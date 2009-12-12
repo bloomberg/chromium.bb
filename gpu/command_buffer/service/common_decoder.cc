@@ -33,7 +33,7 @@
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 
-namespace command_buffer {
+namespace gpu {
 
 const void* CommonDecoder::Bucket::GetData(size_t offset, size_t size) const {
   if (OffsetSizeValid(offset, size)) {
@@ -295,4 +295,4 @@ parse_error::ParseError CommonDecoder::HandleGetBucketData(
   return parse_error::kParseNoError;
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

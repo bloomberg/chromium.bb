@@ -29,11 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 // This file contains cross-platform basic type definitions
 
-#ifndef GPU_COMMAND_BUFFER_COMMON_CROSS_TYPES_H_
-#define GPU_COMMAND_BUFFER_COMMON_CROSS_TYPES_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_TYPES_H_
+#define GPU_COMMAND_BUFFER_COMMON_TYPES_H_
 
 #include <build/build_config.h>
 #if !defined(COMPILER_MSVC)
@@ -41,7 +40,7 @@
 #endif
 #include <string>
 
-namespace command_buffer {
+namespace gpu {
 #if defined(COMPILER_MSVC)
 typedef short Int16;
 typedef unsigned short Uint16;
@@ -55,6 +54,6 @@ typedef uint32_t Uint32;
 #endif
 
 typedef std::string String;
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_COMMON_CROSS_TYPES_H_
+#endif  // GPU_COMMAND_BUFFER_COMMON_TYPES_H_

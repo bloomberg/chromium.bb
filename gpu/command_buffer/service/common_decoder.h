@@ -29,15 +29,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
-#define GPU_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_COMMON_DECODER_H_
+#define GPU_COMMAND_BUFFER_SERVICE_COMMON_DECODER_H_
 
 #include <map>
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 
-namespace command_buffer {
+namespace gpu {
 
 class CommandBufferEngine;
 
@@ -176,7 +176,7 @@ class CommonDecoder : public AsyncAPIInterface {
   BucketMap buckets_;
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_COMMON_DECODER_H_
 

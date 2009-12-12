@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
-namespace command_buffer {
+namespace gpu {
 
 class CommandBufferServiceTest : public testing::Test {
  protected:
@@ -30,17 +30,16 @@ TEST_F(CommandBufferServiceTest, NullRingBufferByDefault) {
 }
 
 TEST_F(CommandBufferServiceTest, InitializesCommandBuffer) {
-  SharedMemory* ring_buffer = new SharedMemory;
-  EXPECT_TRUE(ring_buffer->Create(std::wstring(), false, false, 1024));
-  EXPECT_TRUE(command_buffer_->Initialize(ring_buffer));
-  EXPECT_TRUE(ring_buffer == command_buffer_->GetRingBuffer());
-  EXPECT_EQ(256, command_buffer_->GetSize());
+  base::SharedMemory* ring_buffer = command_buffer_->Initialize(1024);
+  EXPECT_TRUE(NULL != ring_buffer);
+  EXPECT_EQ(ring_buffer, command_buffer_->GetRingBuffer());
+  EXPECT_GT(command_buffer_->GetSize(), 0);
 }
 
 TEST_F(CommandBufferServiceTest, InitializeFailsSecondTime) {
   SharedMemory* ring_buffer = new SharedMemory;
-  EXPECT_TRUE(command_buffer_->Initialize(ring_buffer));
-  EXPECT_FALSE(command_buffer_->Initialize(ring_buffer));
+  EXPECT_TRUE(NULL != command_buffer_->Initialize(1024));
+  EXPECT_TRUE(NULL == command_buffer_->Initialize(1024));
 }
 
 TEST_F(CommandBufferServiceTest, GetAndPutOffsetsDefaultToZero) {
@@ -54,10 +53,7 @@ class MockCallback : public CallbackRunner<Tuple0> {
 };
 
 TEST_F(CommandBufferServiceTest, CanSyncGetAndPutOffset) {
-  SharedMemory* ring_buffer = new SharedMemory;
-  ring_buffer->Create(std::wstring(), false, false, 1024);
-
-  EXPECT_TRUE(command_buffer_->Initialize(ring_buffer));
+  command_buffer_->Initialize(1024);
 
   StrictMock<MockCallback>* put_offset_change_callback =
       new StrictMock<MockCallback>;
@@ -175,4 +171,4 @@ TEST_F(CommandBufferServiceTest, CanRaiseErrorStatus) {
   EXPECT_TRUE(command_buffer_->GetErrorStatus());
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

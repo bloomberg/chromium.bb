@@ -35,9 +35,9 @@
 #include "gpu/command_buffer/client/id_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace command_buffer {
+namespace gpu {
 
-using command_buffer::ResourceId;
+using gpu::ResourceId;
 
 class IdAllocatorTest : public testing::Test {
  protected:
@@ -109,4 +109,4 @@ TEST_F(IdAllocatorTest, TestAdvanced) {
   EXPECT_EQ(id1, id2);
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

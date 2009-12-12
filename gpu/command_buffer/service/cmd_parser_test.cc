@@ -39,7 +39,7 @@
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace command_buffer {
+namespace gpu {
 
 using testing::Return;
 using testing::Mock;
@@ -313,4 +313,4 @@ TEST_F(CommandParserTest, TestError) {
   Mock::VerifyAndClearExpectations(api_mock());
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H
-#define GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H
+#ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H_
+#define GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H_
 
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 
-namespace command_buffer {
+namespace gpu {
 namespace gles2 {
 
 // A class that helps write GL command buffers.
 class GLES2CmdHelper : public CommandBufferHelper {
  public:
-  explicit GLES2CmdHelper(command_buffer::CommandBuffer* command_buffer)
+  explicit GLES2CmdHelper(gpu::CommandBuffer* command_buffer)
       : CommandBufferHelper(command_buffer) {
   }
   virtual ~GLES2CmdHelper() {
@@ -70,7 +70,7 @@ class GLES2CmdHelper : public CommandBufferHelper {
 };
 
 }  // namespace gles2
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H
+#endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H_
 

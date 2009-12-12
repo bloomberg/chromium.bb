@@ -45,14 +45,11 @@ enum IPCMessageStart {
   WorkerMsgStart,
   WorkerHostMsgStart,
   NaClProcessMsgStart,
-  //CommandBufferMsgStart,
+  CommandBufferMsgStart,
   // NOTE: When you add a new message class, also update
   // IPCStatusView::IPCStatusView to ensure logging works.
   LastMsgIndex
 };
-
-COMPILE_ASSERT(LastMsgIndex <= 16, need_to_update_IPC_MESSAGE_MACRO);
-
 
 namespace IPC {
 

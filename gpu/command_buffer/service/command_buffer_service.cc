@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 using ::base::SharedMemory;
 
-namespace command_buffer {
+namespace gpu {
 
 CommandBufferService::CommandBufferService()
     : size_(0),
@@ -24,18 +24,21 @@ CommandBufferService::CommandBufferService()
 CommandBufferService::~CommandBufferService() {
 }
 
-bool CommandBufferService::Initialize(::base::SharedMemory* ring_buffer) {
-  DCHECK(ring_buffer);
-
+base::SharedMemory* CommandBufferService::Initialize(int32 size) {
   // Fail if already initialized.
   if (ring_buffer_.get())
     return false;
 
-  size_t size_in_bytes = ring_buffer->max_size();
-  size_ = size_in_bytes / sizeof(int32);
-  ring_buffer_.reset(ring_buffer);
+  size_ = size;
 
-  return true;
+  ring_buffer_.reset(new SharedMemory);
+  if (ring_buffer_->Create(std::wstring(), false, false, size_)) {
+    if (ring_buffer_->Map(size_))
+      return ring_buffer_.get();
+  }
+
+  ring_buffer_.reset();
+  return NULL;
 }
 
 SharedMemory* CommandBufferService::GetRingBuffer() {
@@ -158,4 +161,4 @@ void CommandBufferService::RaiseErrorStatus() {
   error_status_ = true;
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

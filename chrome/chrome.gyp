@@ -493,6 +493,8 @@
         'common/chrome_plugin_lib.h',
         'common/chrome_plugin_util.cc',
         'common/chrome_plugin_util.h',
+        'common/command_buffer_messages.h',
+        'common/command_buffer_messages_internal.h',
         'common/common_glue.cc',
         'common/common_param_traits.cc',
         'common/common_param_traits.h',
@@ -769,6 +771,12 @@
           ],
           'include_dirs': [
             'third_party/wtl/include',
+          ],
+        },],
+        ['enable_gpu==1', {
+          'sources': [
+            'plugin/command_buffer_stub.cc',
+            'plugin/command_buffer_stub.h',
           ],
         },],
       ],

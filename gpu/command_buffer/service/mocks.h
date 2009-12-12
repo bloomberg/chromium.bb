@@ -36,15 +36,15 @@
 // would be definitely preferable, unfortunately it doesn't work on Windows
 // yet.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_MOCKS_H_
-#define GPU_COMMAND_BUFFER_SERVICE_CROSS_MOCKS_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_MOCKS_H_
+#define GPU_COMMAND_BUFFER_SERVICE_MOCKS_H_
 
 #include <vector>
 #include "testing/gmock/include/gmock/gmock.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // Mocks an AsyncAPIInterface, using GMock.
 class AsyncAPIMock : public AsyncAPIInterface {
@@ -103,6 +103,6 @@ class AsyncAPIMock : public AsyncAPIInterface {
   CommandBufferEngine *engine_;
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_MOCKS_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_MOCKS_H_

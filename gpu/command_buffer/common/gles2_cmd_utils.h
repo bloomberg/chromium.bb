@@ -5,13 +5,13 @@
 // This file is here so other GLES2 related files can have a common set of
 // includes where appropriate.
 
-#ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H
-#define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H
+#ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
+#define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 
 #include "base/basictypes.h"
 #include "gpu/command_buffer/common/types.h"
 
-namespace command_buffer {
+namespace gpu {
 namespace gles2 {
 
 // Utilties for GLES2 support.
@@ -35,7 +35,7 @@ class GLES2Util {
 };
 
 }  // namespace gles2
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H
+#endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 

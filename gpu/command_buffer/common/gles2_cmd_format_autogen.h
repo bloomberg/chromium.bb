@@ -25,7 +25,7 @@ struct ActiveTexture {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 texture;
 };
 
@@ -60,7 +60,7 @@ struct AttachShader {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 shader;
 };
@@ -107,7 +107,7 @@ struct BindAttribLocation {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 index;
   uint32 name_shm_id;
@@ -162,7 +162,7 @@ struct BindAttribLocationImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 index;
   uint32 data_size;
@@ -203,7 +203,7 @@ struct BindBuffer {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 buffer;
 };
@@ -241,7 +241,7 @@ struct BindFramebuffer {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 framebuffer;
 };
@@ -279,7 +279,7 @@ struct BindRenderbuffer {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 renderbuffer;
 };
@@ -317,7 +317,7 @@ struct BindTexture {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 texture;
 };
@@ -359,7 +359,7 @@ struct BlendColor {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   float red;
   float green;
   float blue;
@@ -402,7 +402,7 @@ struct BlendEquation {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 mode;
 };
 
@@ -437,7 +437,7 @@ struct BlendEquationSeparate {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 modeRGB;
   uint32 modeAlpha;
 };
@@ -475,7 +475,7 @@ struct BlendFunc {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 sfactor;
   uint32 dfactor;
 };
@@ -518,7 +518,7 @@ struct BlendFuncSeparate {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 srcRGB;
   uint32 dstRGB;
   uint32 srcAlpha;
@@ -570,7 +570,7 @@ struct BufferData {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 size;
   uint32 data_shm_id;
@@ -622,7 +622,7 @@ struct BufferDataImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 size;
   uint32 usage;
@@ -671,7 +671,7 @@ struct BufferSubData {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 offset;
   uint32 size;
@@ -723,7 +723,7 @@ struct BufferSubDataImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 offset;
   uint32 size;
@@ -763,7 +763,7 @@ struct CheckFramebufferStatus {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
 };
 
@@ -797,7 +797,7 @@ struct Clear {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 mask;
 };
 
@@ -836,7 +836,7 @@ struct ClearColor {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   float red;
   float green;
   float blue;
@@ -879,7 +879,7 @@ struct ClearDepthf {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   float depth;
 };
 
@@ -913,7 +913,7 @@ struct ClearStencil {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 s;
 };
 
@@ -953,7 +953,7 @@ struct ColorMask {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 red;
   uint32 green;
   uint32 blue;
@@ -996,7 +996,7 @@ struct CompileShader {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 shader;
 };
 
@@ -1047,7 +1047,7 @@ struct CompressedTexImage2D {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 level;
   uint32 internalformat;
@@ -1122,7 +1122,7 @@ struct CompressedTexImage2DImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 level;
   uint32 internalformat;
@@ -1192,7 +1192,7 @@ struct CompressedTexSubImage2D {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 level;
   uint32 xoffset;
@@ -1271,7 +1271,7 @@ struct CompressedTexSubImage2DImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 level;
   uint32 xoffset;
@@ -1340,7 +1340,7 @@ struct CopyTexImage2D {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 level;
   uint32 internalformat;
@@ -1408,7 +1408,7 @@ struct CopyTexSubImage2D {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 level;
   uint32 xoffset;
@@ -1463,7 +1463,7 @@ struct CreateProgram {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 client_id;
 };
 
@@ -1498,7 +1498,7 @@ struct CreateShader {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 type;
   uint32 client_id;
 };
@@ -1535,7 +1535,7 @@ struct CullFace {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 mode;
 };
 
@@ -1574,7 +1574,7 @@ struct DeleteBuffers {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
   uint32 buffers_shm_id;
   uint32 buffers_shm_offset;
@@ -1622,7 +1622,7 @@ struct DeleteBuffersImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
 };
 
@@ -1663,7 +1663,7 @@ struct DeleteFramebuffers {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
   uint32 framebuffers_shm_id;
   uint32 framebuffers_shm_offset;
@@ -1711,7 +1711,7 @@ struct DeleteFramebuffersImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
 };
 
@@ -1745,7 +1745,7 @@ struct DeleteProgram {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
 };
 
@@ -1786,7 +1786,7 @@ struct DeleteRenderbuffers {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
   uint32 renderbuffers_shm_id;
   uint32 renderbuffers_shm_offset;
@@ -1834,7 +1834,7 @@ struct DeleteRenderbuffersImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
 };
 
@@ -1868,7 +1868,7 @@ struct DeleteShader {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 shader;
 };
 
@@ -1907,7 +1907,7 @@ struct DeleteTextures {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
   uint32 textures_shm_id;
   uint32 textures_shm_offset;
@@ -1955,7 +1955,7 @@ struct DeleteTexturesImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
 };
 
@@ -1989,7 +1989,7 @@ struct DepthFunc {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 func;
 };
 
@@ -2023,7 +2023,7 @@ struct DepthMask {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 flag;
 };
 
@@ -2058,7 +2058,7 @@ struct DepthRangef {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   float zNear;
   float zFar;
 };
@@ -2096,7 +2096,7 @@ struct DetachShader {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 shader;
 };
@@ -2133,7 +2133,7 @@ struct Disable {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 cap;
 };
 
@@ -2167,7 +2167,7 @@ struct DisableVertexAttribArray {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 index;
 };
 
@@ -2203,7 +2203,7 @@ struct DrawArrays {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 mode;
   uint32 first;
   uint32 count;
@@ -2248,7 +2248,7 @@ struct DrawElements {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 mode;
   uint32 count;
   uint32 type;
@@ -2291,7 +2291,7 @@ struct Enable {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 cap;
 };
 
@@ -2325,7 +2325,7 @@ struct EnableVertexAttribArray {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 index;
 };
 
@@ -2358,7 +2358,7 @@ struct Finish {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
 };
 
 COMPILE_ASSERT(sizeof(Finish) == 4,
@@ -2388,7 +2388,7 @@ struct Flush {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
 };
 
 COMPILE_ASSERT(sizeof(Flush) == 4,
@@ -2427,7 +2427,7 @@ struct FramebufferRenderbuffer {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 attachment;
   uint32 renderbuffertarget;
@@ -2479,7 +2479,7 @@ struct FramebufferTexture2D {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 attachment;
   uint32 textarget;
@@ -2525,7 +2525,7 @@ struct FrontFace {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 mode;
 };
 
@@ -2564,7 +2564,7 @@ struct GenBuffers {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
   uint32 buffers_shm_id;
   uint32 buffers_shm_offset;
@@ -2612,7 +2612,7 @@ struct GenBuffersImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
 };
 
@@ -2646,7 +2646,7 @@ struct GenerateMipmap {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
 };
 
@@ -2687,7 +2687,7 @@ struct GenFramebuffers {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
   uint32 framebuffers_shm_id;
   uint32 framebuffers_shm_offset;
@@ -2735,7 +2735,7 @@ struct GenFramebuffersImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
 };
 
@@ -2776,7 +2776,7 @@ struct GenRenderbuffers {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
   uint32 renderbuffers_shm_id;
   uint32 renderbuffers_shm_offset;
@@ -2824,7 +2824,7 @@ struct GenRenderbuffersImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
 };
 
@@ -2863,7 +2863,7 @@ struct GenTextures {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
   uint32 textures_shm_id;
   uint32 textures_shm_offset;
@@ -2911,7 +2911,7 @@ struct GenTexturesImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 n;
 };
 
@@ -2967,7 +2967,7 @@ struct GetActiveAttrib {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 index;
   uint32 bufsize;
@@ -3053,7 +3053,7 @@ struct GetActiveUniform {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 index;
   uint32 bufsize;
@@ -3131,7 +3131,7 @@ struct GetAttachedShaders {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 maxcount;
   uint32 count_shm_id;
@@ -3185,7 +3185,7 @@ struct GetBooleanv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 pname;
   uint32 params_shm_id;
   uint32 params_shm_offset;
@@ -3233,7 +3233,7 @@ struct GetBufferParameteriv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 pname;
   uint32 params_shm_id;
@@ -3277,7 +3277,7 @@ struct GetError {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 result_shm_id;
   uint32 result_shm_offset;
 };
@@ -3319,7 +3319,7 @@ struct GetFloatv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 pname;
   uint32 params_shm_id;
   uint32 params_shm_offset;
@@ -3369,7 +3369,7 @@ struct GetFramebufferAttachmentParameteriv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 attachment;
   uint32 pname;
@@ -3422,7 +3422,7 @@ struct GetIntegerv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 pname;
   uint32 params_shm_id;
   uint32 params_shm_offset;
@@ -3470,7 +3470,7 @@ struct GetProgramiv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 pname;
   uint32 params_shm_id;
@@ -3527,7 +3527,7 @@ struct GetProgramInfoLog {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 bufsize;
   uint32 length_shm_id;
@@ -3584,7 +3584,7 @@ struct GetRenderbufferParameteriv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 pname;
   uint32 params_shm_id;
@@ -3635,7 +3635,7 @@ struct GetShaderiv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 shader;
   uint32 pname;
   uint32 params_shm_id;
@@ -3692,7 +3692,7 @@ struct GetShaderInfoLog {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 shader;
   uint32 bufsize;
   uint32 length_shm_id;
@@ -3755,7 +3755,7 @@ struct GetShaderPrecisionFormat {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 shadertype;
   uint32 precisiontype;
   uint32 range_shm_id;
@@ -3818,7 +3818,7 @@ struct GetShaderSource {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 shader;
   uint32 bufsize;
   uint32 length_shm_id;
@@ -3867,7 +3867,7 @@ struct GetString {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 name;
 };
 
@@ -3909,7 +3909,7 @@ struct GetTexParameterfv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 pname;
   uint32 params_shm_id;
@@ -3960,7 +3960,7 @@ struct GetTexParameteriv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 pname;
   uint32 params_shm_id;
@@ -4011,7 +4011,7 @@ struct GetUniformfv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 location;
   uint32 params_shm_id;
@@ -4062,7 +4062,7 @@ struct GetUniformiv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 location;
   uint32 params_shm_id;
@@ -4113,7 +4113,7 @@ struct GetVertexAttribfv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 index;
   uint32 pname;
   uint32 params_shm_id;
@@ -4164,7 +4164,7 @@ struct GetVertexAttribiv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 index;
   uint32 pname;
   uint32 params_shm_id;
@@ -4215,7 +4215,7 @@ struct GetVertexAttribPointerv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 index;
   uint32 pname;
   uint32 pointer_shm_id;
@@ -4259,7 +4259,7 @@ struct Hint {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 mode;
 };
@@ -4301,7 +4301,7 @@ struct IsBuffer {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 buffer;
   uint32 result_shm_id;
   uint32 result_shm_offset;
@@ -4346,7 +4346,7 @@ struct IsEnabled {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 cap;
   uint32 result_shm_id;
   uint32 result_shm_offset;
@@ -4392,7 +4392,7 @@ struct IsFramebuffer {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 framebuffer;
   uint32 result_shm_id;
   uint32 result_shm_offset;
@@ -4438,7 +4438,7 @@ struct IsProgram {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 result_shm_id;
   uint32 result_shm_offset;
@@ -4484,7 +4484,7 @@ struct IsRenderbuffer {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 renderbuffer;
   uint32 result_shm_id;
   uint32 result_shm_offset;
@@ -4529,7 +4529,7 @@ struct IsShader {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 shader;
   uint32 result_shm_id;
   uint32 result_shm_offset;
@@ -4575,7 +4575,7 @@ struct IsTexture {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 texture;
   uint32 result_shm_id;
   uint32 result_shm_offset;
@@ -4615,7 +4615,7 @@ struct LineWidth {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   float width;
 };
 
@@ -4649,7 +4649,7 @@ struct LinkProgram {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
 };
 
@@ -4684,7 +4684,7 @@ struct PixelStorei {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 pname;
   uint32 param;
 };
@@ -4722,7 +4722,7 @@ struct PolygonOffset {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   float factor;
   float units;
 };
@@ -4774,7 +4774,7 @@ struct ReadPixels {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 x;
   uint32 y;
   uint32 width;
@@ -4837,7 +4837,7 @@ struct RenderbufferStorage {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 internalformat;
   uint32 width;
@@ -4881,7 +4881,7 @@ struct SampleCoverage {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   float value;
   uint32 invert;
 };
@@ -4921,7 +4921,7 @@ struct Scissor {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 x;
   uint32 y;
   uint32 width;
@@ -4974,7 +4974,7 @@ struct ShaderSource {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 shader;
   uint32 count;
   uint32 data_shm_id;
@@ -5026,7 +5026,7 @@ struct ShaderSourceImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 shader;
   uint32 count;
   uint32 data_size;
@@ -5068,7 +5068,7 @@ struct StencilFunc {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 func;
   uint32 ref;
   uint32 mask;
@@ -5111,7 +5111,7 @@ struct StencilFuncSeparate {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 face;
   uint32 func;
   uint32 ref;
@@ -5154,7 +5154,7 @@ struct StencilMask {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 mask;
 };
 
@@ -5189,7 +5189,7 @@ struct StencilMaskSeparate {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 face;
   uint32 mask;
 };
@@ -5228,7 +5228,7 @@ struct StencilOp {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 fail;
   uint32 zfail;
   uint32 zpass;
@@ -5272,7 +5272,7 @@ struct StencilOpSeparate {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 face;
   uint32 fail;
   uint32 zfail;
@@ -5333,7 +5333,7 @@ struct TexImage2D {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 level;
   uint32 internalformat;
@@ -5413,7 +5413,7 @@ struct TexImage2DImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 level;
   uint32 internalformat;
@@ -5470,7 +5470,7 @@ struct TexParameterf {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 pname;
   float param;
@@ -5518,7 +5518,7 @@ struct TexParameterfv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 pname;
   uint32 params_shm_id;
@@ -5571,7 +5571,7 @@ struct TexParameterfvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 pname;
 };
@@ -5610,7 +5610,7 @@ struct TexParameteri {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 pname;
   uint32 param;
@@ -5658,7 +5658,7 @@ struct TexParameteriv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 pname;
   uint32 params_shm_id;
@@ -5711,7 +5711,7 @@ struct TexParameterivImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 pname;
 };
@@ -5766,7 +5766,7 @@ struct TexSubImage2D {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 level;
   uint32 xoffset;
@@ -5845,7 +5845,7 @@ struct TexSubImage2DImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 target;
   uint32 level;
   uint32 xoffset;
@@ -5901,7 +5901,7 @@ struct Uniform1f {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   float x;
 };
@@ -5946,7 +5946,7 @@ struct Uniform1fv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 v_shm_id;
@@ -5999,7 +5999,7 @@ struct Uniform1fvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
 };
@@ -6037,7 +6037,7 @@ struct Uniform1i {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 x;
 };
@@ -6082,7 +6082,7 @@ struct Uniform1iv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 v_shm_id;
@@ -6135,7 +6135,7 @@ struct Uniform1ivImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
 };
@@ -6174,7 +6174,7 @@ struct Uniform2f {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   float x;
   float y;
@@ -6222,7 +6222,7 @@ struct Uniform2fv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 v_shm_id;
@@ -6275,7 +6275,7 @@ struct Uniform2fvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
 };
@@ -6314,7 +6314,7 @@ struct Uniform2i {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 x;
   uint32 y;
@@ -6362,7 +6362,7 @@ struct Uniform2iv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 v_shm_id;
@@ -6415,7 +6415,7 @@ struct Uniform2ivImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
 };
@@ -6455,7 +6455,7 @@ struct Uniform3f {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   float x;
   float y;
@@ -6506,7 +6506,7 @@ struct Uniform3fv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 v_shm_id;
@@ -6559,7 +6559,7 @@ struct Uniform3fvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
 };
@@ -6599,7 +6599,7 @@ struct Uniform3i {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 x;
   uint32 y;
@@ -6650,7 +6650,7 @@ struct Uniform3iv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 v_shm_id;
@@ -6703,7 +6703,7 @@ struct Uniform3ivImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
 };
@@ -6746,7 +6746,7 @@ struct Uniform4f {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   float x;
   float y;
@@ -6800,7 +6800,7 @@ struct Uniform4fv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 v_shm_id;
@@ -6853,7 +6853,7 @@ struct Uniform4fvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
 };
@@ -6895,7 +6895,7 @@ struct Uniform4i {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 x;
   uint32 y;
@@ -6949,7 +6949,7 @@ struct Uniform4iv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 v_shm_id;
@@ -7002,7 +7002,7 @@ struct Uniform4ivImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
 };
@@ -7049,7 +7049,7 @@ struct UniformMatrix2fv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 transpose;
@@ -7110,7 +7110,7 @@ struct UniformMatrix2fvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 transpose;
@@ -7160,7 +7160,7 @@ struct UniformMatrix3fv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 transpose;
@@ -7221,7 +7221,7 @@ struct UniformMatrix3fvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 transpose;
@@ -7271,7 +7271,7 @@ struct UniformMatrix4fv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 transpose;
@@ -7332,7 +7332,7 @@ struct UniformMatrix4fvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 location;
   uint32 count;
   uint32 transpose;
@@ -7372,7 +7372,7 @@ struct UseProgram {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
 };
 
@@ -7406,7 +7406,7 @@ struct ValidateProgram {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
 };
 
@@ -7441,7 +7441,7 @@ struct VertexAttrib1f {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
   float x;
 };
@@ -7483,7 +7483,7 @@ struct VertexAttrib1fv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
   uint32 values_shm_id;
   uint32 values_shm_offset;
@@ -7532,7 +7532,7 @@ struct VertexAttrib1fvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
 };
 
@@ -7568,7 +7568,7 @@ struct VertexAttrib2f {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
   float x;
   float y;
@@ -7613,7 +7613,7 @@ struct VertexAttrib2fv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
   uint32 values_shm_id;
   uint32 values_shm_offset;
@@ -7662,7 +7662,7 @@ struct VertexAttrib2fvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
 };
 
@@ -7699,7 +7699,7 @@ struct VertexAttrib3f {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
   float x;
   float y;
@@ -7747,7 +7747,7 @@ struct VertexAttrib3fv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
   uint32 values_shm_id;
   uint32 values_shm_offset;
@@ -7796,7 +7796,7 @@ struct VertexAttrib3fvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
 };
 
@@ -7836,7 +7836,7 @@ struct VertexAttrib4f {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
   float x;
   float y;
@@ -7887,7 +7887,7 @@ struct VertexAttrib4fv {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
   uint32 values_shm_id;
   uint32 values_shm_offset;
@@ -7936,7 +7936,7 @@ struct VertexAttrib4fvImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
 };
 
@@ -7980,7 +7980,7 @@ struct VertexAttribPointer {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 indx;
   uint32 size;
   uint32 type;
@@ -8032,7 +8032,7 @@ struct Viewport {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 x;
   uint32 y;
   uint32 width;
@@ -8074,7 +8074,7 @@ struct SwapBuffers {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
 };
 
 COMPILE_ASSERT(sizeof(SwapBuffers) == 4,

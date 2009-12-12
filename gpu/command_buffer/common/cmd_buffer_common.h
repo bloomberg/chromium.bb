@@ -32,15 +32,15 @@
 
 // This file contains the common parts of command buffer formats.
 
-#ifndef GPU_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_COMMON_H_
-#define GPU_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_COMMON_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_CMD_BUFFER_COMMON_H_
+#define GPU_COMMAND_BUFFER_COMMON_CMD_BUFFER_COMMON_H_
 
 #include "base/basictypes.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/command_buffer/common/bitfield_helpers.h"
 #include "gpu/command_buffer/common/logging.h"
 
-namespace command_buffer {
+namespace gpu {
 
 namespace cmd {
   enum ArgFlags {
@@ -680,7 +680,7 @@ COMPILE_ASSERT(offsetof(GetBucketData, shared_memory_offset) == 20,
 
 #pragma pack(pop)
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_COMMON_H_
+#endif  // GPU_COMMAND_BUFFER_COMMON_CMD_BUFFER_COMMON_H_
 

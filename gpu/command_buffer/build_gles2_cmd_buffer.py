@@ -17,7 +17,7 @@ _SIZE_OF_COMMAND_HEADER = 4
 _FIRST_SPECIFIC_COMMAND_ID = 256
 
 _LICENSE = """
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -418,7 +418,7 @@ class TypeHandler(object):
     func.WriteCmdInit(file)
     func.WriteCmdSet(file)
 
-    file.Write("  command_buffer::CommandHeader header;\n")
+    file.Write("  gpu::CommandHeader header;\n")
     args = func.GetCmdArgs()
     for arg in args:
       file.Write("  %s %s;\n" % (arg.cmd_type, arg.name))
@@ -2417,14 +2417,14 @@ class GLGenerator(object):
 
   def WriteNamespaceOpen(self, file):
     """Writes the code for the namespace."""
-    file.Write("namespace command_buffer {\n")
+    file.Write("namespace gpu {\n")
     file.Write("namespace gles2 {\n")
     file.Write("\n")
 
   def WriteNamespaceClose(self, file):
     """Writes the code to close the namespace."""
     file.Write("}  // namespace gles2\n")
-    file.Write("}  // namespace command_buffer\n")
+    file.Write("}  // namespace gpu\n")
     file.Write("\n")
 
   def MakeGuard(self, filename):

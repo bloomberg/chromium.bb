@@ -35,7 +35,7 @@
 
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
-namespace command_buffer {
+namespace gpu {
 namespace cmd {
 
 const char* GetCommandName(CommandId command_id) {
@@ -52,6 +52,6 @@ const char* GetCommandName(CommandId command_id) {
 }
 
 }  // namespace cmd
-}  // namespace command_buffer
+}  // namespace gpu
 
 

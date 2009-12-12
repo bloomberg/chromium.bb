@@ -32,14 +32,14 @@
 
 // This file contains the definition for resource classes and the resource map.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_
-#define GPU_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_RESOURCE_H_
+#define GPU_COMMAND_BUFFER_SERVICE_RESOURCE_H_
 
 #include <vector>
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/common/resource.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // Base class for resources, just providing a common Destroy function.
 class Resource {
@@ -263,6 +263,6 @@ template<class T> class ResourceMap {
   ResourceMapBase container_;
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_RESOURCE_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 
 using ::base::SharedMemory;
 
-namespace command_buffer {
+namespace gpu {
 
 GPUProcessor::~GPUProcessor() {
 }
@@ -20,16 +20,16 @@ void GPUProcessor::ProcessCommands() {
 
   int commands_processed = 0;
   while (commands_processed < commands_per_update_ && !parser_->IsEmpty()) {
-    command_buffer::parse_error::ParseError parse_error =
+    gpu::parse_error::ParseError parse_error =
         parser_->ProcessCommand();
     switch (parse_error) {
-      case command_buffer::parse_error::kParseUnknownCommand:
-      case command_buffer::parse_error::kParseInvalidArguments:
+      case gpu::parse_error::kParseUnknownCommand:
+      case gpu::parse_error::kParseInvalidArguments:
         command_buffer_->SetParseError(parse_error);
         break;
 
-      case command_buffer::parse_error::kParseInvalidSize:
-      case command_buffer::parse_error::kParseOutOfBounds:
+      case gpu::parse_error::kParseInvalidSize:
+      case gpu::parse_error::kParseOutOfBounds:
         command_buffer_->SetParseError(parse_error);
         command_buffer_->RaiseErrorStatus();
         return;
@@ -75,4 +75,4 @@ void GPUProcessor::set_token(int32 token) {
   command_buffer_->SetToken(token);
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

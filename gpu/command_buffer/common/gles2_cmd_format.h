@@ -4,8 +4,8 @@
 
 // This file defines the GLES2 command buffer commands.
 
-#ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_H
-#define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_H
+#ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_H_
+#define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_H_
 
 // This is here because service side code must include the system's version of
 // the GL headers where as client side code includes the Chrome version.
@@ -24,7 +24,7 @@
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/gles2_cmd_ids.h"
 
-namespace command_buffer {
+namespace gpu {
 namespace gles2 {
 
 #include "gpu/command_buffer/common/gles2_cmd_format_autogen.h"
@@ -69,7 +69,7 @@ struct GetAttribLocation {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 name_shm_id;
   uint32 name_shm_offset;
@@ -132,7 +132,7 @@ struct GetAttribLocationImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 location_shm_id;
   uint32 location_shm_offset;
@@ -189,7 +189,7 @@ struct GetUniformLocation {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 name_shm_id;
   uint32 name_shm_offset;
@@ -252,7 +252,7 @@ struct GetUniformLocationImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
-  command_buffer::CommandHeader header;
+  gpu::CommandHeader header;
   uint32 program;
   uint32 location_shm_id;
   uint32 location_shm_offset;
@@ -275,7 +275,7 @@ COMPILE_ASSERT(offsetof(GetUniformLocationImmediate, data_size) == 16,
 
 
 }  // namespace gles2
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_H
+#endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_H_
 

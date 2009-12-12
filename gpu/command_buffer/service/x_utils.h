@@ -39,7 +39,7 @@
 #include "base/basictypes.h"
 #include "gpu/command_buffer/common/logging.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // This class is a wrapper around an X Window and associated GL context. It is
 // useful to isolate intrusive X headers, since it can be forward declared
@@ -71,6 +71,6 @@ class XWindowWrapper {
   DISALLOW_COPY_AND_ASSIGN(XWindowWrapper);
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_X_UTILS_H_

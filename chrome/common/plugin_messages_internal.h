@@ -267,6 +267,9 @@ IPC_BEGIN_MESSAGES(Plugin)
   IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_HandleURLRequestReply,
                              PluginMsg_URLRequestReply_Params)
 
+  IPC_SYNC_MESSAGE_ROUTED0_1(PluginMsg_CreateCommandBuffer,
+                             int /* route_id */)
+
   IPC_MESSAGE_CONTROL1(PluginMsg_SignalModalDialogEvent,
                        gfx::NativeViewId /* containing_window */)
 

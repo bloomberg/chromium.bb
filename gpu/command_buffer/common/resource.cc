@@ -34,7 +34,7 @@
 
 #include "gpu/command_buffer/common/resource.h"
 
-namespace command_buffer {
+namespace gpu {
 
 namespace texture {
 
@@ -117,4 +117,4 @@ unsigned int GetDataSize(DataType type) {
 
 }  // namespace effect_param
 
-}  // namespace command_buffer
+}  // namespace gpu

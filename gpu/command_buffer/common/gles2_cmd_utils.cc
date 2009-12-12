@@ -8,7 +8,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 
-namespace command_buffer {
+namespace gpu {
 namespace gles2 {
 
 int GLES2Util::GLGetNumValuesReturned(int id) const {
@@ -344,5 +344,5 @@ uint32 GLES2Util::ComputeImageDataSize(
 }
 
 }  // namespace gles2
-}  // namespace command_buffer
+}  // namespace gpu
 

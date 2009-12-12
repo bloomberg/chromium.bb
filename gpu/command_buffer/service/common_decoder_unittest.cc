@@ -6,7 +6,7 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace command_buffer {
+namespace gpu {
 
 TEST(CommonDecoderBucket, Basic) {
   CommonDecoder::Bucket bucket;
@@ -414,5 +414,5 @@ TEST_F(CommonDecoderTest, GetBucketData) {
 }
 
 
-}  // namespace command_buffer
+}  // namespace gpu
 

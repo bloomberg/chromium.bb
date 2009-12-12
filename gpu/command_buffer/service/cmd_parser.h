@@ -32,13 +32,13 @@
 
 // This file contains the command parser class.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_CMD_PARSER_H_
-#define GPU_COMMAND_BUFFER_SERVICE_CROSS_CMD_PARSER_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CMD_PARSER_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CMD_PARSER_H_
 
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
-namespace command_buffer {
+namespace gpu {
 
 class AsyncAPIInterface;
 
@@ -110,6 +110,6 @@ class AsyncAPIInterface {
   virtual const char* GetCommandName(unsigned int command_id) const = 0;
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_CMD_PARSER_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CMD_PARSER_H_

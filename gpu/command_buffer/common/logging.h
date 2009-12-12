@@ -33,8 +33,8 @@
 // This file abstracts differences in logging between NaCl and host
 // environment.
 
-#ifndef GPU_COMMAND_BUFFER_COMMON_CROSS_LOGGING_H_
-#define GPU_COMMAND_BUFFER_COMMON_CROSS_LOGGING_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_LOGGING_H_
+#define GPU_COMMAND_BUFFER_COMMON_LOGGING_H_
 
 #ifndef __native_client__
 #include "base/logging.h"
@@ -64,4 +64,4 @@
 
 #endif
 
-#endif  // GPU_COMMAND_BUFFER_COMMON_CROSS_LOGGING_H_
+#endif  // GPU_COMMAND_BUFFER_COMMON_LOGGING_H_

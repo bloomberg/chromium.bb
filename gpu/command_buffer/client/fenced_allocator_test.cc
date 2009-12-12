@@ -42,10 +42,10 @@
 #include "gpu/command_buffer/service/gpu_processor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace command_buffer {
+namespace gpu {
 
-using command_buffer::CommandBufferService;
-using command_buffer::GPUProcessor;
+using gpu::CommandBufferService;
+using gpu::GPUProcessor;
 using testing::Return;
 using testing::Mock;
 using testing::Truly;
@@ -69,14 +69,11 @@ class BaseFencedAllocatorTest : public testing::Test {
         .WillRepeatedly(DoAll(Invoke(api_mock_.get(), &AsyncAPIMock::SetToken),
                               Return(parse_error::kParseNoError)));
 
-    base::SharedMemory* ring_buffer = new base::SharedMemory;
-    ring_buffer->Create(std::wstring(), false, false, 1024);
-    ring_buffer->Map(1024);
-
     command_buffer_.reset(new CommandBufferService);
-    command_buffer_->Initialize(ring_buffer);
+    base::SharedMemory* ring_buffer = command_buffer_->Initialize(
+        kBufferSize / sizeof(CommandBufferEntry));
 
-    parser_ = new command_buffer::CommandParser(ring_buffer->memory(),
+    parser_ = new gpu::CommandParser(ring_buffer->memory(),
                                                 kBufferSize,
                                                 0,
                                                 kBufferSize,
@@ -102,7 +99,7 @@ class BaseFencedAllocatorTest : public testing::Test {
   MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<CommandBufferService> command_buffer_;
-  command_buffer::CommandParser* parser_;
+  gpu::CommandParser* parser_;
   scoped_ptr<CommandBufferHelper> helper_;
 };
 
@@ -493,4 +490,4 @@ TEST_F(FencedAllocatorWrapperTest, TestFreePendingToken) {
   }
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

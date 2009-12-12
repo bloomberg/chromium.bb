@@ -36,7 +36,7 @@
 #include "gpu/command_buffer/service/resource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // Mock resource implementation that checks for leaks.
 class ResourceMock : public Resource {
@@ -124,4 +124,4 @@ TEST_F(ResourceMapTest, TestMap) {
   CheckLeaks();
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

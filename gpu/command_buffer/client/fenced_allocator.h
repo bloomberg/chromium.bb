@@ -32,14 +32,14 @@
 
 // This file contains the definition of the FencedAllocator class.
 
-#ifndef GPU_COMMAND_BUFFER_CLIENT_CROSS_FENCED_ALLOCATOR_H_
-#define GPU_COMMAND_BUFFER_CLIENT_CROSS_FENCED_ALLOCATOR_H_
+#ifndef GPU_COMMAND_BUFFER_CLIENT_FENCED_ALLOCATOR_H_
+#define GPU_COMMAND_BUFFER_CLIENT_FENCED_ALLOCATOR_H_
 
 #include <vector>
 #include "base/basictypes.h"
 #include "gpu/command_buffer/common/logging.h"
 
-namespace command_buffer {
+namespace gpu {
 class CommandBufferHelper;
 
 // FencedAllocator provides a mechanism to manage allocations within a fixed
@@ -156,7 +156,7 @@ class FencedAllocator {
   // the other functions that return a block index).
   Offset AllocInBlock(BlockIndex index, unsigned int size);
 
-  command_buffer::CommandBufferHelper *helper_;
+  gpu::CommandBufferHelper *helper_;
   Container blocks_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FencedAllocator);
@@ -261,6 +261,6 @@ class FencedAllocatorWrapper {
   DISALLOW_IMPLICIT_CONSTRUCTORS(FencedAllocatorWrapper);
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_CLIENT_CROSS_FENCED_ALLOCATOR_H_
+#endif  // GPU_COMMAND_BUFFER_CLIENT_FENCED_ALLOCATOR_H_

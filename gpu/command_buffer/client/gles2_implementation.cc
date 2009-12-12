@@ -9,7 +9,7 @@
 #include "gpu/command_buffer/client/gles2_implementation_gen.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
-namespace command_buffer {
+namespace gpu {
 namespace gles2 {
 
 // A 32-bit and 64-bit compatible way of converting a pointer to a GLuint.
@@ -253,4 +253,4 @@ void GLES2Implementation::TexSubImage2D(
 
 
 }  // namespace gles2
-}  // namespace command_buffer
+}  // namespace gpu

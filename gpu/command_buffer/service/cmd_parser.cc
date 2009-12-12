@@ -35,7 +35,7 @@
 #include "gpu/command_buffer/service/precompile.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 
-namespace command_buffer {
+namespace gpu {
 
 CommandParser::CommandParser(void *shm_address,
                              size_t shm_size,
@@ -107,4 +107,4 @@ parse_error::ParseError CommandParser::ProcessAllCommands() {
   return parse_error::kParseNoError;
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

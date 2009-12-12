@@ -35,9 +35,9 @@
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 
-namespace command_buffer {
+namespace gpu {
 
-using command_buffer::CommandBuffer;
+using gpu::CommandBuffer;
 
 CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),
@@ -188,4 +188,4 @@ parse_error::ParseError CommandBufferHelper::GetParseError() {
   return static_cast<parse_error::ParseError>(parse_error);
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

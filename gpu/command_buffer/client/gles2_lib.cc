@@ -6,7 +6,7 @@
 
 namespace gles2 {
 
-::command_buffer::gles2::GLES2Implementation* g_gl_impl;
+::gpu::gles2::GLES2Implementation* g_gl_impl;
 
 bool InitGLES2Lib() {
   // TODO(gman): Encapulate initalizing the GLES2 library for client apps.

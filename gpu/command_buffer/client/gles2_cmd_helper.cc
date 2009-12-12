@@ -4,11 +4,11 @@
 
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // Currently this is a place holder.
 
-}  // namespace command_buffer
+}  // namespace gpu
 
 
 

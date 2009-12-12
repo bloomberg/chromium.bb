@@ -36,7 +36,7 @@
 #include <algorithm>
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
-namespace command_buffer {
+namespace gpu {
 
 #ifndef COMPILER_MSVC
 const FencedAllocator::Offset FencedAllocator::kInvalidOffset;
@@ -211,4 +211,4 @@ FencedAllocator::BlockIndex FencedAllocator::GetBlockByOffset(Offset offset) {
   return it-blocks_.begin();
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

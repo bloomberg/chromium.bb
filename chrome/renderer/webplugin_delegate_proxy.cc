@@ -27,6 +27,7 @@
 #include "chrome/plugin/npobject_proxy.h"
 #include "chrome/plugin/npobject_stub.h"
 #include "chrome/plugin/npobject_util.h"
+#include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
@@ -1139,6 +1140,20 @@ WebPluginDelegateProxy::CreateResourceClient(
                                                        instance_id_);
   proxy->Initialize(resource_id, url, notify_needed, notify_data, npstream);
   return proxy;
+}
+
+CommandBufferProxy* WebPluginDelegateProxy::CreateCommandBuffer() {
+#if defined(ENABLE_GPU)
+  int command_buffer_id;
+  if (!Send(new PluginMsg_CreateCommandBuffer(instance_id_,
+                                              &command_buffer_id))) {
+    return NULL;
+  }
+
+  return new CommandBufferProxy(channel_host_, command_buffer_id);
+#else
+  return NULL;
+#endif
 }
 
 void WebPluginDelegateProxy::OnCancelDocumentLoad() {

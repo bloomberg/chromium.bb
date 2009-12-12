@@ -35,7 +35,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "gpu/command_buffer/common/bitfield_helpers.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // Tests that BitField<>::Get returns the right bits.
 TEST(BitFieldTest, TestGet) {
@@ -63,4 +63,4 @@ TEST(BitFieldTest, TestSet) {
   EXPECT_EQ(0x87654321u, value);
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

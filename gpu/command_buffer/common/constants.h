@@ -30,12 +30,12 @@
  */
 
 
-#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_CONSTANTS_H_
-#define O3D_COMMAND_BUFFER_COMMON_CROSS_CONSTANTS_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_
+#define GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_
 
 #include "base/basictypes.h"
 
-namespace command_buffer {
+namespace gpu {
 
 typedef int32 CommandBufferOffset;
 const CommandBufferOffset kInvalidCommandBufferOffset = -1;
@@ -66,6 +66,6 @@ namespace parse_error {
 // failure.
 const int32 kInvalidSharedMemoryId = -1;
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_CONSTANTS_H_
+#endif  // GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_

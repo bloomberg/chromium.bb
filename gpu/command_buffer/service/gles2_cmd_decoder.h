@@ -4,8 +4,8 @@
 
 // This file contains the GLES2Decoder class.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GLES2_CMD_DECODER_H
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_GLES2_CMD_DECODER_H
+#ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
+#define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
 
 #include <build/build_config.h>
 #if defined(OS_LINUX)
@@ -15,7 +15,7 @@
 #endif
 #include "gpu/command_buffer/service/common_decoder.h"
 
-namespace command_buffer {
+namespace gpu {
 namespace gles2 {
 
 // This class implements the AsyncAPIInterface interface, decoding GLES2
@@ -80,6 +80,6 @@ class GLES2Decoder : public CommonDecoder {
 };
 
 }  // namespace gles2
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_GLES2_CMD_DECODER_H
+#endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_

@@ -152,6 +152,10 @@
           'dependencies': [
             '../gpu/gpu.gyp:gpu_plugin',
           ],
+          'sources': [
+            'renderer/command_buffer_proxy.cc',
+            'renderer/command_buffer_proxy.h',
+          ],
         }],
         ['disable_nacl!=1', {
           'dependencies': [

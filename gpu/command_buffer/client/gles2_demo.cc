@@ -25,10 +25,10 @@
 #include "gpu/command_buffer/client/gles2_demo_cc.h"
 
 using base::SharedMemory;
-using command_buffer::GPUProcessor;
-using command_buffer::CommandBufferService;
-using command_buffer::gles2::GLES2CmdHelper;
-using command_buffer::gles2::GLES2Implementation;
+using gpu::GPUProcessor;
+using gpu::CommandBufferService;
+using gpu::gles2::GLES2CmdHelper;
+using gpu::gles2::GLES2Implementation;
 
 class GLES2Demo {
  public:
@@ -44,17 +44,8 @@ GLES2Demo::GLES2Demo() {
 }
 
 bool GLES2Demo::Setup(void* hwnd, int32 size) {
-  scoped_ptr<SharedMemory> ring_buffer(new SharedMemory);
-  if (!ring_buffer->Create(std::wstring(), false, false, size)) {
-    return NULL;
-  }
-
-  if (!ring_buffer->Map(size)) {
-    return NULL;
-  }
-
   scoped_ptr<CommandBufferService> command_buffer(new CommandBufferService);
-  if (!command_buffer->Initialize(ring_buffer.release())) {
+  if (!command_buffer->Initialize(size)) {
     return NULL;
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 using ::base::SharedMemory;
 
-namespace command_buffer {
+namespace gpu {
 
 GPUProcessor::GPUProcessor(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),
@@ -29,7 +29,7 @@ GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
   parser_.reset(parser);
 }
 
-bool GPUProcessor::Initialize(HWND handle) {
+bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle) {
   DCHECK(handle);
 
   // Cannot reinitialize.
@@ -45,10 +45,10 @@ bool GPUProcessor::Initialize(HWND handle) {
     }
 
     void* ptr = ring_buffer->memory();
-    parser_.reset(new command_buffer::CommandParser(ptr, size, 0, size, 0,
+    parser_.reset(new gpu::CommandParser(ptr, size, 0, size, 0,
                                                     decoder_.get()));
   } else {
-    parser_.reset(new command_buffer::CommandParser(NULL, 0, 0, 0, 0,
+    parser_.reset(new gpu::CommandParser(NULL, 0, 0, 0, 0,
                                                     decoder_.get()));
   }
 
@@ -65,7 +65,9 @@ void GPUProcessor::Destroy() {
   }
 }
 
-bool GPUProcessor::SetWindow(HWND handle, int width, int height) {
+bool GPUProcessor::SetWindow(gfx::PluginWindowHandle handle,
+                             int width,
+                             int height) {
   if (handle == NULL) {
     // Destroy GAPI when the window handle becomes invalid.
     Destroy();
@@ -75,4 +77,4 @@ bool GPUProcessor::SetWindow(HWND handle, int width, int height) {
   }
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

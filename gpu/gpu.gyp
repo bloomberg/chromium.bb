@@ -80,6 +80,9 @@
           '..',
         ],
       },
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
       'sources': [
         'command_buffer/common/bitfield_helpers.h',
         'command_buffer/common/cmd_buffer_common.h',
@@ -107,7 +110,6 @@
       'type': 'static_library',
       'dependencies': [
         'command_buffer_common',
-        'np_utils',
       ],
       'sources': [
         'command_buffer/client/gles2_cmd_helper.cc',
@@ -271,68 +273,11 @@
       },
     },
     {
-      'target_name': 'np_utils',
-      'type': '<(library)',
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'all_dependent_settings': {
-        'include_dirs': [
-          '..',
-        ],
-      },
-      'sources': [
-        'np_utils/default_np_object.h',
-        'np_utils/dynamic_np_object.cc',
-        'np_utils/dynamic_np_object.h',
-        'np_utils/np_browser.cc',
-        'np_utils/np_browser.h',
-        'np_utils/np_browser_mock.h',
-        'np_utils/np_browser_stub.cc',
-        'np_utils/np_browser_stub.h',
-        'np_utils/np_class.h',
-        'np_utils/np_dispatcher.cc',
-        'np_utils/np_dispatcher.h',
-        'np_utils/np_dispatcher_specializations.h',
-        'np_utils/np_headers.h',
-        'np_utils/np_object_mock.h',
-        'np_utils/np_object_pointer.h',
-        'np_utils/np_plugin_object.h',
-        'np_utils/np_plugin_object_mock.h',
-        'np_utils/np_plugin_object_factory.cc',
-        'np_utils/np_plugin_object_factory.h',
-        'np_utils/np_plugin_object_factory_mock.h',
-        'np_utils/np_utils.cc',
-        'np_utils/np_utils.h',
-        'np_utils/webkit_browser.h',
-      ],
-    },
-    {
-      'target_name': 'np_utils_unittests',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '..',
-        ],
-        'sources': [
-          'np_utils/dispatched_np_object_unittest.cc',
-          'np_utils/dynamic_np_object_unittest.cc',
-          'np_utils/np_class_unittest.cc',
-          'np_utils/np_object_pointer_unittest.cc',
-          'np_utils/np_utils_unittest.cc',
-        ],
-      },
-    },
-    {
       'target_name': 'gpu_plugin',
       'type': '<(library)',
       'dependencies': [
         '../base/base.gyp:base',
         'command_buffer_service',
-        'np_utils',
       ],
       'include_dirs': [
         '..',
@@ -345,26 +290,7 @@
       'sources': [
         'gpu_plugin/gpu_plugin.cc',
         'gpu_plugin/gpu_plugin.h',
-        'gpu_plugin/gpu_plugin_object.cc',
-        'gpu_plugin/gpu_plugin_object.h',
-        'gpu_plugin/gpu_plugin_object_win.cc',
-        'gpu_plugin/gpu_plugin_object_factory.cc',
-        'gpu_plugin/gpu_plugin_object_factory.h',
       ],
-    },
-    {
-      'target_name': 'gpu_plugin_unittests',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '..',
-        ],
-        'sources': [
-          'gpu_plugin/gpu_plugin_unittest.cc',
-          'gpu_plugin/gpu_plugin_object_unittest.cc',
-          'gpu_plugin/gpu_plugin_object_factory_unittest.cc',
-        ],
-      },
     },
     {
       'target_name': 'gpu_all_unittests',
@@ -379,10 +305,6 @@
         'command_buffer_common_unittests',
         'command_buffer_service',
         'command_buffer_service_unittests',
-        'gpu_plugin',
-        'gpu_plugin_unittests',
-        'np_utils',
-        'np_utils_unittests',
       ],
     },
     {
@@ -394,7 +316,6 @@
         'gles2_lib',
         'gles2_c_lib',
         'gpu_plugin',
-        'np_utils',
       ],
       'sources': [
         'command_buffer/client/gles2_demo.cc',

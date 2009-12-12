@@ -2,26 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_COMMAND_BUFFER_SERVICE_H_
-#define GPU_COMMAND_BUFFER_SERVICE_COMMAND_BUFFER_SERVICE_H_
+#ifndef CHROME_RENDERER_COMMAND_BUFFER_PROXY_H_
+#define CHROME_RENDERER_COMMAND_BUFFER_PROXY_H_
 
-#include <set>
-#include <vector>
+#if defined(ENABLE_GPU)
+
+#include <map>
 
 #include "base/linked_ptr.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "base/task.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "ipc/ipc_channel.h"
+#include "ipc/ipc_message.h"
 
-namespace gpu {
+class PluginChannelHost;
 
-// An object that implements a shared memory command buffer and a synchronous
-// API to manage the put and get pointers.
-class CommandBufferService : public CommandBuffer {
+// Client side proxy that forwards messages synchronously to a
+// CommandBufferStub.
+class CommandBufferProxy : public gpu::CommandBuffer,
+                           public IPC::Message::Sender {
  public:
-  CommandBufferService();
-  virtual ~CommandBufferService();
+  explicit CommandBufferProxy(
+      PluginChannelHost* channel,
+      int route_id);
+  virtual ~CommandBufferProxy();
+
+  // IPC::Message::Sender implementation:
+  virtual bool Send(IPC::Message* msg);
 
   // CommandBuffer implementation:
   virtual base::SharedMemory* Initialize(int32 size);
@@ -43,18 +52,20 @@ class CommandBufferService : public CommandBuffer {
   virtual void RaiseErrorStatus();
 
  private:
-  scoped_ptr< base::SharedMemory> ring_buffer_;
+  // As with the service, the client takes ownership of the ring buffer.
   int32 size_;
-  int32 get_offset_;
-  int32 put_offset_;
-  scoped_ptr<Callback0::Type> put_offset_change_callback_;
-  std::vector<linked_ptr< base::SharedMemory> > registered_objects_;
-  std::set<int32> unused_registered_object_elements_;
-  int32 token_;
-  int32 parse_error_;
-  bool error_status_;
+  scoped_ptr<base::SharedMemory> ring_buffer_;
+
+  // Local cache of id to transfer buffer mapping.
+  typedef std::map<int32, linked_ptr<base::SharedMemory> > TransferBufferMap;
+  TransferBufferMap transfer_buffers_;
+
+  scoped_refptr<PluginChannelHost> channel_;
+  int route_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(CommandBufferProxy);
 };
 
-}  // namespace gpu
+#endif  // ENABLE_GPU
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_COMMAND_BUFFER_SERVICE_H_
+#endif  // CHROME_RENDERER_COMMAND_BUFFER_PROXY_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "base/shared_memory.h"
 #include "base/task.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // Common interface for CommandBuffer implementations.
 class CommandBuffer {
@@ -19,12 +19,12 @@ class CommandBuffer {
   virtual ~CommandBuffer() {
   }
 
-  // Initialize the command buffer with the given ring buffer. Takes ownership
-  // of ring buffer.
-  virtual bool Initialize(::base::SharedMemory* ring_buffer) = 0;
+  // Initialize the command buffer with the given size (number of command
+  // entries).
+  virtual base::SharedMemory* Initialize(int32 size) = 0;
 
   // Gets the shared memory ring buffer object for the command buffer.
-  virtual ::base::SharedMemory* GetRingBuffer() = 0;
+  virtual base::SharedMemory* GetRingBuffer() = 0;
 
   virtual int32 GetSize() = 0;
 
@@ -62,7 +62,7 @@ class CommandBuffer {
   virtual void DestroyTransferBuffer(int32 id) = 0;
 
   // Get the shared memory associated with a handle.
-  virtual ::base::SharedMemory* GetTransferBuffer(int32 handle) = 0;
+  virtual base::SharedMemory* GetTransferBuffer(int32 handle) = 0;
 
   // Get the current token value. This is used for by the writer to defer
   // changes to shared memory objects until the reader has reached a certain
@@ -92,6 +92,6 @@ class CommandBuffer {
   DISALLOW_COPY_AND_ASSIGN(CommandBuffer);
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_H_

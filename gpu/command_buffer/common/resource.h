@@ -33,8 +33,8 @@
 // This file contains definitions for resource flags, enums, and helper
 // functions.
 
-#ifndef GPU_COMMAND_BUFFER_COMMON_CROSS_RESOURCE_H_
-#define GPU_COMMAND_BUFFER_COMMON_CROSS_RESOURCE_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_RESOURCE_H_
+#define GPU_COMMAND_BUFFER_COMMON_RESOURCE_H_
 
 #include <algorithm>
 #include "base/basictypes.h"
@@ -42,7 +42,7 @@
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/command_buffer/common/logging.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // A resource ID, key to the resource maps.
 typedef uint32 ResourceId;
@@ -224,6 +224,6 @@ enum FilteringMode {
 };
 }  // namespace sampler
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_COMMON_CROSS_RESOURCE_H_
+#endif  // GPU_COMMAND_BUFFER_COMMON_RESOURCE_H_

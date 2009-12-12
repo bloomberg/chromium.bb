@@ -9,7 +9,7 @@
 // and service side have different requirements.
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
-namespace command_buffer {
+namespace gpu {
 namespace gles2 {
 
 #include "gpu/command_buffer/common/gles2_cmd_ids_autogen.h"
@@ -29,6 +29,6 @@ const char* GetCommandName(CommandId id) {
 }
 
 }  // namespace gles2
-}  // namespace command_buffer
+}  // namespace gpu
 
 

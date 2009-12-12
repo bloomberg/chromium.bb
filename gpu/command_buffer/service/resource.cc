@@ -35,7 +35,7 @@
 #include "gpu/command_buffer/service/precompile.h"
 #include "gpu/command_buffer/service/resource.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // Assigns a resource to a resource ID, by setting it at the right location
 // into the list, resizing the list if necessary, and destroying an existing
@@ -98,4 +98,4 @@ void ResourceMapBase::DestroyAllResources() {
   resources_.clear();
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

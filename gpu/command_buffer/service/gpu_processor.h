@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
 
+#include "app/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
@@ -13,12 +14,12 @@
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // This class processes commands in a command buffer. It is event driven and
 // posts tasks to the current message loop to do additional work.
 class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
-                     public command_buffer::CommandBufferEngine {
+                     public gpu::CommandBufferEngine {
  public:
   explicit GPUProcessor(CommandBuffer* command_buffer);
 
@@ -28,7 +29,7 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
                CommandParser* parser,
                int commands_per_update);
 
-  virtual bool Initialize(HWND hwnd);
+  virtual bool Initialize(gfx::PluginWindowHandle hwnd);
 
   virtual ~GPUProcessor();
 
@@ -36,9 +37,7 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
 
   virtual void ProcessCommands();
 
-#if defined(OS_WIN)
-  virtual bool SetWindow(HWND handle, int width, int height);
-#endif
+  virtual bool SetWindow(gfx::PluginWindowHandle handle, int width, int height);
 
   // Implementation of CommandBufferEngine.
 
@@ -68,13 +67,13 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
   scoped_ptr<CommandParser> parser_;
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
 // Callbacks to the GPUProcessor hold a reference count.
 template <typename Method>
-class CallbackStorage<command_buffer::GPUProcessor, Method> {
+class CallbackStorage<gpu::GPUProcessor, Method> {
  public:
-  CallbackStorage(command_buffer::GPUProcessor* obj, Method method)
+  CallbackStorage(gpu::GPUProcessor* obj, Method method)
       : obj_(obj),
         meth_(method) {
     DCHECK(obj_);
@@ -86,7 +85,7 @@ class CallbackStorage<command_buffer::GPUProcessor, Method> {
   }
 
  protected:
-  command_buffer::GPUProcessor* obj_;
+  gpu::GPUProcessor* obj_;
   Method meth_;
 
  private:

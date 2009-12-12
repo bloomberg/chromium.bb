@@ -16,6 +16,7 @@
 #include "chrome/common/transport_dib.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "googleurl/src/gurl.h"
+#include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/glue/webplugin.h"
@@ -27,6 +28,7 @@
 #include "base/linked_ptr.h"
 #endif
 
+class CommandBufferProxy;
 struct NPObject;
 class NPObjectStub;
 struct NPVariant_Param;
@@ -96,6 +98,8 @@ class WebPluginDelegateProxy
       bool notify_needed,
       intptr_t notify_data,
       intptr_t existing_stream);
+
+  CommandBufferProxy* CreateCommandBuffer();
 
  protected:
   template<class WebPluginDelegateProxy> friend class DeleteTask;

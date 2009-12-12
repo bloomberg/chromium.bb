@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
-namespace command_buffer {
+namespace gpu {
 namespace gles2 {
 
 namespace {
@@ -103,7 +103,7 @@ enum GLErrorBit {
 }
 
 uint32 GLErrorToErrorBit(GLenum error) {
-  switch(error) {
+  switch (error) {
     case GL_INVALID_ENUM:
       return GLErrorBit::kInvalidEnum;
     case GL_INVALID_VALUE:
@@ -121,7 +121,7 @@ uint32 GLErrorToErrorBit(GLenum error) {
 }
 
 GLenum GLErrorBitToGLError(uint32 error_bit) {
-  switch(error_bit) {
+  switch (error_bit) {
     case GLErrorBit::kInvalidEnum:
       return GL_INVALID_ENUM;
     case GLErrorBit::kInvalidValue:
@@ -698,12 +698,12 @@ parse_error::ParseError GLES2DecoderImpl::DoCommand(
 }
 
 }  // namespace gles2
-}  // namespace command_buffer
+}  // namespace gpu
 
 // This is included so the compiler will make these inline.
 #include "gpu/command_buffer/service/gles2_cmd_decoder_validate.h"
 
-namespace command_buffer {
+namespace gpu {
 namespace gles2 {
 
 void GLES2DecoderImpl::CreateProgramHelper(GLuint client_id) {
@@ -1231,5 +1231,5 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetActiveAttrib(
 #include "gpu/command_buffer/service/gles2_cmd_decoder_autogen.h"
 
 }  // namespace gles2
-}  // namespace command_buffer
+}  // namespace gpu
 

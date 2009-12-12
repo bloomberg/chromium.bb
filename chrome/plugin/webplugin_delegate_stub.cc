@@ -130,6 +130,8 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_InstallMissingPlugin, OnInstallMissingPlugin)
     IPC_MESSAGE_HANDLER(PluginMsg_HandleURLRequestReply,
                         OnHandleURLRequestReply)
+    IPC_MESSAGE_HANDLER(PluginMsg_CreateCommandBuffer,
+                        OnCreateCommandBuffer)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 
@@ -302,8 +304,9 @@ void WebPluginDelegateStub::OnUpdateGeometry(
       );
 }
 
-void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id,
-                                                        intptr_t* npobject_ptr) {
+void WebPluginDelegateStub::OnGetPluginScriptableObject(
+    int* route_id,
+    intptr_t* npobject_ptr) {
   NPObject* object = delegate_->GetPluginScriptableObject();
   if (!object) {
     *route_id = MSG_ROUTING_NONE;
@@ -355,6 +358,16 @@ void WebPluginDelegateStub::OnDidManualLoadFail() {
 
 void WebPluginDelegateStub::OnInstallMissingPlugin() {
   delegate_->InstallMissingPlugin();
+}
+
+void WebPluginDelegateStub::OnCreateCommandBuffer(int* route_id) {
+#if defined(ENABLE_GPU)
+  command_buffer_stub_.reset(new CommandBufferStub(
+      static_cast<PluginChannel*>(PluginChannelBase::GetCurrentChannel()),
+      delegate_->windowed_handle()));
+
+  *route_id = command_buffer_stub_->route_id();
+#endif
 }
 
 void WebPluginDelegateStub::CreateSharedBuffer(

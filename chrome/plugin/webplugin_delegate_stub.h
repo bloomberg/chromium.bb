@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/shared_memory.h"
 #include "base/task.h"
 #include "chrome/common/transport_dib.h"
+#include "chrome/plugin/command_buffer_stub.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/npapi/bindings/npapi.h"
@@ -93,6 +94,8 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   void OnHandleURLRequestReply(
       const PluginMsg_URLRequestReply_Params& params);
 
+  void OnCreateCommandBuffer(int* route_id);
+
   void CreateSharedBuffer(size_t size,
                           base::SharedMemory* shared_buf,
                           base::SharedMemoryHandle* remote_handle);
@@ -108,6 +111,12 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
 
   // The url of the main frame hosting the plugin.
   GURL page_url_;
+
+#if defined(ENABLE_GPU)
+  // If this is the GPU plugin, the stub object that forwards to the
+  // command buffer service.
+  scoped_ptr<CommandBufferStub> command_buffer_stub_;
+#endif
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebPluginDelegateStub);
 };

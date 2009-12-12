@@ -34,7 +34,7 @@
 
 #include "gpu/command_buffer/client/id_allocator.h"
 
-namespace command_buffer {
+namespace gpu {
 
 IdAllocator::IdAllocator() : bitmap_(1) { bitmap_[0] = 0; }
 
@@ -82,4 +82,4 @@ bool IdAllocator::GetBit(unsigned int bit) const {
   return (bitmap_[bit / kBitsPerUint32] & mask) != 0;
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

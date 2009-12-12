@@ -40,10 +40,10 @@
 #include "gpu/command_buffer/service/gpu_processor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace command_buffer {
+namespace gpu {
 
-using command_buffer::CommandBufferService;
-using command_buffer::GPUProcessor;
+using gpu::CommandBufferService;
+using gpu::GPUProcessor;
 using testing::Return;
 using testing::Mock;
 using testing::Truly;
@@ -53,7 +53,8 @@ using testing::Invoke;
 using testing::_;
 
 const int32 kNumCommandEntries = 10;
-const int32 kCommandBufferSizeBytes = kNumCommandEntries * sizeof(int32);
+const int32 kCommandBufferSizeBytes =
+    kNumCommandEntries * sizeof(CommandBufferEntry);
 
 // Test fixture for CommandBufferHelper test - Creates a CommandBufferHelper,
 // using a CommandBufferEngine with a mock AsyncAPIInterface for its interface
@@ -67,14 +68,12 @@ class CommandBufferHelperTest : public testing::Test {
     EXPECT_CALL(*api_mock_, DoCommand(0, 0, _))
         .WillRepeatedly(Return(parse_error::kParseNoError));
 
-    base::SharedMemory* ring_buffer = new base::SharedMemory;
-    ring_buffer->Create(std::wstring(), false, false, kCommandBufferSizeBytes);
-    ring_buffer->Map(1024);
-
     command_buffer_.reset(new CommandBufferService);
-    command_buffer_->Initialize(ring_buffer);
+    base::SharedMemory* ring_buffer = command_buffer_->Initialize(
+        kNumCommandEntries);
 
-    parser_ = new command_buffer::CommandParser(ring_buffer->memory(),
+
+    parser_ = new gpu::CommandParser(ring_buffer->memory(),
                                                 kCommandBufferSizeBytes,
                                                 0,
                                                 kCommandBufferSizeBytes,
@@ -140,7 +139,7 @@ class CommandBufferHelperTest : public testing::Test {
   MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<CommandBufferService> command_buffer_;
-  command_buffer::CommandParser* parser_;
+  gpu::CommandParser* parser_;
   scoped_ptr<CommandBufferHelper> helper_;
   Sequence sequence_;
 };
@@ -295,4 +294,4 @@ TEST_F(CommandBufferHelperTest, TestToken) {
   EXPECT_EQ(parse_error::kParseNoError, command_buffer_->ResetParseError());
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

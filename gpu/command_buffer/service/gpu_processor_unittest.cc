@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,10 +19,10 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
-namespace command_buffer {
+namespace gpu {
 
 const size_t kRingBufferSize = 1024;
-const size_t kRingBufferEntries = kRingBufferSize / sizeof(int32);
+const size_t kRingBufferEntries = kRingBufferSize / sizeof(CommandBufferEntry);
 
 class GPUProcessorTest : public testing::Test {
  protected:
@@ -40,11 +40,11 @@ class GPUProcessorTest : public testing::Test {
     ON_CALL(*command_buffer_.get(), GetSize())
       .WillByDefault(Return(kRingBufferEntries));
 
-    async_api_.reset(new StrictMock<command_buffer::AsyncAPIMock>);
+    async_api_.reset(new StrictMock<gpu::AsyncAPIMock>);
 
     decoder_ = gles2::GLES2Decoder::Create();
 
-    parser_ = new command_buffer::CommandParser(buffer_,
+    parser_ = new gpu::CommandParser(buffer_,
                                                 kRingBufferEntries,
                                                 0,
                                                 kRingBufferEntries,
@@ -68,9 +68,9 @@ class GPUProcessorTest : public testing::Test {
   scoped_ptr<MockCommandBuffer> command_buffer_;
   scoped_ptr<::base::SharedMemory> shared_memory_;
   int32* buffer_;
-  command_buffer::gles2::GLES2Decoder* decoder_;
-  command_buffer::CommandParser* parser_;
-  scoped_ptr<command_buffer::AsyncAPIMock> async_api_;
+  gpu::gles2::GLES2Decoder* decoder_;
+  gpu::CommandParser* parser_;
+  scoped_ptr<gpu::AsyncAPIMock> async_api_;
   scoped_refptr<GPUProcessor> processor_;
 };
 
@@ -81,14 +81,14 @@ TEST_F(GPUProcessorTest, ProcessorDoesNothingIfRingBufferIsEmpty) {
 
   processor_->ProcessCommands();
 
-  EXPECT_EQ(command_buffer::parse_error::kParseNoError,
+  EXPECT_EQ(gpu::parse_error::kParseNoError,
             command_buffer_->ResetParseError());
   EXPECT_FALSE(command_buffer_->GetErrorStatus());
 }
 
 TEST_F(GPUProcessorTest, ProcessesOneCommand) {
-  command_buffer::CommandHeader* header =
-      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  gpu::CommandHeader* header =
+      reinterpret_cast<gpu::CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
   buffer_[1] = 123;
@@ -98,18 +98,18 @@ TEST_F(GPUProcessorTest, ProcessesOneCommand) {
   EXPECT_CALL(*command_buffer_, SetGetOffset(2));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
-    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
+    .WillOnce(Return(gpu::parse_error::kParseNoError));
 
   processor_->ProcessCommands();
 
-  EXPECT_EQ(command_buffer::parse_error::kParseNoError,
+  EXPECT_EQ(gpu::parse_error::kParseNoError,
             command_buffer_->ResetParseError());
   EXPECT_FALSE(command_buffer_->GetErrorStatus());
 }
 
 TEST_F(GPUProcessorTest, ProcessesTwoCommands) {
-  command_buffer::CommandHeader* header =
-      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  gpu::CommandHeader* header =
+      reinterpret_cast<gpu::CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
   buffer_[1] = 123;
@@ -121,17 +121,17 @@ TEST_F(GPUProcessorTest, ProcessesTwoCommands) {
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
-    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
+    .WillOnce(Return(gpu::parse_error::kParseNoError));
 
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
-    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
+    .WillOnce(Return(gpu::parse_error::kParseNoError));
 
   processor_->ProcessCommands();
 }
 
 TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
-  command_buffer::CommandHeader* header =
-      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  gpu::CommandHeader* header =
+      reinterpret_cast<gpu::CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
   buffer_[1] = 123;
@@ -144,10 +144,10 @@ TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
     .WillOnce(Return(4));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
-    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
+    .WillOnce(Return(gpu::parse_error::kParseNoError));
 
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
-    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
+    .WillOnce(Return(gpu::parse_error::kParseNoError));
 
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
@@ -159,7 +159,7 @@ TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
     .WillOnce(Return(4));
 
   EXPECT_CALL(*async_api_, DoCommand(9, 0, &buffer_[3]))
-    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
+    .WillOnce(Return(gpu::parse_error::kParseNoError));
 
   EXPECT_CALL(*command_buffer_, SetGetOffset(4));
 
@@ -167,8 +167,8 @@ TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
 }
 
 TEST_F(GPUProcessorTest, SetsErrorCodeOnCommandBuffer) {
-  command_buffer::CommandHeader* header =
-      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  gpu::CommandHeader* header =
+      reinterpret_cast<gpu::CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 1;
 
@@ -178,18 +178,18 @@ TEST_F(GPUProcessorTest, SetsErrorCodeOnCommandBuffer) {
 
   EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
     .WillOnce(Return(
-        command_buffer::parse_error::kParseUnknownCommand));
+        gpu::parse_error::kParseUnknownCommand));
 
   EXPECT_CALL(*command_buffer_,
-      SetParseError(command_buffer::parse_error::kParseUnknownCommand));
+      SetParseError(gpu::parse_error::kParseUnknownCommand));
 
   processor_->ProcessCommands();
 }
 
 TEST_F(GPUProcessorTest,
        RecoverableParseErrorsAreNotClearedByFollowingSuccessfulCommands) {
-  command_buffer::CommandHeader* header =
-      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  gpu::CommandHeader* header =
+      reinterpret_cast<gpu::CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 1;
   header[1].command = 8;
@@ -201,20 +201,20 @@ TEST_F(GPUProcessorTest,
 
   EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
     .WillOnce(Return(
-        command_buffer::parse_error::kParseUnknownCommand));
+        gpu::parse_error::kParseUnknownCommand));
 
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[1]))
-    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
+    .WillOnce(Return(gpu::parse_error::kParseNoError));
 
   EXPECT_CALL(*command_buffer_,
-      SetParseError(command_buffer::parse_error::kParseUnknownCommand));
+      SetParseError(gpu::parse_error::kParseUnknownCommand));
 
   processor_->ProcessCommands();
 }
 
 TEST_F(GPUProcessorTest, UnrecoverableParseErrorsRaiseTheErrorStatus) {
-  command_buffer::CommandHeader* header =
-      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  gpu::CommandHeader* header =
+      reinterpret_cast<gpu::CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 1;
   header[1].command = 8;
@@ -224,10 +224,10 @@ TEST_F(GPUProcessorTest, UnrecoverableParseErrorsRaiseTheErrorStatus) {
     .WillOnce(Return(2));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
-    .WillOnce(Return(command_buffer::parse_error::kParseInvalidSize));
+    .WillOnce(Return(gpu::parse_error::kParseInvalidSize));
 
   EXPECT_CALL(*command_buffer_,
-      SetParseError(command_buffer::parse_error::kParseInvalidSize));
+      SetParseError(gpu::parse_error::kParseInvalidSize));
 
   EXPECT_CALL(*command_buffer_, RaiseErrorStatus());
 
@@ -274,4 +274,4 @@ TEST_F(GPUProcessorTest, SetTokenForwardsToCommandBuffer) {
   processor_->set_token(7);
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

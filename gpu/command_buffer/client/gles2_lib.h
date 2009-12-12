@@ -4,16 +4,16 @@
 
 // These functions emluate GLES2 over command buffers.
 
-#ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_LIB_H
-#define GPU_COMMAND_BUFFER_CLIENT_GLES2_LIB_H
+#ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_LIB_H_
+#define GPU_COMMAND_BUFFER_CLIENT_GLES2_LIB_H_
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
 namespace gles2 {
 
-extern ::command_buffer::gles2::GLES2Implementation* g_gl_impl;
+extern ::gpu::gles2::GLES2Implementation* g_gl_impl;
 
-inline ::command_buffer::gles2::GLES2Implementation* GetGLContext() {
+inline ::gpu::gles2::GLES2Implementation* GetGLContext() {
   return g_gl_impl;
 }
 
@@ -22,5 +22,5 @@ bool InitGLES2Lib();
 
 }  // namespace gles2
 
-#endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_LIB_H
+#endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_LIB_H_
 

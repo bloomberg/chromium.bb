@@ -33,10 +33,10 @@
 // This file contains a helper template class used to access bit fields in
 // unsigned int_ts.
 
-#ifndef GPU_COMMAND_BUFFER_COMMON_CROSS_BITFIELD_HELPERS_H_
-#define GPU_COMMAND_BUFFER_COMMON_CROSS_BITFIELD_HELPERS_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_BITFIELD_HELPERS_H_
+#define GPU_COMMAND_BUFFER_COMMON_BITFIELD_HELPERS_H_
 
-namespace command_buffer {
+namespace gpu {
 
 // Bitfield template class, used to access bit fields in unsigned int_ts.
 template<int shift, int length> class BitField {
@@ -63,6 +63,6 @@ template<int shift, int length> class BitField {
   }
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_COMMON_CROSS_BITFIELD_HELPERS_H_
+#endif  // GPU_COMMAND_BUFFER_COMMON_BITFIELD_HELPERS_H_

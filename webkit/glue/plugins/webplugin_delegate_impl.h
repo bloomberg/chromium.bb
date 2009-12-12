@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,6 +131,12 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // propagate focus notifications to all running plugin processes.
   void SetFocusNotifier(void (*notifier)(WebPluginDelegateImpl*)) {
     focus_notifier_ = notifier;
+  }
+#endif
+
+#if !defined(OS_MACOSX)
+  gfx::PluginWindowHandle windowed_handle() const {
+    return windowed_handle_;
   }
 #endif
 

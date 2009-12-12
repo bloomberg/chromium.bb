@@ -33,12 +33,12 @@
 // This file defines the CommandBufferEngine class, providing the main loop for
 // the service, exposing the RPC API, managing the command parser.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_
-#define GPU_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CMD_BUFFER_ENGINE_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CMD_BUFFER_ENGINE_H_
 
 #include "base/basictypes.h"
 
-namespace command_buffer {
+namespace gpu {
 
 class CommandBufferEngine {
  public:
@@ -65,6 +65,6 @@ class CommandBufferEngine {
   DISALLOW_COPY_AND_ASSIGN(CommandBufferEngine);
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CMD_BUFFER_ENGINE_H_

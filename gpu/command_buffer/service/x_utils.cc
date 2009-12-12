@@ -36,7 +36,7 @@
 #include "gpu/command_buffer/common/logging.h"
 #include "gpu/command_buffer/service/x_utils.h"
 
-namespace command_buffer {
+namespace gpu {
 
 bool XWindowWrapper::Initialize() {
   XWindowAttributes attributes;
@@ -89,4 +89,4 @@ void XWindowWrapper::SwapBuffers() {
   glXSwapBuffers(display_, window_);
 }
 
-}  // namespace command_buffer
+}  // namespace gpu

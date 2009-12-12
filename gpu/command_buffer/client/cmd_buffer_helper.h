@@ -32,15 +32,15 @@
 
 // This file contains the command buffer helper class.
 
-#ifndef GPU_COMMAND_BUFFER_CLIENT_CROSS_CMD_BUFFER_HELPER_H_
-#define GPU_COMMAND_BUFFER_CLIENT_CROSS_CMD_BUFFER_HELPER_H_
+#ifndef GPU_COMMAND_BUFFER_CLIENT_CMD_BUFFER_HELPER_H_
+#define GPU_COMMAND_BUFFER_CLIENT_CMD_BUFFER_HELPER_H_
 
 #include "gpu/command_buffer/common/logging.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // Command buffer helper class. This class simplifies ring buffer management:
 // it will allocate the buffer, give it to the buffer interface, and let the
@@ -59,7 +59,7 @@ namespace command_buffer {
 //                              // commands have been executed.
 class CommandBufferHelper {
  public:
-  explicit CommandBufferHelper(command_buffer::CommandBuffer* command_buffer);
+  explicit CommandBufferHelper(gpu::CommandBuffer* command_buffer);
   virtual ~CommandBufferHelper();
 
   bool Initialize();
@@ -198,7 +198,7 @@ class CommandBufferHelper {
     return (get_ - put_ - 1 + entry_count_) % entry_count_;
   }
 
-  command_buffer::CommandBuffer* command_buffer_;
+  gpu::CommandBuffer* command_buffer_;
   ::base::SharedMemory* ring_buffer_;
   CommandBufferEntry *entries_;
   int32 entry_count_;
@@ -211,6 +211,6 @@ class CommandBufferHelper {
   DISALLOW_COPY_AND_ASSIGN(CommandBufferHelper);
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_CLIENT_CROSS_CMD_BUFFER_HELPER_H_
+#endif  // GPU_COMMAND_BUFFER_CLIENT_CMD_BUFFER_HELPER_H_

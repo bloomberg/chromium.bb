@@ -32,15 +32,15 @@
 
 // This file contains the definition of the IdAllocator class.
 
-#ifndef GPU_COMMAND_BUFFER_CLIENT_CROSS_ID_ALLOCATOR_H_
-#define GPU_COMMAND_BUFFER_CLIENT_CROSS_ID_ALLOCATOR_H_
+#ifndef GPU_COMMAND_BUFFER_CLIENT_ID_ALLOCATOR_H_
+#define GPU_COMMAND_BUFFER_CLIENT_ID_ALLOCATOR_H_
 
 #include <vector>
 #include "base/basictypes.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/command_buffer/common/resource.h"
 
-namespace command_buffer {
+namespace gpu {
 
 // A class to manage the allocation of resource IDs. It uses a bitfield stored
 // into a vector of unsigned ints.
@@ -49,19 +49,19 @@ class IdAllocator {
   IdAllocator();
 
   // Allocates a new resource ID.
-  command_buffer::ResourceId AllocateID() {
+  gpu::ResourceId AllocateID() {
     unsigned int bit = FindFirstFree();
     SetBit(bit, true);
     return bit;
   }
 
   // Frees a resource ID.
-  void FreeID(command_buffer::ResourceId id) {
+  void FreeID(gpu::ResourceId id) {
     SetBit(id, false);
   }
 
   // Checks whether or not a resource ID is in use.
-  bool InUse(command_buffer::ResourceId id) {
+  bool InUse(gpu::ResourceId id) {
     return GetBit(id);
   }
  private:
@@ -73,6 +73,6 @@ class IdAllocator {
   DISALLOW_COPY_AND_ASSIGN(IdAllocator);
 };
 
-}  // namespace command_buffer
+}  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_CLIENT_CROSS_ID_ALLOCATOR_H_
+#endif  // GPU_COMMAND_BUFFER_CLIENT_ID_ALLOCATOR_H_
