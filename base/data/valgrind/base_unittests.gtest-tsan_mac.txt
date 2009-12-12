@@ -3,3 +3,6 @@
 # (see https://bugs.kde.org/show_bug.cgi?id=192634 and
 # http://code.google.com/p/data-race-test/issues/detail?id=11)
 WorkerPoolTest.PostTask
+
+# http://crbug.com/29855.
+StackTrace.OutputToStream

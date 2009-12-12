@@ -260,11 +260,7 @@ class ValgrindTool(object):
     os.putenv("GTEST_DEATH_TEST_USE_FORK", "1")
     logging.info("export GTEST_DEATH_TEST_USE_FORK=1");
 
-    common.RunSubprocess(proc, self._timeout)
-
-    # Always return true, even if running the subprocess failed. We depend on
-    # Analyze to determine if the run was valid.
-    return True
+    return common.RunSubprocess(proc, self._timeout)
 
   def Analyze(self):
     raise RuntimeError, "This method should be implemented " \
@@ -279,12 +275,17 @@ class ValgrindTool(object):
 
   def RunTestsAndAnalyze(self):
     self.PrepareForTest()
-    self.Execute()
+    exec_retcode = self.Execute()
+    analyze_retcode = self.Analyze()
 
-    retcode = self.Analyze()
-    if retcode:
+    if analyze_retcode:
       logging.error("Analyze failed.")
-      return retcode
+      return analyze_retcode
+
+    if exec_retcode:
+      logging.error("Test Execution failed.")
+      return exec_retcode
+
     logging.info("Execution and analysis completed successfully.")
     return 0
 

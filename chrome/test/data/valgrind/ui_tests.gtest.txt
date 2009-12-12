@@ -33,3 +33,13 @@ TabRestoreUITest.*
 # See http://crbug.com/25176
 ProcessSingletonLinuxTest.NotifyOtherProcessFailure
 ProcessSingletonLinuxTest.NotifyOtherProcessDifferingHost
+
+# These tests fail under valgrind.
+# See http://crbug.com/29579.
+AutomationProxyTest.NavigateToURLWithTimeout1
+AutomationProxyTest.NavigateToURLWithTimeout2
+# See http://crbug.com/29586.
+NewTabUITest.ChromeInternalLoadsNTP
+# See http://crbug.com/29592.
+WorkerTest.MultipleWorkers
+
