@@ -206,8 +206,10 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
       DLOG(INFO) << "URL: " << url() << " redirected to "
                  << status_text;
       redirect_url_ = status_text;
-      redirect_status_ =
-          redirect_status > 0 ? redirect_status : kDefaultHttpRedirectCode;
+      // At times we receive invalid redirect codes like 0, 200, etc. We
+      // default to 302 in this case.
+      if (!net::HttpResponseHeaders::IsRedirectResponseCode(redirect_status_))
+        redirect_status_ = kDefaultHttpRedirectCode;
       // Chrome should decide whether a redirect has to be followed. To achieve
       // this we send over a fake response to Chrome and abort the redirect.
       std::string headers = GetHttpHeaders();
