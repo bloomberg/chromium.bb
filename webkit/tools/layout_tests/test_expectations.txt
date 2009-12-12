@@ -3274,3 +3274,9 @@ BUG30082 : LayoutTests/storage/open-database-while-transaction-in-progress.html 
 
 // Flaky.
 BUG30180 : LayoutTests/fast/text/international/hindi-whitespace.html = IMAGE PASS
+
+// New test with http://trac.webkit.org/changeset/51982
+LayoutTests/fast/events/basic-touch-events.html = TEXT
+
+BUG30185 MAC LINUX : LayoutTests/websocket/tests/handshake-error.html = TEXT PASS
+BUG30185 MAC LINUX : LayoutTests/websocket/tests/handshake-fail-by-cross-origin.html = TEXT PASS
