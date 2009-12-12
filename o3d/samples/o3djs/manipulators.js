@@ -291,15 +291,15 @@ o3djs.manipulators.Line_.prototype.recalc_ = function() {
 };
 
 /**
- * A vector with 4 entries, the R,G,B, and A components of the default color
- * for manipulators (used when not highlighted).
+ * The default color for manipulators (used when not highlighted).
+ * In [r, g, b, a] format.
  * @type {!o3djs.math.Vector4}
  */
 o3djs.manipulators.DEFAULT_COLOR = [0.8, 0.8, 0.8, 1.0];
 
 /**
- * A vector with 4 entries, the R,G,B, and A components of the color used
- * for manipulators when they are highlighted.
+ * The color used for manipulators when they are highlighted.
+ * In [r, g, b, a] format.
  * @type {!o3djs.math.Vector4}
  */
 o3djs.manipulators.HIGHLIGHTED_COLOR = [0.9, 0.9, 0.0, 1.0];
@@ -525,53 +525,6 @@ o3djs.manipulators.Manager = function(pack,
    * @type {!o3d.Transform}
    */
   this.parentTransform = parentTransform;
-  /**
-   * The parent render node under which the manipulators' draw elements
-   * shall be placed.
-   * @type {!o3d.RenderNode}
-   */
-  this.parentRenderNode = parentRenderNode;
-  /**
-   * The priority that the manipulators' geometry should use for rendering.
-   * @type {number}
-   */
-  this.renderNodePriority = renderNodePriority;
-
-  /**
-   * The light position used by the manipulators' shader.
-   * @type {!o3djs.math.Vector3}
-   */
-  this.lightPosition = [10, 10, 10];
-
-  /**
-   * A constant-shaded material, useful for line geometry in some manipulators.
-   *
-   * TODO(simonrad): This is currently used for Translate1+2 polygon geometry.
-   * We should change polygon geometry back to using phong shader. We should
-   * use this constant shader for Translate1+2 line geometry, if we add it.
-   * Rotate1 line geometry uses a different, special shader.
-   *
-   * @private
-   * @type {!o3d.Material}
-   */
-  this.constantMaterial_ =
-      this.createConstantMaterial_(o3djs.manipulators.DEFAULT_COLOR);
-
-  /**
-   * The material used to draw the obscured part of some
-   * manipulators..
-   *
-   * @private
-   * @type {!o3d.Material}
-   *
-   * TODO(gman): Use a different material that doesn't use the same param
-   *    names as the constant material OR put them on separate transforms.
-   */
-  this.obscuredConstantMaterial_ = o3djs.material.createBasicMaterial(
-      pack,
-      this.viewInfo,
-      [1, 0, 0, 0.3],  // TODO(gman): Pick an appropriate color.
-      true);
 
   /**
    * A map from the manip's parent Transform clientId to the manip.
@@ -600,51 +553,52 @@ o3djs.manipulators.Manager = function(pack,
 };
 
 /**
- * Creates a constant-shaded material based on the given single color.
- * @private
- * @param {!o3djs.math.Vector4} baseColor A vector with 4 entries, the
- *     R,G,B, and A components of a color.
- * @return {!o3d.Material} A constant material whose overall pigment is
- *     baseColor.
- */
-o3djs.manipulators.Manager.prototype.createConstantMaterial_ =
-    function(baseColor) {
-  return o3djs.material.createConstantMaterialEx(
-     this.pack, this.unobscuredDrawList_, baseColor);
-};
-
-/**
- * Gets the constant material used for manipulators.
+ * Gets the constant-color material used for the parts of manipulators that are
+ * in front of other objects in the scene.
  * @return {!o3d.Material} A material.
  */
 o3djs.manipulators.Manager.prototype.getUnobscuredConstantMaterial = function() {
-  return this.constantMaterial_;
+  if (!this.unobscuredConstantMaterial_) {
+    this.unobscuredConstantMaterial_ =
+        o3djs.manipulators.createConstantMaterial(
+            this.pack, this.unobscuredDrawList_, [1, 1, 1, 0.8]);
+  }
+  return this.unobscuredConstantMaterial_;
 };
 
 /**
- * Gets the constant material used for manipulators.
+ * Gets the constant-color material used for the parts of manipulators that are
+ * behind other objects in the scene.
  * @return {!o3d.Material} A material.
  */
 o3djs.manipulators.Manager.prototype.getObscuredConstantMaterial = function() {
+  if (!this.obscuredConstantMaterial_) {
+    this.obscuredConstantMaterial_ =
+        o3djs.manipulators.createConstantMaterial(
+            this.pack, this.obscuredDrawList_, [1, 1, 1, 0.3]);
+  }
   return this.obscuredConstantMaterial_;
 };
 
 /**
- * Gets the material used for the line ring manipulators.
+ * Gets the material used for the parts of line ring manipulators that are
+ * in front of other objects in the scene.
  * @return {!o3d.Material} A material.
  */
 o3djs.manipulators.Manager.prototype.getUnobscuredLineRingMaterial =
     function() {
-  if (!this.lineRingMaterial_) {
-    this.lineRingMaterial_ = o3djs.manipulators.createLineRingMaterial(
-        this.pack, this.unobscuredDrawList_,
-        [1, 1, 1, 1], [1, 1, 1, 0.6], false);
+  if (!this.unobscuredLineRingMaterial_) {
+    this.unobscuredLineRingMaterial_ =
+        o3djs.manipulators.createLineRingMaterial(
+            this.pack, this.unobscuredDrawList_,
+            [1, 1, 1, 1], [1, 1, 1, 0.6], false);
   }
-  return this.lineRingMaterial_;
+  return this.unobscuredLineRingMaterial_;
 };
 
 /**
- * Gets the material used for the line ring manipulators.
+ * Gets the material used for the parts of line ring manipulators that are
+ * behind other objects in the scene.
  * @return {!o3d.Material} A material.
  */
 o3djs.manipulators.Manager.prototype.getObscuredLineRingMaterial = function() {
@@ -655,12 +609,6 @@ o3djs.manipulators.Manager.prototype.getObscuredLineRingMaterial = function() {
   }
   return this.obscuredLineRingMaterial_;
 };
-
-// TODO(simonrad): Add phong shader back in. We need it for the solid cones
-// of the Translate1+2 manipulators. Note that for highlighting, the phong
-// shader uses diffuse param and the constant shader uses emissive param, so
-// we'll need to either change that or split them onto separate transforms.
-// Probably the former would be better.
 
 /**
  * Creates a new Translate1 manipulator. A Translate1 moves along the
@@ -1290,7 +1238,6 @@ o3djs.manipulators.Translate1 = function(manager) {
   o3djs.manipulators.Manip.call(this, manager);
 
   var pack = manager.pack;
-  var material = manager.getUnobscuredConstantMaterial();
 
   var shape = manager.translate1Shape_;
   if (!shape) {
@@ -1298,7 +1245,7 @@ o3djs.manipulators.Translate1 = function(manager) {
     // two-way arrow going from (-1, 0, 0) to (1, 0, 0).
     var verts = o3djs.manipulators.createArrowVertices_(
         o3djs.math.matrix4.rotationZ(Math.PI / 2));
-    shape = verts.createShape(pack, material);
+    shape = verts.createShape(pack, manager.getUnobscuredConstantMaterial());
     // Add a second DrawElement to this shape to draw it a second time
     // with a different material when it's obscured.
     shape.createDrawElements(pack, manager.getObscuredConstantMaterial());
@@ -1313,7 +1260,8 @@ o3djs.manipulators.Translate1 = function(manager) {
    * @private
    * @type {!o3d.ParamFloat4}
    */
-  this.colorParam_ = this.getTransform().createParam('emissive', 'ParamFloat4');
+  this.colorParam_ = this.getTransform().createParam('highlightColor',
+                                                     'ParamFloat4');
   this.clearHighlight();
 
   /**
@@ -1397,7 +1345,6 @@ o3djs.manipulators.Translate2 = function(manager) {
   o3djs.manipulators.Manip.call(this, manager);
 
   var pack = manager.pack;
-  var material = manager.getUnobscuredConstantMaterial();
 
   var shape = manager.Translate2Shape_;
   if (!shape) {
@@ -1408,7 +1355,7 @@ o3djs.manipulators.Translate2 = function(manager) {
         o3djs.math.matrix4.rotationZ(Math.PI / 2));
     verts.append(o3djs.manipulators.createArrowVertices_(
         o3djs.math.matrix4.rotationZ(0)));
-    shape = verts.createShape(pack, material);
+    shape = verts.createShape(pack, manager.getUnobscuredConstantMaterial());
     // Add a second DrawElement to this shape to draw it a second time
     // with a different material when it's obscured.
     shape.createDrawElements(pack, manager.getObscuredConstantMaterial());
@@ -1423,7 +1370,8 @@ o3djs.manipulators.Translate2 = function(manager) {
    * @private
    * @type {!o3d.ParamFloat4}
    */
-  this.colorParam_ = this.getTransform().createParam('emissive', 'ParamFloat4');
+  this.colorParam_ = this.getTransform().createParam('highlightColor',
+                                                     'ParamFloat4');
   this.clearHighlight();
 
   /**
@@ -1550,7 +1498,8 @@ o3djs.manipulators.Rotate1 = function(manager) {
    * @private
    * @type {!o3d.ParamFloat4}
    */
-  this.colorParam_ = this.getTransform().createParam('emissive', 'ParamFloat4');
+  this.colorParam_ = this.getTransform().createParam('highlightColor',
+                                                     'ParamFloat4');
   this.clearHighlight();
 
   /**
@@ -1664,8 +1613,122 @@ o3djs.manipulators.Rotate1.prototype.drag = function(startPoint,
   this.updateAttachedTransformFromLocalTransform_();
 };
 
-// The shader and material for the Rotate1 manipulator's line ring.
+// The shaders and materials for the manipulators.
 // TODO(simonrad): Find a better place for these?
+
+// The main reason for using custom shader code instead of using standard
+// shaders from the effect library is that we want to do highlighting.
+// We want to supply two color parameters, and have them combined by the shader.
+// One parameter is defined on the material itself, so that we can have
+// different colored materials for obscured vs. unobscured geometry. The other
+// parameter is the highlightColor, which could switch between white and yellow
+// (for example). The highlightColor is usually defined on the transform
+// directly above the manipulator shapes. We want to be able to change the
+// highlightColor for all materials of the manipulator, but still maintain
+// different colors on each individual material.
+// An alternative would be to use standard shaders, and change the colors of
+// each material individually in the highlight() and clearHighlight() methods.
+// If you do this however, you would have to use different materials on each
+// manipulator, so that you can highlight only one.
+// Another alternative would be to do highlighting by swapping materials on
+// the shapes. That is, you would have obscuredHighlightedMaterial and
+// obscuredNonHighlightedMaterial. This might be best.
+
+/**
+ * An effect string for the polygon geometry of manipulators.
+ * This is the same as the shader returned by buildPhongShaderString(),
+ * except that it uses an additional highlightColor uniform parameter
+ * to do manipulator highlighting.
+ * TODO(simonrad): Make the highlighting easier to see, especially when the
+ * shapes are dark and obscured.
+ * @private
+ * @type {string}
+ */
+o3djs.manipulators.phongFXString_ = '' +
+    'uniform float4x4 worldViewProjection : WORLDVIEWPROJECTION;\n' +
+    'uniform float3 lightWorldPos;\n' +
+    'uniform float4 lightColor;\n' +
+    'uniform float4x4 world : WORLD;\n' +
+    'uniform float4x4 viewInverse : VIEWINVERSE;\n' +
+    'uniform float4x4 worldInverseTranspose : WORLDINVERSETRANSPOSE;\n' +
+    'uniform float4 emissive;\n' +
+    'uniform float4 ambient;\n' +
+    'uniform float4 diffuse;\n' +
+    'uniform float4 highlightColor;\n' +
+    'uniform float4 specular;\n' +
+    'uniform float shininess;\n' +
+    'uniform float specularFactor;\n' +
+    'struct InVertex {\n' +
+    '  float4 position : POSITION;\n' +
+    '  float3 normal : NORMAL;\n' +
+    '};\n' +
+    'struct OutVertex {\n' +
+    '  float4 position : POSITION;\n' +
+    '  float3 normal : TEXCOORD0;\n' +
+    '  float3 surfaceToLight: TEXCOORD1;\n' +
+    '  float3 surfaceToView : TEXCOORD2;\n' +
+    '};\n' +
+    'OutVertex vertexShaderFunction(InVertex input) {\n' +
+    '  OutVertex output;\n' +
+    '  output.position = mul(input.position, worldViewProjection);\n' +
+    '  output.normal = mul(float4(input.normal, 0),\n' +
+    '                      worldInverseTranspose).xyz;\n' +
+    '  output.surfaceToLight = lightWorldPos - \n' +
+    '      mul(input.position, world).xyz;\n' +
+    '  output.surfaceToView = (viewInverse[3] - mul(input.position,\n' +
+    '      world)).xyz;\n' +
+    '  return output;\n' +
+    '}\n' +
+    'float4 pixelShaderFunction(OutVertex input) : COLOR {\n' +
+    '  float4 newDiffuse = diffuse * highlightColor;\n' +
+    '  float3 normal = normalize(input.normal);\n' +
+    '  float3 surfaceToLight = normalize(input.surfaceToLight);\n' +
+    '  float3 surfaceToView = normalize(input.surfaceToView);\n' +
+    '  float3 halfVector = normalize(surfaceToLight + surfaceToView);\n' +
+    '  float4 litR = lit(dot(normal, surfaceToLight), \n' +
+    '                    dot(normal, halfVector), shininess);\n' +
+    '  return float4((emissive +\n' +
+    '      lightColor * (ambient * newDiffuse + newDiffuse * litR.y +\n' +
+    '      + specular * litR.z * specularFactor)).rgb, newDiffuse.a);\n' +
+    '}\n' +
+    '\n' +
+    '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
+    '// #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
+    '// #o3d MatrixLoadOrder RowMajor\n';
+
+/**
+ * An constant-color effect string.
+ * @private
+ * @type {string}
+ */
+o3djs.manipulators.constantFXString_ = '' +
+      'uniform float4x4 worldViewProjection : WORLDVIEWPROJECTION;\n' +
+      'uniform float4 color;\n' +
+      'uniform float4 highlightColor;\n' +
+      '\n' +
+      'struct VertexShaderInput {\n' +
+      '  float4 position : POSITION;\n' +
+      '};\n' +
+      '\n' +
+      'struct PixelShaderInput {\n' +
+      '  float4 position : POSITION;\n' +
+      '};\n' +
+      '\n' +
+      'PixelShaderInput vertexShaderFunction(VertexShaderInput input) {\n' +
+      '  PixelShaderInput output;\n' +
+      '\n' +
+      '  output.position = mul(input.position, worldViewProjection);\n' +
+      '  return output;\n' +
+      '}\n' +
+      '\n' +
+      'float4 pixelShaderFunction(PixelShaderInput input): COLOR {\n' +
+      '  return color * highlightColor;\n' +
+      '}\n' +
+      '\n' +
+      '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
+      '// #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
+      '// #o3d MatrixLoadOrder RowMajor\n';
+
 
 /**
  * Returns an effect string for the Rotate1 manipulator's line ring.
@@ -1682,7 +1745,7 @@ o3djs.manipulators.getLineRingFXString_ = function(enableStipple) {
         '  if (input.texCoord.x % 2 > 1) return float4(0, 0, 0, 0);\n';
   }
   return '' +
-      'float4x4 worldViewProjection : WORLDVIEWPROJECTION;\n' +
+      'uniform float4x4 worldViewProjection : WORLDVIEWPROJECTION;\n' +
       '// NOTE: We transform the normals through the\n' +
       '// worldViewProjectionInverseTranspose instead of the\n' +
       '// worldViewInverseTranspose. The projection matrix warps the\n' +
@@ -1693,11 +1756,11 @@ o3djs.manipulators.getLineRingFXString_ = function(enableStipple) {
       '// perspective. An alternative would be to get a little more\n' +
       '// complicated, using the positions of the camera and the center\n' +
       '// of the ring.\n' +
-      'float4x4 worldViewProjectionInverseTranspose :\n' +
+      'uniform float4x4 worldViewProjectionInverseTranspose :\n' +
       '    WORLDVIEWPROJECTIONINVERSETRANSPOSE;\n' +
-      'float4 color1;\n' +
-      'float4 color2;\n' +
-      'float4 emissive; // Used for highlighting.\n' +
+      'uniform float4 color1;\n' +
+      'uniform float4 color2;\n' +
+      'uniform float4 highlightColor;\n' +
       '\n' +
       'struct VertexShaderInput {\n' +
       '  float4 position : POSITION;\n' +
@@ -1724,15 +1787,40 @@ o3djs.manipulators.getLineRingFXString_ = function(enableStipple) {
       'float4 pixelShaderFunction(PixelShaderInput input): COLOR {\n' +
       stippleCode +
       '  if (input.normal.z < 0) {\n' +
-      '    return color1 * emissive; // Front face of the ring.\n' +
+      '    return color1 * highlightColor; // Front face of the ring.\n' +
       '  } else {\n' +
-      '    return color2 * emissive; // Back face of the ring.\n' +
+      '    return color2 * highlightColor; // Back face of the ring.\n' +
       '  }\n' +
       '}\n' +
       '\n' +
       '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
       '// #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
       '// #o3d MatrixLoadOrder RowMajor\n';
+};
+
+/**
+ * Set up the state of a material to allow alpha blending.
+ *
+ * @param {!o3d.Pack} pack The pack to create the state object in.
+ * @param {!o3d.Material} material The material to modify.
+ * @param {boolean} discardZeroAlphaPixels Whether incoming pixels that have
+ *     zero alpha should be discarded.
+ */
+o3djs.manipulators.enableAlphaBlendingOnMaterial =
+    function(pack, material, discardZeroAlphaPixels) {
+  if (!material.state) {
+    material.state = pack.createObject('State');
+  }
+  var state = material.state;
+  state.getStateParam('AlphaBlendEnable').value = true;
+  state.getStateParam('SourceBlendFunction').value =
+      o3djs.base.o3d.State.BLENDFUNC_SOURCE_ALPHA;
+  state.getStateParam('DestinationBlendFunction').value =
+      o3djs.base.o3d.State.BLENDFUNC_INVERSE_SOURCE_ALPHA;
+  state.getStateParam('AlphaTestEnable').value = discardZeroAlphaPixels;
+  state.getStateParam('AlphaComparisonFunction').value =
+      o3djs.base.o3d.State.CMP_GREATER;
+  state.getStateParam('AlphaReference').value = 0;
 };
 
 /**
@@ -1759,18 +1847,62 @@ o3djs.manipulators.createLineRingMaterial = function(pack,
   material.drawList = drawList;
   material.createParam('color1', 'ParamFloat4').value = color1;
   material.createParam('color2', 'ParamFloat4').value = color2;
+  o3djs.manipulators.enableAlphaBlendingOnMaterial(pack, material, true);
+  return material;
+};
 
-  // Set up the state to allow alpha blending
-  material.state = pack.createObject('State');
-  material.state.getStateParam('AlphaBlendEnable').value = true;
-  material.state.getStateParam('SourceBlendFunction').value =
-      o3djs.base.o3d.State.BLENDFUNC_SOURCE_ALPHA;
-  material.state.getStateParam('DestinationBlendFunction').value =
-      o3djs.base.o3d.State.BLENDFUNC_INVERSE_SOURCE_ALPHA;
-  material.state.getStateParam('AlphaTestEnable').value = true;
-  material.state.getStateParam('AlphaComparisonFunction').value =
-      o3djs.base.o3d.State.CMP_GREATER;
-  material.state.getStateParam('AlphaReference').value = 0;
+/**
+ * Creates a constant-shaded material based on the given single color.
+ *
+ * @param {!o3d.Pack} pack The pack to create the effect and material in.
+ * @param {!o3d.DrawList} drawList The draw list against which
+ *     the material is created.
+ * @param {!o3djs.math.Vector4} color A color in the format [r, g, b, a].
+ * @return {!o3d.Material} The created material.
+ */
+o3djs.manipulators.createConstantMaterial = function(pack,
+                                                     drawList,
+                                                     color) {
+  var material = pack.createObject('Material');
+  material.effect = pack.createObject('Effect');
+  material.effect.loadFromFXString(o3djs.manipulators.constantFXString_);
+  material.drawList = drawList;
+  material.createParam('color', 'ParamFloat4').value = color;
+  o3djs.manipulators.enableAlphaBlendingOnMaterial(pack, material, false);
+  return material;
+};
 
+/**
+ * Creates a phong-shaded material based on the given color.
+ *
+ * @param {!o3d.Pack} pack The pack to create the effect and material in.
+ * @param {!o3d.DrawList} drawList The draw list against which
+ *     the material is created.
+ * @param {!o3djs.math.Vector4} color A color in the format [r, g, b, a].
+ * @return {!o3d.Material} The created material.
+ */
+o3djs.manipulators.createPhongMaterial = function(pack,
+                                                  drawList,
+                                                  color) {
+  var material = pack.createObject('Material');
+  material.effect = pack.createObject('Effect');
+  material.effect.loadFromFXString(o3djs.manipulators.phongFXString_);
+  material.drawList = drawList;
+  material.createParam('diffuse', 'ParamFloat4').value = color;
+
+  // Create some suitable defaults for the material.
+  material.createParam('emissive', 'ParamFloat4').value = [0, 0, 0, 1];
+  material.createParam('ambient', 'ParamFloat4').value = [0.5, 0.5, 0.5, 1];
+  material.createParam('specular', 'ParamFloat4').value = [1, 1, 1, 1];
+  material.createParam('shininess', 'ParamFloat').value = 50;
+  material.createParam('specularFactor', 'ParamFloat').value = 1;
+  material.createParam('lightColor', 'ParamFloat4').value = [1, 1, 1, 1];
+  material.createParam('lightWorldPos', 'ParamFloat3').value =
+      [1000, 2000, 3000];
+  // TODO(simonrad): Allow modifying the lightPosition, and/or make it fit in
+  // with the surrounding world. We could put the lightWorldPos parameter on
+  // the transform or somewhere else.
+
+  o3djs.manipulators.enableAlphaBlendingOnMaterial(pack, material, false);
   return material;
 };
