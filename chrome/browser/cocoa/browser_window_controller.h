@@ -29,7 +29,6 @@ class BrowserWindowCocoa;
 @class ChromeBrowserWindow;
 class ConstrainedWindowMac;
 @class DownloadShelfController;
-@class ExtensionShelfController;
 @class FindBarCocoaController;
 @class GTMWindowSheetController;
 @class InfoBarContainerController;
@@ -65,7 +64,6 @@ class TabStripModelObserverBridge;
   scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
   scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
-  scoped_nsobject<ExtensionShelfController> extensionShelfController_;
   scoped_nsobject<BookmarkBarController> bookmarkBarController_;
 
   // Strong. StatusBubble is a special case of a strong reference that

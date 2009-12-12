@@ -32,7 +32,6 @@
 - (NSView*)toolbarView;
 - (NSView*)bookmarkView;
 - (BOOL)bookmarkBarVisible;
-- (NSView*)extensionShelfView;
 @end
 
 @implementation BrowserWindowController (ExposedForTesting)
@@ -54,10 +53,6 @@
 
 - (BOOL)bookmarkBarVisible {
   return [bookmarkBarController_ isVisible];
-}
-
-- (NSView*)extensionShelfView {
-  return [extensionShelfController_ view];
 }
 @end
 
@@ -166,18 +161,16 @@ TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
 #endif
 
 namespace {
-// Verifies that the toolbar, infobar, tab content area, download shelf, and
-// extension shelf completely fill their window's contentView.
+// Verifies that the toolbar, infobar, tab content area, and download shelf
+// completely fill their window's contentView.
 void CheckViewPositions(BrowserWindowController* controller) {
   NSRect contentView = [[[controller window] contentView] bounds];
   NSRect toolbar = [[controller toolbarView] frame];
   NSRect infobar = [[controller infoBarContainerView] frame];
   NSRect contentArea = [[controller tabContentArea] frame];
   NSRect download = [[[controller downloadShelf] view] frame];
-  NSRect extension = [[controller extensionShelfView] frame];
 
-  EXPECT_EQ(NSMinY(contentView), NSMinY(extension));
-  EXPECT_EQ(NSMaxY(extension), NSMinY(download));
+  EXPECT_EQ(NSMinY(contentView), NSMinY(download));
   EXPECT_EQ(NSMaxY(download), NSMinY(contentArea));
   EXPECT_EQ(NSMaxY(contentArea), NSMinY(infobar));
 
@@ -326,7 +319,6 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   NSView* contentView = [[tabstrip window] contentView];
   NSView* toolbar = [controller_ toolbarView];
   NSView* infobar = [controller_ infoBarContainerView];
-  NSView* extensionShelf = [controller_ extensionShelfView];
 
   // We need to muck with the views a bit to put us in a consistent state before
   // we start resizing.  In particular, we need to move the tab strip to be
@@ -345,10 +337,6 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
 
   // Force a layout and check each view's frame.
   [controller_ layoutSubviews];
-  CheckViewPositions(controller_);
-
-  // Add an extension shelf and recheck.
-  [controller_ resizeView:extensionShelf newHeight:40];
   CheckViewPositions(controller_);
 
   // Expand the infobar to 60px and recheck
@@ -380,7 +368,6 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   NSView* toolbar = [controller_ toolbarView];
   NSView* bookmark = [controller_ bookmarkView];
   NSView* infobar = [controller_ infoBarContainerView];
-  NSView* extensionShelf = [controller_ extensionShelfView];
 
   // We need to muck with the views a bit to put us in a consistent state before
   // we start resizing.  In particular, we need to move the tab strip to be
@@ -403,10 +390,6 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
 
   // Add the bookmark bar and recheck.
   [controller_ resizeView:bookmark newHeight:40];
-  CheckViewPositions(controller_);
-
-  // Add an extension shelf and recheck.
-  [controller_ resizeView:extensionShelf newHeight:40];
   CheckViewPositions(controller_);
 
   // Expand the infobar to 60px and recheck

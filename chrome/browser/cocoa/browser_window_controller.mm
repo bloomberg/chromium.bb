@@ -31,7 +31,6 @@
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
-#import "chrome/browser/cocoa/extension_shelf_controller.h"
 #import "chrome/browser/cocoa/fast_resize_view.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #include "chrome/browser/cocoa/find_bar_bridge.h"
@@ -264,15 +263,6 @@ willPositionSheet:(NSWindow*)sheet
     // view, so this step shoudn't be inside the bookmark bar controller's
     // |-awakeFromNib|.
     [self updateBookmarkBarVisibilityWithAnimation:NO];
-
-    if (browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF)) {
-      // Create the extension shelf.
-      extensionShelfController_.reset([[ExtensionShelfController alloc]
-                                        initWithBrowser:browser_.get()
-                                         resizeDelegate:self]);
-      [[[self window] contentView] addSubview:[extensionShelfController_ view]];
-      [extensionShelfController_ wasInsertedIntoWindow];
-    }
 
     // Force a relayout of all the various bars.
     [self layoutSubviews];
@@ -651,7 +641,6 @@ willPositionSheet:(NSWindow*)sheet
   DCHECK(view);
   DCHECK(view == [toolbarController_ view] ||
          view == [infoBarContainerController_ view] ||
-         view == [extensionShelfController_ view] ||
          view == [downloadShelfController_ view] ||
          view == [bookmarkBarController_ view]);
 
@@ -1646,17 +1635,7 @@ willPositionSheet:(NSWindow*)sheet
     [bookmarkBarController_ layoutSubviews];
   }
 
-  // Place the extension shelf at the bottom of the view, if it exists.
-  if (extensionShelfController_.get()) {
-    NSView* extensionView = [extensionShelfController_ view];
-    NSRect extensionFrame = [extensionView frame];
-    extensionFrame.origin.y = minY;
-    extensionFrame.size.width = NSWidth(contentFrame);
-    [extensionView setFrame:extensionFrame];
-    minY += NSHeight(extensionFrame);
-  }
-
-  // Place the download shelf above the extension shelf, if it exists.
+  // If there's a download shelf, place it at the bottom of the view.
   if (downloadShelfController_.get()) {
     NSView* downloadView = [downloadShelfController_ view];
     NSRect downloadFrame = [downloadView frame];

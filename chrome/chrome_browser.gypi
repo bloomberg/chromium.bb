@@ -389,8 +389,6 @@
         'browser/cocoa/event_utils.h',
         'browser/cocoa/event_utils.mm',
         'browser/cocoa/extension_install_prompt.mm',
-        'browser/cocoa/extension_shelf_controller.h',
-        'browser/cocoa/extension_shelf_controller.mm',
         'browser/cocoa/extension_view_mac.h',
         'browser/cocoa/extension_view_mac.mm',
         'browser/cocoa/extensions/browser_actions_controller.h',

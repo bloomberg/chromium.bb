@@ -587,7 +587,6 @@
         'browser/cocoa/download_shelf_view_unittest.mm',
         'browser/cocoa/download_util_mac_unittest.mm',
         'browser/cocoa/edit_search_engine_cocoa_controller_unittest.mm',
-        'browser/cocoa/extension_shelf_controller_unittest.mm',
         'browser/cocoa/extensions/extension_popup_controller_unittest.mm',
         'browser/cocoa/event_utils_unittest.mm',
         'browser/cocoa/fast_resize_view_unittest.mm',
