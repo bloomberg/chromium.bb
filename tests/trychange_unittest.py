@@ -24,7 +24,7 @@ class TryChangeUnittest(TryChangeTestsBase):
       'EscapeDot', 'GIT', 'GetSourceRoot',
       'GetTryServerSettings', 'GuessVCS',
       'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PathDifference',
-      'RunCommand', 'SCM', 'SVN', 'TryChange', 'USAGE',
+      'RunCommand', 'SCM', 'SVN', 'TryChange', 'USAGE', 'breakpad',
       'datetime', 'gcl', 'getpass', 'logging',
       'optparse', 'os', 'presubmit_support', 'scm', 'shutil', 'socket',
       'subprocess', 'sys', 'tempfile', 'upload', 'urllib',
