@@ -18,3 +18,17 @@ DownloadUtilTest.AddFileToPasteboardTest
 FindPasteboardTest.ReadingFromPboardUpdatesFindText
 FindPasteboardTest.SendsNotificationWhenTextChanges
 RenderViewTest.MacTestCmdUp
+
+# Folowing tests does not pass memcheck test.
+# See http://crbug.com/30209.
+BookmarkMenuTest.Basics
+BrowserWindowCocoaTest.TestFullscreen
+ChromeBrowserWindowTest.DoesHideTitle
+FindBarViewTest.FindBarEatsMouseClicksInBackgroundArea
+FindBarViewTest.FindBarPassesThroughClicksInTransparentArea
+NSMenuItemAdditionsTest.TestMOnDifferentLayouts
+PrefsControllerTest.GetPrefsViewForPage
+PrefsControllerTest.GetToolbarItemForPage
+PrefsControllerTest.ShowAndClose
+PrefsControllerTest.SwitchToPage
+TabStripControllerTest.AddRemoveTabs
