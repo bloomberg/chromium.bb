@@ -31,4 +31,7 @@ PrefsControllerTest.GetPrefsViewForPage
 PrefsControllerTest.GetToolbarItemForPage
 PrefsControllerTest.ShowAndClose
 PrefsControllerTest.SwitchToPage
+RenderViewTest.OnPrintPages
 TabStripControllerTest.AddRemoveTabs
+TabStripControllerTest.SelectTab
+				   
