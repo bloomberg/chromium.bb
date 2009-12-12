@@ -3272,3 +3272,5 @@ BUG30174 : LayoutTests/media/video-source-type.html = CRASH PASS
 // Flaky crash.
 BUG30082 : LayoutTests/storage/open-database-while-transaction-in-progress.html = CRASH PASS
 
+// Flaky.
+BUG30180 : LayoutTests/fast/text/international/hindi-whitespace.html = IMAGE PASS
