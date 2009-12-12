@@ -117,7 +117,10 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     "stress-js-execution.html",
     "use-machine-stack.html",
     "worker-call.html",
+#if defined(OS_WIN)
+    // This test occasionally fails on valgrind (http://crbug.com/30212).
     "worker-cloneport.html",
+#endif
     "worker-close.html",
     "worker-constructor.html",
     "worker-context-gc.html",

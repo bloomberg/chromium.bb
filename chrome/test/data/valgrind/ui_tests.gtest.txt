@@ -18,6 +18,11 @@ WorkerTest.LimitTotal
 WorkerTest.SingleWorker
 WorkerTest.WorkerXhrHttpLayoutTests
 
+# Fails due to mmap failure (http://crbug.com/28439)
+WorkerTest.SingleSharedWorker
+WorkerTest.MultipleSharedWorkers
+WorkerTest.LimitPerPage
+
 # Don't run reference tests under Valgrind
 # On the Mac, they don't have symbols, even, so suppressions don't work
 # They probably don't have ThreadSanitizer annotations TODO(timurrrr): check
