@@ -63,6 +63,11 @@ static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
   return host;
 }
 
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// See http://crbug.com/30151.
+#define Toolstrip DISABLED_Toolstrip
+#endif
+
 // Tests that toolstrips initializes properly and can run basic extension js.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
   FilePath extension_test_data_dir = test_data_dir_.AppendASCII("good").
