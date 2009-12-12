@@ -105,7 +105,10 @@ TEST_F(WorkerTest, IncognitoSharedWorkers) {
   RunIncognitoTest(L"incognito_worker.html");
 }
 
-#if defined(OS_LINUX) || defined (OS_MACOSX)
+#if defined(OS_LINUX)
+// Crashes on Linux - http://crbug.com/22898
+#define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
+#elif defined (OS_MACOSX)
 #define WorkerFastLayoutTests FLAKY_WorkerFastLayoutTests
 #endif
 
