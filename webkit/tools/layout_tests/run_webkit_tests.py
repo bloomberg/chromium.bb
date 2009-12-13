@@ -680,12 +680,6 @@ class TestRunner:
     self._WriteJSONFiles(unexpected_results, result_summary,
                          individual_test_timings)
 
-    out_filename = os.path.join(self._options.results_directory, "score.txt")
-    output_file = open(out_filename, "w")
-    self._PrintResultSummary(lambda str: output_file.write(str),
-                             result_summary)
-    output_file.close()
-
     # Write the summary to disk (results.html) and maybe open the test_shell
     # to this file.
     wrote_results = self._WriteResultsHtmlFile(result_summary)
