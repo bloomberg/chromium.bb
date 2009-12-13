@@ -474,9 +474,37 @@
    # This may be category 1, but putting here for now and
    # someone who knows better has to look into this.
    bug_30264
+   Memcheck:Value4
+   fun:_ZNK10CMMConvLut7ConvertER10CMMMinBitsP14CMMRuntimeInfomm
+   fun:_Z16CMMProcessBitmapP15CMMBitmapParams
+   fun:DoMatchBitmap
+   fun:CWMatchBitmap
+   fun:ConvertImageGeneric
+   fun:CMSColorWorldConvertData
+   fun:CMSTransformConvertData
+   fun:CGCMSInterfaceTransformConvertData
+   fun:CGColorTransformConvertData
+   fun:img_colormatch_read
+   fun:img_alphamerge_read
+   fun:img_data_lock
+   fun:CGSImageDataLock
+   fun:ripc_AcquireImage
+   fun:ripc_DrawImage
+   fun:CGContextDrawImage
+   fun:_ZN3gfx17CGImageToSkBitmapEP7CGImage
+   fun:_ZNK11webkit_glue12ImageDecoder6DecodeEPKhm
+   fun:_ZL11DecodeImageRK8FilePath
+   fun:_ZN17ExtensionUnpacker15AddDecodedImageERK8FilePath
+   fun:_ZN17ExtensionUnpacker3RunEv
+   fun:_ZN26SandboxedExtensionUnpacker5StartEv
+}
+{
+   # This may be category 1, but putting here for now and
+   # someone who knows better has to look into this.
+   bug_30264
    Memcheck:Cond
    fun:_ZNK10CMMMtxOnly10ConvertMinE10CMM3x3Type10CMM3x1TypeR12CMMMinBuffermm
-   ...
+   fun:_ZNK21CMMConvMatrixTemplateI10CMMMtxOnly22CMMConvGrayToRGBMatrixE7ConvertER10CMMMinBitsP14CMMRuntimeInfomm
    fun:_Z16CMMProcessBitmapP15CMMBitmapParams
    fun:DoMatchBitmap
    fun:CWMatchBitmap
