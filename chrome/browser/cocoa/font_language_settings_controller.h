@@ -26,9 +26,7 @@ extern NSString* const kCharacterInfoID;  // NSNumber value.
 // and language encodings for web pages. This window controller is meant to be
 // used as a modal sheet on another window.
 @interface FontLanguageSettingsController : NSWindowController
-                                           <NSWindowDelegate,
-                                           NSTableViewDelegate,
-                                           NSTableViewDataSource> {
+                                            <NSWindowDelegate> {
  @private
   // The font that we are currently changing.
   NSFont* currentFont_;  // weak

@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "app/table_model_observer.h"
+#import "base/cocoa_protocols_mac.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
@@ -58,7 +59,10 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
 // acts as |tableView_|'s data source and delegate, feeding it data from the
 // KeywordEditorController's |table_model()|.
 
-@interface KeywordEditorCocoaController : NSWindowController {
+@interface KeywordEditorCocoaController : NSWindowController
+                                          <NSWindowDelegate,
+                                          NSTableViewDataSource,
+                                          NSTableViewDelegate> {
   IBOutlet NSTableView* tableView_;
   IBOutlet NSButton* addButton_;
   IBOutlet NSButton* removeButton_;
