@@ -212,3 +212,4 @@
 -i=EC                                    #0000000000000000: ec                                           in %al, %dx; *NACL Disallows!*
 -i=66ED                                  #0000000000000000: 66 ed                                        in %ax, %dx; *NACL Disallows!*
 -i=ED                                    #0000000000000000: ed                                           in %eax, %dx; *NACL Disallows!*
+-i=55                                    #0000000000000000: 55                                           push %rbp

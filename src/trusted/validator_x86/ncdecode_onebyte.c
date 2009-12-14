@@ -185,6 +185,7 @@ static void DefineIncOrDec_00_07(const uint8_t base,
 static void DefinePushOrPop_00_07(const uint8_t base,
                                   const InstMnemonic name) {
   int i;
+  OperandFlags op_access = (name == InstPush ? OpFlag(OpUse) : OpFlag(OpSet));
   for (i = 0; i < 8; ++i) {
     DefineOpcode(
         base+i,
@@ -193,7 +194,7 @@ static void DefinePushOrPop_00_07(const uint8_t base,
         name);
     DefineOperand(OpcodeBaseMinus0 + i, OpFlag(OperandExtendsOpcode));
     DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
-    DefineOperand(G_OpcodeBase, OpFlag(OpSet));
+    DefineOperand(G_OpcodeBase, op_access);
 
     DefineOpcode(
         base + i,
@@ -203,7 +204,7 @@ static void DefinePushOrPop_00_07(const uint8_t base,
         name);
     DefineOperand(OpcodeBaseMinus0 + i, OpFlag(OperandExtendsOpcode));
     DefineOperand(RegESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
-    DefineOperand(G_OpcodeBase, OpFlag(OpSet));
+    DefineOperand(G_OpcodeBase, op_access);
 
     DefineOpcode(
         base + i,
@@ -213,7 +214,7 @@ static void DefinePushOrPop_00_07(const uint8_t base,
         name);
     DefineOperand(OpcodeBaseMinus0 + i, OpFlag(OperandExtendsOpcode));
     DefineOperand(RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
-    DefineOperand(G_OpcodeBase, OpFlag(OpSet));
+    DefineOperand(G_OpcodeBase, op_access);
   }
 }
 

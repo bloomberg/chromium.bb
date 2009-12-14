@@ -3300,3 +3300,19 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
 };
+0000000000000000: 55                                           push %rbp
+  { 1, { 0x55, 0x00, 0x00 },
+    NACLi_386,
+    InstFlag(OpcodePlusR) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeDefaultIs64),
+    InstPush,
+    3, {
+      { OpcodeBaseMinus5, OpFlag(OperandExtendsOpcode) },
+      { RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { G_OpcodeBase, OpFlag(OpUse) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 2, 0 },
+  { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
+};
