@@ -3277,3 +3277,6 @@ BUG30185 : LayoutTests/websocket/tests/handshake-fail-by-sub-protocol-mismatch.h
 
 // evan's fix rolled out in http://trac.webkit.org/changeset/52071 due to compat issues.
 BUG30343 LINUX : LayoutTests/fast/css/large-number-round-trip.html = TEXT
+
+// Crash of unknown origin :(
+BUG_DGLAZKOV LINUX : LayoutTests/fast/images/svg-as-background.html = CRASH
