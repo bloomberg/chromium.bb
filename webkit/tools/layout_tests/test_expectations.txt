@@ -3082,8 +3082,8 @@ BUG_AJWONG : LayoutTests/fast/repaint/block-selection-gap-stale-cache-2.html = I
 BUG_AJWONG : LayoutTests/fast/repaint/block-selection-gap-stale-cache.html = IMAGE IMAGE+TEXT TEXT
 
 // Regression from Webkit merge 51772 -> 51784
-BUG_AJWONG : LayoutTests/storage/domstorage/quota.html = CRASH
-BUG_AJWONG : LayoutTests/http/tests/appcache/resource-redirect-2.html = TIMEOUT
+BUG_AJWONG MAC LINUX : LayoutTests/storage/domstorage/quota.html = CRASH PASS
+BUG_AJWONG : LayoutTests/http/tests/appcache/resource-redirect-2.html = TIMEOUT PASS
 
 // Webkit Roll to r51875
 BUG29748 LINUX : LayoutTests/css1/basic/containment.html = IMAGE
