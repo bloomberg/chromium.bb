@@ -1461,6 +1461,15 @@
               '-lsecur32.lib',
             ],
           },
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
         }, { # else: OS != "win"
           'sources!': [
             'browser/sync/util/data_encryption_unittest.cc',
