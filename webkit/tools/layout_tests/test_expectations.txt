@@ -3334,6 +3334,7 @@ BUG30049 : LayoutTests/platform/win/editing/selection/doubleclick-should-not-exp
 
 // Flaky crash.
 BUG30081 : LayoutTests/storage/close-during-stress-test.html = CRASH PASS
+BUG30081 DEBUG : LayoutTests/storage/multiple-databases-garbage-collection.html = CRASH PASS
 
 // Flaky crash.
 BUG30174 : LayoutTests/media/video-source-type.html = CRASH PASS
