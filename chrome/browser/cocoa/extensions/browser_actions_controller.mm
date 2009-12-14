@@ -460,4 +460,8 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
   return selected_tab->controller().session_id().id();
 }
 
+- (NSButton*)buttonWithIndex:(int)index {
+  return [buttonOrder_ objectAtIndex:(NSUInteger)index];
+}
+
 @end

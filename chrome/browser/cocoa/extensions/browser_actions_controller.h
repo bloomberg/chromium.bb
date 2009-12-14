@@ -84,4 +84,8 @@ extern NSString* const kBrowserActionsChangedNotification;
 
 @end  // @interface BrowserActionsController
 
+@interface BrowserActionsController(TestingAPI)
+- (NSButton*)buttonWithIndex:(int)index;
+@end
+
 #endif  // CHROME_BROWSER_COCOA_EXTENSIONS_BROWSER_ACTIONS_CONTROLLER_H_

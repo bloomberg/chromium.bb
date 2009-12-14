@@ -23,13 +23,15 @@ var chrome = chrome || {};
     if (completed) throw "completed";
     chrome.test.log("(  FAILED  ) " + currentTest.name);
 
-    var stack;
+    var stack = "(no stack available)";
     try {
       crash.me += 0;  // An intentional exception to get the stack trace.
     } catch (e) {
-      stack = e.stack.split("\n");
-      stack = stack.slice(2);  // Remove title and fail() lines.
-      stack = stack.join("\n");
+      if (typeof(e.stack) != undefined) {
+        stack = e.stack.split("\n");
+        stack = stack.slice(2);  // Remove title and fail() lines.
+        stack = stack.join("\n");
+      }
     }
 
     if (!message) {
@@ -48,7 +50,7 @@ var chrome = chrome || {};
     chrome.test.notifyPass();
     complete();
   }
-  
+
   var pendingCallbacks = 0;
 
   chrome.test.callbackAdded = function () {
@@ -74,7 +76,7 @@ var chrome = chrome || {};
       chrome.test.log("( RUN      ) " + currentTest.name);
       currentTest.call();
     } catch (e) {
-      var message = e.stack;
+      var message = e.stack || "(no stack available)";
       console.log("[FAIL] " + currentTest.name + ": " + message);
       chrome.test.notifyFail(message);
       complete();
@@ -127,18 +129,16 @@ var chrome = chrome || {};
         func.apply(null, arguments);
       }
     } catch (e) {
-      var stack = null;
+      var stack = "(no stack available)";
       if (typeof(e.stack) != "undefined") {
         stack = e.stack.toString();
       }
       var msg = "Exception during execution of callback in " +
                 currentTest.name;
-      if (stack) {
-        msg += "\n" + stack;
-      } else {
-        msg += "\n(no stack available)";
-      }
-      chrome.test.fail(msg);
+      msg += "\n" + stack;
+      console.log("[FAIL] " + currentTest.name + ": " + msg);
+      chrome.test.notifyFail(msg);
+      complete();
     }
   };
 
@@ -157,7 +157,7 @@ var chrome = chrome || {};
         chrome.test.assertEq(typeof(expectedError), 'string');
         chrome.test.assertEq(expectedError, chrome.extension.lastError.message);
       }
-      
+
       if (func) {
         safeFunctionApply(func, arguments);
       }
@@ -175,10 +175,10 @@ var chrome = chrome || {};
     };
     event.addListener(listener);
   };
-  
+
   chrome.test.listenForever = function(event, func) {
     var callbackCompleted = chrome.test.callbackAdded();
- 
+
     var listener = function() {
       safeFunctionApply(func, arguments);
     };
@@ -187,7 +187,7 @@ var chrome = chrome || {};
       event.removeListener(listener);
       callbackCompleted();
     };
- 
+
     event.addListener(listener);
     return done;
   };

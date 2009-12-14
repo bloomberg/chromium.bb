@@ -217,6 +217,9 @@ class TabStripModelObserverBridge;
 // Return a point suitable for the topLeft for a bookmark bubble.
 - (NSPoint)topLeftForBubble;
 
+// Return a weak pointer to the toolbar controller.
+- (ToolbarController*)toolbarController;
+
 // Resets any saved state about window growth (due to showing the bookmark bar
 // or the download shelf), so that future shrinking will occur from the bottom.
 - (void)resetWindowGrowthState;

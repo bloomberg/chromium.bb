@@ -161,6 +161,7 @@ class ToolbarModel;
 - (gfx::Rect)locationStackBounds;
 // Return a hover button for the current event.
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
+- (BrowserActionsController*)browserActionsController;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TOOLBAR_CONTROLLER_H_

@@ -789,6 +789,10 @@ willPositionSheet:(NSWindow*)sheet
   return enable;
 }
 
+- (ToolbarController*)toolbarController {
+  return toolbarController_.get();
+}
+
 // Called when the user picks a menu or toolbar item when this window is key.
 // Calls through to the browser object to execute the command. This assumes that
 // the command is supported and doesn't check, otherwise it would have been

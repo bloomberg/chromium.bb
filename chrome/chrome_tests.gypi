@@ -5,6 +5,7 @@
 {
   'variables' : {
     'browser_tests_sources_views_specific': [
+      'browser/extensions/browser_action_test_util_views.cc',
       'browser/views/find_bar_host_browsertest.cc',
     ],
     'browser_tests_sources_win_specific': [
@@ -1069,18 +1070,19 @@
         'browser/extensions/autoupdate_interceptor.cc',
         'browser/extensions/autoupdate_interceptor.h',
         'browser/extensions/browser_action_apitest.cc',
+        'browser/extensions/browser_action_test_util.h',
         'browser/extensions/content_script_all_frames_apitest.cc',
         'browser/extensions/cross_origin_xhr_apitest.cc',
         'browser/extensions/execute_script_apitest.cc',
         'browser/extensions/extension_apitest.cc',
         'browser/extensions/extension_apitest.h',
         'browser/extensions/extension_bookmarks_apitest.cc',
-        'browser/extensions/extension_history_apitest.cc',
-        'browser/extensions/extension_javascript_url_apitest.cc',
-        'browser/extensions/extension_messages_apitest.cc',
         'browser/extensions/extension_browsertest.cc',
         'browser/extensions/extension_browsertest.h',
         'browser/extensions/extension_browsertests_misc.cc',
+        'browser/extensions/extension_history_apitest.cc',
+        'browser/extensions/extension_javascript_url_apitest.cc',
+        'browser/extensions/extension_messages_apitest.cc',
         'browser/extensions/extension_override_apitest.cc',
         'browser/extensions/extension_toolstrip_apitest.cc',
         'browser/extensions/isolated_world_apitest.cc',
@@ -1143,14 +1145,21 @@
         }],
         ['OS=="linux" and toolkit_views==0', {
           'sources': [
+            'browser/extensions/browser_action_test_util_gtk.cc',
             'browser/gtk/view_id_util_browsertest.cc',
           ],
         }],
         ['OS=="mac"', {
+          'sources': [
+            'browser/extensions/browser_action_test_util_mac.mm',
+          ],
           'sources!': [
             # This fails to compile because it seem to drag in views headers.
             # http://crbug.com/29895
             'browser/extensions/page_action_apitest.cc',
+          ],
+          'include_dirs': [
+            '../third_party/GTM',
           ],
           # TODO(mark): We really want this for all non-static library
           # targets, but when we tried to pull it up to the common.gypi

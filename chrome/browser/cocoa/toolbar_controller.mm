@@ -274,6 +274,10 @@ class PrefObserverBridge : public NotificationObserver {
   return nil;
 }
 
+- (BrowserActionsController*)browserActionsController {
+  return browserActionsController_.get();
+}
+
 - (void)mouseMoved:(NSEvent*)theEvent {
   NSButton* targetView = [self hoverButtonForEvent:theEvent];
   if (hoveredButton_ != targetView) {
