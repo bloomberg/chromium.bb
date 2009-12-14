@@ -382,6 +382,24 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
   DLOG(INFO) << "URL: " << url << " Obj: " << std::hex << this <<
       " - Request headers: \n" << current_headers;
 
+  if (!binding_) {
+    // At times the BINDSTATUS_REDIRECTING notification which is sent to the
+    // IBindStatusCallback interface does not have an accompanying HTTP
+    // redirect status code, i.e. the attempt to query the HTTP status code
+    // from the binding returns 0, 200, etc which are invalid redirect codes.
+    // We don't want urlmon to follow redirects. We return E_ABORT in our
+    // IBindStatusCallback::OnProgress function and also abort the binding.
+    // However urlmon still tries to establish a transaction with the
+    // redirected URL which confuses the web server.
+    // Fix is to abort the attempted transaction.
+    DCHECK(ignore_redirect_stop_binding_error_);
+    DLOG(WARNING) << __FUNCTION__
+                  << ": Aborting connection to URL:"
+                  << url
+                  << " as the binding has been aborted";
+    return E_ABORT;
+  }
+
   HRESULT hr = S_OK;
 
   std::string new_headers;
