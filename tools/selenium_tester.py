@@ -5,7 +5,7 @@
 
 # A simple selenium tester for nacl.
 # You should be able to self test the selenium setup using:
-# ./selenium_tester.py  --page self.test.html
+# ./selenium_tester.py  --url self.test.html
 
 import logging
 import optparse
@@ -58,7 +58,7 @@ _SELENIUM_BROWSERS = [
 
 parser = optparse.OptionParser()
 parser.add_option(
-    '--page',
+    '--url',
     default='index.html',
     metavar='FILE',
     help='write report to FILE')
@@ -83,7 +83,7 @@ parser.add_option(
 parser.add_option(
     '--port_fileserver',
     type='int',
-    default=5103,
+    default=0,
     help='specifies the port number to be used by file server.'
     'A value zero means pick an arbitrary port.')
 
@@ -243,6 +243,10 @@ class LocalFileHTTPServer(threading.Thread):
     Args:
       local_root: all files below this path are served.
     """
+    logging.info('#' * 60)
+    logging.info('# creating file/page http server')
+    logging.info('#' * 60)
+
     self._keep_going = True
     threading.Thread.__init__(self, name='fileserver')
     for f in files:
@@ -263,10 +267,8 @@ class LocalFileHTTPServer(threading.Thread):
 
     # if port == 0, we need to figure out the actual port
     self._port = self._httpd.server_address[1]
-    logging.info('#' * 60)
     logging.info('created server on port %d', self._port)
     logging.info('try it at %s', self.BaseUrl())
-    logging.info('#' * 60)
 
   def StopServer(self):
     self._keep_going = False
@@ -311,6 +313,10 @@ class SeleniumRemoteControl(threading.Thread):
 
   def __init__(self, java, selenium_jar, port):
     """Initializes the SeleniumRemoteControl class."""
+    logging.info('#' * 60)
+    logging.info('# creating selenium remote control server')
+    logging.info('#' * 60)
+
     self._alive = threading.Event()
     self._keep_going = True
     if port == 0:
@@ -330,10 +336,8 @@ class SeleniumRemoteControl(threading.Thread):
         logging.error("cannot launch selenium rc server")
         sys.exit(-1)
 
-    logging.info('#' * 60)
     logging.info('found active selenium server on port %d', self._port)
     logging.info('try it at %s', self.BaseUrl())
-    logging.info('#' * 60)
 
   def StopServer(self):
     logging.info("shutting down selenium rc server")
@@ -342,7 +346,8 @@ class SeleniumRemoteControl(threading.Thread):
     try:
       self._process.terminate()
     except Exception, err:
-      logging.error('problem shutting down selenium server: %s', str(err))
+      logging.error('problem terminating selenium server: %s', str(err))
+      logging.info('This is normal for python version < 2.6')
 
     # NOTE: here is what we do in desperation for older python versions
     try:
@@ -445,6 +450,7 @@ def RunTest(session, url, max_wait):
                url, status, duration, message)
 
   if status == "SUCCESS":
+    logging.info("************* SUCCESS *********")
     return 0
   else:
     logging.warning("************* FAILURE *********")
@@ -479,7 +485,9 @@ def main(options):
   selenium_server.start()
   GlobalCleanupList.append(selenium_server.StopServer)
 
+  logging.info('#' * 60)
   logging.info('creating session')
+  logging.info('#' * 60)
   session = selenium.selenium('localhost',
                               selenium_server._port,
                               options.browser,
@@ -488,7 +496,7 @@ def main(options):
   session.start()
   GlobalCleanupList.append(session.stop)
   result = RunTest(session,
-                   session.browserURL + "/"  + options.page,
+                   session.browserURL + "/"  + options.url,
                    options.timeout)
 
   if options.shutdown_delay > 0:

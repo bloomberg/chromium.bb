@@ -1,0 +1,29 @@
+# -*- python -*-
+# Copyright 2009 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# TODO(robertm): enable arm support ASAP
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
+
+# Use the built-in page for testing
+node = env.BrowserTester(
+     'selenium_self_test.out',
+     url='self.test.html',
+     files=[],
+     browser='*firefox',
+     )
+env.AddNodeToTestSuite(node, ['browser_tests'])
+
+
+# Use an external page for testing
+node = env.BrowserTester(
+     'selenium_self_test2.out',
+     url='simple.html',
+     files=[env.File('simple.html')],
+     browser='*firefox',
+     )
+env.AddNodeToTestSuite(node, ['browser_tests'])

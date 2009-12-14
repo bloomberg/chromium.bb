@@ -27,13 +27,30 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 Import('env')
 
-env.ComponentProgram('srpc_hw.nexe', 'srpc_hw.c',
-                     EXTRA_LIBS=['srpc', 'google_nacl_imc_c','pthread'])
+nexe = env.ComponentProgram('srpc_hw.nexe', 'srpc_hw.c',
+                            EXTRA_LIBS=['srpc', 'google_nacl_imc_c','pthread'])
 
 # Note that the html is required to run this program.
 env.Publish('srpc_hw.nexe', 'run',
             ['srpc_hw.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')])
+
+
+# TODO(robertm): enable general support ASAP
+Return()
+# TODO(robertm): enable arm support ASAP
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
+
+node = env.BrowserTester(
+     'srpc_hw_browser_test.out',
+     url='srpc_hw.html',
+     files=[nexe,
+            env.File('srpc_hw.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     browser='*firefox',
+     )
+env.AddNodeToTestSuite(node, ['browser_tests'], 'run_srpc_hw_browser_test')

@@ -1,5 +1,0 @@
-Import('env')
-
-n = env.Replicate('${STAGING_DIR}', env.File('simple.html'))
-# temporary hack until we model deps right for selenium
-Default(n)

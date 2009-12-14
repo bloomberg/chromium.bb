@@ -276,6 +276,39 @@ EXTRA_ENV = [('XAUTHORITY', None),
              ('KRB5CCNAME', None),
              ]
 
+SELENIUM_TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/selenium_tester.py'
+
+def BrowserTester(env,
+                target,
+                url,
+                files,
+                browser,
+                log_verbosity=2,
+                args=[]):
+
+  deps = [SELENIUM_TEST_SCRIPT] + files
+  command = ['${SOURCES[0].abspath}', '--url', url, '--browser', browser]
+  for i in range(len(files)):
+    command.append('--file')
+    command.append('${SOURCES[%d].abspath}' % (i + 1))
+
+  # NOT: since most of the demos use X11 we need to make sure
+  #      some env vars are set for tag, val in extra_env:
+  for tag, val in EXTRA_ENV:
+    if val is None:
+      if os.getenv(tag) is not None:
+        env['ENV'][tag] = os.getenv(tag)
+      else:
+        env['ENV'][tag] =  env.subst(val)
+
+  node = env.Command(target, deps, ' '.join(command))
+  return node
+
+if pre_base_env['TARGET_ARCHITECTURE'] == 'x86':
+  # arm support would likely require some emulation magic
+  pre_base_env.AddMethod(BrowserTester)
+
+# ----------------------------------------------------------
 def DemoSelLdrNacl(env,
                    target,
                    nexe,
@@ -513,6 +546,7 @@ base_env.Append(
     #       but provides nchelper lib. Needs to be cleaned up
     'src/trusted/validator_x86/build.scons',
     'tests/python_version/build.scons',
+    'tests/selenium_self_test/build.scons',
     'tests/tools/build.scons',
     'installer/build.scons'
     ],
