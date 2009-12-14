@@ -596,7 +596,7 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
   // Register for notifications about extension process changes.
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CREATED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CRASHED,
+  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_HOST_DESTROYED,
                  NotificationService::AllSources());
@@ -609,7 +609,7 @@ void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
   // Unregister for notifications about extension process changes.
   registrar_.Remove(this, NotificationType::EXTENSION_PROCESS_CREATED,
                     NotificationService::AllSources());
-  registrar_.Remove(this, NotificationType::EXTENSION_PROCESS_CRASHED,
+  registrar_.Remove(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
                     NotificationService::AllSources());
   registrar_.Remove(this, NotificationType::EXTENSION_HOST_DESTROYED,
                     NotificationService::AllSources());
@@ -629,7 +629,7 @@ void TaskManagerExtensionProcessResourceProvider::Observe(
     case NotificationType::EXTENSION_PROCESS_CREATED:
       AddToTaskManager(Details<ExtensionHost>(details).ptr());
       break;
-    case NotificationType::EXTENSION_PROCESS_CRASHED:
+    case NotificationType::EXTENSION_PROCESS_TERMINATED:
     case NotificationType::EXTENSION_HOST_DESTROYED:
       RemoveFromTaskManager(Details<ExtensionHost>(details).ptr());
       break;

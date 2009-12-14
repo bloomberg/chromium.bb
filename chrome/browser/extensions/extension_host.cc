@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -242,10 +243,16 @@ void ExtensionHost::UpdatePreferredSize(const gfx::Size& new_size) {
 }
 
 void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host) {
-  LOG(INFO) << "Sending EXTENSION_PROCESS_CRASHED for " + extension_->name();
+  // During browser shutdown, we may use sudden termination on an extension
+  // process, so it is expected to lose our connection to the render view.
+  // Do nothing.
+  if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
+    return;
+
+  LOG(INFO) << "Sending EXTENSION_PROCESS_TERMINATED for " + extension_->name();
   DCHECK_EQ(render_view_host_, render_view_host);
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_PROCESS_CRASHED,
+      NotificationType::EXTENSION_PROCESS_TERMINATED,
       Source<Profile>(profile_),
       Details<ExtensionHost>(this));
 }

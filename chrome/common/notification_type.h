@@ -708,9 +708,10 @@ class NotificationType {
     // The details are an ExtensionHost*.
     EXTENSION_PROCESS_CREATED,
 
-    // Sent when extension render process crashes. The details are
-    // an ExtensionHost* and the source is a Profile*.
-    EXTENSION_PROCESS_CRASHED,
+    // Sent when extension render process ends (whether it crashes or closes).
+    // The details are an ExtensionHost* and the source is a Profile*. Not sent
+    // during browser shutdown.
+    EXTENSION_PROCESS_TERMINATED,
 
     // Sent when the contents or order of toolstrips in the shelf model change.
     EXTENSION_SHELF_MODEL_CHANGED,

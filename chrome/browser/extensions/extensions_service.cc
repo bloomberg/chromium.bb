@@ -122,7 +122,7 @@ ExtensionsService::ExtensionsService(Profile* profile,
 
   registrar_.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CRASHED,
+  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
                  Source<Profile>(profile_));
 
   // Set up the ExtensionUpdater
@@ -840,8 +840,9 @@ void ExtensionsService::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::EXTENSION_PROCESS_CRASHED: {
+    case NotificationType::EXTENSION_PROCESS_TERMINATED: {
       DCHECK_EQ(profile_, Source<Profile>(source).ptr());
+
       ExtensionHost* host = Details<ExtensionHost>(details).ptr();
 
       // Unload the entire extension. We want it to be in a consistent state:
