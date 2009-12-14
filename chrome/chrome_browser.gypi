@@ -239,6 +239,8 @@
         'browser/chromeos/external_protocol_dialog.h',
         'browser/chromeos/gview_request_interceptor.cc',
         'browser/chromeos/gview_request_interceptor.h',
+        'browser/chromeos/login_manager_view.cc',
+        'browser/chromeos/login_manager_view.h', 
         'browser/chromeos/main_menu.cc',
         'browser/chromeos/main_menu.h',
         'browser/chromeos/mount_library.cc',
@@ -2300,6 +2302,8 @@
               'dependencies': [
                 '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
                 '../third_party/protobuf2/protobuf.gyp:protoc#host',
+                '../third_party/chromeos_login_manager/chromeos_login_manager/chromeos_login_manager.gyp:session',
+                '../third_party/chromeos_login_manager/chromeos_login_manager/chromeos_login_manager.gyp:emit-login-prompt-ready',
                 'browser/chromeos/cros_api.gyp:cros_api',
                 '../views/views.gyp:views',
               ],

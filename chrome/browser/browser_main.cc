@@ -127,6 +127,7 @@
 #include "chrome/browser/chromeos/cros_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/external_metrics.h"
+#include "chrome/browser/views/browser_dialogs.h"
 #endif
 
 namespace {
@@ -574,6 +575,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif  // !defined(OS_MACOSX)
   }
 
+#if defined(OS_CHROMEOS)
+  if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
+    browser::ShowLoginManager();
+  }
+#endif  // OS_CHROMEOS
+
 #if defined(OS_LINUX)
   gtk_util::SetDefaultWindowIcon();
 #endif
@@ -699,6 +706,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Try to create/load the profile.
   ProfileManager* profile_manager = browser_process->profile_manager();
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+
 #if defined(OS_WIN)
   if (!profile) {
     // Ideally, we should be able to run w/o access to disk.  For now, we

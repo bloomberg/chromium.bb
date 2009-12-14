@@ -87,6 +87,11 @@ void ShowNewProfileDialog();
 // Shows the Task Manager.
 void ShowTaskManager();
 
+#if defined(OS_CHROMEOS)
+// Shows the Login Manager.
+void ShowLoginManager();
+#endif
+
 // Shows a dialog box that allows a search engine to be edited. |template_url|
 // is the search engine being edited. If it is NULL, then the dialog will add a
 // new search engine with the data the user supplies. |delegate| is an object
