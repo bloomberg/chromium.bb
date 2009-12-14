@@ -331,7 +331,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  }
  
  /* Reset from the function's potential modifications.  */
-@@ -8746,6 +8782,56 @@
+@@ -8746,6 +8782,88 @@
     grossly off.  Return -1 if the address contains ASHIFT, so it is not
     strictly valid, but still used for computing length of lea instruction.  */
  
@@ -346,18 +346,50 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
 +  return retval;
 +}
 +
++/* Check if instruction is a LEA instruction.
++
++   We should prevent invocation of get_attr_type(insn) for some insns. Examples
++   are: USE, CLOBBER, instructions with asm_operands. get_attr_type() has a side
++   effect on the instruction itself or on recog_data.
++
++   This pattern of checking was borrowed from extract_insn() in recog.c and
++   should be refactored to improve code reuse.  */
++
 +int
 +insn_is_nacl_lea(rtx insn)
 +{
 +  enum rtx_code insn_code;
++  rtx body = PATTERN(insn);
 +
 +  if (!TARGET_64BIT)
 +    return 0;
 +
-+  insn_code = GET_CODE (PATTERN (insn));
-+  return insn_code != USE &&
-+      insn_code != CLOBBER &&
-+      get_attr_type (insn) == TYPE_LEA;
++  switch (GET_CODE (body))
++    {
++    case USE:
++    case CLOBBER:
++    case ASM_INPUT:
++    case ADDR_VEC:
++    case ADDR_DIFF_VEC:
++    case ASM_OPERANDS:
++      return 0;
++
++    case SET:
++      if (GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
++	return 0;
++      else
++	goto normal_insn;
++    case PARALLEL:
++      if ((GET_CODE (XVECEXP (body, 0, 0)) == SET
++	   && GET_CODE (SET_SRC (XVECEXP (body, 0, 0))) == ASM_OPERANDS)
++	  || GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS)
++	return 0;
++      else
++	goto normal_insn;
++    default:
++    normal_insn:
++      return get_attr_type (insn) == TYPE_LEA;
++    }
 +}
 +
 +static int
