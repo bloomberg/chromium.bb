@@ -463,6 +463,9 @@ class UITest : public testing::Test {
                                size_t charge,
                                bool important);
 
+  // Configures the test to use the reference build.
+  void UseReferenceBuild();
+
  private:
   // Check that no processes related to Chrome exist, displaying
   // the given message if any do.

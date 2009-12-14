@@ -1425,3 +1425,18 @@ void UITest::PrintSystemCommitCharge(const char* test_name,
   std::string trace_name(test_name);
   PrintResult("commit_charge", "", "cc" + trace_name, charge, "kb", important);
 }
+
+void UITest::UseReferenceBuild() {
+  FilePath dir;
+  PathService::Get(chrome::DIR_TEST_TOOLS, &dir);
+  dir = dir.AppendASCII("reference_build");
+#if defined(OS_WIN)
+  dir = dir.AppendASCII("chrome");
+#elif defined(OS_LINUX)
+  dir = dir.AppendASCII("chrome_linux");
+#elif defined(OS_MACOSX)
+  dir = dir.AppendASCII("chrome_mac");
+#endif
+  browser_directory_ = dir;
+}
+
