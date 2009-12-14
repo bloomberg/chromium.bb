@@ -80,6 +80,8 @@ pre_base_env.AddMethod(AddNodeToTestSuite)
 # NOTE: work around for scons non-determinism in the following two lines
 Alias('small_tests', [])
 Alias('medium_tests', [])
+Alias('large_tests', [])
+Alias('browser_tests', [])
 
 Alias('unit_tests', 'small_tests')
 Alias('smoke_tests', ['small_tests', 'medium_tests'])
@@ -292,7 +294,8 @@ def BrowserTester(env,
     command.append('--file')
     command.append('${SOURCES[%d].abspath}' % (i + 1))
 
-  # NOT: since most of the demos use X11 we need to make sure
+  env['ENV']['PYTHONPATH'] = env.subst('${SOURCE_ROOT}/third_party/selenium')
+  # NOTE: since most of the demos use X11 we need to make sure
   #      some env vars are set for tag, val in extra_env:
   for tag, val in EXTRA_ENV:
     if val is None:
@@ -328,7 +331,7 @@ def DemoSelLdrNacl(env,
   command = (['${SOURCES[0].abspath}'] + sel_ldr_flags +
              ['-f', '${SOURCES[1].abspath}', '--'] + args)
 
-  # NOT: since most of the demos use X11 we need to make sure
+  # NOTE: since most of the demos use X11 we need to make sure
   #      some env vars are set for tag, val in extra_env:
   for tag, val in EXTRA_ENV:
     if val is None:
