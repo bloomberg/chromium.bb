@@ -600,6 +600,12 @@ SkBitmap TabRendererGtk::PaintBitmap() {
   return canvas.ExtractBitmap();
 }
 
+cairo_surface_t* TabRendererGtk::PaintToSurface() {
+  gfx::Canvas canvas(width(), height(), false);
+  Paint(&canvas);
+  return cairo_surface_reference(cairo_get_target(canvas.beginPlatformPaint()));
+}
+
 void TabRendererGtk::SchedulePaint() {
   gtk_widget_queue_draw(tab_.get());
 }

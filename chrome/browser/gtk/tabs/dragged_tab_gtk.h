@@ -105,11 +105,8 @@ class DraggedTabGtk : public AnimationDelegate {
   // Sets the shape mask for the container window to emulate a transparent
   // container window.  This is used if compositing is not available for the
   // screen.
-  // |pixbuf| is the pixbuf for the tab only (not the render view).
-  void SetContainerShapeMask(GdkPixbuf* pixbuf);
-
-  // Paints the tab. The returned pixbuf belongs to the caller.
-  GdkPixbuf* PaintTab();
+  // |surface| represents the tab only (not the render view).
+  void SetContainerShapeMask(cairo_surface_t* surface);
 
   // expose-event handler that notifies when the tab needs to be redrawn.
   static gboolean OnExposeEvent(GtkWidget* widget, GdkEventExpose* event,

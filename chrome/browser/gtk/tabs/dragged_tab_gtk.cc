@@ -241,7 +241,7 @@ void DraggedTabGtk::SetContainerTransparency() {
   cairo_destroy(cairo_context);
 }
 
-void DraggedTabGtk::SetContainerShapeMask(GdkPixbuf* pixbuf) {
+void DraggedTabGtk::SetContainerShapeMask(cairo_surface_t* surface) {
   // Create a 1bpp bitmap the size of |container_|.
   gfx::Size size = bounds().size();
   GdkPixmap* pixmap = gdk_pixmap_new(NULL, size.width(), size.height(), 1);
@@ -255,7 +255,7 @@ void DraggedTabGtk::SetContainerShapeMask(GdkPixbuf* pixbuf) {
   cairo_set_operator(cairo_context, CAIRO_OPERATOR_SOURCE);
   if (!attached_)
     cairo_scale(cairo_context, kScalingFactor, kScalingFactor);
-  gdk_cairo_set_source_pixbuf(cairo_context, pixbuf, 0, 0);
+  cairo_set_source_surface(cairo_context, surface, 0, 0);
   cairo_paint(cairo_context);
 
   if (!attached_) {
@@ -264,7 +264,7 @@ void DraggedTabGtk::SetContainerShapeMask(GdkPixbuf* pixbuf) {
     cairo_identity_matrix(cairo_context);
     cairo_set_source_rgba(cairo_context, 1.0f, 1.0f, 1.0f, 1.0f);
     int tab_height = static_cast<int>(kScalingFactor *
-                                      gdk_pixbuf_get_height(pixbuf) -
+                                      renderer_->height() -
                                       kDragFrameBorderSize);
     cairo_rectangle(cairo_context,
                     0, tab_height,
@@ -279,27 +279,22 @@ void DraggedTabGtk::SetContainerShapeMask(GdkPixbuf* pixbuf) {
   g_object_unref(pixmap);
 }
 
-GdkPixbuf* DraggedTabGtk::PaintTab() {
-  SkBitmap bitmap = renderer_->PaintBitmap();
-  return gfx::GdkPixbufFromSkBitmap(&bitmap);
-}
-
 // static
 gboolean DraggedTabGtk::OnExposeEvent(GtkWidget* widget,
                                       GdkEventExpose* event,
                                       DraggedTabGtk* dragged_tab) {
-  GdkPixbuf* pixbuf = dragged_tab->PaintTab();
+  cairo_surface_t* surface = dragged_tab->renderer_->PaintToSurface();
   if (gtk_util::IsScreenComposited()) {
     dragged_tab->SetContainerTransparency();
   } else {
-    dragged_tab->SetContainerShapeMask(pixbuf);
+    dragged_tab->SetContainerShapeMask(surface);
   }
 
   // Only used when not attached.
-  int tab_height = static_cast<int>(kScalingFactor *
-                                    gdk_pixbuf_get_height(pixbuf));
   int tab_width = static_cast<int>(kScalingFactor *
-                                   gdk_pixbuf_get_width(pixbuf));
+      dragged_tab->renderer_->width());
+  int tab_height = static_cast<int>(kScalingFactor *
+      dragged_tab->renderer_->height());
 
   // Draw the render area.
   if (dragged_tab->backing_store_ && !dragged_tab->attached_) {
@@ -341,12 +336,12 @@ gboolean DraggedTabGtk::OnExposeEvent(GtkWidget* widget,
   // Draw the tab.
   if (!dragged_tab->attached_)
     cairo_scale(cr, kScalingFactor, kScalingFactor);
-  gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+  cairo_set_source_surface(cr, surface, 0, 0);
   cairo_paint(cr);
 
   cairo_destroy(cr);
 
-  g_object_unref(pixbuf);
+  cairo_surface_destroy(surface);
 
   // We've already drawn the tab, so don't propagate the expose-event signal.
   return TRUE;

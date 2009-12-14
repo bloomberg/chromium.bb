@@ -128,6 +128,10 @@ class TabRendererGtk : public AnimationDelegate {
   // Paints the tab into a SkBitmap.
   virtual SkBitmap PaintBitmap();
 
+  // Paints the tab, and keeps the result server-side. The returned surface must
+  // be freed with cairo_surface_destroy().
+  virtual cairo_surface_t* PaintToSurface();
+
   // There is no PaintNow available, so the fastest we can do is schedule a
   // paint with the windowing system.
   virtual void SchedulePaint();
