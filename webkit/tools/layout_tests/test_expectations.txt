@@ -2487,7 +2487,6 @@ BUG9798 SLOW LINUX RELEASE : LayoutTests/transitions/transition-timing-function.
 BUG9798 MAC WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS TIMEOUT
 BUG9798 SLOW LINUX RELEASE : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/web-apps/003.html = PASS TIMEOUT
-BUG9798 LINUX DEBUG : LayoutTests/http/tests/multipart/invalid-image-data.html = PASS IMAGE
 BUG9798 LINUX DEBUG : LayoutTests/fast/forms/listbox-scroll-after-options-removed.html = CRASH PASS
 BUG9798 LINUX DEBUG : LayoutTests/fast/multicol/float-multicol.html = IMAGE PASS
 BUG9798 LINUX WIN DEBUG : LayoutTests/svg/custom/js-update-transform-addition.svg = CRASH PASS
@@ -2497,6 +2496,10 @@ BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-changes.svg = FAIL
 // Occasionally times out. Not just slow.
 BUG9798 WIN DEBUG : LayoutTests/http/tests/loading/redirect-methods.html = TIMEOUT PASS
 BUG9798 MAC DEBUG : LayoutTests/plugins/geturl-replace-query.html = TEXT PASS
+
+// This test got considerably more flaky when we switched from lighttpd to
+// apache on the linux bots.
+BUG9798 LINUX DEBUG : LayoutTests/http/tests/multipart/invalid-image-data.html = PASS IMAGE
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.

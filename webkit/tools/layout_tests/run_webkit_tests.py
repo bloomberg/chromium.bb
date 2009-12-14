@@ -153,9 +153,11 @@ class TestRunner:
     self._shardable_directories = ['chrome', 'LayoutTests', 'pending', 'fast',
         'svg']
 
-    # The http tests are very stable on the mac. Experiment with sharding
-    # the http directories to see if it considerably increases flakiness.
-    if sys.platform == 'darwin':
+    # The http tests are very stable on mac/linux.
+    # TODO(ojan): Make the http server on Windows be apache so we can turn
+    # shard the http tests there as well. Switching to apache is what made them
+    # stable on linux/mac.
+    if sys.platform in ('darwin', 'linux2'):
       self._shardable_directories.extend(['http', 'tests'])
 
     self._websocket_server = websocket_server.PyWebSocket(
