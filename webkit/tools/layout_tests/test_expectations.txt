@@ -3011,9 +3011,8 @@ BUG29018 : LayoutTests/plugins/reloadplugins-and-pages.html = TIMEOUT
 // BUG28605 LINUX : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE
 // BUG28605 MAC : LayoutTests/svg/filters/big-sized-filter-2.svg = MISSING
 // BUG28605 WIN LINUX : LayoutTests/svg/filters/filterRes.svg = IMAGE
-BUG29737 LINUX MAC : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/big-sized-filter-2.svg = IMAGE+TEXT
-BUG29737 LINUX MAC : LayoutTests/svg/filters/filterRes.svg = IMAGE+TEXT
+BUG29737 MAC : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE+TEXT
+BUG29737 MAC : LayoutTests/svg/filters/filterRes.svg = IMAGE+TEXT
 
 // New tests. Failures from merge 51210:51325.
 BUG28646 : LayoutTests/editing/selection/transformed-selection-rects.html = FAIL
@@ -3152,8 +3151,6 @@ BUG29748 LINUX : LayoutTests/tables/mozilla_expected_failures/other/test4.html =
 BUG29748 LINUX : LayoutTests/fast/forms/input-align-image.html = IMAGE+TEXT
 
 // More Webkit Roll to r51875
-BUG29737 LINUX : LayoutTests/fast/repaint/block-selection-gap-in-composited-layer.html = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/fast/repaint/block-selection-gap-in-table-cell.html = IMAGE+TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/feGaussianBlur.svg = IMAGE+TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/feMerge.svg = IMAGE+TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/feOffset.svg = IMAGE+TEXT
@@ -3161,46 +3158,14 @@ BUG29737 LINUX : LayoutTests/svg/filters/shadow-on-filter.svg = IMAGE+TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/subRegion-in-userSpace.svg = IMAGE+TEXT
 BUG29737 LINUX : LayoutTests/svg/custom/js-svg-constructors.svg = TEXT
 BUG29737 LINUX : LayoutTests/svg/custom/svg-features.html = TEXT
-BUG29737 LINUX : LayoutTests/svg/dom/operatorAttribute.html = TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/feMerge-wrong-input.svg = TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-blend-01-b.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-color-01-b.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-composite-02-b.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-comptran-01-b.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-conv-01-f.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-displace-01-f.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-felem-01-b.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-gauss-01-b.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-image-01-b.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-light-01-f.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-morph-01-f.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-offset-01-b.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-specular-01-f.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-tile-01-b.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-turb-01-f.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-cond-03-t.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/batik/filters/feTile.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/batik/filters/filterRegions.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/batik/text/textFeatures.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/empty-merge.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/feComponentTransfer-Discrete.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/feComponentTransfer-Gamma.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/feComponentTransfer-Linear.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/feComponentTransfer-Table.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/feDisplacementMap-01.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/image-with-transform-clip-filter.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/non-opaque-filters.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/text-filter.svg = IMAGE+TEXT
 BUG29737 LINUX : LayoutTests/svg/custom/visibility-override-filter.svg = IMAGE+TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/feTile.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/sourceAlpha.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/subRegion-one-effect.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/subRegion-two-effects.svg = IMAGE+TEXT
 BUG29737 LINUX : LayoutTests/svg/custom/invalid-css.svg = TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = IMAGE+TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/feComposite.svg = TIMEOUT CRASH
+BUG29737 LINUX : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE+TEXT
+BUG29737 LINUX : LayoutTests/svg/filters/big-sized-filter-2.svg = IMAGE+TEXT
 
 // More Webkit Roll to r51875
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-blend-01-b.svg = IMAGE+TEXT
@@ -3258,9 +3223,9 @@ BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = IMAGE
 BUG29737 MAC : LayoutTests/svg/filters/sourceAlpha.svg = IMAGE+TEXT
 
 // More Webkit Roll to r51875
-BUG29737 WIN : LayoutTests/fast/repaint/block-selection-gap-in-composited-layer.html = IMAGE+TEXT
-BUG29737 WIN : LayoutTests/fast/repaint/block-selection-gap-in-table-cell.html = IMAGE+TEXT
-BUG29737 WIN : LayoutTests/svg/dom/operatorAttribute.html = TEXT
+BUG29737 WIN LINUX : LayoutTests/fast/repaint/block-selection-gap-in-composited-layer.html = IMAGE+TEXT
+BUG29737 WIN LINUX : LayoutTests/fast/repaint/block-selection-gap-in-table-cell.html = IMAGE+TEXT
+BUG29737 WIN LINUX : LayoutTests/svg/dom/operatorAttribute.html = TEXT
 BUG29737 WIN : LayoutTests/svg/filters/feComposite.svg = TIMEOUT CRASH
 
 // Don't think this is related to SVG filters, but crashing anyway:
