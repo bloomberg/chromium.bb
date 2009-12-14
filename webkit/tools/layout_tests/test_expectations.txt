@@ -3303,7 +3303,7 @@ BUG29737 WIN : LayoutTests/svg/filters/sourceAlpha.svg = IMAGE+TEXT
 BUG29737 WIN : LayoutTests/svg/filters/subRegion-one-effect.svg = IMAGE+TEXT
 BUG29737 WIN : LayoutTests/svg/filters/subRegion-two-effects.svg = IMAGE+TEXT
 BUG29737 WIN : LayoutTests/svg/custom/invalid-css.svg = TEXT
-BUG29737 WIN : LayoutTests/svg/filters/feComposite.svg = TIMEOUT
+BUG29737 WIN : LayoutTests/svg/filters/feComposite.svg = TIMEOUT CRASH
 
 // Don't think this is related to SVG filters, but crashing anyway:
 BUG_SENORBLANCO WIN : LayoutTests/platform/mac/editing/pasteboard/text-precomposed.html = CRASH TEXT
