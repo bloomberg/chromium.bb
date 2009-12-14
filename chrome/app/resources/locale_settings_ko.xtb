@@ -84,7 +84,7 @@
 <translation id="IDS_SELECT_PROFILE_DIALOG_HEIGHT_LINES">5</translation>
 <translation id="IDS_NEW_PROFILE_DIALOG_WIDTH_CHARS">60</translation>
 <translation id="IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS">46</translation>
-<translation id="IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES">15</translation>
+<translation id="IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES">17</translation>
 <translation id="IDS_CONFIRM_MESSAGE_BOX_DEFAULT_WIDTH_CHARS">50</translation>
 <translation id="IDS_CONFIRM_MESSAGE_BOX_DEFAULT_HEIGHT_LINES">5</translation>
 <translation id="IDS_CONFIRM_STOP_SYNCING_DIALOG_WIDTH_CHARS">60</translation>
