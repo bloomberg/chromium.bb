@@ -37,7 +37,7 @@ namespace browser {
 bool EmitLoginPromptReady() {
   base::ProcessHandle handle;
   std::vector<std::string> argv;
-  argv.push_back("/opt/google/chrome/emit-login-prompt-ready");
+  argv.push_back("/opt/google/chrome/emit_login_prompt_ready");
   base::environment_vector no_env;
   base::file_handle_mapping_vector no_files;
   return base::LaunchApp(argv, no_env, no_files, false, &handle);
