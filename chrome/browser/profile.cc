@@ -150,6 +150,7 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
 #if defined(OS_LINUX)
   prefs->RegisterBooleanPref(prefs::kUsesSystemTheme, false);
 #endif
+  prefs->RegisterFilePathPref(prefs::kCurrentThemePackFilename, FilePath());
   prefs->RegisterStringPref(prefs::kCurrentThemeID,
                             UTF8ToWide(BrowserThemeProvider::kDefaultThemeID));
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeImages);

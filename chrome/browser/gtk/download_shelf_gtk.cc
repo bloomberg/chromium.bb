@@ -201,7 +201,8 @@ void DownloadShelfGtk::Observe(NotificationType type,
     // bad for some dark themes.
     bool use_default_color = theme_provider_->GetColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT) ==
-        BrowserThemeProvider::kDefaultColorBookmarkText;
+        BrowserThemeProvider::GetDefaultColor(
+            BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
     GdkColor bookmark_color = theme_provider_->GetGdkColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
     gtk_chrome_link_button_set_normal_color(

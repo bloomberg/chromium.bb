@@ -50,39 +50,8 @@
          }
       },
       "theme": {
-         "colors": {
-            "bookmark_text": [ 0, 0, 0 ],
-            "frame": [ 57, 137, 194 ],
-            "ntp_background": [ 57, 137, 194 ],
-            "ntp_link": [ 0, 0, 0 ],
-            "ntp_section": [ 131, 138, 146, 0.8 ],
-            "ntp_section_link": [ 255, 255, 255 ],
-            "ntp_section_text": [ 255, 255, 255 ],
-            "ntp_text": [ 0, 0, 0 ],
-            "tab_background_text": [ 0, 0, 0 ],
-            "tab_text": [ 0, 0, 0 ],
-            "toolbar": [ 204, 208, 212 ]
-         },
          "id": "mblmlcbknbnfebdfjnolmcapmdofhmme",
-         "images": {
-            "theme_button_background": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/agxjaHJvbWV0aGVtZXNyDAsSBEZpbGUYwsgCDA",
-            "theme_frame": "$1/Default/Cached Theme Images/theme_frame_original",
-            "theme_frame_inactive": "$1/Default/Cached Theme Images/theme_frame_inactive",
-            "theme_frame_incognito": "$1/Default/Cached Theme Images/theme_frame_incognito",
-            "theme_frame_incognito_inactive": "$1/Default/Cached Theme Images/theme_frame_incognito_inactive",
-            "theme_ntp_background": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/agxjaHJvbWV0aGVtZXNyDAsSBEZpbGUYj9gCDA",
-            "theme_tab_background": "$1/Default/Cached Theme Images/theme_tab_background_original",
-            "theme_tab_background_incognito": "$1/Default/Cached Theme Images/theme_tab_background_incognito",
-            "theme_toolbar": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/agxjaHJvbWV0aGVtZXNyDAsSBEZpbGUYnMgCDA",
-            "theme_window_control_background": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/agxjaHJvbWV0aGVtZXNyDAsSBEZpbGUYjNgCDA"
-         },
-         "properties": {
-            "ntp_background_alignment": "top",
-            "ntp_background_repeat": "no-repeat"
-         },
-         "tints": {
-            "buttons": [ 0.6, 0.553, 0.5 ]
-         }
+         "pack": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/Cached Theme.pak"
       }
    },
    "profile": {

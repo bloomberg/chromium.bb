@@ -114,10 +114,12 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
   BOOL useDefaultColor = YES;
   if (bridge_.get() && bridge_->browser() && bridge_->browser()->profile()) {
     ThemeProvider* provider = bridge_->browser()->profile()->GetThemeProvider();
-    if (provider)
+    if (provider) {
       useDefaultColor = provider->GetColor(
           BrowserThemeProvider::COLOR_BOOKMARK_TEXT) ==
-          BrowserThemeProvider::kDefaultColorBookmarkText;
+          BrowserThemeProvider::GetDefaultColor(
+              BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+    }
   }
 
   NSColor* color = useDefaultColor ?
