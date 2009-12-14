@@ -3350,3 +3350,6 @@ LayoutTests/fast/events/basic-touch-events.html = TEXT
 BUG30185 : LayoutTests/websocket/tests/handshake-error.html = TEXT PASS
 BUG30185 : LayoutTests/websocket/tests/handshake-fail-by-cross-origin.html = TEXT PASS
 BUG30185 : LayoutTests/websocket/tests/handshake-fail-by-sub-protocol-mismatch.html = TEXT PASS
+
+// evan's fix rolled out in http://trac.webkit.org/changeset/52071 due to compat issues.
+BUG30343 LINUX : LayoutTests/fast/css/large-number-round-trip.html = TEXT
