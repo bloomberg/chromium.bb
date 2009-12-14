@@ -920,6 +920,7 @@ int ResourceDispatcherHost::GetOutstandingRequestsMemoryCost(
 // for downloads, which belong to the browser process even if initiated via a
 // renderer.
 void ResourceDispatcherHost::CancelRequestsForProcess(int child_id) {
+  socket_stream_dispatcher_host_->CancelRequestsForProcess(child_id);
   CancelRequestsForRoute(child_id, -1 /* cancel all */);
 }
 

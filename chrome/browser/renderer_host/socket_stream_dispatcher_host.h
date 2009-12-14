@@ -26,6 +26,8 @@ class SocketStreamDispatcherHost : public net::SocketStream::Delegate {
   bool OnMessageReceived(const IPC::Message& msg,
                          ResourceDispatcherHost::Receiver* receiver,
                          bool* msg_ok);
+  // The object died, so cancel and detach all requests associated with it.
+  void CancelRequestsForProcess(int host_id);
 
   // SocketStream::Delegate methods.
   virtual void OnConnected(net::SocketStream* socket,

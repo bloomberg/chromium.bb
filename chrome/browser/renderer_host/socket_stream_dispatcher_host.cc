@@ -21,18 +21,7 @@ SocketStreamDispatcherHost::~SocketStreamDispatcherHost() {
        !iter.IsAtEnd();
        iter.Advance()) {
     int host_id = iter.GetCurrentKey();
-    IDMap<SocketStreamHost>* hosts =
-        const_cast<IDMap<SocketStreamHost> *>(iter.GetCurrentValue());
-    for (IDMap<SocketStreamHost>::const_iterator hosts_iter(hosts);
-         !hosts_iter.IsAtEnd();
-         hosts_iter.Advance()) {
-      int socket_id = iter.GetCurrentKey();
-      const SocketStreamHost* socket_stream_host = hosts_iter.GetCurrentValue();
-      delete socket_stream_host;
-      hosts->Remove(socket_id);
-    }
-    hostmap_.Remove(host_id);
-    delete hosts;
+    CancelRequestsForProcess(host_id);
   }
 }
 
@@ -54,6 +43,22 @@ bool SocketStreamDispatcherHost::OnMessageReceived(
   IPC_END_MESSAGE_MAP_EX()
   receiver_ = NULL;
   return handled;
+}
+
+void SocketStreamDispatcherHost::CancelRequestsForProcess(int host_id) {
+  IDMap<SocketStreamHost>* hosts = hostmap_.Lookup(host_id);
+  if (hosts == NULL)
+    return;
+  for (IDMap<SocketStreamHost>::const_iterator hosts_iter(hosts);
+       !hosts_iter.IsAtEnd();
+       hosts_iter.Advance()) {
+    const SocketStreamHost* socket_stream_host = hosts_iter.GetCurrentValue();
+    delete socket_stream_host;
+    int socket_id = hosts_iter.GetCurrentKey();
+    hosts->Remove(socket_id);
+  }
+  hostmap_.Remove(host_id);
+  delete hosts;
 }
 
 // SocketStream::Delegate methods implementations.
