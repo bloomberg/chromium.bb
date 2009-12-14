@@ -17,8 +17,10 @@
  */
 function setupExpectationsTest() {
   allExpectations = null;
+  allTests = null;
   expectationsByTest = {};
   resultsByBuilder = {};
+  builders = {};
 }
 
 /**
@@ -27,84 +29,85 @@ function setupExpectationsTest() {
  *
  * @param {string} builder Builder the test is run on.
  * @param {string} test The test name.
- * @param {Array} expectationsArray Array of test expectations. This should be
- *    in the same format as in expectations.json as output by
- *    run_webkit_tests.py and on the buildbots.
- * @param {Object} results Object listing the results for this test on the bot.
- *    This should be in the same format as in expectations.json as output by
- *    run_webkit_tests.py and on the buildbots.
  * @param {string} expectations Sorted string of what the expectations for this
  *    test ought to be for this builder.
  * @param {string} modifiers Sorted string of what the modifiers for this
  *    test ought to be for this builder.
  */
-function runExpectationsTest(builder, test, expectationsArray, results,
-    expectations, modifiers) {
-  // Setup global dashboard state.
-  builders = {};
+function runExpectationsTest(builder, test, expectations, modifiers) {
   builders[builder] = true;
-  expectationsByTest[test] = expectationsArray;
-  resultsByBuilder[builder] = results;
+
+  // Put in some dummy results. processExpectations expects the test to be
+  // there.
+  var tests = {};
+  tests[test] = {'results': [[100, 'F']], 'times': [[100, 0]]};
+  resultsByBuilder[builder] = {'tests': tests};
 
   processExpectations();
   var resultsForTest = createResultsObjectForTest(test, builder);
   populateExpectationsData(resultsForTest);
 
-  assertEquals(resultsForTest.expectations, expectations);
-  assertEquals(resultsForTest.modifiers, modifiers);
+  assertEquals(resultsForTest, resultsForTest.expectations, expectations);
+  assertEquals(resultsForTest, resultsForTest.modifiers, modifiers);
 }
 
-function assertEquals(actual, expected) {
+function assertEquals(resultsForTest, actual, expected) {
   if (expected !== actual) {
-    throw Error('Got: ' + actual + ' expected: ' + expected);
+    throw Error('Builder: ' + resultsForTest.builder + ' test: ' +
+        resultsForTest.test + ' got: ' + actual + ' expected: ' + expected);
   }
+}
+
+function throwError(resultsForTests, actual, expected) {
 }
 
 function testReleaseFail() {
   var builder = 'Webkit';
   var test = 'foo/1.html';
-  var expectatiosnArray = [
+  var expectationsArray = [
     {'modifiers': 'RELEASE', 'expectations': 'FAIL'}
   ];
-  var results = {'tests': {
-    'foo/1.html': {
-      'results': [[100, 'F']],
-      'times': [[100, 0]]
-  }}};
-  runExpectationsTest(builder, test, expectatiosnArray, results, 'FAIL',
-      'RELEASE');
+  expectationsByTest[test] = expectationsArray;
+  runExpectationsTest(builder, test, 'FAIL', 'RELEASE');
 }
 
 function testReleaseFailDebugCrashReleaseBuilder() {
   var builder = 'Webkit';
   var test = 'foo/1.html';
-  var expectatiosnArray = [
+  var expectationsArray = [
     {'modifiers': 'RELEASE', 'expectations': 'FAIL'},
     {'modifiers': 'DEBUG', 'expectations': 'CRASH'}
   ];
-  var results = {'tests': {
-    'foo/1.html': {
-      'results': [[100, 'F']],
-      'times': [[100, 0]]
-  }}};
-  runExpectationsTest(builder, test, expectatiosnArray, results, 'FAIL',
-      'RELEASE');
+  expectationsByTest[test] = expectationsArray;
+  runExpectationsTest(builder, test, 'FAIL', 'RELEASE');
 }
 
 function testReleaseFailDebugCrashDebugBuilder() {
   var builder = 'Webkit(dbg)';
   var test = 'foo/1.html';
-  var expectatiosnArray = [
+  var expectationsArray = [
     {'modifiers': 'RELEASE', 'expectations': 'FAIL'},
     {'modifiers': 'DEBUG', 'expectations': 'CRASH'}
   ];
-  var results = {'tests': {
-    'foo/1.html': {
-      'results': [[100, 'F']],
-      'times': [[100, 0]]
-  }}};
-  runExpectationsTest(builder, test, expectatiosnArray, results,  'CRASH',
-      'DEBUG');
+  expectationsByTest[test] = expectationsArray;
+  runExpectationsTest(builder, test, 'CRASH', 'DEBUG');
+}
+
+function testOverrideJustBuildType() {
+  var test = 'bar/1.html';
+  expectationsByTest['bar'] = [
+    {'modifiers': 'WONTFIX', 'expectations': 'FAIL PASS TIMEOUT'}
+  ];
+  expectationsByTest[test] = [
+    {'modifiers': 'WONTFIX MAC', 'expectations': 'FAIL'},
+    {'modifiers': 'LINUX DEBUG', 'expectations': 'CRASH'},
+  ];
+  runExpectationsTest('Webkit', test, 'FAIL PASS TIMEOUT', 'WONTFIX');
+  runExpectationsTest('Webkit (dbg)(3)', test, 'FAIL PASS TIMEOUT', 'WONTFIX');
+  runExpectationsTest('Webkit Linux', test, 'FAIL PASS TIMEOUT', 'WONTFIX');
+  runExpectationsTest('Webkit Linux (dbg)(3)', test, 'CRASH', 'LINUX DEBUG');
+  runExpectationsTest('Webkit Mac10.5', test, 'FAIL', 'WONTFIX MAC');
+  runExpectationsTest('Webkit Mac10.5 (dbg)(3)', test, 'FAIL', 'WONTFIX MAC');
 }
 
 function runTests() {

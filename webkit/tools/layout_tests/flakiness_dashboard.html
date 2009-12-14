@@ -292,13 +292,6 @@
     if (currentState.useTestData)
       return;
 
-    if (!currentState.tests && !('builder' in currentState)) {
-      for (var builder in builders) {
-        currentState.builder = builder;
-        break;
-      }
-    }
-
     document.body.innerHTML = '<div id="loading-ui">LOADING...</div>';
 
     if (currentState.tests) {
@@ -399,7 +392,8 @@
     showSlow: false,
     showSkipped: false,
     expectationsUpdate: false,
-    updateIndex: 0
+    updateIndex: 0,
+    builder: 'Webkit'
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -705,10 +699,17 @@
       if (platformObject[buildType])
         return platformObject[buildType]
 
-      if (testObject[ALL] && testObject[ALL][buildType])
-        return testObject[ALL][buildType]
+      if (platformObject[ALL])
+        return platformObject[ALL];
 
-      return platformObject[ALL];
+      if (testObject[ALL]) {
+        var allPlatformObject = testObject[ALL];
+        if (allPlatformObject[buildType])
+          return allPlatformObject[buildType]
+
+        if (allPlatformObject[ALL])
+          return allPlatformObject[ALL]
+      }
     }
     return null;
   }
@@ -1528,7 +1529,9 @@
    */
   function showUpdateInfoForTest(testsNeedingUpdate, keys) {
     var test = keys[currentState.updateIndex];
-    document.body.innerHTML = '<b>' + test + '</b><br><br>';
+    document.body.innerHTML = '<b>' + test + '</b>' +
+        '<div style="float:right">' + (currentState.updateIndex + 1) + ' of ' +
+        + keys.length + ' tests</div><br><br>';
 
     var buttonRegion = document.createElement('div');
     var includeBtn = document.createElement('input');
@@ -1558,6 +1561,7 @@
     var confirmStr = JSON.stringify(testsNeedingUpdate[test], null, 4);
 
     var pre = document.createElement('pre');
+    pre.style.marginTop = 0;
     pre.innerHTML = confirmStr;
     document.body.appendChild(pre);
     var div = document.createElement('div');
@@ -1610,7 +1614,7 @@
       var tracURL = TEST_URL_BASE_PATH + test
       html += getLinkHTMLToOpenWindow(tracURL, tracURL) +
           '<div><b>If a builder is not listed, that means the builder does ' +
-          'run that test or all runs of the test passed.</b></div>';
+          'not run that test or all runs of the test passed.</b></div>';
 
       for (var j = 0; j < testResults.length; j++) {
         html += getHTMLForSingleTestRow(testResults[j], true);
