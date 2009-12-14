@@ -15,23 +15,27 @@
   }
 
   function executeMailto(tab_id, subject, body, selection) {
+    var default_handler = customMailtoUrl().length == 0;
+
     var action_url = "mailto:?"
     if (subject.length > 0)
-      action_url += "subject=" + subject + "%26";  // 26 is ampersand.
+      action_url += "subject=" + encodeURIComponent(subject) + "&";
+
     if (body.length > 0) {
-      action_url += "body=" + body;
+      action_url += "body=" + encodeURIComponent(body);
 
       // Append the current selection to the end of the text message.
-      var new_line = "%0D%0A";
-      if (selection.length > 0)
-        action_url += new_line + new_line + selection;
+      if (selection.length > 0) {
+        action_url += encodeURIComponent("\n\n") +
+                      encodeURIComponent(selection);
+      }
     }
 
-    var custom_url = customMailtoUrl();
-    if (custom_url.length > 0) {
+    if (!default_handler) {
       // Custom URL's (such as opening mailto in Gmail tab) should have a
       // separate tab to avoid clobbering the page you are on.
-      action_url = custom_url.replace("%s", action_url);
+      var custom_url = customMailtoUrl();
+      action_url = custom_url.replace("%s", encodeURIComponent(action_url));
       console.log('Custom url: ' + action_url);
       chrome.tabs.create({ url: action_url });
     } else {
@@ -51,8 +55,7 @@
       var max_length = 1024;
       if (info.selection.length > max_length)
         info.selection = info.selection.substring(0, max_length);
-      executeMailto(tab.id, encodeURI(info.title),
-                    encodeURI(tab.url), encodeURI(info.selection));
+      executeMailto(tab.id, info.title, tab.url, info.selection);
     });
   });
 
@@ -62,7 +65,7 @@
     // and https so for all other pages, we don't ask for the title.
     if (tab.url.indexOf("http:") != 0 &&
         tab.url.indexOf("https:") != 0) {
-      executeMailto(tab.id, "", encodeURI(tab.url), "");
+      executeMailto(tab.id, "", tab.url, "");
     } else {
       chrome.tabs.executeScript(null, {file: "content_script.js"});
     }

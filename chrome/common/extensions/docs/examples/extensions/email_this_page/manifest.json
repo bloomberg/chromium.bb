@@ -1,7 +1,7 @@
 {
-  "name": "Email this page",
-  "description": "This extension adds an email button to the toolbar which allows you to email the page link using your default mail client or Gmail",
-  "version": "1.2.2",
+  "name": "Email this page (by Google)",
+  "description": "This extension adds an email button to the toolbar which allows you to email the page link using your default mail client or Gmail.",
+  "version": "1.2.5",
   "background_page": "background.html",
   "icons": { "128": "mail_128x128.png" },
   "options_page": "options.html",
