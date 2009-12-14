@@ -15,18 +15,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+namespace mac_util {
+
+namespace {
+
 typedef PlatformTest MacUtilTest;
 
 TEST_F(MacUtilTest, TestFSRef) {
   FSRef ref;
   std::string path("/System/Library");
 
-  ASSERT_TRUE(mac_util::FSRefFromPath(path, &ref));
-  EXPECT_EQ(path, mac_util::PathFromFSRef(ref));
+  ASSERT_TRUE(FSRefFromPath(path, &ref));
+  EXPECT_EQ(path, PathFromFSRef(ref));
 }
 
 TEST_F(MacUtilTest, TestLibraryPath) {
-  FilePath library_dir = mac_util::GetUserLibraryPath();
+  FilePath library_dir = GetUserLibraryPath();
   // Make sure the string isn't empty.
   EXPECT_FALSE(library_dir.value().empty());
 }
@@ -45,7 +49,7 @@ TEST_F(MacUtilTest, TestGrabWindowSnapshot) {
 
   scoped_ptr<std::vector<unsigned char> > png_representation(
       new std::vector<unsigned char>);
-  mac_util::GrabWindowSnapshot(window, png_representation.get());
+  GrabWindowSnapshot(window, png_representation.get());
 
   // Copy png back into NSData object so we can make sure we grabbed a png.
   scoped_nsobject<NSData> image_data(
@@ -64,7 +68,7 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
   FilePath out;
 
   // Make sure it doesn't crash.
-  out = mac_util::GetAppBundlePath(FilePath());
+  out = GetAppBundlePath(FilePath());
   EXPECT_TRUE(out.empty());
 
   // Some more invalid inputs.
@@ -73,7 +77,7 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
     "foo/bar./bazquux", "foo/.app", "//foo",
   };
   for (size_t i = 0; i < arraysize(invalid_inputs); i++) {
-    out = mac_util::GetAppBundlePath(FilePath(invalid_inputs[i]));
+    out = GetAppBundlePath(FilePath(invalid_inputs[i]));
     EXPECT_TRUE(out.empty()) << "loop: " << i;
   }
 
@@ -97,7 +101,7 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
         "/Applications/Google Foo.app" },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(valid_inputs); i++) {
-    out = mac_util::GetAppBundlePath(FilePath(valid_inputs[i].in));
+    out = GetAppBundlePath(FilePath(valid_inputs[i].in));
     EXPECT_FALSE(out.empty()) << "loop: " << i;
     EXPECT_STREQ(valid_inputs[i].expected_out,
         out.value().c_str()) << "loop: " << i;
@@ -115,15 +119,15 @@ TEST_F(MacUtilTest, TestExcludeFileFromBackups) {
   // set its exclusion property.
   NSURL* fileURL = [NSURL URLWithString:dummyFilePath];
   // Reset the exclusion in case it was set previously.
-  mac_util::SetFileBackupExclusion(file_path, false);
+  SetFileBackupExclusion(file_path, false);
   Boolean excludeByPath;
   // Initial state should be non-excluded.
   EXPECT_FALSE(CSBackupIsItemExcluded((CFURLRef)fileURL, &excludeByPath));
   // Exclude the file.
-  EXPECT_TRUE(mac_util::SetFileBackupExclusion(file_path, true));
+  EXPECT_TRUE(SetFileBackupExclusion(file_path, true));
   EXPECT_TRUE(CSBackupIsItemExcluded((CFURLRef)fileURL, &excludeByPath));
   // Un-exclude the file.
-  EXPECT_TRUE(mac_util::SetFileBackupExclusion(file_path, false));
+  EXPECT_TRUE(SetFileBackupExclusion(file_path, false));
   EXPECT_FALSE(CSBackupIsItemExcluded((CFURLRef)fileURL, &excludeByPath));
 }
 
@@ -135,10 +139,13 @@ TEST_F(MacUtilTest, TestGetValueFromDictionary) {
   CFDictionarySetValue(dict.get(), CFSTR("key"), CFSTR("value"));
 
   EXPECT_TRUE(CFEqual(CFSTR("value"),
-                      mac_util::GetValueFromDictionary(
+                      GetValueFromDictionary(
                           dict, CFSTR("key"), CFStringGetTypeID())));
-  EXPECT_FALSE(mac_util::GetValueFromDictionary(
-                   dict, CFSTR("key"), CFNumberGetTypeID()));
-  EXPECT_FALSE(mac_util::GetValueFromDictionary(
+  EXPECT_FALSE(GetValueFromDictionary(dict, CFSTR("key"), CFNumberGetTypeID()));
+  EXPECT_FALSE(GetValueFromDictionary(
                    dict, CFSTR("no-exist"), CFStringGetTypeID()));
 }
+
+}  // namespace
+
+}  // namespace mac_util
