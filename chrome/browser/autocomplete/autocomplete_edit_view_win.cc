@@ -1320,8 +1320,9 @@ void AutocompleteEditViewWin::OnKeyUp(TCHAR key,
   // To work around this, if the user hits ctrl+shift, we pass it to
   // DefWindowProc() while the edit is empty, which toggles the default reading
   // order; then we restore the user's input.
-  if (((key == VK_CONTROL) && (GetKeyState(VK_SHIFT) < 0)) ||
-      ((key == VK_SHIFT) && (GetKeyState(VK_CONTROL) < 0))) {
+  if ((GetKeyState(VK_MENU) == 0) &&
+      (((key == VK_CONTROL) && (GetKeyState(VK_SHIFT) < 0)) ||
+       ((key == VK_SHIFT) && (GetKeyState(VK_CONTROL) < 0)))) {
     ScopedFreeze freeze(this, GetTextObjectModel());
 
     std::wstring saved_text(GetText());
