@@ -65,7 +65,7 @@
 // decoration area.  This allows the user to click-drag starting from
 // a decoration area and get the expected selection behaviour,
 // likewise for multiple clicks in those areas.
-- (void)mouseDown:(NSEvent *)theEvent {
+- (void)mouseDown:(NSEvent*)theEvent {
   const NSPoint locationInWindow = [theEvent locationInWindow];
   const NSPoint location = [self convertPoint:locationInWindow fromView:nil];
 
@@ -108,12 +108,24 @@
     return;
   }
 
-  // Check to see if the user clicked the security hint icon in the cell. If so,
-  // we need to display the page info window.
+  // If the user clicked the security hint icon in the cell, display the page
+  // info window.
   const NSRect hintIconFrame = [cell securityImageFrameForFrame:[self bounds]];
   if (NSMouseInRect(location, hintIconFrame, [self isFlipped])) {
     [cell onSecurityIconMousePressed];
     return;
+  }
+
+  // If the user clicked a Page Action icon, execute its action.
+  const NSRect iconFrame([self bounds]);
+  const size_t pageActionCount = [cell pageActionCount];
+  for (size_t i = 0; i < pageActionCount; ++i) {
+    NSRect pageActionFrame = [cell pageActionFrameForIndex:i inFrame:iconFrame];
+    if (NSMouseInRect(location, pageActionFrame, [self isFlipped])) {
+      // TODO(pamg): Do we need to send the event?
+      [cell onPageActionMousePressedIn:pageActionFrame forIndex:i];
+      return;
+    }
   }
 
   NSText* editor = [self currentEditor];

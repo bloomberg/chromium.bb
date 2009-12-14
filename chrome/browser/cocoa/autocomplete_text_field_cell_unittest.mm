@@ -21,7 +21,8 @@ const CGFloat kNarrowWidth(5.0);
 
 class AutocompleteTextFieldCellTest : public CocoaTest {
  public:
-  AutocompleteTextFieldCellTest() : security_image_view_(NULL, NULL) {
+  AutocompleteTextFieldCellTest() : security_image_view_(NULL, NULL),
+                                    page_action_views_(NULL, NULL, NULL) {
     // Make sure this is wide enough to play games with the cell
     // decorations.
     const NSRect frame = NSMakeRect(0, 0, kWidth, 30);
@@ -35,6 +36,7 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
     [cell setEditable:YES];
     [cell setBordered:YES];
     [cell setSecurityImageView:&security_image_view_];
+    [cell setPageActionViewList:&page_action_views_];
     [view_ setCell:cell.get()];
 
     [[test_window() contentView] addSubview:view_];
@@ -42,6 +44,7 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
 
   NSTextField* view_;
   LocationBarViewMac::SecurityImageView security_image_view_;
+  LocationBarViewMac::PageActionViewList page_action_views_;
 };
 
 // Basic view tests (AddRemove, Display).

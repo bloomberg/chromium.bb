@@ -20,11 +20,10 @@ using ::testing::Return;
 using ::testing::StrictMock;
 
 namespace {
-// Mock a SecurityImageView.
 class MockSecurityImageView : public LocationBarViewMac::SecurityImageView {
  public:
   MockSecurityImageView(Profile* profile, ToolbarModel* model)
-  : LocationBarViewMac::SecurityImageView(profile, model) {}
+      : LocationBarViewMac::SecurityImageView(profile, model) {}
 
   MOCK_METHOD0(OnMousePressed, bool());
 };

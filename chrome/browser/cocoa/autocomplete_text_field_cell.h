@@ -28,6 +28,11 @@
   // Display is exclusive WRT the |hintString_| and |keywordString_|.
   // This may be NULL during testing.
   LocationBarViewMac::SecurityImageView* security_image_view_;
+
+  // List of views showing visible Page Actions. Owned by the location bar.
+  // Display is exclusive WRT the |hintString_| and |keywordString_|.
+  // This may be NULL during testing.
+  LocationBarViewMac::PageActionViewList* page_action_views_;
 }
 
 // Chooses |partialString| if |width| won't fit |fullString|.  Strings
@@ -50,14 +55,27 @@
 - (void)clearKeywordAndHint;
 
 - (void)setSecurityImageView:(LocationBarViewMac::SecurityImageView*)view;
+- (void)setPageActionViewList:(LocationBarViewMac::PageActionViewList*)list;
+
+// Returns the total number of installed Page Actions, visible or not.
+- (size_t)pageActionCount;
 
 // Called when the security icon is visible and clicked. Passed through to the
 // security_image_view_ to handle the click (i.e., show the page info dialog).
 - (void)onSecurityIconMousePressed;
 
-// Return the portion of the cell to use for displaying the security (SSL lock)
+// Returns the portion of the cell to use for displaying the security (SSL lock)
 // icon, leaving space for its label if any.
 - (NSRect)securityImageFrameForFrame:(NSRect)cellFrame;
+
+// Returns the portion of the cell to use for displaying the Page Action icon
+// at the given index. May be NSZeroRect if the index's action is not visible.
+- (NSRect)pageActionFrameForIndex:(size_t)index inFrame:(NSRect)cellFrame;
+
+// Called when the Page Action at the given index, whose icon is drawn in the
+// iconFrame, is visible and clicked. Passed through to the list of views to
+// handle the click.
+- (void)onPageActionMousePressedIn:(NSRect)iconFrame forIndex:(size_t)index;
 
 @end
 

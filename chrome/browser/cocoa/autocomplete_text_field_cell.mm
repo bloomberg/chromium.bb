@@ -194,12 +194,20 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   hintString_.reset();
 }
 
+- (void)setPageActionViewList:(LocationBarViewMac::PageActionViewList*)list {
+  page_action_views_ = list;
+}
+
 - (void)setSecurityImageView:(LocationBarViewMac::SecurityImageView*)view {
   security_image_view_ = view;
 }
 
 - (void)onSecurityIconMousePressed {
   security_image_view_->OnMousePressed();
+}
+
+- (void)onPageActionMousePressedIn:(NSRect)iconFrame forIndex:(size_t)index {
+  page_action_views_->OnMousePressed(iconFrame, index);
 }
 
 // Overriden to account for the hint strings and hint icons.
@@ -226,14 +234,30 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
       textFrame.origin.x += keywordWidth;
       textFrame.size.width = NSMaxX(cellFrame) - NSMinX(textFrame);
     }
-  } else if (security_image_view_ && security_image_view_->IsVisible()) {
-    NSImage* image = security_image_view_->GetImage();
-    CGFloat width = [image size].width;
-    width += kIconHorizontalPad * 2;
-    NSAttributedString* label = security_image_view_->GetLabel();
-    if (label) {
-      width += ceil([label size].width) + kHintXOffset;
+  } else {
+    // Account for the lock icon, if any, and any visible Page Action icons.
+    CGFloat width = 0;
+    const size_t iconCount = [self pageActionCount];
+    for (size_t i = 0; i < iconCount; ++i) {
+      LocationBarViewMac::PageActionImageView* view =
+          page_action_views_->ViewAt(i);
+      NSImage* image = view->GetImage();
+      if (image && view->IsVisible()) {
+        width += [image size].width + kIconHorizontalPad;
+      }
     }
+
+    if (security_image_view_ && security_image_view_->IsVisible()) {
+      width += [security_image_view_->GetImage() size].width +
+          kIconHorizontalPad;
+      NSAttributedString* label = security_image_view_->GetLabel();
+      if (label) {
+        width += ceil([label size].width) + kHintXOffset;
+      }
+    }
+    if (width > 0)
+      width += kIconHorizontalPad;
+
     if (width < NSWidth(cellFrame)) {
       textFrame.size.width -= width;
     }
@@ -242,40 +266,76 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   return textFrame;
 }
 
-- (NSRect)imageFrameForFrame:(NSRect)cellFrame
-      withImageView:(LocationBarViewMac::LocationBarImageView*)image_view {
-  if (!image_view->IsVisible()) {
-    return NSZeroRect;
-  }
-  const NSSize imageRect = [image_view->GetImage() size];
-  CGFloat labelWidth = 0;
-  NSAttributedString* label = image_view->GetLabel();
-  if (label) {
-    labelWidth = ceil([label size].width) + kHintXOffset;
-  }
-
-  // Move the rect that we're drawing into to the far right, minus
-  // enough space for the label (if present).
-  cellFrame.origin.x += cellFrame.size.width - imageRect.width;
-  cellFrame.origin.x -= labelWidth;
-  // Add back the padding
-  cellFrame.origin.x -= kIconHorizontalPad;
-
-  // Center the image vertically in the frame
-  cellFrame.origin.y +=
-      floor((cellFrame.size.height - imageRect.height) / 2);
-
-  // Set the drawing size to the image size
-  cellFrame.size = imageRect;
-
-  return cellFrame;
+// Returns a rect of size |imageSize| centered vertically and right-justified in
+// the |box|, with its top left corner |margin| pixels from the right end of the
+// box. (The image thus occupies part of the |margin|.)
+- (NSRect)rightJustifyImage:(NSSize)imageSize
+                     inRect:(NSRect)box
+                 withMargin:(CGFloat)margin {
+  box.origin.x += box.size.width - margin;
+  box.origin.y += floor((box.size.height - imageSize.height) / 2);
+  box.size = imageSize;
+  return box;
 }
 
 - (NSRect)securityImageFrameForFrame:(NSRect)cellFrame {
-  if (!security_image_view_) {
+  if (!security_image_view_ || !security_image_view_->IsVisible()) {
     return NSZeroRect;
   }
-  return [self imageFrameForFrame:cellFrame withImageView:security_image_view_];
+
+  // Calculate the total width occupied by the image, label, and padding.
+  NSSize imageSize = [security_image_view_->GetImage() size];
+  CGFloat widthUsed = imageSize.width + kIconHorizontalPad;
+  NSAttributedString* label = security_image_view_->GetLabel();
+  if (label) {
+    widthUsed += ceil([label size].width) + kHintXOffset;
+  }
+
+  return [self rightJustifyImage:imageSize
+                          inRect:cellFrame
+                      withMargin:widthUsed];
+}
+
+- (size_t)pageActionCount {
+  // page_action_views_ may be NULL during testing.
+  if (!page_action_views_)
+    return 0;
+  return page_action_views_->Count();
+}
+
+- (NSRect)pageActionFrameForIndex:(size_t)index inFrame:(NSRect)cellFrame {
+  LocationBarViewMac::PageActionImageView* view =
+      page_action_views_->ViewAt(index);
+  const NSImage* icon = view->GetImage();
+  if (!icon || !view->IsVisible()) {
+    return NSZeroRect;
+  }
+
+  // Compute the amount of space used by this icon plus any other icons to its
+  // right. It's terribly inefficient to do this anew every time, but easy to
+  // understand. It should be fine for 5 or 10 installed Page Actions, perhaps
+  // too slow for 100.
+  // TODO(pamg): Refactor to avoid this if performance is a problem.
+  const NSRect securityIconRect = [self securityImageFrameForFrame:cellFrame];
+  CGFloat widthUsed = 0.0;
+  if (NSWidth(securityIconRect) > 0) {
+    widthUsed += NSMaxX(cellFrame) - NSMinX(securityIconRect);
+  }
+  for (size_t i = 0; i <= index; ++i) {
+    view = page_action_views_->ViewAt(i);
+    if (view->IsVisible()) {
+      NSImage* image = view->GetImage();
+      if (image) {
+        // Page Action icons don't have labels. Don't compute space for them.
+        widthUsed += [image size].width + kIconHorizontalPad;
+      }
+    }
+  }
+  widthUsed += kIconHorizontalPad;
+
+  return [self rightJustifyImage:[icon size]
+                          inRect:cellFrame
+                      withMargin:widthUsed];
 }
 
 - (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -319,27 +379,25 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   [keywordString_.get() drawInRect:infoFrame];
 }
 
-- (void)drawImageView:(LocationBarViewMac::LocationBarImageView*)image_view
-            withFrame:(NSRect)cellFrame
+- (void)drawImageView:(LocationBarViewMac::LocationBarImageView*)imageView
+              inFrame:(NSRect)imageFrame
                inView:(NSView*)controlView {
-  // If there's a label, draw it to the right of the icon.
-  CGFloat labelWidth = 0;
-  NSAttributedString* label = image_view->GetLabel();
+  // If there's a label, draw it to the right of the icon. The caller must have
+  // left sufficient space.
+  NSAttributedString* label = imageView->GetLabel();
   if (label) {
-    labelWidth = ceil([label size].width) + kHintXOffset;
-    NSRect textFrame(NSMakeRect(NSMaxX(cellFrame) - labelWidth,
-                                cellFrame.origin.y + kIconLabelYOffset,
+    CGFloat labelWidth = ceil([label size].width) + kHintXOffset;
+    NSRect textFrame(NSMakeRect(NSMaxX(imageFrame) + kIconHorizontalPad,
+                                imageFrame.origin.y + kIconLabelYOffset,
                                 labelWidth,
-                                cellFrame.size.height - kIconLabelYOffset));
+                                imageFrame.size.height - kIconLabelYOffset));
     [label drawInRect:textFrame];
   }
 
   // Draw the entire image.
   NSRect imageRect = NSZeroRect;
-  NSImage* image = image_view->GetImage();
+  NSImage* image = imageView->GetImage();
   image.size = [image size];
-  NSRect imageFrame([self imageFrameForFrame:cellFrame
-                               withImageView:image_view]);
   [image setFlipped:[controlView isFlipped]];
   [image drawInRect:imageFrame
            fromRect:imageRect
@@ -352,10 +410,23 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
     [self drawHintWithFrame:cellFrame inView:controlView];
   } else if (keywordString_) {
     [self drawKeywordWithFrame:cellFrame inView:controlView];
-  } else if (security_image_view_ && security_image_view_->IsVisible()) {
-    [self drawImageView:security_image_view_
-              withFrame:cellFrame
-                 inView:controlView];
+  } else {
+    if (security_image_view_ && security_image_view_->IsVisible()) {
+      [self drawImageView:security_image_view_
+                  inFrame:[self securityImageFrameForFrame:cellFrame]
+                   inView:controlView];
+    }
+
+    const size_t pageActionCount = [self pageActionCount];
+    for (size_t i = 0; i < pageActionCount; ++i) {
+      LocationBarViewMac::PageActionImageView* view =
+          page_action_views_->ViewAt(i);
+      if (view && view->IsVisible()) {
+        [self drawImageView:view
+                    inFrame:[self pageActionFrameForIndex:i inFrame:cellFrame]
+                     inView:controlView];
+      }
+    }
   }
 
   [super drawInteriorWithFrame:cellFrame inView:controlView];
