@@ -71,12 +71,6 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
   virtual void detach();
   virtual void didNavigate();
   virtual void dispatchMessageFromFrontend(
-      const WebKit::WebString& class_name,
-      const WebKit::WebString& method_name,
-      const WebKit::WebString& param1,
-      const WebKit::WebString& param2,
-      const WebKit::WebString& param3);
-  virtual void dispatchMessageFromFrontend(
       const WebKit::WebDevToolsMessageData& data);
   virtual void inspectElementAt(const WebKit::WebPoint& point);
   virtual void evaluateInWebInspector(long call_id,

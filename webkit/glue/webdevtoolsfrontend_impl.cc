@@ -218,17 +218,6 @@ WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
     menu_provider_->disconnect();
 }
 
-// TODO(yurys): this method is deprecated and will go away soon, use
-// overloaded method with WebDevToolsMessageData argument instead.
-void WebDevToolsFrontendImpl::dispatchMessageFromAgent(
-      const WebString& class_name,
-      const WebString& method_name,
-      const WebString& param1,
-      const WebString& param2,
-      const WebString& param3) {
-  ASSERT_NOT_REACHED();
-}
-
 void WebDevToolsFrontendImpl::dispatchMessageFromAgent(
     const WebKit::WebDevToolsMessageData& data) {
   if (ToolsAgentNativeDelegateDispatch::Dispatch(

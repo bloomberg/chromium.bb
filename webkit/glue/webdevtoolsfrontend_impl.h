@@ -52,11 +52,6 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
   virtual void SendRpcMessage(const WebKit::WebDevToolsMessageData& data);
 
   // WebDevToolsFrontend implementation.
-  virtual void dispatchMessageFromAgent(const WebKit::WebString& class_name,
-                                        const WebKit::WebString& method_name,
-                                        const WebKit::WebString& param1,
-                                        const WebKit::WebString& param2,
-                                        const WebKit::WebString& param3);
   virtual void dispatchMessageFromAgent(
       const WebKit::WebDevToolsMessageData& data);
 
