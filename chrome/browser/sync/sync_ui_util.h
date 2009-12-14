@@ -26,6 +26,8 @@ MessageType GetStatusLabels(ProfileSyncService* service,
                             string16* status_label,
                             string16* link_label);
 
+MessageType GetStatus(ProfileSyncService* service);
+
 // Open the appropriate sync dialog for the given profile (which can be
 // incognito).  |code| should be one of the START_FROM_* codes.
 void OpenSyncMyBookmarksDialog(

@@ -814,8 +814,7 @@ void ToolbarView::CreateAppMenu() {
   if (ProfileSyncService::IsSyncEnabled()) {
     string16 label;
     string16 link;
-    // TODO(timsteele): Need a ui helper method to just get the type without
-    // needing labels.
+    // TODO(akalin): use sync_ui_util::GetStatus instead.
     sync_ui_util::MessageType type = sync_ui_util::GetStatusLabels(
         browser_->profile()->GetOriginalProfile()->GetProfileSyncService(),
         &label, &link);

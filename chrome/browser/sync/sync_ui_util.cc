@@ -64,11 +64,14 @@ string16 GetSyncedStateStatusLabel(ProfileSyncService* service) {
       WideToUTF16(service->GetLastSyncedTimeString()));
 }
 
-}  // namespace
+// TODO(akalin): Write unit tests for these three functions below.
 
-MessageType GetStatusLabels(ProfileSyncService* service,
-                            string16* status_label,
-                            string16* link_label) {
+// status_label and link_label must either be both NULL or both non-NULL.
+MessageType GetStatusInfo(ProfileSyncService* service,
+                          string16* status_label,
+                          string16* link_label) {
+  DCHECK_EQ(status_label == NULL, link_label == NULL);
+
   MessageType result_type(SYNCED);
 
   if (!service) {
@@ -83,15 +86,21 @@ MessageType GetStatusLabels(ProfileSyncService* service,
     // or note that everything is OK with the last synced time.
     if (status.authenticated) {
       // Everything is peachy.
-      status_label->assign(GetSyncedStateStatusLabel(service));
+      if (status_label) {
+        status_label->assign(GetSyncedStateStatusLabel(service));
+      }
       DCHECK_EQ(auth_error.state(), AuthError::NONE);
     } else if (service->UIShouldDepictAuthInProgress()) {
-      status_label->assign(
+      if (status_label) {
+        status_label->assign(
           l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
+      }
       result_type = PRE_SYNCED;
     } else if (auth_error.state() != AuthError::NONE) {
-      GetStatusLabelsForAuthError(auth_error, service,
-                                  status_label, link_label);
+      if (status_label && link_label) {
+        GetStatusLabelsForAuthError(auth_error, service,
+                                    status_label, link_label);
+      }
       result_type = SYNC_ERROR;
     }
   } else {
@@ -101,27 +110,54 @@ MessageType GetStatusLabels(ProfileSyncService* service,
     if (service->SetupInProgress()) {
       ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
       const AuthError& auth_error = service->GetAuthError();
-      status_label->assign(
-          l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS));
-      if (service->UIShouldDepictAuthInProgress()) {
+      if (status_label) {
         status_label->assign(
-            l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
+            l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS));
+      }
+      if (service->UIShouldDepictAuthInProgress()) {
+        if (status_label) {
+          status_label->assign(
+              l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
+        }
       } else if (auth_error.state() != AuthError::NONE) {
-        status_label->clear();
+        if (status_label) {
+          status_label->clear();
+        }
         GetStatusLabelsForAuthError(auth_error, service, status_label, NULL);
         result_type = SYNC_ERROR;
       } else if (!status.authenticated) {
-        status_label->assign(
-            l10n_util::GetStringUTF16(IDS_SYNC_ACCOUNT_DETAILS_NOT_ENTERED));
+        if (status_label) {
+          status_label->assign(
+              l10n_util::GetStringUTF16(IDS_SYNC_ACCOUNT_DETAILS_NOT_ENTERED));
+        }
       }
     } else if (service->unrecoverable_error_detected()) {
       result_type = SYNC_ERROR;
-      status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_SETUP_ERROR));
+      if (status_label) {
+        status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_SETUP_ERROR));
+      }
     } else {
-      status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_NOT_SET_UP_INFO));
+      if (status_label) {
+        status_label->assign(
+            l10n_util::GetStringUTF16(IDS_SYNC_NOT_SET_UP_INFO));
+      }
     }
   }
   return result_type;
+}
+
+}  // namespace
+
+MessageType GetStatusLabels(ProfileSyncService* service,
+                            string16* status_label,
+                            string16* link_label) {
+  DCHECK(status_label);
+  DCHECK(link_label);
+  return sync_ui_util::GetStatusInfo(service, status_label, link_label);
+}
+
+MessageType GetStatus(ProfileSyncService* service) {
+  return sync_ui_util::GetStatusInfo(service, NULL, NULL);
 }
 
 void OpenSyncMyBookmarksDialog(

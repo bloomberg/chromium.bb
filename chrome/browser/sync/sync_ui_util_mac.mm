@@ -17,8 +17,7 @@ namespace sync_ui_util {
 void UpdateSyncItem(id syncItem, BOOL syncEnabled, Profile* profile) {
   ProfileSyncService* syncService =
     profile->GetOriginalProfile()->GetProfileSyncService();
-  // TODO(timsteele): Need a ui helper method to just get the type
-  // without needing labels.
+  // TODO(akalin): use sync_ui_util::GetStatus instead.
   string16 label, link;
   sync_ui_util::MessageType status =
       sync_ui_util::GetStatusLabels(syncService, &label, &link);

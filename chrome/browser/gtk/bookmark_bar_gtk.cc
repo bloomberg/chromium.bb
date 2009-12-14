@@ -1302,6 +1302,7 @@ bool BookmarkBarGtk::ShouldShowSyncErrorButton() {
   if (sync_service_ && sync_service_->HasSyncSetupCompleted()) {
     string16 status_text;
     string16 link_text;
+    // TODO(akalin): use sync_ui_util::GetStatus instead.
     sync_ui_util::MessageType sync_status;
     sync_status = sync_ui_util::GetStatusLabels(
         sync_service_, &status_text, &link_text);

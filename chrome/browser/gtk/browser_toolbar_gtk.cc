@@ -701,8 +701,7 @@ void BrowserToolbarGtk::OnStateChanged() {
 
   string16 label;
   string16 link;
-  // TODO(zork): Need a ui helper method to just get the type without
-  // needing labels.
+  // TODO(akalin): use sync_ui_util::GetStatus instead.
   sync_ui_util::MessageType type = sync_ui_util::GetStatusLabels(
       sync_service_, &label, &link);
 
