@@ -2497,9 +2497,10 @@ BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-changes.svg = FAIL
 BUG9798 WIN DEBUG : LayoutTests/http/tests/loading/redirect-methods.html = TIMEOUT PASS
 BUG9798 MAC DEBUG : LayoutTests/plugins/geturl-replace-query.html = TEXT PASS
 
-// This test got considerably more flaky when we switched from lighttpd to
-// apache on the linux bots.
-BUG9798 LINUX DEBUG : LayoutTests/http/tests/multipart/invalid-image-data.html = PASS IMAGE
+// This test got considerably more flaky for DEBUG when we switched from
+// lighttpd to apache on the linux bots. For RELEASE, this was not flaky until
+// we sharded the LayoutTests/http.
+BUG9798 LINUX : LayoutTests/http/tests/multipart/invalid-image-data.html = PASS IMAGE
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
