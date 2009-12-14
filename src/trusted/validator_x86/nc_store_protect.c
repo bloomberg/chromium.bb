@@ -56,6 +56,7 @@ void NcStoreValidator(NcValidatorState* state,
 
   DEBUG({
       printf("-> Validating store\n");
+      PrintNcInstStateInstruction(stdout, inst);
       PrintOpcode(stdout, NcInstStateOpcode(inst));
       PrintExprNodeVector(stdout, NcInstStateNodeVector(inst));
     });
@@ -79,7 +80,8 @@ void NcStoreValidator(NcValidatorState* state,
       DEBUG(printf("base reg = %s\n", OperandKindName(base_reg)));
       if (base_reg != state->base_register &&
           base_reg != RegRSP &&
-          base_reg != RegRBP) {
+          base_reg != RegRBP &&
+          base_reg != RegRIP) {
         NcValidatorInstMessage(LOG_ERROR, state, inst,
                                "Invalid base register in memory store\n");
         break;
@@ -90,7 +92,8 @@ void NcStoreValidator(NcValidatorState* state,
       DEBUG(printf("index reg = %s\n", OperandKindName(index_reg)));
       if (RegUnknown != index_reg) {
         Bool index_reg_is_good = FALSE;
-        if ((index_reg_node->flags & ExprFlag(ExprSize64)) &&
+        if ((base_reg != RegRIP) &&
+            (index_reg_node->flags & ExprFlag(ExprSize64)) &&
             NcInstIterHasLookbackState(iter, 1)) {
           NcInstState* prev_inst = NcInstIterGetLookbackState(iter, 1);
           DEBUG({
@@ -115,8 +118,11 @@ void NcStoreValidator(NcValidatorState* state,
       disp_index = scale_index + ExprNodeWidth(vector, scale_index);
       DEBUG(printf("disp index = %d\n", disp_index));
       if (ExprConstant != vector->node[disp_index].kind) {
-        NcValidatorInstMessage(LOG_ERROR, state, inst,
-                               "Invalid displacement in memory store\n");
+        if ((base_reg != RegRIP) ||
+            (ExprConstant64 == vector->node[disp_index].kind)) {
+          NcValidatorInstMessage(LOG_ERROR, state, inst,
+                                 "Invalid displacement in memory store\n");
+        }
       }
       break;
     } else if (ExprFlag(ExprSet) &&

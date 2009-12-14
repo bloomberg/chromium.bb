@@ -58,6 +58,10 @@ struct NcInstIter;
  *     with zero extension.
  *
  * (3) The displacement can't be larger than 32 bits.
+ *
+ * SPECIAL CASE: We allow all stores of the form [%rip + displacement].
+ *
+ * NOTE: in x86 code, displacements can't be larger than 32 bits.
  */
 void NcStoreValidator(struct NcValidatorState* state,
                       struct NcInstIter* iter,
