@@ -5,7 +5,7 @@
 #include "net/tools/flip_server/ring_buffer.h"
 #include "base/logging.h"
 
-namespace gfe2 {
+namespace net {
 
 RingBuffer::RingBuffer(int buffer_size)
     : buffer_(new char[buffer_size]),
@@ -261,5 +261,5 @@ void RingBuffer::Resize(int buffer_size) {
   write_idx_ = bytes_used_ % buffer_size_;
 }
 
-}  // namespace gfe2
+}  // namespace net
 

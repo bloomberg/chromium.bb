@@ -28,7 +28,7 @@
 #include "strings/stringpiece_utils.h"
 #endif
 
-namespace gfe2 {
+namespace net {
 
 // Constants holding some header names for headers which can affect the way the
 // HTTP message is framed, and so must be processed specially:
@@ -1567,5 +1567,5 @@ const int32 BalsaFrame::kValidTerm1Mask;
 const int32 BalsaFrame::kValidTerm2;
 const int32 BalsaFrame::kValidTerm2Mask;
 
-}  // namespace gfe2
+}  // namespace net
 

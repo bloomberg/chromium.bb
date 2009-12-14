@@ -7,7 +7,7 @@
 
 #include <cstddef>
 
-namespace gfe2 {
+namespace net {
 
 class BalsaFrame;
 class BalsaHeaders;
@@ -175,7 +175,7 @@ class BalsaVisitorInterface {
   virtual void HandleBodyError(BalsaFrame* framer) = 0;
 };
 
-}  // namespace gfe2
+}  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_BALSA_VISITOR_INTERFACE_H_
 

@@ -15,7 +15,7 @@
 
 #include "base/logging.h"
 
-namespace gfe2 {
+namespace net {
 
 // used to ensure we delete the addrinfo structure
 // alloc'd by getaddrinfo
@@ -175,5 +175,5 @@ void CreateListeningSocket(const string& host,
   *listen_fd = sock;
 }
 
-}  // namespace gfe2
+}  // namespace net
 

@@ -5,13 +5,13 @@
 #ifndef NET_TOOLS_FLIP_SERVER_HTTP_MESSAGE_CONSTANTS_H__
 #define NET_TOOLS_FLIP_SERVER_HTTP_MESSAGE_CONSTANTS_H__
 
-namespace gfe2 {
+namespace net {
 
 const char* get_http_status_message(int status_message);
 extern const int http_status_codes[];
 extern const int http_status_code_count;
 
-}  // namespace gfe2
+}  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_HTTP_MESSAGE_CONSTANTS_H__
 

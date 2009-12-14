@@ -9,7 +9,7 @@
 
 #include "net/tools/flip_server/buffer_interface.h"
 
-namespace gfe2 {
+namespace net {
 
 class SimpleBuffer : public BufferInterface {
  public:
@@ -88,7 +88,7 @@ class SimpleBuffer : public BufferInterface {
   //DISALLOW_COPY_AND_ASSIGN(SimpleBuffer);
 };
 
-}  // namespace gfe2
+}  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_SIMPLE_BUFFER_H__
 

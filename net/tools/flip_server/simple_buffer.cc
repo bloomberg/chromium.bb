@@ -16,7 +16,7 @@
 // qualify the method calls, thus disabling the virtual dispatch and enable
 // inlining.
 
-namespace gfe2 {
+namespace net {
 
 static const int kInitialSimpleBufferSize = 10;
 
@@ -200,5 +200,5 @@ inline void SimpleBuffer::AdvanceWritablePtr(int amount_to_advance) {
   }
 }
 
-}  // namespace gfe2
+}  // namespace net
 

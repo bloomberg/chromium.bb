@@ -22,7 +22,7 @@
 // For additional debug output, uncomment the following:
 // #define DEBUGFRAMER 1
 
-namespace gfe2 {
+namespace net {
 
 // BalsaFrame is a 'Model' of a framer (haha).
 // It exists as a proof of concept headers framer.
@@ -277,7 +277,7 @@ class BalsaFrame {
   DoNothingBalsaVisitor do_nothing_visitor_;
 };
 
-}  // namespace gfe2;
+}  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_BALSA_FRAME_H_
 

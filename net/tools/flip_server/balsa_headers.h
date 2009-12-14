@@ -43,7 +43,7 @@ struct StringPieceCaseEqual {
 #include "strings/stringpiece_utils.h"
 #endif
 
-namespace gfe2 {
+namespace net {
 
 // WARNING:
 // Note that -no- char* returned by any function in this
@@ -415,7 +415,7 @@ class BalsaHeaders {
   };
 
   typedef vector<StringPiece> HeaderTokenList;
-  friend bool gfe2::ParseHTTPFirstLine(const char* begin,
+  friend bool net::ParseHTTPFirstLine(const char* begin,
                                        const char* end,
                                        bool is_request,
                                        size_t max_request_uri_length,
@@ -789,8 +789,6 @@ class BalsaHeaders {
 
   void CopyFrom(const BalsaHeaders& other);
 
-  // TODO(fenix): remove this function and rename all occurances
-  // of it in the code to AppendHeader...
   void HackHeader(const StringPiece& key, const StringPiece& value);
 
   // Same as AppendToHeader, except that it will attempt to preserve
@@ -1295,7 +1293,7 @@ class BalsaHeaders {
   HeaderLines header_lines_;
 };
 
-}  // namespace gfe2
+}  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_H_
 

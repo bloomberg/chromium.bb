@@ -92,35 +92,35 @@ DEFINE_string(record_path, ".", "The path to save the record files");
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using gfe_flip::CONTROL_FLAG_NONE;
-using gfe_flip::DATA_FLAG_COMPRESSED;
-using gfe_flip::DATA_FLAG_FIN;
-using gfe_flip::FIN_STREAM;
-using gfe_flip::FlipControlFrame;
-using gfe_flip::FlipFrame;
-using gfe_flip::FlipDataFlags;
-using gfe_flip::FlipDataFrame;
-using gfe_flip::FlipFrameBuilder;
-using gfe_flip::FlipFramer;
-using gfe_flip::FlipFramerVisitorInterface;
-using gfe_flip::FlipHeaderBlock;
-using gfe_flip::FlipFinStreamControlFrame;
-using gfe_flip::FlipStreamId;
-using gfe_flip::FlipSynReplyControlFrame;
-using gfe_flip::FlipSynStreamControlFrame;
-using gfe_flip::SYN_REPLY;
-using gfe_flip::SYN_STREAM;
-using gfe2::BalsaFrame;
-using gfe2::BalsaFrameEnums;
-using gfe2::BalsaHeaders;
-using gfe2::BalsaHeadersEnums;
-using gfe2::BalsaVisitorInterface;
-using gfe2::EpollAlarmCallbackInterface;
-using gfe2::EpollCallbackInterface;
-using gfe2::EpollEvent;
-using gfe2::EpollServer;
-using gfe2::RingBuffer;
-using gfe2::SimpleBuffer;
+using flip::CONTROL_FLAG_NONE;
+using flip::DATA_FLAG_COMPRESSED;
+using flip::DATA_FLAG_FIN;
+using flip::FIN_STREAM;
+using flip::FlipControlFrame;
+using flip::FlipFrame;
+using flip::FlipDataFlags;
+using flip::FlipDataFrame;
+using flip::FlipFrameBuilder;
+using flip::FlipFramer;
+using flip::FlipFramerVisitorInterface;
+using flip::FlipHeaderBlock;
+using flip::FlipFinStreamControlFrame;
+using flip::FlipStreamId;
+using flip::FlipSynReplyControlFrame;
+using flip::FlipSynStreamControlFrame;
+using flip::SYN_REPLY;
+using flip::SYN_STREAM;
+using net::BalsaFrame;
+using net::BalsaFrameEnums;
+using net::BalsaHeaders;
+using net::BalsaHeadersEnums;
+using net::BalsaVisitorInterface;
+using net::EpollAlarmCallbackInterface;
+using net::EpollCallbackInterface;
+using net::EpollEvent;
+using net::EpollServer;
+using net::RingBuffer;
+using net::SimpleBuffer;
 using net::UrlUtilities;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2077,7 +2077,7 @@ int CreateListeningSocket(int port, int backlog_size,
   snprintf(port_buf, sizeof(port_buf), "%d", port);
   cerr <<" Attempting to listen on port: " << port_buf << "\n";
   cerr <<" input port: " << port << "\n";
-  gfe2::CreateListeningSocket("",
+  net::CreateListeningSocket("",
                               port_buf,
                               true,
                               backlog_size,

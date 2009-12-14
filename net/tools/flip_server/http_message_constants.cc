@@ -4,7 +4,7 @@
 
 #include "net/tools/flip_server/http_message_constants.h"
 
-namespace gfe2 {
+namespace net {
 
 const char* get_http_status_message(int status_message) {
   switch (status_message) {
@@ -142,5 +142,5 @@ const int http_status_codes[] = {
 const int http_status_code_count = sizeof(http_status_codes) /
                                    sizeof(http_status_codes[0]);
 
-}  // namespace gfe2
+}  // namespace net
 

@@ -63,7 +63,7 @@ REGISTER_MODULE_INITIALIZER(multivalued_headers, InitMultivaluedHeaders());
 
 }  // namespace
 
-namespace gfe2 {
+namespace net {
 
 const size_t BalsaBuffer::kDefaultBlocksize;
 
@@ -744,5 +744,5 @@ void BalsaHeaders::SetResponseReasonPhrase(const StringPiece& reason) {
   SetRequestVersion(reason);
 }
 
-}  // namespace gfe2
+}  // namespace net
 

@@ -5,7 +5,7 @@
 #ifndef NET_TOOLS_FLIP_SERVER_BUFFER_INTERFACE_H__
 #define NET_TOOLS_FLIP_SERVER_BUFFER_INTERFACE_H__
 
-namespace gfe2 {
+namespace net {
 
 class BufferInterface {
  public:
@@ -115,7 +115,7 @@ class BufferInterface {
   BufferInterface() {}
 };
 
-}  // namespace gfe2
+}  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_BUFFER_INTERFACE__H__
 

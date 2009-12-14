@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-namespace gfe2 {
+namespace net {
 
 // Summary:
 //   creates a socket for listening, and bind()s and listen()s it.
@@ -39,7 +39,7 @@ void CreateListeningSocket(const string& host,
                            bool reuseport,
                            ostream* error_stream);
 
-}  // namespace gfe2
+}  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_CREATE_LISTENER_H__
 

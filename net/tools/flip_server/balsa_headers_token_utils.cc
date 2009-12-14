@@ -6,7 +6,7 @@
 
 #include "strings/stringpiece_utils.h"
 
-namespace gfe2 {
+namespace net {
 
 inline void BalsaHeadersTokenUtils::TokenizeHeaderLine(
     const BalsaHeaders& headers,
@@ -139,5 +139,5 @@ void BalsaHeadersTokenUtils::ParseTokenList(
   }
 }
 
-}  // namespace gfe2
+}  // namespace net
 

@@ -5,7 +5,7 @@
 #ifndef NET_TOOLS_FLIP_SERVER_BALSA_ENUMS_H_
 #define NET_TOOLS_FLIP_SERVER_BALSA_ENUMS_H_
 
-namespace gfe2 {
+namespace net {
 
 struct BalsaFrameEnums {
   enum ParseState {
@@ -105,7 +105,7 @@ struct BalsaHeadersEnums {
   };
 };
 
-}  // namespace gfe2
+}  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_BALSA_ENUMS_H_
 

@@ -55,7 +55,7 @@
 // The size we use for buffers passed to strerror_r
 static const int kErrorBufferSize = 256;
 
-namespace gfe2 {
+namespace net {
 
 // Clears the pipe and returns.  Used for waking the epoll server up.
 class ReadPipeCallback : public EpollCallbackInterface {
@@ -146,7 +146,7 @@ void EpollServer::CleanupTimeToAlarmCBMap() {
 EpollServer::~EpollServer() {
   DCHECK_EQ(in_shutdown_, false);
   in_shutdown_ = true;
-#ifdef GFE_GFE2_EPOLL_SERVER_EVENT_TRACING
+#ifdef EPOLL_SERVER_EVENT_TRACING
   LOG(INFO) << "\n" << event_recorder_;
 #endif
   VLOG(2) << "Shutting down epoll server ";
@@ -263,7 +263,7 @@ void EpollServer::UnregisterFD(int fd) {
     // inside the callchain of OnEvent.
     return;
   }
-#ifdef GFE_GFE2_EPOLL_SERVER_EVENT_TRACING
+#ifdef EPOLL_SERVER_EVENT_TRACING
   event_recorder_.RecordUnregistration(fd);
 #endif
   CB* cb = fd_i->cb;
@@ -311,7 +311,7 @@ void EpollServer::StartWrite(int fd) {
 }
 
 void EpollServer::HandleEvent(int fd, int event_mask) {
-#ifdef GFE_GFE2_EPOLL_SERVER_EVENT_TRACING
+#ifdef EPOLL_SERVER_EVENT_TRACING
   event_recorder_.RecordEpollEvent(fd, event_mask);
 #endif
   FDToCBMap::iterator fd_i = cb_map_.find(CBAndEventMask(NULL, 0, fd));
@@ -540,7 +540,7 @@ void EpollServer::LogStateOnCrash() {
 void EpollServer::DelFD(int fd) const {
   struct epoll_event ee;
   memset(&ee, 0, sizeof(ee));
-#ifdef GFE_GFE2_EPOLL_SERVER_EVENT_TRACING
+#ifdef EPOLL_SERVER_EVENT_TRACING
   event_recorder_.RecordFDMaskEvent(fd, 0, "DelFD");
 #endif
   if (epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, fd, &ee)) {
@@ -558,7 +558,7 @@ void EpollServer::AddFD(int fd, int event_mask) const {
   memset(&ee, 0, sizeof(ee));
   ee.events = event_mask | EPOLLERR | EPOLLHUP;
   ee.data.fd = fd;
-#ifdef GFE_GFE2_EPOLL_SERVER_EVENT_TRACING
+#ifdef EPOLL_SERVER_EVENT_TRACING
   event_recorder_.RecordFDMaskEvent(fd, ee.events, "AddFD");
 #endif
   if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, fd, &ee)) {
@@ -576,7 +576,7 @@ void EpollServer::ModFD(int fd, int event_mask) const {
   memset(&ee, 0, sizeof(ee));
   ee.events = event_mask | EPOLLERR | EPOLLHUP;
   ee.data.fd = fd;
-#ifdef GFE_GFE2_EPOLL_SERVER_EVENT_TRACING
+#ifdef EPOLL_SERVER_EVENT_TRACING
   event_recorder_.RecordFDMaskEvent(fd, ee.events, "ModFD");
 #endif
   VLOG(3) <<  "modifying fd= " << fd << " "
@@ -644,7 +644,7 @@ void EpollServer::WaitForEventsAndCallHandleEvents(int64 timeout_in_us,
         << " events at a time, so events[] should be larger.";
   }
 
-#ifdef GFE_GFE2_EPOLL_SERVER_EVENT_TRACING
+#ifdef EPOLL_SERVER_EVENT_TRACING
   event_recorder_.RecordEpollWaitEvent(timeout_in_ms, nfds);
 #endif
 
@@ -818,5 +818,5 @@ void EpollAlarm::UnregisterIfRegistered() {
   eps_->UnregisterAlarm(token_);
 }
 
-}  // namespace gfe2
+}  // namespace net
 

@@ -11,7 +11,7 @@
 #include "net/tools/flip_server/balsa_headers.h"
 #include "strings/stringpiece.h"
 
-namespace gfe2 {
+namespace net {
 
 class BalsaHeadersTokenUtils {
  public:
@@ -55,7 +55,7 @@ class BalsaHeadersTokenUtils {
   BalsaHeadersTokenUtils();  // Prohibit instantiation
 };
 
-}  // namespace gfe2
+}  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_TOKEN_UTILS_H_
 

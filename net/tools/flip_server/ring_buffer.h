@@ -8,7 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "net/tools/flip_server/buffer_interface.h"
 
-namespace gfe2 {
+namespace net {
 
 // The ring buffer is a circular buffer, that is, reads or writes may wrap
 // around the end of the linear memory contained by the class (and back to
@@ -106,7 +106,7 @@ class RingBuffer : public BufferInterface {
   void operator=(const RingBuffer&);
 };
 
-}  // namespace gfe2
+}  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_RING_BUFFER_H__
 
