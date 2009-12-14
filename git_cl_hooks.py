@@ -58,7 +58,7 @@ def RunHooks(hook_name, upstream_branch):
     watchlist = watchlists.Watchlists(options.change.RepositoryRoot())
     files = [f.LocalPath() for f in options.change.AffectedFiles()]
     watchers = watchlist.GetWatchersForPaths(files)
-    Backquote(['git', 'config', '--add',
+    Backquote(['git', 'config', '--replace-all',
                'rietveld.extracc', ','.join(watchers)])
 
   # Run the presubmit checks.
