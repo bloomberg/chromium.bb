@@ -1817,3 +1817,22 @@
    fun:ChromeMain
    fun:main
 }
+{
+   bug_30346
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN13TCMallocGuardC1Ev
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_GLOBAL__I__ZN61FLAG__namespace_do_not_use_directly_use_DECLARE_int64_instead43FLAGS_tcmalloc_large_alloc_report_thresholdE
+}
+{
+   bug_30346b
+   Memcheck:Addr2
+   ...
+   fun:_ZSt22__get_temporary_bufferIPN7WebCore11RenderLayerEESt4pairIPT_iEiS5_
+   fun:_ZNSt17_Temporary_bufferIPPN7WebCore11RenderLayerES2_EC1ES3_S3_
+   fun:_ZN7WebCore11RenderLayer17updateZOrderListsEv
+   fun:_ZN7WebCore11RenderLayer24updateLayerListsIfNeededEv
+   fun:_ZN7WebCore11RenderLayer38updateCompositingAndLayerListsIfNeededEv
+}
