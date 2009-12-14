@@ -349,6 +349,7 @@ TEST_F(WorkerTest, LimitPerPage) {
 #endif
 
 TEST_F(WorkerTest, LimitTotal) {
+#if !defined(OS_LINUX)
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
 
@@ -370,4 +371,5 @@ TEST_F(WorkerTest, LimitTotal) {
   tab->NavigateToURL(GetTestUrl(L"google", L"google.html"));
 
   ASSERT_TRUE(WaitForProcessCountToBe(tab_count, total_workers));
+#endif
 }
