@@ -36,6 +36,11 @@ const wchar_t kPrefBlacklist[] = L"blacklist";
 // A preference that tracks extension shelf configuration.  This is a list
 // object read from the Preferences file, containing a list of toolstrip URLs.
 const wchar_t kExtensionShelf[] = L"extensions.shelf";
+
+// A preference that tracks browser action toolbar configuration. This is a list
+// object stored in the Preferences file. The extensions are stored by ID.
+const wchar_t kExtensionToolbar[] = L"extensions.toolbar";
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,6 +110,8 @@ ExtensionPrefs::ExtensionPrefs(PrefService* prefs, const FilePath& root_dir)
     prefs_->RegisterDictionaryPref(kExtensionsPref);
   if (!prefs->FindPreference(kExtensionShelf))
     prefs->RegisterListPref(kExtensionShelf);
+  if (!prefs->FindPreference(kExtensionToolbar))
+    prefs->RegisterListPref(kExtensionToolbar);
   MakePathsRelative();
 }
 
@@ -310,6 +317,30 @@ void ExtensionPrefs::SetShelfToolstripOrder(const URLList& urls) {
   for (size_t i = 0; i < urls.size(); ++i) {
     GURL url = urls[i];
     toolstrip_urls->Append(new StringValue(url.spec()));
+  }
+  prefs_->ScheduleSavePersistentPrefs();
+}
+
+std::vector<std::string> ExtensionPrefs::GetToolbarOrder() {
+  std::vector<std::string> extension_ids;
+  const ListValue* toolbar_order = prefs_->GetList(kExtensionToolbar);
+  if (toolbar_order) {
+    for (size_t i = 0; i < toolbar_order->GetSize(); ++i) {
+      std::string extension_id;
+      if (toolbar_order->GetString(i, &extension_id))
+        extension_ids.push_back(extension_id);
+    }
+  }
+  return extension_ids;
+}
+
+void ExtensionPrefs::SetToolbarOrder(
+    const std::vector<std::string>& extension_ids) {
+  ListValue* toolbar_order = prefs_->GetMutableList(kExtensionToolbar);
+  toolbar_order->Clear();
+  for (std::vector<std::string>::const_iterator iter = extension_ids.begin();
+       iter != extension_ids.end(); ++iter) {
+    toolbar_order->Append(new StringValue(*iter));
   }
   prefs_->ScheduleSavePersistentPrefs();
 }

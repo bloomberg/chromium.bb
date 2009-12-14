@@ -326,11 +326,6 @@ void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
   if (drag_button_ != NULL) {
     // Break the current drag.
     gtk_grab_remove(widget());
-
-    // Re-generate the toolbar to clean up unfinished drag business (i.e., we
-    // may have re-ordered some buttons; this will put them back where they
-    // belong).
-    CreateAllButtons();
   }
 
   RemoveButtonForExtension(extension);

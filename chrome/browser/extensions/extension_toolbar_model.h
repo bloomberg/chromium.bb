@@ -52,6 +52,14 @@ class ExtensionToolbarModel : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // To be called after the extension service is ready; gets loaded extensions
+  // from the extension service and their saved order from the pref service
+  // and constructs |toolitems_| from these data.
+  void InitializeExtensionList();
+
+  // Save the model to prefs.
+  void UpdatePrefs();
+
   // Our observers.
   ObserverList<Observer> observers_;
 

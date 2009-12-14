@@ -36,6 +36,12 @@ class ExtensionPrefs {
   // Sets the order that toolstrip URLs appear in the shelf.
   void SetShelfToolstripOrder(const URLList& urls);
 
+  // Get the order that the browser actions appear in the toolbar.
+  std::vector<std::string> GetToolbarOrder();
+
+  // Set the order that the browser actions appear in the toolbar.
+  void SetToolbarOrder(const std::vector<std::string>& extension_ids);
+
   // Called when an extension is installed, so that prefs get created.
   void OnExtensionInstalled(Extension* extension);
 
