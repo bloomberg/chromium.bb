@@ -669,6 +669,14 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     }
   }
 
+  // If this is an incognito window, don't allow "open in incognito".
+  if ((action == @selector(openBookmarkInIncognitoWindow:)) ||
+      (action == @selector(openAllBookmarksIncognitoWindow:))) {
+    if (browser_->profile()->IsOffTheRecord()) {
+      return NO;
+    }
+  }
+
   // Enabled by default.
   return YES;
 }
