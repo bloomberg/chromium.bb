@@ -136,8 +136,6 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
       client_(client),
       application_locale_(application_locale),
       loaded_(false) {
-  // menu_selection_handler_ = MenuSelectionHandler::create(this);
-
   WebFrameImpl* frame = web_view_impl_->mainFrameImpl();
   v8::HandleScope scope;
   v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
@@ -216,7 +214,8 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
-  // menu_selection_handler_->disconnect();
+  if (menu_provider_)
+    menu_provider_->disconnect();
 }
 
 // TODO(yurys): this method is deprecated and will go away soon, use
@@ -501,9 +500,7 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsWindowUnloading(
 
 // static
 v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsShowContextMenu(
-    const v8::Arguments&) {
-/*
-  TODO: Uncomment once new ContextMenu API lands upstream.
+    const v8::Arguments& args) {
   if (args.Length() < 2)
     return v8::Undefined();
 
@@ -516,7 +513,7 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsShowContextMenu(
     return v8::Undefined();
 
   v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(args[1]);
-  Vector<ContextMenuItem> items;
+  Vector<ContextMenuItem*> items;
 
   for (size_t i = 0; i < array->Length(); ++i) {
     v8::Local<v8::Object> item = v8::Local<v8::Object>::Cast(
@@ -524,26 +521,27 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsShowContextMenu(
     v8::Local<v8::Value> label = item->Get(v8::String::New("label"));
     v8::Local<v8::Value> id = item->Get(v8::String::New("id"));
     if (label->IsUndefined() || id->IsUndefined()) {
-      items.append(ContextMenuItem(SeparatorType,
-                                   ContextMenuItemTagNoAction,
-                                   String()));
+      items.append(new ContextMenuItem(SeparatorType,
+                                       ContextMenuItemTagNoAction,
+                                       String()));
     } else {
       ContextMenuAction typedId = static_cast<ContextMenuAction>(
           ContextMenuItemBaseCustomTag + id->ToInt32()->Value());
-      items.append(ContextMenuItem(ActionType,
-                                   typedId,
-                                   toWebCoreStringWithNullCheck(label)));
+      items.append(new ContextMenuItem(ActionType,
+                                       typedId,
+                                       toWebCoreStringWithNullCheck(label)));
     }
   }
 
   WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
 
+  frontend->menu_provider_ = MenuProvider::create(frontend, items);
+
   ContextMenuController* menu_controller = frontend->web_view_impl_->page()->
       contextMenuController();
   menu_controller->showContextMenu(event,
-                                   items,
-                                   frontend->menu_selection_handler_);
-*/
+                                   frontend->menu_provider_);
+
   return v8::Undefined();
 }

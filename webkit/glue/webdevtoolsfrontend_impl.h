@@ -7,10 +7,13 @@
 
 #include <string>
 
+#include "ContextMenuProvider.h"
+
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>
+#include <wtf/Vector.h>
 
 #include "v8.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsFrontend.h"
@@ -58,17 +61,26 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
       const WebKit::WebDevToolsMessageData& data);
 
  private:
-/* Uncomment once breaking API changes upstream land.
-   class MenuSelectionHandler : public WebCore::ContextMenuSelectionHandler {
+  class MenuProvider : public WebCore::ContextMenuProvider {
    public:
-    static PassRefPtr<MenuSelectionHandler> create(
-        WebDevToolsFrontendImpl* frontend_host) {
-      return adoptRef(new MenuSelectionHandler(frontend_host));
+    static PassRefPtr<MenuProvider> create(
+        WebDevToolsFrontendImpl* frontend_host,
+        const Vector<WebCore::ContextMenuItem*>& items) {
+      return adoptRef(new MenuProvider(frontend_host, items));
     }
 
-    virtual ~MenuSelectionHandler() {}
+    virtual ~MenuProvider() {
+      contextMenuCleared();
+    }
 
-    void disconnect() { frontend_host_ = 0; }
+    void disconnect() {
+      frontend_host_ = NULL;
+    }
+
+    virtual void populateContextMenu(WebCore::ContextMenu* menu) {
+      for (size_t i = 0; i < items_.size(); ++i)
+        menu->appendItem(*items_[i]);
+    }
 
     virtual void contextMenuItemSelected(WebCore::ContextMenuItem* item) {
       if (frontend_host_)
@@ -78,14 +90,19 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
     virtual void contextMenuCleared() {
       if (frontend_host_)
         frontend_host_->ContextMenuCleared();
+      deleteAllValues(items_);
+      items_.clear();
     }
 
-   private:
-    MenuSelectionHandler(WebDevToolsFrontendImpl* frontend_host)
-          : frontend_host_(frontend_host) {}
-    WebDevToolsFrontendImpl* frontend_host_;
+    private:
+     MenuProvider(WebDevToolsFrontendImpl* frontend_host,
+                  const Vector<WebCore::ContextMenuItem*>& items)
+         : frontend_host_(frontend_host),
+           items_(items) { }
+     WebDevToolsFrontendImpl* frontend_host_;
+     Vector<WebCore::ContextMenuItem*> items_;
   };
-*/
+
   void AddResourceSourceToFrame(int resource_id,
                                 String mime_type,
                                 WebCore::Node* frame);
@@ -135,7 +152,7 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
   bool loaded_;
   Vector<Vector<String> > pending_incoming_messages_;
   OwnPtr<ToolsAgentNativeDelegateImpl> tools_agent_native_delegate_impl_;
-//  RefPtr<MenuSelectionHandler> menu_selection_handler_;
+  RefPtr<MenuProvider> menu_provider_;
 };
 
 #endif  // WEBKIT_GLUE_WEBDEVTOOLSFRONTEND_IMPL_H_
