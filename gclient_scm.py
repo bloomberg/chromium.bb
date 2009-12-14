@@ -140,13 +140,32 @@ class GitWrapper(SCMWrapper, scm.GIT):
     new_base = 'origin'
     if revision:
       new_base = revision
-    cur_branch = self._Run(['symbolic-ref', 'HEAD']).split('/')[-1]
+    cur_branch = self._GetCurrentBranch()
+
+    # Check if we are in a rebase conflict
+    if cur_branch is None:
+      raise gclient_utils.Error('\n____ %s%s\n'
+                                '\tAlready in a conflict, i.e. (no branch).\n'
+                                '\tFix the conflict and run gclient again.\n'
+                                '\tOr to abort run:\n\t\tgit-rebase --abort\n'
+                                '\tSee man git-rebase for details.\n'
+                                 % (self.relpath, rev_str))
+
     merge_base = self._Run(['merge-base', 'HEAD', new_base])
     self._Run(['remote', 'update'], redirect_stdout=False)
     files = self._Run(['diff', new_base, '--name-only']).split()
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
     self._Run(['rebase', '-v', '--onto', new_base, merge_base, cur_branch],
-                redirect_stdout=False)
+                redirect_stdout=False, checkrc=False)
+
+    # If the rebase generated a conflict, abort and ask user to fix
+    if self._GetCurrentBranch() is None:
+      raise gclient_utils.Error('\n____ %s%s\n'
+                                '\nConflict while rebasing this branch.\n'
+                                'Fix the conflict and run gclient again.\n'
+                                'See man git-rebase for details.\n'
+                                % (self.relpath, rev_str))
+
     print "Checked out revision %s." % self.revinfo(options, (), None)
 
   def revert(self, options, args, file_list):
@@ -203,6 +222,15 @@ class GitWrapper(SCMWrapper, scm.GIT):
                                   (version, min_version))
       elif min_ver < ver:
         return
+
+  def _GetCurrentBranch(self):
+    # Returns name of current branch
+    # Returns None if inside a (no branch)
+    tokens = self._Run(['branch']).split()
+    branch = tokens[tokens.index('*') + 1]
+    if branch == '(no':
+      return None
+    return branch
 
   def _Run(self, args, cwd=None, checkrc=True, redirect_stdout=True):
     # TODO(maruel): Merge with Capture?

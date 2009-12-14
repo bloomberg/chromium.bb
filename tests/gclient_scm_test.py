@@ -279,7 +279,7 @@ class SVNWrapperTestCase(BaseTestCase):
     scm.update(options, self.args, file_list)
 
 
-class GitWrapperTestCase(SuperMoxBaseTestBase):
+class GitWrapperTestCase(BaseTestCase):
   """This class doesn't use pymox."""
   class OptionsObject(object):
      def __init__(self, test_case, verbose=False, revision=None):
@@ -505,6 +505,29 @@ from :3
     self.assertEquals(file_list, expected_file_list)
     self.assertEquals(scm.revinfo(options, (), None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
+
+  def testUpdateConflict(self):
+    if not self.enabled:
+      return
+    options = self.Options()
+    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
+                                relpath=self.relpath)
+    file_path = gclient_scm.os.path.join(self.base_path, 'b')
+    f = open(file_path, 'w').writelines('conflict\n')
+    scm._Run(['commit', '-am', 'test'])
+    exception = \
+        '\n____ .\n' \
+        '\nConflict while rebasing this branch.\n' \
+        'Fix the conflict and run gclient again.\n' \
+        'See man git-rebase for details.\n'
+    self.assertRaisesError(exception, scm.update, options, (), [])
+    exception = \
+        '\n____ .\n' \
+        '\tAlready in a conflict, i.e. (no branch).\n' \
+        '\tFix the conflict and run gclient again.\n' \
+        '\tOr to abort run:\n\t\tgit-rebase --abort\n' \
+        '\tSee man git-rebase for details.\n'
+    self.assertRaisesError(exception, scm.update, options, (), [])
 
   def testRevinfo(self):
     if not self.enabled:
