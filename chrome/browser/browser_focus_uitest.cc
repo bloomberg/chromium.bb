@@ -36,8 +36,11 @@
 // For some reason we hit an external DNS lookup in this test in Linux but not
 // on Windows. TODO(estade): investigate.
 #define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
+// TODO(jcampan): http://crbug.com/23683
+#define MAYBE_TabsRememberFocusFindInPage DISABLED_TabsRememberFocusFindInPage
 #else
 #define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
+#define MAYBE_TabsRememberFocusFindInPage TabsRememberFocusFindInPage
 #endif
 
 namespace {
@@ -289,12 +292,39 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
                                       VIEW_ID_LOCATION_BAR;
       ASSERT_TRUE(IsViewFocused(vid));
     }
+
+    gfx::NativeWindow window = browser()->window()->GetNativeHandle();
+    browser()->SelectTabContentsAt(0, true);
+    // Try the above, but with ctrl+tab. Since tab normally changes focus,
+    // this has regressed in the past. Loop through several times to be sure.
+    for (int j = 0; j < 15; j++) {
+      ViewID vid = kFocusPage[i][j % 5] ? VIEW_ID_TAB_CONTAINER_FOCUS_VIEW :
+                                          VIEW_ID_LOCATION_BAR;
+      ASSERT_TRUE(IsViewFocused(vid));
+
+      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, true,
+                                              false, false,
+                                              new MessageLoop::QuitTask());
+      ui_test_utils::RunMessageLoop();
+    }
+
+    // As above, but with ctrl+shift+tab.
+    browser()->SelectTabContentsAt(4, true);
+    for (int j = 14; j >= 0; --j) {
+      ViewID vid = kFocusPage[i][j % 5] ? VIEW_ID_TAB_CONTAINER_FOCUS_VIEW :
+                                          VIEW_ID_LOCATION_BAR;
+      ASSERT_TRUE(IsViewFocused(vid));
+
+      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, true,
+                                              true, false,
+                                              new MessageLoop::QuitTask());
+      ui_test_utils::RunMessageLoop();
+    }
   }
 }
 
 // Tabs remember focus with find-in-page box.
-// TODO(jcampan): http://crbug.com/23683 Disabled because it fails on Linux.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocusFindInPage) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our test page.
