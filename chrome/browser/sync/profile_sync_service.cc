@@ -21,6 +21,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -31,8 +32,9 @@
 #include "net/base/cookie_monster.h"
 #include "views/window/window.h"
 
+using browser_sync::BookmarkChangeProcessor;
+using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChangeProcessor;
-using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
 
 typedef GoogleServiceAuthError AuthError;
@@ -49,17 +51,22 @@ ProfileSyncService::ProfileSyncService(Profile* profile)
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false) {
-  change_processor_.reset(new ChangeProcessor(this));
+  BookmarkChangeProcessor* processor = new BookmarkChangeProcessor(this);
+  change_processors_.insert(processor);
+  // TODO: Move this back to StartUp
+  BookmarkModelAssociator* associator = new BookmarkModelAssociator(this);
+  processor->set_model_associator(associator);
 }
 
 ProfileSyncService::~ProfileSyncService() {
   Shutdown(false);
+  STLDeleteElements(&change_processors_);
 }
 
-void ProfileSyncService::set_model_associator(
-    browser_sync::ModelAssociator* associator) {
-  model_associator_ = associator;
-  change_processor_->set_model_associator(associator);
+void ProfileSyncService::set_change_processor(
+    browser_sync::ChangeProcessor* change_processor) {
+  change_processors_.clear();
+  change_processors_.insert(change_processor);
 }
 
 void ProfileSyncService::Initialize() {
@@ -153,14 +160,10 @@ void ProfileSyncService::StartUp() {
       profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
 
   backend_.reset(new SyncBackendHost(this, profile_->GetPath(),
-                                     change_processor_.get()));
+                                     change_processors_));
 
   registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
                  Source<Profile>(profile_));
-
-  // Create new model association manager and change processor.
-  model_associator_ = new ModelAssociator(this);
-  change_processor_->set_model_associator(model_associator_);
 
   InitializeBackend();
 }
@@ -171,13 +174,16 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   if (backend_.get())
     backend_->Shutdown(sync_disabled);
 
-  change_processor_->Stop();
+  for (std::set<ChangeProcessor*>::const_iterator it =
+       change_processors_.begin(); it != change_processors_.end(); ++it) {
+    (*it)->Stop();
+  }
   backend_.reset();
 
   // Clear all associations and throw away the association manager instance.
-  if (model_associator_.get()) {
-    model_associator_->ClearAll();
-    model_associator_ = NULL;
+  for (std::set<ChangeProcessor*>::const_iterator it =
+       change_processors_.begin(); it != change_processors_.end(); ++it) {
+    (*it)->GetModelAssociator()->DisassociateModels();
   }
 
   // Clear various flags.
@@ -222,8 +228,13 @@ bool ProfileSyncService::MergeAndSyncAcceptanceNeeded() const {
   if (profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted))
     return false;
 
-  return model_associator_->BookmarkModelHasUserCreatedNodes() &&
-         model_associator_->SyncModelHasUserCreatedNodes();
+  for (std::set<ChangeProcessor*>::const_iterator it =
+       change_processors_.begin(); it != change_processors_.end(); ++it) {
+    if ((*it)->GetModelAssociator()->ChromeModelHasUserCreatedNodes() &&
+        (*it)->GetModelAssociator()->SyncModelHasUserCreatedNodes())
+      return true;
+  }
+  return false;
 }
 
 bool ProfileSyncService::HasSyncSetupCompleted() const {
@@ -247,7 +258,10 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 // to do as little work as possible, to avoid further corruption or crashes.
 void ProfileSyncService::OnUnrecoverableError() {
   unrecoverable_error_detected_ = true;
-  change_processor_->Stop();
+  for (std::set<ChangeProcessor*>::const_iterator it =
+       change_processors_.begin(); it != change_processors_.end(); ++it) {
+    (*it)->Stop();
+  }
 
   // Tell the wizard so it can inform the user only if it is already open.
   wizard_.Step(SyncSetupWizard::FATAL_ERROR);
@@ -375,8 +389,17 @@ void ProfileSyncService::OnUserSubmittedAuth(
 
 void ProfileSyncService::OnUserAcceptedMergeAndSync() {
   base::TimeTicks start_time = base::TimeTicks::Now();
-  bool not_first_run = model_associator_->SyncModelHasUserCreatedNodes();
-  bool merge_success = model_associator_->AssociateModels();
+  bool not_first_run = false;
+  bool merge_success = true;
+  for (std::set<ChangeProcessor*>::const_iterator it =
+       change_processors_.begin(); it != change_processors_.end(); ++it) {
+    not_first_run |= (*it)->GetModelAssociator()->
+        SyncModelHasUserCreatedNodes();
+    // TODO(sync): Figure out what do to when a single associator fails.
+    // http://crbug.com/30038
+    merge_success &= (*it)->GetModelAssociator()->
+        AssociateModels();
+  }
   UMA_HISTOGRAM_MEDIUM_TIMES("Sync.UserPerceivedBookmarkAssociation",
                              base::TimeTicks::Now() - start_time);
   if (!merge_success) {
@@ -388,8 +411,10 @@ void ProfileSyncService::OnUserAcceptedMergeAndSync() {
   wizard_.Step(not_first_run ? SyncSetupWizard::DONE :
                SyncSetupWizard::DONE_FIRST_TIME);
 
-  change_processor_->Start(profile_->GetBookmarkModel(),
-                           backend_->GetUserShareHandle());
+  for (std::set<ChangeProcessor*>::const_iterator it =
+       change_processors_.begin(); it != change_processors_.end(); ++it) {
+    (*it)->Start(profile(), backend_->GetUserShareHandle());
+  }
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
@@ -406,7 +431,10 @@ void ProfileSyncService::OnUserCancelledDialog() {
 void ProfileSyncService::StartProcessingChangesIfReady() {
   BookmarkModel* model = profile_->GetBookmarkModel();
 
-  DCHECK(!change_processor_->IsRunning());
+  for (std::set<ChangeProcessor*>::const_iterator it =
+       change_processors_.begin(); it != change_processors_.end(); ++it) {
+    DCHECK(!(*it)->IsRunning());
+  }
 
   // First check if the subsystems are ready.  We can't proceed until they
   // both have finished loading.
@@ -424,8 +452,15 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
 
   // We're ready to merge the models.
   base::TimeTicks start_time = base::TimeTicks::Now();
-  bool not_first_run = model_associator_->SyncModelHasUserCreatedNodes();
-  bool merge_success = model_associator_->AssociateModels();
+  bool not_first_run = false;
+  bool merge_success = true;
+  for (std::set<ChangeProcessor*>::const_iterator it =
+       change_processors_.begin(); it != change_processors_.end(); ++it) {
+    not_first_run |= (*it)->GetModelAssociator()->
+        SyncModelHasUserCreatedNodes();
+    merge_success &= (*it)->GetModelAssociator()->
+        AssociateModels();
+  }
   UMA_HISTOGRAM_TIMES("Sync.BookmarkAssociationTime",
                       base::TimeTicks::Now() - start_time);
   if (!merge_success) {
@@ -437,8 +472,10 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
   wizard_.Step(not_first_run ? SyncSetupWizard::DONE :
                SyncSetupWizard::DONE_FIRST_TIME);
 
-  change_processor_->Start(profile_->GetBookmarkModel(),
-                           backend_->GetUserShareHandle());
+  for (std::set<ChangeProcessor*>::const_iterator it =
+       change_processors_.begin(); it != change_processors_.end(); ++it) {
+    (*it)->Start(profile(), backend_->GetUserShareHandle());
+  }
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
@@ -469,5 +506,9 @@ bool ProfileSyncService::ShouldPushChanges() {
   // True only after all bootstrapping has succeeded: the bookmark model is
   // loaded, the sync backend is initialized, the two domains are
   // consistent with one another, and no unrecoverable error has transpired.
-  return change_processor_->IsRunning();
+  for (std::set<ChangeProcessor*>::const_iterator it =
+       change_processors_.begin(); it != change_processors_.end(); ++it) {
+    if (!(*it)->IsRunning()) return false;
+  }
+  return true;
 }

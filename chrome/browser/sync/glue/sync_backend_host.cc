@@ -25,12 +25,12 @@ namespace browser_sync {
 
 SyncBackendHost::SyncBackendHost(SyncFrontend* frontend,
                                  const FilePath& profile_path,
-                                 ChangeProcessingInterface* processor)
+                                 std::set<ChangeProcessor*> processors)
     : core_thread_("Chrome_SyncCoreThread"),
       frontend_loop_(MessageLoop::current()),
       bookmark_model_worker_(NULL),
       frontend_(frontend),
-      processor_(processor),
+      processors_(processors),
       sync_data_folder_path_(profile_path.Append(kSyncDataFolderName)),
       last_auth_error_(AuthError::None()) {
   core_ = new Core(this);
@@ -243,7 +243,12 @@ void SyncBackendHost::Core::OnChangesApplied(
     DLOG(WARNING) << "Could not update bookmark model from non-UI thread";
     return;
   }
-  host_->processor_->ApplyChangesFromSyncModel(trans, changes, change_count);
+  for (std::set<ChangeProcessor*>::const_iterator it =
+       host_->processors_.begin(); it != host_->processors_.end(); ++it) {
+    // TODO(sync): Filter per data-type here and apply only the relevant
+    // changes for each processor.
+    (*it)->ApplyChangesFromSyncModel(trans, changes, change_count);
+  }
 }
 
 void SyncBackendHost::Core::OnSyncCycleCompleted() {

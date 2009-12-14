@@ -15,7 +15,8 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/model_associator.h"
+#include "chrome/browser/sync/glue/bookmark_change_processor.h"
+#include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -23,15 +24,17 @@
 #include "chrome/test/sync/test_http_bridge_factory.h"
 
 using std::vector;
-using browser_sync::ChangeProcessingInterface;
+using browser_sync::BookmarkChangeProcessor;
+using browser_sync::BookmarkModelAssociator;
+using browser_sync::ChangeProcessor;
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
 using browser_sync::TestHttpBridgeFactory;
 
-class TestModelAssociator : public ModelAssociator {
+class TestModelAssociator : public BookmarkModelAssociator {
  public:
   explicit TestModelAssociator(ProfileSyncService* service)
-      : ModelAssociator(service) {
+      : BookmarkModelAssociator(service) {
   }
 
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
@@ -92,7 +95,10 @@ class TestProfileSyncService : public ProfileSyncService {
   }
 
   virtual void InitializeBackend() {
-    set_model_associator(new TestModelAssociator(this));
+    change_processor_ = new BookmarkChangeProcessor(this);
+    model_associator_ = new TestModelAssociator(this);
+    change_processor_->set_model_associator(model_associator_);
+    set_change_processor(change_processor_);
     TestHttpBridgeFactory* factory = new TestHttpBridgeFactory();
     TestHttpBridgeFactory* factory2 = new TestHttpBridgeFactory();
     backend()->InitializeForTestMode(L"testuser", factory, factory2);
@@ -112,6 +118,16 @@ class TestProfileSyncService : public ProfileSyncService {
     // Never show the dialog.
     return false;
   }
+
+  BookmarkChangeProcessor* change_processor() {
+    return change_processor_;
+  }
+  BookmarkModelAssociator* model_associator() {
+    return model_associator_;
+  }
+
+  BookmarkChangeProcessor* change_processor_;
+  BookmarkModelAssociator* model_associator_;
 };
 
 // FakeServerChange constructs a list of sync_api::ChangeRecords while modifying
@@ -228,7 +244,7 @@ class FakeServerChange {
   }
 
   // Pass the fake change list to |service|.
-  void ApplyPendingChanges(browser_sync::ChangeProcessingInterface* processor) {
+  void ApplyPendingChanges(browser_sync::ChangeProcessor* processor) {
     processor->ApplyChangesFromSyncModel(trans_,
         changes_.size() ? &changes_[0] : NULL, changes_.size());
   }
@@ -279,14 +295,14 @@ class ProfileSyncServiceTest : public testing::Test {
     MessageLoop::current()->RunAllPending();
   }
 
-  ModelAssociator* associator() {
+  BookmarkModelAssociator* associator() {
     DCHECK(service_.get());
     return service_->model_associator_;
   }
 
-  ChangeProcessingInterface* change_processor() {
+  BookmarkChangeProcessor* change_processor() {
     DCHECK(service_.get());
-    return service_->change_processor_.get();
+    return service_->change_processor_;
   }
 
   void StartSyncService() {
@@ -468,7 +484,7 @@ class ProfileSyncServiceTest : public testing::Test {
   ChromeThread ui_thread_;
   ChromeThread file_thread_;
 
-  scoped_ptr<ProfileSyncService> service_;
+  scoped_ptr<TestProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;
   BookmarkModel* model_;
 };
@@ -922,7 +938,7 @@ static TestData kF2Children[] = {
   { L"f2u1", "http://www.f2u1.com/" },
 };
 
-static TestData kOtherBookmarksChildren[] = {
+static TestData kOtherBookmarkChildren[] = {
   { L"f3", NULL },
   { L"u4", "http://www.u4.com/" },
   { L"u3", "http://www.u3.com/" },
@@ -1002,8 +1018,8 @@ void ProfileSyncServiceTestWithData::WriteTestDataToBookmarkModel() {
 
   const BookmarkNode* other_bookmarks_node = model_->other_node();
   PopulateFromTestData(other_bookmarks_node,
-                       kOtherBookmarksChildren,
-                       arraysize(kOtherBookmarksChildren));
+                       kOtherBookmarkChildren,
+                       arraysize(kOtherBookmarkChildren));
 
   ASSERT_GE(other_bookmarks_node->GetChildCount(), 6);
   const BookmarkNode* f3_node = other_bookmarks_node->GetChild(0);
@@ -1032,8 +1048,8 @@ void ProfileSyncServiceTestWithData::ExpectBookmarkModelMatchesTestData() {
 
   const BookmarkNode* other_bookmarks_node = model_->other_node();
   CompareWithTestData(other_bookmarks_node,
-                      kOtherBookmarksChildren,
-                      arraysize(kOtherBookmarksChildren));
+                      kOtherBookmarkChildren,
+                      arraysize(kOtherBookmarkChildren));
 
   ASSERT_GE(other_bookmarks_node->GetChildCount(), 6);
   const BookmarkNode* f3_node = other_bookmarks_node->GetChild(0);

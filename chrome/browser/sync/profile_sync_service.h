@@ -28,7 +28,6 @@ class MessageLoop;
 class Profile;
 
 namespace browser_sync {
-class ModelAssociator;
 
 class UnrecoverableErrorHandler {
  public:
@@ -231,7 +230,7 @@ class ProfileSyncService : public NotificationObserver,
   virtual void InitializeBackend();
 
   // Tests need this.
-  void set_model_associator(browser_sync::ModelAssociator* associator);
+  void set_change_processor(browser_sync::ChangeProcessor* change_processor);
 
   // We keep track of the last auth error observed so we can cover up the first
   // "expected" auth failure from observers.
@@ -274,9 +273,6 @@ class ProfileSyncService : public NotificationObserver,
   // This specifies where to find the sync server.
   GURL sync_service_url_;
 
-  // Model association manager instance.
-  scoped_refptr<browser_sync::ModelAssociator> model_associator_;
-
   // The last time we detected a successful transition from SYNCING state.
   // Our backend notifies us whenever we should take a new snapshot.
   base::Time last_synced_time_;
@@ -285,7 +281,8 @@ class ProfileSyncService : public NotificationObserver,
   // other threads.
   scoped_ptr<browser_sync::SyncBackendHost> backend_;
 
-  scoped_ptr<browser_sync::ChangeProcessor> change_processor_;
+  // The change processors that handle the different data types.
+  std::set<browser_sync::ChangeProcessor*> change_processors_;
 
   NotificationRegistrar registrar_;
 

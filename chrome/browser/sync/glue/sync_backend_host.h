@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
 #define CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
 
+#include <set>
 #include <string>
 
 #include "base/file_path.h"
@@ -20,6 +21,8 @@
 #include "googleurl/src/gurl.h"
 
 namespace browser_sync {
+
+class ChangeProcessor;
 
 // SyncFrontend is the interface used by SyncBackendHost to communicate with
 // the entity that created it and, presumably, is interested in sync-related
@@ -49,21 +52,6 @@ class SyncFrontend {
   DISALLOW_COPY_AND_ASSIGN(SyncFrontend);
 };
 
-// An interface used to apply changes from the sync model to the browser's
-// native model.  This does not currently distinguish between model data types.
-class ChangeProcessingInterface {
- public:
-  // Changes have been applied to the backend model and are ready to be
-  // applied to the frontend model. See syncapi.h for detailed instructions on
-  // how to interpret and process |changes|.
-  virtual void ApplyChangesFromSyncModel(
-      const sync_api::BaseTransaction* trans,
-      const sync_api::SyncManager::ChangeRecord* changes,
-      int change_count) = 0;
- protected:
-  virtual ~ChangeProcessingInterface() { }
-};
-
 // A UI-thread safe API into the sync backend that "hosts" the top-level
 // syncapi element, the SyncManager, on its own thread. This class handles
 // dispatch of potentially blocking calls to appropriate threads and ensures
@@ -79,7 +67,7 @@ class SyncBackendHost {
   // it used to call the constructor), and push changes from sync_api through
   // |processor|.
   SyncBackendHost(SyncFrontend* frontend, const FilePath& profile_path,
-                  ChangeProcessingInterface* processor);
+                  std::set<ChangeProcessor*> processor);
   ~SyncBackendHost();
 
   // Called on |frontend_loop_| to kick off asynchronous initialization.
@@ -282,7 +270,8 @@ class SyncBackendHost {
   // The frontend which we serve (and are owned by).
   SyncFrontend* frontend_;
 
-  ChangeProcessingInterface* processor_;  // Guaranteed to outlive us.
+  // The change processors that handle the different data types.
+  std::set<ChangeProcessor*> processors_;
 
   // Path of the folder that stores the sync data files.
   FilePath sync_data_folder_path_;

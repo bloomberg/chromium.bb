@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/model_associator.h"
+#include "chrome/browser/sync/glue/bookmark_model_associator.h"
 
 #include <stack>
 
@@ -11,6 +11,7 @@
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 
 namespace browser_sync {
@@ -150,29 +151,32 @@ const BookmarkNode* BookmarkNodeIdIndex::Find(int64 id) const {
   return iter == node_index_.end() ? NULL : iter->second;
 }
 
-ModelAssociator::ModelAssociator(ProfileSyncService* sync_service)
+BookmarkModelAssociator::BookmarkModelAssociator(
+    ProfileSyncService* sync_service)
     : sync_service_(sync_service),
-      task_pending_(false) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(persist_associations_(this)) {
   DCHECK(sync_service_);
 }
 
-void ModelAssociator::ClearAll() {
+bool BookmarkModelAssociator::DisassociateModels() {
   id_map_.clear();
   id_map_inverse_.clear();
   dirty_associations_sync_ids_.clear();
+  return true;
 }
 
-int64 ModelAssociator::GetSyncIdFromBookmarkId(int64 node_id) const {
+int64 BookmarkModelAssociator::GetSyncIdFromBookmarkId(int64 node_id) const {
   BookmarkIdToSyncIdMap::const_iterator iter = id_map_.find(node_id);
   return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
 }
 
-const BookmarkNode* ModelAssociator::GetBookmarkNodeFromSyncId(int64 sync_id) {
+const BookmarkNode* BookmarkModelAssociator::GetBookmarkNodeFromSyncId(
+    int64 sync_id) {
   SyncIdToBookmarkNodeMap::const_iterator iter = id_map_inverse_.find(sync_id);
   return iter == id_map_inverse_.end() ? NULL : iter->second;
 }
 
-bool ModelAssociator::InitSyncNodeFromBookmarkId(
+bool BookmarkModelAssociator::InitSyncNodeFromBookmarkId(
     int64 node_id,
     sync_api::BaseNode* sync_node) {
   DCHECK(sync_node);
@@ -185,7 +189,8 @@ bool ModelAssociator::InitSyncNodeFromBookmarkId(
   return true;
 }
 
-void ModelAssociator::Associate(const BookmarkNode* node, int64 sync_id) {
+void BookmarkModelAssociator::Associate(const BookmarkNode* node,
+                                        int64 sync_id) {
   int64 node_id = node->id();
   DCHECK_NE(sync_id, sync_api::kInvalidId);
   DCHECK(id_map_.find(node_id) == id_map_.end());
@@ -196,7 +201,7 @@ void ModelAssociator::Associate(const BookmarkNode* node, int64 sync_id) {
   PostPersistAssociationsTask();
 }
 
-void ModelAssociator::Disassociate(int64 sync_id) {
+void BookmarkModelAssociator::Disassociate(int64 sync_id) {
   SyncIdToBookmarkNodeMap::iterator iter = id_map_inverse_.find(sync_id);
   if (iter == id_map_inverse_.end())
     return;
@@ -205,16 +210,16 @@ void ModelAssociator::Disassociate(int64 sync_id) {
   dirty_associations_sync_ids_.erase(sync_id);
 }
 
-bool ModelAssociator::BookmarkModelHasUserCreatedNodes() const {
+bool BookmarkModelAssociator::ChromeModelHasUserCreatedNodes() {
   BookmarkModel* model = sync_service_->profile()->GetBookmarkModel();
   DCHECK(model->IsLoaded());
   return model->GetBookmarkBarNode()->GetChildCount() > 0 ||
          model->other_node()->GetChildCount() > 0;
 }
 
-bool ModelAssociator::SyncModelHasUserCreatedNodes() {
+bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes() {
   int64 bookmark_bar_sync_id;
-  if (!GetSyncIdForTaggedNode(kBookmarkBarTag,&bookmark_bar_sync_id)) {
+  if (!GetSyncIdForTaggedNode(kBookmarkBarTag, &bookmark_bar_sync_id)) {
     sync_service_->OnUnrecoverableError();
     return false;
   }
@@ -245,8 +250,9 @@ bool ModelAssociator::SyncModelHasUserCreatedNodes() {
          other_bookmarks_node.GetFirstChildId() != sync_api::kInvalidId;
 }
 
-bool ModelAssociator::NodesMatch(const BookmarkNode* bookmark,
-                                 const sync_api::BaseNode* sync_node) const {
+bool BookmarkModelAssociator::NodesMatch(const BookmarkNode* bookmark,
+                                          const sync_api::BaseNode* sync_node)
+    const {
   if (bookmark->GetTitle() != sync_node->GetTitle())
     return false;
   if (bookmark->is_folder() != sync_node->GetIsFolder())
@@ -261,7 +267,7 @@ bool ModelAssociator::NodesMatch(const BookmarkNode* bookmark,
   return true;
 }
 
-bool ModelAssociator::AssociateTaggedPermanentNode(
+bool BookmarkModelAssociator::AssociateTaggedPermanentNode(
     const BookmarkNode* permanent_node, const std::string&tag) {
   // Do nothing if |permanent_node| is already initialized and associated.
   int64 sync_id = GetSyncIdFromBookmarkId(permanent_node->id());
@@ -274,8 +280,8 @@ bool ModelAssociator::AssociateTaggedPermanentNode(
   return true;
 }
 
-bool ModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
-                                             int64* sync_id) {
+bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
+                                                      int64* sync_id) {
   sync_api::ReadTransaction trans(
       sync_service_->backend()->GetUserShareHandle());
   sync_api::ReadNode sync_node(&trans);
@@ -285,20 +291,20 @@ bool ModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
   return true;
 }
 
-bool ModelAssociator::AssociateModels() {
+bool BookmarkModelAssociator::AssociateModels() {
   // Try to load model associations from persisted associations first. If that
   // succeeds, we don't need to run the complex model matching algorithm.
   if (LoadAssociations())
     return true;
 
-  ClearAll();
+  DisassociateModels();
 
   // We couldn't load model associations from persisted associations. So build
   // them.
   return BuildAssociations();
 }
 
-bool ModelAssociator::BuildAssociations() {
+bool BookmarkModelAssociator::BuildAssociations() {
   // Algorithm description:
   // Match up the roots and recursively do the following:
   // * For each sync node for the current sync parent node, find the best
@@ -379,15 +385,15 @@ bool ModelAssociator::BuildAssociations() {
       if (child_node) {
         model->Move(child_node, parent_node, index);
         // Set the favicon for bookmark node from sync node or vice versa.
-        if (ChangeProcessor::SetBookmarkFavicon(&sync_child_node,
+        if (BookmarkChangeProcessor::SetBookmarkFavicon(&sync_child_node,
             child_node, sync_service_->profile())) {
-          ChangeProcessor::SetSyncNodeFavicon(child_node, model,
-                                              &sync_child_node);
+          BookmarkChangeProcessor::SetSyncNodeFavicon(child_node, model,
+                                                       &sync_child_node);
         }
       } else {
         // Create a new bookmark node for the sync node.
-        child_node = ChangeProcessor::CreateBookmarkNode(&sync_child_node,
-            parent_node, model, index);
+        child_node = BookmarkChangeProcessor::CreateBookmarkNode(
+            &sync_child_node, parent_node, model, index);
       }
       Associate(child_node, sync_child_id);
       if (sync_child_node.GetIsFolder())
@@ -403,8 +409,8 @@ bool ModelAssociator::BuildAssociations() {
     // So the children starting from index in the parent bookmark node are the
     // ones that are not present in the parent sync node. So create them.
     for (int i = index; i < parent_node->GetChildCount(); ++i) {
-      sync_child_id = ChangeProcessor::CreateSyncNode(parent_node, model, i,
-          &trans, this, sync_service_);
+      sync_child_id = BookmarkChangeProcessor::CreateSyncNode(parent_node,
+          model, i, &trans, this, sync_service_);
       if (parent_node->GetChild(i)->is_folder())
         dfs_stack.push(sync_child_id);
     }
@@ -412,20 +418,17 @@ bool ModelAssociator::BuildAssociations() {
   return true;
 }
 
-void ModelAssociator::PostPersistAssociationsTask() {
+void BookmarkModelAssociator::PostPersistAssociationsTask() {
   // No need to post a task if a task is already pending.
-  if (task_pending_)
+  if (!persist_associations_.empty())
     return;
-  task_pending_ = true;
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &ModelAssociator::PersistAssociations));
+      persist_associations_.NewRunnableMethod(
+          &BookmarkModelAssociator::PersistAssociations));
 }
 
-void ModelAssociator::PersistAssociations() {
-  DCHECK(task_pending_);
-  task_pending_ = false;
-
+void BookmarkModelAssociator::PersistAssociations() {
   // If there are no dirty associations we have nothing to do. We handle this
   // explicity instead of letting the for loop do it to avoid creating a write
   // transaction in this case.
@@ -456,7 +459,7 @@ void ModelAssociator::PersistAssociations() {
   dirty_associations_sync_ids_.clear();
 }
 
-bool ModelAssociator::LoadAssociations() {
+bool BookmarkModelAssociator::LoadAssociations() {
   BookmarkModel* model = sync_service_->profile()->GetBookmarkModel();
   DCHECK(model->IsLoaded());
   // If the bookmarks changed externally, our previous associations may not be
