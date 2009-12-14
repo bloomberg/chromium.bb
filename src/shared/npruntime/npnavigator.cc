@@ -43,6 +43,7 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npcapability.h"
+#include "native_client/src/shared/npruntime/npn_gate.h"
 #include "native_client/src/shared/npruntime/nprpc.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
@@ -61,6 +62,7 @@ std::set<const NPUTF8*, NPNavigator::StringCompare>*
     NPNavigator::string_set = NULL;
 uint32_t NPNavigator::next_pending_call = 0;
 
+NPPluginFuncs NPNavigator::plugin_funcs;
 
 static void DebugPrintf(const char *fmt, ...) {
   va_list argptr;
@@ -145,13 +147,13 @@ NPP NPNavigator::GetPluginNPP(NPP nacl_npp) {
 NACL_SRPC_METHOD_ARRAY(NPNavigator::srpc_methods) = {
   // Exported from NPNavigator.
   { "NP_SetUpcallServices:s:", SetUpcallServices },
-  { "NP_Initialize:ii:", Initialize },
+  { "NP_Initialize:iih:", Initialize },
   { "NPP_New:siiCC:i", New },
   { "NPP_Destroy:i:i", Destroy },
   { "NPP_GetScriptableInstance:i:C", GetScriptableInstance },
   { "NPP_HandleEvent:iC:i", HandleEvent },
   { "NPP_URLNotify:ihi:", URLNotify },
-  { "NPN_DoAsyncCall:i", DoAsyncCall },
+  { "NPN_DoAsyncCall:i:", DoAsyncCall },
   // Exported from NPObjectStub
   { "NPN_Deallocate:C:", NPObjectStub::Deallocate },
   { "NPN_Invalidate:C:", NPObjectStub::Invalidate },
@@ -199,7 +201,7 @@ NaClSrpcError NPNavigator::Initialize(NaClSrpcChannel* channel,
   uint32_t peer_pid = static_cast<uint32_t>(inputs[0]->u.ival);
   uint32_t npvariant_size = static_cast<size_t>(inputs[1]->u.ival);
 
-  DebugPrintf("NPP_Initialize: peer_pid=%d, size=%d\n",
+  DebugPrintf("NP_Initialize: peer_pid=%d, size=%d\n",
               peer_pid,
               npvariant_size);
   // There is only one NPNavigator per call to Initialize, and it is
@@ -222,16 +224,28 @@ NaClSrpcError NPNavigator::Initialize(NaClSrpcChannel* channel,
   NaClSrpcImcDescType upcall_desc = inputs[2]->u.hval;
   NaClSrpcChannel* upcall_channel = new(std::nothrow) NaClSrpcChannel;
   if (NULL == upcall_channel) {
+    DebugPrintf("  Error: couldn't create upcall_channel \n");
     delete navigator;
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   if (!NaClSrpcClientCtor(upcall_channel, upcall_desc)) {
+    DebugPrintf("  Error: couldn't create SRPC upcall client\n");
     delete upcall_channel;
     delete navigator;
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   channel->server_instance_data = static_cast<void*>(navigator);
   navigator->upcall_channel_ = upcall_channel;
+  // Invoke the client NP_Initialize.
+  memset(reinterpret_cast<void*>(&plugin_funcs), 0, sizeof(plugin_funcs));
+  plugin_funcs.size = static_cast<uint16_t>(sizeof(plugin_funcs));
+  plugin_funcs.version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
+  NPNetscapeFuncs* browser_funcs =
+      const_cast<NPNetscapeFuncs*>(GetBrowserFuncs());
+  NPError err = NP_Initialize(browser_funcs, &plugin_funcs);
+  if (NPERR_NO_ERROR != err) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -276,7 +290,8 @@ NaClSrpcError NPNavigator::New(NaClSrpcChannel* channel,
   char* mimetype = inputs[0]->u.sval;
   NPP npp = GetNaClNPP(NPBridge::IntToNpp(inputs[1]->u.ival), true);
   uint32_t argc = static_cast<uint32_t>(inputs[2]->u.ival);
-  DebugPrintf("NPP_New: mime=%s, argc=%"PRIu32"\n", mimetype, argc);
+  DebugPrintf("NPP_New: npp=%d, mime=%s, argc=%"PRIu32"\n",
+              npp, mimetype, argc);
 
   NPNavigator* nav = static_cast<NPNavigator*>(channel->server_instance_data);
   // Build the argv and argn strutures.
@@ -354,7 +369,13 @@ NaClSrpcError NPNavigator::HandleEvent(NaClSrpcChannel* channel,
   NPPepperEvent* event =
       reinterpret_cast<NPPepperEvent*>(inputs[1]->u.caval.carr);
   DebugPrintf("NPP_HandleEvent(npp %p, %p)\n", npp, event);
-  outputs[0]->u.ival = NPP_HandleEvent(npp, reinterpret_cast<void*>(event));
+  if (NULL == plugin_funcs.event) {
+    // Event was not handled.
+    outputs[0]->u.ival = 0;
+  } else {
+    outputs[0]->u.ival =
+        plugin_funcs.event(npp, reinterpret_cast<void*>(event));
+  }
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -387,18 +408,24 @@ NPError NPNavigator::NewImpl(NPMIMEType mimetype,
                              char* argn[],
                              char* argv[],
                              NaClSrpcArg* result_object) {
-  NPError retval = NPP_New(mimetype,
-                           npp,
-                           0,  // TODO(sehr): what to do with mode?
-                           argc,
-                           argn,
-                           argv,
-                           NULL);
+  if (NULL == plugin_funcs.newp) {
+    return NPERR_GENERIC_ERROR;
+  }
+  NPError retval = plugin_funcs.newp(mimetype,
+                                     npp,
+                                     0,  // TODO(sehr): what to do with mode?
+                                     argc,
+                                     argn,
+                                     argv,
+                                     NULL);
   return retval;
 }
 
 NPError NPNavigator::DestroyImpl(NPP npp) {
-  return NPP_Destroy(npp, NULL);
+  if (NULL == plugin_funcs.destroy) {
+    return NPERR_GENERIC_ERROR;
+  }
+  return plugin_funcs.destroy(npp, NULL);
 }
 
 NPCapability* NPNavigator::GetScriptableInstanceImpl(NPP npp) {
@@ -426,10 +453,9 @@ void NPNavigator::URLNotifyImpl(NPP npp,
     // handle; This is also how the callback knows that there was a
     // problem.
   }
-  // Only one notify_ is allowed from a particular NPP, making it impossible
-  // to handle multiple simultaneous GetURLNotify or PostURLNotify calls.
-  if (notify_) {
-    notify_(url_, notify_data_, received_handle);
+  if (NULL != plugin_funcs.urlnotify) {
+    plugin_funcs.urlnotify(npp, url_, reason, notify_data_);
+    // TODO(sehr): remove these vestigial bits.
     notify_ = NULL;
     notify_data_ = NULL;
     free(url_);

@@ -54,10 +54,18 @@
 #endif
 
 #ifndef _NPAPI_H_
+#ifdef __native_client__
+#include <nacl/npapi.h>
+#else
 #include "third_party/npapi/bindings/npapi.h"
 #endif
+#endif
 
+#ifdef __native_client__
+#include <nacl/npruntime.h>
+#else
 #include "third_party/npapi/bindings/npruntime.h"
+#endif
 
 /******************************************************************************************
    plug-in function table macros
@@ -467,14 +475,14 @@ typedef void (* NP_LOADDS NPN_SetExceptionUPP)(NPObject *obj, const NPUTF8 *mess
 		(*(FUNC))((ARG1), (ARG2))	
 
 /* NPN_PushPopupsEnabledStateUPP */
-typedef bool (* NP_LOADDS NPN_PushPopupsEnabledStateUPP)(NPP npp, NPBool enabled);
+typedef void (* NP_LOADDS NPN_PushPopupsEnabledStateUPP)(NPP npp, NPBool enabled);
 #define NewNPN_PushPopupsEnabledStateProc(FUNC)		\
 		((NPN_PushPopupsEnabledStateUPP) (FUNC))
 #define CallNPN_PushPopupsEnabledStateProc(FUNC, ARG1, ARG2)		\
 		(*(FUNC))((ARG1), (ARG2))
 
 /* NPN_PopPopupsEnabledState */
-typedef bool (* NP_LOADDS NPN_PopPopupsEnabledStateUPP)(NPP npp);
+typedef void (* NP_LOADDS NPN_PopPopupsEnabledStateUPP)(NPP npp);
 #define NewNPN_PopPopupsEnabledStateProc(FUNC)		\
 		((NPN_PopPopupsEnabledStateUPP) (FUNC))
 #define CallNPN_PopPopupsEnabledStateProc(FUNC, ARG1)		\

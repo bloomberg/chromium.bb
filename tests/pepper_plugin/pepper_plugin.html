@@ -6,6 +6,11 @@ found in the LICENSE file.
 -->
 <head>
 <title> Pepper Plugin Demo </title>
+</head>
+
+<body style="background-image:url(nacl.png); background-repeat:repeat;"
+      onload="runScripts();">
+
 <script type="text/javascript">
 var event_box;
 
@@ -15,24 +20,25 @@ var addLine = function(line) {
 
 var runScripts = function() {
   event_box = document.getElementById("event_text_box");;
+  window.alert('setting text box');
   var plugin_obj = document.getElementById("plugin");
   addLine('<b>Event log</b>');
   plugin_obj.setTextBox(addLine);
+  window.alert('set text box');
 }
 </script>
-</head>
-
-<body style="background-image:url(nacl.png); background-repeat:repeat;"
-      onload="runScripts()">
-
 <p>
 This page embeds a NaCl module for testing Pepper.
 </p>
 <table>
 <tr>
 <td valign="top" width="50%">
-  <embed id="plugin" type="application/x-nacl-srpc" src="pepper_plugin.nexe"
-         width="400" height="400" />
+  <embed name="nacl_module"
+         id="plugin"
+         type="application/x-nacl-srpc"
+         src="pepper_plugin.nexe"
+         width="400"
+         height="400" />
 </td>
 <td valign="top" style="background-color:Silver" width="50%">
 <div id="event_text_box" style="width:400px; height:400px; overflow:auto">
@@ -40,6 +46,5 @@ This page embeds a NaCl module for testing Pepper.
 </td>
 </tr>
 </table>
-
 </body>
 </html>

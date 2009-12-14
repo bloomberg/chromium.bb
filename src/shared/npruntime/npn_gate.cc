@@ -1,37 +1,10 @@
-
-/*
- * Copyright 2008, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
+// Copyright (c) 2008 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // NaCl-NPAPI Interface
+
+#include "native_client/src/shared/npruntime/npn_gate.h"
 
 #include <stdlib.h>
 
@@ -41,15 +14,111 @@
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 
-void* NPN_MemAlloc(uint32_t size) {
-  return malloc(size);
+namespace nacl {
+const NPNetscapeFuncs* GetBrowserFuncs() {
+  static const NPNetscapeFuncs kBrowserFuncs = {
+    static_cast<uint16_t>(sizeof(NPNetscapeFuncs)),
+    (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR,
+    NPN_GetURL,
+    NPN_PostURL,
+    NPN_RequestRead,
+    NPN_NewStream,
+    NPN_Write,
+    NPN_DestroyStream,
+    NPN_Status,
+    NPN_UserAgent,
+    NPN_MemAlloc,
+    NPN_MemFree,
+    NPN_MemFlush,
+    NPN_ReloadPlugins,
+    NPN_GetJavaEnv,
+    NPN_GetJavaPeer,
+    NPN_GetURLNotify,
+    NPN_PostURLNotify,
+    NPN_GetValue,
+    NPN_SetValue,
+    NPN_InvalidateRect,
+    NPN_InvalidateRegion,
+    NPN_ForceRedraw,
+    NPN_GetStringIdentifier,
+    NPN_GetStringIdentifiers,
+    NPN_GetIntIdentifier,
+    NPN_IdentifierIsString,
+    NPN_UTF8FromIdentifier,
+    NPN_IntFromIdentifier,
+    NPN_CreateObject,
+    NPN_RetainObject,
+    NPN_ReleaseObject,
+    NPN_Invoke,
+    NPN_InvokeDefault,
+    NPN_Evaluate,
+    NPN_GetProperty,
+    NPN_SetProperty,
+    NPN_RemoveProperty,
+    NPN_HasProperty,
+    NPN_HasMethod,
+    NPN_ReleaseVariantValue,
+    NPN_SetException,
+    NPN_PushPopupsEnabledState,
+    NPN_PopPopupsEnabledState,
+    NPN_Enumerate,
+    NPN_PluginThreadAsyncCall,
+    NPN_Construct
+  };
+
+  return &kBrowserFuncs;
 }
 
-void NPN_MemFree(void* ptr) {
-  free(ptr);
+}  // namespace nacl
+
+NPError NPN_GetURL(NPP instance,
+                   const char* url,
+                   const char* window) {
+  // TODO(sehr): implement this.
+  return NPERR_GENERIC_ERROR;
 }
 
-void NPN_Status(NPP instance, const char* message) {
+NPError NPN_PostURL(NPP instance,
+                    const char* url,
+                    const char* window,
+                    uint32_t len,
+                    const char* buf,
+                    NPBool file) {
+  // TODO(sehr): implement this.
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError NPN_RequestRead(NPStream* stream,
+                        NPByteRange* rangeList) {
+  // TODO(sehr): implement this.
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError NPN_NewStream(NPP instance,
+                      NPMIMEType type,
+                      const char* window,
+                      NPStream** stream) {
+  // TODO(sehr): implement this.
+  return NPERR_GENERIC_ERROR;
+}
+
+int32_t NPN_Write(NPP instance,
+                  NPStream* stream,
+                  int32_t len,
+                  void* buffer) {
+  // TODO(sehr): implement this.
+  return -1;
+}
+
+NPError NPN_DestroyStream(NPP instance,
+                          NPStream* stream,
+                          NPReason reason) {
+  // TODO(sehr): implement this.
+  return NPERR_GENERIC_ERROR;
+}
+
+void NPN_Status(NPP instance,
+                const char* message) {
   if (NULL == instance || NULL == message) {
     return;
   }
@@ -60,7 +129,60 @@ void NPN_Status(NPP instance, const char* message) {
   navigator->SetStatus(instance, message);
 }
 
-NPError NPN_GetValue(NPP instance, NPNVariable variable, void* value) {
+const char* NPN_UserAgent(NPP instance) {
+  // TODO(sehr): implement this.
+  return NULL;
+}
+
+void* NPN_MemAlloc(uint32_t size) {
+  return malloc(size);
+}
+
+void NPN_MemFree(void* ptr) {
+  free(ptr);
+}
+
+uint32_t NPN_MemFlush(uint32_t size) {
+  // TODO(sehr): do we need to implement this?
+  return 0;
+}
+
+void NPN_ReloadPlugins(NPBool reloadPages) {
+  // TODO(sehr): implement this.
+}
+
+void* NPN_GetJavaEnv() {
+  // Pepper does not support this call.
+  return NULL;
+}
+
+void* NPN_GetJavaPeer(NPP instance) {
+  // Pepper does not support this call.
+  return NULL;
+}
+
+NPError NPN_GetURLNotify(NPP instance,
+                         const char* url,
+                         const char* window,
+                         void* notifyData) {
+  // TODO(sehr): implement this.
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError NPN_PostURLNotify(NPP instance,
+                          const char* url,
+                          const char* window,
+                          uint32_t len,
+                          const char* buf,
+                          NPBool file,
+                          void* notifyData) {
+  // TODO(sehr): implement this.
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError NPN_GetValue(NPP instance,
+                     NPNVariable variable,
+                     void* value) {
   if (NULL == instance) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
@@ -101,6 +223,41 @@ NPError NPN_GetValue(NPP instance, NPNVariable variable, void* value) {
     default:
       return NPERR_INVALID_PARAM;
   }
+}
+
+NPError NPN_SetValue(NPP instance,
+                     NPPVariable variable,
+                     void* ret_value) {
+  // TODO(sehr): implement this.
+  return NPERR_GENERIC_ERROR;
+}
+
+void NPN_InvalidateRect(NPP instance,
+                        NPRect* invalid_rect) {
+  if (NULL == instance) {
+    return;
+  }
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return;
+  }
+  navigator->InvalidateRect(instance, invalid_rect);
+}
+
+void NPN_InvalidateRegion(NPP instance,
+                          NPRegion region) {
+  // TODO(sehr): implement this.
+}
+
+void NPN_ForceRedraw(NPP instance) {
+  if (NULL == instance) {
+    return;
+  }
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return;
+  }
+  navigator->ForceRedraw(instance);
 }
 
 NPIdentifier NPN_GetStringIdentifier(const NPUTF8* name) {
@@ -159,7 +316,8 @@ int32_t NPN_IntFromIdentifier(NPIdentifier identifier) {
   return navigator->IntFromIdentifier(identifier);
 }
 
-NPObject* NPN_CreateObject(NPP npp, NPClass* aClass) {
+NPObject* NPN_CreateObject(NPP npp,
+                           NPClass* aClass) {
   if (NULL == npp || NULL == aClass) {
     return NULL;
   }
@@ -226,6 +384,14 @@ bool NPN_InvokeDefault(NPP npp,
   return object->_class->invokeDefault(object, args, argCount, result);
 }
 
+bool NPN_Evaluate(NPP npp,
+                  NPObject* obj,
+                  NPString* script,
+                  NPVariant* result) {
+  // TODO(sehr): implement this.
+  return false;
+}
+
 bool NPN_GetProperty(NPP npp,
                      NPObject* object,
                      NPIdentifier propertyName,
@@ -252,7 +418,9 @@ bool NPN_SetProperty(NPP npp,
   return object->_class->setProperty(object, propertyName, value);
 }
 
-bool NPN_RemoveProperty(NPP npp, NPObject* object, NPIdentifier propertyName) {
+bool NPN_RemoveProperty(NPP npp,
+                        NPObject* object,
+                        NPIdentifier propertyName) {
   if (NULL == npp ||
       NULL == object ||
       NULL == object->_class ||
@@ -262,44 +430,9 @@ bool NPN_RemoveProperty(NPP npp, NPObject* object, NPIdentifier propertyName) {
   return object->_class->removeProperty(object, propertyName);
 }
 
-#if 1 <= NP_VERSION_MAJOR || 19 <= NP_VERSION_MINOR
-// The following two functions for NPObject are supported in the NPAPI
-// version 0.19 and newer. Note currently we are using 0.18.
-
-bool NPN_Enumerate(NPP npp,
-                   NPObject* object,
-                   NPIdentifier** identifier,
-                   uint32_t* count) {
-  if (NULL == npp || NULL == object || NULL == object->_class) {
-    return false;
-  }
-  if (!NP_CLASS_STRUCT_VERSION_HAS_ENUM(object->_class) ||
-      NULL == object->_class->enumerate) {
-    *identifier = 0;
-    *count = 0;
-    return true;
-  }
-  return object->_class->enumerate(object, identifier, count);
-}
-
-bool NPN_Construct(NPP npp,
-                   NPObject* object,
-                   const NPVariant* args,
-                   uint32_t argCount,
-                   NPVariant* result) {
-  if (NULL == npp ||
-      NULL == object ||
-      NULL == object->_class ||
-      !NP_CLASS_STRUCT_VERSION_HAS_CTOR(object->_class) ||
-      NULL == object->_class->construct) {
-    return false;
-  }
-  return object->_class->construct(object, args, argCount, result);
-}
-
-#endif
-
-bool NPN_HasProperty(NPP npp, NPObject* object, NPIdentifier propertyName) {
+bool NPN_HasProperty(NPP npp,
+                     NPObject* object,
+                     NPIdentifier propertyName) {
   if (NULL == npp ||
       NULL == object ||
       NULL == object->_class ||
@@ -309,7 +442,9 @@ bool NPN_HasProperty(NPP npp, NPObject* object, NPIdentifier propertyName) {
   return object->_class->hasProperty(object, propertyName);
 }
 
-bool NPN_HasMethod(NPP npp, NPObject* object, NPIdentifier methodName) {
+bool NPN_HasMethod(NPP npp,
+                   NPObject* object,
+                   NPIdentifier methodName) {
   if (NULL == npp ||
       NULL == object ||
       NULL == object->_class ||
@@ -328,8 +463,8 @@ void NPN_ReleaseVariantValue(NPVariant* variant) {
   case NPVariantType_Double:
     break;
   case NPVariantType_String: {
-    const NPString* string = &NPVARIANT_TO_STRING(*variant);
-    NPN_MemFree(const_cast<NPUTF8*>(string->UTF8Characters));
+    const NPString* str = &NPVARIANT_TO_STRING(*variant);
+    NPN_MemFree(const_cast<NPUTF8*>(str->UTF8Characters));
     break;
   }
   case NPVariantType_Object: {
@@ -343,7 +478,8 @@ void NPN_ReleaseVariantValue(NPVariant* variant) {
   VOID_TO_NPVARIANT(*variant);
 }
 
-void NPN_SetException(NPObject* object, const NPUTF8* message) {
+void NPN_SetException(NPObject* object,
+                      const NPUTF8* message) {
   if (NULL == object) {
     return;
   }
@@ -362,26 +498,29 @@ void NPN_SetException(NPObject* object, const NPUTF8* message) {
   }
 }
 
-void NPN_InvalidateRect(NPP instance, NPRect* invalid_rect) {
-  if (NULL == instance) {
-    return;
-  }
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
-  if (NULL == navigator) {
-    return;
-  }
-  navigator->InvalidateRect(instance, invalid_rect);
+void NPN_PushPopupsEnabledState(NPP npp,
+                                NPBool enabled) {
+  // TODO(sehr): implement this.
 }
 
-void NPN_ForceRedraw(NPP instance) {
-  if (NULL == instance) {
-    return;
+void NPN_PopPopupsEnabledState(NPP npp) {
+  // TODO(sehr): implement this.
+}
+
+bool NPN_Enumerate(NPP npp,
+                   NPObject* object,
+                   NPIdentifier** identifier,
+                   uint32_t* count) {
+  if (NULL == npp || NULL == object || NULL == object->_class) {
+    return false;
   }
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
-  if (NULL == navigator) {
-    return;
+  if (!NP_CLASS_STRUCT_VERSION_HAS_ENUM(object->_class) ||
+      NULL == object->_class->enumerate) {
+    *identifier = 0;
+    *count = 0;
+    return true;
   }
-  navigator->ForceRedraw(instance);
+  return object->_class->enumerate(object, identifier, count);
 }
 
 void NPN_PluginThreadAsyncCall(NPP instance,
@@ -395,4 +534,19 @@ void NPN_PluginThreadAsyncCall(NPP instance,
     return;
   }
   navigator->PluginThreadAsyncCall(instance, func, user_data);
+}
+
+bool NPN_Construct(NPP npp,
+                   NPObject* object,
+                   const NPVariant* args,
+                   uint32_t argCount,
+                   NPVariant* result) {
+  if (NULL == npp ||
+      NULL == object ||
+      NULL == object->_class ||
+      !NP_CLASS_STRUCT_VERSION_HAS_CTOR(object->_class) ||
+      NULL == object->_class->construct) {
+    return false;
+  }
+  return object->_class->construct(object, args, argCount, result);
 }

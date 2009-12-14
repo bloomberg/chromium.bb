@@ -45,6 +45,7 @@
 #include <set>
 
 #include "native_client/src/shared/npruntime/npbridge.h"
+#include "native_client/src/third_party/npapi/files/include/npupp.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 namespace nacl {
@@ -114,6 +115,8 @@ class NPNavigator : public NPBridge {
   // The SRPC service used to send upcalls to the browser plugin.
   // This is used, among other things, to implement NPN_PluginThreadAsyncCall.
   NaClSrpcChannel* upcall_channel_;
+
+  static NPPluginFuncs plugin_funcs;
 
  public:
   // Creates a new instance of NPNavigator. argc and argv should be unmodified

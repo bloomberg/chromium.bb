@@ -47,6 +47,7 @@
 #include <nacl/nacl_npapi.h>
 #include <nacl/nacl_srpc.h>
 #include <nacl/npruntime.h>
+#include <nacl/npupp.h>
 
 
 // Dummy variables used to hold return values.
@@ -111,6 +112,7 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-int16_t NPP_HandleEvent(NPP instance, void* event) {
-  return 0;
+extern "C" NPError NP_Initialize(NPNetscapeFuncs* browser_funcs,
+                                 NPPluginFuncs* plugin_funcs) {
+  return NPERR_NO_ERROR;
 }

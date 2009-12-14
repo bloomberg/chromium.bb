@@ -38,6 +38,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <nacl/nacl_npapi.h>
 
 #include "native_client/tests/pepper_plugin/plugin_object.h"
 #include "native_client/tests/pepper_plugin/event_handler.h"
@@ -63,8 +64,12 @@ char* NP_GetMIMEDescription();
 }  // extern "C"
 
 // Plugin entry points
+
 NPError NPAPI NP_Initialize(NPNetscapeFuncs* browser_funcs,
                             NPPluginFuncs* plugin_funcs) {
+  printf("NP_Initialize... %p %p\n",
+         reinterpret_cast<void*>(browser_funcs),
+         reinterpret_cast<void*>(plugin_funcs));
   browser = browser_funcs;
   return NP_GetEntryPoints(plugin_funcs);
 }
@@ -97,8 +102,7 @@ NPError NPP_New(NPMIMEType pluginType,
                 int16 argc, char* argn[], char* argv[],
                 NPSavedData* saved) {
   if (browser->version >= 14) {
-    PluginObject* obj = reinterpret_cast<PluginObject*>(
-        browser->createobject(instance, PluginObject::GetPluginClass()));
+    NPObject* obj = NPP_GetScriptableInstance(instance);
     instance->pdata = obj;
     event_handler = new EventHandler(instance);
   }
@@ -109,7 +113,7 @@ NPError NPP_New(NPMIMEType pluginType,
 NPError NPP_Destroy(NPP instance, NPSavedData** save) {
   PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
   if (obj)
-    browser->releaseobject(obj->header());
+    NPN_ReleaseObject(obj->header());
 
   fflush(stdout);
   return NPERR_NO_ERROR;
@@ -197,6 +201,10 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
 
 NPError NPP_SetValue(NPP instance, NPNVariable variable, void* value) {
   return NPERR_GENERIC_ERROR;
+}
+
+NPObject *NPP_GetScriptableInstance(NPP instance) {
+  return browser->createobject(instance, PluginObject::GetPluginClass());
 }
 
 NPError NP_GetValue(void* instance, NPPVariable variable, void* value) {

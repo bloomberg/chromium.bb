@@ -33,11 +33,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <new>
+#include <nacl/npupp.h>
 #include "native_client/tests/npapi_bridge/plugin.h"
 
 // Please refer to the Gecko Plugin API Reference for the description of
 // NPP_New.
-// In the NaCl module, NPP_New is called from NaClNP_MainLoop().
 NPError NPP_New(NPMIMEType mime_type, NPP instance, uint16_t mode,
                 int16_t argc, char* argn[], char* argv[],
                 NPSavedData* saved) {
@@ -116,4 +116,13 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
     return plugin->SetWindow(window);
   }
   return NPERR_GENERIC_ERROR;
+}
+
+extern "C" NPError NP_Initialize(NPNetscapeFuncs* browser_funcs,
+                                 NPPluginFuncs* plugin_funcs) {
+  plugin_funcs->newp = NPP_New;
+  plugin_funcs->destroy = NPP_Destroy;
+  plugin_funcs->setwindow = NPP_SetWindow;
+  plugin_funcs->event = NPP_HandleEvent;
+  return NPERR_NO_ERROR;
 }

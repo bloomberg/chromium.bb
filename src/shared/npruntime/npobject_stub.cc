@@ -31,11 +31,11 @@
 
 
 // NaCl-NPAPI Interface
-#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 
 #include <stdarg.h>
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
@@ -221,7 +221,7 @@ NaClSrpcError NPObjectStub::GetProperty(NaClSrpcChannel* channel,
   RpcArg ret12(stub->npp(), outputs[1], outputs[2]);
   ret12.PutVariant(&variant);
   // Free any allocated string in the result variant.
-  if (NPERR_NO_ERROR != outputs[0]->u.ival && NPVARIANT_IS_STRING(variant)) {
+  if (outputs[0]->u.ival && NPVARIANT_IS_STRING(variant)) {
     NPN_ReleaseVariantValue(&variant);
   }
   return NACL_SRPC_RESULT_OK;

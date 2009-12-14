@@ -35,11 +35,11 @@
 // The "proxy" side is in the process scripting the object.
 // The "stub" side is in the process implementing the object.
 
-#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 
 #include <stdarg.h>
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
 
@@ -333,6 +333,7 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
+    printf("bridge was NULL\n");
     return false;
   }
   char      fixed[kNPVariantSizeMax * kParamMax];
@@ -341,13 +342,14 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
   uint32_t  optional_size = static_cast<uint32_t>(sizeof(optional));
   RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
   if (!vars.PutVariantArray(args, arg_count)) {
+    printf("Args didn't fit\n");
     return false;
   }
   int error_code;
   char ret_fixed[kNPVariantSizeMax];
-  uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(optional));
+  uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(ret_fixed));
   char ret_optional[kNPVariantSizeMax];
-  uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(optional));
+  uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(ret_optional));
   if (NACL_SRPC_RESULT_OK !=
       NaClSrpcInvokeByName(bridge->channel(),
                            "NPN_InvokeDefault",
@@ -357,11 +359,13 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
                            fixed,
                            optional_size,
                            optional,
+                           arg_count,
                            &error_code,
                            ret_fixed_size,  // Need size set by return
                            ret_fixed,
                            ret_optional_size,  // Need size set by return
                            ret_optional)) {
+    printf("RPC failed\n");
     return false;
   }
   if (NPERR_NO_ERROR != error_code) {
@@ -428,9 +432,10 @@ bool NPObjectProxy::GetProperty(NPIdentifier name, NPVariant* variant) {
                            ret_fixed,
                            ret_optional_size,  // Need size set by return
                            ret_optional)) {
+    DebugPrintf("GetProperty failed\n");
     return false;
   }
-  if (NPERR_NO_ERROR != error_code) {
+  if (1 == error_code) {
     RpcArg rets(npp_,
                 ret_fixed,
                 ret_fixed_size,

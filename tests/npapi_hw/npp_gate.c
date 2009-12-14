@@ -35,6 +35,7 @@
 #include <stdlib.h>
 
 #include <nacl/nacl_npapi.h>
+#include <nacl/npupp.h>
 
 struct PlugIn {
   NPP npp;
@@ -44,7 +45,6 @@ struct PlugIn {
 /*
  * Please refer to the Gecko Plugin API Reference for the description of
  * NPP_New.
- * In the NaCl module, NPP_New is called from NaClNP_MainLoop().
  */
 NPError NPP_New(NPMIMEType mime_type,
                 NPP instance,
@@ -112,11 +112,29 @@ NPObject *NPP_GetScriptableInstance(NPP instance) {
   return plugin->npobject;
 }
 
-int16_t NPP_HandleEvent(NPP instance, void* event) {
-  return 0;
+NPError NPP_GetValue(NPP instance, NPPVariable variable, void* ret_value) {
+  if (NPPVpluginScriptableNPObject == variable) {
+    *((NPObject**) ret_value) = NPP_GetScriptableInstance(instance);
+    return NPERR_NO_ERROR;
+  } else {
+    return NPERR_GENERIC_ERROR;
+  }
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {
   printf("*** NPP_SetWindow\n");
+  return NPERR_NO_ERROR;
+}
+
+/*
+ * NP_Initialize
+ */
+
+NPError NP_Initialize(NPNetscapeFuncs* browser_funcs,
+                      NPPluginFuncs* plugin_funcs) {
+  plugin_funcs->newp = NPP_New;
+  plugin_funcs->destroy = NPP_Destroy;
+  plugin_funcs->setwindow = NPP_SetWindow;
+  plugin_funcs->getvalue = NPP_GetValue;
   return NPERR_NO_ERROR;
 }

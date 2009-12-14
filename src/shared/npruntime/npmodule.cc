@@ -113,7 +113,7 @@ NACL_SRPC_METHOD_ARRAY(NPModule::srpc_methods) = {
   { "NPN_Invalidate:C:", NPObjectStub::Invalidate },
   { "NPN_HasMethod:Ci:i", NPObjectStub::HasMethod },
   { "NPN_Invoke:CiCCi:iCC", NPObjectStub::Invoke },
-  { "NPN_InvokeDefault:CiCi:iCC", NPObjectStub::InvokeDefault },
+  { "NPN_InvokeDefault:CCCi:iCC", NPObjectStub::InvokeDefault },
   { "NPN_HasProperty:Ci:i", NPObjectStub::HasProperty },
   { "NPN_GetProperty:Ci:iCC", NPObjectStub::GetProperty },
   { "NPN_SetProperty:CiCC:i", NPObjectStub::SetProperty },
@@ -215,17 +215,22 @@ NaClSrpcError NPModule::CreateArray(NaClSrpcChannel* channel,
   DebugPrintf("CreateArray\n");
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
   NPObject* window;
-  NPN_GetValue(npp, NPNVWindowNPObject, &window);
+  if (NPERR_NO_ERROR != NPN_GetValue(npp, NPNVWindowNPObject, &window)) {
+    DebugPrintf("NPNVWindowNPObject returned false\n");
+    outputs[0]->u.ival = 0;
+    return NACL_SRPC_RESULT_OK;
+  }
   NPString script;
   const char scriptText[] = "new Array();";
   script.UTF8Characters = scriptText;
-  script.UTF8Length = sizeof(scriptText);
+  script.UTF8Length = strlen(scriptText);
   NPVariant result;
   int success = NPN_Evaluate(npp, window, &script, &result) &&
                 NPVARIANT_IS_OBJECT(result);
   if (success) {
     RpcArg ret0(npp, outputs[1]);
     ret0.PutObject(NPVARIANT_TO_OBJECT(result));
+    // TODO(sehr): We're leaking result here.
   }
   NPN_ReleaseObject(window);
   outputs[0]->u.ival = success;
@@ -416,7 +421,7 @@ static void WINAPI UpcallThread(void* arg) {
 NPError NPModule::Initialize() {
   NaClSrpcError retval;
   nacl::Handle pair[2];
-  struct NaClDescImcDesc* desc[2];
+  struct NaClDescXferableDataDesc* desc[2];
   UpcallInfo* info = NULL;
   NPError err = NPERR_GENERIC_ERROR;
 
@@ -431,10 +436,10 @@ NPError NPModule::Initialize() {
   if (0 != SocketPair(pair))
     goto done;
   // Set up the NaClDesc the upcall server will be placed on.
-  desc[0] = new(std::nothrow) struct NaClDescImcDesc;
+  desc[0] = new(std::nothrow) struct NaClDescXferableDataDesc;
   if (NULL == desc[0])
     goto done;
-  if (!NaClDescImcDescCtor(desc[0], pair[0])) {
+  if (!NaClDescXferableDataDescCtor(desc[0], pair[0])) {
     delete desc[0];
     desc[0] = NULL;
     goto done;
@@ -450,10 +455,10 @@ NPError NPModule::Initialize() {
   // On success, ownership of info passes to the thread.
   info = NULL;
   // Set up the NaClDesc that will be passed to the NaCl module.
-  desc[1] = new(std::nothrow) struct NaClDescImcDesc;
+  desc[1] = new(std::nothrow) struct NaClDescXferableDataDesc;
   if (NULL == desc[1])
     goto done;
-  if (!NaClDescImcDescCtor(desc[1], pair[1])) {
+  if (!NaClDescXferableDataDescCtor(desc[1], pair[1])) {
     delete desc[1];
     desc[1] = NULL;
     goto done;
