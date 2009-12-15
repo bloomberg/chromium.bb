@@ -815,28 +815,6 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
     return TRUE;
   }
 
-  static UINT custom_msg = RegisterWindowMessage(kPaintMessageName);
-  if (message == custom_msg) {
-    // Get the invalid rect which is in screen coordinates and convert to
-    // window coordinates.
-    gfx::Rect invalid_rect;
-    invalid_rect.set_x(wparam >> 16);
-    invalid_rect.set_y(wparam & 0xFFFF);
-    invalid_rect.set_width(lparam >> 16);
-    invalid_rect.set_height(lparam & 0xFFFF);
-
-    RECT window_rect;
-    GetWindowRect(hwnd, &window_rect);
-    invalid_rect.Offset(-window_rect.left, -window_rect.top);
-
-    // The plugin window might have non-client area.   If we don't pass in
-    // RDW_FRAME then the children don't receive WM_NCPAINT messages while
-    // scrolling, which causes painting problems (http://b/issue?id=923945).
-    RedrawWindow(hwnd, &invalid_rect.ToRECT(), NULL,
-                 RDW_UPDATENOW | RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_FRAME);
-    return FALSE;
-  }
-
   // Maintain a local/global stack for the g_current_plugin_instance variable
   // as this may be a nested invocation.
   WebPluginDelegateImpl* last_plugin_instance = g_current_plugin_instance;
@@ -854,35 +832,70 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
     return FALSE;
   }
 
+  LRESULT result;
+  uint32 old_message = delegate->last_message_;
   delegate->last_message_ = message;
-  delegate->is_calling_wndproc = true;
 
-  if (!delegate->user_gesture_message_posted_ &&
-      IsUserGestureMessage(message)) {
-    delegate->user_gesture_message_posted_ = true;
+  static UINT custom_msg = RegisterWindowMessage(kPaintMessageName);
+  if (message == custom_msg) {
+    // Get the invalid rect which is in screen coordinates and convert to
+    // window coordinates.
+    gfx::Rect invalid_rect;
+    invalid_rect.set_x(wparam >> 16);
+    invalid_rect.set_y(wparam & 0xFFFF);
+    invalid_rect.set_width(lparam >> 16);
+    invalid_rect.set_height(lparam & 0xFFFF);
 
-    delegate->instance()->PushPopupsEnabledState(true);
+    RECT window_rect;
+    GetWindowRect(hwnd, &window_rect);
+    invalid_rect.Offset(-window_rect.left, -window_rect.top);
 
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        delegate->user_gesture_msg_factory_.NewRunnableMethod(
-            &WebPluginDelegateImpl::OnUserGestureEnd),
-        kWindowedPluginPopupTimerMs);
+    // The plugin window might have non-client area.   If we don't pass in
+    // RDW_FRAME then the children don't receive WM_NCPAINT messages while
+    // scrolling, which causes painting problems (http://b/issue?id=923945).
+    uint32 flags = RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_FRAME;
+
+    // If a plugin (like Google Earth or Java) has child windows that are hosted
+    // in a different process, then RedrawWindow with UPDATENOW will
+    // synchronously wait for this call to complete.  Some messages are pumped
+    // but not others, which could lead to a deadlock.  So avoid reentrancy by
+    // only synchronously calling RedrawWindow once at a time.
+    if (old_message != custom_msg)
+      flags |= RDW_UPDATENOW;
+
+    RedrawWindow(hwnd, &invalid_rect.ToRECT(), NULL, flags);
+    result = FALSE;
+  } else {
+    delegate->is_calling_wndproc = true;
+
+    if (!delegate->user_gesture_message_posted_ &&
+        IsUserGestureMessage(message)) {
+      delegate->user_gesture_message_posted_ = true;
+
+      delegate->instance()->PushPopupsEnabledState(true);
+
+      MessageLoop::current()->PostDelayedTask(FROM_HERE,
+          delegate->user_gesture_msg_factory_.NewRunnableMethod(
+              &WebPluginDelegateImpl::OnUserGestureEnd),
+          kWindowedPluginPopupTimerMs);
+    }
+
+    result = CallWindowProc(
+        delegate->plugin_wnd_proc_, hwnd, message, wparam, lparam);
+    delegate->is_calling_wndproc = false;
+    g_current_plugin_instance = last_plugin_instance;
+
+    if (message == WM_NCDESTROY) {
+      RemoveProp(hwnd, kWebPluginDelegateProperty);
+      ATOM plugin_name_atom = reinterpret_cast<ATOM>(
+          RemoveProp(hwnd, kPluginNameAtomProperty));
+      if (plugin_name_atom != 0)
+        GlobalDeleteAtom(plugin_name_atom);
+      ClearThrottleQueueForWindow(hwnd);
+    }
   }
 
-  LRESULT result = CallWindowProc(delegate->plugin_wnd_proc_, hwnd, message,
-                                  wparam, lparam);
-  delegate->is_calling_wndproc = false;
-  g_current_plugin_instance = last_plugin_instance;
-
-  if (message == WM_NCDESTROY) {
-    RemoveProp(hwnd, kWebPluginDelegateProperty);
-    ATOM plugin_name_atom = reinterpret_cast<ATOM>(
-        RemoveProp(hwnd, kPluginNameAtomProperty));
-    if (plugin_name_atom != 0)
-      GlobalDeleteAtom(plugin_name_atom);
-    ClearThrottleQueueForWindow(hwnd);
-  }
-
+  delegate->last_message_ = old_message;
   return result;
 }
 
