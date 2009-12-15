@@ -1842,36 +1842,3 @@
    fun:_ZN7WebCore11RenderLayer24updateLayerListsIfNeededEv
    fun:_ZN7WebCore11RenderLayer38updateCompositingAndLayerListsIfNeededEv
 }
-{
-   http://crbug.com/30436
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z10InitModulev
-   fun:pthread_once
-   fun:_ZN15MallocExtension8RegisterEPS_
-   fun:_ZN13TCMallocGuardC1Ev
-}
-{
-   http://crbug.com/30436
-   Memcheck:Param
-   write(buf)
-   obj:/lib/tls/i686/cmov/libc-2.7.so
-   fun:new_do_write
-   fun:_IO_do_write@@GLIBC_2.1
-   fun:_IO_file_overflow@@GLIBC_2.1
-   fun:_IO_switch_to_get_mode
-   fun:_IO_file_seekoff@@GLIBC_2.1
-   fun:_IO_seekoff_unlocked
-   fun:ftell
-   fun:ftell_file_func
-   fun:zipCloseFileInZipRaw
-}
-{
-   http://crbug.com/30436
-   Memcheck:Addr2
-   fun:_ZN8tcmalloc15CentralFreeList14FetchFromSpansEv
-   fun:_ZN8tcmalloc15CentralFreeList18FetchFromSpansSafeEv
-   fun:_ZN8tcmalloc15CentralFreeList11RemoveRangeEPPvS2_i
-   fun:_ZN8tcmalloc11ThreadCache21FetchFromCentralCacheEjj
-   fun:_ZN8tcmalloc11ThreadCache8AllocateEj
-}
