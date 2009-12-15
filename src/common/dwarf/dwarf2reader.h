@@ -110,7 +110,7 @@ class LineInfo {
                                const char* start,
                                struct LineStateMachine* lsm,
                                size_t* len,
-                               uintptr_t pc,
+                               uintptr pc,
                                bool *lsm_passes_pc);
 
  private:

@@ -605,7 +605,7 @@ bool LineInfo::ProcessOneOpcode(ByteReader* reader,
                                 const char* start,
                                 struct LineStateMachine* lsm,
                                 size_t* len,
-                                uintptr_t pc,
+                                uintptr pc,
                                 bool *lsm_passes_pc) {
   size_t oplen = 0;
   size_t templen;
@@ -806,7 +806,8 @@ void LineInfo::ReadLines() {
     while (!lsm.end_sequence) {
       size_t oplength;
       bool add_line = ProcessOneOpcode(reader_, handler_, header_,
-                                       lineptr, &lsm, &oplength, (uintptr_t)-1, NULL);
+                                       lineptr, &lsm, &oplength, (uintptr)-1,
+                                       NULL);
       if (add_line)
         handler_->AddLine(lsm.address, lsm.file_num, lsm.line_num,
                           lsm.column_num);
