@@ -180,7 +180,7 @@ class StabsHandler {
 
   // Report a warning.  FORMAT is a printf-like format string,
   // specifying how to format the subsequent arguments.
-  virtual void Warning(const char *format, ...) { }
+  virtual void Warning(const char *format, ...) = 0;
 };
 
 } // namespace google_breakpad

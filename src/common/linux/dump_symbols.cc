@@ -144,6 +144,7 @@ class DumpStabsHandler: public google_breakpad::StabsHandler {
   bool StartFunction(const std::string &name, uint64_t address);
   bool EndFunction(uint64_t address);
   bool Line(uint64_t address, const char *name, int number);
+  void Warning(const char *format, ...);
 
   // Do any final processing necessary to make module_ contain all the
   // data provided by the STABS reader.
@@ -263,6 +264,13 @@ bool DumpStabsHandler::Line(uint64_t address, const char *name, int number) {
   line.number_ = number;
   current_function_->lines_.push_back(line);
   return true;
+}
+
+void DumpStabsHandler::Warning(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  va_end(args);
 }
 
 void DumpStabsHandler::Finalize() {
