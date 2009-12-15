@@ -22,6 +22,7 @@
 #include "chrome/common/env_vars.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_request_status.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -221,10 +222,15 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
         if (re_key)
           HandleReKey();
       }
-    } else if (response_code >= 300) {
+    } else {
       HandleGetHashError(Time::Now());
-      SB_DLOG(INFO) << "SafeBrowsing GetHash request for: " << source->url()
-                    << ", failed with error: " << response_code;
+      if (status.status() == URLRequestStatus::FAILED) {
+          SB_DLOG(INFO) << "SafeBrowsing GetHash request for: " << source->url()
+                        << " failed with os error: " << status.os_error();
+      } else {
+          SB_DLOG(INFO) << "SafeBrowsing GetHash request for: " << source->url()
+                        << " failed with error: " << response_code;
+      }
     }
 
     // Call back the SafeBrowsingService with full_hashes, even if there was a
@@ -286,15 +292,19 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
           NOTREACHED();
           break;
       }
-
-    } else if (response_code >= 300) {
-      // The SafeBrowsing service error: back off.
+    } else {
+      // The SafeBrowsing service error, or very bad response code: back off.
       must_back_off = true;
       if (request_type_ == CHUNK_REQUEST)
         chunk_request_urls_.clear();
       UpdateFinished(false);
-      SB_DLOG(INFO) << "SafeBrowsing request for: " << source->url()
-                    << ", failed with error: " << response_code;
+      if (status.status() == URLRequestStatus::FAILED) {
+        SB_DLOG(INFO) << "SafeBrowsing request for: " << source->url()
+                      << " failed with os error: " << status.os_error();
+      } else {
+        SB_DLOG(INFO) << "SafeBrowsing request for: " << source->url()
+                      << " failed with error: " << response_code;
+      }
     }
   }
 
@@ -533,10 +543,9 @@ void SafeBrowsingProtocolManager::IssueKeyRequest() {
 void SafeBrowsingProtocolManager::OnGetChunksComplete(
     const std::vector<SBListChunkRanges>& lists, bool database_error) {
   DCHECK(request_type_ == UPDATE_REQUEST);
-
   if (database_error) {
-    ScheduleNextUpdate(false);
     UpdateFinished(false);
+    ScheduleNextUpdate(false);
     return;
   }
 
@@ -590,8 +599,8 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
 void SafeBrowsingProtocolManager::UpdateResponseTimeout() {
   DCHECK(request_type_ == UPDATE_REQUEST);
   request_.reset();
-  ScheduleNextUpdate(false);
   UpdateFinished(false);
+  ScheduleNextUpdate(false);
 }
 
 void SafeBrowsingProtocolManager::OnChunkInserted() {
