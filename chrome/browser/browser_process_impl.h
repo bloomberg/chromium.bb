@@ -164,21 +164,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
       CreateDebuggerWrapper(port);
   }
 
-  virtual unsigned int AddRefModule() {
-    DCHECK(CalledOnValidThread());
-    module_ref_count_++;
-    return module_ref_count_;
-  }
+  virtual unsigned int AddRefModule();
 
-  virtual unsigned int ReleaseModule() {
-    DCHECK(CalledOnValidThread());
-    DCHECK(0 != module_ref_count_);
-    module_ref_count_--;
-    if (0 == module_ref_count_) {
-      MessageLoop::current()->Quit();
-    }
-    return module_ref_count_;
-  }
+  virtual unsigned int ReleaseModule();
 
   virtual bool IsShuttingDown() {
     DCHECK(CalledOnValidThread());

@@ -31,9 +31,11 @@
 namespace Platform {
 
 void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
+  OleInitialize(NULL);
 }
 
 void DidEndMainMessageLoop() {
+  OleUninitialize();
 }
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {

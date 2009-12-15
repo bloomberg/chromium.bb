@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
+#include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/debugger_wrapper.h"
@@ -249,6 +250,24 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 // Send a QuitTask to the given MessageLoop.
 static void PostQuit(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+}
+
+unsigned int BrowserProcessImpl::AddRefModule() {
+  DCHECK(CalledOnValidThread());
+  module_ref_count_++;
+  return module_ref_count_;
+}
+
+unsigned int BrowserProcessImpl::ReleaseModule() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(0 != module_ref_count_);
+  module_ref_count_--;
+  if (0 == module_ref_count_) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, NewRunnableFunction(Platform::DidEndMainMessageLoop));
+    MessageLoop::current()->Quit();
+  }
+  return module_ref_count_;
 }
 
 void BrowserProcessImpl::EndSession() {

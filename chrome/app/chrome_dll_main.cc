@@ -45,7 +45,6 @@
 #include "base/stats_counters.h"
 #include "base/stats_table.h"
 #include "base/string_util.h"
-#include "chrome/app/scoped_ole_initializer.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_constants.h"
@@ -742,7 +741,6 @@ int ChromeMain(int argc, char** argv) {
     SetUpGLibLogHandler();
 #endif  // defined(OS_LINUX)
 
-    ScopedOleInitializer ole_initializer;
     rv = BrowserMain(main_params);
   } else {
     NOTREACHED() << "Unknown process type";
