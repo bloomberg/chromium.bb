@@ -6,3 +6,5 @@ MediaLeakTest.VideoBear
 MediaLeakTest.ManyVideoBear
 # hangs; see http://crbug.com/22134
 WebFrameTest.GetFullHtmlOfPage
+# Crashes only on the bots? http://crbug.com/30346
+PluginTest.Refresh
