@@ -28,6 +28,8 @@
 
 #include <cassert>
 #include <cstdio>
+#include <cstring>
+#include <memory>
 #include <stack>
 #include <utility>
 
@@ -90,7 +92,9 @@ void CompilationUnit::ReadAbbrevs() {
   const char* abbrev_start = iter->second.first +
                                       header_.abbrev_offset;
   const char* abbrevptr = abbrev_start;
+#ifndef NDEBUG
   const uint64 abbrev_length = iter->second.second - header_.abbrev_offset;
+#endif
 
   while (1) {
     CompilationUnit::Abbrev abbrev;
@@ -466,7 +470,7 @@ void CompilationUnit::ProcessDIEs() {
   // we need semantics of boost scoped_ptr here - no intention of trasnferring
   // ownership of the stack.  use const, but then we limit ourselves to not
   // ever being able to call .reset() on the smart pointer.
-  auto_ptr<stack<uint64> > const die_stack(new stack<uint64>);
+  std::auto_ptr<stack<uint64> > const die_stack(new stack<uint64>);
 
   while (dieptr < (lengthstart + header_.length)) {
     // We give the user the absolute offset from the beginning of
