@@ -28,22 +28,20 @@ class MeteredStream:
     """
     self._dirty = False
     self._verbose = verbose
-    self._max_len = 0
     self._stream = stream
+    self._last_update = ""
 
   def write(self, txt):
-    self.clear()
-    self._stream.write(txt)
-
-  def flush(self):
-    self.clear()
-    self._stream.flush()
-
-  def clear(self):
-    """Clears the current line and resets the dirty flag."""
+    """Write text directly to the stream, overwriting and resetting the
+    meter."""
     if self._dirty:
       self.update("")
       self._dirty = False
+    self._stream.write(txt)
+
+  def flush(self):
+    """Flush any buffered output."""
+    self._stream.flush()
 
   def update(self, str):
     """Write an update to the stream that will get overwritten by the next
@@ -61,8 +59,11 @@ class MeteredStream:
     if self._verbose:
       return
 
-    self._max_len = max(self._max_len, len(str))
-    fmtstr = "%%-%ds\r" % self._max_len
-    self._stream.write(fmtstr % (str))
-    self._stream.flush()
+    # Print the necessary number of backspaces to erase the previous message.
+    self._stream.write("\b" * len(self._last_update))
+    self._stream.write(str)
+    num_remaining = len(self._last_update) - len(str)
+    if num_remaining > 0:
+      self._stream.write(" " * num_remaining + "\b" * num_remaining)
+    self._last_update = str
     self._dirty = True

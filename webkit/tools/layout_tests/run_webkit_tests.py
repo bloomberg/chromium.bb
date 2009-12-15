@@ -54,6 +54,13 @@ from test_types import text_diff
 sys.path.append(path_utils.PathFromBase('third_party'))
 import simplejson
 
+# Indicates that we want detailed progress updates in the output (prints
+# directory-by-directory feedback).
+LOG_DETAILED_PROGRESS = 'detailed-progress'
+
+# Log any unexpected results while running (instead of just at the end).
+LOG_UNEXPECTED = 'unexpected'
+
 TestExpectationsFile = test_expectations.TestExpectationsFile
 
 class TestInfo:
@@ -99,25 +106,26 @@ class ResultSummary(object):
       self.tests_by_timeline[timeline] = expectations.GetTestsWithTimeline(
           timeline)
 
-  def Add(self, test, failures, result):
+  def Add(self, test, failures, result, expected):
     """Add a result into the appropriate bin.
 
     Args:
       test: test file name
       failures: list of failure objects from test execution
-      result: result of test (PASS, IMAGE, etc.)."""
+      result: result of test (PASS, IMAGE, etc.).
+      expected: whether the result was what we expected it to be.
+    """
 
     self.tests_by_expectation[result].add(test)
     self.results[test] = result
     self.remaining -= 1
     if len(failures):
       self.failures[test] = failures
-    if self.expectations.MatchesAnExpectedResult(test, result):
+    if expected:
       self.expected += 1
     else:
       self.unexpected_results[test] = result
       self.unexpected += 1
-
 
 
 class TestRunner:
@@ -174,6 +182,11 @@ class TestRunner:
     self._test_files_list = None
     self._file_dir = path_utils.GetAbsolutePath(os.path.dirname(sys.argv[0]))
     self._result_queue = Queue.Queue()
+
+    # These are used for --log detailed-progress to track status by directory.
+    self._current_dir = None
+    self._current_progress_str = ""
+    self._current_test_number = 0
 
   def __del__(self):
     logging.debug("flushing stdout")
@@ -240,7 +253,7 @@ class TestRunner:
     if self._options.randomize_order:
       random.shuffle(self._test_files_list)
     else:
-      self._test_files_list.sort(self.TestFilesSort)
+      self._test_files_list.sort()
 
     # If the user specifies they just want to run a subset of the tests,
     # just grab a subset of the non-skipped tests.
@@ -326,7 +339,7 @@ class TestRunner:
       skip_chunk = skipped
 
     result_summary = ResultSummary(self._expectations,
-                                   self._test_files | skip_chunk)
+        self._test_files | skip_chunk)
     self._PrintExpectedResultsOfType(write, result_summary,
         test_expectations.PASS, "passes")
     self._PrintExpectedResultsOfType(write, result_summary,
@@ -344,7 +357,7 @@ class TestRunner:
       # subtracted out of self._test_files, above), but we stub out the
       # results here so the statistics can remain accurate.
       for test in skip_chunk:
-        result_summary.Add(test, [], test_expectations.SKIP)
+        result_summary.Add(test, [], test_expectations.SKIP, expected=True)
     write("")
 
     return result_summary
@@ -352,17 +365,6 @@ class TestRunner:
   def AddTestType(self, test_type):
     """Add a TestType to the TestRunner."""
     self._test_types.append(test_type)
-
-  # We sort the tests so that tests using the http server will run first.  We
-  # are seeing some flakiness, maybe related to apache getting swapped out,
-  # slow, or stuck after not serving requests for a while.
-  def TestFilesSort(self, x, y):
-    """Sort with http tests always first."""
-    x_is_http = x.find(self.HTTP_SUBDIR) >= 0
-    y_is_http = y.find(self.HTTP_SUBDIR) >= 0
-    if x_is_http != y_is_http:
-      return cmp(y_is_http, x_is_http)
-    return cmp(x, y)
 
   def _GetDirForTestFile(self, test_file):
     """Returns the highest-level directory by which to shard the given test
@@ -473,11 +475,9 @@ class TestRunner:
 
     return (test_args, shell_args)
 
-  def _ContainWebSocketTest(self, test_files):
-    if not test_files:
-      return False
-    for test_file in test_files:
-      if test_file.find(self.WEBSOCKET_SUBDIR) >= 0:
+  def _ContainsTests(self, subdir):
+    for test_file in self._test_files_list:
+      if test_file.find(subdir) >= 0:
         return True
     return False
 
@@ -621,14 +621,10 @@ class TestRunner:
                      "To override, invoke with --nocheck-sys-deps")
         sys.exit(1)
 
-    # If we have http tests, the first one will be an http test.
-    if ((self._test_files_list and
-         self._test_files_list[0].find(self.HTTP_SUBDIR) >= 0)
-        or self._options.randomize_order):
+    if self._ContainsTests(self.HTTP_SUBDIR):
       self._http_server.Start()
 
-    # Start Web Socket server.
-    if (self._ContainWebSocketTest(self._test_files_list)):
+    if self._ContainsTests(self.WEBSOCKET_SUBDIR):
       self._websocket_server.Start()
       # self._websocket_secure_server.Start()
 
@@ -657,8 +653,7 @@ class TestRunner:
                                 individual_test_timings,
                                 result_summary)
 
-    unexpected_results = self._SummarizeUnexpectedResults(result_summary,
-        retry_summary)
+    self._meter.update("")
 
     if self._options.verbose:
       # We write this block to stdout for compatibility with the buildbot
@@ -668,15 +663,20 @@ class TestRunner:
       write = CreateLoggingWriter(self._options, 'actual')
 
     self._PrintResultSummary(write, result_summary)
-    write("")
 
-    self._meter.clear()
     sys.stdout.flush()
     sys.stderr.flush()
+
+    if (LOG_DETAILED_PROGRESS in self._options.log or
+        (LOG_UNEXPECTED in self._options.log and
+         result_summary.total != result_summary.expected)):
+      print
 
     # This summary data gets written to stdout regardless of log level
     self._PrintOneLineSummary(result_summary.total, result_summary.expected)
 
+    unexpected_results = self._SummarizeUnexpectedResults(result_summary,
+        retry_summary)
     self._PrintUnexpectedResults(unexpected_results)
 
     # Write the same data to log files.
@@ -699,12 +699,64 @@ class TestRunner:
       try:
         (test, fail_list) = self._result_queue.get_nowait()
         result = test_failures.DetermineResultType(fail_list)
-        result_summary.Add(test, fail_list, result)
+        expected = self._expectations.MatchesAnExpectedResult(test, result)
+        result_summary.Add(test, fail_list, result, expected)
+        if (LOG_DETAILED_PROGRESS in self._options.log and
+            self._options.experimental_fully_parallel):
+          self._DisplayDetailedProgress(result_summary)
+        else:
+          if not expected and LOG_UNEXPECTED in self._options.log:
+            self._PrintUnexpectedTestResult(test, result)
+          self._DisplayOneLineProgress(result_summary)
       except Queue.Empty:
-        self._meter.update("Testing: %d ran as expected, %d didn't, %d left" %
-             (result_summary.expected, result_summary.unexpected,
-              result_summary.remaining))
         return
+
+  def _DisplayOneLineProgress(self, result_summary):
+    """Displays the progress through the test run."""
+    self._meter.update("Testing: %d ran as expected, %d didn't, %d left" %
+        (result_summary.expected, result_summary.unexpected,
+         result_summary.remaining))
+
+  def _DisplayDetailedProgress(self, result_summary):
+    """Display detailed progress output where we print the directory name
+    and one dot for each completed test. This is triggered by
+    "--log detailed-progress"."""
+    if self._current_test_number == len(self._test_files_list):
+      return
+
+    next_test = self._test_files_list[self._current_test_number]
+    next_dir = os.path.dirname(path_utils.RelativeTestFilename(next_test))
+    if self._current_progress_str == "":
+      self._current_progress_str = "%s: " % (next_dir)
+      self._current_dir = next_dir
+
+    while next_test in result_summary.results:
+      if next_dir != self._current_dir:
+        self._meter.write("%s\n" % (self._current_progress_str))
+        self._current_progress_str = "%s: ." % (next_dir)
+        self._current_dir = next_dir
+      else:
+        self._current_progress_str += "."
+
+      if (next_test in result_summary.unexpected_results and
+          LOG_UNEXPECTED in self._options.log):
+        result = result_summary.unexpected_results[next_test]
+        self._meter.write("%s\n" % self._current_progress_str)
+        self._PrintUnexpectedTestResult(next_test, result)
+        self._current_progress_str = "%s: " % self._current_dir
+
+      self._current_test_number += 1
+      if self._current_test_number == len(self._test_files_list):
+        break
+
+      next_test = self._test_files_list[self._current_test_number]
+      next_dir = os.path.dirname(path_utils.RelativeTestFilename(next_test))
+
+    if result_summary.remaining:
+      remain_str = " (%d)" % (result_summary.remaining)
+      self._meter.update("%s%s" % (self._current_progress_str, remain_str))
+    else:
+      self._meter.write("%s\n" % (self._current_progress_str))
 
   def _GetFailures(self, result_summary, include_crashes):
     """Filters a dict of results and returns only the failures.
@@ -1108,7 +1160,6 @@ class TestRunner:
       results = (result_summary.tests_by_expectation[result] &
                  result_summary.tests_by_timeline[timeline])
       desc = TestExpectationsFile.EXPECTATION_DESCRIPTIONS[result]
-      plural = ["", "s"]
       if not_passing and len(results):
         pct = len(results) * 100.0 / not_passing
         write("  %5d %-24s (%4.1f%%)" % (len(results),
@@ -1191,6 +1242,12 @@ class TestRunner:
 
     if len(unexpected_results['tests']) and self._options.verbose:
       print "-" * 78
+
+  def _PrintUnexpectedTestResult(self, test, result):
+    """Prints one unexpected test result line."""
+    desc = TestExpectationsFile.EXPECTATION_DESCRIPTIONS[result][0]
+    self._meter.write("  %s -> unexpected %s\n" %
+                      (path_utils.RelativeTestFilename(test), desc))
 
   def _WriteResultsHtmlFile(self, result_summary):
     """Write results.html which is a summary of tests that failed.
@@ -1479,10 +1536,13 @@ if '__main__' == __name__:
   option_parser.add_option("", "--target", default="",
                            help="Set the build target configuration (overrides"
                                  " --debug)")
-  option_parser.add_option("", "--log", action="store", default="",
+  option_parser.add_option("", "--log", action="store",
+                           default="detailed-progress,unexpected",
                            help="log various types of data. The param should "
-                           "be a comma-separated list of values from:"
-                           "actual,config,expected,timing")
+                           "be a comma-separated list of values from: "
+                           "actual,config," + LOG_DETAILED_PROGRESS +
+                           ",expected,timing," + LOG_UNEXPECTED +
+                           " (defaults to --log detailed-progress,unexpected)")
   option_parser.add_option("-v", "--verbose", action="store_true",
                            default=False, help="include debug-level logging")
   option_parser.add_option("", "--sources", action="store_true",
@@ -1536,5 +1596,6 @@ if '__main__' == __name__:
   option_parser.add_option("", "--experimental-fully-parallel",
                            action="store_true", default=False,
                            help="run all tests in parallel")
+
   options, args = option_parser.parse_args()
   main(options, args)
