@@ -72,7 +72,7 @@ ARCHIVE_URL_REGEX = "last.*change: (\d+)"
 BUILD_NAME_REGEX = "build name: ([^\s]*)"
 CHROMIUM_FILE_AGE_REGEX = '<br />\s*Modified\s*<em>.*</em> \((.*)\) by'
 TEST_PATH_REGEX = "[^\s]+?"
-FAILED_REGEX = ("ERROR (" + TEST_PATH_REGEX + ") failed:\s*"
+FAILED_REGEX = ("DEBUG (" + TEST_PATH_REGEX + ") failed:\s*"
                 "(" + TEXT_DIFF_MISMATCH + ")?\s*"
                 "(" + IMAGE_MISMATCH + ")?\s*"
                 "(" + TEST_TIMED_OUT + ")?\s*"
@@ -82,7 +82,8 @@ LAST_BUILD_REGEX = ("<h2>Recent Builds:</h2>"
                     "[\s\S]*?<a href=\"../builders/.*?/builds/(\d+)\">")
 # Sometimes the lines of hyphens gets interrupted with multiple processes
 # outputting to stdio, so don't rely on them being contiguous.
-SUMMARY_REGEX = "-{78}(.*?)-{78}" # -{78} --> 78 dashes in a row.
+SUMMARY_REGEX = ("\d+ tests ran as expected, "
+                 "\d+ didn't:(.*?)-{78}")  # -{78} --> 78 dashes in a row.
 SUMMARY_REGRESSIONS = "Regressions:.*?\n((?:  [^\s]+(?: = .*?)?\n)+)"
 TEST_EXPECTATIONS_PLATFORM_REGEX = "((WONTFIX |BUG.* )+.* %s.* : %s = [^\n]*)"
 TEST_EXPECTATIONS_NO_PLATFORM_REGEX = ("((WONTFIX |BUG.* )+.*"
@@ -346,6 +347,9 @@ class FailureFinder(object):
       print "and wrap quotes around builder names that have spaces."
       return None
 
+  # TODO(gwilson): The type of failure is now output in the summary, so no
+  # matching between the summary and the earlier output is necessary.
+  # Change this method and others to derive failure types from summary only.
   def _FindMatchesInBuilderOutput(self, output):
     matches = []
     matches = re.findall(FAILED_REGEX, output, re.MULTILINE)
@@ -387,6 +391,7 @@ class FailureFinder(object):
       for failure in failures:
         if failure[0].find(regression) > -1:
           matches.append(failure)
+          break
     return matches
 
   # TODO(gwilson): add support for multiple conflicting build numbers by
