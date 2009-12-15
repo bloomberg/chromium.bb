@@ -326,6 +326,9 @@ void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
       "dispatchToApu",
       WebDevToolsAgentImpl::JsDispatchToApu);
   devtools_agent_host.AddProtoFunction(
+      "evaluateOnSelf",
+      WebDevToolsAgentImpl::JsEvaluateOnSelf);
+  devtools_agent_host.AddProtoFunction(
       "runtimeFeatureStateChanged",
       WebDevToolsAgentImpl::JsOnRuntimeFeatureStateChanged);
   devtools_agent_host.Build();
@@ -480,6 +483,28 @@ v8::Handle<v8::Value> WebDevToolsAgentImpl::JsDispatchToApu(
       v8::External::Cast(*args.Data())->Value());
   agent->apu_agent_delegate_stub_->DispatchToApu(message);
   return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsAgentImpl::JsEvaluateOnSelf(
+    const v8::Arguments& args) {
+  String code;
+  {
+    v8::TryCatch exception_catcher;
+    code = WebCore::toWebCoreStringWithNullCheck(args[0]);
+    if (code.isEmpty() || exception_catcher.HasCaught()) {
+      return v8::Undefined();
+    }
+  }
+  WebDevToolsAgentImpl* agent = static_cast<WebDevToolsAgentImpl*>(
+      v8::External::Cast(*args.Data())->Value());
+  v8::Context::Scope(agent->utility_context_);
+  V8Proxy* proxy = V8Proxy::retrieve(
+      agent->web_view_impl_->page()->mainFrame());
+  v8::Local<v8::Value> result = proxy->runScript(
+      v8::Script::Compile(v8::String::New(code.utf8().data())),
+      true);
+  return result;
 }
 
 // static

@@ -105,6 +105,7 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
  private:
   static v8::Handle<v8::Value> JsDispatchOnClient(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsDispatchToApu(const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsEvaluateOnSelf(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsOnRuntimeFeatureStateChanged(
       const v8::Arguments& args);
 

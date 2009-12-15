@@ -90,6 +90,12 @@ InjectedScript._window = function() {
 
 
 // Plugging into upstreamed support.
+InjectedScript.evaluateOnSelf = function(funcBody) {
+  return DevToolsAgentHost.evaluateOnSelf("(" + funcBody + ")();");
+};
+
+
+// Plugging into upstreamed support.
 Object.className = function(obj) {
   return (obj == null) ? "null" : obj.constructor.name;
 };
