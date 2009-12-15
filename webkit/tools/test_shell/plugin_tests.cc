@@ -25,7 +25,7 @@ using WebKit::WebString;
 #if defined(OS_WIN)
 #define TEST_PLUGIN_NAME "npapi_test_plugin.dll"
 #elif defined(OS_MACOSX)
-#define TEST_PLUGIN_NAME "npapi_test_plugin.bundle"
+#define TEST_PLUGIN_NAME "npapi_test_plugin.plugin"
 #elif defined(OS_LINUX)
 #define TEST_PLUGIN_NAME "libnpapi_test_plugin.so"
 #endif

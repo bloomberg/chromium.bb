@@ -101,6 +101,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   // Plugins that we know are working reasonably well.
   const char* whitelisted_plugin_mimes[] = {
     "application/googletalk",
+    "application/vnd.npapi-test",
     "application/x-picasa-detect",
     "application/x-shockwave-flash",
     "application/x-silverlight",

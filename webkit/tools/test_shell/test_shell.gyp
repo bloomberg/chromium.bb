@@ -457,11 +457,7 @@
           # mac tests load the resources from the built test_shell beside the
           # test
           'dependencies': ['test_shell'],
-          # TODO(port)
-          # disable plugin tests until we re-enable plugins for chromium.app
           'sources!': [
-            'plugin_tests.cc',
-
             # Disable the image decoder tests because we use CoreGraphics
             # code on mac and these tests are for the Skia image-decoders.
             '../webcore_unit_tests/BMPImageDecoder_unittest.cpp',
@@ -650,6 +646,7 @@
               ],
             }],
             ['OS=="mac"', {
+              'product_extension': 'plugin',
               'link_settings': {
                 'libraries': [
                   '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
