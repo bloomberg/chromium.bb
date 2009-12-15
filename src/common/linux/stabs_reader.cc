@@ -94,8 +94,13 @@ bool StabsReader::ProcessCompilationUnit() {
     if (symbol_ >= symbols_end_ || symbol_->n_type != N_SO)
       return true;
     const char *name = SymbolString();
-    if (name[0] == '\0')
+    if (name[0] == '\0') {
+      // This seems to be a stray end-of-compilation-unit marker;
+      // consume it, but don't report the end, since we didn't see a
+      // beginning.
+      symbol_++;
       return true;
+    }
     current_source_file_ = name;
   }
 
