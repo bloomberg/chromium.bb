@@ -76,6 +76,7 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   // Enable or disable SSL.
   static void SetSSLMode(bool enable) { use_ssl_ = enable; }
+  static bool SSLMode() { return use_ssl_; }
 
  protected:
   friend class FlipSessionPool;

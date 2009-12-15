@@ -599,12 +599,16 @@ const char kUseFlip[]                       = "use-flip";
 // Force all requests to go to this server.  This commandline is provided
 // for testing purposes only, and will likely be removed soon.  It can also
 // hurt startup performance as it does a synchronous name resolution on the
-// UI thread.  The port is not optional.
+// UI thread.
 // The host resolution using this scheme is done exactly once at startup.
 // From that point on, it is completely a static configuration.
 // TODO(mbelshe): Remove this flag when testing is complete.
-//   --testing-fixed-server=myserver:1000
-const char kFixedServer[]                   = "testing-fixed-server";
+//   --testing-fixed-host=myserver
+const char kFixedHost[]                     = "testing-fixed-host";
+
+// These two flags are used to force http and https requests to fixed ports.
+const char kFixedHttpPort[]                 = "testing-fixed-http-port";
+const char kFixedHttpsPort[]                = "testing-fixed-https-port";
 
 // Use the low fragmentation heap for the CRT.
 const char kUseLowFragHeapCrt[]             = "use-lf-heap";

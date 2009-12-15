@@ -644,6 +644,20 @@ int BrowserMain(const MainFunctionParams& parameters) {
     net::CookieMonster::EnableFileScheme();
   }
 
+  if (parsed_command_line.HasSwitch(switches::kFixedHttpPort)) {
+    std::string http_port_str =
+        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpPort);
+    int http_port = StringToInt(http_port_str);
+    net::HttpNetworkSession::set_fixed_http_port(http_port);
+  }
+
+  if (parsed_command_line.HasSwitch(switches::kFixedHttpsPort)) {
+    std::string https_port_str =
+        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpsPort);
+    int https_port = StringToInt(https_port_str);
+    net::HttpNetworkSession::set_fixed_https_port(https_port);
+  }
+
   // Initialize histogram statistics gathering system.
   StatisticsRecorder statistics;
 

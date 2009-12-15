@@ -478,10 +478,10 @@ net::HostResolver* GetGlobalHostResolver() {
 
     // The FixedHostResolver allows us to send all network requests through
     // a designated test server.
-    if (command_line.HasSwitch(switches::kFixedServer)) {
-      std::string host_and_port =
-          WideToASCII(command_line.GetSwitchValue(switches::kFixedServer));
-      global_host_resolver = new net::FixedHostResolver(host_and_port);
+    if (command_line.HasSwitch(switches::kFixedHost)) {
+      std::string host =
+          command_line.GetSwitchValueASCII(switches::kFixedHost);
+      global_host_resolver = new net::FixedHostResolver(host);
     } else {
       global_host_resolver = net::CreateSystemHostResolver();
 
@@ -672,4 +672,3 @@ DnsPrefetcherInit::~DnsPrefetcherInit() {
   }
 
 }  // namespace chrome_browser_net
-

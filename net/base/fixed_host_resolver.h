@@ -15,9 +15,9 @@ namespace net {
 // A FixedHostResolver resolves all addresses to a single address.
 class FixedHostResolver : public HostResolver {
  public:
-  // |host_and_port| is a string representing the resolution.
-  //   example: foo.myproxy.com:1234
-  explicit FixedHostResolver(const std::string& host_and_port);
+  // |host| is a string representing the resolution.
+  //   example: foo.myproxy.com
+  explicit FixedHostResolver(const std::string& host);
 
   // HostResolver methods:
   virtual int Resolve(const RequestInfo& info,
@@ -41,4 +41,3 @@ class FixedHostResolver : public HostResolver {
 }  // namespace net
 
 #endif  // NET_BASE_MOCK_HOST_RESOLVER_H_
-

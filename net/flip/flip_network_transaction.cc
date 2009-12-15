@@ -218,6 +218,15 @@ int FlipNetworkTransaction::DoInitConnection() {
   std::string host = request_->url.HostNoBrackets();
   int port = request_->url.EffectiveIntPort();
 
+  // Use the fixed testing ports if they've been provided.  This is useful for
+  // debugging.
+  if (FlipSession::SSLMode()) {
+    if (session_->fixed_https_port() != 0)
+      port = session_->fixed_https_port();
+  } else if (session_->fixed_http_port() != 0) {
+    port = session_->fixed_http_port();
+  }
+
   std::string connection_group = "flip.";
   connection_group.append(host);
 

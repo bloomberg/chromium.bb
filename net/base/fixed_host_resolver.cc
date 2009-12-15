@@ -10,12 +10,12 @@
 
 namespace net {
 
-FixedHostResolver::FixedHostResolver(const std::string& host_and_port)
+FixedHostResolver::FixedHostResolver(const std::string& host)
     : initialized_(false) {
-  std::string host;
-  int port = 0;
-  if (!ParseHostAndPort(host_and_port, &host, &port)) {
-    LOG(ERROR) << "Invalid FixedHostResolver information: " << host_and_port;
+  int port;
+  std::string parsed_host;
+  if (!ParseHostAndPort(host, &parsed_host, &port)) {
+    LOG(DFATAL) << "Invalid FixedHostResolver information: " << host;
     return;
   }
 
@@ -26,12 +26,6 @@ FixedHostResolver::FixedHostResolver(const std::string& host_and_port)
     return;
   }
 
-  if (port <= 0) {
-    LOG(ERROR) << "FixedHostResolver must contain a port number";
-    return;
-  }
-
-  address_.SetPort(port);
   initialized_ = true;
 }
 
@@ -44,9 +38,9 @@ int FixedHostResolver::Resolve(const RequestInfo& info,
     return ERR_NAME_NOT_RESOLVED;
 
   DCHECK(addresses);
-  *addresses = address_;
+  addresses->Copy(address_.head());
+  addresses->SetPort(info.port());
   return OK;
 }
 
 }  // namespace net
-
