@@ -3352,3 +3352,13 @@ ExprNodeVector[8] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
 };
+0000000000000000: 0f ae f8                                     sfence
+  { 2, { 0x0f, 0xae, 0x00 },
+    NACLi_SFENCE_CLFLUSH,
+    InstFlag(OpcodeInModRm),
+    InstSfence,
+    1, {
+      { Opcode7, OpFlag(OperandExtendsOpcode) },
+  } };
+ExprNodeVector[0] = {
+};

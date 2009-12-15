@@ -1,3 +1,4 @@
+
 # This is a simple test file to see if we have things working.
 # When run in self documenting mode and command free lines,
 # are echoed to the output.
@@ -215,3 +216,4 @@
 -i=55                                    #0000000000000000: 55                                           push %rbp
 -i=0F188600030000                        #0000000000000000: 0f 18 86 00 03 00 00                         prefetchnta [%rsi+0x300]
 -i=480FC307                              #0000000000000000: 48 0f c3 07                                  movnti [%rdi], %rax
+-i=0FAEF8                                #0000000000000000: 0f ae f8                                     sfence

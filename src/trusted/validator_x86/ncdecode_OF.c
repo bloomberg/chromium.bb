@@ -210,6 +210,21 @@ void Define0FOpcodes() {
   DefineOperand(RegECX, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegEDX, OpFlag(OpSet) | OpFlag(OpImplicit));
 
+  DefineOpcode(0xae, NACLi_SSE2,
+               InstFlag(OpcodeInModRm),
+               InstLfence);
+  DefineOperand(Opcode5, OpFlag(OperandExtendsOpcode));
+
+  DefineOpcode(0xae, NACLi_SSE2,
+               InstFlag(OpcodeInModRm),
+               InstMfence);
+  DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
+
+  DefineOpcode(0xae, NACLi_SFENCE_CLFLUSH,
+               InstFlag(OpcodeInModRm),
+               InstSfence);
+  DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
+
   DefineOpcode(0xaf, NACLi_386,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v),

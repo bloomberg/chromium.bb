@@ -119,12 +119,14 @@ Lds
 Lea
 Leave
 Les
+Lfence
 Lodsb
 Lodsd
 Lodsq
 Lodsw
 Maxsd
 Maxss
+Mfence
 Minsd
 Minss
 Mov
