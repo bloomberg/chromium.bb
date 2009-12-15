@@ -101,7 +101,7 @@ TEST(FileDescriptorShuffleTest, Simple1) {
   map.push_back(InjectionArc(0, 1, false));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(1u, tracer.actions().size());
+  ASSERT_EQ(1u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] == Action(Action::MOVE, 0, 1));
 }
 
@@ -112,7 +112,7 @@ TEST(FileDescriptorShuffleTest, Simple2) {
   map.push_back(InjectionArc(2, 3, false));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(2u, tracer.actions().size());
+  ASSERT_EQ(2u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] == Action(Action::MOVE, 0, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 2, 3));
 }
@@ -123,7 +123,7 @@ TEST(FileDescriptorShuffleTest, Simple3) {
   map.push_back(InjectionArc(0, 1, true));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(2u, tracer.actions().size());
+  ASSERT_EQ(2u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] == Action(Action::MOVE, 0, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::CLOSE, 0));
 }
@@ -135,7 +135,7 @@ TEST(FileDescriptorShuffleTest, Simple4) {
   map.push_back(InjectionArc(1, 1, true));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(2u, tracer.actions().size());
+  ASSERT_EQ(2u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] == Action(Action::MOVE, 10, 0));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::CLOSE, 10));
 }
@@ -147,7 +147,7 @@ TEST(FileDescriptorShuffleTest, Cycle) {
   map.push_back(InjectionArc(1, 0, false));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(4u, tracer.actions().size());
+  ASSERT_EQ(4u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] ==
               Action(Action::DUPLICATE, kDuplicateBase, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 1));
@@ -162,7 +162,7 @@ TEST(FileDescriptorShuffleTest, CycleAndClose1) {
   map.push_back(InjectionArc(1, 0, false));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(4u, tracer.actions().size());
+  ASSERT_EQ(4u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] ==
               Action(Action::DUPLICATE, kDuplicateBase, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 1));
@@ -177,7 +177,7 @@ TEST(FileDescriptorShuffleTest, CycleAndClose2) {
   map.push_back(InjectionArc(1, 0, true));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(4u, tracer.actions().size());
+  ASSERT_EQ(4u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] ==
               Action(Action::DUPLICATE, kDuplicateBase, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 1));
@@ -192,7 +192,7 @@ TEST(FileDescriptorShuffleTest, CycleAndClose3) {
   map.push_back(InjectionArc(1, 0, true));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(4u, tracer.actions().size());
+  ASSERT_EQ(4u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] ==
               Action(Action::DUPLICATE, kDuplicateBase, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 1));
@@ -207,7 +207,7 @@ TEST(FileDescriptorShuffleTest, Fanout) {
   map.push_back(InjectionArc(0, 2, false));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(2u, tracer.actions().size());
+  ASSERT_EQ(2u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] == Action(Action::MOVE, 0, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 2));
 }
@@ -219,7 +219,7 @@ TEST(FileDescriptorShuffleTest, FanoutAndClose1) {
   map.push_back(InjectionArc(0, 2, false));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(3u, tracer.actions().size());
+  ASSERT_EQ(3u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] == Action(Action::MOVE, 0, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 2));
   EXPECT_TRUE(tracer.actions()[2] == Action(Action::CLOSE, 0));
@@ -232,7 +232,7 @@ TEST(FileDescriptorShuffleTest, FanoutAndClose2) {
   map.push_back(InjectionArc(0, 2, true));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(3u, tracer.actions().size());
+  ASSERT_EQ(3u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] == Action(Action::MOVE, 0, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 2));
   EXPECT_TRUE(tracer.actions()[2] == Action(Action::CLOSE, 0));
@@ -245,7 +245,7 @@ TEST(FileDescriptorShuffleTest, FanoutAndClose3) {
   map.push_back(InjectionArc(0, 2, true));
 
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
-  EXPECT_EQ(3u, tracer.actions().size());
+  ASSERT_EQ(3u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] == Action(Action::MOVE, 0, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 2));
   EXPECT_TRUE(tracer.actions()[2] == Action(Action::CLOSE, 0));
