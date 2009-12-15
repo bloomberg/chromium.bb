@@ -277,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
 }
 
 // Tests resources have correct sizes.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestResourceContentLength) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceContentLength) {
   RunTest("testResourceContentLength", kResourceContentLengthTestPage);
 }
 
@@ -288,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceHeaders) {
 
 // Tests cached resource mime type.
 // @see http://crbug.com/27364
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestCachedResourceMimeType) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestCachedResourceMimeType) {
   RunTest("testCachedResourceMimeType", kResourceTestPage);
 }
 
@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       DISABLED_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+                       TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   // Reset inspector settings to defaults to ensure that Elements will be
   // current panel when DevTools window is open.
   GetInspectedTab()->render_view_host()->delegate()->UpdateInspectorSettings(
@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
 }
 
 // Tests pause on exception.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseOnException) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseOnException) {
   RunTest("testPauseOnException", kPauseOnExceptionTestPage);
 }
 
@@ -348,48 +348,48 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
 
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseWhenScriptIsRunning) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
 // Tests eval on call frame.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEvalOnCallFrame) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
   RunTest("testEvalOnCallFrame", kDebuggerTestPage);
 }
 
 // Tests step over functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestStepOver) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOver) {
   RunTest("testStepOver", kDebuggerStepTestPage);
 }
 
 // Tests step out functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestStepOut) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOut) {
   RunTest("testStepOut", kDebuggerStepTestPage);
 }
 
 // Tests step in functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestStepIn) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepIn) {
   RunTest("testStepIn", kDebuggerStepTestPage);
 }
 
 // Tests that scope can be expanded and contains expected variables.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestExpandScope) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestExpandScope) {
   RunTest("testExpandScope", kDebuggerClosurePage);
 }
 
 // Tests that intrinsic properties(__proto__, prototype, constructor) are
 // present.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestDebugIntrinsicProperties) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDebugIntrinsicProperties) {
   RunTest("testDebugIntrinsicProperties", kDebuggerIntrinsicPropertiesPage);
 }
 
 // Tests that execution continues automatically when there is a syntax error in
 // script and DevTools are open.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestAutoContinueOnSyntaxError) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAutoContinueOnSyntaxError) {
   RunTest("testAutoContinueOnSyntaxError", kSyntaxErrorTestPage);
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestCompletionOnPause) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestCompletionOnPause) {
   RunTest("testCompletionOnPause", kCompletionOnPause);
 }
 
@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
 }
 
 // Tests console eval.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleEval) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleEval) {
   RunTest("testConsoleEval", kConsoleTestPage);
 }
 
@@ -409,12 +409,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleLog) {
 }
 
 // Tests eval global values.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEvalGlobal) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalGlobal) {
   RunTest("testEvalGlobal", kEvalTestPage);
 }
 
 // Test that Storage panel can be shown.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestShowStoragePanel) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowStoragePanel) {
   RunTest("testShowStoragePanel", kDebuggerTestPage);
 }
 

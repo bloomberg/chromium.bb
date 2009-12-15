@@ -842,8 +842,8 @@ TestSuite.prototype.showMainPageScriptSource_ = function(scriptName, callback) {
 TestSuite.prototype.evaluateInConsole_ = function(code, callback) {
   WebInspector.console.visible = true;
   WebInspector.console.prompt.text = code;
-  WebInspector.console.promptElement.handleKeyEvent(
-      new TestSuite.KeyEvent('Enter'));
+  WebInspector.console.promptElement.dispatchEvent(
+      TestSuite.createKeyEvent('Enter'));
 
   this.addSniffer(WebInspector.ConsoleView.prototype, 'addMessage',
       function(commandResult) {
@@ -1782,11 +1782,12 @@ TestSuite.prototype.testPauseInEval = function() {
 /**
  * Key event with given key identifier.
  */
-TestSuite.KeyEvent = function(key) {
-  this.keyIdentifier = key;
+TestSuite.createKeyEvent = function(keyIdentifier) {
+  var evt = document.createEvent('KeyboardEvent');
+  evt.initKeyboardEvent('keydown', true /* can bubble */, true /* can cancel */,
+                        null /* view */, keyIdentifier, "");
+  return evt;
 };
-TestSuite.KeyEvent.prototype.preventDefault = function() {};
-TestSuite.KeyEvent.prototype.stopPropagation = function() {};
 
 
 /**
@@ -1861,8 +1862,8 @@ TestSuite.prototype.testEvalGlobal = function() {
   // Do not change code below - simply add inputs and expectations above.
   var initEval = function(input) {
     WebInspector.console.prompt.text = input;
-    WebInspector.console.promptElement.handleKeyEvent(
-        new TestSuite.KeyEvent('Enter'));
+    WebInspector.console.promptElement.dispatchEvent(
+        TestSuite.createKeyEvent('Enter'));
   };
   var test = this;
   var messagesCount = 0;
