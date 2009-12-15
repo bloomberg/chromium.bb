@@ -464,6 +464,7 @@ bool Histogram::DeserializeHistogramInfo(const std::string& histogram_info) {
         histogram_name;
   } else {
     render_histogram->AddSampleSet(sample);
+    render_histogram->SetFlags(flags & ~kIPCSerializationSourceFlag);
   }
 
   return true;
