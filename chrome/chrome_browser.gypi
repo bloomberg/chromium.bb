@@ -43,6 +43,8 @@
         'browser/app_controller_cppsafe_mac.h',
         'browser/app_controller_mac.h',
         'browser/app_controller_mac.mm',
+        'browser/app_menu_model.cc',
+        'browser/app_menu_model.h',
         'browser/app_modal_dialog.cc',
         'browser/app_modal_dialog.h',
         'browser/app_modal_dialog_gtk.cc',

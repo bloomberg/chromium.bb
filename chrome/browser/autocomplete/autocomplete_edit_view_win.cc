@@ -43,7 +43,6 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "skia/ext/skia_utils_win.h"
-#include "views/controls/menu/menu_2.h"
 #include "views/drag_utils.h"
 #include "views/focus/focus_util_win.h"
 #include "views/widget/widget.h"

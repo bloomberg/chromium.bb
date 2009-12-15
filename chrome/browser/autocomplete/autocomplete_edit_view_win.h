@@ -22,6 +22,7 @@
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
+#include "views/controls/menu/menu_2.h"
 
 class AutocompletePopupModel;
 class CommandUpdater;
@@ -29,7 +30,6 @@ class Profile;
 class TabContents;
 namespace views {
 class View;
-class Menu2;
 }
 
 class AutocompleteEditController;

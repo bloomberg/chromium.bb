@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "app/menus/simple_menu_model.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/app_menu_model.h"
+#include "chrome/browser/back_forward_menu_model_views.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/page_menu_model.h"
-#include "chrome/browser/user_data_manager.h"
 #include "chrome/browser/views/accessible_toolbar_view.h"
 #include "chrome/browser/views/go_button.h"
 #include "chrome/browser/views/location_bar_view.h"
@@ -23,7 +23,6 @@
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
-class BackForwardMenuModelViews;
 class BrowserActionsContainer;
 class Browser;
 class Profile;
@@ -40,13 +39,12 @@ class ToolbarView : public AccessibleToolbarView,
                     public menus::SimpleMenuModel::Delegate,
                     public LocationBarView::Delegate,
                     public NotificationObserver,
-                    public GetProfilesHelper::Delegate,
                     public CommandUpdater::CommandObserver,
                     public views::ButtonListener,
                     public BubblePositioner {
  public:
   explicit ToolbarView(Browser* browser);
-  virtual ~ToolbarView();
+  virtual ~ToolbarView() { }
 
   // Create the contents of the Browser Toolbar
   void Init(Profile* profile);
@@ -78,9 +76,6 @@ class ToolbarView : public AccessibleToolbarView,
 
   // Overridden from views::MenuDelegate:
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
-
-  // Overridden from GetProfilesHelper::Delegate:
-  virtual void OnGetProfilesDone(const std::vector<std::wstring>& profiles);
 
   // Overridden from LocationBarView::Delegate:
   virtual TabContents* GetTabContents();
@@ -143,8 +138,6 @@ class ToolbarView : public AccessibleToolbarView,
   void RunPageMenu(const gfx::Point& pt);
   void RunAppMenu(const gfx::Point& pt);
 
-  void CreateAppMenu();
-
   // Types of display mode this toolbar can have.
   enum DisplayMode {
     DISPLAYMODE_NORMAL,       // Normal toolbar with buttons, etc.
@@ -180,9 +173,6 @@ class ToolbarView : public AccessibleToolbarView,
   // Contents of the profiles menu to populate with profile names.
   scoped_ptr<menus::SimpleMenuModel> profiles_menu_contents_;
 
-  // Helper class to enumerate profiles information on the file thread.
-  scoped_refptr<GetProfilesHelper> profiles_helper_;
-
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;
 
@@ -191,7 +181,7 @@ class ToolbarView : public AccessibleToolbarView,
 
   // The contents of the various menus.
   scoped_ptr<PageMenuModel> page_menu_model_;
-  scoped_ptr<menus::SimpleMenuModel> app_menu_contents_;
+  scoped_ptr<AppMenuModel> app_menu_model_;
 
   // TODO(beng): build these into MenuButton.
   scoped_ptr<views::Menu2> page_menu_menu_;

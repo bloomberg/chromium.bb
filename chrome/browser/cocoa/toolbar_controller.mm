@@ -10,6 +10,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/bubble_positioner.h"
@@ -472,13 +473,18 @@ class PrefObserverBridge : public NotificationObserver {
 - (void)installPageWrenchMenus {
   if (pageMenuModel_.get())
     return;
-  pageMenuDelegate_.reset(
-      new ToolbarControllerInternal::MenuDelegate(browser_));
-  pageMenuModel_.reset(new PageMenuModel(pageMenuDelegate_.get(), browser_));
+  menuDelegate_.reset(new ToolbarControllerInternal::MenuDelegate(browser_));
+  pageMenuModel_.reset(new PageMenuModel(menuDelegate_.get(), browser_));
   pageMenuController_.reset(
       [[MenuController alloc] initWithModel:pageMenuModel_.get()
-                              useWithPopUpButtonCell:YES]);
+                     useWithPopUpButtonCell:YES]);
   [pageButton_ setAttachedMenu:[pageMenuController_ menu]];
+
+  appMenuModel_.reset(new AppMenuModel(menuDelegate_.get(), browser_));
+  appMenuController_.reset(
+      [[MenuController alloc] initWithModel:appMenuModel_.get()
+                     useWithPopUpButtonCell:YES]);
+  [wrenchButton_ setAttachedMenu:[appMenuController_ menu]];
 }
 
 // Show or hide the page and wrench buttons based on the pref.

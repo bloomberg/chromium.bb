@@ -19,6 +19,7 @@ const bool kCanToggleSystemTitleBar = false;
 const bool kRestorePopups = true;
 const bool kShowImportOnBookmarkBar = false;
 const bool kShowExitMenuItem = false;
+const bool kShowAboutMenuItem = true;
 const bool kOSSupportsOtherBrowsers = false;
 
 #elif defined(OS_LINUX)
@@ -48,7 +49,13 @@ const SessionStartupPref::Type kDefaultSessionStartupType =
 const int kPinnedTabWidth = 56;
 const bool kRestorePopups = false;
 const bool kShowImportOnBookmarkBar = true;
+#if defined(OS_MACOSX)
+const bool kShowExitMenuItem = false;
+const bool kShowAboutMenuItem = false;
+#else
 const bool kShowExitMenuItem = true;
+const bool kShowAboutMenuItem = true;
+#endif
 const bool kOSSupportsOtherBrowsers = true;
 
 #endif

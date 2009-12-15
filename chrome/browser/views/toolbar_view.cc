@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/back_forward_menu_model_views.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
@@ -31,7 +30,6 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/user_data_manager.h"
 #include "chrome/browser/views/bookmark_menu_button.h"
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/event_utils.h"
@@ -94,9 +92,7 @@ ToolbarView::ToolbarView(Browser* browser)
       bookmark_menu_(NULL),
       profile_(NULL),
       browser_(browser),
-      profiles_menu_contents_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          profiles_helper_(new GetProfilesHelper(this))) {
+      profiles_menu_contents_(NULL) {
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
@@ -111,10 +107,6 @@ ToolbarView::ToolbarView(Browser* browser)
     kPopupBackgroundEdge = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_LOCATIONBG_POPUPMODE_EDGE);
   }
-}
-
-ToolbarView::~ToolbarView() {
-  profiles_helper_->OnDelegateDeleted();
 }
 
 void ToolbarView::Init(Profile* profile) {
@@ -177,39 +169,6 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& pt) {
     default:
       NOTREACHED() << "Invalid source menu.";
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, GetProfilesHelper::Delegate implementation:
-
-void ToolbarView::OnGetProfilesDone(
-    const std::vector<std::wstring>& profiles) {
-  // Nothing to do if the menu has gone away.
-  if (!profiles_menu_contents_.get())
-    return;
-
-  // Store the latest list of profiles in the browser.
-  browser_->set_user_data_dir_profiles(profiles);
-
-  // Add direct sub menu items for profiles.
-  std::vector<std::wstring>::const_iterator iter = profiles.begin();
-  for (int i = IDC_NEW_WINDOW_PROFILE_0;
-       (i <= IDC_NEW_WINDOW_PROFILE_LAST) && (iter != profiles.end());
-       ++i, ++iter)
-    profiles_menu_contents_->AddItem(i, WideToUTF16Hack(*iter));
-
-  // If there are more profiles then show "Other" link.
-  if (iter != profiles.end()) {
-    profiles_menu_contents_->AddSeparator();
-    profiles_menu_contents_->AddItemWithStringId(IDC_SELECT_PROFILE,
-                                                 IDS_SELECT_PROFILE);
-  }
-
-  // Always show a link to select a new profile.
-  profiles_menu_contents_->AddSeparator();
-  profiles_menu_contents_->AddItemWithStringId(
-      IDC_NEW_PROFILE,
-      IDS_SELECT_PROFILE_DIALOG_NEW_PROFILE_ENTRY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -770,75 +729,9 @@ void ToolbarView::RunPageMenu(const gfx::Point& pt) {
 }
 
 void ToolbarView::RunAppMenu(const gfx::Point& pt) {
-  CreateAppMenu();
-  app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
-}
-
-void ToolbarView::CreateAppMenu() {
   // We always rebuild the app menu so that we can get the current state of
   // the sync system.
-
-  app_menu_contents_.reset(new menus::SimpleMenuModel(this));
-  app_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
-  app_menu_contents_->AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
-  app_menu_contents_->AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW,
-                                          IDS_NEW_INCOGNITO_WINDOW);
-  // Enumerate profiles asynchronously and then create the parent menu item.
-  // We will create the child menu items for this once the asynchronous call is
-  // done.  See OnGetProfilesDone().
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableUserDataDirProfiles) &&
-      !profiles_menu_contents_.get()) {
-    profiles_helper_->GetProfiles(NULL);
-    profiles_menu_contents_.reset(new menus::SimpleMenuModel(this));
-    app_menu_contents_->AddSubMenuWithStringId(IDS_PROFILE_MENU,
-                                               profiles_menu_contents_.get());
-  }
-
-  app_menu_contents_->AddSeparator();
-  app_menu_contents_->AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR,
-                                               IDS_SHOW_BOOKMARK_BAR);
-  app_menu_contents_->AddItemWithStringId(IDC_FULLSCREEN, IDS_FULLSCREEN);
-  app_menu_contents_->AddSeparator();
-  app_menu_contents_->AddItemWithStringId(IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
-  app_menu_contents_->AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER,
-                                          IDS_BOOKMARK_MANAGER);
-  app_menu_contents_->AddItemWithStringId(IDC_SHOW_DOWNLOADS,
-                                          IDS_SHOW_DOWNLOADS);
-
-  // Create the manage extensions menu item.
-  app_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
-                                          IDS_SHOW_EXTENSIONS);
-
-  app_menu_contents_->AddSeparator();
-  if (ProfileSyncService::IsSyncEnabled()) {
-    string16 label;
-    string16 link;
-    // TODO(akalin): use sync_ui_util::GetStatus instead.
-    sync_ui_util::MessageType type = sync_ui_util::GetStatusLabels(
-        browser_->profile()->GetOriginalProfile()->GetProfileSyncService(),
-        &label, &link);
-    label = type == sync_ui_util::SYNCED ?
-        l10n_util::GetStringUTF16(IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL) :
-        type == sync_ui_util::SYNC_ERROR ?
-        l10n_util::GetStringUTF16(IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL) :
-        l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
-    app_menu_contents_->AddItem(IDC_SYNC_BOOKMARKS, label);
-    app_menu_contents_->AddSeparator();
-  }
-  app_menu_contents_->AddItem(IDC_OPTIONS,
-                              l10n_util::GetStringFUTF16(
-                                  IDS_OPTIONS,
-                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  app_menu_contents_->AddItem(IDC_ABOUT,
-                              l10n_util::GetStringFUTF16(
-                                  IDS_ABOUT,
-                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  app_menu_contents_->AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
-  if (browser_defaults::kShowExitMenuItem) {
-    app_menu_contents_->AddSeparator();
-    app_menu_contents_->AddItemWithStringId(IDC_EXIT, IDS_EXIT);
-  }
-
-  app_menu_menu_.reset(new views::Menu2(app_menu_contents_.get()));
+  app_menu_model_.reset(new AppMenuModel(this, browser_));
+  app_menu_menu_.reset(new views::Menu2(app_menu_model_.get()));
+  app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }

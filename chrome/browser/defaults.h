@@ -41,11 +41,14 @@ extern const bool kRestorePopups;
 extern const bool kBrowserAliveWithNoWindows;
 
 // Should a link be shown on the bookmark bar allowing the user to import
-// bookmarks.
+// bookmarks?
 extern const bool kShowImportOnBookmarkBar;
 
-// Should the exit menu be shown?
+// Should the exit menu item be shown in the toolbar menu?
 extern const bool kShowExitMenuItem;
+
+// Should the about menu item be shown in the toolbar app menu?
+extern const bool kShowAboutMenuItem;
 
 // Does the OS support other browsers? If not, operations such as default
 // browser check are not done.

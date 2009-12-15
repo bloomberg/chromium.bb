@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/common/pref_member.h"
 
+class AppMenuModel;
 @class AutocompleteTextField;
 @class AutocompleteTextFieldEditor;
 @class BackForwardMenuController;
@@ -56,11 +57,14 @@ class ToolbarModel;
   scoped_nsobject<BrowserActionsController> browserActionsController_;
 
   // Lazily-instantiated model, controller, and delegate for the menu on the
-  // page button. If it's visible, these will be non-null, but they are not
-  // reaped when the button is hidden once it is initially shown.
+  // page and wrench buttons. The wrench menu is also called the "app menu". If
+  // it's visible, these will be non-null, but they are not reaped when the
+  // button is hidden once it is initially shown.
   scoped_ptr<PageMenuModel> pageMenuModel_;
   scoped_nsobject<MenuController> pageMenuController_;
-  scoped_ptr<ToolbarControllerInternal::MenuDelegate> pageMenuDelegate_;
+  scoped_ptr<ToolbarControllerInternal::MenuDelegate> menuDelegate_;
+  scoped_ptr<AppMenuModel> appMenuModel_;
+  scoped_nsobject<MenuController> appMenuController_;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
