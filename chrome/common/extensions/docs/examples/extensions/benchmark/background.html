@@ -102,7 +102,7 @@ function Benchmark() {
 
   // Called when the test run completes.
   this.finish = function() {
-    lastWin_.close();
+    chrome.tabs.remove(lastWin_.id);
     lastWin_ = 0;
 
     // Record some more stats.
@@ -148,9 +148,10 @@ function Benchmark() {
     }
 
     if (lastWin_) {
-      lastWin_.location = current_.url;
+      chrome.tabs.update(lastWin_.id, {"url": current_.url});
     } else {
-      lastWin_ = window.open(current_.url);
+      chrome.tabs.create({"url": current_.url},
+                         function(tab) { lastWin_ = tab; });
     }
   }
 
