@@ -102,6 +102,7 @@
 #define NACL_sys_thread_exit            81
 #define NACL_sys_tls_init               82
 #define NACL_sys_thread_nice            83
+#define NACL_sys_tls_get                84
 
 #define NACL_sys_srpc_get_fd            90
 

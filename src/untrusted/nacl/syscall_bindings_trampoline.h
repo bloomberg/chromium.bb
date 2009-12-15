@@ -165,6 +165,8 @@ typedef void (*TYPE_nacl_null) (void);
 
 typedef int (*TYPE_nacl_tls_init) (void *tdb, int size);
 
+typedef void *(*TYPE_nacl_tls_get) ();
+
 typedef int (*TYPE_nacl_srpc_get_fd) (void);
 
 #if __cplusplus

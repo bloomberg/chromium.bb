@@ -99,6 +99,16 @@ int __nc_memory_block_counter[2];
 
 #if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
 
+#ifdef __x86_64__
+static inline nc_thread_descriptor_t *nc_get_tdb() {
+  return NACL_SYSCALL(tls_get)();
+}
+
+void *__tls_get_addr(int offset) {
+  return ((char *)nc_get_tdb()) + offset;
+}
+
+#else
 static inline nc_thread_descriptor_t *nc_get_tdb() {
   nc_thread_descriptor_t *tdb = NULL;
   __asm__ __volatile__ ("mov %%gs:0, %0"
@@ -106,6 +116,7 @@ static inline nc_thread_descriptor_t *nc_get_tdb() {
                       : );
   return tdb;
 }
+#endif
 
 #elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
 static INLINE nc_thread_descriptor_t *nc_get_tdb() {
