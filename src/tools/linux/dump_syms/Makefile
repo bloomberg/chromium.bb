@@ -1,37 +1,136 @@
-CXX=g++
-CC=gcc
+### Variables that can be overridden on the command line.
+CC = gcc
+CXX = g++
+CPPFLAGS = -DNDEBUG
+CXXFLAGS = -g3 -O2 -Wall -m32
 
-CPPFLAGS=-DNDEBUG
-CXXFLAGS=-g3 -O2 -Wall -m32
+# To produce test coverage reports:
+# 1) Build all .o files and executables without optimization and with
+#    'COVERAGE=1' on the make command line.
+# 2) Run the tests.
+# 3) Do 'make coverage'.
+# All in one command:
+# $ make CFLAGS='-O0' CXXFLAGS='-O0' COVERAGE=1 clean check coverage
+COVERAGE=
+
+# Build all executables.
+all::
+
+# Delete all generated files: executables, object files, test coverage
+# reports, etc.
+clean::
+
+# Run all tests.
+# You can run a specific test FOO with the command: 'make check-FOO'.
+check:
+
+# Generate coverage reports for the execution that has taken place
+# since the coverage data files were last deleted. Only files that
+# have been added to COVERAGE_SOURCES (see below) get reported on.
+coverage:
+
+# Reset all coverage counts. When coverage is enabled, each time you
+# run the program, it adds its execution counts into the profiling
+# data files in the build directory. 'make coverage-reset' deletes
+# those files, so the counts reported by 'make coverage' start from
+# zero again. Note that 'make clean' does this automatically.
+coverage-reset:
+
+.PHONY: all clean check coverage coverage-reset
 
 
-# These flags are necessary to compile correctly; the 'override'
-# command makes sure these are added even if the user sets CPPFLAGS on
-# the command line.
-override CPPFLAGS+=-I../../.. -D_REENTRANT
+### Variables used internally by this Makefile.
 
-.PHONY:all clean
+# The top of the breakpad source tree.
+SRC = ../../..
 
-BIN=dump_syms
+# A list of the executables that we should use the C++ compiler to
+# link. GNU make's default executable-from-object rule uses $(CC),
+# which doesn't include libstdc++, and perhaps does some other things
+# wrong as well. Every executable listed in this variable uses the
+# pattern rule provided at the bottom, which links all the
+# dependencies using $(CXX). Value accumulated throughout the file.
+CPP_EXECUTABLES = 
 
-all:$(BIN)
+# Source files whose coverage we are interested in. Value accumulated
+# throughout the file.
+COVERAGE_SOURCES = 
 
-DUMP_OBJ=dump_symbols.o dump_syms.o file_id.o stabs_reader.o module.o
 
-dump_syms:$(DUMP_OBJ)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^
+### dump_syms: a program to produce Breakpad symbol files from the
+### debugging information in Linux executables.
+all:: dump_syms
+dump_syms:					\
+	dump_syms.o				\
+	dump_symbols.o				\
+	file_id.o				\
+	module.o				\
+	stabs_reader.o				\
+	$(empty)
+CPP_EXECUTABLES += dump_syms
+clean::
+	rm -f dump_syms
 
-dump_symbols.o:../../../common/linux/dump_symbols.cc
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $^
+dump_syms.o: dump_syms.cc
 
-stabs_reader.o:../../../common/linux/stabs_reader.cc
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $^
+VPATH += $(SRC)/common/linux
+dump_symbols.o: dump_symbols.cc
+file_id.o: file_id.cc
+module.o: module.cc
+stabs_reader.o: stabs_reader.cc
 
-module.o:../../../common/linux/module.cc
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $^
 
-file_id.o:../../../common/linux/file_id.cc
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $^
+### Generic compilation rules.
 
-clean:
-	rm -f $(BIN) $(DUMP_OBJ)
+# Link C++ executables using the C++ compiler; see CPP_EXECUTABLES above.
+$(CPP_EXECUTABLES): %: %.o
+	$(CXX) $(CXXFLAGS) $(COVERAGE_LDFLAGS) $(LDFLAGS) -o $@ $^
+
+# These flags are required for breakpad sources to compile correctly.
+BREAKPAD_CPPFLAGS = -I$(SRC) -D_REENTRANT
+
+%.o: %.cc
+	$(CXX) -c $^ -o $@ $(CPPFLAGS) $(BREAKPAD_CPPFLAGS) $(CXXFLAGS)
+%.o: %.c
+	$(CC)  -c $^ -o $@ $(CPPFLAGS) $(BREAKPAD_CPPFLAGS) $(CFLAGS)
+
+clean::
+	rm -f *.o core
+
+### Generic testing rules.
+
+### To define a test, make the 'check' target depend on a particular
+### target 'check-FOO' that runs your test, where FOO is the name of
+### the test executable, or something else people will expect.
+### 
+### This pattern rule provides commands for 'check-FOO' that are
+### appropriate for Google C++ Testing Framework test programs. But
+### you can provide your own commands.
+check-%: %
+	srcdir=$(SRC) ./$< $(TEST_ARGS)
+
+
+### Generic coverage reporting rules.
+coverage:
+	gcov --branch-probabilities $(COVERAGE_SOURCES)
+
+coverage-reset:
+	rm -f *.gcda
+
+# If code coverage is enabled, pass the appropriate coverage flags to
+# the compiler for the sources we care about.
+ifdef COVERAGE
+
+COVERAGE_C_SOURCES = $(filter %.c,$(COVERAGE_SOURCES))
+$(COVERAGE_C_SOURCES:.c=.o): override CFLAGS += --coverage
+
+COVERAGE_CXX_SOURCES = $(filter %.cc,$(COVERAGE_SOURCES))
+$(COVERAGE_CXX_SOURCES:.cc=.o): override CXXFLAGS += --coverage
+
+COVERAGE_LDFLAGS = --coverage
+
+endif
+
+clean:: coverage-reset
+clean::
+	rm -f *.gcno *.gcov
