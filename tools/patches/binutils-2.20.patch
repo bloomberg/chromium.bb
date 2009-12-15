@@ -1829,7 +1829,7 @@ diff -uNr binutils-2.20.orig/include/elf/common.h binutils-2.20/include/elf/comm
 diff -uNr binutils-2.20.orig/include/elf/nacl.h binutils-2.20/include/elf/nacl.h
 --- binutils-2.20.orig/include/elf/nacl.h	1970-01-01 01:00:00.000000000 +0100
 +++ binutils-2.20/include/elf/nacl.h	2009-11-23 14:07:39.000000000 +0100
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,39 @@
 +/* ix86 ELF support for BFD.
 +   Copyright 1998, 1999, 2000, 2002, 2004, 2005, 2006
 +   Free Software Foundation, Inc.
@@ -1860,7 +1860,13 @@ diff -uNr binutils-2.20.orig/include/elf/nacl.h binutils-2.20/include/elf/nacl.h
 +#define EF_NACL_ALIGN_LIB   0x000000	/* aligned to pass either way */
 +
 +/* ABI version number -- increment when ABI changes are incompatible. */
++#ifdef __x86_64__
++/* Version 0 is not a stable version - it's used before we'll produce alpha
++   release of NaCl x86-64 */
++#define EF_NACL_ABIVERSION  0
++#else
 +#define EF_NACL_ABIVERSION  6
++#endif
 +
 +#endif
 diff -uNr binutils-2.20.orig/ld/Makefile.am binutils-2.20/ld/Makefile.am
