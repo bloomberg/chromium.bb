@@ -16,9 +16,9 @@
 //
 // EXAMPLE:
 //
-//  class Controller : public SupportsWeakPtr {
+//  class Controller : public SupportsWeakPtr<Controller> {
 //   public:
-//    void SpawnWorker() { Worker::StartNew(GetWeakPtr()); }
+//    void SpawnWorker() { Worker::StartNew(AsWeakPtr()); }
 //    void WorkComplete(const Result& result) { ... }
 //  };
 //
