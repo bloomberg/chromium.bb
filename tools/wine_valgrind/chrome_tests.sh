@@ -68,7 +68,7 @@ SUITES_100="media_unittests net_unittests"
 SUITES_1000="base_unittests unit_tests"
 #SUITES_10000="ui_tests startup_tests"
 
-THE_VALGRIND_CMD="/usr/local/valgrind-10903/bin/valgrind \
+THE_VALGRIND_CMD="/usr/local/valgrind-10880/bin/valgrind \
 --gen-suppressions=all \
 --leak-check=full \
 --num-callers=25 \
@@ -353,6 +353,7 @@ then
     do
       if test -f "$dir/$f"
       then
+        dir="`cd $dir; pwd`"
         suppression_options="$suppression_options --suppressions=$dir/$f"
       fi
     done
