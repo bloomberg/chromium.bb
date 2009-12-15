@@ -81,6 +81,12 @@ TEST_F(WorkerTest, SingleWorker) {
   RunTest(L"single_worker.html");
 }
 
+#if defined(OS_LINUX)
+// MultipleWorkers times out (process hangs, does not exit) occasionally.
+// http://crbug.com/30353
+#define MultipleWorkers DISABLED_MultipleWorkers
+#endif
+
 TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
