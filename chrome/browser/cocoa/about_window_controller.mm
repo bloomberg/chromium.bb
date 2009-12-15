@@ -138,8 +138,8 @@ static BOOL recentShownUserActionFailedStatus = NO;
   // is built on Windows too.
   NSString* svnRevision = [bundle objectForInfoDictionaryKey:@"SVNRevision"];
   NSString* version =
-    [NSString stringWithFormat:@"%@%@ (%@)",
-              chromeVersion, versionModifier, svnRevision];
+    [NSString stringWithFormat:@"%@ (%@)%@",
+              chromeVersion, svnRevision, versionModifier];
 
   [version_ setStringValue:version];
 

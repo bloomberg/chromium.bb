@@ -136,15 +136,16 @@ void AboutChromeView::Init() {
     return;
   }
 
+  current_version_ = version_info->file_version();
+  current_version_ += L" (";
+  current_version_ += version_info->last_change();
+  current_version_ += L")";
+
   string16 version_modifier = platform_util::GetVersionStringModifier();
   if (version_modifier.length()) {
     current_version_ += L" ";
     current_version_ += UTF16ToWide(version_modifier);
   }
-  current_version_ = version_info->file_version();
-  current_version_ += L" (";
-  current_version_ += version_info->last_change();
-  current_version_ += L")";
 
   // Views we will add to the *parent* of this dialog, since it will display
   // next to the buttons which we don't draw ourselves.

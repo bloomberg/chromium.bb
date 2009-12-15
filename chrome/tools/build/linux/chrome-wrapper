@@ -62,6 +62,10 @@ esac
 # Always use our ffmpeg and other shared libs.
 export LD_LIBRARY_PATH="$HERE:$HERE/lib:$HERE/lib.target:$LD_LIBRARY_PATH"
 
+# Custom version string for this release. This can be used to add a downstream
+# vendor string or release channel information.
+export CHROME_VERSION_EXTRA="custom"
+
 exists_desktop_file || generate_desktop_file
 
 exec "$HERE/chrome" "$@"
