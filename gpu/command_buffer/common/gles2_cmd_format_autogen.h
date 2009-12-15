@@ -914,7 +914,7 @@ struct ClearStencil {
   }
 
   gpu::CommandHeader header;
-  uint32 s;
+  int32 s;
 };
 
 COMPILE_ASSERT(sizeof(ClearStencil) == 8,
@@ -1049,12 +1049,12 @@ struct CompressedTexImage2D {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 level;
+  int32 level;
   uint32 internalformat;
-  uint32 width;
-  uint32 height;
-  uint32 border;
-  uint32 imageSize;
+  int32 width;
+  int32 height;
+  int32 border;
+  int32 imageSize;
   uint32 data_shm_id;
   uint32 data_shm_offset;
 };
@@ -1124,12 +1124,12 @@ struct CompressedTexImage2DImmediate {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 level;
+  int32 level;
   uint32 internalformat;
-  uint32 width;
-  uint32 height;
-  uint32 border;
-  uint32 imageSize;
+  int32 width;
+  int32 height;
+  int32 border;
+  int32 imageSize;
 };
 
 COMPILE_ASSERT(sizeof(CompressedTexImage2DImmediate) == 32,
@@ -1194,13 +1194,13 @@ struct CompressedTexSubImage2D {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 level;
-  uint32 xoffset;
-  uint32 yoffset;
-  uint32 width;
-  uint32 height;
+  int32 level;
+  int32 xoffset;
+  int32 yoffset;
+  int32 width;
+  int32 height;
   uint32 format;
-  uint32 imageSize;
+  int32 imageSize;
   uint32 data_shm_id;
   uint32 data_shm_offset;
 };
@@ -1273,13 +1273,13 @@ struct CompressedTexSubImage2DImmediate {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 level;
-  uint32 xoffset;
-  uint32 yoffset;
-  uint32 width;
-  uint32 height;
+  int32 level;
+  int32 xoffset;
+  int32 yoffset;
+  int32 width;
+  int32 height;
   uint32 format;
-  uint32 imageSize;
+  int32 imageSize;
 };
 
 COMPILE_ASSERT(sizeof(CompressedTexSubImage2DImmediate) == 36,
@@ -1342,13 +1342,13 @@ struct CopyTexImage2D {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 level;
+  int32 level;
   uint32 internalformat;
-  uint32 x;
-  uint32 y;
-  uint32 width;
-  uint32 height;
-  uint32 border;
+  int32 x;
+  int32 y;
+  int32 width;
+  int32 height;
+  int32 border;
 };
 
 COMPILE_ASSERT(sizeof(CopyTexImage2D) == 36,
@@ -1410,13 +1410,13 @@ struct CopyTexSubImage2D {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 level;
-  uint32 xoffset;
-  uint32 yoffset;
-  uint32 x;
-  uint32 y;
-  uint32 width;
-  uint32 height;
+  int32 level;
+  int32 xoffset;
+  int32 yoffset;
+  int32 x;
+  int32 y;
+  int32 width;
+  int32 height;
 };
 
 COMPILE_ASSERT(sizeof(CopyTexSubImage2D) == 36,
@@ -1575,7 +1575,7 @@ struct DeleteBuffers {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
   uint32 buffers_shm_id;
   uint32 buffers_shm_offset;
 };
@@ -1623,7 +1623,7 @@ struct DeleteBuffersImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
 };
 
 COMPILE_ASSERT(sizeof(DeleteBuffersImmediate) == 8,
@@ -1664,7 +1664,7 @@ struct DeleteFramebuffers {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
   uint32 framebuffers_shm_id;
   uint32 framebuffers_shm_offset;
 };
@@ -1712,7 +1712,7 @@ struct DeleteFramebuffersImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
 };
 
 COMPILE_ASSERT(sizeof(DeleteFramebuffersImmediate) == 8,
@@ -1787,7 +1787,7 @@ struct DeleteRenderbuffers {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
   uint32 renderbuffers_shm_id;
   uint32 renderbuffers_shm_offset;
 };
@@ -1835,7 +1835,7 @@ struct DeleteRenderbuffersImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
 };
 
 COMPILE_ASSERT(sizeof(DeleteRenderbuffersImmediate) == 8,
@@ -1908,7 +1908,7 @@ struct DeleteTextures {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
   uint32 textures_shm_id;
   uint32 textures_shm_offset;
 };
@@ -1956,7 +1956,7 @@ struct DeleteTexturesImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
 };
 
 COMPILE_ASSERT(sizeof(DeleteTexturesImmediate) == 8,
@@ -2205,8 +2205,8 @@ struct DrawArrays {
 
   gpu::CommandHeader header;
   uint32 mode;
-  uint32 first;
-  uint32 count;
+  int32 first;
+  int32 count;
 };
 
 COMPILE_ASSERT(sizeof(DrawArrays) == 16,
@@ -2250,7 +2250,7 @@ struct DrawElements {
 
   gpu::CommandHeader header;
   uint32 mode;
-  uint32 count;
+  int32 count;
   uint32 type;
   uint32 index_offset;
 };
@@ -2484,7 +2484,7 @@ struct FramebufferTexture2D {
   uint32 attachment;
   uint32 textarget;
   uint32 texture;
-  uint32 level;
+  int32 level;
 };
 
 COMPILE_ASSERT(sizeof(FramebufferTexture2D) == 24,
@@ -2565,7 +2565,7 @@ struct GenBuffers {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
   uint32 buffers_shm_id;
   uint32 buffers_shm_offset;
 };
@@ -2613,7 +2613,7 @@ struct GenBuffersImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
 };
 
 COMPILE_ASSERT(sizeof(GenBuffersImmediate) == 8,
@@ -2688,7 +2688,7 @@ struct GenFramebuffers {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
   uint32 framebuffers_shm_id;
   uint32 framebuffers_shm_offset;
 };
@@ -2736,7 +2736,7 @@ struct GenFramebuffersImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
 };
 
 COMPILE_ASSERT(sizeof(GenFramebuffersImmediate) == 8,
@@ -2777,7 +2777,7 @@ struct GenRenderbuffers {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
   uint32 renderbuffers_shm_id;
   uint32 renderbuffers_shm_offset;
 };
@@ -2825,7 +2825,7 @@ struct GenRenderbuffersImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
 };
 
 COMPILE_ASSERT(sizeof(GenRenderbuffersImmediate) == 8,
@@ -2864,7 +2864,7 @@ struct GenTextures {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
   uint32 textures_shm_id;
   uint32 textures_shm_offset;
 };
@@ -2912,7 +2912,7 @@ struct GenTexturesImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 n;
+  int32 n;
 };
 
 COMPILE_ASSERT(sizeof(GenTexturesImmediate) == 8,
@@ -2970,7 +2970,7 @@ struct GetActiveAttrib {
   gpu::CommandHeader header;
   uint32 program;
   uint32 index;
-  uint32 bufsize;
+  int32 bufsize;
   uint32 length_shm_id;
   uint32 length_shm_offset;
   uint32 size_shm_id;
@@ -3056,7 +3056,7 @@ struct GetActiveUniform {
   gpu::CommandHeader header;
   uint32 program;
   uint32 index;
-  uint32 bufsize;
+  int32 bufsize;
   uint32 length_shm_id;
   uint32 length_shm_offset;
   uint32 size_shm_id;
@@ -3133,7 +3133,7 @@ struct GetAttachedShaders {
 
   gpu::CommandHeader header;
   uint32 program;
-  uint32 maxcount;
+  int32 maxcount;
   uint32 count_shm_id;
   uint32 count_shm_offset;
   uint32 shaders_shm_id;
@@ -3529,7 +3529,7 @@ struct GetProgramInfoLog {
 
   gpu::CommandHeader header;
   uint32 program;
-  uint32 bufsize;
+  int32 bufsize;
   uint32 length_shm_id;
   uint32 length_shm_offset;
   uint32 infolog_shm_id;
@@ -3694,7 +3694,7 @@ struct GetShaderInfoLog {
 
   gpu::CommandHeader header;
   uint32 shader;
-  uint32 bufsize;
+  int32 bufsize;
   uint32 length_shm_id;
   uint32 length_shm_offset;
   uint32 infolog_shm_id;
@@ -3820,7 +3820,7 @@ struct GetShaderSource {
 
   gpu::CommandHeader header;
   uint32 shader;
-  uint32 bufsize;
+  int32 bufsize;
   uint32 length_shm_id;
   uint32 length_shm_offset;
   uint32 source_shm_id;
@@ -4013,7 +4013,7 @@ struct GetUniformfv {
 
   gpu::CommandHeader header;
   uint32 program;
-  uint32 location;
+  int32 location;
   uint32 params_shm_id;
   uint32 params_shm_offset;
 };
@@ -4064,7 +4064,7 @@ struct GetUniformiv {
 
   gpu::CommandHeader header;
   uint32 program;
-  uint32 location;
+  int32 location;
   uint32 params_shm_id;
   uint32 params_shm_offset;
 };
@@ -4686,7 +4686,7 @@ struct PixelStorei {
 
   gpu::CommandHeader header;
   uint32 pname;
-  uint32 param;
+  int32 param;
 };
 
 COMPILE_ASSERT(sizeof(PixelStorei) == 12,
@@ -4775,10 +4775,10 @@ struct ReadPixels {
   }
 
   gpu::CommandHeader header;
-  uint32 x;
-  uint32 y;
-  uint32 width;
-  uint32 height;
+  int32 x;
+  int32 y;
+  int32 width;
+  int32 height;
   uint32 format;
   uint32 type;
   uint32 pixels_shm_id;
@@ -4840,8 +4840,8 @@ struct RenderbufferStorage {
   gpu::CommandHeader header;
   uint32 target;
   uint32 internalformat;
-  uint32 width;
-  uint32 height;
+  int32 width;
+  int32 height;
 };
 
 COMPILE_ASSERT(sizeof(RenderbufferStorage) == 20,
@@ -4922,10 +4922,10 @@ struct Scissor {
   }
 
   gpu::CommandHeader header;
-  uint32 x;
-  uint32 y;
-  uint32 width;
-  uint32 height;
+  int32 x;
+  int32 y;
+  int32 width;
+  int32 height;
 };
 
 COMPILE_ASSERT(sizeof(Scissor) == 20,
@@ -4976,7 +4976,7 @@ struct ShaderSource {
 
   gpu::CommandHeader header;
   uint32 shader;
-  uint32 count;
+  int32 count;
   uint32 data_shm_id;
   uint32 data_shm_offset;
   uint32 data_size;
@@ -5028,7 +5028,7 @@ struct ShaderSourceImmediate {
 
   gpu::CommandHeader header;
   uint32 shader;
-  uint32 count;
+  int32 count;
   uint32 data_size;
 };
 
@@ -5070,7 +5070,7 @@ struct StencilFunc {
 
   gpu::CommandHeader header;
   uint32 func;
-  uint32 ref;
+  int32 ref;
   uint32 mask;
 };
 
@@ -5114,7 +5114,7 @@ struct StencilFuncSeparate {
   gpu::CommandHeader header;
   uint32 face;
   uint32 func;
-  uint32 ref;
+  int32 ref;
   uint32 mask;
 };
 
@@ -5335,11 +5335,11 @@ struct TexImage2D {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 level;
-  uint32 internalformat;
-  uint32 width;
-  uint32 height;
-  uint32 border;
+  int32 level;
+  int32 internalformat;
+  int32 width;
+  int32 height;
+  int32 border;
   uint32 format;
   uint32 type;
   uint32 pixels_shm_id;
@@ -5415,11 +5415,11 @@ struct TexImage2DImmediate {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 level;
-  uint32 internalformat;
-  uint32 width;
-  uint32 height;
-  uint32 border;
+  int32 level;
+  int32 internalformat;
+  int32 width;
+  int32 height;
+  int32 border;
   uint32 format;
   uint32 type;
 };
@@ -5613,7 +5613,7 @@ struct TexParameteri {
   gpu::CommandHeader header;
   uint32 target;
   uint32 pname;
-  uint32 param;
+  int32 param;
 };
 
 COMPILE_ASSERT(sizeof(TexParameteri) == 16,
@@ -5768,11 +5768,11 @@ struct TexSubImage2D {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 level;
-  uint32 xoffset;
-  uint32 yoffset;
-  uint32 width;
-  uint32 height;
+  int32 level;
+  int32 xoffset;
+  int32 yoffset;
+  int32 width;
+  int32 height;
   uint32 format;
   uint32 type;
   uint32 pixels_shm_id;
@@ -5847,11 +5847,11 @@ struct TexSubImage2DImmediate {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 level;
-  uint32 xoffset;
-  uint32 yoffset;
-  uint32 width;
-  uint32 height;
+  int32 level;
+  int32 xoffset;
+  int32 yoffset;
+  int32 width;
+  int32 height;
   uint32 format;
   uint32 type;
 };
@@ -5902,7 +5902,7 @@ struct Uniform1f {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
+  int32 location;
   float x;
 };
 
@@ -5947,8 +5947,8 @@ struct Uniform1fv {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 v_shm_id;
   uint32 v_shm_offset;
 };
@@ -6000,8 +6000,8 @@ struct Uniform1fvImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
 };
 
 COMPILE_ASSERT(sizeof(Uniform1fvImmediate) == 12,
@@ -6038,8 +6038,8 @@ struct Uniform1i {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 x;
+  int32 location;
+  int32 x;
 };
 
 COMPILE_ASSERT(sizeof(Uniform1i) == 12,
@@ -6083,8 +6083,8 @@ struct Uniform1iv {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 v_shm_id;
   uint32 v_shm_offset;
 };
@@ -6136,8 +6136,8 @@ struct Uniform1ivImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
 };
 
 COMPILE_ASSERT(sizeof(Uniform1ivImmediate) == 12,
@@ -6175,7 +6175,7 @@ struct Uniform2f {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
+  int32 location;
   float x;
   float y;
 };
@@ -6223,8 +6223,8 @@ struct Uniform2fv {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 v_shm_id;
   uint32 v_shm_offset;
 };
@@ -6276,8 +6276,8 @@ struct Uniform2fvImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
 };
 
 COMPILE_ASSERT(sizeof(Uniform2fvImmediate) == 12,
@@ -6315,9 +6315,9 @@ struct Uniform2i {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 x;
-  uint32 y;
+  int32 location;
+  int32 x;
+  int32 y;
 };
 
 COMPILE_ASSERT(sizeof(Uniform2i) == 16,
@@ -6363,8 +6363,8 @@ struct Uniform2iv {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 v_shm_id;
   uint32 v_shm_offset;
 };
@@ -6416,8 +6416,8 @@ struct Uniform2ivImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
 };
 
 COMPILE_ASSERT(sizeof(Uniform2ivImmediate) == 12,
@@ -6456,7 +6456,7 @@ struct Uniform3f {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
+  int32 location;
   float x;
   float y;
   float z;
@@ -6507,8 +6507,8 @@ struct Uniform3fv {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 v_shm_id;
   uint32 v_shm_offset;
 };
@@ -6560,8 +6560,8 @@ struct Uniform3fvImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
 };
 
 COMPILE_ASSERT(sizeof(Uniform3fvImmediate) == 12,
@@ -6600,10 +6600,10 @@ struct Uniform3i {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 x;
-  uint32 y;
-  uint32 z;
+  int32 location;
+  int32 x;
+  int32 y;
+  int32 z;
 };
 
 COMPILE_ASSERT(sizeof(Uniform3i) == 20,
@@ -6651,8 +6651,8 @@ struct Uniform3iv {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 v_shm_id;
   uint32 v_shm_offset;
 };
@@ -6704,8 +6704,8 @@ struct Uniform3ivImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
 };
 
 COMPILE_ASSERT(sizeof(Uniform3ivImmediate) == 12,
@@ -6747,7 +6747,7 @@ struct Uniform4f {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
+  int32 location;
   float x;
   float y;
   float z;
@@ -6801,8 +6801,8 @@ struct Uniform4fv {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 v_shm_id;
   uint32 v_shm_offset;
 };
@@ -6854,8 +6854,8 @@ struct Uniform4fvImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
 };
 
 COMPILE_ASSERT(sizeof(Uniform4fvImmediate) == 12,
@@ -6896,11 +6896,11 @@ struct Uniform4i {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 x;
-  uint32 y;
-  uint32 z;
-  uint32 w;
+  int32 location;
+  int32 x;
+  int32 y;
+  int32 z;
+  int32 w;
 };
 
 COMPILE_ASSERT(sizeof(Uniform4i) == 24,
@@ -6950,8 +6950,8 @@ struct Uniform4iv {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 v_shm_id;
   uint32 v_shm_offset;
 };
@@ -7003,8 +7003,8 @@ struct Uniform4ivImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
 };
 
 COMPILE_ASSERT(sizeof(Uniform4ivImmediate) == 12,
@@ -7050,8 +7050,8 @@ struct UniformMatrix2fv {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 transpose;
   uint32 value_shm_id;
   uint32 value_shm_offset;
@@ -7111,8 +7111,8 @@ struct UniformMatrix2fvImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 transpose;
 };
 
@@ -7161,8 +7161,8 @@ struct UniformMatrix3fv {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 transpose;
   uint32 value_shm_id;
   uint32 value_shm_offset;
@@ -7222,8 +7222,8 @@ struct UniformMatrix3fvImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 transpose;
 };
 
@@ -7272,8 +7272,8 @@ struct UniformMatrix4fv {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 transpose;
   uint32 value_shm_id;
   uint32 value_shm_offset;
@@ -7333,8 +7333,8 @@ struct UniformMatrix4fvImmediate {
   }
 
   gpu::CommandHeader header;
-  uint32 location;
-  uint32 count;
+  int32 location;
+  int32 count;
   uint32 transpose;
 };
 
@@ -7982,10 +7982,10 @@ struct VertexAttribPointer {
 
   gpu::CommandHeader header;
   uint32 indx;
-  uint32 size;
+  int32 size;
   uint32 type;
   uint32 normalized;
-  uint32 stride;
+  int32 stride;
   uint32 offset;
 };
 
@@ -8033,10 +8033,10 @@ struct Viewport {
   }
 
   gpu::CommandHeader header;
-  uint32 x;
-  uint32 y;
-  uint32 width;
-  uint32 height;
+  int32 x;
+  int32 y;
+  int32 width;
+  int32 height;
 };
 
 COMPILE_ASSERT(sizeof(Viewport) == 20,

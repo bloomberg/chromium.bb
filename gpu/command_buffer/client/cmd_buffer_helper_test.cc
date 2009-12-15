@@ -152,7 +152,7 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   EXPECT_TRUE(parser_ != NULL);
   EXPECT_FALSE(command_buffer_->GetErrorStatus());
   EXPECT_EQ(parse_error::kParseNoError, command_buffer_->ResetParseError());
-  EXPECT_EQ(0u, command_buffer_->GetGetOffset());
+  EXPECT_EQ(0, command_buffer_->GetGetOffset());
 
   // Add 3 commands through the helper
   AddCommandWithExpect(parse_error::kParseNoError, 1, 0, NULL);

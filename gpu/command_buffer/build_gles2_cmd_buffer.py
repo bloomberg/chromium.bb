@@ -452,12 +452,12 @@ class TypeHandler(object):
 
   def WriteCmdSizeTest(self, func, file):
     """Writes the size test for a command."""
-    file.Write("  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4);  // NOLINT\n")
+    file.Write("  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);  // NOLINT\n")
 
   def WriteFormatTest(self, func, file):
     """Writes a format test for a command."""
     file.Write("TEST(GLES2FormatTest, %s) {\n" % func.name)
-    file.Write("  %s cmd = { 0, };\n" % func.name)
+    file.Write("  %s cmd = {{0}};\n" % func.name)
     file.Write("  void* next_cmd = cmd.Set(\n")
     file.Write("      &cmd")
     args = func.GetCmdArgs()
@@ -467,8 +467,11 @@ class TypeHandler(object):
       value += 1
     file.Write(");\n")
     value = 11
-    file.Write("  EXPECT_EQ(%s::kCmdId, cmd.header.command);\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("            cmd.header.command);\n")
     func.type_handler.WriteCmdSizeTest(func, file)
+    file.Write("  EXPECT_EQ(static_cast<char*>(next_cmd),\n")
+    file.Write("            reinterpret_cast<char*>(&cmd) + sizeof(cmd));\n");
     for arg in args:
       file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
                  (arg.type, value, arg.name))
@@ -491,8 +494,11 @@ class TypeHandler(object):
       value += 1
     file.Write(");\n")
     value = 11
-    file.Write("  EXPECT_EQ(%s::kCmdId, cmd.header.command);\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("            cmd.header.command);\n")
     func.type_handler.WriteImmediateCmdSizeTest(func, file)
+    file.Write("  EXPECT_EQ(static_cast<char*>(next_cmd),\n")
+    file.Write("            reinterpret_cast<char*>(&cmd) + sizeof(cmd));\n");
     for arg in args:
       file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
                  (arg.type, value, arg.name))
@@ -503,7 +509,7 @@ class TypeHandler(object):
   def WriteImmediateCmdSizeTest(self, func, file):
     """Writes a size test for an immediate version of a command."""
     file.Write("  // TODO(gman): Compute correct size.\n")
-    file.Write("  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4);\n")
+    file.Write("  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);\n")
 
   def WriteImmediateHandlerImplementation (self, func, file):
     """Writes the handler impl for the immediate version of a command."""
@@ -976,10 +982,14 @@ class GENnHandler(TypeHandler):
     file.Write(",\n      ids);\n")
     args = func.GetCmdArgs()
     value = 11
-    file.Write("  EXPECT_EQ(%s::kCmdId, cmd.header.command);\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("            cmd.header.command);\n")
     file.Write("  EXPECT_EQ(sizeof(cmd) +\n")
-    file.Write("            RoundSizeToMultipleOfEntries(cmd.n * 4),\n")
-    file.Write("            cmd.header.size * 4);  // NOLINT\n")
+    file.Write("            RoundSizeToMultipleOfEntries(cmd.n * 4u),\n")
+    file.Write("            cmd.header.size * 4u);  // NOLINT\n")
+    file.Write("  EXPECT_EQ(static_cast<char*>(next_cmd),\n")
+    file.Write("            reinterpret_cast<char*>(&cmd) + sizeof(cmd) +\n");
+    file.Write("                RoundSizeToMultipleOfEntries(cmd.n * 4u));\n");
     for arg in args:
       file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
                  (arg.type, value, arg.name))
@@ -1152,10 +1162,14 @@ class DELnHandler(TypeHandler):
     file.Write(",\n      ids);\n")
     args = func.GetCmdArgs()
     value = 11
-    file.Write("  EXPECT_EQ(%s::kCmdId, cmd.header.command);\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("            cmd.header.command);\n")
     file.Write("  EXPECT_EQ(sizeof(cmd) +\n")
-    file.Write("            RoundSizeToMultipleOfEntries(cmd.n * 4),\n")
-    file.Write("            cmd.header.size * 4);  // NOLINT\n")
+    file.Write("            RoundSizeToMultipleOfEntries(cmd.n * 4u),\n")
+    file.Write("            cmd.header.size * 4u);  // NOLINT\n")
+    file.Write("  EXPECT_EQ(static_cast<char*>(next_cmd),\n")
+    file.Write("            reinterpret_cast<char*>(&cmd) + sizeof(cmd) +\n");
+    file.Write("                RoundSizeToMultipleOfEntries(cmd.n * 4u));\n");
     for arg in args:
       file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
                  (arg.type, value, arg.name))
@@ -1337,10 +1351,14 @@ class PUTHandler(TypeHandler):
     file.Write(",\n      data);\n")
     args = func.GetCmdArgs()
     value = 11
-    file.Write("  EXPECT_EQ(%s::kCmdId, cmd.header.command);\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("            cmd.header.command);\n")
     file.Write("  EXPECT_EQ(sizeof(cmd) +\n")
     file.Write("            RoundSizeToMultipleOfEntries(sizeof(data)),\n")
-    file.Write("            cmd.header.size * 4);  // NOLINT\n")
+    file.Write("            cmd.header.size * 4u);  // NOLINT\n")
+    file.Write("  EXPECT_EQ(static_cast<char*>(next_cmd),\n")
+    file.Write("            reinterpret_cast<char*>(&cmd) + sizeof(cmd) +\n")
+    file.Write("                RoundSizeToMultipleOfEntries(sizeof(data)));\n")
     for arg in args:
       file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
                  (arg.type, value, arg.name))
@@ -1466,10 +1484,14 @@ class PUTnHandler(TypeHandler):
     file.Write(",\n      data);\n")
     args = func.GetCmdArgs()
     value = 1
-    file.Write("  EXPECT_EQ(%s::kCmdId, cmd.header.command);\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("            cmd.header.command);\n")
     file.Write("  EXPECT_EQ(sizeof(cmd) +\n")
     file.Write("            RoundSizeToMultipleOfEntries(sizeof(data)),\n")
-    file.Write("            cmd.header.size * 4);  // NOLINT\n")
+    file.Write("            cmd.header.size * 4u);  // NOLINT\n")
+    file.Write("  EXPECT_EQ(static_cast<char*>(next_cmd),\n")
+    file.Write("            reinterpret_cast<char*>(&cmd) + sizeof(cmd) +\n")
+    file.Write("                RoundSizeToMultipleOfEntries(sizeof(data)));\n")
     for arg in args:
       file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
                  (arg.type, value, arg.name))
@@ -1642,10 +1664,14 @@ class GLcharHandler(TypeHandler):
       value += 1
     file.Write(",\n      test_str);\n")
     value = 11
-    file.Write("  EXPECT_EQ(%s::kCmdId, cmd.header.command);\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("            cmd.header.command);\n")
     file.Write("  EXPECT_EQ(sizeof(cmd) +  // NOLINT\n")
     file.Write("            RoundSizeToMultipleOfEntries(strlen(test_str)),\n")
-    file.Write("            cmd.header.size * 4);\n")
+    file.Write("            cmd.header.size * 4u);\n")
+    file.Write("  EXPECT_EQ(static_cast<char*>(next_cmd),\n")
+    file.Write("            reinterpret_cast<char*>(&cmd) + sizeof(cmd) +\n")
+    file.Write("                strlen(test_str) + 1);\n")
     for arg in all_but_last_arg:
       file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
                  (arg.type, value, arg.name))
@@ -1821,10 +1847,12 @@ class GetGLcharHandler(GLcharHandler):
       value += 1
     file.Write(",\n      test_str);\n")
     value = 11
-    file.Write("  EXPECT_EQ(%s::kCmdId, cmd.header.command);\n" % func.name)
+    file.Write("  EXPECT_EQ(%s::kCmdId ^ cmd.header.command);\n" % func.name)
     file.Write("  EXPECT_EQ(sizeof(cmd) +  // NOLINT\n")
     file.Write("            RoundSizeToMultipleOfEntries(strlen(test_str)),\n")
-    file.Write("            cmd.header.size * 4);\n")
+    file.Write("            cmd.header.size * 4u);\n")
+    file.Write("  EXPECT_EQ(static_cast<char*>(next_cmd),\n")
+    file.Write("            reinterpret_cast<char*>(&cmd) + sizeof(cmd));\n");
     for arg in all_but_last_arg:
       file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
                  (arg.type, value, arg.name))
@@ -1920,6 +1948,8 @@ class Argument(object):
   """A class that represents a function argument."""
 
   cmd_type_map_ = {
+    'GLint': 'int32',
+    'GLsizei': 'int32',
     'GLfloat': 'float',
     'GLclampf': 'float',
   }
@@ -2698,4 +2728,3 @@ def main(argv):
 
 if __name__ == '__main__':
   main(sys.argv[1:])
-
