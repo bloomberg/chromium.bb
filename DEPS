@@ -95,14 +95,14 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/storage/domstorage":
     Var("webkit_trunk") + "/LayoutTests/storage/domstorage@" +
     Var("webkit_revision"),
-
-  "src/chrome/tools/test/reference_build":
-    "/trunk/deps/reference_builds@33840",
 }
 
 
 deps_os = {
   "win": {
+    "src/chrome/tools/test/reference_build/chrome":
+      "/trunk/deps/reference_builds/chrome@33840",
+
     "src/third_party/cygwin":
       "/trunk/deps/third_party/cygwin@11984",
 
@@ -126,6 +126,9 @@ deps_os = {
       "http://pefile.googlecode.com/svn/trunk@63",
   },
   "mac": {
+    "src/chrome/tools/test/reference_build/chrome_mac":
+      "/trunk/deps/reference_builds/chrome_mac@33840",
+
     "src/third_party/GTM":
       "http://google-toolbox-for-mac.googlecode.com/svn/trunk@259",
     "src/third_party/pdfsqueeze":
@@ -153,6 +156,9 @@ deps_os = {
   },
   "unix": {
     # Linux, really.
+    "src/chrome/tools/test/reference_build/chrome_linux":
+      "/trunk/deps/reference_builds/chrome_linux@33840",
+
     "src/third_party/xdg-utils":
       "/trunk/deps/third_party/xdg-utils@29103",
 
