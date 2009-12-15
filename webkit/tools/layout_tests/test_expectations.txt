@@ -858,14 +858,6 @@ BUG28183 : LayoutTests/fast/repaint/box-shadow-v.html = IMAGE
 // upstream expectation image has the same issue.
 BUG28183 WIN LINUX : LayoutTests/fast/repaint/list-marker.html = IMAGE
 
-// Extra space at end of test results.  Since this is a crash test, a
-// FAIL here is just as good as running the test normally.
-// FAIL results from an extra newline at the top of the results
-// the checked in results do not include the PASS text.
-// May only need re-baselining?
-BUG24206 WIN : LayoutTests/http/tests/navigation/changing-frame-hierarchy-in-onload.html = FAIL PASS
-BUG24206 LINUX MAC : LayoutTests/http/tests/navigation/changing-frame-hierarchy-in-onload.html = FAIL
-
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
 //also BUG24863
@@ -878,7 +870,7 @@ BUG9071 LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.htm
 
 // These are regressions from 1.0, but deemed DEFERable for 2.0.
 BUG8635 LINUX WIN : LayoutTests/svg/custom/pattern-y-offset.svg = FAIL
-BUG8635 WIN MAC : LayoutTests/svg/batik/paints/patternRegions.svg = IMAGE
+BUG8635 WIN : LayoutTests/svg/batik/paints/patternRegions.svg = IMAGE
 BUG8635 LINUX : LayoutTests/svg/batik/paints/patternRegions.svg = IMAGE+TEXT
 BUG8635 LINUX WIN RELEASE : LayoutTests/svg/custom/pattern-cycle-detection.svg = FAIL
 BUG8635 LINUX WIN DEBUG : LayoutTests/svg/custom/pattern-cycle-detection.svg = FAIL
@@ -1300,7 +1292,7 @@ BUG27914 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-protocol.ht
 // ----------------------------------------------------------------------------
 
 // This test isn't hanging, it just takes 12-13 seconds to run.
-BUG10322 SLOW : LayoutTests/http/tests/misc/acid3.html = FAIL
+BUG10322 SLOW WIN LINUX : LayoutTests/http/tests/misc/acid3.html = FAIL
 
 // Has failed for Chromium since it was first checked in.  (Lighttpd related?)
 BUG10323 WIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-no-content-length-onProgress.html = FAIL
@@ -2064,25 +2056,7 @@ BUG23488 MAC : LayoutTests/fast/table/fixed-table-with-percent-width-inside-fixe
 BUG23488 MAC : LayoutTests/fast/table/fixed-table-with-small-percent-width.html = IMAGE
 BUG23488 MAC : LayoutTests/fast/text/shadow-no-blur.html = IMAGE
 BUG23488 MAC : LayoutTests/fast/text/shadow-translucent-fill.html = IMAGE
-// BUG23488 MAC : LayoutTests/svg/batik/paints/patternRegions.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/batik/text/verticalText.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/batik/text/verticalTextOnPath.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/custom/circular-marker-reference-2.svg = IMAGE
-// BUG23488 MAC : LayoutTests/svg/custom/dominant-baseline-hanging.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/custom/gradient-rotated-bbox.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/custom/gradient-stop-corner-cases.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/custom/gradient-stroke-width.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/custom/js-late-marker-creation.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/custom/linking-a-03-b-all.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/custom/linking-a-03-b-viewBox-transform.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/custom/non-circular-marker-reference.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/custom/pattern-rotate.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/custom/pointer-events-path.svg = IMAGE
-// BUG23488 MAC : LayoutTests/svg/custom/use-css-no-effect-on-shadow-tree.svg = IMAGE
 BUG23488 MAC : LayoutTests/svg/transforms/animated-path-inside-transformed-html.xhtml = IMAGE
-BUG23488 MAC : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-06-b.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-08-b.svg = IMAGE
-BUG23488 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-frag-02-t.svg = IMAGE
 BUG23488 MAC : LayoutTests/tables/mozilla/bugs/bug106158-1.html = IMAGE
 BUG23488 MAC : LayoutTests/tables/mozilla/bugs/bug106158-2.html = IMAGE
 BUG23488 MAC : LayoutTests/tables/mozilla/bugs/bug34176.html = IMAGE
@@ -2095,8 +2069,6 @@ BUG23489 MAC : LayoutTests/fast/forms/menulist-option-wrap.html = IMAGE
 BUG23489 MAC : LayoutTests/fast/forms/menulist-restrict-line-height.html = IMAGE
 BUG23489 MAC : LayoutTests/fast/forms/select-baseline.html = IMAGE
 BUG23489 MAC : LayoutTests/fast/table/empty-section-crash.html = IMAGE
-BUG23489 MAC : LayoutTests/svg/batik/text/textOnPath.svg = IMAGE
-BUG23489 MAC : LayoutTests/svg/carto.net/window.svg = IMAGE
 BUG23489 MAC : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-17-b.svg = IMAGE
 
 // Uses the wrong bullets for the bulleted list
@@ -2199,18 +2171,8 @@ BUG23471 MAC : LayoutTests/fast/text/stroking.html = IMAGE
 // Thin lines not drawing right
 BUG23470 MAC : LayoutTests/fast/transforms/shadows.html = IMAGE
 
-// SVG edges are slightly different
-BUG23469 MAC : LayoutTests/svg/custom/use-css-no-effect-on-shadow-tree.svg = IMAGE
-
-// SVG hanging text has lines on left and top
-BUG23467 MAC : LayoutTests/svg/custom/dominant-baseline-hanging.svg = IMAGE
-
 // SVG foreign object skew off by a lot
 BUG23466 MAC : LayoutTests/svg/custom/foreign-object-skew.svg = IMAGE
-
-// SVG marker changes
-BUG23465 MAC : LayoutTests/svg/custom/marker-changes.svg = FAIL
-BUG23465 MAC : LayoutTests/svg/custom/marker-child-changes.svg = FAIL
 
 // Plugin drawing off
 BUG12030 MAC DEBUG : LayoutTests/plugins/embed-attributes-style.html = IMAGE IMAGE+TEXT
@@ -2528,9 +2490,7 @@ BUG10760 LINUX : LayoutTests/fast/inline/25277-2.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/inline/25277.html = FAIL
 BUG10760 MAC : LayoutTests/svg/custom/marker-overflow-clip.svg = FAIL
 BUG10760 LINUX : LayoutTests/svg/custom/marker-child-changes.svg = PASS FAIL
-BUG10760 LINUX MAC DEBUG : LayoutTests/svg/custom/marker-viewBox-changes.svg = FAIL
-BUG10760 MAC RELEASE : LayoutTests/svg/custom/marker-viewBox-changes.svg = FAIL
-BUG10760 LINUX RELEASE : LayoutTests/svg/custom/marker-viewBox-changes.svg = PASS FAIL
+BUG10760 LINUX : LayoutTests/svg/custom/marker-viewBox-changes.svg = FAIL
 
 // New failures from WebKit Merge 42671:42725
 BUG10861 MAC DEBUG : LayoutTests/http/tests/plugins/post-url-file.html = PASS FAIL
@@ -2546,9 +2506,6 @@ BUG11001 LINUX MAC WIN : LayoutTests/http/tests/history/back-to-post.php = TIMEO
 BUG11123 LINUX : LayoutTests/editing/inserting/4960120-1.html = FAIL
 BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrollbar.html = FAIL
 BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrolled-type.html = FAIL
-
-// Regressions from WebKit Merge 42932:42994
-BUG11239 MAC : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL
 
 // Regressions from WebKit Merge 42932:42994 due to text metric changes.
 BUG11251 WIN DEBUG : LayoutTests/fast/forms/textarea-width.html = FAIL
@@ -2712,9 +2669,9 @@ BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug83786.html = FAIL
 BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
 
 // SVG empty trailing tspan causes text to not show up
-BUG23468 WIN MAC : LayoutTests/svg/batik/text/textPosition.svg = IMAGE
+BUG23468 WIN : LayoutTests/svg/batik/text/textPosition.svg = IMAGE
 BUG23468 LINUX : LayoutTests/svg/batik/text/textPosition.svg = IMAGE+TEXT
-BUG23468 WIN LINUX MAC : LayoutTests/svg/batik/text/xmlSpace.svg = IMAGE
+BUG23468 WIN LINUX : LayoutTests/svg/batik/text/xmlSpace.svg = IMAGE
 
 // Fails due to textInputController.setInputMethod not implemented for Mac.
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
@@ -3001,9 +2958,6 @@ BUG2844 SKIP : LayoutTests/http/tests/appcache/top-frame-2.html = FAIL
 // This test fails because there is no setAppCacheMaximumSize API yet.
 BUG2844 SKIP : LayoutTests/http/tests/appcache/max-size.html = FAIL
 
-// Failures in TestShell that resulted from Mac plugin/focus fixes in r32631.
-BUG28380 MAC : LayoutTests/fast/events/tabindex-focus-blur-all.html = CRASH FAIL
-
 // New tests. Failures from merge 51253:51310.
 // Needs to implement NPN_reloadPlugins and add reloadPluginNoPages & reloadPluginAndPages
 // to plugin object.
@@ -3148,7 +3102,6 @@ BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-gauss-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-morph-01-f.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-offset-01-b.svg = IMAGE+TEXT
-BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-cond-03-t.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/batik/filters/feTile.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/custom/empty-merge.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/custom/feComponentTransfer-Discrete.svg = IMAGE+TEXT
@@ -3162,38 +3115,12 @@ BUG29737 MAC : LayoutTests/svg/filters/feDisplacementMap.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feGaussianBlur.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feTile.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/shadow-on-filter.svg = IMAGE+TEXT
-BUG29737 MAC : LayoutTests/svg/custom/invalid-css.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/custom/js-svg-constructors.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/custom/svg-features.html = TEXT
 BUG29737 MAC : LayoutTests/svg/dom/operatorAttribute.html = TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feMerge-wrong-input.svg = TEXT
 BUG29737 MAC : LayoutTests/svg/custom/use-elementInstance-event-target.svg = IMAGE
 
-BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-composite-02-b.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-displace-01-f.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-felem-01-b.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-image-01-b.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-specular-01-f.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-tile-01-b.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-turb-01-f.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/batik/filters/filterRegions.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/batik/text/textEffect.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/batik/text/textEffect3.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/batik/text/textFeatures.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/batik/text/textProperties.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/custom/feDisplacementMap-01.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/custom/non-opaque-filters.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/custom/visibility-override-filter.svg = TEXT
 BUG29737 MAC : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE+TEXT
-BUG29737 MAC : LayoutTests/svg/filters/big-sized-filter-2.svg = TEXT
 BUG29737 MAC : LayoutTests/svg/filters/filterRes.svg = IMAGE+TEXT
-BUG29737 MAC : LayoutTests/svg/filters/feMerge.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/filters/feOffset.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/filters/subRegion-in-userSpace.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/filters/subRegion-one-effect.svg = TEXT
-BUG29737 MAC : LayoutTests/svg/filters/subRegion-two-effects.svg = TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = IMAGE
 BUG29737 MAC : LayoutTests/svg/filters/sourceAlpha.svg = IMAGE+TEXT
 
