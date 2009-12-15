@@ -14,6 +14,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/clock_menu_button.h"
+#include "chrome/browser/chromeos/language_menu_button.h"
 #include "chrome/browser/chromeos/network_menu_button.h"
 #include "chrome/browser/chromeos/power_menu_button.h"
 #include "chrome/browser/chromeos/status_area_button.h"
@@ -37,6 +38,9 @@ namespace chromeos {
 const int kLeftBorder = 1;
 // Number of pixels to separate the clock from the next item on the right.
 const int kClockSeparation = 4;
+// Number of pixels to separate the language selector from the next item
+// on the right.
+const int kLanguageSeparation = 4;
 
 // BrowserWindowGtk tiles its image with this offset
 const int kCustomFrameBackgroundVerticalOffset = 15;
@@ -126,6 +130,7 @@ StatusAreaView::StatusAreaView(Browser* browser,
     : browser_(browser),
       window_(window),
       clock_view_(NULL),
+      language_view_(NULL),
       network_view_(NULL),
       battery_view_(NULL),
       menu_view_(NULL) {
@@ -133,6 +138,10 @@ StatusAreaView::StatusAreaView(Browser* browser,
 
 void StatusAreaView::Init() {
   ThemeProvider* theme = browser_->profile()->GetThemeProvider();
+
+  // Language.
+  language_view_ = new LanguageMenuButton(browser_);
+  AddChildView(language_view_);
 
   // Clock.
   clock_view_ = new ClockMenuButton(browser_);
@@ -164,7 +173,7 @@ void StatusAreaView::Update() {
 
 gfx::Size StatusAreaView::GetPreferredSize() {
   // Start with padding.
-  int result_w = kLeftBorder + kClockSeparation;
+  int result_w = kLeftBorder + kClockSeparation + kLanguageSeparation;
   int result_h = 0;
   for (int i = 0; i < GetChildViewCount(); i++) {
     views::View* cur = GetChildViewAt(i);
@@ -195,9 +204,11 @@ void StatusAreaView::Layout() {
 
       cur_x += cur_size.width();
 
-      // Buttons have built in padding, but clock doesn't.
+      // Buttons have built in padding, but clock and language status don't.
       if (cur == clock_view_)
         cur_x += kClockSeparation;
+      else if (cur == language_view_)
+        cur_x += kLanguageSeparation;
     }
   }
 }

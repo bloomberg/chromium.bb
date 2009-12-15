@@ -17,6 +17,7 @@ class Browser;
 namespace chromeos {
 
 class ClockMenuButton;
+class LanguageMenuButton;
 class NetworkMenuButton;
 class PowerMenuButton;
 class StatusAreaButton;
@@ -73,6 +74,7 @@ class StatusAreaView : public views::View,
   gfx::NativeWindow window_;
 
   ClockMenuButton* clock_view_;
+  LanguageMenuButton* language_view_;
   NetworkMenuButton* network_view_;
   PowerMenuButton* battery_view_;
   StatusAreaButton* menu_view_;
