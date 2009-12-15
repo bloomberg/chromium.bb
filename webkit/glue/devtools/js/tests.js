@@ -227,7 +227,7 @@ TestSuite.prototype.testEnableResourcesTab = function() {
   this.showPanel('resources');
 
   var test = this;
-  this.addSniffer(WebInspector, 'addResource',
+  this.addSniffer(WebInspector, '_addResource',
       function(identifier, payload) {
         test.assertEquals('simple_page.html', payload.lastPathComponent);
         WebInspector.panels.resources.refresh();
@@ -315,7 +315,7 @@ TestSuite.prototype.testResourceHeaders = function() {
   var responseOk = false;
   var timingOk = false;
 
-  this.addSniffer(WebInspector, 'addResource',
+  this.addSniffer(WebInspector, '_addResource',
       function(identifier, payload) {
         var resource = this.resources[identifier];
         if (resource.mainResource) {
@@ -331,7 +331,7 @@ TestSuite.prototype.testResourceHeaders = function() {
   this.addSniffer(WebInspector, 'updateResource',
       function(identifier, payload) {
         var resource = this.resources[identifier];
-        if (resource.mainResource) {
+        if (!resource || resource.mainResource) {
           // We are only interested in secondary resources in this test.
           return;
         }
@@ -375,7 +375,7 @@ TestSuite.prototype.testCachedResourceMimeType = function() {
   this.addSniffer(WebInspector, 'updateResource',
       function(identifier, payload) {
         var resource = this.resources[identifier];
-        if (resource.mainResource) {
+        if (!resource || resource.mainResource) {
           // We are only interested in secondary resources in this test.
           return;
         }
