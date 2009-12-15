@@ -831,10 +831,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (socket_late_binding_trial->group() == late_binding_group)
     net::EnableLateBindingOfSockets(true);
 
-  scoped_refptr<FieldTrial> trial = new FieldTrial("AsyncSlowStart", 100);
-  trial->AppendGroup("_AsyncSlowStart", 50);
-  trial->AppendGroup("_AsyncSlowStart_off", 50);
-
 #if defined(OS_WIN)
   // Init common control sex.
   INITCOMMONCONTROLSEX config;

@@ -3707,16 +3707,6 @@ void RenderView::DumpLoadHistograms() const {
         finish - start, kBeginToFinishMin,
         kBeginToFinishMax, kBeginToFinishBucketCount);
 
-  static bool use_async_tcp(FieldTrialList::Find("AsyncSlowStart") &&
-      !FieldTrialList::Find("AsyncSlowStart")->group_name().empty());
-  if (use_async_tcp) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        FieldTrial::MakeName("Renderer4.StartToFinish",
-                             "AsyncSlowStart").data(),
-        finish - start, kBeginToFinishMin,
-        kBeginToFinishMax, kBeginToFinishBucketCount);
-  }
-
   UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.CommitToFinish", finish - commit);
 
   if (!first_paint.is_null()) {
