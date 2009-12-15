@@ -71,12 +71,11 @@ EXTERN_C_BEGIN
 
 struct NaClDescEffector;
 
-
 struct NaClImcTypedMsgHdr {
   struct NaClImcMsgIoVec  *iov;
-  ssize_t                 iov_length;
+  nacl_abi_size_t         iov_length;
   struct NaClDesc         **ndescv;     /* ptr to array of ptrs */
-  ssize_t                 ndesc_length;
+  nacl_abi_size_t         ndesc_length;
   int32_t                 flags;
 };
 
@@ -86,7 +85,7 @@ struct NaClImcTypedMsgHdr {
  * an IMC channel.  Returns the number of bytes sent on success, and
  * a negated errno value (essentially the kernel return ABI) on error.
  */
-ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
+int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
                                 struct NaClDescEffector         *effp,
                                 const struct NaClImcTypedMsgHdr *nitmhp,
                                 int32_t                         flags);
@@ -97,7 +96,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
  * success, and a negative value, a negated errno value, on error
  * (the kernel return ABI).
  */
-ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
+int32_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
                                 struct NaClDescEffector   *effp,
                                 struct NaClImcTypedMsgHdr *nitmhp,
                                 int32_t                   flags);

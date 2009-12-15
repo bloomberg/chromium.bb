@@ -275,11 +275,11 @@ struct NaClDescVtbl {
   int (*Broadcast)(struct NaClDesc          *vself,
                    struct NaClDescEffector  *effp) NACL_WUR;
 
-  ssize_t (*SendMsg)(struct NaClDesc            *vself,
+  int (*SendMsg)(struct NaClDesc                *vself,
                  struct NaClDescEffector        *effp,
                  struct NaClMessageHeader const *dgram,
                  int                            flags) NACL_WUR;
-  ssize_t (*RecvMsg)(struct NaClDesc      *vself,
+  int (*RecvMsg)(struct NaClDesc          *vself,
                  struct NaClDescEffector  *effp,
                  struct NaClMessageHeader *dgram,
                  int                      flags) NACL_WUR;
@@ -586,11 +586,11 @@ int NaClDescSignalNotImplemented(struct NaClDesc          *vself,
 int NaClDescBroadcastNotImplemented(struct NaClDesc         *vself,
                                     struct NaClDescEffector *effp);
 
-ssize_t NaClDescSendMsgNotImplemented(struct NaClDesc            *vself,
+int NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
                                   struct NaClDescEffector        *effp,
                                   struct NaClMessageHeader const *dgram,
                                   int                            flags);
-ssize_t NaClDescRecvMsgNotImplemented(struct NaClDesc       *vself,
+int NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
                                   struct NaClDescEffector   *effp,
                                   struct NaClMessageHeader  *dgram,
                                   int                       flags);

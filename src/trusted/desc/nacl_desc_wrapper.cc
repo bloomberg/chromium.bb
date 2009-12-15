@@ -30,7 +30,7 @@
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
 namespace {
-  static const size_t kSSizeTMax = std::numeric_limits<ssize_t>::max();
+static const size_t kSizeTMax = std::numeric_limits<size_t>::max();
 }  // namespace
 
 namespace nacl {
@@ -567,18 +567,17 @@ int DescWrapper::Broadcast() {
   return desc_->vtbl->Broadcast(desc_, common_data_->effp());
 }
 
-ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
+int DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   struct NaClImcTypedMsgHdr header;
-  ssize_t ret = -NACL_ABI_ENOMEM;
-  ssize_t diov_length = dgram->iov_length;
-  ssize_t ddescv_length = dgram->ndescv_length;
-  ssize_t i;
+  int ret = -NACL_ABI_ENOMEM;
+  size_t diov_length = dgram->iov_length;
+  size_t ddescv_length = dgram->ndescv_length;
+  size_t i;
 
   // Initialize to allow simple cleanups.
   header.ndescv = NULL;
   // Allocate and copy IOV.
-  if (kSSizeTMax / sizeof(NaClImcMsgIoVec)
-      <= static_cast<size_t>(diov_length)) {
+  if (kSizeTMax / sizeof(NaClImcMsgIoVec) <= diov_length) {
     goto cleanup;
   }
   header.iov = new(std::nothrow) NaClImcMsgIoVec[dgram->iov_length];
@@ -591,10 +590,10 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
     header.iov[i].length = dgram->iov[i].length;
   }
   // Allocate and copy the descriptor vector, removing DescWrappers.
-  if (kHandleCountMax < static_cast<size_t>(dgram->ndescv_length)) {
+  if (kHandleCountMax < dgram->ndescv_length) {
     goto cleanup;
   }
-  if (kSSizeTMax / sizeof(NaClDesc*) <= static_cast<size_t>(ddescv_length)) {
+  if (kSizeTMax / sizeof(NaClDesc*) <= ddescv_length) {
     goto cleanup;
   }
   header.ndescv = new(std::nothrow) NaClDesc*[dgram->ndescv_length];
@@ -614,12 +613,12 @@ cleanup:
   return ret;
 }
 
-ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
+int DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   struct NaClImcTypedMsgHdr header;
-  ssize_t ret = -NACL_ABI_ENOMEM;
-  ssize_t diov_length = dgram->iov_length;
-  ssize_t ddescv_length = dgram->ndescv_length;
-  ssize_t i;
+  int ret = -NACL_ABI_ENOMEM;
+  size_t diov_length = dgram->iov_length;
+  size_t ddescv_length = dgram->ndescv_length;
+  size_t i;
 
   // Initialize to allow simple cleanups.
   header.ndescv = NULL;
@@ -628,8 +627,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   }
 
   // Allocate and copy the IOV.
-  if (kSSizeTMax / sizeof(NaClImcMsgIoVec)
-      <= static_cast<size_t>(diov_length)) {
+  if (kSizeTMax / sizeof(NaClImcMsgIoVec) <= diov_length) {
     goto cleanup;
   }
   header.iov = new(std::nothrow) NaClImcMsgIoVec[dgram->iov_length];
@@ -642,10 +640,10 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
     header.iov[i].length = dgram->iov[i].length;
   }
   // Allocate and copy the descriptor vector.
-  if (kHandleCountMax < static_cast<size_t>(dgram->ndescv_length)) {
+  if (kHandleCountMax < dgram->ndescv_length) {
     goto cleanup;
   }
-  if (kSSizeTMax / sizeof(NaClDesc*) <= static_cast<size_t>(ddescv_length)) {
+  if (kSizeTMax / sizeof(NaClDesc*) <= ddescv_length) {
     goto cleanup;
   }
   header.ndescv = new(std::nothrow) NaClDesc*[dgram->ndescv_length];

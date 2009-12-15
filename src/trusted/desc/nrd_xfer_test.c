@@ -68,7 +68,7 @@ int main(int ac, char **av) {
   struct NaClImcMsgIoVec      iov[1];
   struct NaClDesc             *desc_buffer[NACL_ABI_IMC_USER_DESC_MAX];
   char                        data_buffer[4096];
-  ssize_t                     i;
+  size_t                      i;
   char                        *transfer_file = NULL;
 
   printf("Hello world\n");
@@ -174,7 +174,7 @@ int main(int ac, char **av) {
 
     if (rv >= 0) {
       printf("Data bytes: %.*s\n", rv, data_buffer);
-      printf("Got %"PRIdS" NaCl descriptors\n", msg_hdr.ndesc_length);
+      printf("Got %"PRIdNACL_SIZE" NaCl descriptors\n", msg_hdr.ndesc_length);
 
       for (i = 0; i < msg_hdr.ndesc_length; ++i) {
         struct NaClDesc *ndp;

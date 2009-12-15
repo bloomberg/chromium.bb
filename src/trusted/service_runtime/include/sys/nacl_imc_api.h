@@ -58,18 +58,16 @@ typedef int NaClHandle;
 #endif
 #endif
 
-
-
 struct NaClImcMsgIoVec {
   void    *base;
-  ssize_t length;
+  size_t  length;
 };
 
 struct NaClImcMsgHdr {
   struct NaClImcMsgIoVec  *iov;
-  ssize_t                 iov_length;
+  size_t                  iov_length;
   int                     *descv;
-  ssize_t                 desc_length;
+  size_t                  desc_length;
   int                     flags;
 };
 

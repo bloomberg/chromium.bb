@@ -72,15 +72,15 @@ class DescWrapper {
  public:
   struct MsgIoVec {
     void*  base;
-    nacl_abi_size_t length;
+    size_t length;
   };
 
   struct MsgHeader {
-    struct MsgIoVec *iov;
-    ssize_t         iov_length;
-    DescWrapper     **ndescv;  // Pointer to array of pointers.
-    ssize_t         ndescv_length;
-    int32_t         flags;
+    struct MsgIoVec* iov;
+    nacl_abi_size_t  iov_length;
+    DescWrapper**    ndescv;  // Pointer to array of pointers.
+    nacl_abi_size_t  ndescv_length;
+    int32_t          flags;
     // flags may contain 0 or any combination of the following.
     static const int32_t kRecvMsgDataTruncated =
         NACL_ABI_RECVMSG_DATA_TRUNCATED;
@@ -172,11 +172,11 @@ class DescWrapper {
 
   // Send a message.
   // Returns bytes sent on success, negative NaCl ABI errno on failure.
-  ssize_t SendMsg(const MsgHeader* dgram, int flags);
+  int SendMsg(const MsgHeader* dgram, int flags);
 
   // Receive a message.
   // Returns bytes received on success, negative NaCl ABI errno on failure.
-  ssize_t RecvMsg(MsgHeader* dgram, int flags);
+  int RecvMsg(MsgHeader* dgram, int flags);
 
   // Connect to a socket address.
   // Returns a valid DescWrapper on success, NULL on failure.

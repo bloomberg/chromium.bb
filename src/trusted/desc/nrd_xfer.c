@@ -68,20 +68,21 @@
  * This allows fast, SSE-based memcpy routines to work, giving us
  * 16-bytes-per-cycle memory copies for in-cache data.
  */
-static INLINE ssize_t min_ssize(ssize_t  a,
-                                ssize_t  b) {
+
+static INLINE nacl_abi_size_t min_size(nacl_abi_size_t  a,
+                                       nacl_abi_size_t  b) {
   if (a < b) return a;
   return b;
 }
 
-ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
+int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
                                 struct NaClDescEffector         *effp,
                                 const struct NaClImcTypedMsgHdr *nitmhp,
                                 int                              flags) {
   int                       supported_flags;
-  ssize_t                   retval = -NACL_ABI_EINVAL;
+  int                       retval = -NACL_ABI_EINVAL;
   struct NaClMessageHeader  kern_msg_hdr;  /* xlated interface */
-  ssize_t                    i;
+  size_t                    i;
   /*
    * BEWARE: NaClImcMsgIoVec has the same layout as NaClIOVec, so
    * there will be type punning below to avoid copying from a struct
@@ -91,12 +92,12 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
   struct NaClImcMsgIoVec    kern_iov[NACL_ABI_IMC_IOVEC_MAX + 1];
   struct NaClDesc           **kern_desc;
   NaClHandle                kern_handle[NACL_ABI_IMC_DESC_MAX];
-  ssize_t                   user_bytes;
-  ssize_t                   tmp_sum;
-  ssize_t                   sys_bytes;
-  ssize_t                   sys_handles;
-  ssize_t                   desc_bytes;
-  ssize_t                   desc_handles;
+  nacl_abi_size_t           user_bytes;
+  nacl_abi_size_t           tmp_sum;
+  nacl_abi_size_t           sys_bytes;
+  nacl_abi_size_t           sys_handles;
+  size_t                    desc_bytes;
+  size_t                    desc_handles;
   struct NaClInternalHeader *hdr;
   char                      *hdr_buf;
   struct NaClDescXferState  xfer_state;
@@ -164,7 +165,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     if (tmp_sum < user_bytes) {
       return -NACL_ABI_EINVAL;
     }
-    user_bytes =tmp_sum;
+    user_bytes = tmp_sum;
   }
   if (user_bytes > NACL_ABI_IMC_USER_BYTES_MAX) {
     return -NACL_ABI_EINVAL;
@@ -196,8 +197,8 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     /* nitmhp->desc_length <= NACL_ABI_IMC_USER_DESC_MAX */
     for (i = 0; i < nitmhp->ndesc_length; ++i) {
       retval = (*kern_desc[i]->vtbl->ExternalizeSize)(kern_desc[i],
-                                                      (size_t*)&desc_bytes,
-                                                      (size_t*)&desc_handles);
+                                                      &desc_bytes,
+                                                      &desc_handles);
       if (retval < 0) {
         goto cleanup;
       }
@@ -205,18 +206,18 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
        * No integer overflow should be possible given the max-handles
        * limits and actual resource use per handle involved.
        */
-      if (desc_bytes > NACL_ABI_SSIZE_T_MAX - 1
-          || (desc_bytes + 1) > NACL_ABI_SSIZE_T_MAX - sys_bytes
-          || desc_handles > NACL_ABI_SSIZE_T_MAX - sys_handles) {
+      if (desc_bytes > NACL_ABI_SIZE_T_MAX - 1
+          || (desc_bytes + 1) > NACL_ABI_SIZE_T_MAX - sys_bytes
+          || desc_handles > NACL_ABI_SIZE_T_MAX - sys_handles) {
         retval = -NACL_ABI_EOVERFLOW;
         goto cleanup;
       }
-      sys_bytes += (1 + desc_bytes);
-      sys_handles += desc_handles;
+      sys_bytes += (nacl_abi_size_t) (1 + desc_bytes);
+      sys_handles += (nacl_abi_size_t) desc_handles;
     }
     if (sys_handles > NACL_ABI_IMC_DESC_MAX) {
-      NaClLog(LOG_FATAL, ("User had %"PRIdS" descriptors,"
-                          " which expanded into %"PRIdS
+      NaClLog(LOG_FATAL, ("User had %"PRIdNACL_SIZE" descriptors,"
+                          " which expanded into %"PRIdNACL_SIZE
                           "handles, more than"
                           " the max of %d.\n"),
               nitmhp->ndesc_length, sys_handles,
@@ -294,7 +295,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
        */
       retval = -NACL_ABI_EIO;
     }
-  } else if (retval < kern_iov[0].length) {
+  } else if ((unsigned) retval < kern_iov[0].length) {
     /*
      * retval >= 0, so cast to unsigned is value preserving.
      */
@@ -314,31 +315,30 @@ cleanup:
   return retval;
 }
 
-ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
+int32_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
                                 struct NaClDescEffector   *effp,
                                 struct NaClImcTypedMsgHdr *nitmhp,
                                 int                       flags) {
   int                       supported_flags;
-  ssize_t                   retval;
+  int                       retval;
   char                      *recv_buf;
-  ssize_t                   user_bytes;
-  ssize_t                   tmp_sum;
+  nacl_abi_size_t           user_bytes;
+  nacl_abi_size_t           tmp_sum;
   NaClHandle                kern_handle[NACL_ABI_IMC_DESC_MAX];
   struct NaClIOVec          recv_iov;
   struct NaClMessageHeader  recv_hdr;
-  ssize_t                   total_recv_bytes;
+  int                       total_recv_bytes;
   struct NaClInternalHeader intern_hdr;
-  ssize_t                   recv_user_bytes_avail;
-  ssize_t                   tmp;
+  nacl_abi_size_t           recv_user_bytes_avail;
+  nacl_abi_size_t           tmp;
   char                      *user_data;
-  ssize_t                   iov_copy_size;
+  nacl_abi_size_t           iov_copy_size;
   struct NaClDescXferState  xfer;
-  ssize_t                   type_tag;
+  nacl_abi_size_t           type_tag;
   struct NaClDesc           *new_desc[NACL_ABI_IMC_DESC_MAX];
   int                       xfer_status;
-  ssize_t                   i;
-  size_t                    j;
-  ssize_t                   num_user_desc;
+  nacl_abi_size_t           i;
+  nacl_abi_size_t           num_user_desc;
 
   NaClLog(4,
           "Entered NaClImcRecvTypedMsg(0x%08"PRIxPTR", 0x%08"PRIxPTR", %d)\n",
@@ -375,7 +375,7 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
    * if user_bytes > NACL_ABI_IMC_USER_BYTES_MAX,
    * we will just never fill up all the buffer space.
    */
-  user_bytes = min_ssize(user_bytes, NACL_ABI_IMC_USER_BYTES_MAX);
+  user_bytes = min_size(user_bytes, NACL_ABI_IMC_USER_BYTES_MAX);
   /*
    * user_bytes = \min(\sum_{i=0}{nitmhp->iov_length-1} nitmhp->iov[i].length,
    *                   NACL_ABI_IMC_USER_BYTES_MAX)
@@ -400,8 +400,8 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
   recv_hdr.iov = &recv_iov;
   recv_hdr.iov_length = 1;
 
-  for (j = 0; j < NACL_ARRAY_SIZE(kern_handle); ++j) {
-    kern_handle[j] = NACL_INVALID_HANDLE;
+  for (i = 0; i < NACL_ARRAY_SIZE(kern_handle); ++i) {
+    kern_handle[i] = NACL_INVALID_HANDLE;
   }
 
   if (NACL_DESC_IMC_SOCKET == channel->vtbl->typeTag) {
@@ -430,7 +430,7 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
                                                &recv_hdr,
                                                flags);
   if (total_recv_bytes < 0) {
-    NaClLog(1, "RecvMsg failed, returned %"PRIdS"\n", total_recv_bytes);
+    NaClLog(1, "RecvMsg failed, returned %d\n", total_recv_bytes);
     retval = total_recv_bytes;
     goto cleanup;
   }
@@ -449,7 +449,7 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
    * Since total_recv_bytes >= 0, the cast to size_t is value preserving.
    */
   if ((size_t) total_recv_bytes < sizeof intern_hdr) {
-    NaClLog(4, ("only received %"PRIdS" (0x%"PRIxS") bytes,"
+    NaClLog(4, ("only received %d (0x%x) bytes,"
                 " but internal header is %"PRIdS" (0x%"PRIxS") bytes\n"),
             total_recv_bytes, total_recv_bytes,
             sizeof intern_hdr, sizeof intern_hdr);
@@ -471,7 +471,7 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
                                    + sizeof intern_hdr)) {
     NaClLog(4, ("internal header (size %"PRIdS" (0x%"PRIxS")) says there are"
                 " %d (0x%x) NRD xfer descriptor bytes,"
-                " but we received %"PRIdS" (0x%"PRIxS") bytes\n"),
+                " but we received %d (0x%x) bytes\n"),
             sizeof intern_hdr, sizeof intern_hdr,
             intern_hdr.h.descriptor_data_bytes,
             intern_hdr.h.descriptor_data_bytes,
@@ -490,7 +490,7 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
   if (user_bytes < recv_user_bytes_avail) {
     recv_hdr.flags |= NACL_ABI_RECVMSG_DATA_TRUNCATED;
   }
-  recv_user_bytes_avail = min_ssize(recv_user_bytes_avail, user_bytes);
+  recv_user_bytes_avail = min_size(recv_user_bytes_avail, user_bytes);
 
   retval = recv_user_bytes_avail;  /* default from hence forth */
 
@@ -510,7 +510,7 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
    *  user_data + recv_user_bytes_avail == StartUserData + UserDataSize
    */
   for (i = 0; i < nitmhp->iov_length && 0 < recv_user_bytes_avail; ++i) {
-    iov_copy_size = min_ssize(nitmhp->iov[i].length, recv_user_bytes_avail);
+    iov_copy_size = min_size(nitmhp->iov[i].length, recv_user_bytes_avail);
 
     memcpy(nitmhp->iov[i].base, user_data, iov_copy_size);
 
@@ -554,7 +554,7 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
       break;
     }
     if (type_tag >= NACL_DESC_TYPE_MAX) {
-      NaClLog(4, ("illegal type tag %"PRIdS "(0x%"PRIxS")\n"),
+      NaClLog(4, ("illegal type tag %d (0x%x)\n"),
               type_tag, type_tag);
       retval = -NACL_ABI_EIO;
       goto cleanup;
@@ -562,7 +562,7 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
     if ((int (*)(struct NaClDesc **, struct NaClDescXferState *)) NULL ==
         NaClDescInternalize[type_tag]) {
       NaClLog(LOG_FATAL,
-              "No internalization function for type %"PRIdS"\n",
+              "No internalization function for type %d\n",
               type_tag);
       /* fatal, but in case we change it later */
       retval = -NACL_ABI_EIO;
@@ -573,7 +573,7 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
 
     if (xfer_status != 0) {
       NaClLog(0,
-              "non-zero xfer_status %d, desc type tag %s (%"PRIdS")\n",
+              "non-zero xfer_status %d, desc type tag %s (%d)\n",
               xfer_status,
               NaClDescTypeString(type_tag),
               type_tag);
@@ -609,19 +609,19 @@ cleanup:
    * object. Otherwise, between new_desc and kern_handle cleanup code,
    * a NaClHandle might be closed twice.
    */
-  for (j = 0; j < NACL_ARRAY_SIZE(new_desc); ++j) {
-    if (NULL != new_desc[j]) {
-      NaClDescUnref(new_desc[j]);
-      new_desc[j] = NULL;
+  for (i = 0; i < NACL_ARRAY_SIZE(new_desc); ++i) {
+    if (NULL != new_desc[i]) {
+      NaClDescUnref(new_desc[i]);
+      new_desc[i] = NULL;
     }
   }
-  for (j = 0; j < NACL_ARRAY_SIZE(kern_handle); ++j) {
-    if (NACL_INVALID_HANDLE != kern_handle[j]) {
-      NaClClose(kern_handle[j]);
+  for (i = 0; i < NACL_ARRAY_SIZE(kern_handle); ++i) {
+    if (NACL_INVALID_HANDLE != kern_handle[i]) {
+      NaClClose(kern_handle[i]);
     }
   }
 
-  NaClLog(3, "NaClImcRecvTypedMsg: returning %"PRIdS"\n", retval);
+  NaClLog(3, "NaClImcRecvTypedMsg: returning %d\n", retval);
   return retval;
 }
 

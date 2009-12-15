@@ -61,8 +61,8 @@ namespace nacl {
 
 #ifndef __native_client__
 
-ssize_t SendDatagram(HtpHandle socket, const HtpHeader* message, int flags) {
-  ssize_t result = NaClImcSendTypedMessage(socket, NULL,
+int SendDatagram(HtpHandle socket, const HtpHeader* message, int flags) {
+  int32_t result = NaClImcSendTypedMessage(socket, NULL,
       reinterpret_cast<const struct NaClImcTypedMsgHdr*>(message), flags);
   if (result < 0) {
     return -1;
@@ -70,8 +70,8 @@ ssize_t SendDatagram(HtpHandle socket, const HtpHeader* message, int flags) {
   return result;
 }
 
-ssize_t ReceiveDatagram(HtpHandle socket, HtpHeader* message, int flags) {
-  ssize_t result = NaClImcRecvTypedMessage(socket, NULL,
+int ReceiveDatagram(HtpHandle socket, HtpHeader* message, int flags) {
+  int32_t result = NaClImcRecvTypedMessage(socket, NULL,
       reinterpret_cast<struct NaClImcTypedMsgHdr*>(message), flags);
   if (result < 0) {
     return -1;

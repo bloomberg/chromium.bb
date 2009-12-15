@@ -136,7 +136,7 @@ nacl_abi_size_t __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
  * or NULL (trusted) otherwise.
  */
 NaClSrpcImcDescType __NaClSrpcImcReadDesc(NaClSrpcImcBuffer* buffer) {
-  ssize_t desc_index = buffer->next_desc;
+  uint32_t desc_index = buffer->next_desc;
 
   if (desc_index >= NACL_SRPC_IMC_HEADER_DESC_LENGTH(*buffer)) {
     return NACL_SRPC_IMC_INVALID_DESC;
@@ -288,7 +288,7 @@ int __NaClSrpcImcFlush(NaClSrpcImcBuffer* buffer, NaClSrpcChannel* channel) {
     channel->imc_write_usec += this_usec;
   }
   buffer->next_byte = 0;
-  if ((ssize_t) retval != buffer->iovec[0].length) {
+  if ((size_t) retval != buffer->iovec[0].length) {
     dprintf((SIDE "FLUSH: send error.\n"));
     return 0;
   }

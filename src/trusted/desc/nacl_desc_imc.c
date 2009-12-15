@@ -217,7 +217,7 @@ int NaClDescXferableDataDescExternalize(struct NaClDesc          *vself,
  * multi-threaded scenario, where a sender race cause receiver
  * confusion.
  */
-ssize_t NaClDescImcDescSendMsg(struct NaClDesc                *vself,
+int NaClDescImcDescSendMsg(struct NaClDesc                *vself,
                            struct NaClDescEffector        *effp,
                            struct NaClMessageHeader const *dgram,
                            int                            flags) {
@@ -263,10 +263,10 @@ ssize_t NaClDescImcDescSendMsg(struct NaClDesc                *vself,
  * with a transferable data-only descriptor from two threads (or two
  * modules) simultaneously.
  */
-ssize_t NaClDescXferableDataDescSendMsg(struct NaClDesc                *vself,
-                                        struct NaClDescEffector        *effp,
-                                        struct NaClMessageHeader const *dgram,
-                                        int                            flags) {
+int NaClDescXferableDataDescSendMsg(struct NaClDesc                *vself,
+                                    struct NaClDescEffector        *effp,
+                                    struct NaClMessageHeader const *dgram,
+                                    int                            flags) {
   struct NaClDescXferableDataDesc *self = ((struct NaClDescXferableDataDesc *)
                                            vself);
   int result;
@@ -304,10 +304,10 @@ ssize_t NaClDescXferableDataDescSendMsg(struct NaClDesc                *vself,
  * imc_recvmsg race is not substantively different from an imc_sendmsg
  * race.
  */
-ssize_t NaClDescImcDescRecvMsg(struct NaClDesc          *vself,
-                               struct NaClDescEffector  *effp,
-                               struct NaClMessageHeader *dgram,
-                               int                      flags) {
+int NaClDescImcDescRecvMsg(struct NaClDesc          *vself,
+                           struct NaClDescEffector  *effp,
+                           struct NaClMessageHeader *dgram,
+                           int                      flags) {
   struct NaClDescImcDesc *self = ((struct NaClDescImcDesc *)
                                   vself);
   int result;
@@ -337,10 +337,10 @@ ssize_t NaClDescImcDescRecvMsg(struct NaClDesc          *vself,
  * imc_recvmsg race is not substantively different from an imc_sendmsg
  * race.
  */
-ssize_t NaClDescXferableDataDescRecvMsg(struct NaClDesc          *vself,
-                                        struct NaClDescEffector  *effp,
-                                        struct NaClMessageHeader *dgram,
-                                        int                      flags) {
+int NaClDescXferableDataDescRecvMsg(struct NaClDesc          *vself,
+                                    struct NaClDescEffector  *effp,
+                                    struct NaClMessageHeader *dgram,
+                                    int                      flags) {
   struct NaClDescXferableDataDesc *self = ((struct NaClDescXferableDataDesc *)
                                            vself);
   int                             result;
