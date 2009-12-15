@@ -1516,7 +1516,9 @@
       }
     }
 
-    var keys = getKeys(testsNeedingUpdate);
+    // Get the keys in alphabetical order, so it is easy to process groups
+    // of tests.
+    var keys = getKeys(testsNeedingUpdate).sort();
     showUpdateInfoForTest(testsNeedingUpdate, keys);
   }
 
