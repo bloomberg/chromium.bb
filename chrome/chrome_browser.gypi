@@ -80,6 +80,8 @@
         'browser/autocomplete/keyword_provider.h',
         'browser/autocomplete/search_provider.cc',
         'browser/autocomplete/search_provider.h',
+        'browser/autofill/address_field.cc',
+        'browser/autofill/address_field.h',
         'browser/autofill/autofill_field.cc',
         'browser/autofill/autofill_field.h',
         'browser/autofill/autofill_infobar_delegate.cc',
