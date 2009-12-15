@@ -1,0 +1,92 @@
+# Chromium-specific suppressions
+{
+   dont_valgrind_python_1
+   Memcheck:Cond
+   ...
+   obj:*python*
+}
+{
+   dont_valgrind_python_2
+   Memcheck:Value4
+   ...
+   obj:*python*
+}
+{
+   dont_valgrind_python_3
+   Memcheck:Addr4
+   ...
+   obj:*python*
+}
+{
+   wine_bug_20551_as_seen_by_chromium
+   Memcheck:Leak
+   ...
+   fun:RtlAllocateHeap
+   ...
+   fun:GlobalAlloc
+   ...
+   fun:Clipboard::WriteObjects
+}
+{
+   suppress_chromium_crasher
+   Memcheck:Addr1
+   ...
+   fun:*Test_Crasher*
+}
+{
+   ignore_mozilla_errors
+   Memcheck:Cond
+   obj:*/ImporterTest/profile/mozcrt19.dll
+}
+{
+   wine_bug_20692_a
+   Memcheck:Leak
+   ...
+   fun:CryptImportKey
+   fun:CRYPT_ImportRsaPublicKeyInfoEx
+   fun:CryptImportPublicKeyInfoEx
+   fun:CryptImportPublicKeyInfo
+   fun:base::SignatureVerifier::VerifyInit
+}
+{
+   wine_bug_20692_b
+   Memcheck:Leak
+   ...
+   fun:CryptGenKey
+   fun:base::RSAPrivateKey::Create
+}
+{
+   # Boy, oh, boy do we need a better way to deal with this.
+   # See https://bugs.kde.org/show_bug.cgi?id=190660
+   valgrind_bug_190660
+   Memcheck:Addr4
+   fun:strlen
+}
+{
+   # Boy, oh, boy do we need a better way to deal with this.
+   # See https://bugs.kde.org/show_bug.cgi?id=190660
+   valgrind_bug_190660
+   Memcheck:Addr4
+   fun:strcmp
+}
+{
+   # Boy, oh, boy do we need a better way to deal with this.
+   # See https://bugs.kde.org/show_bug.cgi?id=190660
+   valgrind_bug_190660
+   Memcheck:Addr4
+   fun:strchr
+}
+{
+   # Boy, oh, boy do we need a better way to deal with this.
+   # See https://bugs.kde.org/show_bug.cgi?id=190660
+   valgrind_bug_190660
+   Memcheck:Addr4
+   fun:strcat
+}
+{
+   # Boy, oh, boy do we need a better way to deal with this.
+   # See https://bugs.kde.org/show_bug.cgi?id=190660
+   valgrind_bug_190660
+   Memcheck:Addr4
+   fun:strncpy
+}
