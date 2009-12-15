@@ -24,6 +24,9 @@
 # option in wine, so skip test suites that invoke it directly until I
 # figure out how to jam that in there.
 
+# The bot that runs this script seemed to ignore stderr, so redirect stderr to stdout by default
+2>&1
+
 usage() {
   cat <<_EOF_
 Usage: sh chromium-runtests.sh [--options] [suite ...]
@@ -79,6 +82,10 @@ THE_VALGRIND_CMD="/usr/local/valgrind-10880/bin/valgrind \
 -v \
 --workaround-gcc296-bugs=yes \
 "
+
+LANG=C
+
+PATTERN="are definitely|uninitialised|Unhandled exception|Invalid read|Invalid write|Invalid free|Source and desti|Mismatched free|unaddressable byte|vex x86|impossible|Assertion |INTERNAL ERROR|Terminated|Test failed|Alarm clock|Command exited with non-zero status"
 
 reduce_verbosity() {
   # Filter out valgrind's extra -v output except for the 'used_suppression' lines
@@ -382,34 +389,45 @@ do
     no)  filterspec=`and_gtest_filters "${extra_gtest_filter}" -${expected_to_fail}` ;;
     yes) filterspec=`and_gtest_filters "${extra_gtest_filter}"  ${expected_to_fail}` ;;
     esac
-    LOGCMD=
 
     case $do_individual in
     no)
       $announce $VALGRIND_CMD $WINE ./$suite.exe --gtest_filter=$filterspec
-      test "$logfiles" = yes && LOGCMD="> ../../../logs/$suite-$i.log"
+      LOG=../../../logs/$suite-$i.log
       $dry_run alarm `get_expected_runtime $suite` \
-                $VALGRIND_CMD $WINE ./$suite.exe --gtest_filter=$filterspec 2>&1 | eval reduce_verbosity $LOGCMD || true
+                $VALGRIND_CMD $WINE ./$suite.exe --gtest_filter=$filterspec 2>&1 | eval reduce_verbosity | tee $LOG || errors=yes true
+      egrep -q "$PATTERN" $LOG && errors=yes
+      test "$logfiles" = yes || rm $LOG
       ;;
     yes)
       for test in `expand_test_list $suite $filterspec`
       do
         $announce $VALGRIND_CMD $WINE ./$suite.exe --gtest_filter="$test"
-        test "$logfiles" = yes && LOGCMD="> ../../../logs/$suite-$test-$i.log"
+        LOG=../../../logs/$suite-$test-$i.log
         $dry_run alarm `get_expected_runtime $suite` \
-                  $VALGRIND_CMD $WINE ./$suite.exe --gtest_filter="$test" 2>&1 | eval reduce_verbosity $LOGCMD || true
+                  $VALGRIND_CMD $WINE ./$suite.exe --gtest_filter="$test" 2>&1 | eval reduce_verbosity | tee $LOG || errors=yes true
+        egrep -q "$PATTERN" $LOG && errors=yes
+      test "$logfiles" = yes || rm $LOG
       done
       ;;
     groups)
       for test in `expand_test_list $suite $filterspec | sed 's/\..*//' | sort -u`
       do
         $announce $VALGRIND_CMD $WINE ./$suite.exe --gtest_filter="$test.*-${expected_to_fail}"
-        test "$logfiles" = yes && LOGCMD="> ../../../logs/$suite-$test-$i.log"
+        LOG=../../../logs/$suite-$test-$i.log
         $dry_run alarm `get_expected_runtime $suite` \
-                  $VALGRIND_CMD $WINE ./$suite.exe --gtest_filter="$test.*-${expected_to_fail}" 2>&1 | eval reduce_verbosity $LOGCMD || true
+                  $VALGRIND_CMD $WINE ./$suite.exe --gtest_filter="$test.*-${expected_to_fail}" 2>&1 | eval reduce_verbosity | tee $LOG || errors=yes true
+        egrep -q "$PATTERN" tmp.log && errors=yes
+        test "$logfiles" = yes || rm $LOG
       done
       ;;
     esac
   done
   i=`expr $i + 1`
 done
+
+case "$errors" in
+yes) echo "Errors detected, condition red.  Battle stations!" ; exit 1;;
+*) echo "No errors detected." ;;
+esac
+
