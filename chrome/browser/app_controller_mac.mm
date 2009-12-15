@@ -560,10 +560,8 @@ static bool g_is_opening_new_window = false;
       break;
     case IDC_CLEAR_BROWSING_DATA: {
       // There may not be a browser open, so use the default profile.
-      scoped_nsobject<ClearBrowsingDataController> controller(
-          [[ClearBrowsingDataController alloc]
-              initWithProfile:defaultProfile]);
-      [controller runModalDialog];
+      [ClearBrowsingDataController
+          showClearBrowsingDialogForProfile:defaultProfile];
       break;
     }
     case IDC_IMPORT_SETTINGS: {

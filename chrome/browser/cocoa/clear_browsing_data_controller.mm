@@ -6,6 +6,7 @@
 
 #include "base/mac_util.h"
 #include "base/scoped_nsobject.h"
+#include "base/singleton.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -26,6 +27,12 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer {
   ClearBrowsingDataController* controller_;
 };
 
+namespace {
+
+typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
+
+} // namespace
+
 @implementation ClearBrowsingDataController
 
 @synthesize clearBrowsingHistory = clearBrowsingHistory_;
@@ -37,6 +44,34 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer {
 @synthesize timePeriod = timePeriod_;
 @synthesize isClearing = isClearing_;
 
++ (void)showClearBrowsingDialogForProfile:(Profile*)profile {
+  ClearBrowsingDataController* controller =
+      [ClearBrowsingDataController controllerForProfile:profile];
+  if (![controller isWindowLoaded]) {
+    [controller runModalDialog];
+  }
+}
+
++ (ClearBrowsingDataController *)controllerForProfile:(Profile*)profile {
+  // Get the original profile in case we get here from an incognito window
+  // |GetOriginalProfile()| will return the same profile if it is the original
+  // profile.
+  profile = profile->GetOriginalProfile();
+
+  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  DCHECK(map != NULL);
+  ProfileControllerMap::iterator it = map->find(profile);
+  if (it == map->end()) {
+    // Since we don't currently support multiple profiles, this class
+    // has not been tested against this case.
+    DCHECK_EQ(map->size(), 0U);
+
+    ClearBrowsingDataController* controller =
+      [[self alloc] initWithProfile:profile];
+    it = map->insert(std::make_pair(profile, controller)).first;
+  }
+  return it->second;
+}
 
 - (id)initWithProfile:(Profile*)profile {
   DCHECK(profile);
@@ -60,6 +95,7 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer {
     // while clearing is in progress as the dialog is modal and not closeable).
     remover_->RemoveObserver(observer_.get());
   }
+
   [super dealloc];
 }
 
@@ -106,8 +142,18 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer {
 // Called when the user clicks the cancel button. All we need to do is stop
 // the modal session.
 - (IBAction)cancel:(id)sender {
-  [NSApp stopModal];
+  [self closeDialog];
+}
+
+- (void)closeDialog {
+  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  ProfileControllerMap::iterator it = map->find(profile_);
+  if (it != map->end()) {
+    map->erase(it);
+  }
+  [self autorelease];
   [[self window] orderOut:self];
+  [NSApp stopModal];
 }
 
 // Initialize the bools from prefs using the setters to be KVO-compliant.
@@ -141,7 +187,7 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer {
 // Called when the data remover object is done with its work. Close the window.
 // The remover will delete itself. End the modal session at this point.
 - (void)dataRemoverDidFinish {
-  [NSApp stopModal];
+  [self closeDialog];
   [[self window] orderOut:self];
   [self setIsClearing:NO];
   remover_ = NULL;

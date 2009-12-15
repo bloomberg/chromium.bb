@@ -1148,10 +1148,8 @@ const int kDisabledIndex = 1;
 // Called to clear user's browsing data. This puts up an application-modal
 // dialog to guide the user through clearing the data.
 - (IBAction)clearData:(id)sender {
-  scoped_nsobject<ClearBrowsingDataController> controller(
-      [[ClearBrowsingDataController alloc]
-          initWithProfile:profile_]);
-  [controller runModalDialog];
+  [ClearBrowsingDataController
+      showClearBrowsingDialogForProfile:profile_];
 }
 
 - (IBAction)resetThemeToDefault:(id)sender {

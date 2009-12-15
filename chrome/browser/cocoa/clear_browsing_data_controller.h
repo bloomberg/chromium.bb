@@ -39,8 +39,10 @@ class Profile;
   NSInteger timePeriod_;
 }
 
-// Create the controller with the given profile (which must not be NULL).
-- (id)initWithProfile:(Profile*)profile;
+// Show the clear browsing data window.  Do not use |-initWithProfile:|,
+// go through this instead so we don't end up with multiple instances.
++ (void)showClearBrowsingDialogForProfile:(Profile*)profile;
++ (ClearBrowsingDataController*)controllerForProfile:(Profile*)profile;
 
 // Run the dialog with an application-modal event loop. If the user accepts,
 // performs the deletion of the selected browsing data. The values of the
@@ -65,8 +67,11 @@ class Profile;
 
 
 @interface ClearBrowsingDataController (ExposedForUnitTests)
+// Create the controller with the given profile (which must not be NULL).
+- (id)initWithProfile:(Profile*)profile;
 @property (readonly) int removeMask;
 - (void)persistToPrefs;
+- (void)closeDialog;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_CLEAR_BROWSING_DATA_CONTROLLER_

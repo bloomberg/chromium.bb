@@ -283,10 +283,8 @@ void BrowserWindowCocoa::ShowReportBugDialog() {
 }
 
 void BrowserWindowCocoa::ShowClearBrowsingDataDialog() {
-  scoped_nsobject<ClearBrowsingDataController> controller(
-      [[ClearBrowsingDataController alloc]
-          initWithProfile:browser_->profile()]);
-  [controller runModalDialog];
+  [ClearBrowsingDataController
+      showClearBrowsingDialogForProfile:browser_->profile()];
 }
 
 void BrowserWindowCocoa::ShowImportDialog() {

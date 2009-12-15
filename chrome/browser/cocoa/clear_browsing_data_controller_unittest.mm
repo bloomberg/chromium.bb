@@ -31,13 +31,12 @@ class ClearBrowsingDataControllerTest : public CocoaTest {
     prefs->SetBoolean(prefs::kDeleteFormData, false);
     prefs->SetInteger(prefs::kDeleteTimePeriod,
                       BrowsingDataRemover::FOUR_WEEKS);
-
     controller_ =
-        [[ClearBrowsingDataController alloc] initWithProfile:helper_.profile()];
+        [ClearBrowsingDataController controllerForProfile:helper_.profile()];
   }
 
   virtual void TearDown() {
-    [controller_ close];
+    [controller_ closeDialog];
     CocoaTest::TearDown();
   }
 
@@ -111,6 +110,12 @@ TEST_F(ClearBrowsingDataControllerTest, PersistToPrefs) {
   EXPECT_FALSE(prefs->GetBoolean(prefs::kDeleteFormData));
   EXPECT_EQ(BrowsingDataRemover::FOUR_WEEKS,
             prefs->GetInteger(prefs::kDeleteTimePeriod));
+}
+
+TEST_F(ClearBrowsingDataControllerTest, SameControllerForProfile) {
+  ClearBrowsingDataController* controller =
+      [ClearBrowsingDataController controllerForProfile:helper_.profile()];
+  EXPECT_EQ(controller_, controller);
 }
 
 }  // namespace
