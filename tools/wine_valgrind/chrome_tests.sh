@@ -201,9 +201,9 @@ init_runtime() {
 
   if test "$WINDIR" = ""
   then
-    WINE=${WINE:-$HOME/wine-git/wine}
+    WINE=${WINE:-/usr/local/wine/bin/wine}
     export WINE
-    WINESERVER=${WINESERVER:-$HOME/wine-git/server/wineserver}
+    WINESERVER=${WINESERVER:-/usr/local/wine/bin/wineserver}
     WINEPREFIX=${WINEPREFIX:-$HOME/.wine-chromium-tests}
     export WINEPREFIX
     WINE_HEAP_REDZONE=16
