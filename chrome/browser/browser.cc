@@ -2583,6 +2583,10 @@ void Browser::UpdateCommandsForTabState() {
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB,
       !(type() & TYPE_APP) && CanDuplicateContentsAt(selected_index()));
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB,
+      !(type() & TYPE_APP) && tab_count() > 1);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB,
+      !(type() & TYPE_APP) && tab_count() > 1);
 
   // Current navigation entry, may be NULL.
   NavigationEntry* active_entry = current_tab->controller().GetActiveEntry();
