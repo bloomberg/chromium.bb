@@ -173,6 +173,8 @@ NSString* const kCharacterInfoID = @"id";
 }
 
 - (IBAction)closeSheet:(id)sender {
+  NSFontPanel* panel = [[NSFontManager sharedFontManager] fontPanel:NO];
+  [panel close];
   [NSApp endSheet:[self window]];
 }
 
