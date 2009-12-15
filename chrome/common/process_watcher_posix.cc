@@ -46,8 +46,8 @@ class BackgroundReaper : public PlatformThread::Delegate {
     if (timeout_ == 0) {
       pid_t r = HANDLE_EINTR(waitpid(child_, NULL, 0));
       if (r != child_) {
-        LOG(ERROR) << "While waiting for " << child_
-                   << " to terminate, we got the following result: " << r;
+        PLOG(ERROR) << "While waiting for " << child_
+                    << " to terminate, we got the following result: " << r;
       }
       return;
     }
@@ -83,7 +83,7 @@ class BackgroundReaper : public PlatformThread::Delegate {
 
 // static
 void ProcessWatcher::EnsureProcessTerminated(base::ProcessHandle process) {
-  // If the child is already dead, then there's nothing to do
+  // If the child is already dead, then there's nothing to do.
   if (IsChildDead(process))
     return;
 
@@ -94,7 +94,7 @@ void ProcessWatcher::EnsureProcessTerminated(base::ProcessHandle process) {
 
 // static
 void ProcessWatcher::EnsureProcessGetsReaped(base::ProcessHandle process) {
-  // If the child is already dead, then there's nothing to do
+  // If the child is already dead, then there's nothing to do.
   if (IsChildDead(process))
     return;
 

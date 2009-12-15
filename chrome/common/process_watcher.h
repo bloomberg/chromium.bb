@@ -20,14 +20,15 @@ class ProcessWatcher {
   // does not appear to have exited, then this function starts to become
   // aggressive about ensuring that the process terminates.
   //
-  // This method does not block the calling thread.
+  // On Linux this method does not block the calling thread.
+  // On OS X this method may block for up to 2 seconds.
   //
   // NOTE: The process handle must have been opened with the PROCESS_TERMINATE
   // and SYNCHRONIZE permissions.
   //
   static void EnsureProcessTerminated(base::ProcessHandle process_handle);
 
-#if defined(OS_POSIX)
+#if defined(OS_LINUX)
   // The nicer version of EnsureProcessTerminated() that is patient and will
   // wait for |process_handle| to finish and then reap it.
   static void EnsureProcessGetsReaped(base::ProcessHandle process_handle);

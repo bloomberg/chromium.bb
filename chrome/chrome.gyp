@@ -559,6 +559,7 @@
         'common/pref_member.h',
         'common/pref_service.cc',
         'common/pref_service.h',
+        'common/process_watcher_mac.cc',
         'common/process_watcher_posix.cc',
         'common/process_watcher_win.cc',
         'common/process_watcher.h',
@@ -647,6 +648,11 @@
         ['OS=="linux" and selinux==1', {
           'dependencies': [
             '../build/linux/system.gyp:selinux',
+          ],
+        }],
+        ['OS=="mac"', {
+          'sources!': [
+            'common/process_watcher_posix.cc',
           ],
         }],
         ['OS=="win"', {

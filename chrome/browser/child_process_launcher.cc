@@ -228,11 +228,11 @@ class ChildProcessLauncher::Context
       // through the zygote process.
       Singleton<ZygoteHost>()->EnsureProcessTerminated(handle);
     } else
-#endif  // defined(OS_LINUX)
+#endif  // OS_LINUX
     {
       ProcessWatcher::EnsureProcessTerminated(handle);
     }
-#endif
+#endif  // OS_POSIX
     process.Close();
   }
 
