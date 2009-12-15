@@ -43,8 +43,8 @@ class FindBarViewTest : public CocoaTest {
 TEST_VIEW(FindBarViewTest, view_)
 
 TEST_F(FindBarViewTest, FindBarEatsMouseClicksInBackgroundArea) {
-  MouseDownViewPong* pongView =
-      [[MouseDownViewPong alloc] initWithFrame:NSMakeRect(0, 0, 200, 200)];
+  scoped_nsobject<MouseDownViewPong> pongView(
+      [[MouseDownViewPong alloc] initWithFrame:NSMakeRect(0, 0, 200, 200)]);
 
   // Remove all of the subviews of the findbar, to make sure we don't
   // accidentally hit a subview when trying to simulate a click in the
@@ -53,7 +53,7 @@ TEST_F(FindBarViewTest, FindBarEatsMouseClicksInBackgroundArea) {
   [view_ setFrame:NSMakeRect(0, 0, 200, 200)];
 
   // Add the pong view as a sibling of the findbar.
-  [[test_window() contentView] addSubview:pongView
+  [[test_window() contentView] addSubview:pongView.get()
                                positioned:NSWindowBelow
                                relativeTo:view_];
 
@@ -68,12 +68,12 @@ TEST_F(FindBarViewTest, FindBarEatsMouseClicksInBackgroundArea) {
 }
 
 TEST_F(FindBarViewTest, FindBarPassesThroughClicksInTransparentArea) {
-  MouseDownViewPong* pongView =
-      [[MouseDownViewPong alloc] initWithFrame:NSMakeRect(0, 0, 200, 200)];
+  scoped_nsobject<MouseDownViewPong> pongView(
+      [[MouseDownViewPong alloc] initWithFrame:NSMakeRect(0, 0, 200, 200)]);
   [view_ setFrame:NSMakeRect(0, 0, 200, 200)];
 
   // Add the pong view as a sibling of the findbar.
-  [[test_window() contentView] addSubview:pongView
+  [[test_window() contentView] addSubview:pongView.get()
                                positioned:NSWindowBelow
                                relativeTo:view_];
 

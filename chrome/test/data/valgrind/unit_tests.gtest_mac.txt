@@ -26,8 +26,6 @@ BrowserWindowCocoaTest.TestFullscreen
 ChromeBrowserWindowTest.DoesHideTitle
 ClearBrowsingDataControllerTest.*
 EditSearchEngineControllerTest.*
-FindBarViewTest.FindBarEatsMouseClicksInBackgroundArea
-FindBarViewTest.FindBarPassesThroughClicksInTransparentArea
 KeywordEditorCocoaControllerTest.*
 NSMenuItemAdditionsTest.TestMOnDifferentLayouts
 PrefsControllerTest.GetPrefsViewForPage
