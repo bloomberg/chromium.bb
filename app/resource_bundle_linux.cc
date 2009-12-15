@@ -27,7 +27,7 @@ namespace {
 // memory.
 GdkPixbuf* LoadPixbuf(RefCountedStaticMemory* data, bool rtl_enabled) {
   ScopedGObject<GdkPixbufLoader>::Type loader(gdk_pixbuf_loader_new());
-  bool ok = gdk_pixbuf_loader_write(loader.get(),
+  bool ok = data && gdk_pixbuf_loader_write(loader.get(),
       reinterpret_cast<const guint8*>(data->front()), data->size(), NULL);
   if (!ok)
     return NULL;
