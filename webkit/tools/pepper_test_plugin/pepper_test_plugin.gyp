@@ -36,6 +36,7 @@
         'action': [
           '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
           '--no-sandbox',
+          '--internal-pepper',
           '--load-plugin=$(TargetPath)',
           'file://$(ProjectDir)test_page.html',
         ],
