@@ -157,26 +157,6 @@ const int kPreloadIDs[] = {
   IDR_THEME_WINDOW_CONTROL_BACKGROUND
 };
 
-// The image resources that will be tinted by the 'button' tint value.
-const int kToolbarButtonIDs[] = {
-  IDR_BACK, IDR_BACK_D, IDR_BACK_H, IDR_BACK_P,
-  IDR_FORWARD, IDR_FORWARD_D, IDR_FORWARD_H, IDR_FORWARD_P,
-  IDR_RELOAD, IDR_RELOAD_H, IDR_RELOAD_P,
-  IDR_HOME, IDR_HOME_H, IDR_HOME_P,
-  IDR_STAR, IDR_STAR_NOBORDER, IDR_STAR_NOBORDER_CENTER, IDR_STAR_D, IDR_STAR_H,
-  IDR_STAR_P,
-  IDR_STARRED, IDR_STARRED_NOBORDER, IDR_STARRED_NOBORDER_CENTER, IDR_STARRED_H,
-  IDR_STARRED_P,
-  IDR_GO, IDR_GO_NOBORDER, IDR_GO_NOBORDER_CENTER, IDR_GO_H, IDR_GO_P,
-  IDR_STOP, IDR_STOP_NOBORDER, IDR_STOP_NOBORDER_CENTER, IDR_STOP_H, IDR_STOP_P,
-  IDR_MENU_BOOKMARK,
-  IDR_MENU_PAGE, IDR_MENU_PAGE_RTL,
-  IDR_MENU_CHROME, IDR_MENU_CHROME_RTL,
-  IDR_MENU_DROPARROW,
-  IDR_THROBBER, IDR_THROBBER_WAITING, IDR_THROBBER_LIGHT,
-  IDR_LOCATIONBG
-};
-
 // Returns a piece of memory with the contents of the file |path|.
 RefCountedMemory* ReadFileData(const FilePath& path) {
   if (!path.empty()) {
@@ -199,7 +179,7 @@ RefCountedMemory* ReadFileData(const FilePath& path) {
 }
 
 // Does error checking for invalid incoming data while trying to read an
-// floaing point value.
+// floating point value.
 bool ValidRealValue(ListValue* tint_list, int index, double* out) {
   if (tint_list->GetReal(index, out))
     return true;
@@ -258,7 +238,7 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
   pack->GenerateTabBackgroundImages(&pack->image_cache_);
 
   // Repack all the images from |image_cache_| into |image_memory_| for
-  // writing to the data pack
+  // writing to the data pack.
   pack->RepackImageCacheToImageMemory();
 
   // The BrowserThemePack is now in a consistent state.
@@ -777,10 +757,12 @@ void BrowserThemePack::GenerateTintedButtons(
     ImageCache* processed_bitmaps) const {
   if (button_tint.h != -1 || button_tint.s != -1 || button_tint.l != -1) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    for (size_t i = 0; i < arraysize(kToolbarButtonIDs); ++i) {
-      scoped_ptr<SkBitmap> button(
-          new SkBitmap(*rb.GetBitmapNamed(kToolbarButtonIDs[i])));
-      (*processed_bitmaps)[kToolbarButtonIDs[i]] = new SkBitmap(
+    const std::set<int>& ids =
+        BrowserThemeProvider::GetTintableToolbarButtons();
+    for (std::set<int>::const_iterator it = ids.begin(); it != ids.end();
+         ++it) {
+      scoped_ptr<SkBitmap> button(new SkBitmap(*rb.GetBitmapNamed(*it)));
+      (*processed_bitmaps)[*it] = new SkBitmap(
           SkBitmapOperations::CreateHSLShiftedBitmap(*button, button_tint));
     }
   }

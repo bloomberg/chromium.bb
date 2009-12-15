@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BROWSER_THEME_PROVIDER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -152,6 +153,9 @@ class BrowserThemeProvider : public NonThreadSafe,
   // Returns true and sets |result| to the requested default property, if |id|
   // is valid.
   static bool GetDefaultDisplayProperty(int id, int* result);
+
+  // Returns the set of IDR_* resources that should be tinted.
+  static const std::set<int>& GetTintableToolbarButtons();
 
   // Save the images to be written to disk, mapping file path to id.
   typedef std::map<FilePath, int> ImagesDiskCache;

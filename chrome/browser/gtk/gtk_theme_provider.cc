@@ -71,12 +71,16 @@ const int kThemeImages[] = {
 };
 
 bool IsOverridableImage(int id) {
-  for (size_t i = 0; i < arraysize(kThemeImages); ++i) {
-    if (kThemeImages[i] == id)
-      return true;
+  static std::set<int> images;
+  if (images.empty()) {
+    images.insert(kThemeImages, kThemeImages + arraysize(kThemeImages));
+
+    const std::set<int>& buttons =
+        BrowserThemeProvider::GetTintableToolbarButtons();
+    images.insert(buttons.begin(), buttons.end());
   }
 
-  return false;
+  return images.count(id) > 0;
 }
 
 }  // namespace
@@ -619,10 +623,17 @@ SkBitmap* GtkThemeProvider::GenerateGtkThemeBitmap(int id) const {
       return GenerateFrameImage(
           BrowserThemeProvider::TINT_FRAME_INCOGNITO_INACTIVE);
     }
+    default: {
+      // This is a tinted button. Tint it and return it.
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      scoped_ptr<SkBitmap> button(new SkBitmap(*rb.GetBitmapNamed(id)));
+      TintMap::const_iterator it = tints_.find(
+          BrowserThemeProvider::TINT_BUTTONS);
+      DCHECK(it != tints_.end());
+      return new SkBitmap(SkBitmapOperations::CreateHSLShiftedBitmap(
+          *button, it->second));
+    }
   }
-
-  NOTREACHED() << "Invalid bitmap request " << id;
-  return NULL;
 }
 
 SkBitmap* GtkThemeProvider::GenerateFrameImage(int tint_id) const {

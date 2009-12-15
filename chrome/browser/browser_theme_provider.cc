@@ -126,13 +126,33 @@ const int kThemeableImages[] = {
 };
 
 bool HasThemeableImage(int themeable_image_id) {
-  static std::map<int, bool> themeable_images;
+  static std::set<int> themeable_images;
   if (themeable_images.empty()) {
-    for (size_t i = 0; i < arraysize(kThemeableImages); ++i)
-      themeable_images[kThemeableImages[i]] = true;
+    themeable_images.insert(
+        kThemeableImages, kThemeableImages + arraysize(kThemeableImages));
   }
   return themeable_images.count(themeable_image_id) > 0;
 }
+
+// The image resources that will be tinted by the 'button' tint value.
+const int kToolbarButtonIDs[] = {
+  IDR_BACK, IDR_BACK_D, IDR_BACK_H, IDR_BACK_P,
+  IDR_FORWARD, IDR_FORWARD_D, IDR_FORWARD_H, IDR_FORWARD_P,
+  IDR_RELOAD, IDR_RELOAD_H, IDR_RELOAD_P,
+  IDR_HOME, IDR_HOME_H, IDR_HOME_P,
+  IDR_STAR, IDR_STAR_NOBORDER, IDR_STAR_NOBORDER_CENTER, IDR_STAR_D, IDR_STAR_H,
+  IDR_STAR_P,
+  IDR_STARRED, IDR_STARRED_NOBORDER, IDR_STARRED_NOBORDER_CENTER, IDR_STARRED_H,
+  IDR_STARRED_P,
+  IDR_GO, IDR_GO_NOBORDER, IDR_GO_NOBORDER_CENTER, IDR_GO_H, IDR_GO_P,
+  IDR_STOP, IDR_STOP_NOBORDER, IDR_STOP_NOBORDER_CENTER, IDR_STOP_H, IDR_STOP_P,
+  IDR_MENU_BOOKMARK,
+  IDR_MENU_PAGE, IDR_MENU_PAGE_RTL,
+  IDR_MENU_CHROME, IDR_MENU_CHROME_RTL,
+  IDR_MENU_DROPARROW,
+  IDR_THROBBER, IDR_THROBBER_WAITING, IDR_THROBBER_LIGHT,
+  IDR_LOCATIONBG
+};
 
 // Writes the theme pack to disk on a separate thread.
 class WritePackToDiskTask : public Task {
@@ -444,6 +464,18 @@ bool BrowserThemeProvider::GetDefaultDisplayProperty(int id, int* result) {
   }
 
   return false;
+}
+
+// static
+const std::set<int>& BrowserThemeProvider::GetTintableToolbarButtons() {
+  static std::set<int> button_set;
+  if (button_set.empty()) {
+    button_set = std::set<int>(
+        kToolbarButtonIDs,
+        kToolbarButtonIDs + arraysize(kToolbarButtonIDs));
+  }
+
+  return button_set;
 }
 
 color_utils::HSL BrowserThemeProvider::GetTint(int id) const {

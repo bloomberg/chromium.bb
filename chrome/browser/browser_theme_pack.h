@@ -41,9 +41,9 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
   // on a separate thread as it takes so long.
   static BrowserThemePack* BuildFromExtension(Extension* extension);
 
-  // Builds the theme pack from a previously WriteToDisk(). This operation
-  // should be relatively fast, as it should be an mmap() and some pointer
-  // swizzling. Returns NULL on any error attempting to read |path|.
+  // Builds the theme pack from a previously performed WriteToDisk(). This
+  // operation should be relatively fast, as it should be an mmap() and some
+  // pointer swizzling. Returns NULL on any error attempting to read |path|.
   static scoped_refptr<BrowserThemePack> BuildFromDataPack(
       FilePath path, const std::string& expected_id);
 

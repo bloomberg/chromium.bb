@@ -174,7 +174,7 @@ TEST_F(BrowserThemePackTest, DeriveUnderlineLinkColor) {
 }
 
 TEST_F(BrowserThemePackTest, ProvideUnderlineLinkColor) {
-  // If we specify the underline color, it shouldn't try to generate one.x
+  // If we specify the underline color, it shouldn't try to generate one.
   std::string color_json = "{ \"ntp_link\": [128, 128, 128],"
                            "  \"ntp_link_underline\": [255, 255, 255],"
                            "  \"ntp_section_link\": [128, 128, 128],"
