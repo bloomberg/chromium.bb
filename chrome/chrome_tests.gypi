@@ -61,6 +61,7 @@
         '..',
       ],
       'sources': [
+        'app/breakpad_mac_stubs.mm',
         # The only thing used from browser is Browser::Type.
         'browser/browser.h',
         'browser/cocoa/browser_test_helper.h',
@@ -266,7 +267,6 @@
         '..',
       ],
       'sources': [
-        'app/breakpad_mac_stubs.mm',
         'app/chrome_main_uitest.cc',
         'browser/browser_encoding_uitest.cc',
         'browser/browser_uitest.cc',

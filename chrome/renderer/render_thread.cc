@@ -80,6 +80,10 @@
 #include <objbase.h>
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/app/breakpad_mac.h"
+#endif
+
 using WebKit::WebCache;
 using WebKit::WebCrossOriginPreflightResultCache;
 using WebKit::WebFontCache;
@@ -116,6 +120,19 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
     //
     // So, we install a filter on the channel so that we can process this event
     // here and kill the process.
+
+#if defined(OS_MACOSX)
+    // TODO(viettrungluu): crbug.com/28547: The following is needed, as a
+    // stopgap, to avoid leaking due to not releasing Breakpad properly.
+    // TODO(viettrungluu): Investigate why this is being called.
+    if (IsCrashReporterEnabled()) {
+      LOG(INFO) << "Cleaning up Breakpad.";
+      DestructCrashReporter();
+    } else {
+      LOG(INFO) << "Breakpad not enabled; no clean-up needed.";
+    }
+#endif  // OS_MACOSX
+
     _exit(0);
   }
 };
