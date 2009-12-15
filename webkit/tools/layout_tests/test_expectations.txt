@@ -82,7 +82,6 @@ BUG24182 SLOW LINUX DEBUG : LayoutTests/fast/xpath/4XPath/Borrowed/cz_20030217.h
 BUG24182 SLOW WIN MAC DEBUG : LayoutTests/tables/mozilla/bugs/45621.html = PASS
 //BUG24852 started failing since webkit 49583
 //BUG24182 SLOW WIN : LayoutTests/css1/font_properties/font.html = PASS
-BUG24182 SLOW LINUX DEBUG : LayoutTests/editing/selection/doubleclick-whitespace.html = PASS
 BUG24182 SLOW WIN : LayoutTests/http/tests/security/xssAuditor/meta-tag-http-refresh-javascript-url.html = PASS TEXT
 BUG24182 SLOW WIN RELEASE : LayoutTests/fast/loader/local-CSS-from-local.html = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/incremental/split-hex-entities.pl = PASS
@@ -2906,7 +2905,6 @@ BUG28034 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-den
 BUG28040 WIN LINUX DEBUG : LayoutTests/fast/body-propagation/overflow/004.html = PASS FAIL IMAGE
 
 BUG28041 MAC : LayoutTests/storage/domstorage/clear.html = PASS FAIL
-BUG28057 WIN DEBUG : LayoutTests/dom/html/level2/html/HTMLElement95.html = PASS CRASH
 BUG28074 MAC : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = PASS TIMEOUT
 BUG28077 MAC : LayoutTests/plugins/netscape-invoke-default.html = PASS FAIL
 BUG28079 LINUX : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = PASS TIMEOUT
