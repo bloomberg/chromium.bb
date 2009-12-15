@@ -802,25 +802,6 @@ IPC_BEGIN_MESSAGES(View)
                        bool /* on or off */)
 #endif
 
-  //---------------------------------------------------------------------------
-  // Utility process messages:
-  // These are messages from the browser to the utility process.  They're here
-  // because we ran out of spare message types.
-
-  // Tell the utility process to unpack the given extension file in its
-  // directory and verify that it is valid.
-  IPC_MESSAGE_CONTROL1(UtilityMsg_UnpackExtension,
-                       FilePath /* extension_filename */)
-
-  // Tell the utility process to parse the given JSON data and verify its
-  // validity.
-  IPC_MESSAGE_CONTROL1(UtilityMsg_UnpackWebResource,
-                       std::string /* JSON data */)
-
-  // Tell the utility process to parse the given xml document.
-  IPC_MESSAGE_CONTROL1(UtilityMsg_ParseUpdateManifest,
-                       std::string /* xml document contents */)
-
   // Socket Stream messages:
   // These are messages from the browser to the SocketStreamHandle on
   // a renderer.
@@ -1923,46 +1904,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileSize,
                               FilePath /* path */,
                               int64 /* result */)
-
-  //---------------------------------------------------------------------------
-  // Utility process host messages:
-  // These are messages from the utility process to the browser.  They're here
-  // because we ran out of spare message types.
-
-  // Reply when the utility process is done unpacking an extension.  |manifest|
-  // is the parsed manifest.json file.  |catalogs| is the list of all parsed
-  // message catalogs and relative paths to them.
-  // The unpacker should also have written out a file containing decoded images
-  // from the extension.  See ExtensionUnpacker for details.
-  IPC_MESSAGE_CONTROL2(UtilityHostMsg_UnpackExtension_Succeeded,
-                       DictionaryValue /* manifest */,
-                       DictionaryValue /* catalogs */)
-
-  // Reply when the utility process has failed while unpacking an extension.
-  // |error_message| is a user-displayable explanation of what went wrong.
-  IPC_MESSAGE_CONTROL1(UtilityHostMsg_UnpackExtension_Failed,
-                       std::string /* error_message, if any */)
-
-  // Reply when the utility process is done unpacking and parsing JSON data
-  // from a web resource.
-  IPC_MESSAGE_CONTROL1(UtilityHostMsg_UnpackWebResource_Succeeded,
-                       DictionaryValue /* json data */)
-
-  // Reply when the utility process has failed while unpacking and parsing a
-  // web resource.  |error_message| is a user-readable explanation of what
-  // went wrong.
-  IPC_MESSAGE_CONTROL1(UtilityHostMsg_UnpackWebResource_Failed,
-                       std::string /* error_message, if any */)
-
-  // Reply when the utility process has succeeded in parsing an update manifest
-  // xml document.
-  IPC_MESSAGE_CONTROL1(UtilityHostMsg_ParseUpdateManifest_Succeeded,
-                       std::vector<UpdateManifest::Result> /* updates */)
-
-  // Reply when an error occured parsing the update manifest. |error_message|
-  // is a description of what went wrong suitable for logging.
-  IPC_MESSAGE_CONTROL1(UtilityHostMsg_ParseUpdateManifest_Failed,
-                       std::string /* error_message, if any */)
 
   // Sent by the renderer process to acknowledge receipt of a
   // ViewMsg_CSSInsertRequest message and css has been inserted into the frame.

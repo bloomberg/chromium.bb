@@ -9,8 +9,9 @@
 #include "chrome/common/child_process.h"
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/utility_messages.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 UtilityThread::UtilityThread() {
   ChildProcess::current()->AddRefProcess();

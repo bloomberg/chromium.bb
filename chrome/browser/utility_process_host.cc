@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/utility_messages.h"
 #include "ipc/ipc_switches.h"
 
 UtilityProcessHost::UtilityProcessHost(ResourceDispatcherHost* rdh,

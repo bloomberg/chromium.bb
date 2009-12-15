@@ -137,11 +137,9 @@
 #if defined(IPC_MESSAGE_MACROS_ENUMS)
 #undef IPC_MESSAGE_MACROS_ENUMS
 
-// TODO(jabdelmalek): we're using the lowest 12 bits of type for the message
-// id, and the highest 4 bits for the channel type.  This constrains us to
-// 16 channel types (currently using 8) and 4K messages per type.  Should
-// really make type be 32 bits, but then we break automation with older Chrome
-// builds..
+// We're using the lowest 16 bits of type for the message id, and the highest
+// 16 bits for the channel type.
+//
 // Do label##PreStart so that automation messages keep the same id as before.
 #define IPC_BEGIN_MESSAGES(label) \
   enum label##MsgType { \
