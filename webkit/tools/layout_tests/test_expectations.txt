@@ -3265,3 +3265,7 @@ BUG30343 LINUX : LayoutTests/fast/css/large-number-round-trip.html = TEXT
 
 // Crash of unknown origin :(
 BUG_DGLAZKOV LINUX : LayoutTests/fast/images/svg-as-background.html = CRASH
+
+// Another crash of unknown origin
+// First crash at http://src.chromium.org/viewvc/chrome?view=rev&revision=34558, which doesn't make much sense.
+BUG_DGLAZKOV WIN : LayoutTests/svg/webarchive/svg-script-subresouces.svg = FAIL CRASH
