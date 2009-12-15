@@ -65,6 +65,7 @@ ProfileSyncService::~ProfileSyncService() {
 
 void ProfileSyncService::set_change_processor(
     browser_sync::ChangeProcessor* change_processor) {
+  STLDeleteElements(&change_processors_);
   change_processors_.clear();
   change_processors_.insert(change_processor);
 }
