@@ -151,7 +151,7 @@ class TestRunner:
       self._http_server = http_server.Lighttpd(options.results_directory)
 
     self._shardable_directories = ['chrome', 'LayoutTests', 'pending', 'fast',
-        'svg']
+        'svg', 'loader']
 
     # The http tests are very stable on mac/linux.
     # TODO(ojan): Make the http server on Windows be apache so we can turn
@@ -380,7 +380,8 @@ class TestRunner:
     test_file = test_file_parts[1]
 
     return_value = directory
-    while directory in self._shardable_directories:
+    while (directory in self._shardable_directories and
+           test_file.find(os.sep) >= 0):
       test_file_parts = test_file.split(os.sep, 1)
       directory = test_file_parts[0]
       return_value = os.path.join(return_value, directory)
