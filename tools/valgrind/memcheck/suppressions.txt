@@ -418,8 +418,8 @@
 {
    bug_30110
    Memcheck:Leak
-   ...
-   fun:*TCMallocGuard*
+   fun:_Znw*
+   fun:_ZN13TCMallocGuardC1Ev
 }
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
