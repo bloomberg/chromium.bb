@@ -254,6 +254,8 @@
         'widget/drop_target_gtk.h',
         'widget/drop_target_win.cc',
         'widget/drop_target_win.h',
+        'widget/gtk_views_fixed.cc',
+        'widget/gtk_views_fixed.h',
         'widget/root_view.cc',
         'widget/root_view.h',
         'widget/root_view_gtk.cc',

@@ -16,13 +16,17 @@
 
 namespace views {
 
-static const int kButtonBorderHWidth = 8;
-
 #if defined(OS_WIN)
 // The min size in DLUs comes from
 // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnwue/html/ch14e.asp
 static const int kMinWidthDLUs = 50;
 static const int kMinHeightDLUs = 14;
+
+// Horizontal padding (on each side).
+static const int kButtonBorderHWidth = 8;
+#else
+// Horizontal padding (on each side).
+static const int kButtonBorderHWidth = 0;
 #endif
 
 // static

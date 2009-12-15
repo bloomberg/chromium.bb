@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_gtk.h"
+#include "views/widget/gtk_views_fixed.h"
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager_gtk.h"
 #include "views/window/window_gtk.h"
@@ -149,8 +150,10 @@ void WidgetGtk::RemoveChild(GtkWidget* child) {
   // We can be called after the contents widget has been destroyed, e.g. any
   // NativeViewHost not removed from the view hierarchy before the window is
   // closed.
-  if (GTK_IS_CONTAINER(window_contents_))
+  if (GTK_IS_CONTAINER(window_contents_)) {
     gtk_container_remove(GTK_CONTAINER(window_contents_), child);
+    gtk_views_fixed_set_use_allocated_size(child, false);
+  }
 }
 
 void WidgetGtk::ReparentChild(GtkWidget* child) {
@@ -159,9 +162,8 @@ void WidgetGtk::ReparentChild(GtkWidget* child) {
 
 void WidgetGtk::PositionChild(GtkWidget* child, int x, int y, int w, int h) {
   GtkAllocation alloc = { x, y, w, h };
-  // For some reason we need to do both of these to size a widget.
   gtk_widget_size_allocate(child, &alloc);
-  gtk_widget_set_size_request(child, w, h);
+  gtk_views_fixed_set_use_allocated_size(child, true);
   gtk_fixed_move(GTK_FIXED(window_contents_), child, x, y);
 }
 
@@ -1165,7 +1167,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
   //    that if we use GTK's double buffering and we tried to expand the dirty
   //    region, it wouldn't get painted.
   if (type_ == TYPE_CHILD) {
-    window_contents_ = widget_ = gtk_fixed_new();
+    window_contents_ = widget_ = gtk_views_fixed_new();
     gtk_widget_set_name(widget_, "views-gtkwidget-child-fixed");
     GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
     gtk_fixed_set_has_window(GTK_FIXED(widget_), true);
@@ -1200,7 +1202,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     }
     SetWindowForNative(widget_, static_cast<WindowGtk*>(this));
 
-    window_contents_ = gtk_fixed_new();
+    window_contents_ = gtk_views_fixed_new();
     gtk_widget_set_name(window_contents_, "views-gtkwidget-window-fixed");
     GTK_WIDGET_UNSET_FLAGS(window_contents_, GTK_DOUBLE_BUFFERED);
     gtk_fixed_set_has_window(GTK_FIXED(window_contents_), true);
