@@ -335,9 +335,6 @@ function showSection(section) {
       case Section.TIPS:
         $('tip-line').style.display = '';
         break;
-      case Section.SYNC:
-        $('sync-status').style.display = '';
-        break;
     }
   }
 }
@@ -358,9 +355,6 @@ function hideSection(section) {
         break;
       case Section.TIPS:
         $('tip-line').style.display = 'none';
-        break;
-      case Section.SYNC:
-        $('sync-status').style.display = 'none';
         break;
     }
   }
@@ -620,7 +614,6 @@ function layoutRecentlyClosed() {
  *
  * syncsectionisvisible: true if the sync section needs to show up on the new
  *                       tab page and false otherwise.
- * msgtype: represents the states - "error", "presynced" or "synced".
  * title: the header for the sync status section.
  * msg: the actual message (e.g. "Synced to foo@gmail.com").
  * linkisvisible: true if the link element should be visible within the sync
@@ -637,10 +630,9 @@ function layoutRecentlyClosed() {
 function syncMessageChanged(newMessage) {
   var syncStatusElement = $('sync-status');
   var style = syncStatusElement.style;
-  $('sync-menu-item').style.display = 'block';
 
   // Hide the section if the message is emtpy.
-  if (!newMessage['syncsectionisvisible'] || !(shownSections & Section.SYNC)) {
+  if (!newMessage['syncsectionisvisible']) {
     style.display = 'none';
     return;
   }

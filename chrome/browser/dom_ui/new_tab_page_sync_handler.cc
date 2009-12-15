@@ -172,35 +172,21 @@ void NewTabPageSyncHandler::SendSyncMessageToPage(
     MessageType type, std::string msg,
     std::string linktext) {
   DictionaryValue value;
-  std::string msgtype;
   std::wstring user;
-  std::string title =
-      WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_SYNC_SECTION_TITLE));
+  std::string title;
   std::string linkurl;
-  switch (type) {
-    case HIDE:
-      msgtype = "presynced";
-      break;
-    case SYNC_ERROR:
-      title =
-          WideToUTF8(
-              l10n_util::GetString(IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE));
-      msgtype = "error";
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
 
   // If there is no message to show, we should hide the sync section
   // altogether.
   if (type == HIDE || msg.empty()) {
     value.SetBoolean(L"syncsectionisvisible", false);
-  } else {
+  } else {  // type == SYNC_ERROR
+    title = WideToUTF8(
+        l10n_util::GetString(IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE));
+
     value.SetBoolean(L"syncsectionisvisible", true);
     value.SetString(L"msg", msg);
     value.SetString(L"title", title);
-    value.SetString(L"msgtype", msgtype);
     if (linktext.empty()) {
       value.SetBoolean(L"linkisvisible", false);
     } else {

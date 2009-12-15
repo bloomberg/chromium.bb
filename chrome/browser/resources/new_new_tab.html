@@ -185,8 +185,6 @@ function updateSimpleSection(id, section) {
     <div command="hide" section="THUMB" i18n-content="mostvisited"></div>
     <div command="hide" section="RECENT" i18n-content="recentlyclosed"></div>
     <div command="hide" section="TIPS" i18n-content="tips"></div>
-    <div command="hide" section="SYNC" i18n-content="sync"
-         id="sync-menu-item"></div>
     <hr>
     <div command="clear-all-blacklisted"
          i18n-content="restorethumbnails"></div>
@@ -195,8 +193,6 @@ function updateSimpleSection(id, section) {
   <script>
     $('thumb-checkbox').checked = shownSections & Section.THUMB;
     $('list-checkbox').checked = shownSections & Section.LIST;
-    $('sync-menu-item').style.display =
-        templateData['syncispresent'] == 'true' ? '' : 'none';
   </script>
 
   <div id="notification">
@@ -252,7 +248,6 @@ function updateSimpleSection(id, section) {
     <h2></h2>
     <span></span>
   </div>
-  <script>updateSimpleSection('sync-status', Section.SYNC);</script>
 
   <div id="tip-line"></div>
   <script>updateSimpleSection('tip-line', Section.TIPS);</script>
