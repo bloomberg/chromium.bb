@@ -526,7 +526,6 @@
    fun:_ZN17ExtensionUnpacker15AddDecodedImageERK8FilePath
    fun:_ZN17ExtensionUnpacker3RunEv
 }
-Suppression:
 {
    bug_30448
    Memcheck:Leak
