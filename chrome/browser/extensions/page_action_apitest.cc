@@ -9,9 +9,8 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/location_bar.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/views/browser_actions_container.h"
-#include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/ui_test_utils.h"
 
@@ -134,10 +133,17 @@ public:
   bool last_visibility_;
 };
 
-// TODO(port)
-#if defined(OS_WIN)
+#if !defined(OS_WIN)
+// The following test fails on Mac and Linux because some of page action
+// implementation is missing in LocationBarView
+// (see http://crbug.com/29898, http://crbug.com/30326)
+#define MAYBE_Show DISABLED_Show
+#else
+#define MAYBE_Show Show
+#endif
+
 // Tests popups in page actions.
-IN_PROC_BROWSER_TEST_F(PageActionPopupTest, Show) {
+IN_PROC_BROWSER_TEST_F(PageActionPopupTest, MAYBE_Show) {
   NotificationRegistrar registrar;
   registrar.Add(this,
                 NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
@@ -168,4 +174,3 @@ IN_PROC_BROWSER_TEST_F(PageActionPopupTest, Show) {
     ASSERT_TRUE(catcher.GetNextResult());
   }
 }
-#endif

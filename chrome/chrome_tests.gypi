@@ -1153,11 +1153,6 @@
           'sources': [
             'browser/extensions/browser_action_test_util_mac.mm',
           ],
-          'sources!': [
-            # This fails to compile because it seem to drag in views headers.
-            # http://crbug.com/29895
-            'browser/extensions/page_action_apitest.cc',
-          ],
           'include_dirs': [
             '../third_party/GTM',
           ],
