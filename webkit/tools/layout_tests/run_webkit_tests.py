@@ -960,7 +960,7 @@ class TestRunner:
         slow_tests.append(test_tuple)
 
       if filename in result_summary.failures:
-        result = result_summary.failures[filename]
+        result = result_summary.results[filename]
         if (result == test_expectations.TIMEOUT or
             result == test_expectations.CRASH):
           is_timeout_crash_or_slow = True

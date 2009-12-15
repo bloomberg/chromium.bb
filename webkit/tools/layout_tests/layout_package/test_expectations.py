@@ -173,7 +173,7 @@ class TestExpectationsFile:
                    'crash': CRASH,
                    'missing': MISSING }
 
-  EXPECTATION_DESCRIPTIONS = { SKIP : ('Skipped', 'Skipped'),
+  EXPECTATION_DESCRIPTIONS = { SKIP : ('skipped', 'skipped'),
                                PASS : ('passes', 'passes'),
                                FAIL : ('failure', 'failures'),
                                TEXT : ('text diff mismatch',
@@ -184,8 +184,8 @@ class TestExpectationsFile:
                                CRASH : ('test shell crash',
                                         'test shell crashes'),
                                TIMEOUT : ('test timed out', 'tests timed out'),
-                               MISSING : ('No expected result found',
-                                          'No expected results found') }
+                               MISSING : ('no expected result found',
+                                          'no expected results found') }
 
   EXPECTATION_ORDER = ( PASS, CRASH, TIMEOUT, MISSING, IMAGE_PLUS_TEXT,
      TEXT, IMAGE, FAIL, SKIP )
