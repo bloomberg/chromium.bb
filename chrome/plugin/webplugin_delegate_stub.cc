@@ -367,6 +367,8 @@ void WebPluginDelegateStub::OnCreateCommandBuffer(int* route_id) {
       delegate_->windowed_handle()));
 
   *route_id = command_buffer_stub_->route_id();
+#else
+  *route_id = 0;
 #endif
 }
 
