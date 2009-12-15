@@ -55,7 +55,8 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
   virtual void DispatchOnInjectedScript(
       int call_id,
       const WebCore::String& function_name,
-      const WebCore::String& json_args);
+      const WebCore::String& json_args,
+      bool async);
   virtual void ExecuteVoidJavaScript();
   virtual void GetResourceContent(
       int call_id,

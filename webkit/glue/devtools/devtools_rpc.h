@@ -77,13 +77,10 @@ template<>
 struct RpcTypeTrait<bool> {
   typedef bool ApiType;
   static bool Parse(const WebCore::String& t) {
-    bool success;
-    int i = t.toIntStrict(&success);
-    ASSERT(success);
-    return i;
+    return t == "true";
   }
   static WebCore::String ToString(bool b) {
-    return WebCore::String::number(b ? 1 : 0);
+    return b ? "true" : "false";
   }
 };
 

@@ -245,16 +245,12 @@ void WebDevToolsAgentImpl::DispatchOnInspectorController(
 void WebDevToolsAgentImpl::DispatchOnInjectedScript(
       int call_id,
       const String& function_name,
-      const String& json_args) {
+      const String& json_args,
+      bool async) {
   String result;
   String exception;
-  String fname = function_name;
-  bool async = function_name.endsWith("_async");
-  if (async) {
-    fname = fname.substring(0, fname.length() - 6);
-  }
   result = debugger_agent_impl_->ExecuteUtilityFunction(utility_context_,
-      call_id, "InjectedScript", fname, json_args, async, &exception);
+      call_id, "InjectedScript", function_name, json_args, async, &exception);
   if (!async) {
     tools_agent_delegate_stub_->DidDispatchOn(call_id,
         result, exception);

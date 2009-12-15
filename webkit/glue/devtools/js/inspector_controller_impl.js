@@ -192,16 +192,8 @@ devtools.InspectorBackendImpl.prototype.takeHeapSnapshot = function() {
 /**
  * @override
  */
-devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript = function(
-    callId, methodName, argsString, async) {
-  var callback = function(result, isException) {
-    WebInspector.didDispatchOnInjectedScript(callId, result, isException);
-  };
-  RemoteToolsAgent.DispatchOnInjectedScript(
-      WebInspector.Callback.wrap(callback),
-      async ? methodName + "_async" : methodName,
-      argsString);
-};
+devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript =
+    RemoteToolsAgent.DispatchOnInjectedScript.bind(RemoteToolsAgent);
 
 
 /**
