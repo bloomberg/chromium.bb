@@ -80,11 +80,22 @@ void DebuggerAgentImpl::CreateUtilityContext(
 
   v8::Handle<v8::ObjectTemplate> global_template = v8::ObjectTemplate::New();
 
+  // TODO(yurys): provide a function in v8 bindings that would make the
+  // utility context more like main world context of the inspected frame,
+  // otherwise we need to manually make it satisfy various invariants
+  // that V8Proxy::getEntered and some other V8Proxy methods expect to find
+  // on v8 contexts on the contexts stack.
+  // See V8Proxy::createNewContext.
+  //
   // Install a security handler with V8.
   global_template->SetAccessCheckCallbacks(
       V8Custom::v8DOMWindowNamedSecurityCheck,
       V8Custom::v8DOMWindowIndexedSecurityCheck,
       v8::Integer::New(V8ClassIndex::DOMWINDOW));
+  // We set number of internal fields to match that in V8DOMWindow wrapper.
+  // See http://crbug.com/28961
+  global_template->SetInternalFieldCount(
+      V8Custom::kDOMWindowInternalFieldCount);
 
   *context = v8::Context::New(
       NULL /* no extensions */,
