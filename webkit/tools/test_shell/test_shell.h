@@ -37,6 +37,7 @@
 #include "base/lazy_instance.h"
 #endif
 #include "base/ref_counted.h"
+#include "base/weak_ptr.h"
 #include "webkit/tools/test_shell/event_sending_controller.h"
 #include "webkit/tools/test_shell/layout_test_controller.h"
 #include "webkit/tools/test_shell/plain_text_controller.h"
@@ -52,12 +53,14 @@ class AccessibilityController;
 class FilePath;
 class TestNavigationEntry;
 class TestNavigationController;
+class TestShellDevToolsAgent;
+class TestShellDevToolsClient;
 
 namespace base {
 class StringPiece;
 }
 
-class TestShell {
+class TestShell : public base::SupportsWeakPtr<TestShell>  {
 public:
     struct TestParams {
       // Load the test defaults.
@@ -103,6 +106,12 @@ public:
       return m_popupHost ? m_popupHost->webwidget() : NULL;
     }
     WebWidgetHost* popupHost() { return m_popupHost; }
+
+    // A new TestShell window will be opened with devtools url.
+    // DevTools window can be opened manually via menu or automatically when
+    // inspector's layout test url is passed from command line or console.
+    void ShowDevTools();
+    void CloseDevTools();
 
     // Called by the LayoutTestController to signal test completion.
     void TestFinished();
@@ -286,8 +295,14 @@ public:
     // This is called indirectly by the network layer to access resources.
     static base::StringPiece NetResourceProvider(int key);
 
+    TestShellDevToolsAgent* dev_tools_agent() {
+      return dev_tools_agent_.get();
+    }
+
 protected:
+    void CreateDevToolsClient(TestShellDevToolsAgent* agent);
     bool Initialize(const GURL& starting_url);
+    void InitializeDevToolsAgent(WebKit::WebView* webView);
     bool IsSVGTestURL(const GURL& url);
     void SizeToSVG();
     void SizeToDefault();
@@ -329,6 +344,7 @@ private:
 #endif
 
     // True when the app is being run using the --layout-tests switch.
+    static bool inspector_test_mode_;
     static bool layout_test_mode_;
 
     // Default timeout in ms for file page loads when in layout test mode.
@@ -343,6 +359,10 @@ private:
 
     scoped_ptr<TestWebViewDelegate> delegate_;
     scoped_ptr<TestWebViewDelegate> popup_delegate_;
+
+    base::WeakPtr<TestShell> devtools_shell_;
+    scoped_ptr<TestShellDevToolsAgent> dev_tools_agent_;
+    scoped_ptr<TestShellDevToolsClient> dev_tools_client_;
 
     const TestParams* test_params_;
 

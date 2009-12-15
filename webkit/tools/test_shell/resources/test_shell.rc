@@ -46,6 +46,7 @@ BEGIN
     BEGIN
         MENUITEM "Dump body text...",     IDM_DUMP_BODY_TEXT
         MENUITEM "Dump render tree...",   IDM_DUMP_RENDER_TREE
+        MENUITEM "Show Developer Tools", IDM_SHOW_DEV_TOOLS
     END
     POPUP "&Help"
     BEGIN

@@ -28,6 +28,7 @@
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
+#include "webkit/tools/test_shell/test_shell_devtools_agent.h"
 
 using std::string;
 using std::wstring;
@@ -143,6 +144,8 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("evaluateScriptInIsolatedWorld", &LayoutTestController::evaluateScriptInIsolatedWorld);
   BindMethod("overridePreference", &LayoutTestController::overridePreference);
   BindMethod("setAllowUniversalAccessFromFileURLs", &LayoutTestController::setAllowUniversalAccessFromFileURLs);
+  BindMethod("setTimelineProfilingEnabled", &LayoutTestController::setTimelineProfilingEnabled);
+  BindMethod("evaluateInWebInspector", &LayoutTestController::evaluateInWebInspector);
 
   // The fallback method is called when an unknown method is invoked.
   BindFallbackMethod(&LayoutTestController::fallbackMethod);
@@ -1030,3 +1033,21 @@ void LayoutTestController::LogErrorToConsole(const std::string& text) {
                         WebString::fromUTF8(text)),
       WebString(), 0);
 }
+
+void LayoutTestController::setTimelineProfilingEnabled(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  if (args.size() < 1 || !args[0].isBool())
+    return;
+  shell_->dev_tools_agent()->setTimelineProfilingEnabled(args[0].ToBoolean());
+}
+
+void LayoutTestController::evaluateInWebInspector(const CppArgumentList& args,
+                                                  CppVariant* result) {
+  result->SetNull();
+  if (args.size() < 2 || !args[0].isInt32() || !args[1].isString())
+    return;
+  shell_->dev_tools_agent()->evaluateInWebInspector(args[0].ToInt32(),
+                                                    args[1].ToString());
+}
+

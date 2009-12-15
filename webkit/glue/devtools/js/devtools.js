@@ -489,8 +489,8 @@ WebInspector.ElementsPanel.prototype._nodeSearchButtonClicked = function(
 
 WebInspector.runAfterPendingDispatchesQueue = [];
 
-WebInspector.runAfterPendingDispatches = function(callback) {
-  this.runAfterPendingDispatchesQueue.push(callback);
+WebInspector.TestController.prototype.runAfterPendingDispatches = function(callback) {
+  WebInspector.runAfterPendingDispatchesQueue.push(callback);
 };
 
 WebInspector.queuesAreEmpty = function() {

@@ -252,6 +252,10 @@ bool TestShell::RunFileTest(const TestParams& params) {
   shell = static_cast<TestShell*>(win_util::GetWindowUserData(hwnd));
   DCHECK(shell);
 
+  if (strstr(params.test_url.c_str(), "/inspector/") ||
+      strstr(params.test_url.c_str(), "\\inspector\\"))
+    inspector_test_mode_ = true;
+
   // Clean up state between test runs.
   webkit_glue::ResetBeforeTestRun(shell->webView());
   ResetWebPreferences();
@@ -266,6 +270,9 @@ bool TestShell::RunFileTest(const TestParams& params) {
       strstr(params.test_url.c_str(), "loading\\"))
     shell->layout_test_controller()->SetShouldDumpFrameLoadCallbacks(true);
 
+  if (inspector_test_mode_)
+    shell->ShowDevTools();
+
   shell->test_is_preparing_ = true;
   shell->set_test_params(&params);
   shell->LoadURL(GURL(params.test_url));
@@ -273,7 +280,6 @@ bool TestShell::RunFileTest(const TestParams& params) {
   shell->test_is_preparing_ = false;
   shell->WaitTestFinished();
   shell->set_test_params(NULL);
-
 
   return true;
 }
@@ -360,6 +366,8 @@ bool TestShell::Initialize(const GURL& starting_url) {
   m_webViewHost.reset(
       WebViewHost::Create(m_mainWnd, delegate_.get(), *TestShell::web_prefs_));
   delegate_->RegisterDragDrop();
+
+  InitializeDevToolsAgent(webView());
 
   // Load our initial content.
   if (starting_url.is_valid())
@@ -557,19 +565,23 @@ LRESULT CALLBACK TestShell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
       case IDM_DUMP_RENDER_TREE:
         shell->DumpRenderTree();
         break;
+      case IDM_SHOW_DEV_TOOLS:
+        shell->ShowDevTools();
+        break;
       }
     }
     break;
 
   case WM_DESTROY:
     {
-      // Dump all in use memory just before shutdown if in use memory
-      // debugging has been enabled.
-      base::MemoryDebug::DumpAllMemoryInUse();
 
       RemoveWindowFromList(hwnd);
 
       if (TestShell::windowList()->empty() || shell->is_modal()) {
+        // Dump all in use memory just before shutdown if in use memory
+        // debugging has been enabled.
+        base::MemoryDebug::DumpAllMemoryInUse();
+
         MessageLoop::current()->PostTask(FROM_HERE,
                                          new MessageLoop::QuitTask());
       }
@@ -725,6 +737,9 @@ base::StringPiece GetDataResource(int resource_id) {
   case IDR_MEDIA_SOUND_DISABLED:
   case IDR_MEDIA_SLIDER_THUMB:
   case IDR_MEDIA_VOLUME_SLIDER_THUMB:
+  case IDR_DEVTOOLS_INJECT_WEBKIT_JS:
+  case IDR_DEVTOOLS_BASE_JS:
+  case IDR_DEVTOOLS_INJECT_DISPATCH_JS:
     return NetResourceProvider(resource_id);
 
   default:

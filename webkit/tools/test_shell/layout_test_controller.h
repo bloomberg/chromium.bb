@@ -210,6 +210,13 @@ class LayoutTestController : public CppBoundClass {
   void counterValueForElementById(
       const CppArgumentList& args, CppVariant* result);
 
+  // Allows layout tests to start Timeline profiling.
+  void setTimelineProfilingEnabled(const CppArgumentList& args,
+                                   CppVariant* result);
+
+  // Allows layout tests to exec scripts at WebInspector side.
+  void evaluateInWebInspector(const CppArgumentList& args, CppVariant* result);
+
  public:
   // The following methods are not exposed to JavaScript.
   void SetWorkQueueFrozen(bool frozen) { work_queue_.set_frozen(frozen); }

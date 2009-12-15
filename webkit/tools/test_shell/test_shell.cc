@@ -48,6 +48,8 @@
 #include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
+#include "webkit/tools/test_shell/test_shell_devtools_agent.h"
+#include "webkit/tools/test_shell/test_shell_devtools_client.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
 
 using WebKit::WebCanvas;
@@ -100,6 +102,7 @@ class URLRequestTestShellFileJob : public URLRequestFileJob {
 // Initialize static member variable
 WindowList* TestShell::window_list_;
 WebPreferences* TestShell::web_prefs_ = NULL;
+bool TestShell::inspector_test_mode_ = false;
 bool TestShell::layout_test_mode_ = false;
 int TestShell::file_test_timeout_ms_ = kDefaultFileTestTimeoutMillisecs;
 bool TestShell::test_is_preparing_ = false;
@@ -145,6 +148,8 @@ TestShell::~TestShell() {
 
   // Destroy the WebView before the TestWebViewDelegate.
   m_webViewHost.reset();
+
+  CloseDevTools();
 
   PlatformCleanUp();
 
@@ -430,7 +435,8 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->minimum_logical_font_size = 9;
         web_prefs_->javascript_can_open_windows_automatically = true;
         web_prefs_->dom_paste_enabled = true;
-        web_prefs_->developer_extras_enabled = !layout_test_mode_;
+        web_prefs_->developer_extras_enabled = !layout_test_mode_ ||
+            inspector_test_mode_;
         web_prefs_->site_specific_quirks_enabled = true;
         web_prefs_->shrinks_standalone_images_to_fit = false;
         web_prefs_->uses_universal_detector = false;
@@ -528,6 +534,37 @@ WebView* TestShell::CreateWebView() {
     return NULL;
 
   return new_win->webView();
+}
+
+void TestShell::InitializeDevToolsAgent(WebView* webView) {
+  DCHECK(!dev_tools_agent_.get());
+  dev_tools_agent_.reset(new TestShellDevToolsAgent(webView));
+}
+
+void TestShell::ShowDevTools() {
+  if (!devtools_shell_) {
+    FilePath dir_exe;
+    PathService::Get(base::DIR_EXE, &dir_exe);
+    FilePath devtools_path =
+        dir_exe.AppendASCII("resources/inspector/devtools.html");
+    TestShell* devtools_shell;
+    TestShell::CreateNewWindow(GURL(devtools_path.value()),
+                               &devtools_shell);
+    devtools_shell_ = devtools_shell->AsWeakPtr();
+    devtools_shell_->CreateDevToolsClient(dev_tools_agent_.get());
+  }
+  DCHECK(devtools_shell_);
+  devtools_shell_->Show(WebKit::WebNavigationPolicyNewWindow);
+}
+
+void TestShell::CloseDevTools() {
+  if (devtools_shell_)
+    devtools_shell_->DestroyWindow(devtools_shell_->mainWnd());
+}
+
+void TestShell::CreateDevToolsClient(TestShellDevToolsAgent *agent) {
+  dev_tools_client_.reset(new TestShellDevToolsClient(agent,
+                                                      webView()));
 }
 
 bool TestShell::IsSVGTestURL(const GURL& url) {
