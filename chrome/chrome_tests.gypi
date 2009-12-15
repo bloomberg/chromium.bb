@@ -1412,6 +1412,7 @@
         'browser/sync/engine/syncer_thread_unittest.cc',
         'browser/sync/engine/syncer_unittest.cc',
         'browser/sync/engine/syncproto_unittest.cc',
+        'browser/sync/notifier/base/mac/network_status_detector_task_mac_unittest.cc',
         'browser/sync/notifier/listener/talk_mediator_unittest.cc',
         'browser/sync/sessions/status_controller_unittest.cc',
         'browser/sync/sessions/sync_session_unittest.cc',

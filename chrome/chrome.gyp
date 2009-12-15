@@ -1424,6 +1424,7 @@
         'browser/sync/notifier/base/async_network_alive.h',
         'browser/sync/notifier/base/fastalloc.h',
         'browser/sync/notifier/base/linux/network_status_detector_task_linux.cc',
+        'browser/sync/notifier/base/mac/network_status_detector_task_mac.h',
         'browser/sync/notifier/base/mac/network_status_detector_task_mac.cc',
         'browser/sync/notifier/base/nethelpers.cc',
         'browser/sync/notifier/base/nethelpers.h',
