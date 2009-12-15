@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
 #define CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
 
+#include "base/condition_variable.h"
 #include "base/lock.h"
 #include "base/task.h"
 #include "base/waitable_event.h"
@@ -30,7 +31,7 @@ class BookmarkModelWorker
         pending_work_(NULL),
         syncapi_has_shutdown_(false),
         bookmark_model_loop_(bookmark_model_loop),
-        syncapi_event_(false, false) {
+        syncapi_event_(&lock_) {
   }
   virtual ~BookmarkModelWorker();
 
@@ -105,7 +106,6 @@ class BookmarkModelWorker
   // We keep a reference to any task we have scheduled so we can gracefully
   // force them to run if the syncer is trying to shutdown.
   Task* pending_work_;
-  Lock pending_work_lock_;
 
   // Set by the SyncCoreThread when Syncapi shutdown has completed and the
   // SyncerThread has terminated, so no more work will be scheduled. Read by
@@ -115,12 +115,20 @@ class BookmarkModelWorker
   // The BookmarkModel's home-sweet-home MessageLoop.
   MessageLoop* const bookmark_model_loop_;
 
+  // We use a Lock for all data members and a ConditionVariable to synchronize.
+  // We do this instead of using a WaitableEvent and a bool condition in order
+  // to guard against races that could arise due to the fact that the lack of a
+  // barrier permits instructions to be reordered by compiler optimizations.
+  // Possible or not, that route makes for very fragile code due to existence
+  // of theoretical races.
+  Lock lock_;
+
   // Used as a barrier at shutdown to ensure the SyncerThread terminates before
   // we allow the UI thread to return from Stop(). This gets signalled whenever
   // one of two events occur: a new pending_work_ task was scheduled, or the
   // SyncerThread has terminated. We only care about (1) when we are in Stop(),
   // because we have to manually Run() the task.
-  base::WaitableEvent syncapi_event_;
+  ConditionVariable syncapi_event_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelWorker);
 };

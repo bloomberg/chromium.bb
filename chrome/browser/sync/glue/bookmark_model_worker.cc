@@ -31,7 +31,7 @@ void BookmarkModelWorker::CallDoWorkFromModelSafeThreadAndWait(
     // We lock only to avoid PostTask'ing a NULL pending_work_ (because it
     // could get Run() in Stop() and call OnTaskCompleted before we post).
     // The task is owned by the message loop as per usual.
-    AutoLock lock(pending_work_lock_);
+    AutoLock lock(lock_);
     DCHECK(!pending_work_);
     pending_work_ = new CallDoWorkAndSignalTask(visitor, &work_done, this);
     bookmark_model_loop_->PostTask(FROM_HERE, pending_work_);
@@ -45,11 +45,12 @@ BookmarkModelWorker::~BookmarkModelWorker() {
 }
 
 void BookmarkModelWorker::OnSyncerShutdownComplete() {
+  AutoLock lock(lock_);
   // The SyncerThread has terminated and we are no longer needed by syncapi.
   // The UI loop initiated shutdown and is (or will be) waiting in Stop().
   // We could either be WORKING or RUNNING_MANUAL_SHUTDOWN_PUMP, depending
   // on where we timeslice the UI thread in Stop; but we can't be STOPPED,
-  // because that would imply NotifySyncapiShutdownComplete already signaled.
+  // because that would imply OnSyncerShutdownComplete already signaled.
   DCHECK_NE(state_, STOPPED);
 
   syncapi_has_shutdown_ = true;
@@ -58,26 +59,22 @@ void BookmarkModelWorker::OnSyncerShutdownComplete() {
 
 void BookmarkModelWorker::Stop() {
   DCHECK_EQ(MessageLoop::current(), bookmark_model_loop_);
+
+  AutoLock lock(lock_);
   DCHECK_EQ(state_, WORKING);
 
   // We're on our own now, the beloved UI MessageLoop is no longer running.
   // Any tasks scheduled or to be scheduled on the UI MessageLoop will not run.
   state_ = RUNNING_MANUAL_SHUTDOWN_PUMP;
 
-  // Drain any final task manually until the SyncerThread tells us it has
-  // totally finished. Note we use a 'while' loop and not 'if'. The main subtle
-  // reason for this is that syncapi_event could be signaled the first time we
-  // come through due to an old CallDoWork call, and we need to keep looping
-  // until the SyncerThread either calls it again or tells us it is done. There
-  // should only ever be 0 or 1 tasks Run() here, however.
+  // Drain any final tasks manually until the SyncerThread tells us it has
+  // totally finished. There should only ever be 0 or 1 tasks Run() here.
   while (!syncapi_has_shutdown_) {
-    {
-      AutoLock lock(pending_work_lock_);
-      if (pending_work_)
-        pending_work_->Run();
-    }
-    syncapi_event_.Wait();  // Signaled either by new task, or SyncerThread
-                            // termination.
+    if (pending_work_)
+      pending_work_->Run();  // OnTaskCompleted will set pending_work_ to NULL.
+
+    // Wait for either a new task or SyncerThread termination.
+    syncapi_event_.Wait();
   }
 
   state_ = STOPPED;
