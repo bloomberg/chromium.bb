@@ -518,6 +518,11 @@ class GClient(object):
                               solution_deps_content[solution["name"]],
                               custom_vars)
 
+      local_scope = {}
+      var = self._VarImpl(custom_vars, local_scope)
+      global_scope = {"From": self.FromImpl, "Var": var.Lookup, "deps_os": {}}
+      exec(solution_deps_content[solution["name"]], global_scope, local_scope)
+
       # If a line is in custom_deps, but not in the solution, we want to append
       # this line to the solution.
       if "custom_deps" in solution:
@@ -555,10 +560,10 @@ class GClient(object):
               if path[0] != "/":
                 raise gclient_utils.Error(
                     "relative DEPS entry \"%s\" must begin with a slash" % d)
-              # Create a scm just to query the full url.
-              scm = gclient_scm.CreateSCM(solution["url"], self._root_dir,
-                                           None)
-              url = scm.FullUrlForRelativeUrl(url)
+              if local_scope.get('use_relative_urls2'):
+                 url = gclient_utils.FullUrlFromRelative2(solution["url"], url)
+              else:
+                 url = gclient_utils.FullUrlFromRelative(solution["url"], url)
         if d in deps and deps[d] != url:
           raise gclient_utils.Error(
               "Solutions have conflicting versions of dependency \"%s\"" % d)

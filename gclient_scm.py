@@ -57,10 +57,6 @@ class SCMWrapper(object):
     if self.relpath and self._root_dir:
       self.checkout_path = os.path.join(self._root_dir, self.relpath)
 
-  def FullUrlForRelativeUrl(self, url):
-    # Find the forth '/' and strip from there. A bit hackish.
-    return '/'.join(self.url.split('/')[:4]) + url
-
   def RunCommand(self, command, options, args, file_list=None):
     # file_list will have all files that are modified appended to it.
     if file_list is None:

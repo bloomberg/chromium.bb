@@ -47,6 +47,7 @@ class GClientBaseTestCase(BaseTestCase):
     self.mox.StubOutWithMock(gclient.gclient_utils, 'FileWrite')
     self.mox.StubOutWithMock(gclient.gclient_utils, 'SubprocessCall')
     self.mox.StubOutWithMock(gclient.gclient_utils, 'RemoveDirectory')
+    self.mox.StubOutWithMock(gclient.gclient_utils, 'FullUrlFromRelative')
     # Mock them to be sure nothing bad happens.
     self.mox.StubOutWithMock(gclient.gclient_scm.scm.SVN, 'Capture')
     self.mox.StubOutWithMock(gclient.gclient_scm.scm.SVN, 'CaptureInfo')
@@ -797,15 +798,13 @@ deps_os = {
         scm_wrapper_src)
     scm_wrapper_src.RunCommand('update', mox.Func(OptIsRev123), self.args, [])
 
-    gclient.gclient_scm.CreateSCM(self.url, self.root_dir,
-                                  None).AndReturn(scm_wrapper_src2)
-    scm_wrapper_src2.FullUrlForRelativeUrl('/trunk/deps/third_party/cygwin@3248'
-        ).AndReturn(cygwin_path)
+    gclient.gclient_utils.FullUrlFromRelative(self.url,
+                                              '/trunk/deps/third_party/cygwin@3248'
+                                              ).AndReturn(cygwin_path)
 
-    gclient.gclient_scm.CreateSCM(self.url, self.root_dir,
-                                  None).AndReturn(scm_wrapper_src2)
-    scm_wrapper_src2.FullUrlForRelativeUrl('/trunk/deps/third_party/WebKit'
-        ).AndReturn(webkit_path)
+    gclient.gclient_utils.FullUrlFromRelative(self.url,
+                                              '/trunk/deps/third_party/WebKit'
+                                              ).AndReturn(webkit_path)
 
     gclient.gclient_scm.CreateSCM(
         webkit_path, self.root_dir, 'foo/third_party/WebKit'
@@ -913,10 +912,9 @@ deps = {
         gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
-    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, None
-                                  ).AndReturn(scm_wrapper_src)
-    scm_wrapper_src.FullUrlForRelativeUrl('/trunk/bar/WebKit'
-        ).AndReturn(webkit_path)
+    gclient.gclient_utils.FullUrlFromRelative(self.url,
+                                              '/trunk/bar/WebKit',
+                                              ).AndReturn(webkit_path)
 
     gclient.gclient_scm.CreateSCM(
         webkit_path, self.root_dir, 'foo/third_party/WebKit'
@@ -977,10 +975,9 @@ deps = {
         gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
-    gclient.gclient_scm.CreateSCM(self.url, self.root_dir,
-                       None).AndReturn(scm_wrapper_src)
-    scm_wrapper_src.FullUrlForRelativeUrl('/trunk/bar_custom/WebKit'
-        ).AndReturn(webkit_path)
+    gclient.gclient_utils.FullUrlFromRelative(self.url,
+                                              '/trunk/bar_custom/WebKit'
+                                              ).AndReturn(webkit_path)
 
     gclient.gclient_scm.CreateSCM(webkit_path, self.root_dir,
         'foo/third_party/WebKit').AndReturn(gclient.gclient_scm.CreateSCM)

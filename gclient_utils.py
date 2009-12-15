@@ -38,6 +38,17 @@ def SplitUrlRevision(url):
   return tuple(components)
 
 
+def FullUrlFromRelative(base_url, url):
+  # Find the forth '/' and strip from there. A bit hackish.
+  return '/'.join(base_url.split('/')[:4]) + url
+
+
+def FullUrlFromRelative2(base_url, url):
+  # Strip from last '/'
+  # Equivalent to unix basename
+  return base_url[:base_url.rfind('/')] + url
+
+
 def ParseXML(output):
   try:
     return xml.dom.minidom.parseString(output)

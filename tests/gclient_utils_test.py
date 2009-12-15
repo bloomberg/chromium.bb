@@ -86,6 +86,18 @@ class SplitUrlRevisionTestCase(SuperMoxTestBase):
     self.assertEquals(out_url, url)
 
 
+class FullUrlFromRelative(SuperMoxTestBase):
+  def testFullUrlFromRelative(self):
+    base_url = 'svn://a/b/c/d'
+    full_url = gclient_utils.FullUrlFromRelative(base_url, '/crap')
+    self.assertEqual(full_url, 'svn://a/b/crap')
+
+  def testFullUrlFromRelative2(self):
+    base_url = 'svn://a/b/c/d'
+    full_url = gclient_utils.FullUrlFromRelative2(base_url, '/crap')
+    self.assertEqual(full_url, 'svn://a/b/c/crap')
+
+
 if __name__ == '__main__':
   import unittest
   unittest.main()
