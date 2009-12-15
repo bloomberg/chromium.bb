@@ -294,7 +294,9 @@ def BrowserTester(env,
     command.append('--file')
     command.append('${SOURCES[%d].abspath}' % (i + 1))
 
-  env['ENV']['PYTHONPATH'] = env.subst('${SOURCE_ROOT}/third_party/selenium')
+  # NOTE: setting the PYTHONPATH is currently not necessary as the test
+  #       script sets its own path
+  # env['ENV']['PYTHONPATH'] = ???
   # NOTE: since most of the demos use X11 we need to make sure
   #      some env vars are set for tag, val in extra_env:
   for tag, val in EXTRA_ENV:
@@ -303,6 +305,9 @@ def BrowserTester(env,
         env['ENV'][tag] = os.getenv(tag)
       else:
         env['ENV'][tag] =  env.subst(val)
+
+  # TODO(robertm): explain why this is necessary
+  env['ENV']['NACL_DISABLE_SECURITY_FOR_SELENIUM_TEST'] = '1'
 
   node = env.Command(target, deps, ' '.join(command))
   return node

@@ -168,6 +168,15 @@ var nacllib = new NaclLib();
 </html>
 """
 
+def GuessMimeType(filename):
+  if filename.endswith('.html'):
+    return 'text/html'
+  elif filename.endswith('.nexe'):
+    return 'application/x-object'
+    #return 'application/x-octet-stream'
+  else:
+    return 'text/plain'
+
 class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   """Hook to handle HTTP server requests.
 
@@ -178,34 +187,40 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     """Logging hook for HTTP server."""
     logging.info(format % args)
 
-  def SendFile(self, filename):
+  def SendData(self, data, type='text/html', code=200):
     try:
-      self.send_response(200)
-      self.send_header('Content-Type', 'text/html')
-      self.end_headers()
-      self.wfile.write(open(filename).read())
-    except Exception, err:
-      self.send_error(404, str(err))
-    return
-
-  def SendData(self, data):
-    try:
-      self.send_response(200)
-      self.send_header('Content-Type', 'text/html')
+      self.send_response(code)
+      self.send_header('Content-Type', type)
+      self.send_header('Content-Length', len(data))
       self.end_headers()
       self.wfile.write(data)
     except Exception, err:
+      logging.error(str(err))
       self.send_error(404, str(err))
     return
 
+  def SendFile(self, filename):
+    type = GuessMimeType(filename)
+    logging.info('sending %s (%s)', filename, type)
+    try:
+      data = open(filename).read()
+      self.SendData(data, type=type)
+    except Exception, err:
+      logging.error(str(err))
+      self.SendData(str(err), code=404)
+    return
+
   def SendToc(self, files):
-    self.send_response(200)
-    self.send_header('Content-Type', 'text/html')
-    self.end_headers()
-    self.wfile.write('<html><table border=1>')
-    for f in files:
-      self.wfile.write('<tr><td>%s<td>%s' % (f, os.path.basename(f)))
-    self.wfile.write('</table></html>')
+    logging.info("sending toc")
+    try:
+      s = ['<html><table border=1>']
+      for f in files:
+        s.append('<tr><td>%s<td>%s' % (f, os.path.basename(f)))
+      s.append('</table></html>')
+      self.SendData("".join(s))
+    except Exception, err:
+      logging.error(str(err))
+      self.SendData(str(err), code=404)
     return
 
   def do_GET(self):
@@ -213,16 +228,19 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     filename = os.path.basename(self.path)
     logging.info("request %s -> %s", self.path, filename)
 
+    # built-in page
     if filename == 'self.test.html':
       self.SendData(SPECIAL_PAGE_FOR_SELF_TEST)
       return
 
+    # check against set of available
     for f in files:
       candidate = os.path.basename(f)
       if candidate == filename:
         self.SendFile(f)
         return
 
+    # default is the file listing
     self.SendToc(files)
     return
 
@@ -486,7 +504,7 @@ def main(options):
   GlobalCleanupList.append(selenium_server.StopServer)
 
   logging.info('#' * 60)
-  logging.info('creating session')
+  logging.info('creating session for browser %s', options.browser)
   logging.info('#' * 60)
   session = selenium.selenium('localhost',
                               selenium_server._port,

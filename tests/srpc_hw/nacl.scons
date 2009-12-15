@@ -38,8 +38,6 @@ env.Publish('srpc_hw.nexe', 'run',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')])
 
 
-# TODO(robertm): enable general support ASAP
-Return()
 # TODO(robertm): enable arm support ASAP
 if env['TARGET_ARCHITECTURE'] == 'arm':
   Return()
