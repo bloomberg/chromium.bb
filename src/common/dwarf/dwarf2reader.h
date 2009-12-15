@@ -33,8 +33,8 @@
 // reading if you wish to modify the implementation.
 // Only a cursory attempt is made to explain terminology that is
 // used here, as it is much better explained in the standard documents
-#ifndef COMMON_MAC_DWARF_DWARF2READER_H__
-#define COMMON_MAC_DWARF_DWARF2READER_H__
+#ifndef COMMON_DWARF_DWARF2READER_H__
+#define COMMON_DWARF_DWARF2READER_H__
 
 #include <list>
 #include <map>
@@ -42,8 +42,8 @@
 #include <utility>
 #include <vector>
 
-#include "common/mac/dwarf/dwarf2enums.h"
-#include "common/mac/dwarf/types.h"
+#include "common/dwarf/dwarf2enums.h"
+#include "common/dwarf/types.h"
 
 using namespace std;
 

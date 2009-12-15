@@ -35,9 +35,9 @@
 #include <queue>
 #include <vector>
 
-#include "common/mac/dwarf/functioninfo.h"
+#include "common/dwarf/functioninfo.h"
 
-#include "common/mac/dwarf/bytereader.h"
+#include "common/dwarf/bytereader.h"
 
 
 namespace dwarf2reader {

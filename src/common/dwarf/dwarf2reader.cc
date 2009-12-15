@@ -31,10 +31,10 @@
 #include <stack>
 #include <utility>
 
-#include "common/mac/dwarf/bytereader-inl.h"
-#include "common/mac/dwarf/dwarf2reader.h"
-#include "common/mac/dwarf/bytereader.h"
-#include "common/mac/dwarf/line_state_machine.h"
+#include "common/dwarf/bytereader-inl.h"
+#include "common/dwarf/dwarf2reader.h"
+#include "common/dwarf/bytereader.h"
+#include "common/dwarf/line_state_machine.h"
 
 namespace dwarf2reader {
 
