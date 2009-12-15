@@ -112,9 +112,9 @@ bool StabsReader::ProcessCompilationUnit() {
   symbol_++;
 
   // The STABS documentation says that some compilers may emit
-  // additional N_SO units with names immediately following the first,
-  // and that they should be ignored.  However, the original Breakpad
-  // STABS reader doesn't ignore them, so we won't either.
+  // additional N_SO entries with names immediately following the
+  // first, and that they should be ignored.  However, the original
+  // Breakpad STABS reader doesn't ignore them, so we won't either.
 
   // Process the body of the compilation unit, up to the next N_SO.
   while (symbol_ < symbols_end_ && symbol_->n_type != N_SO) {
