@@ -526,3 +526,16 @@
    fun:_ZN17ExtensionUnpacker15AddDecodedImageERK8FilePath
    fun:_ZN17ExtensionUnpacker3RunEv
 }
+Suppression:
+{
+   bug_30448
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18LocationBarViewMacC2EP21AutocompleteTextFieldPK16BubblePositionerP14CommandUpdaterP12ToolbarModelP7Profile
+   fun:_ZN18LocationBarViewMacC1EP21AutocompleteTextFieldPK16BubblePositionerP14CommandUpdaterP12ToolbarModelP7Profile
+   fun:-[ToolbarController awakeFromNib]
+   fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
+   fun:-[NSNib instantiateNibWithExternalNameTable:]
+   fun:-[NSNib instantiateNibWithOwner:topLevelObjects:]
+   fun:-[NSViewController loadView]
+}
