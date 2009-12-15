@@ -88,4 +88,13 @@ void SimpleErrorBox(gfx::NativeWindow parent,
   gtk_widget_show_all(dialog);
 }
 
+/* Warning: this may be either Linux or ChromeOS */
+string16 GetVersionStringModifier() {
+#if defined(GOOGLE_CHROME_BUILD)
+  return EmptyString16();  /* TODO(jrg,mmoss) */
+#else
+  return EmptyString16();
+#endif
+}
+
 }  // namespace platform_util

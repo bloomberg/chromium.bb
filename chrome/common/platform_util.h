@@ -44,6 +44,11 @@ void SimpleErrorBox(gfx::NativeWindow parent,
                     const string16& title,
                     const string16& message);
 
+// Return a human readable modifier for the version string.  For a
+// branded Chrome (not Chromium), this modifier is the channel (dev,
+// beta, stable).
+string16 GetVersionStringModifier();
+
 }
 
 #endif  // CHROME_COMMON_PLATFORM_UTIL_H_

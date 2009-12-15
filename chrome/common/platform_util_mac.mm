@@ -10,6 +10,7 @@
 #include "app/l10n_util_mac.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/cocoa/tab_window_controller.h"
 #include "googleurl/src/gurl.h"
@@ -82,6 +83,18 @@ void SimpleErrorBox(gfx::NativeWindow parent,
   [alert setInformativeText:base::SysUTF16ToNSString(message)];
   [alert setAlertStyle:NSWarningAlertStyle];
   [alert runModal];
+}
+
+string16 GetVersionStringModifier() {
+#if defined(GOOGLE_CHROME_BUILD)
+  NSBundle* bundle = mac_util::MainAppBundle();
+  NSString* channel = [bundle objectForInfoDictionaryKey:@"KSChannelID"];
+  if (!channel)
+    channel = @"stable";
+  return base::SysNSStringToUTF16(channel);
+#else
+  return EmptyString16();
+#endif
 }
 
 }  // namespace platform_util

@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/background_tile_view.h"
 #import "chrome/browser/cocoa/keystone_glue.h"
 #include "chrome/browser/cocoa/restart_browser.h"
+#include "chrome/common/platform_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -127,19 +128,18 @@ static BOOL recentShownUserActionFailedStatus = NO;
   NSString* chromeVersion =
       [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
 
-#if defined(GOOGLE_CHROME_BUILD)
-  NSString* version = chromeVersion;
-  NSString* channel = [bundle objectForInfoDictionaryKey:@"KSChannelID"];
-  if (!channel)
-    channel = @"stable";
-  version = [NSString stringWithFormat:@"%@ %@", version, channel];
-#else  // GOOGLE_CHROME_BUILD
+  NSString* versionModifier = @"";
+  string16 modifier = platform_util::GetVersionStringModifier();
+  if (modifier.length())
+    versionModifier = [NSString stringWithFormat:@" %@",
+                                            base::SysUTF16ToNSString(modifier)];
+
   // The format string is not localized, but this is how the displayed version
   // is built on Windows too.
   NSString* svnRevision = [bundle objectForInfoDictionaryKey:@"SVNRevision"];
   NSString* version =
-      [NSString stringWithFormat:@"%@ (%@)", chromeVersion, svnRevision];
-#endif  // GOOGLE_CHROME_BUILD
+    [NSString stringWithFormat:@"%@%@ (%@)",
+              chromeVersion, versionModifier, svnRevision];
 
   [version_ setStringValue:version];
 

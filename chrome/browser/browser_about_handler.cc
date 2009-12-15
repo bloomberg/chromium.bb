@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/histogram_synchronizer.h"
 #include "chrome/common/jstemplate_builder.h"
+#include "chrome/common/platform_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/render_messages.h"
@@ -506,6 +507,8 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
   localized_strings->SetString(L"name",
       l10n_util::GetString(IDS_PRODUCT_NAME));
   localized_strings->SetString(L"version", version_info->file_version());
+  std::wstring mod = UTF16ToWide(platform_util::GetVersionStringModifier());
+  localized_strings->SetString(L"version_modifier", mod);
   localized_strings->SetString(L"js_engine", js_engine);
   localized_strings->SetString(L"js_version", js_version);
   localized_strings->SetString(L"webkit_version", webkit_version);
