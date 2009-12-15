@@ -222,7 +222,6 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
   pack->ParseImageNamesFromJSON(extension->GetThemeImages(),
                                 extension->path(),
                                 &file_paths);
-
   pack->LoadRawBitmapsTo(file_paths, &pack->image_cache_);
 
   pack->GenerateFrameImages(&pack->image_cache_);
@@ -452,6 +451,9 @@ void BrowserThemePack::BuildTintsFromJSON(DictionaryValue* tints_value) {
     tints_[i].l = -1;
   }
 
+  if (!tints_value)
+    return;
+
   // Parse the incoming data from |tints_value| into an intermediary structure.
   std::map<int, color_utils::HSL> temp_tints;
   for (DictionaryValue::key_iterator iter(tints_value->begin_keys());
@@ -493,7 +495,8 @@ void BrowserThemePack::BuildColorsFromJSON(DictionaryValue* colors_value) {
   }
 
   std::map<int, SkColor> temp_colors;
-  ReadColorsFromJSON(colors_value, &temp_colors);
+  if (colors_value)
+    ReadColorsFromJSON(colors_value, &temp_colors);
   GenerateMissingColors(&temp_colors);
 
   // Copy data from the intermediary data structure to the array.
@@ -608,6 +611,9 @@ void BrowserThemePack::BuildDisplayPropertiesFromJSON(
     display_properties_[i].property = 0;
   }
 
+  if (!display_properties_value)
+    return;
+
   std::map<int, int> temp_properties;
   for (DictionaryValue::key_iterator iter(
        display_properties_value->begin_keys());
@@ -653,6 +659,9 @@ void BrowserThemePack::ParseImageNamesFromJSON(
     DictionaryValue* images_value,
     FilePath images_path,
     std::map<int, FilePath>* file_paths) const {
+  if (!images_value)
+    return;
+
   for (DictionaryValue::key_iterator iter(images_value->begin_keys());
        iter != images_value->end_keys(); ++iter) {
     std::string val;

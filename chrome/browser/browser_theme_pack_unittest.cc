@@ -73,22 +73,31 @@ class BrowserThemePackTest : public ::testing::Test {
   void LoadColorJSON(const std::string& json) {
     scoped_ptr<Value> value(base::JSONReader::Read(json, false));
     ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
-    theme_pack_->BuildColorsFromJSON(
-        static_cast<DictionaryValue*>(value.get()));
+    LoadColorDictionary(static_cast<DictionaryValue*>(value.get()));
+  }
+
+  void LoadColorDictionary(DictionaryValue* value) {
+    theme_pack_->BuildColorsFromJSON(value);
   }
 
   void LoadTintJSON(const std::string& json) {
     scoped_ptr<Value> value(base::JSONReader::Read(json, false));
     ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
-    theme_pack_->BuildTintsFromJSON(
-        static_cast<DictionaryValue*>(value.get()));
+    LoadTintDictionary(static_cast<DictionaryValue*>(value.get()));
+  }
+
+  void LoadTintDictionary(DictionaryValue* value) {
+    theme_pack_->BuildTintsFromJSON(value);
   }
 
   void LoadDisplayPropertiesJSON(const std::string& json) {
     scoped_ptr<Value> value(base::JSONReader::Read(json, false));
     ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
-    theme_pack_->BuildDisplayPropertiesFromJSON(
-        static_cast<DictionaryValue*>(value.get()));
+    LoadDisplayPropertiesDictionary(static_cast<DictionaryValue*>(value.get()));
+  }
+
+  void LoadDisplayPropertiesDictionary(DictionaryValue* value) {
+    theme_pack_->BuildDisplayPropertiesFromJSON(value);
   }
 
   void ParseImageNames(const std::string& json,
@@ -291,6 +300,19 @@ TEST_F(BrowserThemePackTest, InvalidDisplayProperties) {
   int out_val;
   EXPECT_FALSE(theme_pack_->GetDisplayProperty(
       BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT, &out_val));
+}
+
+// These three tests should just not cause a segmentation fault.
+TEST_F(BrowserThemePackTest, NullTints) {
+  LoadTintDictionary(NULL);
+}
+
+TEST_F(BrowserThemePackTest, NullColors) {
+  LoadColorDictionary(NULL);
+}
+
+TEST_F(BrowserThemePackTest, NullDisplayProperties) {
+  LoadDisplayPropertiesDictionary(NULL);
 }
 
 // TODO(erg): This test should actually test more of the built resources from
