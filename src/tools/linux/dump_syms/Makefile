@@ -78,6 +78,40 @@ dump_symbols.o: dump_symbols.cc
 file_id.o: file_id.cc
 module.o: module.cc
 stabs_reader.o: stabs_reader.cc
+COVERAGE_SOURCES += stabs_reader.cc
+
+
+
+### Google C++ Testing Framework.
+VPATH += $(SRC)/testing/gtest/src
+GTEST_CPPFLAGS = -I$(SRC)/testing/gtest/include -I$(SRC)/testing/gtest
+gtest-all.o: gtest-all.cc
+gtest_main.o: gtest_main.cc
+gtest-all.o gtest_main.o: override CPPFLAGS += $(GTEST_CPPFLAGS)
+
+
+### Google C++ Mocking Framework.
+VPATH += $(SRC)/testing/src
+GMOCK_CPPFLAGS = -I$(SRC)/testing -I$(SRC)/testing/include
+gmock-all.o: gmock-all.cc
+gmock-all.o: override CPPFLAGS += $(GTEST_CPPFLAGS) $(GMOCK_CPPFLAGS)
+
+
+### Unit tests for google_breakpad::StabsReader.
+check: check-stabs_reader_unittest
+check-stabs_reader_unittest: stabs_reader_unittest
+stabs_reader_unittest:				\
+	gmock-all.o				\
+	gtest-all.o				\
+	gtest_main.o				\
+	stabs_reader.o				\
+	$(empty)
+CPP_EXECUTABLES += stabs_reader_unittest
+stabs_reader_unittest.o: stabs_reader_unittest.cc
+stabs_reader_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
+					      $(GMOCK_CPPFLAGS)
+clean::
+	rm -f stabs_reader_unittest
 
 
 ### Generic compilation rules.
