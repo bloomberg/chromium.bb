@@ -120,7 +120,8 @@ NACL_SRPC_METHOD_ARRAY(NPModule::srpc_methods) = {
   { "NPN_RemoveProperty:Ci:i", NPObjectStub::RemoveProperty },
   { "NPN_Enumerate:C:iCi", NPObjectStub::Enumerate },
   { "NPN_Construct:CCCi:iCC", NPObjectStub::Construct },
-  { "NPN_SetException:Cs:", NPObjectStub::SetException }
+  { "NPN_SetException:Cs:", NPObjectStub::SetException },
+  { NULL, NULL }
 };
 
 // inputs:
@@ -400,7 +401,11 @@ struct UpcallInfo {
     module_ = module;
   }
   ~UpcallInfo() {
-    NaClDescUnref(desc_);
+    // This Unref really should be here.  Unfortunately, NaClSrpcServerLoop
+    // appears to do an Unref without a corresponding Ref, resulting in
+    // multiple frees and memory corruption.
+    // TODO(sehr): fix the SRPC descriptor ownership issue.
+    // NaClDescUnref(desc_);
   }
 };
 
@@ -532,7 +537,9 @@ NPError NPModule::New(char* mimetype,
                       int argc,
                       char* argn[],
                       char* argv[]) {
-  NPError nperr;
+  // NPError is shorter than an int, causing stack corruption reports
+  // on Windows, because SRPC doesn't have an int16 type.
+  int nperr;
   char argn_serial[kMaxArgc * kMaxArgLength];
   char argv_serial[kMaxArgc * kMaxArgLength];
 
@@ -561,7 +568,7 @@ NPError NPModule::New(char* mimetype,
     DebugPrintf("New: invocation returned %x, %d\n", retval, nperr);
     return NPERR_GENERIC_ERROR;
   }
-  return nperr;
+  return static_cast<NPError>(nperr);
 }
 
 //
@@ -570,7 +577,7 @@ NPError NPModule::New(char* mimetype,
 
 NPError NPModule::Destroy(NPP npp, NPSavedData** save) {
   UNREFERENCED_PARAMETER(save);
-  NPError nperr;
+  int nperr;
   NaClSrpcError retval = NaClSrpcInvokeByName(channel(),
                                               "NPP_Destroy",
                                               NPBridge::NppToInt(npp),
@@ -578,7 +585,7 @@ NPError NPModule::Destroy(NPP npp, NPSavedData** save) {
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
-  return nperr;
+  return static_cast<NPError>(nperr);
 }
 
 NPError NPModule::SetWindow(NPP npp, NPWindow* window) {
@@ -618,8 +625,8 @@ int16_t NPModule::HandleEvent(NPP npp, void* event) {
   NaClSrpcError retval = NaClSrpcInvokeByName(channel(),
                                               "NPP_HandleEvent",
                                               NPBridge::NppToInt(npp),
-                                              reinterpret_cast<char*>(event),
                                               kEventSize,
+                                              reinterpret_cast<char*>(event),
                                               &return_int16);
   if (NACL_SRPC_RESULT_OK == retval) {
     return static_cast<int16_t>(return_int16 & 0xffff);

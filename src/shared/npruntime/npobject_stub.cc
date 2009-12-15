@@ -145,7 +145,9 @@ NaClSrpcError NPObjectStub::Invoke(NaClSrpcChannel* channel,
   outputs[0]->u.ival = stub->InvokeImpl(name, args, arg_count, &variant);
   // Copy the resulting variant back to outputs.
   RpcArg ret12(stub->npp(), outputs[1], outputs[2]);
-  ret12.PutVariant(&variant);
+  if (!ret12.PutVariant(&variant)) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
   // Free any allocated string in the result variant.
   if (NPERR_NO_ERROR != outputs[0]->u.ival && NPVARIANT_IS_STRING(variant)) {
     NPN_ReleaseVariantValue(&variant);

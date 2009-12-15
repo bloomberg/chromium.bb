@@ -166,7 +166,8 @@ NACL_SRPC_METHOD_ARRAY(NPNavigator::srpc_methods) = {
   { "NPN_RemoveProperty:Ci:i", NPObjectStub::RemoveProperty },
   { "NPN_Enumerate:C:iCi", NPObjectStub::Enumerate },
   { "NPN_Construct:CCCi:iCC", NPObjectStub::Construct },
-  { "NPN_SetException:Cs:", NPObjectStub::SetException }
+  { "NPN_SetException:Cs:", NPObjectStub::SetException },
+  { NULL, NULL }
 };
 
 //

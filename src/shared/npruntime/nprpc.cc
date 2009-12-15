@@ -162,14 +162,14 @@ bool RpcArg::PutVariant(const NPVariant* variant) {
   fixed_.Consume(peer_npvariant_size);
   ConvertNPVariants(variant, ptr, peer_npvariant_size, 1);
   // Aid the optional portions.
-  if (NPVARIANT_IS_STRING(*ptr)) {
-    if (0 == NPVARIANT_TO_STRING(*ptr).UTF8Length ||
-        NULL == NPVARIANT_TO_STRING(*ptr).UTF8Characters) {
+  if (NPVARIANT_IS_STRING(*variant)) {
+    if (0 == NPVARIANT_TO_STRING(*variant).UTF8Length ||
+        NULL == NPVARIANT_TO_STRING(*variant).UTF8Characters) {
       // Something's wrong with this string.
       return false;
     } else {
-      size_t len = NPVARIANT_TO_STRING(*ptr).UTF8Length;
-      const char* npstr = NPVARIANT_TO_STRING(*ptr).UTF8Characters;
+      size_t len = NPVARIANT_TO_STRING(*variant).UTF8Length;
+      const char* npstr = NPVARIANT_TO_STRING(*variant).UTF8Characters;
       void* str = optional_.Request(len);
       if (NULL == str) {
         // There aren't enough bytes to store the string.
