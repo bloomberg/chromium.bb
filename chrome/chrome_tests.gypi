@@ -626,6 +626,7 @@
         'browser/cocoa/page_info_window_controller_unittest.mm',
         'browser/cocoa/preferences_window_controller_unittest.mm',
         'browser/cocoa/rwhvm_editcommand_helper_unittest.mm',
+        'browser/cocoa/sad_tab_controller_unittest.mm',
         'browser/cocoa/sad_tab_view_unittest.mm',
         'browser/cocoa/search_engine_list_model_unittest.mm',
         'browser/cocoa/status_bubble_mac_unittest.mm',

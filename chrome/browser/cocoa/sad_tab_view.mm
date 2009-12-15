@@ -4,78 +4,122 @@
 
 #include "chrome/browser/cocoa/sad_tab_view.h"
 
-#include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
-#include "base/sys_string_conversions.h"
-#include "grit/generated_resources.h"
+#include "base/logging.h"
+#import "chrome/browser/cocoa/hyperlink_button_cell.h"
 #include "grit/theme_resources.h"
+#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
-static const int kSadTabOffset = -64;
-static const int kIconTitleSpacing = 20;
-static const int kTitleMessageSpacing = 15;
+// Offset above vertical middle of page where contents of page start.
+static const CGFloat kSadTabOffset = -64;
+// Padding between icon and title.
+static const CGFloat kIconTitleSpacing = 20;
+// Padding between title and message.
+static const CGFloat kTitleMessageSpacing = 15;
+// Padding between message and link.
+static const CGFloat kMessageLinkSpacing = 15;
+// Paddings on left and right of page.
+static const CGFloat kTabHorzMargin = 13;
 
 @implementation SadTabView
 
-- (void)drawRect:(NSRect)dirtyRect {
+- (void)awakeFromNib {
+  // Load resource for image and set it.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* sadTabImage = rb.GetNSImageNamed(IDR_SAD_TAB);
-  DCHECK(sadTabImage);
-  NSString* title = l10n_util::GetNSStringWithFixup(IDS_SAD_TAB_TITLE);
-  NSString* message = l10n_util::GetNSStringWithFixup(IDS_SAD_TAB_MESSAGE);
+  NSImage* image = rb.GetNSImageNamed(IDR_SAD_TAB);
+  DCHECK(image);
+  [image_ setImage:image];
 
-  NSColor* textColor = [NSColor whiteColor];
-  NSColor* backgroundColor = [NSColor colorWithCalibratedRed:(35.0f/255.0f)
-                                                       green:(48.0f/255.0f)
-                                                        blue:(64.0f/255.0f)
-                                                       alpha:1.0];
-
-  // Layout
+  // Set font for title.
   NSFont* titleFont = [NSFont boldSystemFontOfSize:[NSFont systemFontSize]];
+  [title_ setFont:titleFont];
+
+  // Set font for message.
   NSFont* messageFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+  [message_ setFont:messageFont];
 
-  NSDictionary* titleAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
-                              titleFont, NSFontAttributeName,
-                              textColor, NSForegroundColorAttributeName,
-                              nil];
-  NSDictionary* messageAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
-                                messageFont, NSFontAttributeName,
-                                textColor, NSForegroundColorAttributeName,
-                                nil];
+  // If necessary, set font and color for link.
+  if (linkButton_) {
+    [linkButton_ setFont:messageFont];
+    [linkCell_ setTextColor:[NSColor whiteColor]];
+  }
 
-  NSAttributedString* titleString =
-      [[[NSAttributedString alloc] initWithString:title
-                                       attributes:titleAttrs] autorelease];
-  NSAttributedString* messageString =
-      [[[NSAttributedString alloc] initWithString:message
-                                       attributes:messageAttrs] autorelease];
+  // Initialize background color.
+  NSColor* backgroundColor = [[NSColor colorWithCalibratedRed:(35.0f/255.0f)
+                                                        green:(48.0f/255.0f)
+                                                         blue:(64.0f/255.0f)
+                                                        alpha:1.0] retain];
+  backgroundColor_.reset(backgroundColor);
+}
 
-  NSRect viewBounds = [self bounds];
+- (void)drawRect:(NSRect)dirtyRect {
+  // Paint background.
+  [backgroundColor_ set];
+  NSRectFill(dirtyRect);
+}
 
-  NSSize sadTabImageSize = [sadTabImage size];
-  CGFloat iconWidth = sadTabImageSize.width;
-  CGFloat iconHeight = sadTabImageSize.height;
-  CGFloat iconX = (viewBounds.size.width - iconWidth) / 2;
+- (void)resizeSubviewsWithOldSize:(NSSize)oldSize {
+  NSRect newBounds = [self bounds];
+  CGFloat maxWidth = NSWidth(newBounds) - (kTabHorzMargin * 2);
+  BOOL callSizeToFit = (messageSize_.width == 0);
+
+  // Set new frame origin for image.
+  NSRect iconFrame = [image_ frame];
+  CGFloat iconX = (maxWidth - NSWidth(iconFrame)) / 2;
   CGFloat iconY =
-      ((viewBounds.size.height - iconHeight) / 2) - kSadTabOffset;
+      MIN(((NSHeight(newBounds) - NSHeight(iconFrame)) / 2) - kSadTabOffset,
+          NSHeight(newBounds) - NSHeight(iconFrame));
+  [image_ setFrameOrigin:NSMakePoint(iconX, iconY)];
 
-  NSSize titleSize = [titleString size];
-  CGFloat titleX = (viewBounds.size.width - titleSize.width) / 2;
-  CGFloat titleY = iconY - kIconTitleSpacing - titleSize.height;
+  // Set new frame origin for title.
+  if (callSizeToFit)
+    [title_ sizeToFit];
+  NSRect titleFrame = [title_ frame];
+  CGFloat titleX = (maxWidth - NSWidth(titleFrame)) / 2;
+  CGFloat titleY = iconY - kIconTitleSpacing - NSHeight(titleFrame);
+  [title_ setFrameOrigin:NSMakePoint(titleX, titleY)];
 
-  NSSize messageSize = [messageString size];
-  CGFloat messageX = (viewBounds.size.width - messageSize.width) / 2;
-  CGFloat messageY = titleY - kTitleMessageSpacing - messageSize.height;
+  // Set new frame for message, wrapping or unwrapping the text if necessary.
+  if (callSizeToFit) {
+    [message_ sizeToFit];
+    messageSize_ = [message_ frame].size;
+  }
+  NSRect messageFrame = [message_ frame];
+  if (messageSize_.width > maxWidth) {  // Need to wrap message.
+    [message_ setFrameSize:NSMakeSize(maxWidth, messageSize_.height)];
+    CGFloat heightChange =
+        [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:message_];
+    messageFrame.size.width = maxWidth;
+    messageFrame.size.height = messageSize_.height + heightChange;
+    messageFrame.origin.x = kTabHorzMargin;
+  } else {
+    if (!callSizeToFit) {
+      [message_ sizeToFit];
+      messageFrame = [message_ frame];
+    }
+    messageFrame.origin.x = (maxWidth - NSWidth(messageFrame)) / 2;
+  }
+  messageFrame.origin.y =
+      titleY - kTitleMessageSpacing - NSHeight(messageFrame);
+  [message_ setFrame:messageFrame];
 
-  // Paint
-  [backgroundColor set];
-  NSRectFill(viewBounds);
+  if (linkButton_) {
+    if (callSizeToFit)
+      [linkButton_ sizeToFit];
+    // Set new frame origin for link.
+    NSRect linkFrame = [linkButton_ frame];
+    CGFloat linkX = (maxWidth - NSWidth(linkFrame)) / 2;
+    CGFloat linkY =
+        NSMinY(messageFrame) - kMessageLinkSpacing - NSHeight(linkFrame);
+    [linkButton_ setFrameOrigin:NSMakePoint(linkX, linkY)];
+  }
+}
 
-  [sadTabImage drawAtPoint:NSMakePoint(iconX, iconY)
-                  fromRect:NSZeroRect
-                 operation:NSCompositeSourceOver
-                  fraction:1.0f];
-  [titleString drawAtPoint:NSMakePoint(titleX, titleY)];
-  [messageString drawAtPoint:NSMakePoint(messageX, messageY)];
+- (void)removeLinkButton {
+  if (linkButton_) {
+    [linkButton_ removeFromSuperview];
+    linkButton_ = nil;
+  }
 }
 
 @end

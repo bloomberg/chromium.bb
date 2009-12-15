@@ -19,7 +19,7 @@
 class FilePath;
 class FindBarMac;
 @class FocusTracker;
-@class SadTabView;
+@class SadTabController;
 class TabContentsViewMac;
 @class WebDragSource;
 @class WebDropTarget;
@@ -101,7 +101,7 @@ class TabContentsViewMac : public TabContentsView,
 
   // Used to render the sad tab. This will be non-NULL only when the sad tab is
   // visible.
-  scoped_nsobject<SadTabView> sad_tab_;
+  scoped_nsobject<SadTabController> sad_tab_;
 
   // The page content's intrinsic width.
   int preferred_width_;

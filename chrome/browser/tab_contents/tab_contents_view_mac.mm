@@ -14,7 +14,7 @@
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
-#include "chrome/browser/cocoa/sad_tab_view.h"
+#include "chrome/browser/cocoa/sad_tab_controller.h"
 #import "chrome/browser/cocoa/web_drag_source.h"
 #import "chrome/browser/cocoa/web_drop_target.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
@@ -158,13 +158,14 @@ void TabContentsViewMac::SetPageTitle(const std::wstring& title) {
 
 void TabContentsViewMac::OnTabCrashed() {
   if (!sad_tab_.get()) {
-    SadTabView* view = [[SadTabView alloc] initWithFrame:NSZeroRect];
-    sad_tab_.reset(view);
-
-    // Set as the dominant child.
-    [cocoa_view_.get() addSubview:view];
-    [view setFrame:[cocoa_view_.get() bounds]];
-    [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    TabContents* contents = tab_contents();
+    DCHECK(contents);
+    if (contents) {
+      SadTabController* sad_tab =
+          [[SadTabController alloc] initWithTabContents:contents
+                                              superview:cocoa_view_];
+      sad_tab_.reset(sad_tab);
+    }
   }
 }
 
@@ -295,10 +296,7 @@ void TabContentsViewMac::Observe(NotificationType type,
                                  const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::TAB_CONTENTS_CONNECTED: {
-      if (sad_tab_.get()) {
-        [sad_tab_.get() removeFromSuperview];
-        sad_tab_.reset();
-      }
+      sad_tab_.reset();
       break;
     }
     default:

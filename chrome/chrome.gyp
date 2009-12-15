@@ -1848,6 +1848,7 @@
                 'app/nibs/Preferences.xib',
                 'app/nibs/ReportBug.xib',
                 'app/nibs/SaveAccessoryView.xib',
+                'app/nibs/SadTab.xib',
                 'app/nibs/TabContents.xib',
                 'app/nibs/TabView.xib',
                 'app/nibs/TaskManager.xib',

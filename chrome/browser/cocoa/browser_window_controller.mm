@@ -36,6 +36,7 @@
 #include "chrome/browser/cocoa/find_bar_bridge.h"
 #import "chrome/browser/cocoa/fullscreen_window.h"
 #import "chrome/browser/cocoa/infobar_container_controller.h"
+#import "chrome/browser/cocoa/sad_tab_controller.h"
 #import "chrome/browser/cocoa/status_bubble_mac.h"
 #import "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
@@ -48,6 +49,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
@@ -1334,6 +1336,21 @@ willPositionSheet:(NSWindow*)sheet
   // when the status bubble does not exist.
   if (statusBubble_) {
     statusBubble_->UpdateSizeAndPosition();
+  }
+}
+
+// Handle the openLearnMoreAboutCrashLink: action from SadTabController when
+// "Learn more" link in "Aw snap" page (i.e. crash page or sad tab) is
+// clicked. Decoupling the action from its target makes unitestting possible.
+- (void)openLearnMoreAboutCrashLink:(id)sender {
+  if ([sender isKindOfClass:[SadTabController class]]) {
+    SadTabController* sad_tab = static_cast<SadTabController*>(sender);
+    TabContents* tab_contents = [sad_tab tabContents];
+    if (tab_contents) {
+      std::string linkUrl = l10n_util::GetStringUTF8(IDS_CRASH_REASON_URL);
+      tab_contents->OpenURL(GURL(linkUrl), GURL(), CURRENT_TAB,
+          PageTransition::LINK);
+    }
   }
 }
 
