@@ -502,6 +502,7 @@ var mostVisited = {
 
   clearAllBlacklisted: function() {
     chrome.send('clearMostVisitedURLsBlacklist', []);
+    hideNotification();
   },
 
   updateDisplayMode: function() {
@@ -843,6 +844,9 @@ function showNotification(text, actionText, opt_f, opt_delay) {
   delayedHide();
 }
 
+/**
+ * Hides the notifier.
+ */
 function hideNotification() {
   var notificationElement = $('notification');
   removeClass(notificationElement, 'show');
