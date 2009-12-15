@@ -988,7 +988,10 @@ void ChromeFrameAutomationClient::PrintTab() {
 
 // IPC:Message::Sender implementation
 bool ChromeFrameAutomationClient::Send(IPC::Message* msg) {
-  return automation_server_->Send(msg);
+  if (automation_server_) {
+    return automation_server_->Send(msg);
+  }
+  return false;
 }
 
 bool ChromeFrameAutomationClient::AddRequest(PluginUrlRequest* request) {
