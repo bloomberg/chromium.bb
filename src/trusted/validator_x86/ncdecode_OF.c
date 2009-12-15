@@ -105,6 +105,33 @@ void Define0FOpcodes() {
    * at ncdecode_sse.c for the definitions of SSE instruction.
    */
 
+  DefineOpcode(0x18, NACLi_SSE,
+               InstFlag(OpcodeInModRm),
+               InstPrefetchnta);
+  DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
+  DefineOperand(Mb_Operand, (OperandFlags) 0);
+
+
+  DefineOpcode(0x18, NACLi_SSE,
+               InstFlag(OpcodeInModRm),
+               InstPrefetcht0);
+  DefineOperand(Opcode1, OpFlag(OperandExtendsOpcode));
+  DefineOperand(Mb_Operand, (OperandFlags) 0);
+
+
+  DefineOpcode(0x18, NACLi_SSE,
+               InstFlag(OpcodeInModRm),
+               InstPrefetcht1);
+  DefineOperand(Opcode2, OpFlag(OperandExtendsOpcode));
+  DefineOperand(Mb_Operand, (OperandFlags) 0);
+
+
+  DefineOpcode(0x18, NACLi_SSE,
+               InstFlag(OpcodeInModRm),
+               InstPrefetcht2);
+  DefineOperand(Opcode3, OpFlag(OperandExtendsOpcode));
+  DefineOperand(Mb_Operand, (OperandFlags) 0);
+
   /* TODO(karl) Should we verify the contents of the nop matches table 4.1
    * in Intel manual? (i.e. only allow valid forms of modrm data and
    * displacements).
@@ -326,6 +353,19 @@ void Define0FOpcodes() {
                InstXadd);
   DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xc3, NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v),
+               InstMovnti);
+  DefineOperand(M_Operand, OpFlag(OpSet));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xc3, NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_o) |
+               InstFlag(Opcode64Only),
+               InstMovnti);
+  DefineOperand(M_Operand, OpFlag(OpSet));
+  DefineOperand(G_Operand, OpFlag(OpUse));
 
   /* Defines C8 throught CF */
   DefineBswap();

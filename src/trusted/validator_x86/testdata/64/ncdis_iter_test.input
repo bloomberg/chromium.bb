@@ -213,3 +213,5 @@
 -i=66ED                                  #0000000000000000: 66 ed                                        in %ax, %dx; *NACL Disallows!*
 -i=ED                                    #0000000000000000: ed                                           in %eax, %dx; *NACL Disallows!*
 -i=55                                    #0000000000000000: 55                                           push %rbp
+-i=0F188600030000                        #0000000000000000: 0f 18 86 00 03 00 00                         prefetchnta [%rsi+0x300]
+-i=480FC307                              #0000000000000000: 48 0f c3 07                                  movnti [%rdi], %rax

@@ -131,6 +131,7 @@ Mov
 Movapd
 Movaps
 Movd
+Movnti
 Movntq
 Movq
 Movdqu
@@ -243,6 +244,10 @@ Popf
 Popfd
 Popfq
 Por
+Prefetchnta
+Prefetcht0
+Prefetcht1
+Prefetcht2
 Psadbw
 Pshufb
 Pshufd
@@ -313,6 +318,7 @@ Setl
 Setnl
 Setle
 Setnle
+Sfence
 Shl
 Shr
 Sqrtsd
