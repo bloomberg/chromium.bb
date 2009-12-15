@@ -49,7 +49,6 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
 }
 
 - (void)dealloc {
-  [closeButton_ removeTrackingArea:closeTrackingArea_.get()];
   [view_ removeFromSuperview];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
@@ -112,7 +111,7 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
                                  kCloseBoxPaddingY,
                                  kCloseBoxSize,
                                  kCloseBoxSize);
-  closeButton_.reset([[NSButton alloc] initWithFrame:closeFrame]);
+  closeButton_.reset([[HoverCloseButton alloc] initWithFrame:closeFrame]);
   [closeButton_ setAutoresizingMask:NSViewMinXMargin];
   [closeButton_ setButtonType:NSMomentaryChangeButton];
   [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar.pdf")];
@@ -122,18 +121,6 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
   [closeButton_ setTarget:self];
   [closeButton_ setAction:@selector(closePopup:)];
   [view_ addSubview:closeButton_];
-
-  // Set up the tracking rect for the close button mouseover.  Add it
-  // to the |closeButton_| view, but we'll handle the message ourself.
-  // The mouseover is always enabled, because the close button works
-  // regardless of key/main/active status.
-  closeTrackingArea_.reset(
-      [[NSTrackingArea alloc] initWithRect:[closeButton_ bounds]
-                                   options:NSTrackingMouseEnteredAndExited |
-                                           NSTrackingActiveAlways
-                                     owner:self
-                                  userInfo:nil]);
-  [closeButton_ addTrackingArea:closeTrackingArea_.get()];
 }
 
 // Returns the C++ brige object.
@@ -352,18 +339,6 @@ void GetURLAndTitleForPopup(
 // Only used for testing.
 - (void)setContainer:(BlockedPopupContainer*)container {
   container_ = container;
-}
-
-// Called when the mouse enters the tracking rect for the close box.
-- (void)mouseEntered:(NSEvent *)theEvent {
-  if ([theEvent trackingArea] == closeTrackingArea_)
-    [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar_h.pdf")];
-}
-
-// Called when the mouse exits the tracking rect for the close box.
-- (void)mouseExited:(NSEvent *)theEvent {
-  if ([theEvent trackingArea] == closeTrackingArea_)
-    [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar.pdf")];
 }
 
 @end

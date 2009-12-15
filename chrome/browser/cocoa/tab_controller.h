@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_COCOA_TAB_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
+#import "chrome/browser/cocoa/hover_close_button.h"
 
 // The loading/waiting state of the tab.
 // TODO(pinkerton): this really doesn't belong here, but something needs to
@@ -38,7 +39,7 @@ enum TabLoadingState {
   IBOutlet NSView* iconView_;
   IBOutlet NSTextField* titleView_;
   IBOutlet NSMenu* contextMenu_;
-  IBOutlet NSButton* closeButton_;
+  IBOutlet HoverCloseButton* closeButton_;
 
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
   BOOL isIconShowing_;  // last state of iconView_ in updateVisibility

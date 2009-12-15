@@ -9,6 +9,7 @@
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
+#import "chrome/browser/cocoa/hover_close_button.h"
 
 @class TabController, TabWindowController;
 
@@ -21,7 +22,7 @@
   IBOutlet TabController* controller_;
   // TODO(rohitrao): Add this button to a CoreAnimation layer so we can fade it
   // in and out on mouseovers.
-  IBOutlet NSButton* closeButton_;
+  IBOutlet HoverCloseButton* closeButton_;
   BOOL closing_;
 
   // Tracking area for close button mouseover images.

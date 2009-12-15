@@ -10,6 +10,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/blocked_popup_container.h"
+#include "chrome/browser/cocoa/hover_close_button.h"
 
 @class BubbleView;
 
@@ -28,9 +29,8 @@
   scoped_ptr<BlockedPopupContainerView> bridge_;
   BlockedPopupContainer* container_;  // Weak. "owns" me.
   scoped_nsobject<BubbleView> view_;
-  scoped_nsobject<NSButton> closeButton_;
-  // Tracking area for close button mouseover images.
-  scoped_nsobject<NSTrackingArea> closeTrackingArea_;
+  scoped_nsobject<HoverCloseButton> closeButton_;
+
   IBOutlet NSPopUpButton* popupButton_;
 }
 

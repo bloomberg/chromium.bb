@@ -435,6 +435,8 @@
         'browser/cocoa/history_menu_bridge.mm',
         'browser/cocoa/history_menu_cocoa_controller.h',
         'browser/cocoa/history_menu_cocoa_controller.mm',
+        'browser/cocoa/hover_close_button.h',
+        'browser/cocoa/hover_close_button.mm',
         'browser/cocoa/html_dialog_window_controller.h',
         'browser/cocoa/html_dialog_window_controller_cppsafe.h',
         'browser/cocoa/html_dialog_window_controller.mm',
