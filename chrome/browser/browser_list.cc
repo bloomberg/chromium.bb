@@ -151,10 +151,14 @@ void BrowserList::AddBrowser(Browser* browser) {
 void BrowserList::RemoveBrowser(Browser* browser) {
   RemoveBrowserFrom(browser, &last_active_browsers_);
 
-  bool close_app = (browsers_.size() == 1);
+  // Closing all windows does not indicate quitting the application on the Mac,
+  // however, many UI tests rely on this behavior so leave it be for now and
+  // simply ignore the behavior on the Mac outside of unit tests.
+  // TODO(andybons): Fix the UI tests to Do The Right Thing.
+  bool close_app_non_mac = (browsers_.size() == 1);
   NotificationService::current()->Notify(
       NotificationType::BROWSER_CLOSED,
-      Source<Browser>(browser), Details<bool>(&close_app));
+      Source<Browser>(browser), Details<bool>(&close_app_non_mac));
 
   // Send out notifications before anything changes. Do some basic checking to
   // try to catch evil observers that change the list from under us.
