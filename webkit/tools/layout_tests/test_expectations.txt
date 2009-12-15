@@ -525,17 +525,17 @@ BUG18978 DEBUG : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIME
 BUG18978 LINUX MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
 BUG18978 WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
 BUG18978 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
-BUG18978 LINUX : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods and passes CGIs a Content-Type
 // even when a request didn't send the header.
 BUG18978 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL
 BUG18978 LINUX : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL
 BUG18978 MAC : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL TIMEOUT
 // Another lighttpd quirk.
-BUG8941 LINUX WIN SLOW : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL
+BUG8941 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL
+BUG8941 LINUX SLOW : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = PASS
 BUG8941 MAC DEBUG SLOW : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL
 BUG8941 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL TIMEOUT
-BUG8941 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = FAIL
+BUG8941 WIN : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = FAIL
 
 // -----------------------------------------------------------------
 // TEXT
@@ -1298,8 +1298,8 @@ BUG27914 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-protocol.ht
 // This test isn't hanging, it just takes 12-13 seconds to run.
 BUG10322 SLOW : LayoutTests/http/tests/misc/acid3.html = FAIL
 
-// Has failed for Chromium since it was first checked in.
-BUG10323 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-no-content-length-onProgress.html = FAIL
+// Has failed for Chromium since it was first checked in.  (Lighttpd related?)
+BUG10323 WIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-no-content-length-onProgress.html = FAIL
 
 // Times out because this uses dom storage which we don't implement.
 BUG4360 SKIP : LayoutTests/security/autocomplete-cleared-on-back.html = TIMEOUT
@@ -1462,7 +1462,7 @@ BUG10357 RELEASE : LayoutTests/fast/dom/cssTarget-crash.html = TIMEOUT PASS
 BUG10358 SKIP MAC LINUX : LayoutTests/animations/animation-drt-api.html = PASS
 
 // New test. We should fix it, but it doesn't need to block the current release
-BUG10361 WIN LINUX : LayoutTests/http/tests/misc/single-character-pi-stylesheet.xhtml = FAIL
+BUG10361 WIN : LayoutTests/http/tests/misc/single-character-pi-stylesheet.xhtml = FAIL
 
 // Windows is missing the green box.
 // started to pass in roll to WebKit r50313
@@ -2870,8 +2870,8 @@ BUG9798 WIN DEBUG : LayoutTests/media/video-empty-source.html = IMAGE PASS
 BUG9798 RELEASE : LayoutTests/fast/dom/defaultView.html = TEXT PASS
 BUG9798 WIN RELEASE : LayoutTests/http/tests/navigation/no-referrer-reset.html = TIMEOUT PASS
 
-// Webkit 50667:50696
-BUG28417 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html = TEXT
+// Webkit 50667:50696 (Lighttpd related?)
+BUG28417 WIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html = TEXT
 
 // more test flakiness
 BUG27334 MAC RELEASE : LayoutTests/http/tests/misc/xhtml.php = PASS TIMEOUT
@@ -2968,7 +2968,6 @@ BUG28317 : LayoutTests/fast/css/color-correction-untagged-images.html = FAIL
 BUG_OJAN MAC LINUX : LayoutTests/http/tests/loading/text-content-type-with-binary-extension.html = TEXT PASS
 BUG_OJAN MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = TEXT PASS
 BUG_OJAN LINUX : LayoutTests/http/tests/xmlhttprequest/cache-override.html = TEXT PASS
-BUG_OJAN LINUX : LayoutTests/svg/custom/stop-crash.svg = CRASH
 
 // Started failing when we started sharding the http and fast directories.
 // Likely it's because this test depends on some other http test running before
@@ -3006,13 +3005,6 @@ BUG28380 MAC : LayoutTests/fast/events/tabindex-focus-blur-all.html = CRASH FAIL
 // to plugin object.
 BUG29018 : LayoutTests/plugins/reloadplugins-no-pages.html = TEXT
 BUG29018 : LayoutTests/plugins/reloadplugins-and-pages.html = TIMEOUT
-
-// TODO(michaeln): BUG29737, restore expectations after svg issues are resolved
-// BUG28605 LINUX : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE
-// BUG28605 MAC : LayoutTests/svg/filters/big-sized-filter-2.svg = MISSING
-// BUG28605 WIN LINUX : LayoutTests/svg/filters/filterRes.svg = IMAGE
-BUG29737 MAC : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE+TEXT
-BUG29737 MAC : LayoutTests/svg/filters/filterRes.svg = IMAGE+TEXT
 
 // New tests. Failures from merge 51210:51325.
 BUG28646 : LayoutTests/editing/selection/transformed-selection-rects.html = FAIL
@@ -3149,23 +3141,10 @@ BUG29748 LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/table_overf
 BUG29748 LINUX : LayoutTests/tables/mozilla_expected_failures/other/empty_cells.html = IMAGE
 BUG29748 LINUX : LayoutTests/tables/mozilla_expected_failures/other/test4.html = IMAGE
 BUG29748 LINUX : LayoutTests/fast/forms/input-align-image.html = IMAGE+TEXT
+BUG29748 WIN DEBUG : LayoutTests/fast/forms/input-align-image.html = IMAGE+TEXT PASS
 
 // More Webkit Roll to r51875
-BUG29737 LINUX : LayoutTests/svg/filters/feGaussianBlur.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/feMerge.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/feOffset.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/shadow-on-filter.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/subRegion-in-userSpace.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/js-svg-constructors.svg = TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/svg-features.html = TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/feMerge-wrong-input.svg = TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/visibility-override-filter.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/feTile.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/custom/invalid-css.svg = TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = IMAGE+TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/feComposite.svg = TIMEOUT CRASH
-BUG29737 LINUX : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/big-sized-filter-2.svg = IMAGE+TEXT
 
 // More Webkit Roll to r51875
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-blend-01-b.svg = IMAGE+TEXT
@@ -3213,7 +3192,9 @@ BUG29737 MAC : LayoutTests/svg/batik/text/textProperties.svg = TEXT
 BUG29737 MAC : LayoutTests/svg/custom/feDisplacementMap-01.svg = TEXT
 BUG29737 MAC : LayoutTests/svg/custom/non-opaque-filters.svg = TEXT
 BUG29737 MAC : LayoutTests/svg/custom/visibility-override-filter.svg = TEXT
+BUG29737 MAC : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/big-sized-filter-2.svg = TEXT
+BUG29737 MAC : LayoutTests/svg/filters/filterRes.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feMerge.svg = TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feOffset.svg = TEXT
 BUG29737 MAC : LayoutTests/svg/filters/subRegion-in-userSpace.svg = TEXT
