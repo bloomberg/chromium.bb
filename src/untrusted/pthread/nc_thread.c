@@ -335,12 +335,9 @@ void nc_spinlock_unlock(volatile int *lock) {
 void nc_spinlock_lock(volatile int *lock) {
   uint32_t val;
 
-  do
-    asm volatile ("swp %0, %1, [%2]"
-      : "=r" (val)
-      : "0" (1), "r" (lock)
-      : "memory");
-  while (val != 0);
+  do {
+    val = CompareAndSwap(lock, 0, 1);
+  } while (val != 0);
 }
 
 void nc_spinlock_unlock(volatile int *lock) {

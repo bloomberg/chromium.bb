@@ -37,3 +37,11 @@ bundle2:
 
 bundle3:
   str r0, [r1]            @ ...then the store is an ERROR.
+  nop
+
+  biceq r2, r2, #0xC0000000 @ Mask a register and
+  strexeq r0, r1, [r2]    @ use it in a store-exclusive.  Should pass.
+
+bundle4:
+  bic r2, r2, #0          @ Mask incorrectly and
+  strex r0, r1, [r2]      @ use it in a store-exclusive, for an ERROR.
