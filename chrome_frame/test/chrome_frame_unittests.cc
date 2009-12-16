@@ -570,7 +570,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_InitializeHidden) {
   SimpleBrowserTest(IE, kInitializeHiddenPage, L"InitializeHidden");
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_InitializeHidden) {
+// Flaky on the build bots. See http://crbug.com/30622
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_InitializeHidden) {
   SimpleBrowserTest(FIREFOX, kInitializeHiddenPage, L"InitializeHidden");
 }
 
