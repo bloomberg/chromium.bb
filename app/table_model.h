@@ -94,6 +94,8 @@ class TableModel {
   void ClearCollator();
 
  protected:
+  virtual ~TableModel() {}
+
   // Returns the collator used by CompareValues.
   icu::Collator* GetCollator();
 };

@@ -273,7 +273,7 @@ class Class : public Noncopyable {\
   Class() { \
     class_name = #Class; \
   } \
-  ~Class() {} \
+  virtual ~Class() {} \
   \
   STRUCT( \
       TOOLS_RPC_API_METHOD0, \

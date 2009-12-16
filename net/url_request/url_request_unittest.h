@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -240,9 +240,9 @@ class TestDelegate : public URLRequest::Delegate {
 // that can provide various responses useful for testing.
 class BaseTestServer : public base::RefCounted<BaseTestServer> {
  protected:
-  BaseTestServer() { }
+  BaseTestServer() {}
   BaseTestServer(int connection_attempts, int connection_timeout)
-      : launcher_(connection_attempts, connection_timeout) { }
+      : launcher_(connection_attempts, connection_timeout) {}
 
  public:
   void set_forking(bool forking) {

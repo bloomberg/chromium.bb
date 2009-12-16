@@ -19,6 +19,9 @@ class HttpListenSocket : public ListenSocket,
    public:
     virtual void OnRequest(HttpListenSocket* connection,
                            HttpServerRequestInfo* info) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   static HttpListenSocket* Listen(const std::string& ip, int port,

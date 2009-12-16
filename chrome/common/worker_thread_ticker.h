@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_WORKER_THREAD_TICKER_H__
-#define CHROME_COMMON_WORKER_THREAD_TICKER_H__
+#ifndef CHROME_COMMON_WORKER_THREAD_TICKER_H_
+#define CHROME_COMMON_WORKER_THREAD_TICKER_H_
 
 #include <vector>
 
@@ -24,6 +24,9 @@ class WorkerThreadTicker {
    public:
     // Gets invoked when the timer period is up
     virtual void OnTick() = 0;
+
+   protected:
+    virtual ~Callback() {}
   };
 
   // tick_interval is the periodic interval in which to invoke the
@@ -84,4 +87,4 @@ class WorkerThreadTicker {
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadTicker);
 };
 
-#endif  // CHROME_COMMON_WORKER_THREAD_TICKER_H__
+#endif  // CHROME_COMMON_WORKER_THREAD_TICKER_H_

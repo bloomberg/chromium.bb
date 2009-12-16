@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IPC_IPC_SYNC_MESSAGE_H__
-#define IPC_IPC_SYNC_MESSAGE_H__
+#ifndef IPC_IPC_SYNC_MESSAGE_H_
+#define IPC_IPC_SYNC_MESSAGE_H_
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -84,6 +84,7 @@ class SyncMessage : public Message {
 // Used to deserialize parameters from a reply to a synchronous message
 class MessageReplyDeserializer {
  public:
+  virtual ~MessageReplyDeserializer() {}
   bool SerializeOutputParameters(const Message& msg);
  private:
   // Derived classes need to implement this, using the given iterator (which
@@ -93,4 +94,4 @@ class MessageReplyDeserializer {
 
 }  // namespace IPC
 
-#endif  // IPC_IPC_SYNC_MESSAGE_H__
+#endif  // IPC_IPC_SYNC_MESSAGE_H_

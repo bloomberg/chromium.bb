@@ -20,6 +20,9 @@ class TableModelObserver {
 
   // Invoked when a range of items has been removed.
   virtual void OnItemsRemoved(int start, int length) = 0;
+
+ protected:
+  virtual ~TableModelObserver() {}
 };
 
 #endif  // APP_TABLE_MODEL_OBSERVER_H_

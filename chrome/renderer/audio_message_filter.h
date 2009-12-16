@@ -32,6 +32,9 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
     // Called when notification of stream volume is received from the browser
     // process.
     virtual void OnVolume(double volume) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   explicit AudioMessageFilter(int32 route_id);

@@ -83,6 +83,9 @@ class EnumerateWindowsDelegate {
   // |xid| is the X Window ID of the enumerated window.  Return true to stop
   // further iteration.
   virtual bool ShouldStopIterating(XID xid) = 0;
+
+ protected:
+  virtual ~EnumerateWindowsDelegate() {}
 };
 
 // Enumerates all windows in the current display.  Will recurse into child

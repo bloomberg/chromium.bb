@@ -37,6 +37,9 @@ class InjectionDelegate {
   virtual bool Move(int src, int dest) = 0;
   // Delete an element of the domain.
   virtual void Close(int fd) = 0;
+
+ protected:
+  virtual ~InjectionDelegate() {}
 };
 
 // An implementation of the InjectionDelegate interface using the file
