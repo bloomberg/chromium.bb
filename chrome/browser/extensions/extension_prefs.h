@@ -129,7 +129,8 @@ class InstalledExtensions {
 
   // Runs |callback| for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't trigger
-  // the callback. Ownership of |callback| is transferred to callee.
+  // the callback and neither will external extensions the user has explicitly
+  // uninstalled. Ownership of |callback| is transferred to callee.
   void VisitInstalledExtensions(Callback *callback);
 
  private:

@@ -76,6 +76,17 @@ void InstalledExtensions::VisitInstalledExtensions(
         continue;
       }
     }
+    int state_value;
+    if (!ext->GetInteger(kPrefState, &state_value)) {
+      LOG(WARNING) << "Missing state pref for extension " << *extension_id;
+      NOTREACHED();
+      continue;
+    }
+    if (state_value == Extension::KILLBIT) {
+      LOG(WARNING) << "External extension has been uninstalled by the user "
+                   << *extension_id;
+      continue;
+    }
     FilePath::StringType path;
     if (!ext->GetString(kPrefPath, &path)) {
       LOG(WARNING) << "Missing path pref for extension " << *extension_id;

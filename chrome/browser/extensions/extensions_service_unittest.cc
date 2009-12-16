@@ -327,6 +327,9 @@ class ExtensionsServiceTest
   }
 
  protected:
+  void TestExternalProvider(MockExtensionProvider* provider,
+                            Extension::Location location);
+
   void InstallExtension(const FilePath& path,
                         bool should_succeed) {
     ASSERT_TRUE(file_util::PathExists(path));
@@ -1286,22 +1289,12 @@ TEST_F(ExtensionsServiceTest, GenerateID) {
   ASSERT_EQ(previous_id, loaded_[0]->id());
 }
 
-// Tests the external installation feature
-#if defined(OS_WIN)
-
-TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
-  // This should all work, even when normal extension installation is disabled.
-  InitializeEmptyExtensionsService();
-  set_extensions_enabled(false);
+void ExtensionsServiceTest::TestExternalProvider(
+    MockExtensionProvider* provider, Extension::Location location) {
   // Verify that starting with no providers loads no extensions.
   service_->Init();
   loop_.RunAllPending();
   ASSERT_EQ(0u, loaded_.size());
-
-  // Now add providers. Extension system takes ownership of the objects.
-  MockExtensionProvider* reg_provider =
-      new MockExtensionProvider(Extension::EXTERNAL_REGISTRY);
-  SetMockExternalProvider(Extension::EXTERNAL_REGISTRY, reg_provider);
 
   // Register a test extension externally using the mock registry provider.
   FilePath source_path;
@@ -1309,7 +1302,7 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
   source_path = source_path.AppendASCII("extensions").AppendASCII("good.crx");
 
   // Add the extension.
-  reg_provider->UpdateOrAddExtension(good_crx, "1.0.0.0", source_path);
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.0", source_path);
 
   // Reloading extensions should find our externally registered extension
   // and install it.
@@ -1318,11 +1311,11 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
 
   ASSERT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
-  ASSERT_EQ(Extension::EXTERNAL_REGISTRY, loaded_[0]->location());
+  ASSERT_EQ(location, loaded_[0]->location());
   ASSERT_EQ("1.0.0.0", loaded_[0]->version()->GetString());
   ValidatePrefKeyCount(1);
   ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
-  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
+  ValidateIntegerPref(good_crx, L"location", location);
 
   // Reload extensions without changing anything. The extension should be
   // loaded again.
@@ -1333,11 +1326,11 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
   ASSERT_EQ(1u, loaded_.size());
   ValidatePrefKeyCount(1);
   ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
-  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
+  ValidateIntegerPref(good_crx, L"location", location);
 
   // Now update the extension with a new version. We should get upgraded.
   source_path = source_path.DirName().AppendASCII("good2.crx");
-  reg_provider->UpdateOrAddExtension(good_crx, "1.0.0.1", source_path);
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.1", source_path);
 
   loaded_.clear();
   service_->CheckForExternalUpdates();
@@ -1347,7 +1340,7 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
   ASSERT_EQ("1.0.0.1", loaded_[0]->version()->GetString());
   ValidatePrefKeyCount(1);
   ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
-  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
+  ValidateIntegerPref(good_crx, L"location", location);
 
   // Uninstall the extension and reload. Nothing should happen because the
   // preference should prevent us from reinstalling.
@@ -1365,111 +1358,7 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
   ASSERT_EQ(0u, loaded_.size());
   ValidatePrefKeyCount(1);
   ValidateIntegerPref(good_crx, L"state", Extension::KILLBIT);
-  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
-
-  // Now clear the preference, reinstall, then remove the reg key. The extension
-  // should be uninstalled.
-  SetPrefInteg(good_crx, L"state", Extension::ENABLED);
-  prefs_->ScheduleSavePersistentPrefs();
-
-  loaded_.clear();
-  service_->CheckForExternalUpdates();
-  loop_.RunAllPending();
-  ASSERT_EQ(1u, loaded_.size());
-  ValidatePrefKeyCount(1);
-  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
-  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
-
-  // Now test an externally triggered uninstall (deleting the registry key).
-  reg_provider->RemoveExtension(good_crx);
-
-  loaded_.clear();
-  service_->LoadAllExtensions();
-  loop_.RunAllPending();
-  ASSERT_EQ(0u, loaded_.size());
-  ValidatePrefKeyCount(0);
-
-  // The extension should also be gone from the install directory.
-  ASSERT_FALSE(file_util::PathExists(install_path));
-}
-
-#endif
-
-TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
-  InitializeEmptyExtensionsService();
-  // Verify that starting with no providers loads no extensions.
-  service_->Init();
-  loop_.RunAllPending();
-  ASSERT_EQ(0u, loaded_.size());
-
-  // Now add providers. Extension system takes ownership of the objects.
-  MockExtensionProvider* pref_provider =
-      new MockExtensionProvider(Extension::EXTERNAL_PREF);
-  SetMockExternalProvider(Extension::EXTERNAL_PREF, pref_provider);
-
-  // Register a external extension using preinstalled preferences.
-  FilePath source_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_path));
-  source_path = source_path.AppendASCII("extensions").AppendASCII("good.crx");
-
-  // Add the extension.
-  pref_provider->UpdateOrAddExtension(good_crx, "1.0", source_path);
-
-  // Checking for updates should find our externally registered extension
-  // and install it.
-  service_->CheckForExternalUpdates();
-  loop_.RunAllPending();
-
-  ASSERT_EQ(0u, GetErrors().size());
-  ASSERT_EQ(1u, loaded_.size());
-  ASSERT_EQ(Extension::EXTERNAL_PREF, loaded_[0]->location());
-  ASSERT_EQ("1.0.0.0", loaded_[0]->version()->GetString());
-  ValidatePrefKeyCount(1);
-  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
-  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_PREF);
-
-  // Reload extensions without changing anything. The extension should be
-  // loaded again.
-  loaded_.clear();
-  service_->ReloadExtensions();
-  loop_.RunAllPending();
-  ASSERT_EQ(0u, GetErrors().size());
-  ASSERT_EQ(1u, loaded_.size());
-  ValidatePrefKeyCount(1);
-  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
-  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_PREF);
-
-  // Now update the extension with a new version. We should get upgraded.
-  source_path = source_path.DirName().AppendASCII("good2.crx");
-  pref_provider->UpdateOrAddExtension(good_crx, "1.0.0.1", source_path);
-
-  loaded_.clear();
-  service_->CheckForExternalUpdates();
-  loop_.RunAllPending();
-  ASSERT_EQ(0u, GetErrors().size());
-  ASSERT_EQ(1u, loaded_.size());
-  ASSERT_EQ("1.0.0.1", loaded_[0]->version()->GetString());
-  ValidatePrefKeyCount(1);
-  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
-  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_PREF);
-
-  // Uninstall the extension and reload. Nothing should happen because the
-  // preference should prevent us from reinstalling.
-  std::string id = loaded_[0]->id();
-  service_->UninstallExtension(id, false);
-  loop_.RunAllPending();
-
-  // The extension should also be gone from the install directory.
-  FilePath install_path = extensions_install_dir_.AppendASCII(id);
-  ASSERT_FALSE(file_util::PathExists(install_path));
-
-  loaded_.clear();
-  service_->CheckForExternalUpdates();
-  loop_.RunAllPending();
-  ASSERT_EQ(0u, loaded_.size());
-  ValidatePrefKeyCount(1);
-  ValidateIntegerPref(good_crx, L"state", Extension::KILLBIT);
-  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_PREF);
+  ValidateIntegerPref(good_crx, L"location", location);
 
   // Now clear the preference and reinstall.
   SetPrefInteg(good_crx, L"state", Extension::ENABLED);
@@ -1481,10 +1370,11 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
   ASSERT_EQ(1u, loaded_.size());
   ValidatePrefKeyCount(1);
   ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
-  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_PREF);
+  ValidateIntegerPref(good_crx, L"location", location);
 
-  // Now test an externally triggered uninstall (deleting id from json file).
-  pref_provider->RemoveExtension(good_crx);
+  // Now test an externally triggered uninstall (deleting the registry key or
+  // the pref entry).
+  provider->RemoveExtension(good_crx);
 
   loaded_.clear();
   service_->LoadAllExtensions();
@@ -1495,16 +1385,58 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
   // The extension should also be gone from the install directory.
   ASSERT_FALSE(file_util::PathExists(install_path));
 
-  // It should still work if extensions are disabled (disableness doesn't
-  // apply to externally registered extensions).
-  set_extensions_enabled(false);
+  // Now test the case where user uninstalls and then the extension is removed
+  // from the external provider.
 
-  pref_provider->UpdateOrAddExtension(good_crx, "1.0", source_path);
+  provider->UpdateOrAddExtension(good_crx, "1.0", source_path);
   service_->CheckForExternalUpdates();
   loop_.RunAllPending();
 
   ASSERT_EQ(1u, loaded_.size());
   ASSERT_EQ(1u, GetErrors().size());
+
+  // User uninstalls.
+  loaded_.clear();
+  service_->UninstallExtension(id, false);
+  loop_.RunAllPending();
+  ASSERT_EQ(0u, loaded_.size());
+
+  // Then remove the extension from the extension provider.
+  provider->RemoveExtension(good_crx);
+
+  // Should still be at 0.
+  loaded_.clear();
+  service_->LoadAllExtensions();
+  loop_.RunAllPending();
+  ASSERT_EQ(0u, loaded_.size());
+  ValidatePrefKeyCount(1);
+}
+
+// Tests the external installation feature
+#if defined(OS_WIN)
+TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
+  // This should all work, even when normal extension installation is disabled.
+  InitializeEmptyExtensionsService();
+  set_extensions_enabled(false);
+
+  // Now add providers. Extension system takes ownership of the objects.
+  MockExtensionProvider* reg_provider =
+      new MockExtensionProvider(Extension::EXTERNAL_REGISTRY);
+  SetMockExternalProvider(Extension::EXTERNAL_REGISTRY, reg_provider);
+  TestExternalProvider(reg_provider, Extension::EXTERNAL_REGISTRY);
+}
+#endif
+
+TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
+  // This should all work, even when normal extension installation is disabled.
+  InitializeEmptyExtensionsService();
+  set_extensions_enabled(false);
+
+  // Now add providers. Extension system takes ownership of the objects.
+  MockExtensionProvider* pref_provider =
+      new MockExtensionProvider(Extension::EXTERNAL_PREF);
+  SetMockExternalProvider(Extension::EXTERNAL_PREF, pref_provider);
+  TestExternalProvider(pref_provider, Extension::EXTERNAL_PREF);
 }
 
 TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
