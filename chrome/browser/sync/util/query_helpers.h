@@ -43,7 +43,13 @@ void GetColumn(sqlite3_stmt*, int index, double* value);
 void GetColumn(sqlite3_stmt*, int index, bool* value);
 void GetColumn(sqlite3_stmt*, int index, std::vector<uint8>* value);
 
-bool DoesTableExist(sqlite3* dbhandle, const std::string& tablename);
+// Checks if tablename exists in the database referenced by dbhandle.
+// If the function succeeds, *exists is set to true if the table exists, and
+// false if it doesn't.
+//
+// Returns true on success, or false on error.
+bool DoesTableExist(sqlite3* dbhandle, const std::string& tablename,
+                    bool* exists);
 
 // Prepares a query with a WHERE clause that filters the values by the items
 // passed inside of the Vector.

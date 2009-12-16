@@ -26,6 +26,7 @@ sqlite3_stmt* PrepareQuery(sqlite3* dbhandle, const char* query) {
                                    CountBytes(query), &statement,
                                    &query_tail)) {
     LOG(ERROR) << query << "\n" << sqlite3_errmsg(dbhandle);
+    return NULL;
   }
   return statement;
 }
@@ -201,17 +202,25 @@ void GetColumn(sqlite3_stmt* statement, int index, std::vector<uint8>* value) {
   }
 }
 
-bool DoesTableExist(sqlite3* dbhandle, const string& table_name) {
+bool DoesTableExist(sqlite3* dbhandle, const string& table_name,
+                    bool* exists) {
+  CHECK(exists);
   ScopedStatement count_query
     (PrepareQuery(dbhandle,
                   "SELECT count(*) from sqlite_master where name = ?",
                   table_name));
 
+  if (!count_query.get())
+    return false;
+
   int query_result = sqlite3_step(count_query.get());
-  CHECK(SQLITE_ROW == query_result);
+  if (SQLITE_ROW != query_result)
+    return false;
+
   int count = sqlite3_column_int(count_query.get(), 0);
 
-  return 1 == count;
+  *exists = (1 == count);
+  return true;
 }
 
 void ScopedStatement::reset(sqlite3_stmt* statement) {

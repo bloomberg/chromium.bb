@@ -306,7 +306,8 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
   }
   int version_on_disk = 0;
 
-  if (DoesTableExist(load_dbhandle_, "share_version")) {
+  bool exists = false;
+  if (DoesTableExist(load_dbhandle_, "share_version", &exists) && exists) {
     ScopedStatement version_query(
         PrepareQuery(load_dbhandle_, "SELECT data from share_version"));
     int query_result = sqlite3_step(version_query.get());
@@ -331,7 +332,10 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
     {
       ScopedStatement statement(PrepareQuery(load_dbhandle_,
           "SELECT db_create_version, db_create_time FROM share_info"));
-      CHECK(SQLITE_ROW == sqlite3_step(statement.get()));
+      if (SQLITE_ROW != sqlite3_step(statement.get())) {
+        ExecOrDie(load_dbhandle_, "ROLLBACK TRANSACTION");
+        return FAILED_DISK_FULL;
+      }
       string db_create_version;
       int db_create_time;
       GetColumn(statement.get(), 0, &db_create_version);
