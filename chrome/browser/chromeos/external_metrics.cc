@@ -21,6 +21,18 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 
+// Steps to add a stat:
+//
+// 1. Enter the stat in the function_table_ (specify histogram or action).
+// Note that the macros concatenate strings.  Also note that stat names must be
+// in alphabetical order (there is an init-time test but only for debug
+// builds).
+//
+// 2. Enter a helper function that calls either one of the UMA_HISTOGRAM
+// macros, or UserMetrics::RecordAction.
+//
+// 3. Enjoy the recompilation.
+
 namespace chromeos {
 
 // The interval between external metrics collections, in milliseconds.
@@ -49,13 +61,73 @@ static void RecordBootTime(const char* info) {
                              base::TimeDelta::FromMilliseconds(time),
                              base::TimeDelta::FromSeconds(0),
                              base::TimeDelta::FromSeconds(60),
-                             100);
+                             50);
 }
 
 static void RecordUpTime(const char* info) {
   int64 time = atol(info);
   UMA_HISTOGRAM_LONG_TIMES("ChromeOS.Uptime",
                            base::TimeDelta::FromSeconds(time));
+}
+
+static void RecordConnmanIdle(const char* info) {
+  int64 time = atol(info);
+  UMA_HISTOGRAM_LONG_TIMES("ChromeOS.Net.Connman.Idle",
+                           base::TimeDelta::FromMilliseconds(time));
+}
+
+static void RecordConnmanOffline(const char* info) {
+  int64 time = atol(info);
+  UMA_HISTOGRAM_LONG_TIMES("ChromeOS.Net.Connman.Offline",
+                           base::TimeDelta::FromMilliseconds(time));
+}
+
+static void RecordConnmanOnline(const char* info) {
+  int64 time = atol(info);
+  UMA_HISTOGRAM_LONG_TIMES("ChromeOS.Net.Connman.Online",
+                           base::TimeDelta::FromMilliseconds(time));
+}
+
+static void RecordConnmanReady(const char* info) {
+  int64 time = atol(info);
+  UMA_HISTOGRAM_LONG_TIMES("ChromeOS.Net.Connman.Ready",
+                           base::TimeDelta::FromMilliseconds(time));
+}
+
+static void RecordConnmanAssociation(const char* info) {
+  int64 time = atol(info);
+  UMA_HISTOGRAM_CUSTOM_TIMES("ChromeOS.Net.Connman.Association",
+                             base::TimeDelta::FromMilliseconds(time),
+                             base::TimeDelta::FromSeconds(0),
+                             base::TimeDelta::FromSeconds(120),
+                             50);
+}
+
+static void RecordConnmanConfiguration(const char* info) {
+  int64 time = atol(info);
+  UMA_HISTOGRAM_CUSTOM_TIMES("ChromeOS.Net.Connman.Configuration",
+                             base::TimeDelta::FromMilliseconds(time),
+                             base::TimeDelta::FromSeconds(0),
+                             base::TimeDelta::FromSeconds(120),
+                             50);
+}
+
+static void RecordConnmanDisconnect(const char* info) {
+  int64 time = atol(info);
+  UMA_HISTOGRAM_CUSTOM_TIMES("ChromeOS.Net.Connman.Disconnect",
+                             base::TimeDelta::FromMilliseconds(time),
+                             base::TimeDelta::FromSeconds(0),
+                             base::TimeDelta::FromSeconds(30),
+                             50);
+}
+
+static void RecordConnmanFailure(const char* info) {
+  int64 time = atol(info);
+  UMA_HISTOGRAM_CUSTOM_TIMES("ChromeOS.Net.Connman.Failure",
+                             base::TimeDelta::FromMilliseconds(time),
+                             base::TimeDelta::FromSeconds(0),
+                             base::TimeDelta::FromSeconds(30),
+                             50);
 }
 
 void ExternalMetrics::Start(Profile* profile) {
@@ -83,9 +155,17 @@ void ExternalMetrics::RecordActionWrapper(RecordFunctionType f) {
 
 ExternalMetrics::RecordFunctionTableEntry ExternalMetrics::function_table_[] = {
   // These entries MUST be in alphabetical order.
-  RF_ENTRY(BootTime, EVENT_TYPE_HISTOGRAM),
-  RF_ENTRY(TabOverviewExitMouse, EVENT_TYPE_ACTION),
-  RF_ENTRY(TabOverviewKeystroke, EVENT_TYPE_ACTION),
+  RF_ENTRY(BootTime,                            EVENT_TYPE_HISTOGRAM),
+  RF_ENTRY(ConnmanAssociation,                  EVENT_TYPE_HISTOGRAM),
+  RF_ENTRY(ConnmanConfiguration,                EVENT_TYPE_HISTOGRAM),
+  RF_ENTRY(ConnmanDisconnect,                   EVENT_TYPE_HISTOGRAM),
+  RF_ENTRY(ConnmanFailure,                      EVENT_TYPE_HISTOGRAM),
+  RF_ENTRY(ConnmanIdle,                         EVENT_TYPE_HISTOGRAM),
+  RF_ENTRY(ConnmanOffline,                      EVENT_TYPE_HISTOGRAM),
+  RF_ENTRY(ConnmanOnline,                       EVENT_TYPE_HISTOGRAM),
+  RF_ENTRY(ConnmanReady,                        EVENT_TYPE_HISTOGRAM),
+  RF_ENTRY(TabOverviewExitMouse,                EVENT_TYPE_ACTION),
+  RF_ENTRY(TabOverviewKeystroke,                EVENT_TYPE_ACTION),
   RF_ENTRY(UpTime, EVENT_TYPE_HISTOGRAM),
 };
 

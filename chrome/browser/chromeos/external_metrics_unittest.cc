@@ -53,6 +53,21 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
     {"BootTime", "9500"},
     {"BootTime", "10000"},
     {"BootTime", "9200"},
+    {"TabOverviewExitMouse", ""},
+    {"ConnmanIdle", "1000"},
+    {"ConnmanIdle", "1200"},
+    {"TabOverviewKeystroke", ""},
+    {"ConnmanDisconnect", "1000"},
+    {"ConnmanFailure", "1000"},
+    {"ConnmanFailure", "1300"},
+    {"ConnmanAssociation", "1000"},
+    {"ConnmanConfiguration", "1000"},
+    {"ConnmanOffline", "1000"},
+    {"ConnmanOnline", "1000"},
+    {"ConnmanOffline", "2000"},
+    {"ConnmanReady", "33000"},
+    {"ConnmanReady", "44000"},
+    {"ConnmanReady", "22000"},
   };
   int npairs = ARRAYSIZE_UNSAFE(pairs);
   int32 i;
@@ -63,15 +78,20 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
 
   EXPECT_TRUE(unlink(path) == 0 || errno == ENOENT);
 
-  // Send a few valid messages.
+  // Sends a few valid messages.  Once in a while, collect them and check the
+  // last message.  We don't want to check every single message because we also
+  // want to test the ability to deal with a file containing more than one
+  // message.
   for (i = 0; i < npairs; i++) {
     SendMessage(path, pairs[i].name, pairs[i].value);
+    if (i % 3 == 2) {
+      external_metrics->CollectEvents();
+      CheckMessage(pairs[i].name, pairs[i].value, i + 1);
+    }
   }
 
-  external_metrics->CollectEvents();
-  CheckMessage(pairs[npairs-1].name, pairs[npairs-1].value, npairs);
 
-  // Send a message that's too large.
+  // Sends a message that's too large.
   char b[MAXLENGTH + 100];
   for (i = 0; i < MAXLENGTH + 99; i++) {
     b[i] = 'x';
@@ -81,7 +101,7 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
   external_metrics->CollectEvents();
   EXPECT_EQ(received_count, npairs);
 
-  // Send a malformed message (first string is not null-terminated).
+  // Sends a malformed message (first string is not null-terminated).
   i = 100 + sizeof(i);
   int fd = open(path, O_CREAT | O_WRONLY);
   EXPECT_GT(fd, 0);
@@ -92,7 +112,7 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
   external_metrics->CollectEvents();
   EXPECT_EQ(received_count, npairs);
 
-  // Send a malformed message (second string is not null-terminated).
+  // Sends a malformed message (second string is not null-terminated).
   b[50] = '\0';
   fd = open(path, O_CREAT | O_WRONLY);
   EXPECT_GT(fd, 0);
@@ -103,7 +123,7 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
   external_metrics->CollectEvents();
   EXPECT_EQ(received_count, npairs);
 
-  // Check that we survive when file doesn't exist.
+  // Checks that we survive when file doesn't exist.
   EXPECT_EQ(unlink(path), 0);
   external_metrics->CollectEvents();
   EXPECT_EQ(received_count, npairs);
