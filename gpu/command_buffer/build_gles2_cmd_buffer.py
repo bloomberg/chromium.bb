@@ -24,71 +24,66 @@ _LICENSE = """
 """
 
 # This string is copied directly out of the gl2.h file from GLES2.0
-# the reasons it is copied out instead of parsed directly are
-#
-# 1) Because order is important. The command IDs need to stay constant forever
-#    so if you add a new command it needs to be added to the bottom of the list.
-#
-# 2) So we can add more commands easily that are unrelated to GLES2.0 but still
-#    needed for GLES2.0 command buffers.
 #
 # Edits:
 #
 # *) Any argument that is a resourceID has been changed to GLresourceID.
 #    (not pointer arguments)
 #
+# *) All GLenums have been changed to GLenumTypeOfEnum
+#
 _GL_FUNCTIONS = """
 GL_APICALL void         GL_APIENTRY glActiveTexture (GLenum texture);
 GL_APICALL void         GL_APIENTRY glAttachShader (GLResourceId program, GLResourceId shader);
 GL_APICALL void         GL_APIENTRY glBindAttribLocation (GLResourceId program, GLuint index, const char* name);
-GL_APICALL void         GL_APIENTRY glBindBuffer (GLenum target, GLResourceId buffer);
-GL_APICALL void         GL_APIENTRY glBindFramebuffer (GLenum target, GLResourceId framebuffer);
-GL_APICALL void         GL_APIENTRY glBindRenderbuffer (GLenum target, GLResourceId renderbuffer);
-GL_APICALL void         GL_APIENTRY glBindTexture (GLenum target, GLResourceId texture);
+GL_APICALL void         GL_APIENTRY glBindBuffer (GLenumBufferTarget target, GLResourceId buffer);
+GL_APICALL void         GL_APIENTRY glBindFramebuffer (GLenumFrameBufferTarget target, GLResourceId framebuffer);
+GL_APICALL void         GL_APIENTRY glBindRenderbuffer (GLenumRenderBufferTarget target, GLResourceId renderbuffer);
+GL_APICALL void         GL_APIENTRY glBindTexture (GLenumTextureBindTarget target, GLResourceId texture);
 GL_APICALL void         GL_APIENTRY glBlendColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-GL_APICALL void         GL_APIENTRY glBlendEquation ( GLenum mode );
-GL_APICALL void         GL_APIENTRY glBlendEquationSeparate (GLenum modeRGB, GLenum modeAlpha);
-GL_APICALL void         GL_APIENTRY glBlendFunc (GLenum sfactor, GLenum dfactor);
-GL_APICALL void         GL_APIENTRY glBlendFuncSeparate (GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
-GL_APICALL void         GL_APIENTRY glBufferData (GLenum target, GLsizeiptr size, const void* data, GLenum usage);
-GL_APICALL void         GL_APIENTRY glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, const void* data);
-GL_APICALL GLenum       GL_APIENTRY glCheckFramebufferStatus (GLenum target);
+GL_APICALL void         GL_APIENTRY glBlendEquation ( GLenumEquation mode );
+GL_APICALL void         GL_APIENTRY glBlendEquationSeparate (GLenumEquation modeRGB, GLenumEquation modeAlpha);
+GL_APICALL void         GL_APIENTRY glBlendFunc (GLenumSrcBlendFactor sfactor, GLenumDstBlendFactor dfactor);
+GL_APICALL void         GL_APIENTRY glBlendFuncSeparate (GLenumSrcBlendFactor srcRGB, GLenumDstBlendFactor dstRGB, GLenumSrcBlendFactor srcAlpha, GLenumDstBlendFactor dstAlpha);
+GL_APICALL void         GL_APIENTRY glBufferData (GLenumBufferTarget target, GLsizeiptr size, const void* data, GLenumBufferUsage usage);
+GL_APICALL void         GL_APIENTRY glBufferSubData (GLenumBufferTarget target, GLintptr offset, GLsizeiptr size, const void* data);
+GL_APICALL GLenum       GL_APIENTRY glCheckFramebufferStatus (GLenumFrameBufferTarget target);
 GL_APICALL void         GL_APIENTRY glClear (GLbitfield mask);
 GL_APICALL void         GL_APIENTRY glClearColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
 GL_APICALL void         GL_APIENTRY glClearDepthf (GLclampf depth);
 GL_APICALL void         GL_APIENTRY glClearStencil (GLint s);
 GL_APICALL void         GL_APIENTRY glColorMask (GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
 GL_APICALL void         GL_APIENTRY glCompileShader (GLResourceId shader);
-GL_APICALL void         GL_APIENTRY glCompressedTexImage2D (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data);
-GL_APICALL void         GL_APIENTRY glCompressedTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data);
-GL_APICALL void         GL_APIENTRY glCopyTexImage2D (GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
-GL_APICALL void         GL_APIENTRY glCopyTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glCompressedTexImage2D (GLenumTextureTarget target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data);
+GL_APICALL void         GL_APIENTRY glCompressedTexSubImage2D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data);
+GL_APICALL void         GL_APIENTRY glCopyTexImage2D (GLenumTextureTarget target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
+GL_APICALL void         GL_APIENTRY glCopyTexSubImage2D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL GLuint       GL_APIENTRY glCreateProgram (void);
-GL_APICALL GLuint       GL_APIENTRY glCreateShader (GLenum type);
-GL_APICALL void         GL_APIENTRY glCullFace (GLenum mode);
+GL_APICALL GLuint       GL_APIENTRY glCreateShader (GLenumShaderType type);
+GL_APICALL void         GL_APIENTRY glCullFace (GLenumFaceType mode);
 GL_APICALL void         GL_APIENTRY glDeleteBuffers (GLsizei n, const GLuint* buffers);
 GL_APICALL void         GL_APIENTRY glDeleteFramebuffers (GLsizei n, const GLuint* framebuffers);
 GL_APICALL void         GL_APIENTRY glDeleteProgram (GLResourceId program);
 GL_APICALL void         GL_APIENTRY glDeleteRenderbuffers (GLsizei n, const GLuint* renderbuffers);
 GL_APICALL void         GL_APIENTRY glDeleteShader (GLResourceId shader);
 GL_APICALL void         GL_APIENTRY glDeleteTextures (GLsizei n, const GLuint* textures);
-GL_APICALL void         GL_APIENTRY glDepthFunc (GLenum func);
+GL_APICALL void         GL_APIENTRY glDepthFunc (GLenumCmpFunction func);
 GL_APICALL void         GL_APIENTRY glDepthMask (GLboolean flag);
 GL_APICALL void         GL_APIENTRY glDepthRangef (GLclampf zNear, GLclampf zFar);
 GL_APICALL void         GL_APIENTRY glDetachShader (GLResourceId program, GLResourceId shader);
-GL_APICALL void         GL_APIENTRY glDisable (GLenum cap);
+GL_APICALL void         GL_APIENTRY glDisable (GLenumCapability cap);
 GL_APICALL void         GL_APIENTRY glDisableVertexAttribArray (GLuint index);
-GL_APICALL void         GL_APIENTRY glDrawArrays (GLenum mode, GLint first, GLsizei count);
-GL_APICALL void         GL_APIENTRY glDrawElements (GLenum mode, GLsizei count, GLenum type, const void* indices);
-GL_APICALL void         GL_APIENTRY glEnable (GLenum cap);
+GL_APICALL void         GL_APIENTRY glDrawArrays (GLenumDrawMode mode, GLint first, GLsizei count);
+GL_APICALL void         GL_APIENTRY glDrawElements (GLenumDrawMode mode, GLsizei count, GLenumIndexType type, const void* indices);
+GL_APICALL void         GL_APIENTRY glEnable (GLenumCapability cap);
 GL_APICALL void         GL_APIENTRY glEnableVertexAttribArray (GLuint index);
 GL_APICALL void         GL_APIENTRY glFinish (void);
 GL_APICALL void         GL_APIENTRY glFlush (void);
-GL_APICALL void         GL_APIENTRY glFramebufferRenderbuffer (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLResourceId renderbuffer);
-GL_APICALL void         GL_APIENTRY glFramebufferTexture2D (GLenum target, GLenum attachment, GLenum textarget, GLResourceId texture, GLint level);
-GL_APICALL void         GL_APIENTRY glFrontFace (GLenum mode);
+GL_APICALL void         GL_APIENTRY glFramebufferRenderbuffer (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumRenderBufferTarget renderbuffertarget, GLResourceId renderbuffer);
+GL_APICALL void         GL_APIENTRY glFramebufferTexture2D (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumTextureTarget textarget, GLResourceId texture, GLint level);
+GL_APICALL void         GL_APIENTRY glFrontFace (GLenumFaceMode mode);
 GL_APICALL void         GL_APIENTRY glGenBuffers (GLsizei n, GLuint* buffers);
-GL_APICALL void         GL_APIENTRY glGenerateMipmap (GLenum target);
+GL_APICALL void         GL_APIENTRY glGenerateMipmap (GLenumTextureBindTarget target);
 GL_APICALL void         GL_APIENTRY glGenFramebuffers (GLsizei n, GLuint* framebuffers);
 GL_APICALL void         GL_APIENTRY glGenRenderbuffers (GLsizei n, GLuint* renderbuffers);
 GL_APICALL void         GL_APIENTRY glGenTextures (GLsizei n, GLuint* textures);
@@ -97,30 +92,30 @@ GL_APICALL void         GL_APIENTRY glGetActiveUniform (GLResourceId program, GL
 GL_APICALL void         GL_APIENTRY glGetAttachedShaders (GLResourceId program, GLsizei maxcount, GLsizei* count, GLuint* shaders);
 GL_APICALL GLint        GL_APIENTRY glGetAttribLocation (GLResourceId program, const char* name);
 GL_APICALL void         GL_APIENTRY glGetBooleanv (GLenum pname, GLboolean* params);
-GL_APICALL void         GL_APIENTRY glGetBufferParameteriv (GLenum target, GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetBufferParameteriv (GLenumBufferTarget target, GLenumBufferParameter pname, GLint* params);
 GL_APICALL GLenum       GL_APIENTRY glGetError (void);
 GL_APICALL void         GL_APIENTRY glGetFloatv (GLenum pname, GLfloat* params);
-GL_APICALL void         GL_APIENTRY glGetFramebufferAttachmentParameteriv (GLenum target, GLenum attachment, GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetFramebufferAttachmentParameteriv (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumFrameBufferParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetIntegerv (GLenum pname, GLint* params);
-GL_APICALL void         GL_APIENTRY glGetProgramiv (GLResourceId program, GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetProgramiv (GLResourceId program, GLenumProgramParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoLog (GLResourceId program, GLsizei bufsize, GLsizei* length, char* infolog);
-GL_APICALL void         GL_APIENTRY glGetRenderbufferParameteriv (GLenum target, GLenum pname, GLint* params);
-GL_APICALL void         GL_APIENTRY glGetShaderiv (GLResourceId shader, GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetRenderbufferParameteriv (GLenumRenderBufferTarget target, GLenumRenderBufferParameter pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetShaderiv (GLResourceId shader, GLenumShaderParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetShaderInfoLog (GLResourceId shader, GLsizei bufsize, GLsizei* length, char* infolog);
-GL_APICALL void         GL_APIENTRY glGetShaderPrecisionFormat (GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision);
+GL_APICALL void         GL_APIENTRY glGetShaderPrecisionFormat (GLenumShaderType shadertype, GLenumShaderPercision precisiontype, GLint* range, GLint* precision);
 GL_APICALL void         GL_APIENTRY glGetShaderSource (GLResourceId shader, GLsizei bufsize, GLsizei* length, char* source);
-GL_APICALL const GLubyte* GL_APIENTRY glGetString (GLenum name);
-GL_APICALL void         GL_APIENTRY glGetTexParameterfv (GLenum target, GLenum pname, GLfloat* params);
-GL_APICALL void         GL_APIENTRY glGetTexParameteriv (GLenum target, GLenum pname, GLint* params);
+GL_APICALL const GLubyte* GL_APIENTRY glGetString (GLenumStringType name);
+GL_APICALL void         GL_APIENTRY glGetTexParameterfv (GLenumTextureTarget target, GLenumTextureParameter pname, GLfloat* params);
+GL_APICALL void         GL_APIENTRY glGetTexParameteriv (GLenumTextureTarget target, GLenumTextureParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetUniformfv (GLResourceId program, GLint location, GLfloat* params);
 GL_APICALL void         GL_APIENTRY glGetUniformiv (GLResourceId program, GLint location, GLint* params);
 GL_APICALL GLint        GL_APIENTRY glGetUniformLocation (GLResourceId program, const char* name);
-GL_APICALL void         GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenum pname, GLfloat* params);
-GL_APICALL void         GL_APIENTRY glGetVertexAttribiv (GLuint index, GLenum pname, GLint* params);
-GL_APICALL void         GL_APIENTRY glGetVertexAttribPointerv (GLuint index, GLenum pname, void** pointer);
-GL_APICALL void         GL_APIENTRY glHint (GLenum target, GLenum mode);
+GL_APICALL void         GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenumVertexAttribute pname, GLfloat* params);
+GL_APICALL void         GL_APIENTRY glGetVertexAttribiv (GLuint index, GLenumVertexAttribute pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetVertexAttribPointerv (GLuint index, GLenumVertexPointer pname, void** pointer);
+GL_APICALL void         GL_APIENTRY glHint (GLenumHintTarget target, GLenumHintMode mode);
 GL_APICALL GLboolean    GL_APIENTRY glIsBuffer (GLResourceId buffer);
-GL_APICALL GLboolean    GL_APIENTRY glIsEnabled (GLenum cap);
+GL_APICALL GLboolean    GL_APIENTRY glIsEnabled (GLenumCapability cap);
 GL_APICALL GLboolean    GL_APIENTRY glIsFramebuffer (GLResourceId framebuffer);
 GL_APICALL GLboolean    GL_APIENTRY glIsProgram (GLResourceId program);
 GL_APICALL GLboolean    GL_APIENTRY glIsRenderbuffer (GLResourceId renderbuffer);
@@ -128,27 +123,27 @@ GL_APICALL GLboolean    GL_APIENTRY glIsShader (GLResourceId shader);
 GL_APICALL GLboolean    GL_APIENTRY glIsTexture (GLResourceId texture);
 GL_APICALL void         GL_APIENTRY glLineWidth (GLfloat width);
 GL_APICALL void         GL_APIENTRY glLinkProgram (GLResourceId program);
-GL_APICALL void         GL_APIENTRY glPixelStorei (GLenum pname, GLint param);
+GL_APICALL void         GL_APIENTRY glPixelStorei (GLenumPixelStore pname, GLintPixelStoreAlignment param);
 GL_APICALL void         GL_APIENTRY glPolygonOffset (GLfloat factor, GLfloat units);
-GL_APICALL void         GL_APIENTRY glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void* pixels);
+GL_APICALL void         GL_APIENTRY glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenumReadPixelFormat format, GLenumPixelType type, void* pixels);
 GL_APICALL void         GL_APIENTRY glReleaseShaderCompiler (void);
-GL_APICALL void         GL_APIENTRY glRenderbufferStorage (GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glRenderbufferStorage (GLenumRenderBufferTarget target, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glSampleCoverage (GLclampf value, GLboolean invert);
 GL_APICALL void         GL_APIENTRY glScissor (GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glShaderBinary (GLsizei n, const GLResourceId* shaders, GLenum binaryformat, const void* binary, GLsizei length);
 GL_APICALL void         GL_APIENTRY glShaderSource (GLResourceId shader, GLsizei count, const char** string, const GLint* length);
-GL_APICALL void         GL_APIENTRY glStencilFunc (GLenum func, GLint ref, GLuint mask);
-GL_APICALL void         GL_APIENTRY glStencilFuncSeparate (GLenum face, GLenum func, GLint ref, GLuint mask);
+GL_APICALL void         GL_APIENTRY glStencilFunc (GLenumCmpFunction func, GLint ref, GLuint mask);
+GL_APICALL void         GL_APIENTRY glStencilFuncSeparate (GLenumFaceType face, GLenumCmpFunction func, GLint ref, GLuint mask);
 GL_APICALL void         GL_APIENTRY glStencilMask (GLuint mask);
-GL_APICALL void         GL_APIENTRY glStencilMaskSeparate (GLenum face, GLuint mask);
-GL_APICALL void         GL_APIENTRY glStencilOp (GLenum fail, GLenum zfail, GLenum zpass);
-GL_APICALL void         GL_APIENTRY glStencilOpSeparate (GLenum face, GLenum fail, GLenum zfail, GLenum zpass);
-GL_APICALL void         GL_APIENTRY glTexImage2D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels);
-GL_APICALL void         GL_APIENTRY glTexParameterf (GLenum target, GLenum pname, GLfloat param);
-GL_APICALL void         GL_APIENTRY glTexParameterfv (GLenum target, GLenum pname, const GLfloat* params);
-GL_APICALL void         GL_APIENTRY glTexParameteri (GLenum target, GLenum pname, GLint param);
-GL_APICALL void         GL_APIENTRY glTexParameteriv (GLenum target, GLenum pname, const GLint* params);
-GL_APICALL void         GL_APIENTRY glTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels);
+GL_APICALL void         GL_APIENTRY glStencilMaskSeparate (GLenumFaceType face, GLuint mask);
+GL_APICALL void         GL_APIENTRY glStencilOp (GLenumStencilOp fail, GLenumStencilOp zfail, GLenumStencilOp zpass);
+GL_APICALL void         GL_APIENTRY glStencilOpSeparate (GLenumFaceType face, GLenumStencilOp fail, GLenumStencilOp zfail, GLenumStencilOp zpass);
+GL_APICALL void         GL_APIENTRY glTexImage2D (GLenumTextureTarget target, GLint level, GLintTextureFormat internalformat, GLsizei width, GLsizei height, GLint border, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
+GL_APICALL void         GL_APIENTRY glTexParameterf (GLenumTextureBindTarget target, GLenumTextureParameter pname, GLfloat param);
+GL_APICALL void         GL_APIENTRY glTexParameterfv (GLenumTextureBindTarget target, GLenumTextureParameter pname, const GLfloat* params);
+GL_APICALL void         GL_APIENTRY glTexParameteri (GLenumTextureBindTarget target, GLenumTextureParameter pname, GLint param);
+GL_APICALL void         GL_APIENTRY glTexParameteriv (GLenumTextureBindTarget target, GLenumTextureParameter pname, const GLint* params);
+GL_APICALL void         GL_APIENTRY glTexSubImage2D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
 GL_APICALL void         GL_APIENTRY glUniform1f (GLint location, GLfloat x);
 GL_APICALL void         GL_APIENTRY glUniform1fv (GLint location, GLsizei count, const GLfloat* v);
 GL_APICALL void         GL_APIENTRY glUniform1i (GLint location, GLint x);
@@ -178,11 +173,457 @@ GL_APICALL void         GL_APIENTRY glVertexAttrib3f (GLuint indx, GLfloat x, GL
 GL_APICALL void         GL_APIENTRY glVertexAttrib3fv (GLuint indx, const GLfloat* values);
 GL_APICALL void         GL_APIENTRY glVertexAttrib4f (GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
 GL_APICALL void         GL_APIENTRY glVertexAttrib4fv (GLuint indx, const GLfloat* values);
-GL_APICALL void         GL_APIENTRY glVertexAttribPointer (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
+GL_APICALL void         GL_APIENTRY glVertexAttribPointer (GLuint indx, GLintVertexAttribSize size, GLenumVertexAttribType type, GLboolean normalized, GLsizei stride, const void* ptr);
 GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
 """
+
+# This is the list of all commmands that will be generated and their Id.
+# If a command is not listed in this table it is an error.
+# This lets us make sure that command ids do not change as the generator
+# generates new variations of commands.
+
+_CMD_ID_TABLE = {
+  'ActiveTexture':                                             256,
+  'AttachShader':                                              257,
+  'BindAttribLocation':                                        258,
+  'BindAttribLocationImmediate':                               259,
+  'BindBuffer':                                                260,
+  'BindFramebuffer':                                           261,
+  'BindRenderbuffer':                                          262,
+  'BindTexture':                                               263,
+  'BlendColor':                                                264,
+  'BlendEquation':                                             265,
+  'BlendEquationSeparate':                                     266,
+  'BlendFunc':                                                 267,
+  'BlendFuncSeparate':                                         268,
+  'BufferData':                                                269,
+  'BufferDataImmediate':                                       270,
+  'BufferSubData':                                             271,
+  'BufferSubDataImmediate':                                    272,
+  'CheckFramebufferStatus':                                    273,
+  'Clear':                                                     274,
+  'ClearColor':                                                275,
+  'ClearDepthf':                                               276,
+  'ClearStencil':                                              277,
+  'ColorMask':                                                 278,
+  'CompileShader':                                             279,
+  'CompressedTexImage2D':                                      280,
+  'CompressedTexImage2DImmediate':                             281,
+  'CompressedTexSubImage2D':                                   282,
+  'CompressedTexSubImage2DImmediate':                          283,
+  'CopyTexImage2D':                                            284,
+  'CopyTexSubImage2D':                                         285,
+  'CreateProgram':                                             286,
+  'CreateShader':                                              287,
+  'CullFace':                                                  288,
+  'DeleteBuffers':                                             289,
+  'DeleteBuffersImmediate':                                    290,
+  'DeleteFramebuffers':                                        291,
+  'DeleteFramebuffersImmediate':                               292,
+  'DeleteProgram':                                             293,
+  'DeleteRenderbuffers':                                       294,
+  'DeleteRenderbuffersImmediate':                              295,
+  'DeleteShader':                                              296,
+  'DeleteTextures':                                            297,
+  'DeleteTexturesImmediate':                                   298,
+  'DepthFunc':                                                 299,
+  'DepthMask':                                                 300,
+  'DepthRangef':                                               301,
+  'DetachShader':                                              302,
+  'Disable':                                                   303,
+  'DisableVertexAttribArray':                                  304,
+  'DrawArrays':                                                305,
+  'DrawElements':                                              306,
+  'Enable':                                                    307,
+  'EnableVertexAttribArray':                                   308,
+  'Finish':                                                    309,
+  'Flush':                                                     310,
+  'FramebufferRenderbuffer':                                   311,
+  'FramebufferTexture2D':                                      312,
+  'FrontFace':                                                 313,
+  'GenBuffers':                                                314,
+  'GenBuffersImmediate':                                       315,
+  'GenerateMipmap':                                            316,
+  'GenFramebuffers':                                           317,
+  'GenFramebuffersImmediate':                                  318,
+  'GenRenderbuffers':                                          319,
+  'GenRenderbuffersImmediate':                                 320,
+  'GenTextures':                                               321,
+  'GenTexturesImmediate':                                      322,
+  'GetActiveAttrib':                                           323,
+  'GetActiveUniform':                                          324,
+  'GetAttachedShaders':                                        325,
+  'GetAttribLocation':                                         326,
+  'GetAttribLocationImmediate':                                327,
+  'GetBooleanv':                                               328,
+  'GetBufferParameteriv':                                      329,
+  'GetError':                                                  330,
+  'GetFloatv':                                                 331,
+  'GetFramebufferAttachmentParameteriv':                       332,
+  'GetIntegerv':                                               333,
+  'GetProgramiv':                                              334,
+  'GetProgramInfoLog':                                         335,
+  'GetRenderbufferParameteriv':                                336,
+  'GetShaderiv':                                               337,
+  'GetShaderInfoLog':                                          338,
+  'GetShaderPrecisionFormat':                                  339,
+  'GetShaderSource':                                           340,
+  'GetString':                                                 341,
+  'GetTexParameterfv':                                         342,
+  'GetTexParameteriv':                                         343,
+  'GetUniformfv':                                              344,
+  'GetUniformiv':                                              345,
+  'GetUniformLocation':                                        346,
+  'GetUniformLocationImmediate':                               347,
+  'GetVertexAttribfv':                                         348,
+  'GetVertexAttribiv':                                         349,
+  'GetVertexAttribPointerv':                                   350,
+  'Hint':                                                      351,
+  'IsBuffer':                                                  352,
+  'IsEnabled':                                                 353,
+  'IsFramebuffer':                                             354,
+  'IsProgram':                                                 355,
+  'IsRenderbuffer':                                            356,
+  'IsShader':                                                  357,
+  'IsTexture':                                                 358,
+  'LineWidth':                                                 359,
+  'LinkProgram':                                               360,
+  'PixelStorei':                                               361,
+  'PolygonOffset':                                             362,
+  'ReadPixels':                                                363,
+  'RenderbufferStorage':                                       364,
+  'SampleCoverage':                                            365,
+  'Scissor':                                                   366,
+  'ShaderSource':                                              367,
+  'ShaderSourceImmediate':                                     368,
+  'StencilFunc':                                               369,
+  'StencilFuncSeparate':                                       370,
+  'StencilMask':                                               371,
+  'StencilMaskSeparate':                                       372,
+  'StencilOp':                                                 373,
+  'StencilOpSeparate':                                         374,
+  'TexImage2D':                                                375,
+  'TexImage2DImmediate':                                       376,
+  'TexParameterf':                                             377,
+  'TexParameterfv':                                            378,
+  'TexParameterfvImmediate':                                   379,
+  'TexParameteri':                                             380,
+  'TexParameteriv':                                            381,
+  'TexParameterivImmediate':                                   382,
+  'TexSubImage2D':                                             383,
+  'TexSubImage2DImmediate':                                    384,
+  'Uniform1f':                                                 385,
+  'Uniform1fv':                                                386,
+  'Uniform1fvImmediate':                                       387,
+  'Uniform1i':                                                 388,
+  'Uniform1iv':                                                389,
+  'Uniform1ivImmediate':                                       390,
+  'Uniform2f':                                                 391,
+  'Uniform2fv':                                                392,
+  'Uniform2fvImmediate':                                       393,
+  'Uniform2i':                                                 394,
+  'Uniform2iv':                                                395,
+  'Uniform2ivImmediate':                                       396,
+  'Uniform3f':                                                 397,
+  'Uniform3fv':                                                398,
+  'Uniform3fvImmediate':                                       399,
+  'Uniform3i':                                                 400,
+  'Uniform3iv':                                                401,
+  'Uniform3ivImmediate':                                       402,
+  'Uniform4f':                                                 403,
+  'Uniform4fv':                                                404,
+  'Uniform4fvImmediate':                                       405,
+  'Uniform4i':                                                 406,
+  'Uniform4iv':                                                407,
+  'Uniform4ivImmediate':                                       408,
+  'UniformMatrix2fv':                                          409,
+  'UniformMatrix2fvImmediate':                                 410,
+  'UniformMatrix3fv':                                          411,
+  'UniformMatrix3fvImmediate':                                 412,
+  'UniformMatrix4fv':                                          413,
+  'UniformMatrix4fvImmediate':                                 414,
+  'UseProgram':                                                415,
+  'ValidateProgram':                                           416,
+  'VertexAttrib1f':                                            417,
+  'VertexAttrib1fv':                                           418,
+  'VertexAttrib1fvImmediate':                                  419,
+  'VertexAttrib2f':                                            420,
+  'VertexAttrib2fv':                                           421,
+  'VertexAttrib2fvImmediate':                                  422,
+  'VertexAttrib3f':                                            423,
+  'VertexAttrib3fv':                                           424,
+  'VertexAttrib3fvImmediate':                                  425,
+  'VertexAttrib4f':                                            426,
+  'VertexAttrib4fv':                                           427,
+  'VertexAttrib4fvImmediate':                                  428,
+  'VertexAttribPointer':                                       429,
+  'Viewport':                                                  430,
+  'SwapBuffers':                                               431,
+}
+
+# This is a list of enum names and their valid values. It is used to map
+# GLenum arguments to a specific set of valid values.
+_ENUM_LISTS = {
+  'FrameBufferTarget': [
+    'GL_FRAMEBUFFER',
+  ],
+  'RenderBufferTarget': [
+    'GL_RENDERBUFFER',
+  ],
+  'BufferTarget': [
+    'GL_ARRAY_BUFFER',
+    'GL_ELEMENT_ARRAY_BUFFER',
+  ],
+  'BufferUsage': [
+    'GL_STREAM_DRAW',
+    'GL_STATIC_DRAW',
+    'GL_DYNAMIC_DRAW',
+  ],
+  'TextureTarget': [
+    'GL_TEXTURE_2D',
+    'GL_TEXTURE_CUBE_MAP_POSITIVE_X',
+    'GL_TEXTURE_CUBE_MAP_NEGATIVE_X',
+    'GL_TEXTURE_CUBE_MAP_POSITIVE_Y',
+    'GL_TEXTURE_CUBE_MAP_NEGATIVE_Y',
+    'GL_TEXTURE_CUBE_MAP_POSITIVE_Z',
+    'GL_TEXTURE_CUBE_MAP_NEGATIVE_Z',
+  ],
+  'TextureBindTarget': [
+    'GL_TEXTURE_2D',
+    'GL_TEXTURE_CUBE_MAP',
+  ],
+  'ShaderType': [
+    'GL_VERTEX_SHADER',
+    'GL_FRAGMENT_SHADER',
+  ],
+  'FaceType': [
+    'GL_FRONT',
+    'GL_BACK',
+    'GL_FRONT_AND_BACK',
+  ],
+  'FaceMode': [
+    'GL_CW',
+    'GL_CCW',
+  ],
+  'CmpFunction': [
+    'GL_NEVER',
+    'GL_LESS',
+    'GL_EQUAL',
+    'GL_LEQUAL',
+    'GL_GREATER',
+    'GL_NOTEQUAL',
+    'GL_GEQUAL',
+    'GL_ALWAYS',
+  ],
+  'Equation': [
+    'GL_FUNC_ADD',
+    'GL_FUNC_SUBTRACT',
+    'GL_FUNC_REVERSE_SUBTRACT',
+  ],
+  'SrcBlendFactor': [
+    'GL_ZERO',
+    'GL_ONE',
+    'GL_SRC_COLOR',
+    'GL_ONE_MINUS_SRC_COLOR',
+    'GL_DST_COLOR',
+    'GL_ONE_MINUS_DST_COLOR',
+    'GL_SRC_ALPHA',
+    'GL_ONE_MINUS_SRC_ALPHA',
+    'GL_DST_ALPHA',
+    'GL_ONE_MINUS_DST_ALPHA',
+    'GL_CONSTANT_COLOR',
+    'GL_ONE_MINUS_CONSTANT_COLOR',
+    'GL_CONSTANT_ALPHA',
+    'GL_ONE_MINUS_CONSTANT_ALPHA',
+    'GL_SRC_ALPHA_SATURATE',
+  ],
+  'DstBlendFactor': [
+    'GL_ZERO',
+    'GL_ONE',
+    'GL_SRC_COLOR',
+    'GL_ONE_MINUS_SRC_COLOR',
+    'GL_DST_COLOR',
+    'GL_ONE_MINUS_DST_COLOR',
+    'GL_SRC_ALPHA',
+    'GL_ONE_MINUS_SRC_ALPHA',
+    'GL_DST_ALPHA',
+    'GL_ONE_MINUS_DST_ALPHA',
+    'GL_CONSTANT_COLOR',
+    'GL_ONE_MINUS_CONSTANT_COLOR',
+    'GL_CONSTANT_ALPHA',
+    'GL_ONE_MINUS_CONSTANT_ALPHA',
+  ],
+  'Capability': [
+    'GL_BLEND',
+    'GL_CULL_FACE',
+    'GL_DEPTH_TEST',
+    'GL_DITHER',
+    'GL_POLYGON_OFFSET_FILL',
+    'GL_SAMPLE_ALPHA_TO_COVERAGE',
+    'GL_SAMPLE_COVERAGE',
+    'GL_SCISSOR_TEST',
+    'GL_STENCIL_TEST',
+  ],
+  'DrawMode': [
+    'GL_POINTS',
+    'GL_LINE_STRIP',
+    'GL_LINE_LOOP',
+    'GL_LINES',
+    'GL_TRIANGLE_STRIP',
+    'GL_TRIANGLE_FAN',
+    'GL_TRIANGLES',
+  ],
+  'IndexType': [
+    'GL_UNSIGNED_BYTE',
+    'GL_UNSIGNED_SHORT',
+  ],
+  'Attachment': [
+    'GL_COLOR_ATTACHMENT0',
+    'GL_DEPTH_ATTACHMENT',
+    'GL_STENCIL_ATTACHMENT',
+  ],
+  'BufferParameter': [
+    'GL_BUFFER_SIZE',
+    'GL_BUFFER_USAGE',
+  ],
+  'FrameBufferParameter': [
+    'GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE',
+    'GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME',
+    'GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL',
+    'GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE',
+  ],
+  'ProgramParameter': [
+    'GL_DELETE_STATUS',
+    'GL_LINK_STATUS',
+    'GL_VALIDATE_STATUS',
+    'GL_INFO_LOG_LENGTH',
+    'GL_ATTACHED_SHADERS',
+    'GL_ACTIVE_ATTRIBUTES',
+    'GL_ACTIVE_ATTRIBUTE_MAX_LENGTH',
+    'GL_ACTIVE_UNIFORMS',
+    'GL_ACTIVE_UNIFORM_MAX_LENGTH',
+  ],
+  'RenderBufferParameter': [
+    'GL_RENDERBUFFER_WIDTH',
+    'GL_RENDERBUFFER_HEIGHT',
+    'GL_RENDERBUFFER_INTERNAL_FORMAT',
+    'GL_RENDERBUFFER_RED_SIZE',
+    'GL_RENDERBUFFER_GREEN_SIZE',
+    'GL_RENDERBUFFER_BLUE_SIZE',
+    'GL_RENDERBUFFER_ALPHA_SIZE',
+    'GL_RENDERBUFFER_DEPTH_SIZE',
+    'GL_RENDERBUFFER_STENCIL_SIZE',
+  ],
+  'ShaderParameter': [
+    'GL_SHADER_TYPE',
+    'GL_DELETE_STATUS',
+    'GL_COMPILE_STATUS',
+    'GL_INFO_LOG_LENGTH',
+    'GL_SHADER_SOURCE_LENGTH',
+  ],
+  'ShaderPercision': [
+    'GL_LOW_FLOAT',
+    'GL_MEDIUM_FLOAT',
+    'GL_HIGH_FLOAT',
+    'GL_LOW_INT',
+    'GL_MEDIUM_INT',
+    'GL_HIGH_INT',
+  ],
+  'StringType': [
+    'GL_VENDOR',
+    'GL_RENDERER',
+    'GL_VERSION',
+    'GL_SHADING_LANGUAGE_VERSION',
+    'GL_EXTENSIONS',
+  ],
+  'TextureParameter': [
+    'GL_TEXTURE_MAG_FILTER',
+    'GL_TEXTURE_MIN_FILTER',
+    'GL_TEXTURE_WRAP_S',
+    'GL_TEXTURE_WRAP_T',
+  ],
+  'VertexAttribute': [
+    'GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING',
+    'GL_VERTEX_ATTRIB_ARRAY_ENABLED',
+    'GL_VERTEX_ATTRIB_ARRAY_SIZE',
+    'GL_VERTEX_ATTRIB_ARRAY_STRIDE',
+    'GL_VERTEX_ATTRIB_ARRAY_TYPE',
+    'GL_VERTEX_ATTRIB_ARRAY_NORMALIZED',
+    'GL_CURRENT_VERTEX_ATTRIB',
+  ],
+  'VertexPointer': [
+    'GL_VERTEX_ATTRIB_ARRAY_POINTER',
+  ],
+  'HintTarget': [
+    'GL_GENERATE_MIPMAP_HINT',
+  ],
+  'HintMode': [
+    'GL_FASTEST',
+    'GL_NICEST',
+    'GL_DONT_CARE',
+  ],
+  'PixelStore': [
+    'GL_PACK_ALIGNMENT',
+    'GL_UNPACK_ALIGNMENT',
+  ],
+  'PixelStoreAlignment': [
+    '1',
+    '2',
+    '4',
+    '8',
+  ],
+  'ReadPixelFormat': [
+    'GL_ALPHA',
+    'GL_RGB',
+    'GL_RGBA',
+  ],
+  'PixelType': [
+    'GL_UNSIGNED_BYTE',
+    'GL_UNSIGNED_SHORT_5_6_5',
+    'GL_UNSIGNED_SHORT_4_4_4_4',
+    'GL_UNSIGNED_SHORT_5_5_5_1',
+  ],
+  'RenderBufferFormat': [
+    'GL_RGBA4',
+    'GL_RGB565',
+    'GL_RGB5_A1',
+    'GL_DEPTH_COMPONENT16',
+    'GL_STENCIL_INDEX8',
+  ],
+  'StencilOp': [
+    'GL_KEEP',
+    'GL_ZERO',
+    'GL_REPLACE',
+    'GL_INCR',
+    'GL_INCR_WRAP',
+    'GL_DECR',
+    'GL_DECR_WRAP',
+    'GL_INVERT',
+  ],
+  'TextureFormat': [
+    'GL_ALPHA',
+    'GL_LUMINANCE',
+    'GL_LUMINANCE_ALPHA',
+    'GL_RGB',
+    'GL_RGBA',
+  ],
+  'VertexAttribType': [
+    'GL_BYTE',
+    'GL_UNSIGNED_BYTE',
+    'GL_SHORT',
+    'GL_UNSIGNED_SHORT',
+    #'GL_FIXED',  // This is not available on Desktop GL.
+    'GL_FLOAT',
+  ],
+  'VertexAttribSize': [
+    '1',
+    '2',
+    '3',
+    '4',
+  ],
+}
 
 # This table specifies types and other special data for the commands that
 # will be generated.
@@ -207,19 +648,19 @@ _FUNCTION_INFO = {
   'BindBuffer': {'DecoderFunc': 'DoBindBuffer'},
   'BindFramebuffer': {'DecoderFunc': 'glBindFramebufferEXT'},
   'BindRenderbuffer': {'DecoderFunc': 'glBindRenderbufferEXT'},
-  'BufferData': {'type': 'Manual', 'immediate': True,},
+  'BufferData': {'type': 'Manual', 'immediate': True},
   'BufferSubData': {'type': 'Data'},
   'CheckFramebufferStatus': {'DecoderFunc': 'glCheckFramebufferStatusEXT'},
   'ClearDepthf': {'DecoderFunc': 'glClearDepth'},
-  'CompressedTexImage2D': {'type': 'Manual', 'immediate': True,},
+  'CompressedTexImage2D': {'type': 'Manual','immediate': True},
   'CompressedTexSubImage2D': {'type': 'Data'},
   'CreateProgram': {'type': 'Create'},
   'CreateShader': {'type': 'Create'},
   'DeleteBuffers': {'type': 'DELn'},
   'DeleteFramebuffers': {'type': 'DELn'},
-  'DeleteProgram': {'DecoderFunc': 'DoDeleteProgram'},
+  'DeleteProgram': {'type': 'Custom', 'DecoderFunc': 'DoDeleteProgram'},
   'DeleteRenderbuffers': {'type': 'DELn'},
-  'DeleteShader': {'DecoderFunc': 'DoDeleteShader'},
+  'DeleteShader': {'type': 'Custom', 'DecoderFunc': 'DoDeleteShader'},
   'DeleteTextures': {'type': 'DELn'},
   'DepthRangef': {'DecoderFunc': 'glDepthRange'},
   'DrawElements': {
@@ -441,12 +882,6 @@ class TypeHandler(object):
 
   def WriteHandlerImplementation(self, func, file):
     """Writes the handler implementation for this command."""
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
     file.Write("  %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
 
@@ -514,12 +949,7 @@ class TypeHandler(object):
   def WriteImmediateHandlerImplementation (self, func, file):
     """Writes the handler impl for the immediate version of a command."""
     file.Write("  // Immediate version.\n")
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
+    func.WriteHandlerValidation(file)
     file.Write("  %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
 
@@ -531,6 +961,7 @@ class TypeHandler(object):
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     for arg in func.GetOriginalArgs():
       arg.WriteGetCode(file)
+    func.WriteHandlerValidation(file)
     func.WriteHandlerImplementation(file)
     file.Write("  return parse_error::kParseNoError;\n")
     file.Write("}\n")
@@ -544,6 +975,7 @@ class TypeHandler(object):
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     for arg in func.GetOriginalArgs():
       arg.WriteGetCode(file)
+    func.WriteHandlerValidation(file)
     func.WriteHandlerImplementation(file)
     file.Write("  return parse_error::kParseNoError;\n")
     file.Write("}\n")
@@ -802,6 +1234,7 @@ class DataHandler(CustomHandler):
 
     for arg in func.GetOriginalArgs():
       arg.WriteGetAddress(file)
+    func.WriteHandlerValidation(file)
     func.WriteHandlerImplementation(file)
     file.Write("  return parse_error::kParseNoError;\n")
     file.Write("}\n")
@@ -867,23 +1300,13 @@ class GENnHandler(TypeHandler):
 
   def WriteHandlerImplementation (self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
+    func.WriteHandlerValidation(file)
     file.Write("  GenGLObjects<GL%sHelper>(n, %s);\n" %
                (func.name, func.GetLastOriginalArg().name))
 
   def WriteImmediateHandlerImplementation(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
+    func.WriteHandlerValidation(file)
     file.Write("  GenGLObjects<GL%sHelper>(n, %s);\n" %
                (func.original_name, func.GetLastOriginalArg().name))
 
@@ -1012,12 +1435,7 @@ class CreateHandler(TypeHandler):
   def WriteHandlerImplementation (self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("  uint32 client_id = c.client_id;\n")
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
+    func.WriteHandlerValidation(file)
     file.Write("  %sHelper(%s);\n" %
                (func.name, func.MakeCmdArgString("")))
 
@@ -1047,23 +1465,13 @@ class DELnHandler(TypeHandler):
 
   def WriteHandlerImplementation (self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
+    func.WriteHandlerValidation(file)
     file.Write("  DeleteGLObjects<GL%sHelper>(n, %s);\n" %
                (func.name, func.GetLastOriginalArg().name))
 
   def WriteImmediateHandlerImplementation (self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
+    func.WriteHandlerValidation(file)
     file.Write("  DeleteGLObjects<GL%sHelper>(n, %s);\n" %
                (func.original_name, func.GetLastOriginalArg().name))
 
@@ -1206,6 +1614,7 @@ class GETnHandler(TypeHandler):
     file.Write("  uint32 params_size = num_values * sizeof(*params);\n")
     file.Write("  params = GetSharedMemoryAs<%s>(\n" % last_arg.type)
     file.Write("      c.params_shm_id, c.params_shm_offset, params_size);\n")
+    func.WriteHandlerValidation(file)
     func.WriteHandlerImplementation(file)
     file.Write("  return parse_error::kParseNoError;\n")
     file.Write("}\n")
@@ -1528,12 +1937,7 @@ class GLcharHandler(TypeHandler):
                last_arg.type)
     file.Write("      c.%s_shm_id, c.%s_shm_offset, name_size);\n" %
                (last_arg.name, last_arg.name))
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
+    func.WriteHandlerValidation(file)
     arg_string = ", ".join(["%s" % arg.name for arg in all_but_last_arg])
     file.Write("  String name_str(name, name_size);\n")
     file.Write("  %s(%s, name_str.c_str());\n" %
@@ -1559,12 +1963,7 @@ class GLcharHandler(TypeHandler):
         "  const char* name = GetImmediateDataAs<const char*>(c);\n")
     file.Write("  // TODO(gman): Make sure validate checks\n")
     file.Write("  //     immediate_data_size covers data_size.\n")
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
+    func.WriteHandlerValidation(file)
     arg_string = ", ".join(["%s" % arg.name for arg in all_but_last_arg])
     file.Write("  String name_str(name, name_size);\n")
     file.Write("  %s(%s, name_str.c_str());\n" %
@@ -1707,12 +2106,7 @@ class GetGLcharHandler(GLcharHandler):
     file.Write(
         "      c.location_shm_id, c.location_shm_offset, sizeof(*location));\n")
     file.Write("  // TODO(gman): Validate location.\n")
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
+    func.WriteHandlerValidation(file)
     arg_string = ", ".join(["%s" % arg.name for arg in all_but_last_arg])
     file.Write("  String name_str(name, name_size);\n")
     file.Write("  *location = %s(%s, name_str.c_str());\n" %
@@ -1742,12 +2136,7 @@ class GetGLcharHandler(GLcharHandler):
     file.Write(
         "      c.location_shm_id, c.location_shm_offset, sizeof(*location));\n")
     file.Write("  // TODO(gman): Validate location.\n")
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
+    func.WriteHandlerValidation(file)
     arg_string = ", ".join(["%s" % arg.name for arg in all_but_last_arg])
     file.Write("  String name_str(name, name_size);\n")
     file.Write("  *location = %s(%s, name_str.c_str());\n" %
@@ -1887,12 +2276,7 @@ class IsHandler(TypeHandler):
                (func.return_type, func.return_type))
     file.Write(
         "      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));\n")
-    file.Write("  parse_error::ParseError result =\n")
-    file.Write("      Validate%s(this, immediate_data_size%s);\n" %
-               (func.name, func.MakeOriginalArgString("", True)))
-    file.Write("  if (result != parse_error::kParseNoError) {\n")
-    file.Write("    return result;\n")
-    file.Write("  }\n")
+    func.WriteHandlerValidation(file)
     file.Write("  *result_dst = %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
     file.Write("  return parse_error::kParseNoError;\n")
@@ -1991,6 +2375,40 @@ class Argument(object):
   def GetImmediateVersion(self):
     """Gets the immediate version of this argument."""
     return self
+
+
+class EnumArgument(Argument):
+  """A class that represents a GLenum argument"""
+
+  def __init__(self, name, type):
+    Argument.__init__(self, name, "GLenum")
+
+    self.enum_type = type
+
+  def WriteValidationCode(self, file):
+    file.Write("  if (!Validate%s(%s)) {\n" % (self.enum_type, self.name))
+    file.Write("    SetGLError(GL_INVALID_VALUE);\n")
+    file.Write("    return parse_error::kParseNoError;\n")
+    file.Write("  }\n")
+
+
+class IntArgument(Argument):
+  """A class for a GLint argument that can only except specific values.
+
+  For example glTexImage2D takes a GLint for its internalformat
+  argument instead of a GLenum.
+  """
+
+  def __init__(self, name, type):
+    Argument.__init__(self, name, "GLint")
+
+    self.int_type = type
+
+  def WriteValidationCode(self, file):
+    file.Write("  if (!Validate%s(%s)) {\n" % (self.int_type, self.name))
+    file.Write("    SetGLError(GL_INVALID_VALUE);\n")
+    file.Write("    return parse_error::kParseNoError;\n")
+    file.Write("  }\n")
 
 
 class ImmediatePointerArgument(Argument):
@@ -2202,6 +2620,12 @@ class Function(object):
         ["%s%s" % (prefix, arg.name) for arg in args])
     return self.__GetArgList(arg_string, add_comma)
 
+  def WriteHandlerValidation(self, file):
+    """Writes validation code for the function."""
+    for arg in self.GetOriginalArgs():
+      arg.WriteValidationCode(file)
+    self.WriteValidationCode(file)
+
   def WriteHandlerImplementation(self, file):
     """Writes the handler implementation for this command."""
     self.type_handler.WriteHandlerImplementation(self, file)
@@ -2368,10 +2792,13 @@ def CreateArg(arg_string):
     return ResourceIdArgument(
         arg_parts[-1],
         " ".join(arg_parts[0:-1]))
+  elif arg_parts[0].startswith('GLenum') and len(arg_parts[0]) > 6:
+    return EnumArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
+  elif (arg_parts[0].startswith('GLint') and len(arg_parts[0]) > 5 and
+        arg_parts[0] != "GLintptr"):
+    return IntArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   else:
-    return Argument(
-        arg_parts[-1],
-        " ".join(arg_parts[0:-1]))
+    return Argument(arg_parts[-1], " ".join(arg_parts[0:-1]))
 
 
 class GLGenerator(object):
@@ -2384,6 +2811,7 @@ class GLGenerator(object):
     self.original_functions = []
     self.functions = []
     self.verbose = verbose
+    self.errors = 0
     self._function_info = {}
     self._empty_type_handler = TypeHandler()
     self._empty_function_info = FunctionInfo({}, self._empty_type_handler)
@@ -2435,6 +2863,11 @@ class GLGenerator(object):
     if self.verbose:
       print msg
 
+  def Error(self, msg):
+    """Prints an error."""
+    print "Error: %s" % msg
+    self.errors += 1
+
   def WriteHeader(self, file):
     """Writes header to file"""
     file.Write(
@@ -2469,13 +2902,16 @@ class GLGenerator(object):
     args = []
     num_pointer_args = 0
     parts = arg_string.split(',')
+    is_gl_enum = False
     for arg_string in parts:
+      if arg_string.startswith('GLenum '):
+        is_gl_enum = True
       arg = CreateArg(arg_string)
       if arg:
         args.append(arg)
         if arg.IsPointer():
           num_pointer_args += 1
-    return (args, num_pointer_args)
+    return (args, num_pointer_args, is_gl_enum)
 
   def ParseGLH(self, filename):
     """Parses the GL2.h file and extracts the functions"""
@@ -2487,10 +2923,12 @@ class GLGenerator(object):
         if func_info.type != 'Noop':
           return_type = match.group(1).strip()
           arg_string = match.group(3)
-          (args, num_pointer_args) = self.ParseArgs(arg_string)
+          (args, num_pointer_args, is_gl_enum) = self.ParseArgs(arg_string)
+          if is_gl_enum:
+            self.Log("%s uses bare GLenum" % func_name)
           args_for_cmds = args
           if hasattr(func_info, 'cmd_args'):
-            (args_for_cmds, num_pointer_args) = (
+            (args_for_cmds, num_pointer_args, is_gl_enum) = (
                 self.ParseArgs(getattr(func_info, 'cmd_args')))
           cmd_args = []
           for arg in args_for_cmds:
@@ -2524,10 +2962,11 @@ class GLGenerator(object):
     file = CWriter(filename)
     self.WriteHeader(file)
     file.Write("#define GLES2_COMMAND_LIST(OP) \\\n")
-    command_id = _FIRST_SPECIFIC_COMMAND_ID
     for func in self.functions:
-      file.Write("  %-60s /* %d */ \\\n" % ("OP(%s)" % func.name, command_id))
-      command_id += 1
+      if not func.name in _CMD_ID_TABLE:
+        self.Error("Command %s not in _CMD_ID_TABLE" % func.name)
+      file.Write("  %-60s /* %d */ \\\n" %
+                 ("OP(%s)" % func.name, _CMD_ID_TABLE[func.name]))
     file.Write("\n")
 
     file.Write("enum CommandId {\n")
@@ -2571,29 +3010,21 @@ class GLGenerator(object):
   def WriteCommandIdTest(self, filename):
     """Writes the command id test."""
     file = CWriter(filename)
-    self.WriteLicense(file)
     file.Write("// This file contains unit tests for gles2 commmand ids\n")
     file.Write("\n")
-    file.Write("#include \"tests/common/win/testing_common.h\"\n")
-    file.Write("#include \"gpu/command_buffer/common/gles2_cmd_format.h\"\n")
-    file.Write("\n")
-
-    self.WriteNamespaceOpen(file)
 
     file.Write("// *** These IDs MUST NOT CHANGE!!! ***\n")
     file.Write("// Changing them will break all client programs.\n")
     file.Write("TEST(GLES2CommandIdTest, CommandIdsMatch) {\n")
-    command_id = _FIRST_SPECIFIC_COMMAND_ID
     for func in self.functions:
+      if not func.name in _CMD_ID_TABLE:
+        self.Error("Command %s not in _CMD_ID_TABLE" % func.name)
       file.Write("  COMPILE_ASSERT(%s::kCmdId == %d,\n" %
-                 (func.name, command_id))
+                 (func.name, _CMD_ID_TABLE[func.name]))
       file.Write("                 GLES2_%s_kCmdId_mismatch);\n" % func.name)
-      command_id += 1
 
     file.Write("}\n")
-
-    self.WriteNamespaceClose(file)
-
+    file.Write("\n")
     file.Close()
 
   def WriteCmdHelperHeader(self, filename):
@@ -2615,27 +3046,6 @@ class GLGenerator(object):
     for func in self.functions:
       func.WriteServiceImplementation(file)
 
-    file.Close()
-
-  def WriteServiceValidation(self, filename):
-    file = CWriter(filename)
-    self.WriteLicense(file)
-    file.Write("\n")
-    self.WriteNamespaceOpen(file)
-    file.Write("namespace {\n")
-    file.Write("\n")
-    for func in self.functions:
-      file.Write("parse_error::ParseError Validate%s(\n" % func.name)
-      file.Write(
-          "    GLES2Decoder* decoder, uint32 immediate_data_size%s) {\n" %
-          func.MakeTypedOriginalArgString("", True))
-      for arg in func.GetOriginalArgs():
-        arg.WriteValidationCode(file)
-      func.WriteValidationCode(file)
-      file.Write("  return parse_error::kParseNoError;\n")
-      file.Write("}\n")
-    file.Write("}  // anonymous namespace\n")
-    self.WriteNamespaceClose(file)
     file.Close()
 
   def WriteGLES2CLibImplementation(self, filename):
@@ -2692,6 +3102,34 @@ class GLGenerator(object):
     self.WriteNamespaceClose(file)
     file.Close()
 
+  def WriteServiceUtilsHeader(self, filename):
+    """Writes the gles2 auto generated utility header."""
+    file = CWriter(filename)
+    self.WriteHeader(file)
+    file.Write("\n")
+    for enum in _ENUM_LISTS:
+      file.Write("bool ValidateGLenum%s(GLenum value);\n" % enum)
+    file.Write("\n")
+    file.Close()
+
+  def WriteServiceUtilsImplementation(self, filename):
+    """Writes the gles2 auto generated utility implementation."""
+    file = CWriter(filename)
+    self.WriteHeader(file)
+    file.Write("\n")
+    for enum in _ENUM_LISTS:
+      file.Write("bool ValidateGLenum%s(GLenum value) {\n" % enum)
+      file.Write("  switch (value) {\n")
+      for value in _ENUM_LISTS[enum]:
+        file.Write("    case %s:\n" % value)
+      file.Write("      return true;\n")
+      file.Write("    default:\n")
+      file.Write("      return false;\n")
+      file.Write("  }\n")
+      file.Write("}\n")
+      file.Write("\n")
+    file.Close()
+
 
 def main(argv):
   """This is the main function."""
@@ -2717,14 +3155,19 @@ def main(argv):
   gen.WriteGLES2CLibImplementation("client/gles2_c_lib_autogen.h")
   gen.WriteCmdHelperHeader("client/gles2_cmd_helper_autogen.h")
   gen.WriteServiceImplementation("service/gles2_cmd_decoder_autogen.h")
+  gen.WriteServiceUtilsHeader("service/gles2_cmd_validation_autogen.h")
+  gen.WriteServiceUtilsImplementation(
+      "service/gles2_cmd_validation_implementation_autogen.h")
 
   if options.generate_implementation_templates:
     gen.WriteGLES2ImplementationImpl("client/gles2_implementation_gen.h")
-    gen.WriteServiceValidation("service/gles2_cmd_decoder_validate.h")
 
   if options.generate_command_id_tests:
-    gen.WriteCommandIdTest("common/gles2_cmd_id_test.cc")
+    gen.WriteCommandIdTest("common/gles2_cmd_id_test_autogen.h")
 
+  if gen.errors > 0:
+    print "%d errors" % gen.errors
+    sys.exit(1)
 
 if __name__ == '__main__':
   main(sys.argv[1:])
