@@ -94,6 +94,7 @@ class NetworkMenuButton : public StatusAreaButton,
     FLAG_DISABLED        = 0x0001,
     FLAG_TOGGLE_ETHERNET = 0x0010,
     FLAG_TOGGLE_WIFI     = 0x0100,
+    FLAG_TOGGLE_OFFLINE  = 0x1000
   };
 
   struct MenuItem {

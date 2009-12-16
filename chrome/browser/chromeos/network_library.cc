@@ -29,7 +29,8 @@ const int NetworkLibrary::kNetworkTrafficeTimerSecs = 1;
 
 NetworkLibrary::NetworkLibrary()
     : traffic_type_(0),
-      network_devices_(0) {
+      network_devices_(0),
+      offline_mode_(false) {
   if (CrosLibrary::EnsureLoaded()) {
     Init();
   }
@@ -120,6 +121,25 @@ void NetworkLibrary::EnableWifiNetworkDevice(bool enable) {
   EnableNetworkDevice(chromeos::TYPE_WIFI, enable);
 }
 
+void NetworkLibrary::EnableOfflineMode(bool enable) {
+  if (!CrosLibrary::EnsureLoaded())
+    return;
+
+  // If network device is already enabled/disabled, then don't do anything.
+  if (enable && offline_mode_) {
+    LOG(INFO) << "Trying to enable offline mode when it's already enabled. ";
+    return;
+  }
+  if (!enable && !offline_mode_) {
+    LOG(INFO) << "Trying to disable offline mode when it's already disabled. ";
+    return;
+  }
+
+  if (chromeos::SetOfflineMode(enable)) {
+    offline_mode_ = enable;
+  }
+}
+
 // static
 void NetworkLibrary::NetworkStatusChangedHandler(void* object,
     const chromeos::ServiceStatus& service_status) {
@@ -176,8 +196,14 @@ void NetworkLibrary::Init() {
   // Now, register to receive updates on network status.
   network_status_connection_ = chromeos::MonitorNetworkStatus(
       &NetworkStatusChangedHandler, this);
-  // Get the enabled network devices.
+  // Get the enabled network devices bit flag. If we get a -1, then that means
+  // offline mode is on. So all devices are disabled. This happens when offline
+  // mode is persisted during a reboot and Chrome starts up with it on.
   network_devices_ = chromeos::GetEnabledNetworkDevices();
+  if (network_devices_ == -1) {
+    offline_mode_ = true;
+    network_devices_ = 0;
+  }
 }
 
 void NetworkLibrary::EnableNetworkDevice(chromeos::ConnectionType device,

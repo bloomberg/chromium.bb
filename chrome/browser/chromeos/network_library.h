@@ -115,12 +115,16 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
 
   bool ethernet_enabled() const { return network_devices_ & TYPE_ETHERNET; }
   bool wifi_enabled() const { return network_devices_ & TYPE_WIFI; }
+  bool offline_mode() const { return offline_mode_; }
 
   // Enables/disables the ethernet network device.
   void EnableEthernetNetworkDevice(bool enable);
 
   // Enables/disables the wifi network device.
   void EnableWifiNetworkDevice(bool enable);
+
+  // Enables/disables offline mode.
+  void EnableOfflineMode(bool enable);
 
  private:
   friend struct DefaultSingletonTraits<NetworkLibrary>;
@@ -195,6 +199,8 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   // The current enabled network devices. This is a bitwise flag of
   // ConnectionTypes.
   int network_devices_;
+
+  bool offline_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibrary);
 };

@@ -6144,6 +6144,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT" desc="A menu item label with an indentation. For left-to-right languages, we use 3 spaces on the left.">
         '''   <ph name="LABEL">$1<ex>Wifi SSID</ex></ph>'''
       </message>
+      <message name="IDS_STATUSBAR_NETWORK_OFFLINE_MODE" desc="The offline mode.">
+        Offline mode
+      </message>
       <message name="IDS_STATUSBAR_NO_NETWORKS_MESSAGE" desc="No networks are available">
         No networks are available
       </message>
