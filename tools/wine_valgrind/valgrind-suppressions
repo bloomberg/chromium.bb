@@ -183,9 +183,15 @@
    obj:/usr/lib*/libX11.so.6.2.0
 }
 {
-   bogus_Xcursor
+   bogus_Xcursor_Cond
    Memcheck:Cond
    obj:/usr/lib*/libXcursor.so.1.0.2
+}
+{
+   bogus_Xcursor_Leak
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/libXcursor.so.1.0.2
 }
 {
    suppress_i915_ioctl

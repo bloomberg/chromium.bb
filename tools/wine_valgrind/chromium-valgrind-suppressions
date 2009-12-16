@@ -133,3 +133,11 @@
    fun:IconUtil::CreateSkBitmapFromHICON
    fun:TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource
 }
+{
+   bug_30614
+   Memcheck:Cond
+   fun:strncpy
+   fun:AffixMgr::parse_affix
+   ...
+   fun:SpellCheck::InitializeHunspell
+}
