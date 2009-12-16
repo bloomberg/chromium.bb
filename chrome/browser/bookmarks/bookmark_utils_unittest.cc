@@ -77,6 +77,22 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
   // Punycode query also matches as ever.
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
       node, L"qcka1pmc", L"ja"));
+
+  // Tests with various lower/upper case characters.
+  node = model.AddURL(model.other_node(), 0, L"FOO bar",
+                      GURL("http://www.google.com/search?q=ABC"));
+  ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, L"foo", std::wstring()));
+  ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, L"Foo", std::wstring()));
+  ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, L"FOO", std::wstring()));
+  ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, L"google abc", std::wstring()));
+  ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, L"google ABC", std::wstring()));
+  ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, L"http://www.google.com/search?q=A", std::wstring()));
 }
 
 #if !defined(OS_MACOSX)

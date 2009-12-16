@@ -185,9 +185,10 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
   return
       DoesBookmarkTextContainWords(
           l10n_util::ToLower(node->GetTitle()), words) ||
-      DoesBookmarkTextContainWords(UTF8ToWide(node->GetURL().spec()), words) ||
-      DoesBookmarkTextContainWords(net::FormatUrl(
-          node->GetURL(), languages, false, true, NULL, NULL, NULL), words);
+      DoesBookmarkTextContainWords(
+          l10n_util::ToLower(UTF8ToWide(node->GetURL().spec())), words) ||
+      DoesBookmarkTextContainWords(l10n_util::ToLower(net::FormatUrl(
+          node->GetURL(), languages, false, true, NULL, NULL, NULL)), words);
 }
 
 }  // namespace
