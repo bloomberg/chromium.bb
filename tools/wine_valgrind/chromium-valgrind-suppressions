@@ -117,3 +117,19 @@
    fun:CompactLangDetImpl::DetectLanguageSummaryV25
    fun:CompactLangDet::DetectLanguage
 }
+{
+   bug_30547
+   Memcheck:Leak
+   ...
+   fun:operator new
+   fun:ImportantFileWriter::WriteNow
+   fun:BookmarkStorage::SaveNow
+   fun:BookmarkStorage::BookmarkModelDeleted
+}
+{
+   bug_30584
+   Memcheck:Cond
+   fun:IconUtil::PixelsHaveAlpha
+   fun:IconUtil::CreateSkBitmapFromHICON
+   fun:TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource
+}
