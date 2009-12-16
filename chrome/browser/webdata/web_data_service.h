@@ -15,12 +15,11 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/form_field.h"
 
-class AutofillKey;
+class AutofillChange;
 #if defined(OS_WIN)
 struct IE7PasswordInfo;
 #endif
 class MessageLoop;
-class NotificationType;
 class Task;
 class WebDatabase;
 
@@ -61,8 +60,10 @@ typedef enum {
 #endif
   WEB_APP_IMAGES,         // WDResult<WDAppImagesResult>
   AUTOFILL_VALUE_RESULT,  // WDResult<std::vector<string16>>
-  AUTOFILL_AFFECTED_KEYS, // WDResult<std::vector<AutofillKey>>
+  AUTOFILL_CHANGES,       // WDResult<std::vector<AutofillChange>>
 } WDResultType;
+
+typedef std::vector<AutofillChange> AutofillChangeList;
 
 // Result from GetWebAppImages.
 struct WDAppImagesResult {
@@ -427,7 +428,6 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   typedef GenericRequest2<std::vector<const TemplateURL*>,
                           std::vector<TemplateURL*> > SetKeywordsRequest;
 
-  typedef std::vector<AutofillKey> AutofillKeyList;
   ~WebDataService();
 
   // Initialize the database, if it hasn't already been initialized.

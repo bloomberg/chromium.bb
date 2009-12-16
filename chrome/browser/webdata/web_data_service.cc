@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/thread.h"
+#include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_constants.h"
@@ -188,13 +189,13 @@ void WebDataService::RequestCompleted(Handle h) {
   // including the list of affected keys.
   const WDTypedResult* result = request->GetResult();
   if (!request->IsCancelled() && result) {
-    if (result->GetType() == AUTOFILL_AFFECTED_KEYS) {
-      AutofillKeyList affected_keys =
-          static_cast<const WDResult<AutofillKeyList>*>(result)->GetValue();
+    if (result->GetType() == AUTOFILL_CHANGES) {
+      AutofillChangeList changes =
+          static_cast<const WDResult<AutofillChangeList>*>(result)->GetValue();
       NotificationService::current()->Notify(
-          NotificationType::AUTOFILL_ENTRIES_ADDED,
+          NotificationType::AUTOFILL_ENTRIES_CHANGED,
           NotificationService::AllSources(),
-          Details<AutofillKeyList>(&affected_keys));
+          Details<AutofillChangeList>(&changes));
     }
   }
 }
@@ -619,14 +620,16 @@ void WebDataService::AddFormFieldValuesImpl(
     if (!db_->AddFormFieldValues(form_fields))
       NOTREACHED();
 
-    AutofillKeyList keys;
+    AutofillChangeList changes;
     for (std::vector<FormField>::const_iterator itr = form_fields.begin();
          itr != form_fields.end();
          itr++) {
-      keys.push_back(AutofillKey(itr->name(), itr->value()));
+      changes.push_back(
+          AutofillChange(AutofillChange::ADD,
+                         AutofillKey(itr->name(), itr->value())));
     }
     request->SetResult(
-        new WDResult<AutofillKeyList>(AUTOFILL_AFFECTED_KEYS, keys));
+        new WDResult<AutofillChangeList>(AUTOFILL_CHANGES, changes));
     ScheduleCommit();
   }
   request->RequestComplete();
@@ -660,9 +663,17 @@ void WebDataService::RemoveFormValueForElementNameImpl(
     GenericRequest2<string16, string16>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    if (db_->RemoveFormElement(request->GetArgument1(),
-                               request->GetArgument2()))
+    const string16& name = request->GetArgument1();
+    const string16& value = request->GetArgument2();
+
+    if (db_->RemoveFormElement(name, value)) {
+      AutofillChangeList changes;
+      changes.push_back(AutofillChange(AutofillChange::REMOVE,
+                                       AutofillKey(name, value)));
+      request->SetResult(
+          new WDResult<AutofillChangeList>(AUTOFILL_CHANGES, changes));
       ScheduleCommit();
+    }
   }
   request->RequestComplete();
 }
