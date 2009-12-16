@@ -153,6 +153,7 @@ class ExceptionHandler {
   bool InstallHandlers();
   void UninstallHandlers();
   void PreresolveSymbols();
+  bool GenerateDump(CrashContext *context);
 
   void UpdateNextID();
   static void SignalHandler(int sig, siginfo_t* info, void* uc);

@@ -77,12 +77,13 @@
 #include <sys/ucontext.h>
 #include <sys/user.h>
 #include <sys/wait.h>
+#include <ucontext.h>
 #include <unistd.h>
 
 #include "common/linux/linux_libc_support.h"
 #include "common/linux/linux_syscall_support.h"
 #include "common/linux/memory.h"
-#include "client/linux/minidump_writer//minidump_writer.h"
+#include "client/linux/minidump_writer/minidump_writer.h"
 #include "common/linux/guid_creator.h"
 
 // A wrapper for the tgkill syscall: send a signal to a specific thread.
@@ -274,6 +275,11 @@ bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
                                        callback_context_))
     return true;
 
+  return GenerateDump(&context);
+}
+
+// This function may run in a compromised context: see the top of the file.
+bool ExceptionHandler::GenerateDump(CrashContext *context) {
   static const unsigned kChildStackSize = 8000;
   PageAllocator allocator;
   uint8_t* stack = (uint8_t*) allocator.Alloc(kChildStackSize);
@@ -286,8 +292,8 @@ bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
   ThreadArgument thread_arg;
   thread_arg.handler = this;
   thread_arg.pid = getpid();
-  thread_arg.context = &context;
-  thread_arg.context_size = sizeof(context);
+  thread_arg.context = context;
+  thread_arg.context_size = sizeof(*context);
 
   const pid_t child = sys_clone(
       ThreadEntry, stack, CLONE_FILES | CLONE_FS | CLONE_UNTRACED,
@@ -298,7 +304,7 @@ bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
   } while (r == -1 && errno == EINTR);
 
   if (r == -1) {
-    static const char msg[] = "ExceptionHandler::HandleSignal: waitpid failed:";
+    static const char msg[] = "ExceptionHandler::GenerateDump waitpid failed:";
     sys_write(2, msg, sizeof(msg) - 1);
     sys_write(2, strerror(errno), strlen(strerror(errno)));
     sys_write(2, "\n", 1);
@@ -319,6 +325,31 @@ bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
                               size_t context_size) {
   return google_breakpad::WriteMinidump(
       next_minidump_path_c_, crashing_process, context, context_size);
+}
+
+// static
+bool ExceptionHandler::WriteMinidump(const std::string &dump_path,
+                                     MinidumpCallback callback,
+                                     void* callback_context) {
+  ExceptionHandler eh(dump_path, NULL, callback, callback_context, false);
+  return eh.WriteMinidump();
+}
+
+bool ExceptionHandler::WriteMinidump() {
+  // Allow ourselves to be dumped.
+  sys_prctl(PR_SET_DUMPABLE, 1);
+
+  CrashContext context;
+  int getcontext_result = getcontext(&context.context);
+  if (getcontext_result)
+    return false;
+  memcpy(&context.float_state, context.context.uc_mcontext.fpregs,
+         sizeof(context.float_state));
+  context.tid = sys_gettid();
+
+  bool success = GenerateDump(&context);
+  UpdateNextID();
+  return success;
 }
 
 }  // namespace google_breakpad
