@@ -415,6 +415,25 @@ bool IsIEInPrivate() {
   return incognito_mode;
 }
 
+HRESULT DoFileDownloadInIE(const wchar_t* url) {
+  DCHECK(url);
+
+  HMODULE mod = ::GetModuleHandleA("ieframe.dll");
+  if (!mod)
+    mod = ::GetModuleHandleA("shdocvw.dll");
+
+  if (!mod) {
+    NOTREACHED();
+    return E_UNEXPECTED;
+  }
+
+  typedef HRESULT (WINAPI* DoFileDownloadFn)(const wchar_t*);
+  DoFileDownloadFn fn = reinterpret_cast<DoFileDownloadFn>(
+      ::GetProcAddress(mod, "DoFileDownload"));
+  DCHECK(fn);
+  return fn ? fn(url) : E_UNEXPECTED;
+}
+
 bool GetModuleVersion(HMODULE module, uint32* high, uint32* low) {
   DCHECK(module != NULL)
       << "Please use GetModuleHandle(NULL) to get the process name";

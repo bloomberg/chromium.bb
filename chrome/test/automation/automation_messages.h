@@ -454,6 +454,77 @@ struct ParamTraits<NavigationInfo> {
   }
 };
 
+// A stripped down version of ContextMenuParams in webkit/glue/context_menu.h.
+struct ContextMenuParams {
+  // The x coordinate for displaying the menu.
+  int screen_x;
+
+  // The y coordinate for displaying the menu.
+  int screen_y;
+
+  // This is the URL of the link that encloses the node the context menu was
+  // invoked on.
+  GURL link_url;
+
+  // The link URL to be used ONLY for "copy link address". We don't validate
+  // this field in the frontend process.
+  GURL unfiltered_link_url;
+
+  // This is the source URL for the element that the context menu was
+  // invoked on.  Example of elements with source URLs are img, audio, and
+  // video.
+  GURL src_url;
+
+  // This is the URL of the top level page that the context menu was invoked
+  // on.
+  GURL page_url;
+
+  // This is the URL of the subframe that the context menu was invoked on.
+  GURL frame_url;
+};
+
+// Traits for ContextMenuParams structure to pack/unpack.
+template <>
+struct ParamTraits<ContextMenuParams> {
+  typedef ContextMenuParams param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.screen_x);
+    WriteParam(m, p.screen_y);
+    WriteParam(m, p.link_url);
+    WriteParam(m, p.unfiltered_link_url);
+    WriteParam(m, p.src_url);
+    WriteParam(m, p.page_url);
+    WriteParam(m, p.frame_url);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, &p->screen_x) &&
+      ReadParam(m, iter, &p->screen_y) &&
+      ReadParam(m, iter, &p->link_url) &&
+      ReadParam(m, iter, &p->unfiltered_link_url) &&
+      ReadParam(m, iter, &p->src_url) &&
+      ReadParam(m, iter, &p->page_url) &&
+      ReadParam(m, iter, &p->frame_url);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.screen_x, l);
+    l->append(L", ");
+    LogParam(p.screen_y, l);
+    l->append(L", ");
+    LogParam(p.link_url, l);
+    l->append(L", ");
+    LogParam(p.unfiltered_link_url, l);
+    l->append(L", ");
+    LogParam(p.src_url, l);
+    l->append(L", ");
+    LogParam(p.page_url, l);
+    l->append(L", ");
+    LogParam(p.frame_url, l);
+    l->append(L")");
+  }
+};
+
+
 }  // namespace IPC
 
 #define MESSAGES_INTERNAL_FILE \

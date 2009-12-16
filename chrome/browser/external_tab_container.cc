@@ -440,11 +440,20 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
   POINT screen_pt = { params.x, params.y };
   MapWindowPoints(GetNativeView(), HWND_DESKTOP, &screen_pt, 1);
 
+  IPC::ContextMenuParams ipc_params;
+  ipc_params.screen_x = screen_pt.x;
+  ipc_params.screen_y = screen_pt.y;
+  ipc_params.link_url = params.link_url;
+  ipc_params.unfiltered_link_url = params.unfiltered_link_url;
+  ipc_params.src_url = params.src_url;
+  ipc_params.page_url = params.page_url;
+  ipc_params.frame_url = params.frame_url;
+
   bool rtl = l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT;
   automation_->Send(
       new AutomationMsg_ForwardContextMenuToExternalHost(0, tab_handle_,
-          external_context_menu_->GetMenuHandle(), screen_pt.x, screen_pt.y,
-          rtl ? TPM_RIGHTALIGN : TPM_LEFTALIGN));
+          external_context_menu_->GetMenuHandle(),
+          rtl ? TPM_RIGHTALIGN : TPM_LEFTALIGN, ipc_params));
 
   return true;
 }
@@ -453,6 +462,16 @@ bool ExternalTabContainer::ExecuteContextMenuCommand(int command) {
   if (!external_context_menu_.get()) {
     NOTREACHED();
     return false;
+  }
+
+  switch (command) {
+    case IDS_CONTENT_CONTEXT_SAVEAUDIOAS:
+    case IDS_CONTENT_CONTEXT_SAVEVIDEOAS:
+    case IDS_CONTENT_CONTEXT_SAVEIMAGEAS:
+    case IDS_CONTENT_CONTEXT_SAVELINKAS: {
+      NOTREACHED();  // Should be handled in host.
+      break;
+    }
   }
 
   external_context_menu_->ExecuteCommand(command);

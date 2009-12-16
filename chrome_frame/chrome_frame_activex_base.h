@@ -40,6 +40,7 @@
 #include "chrome_frame/com_message_event.h"
 #include "chrome_frame/com_type_info_holder.h"
 #include "chrome_frame/urlmon_url_request.h"
+#include "grit/generated_resources.h"
 
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
@@ -288,11 +289,26 @@ END_MSG_MAP()
     return CComControlBase::IOleObject_SetClientSite(client_site);
   }
 
-  bool HandleContextMenuCommand(UINT cmd) {
+  bool HandleContextMenuCommand(UINT cmd,
+                                const IPC::ContextMenuParams& params) {
     if (cmd == IDC_ABOUT_CHROME_FRAME) {
       int tab_handle = automation_client_->tab()->handle();
       OnOpenURL(tab_handle, GURL("about:version"), GURL(), NEW_WINDOW);
       return true;
+    } else {
+      switch (cmd) {
+        case IDS_CONTENT_CONTEXT_SAVEAUDIOAS:
+        case IDS_CONTENT_CONTEXT_SAVEVIDEOAS:
+        case IDS_CONTENT_CONTEXT_SAVEIMAGEAS:
+        case IDS_CONTENT_CONTEXT_SAVELINKAS: {
+          const GURL& referrer = params.frame_url.is_empty() ?
+              params.page_url : params.frame_url;
+          const GURL& url = (cmd == IDS_CONTENT_CONTEXT_SAVELINKAS ?
+              params.link_url : params.src_url);
+          DoFileDownloadInIE(UTF8ToWide(url.spec()).c_str());
+          return true;
+        }
+      }
     }
 
     return false;

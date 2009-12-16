@@ -236,7 +236,7 @@ END_EXEC_COMMAND_MAP()
 
   // Callbacks from ChromeFramePlugin<T>
   bool PreProcessContextMenu(HMENU menu);
-  bool HandleContextMenuCommand(UINT cmd);
+  bool HandleContextMenuCommand(UINT cmd, const IPC::ContextMenuParams& params);
 
   // Should connections initiated by this class try to block
   // responses served with the X-Frame-Options header?

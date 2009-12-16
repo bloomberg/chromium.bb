@@ -1605,7 +1605,8 @@ NPAPIUrlRequest* ChromeFrameNPAPI::RequestFromNotifyData(
   return request;
 }
 
-bool ChromeFrameNPAPI::HandleContextMenuCommand(UINT cmd) {
+bool ChromeFrameNPAPI::HandleContextMenuCommand(UINT cmd,
+    const IPC::ContextMenuParams& params) {
   if (cmd == IDC_ABOUT_CHROME_FRAME) {
     // TODO: implement "About Chrome Frame"
   }

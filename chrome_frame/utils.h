@@ -165,6 +165,9 @@ bool GetModuleVersion(HMODULE module, uint32* high, uint32* low);
 // whether current process is IEXPLORE.
 bool IsIEInPrivate();
 
+// Calls [ieframe|shdocvw]!DoFileDownload to initiate a download.
+HRESULT DoFileDownloadInIE(const wchar_t* url);
+
 // Creates a copy of a menu. We need this when original menu comes from
 // a process with higher integrity.
 HMENU UtilCloneContextMenu(HMENU original_menu);

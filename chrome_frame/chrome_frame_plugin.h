@@ -93,7 +93,8 @@ END_MSG_MAP()
   }
 
   virtual void OnHandleContextMenu(int tab_handle, HANDLE menu_handle,
-                                   int x_pos, int y_pos, int align_flags) {
+                                   int align_flags,
+                                   const IPC::ContextMenuParams& params) {
     if (!menu_handle || !automation_client_.get()) {
       NOTREACHED();
       return;
@@ -109,9 +110,9 @@ END_MSG_MAP()
     T* pThis = static_cast<T*>(this);
     if (pThis->PreProcessContextMenu(copy)) {
       UINT flags = align_flags | TPM_LEFTBUTTON | TPM_RETURNCMD | TPM_RECURSE;
-      UINT selected = TrackPopupMenuEx(copy, flags, x_pos, y_pos, GetWindow(),
-                                       NULL);
-      if (selected != 0 && !pThis->HandleContextMenuCommand(selected)) {
+      UINT selected = TrackPopupMenuEx(copy, flags, params.screen_x,
+                                       params.screen_y, GetWindow(), NULL);
+      if (selected != 0 && !pThis->HandleContextMenuCommand(selected, params)) {
         automation_client_->SendContextMenuCommandToChromeFrame(selected);
       }
     }
@@ -175,7 +176,7 @@ END_MSG_MAP()
 
   // Return true if menu command is processed, otherwise the command will be
   // passed to Chrome for execution. Override in most-derived class if needed.
-  bool HandleContextMenuCommand(UINT cmd) {
+  bool HandleContextMenuCommand(UINT cmd, const IPC::ContextMenuParams& params) {
     return false;
   }
 

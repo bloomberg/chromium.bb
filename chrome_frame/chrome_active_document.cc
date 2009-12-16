@@ -715,7 +715,8 @@ bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
   return Base::PreProcessContextMenu(menu);
 }
 
-bool ChromeActiveDocument::HandleContextMenuCommand(UINT cmd) {
+bool ChromeActiveDocument::HandleContextMenuCommand(UINT cmd,
+    const IPC::ContextMenuParams& params) {
   ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
 
@@ -733,7 +734,7 @@ bool ChromeActiveDocument::HandleContextMenuCommand(UINT cmd) {
       break;
 
     default:
-      return Base::HandleContextMenuCommand(cmd);
+      return Base::HandleContextMenuCommand(cmd, params);
   }
 
   return true;

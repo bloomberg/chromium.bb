@@ -714,8 +714,8 @@ struct MockCFDelegate : public ChromeFrameDelegateImpl {
       const std::string& message,
       const std::string& origin,
       const std::string& target));
-  MOCK_METHOD5(OnHandleContextMenu, void(int tab_handle, HANDLE menu_handle,
-      int x_pos, int y_pos, int align_flags));
+  MOCK_METHOD4(OnHandleContextMenu, void(int tab_handle, HANDLE menu_handle,
+      int align_flags, const IPC::ContextMenuParams& params));
   MOCK_METHOD3(OnRequestStart, void(int tab_handle, int request_id,
       const IPC::AutomationURLRequest& request));
   MOCK_METHOD3(OnRequestRead, void(int tab_handle, int request_id,

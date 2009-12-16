@@ -91,7 +91,8 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
                                         const std::string& origin,
                                         const std::string& target) {}
   virtual void OnHandleContextMenu(int tab_handle, HANDLE menu_handle,
-                                   int x_pos, int y_pos, int align_flags) {}
+                                   int align_flags,
+                                   const IPC::ContextMenuParams& params) {}
   virtual void OnRequestStart(int tab_handle, int request_id,
                               const IPC::AutomationURLRequest& request) {}
   virtual void OnRequestRead(int tab_handle, int request_id,

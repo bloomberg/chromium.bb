@@ -944,12 +944,11 @@ IPC_BEGIN_MESSAGES(Automation)
                              string16 /* chrome_locale */)
 
 #if defined(OS_WIN)
-  IPC_MESSAGE_ROUTED5(AutomationMsg_ForwardContextMenuToExternalHost,
+  IPC_MESSAGE_ROUTED4(AutomationMsg_ForwardContextMenuToExternalHost,
                       int /* tab_handle */,
                       HANDLE /* source menu handle */,
-                      int    /* the x coordinate for displaying the menu */,
-                      int    /* the y coordinate for displaying the menu */,
-                      int    /* align flags */)
+                      int    /* align flags */,
+                      IPC::ContextMenuParams /* params */)
 
   IPC_MESSAGE_ROUTED2(AutomationMsg_ForwardContextMenuCommandToChrome,
                       int /* tab_handle */,

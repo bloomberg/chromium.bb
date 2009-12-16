@@ -125,7 +125,7 @@ END_MSG_MAP()
   // Initialize string->identifier mapping, public to allow unittesting.
   static void InitializeIdentifiers();
 
-  bool HandleContextMenuCommand(UINT cmd);
+  bool HandleContextMenuCommand(UINT cmd, const IPC::ContextMenuParams& params);
  protected:
   // Handler for accelerator messages passed on from the hosted chrome
   // instance.
