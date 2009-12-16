@@ -11,10 +11,10 @@
 #include "base/basictypes.h"
 #include "base/process_util.h"
 #include "chrome/browser/task_manager.h"
+#include "chrome/browser/task_manager_renderer_resource.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 
 class Extension;
 class ExtensionHost;
@@ -22,50 +22,21 @@ class TabContents;
 
 // These file contains the resource providers used in the task manager.
 
-class TaskManagerTabContentsResource : public TaskManager::Resource {
+class TaskManagerTabContentsResource : public TaskManagerRendererResource {
  public:
   explicit TaskManagerTabContentsResource(TabContents* tab_contents);
-  ~TaskManagerTabContentsResource();
+  virtual ~TaskManagerTabContentsResource();
 
   // TaskManagerResource methods:
-  std::wstring GetTitle() const;
-  SkBitmap GetIcon() const;
-  base::ProcessHandle GetProcess() const;
+  virtual std::wstring GetTitle() const;
+  virtual SkBitmap GetIcon() const;
+  virtual base::ProcessHandle GetProcess() const;
   TabContents* GetTabContents() const;
-
-  virtual bool ReportsCacheStats() const { return true; }
-  virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
-
-  virtual bool ReportsV8MemoryStats() const { return true; }
-  virtual size_t GetV8MemoryAllocated() const;
-  virtual size_t GetV8MemoryUsed() const;
-
-  // TabContents always provide the network usage.
-  bool SupportNetworkUsage() const { return true; }
-  void SetSupportNetworkUsage() { }
-
-  virtual void Refresh();
-
-  virtual void NotifyResourceTypeStats(
-      const WebKit::WebCache::ResourceTypeStats& stats);
-
-  virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
-                                 size_t v8_memory_used);
 
  private:
   TabContents* tab_contents_;
   base::ProcessHandle process_;
   int pid_;
-  // The stats_ field holds information about resource usage in the renderer
-  // process and so it is updated asynchronously by the Refresh() call.
-  WebKit::WebCache::ResourceTypeStats stats_;
-  // This flag is true if we are waiting for the renderer to report its stats.
-  bool pending_stats_update_;
-
-  // We do a similar dance to gather the V8 memory usage in a process.
-  size_t v8_memory_allocated_;
-  size_t v8_memory_used_;
-  bool pending_v8_memory_allocated_update_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
 };
@@ -200,7 +171,7 @@ class TaskManagerChildProcessResourceProvider
   DISALLOW_COPY_AND_ASSIGN(TaskManagerChildProcessResourceProvider);
 };
 
-class TaskManagerExtensionProcessResource : public TaskManager::Resource {
+class TaskManagerExtensionProcessResource : public TaskManagerRendererResource {
  public:
   explicit TaskManagerExtensionProcessResource(ExtensionHost* extension_host);
   ~TaskManagerExtensionProcessResource();

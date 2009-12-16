@@ -1524,6 +1524,8 @@
         'browser/tabs/tab_strip_model_order_controller.h',
         'browser/task_manager.cc',
         'browser/task_manager.h',
+        'browser/task_manager_renderer_resource.cc',
+        'browser/task_manager_renderer_resource.h',
         'browser/task_manager_resource_providers.cc',
         'browser/task_manager_resource_providers.h',
         'browser/theme_resources_util.cc',
