@@ -3227,3 +3227,6 @@ BUG_DGLAZKOV WIN : LayoutTests/svg/webarchive/svg-script-subresouces.svg = FAIL 
 // Flaky ASSERTION FAILED: currentThread() == m_openingThread
 // This test is flaky since this file is added.
 BUG30543 : LayoutTests/storage/domstorage/localstorage/enumerate-with-length-and-key.html = CRASH PASS
+
+// Flaky.
+BUG30545 WIN : LayoutTests/websocket/tests/bad-sub-protocol.html = CRASH PASS
