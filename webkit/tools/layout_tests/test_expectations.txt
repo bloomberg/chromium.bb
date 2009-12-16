@@ -439,6 +439,10 @@ BUG12254 WONTFIX SKIP : LayoutTests/fast/xhtmlmp = FAIL
 // We are not planning to support these.
 BUG12310 WONTFIX SKIP : LayoutTests/fast/wcss = FAIL
 
+// This test requires LayoutTestController.setCacheModel, which we don't implement
+// because we can't emulate the cahcing behaviors it expects.
+WONTFIX : LayoutTests/fast/dom/HTMLScriptElement/nested-execution.html = FAIL
+
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
 // -----------------------------------------------------------------
@@ -593,9 +597,6 @@ BUG24195 WIN LINUX : LayoutTests/fast/repaint/bugzilla-6473.html = IMAGE+TEXT
 // This is a test tool problem, not a Chrome problem.
 BUG21888 : LayoutTests/fast/history/clicked-link-is-visited.html = FAIL
 BUG21888 : LayoutTests/fast/history/subframe-is-visited.html = FAIL
-
-// Need to implement LayoutTestController.setCacheModel
-BUG13920 : LayoutTests/fast/dom/HTMLScriptElement/nested-execution.html = FAIL
 
 // Implement layoutTestController.display()
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/body-background-image.html = FAIL
@@ -1448,8 +1449,7 @@ BUG10354 WIN LINUX : LayoutTests/fast/layers/opacity-transforms.html = FAIL
 // MERGE 38389:38450
 // Form submit causes invalid page reload/navigation when action is a named
 // anchor
-BUG10357 DEBUG : LayoutTests/fast/dom/cssTarget-crash.html = TIMEOUT
-BUG10357 RELEASE : LayoutTests/fast/dom/cssTarget-crash.html = TIMEOUT PASS
+BUG10357 : LayoutTests/fast/dom/cssTarget-crash.html = TIMEOUT PASS
 
 // MERGE 38500:39550: New tests
 // Missing expected results
@@ -2470,9 +2470,6 @@ BUG9798 LINUX : LayoutTests/http/tests/multipart/invalid-image-data.html = PASS 
 // Windows. Probably just need the same on other platforms.
 BUG9962 LINUX : LayoutTests/fast/block/positioning/fixed-positioning-scrollbar-bug.html = FAIL
 BUG9962 MAC : LayoutTests/fast/js/function-apply-aliased.html = FAIL
-
-// Regressions from WebKit merge 43264:42403, possibly due to r42375.
-BUG9992 WIN LINUX : LayoutTests/fast/text/shadow-no-blur.html = FAIL
 
 // Regressions from WebKit merge 43264:42403, unknown cause(s)
 BUG10055 MAC : LayoutTests/fast/events/updateLayoutForHitTest.html = FAIL
