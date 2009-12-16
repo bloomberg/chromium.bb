@@ -92,9 +92,9 @@ bool WebPluginDelegateImpl::Initialize(
   } else {
     // For windowless plugins we should set the containing window handle
     // as the instance window handle. This is what Safari does. Not having
-    // a valid window handle causes subtle bugs with plugins which retreive
+    // a valid window handle causes subtle bugs with plugins which retrieve
     // the window handle and validate the same. The window handle can be
-    // retreived via NPN_GetValue of NPNVnetscapeWindow.
+    // retrieved via NPN_GetValue of NPNVnetscapeWindow.
     instance_->set_window_handle(parent_);
   }
 
