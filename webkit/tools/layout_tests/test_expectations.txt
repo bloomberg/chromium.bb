@@ -92,10 +92,6 @@ BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 
-BUG24182 SLOW : LayoutTests/http/tests/appcache/fallback.html = PASS
-BUG24182 SLOW : LayoutTests/http/tests/appcache/auth.html = PASS
-
-
 // --- collecting results for supported-xml-content-types.html ---
 // was slow, started to timeout
 BUG18702 MAC WIN : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
@@ -3177,6 +3173,29 @@ BUG30185 : LayoutTests/websocket/tests/handshake-fail-by-sub-protocol-mismatch.h
 
 // evan's fix rolled out in http://trac.webkit.org/changeset/52071 due to compat issues.
 BUG30343 LINUX : LayoutTests/fast/css/large-number-round-trip.html = TEXT
+
+// These tests got very flaky (failing 8/10 runs!) after
+// http://src.chromium.org/viewvc/chrome?view=rev&revision=34610
+// The only relevant change there is that we now sort tests purely
+// lexicographically instead of putting the http tests first. This is a good
+// thing because it matches upstream. The regressions are likely due to timing
+// issues because the http tests moved from one debug shard to another.
+// Likely, moving Windows to using Apache2 will fix this as the Linux/Mac builds
+// did not get flaky here and moving to Apache made the appcache tests less
+// flaky on those platforms.
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/access-via-redirect.php = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/auth.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/crash-when-navigating-away-then-back.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/different-scheme.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/empty-manifest.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/fallback.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/local-content.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/main-resource-hash.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/manifest-containing-itself.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/manifest-parsing.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/manifest-redirect-2.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/manifest-redirect.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/manifest-with-empty-file.html = TIMEOUT PASS
 
 // Crash of unknown origin :(
 BUG_DGLAZKOV LINUX : LayoutTests/fast/images/svg-as-background.html = CRASH
