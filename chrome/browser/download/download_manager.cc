@@ -1244,9 +1244,10 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
   ExtensionsService* service = profile_->GetExtensionsService();
   if (service) {
     NotificationService* nservice = NotificationService::current();
+      GURL nonconst_download_url = download_url;
       nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
                        Source<DownloadManager>(this),
-                       NotificationService::NoDetails());
+                       Details<GURL>(&nonconst_download_url));
     if (UserScript::HasUserScriptFileExtension(download_url)) {
       CrxInstaller::InstallUserScript(
           full_path,

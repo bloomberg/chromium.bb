@@ -2396,7 +2396,14 @@ void Browser::Observe(NotificationType type,
     case NotificationType::EXTENSION_READY_FOR_INSTALL: {
       if (BrowserList::GetLastActive() != this)
         break;
-      window()->ShowThemeInstallBubble();
+
+      // We only want to show the loading dialog for themes, but we don't want
+      // to wait until unpack to find out an extension is a theme, so we test
+      // the download_url GURL instead. This means that themes in the extensions
+      // gallery won't get the loading dialog.
+      GURL download_url = *(Details<GURL>(details).ptr());
+      if (ExtensionsService::IsDownloadFromMiniGallery(download_url))
+        window()->ShowThemeInstallBubble();
       break;
     }
 

@@ -660,7 +660,9 @@ class NotificationType {
     // details are an Extension*, and the source is a Profile*.
     EXTENSION_UPDATE_DISABLED,
 
-    // Sent when a theme is ready to be installed, so we can alert the user.
+    // Sent when an extension is about to be installed so we can (in the case of
+    // themes) alert the user with a loading dialog. The source is the download
+    // manager and the details are the download url.
     EXTENSION_READY_FOR_INSTALL,
 
     // Sent on ExtensionOverinstallAttempted when no theme is detected. The
