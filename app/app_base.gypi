@@ -132,6 +132,7 @@
         'gfx/icon_util.cc',
         'gfx/icon_util.h',
         'gfx/insets.h',
+        'gfx/insets.cc',
         'gfx/native_widget_types.h',
         'gfx/native_widget_types_gtk.cc',
         'gfx/native_theme_win.cc',

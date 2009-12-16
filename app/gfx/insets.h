@@ -11,6 +11,8 @@
 #include <gtk/gtkstyle.h>
 #endif
 
+#include <string>
+
 namespace gfx {
 
 //
@@ -76,6 +78,9 @@ class Insets {
     return *this;
   }
 
+  // Returns a string representation of the insets.
+  std::string ToString() const;
+
  private:
   int top_;
   int left_;
@@ -83,6 +88,6 @@ class Insets {
   int right_;
 };
 
-}  // namespace
+}  // namespace gfx
 
 #endif  // APP_GFX_INSETS_H_
