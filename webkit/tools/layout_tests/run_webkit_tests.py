@@ -159,7 +159,7 @@ class TestRunner:
       self._http_server = http_server.Lighttpd(options.results_directory)
 
     self._shardable_directories = ['chrome', 'LayoutTests', 'pending', 'fast',
-        'svg', 'loader']
+        'svg', 'loader', 'editing']
 
     # The http tests are very stable on mac/linux.
     # TODO(ojan): Make the http server on Windows be apache so we can turn
