@@ -6,6 +6,7 @@
 
 #include "chrome/browser/autofill/address_field.h"
 #include "chrome/browser/autofill/autofill_field.h"
+#include "chrome/browser/autofill/credit_card_field.h"
 #include "chrome/browser/autofill/phone_field.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRegularExpression.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
@@ -72,9 +73,11 @@ FormField* FormField::ParseFormField(
   field = AddressField::Parse(iter, is_ecml);
   if (field != NULL)
     return field;
+  field = CreditCardField::Parse(iter, is_ecml);
+  if (field != NULL)
+    return field;
 
   // TODO(jhawkins):
-  //  - CreditCardField
   //  - NameField
 
   return NULL;
