@@ -283,6 +283,16 @@ void NativeMenuGtk::OnActivate(GtkMenuItem* menu_item) {
     return;
   int position = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(menu_item),
                                                    kPositionString));
+  // Ignore the signal if it's sent to an inactive checked radio item.
+  //
+  // Suppose there are three radio items A, B, C, and A is now being
+  // checked. If you click C, "activate" signal will be sent to A and C.
+  // Here, we ignore the signal sent to A.
+  if (GTK_IS_RADIO_MENU_ITEM(menu_item) &&
+      !gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_item))) {
+    return;
+  }
+
   if (model_->IsEnabledAt(position) &&
       MenuTypeCanExecute(model_->GetTypeAt(position))) {
     model_->ActivatedAt(position);
