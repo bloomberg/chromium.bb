@@ -357,6 +357,33 @@ Index: lib/Target/ARM/ARMInstrInfo.td
                 [(set R0, ARMthread_pointer)]>;
  }
  
+Index: lib/Target/ARM/ARMInstrVFP.td
+===================================================================
+--- lib/Target/ARM/ARMInstrVFP.td	(revision 88663)
++++ lib/Target/ARM/ARMInstrVFP.td	(working copy)
+@@ -65,11 +65,11 @@
+ } // canFoldAsLoad
+ 
+ def VSTRD  : ADI5<0b1101, 0b00, (outs), (ins DPR:$src, addrmode5:$addr),
+-                 IIC_fpStore64, "vstr", ".64\t$src, $addr",
++                 IIC_fpStore64, "${addr:sfi}vstr", ".64\t$src, $addr",
+                  [(store DPR:$src, addrmode5:$addr)]>;
+ 
+ def VSTRS  : ASI5<0b1101, 0b00, (outs), (ins SPR:$src, addrmode5:$addr),
+-                 IIC_fpStore32, "vstr", ".32\t$src, $addr",
++                 IIC_fpStore32, "${addr:sfi}vstr", ".32\t$src, $addr",
+                  [(store SPR:$src, addrmode5:$addr)]>;
+ 
+ //===----------------------------------------------------------------------===//
+@@ -92,6 +92,8 @@
+ }
+ } // mayLoad, hasExtraDefRegAllocReq
+ 
++
++// @LOCALMOD TODO: these probably have to be sandboxed as well
+ let mayStore = 1, hasExtraSrcRegAllocReq = 1 in {
+ def VSTMD : AXDI5<(outs), (ins addrmode5:$addr, pred:$p, reglist:$wb,
+                            variable_ops), IIC_fpStorem,
 Index: lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp
 ===================================================================
 --- lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp	(revision 88663)
@@ -621,7 +648,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    // Emit post-function debug information.
    DW->EndFunction(&MF);
  
-@@ -507,6 +591,65 @@
+@@ -507,6 +591,57 @@
    O << "]";
  }
  
@@ -643,14 +670,10 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +    //assert(0);
 +  }
 +
-+  // NOTE: this test is not really necessary anymore
-+  //       the sfi_store_preamble is aware of sp
-+  if (0 != strcmp(base_reg, "sp")) {
-+      O << "sfi_store_preamble " << base_reg << ", ";
-+
-+      printPredicateOperand(MI, Op + 3);
-+      O << "\n\t";
-+  }
++  // NOTE: sfi_store_preamble is aware of sp
++  O << "sfi_store_preamble " << base_reg << ", ";
++  printPredicateOperand(MI, Op + 3);
++  O << "\n\t";
 +
 +}
 +
@@ -672,14 +695,10 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +    //assert(0);
 +  }
 +
-+  // NOTE: this test is not really necessary anymore because
-+  //       the sfi_store_preamble is aware of sp
-+  if (0 !=strcmp(base_reg, "sp")) {
-+      O << "sfi_store_preamble " << base_reg << ", ";
-+
-+      printPredicateOperand(MI, Op + 3);
-+      O << "\n\t";
-+  }
++  // NOTE: sfi_store_preamble is aware of sp
++  O << "sfi_store_preamble " << base_reg << ", ";
++  printPredicateOperand(MI, Op + 3);
++  O << "\n\t";
 +
 +}
 +// @LOCALMOD-END
@@ -687,7 +706,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  void ARMAsmPrinter::printAddrMode2OffsetOperand(const MachineInstr *MI, int Op){
    const MachineOperand &MO1 = MI->getOperand(Op);
    const MachineOperand &MO2 = MI->getOperand(Op+1);
-@@ -588,6 +731,10 @@
+@@ -588,6 +723,10 @@
      ARM_AM::AMSubMode Mode = ARM_AM::getAM4SubMode(MO2.getImm());
      if (Mode == ARM_AM::ia)
        O << ".w";
@@ -698,7 +717,30 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    } else {
      printOperand(MI, Op);
      if (ARM_AM::getAM4WBFlag(MO2.getImm()))
-@@ -880,7 +1027,16 @@
+@@ -618,6 +757,22 @@
+       O << "!";
+     return;
+   }
++  //@LOCALMOD-START
++   else if (Modifier && strcmp(Modifier, "sfi") == 0) {
++     const char *base_reg = getRegisterName(MO1.getReg());
++
++     // NOTE: sfi_store_preamble is aware of sp
++     O << "sfi_store_preamble " << base_reg << ", ";
++     printPredicateOperand(MI, Op + 2);
++     O << "\n\t";
++     return;
++   } else if (Modifier && strcmp(Modifier, "basereg") == 0) {
++     O << getRegisterName(MO1.getReg());
++     return;
++   }
++  //@LOCALMOD-END
++
++
+ 
+   O << "[" << getRegisterName(MO1.getReg());
+ 
+@@ -880,7 +1035,25 @@
    assert(Modifier && "This operand only works with a modifier!");
    // There are two aspects to a CONSTANTPOOL_ENTRY operand, the label and the
    // data itself.
@@ -707,15 +749,24 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +    // @LOCALMOD-START
 +    // NOTE: we also should make sure that the first data item
 +    // is not in a code bundle
++    // NOTE: there may be issues with alignment constraints
++    const unsigned size = MI->getOperand(2).getImm();
++    //assert(size == 4 || size == 8 && "Unsupported data item size");
++    if (size == 8) {
++      // we cannot generate a size 8 constant at offset 12 (mod 16)
++      O << "sfi_nop_if_at_bundle_end\n";
++    }
++
 +    if (FlagSfiData) {
-+      O << "sfi_illegal_if_at_bundle_begining  @ ========== SFI\n";
++      O << "sfi_illegal_if_at_bundle_begining  @ ========== SFI (" <<
++        size << ")\n";
 +    }
 +    // @LOCALMOD-END
 +
      unsigned ID = MI->getOperand(OpNum).getImm();
      O << MAI->getPrivateGlobalPrefix() << "CPI" << getFunctionNumber()
        << '_' << ID << ":\n";
-@@ -891,6 +1047,9 @@
+@@ -891,6 +1064,9 @@
      const MachineConstantPoolEntry &MCPE = MCP->getConstants()[CPI];
  
      if (MCPE.isMachineConstantPoolEntry()) {
@@ -725,7 +776,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
        EmitMachineConstantPoolValue(MCPE.Val.MachineCPVal);
      } else {
        EmitGlobalConstant(MCPE.Val.ConstVal);
-@@ -915,6 +1074,7 @@
+@@ -915,6 +1091,7 @@
    const std::vector<MachineBasicBlock*> &JTBBs = JT[JTI].MBBs;
    bool UseSet= MAI->getSetDirective() && TM.getRelocationModel() == Reloc::PIC_;
    SmallPtrSet<MachineBasicBlock*, 8> JTSets;
@@ -733,7 +784,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    for (unsigned i = 0, e = JTBBs.size(); i != e; ++i) {
      MachineBasicBlock *MBB = JTBBs[i];
      bool isNew = JTSets.insert(MBB);
-@@ -1158,6 +1318,253 @@
+@@ -1158,6 +1335,253 @@
  
      // FIXME: Should we signal R9 usage?
    }
@@ -987,7 +1038,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
  
  void ARMAsmPrinter::PrintGlobalVariable(const GlobalVariable* GVar) {
-@@ -1345,6 +1752,7 @@
+@@ -1345,6 +1769,7 @@
      // generates code that does this, it is always safe to set.
      OutStreamer.EmitAssemblerFlag(MCStreamer::SubsectionsViaSymbols);
    }
@@ -995,7 +1046,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
  
  //===----------------------------------------------------------------------===//
-@@ -1519,4 +1927,3 @@
+@@ -1519,4 +1944,3 @@
    TargetRegistry::RegisterMCInstPrinter(TheARMTarget, createARMMCInstPrinter);
    TargetRegistry::RegisterMCInstPrinter(TheThumbTarget, createARMMCInstPrinter);
  }
@@ -1019,8 +1070,11 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
 ===================================================================
 --- lib/Target/ARM/ARMISelLowering.cpp	(revision 88663)
 +++ lib/Target/ARM/ARMISelLowering.cpp	(working copy)
-@@ -44,7 +44,11 @@
+@@ -42,9 +42,14 @@
+ #include "llvm/Support/ErrorHandling.h"
+ #include "llvm/Support/MathExtras.h"
  #include <sstream>
++
  using namespace llvm;
  
 +#include "llvm/Support/CommandLine.h"
@@ -1031,7 +1085,7 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
                                     CCValAssign::LocInfo &LocInfo,
                                     ISD::ArgFlagsTy &ArgFlags,
                                     CCState &State);
-@@ -61,6 +65,15 @@
+@@ -61,8 +66,18 @@
                                         ISD::ArgFlagsTy &ArgFlags,
                                         CCState &State);
  
@@ -1046,8 +1100,11 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
 +
  void ARMTargetLowering::addTypeForNEON(EVT VT, EVT PromotedLdStVT,
                                         EVT PromotedBitwiseVT) {
++
    if (VT != PromotedLdStVT) {
-@@ -136,6 +149,41 @@
+     setOperationAction(ISD::LOAD, VT.getSimpleVT(), Promote);
+     AddPromotedToType (ISD::LOAD, VT.getSimpleVT(),
+@@ -136,6 +151,41 @@
      : TargetLowering(TM, createTLOF(TM)) {
    Subtarget = &TM.getSubtarget<ARMSubtarget>();
  
@@ -1089,7 +1146,7 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
    if (Subtarget->isTargetDarwin()) {
      // Uses VFP for Thumb libfuncs if available.
      if (Subtarget->isThumb() && Subtarget->hasVFP2()) {
-@@ -364,6 +412,11 @@
+@@ -364,6 +414,11 @@
    setOperationAction(ISD::GLOBAL_OFFSET_TABLE, MVT::i32, Custom);
    setOperationAction(ISD::GlobalTLSAddress, MVT::i32, Custom);
    setOperationAction(ISD::BlockAddress, MVT::i32, Custom);
@@ -1101,7 +1158,7 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
  
    // Use the default implementation.
    setOperationAction(ISD::VASTART,            MVT::Other, Custom);
-@@ -409,8 +462,11 @@
+@@ -409,8 +464,11 @@
    setOperationAction(ISD::BR_CC,     MVT::i32,   Custom);
    setOperationAction(ISD::BR_CC,     MVT::f32,   Custom);
    setOperationAction(ISD::BR_CC,     MVT::f64,   Custom);
@@ -1115,7 +1172,7 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
    // We don't support sin/cos/fmod/copysign/pow
    setOperationAction(ISD::FSIN,      MVT::f64, Expand);
    setOperationAction(ISD::FSIN,      MVT::f32, Expand);
-@@ -1239,6 +1295,24 @@
+@@ -1239,6 +1297,24 @@
    return DAG.getNode(ARMISD::PIC_ADD, DL, PtrVT, Result, PICLabel);
  }
  
@@ -1140,7 +1197,7 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
  // Lower ISD::GlobalTLSAddress using the "general dynamic" model
  SDValue
  ARMTargetLowering::LowerToTLSGeneralDynamicModel(GlobalAddressSDNode *GA,
-@@ -1360,6 +1434,8 @@
+@@ -1360,6 +1436,8 @@
                             PseudoSourceValue::getGOT(), 0);
      return Result;
    } else {
@@ -1149,7 +1206,7 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
      SDValue CPAddr = DAG.getTargetConstantPool(GV, PtrVT, 4);
      CPAddr = DAG.getNode(ARMISD::Wrapper, dl, MVT::i32, CPAddr);
      return DAG.getLoad(PtrVT, dl, DAG.getEntryNode(), CPAddr,
-@@ -1874,7 +1950,30 @@
+@@ -1874,7 +1952,30 @@
    return Res;
  }
  
@@ -1180,7 +1237,7 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
    SDValue Chain = Op.getOperand(0);
    SDValue Table = Op.getOperand(1);
    SDValue Index = Op.getOperand(2);
-@@ -2873,6 +2972,7 @@
+@@ -2873,6 +2974,7 @@
    default: llvm_unreachable("Don't know how to custom lower this!");
    case ISD::ConstantPool:  return LowerConstantPool(Op, DAG);
    case ISD::BlockAddress:  return LowerBlockAddress(Op, DAG);
@@ -1188,7 +1245,7 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
    case ISD::GlobalAddress:
      return Subtarget->isTargetDarwin() ? LowerGlobalAddressDarwin(Op, DAG) :
        LowerGlobalAddressELF(Op, DAG);
-@@ -3642,6 +3742,8 @@
+@@ -3642,6 +3744,8 @@
  /// by AM is legal for this target, for a load/store of the specified type.
  bool ARMTargetLowering::isLegalAddressingMode(const AddrMode &AM,
                                                const Type *Ty) const {
@@ -1197,7 +1254,7 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
    EVT VT = getValueType(Ty, true);
    if (!isLegalAddressImmediate(AM.BaseOffs, VT, Subtarget))
      return false;
-@@ -3669,6 +3771,12 @@
+@@ -3669,6 +3773,12 @@
        return isLegalT2ScaledAddressingMode(AM, VT);
  
      int Scale = AM.Scale;
@@ -1210,7 +1267,7 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
      switch (VT.getSimpleVT().SimpleTy) {
      default: return false;
      case MVT::i1:
-@@ -3806,6 +3914,14 @@
+@@ -3806,6 +3916,14 @@
    if (Subtarget->isThumb1Only())
      return false;
  
@@ -1225,7 +1282,7 @@ Index: lib/Target/ARM/ARMISelLowering.cpp
    EVT VT;
    SDValue Ptr;
    bool isSEXTLoad = false;
-@@ -3845,6 +3961,13 @@
+@@ -3845,6 +3963,13 @@
    if (Subtarget->isThumb1Only())
      return false;
  
@@ -1549,7 +1606,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
 ===================================================================
 --- lib/Target/ARM/ARMConstantIslandPass.cpp	(revision 88663)
 +++ lib/Target/ARM/ARMConstantIslandPass.cpp	(working copy)
-@@ -35,6 +35,14 @@
+@@ -35,6 +35,15 @@
  #include <algorithm>
  using namespace llvm;
  
@@ -1558,13 +1615,14 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
 +
 +cl::opt<bool> FlagSfiCpFudge("sfi-cp-fudge");
 +cl::opt<int> FlagSfiCpFudgePercent("sfi-cp-fudge-percent", cl::init(85));
++extern cl::opt<bool> FlagSfiBranch;
 +// @LOCALMOD-END
 +
 +
  STATISTIC(NumCPEs,       "Number of constpool entries");
  STATISTIC(NumSplit,      "Number of uncond branches inserted");
  STATISTIC(NumCBrFixed,   "Number of cond branches fixed");
-@@ -52,6 +60,7 @@
+@@ -52,6 +61,7 @@
            cl::desc("Adjust basic block layout to better use TB[BH]"));
  
  namespace {
@@ -1572,7 +1630,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
    /// ARMConstantIslands - Due to limited PC-relative displacements, ARM
    /// requires constant pool entries to be scattered among the instructions
    /// inside a function.  To do this, it completely ignores the normal LLVM
-@@ -179,6 +188,13 @@
+@@ -179,6 +189,13 @@
      }
  
    private:
@@ -1586,7 +1644,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
      void DoInitialPlacement(MachineFunction &MF,
                              std::vector<MachineInstr*> &CPEMIs);
      CPEntry *findConstPoolEntry(unsigned CPI, const MachineInstr *CPEMI);
-@@ -259,7 +275,6 @@
+@@ -259,7 +276,6 @@
  
  bool ARMConstantIslands::runOnMachineFunction(MachineFunction &MF) {
    MachineConstantPool &MCP = *MF.getConstantPool();
@@ -1594,7 +1652,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
    TII = MF.getTarget().getInstrInfo();
    AFI = MF.getInfo<ARMFunctionInfo>();
    STI = &MF.getTarget().getSubtarget<ARMSubtarget>();
-@@ -467,6 +482,92 @@
+@@ -467,11 +483,132 @@
    }
  }
  
@@ -1606,6 +1664,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
 +// NOTE: this is very likely missing a few cases
 +//       we will add those as neeeded and otherwise
 +//       rely on artificially reducing the ldr offset range.
++// NOTE: one missing case: jump table targets are 16 bytes aligned
 +unsigned ARMConstantIslands::GetFudge(const MachineInstr* I,
 +                                      unsigned  offset,
 +                                      bool is_start,
@@ -1641,6 +1700,14 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
 +      while ( (offset + fudge) % kBundleSize != 0xc) fudge += 4;
 +    }
 +
++    {
++      const int size = TII->GetInstSizeInBytes(I);
++      assert (size == 4 || size == 8);
++      // we do not want the data to cross bundle boundaries
++      if (size == 8) {
++        if((offset + fudge) % kBundleSize == 0xc) fudge += 4;
++      }
++    }
 +    // illegal if at data bundle beginning
 +    if ((offset + fudge) % kBundleSize == 0) fudge += 4;
 +    break;
@@ -1658,6 +1725,10 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
 +   case ARM::STRB:
 +   case ARM::STRH:
 +   case ARM::STRD:
++    // TODO: there are vfp stores missing
++   case ARM::VSTRS:
++   case ARM::VSTRD:
++
 +    // case ARM::STM:// TODO: make this work
 +    {
 +    const MachineOperand &MO1 = I->getOperand(1);
@@ -1682,12 +1753,39 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
 +
 +  return fudge;
 +}
++
++static void UpdateJumpTargetAlignment(MachineFunction &MF) {
++  if (!FlagSfiBranch) return;
++
++  // JUMP TABLE TARGETS
++  MachineJumpTableInfo *jt_info = MF.getJumpTableInfo();
++  const std::vector<MachineJumpTableEntry> &JT = jt_info->getJumpTables();
++  for (unsigned i=0; i < JT.size(); ++i) {
++    std::vector<MachineBasicBlock*> MBBs = JT[i].MBBs;
++
++    //cout << "JUMPTABLE "<< i << " " << MBBs.size() << "\n";
++    for (unsigned j=0; j < MBBs.size(); ++j) {
++      if (MBBs[j]->begin()->getOpcode() == ARM::CONSTPOOL_ENTRY) {
++        continue;
++      }
++      MBBs[j]->setAlignment(16);
++    }
++  }
++}
++
 +//@LOCALMOD-END
 +
  /// InitialFunctionScan - Do the initial scan of the function, building up
  /// information about the sizes of each block, the location of all the water,
  /// and finding all of the constant pool users.
-@@ -483,12 +584,24 @@
+ void ARMConstantIslands::InitialFunctionScan(MachineFunction &MF,
+                                  const std::vector<MachineInstr*> &CPEMIs) {
++  UpdateJumpTargetAlignment(MF); // @LOCALMOD
++
+   unsigned Offset = 0;
+   for (MachineFunction::iterator MBBI = MF.begin(), E = MF.end();
+        MBBI != E; ++MBBI) {
+@@ -483,12 +620,24 @@
        WaterList.push_back(&MBB);
  
      unsigned MBBSize = 0;
@@ -1700,7 +1798,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
 +                          Offset,
 +                          I == MBB.begin(),
 +                          I == E,
-+                          MF.begin() == MBBI);
++                          MF.begin() == MBBI || MBBI->getAlignment() == 16);
 +      //@LOCALMOD-END
 +
        // Add instruction size to MBBSize.
@@ -1712,7 +1810,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
        if (I->getDesc().isBranch()) {
          bool isCond = false;
          unsigned Bits = 0;
-@@ -546,6 +659,7 @@
+@@ -546,6 +695,7 @@
        if (Opc == ARM::tPUSH || Opc == ARM::tPOP_RET)
          PushPopMIs.push_back(I);
  
@@ -1720,7 +1818,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
        if (Opc == ARM::CONSTPOOL_ENTRY)
          continue;
  
-@@ -611,6 +725,13 @@
+@@ -611,6 +761,13 @@
            unsigned CPI = I->getOperand(op).getIndex();
            MachineInstr *CPEMI = CPEMIs[CPI];
            unsigned MaxOffs = ((1 << Bits)-1) * Scale;
@@ -1734,7 +1832,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
            CPUsers.push_back(CPUser(I, CPEMI, MaxOffs, NegOk, IsSoImm));
  
            // Increment corresponding CPEntry reference count.
-@@ -661,6 +782,11 @@
+@@ -661,6 +818,11 @@
      assert(I != MBB->end() && "Didn't find MI in its own basic block?");
      if (&*I == MI) return Offset;
      Offset += TII->GetInstSizeInBytes(I);
@@ -1746,7 +1844,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
    }
  }
  
-@@ -698,6 +824,10 @@
+@@ -698,6 +860,10 @@
  /// an unconditional branch.  Update data structures and renumber blocks to
  /// account for this change and returns the newly created block.
  MachineBasicBlock *ARMConstantIslands::SplitBlockBeforeInstr(MachineInstr *MI) {
@@ -1757,7 +1855,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
    MachineBasicBlock *OrigBB = MI->getParent();
    MachineFunction &MF = *OrigBB->getParent();
  
-@@ -882,9 +1012,19 @@
+@@ -882,9 +1048,19 @@
  void ARMConstantIslands::AdjustBBOffsetsAfter(MachineBasicBlock *BB,
                                                int delta) {
    MachineFunction::iterator MBBI = BB; MBBI = next(MBBI);
@@ -1777,7 +1875,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
      // If some existing blocks have padding, adjust the padding as needed, a
      // bit tricky.  delta can be negative so don't use % on that.
      if (!isThumb)
-@@ -1106,6 +1246,11 @@
+@@ -1106,6 +1282,11 @@
      BBSizes[UserMBB->getNumber()] += delta;
      AdjustBBOffsetsAfter(UserMBB, delta);
    } else {
@@ -1789,7 +1887,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
      // What a big block.  Find a place within the block to split it.
      // This is a little tricky on Thumb1 since instructions are 2 bytes
      // and constant pool entries are 4 bytes: if instruction I references
-@@ -1354,6 +1499,10 @@
+@@ -1354,6 +1535,10 @@
  /// Otherwise, add an intermediate branch instruction to a branch.
  bool
  ARMConstantIslands::FixUpUnconditionalBr(MachineFunction &MF, ImmBranch &Br) {
@@ -1800,7 +1898,7 @@ Index: lib/Target/ARM/ARMConstantIslandPass.cpp
    MachineInstr *MI = Br.MI;
    MachineBasicBlock *MBB = MI->getParent();
    if (!isThumb1)
-@@ -1377,6 +1526,10 @@
+@@ -1377,6 +1562,10 @@
  /// conditional branch + an unconditional branch to the destination.
  bool
  ARMConstantIslands::FixUpConditionalBr(MachineFunction &MF, ImmBranch &Br) {
@@ -1925,3 +2023,19 @@ Index: lib/CodeGen/BranchFolding.cpp
      // Finally, remove dead jump tables.  This happens either because the
      // indirect jump was unreachable (and thus deleted) or because the jump
      // table was merged with some other one.
+Index: lib/CodeGen/SelectionDAG/DAGCombiner.cpp
+===================================================================
+--- lib/CodeGen/SelectionDAG/DAGCombiner.cpp	(revision 88663)
++++ lib/CodeGen/SelectionDAG/DAGCombiner.cpp	(working copy)
+@@ -5853,6 +5853,11 @@
+   if (ConstantFPSDNode *TV = dyn_cast<ConstantFPSDNode>(N2))
+     if (ConstantFPSDNode *FV = dyn_cast<ConstantFPSDNode>(N3)) {
+       if (TLI.isTypeLegal(N2.getValueType()) &&
++          // @LOCALMOD-START
++          // when we combine two 8byte constants into a 16byte one
++          // we get constant pool entries which are too big
++          TLI.getTargetData()->getTypeAllocSize(FV->getConstantFPValue()->getType()) <= 4 &&
++          // @LOCALMOD-STOP
+           (TLI.getOperationAction(ISD::ConstantFP, N2.getValueType()) !=
+            TargetLowering::Legal) &&
+           // If both constants have multiple uses, then we won't need to do an

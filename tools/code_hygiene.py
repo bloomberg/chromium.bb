@@ -267,7 +267,7 @@ class FixmeChecker(GenericRegexChecker):
     return
 
   def FileFilter(self, filename):
-    return 1
+    return (not filename.endswith('.patch'))
 
 
 class ExternChecker(GenericRegexChecker):
@@ -368,7 +368,7 @@ class LineLengthChecker(object):
     return problem
 
   def FileFilter(self, filename):
-    return 1
+    return (not filename.endswith('.patch'))
 
 
 # ======================================================================

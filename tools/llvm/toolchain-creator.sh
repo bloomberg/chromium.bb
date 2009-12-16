@@ -3,9 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 #
-#@ This script build the arm untrusted SDK.
+#@ This script builds the arm untrusted SDK.
 #@ NOTE: It must be run from the native_client/ directory.
-#@ NOTE: you should also source: set_arm_(un)trusted_toolchain.sh
+#@ NOTE: you should source: set_arm_(un)trusted_toolchain.sh
+#@       before running it
 ######################################################################
 # Config
 ######################################################################
@@ -233,15 +234,14 @@ InstallExamples() {
 }
 
 
-BuildNewLib() {
-  echo
-}
-
 ######################################################################
 # Main
 ######################################################################
 if [ $# -eq 0 ] ; then
-  echo "you must specify a mode on the commandline:"
+  echo
+  echo "ERROR: you must specify a mode on the commandline:"
+  echo
+  Usage
   exit -1
 fi
 
