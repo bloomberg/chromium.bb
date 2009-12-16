@@ -251,6 +251,13 @@ void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
   if (gtk_menu_item_get_submenu(menuitem))
     return;
 
+  // The activate signal is sent to radio items as they get deselected;
+  // ignore it in this case.
+  if (GTK_IS_RADIO_MENU_ITEM(menuitem) &&
+      !gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem))) {
+    return;
+  }
+
   const MenuCreateMaterial* data =
       reinterpret_cast<const MenuCreateMaterial*>(
           g_object_get_data(G_OBJECT(menuitem), "menu-data"));
