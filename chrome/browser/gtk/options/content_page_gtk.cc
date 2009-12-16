@@ -230,6 +230,8 @@ GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
   // Browsing data label.
   GtkWidget* browsing_data_label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_OPTIONS_BROWSING_DATA_INFO).c_str());
+  gtk_util::WrapLabelAtAllocationHack(browsing_data_label);
+
   gtk_label_set_line_wrap(GTK_LABEL(browsing_data_label), TRUE);
   gtk_misc_set_alignment(GTK_MISC(browsing_data_label), 0, 0);
   gtk_box_pack_start(GTK_BOX(vbox), browsing_data_label, FALSE, FALSE, 0);
@@ -311,13 +313,13 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   // Sync label.
-  GtkWidget* label_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   sync_status_label_background_ = gtk_event_box_new();
   sync_status_label_ = gtk_label_new("");
+  gtk_util::WrapLabelAtAllocationHack(sync_status_label_);
+
   gtk_label_set_line_wrap(GTK_LABEL(sync_status_label_), TRUE);
   gtk_misc_set_alignment(GTK_MISC(sync_status_label_), 0, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), label_hbox, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(label_hbox), sync_status_label_background_, FALSE,
+  gtk_box_pack_start(GTK_BOX(vbox), sync_status_label_background_, FALSE,
                      FALSE, 0);
   gtk_container_add(GTK_CONTAINER(sync_status_label_background_),
                     sync_status_label_);
@@ -333,7 +335,6 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
                      FALSE, 0);
   gtk_container_add(GTK_CONTAINER(sync_action_link_background_),
                     sync_action_link_);
-  gtk_widget_set_no_show_all(sync_action_link_background_, TRUE);
   gtk_widget_hide(sync_action_link_background_);
 
   // Add the sync button into its own horizontal box so it does not
@@ -374,8 +375,10 @@ void ContentPageGtk::UpdateSyncControls() {
   gtk_chrome_link_button_set_label(GTK_CHROME_LINK_BUTTON(sync_action_link_),
                                    UTF16ToUTF8(link_label).c_str());
   if (link_label.empty()) {
+    gtk_widget_set_no_show_all(sync_action_link_background_, TRUE);
     gtk_widget_hide(sync_action_link_background_);
   } else {
+    gtk_widget_set_no_show_all(sync_action_link_background_, FALSE);
     gtk_widget_show(sync_action_link_background_);
   }
   if (status_has_error) {
