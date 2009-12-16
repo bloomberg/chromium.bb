@@ -39,6 +39,16 @@
    obj:*/ImporterTest/profile/mozcrt19.dll
 }
 {
+   ignore_mozilla_errors2
+   Memcheck:Cond
+   obj:*/chrome/test/data/firefox3_nss/mozcrt19.dll
+}
+{
+   ignore_gears_errors
+   Memcheck:Addr4
+   obj:*/gears.dll
+}
+{
    wine_bug_20692_a
    Memcheck:Leak
    ...
@@ -89,4 +99,21 @@
    valgrind_bug_190660
    Memcheck:Addr4
    fun:strncpy
+}
+# From src/tools/valgrind/memcheck/suppressions.txt
+# TODO(thestig) dedup / merge
+{
+   Uninitialized value in deflate
+   Memcheck:Cond
+   ...
+   fun:MOZ_Z_deflate
+}
+{
+   bug_15276
+   Memcheck:Cond
+   fun:cld::OctaHashV3Lookup4
+   fun:cld::DoOctaScoreV3
+   fun:ScoreQuadgrams
+   fun:CompactLangDetImpl::DetectLanguageSummaryV25
+   fun:CompactLangDet::DetectLanguage
 }
