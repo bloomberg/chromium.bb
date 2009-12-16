@@ -38,7 +38,6 @@
         '../../<(zlibdir)/zlib.gyp:zlib',
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
-        '../../native_client/src/shared/imc/imc.gyp:google_nacl_imc',
         '../compiler/technique/technique.gyp:o3dTechnique',
         '../core/core.gyp:o3dCore',
         '../core/core.gyp:o3dCorePlatform',
@@ -90,13 +89,9 @@
                   '../../<(cgdir)/lib/cg.lib',
                   '../../<(cgdir)/lib/cgGL.lib',
                 ],
-                # Set /SUBSYSTEM:WINDOWS for unit_tests.exe, since
-                # it is a windows app.
-                'SubSystem': '2',
-                # Don't optimize away unreferenced symbols when
-                # linking.  If we didn't do this, then none of the
-                # tests would auto-register.
-                'OptimizeReferences': '1',
+                # Set /SUBSYSTEM:WINDOWS for standalone.exe, since
+                # it is a console app.
+                'SubSystem': '1',
               },
             },
             # We switch it to console post-build so that we have a
