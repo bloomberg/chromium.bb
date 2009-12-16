@@ -14,6 +14,7 @@
 #include "views/examples/button_example.h"
 #include "views/examples/combobox_example.h"
 #include "views/examples/message_box_example.h"
+#include "views/examples/menu_example.h"
 #include "views/examples/radio_button_example.h"
 #include "views/examples/scroll_view_example.h"
 // Slider is not yet ported to Windows.
@@ -80,8 +81,10 @@ void ExamplesMain::Run() {
   layout->StartRow(0 /* no expand */, 0);
   layout->AddView(status_label_);
 
+  // TODO(satorux): The window is getting wide.  Eventually, we would have
+  // the second tabbed pane.
   views::Window* window =
-      views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 750, 300), this);
+      views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 850, 300), this);
 
   examples::TextfieldExample textfield_example(this);
   tabbed_pane->AddTab(textfield_example.GetExampleTitle(),
@@ -130,6 +133,10 @@ void ExamplesMain::Run() {
   tabbed_pane->AddTab(slider_example.GetExampleTitle(),
                       slider_example.GetExampleView());
 #endif
+
+  examples::MenuExample menu_example(this);
+  tabbed_pane->AddTab(menu_example.GetExampleTitle(),
+                      menu_example.GetExampleView());
 
   window->Show();
   views::AcceleratorHandler accelerator_handler;
