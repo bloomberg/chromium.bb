@@ -1744,6 +1744,9 @@ void TabContents::OnPageContents(const GURL& url,
       hs->SetPageContents(url, contents);
   }
 
+
+// TODO(port): Port detection language to Mac and Linux.
+#if defined(OS_WIN)
   // Detect the page language.  The detection happens on the file thread.
   // We get the TAB_LANGUAGE_DETERMINED notification when the language has been
   // detected.
@@ -1753,6 +1756,7 @@ void TabContents::OnPageContents(const GURL& url,
                               render_view_host()->routing_id(),
                               page_id, contents);
   cld_helper_->DetectLanguage();
+#endif
 }
 
 void TabContents::DidStartProvisionalLoadForFrame(
