@@ -677,7 +677,10 @@ BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-mark
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-setattribute.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-setwindow.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/string-conversion.html = FAIL
-BUG4360 : LayoutTests/storage/domstorage/documentURI.html = FAIL
+BUG4360 WIN MAC : LayoutTests/storage/domstorage/documentURI.html = FAIL
+BUG4360 LINUX RELEASE : LayoutTests/storage/domstorage/documentURI.html = FAIL
+// Flaky ASSERTION FAILED: currentThread() == m_openingThread
+BUG4360 LINUX DEBUG : LayoutTests/storage/domstorage/documentURI.html = FAIL CRASH
 BUG4360_and_BUG30081 : LayoutTests/storage/domstorage/complex-values.html = FAIL CRASH
 BUG4360 : LayoutTests/http/tests/loading/deleted-host-in-resource-load-delegate-callback.html = TIMEOUT
 
