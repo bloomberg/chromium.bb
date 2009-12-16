@@ -3224,6 +3224,6 @@ BUG_DGLAZKOV LINUX : LayoutTests/fast/images/svg-as-background.html = CRASH
 // First crash at http://src.chromium.org/viewvc/chrome?view=rev&revision=34558, which doesn't make much sense.
 BUG_DGLAZKOV WIN : LayoutTests/svg/webarchive/svg-script-subresouces.svg = FAIL CRASH
 
-// Flaky ASSERTION FAILED: useTransforms
+// Flaky ASSERTION FAILED: currentThread() == m_openingThread
 // This test is flaky since this file is added.
 BUG30543 : LayoutTests/storage/domstorage/localstorage/enumerate-with-length-and-key.html = CRASH PASS
