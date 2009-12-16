@@ -38,7 +38,7 @@ class BrowserActionApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   StartHTTPServer();
-  ASSERT_TRUE(RunExtensionTest("browser_action")) << message_;
+  ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
 
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
-  ASSERT_TRUE(RunExtensionTest("browser_action_no_icon")) << message_;
+  ASSERT_TRUE(RunExtensionTest("browser_action/no_icon")) << message_;
 
   // Test that there is a browser action in the toolbar and that it has no icon.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
-  ASSERT_TRUE(RunExtensionTest("browser_action_tab_specific_state")) <<
+  ASSERT_TRUE(RunExtensionTest("browser_action/tab_specific_state")) <<
       message_;
 
   // Test that there is a browser action in the toolbar and that it has an icon.

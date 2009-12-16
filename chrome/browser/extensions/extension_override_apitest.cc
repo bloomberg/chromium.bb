@@ -6,7 +6,7 @@
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Overrides) {
   // The first pass response is the creation of a new tab.
-  ASSERT_TRUE(RunExtensionTest("override1")) << message_;
+  ASSERT_TRUE(RunExtensionTest("override")) << message_;
 
   // TODO(erikkay) load a second override and verify behavior, then unload
   // the first and verify behavior, etc.
