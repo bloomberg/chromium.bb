@@ -59,6 +59,9 @@ src:*base/lock*
 src:*base/stats_counters*
 src:*base/thread_local_storage_posix*
 
+# Don't instrument tcmalloc
+src:*/tcmalloc/*
+
 # This function is heavy in net_unittests
 fun_r:*disk_cache*BackendImpl*CheckAllEntries*
 
