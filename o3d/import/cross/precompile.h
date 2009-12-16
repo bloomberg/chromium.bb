@@ -52,6 +52,13 @@
 #endif
 #endif  // defined(RENDERER_GL)
 
+#if defined(RENDERER_GLES2)
+#include <GL/glew.h>
+#if defined(OS_WIN)
+#include <GL/wglew.h>
+#endif
+#endif  // defined(RENDERER_GLES2)
+
 #include <Cg/cg.h>
 #include <Cg/cgGL.h>
 #include <FCollada.h>

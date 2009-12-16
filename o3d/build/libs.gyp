@@ -73,6 +73,61 @@
       ],
     },
     {
+      'target_name': 'gles2_libs',
+      'type': 'none',
+      'all_dependent_settings': {
+        'include_dirs': [
+          '../../<(glewdir)/include',
+        ],
+      },
+      'conditions': [
+        [ 'OS=="linux"',
+          {
+            'all_dependent_settings': {
+              'defines': [
+                'GL_GLEXT_PROTOTYPES',
+              ],
+              'ldflags': [
+                '-L<(PRODUCT_DIR)',
+              ],
+              'libraries': [
+                '-lGL',
+                '-lGLEW',
+                '-lX11',
+              ],
+            },
+          },
+        ],
+        [ 'OS=="mac"',
+          {
+            'direct_dependent_settings': {
+              'libraries': [
+                '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+              ],
+            },
+          },
+        ],
+        [ 'OS=="win"',
+          {
+            'all_dependent_settings': {
+              'libraries': [
+                '-lOpenGL32.lib',
+                '../../<(glewdir)/lib/glew32.lib',
+              ],
+            },
+            'copies': [
+              {
+                'destination': '<(PRODUCT_DIR)',
+                'files': [
+                  "../../<(glewdir)/bin/glew32.dll",
+                ]
+              },
+            ],
+          },
+        ],
+      ],
+    },
+    {
       'target_name': 'cg_libs',
       'type': 'none',
       'hard_dependency': 1,

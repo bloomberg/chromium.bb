@@ -53,6 +53,14 @@
           ],
         },
       ],
+      ['renderer == "gles2"',
+        {
+          'include_dirs': [
+            '../../<(glewdir)/include',
+            '../../<(cgdir)/include',
+          ],
+        },
+      ],
     ],
   },
   'includes': [
@@ -285,6 +293,14 @@
             ],
           },
         ],
+        ['renderer == "gles2"',
+          {
+            'dependencies': [
+              '../build/libs.gyp:cg_libs',
+              '../build/libs.gyp:gles2_libs',
+            ],
+          },
+        ],
         ['OS == "linux"',
           {
             'sources': [
@@ -362,6 +378,39 @@
             ],
             'dependencies': [
               '../build/libs.gyp:gl_libs',
+            ],
+          },
+        ],
+        ['renderer == "gles2"',
+          {
+            'sources': [
+              'cross/gles2/buffer_gles2.cc',
+              'cross/gles2/buffer_gles2.h',
+              'cross/gles2/draw_element_gles2.cc',
+              'cross/gles2/draw_element_gles2.h',
+              'cross/gles2/effect_gles2.cc',
+              'cross/gles2/effect_gles2.h',
+              'cross/gles2/install_check.cc',
+              'cross/gles2/param_cache_gles2.cc',
+              'cross/gles2/param_cache_gles2.h',
+              'cross/gles2/primitive_gles2.cc',
+              'cross/gles2/primitive_gles2.h',
+              'cross/gles2/render_surface_gles2.cc',
+              'cross/gles2/render_surface_gles2.h',
+              'cross/gles2/renderer_gles2.cc',
+              'cross/gles2/renderer_gles2.h',
+              'cross/gles2/sampler_gles2.cc',
+              'cross/gles2/sampler_gles2.h',
+              'cross/gles2/stream_bank_gles2.cc',
+              'cross/gles2/stream_bank_gles2.h',
+              'cross/gles2/texture_gles2.cc',
+              'cross/gles2/texture_gles2.h',
+              'cross/gles2/utils_gles2-inl.h',
+              'cross/gles2/utils_gles2.cc',
+              'cross/gles2/utils_gles2.h',
+            ],
+            'dependencies': [
+              '../build/libs.gyp:gles2_libs',
             ],
           },
         ],

@@ -30,47 +30,34 @@
  */
 
 
-// This include determines which renderer to include, based on the
-// compile options, so that this is the only place that needs to know
-// what all the choices are.
+// This file contains the declaration of the PrimitiveGL class.
 
-#ifndef O3D_CORE_CROSS_RENDERER_PLATFORM_H_
-#define O3D_CORE_CROSS_RENDERER_PLATFORM_H_
+#ifndef O3D_CORE_CROSS_GLES2_PRIMITIVE_GLES2_H_
+#define O3D_CORE_CROSS_GLES2_PRIMITIVE_GLES2_H_
 
-#include <build/build_config.h>
-#if defined(OS_MACOSX)
-#include "core/cross/gl/gl_headers.h"
-#include <OpenGL/OpenGL.h>
-#include <AGL/agl.h>
-#elif defined(OS_LINUX)
-#include "core/cross/gl/gl_headers.h"
-#include <GL/glx.h>
-#elif defined(OS_WIN) && defined(RENDERER_GL)
-#include "core/cross/gl/gl_headers.h"
-#include <gl/GL.h>
-#elif defined(OS_WIN) && defined(RENDERER_GLES2)
-#include "core/cross/gles2/gles2_headers.h"
-#include <gl/GL.h>
-#endif
+#include <map>
+#include "core/cross/primitive.h"
+#include "core/cross/gles2/param_cache_gles2.h"
 
-#if defined(OS_WIN)
-#include "core/win/display_window_win.h"
-#elif defined(OS_MACOSX)
-#include "core/mac/display_window_mac.h"
-#elif defined(OS_LINUX)
-#include "core/linux/display_window_linux.h"
-#else
-#error Platform not recognized.
-#endif
+namespace o3d {
 
-#if defined(RENDERER_D3D9) && defined(OS_WIN)
-#include "core/win/d3d9/renderer_d3d9.h"
-#elif defined(RENDERER_GL)
-#include "core/cross/gl/renderer_gl.h"
-#elif defined(RENDERER_GLES2)
-#include "core/cross/gles2/renderer_gles2.h"
-#else
-#error Renderer not recognized.
-#endif
+// PrimitiveGL is the OpenGL implementation of the Primitive.  It provides the
+// necessary interfaces for setting the geometry streams on the Primitive.
+class PrimitiveGL : public Primitive {
+ public:
+  explicit PrimitiveGL(ServiceLocator* service_locator);
+  virtual ~PrimitiveGL();
 
-#endif  // O3D_CORE_CROSS_RENDERER_PLATFORM_H_
+ protected:
+  // Overridden from Primitive.
+  virtual void PlatformSpecificRender(Renderer* renderer,
+                                      DrawElement* draw_element,
+                                      Material* material,
+                                      ParamObject* override,
+                                      ParamCache* param_cache);
+
+ private:
+};
+}  // o3d
+
+#endif  // O3D_CORE_CROSS_GLES2_PRIMITIVE_GLES2_H_

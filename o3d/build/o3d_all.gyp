@@ -28,6 +28,7 @@
         '../plugin/idl/idl.gyp:o3dNpnApi',
         '../plugin/plugin.gyp:npo3dautoplugin',
         '../samples/samples.gyp:*',
+        '../standalone/standalone.gyp:*',
         '../tests/selenium/selenium.gyp:*',
         '../tests/tests.gyp:unit_tests',
         '../utils/utils.gyp:o3dUtils',

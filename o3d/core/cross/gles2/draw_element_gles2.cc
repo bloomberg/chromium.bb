@@ -30,47 +30,17 @@
  */
 
 
-// This include determines which renderer to include, based on the
-// compile options, so that this is the only place that needs to know
-// what all the choices are.
+// This file contains the definition of the DrawElementGL class.
 
-#ifndef O3D_CORE_CROSS_RENDERER_PLATFORM_H_
-#define O3D_CORE_CROSS_RENDERER_PLATFORM_H_
+#include "core/cross/gles2/draw_element_gles2.h"
 
-#include <build/build_config.h>
-#if defined(OS_MACOSX)
-#include "core/cross/gl/gl_headers.h"
-#include <OpenGL/OpenGL.h>
-#include <AGL/agl.h>
-#elif defined(OS_LINUX)
-#include "core/cross/gl/gl_headers.h"
-#include <GL/glx.h>
-#elif defined(OS_WIN) && defined(RENDERER_GL)
-#include "core/cross/gl/gl_headers.h"
-#include <gl/GL.h>
-#elif defined(OS_WIN) && defined(RENDERER_GLES2)
-#include "core/cross/gles2/gles2_headers.h"
-#include <gl/GL.h>
-#endif
+namespace o3d {
 
-#if defined(OS_WIN)
-#include "core/win/display_window_win.h"
-#elif defined(OS_MACOSX)
-#include "core/mac/display_window_mac.h"
-#elif defined(OS_LINUX)
-#include "core/linux/display_window_linux.h"
-#else
-#error Platform not recognized.
-#endif
+DrawElementGL::DrawElementGL(ServiceLocator* service_locator)
+    : DrawElement(service_locator) {
+}
 
-#if defined(RENDERER_D3D9) && defined(OS_WIN)
-#include "core/win/d3d9/renderer_d3d9.h"
-#elif defined(RENDERER_GL)
-#include "core/cross/gl/renderer_gl.h"
-#elif defined(RENDERER_GLES2)
-#include "core/cross/gles2/renderer_gles2.h"
-#else
-#error Renderer not recognized.
-#endif
+DrawElementGL::~DrawElementGL() {
+}
+}  // namespace o3d
 
-#endif  // O3D_CORE_CROSS_RENDERER_PLATFORM_H_

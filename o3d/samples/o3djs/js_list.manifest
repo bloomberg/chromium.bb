@@ -41,6 +41,7 @@
   'io.js',
   'loader.js',
   'material.js',
+  'manipulators.js',
   'math.js',
   'pack.js',
   'particles.js',

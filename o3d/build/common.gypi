@@ -113,6 +113,13 @@
                 ],
               },
             ],
+            ['renderer == "gles2"',
+              {
+                'defines': [
+                  'RENDERER_GLES2',
+                ],
+              },
+            ],
           ],
         },
       },
@@ -152,6 +159,13 @@
                 ],
               },
             ],
+            ['renderer == "gles2"',
+              {
+                'defines': [
+                  'RENDERER_GLES2',
+                ],
+              },
+            ],
           ],
         },
       },
@@ -177,6 +191,13 @@
               {
                 'defines': [
                   'RENDERER_GL',
+                ],
+              },
+            ],
+            ['renderer == "gles2"',
+              {
+                'defines': [
+                  'RENDERER_GLES2',
                 ],
               },
             ],

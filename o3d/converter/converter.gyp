@@ -62,6 +62,13 @@
             ],
           },
         ],
+        ['renderer == "gles2"',
+          {
+            'dependencies': [
+              '../build/libs.gyp:cg_libs',
+            ],
+          },
+        ],
         ['OS == "mac"',
           {
             'postbuilds': [

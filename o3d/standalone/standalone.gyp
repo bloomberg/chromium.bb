@@ -28,7 +28,7 @@
   },
   'targets': [
     {
-      'target_name': 'unit_tests',
+      'target_name': 'standalone',
       'type': 'executable',
       'dependencies': [
         '../../<(antlrdir)/antlr.gyp:antlr3c',
@@ -38,60 +38,14 @@
         '../../<(zlibdir)/zlib.gyp:zlib',
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
-        '../../testing/gtest.gyp:gtest',
-        '../../testing/gmock.gyp:gmock',
         '../../native_client/src/shared/imc/imc.gyp:google_nacl_imc',
         '../compiler/technique/technique.gyp:o3dTechnique',
-        '../compiler/technique/technique.gyp:o3dTechniqueTest',
         '../core/core.gyp:o3dCore',
         '../core/core.gyp:o3dCorePlatform',
-        '../core/core.gyp:o3dCoreTest',
-        '../import/import.gyp:o3dImport',
-        '../import/archive.gyp:o3dArchiveTest',
-        '../import/import.gyp:o3dImportTest',
-        '../serializer/serializer.gyp:o3dSerializerTest',
         '../utils/utils.gyp:o3dUtils',
-        '../utils/utils.gyp:o3dUtilsTest',
       ],
       'sources': [
-        'common/cross/test_utils.cc',
-        'common/cross/main.cc',
-      ],
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)/bitmap_test',
-          'files': [
-            "bitmap_test/5kx5k.dds",
-            "bitmap_test/5kx5k.jpg",
-            "bitmap_test/5kx5k.png",
-            "bitmap_test/5kx5k.tga",
-            "bitmap_test/dds-dxt1-256x256-alpha.dds",
-            "bitmap_test/dds-dxt1-256x256-mipmap.dds",
-            "bitmap_test/dds-dxt1-256x256.dds",
-            "bitmap_test/dds-dxt3-256x256-alpha.dds",
-            "bitmap_test/dds-dxt3-256x256-mipmap.dds",
-            "bitmap_test/dds-dxt5-256x256-alpha.dds",
-            "bitmap_test/dds-dxt5-256x256-mipmap.dds",
-            "bitmap_test/gif-256x256-interlaced.gif",
-            "bitmap_test/gif-256x256.gif",
-            "bitmap_test/jpeg-256x256.jpg",
-            "bitmap_test/png-20x14-4bit-palette.png",
-            "bitmap_test/png-256x256-24bit-interlaced.png",
-            "bitmap_test/png-256x256-24bit.png",
-            "bitmap_test/png-256x256-32bit.png",
-            "bitmap_test/png-256x256-8bit-palette-alpha.png",
-            "bitmap_test/png-256x256-8bit-palette.png",
-            "bitmap_test/png-2x2-24bit-drawimage-src.png",
-            "bitmap_test/png-4x4-24bit-drawimage-argb8-src.png",
-            "bitmap_test/png-4x4-24bit-drawimage-src.png",
-            "bitmap_test/png-8x4-24bit-drawimage-argb8-dest.png",
-            "bitmap_test/png-8x4-24bit-drawimage-dest.png",
-            "bitmap_test/png-8x8-24bit-drawimage-src.png",
-            "bitmap_test/test_source.psd",
-            "bitmap_test/tga-256x256-24bit.tga",
-            "bitmap_test/tga-256x256-32bit.tga",
-          ],
-        },
+        'standalone.cc',
       ],
       'conditions' : [
         ['renderer == "gl"',
@@ -112,32 +66,6 @@
         ],
         ['OS == "mac"',
           {
-            'dependencies': [
-              '../statsreport/statsreport.gyp:o3dStatsReportTest',
-            ],
-            'sources': [
-              'common/mac/testing_common.mm',
-            ],
-            'postbuilds': [
-              {
-                'variables': {
-                  # Define install_name in a variable ending in _path
-                  # so that gyp understands it's a path and performs proper
-                  # relativization during dict merging.
-                  'install_name_path': 'mac/unit_tests_install_name.sh',
-                },
-                'postbuild_name': 'Fix Framework Paths',
-                'action': ['<(install_name_path)'],
-              },
-            ],
-            'copies': [
-              {
-                'destination': '<(PRODUCT_DIR)',
-                'files': [
-                  '../../<(pdiffdir)/bin/mac/perceptualdiff',
-                ],
-              },
-            ],
             'include_dirs': [
               '../../third_party/glew/files/include',
             ],
@@ -155,22 +83,6 @@
         ],
         ['OS == "win"',
           {
-            'dependencies': [
-              '../statsreport/statsreport.gyp:o3dStatsReportTest',
-            ],
-            'sources': [
-              'common/win/testing_common.cc',
-              'common/win/testing_common.h',
-            ],
-            'copies': [
-              {
-                'destination': '<(PRODUCT_DIR)',
-                'files': [
-                  '../../<(pdiffdir)/bin/win/perceptualdiff.exe',
-                  '../../<(pdiffdir)/bin/win/FreeImage.dll',
-                ],
-              },
-            ],
             'msvs_settings': {
               'VCLinkerTool': {
                 'AdditionalDependencies': [
@@ -196,9 +108,6 @@
         ],
         ['OS == "win" and renderer == "d3d9"',
           {
-            'sources': [
-              'common/win/dxcapture.cc',
-            ],
             'include_dirs': [
               '"$(DXSDK_DIR)/Include"',
             ],
@@ -227,17 +136,6 @@
         ],
         ['OS == "linux"',
           {
-            'sources': [
-              'common/linux/testing_common.cc',
-            ],
-            'copies': [
-              {
-                'destination': '<(PRODUCT_DIR)',
-                'files': [
-                  '../../<(pdiffdir)/bin/linux/perceptualdiff',
-                ],
-              },
-            ],
           },
         ],
       ],

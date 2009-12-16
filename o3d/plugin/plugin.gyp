@@ -102,6 +102,14 @@
             ],
           },
         ],
+        ['renderer == "gles2"',
+          {
+            'dependencies': [
+              '../build/libs.gyp:gles2_libs',
+              '../build/libs.gyp:cg_libs',
+            ],
+          },
+        ],
         ['OS == "mac"',
           {
             'mac_bundle': 1,
@@ -283,6 +291,14 @@
                 {
                   'dependencies': [
                     '../build/libs.gyp:gl_libs',
+                    '../build/libs.gyp:cg_libs',
+                  ],
+                },
+              ],
+              ['renderer == "gles2"',
+                {
+                  'dependencies': [
+                    '../build/libs.gyp:gles2_libs',
                     '../build/libs.gyp:cg_libs',
                   ],
                 },
