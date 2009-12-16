@@ -818,7 +818,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 }
 
 // Tests extension autoupdate.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, AutoUpdate) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_AutoUpdate) {
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
