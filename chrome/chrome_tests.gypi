@@ -265,7 +265,6 @@
         '../third_party/libxml/libxml.gyp:libxml',
         # run time dependencies
         '../webkit/tools/test_shell/test_shell.gyp:npapi_layout_test_plugin',
-        '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
       ],
       'include_dirs': [
         '..',
@@ -317,6 +316,12 @@
         'worker/worker_uitest.cc',
       ],
       'conditions': [
+        # http://code.google.com/p/chromium/issues/detail?id=18337
+        ['target_arch!="x64" and target_arch!="arm"', {
+          'dependencies': [
+            '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
+          ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
