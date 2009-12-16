@@ -28,6 +28,8 @@
  * 
  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -39,6 +41,9 @@
 #include <errno.h>
 #include <signal.h>
 #include <fcntl.h>
+#ifdef HAVE_ALLOCA_H
+# include <alloca.h>
+#endif
 #include "xf86drm.h"
 
 int sigio_fd;
