@@ -936,6 +936,8 @@ void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,
 
   // Hide our node.
   gtk_widget_hide(button);
+  // Make sure it stays hidden for the duration of the drag.
+  gtk_widget_set_no_show_all(button, TRUE);
 }
 
 // static
@@ -943,6 +945,7 @@ void BookmarkBarGtk::OnButtonDragEnd(GtkWidget* button,
                                      GdkDragContext* drag_context,
                                      BookmarkBarGtk* bar) {
   gtk_widget_show(button);
+  gtk_widget_set_no_show_all(button, FALSE);
 
   if (bar->toolbar_drop_item_) {
     g_object_unref(bar->toolbar_drop_item_);
