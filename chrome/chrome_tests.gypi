@@ -834,6 +834,8 @@
         'test/browser_with_test_window_test.h',
         'test/file_test_utils.cc',
         'test/file_test_utils.h',
+        'test/menu_model_test.cc',
+        'test/menu_model_test.h',
         'test/render_view_test.cc',
         'test/render_view_test.h',
         'test/sync/test_http_bridge_factory.h',
