@@ -20,6 +20,7 @@
 #include "net/base/file_stream.h"
 
 namespace errors = extension_manifest_errors;
+namespace keys = extension_manifest_keys;
 
 namespace extension_file_util {
 
@@ -136,14 +137,12 @@ Extension* LoadExtension(const FilePath& extension_path,
   }
 
   DictionaryValue* manifest = static_cast<DictionaryValue*>(root.get());
-  ExtensionMessageBundle* message_bundle =
-    LoadLocaleInfo(extension_path, *manifest, error);
-  if (!message_bundle && !error->empty())
-    return NULL;
 
   scoped_ptr<Extension> extension(new Extension(extension_path));
-  // Assign message bundle to extension.
-  extension->set_message_bundle(message_bundle);
+
+  if (!extension_l10n_util::LocalizeExtension(extension.get(), manifest, error))
+    return NULL;
+
   if (!extension->InitFromValue(*manifest, require_key, error))
     return NULL;
 
@@ -394,9 +393,10 @@ void GarbageCollectExtensions(
   }
 }
 
-ExtensionMessageBundle* LoadLocaleInfo(const FilePath& extension_path,
-                                       const DictionaryValue& manifest,
-                                       std::string* error) {
+ExtensionMessageBundle* LoadExtensionMessageBundle(
+    const FilePath& extension_path,
+    const DictionaryValue& manifest,
+    std::string* error) {
   error->clear();
   // Load locale information if available.
   FilePath locale_path = extension_path.AppendASCII(Extension::kLocaleFolder);
@@ -415,15 +415,14 @@ ExtensionMessageBundle* LoadLocaleInfo(const FilePath& extension_path,
     return NULL;
   }
 
-  std::string app_locale = g_browser_process->GetApplicationLocale();
-  if (locales.find(app_locale) == locales.end())
-    app_locale = "";
   ExtensionMessageBundle* message_bundle =
-    extension_l10n_util::LoadMessageCatalogs(locale_path,
-                                             default_locale,
-                                             app_locale,
-                                             locales,
-                                             error);
+      extension_l10n_util::LoadMessageCatalogs(
+          locale_path,
+          default_locale,
+          extension_l10n_util::CurrentLocaleOrDefault(),
+          locales,
+          error);
+
   return message_bundle;
 }
 

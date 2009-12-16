@@ -22,10 +22,6 @@ const char* ExtensionMessageBundle::kPlaceholderEnd = "$";
 const char* ExtensionMessageBundle::kMessageBegin = "__MSG_";
 const char* ExtensionMessageBundle::kMessageEnd = "__";
 
-const char* ExtensionMessageBundle::kExtensionName = "chrome_extension_name";
-const char* ExtensionMessageBundle::kExtensionDescription =
-  "chrome_extension_description";
-
 // Formats message in case we encounter a bad formed key in the JSON object.
 // Returns false and sets |error| to actual error message.
 static bool BadKeyMessage(const std::string& name, std::string* error) {

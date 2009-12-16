@@ -30,10 +30,6 @@ class ExtensionMessageBundle {
   static const char* kMessageBegin;
   static const char* kMessageEnd;
 
-  // Extension name and description message names
-  static const char* kExtensionName;
-  static const char* kExtensionDescription;
-
   // Creates ExtensionMessageBundle or returns NULL if there was an error.
   // Expects locale_catalogs to be sorted from more specific to less specific,
   // with default catalog at the end.
@@ -83,7 +79,7 @@ class ExtensionMessageBundle {
 
  private:
   // Use Create to create ExtensionMessageBundle instance.
-   ExtensionMessageBundle();
+  ExtensionMessageBundle();
 
   // Initializes the instance from the contents of vector of catalogs.
   // If the key is not present in more specific catalog we fall back to next one

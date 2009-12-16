@@ -15,6 +15,7 @@ class DictionaryValue;
 class Extension;
 class ExtensionMessageBundle;
 class FilePath;
+struct ExtensionInfo;
 
 namespace extension_l10n_util {
 
@@ -27,6 +28,22 @@ void SetProcessLocale(const std::string& locale);
 // "default_locale" section was not defined in the manifest.json file.
 std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
                                          std::string* error);
+
+// Returns true iff the extension was localized, and the current locale
+// doesn't match the locale written into info.extension_manifest.
+bool ShouldRelocalizeManifest(const ExtensionInfo& info);
+
+// Localize extension name, description, browser_action and other fields
+// in the manifest.
+bool LocalizeManifest(const ExtensionMessageBundle& messages,
+                      DictionaryValue* manifest,
+                      std::string* error);
+
+// Load message catalogs, localize manifest and attach message bundle to the
+// extension.
+bool LocalizeExtension(Extension* extension,
+                       DictionaryValue* manifest,
+                       std::string* error);
 
 // Adds locale_name to the extension if it's in chrome_locales, and
 // if messages file is present (we don't check content of messages file here).
@@ -41,6 +58,9 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
 
 // Converts all - into _, to be consistent with ICU and file system names.
 std::string NormalizeLocale(const std::string& locale);
+
+// Returns normalized current locale, or default locale - en_US.
+std::string CurrentLocaleOrDefault();
 
 // Produce a vector of parent locales for given locale.
 // It includes the current locale in the result.

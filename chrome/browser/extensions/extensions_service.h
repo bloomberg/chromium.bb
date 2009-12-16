@@ -15,6 +15,7 @@
 #include "base/linked_ptr.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "base/tuple.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
@@ -30,8 +31,6 @@
 #include "chrome/common/extensions/extension.h"
 
 class Browser;
-class DictionaryValue;
-class Extension;
 class ExtensionsServiceBackend;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
@@ -147,6 +146,13 @@ class ExtensionsService
   // Load all known extensions (used by startup and testing code).
   void LoadAllExtensions();
 
+  // Continues loading all know extensions. It can be called from
+  // LoadAllExtensions or from file thread if we had to relocalize manifest
+  // (write_to_prefs is true in that case).
+  void ContinueLoadAllExtensions(ExtensionPrefs::ExtensionsInfo* info,
+                                 base::TimeTicks start_time,
+                                 bool write_to_prefs);
+
   // Check for updates (or potentially new extensions from external providers)
   void CheckForExternalUpdates();
 
@@ -174,8 +180,8 @@ class ExtensionsService
   void SetProviderForTesting(Extension::Location location,
                              ExternalExtensionProvider* test_provider);
 
-  // Called by the backend when the initial extension load has completed.
-  void OnLoadedInstalledExtensions();
+  // Called when the initial extensions load has completed.
+  virtual void OnLoadedInstalledExtensions();
 
   // Called by the backend when an extension has been loaded.
   void OnExtensionLoaded(Extension* extension,
@@ -246,22 +252,15 @@ class ExtensionsService
                        const NotificationDetails& details);
 
  private:
+  virtual ~ExtensionsService();
   friend class ChromeThread;
   friend class DeleteTask<ExtensionsService>;
-
-  virtual ~ExtensionsService();
 
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.
   Extension* GetExtensionByIdInternal(const std::string& id,
                                       bool include_enabled,
                                       bool include_disabled);
-
-  // Load a single extension from the prefs. This can be done on the UI thread
-  // because we don't touch the disk.
-  void LoadInstalledExtension(
-      DictionaryValue* manifest, const std::string& id,
-      const FilePath& path, Extension::Location location);
 
   // Handles sending notification that |extension| was loaded.
   void NotifyExtensionLoaded(Extension* extension);
@@ -271,6 +270,9 @@ class ExtensionsService
 
   // Helper that updates the active extension list used for crash reporting.
   void UpdateActiveExtensionsInCrashReporter();
+
+  // Helper method. Loads extension from prefs.
+  void LoadInstalledExtension(const ExtensionInfo& info, bool relocalize);
 
   // The profile this ExtensionsService is part of.
   Profile* profile_;
@@ -363,6 +365,14 @@ class ExtensionsServiceBackend
                                         const Version* version,
                                         const FilePath& path,
                                         Extension::Location location);
+
+  // When Chrome locale changes we need to re-localize manifest files for
+  // extensions that are actually localized.
+  void ReloadExtensionManifestsForLocaleChanged(
+      ExtensionPrefs::ExtensionsInfo* extensions_to_reload,
+      base::TimeTicks start_time,
+      scoped_refptr<ExtensionsService> frontend);
+
  private:
   friend class base::RefCountedThreadSafe<ExtensionsServiceBackend>;
 

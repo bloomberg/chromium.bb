@@ -14,12 +14,14 @@
 #include "base/scoped_handle.h"
 #include "base/task.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_unpacker.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/json_value_serializer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -107,11 +109,17 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
   // extension.
   extension_.reset(new Extension(extension_root_));
 
-  std::string manifest_error;
-  if (!extension_->InitFromValue(*final_manifest, true,  // require id
-                                 &manifest_error)) {
-    ReportFailure(std::string("Manifest is invalid: ") +
-                              manifest_error);
+  // Localize manifest now, so confirm UI gets correct extension name.
+  std::string error;
+  if (!extension_l10n_util::LocalizeExtension(extension_.get(),
+                                              final_manifest.get(),
+                                              &error)) {
+    ReportFailure(error);
+    return;
+  }
+
+  if (!extension_->InitFromValue(*final_manifest, true, &error)) {
+    ReportFailure(std::string("Manifest is invalid: ") + error);
     return;
   }
 

@@ -19,6 +19,8 @@
 // from there.
 class ExtensionPrefs {
  public:
+  typedef std::vector<linked_ptr<ExtensionInfo> > ExtensionsInfo;
+
   explicit ExtensionPrefs(PrefService* prefs, const FilePath& root_dir_);
 
   // Returns a copy of the Extensions prefs.
@@ -59,8 +61,9 @@ class ExtensionPrefs {
   // the empty string if not found.
   std::string GetVersionString(const std::string& extension_id);
 
-  // Ensure old extensions have fully up-to-date prefs values.
-  void MigrateToPrefs(Extension* extension);
+  // Re-writes the extension manifest into the prefs.
+  // Called to change the extension's manifest when it's re-localized.
+  void UpdateManifest(Extension* extension);
 
   // Returns extension path based on extension ID, or empty FilePath on error.
   FilePath GetExtensionPath(const std::string& extension_id);
@@ -73,6 +76,12 @@ class ExtensionPrefs {
 
   // Based on extension id, checks prefs to see if it is blacklisted.
   bool IsExtensionBlacklisted(const std::string& id);
+
+  // Saves ExtensionInfo for each installed extension with the path to the
+  // version directory and the location. Blacklisted extensions won't be saved
+  // and neither will external extensions the user has explicitly uninstalled.
+  // Caller takes ownership of returned structure.
+  static ExtensionsInfo* CollectExtensionsInfo(ExtensionPrefs* extension_prefs);
 
  private:
 
@@ -113,32 +122,6 @@ class ExtensionPrefs {
   URLList shelf_order_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefs);
-};
-
-// A helper class that has a list of the currently installed extensions
-// and can iterate over them to a provided callback.
-class InstalledExtensions {
- public:
-  explicit InstalledExtensions(ExtensionPrefs* prefs);
-  ~InstalledExtensions();
-
-  typedef Callback4<DictionaryValue*,
-                    const std::string&,
-                    const FilePath&,
-                    Extension::Location>::Type Callback;
-
-  // Runs |callback| for each installed extension with the path to the
-  // version directory and the location. Blacklisted extensions won't trigger
-  // the callback and neither will external extensions the user has explicitly
-  // uninstalled. Ownership of |callback| is transferred to callee.
-  void VisitInstalledExtensions(Callback *callback);
-
- private:
-  // A copy of the extensions pref dictionary so that this can be passed
-  // around without a dependency on prefs.
-  scoped_ptr<DictionaryValue> extension_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstalledExtensions);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_H_

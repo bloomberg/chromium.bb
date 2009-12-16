@@ -425,4 +425,27 @@ class Extension {
 
 typedef std::vector<Extension*> ExtensionList;
 
+// Handy struct to pass core extension info around.
+struct ExtensionInfo {
+  ExtensionInfo(const DictionaryValue* manifest,
+                const std::string& id,
+                const FilePath& path,
+                Extension::Location location)
+      : extension_id(id),
+        extension_path(path),
+        extension_location(location) {
+    if (manifest)
+      extension_manifest.reset(
+          static_cast<DictionaryValue*>(manifest->DeepCopy()));
+  }
+
+  scoped_ptr<DictionaryValue> extension_manifest;
+  std::string extension_id;
+  FilePath extension_path;
+  Extension::Location extension_location;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInfo);
+};
+
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_H_

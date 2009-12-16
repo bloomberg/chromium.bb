@@ -31,6 +31,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
@@ -41,40 +42,40 @@
 #include "chrome/browser/extensions/external_registry_extension_provider_win.h"
 #endif
 
+namespace errors = extension_manifest_errors;
+
 namespace {
 
 // Helper class to collect the IDs of every extension listed in the prefs.
 class InstalledExtensionSet {
  public:
-  explicit InstalledExtensionSet(InstalledExtensions* installed) {
-    scoped_ptr<InstalledExtensions> cleanup(installed);
-    installed->VisitInstalledExtensions(
-        NewCallback(this, &InstalledExtensionSet::ExtensionVisited));
+  explicit InstalledExtensionSet(ExtensionPrefs* prefs) {
+    scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
+        ExtensionPrefs::CollectExtensionsInfo(prefs));
+
+    for (size_t i = 0; i < info->size(); ++i) {
+      std::string version;
+      const DictionaryValue* manifest = info->at(i)->extension_manifest.get();
+      if (!manifest ||
+          !manifest->GetString(extension_manifest_keys::kVersion, &version)) {
+        // Without a version, the extension is invalid. Ignoring it here will
+        // cause it to get garbage collected.
+        continue;
+      }
+      extensions_.insert(info->at(i)->extension_id);
+      versions_[info->at(i)->extension_id] = version;
+    }
   }
 
   const std::set<std::string>& extensions() { return extensions_; }
   const std::map<std::string, std::string>& versions() { return versions_; }
 
  private:
-  void ExtensionVisited(
-      DictionaryValue* manifest, const std::string& id,
-      const FilePath& path, Extension::Location location) {
-    std::string version;
-    if (!manifest ||
-        !manifest->GetString(extension_manifest_keys::kVersion, &version)) {
-      // Without a version, the extension is invalid. Ignoring it here will
-      // cause it to get garbage collected.
-      return;
-    }
-    extensions_.insert(id);
-    versions_[id] = version;
-  }
-
   std::set<std::string> extensions_;
   std::map<std::string, std::string> versions_;
 };
 
-} // namespace
+}  // namespace
 
 // ExtensionsService.
 
@@ -317,10 +318,39 @@ void ExtensionsService::LoadAllExtensions() {
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   // Load the previously installed extensions.
-  scoped_ptr<InstalledExtensions> installed(
-      new InstalledExtensions(extension_prefs_.get()));
-  installed->VisitInstalledExtensions(
-      NewCallback(this, &ExtensionsService::LoadInstalledExtension));
+  scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
+      ExtensionPrefs::CollectExtensionsInfo(extension_prefs_.get()));
+
+  // If any extensions need localization, we bounce them all to the file thread
+  // for re-reading and localization.
+  for (size_t i = 0; i < info->size(); ++i) {
+    if (extension_l10n_util::ShouldRelocalizeManifest(*info->at(i))) {
+      ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
+            backend_.get(),
+            &ExtensionsServiceBackend::ReloadExtensionManifestsForLocaleChanged,
+            info.release(),  // Callee takes ownership of the memory.
+            start_time,
+            scoped_refptr<ExtensionsService>(this)));
+      return;
+    }
+  }
+
+  // Don't update prefs.
+  // Callee takes ownership of the memory.
+  ContinueLoadAllExtensions(info.release(), start_time, false);
+}
+
+void ExtensionsService::ContinueLoadAllExtensions(
+    ExtensionPrefs::ExtensionsInfo* extensions_info,
+    base::TimeTicks start_time,
+    bool write_to_prefs) {
+  scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(extensions_info);
+
+  for (size_t i = 0; i < info->size(); ++i) {
+    LoadInstalledExtension(*info->at(i), write_to_prefs);
+  }
+
   OnLoadedInstalledExtensions();
 
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadAll", extensions_.size());
@@ -365,40 +395,45 @@ void ExtensionsService::LoadAllExtensions() {
   }
 }
 
-void ExtensionsService::LoadInstalledExtension(
-    DictionaryValue* manifest, const std::string& id,
-    const FilePath& path, Extension::Location location) {
+void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
+                                               bool write_to_prefs) {
   std::string error;
   Extension* extension = NULL;
-  if (manifest) {
-    scoped_ptr<Extension> tmp(new Extension(path));
-    if (tmp->InitFromValue(*manifest, true, &error)) {
+  if (info.extension_manifest.get()) {
+    scoped_ptr<Extension> tmp(new Extension(info.extension_path));
+    if (tmp->InitFromValue(*info.extension_manifest, true, &error))
       extension = tmp.release();
-    }
   } else {
-    error = extension_manifest_errors::kManifestUnreadable;
+    error = errors::kManifestUnreadable;
   }
 
   if (!extension) {
-    ReportExtensionLoadError(path,
+    ReportExtensionLoadError(info.extension_path,
                              error,
                              NotificationType::EXTENSION_INSTALL_ERROR,
                              false);
     return;
   }
 
-  extension->set_location(location);
+  extension->set_location(info.extension_location);
+
+  if (write_to_prefs)
+    extension_prefs_->UpdateManifest(extension);
+
   OnExtensionLoaded(extension, true);
 
-  if (location == Extension::EXTERNAL_PREF ||
-      location == Extension::EXTERNAL_REGISTRY) {
+  if (info.extension_location == Extension::EXTERNAL_PREF ||
+      info.extension_location == Extension::EXTERNAL_REGISTRY) {
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(
-            backend_.get(),
-            &ExtensionsServiceBackend::CheckExternalUninstall,
-            scoped_refptr<ExtensionsService>(this), id, location));
+        backend_.get(),
+        &ExtensionsServiceBackend::CheckExternalUninstall,
+        scoped_refptr<ExtensionsService>(this),
+        info.extension_id,
+        info.extension_location));
   }
+
 }
 
 void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
@@ -540,8 +575,7 @@ void ExtensionsService::ReloadExtensions() {
 }
 
 void ExtensionsService::GarbageCollectExtensions() {
-  InstalledExtensionSet installed(
-      new InstalledExtensions(extension_prefs_.get()));
+  InstalledExtensionSet installed(extension_prefs_.get());
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableFunction(
@@ -616,9 +650,6 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
           ExtensionBookmarkEventRouter::GetSingleton()->Observe(
               profile_->GetBookmarkModel());
         }
-
-        if (extension->location() != Extension::LOAD)
-          extension_prefs_->MigrateToPrefs(extension);
 
         NotifyExtensionLoaded(extension);
 
@@ -1016,4 +1047,40 @@ void ExtensionsServiceBackend::OnExternalExtensionFound(
       NewRunnableMethod(
           frontend_, &ExtensionsService::OnExternalExtensionFound, id,
           version->GetString(), path, location));
+}
+
+void ExtensionsServiceBackend::ReloadExtensionManifestsForLocaleChanged(
+    ExtensionPrefs::ExtensionsInfo* extensions_to_reload,
+    base::TimeTicks start_time,
+    scoped_refptr<ExtensionsService> frontend) {
+  frontend_ = frontend;
+
+  for (size_t i = 0; i < extensions_to_reload->size(); ++i) {
+    ExtensionInfo* info = extensions_to_reload->at(i).get();
+    if (!info->extension_manifest.get())
+      continue;
+
+    if (!extension_l10n_util::ShouldRelocalizeManifest(*info))
+      continue;
+
+    // We need to reload original manifest in order to localize properly.
+    std::string error;
+    scoped_ptr<Extension> extension(extension_file_util::LoadExtension(
+        info->extension_path, false, &error));
+
+    if (extension.get())
+      extensions_to_reload->at(i)->extension_manifest.reset(
+          static_cast<DictionaryValue*>(
+              extension->manifest_value()->DeepCopy()));
+  }
+
+  // Finish installing on UI thread.
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          frontend_,
+          &ExtensionsService::ContinueLoadAllExtensions,
+          extensions_to_reload,
+          start_time,
+          true));
 }

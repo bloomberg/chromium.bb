@@ -4,6 +4,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/platform_thread.h"
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
@@ -51,7 +52,7 @@ class MockSandboxedExtensionUnpackerClient
 
 class SandboxedExtensionUnpackerTest : public testing::Test {
  public:
-  virtual void SetUp () {
+  virtual void SetUp() {
     // It will delete itself.
     client_ = new MockSandboxedExtensionUnpackerClient;
     client_->DelegateToFake();
@@ -143,16 +144,24 @@ TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
   ASSERT_TRUE(unpacker_->Run());
   ASSERT_TRUE(unpacker_->DumpImagesToFile());
 
-  // Delete _locales/en_US/messages.json.
+  // Check timestamp on _locales/en_US/messages.json.
   FilePath messages_file;
   messages_file = GetInstallPath()
       .AppendASCII(Extension::kLocaleFolder)
       .AppendASCII("en_US")
       .AppendASCII(Extension::kMessagesFilename);
-  EXPECT_TRUE(file_util::Delete(messages_file, false));
+  file_util::FileInfo old_info;
+  EXPECT_TRUE(file_util::GetFileInfo(messages_file, &old_info));
 
+  // unpacker_->Run unpacks the extension. OnUnpackSucceeded overwrites some
+  // of the files. To force timestamp on overwriten files to be different we use
+  // Sleep(1s). See comment on file_util::CountFilesCreatedAfter.
+  PlatformThread::Sleep(1000);
   OnUnpackSucceeded();
 
-  // Check that there is _locales/en_US/messages.json file.
-  EXPECT_TRUE(file_util::PathExists(messages_file));
+  // Check that there is newer _locales/en_US/messages.json file.
+  file_util::FileInfo new_info;
+  EXPECT_TRUE(file_util::GetFileInfo(messages_file, &new_info));
+
+  EXPECT_TRUE(new_info.last_modified > old_info.last_modified);
 }

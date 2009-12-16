@@ -13,6 +13,8 @@
 #include "base/linked_ptr.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
@@ -41,6 +43,96 @@ std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
   }
 
   return default_locale;
+}
+
+bool ShouldRelocalizeManifest(const ExtensionInfo& info) {
+  DictionaryValue* manifest = info.extension_manifest.get();
+  if (!manifest)
+    return false;
+
+  if (!manifest->HasKey(keys::kDefaultLocale))
+    return false;
+
+  std::string manifest_current_locale;
+  manifest->GetString(keys::kCurrentLocale, &manifest_current_locale);
+  return manifest_current_locale != CurrentLocaleOrDefault();
+}
+
+// Localizes manifest value for a given key.
+static bool LocalizeManifestValue(const std::wstring& key,
+                                  const ExtensionMessageBundle& messages,
+                                  DictionaryValue* manifest,
+                                  std::string* error) {
+  std::string result;
+  if (!manifest->GetString(key, &result))
+    return true;
+
+  if (!messages.ReplaceMessages(&result, error))
+    return false;
+
+  manifest->SetString(key, result);
+  return true;
+}
+
+bool LocalizeManifest(const ExtensionMessageBundle& messages,
+                      DictionaryValue* manifest,
+                      std::string* error) {
+  // Don't localize themes.
+  if (manifest->HasKey(keys::kTheme))
+    return true;
+
+  // Initialize name.
+  std::string result;
+  if (!manifest->GetString(keys::kName, &result)) {
+    *error = errors::kInvalidName;
+    return false;
+  }
+  if (!LocalizeManifestValue(keys::kName, messages, manifest, error)) {
+    return false;
+  }
+
+  // Initialize description.
+  if (!LocalizeManifestValue(keys::kDescription, messages, manifest, error))
+    return false;
+
+  // Initialize browser_action.default_title
+  std::wstring key(keys::kBrowserAction);
+  key.append(L".");
+  key.append(keys::kPageActionDefaultTitle);
+  if (!LocalizeManifestValue(key, messages, manifest, error))
+    return false;
+
+  // Initialize page_action.default_title
+  key.assign(keys::kPageAction);
+  key.append(L".");
+  key.append(keys::kPageActionDefaultTitle);
+  if (!LocalizeManifestValue(key, messages, manifest, error))
+    return false;
+
+  // Add current locale key to the manifest, so we can overwrite prefs
+  // with new manifest when chrome locale changes.
+  manifest->SetString(keys::kCurrentLocale, CurrentLocaleOrDefault());
+  return true;
+}
+
+bool LocalizeExtension(Extension* extension,
+                       DictionaryValue* manifest,
+                       std::string* error) {
+  ExtensionMessageBundle* message_bundle =
+      extension_file_util::LoadExtensionMessageBundle(extension->path(),
+                                                      *manifest,
+                                                      error);
+  if (!message_bundle && !error->empty())
+    return false;
+
+  // TODO(cira): remove ExtensionMessageBundle object from Extension class
+  // after we implement IPC that requests message bundles on demand.
+  extension->set_message_bundle(message_bundle);
+
+  if (message_bundle && !LocalizeManifest(*message_bundle, manifest, error))
+    return false;
+
+  return true;
 }
 
 bool AddLocale(const std::set<std::string>& chrome_locales,
@@ -76,6 +168,15 @@ std::string NormalizeLocale(const std::string& locale) {
   std::replace(normalized_locale.begin(), normalized_locale.end(), '-', '_');
 
   return normalized_locale;
+}
+
+std::string CurrentLocaleOrDefault() {
+  std::string current_locale =
+      NormalizeLocale(g_browser_process->GetApplicationLocale());
+  if (current_locale.empty())
+    current_locale = "en";
+
+  return current_locale;
 }
 
 void GetParentLocales(const std::string& current_locale,
@@ -145,7 +246,6 @@ bool GetValidLocales(const FilePath& locale_path,
 static DictionaryValue* LoadMessageFile(const FilePath& locale_path,
                                         const std::string& locale,
                                         std::string* error) {
-
   std::string extension_locale = locale;
   FilePath file = locale_path.AppendASCII(extension_locale)
       .AppendASCII(Extension::kMessagesFilename);

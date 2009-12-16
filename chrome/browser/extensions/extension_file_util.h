@@ -86,13 +86,12 @@ void GarbageCollectExtensions(
     const std::set<std::string>& installed_ids,
     const std::map<std::string, std::string>& installed_versions);
 
-// Loads locale information if _locales folder is present.
-// Returns message bundle if there were no errors. If _locales folder is not
-// present it returns NULL with empty error string.
-// Loading failed only if function returns NULL and error is not empty.
-ExtensionMessageBundle* LoadLocaleInfo(const FilePath& extension_path,
-                                       const DictionaryValue& manifest,
-                                       std::string* error);
+// Loads extension message catalogs and returns message bundle.
+// Returns NULL on error, or if extension is not localized.
+ExtensionMessageBundle* LoadExtensionMessageBundle(
+    const FilePath& extension_path,
+    const DictionaryValue& manifest,
+    std::string* error);
 
 // We need to reserve the namespace of entries that start with "_" for future
 // use by Chrome.

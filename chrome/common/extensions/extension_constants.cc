@@ -13,6 +13,7 @@ const wchar_t* kChromeURLOverrides = L"chrome_url_overrides";
 const wchar_t* kContentScripts = L"content_scripts";
 const wchar_t* kConvertedFromUserScript = L"converted_from_user_script";
 const wchar_t* kCss = L"css";
+const wchar_t* kCurrentLocale = L"current_locale";
 const wchar_t* kDefaultLocale = L"default_locale";
 const wchar_t* kDescription = L"description";
 const wchar_t* kIcons = L"icons";

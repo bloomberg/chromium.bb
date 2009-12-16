@@ -32,6 +32,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+namespace keys = extension_manifest_keys;
+
 namespace {
 
 // Extension ids used during testing.
@@ -398,13 +400,13 @@ class ExtensionsServiceTest
 
   void ValidateBooleanPref(const std::string& extension_id,
                            const std::wstring& pref_path,
-                           bool must_equal) {
+                           bool expected_val) {
     std::wstring msg = L" while checking: ";
     msg += ASCIIToWide(extension_id);
     msg += L" ";
     msg += pref_path;
     msg += L" == ";
-    msg += must_equal ? L"true" : L"false";
+    msg += expected_val ? L"true" : L"false";
 
     const DictionaryValue* dict =
         prefs_->GetDictionary(L"extensions.settings");
@@ -414,7 +416,7 @@ class ExtensionsServiceTest
     EXPECT_TRUE(pref != NULL) << msg;
     bool val;
     ASSERT_TRUE(pref->GetBoolean(pref_path, &val)) << msg;
-    EXPECT_EQ(must_equal, val) << msg;
+    EXPECT_EQ(expected_val, val) << msg;
   }
 
   bool IsPrefExist(const std::string& extension_id,
@@ -438,13 +440,13 @@ class ExtensionsServiceTest
 
   void ValidateIntegerPref(const std::string& extension_id,
                            const std::wstring& pref_path,
-                           int must_equal) {
+                           int expected_val) {
     std::wstring msg = L" while checking: ";
     msg += ASCIIToWide(extension_id);
     msg += L" ";
     msg += pref_path;
     msg += L" == ";
-    msg += IntToWString(must_equal);
+    msg += IntToWString(expected_val);
 
     const DictionaryValue* dict =
         prefs_->GetDictionary(L"extensions.settings");
@@ -454,7 +456,29 @@ class ExtensionsServiceTest
     EXPECT_TRUE(pref != NULL) << msg;
     int val;
     ASSERT_TRUE(pref->GetInteger(pref_path, &val)) << msg;
-    EXPECT_EQ(must_equal, val) << msg;
+    EXPECT_EQ(expected_val, val) << msg;
+  }
+
+  void ValidateStringPref(const std::string& extension_id,
+                          const std::wstring& pref_path,
+                          const std::string& expected_val) {
+    std::wstring msg = L" while checking: ";
+    msg += ASCIIToWide(extension_id);
+    msg += L".manifest.";
+    msg += pref_path;
+    msg += L" == ";
+    msg += ASCIIToWide(expected_val);
+
+    const DictionaryValue* dict =
+        prefs_->GetDictionary(L"extensions.settings");
+    ASSERT_TRUE(dict != NULL) << msg;
+    DictionaryValue* pref = NULL;
+    std::string manifest_path = extension_id + ".manifest";
+    ASSERT_TRUE(dict->GetDictionary(ASCIIToWide(manifest_path), &pref)) << msg;
+    EXPECT_TRUE(pref != NULL) << msg;
+    std::string val;
+    ASSERT_TRUE(pref->GetString(pref_path, &val)) << msg;
+    EXPECT_EQ(expected_val, val) << msg;
   }
 
   void SetPrefInteg(const std::string& extension_id,
@@ -609,7 +633,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
 
 // Test loading bad extensions from the profile directory.
 TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectoryFail) {
-  // Initialize the test dir with a good Preferences/extensions.
+  // Initialize the test dir with a bad Preferences/extensions.
   FilePath source_install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
   source_install_dir = source_install_dir
@@ -1485,6 +1509,37 @@ TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
       "}";
   ignore_list.clear();
   EXPECT_EQ(1, visitor.Visit(json_data, ignore_list));
+}
+
+// Test loading good extensions from the profile directory.
+TEST_F(ExtensionsServiceTest, LoadAndRelocalizeExtensions) {
+  // Initialize the test dir with a good Preferences/extensions.
+  FilePath source_install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
+  source_install_dir = source_install_dir
+      .AppendASCII("extensions")
+      .AppendASCII("l10n");
+  FilePath pref_path = source_install_dir.AppendASCII("Preferences");
+  InitializeInstalledExtensionsService(pref_path, source_install_dir);
+
+  service_->Init();
+  loop_.RunAllPending();
+
+  ASSERT_EQ(3u, loaded_.size());
+
+  // This was equal to "sr" on load.
+  ValidateStringPref(loaded_[0]->id(), keys::kCurrentLocale, "en");
+
+  // These are untouched by re-localization.
+  ValidateStringPref(loaded_[1]->id(), keys::kCurrentLocale, "en");
+  EXPECT_FALSE(IsPrefExist(loaded_[1]->id(), keys::kCurrentLocale));
+
+  // This one starts with Serbian name, and gets re-localized into English.
+  EXPECT_EQ("My name is simple.", loaded_[0]->name());
+
+  // These are untouched by re-localization.
+  EXPECT_EQ("My name is simple.", loaded_[1]->name());
+  EXPECT_EQ("no l10n", loaded_[2]->name());
 }
 
 class ExtensionsReadyRecorder : public NotificationObserver {

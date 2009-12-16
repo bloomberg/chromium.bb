@@ -683,27 +683,17 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     return false;
   }
 
-  // Initialize & localize name.
+  // Initialize name.
   if (!source.GetString(keys::kName, &name_)) {
     *error = errors::kInvalidName;
     return false;
-  } else if (message_bundle_.get()) {
-    std::string l10n_name =
-      message_bundle_->GetL10nMessage(ExtensionMessageBundle::kExtensionName);
-    if (!l10n_name.empty())
-      name_ = l10n_name;
   }
 
-  // Initialize & localize description (if present).
+  // Initialize description (if present).
   if (source.HasKey(keys::kDescription)) {
     if (!source.GetString(keys::kDescription, &description_)) {
       *error = errors::kInvalidDescription;
       return false;
-    } else if (message_bundle_.get()) {
-      std::string l10n_description = message_bundle_->GetL10nMessage(
-          ExtensionMessageBundle::kExtensionDescription);
-      if (!l10n_description.empty())
-        description_ = l10n_description;
     }
   }
 

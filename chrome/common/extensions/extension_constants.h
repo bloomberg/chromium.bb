@@ -14,6 +14,7 @@ namespace extension_manifest_keys {
   extern const wchar_t* kContentScripts;
   extern const wchar_t* kConvertedFromUserScript;
   extern const wchar_t* kCss;
+  extern const wchar_t* kCurrentLocale;
   extern const wchar_t* kDefaultLocale;
   extern const wchar_t* kDescription;
   extern const wchar_t* kExcludeGlobs;
