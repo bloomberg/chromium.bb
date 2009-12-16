@@ -120,8 +120,11 @@ TEST_F(ChromeBrowserWindowTest, WindowWidgetLocation) {
   // Then with a tabstrip.
   id controller = [OCMockObject mockForClass:[BrowserWindowController class]];
   BOOL yes = YES;
+  BOOL no = NO;
   [[[controller stub] andReturnValue:OCMOCK_VALUE(yes)]
    isKindOfClass:[BrowserWindowController class]];
+  [[[controller expect] andReturnValue:OCMOCK_VALUE(yes)] hasTabStrip];
+  [[[controller expect] andReturnValue:OCMOCK_VALUE(no)] hasTitleBar];
   [[[controller expect] andReturnValue:OCMOCK_VALUE(yes)] isNormalWindow];
   [window_ setWindowController:controller];
 

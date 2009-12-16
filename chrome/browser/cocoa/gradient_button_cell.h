@@ -45,7 +45,6 @@ typedef NSInteger ButtonType;
 
 - (void)drawBorderAndFillForTheme:(GTMTheme*)theme
                       controlView:(NSView*)controlView
-                        outerPath:(NSBezierPath*)outerPath
                         innerPath:(NSBezierPath*)innerPath
               showClickedGradient:(BOOL)showClickedGradient
             showHighlightGradient:(BOOL)showHighlightGradient

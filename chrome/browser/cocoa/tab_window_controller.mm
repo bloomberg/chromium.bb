@@ -23,7 +23,7 @@
 }
 
 - (void)windowDidLoad {
-  if ([self isNormalWindow]) {
+  if ([self hasTabStrip]) {
     // Place the tab bar above the content box and add it to the view hierarchy
     // as a sibling of the content view so it can overlap with the window frame.
     NSRect tabFrame = [tabContentArea_ frame];
@@ -199,8 +199,8 @@
   return @"";
 }
 
-- (BOOL)isNormalWindow {
-  // subclass must implement
+- (BOOL)hasTabStrip {
+  // Subclasses should implement this.
   NOTIMPLEMENTED();
   return YES;
 }

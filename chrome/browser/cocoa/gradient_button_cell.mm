@@ -24,7 +24,6 @@
                        inView:(NSView*)controlView
                    innerFrame:(NSRect*)returnInnerFrame
                     innerPath:(NSBezierPath**)returnInnerPath
-                    outerPath:(NSBezierPath**)returnOuterPath
                      clipPath:(NSBezierPath**)returnClipPath;
 @end
 
@@ -176,7 +175,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 // TODO(viettrungluu): clean up/reorganize.
 - (void)drawBorderAndFillForTheme:(GTMTheme*)theme
                       controlView:(NSView*)controlView
-                        outerPath:(NSBezierPath*)outerPath
                         innerPath:(NSBezierPath*)innerPath
               showClickedGradient:(BOOL)showClickedGradient
             showHighlightGradient:(BOOL)showHighlightGradient
@@ -279,7 +277,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
                        inView:(NSView*)controlView
                    innerFrame:(NSRect*)returnInnerFrame
                     innerPath:(NSBezierPath**)returnInnerPath
-                    outerPath:(NSBezierPath**)returnOuterPath
                      clipPath:(NSBezierPath**)returnClipPath {
   // Constants from Cole.  Will kConstant them once the feedback loop
   // is complete.
@@ -316,13 +313,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
                                                        xRadius:radius
                                                        yRadius:radius];
   }
-  if (returnOuterPath) {
-    DCHECK(*returnOuterPath == nil);
-    NSRect outerPathRect = NSInsetRect(drawFrame, -1, -1);
-    *returnOuterPath = [NSBezierPath bezierPathWithRoundedRect:outerPathRect
-                                                       xRadius:radius + 1
-                                                       yRadius:radius + 1];
-  }
   if (returnClipPath) {
     DCHECK(*returnClipPath == nil);
     NSRect clipPathRect = NSInsetRect(drawFrame, -0.5, -0.5);
@@ -336,12 +326,10 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   NSRect innerFrame;
   NSBezierPath* innerPath = nil;
-  NSBezierPath* outerPath = nil;
   [self getDrawParamsForFrame:cellFrame
                        inView:controlView
                    innerFrame:&innerFrame
                     innerPath:&innerPath
-                    outerPath:&outerPath
                      clipPath:NULL];
 
   BOOL pressed = [self isHighlighted];
@@ -358,7 +346,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
     [self drawBorderAndFillForTheme:theme
                         controlView:controlView
-                          outerPath:outerPath
                           innerPath:innerPath
                 showClickedGradient:pressed
               showHighlightGradient:[self isHighlighted]
@@ -456,7 +443,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
                        inView:controlView
                    innerFrame:NULL
                     innerPath:NULL
-                    outerPath:NULL
                      clipPath:&boundingPath];
   return boundingPath;
 }

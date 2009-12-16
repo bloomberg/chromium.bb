@@ -452,8 +452,10 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 }
 
 - (void)setBookmarkBarEnabled:(BOOL)enabled {
-  barIsEnabled_ = enabled;
-  [self updateVisibility];
+  if (enabled != barIsEnabled_) {
+    barIsEnabled_ = enabled;
+    [self updateVisibility];
+  }
 }
 
 - (CGFloat)getDesiredToolbarHeightCompression {

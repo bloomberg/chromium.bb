@@ -112,7 +112,7 @@ namespace {
     closeButton_ = [NSWindow standardWindowButton:NSWindowCloseButton
                                      forStyleMask:aStyle];
     NSRect closeButtonFrame = [closeButton_ frame];
-    CGFloat yOffset = [browserController isNormalWindow] ?
+    CGFloat yOffset = [browserController hasTabStrip] ?
         kChromeWindowButtonsWithTabStripOffsetFromTop :
         kChromeWindowButtonsWithoutTabStripOffsetFromTop;
     closeButtonFrame.origin =

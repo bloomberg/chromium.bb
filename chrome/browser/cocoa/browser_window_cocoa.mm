@@ -197,7 +197,7 @@ void BrowserWindowCocoa::ConfirmAddSearchProvider(
 }
 
 LocationBar* BrowserWindowCocoa::GetLocationBar() const {
-  return [controller_ locationBar];
+  return [controller_ locationBarBridge];
 }
 
 void BrowserWindowCocoa::SetFocusToLocationBar() {
@@ -223,8 +223,8 @@ bool BrowserWindowCocoa::IsBookmarkBarVisible() const {
 }
 
 bool BrowserWindowCocoa::IsToolbarVisible() const {
-  NOTIMPLEMENTED();
-  return true;
+  return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
+         browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
 
 // This is called from Browser, which in turn is called directly from

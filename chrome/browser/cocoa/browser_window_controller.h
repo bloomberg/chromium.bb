@@ -103,7 +103,7 @@ class TabStripModelObserverBridge;
 - (BrowserWindow*)browserWindow;
 
 // Access the C++ bridge object representing the location bar.
-- (LocationBar*)locationBar;
+- (LocationBar*)locationBarBridge;
 
 // Access the C++ bridge object representing the status bubble for the window.
 - (StatusBubbleMac*)statusBubble;
@@ -130,6 +130,33 @@ class TabStripModelObserverBridge;
 
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar;
+
+// Determines whether this controller's window supports a given feature (i.e.,
+// whether a given feature is or can be shown in the window).
+// TODO(viettrungluu): |feature| is really should be |Browser::Feature|, but I
+// don't want to include browser.h (and you can't forward declare enums).
+- (BOOL)supportsWindowFeature:(int)feature;
+
+// Called to check whether or not this window has a normal title bar (YES if it
+// does, NO otherwise). (E.g., normal browser windows do not, pop-ups do.)
+- (BOOL)hasTitleBar;
+
+// Called to check whether or not this window has a toolbar (YES if it does, NO
+// otherwise). (E.g., normal browser windows do, pop-ups do not.)
+- (BOOL)hasToolbar;
+
+// Called to check whether or not this window has a location bar (YES if it
+// does, NO otherwise). (E.g., normal browser windows do, pop-ups may or may
+// not.)
+- (BOOL)hasLocationBar;
+
+// Called to check whether or not this window can have bookmark bar (YES if it
+// does, NO otherwise). (E.g., normal browser windows may, pop-ups may not.)
+- (BOOL)supportsBookmarkBar;
+
+// Called to check if this controller's window is a normal window (e.g., not a
+// pop-up window). Returns YES if it is, NO otherwise.
+- (BOOL)isNormalWindow;
 
 - (BOOL)isBookmarkBarVisible;
 

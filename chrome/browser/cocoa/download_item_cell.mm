@@ -397,20 +397,12 @@ const int kCompleteAnimationDuration = 2.5;
 
   NSBezierPath* buttonInnerPath = [self
       leftRoundedPath:radius inRect:buttonDrawRect];
-  NSBezierPath* buttonOuterPath = [self
-      leftRoundedPath:(radius + 1)
-               inRect:NSInsetRect(buttonDrawRect, -1, -1)];
-
   NSBezierPath* dropdownInnerPath = [self
       rightRoundedPath:radius inRect:dropdownDrawRect];
-  NSBezierPath* dropdownOuterPath = [self
-      rightRoundedPath:(radius + 1)
-                inRect:NSInsetRect(dropdownDrawRect, -1, -1)];
 
   // Stroke the borders and appropriate fill gradient.
   [self drawBorderAndFillForTheme:theme
                       controlView:controlView
-                        outerPath:buttonOuterPath
                         innerPath:buttonInnerPath
               showClickedGradient:[self isButtonPartPressed]
             showHighlightGradient:[self isMouseOverButtonPart]
@@ -421,7 +413,6 @@ const int kCompleteAnimationDuration = 2.5;
 
   [self drawBorderAndFillForTheme:theme
                       controlView:controlView
-                        outerPath:dropdownOuterPath
                         innerPath:dropdownInnerPath
               showClickedGradient:[self isDropdownPartPressed]
             showHighlightGradient:[self isMouseOverDropdownPart]

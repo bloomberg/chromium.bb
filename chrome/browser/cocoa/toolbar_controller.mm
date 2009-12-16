@@ -149,6 +149,7 @@ class PrefObserverBridge : public NotificationObserver {
     browser_ = browser;
     resizeDelegate_ = resizeDelegate;
     hasToolbar_ = YES;
+    hasLocationBar_ = YES;
 
     // Register for notifications about state changes for the toolbar buttons
     commandObserver_.reset(new CommandObserverBridge(self, commands));
@@ -165,6 +166,7 @@ class PrefObserverBridge : public NotificationObserver {
   // Make sure any code in the base class which assumes [self view] is
   // the "parent" view continues to work.
   hasToolbar_ = YES;
+  hasLocationBar_ = YES;
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
@@ -293,7 +295,7 @@ class PrefObserverBridge : public NotificationObserver {
   [self mouseMoved:event];
 }
 
-- (LocationBar*)locationBar {
+- (LocationBar*)locationBarBridge {
   return locationBarView_.get();
 }
 
@@ -377,15 +379,20 @@ class PrefObserverBridge : public NotificationObserver {
   [goButton_ setTag:tag];
 }
 
-- (void)setHasToolbar:(BOOL)toolbar {
-  [self view];  // force nib loading
+- (void)setHasToolbar:(BOOL)toolbar hasLocationBar:(BOOL)locBar {
+  [self view];  // Force nib loading.
+
   hasToolbar_ = toolbar;
 
-  // App mode allows turning off the location bar as well.
-  // TODO(???): add more code here when implementing app mode to allow
-  // turning off both toolbar AND location bar.
+  // If there's a toolbar, there must be a location bar.
+  DCHECK((toolbar && locBar) || !toolbar);
+  hasLocationBar_ = toolbar ? YES : locBar;
+
+  // Decide whether to hide/show based on whether there's a location bar.
+  [[self view] setHidden:!hasLocationBar_];
 
   // Make location bar not editable when in a pop-up.
+  // TODO(viettrungluu): is this right (all the time)?
   [locationBar_ setEditable:toolbar];
 }
 
@@ -582,7 +589,9 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {
-  return kBaseToolbarHeight - compressByHeight;
+  // With no toolbar, just ignore the compression.
+  return hasToolbar_ ? kBaseToolbarHeight - compressByHeight :
+                       NSHeight([locationBar_ frame]);
 }
 
 - (void)setDividerOpacity:(CGFloat)opacity {
@@ -613,7 +622,7 @@ class PrefObserverBridge : public NotificationObserver {
   // It is 'go', so see what it would do...
 
   // Fetch the EditView and EditModel
-  LocationBar* locationBar = [self locationBar];
+  LocationBar* locationBar = [self locationBarBridge];
   DCHECK(locationBar);
   AutocompleteEditView* editView = locationBar->location_entry();
   DCHECK(editView);

@@ -53,6 +53,25 @@
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
+// ORGANIZATION: This is a big file. It is (in principle) organized as follows
+// (in order):
+// 1. Interfaces, including for our private methods. Very short, one-time-use
+//    classes may include an implementation immediately after their interface.
+// 2. The general implementation section, ordered as follows:
+//      i. Public methods and overrides.
+//     ii. Overrides/implementations of undocumented methods.
+//    iii. Delegate methods for various protocols, formal and informal, to which
+//        |BrowserWindowController| conforms.
+// 3. The private implementation section (|BrowserWindowController (Private)|).
+// 4. Implementation for |GTMTheme (BrowserThemeProviderInitialization)|.
+//
+// Not all of the above guidelines are followed and more (re-)organization is
+// needed. BUT PLEASE TRY TO KEEP THIS FILE ORGANIZED. I'd rather re-organize as
+// little as possible, since doing so messes up the file's history.
+//
+// TODO(viettrungluu): (re-)organize some more, possibly split into separate
+// files?
+
 // Notes on self-inflicted (not user-inflicted) window resizing and moving:
 //
 // When the bookmark bar goes from hidden to shown (on a non-NTP) page, or when
@@ -127,8 +146,41 @@ willPositionSheet:(NSWindow*)sheet
 // Assign a theme to the window.
 - (void)setTheme;
 
-// Repositions the windows subviews.
+// Repositions the window's subviews. From the top down: toolbar, normal
+// bookmark bar (if shown), infobar, NTP detached bookmark bar (if shown),
+// content area, download shelf (if any).
 - (void)layoutSubviews;
+
+// Lays out the toolbar (or just location bar for popups) at the given maximum
+// y-coordinate, with the given width; returns the new maximum y (below the
+// toolbar).
+- (CGFloat)layoutToolbarAtMaxY:(CGFloat)maxY width:(CGFloat)width;
+
+// Lays out the bookmark bar at the given maximum y-coordinate, with the given
+// width; returns the new maximum y (below the bookmark bar). Note that one must
+// call it with the appropriate |maxY| which depends on whether or not the
+// bookmark bar is shown as the NTP bubble or not (use
+// |-placeBookmarkBarBelowInfoBar|).
+- (CGFloat)layoutBookmarkBarAtMaxY:(CGFloat)maxY width:(CGFloat)width;
+
+// Lays out the infobar at the given maximum y-coordinate, with the given width;
+// returns the new maximum y (below the infobar).
+- (CGFloat)layoutInfoBarAtMaxY:(CGFloat)maxY width:(CGFloat)width;
+
+// Returns YES if the bookmark bar should be placed below the infobar, NO
+// otherwise.
+- (BOOL)placeBookmarkBarBelowInfoBar;
+
+// Lays out the download shelf, if there is one, at the given minimum
+// y-coordinate, with the given width; returns the new minimum y (above the
+// download shelf). This is safe to call even if there is no download shelf.
+- (CGFloat)layoutDownloadShelfAtMinY:(CGFloat)minY width:(CGFloat)width;
+
+// Lays out the tab content area between the given minimum and maximum
+// y-coordinates, with the given width.
+- (void)layoutTabContentAreaAtMinY:(CGFloat)minY
+                              maxY:(CGFloat)maxY
+                             width:(CGFloat)width;
 
 // Should we show the normal bookmark bar?
 - (BOOL)shouldShowBookmarkBar;
@@ -233,11 +285,8 @@ willPositionSheet:(NSWindow*)sheet
                                      profile:browser->profile()
                                      browser:browser
                               resizeDelegate:self]);
-    // If we are a pop-up, we have a titlebar and no toolbar.
-    if (!browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) &&
-        browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR)) {
-      [toolbarController_ setHasToolbar:NO];
-    }
+    [toolbarController_ setHasToolbar:[self hasToolbar]
+                       hasLocationBar:[self hasLocationBar]];
     [[[self window] contentView] addSubview:[toolbarController_ view]];
 
     // Create a sub-controller for the bookmark bar.
@@ -248,18 +297,14 @@ willPositionSheet:(NSWindow*)sheet
                    delegate:self
              resizeDelegate:self]);
 
-    // Add bookmark bar to the view hierarchy.  This also triggers the
-    // nib load.  The bookmark bar is defined (in the nib) to be
-    // bottom-aligned to it's parent view (among other things), so
-    // position and resize properties don't need to be set.
+    // Add bookmark bar to the view hierarchy, which also triggers the nib load.
+    // The bookmark bar is defined (in the nib) to be bottom-aligned to its
+    // parent view (among other things), so position and resize properties don't
+    // need to be set.
     [[[self window] contentView] addSubview:[bookmarkBarController_ view]
                                  positioned:NSWindowBelow
                                  relativeTo:[toolbarController_ view]];
-
-    // Disable the bookmark bar if this window doesn't support them.
-    if (!browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
-      [bookmarkBarController_ setBookmarkBarEnabled:NO];
-    }
+    [bookmarkBarController_ setBookmarkBarEnabled:[self supportsBookmarkBar]];
 
     // We don't want to try and show the bar before it gets placed in its parent
     // view, so this step shoudn't be inside the bookmark bar controller's
@@ -752,7 +797,7 @@ willPositionSheet:(NSWindow*)sheet
     NSInteger tag = [item tag];
     if (browser_->command_updater()->SupportsCommand(tag)) {
       // Generate return value (enabled state)
-      enable = browser_->command_updater()->IsCommandEnabled(tag) ? YES : NO;
+      enable = browser_->command_updater()->IsCommandEnabled(tag);
       switch (tag) {
         case IDC_CLOSE_TAB:
           // Disable "close tab" if we're not the key window or if there's only
@@ -809,7 +854,7 @@ willPositionSheet:(NSWindow*)sheet
         // for Windows (ToolbarView::ButtonPressed()), this function handles
         // both reload button press event and Command+r press event. Thus the
         // 'isKindofClass' check is necessary.
-        [self locationBar]->Revert();
+        [self locationBarBridge]->Revert();
       }
       break;
   }
@@ -841,8 +886,8 @@ willPositionSheet:(NSWindow*)sheet
   return [tabStripController_ sheetController];
 }
 
-- (LocationBar*)locationBar {
-  return [toolbarController_ locationBar];
+- (LocationBar*)locationBarBridge {
+  return [toolbarController_ locationBarBridge];
 }
 
 - (StatusBubbleMac*)statusBubble {
@@ -1116,9 +1161,7 @@ willPositionSheet:(NSWindow*)sheet
   } else {
     mac_util::ReleaseFullScreen();
     [[[self window] contentView] addSubview:[toolbarController_ view]];
-    if (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
-      [bookmarkBarController_ setBookmarkBarEnabled:YES];
-    }
+    [bookmarkBarController_ setBookmarkBarEnabled:[self supportsBookmarkBar]];
   }
 
   // Force a relayout.
@@ -1187,11 +1230,34 @@ willPositionSheet:(NSWindow*)sheet
   return base::SysUTF16ToNSString(contents->GetTitle());
 }
 
-// TYPE_POPUP is not normal (e.g. no tab strip)
+- (BOOL)supportsWindowFeature:(int)feature {
+  return browser_->SupportsWindowFeature(
+      static_cast<Browser::WindowFeature>(feature));
+}
+
+// (Override of |TabWindowController| method.)
+- (BOOL)hasTabStrip {
+  return [self supportsWindowFeature:Browser::FEATURE_TABSTRIP];
+}
+
+- (BOOL)hasTitleBar {
+  return [self supportsWindowFeature:Browser::FEATURE_TITLEBAR];
+}
+
+- (BOOL)hasToolbar {
+  return [self supportsWindowFeature:Browser::FEATURE_TOOLBAR];
+}
+
+- (BOOL)hasLocationBar {
+  return [self supportsWindowFeature:Browser::FEATURE_LOCATIONBAR];
+}
+
+- (BOOL)supportsBookmarkBar {
+  return [self supportsWindowFeature:Browser::FEATURE_BOOKMARKBAR];
+}
+
 - (BOOL)isNormalWindow {
-  if (browser_->type() == Browser::TYPE_NORMAL)
-    return YES;
-  return NO;
+  return browser_->type() == Browser::TYPE_NORMAL;
 }
 
 - (void)selectTabWithContents:(TabContents*)newContents
@@ -1330,6 +1396,68 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
+// If the browser is in incognito mode, install the image view to decorate
+// the window at the upper right. Use the same base y coordinate as the
+// tab strip.
+- (void)installIncognitoBadge {
+  if (!browser_->profile()->IsOffTheRecord())
+    return;
+  // Don't install if we're not a normal browser (ie, a popup).
+  if (![self isNormalWindow])
+    return;
+
+  static const float kOffset = 4;
+  NSString* incognitoPath = [mac_util::MainAppBundle()
+                                pathForResource:@"otr_icon"
+                                         ofType:@"pdf"];
+  scoped_nsobject<NSImage> incognitoImage(
+      [[NSImage alloc] initWithContentsOfFile:incognitoPath]);
+  const NSSize imageSize = [incognitoImage size];
+  NSRect tabFrame = [[self tabStripView] frame];
+  NSRect incognitoFrame = tabFrame;
+  incognitoFrame.origin.x = NSMaxX(incognitoFrame) - imageSize.width -
+                              kOffset;
+  incognitoFrame.size = imageSize;
+  scoped_nsobject<IncognitoImageView> incognitoView(
+      [[IncognitoImageView alloc] initWithFrame:incognitoFrame]);
+  [incognitoView setImage:incognitoImage.get()];
+  [incognitoView setWantsLayer:YES];
+  [incognitoView setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  [shadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0.0
+                                                           alpha:0.5]];
+  [shadow.get() setShadowOffset:NSMakeSize(0, -1)];
+  [shadow setShadowBlurRadius:2.0];
+  [incognitoView setShadow:shadow];
+
+  // Shrink the tab strip's width so there's no overlap and install the
+  // view.
+  tabFrame.size.width -= incognitoFrame.size.width + kOffset;
+  [[self tabStripView] setFrame:tabFrame];
+  [[[[self window] contentView] superview] addSubview:incognitoView.get()];
+}
+
+// Undocumented method for multi-touch gestures in 10.5. Future OS's will
+// likely add a public API, but the worst that will happen is that this will
+// turn into dead code and just won't get called.
+- (void)swipeWithEvent:(NSEvent*)event {
+  // Map forwards and backwards to history; left is positive, right is negative.
+  unsigned int command = 0;
+  if ([event deltaX] > 0.5)
+    command = IDC_BACK;
+  else if ([event deltaX] < -0.5)
+    command = IDC_FORWARD;
+  else if ([event deltaY] > 0.5)
+    ;  // TODO(pinkerton): figure out page-up
+  else if ([event deltaY] < -0.5)
+    ;  // TODO(pinkerton): figure out page-down
+
+  // Ensure the command is valid first (ExecuteCommand() won't do that) and
+  // then make it so.
+  if (browser_->command_updater()->IsCommandEnabled(command))
+    browser_->ExecuteCommand(command);
+}
+
 // Delegate method called when window is resized.
 - (void)windowDidResize:(NSNotification*)notification {
   // Resize (and possibly move) the status bubble. Note that we may get called
@@ -1383,6 +1511,13 @@ willPositionSheet:(NSWindow*)sheet
   return frameSize;
 }
 
+// Delegate method: see |NSWindowDelegate| protocol.
+- (id)windowWillReturnFieldEditor:(NSWindow*)sender toObject:(id)obj {
+  // Ask the toolbar controller if it wants to return a custom field editor
+  // for the specific object.
+  return [toolbarController_ customFieldEditorForObject:obj];
+}
+
 // (Needed for |BookmarkBarControllerDelegate| protocol.)
 - (void)bookmarkBar:(BookmarkBarController*)controller
  didChangeFromState:(bookmarks::VisualState)oldState
@@ -1427,47 +1562,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 @end
 
 @implementation BrowserWindowController (Private)
-
-// If the browser is in incognito mode, install the image view to decorate
-// the window at the upper right. Use the same base y coordinate as the
-// tab strip.
-- (void)installIncognitoBadge {
-  if (!browser_->profile()->IsOffTheRecord())
-    return;
-  // Don't install if we're not a normal browser (ie, a popup).
-  if (![self isNormalWindow])
-    return;
-
-  static const float kOffset = 4;
-  NSString* incognitoPath = [mac_util::MainAppBundle()
-                                pathForResource:@"otr_icon"
-                                         ofType:@"pdf"];
-  scoped_nsobject<NSImage> incognitoImage(
-      [[NSImage alloc] initWithContentsOfFile:incognitoPath]);
-  const NSSize imageSize = [incognitoImage size];
-  NSRect tabFrame = [[self tabStripView] frame];
-  NSRect incognitoFrame = tabFrame;
-  incognitoFrame.origin.x = NSMaxX(incognitoFrame) - imageSize.width -
-                              kOffset;
-  incognitoFrame.size = imageSize;
-  scoped_nsobject<IncognitoImageView> incognitoView(
-      [[IncognitoImageView alloc] initWithFrame:incognitoFrame]);
-  [incognitoView setImage:incognitoImage.get()];
-  [incognitoView setWantsLayer:YES];
-  [incognitoView setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
-  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0.0
-                                                           alpha:0.5]];
-  [shadow.get() setShadowOffset:NSMakeSize(0, -1)];
-  [shadow setShadowBlurRadius:2.0];
-  [incognitoView setShadow:shadow];
-
-  // Shrink the tab strip's width so there's no overlap and install the
-  // view.
-  tabFrame.size.width -= incognitoFrame.size.width + kOffset;
-  [[self tabStripView] setFrame:tabFrame];
-  [[[[self window] contentView] superview] addSubview:incognitoView.get()];
-}
 
 - (void)saveWindowPositionIfNeeded {
   if (browser_ != BrowserList::GetLastActive())
@@ -1537,33 +1631,6 @@ willPositionSheet:(NSWindow*)sheet
   return defaultSheetRect;
 }
 
-// Undocumented method for multi-touch gestures in 10.5. Future OS's will
-// likely add a public API, but the worst that will happen is that this will
-// turn into dead code and just won't get called.
-- (void)swipeWithEvent:(NSEvent*)event {
-  // Map forwards and backwards to history; left is positive, right is negative.
-  unsigned int command = 0;
-  if ([event deltaX] > 0.5)
-    command = IDC_BACK;
-  else if ([event deltaX] < -0.5)
-    command = IDC_FORWARD;
-  else if ([event deltaY] > 0.5)
-    ;  // TODO(pinkerton): figure out page-up
-  else if ([event deltaY] < -0.5)
-    ;  // TODO(pinkerton): figure out page-down
-
-  // Ensure the command is valid first (ExecuteCommand() won't do that) and
-  // then make it so.
-  if (browser_->command_updater()->IsCommandEnabled(command))
-    browser_->ExecuteCommand(command);
-}
-
-- (id)windowWillReturnFieldEditor:(NSWindow*)sender toObject:(id)obj {
-  // Ask the toolbar controller if it wants to return a custom field editor
-  // for the specific object.
-  return [toolbarController_ customFieldEditorForObject:obj];
-}
-
 - (void)setTheme {
   ThemeProvider* theme_provider = browser_->profile()->GetThemeProvider();
   BrowserThemeProvider* browser_theme_provider =
@@ -1577,113 +1644,147 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
-// Private method to layout browser window subviews.  Positions the toolbar and
-// the infobar above the tab content area.  Positions the download shelf below
-// the tab content area.  If the toolbar is not a child of the contentview, this
-// method will not leave room for it.  If we are currently running in fullscreen
-// mode, or if the tabstrip is not a descendant of the window, this method fills
-// the entire content area.  Otherwise, this method places the topmost view
-// directly beneath the tabstrip.
 - (void)layoutSubviews {
   NSWindow* window = [self window];
   NSView* contentView = [window contentView];
   NSRect contentFrame = [contentView frame];
-  int maxY = NSMaxY(contentFrame);
-  int minY = NSMinY(contentFrame);
-  if (![self isFullscreen] && [self isNormalWindow]) {
+  CGFloat maxY = NSMaxY(contentFrame);
+  CGFloat minY = NSMinY(contentFrame);
+  CGFloat width = NSWidth(contentFrame);
+  if ([self hasTabStrip])
     maxY = NSMinY([[self tabStripView] frame]);
-  }
   DCHECK_GE(maxY, minY);
 
-  // Suppress title drawing for normal windows (popups use normal
-  // window title bars).
-  if ([window respondsToSelector:@selector(setShouldHideTitle:)]) {
-    [(id)window setShouldHideTitle:[self isNormalWindow]];
-  }
+  // Suppress title drawing if necessary.
+  if ([window respondsToSelector:@selector(setShouldHideTitle:)])
+    [(id)window setShouldHideTitle:![self hasTitleBar]];
 
-  // Place the toolbar at the top of the reserved area, but only if we're not in
-  // fullscreen mode.
-  NSView* toolbarView = [toolbarController_ view];
-  NSRect toolbarFrame = [toolbarView frame];
-  if (![self isFullscreen]) {
-    // The toolbar is present in the window, so we make room for it.
-    toolbarFrame.origin.x = 0;
-    toolbarFrame.origin.y = maxY - NSHeight(toolbarFrame);
-    toolbarFrame.size.width = NSWidth(contentFrame);
-    maxY -= NSHeight(toolbarFrame);
-  }
-  [toolbarView setFrame:toolbarFrame];
-
-  // If we are currently displaying the NTP detached bookmark bar or animating
-  // to/from it (from/to anything else), we display the bookmark bar below the
-  // infobar.
-  BOOL placeBookmarkBarBelowInfobar =
-      [bookmarkBarController_ isInState:bookmarks::kDetachedState] ||
-      [bookmarkBarController_ isAnimatingToState:bookmarks::kDetachedState] ||
-      [bookmarkBarController_ isAnimatingFromState:bookmarks::kDetachedState];
+  // Place the toolbar at the top of the reserved area.
+  maxY = [self layoutToolbarAtMaxY:maxY width:width];
 
   // If we're not displaying the bookmark bar below the infobar, then it goes
   // immediately below the toolbar.
-  if (!placeBookmarkBarBelowInfobar) {
-    NSView* bookmarkBarView = [bookmarkBarController_ view];
-    [bookmarkBarView setHidden:NO];
-    NSRect bookmarkBarFrame = [bookmarkBarView frame];
-    bookmarkBarFrame.origin.y = maxY - NSHeight(bookmarkBarFrame);
-    bookmarkBarFrame.size.width = NSWidth(contentFrame);
-    [bookmarkBarView setFrame:bookmarkBarFrame];
-    maxY -= NSHeight(bookmarkBarFrame);
-  }
+  BOOL placeBookmarkBarBelowInfoBar = [self placeBookmarkBarBelowInfoBar];
+  if (!placeBookmarkBarBelowInfoBar)
+    maxY = [self layoutBookmarkBarAtMaxY:maxY width:width];
 
   // Place the infobar container in place below the toolbar.
-  NSView* infoBarView = [infoBarContainerController_ view];
-  NSRect infoBarFrame = [infoBarView frame];
-  infoBarFrame.origin.y = maxY - NSHeight(infoBarFrame);
-  infoBarFrame.size.width = NSWidth(contentFrame);
-  [infoBarView setFrame:infoBarFrame];
-  maxY -= NSHeight(infoBarFrame);
+  maxY = [self layoutInfoBarAtMaxY:maxY width:width];
 
   // If the bookmark bar is detached, place it at the bottom of the stack.
-  if (placeBookmarkBarBelowInfobar) {
-    NSView* bookmarkBarView = [bookmarkBarController_ view];
-    [bookmarkBarView setHidden:NO];
-    NSRect bookmarkBarFrame = [bookmarkBarView frame];
-    bookmarkBarFrame.origin.y = maxY - NSHeight(bookmarkBarFrame);
-    bookmarkBarFrame.size.width = NSWidth(contentFrame);
-    [bookmarkBarView setFrame:bookmarkBarFrame];
-    maxY -= NSHeight(bookmarkBarFrame);
+  if (placeBookmarkBarBelowInfoBar)
+    maxY = [self layoutBookmarkBarAtMaxY:maxY width:width];
 
-    // TODO(viettrungluu): this really doesn't belong here.
-    [bookmarkBarController_ layoutSubviews];
-  }
+  // Place the download shelf, if any, at the bottom of the view.
+  minY = [self layoutDownloadShelfAtMinY:minY width:width];
 
-  // If there's a download shelf, place it at the bottom of the view.
-  if (downloadShelfController_.get()) {
-    NSView* downloadView = [downloadShelfController_ view];
-    NSRect downloadFrame = [downloadView frame];
-    downloadFrame.origin.y = minY;
-    downloadFrame.size.width = NSWidth(contentFrame);
-    [downloadView setFrame:downloadFrame];
-    minY += NSHeight(downloadFrame);
-  }
-
-  // Finally, the tabContentArea takes up all of the remaining space.
-  NSView* tabContentView = [self tabContentArea];
-  NSRect tabContentFrame = [tabContentView frame];
-  tabContentFrame.origin.y = minY;
-  tabContentFrame.size.height = maxY - minY;
-  tabContentFrame.size.width = NSWidth(contentFrame);
-  [tabContentView setFrame:tabContentFrame];
+  // Finally, the content area takes up all of the remaining space.
+  [self layoutTabContentAreaAtMinY:minY maxY:maxY width:width];
 
   // Position the find bar relative to the infobar container.
   [findBarCocoaController_
-    positionFindBarView:[infoBarContainerController_ view]];
+      positionFindBarView:[infoBarContainerController_ view]];
 
+  // Place the status bubble at the bottom of the content area.
   verticalOffsetForStatusBubble_ = minY;
 
   // Normally, we don't need to tell the toolbar whether or not to show the
   // divider, but things break down during animation.
   [toolbarController_
       setDividerOpacity:[bookmarkBarController_ toolbarDividerOpacity]];
+}
+
+- (CGFloat)layoutToolbarAtMaxY:(CGFloat)maxY width:(CGFloat)width {
+  NSView* toolbarView = [toolbarController_ view];
+  NSRect toolbarFrame = [toolbarView frame];
+  if ([self hasToolbar]) {
+    // The toolbar is present in the window, so we make room for it.
+    DCHECK(![toolbarView isHidden]);
+    toolbarFrame.origin.x = 0;
+    toolbarFrame.origin.y = maxY - NSHeight(toolbarFrame);
+    toolbarFrame.size.width = width;
+    maxY -= NSHeight(toolbarFrame);
+  } else {
+    if ([self hasLocationBar]) {
+      // Location bar is present with no toolbar. Put a border of
+      // |kLocBar...Inset| pixels around the location bar.
+      // TODO(viettrungluu): This is moderately ridiculous. The toolbar should
+      // really be aware of what its height should be (the way the toolbar
+      // compression stuff is currently set up messes things up).
+      DCHECK(![toolbarView isHidden]);
+      // TODO(viettrungluu): We can argue about the "correct" insetting; I like
+      // the following best, though arguably 0 inset is better/more correct.
+      const CGFloat kLocBarLeftRightInset = 1;
+      const CGFloat kLocBarTopInset = 0;
+      const CGFloat kLocBarBottomInset = 1;
+      toolbarFrame.origin.x = kLocBarLeftRightInset;
+      toolbarFrame.origin.y = maxY - NSHeight(toolbarFrame) - kLocBarTopInset;
+      toolbarFrame.size.width = width - 2 * kLocBarLeftRightInset;
+      maxY -= kLocBarTopInset + NSHeight(toolbarFrame) + kLocBarBottomInset;
+    } else {
+      DCHECK([toolbarView isHidden]);
+    }
+  }
+  [toolbarView setFrame:toolbarFrame];
+  return maxY;
+}
+
+- (CGFloat)layoutBookmarkBarAtMaxY:(CGFloat)maxY width:(CGFloat)width {
+  NSView* bookmarkBarView = [bookmarkBarController_ view];
+  [bookmarkBarView setHidden:NO];
+  NSRect bookmarkBarFrame = [bookmarkBarView frame];
+  bookmarkBarFrame.origin.y = maxY - NSHeight(bookmarkBarFrame);
+  bookmarkBarFrame.size.width = width;
+  [bookmarkBarView setFrame:bookmarkBarFrame];
+  maxY -= NSHeight(bookmarkBarFrame);
+
+  // TODO(viettrungluu): Does this really belong here? Calling it shouldn't be
+  // necessary in the non-NTP case.
+  [bookmarkBarController_ layoutSubviews];
+
+  return maxY;
+}
+
+- (CGFloat)layoutInfoBarAtMaxY:(CGFloat)maxY width:(CGFloat)width {
+  NSView* infoBarView = [infoBarContainerController_ view];
+  NSRect infoBarFrame = [infoBarView frame];
+  infoBarFrame.origin.y = maxY - NSHeight(infoBarFrame);
+  infoBarFrame.size.width = width;
+  [infoBarView setFrame:infoBarFrame];
+  maxY -= NSHeight(infoBarFrame);
+  return maxY;
+}
+
+- (BOOL)placeBookmarkBarBelowInfoBar {
+  // If we are currently displaying the NTP detached bookmark bar or animating
+  // to/from it (from/to anything else), we display the bookmark bar below the
+  // infobar.
+  return [bookmarkBarController_ isInState:bookmarks::kDetachedState] ||
+      [bookmarkBarController_ isAnimatingToState:bookmarks::kDetachedState] ||
+      [bookmarkBarController_ isAnimatingFromState:bookmarks::kDetachedState];
+}
+
+- (CGFloat)layoutDownloadShelfAtMinY:(CGFloat)minY width:(CGFloat)width {
+  if (downloadShelfController_.get()) {
+    NSView* downloadView = [downloadShelfController_ view];
+    NSRect downloadFrame = [downloadView frame];
+    downloadFrame.origin.y = minY;
+    downloadFrame.size.width = width;
+    [downloadView setFrame:downloadFrame];
+    minY += NSHeight(downloadFrame);
+  }
+  return minY;
+}
+
+- (void)layoutTabContentAreaAtMinY:(CGFloat)minY
+                              maxY:(CGFloat)maxY
+                             width:(CGFloat)width {
+  NSView* tabContentView = [self tabContentArea];
+  NSRect tabContentFrame = [tabContentView frame];
+  tabContentFrame.origin.y = minY;
+  tabContentFrame.size.height = maxY - minY;
+  tabContentFrame.size.width = width;
+  [tabContentView setFrame:tabContentFrame];
 }
 
 - (BOOL)shouldShowBookmarkBar {

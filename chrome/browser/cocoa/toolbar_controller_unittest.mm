@@ -95,11 +95,11 @@ TEST_F(ToolbarControllerTest, InitialState) {
   CompareState(updater, [bar_ toolbarViews]);
 }
 
-// Make sure a "titlebar only" toolbar works
+// Make sure a "titlebar only" toolbar with location bar works.
 TEST_F(ToolbarControllerTest, TitlebarOnly) {
   NSView* view = [bar_ view];
 
-  [bar_ setHasToolbar:NO];
+  [bar_ setHasToolbar:NO hasLocationBar:YES];
   EXPECT_NE(view, [bar_ view]);
 
   // Simulate a popup going fullscreen and back.
@@ -110,13 +110,14 @@ TEST_F(ToolbarControllerTest, TitlebarOnly) {
   [view removeFromSuperview];
   [superview addSubview:view];
 
-  [bar_ setHasToolbar:YES];
+  [bar_ setHasToolbar:YES hasLocationBar:YES];
   EXPECT_EQ(view, [bar_ view]);
 
   // Leave it off to make sure that's fine
-  [bar_ setHasToolbar:NO];
+  [bar_ setHasToolbar:NO hasLocationBar:YES];
 }
 
+// TODO(viettrungluu): make a version of above without location bar.
 
 // Make some changes to the enabled state of a few of the buttons and ensure
 // that we're still in sync.
@@ -208,7 +209,7 @@ TEST_F(ToolbarControllerTest, TogglePageWrench) {
 // having the full toolbar. Also ensure that the location bar doesn't change
 // size.
 TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
-  [bar_ setHasToolbar:NO];
+  [bar_ setHasToolbar:NO hasLocationBar:YES];
   NSView* homeButton = [[bar_ toolbarViews] objectAtIndex:kHomeIndex];
   NSView* pageButton = [[bar_ toolbarViews] objectAtIndex:kPageIndex];
   NSView* wrenchButton = [[bar_ toolbarViews] objectAtIndex:kWrenchIndex];

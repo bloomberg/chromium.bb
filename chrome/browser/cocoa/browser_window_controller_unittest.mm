@@ -104,6 +104,8 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
 
   // Make sure a normal BrowserWindowController is, uh, normal.
   EXPECT_TRUE([controller_ isNormalWindow]);
+  EXPECT_TRUE([controller_ hasTabStrip]);
+  EXPECT_FALSE([controller_ hasTitleBar]);
   EXPECT_TRUE([controller_ isBookmarkBarVisible]);
 
   // And make sure a controller for a pop-up window is not normal.
@@ -114,6 +116,8 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
       static_cast<BrowserWindowController*>([cocoaWindow windowController]);
   ASSERT_TRUE([controller isKindOfClass:[BrowserWindowController class]]);
   EXPECT_FALSE([controller isNormalWindow]);
+  EXPECT_FALSE([controller hasTabStrip]);
+  EXPECT_TRUE([controller hasTitleBar]);
   EXPECT_FALSE([controller isBookmarkBarVisible]);
   [controller close];
 }

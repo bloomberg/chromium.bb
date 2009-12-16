@@ -72,7 +72,8 @@ class ToolbarModel;
   scoped_ptr<BubblePositioner> bubblePositioner_;
   BooleanPrefMember showHomeButton_;
   BooleanPrefMember showPageOptionButtons_;
-  BOOL hasToolbar_;  // if NO, we only have the location bar.
+  BOOL hasToolbar_;  // If NO, we may have only the location bar.
+  BOOL hasLocationBar_;  // If |hasToolbar_| is YES, this must also be YES.
 
   // We have an extra retain in the locationBar_.
   // See comments in awakeFromNib for more info.
@@ -113,7 +114,7 @@ class ToolbarModel;
      resizeDelegate:(id<ViewResizer>)resizeDelegate;
 
 // Get the C++ bridge object representing the location bar for this tab.
-- (LocationBar*)locationBar;
+- (LocationBar*)locationBarBridge;
 
 // Called by the Window delegate so we can provide a custom field editor if
 // needed.
@@ -138,10 +139,10 @@ class ToolbarModel;
 // state.
 - (void)setIsLoading:(BOOL)isLoading;
 
-// Allow turning off the toolbar (but we keep the location bar
-// around).  This changes the behavior of other methods, like
-// [self view].
-- (void)setHasToolbar:(BOOL)toolbar;
+// Allow turning off the toolbar (but we may keep the location bar without a
+// surrounding toolbar). If |toolbar| is YES, the value of |hasLocationBar| is
+// ignored. This changes the behavior of other methods, like |-view|.
+- (void)setHasToolbar:(BOOL)toolbar hasLocationBar:(BOOL)locBar;
 
 // The bookmark bubble (when you click the star) needs to know where to go.
 // Somewhere near the star button seems like a good start.
