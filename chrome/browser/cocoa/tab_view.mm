@@ -16,8 +16,18 @@ const CGFloat kInsetMultiplier = 2.0/3.0;
 const CGFloat kControlPoint1Multiplier = 1.0/3.0;
 const CGFloat kControlPoint2Multiplier = 3.0/8.0;
 
-const NSTimeInterval kAnimationShowDuration = 0.2;
-const NSTimeInterval kAnimationHideDuration = 0.4;
+// The amount of time in seconds during which each type of glow increases, holds
+// steady, and decreases, respectively.
+const NSTimeInterval kHoverShowDuration = 0.2;
+const NSTimeInterval kHoverHoldDuration = 0.02;
+const NSTimeInterval kHoverHideDuration = 0.4;
+const NSTimeInterval kAlertShowDuration = 0.4;
+const NSTimeInterval kAlertHoldDuration = 0.4;
+const NSTimeInterval kAlertHideDuration = 0.4;
+
+// The default time interval in seconds between glow updates (when
+// increasing/decreasing).
+const NSTimeInterval kGlowUpdateInterval = 0.025;
 
 const CGFloat kTearDistance = 36.0;
 const NSTimeInterval kTearDuration = 0.333;
@@ -28,10 +38,19 @@ const CGFloat kRapidCloseDist = 2.5;
 
 }  // namespace
 
+@interface TabView(Private)
+
+- (void)resetLastGlowUpdateTime;
+- (NSTimeInterval)timeElapsedSinceLastGlowUpdate;
+- (void)adjustGlowValue;
+
+@end  // TabView(Private)
+
 @implementation TabView
 
 @synthesize state = state_;
 @synthesize hoverAlpha = hoverAlpha_;
+@synthesize alertAlpha = alertAlpha_;
 @synthesize closing = closing_;
 
 - (id)initWithFrame:(NSRect)frame {
@@ -67,36 +86,10 @@ const CGFloat kRapidCloseDist = 2.5;
   return YES;
 }
 
-- (void)adjustHoverValue {
-  NSTimeInterval thisUpdate = [NSDate timeIntervalSinceReferenceDate];
-
-  NSTimeInterval elapsed = thisUpdate - lastHoverUpdate_;
-
-  CGFloat opacity = [self hoverAlpha];
-  if (isMouseInside_) {
-    opacity += elapsed / kAnimationShowDuration;
-  } else {
-    opacity -= elapsed / kAnimationHideDuration;
-  }
-
-  if (!isMouseInside_ && opacity < 0) {
-    opacity = 0;
-  } else if (isMouseInside_ && opacity > 1) {
-    opacity = 1;
-  } else {
-    [self performSelector:_cmd withObject:nil afterDelay:0.02];
-  }
-  lastHoverUpdate_ = thisUpdate;
-  [self setHoverAlpha:opacity];
-
-  [self setNeedsDisplay:YES];
-}
-
 - (void)mouseEntered:(NSEvent*)theEvent {
-  lastHoverUpdate_ = [NSDate timeIntervalSinceReferenceDate];
   isMouseInside_ = YES;
-  [self adjustHoverValue];
-  [self setNeedsDisplay:YES];
+  [self resetLastGlowUpdateTime];
+  [self adjustGlowValue];
 }
 
 - (void)mouseMoved:(NSEvent*)theEvent {
@@ -106,10 +99,11 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {
-  lastHoverUpdate_ = [NSDate timeIntervalSinceReferenceDate];
   isMouseInside_ = NO;
-  [self adjustHoverValue];
-  [self setNeedsDisplay:YES];
+  hoverHoldEndTime_ =
+      [NSDate timeIntervalSinceReferenceDate] + kHoverHoldDuration;
+  [self resetLastGlowUpdateTime];
+  [self adjustGlowValue];
 }
 
 - (void)setTrackingEnabled:(BOOL)enabled {
@@ -678,9 +672,14 @@ const CGFloat kRapidCloseDist = 2.5;
   [context saveGraphicsState];
   [path addClip];
 
-  if (selected || hoverAlpha_ > 0) {
+  // Use the same overlay for both hover and alert glows by combining their
+  // opacities. Note that h + a - h*a = h + a*(1-h) = a + h*(1-a).
+  CGFloat hoverAlpha = [self hoverAlpha];
+  CGFloat alertAlpha = [self alertAlpha];
+  CGFloat glowAlpha = hoverAlpha + alertAlpha - hoverAlpha * alertAlpha;
+  if (selected || glowAlpha > 0) {
     // Draw the background.
-    CGFloat backgroundAlpha = hoverAlpha_ * 0.5;
+    CGFloat backgroundAlpha = glowAlpha * 0.5;
     [context saveGraphicsState];
     CGContextRef cgContext =
         (CGContextRef)([context graphicsPort]);
@@ -693,13 +692,12 @@ const CGFloat kRapidCloseDist = 2.5;
     [context restoreGraphicsState];
 
     // Draw a mouse hover gradient for the default themes
-    if (!selected) {
+    if (!selected && hoverAlpha > 0) {
       if (![theme backgroundImageForStyle:GTMThemeStyleTabBarDeselected
                                     state:GTMThemeStateActiveWindow]) {
         scoped_nsobject<NSGradient> glow([NSGradient alloc]);
         [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0
-                                                                alpha:1.0 *
-                                                                    hoverAlpha_]
+                                        alpha:1.0 * hoverAlpha]
                         endingColor:[NSColor colorWithCalibratedWhite:1.0
                                                                 alpha:0.0]];
 
@@ -724,7 +722,7 @@ const CGFloat kRapidCloseDist = 2.5;
   [highlightTransform translateXBy:1 yBy:-1];
   scoped_nsobject<NSBezierPath> highlightPath([path copy]);
   [highlightPath transformUsingAffineTransform:highlightTransform];
-  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2 + 0.3 * hoverAlpha_]
+  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2 + 0.3 * glowAlpha]
       setStroke];
   [highlightPath stroke];
 
@@ -777,4 +775,114 @@ const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
+- (void)startAlert {
+  // Do not start a new alert while already alerting or while in a decay cycle.
+  if (alertState_ == tabs::kAlertNone) {
+    alertState_ = tabs::kAlertRising;
+    [self resetLastGlowUpdateTime];
+    [self adjustGlowValue];
+  }
+}
+
+- (void)cancelAlert {
+  if (alertState_ != tabs::kAlertNone) {
+    alertState_ = tabs::kAlertFalling;
+    alertHoldEndTime_ =
+        [NSDate timeIntervalSinceReferenceDate] + kGlowUpdateInterval;
+    [self resetLastGlowUpdateTime];
+    [self adjustGlowValue];
+  }
+}
+
 @end  // @implementation TabView
+
+@implementation TabView(Private)
+
+- (void)resetLastGlowUpdateTime {
+  lastGlowUpdate_ = [NSDate timeIntervalSinceReferenceDate];
+}
+
+- (NSTimeInterval)timeElapsedSinceLastGlowUpdate {
+  return [NSDate timeIntervalSinceReferenceDate] - lastGlowUpdate_;
+}
+
+- (void)adjustGlowValue {
+  // A time interval long enough to represent no update.
+  const NSTimeInterval kNoUpdate = 1000000;
+
+  // Time until next update for either glow.
+  NSTimeInterval nextUpdate = kNoUpdate;
+
+  NSTimeInterval elapsed = [self timeElapsedSinceLastGlowUpdate];
+  NSTimeInterval currentTime = [NSDate timeIntervalSinceReferenceDate];
+
+  // TODO(viettrungluu): <http://crbug.com/30617> -- split off the stuff below
+  // into a pure function and add a unit test.
+
+  CGFloat hoverAlpha = [self hoverAlpha];
+  if (isMouseInside_) {
+    // Increase hover glow until it's 1.
+    if (hoverAlpha < 1) {
+      hoverAlpha = MIN(hoverAlpha + elapsed / kHoverShowDuration, 1);
+      [self setHoverAlpha:hoverAlpha];
+      nextUpdate = MIN(kGlowUpdateInterval, nextUpdate);
+    }  // Else already 1 (no update needed).
+  } else {
+    if (currentTime >= hoverHoldEndTime_) {
+      // No longer holding, so decrease hover glow until it's 0.
+      if (hoverAlpha > 0) {
+        hoverAlpha = MAX(hoverAlpha - elapsed / kHoverHideDuration, 0);
+        [self setHoverAlpha:hoverAlpha];
+        nextUpdate = MIN(kGlowUpdateInterval, nextUpdate);
+      }  // Else already 0 (no update needed).
+    } else {
+      // Schedule update for end of hold time.
+      nextUpdate = MIN(hoverHoldEndTime_ - currentTime, nextUpdate);
+    }
+  }
+
+  CGFloat alertAlpha = [self alertAlpha];
+  if (alertState_ == tabs::kAlertRising) {
+    // Increase alert glow until it's 1 ...
+    alertAlpha = MIN(alertAlpha + elapsed / kAlertShowDuration, 1);
+    [self setAlertAlpha:alertAlpha];
+
+    // ... and having reached 1, switch to holding.
+    if (alertAlpha >= 1) {
+      alertState_ = tabs::kAlertHolding;
+      alertHoldEndTime_ = currentTime + kAlertHoldDuration;
+      nextUpdate = MIN(kAlertHoldDuration, nextUpdate);
+    } else {
+      nextUpdate = MIN(kGlowUpdateInterval, nextUpdate);
+    }
+  } else if (alertState_ != tabs::kAlertNone) {
+    if (alertAlpha > 0) {
+      if (currentTime >= alertHoldEndTime_) {
+        // Stop holding, then decrease alert glow (until it's 0).
+        if (alertState_ == tabs::kAlertHolding) {
+          alertState_ = tabs::kAlertFalling;
+          nextUpdate = MIN(kGlowUpdateInterval, nextUpdate);
+        } else {
+          DCHECK_EQ(tabs::kAlertFalling, alertState_);
+          alertAlpha = MAX(alertAlpha - elapsed / kAlertHideDuration, 0);
+          [self setAlertAlpha:alertAlpha];
+          nextUpdate = MIN(kGlowUpdateInterval, nextUpdate);
+        }
+      } else {
+        // Schedule update for end of hold time.
+        nextUpdate = MIN(alertHoldEndTime_ - currentTime, nextUpdate);
+      }
+    } else {
+      // Done the alert decay cycle.
+      alertState_ = tabs::kAlertNone;
+    }
+  }
+
+  if (nextUpdate < kNoUpdate)
+    [self performSelector:_cmd withObject:nil afterDelay:nextUpdate];
+
+  [self resetLastGlowUpdateTime];
+  [self setNeedsDisplay:YES];
+}
+
+@end  // @implementation TabView(Private)

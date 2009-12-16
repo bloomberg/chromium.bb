@@ -11,6 +11,26 @@
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/hover_close_button.h"
 
+namespace tabs {
+
+// Nomenclature:
+// Tabs _glow_ under two different circumstances, when they are _hovered_ (by
+// the mouse) and when they are _alerted_ (to show that the tab's title has
+// changed).
+
+// The state of alerting (to show a title change on an unselected, pinned tab).
+// This is more complicated than a simple on/off since we want to allow the
+// alert glow to go through a full rise-hold-fall cycle to avoid flickering (or
+// always holding).
+enum AlertState {
+  kAlertNone = 0,  // Obj-C initializes to this.
+  kAlertRising,
+  kAlertHolding,
+  kAlertFalling
+};
+
+}  // namespace tabs
+
 @class TabController, TabWindowController;
 
 // A view that handles the event tracking (clicking and dragging) for a tab
@@ -29,8 +49,16 @@
   scoped_nsobject<NSTrackingArea> closeTrackingArea_;
 
   BOOL isMouseInside_;  // Is the mouse hovering over?
-  CGFloat hoverAlpha_;  // How strong the mouse hover state is.
-  NSTimeInterval lastHoverUpdate_;  // Time the hover value was last updated.
+  tabs::AlertState alertState_;
+
+  CGFloat hoverAlpha_;  // How strong the hover glow is.
+  NSTimeInterval hoverHoldEndTime_;  // When the hover glow will begin dimming.
+
+  CGFloat alertAlpha_;  // How strong the alert glow is.
+  NSTimeInterval alertHoldEndTime_;  // When the hover glow will begin dimming.
+
+  NSTimeInterval lastGlowUpdate_;  // Time either glow was last updated.
+
   NSPoint hoverPoint_;  // Current location of hover in view coords.
 
   // All following variables are valid for the duration of a drag.
@@ -60,6 +88,7 @@
 
 @property(assign, nonatomic) NSCellStateValue state;
 @property(assign, nonatomic) CGFloat hoverAlpha;
+@property(assign, nonatomic) CGFloat alertAlpha;
 
 // Determines if the tab is in the process of animating closed. It may still
 // be visible on-screen, but should not respond to/initiate any events. Upon
@@ -69,6 +98,14 @@
 
 // Enables/Disables tracking regions for the tab.
 - (void)setTrackingEnabled:(BOOL)enabled;
+
+// Begin showing an "alert" glow (shown to call attention to an unselected
+// pinned tab whose title changed).
+- (void)startAlert;
+
+// Stop showing the "alert" glow; this won't immediately wipe out any glow, but
+// will make it fade away.
+- (void)cancelAlert;
 
 @end
 

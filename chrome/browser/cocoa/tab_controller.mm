@@ -105,7 +105,9 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 - (void)internalSetSelected:(BOOL)selected {
   selected_ = selected;
   TabView* tabView = static_cast<TabView*>([self view]);
+  DCHECK([tabView isKindOfClass:[TabView class]]);
   [tabView setState:selected];
+  [tabView cancelAlert];
   [self updateVisibility];
   [self updateTitleColor];
 }
@@ -149,6 +151,11 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 
 - (void)setTitle:(NSString*)title {
   [[self view] setToolTip:title];
+  if ([self pinned] && ![self selected]) {
+    TabView* tabView = static_cast<TabView*>([self view]);
+    DCHECK([tabView isKindOfClass:[TabView class]]);
+    [tabView startAlert];
+  }
   [super setTitle:title];
 }
 
