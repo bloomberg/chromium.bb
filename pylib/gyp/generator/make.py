@@ -153,10 +153,10 @@ endef
 # - quiet_cmd_foo is the brief-output summary of the command.
 
 quiet_cmd_cc = CC($(TOOLSET)) $@
-cmd_cc = $(CC.$(TOOLSET)) $(CFLAGS) $(DEPFLAGS) -c -o $@ $<
+cmd_cc = $(CC.$(TOOLSET)) $(CFLAGS) $(GYP_CFLAGS) $(DEPFLAGS) -c -o $@ $<
 
 quiet_cmd_cxx = CXX($(TOOLSET)) $@
-cmd_cxx = $(CXX.$(TOOLSET)) $(CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
+cmd_cxx = $(CXX.$(TOOLSET)) $(CXXFLAGS) $(GYP_CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
 
 quiet_cmd_alink = AR+RANLIB($(TOOLSET)) $@
 cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) rc $@ $(filter %.o,$^) && $(RANLIB.$(TOOLSET)) $@
@@ -171,14 +171,14 @@ cmd_copy = ln -f $< $@ || cp -af $< $@
 # special "figure out circular dependencies" flags around the entire
 # input list during linking.
 quiet_cmd_link = LINK($(TOOLSET)) $@
-cmd_link = $(LINK.$(TOOLSET)) $(LDFLAGS) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+cmd_link = $(LINK.$(TOOLSET)) $(LDFLAGS) $(GYP_LDFLAGS) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 
 # Shared-object link (for generating .so).
 # Set SONAME to the library filename so our binaries don't reference the local,
 # absolute paths used on the link command-line.
 # TODO: perhaps this can share with the LINK command above?
 quiet_cmd_solink = SOLINK($(TOOLSET)) $@
-cmd_solink = $(LINK.$(TOOLSET)) -shared $(LDFLAGS) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+cmd_solink = $(LINK.$(TOOLSET)) -shared $(LDFLAGS) $(GYP_LDFLAGS) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 """
 r"""
 # Define an escape_quotes function to escape single quotes.
@@ -762,10 +762,10 @@ class MakefileWriter:
 # CFLAGS et al overrides must be target-local.
 # See "Target-specific Variable Values" in the GNU Make manual.""")
       self.WriteLn("$(OBJS): TOOLSET := $(TOOLSET)")
-      self.WriteLn("$(OBJS): CFLAGS := $(CFLAGS_$(BUILDTYPE)) "
+      self.WriteLn("$(OBJS): GYP_CFLAGS := $(CFLAGS_$(BUILDTYPE)) "
                    "$(CFLAGS_C_$(BUILDTYPE)) "
                    "$(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))")
-      self.WriteLn("$(OBJS): CXXFLAGS := $(CFLAGS_$(BUILDTYPE)) "
+      self.WriteLn("$(OBJS): GYP_CXXFLAGS := $(CFLAGS_$(BUILDTYPE)) "
                    "$(CFLAGS_CC_$(BUILDTYPE)) "
                    "$(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))")
 
