@@ -3188,7 +3188,9 @@ BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/auth.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/crash-when-navigating-away-then-back.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/different-scheme.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/empty-manifest.html = TIMEOUT PASS
-BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/fallback.html = TIMEOUT PASS
+// This test is slow on windows, but sometimes times out indefinitely.
+// See if this improves when we move to apache.
+BUG25977 WIN : LayoutTests/http/tests/appcache/fallback.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/local-content.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/main-resource-hash.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/manifest-containing-itself.html = TIMEOUT PASS
