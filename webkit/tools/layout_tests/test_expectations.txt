@@ -2808,12 +2808,6 @@ BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = PA
 BUG25955 LINUX DEBUG : LayoutTests/fast/forms/textarea-placeholder-set-value.html = PASS CRASH
 BUG_JORLOW LINUX : LayoutTests/fast/multicol/column-rules-stacking.html = FAIL
 
-// WebKit roll 50218:50235
-BUG_JORLOW : LayoutTests/http/tests/ssl/referer-301.html = FAIL
-BUG_JORLOW DEBUG : LayoutTests/http/tests/ssl/referer-303.html = FAIL
-BUG_JORLOW LINUX MAC RELEASE : LayoutTests/http/tests/ssl/referer-303.html = FAIL
-BUG_JORLOW SLOW WIN RELEASE : LayoutTests/http/tests/ssl/referer-303.html = FAIL
-
 // randomly started to be flaky on r30451 (revision had only a check-in of text_expectations.txt)
 BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-map-data-to-src.html = PASS TEXT
 BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-setwindow-size.html = PASS TEXT
