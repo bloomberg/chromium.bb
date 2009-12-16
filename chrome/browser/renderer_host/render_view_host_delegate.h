@@ -217,6 +217,11 @@ class RenderViewHostDelegate {
     virtual void OnDidGetApplicationInfo(
         int32 page_id,
         const webkit_glue::WebApplicationInfo& app_info) = 0;
+
+    // Notification that the contents of the page has been loaded.
+    virtual void OnPageContents(const GURL& url,
+                                int32 page_id,
+                                const std::wstring& contents) = 0;
   };
 
   // Resource ------------------------------------------------------------------
