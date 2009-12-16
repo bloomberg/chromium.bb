@@ -42,6 +42,9 @@ class ExtensionFunctionDispatcher {
 
     virtual ExtensionHost* GetExtensionHost() { return NULL; }
     virtual ExtensionDOMUI* GetExtensionDOMUI() { return NULL; }
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // The peer object allows us to notify ExtensionFunctions when we are

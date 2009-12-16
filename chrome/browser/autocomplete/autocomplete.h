@@ -472,6 +472,9 @@ class AutocompleteProvider
     // them all again when this is called anyway, so such a parameter wouldn't
     // actually be useful.
     virtual void OnProviderUpdate(bool updated_matches) = 0;
+
+   protected:
+    virtual ~ACProviderListener() {}
   };
 
   AutocompleteProvider(ACProviderListener* listener,

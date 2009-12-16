@@ -27,7 +27,7 @@ class Profile;
 
 class AutocompletePopupView {
  public:
-  virtual ~AutocompletePopupView() { }
+  virtual ~AutocompletePopupView() {}
 
   // Returns true if the popup is currently open.
   virtual bool IsOpen() const = 0;

@@ -22,6 +22,9 @@ class ConstrainedWindowGtkDelegate {
   // Tells the delegate to either delete itself or set up a task to delete
   // itself later.
   virtual void DeleteDelegate() = 0;
+
+ protected:
+  virtual ~ConstrainedWindowGtkDelegate() {}
 };
 
 // Constrained window implementation for the GTK port. Unlike the Win32 system,

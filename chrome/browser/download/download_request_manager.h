@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,9 @@ class DownloadRequestManager
     virtual void ContinueDownload() = 0;
     virtual void CancelDownload() = 0;
     virtual int GetRequestId() = 0;
+
+   protected:
+    virtual ~Callback() {}
   };
 
   // TabDownloadState maintains the download state for a particular tab.
@@ -74,7 +77,7 @@ class DownloadRequestManager
     TabDownloadState(DownloadRequestManager* host,
                      NavigationController* controller,
                      NavigationController* originating_controller);
-    ~TabDownloadState();
+    virtual ~TabDownloadState();
 
     // Status of the download.
     void set_download_status(DownloadRequestManager::DownloadStatus status) {
@@ -179,6 +182,9 @@ class DownloadRequestManager
   class TestingDelegate {
    public:
     virtual bool ShouldAllowDownload() = 0;
+
+   protected:
+    virtual ~TestingDelegate() {}
   };
   static void SetTestingDelegate(TestingDelegate* delegate);
 

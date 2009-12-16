@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_EXPIRE_HISTORY_BACKEND_H__
-#define CHROME_BROWSER_HISTORY_EXPIRE_HISTORY_BACKEND_H__
+#ifndef CHROME_BROWSER_HISTORY_EXPIRE_HISTORY_BACKEND_H_
+#define CHROME_BROWSER_HISTORY_EXPIRE_HISTORY_BACKEND_H_
 
 #include <queue>
 #include <set>
@@ -36,6 +36,9 @@ class BroadcastNotificationDelegate {
   // thread. The details argument will have ownership taken by this function.
   virtual void BroadcastNotifications(NotificationType type,
                                       HistoryDetails* details_deleted) = 0;
+
+ protected:
+  virtual ~BroadcastNotificationDelegate() {}
 };
 
 // Encapsulates visit expiration criteria and type of visits to expire.
@@ -277,4 +280,4 @@ class ExpireHistoryBackend {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_EXPIRE_HISTORY_BACKEND_H__
+#endif  // CHROME_BROWSER_HISTORY_EXPIRE_HISTORY_BACKEND_H_

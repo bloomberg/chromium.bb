@@ -97,6 +97,9 @@ class DownloadItem {
 
     // Called when a downloaded file has been opened.
     virtual void OnDownloadOpened(DownloadItem* download) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   // Constructing from persistent store:
@@ -326,6 +329,9 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
     // downloads. The DownloadManagerObserver must copy the vector, but does not
     // own the individual DownloadItems, when this call is made.
     virtual void SetDownloads(std::vector<DownloadItem*>& downloads) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   // Public API

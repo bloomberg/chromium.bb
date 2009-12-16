@@ -15,6 +15,9 @@ class LoginModelObserver {
   // as a match for the pending login prompt.
   virtual void OnAutofillDataAvailable(const std::wstring& username,
                                        const std::wstring& password) = 0;
+
+ protected:
+  virtual ~LoginModelObserver() {}
 };
 
 class LoginModel {
@@ -23,6 +26,9 @@ class LoginModel {
   // observer can be null, signifying there is no longer any observer
   // interested in the data.
   virtual void SetObserver(LoginModelObserver* observer) = 0;
+
+ protected:
+  virtual ~LoginModel() {}
 };
 
 #endif  // CHROME_BROWSER_LOGIN_MODEL_H_

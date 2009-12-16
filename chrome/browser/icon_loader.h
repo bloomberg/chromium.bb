@@ -43,6 +43,9 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
     // icon has been successfully loaded, result is non-null. This method must
     // return true if it is taking ownership of the returned bitmap.
     virtual bool OnBitmapLoaded(IconLoader* source, SkBitmap* result) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   IconLoader(const IconGroupID& group, IconSize size, Delegate* delegate);

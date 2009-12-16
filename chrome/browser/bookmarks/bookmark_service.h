@@ -1,4 +1,4 @@
-// Copyright 2008, Google Inc.
+// Copyright 2009, The Chromium Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -56,6 +56,9 @@ class BookmarkService {
   // Blocks until loaded. This is intended for usage on a thread other than
   // the main thread.
   virtual void BlockTillLoaded() = 0;
+
+ protected:
+  virtual ~BookmarkService() {}
 };
 
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_SERVICE_H_

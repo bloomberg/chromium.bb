@@ -52,6 +52,8 @@ class BlockedPopupContainerView {
   // Called by the BlockedPopupContainer that owns us. Destroys the view or
   // starts a delayed Task to destroy the View at some later time.
   virtual void Destroy() = 0;
+
+  virtual ~BlockedPopupContainerView() {}
 };
 
 // Takes ownership of TabContents that are unrequested popup windows and
@@ -160,7 +162,7 @@ class BlockedPopupContainer : public TabContentsDelegate,
 
   // Ignored; BlockedPopupContainer doesn't display a throbber.
   virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags) { }
+                                      unsigned changed_flags) {}
 
   // Forwards AddNewContents to our |owner_|.
   virtual void AddNewContents(TabContents* source,
@@ -170,10 +172,10 @@ class BlockedPopupContainer : public TabContentsDelegate,
                               bool user_gesture);
 
   // Ignore activation requests from the TabContents we're blocking.
-  virtual void ActivateContents(TabContents* contents) { }
+  virtual void ActivateContents(TabContents* contents) {}
 
   // Ignored; BlockedPopupContainer doesn't display a throbber.
-  virtual void LoadingStateChanged(TabContents* source) { }
+  virtual void LoadingStateChanged(TabContents* source) {}
 
   // Removes |source| from our internal list of blocked popups.
   virtual void CloseContents(TabContents* source);
@@ -188,13 +190,13 @@ class BlockedPopupContainer : public TabContentsDelegate,
   virtual TabContents* GetConstrainingContents(TabContents* source);
 
   // Ignored; BlockedPopupContainer doesn't display a toolbar.
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) { }
+  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
 
   // Ignored; BlockedPopupContainer doesn't display a bookmarking star.
-  virtual void URLStarredChanged(TabContents* source, bool starred) { }
+  virtual void URLStarredChanged(TabContents* source, bool starred) {}
 
   // Ignored; BlockedPopupContainer doesn't display a URL bar.
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) { }
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
 
   // A number larger than the internal popup count on the Renderer; meant for
   // preventing a compromised renderer from exhausting GDI memory by spawning

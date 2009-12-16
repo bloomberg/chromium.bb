@@ -15,6 +15,9 @@ class ViewIDUtil {
   class Delegate {
    public:
     virtual GtkWidget* GetWidgetForViewID(ViewID id) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // If you set the ID via this function, it will also set the name of your

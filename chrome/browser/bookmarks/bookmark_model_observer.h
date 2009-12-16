@@ -15,7 +15,7 @@ class BookmarkModelObserver {
   virtual void Loaded(BookmarkModel* model) = 0;
 
   // Invoked from the destructor of the BookmarkModel.
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) { }
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) {}
 
   // Invoked when a node has moved.
   virtual void BookmarkNodeMoved(BookmarkModel* model,
@@ -51,6 +51,9 @@ class BookmarkModelObserver {
   // |node| have been reordered in some way, such as sorted.
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) = 0;
+
+ protected:
+  virtual ~BookmarkModelObserver() {}
 };
 
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_OBSERVER_H_

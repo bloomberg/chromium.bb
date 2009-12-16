@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSER_LIST_H__
-#define CHROME_BROWSER_BROWSER_LIST_H__
+#ifndef CHROME_BROWSER_BROWSER_LIST_H_
+#define CHROME_BROWSER_BROWSER_LIST_H_
 
 #include <vector>
 
@@ -28,7 +28,10 @@ class BrowserList {
     virtual void OnBrowserRemoving(const Browser* browser) = 0;
 
     // Called immediately after a browser is set active (SetLastActive)
-    virtual void OnBrowserSetLastActive(const Browser* browser) { }
+    virtual void OnBrowserSetLastActive(const Browser* browser) {}
+
+   protected:
+    virtual ~Observer() {}
   };
 
   // Adds and removes browsers from the global list. The browser object should
@@ -199,4 +202,4 @@ class TabContentsIterator {
   TabContents* cur_;
 };
 
-#endif  // CHROME_BROWSER_BROWSER_LIST_H__
+#endif  // CHROME_BROWSER_BROWSER_LIST_H_

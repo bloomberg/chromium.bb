@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_HISTORY_TYPES_H__
-#define CHROME_BROWSER_HISTORY_HISTORY_TYPES_H__
+#ifndef CHROME_BROWSER_HISTORY_HISTORY_TYPES_H_
+#define CHROME_BROWSER_HISTORY_HISTORY_TYPES_H_
 
 #include <map>
 #include <set>
@@ -73,6 +73,7 @@ class URLRow {
     // Initialize will not set the URL, so our initialization above will stay.
     Initialize();
   }
+  virtual ~URLRow() {}
 
   URLID id() const { return id_; }
   const GURL& url() const { return url_; }
@@ -521,4 +522,4 @@ struct MostVisitedURL {
 
 }  // history
 
-#endif  // CHROME_BROWSER_HISTORY_HISTORY_TYPES_H__
+#endif  // CHROME_BROWSER_HISTORY_HISTORY_TYPES_H_

@@ -43,6 +43,7 @@ class InputWindowDialog {
 
  protected:
   InputWindowDialog() {}
+  virtual ~InputWindowDialog() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputWindowDialog);

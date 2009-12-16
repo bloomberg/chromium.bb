@@ -69,6 +69,9 @@ class LocationBar {
 
   // Returns a pointer to the testing interface.
   virtual LocationBarTesting* GetLocationBarForTesting() = 0;
+
+ protected:
+  virtual ~LocationBar() {}
 };
 
 class LocationBarTesting {
@@ -87,6 +90,9 @@ class LocationBarTesting {
 
   // Simulates a left mouse pressed on the visible page action at |index|.
   virtual void TestPageActionPressed(size_t index) = 0;
+
+ protected:
+  virtual ~LocationBarTesting() {}
 };
 
 #endif  // CHROME_BROWSER_LOCATION_BAR_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,9 @@ class CommandUpdater {
    public:
     // Perform the action associated with the command with the specified ID.
     virtual void ExecuteCommand(int id) = 0;
+
+   protected:
+    virtual ~CommandUpdaterDelegate() {}
   };
 
   // Create a CommandUpdater with a CommandUpdaterDelegate to handle execution
@@ -50,6 +53,9 @@ class CommandUpdater {
     // Notifies the observer that the enabled state has changed for the
     // specified command id.
     virtual void EnabledStateChangedForCommand(int id, bool enabled) = 0;
+
+   protected:
+    virtual ~CommandObserver() {}
   };
 
   // Adds an observer to the state of a particular command. If the command does
