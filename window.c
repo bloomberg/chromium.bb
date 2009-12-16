@@ -65,7 +65,7 @@ struct window {
 	uint32_t name;
 	uint32_t modifiers;
 
-	cairo_surface_t *cairo_surface;
+	cairo_surface_t *cairo_surface, *pending_surface;
 
 	window_resize_handler_t resize_handler;
 	window_key_handler_t key_handler;
@@ -88,13 +88,32 @@ rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
 }
 
 static void
+window_attach_surface(struct window *window)
+{
+	struct wl_visual *visual;
+
+	visual = wl_display_get_premultiplied_argb_visual(window->display->display);
+	wl_surface_attach(window->surface,
+			  cairo_drm_surface_get_name(window->cairo_surface),
+			  window->allocation.width,
+			  window->allocation.height,
+			  cairo_drm_surface_get_stride(window->cairo_surface),
+			  visual);
+
+	wl_surface_map(window->surface,
+		       window->allocation.x - window->margin,
+		       window->allocation.y - window->margin,
+		       window->allocation.width,
+		       window->allocation.height);
+}
+
+static void
 window_draw_decorations(struct window *window)
 {
 	cairo_t *cr;
 	int border = 2, radius = 5;
 	cairo_text_extents_t extents;
 	cairo_pattern_t *gradient, *outline, *bright, *dim;
-	struct wl_visual *visual;
 	int width, height;
 	int shadow_dx = 4, shadow_dy = 4;
 
@@ -186,45 +205,19 @@ window_draw_decorations(struct window *window)
 	}
 	cairo_destroy(cr);
 
-	visual = wl_display_get_premultiplied_argb_visual(window->display->display);
-	wl_surface_attach(window->surface,
-			  cairo_drm_surface_get_name(window->cairo_surface),
-			  window->allocation.width,
-			  window->allocation.height,
-			  cairo_drm_surface_get_stride(window->cairo_surface),
-			  visual);
-
-	wl_surface_map(window->surface,
-		       window->allocation.x - window->margin,
-		       window->allocation.y - window->margin,
-		       window->allocation.width,
-		       window->allocation.height);
+	window_attach_surface(window);
 }
 
 static void
 window_draw_fullscreen(struct window *window)
 {
-	struct wl_visual *visual;
-
 	window->cairo_surface =
 		cairo_drm_surface_create(window->display->device,
 					 CAIRO_CONTENT_COLOR_ALPHA,
 					 window->allocation.width,
 					 window->allocation.height);
 
-	visual = wl_display_get_premultiplied_argb_visual(window->display->display);
-	wl_surface_attach(window->surface,
-			  cairo_drm_surface_get_name(window->cairo_surface),
-			  window->allocation.width,
-			  window->allocation.height,
-			  cairo_drm_surface_get_stride(window->cairo_surface),
-			  visual);
-
-	wl_surface_map(window->surface,
-		       window->allocation.x,
-		       window->allocation.y,
-		       window->allocation.width,
-		       window->allocation.height);
+	window_attach_surface(window);
 }
 
 void
