@@ -51,7 +51,9 @@ class FlipStream : public base::RefCounted<FlipStream> {
   // body.  |callback| is used when this completes asynchronously.  Note that
   // the actual SYN_STREAM packet will have already been sent by this point.
   // Also note that FlipStream takes ownership of |upload_data|.
-  int SendRequest(UploadDataStream* upload_data, CompletionCallback* callback);
+  int SendRequest(UploadDataStream* upload_data,
+                  HttpResponseInfo* response,
+                  CompletionCallback* callback);
 
   // Reads the response headers.  Returns a net error code.
   int ReadResponseHeaders(CompletionCallback* callback);
@@ -164,7 +166,7 @@ class FlipStream : public base::RefCounted<FlipStream> {
 
   scoped_refptr<FlipSession> session_;
 
-  scoped_ptr<HttpResponseInfo> response_;
+  HttpResponseInfo* response_;
   scoped_ptr<UploadDataStream> request_body_stream_;
 
   bool response_complete_;  // TODO(mbelshe): fold this into the io_state.

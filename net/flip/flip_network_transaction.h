@@ -15,6 +15,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 #include "net/flip/flip_session.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_transaction.h"
 
 namespace net {
@@ -103,6 +104,7 @@ class FlipNetworkTransaction : public HttpTransaction {
   scoped_refptr<HttpNetworkSession> session_;
 
   const HttpRequestInfo* request_;
+  HttpResponseInfo response_;
 
   // The time the Start method was called.
   base::TimeTicks start_time_;

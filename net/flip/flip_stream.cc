@@ -50,7 +50,7 @@ uint64 FlipStream::GetUploadProgress() const {
 }
 
 const HttpResponseInfo* FlipStream::GetResponseInfo() const {
-  return response_.get();
+  return response_;
 }
 
 int FlipStream::ReadResponseHeaders(CompletionCallback* callback) {
@@ -61,7 +61,7 @@ int FlipStream::ReadResponseHeaders(CompletionCallback* callback) {
   CHECK(!cancelled_);
 
   // The SYN_REPLY has already been received.
-  if (response_.get())
+  if (response_->headers)
     return OK;
 
   io_state_ = STATE_READ_HEADERS;
@@ -114,9 +114,13 @@ int FlipStream::ReadResponseBody(
 }
 
 int FlipStream::SendRequest(UploadDataStream* upload_data,
+                            HttpResponseInfo* response,
                             CompletionCallback* callback) {
   CHECK(callback);
   CHECK(!cancelled_);
+  CHECK(response);
+
+  response_ = response;
 
   if (upload_data) {
     if (upload_data->size())
@@ -157,10 +161,10 @@ void FlipStream::Cancel() {
 void FlipStream::OnResponseReceived(const HttpResponseInfo& response) {
   metrics_.StartStream();
 
-  CHECK(!response_.get());
+  CHECK(!response_->headers);
 
-  response_.reset(new HttpResponseInfo);
   *response_ = response;  // TODO(mbelshe): avoid copy.
+  DCHECK(response_->headers);
 
   if (io_state_ == STATE_NONE) {
     CHECK(pushed_);
@@ -184,7 +188,7 @@ bool FlipStream::OnDataReceived(const char* data, int length) {
   // If we don't have a response, then the SYN_REPLY did not come through.
   // We cannot pass data up to the caller unless the reply headers have been
   // received.
-  if (!response_.get()) {
+  if (!response_->headers) {
     OnClose(ERR_SYN_REPLY_NOT_RECEIVED);
     return false;
   }
@@ -359,7 +363,7 @@ int FlipStream::DoSendBodyComplete(int result) {
 
 int FlipStream::DoReadHeaders() {
   io_state_ = STATE_READ_HEADERS_COMPLETE;
-  return response_.get() ? OK : ERR_IO_PENDING;
+  return response_->headers ? OK : ERR_IO_PENDING;
 }
 
 int FlipStream::DoReadHeadersComplete(int result) {

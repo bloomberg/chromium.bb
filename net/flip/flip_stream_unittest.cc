@@ -13,6 +13,7 @@
 #include "net/flip/flip_session_pool.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
+#include "net/http/http_response_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -103,9 +104,10 @@ TEST_F(FlipStreamTest, SendRequest) {
   request.method = "GET";
   request.url = GURL("http://www.google.com/");
   TestCompletionCallback callback;
+  HttpResponseInfo response;
 
   scoped_refptr<FlipStream> stream(new FlipStream(session, 1, false));
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(NULL, &callback));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(NULL, &response, &callback));
 
   // Need to manually remove the flip session since normally it gets removed on
   // socket close/error, but we aren't communicating over a socket here.

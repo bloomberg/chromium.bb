@@ -99,8 +99,7 @@ int FlipNetworkTransaction::Read(IOBuffer* buf, int buf_len,
 }
 
 const HttpResponseInfo* FlipNetworkTransaction::GetResponseInfo() const {
-  const HttpResponseInfo* response = stream_->GetResponseInfo();
-  return (response->headers || response->ssl_info.cert) ? response : NULL;
+  return (response_.headers || response_.ssl_info.cert) ? &response_ : NULL;
 }
 
 LoadState FlipNetworkTransaction::GetLoadState() const {
@@ -253,7 +252,7 @@ int FlipNetworkTransaction::DoSendRequest() {
   UploadDataStream* upload_data = request_->upload_data ?
       new UploadDataStream(request_->upload_data) : NULL;
   stream_ = flip_->GetOrCreateStream(*request_, upload_data);
-  return stream_->SendRequest(upload_data, &io_callback_);
+  return stream_->SendRequest(upload_data, &response_, &io_callback_);
 }
 
 int FlipNetworkTransaction::DoSendRequestComplete(int result) {
