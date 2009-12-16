@@ -91,10 +91,10 @@ class NetworkMenuButton : public StatusAreaButton,
 
  private:
   enum MenuItemFlags {
-    FLAG_DISABLED        = 0x0001,
-    FLAG_TOGGLE_ETHERNET = 0x0010,
-    FLAG_TOGGLE_WIFI     = 0x0100,
-    FLAG_TOGGLE_OFFLINE  = 0x1000
+    FLAG_DISABLED        = 1 << 0,
+    FLAG_TOGGLE_ETHERNET = 1 << 1,
+    FLAG_TOGGLE_WIFI     = 1 << 2,
+    FLAG_TOGGLE_OFFLINE  = 1 << 3
   };
 
   struct MenuItem {
