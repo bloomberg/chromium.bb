@@ -48,7 +48,8 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   typedef std::vector<AppCacheHost*> PendingHosts;
   typedef std::map<GURL, PendingHosts> PendingMasters;
   typedef std::map<GURL, URLRequest*> PendingUrlFetches;
-  typedef std::pair<GURL, bool> UrlToFetch;  // flag TRUE if storage checked
+  typedef std::pair<GURL, bool> UrlsToFetch;  // flag TRUE if storage checked
+  typedef std::map<int64, GURL> LoadingResponses;
 
   static const int kRerunDelayMs = 1000;
 
@@ -79,6 +80,8 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   // TODO(jennb): any other delegate callbacks to handle? certificate?
 
   // Methods for AppCacheStorage::Delegate.
+  void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
+                            int64 response_id);
   void OnGroupAndNewestCacheStored(AppCacheGroup* group, bool success);
   void OnGroupMadeObsolete(AppCacheGroup* group, bool success);
 
@@ -152,14 +155,7 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   // Returns false if immediately obvious that data cannot be loaded from
   // newest complete cache.
   bool MaybeLoadFromNewestCache(const GURL& url, AppCacheEntry& entry);
-
-  // TODO(jennb): delete me after storage code added
-  void SimulateFailedLoadFromNewestCache(const GURL& url);
-
-  // Copies the data from src entry to dest entry and adds the modified
-  // entry to the inprogress cache.
-  void CopyEntryToCache(const GURL& url, const AppCacheEntry& src,
-                        AppCacheEntry* dest);
+  void LoadFromNewestCacheFailed(const GURL& url);
 
   // Does nothing if update process is still waiting for pending master
   // entries or URL fetches to complete downloading. Otherwise, completes
@@ -216,7 +212,11 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   // Helper container to track which urls have not been fetched yet. URLs are
   // removed when the fetch is initiated. Flag indicates whether an attempt
   // to load the URL from storage has already been tried and failed.
-  std::deque<UrlToFetch> urls_to_fetch_;
+  std::deque<UrlsToFetch> urls_to_fetch_;
+
+  // Helper container to track which urls are being loaded from response
+  // storage.
+  LoadingResponses loading_responses_;
 
   // Keep track of pending URL requests so we can cancel them if necessary.
   URLRequest* manifest_url_request_;

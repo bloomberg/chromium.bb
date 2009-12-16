@@ -512,11 +512,13 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
     } else if (response_code == 404 || response_code == 410) {
       // Entry is skipped.  They are dropped from the cache.
     } else if (update_type_ == UPGRADE_ATTEMPT) {
-      // Copy the resource and its metadata from the newest complete cache.
+      // Copy the response from the newest complete cache.
       AppCache* cache = group_->newest_complete_cache();
       AppCacheEntry* copy = cache->GetEntry(url);
-      if (copy)
-        CopyEntryToCache(url, *copy, &entry);
+      if (copy) {
+        entry.set_response_id(copy->response_id());
+        inprogress_cache_->AddOrModifyEntry(url, entry);
+      }
     }
   }
 
@@ -803,7 +805,7 @@ void AppCacheUpdateJob::AddUrlToFileList(const GURL& url, int type) {
       AppCache::EntryMap::value_type(url, AppCacheEntry(type)));
 
   if (ret.second)
-    urls_to_fetch_.push_back(UrlToFetch(url, false));
+    urls_to_fetch_.push_back(UrlsToFetch(url, false));
   else
     ret.first->second.add_types(type);  // URL already exists. Merge types.
 }
@@ -1002,39 +1004,60 @@ bool AppCacheUpdateJob::MaybeLoadFromNewestCache(const GURL& url,
 
   AppCache* newest = group_->newest_complete_cache();
   AppCacheEntry* copy_me = newest->GetEntry(url);
-  if (!copy_me)
+  if (!copy_me || !copy_me->has_response_id())
     return false;
 
-  // TODO(jennb): load HTTP headers for copy_me and wait for callback
-  // In callback:
-  // if HTTP caching semantics for entry allows its use,
-  //   CopyEntryData(url, copy_me, entry)
-  //   ++urls_fetches_completed_;
-  // Else, add url back to front of urls_to_fetch and call FetchUrls().
-  //   flag url somehow so that FetchUrls() doesn't end up here again.
-  // For now: post a message to pretend entry could not be copied
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &AppCacheUpdateJob::SimulateFailedLoadFromNewestCache, url));
+  // Load HTTP headers for entry from newest cache.
+  loading_responses_.insert(
+      LoadingResponses::value_type(copy_me->response_id(), url));
+  service_->storage()->LoadResponseInfo(manifest_url_, copy_me->response_id(),
+                                        this);
+  // Async: wait for OnResponseInfoLoaded to complete.
   return true;
 }
 
-// TODO(jennb): delete this after have real storage code
-void AppCacheUpdateJob::SimulateFailedLoadFromNewestCache(const GURL& url) {
+void AppCacheUpdateJob::OnResponseInfoLoaded(
+    AppCacheResponseInfo* response_info, int64 response_id) {
+  LoadingResponses::iterator found = loading_responses_.find(response_id);
+  DCHECK(found != loading_responses_.end());
+  const GURL& url = found->second;
+
+  if (!response_info) {
+    LoadFromNewestCacheFailed(url);  // no response found
+  } else {
+    // Check if response can be re-used according to HTTP caching semantics.
+    // Responses with a "vary" header get treated as expired.
+    const net::HttpResponseInfo* http_info =
+        response_info->http_response_info();
+    const std::string name = "vary";
+    std::string value;
+    void* iter = NULL;
+    if (http_info->headers->RequiresValidation(http_info->request_time,
+                                               http_info->response_time,
+                                               base::Time::Now()) ||
+        http_info->headers->EnumerateHeader(&iter, name, &value)) {
+      LoadFromNewestCacheFailed(url);
+    } else {
+      AppCache::EntryMap::iterator it = url_file_list_.find(url);
+      DCHECK(it != url_file_list_.end());
+      AppCacheEntry& entry = it->second;
+      entry.set_response_id(response_id);
+      inprogress_cache_->AddOrModifyEntry(url, entry);
+      ++url_fetches_completed_;
+    }
+  }
+  loading_responses_.erase(found);
+
+  MaybeCompleteUpdate();
+}
+
+void AppCacheUpdateJob::LoadFromNewestCacheFailed(const GURL& url) {
   if (internal_state_ == CACHE_FAILURE)
     return;
 
   // Re-insert url at front of fetch list. Indicate storage has been checked.
-  urls_to_fetch_.push_front(AppCacheUpdateJob::UrlToFetch(url, true));
+  urls_to_fetch_.push_front(AppCacheUpdateJob::UrlsToFetch(url, true));
   FetchUrls();
-}
-
-void AppCacheUpdateJob::CopyEntryToCache(const GURL& url,
-                                         const AppCacheEntry& src,
-                                         AppCacheEntry* dest) {
-  DCHECK(dest);
-  dest->set_response_id(src.response_id());
-  inprogress_cache_->AddOrModifyEntry(url, *dest);
 }
 
 void AppCacheUpdateJob::MaybeCompleteUpdate() {
