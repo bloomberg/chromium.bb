@@ -46,12 +46,20 @@
 
 TaskManagerTabContentsResource::TaskManagerTabContentsResource(
     TabContents* tab_contents)
-    : TaskManagerRendererResource(tab_contents->render_view_host()),
-      tab_contents_(tab_contents) {
+    : tab_contents_(tab_contents),
+      pending_stats_update_(false),
+      v8_memory_allocated_(0),
+      v8_memory_used_(0),
+      pending_v8_memory_allocated_update_(false) {
   // We cache the process as when the TabContents is closed the process
   // becomes NULL and the TaskManager still needs it.
   process_ = tab_contents_->process()->GetHandle();
   pid_ = base::GetProcId(process_);
+  stats_.images.size = 0;
+  stats_.cssStyleSheets.size = 0;
+  stats_.scripts.size = 0;
+  stats_.xslStyleSheets.size = 0;
+  stats_.fonts.size = 0;
 }
 
 TaskManagerTabContentsResource::~TaskManagerTabContentsResource() {
@@ -79,6 +87,43 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
   }
 
   return l10n_util::GetStringF(IDS_TASK_MANAGER_TAB_PREFIX, tab_title);
+}
+
+void TaskManagerTabContentsResource::Refresh() {
+  if (!pending_stats_update_) {
+    tab_contents_->render_view_host()->Send(new ViewMsg_GetCacheResourceStats);
+    pending_stats_update_ = true;
+  }
+  if (!pending_v8_memory_allocated_update_) {
+    tab_contents_->render_view_host()->Send(new ViewMsg_GetV8HeapStats);
+    pending_v8_memory_allocated_update_ = true;
+  }
+}
+
+WebKit::WebCache::ResourceTypeStats
+    TaskManagerTabContentsResource::GetWebCoreCacheStats() const {
+  return stats_;
+}
+
+size_t TaskManagerTabContentsResource::GetV8MemoryAllocated() const {
+  return v8_memory_allocated_;
+}
+
+size_t TaskManagerTabContentsResource::GetV8MemoryUsed() const {
+  return v8_memory_used_;
+}
+
+void TaskManagerTabContentsResource::NotifyResourceTypeStats(
+    const WebKit::WebCache::ResourceTypeStats& stats) {
+  stats_ = stats;
+  pending_stats_update_ = false;
+}
+
+void TaskManagerTabContentsResource::NotifyV8HeapStats(
+    size_t v8_memory_allocated, size_t v8_memory_used) {
+  v8_memory_allocated_ = v8_memory_allocated;
+  v8_memory_used_ = v8_memory_used;
+  pending_v8_memory_allocated_update_ = false;
 }
 
 SkBitmap TaskManagerTabContentsResource::GetIcon() const {
@@ -467,8 +512,7 @@ SkBitmap* TaskManagerExtensionProcessResource::default_icon_ = NULL;
 
 TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
     ExtensionHost* extension_host)
-    : TaskManagerRendererResource(extension_host->render_view_host()),
-      extension_host_(extension_host) {
+    : extension_host_(extension_host) {
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
