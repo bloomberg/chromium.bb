@@ -763,7 +763,7 @@ bool IsSubFrameRequest(IUnknown* service_provider) {
   HRESULT hr = DoQueryService(IID_ITargetFrame2, service_provider,
                               web_browser.Receive());
 
-  bool is_non_top_level_request = false;
+  bool is_sub_frame_request = false;
   if (web_browser) {
     // Now check to see if we are in a sub-frame.
     ScopedComPtr<IHTMLWindow2> current_frame, parent_frame;
@@ -774,14 +774,14 @@ bool IsSubFrameRequest(IUnknown* service_provider) {
       current_frame->get_parent(parent_frame.Receive());
       if (parent_frame != current_frame) {
         DLOG(INFO) << "Sub frame detected";
-        is_non_top_level_request = true;
+        is_sub_frame_request = true;
       }
     }
   } else {
-    is_non_top_level_request = true;
+    is_sub_frame_request = true;
   }
 
-  return is_non_top_level_request;
+  return is_sub_frame_request;
 }
 
 bool IsHeadlessMode() {
