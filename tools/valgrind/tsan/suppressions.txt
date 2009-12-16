@@ -104,6 +104,13 @@
 ############################
 # Data races in tests
 
+{
+  bug_30582
+  ThreadSanitizer:Race
+  fun:*LongCallbackD*
+  fun:*WorkerThreadTickerTest_LongCallback_Test*TestBody*
+}
+
 # TODO(timurrrr): bug item
 {
   Data race on bool in AssertReporter [test-only]
