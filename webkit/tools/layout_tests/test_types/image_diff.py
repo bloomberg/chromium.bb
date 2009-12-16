@@ -136,6 +136,11 @@ class ImageDiff(test_type_base.TestTypeBase):
         raise
       expected_hash = ''
 
+    self.WriteOutputFiles(filename, '', '.checksum', test_args.hash,
+                          expected_hash, diff=False, wdiff=False)
+    self._CopyOutputPNGs(filename, test_args.png_path,
+                         expected_png_file)
+
     if not os.path.isfile(expected_png_file):
       # Report a missing expected PNG file.
       failures.append(test_failures.FailureMissingImage(self))
@@ -143,8 +148,6 @@ class ImageDiff(test_type_base.TestTypeBase):
     elif test_args.hash == expected_hash:
       return failures
 
-    self._CopyOutputPNGs(filename, test_args.png_path,
-                         expected_png_file)
     # Even though we only use result in one codepath below but we still need to
     # call CreateImageDiff for other codepaths.
     result = self._CreateImageDiff(filename, target)
@@ -158,9 +161,6 @@ class ImageDiff(test_type_base.TestTypeBase):
         failures.append(test_failures.FailureImageHashIncorrect(self))
       else:
         failures.append(test_failures.FailureImageHashMismatch(self))
-
-    self.WriteOutputFiles(filename, '', '.checksum', test_args.hash,
-                          expected_hash, diff=False, wdiff=False)
 
     return failures
 

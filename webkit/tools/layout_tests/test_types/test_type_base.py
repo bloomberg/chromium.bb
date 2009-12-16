@@ -144,8 +144,13 @@ class TestTypeBase(object):
                       test_type + self.FILENAME_SUFFIX_ACTUAL + file_type)
     expected_filename = self.OutputFilename(filename,
                       test_type + self.FILENAME_SUFFIX_EXPECTED + file_type)
-    open(actual_filename, "wb").write(output)
-    open(expected_filename, "wb").write(expected)
+    if output:
+      open(actual_filename, "wb").write(output)
+    if expected:
+      open(expected_filename, "wb").write(expected)
+
+    if not output or not expected:
+      return
 
     if diff:
       diff = difflib.unified_diff(expected.splitlines(True),
