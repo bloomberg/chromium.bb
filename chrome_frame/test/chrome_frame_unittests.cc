@@ -1651,3 +1651,18 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForwardAnchor) {
   mock.Uninitialize();
   chrome_frame_test::CloseAllIEWindows();
 }
+
+const wchar_t kChromeFrameFullTabModeXMLHttpRequestTestUrl[] =
+    L"files/xmlhttprequest_test.html";
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ChromeFrameXHRTest) {
+  chrome_frame_test::TimedMsgLoop loop;
+
+  ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeXMLHttpRequestTestUrl));
+
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  chrome_frame_test::CloseAllIEWindows();
+  ASSERT_TRUE(CheckResultFile(L"FullTab_XMLHttpRequestTest", "OK"));
+}
+

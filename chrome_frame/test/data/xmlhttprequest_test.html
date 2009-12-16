@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <meta http-equiv="x-ua-compatible" content="chrome=1" />
+    <title>ChromeFrame keyevent test</title>
+    <script type="text/javascript"
+        src="chrome_frame_tester_helpers.js"></script>
+
+    <script type="text/javascript">
+      function ValidateUserAgent() {
+        if (isRunningInMSIE()) {
+          onFailure("FullTab_XMLHttpRequestTest", 1, "Failed");
+        }
+
+        SendXHRRequest();
+      }
+
+      function SendXHRRequest() {
+        var xhr = getXHRObject();
+        if (!xhr) {
+          onFailure("FullTab_XMLHttpRequestTest", 1,
+                    "Failed to get XHR object");
+        }
+
+        xhr.open("GET", "http://localhost:1337/echoheader?User-Agent", false);
+        try {
+          xhr.send(null);
+          var pos = xhr.responseText.indexOf("chromeframe");
+          if (pos >= 0) {
+            appendStatus("Received user agent: " + xhr.responseText);
+            onSuccess("FullTab_XMLHttpRequestTest", 1);
+          } else {
+            onFailure("FullTab_XMLHttpRequestTest", 1,
+                      "Failed to find chromeframe in user agent.");
+          }
+        } catch (e) {
+          appendStatus("XHR send failed. Error: " + e.description);
+          onFailure("FullTab_XMLHttpRequestTest", 1,
+                    "Failed to send XHR request");
+        }
+      }
+    </script>
+  </head>
+
+  <body onLoad="setTimeout(ValidateUserAgent, 100);" onkeypress="OnKeyPress()">
+    ChromeFrame full tab mode XMLHttpRequest test. Verifies that
+    XMLHttpRequests use the host network stack.
+  </body>
+</html>
