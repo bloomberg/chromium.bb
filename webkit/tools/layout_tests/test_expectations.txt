@@ -3231,5 +3231,11 @@ BUG30543 : LayoutTests/storage/domstorage/localstorage/enumerate-with-length-and
 BUG30545 WIN : LayoutTests/websocket/tests/bad-sub-protocol.html = CRASH PASS
 BUG30593 LINUX MAC : LayoutTests/websocket/tests/url-with-credential.html = TEXT PASS
 
+// Webkit roll 52198->52208
+// Newly added test in r52202
+BUG_JPARENT : LayoutTests/svg/filters/filter-source-position.svg = IMAGE+TEXT
+// Started failing with r52207
+BUG_JPARENT : LayoutTests/fast/repaint/backgroundSizeRepaint.html = IMAGE
+
 // Flaky since SVG filters turned on
 BUG29737 LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = TEXT PASS
