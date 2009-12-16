@@ -519,7 +519,7 @@ static const BookmarkNode* CreateNewNode(BookmarkModel* model,
       model->AddURL(node, node->GetChildCount(), details.urls[i].second,
                     details.urls[i].first);
     }
-    // TODO(sky): update parent modified time.
+    model->SetDateGroupModified(parent, Time::Now());
   } else {
     NOTREACHED();
     return NULL;

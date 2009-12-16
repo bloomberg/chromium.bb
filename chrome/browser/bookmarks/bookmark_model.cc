@@ -389,6 +389,15 @@ void BookmarkModel::SetURLStarred(const GURL& url,
   }
 }
 
+void BookmarkModel::SetDateGroupModified(const BookmarkNode* parent,
+                                         const Time time) {
+  DCHECK(parent);
+  AsMutable(parent)->set_date_group_modified(time);
+
+  if (store_.get())
+    store_->ScheduleSave();
+}
+
 void BookmarkModel::ResetDateGroupModified(const BookmarkNode* node) {
   SetDateGroupModified(node, Time());
 }
@@ -601,15 +610,6 @@ bool BookmarkModel::IsValidIndex(const BookmarkNode* parent,
   return (parent && parent->is_folder() &&
           (index >= 0 && (index < parent->GetChildCount() ||
                           (allow_end && index == parent->GetChildCount()))));
-}
-
-void BookmarkModel::SetDateGroupModified(const BookmarkNode* parent,
-                                         const Time time) {
-  DCHECK(parent);
-  AsMutable(parent)->set_date_group_modified(time);
-
-  if (store_.get())
-    store_->ScheduleSave();
 }
 
 BookmarkNode* BookmarkModel::CreateBookmarkNode() {

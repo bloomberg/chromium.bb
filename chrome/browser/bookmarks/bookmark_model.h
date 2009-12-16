@@ -274,6 +274,9 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
                      const std::wstring& title,
                      bool is_starred);
 
+  // Sets the date modified time of the specified node.
+  void SetDateGroupModified(const BookmarkNode* parent, const base::Time time);
+
   // Resets the 'date modified' time of the node to 0. This is used during
   // importing to exclude the newly created groups from showing up in the
   // combobox of most recently modified groups.
@@ -355,9 +358,6 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
 
   // Returns true if the parent and index are valid.
   bool IsValidIndex(const BookmarkNode* parent, int index, bool allow_end);
-
-  // Sets the date modified time of the specified node.
-  void SetDateGroupModified(const BookmarkNode* parent, const base::Time time);
 
   // Creates the bookmark bar/other nodes. These call into
   // CreateRootNodeFromStarredEntry.
