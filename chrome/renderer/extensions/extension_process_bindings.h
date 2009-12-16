@@ -8,6 +8,7 @@
 #define CHROME_RENDERER_EXTENSIONS_EXTENSION_PROCESS_BINDINGS_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,9 @@ class ExtensionProcessBindings {
  public:
   static void SetFunctionNames(const std::vector<std::string>& names);
   static v8::Extension* Get();
+
+  // Gets the set of extensions running in this process.
+  static void GetActiveExtensions(std::set<std::string>* extension_ids);
 
   // Handles a response to an API request.
   static void HandleResponse(int request_id, bool success,

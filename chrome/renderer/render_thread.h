@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_RENDER_THREAD_H_
 #define CHROME_RENDERER_RENDER_THREAD_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -144,6 +145,9 @@ class RenderThread : public RenderThreadBase,
 
   // Sends a message to the browser to enable or disable the disk cache.
   void SetCacheMode(bool enabled);
+
+  // Update the list of active extensions that will be reported when we crash.
+  void UpdateActiveExtensions();
 
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);

@@ -1075,6 +1075,7 @@
         'browser/extensions/browser_action_apitest.cc',
         'browser/extensions/browser_action_test_util.h',
         'browser/extensions/content_script_all_frames_apitest.cc',
+        'browser/extensions/content_script_extension_process_apitest.cc',
         'browser/extensions/cross_origin_xhr_apitest.cc',
         'browser/extensions/execute_script_apitest.cc',
         'browser/extensions/extension_apitest.cc',

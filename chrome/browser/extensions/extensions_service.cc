@@ -643,10 +643,10 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
 }
 
 void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
-  std::vector<std::string> extension_ids;
+  std::set<std::string> extension_ids;
   for (size_t i = 0; i < extensions_.size(); ++i) {
     if (!extensions_[i]->IsTheme())
-      extension_ids.push_back(extensions_[i]->id());
+      extension_ids.insert(extensions_[i]->id());
   }
 
   child_process_logging::SetActiveExtensions(extension_ids);

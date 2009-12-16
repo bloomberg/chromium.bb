@@ -66,7 +66,7 @@ void SetClientId(const std::string& client_id) {
   (set_client_id)(wstr.c_str());
 }
 
-void SetActiveExtensions(const std::vector<std::string>& extension_ids) {
+void SetActiveExtensions(const std::set<std::string>& extension_ids) {
   static MainSetExtensionID set_extension_id = NULL;
   if (!set_extension_id) {
     HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
@@ -78,11 +78,14 @@ void SetActiveExtensions(const std::vector<std::string>& extension_ids) {
       return;
   }
 
+  std::set<std::string>::const_iterator iter = extension_ids.begin();
   for (size_t i = 0; i < kMaxReportedActiveExtensions; ++i) {
-    if (i < extension_ids.size())
-      (set_extension_id)(i, ASCIIToWide(extension_ids[i].c_str()).c_str());
-    else
+    if (iter != extension_ids.end()) {
+      (set_extension_id)(i, ASCIIToWide(iter->c_str()).c_str());
+      ++iter;
+    } else {
       (set_extension_id)(i, L"");
+    }
   }
 }
 

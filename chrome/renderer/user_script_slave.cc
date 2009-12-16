@@ -12,7 +12,6 @@
 #include "base/pickle.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -60,6 +59,13 @@ UserScriptSlave::UserScriptSlave()
       script_deleter_(&scripts_) {
   api_js_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
                 IDR_GREASEMONKEY_API_JS);
+}
+
+void UserScriptSlave::GetActiveExtensions(std::set<std::string>* extension_ids) {
+  for (size_t i = 0; i < scripts_.size(); ++i) {
+    DCHECK(!scripts_[i]->extension_id().empty());
+    extension_ids->insert(scripts_[i]->extension_id());
+  }
 }
 
 bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
@@ -112,24 +118,6 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
       script->css_scripts()[j].set_external_content(
           base::StringPiece(body, body_length));
     }
-  }
-
-  // Update the crash reporter with all loaded extensions. In single process,
-  // this has already been done in the browser code.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
-    std::vector<std::string> extension_ids;
-    for (size_t i = 0; i < num_scripts; ++i) {
-      DCHECK(!scripts_[i]->extension_id().empty());
-
-      // We must check this because there can be multiple scripts from a single
-      // extension. n^2, but meh, it's a small list.
-      if (std::find(extension_ids.begin(), extension_ids.end(),
-                    scripts_[i]->extension_id()) == extension_ids.end()) {
-        extension_ids.push_back(scripts_[i]->extension_id());
-      }
-    }
-
-    child_process_logging::SetActiveExtensions(extension_ids);
   }
 
   return true;

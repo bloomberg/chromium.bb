@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_USER_SCRIPT_SLAVE_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -26,6 +27,9 @@ using WebKit::WebScriptSource;
 class UserScriptSlave {
  public:
   UserScriptSlave();
+
+  // Returns the unique set of extension IDs this UserScriptSlave knows about.
+  void GetActiveExtensions(std::set<std::string>* extension_ids);
 
   // Update the parsed scripts from shared memory.
   bool UpdateScripts(base::SharedMemoryHandle shared_memory);

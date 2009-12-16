@@ -32,7 +32,7 @@ void SetClientId(const std::string& client_id) {
   GoogleUpdateSettings::SetMetricsId(wstr);
 }
 
-void SetActiveExtensions(const std::vector<std::string>& extension_ids) {
+void SetActiveExtensions(const std::set<std::string>& extension_ids) {
   // TODO(port)
 }
 }  // namespace child_process_logging

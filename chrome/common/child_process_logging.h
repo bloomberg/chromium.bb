@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_CHILD_PROCESS_LOGGING_H_
 #define CHROME_COMMON_CHILD_PROCESS_LOGGING_H_
 
-#include <vector>
+#include <set>
 
 #include "base/basictypes.h"
 #include "googleurl/src/gurl.h"
@@ -25,7 +25,7 @@ void SetClientId(const std::string& client_id);
 // - renderer: the unique set of extension ids from all content scripts
 // - extension: the id of each extension running in this process (there can be
 //   multiple because of process collapsing).
-void SetActiveExtensions(const std::vector<std::string>& extension_ids);
+void SetActiveExtensions(const std::set<std::string>& extension_ids);
 
 // Simple wrapper class that sets the active URL in it's constructor and clears
 // the active URL in the destructor.

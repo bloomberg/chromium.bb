@@ -26,6 +26,7 @@
 #include "base/string_util.h"
 #include "base/thread_local.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/db_message_filter.h"
 #include "chrome/common/render_messages.h"
@@ -288,6 +289,7 @@ void RenderThread::OnUpdateUserScripts(
     base::SharedMemoryHandle scripts) {
   DCHECK(base::SharedMemory::IsHandleValid(scripts)) << "Bad scripts handle";
   user_script_slave_->UpdateScripts(scripts);
+  UpdateActiveExtensions();
 }
 
 void RenderThread::OnSetExtensionFunctionNames(
@@ -309,6 +311,8 @@ void RenderThread::OnExtensionSetAPIPermissions(
   // This is called when starting a new extension page, so start the idle
   // handler ticking.
   ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayS);
+
+  UpdateActiveExtensions();
 }
 
 void RenderThread::OnExtensionSetHostPermissions(
@@ -492,6 +496,17 @@ void RenderThread::CloseIdleConnections() {
 
 void RenderThread::SetCacheMode(bool enabled) {
   Send(new ViewHostMsg_SetCacheMode(enabled));
+}
+
+void RenderThread::UpdateActiveExtensions() {
+  // In single-process mode, the browser process reports the active extensions.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
+    return;
+
+  std::set<std::string> active_extensions;
+  user_script_slave_->GetActiveExtensions(&active_extensions);
+  ExtensionProcessBindings::GetActiveExtensions(&active_extensions);
+  child_process_logging::SetActiveExtensions(active_extensions);
 }
 
 static void* CreateHistogram(
