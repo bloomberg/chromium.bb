@@ -12,6 +12,7 @@
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/gfx/size.h"
+#include "chrome/browser/tab_menu_model.h"
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
@@ -26,11 +27,10 @@ static const SkScalar kTabCapWidth = 15;
 static const SkScalar kTabTopCurveWidth = 4;
 static const SkScalar kTabBottomCurveWidth = 3;
 
-class Tab::TabContextMenuContents : public menus::SimpleMenuModel,
-                                    public menus::SimpleMenuModel::Delegate {
+class Tab::TabContextMenuContents : public menus::SimpleMenuModel::Delegate {
  public:
   explicit TabContextMenuContents(Tab* tab)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(model_(this)),
         tab_(tab),
         last_command_(TabStripModel::CommandFirst) {
     Build();
@@ -84,29 +84,10 @@ class Tab::TabContextMenuContents : public menus::SimpleMenuModel,
 
  private:
   void Build() {
-    AddItemWithStringId(TabStripModel::CommandNewTab, IDS_TAB_CXMENU_NEWTAB);
-    AddSeparator();
-    AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
-    AddItemWithStringId(TabStripModel::CommandDuplicate,
-                        IDS_TAB_CXMENU_DUPLICATE);
-    AddCheckItemWithStringId(TabStripModel::CommandTogglePinned,
-                             IDS_TAB_CXMENU_PIN_TAB);
-    AddSeparator();
-    AddItemWithStringId(TabStripModel::CommandCloseTab,
-                        IDS_TAB_CXMENU_CLOSETAB);
-    AddItemWithStringId(TabStripModel::CommandCloseOtherTabs,
-                        IDS_TAB_CXMENU_CLOSEOTHERTABS);
-    AddItemWithStringId(TabStripModel::CommandCloseTabsToRight,
-                        IDS_TAB_CXMENU_CLOSETABSTORIGHT);
-    AddItemWithStringId(TabStripModel::CommandCloseTabsOpenedBy,
-                        IDS_TAB_CXMENU_CLOSETABSOPENEDBY);
-    AddSeparator();
-    AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
-    AddItemWithStringId(TabStripModel::CommandBookmarkAllTabs,
-                        IDS_TAB_CXMENU_BOOKMARK_ALL_TABS);
-    menu_.reset(new views::Menu2(this));
+    menu_.reset(new views::Menu2(&model_));
   }
 
+  TabMenuModel model_;
   scoped_ptr<views::Menu2> menu_;
 
   // The Tab the context menu was brought up for. Set to NULL when the menu

@@ -96,7 +96,8 @@
     // The MenuModel works on indexes so we can't just set the command id as the
     // tag like we do in other menus. Also set the represented object to be
     // the model so hierarchical menus check the correct index in the correct
-    // model.
+    // model. Setting the target to |self| allows this class to participate
+    // in validation of the menu items.
     [item setTag:modelIndex];
     [item setTarget:self];
     NSValue* modelObject = [NSValue valueWithPointer:model];

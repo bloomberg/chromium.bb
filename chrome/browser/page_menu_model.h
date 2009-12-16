@@ -67,10 +67,9 @@ class PageMenuModel : public menus::SimpleMenuModel {
  private:
   void Build();
 
-  // The top-level model.
-  scoped_ptr<menus::SimpleMenuModel> model_;
-  // Models for submenus referenced by model_. SimpleMenuModel only uses weak
-  // references so these must be kept for the lifetime of the top-level model.
+  // Models for submenus referenced by this model. SimpleMenuModel only uses
+  // weak references so these must be kept for the lifetime of the top-level
+  // model.
   scoped_ptr<ZoomMenuModel> zoom_menu_model_;
   scoped_ptr<EncodingMenuModel> encoding_menu_model_;
   scoped_ptr<DevToolsMenuModel> devtools_menu_model_;

@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "chrome/browser/cocoa/hover_close_button.h"
+#include "chrome/browser/tab_menu_model.h"
 
 // The loading/waiting state of the tab.
 // TODO(pinkerton): this really doesn't belong here, but something needs to
@@ -20,6 +21,10 @@ enum TabLoadingState {
   kTabCrashed,
 };
 
+@class MenuController;
+namespace TabControllerInternal {
+class MenuDelegate;
+}
 @class TabView;
 @protocol TabControllerTarget;
 
@@ -38,7 +43,6 @@ enum TabLoadingState {
  @private
   IBOutlet NSView* iconView_;
   IBOutlet NSTextField* titleView_;
-  IBOutlet NSMenu* contextMenu_;
   IBOutlet HoverCloseButton* closeButton_;
 
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
@@ -50,6 +54,9 @@ enum TabLoadingState {
   CGFloat titleCloseWidthOffset_;  // between right edges of icon and close btn.
   id<TabControllerTarget> target_;  // weak, where actions are sent
   SEL action_;  // selector sent when tab is selected by clicking
+  scoped_ptr<TabMenuModel> contextMenuModel_;
+  scoped_ptr<TabControllerInternal::MenuDelegate> contextMenuDelegate_;
+  scoped_nsobject<MenuController> contextMenuController_;
 }
 
 @property(assign, nonatomic) TabLoadingState loadingState;
@@ -73,9 +80,6 @@ enum TabLoadingState {
 // Closes the associated TabView by relaying the message to |target_| to
 // perform the close.
 - (IBAction)closeTab:(id)sender;
-
-// Dispatches the command in the tag to the registered target object.
-- (IBAction)commandDispatch:(id)sender;
 
 // Replace the current icon view with the given view. |iconView| will be
 // resized to the size of the current icon view.

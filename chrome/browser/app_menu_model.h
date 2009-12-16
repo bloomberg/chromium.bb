@@ -28,8 +28,6 @@ class AppMenuModel : public menus::SimpleMenuModel,
  private:
   void Build();
 
-  // The top-level model.
-  scoped_ptr<menus::SimpleMenuModel> model_;
   // Contents of the profiles menu to populate with profile names.
   scoped_ptr<menus::SimpleMenuModel> profiles_menu_contents_;
 

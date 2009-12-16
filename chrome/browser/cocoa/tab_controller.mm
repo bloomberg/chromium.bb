@@ -4,6 +4,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
+#import "chrome/browser/cocoa/menu_controller.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"
 #import "chrome/browser/cocoa/tab_view.h"
@@ -16,6 +17,53 @@
 @synthesize pinned = pinned_;
 @synthesize target = target_;
 @synthesize action = action_;
+
+namespace TabControllerInternal {
+
+// A C++ delegate that handles enabling/disabling menu items and handling when
+// a menu command is chosen. Also fixes up the menu item label for "pin/unpin
+// tab".
+class MenuDelegate : public menus::SimpleMenuModel::Delegate {
+ public:
+  explicit MenuDelegate(id<TabControllerTarget> target, TabController* owner)
+      : target_(target), owner_(owner) { }
+
+  // Overridden from menus::SimpleMenuModel::Delegate
+  virtual bool IsCommandIdChecked(int command_id) const { return false; }
+  virtual bool IsCommandIdEnabled(int command_id) const {
+    TabStripModel::ContextMenuCommand command =
+        static_cast<TabStripModel::ContextMenuCommand>(command_id);
+    return [target_ isCommandEnabled:command forController:owner_];
+  }
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator) { return false; }
+  virtual void ExecuteCommand(int command_id) {
+    TabStripModel::ContextMenuCommand command =
+        static_cast<TabStripModel::ContextMenuCommand>(command_id);
+    [target_ commandDispatch:command forController:owner_];
+  }
+
+  virtual bool IsLabelForCommandIdDynamic(int command_id) const {
+    return command_id == TabStripModel::CommandTogglePinned;
+  }
+  virtual string16 GetLabelForCommandId(int command_id) const {
+    // Display "Pin Tab" when the tab is not pinned and "Unpin Tab" when it is
+    // (this is not a checkmark menu item, per Apple's HIG).
+    if (command_id == TabStripModel::CommandTogglePinned) {
+      return l10n_util::GetStringUTF16(
+          [owner_ pinned] ? IDS_TAB_CXMENU_UNPIN_TAB_MAC
+                          : IDS_TAB_CXMENU_PIN_TAB_MAC);
+    }
+    return string16();
+  }
+
+ private:
+  id<TabControllerTarget> target_;  // weak
+  TabController* owner_;  // weak, owns me
+};
+
+}  // namespace
 
 // The min widths match the windows values and are sums of left + right
 // padding, of which we have no comparable constants (we draw using paths, not
@@ -79,27 +127,24 @@
   [self internalSetSelected:selected_];
 }
 
+// Called when Cocoa wants to display the context menu. Lazily instantiate
+// the menu based off of the cross-platform model. Re-create the menu and
+// model every time to get the correct labels and enabling.
+- (NSMenu*)menu {
+  contextMenuDelegate_.reset(
+      new TabControllerInternal::MenuDelegate(target_, self));
+  contextMenuModel_.reset(new TabMenuModel(contextMenuDelegate_.get()));
+  contextMenuController_.reset(
+      [[MenuController alloc] initWithModel:contextMenuModel_.get()
+                     useWithPopUpButtonCell:NO]);
+  return [contextMenuController_ menu];
+}
+
 - (IBAction)closeTab:(id)sender {
   if ([[self target] respondsToSelector:@selector(closeTab:)]) {
     [[self target] performSelector:@selector(closeTab:)
                         withObject:[self view]];
   }
-}
-
-// Dispatches the command in the tag to the registered target object.
-- (IBAction)commandDispatch:(id)sender {
-  TabStripModel::ContextMenuCommand command =
-      static_cast<TabStripModel::ContextMenuCommand>([sender tag]);
-  [[self target] commandDispatch:command forController:self];
-}
-
-// Called for each menu item on its target, which would be this controller.
-// Returns YES if the menu item should be enabled. We ask the tab's
-// target for the proper answer.
-- (BOOL)validateMenuItem:(NSMenuItem*)item {
-  TabStripModel::ContextMenuCommand command =
-      static_cast<TabStripModel::ContextMenuCommand>([item tag]);
-  return [[self target] isCommandEnabled:command forController:self];
 }
 
 - (void)setTitle:(NSString*)title {
@@ -257,18 +302,6 @@
         YES : NO;
   }
   return NO;
-}
-
-// Delegate method for context menu. Called before the menu is displayed to
-// update the menu. We need to display "Pin Tab" when the tab is not pinned and
-// "Unpin Tab" when it is (this is not a checkmark menu item, per Apple's HIG).
-- (void)menuNeedsUpdate:(NSMenu*)menu {
-  NSMenuItem* togglePinned =
-      [menu itemWithTag:TabStripModel::CommandTogglePinned];
-  NSString* menuItemText = l10n_util::GetNSStringWithFixup(
-      [self pinned] ? IDS_TAB_CXMENU_UNPIN_TAB_MAC
-                    : IDS_TAB_CXMENU_PIN_TAB_MAC);
-  [togglePinned setTitle:menuItemText];
 }
 
 @end

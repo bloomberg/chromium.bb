@@ -2,11 +2,11 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include "chrome/browser/app_menu_model.h"
+#include "chrome/browser/tab_menu_model.h"
 
 #include "base/logging.h"
-#include "chrome/test/browser_with_test_window_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 // A menu delegate that counts the number of times certain things are called
 // to make sure things are hooked up properly.
@@ -28,7 +28,7 @@ class Delegate : public menus::SimpleMenuModel::Delegate {
   mutable int enable_count_;
 };
 
-class AppMenuModelTest : public BrowserWithTestWindowTest {
+class TabMenuModelTest : public PlatformTest {
 };
 
 // Recursively checks the enabled state and executes a command on every item
@@ -52,9 +52,9 @@ static void CountEnabledExecutable(menus::MenuModel* model, int* count) {
   }
 }
 
-TEST_F(AppMenuModelTest, Basics) {
+TEST_F(TabMenuModelTest, Basics) {
   Delegate delegate;
-  AppMenuModel model(&delegate, browser());
+  TabMenuModel model(&delegate);
 
   // Verify it has items. The number varies by platform, so we don't check
   // the exact number.

@@ -1518,6 +1518,8 @@
         'browser/tab_contents/web_drag_dest_gtk.h',
         'browser/tab_contents/web_drop_target_win.cc',
         'browser/tab_contents/web_drop_target_win.h',
+        'browser/tab_menu_model.cc',
+        'browser/tab_menu_model.h',
         'browser/tabs/tab_strip_model.cc',
         'browser/tabs/tab_strip_model.h',
         'browser/tabs/tab_strip_model_order_controller.cc',

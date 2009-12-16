@@ -257,4 +257,17 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
   EXPECT_GT(cap, 0);
 }
 
+TEST_F(TabControllerTest, Menu) {
+  NSWindow* window = test_window();
+  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  [[window contentView] addSubview:[controller view]];
+  int cap = [controller iconCapacity];
+  EXPECT_GT(cap, 0);
+
+  // Asking the view for its menu should yield a valid menu.
+  NSMenu* menu = [[controller view] menu];
+  EXPECT_TRUE(menu);
+  EXPECT_GT([menu numberOfItems], 0);
+}
+
 }  // namespace

@@ -54,6 +54,12 @@ const CGFloat kRapidCloseDist = 2.5;
   [super dealloc];
 }
 
+// Use the TabController to provide the menu rather than obtaining it from the
+// nib file.
+- (NSMenu*)menu {
+  return [controller_ menu];
+}
+
 // Overridden so that mouse clicks come to this view (the parent of the
 // hierarchy) first. We want to handle clicks and drags in this class and
 // leave the background button for display purposes only.
