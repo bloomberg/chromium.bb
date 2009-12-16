@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/form_field.h"
 
+class AutofillKey;
 #if defined(OS_WIN)
 struct IE7PasswordInfo;
 #endif
@@ -51,15 +52,16 @@ struct PasswordForm;
 // Result types
 //
 typedef enum {
-  BOOL_RESULT = 1,       // WDResult<bool>
-  KEYWORDS_RESULT,       // WDResult<WDKeywordsResult>
-  INT64_RESULT,          // WDResult<int64>
-  PASSWORD_RESULT,       // WDResult<std::vector<PasswordForm*>>
+  BOOL_RESULT = 1,        // WDResult<bool>
+  KEYWORDS_RESULT,        // WDResult<WDKeywordsResult>
+  INT64_RESULT,           // WDResult<int64>
+  PASSWORD_RESULT,        // WDResult<std::vector<PasswordForm*>>
 #if defined(OS_WIN)
-  PASSWORD_IE7_RESULT,   // WDResult<IE7PasswordInfo>
+  PASSWORD_IE7_RESULT,    // WDResult<IE7PasswordInfo>
 #endif
-  WEB_APP_IMAGES,        // WDResult<WDAppImagesResult>
-  AUTOFILL_VALUE_RESULT, // WDResult<std::vector<string16>>
+  WEB_APP_IMAGES,         // WDResult<WDAppImagesResult>
+  AUTOFILL_VALUE_RESULT,  // WDResult<std::vector<string16>>
+  AUTOFILL_AFFECTED_KEYS, // WDResult<std::vector<AutofillKey>>
 } WDResultType;
 
 // Result from GetWebAppImages.
@@ -373,9 +375,6 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   // WebDataServiceConsumer is about to be deleted.
   void CancelRequest(Handle h);
 
-  // Sends a notification using the notification service.
-  void Notify(NotificationType type);
-
   //////////////////////////////////////////////////////////////////////////////
   //
   // Autofill.
@@ -428,6 +427,7 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   typedef GenericRequest2<std::vector<const TemplateURL*>,
                           std::vector<TemplateURL*> > SetKeywordsRequest;
 
+  typedef std::vector<AutofillKey> AutofillKeyList;
   ~WebDataService();
 
   // Initialize the database, if it hasn't already been initialized.

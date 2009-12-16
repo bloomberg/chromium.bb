@@ -782,9 +782,12 @@ class NotificationType {
     // (the pointer is usable). No details are expected.
     NOTIFY_BALLOON_DISCONNECTED,
 
-    // This notification is sent whenever the list of autofill values
-    // has been changed.
-    AUTOFILL_CHANGED,
+    // This notification is sent whenever autofill entries are added
+    // to the database.  The detail of this notification is a list of
+    // the affected entries represented by a vector of AutofillKey.
+    // Note that this notification will always be sent even in the
+    // autofill entries already exist in the database.
+    AUTOFILL_ENTRIES_ADDED,
 
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as

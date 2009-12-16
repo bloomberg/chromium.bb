@@ -12,8 +12,10 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
@@ -22,7 +24,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_field.h"
 
-using testing::_;
+using testing::ElementsAreArray;
+using testing::Pointee;
+using testing::Property;
+
+typedef std::vector<AutofillKey> AutofillKeyList;
 
 ACTION(QuitUIMessageLoop) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
@@ -31,7 +37,7 @@ ACTION(QuitUIMessageLoop) {
 
 class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
  public:
-  AutofillWebDataServiceConsumer() {}
+  AutofillWebDataServiceConsumer() : handle_(0) {}
   virtual ~AutofillWebDataServiceConsumer() {}
 
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle handle,
@@ -43,6 +49,9 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
         static_cast<const WDResult<std::vector<string16> >*>(result);
     // Copy the values.
     values_ = autofill_result->GetValue();
+
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    MessageLoop::current()->Quit();
   }
 
   WebDataService::Handle const handle() { return handle_; }
@@ -86,32 +95,56 @@ class WebDataServiceTest : public testing::Test {
 };
 
 TEST_F(WebDataServiceTest, AutofillAdd) {
-  EXPECT_CALL(observer_,
-              Observe(NotificationType(NotificationType::AUTOFILL_CHANGED),
-                      NotificationService::AllSources(),
-                      NotificationService::NoDetails())).
+  const string16 kName1 = ASCIIToUTF16("name1");
+  const string16 kValue1 = ASCIIToUTF16("value1");
+  const string16 kName2 = ASCIIToUTF16("name2");
+  const string16 kValue2 = ASCIIToUTF16("value2");
+
+  const AutofillKey expected_keys[] = {
+    AutofillKey(kName1, kValue1),
+    AutofillKey(kName2, kValue2)
+  };
+
+  // This will verify that the correct notification is triggered,
+  // passing the correct list of autofill keys in the details.
+  EXPECT_CALL(
+      observer_,
+      Observe(NotificationType(NotificationType::AUTOFILL_ENTRIES_ADDED),
+              NotificationService::AllSources(),
+              Property(&Details<AutofillKeyList>::ptr,
+                       Pointee(ElementsAreArray(expected_keys))))).
       WillOnce(QuitUIMessageLoop());
+
   registrar_.Add(&observer_,
-                 NotificationType::AUTOFILL_CHANGED,
+                 NotificationType::AUTOFILL_ENTRIES_ADDED,
                  NotificationService::AllSources());
 
   std::vector<webkit_glue::FormField> form_fields;
-  form_fields.push_back(webkit_glue::FormField(EmptyString16(),
-                                               ASCIIToUTF16("name"),
-                                               EmptyString16(),
-                                               ASCIIToUTF16("value")));
+  form_fields.push_back(
+      webkit_glue::FormField(EmptyString16(),
+                             kName1,
+                             EmptyString16(),
+                             kValue1));
+  form_fields.push_back(
+      webkit_glue::FormField(EmptyString16(),
+                             kName2,
+                             EmptyString16(),
+                             kValue2));
   wds_->AddFormFieldValues(form_fields);
+
+  // The message loop will exit when the mock observer is notified.
+  MessageLoop::current()->Run();
 
   AutofillWebDataServiceConsumer consumer;
   WebDataService::Handle handle;
   static const int limit = 10;
-  handle = wds_->GetFormValuesForElementName(ASCIIToUTF16("name"),
-                                             EmptyString16(),
-                                             limit,
-                                             &consumer);
+  handle = wds_->GetFormValuesForElementName(
+      kName1, EmptyString16(), limit, &consumer);
+
+  // The message loop will exit when the consumer is called.
   MessageLoop::current()->Run();
 
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.values().size());
-  EXPECT_EQ(ASCIIToUTF16("value"), consumer.values()[0]);
+  EXPECT_EQ(kValue1, consumer.values()[0]);
 }

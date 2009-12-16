@@ -7,8 +7,10 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/thread.h"
+#include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "webkit/glue/password_form.h"
@@ -120,12 +122,6 @@ void WebDataService::CancelRequest(Handle h) {
   i->second->Cancel();
 }
 
-void WebDataService::Notify(NotificationType type) {
-  NotificationService::current()->Notify(type,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
-}
-
 void WebDataService::AddFormFieldValues(
     const std::vector<FormField>& element) {
   GenericRequest<std::vector<FormField> >* request =
@@ -188,11 +184,19 @@ void WebDataService::RequestCompleted(Handle h) {
                                           request->GetResult());
   }
 
-  // If this is an autofill request, post the notifications.
-  if (!request->IsCancelled() &&
-      request->GetResult() &&
-      request->GetResult()->GetType() == AUTOFILL_VALUE_RESULT)
-    Notify(NotificationType::AUTOFILL_CHANGED);
+  // If this is an autofill change request, post the notifications
+  // including the list of affected keys.
+  const WDTypedResult* result = request->GetResult();
+  if (!request->IsCancelled() && result) {
+    if (result->GetType() == AUTOFILL_AFFECTED_KEYS) {
+      AutofillKeyList affected_keys =
+          static_cast<const WDResult<AutofillKeyList>*>(result)->GetValue();
+      NotificationService::current()->Notify(
+          NotificationType::AUTOFILL_ENTRIES_ADDED,
+          NotificationService::AllSources(),
+          Details<AutofillKeyList>(&affected_keys));
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -610,9 +614,20 @@ void WebDataService::GetBlacklistLoginsImpl(WebDataRequest* request) {
 void WebDataService::AddFormFieldValuesImpl(
     GenericRequest<std::vector<FormField> >* request) {
   InitializeDatabaseIfNecessary();
+  const std::vector<FormField>& form_fields = request->GetArgument();
   if (db_ && !request->IsCancelled()) {
-    if (db_->AddFormFieldValues(request->GetArgument()))
-      ScheduleCommit();
+    if (!db_->AddFormFieldValues(form_fields))
+      NOTREACHED();
+
+    AutofillKeyList keys;
+    for (std::vector<FormField>::const_iterator itr = form_fields.begin();
+         itr != form_fields.end();
+         itr++) {
+      keys.push_back(AutofillKey(itr->name(), itr->value()));
+    }
+    request->SetResult(
+        new WDResult<AutofillKeyList>(AUTOFILL_AFFECTED_KEYS, keys));
+    ScheduleCommit();
   }
   request->RequestComplete();
 }
