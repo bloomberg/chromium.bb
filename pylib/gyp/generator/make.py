@@ -846,7 +846,7 @@ class MakefileWriter:
         config = configs[configname]
         self.WriteList(config.get('ldflags'), 'LDFLAGS_%s' % configname)
       self.WriteList(spec.get('libraries'), 'LIBS')
-      self.WriteLn('%s: LDFLAGS := $(LDFLAGS_$(BUILDTYPE))' % self.output)
+      self.WriteLn('%s: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))' % self.output)
       self.WriteLn('%s: LIBS := $(LIBS)' % self.output)
 
     if self.type == 'executable':
