@@ -118,7 +118,7 @@ Array.avg = function(array) {
     sum = sum - min - max;
     count -= 2;
   }
-  return (sum / count).toFixed(1);
+  return sum / count;
 }
 
 // Compute the standard deviation of an array
@@ -134,21 +134,41 @@ Array.stddev = function(array) {
   return Math.sqrt(variance).toFixed(2);
 }
 
+// Object to summarize everything
+var totals = {};
+
 // Computes min/max/mean/stddev, etc all up front.
 function computeResults(data) {
-  for (var i = 0; i < data.data.length; i++) {
+  totals = {};
+  totals.mean = 0;
+  totals.paintMean = 0;
+  totals.docLoadMean = 0;
+
+  var count = data.data.length;
+  for (var i = 0; i < count; i++) {
     var obj = data.data[i];
     var resultList = obj.totalResults;
     obj.mean = Array.avg(resultList);
     obj.stddev = Array.stddev(resultList);
     obj.min = Array.min(resultList);
     obj.max = Array.max(resultList);
-    obj.readbps = (obj.bytesRead * 8 / obj.totalTime).toFixed(2);
-    obj.writebps = (obj.bytesWritten * 8 / obj.totalTime).toFixed(2);
-    obj.readKB = (obj.bytesRead / 1024).toFixed(0);
-    obj.writeKB = (obj.bytesWritten / 1024).toFixed(0);
+    obj.readbps = obj.bytesRead * 8 / obj.totalTime;
+    obj.writebps = obj.bytesWritten * 8 / obj.totalTime;
+    obj.readKB = obj.bytesRead / 1024;
+    obj.writeKB = obj.bytesWritten / 1024;
     obj.paintMean = Array.avg(obj.paintResults);
     obj.docLoadMean = Array.avg(obj.docLoadResults);
+
+    totals.mean += obj.mean;
+    totals.paintMean += obj.paintMean;
+    totals.docLoadMean += obj.docLoadMean;
+  }
+
+  totals.url = "(" + count + " urls)";
+  if (count > 0) {
+    totals.mean /= count;
+    totals.paintMean /= count;
+    totals.docLoadMean /= count;
   }
 
   // Find the biggest sample for our bar graph.
@@ -258,18 +278,33 @@ Clear Cache?<input id="clearcache" type="checkbox">
   <th samples</th>
   </tr>
 
+  <tr id="t.total" jsselect="totals">
+  <td class="url">TOTALS <span jscontent="url"></span></td>
+  <td class="avg"><span jseval="val = docLoadMean.toFixed(1)" jscontent="val"></span></td>
+  <td class="avg"><span jseval="val = paintMean.toFixed(1)" jscontent="val"></span></td>
+  <td class="avg"><span jseval="val = mean.toFixed(1)" jscontent="val"></span></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="data"></td>
+  </tr>
+
   <tr jsselect="data">
   <td class="url" jseval="$width = getWidth($this.mean, 600)"><div jsvalues=".style.width:$width" class="bggraph"><a jsvalues="href:$this.url" jscontent="url"></a></div></td>
-  <td class="avg" jscontent="docLoadMean"></td>
-  <td class="avg" jscontent="paintMean"></td>
-  <td class="avg" jscontent="mean"></td>
-  <td class="avg" jscontent="stddev"></td>
-  <td class="avg" jscontent="min"></td>
-  <td class="avg" jscontent="max"></td>
-  <td class="avg" jscontent="readKB"></td>
-  <td class="avg" jscontent="writeKB"></td>
-  <td class="avg" jscontent="readbps"></td>
-  <td class="avg" jscontent="writebps"></td>
+  <td class="avg" jseval="val = docLoadMean.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = paintMean.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = mean.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = stddev.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = min.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = max.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = readKB.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = writeKB.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = readbps.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = writebps.toFixed(1)" jscontent="val"></td>
   <td class="data"><span jsselect="totalResults"><span jscontent="$this"></span>,</span> </td>
   </tr>
   <tr jsdisplay="data.length == 0">

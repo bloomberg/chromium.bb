@@ -37,9 +37,56 @@ window.results.data = new Array();
 window.testUrl = "";
 window.windowId = 0;
 
+// The list of currently running benchmarks
+var benchmarks = new Array();
+var benchmarkIndex = 0;
+var benchmarkWindow = 0;
+
+function addBenchmark(benchmark) {
+  benchmarks.push(benchmark);
+}
+
+// Array Remove - By John Resig (MIT Licensed)
+Array.prototype.remove = function(from, to) {
+  var rest = this.slice((to || from) + 1 || this.length);
+  this.length = from < 0 ? this.length + from : from;
+  return this.push.apply(this, rest);
+};
+
+function removeBenchmark(benchmark) {
+  var index;
+  for (var index = 0; index < benchmarks.length; ++index) {
+    if (benchmarks[index] == benchmark) {
+      break;
+    }
+  }
+  benchmarks.remove(index);
+
+  // Preserve index ordering when removing from the list.
+  if (index <= benchmarkIndex) {
+    benchmarkIndex--;  // Note:  it is okay to drop to -1 here.
+  }
+}
+
+function findBenchmark(url) {
+  for (var index = 0; index < benchmarks.length; ++index) {
+    if (benchmarks[index].url() == url) {
+      return benchmarks[index];
+    }
+  }
+  return undefined;
+}
+
+function nextBenchmark() {
+  benchmarkIndex = (benchmarkIndex + 1) % benchmarks.length;
+  return benchmarks[benchmarkIndex];
+}
+
 function show_options() {
   chrome.tabs.getSelected(null, function(tab) {
-    window.testUrl = tab.url;
+    if (window.testUrl == "") {
+      window.testUrl = tab.url;
+    }
     var tabs = chrome.extension.getExtensionTabs();
     if (tabs && tabs.length) {
       tabs[0].setUrl(testUrl);
@@ -64,7 +111,6 @@ function Benchmark() {
   var runCount_ = 0;
   var count_;
   var totalTime_;
-  var lastWin_;
   var me_ = this;
   var current_;
   var initialReadBytes_;
@@ -77,22 +123,23 @@ function Benchmark() {
       return;
     }
 
-    console.log("Starting test for url: " + url);
+    console.log("Benchmark testing url: " + url);
+
+    // Add this benchmark to the list of benchmarks running.
+    addBenchmark(this);
 
     runCount_ = window.iterations;
     count_ = 0;
     totalTime_ = 0;
-    lastWin_ = 0;
 
     current_ = {};
     current_.url = url;
     current_.docLoadResults = new Array();  // times to docload
     current_.paintResults = new Array();    // times to paint
     current_.totalResults = new Array();    // times to complete load
-    initialReadBytes = chrome.benchmarking.counter("tcp.read_bytes");
-    initialWriteBytes = chrome.benchmarking.counter("tcp.write_bytes");
-
-    me_.runPage();
+    current_.bytesRead = 0;
+    current_.bytesWritten = 0;
+    current_.totalTime = 0;
   }
 
   // Is the benchmark currently in progress.
@@ -100,21 +147,23 @@ function Benchmark() {
     return runCount_ > 0;
   }
 
+  // The url which this benchmark is running.
+  this.url = function() { return current_.url; }
+
   // Called when the test run completes.
   this.finish = function() {
-    chrome.tabs.remove(lastWin_.id);
-    lastWin_ = 0;
+    removeBenchmark(this);
 
-    // Record some more stats.
-    current_.bytesRead = chrome.benchmarking.counter("tcp.read_bytes") -
-                          initialReadBytes;
-    current_.bytesWritten = chrome.benchmarking.counter("tcp.write_bytes") -
-                            initialWriteBytes;
-    current_.totalTime = totalTime_;
-
-    // push the result
+    // Push the result.
     window.results.data.push(current_);
-    current_ = 0;
+
+    // If we're the last benchmark, close the window.
+    if (benchmarks.length == 0) {
+      chrome.tabs.remove(benchmarkWindow.id);
+      benchmarkWindow = 0;
+
+      show_options();
+    }
   }
 
   // Update the UI after a test run.
@@ -143,15 +192,21 @@ function Benchmark() {
     if (window.clearCache) {
       chrome.benchmarking.clearCache();
     }
+
     if (window.clearConnections) {
       chrome.benchmarking.closeConnections();
     }
 
-    if (lastWin_) {
-      chrome.tabs.update(lastWin_.id, {"url": current_.url});
+    initialReadBytes = chrome.benchmarking.counter("tcp.read_bytes");
+    initialWriteBytes = chrome.benchmarking.counter("tcp.write_bytes");
+
+
+    if (benchmarkWindow) {
+      var benchmark = nextBenchmark();
+      chrome.tabs.update(benchmarkWindow.id, {"url": benchmark.url() });
     } else {
-      chrome.tabs.create({"url": current_.url},
-                         function(tab) { lastWin_ = tab; });
+      chrome.tabs.create({"url": current_.url },
+                         function(tab) { benchmarkWindow = tab; });
     }
   }
 
@@ -164,32 +219,46 @@ function Benchmark() {
     var totalTime =
         Math.round((csi.finishLoadTime - csi.startLoadTime) * 1000.0);
 
-    // Record the result
-    current_.docLoadResults.push(docLoadTime);
-    current_.paintResults.push(paintTime);
-    current_.totalResults.push(totalTime);
+    if (paintTime < 0) {
+      // If the user navigates away from the test while it is running,
+      // paint may not occur.
+      alert("No paint detected.  Did you navigate while the test was running?");
+      paintTime = totalTime;  // approximate.
+    }
 
     // For our toolbar counters
     totalTime_ += totalTime;
     count_++;
 
-    if (--runCount_ > 0) {
-      setTimeout(me_.runPage, 100);
-    } else {
+    // Record the result
+    current_.docLoadResults.push(docLoadTime);
+    current_.paintResults.push(paintTime);
+    current_.totalResults.push(totalTime);
+    current_.bytesRead += chrome.benchmarking.counter("tcp.read_bytes") -
+                          initialReadBytes;
+    current_.bytesWritten += chrome.benchmarking.counter("tcp.write_bytes") -
+                             initialWriteBytes;
+    current_.totalTime += totalTime;
+
+    if (--runCount_ == 0) {
       me_.finish();
+    }
+
+    // If there are more tests, schedule them
+    if (runCount_ > 0 || benchmarks.length > 0) {
+      setTimeout(me_.runPage, 100);
     }
 
     // Update the UI
     me_.displayResults();
+
   }
 }
-
-var benchmarks = new Array();
 
 chrome.extension.onConnect.addListener(function(port) {
   port.onMessage.addListener(function(data) {
     if (data.message == "load") {
-      var benchmark = benchmarks[data.url];
+      var benchmark = findBenchmark(data.url);
       if (benchmark != undefined && benchmark.isRunning()) {
         benchmark.pageFinished(data.values);
       }
@@ -201,9 +270,9 @@ function run() {
   var urls = testUrl.split(",");
   for (var i = 0; i < urls.length; i++) {
     var benchmark = new Benchmark();
-    benchmarks[urls[i]] = benchmark;
     benchmark.start(urls[i]);  // XXXMB - move to constructor
   }
+  benchmarks[0].runPage();
 }
 
 // Run at startup
