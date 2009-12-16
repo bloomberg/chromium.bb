@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/sad_tab_controller.h"
 #import "chrome/browser/cocoa/sad_tab_view.h"
-#include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
 @interface SadTabView (ExposedForTesting)
 // Implementation is below.
@@ -23,25 +21,36 @@
 
 namespace {
 
-class SadTabControllerTest : public CocoaTest {
+class SadTabControllerTest : public RenderViewHostTestHarness {
  public:
-  SadTabControllerTest() {
+  SadTabControllerTest() : test_window_(nil) {
     link_clicked_ = false;
   }
 
-  TabContents* CreateTabContents() {
-    SiteInstance* instance =
-        SiteInstance::CreateSiteInstance(browser_helper_.profile());
-    TabContents* tab_contents = new TabContents(browser_helper_.profile(),
-        instance, MSG_ROUTING_NONE, NULL);
-    return tab_contents;
+  virtual void SetUp() {
+    RenderViewHostTestHarness::SetUp();
+    // Inherting from RenderViewHostTestHarness means we can't inherit from
+    // from CocoaTest, so do a bootstrap and create test window.
+    CocoaTest::BootstrapCocoa();
+    test_window_ = [[CocoaTestHelperWindow alloc] init];
+    if (DebugUtil::BeingDebugged()) {
+      [test_window_ orderFront:nil];
+    } else {
+      [test_window_ orderBack:nil];
+    }
+  }
+
+  virtual void TearDown() {
+    [test_window_ close];
+    test_window_ = nil;
+    RenderViewHostTestHarness::TearDown();
   }
 
   // Creates the controller and adds its view to contents, caller has ownership.
-  SadTabController* CreateController(TabContents* tab_contents) {
-    NSView* contentView = [test_window() contentView];
+  SadTabController* CreateController() {
+    NSView* contentView = [test_window_ contentView];
     SadTabController* controller =
-        [[SadTabController alloc] initWithTabContents:tab_contents
+        [[SadTabController alloc] initWithTabContents:contents()
                                             superview:contentView];
     EXPECT_TRUE(controller);
     NSView* view = [controller view];
@@ -55,40 +64,33 @@ class SadTabControllerTest : public CocoaTest {
     return ([view linkButton]);
   }
 
-  BrowserTestHelper browser_helper_;
   static bool link_clicked_;
+  CocoaTestHelperWindow* test_window_;
 };
 
-/* TODO(kuan): (BUG:30522) enable this test when leak is fixed
-TEST_F(SadTabControllerTest, TestWithTabContents) {
-  scoped_ptr<TabContents> tab_contents(CreateTabContents());
-  scoped_nsobject<SadTabController>
-      controller(CreateController(tab_contents.get()));
+TEST_F(SadTabControllerTest, WithTabContents) {
+  scoped_nsobject<SadTabController> controller(CreateController());
   EXPECT_TRUE(controller);
   NSButton* link = GetLinkButton(controller);
   EXPECT_TRUE(link);
 }
-*/
 
-TEST_F(SadTabControllerTest, TestWithoutTabContents) {
-  scoped_nsobject<SadTabController> controller(CreateController(NULL));
+TEST_F(SadTabControllerTest, WithoutTabContents) {
+  contents_.reset();
+  scoped_nsobject<SadTabController> controller(CreateController());
   EXPECT_TRUE(controller);
   NSButton* link = GetLinkButton(controller);
   EXPECT_FALSE(link);
 }
 
-/* TODO(kuan): (BUG:30522) enable this when leak is fixed
-TEST_F(SadTabControllerTest, TestClickOnLink) {
-  scoped_ptr<TabContents> tab_contents(CreateTabContents());
-  scoped_nsobject<SadTabController>
-      controller(CreateController(tab_contents.get()));
+TEST_F(SadTabControllerTest, ClickOnLink) {
+  scoped_nsobject<SadTabController> controller(CreateController());
   NSButton* link = GetLinkButton(controller);
   EXPECT_TRUE(link);
   EXPECT_FALSE(link_clicked_);
   [link performClick:link];
   EXPECT_TRUE(link_clicked_);
 }
-*/
 
 }  // namespace
 
