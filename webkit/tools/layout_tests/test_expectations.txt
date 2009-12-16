@@ -2942,8 +2942,10 @@ BUG2844 : LayoutTests/http/tests/appcache/update-cache.html = TIMEOUT PASS
 
 // These tests sometimes pass and sometimes have a text difference due
 // to chromium's appcache being async.
-BUG2844 : LayoutTests/http/tests/appcache/top-frame-3.html = TEXT PASS
-BUG2844 : LayoutTests/http/tests/appcache/top-frame-4.html = TEXT PASS
+BUG2844 WIN RELEASE : LayoutTests/http/tests/appcache/top-frame-3.html = TEXT PASS
+BUG2844 MAC LINUX : LayoutTests/http/tests/appcache/top-frame-3.html = TEXT PASS
+BUG2844 WIN RELEASE : LayoutTests/http/tests/appcache/top-frame-4.html = TEXT PASS
+BUG2844 MAC LINUX : LayoutTests/http/tests/appcache/top-frame-4.html = TEXT PASS
 
 // These fail because chromium's appcache is async but webkit's is not.
 BUG2844 SKIP : LayoutTests/http/tests/appcache/idempotent-update.html = FAIL
@@ -3198,6 +3200,19 @@ BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/manifest-parsing.html = TIM
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/manifest-redirect-2.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/manifest-redirect.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/manifest-with-empty-file.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/wrong-content-type.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/wrong-signature.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/online-whitelist.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/svg/filters/big-sized-filter.svg = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/top-frame-1.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/whitelist-wildcard.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/resource-redirect.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/xhr-foreign-resource.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/simple.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/reload.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/wrong-signature-2.html = TIMEOUT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/top-frame-4.html = TIMEOUT TEXT PASS
+BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/top-frame-3.html = TIMEOUT TEXT PASS
 
 // Crash of unknown origin :(
 BUG_DGLAZKOV LINUX : LayoutTests/fast/images/svg-as-background.html = CRASH
