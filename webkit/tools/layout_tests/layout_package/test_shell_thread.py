@@ -261,7 +261,7 @@ class TestShellThread(threading.Thread):
     self._num_tests = 0
     try:
       logging.debug('thread %s starting' % (self.getName()))
-      self._Run()
+      self._Run(test_runner=None, result_summary=None)
       logging.debug('thread %s done (%d tests)' % (self.getName(),
                     self.GetNumTests()))
     except:
@@ -274,9 +274,19 @@ class TestShellThread(threading.Thread):
       raise
     self._stop_time = time.time()
 
-  def _Run(self):
+  def RunInMainThread(self, test_runner, result_summary):
+    """This hook allows us to run the tests from the main thread if
+    --num-test-shells==1, instead of having to always run two or more
+    threads. This allows us to debug the test harness without having to
+    do multi-threaded debugging."""
+    self._Run(test_runner, result_summary)
+
+  def _Run(self, test_runner, result_summary):
     """Main work entry point of the thread. Basically we pull urls from the
-    filename queue and run the tests until we run out of urls."""
+    filename queue and run the tests until we run out of urls.
+
+    If test_runner is not None, then we call test_runner.UpdateSummary()
+    with the results of each test."""
     batch_size = 0
     batch_count = 0
     if self._options.batch_size:
@@ -345,6 +355,9 @@ class TestShellThread(threading.Thread):
         # Bounce the shell and reset count.
         self._KillTestShell()
         batch_count = 0
+
+      if test_runner:
+        test_runner.UpdateSummary(result_summary)
 
   def _RunTestSingly(self, test_info):
     """Run a test in a separate thread, enforcing a hard time limit.

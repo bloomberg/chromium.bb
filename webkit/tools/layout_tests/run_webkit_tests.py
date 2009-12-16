@@ -411,7 +411,8 @@ class TestRunner:
       The Queue of lists of TestInfo objects.
     """
 
-    if self._options.experimental_fully_parallel:
+    if (self._options.experimental_fully_parallel or
+        self._IsSingleThreaded()):
       filename_queue = Queue.Queue()
       for test_file in test_files:
        filename_queue.put(('.', [self._GetTestInfoForFile(test_file)]))
@@ -481,7 +482,8 @@ class TestRunner:
         return True
     return False
 
-  def _InstantiateTestShellThreads(self, test_shell_binary, test_files):
+  def _InstantiateTestShellThreads(self, test_shell_binary, test_files,
+                                   result_summary):
     """Instantitates and starts the TestShellThread(s).
 
     Return:
@@ -515,7 +517,10 @@ class TestRunner:
                                                  test_args,
                                                  shell_args,
                                                  self._options)
-      thread.start()
+      if self._IsSingleThreaded():
+        thread.RunInMainThread(self, result_summary)
+      else:
+        thread.start()
       threads.append(thread)
 
     return threads
@@ -527,6 +532,10 @@ class TestRunner:
       proc.stdin.write("x\n")
       proc.stdin.close()
       proc.wait()
+
+  def _IsSingleThreaded(self):
+    """Returns whether we should run all the tests in the main thread."""
+    return int(self._options.num_test_shells) == 1
 
   def _RunTests(self, test_shell_binary, file_list, result_summary):
     """Runs the tests in the file_list.
@@ -542,7 +551,8 @@ class TestRunner:
           {filename:filename, test_run_time:test_run_time}
         result_summary: summary object to populate with the results
     """
-    threads = self._InstantiateTestShellThreads(test_shell_binary, file_list)
+    threads = self._InstantiateTestShellThreads(test_shell_binary, file_list,
+                                                result_summary)
 
     # Wait for the threads to finish and collect test failures.
     failures = {}
@@ -557,7 +567,7 @@ class TestRunner:
           # suffices to not use an indefinite blocking join for it to
           # be interruptible by KeyboardInterrupt.
           thread.join(0.1)
-          self._UpdateSummary(result_summary)
+          self.UpdateSummary(result_summary)
         thread_timings.append({ 'name': thread.getName(),
                                 'num_tests': thread.GetNumTests(),
                                 'total_time': thread.GetTotalTime()});
@@ -578,7 +588,7 @@ class TestRunner:
         raise exception_info[0], exception_info[1], exception_info[2]
 
     # Make sure we pick up any remaining tests.
-    self._UpdateSummary(result_summary)
+    self.UpdateSummary(result_summary)
     return (thread_timings, test_timings, individual_test_timings)
 
   def Run(self, result_summary):
@@ -693,7 +703,7 @@ class TestRunner:
     # bot red for those.
     return unexpected_results['num_regressions']
 
-  def _UpdateSummary(self, result_summary):
+  def UpdateSummary(self, result_summary):
     """Update the summary while running tests."""
     while True:
       try:
@@ -702,7 +712,8 @@ class TestRunner:
         expected = self._expectations.MatchesAnExpectedResult(test, result)
         result_summary.Add(test, fail_list, result, expected)
         if (LOG_DETAILED_PROGRESS in self._options.log and
-            self._options.experimental_fully_parallel):
+            (self._options.experimental_fully_parallel or
+             self._IsSingleThreaded())):
           self._DisplayDetailedProgress(result_summary)
         else:
           if not expected and LOG_UNEXPECTED in self._options.log:
