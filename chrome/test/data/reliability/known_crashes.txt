@@ -148,3 +148,6 @@ PREFIX : malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugini
 
 # 29759
 PREFIX : webcore::imageeventsender::dispatchpendingevents
+
+# 30607
+PREFIX : `anonymous namespace'::PureCall____invalid_parameter_noinfo___std::vector<char,std::allocator<char> >::clear___WebCursor::InitFromCursorInfo___WebCursor::InitFromExternalCursor
