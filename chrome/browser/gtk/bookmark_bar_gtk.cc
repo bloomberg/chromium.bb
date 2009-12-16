@@ -852,8 +852,8 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
   const BookmarkNode* parent = NULL;
   std::vector<const BookmarkNode*> nodes;
   if (sender == other_bookmarks_button_) {
+    nodes.push_back(node);
     parent = model_->GetBookmarkBarNode();
-    nodes.push_back(parent);
   } else if (sender != bookmark_toolbar_.get()) {
     nodes.push_back(node);
     parent = node->GetParent();
