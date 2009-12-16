@@ -651,7 +651,9 @@ repaint_output(struct wlsc_output *output)
 	fd = eglGetDisplayFD(ec->display);
 	output->current ^= 1;
 	eglBindColorBuffer(ec->display, output->surface, output->current);
-	drmModePageFlip(fd, output->crtc_id, output->fb_id[output->current ^ 1], output);
+	drmModePageFlip(fd, output->crtc_id,
+			output->fb_id[output->current ^ 1],
+			DRM_MODE_PAGE_FLIP_EVENT, output);
 }
 
 static void
@@ -690,7 +692,8 @@ wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 			      struct wlsc_output, link);
 	while (&output->link != &compositor->output_list) {
 		drmModePageFlip(fd, output->crtc_id,
-				output->fb_id[output->current ^ 1], output);
+				output->fb_id[output->current ^ 1],
+				DRM_MODE_PAGE_FLIP_EVENT, output);
 		output = container_of(output->link.next,
 				      struct wlsc_output, link);
 	}
