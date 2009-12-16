@@ -106,8 +106,8 @@ CreditCardField* CreditCardField::Parse(
     else
       pattern = ASCIIToUTF16("expir|exp month|exp date|ccmonth|&month");
 
-    if (!credit_card_field.expiration_month_ ||
-        credit_card_field.expiration_month_->IsEmpty() &&
+    if ((!credit_card_field.expiration_month_ ||
+        credit_card_field.expiration_month_->IsEmpty()) &&
         ParseText(&q, pattern, &credit_card_field.expiration_month_)) {
       if (is_ecml)
         pattern = GetEcmlPattern(kEcmlCardExpireYear);
