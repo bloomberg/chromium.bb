@@ -399,9 +399,13 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
   scoped_nsobject<WebMenuRunner> menu_runner;
   menu_runner.reset([[WebMenuRunner alloc] initWithItems:items]);
 
-  [menu_runner runMenuInView:parent_view_
-                  withBounds:position
-                initialIndex:selected_item];
+  {
+    // Make sure events can be pumped while the menu is up.
+    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+    [menu_runner runMenuInView:parent_view_
+                    withBounds:position
+                  initialIndex:selected_item];
+  }
 
   int window_num = [[parent_view_ window] windowNumber];
   NSEvent* event =

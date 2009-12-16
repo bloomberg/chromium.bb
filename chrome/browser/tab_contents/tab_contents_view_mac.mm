@@ -137,12 +137,10 @@ void TabContentsViewMac::StartDragging(const WebDropData& drop_data,
 
   // The drag invokes a nested event loop, arrange to continue
   // processing events.
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
   NSDragOperation mask = static_cast<NSDragOperation>(allowed_operations);
   [cocoa_view_ startDragWithDropData:drop_data
                    dragOperationMask:mask];
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
 void TabContentsViewMac::RenderViewCreated(RenderViewHost* host) {
