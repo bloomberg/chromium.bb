@@ -81,6 +81,9 @@ if env.Bit('linux'):
           LIBS = ['dl', 'Xt', 'X11'],
           )
 
+    # We usually try to build things statically, but the plugin is a .so
+    env.FilterOut(LINKFLAGS=['-static'])
+
 if env.Bit('mac'):
     env.Append(
         CCFLAGS=['-Wno-long-long',
