@@ -58,6 +58,11 @@ class KeywordEditorCocoaControllerTest : public CocoaTest {
   }
 
   virtual void TearDown() {
+    // Force the window to load so we hit |-awakeFromNib| to register as the
+    // window's delegate so that the controller can clean itself up in
+    // |-windowWillClose:|.
+    ASSERT_TRUE([controller_ window]);
+
     [controller_ close];
     CocoaTest::TearDown();
   }
