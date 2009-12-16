@@ -3224,6 +3224,9 @@ BUG30543 : LayoutTests/storage/domstorage/localstorage/enumerate-with-length-and
 // Flaky.
 BUG30545 WIN : LayoutTests/websocket/tests/bad-sub-protocol.html = CRASH PASS
 BUG30593 LINUX MAC : LayoutTests/websocket/tests/url-with-credential.html = TEXT PASS
+BUG9798 WIN LINUX : LayoutTests/fast/loader/javascript-url-encoding-2.html = TIMEOUT PASS
+BUG9798 WIN RELEASE : LayoutTests/fast/loading/subframe-removes-itself.html = TEXT PASS
+BUG9798 LINUX MAC RELEASE : LayoutTests/fast/loader/invalid-charset-on-script-crashes-loader.html = TIMEOUT PASS
 
 // Webkit roll 52198->52208
 // Newly added test in r52202
