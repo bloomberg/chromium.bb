@@ -152,7 +152,11 @@ NPError PluginGetURLTest::NewStream(NPMIMEType type, NPStream* stream,
           break;
         }
 
+#if defined(OS_WIN)
         filename = filename.substr(8);  // remove "file:///"
+#else
+        filename = filename.substr(7);  // remove "file://"
+#endif
 
         test_file_ = file_util::OpenFile(filename, "r");
         if (!test_file_) {

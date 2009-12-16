@@ -47,6 +47,12 @@
 #include <windows.h>
 #endif
 
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define EXPORT __attribute__((visibility ("default")))
+#else
+#define EXPORT
+#endif
+
 #include "webkit/glue/plugins/test/plugin_client.h"
 
 #if defined(OS_WIN)
@@ -56,15 +62,15 @@ BOOL API_CALL DllMain(HINSTANCE hDll, DWORD dwReason, LPVOID lpReserved) {
 #endif
 
 extern "C" {
-NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* pFuncs) {
+EXPORT NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* pFuncs) {
   return NPAPIClient::PluginClient::GetEntryPoints(pFuncs);
 }
 
-NPError API_CALL NP_Initialize(NPNetscapeFuncs* pFuncs) {
+EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* pFuncs) {
   return NPAPIClient::PluginClient::Initialize(pFuncs);
 }
 
-NPError API_CALL NP_Shutdown() {
+EXPORT NPError API_CALL NP_Shutdown() {
   return NPAPIClient::PluginClient::Shutdown();
 }
 } // extern "C"

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(OS_WIN)
 // windows headers
 #include <windows.h>
 #include <shellapi.h>
 #include <shlobj.h>
 #include <comutil.h>
+#endif
 
 // runtime headers
 #include <stdlib.h>
@@ -160,6 +162,7 @@ TEST_F(NPAPITester, DISABLED_SelfDeletePluginInvokeAlert) {
                 kShortWaitTimeout);
 }
 
+#if defined(OS_WIN)
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous paint event works correctly
 TEST_F(NPAPIVisiblePluginTester,
@@ -175,6 +178,7 @@ TEST_F(NPAPIVisiblePluginTester,
                 kTestCompleteCookie, kTestCompleteSuccess,
                 kShortWaitTimeout);
 }
+#endif
 
 TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNewStream) {
   if (UITest::in_process_renderer())
@@ -189,6 +193,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNewStream) {
                 kShortWaitTimeout);
 }
 
+#if defined(OS_WIN)
 // Tests if a plugin has a non zero window rect.
 TEST_F(NPAPIVisiblePluginTester, VerifyPluginWindowRect) {
   show_window_ = true;
@@ -209,8 +214,6 @@ TEST_F(NPAPIVisiblePluginTester, CreateInstanceInPaint) {
   WaitForFinish("create_instance_in_paint", "2", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
-
-#if defined(OS_WIN)
 
 // Tests that putting up an alert in response to a paint doesn't deadlock.
 TEST_F(NPAPIVisiblePluginTester, AlertInWindowMessage) {
@@ -238,8 +241,6 @@ TEST_F(NPAPIVisiblePluginTester, AlertInWindowMessage) {
   ASSERT_TRUE(automation()->ClickAppModalDialogButton(
       MessageBoxFlags::DIALOGBUTTON_OK));
 }
-
-#endif
 
 TEST_F(NPAPIVisiblePluginTester, VerifyNPObjectLifetimeTest) {
   if (UITest::in_process_renderer())
@@ -273,6 +274,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNPNEvaluate) {
                 kTestCompleteCookie, kTestCompleteSuccess,
                 kShortWaitTimeout);
 }
+#endif
 
 // Flaky. See http://crbug.com/17645
 TEST_F(NPAPIVisiblePluginTester, DISABLED_OpenPopupWindowWithPlugin) {
@@ -320,6 +322,7 @@ TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 
+#if defined(OS_WIN)
 // Test a browser hang due to special case of multiple
 // plugin instances indulged in sync calls across renderer.
 TEST_F(NPAPIVisiblePluginTester, MultipleInstancesSyncCalls) {
@@ -331,6 +334,7 @@ TEST_F(NPAPIVisiblePluginTester, MultipleInstancesSyncCalls) {
   WaitForFinish("multiple_instances_sync_calls", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
+#endif
 
 TEST_F(NPAPIVisiblePluginTester, GetURLRequestFailWrite) {
   if (UITest::in_process_renderer())
@@ -346,6 +350,7 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequestFailWrite) {
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 
+#if defined(OS_WIN)
 TEST_F(NPAPITester, EnsureScriptingWorksInDestroy) {
   if (UITest::in_process_renderer())
     return;
@@ -359,8 +364,6 @@ TEST_F(NPAPITester, EnsureScriptingWorksInDestroy) {
 
 // This test uses a Windows Event to signal to the plugin that it should crash
 // on NP_Initialize.
-#if defined(OS_WIN)
-
 TEST_F(NPAPITester, NoHangIfInitCrashes) {
   if (UITest::in_process_renderer())
     return;

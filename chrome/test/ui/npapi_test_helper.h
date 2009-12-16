@@ -15,7 +15,8 @@ class NPAPITester : public UITest {
   virtual void TearDown();
 
  private:
-  FilePath plugin_dll_;
+  FilePath test_plugin_path_;
+  FilePath layout_plugin_path_;
 };
 
 // Helper class for NPAPI plugin UI tests, which need the browser window

@@ -166,8 +166,9 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
-        ['OS!="win"', {
+        ['OS=="linux" or OS=="freebsd"', {
           'sources!': [
+            # TODO(port)
             'test/ui/npapi_test_helper.cc',
           ],
         }],
@@ -262,6 +263,9 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
+        # run time dependencies
+        '../webkit/tools/test_shell/test_shell.gyp:npapi_layout_test_plugin',
+        '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
       ],
       'include_dirs': [
         '..',
@@ -358,8 +362,6 @@
             'test_support_common',
             '../google_update/google_update.gyp:google_update',
             '../views/views.gyp:views',
-            # run time dependency
-            '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
             '<(allocator_target)',
           ],
           'link_settings': {
@@ -384,7 +386,6 @@
             'browser/printing/printing_layout_uitest.cc',
             'browser/views/find_bar_host_uitest.cc',
             'common/logging_chrome_uitest.cc',
-            'test/ui/npapi_uitest.cc',
             'test/ui/sandbox_uitests.cc',
           ],
         }],
@@ -395,6 +396,10 @@
                 '../base/allocator/allocator.gyp:allocator',
               ],
             }],
+          ],
+          'sources!': [
+            # TODO(port)
+            'test/ui/npapi_uitest.cc',
           ],
         }],
       ],

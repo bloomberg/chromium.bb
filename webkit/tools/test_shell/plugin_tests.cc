@@ -30,6 +30,12 @@ using WebKit::WebString;
 #define TEST_PLUGIN_NAME "libnpapi_test_plugin.so"
 #endif
 
+#if defined(OS_MACOSX)
+#define TEST_PLUGIN_DIRECTORY "PlugIns"
+#else
+#define TEST_PLUGIN_DIRECTORY "plugins"
+#endif
+
 // Ignore these until 64-bit plugin build is fixed. http://crbug.com/18337
 #if !defined(ARCH_CPU_64_BITS)
 // Provides functionality for creating plugin tests.
@@ -41,7 +47,7 @@ class PluginTest : public TestShellTest {
     plugin_src_ = executable_directory.AppendASCII(TEST_PLUGIN_NAME);
     CHECK(file_util::PathExists(plugin_src_));
 
-    plugin_file_path_ = executable_directory.AppendASCII("plugins");
+    plugin_file_path_ = executable_directory.AppendASCII(TEST_PLUGIN_DIRECTORY);
     file_util::CreateDirectory(plugin_file_path_);
 
     plugin_file_path_ = plugin_file_path_.AppendASCII(TEST_PLUGIN_NAME);
