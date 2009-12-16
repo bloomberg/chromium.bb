@@ -49,6 +49,13 @@
    obj:*/gears.dll
 }
 {
+   ignore_nss_decryptor_init_errors
+   Memcheck:Leak
+   fun:RtlAllocateHeap
+   ...
+   fun:NSSDecryptor::Init
+}
+{
    wine_bug_20692_a
    Memcheck:Leak
    ...
@@ -99,6 +106,16 @@
    valgrind_bug_190660
    Memcheck:Addr4
    fun:strncpy
+}
+{
+   # Same leak exists in src/tools/valgrind/memcheck/suppressions.txt
+   # with a manged stack signature.
+   intentional_ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test_leak
+   Memcheck:Leak
+   ...
+   fun:operator new
+   fun:ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
+   fun:testing::Test::Run
 }
 # From src/tools/valgrind/memcheck/suppressions.txt
 # TODO(thestig) dedup / merge
