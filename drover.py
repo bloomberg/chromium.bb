@@ -127,6 +127,50 @@ def getRevisionLog(url, revision):
       pos = pos + 1
   return log
 
+def getSVNVersionInfo():
+  """Extract version information from SVN"""
+  command = 'svn --version'
+  svn_info = subprocess.Popen(command,
+                              shell=True,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE).stdout.readlines()
+  info = {}
+  for line in svn_info:
+    match = re.search(r"svn, version ((\d+)\.(\d+)\.(\d+)) \(r(\d+)\)", line)
+    if match:
+    	info['version']=match.group(1)
+    	info['major']=int(match.group(2))
+    	info['minor']=int(match.group(3))
+    	info['patch']=int(match.group(4))
+    	info['revision']=match.group(5)
+    	return info
+
+  return None
+
+def isMinimumSVNVersion(major, minor, patch=0):
+  """Test for minimum SVN version"""
+  return _isMinimumSVNVersion(getSVNVersionInfo(), major, minor, patch)
+
+def _isMinimumSVNVersion(version, major, minor, patch=0):
+  """Test for minimum SVN version, internal method"""
+  if not version:
+    return False
+
+  if (version['major'] > major):
+    return True
+  elif (version['major'] < major):
+    return False
+
+  if (version['minor'] > minor):
+    return True
+  elif (version['minor'] < minor):
+    return False
+
+  if (version['patch'] >= patch):
+    return True
+  else:
+    return False
+
 def checkoutRevision(url, revision, branch_url, revert=False):
   files_info = getFileInfo(url, revision)
   paths = getBestMergePaths2(files_info, revision)
@@ -369,6 +413,10 @@ def main(options, args):
   DEFAULT_WORKING = "drover_" + str(revision)
   if options.branch:
     DEFAULT_WORKING += ("_" + options.branch)
+
+  if not isMinimumSVNVersion(1,5):
+    print "You need to use at least SVN version 1.5.x"
+    sys.exit(1)
 
   # Override the default properties if there is a drover.properties file.
   global file_pattern_
