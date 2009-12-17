@@ -7,6 +7,7 @@
 #include "chrome/browser/autofill/address_field.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/credit_card_field.h"
+#include "chrome/browser/autofill/name_field.h"
 #include "chrome/browser/autofill/phone_field.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRegularExpression.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
@@ -77,10 +78,9 @@ FormField* FormField::ParseFormField(
   if (field != NULL)
     return field;
 
-  // TODO(jhawkins):
-  //  - NameField
-
-  return NULL;
+  // We search for a NameField last since it matches the word "name", which is
+  // relatively general.
+  return NameField::Parse(iter, is_ecml);
 }
 
 // static

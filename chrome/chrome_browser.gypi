@@ -97,6 +97,8 @@
         'browser/autofill/form_field.h',
         'browser/autofill/form_structure.cc',
         'browser/autofill/form_structure.h',
+        'browser/autofill/name_field.cc',
+        'browser/autofill/name_field.h',
         'browser/autofill/personal_data_manager.cc',
         'browser/autofill/personal_data_manager.h',
         'browser/autofill/phone_field.cc',
