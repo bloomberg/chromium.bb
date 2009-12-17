@@ -500,13 +500,6 @@ void RenderWidget::DoDeferredUpdate() {
 
     HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
 
-    // TODO(darin): Re-enable painting multiple damage rects once the
-    // page-cycler regressions are resolved.  See bug 29589.
-    if (update.scroll_rect.IsEmpty()) {
-      update.paint_rects.clear();
-      update.paint_rects.push_back(bounds);
-    }
-
     for (size_t i = 0; i < update.paint_rects.size(); ++i)
       PaintRect(update.paint_rects[i], bounds.origin(), canvas.get());
 
