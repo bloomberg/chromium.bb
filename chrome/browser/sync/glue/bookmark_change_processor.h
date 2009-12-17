@@ -23,16 +23,13 @@ namespace browser_sync {
 // All operations and use of this class are from the UI thread.
 // This is currently bookmarks specific.
 class BookmarkChangeProcessor : public BookmarkModelObserver,
-                                 public ChangeProcessor {
+                                public ChangeProcessor {
  public:
   explicit BookmarkChangeProcessor(UnrecoverableErrorHandler* error_handler);
   virtual ~BookmarkChangeProcessor() {}
 
   void set_model_associator(BookmarkModelAssociator* model_associator) {
-    model_associator_.reset(model_associator);
-  }
-  virtual ModelAssociator* GetModelAssociator() {
-    return model_associator_.get();
+    model_associator_ = model_associator;
   }
 
   // BookmarkModelObserver implementation.
@@ -162,7 +159,9 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // The bookmark model we are processing changes from.  Non-NULL when
   // |running_| is true.
   BookmarkModel* bookmark_model_;
-  scoped_ptr<BookmarkModelAssociator> model_associator_;
+
+  // The two models should be associated according to this ModelAssociator.
+  BookmarkModelAssociator* model_associator_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkChangeProcessor);
 };

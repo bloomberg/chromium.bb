@@ -13,7 +13,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
-#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
+#include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -35,6 +35,7 @@
 using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChangeProcessor;
+using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
 
 typedef GoogleServiceAuthError AuthError;
@@ -46,28 +47,26 @@ ProfileSyncService::ProfileSyncService(Profile* profile)
     : last_auth_error_(AuthError::None()),
       profile_(profile),
       sync_service_url_(kSyncServerUrl),
+      ALLOW_THIS_IN_INITIALIZER_LIST(model_associator_(
+          new ModelAssociator(this))),
       backend_initialized_(false),
       expecting_first_run_auth_needed_event_(false),
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false) {
-  BookmarkChangeProcessor* processor = new BookmarkChangeProcessor(this);
-  change_processors_.insert(processor);
-  // TODO: Move this back to StartUp
-  BookmarkModelAssociator* associator = new BookmarkModelAssociator(this);
-  processor->set_model_associator(associator);
+
+  // Register associator impls for all currently synced data types, and hook
+  // them up to the associated change processors.  If you add a new data type
+  // and want that data type to be synced, call CreateGlue with appropriate
+  // association and change processing implementations.
+
+  // Bookmarks.
+  InstallGlue<BookmarkModelAssociator, BookmarkChangeProcessor>();
 }
 
 ProfileSyncService::~ProfileSyncService() {
   Shutdown(false);
   STLDeleteElements(&change_processors_);
-}
-
-void ProfileSyncService::set_change_processor(
-    browser_sync::ChangeProcessor* change_processor) {
-  STLDeleteElements(&change_processors_);
-  change_processors_.clear();
-  change_processors_.insert(change_processor);
 }
 
 void ProfileSyncService::Initialize() {
@@ -182,10 +181,8 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   backend_.reset();
 
   // Clear all associations and throw away the association manager instance.
-  for (std::set<ChangeProcessor*>::const_iterator it =
-       change_processors_.begin(); it != change_processors_.end(); ++it) {
-    (*it)->GetModelAssociator()->DisassociateModels();
-  }
+  model_associator_->DisassociateModels();
+  model_associator_->CleanupAllAssociators();
 
   // Clear various flags.
   is_auth_in_progress_ = false;
@@ -229,13 +226,8 @@ bool ProfileSyncService::MergeAndSyncAcceptanceNeeded() const {
   if (profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted))
     return false;
 
-  for (std::set<ChangeProcessor*>::const_iterator it =
-       change_processors_.begin(); it != change_processors_.end(); ++it) {
-    if ((*it)->GetModelAssociator()->ChromeModelHasUserCreatedNodes() &&
-        (*it)->GetModelAssociator()->SyncModelHasUserCreatedNodes())
-      return true;
-  }
-  return false;
+  return model_associator_->ChromeModelHasUserCreatedNodes() &&
+         model_associator_->SyncModelHasUserCreatedNodes();
 }
 
 bool ProfileSyncService::HasSyncSetupCompleted() const {
@@ -390,17 +382,10 @@ void ProfileSyncService::OnUserSubmittedAuth(
 
 void ProfileSyncService::OnUserAcceptedMergeAndSync() {
   base::TimeTicks start_time = base::TimeTicks::Now();
-  bool not_first_run = false;
-  bool merge_success = true;
-  for (std::set<ChangeProcessor*>::const_iterator it =
-       change_processors_.begin(); it != change_processors_.end(); ++it) {
-    not_first_run |= (*it)->GetModelAssociator()->
-        SyncModelHasUserCreatedNodes();
-    // TODO(sync): Figure out what do to when a single associator fails.
-    // http://crbug.com/30038
-    merge_success &= (*it)->GetModelAssociator()->
-        AssociateModels();
-  }
+  // TODO(sync): Figure out what do to when a single associator fails.
+  // http://crbug.com/30038
+  bool not_first_run = model_associator_->SyncModelHasUserCreatedNodes();
+  bool merge_success = model_associator_->AssociateModels();
   UMA_HISTOGRAM_MEDIUM_TIMES("Sync.UserPerceivedBookmarkAssociation",
                              base::TimeTicks::Now() - start_time);
   if (!merge_success) {
@@ -453,15 +438,8 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
 
   // We're ready to merge the models.
   base::TimeTicks start_time = base::TimeTicks::Now();
-  bool not_first_run = false;
-  bool merge_success = true;
-  for (std::set<ChangeProcessor*>::const_iterator it =
-       change_processors_.begin(); it != change_processors_.end(); ++it) {
-    not_first_run |= (*it)->GetModelAssociator()->
-        SyncModelHasUserCreatedNodes();
-    merge_success &= (*it)->GetModelAssociator()->
-        AssociateModels();
-  }
+  bool not_first_run = model_associator_->SyncModelHasUserCreatedNodes();
+  bool merge_success = model_associator_->AssociateModels();
   UMA_HISTOGRAM_TIMES("Sync.BookmarkAssociationTime",
                       base::TimeTicks::Now() - start_time);
   if (!merge_success) {

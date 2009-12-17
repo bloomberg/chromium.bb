@@ -35,6 +35,7 @@ void BookmarkChangeProcessor::StopImpl() {
   DCHECK(bookmark_model_);
   bookmark_model_->RemoveObserver(this);
   bookmark_model_ = NULL;
+  model_associator_ = NULL;
 }
 
 void BookmarkChangeProcessor::UpdateSyncNodeProperties(
@@ -68,7 +69,7 @@ void BookmarkChangeProcessor::EncodeFavicon(const BookmarkNode* src,
 void BookmarkChangeProcessor::RemoveOneSyncNode(
     sync_api::WriteTransaction* trans, const BookmarkNode* node) {
   sync_api::WriteNode sync_node(trans);
-  if (!model_associator_->InitSyncNodeFromBookmarkId(node->id(), &sync_node)) {
+  if (!model_associator_->InitSyncNodeFromChromeId(node->id(), &sync_node)) {
     error_handler()->OnUnrecoverableError();
     return;
   }
@@ -132,7 +133,7 @@ void BookmarkChangeProcessor::BookmarkNodeAdded(BookmarkModel* model,
   // Acquire a scoped write lock via a transaction.
   sync_api::WriteTransaction trans(share_handle());
 
-  CreateSyncNode(parent, model, index, &trans, model_associator_.get(),
+  CreateSyncNode(parent, model, index, &trans, model_associator_,
                  error_handler());
 }
 
@@ -187,7 +188,7 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
 
   // Lookup the sync node that's associated with |node|.
   sync_api::WriteNode sync_node(&trans);
-  if (!model_associator_->InitSyncNodeFromBookmarkId(node->id(), &sync_node)) {
+  if (!model_associator_->InitSyncNodeFromChromeId(node->id(), &sync_node)) {
     error_handler()->OnUnrecoverableError();
     return;
   }
@@ -195,7 +196,7 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
   UpdateSyncNodeProperties(node, model, &sync_node);
 
   DCHECK_EQ(sync_node.GetIsFolder(), node->is_folder());
-  DCHECK_EQ(model_associator_->GetBookmarkNodeFromSyncId(
+  DCHECK_EQ(model_associator_->GetChromeNodeFromSyncId(
             sync_node.GetParentId()),
             node->GetParent());
   // This node's index should be one more than the predecessor's index.
@@ -221,13 +222,13 @@ void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
 
   // Lookup the sync node that's associated with |child|.
   sync_api::WriteNode sync_node(&trans);
-  if (!model_associator_->InitSyncNodeFromBookmarkId(child->id(), &sync_node)) {
+  if (!model_associator_->InitSyncNodeFromChromeId(child->id(), &sync_node)) {
     error_handler()->OnUnrecoverableError();
     return;
   }
 
   if (!PlaceSyncNode(MOVE, new_parent, new_index, &trans, &sync_node,
-                     model_associator_.get(), error_handler())) {
+                     model_associator_, error_handler())) {
     error_handler()->OnUnrecoverableError();
     return;
   }
@@ -249,16 +250,16 @@ void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
   // children of the corresponding sync node.
   for (int i = 0; i < node->GetChildCount(); ++i) {
     sync_api::WriteNode sync_child(&trans);
-    if (!model_associator_->InitSyncNodeFromBookmarkId(node->GetChild(i)->id(),
-                                                       &sync_child)) {
+    if (!model_associator_->InitSyncNodeFromChromeId(node->GetChild(i)->id(),
+                                                     &sync_child)) {
       error_handler()->OnUnrecoverableError();
       return;
     }
     DCHECK_EQ(sync_child.GetParentId(),
-              model_associator_->GetSyncIdFromBookmarkId(node->id()));
+              model_associator_->GetSyncIdFromChromeId(node->id()));
 
     if (!PlaceSyncNode(MOVE, node, i, &trans, &sync_child,
-                       model_associator_.get(), error_handler())) {
+                       model_associator_, error_handler())) {
       error_handler()->OnUnrecoverableError();
       return;
     }
@@ -271,7 +272,7 @@ bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
       sync_api::WriteNode* dst, BookmarkModelAssociator* associator,
       UnrecoverableErrorHandler* error_handler) {
   sync_api::ReadNode sync_parent(trans);
-  if (!associator->InitSyncNodeFromBookmarkId(parent->id(), &sync_parent)) {
+  if (!associator->InitSyncNodeFromChromeId(parent->id(), &sync_parent)) {
     LOG(WARNING) << "Parent lookup failed";
     error_handler->OnUnrecoverableError();
     return false;
@@ -291,7 +292,7 @@ bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
     // Find the bookmark model predecessor, and insert after it.
     const BookmarkNode* prev = parent->GetChild(index - 1);
     sync_api::ReadNode sync_prev(trans);
-    if (!associator->InitSyncNodeFromBookmarkId(prev->id(), &sync_prev)) {
+    if (!associator->InitSyncNodeFromChromeId(prev->id(), &sync_prev)) {
       LOG(WARNING) << "Predecessor lookup failed";
       return false;
     }
@@ -324,7 +325,7 @@ int BookmarkChangeProcessor::CalculateBookmarkModelInsertionIndex(
 
   // Otherwise, insert after the predecessor bookmark node.
   const BookmarkNode* predecessor =
-      model_associator_->GetBookmarkNodeFromSyncId(predecessor_id);
+      model_associator_->GetChromeNodeFromSyncId(predecessor_id);
   DCHECK(predecessor);
   DCHECK_EQ(predecessor->GetParent(), parent);
   return parent->IndexOfChild(predecessor) + 1;
@@ -367,7 +368,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   const BookmarkNode* foster_parent = NULL;
   for (int i = 0; i < change_count; ++i) {
     const BookmarkNode* dst =
-        model_associator_->GetBookmarkNodeFromSyncId(changes[i].id);
+        model_associator_->GetChromeNodeFromSyncId(changes[i].id);
     // Ignore changes to the permanent top-level nodes.  We only care about
     // their children.
     if ((dst == model->GetBookmarkBarNode()) || (dst == model->other_node()))
@@ -429,7 +430,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
     sync_api::BaseNode* src,
     BookmarkModel* model) {
   const BookmarkNode* parent =
-      model_associator_->GetBookmarkNodeFromSyncId(src->GetParentId());
+      model_associator_->GetChromeNodeFromSyncId(src->GetParentId());
   if (!parent) {
     DLOG(WARNING) << "Could not find parent of node being added/updated."
       << " Node title: " << src->GetTitle()
@@ -437,7 +438,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
     return NULL;
   }
   int index = CalculateBookmarkModelInsertionIndex(parent, src);
-  const BookmarkNode* dst = model_associator_->GetBookmarkNodeFromSyncId(
+  const BookmarkNode* dst = model_associator_->GetChromeNodeFromSyncId(
       src->GetId());
   if (!dst) {
     dst = CreateBookmarkNode(src, parent, model, index);

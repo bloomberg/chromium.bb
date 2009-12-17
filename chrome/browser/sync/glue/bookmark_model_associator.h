@@ -31,11 +31,15 @@ class BookmarkChangeProcessor;
 // * Algorithm to associate bookmark model and sync model.
 // * Methods to get a bookmark node for a given sync node and vice versa.
 // * Persisting model associations and loading them back.
-class BookmarkModelAssociator : public ModelAssociator {
+class BookmarkModelAssociator
+    : public PerDataTypeAssociatorInterface<BookmarkNode, int64> {
  public:
+  static const ModelType model_type() { return MODEL_TYPE_BOOKMARKS; }
   explicit BookmarkModelAssociator(ProfileSyncService* sync_service);
   virtual ~BookmarkModelAssociator() { }
 
+  // AssociatorInterface implementation.
+  //
   // AssociateModels iterates through both the sync and the browser
   // bookmark model, looking for matched pairs of items.  For any pairs it
   // finds, it will call AssociateSyncID.  For any unmatched items,
@@ -60,21 +64,22 @@ class BookmarkModelAssociator : public ModelAssociator {
   // Returns sync id for the given bookmark node id.
   // Returns sync_api::kInvalidId if the sync node is not found for the given
   // bookmark node id.
-  int64 GetSyncIdFromBookmarkId(int64 node_id) const;
+  virtual int64 GetSyncIdFromChromeId(int64 node_id);
 
   // Returns the bookmark node for the given sync id.
   // Returns NULL if no bookmark node is found for the given sync id.
-  const BookmarkNode* GetBookmarkNodeFromSyncId(int64 sync_id);
+  virtual const BookmarkNode* GetChromeNodeFromSyncId(int64 sync_id);
 
   // Initializes the given sync node from the given bookmark node id.
   // Returns false if no sync node was found for the given bookmark node id or
   // if the initialization of sync node fails.
-  bool InitSyncNodeFromBookmarkId(int64 node_id, sync_api::BaseNode* sync_node);
+  virtual bool InitSyncNodeFromChromeId(int64 node_id,
+                                        sync_api::BaseNode* sync_node);
 
   // Associates the given bookmark node with the given sync id.
-  void Associate(const BookmarkNode* node, int64 sync_id);
+  virtual void Associate(const BookmarkNode* node, int64 sync_id);
   // Remove the association that corresponds to the given sync id.
-  void Disassociate(int64 sync_id);
+  virtual void Disassociate(int64 sync_id);
 
  protected:
   // Stores the id of the node with the given tag in |sync_id|.

@@ -229,8 +229,24 @@ class ProfileSyncService : public NotificationObserver,
   // Tests need to override this.
   virtual void InitializeBackend();
 
-  // Tests need this.
-  void set_change_processor(browser_sync::ChangeProcessor* change_processor);
+  template <class AssociatorImpl, class ChangeProcessorImpl>
+  void InstallGlue() {
+    model_associator_->CreateAndRegisterPerDataTypeImpl<AssociatorImpl>();
+    // TODO(tim): Keep a map instead of a set so we can register/unregister
+    // data type specific ChangeProcessors, once we have more than one.
+    STLDeleteElements(processors());
+    ChangeProcessorImpl* processor = new ChangeProcessorImpl(this);
+    change_processors_.insert(processor);
+    processor->set_model_associator(
+        model_associator_->GetImpl<AssociatorImpl>());
+  }
+
+  browser_sync::ModelAssociator* associator() {
+    return model_associator_.get();
+  }
+  std::set<browser_sync::ChangeProcessor*>* processors() {
+    return &change_processors_;
+  }
 
   // We keep track of the last auth error observed so we can cover up the first
   // "expected" auth failure from observers.
@@ -280,6 +296,9 @@ class ProfileSyncService : public NotificationObserver,
   // Our asynchronous backend to communicate with sync components living on
   // other threads.
   scoped_ptr<browser_sync::SyncBackendHost> backend_;
+
+  // Model association manager instance.
+  scoped_ptr<browser_sync::ModelAssociator> model_associator_;
 
   // The change processors that handle the different data types.
   std::set<browser_sync::ChangeProcessor*> change_processors_;

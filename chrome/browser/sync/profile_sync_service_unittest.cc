@@ -95,10 +95,7 @@ class TestProfileSyncService : public ProfileSyncService {
   }
 
   virtual void InitializeBackend() {
-    change_processor_ = new BookmarkChangeProcessor(this);
-    model_associator_ = new TestModelAssociator(this);
-    change_processor_->set_model_associator(model_associator_);
-    set_change_processor(change_processor_);
+    InstallGlue<TestModelAssociator, BookmarkChangeProcessor>();
     TestHttpBridgeFactory* factory = new TestHttpBridgeFactory();
     TestHttpBridgeFactory* factory2 = new TestHttpBridgeFactory();
     backend()->InitializeForTestMode(L"testuser", factory, factory2);
@@ -120,14 +117,12 @@ class TestProfileSyncService : public ProfileSyncService {
   }
 
   BookmarkChangeProcessor* change_processor() {
-    return change_processor_;
+    // TODO(tim): The service should have a way to get specific processors.
+    return static_cast<BookmarkChangeProcessor*>(*processors()->begin());
   }
   BookmarkModelAssociator* model_associator() {
-    return model_associator_;
+    return associator()->GetImpl<BookmarkModelAssociator>();
   }
-
-  BookmarkChangeProcessor* change_processor_;
-  BookmarkModelAssociator* model_associator_;
 };
 
 // FakeServerChange constructs a list of sync_api::ChangeRecords while modifying
@@ -297,12 +292,12 @@ class ProfileSyncServiceTest : public testing::Test {
 
   BookmarkModelAssociator* associator() {
     DCHECK(service_.get());
-    return service_->model_associator_;
+    return service_->model_associator();
   }
 
   BookmarkChangeProcessor* change_processor() {
     DCHECK(service_.get());
-    return service_->change_processor_;
+    return service_->change_processor();
   }
 
   void StartSyncService() {
@@ -338,12 +333,12 @@ class ProfileSyncServiceTest : public testing::Test {
   void ExpectSyncerNodeMatching(sync_api::BaseTransaction* trans,
                                 const BookmarkNode* bnode) {
     sync_api::ReadNode gnode(trans);
-    EXPECT_TRUE(associator()->InitSyncNodeFromBookmarkId(bnode->id(), &gnode));
+    EXPECT_TRUE(associator()->InitSyncNodeFromChromeId(bnode->id(), &gnode));
     // Non-root node titles and parents must match.
     if (bnode != model_->GetBookmarkBarNode() &&
         bnode != model_->other_node()) {
       EXPECT_EQ(bnode->GetTitle(), gnode.GetTitle());
-      EXPECT_EQ(associator()->GetBookmarkNodeFromSyncId(gnode.GetParentId()),
+      EXPECT_EQ(associator()->GetChromeNodeFromSyncId(gnode.GetParentId()),
         bnode->GetParent());
     }
     EXPECT_EQ(bnode->is_folder(), gnode.GetIsFolder());
@@ -358,8 +353,8 @@ class ProfileSyncServiceTest : public testing::Test {
       const BookmarkNode* bprev =
           bnode->GetParent()->GetChild(browser_index - 1);
       sync_api::ReadNode gprev(trans);
-      ASSERT_TRUE(associator()->InitSyncNodeFromBookmarkId(bprev->id(),
-                                                           &gprev));
+      ASSERT_TRUE(associator()->InitSyncNodeFromChromeId(bprev->id(),
+                                                         &gprev));
       EXPECT_EQ(gnode.GetPredecessorId(), gprev.GetId());
       EXPECT_EQ(gnode.GetParentId(), gprev.GetParentId());
     }
@@ -369,8 +364,8 @@ class ProfileSyncServiceTest : public testing::Test {
       const BookmarkNode* bnext =
           bnode->GetParent()->GetChild(browser_index + 1);
       sync_api::ReadNode gnext(trans);
-      ASSERT_TRUE(associator()->InitSyncNodeFromBookmarkId(bnext->id(),
-                                                           &gnext));
+      ASSERT_TRUE(associator()->InitSyncNodeFromChromeId(bnext->id(),
+                                                         &gnext));
       EXPECT_EQ(gnode.GetSuccessorId(), gnext.GetId());
       EXPECT_EQ(gnode.GetParentId(), gnext.GetParentId());
     }
@@ -388,50 +383,50 @@ class ProfileSyncServiceTest : public testing::Test {
                                  int64 sync_id) {
     EXPECT_TRUE(sync_id);
     const BookmarkNode* bnode =
-        associator()->GetBookmarkNodeFromSyncId(sync_id);
+        associator()->GetChromeNodeFromSyncId(sync_id);
     ASSERT_TRUE(bnode);
-    int64 id = associator()->GetSyncIdFromBookmarkId(bnode->id());
+    int64 id = associator()->GetSyncIdFromChromeId(bnode->id());
     EXPECT_EQ(id, sync_id);
     ExpectSyncerNodeMatching(trans, bnode);
   }
 
   void ExpectBrowserNodeUnknown(int64 sync_id) {
-    EXPECT_FALSE(associator()->GetBookmarkNodeFromSyncId(sync_id));
+    EXPECT_FALSE(associator()->GetChromeNodeFromSyncId(sync_id));
   }
 
   void ExpectBrowserNodeKnown(int64 sync_id) {
-    EXPECT_TRUE(associator()->GetBookmarkNodeFromSyncId(sync_id));
+    EXPECT_TRUE(associator()->GetChromeNodeFromSyncId(sync_id));
   }
 
   void ExpectSyncerNodeKnown(const BookmarkNode* node) {
-    int64 sync_id = associator()->GetSyncIdFromBookmarkId(node->id());
+    int64 sync_id = associator()->GetSyncIdFromChromeId(node->id());
     EXPECT_NE(sync_id, sync_api::kInvalidId);
   }
 
   void ExpectSyncerNodeUnknown(const BookmarkNode* node) {
-    int64 sync_id = associator()->GetSyncIdFromBookmarkId(node->id());
+    int64 sync_id = associator()->GetSyncIdFromChromeId(node->id());
     EXPECT_EQ(sync_id, sync_api::kInvalidId);
   }
 
   void ExpectBrowserNodeTitle(int64 sync_id, const std::wstring& title) {
     const BookmarkNode* bnode =
-        associator()->GetBookmarkNodeFromSyncId(sync_id);
+        associator()->GetChromeNodeFromSyncId(sync_id);
     ASSERT_TRUE(bnode);
     EXPECT_EQ(bnode->GetTitle(), title);
   }
 
   void ExpectBrowserNodeURL(int64 sync_id, const std::string& url) {
     const BookmarkNode* bnode =
-        associator()->GetBookmarkNodeFromSyncId(sync_id);
+        associator()->GetChromeNodeFromSyncId(sync_id);
     ASSERT_TRUE(bnode);
     EXPECT_EQ(GURL(url), bnode->GetURL());
   }
 
   void ExpectBrowserNodeParent(int64 sync_id, int64 parent_sync_id) {
-    const BookmarkNode* node = associator()->GetBookmarkNodeFromSyncId(sync_id);
+    const BookmarkNode* node = associator()->GetChromeNodeFromSyncId(sync_id);
     ASSERT_TRUE(node);
     const BookmarkNode* parent =
-        associator()->GetBookmarkNodeFromSyncId(parent_sync_id);
+        associator()->GetChromeNodeFromSyncId(parent_sync_id);
     EXPECT_TRUE(parent);
     EXPECT_EQ(node->GetParent(), parent);
   }
@@ -463,11 +458,11 @@ class ProfileSyncServiceTest : public testing::Test {
   }
 
   int64 other_bookmarks_id() {
-    return associator()->GetSyncIdFromBookmarkId(model_->other_node()->id());
+    return associator()->GetSyncIdFromChromeId(model_->other_node()->id());
   }
 
   int64 bookmark_bar_id() {
-    return associator()->GetSyncIdFromBookmarkId(
+    return associator()->GetSyncIdFromChromeId(
         model_->GetBookmarkBarNode()->id());
   }
 
@@ -834,8 +829,8 @@ TEST_F(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService) {
   {
     sync_api::WriteTransaction trans(service_->backend_->GetUserShareHandle());
     sync_api::WriteNode sync_node(&trans);
-    EXPECT_TRUE(associator()->InitSyncNodeFromBookmarkId(node->id(),
-                                                         &sync_node));
+    EXPECT_TRUE(associator()->InitSyncNodeFromChromeId(node->id(),
+                                                       &sync_node));
     sync_node.Remove();
   }
   // The models don't match at this point, but the ProfileSyncService

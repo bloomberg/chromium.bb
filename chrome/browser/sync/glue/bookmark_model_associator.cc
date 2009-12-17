@@ -165,22 +165,22 @@ bool BookmarkModelAssociator::DisassociateModels() {
   return true;
 }
 
-int64 BookmarkModelAssociator::GetSyncIdFromBookmarkId(int64 node_id) const {
+int64 BookmarkModelAssociator::GetSyncIdFromChromeId(int64 node_id) {
   BookmarkIdToSyncIdMap::const_iterator iter = id_map_.find(node_id);
   return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
 }
 
-const BookmarkNode* BookmarkModelAssociator::GetBookmarkNodeFromSyncId(
+const BookmarkNode* BookmarkModelAssociator::GetChromeNodeFromSyncId(
     int64 sync_id) {
   SyncIdToBookmarkNodeMap::const_iterator iter = id_map_inverse_.find(sync_id);
   return iter == id_map_inverse_.end() ? NULL : iter->second;
 }
 
-bool BookmarkModelAssociator::InitSyncNodeFromBookmarkId(
+bool BookmarkModelAssociator::InitSyncNodeFromChromeId(
     int64 node_id,
     sync_api::BaseNode* sync_node) {
   DCHECK(sync_node);
-  int64 sync_id = GetSyncIdFromBookmarkId(node_id);
+  int64 sync_id = GetSyncIdFromChromeId(node_id);
   if (sync_id == sync_api::kInvalidId)
     return false;
   if (!sync_node->InitByIdLookup(sync_id))
@@ -251,8 +251,7 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes() {
 }
 
 bool BookmarkModelAssociator::NodesMatch(const BookmarkNode* bookmark,
-                                          const sync_api::BaseNode* sync_node)
-    const {
+    const sync_api::BaseNode* sync_node) const {
   if (bookmark->GetTitle() != sync_node->GetTitle())
     return false;
   if (bookmark->is_folder() != sync_node->GetIsFolder())
@@ -270,7 +269,7 @@ bool BookmarkModelAssociator::NodesMatch(const BookmarkNode* bookmark,
 bool BookmarkModelAssociator::AssociateTaggedPermanentNode(
     const BookmarkNode* permanent_node, const std::string&tag) {
   // Do nothing if |permanent_node| is already initialized and associated.
-  int64 sync_id = GetSyncIdFromBookmarkId(permanent_node->id());
+  int64 sync_id = GetSyncIdFromChromeId(permanent_node->id());
   if (sync_id != sync_api::kInvalidId)
     return true;
   if (!GetSyncIdForTaggedNode(tag, &sync_id))
@@ -281,7 +280,7 @@ bool BookmarkModelAssociator::AssociateTaggedPermanentNode(
 }
 
 bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
-                                                      int64* sync_id) {
+                                                     int64* sync_id) {
   sync_api::ReadTransaction trans(
       sync_service_->backend()->GetUserShareHandle());
   sync_api::ReadNode sync_node(&trans);
@@ -340,10 +339,10 @@ bool BookmarkModelAssociator::BuildAssociations() {
                << "are running against an out-of-date server?";
     return false;
   }
-  int64 bookmark_bar_sync_id = GetSyncIdFromBookmarkId(
+  int64 bookmark_bar_sync_id = GetSyncIdFromChromeId(
       model->GetBookmarkBarNode()->id());
   DCHECK(bookmark_bar_sync_id != sync_api::kInvalidId);
-  int64 other_bookmarks_sync_id = GetSyncIdFromBookmarkId(
+  int64 other_bookmarks_sync_id = GetSyncIdFromChromeId(
       model->other_node()->id());
   DCHECK(other_bookmarks_sync_id != sync_api::kInvalidId);
 
@@ -366,7 +365,7 @@ bool BookmarkModelAssociator::BuildAssociations() {
     // Only folder nodes are pushed on to the stack.
     DCHECK(sync_parent.GetIsFolder());
 
-    const BookmarkNode* parent_node = GetBookmarkNodeFromSyncId(sync_parent_id);
+    const BookmarkNode* parent_node = GetChromeNodeFromSyncId(sync_parent_id);
     DCHECK(parent_node->is_folder());
 
     BookmarkNodeFinder node_finder(parent_node);
@@ -385,10 +384,10 @@ bool BookmarkModelAssociator::BuildAssociations() {
       if (child_node) {
         model->Move(child_node, parent_node, index);
         // Set the favicon for bookmark node from sync node or vice versa.
-        if (BookmarkChangeProcessor::SetBookmarkFavicon(&sync_child_node,
-            child_node, sync_service_->profile())) {
+        if (BookmarkChangeProcessor::SetBookmarkFavicon(
+            &sync_child_node, child_node, sync_service_->profile())) {
           BookmarkChangeProcessor::SetSyncNodeFavicon(child_node, model,
-                                                       &sync_child_node);
+                                                      &sync_child_node);
         }
       } else {
         // Create a new bookmark node for the sync node.
@@ -409,8 +408,8 @@ bool BookmarkModelAssociator::BuildAssociations() {
     // So the children starting from index in the parent bookmark node are the
     // ones that are not present in the parent sync node. So create them.
     for (int i = index; i < parent_node->GetChildCount(); ++i) {
-      sync_child_id = BookmarkChangeProcessor::CreateSyncNode(parent_node,
-          model, i, &trans, this, sync_service_);
+      sync_child_id = BookmarkChangeProcessor::CreateSyncNode(
+          parent_node, model, i, &trans, this, sync_service_);
       if (parent_node->GetChild(i)->is_folder())
         dfs_stack.push(sync_child_id);
     }
@@ -450,7 +449,7 @@ void BookmarkModelAssociator::PersistAssociations() {
       sync_service_->OnUnrecoverableError();
       return;
     }
-    const BookmarkNode* node = GetBookmarkNodeFromSyncId(sync_id);
+    const BookmarkNode* node = GetChromeNodeFromSyncId(sync_id);
     if (node)
       sync_node.SetExternalId(node->id());
     else

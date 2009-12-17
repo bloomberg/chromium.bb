@@ -35,8 +35,6 @@ class ChangeProcessor {
   void Stop();
   bool IsRunning() const { return running_; }
 
-  virtual ModelAssociator* GetModelAssociator() = 0;
-
   // Changes have been applied to the backend model and are ready to be
   // applied to the frontend model. See syncapi.h for detailed instructions on
   // how to interpret and process |changes|.
