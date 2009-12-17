@@ -427,7 +427,7 @@
 {
    Memcheck sanity test (ToolsSanityTest.MemoryLeak).
    Memcheck:Leak
-   fun:_Znam
+   fun:_Zna*
    fun:_ZN31ToolsSanityTest_MemoryLeak_Test8TestBodyEv
 }
 {
