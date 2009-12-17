@@ -121,8 +121,15 @@ base_unittests        flaky-dontcare       StatsTableTest.MultipleProcesses     
 base_unittests        hang-dontcare        DirectoryWatcherTest.*
 base_unittests        hang-valgrind        JSONReaderTest.Reading                               # not really a hang, takes 400 seconds
 base_unittests        hang-valgrind        RSAPrivateKeyUnitTest.InitRandomTest                 # not really a hang, takes 300 seconds
+base_unittests        flaky-valgrind       TimeTicks.Deltas                                     # fails half the time under valgrind, timing issue?
 base_unittests        hang-valgrind        TimerTest.RepeatingTimer*
 base_unittests        hang-valgrind        TimeTicks.WinRollover                                # not really a hang, takes 1000 seconds
+base_unittests        fail-valgrind        ConditionVariableTest.LargeFastTaskTest              # fails under wine + valgrind TODO(thestig): investigate
+base_unittests        fail-valgrind        ProcessUtilTest.CalcFreeMemory                       # fails under wine + valgrind TODO(thestig): investigate
+base_unittests        fail-valgrind        ProcessUtilTest.KillSlowChild                        # fails under wine + valgrind TODO(thestig): investigate
+base_unittests        fail-valgrind        ProcessUtilTest.SpawnChild                           # fails under wine + valgrind TODO(thestig): investigate
+base_unittests        fail-valgrind        StatsTableTest.StatsRate                             # fails under wine + valgrind TODO(thestig): investigate
+base_unittests        fail-valgrind        StatsTableTest.StatsScope                            # fails under wine + valgrind TODO(thestig): investigate
 ipc_tests             flaky                IPCChannelTest.ChannelTest                           http://bugs.winehq.org/show_bug.cgi?id=20628
 ipc_tests             flaky                IPCChannelTest.SendMessageInChannelConnected         http://bugs.winehq.org/show_bug.cgi?id=20628
 ipc_tests             hang                 IPCSyncChannelTest.*                                 http://bugs.winehq.org/show_bug.cgi?id=20390
