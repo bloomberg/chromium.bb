@@ -783,13 +783,32 @@
 			return (runStyle === "runs/s" ? Math.pow(Math.E, maxTotal / maxTotalNum) : maxTotal).toString();
 		}
 		window.automation.GetResults = function() {
-			results = {}
+			var results = {};
+			var aggregated = {};
+			function normalizeName(name) {
+				// At least for ui_tests, dots are not allowed.
+				return name.replace(".", "_");
+			}
+			function appendToAggregated(name, value) {
+				name = normalizeName(name);
+				(aggregated[name] || (aggregated[name] = [])).push(Math.log(value));
+			}
+
 			for (var i = 0; i < dataStore.length; i++) {
 				var data = dataStore[i];
-				// dots are not allowed.
-				var key = (data.collection + "/" + data.name).replace(".", "_");
-				results[key] = data.mean.toString();
+				var topName = data.collection.split("-", 1)[0];
+				appendToAggregated(topName, data.mean);
+				appendToAggregated(data.collection, data.mean);
+				results[normalizeName(data.collection + "/" + data.name)] = data.mean.toString();
 			}
+
+			for (var name in aggregated) {
+				var means = aggregated[name];
+				var sum = 0;
+				for (var i = 0; i < means.length; i++) sum += means[i];
+				results[name] = Math.pow(Math.E, sum/means.length).toString();
+			}
+
 			return results;
 		}
 	}
