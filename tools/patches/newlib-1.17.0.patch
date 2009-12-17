@@ -833,7 +833,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/i386/strlen.S newlib-1.17.0/new
 +  nacljmp ecx
 diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/newlib/libc/machine/x86_64/memcpy.S
 --- newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S	2007-08-28 23:56:49.000000000 +0200
-+++ newlib-1.17.0/newlib/libc/machine/x86_64/memcpy.S	2009-12-17 15:25:04.000000000 +0100
++++ newlib-1.17.0/newlib/libc/machine/x86_64/memcpy.S	2009-12-17 15:51:40.000000000 +0100
 @@ -14,20 +14,25 @@
    SOTYPE_FUNCTION(memcpy)
  
@@ -848,14 +848,14 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
  
 -  movq    rdi, r8                 /* Align destination on quad word boundary */
 -  andq    $7, r8
-+  movl    edi, %r8d                /* Align destination on quad word boundary */
-+  andl    $7, %r8d
++  movl    edi, r8d                /* Align destination on quad word boundary */
++  andl    $7, r8d
    jz      quadword_aligned
 -  movq    $8, rcx
 -  subq    r8, rcx
 -  subq    rcx, rdx
 +  movl    $8, ecx
-+  subl    %r8d, ecx
++  subl    r8d, ecx
 +  subl    ecx, edx
 +  
 +  movl    edi, edi
@@ -945,7 +945,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
    movq    -32 (rsp), r14
 -  ret
 +  pop     r11
-+  nacljmp %r11d, r15
++  nacljmp r11d, r15
  
  
  byte_copy:
@@ -956,7 +956,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
    rep     movsb
 -  ret
 +  pop     r11
-+  nacljmp %r11d, r15
++  nacljmp r11d, r15
  
  
  quadword_copy:
@@ -977,10 +977,10 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
    rep     movsb                   /* Copy the remaining bytes */
 -  ret
 +  pop     r11
-+  nacljmp %r11d, r15
++  nacljmp r11d, r15
 diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/newlib/libc/machine/x86_64/memset.S
 --- newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S	2007-08-28 23:56:49.000000000 +0200
-+++ newlib-1.17.0/newlib/libc/machine/x86_64/memset.S	2009-12-17 15:26:04.000000000 +0100
++++ newlib-1.17.0/newlib/libc/machine/x86_64/memset.S	2009-12-17 15:51:47.000000000 +0100
 @@ -14,75 +14,90 @@
    SOTYPE_FUNCTION(memset)
  
@@ -991,7 +991,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
 -  cmpq    $16, rdx
 +  movl    esi, esi                /* Only need to do read sandboxing once */
 +  addq    r15 ,rsi
-+  movl    edi, %r9d               /* Save return value */
++  movl    edi, r9d                /* Save return value */
 +  movl    esi, eax
 +  movl    edx, ecx
 +  cmpl    $16, edx
@@ -999,14 +999,14 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
  
 -  movq    rdi, r8                 /* Align on quad word boundary */
 -  andq    $7, r8
-+  movl    edi, %r8d               /* Align on quad word boundary */
-+  andl    $7, %r8d
++  movl    edi, r8d                /* Align on quad word boundary */
++  andl    $7, r8d
    jz      quadword_aligned
 -  movq    $8, rcx
 -  subq    r8, rcx
 -  subq    rcx, rdx
 +  movl    $8, ecx
-+  subl    %r8d, ecx
++  subl    r8d, ecx
 +  subl    ecx, edx
 +  mov     edi, edi
 +  add     r15, rdi
@@ -1077,9 +1077,9 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
    rep     stosb
 -  movq    r9, rax
 -  ret
-+  movl    %r9d, eax
++  movl    r9d, eax
 +  pop     r11
-+  nacljmp %r11d, r15
++  nacljmp r11d, r15
  
  
  byte_set:
@@ -1088,9 +1088,9 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
    rep     stosb
 -  movq    r9, rax
 -  ret
-+  movl    %r9d, eax
++  movl    r9d, eax
 +  pop     r11
-+  nacljmp %r11d, r15
++  nacljmp r11d, r15
  
  
  quadword_set:
@@ -1109,30 +1109,86 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
    rep     stosb                   /* Store the remaining bytes */
 -  movq    r9, rax
 -  ret
-+  movl    %r9d, eax
++  movl    r9d, eax
 +  pop     r11
-+  nacljmp %r11d, r15
++  nacljmp r11d, r15
  
 diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/setjmp.S newlib-1.17.0/newlib/libc/machine/x86_64/setjmp.S
 --- newlib-1.17.0.orig/newlib/libc/machine/x86_64/setjmp.S	2007-08-28 23:56:50.000000000 +0200
-+++ newlib-1.17.0/newlib/libc/machine/x86_64/setjmp.S	2009-12-17 13:51:54.000000000 +0100
-@@ -33,7 +33,8 @@
++++ newlib-1.17.0/newlib/libc/machine/x86_64/setjmp.S	2009-12-17 15:54:53.000000000 +0100
+@@ -22,32 +22,35 @@
+   SOTYPE_FUNCTION(longjmp)
+ 
+ SYM (setjmp):
+-  movq    rbx,  0 (rdi)
+-  movq    rbp,  8 (rdi)
+-  movq    r12, 16 (rdi)
+-  movq    r13, 24 (rdi)
+-  movq    r14, 32 (rdi)
+-  movq    r15, 40 (rdi)
++  movq    rbx, %nacl:  0 (r15,rdi)
++  movq    rbp, %nacl:  8 (r15,rdi)
++  movq    r12, %nacl: 16 (r15,rdi)
++  movq    r13, %nacl: 24 (r15,rdi)
++  movq    r14, %nacl: 32 (r15,rdi)
++  movq    r15, %nacl: 40 (r15,rdi)
+   leaq    8 (rsp), rax
+-  movq    rax, 48 (rdi)
++  movq    rax, %nacl: 48 (r15,rdi)
    movq    (rsp), rax
-   movq    rax, 56 (rdi)
+-  movq    rax, 56 (rdi)
++  movq    rax, %nacl: 56 (r15,rdi)
    movq    $0, rax
 -  ret
 +  pop     r11
 +  nacljmp %r11d, r15
  
  SYM (longjmp):
++  movl    edi, edi        /* Sandbox */
    movq    rsi, rax        /* Return value */
-@@ -50,4 +51,5 @@
-   movq    40 (rdi), r15
+ 
+-  movq     8 (rdi), rbp
++  movq     8 (r15,rdi), rbp
+ 
+   __CLI
+-  movq    48 (rdi), rsp
+-  pushq   56 (rdi)
+-  movq     0 (rdi), rbx
+-  movq    16 (rdi), r12
+-  movq    24 (rdi), r13
+-  movq    32 (rdi), r14
+-  movq    40 (rdi), r15
++  movq    48 (r15,rdi), rsp
++  pushq   56 (r15,rdi)
++  movq     0 (r15,rdi), rbx
++  movq    16 (r15,rdi), r12
++  movq    24 (r15,rdi), r13
++  movq    32 (r15,rdi), r14
++  movq    40 (r15,rdi), r15
    __STI
  
 -  ret
 +  pop     r11
 +  nacljmp %r11d, r15
+diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/x86_64mach.h newlib-1.17.0/newlib/libc/machine/x86_64/x86_64mach.h
+--- newlib-1.17.0.orig/newlib/libc/machine/x86_64/x86_64mach.h	2007-08-28 23:56:50.000000000 +0200
++++ newlib-1.17.0/newlib/libc/machine/x86_64/x86_64mach.h	2009-12-17 15:51:55.000000000 +0100
+@@ -49,6 +49,15 @@
+ #define ebp REG(ebp)
+ #define esp REG(esp)
+ 
++#define r8d  REG(r8d)
++#define r9d  REG(r9d)
++#define r10d REG(r10d)
++#define r11d REG(r11d)
++#define r12d REG(r12d)
++#define r13d REG(r13d)
++#define r14d REG(r14d)
++#define r15d REG(r15d)
++
+ #define st0 REG(st)
+ #define st1 REG(st(1))
+ #define st2 REG(st(2))
 diff -uNr newlib-1.17.0.orig/newlib/libc/posix/telldir.c newlib-1.17.0/newlib/libc/posix/telldir.c
 --- newlib-1.17.0.orig/newlib/libc/posix/telldir.c	2008-11-27 22:01:40.000000000 +0100
 +++ newlib-1.17.0/newlib/libc/posix/telldir.c	2009-12-17 13:51:54.000000000 +0100
