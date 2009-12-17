@@ -37,12 +37,12 @@ void SetProcessLocale(const std::string& locale) {
 std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
                                          std::string* error) {
   std::string default_locale;
-  if (!manifest.GetString(keys::kDefaultLocale, &default_locale)) {
-    *error = errors::kInvalidDefaultLocale;
-    return "";
-  }
+  if (manifest.GetString(keys::kDefaultLocale, &default_locale))
+    return default_locale;
 
-  return default_locale;
+  *error = errors::kInvalidDefaultLocale;
+  return "";
+
 }
 
 bool ShouldRelocalizeManifest(const ExtensionInfo& info) {
@@ -118,16 +118,17 @@ bool LocalizeManifest(const ExtensionMessageBundle& messages,
 bool LocalizeExtension(Extension* extension,
                        DictionaryValue* manifest,
                        std::string* error) {
+  DCHECK(manifest);
+
+  std::string default_locale = GetDefaultLocaleFromManifest(*manifest, error);
+
   ExtensionMessageBundle* message_bundle =
       extension_file_util::LoadExtensionMessageBundle(extension->path(),
-                                                      *manifest,
+                                                      default_locale,
                                                       error);
+
   if (!message_bundle && !error->empty())
     return false;
-
-  // TODO(cira): remove ExtensionMessageBundle object from Extension class
-  // after we implement IPC that requests message bundles on demand.
-  extension->set_message_bundle(message_bundle);
 
   if (message_bundle && !LocalizeManifest(*message_bundle, manifest, error))
     return false;

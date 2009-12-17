@@ -16,7 +16,6 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -276,14 +275,6 @@ class Extension {
     return manifest_value_.get();
   }
 
-  // Getter/setter for l10n message bundle.
-  const ExtensionMessageBundle* message_bundle() const {
-    return message_bundle_.get();
-  }
-  void set_message_bundle(ExtensionMessageBundle* message_bundle) {
-    message_bundle_.reset(message_bundle);
-  }
-
   const std::string default_locale() const { return default_locale_; }
 
   // Chrome URL overrides (see ExtensionOverrideUI).
@@ -414,9 +405,6 @@ class Extension {
 
   // A copy of the manifest that this extension was created from.
   scoped_ptr<DictionaryValue> manifest_value_;
-
-  // Handles the l10n messages replacement and parsing.
-  scoped_ptr<ExtensionMessageBundle> message_bundle_;
 
   // Default locale for fall back. Can be empty if extension is not localized.
   std::string default_locale_;

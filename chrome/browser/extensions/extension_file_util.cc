@@ -395,7 +395,7 @@ void GarbageCollectExtensions(
 
 ExtensionMessageBundle* LoadExtensionMessageBundle(
     const FilePath& extension_path,
-    const DictionaryValue& manifest,
+    const std::string& default_locale,
     std::string* error) {
   error->clear();
   // Load locale information if available.
@@ -407,8 +407,6 @@ ExtensionMessageBundle* LoadExtensionMessageBundle(
   if (!extension_l10n_util::GetValidLocales(locale_path, &locales, error))
     return NULL;
 
-  std::string default_locale =
-    extension_l10n_util::GetDefaultLocaleFromManifest(manifest, error);
   if (default_locale.empty() ||
       locales.find(default_locale) == locales.end()) {
     *error = extension_manifest_errors::kLocalesNoDefaultLocaleSpecified;

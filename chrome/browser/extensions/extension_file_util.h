@@ -90,7 +90,7 @@ void GarbageCollectExtensions(
 // Returns NULL on error, or if extension is not localized.
 ExtensionMessageBundle* LoadExtensionMessageBundle(
     const FilePath& extension_path,
-    const DictionaryValue& manifest,
+    const std::string& default_locale,
     std::string* error);
 
 // We need to reserve the namespace of entries that start with "_" for future

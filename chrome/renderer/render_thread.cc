@@ -329,12 +329,6 @@ void RenderThread::OnDOMStorageEvent(
       params.storage_type_ == DOM_STORAGE_LOCAL);
 }
 
-void RenderThread::OnExtensionSetL10nMessages(
-    const std::string& extension_id,
-    const std::map<std::string, std::string>& l10n_messages) {
-  ExtensionProcessBindings::SetL10nMessages(extension_id, l10n_messages);
-}
-
 void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   // App cache messages are handled by a delegate.
   if (appcache_dispatcher_->OnMessageReceived(msg))
@@ -380,8 +374,6 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionSetHostPermissions)
     IPC_MESSAGE_HANDLER(ViewMsg_DOMStorageEvent,
                         OnDOMStorageEvent)
-    IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetL10nMessages,
-                        OnExtensionSetL10nMessages)
 #if defined(IPC_MESSAGE_LOG_ENABLED)
     IPC_MESSAGE_HANDLER(ViewMsg_SetIPCLoggingEnabled,
                         OnSetIPCLoggingEnabled)

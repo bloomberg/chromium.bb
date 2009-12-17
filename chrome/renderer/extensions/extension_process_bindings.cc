@@ -423,8 +423,26 @@ class ExtensionImpl : public ExtensionBase {
       return v8::Undefined();
 
     L10nMessagesMap* l10n_messages = GetL10nMessagesMap(extension_id);
-    if (!l10n_messages)
-      return v8::Undefined();
+    if (!l10n_messages) {
+      // Get the current RenderView so that we can send a routed IPC message
+      // from the correct source.
+      RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+      if (!renderview)
+        return v8::Undefined();
+
+      L10nMessagesMap messages;
+      // A sync call to load message catalogs for current extension.
+      renderview->Send(new ViewHostMsg_GetExtensionMessageBundle(
+          extension_id, &messages));
+
+      if (messages.empty())
+        return v8::Undefined();
+
+      ExtensionProcessBindings::SetL10nMessages(extension_id, messages);
+      l10n_messages = GetL10nMessagesMap(extension_id);
+      if (!l10n_messages)
+        return v8::Undefined();
+    }
 
     std::string message_name = *v8::String::AsciiValue(args[0]);
     std::string message =

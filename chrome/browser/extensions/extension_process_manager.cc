@@ -167,12 +167,6 @@ void ExtensionProcessManager::RegisterExtensionProcess(
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   rph->Send(new ViewMsg_Extension_UpdatePageActions(extension_id,
                                                     page_action_ids));
-
-  // Send l10n messages to the renderer - if there are any.
-  if (extension->message_bundle()) {
-    rph->Send(new ViewMsg_Extension_SetL10nMessages(
-        extension_id, *extension->message_bundle()->dictionary()));
-  }
 }
 
 void ExtensionProcessManager::UnregisterExtensionProcess(int process_id) {

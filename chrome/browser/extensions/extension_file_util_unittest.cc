@@ -140,7 +140,6 @@ TEST(ExtensionFileUtil, LoadExtensionWithoutLocalesFolder) {
   scoped_ptr<Extension> extension(
       extension_file_util::LoadExtension(install_dir, false, &error));
   ASSERT_FALSE(extension == NULL);
-  EXPECT_TRUE(NULL == extension->message_bundle());
   EXPECT_TRUE(error.empty());
 }
 

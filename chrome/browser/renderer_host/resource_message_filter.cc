@@ -15,6 +15,7 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
@@ -39,6 +40,8 @@
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/histogram_synchronizer.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -388,10 +391,11 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
       IPC_MESSAGE_HANDLER(ViewHostMsg_Keygen, OnKeygen)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetExtensionMessageBundle,
+                                      OnGetExtensionMessageBundle)
 #if defined(USE_TCMALLOC)
       IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
-
       IPC_MESSAGE_UNHANDLED(
           handled = false)
     IPC_END_MESSAGE_MAP_EX()
@@ -1179,3 +1183,42 @@ void ResourceMessageFilter::OnRendererTcmalloc(base::ProcessId pid,
       NewRunnableFunction(AboutTcmallocRendererCallback, pid, output));
 }
 #endif
+
+void ResourceMessageFilter::OnGetExtensionMessageBundle(
+    const std::string& extension_id, IPC::Message* reply_msg) {
+  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
+    request_context_->GetURLRequestContext());
+
+  FilePath extension_path = context->GetPathForExtension(extension_id);
+  std::string default_locale =
+    context->GetDefaultLocaleForExtension(extension_id);
+
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread,
+          extension_path, default_locale, reply_msg));
+}
+
+void ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread(
+    const FilePath& extension_path,
+    const std::string& default_locale,
+    IPC::Message* reply_msg) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  std::string error;
+  ExtensionMessageBundle* bundle =
+      extension_file_util::LoadExtensionMessageBundle(
+          extension_path, default_locale, &error);
+
+  std::map<std::string, std::string> dictionary_map;
+  if (bundle)
+    dictionary_map = *bundle->dictionary();
+
+  ViewHostMsg_GetExtensionMessageBundle::WriteReplyParams(
+      reply_msg, dictionary_map);
+
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
+}

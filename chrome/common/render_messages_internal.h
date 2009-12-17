@@ -681,12 +681,6 @@ IPC_BEGIN_MESSAGES(View)
                        std::string /* extension_id */,
                        std::vector<std::string> /* page_action_ids */)
 
-  // Tell the renderer process all known localized messages for a particular
-  // extension.
-  IPC_MESSAGE_CONTROL2(ViewMsg_Extension_SetL10nMessages,
-                       std::string /* extension_id */,
-                       SubstitutionMap /* l10n messages */)
-
   // Changes the text direction of the currently selected input field (if any).
   IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
                       WebKit::WebTextDirection /* direction */)
@@ -1142,6 +1136,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       GURL /* URL of the page */,
                       int32 /* page id */,
                       std::wstring /*page contents */)
+
+  // Used to get the extension message bundle.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetExtensionMessageBundle,
+                              std::string /* extension id */,
+                              SubstitutionMap /* message bundle */)
 
   // Specifies the URL as the first parameter (a wstring) and thumbnail as
   // binary data as the second parameter.

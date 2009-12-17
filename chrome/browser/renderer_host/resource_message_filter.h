@@ -294,6 +294,13 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetFileSizeOnFileThread(const FilePath& path, IPC::Message* reply_msg);
   void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
                 const GURL& url, std::string* signed_public_key);
+  void OnGetExtensionMessageBundle(const std::string& extension_id,
+                                   IPC::Message* reply_msg);
+  void OnGetExtensionMessageBundleOnFileThread(
+      const FilePath& extension_path,
+      const std::string& default_locale,
+      IPC::Message* reply_msg);
+
 #if defined(OS_LINUX)
   void SendDelayedReply(IPC::Message* reply_msg);
   void DoOnGetScreenInfo(gfx::NativeViewId view, IPC::Message* reply_msg);

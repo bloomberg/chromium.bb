@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/linked_ptr.h"
 #include "base/task.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_service.h"
