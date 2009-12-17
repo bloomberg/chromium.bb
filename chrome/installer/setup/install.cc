@@ -94,8 +94,6 @@ void AppendUninstallCommandLineFlags(std::wstring* uninstall_cmd_line,
 
   if (InstallUtil::IsChromeFrameProcess()) {
     uninstall_cmd_line->append(L" --");
-    uninstall_cmd_line->append(installer_util::switches::kForceUninstall);
-    uninstall_cmd_line->append(L" --");
     uninstall_cmd_line->append(installer_util::switches::kDeleteProfile);
     uninstall_cmd_line->append(L" --");
     uninstall_cmd_line->append(installer_util::switches::kChromeFrame);

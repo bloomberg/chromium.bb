@@ -596,7 +596,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 
-  if (InstallUtil::IsChromeFrameProcess()) {
+  if (InstallUtil::IsChromeFrameProcess() &&
+      !parsed_command_line.HasSwitch(
+          installer_util::switches::kForceUninstall)) {
     if (install_status == installer_util::UNINSTALL_REQUIRES_REBOOT) {
       ShowRebootDialog();
     } else if (parsed_command_line.HasSwitch(
@@ -609,10 +611,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     }
   }
 
-  if (install_status == installer_util::UNINSTALL_REQUIRES_REBOOT) {
-    install_status = installer_util::UNINSTALL_SUCCESSFUL;
-  }
-
   CoUninitialize();
+  // Note that we allow the status installer_util::UNINSTALL_REQUIRES_REBOOT
+  // to pass through, since this is only returned on uninstall which is never
+  // invoked directly by Google Update.
   return dist->GetInstallReturnCode(install_status);
 }

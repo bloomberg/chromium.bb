@@ -438,7 +438,8 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
     // do silent uninstall. Try to close all running Chrome instances.
     if (!InstallUtil::IsChromeFrameProcess())
       CloseAllChromeProcesses();
-  } else {  // no --force-uninstall so lets show some UI dialog boxes.
+  } else if (!InstallUtil::IsChromeFrameProcess()) {
+    // no --force-uninstall so lets show some UI dialog boxes.
     status = IsChromeActiveOrUserCancelled(system_uninstall);
     if (status != installer_util::UNINSTALL_CONFIRMED &&
         status != installer_util::UNINSTALL_DELETE_PROFILE)
