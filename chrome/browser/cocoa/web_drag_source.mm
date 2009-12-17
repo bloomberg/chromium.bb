@@ -223,13 +223,13 @@ void PromiseWriterTask::Run() {
                                         clickCount:1
                                           pressure:1.0];
 
-  [contentsView_ dragImage:[self dragImage]
-                        at:position
-                    offset:NSZeroSize
-                     event:dragEvent
-                pasteboard:pasteboard_
-                    source:contentsView_
-                 slideBack:YES];
+  [window dragImage:[self dragImage]
+                 at:position
+             offset:NSZeroSize
+              event:dragEvent
+         pasteboard:pasteboard_
+             source:contentsView_
+          slideBack:YES];
 }
 
 - (void)endDragAt:(NSPoint)screenPoint
