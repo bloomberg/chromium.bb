@@ -45,3 +45,18 @@ node = env.CommandValidatorTestNacl(
     image=[env.File('earth.nexe')],
     )
 env.AddNodeToTestSuite(node, ['validator_tests', 'simple_tests'])
+
+# TODO(robertm): enable arm support ASAP
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
+
+node = env.BrowserTester(
+    'earth_browser_test.out',
+    url='earth.html',
+    files=[nexe,
+           env.File('earth.html'),
+           env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+           ],
+    browser='*firefox',
+    )
+env.AddNodeToTestSuite(node, ['browser_tests'], 'earth_browser_test')
