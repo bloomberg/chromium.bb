@@ -101,30 +101,25 @@ static string GenerateCacheGUID() {
   return Generate128BitRandomHexString();
 }
 
-// Iterate over the fields of |entry| and bind dirty ones to |statement| for
+// Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
-static int BindDirtyFields(const EntryKernel& entry, sqlite3_stmt* statement) {
+static int BindFields(const EntryKernel& entry, sqlite3_stmt* statement) {
   int index = 1;
   int i = 0;
   for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
-    if (entry.dirty[i])
-      BindArg(statement, entry.ref(static_cast<Int64Field>(i)), index++);
+    BindArg(statement, entry.ref(static_cast<Int64Field>(i)), index++);
   }
   for ( ; i < ID_FIELDS_END; ++i) {
-    if (entry.dirty[i])
-      BindArg(statement, entry.ref(static_cast<IdField>(i)), index++);
+    BindArg(statement, entry.ref(static_cast<IdField>(i)), index++);
   }
   for ( ; i < BIT_FIELDS_END; ++i) {
-    if (entry.dirty[i])
-      BindArg(statement, entry.ref(static_cast<BitField>(i)), index++);
+    BindArg(statement, entry.ref(static_cast<BitField>(i)), index++);
   }
   for ( ; i < STRING_FIELDS_END; ++i) {
-    if (entry.dirty[i])
-      BindArg(statement, entry.ref(static_cast<StringField>(i)), index++);
+    BindArg(statement, entry.ref(static_cast<StringField>(i)), index++);
   }
   for ( ; i < BLOB_FIELDS_END; ++i) {
-    if (entry.dirty[i])
-      BindArg(statement, entry.ref(static_cast<BlobField>(i)), index++);
+    BindArg(statement, entry.ref(static_cast<BlobField>(i)), index++);
   }
   return index - 1;
 }
@@ -135,6 +130,7 @@ static EntryKernel* UnpackEntry(sqlite3_stmt* statement) {
   int query_result = sqlite3_step(statement);
   if (SQLITE_ROW == query_result) {
     result = new EntryKernel;
+    result->clear_dirty();
     CHECK(sqlite3_column_count(statement) == static_cast<int>(FIELD_COUNT));
     int i = 0;
     for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
@@ -259,7 +255,7 @@ bool DirectoryBackingStore::SaveChanges(
 
     for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
          !disk_full && i != snapshot.dirty_metas.end(); ++i) {
-      DCHECK(i->dirty.any());
+      DCHECK(i->is_dirty());
       disk_full = !SaveEntryToDB(*i);
     }
 
@@ -413,59 +409,29 @@ void DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
 }
 
 bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
-  return entry.ref(IS_NEW) ? SaveNewEntryToDB(entry) : UpdateEntryToDB(entry);
-}
-
-bool DirectoryBackingStore::SaveNewEntryToDB(const EntryKernel& entry) {
   DCHECK(save_dbhandle_);
-  // TODO(timsteele): Should use INSERT OR REPLACE and eliminate one of
-  // the SaveNew / UpdateEntry code paths.
   string query;
   query.reserve(kUpdateStatementBufferSize);
-  query.append("INSERT INTO metas ");
+  query.append("INSERT OR REPLACE INTO metas ");
   string values;
   values.reserve(kUpdateStatementBufferSize);
   values.append("VALUES ");
   const char* separator = "( ";
   int i = 0;
   for (i = BEGIN_FIELDS; i < BLOB_FIELDS_END; ++i) {
-    if (entry.dirty[i]) {
-      query.append(separator);
-      values.append(separator);
-      separator = ", ";
-      query.append(ColumnName(i));
-      values.append("?");
-    }
+    query.append(separator);
+    values.append(separator);
+    separator = ", ";
+    query.append(ColumnName(i));
+    values.append("?");
   }
+
   query.append(" ) ");
   values.append(" )");
   query.append(values);
   ScopedStatement const statement(PrepareQuery(save_dbhandle_, query.c_str()));
-  BindDirtyFields(entry, statement.get());
-  return StepDone(statement.get(), "SaveNewEntryToDB()") &&
-      1 == sqlite3_changes(save_dbhandle_);
-}
-
-bool DirectoryBackingStore::UpdateEntryToDB(const EntryKernel& entry) {
-  DCHECK(save_dbhandle_);
-  string query;
-  query.reserve(kUpdateStatementBufferSize);
-  query.append("UPDATE metas ");
-  const char* separator = "SET ";
-  int i;
-  for (i = BEGIN_FIELDS; i < BLOB_FIELDS_END; ++i) {
-    if (entry.dirty[i]) {
-      query.append(separator);
-      separator = ", ";
-      query.append(ColumnName(i));
-      query.append(" = ? ");
-    }
-  }
-  query.append("WHERE metahandle = ?");
-  ScopedStatement const statement(PrepareQuery(save_dbhandle_, query.c_str()));
-  const int var_count = BindDirtyFields(entry, statement.get());
-  BindArg(statement.get(), entry.ref(META_HANDLE), var_count + 1);
-  return StepDone(statement.get(), "UpdateEntryToDB()") &&
+  BindFields(entry, statement.get());
+  return StepDone(statement.get(), "SaveEntryToDB()") &&
       1 == sqlite3_changes(save_dbhandle_);
 }
 

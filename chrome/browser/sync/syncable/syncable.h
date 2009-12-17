@@ -18,6 +18,7 @@
 #include "base/file_path.h"
 #include "base/lock.h"
 #include "base/time.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/directory_event.h"
@@ -173,7 +174,6 @@ enum {
 
 enum BitTemp {
   SYNCING = BIT_TEMPS_BEGIN,
-  IS_NEW,  // Means use INSERT instead of UPDATE to save to db.
   BIT_TEMPS_END,
 };
 
@@ -234,7 +234,17 @@ struct EntryKernel {
   std::bitset<BIT_TEMPS_COUNT> bit_temps;
 
  public:
-  std::bitset<FIELD_COUNT> dirty;
+  inline void mark_dirty() {
+    dirty_ = true;
+  }
+  
+  inline void clear_dirty() {
+    dirty_ = false;
+  }
+  
+  inline bool is_dirty() const {
+    return dirty_;
+  }
 
   // Contain all this error-prone arithmetic in one place.
   inline int64& ref(MetahandleField field) {
@@ -298,6 +308,10 @@ struct EntryKernel {
   inline bool ref(BitTemp field) const {
     return bit_temps[field - BIT_TEMPS_BEGIN];
   }
+  
+ private:
+  // Tracks whether this entry needs to be saved to the database.
+  bool dirty_;
 };
 
 // A read-only meta entry.
@@ -449,7 +463,7 @@ class MutableEntry : public Entry {
     DCHECK(kernel_);
     if (kernel_->ref(field) != value) {
       kernel_->ref(field) = value;
-      kernel_->dirty[static_cast<int>(field)] = true;
+      kernel_->mark_dirty();
     }
     return true;
   }
@@ -731,7 +745,7 @@ class Directory {
   // state and indices (by deep copy) under a ReadTransaction, passing this
   // snapshot to the backing store under no transaction, and finally cleaning
   // up by either purging entries no longer needed (this part done under a
-  // WriteTransaction) or rolling back dirty and IS_NEW bits.  It also uses
+  // WriteTransaction) or rolling back the dirty bits.  It also uses
   // internal locking to enforce SaveChanges operations are mutually exclusive.
   //
   // WARNING: THIS METHOD PERFORMS SYNCHRONOUS I/O VIA SQLITE.
@@ -799,8 +813,8 @@ class Directory {
   // |snapshot|.  See SaveChanges() for more information.
   void VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot);
 
-  // Rolls back dirty and IS_NEW bits in the event that the SaveChanges that
-  // processed |snapshot| failed, for ex. due to no disk space.
+  // Rolls back dirty bits in the event that the SaveChanges that
+  // processed |snapshot| failed, for example, due to no disk space.
   void HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot);
 
   void InsertEntry(EntryKernel* entry, ScopedKernelLock* lock);
@@ -866,7 +880,7 @@ class Directory {
     IdsIndex* ids_index;  // Entries indexed by id
     ParentIdChildIndex* parent_id_child_index;
     // So we don't have to create an EntryKernel every time we want to
-    // look something up in an index.  Needle in haystack metaphore.
+    // look something up in an index.  Needle in haystack metaphor.
     EntryKernel needle;
     ExtendedAttributes* const extended_attributes;
 

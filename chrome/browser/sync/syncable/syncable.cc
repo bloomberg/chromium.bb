@@ -421,14 +421,14 @@ void Directory::Undelete(EntryKernel* const entry) {
   DCHECK(entry->ref(IS_DEL));
   ScopedKernelLock lock(this);
   entry->ref(IS_DEL) = false;
-  entry->dirty[IS_DEL] = true;
+  entry->mark_dirty();
   CHECK(kernel_->parent_id_child_index->insert(entry).second);
 }
 
 void Directory::Delete(EntryKernel* const entry) {
   DCHECK(!entry->ref(IS_DEL));
   entry->ref(IS_DEL) = true;
-  entry->dirty[IS_DEL] = true;
+  entry->mark_dirty();
   ScopedKernelLock lock(this);
   CHECK(1 == kernel_->parent_id_child_index->erase(entry));
 }
@@ -463,7 +463,7 @@ void Directory::ReindexParentId(EntryKernel* const entry,
 
 // static
 bool Directory::SafeToPurgeFromMemory(const EntryKernel* const entry) {
-  return entry->ref(IS_DEL) && !entry->dirty.any() && !entry->ref(SYNCING) &&
+  return entry->ref(IS_DEL) && !entry->is_dirty() && !entry->ref(SYNCING) &&
          !entry->ref(IS_UNAPPLIED_UPDATE) && !entry->ref(IS_UNSYNCED);
 }
 
@@ -475,27 +475,10 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   for (MetahandlesIndex::iterator i = kernel_->metahandles_index->begin();
        i != kernel_->metahandles_index->end(); ++i) {
     EntryKernel* entry = *i;
-    if (!entry->dirty.any())
+    if (!entry->is_dirty())
       continue;
     snapshot->dirty_metas.insert(snapshot->dirty_metas.end(), *entry);
-    entry->dirty.reset();
-    // TODO(timsteele): The previous *windows only* SaveChanges code path seems
-    // to have a bug in that the IS_NEW bit is not rolled back if the entire DB
-    // transaction is rolled back, due to the "recent" windows optimization of
-    // using a ReadTransaction rather than a WriteTransaction in SaveChanges.
-    // This bit is only used to decide whether we should sqlite INSERT or
-    // UPDATE, and if we are INSERTing we make sure to dirty all the fields so
-    // as to overwrite the database default values.  For now, this is rectified
-    // by flipping the bit to false here (note that the snapshot will contain
-    // the "original" value), and then resetting it on failure in
-    // HandleSaveChangesFailure, where "failure" is defined as "the DB
-    // "transaction was rolled back". This is safe because the only user of this
-    // bit is in fact SaveChanges, which enforces mutually exclusive access by
-    // way of save_changes_mutex_.  The TODO is to consider abolishing this bit
-    // in favor of using a sqlite INSERT OR REPLACE, which could(would?) imply
-    // that all bits need to be written rather than just the dirty ones in
-    // the BindArg helper function.
-    entry->ref(IS_NEW) = false;
+    entry->clear_dirty();
   }
 
   // Do the same for extended attributes.
@@ -585,20 +568,18 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
   ScopedKernelLock lock(this);
   kernel_->info_status_ = KERNEL_SHARE_INFO_DIRTY;
 
-  // Because we cleared dirty bits on the real entries when taking the snapshot,
-  // we should make sure the fact that the snapshot was not persisted gets
-  // reflected in the entries.  Not doing this would mean if no other changes
-  // occur to the same fields of the entries in dirty_metas some changes could
-  // end up being lost, if they also failed to be committed to the server.
-  // Setting the bits ensures that SaveChanges will at least try again later.
+  // Because we optimistically cleared the dirty bit on the real entries when
+  // taking the snapshot, we must restore it on failure.  Not doing this could
+  // cause lost data, if no other changes are made to the in-memory entries
+  // that would cause the dirty bit to get set again. Setting the bit ensures
+  // that SaveChanges will at least try again later.
   for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
     kernel_->needle.ref(META_HANDLE) = i->ref(META_HANDLE);
     MetahandlesIndex::iterator found =
         kernel_->metahandles_index->find(&kernel_->needle);
     if (found != kernel_->metahandles_index->end()) {
-      (*found)->dirty |= i->dirty;
-      (*found)->ref(IS_NEW) = i->ref(IS_NEW);
+      (*found)->mark_dirty();
     }
   }
 
@@ -1032,20 +1013,14 @@ void MutableEntry::Init(WriteTransaction* trans, const Id& parent_id,
                         const string& name) {
   kernel_ = new EntryKernel;
   ZeroFields(kernel_, BEGIN_FIELDS);
+  kernel_->mark_dirty();
   kernel_->ref(ID) = trans->directory_->NextId();
-  kernel_->dirty[ID] = true;
   kernel_->ref(META_HANDLE) = trans->directory_->NextMetahandle();
-  kernel_->dirty[META_HANDLE] = true;
   kernel_->ref(PARENT_ID) = parent_id;
-  kernel_->dirty[PARENT_ID] = true;
   kernel_->ref(NON_UNIQUE_NAME) = name;
-  kernel_->dirty[NON_UNIQUE_NAME] = true;
-  kernel_->ref(IS_NEW) = true;
   const int64 now = Now();
   kernel_->ref(CTIME) = now;
-  kernel_->dirty[CTIME] = true;
   kernel_->ref(MTIME) = now;
-  kernel_->dirty[MTIME] = true;
   // We match the database defaults here
   kernel_->ref(BASE_VERSION) = CHANGES_VERSION;
   trans->directory()->InsertEntry(kernel_);
@@ -1066,12 +1041,9 @@ MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
   kernel_ = new EntryKernel;
   ZeroFields(kernel_, BEGIN_FIELDS);
   kernel_->ref(ID) = id;
-  kernel_->dirty[ID] = true;
+  kernel_->mark_dirty();
   kernel_->ref(META_HANDLE) = trans->directory_->NextMetahandle();
-  kernel_->dirty[META_HANDLE] = true;
   kernel_->ref(IS_DEL) = true;
-  kernel_->dirty[IS_DEL] = true;
-  kernel_->ref(IS_NEW) = true;
   // We match the database defaults here
   kernel_->ref(BASE_VERSION) = CHANGES_VERSION;
   trans->directory()->InsertEntry(kernel_);
@@ -1109,7 +1081,7 @@ bool MutableEntry::Put(Int64Field field, const int64& value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
     kernel_->ref(field) = value;
-    kernel_->dirty[static_cast<int>(field)] = true;
+    kernel_->mark_dirty();
   }
   return true;
 }
@@ -1126,7 +1098,7 @@ bool MutableEntry::Put(IdField field, const Id& value) {
     } else {
       kernel_->ref(field) = value;
     }
-    kernel_->dirty[static_cast<int>(field)] = true;
+    kernel_->mark_dirty();
   }
   return true;
 }
@@ -1135,7 +1107,7 @@ bool MutableEntry::Put(BaseVersion field, int64 value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
     kernel_->ref(field) = value;
-    kernel_->dirty[static_cast<int>(field)] = true;
+    kernel_->mark_dirty();
   }
   return true;
 }
@@ -1148,7 +1120,7 @@ bool MutableEntry::PutImpl(StringField field, const string& value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
     kernel_->ref(field) = value;
-    kernel_->dirty[static_cast<int>(field)] = true;
+    kernel_->mark_dirty();
   }
   return true;
 }
@@ -1168,7 +1140,7 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
     else
       CHECK(1 == index->erase(kernel_->ref(META_HANDLE)));
     kernel_->ref(field) = value;
-    kernel_->dirty[static_cast<int>(field)] = true;
+    kernel_->mark_dirty();
   }
   return true;
 }

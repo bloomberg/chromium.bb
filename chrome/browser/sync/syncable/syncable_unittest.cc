@@ -572,7 +572,6 @@ TEST_F(SyncableDirectoryTest, TestParentIdIndexUpdate) {
   EXPECT_EQ(parent_folder2.Get(ID), child.Get(PARENT_ID));
   EXPECT_EQ(0, CountEntriesWithName(&wt, parent_folder.Get(ID), child_name));
   EXPECT_EQ(1, CountEntriesWithName(&wt, parent_folder2.Get(ID), child_name));
-
 }
 
 TEST_F(SyncableDirectoryTest, TestNoReindexDeletedItems) {
@@ -687,18 +686,37 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
 
 TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
   int64 handle1 = 0;
+  // Set up an item using a regular, saveable directory.
   {
     WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
 
     MutableEntry e1(&trans, CREATE, trans.root_id(), "aguilera");
     ASSERT_TRUE(e1.good());
+    EXPECT_TRUE(e1.GetKernelCopy().is_dirty());
     handle1 = e1.Get(META_HANDLE);
     e1.Put(BASE_VERSION, 1);
     e1.Put(IS_DIR, true);
     e1.Put(ID, TestIdFactory::FromNumber(101));
+    EXPECT_TRUE(e1.GetKernelCopy().is_dirty());
+  }
+  ASSERT_TRUE(dir_->SaveChanges());
+  
+  // Make sure the item is no longer dirty after saving,
+  // and make a modification.
+  {
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+
+    MutableEntry aguilera(&trans, GET_BY_HANDLE, handle1);
+    ASSERT_TRUE(aguilera.good());
+    EXPECT_FALSE(aguilera.GetKernelCopy().is_dirty());
+    EXPECT_EQ(aguilera.Get(NON_UNIQUE_NAME), "aguilera");
+    aguilera.Put(NON_UNIQUE_NAME, "overwritten");
+    EXPECT_TRUE(aguilera.GetKernelCopy().is_dirty());
   }
   ASSERT_TRUE(dir_->SaveChanges());
 
+  // Now do some operations using a directory for which SaveChanges will
+  // always fail.
   dir_.reset(new TestUnsaveableDirectory());
   ASSERT_TRUE(dir_.get());
   ASSERT_TRUE(OPENED == dir_->Open(FilePath(kFilePath), kName));
@@ -709,16 +727,20 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
 
     MutableEntry aguilera(&trans, GET_BY_HANDLE, handle1);
     ASSERT_TRUE(aguilera.good());
+    EXPECT_FALSE(aguilera.GetKernelCopy().is_dirty());
+    EXPECT_EQ(aguilera.Get(NON_UNIQUE_NAME), "overwritten");
+    EXPECT_FALSE(aguilera.GetKernelCopy().is_dirty());
     aguilera.Put(NON_UNIQUE_NAME, "christina");
-    ASSERT_TRUE(aguilera.GetKernelCopy().dirty[NON_UNIQUE_NAME]);
+    EXPECT_TRUE(aguilera.GetKernelCopy().is_dirty());
 
+    // New item.
     MutableEntry kids_on_block(&trans, CREATE, trans.root_id(), "kids");
     ASSERT_TRUE(kids_on_block.good());
     handle2 = kids_on_block.Get(META_HANDLE);
     kids_on_block.Put(BASE_VERSION, 1);
     kids_on_block.Put(IS_DIR, true);
     kids_on_block.Put(ID, TestIdFactory::FromNumber(102));
-    EXPECT_TRUE(kids_on_block.Get(IS_NEW));
+    EXPECT_TRUE(kids_on_block.GetKernelCopy().is_dirty());
   }
 
   // We are using an unsaveable directory, so this can't succeed.  However,
@@ -730,15 +752,13 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
      ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
      Entry e1(&trans, GET_BY_HANDLE, handle1);
      ASSERT_TRUE(e1.good());
-     const EntryKernel& aguilera = e1.GetKernelCopy();
-     Entry kids_on_block(&trans, GET_BY_HANDLE, handle2);
-     ASSERT_TRUE(kids_on_block.good());
-
-     EXPECT_TRUE(aguilera.dirty[NON_UNIQUE_NAME]);
-     EXPECT_TRUE(kids_on_block.Get(IS_NEW));
+     EntryKernel aguilera = e1.GetKernelCopy();
+     Entry kids(&trans, GET_BY_HANDLE, handle2);
+     ASSERT_TRUE(kids.good());
+     EXPECT_TRUE(kids.GetKernelCopy().is_dirty());
+     EXPECT_TRUE(aguilera.is_dirty());
   }
 }
-
 
 void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans, int64 id,
     bool check_name, string name, int64 base_version, int64 server_version,
