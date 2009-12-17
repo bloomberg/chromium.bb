@@ -10,6 +10,8 @@ SDK_ROOT=/usr/local/crosstool-untrusted
 
 SEL_LDR=$(SDK_ROOT)/tools-arm/sel_ldr
 
+VALIDATOR=$(SDK_ROOT)/tools-x86/arm-ncval-core
+
 QEMU_SCRIPT=/usr/local/crosstool-trusted/qemu_tool.sh
 
 # TODO: move most of these flags into llvm-fake.py
@@ -79,5 +81,5 @@ hello_run: hello.nexe
 
 
 hello_validate: hello.nexe
-	/usr/local/crosstool/tools-x86/arm-ncval-core $<
+	$(VALIDATOR) $<
 

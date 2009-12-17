@@ -187,13 +187,15 @@ InstallMiscTools() {
    Banner "building and installing misc tools"
    SubBanner "sel loader"
    # TODO(robertm): revisit some of these options
-  ./scons MODE=nacl,opt-linux platform=arm dangerous_debug_disable_inner_sandbox=1 sdl_mode=none sdl=none naclsdk_mode=manual naclsdk_validate=0
+  ./scons MODE=nacl,opt-linux platform=arm dangerous_debug_disable_inner_sandbox=1 sdl_mode=none sdl=none naclsdk_mode=manual naclsdk_validate=0 sysinfo= sel_ldr
+   rm -rf  ${INSTALL_ROOT}/tools-arm
    mkdir ${INSTALL_ROOT}/tools-arm
    cp scons-out/opt-linux-arm/obj/src/trusted/service_runtime/sel_ldr\
      ${INSTALL_ROOT}/tools-arm
 
    SubBanner "validator"
-   ./scons MODE=opt-linux targetplatform=arm arm-ncval-core
+   ./scons MODE=opt-linux targetplatform=arm sysinfo= arm-ncval-core
+   rm -rf  ${INSTALL_ROOT}/tools-x86
    mkdir ${INSTALL_ROOT}/tools-x86
    cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/v2/arm-ncval-core\
        ${INSTALL_ROOT}/tools-x86
