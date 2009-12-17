@@ -192,7 +192,7 @@ WONTFIX SKIP : LayoutTests/webarchive/adopt-inline-styled-node-webarchive.html =
 // This test is completely timing dependent.  It is testing the time
 // between a key event and a search event.  You cannot count on this
 // always being exactly the same.
-WONTFIX DEBUG : LayoutTests/fast/forms/search-event-delay.html = PASS
+WONTFIX DEBUG : LayoutTests/fast/forms/search-event-delay.html = PASS TEXT
 WONTFIX SLOW WIN RELEASE : LayoutTests/fast/forms/search-event-delay.html = FAIL PASS
 WONTFIX SLOW MAC RELEASE : LayoutTests/fast/forms/search-event-delay.html = FAIL PASS CRASH
 WONTFIX LINUX RELEASE : LayoutTests/fast/forms/search-event-delay.html = FAIL PASS
@@ -3119,11 +3119,15 @@ BUG9798 WIN LINUX : LayoutTests/fast/loader/javascript-url-encoding-2.html = TIM
 BUG9798 WIN RELEASE : LayoutTests/fast/loading/subframe-removes-itself.html = TEXT PASS
 BUG9798 LINUX MAC RELEASE : LayoutTests/fast/loader/invalid-charset-on-script-crashes-loader.html = TIMEOUT PASS
 
-// Webkit roll 52198->52208
+// Webkit roll 52198->52205
 // Newly added test in r52202
 BUG_JPARENT : LayoutTests/svg/filters/filter-source-position.svg = IMAGE+TEXT
 // Started failing with r52207
 BUG_JPARENT : LayoutTests/fast/repaint/backgroundSizeRepaint.html = IMAGE
+
+// Webkit roll 52205->52227
+// New expectations added in 52219
+BUG_JPARENT WIN LINUX : LayoutTests/svg/custom/empty-merge.svg = IMAGE+TEXT
 
 // Flaky since SVG filters turned on
 BUG29737 LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = TEXT PASS
