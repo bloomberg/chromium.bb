@@ -109,7 +109,7 @@ private:
 - (void)regenerateSubviewList;
 - (NSInteger)indexForContentsView:(NSView*)view;
 - (void)updateFavIconForContents:(TabContents*)contents
-                         atIndex:(NSInteger)index;
+                         atIndex:(NSInteger)modelIndex;
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate;
 - (void)animationDidStopForController:(TabController*)controller
@@ -823,7 +823,7 @@ private:
 }
 
 // Called when a notification is received from the model to insert a new tab
-// at |index|.
+// at |modelIndex|.
 - (void)insertTabWithContents:(TabContents*)contents
                       atIndex:(NSInteger)modelIndex
                  inForeground:(bool)inForeground {
@@ -873,7 +873,7 @@ private:
   // dragging a tab out into a new window, we have to put the tab's favicon
   // into the right state up front as we won't be told to do it from anywhere
   // else.
-  [self updateFavIconForContents:contents atIndex:index];
+  [self updateFavIconForContents:contents atIndex:modelIndex];
 
   // Send a broadcast that the number of tabs have changed.
   [[NSNotificationCenter defaultCenter]
@@ -1053,10 +1053,9 @@ private:
 }
 
 // Updates the current loading state, replacing the icon view with a favicon,
-// a throbber, the default icon, or nothing at all. |index| is a controller
-// array index, not a model index.
+// a throbber, the default icon, or nothing at all.
 - (void)updateFavIconForContents:(TabContents*)contents
-                         atIndex:(NSInteger)index {
+                         atIndex:(NSInteger)modelIndex {
   if (!contents)
     return;
 
@@ -1070,11 +1069,14 @@ private:
       [ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SAD_FAVICON)
         retain];
 
+  // Take closing tabs into account.
+  NSInteger index = [self indexFromModelIndex:modelIndex];
+
   TabController* tabController = [tabArray_ objectAtIndex:index];
 
   bool oldHasIcon = [tabController iconView] != nil;
   bool newHasIcon = contents->ShouldDisplayFavIcon() ||
-      tabStripModel_->IsTabPinned(index);  // always show icon for pinned tabs
+      tabStripModel_->IsTabPinned(modelIndex);  // always show icon if pinned
 
   TabLoadingState oldState = [tabController loadingState];
   TabLoadingState newState = kTabDone;
@@ -1138,7 +1140,7 @@ private:
   if (change != TabStripModelObserver::LOADING_ONLY)
     [self setTabTitle:[tabArray_ objectAtIndex:index] withContents:contents];
 
-  [self updateFavIconForContents:contents atIndex:index];
+  [self updateFavIconForContents:contents atIndex:modelIndex];
 
   TabContentsController* updatedController =
       [tabContentsArray_ objectAtIndex:index];
@@ -1180,11 +1182,15 @@ private:
 
 // Called when a tab is pinned or unpinned without moving.
 - (void)tabPinnedStateChangedWithContents:(TabContents*)contents
-                                  atIndex:(NSInteger)index {
+                                  atIndex:(NSInteger)modelIndex {
+  // Take closing tabs into account.
+  NSInteger index = [self indexFromModelIndex:modelIndex];
+
   TabController* tabController = [tabArray_ objectAtIndex:index];
   DCHECK([tabController isKindOfClass:[TabController class]]);
-  [tabController setPinned:(tabStripModel_->IsTabPinned(index) ? YES : NO)];
-  [self updateFavIconForContents:contents atIndex:index];
+  [tabController setPinned:
+      (tabStripModel_->IsTabPinned(modelIndex) ? YES : NO)];
+  [self updateFavIconForContents:contents atIndex:modelIndex];
 
   // TODO(viettrungluu): I don't think this is needed. Investigate. See also
   // |-tabMovedWithContents:...|.
@@ -1206,14 +1212,25 @@ private:
   return [self viewAtIndex:selectedIndex];
 }
 
-// Find the index based on the x coordinate of the placeholder. If there is
-// no placeholder, this returns the end of the tab strip.
+// Find the model index based on the x coordinate of the placeholder. If there
+// is no placeholder, this returns the end of the tab strip. Closing tabs are
+// not considered in computing the index.
 - (int)indexOfPlaceholder {
   double placeholderX = placeholderFrame_.origin.x;
   int index = 0;
   int location = 0;
-  const int count = tabStripModel_->count();
+  // Use |tabArray_| here instead of the tab strip count in order to get the
+  // correct index when there are closing tabs to the left of the placeholder.
+  const int count = [tabArray_ count];
   while (index < count) {
+    // Ignore closing tabs for simplicity. The only drawback of this is that
+    // if the placeholder is placed right before one or several contiguous
+    // currently closing tabs, the associated TabController will start at the
+    // end of the closing tabs.
+    if ([closingControllers_ containsObject:[tabArray_ objectAtIndex:index]]) {
+      index++;
+      continue;
+    }
     NSView* curr = [self viewAtIndex:index];
     // The placeholder tab works by changing the frame of the tab being dragged
     // to be the bounds of the placeholder, so we need to skip it while we're
@@ -1245,7 +1262,7 @@ private:
 // where the user dropped the new tab so it can be animated into its correct
 // location when the tab is added to the model.
 - (void)dropTabContents:(TabContents*)contents withFrame:(NSRect)frame {
-  int index = [self indexOfPlaceholder];
+  int modelIndex = [self indexOfPlaceholder];
 
   // Mark that the new tab being created should start at |frame|. It will be
   // reset as soon as the tab has been positioned.
@@ -1253,15 +1270,19 @@ private:
 
   // Insert it into this tab strip. We want it in the foreground and to not
   // inherit the current tab's group.
-  tabStripModel_->InsertTabContentsAt(index, contents, true, false);
+  tabStripModel_->InsertTabContentsAt(modelIndex, contents, true, false);
+
+  // Take closing tabs into account.
+  NSInteger index = [self indexFromModelIndex:modelIndex];
 
   // The tab's pinned status may have changed.
   // TODO(viettrungluu): Improve the behaviour for drops at the dividing point
   // between pinned and unpinned tabs.
   TabController* tabController = [tabArray_ objectAtIndex:index];
   DCHECK([tabController isKindOfClass:[TabController class]]);
-  [tabController setPinned:(tabStripModel_->IsTabPinned(index) ? YES : NO)];
-  [self updateFavIconForContents:contents atIndex:index];
+  [tabController setPinned:
+      (tabStripModel_->IsTabPinned(modelIndex) ? YES : NO)];
+  [self updateFavIconForContents:contents atIndex:modelIndex];
 }
 
 // Called when the tab strip view changes size. As we only registered for
