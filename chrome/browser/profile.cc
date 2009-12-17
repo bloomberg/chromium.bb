@@ -464,7 +464,7 @@ class OffTheRecordProfileImpl : public Profile,
     return GetOriginalProfile()->GetTheme();
   }
 
-  virtual ThemeProvider* GetThemeProvider() {
+  virtual BrowserThemeProvider* GetThemeProvider() {
     return GetOriginalProfile()->GetThemeProvider();
   }
 
@@ -1228,7 +1228,7 @@ Extension* ProfileImpl::GetTheme() {
   return extensions_service_->GetExtensionById(id, false);
 }
 
-ThemeProvider* ProfileImpl::GetThemeProvider() {
+BrowserThemeProvider* ProfileImpl::GetThemeProvider() {
   InitThemes();
   return theme_provider_.get();
 }

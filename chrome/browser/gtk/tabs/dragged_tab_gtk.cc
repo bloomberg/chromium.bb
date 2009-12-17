@@ -11,6 +11,7 @@
 #include "app/gfx/canvas_paint.h"
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
+#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"

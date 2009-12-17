@@ -16,8 +16,6 @@ GtkThemeInstalledInfoBarDelegate::GtkThemeInstalledInfoBarDelegate(
 }
 
 bool GtkThemeInstalledInfoBarDelegate::Cancel() {
-  was_canceled_ = true;
-
   if (previous_use_gtk_theme_) {
     profile()->SetNativeTheme();
     return true;

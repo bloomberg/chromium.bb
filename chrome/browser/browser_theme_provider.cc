@@ -179,7 +179,8 @@ bool BrowserThemeProvider::IsThemeableImage(int resource_id) {
 
 BrowserThemeProvider::BrowserThemeProvider()
     : rb_(ResourceBundle::GetSharedInstance()),
-      profile_(NULL) {
+      profile_(NULL),
+      number_of_infobars_(0) {
   // Initialize the themeable image map so we can use it on other threads.
   HasThemeableImage(0);
 }
@@ -571,4 +572,15 @@ void BrowserThemeProvider::BuildFromExtension(Extension* extension) {
 
   SavePackName(pack_path);
   theme_pack_ = pack;
+}
+
+void BrowserThemeProvider::OnInfobarDisplayed() {
+  number_of_infobars_++;
+}
+
+void BrowserThemeProvider::OnInfobarDestroyed() {
+  number_of_infobars_--;
+
+  if (number_of_infobars_ == 0)
+    RemoveUnusedThemes();
 }
