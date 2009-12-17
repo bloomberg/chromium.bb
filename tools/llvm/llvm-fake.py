@@ -126,13 +126,12 @@ def PatchAbiVersionIntoElfHeader(filename):
 
   ELF_OSABI = 7
   ELF_ABIVERSION = 8
-  # ELF_FLAGS = 22
+  ELF_FLAGS = 22
   t = list(struct.unpack(FORMAT, data))
   # c.f. nacl_elf.h
   t[ELF_OSABI] = 123
   t[ELF_ABIVERSION] = 6
-  # TODO(robertm): this currently breaks running images in sel_ldr
-  # t[ELF_FLAGS] = t[ELF_FLAGS] | 0x100000
+  t[ELF_FLAGS] = t[ELF_FLAGS] | 0x100000
   data = struct.pack(FORMAT, *t)
   fp = open(filename, 'rb+')
   fp.write(data)
