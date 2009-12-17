@@ -42,3 +42,4 @@ NewTabUITest.UpdateUserPrefsVersion
 WorkerTest.FLAKY_LimitTotal
 WorkerTest.LimitPerPage
 WorkerTest.WorkerXhrHttpLayoutTests
+WorkerTest.FLAKY_SharedWorkerFastLayoutTests
