@@ -24,6 +24,7 @@
 #include "base/rand_util.h"
 #include "base/stack_container.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profile.h"
@@ -254,68 +255,8 @@ void VisitedLinkMaster::InitMembers(Listener* listener, Profile* profile) {
 
 bool VisitedLinkMaster::Init() {
   if (!InitFromFile())
-    return InitFromScratch();
+    return InitFromScratch(suppress_rebuild_);
   return true;
-}
-
-bool VisitedLinkMaster::InitFromFile() {
-  DCHECK(file_ == NULL);
-
-  FilePath filename;
-  GetDatabaseFileName(&filename);
-  ScopedFILE file_closer(OpenFile(filename, "rb+"));
-  if (!file_closer.get())
-    return false;
-
-  int32 num_entries, used_count;
-  if (!ReadFileHeader(file_closer.get(), &num_entries, &used_count, salt_))
-    return false;  // Header isn't valid.
-
-  // Allocate and read the table.
-  if (!CreateURLTable(num_entries, false))
-    return false;
-  if (!ReadFromFile(file_closer.get(), kFileHeaderSize,
-                    hash_table_, num_entries * sizeof(Fingerprint))) {
-    FreeURLTable();
-    return false;
-  }
-  used_items_ = used_count;
-
-#ifndef NDEBUG
-  DebugValidate();
-#endif
-
-  file_ = file_closer.release();
-  return true;
-}
-
-bool VisitedLinkMaster::InitFromScratch() {
-  int32 table_size = kDefaultTableSize;
-  if (table_size_override_)
-    table_size = table_size_override_;
-
-  // The salt must be generated before the table so that it can be copied to
-  // the shared memory.
-  GenerateSalt(salt_);
-  if (!CreateURLTable(table_size, true))
-    return false;
-
-#ifndef NDEBUG
-  DebugValidate();
-#endif
-
-  if (suppress_rebuild_) {
-    // When we disallow rebuilds (normally just unit tests), just use the
-    // current empty table.
-    return WriteFullTable();
-  }
-
-  // This will build the table from history. On the first run, history will
-  // be empty, so this will be correct. This will also write the new table
-  // to disk. We don't want to save explicitly here, since the rebuild may
-  // not complete, leaving us with an empty but valid visited link database.
-  // In the future, we won't know we need to try rebuilding again.
-  return RebuildTableFromHistory();
 }
 
 VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
@@ -594,6 +535,66 @@ bool VisitedLinkMaster::WriteFullTable() {
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE, new AsyncSetEndOfFile(file_));
   return true;
+}
+
+bool VisitedLinkMaster::InitFromFile() {
+  DCHECK(file_ == NULL);
+
+  FilePath filename;
+  GetDatabaseFileName(&filename);
+  ScopedFILE file_closer(OpenFile(filename, "rb+"));
+  if (!file_closer.get())
+    return false;
+
+  int32 num_entries, used_count;
+  if (!ReadFileHeader(file_closer.get(), &num_entries, &used_count, salt_))
+    return false;  // Header isn't valid.
+
+  // Allocate and read the table.
+  if (!CreateURLTable(num_entries, false))
+    return false;
+  if (!ReadFromFile(file_closer.get(), kFileHeaderSize,
+                    hash_table_, num_entries * sizeof(Fingerprint))) {
+    FreeURLTable();
+    return false;
+  }
+  used_items_ = used_count;
+
+#ifndef NDEBUG
+  DebugValidate();
+#endif
+
+  file_ = file_closer.release();
+  return true;
+}
+
+bool VisitedLinkMaster::InitFromScratch(bool suppress_rebuild) {
+  int32 table_size = kDefaultTableSize;
+  if (table_size_override_)
+    table_size = table_size_override_;
+
+  // The salt must be generated before the table so that it can be copied to
+  // the shared memory.
+  GenerateSalt(salt_);
+  if (!CreateURLTable(table_size, true))
+    return false;
+
+#ifndef NDEBUG
+  DebugValidate();
+#endif
+
+  if (suppress_rebuild) {
+    // When we disallow rebuilds (normally just unit tests), just use the
+    // current empty table.
+    return WriteFullTable();
+  }
+
+  // This will build the table from history. On the first run, history will
+  // be empty, so this will be correct. This will also write the new table
+  // to disk. We don't want to save explicitly here, since the rebuild may
+  // not complete, leaving us with an empty but valid visited link database.
+  // In the future, we won't know we need to try rebuilding again.
+  return RebuildTableFromHistory();
 }
 
 bool VisitedLinkMaster::ReadFileHeader(FILE* file,

@@ -44,7 +44,6 @@
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile_manager.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/user_data_manager.h"
@@ -101,6 +100,7 @@
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/views/user_data_dir_dialog.h"
 #include "chrome/common/env_vars.h"
@@ -681,10 +681,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // silently exit because of missing code in the above test.
   CHECK(profile) << "Cannot get default profile.";
 #endif
-
-  // Now that we have a profile, try to load the visited link master on a
-  // background thread.  We want to start this as soon as we can.
-  profile->PreloadVisitedLinkMaster();
 
   PrefService* user_prefs = profile->GetPrefs();
   DCHECK(user_prefs);
