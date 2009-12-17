@@ -1070,6 +1070,10 @@ void TabContents::StopFinding(bool clear_selection) {
   render_view_host()->StopFinding(clear_selection);
 }
 
+void TabContents::GetPageLanguage() {
+  render_view_host()->GetPageLanguage();
+}
+
 void TabContents::OnSavePage() {
   // If we can not save the page, try to download it.
   if (!SavePackage::IsSavableContents(contents_mime_type())) {
@@ -1723,40 +1727,6 @@ void TabContents::OnDidGetApplicationInfo(
 
   if (delegate())
     delegate()->OnDidGetApplicationInfo(this, page_id);
-}
-
-void TabContents::OnPageContents(const GURL& url,
-                                 int32 page_id,
-                                 const std::wstring& contents) {
-  // Don't index any https pages. People generally don't want their bank
-  // accounts, etc. indexed on their computer, especially since some of these
-  // things are not marked cachable.
-  // TODO(brettw) we may want to consider more elaborate heuristics such as
-  // the cachability of the page. We may also want to consider subframes (this
-  // test will still index subframes if the subframe is SSL).
-  if (!url.SchemeIsSecure()) {
-    Profile* p = profile();
-    if (!p || p->IsOffTheRecord())
-      return;
-
-    HistoryService* hs = p->GetHistoryService(Profile::IMPLICIT_ACCESS);
-    if (hs)
-      hs->SetPageContents(url, contents);
-  }
-
-
-// TODO(port): Port detection language to Mac and Linux.
-#if defined(OS_WIN)
-  // Detect the page language.  The detection happens on the file thread.
-  // We get the TAB_LANGUAGE_DETERMINED notification when the language has been
-  // detected.
-  registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
-                 Source<RenderViewHost>(render_view_host()));
-  cld_helper_ = new CLDHelper(render_view_host()->process()->id(),
-                              render_view_host()->routing_id(),
-                              page_id, contents);
-  cld_helper_->DetectLanguage();
-#endif
 }
 
 void TabContents::DidStartProvisionalLoadForFrame(
@@ -2619,20 +2589,6 @@ void TabContents::Observe(NotificationType type,
       break;
     }
 #endif
-
-    case NotificationType::TAB_LANGUAGE_DETERMINED: {
-      DCHECK(cld_helper_.get());
-      DCHECK(cld_helper_->language() == *Details<std::string>(details).ptr());
-
-      registrar_.Remove(this, NotificationType::TAB_LANGUAGE_DETERMINED,
-                        Source<RenderViewHost>(source));
-
-      NavigationEntry* entry = controller_.GetActiveEntry();
-      if (entry && entry->page_id() == cld_helper_->page_id())
-        entry->set_language(cld_helper_->language());
-      cld_helper_.release();
-      break;
-    }
 
     default:
       NOTREACHED();

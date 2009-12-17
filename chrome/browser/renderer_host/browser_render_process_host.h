@@ -104,6 +104,8 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   friend class VisitRelayingRenderProcessHost;
 
   // Control message handlers.
+  void OnPageContents(const GURL& url, int32 page_id,
+                      const std::wstring& contents);
   void OnUpdatedCacheStats(const WebKit::WebCache::UsageStats& stats);
   void SuddenTerminationChanged(bool enabled);
   void OnExtensionAddListener(const std::string& event_name);
