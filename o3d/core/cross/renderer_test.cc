@@ -94,7 +94,7 @@ TEST_F(RendererTest, InitAndDestroyRenderer) {
   EXPECT_TRUE(gl_renderer->cg_context() != NULL);
 #elif defined(RENDERER_GLES2)
   // test that the Cg Context was correctly created
-  RendererGL* gles2_renderer = down_cast<RendererGL*>(renderer.get());
+  RendererGLES2* gles2_renderer = down_cast<RendererGLES2*>(renderer.get());
   EXPECT_TRUE(gles2_renderer->cg_context() != NULL);
 #endif
   // destroy the renderer
@@ -185,3 +185,4 @@ TEST_F(RendererTest, SetViewport) {
 }
 
 }  // namespace o3d
+

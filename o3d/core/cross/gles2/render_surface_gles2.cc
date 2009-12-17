@@ -30,8 +30,8 @@
  */
 
 
-// This file contains the implementation of RenderSurfaceGL and
-// RenderDepthStencilSurfaceGL.
+// This file contains the implementation of RenderSurfaceGLES2 and
+// RenderDepthStencilSurfaceGLES2.
 
 #include "core/cross/gles2/render_surface_gles2.h"
 #include "core/cross/gles2/utils_gles2-inl.h"
@@ -39,22 +39,22 @@
 
 namespace o3d {
 
-RenderSurfaceGL::RenderSurfaceGL(ServiceLocator *service_locator,
-                                 int width,
-                                 int height,
-                                 GLenum cube_face,
-                                 int mip_level,
-                                 Texture *texture)
+RenderSurfaceGLES2::RenderSurfaceGLES2(ServiceLocator *service_locator,
+                                       int width,
+                                       int height,
+                                       GLenum cube_face,
+                                       int mip_level,
+                                       Texture *texture)
     : RenderSurface(service_locator, width, height, texture),
       cube_face_(cube_face),
       mip_level_(mip_level) {
   DCHECK(texture);
 }
 
-RenderSurfaceGL::~RenderSurfaceGL() {
+RenderSurfaceGLES2::~RenderSurfaceGLES2() {
 }
 
-Bitmap::Ref RenderSurfaceGL::PlatformSpecificGetBitmap() const {
+Bitmap::Ref RenderSurfaceGLES2::PlatformSpecificGetBitmap() const {
   Renderer* renderer = service_locator()->GetService<Renderer>();
   DCHECK(renderer);
 
@@ -79,7 +79,7 @@ Bitmap::Ref RenderSurfaceGL::PlatformSpecificGetBitmap() const {
   return bitmap;
 }
 
-RenderDepthStencilSurfaceGL::RenderDepthStencilSurfaceGL(
+RenderDepthStencilSurfaceGLES2::RenderDepthStencilSurfaceGLES2(
     ServiceLocator *service_locator,
     int width,
     int height)
@@ -114,7 +114,7 @@ RenderDepthStencilSurfaceGL::RenderDepthStencilSurfaceGL(
   }
 }
 
-RenderDepthStencilSurfaceGL::~RenderDepthStencilSurfaceGL() {
+RenderDepthStencilSurfaceGLES2::~RenderDepthStencilSurfaceGLES2() {
   if (GLEW_EXT_packed_depth_stencil) {
     glDeleteRenderbuffersEXT(1, render_buffers_);
   } else {
@@ -123,3 +123,4 @@ RenderDepthStencilSurfaceGL::~RenderDepthStencilSurfaceGL() {
 }
 
 }  // end namespace o3d
+

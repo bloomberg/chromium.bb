@@ -30,12 +30,12 @@
  */
 
 
-// This file contains the implementatinos of VertexBufferGL and
-// IndexBufferGL, used to implement O3D using OpenGL.
+// This file contains the implementatinos of VertexBufferGLES2 and
+// IndexBufferGLES2, used to implement O3D using OpenGLES2.
 //
 // To force the vertex and index buffers to be created by Cg Runtime
 // control, define the compile flag "USE_CG_BUFFERS". This option is off by
-// default and buffers are created, locked and managed using the OpenGL
+// default and buffers are created, locked and managed using the OpenGLES2
 // "ARB_vertex_buffer_object" extension.
 
 #include "core/cross/error.h"
@@ -68,24 +68,24 @@ GLenum BufferAccessModeToGLenum(Buffer::AccessMode access_mode) {
 // Vertex Buffers --------------------------------------------------------------
 
 // Initializes the O3D VertexBuffer object but does not allocate an
-// OpenGL vertex buffer object yet.
-VertexBufferGL::VertexBufferGL(ServiceLocator* service_locator)
+// OpenGLES2 vertex buffer object yet.
+VertexBufferGLES2::VertexBufferGLES2(ServiceLocator* service_locator)
     : VertexBuffer(service_locator),
-      renderer_(static_cast<RendererGL*>(
+      renderer_(static_cast<RendererGLES2*>(
           service_locator->GetService<Renderer>())),
       gl_buffer_(0) {
-  DLOG(INFO) << "VertexBufferGL Construct";
+  DLOG(INFO) << "VertexBufferGLES2 Construct";
 }
 
-// Destructor releases the OpenGL VBO.
-VertexBufferGL::~VertexBufferGL() {
-  DLOG(INFO) << "VertexBufferGL Destruct \"" << name() << "\"";
+// Destructor releases the OpenGLES2 VBO.
+VertexBufferGLES2::~VertexBufferGLES2() {
+  DLOG(INFO) << "VertexBufferGLES2 Destruct \"" << name() << "\"";
   ConcreteFree();
 }
 
-// Creates a OpenGL vertex buffer of the requested size.
-bool VertexBufferGL::ConcreteAllocate(size_t size_in_bytes) {
-  DLOG(INFO) << "VertexBufferGL Allocate  \"" << name() << "\"";
+// Creates a OpenGLES2 vertex buffer of the requested size.
+bool VertexBufferGLES2::ConcreteAllocate(size_t size_in_bytes) {
+  DLOG(INFO) << "VertexBufferGLES2 Allocate  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   ConcreteFree();
   // Create a new VBO.
@@ -104,7 +104,7 @@ bool VertexBufferGL::ConcreteAllocate(size_t size_in_bytes) {
   return true;
 }
 
-void VertexBufferGL::ConcreteFree() {
+void VertexBufferGLES2::ConcreteFree() {
   if (gl_buffer_) {
     renderer_->MakeCurrentLazy();
     glDeleteBuffersARB(1, &gl_buffer_);
@@ -113,11 +113,11 @@ void VertexBufferGL::ConcreteFree() {
   }
 }
 
-// Calls Lock on the OpenGL buffer to get the address in memory of where the
+// Calls Lock on the OpenGLES2 buffer to get the address in memory of where the
 // buffer data is currently stored.
-bool VertexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
-                                  void **buffer_data) {
-  DLOG(INFO) << "VertexBufferGL Lock  \"" << name() << "\"";
+bool VertexBufferGLES2::ConcreteLock(Buffer::AccessMode access_mode,
+                                     void **buffer_data) {
+  DLOG(INFO) << "VertexBufferGLES2 Lock  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   glBindBufferARB(GL_ARRAY_BUFFER_ARB, gl_buffer_);
   *buffer_data = glMapBufferARB(GL_ARRAY_BUFFER_ARB,
@@ -127,7 +127,7 @@ bool VertexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
     if (error == GL_OUT_OF_MEMORY) {
       O3D_ERROR(service_locator()) << "Out of memory for buffer lock.";
     } else {
-      O3D_ERROR(service_locator()) << "Unable to lock a GL Array Buffer";
+      O3D_ERROR(service_locator()) << "Unable to lock a GLES2 Array Buffer";
     }
     return false;
   }
@@ -135,10 +135,10 @@ bool VertexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
   return true;
 }
 
-// Calls Unlock on the OpenGL buffer to notify that the contents of the buffer
-// are now ready for use.
-bool VertexBufferGL::ConcreteUnlock() {
-  DLOG(INFO) << "VertexBufferGL Unlock  \"" << name() << "\"";
+// Calls Unlock on the OpenGLES2 buffer to notify that the contents of the
+// buffer are now ready for use.
+bool VertexBufferGLES2::ConcreteUnlock() {
+  DLOG(INFO) << "VertexBufferGLES2 Unlock  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   glBindBufferARB(GL_ARRAY_BUFFER_ARB, gl_buffer_);
   if (!glUnmapBufferARB(GL_ARRAY_BUFFER)) {
@@ -148,7 +148,7 @@ bool VertexBufferGL::ConcreteUnlock() {
           "Buffer was unlocked without first being locked.";
     } else {
       O3D_ERROR(
-          service_locator()) << "Unable to unlock a GL Element Array Buffer";
+          service_locator()) << "Unable to unlock a GLES2 Element Array Buffer";
     }
     return false;
   }
@@ -159,26 +159,26 @@ bool VertexBufferGL::ConcreteUnlock() {
 
 // Index Buffers ---------------------------------------------------------------
 
-// Initializes the O3D IndexBuffer object but does not create a OpenGL
+// Initializes the O3D IndexBuffer object but does not create a OpenGLES2
 // buffer yet.
 
-IndexBufferGL::IndexBufferGL(ServiceLocator* service_locator)
+IndexBufferGLES2::IndexBufferGLES2(ServiceLocator* service_locator)
     : IndexBuffer(service_locator),
-      renderer_(static_cast<RendererGL*>(
+      renderer_(static_cast<RendererGLES2*>(
           service_locator->GetService<Renderer>())),
       gl_buffer_(0) {
-  DLOG(INFO) << "IndexBufferGL Construct";
+  DLOG(INFO) << "IndexBufferGLES2 Construct";
 }
 
-// Destructor releases the OpenGL index buffer.
-IndexBufferGL::~IndexBufferGL() {
-  DLOG(INFO) << "IndexBufferGL Destruct  \"" << name() << "\"";
+// Destructor releases the OpenGLES2 index buffer.
+IndexBufferGLES2::~IndexBufferGLES2() {
+  DLOG(INFO) << "IndexBufferGLES2 Destruct  \"" << name() << "\"";
   ConcreteFree();
 }
 
-// Creates a OpenGL index buffer of the requested size.
-bool IndexBufferGL::ConcreteAllocate(size_t size_in_bytes) {
-  DLOG(INFO) << "IndexBufferGL Allocate  \"" << name() << "\"";
+// Creates a OpenGLES2 index buffer of the requested size.
+bool IndexBufferGLES2::ConcreteAllocate(size_t size_in_bytes) {
+  DLOG(INFO) << "IndexBufferGLES2 Allocate  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   ConcreteFree();
   // Create a new VBO.
@@ -195,7 +195,7 @@ bool IndexBufferGL::ConcreteAllocate(size_t size_in_bytes) {
   return true;
 }
 
-void IndexBufferGL::ConcreteFree() {
+void IndexBufferGLES2::ConcreteFree() {
   if (gl_buffer_) {
     renderer_->MakeCurrentLazy();
     glDeleteBuffersARB(1, &gl_buffer_);
@@ -204,10 +204,10 @@ void IndexBufferGL::ConcreteFree() {
   }
 }
 
-// Maps the OpenGL buffer to get the address in memory of the buffer data.
-bool IndexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
-                                 void **buffer_data) {
-  DLOG(INFO) << "IndexBufferGL Lock  \"" << name() << "\"";
+// Maps the OpenGLES2 buffer to get the address in memory of the buffer data.
+bool IndexBufferGLES2::ConcreteLock(Buffer::AccessMode access_mode,
+                                    void **buffer_data) {
+  DLOG(INFO) << "IndexBufferGLES2 Lock  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, gl_buffer_);
   if (!num_elements())
@@ -220,7 +220,7 @@ bool IndexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
       O3D_ERROR(service_locator()) << "Out of memory for buffer lock.";
     } else {
       O3D_ERROR(
-          service_locator()) << "Unable to lock a GL Element Array Buffer";
+          service_locator()) << "Unable to lock a GLES2 Element Array Buffer";
     }
     return false;
   }
@@ -228,10 +228,10 @@ bool IndexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
   return true;
 }
 
-// Calls Unlock on the OpenGL buffer to notify that the contents of the buffer
-// are now ready for use.
-bool IndexBufferGL::ConcreteUnlock() {
-  DLOG(INFO) << "IndexBufferGL Unlock  \"" << name() << "\"";
+// Calls Unlock on the OpenGLES2 buffer to notify that the contents of the
+// buffer are now ready for use.
+bool IndexBufferGLES2::ConcreteUnlock() {
+  DLOG(INFO) << "IndexBufferGLES2 Unlock  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   if (!num_elements())
     return true;
@@ -243,7 +243,7 @@ bool IndexBufferGL::ConcreteUnlock() {
           "Buffer was unlocked without first being locked.";
     } else {
       O3D_ERROR(
-          service_locator()) << "Unable to unlock a GL Element Array Buffer";
+          service_locator()) << "Unable to unlock a GLES2 Element Array Buffer";
     }
     return false;
   }
@@ -251,3 +251,4 @@ bool IndexBufferGL::ConcreteUnlock() {
   return true;
 }
 }  // namespace o3d
+

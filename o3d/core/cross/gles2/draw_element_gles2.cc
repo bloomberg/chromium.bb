@@ -30,17 +30,17 @@
  */
 
 
-// This file contains the definition of the DrawElementGL class.
+// This file contains the definition of the DrawElementGLES2 class.
 
 #include "core/cross/gles2/draw_element_gles2.h"
 
 namespace o3d {
 
-DrawElementGL::DrawElementGL(ServiceLocator* service_locator)
+DrawElementGLES2::DrawElementGLES2(ServiceLocator* service_locator)
     : DrawElement(service_locator) {
 }
 
-DrawElementGL::~DrawElementGL() {
+DrawElementGLES2::~DrawElementGLES2() {
 }
 }  // namespace o3d
 

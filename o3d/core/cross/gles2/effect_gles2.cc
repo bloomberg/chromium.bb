@@ -30,11 +30,11 @@
  */
 
 
-// This file contains the definition of EffectGL, the OpenGL implementation
-// of the abstract O3D class Effect.
+// This file contains the definition of EffectGLES2, the OpenGLES2
+// implementation of the abstract O3D class Effect.
 
 
-// Disable pointer casting warning for openGL calls that require a void* to
+// Disable pointer casting warning for OpenGLES2 calls that require a void* to
 // be cast to a GLuint
 #if defined(OS_WIN)
 #pragma warning(disable : 4312)
@@ -94,21 +94,21 @@ static const ObjectBase::Class* CgTypeToParamType(CGtype cg_type) {
 
 // -----------------------------------------------------------------------------
 
-EffectGL::EffectGL(ServiceLocator* service_locator, CGcontext cg_context)
+EffectGLES2::EffectGLES2(ServiceLocator* service_locator, CGcontext cg_context)
     : Effect(service_locator),
       semantic_manager_(service_locator->GetService<SemanticManager>()),
-      renderer_(static_cast<RendererGL*>(
+      renderer_(static_cast<RendererGLES2*>(
           service_locator->GetService<Renderer>())),
       cg_context_(cg_context),
       cg_vertex_(NULL),
       cg_fragment_(NULL) {
-  DLOG(INFO) << "EffectGL Construct";
+  DLOG(INFO) << "EffectGLES2 Construct";
 }
 
 // Destructor releases vertex and fragment shaders and their correspoding
 // constants tables.
-EffectGL::~EffectGL() {
-  DLOG(INFO) << "EffectGL Destruct \"" << name() << "\"";
+EffectGLES2::~EffectGLES2() {
+  DLOG(INFO) << "EffectGLES2 Destruct \"" << name() << "\"";
   if (cg_vertex_) {
     cgDestroyProgram(cg_vertex_);
   }
@@ -117,7 +117,7 @@ EffectGL::~EffectGL() {
   }
 }
 
-// Rewrites vertex program assembly code to match GL semantics for clipping.
+// Rewrites vertex program assembly code to match GLES2 semantics for clipping.
 // This parses the source, breaking it down into pieces:
 // - declaration ("!!ARBvp1.0")
 // - comments (that contain the parameter information)
@@ -195,8 +195,8 @@ static bool RewriteVertexProgramSource(String *source) {
 
 // Initializes the Effect object using the shaders found in an FX formatted
 // string.
-bool EffectGL::LoadFromFXString(const String& effect) {
-  DLOG(INFO) << "EffectGL LoadFromFXString";
+bool EffectGLES2::LoadFromFXString(const String& effect) {
+  DLOG(INFO) << "EffectGLES2 LoadFromFXString";
   renderer_->MakeCurrentLazy();
 
   set_source("");
@@ -260,17 +260,17 @@ bool EffectGL::LoadFromFXString(const String& effect) {
   CHECK_GL_ERROR();
 
   // If the program rewrite introduced some syntax or semantic errors, we won't
-  // know it until we load the program (through a GL error).
-  // So flush all GL errors first...
+  // know it until we load the program (through a GLES2 error).
+  // So flush all GLES2 errors first...
   do {} while (glGetError() != GL_NO_ERROR);
 
   // ... Then load the program ...
   cgGLLoadProgram(cg_vertex_);
 
-  // ... And check for GL errors.
+  // ... And check for GLES2 errors.
   if (glGetError() != GL_NO_ERROR) {
     O3D_ERROR(service_locator())
-        << "Effect post-rewrite GL Error: "
+        << "Effect post-rewrite GLES2 Error: "
         << glGetString(GL_PROGRAM_ERROR_STRING_ARB)
         << "\nSource: \n"
         << vp_assembly;
@@ -300,11 +300,11 @@ bool EffectGL::LoadFromFXString(const String& effect) {
 
   cgGLLoadProgram(cg_fragment_);
 
-  // Also check for GL errors, in case Cg managed to compile, but generated a
+  // Also check for GLES2 errors, in case Cg managed to compile, but generated a
   // bad program.
   if (glGetError() != GL_NO_ERROR) {
     O3D_ERROR(service_locator())
-        << "Effect GL Error: "
+        << "Effect GLES2 Error: "
         << glGetString(GL_PROGRAM_ERROR_STRING_ARB);
     return false;
   }
@@ -324,7 +324,7 @@ bool EffectGL::LoadFromFXString(const String& effect) {
 // Note that we compile the raw effect, which shouldn't have any
 // technique/pass, so we don't actually create programs, just parse the
 // uniforms and state assignments.
-void EffectGL::FillSamplerToTextureMap(const String &effect) {
+void EffectGLES2::FillSamplerToTextureMap(const String &effect) {
   CGeffect cg_effect = cgCreateEffect(cg_context_, effect.c_str(), NULL);
   if (!cg_effect) {
     DLOG(ERROR) << "Could not compile the effect to find "
@@ -360,7 +360,7 @@ void EffectGL::FillSamplerToTextureMap(const String &effect) {
 }
 
 // TODO(o3d): remove this (OLD path for textures).
-String EffectGL::GetTextureNameFromSamplerParamName(
+String EffectGLES2::GetTextureNameFromSamplerParamName(
     const String &sampler_name) {
   std::map<String, String>::iterator it =
       sampler_to_texture_map_.find(sampler_name);
@@ -373,10 +373,10 @@ String EffectGL::GetTextureNameFromSamplerParamName(
 
 // Given a CG_SAMPLER parameter, find the corresponding CG_TEXTURE
 // parameter. From this CG_TEXTURE, find a matching Param by name.
-ParamTexture* EffectGL::GetTextureParamFromCgSampler(
+ParamTexture* EffectGLES2::GetTextureParamFromCgSampler(
     CGparameter cg_sampler,
     const std::vector<ParamObject*> &param_objects) {
-  DLOG(INFO) << "EffectGL GetTextureParamFromCgSampler";
+  DLOG(INFO) << "EffectGLES2 GetTextureParamFromCgSampler";
   DLOG_ASSERT(cgGetParameterType(cg_sampler) != CG_SAMPLER);
   String sampler_name = cgGetParameterName(cg_sampler);
   String param_name = GetTextureNameFromSamplerParamName(sampler_name);
@@ -389,7 +389,7 @@ ParamTexture* EffectGL::GetTextureParamFromCgSampler(
     Param* param = param_objects[i]->GetUntypedParam(param_name);
     if (param && param->IsA(ParamTexture::GetApparentClass())) {
       // Success.
-      DLOG(INFO) << "EffectGL Matched CG_SAMPLER \""
+      DLOG(INFO) << "EffectGLES2 Matched CG_SAMPLER \""
                  << sampler_name
                  << "\" To Param \""
                  << param_name << "\"";
@@ -403,7 +403,7 @@ ParamTexture* EffectGL::GetTextureParamFromCgSampler(
   return NULL;
 }
 
-void EffectGL::GetShaderParamInfo(
+void EffectGLES2::GetShaderParamInfo(
     CGprogram program,
     CGenum name_space,
     std::map<String, EffectParameterInfo>* info_map) {
@@ -480,7 +480,7 @@ void EffectGL::GetShaderParamInfo(
   }
 }
 
-void EffectGL::GetParameterInfo(EffectParameterInfoArray* info_array) {
+void EffectGLES2::GetParameterInfo(EffectParameterInfoArray* info_array) {
   DCHECK(info_array);
   std::map<String, EffectParameterInfo> info_map;
   renderer_->MakeCurrentLazy();
@@ -503,7 +503,7 @@ void EffectGL::GetParameterInfo(EffectParameterInfoArray* info_array) {
       base::select2nd<std::map<String, EffectParameterInfo>::value_type>());
 }
 
-void EffectGL::GetVaryingVertexShaderParamInfo(
+void EffectGLES2::GetVaryingVertexShaderParamInfo(
     CGprogram program,
     CGenum name_space,
     std::vector<EffectStreamInfo>* info_array) {
@@ -535,7 +535,7 @@ void EffectGL::GetVaryingVertexShaderParamInfo(
   }
 }
 
-void EffectGL::GetStreamInfo(
+void EffectGLES2::GetStreamInfo(
     EffectStreamInfoArray* info_array) {
   DCHECK(info_array);
   renderer_->MakeCurrentLazy();
@@ -548,13 +548,14 @@ void EffectGL::GetStreamInfo(
 // private functions -----------------------------------------------------------
 
 // Loop over all the CG_SAMPLER objects and attach the GLuint handle for the
-// GL texture object that we discovered earlier. Then execute the
+// GLES2 texture object that we discovered earlier. Then execute the
 // CGstateassignments in the sampler_state to set up the texture unit.
 // TODO(o3d): remove this (OLD path for textures).
-void EffectGL::SetTexturesFromEffect(ParamCacheGL* param_cache_gl) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGL EnableTexturesFromEffect";
-  ParamCacheGL::SamplerParameterMap& map = param_cache_gl->sampler_map();
-  ParamCacheGL::SamplerParameterMap::iterator i;
+void EffectGLES2::SetTexturesFromEffect(ParamCacheGLES2* param_cache_gl) {
+  DLOG_FIRST_N(INFO, kNumLoggedEvents)
+      << "EffectGLES2 EnableTexturesFromEffect";
+  ParamCacheGLES2::SamplerParameterMap& map = param_cache_gl->sampler_map();
+  ParamCacheGLES2::SamplerParameterMap::iterator i;
   for (i = map.begin(); i != map.end(); ++i) {
     CGparameter cg_param = i->first;
     ParamTexture *param = i->second;
@@ -573,12 +574,13 @@ void EffectGL::SetTexturesFromEffect(ParamCacheGL* param_cache_gl) {
 
 // Loop through all the uniform CGparameters on the effect and set their
 // values from their corresponding Params on the various ParamObject (as stored
-// in the ParamCacheGL).
-void EffectGL::UpdateShaderUniformsFromEffect(ParamCacheGL* param_cache_gl) {
+// in the ParamCacheGLES2).
+void EffectGLES2::UpdateShaderUniformsFromEffect(
+    ParamCacheGLES2* param_cache_gl) {
   DLOG_FIRST_N(INFO, kNumLoggedEvents)
-      << "EffectGL UpdateShaderUniformsFromEffect";
-  ParamCacheGL::UniformParameterMap& map = param_cache_gl->uniform_map();
-  ParamCacheGL::UniformParameterMap::iterator i;
+      << "EffectGLES2 UpdateShaderUniformsFromEffect";
+  ParamCacheGLES2::UniformParameterMap& map = param_cache_gl->uniform_map();
+  ParamCacheGLES2::UniformParameterMap::iterator i;
   for (i = map.begin(); i != map.end(); ++i) {
     CGparameter cg_param = i->first;
     i->second->SetEffectParam(renderer_, cg_param);
@@ -588,10 +590,10 @@ void EffectGL::UpdateShaderUniformsFromEffect(ParamCacheGL* param_cache_gl) {
 
 // Loop through all the uniform CGparameters on the effect and reset their
 // values.  For now, this unbinds textures contained in sampler parameters.
-void EffectGL::ResetShaderUniforms(ParamCacheGL* param_cache_gl) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGL ResetShaderUniforms";
-  ParamCacheGL::UniformParameterMap& map = param_cache_gl->uniform_map();
-  ParamCacheGL::UniformParameterMap::iterator i;
+void EffectGLES2::ResetShaderUniforms(ParamCacheGLES2* param_cache_gl) {
+  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGLES2 ResetShaderUniforms";
+  ParamCacheGLES2::UniformParameterMap& map = param_cache_gl->uniform_map();
+  ParamCacheGLES2::UniformParameterMap::iterator i;
   for (i = map.begin(); i != map.end(); ++i) {
     CGparameter cg_param = i->first;
     i->second->ResetEffectParam(renderer_, cg_param);
@@ -601,8 +603,8 @@ void EffectGL::ResetShaderUniforms(ParamCacheGL* param_cache_gl) {
 
 // Updates the values of the vertex and fragment shader parameters using the
 // current values in the param/cgparam caches.
-void EffectGL::PrepareForDraw(ParamCacheGL* param_cache_gl) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGL PrepareForDraw \""
+void EffectGLES2::PrepareForDraw(ParamCacheGLES2* param_cache_gl) {
+  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGLES2 PrepareForDraw \""
                                        << name()
                                        << "\"";
   DCHECK(renderer_->IsCurrent());
@@ -623,12 +625,13 @@ void EffectGL::PrepareForDraw(ParamCacheGL* param_cache_gl) {
 }
 
 // Resets the render states back to their default value.
-void EffectGL::PostDraw(ParamCacheGL* param_cache_gl) {
+void EffectGLES2::PostDraw(ParamCacheGLES2* param_cache_gl) {
   DLOG_FIRST_N(INFO, kNumLoggedEvents)
-      << "EffectGL PostDraw \"" << name() << "\"";
+      << "EffectGLES2 PostDraw \"" << name() << "\"";
   DCHECK(renderer_->IsCurrent());
   ResetShaderUniforms(param_cache_gl);
   CHECK_GL_ERROR();
 }
 
 }  // namespace o3d
+

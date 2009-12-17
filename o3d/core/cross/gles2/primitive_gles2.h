@@ -30,7 +30,7 @@
  */
 
 
-// This file contains the declaration of the PrimitiveGL class.
+// This file contains the declaration of the PrimitiveGLES2 class.
 
 #ifndef O3D_CORE_CROSS_GLES2_PRIMITIVE_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_PRIMITIVE_GLES2_H_
@@ -41,12 +41,12 @@
 
 namespace o3d {
 
-// PrimitiveGL is the OpenGL implementation of the Primitive.  It provides the
-// necessary interfaces for setting the geometry streams on the Primitive.
-class PrimitiveGL : public Primitive {
+// PrimitiveGLES2 is the OpenGLES2 implementation of the Primitive.  It provides
+// the necessary interfaces for setting the geometry streams on the Primitive.
+class PrimitiveGLES2 : public Primitive {
  public:
-  explicit PrimitiveGL(ServiceLocator* service_locator);
-  virtual ~PrimitiveGL();
+  explicit PrimitiveGLES2(ServiceLocator* service_locator);
+  virtual ~PrimitiveGLES2();
 
  protected:
   // Overridden from Primitive.
@@ -61,3 +61,4 @@ class PrimitiveGL : public Primitive {
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_PRIMITIVE_GLES2_H_
+

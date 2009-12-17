@@ -35,7 +35,7 @@
 #include "core/cross/gles2/utils_gles2.h"
 #include "core/cross/gles2/gles2_headers.h"
 
-// Required OpenGL extensions:
+// Required OpenGLES2 extensions:
 // GL_ARB_vertex_buffer_object
 // GL_ARB_vertex_program
 // GL_ARB_texture_compression
@@ -141,7 +141,7 @@ SemanticMapElement semantic_map_vp_40[] = {
   SemanticMapElement("ATTR15",    15),
 };
 
-// The map batween OpenGL Vertex Attribute indexes under the VP_40 profile
+// The map batween OpenGLES2 Vertex Attribute indexes under the VP_40 profile
 // to Stream::Semantic identifiers (with index offsets).
 struct AttrMapElement {
   AttrMapElement(Stream::Semantic s, int i) : semantic(s), index(i) {}
@@ -167,14 +167,14 @@ AttrMapElement attr_map_vp_40[] = {
   AttrMapElement(Stream::BINORMAL, 0),
 };
 
-// TODO: make this choice a runtime decision in RendererGL
+// TODO(o3d): make this choice a runtime decision in RendererGLES2
 // initialisation.
 static SemanticMap semantic_map(semantic_map_vp_40,
                                 semantic_map_vp_40 +
                                 sizeof(semantic_map_vp_40) /
                                 sizeof(SemanticMapElement) );
 
-// Converts a semantic string to an OpenGL vertex attribute number using the
+// Converts a semantic string to an OpenGLES2 vertex attribute number using the
 // standard VP_40 shader semantic mappings. If the semantic is not
 // recognised, it returns an index of -1.
 int SemanticNameToGLVertexAttribute(const char* semantic) {
@@ -192,11 +192,11 @@ Stream::Semantic GLVertexAttributeToStream(const unsigned int attr,
   // kMaxAttrIndex is available from:
   //    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
   //
-  // TODO: make this a runtime provided value discovered during
+  // TODO(o3d): make this a runtime provided value discovered during
   // Renderer creation.
   const unsigned int kMaxAttrIndex = 15u;
   if (attr > kMaxAttrIndex) {
-    //TODO: Figure out how to get errors out of here to the client.
+    //TODO(o3d): Figure out how to get errors out of here to the client.
     DLOG(ERROR) << "Invalid vertex attribute index.";
     *index = 0;
     return Stream::UNKNOWN_SEMANTIC;
@@ -226,3 +226,4 @@ inline void CheckForCgError(const String& logmessage, CGcontext cg_context) {
 #endif
 
 }  // namespace o3d
+

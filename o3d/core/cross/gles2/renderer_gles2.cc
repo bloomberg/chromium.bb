@@ -30,8 +30,8 @@
  */
 
 
-// This file contains the definition of the RendererGL class that
-// implements the abstract Renderer API using OpenGL and the Cg
+// This file contains the definition of the RendererGLES2 class that
+// implements the abstract Renderer API using OpenGLES2 and the Cg
 // Runtime.
 
 
@@ -170,7 +170,7 @@ GLenum ConvertStencilOp(State::StencilOperation stencil_func) {
 }
 
 // Helper routine that will bind the surfaces stored in the RenderSurface and
-// RenderDepthStencilSurface arguments to the current OpenGL context.
+// RenderDepthStencilSurface arguments to the current OpenGLES2 context.
 // Returns true upon success.
 // Note:  This routine assumes that a frambuffer object is presently bound
 // to the context.
@@ -199,8 +199,8 @@ bool InstallFramebufferObjects(const RenderSurface* surface,
                                  0);
 
   if (surface) {
-    const RenderSurfaceGL *gl_surface =
-        down_cast<const RenderSurfaceGL*>(surface);
+    const RenderSurfaceGLES2 *gl_surface =
+        down_cast<const RenderSurfaceGLES2*>(surface);
     Texture *texture = gl_surface->texture();
     GLuint handle = static_cast<GLuint>(reinterpret_cast<intptr_t>(
         texture->GetTextureHandle()));
@@ -223,8 +223,8 @@ bool InstallFramebufferObjects(const RenderSurface* surface,
 
   if (surface_depth) {
     // Bind both the depth and stencil attachments.
-    const RenderDepthStencilSurfaceGL* gl_surface =
-        down_cast<const RenderDepthStencilSurfaceGL*>(surface_depth);
+    const RenderDepthStencilSurfaceGLES2* gl_surface =
+        down_cast<const RenderDepthStencilSurfaceGLES2*>(surface_depth);
     ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
                                    GL_DEPTH_ATTACHMENT_EXT,
                                    GL_RENDERBUFFER_EXT,
@@ -258,13 +258,14 @@ const RenderSurfaceBase* GetValidRenderSurface(
 
 // This class wraps StateHandler to make it typesafe.
 template <typename T>
-class TypedStateHandler : public RendererGL::StateHandler {
+class TypedStateHandler : public RendererGLES2::StateHandler {
  public:
   // Override this function to set a specific state.
   // Parameters:
   //   renderer: The platform specific renderer.
   //   param: A concrete param with state data.
-  virtual void SetStateFromTypedParam(RendererGL* renderer, T* param) const = 0;
+  virtual void SetStateFromTypedParam(
+      RendererGLES2* renderer, T* param) const = 0;
 
   // Gets Class of State's Parameter
   virtual const ObjectBase::Class* GetClass() const {
@@ -277,7 +278,7 @@ class TypedStateHandler : public RendererGL::StateHandler {
   //   renderer: The platform specific renderer.
   //   param: A param with state data.
   virtual void SetState(Renderer* renderer, Param* param) const {
-    RendererGL *renderer_gl = down_cast<RendererGL *>(renderer);
+    RendererGLES2 *renderer_gl = down_cast<RendererGLES2 *>(renderer);
     // This is safe because State guarntees Params match by type.
     DCHECK(param->IsA(T::GetApparentClass()));
     SetStateFromTypedParam(renderer_gl, down_cast<T*>(param));
@@ -290,7 +291,7 @@ class TypedStateHandler : public RendererGL::StateHandler {
 template <GLenum state_constant>
 class StateEnableHandler : public TypedStateHandler<ParamBoolean> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamBoolean* param) const {
     if (param->value()) {
       ::glEnable(state_constant);
@@ -306,7 +307,7 @@ class BoolHandler : public TypedStateHandler<ParamBoolean> {
       : var_(*var),
         changed_var_(*changed_var) {
   }
-  virtual void SetStateFromTypedParam(RendererGL *renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2 *renderer,
                                       ParamBoolean *param) const {
     var_ = param->value();
   }
@@ -317,7 +318,7 @@ class BoolHandler : public TypedStateHandler<ParamBoolean> {
 
 class ZWriteEnableHandler : public TypedStateHandler<ParamBoolean> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL *renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2 *renderer,
                                       ParamBoolean *param) const {
     ::glDepthMask(param->value());
   }
@@ -325,7 +326,7 @@ class ZWriteEnableHandler : public TypedStateHandler<ParamBoolean> {
 
 class AlphaReferenceHandler : public TypedStateHandler<ParamFloat> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamFloat* param) const {
     float refFloat = param->value();
 
@@ -343,7 +344,7 @@ class AlphaReferenceHandler : public TypedStateHandler<ParamFloat> {
 
 class CullModeHandler : public TypedStateHandler<ParamInteger> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamInteger* param) const {
     State::Cull cull = static_cast<State::Cull>(param->value());
     switch (cull) {
@@ -364,7 +365,7 @@ class CullModeHandler : public TypedStateHandler<ParamInteger> {
 
 class PolygonOffset1Handler : public TypedStateHandler<ParamFloat> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamFloat* param) const {
     renderer->polygon_offset_factor_ = param->value();
     renderer->polygon_offset_changed_ = true;
@@ -373,7 +374,7 @@ class PolygonOffset1Handler : public TypedStateHandler<ParamFloat> {
 
 class PolygonOffset2Handler : public TypedStateHandler<ParamFloat> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamFloat* param) const {
     renderer->polygon_offset_bias_ = param->value();
     renderer->polygon_offset_changed_ = true;
@@ -382,7 +383,7 @@ class PolygonOffset2Handler : public TypedStateHandler<ParamFloat> {
 
 class FillModeHandler : public TypedStateHandler<ParamInteger> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamInteger* param) const {
     ::glPolygonMode(GL_FRONT_AND_BACK,
                     ConvertFillMode(static_cast<State::Fill>(param->value())));
@@ -391,7 +392,7 @@ class FillModeHandler : public TypedStateHandler<ParamInteger> {
 
 class ZFunctionHandler : public TypedStateHandler<ParamInteger> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamInteger* param) const {
     ::glDepthFunc(
         ConvertCmpFunc(static_cast<State::Comparison>(param->value())));
@@ -403,7 +404,7 @@ class BlendEquationHandler : public TypedStateHandler<ParamInteger> {
   explicit BlendEquationHandler(GLenum* var)
       : var_(*var) {
   }
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamInteger* param) const {
     renderer->alpha_blend_settings_changed_ = true;
     var_ = ConvertBlendEquation(
@@ -418,7 +419,7 @@ class BlendFunctionHandler : public TypedStateHandler<ParamInteger> {
   explicit BlendFunctionHandler(GLenum* var)
       : var_(*var) {
   }
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamInteger* param) const {
     renderer->alpha_blend_settings_changed_ = true;
     var_ = ConvertBlendFunc(
@@ -435,7 +436,7 @@ class StencilOperationHandler : public TypedStateHandler<ParamInteger> {
       : face_(face) ,
         condition_(condition) {
   }
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamInteger* param) const  {
     renderer->stencil_settings_changed_ = true;
     renderer->stencil_settings_[face_].op_[condition_] = ConvertStencilOp(
@@ -452,7 +453,7 @@ class ComparisonFunctionHandler : public TypedStateHandler<ParamInteger> {
       : var_(*var),
         changed_var_(*changed_var) {
   }
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamInteger* param) const {
     changed_var_ = true;
     var_ = ConvertCmpFunc(static_cast<State::Comparison>(param->value()));
@@ -464,7 +465,7 @@ class ComparisonFunctionHandler : public TypedStateHandler<ParamInteger> {
 
 class StencilRefHandler : public TypedStateHandler<ParamInteger> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamInteger* param) const {
     renderer->stencil_settings_changed_ = true;
     renderer->stencil_ref_ = param->value();
@@ -476,7 +477,7 @@ class StencilMaskHandler : public TypedStateHandler<ParamInteger> {
   explicit StencilMaskHandler(int mask_index)
       : mask_index_(mask_index) {
   }
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamInteger* param) const {
     renderer->stencil_settings_changed_ = true;
     renderer->stencil_mask_[mask_index_] = param->value();
@@ -487,7 +488,7 @@ class StencilMaskHandler : public TypedStateHandler<ParamInteger> {
 
 class ColorWriteEnableHandler : public TypedStateHandler<ParamInteger> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamInteger* param) const {
     int mask = param->value();
     ::glColorMask((mask & 0x1) != 0,
@@ -500,11 +501,11 @@ class ColorWriteEnableHandler : public TypedStateHandler<ParamInteger> {
 
 class PointSpriteEnableHandler : public TypedStateHandler<ParamBoolean> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamBoolean* param) const {
     if (param->value()) {
       ::glEnable(GL_POINT_SPRITE);
-      // TODO: It's not clear from D3D docs that point sprites affect
+      // TODO(o3d): It's not clear from D3D docs that point sprites affect
       // TEXCOORD0, but that's my guess. Check that.
       ::glActiveTextureARB(GL_TEXTURE0);
       ::glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
@@ -518,17 +519,17 @@ class PointSpriteEnableHandler : public TypedStateHandler<ParamBoolean> {
 
 class PointSizeHandler : public TypedStateHandler<ParamFloat> {
  public:
-  virtual void SetStateFromTypedParam(RendererGL* renderer,
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamFloat* param) const {
     ::glPointSize(param->value());
   }
 };
 
-RendererGL* RendererGL::CreateDefault(ServiceLocator* service_locator) {
-  return new RendererGL(service_locator);
+RendererGLES2* RendererGLES2::CreateDefault(ServiceLocator* service_locator) {
+  return new RendererGLES2(service_locator);
 }
 
-RendererGL::RendererGL(ServiceLocator* service_locator)
+RendererGLES2::RendererGLES2(ServiceLocator* service_locator)
     : Renderer(service_locator),
       semantic_manager_(service_locator),
 #ifdef OS_WIN
@@ -557,7 +558,7 @@ RendererGL::RendererGL(ServiceLocator* service_locator)
       polygon_offset_changed_(true),
       polygon_offset_factor_(0.f),
       polygon_offset_bias_(0.f) {
-  DLOG(INFO) << "RendererGL Construct";
+  DLOG(INFO) << "RendererGLES2 Construct";
 
   // Setup default state values.
   for (int ii = 0; ii < 2; ++ii) {
@@ -653,13 +654,13 @@ RendererGL::RendererGL(ServiceLocator* service_locator)
                   new BlendEquationHandler(&blend_equation_[ALPHA]));
 }
 
-RendererGL::~RendererGL() {
+RendererGLES2::~RendererGLES2() {
   Destroy();
 }
 
 // platform neutral initialization code
 //
-Renderer::InitStatus RendererGL::InitCommonGL() {
+Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
   GLenum glew_error = glewInit();
   if (glew_error != GLEW_OK) {
     DLOG(ERROR) << "Unable to initialise GLEW : "
@@ -667,29 +668,29 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
     return INITIALIZATION_ERROR;
   }
 
-  // Check to see that we can use the OpenGL vertex attribute APIs
-  // TODO:  We should return false if this check fails, but because some
-  // Intel hardware does not support OpenGL 2.0, yet does support all of the
+  // Check to see that we can use the OpenGLES2 vertex attribute APIs
+  // TODO(o3d):  We should return false if this check fails, but because some
+  // Intel hardware does not support OpenGLES2 2.0, yet does support all of the
   // extensions we require, we only log an error.  A future CL should change
   // this check to ensure that all of the extension strings we require are
   // present.
   if (!GLEW_VERSION_2_0) {
-    DLOG(ERROR) << "GL drivers do not have OpenGL 2.0 functionality.";
+    DLOG(ERROR) << "GLES2 drivers do not have OpenGLES2 2.0 functionality.";
   }
 
   if (!GLEW_ARB_vertex_buffer_object) {
-    // NOTE: Linux NVidia drivers claim to support OpenGL 2.0 when using
+    // NOTE: Linux NVidia drivers claim to support OpenGLES2 2.0 when using
     // indirect rendering (e.g. remote X), but it is actually lying. The
     // ARB_vertex_buffer_object functions silently no-op (!) when using
     // indirect rendering, leading to crashes. Fortunately, in that case, the
     // driver claims to not support ARB_vertex_buffer_object, so fail in that
     // case.
-    DLOG(ERROR) << "GL drivers do not support vertex buffer objects.";
+    DLOG(ERROR) << "GLES2 drivers do not support vertex buffer objects.";
     return GPU_NOT_UP_TO_SPEC;
   }
 
   if (!GLEW_EXT_framebuffer_object) {
-    DLOG(ERROR) << "GL drivers do not support framebuffer objects.";
+    DLOG(ERROR) << "GLES2 drivers do not support framebuffer objects.";
     return GPU_NOT_UP_TO_SPEC;
   }
 
@@ -698,7 +699,7 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
 #ifdef OS_MACOSX
   // The Radeon X1600 says it supports NPOT, but in most situations it doesn't.
   if (supports_npot() &&
-      !strcmp("ATI Radeon X1600 OpenGL Engine",
+      !strcmp("ATI Radeon X1600 OpenGLES2 Engine",
               reinterpret_cast<const char*>(::glGetString(GL_RENDERER))))
     SetSupportsNPOT(false);
 #endif
@@ -721,9 +722,9 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
   // ignore any "CG ERROR: Invalid context handle." message on this
   // function - Invalid context handle isn't one of therror states of
   // cgCreateContext().
-  DLOG(INFO) << "OpenGL Vendor: " << ::glGetString(GL_VENDOR);
-  DLOG(INFO) << "OpenGL Renderer: " << ::glGetString(GL_RENDERER);
-  DLOG(INFO) << "OpenGL Version: " << ::glGetString(GL_VERSION);
+  DLOG(INFO) << "OpenGLES2 Vendor: " << ::glGetString(GL_VENDOR);
+  DLOG(INFO) << "OpenGLES2 Renderer: " << ::glGetString(GL_RENDERER);
+  DLOG(INFO) << "OpenGLES2 Version: " << ::glGetString(GL_VERSION);
   DLOG(INFO) << "Cg Version: " << cgGetString(CG_VERSION);
   cg_vertex_profile_ = cgGLGetLatestProfile(CG_GL_VERTEX);
   cgGLSetOptimalOptions(cg_vertex_profile_);
@@ -733,9 +734,9 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
   cgGLSetOptimalOptions(cg_fragment_profile_);
   DLOG(INFO) << "Best Cg fragment profile = "
              << cgGetProfileString(cg_fragment_profile_);
-  // Set up all Cg State Assignments for OpenGL.
+  // Set up all Cg State Assignments for OpenGLES2.
   cgGLRegisterStates(cg_context_);
-  DLOG_CG_ERROR("Registering GL StateAssignments");
+  DLOG_CG_ERROR("Registering GLES2 StateAssignments");
   cgGLSetDebugMode(CG_FALSE);
   // Enable the profiles we use.
   cgGLEnableProfile(CG_PROFILE_ARBVP1);
@@ -744,8 +745,8 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
   GLint max_vertex_attribs = 0;
   ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
   DLOG(INFO) << "Max Vertex Attribs = " << max_vertex_attribs;
-  // Initialize global GL settings.
-  // Tell GL that texture buffers can be single-byte aligned.
+  // Initialize global GLES2 settings.
+  // Tell GLES2 that texture buffers can be single-byte aligned.
   ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
   ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   ::glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
@@ -764,7 +765,7 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
 }
 
 // platform neutral destruction code
-void RendererGL::DestroyCommonGL() {
+void RendererGLES2::DestroyCommonGLES2() {
   MakeCurrentLazy();
   if (render_surface_framebuffer_) {
     ::glDeleteFramebuffersEXT(1, &render_surface_framebuffer_);
@@ -812,7 +813,7 @@ LRESULT CALLBACK IntermediateWindowProc(HWND window,
 Renderer::InitStatus GetWindowsPixelFormat(HWND window,
                                            Features* features,
                                            int* pixel_format) {
-  // We must initialize a GL context before we can determine the multi-sampling
+  // We must initialize a GLES2 context before we can determine the multi-sampling
   // supported on the current hardware, so we create an intermediate window
   // and context here.
   HINSTANCE module_handle;
@@ -833,7 +834,7 @@ Renderer::InitStatus GetWindowsPixelFormat(HWND window,
   intermediate_class.hCursor = LoadCursor(NULL, IDC_ARROW);
   intermediate_class.hbrBackground = NULL;
   intermediate_class.lpszMenuName = NULL;
-  intermediate_class.lpszClassName = L"Intermediate GL Window";
+  intermediate_class.lpszClassName = L"Intermediate GLES2 Window";
 
   ATOM class_registration = ::RegisterClass(&intermediate_class);
   if (!class_registration) {
@@ -861,7 +862,7 @@ Renderer::InitStatus GetWindowsPixelFormat(HWND window,
   int format_index = ::ChoosePixelFormat(intermediate_dc,
                                          &kPixelFormatDescriptor);
   if (format_index == 0) {
-    DLOG(ERROR) << "Unable to get the pixel format for GL context.";
+    DLOG(ERROR) << "Unable to get the pixel format for GLES2 context.";
     ::ReleaseDC(intermediate_window, intermediate_dc);
     ::DestroyWindow(intermediate_window);
     ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
@@ -870,7 +871,7 @@ Renderer::InitStatus GetWindowsPixelFormat(HWND window,
   }
   if (!::SetPixelFormat(intermediate_dc, format_index,
                         &kPixelFormatDescriptor)) {
-    DLOG(ERROR) << "Unable to set the pixel format for GL context.";
+    DLOG(ERROR) << "Unable to set the pixel format for GLES2 context.";
     ::ReleaseDC(intermediate_window, intermediate_dc);
     ::DestroyWindow(intermediate_window);
     ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
@@ -882,8 +883,8 @@ Renderer::InitStatus GetWindowsPixelFormat(HWND window,
   *pixel_format = format_index;
   HGLRC gl_context = ::wglCreateContext(intermediate_dc);
   if (::wglMakeCurrent(intermediate_dc, gl_context)) {
-    // GL context was successfully created and applied to the window's DC.
-    // Startup GLEW, the GL extensions wrangler.
+    // GLES2 context was successfully created and applied to the window's DC.
+    // Startup GLEW, the GLES2 extensions wrangler.
     GLenum glew_error = ::glewInit();
     if (glew_error == GLEW_OK) {
       DLOG(INFO) << "Initialized GLEW " << ::glewGetString(GLEW_VERSION);
@@ -949,15 +950,15 @@ Renderer::InitStatus GetWindowsPixelFormat(HWND window,
 
 }  // unnamed namespace
 
-Renderer::InitStatus RendererGL::InitPlatformSpecific(
+Renderer::InitStatus RendererGLES2::InitPlatformSpecific(
     const DisplayWindow& display,
     bool off_screen) {
   const DisplayWindowWindows &display_platform =
       static_cast<const DisplayWindowWindows&>(display);
 
-  DLOG(INFO) << "RendererGL Init";
+  DLOG(INFO) << "RendererGLES2 Init";
 
-  // TODO: Add support for off-screen rendering using OpenGL.
+  // TODO(o3d): Add support for off-screen rendering using OpenGLES2.
   if (off_screen) {
     return INITIALIZATION_ERROR;
   }
@@ -976,36 +977,36 @@ Renderer::InitStatus RendererGL::InitPlatformSpecific(
   device_context_ = ::GetDC(window_);
   if (!::SetPixelFormat(device_context_, pixel_format,
                         &kPixelFormatDescriptor)) {
-    DLOG(ERROR) << "Unable to set the pixel format for GL context.";
+    DLOG(ERROR) << "Unable to set the pixel format for GLES2 context.";
     return INITIALIZATION_ERROR;
   }
 
   gl_context_ = ::wglCreateContext(device_context_);
   if (MakeCurrent()) {
     // Ensure that glew has been initialized for the created rendering context.
-    init_status = InitCommonGL();
+    init_status = InitCommonGLES2();
     if (init_status != SUCCESS) {
-      DLOG(ERROR) << "Failed to initialize GL rendering context.";
+      DLOG(ERROR) << "Failed to initialize GLES2 rendering context.";
       return init_status;
     }
     if (WGLEW_ARB_multisample) {
       ::glEnable(GL_MULTISAMPLE_ARB);
     }
   } else {
-    DLOG(ERROR) << "Failed to create the GL Context.";
+    DLOG(ERROR) << "Failed to create the GLES2 Context.";
     return INITIALIZATION_ERROR;
   }
   CHECK_GL_ERROR();
   return SUCCESS;
 }
 
-// Releases the Cg Context and deletes the GL device.
-void RendererGL::Destroy() {
-  DLOG(INFO) << "Destroy RendererGL";
-  DestroyCommonGL();
+// Releases the Cg Context and deletes the GLES2 device.
+void RendererGLES2::Destroy() {
+  DLOG(INFO) << "Destroy RendererGLES2";
+  DestroyCommonGLES2();
   if (device_context_) {
     CHECK_GL_ERROR();
-    // Release the OpenGL rendering context.
+    // Release the OpenGLES2 rendering context.
     ::wglMakeCurrent(device_context_, NULL);
     if (gl_context_) {
       ::wglDeleteContext(gl_context_);
@@ -1023,20 +1024,20 @@ void RendererGL::Destroy() {
 
 #ifdef OS_MACOSX
 
-Renderer::InitStatus  RendererGL::InitPlatformSpecific(
+Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
     const DisplayWindow& display,
     bool /*off_screen*/) {
   const DisplayWindowMac &display_platform =
       static_cast<const DisplayWindowMac&>(display);
-  // TODO: Add support for off screen rendering on the Mac.
+  // TODO(o3d): Add support for off screen rendering on the Mac.
   mac_agl_context_ = display_platform.agl_context();
   mac_cgl_context_ = display_platform.cgl_context();
 
-  return InitCommonGL();
+  return InitCommonGLES2();
 }
 
-void RendererGL::Destroy() {
-  DestroyCommonGL();
+void RendererGLES2::Destroy() {
+  DestroyCommonGLES2();
   // We only have to destroy agl contexts,
   // cgl contexts are not owned by us.
   if (mac_agl_context_) {
@@ -1048,7 +1049,7 @@ void RendererGL::Destroy() {
 #endif  // OS_MACOSX
 
 #ifdef OS_LINUX
-Renderer::InitStatus  RendererGL::InitPlatformSpecific(
+Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
     const DisplayWindow& display_window,
     bool off_screen) {
   const DisplayWindowLinux &display_platform =
@@ -1073,7 +1074,7 @@ Renderer::InitStatus  RendererGL::InitPlatformSpecific(
   }
   ::XFree(visual_info_list);
   if (!context_) {
-    DLOG(ERROR) << "Couldn't create GL context.";
+    DLOG(ERROR) << "Couldn't create GLES2 context.";
     return INITIALIZATION_ERROR;
   }
   display_ = display;
@@ -1083,11 +1084,11 @@ Renderer::InitStatus  RendererGL::InitPlatformSpecific(
     context_ = 0;
     display_ = NULL;
     window_ = 0;
-    DLOG(ERROR) << "Couldn't create GL context.";
+    DLOG(ERROR) << "Couldn't create GLES2 context.";
     return INITIALIZATION_ERROR;
   }
 
-  InitStatus init_status = InitCommonGL();
+  InitStatus init_status = InitCommonGLES2();
   if (init_status != SUCCESS) {
     ::glXDestroyContext(display, context_);
     context_ = 0;
@@ -1097,8 +1098,8 @@ Renderer::InitStatus  RendererGL::InitPlatformSpecific(
   return init_status;
 }
 
-void RendererGL::Destroy() {
-  DestroyCommonGL();
+void RendererGLES2::Destroy() {
+  DestroyCommonGLES2();
   if (display_) {
     ::glXMakeCurrent(display_, 0, 0);
     if (context_) {
@@ -1112,7 +1113,7 @@ void RendererGL::Destroy() {
 
 #endif
 
-bool RendererGL::MakeCurrent() {
+bool RendererGLES2::MakeCurrent() {
 #ifdef OS_WIN
   if (!device_context_ || !gl_context_) return false;
   bool result = ::wglMakeCurrent(device_context_, gl_context_) != 0;
@@ -1139,12 +1140,12 @@ bool RendererGL::MakeCurrent() {
 #endif
 }
 
-void RendererGL::PlatformSpecificClear(const Float4 &color,
-                                       bool color_flag,
-                                       float depth,
-                                       bool depth_flag,
-                                       int stencil,
-                                       bool stencil_flag) {
+void RendererGLES2::PlatformSpecificClear(const Float4 &color,
+                                          bool color_flag,
+                                          float depth,
+                                          bool depth_flag,
+                                          int stencil,
+                                          bool stencil_flag) {
   MakeCurrentLazy();
   ::glClearColor(color[0], color[1], color[2], color[3]);
   ::glClearDepth(depth);
@@ -1156,11 +1157,11 @@ void RendererGL::PlatformSpecificClear(const Float4 &color,
   CHECK_GL_ERROR();
 }
 
-// Updates the helper constant used for the D3D -> GL remapping.
+// Updates the helper constant used for the D3D -> GLES2 remapping.
 // See effect_gles2.cc for details.
-void RendererGL::UpdateHelperConstant(float width, float height) {
+void RendererGLES2::UpdateHelperConstant(float width, float height) {
   MakeCurrentLazy();
-  // If render-targets are active, pass -1 to invert the Y axis.  OpenGL uses
+  // If render-targets are active, pass -1 to invert the Y axis.  OpenGLES2 uses
   // a different viewport orientation than DX.  Without the inversion, the
   // output of render-target rendering will be upside down.
   if (RenderSurfaceActive()) {
@@ -1182,12 +1183,12 @@ void RendererGL::UpdateHelperConstant(float width, float height) {
   CHECK_GL_ERROR();
 }
 
-void RendererGL::SetViewportInPixels(int left,
-                                     int top,
-                                     int width,
-                                     int height,
-                                     float min_z,
-                                     float max_z) {
+void RendererGLES2::SetViewportInPixels(int left,
+                                        int top,
+                                        int width,
+                                        int height,
+                                        float min_z,
+                                        float max_z) {
   MakeCurrentLazy();
   int vieport_top =
       RenderSurfaceActive() ? top : display_height() - top - height;
@@ -1208,14 +1209,14 @@ void RendererGL::SetViewportInPixels(int left,
 }
 
 // Resizes the viewport.
-void RendererGL::Resize(int width, int height) {
+void RendererGLES2::Resize(int width, int height) {
   MakeCurrentLazy();
   SetClientSize(width, height);
   CHECK_GL_ERROR();
 }
 
-bool RendererGL::GoFullscreen(const DisplayWindow& display,
-                              int mode_id) {
+bool RendererGLES2::GoFullscreen(const DisplayWindow& display,
+                                 int mode_id) {
 #ifdef OS_LINUX
   // This actually just switches the GLX context to the new window. The real
   // work is in main_linux.cc.
@@ -1231,8 +1232,8 @@ bool RendererGL::GoFullscreen(const DisplayWindow& display,
   return true;
 }
 
-bool RendererGL::CancelFullscreen(const DisplayWindow& display,
-                                  int width, int height) {
+bool RendererGLES2::CancelFullscreen(const DisplayWindow& display,
+                                     int width, int height) {
 #ifdef OS_LINUX
   // This actually just switches the GLX context to the old window. The real
   // work is in main_linux.cc.
@@ -1248,7 +1249,7 @@ bool RendererGL::CancelFullscreen(const DisplayWindow& display,
   return true;
 }
 
-void RendererGL::GetDisplayModes(std::vector<DisplayMode> *modes) {
+void RendererGLES2::GetDisplayModes(std::vector<DisplayMode> *modes) {
 #ifdef OS_MACOSX
   // Mac is supposed to call a different function in plugin_mac.mm instead.
   DLOG(FATAL) << "Not supposed to be called";
@@ -1258,7 +1259,7 @@ void RendererGL::GetDisplayModes(std::vector<DisplayMode> *modes) {
   modes->clear();
 }
 
-bool RendererGL::GetDisplayMode(int id, DisplayMode *mode) {
+bool RendererGLES2::GetDisplayMode(int id, DisplayMode *mode) {
 #ifdef OS_MACOSX
   // Mac is supposed to call a different function in plugin_mac.mm instead.
   DLOG(FATAL) << "Not supposed to be called";
@@ -1278,8 +1279,8 @@ bool RendererGL::GetDisplayMode(int id, DisplayMode *mode) {
 #endif
 }
 
-bool RendererGL::PlatformSpecificStartRendering() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGL StartRendering";
+bool RendererGLES2::PlatformSpecificStartRendering() {
+  DLOG_FIRST_N(INFO, 10) << "RendererGLES2 StartRendering";
   MakeCurrentLazy();
 
   // Currently always returns true.
@@ -1288,11 +1289,11 @@ bool RendererGL::PlatformSpecificStartRendering() {
   return true;
 }
 
-// Clears the color, depth and stncil buffers and prepares GL for rendering
+// Clears the color, depth and stncil buffers and prepares GLES2 for rendering
 // the frame.
 // Returns true on success.
-bool RendererGL::PlatformSpecificBeginDraw() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGL BeginDraw";
+bool RendererGLES2::PlatformSpecificBeginDraw() {
+  DLOG_FIRST_N(INFO, 10) << "RendererGLES2 BeginDraw";
 
   MakeCurrentLazy();
 
@@ -1304,10 +1305,10 @@ bool RendererGL::PlatformSpecificBeginDraw() {
 
 // Assign the surface arguments to the renderer, and update the stack
 // of pushed surfaces.
-void RendererGL::SetRenderSurfacesPlatformSpecific(
+void RendererGLES2::SetRenderSurfacesPlatformSpecific(
     const RenderSurface* surface,
     const RenderDepthStencilSurface* surface_depth) {
-  // TODO:  This routine re-uses a single global framebuffer object for
+  // TODO(o3d):  This routine re-uses a single global framebuffer object for
   // all RenderSurface rendering.  Because of the validation checks performed
   // at attachment-change time, it may be more performant to create a pool
   // of framebuffer objects with different attachment characterists and
@@ -1316,7 +1317,7 @@ void RendererGL::SetRenderSurfacesPlatformSpecific(
   ::glBindFramebufferEXT(GL_FRAMEBUFFER, render_surface_framebuffer_);
   if (!InstallFramebufferObjects(surface, surface_depth)) {
     O3D_ERROR(service_locator())
-        << "Failed to bind OpenGL render target objects:"
+        << "Failed to bind OpenGLES2 render target objects:"
         << surface->name() <<", "<< surface_depth->name();
   }
   // RenderSurface rendering is performed with an inverted Y, so the front
@@ -1325,7 +1326,7 @@ void RendererGL::SetRenderSurfacesPlatformSpecific(
   glFrontFace(GL_CW);
 }
 
-void RendererGL::SetBackBufferPlatformSpecific() {
+void RendererGLES2::SetBackBufferPlatformSpecific() {
   MakeCurrentLazy();
   // Bind the default context, and restore the default front-face winding.
   ::glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
@@ -1333,21 +1334,21 @@ void RendererGL::SetBackBufferPlatformSpecific() {
 }
 
 // Executes a post rendering step
-void RendererGL::PlatformSpecificEndDraw() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGL EndDraw";
+void RendererGLES2::PlatformSpecificEndDraw() {
+  DLOG_FIRST_N(INFO, 10) << "RendererGLES2 EndDraw";
   DCHECK(IsCurrent());
 }
 
 // Swaps the buffers.
-void RendererGL::PlatformSpecificFinishRendering() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGL FinishRendering";
+void RendererGLES2::PlatformSpecificFinishRendering() {
+  DLOG_FIRST_N(INFO, 10) << "RendererGLES2 FinishRendering";
   DCHECK(IsCurrent());
   ::glFlush();
   CHECK_GL_ERROR();
 }
 
-void RendererGL::PlatformSpecificPresent() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGL Present";
+void RendererGLES2::PlatformSpecificPresent() {
+  DLOG_FIRST_N(INFO, 10) << "RendererGLES2 Present";
   DCHECK(IsCurrent());
 #ifdef OS_WIN
   ::SwapBuffers(device_context_);
@@ -1364,20 +1365,20 @@ void RendererGL::PlatformSpecificPresent() {
 #endif
 }
 
-StreamBank::Ref RendererGL::CreateStreamBank() {
-  return StreamBank::Ref(new StreamBankGL(service_locator()));
+StreamBank::Ref RendererGLES2::CreateStreamBank() {
+  return StreamBank::Ref(new StreamBankGLES2(service_locator()));
 }
 
-Primitive::Ref RendererGL::CreatePrimitive() {
-  return Primitive::Ref(new PrimitiveGL(service_locator()));
+Primitive::Ref RendererGLES2::CreatePrimitive() {
+  return Primitive::Ref(new PrimitiveGLES2(service_locator()));
 }
 
-DrawElement::Ref RendererGL::CreateDrawElement() {
-  return DrawElement::Ref(new DrawElementGL(service_locator()));
+DrawElement::Ref RendererGLES2::CreateDrawElement() {
+  return DrawElement::Ref(new DrawElementGLES2(service_locator()));
 }
 
-void RendererGL::SetStencilStates(GLenum face,
-                                  const StencilStates& stencil_state) {
+void RendererGLES2::SetStencilStates(GLenum face,
+                                     const StencilStates& stencil_state) {
   DCHECK(IsCurrent());
   if (face == GL_FRONT_AND_BACK) {
     ::glStencilFunc(stencil_state.func_,
@@ -1413,7 +1414,7 @@ void RendererGL::SetStencilStates(GLenum face,
   CHECK_GL_ERROR();
 }
 
-void RendererGL::ApplyDirtyStates() {
+void RendererGLES2::ApplyDirtyStates() {
   MakeCurrentLazy();
   DCHECK(IsCurrent());
   // Set blend settings.
@@ -1481,81 +1482,82 @@ void RendererGL::ApplyDirtyStates() {
   CHECK_GL_ERROR();
 }
 
-VertexBuffer::Ref RendererGL::CreateVertexBuffer() {
-  DLOG(INFO) << "RendererGL CreateVertexBuffer";
+VertexBuffer::Ref RendererGLES2::CreateVertexBuffer() {
+  DLOG(INFO) << "RendererGLES2 CreateVertexBuffer";
   MakeCurrentLazy();
-  return VertexBuffer::Ref(new VertexBufferGL(service_locator()));
+  return VertexBuffer::Ref(new VertexBufferGLES2(service_locator()));
 }
 
-IndexBuffer::Ref RendererGL::CreateIndexBuffer() {
-  DLOG(INFO) << "RendererGL CreateIndexBuffer";
+IndexBuffer::Ref RendererGLES2::CreateIndexBuffer() {
+  DLOG(INFO) << "RendererGLES2 CreateIndexBuffer";
   MakeCurrentLazy();
-  return IndexBuffer::Ref(new IndexBufferGL(service_locator()));
+  return IndexBuffer::Ref(new IndexBufferGLES2(service_locator()));
 }
 
-Effect::Ref RendererGL::CreateEffect() {
-  DLOG(INFO) << "RendererGL CreateEffect";
+Effect::Ref RendererGLES2::CreateEffect() {
+  DLOG(INFO) << "RendererGLES2 CreateEffect";
   MakeCurrentLazy();
-  return Effect::Ref(new EffectGL(service_locator(), cg_context_));
+  return Effect::Ref(new EffectGLES2(service_locator(), cg_context_));
 }
 
-Sampler::Ref RendererGL::CreateSampler() {
-  return Sampler::Ref(new SamplerGL(service_locator()));
+Sampler::Ref RendererGLES2::CreateSampler() {
+  return Sampler::Ref(new SamplerGLES2(service_locator()));
 }
 
-ParamCache* RendererGL::CreatePlatformSpecificParamCache() {
-  return new ParamCacheGL(semantic_manager_.Get(), this);
+ParamCache* RendererGLES2::CreatePlatformSpecificParamCache() {
+  return new ParamCacheGLES2(semantic_manager_.Get(), this);
 }
 
 
-Texture2D::Ref RendererGL::CreatePlatformSpecificTexture2D(
+Texture2D::Ref RendererGLES2::CreatePlatformSpecificTexture2D(
     int width,
     int height,
     Texture::Format format,
     int levels,
     bool enable_render_surfaces) {
-  DLOG(INFO) << "RendererGL CreateTexture2D";
+  DLOG(INFO) << "RendererGLES2 CreateTexture2D";
   MakeCurrentLazy();
-  return Texture2D::Ref(Texture2DGL::Create(service_locator(),
-                                            format,
-                                            levels,
-                                            width,
-                                            height,
-                                            enable_render_surfaces));
+  return Texture2D::Ref(Texture2DGLES2::Create(service_locator(),
+                                               format,
+                                               levels,
+                                               width,
+                                               height,
+                                               enable_render_surfaces));
 }
 
-TextureCUBE::Ref RendererGL::CreatePlatformSpecificTextureCUBE(
+TextureCUBE::Ref RendererGLES2::CreatePlatformSpecificTextureCUBE(
     int edge_length,
     Texture::Format format,
     int levels,
     bool enable_render_surfaces) {
-  DLOG(INFO) << "RendererGL CreateTextureCUBE";
+  DLOG(INFO) << "RendererGLES2 CreateTextureCUBE";
   MakeCurrentLazy();
-  return TextureCUBE::Ref(TextureCUBEGL::Create(service_locator(),
-                                                format,
-                                                levels,
-                                                edge_length,
-                                                enable_render_surfaces));
+  return TextureCUBE::Ref(TextureCUBEGLES2::Create(service_locator(),
+                                                   format,
+                                                   levels,
+                                                   edge_length,
+                                                   enable_render_surfaces));
 }
 
-RenderDepthStencilSurface::Ref RendererGL::CreateDepthStencilSurface(
+RenderDepthStencilSurface::Ref RendererGLES2::CreateDepthStencilSurface(
     int width,
     int height) {
   return RenderDepthStencilSurface::Ref(
-      new RenderDepthStencilSurfaceGL(service_locator(),
-                                      width,
-                                      height));
+      new RenderDepthStencilSurfaceGLES2(service_locator(),
+                                         width,
+                                         height));
 }
 
-const int* RendererGL::GetRGBAUByteNSwizzleTable() {
+const int* RendererGLES2::GetRGBAUByteNSwizzleTable() {
   static int swizzle_table[] = { 0, 1, 2, 3, };
   return swizzle_table;
 }
 
 // This is a factory function for creating Renderer objects.  Since
-// we're implementing GL, we only ever return a GL renderer.
+// we're implementing GLES2, we only ever return a GLES2 renderer.
 Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
-  return RendererGL::CreateDefault(service_locator);
+  return RendererGLES2::CreateDefault(service_locator);
 }
 
 }  // namespace o3d
+

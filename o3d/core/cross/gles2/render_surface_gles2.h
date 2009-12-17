@@ -30,8 +30,8 @@
  */
 
 
-// This file contains the declarations for RenderSurfaceGL and
-// RenderDepthStencilSurfaceGL.
+// This file contains the declarations for RenderSurfaceGLES2 and
+// RenderDepthStencilSurfaceGLES2.
 
 #ifndef O3D_CORE_CROSS_GLES2_RENDER_SURFACE_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_RENDER_SURFACE_GLES2_H_
@@ -42,11 +42,12 @@
 
 namespace o3d {
 
-class RenderSurfaceGL : public RenderSurface {
+class RenderSurfaceGLES2 : public RenderSurface {
  public:
-  typedef SmartPointer<RenderSurfaceGL> Ref;
+  typedef SmartPointer<RenderSurfaceGLES2> Ref;
 
-  // Constructs a RenderSurfaceGL instance associated with the texture argument.
+  // Constructs a RenderSurfaceGLES2 instance associated with the texture
+  // argument.
   // Parameters:
   //  service_locator:  Service locator for the instance.
   //  width:  The width of the surface, in pixels.
@@ -56,13 +57,13 @@ class RenderSurfaceGL : public RenderSurface {
   //    this argument is irrelevent.
   //  mip_level:  The mip-level of the texture to associate with the surface.
   //  texture:  The texture to associate with the surface.
-  RenderSurfaceGL(ServiceLocator *service_locator,
-                  int width,
-                  int height,
-                  GLenum cube_face,
-                  int mip_level,
-                  Texture *texture);
-  virtual ~RenderSurfaceGL();
+  RenderSurfaceGLES2(ServiceLocator *service_locator,
+                     int width,
+                     int height,
+                     GLenum cube_face,
+                     int mip_level,
+                     Texture *texture);
+  virtual ~RenderSurfaceGLES2();
 
   GLenum cube_face() const {
     return cube_face_;
@@ -79,17 +80,17 @@ class RenderSurfaceGL : public RenderSurface {
  private:
   GLenum cube_face_;
   int mip_level_;
-  DISALLOW_COPY_AND_ASSIGN(RenderSurfaceGL);
+  DISALLOW_COPY_AND_ASSIGN(RenderSurfaceGLES2);
 };
 
-class RenderDepthStencilSurfaceGL : public RenderDepthStencilSurface {
+class RenderDepthStencilSurfaceGLES2 : public RenderDepthStencilSurface {
  public:
-  typedef SmartPointer<RenderDepthStencilSurfaceGL> Ref;
+  typedef SmartPointer<RenderDepthStencilSurfaceGLES2> Ref;
 
-  RenderDepthStencilSurfaceGL(ServiceLocator *service_locator,
-                              int width,
-                              int height);
-  virtual ~RenderDepthStencilSurfaceGL();
+  RenderDepthStencilSurfaceGLES2(ServiceLocator *service_locator,
+                                 int width,
+                                 int height);
+  virtual ~RenderDepthStencilSurfaceGLES2();
 
   GLuint depth_buffer() const {
     return render_buffers_[0];
@@ -101,9 +102,10 @@ class RenderDepthStencilSurfaceGL : public RenderDepthStencilSurface {
  private:
   // Handles to the depth and stencil render-buffers, respectively.
   GLuint render_buffers_[2];
-  DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurfaceGL);
+  DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurfaceGLES2);
 };
 
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_RENDER_SURFACE_GLES2_H_
+

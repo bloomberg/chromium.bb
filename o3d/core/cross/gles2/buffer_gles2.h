@@ -31,7 +31,7 @@
 
 
 // This file contains the declaration of the platform specific
-// VertexBufferGL and IndexBufferGL objects used by O3D
+// VertexBufferGLES2 and IndexBufferGLES2 objects used by O3D
 
 #ifndef O3D_CORE_CROSS_GLES2_BUFFER_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_BUFFER_GLES2_H_
@@ -41,76 +41,77 @@
 
 namespace o3d {
 
-class RendererGL;
+class RendererGLES2;
 
-// VertexBufferGL is a wrapper around an OpenGL Vertex Buffer Object (VBO).
-// The buffer starts out empty.  Calling Allocate() will reserve video memory
-// for the buffer. Buffer contents are are updated by calling Lock() to get a
-// pointer to the memory allocated for the buffer, updating that data in place
-// and calling Unlock() to notify OpenGL that the edits are done.
+// VertexBufferGLES2 is a wrapper around an OpenGLES2
+// Vertex Buffer Object (VBO). The buffer starts out empty.  Calling Allocate()
+// will reserve video memory for the buffer. Buffer contents are are updated by
+// calling Lock() to get a pointer to the memory allocated for the buffer,
+// updating that data in place and calling Unlock() to notify OpenGLES2 that the
+// edits are done.
 //
 // To force the vertex and index buffers to be created by Cg Runtime
 // control, define the compile flag "USE_CG_BUFFERS". This option is off by
-// default and buffers are created, locked and managed using the OpenGL
+// default and buffers are created, locked and managed using the OpenGLES2
 // "ARB_vertex_buffer_object" extension.
 
-class VertexBufferGL : public VertexBuffer {
+class VertexBufferGLES2 : public VertexBuffer {
  public:
-  explicit VertexBufferGL(ServiceLocator* service_locator);
-  ~VertexBufferGL();
+  explicit VertexBufferGLES2(ServiceLocator* service_locator);
+  ~VertexBufferGLES2();
 
-  // Returns the OpenGL vertex buffer Object handle.
+  // Returns the OpenGLES2 vertex buffer Object handle.
   GLuint gl_buffer() const { return gl_buffer_; }
 
  protected:
-  // Creates a OpenGL vertex buffer object of the specified size.
+  // Creates a OpenGLES2 vertex buffer object of the specified size.
   virtual bool ConcreteAllocate(size_t size_in_bytes);
 
-  // Frees the OpenGL vertex buffer object.
+  // Frees the OpenGLES2 vertex buffer object.
   virtual void ConcreteFree();
 
   // Returns a pointer to the current contents of the buffer.  A matching
   // call to Unlock is necessary to update the contents of the buffer.
   virtual bool ConcreteLock(AccessMode access_mode, void** buffer_data);
 
-  // Notifies OpenGL that the buffer data has been updated.  Unlock is only
+  // Notifies OpenGLES2 that the buffer data has been updated.  Unlock is only
   // valid if it follows a Lock operation.
   virtual bool ConcreteUnlock();
 
  private:
-  RendererGL* renderer_;
+  RendererGLES2* renderer_;
   GLuint gl_buffer_;
 };
 
-// IndexBufferGL is a wrapper around an OpenGL Index Buffer Object (VBO).
-// The buffer starts out empty.  A call to Allocate() will create an OpenGL
+// IndexBufferGLES2 is a wrapper around an OpenGLES2 Index Buffer Object (VBO).
+// The buffer starts out empty.  A call to Allocate() will create an OpenGLES2
 // index buffer of the requested size.  Updates the to the contents of the
 // buffer are done via the Lock/Unlock calls.
-class IndexBufferGL : public IndexBuffer {
+class IndexBufferGLES2 : public IndexBuffer {
  public:
-  explicit IndexBufferGL(ServiceLocator* service_locator);
-  ~IndexBufferGL();
+  explicit IndexBufferGLES2(ServiceLocator* service_locator);
+  ~IndexBufferGLES2();
 
-  // Returns the OpenGL vertex buffer Object handle.
+  // Returns the OpenGLES2 vertex buffer Object handle.
   GLuint gl_buffer() const { return gl_buffer_; }
 
  protected:
-  // Creates a OpenGL index buffer of the specified size.
+  // Creates a OpenGLES2 index buffer of the specified size.
   virtual bool ConcreteAllocate(size_t size_in_bytes);
 
-  // Frees the OpenGL vertex buffer object.
+  // Frees the OpenGLES2 vertex buffer object.
   virtual void ConcreteFree();
 
   // Returns a pointer to the current contents of the buffer.  After calling
   // Lock, the contents of the buffer can be updated in place.
   virtual bool ConcreteLock(AccessMode access_mode, void** buffer_data);
 
-  // Notifies OpenGL that the buffer data has been updated.  Unlock is only
+  // Notifies OpenGLES2 that the buffer data has been updated.  Unlock is only
   // valid if it follows a Lock operation.
   virtual bool ConcreteUnlock();
 
  private:
-  RendererGL* renderer_;
+  RendererGLES2* renderer_;
   GLuint gl_buffer_;
 };
 
@@ -118,3 +119,4 @@ class IndexBufferGL : public IndexBuffer {
 
 
 #endif  // O3D_CORE_CROSS_GLES2_BUFFER_GLES2_H_
+

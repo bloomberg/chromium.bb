@@ -30,7 +30,7 @@
  */
 
 
-// This file contains the definition of the ParamCacheGL class.
+// This file contains the definition of the ParamCacheGLES2 class.
 
 #include "core/cross/error.h"
 #include "core/cross/param_array.h"
@@ -47,29 +47,29 @@ namespace o3d {
 
 typedef std::vector<ParamObject *> ParamObjectList;
 
-ParamCacheGL::ParamCacheGL(SemanticManager* semantic_manager,
-                           Renderer* renderer)
+ParamCacheGLES2::ParamCacheGLES2(SemanticManager* semantic_manager,
+                                 Renderer* renderer)
     : semantic_manager_(semantic_manager),
       renderer_(renderer),
       last_vertex_program_(0),
       last_fragment_program_(0) {
 }
 
-bool ParamCacheGL::ValidateEffect(Effect* effect) {
+bool ParamCacheGLES2::ValidateEffect(Effect* effect) {
   DLOG_ASSERT(effect);
 
-  EffectGL* effect_gl = down_cast<EffectGL*>(effect);
+  EffectGLES2* effect_gl = down_cast<EffectGLES2*>(effect);
   return (effect_gl->cg_vertex_program() == last_vertex_program_ ||
           effect_gl->cg_fragment_program() == last_fragment_program_);
 }
 
-void ParamCacheGL::UpdateCache(Effect* effect,
-                               DrawElement* draw_element,
-                               Element* element,
-                               Material* material,
-                               ParamObject* override) {
+void ParamCacheGLES2::UpdateCache(Effect* effect,
+                                  DrawElement* draw_element,
+                                  Element* element,
+                                  Material* material,
+                                  ParamObject* override) {
   DLOG_ASSERT(effect);
-  EffectGL* effect_gl = down_cast<EffectGL*>(effect);
+  EffectGLES2* effect_gl = down_cast<EffectGLES2*>(effect);
 
   ScanCgEffectParameters(effect_gl->cg_vertex_program(),
                          effect_gl->cg_fragment_program(),
@@ -83,22 +83,22 @@ void ParamCacheGL::UpdateCache(Effect* effect,
 }
 
 template <typename T>
-class TypedEffectParamHandlerGL : public EffectParamHandlerGL {
+class TypedEffectParamHandlerGLES2 : public EffectParamHandlerGLES2 {
  public:
-  explicit TypedEffectParamHandlerGL(T* param)
+  explicit TypedEffectParamHandlerGLES2(T* param)
       : param_(param) {
   }
-  virtual void SetEffectParam(RendererGL* renderer, CGparameter cg_param);
+  virtual void SetEffectParam(RendererGLES2* renderer, CGparameter cg_param);
  private:
   T* param_;
 };
 
-class EffectParamHandlerGLMatrixRows : public EffectParamHandlerGL {
+class EffectParamHandlerGLMatrixRows : public EffectParamHandlerGLES2 {
  public:
   explicit EffectParamHandlerGLMatrixRows(ParamMatrix4* param)
       : param_(param) {
   }
-  virtual void SetEffectParam(RendererGL* renderer, CGparameter cg_param) {
+  virtual void SetEffectParam(RendererGLES2* renderer, CGparameter cg_param) {
     // set the data as floats in row major order.
     Matrix4 mat = param_->value();
     cgSetMatrixParameterfr(cg_param, &mat[0][0]);
@@ -107,12 +107,12 @@ class EffectParamHandlerGLMatrixRows : public EffectParamHandlerGL {
   ParamMatrix4* param_;
 };
 
-class EffectParamHandlerGLMatrixColumns : public EffectParamHandlerGL {
+class EffectParamHandlerGLMatrixColumns : public EffectParamHandlerGLES2 {
  public:
   explicit EffectParamHandlerGLMatrixColumns(ParamMatrix4* param)
       : param_(param) {
   }
-  virtual void SetEffectParam(RendererGL* renderer, CGparameter cg_param) {
+  virtual void SetEffectParam(RendererGLES2* renderer, CGparameter cg_param) {
     // set the data as floats in column major order.
     Matrix4 mat = param_->value();
     cgSetMatrixParameterfc(cg_param, &mat[0][0]);
@@ -122,63 +122,63 @@ class EffectParamHandlerGLMatrixColumns : public EffectParamHandlerGL {
 };
 
 template <>
-void TypedEffectParamHandlerGL<ParamFloat>::SetEffectParam(
-    RendererGL* renderer,
+void TypedEffectParamHandlerGLES2<ParamFloat>::SetEffectParam(
+    RendererGLES2* renderer,
     CGparameter cg_param) {
   Float f = param_->value();
   cgSetParameter1f(cg_param, f);
 };
 
 template <>
-void TypedEffectParamHandlerGL<ParamFloat2>::SetEffectParam(
-    RendererGL* renderer,
+void TypedEffectParamHandlerGLES2<ParamFloat2>::SetEffectParam(
+    RendererGLES2* renderer,
     CGparameter cg_param) {
   Float2 f = param_->value();
   cgSetParameter2fv(cg_param, f.GetFloatArray());
 };
 
 template <>
-void TypedEffectParamHandlerGL<ParamFloat3>::SetEffectParam(
-    RendererGL* renderer,
+void TypedEffectParamHandlerGLES2<ParamFloat3>::SetEffectParam(
+    RendererGLES2* renderer,
     CGparameter cg_param) {
   Float3 f = param_->value();
   cgSetParameter3fv(cg_param, f.GetFloatArray());
 };
 
 template <>
-void TypedEffectParamHandlerGL<ParamFloat4>::SetEffectParam(
-    RendererGL* renderer,
+void TypedEffectParamHandlerGLES2<ParamFloat4>::SetEffectParam(
+    RendererGLES2* renderer,
     CGparameter cg_param) {
   Float4 f = param_->value();
   cgSetParameter4fv(cg_param, f.GetFloatArray());
 };
 
 template <>
-void TypedEffectParamHandlerGL<ParamInteger>::SetEffectParam(
-    RendererGL* renderer,
+void TypedEffectParamHandlerGLES2<ParamInteger>::SetEffectParam(
+    RendererGLES2* renderer,
     CGparameter cg_param) {
   int i = param_->value();
   cgSetParameter1i(cg_param, i);
 };
 
 template <>
-void TypedEffectParamHandlerGL<ParamBoolean>::SetEffectParam(
-    RendererGL* renderer,
+void TypedEffectParamHandlerGLES2<ParamBoolean>::SetEffectParam(
+    RendererGLES2* renderer,
     CGparameter cg_param) {
   int i = param_->value();
   cgSetParameter1i(cg_param, i);
 };
 
-class EffectParamHandlerForSamplersGL : public EffectParamHandlerGL {
+class EffectParamHandlerForSamplersGLES2 : public EffectParamHandlerGLES2 {
  public:
-  explicit EffectParamHandlerForSamplersGL(ParamSampler* param)
+  explicit EffectParamHandlerForSamplersGLES2(ParamSampler* param)
       : param_(param) {
   }
-  virtual void SetEffectParam(RendererGL* renderer, CGparameter cg_param) {
-    SamplerGL* sampler_gl = down_cast<SamplerGL*>(param_->value());
+  virtual void SetEffectParam(RendererGLES2* renderer, CGparameter cg_param) {
+    SamplerGLES2* sampler_gl = down_cast<SamplerGLES2*>(param_->value());
     if (!sampler_gl) {
       // Use the error sampler.
-      sampler_gl = down_cast<SamplerGL*>(renderer->error_sampler());
+      sampler_gl = down_cast<SamplerGLES2*>(renderer->error_sampler());
       // If no error texture is set then generate an error.
       if (!renderer->error_texture()) {
         O3D_ERROR(param_->service_locator())
@@ -187,10 +187,10 @@ class EffectParamHandlerForSamplersGL : public EffectParamHandlerGL {
     }
     sampler_gl->SetTextureAndStates(cg_param);
   }
-  virtual void ResetEffectParam(RendererGL* renderer, CGparameter cg_param) {
-    SamplerGL* sampler_gl = down_cast<SamplerGL*>(param_->value());
+  virtual void ResetEffectParam(RendererGLES2* renderer, CGparameter cg_param) {
+    SamplerGLES2* sampler_gl = down_cast<SamplerGLES2*>(param_->value());
     if (!sampler_gl) {
-      sampler_gl = down_cast<SamplerGL*>(renderer->error_sampler());
+      sampler_gl = down_cast<SamplerGLES2*>(renderer->error_sampler());
     }
     sampler_gl->ResetTexture(cg_param);
   }
@@ -199,12 +199,12 @@ class EffectParamHandlerForSamplersGL : public EffectParamHandlerGL {
 };
 
 template <typename T>
-class EffectParamArrayHandlerGL : public EffectParamHandlerGL {
+class EffectParamArrayHandlerGLES2 : public EffectParamHandlerGLES2 {
  public:
-  explicit EffectParamArrayHandlerGL(ParamParamArray* param)
+  explicit EffectParamArrayHandlerGLES2(ParamParamArray* param)
       : param_(param) {
   }
-  virtual void SetEffectParam(RendererGL* renderer, CGparameter cg_param) {
+  virtual void SetEffectParam(RendererGLES2* renderer, CGparameter cg_param) {
     ParamArray* param = param_->value();
     if (param) {
       int size = cgGetArraySize(cg_param, 0);
@@ -237,12 +237,12 @@ class EffectParamArrayHandlerGL : public EffectParamHandlerGL {
 };
 
 template <bool column_major>
-class EffectParamArrayMatrix4HandlerGL : public EffectParamHandlerGL {
+class EffectParamArrayMatrix4HandlerGLES2 : public EffectParamHandlerGLES2 {
  public:
-  explicit EffectParamArrayMatrix4HandlerGL(ParamParamArray* param)
+  explicit EffectParamArrayMatrix4HandlerGLES2(ParamParamArray* param)
       : param_(param) {
   }
-  virtual void SetEffectParam(RendererGL* renderer, CGparameter cg_param) {
+  virtual void SetEffectParam(RendererGLES2* renderer, CGparameter cg_param) {
     ParamArray* param = param_->value();
     if (param) {
       int size = cgGetArraySize(cg_param, 0);
@@ -274,12 +274,12 @@ class EffectParamArrayMatrix4HandlerGL : public EffectParamHandlerGL {
   ParamParamArray* param_;
 };
 
-class EffectParamArraySamplerHandlerGL : public EffectParamHandlerGL {
+class EffectParamArraySamplerHandlerGLES2 : public EffectParamHandlerGLES2 {
  public:
-  explicit EffectParamArraySamplerHandlerGL(ParamParamArray* param)
+  explicit EffectParamArraySamplerHandlerGLES2(ParamParamArray* param)
       : param_(param) {
   }
-  virtual void SetEffectParam(RendererGL* renderer, CGparameter cg_param) {
+  virtual void SetEffectParam(RendererGLES2* renderer, CGparameter cg_param) {
     ParamArray* param = param_->value();
     if (param) {
       int size = cgGetArraySize(cg_param, 0);
@@ -296,10 +296,11 @@ class EffectParamArraySamplerHandlerGL : public EffectParamHandlerGL {
           if (untyped_element->IsA(ParamSampler::GetApparentClass())) {
             CGparameter cg_element = cgGetArrayParameter(cg_param, i);
             ParamSampler* element = down_cast<ParamSampler*>(untyped_element);
-            SamplerGL* sampler_gl = down_cast<SamplerGL*>(element->value());
+            SamplerGLES2* sampler_gl =
+                down_cast<SamplerGLES2*>(element->value());
             if (!sampler_gl) {
               // Use the error sampler.
-              sampler_gl = down_cast<SamplerGL*>(renderer->error_sampler());
+              sampler_gl = down_cast<SamplerGLES2*>(renderer->error_sampler());
               // If no error texture is set then generate an error.
               if (!renderer->error_texture()) {
                 O3D_ERROR(param_->service_locator())
@@ -317,7 +318,7 @@ class EffectParamArraySamplerHandlerGL : public EffectParamHandlerGL {
       }
     }
   }
-  virtual void ResetEffectParam(RendererGL* renderer, CGparameter cg_param) {
+  virtual void ResetEffectParam(RendererGLES2* renderer, CGparameter cg_param) {
     ParamArray* param = param_->value();
     if (param) {
       int size = cgGetArraySize(cg_param, 0);
@@ -327,9 +328,10 @@ class EffectParamArraySamplerHandlerGL : public EffectParamHandlerGL {
           if (untyped_element->IsA(ParamSampler::GetApparentClass())) {
             CGparameter cg_element = cgGetArrayParameter(cg_param, i);
             ParamSampler* element = down_cast<ParamSampler*>(untyped_element);
-            SamplerGL* sampler_gl = down_cast<SamplerGL*>(element->value());
+            SamplerGLES2* sampler_gl =
+                down_cast<SamplerGLES2*>(element->value());
             if (!sampler_gl) {
-              sampler_gl = down_cast<SamplerGL*>(renderer->error_sampler());
+              sampler_gl = down_cast<SamplerGLES2*>(renderer->error_sampler());
             }
             sampler_gl->ResetTexture(cg_element);
           }
@@ -343,14 +345,14 @@ class EffectParamArraySamplerHandlerGL : public EffectParamHandlerGL {
 };
 
 template<>
-void EffectParamArrayHandlerGL<ParamFloat>::SetElement(
+void EffectParamArrayHandlerGLES2<ParamFloat>::SetElement(
     CGparameter cg_element,
     ParamFloat* param) {
   cgSetParameter1f(cg_element, param->value());
 }
 
 template<>
-void EffectParamArrayHandlerGL<ParamFloat2>::SetElement(
+void EffectParamArrayHandlerGLES2<ParamFloat2>::SetElement(
     CGparameter cg_element,
     ParamFloat2* param) {
   Float2 f = param->value();
@@ -358,7 +360,7 @@ void EffectParamArrayHandlerGL<ParamFloat2>::SetElement(
 }
 
 template<>
-void EffectParamArrayHandlerGL<ParamFloat3>::SetElement(
+void EffectParamArrayHandlerGLES2<ParamFloat3>::SetElement(
     CGparameter cg_element,
     ParamFloat3* param) {
   Float3 f = param->value();
@@ -366,7 +368,7 @@ void EffectParamArrayHandlerGL<ParamFloat3>::SetElement(
 }
 
 template<>
-void EffectParamArrayHandlerGL<ParamFloat4>::SetElement(
+void EffectParamArrayHandlerGLES2<ParamFloat4>::SetElement(
     CGparameter cg_element,
     ParamFloat4* param) {
   Float4 f = param->value();
@@ -374,7 +376,7 @@ void EffectParamArrayHandlerGL<ParamFloat4>::SetElement(
 }
 
 template<>
-void EffectParamArrayMatrix4HandlerGL<false>::SetElement(
+void EffectParamArrayMatrix4HandlerGLES2<false>::SetElement(
     CGparameter cg_element,
     ParamMatrix4* param) {
   // set the data as floats in row major order.
@@ -383,7 +385,7 @@ void EffectParamArrayMatrix4HandlerGL<false>::SetElement(
 }
 
 template<>
-void EffectParamArrayMatrix4HandlerGL<true>::SetElement(
+void EffectParamArrayMatrix4HandlerGLES2<true>::SetElement(
     CGparameter cg_element,
     ParamMatrix4* param) {
   // set the data as floats in column major order.
@@ -392,70 +394,71 @@ void EffectParamArrayMatrix4HandlerGL<true>::SetElement(
 }
 
 template<>
-void EffectParamArrayHandlerGL<ParamInteger>::SetElement(
+void EffectParamArrayHandlerGLES2<ParamInteger>::SetElement(
     CGparameter cg_element,
     ParamInteger* param) {
   cgSetParameter1i(cg_element, param->value());
 }
 
 template<>
-void EffectParamArrayHandlerGL<ParamBoolean>::SetElement(
+void EffectParamArrayHandlerGLES2<ParamBoolean>::SetElement(
     CGparameter cg_element,
     ParamBoolean* param) {
   cgSetParameter1i(cg_element, param->value());
 }
 
-static EffectParamHandlerGL::Ref GetHandlerFromParamAndCgType(
-    EffectGL* effect_gl,
+static EffectParamHandlerGLES2::Ref GetHandlerFromParamAndCgType(
+    EffectGLES2* effect_gl,
     Param *param,
     CGtype cg_type) {
-  EffectParamHandlerGL::Ref handler;
+  EffectParamHandlerGLES2::Ref handler;
   if (param->IsA(ParamParamArray::GetApparentClass())) {
     ParamParamArray* param_param_array = down_cast<ParamParamArray*>(param);
     switch (cg_type) {
       case CG_FLOAT:
       case CG_FLOAT1:
-        handler = EffectParamHandlerGL::Ref(
-            new EffectParamArrayHandlerGL<ParamFloat>(param_param_array));
+        handler = EffectParamHandlerGLES2::Ref(
+            new EffectParamArrayHandlerGLES2<ParamFloat>(param_param_array));
         break;
       case CG_FLOAT2:
-        handler = EffectParamHandlerGL::Ref(
-            new EffectParamArrayHandlerGL<ParamFloat2>(param_param_array));
+        handler = EffectParamHandlerGLES2::Ref(
+            new EffectParamArrayHandlerGLES2<ParamFloat2>(param_param_array));
         break;
       case CG_FLOAT3:
-        handler = EffectParamHandlerGL::Ref(
-            new EffectParamArrayHandlerGL<ParamFloat3>(param_param_array));
+        handler = EffectParamHandlerGLES2::Ref(
+            new EffectParamArrayHandlerGLES2<ParamFloat3>(param_param_array));
         break;
       case CG_FLOAT4:
-        handler = EffectParamHandlerGL::Ref(
-            new EffectParamArrayHandlerGL<ParamFloat4>(param_param_array));
+        handler = EffectParamHandlerGLES2::Ref(
+            new EffectParamArrayHandlerGLES2<ParamFloat4>(param_param_array));
         break;
       case CG_FLOAT4x4:
         if (effect_gl->matrix_load_order() == Effect::COLUMN_MAJOR) {
-          handler = EffectParamHandlerGL::Ref(
-              new EffectParamArrayMatrix4HandlerGL<true>(param_param_array));
+          handler = EffectParamHandlerGLES2::Ref(
+              new EffectParamArrayMatrix4HandlerGLES2<true>(param_param_array));
         } else {
-          handler = EffectParamHandlerGL::Ref(
-              new EffectParamArrayMatrix4HandlerGL<false>(param_param_array));
+          handler = EffectParamHandlerGLES2::Ref(
+              new EffectParamArrayMatrix4HandlerGLES2<false>(
+                  param_param_array));
         }
         break;
       case CG_INT:
       case CG_INT1:
-        handler = EffectParamHandlerGL::Ref(
-            new EffectParamArrayHandlerGL<ParamInteger>(param_param_array));
+        handler = EffectParamHandlerGLES2::Ref(
+            new EffectParamArrayHandlerGLES2<ParamInteger>(param_param_array));
         break;
       case CG_BOOL:
       case CG_BOOL1:
-        handler = EffectParamHandlerGL::Ref(
-            new EffectParamArrayHandlerGL<ParamBoolean>(param_param_array));
+        handler = EffectParamHandlerGLES2::Ref(
+            new EffectParamArrayHandlerGLES2<ParamBoolean>(param_param_array));
         break;
       case CG_SAMPLER:
       case CG_SAMPLER1D:
       case CG_SAMPLER2D:
       case CG_SAMPLER3D:
       case CG_SAMPLERCUBE:
-        handler = EffectParamHandlerGL::Ref(
-            new EffectParamArraySamplerHandlerGL(param_param_array));
+        handler = EffectParamHandlerGLES2::Ref(
+            new EffectParamArraySamplerHandlerGLES2(param_param_array));
         break;
       default:
         break;
@@ -464,12 +467,12 @@ static EffectParamHandlerGL::Ref GetHandlerFromParamAndCgType(
     if (cg_type == CG_FLOAT4x4) {
       if (effect_gl->matrix_load_order() == Effect::COLUMN_MAJOR) {
         // set the data as floats in column major order.
-        handler = EffectParamHandlerGL::Ref(
+        handler = EffectParamHandlerGLES2::Ref(
             new EffectParamHandlerGLMatrixColumns(
                 down_cast<ParamMatrix4*>(param)));
       } else {
         // set the data as floats in row major order.
-        handler = EffectParamHandlerGL::Ref(
+        handler = EffectParamHandlerGLES2::Ref(
             new EffectParamHandlerGLMatrixRows(
                 down_cast<ParamMatrix4*>(param)));
       }
@@ -477,38 +480,38 @@ static EffectParamHandlerGL::Ref GetHandlerFromParamAndCgType(
   } else if (param->IsA(ParamFloat::GetApparentClass())) {
     if (cg_type == CG_FLOAT ||
         cg_type == CG_FLOAT1) {
-      handler = EffectParamHandlerGL::Ref(
-          new TypedEffectParamHandlerGL<ParamFloat>(
+      handler = EffectParamHandlerGLES2::Ref(
+          new TypedEffectParamHandlerGLES2<ParamFloat>(
               down_cast<ParamFloat*>(param)));
     }
   } else if (param->IsA(ParamFloat2::GetApparentClass())) {
     if (cg_type == CG_FLOAT2) {
-      handler = EffectParamHandlerGL::Ref(
-          new TypedEffectParamHandlerGL<ParamFloat2>(
+      handler = EffectParamHandlerGLES2::Ref(
+          new TypedEffectParamHandlerGLES2<ParamFloat2>(
               down_cast<ParamFloat2*>(param)));
     }
   } else if (param->IsA(ParamFloat3::GetApparentClass())) {
     if (cg_type == CG_FLOAT3) {
-      handler = EffectParamHandlerGL::Ref(
-          new TypedEffectParamHandlerGL<ParamFloat3>(
+      handler = EffectParamHandlerGLES2::Ref(
+          new TypedEffectParamHandlerGLES2<ParamFloat3>(
               down_cast<ParamFloat3*>(param)));
     }
   } else if (param->IsA(ParamFloat4::GetApparentClass())) {
     if (cg_type == CG_FLOAT4) {
-      handler = EffectParamHandlerGL::Ref(
-          new TypedEffectParamHandlerGL<ParamFloat4>(
+      handler = EffectParamHandlerGLES2::Ref(
+          new TypedEffectParamHandlerGLES2<ParamFloat4>(
               down_cast<ParamFloat4*>(param)));
     }
   }  else if (param->IsA(ParamInteger::GetApparentClass())) {
     if (cg_type == CG_INT || cg_type == CG_INT1) {
-      handler = EffectParamHandlerGL::Ref(
-          new TypedEffectParamHandlerGL<ParamInteger>(
+      handler = EffectParamHandlerGLES2::Ref(
+          new TypedEffectParamHandlerGLES2<ParamInteger>(
               down_cast<ParamInteger*>(param)));
     }
   } else if (param->IsA(ParamBoolean::GetApparentClass())) {
     if (cg_type == CG_BOOL || cg_type == CG_BOOL1) {
-      handler = EffectParamHandlerGL::Ref(
-          new TypedEffectParamHandlerGL<ParamBoolean>(
+      handler = EffectParamHandlerGLES2::Ref(
+          new TypedEffectParamHandlerGLES2<ParamBoolean>(
               down_cast<ParamBoolean*>(param)));
     }
   } else if (param->IsA(ParamSampler::GetApparentClass())) {
@@ -517,8 +520,8 @@ static EffectParamHandlerGL::Ref GetHandlerFromParamAndCgType(
         cg_type == CG_SAMPLER2D ||
         cg_type == CG_SAMPLER3D ||
         cg_type == CG_SAMPLERCUBE) {
-      handler = EffectParamHandlerGL::Ref(
-          new EffectParamHandlerForSamplersGL(
+      handler = EffectParamHandlerGLES2::Ref(
+          new EffectParamHandlerForSamplersGLES2(
               down_cast<ParamSampler*>(param)));
     }
   }
@@ -529,7 +532,7 @@ static EffectParamHandlerGL::Ref GetHandlerFromParamAndCgType(
 // program or effect and recording their entries into the varying map.
 static void ScanVaryingParameters(CGprogram program,
                                   CGenum name_space,
-                                  ParamCacheGL* param_cache_gl) {
+                                  ParamCacheGLES2* param_cache_gl) {
   CGparameter cg_param = cgGetFirstLeafParameter(program, name_space);
   for (; cg_param; cg_param = cgGetNextLeafParameter(cg_param)) {
     if (!cgIsParameterReferenced(cg_param))
@@ -544,7 +547,7 @@ static void ScanVaryingParameters(CGprogram program,
           param_cache_gl->varying_map().end()) {
         const char* cg_name = cgGetParameterName(cg_param);
         param_cache_gl->varying_map().insert(std::make_pair(cg_param, -1));
-        DLOG(INFO) << "ElementGL Found CG_VARYING \""
+        DLOG(INFO) << "ElementGLES2 Found CG_VARYING \""
                    << cg_name << " : "
                    << cgGetParameterSemantic(cg_param) << "\"";
       }
@@ -558,9 +561,9 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
                                   Renderer* renderer,
                                   CGprogram program,
                                   CGenum name_space,
-                                  ParamCacheGL* param_cache_gl,
+                                  ParamCacheGLES2* param_cache_gl,
                                   const ParamObjectList& param_objects,
-                                  EffectGL* effect_gl) {
+                                  EffectGLES2* effect_gl) {
   CGparameter cg_param = cgGetFirstParameter(program, name_space);
   for (; cg_param; cg_param = cgGetNextParameter(cg_param)) {
     if (!cgIsParameterReferenced(cg_param))
@@ -617,7 +620,7 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
           // semantic from the shader source code, so this match is valid.
           sem_class = semantic_manager->LookupSemantic(cg_semantic);
         }
-        EffectParamHandlerGL::Ref handler;
+        EffectParamHandlerGLES2::Ref handler;
         // Look through all the param objects to find a matching param.
         unsigned last = param_objects.size() - 1;
         for (unsigned int i = 0; i < param_objects.size(); ++i) {
@@ -651,14 +654,14 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
           if (!handler.IsNull()) {
             param_cache_gl->uniform_map().insert(
                 std::make_pair(cg_param, handler));
-            DLOG(INFO) << "ElementGL Matched CG_PARAMETER \""
+            DLOG(INFO) << "ElementGLES2 Matched CG_PARAMETER \""
                        << cg_name << "\" to Param \""
                        << param->name() << "\" from \""
                        << param_object->name() << "\"";
             break;
           } else {
             // We found a param, but it didn't match the type. keep looking.
-            DLOG(ERROR) << "ElementGL Param \""
+            DLOG(ERROR) << "ElementGLES2 Param \""
                         << param->name() << "\" type \""
                         << param->GetClassName() << "\" from \""
                         << param_object->name()
@@ -677,10 +680,10 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
 
 static void DoScanCgEffectParameters(SemanticManager* semantic_manager,
                                      Renderer* renderer,
-                                     ParamCacheGL* param_cache_gl,
+                                     ParamCacheGLES2* param_cache_gl,
                                      CGprogram cg_vertex,
                                      CGprogram cg_fragment,
-                                     EffectGL* effect_gl,
+                                     EffectGLES2* effect_gl,
                                      const ParamObjectList& param_objects) {
   ScanVaryingParameters(cg_vertex, CG_PROGRAM, param_cache_gl);
   ScanVaryingParameters(cg_vertex, CG_GLOBAL, param_cache_gl);
@@ -719,17 +722,17 @@ static void DoScanCgEffectParameters(SemanticManager* semantic_manager,
 // using cgGetFirstEffectParameter() / cgGetFirstLeafParameter() /
 // cgGetNextLeafParameter(). Add the CGparameters found to the parameter
 // maps on the DrawElement.
-void ParamCacheGL::ScanCgEffectParameters(CGprogram cg_vertex,
-                                          CGprogram cg_fragment,
-                                          ParamObject* draw_element,
-                                          ParamObject* element,
-                                          Material* material,
-                                          ParamObject* override) {
-  DLOG(INFO) << "DrawElementGL ScanCgEffectParameters";
+void ParamCacheGLES2::ScanCgEffectParameters(CGprogram cg_vertex,
+                                             CGprogram cg_fragment,
+                                             ParamObject* draw_element,
+                                             ParamObject* element,
+                                             Material* material,
+                                             ParamObject* override) {
+  DLOG(INFO) << "DrawElementGLES2 ScanCgEffectParameters";
   DLOG_ASSERT(material);
   DLOG_ASSERT(draw_element);
   DLOG_ASSERT(element);
-  EffectGL* effect_gl = static_cast<EffectGL*>(material->effect());
+  EffectGLES2* effect_gl = static_cast<EffectGLES2*>(material->effect());
   DLOG_ASSERT(effect_gl);
   if (cg_vertex == NULL)  {
     DLOG(ERROR) << "Can't scan an empty Vertex Program for Cg Parameters.";
@@ -760,3 +763,4 @@ void ParamCacheGL::ScanCgEffectParameters(CGprogram cg_vertex,
 }
 
 }  // namespace o3d
+

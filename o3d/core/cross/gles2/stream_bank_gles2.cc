@@ -30,7 +30,7 @@
  */
 
 
-// This file contains the definition of StreamBankGL.
+// This file contains the definition of StreamBankGLES2.
 
 #include <algorithm>
 
@@ -53,7 +53,7 @@ namespace o3d {
 
 namespace {
 
-// Converts from a Field datatype to a suitable GL type
+// Converts from a Field datatype to a suitable GLES2 type
 GLenum GLDataType(const Field& field) {
   if (field.IsA(FloatField::GetApparentClass())) {
     return GL_FLOAT;
@@ -72,26 +72,26 @@ GLenum GLDataType(const Field& field) {
 // Number of times to log a repeated event before giving up.
 const int kNumLoggedEvents = 5;
 
-// StreamBankGL functions ------------------------------------------------------
+// StreamBankGLES2 functions ---------------------------------------------------
 
-StreamBankGL::StreamBankGL(ServiceLocator* service_locator)
+StreamBankGLES2::StreamBankGLES2(ServiceLocator* service_locator)
     : StreamBank(service_locator) {
-  DLOG(INFO) << "StreamBankGL Construct";
+  DLOG(INFO) << "StreamBankGLES2 Construct";
 }
 
-StreamBankGL::~StreamBankGL() {
-  DLOG(INFO) << "StreamBankGL Destruct";
+StreamBankGLES2::~StreamBankGLES2() {
+  DLOG(INFO) << "StreamBankGLES2 Destruct";
 }
 
-bool StreamBankGL::CheckForMissingVertexStreams(
-    ParamCacheGL::VaryingParameterMap& varying_map,
+bool StreamBankGLES2::CheckForMissingVertexStreams(
+    ParamCacheGLES2::VaryingParameterMap& varying_map,
     Stream::Semantic* missing_semantic,
     int* missing_semantic_index) {
   DCHECK(missing_semantic);
   DCHECK(missing_semantic_index);
-  DLOG(INFO) << "StreamBankGL InsertMissingVertexStreams";
+  DLOG(INFO) << "StreamBankGLES2 InsertMissingVertexStreams";
   // Match CG_VARYING parameters to Buffers with the matching semantics.
-  ParamCacheGL::VaryingParameterMap::iterator i;
+  ParamCacheGLES2::VaryingParameterMap::iterator i;
   for (i = varying_map.begin(); i != varying_map.end(); ++i) {
     CGparameter cg_param = i->first;
     const char* semantic_string = cgGetParameterSemantic(cg_param);
@@ -101,10 +101,10 @@ bool StreamBankGL::CheckForMissingVertexStreams(
     int stream_index = FindVertexStream(semantic, index);
     if (stream_index >= 0) {
       // record the matched stream into the varying parameter map for later
-      // use by StreamBankGL::Draw().
+      // use by StreamBankGLES2::Draw().
       i->second = stream_index;
       DLOG(INFO)
-          << "StreamBankGL Matched CG_PARAMETER \""
+          << "StreamBankGLES2 Matched CG_PARAMETER \""
           << cgGetParameterName(cg_param) << " : "
           << semantic_string << "\" to stream "
           << stream_index << " \""
@@ -122,24 +122,24 @@ bool StreamBankGL::CheckForMissingVertexStreams(
   return true;
 }
 
-bool StreamBankGL::BindStreamsForRendering(
-    const ParamCacheGL::VaryingParameterMap& varying_map,
+bool StreamBankGLES2::BindStreamsForRendering(
+    const ParamCacheGLES2::VaryingParameterMap& varying_map,
     unsigned int* max_vertices) {
   *max_vertices = UINT_MAX;
   // Loop over varying params setting up the streams.
-  ParamCacheGL::VaryingParameterMap::const_iterator i;
+  ParamCacheGLES2::VaryingParameterMap::const_iterator i;
   for (i = varying_map.begin(); i != varying_map.end(); ++i) {
     const Stream& stream = vertex_stream_params_.at(i->second)->stream();
     const Field& field = stream.field();
     GLenum type = GLDataType(field);
     if (type == GL_INVALID_ENUM) {
-      // TODO: support other kinds of buffers.
+      // TODO(o3d): support other kinds of buffers.
       O3D_ERROR(service_locator())
           << "unsupported field of type '" << field.GetClassName()
           << "' on StreamBank '" << name() << "'";
       return false;
     }
-    VertexBufferGL *vbuffer = down_cast<VertexBufferGL*>(field.buffer());
+    VertexBufferGLES2 *vbuffer = down_cast<VertexBufferGLES2*>(field.buffer());
     if (!vbuffer) {
       O3D_ERROR(service_locator())
           << "stream has no buffer in StreamBank '" << name() << "'";
@@ -159,7 +159,7 @@ bool StreamBankGL::BindStreamsForRendering(
     // In the num_elements = 1 case we want to do the D3D stride = 0 thing.
     // but see below.
     if (vbuffer->num_elements() == 1) {
-      // TODO: passing a stride of 0 has a different meaning in GL
+      // TODO(o3d): passing a stride of 0 has a different meaning in GLES2
       // (compute a stride as if it was packed) than in DX (re-use the vertex
       // over and over again). The equivalent of the DX behavior is by
       // disabling the vertex array, and setting a constant value. Currently,
@@ -188,7 +188,7 @@ bool StreamBankGL::BindStreamsForRendering(
 
 // Searches the array of streams and returns the index of the stream that
 // matches the semantic and index pair. if no match was found, return "-1"
-int StreamBankGL::FindVertexStream(Stream::Semantic semantic, int index) {
+int StreamBankGLES2::FindVertexStream(Stream::Semantic semantic, int index) {
   for (unsigned ii = 0; ii < vertex_stream_params_.size(); ++ii) {
     const Stream& stream = vertex_stream_params_[ii]->stream();
     if (stream.semantic() == semantic && stream.semantic_index() == index) {
@@ -199,3 +199,4 @@ int StreamBankGL::FindVertexStream(Stream::Semantic semantic, int index) {
 }
 
 }  // namespace o3d
+

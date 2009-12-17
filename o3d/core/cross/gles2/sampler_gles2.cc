@@ -30,7 +30,7 @@
  */
 
 
-// This file contains the implementation for SamplerGL.
+// This file contains the implementation for SamplerGLES2.
 
 #include "core/cross/gles2/gles2_headers.h"
 #include "core/cross/error.h"
@@ -39,13 +39,13 @@
 
 namespace o3d {
 
-SamplerGL::SamplerGL(ServiceLocator* service_locator)
+SamplerGLES2::SamplerGLES2(ServiceLocator* service_locator)
     : Sampler(service_locator),
-      renderer_(static_cast<RendererGL*>(
+      renderer_(static_cast<RendererGLES2*>(
           service_locator->GetService<Renderer>())) {
 }
 
-SamplerGL::~SamplerGL() {
+SamplerGLES2::~SamplerGLES2() {
 }
 
 namespace {
@@ -131,7 +131,7 @@ GLenum GLTextureTarget(Texture* texture) {
 
 }  // namespace
 
-void SamplerGL::SetTextureAndStates(CGparameter cg_param) {
+void SamplerGLES2::SetTextureAndStates(CGparameter cg_param) {
   // Get the texture object associated with this sampler.
   Texture* texture_object = texture();
 
@@ -162,7 +162,7 @@ void SamplerGL::SetTextureAndStates(CGparameter cg_param) {
     return;
   }
 
-  // TODO: this is a slow check and needs to be moved to initialization
+  // TODO(o3d): this is a slow check and needs to be moved to initialization
   //     time.
   GLenum target = GLTextureTarget(texture_object);
 
@@ -201,10 +201,10 @@ void SamplerGL::SetTextureAndStates(CGparameter cg_param) {
   }
 }
 
-void SamplerGL::ResetTexture(CGparameter cg_param) {
+void SamplerGLES2::ResetTexture(CGparameter cg_param) {
   Texture* the_texture = texture();
   if (the_texture) {
-    // TODO: this is a slow check and needs to be moved to initialization
+    // TODO(o3d): this is a slow check and needs to be moved to initialization
     //     time.
     GLenum target = GLTextureTarget(the_texture);
     if (target) {
@@ -215,3 +215,4 @@ void SamplerGL::ResetTexture(CGparameter cg_param) {
   }
 }
 }  // namespace o3d
+

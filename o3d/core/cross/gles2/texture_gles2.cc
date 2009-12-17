@@ -31,7 +31,7 @@
 
 
 // Implementations of the abstract Texture2D and TextureCUBE classes using
-// the OpenGL graphics API.
+// the OpenGLES2 graphics API.
 
 #include "core/cross/gles2/gles2_headers.h"
 #include "core/cross/error.h"
@@ -51,9 +51,9 @@ Texture::RGBASwizzleIndices g_gl_abgr32f_swizzle_indices = {0, 1, 2, 3};
 
 }  // anonymous namespace.
 
-// Converts an O3D texture format to a GL texture format.
+// Converts an O3D texture format to a GLES2 texture format.
 // Input is 'format'.
-// GL has 2 notions of the format:
+// GLES2 has 2 notions of the format:
 // - the internal format which describes how the format should be stored on the
 // GPU
 // - the (format, type) pair which describes how the input data to glTexImage2D
@@ -97,7 +97,7 @@ static GLenum GLFormatFromO3DFormat(Texture::Format format,
         *data_type = 0;
         return 0;
       } else {
-        // TODO: we need to convert DXT1 -> RGBA8 but keep around the
+        // TODO(o3d): we need to convert DXT1 -> RGBA8 but keep around the
         // pixels so that we can read them back (we won't try to convert back
         // to DXTC).
         LOG(ERROR) << "DXT1 compressed textures not supported yet.";
@@ -112,7 +112,7 @@ static GLenum GLFormatFromO3DFormat(Texture::Format format,
         *data_type = 0;
         return 0;
       } else {
-        // TODO: we need to convert DXT3 -> RGBA8 but keep around the
+        // TODO(o3d): we need to convert DXT3 -> RGBA8 but keep around the
         // pixels so that we can read them back (we won't try to convert back
         // to DXTC).
         LOG(ERROR) << "DXT3 compressed textures not supported yet.";
@@ -127,7 +127,7 @@ static GLenum GLFormatFromO3DFormat(Texture::Format format,
         *data_type = 0;
         return 0;
       } else {
-        // TODO: we need to convert DXT3 -> RGBA8 but keep around the
+        // TODO(o3d): we need to convert DXT3 -> RGBA8 but keep around the
         // pixels so that we can read them back (we won't try to convert back
         // to DXTC).
         LOG(ERROR) << "DXT5 compressed textures not supported yet.";
@@ -146,7 +146,7 @@ static GLenum GLFormatFromO3DFormat(Texture::Format format,
   return 0;
 }
 
-// Updates a GL image from a bitmap, rescaling if necessary.
+// Updates a GLES2 image from a bitmap, rescaling if necessary.
 static bool UpdateGLImageFromBitmap(GLenum target,
                                     unsigned int level,
                                     TextureCUBE::CubeFace face,
@@ -190,7 +190,7 @@ static bool UpdateGLImageFromBitmap(GLenum target,
   return glGetError() == GL_NO_ERROR;
 }
 
-// Creates the array of GL images for a particular face and upload the pixel
+// Creates the array of GLES2 images for a particular face and upload the pixel
 // data from the bitmap.
 static bool CreateGLImages(GLenum target,
                            GLenum internal_format,
@@ -240,18 +240,19 @@ static bool CreateGLImages(GLenum target,
   return true;
 }
 
-// Texture2DGL -----------------------------------------------------------------
+// Texture2DGLES2 --------------------------------------------------------------
 
-// Constructs a 2D texture object from an existing OpenGL 2D texture.
-// NOTE: the Texture2DGL now owns the GL texture and will destroy it on exit.
-Texture2DGL::Texture2DGL(ServiceLocator* service_locator,
-                         GLint texture,
-                         Texture::Format format,
-                         int levels,
-                         int width,
-                         int height,
-                         bool resize_to_pot,
-                         bool enable_render_surfaces)
+// Constructs a 2D texture object from an existing OpenGLES2 2D texture.
+// NOTE: the Texture2DGLES2 now owns the GLES2 texture and will destroy it on
+// exit.
+Texture2DGLES2::Texture2DGLES2(ServiceLocator* service_locator,
+                               GLint texture,
+                               Texture::Format format,
+                               int levels,
+                               int width,
+                               int height,
+                               bool resize_to_pot,
+                               bool enable_render_surfaces)
     : Texture2D(service_locator,
                 width,
                 height,
@@ -259,26 +260,26 @@ Texture2DGL::Texture2DGL(ServiceLocator* service_locator,
                 levels,
                 enable_render_surfaces),
       resize_to_pot_(resize_to_pot),
-      renderer_(static_cast<RendererGL*>(
+      renderer_(static_cast<RendererGLES2*>(
           service_locator->GetService<Renderer>())),
       gl_texture_(texture),
       backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))),
       has_levels_(0),
       locked_levels_(0) {
-  DLOG(INFO) << "Texture2DGL Construct from GLint";
+  DLOG(INFO) << "Texture2DGLES2 Construct from GLint";
   DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
 }
 
 // Creates a new texture object from scratch.
-Texture2DGL* Texture2DGL::Create(ServiceLocator* service_locator,
-                                 Texture::Format format,
-                                 int levels,
-                                 int width,
-                                 int height,
-                                 bool enable_render_surfaces) {
-  DLOG(INFO) << "Texture2DGL Create";
+Texture2DGLES2* Texture2DGLES2::Create(ServiceLocator* service_locator,
+                                       Texture::Format format,
+                                       int levels,
+                                       int width,
+                                       int height,
+                                       bool enable_render_surfaces) {
+  DLOG(INFO) << "Texture2DGLES2 Create";
   DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
-  RendererGL *renderer = static_cast<RendererGL *>(
+  RendererGLES2 *renderer = static_cast<RendererGLES2 *>(
       service_locator->GetService<Renderer>());
   renderer->MakeCurrentLazy();
   GLenum gl_internal_format = 0;
@@ -287,14 +288,14 @@ Texture2DGL* Texture2DGL::Create(ServiceLocator* service_locator,
                                            &gl_internal_format,
                                            &gl_data_type);
   if (gl_internal_format == 0) {
-    DLOG(ERROR) << "Unsupported format in Texture2DGL::Create.";
+    DLOG(ERROR) << "Unsupported format in Texture2DGLES2::Create.";
     return NULL;
   }
 
   bool resize_to_pot = !renderer->supports_npot() &&
                        !image::IsPOT(width, height);
 
-  // Creates the OpenGL texture object, with all the required mip levels.
+  // Creates the OpenGLES2 texture object, with all the required mip levels.
   GLuint gl_texture = 0;
   glGenTextures(1, &gl_texture);
   glBindTexture(GL_TEXTURE_2D, gl_texture);
@@ -322,17 +323,17 @@ Texture2DGL* Texture2DGL::Create(ServiceLocator* service_locator,
 
   DLOG(INFO) << "Created 2D texture (size=" << gl_width << "x" << gl_height
              << ", GLuint=" << gl_texture << ")";
-  Texture2DGL *texture = new Texture2DGL(service_locator,
-                                         gl_texture,
-                                         format,
-                                         levels,
-                                         width,
-                                         height,
-                                         resize_to_pot,
-                                         enable_render_surfaces);
+  Texture2DGLES2 *texture = new Texture2DGLES2(service_locator,
+                                               gl_texture,
+                                               format,
+                                               levels,
+                                               width,
+                                               height,
+                                               resize_to_pot,
+                                               enable_render_surfaces);
 
   // If the hardware does not support npot textures, allocate a 0-initialized
-  // mip-chain here for use during Texture2DGL::Lock.
+  // mip-chain here for use during Texture2DGLES2::Lock.
   if (resize_to_pot) {
     texture->backing_bitmap_->Allocate(format, width, height, levels,
                                        Bitmap::IMAGE);
@@ -342,7 +343,7 @@ Texture2DGL* Texture2DGL::Create(ServiceLocator* service_locator,
   return texture;
 }
 
-void Texture2DGL::UpdateBackedMipLevel(unsigned int level) {
+void Texture2DGLES2::UpdateBackedMipLevel(unsigned int level) {
   DCHECK_LT(static_cast<int>(level), levels());
   DCHECK(backing_bitmap_->image_data());
   DCHECK_EQ(backing_bitmap_->width(), static_cast<unsigned int>(width()));
@@ -354,8 +355,8 @@ void Texture2DGL::UpdateBackedMipLevel(unsigned int level) {
                           *backing_bitmap_.Get(), resize_to_pot_);
 }
 
-Texture2DGL::~Texture2DGL() {
-  DLOG(INFO) << "Texture2DGL Destruct";
+Texture2DGLES2::~Texture2DGLES2() {
+  DLOG(INFO) << "Texture2DGLES2 Destruct";
   if (gl_texture_) {
     renderer_->MakeCurrentLazy();
     glDeleteTextures(1, &gl_texture_);
@@ -364,13 +365,13 @@ Texture2DGL::~Texture2DGL() {
   CHECK_GL_ERROR();
 }
 
-void Texture2DGL::SetRect(int level,
-                          unsigned dst_left,
-                          unsigned dst_top,
-                          unsigned src_width,
-                          unsigned src_height,
-                          const void* src_data,
-                          int src_pitch) {
+void Texture2DGLES2::SetRect(int level,
+                             unsigned dst_left,
+                             unsigned dst_top,
+                             unsigned src_width,
+                             unsigned src_height,
+                             const void* src_data,
+                             int src_pitch) {
   if (level >= levels() || level < 0) {
     O3D_ERROR(service_locator())
         << "Trying to SetRect on non-existent level " << level
@@ -452,9 +453,9 @@ void Texture2DGL::SetRect(int level,
 
 // Locks the given mipmap level of this texture for loading from main memory,
 // and returns a pointer to the buffer.
-bool Texture2DGL::PlatformSpecificLock(
+bool Texture2DGLES2::PlatformSpecificLock(
     int level, void** data, int* pitch, Texture::AccessMode mode) {
-  DLOG(INFO) << "Texture2DGL Lock";
+  DLOG(INFO) << "Texture2DGLES2 Lock";
   DCHECK(data);
   DCHECK(pitch);
   DCHECK_GE(level, 0);
@@ -492,9 +493,9 @@ bool Texture2DGL::PlatformSpecificLock(
 }
 
 // Unlocks the given mipmap level of this texture, uploading the main memory
-// data buffer to GL.
-bool Texture2DGL::PlatformSpecificUnlock(int level) {
-  DLOG(INFO) << "Texture2DGL Unlock";
+// data buffer to GLES2.
+bool Texture2DGLES2::PlatformSpecificUnlock(int level) {
+  DLOG(INFO) << "Texture2DGLES2 Unlock";
   DCHECK_GE(level, 0);
   DCHECK_LT(level, levels());
   if (LockedMode(level) != kReadOnly) {
@@ -510,7 +511,7 @@ bool Texture2DGL::PlatformSpecificUnlock(int level) {
   return true;
 }
 
-RenderSurface::Ref Texture2DGL::PlatformSpecificGetRenderSurface(
+RenderSurface::Ref Texture2DGLES2::PlatformSpecificGetRenderSurface(
     int mip_level) {
   DCHECK_LT(mip_level, levels());
   if (!render_surfaces_enabled()) {
@@ -527,7 +528,7 @@ RenderSurface::Ref Texture2DGL::PlatformSpecificGetRenderSurface(
     return RenderSurface::Ref(NULL);
   }
 
-  return RenderSurface::Ref(new RenderSurfaceGL(
+  return RenderSurface::Ref(new RenderSurfaceGLES2(
       service_locator(),
       width()>> mip_level,
       height() >> mip_level,
@@ -536,30 +537,30 @@ RenderSurface::Ref Texture2DGL::PlatformSpecificGetRenderSurface(
       this));
 }
 
-const Texture::RGBASwizzleIndices& Texture2DGL::GetABGR32FSwizzleIndices() {
+const Texture::RGBASwizzleIndices& Texture2DGLES2::GetABGR32FSwizzleIndices() {
   return g_gl_abgr32f_swizzle_indices;
 }
 
-// TextureCUBEGL ---------------------------------------------------------------
+// TextureCUBEGLES2 ------------------------------------------------------------
 
-// Creates a texture from a pre-existing GL texture object.
-TextureCUBEGL::TextureCUBEGL(ServiceLocator* service_locator,
-                             GLint texture,
-                             Texture::Format format,
-                             int levels,
-                             int edge_length,
-                             bool resize_to_pot,
-                             bool enable_render_surfaces)
+// Creates a texture from a pre-existing GLES2 texture object.
+TextureCUBEGLES2::TextureCUBEGLES2(ServiceLocator* service_locator,
+                                   GLint texture,
+                                   Texture::Format format,
+                                   int levels,
+                                   int edge_length,
+                                   bool resize_to_pot,
+                                   bool enable_render_surfaces)
     : TextureCUBE(service_locator,
                   edge_length,
                   format,
                   levels,
                   enable_render_surfaces),
       resize_to_pot_(resize_to_pot),
-      renderer_(static_cast<RendererGL*>(
+      renderer_(static_cast<RendererGLES2*>(
           service_locator->GetService<Renderer>())),
       gl_texture_(texture) {
-  DLOG(INFO) << "TextureCUBEGL Construct";
+  DLOG(INFO) << "TextureCUBEGLES2 Construct";
   for (int ii = 0; ii < static_cast<int>(NUMBER_OF_FACES); ++ii) {
     backing_bitmaps_[ii] = Bitmap::Ref(new Bitmap(service_locator));
     has_levels_[ii] = 0;
@@ -567,8 +568,8 @@ TextureCUBEGL::TextureCUBEGL(ServiceLocator* service_locator,
   }
 }
 
-TextureCUBEGL::~TextureCUBEGL() {
-  DLOG(INFO) << "TextureCUBEGL Destruct";
+TextureCUBEGLES2::~TextureCUBEGLES2() {
+  DLOG(INFO) << "TextureCUBEGLES2 Destruct";
   if (gl_texture_) {
     renderer_->MakeCurrentLazy();
     glDeleteTextures(1, &gl_texture_);
@@ -587,14 +588,14 @@ static const int kCubemapFaceList[] = {
 };
 
 // Create a new Cube texture from scratch.
-TextureCUBEGL* TextureCUBEGL::Create(ServiceLocator* service_locator,
-                                     Texture::Format format,
-                                     int levels,
-                                     int edge_length,
-                                     bool enable_render_surfaces) {
-  DLOG(INFO) << "TextureCUBEGL Create";
+TextureCUBEGLES2* TextureCUBEGLES2::Create(ServiceLocator* service_locator,
+                                           Texture::Format format,
+                                           int levels,
+                                           int edge_length,
+                                           bool enable_render_surfaces) {
+  DLOG(INFO) << "TextureCUBEGLES2 Create";
   CHECK_GL_ERROR();
-  RendererGL *renderer = static_cast<RendererGL *>(
+  RendererGLES2 *renderer = static_cast<RendererGLES2 *>(
       service_locator->GetService<Renderer>());
   renderer->MakeCurrentLazy();
 
@@ -608,11 +609,11 @@ TextureCUBEGL* TextureCUBEGL::Create(ServiceLocator* service_locator,
                                            &gl_internal_format,
                                            &gl_data_type);
   if (gl_internal_format == 0) {
-    DLOG(ERROR) << "Unsupported format in TextureCUBEGL::Create.";
+    DLOG(ERROR) << "Unsupported format in TextureCUBEGLES2::Create.";
     return NULL;
   }
 
-  // Creates the OpenGL texture object, with all the required mip levels.
+  // Creates the OpenGLES2 texture object, with all the required mip levels.
   GLuint gl_texture = 0;
   glGenTextures(1, &gl_texture);
   glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture);
@@ -635,15 +636,15 @@ TextureCUBEGL* TextureCUBEGL::Create(ServiceLocator* service_locator,
 
   // Create a new texture object, which initializes the base Texture class
   // from the Bitmap information.
-  TextureCUBEGL* texture = new TextureCUBEGL(service_locator,
-                                             gl_texture,
-                                             format,
-                                             levels,
-                                             edge_length,
-                                             resize_to_pot,
-                                             enable_render_surfaces);
+  TextureCUBEGLES2* texture = new TextureCUBEGLES2(service_locator,
+                                                   gl_texture,
+                                                   format,
+                                                   levels,
+                                                   edge_length,
+                                                   resize_to_pot,
+                                                   enable_render_surfaces);
   // If the hardware does not support npot textures, allocate a 0-initialized
-  // mip-chain here for use during TextureCUBEGL::Lock.
+  // mip-chain here for use during TextureCUBEGLES2::Lock.
   if (resize_to_pot) {
     for (int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
       texture->backing_bitmaps_[face]->Allocate(
@@ -656,8 +657,8 @@ TextureCUBEGL* TextureCUBEGL::Create(ServiceLocator* service_locator,
   return texture;
 }
 
-void TextureCUBEGL::UpdateBackedMipLevel(unsigned int level,
-                                         TextureCUBE::CubeFace face) {
+void TextureCUBEGLES2::UpdateBackedMipLevel(unsigned int level,
+                                            TextureCUBE::CubeFace face) {
   Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
   DCHECK_LT(static_cast<int>(level), levels());
   DCHECK(backing_bitmap->image_data());
@@ -671,7 +672,7 @@ void TextureCUBEGL::UpdateBackedMipLevel(unsigned int level,
                           resize_to_pot_);
 }
 
-RenderSurface::Ref TextureCUBEGL::PlatformSpecificGetRenderSurface(
+RenderSurface::Ref TextureCUBEGLES2::PlatformSpecificGetRenderSurface(
     TextureCUBE::CubeFace face,
     int mip_level) {
   DCHECK_LT(mip_level, levels());
@@ -689,7 +690,7 @@ RenderSurface::Ref TextureCUBEGL::PlatformSpecificGetRenderSurface(
     return RenderSurface::Ref(NULL);
   }
 
-  return RenderSurface::Ref(new RenderSurfaceGL(
+  return RenderSurface::Ref(new RenderSurfaceGLES2(
       service_locator(),
       edge_length() >> mip_level,
       edge_length() >> mip_level,
@@ -698,14 +699,14 @@ RenderSurface::Ref TextureCUBEGL::PlatformSpecificGetRenderSurface(
       this));
 }
 
-void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
-                            int level,
-                            unsigned dst_left,
-                            unsigned dst_top,
-                            unsigned src_width,
-                            unsigned src_height,
-                            const void* src_data,
-                            int src_pitch) {
+void TextureCUBEGLES2::SetRect(TextureCUBE::CubeFace face,
+                               int level,
+                               unsigned dst_left,
+                               unsigned dst_top,
+                               unsigned src_width,
+                               unsigned src_height,
+                               const void* src_data,
+                               int src_pitch) {
   if (level >= levels() || level < 0) {
     O3D_ERROR(service_locator())
         << "Trying to SetRect non-existent level " << level
@@ -790,10 +791,10 @@ void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
 
 // Locks the given face and mipmap level of this texture for loading from
 // main memory, and returns a pointer to the buffer.
-bool TextureCUBEGL::PlatformSpecificLock(
+bool TextureCUBEGLES2::PlatformSpecificLock(
     CubeFace face, int level, void** data, int* pitch,
     Texture::AccessMode mode) {
-  DLOG(INFO) << "TextureCUBEGL Lock";
+  DLOG(INFO) << "TextureCUBEGLES2 Lock";
   DCHECK_GE(level, 0);
   DCHECK_LT(level, levels());
   renderer_->MakeCurrentLazy();
@@ -817,7 +818,7 @@ bool TextureCUBEGL::PlatformSpecificLock(
   }
   GLenum gl_target = kCubemapFaceList[face];
   if (mode != kWriteOnly && !HasLevel(face, level)) {
-    // TODO: add some API so we don't have to copy back the data if we
+    // TODO(o3d): add some API so we don't have to copy back the data if we
     // will rewrite it all.
     DCHECK(!resize_to_pot_);
     GLenum gl_internal_format = 0;
@@ -837,8 +838,8 @@ bool TextureCUBEGL::PlatformSpecificLock(
 }
 
 // Unlocks the given face and mipmap level of this texture.
-bool TextureCUBEGL::PlatformSpecificUnlock(CubeFace face, int level) {
-  DLOG(INFO) << "TextureCUBEGL Unlock";
+bool TextureCUBEGLES2::PlatformSpecificUnlock(CubeFace face, int level) {
+  DLOG(INFO) << "TextureCUBEGLES2 Unlock";
   DCHECK_GE(level, 0);
   DCHECK_LT(level, levels());
   if (LockedMode(face, level) != kReadOnly) {
@@ -868,8 +869,10 @@ bool TextureCUBEGL::PlatformSpecificUnlock(CubeFace face, int level) {
   return false;
 }
 
-const Texture::RGBASwizzleIndices& TextureCUBEGL::GetABGR32FSwizzleIndices() {
+const Texture::RGBASwizzleIndices&
+    TextureCUBEGLES2::GetABGR32FSwizzleIndices() {
   return g_gl_abgr32f_swizzle_indices;
 }
 
 }  // namespace o3d
+

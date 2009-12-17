@@ -30,7 +30,7 @@
  */
 
 
-// This file contains the declaration of the DrawElementGL class.
+// This file contains the declaration of the DrawElementGLES2 class.
 
 #ifndef O3D_CORE_CROSS_GLES2_DRAW_ELEMENT_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_DRAW_ELEMENT_GLES2_H_
@@ -42,16 +42,17 @@ namespace o3d {
 
 class Element;
 
-// DrawElementGL is the OpenGL implementation of the DrawElement. It
+// DrawElementGLES2 is the OpenGLES2 implementation of the DrawElement. It
 // provides a place for the renderer to store platform specific cache
 // information.
-class DrawElementGL : public DrawElement {
+class DrawElementGLES2 : public DrawElement {
  public:
-  explicit DrawElementGL(ServiceLocator* service_locator);
-  ~DrawElementGL();
+  explicit DrawElementGLES2(ServiceLocator* service_locator);
+  ~DrawElementGLES2();
 
  private:
 };
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_DRAW_ELEMENT_GLES2_H_
+

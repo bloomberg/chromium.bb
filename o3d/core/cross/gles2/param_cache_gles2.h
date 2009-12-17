@@ -30,7 +30,7 @@
  */
 
 
-// This file contains the declaration of the ParamCacheGL class.
+// This file contains the declaration of the ParamCacheGLES2 class.
 
 #ifndef O3D_CORE_CROSS_GLES2_PARAM_CACHE_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_PARAM_CACHE_GLES2_H_
@@ -45,12 +45,12 @@ namespace o3d {
 class ParamTexture;
 class SemanticManager;
 
-class ParamCacheGL : public ParamCache {
+class ParamCacheGLES2 : public ParamCache {
  public:
-  ParamCacheGL(SemanticManager* semantic_manager, Renderer* renderer);
+  ParamCacheGLES2(SemanticManager* semantic_manager, Renderer* renderer);
 
   typedef std::map<CGparameter, int> VaryingParameterMap;
-  typedef std::map<CGparameter, EffectParamHandlerGL::Ref> UniformParameterMap;
+  typedef std::map<CGparameter, EffectParamHandlerGLES2::Ref> UniformParameterMap;
   typedef std::map<CGparameter, ParamTexture*> SamplerParameterMap;
 
   // Overridden from ParamCache.
@@ -95,9 +95,10 @@ class ParamCacheGL : public ParamCache {
   // A map of uniform CGparameter to Param objects.
   UniformParameterMap uniform_map_;
   // A map of uniform CG_SAMPLER CGparameters to ParamTexture objects.
-  // TODO: remove this (OLD path for textures).
+  // TODO(o3d): remove this (OLD path for textures).
   SamplerParameterMap sampler_map_;
 };
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_PARAM_CACHE_GLES2_H_
+

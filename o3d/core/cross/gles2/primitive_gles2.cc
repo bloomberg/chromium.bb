@@ -30,7 +30,7 @@
  */
 
 
-// This file contains the definition of PrimitiveGL.
+// This file contains the definition of PrimitiveGLES2.
 
 #include <algorithm>
 
@@ -55,15 +55,15 @@ namespace o3d {
 // Number of times to log a repeated event before giving up.
 const int kNumLoggedEvents = 5;
 
-// PrimitiveGL functions -------------------------------------------------------
+// PrimitiveGLES2 functions ----------------------------------------------------
 
-PrimitiveGL::PrimitiveGL(ServiceLocator* service_locator)
+PrimitiveGLES2::PrimitiveGLES2(ServiceLocator* service_locator)
     : Primitive(service_locator) {
-  DLOG(INFO) << "PrimitiveGL Construct";
+  DLOG(INFO) << "PrimitiveGLES2 Construct";
 }
 
-PrimitiveGL::~PrimitiveGL() {
-  DLOG(INFO) << "PrimitiveGL Destruct";
+PrimitiveGLES2::~PrimitiveGLES2() {
+  DLOG(INFO) << "PrimitiveGLES2 Destruct";
 }
 
 // Binds the vertex and index streams required to draw the shape.  If the
@@ -71,28 +71,29 @@ PrimitiveGL::~PrimitiveGL() {
 // was called (or it's the first time it's getting called) then it forces
 // an update of the mapping between the Shape Param's and the shader parameters
 // and also fills in for any missing streams.
-void PrimitiveGL::PlatformSpecificRender(Renderer* renderer,
-                                         DrawElement* draw_element,
-                                         Material* material,
-                                         ParamObject* override,
-                                         ParamCache* param_cache) {
+void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
+                                            DrawElement* draw_element,
+                                            Material* material,
+                                            ParamObject* override,
+                                            ParamCache* param_cache) {
   DLOG_ASSERT(material);
   DLOG_ASSERT(draw_element);
   DLOG_ASSERT(param_cache);
-  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "PrimitiveGL Draw \""
+  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "PrimitiveGLES2 Draw \""
                                        << draw_element->name() << "\"";
-  DrawElementGL* draw_element_gl = down_cast<DrawElementGL*>(draw_element);
-  EffectGL* effect_gl = down_cast<EffectGL*>(material->effect());
+  DrawElementGLES2* draw_element_gl =
+      down_cast<DrawElementGLES2*>(draw_element);
+  EffectGLES2* effect_gl = down_cast<EffectGLES2*>(material->effect());
   DLOG_ASSERT(effect_gl);
-  StreamBankGL* stream_bank_gl = down_cast<StreamBankGL*>(stream_bank());
+  StreamBankGLES2* stream_bank_gl = down_cast<StreamBankGLES2*>(stream_bank());
   DLOG_ASSERT(stream_bank_gl);
 
-  ParamCacheGL* param_cache_gl = down_cast<ParamCacheGL*>(param_cache);
-  ParamCacheGL::VaryingParameterMap& varying_map =
+  ParamCacheGLES2* param_cache_gl = down_cast<ParamCacheGLES2*>(param_cache);
+  ParamCacheGLES2::VaryingParameterMap& varying_map =
       param_cache_gl->varying_map();
 
-  // If this PrimitiveGL has an effect we haven't seen before (or it's the first
-  // time through), initalize the parameter lists before drawing with it.
+  // If this PrimitiveGLES2 has an effect we haven't seen before (or it's the
+  // first time through), initalize the parameter lists before drawing with it.
   if (effect_gl->cg_vertex_program() && effect_gl->cg_fragment_program()) {
     // Set up the current CGeffect.
     if (!param_cache_gl->ValidateAndCacheParams(effect_gl,
@@ -134,7 +135,7 @@ void PrimitiveGL::PlatformSpecificRender(Renderer* renderer,
     return;
   }
 
-  // TODO: move these checks at 'set' time instead of draw time.
+  // TODO(o3d): move these checks at 'set' time instead of draw time.
 
   bool draw = true;
   if (number_vertices_ > max_vertices) {
@@ -159,7 +160,7 @@ void PrimitiveGL::PlatformSpecificRender(Renderer* renderer,
 
   if (indexed()) {
     // Re-bind the index buffer for this shape
-    IndexBufferGL *ibuffer = down_cast<IndexBufferGL*>(index_buffer());
+    IndexBufferGLES2 *ibuffer = down_cast<IndexBufferGLES2*>(index_buffer());
 
     unsigned int max_indices = ibuffer->num_elements();
 
@@ -171,7 +172,7 @@ void PrimitiveGL::PlatformSpecificRender(Renderer* renderer,
       draw = false;
     }
 
-    // TODO: Also check that indices in the index buffer are less than
+    // TODO(o3d): Also check that indices in the index buffer are less than
     // max_vertices_. Needs support from the index buffer (scan indices on
     // Unlock).
 
@@ -247,7 +248,7 @@ void PrimitiveGL::PlatformSpecificRender(Renderer* renderer,
   effect_gl->PostDraw(param_cache_gl);
 
   // Disable the vertex attribute states set earlier.
-  for (ParamCacheGL::VaryingParameterMap::iterator i = varying_map.begin();
+  for (ParamCacheGLES2::VaryingParameterMap::iterator i = varying_map.begin();
        i != varying_map.end();
        ++i) {
     cgGLDisableClientState(i->first);
@@ -256,3 +257,4 @@ void PrimitiveGL::PlatformSpecificRender(Renderer* renderer,
 }
 
 }  // namespace o3d
+

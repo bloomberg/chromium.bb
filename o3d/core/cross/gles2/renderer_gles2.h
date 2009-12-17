@@ -30,8 +30,8 @@
  */
 
 
-// This file contains the definition of the RendererGL class that provides
-// low-level access for O3D to graphics hardware using the OpenGL API
+// This file contains the definition of the RendererGLES2 class that provides
+// low-level access for O3D to graphics hardware using the OpenGLES2 API
 // and Cg Runtime.
 
 #ifndef O3D_CORE_CROSS_GLES2_RENDERER_GLES2_H_
@@ -51,12 +51,13 @@ class Effect;
 class DrawEffect;
 class SemanticManager;
 
-// Implements the genereric Renderer interface using OpenGL and the Cg Runtime.
-class RendererGL : public Renderer {
+// Implements the genereric Renderer interface using OpenGLES2 and the Cg
+// Runtime.
+class RendererGLES2 : public Renderer {
  public:
   // Creates a default Renderer.
-  static RendererGL* CreateDefault(ServiceLocator* service_locator);
-  virtual ~RendererGL();
+  static RendererGLES2* CreateDefault(ServiceLocator* service_locator);
+  virtual ~RendererGLES2();
 
   // Initialises the renderer for use, claiming hardware resources.
   virtual InitStatus InitPlatformSpecific(const DisplayWindow& display,
@@ -86,7 +87,7 @@ class RendererGL : public Renderer {
   // Returns true on success, false on error.
   virtual bool GetDisplayMode(int id, DisplayMode *mode);
 
-  // Resizes the viewport in OpenGL.
+  // Resizes the viewport in OpenGLES2.
   virtual void Resize(int width, int height);
 
   // Creates a StreamBank, returning a platform specific implementation class.
@@ -99,16 +100,16 @@ class RendererGL : public Renderer {
   // class.
   virtual DrawElement::Ref CreateDrawElement();
 
-  // Creates and returns a GL specific float buffer.
+  // Creates and returns a GLES2 specific float buffer.
   virtual VertexBuffer::Ref CreateVertexBuffer();
 
-  // Creates and returns a GL specific integer buffer.
+  // Creates and returns a GLES2 specific integer buffer.
   virtual IndexBuffer::Ref CreateIndexBuffer();
 
-  // Creates and returns a GL specific Effect object.
+  // Creates and returns a GLES2 specific Effect object.
   virtual Effect::Ref CreateEffect();
 
-  // Creates and returns a GL specific Sampler object.
+  // Creates and returns a GLES2 specific Sampler object.
   virtual Sampler::Ref CreateSampler();
 
   // Creates and returns a platform-specific RenderDepthStencilSurface object
@@ -149,7 +150,7 @@ class RendererGL : public Renderer {
       return true;
     }
 #else
-    Error: must port RendererGL::IsCurrent() to your platform.
+    Error: must port RendererGLES2::IsCurrent() to your platform.
 #endif
     return false;
   }
@@ -164,7 +165,7 @@ class RendererGL : public Renderer {
  protected:
   // Keep the constructor protected so only factory methods can create
   // renderers.
-  explicit RendererGL(ServiceLocator* service_locator);
+  explicit RendererGLES2(ServiceLocator* service_locator);
 
   // Overridden from Renderer.
   virtual bool PlatformSpecificBeginDraw();
@@ -227,13 +228,14 @@ class RendererGL : public Renderer {
   virtual void ApplyDirtyStates();
 
  private:
-  // Platform-independent GL initialization
-  InitStatus InitCommonGL();
+  // Platform-independent GLES2 initialization
+  InitStatus InitCommonGLES2();
 
-  // Platform-independent GL destruction
-  void DestroyCommonGL();
+  // Platform-independent GLES2 destruction
+  void DestroyCommonGLES2();
 
-  // Updates the helper constant used to remap D3D clip coordinates to GL ones.
+  // Updates the helper constant used to remap D3D clip coordinates to GLES2
+  // ones.
   void UpdateHelperConstant(float width, float height);
 
   ServiceDependency<SemanticManager> semantic_manager_;
@@ -243,7 +245,7 @@ class RendererGL : public Renderer {
 
 
 #ifdef OS_WIN
-  // Handle to the GL device.
+  // Handle to the GLES2 device.
   HWND window_;
   HDC device_context_;
   HGLRC gl_context_;
@@ -333,3 +335,4 @@ class RendererGL : public Renderer {
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_RENDERER_GLES2_H_
+

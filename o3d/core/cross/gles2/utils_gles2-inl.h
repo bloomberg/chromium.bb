@@ -37,7 +37,7 @@
 
 namespace o3d {
 
-// Define this to debug GL errors. This has a significant performance hit.
+// Define this to debug GLES2 errors. This has a significant performance hit.
 // #define GL_ERROR_DEBUGGING
 
 // convert a byte offset into a Vertex Buffer Object into a GLvoid* for
@@ -70,7 +70,7 @@ namespace o3d {
 #ifdef GL_ERROR_DEBUGGING
 #define CHECK_GL_ERROR() do {                                         \
   GLenum gl_error = glGetError();                                     \
-  LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error :" << gl_error; \
+  LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GLES2 Error :" << gl_error; \
 } while(0)
 #else  // GL_ERROR_DEBUGGING
 #define CHECK_GL_ERROR() void(0)
@@ -79,3 +79,4 @@ namespace o3d {
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_UTILS_GLES2_INL_H_
+

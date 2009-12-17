@@ -30,7 +30,7 @@
  */
 
 
-// This file contains the declaration of the StreamBankGL class.
+// This file contains the declaration of the StreamBankGLES2 class.
 
 #ifndef O3D_CORE_CROSS_GLES2_STREAM_BANK_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_STREAM_BANK_GLES2_H_
@@ -41,11 +41,11 @@
 
 namespace o3d {
 
-// StreamBankGL is the OpenGL implementation of the StreamBank.
-class StreamBankGL : public StreamBank {
+// StreamBankGLES2 is the OpenGLES2 implementation of the StreamBank.
+class StreamBankGLES2 : public StreamBank {
  public:
-  explicit StreamBankGL(ServiceLocator* service_locator);
-  virtual ~StreamBankGL();
+  explicit StreamBankGLES2(ServiceLocator* service_locator);
+  virtual ~StreamBankGLES2();
 
   // Sets the streams for rendering.
   // Parameter:
@@ -55,12 +55,12 @@ class StreamBankGL : public StreamBank {
   // Returns:
   //   true if all streams were bound.
   bool BindStreamsForRendering(
-      const ParamCacheGL::VaryingParameterMap& varying_map,
+      const ParamCacheGLES2::VaryingParameterMap& varying_map,
       unsigned int* max_vertices);
 
   // Checks for all required streams before rendering.
   bool CheckForMissingVertexStreams(
-      ParamCacheGL::VaryingParameterMap& varying_map,
+      ParamCacheGLES2::VaryingParameterMap& varying_map,
       Stream::Semantic* missing_semantic,
       int* missing_semantic_index);
 
@@ -70,3 +70,4 @@ class StreamBankGL : public StreamBank {
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_STREAM_BANK_GLES2_H_
+

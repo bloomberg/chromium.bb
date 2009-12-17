@@ -30,7 +30,7 @@
  */
 
 
-// This file contains the class declaration for SamplerGL.
+// This file contains the class declaration for SamplerGLES2.
 
 #ifndef O3D_CORE_CROSS_GLES2_SAMPLER_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_SAMPLER_GLES2_H_
@@ -39,27 +39,28 @@
 
 namespace o3d {
 
-class RendererGL;
+class RendererGLES2;
 
-// SamplerGL is an implementation of the Sampler object for GL.
-class SamplerGL : public Sampler {
+// SamplerGLES2 is an implementation of the Sampler object for GLES2.
+class SamplerGLES2 : public Sampler {
  public:
-  explicit SamplerGL(ServiceLocator* service_locator);
-  virtual ~SamplerGL();
+  explicit SamplerGLES2(ServiceLocator* service_locator);
+  virtual ~SamplerGLES2();
 
   // Sets the gl texture and sampler states.
   void SetTextureAndStates(CGparameter cg_param);
 
-  // Unbinds the GL texture.
+  // Unbinds the GLES2 texture.
   void ResetTexture(CGparameter cg_param);
 
  private:
 
-  RendererGL* renderer_;
+  RendererGLES2* renderer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SamplerGL);
+  DISALLOW_COPY_AND_ASSIGN(SamplerGLES2);
 };
 }  // namespace o3d
 
 
 #endif  // O3D_CORE_CROSS_GLES2_SAMPLER_GLES2_H_
+

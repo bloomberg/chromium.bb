@@ -30,15 +30,15 @@
  */
 
 
-// This file contains the declarations for Texture2DGL and TextureCUBEGL.
+// This file contains the declarations for Texture2DGLES2 and TextureCUBEGLES2.
 
 #ifndef O3D_CORE_CROSS_GLES2_TEXTURE_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_TEXTURE_GLES2_H_
 
 // Precompiled header comes before everything else.
 
-// Disable compiler warning for openGL calls that require a void* to
-// be cast to a GLuint
+// Disable compiler warning for OpenGLES2 calls that require a void* to be cast
+// to a GLuint
 #if defined(OS_WIN)
 #pragma warning(disable : 4312)
 #pragma warning(disable : 4311)
@@ -50,16 +50,16 @@
 
 namespace o3d {
 
-class RendererGL;
+class RendererGLES2;
 
-// Texture2DGL -----------------------------------------------------------------
+// Texture2DGLES2 --------------------------------------------------------------
 
-// Texture2DGL implements the Texture2D interface with OpenGL.
-class Texture2DGL : public Texture2D {
+// Texture2DGLES2 implements the Texture2D interface with OpenGLES2.
+class Texture2DGLES2 : public Texture2D {
  public:
-  typedef SmartPointer<Texture2DGL> Ref;
+  typedef SmartPointer<Texture2DGLES2> Ref;
 
-  virtual ~Texture2DGL();
+  virtual ~Texture2DGLES2();
 
   // Overridden from Texture2D
   virtual void SetRect(int level,
@@ -70,23 +70,23 @@ class Texture2DGL : public Texture2D {
                        const void* src_data,
                        int src_pitch);
 
-  // Creates a new Texture2DGL with the given specs. If the GL texture
+  // Creates a new Texture2DGLES2 with the given specs. If the GLES2 texture
   // creation fails then it returns NULL otherwise it returns a pointer to the
   // newly created Texture object.
   // The created texture takes ownership of the bitmap data.
-  static Texture2DGL* Create(ServiceLocator* service_locator,
-                             Texture::Format format,
-                             int levels,
-                             int width,
-                             int height,
-                             bool enable_render_surfaces);
+  static Texture2DGLES2* Create(ServiceLocator* service_locator,
+                                Texture::Format format,
+                                int levels,
+                                int width,
+                                int height,
+                                bool enable_render_surfaces);
 
   // Returns the implementation-specific texture handle for this texture.
   void* GetTextureHandle() const {
     return reinterpret_cast<void*>(gl_texture_);
   }
 
-  // Gets the GL texture handle.
+  // Gets the GLES2 texture handle.
   GLuint gl_texture() const { return gl_texture_; }
 
   // Gets a RGBASwizzleIndices that contains a mapping from
@@ -105,19 +105,19 @@ class Texture2DGL : public Texture2D {
   virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(int mip_level);
 
  private:
-  // Initializes the Texture2DGL from a preexisting OpenGL texture handle
+  // Initializes the Texture2DGLES2 from a preexisting OpenGLES2 texture handle
   // and raw Bitmap data.
   // The texture takes ownership of the bitmap data.
-  Texture2DGL(ServiceLocator* service_locator,
-              GLint texture,
-              Texture::Format format,
-              int levels,
-              int width,
-              int height,
-              bool resize_npot,
-              bool enable_render_surfaces);
+  Texture2DGLES2(ServiceLocator* service_locator,
+                 GLint texture,
+                 Texture::Format format,
+                 int levels,
+                 int width,
+                 int height,
+                 bool resize_npot,
+                 bool enable_render_surfaces);
 
-  // Updates a mip level, sending it from the backing bitmap to GL, rescaling
+  // Updates a mip level, sending it from the backing bitmap to GLES2, rescaling
   // it if resize_to_pot_ is set.
   void UpdateBackedMipLevel(unsigned int level);
 
@@ -131,9 +131,9 @@ class Texture2DGL : public Texture2D {
   // the scenes.
   bool resize_to_pot_;
 
-  RendererGL* renderer_;
+  RendererGLES2* renderer_;
 
-  // The handle of the OpenGL texture object.
+  // The handle of the OpenGLES2 texture object.
   GLuint gl_texture_;
 
   // A bitmap used to back the NPOT textures on POT-only hardware, and to back
@@ -149,20 +149,20 @@ class Texture2DGL : public Texture2D {
 };
 
 
-// TextureCUBEGL ---------------------------------------------------------------
+// TextureCUBEGLES2 ------------------------------------------------------------
 
-// TextureCUBEGL implements the TextureCUBE interface with OpenGL.
-class TextureCUBEGL : public TextureCUBE {
+// TextureCUBEGLES2 implements the TextureCUBE interface with OpenGLES2.
+class TextureCUBEGLES2 : public TextureCUBE {
  public:
-  typedef SmartPointer<TextureCUBEGL> Ref;
-  virtual ~TextureCUBEGL();
+  typedef SmartPointer<TextureCUBEGLES2> Ref;
+  virtual ~TextureCUBEGLES2();
 
   // Create a new Cube texture from scratch.
-  static TextureCUBEGL* Create(ServiceLocator* service_locator,
-                               Texture::Format format,
-                               int levels,
-                               int edge_length,
-                               bool enable_render_surfaces);
+  static TextureCUBEGLES2* Create(ServiceLocator* service_locator,
+                                  Texture::Format format,
+                                  int levels,
+                                  int edge_length,
+                                  bool enable_render_surfaces);
 
   // Overridden from TextureCUBE
   virtual void SetRect(CubeFace face,
@@ -179,7 +179,7 @@ class TextureCUBEGL : public TextureCUBE {
     return reinterpret_cast<void*>(gl_texture_);
   }
 
-  // Gets the GL texture handle.
+  // Gets the GLES2 texture handle.
   GLuint gl_texture() const { return gl_texture_; }
 
   // Gets a RGBASwizzleIndices that contains a mapping from
@@ -199,16 +199,16 @@ class TextureCUBEGL : public TextureCUBE {
   virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(CubeFace face,
                                                               int level);
  private:
-  // Creates a texture from a pre-existing GL texture object.
-  TextureCUBEGL(ServiceLocator* service_locator,
-                GLint texture,
-                Texture::Format format,
-                int levels,
-                int edge_length,
-                bool resize_to_pot,
-                bool enable_render_surfaces);
+  // Creates a texture from a pre-existing GLES2 texture object.
+  TextureCUBEGLES2(ServiceLocator* service_locator,
+                   GLint texture,
+                   Texture::Format format,
+                   int levels,
+                   int edge_length,
+                   bool resize_to_pot,
+                   bool enable_render_surfaces);
 
-  // Updates a mip level, sending it from the backing bitmap to GL, rescaling
+  // Updates a mip level, sending it from the backing bitmap to GLES2, rescaling
   // it if resize_to_pot_ is set.
   void UpdateBackedMipLevel(unsigned int level, CubeFace face);
 
@@ -222,9 +222,9 @@ class TextureCUBEGL : public TextureCUBE {
   // the scenes.
   bool resize_to_pot_;
 
-  RendererGL* renderer_;
+  RendererGLES2* renderer_;
 
-  // The handle of the OpenGL texture object.
+  // The handle of the OpenGLES2 texture object.
   GLuint gl_texture_;
 
   // Bitmaps used to back the NPOT textures on POT-only hardware.
@@ -241,3 +241,4 @@ class TextureCUBEGL : public TextureCUBE {
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_TEXTURE_GLES2_H_
+
