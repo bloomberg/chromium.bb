@@ -32,12 +32,16 @@ void CLDHelper::DetectLanguage() {
 
 void CLDHelper::DoDetectLanguage() {
 #if defined(OS_WIN)  // Only for windows.
+// TODO(jcampan): http://crbug.com/30662 the detection language library crashes
+//                on some sites and has been temporarily disabled.
+#if 0
   int num_languages = 0;
   bool is_reliable = false;
   const char* language_iso_code = LanguageCodeISO639_1(
       DetectLanguageOfUnicodeText(page_content_.c_str(), true, &is_reliable,
                                   &num_languages, NULL));
   language_ = language_iso_code;
+#endif
 #else
   // TODO(jcampan): port the compact language detection library.
   NOTIMPLEMENTED();
