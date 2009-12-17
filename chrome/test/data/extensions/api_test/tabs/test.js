@@ -241,6 +241,9 @@ chrome.test.runTests([
     }));
   },
 
+  /*
+  // TODO(jcampan): http://crbug.com/30662 the detection language library
+  //                crashes on some sites and has been temporarily disabled.
   function detectLanguage() {
     chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
       chrome.tabs.detectLanguage(tabs[0].id, pass(function(lang) {
@@ -248,6 +251,7 @@ chrome.test.runTests([
       }));
     }));
   },
+  */
 
   /* TODO(rafaelw): Ideally, this test would include a page with known content,
      it'd take a capture and compare it to some expected output.

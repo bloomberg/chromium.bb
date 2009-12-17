@@ -292,7 +292,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
 // The CLD library only works on Windows at this point.
 #if defined(OS_WIN)
 // Tests that the CLD (Compact Language Detection) works properly.
-IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
+// TODO(jcampan): http://crbug.com/30662 the language detection has been
+//                temporarily disabled.
+IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_PageLanguageDetection) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> server(
         HTTPTestServer::CreateServer(kDocRoot, NULL));

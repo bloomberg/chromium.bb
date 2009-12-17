@@ -89,6 +89,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
   EXPECT_TRUE(result);
 
 #if defined(OS_WIN)
+// TODO(jcampan): http://crbug.com/30662 the language detection has been
+//                temporarily disabled.
+#if 0
   // http://crbug.com/29896 - tabs.detectLanguage is Windows only
 
   // Test for compact language detection API. First navigate to a (static) html
@@ -104,6 +107,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testTabsLanguageAPI()", &result);
   EXPECT_TRUE(result);
+#endif
 #endif
 }
 
