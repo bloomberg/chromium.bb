@@ -2632,6 +2632,9 @@ each locale. -->
         This icon will be visible when the extension can act on the current page.
       </message>
 
+      <message name="IDS_MANAGE_EXTENSIONS" desc="The 'Manage Extensions...' text in the context menu for when right-clicking on extension icons">
+        Manage extensions...
+      </message>
       <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructives on how to find the chrome://extensions/ management page">
         You can manage your installed extensions by clicking Extensions in the Tools menu.
       </message>

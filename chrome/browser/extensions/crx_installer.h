@@ -71,11 +71,6 @@ class CrxInstaller
                                 ExtensionsService* frontend,
                                 ExtensionInstallUI* client);
 
-  // Given the path to the large icon from an extension, read it if present and
-  // decode it into result.
-  static void DecodeInstallIcon(const FilePath& large_icon_path,
-                                scoped_ptr<SkBitmap>* result);
-
   // ExtensionInstallUI::Delegate
   virtual void InstallUIProceed();
   virtual void InstallUIAbort();

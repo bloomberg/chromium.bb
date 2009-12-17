@@ -18,6 +18,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/browser/views/browser_bubble.h"
+#include "chrome/browser/views/extensions/extension_action_context_menu.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -427,6 +428,9 @@ class LocationBarView : public LocationBar,
     // A cache of bitmaps the page actions might need to show, mapped by path.
     typedef std::map<std::string, SkBitmap> PageActionMap;
     PageActionMap page_action_icons_;
+
+    // The context menu for this page action.
+    scoped_ptr<ExtensionActionContextMenu> context_menu_;
 
     // The object that is waiting for the image loading to complete
     // asynchronously.

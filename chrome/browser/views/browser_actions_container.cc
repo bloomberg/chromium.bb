@@ -56,10 +56,11 @@ BrowserActionButton::BrowserActionButton(Extension* extension,
       browser_action_(extension->browser_action()),
       extension_(extension),
       tracker_(NULL),
+      showing_context_menu_(false),
       panel_(panel) {
   set_alignment(TextButton::ALIGN_CENTER);
 
-  // No UpdateState() here because View heirarchy not setup yet. Our parent
+  // No UpdateState() here because View hierarchy not setup yet. Our parent
   // should call UpdateState() after creation.
 
   registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
@@ -155,14 +156,32 @@ bool BrowserActionButton::Activate() {
 }
 
 bool BrowserActionButton::OnMousePressed(const views::MouseEvent& e) {
-  if (IsPopup())
+  showing_context_menu_ = e.IsRightMouseButton();
+  if (showing_context_menu_) {
+    SetButtonPushed();
+
+    // Get the top left point of this button in screen coordinates.
+    gfx::Point point = gfx::Point(0, 0);
+    ConvertPointToScreen(this, &point);
+
+    // Make the menu appear below the button.
+    point.Offset(0, height());
+
+    if (!context_menu_.get())
+      context_menu_.reset(new ExtensionActionContextMenu());
+    context_menu_->Run(extension(), point);
+
+    SetButtonNotPushed();
+    return false;
+  } else if (IsPopup()) {
     return MenuButton::OnMousePressed(e);
+  }
   return TextButton::OnMousePressed(e);
 }
 
 void BrowserActionButton::OnMouseReleased(const views::MouseEvent& e,
                                           bool canceled) {
-  if (IsPopup()) {
+  if (IsPopup() || showing_context_menu_) {
     // TODO(erikkay) this never actually gets called (probably because of the
     // loss of focus).
     MenuButton::OnMouseReleased(e, canceled);
@@ -178,18 +197,18 @@ bool BrowserActionButton::OnKeyReleased(const views::KeyEvent& e) {
 }
 
 void BrowserActionButton::OnMouseExited(const views::MouseEvent& e) {
-  if (IsPopup())
+  if (IsPopup() || showing_context_menu_)
     MenuButton::OnMouseExited(e);
   else
     TextButton::OnMouseExited(e);
 }
 
-void BrowserActionButton::PopupDidShow() {
+void BrowserActionButton::SetButtonPushed() {
   SetState(views::CustomButton::BS_PUSHED);
   menu_visible_ = true;
 }
 
-void BrowserActionButton::PopupDidHide() {
+void BrowserActionButton::SetButtonNotPushed() {
   SetState(views::CustomButton::BS_NORMAL);
   menu_visible_ = false;
 }
@@ -350,7 +369,7 @@ void BrowserActionsContainer::HidePopup() {
 
     closing_popup->DetachFromBrowser();
     delete closing_popup;
-    closing_button->PopupDidHide();
+    closing_button->SetButtonNotPushed();
     return;
   }
 }
@@ -396,7 +415,7 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
                                   true);  // Activate the popup window.
     popup_->set_delegate(this);
     popup_button_ = button;
-    popup_button_->PopupDidShow();
+    popup_button_->SetButtonPushed();
     return;
   }
 

@@ -178,6 +178,18 @@ class Extension {
   static bool IsPrivilegeIncrease(Extension* old_extension,
                                   Extension* new_extension);
 
+  // Given an extension and icon size, read it if present and decode it into
+  // result.
+  static void DecodeIcon(Extension* extension,
+                         Icons icon_size,
+                         scoped_ptr<SkBitmap>* result);
+
+  // Given an icon_path and icon size, read it if present and decode it into
+  // result.
+  static void DecodeIconFromPath(const FilePath& icon_path,
+                                 Icons icon_size,
+                                 scoped_ptr<SkBitmap>* result);
+
   // Initialize the extension from a parsed manifest.
   // If |require_id| is true, will return an error if the "id" key is missing
   // from the value.

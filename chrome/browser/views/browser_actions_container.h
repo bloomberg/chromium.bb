@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/views/browser_bubble.h"
+#include "chrome/browser/views/extensions/extension_action_context_menu.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/controls/button/menu_button.h"
@@ -42,7 +43,7 @@ class BrowserActionButton : public views::MenuButton,
   // Called to update the display to match the browser action's state.
   void UpdateState();
 
-  // Overriden from views::View. Return a 0-inset so the icon can draw all the
+  // Overridden from views::View. Return a 0-inset so the icon can draw all the
   // way to the edge of the view if it wants.
   virtual gfx::Insets GetInsets() const;
 
@@ -71,9 +72,10 @@ class BrowserActionButton : public views::MenuButton,
   // Does this button's action have a popup?
   virtual bool IsPopup();
 
-  // Notifications when the popup is hidden or shown by the container.
-  virtual void PopupDidShow();
-  virtual void PopupDidHide();
+  // Notifications when to set button state to pushed/not pushed (for when the
+  // popup/context menu is hidden or shown by the container).
+  virtual void SetButtonPushed();
+  virtual void SetButtonNotPushed();
 
  private:
   // The browser action this view represents. The ExtensionAction is not owned
@@ -87,6 +89,12 @@ class BrowserActionButton : public views::MenuButton,
   // asynchronously. This object can potentially outlive the BrowserActionView,
   // and takes care of deleting itself.
   ImageLoadingTracker* tracker_;
+
+  // The context menu for browser action icons.
+  scoped_ptr<ExtensionActionContextMenu> context_menu_;
+
+  // Whether we are currently showing/just finished showing a context menu.
+  bool showing_context_menu_;
 
   // The default icon for our browser action. This might be non-empty if the
   // browser action had a value for default_icon in the manifest.

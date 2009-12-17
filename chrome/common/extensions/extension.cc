@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
+#include "webkit/glue/image_decoder.h"
 
 #if defined(OS_WIN)
 #include "base/registry.h"
@@ -639,6 +640,50 @@ bool Extension::IsPrivilegeIncrease(Extension* old_extension,
 
   // Nothing much has changed.
   return false;
+}
+
+// static
+void Extension::DecodeIcon(Extension* extension,
+                           Icons icon_size,
+                           scoped_ptr<SkBitmap>* result) {
+  FilePath icon_path = extension->GetIconPath(icon_size).GetFilePath();
+  DecodeIconFromPath(icon_path, icon_size, result);
+}
+
+// static
+void Extension::DecodeIconFromPath(const FilePath& icon_path,
+                                   Icons icon_size,
+                                   scoped_ptr<SkBitmap>* result) {
+  if (icon_path.empty())
+    return;
+
+  std::string file_contents;
+  if (!file_util::ReadFileToString(icon_path, &file_contents)) {
+    LOG(ERROR) << "Could not read icon file: "
+               << WideToUTF8(icon_path.ToWStringHack());
+    return;
+  }
+
+  // Decode the image using WebKit's image decoder.
+  const unsigned char* data =
+    reinterpret_cast<const unsigned char*>(file_contents.data());
+  webkit_glue::ImageDecoder decoder;
+  scoped_ptr<SkBitmap> decoded(new SkBitmap());
+  *decoded = decoder.Decode(data, file_contents.length());
+  if (decoded->empty()) {
+    LOG(ERROR) << "Could not decode icon file: "
+               << WideToUTF8(icon_path.ToWStringHack());
+    return;
+  }
+
+  if (decoded->width() != icon_size || decoded->height() != icon_size) {
+    LOG(ERROR) << "Icon file has unexpected size: "
+      << IntToString(decoded->width()) << "x"
+      << IntToString(decoded->height());
+    return;
+  }
+
+  result->swap(decoded);
 }
 
 bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,

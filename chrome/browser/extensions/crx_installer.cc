@@ -18,7 +18,6 @@
 #include "chrome/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/glue/image_decoder.h"
 
 namespace {
   // Helper function to delete files. This is used to avoid ugly casts which
@@ -155,48 +154,12 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   }
 
   if (client_.get()) {
-    FilePath icon_path =
-        extension_->GetIconPath(Extension::EXTENSION_ICON_LARGE).GetFilePath();
-    DecodeInstallIcon(icon_path, &install_icon_);
+    Extension::DecodeIcon(extension_.get(), Extension::EXTENSION_ICON_LARGE,
+                          &install_icon_);
   }
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this, &CrxInstaller::ConfirmInstall));
-}
-
-// static
-void CrxInstaller::DecodeInstallIcon(const FilePath& large_icon_path,
-                                     scoped_ptr<SkBitmap>* result) {
-  if (large_icon_path.empty())
-    return;
-
-  std::string file_contents;
-  if (!file_util::ReadFileToString(large_icon_path, &file_contents)) {
-    LOG(ERROR) << "Could not read icon file: "
-               << WideToUTF8(large_icon_path.ToWStringHack());
-    return;
-  }
-
-  // Decode the image using WebKit's image decoder.
-  const unsigned char* data =
-      reinterpret_cast<const unsigned char*>(file_contents.data());
-  webkit_glue::ImageDecoder decoder;
-  scoped_ptr<SkBitmap> decoded(new SkBitmap());
-  *decoded = decoder.Decode(data, file_contents.length());
-  if (decoded->empty()) {
-    LOG(ERROR) << "Could not decode icon file: "
-               << WideToUTF8(large_icon_path.ToWStringHack());
-    return;
-  }
-
-  if (decoded->width() != 128 || decoded->height() != 128) {
-    LOG(ERROR) << "Icon file has unexpected size: "
-               << IntToString(decoded->width()) << "x"
-               << IntToString(decoded->height());
-    return;
-  }
-
-  result->swap(decoded);
 }
 
 void CrxInstaller::ConfirmInstall() {

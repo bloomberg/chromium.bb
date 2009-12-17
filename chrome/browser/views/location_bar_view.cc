@@ -1379,12 +1379,26 @@ void LocationBarView::PageActionImageView::OnMouseMoved(
 bool LocationBarView::PageActionImageView::OnMousePressed(
     const views::MouseEvent& event) {
   int button = -1;
-  if (event.IsLeftMouseButton())
+  if (event.IsLeftMouseButton()) {
     button = 1;
-  else if (event.IsMiddleMouseButton())
+  } else if (event.IsMiddleMouseButton()) {
     button = 2;
-  else if (event.IsRightMouseButton())
-    button = 3;
+  } else if (event.IsRightMouseButton()) {
+    // Get the top left point of this button in screen coordinates.
+    gfx::Point point = gfx::Point(0,0);
+    ConvertPointToScreen(this, &point);
+
+    // Make the menu appear below the button.
+    point.Offset(0, height());
+
+    Extension* extension = profile_->GetExtensionsService()->GetExtensionById(
+        page_action()->extension_id(), false);
+
+    if (!context_menu_.get())
+      context_menu_.reset(new ExtensionActionContextMenu());
+    context_menu_->Run(extension, point);
+    return false;
+  }
 
   ExecuteAction(button);
   return true;
