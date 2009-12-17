@@ -3118,6 +3118,7 @@ BUG30593 LINUX MAC : LayoutTests/websocket/tests/url-with-credential.html = TEXT
 BUG9798 WIN LINUX : LayoutTests/fast/loader/javascript-url-encoding-2.html = TIMEOUT PASS
 BUG9798 WIN RELEASE : LayoutTests/fast/loading/subframe-removes-itself.html = TEXT PASS
 BUG9798 LINUX MAC RELEASE : LayoutTests/fast/loader/invalid-charset-on-script-crashes-loader.html = TIMEOUT PASS
+BUG9798 MAC RELEASE : LayoutTests/fast/borders/block-mask-overlay-image.html = TEXT PASS
 
 // Webkit roll 52198->52205
 // Newly added test in r52202
@@ -3129,6 +3130,9 @@ BUG_JPARENT WIN LINUX : LayoutTests/svg/custom/empty-merge.svg = IMAGE+TEXT
 
 // Flaky since SVG filters turned on
 BUG29737 LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = TEXT PASS
+
+// Newly added test in r52235
+BUG_JPARENT WIN LINUX : LayoutTests/editing/selection/doubleclick-beside-cr-span.html = TEXT
 
 // Failing after chromium r34544.
 BUG30653 WIN DEBUG : LayoutTests/http/tests/security/mixedContent/insecure-script-in-iframe.html = TEXT
