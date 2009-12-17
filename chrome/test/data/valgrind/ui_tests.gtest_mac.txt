@@ -43,3 +43,18 @@ WorkerTest.FLAKY_LimitTotal
 WorkerTest.LimitPerPage
 WorkerTest.WorkerXhrHttpLayoutTests
 WorkerTest.FLAKY_SharedWorkerFastLayoutTests
+
+# See http://crbug.com/30661.
+NPAPITester.GetURL
+NPAPITester.SelfDeletePluginGetUrl
+NPAPITester.PluginThreadAsyncCall
+NPAPITester.GetJavaScriptURL
+NPAPITester.SelfDeletePluginInvoke
+NPAPITester.NPObjectReleasedOnDestruction
+NPAPITester.Arguments
+NPAPITester.FLAKY_GetJavaScriptURL2
+NPAPITester.PrivateDisabled
+NPAPITester.NPObjectSetException
+NPAPIVisiblePluginTester.PluginReferrerTest
+NPAPIVisiblePluginTester.GetURLRequestFailWrite
+NPAPIIncognitoTester.PrivateEnabled
