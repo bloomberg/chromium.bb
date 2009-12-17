@@ -116,8 +116,7 @@ function startRequest() {
 function getInboxCount(onSuccess, onError) {
   var xhr = new XMLHttpRequest();
   var abortTimerId = window.setTimeout(function() {
-    xhr.abort();
-    onError();
+    xhr.abort();  // synchronously calls onreadystatechange
   }, requestTimeout);
 
   function handleSuccess(count) {
