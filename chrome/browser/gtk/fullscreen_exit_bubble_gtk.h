@@ -8,7 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "base/timer.h"
-#include "chrome/common/owned_widget_gtk.h"
+#include "chrome/browser/gtk/slide_animator_gtk.h"
 
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 
@@ -23,6 +23,10 @@ class FullscreenExitBubbleGtk {
   void InitWidgets();
 
  private:
+  GtkWidget* widget() const {
+    return slide_widget_->widget();
+  }
+
   // Hide the exit bubble.
   void Hide();
 
@@ -36,8 +40,8 @@ class FullscreenExitBubbleGtk {
   // A pointer to the floating container that is our parent.
   GtkFloatingContainer* container_;
 
-  // The top widget of the exit bubble.
-  OwnedWidgetGtk alignment_;
+  // The widget that animates the slide-out of fullscreen exit bubble.
+  scoped_ptr<SlideAnimatorGtk> slide_widget_;
 
   // The timer that does the initial hiding of the exit bubble.
   base::OneShotTimer<FullscreenExitBubbleGtk> initial_delay_;
