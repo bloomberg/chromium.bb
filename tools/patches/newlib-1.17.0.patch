@@ -833,7 +833,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/i386/strlen.S newlib-1.17.0/new
 +  nacljmp ecx
 diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/newlib/libc/machine/x86_64/memcpy.S
 --- newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S	2007-08-28 23:56:49.000000000 +0200
-+++ newlib-1.17.0/newlib/libc/machine/x86_64/memcpy.S	2009-12-17 14:20:45.000000000 +0100
++++ newlib-1.17.0/newlib/libc/machine/x86_64/memcpy.S	2009-12-17 15:25:04.000000000 +0100
 @@ -14,20 +14,25 @@
    SOTYPE_FUNCTION(memcpy)
  
@@ -848,14 +848,14 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
  
 -  movq    rdi, r8                 /* Align destination on quad word boundary */
 -  andq    $7, r8
-+  movl    edi, r8d                /* Align destination on quad word boundary */
-+  andl    $7, r8d
++  movl    edi, %r8d                /* Align destination on quad word boundary */
++  andl    $7, %r8d
    jz      quadword_aligned
 -  movq    $8, rcx
 -  subq    r8, rcx
 -  subq    rcx, rdx
 +  movl    $8, ecx
-+  subl    r8d, ecx
++  subl    %r8d, ecx
 +  subl    ecx, edx
 +  
 +  movl    edi, edi
@@ -980,7 +980,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
 +  nacljmp %r11d, r15
 diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/newlib/libc/machine/x86_64/memset.S
 --- newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S	2007-08-28 23:56:49.000000000 +0200
-+++ newlib-1.17.0/newlib/libc/machine/x86_64/memset.S	2009-12-17 14:18:14.000000000 +0100
++++ newlib-1.17.0/newlib/libc/machine/x86_64/memset.S	2009-12-17 15:26:04.000000000 +0100
 @@ -14,75 +14,90 @@
    SOTYPE_FUNCTION(memset)
  
@@ -991,7 +991,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
 -  cmpq    $16, rdx
 +  movl    esi, esi                /* Only need to do read sandboxing once */
 +  addq    r15 ,rsi
-+  movl    edi, r9d                /* Save return value */
++  movl    edi, %r9d               /* Save return value */
 +  movl    esi, eax
 +  movl    edx, ecx
 +  cmpl    $16, edx
@@ -999,14 +999,14 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
  
 -  movq    rdi, r8                 /* Align on quad word boundary */
 -  andq    $7, r8
-+  movl    edi, r8d                /* Align on quad word boundary */
-+  andl    $7, r8d
++  movl    edi, %r8d               /* Align on quad word boundary */
++  andl    $7, %r8d
    jz      quadword_aligned
 -  movq    $8, rcx
 -  subq    r8, rcx
 -  subq    rcx, rdx
 +  movl    $8, ecx
-+  subl    r8d, ecx
++  subl    %r8d, ecx
 +  subl    ecx, edx
 +  mov     edi, edi
 +  add     r15, rdi
@@ -1077,7 +1077,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
    rep     stosb
 -  movq    r9, rax
 -  ret
-+  movl    r9d, eax
++  movl    %r9d, eax
 +  pop     r11
 +  nacljmp %r11d, r15
  
@@ -1088,7 +1088,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
    rep     stosb
 -  movq    r9, rax
 -  ret
-+  movl    r9d, eax
++  movl    %r9d, eax
 +  pop     r11
 +  nacljmp %r11d, r15
  
@@ -1109,7 +1109,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
    rep     stosb                   /* Store the remaining bytes */
 -  movq    r9, rax
 -  ret
-+  movl    r9d, eax
++  movl    %r9d, eax
 +  pop     r11
 +  nacljmp %r11d, r15
  
