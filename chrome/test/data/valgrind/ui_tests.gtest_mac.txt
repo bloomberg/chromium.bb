@@ -58,3 +58,7 @@ NPAPITester.NPObjectSetException
 NPAPIVisiblePluginTester.PluginReferrerTest
 NPAPIVisiblePluginTester.GetURLRequestFailWrite
 NPAPIIncognitoTester.PrivateEnabled
+NPAPITester.FLAKY_ManyPlugins
+NPAPITester.NPObjectProxy
+NPAPITester.ScheduleTimer
+NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
