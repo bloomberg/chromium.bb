@@ -42,6 +42,6 @@ PrefsControllerTest.SwitchToPage
 RenderViewTest.OnPrintPages
 RenderViewTest.Print*
 # See http://crbug.com/30397.
-TabStripControllerTest.*
+TabStripControllerTest.AddRemoveTabs
 # See http://crbug.com/30398.
 TaskManagerWindowControllerTest.*

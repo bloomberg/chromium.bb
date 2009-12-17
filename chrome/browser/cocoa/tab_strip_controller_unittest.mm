@@ -104,6 +104,10 @@ class TabStripControllerTest : public CocoaTest {
 
   virtual void TearDown() {
     browser_helper_.CloseBrowserWindow();
+    // The call to CocoaTest::TearDown() deletes the Browser and TabStripModel
+    // objects, so we first have to delete the controller, which refers to them.
+    controller_.reset(nil);
+    model_ = NULL;
     CocoaTest::TearDown();
   }
 
