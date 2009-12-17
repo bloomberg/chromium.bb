@@ -123,11 +123,11 @@ AutomatedUITest::AutomatedUITest()
   if (parsed_command_line.HasSwitch(kDebugModeSwitch))
     debug_logging_enabled_ = true;
   if (parsed_command_line.HasSwitch(kWaitSwitch)) {
-    std::wstring str = parsed_command_line.GetSwitchValue(kWaitSwitch);
+    std::string str = parsed_command_line.GetSwitchValueASCII(kWaitSwitch);
     if (str.empty()) {
       post_action_delay_ = 1;
     } else {
-      post_action_delay_ = static_cast<int>(StringToInt64(WideToUTF16(str)));
+      post_action_delay_ = StringToInt(str);
     }
   }
   if (base::SysInfo::HasEnvVar(env_vars::kHeadless))
@@ -141,17 +141,15 @@ void AutomatedUITest::RunReproduction() {
   xml_writer_.StartWriting();
   xml_writer_.StartElement("Report");
   std::string action_string =
-      WideToASCII(parsed_command_line.GetSwitchValue(kReproSwitch));
+      parsed_command_line.GetSwitchValueASCII(kReproSwitch);
 
   int64 num_reproductions = 1;
   if (parsed_command_line.HasSwitch(kReproRepeatSwitch)) {
-    std::wstring num_reproductions_string =
-        parsed_command_line.GetSwitchValue(kReproRepeatSwitch);
-    std::string test = WideToASCII(num_reproductions_string);
-    num_reproductions = StringToInt64(test);
+    num_reproductions = StringToInt64(
+        parsed_command_line.GetSwitchValueASCII(kReproRepeatSwitch));
   }
   std::vector<std::string> actions;
-  SplitString(action_string, L',', &actions);
+  SplitString(action_string, ',', &actions);
   bool did_crash = false;
   bool command_complete = false;
 

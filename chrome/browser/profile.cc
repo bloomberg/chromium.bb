@@ -680,9 +680,7 @@ void ProfileImpl::InitExtensions() {
 
   // Load any extensions specified with --load-extension.
   if (command_line->HasSwitch(switches::kLoadExtension)) {
-    std::wstring path_string =
-        command_line->GetSwitchValue(switches::kLoadExtension);
-    FilePath path = FilePath::FromWStringHack(path_string);
+    FilePath path = command_line->GetSwitchValuePath(switches::kLoadExtension);
     extensions_service_->LoadExtension(path);
 
     // Tell UserScriptMaser to watch this extension's directory for changes so

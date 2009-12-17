@@ -514,8 +514,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   // This is experimental code. See first_run_win.cc for more info.
-  std::wstring try_chrome =
-      parsed_command_line.GetSwitchValue(switches::kTryChromeAgain);
+  std::string try_chrome =
+      parsed_command_line.GetSwitchValueASCII(switches::kTryChromeAgain);
   if (!try_chrome.empty()) {
     Upgrade::TryResult answer =
         Upgrade::ShowTryChromeDialog(StringToInt(try_chrome));
@@ -827,7 +827,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   std::string sdch_supported_domain("");
   if (parsed_command_line.HasSwitch(switches::kSdchFilter)) {
     sdch_supported_domain =
-        WideToASCII(parsed_command_line.GetSwitchValue(switches::kSdchFilter));
+        parsed_command_line.GetSwitchValueASCII(switches::kSdchFilter);
   } else {
     sdch_trial->AppendGroup("_global_disable_sdch",
                             kSDCH_PROBABILITY_PER_GROUP);

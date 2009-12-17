@@ -447,8 +447,8 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
 #if defined(OS_WIN)
   // First, check to see if there's a --lang flag.
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  const std::string& lang_arg = WideToASCII(
-      parsed_command_line.GetSwitchValue(switches::kLang));
+  const std::string& lang_arg =
+      parsed_command_line.GetSwitchValueASCII(switches::kLang);
   if (!lang_arg.empty())
     candidates.push_back(lang_arg);
 

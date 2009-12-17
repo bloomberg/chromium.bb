@@ -232,11 +232,11 @@ void InstallJankometer(const CommandLine& parsed_command_line) {
   bool ui_watchdog_enabled = false;
   bool io_watchdog_enabled = false;
   if (parsed_command_line.HasSwitch(switches::kEnableWatchdog)) {
-    std::wstring list =
-        parsed_command_line.GetSwitchValue(switches::kEnableWatchdog);
-    if (list.npos != list.find(L"ui"))
+    std::string list =
+        parsed_command_line.GetSwitchValueASCII(switches::kEnableWatchdog);
+    if (list.npos != list.find("ui"))
       ui_watchdog_enabled = true;
-    if (list.npos != list.find(L"io"))
+    if (list.npos != list.find("io"))
       io_watchdog_enabled = true;
   }
 

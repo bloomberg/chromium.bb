@@ -753,8 +753,8 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
 
     if (command_line.HasSwitch(switches::kPackExtension)) {
       // Input Paths.
-      FilePath src_dir = FilePath::FromWStringHack(command_line.GetSwitchValue(
-          switches::kPackExtension));
+      FilePath src_dir = command_line.GetSwitchValuePath(
+          switches::kPackExtension);
       FilePath private_key_path;
       if (command_line.HasSwitch(switches::kPackExtensionKey)) {
         private_key_path = command_line.GetSwitchValuePath(
@@ -826,7 +826,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
 
   if (command_line.HasSwitch(switches::kUseFlip)) {
     std::string flip_mode =
-        WideToASCII(command_line.GetSwitchValue(switches::kUseFlip));
+        command_line.GetSwitchValueASCII(switches::kUseFlip);
     net::HttpNetworkLayer::EnableFlip(flip_mode);
   }
 
