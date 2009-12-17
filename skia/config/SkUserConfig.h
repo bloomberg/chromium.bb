@@ -189,9 +189,6 @@ typedef unsigned uint32_t;
 // assertion.
 #define SK_CRASH() SkDebugf_FileLine(__FILE__, __LINE__, true, "SK_CRASH")
 
-// Enable the use of the SkEdgeBuilder class.
-#define USE_NEW_BUILDER 1
-
 // ===== End Chrome-specific definitions =====
 
 #endif
