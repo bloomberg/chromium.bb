@@ -124,7 +124,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_B, true, true, false, IDC_SHOW_BOOKMARK_MANAGER },
   { base::VKEY_F1, false, false, false, IDC_HELP_PAGE },
   { base::VKEY_Q, true, true, false, IDC_EXIT },
-  { base::VKEY_0, true, true, false, IDC_COMPACT_NAVBAR },
+  { base::VKEY_C, true, true, false, IDC_COMPACT_NAVBAR },
   { base::VKEY_F, false, false, true, IDC_SHOW_APP_MENU},
   { base::VKEY_E, false, false, true, IDC_SHOW_PAGE_MENU},
 };

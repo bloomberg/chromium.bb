@@ -195,6 +195,7 @@ extern const char kEnableGView[];
 extern const char kLoginManager[];
 extern const char kTestLoadLibcros[];
 extern const char kProfile[];
+extern const char kChromeosFrame[];
 #endif
 
 #if defined(OS_LINUX)

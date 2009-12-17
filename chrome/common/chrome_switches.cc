@@ -449,11 +449,6 @@ const char kProcessPerSite[]                = "process-per-site";
 // script connections to each other).
 const char kProcessPerTab[]                 = "process-per-tab";
 
-#if defined(OS_CHROMEOS)
-// Overrides the Default profile.
-const char kProfile[]                       = "profile";
-#endif
-
 // Causes the process to run as a profile import subprocess.
 const char kProfileImportProcess[]          = "profile-import";
 
@@ -681,6 +676,12 @@ const char kLoginManager[]                  = "login-manager";
 // Attempts to load libcros and validate it, then exits. A nonzero return code
 // means the library could not be loaded correctly.
 const char kTestLoadLibcros[]               = "test-load-libcros";
+
+// Overrides the Default profile.
+const char kProfile[]                       = "profile";
+
+// Use the frame layout used in chromeos.
+const char kChromeosFrame[]                 = "chromeos-frame";
 #endif
 
 #if defined(OS_LINUX)

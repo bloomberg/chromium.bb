@@ -6,6 +6,7 @@
 
 #include "app/menus/simple_menu_model.h"
 #include "app/theme_provider.h"
+#include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chromeos/compact_location_bar.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/x11_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -97,7 +99,9 @@ class NormalExtender : public BrowserExtender,
       // means it's possible for us not to be able to get the name of the window
       // manager. We assume that when this happens we're on Chrome OS.
       force_maximized_window_ = (!wm_name_valid ||
-                                 wm_name == kChromeOsWindowManagerName);
+                                 wm_name == kChromeOsWindowManagerName ||
+                                 CommandLine::ForCurrentProcess()->HasSwitch(
+                                     switches::kChromeosFrame));
     }
   }
 
@@ -115,11 +119,18 @@ class NormalExtender : public BrowserExtender,
       status_area_->SetVisible(true);
     }
 
+    /* TODO(oshima):
+     * Disabling the ability to update location bar on re-layout bacause
+     * tabstrip state may not be in sync with the browser's state when
+     * new tab is added. We should decide when we know more about this
+     * feature. May be we should simply hide the location?
+     * Filed a bug: http://crbug.com/30612.
     if (compact_navigation_bar_->IsVisible()) {
       // Update the size and location of the compact location bar.
       compact_location_bar_->UpdateBounds(
           browser_view()->tabstrip()->GetSelectedTab());
     }
+    */
 
     // Layout main menu before tab strip.
     gfx::Size main_menu_size = main_menu_->GetPreferredSize();
@@ -136,8 +147,13 @@ class NormalExtender : public BrowserExtender,
 
     if (compact_navigation_bar_->IsVisible()) {
       gfx::Size cnb_bounds = compact_navigation_bar_->GetPreferredSize();
-      compact_navigation_bar_->SetBounds(curx, bounds.y(),
-                                         cnb_bounds.width(), bounds.height());
+      // This (+1/-1) is a quick hack for the bug
+      // http://code.google.com/p/chromium-os/issues/detail?id=1010
+      // while investigating the issue. It could be in gtk or around
+      // NativeViewHostGtk::CreateFixed, but it will take some time.
+      compact_navigation_bar_->SetBounds(curx, bounds.y() + 1,
+                                         cnb_bounds.width(),
+                                         bounds.height() - 1);
       curx += cnb_bounds.width();
       width -= cnb_bounds.width();
     }

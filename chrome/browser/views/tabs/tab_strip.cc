@@ -1415,7 +1415,8 @@ void TabStrip::LoadNewTabButtonImage() {
 }
 
 Tab* TabStrip::GetTabAt(int index) const {
-  DCHECK(index >= 0 && index < GetTabCount());
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, GetTabCount());
   return tab_data_.at(index).tab;
 }
 
