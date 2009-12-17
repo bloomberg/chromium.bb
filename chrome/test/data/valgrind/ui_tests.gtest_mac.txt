@@ -24,18 +24,21 @@ DownloadTest.NoDownload
 DownloadTest.PerWindowShelf
 ErrorPageTest.IFrameDNSError_GoBackAndForward
 
-# Following tests are failing on valgrind.
-# See http://crbug.com/29598.
+# Following tests fail on valgrind.
+# See http://crbug.com/30366.
 BrowserEncodingTest.TestEncodingAutoDetect
+# See http://crbug.com/29598.
 DOMStorageTest.FLAKY_LocalStorageLayoutTests
 ErrorPageTest.FLAKY_DNSError_Basic
 ErrorPageTest.FLAKY_DNSError_GoBack1
 ErrorPageTest.FLAKY_DNSError_GoBack2 
 ErrorPageTest.FLAKY_DNSError_GoBack2AndForward
 ErrorPageTest.FLAKY_DNSError_GoBack2Forward2
+SessionHistoryTest.FLAKY_LocationReplace
+# See http://crbug.com/30367.
 NewTabUITest.NTPHasThumbnails
 NewTabUITest.UpdateUserPrefsVersion
-SessionHistoryTest.FLAKY_LocationReplace
+# See http://crbug.com/30360.
 WorkerTest.FLAKY_LimitTotal
 WorkerTest.LimitPerPage
 WorkerTest.WorkerXhrHttpLayoutTests

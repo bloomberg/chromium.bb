@@ -49,6 +49,6 @@ AutomationProxyTest.NavigateToURLWithTimeout1
 AutomationProxyTest.NavigateToURLWithTimeout2
 # See http://crbug.com/29586.
 NewTabUITest.ChromeInternalLoadsNTP
-# See http://crbug.com/29592.
+# See http://crbug.com/29592, http://crbug.com/30360.
 WorkerTest.MultipleWorkers
 

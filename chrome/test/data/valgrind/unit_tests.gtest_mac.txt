@@ -6,31 +6,44 @@ IPCSyncChannelTest.*
 WebDropTargetTest.URL
 WebDropTargetTest.Data
 
-# Following test fails on valgrind.
-# See http://crbug.com/29598.
+# Following tests fail on valgrind.
+# See http://crbug.com/30370.
 AutocompleteTextFieldEditorTest.CutCopyTest
+# See http://crbug.com/30371.
 BookmarkBubbleControllerTest.TestNewParentSameName
+# See http://crbug.com/30373.
 BookmarkEditorControllerTreeTest.RenameBookmarkInPlace
 BookmarkEditorControllerTreeTest.ChangeBookmarkURLInPlace
 BookmarkEditorControllerTreeTest.ChangeBookmarkGroup
 BookmarkEditorControllerTreeTest.ChangeNameAndBookmarkGroup
+# See http://crbug.com/30375.
 DownloadUtilTest.AddFileToPasteboardTest
+# See http://crbug.com/30378.
 FindPasteboardTest.ReadingFromPboardUpdatesFindText
 FindPasteboardTest.SendsNotificationWhenTextChanges
+# See http://crbug.com/30379.
 RenderViewTest.MacTestCmdUp
 
-# Folowing tests does not pass memcheck test.
-# See http://crbug.com/30209.
+# Folowing tests do not pass memcheck test.
+# See http://crbug.com/30381.
 BookmarkMenuTest.Basics
+# See http://crbug.com/30382.
 BrowserWindowCocoaTest.TestFullscreen
+# See http://crbug.com/30384.
 ChromeBrowserWindowTest.DoesHideTitle
+# See http://crbug.com/30386.
 ClearBrowsingDataControllerTest.*
+# See http://crbug.com/30393.
 NSMenuItemAdditionsTest.TestMOnDifferentLayouts
+# See http://crbug.com/30394.
 PrefsControllerTest.GetPrefsViewForPage
 PrefsControllerTest.GetToolbarItemForPage
 PrefsControllerTest.ShowAndClose
 PrefsControllerTest.SwitchToPage
+# See http://crbug.com/30396.
 RenderViewTest.OnPrintPages
 RenderViewTest.Print*
+# See http://crbug.com/30397.
 TabStripControllerTest.*
+# See http://crbug.com/30398.
 TaskManagerWindowControllerTest.*
