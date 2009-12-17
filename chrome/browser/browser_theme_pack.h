@@ -32,7 +32,9 @@ class RefCountedMemory;
 // A note on const-ness. All public, non-static methods are const.  We do this
 // because once we've constructed a BrowserThemePack through the
 // BuildFromExtension() interface, we WriteToDisk() on a thread other than the
-// UI thread that consumes a BrowserThemePack.
+// UI thread that consumes a BrowserThemePack. There is no locking; thread
+// safety between the writing thread and the UI thread is ensured by having the
+// data be immutable.
 class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
  public:
   ~BrowserThemePack();
@@ -61,6 +63,9 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
   bool GetColor(int id, SkColor* color) const;
   bool GetDisplayProperty(int id, int* result) const;
   SkBitmap* GetBitmapNamed(int id) const;
+
+  // Returns the raw PNG encoded data for IDR_THEME_NTP_*. This method is only
+  // supposed to work for the NTP attribution and background resources.
   RefCountedMemory* GetRawData(int id) const;
 
   // Whether this theme provides an image for |id|.
@@ -76,6 +81,9 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
 
   // The raw PNG memory associated with a certain id.
   typedef std::map<int, scoped_refptr<RefCountedMemory> > RawImages;
+
+  // The type passed to base::DataPack::WritePack.
+  typedef std::map<uint32, base::StringPiece> RawDataForWriting;
 
   // Default. Everything is empty.
   BrowserThemePack();
@@ -121,14 +129,18 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
   // in |bitmaps|. Must be called after GenerateFrameImages().
   void GenerateTabBackgroundImages(ImageCache* bitmaps) const;
 
-  // Takes all the SkBitmaps in |image_cache_|, encodes them as PNGs and places
-  // them in |image_memory_|.
-  void RepackImageCacheToImageMemory();
+  // Takes all the SkBitmaps in |images|, encodes them as PNGs and places
+  // them in |reencoded_images|.
+  void RepackImages(const ImageCache& images,
+                    RawImages* reencoded_images) const;
 
   // Takes all images in |source| and puts them in |destination|, freeing any
   // image already in |destination| that |source| would overwrite.
   void MergeImageCaches(const ImageCache& source,
                         ImageCache* destination) const;
+
+  // Changes the RefCountedMemory based |images| into StringPiece data in |out|.
+  void AddRawImagesTo(const RawImages& images, RawDataForWriting* out) const;
 
   // Retrieves the tint OR the default tint. Unlike the public interface, we
   // always need to return a reasonable tint here, instead of partially
@@ -180,10 +192,15 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
   // needs to be in |image_memory_|.
   RawImages image_memory_;
 
-  // Tinted (or otherwise prepared) images for passing out. BrowserThemePack
-  // owns all these images. This cache isn't touched when we write our data to
-  // a DataPack.
-  mutable ImageCache image_cache_;
+  // An immutable cache of images generated in BuildFromExtension(). When this
+  // BrowserThemePack is generated from BuildFromDataPack(), this cache is
+  // empty. We separate the images from the images loaded from disk so that
+  // WriteToDisk()'s implementation doesn't need locks. There should be no IDs
+  // in |image_memory_| that are in |prepared_images_| or vice versa.
+  ImageCache prepared_images_;
+
+  // Loaded images. These are loaded from |image_memory_| or the |data_pack_|.
+  mutable ImageCache loaded_images_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserThemePack);
 };

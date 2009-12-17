@@ -20,7 +20,12 @@
 
 class BrowserThemePackTest : public ::testing::Test {
  public:
-  BrowserThemePackTest() : theme_pack_(new BrowserThemePack) { }
+  BrowserThemePackTest()
+      : message_loop(),
+        fake_ui_thread(ChromeThread::UI, &message_loop),
+        fake_file_thread(ChromeThread::FILE, &message_loop),
+        theme_pack_(new BrowserThemePack) {
+  }
 
   // Transformation for link underline colors.
   SkColor BuildThirdOpacity(SkColor color_link) {
@@ -158,6 +163,10 @@ class BrowserThemePackTest : public ::testing::Test {
                                 &color));
     EXPECT_FALSE(pack->GetTint(BrowserThemeProvider::TINT_FRAME, &actual));
   }
+
+  MessageLoop message_loop;
+  ChromeThread fake_ui_thread;
+  ChromeThread fake_file_thread;
 
   scoped_refptr<BrowserThemePack> theme_pack_;
 };

@@ -203,11 +203,13 @@ BrowserThemePack::~BrowserThemePack() {
     delete [] display_properties_;
   }
 
-  STLDeleteValues(&image_cache_);
+  STLDeleteValues(&prepared_images_);
+  STLDeleteValues(&loaded_images_);
 }
 
 // static
 BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(extension);
   DCHECK(extension->IsTheme());
 
@@ -222,23 +224,19 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
   pack->ParseImageNamesFromJSON(extension->GetThemeImages(),
                                 extension->path(),
                                 &file_paths);
-  pack->LoadRawBitmapsTo(file_paths, &pack->image_cache_);
+  pack->LoadRawBitmapsTo(file_paths, &pack->prepared_images_);
 
-  pack->GenerateFrameImages(&pack->image_cache_);
+  pack->GenerateFrameImages(&pack->prepared_images_);
 
 #if !defined(OS_MACOSX)
   // OSX uses its own special buttons that are PDFs that do odd sorts of vector
   // graphics tricks. Other platforms use bitmaps and we must pre-tint them.
   pack->GenerateTintedButtons(
       pack->GetTintInternal(BrowserThemeProvider::TINT_BUTTONS),
-      &pack->image_cache_);
+      &pack->prepared_images_);
 #endif
 
-  pack->GenerateTabBackgroundImages(&pack->image_cache_);
-
-  // Repack all the images from |image_cache_| into |image_memory_| for
-  // writing to the data pack.
-  pack->RepackImageCacheToImageMemory();
+  pack->GenerateTabBackgroundImages(&pack->prepared_images_);
 
   // The BrowserThemePack is now in a consistent state.
   return pack;
@@ -247,6 +245,7 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
 // static
 scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
     FilePath path, const std::string& expected_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   scoped_refptr<BrowserThemePack> pack = new BrowserThemePack;
   pack->data_pack_.reset(new base::DataPack);
 
@@ -291,8 +290,9 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
 }
 
 bool BrowserThemePack::WriteToDisk(FilePath path) const {
-  std::map<uint32, base::StringPiece> resources;
-
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  // Add resources for each of the property arrays.
+  RawDataForWriting resources;
   resources[kHeaderID] = base::StringPiece(
       reinterpret_cast<const char*>(header_), sizeof(BrowserThemePackHeader));
   resources[kTintsID] = base::StringPiece(
@@ -304,11 +304,11 @@ bool BrowserThemePack::WriteToDisk(FilePath path) const {
       reinterpret_cast<const char*>(display_properties_),
       sizeof(DisplayPropertyPair[kDisplayPropertySize]));
 
-  for (RawImages::const_iterator it = image_memory_.begin();
-       it != image_memory_.end(); ++it) {
-    resources[it->first] = base::StringPiece(
-        reinterpret_cast<const char*>(it->second->front()), it->second->size());
-  }
+  AddRawImagesTo(image_memory_, &resources);
+
+  RawImages reencoded_images;
+  RepackImages(prepared_images_, &reencoded_images);
+  AddRawImagesTo(reencoded_images, &resources);
 
   return base::DataPack::WritePack(path, resources);
 }
@@ -356,8 +356,13 @@ bool BrowserThemePack::GetDisplayProperty(int id, int* result) const {
 
 SkBitmap* BrowserThemePack::GetBitmapNamed(int id) const {
   // Check our cache of prepared images, first.
-  ImageCache::const_iterator image_iter = image_cache_.find(id);
-  if (image_iter != image_cache_.end())
+  ImageCache::const_iterator image_iter = prepared_images_.find(id);
+  if (image_iter != prepared_images_.end())
+    return image_iter->second;
+
+  // Check if we've already loaded this image.
+  image_iter = loaded_images_.find(id);
+  if (image_iter != loaded_images_.end())
     return image_iter->second;
 
   scoped_refptr<RefCountedMemory> memory;
@@ -381,7 +386,7 @@ SkBitmap* BrowserThemePack::GetBitmapNamed(int id) const {
     }
 
     SkBitmap* ret = new SkBitmap(bitmap);
-    image_cache_[id] = ret;
+    loaded_images_[id] = ret;
 
     return ret;
   }
@@ -409,7 +414,8 @@ bool BrowserThemePack::HasCustomImage(int id) const {
     base::StringPiece ignored;
     return data_pack_->GetStringPiece(id, &ignored);
   } else {
-    return image_memory_.count(id) > 0;
+    return prepared_images_.count(id) > 0 ||
+        image_memory_.count(id) > 0;
   }
 }
 
@@ -810,17 +816,17 @@ void BrowserThemePack::GenerateTabBackgroundImages(ImageCache* bitmaps) const {
   MergeImageCaches(temp_output, bitmaps);
 }
 
-void BrowserThemePack::RepackImageCacheToImageMemory() {
-  // TODO(erg): This shouldn't be done on the main thread. This should be done
-  // during the WriteToDisk() method, but will require some tricky locking.
-  for (ImageCache::const_iterator it = image_cache_.begin();
-       it != image_cache_.end(); ++it) {
+void BrowserThemePack::RepackImages(const ImageCache& images,
+                                    RawImages* reencoded_images) const {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  for (ImageCache::const_iterator it = images.begin();
+       it != images.end(); ++it) {
     std::vector<unsigned char> image_data;
     if (!gfx::PNGCodec::EncodeBGRASkBitmap(*(it->second), false, &image_data)) {
       NOTREACHED() << "Image file for resource " << it->first
                    << " could not be encoded.";
     } else {
-      image_memory_[it->first] = RefCountedBytes::TakeVector(&image_data);
+      (*reencoded_images)[it->first] = RefCountedBytes::TakeVector(&image_data);
     }
   }
 }
@@ -835,6 +841,16 @@ void BrowserThemePack::MergeImageCaches(
       delete bitmap_it->second;
 
     (*destination)[it->first] = it->second;
+  }
+}
+
+void BrowserThemePack::AddRawImagesTo(const RawImages& images,
+                                      RawDataForWriting* out) const {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  for (RawImages::const_iterator it = images.begin(); it != images.end();
+       ++it) {
+    (*out)[it->first] = base::StringPiece(
+        reinterpret_cast<const char*>(it->second->front()), it->second->size());
   }
 }
 

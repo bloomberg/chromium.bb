@@ -61,8 +61,9 @@ class ThemeProvider {
   // doesn't provide a certain image, but custom themes might (badges, etc).
   virtual bool HasCustomImage(int id) const = 0;
 
-  // Reads the image data from the theme file into the specified
-  // vector. Returns NULL on error.
+  // Reads the image data from the theme file into the specified vector. Only
+  // valid for un-themed resources and the themed IDR_THEME_NTP_* in most
+  // implementations of ThemeProvider. Returns NULL on error.
   virtual RefCountedMemory* GetRawData(int id) const = 0;
 
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
