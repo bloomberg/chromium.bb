@@ -1540,6 +1540,18 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  ;; We used to use "int $5", in honor of #BR which maps to interrupt vector 5.
  ;; That, however, is usually mapped by the OS to SIGSEGV, which is often
  ;; caught for use by garbage collectors and the like.  Using an insn that
+@@ -21675,7 +22091,10 @@
+   if (TARGET_AVX && GET_CODE (XEXP (operands[0], 0)) != PLUS)
+     gcc_unreachable ();
+ 
+-  output_asm_insn ("jmp\t%A1", operands);
++  if (flag_control_integrity)
++    output_asm_insn ("nacljmp\t%k1,%%r15", operands);
++  else
++    output_asm_insn ("jmp\t%A1", operands);
+   for (i = X86_64_SSE_REGPARM_MAX - 1; i >= INTVAL (operands[2]); i--)
+     {
+       operands[4] = adjust_address (operands[0], DImode, i*16);
 diff -uNr gcc-4.4.2.orig/gcc/config/i386/nacl.h gcc-4.4.2/gcc/config/i386/nacl.h
 --- gcc-4.4.2.orig/gcc/config/i386/nacl.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-4.4.2/gcc/config/i386/nacl.h	2009-11-26 18:14:17.000000000 +0100
