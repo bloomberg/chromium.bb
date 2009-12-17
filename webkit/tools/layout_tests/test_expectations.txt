@@ -3129,3 +3129,6 @@ BUG_JPARENT WIN LINUX : LayoutTests/svg/custom/empty-merge.svg = IMAGE+TEXT
 
 // Flaky since SVG filters turned on
 BUG29737 LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = TEXT PASS
+
+// Failing after chromium r34544.
+BUG30653 WIN DEBUG : LayoutTests/http/tests/security/mixedContent/insecure-script-in-iframe.html = TEXT
