@@ -133,10 +133,9 @@ public:
   bool last_visibility_;
 };
 
-#if !defined(OS_WIN)
-// The following test fails on Mac and Linux because some of page action
-// implementation is missing in LocationBarView
-// (see http://crbug.com/29898, http://crbug.com/30326)
+#if defined(OS_MACOSX)
+// The following test fails on Mac because some of page action implementation is
+// missing in LocationBarView (see http://crbug.com/29898).
 #define MAYBE_Show DISABLED_Show
 #else
 #define MAYBE_Show Show
@@ -166,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(PageActionPopupTest, MAYBE_Show) {
       browser()->window()->GetLocationBar()->GetLocationBarForTesting();
   ASSERT_EQ(1, location_bar->PageActionVisibleCount());
   ExtensionAction* action = location_bar->GetVisiblePageAction(0);
-  ASSERT_TRUE(action == last_action_);
+  EXPECT_EQ(action, last_action_);
 
   {
     ResultCatcher catcher;

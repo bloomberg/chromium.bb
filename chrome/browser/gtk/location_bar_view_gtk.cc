@@ -469,17 +469,34 @@ int LocationBarViewGtk::PageActionVisibleCount() {
 }
 
 ExtensionAction* LocationBarViewGtk::GetPageAction(size_t index) {
-  NOTIMPLEMENTED();
-  return NULL;
+  if (index >= page_action_views_.size()) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  return page_action_views_[index]->page_action();
 }
 
 ExtensionAction* LocationBarViewGtk::GetVisiblePageAction(size_t index) {
-  NOTIMPLEMENTED();
+  size_t visible_index = 0;
+  for (size_t i = 0; i < page_action_views_.size(); ++i) {
+    if (page_action_views_[i]->IsVisible()) {
+      if (index == visible_index++)
+        return page_action_views_[i]->page_action();
+    }
+  }
+
+  NOTREACHED();
   return NULL;
 }
 
 void LocationBarViewGtk::TestPageActionPressed(size_t index) {
-  NOTIMPLEMENTED();
+  if (index >= page_action_views_.size()) {
+    NOTREACHED();
+    return;
+  }
+
+  page_action_views_[index]->TestActivatePageAction();
 }
 
 void LocationBarViewGtk::Observe(NotificationType type,
@@ -796,10 +813,18 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
       visible = false;
   }
 
-  if (visible) {
+
+  bool old_visible = IsVisible();
+  if (visible)
     gtk_widget_show_all(event_box_.get());
-  } else {
+  else
     gtk_widget_hide_all(event_box_.get());
+
+  if (visible != old_visible) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+        Source<ExtensionAction>(page_action_),
+        Details<TabContents>(contents));
   }
 }
 
@@ -827,6 +852,12 @@ void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(SkBitmap* image,
     tracker_ = NULL;
 
   owner_->UpdatePageActions();
+}
+
+void LocationBarViewGtk::PageActionViewGtk::TestActivatePageAction() {
+  GdkEventButton event;
+  event.button = 1;
+  OnButtonPressed(widget(), &event, this);
 }
 
 // static

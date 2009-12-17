@@ -114,6 +114,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     GtkWidget* widget() { return event_box_.get(); }
 
+    ExtensionAction* page_action() { return page_action_; }
+
+    bool IsVisible() { return GTK_WIDGET_VISIBLE(widget()); }
+
     // Called to notify the PageAction that it should determine whether to be
     // visible or hidden. |contents| is the TabContents that is active, |url|
     // is the current page URL.
@@ -121,6 +125,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // A callback from ImageLoadingTracker for when the image has loaded.
     virtual void OnImageLoaded(SkBitmap* image, size_t index);
+
+    // Simulate left mouse click on the page action button.
+    void TestActivatePageAction();
 
    private:
     static gboolean OnButtonPressed(GtkWidget* sender, GdkEventButton* event,
