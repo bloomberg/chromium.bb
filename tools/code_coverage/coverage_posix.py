@@ -52,6 +52,7 @@ import os
 import shutil
 import subprocess
 import sys
+import traceback
 
 class Coverage(object):
   """Doitall class for code coverage."""
@@ -239,8 +240,8 @@ class Coverage(object):
         logging.fatal(fulltest + ' does not exist')
         if self.options.strict:
           sys.exit(2)
-      # TODO(jrg): add timeout?
-      print >>sys.stderr, 'Running test: ' + fulltest
+      else:
+        logging.info('%s path exists' % fulltest)
       cmdlist = [fulltest, '--gtest_print_time']
 
       # If asked, make this REAL fast for testing.
@@ -249,7 +250,13 @@ class Coverage(object):
         cmdlist.append('--gtest_filter=CommandLine*')
 
       self.BeforeRunOneTest(fulltest)
-      retcode = subprocess.call(cmdlist)
+      logging.info('Running test ' + str(cmdlist))
+      try:
+        retcode = subprocess.call(cmdlist)
+      except:  # can't "except WindowsError" since script runs on non-Windows
+        logging.info('EXCEPTION while running a unit test')
+        logging.info(traceback.format_exc())
+        retcode = 999
       self.AfterRunOneTest(fulltest)
 
       if retcode:
