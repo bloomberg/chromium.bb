@@ -24,21 +24,19 @@ _compare_available = True
 _compare_msg_printed = False
 
 class ImageDiff(test_type_base.TestTypeBase):
-  def _CopyOutputPNGs(self, filename, actual_png, expected_png):
+  def _CopyOutputPNG(self, test_filename, source_image, extension):
     """Copies result files into the output directory with appropriate names.
 
     Args:
-      filename: the test filename
-      actual_png: path to the actual result file
-      expected_png: path to the expected result file
+      test_filename: the test filename
+      source_file: path to the image file (either actual or expected)
+      extension: extension to indicate -actual.png or -expected.png
     """
-    self._MakeOutputDirectory(filename)
-    actual_filename = self.OutputFilename(filename, "-actual.png")
-    expected_filename = self.OutputFilename(filename, "-expected.png")
+    self._MakeOutputDirectory(test_filename)
+    dest_image = self.OutputFilename(test_filename, extension)
 
-    shutil.copyfile(actual_png, actual_filename)
     try:
-      shutil.copyfile(expected_png, expected_filename)
+      shutil.copyfile(source_image, dest_image)
     except IOError, e:
       # A missing expected PNG has already been recorded as an error.
       if errno.ENOENT != e.errno:
@@ -136,22 +134,26 @@ class ImageDiff(test_type_base.TestTypeBase):
         raise
       expected_hash = ''
 
-    self.WriteOutputFiles(filename, '', '.checksum', test_args.hash,
-                          expected_hash, diff=False, wdiff=False)
-    self._CopyOutputPNGs(filename, test_args.png_path,
-                         expected_png_file)
 
     if not os.path.isfile(expected_png_file):
       # Report a missing expected PNG file.
+      self.WriteOutputFiles(filename, '', '.checksum', test_args.hash,
+                            expected_hash, diff=False, wdiff=False)
+      self._CopyOutputPNG(filename, test_args.png_path, '-actual.png')
       failures.append(test_failures.FailureMissingImage(self))
       return failures
     elif test_args.hash == expected_hash:
+      # Hash matched (no diff needed, okay to return).
       return failures
 
     # Even though we only use result in one codepath below but we still need to
     # call CreateImageDiff for other codepaths.
     result = self._CreateImageDiff(filename, target)
 
+    self.WriteOutputFiles(filename, '', '.checksum', test_args.hash,
+                          expected_hash, diff=False, wdiff=False)
+    self._CopyOutputPNG(filename, test_args.png_path, '-actual.png')
+    self._CopyOutputPNG(filename, expected_png_file, '-expected.png')
     if expected_hash == '':
       failures.append(test_failures.FailureMissingImageHash(self))
     elif test_args.hash != expected_hash:
