@@ -1,3 +1,8 @@
+<!--
+ * Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
 <html>
 <head>
 <script>
@@ -5,19 +10,18 @@
   // example what feedUrl was detected in the tab).
   var feedData = {};
 
-  chrome.extension.onConnect.addListener(function(port) {
-    var tab = port.sender.tab;
-
-    // This will get called from the content script using PostMessage.
-    // |feedUrls| is a list of URL feeds found on the page.
-    port.onMessage.addListener(function(feedUrls) {
-      feedData[tab.id] = feedUrls;
-      chrome.pageAction.setTitle({ tabId: tab.id,
-        title: "Click to subscribe..."
-      });
-      chrome.pageAction.show(tab.id);
+  chrome.extension.onRequest.addListener(
+    function(request, sender) {
+      if (request.msg == "feedIcon") {
+        // We have received a list of feed urls found on the page.
+        // Enable the page action icon.
+        feedData[sender.tab.id] = request.feeds;
+        chrome.pageAction.setTitle({ tabId: sender.tab.id,
+          title: "Click to subscribe..."
+        });
+        chrome.pageAction.show(sender.tab.id);
+      }
     });
-  });
 
   chrome.tabs.onRemoved.addListener(function(tabId) {
     delete feedData[tabId];
@@ -34,7 +38,7 @@
         // Create a new tab showing the subscription page with the right
         // feed URL.
         var url = "subscribe.html?" +
-            encodeURIComponent(feedData[tab.id].feedUrl);
+            encodeURIComponent(feedData[tab.id][0].href);
         chrome.tabs.create({url: url, windowId: window.id});
       }
     });

@@ -22,6 +22,6 @@ function findFeeds() {
 
   if (count > 0) {
     // Notify the extension of the feed URLs we found.
-    chrome.extension.connect().postMessage(feeds);
+    chrome.extension.sendRequest({msg: "feedIcon", feeds: feeds});
   }
 }

@@ -1,3 +1,8 @@
+/* Copyright (c) 2009 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file.
+*/
+
 /* Use only multi-line comments in this file, since during testing
    its contents will get read from disk and stuffed into the
    iframe .src tag, which is a process that doesn't preserve line
