@@ -734,6 +734,13 @@ void WebPluginImpl::didReceiveData(WebURLLoader* loader,
   WebPluginResourceClient* client = GetClientFromLoader(loader);
   if (!client)
     return;
+
+  // ClientInfo can be removed from clients_ vector by next statements.
+  if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent()) {
+    ClientInfo* client_info = GetClientInfoFromLoader(loader);
+    if (client_info)
+      devtools_agent->didReceiveData(client_info->id, length);
+  }
   MultiPartResponseHandlerMap::iterator index =
       multi_part_response_map_.find(client);
   if (index != multi_part_response_map_.end()) {
@@ -743,12 +750,6 @@ void WebPluginImpl::didReceiveData(WebURLLoader* loader,
   } else {
     loader->setDefersLoading(true);
     client->DidReceiveData(buffer, length, 0);
-  }
-
-  if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent()) {
-    ClientInfo* client_info = GetClientInfoFromLoader(loader);
-    if (client_info)
-      devtools_agent->didReceiveData(client_info->id, length);
   }
 }
 
