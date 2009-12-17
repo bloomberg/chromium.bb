@@ -192,10 +192,11 @@ void SelectFileDialogImpl::SelectFile(
     gfx::NativeWindow owning_window,
     void* params) {
   type_ = type;
-  // TODO(estade): on windows, owning_window may be null. But I'm not sure when
-  // that's used and how to deal with it here. For now, don't allow it.
-  DCHECK(owning_window);
-  parents_.insert(owning_window);
+  // |owning_window| can be null when user right-clicks on a downloadable item
+  // and chooses 'Open Link in New Tab' when 'Ask where to save each file
+  // before downloading.' preference is turned on. (http://crbug.com/29213)
+  if (owning_window)
+    parents_.insert(owning_window);
 
   std::string title_string = UTF16ToUTF8(title);
 
@@ -209,7 +210,7 @@ void SelectFileDialogImpl::SelectFile(
   switch (type) {
     case SELECT_FOLDER:
       dialog = CreateSelectFolderDialog(title_string, default_path,
-                                         owning_window);
+                                        owning_window);
       break;
     case SELECT_OPEN_FILE:
       dialog = CreateFileOpenDialog(title_string, default_path, owning_window);
@@ -453,8 +454,11 @@ void* SelectFileDialogImpl::PopParamsForDialog(GtkWidget* dialog) {
 void SelectFileDialogImpl::FileDialogDestroyed(GtkWidget* dialog) {
   dialogs_.erase(dialog);
 
-  // Parent may be NULL on shutdown when AllBrowsersClosed() trigger this
-  // handler after all the browser windows got destroyed.
+  // Parent may be NULL in a few cases: 1) on shutdown when
+  // AllBrowsersClosed() trigger this handler after all the browser
+  // windows got destroyed, or 2) when the parent tab has been opened by
+  // 'Open Link in New Tab' context menu on a downloadable item and
+  // the tab has no content (see the comment in SelectFile as well).
   GtkWindow* parent = gtk_window_get_transient_for(GTK_WINDOW(dialog));
   if (!parent)
     return;

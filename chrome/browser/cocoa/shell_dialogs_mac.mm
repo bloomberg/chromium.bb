@@ -123,14 +123,15 @@ void SelectFileDialogImpl::SelectFile(
          type == SELECT_OPEN_FILE ||
          type == SELECT_OPEN_MULTI_FILE ||
          type == SELECT_SAVEAS_FILE);
-  DCHECK(owning_window);
   parents_.insert(owning_window);
 
+  // Note: we need to retain the dialog as owning_window can be null.
+  // (see http://crbug.com/29213)
   NSSavePanel* dialog;
   if (type == SELECT_SAVEAS_FILE)
-    dialog = [NSSavePanel savePanel];
+    dialog = [[NSSavePanel savePanel] retain];
   else
-    dialog = [NSOpenPanel openPanel];
+    dialog = [[NSOpenPanel openPanel] retain];
 
   if (!title.empty())
     [dialog setTitle:base::SysUTF16ToNSString(title)];
@@ -344,6 +345,7 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
                                          isMulti,
                                          paths,
                                          index);
+  [panel release];
 }
 
 @end
