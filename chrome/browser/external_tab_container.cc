@@ -187,6 +187,8 @@ bool ExternalTabContainer::Reinitialize(
   automation_resource_message_filter_ = filter;
 
   if (load_requests_via_automation_) {
+    InitializeAutomationRequestContext(tab_handle_);
+
     RenderViewHost* rvh = tab_contents_->render_view_host();
     if (rvh) {
       AutomationResourceMessageFilter::RegisterRenderView(
@@ -206,9 +208,6 @@ bool ExternalTabContainer::Reinitialize(
 
 void ExternalTabContainer::SetTabHandle(int handle) {
   tab_handle_ = handle;
-  if (load_requests_via_automation_) {
-    InitializeAutomationRequestContext(handle);
-  }
 }
 
 void ExternalTabContainer::ProcessUnhandledAccelerator(const MSG& msg) {
