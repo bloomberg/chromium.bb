@@ -273,7 +273,7 @@ Index: lib/Target/ARM/ARMInstrInfo.td
                    [(ARMcall_nolink GPR:$func)]>, Requires<[IsARM, IsDarwin]> {
      let Inst{7-4}   = 0b0001;
      let Inst{19-8}  = 0b111111111111;
-@@ -874,23 +913,36 @@
+@@ -874,64 +913,95 @@
  
  // Store
  def STR  : AI2stw<(outs), (ins GPR:$src, addrmode2:$addr), StFrm, IIC_iStorer,
@@ -314,7 +314,72 @@ Index: lib/Target/ARM/ARMInstrInfo.td
  
  // Indexed stores
  def STR_PRE  : AI2stwpr<(outs GPR:$base_wb),
-@@ -948,7 +1000,11 @@
+                      (ins GPR:$src, GPR:$base, am2offset:$offset), 
+                      StFrm, IIC_iStoreru,
+-                    "str", "\t$src, [$base, $offset]!", "$base = $base_wb",
++// @LOCALMOD-START
++//                    "str", "\t$src, [$base, $offset]!", "$base = $base_wb",
++                    "${offset:sfi}str", "\t$src, [$base, $offset]!", "$base = $base_wb",
++// @LOCALMOD-END
+                     [(set GPR:$base_wb,
+                       (pre_store GPR:$src, GPR:$base, am2offset:$offset))]>;
+ 
+ def STR_POST : AI2stwpo<(outs GPR:$base_wb),
+                      (ins GPR:$src, GPR:$base,am2offset:$offset), 
+                      StFrm, IIC_iStoreru,
+-                    "str", "\t$src, [$base], $offset", "$base = $base_wb",
++// @LOCALMOD-START
++//                    "str", "\t$src, [$base], $offset", "$base = $base_wb",
++                    "${offset:sfi}str", "\t$src, [$base], $offset", "$base = $base_wb",
++// @LOCALMOD-END
+                     [(set GPR:$base_wb,
+                       (post_store GPR:$src, GPR:$base, am2offset:$offset))]>;
+ 
+ def STRH_PRE : AI3sthpr<(outs GPR:$base_wb),
+                      (ins GPR:$src, GPR:$base,am3offset:$offset), 
+                      StMiscFrm, IIC_iStoreru,
+-                     "strh", "\t$src, [$base, $offset]!", "$base = $base_wb",
++// @LOCALMOD-START
++//                     "strh", "\t$src, [$base, $offset]!", "$base = $base_wb",
++                     "${offset:sfi}strh", "\t$src, [$base, $offset]!", "$base = $base_wb",
++// @LOCALMOD-END
+                     [(set GPR:$base_wb,
+                       (pre_truncsti16 GPR:$src, GPR:$base,am3offset:$offset))]>;
+ 
+ def STRH_POST: AI3sthpo<(outs GPR:$base_wb),
+                      (ins GPR:$src, GPR:$base,am3offset:$offset), 
+                      StMiscFrm, IIC_iStoreru,
+-                     "strh", "\t$src, [$base], $offset", "$base = $base_wb",
++// @LOCALMOD-START
++//                     "strh", "\t$src, [$base], $offset", "$base = $base_wb",
++                     "${offset:sfi}strh", "\t$src, [$base], $offset", "$base = $base_wb",
++// @LOCALMOD-END
+                     [(set GPR:$base_wb, (post_truncsti16 GPR:$src,
+                                          GPR:$base, am3offset:$offset))]>;
+ 
+ def STRB_PRE : AI2stbpr<(outs GPR:$base_wb),
+                      (ins GPR:$src, GPR:$base,am2offset:$offset), 
+                      StFrm, IIC_iStoreru,
+-                     "strb", "\t$src, [$base, $offset]!", "$base = $base_wb",
++// @LOCALMOD-START
++//                     "strb", "\t$src, [$base, $offset]!", "$base = $base_wb",
++                     "${offset:sfi}strb", "\t$src, [$base, $offset]!", "$base = $base_wb",
++// @LOCALMOD-END
+                     [(set GPR:$base_wb, (pre_truncsti8 GPR:$src,
+                                          GPR:$base, am2offset:$offset))]>;
+ 
+ def STRB_POST: AI2stbpo<(outs GPR:$base_wb),
+                      (ins GPR:$src, GPR:$base,am2offset:$offset), 
+                      StFrm, IIC_iStoreru,
+-                     "strb", "\t$src, [$base], $offset", "$base = $base_wb",
++// @LOCALMOD-START
++//                     "strb", "\t$src, [$base], $offset", "$base = $base_wb",
++                     "${offset:sfi}strb", "\t$src, [$base], $offset", "$base = $base_wb",
++// @LOCALMOD-END
+                     [(set GPR:$base_wb, (post_truncsti8 GPR:$src,
+                                          GPR:$base, am2offset:$offset))]>;
+ 
+@@ -948,7 +1018,11 @@
  let mayStore = 1, hasExtraSrcRegAllocReq = 1 in
  def STM : AXI4st<(outs),
                 (ins addrmode4:$addr, pred:$p, reglist:$wb, variable_ops),
@@ -327,7 +392,7 @@ Index: lib/Target/ARM/ARMInstrInfo.td
                 []>;
  
  //===----------------------------------------------------------------------===//
-@@ -1087,6 +1143,17 @@
+@@ -1087,6 +1161,17 @@
  defm SUB  : AsI1_bin_irs<0b0010, "sub",
                           BinOpFrag<(sub  node:$LHS, node:$RHS)>>;
  
@@ -345,7 +410,7 @@ Index: lib/Target/ARM/ARMInstrInfo.td
  // ADD and SUB with 's' bit set.
  defm ADDS : AI1_bin_s_irs<0b0100, "adds",
                            BinOpFrag<(addc node:$LHS, node:$RHS)>, 1>;
-@@ -1551,7 +1618,10 @@
+@@ -1551,7 +1636,10 @@
  let isCall = 1,
    Defs = [R0, R12, LR, CPSR] in {
    def TPsoft : ABXI<0b1011, (outs), (ins), IIC_Br,
@@ -405,37 +470,68 @@ Index: lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp
  // Include the auto-generated portion of the assembly writer.
  #define MachineInstr MCInst
  #define ARMAsmPrinter ARMInstPrinter  // FIXME: REMOVE.
-@@ -162,6 +169,38 @@
+@@ -162,6 +169,69 @@
    O << "]";
  }  
  
 +// @LOCALMOD-START
++// NOTE: THIS IS UNTESTED CODE
++// This hack prepends a line of the form:
++// sfi_store <basereg>, <pr>
++// before sandboxed store instructions
++void ARMInstPrinter::printAddrModeHelper(const MCInst *MI,
++                                         int base,
++                                         int pred,
++                                         const char* Modifier) {
++  assert(0 == strcmp("sfi", Modifier));
++
++  const char *base_reg = getRegisterName(MI->getOperand(base).getReg());
++  // NOTE: sfi_store_preamble is aware of sp
++  O << "sfi_store_preamble " << base_reg << ", ";
++  printPredicateOperand(MI, pred);
++  O << "\n\t";
++}
++
 +void ARMInstPrinter::printAddrMode2Operand(const MCInst *MI,
 +                                           unsigned Op,
 +                                           const char *Modifier) {
-+  // This hack prepends a line of the form:
-+  // sfi_store <basereg>, <pr>
-+  // before sandboxed store instructions
-+  assert(0 == strcmp("sfi", Modifier));
 +  if (!FlagSfiStore) return;
-+  const MCOperand &MO1 = MI->getOperand(Op);
-+  const MCOperand &MO2 = MI->getOperand(Op+1);
-+  //const MachineOperand &MO3 = MI->getOperand(Op+2);
-+  const char *base_reg = getRegisterName(MO1.getReg());
 +
++  printAddrModeHelper(MI, Op, Op + 3, Modifier);
++
++  const MCOperand &MO2 = MI->getOperand(Op+1);
 +  if (MO2.getReg()) {
 +    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
-+    //assert(0);
++    assert(0);
 +  }
++}
 +
-+  // NOTE: this test is not really necessary anymore
-+  //       the sfi_store_preamble is aware of sp
-+  if (0 != strcmp(base_reg, "sp")) {
-+      O << "sfi_store_preamble " << base_reg << ", ";
++void ARMInstPrinter::printAddrMode3Operand(const MCInst *MI,
++                                           unsigned Op,
++                                          const char *Modifier) {
++  if (!FlagSfiStore) return;
 +
-+      printPredicateOperand(MI, Op + 3);
-+      O << "\n\t";
++  printAddrModeHelper(MI, Op, Op + 3, Modifier);
++
++  const MCOperand &MO2 = MI->getOperand(Op+1);
++  if (MO2.getReg()) {
++    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
++    assert(0);
 +  }
++}
++
++void ARMInstPrinter::printAddrMode2OffsetOperand(const MCInst *MI,
++                                                unsigned Op,
++                                                const char *Modifier) {
++  if (!FlagSfiStore) return;
++  printAddrModeHelper(MI, Op, Op + 3, Modifier);
++}
++
++void ARMInstPrinter::printAddrMode3OffsetOperand(const MCInst *MI,
++                                                unsigned Op,
++                                                const char *Modifier) {
++  if (!FlagSfiStore) return;
++  printAddrModeHelper(MI, Op, Op + 3, Modifier);
 +
 +}
 +// @LOCALMOD-END
@@ -444,45 +540,6 @@ Index: lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp
  void ARMInstPrinter::printAddrMode2OffsetOperand(const MCInst *MI,
                                                   unsigned OpNum) {
    const MCOperand &MO1 = MI->getOperand(OpNum);
-@@ -220,6 +259,38 @@
-   << ImmOffs;
- }
- 
-+// @LOCALMOD-START
-+void ARMInstPrinter::printAddrMode3Operand(const MCInst *MI,
-+                                           unsigned Op,
-+                                           const char *Modifier) {
-+
-+  // This hack prepends a line of the form:
-+  // sfi_store <basereg>, <pr>
-+  // before sandboxed store instructions
-+  assert(0 == strcmp("sfi", Modifier));
-+  if (!FlagSfiStore) return;
-+  const MCOperand &MO1 = MI->getOperand(Op);
-+  const MCOperand &MO2 = MI->getOperand(Op+1);
-+  //const MachineOperand &MO3 = MI->getOperand(Op+2);
-+  const char *base_reg = getRegisterName(MO1.getReg());
-+
-+  if (MO2.getReg()) {
-+    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
-+    //assert(0);
-+  }
-+
-+  // NOTE: this test is not really necessary anymore because
-+  //       the sfi_store_preamble is aware of sp
-+  if (0 !=strcmp(base_reg, "sp")) {
-+      O << "sfi_store_preamble " << base_reg << ", ";
-+
-+      printPredicateOperand(MI, Op + 3);
-+      O << "\n\t";
-+  }
-+
-+}
-+// @LOCALMOD-END
-+
- 
- void ARMInstPrinter::printAddrMode4Operand(const MCInst *MI, unsigned OpNum,
-                                            const char *Modifier) {
 Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 ===================================================================
 --- lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp	(revision 88663)
@@ -502,7 +559,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  STATISTIC(EmittedInsts, "Number of machine instrs printed");
  
  static cl::opt<bool>
-@@ -94,14 +100,25 @@
+@@ -94,10 +100,29 @@
  
      void printOperand(const MachineInstr *MI, int OpNum,
                        const char *Modifier = 0);
@@ -513,22 +570,26 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
      void printAddrMode2Operand(const MachineInstr *MI, int OpNum);
 +
 +    // @LOCALMOD-START
-+    // NOTE: we force the extra argument in the .td file
++    // NOTE: we force the extra Modifier argument in the .td file
++    void printAddrModeHelper(const MachineInstr *MI,
++                             int base,
++                             int pred,
++                             const char* Modifier);
++
 +    void printAddrMode2Operand(const MachineInstr *MI, int OpNo,
 +                               const char* Modifier);
 +    void printAddrMode3Operand(const MachineInstr *MI, int OpNo,
 +                               const char* Modifier);
++
++    void printAddrMode2OffsetOperand(const MachineInstr *MI, int OpNo,
++                                     const char* Modifier);
++    void printAddrMode3OffsetOperand(const MachineInstr *MI, int OpNo,
++                                     const char* Modifier);
 +    // @LOCALMOD-END
      void printAddrMode2OffsetOperand(const MachineInstr *MI, int OpNum);
-+
      void printAddrMode3Operand(const MachineInstr *MI, int OpNum);
      void printAddrMode3OffsetOperand(const MachineInstr *MI, int OpNum);
-     void printAddrMode4Operand(const MachineInstr *MI, int OpNum,
-+
-                                const char *Modifier = 0);
-     void printAddrMode5Operand(const MachineInstr *MI, int OpNum,
-                                const char *Modifier = 0);
-@@ -170,6 +187,7 @@
+@@ -170,6 +195,7 @@
      /// EmitMachineConstantPoolValue - Print a machine constantpool value to
      /// the .s file.
      virtual void EmitMachineConstantPoolValue(MachineConstantPoolValue *MCPV) {
@@ -536,7 +597,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
        printDataDirective(MCPV->getType());
  
        ARMConstantPoolValue *ACPV = static_cast<ARMConstantPoolValue*>(MCPV);
-@@ -180,6 +198,10 @@
+@@ -180,6 +206,10 @@
          raw_svector_ostream(LSDAName) << MAI->getPrivateGlobalPrefix() <<
            "_LSDA_" << getFunctionNumber();
          Name = LSDAName.str();
@@ -547,7 +608,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
        } else if (ACPV->isBlockAddress()) {
          Name = GetBlockAddressSymbol(ACPV->getBlockAddress())->getName();
        } else if (ACPV->isGlobalValue()) {
-@@ -231,6 +253,15 @@
+@@ -231,6 +261,15 @@
    };
  } // end of anonymous namespace
  
@@ -563,7 +624,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  #include "ARMGenAsmWriter.inc"
  
  /// runOnMachineFunction - This uses the printInstruction()
-@@ -247,7 +278,6 @@
+@@ -247,7 +286,6 @@
  
    // NOTE: we don't print out constant pools here, they are handled as
    // instructions.
@@ -571,7 +632,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    O << '\n';
  
    // Print out labels for the function.
-@@ -287,7 +317,15 @@
+@@ -287,7 +325,15 @@
        O << "\t" << CurrentFnName;
      O << "\n";
    } else {
@@ -588,7 +649,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    }
  
    O << CurrentFnName << ":\n";
-@@ -304,6 +342,46 @@
+@@ -304,6 +350,46 @@
        O << "\tnop\n";
    }
  
@@ -635,7 +696,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    // Print out code for the function.
    for (MachineFunction::const_iterator I = MF.begin(), E = MF.end();
         I != E; ++I) {
-@@ -320,6 +398,12 @@
+@@ -320,6 +406,12 @@
    if (MAI->hasDotTypeDotSizeDirective())
      O << "\t.size " << CurrentFnName << ", .-" << CurrentFnName << "\n";
  
@@ -648,65 +709,73 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    // Emit post-function debug information.
    DW->EndFunction(&MF);
  
-@@ -507,6 +591,57 @@
+@@ -507,6 +599,65 @@
    O << "]";
  }
  
 +// @LOCALMOD-START
-+void ARMAsmPrinter::printAddrMode2Operand(const MachineInstr *MI, int Op,
-+                                          const char *Modifier) {
-+  // This hack prepends a line of the form:
-+  // sfi_store <basereg>, <pr>
-+  // before sandboxed store instructions
++
++// This hack prepends a line of the form:
++// sfi_store <basereg>, <pr>
++// before sandboxed store instructions
++void ARMAsmPrinter::printAddrModeHelper(const MachineInstr *MI,
++                                        int base,
++                                        int pred,
++                                        const char* Modifier) {
 +  assert(0 == strcmp("sfi", Modifier));
-+  if (!FlagSfiStore) return;
-+  const MachineOperand &MO1 = MI->getOperand(Op);
-+  const MachineOperand &MO2 = MI->getOperand(Op+1);
-+  //const MachineOperand &MO3 = MI->getOperand(Op+2);
-+  const char *base_reg = getRegisterName(MO1.getReg());
 +
-+  if (MO2.getReg()) {
-+    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
-+    //assert(0);
-+  }
-+
++  const char *base_reg = getRegisterName(MI->getOperand(base).getReg());
 +  // NOTE: sfi_store_preamble is aware of sp
 +  O << "sfi_store_preamble " << base_reg << ", ";
-+  printPredicateOperand(MI, Op + 3);
++  printPredicateOperand(MI, pred);
 +  O << "\n\t";
++}
 +
++void ARMAsmPrinter::printAddrMode2Operand(const MachineInstr *MI, int Op,
++                                          const char *Modifier) {
++  if (!FlagSfiStore) return;
++
++  printAddrModeHelper(MI, Op, Op + 3, Modifier);
++
++  const MachineOperand &MO2 = MI->getOperand(Op+1);
++  if (MO2.getReg()) {
++    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
++    assert(0);
++  }
 +}
 +
 +void ARMAsmPrinter::printAddrMode3Operand(const MachineInstr *MI, int Op,
 +                                          const char *Modifier) {
-+
-+  // This hack prepends a line of the form:
-+  // sfi_store <basereg>, <pr>
-+  // before sandboxed store instructions
-+  assert(0 == strcmp("sfi", Modifier));
 +  if (!FlagSfiStore) return;
-+  const MachineOperand &MO1 = MI->getOperand(Op);
-+  const MachineOperand &MO2 = MI->getOperand(Op+1);
-+  //const MachineOperand &MO3 = MI->getOperand(Op+2);
-+  const char *base_reg = getRegisterName(MO1.getReg());
 +
++  printAddrModeHelper(MI, Op, Op + 3, Modifier);
++
++  const MachineOperand &MO2 = MI->getOperand(Op+1);
 +  if (MO2.getReg()) {
 +    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
-+    //assert(0);
++    assert(0);
 +  }
++}
 +
-+  // NOTE: sfi_store_preamble is aware of sp
-+  O << "sfi_store_preamble " << base_reg << ", ";
-+  printPredicateOperand(MI, Op + 3);
-+  O << "\n\t";
++void ARMAsmPrinter::printAddrMode2OffsetOperand(const MachineInstr *MI,
++                                                int Op,
++                                                const char *Modifier) {
++  if (!FlagSfiStore) return;
++  printAddrModeHelper(MI, Op - 1, Op + 2, Modifier);
++}
 +
++void ARMAsmPrinter::printAddrMode3OffsetOperand(const MachineInstr *MI,
++                                                int Op,
++                                                const char *Modifier) {
++  if (!FlagSfiStore) return;
++  printAddrModeHelper(MI, Op - 1, Op + 2, Modifier);
 +}
 +// @LOCALMOD-END
 +
  void ARMAsmPrinter::printAddrMode2OffsetOperand(const MachineInstr *MI, int Op){
    const MachineOperand &MO1 = MI->getOperand(Op);
    const MachineOperand &MO2 = MI->getOperand(Op+1);
-@@ -588,6 +723,10 @@
+@@ -588,6 +739,10 @@
      ARM_AM::AMSubMode Mode = ARM_AM::getAM4SubMode(MO2.getImm());
      if (Mode == ARM_AM::ia)
        O << ".w";
@@ -717,18 +786,13 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    } else {
      printOperand(MI, Op);
      if (ARM_AM::getAM4WBFlag(MO2.getImm()))
-@@ -618,6 +757,22 @@
+@@ -618,6 +773,17 @@
        O << "!";
      return;
    }
 +  //@LOCALMOD-START
 +   else if (Modifier && strcmp(Modifier, "sfi") == 0) {
-+     const char *base_reg = getRegisterName(MO1.getReg());
-+
-+     // NOTE: sfi_store_preamble is aware of sp
-+     O << "sfi_store_preamble " << base_reg << ", ";
-+     printPredicateOperand(MI, Op + 2);
-+     O << "\n\t";
++     printAddrModeHelper(MI, Op, Op + 2, Modifier);
 +     return;
 +   } else if (Modifier && strcmp(Modifier, "basereg") == 0) {
 +     O << getRegisterName(MO1.getReg());
@@ -740,7 +804,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  
    O << "[" << getRegisterName(MO1.getReg());
  
-@@ -880,7 +1035,25 @@
+@@ -880,7 +1046,25 @@
    assert(Modifier && "This operand only works with a modifier!");
    // There are two aspects to a CONSTANTPOOL_ENTRY operand, the label and the
    // data itself.
@@ -766,7 +830,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
      unsigned ID = MI->getOperand(OpNum).getImm();
      O << MAI->getPrivateGlobalPrefix() << "CPI" << getFunctionNumber()
        << '_' << ID << ":\n";
-@@ -891,6 +1064,9 @@
+@@ -891,6 +1075,9 @@
      const MachineConstantPoolEntry &MCPE = MCP->getConstants()[CPI];
  
      if (MCPE.isMachineConstantPoolEntry()) {
@@ -776,7 +840,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
        EmitMachineConstantPoolValue(MCPE.Val.MachineCPVal);
      } else {
        EmitGlobalConstant(MCPE.Val.ConstVal);
-@@ -915,6 +1091,7 @@
+@@ -915,6 +1102,7 @@
    const std::vector<MachineBasicBlock*> &JTBBs = JT[JTI].MBBs;
    bool UseSet= MAI->getSetDirective() && TM.getRelocationModel() == Reloc::PIC_;
    SmallPtrSet<MachineBasicBlock*, 8> JTSets;
@@ -784,7 +848,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    for (unsigned i = 0, e = JTBBs.size(); i != e; ++i) {
      MachineBasicBlock *MBB = JTBBs[i];
      bool isNew = JTSets.insert(MBB);
-@@ -1158,6 +1335,253 @@
+@@ -1158,6 +1346,253 @@
  
      // FIXME: Should we signal R9 usage?
    }
@@ -1038,7 +1102,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
  
  void ARMAsmPrinter::PrintGlobalVariable(const GlobalVariable* GVar) {
-@@ -1345,6 +1769,7 @@
+@@ -1345,6 +1780,7 @@
      // generates code that does this, it is always safe to set.
      OutStreamer.EmitAssemblerFlag(MCStreamer::SubsectionsViaSymbols);
    }
@@ -1046,7 +1110,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
  
  //===----------------------------------------------------------------------===//
-@@ -1519,4 +1944,3 @@
+@@ -1519,4 +1955,3 @@
    TargetRegistry::RegisterMCInstPrinter(TheARMTarget, createARMMCInstPrinter);
    TargetRegistry::RegisterMCInstPrinter(TheThumbTarget, createARMMCInstPrinter);
  }
@@ -1055,14 +1119,23 @@ Index: lib/Target/ARM/AsmPrinter/ARMInstPrinter.h
 ===================================================================
 --- lib/Target/ARM/AsmPrinter/ARMInstPrinter.h	(revision 88663)
 +++ lib/Target/ARM/AsmPrinter/ARMInstPrinter.h	(working copy)
-@@ -40,8 +40,10 @@
+@@ -40,8 +40,19 @@
    
    void printSORegOperand(const MCInst *MI, unsigned OpNum);
    void printAddrMode2Operand(const MCInst *MI, unsigned OpNum);
-+  void printAddrMode2Operand(const MCInst *MI, unsigned OpNum, const char* cp); // @LOCALMOD
++
++  // @LOCALMOD-START
++  // NOTE: UNTESTED - but also not used
++  void printAddrModeHelper(const MCInst *MI, int base, int pred, const char* Modifier);
++  void printAddrMode2Operand(const MCInst *MI, unsigned OpNum, const char* cp);
++  void printAddrMode3Operand(const MCInst *MI, unsigned OpNum, const char* cp);
++  void printAddrMode2OffsetOperand(const MCInst *MI, unsigned OpNum, const char* cp);
++  void printAddrMode3OffsetOperand(const MCInst *MI, unsigned OpNum, const char* cp);
++  // @LOCALMOD-END
    void printAddrMode2OffsetOperand(const MCInst *MI, unsigned OpNum);
    void printAddrMode3Operand(const MCInst *MI, unsigned OpNum);
-+  void printAddrMode3Operand(const MCInst *MI, unsigned OpNum, const char* cp); // @LOCALMOD
++
++
    void printAddrMode3OffsetOperand(const MCInst *MI, unsigned OpNum);
    void printAddrMode4Operand(const MCInst *MI, unsigned OpNum,
                               const char *Modifier = 0);
