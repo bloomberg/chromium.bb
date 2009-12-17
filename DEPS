@@ -20,16 +20,10 @@ deps = {
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
   "third_party/binutils":
     Var("native_client_trunk") + "/src/third_party/binutils@" + Var("tools_rev"),
-  "third_party/bison":
-    Var("native_client_trunk") + "/src/third_party/bison@" + Var("tools_rev"),
-  "third_party/flex":
-    Var("native_client_trunk") + "/src/third_party/flex@" + Var("tools_rev"),
   "third_party/gcc":
     Var("native_client_trunk") + "/src/third_party/gcc@" + Var("tools_rev"),
   "third_party/gdb":
     Var("native_client_trunk") + "/src/third_party/gdb@" + Var("tools_rev"),
-  "third_party/glibc":
-    Var("native_client_trunk") + "/src/third_party/glibc@" + Var("tools_rev"),
   "third_party/gmp":
     Var("native_client_trunk") + "/src/third_party/gmp@" + Var("tools_rev"),
   "third_party/llvm":
