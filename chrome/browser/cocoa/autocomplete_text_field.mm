@@ -218,10 +218,12 @@
 }
 
 - (BOOL)textView:(NSTextView*)textView doCommandBySelector:(SEL)cmd {
+  // TODO(shess): Review code for cases where we're fruitlessly attempting to
+  // work in spite of not having an observer_.
   if (observer_ && observer_->OnDoCommandBySelector(cmd)) {
     return YES;
   }
-  return [super textView:textView doCommandBySelector:cmd];
+  return NO;
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
