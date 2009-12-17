@@ -815,12 +815,6 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
     return TRUE;
   }
 
-  // Maintain a local/global stack for the g_current_plugin_instance variable
-  // as this may be a nested invocation.
-  WebPluginDelegateImpl* last_plugin_instance = g_current_plugin_instance;
-
-  g_current_plugin_instance = delegate;
-
   // Flash may flood the message queue with WM_USER+1 message causing 100% CPU
   // usage.  See https://bugzilla.mozilla.org/show_bug.cgi?id=132759.  We
   // prevent this by throttling the messages.
@@ -828,7 +822,6 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
       delegate->GetQuirks() & PLUGIN_QUIRK_THROTTLE_WM_USER_PLUS_ONE) {
     WebPluginDelegateImpl::ThrottleMessage(delegate->plugin_wnd_proc_, hwnd,
                                            message, wparam, lparam);
-    g_current_plugin_instance = last_plugin_instance;
     return FALSE;
   }
 
@@ -880,8 +873,15 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
           kWindowedPluginPopupTimerMs);
     }
 
+    // Maintain a local/global stack for the g_current_plugin_instance variable
+    // as this may be a nested invocation.
+    WebPluginDelegateImpl* last_plugin_instance = g_current_plugin_instance;
+
+    g_current_plugin_instance = delegate;
+
     result = CallWindowProc(
         delegate->plugin_wnd_proc_, hwnd, message, wparam, lparam);
+
     delegate->is_calling_wndproc = false;
     g_current_plugin_instance = last_plugin_instance;
 
@@ -894,7 +894,6 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
       ClearThrottleQueueForWindow(hwnd);
     }
   }
-
   delegate->last_message_ = old_message;
   return result;
 }

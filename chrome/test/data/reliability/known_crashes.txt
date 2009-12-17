@@ -149,9 +149,6 @@ PREFIX : malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugini
 # 29759
 PREFIX : webcore::imageeventsender::dispatchpendingevents
 
-# 30607
-SUBSTRING : _invalid_parameter_noinfo___std::vector<char,std::allocator<char> >::clear___WebCursor::InitFromCursorInfo___WebCursor::InitFromExternalCursor
-
 # 30681
 PREFIX : std::basic_string<char,std::char_traits<char>,std::allocator<char> >::assign___cldhelper::language___tabcontents::observe___notificationservice::notify___cldhelper::detectiondone___messageloop::runtask___messageloop::dowork___base::messagepumpforui::dorunloop___base::messagepumpwin::runwithdispatcher___messageloop::runinternal___messageloopforui::run___`anonymous namespace'::runuimessageloop___browsermain___chromemain___maindllloader::launch___wwinmain_____tmaincrtstartup
 
