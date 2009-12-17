@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/query_helpers.h"
+#include "chrome/common/sqlite_utils.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 
 // Sometimes threads contend on the DB lock itself, especially when one thread
@@ -300,55 +301,56 @@ bool DirectoryBackingStore::SaveChanges(
 }
 
 DirOpenResult DirectoryBackingStore::InitializeTables() {
-  StatementExecutor se(load_dbhandle_);
-  if (SQLITE_DONE != se.Exec("BEGIN EXCLUSIVE TRANSACTION")) {
+  SQLTransaction transaction(load_dbhandle_);
+  if (SQLITE_OK != transaction.BeginExclusive()) {
     return FAILED_DISK_FULL;
   }
   int version_on_disk = 0;
+  int last_result = SQLITE_OK;
 
-  bool exists = false;
-  if (DoesTableExist(load_dbhandle_, "share_version", &exists) && exists) {
-    ScopedStatement version_query(
-        PrepareQuery(load_dbhandle_, "SELECT data from share_version"));
-    int query_result = sqlite3_step(version_query.get());
-    if (SQLITE_ROW == query_result) {
-      version_on_disk = sqlite3_column_int(version_query.get(), 0);
+  if (DoesSqliteTableExist(load_dbhandle_, "share_version")) {
+    SQLStatement version_query;
+    version_query.prepare(load_dbhandle_, "SELECT data from share_version");
+    last_result = version_query.step();
+    if (SQLITE_ROW == last_result) {
+      version_on_disk = version_query.column_int(0);
     }
-    version_query.reset(NULL);
+    last_result = version_query.reset();
   }
   if (version_on_disk != kCurrentDBVersion) {
     if (version_on_disk > kCurrentDBVersion) {
-      ExecOrDie(load_dbhandle_, "END TRANSACTION");
+      transaction.Rollback();
       return FAILED_NEWER_VERSION;
     }
     LOG(INFO) << "Old/null sync database, version " << version_on_disk;
     // Delete the existing database (if any), and create a freshone.
-    if (se.healthy()) {
+    if (SQLITE_OK == last_result) {
       DropAllTables();
-      se.set_result(CreateTables());
+      if (SQLITE_DONE == CreateTables()) {
+        last_result = SQLITE_OK;
+      }
     }
   }
-  if (SQLITE_DONE == se.result()) {
+  if (SQLITE_OK == last_result) {
     {
-      ScopedStatement statement(PrepareQuery(load_dbhandle_,
-          "SELECT db_create_version, db_create_time FROM share_info"));
-      if (SQLITE_ROW != sqlite3_step(statement.get())) {
-        ExecOrDie(load_dbhandle_, "ROLLBACK TRANSACTION");
+      SQLStatement statement;
+      statement.prepare(load_dbhandle_,
+          "SELECT db_create_version, db_create_time FROM share_info");
+      if (SQLITE_ROW != statement.step()) {
+        transaction.Rollback();
         return FAILED_DISK_FULL;
       }
-      string db_create_version;
-      int db_create_time;
-      GetColumn(statement.get(), 0, &db_create_version);
-      GetColumn(statement.get(), 1, &db_create_time);
-      statement.reset(0);
+      string db_create_version = statement.column_text(0);
+      int db_create_time = statement.column_int(1);
+      statement.reset();
       LOG(INFO) << "DB created at " << db_create_time << " by version " <<
           db_create_version;
     }
     // COMMIT TRANSACTION rolls back on failure.
-    if (SQLITE_DONE == Exec(load_dbhandle_, "COMMIT TRANSACTION"))
+    if (SQLITE_OK == transaction.Commit())
       return OPENED;
   } else {
-    ExecOrDie(load_dbhandle_, "ROLLBACK TRANSACTION");
+    transaction.Rollback();
   }
   return FAILED_DISK_FULL;
 }
@@ -521,13 +523,12 @@ void DirectoryBackingStore::DropDeletedEntries() {
 void DirectoryBackingStore::SafeDropTable(const char* table_name) {
   string query = "DROP TABLE IF EXISTS ";
   query.append(table_name);
-  const char* tail;
-  sqlite3_stmt* statement = NULL;
-  if (SQLITE_OK == sqlite3_prepare(load_dbhandle_, query.data(),
-                                   query.size(), &statement, &tail)) {
-    CHECK(SQLITE_DONE == sqlite3_step(statement));
+  SQLStatement statement;
+  if (SQLITE_OK == statement.prepare(load_dbhandle_, query.data(),
+                                     query.size())) {
+    CHECK(SQLITE_DONE == statement.step());
   }
-  sqlite3_finalize(statement);
+  statement.finalize();
 }
 
 int DirectoryBackingStore::CreateExtendedAttributeTable() {
