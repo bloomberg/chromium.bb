@@ -112,9 +112,6 @@ void DebuggerAgentImpl::CreateUtilityContext(
   global->Set(v8::String::New("contentWindow"), window_global);
 
   // Inject javascript into the context.
-  base::StringPiece basejs = webkit_glue::GetDataResource(IDR_DEVTOOLS_BASE_JS);
-  v8::Script::Compile(v8::String::New(basejs.as_string().c_str()))->Run();
-
   base::StringPiece injectjs_webkit =
       webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_WEBKIT_JS);
   v8::Script::Compile(
