@@ -124,10 +124,10 @@ class JSONResultsGenerator:
     """Returns the path of the test relative to the layout test root.
     Example paths are
       src/third_party/WebKit/LayoutTests/fast/forms/foo.html
-      src/webkit/data/layout_tests/pending/fast/forms/foo.html
+      src/webkit/data/layout_tests/chrome/fast/forms/foo.html
     We would return the following:
       LayoutTests/fast/forms/foo.html
-      pending/fast/forms/foo.html
+      chrome/fast/forms/foo.html
     """
     index = test.find(self.WEBKIT_PATH)
     if index is not -1:

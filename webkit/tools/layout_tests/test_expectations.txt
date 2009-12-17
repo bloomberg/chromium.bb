@@ -178,7 +178,6 @@ WONTFIX SKIP : LayoutTests/fast/events/message-port-no-wrapper.html = FAIL
 WONTFIX SKIP : LayoutTests/fast/events/message-port.html = FAIL
 WONTFIX SKIP : LayoutTests/fast/events/message-port-multi.html = FAIL
 WONTFIX SKIP : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = FAIL
-WONTFIX SKIP : chrome/fast/dom/messageport-gc.html = FAIL
 
 // Chrome does not support WebArchives (just like Safari for Windows),
 // although we might eventually want to on Mac.
@@ -456,9 +455,6 @@ WONTFIX : LayoutTests/editing/selection/click-before-and-after-table.html = FAIL
 // whether we create a window via a plugin when target is _blank.
 BUG24186 WONTFIX SKIP : LayoutTests/plugins/get-url-with-blank-target.html = FAIL
 
-// This test doesn't work on the bbot.  Works locally.
-WONTFIX SKIP : chrome/http/tests/plugins/get-file-url.html = FAIL PASS TIMEOUT
-
 // Dashboard-related test
 WONTFIX SKIP : LayoutTests/platform/mac/fast/css/dashboard-region-parser.html = FAIL
 
@@ -577,10 +573,9 @@ BUG24203 : LayoutTests/fast/events/stopPropagation-submit.html = FAIL
 // -----------------------------------------------------------------
 
 // These tests don't work with fast timers due to setTimeout
-// races. Pending versions have these fixed.
-// Upstreaming pending test needs work.
-// See https://bugs.webkit.org/show_bug.cgi?id=21536
+// races. See https://bugs.webkit.org/show_bug.cgi?id=21536
 BUG24195 WIN LINUX : LayoutTests/fast/repaint/bugzilla-6473.html = IMAGE+TEXT
+BUG24195 MAC : LayoutTests/fast/repaint/bugzilla-6473.html = IMAGE
 
 // -----------------------------------------------------------------
 // Tests deferred until we provide support for a particular feature.
@@ -615,8 +610,6 @@ BUG8630 LINUX WIN DEBUG : LayoutTests/fast/overflow/hidden-scrollbar-resize.html
 BUG8630 WIN LINUX RELEASE : LayoutTests/fast/reflections/inline-crash.html = FAIL
 BUG8630 LINUX WIN DEBUG : LayoutTests/fast/reflections/inline-crash.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
-BUG8630 WIN LINUX RELEASE : pending/fast/repaint/bugzilla-6473.html = FAIL
-BUG8630 LINUX WIN DEBUG : pending/fast/repaint/bugzilla-6473.html = FAIL
 BUG8630 LINUX : LayoutTests/svg/custom/use-detach.svg = FAIL PASS
 BUG18772 LINUX : LayoutTests/fast/backgrounds/001.html = FAIL
 
@@ -2061,7 +2054,6 @@ BUG23473 MAC : LayoutTests/fast/repaint/list-marker.html = PASS
 BUG23473 MAC WIN : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = IMAGE+TEXT PASS
 BUG23473 MAC : LayoutTests/fast/repaint/table-cell-vertical-overflow.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/text-shadow.html = PASS
-BUG23473 MAC : pending/fast/repaint/bugzilla-6473.html = IMAGE
 BUG23473 MAC : LayoutTests/fast/repaint/fixed.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/flexible-box-overflow-horizontal.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/layer-outline-horizontal.html = PASS
@@ -2485,12 +2477,6 @@ BUG14832 : LayoutTests/editing/selection/user-drag-element-and-user-select-none.
 
 // WebKit 44928:44943
 BUG14946 : LayoutTests/fast/js/date-toisostring.html = FAIL
-
-// WebKit 44969:45017
-
-// The Mac layout test buildbots haven't generated a package for 20 days so
-// the rebaselining tool isn't working for this  --agl
-BUG15125 MAC SKIP : chrome/fast/text/fake-italic.html = FAIL
 
 // WebKit 45017:45086
 BUG15217 : LayoutTests/fast/js/dictionary-no-cache.html = FAIL

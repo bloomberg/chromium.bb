@@ -665,7 +665,7 @@ class FailureFinder(object):
 
   def _AddBaselineURLs(self, list, base_url, platforms):
     # If the base URL doesn't contain any platform in its path, only add the
-    # base URL to the list.  This happens with the chrome/ and pending/ dirs.
+    # base URL to the list.  This happens with the chrome/ dir.
     if base_url.find("%s") == -1:
       list.append(base_url)
       return
@@ -686,7 +686,7 @@ class FailureFinder(object):
 
     reduced_filename = filename.replace("LayoutTests/", "")
     chromium_platform_url = LAYOUT_TEST_REPO_BASE_URL
-    if not filename.startswith("chrome") and not filename.startswith("pending"):
+    if not filename.startswith("chrome"):
       chromium_platform_url += "platform/%s/"
     chromium_platform_url += filename
 

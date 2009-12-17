@@ -158,7 +158,7 @@ class TestRunner:
     else:
       self._http_server = http_server.Lighttpd(options.results_directory)
 
-    self._shardable_directories = ['chrome', 'LayoutTests', 'pending', 'fast',
+    self._shardable_directories = ['chrome', 'LayoutTests', 'fast',
         'svg', 'loader', 'editing']
 
     # The http tests are very stable on mac/linux.
@@ -1385,7 +1385,7 @@ def main(options, args):
   if options.clobber_old_results:
     # Just clobber the actual test results directories since the other files
     # in the results directory are explicitly used for cross-run tracking.
-    test_dirs = ("LayoutTests", "chrome", "pending")
+    test_dirs = ("LayoutTests", "chrome")
     for directory in test_dirs:
       path = os.path.join(options.results_directory, directory)
       if os.path.exists(path):

@@ -51,13 +51,6 @@ class Lighttpd(http_server_base.HttpServerBase):
       _webkit_tests = None
       _js_test_resource = None
 
-  # New tests for Chrome
-  try:
-    _pending_tests = path_utils.PathFromBase('webkit', 'data', 'layout_tests',
-                                             'pending', 'http', 'tests')
-  except path_utils.PathNotFound:
-    _pending_tests = None
-
   # Path where we can access all of the tests
   _all_tests = path_utils.PathFromBase('webkit', 'data', 'layout_tests')
   # Self generated certificate for SSL server (for client cert get
@@ -76,14 +69,6 @@ class Lighttpd(http_server_base.HttpServerBase):
        {'port': 8080, 'docroot': _webkit_tests},
        {'port': 8443, 'docroot': _webkit_tests, 'sslcert': _pem_file}]
     )
-  if _pending_tests:
-    VIRTUALCONFIG.extend(
-      # Three similar mappings (one with SSL enabled) for pending http tests
-      [{'port': 9000, 'docroot': _pending_tests},
-       {'port': 9080, 'docroot': _pending_tests},
-       {'port': 9443, 'docroot': _pending_tests, 'sslcert': _pem_file}]
-    )
-
 
   def __init__(self, output_dir, background=False, port=None,
                root=None, register_cygwin=None, run_background=None):

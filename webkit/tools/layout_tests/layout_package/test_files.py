@@ -21,7 +21,7 @@ _supported_file_extensions = set(['.html', '.shtml', '.xml', '.xhtml', '.pl',
 _skipped_directories = set(['.svn', '_svn', 'resources', 'script-tests'])
 
 # Top-level directories to shard when running tests.
-ROOT_DIRECTORIES = set(['chrome', 'LayoutTests', 'pending'])
+ROOT_DIRECTORIES = set(['chrome', 'LayoutTests'])
 
 def GatherTestFiles(paths):
   """Generate a set of test files and return them.

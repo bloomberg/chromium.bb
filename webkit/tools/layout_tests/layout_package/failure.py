@@ -95,8 +95,7 @@ class Failure(object):
     return self.test_path[0:last_index] + suffix
 
   def GetTestHome(self):
-    if (self.test_path.startswith("chrome") or
-        self.test_path.startswith("pending")):
+    if self.test_path.startswith("chrome"):
       return CHROMIUM_TRAC_HOME + self.test_path
     return WEBKIT_TRAC_HOME + self.test_path
 

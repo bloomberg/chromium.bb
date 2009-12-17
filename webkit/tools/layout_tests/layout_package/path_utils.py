@@ -102,9 +102,9 @@ def ExpectedBaseline(filename, suffix, platform=None, all_baselines=False):
   global _search_path_platform
   testname = os.path.splitext(RelativeTestFilename(filename))[0]
 
-  # While we still have tests in LayoutTests/, chrome/, and pending/, we need
+  # While we still have tests in both LayoutTests/ and chrome/ we need
   # to strip that outer directory.
-  # TODO(pamg): Once we upstream all of chrome/ and pending/, clean this up.
+  # TODO(pamg): Once we upstream all of chrome/, clean this up.
   platform_filename = testname + '-expected' + suffix
   testdir, base_filename = platform_filename.split('/', 1)
 
@@ -122,8 +122,7 @@ def ExpectedBaseline(filename, suffix, platform=None, all_baselines=False):
       foundCurrentPlatform = True
 
     if foundCurrentPlatform:
-      # TODO(pamg): Clean this up once we upstream everything in chrome/ and
-      # pending/.
+      # TODO(pamg): Clean this up once we upstream everything in chrome/.
       if os.path.basename(platform_dir).startswith('chromium'):
         if os.path.exists(os.path.join(platform_dir, platform_filename)):
           baselines.append((platform_dir, platform_filename))
@@ -183,7 +182,6 @@ def FilenameToUri(full_path):
   """Convert a test file to a URI."""
   LAYOUTTESTS_DIR = "LayoutTests/"
   LAYOUTTEST_HTTP_DIR = "LayoutTests/http/tests/"
-  PENDING_HTTP_DIR    = "pending/http/tests/"
   LAYOUTTEST_WEBSOCKET_DIR = "LayoutTests/websocket/tests/"
 
   relative_path = _WinPathToUnix(RelativeTestFilename(full_path))
@@ -194,10 +192,6 @@ def FilenameToUri(full_path):
     # LayoutTests/http/tests/ run off port 8000 and ssl/ off 8443
     relative_path = relative_path[len(LAYOUTTEST_HTTP_DIR):]
     port = 8000
-  elif relative_path.startswith(PENDING_HTTP_DIR):
-    # pending/http/tests/ run off port 9000 and ssl/ off 9443
-    relative_path = relative_path[len(PENDING_HTTP_DIR):]
-    port = 9000
   elif relative_path.startswith(LAYOUTTEST_WEBSOCKET_DIR):
     # LayoutTests/websocket/tests/ run off port 8880 and 9323
     # Note: the root is LayoutTests/, not LayoutTests/websocket/tests/
