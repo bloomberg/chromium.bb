@@ -441,6 +441,10 @@ class NavigationController {
   NavigationEntry* CreateNavigationEntry(const GURL& url, const GURL& referrer,
                                          PageTransition::Type transition);
 
+  // Updates the virtual URL of an entry to match a new URL, for cases where
+  // the real renderer URL is derived from the virtual URL, like view-source:
+  void UpdateVirtualURLToURL(NavigationEntry* entry, const GURL& new_url);
+
   // Invoked after session/tab restore or cloning a tab. Resets the transition
   // type of the entries, updates the max page id and creates the active
   // contents. See RestoreFromState for a description of from_last_session.

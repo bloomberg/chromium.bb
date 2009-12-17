@@ -253,6 +253,13 @@ class NavigationEntry {
     return virtual_url_.is_empty() ? url_ : virtual_url_;
   }
 
+  bool update_virtual_url_with_url() const {
+    return update_virtual_url_with_url_;
+  }
+  void set_update_virtual_url_with_url(bool update) {
+    update_virtual_url_with_url_ = update;
+  }
+
   // The title as set by the page. This will be empty if there is no title set.
   // The caller is responsible for detecting when there is no title and
   // displaying the appropriate "Untitled" label if this is being displayed to
@@ -405,6 +412,7 @@ class NavigationEntry {
   GURL url_;
   GURL referrer_;
   GURL virtual_url_;
+  bool update_virtual_url_with_url_;
   string16 title_;
   FaviconStatus favicon_;
   std::string content_state_;

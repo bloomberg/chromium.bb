@@ -13,6 +13,7 @@
 #define CHROME_BROWSER_BROWSER_URL_HANDLER_H_
 
 #include <vector>
+#include <utility>
 
 class GURL;
 class Profile;
@@ -24,21 +25,27 @@ class BrowserURLHandler {
   // The type of functions that can process a URL.
   // If a handler handles |url|, it should :
   // - optionally modify |url| to the URL that should be sent to the renderer
-  // - optionally set |dispatcher| to the necessary DOMMessageDispatcher
-  // - return true.
   // If the URL is not handled by a handler, it should return false.
   typedef bool (*URLHandler)(GURL* url, Profile* profile);
 
-  // HandleBrowserURL gives all registered URLHandlers a shot at processing
+  // RewriteURLIfNecessary gives all registered URLHandlers a shot at processing
   // the given URL, and modifies it in place.
-  static void RewriteURLIfNecessary(GURL* url, Profile* profile);
+  // If the original URL needs to be adjusted if the modified URL is redirected,
+  // this function sets |reverse_on_redirect| to true.
+  static void RewriteURLIfNecessary(GURL* url, Profile* profile,
+                                    bool* reverse_on_redirect);
 
-  // We initialize the list of url_handlers_ lazily the first time MaybeHandle
-  // is called.
+  // Reverses the rewriting that was done for |original| using the new |url|.
+  static bool ReverseURLRewrite(GURL* url, const GURL& original,
+                                Profile* profile);
+
+  // We initialize the list of url_handlers_ lazily the first time
+  // RewriteURLIfNecessary is called.
   static void InitURLHandlers();
 
-  // The list of known URLHandlers.
-  static std::vector<URLHandler> url_handlers_;
+  // The list of known URLHandlers, optionally with reverse-rewriters.
+  typedef std::pair<URLHandler, URLHandler> HandlerPair;
+  static std::vector<HandlerPair> url_handlers_;
 };
 
 #endif  // CHROME_BROWSER_BROWSER_URL_HANDLER_H_

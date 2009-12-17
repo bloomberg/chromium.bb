@@ -1439,6 +1439,30 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   EXPECT_EQ(controller().last_committed_entry_index(), 0);
 }
 
+// Test view source redirection is reflected in title bar.
+TEST_F(NavigationControllerTest, ViewSourceRedirect) {
+  const char kUrl[] = "view-source:http://redirect.to/google.com";
+  const char kResult[] = "http://google.com/";
+  const char kExpected[] = "view-source:http://google.com/";
+  const GURL url(kUrl);
+  const GURL result_url(kResult);
+
+  controller().LoadURL(url, GURL(), PageTransition::TYPED);
+
+  ViewHostMsg_FrameNavigate_Params params = {0};
+  params.page_id = 0;
+  params.url = result_url;
+  params.transition = PageTransition::SERVER_REDIRECT;
+  params.should_update_history = false;
+  params.gesture = NavigationGestureAuto;
+  params.is_post = false;
+  NavigationController::LoadCommittedDetails details;
+  controller().RendererDidNavigate(params, 0, &details);
+
+  EXPECT_EQ(ASCIIToUTF16(kExpected), contents()->GetTitle());
+  EXPECT_EQ(true, contents()->ShouldDisplayURL());
+}
+
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
    (but not Vista) cleaning up the directory after they run.
    This should be fixed.

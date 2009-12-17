@@ -43,6 +43,21 @@ static bool HandleViewSource(GURL* url, Profile* profile) {
   return false;
 }
 
+// Turns a non view-source URL into the corresponding view-source URL.
+static bool ReverseViewSource(GURL* url, Profile* profile) {
+  // No action necessary if the URL is already view-source:
+  if (url->SchemeIs(chrome::kViewSourceScheme))
+    return false;
+
+  url_canon::Replacements<char> repl;
+  repl.SetScheme(chrome::kViewSourceScheme,
+      url_parse::Component(0, strlen(chrome::kViewSourceScheme)));
+  repl.SetPath(url->spec().c_str(),
+      url_parse::Component(0, url->spec().size()));
+  *url = url->ReplaceComponents(repl);
+  return true;
+}
+
 // Handles rewriting DOM UI URLs.
 static bool HandleDOMUI(GURL* url, Profile* profile) {
   if (!DOMUIFactory::UseDOMUIForURL(*url))
@@ -60,7 +75,7 @@ static bool HandleDOMUI(GURL* url, Profile* profile) {
   return true;
 }
 
-std::vector<BrowserURLHandler::URLHandler> BrowserURLHandler::url_handlers_;
+std::vector<BrowserURLHandler::HandlerPair> BrowserURLHandler::url_handlers_;
 
 // static
 void BrowserURLHandler::InitURLHandlers() {
@@ -68,18 +83,40 @@ void BrowserURLHandler::InitURLHandlers() {
     return;
 
   // Add the default URL handlers.
-  url_handlers_.push_back(&ExtensionDOMUI::HandleChromeURLOverride);
-  url_handlers_.push_back(&WillHandleBrowserAboutURL);  // about:
-  url_handlers_.push_back(&HandleDOMUI);                // chrome: & friends.
-  url_handlers_.push_back(&HandleViewSource);           // view-source:
+  url_handlers_.push_back(
+      HandlerPair(&ExtensionDOMUI::HandleChromeURLOverride, NULL));
+  // about:
+  url_handlers_.push_back(HandlerPair(&WillHandleBrowserAboutURL, NULL));
+  // chrome: & friends.
+  url_handlers_.push_back(HandlerPair(&HandleDOMUI, NULL));
+  // view-source:
+  url_handlers_.push_back(HandlerPair(&HandleViewSource, &ReverseViewSource));
 }
 
 // static
-void BrowserURLHandler::RewriteURLIfNecessary(GURL* url, Profile* profile) {
+void BrowserURLHandler::RewriteURLIfNecessary(GURL* url, Profile* profile,
+                                              bool* reverse_on_redirect) {
   if (url_handlers_.empty())
     InitURLHandlers();
   for (size_t i = 0; i < url_handlers_.size(); ++i) {
-    if ((*url_handlers_[i])(url, profile))
+    if ((*url_handlers_[i].first)(url, profile)) {
+      *reverse_on_redirect = (url_handlers_[i].second != NULL);
       return;
+    }
   }
+}
+
+// static
+bool BrowserURLHandler::ReverseURLRewrite(
+    GURL* url, const GURL& original, Profile* profile) {
+  for (size_t i = 0; i < url_handlers_.size(); ++i) {
+    GURL test_url(original);
+    if ((*url_handlers_[i].first)(&test_url, profile)) {
+      if (url_handlers_[i].second)
+        return (*url_handlers_[i].second)(url, profile);
+      else
+        return false;
+    }
+  }
+  return false;
 }

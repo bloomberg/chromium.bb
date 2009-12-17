@@ -361,12 +361,15 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
   // will actually be loaded. This real URL won't be shown to the user, just
   // used internally.
   GURL loaded_url(url);
-  BrowserURLHandler::RewriteURLIfNecessary(&loaded_url, profile_);
+  bool reverse_on_redirect = false;
+  BrowserURLHandler::RewriteURLIfNecessary(
+      &loaded_url, profile_, &reverse_on_redirect);
 
   NavigationEntry* entry = new NavigationEntry(NULL, -1, loaded_url, referrer,
                                                string16(), transition);
   entry->set_virtual_url(url);
   entry->set_user_typed_url(url);
+  entry->set_update_virtual_url_with_url(reverse_on_redirect);
   if (url.SchemeIsFile()) {
     std::wstring languages = profile()->GetPrefs()->GetString(
         prefs::kAcceptLanguages);
@@ -374,6 +377,15 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
         file_util::GetFilenameFromPath(net::FormatUrl(url, languages))));
   }
   return entry;
+}
+
+void NavigationController::UpdateVirtualURLToURL(
+    NavigationEntry* entry, const GURL& new_url) {
+  GURL new_virtual_url(new_url);
+  if (BrowserURLHandler::ReverseURLRewrite(
+          &new_virtual_url, entry->virtual_url(), profile_)) {
+    entry->set_virtual_url(new_virtual_url);
+  }
 }
 
 void NavigationController::AddTransientEntry(NavigationEntry* entry) {
@@ -619,6 +631,8 @@ void NavigationController::RendererDidNavigateToNewPage(
   }
 
   new_entry->set_url(params.url);
+  if (new_entry->update_virtual_url_with_url())
+    UpdateVirtualURLToURL(new_entry, params.url);
   new_entry->set_referrer(params.referrer);
   new_entry->set_page_id(params.page_id);
   new_entry->set_transition_type(params.transition);
@@ -654,6 +668,8 @@ void NavigationController::RendererDidNavigateToExistingPage(
   // be the same except during session restore, when no site instance will be
   // assigned.
   entry->set_url(params.url);
+  if (entry->update_virtual_url_with_url())
+    UpdateVirtualURLToURL(entry, params.url);
   DCHECK(entry->site_instance() == NULL ||
          entry->site_instance() == tab_contents_->GetSiteInstance());
   entry->set_site_instance(tab_contents_->GetSiteInstance());
@@ -688,6 +704,8 @@ void NavigationController::RendererDidNavigateToSamePage(
   existing_entry->set_unique_id(pending_entry_->unique_id());
 
   // The URL may have changed due to redirects.
+  if (existing_entry->update_virtual_url_with_url())
+    UpdateVirtualURLToURL(existing_entry, params.url);
   existing_entry->set_url(params.url);
 
   DiscardNonCommittedEntries();
@@ -707,6 +725,8 @@ void NavigationController::RendererDidNavigateInPage(
   // reference fragments, of course).
   NavigationEntry* new_entry = new NavigationEntry(*existing_entry);
   new_entry->set_page_id(params.page_id);
+  if (new_entry->update_virtual_url_with_url())
+    UpdateVirtualURLToURL(new_entry, params.url);
   new_entry->set_url(params.url);
   *did_replace_entry = IsRedirect(params) &&
                        IsLikelyAutoNavigation(base::TimeTicks::Now());
