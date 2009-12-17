@@ -40,6 +40,7 @@ NavigationEntry::NavigationEntry()
     : unique_id_(GetUniqueID()),
       site_instance_(NULL),
       page_type_(NORMAL_PAGE),
+      update_virtual_url_with_url_(false),
       page_id_(-1),
       transition_type_(PageTransition::LINK),
       has_post_data_(false),
