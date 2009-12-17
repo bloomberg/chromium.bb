@@ -272,7 +272,7 @@ class Profile {
   virtual Extension* GetTheme() = 0;
 
   // Returns or creates the ThemeProvider associated with this profile
-  virtual BrowserThemeProvider* GetThemeProvider() = 0;
+  virtual ThemeProvider* GetThemeProvider() = 0;
 
   virtual ThumbnailStore* GetThumbnailStore() = 0;
 
@@ -435,7 +435,7 @@ class ProfileImpl : public Profile,
   virtual void SetNativeTheme();
   virtual void ClearTheme();
   virtual Extension* GetTheme();
-  virtual BrowserThemeProvider* GetThemeProvider();
+  virtual ThemeProvider* GetThemeProvider();
   virtual ThumbnailStore* GetThumbnailStore();
   virtual bool HasCreatedDownloadManager() const;
   virtual URLRequestContextGetter* GetRequestContext();

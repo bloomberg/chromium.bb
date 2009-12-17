@@ -7,7 +7,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -19,17 +18,28 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
     TabContents* tab_contents, const Extension* new_theme,
     const std::string& previous_theme_id)
          : ConfirmInfoBarDelegate(tab_contents),
+           was_canceled_(false),
            profile_(tab_contents->profile()),
            name_(new_theme->name()),
+           new_theme_id_(new_theme->id()),
            previous_theme_id_(previous_theme_id) {
-  profile_->GetThemeProvider()->OnInfobarDisplayed();
-}
-
-ThemeInstalledInfoBarDelegate::~ThemeInstalledInfoBarDelegate() {
-  profile_->GetThemeProvider()->OnInfobarDestroyed();
 }
 
 void ThemeInstalledInfoBarDelegate::InfoBarClosed() {
+  ExtensionsService* service = profile_->GetExtensionsService();
+  // Only delete the theme if we've installed a new theme and not the same
+  // theme on top of the current one.
+  if (service && previous_theme_id_ != new_theme_id_) {
+    std::string uninstall_id;
+    if (was_canceled_)
+      uninstall_id = new_theme_id_;
+    else if (!previous_theme_id_.empty())
+      uninstall_id = previous_theme_id_;
+    // It's possible that the theme was already uninstalled by someone so make
+    // sure it exists.
+    if (!uninstall_id.empty() && service->GetExtensionById(uninstall_id, true))
+      service->UninstallExtension(uninstall_id, false);
+  }
   delete this;
 }
 
@@ -68,6 +78,7 @@ std::wstring ThemeInstalledInfoBarDelegate::GetButtonLabel(
 }
 
 bool ThemeInstalledInfoBarDelegate::Cancel() {
+  was_canceled_ = true;
   if (!previous_theme_id_.empty()) {
     ExtensionsService* service = profile_->GetExtensionsService();
     if (service) {

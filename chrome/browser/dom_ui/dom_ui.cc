@@ -9,7 +9,6 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"

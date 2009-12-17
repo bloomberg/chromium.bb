@@ -18,7 +18,6 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate {
   ThemeInstalledInfoBarDelegate(TabContents* tab_contents,
                                 const Extension* new_theme,
                                 const std::string& previous_theme_id);
-  virtual ~ThemeInstalledInfoBarDelegate();
   virtual void InfoBarClosed();
   virtual std::wstring GetMessageText() const;
   virtual SkBitmap* GetIcon() const;
@@ -31,10 +30,15 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate {
  protected:
   Profile* profile() { return profile_; }
 
+  // Keeps track of whether we canceled the install or not.
+  bool was_canceled_;
+
  private:
   Profile* profile_;
   // Name of theme that's just been installed.
   std::string name_;
+  // Id of theme that's just been installed.
+  std::string new_theme_id_;
   // Used to undo theme install.
   std::string previous_theme_id_;
 };
