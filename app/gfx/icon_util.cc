@@ -115,6 +115,7 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
   DCHECK(bitmap);
   bitmap->setConfig(SkBitmap::kARGB_8888_Config, s.width(), s.height());
   bitmap->allocPixels();
+  bitmap->eraseARGB(0, 0, 0, 0);
   SkAutoLockPixels bitmap_lock(*bitmap);
 
   // Now we should create a DIB so that we can use ::DrawIconEx in order to
