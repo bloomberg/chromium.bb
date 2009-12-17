@@ -3133,6 +3133,3 @@ BUG29737 LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = TEXT PASS
 
 // Newly added test in r52235
 BUG_JPARENT WIN LINUX : LayoutTests/editing/selection/doubleclick-beside-cr-span.html = TEXT
-
-// Failing after chromium r34544.
-BUG30653 WIN DEBUG : LayoutTests/http/tests/security/mixedContent/insecure-script-in-iframe.html = TEXT
