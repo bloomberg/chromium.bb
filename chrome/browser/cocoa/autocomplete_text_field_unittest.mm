@@ -28,6 +28,34 @@ class MockSecurityImageView : public LocationBarViewMac::SecurityImageView {
   MOCK_METHOD0(OnMousePressed, bool());
 };
 
+class MockPageActionImageView : public LocationBarViewMac::PageActionImageView {
+ public:
+  MockPageActionImageView() {}
+  virtual ~MockPageActionImageView() {}
+
+  // We can't use gmock's MOCK_METHOD macro, because it doesn't like the
+  // NSRect argument to OnMousePressed.
+  virtual bool OnMousePressed(NSRect bounds) {
+    mouse_was_pressed_ = true;
+    return true;
+  }
+
+  bool MouseWasPressed() { return mouse_was_pressed_; }
+
+ private:
+  bool mouse_was_pressed_;
+};
+
+class TestPageActionViewList : public LocationBarViewMac::PageActionViewList {
+ public:
+  TestPageActionViewList()
+      : LocationBarViewMac::PageActionViewList(NULL, NULL, NULL) {}
+
+  void Add(LocationBarViewMac::PageActionImageView* view) {
+    views_.push_back(view);
+  }
+};
+
 // Mock up an incrementing event number.
 NSUInteger eventNumber = 0;
 
@@ -545,6 +573,77 @@ TEST_F(AutocompleteTextFieldObserverTest, SecurityIconMouseDown) {
   NSRect iconFrame([cell securityImageFrameForFrame:[field_ bounds]]);
   NSPoint location(NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame)));
   NSEvent* event(Event(field_, location, NSLeftMouseDown, 1));
+
+  EXPECT_CALL(security_image_view, OnMousePressed());
+  [field_ mouseDown:event];
+}
+
+TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+
+  MockSecurityImageView security_image_view(NULL, NULL);
+  security_image_view.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
+  [cell setSecurityImageView:&security_image_view];
+
+  MockPageActionImageView page_action_view;
+  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
+  page_action_view.SetImage(image);
+
+  MockPageActionImageView page_action_view2;
+  page_action_view2.SetImage(image);
+
+  TestPageActionViewList list;
+  list.Add(&page_action_view);
+  list.Add(&page_action_view2);
+  [cell setPageActionViewList:&list];
+
+  // One page action, no security lock.
+  security_image_view.SetVisible(false);
+  page_action_view.SetVisible(true);
+  page_action_view2.SetVisible(false);
+  NSRect iconFrame([cell pageActionFrameForIndex:0 inFrame:[field_ bounds]]);
+  NSPoint location(NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame)));
+  NSEvent* event(Event(field_, location, NSLeftMouseDown, 1));
+
+  [field_ mouseDown:event];
+  EXPECT_TRUE(page_action_view.MouseWasPressed());
+
+  // Two page actions, no security lock.
+  page_action_view2.SetVisible(true);
+  iconFrame = [cell pageActionFrameForIndex:0 inFrame:[field_ bounds]];
+  location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
+  event = Event(field_, location, NSLeftMouseDown, 1);
+
+  [field_ mouseDown:event];
+  EXPECT_TRUE(page_action_view.MouseWasPressed());
+
+  iconFrame = [cell pageActionFrameForIndex:1 inFrame:[field_ bounds]];
+  location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
+  event = Event(field_, location, NSLeftMouseDown, 1);
+
+  [field_ mouseDown:event];
+  EXPECT_TRUE(page_action_view.MouseWasPressed());
+
+  // Two page actions plus security lock.
+  security_image_view.SetVisible(true);
+  iconFrame = [cell pageActionFrameForIndex:0 inFrame:[field_ bounds]];
+  location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
+  event = Event(field_, location, NSLeftMouseDown, 1);
+
+  [field_ mouseDown:event];
+  EXPECT_TRUE(page_action_view.MouseWasPressed());
+
+  iconFrame = [cell pageActionFrameForIndex:1 inFrame:[field_ bounds]];
+  location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
+  event = Event(field_, location, NSLeftMouseDown, 1);
+
+  [field_ mouseDown:event];
+  EXPECT_TRUE(page_action_view.MouseWasPressed());
+
+  iconFrame = [cell securityImageFrameForFrame:[field_ bounds]];
+  location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
+  event = Event(field_, location, NSLeftMouseDown, 1);
 
   EXPECT_CALL(security_image_view, OnMousePressed());
   [field_ mouseDown:event];

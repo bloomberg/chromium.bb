@@ -32,7 +32,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 // TODO(shess): This code is mostly copied from the gtk
 // implementation.  Make sure it's all appropriate and flesh it out.
@@ -103,6 +102,7 @@ LocationBarViewMac::LocationBarViewMac(
 
 LocationBarViewMac::~LocationBarViewMac() {
   // TODO(shess): Placeholder for omnibox changes.
+  delete page_action_views_;
 }
 
 std::wstring LocationBarViewMac::GetInputString() const {

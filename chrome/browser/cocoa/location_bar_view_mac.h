@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/toolbar_model.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 @class AutocompleteTextField;
 class BubblePositioner;
@@ -192,6 +193,15 @@ class LocationBarViewMac : public AutocompleteEditController,
     // is the current page URL.
     void UpdateVisibility(TabContents* contents, const GURL& url);
 
+   protected:
+    // For unit testing only.
+    PageActionImageView() : owner_(NULL),
+                            profile_(NULL),
+                            page_action_(NULL),
+                            tracker_(NULL),
+                            current_tab_id_(-1),
+                            preview_enabled_(false) {}
+
    private:
     // Overridden from NotificationObserver:
     virtual void Observe(NotificationType type,
@@ -256,10 +266,12 @@ class LocationBarViewMac : public AutocompleteEditController,
     // describe the bounds of the affected action's icon.
     void OnMousePressed(NSRect iconFrame, size_t index);
 
-   private:
-    // Any installed Page Actions.
+   protected:
+    // Any installed Page Actions (weak references: owned by the extensions
+    // service). Exposed for unit testing only.
     std::vector<PageActionImageView*> views_;
 
+   private:
     // The location bar view that owns us.
     LocationBarViewMac* owner_;
 
