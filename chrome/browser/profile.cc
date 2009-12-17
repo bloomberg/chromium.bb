@@ -125,6 +125,87 @@ bool HasACacheSubdir(const FilePath &dir) {
 
 }  // namespace
 
+// This helper class owns the VisitedLinkMaster and exposes a way to load it
+// from on the file thread.
+class VisitedLinkCreator
+    : public base::RefCountedThreadSafe<VisitedLinkCreator> {
+ public:
+  enum LoadState {
+    NOT_LOADED,
+    FILE_LOAD_FAILED,
+    LOAD_FINISHED
+  };
+
+  explicit VisitedLinkCreator(Profile* profile)
+      : listener_(new VisitedLinkEventListener()),
+        profile_(profile),
+        load_state_(NOT_LOADED) {
+    visited_link_master_.reset(new VisitedLinkMaster(listener_.get(),
+                                                     profile_));
+  }
+
+  // Preload the visited link master on the file thread.
+  void Preload() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
+        this, &VisitedLinkCreator::LoadBackground));
+  }
+
+  // This method can return NULL if for some reason we can't initialize the
+  // visited link master.
+  VisitedLinkMaster* GetMaster() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    // Go ahead and try to load the VisitedLink table.  If the data was
+    // preloaded, Load() does nothing.
+    AutoLock l(lock_);
+    if (LOAD_FINISHED != load_state_) {
+      bool success = false;
+      if (FILE_LOAD_FAILED == load_state_) {
+        success = visited_link_master_->InitFromScratch();
+      } else if (NOT_LOADED == load_state_) {
+        // We haven't tried to load from file yet, so go ahead and do that.
+        success = visited_link_master_->Init();
+      }
+
+      if (!success) {
+        NOTREACHED() << "Failed to init visited link master.";
+        visited_link_master_.reset();
+      }
+      load_state_ = LOAD_FINISHED;
+    }
+
+    // We don't need to lock here because after Load() has been called, we
+    // never change vistied_link_master_.
+    return visited_link_master_.get();
+  }
+
+ private:
+  // Tries to load the visited link database from the UI thread.
+  void LoadBackground() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+    AutoLock l(lock_);
+    if (NOT_LOADED != load_state_)
+      return;
+
+    // We only want to try to load the data from a file (it's not thread safe
+    // to InitFromScratch on the file thread).
+    load_state_ = visited_link_master_->InitFromFile() ? LOAD_FINISHED
+                                                       : FILE_LOAD_FAILED;
+  }
+
+  scoped_ptr<VisitedLinkMaster::Listener> listener_;
+  Profile* profile_;
+
+  // This lock protects visited_link_master_ and load_state_.
+  Lock lock_;
+  scoped_ptr<VisitedLinkMaster> visited_link_master_;
+  // Once created_ is true, we can stop trying to create and init the
+  // VisitedLinkMaster.
+  LoadState load_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(VisitedLinkCreator);
+};
+
 // A pointer to the request context for the default profile.  See comments on
 // Profile::GetDefaultRequestContext.
 URLRequestContextGetter* Profile::default_request_context_;
@@ -214,7 +295,9 @@ class OffTheRecordProfileImpl : public Profile,
     return reinterpret_cast<ProfileId>(this);
   }
 
-  virtual FilePath GetPath() { return profile_->GetPath(); }
+  virtual FilePath GetPath() {
+    return profile_->GetPath();
+  }
 
   virtual bool IsOffTheRecord() {
     return true;
@@ -244,6 +327,8 @@ class OffTheRecordProfileImpl : public Profile,
     // because we don't want to leak the sites that the user has visited before.
     return NULL;
   }
+
+  virtual void PreloadVisitedLinkMaster() {}
 
   virtual ExtensionsService* GetExtensionsService() {
     return NULL;
@@ -567,7 +652,6 @@ class OffTheRecordProfileImpl : public Profile,
 
 ProfileImpl::ProfileImpl(const FilePath& path)
     : path_(path),
-      visited_link_event_listener_(new VisitedLinkEventListener()),
       extension_devtools_manager_(NULL),
       request_context_(NULL),
       media_request_context_(NULL),
@@ -814,15 +898,16 @@ webkit_database::DatabaseTracker* ProfileImpl::GetDatabaseTracker() {
 }
 
 VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
-  if (!visited_link_master_.get()) {
-    scoped_ptr<VisitedLinkMaster> visited_links(
-      new VisitedLinkMaster(visited_link_event_listener_.get(), this));
-    if (!visited_links->Init())
-      return NULL;
-    visited_link_master_.swap(visited_links);
-  }
+  if (!visited_link_creator_.get())
+    visited_link_creator_ = new VisitedLinkCreator(this);
+  return visited_link_creator_->GetMaster();
+}
 
-  return visited_link_master_.get();
+void ProfileImpl::PreloadVisitedLinkMaster() {
+  if (!visited_link_creator_.get()) {
+    visited_link_creator_ = new VisitedLinkCreator(this);
+    visited_link_creator_->Preload();
+  }
 }
 
 ExtensionsService* ProfileImpl::GetExtensionsService() {

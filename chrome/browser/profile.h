@@ -64,8 +64,8 @@ class ThemeProvider;
 class ThumbnailStore;
 class URLRequestContextGetter;
 class UserScriptMaster;
+class VisitedLinkCreator;
 class VisitedLinkMaster;
-class VisitedLinkEventListener;
 class WebDataService;
 class WebKitContext;
 class WebResourceService;
@@ -147,6 +147,10 @@ class Profile {
   // profile.  The VisitedLinkMaster is lazily created the first time
   // that this method is called.
   virtual VisitedLinkMaster* GetVisitedLinkMaster() = 0;
+
+  // Loads the visited link master on the file thread.  It's safe to call
+  // GetVisitedLinkMaster without calling this in advance.
+  virtual void PreloadVisitedLinkMaster() = 0;
 
   // Retrieves a pointer to the ExtensionsService associated with this
   // profile. The ExtensionsService is created at startup.
@@ -406,6 +410,7 @@ class ProfileImpl : public Profile,
   virtual Profile* GetOriginalProfile();
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
   virtual VisitedLinkMaster* GetVisitedLinkMaster();
+  virtual void PreloadVisitedLinkMaster();
   virtual UserScriptMaster* GetUserScriptMaster();
   virtual SSLHostState* GetSSLHostState();
   virtual net::TransportSecurityState* GetTransportSecurityState();
@@ -491,8 +496,7 @@ class ProfileImpl : public Profile,
 
   FilePath path_;
   FilePath base_cache_path_;
-  scoped_ptr<VisitedLinkEventListener> visited_link_event_listener_;
-  scoped_ptr<VisitedLinkMaster> visited_link_master_;
+  scoped_refptr<VisitedLinkCreator> visited_link_creator_;
   scoped_refptr<ExtensionsService> extensions_service_;
   scoped_refptr<UserScriptMaster> user_script_master_;
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
