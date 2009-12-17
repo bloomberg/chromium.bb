@@ -54,6 +54,9 @@ extern const bool kShowAboutMenuItem;
 // browser check are not done.
 extern const bool kOSSupportsOtherBrowsers;
 
+// Does the download page have the show in folder option?
+extern const bool kDownloadPageHasShowInFolder;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_

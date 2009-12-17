@@ -382,9 +382,15 @@ function Download(download) {
   this.nodeControls_ = createElementWithClassName('div', 'controls');
   this.safe_.appendChild(this.nodeControls_);
 
-  this.controlShow_ = createLink(bind(this.show_, this),
-      localStrings.getString('control_showinfolder'));
-  this.nodeControls_.appendChild(this.controlShow_);
+  // We don't need "show in folder" in chromium os. See download_ui.cc and
+  // http://code.google.com/p/chromium-os/issues/detail?id=916.
+  var showinfolder = localStrings.getString('control_showinfolder');
+  if (showinfolder) {
+    this.controlShow_ = createLink(bind(this.show_, this), showinfolder);
+    this.nodeControls_.appendChild(this.controlShow_);
+  } else {
+    this.controlShow_ = null;
+  }
 
   // Pause/Resume are a toggle.
   this.controlPause_ = createLink(bind(this.togglePause_, this),
@@ -518,7 +524,9 @@ Download.prototype.update = function(download) {
       this.nodeProgressBackground_.style.display = 'none';
     }
 
-    showInline(this.controlShow_, this.state_ == Download.States.COMPLETE);
+    if (this.controlShow_) {
+      showInline(this.controlShow_, this.state_ == Download.States.COMPLETE);
+    }
     showInline(this.controlPause_, this.state_ == Download.States.IN_PROGRESS);
     showInline(this.controlResume_, this.state_ == Download.States.PAUSED);
     showInline(this.controlCancel_, this.state_ == Download.States.IN_PROGRESS ||
@@ -540,7 +548,9 @@ Download.prototype.update = function(download) {
 Download.prototype.clear = function() {
   this.safe_.ondragstart = null;
   this.nodeFileLink_.onclick = null;
-  this.controlShow_.onclick = null;
+  if (this.controlShow_) {
+    this.controlShow_.onclick = null;
+  }
   this.controlCancel_.onclick = null;
   this.controlPause_.onclick = null;
   this.controlResume_.onclick = null;

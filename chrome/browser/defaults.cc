@@ -21,7 +21,7 @@ const bool kShowImportOnBookmarkBar = false;
 const bool kShowExitMenuItem = false;
 const bool kShowAboutMenuItem = true;
 const bool kOSSupportsOtherBrowsers = false;
-
+const bool kDownloadPageHasShowInFolder = false;
 #elif defined(OS_LINUX)
 
 // 13.4px = 10pt @ 96dpi.
@@ -49,6 +49,7 @@ const SessionStartupPref::Type kDefaultSessionStartupType =
 const int kPinnedTabWidth = 56;
 const bool kRestorePopups = false;
 const bool kShowImportOnBookmarkBar = true;
+const bool kDownloadPageHasShowInFolder = true;
 #if defined(OS_MACOSX)
 const bool kShowExitMenuItem = false;
 const bool kShowAboutMenuItem = false;

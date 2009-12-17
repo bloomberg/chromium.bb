@@ -11,6 +11,7 @@
 #include "base/thread.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/downloads_dom_handler.h"
 #include "chrome/browser/download/download_manager.h"
@@ -85,8 +86,10 @@ void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
   // Controls.
   localized_strings.SetString(L"control_pause",
       l10n_util::GetString(IDS_DOWNLOAD_LINK_PAUSE));
-  localized_strings.SetString(L"control_showinfolder",
-      l10n_util::GetString(IDS_DOWNLOAD_LINK_SHOW));
+  if (browser_defaults::kDownloadPageHasShowInFolder) {
+    localized_strings.SetString(L"control_showinfolder",
+        l10n_util::GetString(IDS_DOWNLOAD_LINK_SHOW));
+  }
   localized_strings.SetString(L"control_cancel",
       l10n_util::GetString(IDS_DOWNLOAD_LINK_CANCEL));
   localized_strings.SetString(L"control_resume",
