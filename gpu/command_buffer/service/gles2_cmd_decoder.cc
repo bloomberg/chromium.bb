@@ -676,11 +676,11 @@ parse_error::ParseError GLES2DecoderImpl::DoCommand(
 
         GLES2_COMMAND_LIST(GLES2_CMD_OP)
         #undef GLES2_CMD_OP
-        if (debug()) {
-          if (glGetError() != 0) {
-            // TODO(gman): Change output to something useful for NaCl.
-            printf("GL ERROR b4: %s\n", GetCommandName(command));
-          }
+      }
+      if (debug()) {
+        if (glGetError() != 0) {
+          // TODO(gman): Change output to something useful for NaCl.
+          printf("GL ERROR b4: %s\n", GetCommandName(command));
         }
       }
     } else {
@@ -717,6 +717,7 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint buffer) {
       bound_element_array_buffer_ = buffer;
       break;
     default:
+      DCHECK(false);  // Validation should prevent us getting here.
       break;
   }
   glBindBuffer(target, buffer);
@@ -875,6 +876,8 @@ parse_error::ParseError GLES2DecoderImpl::HandleShaderSourceImmediate(
 
 parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
     uint32 immediate_data_size, const gles2::VertexAttribPointer& c) {
+  // TODO(gman): Is this a valid check or does this check have to come
+  //    at glDrawElements time.
   if (bound_array_buffer_ != 0) {
     GLuint indx = c.indx;
     GLint size = c.size;
@@ -883,10 +886,6 @@ parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
     GLsizei stride = c.stride;
     GLuint offset = c.offset;
     const void* ptr = reinterpret_cast<const void*>(c.offset);
-    // TODO(gman): Do manual validation.
-    if (!ptr) {
-      return parse_error::kParseOutOfBounds;
-    }
     if (!ValidateGLenumVertexAttribType(type) ||
         !ValidateGLenumVertexAttribSize(size)) {
       SetGLError(GL_INVALID_VALUE);
