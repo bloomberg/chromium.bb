@@ -424,7 +424,12 @@
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
-
+{
+   Memcheck sanity test (ToolsSanityTest.MemoryLeak).
+   Memcheck:Leak
+   fun:_Znam
+   fun:_ZN31ToolsSanityTest_MemoryLeak_Test8TestBodyEv
+}
 {
    logging::InitLogging never frees filename. It would be hard to free properly.
    Memcheck:Leak
