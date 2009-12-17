@@ -228,6 +228,7 @@ def mergeRevision(url, revision):
       continue
     command = ('svn merge -N -r ' + str(revision-1) + ":" + str(revision) + " ")
     command += " --ignore-ancestry "
+    command += " -x ––ignore-eol-style "
     command += url + path + "@" + str(revision) + " ." + path
 
     print command
