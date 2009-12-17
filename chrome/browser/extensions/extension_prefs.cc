@@ -148,6 +148,12 @@ bool ExtensionPrefs::IsBlacklistBitSet(DictionaryValue* ext) {
 bool ExtensionPrefs::IsExtensionBlacklisted(const std::string& extension_id) {
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
   DCHECK(extensions);
+
+  // We've seen crash reports (crbug.com/29317) which seem to indicate
+  // that extensions can be null here, although we don't expect it to be.
+  if (!extensions)
+    return false;
+
   DictionaryValue* ext = NULL;
   if (!extensions->GetDictionary(ASCIIToWide(extension_id), &ext)) {
     // No such extension yet.
