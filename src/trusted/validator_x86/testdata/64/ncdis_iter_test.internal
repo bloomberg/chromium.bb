@@ -517,12 +517,12 @@ ExprNodeVector[8] = {
     InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstCmp,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
+      { G_Operand, OpFlag(OpUse) | OpFlag(OperandZeroExtends_v) },
       { E_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, ExprUsed },
   { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
@@ -537,12 +537,12 @@ ExprNodeVector[8] = {
     InstCmp,
     3, {
       { Opcode7, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
+      { E_Operand, OpFlag(OpUse) | OpFlag(OperandZeroExtends_v) },
       { I_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 1, 0 },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
+  { ExprMemOffset[4] , 0, ExprUsed },
   { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },

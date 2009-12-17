@@ -1,39 +1,43 @@
-/*
- * Copyright 2009, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/* Copyright (c) 2009 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
  * Defines the one byte x86 opcodes.
  */
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
+
+static const InstMnemonic Group1OpcodeName[8] = {
+  InstAdd,
+  InstOr,
+  InstAdc,
+  InstSbb,
+  InstAnd,
+  InstSub,
+  InstXor,
+  InstCmp
+};
+
+static const InstMnemonic Group1CompName[1] = {
+  InstCmp
+};
+
+static Bool IsGroup1CompName(InstMnemonic name) {
+  int i;
+  for (i = 0; i < NACL_ARRAY_SIZE(Group1CompName); ++i) {
+    if (name == Group1CompName[i]) return TRUE;
+  }
+  return FALSE;
+}
+
+static OperandFlags GetGroup1DestOpUsage(InstMnemonic name) {
+  return (IsGroup1CompName(name)
+          ? InstFlag(OpUse)
+          : (InstFlag(OpSet) | InstFlag(OpUse)));
+}
 
 /* Define binary operation XX+00 to XX+05, for the binary operators
  * add, or, adc, sbb, and, sub, xor, and cmp. Base is the value XX.
@@ -45,13 +49,14 @@ static void BuildBinaryOps_00_05(const uint8_t base,
                                  const NaClInstType itype,
                                  const InstMnemonic name,
                                  const OperandFlags extra_flags) {
+  OperandFlags dest_op_usage = GetGroup1DestOpUsage(name);
   DefineOpcode(
       base,
       itype,
       InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) |
       InstFlag(OperandSize_b) | extra_flags,
       name);
-  DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(E_Operand, dest_op_usage);
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -60,8 +65,7 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v) |
       InstFlag(OperandSize_w) | extra_flags,
       name);
-  DefineOperand(E_Operand,
-                OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
+  DefineOperand(E_Operand, dest_op_usage | OpFlag(OperandZeroExtends_v));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -70,7 +74,7 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW) |
       InstFlag(OperandSize_o) | InstFlag(Opcode64Only) | extra_flags,
       name);
-  DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(E_Operand, dest_op_usage);
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -79,7 +83,7 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) |
       InstFlag(OperandSize_b) | extra_flags,
       name);
-  DefineOperand(G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(G_Operand, dest_op_usage);
   DefineOperand(E_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -88,8 +92,7 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
       InstFlag(OperandSize_v) | extra_flags,
       name);
-  DefineOperand(G_Operand,
-                OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
+  DefineOperand(G_Operand, dest_op_usage | OpFlag(OperandZeroExtends_v));
   DefineOperand(E_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -98,7 +101,7 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW) |
       InstFlag(OperandSize_o) | InstFlag(Opcode64Only) | extra_flags,
       name);
-  DefineOperand(G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(G_Operand, dest_op_usage);
   DefineOperand(E_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -106,7 +109,7 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       itype,
       InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed) | extra_flags,
       name);
-  DefineOperand(RegAL, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(RegAL, dest_op_usage);
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -114,8 +117,7 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       itype,
       InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_v) | extra_flags,
       name);
-  DefineOperand(RegEAX,
-                OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
+  DefineOperand(RegEAX, dest_op_usage | OpFlag(OperandZeroExtends_v));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -124,7 +126,7 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       InstFlag(OpcodeHasImmed_v) | InstFlag(OpcodeUsesRexW) |
       InstFlag(OperandSize_o) | InstFlag(Opcode64Only) | extra_flags,
       name);
-  DefineOperand(RegRAX, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(RegRAX, dest_op_usage);
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -132,7 +134,7 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       itype,
       InstFlag(OperandSize_w) | InstFlag(OpcodeHasImmed) | extra_flags,
       name);
-  DefineOperand(RegAX, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(RegAX, dest_op_usage);
   DefineOperand(I_Operand, OpFlag(OpUse));
 }
 
@@ -218,27 +220,10 @@ static void DefinePushOrPop_00_07(const uint8_t base,
   }
 }
 
-static const InstMnemonic Group1OpcodeName[8] = {
-  InstAdd,
-  InstOr,
-  InstAdc,
-  InstSbb,
-  InstAnd,
-  InstSub,
-  InstXor,
-  InstCmp
-};
-
-/* Define the number of elements in Group2OpcodeName. */
-static const int kNumGroup1OpcodeNames =
-    sizeof(Group1OpcodeName) / sizeof(InstMnemonic);
-
 static void DefineGroup1OpcodesInModRm() {
   int i;
-  /* TODO(karl) verify this pattern is correct for instructions besides add and
-   * sub.
-   */
-  for (i = 0; i < kNumGroup1OpcodeNames; ++i) {
+  for (i = 0; i < NACL_ARRAY_SIZE(Group1OpcodeName); ++i) {
+    OperandFlags dest_op_usage = GetGroup1DestOpUsage(Group1OpcodeName[i]);
     DefineOpcode(
         0x80,
         NACLi_386L,
@@ -247,7 +232,7 @@ static void DefineGroup1OpcodesInModRm() {
         InstFlag(OpcodeLockable) | InstFlag(OpcodeRex),
         Group1OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+    DefineOperand(E_Operand, dest_op_usage);
     DefineOperand(I_Operand, OpFlag(OpUse));
 
     DefineOpcode(
@@ -257,7 +242,7 @@ static void DefineGroup1OpcodesInModRm() {
         InstFlag(OpcodeHasImmed) | InstFlag(OpcodeLockable),
         Group1OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+    DefineOperand(E_Operand, dest_op_usage);
     DefineOperand(I_Operand, OpFlag(OpUse));
 
     DefineOpcode(
@@ -267,8 +252,7 @@ static void DefineGroup1OpcodesInModRm() {
         InstFlag(OpcodeHasImmed) | InstFlag(OpcodeLockable),
         Group1OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(E_Operand,
-                  OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
+    DefineOperand(E_Operand, dest_op_usage | OpFlag(OperandZeroExtends_v));
     DefineOperand(I_Operand, OpFlag(OpUse));
 
     DefineOpcode(
@@ -279,7 +263,7 @@ static void DefineGroup1OpcodesInModRm() {
         InstFlag(OpcodeHasImmed_v) | InstFlag(OpcodeLockable),
         Group1OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+    DefineOperand(E_Operand, dest_op_usage);
     DefineOperand(I_Operand, OpFlag(OpUse));
 
     DefineOpcode(
@@ -289,7 +273,7 @@ static void DefineGroup1OpcodesInModRm() {
         InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeLockable),
         Group1OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+    DefineOperand(E_Operand, dest_op_usage);
     DefineOperand(I_Operand, OpFlag(OpUse));
 
     DefineOpcode(
@@ -299,8 +283,7 @@ static void DefineGroup1OpcodesInModRm() {
         InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeLockable),
         Group1OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(E_Operand,
-                  OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
+    DefineOperand(E_Operand, dest_op_usage | OpFlag(OperandZeroExtends_v));
     DefineOperand(I_Operand, OpFlag(OpUse));
 
     DefineOpcode(
@@ -311,7 +294,7 @@ static void DefineGroup1OpcodesInModRm() {
         InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeLockable),
         Group1OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+    DefineOperand(E_Operand, dest_op_usage);
     DefineOperand(I_Operand, OpFlag(OpUse));
   }
 }
@@ -336,13 +319,9 @@ static const InstMnemonic Group2OpcodeName[8] = {
   InstSar
 };
 
-/* Define the number of elements in Group2OpcodeName */
-static const int kNumGroup2OpcodeNames =
-    sizeof(Group2OpcodeName) / sizeof(InstMnemonic);
-
 static void DefineGroup2OpcodesInModRm() {
   int i;
-  for (i = 0; i < kNumGroup2OpcodeNames; i++) {
+  for (i = 0; i < NACL_ARRAY_SIZE(Group2OpcodeName); i++) {
     if (Group2OpcodeName[i] == InstMnemonicEnumSize) continue;
     DefineOpcode(0xC0, NACLi_OPINMRM,
                  InstFlag(OpcodeInModRm) | InstFlag(OperandSize_b) |
