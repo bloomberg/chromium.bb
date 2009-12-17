@@ -3362,3 +3362,18 @@ ExprNodeVector[8] = {
   } };
 ExprNodeVector[0] = {
 };
+0000000000000000: 41 0f a3 c0                                  bt %r8d, %eax; *NACL Disallows!*
+  { 2, { 0x0f, 0xa3, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    InstBt,
+    2, {
+      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %r8d, ExprUsed | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+};

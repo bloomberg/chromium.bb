@@ -210,6 +210,36 @@ void Define0FOpcodes() {
   DefineOperand(RegECX, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegEDX, OpFlag(OpSet) | OpFlag(OpImplicit));
 
+  /* ISE reviewers suggested omitting bt. */
+  DefineOpcode(0xa3, NACLi_ILLEGAL,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstBt);
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xa3, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeUsesModRm) |
+               InstFlag(OperandSize_o),
+               InstBt);
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+
+  /* ISE reviewers suggested omitting btr. */
+  DefineOpcode(0xab, NACLi_ILLEGAL,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstBts);
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xab, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeUsesModRm) |
+               InstFlag(OperandSize_o),
+               InstBts);
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+
   DefineOpcode(0xae, NACLi_SSE2,
                InstFlag(OpcodeInModRm),
                InstLfence);
@@ -263,6 +293,23 @@ void Define0FOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
+  /* ISE reviewers suggested omitting btc */
+  DefineOpcode(0xb3, NACLi_ILLEGAL,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
+               InstBtr);
+  DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xba, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_b),
+               InstBtr);
+  DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
   /* MOVZX */
   DefineOpcode(0xb6, NACLi_386,
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
@@ -297,6 +344,87 @@ void Define0FOpcodes() {
                InstBsf);
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(E_Operand, OpFlag(OpSet));
+
+  /* ISE reviewers suggested omitting bt, btc, btr and bts. */
+  DefineOpcode(0xba, NACLi_ILLEGAL,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
+               InstBt);
+  DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xba, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_b),
+               InstBt);
+  DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xba, NACLi_ILLEGAL,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
+               InstBts);
+  DefineOperand(Opcode5, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xba, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_b),
+               InstBts);
+  DefineOperand(Opcode5, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xba, NACLi_ILLEGAL,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
+               InstBtr);
+  DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xba, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_b),
+               InstBtr);
+  DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xba, NACLi_ILLEGAL,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
+               InstBtc);
+  DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xba, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_b),
+               InstBtc);
+  DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  /* ISE reviewers suggested omitting btc */
+  DefineOpcode(0xbb, NACLi_ILLEGAL,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstBtc);
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xbb, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeUsesModRm) |
+               InstFlag(OperandSize_o),
+               InstBtc);
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+
 
   DefineOpcode(0xbc, NACLi_386,
                InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) |
