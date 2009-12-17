@@ -3122,8 +3122,6 @@ BUG9798 LINUX MAC RELEASE : LayoutTests/fast/loader/invalid-charset-on-script-cr
 // Webkit roll 52198->52205
 // Newly added test in r52202
 BUG_JPARENT : LayoutTests/svg/filters/filter-source-position.svg = IMAGE+TEXT
-// Started failing with r52207
-BUG_JPARENT : LayoutTests/fast/repaint/backgroundSizeRepaint.html = IMAGE
 
 // Webkit roll 52205->52227
 // New expectations added in 52219
