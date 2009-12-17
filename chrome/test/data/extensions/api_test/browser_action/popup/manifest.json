@@ -1,0 +1,10 @@
+{
+  "name": "Popup tester",
+  "version": "0.1",
+  "description": "apitest for popups",
+  "browser_action": {
+      "name": "grow",
+      "icons": ["chromium.png"],
+      "popup": "popup.html"
+  }
+}

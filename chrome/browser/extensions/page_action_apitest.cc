@@ -16,7 +16,7 @@
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   StartHTTPServer();
-  ASSERT_TRUE(RunExtensionTest("page_action")) << message_;
+  ASSERT_TRUE(RunExtensionTest("page_action/basics")) << message_;
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   ASSERT_EQ(1u, service->extensions()->size());
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
 // Tests old-style pageActions API that is deprecated but we don't want to
 // break.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OldPageActions) {
-  ASSERT_TRUE(RunExtensionTest("old_page_actions")) << message_;
+  ASSERT_TRUE(RunExtensionTest("page_action/old_api")) << message_;
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   ASSERT_EQ(1u, service->extensions()->size());
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(PageActionPopupTest, MAYBE_Show) {
                 NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
                 NotificationService::AllSources());
 
-  ASSERT_TRUE(RunExtensionTest("page_action_popup")) << message_;
+  ASSERT_TRUE(RunExtensionTest("page_action/popup")) << message_;
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   ASSERT_EQ(1u, service->extensions()->size());

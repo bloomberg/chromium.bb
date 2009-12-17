@@ -6,5 +6,5 @@
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
   StartHTTPServer();
-  ASSERT_TRUE(RunExtensionTest("tabs")) << message_;
+  ASSERT_TRUE(RunExtensionTest("tabs/basics")) << message_;
 }

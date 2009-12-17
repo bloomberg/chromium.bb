@@ -8,9 +8,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IsolatedWorld1) {
   // This extension runs various bits of script and tests that they all run in
   // the same isolated world.
   StartHTTPServer();
-  ASSERT_TRUE(RunExtensionTest("isolated_world1")) << message_;
+  ASSERT_TRUE(RunExtensionTest("content_scripts/isolated_world1")) << message_;
 
   // Now load a different extension, inject into same page, verify worlds aren't
   // shared.
-  ASSERT_TRUE(RunExtensionTest("isolated_world2")) << message_;
+  ASSERT_TRUE(RunExtensionTest("content_scripts/isolated_world2")) << message_;
 }

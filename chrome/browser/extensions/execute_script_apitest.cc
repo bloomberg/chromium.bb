@@ -11,6 +11,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_ExecuteScript) {
   host_resolver()->AddRule("b.com", "127.0.0.1");
   StartHTTPServer();
 
-  ASSERT_TRUE(RunExtensionTest("executescript")) << message_;
-  ASSERT_TRUE(RunExtensionTest("executescript_in_frame")) << message_;
+  ASSERT_TRUE(RunExtensionTest("executescript/basic")) << message_;
+  ASSERT_TRUE(RunExtensionTest("executescript/in_frame")) << message_;
 }

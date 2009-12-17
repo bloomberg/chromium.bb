@@ -489,7 +489,7 @@ chrome.test.runTests([
 
   function setupConnect() {
     // The web page that our content script will be injected into.
-    var relativePath = '/files/extensions/api_test/tabs/relative.html';
+    var relativePath = '/files/extensions/api_test/tabs/basics/relative.html';
     var testUrl = 'http://localhost:1337' + relativePath;
 
     setupWindow([testUrl], pass(function(winId, tabIds) {
@@ -577,4 +577,3 @@ chrome.test.runTests([
   // It would be an improvement to check the captureVisibleTab results
   // against a known-good result.
 ]);
-
