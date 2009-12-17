@@ -178,6 +178,13 @@ EVENT_TYPE(FLIP_TRANSACTION_READ_HEADERS)
 EVENT_TYPE(FLIP_TRANSACTION_READ_BODY)
 
 // ------------------------------------------------------------------------
+// HttpStreamParser
+// ------------------------------------------------------------------------
+
+// Measures the time to read HTTP response headers from the server.
+EVENT_TYPE(HTTP_STREAM_PARSER_READ_HEADERS)
+
+// ------------------------------------------------------------------------
 // SocketStream
 // ------------------------------------------------------------------------
 
