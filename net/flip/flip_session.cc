@@ -52,7 +52,7 @@ namespace net {
 
 namespace {
 
-const int kReadBufferSize = 4 * 1024;
+const int kReadBufferSize = 32 * 1024;
 
 // Convert a FlipHeaderBlock into an HttpResponseInfo.
 // |headers| input parameter with the FlipHeaderBlock.
