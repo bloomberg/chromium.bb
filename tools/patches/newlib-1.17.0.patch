@@ -1115,7 +1115,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
  
 diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/setjmp.S newlib-1.17.0/newlib/libc/machine/x86_64/setjmp.S
 --- newlib-1.17.0.orig/newlib/libc/machine/x86_64/setjmp.S	2007-08-28 23:56:50.000000000 +0200
-+++ newlib-1.17.0/newlib/libc/machine/x86_64/setjmp.S	2009-12-17 15:54:53.000000000 +0100
++++ newlib-1.17.0/newlib/libc/machine/x86_64/setjmp.S	2009-12-17 16:14:03.000000000 +0100
 @@ -22,32 +22,35 @@
    SOTYPE_FUNCTION(longjmp)
  
@@ -1141,7 +1141,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/setjmp.S newlib-1.17.0/n
    movq    $0, rax
 -  ret
 +  pop     r11
-+  nacljmp %r11d, r15
++  nacljmp r11d, r15
  
  SYM (longjmp):
 +  movl    edi, edi        /* Sandbox */
@@ -1169,7 +1169,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/setjmp.S newlib-1.17.0/n
  
 -  ret
 +  pop     r11
-+  nacljmp %r11d, r15
++  nacljmp r11d, r15
 diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/x86_64mach.h newlib-1.17.0/newlib/libc/machine/x86_64/x86_64mach.h
 --- newlib-1.17.0.orig/newlib/libc/machine/x86_64/x86_64mach.h	2007-08-28 23:56:50.000000000 +0200
 +++ newlib-1.17.0/newlib/libc/machine/x86_64/x86_64mach.h	2009-12-17 15:51:55.000000000 +0100
