@@ -41,7 +41,6 @@ env.ComponentProgram('test_exit.nexe',
                      LINKFLAGS=['-nostdlib'])
 node = env.CommandSelLdrTestNacl(
      'test_exit.out',
-     sel_ldr_flags=['-I', '-d'],
      command=[env.File('test_exit.nexe')],
      exit_status='42'
      )
@@ -53,7 +52,6 @@ env.ComponentProgram('test_hello.nexe',
                      LINKFLAGS=['-nostdlib'])
 node = env.CommandSelLdrTestNacl(
      'test_hello.out',
-     sel_ldr_flags=['-I', '-d'],
      command=[env.File('test_hello.nexe')],
      stdout_golden=env.File('test_hello.stdout'),
      )
