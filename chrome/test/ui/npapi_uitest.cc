@@ -135,7 +135,8 @@ TEST_F(NPAPITester, SelfDeletePluginGetUrl) {
 
 // Tests if a plugin executing a self deleting script using Invoke
 // works without crashing or hanging
-TEST_F(NPAPITester, SelfDeletePluginInvoke) {
+// Flaky. See http://crbug.com/30702
+TEST_F(NPAPITester, FLAKY_SelfDeletePluginInvoke) {
   std::wstring test_case = L"self_delete_plugin_invoke.html";
   GURL url = GetTestUrl(L"npapi", test_case);
   NavigateToURL(url);
