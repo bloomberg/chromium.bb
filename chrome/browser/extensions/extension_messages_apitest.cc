@@ -7,7 +7,7 @@
 // Tests that message passing between extensions and content scripts works.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Messaging) {
   StartHTTPServer();
-  ASSERT_TRUE(RunExtensionTest("messaging/connect")) << message_;
+  ASSERT_TRUE(RunExtensionTest("connect")) << message_;
 }
 
 // Tests that message passing from one extension to another works.
@@ -18,5 +18,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingExternal) {
                     .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
                     .AppendASCII("1.0")));
 
-  ASSERT_TRUE(RunExtensionTest("messaging/connect_external")) << message_;
+  ASSERT_TRUE(RunExtensionTest("connect_external")) << message_;
 }

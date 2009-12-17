@@ -11,5 +11,5 @@
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionProcess) {
   StartHTTPServer();
-  ASSERT_TRUE(RunExtensionTest("content_scripts/extension_process")) << message_;
+  ASSERT_TRUE(RunExtensionTest("content_script_extension_process")) << message_;
 }

@@ -6,5 +6,5 @@
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptAllFrames) {
   StartHTTPServer();
-  ASSERT_TRUE(RunExtensionTest("content_scripts/all_frames")) << message_;
+  ASSERT_TRUE(RunExtensionTest("content_script_all_frames")) << message_;
 }
