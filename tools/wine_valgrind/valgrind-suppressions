@@ -906,7 +906,6 @@
    fun:RtlAllocateHeap
    fun:fork_helper
    fun:SECUR32_initNTLMSP
-   fun:SECUR32_initializeProviders
 }
 {
    wine_bug_20548_ConnectNamedPipe
@@ -970,6 +969,13 @@
    fun:DEFWND_SetText*
    ...
    fun:CreateWindow*
+}
+{
+   wine_bug_21045
+   Memcheck:Leak
+   fun:RtlAllocateHeap
+   fun:SECUR32_addPackages
+   fun:SECUR32_initNegotiateSP
 }
 {
    expected_double_free_wintrust_tests_crypt
