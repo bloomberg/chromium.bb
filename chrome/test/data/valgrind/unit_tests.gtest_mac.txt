@@ -27,8 +27,6 @@ RenderViewTest.MacTestCmdUp
 # Folowing tests do not pass memcheck test.
 # See http://crbug.com/30381.
 BookmarkMenuTest.Basics
-# See http://crbug.com/30382.
-BrowserWindowCocoaTest.TestFullscreen
 # See http://crbug.com/30384.
 ChromeBrowserWindowTest.DoesHideTitle
 # See http://crbug.com/30386.

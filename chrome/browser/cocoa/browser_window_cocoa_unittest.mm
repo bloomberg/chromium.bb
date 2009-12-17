@@ -100,10 +100,14 @@ TEST_F(BrowserWindowCocoaTest, TestBookmarkBarVisible) {
 @end
 
 TEST_F(BrowserWindowCocoaTest, TestFullscreen) {
-  FakeController* fake_controller = [[FakeController alloc] init];
+  // Wrap the FakeController in a scoped_nsobject instead of autoreleasing in
+  // windowWillClose: because we never actually open a window in this test (so
+  // windowWillClose: never gets called).
+  scoped_nsobject<FakeController> fake_controller(
+      [[FakeController alloc] init]);
   BrowserWindowCocoaPong *bwc = new BrowserWindowCocoaPong(
     browser_helper_.browser(),
-    (BrowserWindowController*)fake_controller);
+    (BrowserWindowController*)fake_controller.get());
   scoped_ptr<BrowserWindowCocoaPong> scoped_bwc(bwc);
 
   EXPECT_FALSE(bwc->IsFullscreen());
