@@ -163,11 +163,6 @@ TEST_F(StartupTest, PerfCold) {
                  UITest::DEFAULT_THEME);
 }
 
-#if defined(OS_MACOSX)
-// TODO(mpcomplete): running these tests on a mac builder results in leaked
-// chrome processes, causing the build slave to hang.
-// http://code.google.com/p/chromium/issues/detail?id=22287
-#else
 TEST_F(StartupTest, PerfExtensionEmpty) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("empty");
@@ -206,7 +201,6 @@ TEST_F(StartupTest, PerfExtensionContentScript50) {
                  false /* cold */, false /* not important */,
                  UITest::DEFAULT_THEME);
 }
-#endif
 
 #if defined(OS_WIN)
 // TODO(port): Enable gears tests on linux/mac once gears is working.
