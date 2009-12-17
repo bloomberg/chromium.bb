@@ -220,6 +220,11 @@ int __pthread_initialize_minimal(size_t tdb_size) {
   return 0;
 }
 
+#ifdef __x86_64__
+void *__tls_get_addr(int offset) {
+  return ((char *)NACL_SYSCALL(tls_get)()) + offset;
+}
+#endif
 
 int __pthread_initialize() {
   /* all we need is to have the self pointer in the TDB */
@@ -231,3 +236,4 @@ int __pthread_shutdown() {
   /* No shutdown is required when pthread library is not used */
   return 0;
 }
+

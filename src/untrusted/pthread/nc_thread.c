@@ -103,11 +103,6 @@ int __nc_memory_block_counter[2];
 static inline nc_thread_descriptor_t *nc_get_tdb() {
   return NACL_SYSCALL(tls_get)();
 }
-
-void *__tls_get_addr(int offset) {
-  return ((char *)nc_get_tdb()) + offset;
-}
-
 #else
 static inline nc_thread_descriptor_t *nc_get_tdb() {
   nc_thread_descriptor_t *tdb = NULL;
