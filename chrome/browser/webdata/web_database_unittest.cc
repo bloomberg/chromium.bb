@@ -9,6 +9,8 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/webdata/autofill_change.h"
+#include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_paths.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -20,6 +22,30 @@ using base::Time;
 using base::TimeDelta;
 using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
+
+// So we can compare AutofillKeys with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const AutofillKey& key) {
+  return os << UTF16ToASCII(key.name()) << ", " << UTF16ToASCII(key.value());
+}
+
+// So we can compare AutofillChanges with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const AutofillChange& change) {
+  switch (change.type()) {
+    case AutofillChange::ADD: {
+      os << "ADD";
+      break;
+    }
+    case AutofillChange::UPDATE: {
+      os << "UPDATE";
+      break;
+    }
+    case AutofillChange::REMOVE: {
+      os << "REMOVE";
+      break;
+    }
+  }
+  return os << " " << change.key();
+}
 
 class WebDatabaseTest : public testing::Test {
  protected:
@@ -87,7 +113,7 @@ class WebDatabaseTest : public testing::Test {
 TEST_F(WebDatabaseTest, Keywords) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_));
+  ASSERT_TRUE(db.Init(file_));
 
   TemplateURL template_url;
   template_url.set_short_name(L"short_name");
@@ -148,7 +174,7 @@ TEST_F(WebDatabaseTest, Keywords) {
 TEST_F(WebDatabaseTest, KeywordMisc) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_));
+  ASSERT_TRUE(db.Init(file_));
 
   ASSERT_EQ(0, db.GetDefaulSearchProviderID());
   ASSERT_EQ(0, db.GetBuitinKeywordVersion());
@@ -163,7 +189,7 @@ TEST_F(WebDatabaseTest, KeywordMisc) {
 TEST_F(WebDatabaseTest, UpdateKeyword) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_));
+  ASSERT_TRUE(db.Init(file_));
 
   TemplateURL template_url;
   template_url.set_short_name(L"short_name");
@@ -225,7 +251,7 @@ TEST_F(WebDatabaseTest, UpdateKeyword) {
 TEST_F(WebDatabaseTest, KeywordWithNoFavicon) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_));
+  ASSERT_TRUE(db.Init(file_));
 
   TemplateURL template_url;
   template_url.set_short_name(L"short_name");
@@ -252,7 +278,7 @@ TEST_F(WebDatabaseTest, KeywordWithNoFavicon) {
 TEST_F(WebDatabaseTest, Logins) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_));
+  ASSERT_TRUE(db.Init(file_));
 
   std::vector<PasswordForm*> result;
 
@@ -385,7 +411,7 @@ TEST_F(WebDatabaseTest, Logins) {
 TEST_F(WebDatabaseTest, Autofill) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_));
+  ASSERT_TRUE(db.Init(file_));
 
   Time t1 = Time::Now();
 
@@ -485,7 +511,27 @@ TEST_F(WebDatabaseTest, Autofill) {
 
   // Removing all elements since the beginning of this function should remove
   // everything from the database.
-  EXPECT_TRUE(db.RemoveFormElementsAddedBetween(t1, Time()));
+  std::vector<AutofillChange> changes;
+  EXPECT_TRUE(db.RemoveFormElementsAddedBetween(t1, Time(), &changes));
+
+  const AutofillChange expected_changes[] = {
+    AutofillChange(AutofillChange::REMOVE,
+                   AutofillKey(ASCIIToUTF16("Name"),
+                               ASCIIToUTF16("Superman"))),
+    AutofillChange(AutofillChange::REMOVE,
+                   AutofillKey(ASCIIToUTF16("Name"),
+                               ASCIIToUTF16("Clark Kent"))),
+    AutofillChange(AutofillChange::REMOVE,
+                   AutofillKey(ASCIIToUTF16("Name"),
+                               ASCIIToUTF16("Clark Sutter"))),
+    AutofillChange(AutofillChange::REMOVE,
+                   AutofillKey(ASCIIToUTF16("Favorite Color"),
+                               ASCIIToUTF16("Green"))),
+  };
+  EXPECT_EQ(arraysize(expected_changes), changes.size());
+  for (size_t i = 0; i < arraysize(expected_changes); i++) {
+    EXPECT_EQ(expected_changes[i], changes[i]);
+  }
 
   EXPECT_TRUE(db.GetIDAndCountOfFormElement(
       FormField(string16(),
@@ -536,6 +582,44 @@ TEST_F(WebDatabaseTest, Autofill) {
   EXPECT_EQ(kValue, v[0]);
 }
 
+TEST_F(WebDatabaseTest, Autofill_RemoveBetweenChanges) {
+  WebDatabase db;
+  ASSERT_TRUE(db.Init(file_));
+
+  TimeDelta one_day(TimeDelta::FromDays(1));
+  Time t1 = Time::Now();
+  Time t2 = t1 + one_day;
+
+  EXPECT_TRUE(db.AddFormFieldValueTime(
+      FormField(string16(),
+                ASCIIToUTF16("Name"),
+                string16(),
+                ASCIIToUTF16("Superman")),
+      t1));
+  EXPECT_TRUE(db.AddFormFieldValueTime(
+      FormField(string16(),
+                ASCIIToUTF16("Name"),
+                string16(),
+                ASCIIToUTF16("Superman")),
+      t2));
+
+  std::vector<AutofillChange> changes;
+  EXPECT_TRUE(db.RemoveFormElementsAddedBetween(t1, t2, &changes));
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ(AutofillChange(AutofillChange::UPDATE,
+                             AutofillKey(ASCIIToUTF16("Name"),
+                                         ASCIIToUTF16("Superman"))),
+            changes[0]);
+  changes.clear();
+
+  EXPECT_TRUE(db.RemoveFormElementsAddedBetween(t2, t2 + one_day, &changes));
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ(AutofillChange(AutofillChange::REMOVE,
+                             AutofillKey(ASCIIToUTF16("Name"),
+                                         ASCIIToUTF16("Superman"))),
+            changes[0]);
+}
+
 static bool AddTimestampedLogin(WebDatabase* db, std::string url,
                                 const std::string& unique_string,
                                 const Time& time) {
@@ -561,7 +645,7 @@ static void ClearResults(std::vector<PasswordForm*>* results) {
 TEST_F(WebDatabaseTest, ClearPrivateData_SavedPasswords) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_));
+  ASSERT_TRUE(db.Init(file_));
 
   std::vector<PasswordForm*> result;
 
@@ -603,7 +687,7 @@ TEST_F(WebDatabaseTest, ClearPrivateData_SavedPasswords) {
 TEST_F(WebDatabaseTest, BlacklistedLogins) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_));
+  ASSERT_TRUE(db.Init(file_));
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.
@@ -642,7 +726,7 @@ TEST_F(WebDatabaseTest, BlacklistedLogins) {
 TEST_F(WebDatabaseTest, WebAppHasAllImages) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_));
+  ASSERT_TRUE(db.Init(file_));
   GURL url("http://google.com/");
 
   // Initial value for unknown web app should be false.

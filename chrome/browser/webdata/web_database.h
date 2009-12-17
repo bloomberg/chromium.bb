@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/glue/form_field.h"
 
+class AutofillChange;
 class FilePath;
 
 namespace base {
@@ -144,11 +145,14 @@ class WebDatabase {
                                    int limit);
 
   // Removes rows from autofill_dates if they were created on or after
-  // |delete_begin| and strictly before |delete_end|.  Decrements the count of
-  // the corresponding rows in the autofill table, and removes those rows if the
-  // count goes to 0.
+  // |delete_begin| and strictly before |delete_end|.  Decrements the
+  // count of the corresponding rows in the autofill table, and
+  // removes those rows if the count goes to 0.  A list of all changed
+  // keys and whether each was updater or removed is returned in the
+  // changes out parameter.
   bool RemoveFormElementsAddedBetween(base::Time delete_begin,
-                                      base::Time delete_end);
+                                      base::Time delete_end,
+                                      std::vector<AutofillChange>* changes);
 
   // Removes from autofill_dates rows with given pair_id where date_created lies
   // between delte_begin and delte_end.
@@ -157,9 +161,10 @@ class WebDatabase {
                                      base::Time delete_end,
                                      int* how_many);
 
-  // Increments the count in the row corresponding to |pair_id| by |delta|.
-  // Removes the row from the table if the count becomes 0.
-  bool AddToCountOfFormElement(int64 pair_id, int delta);
+  // Increments the count in the row corresponding to |pair_id| by
+  // |delta|.  Removes the row from the table and sets the
+  // |was_removed| out parameter to true if the count becomes 0.
+  bool AddToCountOfFormElement(int64 pair_id, int delta, bool* was_removed);
 
   // Gets the pair_id and count entries from name and value specified in
   // |element|.  Sets *count to 0 if there is no such row in the table.
@@ -202,6 +207,15 @@ class WebDatabase {
 
  private:
   FRIEND_TEST(WebDatabaseTest, Autofill);
+  FRIEND_TEST(WebDatabaseTest, Autofill_RemoveBetweenChanges);
+
+  // Methods for adding autofill entries at a specified time.  For
+  // testing only.
+  bool AddFormFieldValuesTime(
+      const std::vector<webkit_glue::FormField>& elements,
+      base::Time time);
+  bool AddFormFieldValueTime(const webkit_glue::FormField& element,
+                             base::Time time);
 
   // Removes empty values for autofill that were incorrectly stored in the DB
   // (see bug http://crbug.com/6111).

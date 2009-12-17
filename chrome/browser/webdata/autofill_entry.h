@@ -20,9 +20,7 @@ class AutofillKey {
   const string16& name() const { return name_; }
   const string16& value() const { return value_; }
 
-  bool operator==(const AutofillKey& key) const {
-    return name_ == key.name() && value_ == key.value();
-  }
+  bool operator==(const AutofillKey& key) const;
 
  private:
   string16 name_;

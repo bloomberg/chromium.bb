@@ -23,9 +23,7 @@ class AutofillChange {
   Type type() const { return type_; }
   const AutofillKey& key() const { return key_; }
 
-  bool operator==(const AutofillChange& change) const {
-    return type_ == change.type() && key_ == change.key();
-  }
+  bool operator==(const AutofillChange& change) const;
 
  private:
   Type type_;

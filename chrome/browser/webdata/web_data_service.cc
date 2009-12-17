@@ -652,8 +652,10 @@ void WebDataService::RemoveFormElementsAddedBetweenImpl(
     GenericRequest2<Time, Time>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
+    AutofillChangeList changes;
     if (db_->RemoveFormElementsAddedBetween(request->GetArgument1(),
-                                            request->GetArgument2()))
+                                            request->GetArgument2(),
+                                            &changes))
       ScheduleCommit();
   }
   request->RequestComplete();

@@ -10,9 +10,11 @@
 #include "app/l10n_util.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
+#include "base/tuple.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/webdata/autofill_change.h"
 #include "webkit/glue/password_form.h"
 
 // Encryptor is the *wrong* way of doing things; we need to turn it into a
@@ -114,6 +116,10 @@ std::string JoinStrings(const std::string& separator,
   while (++i != strings.end())
     result += separator + *i;
   return result;
+}
+
+namespace {
+typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
 }
 
 WebDatabase::WebDatabase() {
@@ -798,14 +804,18 @@ bool WebDatabase::GetAllLogins(std::vector<PasswordForm*>* forms,
   return s.Succeeded();
 }
 
-bool WebDatabase::AddFormFieldValues(
-    const std::vector<FormField>& elements) {
+bool WebDatabase::AddFormFieldValues(const std::vector<FormField>& elements) {
+  return AddFormFieldValuesTime(elements, Time::Now());
+}
+
+bool WebDatabase::AddFormFieldValuesTime(const std::vector<FormField>& elements,
+                                         base::Time time) {
   bool result = true;
   for (std::vector<FormField>::const_iterator
        itr = elements.begin();
        itr != elements.end();
        itr++) {
-    result = result && AddFormFieldValue(*itr);
+    result = result && AddFormFieldValueTime(*itr, time);
   }
   return result;
 }
@@ -936,6 +946,11 @@ bool WebDatabase::SetCountOfFormElement(int64 pair_id, int count) {
 }
 
 bool WebDatabase::AddFormFieldValue(const FormField& element) {
+  return AddFormFieldValueTime(element, base::Time::Now());
+}
+
+bool WebDatabase::AddFormFieldValueTime(const FormField& element,
+                                        base::Time time) {
   int count = 0;
   int64 pair_id;
 
@@ -946,7 +961,7 @@ bool WebDatabase::AddFormFieldValue(const FormField& element) {
     return false;
 
   return SetCountOfFormElement(pair_id, count + 1) &&
-      InsertPairIDAndDate(pair_id, Time::Now());
+      InsertPairIDAndDate(pair_id, time);
 }
 
 bool WebDatabase::GetFormValuesForElementName(const string16& name,
@@ -998,11 +1013,17 @@ bool WebDatabase::GetFormValuesForElementName(const string16& name,
   return s.Succeeded();
 }
 
-bool WebDatabase::RemoveFormElementsAddedBetween(base::Time delete_begin,
-                                                 base::Time delete_end) {
+bool WebDatabase::RemoveFormElementsAddedBetween(
+    base::Time delete_begin,
+    base::Time delete_end,
+    std::vector<AutofillChange>* changes) {
+  DCHECK(changes);
+  // Query for the pair_id, name, and value of all form elements that
+  // were used between the given times.
   sql::Statement s(db_.GetUniqueStatement(
-      "SELECT DISTINCT pair_id FROM autofill_dates "
-      "WHERE date_created >= ? AND date_created < ?"));
+      "SELECT DISTINCT a.pair_id, a.name, a.value "
+      "FROM autofill_dates ad JOIN autofill a ON ad.pair_id = a.pair_id "
+      "WHERE ad.date_created >= ? AND ad.date_created < ?"));
   if (!s) {
     NOTREACHED() << "Statement 1 prepare failed";
     return false;
@@ -1013,25 +1034,32 @@ bool WebDatabase::RemoveFormElementsAddedBetween(base::Time delete_begin,
                   std::numeric_limits<int64>::max() :
                   delete_end.ToTimeT());
 
-  std::vector<int64> pair_ids;
+  AutofillElementList elements;
   while (s.Step())
-    pair_ids.push_back(s.ColumnInt64(0));
+    elements.push_back(MakeTuple(s.ColumnInt64(0),
+                                 UTF8ToUTF16(s.ColumnString(1)),
+                                 UTF8ToUTF16(s.ColumnString(2))));
 
   if (!s.Succeeded()) {
     NOTREACHED();
     return false;
   }
 
-  for (std::vector<int64>::iterator itr = pair_ids.begin();
-       itr != pair_ids.end();
+  for (AutofillElementList::iterator itr = elements.begin();
+       itr != elements.end();
        itr++) {
     int how_many = 0;
-    if (!RemoveFormElementForTimeRange(*itr, delete_begin, delete_end,
+    if (!RemoveFormElementForTimeRange(itr->a, delete_begin, delete_end,
                                        &how_many)) {
       return false;
     }
-    if (!AddToCountOfFormElement(*itr, -how_many))
+    bool was_removed = false;
+    if (!AddToCountOfFormElement(itr->a, -how_many, &was_removed))
       return false;
+    AutofillChange::Type change_type =
+        was_removed ? AutofillChange::REMOVE : AutofillChange::UPDATE;
+    changes->push_back(AutofillChange(change_type,
+                                      AutofillKey(itr->b, itr->c)));
   }
 
   return true;
@@ -1077,8 +1105,12 @@ bool WebDatabase::RemoveFormElement(const string16& name,
   return false;
 }
 
-bool WebDatabase::AddToCountOfFormElement(int64 pair_id, int delta) {
+bool WebDatabase::AddToCountOfFormElement(int64 pair_id,
+                                          int delta,
+                                          bool* was_removed) {
+  DCHECK(was_removed);
   int count = 0;
+  *was_removed = false;
 
   if (!GetCountOfFormElement(pair_id, &count))
     return false;
@@ -1086,6 +1118,7 @@ bool WebDatabase::AddToCountOfFormElement(int64 pair_id, int delta) {
   if (count + delta == 0) {
     if (!RemoveFormElementForID(pair_id))
       return false;
+    *was_removed = true;
   } else {
     if (!SetCountOfFormElement(pair_id, count + delta))
       return false;
