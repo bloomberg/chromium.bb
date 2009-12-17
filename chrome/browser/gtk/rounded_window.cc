@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/rounded_window.h"
 
 #include <gtk/gtk.h>
+#include <math.h>
 
 #include "app/l10n_util.h"
 #include "chrome/common/gtk_util.h"
@@ -14,6 +15,10 @@ namespace gtk_util {
 namespace {
 
 const char* kRoundedData = "rounded-window-data";
+
+// If the border radius is less than |kMinRoundedBorderSize|, we don't actually
+// round the corners, we just truncate the corner.
+const int kMinRoundedBorderSize = 8;
 
 struct RoundedWindowData {
   // Expected window size. Used to detect when we need to reshape the window.
@@ -66,14 +71,35 @@ std::vector<GdkPoint> MakeFramePolygonPoints(RoundedWindowData* data,
   // We use this one for RTL.
   int x_off_r = !ltr ? -y_off : 0;
 
+  // Build up points starting with the bottom left corner and continuing
+  // clockwise.
+
   // Bottom left corner.
   if (type == FRAME_MASK ||
       (data->drawn_borders & (BORDER_LEFT | BORDER_BOTTOM))) {
     if (data->rounded_edges & ROUNDED_BOTTOM_LEFT) {
-      points.push_back(MakeBidiGdkPoint(
-          corner_size + x_off_l, height + y_off, width, ltr));
-      points.push_back(MakeBidiGdkPoint(
-          x_off_r, height - corner_size, width, ltr));
+      if (corner_size >= kMinRoundedBorderSize) {
+        // We are careful to only add points that are horizontal or vertically
+        // offset from the previous point (not both).  This avoids rounding
+        // differences when two points are connected.
+        for (int x = 0; x <= corner_size; ++x) {
+          int y = static_cast<int>(sqrt(static_cast<double>(
+              (corner_size * corner_size) - (x * x))));
+          if (x > 0) {
+            points.push_back(MakeBidiGdkPoint(
+                corner_size - x + x_off_r + 1,
+                height - (corner_size - y) + y_off, width, ltr));
+          }
+          points.push_back(MakeBidiGdkPoint(
+              corner_size - x + x_off_r,
+              height - (corner_size - y) + y_off, width, ltr));
+        }
+      } else {
+        points.push_back(MakeBidiGdkPoint(
+            corner_size + x_off_l, height + y_off, width, ltr));
+        points.push_back(MakeBidiGdkPoint(
+            x_off_r, height - corner_size, width, ltr));
+      }
     } else {
       points.push_back(MakeBidiGdkPoint(x_off_r, height + y_off, width, ltr));
     }
@@ -83,10 +109,23 @@ std::vector<GdkPoint> MakeFramePolygonPoints(RoundedWindowData* data,
   if (type == FRAME_MASK ||
       (data->drawn_borders & (BORDER_LEFT | BORDER_TOP))) {
     if (data->rounded_edges & ROUNDED_TOP_LEFT) {
-      points.push_back(MakeBidiGdkPoint(
-          x_off_r, corner_size - 1, width, ltr));
-      points.push_back(MakeBidiGdkPoint(
-          corner_size + x_off_r - 1, 0, width, ltr));
+      if (corner_size >= kMinRoundedBorderSize) {
+        for (int x = corner_size; x >= 0; --x) {
+          int y = static_cast<int>(sqrt(static_cast<double>(
+              (corner_size * corner_size) - (x * x))));
+          points.push_back(MakeBidiGdkPoint(corner_size - x + x_off_r,
+              corner_size - y, width, ltr));
+          if (x > 0) {
+            points.push_back(MakeBidiGdkPoint(corner_size - x + 1 + x_off_r,
+                corner_size - y, width, ltr));
+          }
+        }
+      } else {
+        points.push_back(MakeBidiGdkPoint(
+            x_off_r, corner_size - 1, width, ltr));
+        points.push_back(MakeBidiGdkPoint(
+            corner_size + x_off_r - 1, 0, width, ltr));
+      }
     } else {
       points.push_back(MakeBidiGdkPoint(x_off_r, 0, width, ltr));
     }
@@ -96,10 +135,25 @@ std::vector<GdkPoint> MakeFramePolygonPoints(RoundedWindowData* data,
   if (type == FRAME_MASK ||
       (data->drawn_borders & (BORDER_TOP | BORDER_RIGHT))) {
     if (data->rounded_edges & ROUNDED_TOP_RIGHT) {
-      points.push_back(MakeBidiGdkPoint(
-          width - corner_size + 1 + x_off_l, 0, width, ltr));
-      points.push_back(MakeBidiGdkPoint(
-          width + x_off_l, corner_size - 1, width, ltr));
+      if (corner_size >= kMinRoundedBorderSize) {
+        for (int x = 0; x <= corner_size; ++x) {
+          int y = static_cast<int>(sqrt(static_cast<double>(
+              (corner_size * corner_size) - (x * x))));
+          if (x > 0) {
+            points.push_back(MakeBidiGdkPoint(
+                width - (corner_size - x) + x_off_l - 1,
+                corner_size - y, width, ltr));
+          }
+          points.push_back(MakeBidiGdkPoint(
+              width - (corner_size - x) + x_off_l,
+              corner_size - y, width, ltr));
+        }
+      } else {
+        points.push_back(MakeBidiGdkPoint(
+            width - corner_size + 1 + x_off_l, 0, width, ltr));
+        points.push_back(MakeBidiGdkPoint(
+            width + x_off_l, corner_size - 1, width, ltr));
+      }
     } else {
       points.push_back(MakeBidiGdkPoint(
           width + x_off_l, 0, width, ltr));
@@ -110,10 +164,25 @@ std::vector<GdkPoint> MakeFramePolygonPoints(RoundedWindowData* data,
   if (type == FRAME_MASK ||
       (data->drawn_borders & (BORDER_RIGHT | BORDER_BOTTOM))) {
     if (data->rounded_edges & ROUNDED_BOTTOM_RIGHT) {
-      points.push_back(MakeBidiGdkPoint(
-          width + x_off_l, height - corner_size, width, ltr));
-      points.push_back(MakeBidiGdkPoint(
-          width - corner_size + x_off_r, height + y_off, width, ltr));
+      if (corner_size >= kMinRoundedBorderSize) {
+        for (int x = corner_size; x >= 0; --x) {
+          int y = static_cast<int>(sqrt(static_cast<double>(
+              (corner_size * corner_size) - (x * x))));
+          points.push_back(MakeBidiGdkPoint(
+              width - (corner_size - x) + x_off_l,
+              height - (corner_size - y) + y_off, width, ltr));
+          if (x > 0) {
+            points.push_back(MakeBidiGdkPoint(
+                width - (corner_size - x) + x_off_l - 1,
+                height - (corner_size - y) + y_off, width, ltr));
+          }
+        }
+      } else {
+        points.push_back(MakeBidiGdkPoint(
+            width + x_off_l, height - corner_size, width, ltr));
+        points.push_back(MakeBidiGdkPoint(
+            width - corner_size + x_off_r, height + y_off, width, ltr));
+      }
     } else {
       points.push_back(MakeBidiGdkPoint(
           width + x_off_l, height + y_off, width, ltr));

@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
+#include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"
@@ -58,6 +59,9 @@ void FullscreenExitBubbleGtk::InitWidgets() {
 
   alignment_.Own(gtk_util::CreateGtkBorderBin(link, &gfx::kGdkBlack,
       kPaddingPixels, kPaddingPixels, kPaddingPixels, kPaddingPixels));
+  gtk_util::ActAsRoundedWindow(alignment_.get(), gfx::kGdkGreen, kPaddingPixels,
+      gtk_util::ROUNDED_BOTTOM_LEFT | gtk_util::ROUNDED_BOTTOM_RIGHT,
+      gtk_util::BORDER_NONE);
   gtk_widget_set_name(alignment_.get(), "exit-fullscreen-bubble");
   gtk_widget_show_all(alignment_.get());
 
