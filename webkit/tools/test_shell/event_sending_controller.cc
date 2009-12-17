@@ -146,9 +146,23 @@ void ApplyKeyModifier(const std::wstring& arg, WebKeyboardEvent* event) {
     event->modifiers |= WebInputEvent::ShiftKey;
   } else if (!wcscmp(arg_string, L"altKey")) {
     event->modifiers |= WebInputEvent::AltKey;
+#if defined(OS_WIN) || defined(OS_LINUX)
+    // On Windows all keys with Alt modifier will be marked as system key.
+    // We keep the same behavior on Linux, see:
+    // third_party/WebKit/WebKit/chromium/src/gtk/WebInputEventFactory.cpp
+    // If we want to change this behavior on Linux, this piece of code must be
+    // kept in sync with the related code in above file.
     event->isSystemKey = true;
+#endif
   } else if (!wcscmp(arg_string, L"metaKey")) {
     event->modifiers |= WebInputEvent::MetaKey;
+#if defined(OS_MACOSX)
+    // On Mac only command key presses are marked as system key.
+    // See the related code in:
+    // third_party/WebKit/WebKit/chromium/src/mac/WebInputEventFactory.cpp
+    // It must be kept in sync with the related code in above file.
+    event->isSystemKey = true;
+#endif
   }
 }
 
@@ -162,6 +176,47 @@ void ApplyKeyModifiers(const CppVariant* arg, WebKeyboardEvent* event) {
   } else if (arg->isString()) {
     ApplyKeyModifier(UTF8ToWide(arg->ToString()), event);
   }
+}
+
+// Get the edit command corresponding to a keyboard event.
+// Returns true if the specified event corresponds to an edit command, the name
+// of the edit command will be stored in |*name|.
+bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
+#if defined(OS_MACOSX)
+  // We only cares about Left,Right,Up,Down keys with Command or Command+Shift
+  // modifiers. These key events correspond to some special movement and
+  // selection editor commands, and was supposed to be handled in
+  // third_party/WebKit/WebKit/chromium/src/EditorClientImpl.cpp. But these keys
+  // will be marked as system key, which prevents them from being handled.
+  // Thus they must be handled specially.
+  if ((event.modifiers & ~WebKeyboardEvent::ShiftKey) !=
+      WebKeyboardEvent::MetaKey)
+    return false;
+
+  switch (event.windowsKeyCode) {
+    case base::VKEY_LEFT:
+      *name = "MoveToBeginningOfLine";
+      break;
+    case base::VKEY_RIGHT:
+      *name = "MoveToEndOfLine";
+      break;
+    case base::VKEY_UP:
+      *name = "MoveToBeginningOfDocument";
+      break;
+    case base::VKEY_DOWN:
+      *name = "MoveToEndOfDocument";
+      break;
+    default:
+      return false;
+  }
+
+  if (event.modifiers & WebKeyboardEvent::ShiftKey)
+    name->append("AndModifySelection");
+
+  return true;
+#else
+  return false;
+#endif
 }
 
 }  // anonymous namespace
@@ -530,18 +585,19 @@ void EventSendingController::keyDown(
     // test (fast\forms\focus-control-to-page.html) relying on this.
     webview()->layout();
 
-#if defined(OS_MACOSX)
-    // On Mac OS, some layout tests (such as "delete-by-word-001.html") sends
-    // an option-key (or alt-key) event to test it is mapped to an appropriate
-    // editor command (such as "DeleteWordBackward").
-    // On the other hand, EditorClientImpl::handleEditingKeyboardEvent()
-    // ignores the key event whose isSystemKey value is true and cannot map
-    // an editor command to an option-key event.
-    // As a workaround for this problem, we set isSystemKey of RawKeyDown
-    // events to false.
-    event_down.isSystemKey = false;
-#endif
+    // In the browser, if a keyboard event corresponds to an editor command,
+    // the command will be dispatched to the renderer just before dispatching
+    // the keyboard event, and then it will be executed in the
+    // RenderView::handleCurrentKeyboardEvent() method, which is called from
+    // third_party/WebKit/WebKit/chromium/src/EditorClientImpl.cpp.
+    // We just simulate the same behavior here.
+    std::string edit_command;
+    if (GetEditCommand(event_down, &edit_command))
+      shell_->delegate()->SetEditCommand(edit_command, "");
+
     webview()->handleInputEvent(event_down);
+
+    shell_->delegate()->ClearEditCommand();
 
     if (generate_char) {
       event_char.type = WebInputEvent::Char;

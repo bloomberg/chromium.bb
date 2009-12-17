@@ -16,6 +16,7 @@
 #endif
 
 #include <map>
+#include <string>
 
 #if defined(OS_LINUX)
 #include <gdk/gdkcursor.h>
@@ -93,6 +94,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void didChangeSelection(bool is_selection_empty);
   virtual void didChangeContents();
   virtual void didEndEditing();
+  virtual bool handleCurrentKeyboardEvent();
   virtual WebKit::WebString autoCorrectWord(
       const WebKit::WebString& misspelled_word);
   virtual void runModalAlertDialog(
@@ -254,6 +256,16 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
     return block_redirects_;
   }
 
+  void SetEditCommand(const std::string& name, const std::string& value) {
+    edit_command_name_ = name;
+    edit_command_value_ = value;
+  }
+
+  void ClearEditCommand() {
+    edit_command_name_.clear();
+    edit_command_value_.clear();
+  }
+
  private:
 
   // Called the title of the page changes.
@@ -360,6 +372,10 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   // true if we should block any redirects
   bool block_redirects_;
+
+  // Edit command associated to the current keyboard event.
+  std::string edit_command_name_;
+  std::string edit_command_value_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebViewDelegate);
 };

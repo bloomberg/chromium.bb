@@ -446,6 +446,18 @@ void TestWebViewDelegate::didEndEditing() {
   }
 }
 
+bool TestWebViewDelegate::handleCurrentKeyboardEvent() {
+  if (edit_command_name_.empty())
+    return false;
+
+  WebFrame* frame = shell_->webView()->focusedFrame();
+  if (!frame)
+    return false;
+
+  return frame->executeCommand(WebString::fromUTF8(edit_command_name_),
+                               WebString::fromUTF8(edit_command_value_));
+}
+
 WebString TestWebViewDelegate::autoCorrectWord(const WebString& word) {
   // Dummy implementation.
   return word;
