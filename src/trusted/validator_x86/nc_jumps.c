@@ -1,32 +1,6 @@
-/*
- * Copyright 2009, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/* Copyright (c) 2009 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -270,6 +244,14 @@ static Bool MemOffsetMatchesBaseIndex(ExprNodeVector* vector,
       0 == disp;
 }
 
+Bool FLAGS_identity_mask = FALSE;
+
+static uint8_t NcGetJumpMask(NcValidatorState* state) {
+  return FLAGS_identity_mask
+      ? (uint8_t) 0xFF
+      : (uint8_t) (~state->alignment_mask);
+}
+
 /* Checks if an indirect jump (in 64-bit mode) is native client compliant.
  *
  * Expects pattern:
@@ -340,7 +322,7 @@ static void AddRegisterJumpIndirect64(NcValidatorState* state,
     if (RegUnknown == and_64_reg) break;
 
     /* Check that the mask is ok. */
-    mask = (uint8_t) (~state->alignment_mask);
+    mask = NcGetJumpMask(state);
     assert(0 != mask);  /* alignment must be either 16 or 32. */
     node = &nodes->node[op_2];
     if (ExprConstant != node->kind || mask != node->value) break;
@@ -453,7 +435,7 @@ static void AddRegisterJumpIndirect32(NcValidatorState* state,
     if (jump_reg != and_reg) break;
 
     /* Check that the mask is ok. */
-    mask = (uint8_t) (~state->alignment_mask);
+    mask = NcGetJumpMask(state);
     assert(0 != mask);  /* alignment must be either 16 or 32. */
     node = &nodes->node[op_2];
     if (ExprConstant != node->kind || mask != node->value) break;
