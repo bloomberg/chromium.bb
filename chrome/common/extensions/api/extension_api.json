@@ -1199,6 +1199,26 @@
         ]
       },
       {
+        "name": "getRecent",
+        "type": "function",
+        "description": "Retrieves the recently added bookmarks.",
+        "parameters": [
+          {
+            "type": "integer",
+            "minimum": 1,
+            "name": "numberOfItems",
+            "description": "The maximum number of items to return."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+            ]
+          }
+        ]
+      },
+      {
         "name": "getTree",
         "type": "function",
         "description": "Retrieves the entire Bookmarks hierarchy.",

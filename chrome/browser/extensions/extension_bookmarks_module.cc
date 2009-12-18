@@ -341,6 +341,26 @@ bool GetBookmarkChildrenFunction::RunImpl() {
   return true;
 }
 
+bool GetBookmarkRecentFunction::RunImpl() {
+  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_INTEGER));
+  int number_of_items;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&number_of_items));
+  if (number_of_items < 1)
+    return false;
+
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  ListValue* json = new ListValue();
+  std::vector<const BookmarkNode*> nodes;
+  bookmark_utils::GetMostRecentlyAddedEntries(model, number_of_items, &nodes);
+  std::vector<const BookmarkNode*>::iterator i = nodes.begin();
+  for (; i != nodes.end(); ++i) {
+    const BookmarkNode* node = *i;
+    ExtensionBookmarks::AddNode(node, json, false);
+  }
+  result_.reset(json);
+  return true;
+}
+
 bool GetBookmarkTreeFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   scoped_ptr<ListValue> json(new ListValue());

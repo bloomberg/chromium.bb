@@ -348,4 +348,60 @@ chrome.test.runTests([
 
     chrome.test.resetQuota();
   },
+
+  function getRecent_setup() {
+    // Clean up tree
+    ["1", "2"].forEach(function(id) {
+      chrome.bookmarks.getChildren(id, pass(function(children) {
+        children.forEach(function(child, i) {
+          chrome.bookmarks.removeTree(child.id, pass(function() {}));
+
+          // When we have removed the last child we can continue.
+          if (i == children.length - 1)
+            afterRemove();
+        });
+      }));
+    });
+
+    function afterRemove() {
+      // Once done add 3 nodes
+      chrome.bookmarks.getTree(pass(function(results) {
+        chrome.test.assertEq(0, results[0].children[0].children.length);
+        chrome.test.assertEq(0, results[0].children[1].children.length);
+        expected = results;
+
+        // Reset the nodes
+        node1 = {parentId:"1", title:"Foo bar baz",
+                 url:"http://www.example.com/hello"};
+        node2 = {parentId:"1", title:"foo quux",
+                 url:"http://www.example.com/bar"};
+        node3 = {parentId:"1", title:"bar baz",
+                  url:"http://www.google.com/hello/quux"};
+        createThreeNodes(node1, node2, node3);
+      }));
+    }
+  },
+
+  function getRecent() {
+    var failed = false;
+    try {
+      chrome.bookmarks.getRecent(0, function() {});
+    } catch (ex) {
+      failed = true;
+    }
+    chrome.test.assertTrue(failed, "Calling with 0 should fail");
+
+    chrome.bookmarks.getRecent(10000, pass(function(results) {
+      chrome.test.assertEq(3, results.length,
+                           "Should have gotten all recent bookmarks");
+    }));
+
+    chrome.bookmarks.getRecent(2, pass(function(results) {
+      chrome.test.assertEq(2, results.length,
+                           "Should only get the last 2 bookmarks");
+
+      chrome.test.assertTrue(compareNode(node3, results[0]));
+      chrome.test.assertTrue(compareNode(node2, results[1]));
+    }));
+  }
 ]);

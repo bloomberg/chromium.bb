@@ -122,6 +122,7 @@ void FactoryRegistry::ResetFunctions() {
   // Bookmarks.
   RegisterFunction<GetBookmarksFunction>();
   RegisterFunction<GetBookmarkChildrenFunction>();
+  RegisterFunction<GetBookmarkRecentFunction>();
   RegisterFunction<GetBookmarkTreeFunction>();
   RegisterFunction<SearchBookmarksFunction>();
   RegisterFunction<RemoveBookmarkFunction>();

@@ -96,6 +96,13 @@ class GetBookmarkChildrenFunction : public BookmarksFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getChildren")
 };
 
+class GetBookmarkRecentFunction : public BookmarksFunction {
+ public:
+  virtual bool RunImpl();
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getRecent")
+};
+
 class GetBookmarkTreeFunction : public BookmarksFunction {
  public:
   virtual bool RunImpl();

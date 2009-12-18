@@ -489,6 +489,12 @@ TEST_F(ExtensionAPIClientTest, GetBookmarkChildren) {
                "\"42\"");
 }
 
+TEST_F(ExtensionAPIClientTest, GetBookmarkRecent) {
+  ExpectJsPass("chrome.bookmarks.getRecent(5, function(){});",
+    "bookmarks.getRecent",
+    "5");
+}
+
 TEST_F(ExtensionAPIClientTest, GetBookmarkTree) {
   ExpectJsPass("chrome.bookmarks.getTree(function(){});",
                "bookmarks.getTree",
