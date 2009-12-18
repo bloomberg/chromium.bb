@@ -637,6 +637,8 @@ void ExtensionProcessBindings::HandleResponse(int request_id, bool success,
   }
 #endif
 
+  request->second->context.Dispose();
+  request->second->context.Clear();
   pending_requests.erase(request);
 }
 
