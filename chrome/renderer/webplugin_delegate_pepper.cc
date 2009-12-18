@@ -43,6 +43,11 @@ const uint32 kBytesPerPixel = 4;  // Only 8888 RGBA for now.
 
 }  // namespace
 
+// Implementation artifacts for a context
+struct Device2DImpl {
+  TransportDIB* dib;
+};
+
 uint32 WebPluginDelegatePepper::next_buffer_id = 0;
 
 WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
@@ -246,6 +251,9 @@ NPError WebPluginDelegatePepper::Device2DInitializeContext(
   int height = window_rect_.height();
   uint32 buffer_size = width * height * kBytesPerPixel;
 
+  // Initialize the impelementation information in case of failure.
+  context->reserved = NULL;
+
   // Allocate the transport DIB and the PlatformCanvas pointing to it.
   scoped_ptr<OpenPaintContext> paint_context(new OpenPaintContext);
   paint_context->transport_dib.reset(
@@ -270,6 +278,15 @@ NPError WebPluginDelegatePepper::Device2DInitializeContext(
   // catch areas you didn't paint.
   plugin_bitmap.eraseARGB(0, 0, 0, 0);
 
+  // Save the implementation information (the TransportDIB).
+  Device2DImpl* impl = new Device2DImpl;
+  if (impl == NULL) {
+    // TODO(sehr,brettw): cleanup the context if we fail.
+    return NPERR_GENERIC_ERROR;
+  }
+  impl->dib = paint_context->transport_dib.get();
+  context->reserved = reinterpret_cast<void*>(impl);
+
   // Save the canvas to the output context structure and save the
   // OpenPaintContext for future reference.
   context->region = plugin_bitmap.getAddr32(0, 0);
@@ -280,6 +297,7 @@ NPError WebPluginDelegatePepper::Device2DInitializeContext(
   context->dirty.bottom = height;
   open_paint_contexts_[context->region] =
       linked_ptr<OpenPaintContext>(paint_context.release());
+
   return NPERR_NO_ERROR;
 }
 
@@ -355,6 +373,8 @@ NPError WebPluginDelegatePepper::Device2DDestroyContext(
     return NPERR_INVALID_PARAM;
 
   open_paint_contexts_.erase(found);
+  // Free the implementation information.
+  delete reinterpret_cast<Device2DImpl*>(context->reserved);
   return NPERR_NO_ERROR;
 }
 

@@ -6,7 +6,15 @@
 
 #include "chrome/common/notification_service.h"
 #include "chrome/common/nacl_messages.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
+
+// This is ugly.  We need an interface header file for the exported
+// sel_ldr interfaces.
+// TODO(gregoryd,sehr): Add an interface header.
+#if defined(OS_WIN)
+typedef HANDLE NaClHandle;
+#else
+typedef int NaClHandle;
+#endif  // NaClHandle
 
 int SelMain(const int desc, const NaClHandle handle);
 
