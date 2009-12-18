@@ -329,7 +329,6 @@
           ],
           'sources!': [
             # TODO(port)
-            'browser/login_prompt_uitest.cc',
             'test/ui/layout_plugin_uitest.cc',
           ],
         }, { # else: OS != "linux"
@@ -346,7 +345,6 @@
           'sources!': [
             # TODO(port)
             'app/chrome_main_uitest.cc',
-            'browser/login_prompt_uitest.cc',
             'browser/metrics/metrics_service_uitest.cc',
             # leaves an extra window on screen after test completes.
             'browser/sessions/session_restore_uitest.cc',

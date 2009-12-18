@@ -174,7 +174,6 @@ void NavigationNotificationObserver::Observe(
     // occur while authentication is ongoing.
     navigation_started_ = true;
   } else if (type == NotificationType::AUTH_NEEDED) {
-#if defined(OS_WIN)
     if (navigation_started_) {
       // Remember the login handler that wants authentication.
       LoginHandler* handler =
@@ -187,10 +186,6 @@ void NavigationNotificationObserver::Observe(
     } else {
       NOTREACHED();
     }
-#else
-    // TODO(port): Enable when we have LoginNotificationDetails etc.
-    NOTIMPLEMENTED();
-#endif
   } else {
     NOTREACHED();
   }
