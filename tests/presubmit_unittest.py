@@ -49,9 +49,8 @@ def GetPreferredTrySlaves():
     presubmit.os.chdir = MockChdir
     self.mox.StubOutWithMock(presubmit.scm.SVN, 'CaptureInfo')
     self.mox.StubOutWithMock(presubmit.scm.SVN, 'GetFileProperty')
-    # TODO(maruel): Err, small duplication of code here.
-    self.mox.StubOutWithMock(presubmit.gcl, 'ReadFile')
     self.mox.StubOutWithMock(presubmit.gclient_utils, 'FileRead')
+    self.mox.StubOutWithMock(presubmit.gclient_utils, 'FileWrite')
 
 
 class PresubmitUnittest(PresubmitTestsBase):

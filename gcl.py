@@ -141,7 +141,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
       # fetch it each time.
       gclient_utils.FileWrite(cached_file, content)
     else:
-      content = ReadFile(cached_file)
+      content = gclient_utils.FileRead(cached_file, 'r')
     # Keep the content cached in memory.
     FILES_CACHE[filename] = content
   return FILES_CACHE[filename]
@@ -203,14 +203,6 @@ def RunShellWithReturnCode(command, print_output=False):
 def RunShell(command, print_output=False):
   """Executes a command and returns the output."""
   return RunShellWithReturnCode(command, print_output)[0]
-
-
-def ReadFile(filename, flags='r'):
-  """Returns the contents of a file."""
-  f = open(filename, flags)
-  result = f.read()
-  f.close()
-  return result
 
 
 def FilterFlag(args, flag):
@@ -416,7 +408,8 @@ class ChangeInfo(object):
         ErrorExit("Changelist " + changename + " not found.")
       return ChangeInfo(changename, 0, 0, '', None, local_root,
                         needs_upload=False)
-    split_data = ReadFile(info_file).split(ChangeInfo._SEPARATOR, 2)
+    split_data = gclient_utils.FileRead(info_file, 'r').split(
+        ChangeInfo._SEPARATOR, 2)
     if len(split_data) != 3:
       ErrorExit("Changelist file %s is corrupt" % info_file)
     items = split_data[0].split(', ')
@@ -1012,7 +1005,7 @@ def Change(change_info, args):
   if not silent:
     os.system(GetEditor() + " " + filename)
 
-  result = ReadFile(filename)
+  result = gclient_utils.FileRead(filename, 'r')
   os.remove(filename)
 
   if not result:

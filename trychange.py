@@ -520,7 +520,7 @@ def TryChange(argv,
     if options.url:
       options.diff = urllib.urlopen(options.url).read()
     elif options.diff:
-      options.diff = gcl.ReadFile(options.diff)
+      options.diff = gcl.gclient_utils.FileRead(options.diff, 'rb')
     # Process the VCS in any case at least to retrieve the email address.
     try:
       options.scm = GuessVCS(options)

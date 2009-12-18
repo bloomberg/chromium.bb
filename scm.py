@@ -416,11 +416,7 @@ class SVN(object):
 
     # We know the diff will be incorrectly formatted. Fix it.
     if SVN.IsMoved(filename):
-      # The file is "new" in the patch sense. Generate a homebrew diff.
-      # We can't use ReadFile() since it's not using binary mode.
-      file_handle = open(filename, 'rb')
-      file_content = file_handle.read()
-      file_handle.close()
+      file_content = gclient_utils.FileRead(filename, 'rb')
       # Prepend '+' to every lines.
       file_content = ['+' + i for i in file_content.splitlines(True)]
       nb_lines = len(file_content)

@@ -19,7 +19,7 @@ class GclTestsBase(SuperMoxTestBase):
     self.mox.StubOutWithMock(gcl.SVN, 'CaptureInfo')
     self.mox.StubOutWithMock(gcl, 'tempfile')
     self.mox.StubOutWithMock(gcl.upload, 'RealMain')
-    self.mox.StubOutWithMock(gcl, 'ReadFile')
+    self.mox.StubOutWithMock(gcl.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(gcl.gclient_utils, 'FileWrite')
 
 
@@ -38,7 +38,7 @@ class GclUnittest(GclTestsBase):
         'GetModifiedFiles', 'GetRepositoryRoot', 'Help', 'Lint',
         'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG', 'Opened',
         'OptionallyDoPresubmitChecks', 'PresubmitCL', 'REPOSITORY_ROOT',
-        'ReadFile', 'RunShell', 'RunShellWithReturnCode', 'SVN',
+        'RunShell', 'RunShellWithReturnCode', 'SVN',
         'SendToRietveld', 'TryChange', 'UnknownFiles', 'UploadCL', 'Warn',
         'breakpad', 'gclient_utils', 'getpass', 'main', 'os', 'random', 're',
         'shutil', 'string', 'subprocess', 'sys', 'tempfile', 'upload',
@@ -185,7 +185,7 @@ class ChangeInfoUnittest(GclTestsBase):
     description = ["This is some description.", "force an extra separator."]
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
     gcl.os.path.exists('bleeeh').AndReturn(True)
-    gcl.ReadFile('bleeeh').AndReturn(
+    gcl.gclient_utils.FileRead('bleeeh', 'r').AndReturn(
       gcl.ChangeInfo._SEPARATOR.join(["42, 53", "G      b.cc"] + description))
     self.mox.ReplayAll()
 
@@ -200,7 +200,7 @@ class ChangeInfoUnittest(GclTestsBase):
   def testLoadEmpty(self):
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
     gcl.os.path.exists('bleeeh').AndReturn(True)
-    gcl.ReadFile('bleeeh').AndReturn(
+    gcl.gclient_utils.FileRead('bleeeh', 'r').AndReturn(
         gcl.ChangeInfo._SEPARATOR.join(["", "", ""]))
     self.mox.ReplayAll()
 
