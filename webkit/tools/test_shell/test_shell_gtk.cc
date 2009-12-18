@@ -304,6 +304,7 @@ void TestShell::PlatformShutdown() {
     delete g_ahem_path;
     g_ahem_path = NULL;
   }
+  FcFini();
 }
 
 void TestShell::PlatformCleanUp() {
@@ -314,7 +315,6 @@ void TestShell::PlatformCleanUp() {
         reinterpret_cast<gpointer>(MainWindowDestroyed), this);
     gtk_widget_destroy(GTK_WIDGET(m_mainWnd));
   }
-  FcFini();
 }
 
 bool TestShell::Initialize(const GURL& starting_url) {
