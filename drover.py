@@ -471,7 +471,7 @@ def main(options, args):
     revertExportRevision(url, revision)
 
   # Check the base url so we actually find the author who made the change
-  author = getAuthor(TRUNK_URL, revision)
+  author = getAuthor(url, revision)
 
   filename = str(revision)+".txt"
   out = open(filename,"w")
