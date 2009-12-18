@@ -33,10 +33,6 @@
       '../printing/printing.gyp:printing',
       '../webkit/webkit.gyp:inspector_resources',
     ],
-    'nacl_win64_dependencies': [
-      'common_nacl_win64',
-      'common_constants_win64',
-    ],
     'allocator_target': '../base/allocator/allocator.gyp:allocator',
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
@@ -108,17 +104,9 @@
   'includes': [
     # Place some targets in gypi files to reduce contention on this file.
     # By using an include, we keep everything in a single xcodeproj file.
-    # Note on Win64 targets: targets that end with win64 be used
-    # on 64-bit Windows only. Targets that end with nacl_win64 should be used
-    # by Native Client only.
     'chrome_browser.gypi',
-    'chrome_common.gypi',
-    'chrome_dll.gypi',
-    'chrome_exe.gypi',
     'chrome_renderer.gypi',
     'chrome_tests.gypi',
-    'common_constants.gypi',
-    'nacl.gypi',
   ],
   'targets': [
     {
@@ -353,6 +341,340 @@
         }],
       ],
     },
+     {
+      'target_name': 'common_constants',
+      'type': '<(library)',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'dependencies': ['../build/linux/system.gyp:gtk'],
+        }],
+      ],
+      'sources': [
+        'common/chrome_constants.cc',
+        'common/chrome_constants.h',
+        'common/chrome_paths.cc',
+        'common/chrome_paths.h',
+        'common/chrome_paths_internal.h',
+        'common/chrome_paths_linux.cc',
+        'common/chrome_paths_mac.mm',
+        'common/chrome_paths_win.cc',
+        'common/chrome_switches.cc',
+        'common/chrome_switches.h',
+        'common/env_vars.cc',
+        'common/env_vars.h',
+        'common/json_value_serializer.cc',
+        'common/json_value_serializer.h',
+        'common/pref_names.cc',
+        'common/pref_names.h',
+      ],
+      'actions': [
+        {
+          'action_name': 'Make chrome_version.cc',
+          'variables': {
+            'make_version_cc_path': 'tools/build/make_version_cc.py',
+          },
+          'inputs': [
+            '<(make_version_cc_path)',
+            'VERSION',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/chrome_version.cc',
+          ],
+          'action': [
+            'python',
+            '<(make_version_cc_path)',
+            '<@(_outputs)',
+            '<(version_full)',
+          ],
+          'process_outputs_as_sources': 1,
+        },
+      ],
+    },
+    {
+      'target_name': 'common',
+      'type': '<(library)',
+      'msvs_guid': '899F1280-3441-4D1F-BA04-CCD6208D9146',
+      'dependencies': [
+        'common_constants',
+        'chrome_resources',
+        'chrome_strings',
+        'theme_resources',
+        '../app/app.gyp:app_base',
+        '../app/app.gyp:app_resources',
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../ipc/ipc.gyp:ipc',
+        '../net/net.gyp:net',
+        '../net/net.gyp:net_resources',
+        '../skia/skia.gyp:skia',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/libxml/libxml.gyp:libxml',
+        '../third_party/sqlite/sqlite.gyp:sqlite',
+        '../third_party/zlib/zlib.gyp:zlib',
+        '../third_party/npapi/npapi.gyp:npapi',
+        '../webkit/webkit.gyp:appcache',
+        '../webkit/webkit.gyp:glue',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        # All .cc, .h, and .mm files under chrome/common except for tests.
+        'common/desktop_notifications/active_notification_tracker.h',
+        'common/desktop_notifications/active_notification_tracker.cc',
+        'common/extensions/extension.cc',
+        'common/extensions/extension.h',
+        'common/extensions/extension_constants.cc',
+        'common/extensions/extension_constants.h',
+        'common/extensions/extension_error_reporter.cc',
+        'common/extensions/extension_error_reporter.h',
+        'common/extensions/extension_error_utils.cc',
+        'common/extensions/extension_error_utils.h',
+        'common/extensions/extension_action.cc',
+        'common/extensions/extension_action.h',
+        'common/extensions/extension_l10n_util.cc',
+        'common/extensions/extension_l10n_util.h',
+        'common/extensions/extension_message_bundle.cc',
+        'common/extensions/extension_message_bundle.h',
+        'common/extensions/extension_resource.cc',
+        'common/extensions/extension_resource.h',
+        'common/extensions/extension_unpacker.cc',
+        'common/extensions/extension_unpacker.h',
+        'common/extensions/update_manifest.cc',
+        'common/extensions/update_manifest.h',
+        'common/extensions/url_pattern.cc',
+        'common/extensions/url_pattern.h',
+        'common/extensions/user_script.cc',
+        'common/extensions/user_script.h',
+        'common/gfx/utils.h',
+        'common/net/dns.h',
+        'common/net/net_resource_provider.cc',
+        'common/net/net_resource_provider.h',
+        'common/net/socket_stream.h',
+        'common/net/url_request_intercept_job.cc',
+        'common/net/url_request_intercept_job.h',
+        'common/web_resource/web_resource_unpacker.cc',
+        'common/web_resource/web_resource_unpacker.h',
+        'common/appcache/appcache_backend_proxy.cc',
+        'common/appcache/appcache_backend_proxy.h',
+        'common/appcache/appcache_dispatcher.cc',
+        'common/appcache/appcache_dispatcher.h',
+        'common/appcache/appcache_dispatcher_host.cc',
+        'common/appcache/appcache_dispatcher_host.h',
+        'common/appcache/appcache_frontend_proxy.cc',
+        'common/appcache/appcache_frontend_proxy.h',
+        'common/appcache/chrome_appcache_service.cc',
+        'common/appcache/chrome_appcache_service.h',
+        'common/automation_constants.cc',
+        'common/automation_constants.h',
+        'common/bindings_policy.h',
+        'common/child_process.cc',
+        'common/child_process.h',
+        'common/child_process_host.cc',
+        'common/child_process_host.h',
+        'common/child_process_info.cc',
+        'common/child_process_info.h',
+        'common/child_process_logging.h',
+        'common/child_process_logging_linux.cc',
+        'common/child_process_logging_mac.mm',
+        'common/child_process_logging_win.cc',
+        'common/child_thread.cc',
+        'common/child_thread.h',
+        'common/chrome_counters.cc',
+        'common/chrome_counters.h',
+        'common/chrome_descriptors.h',
+        'common/chrome_plugin_api.h',
+        'common/chrome_plugin_lib.cc',
+        'common/chrome_plugin_lib.h',
+        'common/chrome_plugin_util.cc',
+        'common/chrome_plugin_util.h',
+        'common/command_buffer_messages.h',
+        'common/command_buffer_messages_internal.h',
+        'common/common_glue.cc',
+        'common/common_param_traits.cc',
+        'common/common_param_traits.h',
+        'common/css_colors.h',
+        'common/db_message_filter.cc',
+        'common/db_message_filter.h',
+        'common/debug_flags.cc',
+        'common/debug_flags.h',
+        'common/devtools_messages.h',
+        'common/devtools_messages_internal.h',
+        'common/dom_storage_type.h',
+        'common/filter_policy.h',
+        'common/gears_api.h',
+        'common/gtk_tree.cc',
+        'common/gtk_tree.h',
+        'common/gtk_util.cc',
+        'common/gtk_util.h',
+        'common/histogram_synchronizer.cc',
+        'common/histogram_synchronizer.h',
+        'common/important_file_writer.cc',
+        'common/important_file_writer.h',
+        'common/jstemplate_builder.cc',
+        'common/jstemplate_builder.h',
+        'common/libxml_utils.cc',
+        'common/libxml_utils.h',
+        'common/logging_chrome.cc',
+        'common/logging_chrome.h',
+        'common/main_function_params.h',
+        'common/message_router.cc',
+        'common/message_router.h',
+        'common/mru_cache.h',
+        'common/nacl_messages.h',
+        'common/nacl_messages_internal.h',
+        'common/navigation_gesture.h',
+        'common/navigation_types.h',
+        'common/native_web_keyboard_event.h',
+        'common/native_web_keyboard_event_linux.cc',
+        'common/native_web_keyboard_event_mac.mm',
+        'common/native_web_keyboard_event_win.cc',
+        'common/native_window_notification_source.h',
+        'common/notification_details.h',
+        'common/notification_observer.h',
+        'common/notification_registrar.cc',
+        'common/notification_registrar.h',
+        'common/notification_service.cc',
+        'common/notification_service.h',
+        'common/notification_source.h',
+        'common/notification_type.h',
+        'common/owned_widget_gtk.cc',
+        'common/owned_widget_gtk.h',
+        'common/page_transition_types.h',
+        'common/page_zoom.h',
+        'common/platform_util.h',
+        'common/platform_util_linux.cc',
+        'common/platform_util_mac.mm',
+        'common/platform_util_win.cc',
+        'common/plugin_carbon_interpose_constants_mac.h',
+        'common/plugin_carbon_interpose_constants_mac.cc',
+        'common/plugin_messages.h',
+        'common/plugin_messages_internal.h',
+        'common/pref_member.cc',
+        'common/pref_member.h',
+        'common/pref_service.cc',
+        'common/pref_service.h',
+        'common/process_watcher_mac.cc',
+        'common/process_watcher_posix.cc',
+        'common/process_watcher_win.cc',
+        'common/process_watcher.h',
+        'common/property_bag.cc',
+        'common/property_bag.h',
+        'common/ref_counted_util.h',
+        'common/render_messages.h',
+        'common/render_messages_internal.h',
+        'common/renderer_preferences.h',
+        'common/resource_dispatcher.cc',
+        'common/resource_dispatcher.h',
+        'common/result_codes.h',
+        'common/sandbox_init_wrapper.h',
+        'common/sandbox_init_wrapper_linux.cc',
+        'common/sandbox_init_wrapper_mac.cc',
+        'common/sandbox_init_wrapper_win.cc',
+        'common/sandbox_mac.h',
+        'common/sandbox_mac.mm',
+        'common/spellcheck_common.cc',
+        'common/spellcheck_common.h',
+        'common/security_filter_peer.cc',
+        'common/security_filter_peer.h',
+        'common/socket_stream_dispatcher.cc',
+        'common/socket_stream_dispatcher.h',
+        'common/sqlite_compiled_statement.cc',
+        'common/sqlite_compiled_statement.h',
+        'common/sqlite_utils.cc',
+        'common/sqlite_utils.h',
+        'common/task_queue.cc',
+        'common/task_queue.h',
+        'common/temp_scaffolding_stubs.cc',
+        'common/temp_scaffolding_stubs.h',
+        'common/thumbnail_score.cc',
+        'common/thumbnail_score.h',
+        'common/time_format.cc',
+        'common/time_format.h',
+        'common/transport_dib.h',
+        'common/transport_dib_linux.cc',
+        'common/transport_dib_mac.cc',
+        'common/transport_dib_win.cc',
+        'common/url_constants.cc',
+        'common/url_constants.h',
+        'common/utility_messages.h',
+        'common/utility_messages_internal.h',
+        'common/view_types.cc',
+        'common/view_types.h',
+        'common/visitedlink_common.cc',
+        'common/visitedlink_common.h',
+        'common/webkit_param_traits.h',
+        'common/webmessageportchannel_impl.cc',
+        'common/webmessageportchannel_impl.h',
+        'common/win_safe_util.cc',
+        'common/win_safe_util.h',
+        'common/worker_messages.h',
+        'common/worker_messages_internal.h',
+        'common/worker_thread_ticker.cc',
+        'common/worker_thread_ticker.h',
+        'common/x11_util.cc',
+        'common/x11_util.h',
+        'common/x11_util_internal.h',
+        'common/zip.cc',  # Requires zlib directly.
+        'common/zip.h',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
+      'export_dependent_settings': [
+        '../app/app.gyp:app_base',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
+          'export_dependent_settings': [
+            '../third_party/sqlite/sqlite.gyp:sqlite',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lX11',
+              '-lXrender',
+              '-lXext',
+            ],
+          },
+        },],
+        ['OS=="linux" and selinux==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:selinux',
+          ],
+        }],
+        ['OS=="mac"', {
+          'sources!': [
+            'common/process_watcher_posix.cc',
+          ],
+        }],
+        ['OS=="win"', {
+          'include_dirs': [
+            'third_party/wtl/include',
+          ],
+        }, { # else: OS != "win"
+          'sources!': [
+            'common/hi_res_timer_manager.cc',
+            'common/hi_res_timer_manager.h',
+            'common/temp_scaffolding_stubs.h',
+          ],
+        }],
+        ['OS=="win" or OS=="linux"', {
+          'sources!': [
+            'common/temp_scaffolding_stubs.cc',
+          ],
+        }],
+      ],
+    },
     {
       'target_name': 'debugger',
       'type': '<(library)',
@@ -468,6 +790,51 @@
       ],
     },
     {
+      'target_name': 'nacl',
+      'type': '<(library)',
+      'msvs_guid': '83E86DAF-5763-4711-AD34-5FDAE395560C',
+      'dependencies': [
+        'common',
+        'chrome_resources',
+        'chrome_strings',
+        '../third_party/npapi/npapi.gyp:npapi',
+        '../webkit/webkit.gyp:glue',
+        '../native_client/src/trusted/plugin/plugin.gyp:npGoogleNaClPluginChrome',
+        '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
+        '../native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
+        '../native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
+      ],
+      'include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+      ],
+      'defines': [
+        'NACL_BLOCK_SHIFT=5',
+        'NACL_BLOCK_SIZE=32',
+        '<@(nacl_defines)',
+      ],
+      'sources': [
+        # All .cc, .h, .m, and .mm files under nacl except for tests and
+        # mocks.
+        'nacl/sel_main.cc',
+        'nacl/nacl_main.cc',
+        'nacl/nacl_thread.cc',
+        'nacl/nacl_thread.h',
+      ],
+      # TODO(gregoryd): consider switching NaCl to use Chrome OS defines
+      'conditions': [
+        ['OS=="win"', {
+          'defines': [
+            '__STD_C',
+            '_CRT_SECURE_NO_DEPRECATE',
+            '_SCL_SECURE_NO_DEPRECATE',
+          ],
+          'include_dirs': [
+            'third_party/wtl/include',
+          ],
+        },],
+      ],
+    },
+    {
       'target_name': 'utility',
       'type': '<(library)',
       'msvs_guid': '4D2B38E6-65FF-4F97-B88A-E441DF54EBF7',
@@ -535,6 +902,462 @@
       ],
     },
     {
+      'target_name': 'chrome',
+      'type': 'executable',
+      'mac_bundle': 1,
+      'msvs_guid': '7B219FAA-E360-43C8-B341-804A94EEFFAC',
+      'sources': [
+        # All .cc, .h, .m, and .mm files under app except for tests.
+        'app/breakpad_win.cc',
+        'app/breakpad_win.h',
+        'app/chrome_exe_main.cc',
+        'app/chrome_exe_main.mm',
+        'app/chrome_exe_main_gtk.cc',
+        'app/chrome_exe_resource.h',
+        'app/client_util.cc',
+        'app/client_util.h',
+        'app/hard_error_handler_win.cc',
+        'app/hard_error_handler_win.h',
+        'app/scoped_ole_initializer.h',
+      ],
+      'mac_bundle_resources': [
+        'app/app-Info.plist',
+      ],
+      # TODO(mark): Come up with a fancier way to do this.  It should only
+      # be necessary to list app-Info.plist once, not the three times it is
+      # listed here.
+      'mac_bundle_resources!': [
+        'app/app-Info.plist',
+      ],
+      'xcode_settings': {
+        'INFOPLIST_FILE': 'app/app-Info.plist',
+      },
+      'conditions': [
+        ['chrome_frame_define==1 and OS=="win"', {
+          'dependencies': [
+            '../chrome_frame/chrome_frame.gyp:npchrome_tab',
+          ],
+        }],
+        ['OS=="linux" or OS=="freebsd"', {
+          'actions': [
+            {
+              'action_name': 'manpage',
+              'conditions': [
+                [ 'branding == "Chrome"', {
+                  'variables': {
+                    'name': 'Google Chrome',
+                    'filename': 'google-chrome',
+                    'confdir': 'google-chrome',
+                  },
+                }, { # else branding!="Chrome"
+                  'variables': {
+                    'name': 'Chromium',
+                    'filename': 'chromium-browser',
+                    'confdir': 'chromium',
+                  },
+                }],
+              ],
+              'inputs': [
+                'tools/build/linux/sed.sh',
+                'app/resources/manpage.1.in',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/chrome.1',
+              ],
+              'action': [
+                'tools/build/linux/sed.sh',
+                'app/resources/manpage.1.in',
+                '<@(_outputs)',
+                '-e', 's/@@NAME@@/<(name)/',
+                '-e', 's/@@FILENAME@@/<(filename)/',
+                '-e', 's/@@CONFDIR@@/<(confdir)/',
+              ],
+              'message': 'Generating manpage'
+            },
+          ],
+          'conditions': [
+            [ 'linux_use_tcmalloc==1', {
+                'dependencies': [
+                  '<(allocator_target)',
+                ],
+              },
+            ],
+          ],
+          'dependencies': [
+            # On Linux, link the dependencies (libraries) that make up actual
+            # Chromium functionality directly into the executable.
+            '<@(chromium_dependencies)',
+            # Needed for chrome_dll_main.cc #include of gtk/gtk.h
+            '../build/linux/system.gyp:gtk',
+            'packed_resources',
+          ],
+          'sources': [
+            'app/chrome_dll_main.cc',
+            'app/chrome_dll_resource.h',
+          ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)',
+              'files': ['tools/build/linux/chrome-wrapper',
+                        '../third_party/xdg-utils/scripts/xdg-settings',
+                        ],
+              # The wrapper script above may need to generate a .desktop file,
+              # which requires an icon. So, copy one next to the script.
+              'conditions': [
+                ['branding=="Chrome"', {
+                  'files': ['app/theme/google_chrome/product_logo_48.png']
+                }, { # else: 'branding!="Chrome"
+                  'files': ['app/theme/chromium/product_logo_48.png']
+                }],
+              ],
+            },
+          ],
+        }],
+        ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
+          'dependencies': [
+            '../views/views.gyp:views',
+          ],
+        }],
+        ['OS=="mac"', {
+          'variables': {
+            'mac_packaging_dir':
+                '<(PRODUCT_DIR)/<(mac_product_name) Packaging',
+            # <(PRODUCT_DIR) expands to $(BUILT_PRODUCTS_DIR), which doesn't
+            # work properly in a shell script, where ${BUILT_PRODUCTS_DIR} is
+            # needed.
+            'mac_packaging_sh_dir':
+                '${BUILT_PRODUCTS_DIR}/<(mac_product_name) Packaging',
+          },
+          # 'branding' is a variable defined in common.gypi
+          # (e.g. "Chromium", "Chrome")
+          'conditions': [
+            ['branding=="Chrome"', {
+              'mac_bundle_resources': [
+                'app/theme/google_chrome/app.icns',
+                'app/theme/google_chrome/document.icns',
+              ],
+            }, {  # else: 'branding!="Chrome"
+              'mac_bundle_resources': [
+                'app/theme/chromium/app.icns',
+                'app/theme/chromium/document.icns',
+              ],
+            }],
+            ['mac_breakpad==1', {
+              'variables': {
+                # A real .dSYM is needed for dump_syms to operate on.
+                'mac_real_dsym': 1,
+              },
+              'dependencies': [
+                '../breakpad/breakpad.gyp:dump_syms',
+                '../breakpad/breakpad.gyp:symupload',
+              ],
+              # The "Dump Symbols" post-build step is in a target_conditions
+              # block so that it will follow the "Strip If Needed" step if that
+              # is also being used.  There is no standard configuration where
+              # both of these steps occur together, but Mark likes to use this
+              # configuraiton sometimes when testing Breakpad-enabled builds
+              # without the time overhead of creating real .dSYM files.  When
+              # both "Dump Symbols" and "Strip If Needed" are present, "Dump
+              # Symbols" must come second because "Strip If Needed" creates
+              # a fake .dSYM that dump_syms needs to fake dump.  Since
+              # "Strip If Needed" is added in a target_conditions block in
+              # common.gypi, "Dump Symbols" needs to be in an (always true)
+              # target_conditions block.
+              'target_conditions': [
+                ['1 == 1', {
+                  'postbuilds': [
+                    {
+                      'postbuild_name': 'Dump Symbols',
+                      'variables': {
+                        'dump_product_syms_path':
+                            'tools/build/mac/dump_product_syms',
+                      },
+                      'action': ['<(dump_product_syms_path)',
+                                 '<(branding)'],
+                    },
+                  ],
+                }],
+              ],
+            }],  # mac_breakpad
+            ['mac_keystone==1', {
+              'copies': [
+                {
+                  # Put keystone_install.sh where the packaging system will
+                  # find it.  The packager will copy this script to the
+                  # correct location on the disk image.
+                  'destination': '<(mac_packaging_dir)',
+                  'files': [
+                    'tools/build/mac/keystone_install.sh',
+                  ],
+                },
+              ],
+            }],  # mac_keystone
+            ['buildtype=="Official"', {
+              'actions': [
+                {
+                  # Create sign.sh, the script that the packaging system will
+                  # use to sign the .app bundle.
+                  'action_name': 'Make sign.sh',
+                  'variables': {
+                    'make_sign_sh_path': 'tools/build/mac/make_sign_sh',
+                    'sign_sh_in_path': 'tools/build/mac/sign.sh.in',
+                    'app_resource_rules_in_path':
+                        'tools/build/mac/app_resource_rules.plist.in',
+                  },
+                  'inputs': [
+                    '<(make_sign_sh_path)',
+                    '<(sign_sh_in_path)',
+                    '<(app_resource_rules_in_path)',
+                    '<(version_path)',
+                  ],
+                  'outputs': [
+                    '<(mac_packaging_dir)/sign.sh',
+                    '<(mac_packaging_dir)/app_resource_rules.plist',
+                  ],
+                  'action': [
+                    '<(make_sign_sh_path)',
+                    '<(mac_packaging_sh_dir)',
+                    '<(mac_product_name)',
+                    '<(version_full)',
+                  ],
+                },
+              ],
+            }],  # buildtype=="Official"
+          ],
+          'product_name': '<(mac_product_name)',
+          'xcode_settings': {
+            # chrome/app/app-Info.plist has:
+            #   CFBundleIdentifier of CHROMIUM_BUNDLE_ID
+            #   CFBundleName of CHROMIUM_SHORT_NAME
+            #   CFBundleSignature of CHROMIUM_CREATOR
+            # Xcode then replaces these values with the branded values we set
+            # as settings on the target.
+            'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
+            'CHROMIUM_CREATOR': '<(mac_creator)',
+            'CHROMIUM_SHORT_NAME': '<(branding)',
+          },
+          'dependencies': [
+            'helper_app',
+            'infoplist_strings_tool',
+            # This library provides the real implementation for NaClSyscallSeg
+            '../native_client/src/trusted/service_runtime/arch/x86_32/service_runtime_x86_32.gyp:service_runtime_x86_32_chrome'
+          ],
+          'actions': [
+            {
+              # Generate the InfoPlist.strings file
+              'action_name': 'Generating InfoPlist.strings files',
+              'variables': {
+                'tool_path': '<(PRODUCT_DIR)/infoplist_strings_tool',
+                # Unique dir to write to so the [lang].lproj/InfoPlist.strings
+                # for the main app and the helper app don't name collide.
+                'output_path': '<(INTERMEDIATE_DIR)/app_infoplist_strings',
+              },
+              'conditions': [
+                [ 'branding == "Chrome"', {
+                  'variables': {
+                     'branding_name': 'google_chrome_strings',
+                  },
+                }, { # else branding!="Chrome"
+                  'variables': {
+                     'branding_name': 'chromium_strings',
+                  },
+                }],
+              ],
+              'inputs': [
+                '<(tool_path)',
+                '<(version_path)',
+                # TODO: remove this helper when we have loops in GYP
+                '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(branding_name)_ZZLOCALE.pak\' <(locales))',
+              ],
+              'outputs': [
+                # TODO: remove this helper when we have loops in GYP
+                '>!@(<(apply_locales_cmd) -d \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
+              ],
+              'action': [
+                '<(tool_path)',
+                '-b', '<(branding_name)',
+                '-v', '<(version_path)',
+                '-g', '<(grit_out_dir)',
+                '-o', '<(output_path)',
+                '-t', 'main',
+                '<@(locales)',
+              ],
+              'message': 'Generating the language InfoPlist.strings files',
+              'process_outputs_as_mac_bundle_resources': 1,
+            },
+          ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Versions/<(version_full)',
+              'files': [
+                '<(PRODUCT_DIR)/<(mac_product_name) Helper.app',
+              ],
+            },
+          ],
+          'postbuilds': [
+            {
+              'postbuild_name': 'Copy <(mac_product_name) Framework.framework',
+              'action': [
+                'tools/build/mac/copy_framework_unversioned',
+                '${BUILT_PRODUCTS_DIR}/<(mac_product_name) Framework.framework',
+                '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Versions/<(version_full)',
+              ],
+            },
+            {
+              # Modify the Info.plist as needed.  The script explains why this
+              # is needed.  This is also done in the helper_app and chrome_dll
+              # targets.  Use -b0 and -k0 to not include any Breakpad or
+              # Keystone information; that all goes into the framework's
+              # Info.plist.  Use -s1 to include Subversion information.
+              'postbuild_name': 'Tweak Info.plist',
+              'action': ['<(tweak_info_plist_path)',
+                         '-b0',
+                         '-k0',
+                         '-s1',
+                         '<(branding)',
+                         '<(mac_bundle_id)'],
+            },
+            {
+              'postbuild_name': 'Clean up old versions',
+              'action': [
+                'tools/build/mac/clean_up_old_versions',
+                '<(version_full)'
+              ],
+            },
+          ],  # postbuilds
+        }, { # else: OS != "mac"
+          'conditions': [
+            ['branding=="Chrome"', {
+              'product_name': 'chrome'
+            }, {  # else: Branding!="Chrome"
+              # TODO:  change to:
+              #   'product_name': 'chromium'
+              # whenever we convert the rest of the infrastructure
+              # (buildbots etc.) to use "gyp -Dbranding=Chrome".
+              # NOTE: chrome/app/theme/chromium/BRANDING and
+              # chrome/app/theme/google_chrome/BRANDING have the short names,
+              # etc.; should we try to extract from there instead?
+              'product_name': 'chrome'
+            }],
+          ],
+        }],
+        ['OS=="linux"', {
+          'conditions': [
+            ['branding=="Chrome"', {
+              'dependencies': [
+                'installer/installer.gyp:linux_installer_configs',
+              ],
+            }],
+            ['selinux==0', {
+              'dependencies': [
+                '../sandbox/sandbox.gyp:sandbox',
+              ],
+            }],
+            ['linux_sandbox_path != ""', {
+              'defines': [
+                'LINUX_SANDBOX_PATH="<(linux_sandbox_path)"',
+              ],
+            }],
+          ],
+        }],
+        ['OS=="mac" or OS=="win"', {
+          'dependencies': [
+            # On Windows and Mac, make sure we've built chrome_dll, which
+            # contains all of the library code with Chromium functionality.
+            'chrome_dll',
+          ],
+        }],
+        ['OS=="win"', {
+          'dependencies': [
+            'installer/installer.gyp:installer_util',
+            'installer/installer.gyp:installer_util_strings',
+            '../breakpad/breakpad.gyp:breakpad_handler',
+            '../breakpad/breakpad.gyp:breakpad_sender',
+            '../sandbox/sandbox.gyp:sandbox',
+            'app/locales/locales.gyp:*',
+          ],
+          'sources': [
+            'app/chrome_exe.rc',
+            'app/chrome_exe_version.rc.version',
+          ],
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome',
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': [
+                'dbghelp.dll',
+                'dwmapi.dll',
+                'uxtheme.dll',
+                'ole32.dll',
+                'oleaut32.dll',
+              ],
+              'ImportLibrary': '$(OutDir)\\lib\\chrome_exe.lib',
+              'ProgramDatabaseFile': '$(OutDir)\\chrome_exe.pdb',
+              # Set /SUBSYSTEM:WINDOWS for chrome.exe itself.
+              'SubSystem': '2',
+            },
+            'VCManifestTool': {
+              'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.exe.manifest',
+            },
+          },
+          'actions': [
+            {
+              'action_name': 'version',
+              'variables': {
+                'template_input_path': 'app/chrome_exe_version.rc.version',
+              },
+              'conditions': [
+                [ 'branding == "Chrome"', {
+                  'variables': {
+                     'branding_path': 'app/theme/google_chrome/BRANDING',
+                  },
+                }, { # else branding!="Chrome"
+                  'variables': {
+                     'branding_path': 'app/theme/chromium/BRANDING',
+                  },
+                }],
+              ],
+              'inputs': [
+                '<(template_input_path)',
+                '<(version_path)',
+                '<(branding_path)',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_exe_version.rc',
+              ],
+              'action': [
+                'python',
+                '<(version_py_path)',
+                '-f', '<(version_path)',
+                '-f', '<(branding_path)',
+                '<(template_input_path)',
+                '<@(_outputs)',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Generating version information in <(_outputs)'
+            },
+            {
+              'action_name': 'first_run',
+              'inputs': [
+                  'app/FirstRun',
+              ],
+              'outputs': [
+                  '<(PRODUCT_DIR)/First Run',
+              ],
+              'action': ['cp', '-f', '<@(_inputs)', '<@(_outputs)'],
+              'message': 'Copy first run complete sentinel file',
+            },
+          ],
+        }, {  # 'OS!="win"
+          'sources!': [
+            'app/chrome_exe_main.cc',
+            'app/client_util.cc',
+          ]
+        }],
+      ],
+    },
+    {
       # Provides a syncapi dynamic library target from checked-in binaries,
       # or from compiling a stub implementation.
       'target_name': 'syncapi',
@@ -553,6 +1376,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../net/net.gyp:net_base',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/sqlite/sqlite.gyp:sqlite',
@@ -844,6 +1668,437 @@
     },
   ],
   'conditions': [
+    ['OS=="mac" or OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'chrome_dll',
+          'type': 'shared_library',
+          'dependencies': [
+            '<@(chromium_dependencies)',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'product_name': 'chrome',
+              'msvs_guid': 'C0A7EE2C-2A6D-45BE-BA78-6D006FDF52D9',
+              'include_dirs': [
+                'third_party/wtl/include',
+              ],
+              'dependencies': [
+                # On Windows, link the dependencies (libraries) that make
+                # up actual Chromium functionality into this .dll.
+                'chrome_dll_version',
+                'chrome_resources',
+                'installer/installer.gyp:installer_util_strings',
+                'worker',
+                '../printing/printing.gyp:printing',
+                '../net/net.gyp:net_resources',
+                '../build/util/support/support.gyp:*',
+                '../third_party/cld/cld.gyp:cld',
+                '../views/views.gyp:views',
+                '../webkit/webkit.gyp:webkit_resources',
+                '../gears/gears.gyp:gears',
+              ],
+              'defines': [
+                'CHROME_DLL',
+                'BROWSER_DLL',
+                'RENDERER_DLL',
+                'PLUGIN_DLL',
+              ],
+              'sources': [
+                'app/chrome_dll.rc',
+                'app/chrome_dll_main.cc',
+                'app/chrome_dll_resource.h',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+
+                '../webkit/glue/resources/aliasb.cur',
+                '../webkit/glue/resources/cell.cur',
+                '../webkit/glue/resources/col_resize.cur',
+                '../webkit/glue/resources/copy.cur',
+                '../webkit/glue/resources/row_resize.cur',
+                '../webkit/glue/resources/vertical_text.cur',
+                '../webkit/glue/resources/zoom_in.cur',
+                '../webkit/glue/resources/zoom_out.cur',
+
+                # TODO:  It would be nice to have these pulled in
+                # automatically from direct_dependent_settings in
+                # their various targets (net.gyp:net_resources, etc.),
+                # but that causes errors in other targets when
+                # resulting .res files get referenced multiple times.
+                '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
+
+                # TODO(sgk):  left-over from pre-gyp build, figure out
+                # if we still need them and/or how to update to gyp.
+                #'app/check_dependents.bat',
+                #'app/chrome.dll.deps',
+              ],
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'BaseAddress': '0x01c30000',
+                  'DelayLoadDLLs': [
+                    'crypt32.dll',
+                    'cryptui.dll',
+                    'winhttp.dll',
+                    'wininet.dll',
+                    'wsock32.dll',
+                    'ws2_32.dll',
+                    'winspool.drv',
+                    'comdlg32.dll',
+                    'imagehlp.dll',
+                    'urlmon.dll',
+                    'imm32.dll',
+                    'iphlpapi.dll',
+                  ],
+                  'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
+                  'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
+                  # Set /SUBSYSTEM:WINDOWS for chrome.dll (for consistency).
+                  'SubSystem': '2',
+                },
+                'VCManifestTool': {
+                  'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.dll.manifest',
+                },
+              },
+              'configurations': {
+                'Debug': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                    },
+                  },
+                },
+              },
+            }],  # OS=="win"
+            ['OS=="mac"', {
+              # The main browser executable's name is <(mac_product_name).
+              # Certain things will get confused if two modules in the
+              # executable share the same name, so append " Framework" to the
+              # product_name used for the framework.  This will result in
+              # a name like "Chromium Framework.framework".
+              'product_name': '<(mac_product_name) Framework',
+              'mac_bundle': 1,
+              'xcode_settings': {
+                'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
+
+                # The dylib versions are of the form a[.b[.c]], where a is a
+                # 16-bit unsigned integer, and b and c are 8-bit unsigned
+                # integers.  Any missing component is taken to be 0.  The
+                # best mapping from product version numbers into this scheme
+                # is to just use the build and patch numbers.  There is no
+                # ambiguity in this scheme because the build number is
+                # guaranteed unique even across distinct major and minor
+                # version numbers.  These settings correspond to
+                # -compatibility_version and -current_version.
+                'DYLIB_COMPATIBILITY_VERSION': '<(version_build_patch)',
+                'DYLIB_CURRENT_VERSION': '<(version_build_patch)',
+
+                # The framework is placed within the .app's versioned
+                # directory.  DYLIB_INSTALL_NAME_BASE and
+                # LD_DYLIB_INSTALL_NAME affect -install_name.
+                'DYLIB_INSTALL_NAME_BASE':
+                    '@executable_path/../Versions/<(version_full)',
+                # See tools/build/mac/copy_framework_unversioned for
+                # information on LD_DYLIB_INSTALL_NAME.
+                'LD_DYLIB_INSTALL_NAME':
+                    '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(WRAPPER_NAME)/$(PRODUCT_NAME)',
+
+                'INFOPLIST_FILE': 'app/framework-Info.plist',
+
+                # Define the order of symbols within the framework.  This
+                # sets -order_file.
+                'ORDER_FILE': 'app/framework.order',
+              },
+              'sources': [
+                'app/chrome_dll_main.cc',
+                'app/chrome_dll_resource.h',
+                'app/chrome_exe_main.mm',
+              ],
+              # TODO(mark): Come up with a fancier way to do this.  It should
+              # only be necessary to list framework-Info.plist once, not the
+              # three times it is listed here.
+              'mac_bundle_resources': [
+                'app/framework-Info.plist',
+                'app/nibs/About.xib',
+                'app/nibs/AboutIPC.xib',
+                'app/nibs/BookmarkAllTabs.xib',
+                'app/nibs/BookmarkBar.xib',
+                'app/nibs/BookmarkBubble.xib',
+                'app/nibs/BookmarkEditor.xib',
+                'app/nibs/BookmarkNameFolder.xib',
+                'app/nibs/BrowserWindow.xib',
+                'app/nibs/ClearBrowsingData.xib',
+                'app/nibs/DownloadItem.xib',
+                'app/nibs/DownloadShelf.xib',
+                'app/nibs/EditSearchEngine.xib',
+                'app/nibs/ExtensionShelf.xib',
+                'app/nibs/FindBar.xib',
+                'app/nibs/FirstRunDialog.xib',
+                'app/nibs/FontLanguageSettings.xib',
+                'app/nibs/HungRendererDialog.xib',
+                'app/nibs/HttpAuthLoginSheet.xib',
+                'app/nibs/ImportSettingsDialog.xib',
+                'app/nibs/InfoBar.xib',
+                'app/nibs/InfoBarContainer.xib',
+                'app/nibs/ImportProgressDialog.xib',
+                'app/nibs/KeywordEditor.xib',
+                'app/nibs/MainMenu.xib',
+                'app/nibs/PageInfo.xib',
+                'app/nibs/Preferences.xib',
+                'app/nibs/ReportBug.xib',
+                'app/nibs/SaveAccessoryView.xib',
+                'app/nibs/SadTab.xib',
+                'app/nibs/TabContents.xib',
+                'app/nibs/TabView.xib',
+                'app/nibs/TaskManager.xib',
+                'app/nibs/Toolbar.xib',
+                'app/theme/back_Template.pdf',
+                'app/theme/chevron.png',  # TODO(jrg): get and use a pdf version
+                'app/theme/close_bar.pdf',
+                'app/theme/close_bar_h.pdf',
+                'app/theme/close_bar_p.pdf',
+                'app/theme/find_next_Template.pdf',
+                'app/theme/find_prev_Template.pdf',
+                'app/theme/forward_Template.pdf',
+                'app/theme/go_Template.pdf',
+                'app/theme/home_Template.pdf',
+                'app/theme/menu_chrome_rtl_Template.pdf',
+                'app/theme/menu_chrome_Template.pdf',
+                'app/theme/menu_page_rtl_Template.pdf',
+                'app/theme/menu_page_Template.pdf',
+                'app/theme/nav.pdf',
+                'app/theme/newtab.pdf',
+                'app/theme/newtab_h.pdf',
+                'app/theme/newtab_p.pdf',
+                'app/theme/otr_icon.pdf',
+                'app/theme/reload_Template.pdf',
+                'app/theme/star_Template.pdf',
+                'app/theme/starred.pdf',
+                'app/theme/stop_Template.pdf',
+              ],
+              'mac_bundle_resources!': [
+                'app/framework-Info.plist',
+              ],
+              'dependencies': [
+                # Bring in pdfsqueeze and run it on all pdfs
+                '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
+                '../build/util/support/support.gyp:*',
+              ],
+              'rules': [
+                {
+                  'rule_name': 'pdfsqueeze',
+                  'extension': 'pdf',
+                  'inputs': [
+                    '<(PRODUCT_DIR)/pdfsqueeze',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/pdfsqueeze/<(RULE_INPUT_ROOT).pdf',
+                  ],
+                  'action': ['<(PRODUCT_DIR)/pdfsqueeze',
+                             '<(RULE_INPUT_PATH)', '<@(_outputs)'],
+                  'message': 'Running pdfsqueeze on <(RULE_INPUT_PATH)',
+                },
+              ],
+              'variables': {
+                'repack_path': '../tools/data_pack/repack.py',
+              },
+              'actions': [
+                # TODO(mark): These actions are duplicated for Linux and
+                # FreeBSD in the chrome target.  Can they be unified?
+                {
+                  'action_name': 'repack_chrome',
+                  'variables': {
+                    'pak_inputs': [
+                      '<(grit_out_dir)/browser_resources.pak',
+                      '<(grit_out_dir)/common_resources.pak',
+                      '<(grit_out_dir)/renderer_resources.pak',
+                      '<(grit_out_dir)/theme_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
+                    ],
+                  },
+                  'inputs': [
+                    '<(repack_path)',
+                    '<@(pak_inputs)',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/repack/chrome.pak',
+                  ],
+                  'action': ['python', '<(repack_path)', '<@(_outputs)',
+                             '<@(pak_inputs)'],
+                  'process_outputs_as_mac_bundle_resources': 1,
+                },
+                {
+                  'action_name': 'repack_locales',
+                  'process_outputs_as_mac_bundle_resources': 1,
+                  'variables': {
+                    'conditions': [
+                      ['branding=="Chrome"', {
+                        'branding_flag': ['-b', 'google_chrome',],
+                      }, {  # else: branding!="Chrome"
+                        'branding_flag': ['-b', 'chromium',],
+                      }],
+                    ],
+                  },
+                  'inputs': [
+                    'tools/build/repack_locales.py',
+                    # NOTE: Ideally the common command args would be shared
+                    # amongst inputs/outputs/action, but the args include shell
+                    # variables which need to be passed intact, and command
+                    # expansion wants to expand the shell variables. Adding the
+                    # explicit quoting here was the only way it seemed to work.
+                    '>!@(<(repack_locales_cmd) -i <(branding_flag) -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+                  ],
+                  'outputs': [
+                    '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+                  ],
+                  'action': [
+                    '<@(repack_locales_cmd)',
+                    '<@(branding_flag)',
+                    '-g', '<(grit_out_dir)',
+                    '-s', '<(SHARED_INTERMEDIATE_DIR)',
+                    '-x', '<(INTERMEDIATE_DIR)',
+                    '<@(locales)',
+                  ],
+                },
+              ],
+              'postbuilds': [
+                {
+                  # This step causes an error to be raised if the .order file
+                  # does not account for all global text symbols.  It
+                  # validates the completeness of the .order file.
+                  'postbuild_name': 'Verify global text symbol order',
+                  'variables': {
+                    'verify_order_path': 'tools/build/mac/verify_order',
+                  },
+                  'action': [
+                    '<(verify_order_path)',
+                    '_ChromeMain',
+                    '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}',
+                  ],
+                },
+                {
+                  # Modify the Info.plist as needed.  The script explains why
+                  # this is needed.  This is also done in the chrome target.
+                  # The framework needs the Breakpad and Keystone keys if
+                  # those features are enabled.  It doesn't currently use the
+                  # Subversion keys for anything, but this seems like a really
+                  # good place to store them.
+                  'postbuild_name': 'Tweak Info.plist',
+                  'action': ['<(tweak_info_plist_path)',
+                             '-b<(mac_breakpad)',
+                             '-k<(mac_keystone)',
+                             '-s1',
+                             '<(branding)',
+                             '<(mac_bundle_id)'],
+                },
+                {
+                  'postbuild_name': 'Symlink Libraries',
+                  'action': [
+                    'ln',
+                    '-fhs',
+                    'Versions/Current/Libraries',
+                    '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Libraries'
+                  ],
+                },
+              ],
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
+                  'files': [
+                    '<(PRODUCT_DIR)/resources/inspector/'
+                  ],
+                  'conditions': [
+                    ['mac_breakpad==1', {
+                      'files': [
+                        '<(PRODUCT_DIR)/crash_inspector',
+                        '<(PRODUCT_DIR)/crash_report_sender.app'
+                      ],
+                    }],
+                  ],
+                },
+                {
+                  'destination':
+                      '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
+                  'files': [
+                    # TODO(ajwong): Find a way to share this path with
+                    # ffmpeg.gyp so they don't diverge. (BUG=23602)
+                    '<(PRODUCT_DIR)/libffmpegsumo.dylib',
+                  ],
+                },
+              ],
+              'conditions': [
+                ['mac_breakpad==1', {
+                  'variables': {
+                    # A real .dSYM is needed for dump_syms to operate on.
+                    'mac_real_dsym': 1,
+                  },
+                  'sources': [
+                    'app/breakpad_mac.mm',
+                    'app/breakpad_mac.h',
+                  ],
+                  'dependencies': [
+                    '../breakpad/breakpad.gyp:breakpad',
+                  ],
+                }, {  # else: mac_breakpad!=1
+                  # No Breakpad, put in the stubs.
+                  'sources': [
+                    'app/breakpad_mac_stubs.mm',
+                    'app/breakpad_mac.h',
+                  ],
+                }],  # mac_breakpad
+                ['mac_keystone==1', {
+                  'variables': {
+                    'conditions': [
+                      ['branding=="Chrome"', {
+                        'theme_dir_name': 'google_chrome',
+                      }, {  # else: 'branding!="Chrome"
+                        'theme_dir_name': 'chromium',
+                      }],
+                    ],
+                  },
+                  'mac_bundle_resources': [
+                    # This image is used to badge the lock icon in the
+                    # promotion authentication dialog.  It needs to exist as
+                    # a file on disk and not just something in a resource
+                    # bundle because that's the interface that Authorization
+                    # Services uses.  Also, Authorization Services can't deal
+                    # with .icns files.
+                    'app/theme/<(theme_dir_name)/product_logo_32.png',
+
+                    'browser/cocoa/keystone_promote_preflight.sh',
+                    'browser/cocoa/keystone_promote_postflight.sh',
+                  ],
+                  'postbuilds': [
+                    {
+                      'postbuild_name': 'Copy KeystoneRegistration.framework',
+                      'action': [
+                        'tools/build/mac/copy_framework_unversioned',
+                        '../third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework',
+                        '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Frameworks',
+                      ],
+                    },
+                    {
+                      'postbuild_name': 'Symlink Frameworks',
+                      'action': [
+                        'ln',
+                        '-fhs',
+                        'Versions/Current/Frameworks',
+                        '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Frameworks'
+                      ],
+                    },
+                  ],
+                }],  # mac_keystone
+              ],  # conditions
+            }],  # OS=="mac"
+          ],  # conditions
+        },  # target chrome_dll
+      ],  # targets
+    }],  # OS=="mac" or OS=="win"
     ['OS=="mac"',
       { 'targets': [
         {
@@ -1166,6 +2421,10 @@
         }
       ],
     },],  # OS=="linux"
+    ['OS!="win"',
+      { 'targets': [
+      ],  # targets
+    }],  # OS!="win"
     ['OS=="win"',
       { 'targets': [
         {

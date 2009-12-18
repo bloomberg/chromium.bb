@@ -8,10 +8,6 @@
 #include <crt_externs.h>
 #endif
 
-#ifdef _WIN64  /* TODO(gregoryd): remove this when win64 issues are fixed */
-#define NACL_NO_INLINE
-#endif
-
 EXTERN_C_BEGIN
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -54,10 +50,6 @@ static void StopForDebuggerInit(const struct NaClApp *state) {
 }
 
 int SelMain(const int desc, const NaClHandle handle) {
-#ifdef _WIN64
-  /* TODO(gregoryd): remove this when NaCl's service_runtime supports Win64 */
-  return 0;
-#else
   char *av[1];
   int ac = 1;
 
@@ -204,6 +196,5 @@ int SelMain(const int desc, const NaClHandle handle) {
   NaClAllModulesFini();
 
   return ret_code;
-#endif
 }
 
