@@ -405,48 +405,6 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
            fraction:1.0];
 }
 
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  [NSGraphicsContext saveGraphicsState];
-
-  GTMTheme* theme = [controlView gtm_theme];
-
-  NSRect drawFrame = NSInsetRect(cellFrame, 0.5, 1.5);
-  // TODO(viettrungluu): It's hard to do pixel-perfect drawing in Cocoa 'cause
-  // rounding kills you (obviously, the constants below should be 0.5, but then
-  // it doesn't draw correctly).
-  NSRect innerFrame = NSInsetRect(drawFrame, 0.5001, 0.5001);
-  NSBezierPath* innerPath = [NSBezierPath bezierPathWithRect:drawFrame];
-
-  // Paint button background image if there is one (otherwise the border won't
-  // look right).
-  NSImage* backgroundImage =
-      [theme backgroundImageForStyle:GTMThemeStyleToolBarButton state:YES];
-  if (backgroundImage) {
-    NSColor* patternColor = [NSColor colorWithPatternImage:backgroundImage];
-    [patternColor set];
-    // Set the phase to match window.
-    NSRect trueRect = [controlView convertRectToBase:cellFrame];
-    [[NSGraphicsContext currentContext]
-        setPatternPhase:NSMakePoint(NSMinX(trueRect), NSMaxY(trueRect))];
-    [innerPath fill];
-  }
-
-  // Draw the outer stroke (over the background).
-  [[theme strokeColorForStyle:GTMThemeStyleToolBarButton state:YES] setStroke];
-  [innerPath setLineWidth:1];
-  [innerPath stroke];
-
-  // Fill the inside if we're told to.
-  if ([self drawsBackground]) {
-    [[self backgroundColor] setFill];
-    [NSBezierPath fillRect:innerFrame];
-  }
-
-  [NSGraphicsContext restoreGraphicsState];
-
-  [self drawInteriorWithFrame:cellFrame inView:controlView];
-}
-
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   if (hintString_) {
     [self drawHintWithFrame:cellFrame inView:controlView];
