@@ -632,11 +632,9 @@
                  # plugin_npobject_lifetime_test.cc has win32-isms
                 #   (HWND, CALLBACK).
                 '../../glue/plugins/test/plugin_npobject_lifetime_test.cc',
-                 # The windowed/windowless APIs are necessarily
-                # platform-specific.
+                 # The window APIs are necessarily platform-specific.
                 '../../glue/plugins/test/plugin_window_size_test.cc',
                 '../../glue/plugins/test/plugin_windowed_test.cc',
-                '../../glue/plugins/test/plugin_windowless_test.cc',
                  # Seems windows specific.
                 '../../glue/plugins/test/plugin_create_instance_in_paint.cc',
                 '../../glue/plugins/test/plugin_create_instance_in_paint.h',
@@ -652,6 +650,12 @@
                   '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
                 ],
               },
+            }],
+            ['OS=="linux"', {
+              'sources!': [
+                # Needs simple event record type porting
+                '../../glue/plugins/test/plugin_windowless_test.cc',
+              ],
             }],
             ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
               # Shared libraries need -fPIC on x86-64

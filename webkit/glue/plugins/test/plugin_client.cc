@@ -124,7 +124,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
   } else if (test_name == "npobject_proxy") {
     new_test = new NPAPIClient::NPObjectProxyTest(instance,
       NPAPIClient::PluginClient::HostFunctions());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // TODO(port): plugin_windowless_test.*.
   } else if (test_name == "execute_script_delete_in_paint" ||
              test_name == "execute_script_delete_in_mouse_move" ||

@@ -6,6 +6,10 @@
 #include "webkit/glue/plugins/test/plugin_windowless_test.h"
 #include "webkit/glue/plugins/test/plugin_client.h"
 
+#if defined(OS_MACOSX)
+#include <Carbon/Carbon.h>
+#endif
+
 namespace NPAPIClient {
 
 // Remember the first plugin instance for tests involving multiple instances
@@ -17,6 +21,30 @@ WindowlessPluginTest::WindowlessPluginTest(
     test_name_(test_name) {
   if (!g_other_instance)
     g_other_instance = this;
+}
+
+static bool IsPaintEvent(NPEvent* np_event) {
+#if defined(OS_WIN)
+  return WM_PAINT == np_event->event;
+#elif defined(OS_MACOSX)
+  return np_event->what == updateEvt;
+#endif
+}
+
+static bool IsMouseMoveEvent(NPEvent* np_event) {
+#if defined(OS_WIN)
+  return WM_MOUSEMOVE == np_event->event;
+#elif defined(OS_MACOSX)
+  return np_event->what == nullEvent;
+#endif
+}
+
+static bool IsMouseUpEvent(NPEvent* np_event) {
+#if defined(OS_WIN)
+  return WM_LBUTTONUP == np_event->event;
+#elif defined(OS_MACOSX)
+  return np_event->what == mouseUp;
+#endif
 }
 
 int16 WindowlessPluginTest::HandleEvent(void* event) {
@@ -33,7 +61,8 @@ int16 WindowlessPluginTest::HandleEvent(void* event) {
   }
 
   NPEvent* np_event = reinterpret_cast<NPEvent*>(event);
-  if (WM_PAINT == np_event->event) {
+  if (IsPaintEvent(np_event)) {
+#if defined(OS_WIN)
     HDC paint_dc = reinterpret_cast<HDC>(np_event->wParam);
     if (paint_dc == NULL) {
       SetError("Invalid Window DC passed to HandleEvent for WM_PAINT");
@@ -50,6 +79,7 @@ int16 WindowlessPluginTest::HandleEvent(void* event) {
     }
 
     DeleteObject(clipping_region);
+#endif
 
     if (test_name_ == "execute_script_delete_in_paint") {
       ExecuteScriptDeleteInPaint(browser);
@@ -57,11 +87,11 @@ int16 WindowlessPluginTest::HandleEvent(void* event) {
       MultipleInstanceSyncCalls(browser);
     }
 
-  } else if (WM_MOUSEMOVE == np_event->event &&
+  } else if (IsMouseMoveEvent(np_event) &&
              test_name_ == "execute_script_delete_in_mouse_move") {
     ExecuteScript(browser, id(), "DeletePluginWithinScript();", NULL);
     SignalTestCompleted();
-  } else if (WM_LBUTTONUP == np_event->event &&
+  } else if (IsMouseUpEvent(np_event) &&
             test_name_ == "delete_frame_test") {
     ExecuteScript(
         browser, id(),
@@ -89,8 +119,8 @@ NPError WindowlessPluginTest::ExecuteScript(NPNetscapeFuncs* browser, NPP id,
 
 void WindowlessPluginTest::ExecuteScriptDeleteInPaint(
     NPNetscapeFuncs* browser) {
-  NPUTF8* urlString = "javascript:DeletePluginWithinScript()";
-  NPUTF8* targetString = NULL;
+  const NPUTF8* urlString = "javascript:DeletePluginWithinScript()";
+  const NPUTF8* targetString = NULL;
   browser->geturl(id(), urlString, targetString);
   SignalTestCompleted();
 }

@@ -163,7 +163,7 @@ TEST_F(NPAPITester, DISABLED_SelfDeletePluginInvokeAlert) {
                 kShortWaitTimeout);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous paint event works correctly
 TEST_F(NPAPIVisiblePluginTester,
@@ -323,7 +323,7 @@ TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // Test a browser hang due to special case of multiple
 // plugin instances indulged in sync calls across renderer.
 TEST_F(NPAPIVisiblePluginTester, MultipleInstancesSyncCalls) {

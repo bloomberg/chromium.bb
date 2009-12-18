@@ -62,3 +62,4 @@ NPAPITester.FLAKY_ManyPlugins
 NPAPITester.NPObjectProxy
 NPAPITester.ScheduleTimer
 NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
+NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
