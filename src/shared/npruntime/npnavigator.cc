@@ -81,6 +81,9 @@ NPNavigator::NPNavigator(uint32_t peer_pid,
       notify_data_(NULL),
       url_(NULL),
       upcall_channel_(NULL) {
+  DebugPrintf("NPNavigator(%u, %u)\n",
+              static_cast<unsigned>(peer_pid),
+              static_cast<unsigned>(peer_npvariant_size));
   set_peer_pid(peer_pid);
   set_peer_npvariant_size(peer_npvariant_size);
   navigator = this;

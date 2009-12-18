@@ -92,12 +92,6 @@ SrpcClient::~SrpcClient() {
     dprintf(("SrpcClient::~SrpcClient: no plugin\n"));
     return;
   }
-  // TODO(sehr): this needs to be revisited when we allow groups of instances
-  // in one NaCl module.
-  if (NULL != portable_plugin_->module()) {
-    delete portable_plugin_->module();
-    portable_plugin_->set_module(NULL);
-  }
   dprintf(("SrpcClient::~SrpcClient: destroying the channel\n"));
   // And delete the connection.
   NaClSrpcDtor(&srpc_channel_);

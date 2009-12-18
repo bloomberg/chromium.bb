@@ -61,7 +61,9 @@ NPObjectStub::NPObjectStub(NPP npp, NPObject* object)
 NPObjectStub::~NPObjectStub() {
   NPN_ReleaseObject(object_);
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
-  bridge->RemoveStub(this);
+  if (NULL != bridge) {
+    bridge->RemoveStub(this);
+  }
 }
 
 NPObjectStub* NPObjectStub::Lookup(NaClSrpcChannel* channel, RpcArg* arg) {

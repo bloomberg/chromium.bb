@@ -4,64 +4,67 @@
   <!-- Copyright 2008 Google Inc.  All rights reserved. -->
   <head>
     <title>NPAPI Plug-in Test</title>
-    <script type='application/x-javascript'>
-      <!--
+  </head>
+  <body onload="nacllib.waitForModulesAndRunTests();"
+          onunload="nacllib.cleanUp();" >
+<script type="text/javascript" src="nacl_js_lib.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
+                          document.getElementById("status"),
+                          5);
+
+
+nacllib.numModulesReady = function(modules) {
+  var count = 0;
+  for (var i = 0; i < modules.length; i++) {
+    try {
+      var foo = modules[i].fillRect();
+      count += 1;
+    } catch(e) {
+      // do nothing
+    }
+  }
+  return count;
+};
+
 var embed1 = null;
 var embed2 = null;
-var loadTimer = null;
 
-var PostInit = function() {
-  if ((embed1 == undefined) || (embed2 == undefined)) {
-    alert('Unable to load, try reloading page (or missing plugins?)');
-    return;
-  }
-  if ((embed1.bar == undefined) || (embed2.bar == undefined)) {
-    loadTimer = setTimeout(PostInit, 100);
-  } else {
-    // when embed1 & embed2 become available, enable control buttons
-    document.getElementById('button_embed1_alert').disabled = null;
-    document.getElementById('button_embed1_fillRect').disabled = null;
-    document.getElementById('button_embed1_setProxy').disabled = null;
-    document.getElementById('button_embed1_useProxy').disabled = null;
-    document.getElementById('button_embed2_alert').disabled = null;
-    document.getElementById('button_embed2_fillRect').disabled = null;
-    document.getElementById('button_embed2_setProxy').disabled = null;
-    document.getElementById('button_embed2_useProxy').disabled = null;
-
-    var canvas = document.getElementById("tutorial");
-    var context = canvas.getContext("2d");
-
-    context.fillStyle = "rgb(255, 255, 127)";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-
-    canvas = document.getElementById("tutorial2");
-    context = canvas.getContext("2d");
-
-    context.fillStyle = "rgb(127, 255, 255)";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-  }
-}
-
-function doOnLoad()
-{
+nacllib.test = function() {
+  // Enable control buttons
+  document.getElementById('button_embed1_alert').disabled = null;
+  document.getElementById('button_embed1_fillRect').disabled = null;
+  document.getElementById('button_embed1_setProxy').disabled = null;
+  document.getElementById('button_embed1_useProxy').disabled = null;
+  document.getElementById('button_embed2_alert').disabled = null;
+  document.getElementById('button_embed2_fillRect').disabled = null;
+  document.getElementById('button_embed2_setProxy').disabled = null;
+  document.getElementById('button_embed2_useProxy').disabled = null;
+  // Color the first canvas.
+  var canvas1 = document.getElementById("tutorial");
+  var context1 = canvas1.getContext("2d");
+  context1.fillStyle = "rgb(255, 255, 127)";
+  context1.fillRect(0, 0, canvas1.width, canvas1.height);
+  // Color the second canvas.
+  var canvas2 = document.getElementById("tutorial2");
+  var context2 = canvas2.getContext("2d");
+  context2.fillStyle = "rgb(127, 255, 255)";
+  context2.fillRect(0, 0, canvas2.width, canvas2.height);
+  // Remember the objects for use by the buttons.
   embed1 = document.getElementById("embed1");
   embed2 = document.getElementById("embed2");
-  PostInit();
+  // Return no errors.
+  return "";
 }
-
-function doOnUnload()
-{
-  clearTimeout(loadTimer);
-}
-      -->
-    </script>
-  </head>
-  <body id="bodyId" onload="doOnLoad();" onunload="doOnUnload();">
+//]]>
+</script>
 
   <h1>Native Client NPAPI Plug-in Test</h1>
 
   <!-- `embed` element test -->
   <embed id="embed1" src="npapi_test.nexe" type="application/x-nacl-srpc"
+         name="nacl_module"
          width="0" height="0"
          canvas="tutorial"
          param1="with space"
@@ -70,6 +73,7 @@ function doOnUnload()
          param4='with"doublequote' />
   <!-- `embed` element test -->
   <embed id="embed2" src="npapi_test.nexe" type="application/x-nacl-srpc"
+         name="nacl_module"
          width=0 height=0
          canvas='tutorial2'
          param1="with space"
@@ -106,6 +110,8 @@ function doOnUnload()
 
   <canvas id="tutorial" width="150" height="150"></canvas>
   <canvas id="tutorial2" width="150" height="150"></canvas>
+  <p>
+  <div id="status">NO-STATUS</div>
 
   </body>
 </html>

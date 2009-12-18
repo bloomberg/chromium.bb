@@ -39,7 +39,6 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
@@ -75,9 +74,6 @@ namespace nacl_srpc {
         static_cast<DescHandleInitializer*>(init_info);
     wrapper_ = desc_init_info->wrapper_;
     plugin_ = desc_init_info->plugin_;
-    // TODO(sehr): there's an ownership sharing/transfer problem with
-    // SRPC clients and ConnectedSocket that needs fixing.
-    NaClDescRef(wrapper_->desc());
     LoadMethods();
     return true;
   }

@@ -26,6 +26,7 @@
 #include "native_client/tests/pepper_plugin/plugin_object.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <string>
 
@@ -56,6 +57,7 @@ static const NPUTF8*
 enum {
   ID_TEST_GET_PROPERTY = 0,
   ID_SET_TEXT_BOX,
+  ID_MODULE_READY,
   NUM_METHOD_IDENTIFIERS
 };
 
@@ -63,6 +65,7 @@ static NPIdentifier plugin_method_identifiers[NUM_METHOD_IDENTIFIERS];
 static const NPUTF8* plugin_method_identifier_names[NUM_METHOD_IDENTIFIERS] = {
   "testGetProperty",
   "setTextBox",
+  "moduleReady",
 };
 
 void EnsureIdentifiersInitialized() {
@@ -157,6 +160,9 @@ bool PluginInvoke(NPObject* header,
     if (1 == arg_count && NPVARIANT_IS_OBJECT(args[0])) {
       return event_handler->set_text_box(NPVARIANT_TO_OBJECT(args[0]));
     }
+  } else if (name == plugin_method_identifiers[ID_MODULE_READY]) {
+    INT32_TO_NPVARIANT(1, *result);
+    return true;
   }
 
   return false;
@@ -180,14 +186,12 @@ bool PluginHasProperty(NPObject* obj, NPIdentifier name) {
 bool PluginGetProperty(NPObject* obj,
                        NPIdentifier name,
                        NPVariant* result) {
-  // PluginObject* plugin = reinterpret_cast<PluginObject*>(obj);
   return false;
 }
 
 bool PluginSetProperty(NPObject* obj,
                        NPIdentifier name,
                        const NPVariant* variant) {
-  // PluginObject* plugin = reinterpret_cast<PluginObject*>(obj);
   return false;
 }
 
@@ -207,7 +211,7 @@ NPClass plugin_class = {
 // Bitmap painting -------------------------------------------------------------
 
 #ifdef PEPPER2D_ENABLED
-void DrawSampleBitmap(SkCanvas& canvas, int width, int height) {
+void DrawSampleBitmap(NPDeviceContext2D* context, int width, int height) {
   SkRect rect;
   rect.set(SkIntToScalar(0), SkIntToScalar(0),
            SkIntToScalar(width), SkIntToScalar(height));
@@ -266,14 +270,11 @@ NPClass* PluginObject::GetPluginClass() {
 }
 
 void PluginObject::SetWindow(const NPWindow& window) {
-#ifdef PEPPER2D_ENABLED
-  size_.set_width(window.width);
-  size_.set_height(window.height);
-
   NPDeviceContext2DConfig config;
   NPDeviceContext2D context;
   device2d_->initializeContext(npp_, &config, &context);
 
+#ifdef PEPPER2D_ENABLED
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, window.width, window.height);
   bitmap.setPixels(context.u.graphicsRgba.region);

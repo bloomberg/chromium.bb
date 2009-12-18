@@ -221,6 +221,11 @@ SRPC_Plugin::~SRPC_Plugin() {
       video_ = NULL;
     }
   }
+  // Delete the NPModule for this plugin.
+  if (NULL != module_) {
+    delete module_;
+    module_ = NULL;
+  }
   // don't hold scoped global lock while calling NPN_ReleaseObject
   if (NULL != plugin) {
     // Destroying SRPC_Plugin releases ownership of the plugin.

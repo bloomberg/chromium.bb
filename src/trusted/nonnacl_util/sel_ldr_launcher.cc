@@ -29,16 +29,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "native_client/src/include/portability_io.h"
-#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
 #include <stdio.h>
 #include <sys/types.h>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_elf.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/trusted/desc/nacl_desc_imc.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 
 namespace nacl {
 
@@ -51,28 +51,11 @@ SelLdrLauncher::SelLdrLauncher() :
   sock_addr_(NULL) {
 }
 
-// Much of the code to connect to sel_ldr instances and open the respective
-// SRPC channels is very similar to that in launching and connecting from the
-// plugin.
-// TODO(sehr): refactor this to remove the duplication.
-static NaClDesc *Connect(struct NaClDescEffector *effp,
-                         struct NaClDesc *sock_addr) {
-  NaClDesc *connected_desc = NULL;
-
-  if (0 == (sock_addr->vtbl->ConnectAddr)(sock_addr, effp)) {
-    struct NaClNrdXferEffector *nrd_effp =
-        reinterpret_cast<struct NaClNrdXferEffector *>(effp);
-    connected_desc = NaClNrdXferEffectorTakeDesc(nrd_effp);
-  }
-  return connected_desc;
-}
-
-static NaClDesc* GetSockAddr(struct NaClDescEffector *effp,
-                             struct NaClDesc *desc) {
-  NaClImcTypedMsgHdr  header;
-  NaClImcMsgIoVec     iovec[1];
-  unsigned char       bytes[NACL_ABI_IMC_USER_BYTES_MAX];
-  NaClDesc*           descs[NACL_ABI_IMC_USER_DESC_MAX];
+static DescWrapper* GetSockAddr(DescWrapper* desc) {
+  DescWrapper::MsgHeader   header;
+  DescWrapper::MsgIoVec    iovec[1];
+  unsigned char            bytes[NACL_ABI_IMC_USER_BYTES_MAX];
+  DescWrapper*             descs[NACL_ABI_IMC_USER_DESC_MAX];
 
   // Set up to receive a message.
   iovec[0].base = bytes;
@@ -80,12 +63,14 @@ static NaClDesc* GetSockAddr(struct NaClDescEffector *effp,
   header.iov = iovec;
   header.iov_length = NACL_ARRAY_SIZE(iovec);
   header.ndescv = descs;
-  header.ndesc_length = NACL_ARRAY_SIZE(descs);
+  header.ndescv_length = NACL_ARRAY_SIZE(descs);
   header.flags = 0;
   // Receive the message.
-  NaClImcRecvTypedMessage(desc, effp, &header, 0);
+  if (0 != desc->RecvMsg(&header, 0)) {
+    return NULL;
+  }
   // Check that there was exactly one descriptor passed.
-  if (1 != header.ndesc_length) {
+  if (1 != header.ndescv_length) {
     return NULL;
   }
 
@@ -95,62 +80,42 @@ static NaClDesc* GetSockAddr(struct NaClDescEffector *effp,
 bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
                                       NaClSrpcChannel* untrusted_command,
                                       NaClSrpcChannel* untrusted) {
-  int ctor_state = 0;
-  int const kCommandCtord = 1;
-  int const kUntrustedCommandCtord = 2;
-  int const kUntrustedCtord = 4;
-  NaClNrdXferEffector eff;
-  struct NaClDescEffector *effp = NULL;
-  struct NaClDesc *pair[2];
-  struct NaClDesc *channel_desc = NULL;
   int start_result;
-  struct NaClDesc* command_desc = NULL;
-  struct NaClDesc* untrusted_command_desc = NULL;
-  struct NaClDesc* untrusted_desc = NULL;
-  struct NaClDesc* tmp = NULL;
+  bool retval = false;
+  DescWrapper* channel_desc = NULL;
+  DescWrapper* sock_addr = NULL;
+  DescWrapper* command_desc = NULL;
+  DescWrapper* untrusted_command_desc = NULL;
+  DescWrapper* untrusted_desc = NULL;
 
-  pair[0] = NULL;
-  pair[1] = NULL;
-  // Create a NaClDesc for use by the effector.
-  if (0 != NaClCommonDescMakeBoundSock(pair)) {
+  DescWrapperFactory factory;
+  channel_desc = factory.MakeImcSock(channel_);
+  if (NULL == channel_desc) {
     goto done;
   }
-  if (!NaClNrdXferEffectorCtor(&eff, pair[0])) {
-    goto done;
-  }
-  effp = reinterpret_cast<struct NaClDescEffector *>(&eff);
-  // Create a NaClDesc for channel_.
-  tmp = reinterpret_cast<struct NaClDesc*>(malloc(sizeof(NaClDescImcDesc)));
-  if (NULL == tmp) {
-    goto done;
-  }
-  if (!NaClDescImcDescCtor(
-      reinterpret_cast<struct NaClDescImcDesc*>(tmp), channel_)) {
-    free(tmp);
-    goto done;
-  }
-  channel_desc = tmp;
   // channel_desc now has ownership of channel_, so we get rid of our
   // "reference" to it.
   channel_ = kInvalidHandle;
 
   // Get the socket address from the descriptor.
-  sock_addr_ = GetSockAddr(effp, channel_desc);
-  if (NULL == sock_addr_) {
+  sock_addr = GetSockAddr(channel_desc);
+  if (NULL == sock_addr) {
     goto done;
   }
+  // Save the socket address for other uses.
+  sock_addr_ = NaClDescRef(sock_addr->desc());
 
   // The first connection goes to the trusted command channel.
-  if (NULL == (command_desc = Connect(effp, sock_addr_))) {
+  command_desc = sock_addr->Connect();
+  if (NULL == command_desc) {
     goto done;
   }
   // Start the SRPC client to communicate with the trusted command channel.
-  // NaClSrpcClientCtor takes ownership of command_desc.
-  if (!NaClSrpcClientCtor(command, command_desc)) {
+  // SRPC client takes ownership of command_desc.
+  if (!NaClSrpcClientCtor(command, command_desc->desc())) {
     goto done;
   }
-  command_desc = NULL;
-  ctor_state |= kCommandCtord;
+
   // Start untrusted code module.
   if (NACL_SRPC_RESULT_OK !=
       NaClSrpcInvokeByName(command, "start_module", &start_result)) {
@@ -158,61 +123,36 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   }
 
   // The second connection goes to the untrusted command channel.
-  if (NULL == (untrusted_command_desc = Connect(effp, sock_addr_))) {
+  untrusted_command_desc = sock_addr->Connect();
+  if (NULL == untrusted_command_desc) {
     goto done;
-    return 0;
   }
   // Start the SRPC client to communicate with the untrusted command channel.
-  if (!NaClSrpcClientCtor(untrusted_command, untrusted_command_desc)) {
+  // SRPC client takes ownership of untrusted_command_desc.
+  if (!NaClSrpcClientCtor(untrusted_command, untrusted_command_desc->desc())) {
     goto done;
   }
-  untrusted_command_desc = NULL;
-  ctor_state |= kUntrustedCommandCtord;
 
   // The third connection goes to the service itself.
-  if (NULL == (untrusted_desc = Connect(effp, sock_addr_))) {
+  untrusted_desc = sock_addr->Connect();
+  if (NULL == untrusted_desc) {
     goto done;
   }
   // Start the SRPC client to communicate with the untrusted service
-  if (!NaClSrpcClientCtor(untrusted, untrusted_desc)) {
+  // SRPC client takes ownership of untrusted_desc.
+  if (!NaClSrpcClientCtor(untrusted, untrusted_desc->desc())) {
     goto done;
   }
-  untrusted_desc = NULL;
-  ctor_state |= kUntrustedCtord;
-
-  NaClDescUnref(channel_desc);
-  return true;
+  retval = true;
 
  done:
-  if (NULL != untrusted_desc) {
-    NaClDescUnref(untrusted_desc);
-  }
-  if (0 != (kUntrustedCommandCtord & ctor_state)) {
-    NaClSrpcDtor(untrusted_command);
-  }
-  if (NULL != untrusted_command_desc) {
-    NaClDescUnref(untrusted_command_desc);
-  }
-  if (0 != (kCommandCtord & ctor_state)) {
-    NaClSrpcDtor(command);
-  }
-  if (NULL != command_desc) {
-    NaClDescUnref(command_desc);
-  }
-  if (NULL != channel_desc) {
-    NaClDescUnref(channel_desc);
-  }
-  if (NULL != effp) {
-    (*effp->vtbl->Dtor)(effp);
-  }
-  if (NULL != pair[0]) {
-    NaClDescUnref(pair[0]);
-  }
-  if (NULL != pair[1]) {
-    NaClDescUnref(pair[1]);
-  }
+  DescWrapper::SafeDelete(command_desc);
+  DescWrapper::SafeDelete(untrusted_command_desc);
+  DescWrapper::SafeDelete(untrusted_desc);
+  DescWrapper::SafeDelete(channel_desc);
+  DescWrapper::SafeDelete(sock_addr);
 
-  return false;
+  return retval;
 }
 
 void SelLdrLauncher::BuildArgv(const char* sel_ldr_pathname,

@@ -90,6 +90,12 @@ class DescWrapper {
 
   // Delete this wrapper.
   void Delete() { delete this; }
+  // Safely delete a specified wrapper.  (No-op if wrapper is NULL.)
+  static void SafeDelete(DescWrapper* wrapper) {
+    if (NULL != wrapper) {
+      wrapper->Delete();
+    }
+  }
 
   // Extract a NaClDesc from the wrapper.
   struct NaClDesc* desc() const { return desc_; }

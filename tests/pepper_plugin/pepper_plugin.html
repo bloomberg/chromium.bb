@@ -9,34 +9,19 @@ found in the LICENSE file.
 </head>
 
 <body style="background-image:url(nacl.png); background-repeat:repeat;"
-      onload="runScripts();">
+      onload="nacllib.waitForModulesAndRunTests();"
+      onunload="nacllib.cleanUp();">
 
-<script type="text/javascript">
-var event_box;
-
-var addLine = function(line) {
-  event_box.innerHTML = line + '<br>' + event_box.innerHTML;
-}
-
-var runScripts = function() {
-  event_box = document.getElementById("event_text_box");;
-  window.alert('setting text box');
-  var plugin_obj = document.getElementById("plugin");
-  addLine('<b>Event log</b>');
-  plugin_obj.setTextBox(addLine);
-  window.alert('set text box');
-}
-</script>
-<p>
 This page embeds a NaCl module for testing Pepper.
 </p>
 <table>
 <tr>
 <td valign="top" width="50%">
-  <embed name="nacl_module"
+  <object name="nacl_module"
          id="plugin"
+         name="nacl_module"
          type="application/x-nacl-srpc"
-         src="pepper_plugin.nexe"
+         data="pepper_plugin.nexe"
          width="400"
          height="400" />
 </td>
@@ -46,5 +31,54 @@ This page embeds a NaCl module for testing Pepper.
 </td>
 </tr>
 </table>
+<p>
+<div id="status">NO-STATUS</div>
+<script type="text/javascript" src="nacl_js_lib.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
+                          document.getElementById("status"),
+                          10);
+
+// we use a custom detector for whether a module is ready or not
+nacllib.numModulesReady = function(modules) {
+  var count = 0;
+  for (var i = 0; i < modules.length; i++) {
+    try {
+      var foo = modules[i].moduleReady();
+      count += 1;
+    } catch(e) {
+      // do nothing
+    }
+  }
+  return count;
+};
+
+// we use a custom detector for whether a module is ready or not
+nacllib.areTherePluginProblems = function(modules) {
+  return 0;
+};
+
+// The div where we report the events.
+var event_box = null;
+
+// The javascript function to add a line to the div.
+var addLine = function(line) {
+  event_box.innerHTML = line + '<br>' + event_box.innerHTML;
+}
+
+nacllib.test = function() {
+  event_box = document.getElementById("event_text_box");;
+  var plugin_obj = document.getElementById("plugin");
+  // Add the banner to the top of the event log.
+  addLine('<b>Event log</b>');
+  // Set the plugin to report events to the event log.
+  plugin_obj.setTextBox(addLine);
+  // Return success.
+  return "";
+};
+//]]>
+</script>
+
 </body>
 </html>

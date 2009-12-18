@@ -117,6 +117,9 @@ class NPBridge {
 #else
     // For the browser the bridge (NPModule) is retained on the NPInstance
     // retained by npp->pdata.
+    if (NULL == npp->pdata) {
+      return NULL;
+    }
     return reinterpret_cast<NPBridge*>(
         (reinterpret_cast<NPInstance*>(npp->pdata))->module());
 #endif

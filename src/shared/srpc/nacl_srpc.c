@@ -119,17 +119,17 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
  * Set up the buffering structures for a channel.
  */
 int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
-  /* TODO(sehr): we should actually do a NaClDescRef here. */
+#if defined(__native_client__)
   channel->imc_handle = handle;
-
-#ifndef __native_client__
-  if (NULL == channel->imc_handle) {
+#else
+  if (NULL == handle) {
     return 0;
   }
-  if (0 == NaClNrdXferEffectorCtor(&channel->eff, channel->imc_handle)) {
+  if (0 == NaClNrdXferEffectorCtor(&channel->eff, handle)) {
     return 0;
   }
-#endif
+  channel->imc_handle = NaClDescRef(handle);
+#endif  /* defined(__native_client__) */
   /* Initialize the server information. */
   channel->server = NULL;
   /* Construct the buffers. */
@@ -154,16 +154,17 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
                        NaClSrpcImcDescType handle,
                        NaClSrpcService* service,
                        void* server_instance_data) {
-  /* TODO(sehr): we should actually do a NaClDescRef here. */
+#if defined(__native_client__)
   channel->imc_handle = handle;
-#ifndef __native_client__
-  if (NULL == channel->imc_handle) {
+#else
+  if (NULL == handle) {
     return 0;
   }
-  if (0 == NaClNrdXferEffectorCtor(&channel->eff, channel->imc_handle)) {
+  if (0 == NaClNrdXferEffectorCtor(&channel->eff, handle)) {
     return 0;
   }
-#endif
+  channel->imc_handle = NaClDescRef(handle);
+#endif  /* defined(__native_client__) */
   /* Initialize the client information. */
   channel->client = NULL;
   /* Construct the buffers. */

@@ -39,8 +39,7 @@
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
-#include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/desc/nacl_desc_imc.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/origin.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
@@ -61,7 +60,10 @@ bool NPModule::IsWebKit = false;
 
 NPModule::NPModule(NaClSrpcChannel* channel)
     : proxy_(NULL),
-      window_(NULL) {
+      window_(NULL),
+      extensions_(NULL),
+      device2d_(NULL),
+      context2d_(NULL) {
   // Remember the channel we will be communicating over.
   channel_ = channel;
   // Remember the bridge for this channel.
@@ -121,6 +123,8 @@ NACL_SRPC_METHOD_ARRAY(NPModule::srpc_methods) = {
   { "NPN_Enumerate:C:iCi", NPObjectStub::Enumerate },
   { "NPN_Construct:CCCi:iCC", NPObjectStub::Construct },
   { "NPN_SetException:Cs:", NPObjectStub::SetException },
+  { "Device2DInitialize:i:hiiiii", Device2DInitialize },
+  { "Device2DFlush:i:hiiiii", Device2DFlush },
   { NULL, NULL }
 };
 
@@ -350,6 +354,128 @@ NaClSrpcError NPModule::Utf8FromIdentifier(NaClSrpcChannel* channel,
   return NACL_SRPC_RESULT_OK;
 }
 
+// Device2D support
+class TransportDIB;
+struct Device2DImpl {
+  ::TransportDIB* dib;
+};
+
+// inputs:
+// (int) npp
+// outputs:
+// (handle) shared memory
+// (int) stride
+// (int) left
+// (int) top
+// (int) right
+// (int) bottom
+NaClSrpcError NPModule::Device2DInitialize(NaClSrpcChannel* channel,
+                                           NaClSrpcArg** inputs,
+                                           NaClSrpcArg** outputs) {
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  UNREFERENCED_PARAMETER(channel);
+
+  if (NULL == module->extensions_) {
+    if (NPERR_NO_ERROR !=
+        NPN_GetValue(npp, NPNVPepperExtensions, &module->extensions_)) {
+      // Because this variable is not implemented in other browsers, this path
+      // should always be taken except in Pepper-enabled browsers.
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    if (NULL != module->extensions_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  if (NULL == module->device2d_) {
+    module->device2d_ =
+        module->extensions_->acquireDevice(npp, NPPepper2DDevice);
+    if (NULL != module->device2d_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  if (NULL == module->context2d_) {
+    NPError retval =
+        module->device2d_->initializeContext(npp, NULL, &module->context2d_);
+    if (NPERR_NO_ERROR != retval) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  DescWrapperFactory factory;
+  Device2DImpl* impl =
+      reinterpret_cast<Device2DImpl*>(module->context2d_->reserved);
+  DescWrapper* wrapper = factory.ImportTransportDIB(impl->dib);
+  if (NULL == wrapper) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  // Increase reference count for SRPC return value, since wrapper Delete
+  // would cause Dtor to fire.
+  outputs[0]->u.hval = NaClDescRef(wrapper->desc());
+  // Free the wrapper.
+  wrapper->Delete();
+  outputs[1]->u.ival = module->context2d_->stride;
+  outputs[2]->u.ival = module->context2d_->dirty.left;
+  outputs[3]->u.ival = module->context2d_->dirty.top;
+  outputs[4]->u.ival = module->context2d_->dirty.right;
+  outputs[5]->u.ival = module->context2d_->dirty.bottom;
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (int) npp
+// outputs:
+// (handle) shared memory
+// (int) stride
+// (int) left
+// (int) top
+// (int) right
+// (int) bottom
+NaClSrpcError NPModule::Device2DFlush(NaClSrpcChannel* channel,
+                                      NaClSrpcArg** inputs,
+                                      NaClSrpcArg** outputs) {
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPError retval;
+  UNREFERENCED_PARAMETER(channel);
+
+  if (NULL == module->extensions_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  retval = module->device2d_->flushContext(npp, module->context2d_, NULL, NULL);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  outputs[0]->u.ival = module->context2d_->stride;
+  outputs[1]->u.ival = module->context2d_->dirty.left;
+  outputs[2]->u.ival = module->context2d_->dirty.top;
+  outputs[3]->u.ival = module->context2d_->dirty.right;
+  outputs[4]->u.ival = module->context2d_->dirty.bottom;
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (int) npp
+// outputs:
+// none
+NaClSrpcError NPModule::Device2DDestroy(NaClSrpcChannel* channel,
+                                        NaClSrpcArg** inputs,
+                                        NaClSrpcArg** outputs) {
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPError retval;
+  UNREFERENCED_PARAMETER(channel);
+  UNREFERENCED_PARAMETER(outputs);
+
+  if (NULL == module->extensions_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  retval = module->device2d_->destroyContext(npp, module->context2d_);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  return NACL_SRPC_RESULT_OK;
+}
+
 class NppClosure {
  public:
   NppClosure(uint32_t number, NPModule* module) {
@@ -394,18 +520,15 @@ static NaClSrpcError handleAsyncCall(NaClSrpcChannel* channel,
 // to the upcall thread.
 struct UpcallInfo {
  public:
-  struct NaClDesc* desc_;
+  DescWrapper* desc_;
   NPModule* module_;
-  UpcallInfo(struct NaClDesc* desc, NPModule* module) {
-    desc_ = NaClDescRef(desc);
+  UpcallInfo(DescWrapper* desc, NPModule* module) {
+    desc_ = desc;
     module_ = module;
   }
   ~UpcallInfo() {
-    // This Unref really should be here.  Unfortunately, NaClSrpcServerLoop
-    // appears to do an Unref without a corresponding Ref, resulting in
-    // multiple frees and memory corruption.
-    // TODO(sehr): fix the SRPC descriptor ownership issue.
-    // NaClDescUnref(desc_);
+    DebugPrintf("deleting upcall info\n");
+    desc_->Delete();
   }
 };
 
@@ -417,7 +540,7 @@ static void WINAPI UpcallThread(void* arg) {
   };
   DebugPrintf("UpcallThread(%p)\n", arg);
   // Run the SRPC server.
-  NaClSrpcServerLoop(info->desc_, handlers, info->module_);
+  NaClSrpcServerLoop(info->desc_->desc(), handlers, info->module_);
   // Free the info node.
   delete info;
   DebugPrintf("UpcallThread: End\n");
@@ -425,74 +548,47 @@ static void WINAPI UpcallThread(void* arg) {
 
 NPError NPModule::Initialize() {
   NaClSrpcError retval;
-  nacl::Handle pair[2];
-  struct NaClDescXferableDataDesc* desc[2];
+  DescWrapperFactory factory;
+  DescWrapper* pair[2] = { NULL, NULL };
   UpcallInfo* info = NULL;
   NPError err = NPERR_GENERIC_ERROR;
 
   DebugPrintf("Initialize\n");
 
-  // Initialize some state.
-  pair[0] = nacl::kInvalidHandle;
-  pair[1] = nacl::kInvalidHandle;
-  desc[0] = NULL;
-  desc[1] = NULL;
   // Create a socket pair for the upcall server.
-  if (0 != SocketPair(pair))
-    goto done;
-  // Set up the NaClDesc the upcall server will be placed on.
-  desc[0] = new(std::nothrow) struct NaClDescXferableDataDesc;
-  if (NULL == desc[0])
-    goto done;
-  if (!NaClDescXferableDataDescCtor(desc[0], pair[0])) {
-    delete desc[0];
-    desc[0] = NULL;
+  if (factory.MakeSocketPair(pair)) {
     goto done;
   }
   // Create an info node to pass to the thread.
-  info = new(std::nothrow)
-      UpcallInfo(reinterpret_cast<struct NaClDesc*>(desc[0]), this);
-  if (NULL == info)
-    goto done;
-  // Create a thread and an SRPC "upcall" server.
-  if (!NaClThreadCtor(&upcall_thread_, UpcallThread, info, 128 << 10))
-    goto done;
-  // On success, ownership of info passes to the thread.
-  info = NULL;
-  // Set up the NaClDesc that will be passed to the NaCl module.
-  desc[1] = new(std::nothrow) struct NaClDescXferableDataDesc;
-  if (NULL == desc[1])
-    goto done;
-  if (!NaClDescXferableDataDescCtor(desc[1], pair[1])) {
-    delete desc[1];
-    desc[1] = NULL;
+  info = new(std::nothrow) UpcallInfo(pair[0], this);
+  if (NULL == info) {
     goto done;
   }
+  // info takes ownership of pair[0].
+  pair[0] = NULL;
+  // Create a thread and an SRPC "upcall" server.
+  if (!NaClThreadCtor(&upcall_thread_, UpcallThread, info, 128 << 10)) {
+    goto done;
+  }
+  // On success, ownership of info passes to the thread.
+  info = NULL;
   // Invoke the NaCl module's NP_Initialize function.
   retval = NaClSrpcInvokeByName(channel(),
                                 "NP_Initialize",
                                 GETPID(),
                                 static_cast<int>(sizeof(NPVariant)),
-                                desc[1]);
+                                pair[1]->desc());
   // Return the appropriate error code.
-  if (NACL_SRPC_RESULT_OK != retval)
+  if (NACL_SRPC_RESULT_OK != retval) {
     goto done;
+  }
   err = NPERR_NO_ERROR;
+
  done:
-  if (NULL != info)
-    delete info;
-  if (NULL != desc[0]) {
-    NaClDescUnref(reinterpret_cast<struct NaClDesc*>(desc[0]));
-    pair[0] = nacl::kInvalidHandle;
-  }
-  if (nacl::kInvalidHandle == pair[0])
-    Close(pair[0]);
-  if (NULL != desc[1]) {
-    NaClDescUnref(reinterpret_cast<struct NaClDesc*>(desc[1]));
-    pair[1] = nacl::kInvalidHandle;
-  }
-  if (nacl::kInvalidHandle == pair[1])
-    Close(pair[1]);
+  DebugPrintf("deleting pairs\n");
+  DescWrapper::SafeDelete(pair[0]);
+  DescWrapper::SafeDelete(pair[1]);
+  delete info;
   return err;
 }
 

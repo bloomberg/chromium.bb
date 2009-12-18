@@ -48,6 +48,7 @@
 #include "native_client/src/shared/npruntime/npbridge.h"
 #include "native_client/src/shared/npruntime/nprpc.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
+#include "third_party/npapi/bindings/npapi_extensions.h"
 
 namespace nacl {
 
@@ -72,6 +73,11 @@ class NPModule : public NPBridge {
 
   // The SRPC methods exported visible to the NaCl module.
   static NACL_SRPC_METHOD_ARRAY(srpc_methods);
+
+  // 2D graphics device state.
+  NPExtensions* extensions_;
+  NPDevice* device2d_;
+  NPDeviceContext2D* context2d_;
 
  public:
   // Creates a new instance of NPModule.
@@ -119,6 +125,15 @@ class NPModule : public NPBridge {
   static NaClSrpcError IdentifierIsString(NaClSrpcChannel* channel,
                                           NaClSrpcArg** inputs,
                                           NaClSrpcArg** outputs);
+  static NaClSrpcError Device2DInitialize(NaClSrpcChannel* channel,
+                                          NaClSrpcArg** inputs,
+                                          NaClSrpcArg** outputs);
+  static NaClSrpcError Device2DFlush(NaClSrpcChannel* channel,
+                                     NaClSrpcArg** inputs,
+                                     NaClSrpcArg** outputs);
+  static NaClSrpcError Device2DDestroy(NaClSrpcChannel* channel,
+                                       NaClSrpcArg** inputs,
+                                       NaClSrpcArg** outputs);
 
   // Invokes NPP_Initialize() in the child process.
   NPError Initialize();

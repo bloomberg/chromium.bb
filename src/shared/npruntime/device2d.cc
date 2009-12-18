@@ -26,7 +26,6 @@ static const int kInvalidDesc = -1;
 struct Device2DImpl {
   int shared_memory_desc;
   size_t size;
-  int sync_socket_desc;
 };
 
 static NPError QueryCapability(NPP instance,
@@ -51,7 +50,6 @@ static NPError InitializeContext(NPP instance,
   int sync_desc = kInvalidDesc;
   void* map_addr = MAP_FAILED;
   Device2DImpl* impl = NULL;
-  int stride;
 
   // Initialize the context structure.
   context2d->reserved = NULL;
@@ -66,8 +64,11 @@ static NPError InitializeContext(NPP instance,
                            "Device2DInitialize",
                            nacl::NPNavigator::GetPluginNPP(instance),
                            &shm_desc,
-                           &stride,
-                           &sync_desc);
+                           &context2d->stride,
+                           &context2d->dirty.left,
+                           &context2d->dirty.top,
+                           &context2d->dirty.right,
+                           &context2d->dirty.bottom);
   if (NACL_SRPC_RESULT_OK != retval) {
     goto cleanup;
   }
@@ -91,14 +92,8 @@ static NPError InitializeContext(NPP instance,
   }
   impl->shared_memory_desc = shm_desc;
   impl->size = size;
-  impl->sync_socket_desc = sync_desc;
   context2d->reserved = impl;
   context2d->region = map_addr;
-  context2d->stride = stride;
-  context2d->dirty.left = 0;
-  context2d->dirty.top = 0;
-  context2d->dirty.right = 0;
-  context2d->dirty.bottom = 0;
   return NPERR_NO_ERROR;
 
 cleanup:
@@ -134,24 +129,18 @@ static NPError FlushContext(NPP instance,
                             NPDeviceFlushContextCallbackPtr callback,
                             void* userData) {
   NPDeviceContext2D* context2d = reinterpret_cast<NPDeviceContext2D*>(context);
-  Device2DImpl* impl = NULL;
-  // If the context wasn't initialized, return an error.
-  if (NULL == context2d->reserved) {
-    return NPERR_GENERIC_ERROR;
-  }
-  impl = reinterpret_cast<Device2DImpl*>(context2d->reserved);
-  // Write on the sync socket to signal a flush.
-  const char buf[] = { 'a' };
-  if (sizeof(buf) != write(impl->sync_socket_desc,
-                           reinterpret_cast<const void*>(buf),
-                           sizeof(buf))) {
-    return NPERR_GENERIC_ERROR;
-  }
-  // Blocking read on the sync socket to wait before invoking the callback.
-  char read_buf[1];
-  if (sizeof(read_buf) != read(impl->sync_socket_desc,
-                               reinterpret_cast<void*>(read_buf),
-                               sizeof(read_buf))) {
+  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NaClSrpcChannel* channel = nav->channel();
+  NaClSrpcError retval =
+      NaClSrpcInvokeByName(channel,
+                           "Device2DFlush",
+                           nacl::NPNavigator::GetPluginNPP(instance),
+                           &context2d->stride,
+                           &context2d->dirty.left,
+                           &context2d->dirty.top,
+                           &context2d->dirty.right,
+                           &context2d->dirty.bottom);
+  if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
   // Invoke the callback.
@@ -178,9 +167,14 @@ static NPError DestroyContext(NPP instance, NPDeviceContext* context) {
   if (kInvalidDesc != impl->shared_memory_desc) {
     close(impl->shared_memory_desc);
   }
-  // Close the sync socket descriptor
-  if (kInvalidDesc != impl->sync_socket_desc) {
-    close(impl->sync_socket_desc);
+  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NaClSrpcChannel* channel = nav->channel();
+  NaClSrpcError retval =
+      NaClSrpcInvokeByName(channel,
+                           "Device2DDestroy",
+                           nacl::NPNavigator::GetPluginNPP(instance));
+  if (NACL_SRPC_RESULT_OK != retval) {
+    return NPERR_GENERIC_ERROR;
   }
   return NPERR_NO_ERROR;
 }
