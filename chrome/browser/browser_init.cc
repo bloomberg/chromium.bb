@@ -439,8 +439,9 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
       Browser* browser = NULL;
       if (urls_to_open.empty())
         AddStartupURLs(&urls_to_open);
-      else
+      else if (!command_line_.HasSwitch(switches::kOpenInNewWindow))
         browser = BrowserList::GetLastActive();
+
       OpenURLsInBrowser(browser, process_startup, urls_to_open);
     }
     if (process_startup) {

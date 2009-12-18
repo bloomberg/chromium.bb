@@ -399,6 +399,9 @@ const char kNoSandbox[]                     = "no-sandbox";
 // Number of entries to show in the omnibox popup.
 const char kOmniBoxPopupCount[]             = "omnibox-popup-count";
 
+// Launch URL in new browser window.
+const char kOpenInNewWindow[]               = "new-window";
+
 // Package an extension to a .crx installable file from a given directory.
 const char kPackExtension[]                 = "pack-extension";
 
