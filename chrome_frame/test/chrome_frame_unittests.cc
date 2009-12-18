@@ -782,8 +782,8 @@ struct MockCFDelegate : public ChromeFrameDelegateImpl {
 
 class MockProxyFactory : public ProxyFactory {
  public:
-  MOCK_METHOD5(GetAutomationServer, void*(int, const std::wstring&,
-      const std::wstring& extra_argument, bool, ProxyFactory::LaunchDelegate*));
+  MOCK_METHOD3(GetAutomationServer, void (ProxyFactory::LaunchDelegate*,
+      const ChromeFrameLaunchParams& params, void** automation_server_id));
   MOCK_METHOD1(ReleaseAutomationServer, bool(void* id));
 
   MockProxyFactory() : thread_("mock factory worker") {
@@ -793,12 +793,16 @@ class MockProxyFactory : public ProxyFactory {
 
   // Fake implementation
   void GetServerImpl(ChromeFrameAutomationProxy* pxy,
+                     void* proxy_id,
                      AutomationLaunchResult result,
-                     int timeout,
-                     ProxyFactory::LaunchDelegate* d) {
+                     LaunchDelegate* d,
+                     const ChromeFrameLaunchParams& params,
+                     void** automation_server_id) {
+    *automation_server_id = proxy_id;
     Task* task = NewRunnableMethod(d,
         &ProxyFactory::LaunchDelegate::LaunchComplete, pxy, result);
-    loop_->PostDelayedTask(FROM_HERE, task, timeout/2);
+    loop_->PostDelayedTask(FROM_HERE, task,
+                           params.automation_server_launch_timeout/2);
   }
 
   base::Thread thread_;
@@ -1039,18 +1043,16 @@ class CFACMockTest : public testing::Test {
 
   // Easy methods to set expectations.
   void SetAutomationServerOk() {
-    EXPECT_CALL(factory_, GetAutomationServer(testing::Eq(timeout_),
-        testing::StrEq(profile_),
-        testing::_,
-        testing::_,
+    EXPECT_CALL(factory_, GetAutomationServer(testing::NotNull(),
+        testing::Field(&ChromeFrameLaunchParams::profile_name,
+                       testing::StrEq(profile_)),
         testing::NotNull()))
     .Times(1)
-    .WillOnce(testing::DoAll(
-        testing::WithArgs<0, 4>(
-            testing::Invoke(CreateFunctor(&factory_,
-                                          &MockProxyFactory::GetServerImpl,
-                                          get_proxy(), AUTOMATION_SUCCESS))),
-        testing::Return(id_)));
+    .WillOnce(testing::Invoke(
+        CreateFunctor(&factory_, &MockProxyFactory::GetServerImpl,
+                      get_proxy(),
+                      id_,
+                      AUTOMATION_SUCCESS)));
 
     EXPECT_CALL(factory_, ReleaseAutomationServer(testing::Eq(id_))).Times(1);
   }

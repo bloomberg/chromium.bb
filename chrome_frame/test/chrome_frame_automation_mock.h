@@ -21,7 +21,8 @@ class AutomationMockDelegate
       int launch_timeout, bool perform_version_check,
       const std::wstring& profile_name,
       const std::wstring& extra_chrome_arguments, bool incognito)
-      : caller_message_loop_(caller_message_loop), is_connected_(false) {
+      : caller_message_loop_(caller_message_loop), is_connected_(false),
+        navigation_result_(false) {
     test_server_.SetUp();
     automation_client_ = new ChromeFrameAutomationClient;
     automation_client_->Initialize(this, launch_timeout, perform_version_check,
@@ -41,7 +42,12 @@ class AutomationMockDelegate
   // Navigate external tab to the specified url through automation
   bool Navigate(const std::string& url) {
     url_ = GURL(url);
-    return automation_client_->InitiateNavigation(url, std::string(), false);
+    bool result = automation_client_->InitiateNavigation(url,
+                                                         std::string(),
+                                                         false);
+    if (!result)
+      OnLoadFailed(0, url);
+    return result;
   }
 
   // Navigate the external to a 'file://' url for unit test files
@@ -83,6 +89,7 @@ class AutomationMockDelegate
   }
 
   virtual void OnLoadFailed(int error_code, const std::string& url) {
+    navigation_result_ = false;
     QuitMessageLoop();
   }
 

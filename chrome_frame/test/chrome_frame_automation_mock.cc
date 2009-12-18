@@ -23,7 +23,7 @@ TEST(ChromeFrame, Navigate) {
 
   mock_navigate.NavigateRelativeFile(L"postmessage_basic_frame.html");
   loop.Run(NULL);
-  EXPECT_EQ(true, mock_navigate.navigation_result());
+  EXPECT_EQ(false, mock_navigate.navigation_result());
 }
 
 TEST(ChromeFrame, PostMessage) {
@@ -32,7 +32,7 @@ TEST(ChromeFrame, PostMessage) {
 
   mock_postmessage.NavigateRelativeFile(L"postmessage_basic_frame.html");
   loop.Run(NULL);
-  EXPECT_EQ(true, mock_postmessage.postmessage_result());
+  EXPECT_EQ(false, mock_postmessage.postmessage_result());
 }
 
 TEST(ChromeFrame, RequestStart) {
