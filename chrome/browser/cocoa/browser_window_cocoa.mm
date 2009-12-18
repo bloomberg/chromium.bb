@@ -486,6 +486,9 @@ bool BrowserWindowCocoa::HandleKeyboardEventInternal(NSEvent* event) {
 
     if ([event_window handleExtraWindowKeyboardShortcut:event])
       return true;
+
+    if ([event_window handleDelayedWindowKeyboardShortcut:event])
+      return true;
   }
 
   return [event_window redispatchEvent:event];

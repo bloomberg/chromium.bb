@@ -31,6 +31,10 @@
 // window controller's |executeCommand:| and returns |YES|.
 - (BOOL)handleExtraWindowKeyboardShortcut:(NSEvent*)event;
 
+// Checks if |event| is a delayed window keyboard shortcut. If so, dispatches
+// it to the window controller's |executeCommand:| and returns |YES|.
+- (BOOL)handleDelayedWindowKeyboardShortcut:(NSEvent*)event;
+
 // Checks if |event| is a browser keyboard shortcut. If so, dispatches it to the
 // window controller's |executeCommand:| and returns |YES|.
 - (BOOL)handleExtraBrowserKeyboardShortcut:(NSEvent*)event;

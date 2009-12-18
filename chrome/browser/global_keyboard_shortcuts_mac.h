@@ -20,10 +20,13 @@ struct KeyboardShortcutData {
 // returns: Command number (as passed to Browser::ExecuteCommand) or -1 if there
 // was no match.
 //
-// |performKeyEquivalent:| bubbles events up from the window to the views.
-// If we let it bubble up to the Omnibox, then the Omnibox handles
-// cmd-left/right just fine, but it swallows cmd-1 and doesn't give us a chance
-// to intercept this. Hence, we need two types of keyboard shortcuts.
+// |performKeyEquivalent:| bubbles events up from the window to the views.  If
+// we let it bubble up to the Omnibox, then the Omnibox handles cmd-left/right
+// just fine, but it swallows cmd-1 and doesn't give us a chance to intercept
+// this. Hence, we need three types of keyboard shortcuts: shortcuts that are
+// intercepted before the Omnibox handles events, shortcuts that are
+// intercepted after the Omnibox had a chance but did not handle them, and
+// shortcuts that are only handled when tab contents is focused.
 //
 // This means cmd-left doesn't work if you hit cmd-l tab, which focusses
 // something that's neither omnibox nor tab contents. This behavior is
@@ -38,6 +41,13 @@ int CommandForWindowKeyboardShortcut(
     bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
     int vkey_code);
 
+// This returns shortcuts that should work no matter what component of the
+// browser is focused. They are executed by the window, after any view has the
+// opportunity to override the shortcut
+int CommandForDelayedWindowKeyboardShortcut(
+    bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
+    int vkey_code);
+
 // This returns shortcuts that should work only if the tab contents have focus
 // (e.g. cmd-left, which shouldn't do history navigation if e.g. the omnibox has
 // focus).
@@ -47,6 +57,8 @@ int CommandForBrowserKeyboardShortcut(
 
 // For testing purposes.
 const KeyboardShortcutData* GetWindowKeyboardShortcutTable(size_t* num_entries);
+const KeyboardShortcutData*
+    GetDelayedWindowKeyboardShortcutTable(size_t* num_entries);
 const KeyboardShortcutData*
     GetBrowserKeyboardShortcutTable(size_t* num_entries);
 

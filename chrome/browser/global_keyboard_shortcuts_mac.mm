@@ -9,6 +9,14 @@
 #include "base/basictypes.h"
 #include "chrome/app/chrome_dll_resource.h"
 
+// Basically, there are two kinds of keyboard shortcuts: Ones that should work
+// only if the tab contents is focused (BrowserKeyboardShortcut), and ones that
+// should work in all other cases (WindowKeyboardShortcut). In the latter case,
+// we differentiate between shortcuts that are checked before any other view
+// gets the chance to handle them (WindowKeyboardShortcut) or after all views
+// had a chance but did not handle the keypress event
+// (DelayedWindowKeyboardShortcut)
+
 const KeyboardShortcutData* GetWindowKeyboardShortcutTable
     (size_t* num_entries) {
   static const KeyboardShortcutData keyboard_shortcuts[] = {
@@ -28,6 +36,17 @@ const KeyboardShortcutData* GetWindowKeyboardShortcutTable
     {true,  false, false, false, kVK_ANSI_7,        IDC_SELECT_TAB_6},
     {true,  false, false, false, kVK_ANSI_8,        IDC_SELECT_TAB_7},
     {true,  false, false, false, kVK_ANSI_9,        IDC_SELECT_LAST_TAB},
+  };
+
+  *num_entries = arraysize(keyboard_shortcuts);
+
+  return keyboard_shortcuts;
+}
+
+const KeyboardShortcutData* GetDelayedWindowKeyboardShortcutTable
+    (size_t* num_entries) {
+  static const KeyboardShortcutData keyboard_shortcuts[] = {
+    {false, false, false, false, kVK_Escape,        IDC_STOP},
   };
 
   *num_entries = arraysize(keyboard_shortcuts);
@@ -78,6 +97,14 @@ int CommandForWindowKeyboardShortcut(
     bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
     int vkey_code) {
   return CommandForKeyboardShortcut(GetWindowKeyboardShortcutTable,
+                                    command_key, shift_key,
+                                    cntrl_key, opt_key, vkey_code);
+}
+
+int CommandForDelayedWindowKeyboardShortcut(
+    bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
+    int vkey_code) {
+  return CommandForKeyboardShortcut(GetDelayedWindowKeyboardShortcutTable,
                                     command_key, shift_key,
                                     cntrl_key, opt_key, vkey_code);
 }

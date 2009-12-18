@@ -600,8 +600,7 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
   }
 
   if (cmd == @selector(cancelOperation:)) {
-    model_->OnEscapeKeyPressed();
-    return true;
+    return model_->OnEscapeKeyPressed();
   }
 
   if (cmd == @selector(insertTab:)) {

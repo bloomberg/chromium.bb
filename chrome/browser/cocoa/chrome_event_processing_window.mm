@@ -44,6 +44,11 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int);
                                  fromTable:CommandForWindowKeyboardShortcut];
 }
 
+- (BOOL)handleDelayedWindowKeyboardShortcut:(NSEvent*)event {
+  return [self handleExtraKeyboardShortcut:event
+                         fromTable:CommandForDelayedWindowKeyboardShortcut];
+}
+
 - (BOOL)handleExtraBrowserKeyboardShortcut:(NSEvent*)event {
   return [self handleExtraKeyboardShortcut:event
                                  fromTable:CommandForBrowserKeyboardShortcut];
@@ -64,7 +69,13 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int);
   // if e.g. the Omnibox has focus).
   if ([self handleExtraWindowKeyboardShortcut:event])
     return YES;
-  return [super performKeyEquivalent:event];
+
+  if ([super performKeyEquivalent:event])
+    return YES;
+
+  // Handle per-window shortcuts like Esc after giving everybody else a chance
+  // to handle them
+  return [self handleDelayedWindowKeyboardShortcut:event];
 }
 
 - (BOOL)redispatchEvent:(NSEvent*)event {
