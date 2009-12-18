@@ -103,52 +103,56 @@ static string GenerateCacheGUID() {
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
-static int BindFields(const EntryKernel& entry, sqlite3_stmt* statement) {
-  int index = 1;
+int BindFields(const EntryKernel& entry, SQLStatement* statement) {
+  int index = 0;
   int i = 0;
   for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
-    BindArg(statement, entry.ref(static_cast<Int64Field>(i)), index++);
+    statement->bind_int64(index++, entry.ref(static_cast<Int64Field>(i)));
   }
   for ( ; i < ID_FIELDS_END; ++i) {
-    BindArg(statement, entry.ref(static_cast<IdField>(i)), index++);
+    statement->bind_string(index++, entry.ref(static_cast<IdField>(i)).s_);
   }
   for ( ; i < BIT_FIELDS_END; ++i) {
-    BindArg(statement, entry.ref(static_cast<BitField>(i)), index++);
+    statement->bind_int(index++, entry.ref(static_cast<BitField>(i)));
   }
   for ( ; i < STRING_FIELDS_END; ++i) {
-    BindArg(statement, entry.ref(static_cast<StringField>(i)), index++);
+    statement->bind_string(index++, entry.ref(static_cast<StringField>(i)));
   }
   for ( ; i < BLOB_FIELDS_END; ++i) {
-    BindArg(statement, entry.ref(static_cast<BlobField>(i)), index++);
+    uint8* blob = entry.ref(static_cast<BlobField>(i)).empty() ?
+        NULL : const_cast<uint8*>(&entry.ref(static_cast<BlobField>(i)).at(0));
+    statement->bind_blob(index++, blob,
+                         entry.ref(static_cast<BlobField>(i)).size());
   }
-  return index - 1;
+  return index;
 }
 
 // The caller owns the returned EntryKernel*.
-static EntryKernel* UnpackEntry(sqlite3_stmt* statement) {
+EntryKernel* UnpackEntry(SQLStatement* statement) {
   EntryKernel* result = NULL;
-  int query_result = sqlite3_step(statement);
+  int query_result = statement->step();
   if (SQLITE_ROW == query_result) {
     result = new EntryKernel;
     result->clear_dirty();
-    CHECK(sqlite3_column_count(statement) == static_cast<int>(FIELD_COUNT));
+    CHECK(statement->column_count() == static_cast<int>(FIELD_COUNT));
     int i = 0;
     for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
       result->ref(static_cast<Int64Field>(i)) =
-          sqlite3_column_int64(statement, i);
+          statement->column_int64(i);
     }
     for ( ; i < ID_FIELDS_END; ++i) {
-      GetColumn(statement, i, &result->ref(static_cast<IdField>(i)));
+      result->ref(static_cast<IdField>(i)).s_ = statement->column_string(i);
     }
     for ( ; i < BIT_FIELDS_END; ++i) {
       result->ref(static_cast<BitField>(i)) =
-          (0 != sqlite3_column_int(statement, i));
+          (0 != statement->column_int(i));
     }
     for ( ; i < STRING_FIELDS_END; ++i) {
-      GetColumn(statement, i, &result->ref(static_cast<StringField>(i)));
+      result->ref(static_cast<StringField>(i)) = statement->column_string(i);
     }
     for ( ; i < BLOB_FIELDS_END; ++i) {
-      GetColumn(statement, i, &result->ref(static_cast<BlobField>(i)));
+      statement->column_blob_as_vector(
+        i, &result->ref(static_cast<BlobField>(i)));
     }
     ZeroFields(result, i);
   } else {
@@ -355,9 +359,10 @@ void DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
     joiner = ", ";
   }
   select.append(" FROM metas ");
-  ScopedStatement statement(PrepareQuery(load_dbhandle_, select.c_str()));
+  SQLStatement statement;
+  statement.prepare(load_dbhandle_, select.c_str());
   base::hash_set<int64> handles;
-  while (EntryKernel* kernel = UnpackEntry(statement.get())) {
+  while (EntryKernel* kernel = UnpackEntry(&statement)) {
     DCHECK(handles.insert(kernel->ref(META_HANDLE)).second);  // Only in debug.
     entry_bucket->insert(kernel);
   }
@@ -365,20 +370,24 @@ void DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
 
 void DirectoryBackingStore::LoadExtendedAttributes(
     ExtendedAttributes* xattrs_bucket) {
-  ScopedStatement statement(PrepareQuery(load_dbhandle_,
-      "SELECT metahandle, key, value FROM extended_attributes"));
-  int step_result = sqlite3_step(statement.get());
+  SQLStatement statement;
+  statement.prepare(
+      load_dbhandle_,
+      "SELECT metahandle, key, value FROM extended_attributes");
+  int step_result = statement.step();
   while (SQLITE_ROW == step_result) {
-    int64 metahandle;
+    int64 metahandle = statement.column_int64(0);
+
     string path_string_key;
+    DCHECK(statement.column_string(1, &path_string_key));
+
     ExtendedAttributeValue val;
+    DCHECK(statement.column_blob_as_vector(2, &(val.value)));
     val.is_deleted = false;
-    GetColumn(statement.get(), 0, &metahandle);
-    GetColumn(statement.get(), 1, &path_string_key);
-    GetColumn(statement.get(), 2, &(val.value));
+
     ExtendedAttributeKey key(metahandle, path_string_key);
     xattrs_bucket->insert(std::make_pair(key, val));
-    step_result = sqlite3_step(statement.get());
+    step_result = statement.step();
   }
   CHECK(SQLITE_DONE == step_result);
 }
@@ -421,10 +430,12 @@ bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
   query.append(" ) ");
   values.append(" )");
   query.append(values);
-  ScopedStatement const statement(PrepareQuery(save_dbhandle_, query.c_str()));
-  BindFields(entry, statement.get());
-  return StepDone(statement.get(), "SaveEntryToDB()") &&
-      1 == sqlite3_changes(save_dbhandle_);
+  SQLStatement statement;
+  statement.prepare(save_dbhandle_, query.c_str());
+  BindFields(entry, &statement);
+  return (SQLITE_DONE == statement.step() &&
+          SQLITE_OK == statement.reset() &&
+          1 == statement.changes());
 }
 
 bool DirectoryBackingStore::SaveExtendedAttributeToDB(

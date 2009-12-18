@@ -16,15 +16,6 @@ namespace syncable {
 const Id kNullId;  // Currently == root.
 }  // namespace syncable
 
-sqlite3_stmt* BindArg(sqlite3_stmt* statement, const syncable::Id& id,
-                      int index) {
-  return BindArg(statement, id.s_.c_str(), index);
-}
-
-void GetColumn(sqlite3_stmt* statement, int index, syncable::Id* id) {
-  GetColumn(statement, index, &id->s_);
-}
-
 ostream& operator << (ostream& out, const syncable::Id& id) {
   out << id.s_;
   return out;

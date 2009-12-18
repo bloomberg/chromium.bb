@@ -20,10 +20,12 @@ struct sqlite3_stmt;
 }
 
 namespace syncable {
+struct EntryKernel;
 class Id;
 }  // namespace syncable
 
 class MockConnectionManager;
+class SQLStatement;
 
 sqlite3_stmt* BindArg(sqlite3_stmt*, const syncable::Id&, int index);
 void GetColumn(sqlite3_stmt*, int index, syncable::Id* value);
@@ -44,8 +46,8 @@ namespace syncable {
 // 2. r for the root item.
 // 3. s<server provided opaque id> for items that the server knows about.
 class Id {
-  friend sqlite3_stmt* ::BindArg(sqlite3_stmt*, const syncable::Id&, int index);
-  friend void ::GetColumn(sqlite3_stmt*, int index, syncable::Id* value);
+  friend syncable::EntryKernel* UnpackEntry(SQLStatement* statement);
+  friend int BindFields(const EntryKernel& entry, SQLStatement* statement);
   friend std::ostream& ::operator << (std::ostream& out,
                                       const syncable::Id& id);
   friend browser_sync::FastDump& ::operator <<
