@@ -275,26 +275,31 @@ void RenderWidgetHostViewMac::IMEUpdateStatus(int control,
                               caret_rect.width(), caret_rect.height());
 }
 
-void RenderWidgetHostViewMac::DidPaintRect(const gfx::Rect& rect) {
+void RenderWidgetHostViewMac::DidPaintBackingStoreRects(
+    const std::vector<gfx::Rect>& rects) {
   if (is_hidden_)
     return;
 
-  NSRect ns_rect = [cocoa_view_ RectToNSRect:rect];
+  for (size_t i = 0; i < rects.size(); ++i) {
+    NSRect ns_rect = [cocoa_view_ RectToNSRect:rects[i]];
 
-  if (about_to_validate_and_paint_) {
-    // As much as we'd like to use -setNeedsDisplayInRect: here, we can't. We're
-    // in the middle of executing a -drawRect:, and as soon as it returns Cocoa
-    // will clear its record of what needs display. If we want to handle the
-    // recursive drawing, we need to do it ourselves.
-    invalid_rect_ = NSUnionRect(invalid_rect_, ns_rect);
-  } else {
-    [cocoa_view_ setNeedsDisplayInRect:ns_rect];
-    [cocoa_view_ displayIfNeeded];
+    if (about_to_validate_and_paint_) {
+      // As much as we'd like to use -setNeedsDisplayInRect: here, we can't.
+      // We're in the middle of executing a -drawRect:, and as soon as it
+      // returns Cocoa will clear its record of what needs display. If we want
+      // to handle the recursive drawing, we need to do it ourselves.
+      invalid_rect_ = NSUnionRect(invalid_rect_, ns_rect);
+    } else {
+      [cocoa_view_ setNeedsDisplayInRect:ns_rect];
+    }
   }
+
+  if (!about_to_validate_and_paint_)
+    [cocoa_view_ displayIfNeeded];
 }
 
-void RenderWidgetHostViewMac::DidScrollRect(
-    const gfx::Rect& rect, int dx, int dy) {
+void RenderWidgetHostViewMac::DidScrollBackingStoreRect(const gfx::Rect& rect,
+                                                        int dx, int dy) {
   if (is_hidden_)
     return;
 
@@ -305,7 +310,7 @@ void RenderWidgetHostViewMac::DidScrollRect(
   // TODO(rohitrao): Evaluate how slow this full redraw is.  If it
   // turns out to be a problem, consider scrolling only a portion of
   // the view, based on where the findbar and blocked popups are.
-  DidPaintRect(rect);
+  DidPaintBackingStoreRects(std::vector<gfx::Rect>(1, rect));
 }
 
 void RenderWidgetHostViewMac::RenderViewGone() {

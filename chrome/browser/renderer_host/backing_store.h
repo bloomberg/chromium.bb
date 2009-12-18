@@ -98,12 +98,9 @@ class BackingStore {
                  const gfx::Rect& bitmap_rect,
                  const gfx::Rect& copy_rect);
 
-  // Scrolls the given rect in the backing store, replacing the given region
-  // identified by |bitmap_rect| by the bitmap in the file identified by the
-  // given file handle.
-  void ScrollRect(base::ProcessHandle process,
-                  TransportDIB* bitmap, const gfx::Rect& bitmap_rect,
-                  int dx, int dy,
+  // Scrolls the contents of clip_rect in the backing store by dx or dy (but dx
+  // and dy cannot both be non-zero).
+  void ScrollRect(int dx, int dy,
                   const gfx::Rect& clip_rect,
                   const gfx::Size& view_size);
 

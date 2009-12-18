@@ -146,10 +146,7 @@ void BackingStore::PaintRect(base::ProcessHandle process,
                     reinterpret_cast<BITMAPINFO*>(&hdr));
 }
 
-void BackingStore::ScrollRect(base::ProcessHandle process,
-                              TransportDIB* bitmap,
-                              const gfx::Rect& bitmap_rect,
-                              int dx, int dy,
+void BackingStore::ScrollRect(int dx, int dy,
                               const gfx::Rect& clip_rect,
                               const gfx::Size& view_size) {
   RECT damaged_rect, r = clip_rect.ToRECT();
@@ -157,9 +154,4 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
 
   // TODO(darin): this doesn't work if dx and dy are both non-zero!
   DCHECK(dx == 0 || dy == 0);
-
-  // We expect that damaged_rect should equal bitmap_rect.
-  DCHECK(gfx::Rect(damaged_rect) == bitmap_rect);
-
-  PaintRect(process, bitmap, bitmap_rect, bitmap_rect);
 }

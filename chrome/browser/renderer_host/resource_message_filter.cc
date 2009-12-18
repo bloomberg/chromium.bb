@@ -326,8 +326,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_DnsPrefetch, OnDnsPrefetch)
       IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms,
                           OnRendererHistograms)
-      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_PaintRect,
-          render_widget_helper_->DidReceivePaintMsg(msg))
+      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
+          render_widget_helper_->DidReceiveUpdateMsg(msg))
       IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsAsync,
                           OnClipboardWriteObjects)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsSync,

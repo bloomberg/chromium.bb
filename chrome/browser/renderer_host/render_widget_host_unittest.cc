@@ -21,9 +21,9 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
  public:
   explicit RenderWidgetHostProcess(Profile* profile)
       : MockRenderProcessHost(profile),
-        current_paint_buf_(NULL),
-        paint_msg_should_reply_(false),
-        paint_msg_reply_flags_(0) {
+        current_update_buf_(NULL),
+        update_msg_should_reply_(false),
+        update_msg_reply_flags_(0) {
     // DANGER! This is a hack. The RenderWidgetHost checks the channel to see
     // if the process is still alive, but it doesn't actually dereference it.
     // An IPC::SyncChannel is nontrivial, so we just fake it here. If you end up
@@ -34,64 +34,65 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
     // We don't want to actually delete the channel, since it's not a real
     // pointer.
     channel_.release();
-    if (current_paint_buf_)
-      delete current_paint_buf_;
+    delete current_update_buf_;
   }
 
-  void set_paint_msg_should_reply(bool reply) {
-    paint_msg_should_reply_ = reply;
+  void set_update_msg_should_reply(bool reply) {
+    update_msg_should_reply_ = reply;
   }
-  void set_paint_msg_reply_flags(int flags) {
-    paint_msg_reply_flags_ = flags;
+  void set_update_msg_reply_flags(int flags) {
+    update_msg_reply_flags_ = flags;
   }
 
   // Fills the given paint parameters with resonable default values.
-  void InitPaintRectParams(ViewHostMsg_PaintRect_Params* params);
+  void InitUpdateRectParams(ViewHostMsg_UpdateRect_Params* params);
 
  protected:
-  virtual bool WaitForPaintMsg(int render_widget_id,
-                               const base::TimeDelta& max_delay,
-                               IPC::Message* msg);
+  virtual bool WaitForUpdateMsg(int render_widget_id,
+                                const base::TimeDelta& max_delay,
+                                IPC::Message* msg);
 
-  TransportDIB* current_paint_buf_;
+  TransportDIB* current_update_buf_;
 
   // Set to true when WaitForPaintMsg should return a successful paint messaage
   // reply. False implies timeout.
-  bool paint_msg_should_reply_;
+  bool update_msg_should_reply_;
 
   // Indicates the flags that should be sent with a the repaint request. This
   // only has an effect when paint_msg_should_reply_ is true.
-  int paint_msg_reply_flags_;
+  int update_msg_reply_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostProcess);
 };
 
-void RenderWidgetHostProcess::InitPaintRectParams(
-    ViewHostMsg_PaintRect_Params* params) {
+void RenderWidgetHostProcess::InitUpdateRectParams(
+    ViewHostMsg_UpdateRect_Params* params) {
   // Create the shared backing store.
   const int w = 100, h = 100;
   const size_t pixel_size = w * h * 4;
 
-  if (!current_paint_buf_)
-    current_paint_buf_ = TransportDIB::Create(pixel_size, 0);
-  params->bitmap = current_paint_buf_->id();
+  if (!current_update_buf_)
+    current_update_buf_ = TransportDIB::Create(pixel_size, 0);
+  params->bitmap = current_update_buf_->id();
   params->bitmap_rect = gfx::Rect(0, 0, w, h);
-  params->update_rects.push_back(params->bitmap_rect);
+  params->dx = 0;
+  params->dy = 0;
+  params->copy_rects.push_back(params->bitmap_rect);
   params->view_size = gfx::Size(w, h);
-  params->flags = paint_msg_reply_flags_;
+  params->flags = update_msg_reply_flags_;
 }
 
-bool RenderWidgetHostProcess::WaitForPaintMsg(int render_widget_id,
-                                              const base::TimeDelta& max_delay,
-                                              IPC::Message* msg) {
-  if (!paint_msg_should_reply_)
+bool RenderWidgetHostProcess::WaitForUpdateMsg(int render_widget_id,
+                                               const base::TimeDelta& max_delay,
+                                               IPC::Message* msg) {
+  if (!update_msg_should_reply_)
     return false;
 
   // Construct a fake paint reply.
-  ViewHostMsg_PaintRect_Params params;
-  InitPaintRectParams(&params);
+  ViewHostMsg_UpdateRect_Params params;
+  InitUpdateRectParams(&params);
 
-  ViewHostMsg_PaintRect message(render_widget_id, params);
+  ViewHostMsg_UpdateRect message(render_widget_id, params);
   *msg = message;
   return true;
 }
@@ -251,9 +252,9 @@ TEST_F(RenderWidgetHostTest, Resize) {
 
   // Send out a paint that's not a resize ack. This should not clean the
   // resize ack pending flag.
-  ViewHostMsg_PaintRect_Params params;
-  process_->InitPaintRectParams(&params);
-  host_->OnMsgPaintRect(params);
+  ViewHostMsg_UpdateRect_Params params;
+  process_->InitUpdateRectParams(&params);
+  host_->OnMsgUpdateRect(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->in_flight_size_);
 
@@ -271,9 +272,9 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // this isn't the second_size, the message handler should immediately send
   // a new resize message for the new size to the renderer.
   process_->sink().ClearMessages();
-  params.flags = ViewHostMsg_PaintRect_Flags::IS_RESIZE_ACK;
+  params.flags = ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK;
   params.view_size = original_size.size();
-  host_->OnMsgPaintRect(params);
+  host_->OnMsgUpdateRect(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(second_size.size(), host_->in_flight_size_);
   ASSERT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -281,7 +282,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // Send the resize ack for the latest size.
   process_->sink().ClearMessages();
   params.view_size = second_size.size();
-  host_->OnMsgPaintRect(params);
+  host_->OnMsgUpdateRect(params);
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
   ASSERT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
@@ -398,42 +399,42 @@ TEST_F(RenderWidgetHostTest, Background) {
 TEST_F(RenderWidgetHostTest, GetBackingStore_NoRepaintAck) {
   // We don't currently have a backing store, and if the renderer doesn't send
   // one in time, we should get nothing.
-  process_->set_paint_msg_should_reply(false);
+  process_->set_update_msg_should_reply(false);
   BackingStore* backing = host_->GetBackingStore(true);
   EXPECT_FALSE(backing);
   // The widget host should have sent a request for a repaint, and there should
   // be no paint ACK.
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Repaint::ID));
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_PaintRect_ACK::ID));
+      ViewMsg_UpdateRect_ACK::ID));
 
   // Allowing the renderer to reply in time should give is a backing store.
   process_->sink().ClearMessages();
-  process_->set_paint_msg_should_reply(true);
-  process_->set_paint_msg_reply_flags(0);
+  process_->set_update_msg_should_reply(true);
+  process_->set_update_msg_reply_flags(0);
   backing = host_->GetBackingStore(true);
   EXPECT_TRUE(backing);
   // The widget host should NOT have sent a request for a repaint, since there
   // was an ACK already pending.
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Repaint::ID));
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_PaintRect_ACK::ID));
+      ViewMsg_UpdateRect_ACK::ID));
 }
 
 // Tests getting the backing store with the renderer sending a repaint ack.
 TEST_F(RenderWidgetHostTest, GetBackingStore_RepaintAck) {
   // Doing a request request with the paint message allowed should work and
   // the repaint ack should work.
-  process_->set_paint_msg_should_reply(true);
-  process_->set_paint_msg_reply_flags(
-      ViewHostMsg_PaintRect_Flags::IS_REPAINT_ACK);
+  process_->set_update_msg_should_reply(true);
+  process_->set_update_msg_reply_flags(
+      ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK);
   BackingStore* backing = host_->GetBackingStore(true);
   EXPECT_TRUE(backing);
   // We still should not have sent out a repaint request since the last flags
   // didn't have the repaint ack set, and the pending flag will still be set.
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Repaint::ID));
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_PaintRect_ACK::ID));
+      ViewMsg_UpdateRect_ACK::ID));
 
   // Asking again for the backing store should just re-use the existing one
   // and not send any messagse.
@@ -442,7 +443,7 @@ TEST_F(RenderWidgetHostTest, GetBackingStore_RepaintAck) {
   EXPECT_TRUE(backing);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Repaint::ID));
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_PaintRect_ACK::ID));
+      ViewMsg_UpdateRect_ACK::ID));
 }
 
 // Test that we don't paint when we're hidden, but we still send the ACK. Most
@@ -456,13 +457,13 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
 
   // Send it a paint as from the renderer.
   process_->sink().ClearMessages();
-  ViewHostMsg_PaintRect_Params params;
-  process_->InitPaintRectParams(&params);
-  host_->OnMsgPaintRect(params);
+  ViewHostMsg_UpdateRect_Params params;
+  process_->InitUpdateRectParams(&params);
+  host_->OnMsgUpdateRect(params);
 
   // It should have sent out the ACK.
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_PaintRect_ACK::ID));
+      ViewMsg_UpdateRect_ACK::ID));
 
   // Now unhide.
   process_->sink().ClearMessages();

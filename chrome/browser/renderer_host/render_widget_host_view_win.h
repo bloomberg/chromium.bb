@@ -125,8 +125,8 @@ class RenderWidgetHostViewWin
   virtual void UpdateCursor(const WebCursor& cursor);
   virtual void SetIsLoading(bool is_loading);
   virtual void IMEUpdateStatus(int control, const gfx::Rect& caret_rect);
-  virtual void DidPaintRect(const gfx::Rect& rect);
-  virtual void DidScrollRect(const gfx::Rect& rect, int dx, int dy);
+  virtual void DidPaintBackingStoreRects(const std::vector<gfx::Rect>& rects);
+  virtual void DidScrollBackingStoreRect(const gfx::Rect& rect, int dx, int dy);
   virtual void RenderViewGone();
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh);
   virtual void Destroy();
@@ -207,7 +207,7 @@ class RenderWidgetHostViewWin
 
   // Redraws the window synchronously, and any child windows (i.e. plugins)
   // asynchronously.
-  void Redraw(const gfx::Rect& invalid_rect);
+  void Redraw();
 
   // Draw the resize corner bitmap on top of the given HDC, if it intersects the
   // given paint rect.

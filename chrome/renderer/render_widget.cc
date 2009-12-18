@@ -50,9 +50,8 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread, bool activatable)
       render_thread_(render_thread),
       host_window_(0),
       current_paint_buf_(NULL),
-      current_scroll_buf_(NULL),
       next_paint_flags_(0),
-      paint_reply_pending_(false),
+      update_reply_pending_(false),
       did_show_(false),
       is_hidden_(false),
       needs_repainting_on_restore_(false),
@@ -78,10 +77,6 @@ RenderWidget::~RenderWidget() {
   if (current_paint_buf_) {
     RenderProcess::current()->ReleaseTransportDIB(current_paint_buf_);
     current_paint_buf_ = NULL;
-  }
-  if (current_scroll_buf_) {
-    RenderProcess::current()->ReleaseTransportDIB(current_scroll_buf_);
-    current_scroll_buf_ = NULL;
   }
   RenderProcess::current()->ReleaseProcess();
 }
@@ -142,8 +137,7 @@ IPC_DEFINE_MESSAGE_MAP(RenderWidget)
   IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
   IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
   IPC_MESSAGE_HANDLER(ViewMsg_WasRestored, OnWasRestored)
-  IPC_MESSAGE_HANDLER(ViewMsg_PaintRect_ACK, OnPaintRectAck)
-  IPC_MESSAGE_HANDLER(ViewMsg_ScrollRect_ACK, OnScrollRectAck)
+  IPC_MESSAGE_HANDLER(ViewMsg_UpdateRect_ACK, OnUpdateRectAck)
   IPC_MESSAGE_HANDLER(ViewMsg_HandleInputEvent, OnHandleInputEvent)
   IPC_MESSAGE_HANDLER(ViewMsg_MouseCaptureLost, OnMouseCaptureLost)
   IPC_MESSAGE_HANDLER(ViewMsg_SetFocus, OnSetFocus)
@@ -258,11 +252,17 @@ void RenderWidget::OnWasRestored(bool needs_repainting) {
   didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
 }
 
-void RenderWidget::OnPaintRectAck() {
-  DCHECK(paint_reply_pending());
-  paint_reply_pending_ = false;
-  // If we sent a PaintRect message with a zero-sized bitmap, then
-  // we should have no current paint buf.
+void RenderWidget::OnRequestMoveAck() {
+  DCHECK(pending_window_rect_count_);
+  pending_window_rect_count_--;
+}
+
+void RenderWidget::OnUpdateRectAck() {
+  DCHECK(update_reply_pending());
+  update_reply_pending_ = false;
+
+  // If we sent an UpdateRect message with a zero-sized bitmap, then we should
+  // have no current update buf.
   if (current_paint_buf_) {
     RenderProcess::current()->ReleaseTransportDIB(current_paint_buf_);
     current_paint_buf_ = NULL;
@@ -272,23 +272,6 @@ void RenderWidget::OnPaintRectAck() {
   DidPaint();
 
   // Continue painting if necessary...
-  CallDoDeferredUpdate();
-}
-
-void RenderWidget::OnRequestMoveAck() {
-  DCHECK(pending_window_rect_count_);
-  pending_window_rect_count_--;
-}
-
-void RenderWidget::OnScrollRectAck() {
-  DCHECK(scroll_reply_pending());
-
-  if (current_scroll_buf_) {
-    RenderProcess::current()->ReleaseTransportDIB(current_scroll_buf_);
-    current_scroll_buf_ = NULL;
-  }
-
-  // Continue scrolling if necessary...
   CallDoDeferredUpdate();
 }
 
@@ -405,9 +388,17 @@ void RenderWidget::PaintDebugBorder(const gfx::Rect& rect,
   if (!kPaintBorder)
     return;
 
+  // Cycle through these colors to help distinguish new paint rects.
+  const SkColor colors[] = {
+    SkColorSetARGB(0x3F, 0xFF, 0, 0),
+    SkColorSetARGB(0x3F, 0xFF, 0, 0xFF),
+    SkColorSetARGB(0x3F, 0, 0, 0xFF),
+  };
+  static int color_selector = 0;
+
   SkPaint paint;
   paint.setStyle(SkPaint::kStroke_Style);
-  paint.setColor(SkColorSetARGB(0x3F, 0xFF, 0, 0));
+  paint.setColor(colors[color_selector++ % arraysize(colors)]);
   paint.setStrokeWidth(1);
 
   SkIRect irect;
@@ -426,7 +417,7 @@ void RenderWidget::CallDoDeferredUpdate() {
 
 void RenderWidget::DoDeferredUpdate() {
   if (!webwidget_ || !paint_aggregator_.HasPendingUpdate() ||
-      paint_reply_pending() || scroll_reply_pending())
+      update_reply_pending())
     return;
 
   // Suppress updating when we are hidden.
@@ -444,86 +435,56 @@ void RenderWidget::DoDeferredUpdate() {
   PaintAggregator::PendingUpdate update = paint_aggregator_.GetPendingUpdate();
   paint_aggregator_.ClearPendingUpdate();
 
-  if (!update.scroll_rect.IsEmpty()) {
-    // Optmized scrolling
+  gfx::Rect scroll_damage = update.GetScrollDamage();
+  gfx::Rect bounds = update.GetPaintBounds().Union(scroll_damage);
 
-    // Compute the region we will expose by scrolling, and paint that into a
-    // shared memory section.
-    gfx::Rect damaged_rect = update.GetScrollDamage();
-
-    scoped_ptr<skia::PlatformCanvas> canvas(
-        RenderProcess::current()->GetDrawingCanvas(&current_scroll_buf_,
-                                                   damaged_rect));
-    if (!canvas.get()) {
-      NOTREACHED();
-      return;
-    }
-
-    // We may get back a smaller canvas than we asked for.
-    damaged_rect.set_width(canvas->getDevice()->width());
-    damaged_rect.set_height(canvas->getDevice()->height());
-
-    // Set these parameters before calling Paint, since that could result in
-    // further invalidates (uncommon).
-    ViewHostMsg_ScrollRect_Params params;
-    params.bitmap_rect = damaged_rect;
-    params.dx = update.scroll_delta.x();
-    params.dy = update.scroll_delta.y();
-    params.clip_rect = update.scroll_rect;
-    params.view_size = size_;
-    params.plugin_window_moves = plugin_window_moves_;
-    params.bitmap = current_scroll_buf_->id();
-
-    plugin_window_moves_.clear();
-
-    PaintRect(damaged_rect, damaged_rect.origin(), canvas.get());
-    Send(new ViewHostMsg_ScrollRect(routing_id_, params));
+  // Compute a buffer for painting and cache it.
+  scoped_ptr<skia::PlatformCanvas> canvas(
+      RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_, bounds));
+  if (!canvas.get()) {
+    NOTREACHED();
+    return;
   }
 
-  if (!update.paint_rects.empty()) {
-    // Normal painting
+  // We may get back a smaller canvas than we asked for.
+  // TODO(darin): This seems like it could cause painting problems!
+  DCHECK_EQ(bounds.width(), canvas->getDevice()->width());
+  DCHECK_EQ(bounds.height(), canvas->getDevice()->height());
+  bounds.set_width(canvas->getDevice()->width());
+  bounds.set_height(canvas->getDevice()->height());
 
-    gfx::Rect bounds = update.GetPaintBounds();
+  HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
 
-    // Compute a buffer for painting and cache it.
-    scoped_ptr<skia::PlatformCanvas> canvas(
-        RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
-                                                   bounds));
-    if (!canvas.get()) {
-      NOTREACHED();
-      return;
-    }
+  // The scroll damage is just another rectangle to paint and copy.
+  std::vector<gfx::Rect> copy_rects;
+  copy_rects.swap(update.paint_rects);
+  if (!scroll_damage.IsEmpty())
+    copy_rects.push_back(scroll_damage);
 
-    // We may get back a smaller canvas than we asked for.
-    bounds.set_width(canvas->getDevice()->width());
-    bounds.set_height(canvas->getDevice()->height());
-
-    HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
-
-    // TODO(darin): Re-enable painting multiple damage rects once the
-    // page-cycler regressions are resolved.  See bug 29589.
-    if (update.scroll_rect.IsEmpty()) {
-      update.paint_rects.clear();
-      update.paint_rects.push_back(bounds);
-    }
-
-    for (size_t i = 0; i < update.paint_rects.size(); ++i)
-      PaintRect(update.paint_rects[i], bounds.origin(), canvas.get());
-
-    ViewHostMsg_PaintRect_Params params;
-    params.bitmap_rect = bounds;
-    params.update_rects = update.paint_rects;  // TODO(darin): clip to bounds?
-    params.view_size = size_;
-    params.plugin_window_moves = plugin_window_moves_;
-    params.flags = next_paint_flags_;
-    params.bitmap = current_paint_buf_->id();
-
-    plugin_window_moves_.clear();
-
-    paint_reply_pending_ = true;
-    Send(new ViewHostMsg_PaintRect(routing_id_, params));
-    next_paint_flags_ = 0;
+  // TODO(darin): Re-enable painting multiple damage rects once the
+  // page-cycler regressions are resolved.  See bug 29589.
+  if (update.scroll_rect.IsEmpty()) {
+    update.paint_rects.clear();
+    update.paint_rects.push_back(bounds);
   }
+
+  for (size_t i = 0; i < copy_rects.size(); ++i)
+    PaintRect(copy_rects[i], bounds.origin(), canvas.get());
+
+  ViewHostMsg_UpdateRect_Params params;
+  params.bitmap = current_paint_buf_->id();
+  params.bitmap_rect = bounds;
+  params.dx = update.scroll_delta.x();
+  params.dy = update.scroll_delta.y();
+  params.scroll_rect = update.scroll_rect;
+  params.copy_rects.swap(copy_rects);  // TODO(darin): clip to bounds?
+  params.view_size = size_;
+  params.plugin_window_moves.swap(plugin_window_moves_);
+  params.flags = next_paint_flags_;
+
+  update_reply_pending_ = true;
+  Send(new ViewHostMsg_UpdateRect(routing_id_, params));
+  next_paint_flags_ = 0;
 
   UpdateIME();
 }
@@ -548,7 +509,7 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
     return;
   if (!paint_aggregator_.HasPendingUpdate())
     return;
-  if (paint_reply_pending() || scroll_reply_pending())
+  if (update_reply_pending())
     return;
 
   // Perform updating asynchronously.  This serves two purposes:
@@ -577,7 +538,7 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
     return;
   if (!paint_aggregator_.HasPendingUpdate())
     return;
-  if (paint_reply_pending() || scroll_reply_pending())
+  if (update_reply_pending())
     return;
 
   // Perform updating asynchronously.  This serves two purposes:
@@ -773,23 +734,23 @@ void RenderWidget::SetBackground(const SkBitmap& background) {
 }
 
 bool RenderWidget::next_paint_is_resize_ack() const {
-  return ViewHostMsg_PaintRect_Flags::is_resize_ack(next_paint_flags_);
+  return ViewHostMsg_UpdateRect_Flags::is_resize_ack(next_paint_flags_);
 }
 
 bool RenderWidget::next_paint_is_restore_ack() const {
-  return ViewHostMsg_PaintRect_Flags::is_restore_ack(next_paint_flags_);
+  return ViewHostMsg_UpdateRect_Flags::is_restore_ack(next_paint_flags_);
 }
 
 void RenderWidget::set_next_paint_is_resize_ack() {
-  next_paint_flags_ |= ViewHostMsg_PaintRect_Flags::IS_RESIZE_ACK;
+  next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK;
 }
 
 void RenderWidget::set_next_paint_is_restore_ack() {
-  next_paint_flags_ |= ViewHostMsg_PaintRect_Flags::IS_RESTORE_ACK;
+  next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_RESTORE_ACK;
 }
 
 void RenderWidget::set_next_paint_is_repaint_ack() {
-  next_paint_flags_ |= ViewHostMsg_PaintRect_Flags::IS_REPAINT_ACK;
+  next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK;
 }
 
 void RenderWidget::UpdateIME() {

@@ -165,12 +165,12 @@ class RenderProcessHost : public IPC::Channel::Sender,
   virtual void CrossSiteClosePageACK(
       const ViewMsg_ClosePage_Params& params) = 0;
 
-  // Called on the UI thread to wait for the next PaintRect message for the
+  // Called on the UI thread to wait for the next UpdateRect message for the
   // specified render widget.  Returns true if successful, and the msg out-
-  // param will contain a copy of the received PaintRect message.
-  virtual bool WaitForPaintMsg(int render_widget_id,
-                               const base::TimeDelta& max_delay,
-                               IPC::Message* msg) = 0;
+  // param will contain a copy of the received UpdateRect message.
+  virtual bool WaitForUpdateMsg(int render_widget_id,
+                                const base::TimeDelta& max_delay,
+                                IPC::Message* msg) = 0;
 
   // Called when a received message cannot be decoded.
   virtual void ReceivedBadMessage(uint32 msg_type) = 0;
