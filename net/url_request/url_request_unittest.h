@@ -24,6 +24,7 @@
 #include "net/base/host_resolver.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_test_constants.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/http/http_network_layer.h"
 #include "net/socket/ssl_test_util.h"
@@ -383,14 +384,16 @@ class HTTPTestServer : public BaseTestServer {
       const std::wstring& document_root,
       const std::wstring& file_root_url,
       MessageLoop* loop) {
-    return CreateServerWithFileRootURL(document_root, file_root_url,
-                                       loop, 10, 1000);
+    return CreateServerWithFileRootURL(document_root, file_root_url, loop,
+                                       net::kDefaultTestConnectionAttempts,
+                                       net::kDefaultTestConnectionTimeout);
   }
 
   static scoped_refptr<HTTPTestServer> CreateForkingServer(
       const std::wstring& document_root) {
     scoped_refptr<HTTPTestServer> test_server =
-        new HTTPTestServer(10, 1000);
+        new HTTPTestServer(net::kDefaultTestConnectionAttempts,
+                           net::kDefaultTestConnectionTimeout);
     test_server->set_forking(true);
     FilePath no_cert;
     FilePath docroot = FilePath::FromWStringHack(document_root);
@@ -484,7 +487,7 @@ class HTTPTestServer : public BaseTestServer {
       retry_count--;
     }
     // Make sure we were successful in stopping the testserver.
-    DCHECK(retry_count > 0);
+    DCHECK_GT(retry_count, 0);
   }
 
   virtual std::string scheme() { return "http"; }

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include "net/socket/ssl_test_util.h"
 
@@ -31,6 +32,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "net/base/host_resolver.h"
+#include "net/base/net_test_constants.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_pinger.h"
@@ -47,8 +49,8 @@ static CERTCertificate* LoadTemporaryCert(const FilePath& filename) {
   base::EnsureNSSInit();
 
   std::string rawcert;
-  if (!file_util::ReadFileToString(filename.ToWStringHack(), &rawcert)) {
-    LOG(ERROR) << "Can't load certificate " << filename.ToWStringHack();
+  if (!file_util::ReadFileToString(filename, &rawcert)) {
+    LOG(ERROR) << "Can't load certificate " << filename.value();
     return NULL;
   }
 
@@ -56,7 +58,7 @@ static CERTCertificate* LoadTemporaryCert(const FilePath& filename) {
   cert = CERT_DecodeCertFromPackage(const_cast<char *>(rawcert.c_str()),
                                     rawcert.length());
   if (!cert) {
-    LOG(ERROR) << "Can't convert certificate " << filename.ToWStringHack();
+    LOG(ERROR) << "Can't convert certificate " << filename.value();
     return NULL;
   }
 
@@ -71,8 +73,7 @@ static CERTCertificate* LoadTemporaryCert(const FilePath& filename) {
 
   rv = CERT_ChangeCertTrust(CERT_GetDefaultCertDB(), cert, &trust);
   if (rv != SECSuccess) {
-    LOG(ERROR) << "Can't change trust for certificate "
-               << filename.ToWStringHack();
+    LOG(ERROR) << "Can't change trust for certificate " << filename.value();
     CERT_DestroyCertificate(cert);
     return NULL;
   }
@@ -84,8 +85,8 @@ static CERTCertificate* LoadTemporaryCert(const FilePath& filename) {
 #if defined(OS_MACOSX)
 static net::X509Certificate* LoadTemporaryCert(const FilePath& filename) {
   std::string rawcert;
-  if (!file_util::ReadFileToString(filename.ToWStringHack(), &rawcert)) {
-    LOG(ERROR) << "Can't load certificate " << filename.ToWStringHack();
+  if (!file_util::ReadFileToString(filename, &rawcert)) {
+    LOG(ERROR) << "Can't load certificate " << filename.value();
     return NULL;
   }
 
@@ -133,10 +134,10 @@ const int TestServerLauncher::kBadHTTPSPort = 9666;
 const wchar_t TestServerLauncher::kCertIssuerName[] = L"Test CA";
 
 TestServerLauncher::TestServerLauncher() : process_handle_(
-                                               base::kNullProcessHandle),
-                                           forking_(false),
-                                           connection_attempts_(10),
-                                           connection_timeout_(1000)
+    base::kNullProcessHandle),
+    forking_(false),
+    connection_attempts_(kDefaultTestConnectionAttempts),
+    connection_timeout_(kDefaultTestConnectionTimeout)
 #if defined(OS_LINUX)
 , cert_(NULL)
 #endif
