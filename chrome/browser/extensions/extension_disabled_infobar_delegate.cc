@@ -115,6 +115,9 @@ class ExtensionDisabledInfobarDelegate
                                         service_, extension_);
     return true;
   }
+  virtual void InfoBarClosed() {
+    delete this;
+  }
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

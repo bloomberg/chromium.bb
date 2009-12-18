@@ -865,8 +865,11 @@ void TabContents::AddInfoBar(InfoBarDelegate* delegate) {
   // Look through the existing InfoBarDelegates we have for a match. If we've
   // already got one that matches, then we don't add the new one.
   for (int i = 0; i < infobar_delegate_count(); ++i) {
-    if (GetInfoBarDelegateAt(i)->EqualsDelegate(delegate))
+    if (GetInfoBarDelegateAt(i)->EqualsDelegate(delegate)) {
+      // Tell the new infobar to close so that it can clean itself up.
+      delegate->InfoBarClosed();
       return;
+    }
   }
 
   infobar_delegates_.push_back(delegate);

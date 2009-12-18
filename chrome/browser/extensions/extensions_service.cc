@@ -617,13 +617,9 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
         old = NULL;
 
         if (!allow_silent_upgrade) {
-          // Extension has changed permissions significantly. Disable it and
-          // notify the user.
+          // Extension has changed permissions significantly. Disable it. We
+          // send a notification below.
           extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
-          NotificationService::current()->Notify(
-              NotificationType::EXTENSION_UPDATE_DISABLED,
-              Source<Profile>(profile_),
-              Details<Extension>(extension));
         }
       } else {
         // We already have the extension of the same or older version.
@@ -665,11 +661,11 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
         }
         break;
       case Extension::DISABLED:
+        disabled_extensions_.push_back(scoped_extension.release());
         NotificationService::current()->Notify(
             NotificationType::EXTENSION_UPDATE_DISABLED,
             Source<Profile>(profile_),
             Details<Extension>(extension));
-        disabled_extensions_.push_back(scoped_extension.release());
         break;
       default:
         NOTREACHED();
