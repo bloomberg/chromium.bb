@@ -166,7 +166,8 @@ TEST_F(StartupTest, PerfCold) {
 TEST_F(StartupTest, PerfExtensionEmpty) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("empty");
-  RunStartupTest("warm", "t", false /* cold */, false /* not important */,
+  RunStartupTest("warm", "extension_empty",
+                 false /* cold */, false /* not important */,
                  UITest::DEFAULT_THEME);
 }
 
