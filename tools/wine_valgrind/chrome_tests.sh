@@ -141,6 +141,14 @@ media_unittests       crash                FFmpegGlueTest.Write
 media_unittests       fail_wine_vmware     WinAudioTest.PCMWaveStreamTripleBuffer
 media_unittests       hang-valgrind        WinAudioTest.PCMWaveSlowSource
 net_unittests         fail                 SSLClientSocketTest.Read_Interrupted                 http://bugs.winehq.org/show_bug.cgi?id=20748
+net_unittests         fail                 HTTPSRequestTest.HTTPSExpiredTest                    # https/ssl failing on the bot, bad Wine? TODO(thestig): investigate
+net_unittests         fail                 HTTPSRequestTest.HTTPSGetTest                        # https/ssl failing on the bot, bad Wine? TODO(thestig): investigate
+net_unittests         fail                 HTTPSRequestTest.HTTPSMismatchedTest                 # https/ssl failing on the bot, bad Wine? TODO(thestig): investigate
+net_unittests         fail                 SSLClientSocketTest.Connect                          # https/ssl failing on the bot, bad Wine? TODO(thestig): investigate
+net_unittests         fail                 SSLClientSocketTest.Read                             # https/ssl failing on the bot, bad Wine? TODO(thestig): investigate
+net_unittests         fail                 SSLClientSocketTest.Read_FullDuplex                  # https/ssl failing on the bot, bad Wine? TODO(thestig): investigate
+net_unittests         fail                 SSLClientSocketTest.Read_SmallChunks                 # https/ssl failing on the bot, bad Wine? TODO(thestig): investigate
+net_unittests         fail                 URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest  # https/ssl failing on the bot, bad Wine? TODO(thestig): investigate
 sbox_unittests        fail                 JobTest.ProcessInJob
 sbox_unittests        fail                 JobTest.TestCreation
 sbox_unittests        fail                 JobTest.TestDetach
