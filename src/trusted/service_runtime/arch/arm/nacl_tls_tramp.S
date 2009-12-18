@@ -32,6 +32,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 /*
+ * NOTE: this code is like not used. Most places call _aeabi_read_tp() instead.
  * This code is patched into trampoline region, in the pre-last slot (the last
  * slot is occupied by the springboard). This code is used by the nacl module
  * for obtaining a pointer to its TLS region. A function __aeabi_read_tp in nacl

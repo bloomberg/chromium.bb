@@ -37,7 +37,8 @@
 IDENTIFIER(NaClSwitch):
 
   /*
-   * This code is executed when switching from the service runtime to a nacl
+   * This trusted code is linked into the service_runtime and
+   * executed when switching from the service runtime to a nacl
    * module. This happens when a main nacl thread is created and starting to
    * execute the nacle code, or when nacl module is returning from a system
    * call. This piece of code lives in a service runtime part of address space.

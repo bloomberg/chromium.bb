@@ -32,7 +32,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 /*
- * This code is in service runtime part of address space. It is executed when a
+ * This trusted code is linked into the service runtime. It is executed when a
  * nacl module performs a system call via service runtime interface. The nacl
  * module jumps to trampoline corresponding to the syscall it performs and then
  * here. This code switches the execution contexts (registers and stack) from
