@@ -249,7 +249,7 @@ Chrome supports. -->
       </message>
       <!-- Uninstall messages -->
       <message name="IDS_UNINSTALL_CLOSE_APP" desc="Message to user when uninstall detects other app instance running">
-        Please close all Chrome windows and try again.
+        Please close all Google Chrome windows and try again.
       </message>
       <message name="IDS_UNINSTALL_VERIFY" desc="Message to confirm user wants to uninstall">
         Are you sure you want to uninstall Google Chrome?
