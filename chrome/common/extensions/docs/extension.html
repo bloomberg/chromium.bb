@@ -271,6 +271,11 @@
 <p id="classSummary">
 The <code>chrome.extension</code> module
 has utilities that can be used by any extension page.
+It includes support for exchanging messages
+between an extension and its content scripts
+or between extensions,
+as described in detail in
+<a href="messaging.html">Message Passing</a>.
 </p>
 
 <h2 id="content scripts">Support for content scripts</h2>
@@ -282,11 +287,18 @@ can be used by content scripts:
 
 <dl>
   <dt>
+    <a href="#method-sendRequest"><code>sendRequest()</code></a> and
+    <a href="#event-onRequest"><code>onRequest</code></a>
+  </dt>
+  <dd>
+    Simple communication with extension pages
+  </dd>
+  <dt>
     <a href="#method-connect"><code>connect()</code></a> and
     <a href="#event-onConnect"><code>onConnect</code></a>
   </dt>
   <dd>
-    Communication with extension pages
+    Extended communication with extension pages
   </dd>
   <dt>
     <a href="#method-getURL"><code>getURL()</code></a>
