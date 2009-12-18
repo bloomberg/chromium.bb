@@ -21,6 +21,14 @@ typedef base::PlatformFile PlatformFileForTransit;
 typedef base::FileDescriptor PlatformFileForTransit;
 #endif
 
+inline PlatformFileForTransit InvalidPlatformFileForTransit() {
+#if defined(OS_WIN)
+  return base::kInvalidPlatformFileValue;
+#elif defined(OS_POSIX)
+  return base::FileDescriptor();
+#endif
+}
+
 inline base::PlatformFile PlatformFileForTransitToPlatformFile(
     const PlatformFileForTransit& transit) {
 #if defined(OS_WIN)

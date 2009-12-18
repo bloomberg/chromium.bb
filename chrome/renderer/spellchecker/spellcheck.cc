@@ -182,6 +182,8 @@ void SpellCheck::InitializeHunspell() {
 
     DHISTOGRAM_TIMES("Spellcheck.InitTime",
                      TimeTicks::Now() - start_time);
+  } else {
+    NOTREACHED() << "Could not mmap spellchecker dictionary.";
   }
 }
 
@@ -201,11 +203,9 @@ bool SpellCheck::InitializeIfNeeded() {
     return true;
   }
 
-  // Check if the platform spellchecker is being used.
-  if (file_ != base::kInvalidPlatformFileValue) {
-    // If it isn't, init hunspell.
+  // Don't initialize if hunspell is disabled.
+  if (file_ != base::kInvalidPlatformFileValue)
     InitializeHunspell();
-  }
 
   return false;
 }
@@ -223,9 +223,15 @@ bool SpellCheck::CheckSpelling(const string16& word_to_check, int tag) {
     std::string word_to_check_utf8(UTF16ToUTF8(word_to_check));
     // Hunspell shouldn't let us exceed its max, but check just in case
     if (word_to_check_utf8.length() < MAXWORDUTF8LEN) {
-      // |hunspell_->spell| returns 0 if the word is spelled correctly and
-      // non-zero otherwsie.
-      word_correct = (hunspell_->spell(word_to_check_utf8.c_str()) != 0);
+      if (hunspell_.get()) {
+        // |hunspell_->spell| returns 0 if the word is spelled correctly and
+        // non-zero otherwsie.
+        word_correct = (hunspell_->spell(word_to_check_utf8.c_str()) != 0);
+      } else {
+        // If |hunspell_| is NULL here, an error has occurred, but it's better
+        // to check rather than crash.
+        word_correct = true;
+      }
     }
   }
 
@@ -241,6 +247,12 @@ void SpellCheck::FillSuggestionList(
             wrong_word, optional_suggestions));
     return;
   }
+
+  // If |hunspell_| is NULL here, an error has occurred, but it's better
+  // to check rather than crash.
+  if (!hunspell_.get())
+    return;
+
   char** suggestions;
   int number_of_suggestions =
       hunspell_->suggest(&suggestions, UTF16ToUTF8(wrong_word).c_str());

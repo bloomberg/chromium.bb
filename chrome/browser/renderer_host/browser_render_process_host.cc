@@ -993,7 +993,7 @@ void BrowserRenderProcessHost::InitSpellChecker() {
         prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
   } else {
     Send(new ViewMsg_SpellChecker_Init(
-        IPC::PlatformFileForTransit(),
+        IPC::InvalidPlatformFileForTransit(),
         std::vector<std::string>(),
         std::string(),
         false));
