@@ -188,8 +188,13 @@ class AlertInfoBar : public InfoBar {
       : InfoBar(delegate) {
     std::wstring text = delegate->GetMessageText();
     GtkWidget* label = gtk_label_new(WideToUTF8(text).c_str());
+    // We want the label to be horizontally shrinkable, so that the Chrome
+    // window can be resized freely even with a very long message.
+    gtk_widget_set_size_request(label, 0, -1);
+    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
     gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
-    gtk_box_pack_start(GTK_BOX(hbox_), label, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox_), label, TRUE, TRUE, 0);
 
     gtk_widget_show_all(border_bin_.get());
   }
@@ -215,13 +220,23 @@ class LinkInfoBar : public InfoBar {
                      G_CALLBACK(OnLinkClick), this);
     gtk_util::SetButtonTriggersNavigation(link_button);
 
+    GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
+    // We want the link to be horizontally shrinkable, so that the Chrome
+    // window can be resized freely even with a very long link.
+    gtk_widget_set_size_request(hbox, 0, -1);
+    gtk_box_pack_start(GTK_BOX(hbox_), hbox, TRUE, TRUE, 0);
     // If link_offset is npos, we right-align the link instead of embedding it
     // in the text.
     if (link_offset == std::wstring::npos) {
-      gtk_box_pack_end(GTK_BOX(hbox_), link_button, FALSE, FALSE, 0);
+      gtk_box_pack_end(GTK_BOX(hbox), link_button, FALSE, FALSE, 0);
       GtkWidget* label = gtk_label_new(WideToUTF8(display_text).c_str());
+      // In order to avoid the link_button and the label overlapping with each
+      // other, we make the label shrinkable.
+      gtk_widget_set_size_request(label, 0, -1);
+      gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+      gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
       gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
-      gtk_box_pack_start(GTK_BOX(hbox_), label, FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
     } else {
       GtkWidget* initial_label = gtk_label_new(
           WideToUTF8(display_text.substr(0, link_offset)).c_str());
@@ -233,11 +248,9 @@ class LinkInfoBar : public InfoBar {
 
       // We don't want any spacing between the elements, so we pack them into
       // this hbox that doesn't use kElementPadding.
-      GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
       gtk_box_pack_start(GTK_BOX(hbox), initial_label, FALSE, FALSE, 0);
       gtk_util::CenterWidgetInHBox(hbox, link_button, false, 0);
       gtk_box_pack_start(GTK_BOX(hbox), trailing_label, FALSE, FALSE, 0);
-      gtk_box_pack_start(GTK_BOX(hbox_), hbox, FALSE, FALSE, 0);
     }
 
     gtk_widget_show_all(border_bin_.get());

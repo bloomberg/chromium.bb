@@ -89,22 +89,30 @@ class TabContentsViewGtk : public TabContentsView,
   static gboolean OnMouseDown(GtkWidget* widget,
                               GdkEventButton* event, TabContentsViewGtk* view);
 
-  // Used to propagate size changes on |fixed_| to its children.
-  static gboolean OnSizeAllocate(GtkWidget* widget,
-                                 GtkAllocation* config,
+  // Used to adjust the size of its children when the size of |expanded_| is
+  // changed.
+  static void OnChildSizeRequest(GtkWidget* widget,
+                                 GtkWidget* child,
+                                 GtkRequisition* requisition,
                                  TabContentsViewGtk* view);
+
+  // Used to propagate the size change of |expanded_| to our RWHV to resize the
+  // renderer content.
+  static void OnSizeAllocate(GtkWidget* widget,
+                             GtkAllocation* allocation,
+                             TabContentsViewGtk* view);
 
   static void OnSetFloatingPosition(
       GtkFloatingContainer* floating_container, GtkAllocation* allocation,
       TabContentsViewGtk* tab_contents_view);
 
-  // Contains |fixed_| as its GtkBin member and a possible floating widget from
-  // |popup_view_|.
+  // Contains |expanded_| as its GtkBin member and a possible floating widget
+  // from |popup_view_|.
   OwnedWidgetGtk floating_;
 
-  // This container holds the tab's web page views. It is a GtkFixed so that we
-  // can control the size of the web pages.
-  GtkWidget* fixed_;
+  // This container holds the tab's web page views. It is a GtkExpandedContainer
+  // so that we can control the size of the web pages.
+  GtkWidget* expanded_;
 
   // The context menu is reset every time we show it, but we keep a pointer to
   // between uses so that it won't go out of scope before we're done with it.

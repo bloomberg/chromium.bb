@@ -1583,14 +1583,6 @@ void BrowserWindowGtk::BookmarkBarIsFloating(bool is_floating) {
 }
 
 void BrowserWindowGtk::SetGeometryHints() {
-  // Do not allow the user to resize us arbitrarily small. When using the
-  // custom frame, the window can disappear entirely while resizing, or get
-  // to a size that's very hard to resize.
-  GdkGeometry geometry;
-  geometry.min_width = 100;
-  geometry.min_height = 100;
-  gtk_window_set_geometry_hints(window_, NULL, &geometry, GDK_HINT_MIN_SIZE);
-
   // If we call gtk_window_maximize followed by gtk_window_present, compiz gets
   // confused and maximizes the window, but doesn't set the
   // GDK_WINDOW_STATE_MAXIMIZED bit.  So instead, we keep track of whether to
