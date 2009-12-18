@@ -22,10 +22,10 @@
   <translation id="IDS_FANTASY_FONT_FAMILY">Papyrus</translation>
 </if>
 <if expr="os == 'linux2'">
-  <translation id="IDS_WEB_FONT_FAMILY">Sazanami Gothic, Kochi Gothic, sans-serif</translation>
-  <translation id="IDS_FIXED_FONT_FAMILY">Sazanami Gothic</translation>
+  <translation id="IDS_WEB_FONT_FAMILY">VL PGothic, Sazanami Gothic, Kochi Gothic, sans-serif</translation>
+  <translation id="IDS_FIXED_FONT_FAMILY">VL Gothic, Sazanami Gothic</translation>
   <translation id="IDS_SERIF_FONT_FAMILY">Sazanami Mincho</translation>
-  <translation id="IDS_SANS_SERIF_FONT_FAMILY">Sazanami Gothic</translation>
+  <translation id="IDS_SANS_SERIF_FONT_FAMILY">VL PGothic, Sazanami Gothic</translation>
   <translation id="IDS_CURSIVE_FONT_FAMILY">Sazanami Mincho</translation>
   <translation id="IDS_FANTASY_FONT_FAMILY">Sazanami Mincho</translation>
 </if>
