@@ -1,7 +1,12 @@
+// To make sure we can uniquely identify each screenshot tab, add an id as a
+// query param to the url that displays the screenshot.
+var id = 100;
+
 function takeScreenshot() {
   chrome.tabs.captureVisibleTab(null, function(img) {
     var screenshotUrl = img;
-    var viewTabUrl = chrome.extension.getURL('screenshot.html');
+    var viewTabUrl = [chrome.extension.getURL('screenshot.html'),
+                      '?id=', id++].join('');
 
     chrome.tabs.create({url: viewTabUrl}, function(tab) {
       var targetId = tab.id;
@@ -19,18 +24,14 @@ function takeScreenshot() {
         chrome.tabs.onUpdated.removeListener(addSnapshotImageToTab);
 
         // Look through all views to find the window which will display
-        // the screenshot.
+        // the screenshot.  The url of the tab which will display the
+        // screenshot includes a query parameter with a unique id, which
+        // ensures that exactly one view will have the matching URL.
         var views = chrome.extension.getViews();
         for (var i = 0; i < views.length; i++) {
           var view = views[i];
-          // If more than one screen shot tab is opened, we need to
-          // ensure that we do not change an existing screen shot image.
-          // view.imageAlreadySet is set to true when an image is set for
-          // the first time.  We never change an image in a window with
-          // this flag set.
-          if (view.location.href == viewTabUrl && !view.imageAlreadySet) {
+          if (view.location.href == viewTabUrl) {
             view.setScreenshotUrl(screenshotUrl);
-            view.imageAlreadySet = true;
             break;
           }
         }
