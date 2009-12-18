@@ -65,7 +65,7 @@ SRCDIR=../../../third_party
 ifeq ($(PLATFORM), Cygwin)
   # Ugh, Cygwin and spaces in paths don't work well.
   # I'm explicitly coding the path.
-  BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:/usr/local/bin:/usr/bin:/bin:/cygdrive/c/Python25/:/usr/X11R6/bin:/cygdrive/c/WINDOWS/system32:/cygdrive/c/WINDOWS:/cygdrive/c/WINDOWS/system32/WBEM:/cygdrive/c/WINDOWS/system32/WindowsPowerShell/v1.0:/usr/lib/lapack
+  BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:/usr/local/bin:/usr/bin:/bin
   SCONS?=scons.bat
   SDKLOC_NATIVE=$(shell cygpath -m $(SDKLOC))
   CYGWIN17=$(shell grep '^cygwin cygwin-1.7' /etc/setup/installed.db | wc -l)
@@ -74,7 +74,15 @@ ifeq ($(PLATFORM), Cygwin)
     SDKROOT := 
     PLATFORM:= Cygwin17
     CYGWIN_DLL_COPY= \
-      cp -f `cygpath \`cygcheck $(DESTDIR)$(SDKROOT)/bin/*.exe\` | \
+      cp -f `cygpath \` \
+        cd $(DESTDIR)$(SDKROOT)/bin ; \
+        for i in '*.exe' ; do \
+          PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
+        done ; \
+        cd $(DESTDIR)$(SDKROOT)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION) ; \
+        for i in '*.exe' ; do \
+          PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
+        done \` | \
       grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
       $(DESTDIR)$(SDKROOT)/bin
   else
@@ -187,7 +195,7 @@ BUILD/stamp-gdb-$(GDB_VERSION): #Makefile
 SDKDIRS=\
     $(DESTDIR)$(SDKROOT)/bin \
     $(DESTDIR)$(SDKROOT)/lib \
-    $(DESTDIR)$(SDKROOT)/include \
+    $(DESTDIR)$(SDKROOT)/libexec \
     $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include \
     $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib \
 
@@ -218,6 +226,7 @@ BUILD/stamp-binutils: BUILD/stamp-binutils-$(BINUTILS_VERSION) Makefile
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
+	$(MAKE) -f $(THISMAKEFILE) fix_cygwin
 
 .PHONY: binutils
 binutils: BUILD/stamp-binutils
@@ -273,6 +282,7 @@ BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	cp $(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc.a \
 		$(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc_eh.a
 	touch $@
+	$(MAKE) -f $(THISMAKEFILE) fix_cygwin
 
 .PHONY: pregcc
 pregcc: BUILD/stamp-pregcc
@@ -394,6 +404,7 @@ endif
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
 	    DESTDIR=$(DESTDIR) install
 	touch $@
+	$(MAKE) -f $(THISMAKEFILE) fix_cygwin
 
 .PHONY: gcc
 gcc: BUILD/stamp-gcc
@@ -426,6 +437,7 @@ BUILD/stamp-gdb: BUILD/stamp-gdb-$(GDB_VERSION) #Makefile
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
+	$(MAKE) -f $(THISMAKEFILE) fix_cygwin
 
 .PHONY: gdb
 gdb: BUILD/stamp-gdb
@@ -461,16 +473,35 @@ sdk_minimal_test: ALWAYS
 
 
 ##################################################################
+# Fix cygwin 1.7 issues - must be done to make pregcc/gcc work
+##################################################################
+
+fix_cygwin: ALWAYS
+	$(CYGWIN_DLL_COPY)
+ifeq ($(PLATFORM), Cygwin17)
+	mv -f $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
+	  $(DESTDIR)$(SDKROOT)/libexec
+	for exe in $(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-*.exe ; do \
+	  if ! cmp redirector.exe "$$exe" > /dev/null ; then \
+	    mv -f "$$exe" $(DESTDIR)$(SDKROOT)/libexec/"`basename $$exe`" ; \
+	    cp -af redirector.exe "$$exe" ; \
+	  fi ; \
+	done && \
+	for exe in $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/*.exe ; do \
+	  cp -af redirector.exe $$exe ; \
+	done
+endif
+
+##################################################################
 # Build the entire sdk
 ##################################################################
 
-build:
+build: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f ../../third_party/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-binutils
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-pregcc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-newlib
-	$(CYGWIN_DLL_COPY)
 	$(MAKE) -f $(THISMAKEFILE) nc_threads
 	# We need libnacl.a for gfortran, but we don't have a c++ yet
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries_nocpp
@@ -486,17 +517,7 @@ endif
 ifeq ($(CROSSARCH), nacl)
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
 endif
-ifeq ($(PLATFORM), Cygwin17)
-	mv -f $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
-	  $(DESTDIR)$(SDKROOT)/libexec
-	for exe in $(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-*.exe ; do \
-	  mv -f "$$exe" $(DESTDIR)$(SDKROOT)/libexec/"`basename $$exe`" ; \
-	  cp -af redirector.exe "$$exe" ; \
-	done && \
-	for exe in $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/*.exe ; do \
-	  cp -af redirector.exe $$exe ; \
-	done
-endif
+	$(MAKE) -f $(THISMAKEFILE) fix_cygwin
 
 ##################################################################
 # Build an updated set of patches from the current build versions.
