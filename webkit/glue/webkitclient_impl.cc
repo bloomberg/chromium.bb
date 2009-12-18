@@ -318,7 +318,14 @@ WebKit::WebString WebKitClientImpl::signedPublicKeyAndChallengeString(
 size_t WebKitClientImpl::memoryUsageMB() {
   using base::ProcessMetrics;
   static ProcessMetrics* process_metrics =
+#if !defined(OS_MACOSX)
       ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle());
+#else
+      // The default port provider is sufficient to get data for the current
+      // process.
+      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle(),
+                                           NULL);
+#endif
   DCHECK(process_metrics);
   return process_metrics->GetPagefileUsage() >> 20;
 }
