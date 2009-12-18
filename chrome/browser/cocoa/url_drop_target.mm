@@ -9,9 +9,6 @@
 
 @interface URLDropTargetHandler(Private)
 
-// Get the window controller.
-- (id<URLDropTargetWindowController>)windowController;
-
 // Gets the appropriate drag operation given the |NSDraggingInfo|.
 - (NSDragOperation)getDragOperation:(id<NSDraggingInfo>)sender;
 
@@ -47,7 +44,8 @@
   NSDragOperation dragOp = [self getDragOperation:sender];
   if (dragOp == NSDragOperationCopy) {
     // Just tell the window controller to update the indicator.
-    [[self windowController] indicateDropURLsAt:[sender draggingLocation]];
+    NSPoint hoverPoint = [view_ convertPointFromBase:[sender draggingLocation]];
+    [[view_ urlDropController] indicateDropURLsInView:view_ at:hoverPoint];
   }
   return dragOp;
 }
@@ -67,7 +65,9 @@
 
     if ([urls count]) {
       // Tell the window controller about the dropped URL(s).
-      [[self windowController] dropURLs:urls at:[sender draggingLocation]];
+      NSPoint dropPoint =
+          [view_ convertPointFromBase:[sender draggingLocation]];
+      [[view_ urlDropController] dropURLs:urls inView:view_ at:dropPoint];
       return YES;
     }
   }
@@ -79,21 +79,13 @@
 
 @implementation URLDropTargetHandler(Private)
 
-- (id<URLDropTargetWindowController>)windowController {
-  id<URLDropTargetWindowController> controller =
-      [[view_ window] windowController];
-  DCHECK([(id)controller conformsToProtocol:
-      @protocol(URLDropTargetWindowController)]);
-  return controller;
-}
-
 - (NSDragOperation)getDragOperation:(id<NSDraggingInfo>)sender {
   // Only allow the copy operation.
   return [sender draggingSourceOperationMask] & NSDragOperationCopy;
 }
 
 - (void)hideIndicator {
-  [[self windowController] hideDropURLsIndicator];
+  [[view_ urlDropController] hideDropURLsIndicatorInView:view_];
 }
 
 @end  // @implementation URLDropTargetHandler(Private)
