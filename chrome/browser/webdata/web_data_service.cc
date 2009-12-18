@@ -672,8 +672,13 @@ void WebDataService::RemoveFormElementsAddedBetweenImpl(
     AutofillChangeList changes;
     if (db_->RemoveFormElementsAddedBetween(request->GetArgument1(),
                                             request->GetArgument2(),
-                                            &changes))
+                                            &changes)) {
+      if (changes.size() > 0) {
+        request->SetResult(
+            new WDResult<AutofillChangeList>(AUTOFILL_CHANGES, changes));
+      }
       ScheduleCommit();
+    }
   }
   request->RequestComplete();
 }

@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
@@ -25,6 +26,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_field.h"
 
+using base::Time;
+using base::TimeDelta;
 using testing::_;
 using testing::ElementsAreArray;
 using testing::Pointee;
@@ -67,9 +70,16 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
 
 class WebDataServiceTest : public testing::Test {
  public:
-  WebDataServiceTest() : ui_thread_(ChromeThread::UI, &message_loop_) {}
+  WebDataServiceTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_) {}
+
  protected:
   virtual void SetUp() {
+    name1_ = ASCIIToUTF16("name1");
+    name2_ = ASCIIToUTF16("name2");
+    value1_ = ASCIIToUTF16("value1");
+    value2_ = ASCIIToUTF16("value2");
+
     PathService::Get(chrome::DIR_TEST_DATA, &profile_dir_);
     const std::string test_profile = "WebDataServiceTest";
     profile_dir_ = profile_dir_.AppendASCII(test_profile);
@@ -88,8 +98,22 @@ class WebDataServiceTest : public testing::Test {
     MessageLoop::current()->Run();
   }
 
+  void AppendFormField(const string16& name,
+                       const string16& value,
+                       std::vector<webkit_glue::FormField>* form_fields) {
+    form_fields->push_back(
+        webkit_glue::FormField(EmptyString16(),
+                               name,
+                               EmptyString16(),
+                               value));
+  }
+
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
+  string16 name1_;
+  string16 name2_;
+  string16 value1_;
+  string16 value2_;
   FilePath profile_dir_;
   scoped_refptr<WebDataService> wds_;
   NotificationRegistrar registrar_;
@@ -97,14 +121,9 @@ class WebDataServiceTest : public testing::Test {
 };
 
 TEST_F(WebDataServiceTest, AutofillAdd) {
-  const string16 kName1 = ASCIIToUTF16("name1");
-  const string16 kValue1 = ASCIIToUTF16("value1");
-  const string16 kName2 = ASCIIToUTF16("name2");
-  const string16 kValue2 = ASCIIToUTF16("value2");
-
   const AutofillChange expected_changes[] = {
-    AutofillChange(AutofillChange::ADD, AutofillKey(kName1, kValue1)),
-    AutofillChange(AutofillChange::ADD, AutofillKey(kName2, kValue2))
+    AutofillChange(AutofillChange::ADD, AutofillKey(name1_, value1_)),
+    AutofillChange(AutofillChange::ADD, AutofillKey(name2_, value2_))
   };
 
   // This will verify that the correct notification is triggered,
@@ -122,16 +141,8 @@ TEST_F(WebDataServiceTest, AutofillAdd) {
                  NotificationService::AllSources());
 
   std::vector<webkit_glue::FormField> form_fields;
-  form_fields.push_back(
-      webkit_glue::FormField(EmptyString16(),
-                             kName1,
-                             EmptyString16(),
-                             kValue1));
-  form_fields.push_back(
-      webkit_glue::FormField(EmptyString16(),
-                             kName2,
-                             EmptyString16(),
-                             kValue2));
+  AppendFormField(name1_, value1_, &form_fields);
+  AppendFormField(name2_, value2_, &form_fields);
   wds_->AddFormFieldValues(form_fields);
 
   // The message loop will exit when the mock observer is notified.
@@ -141,31 +152,24 @@ TEST_F(WebDataServiceTest, AutofillAdd) {
   WebDataService::Handle handle;
   static const int limit = 10;
   handle = wds_->GetFormValuesForElementName(
-      kName1, EmptyString16(), limit, &consumer);
+      name1_, EmptyString16(), limit, &consumer);
 
   // The message loop will exit when the consumer is called.
   MessageLoop::current()->Run();
 
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.values().size());
-  EXPECT_EQ(kValue1, consumer.values()[0]);
+  EXPECT_EQ(value1_, consumer.values()[0]);
 }
 
 TEST_F(WebDataServiceTest, AutofillRemoveOne) {
-  const string16 kName1 = ASCIIToUTF16("name1");
-  const string16 kValue1 = ASCIIToUTF16("value1");
-
   // First add some values to autofill.
   EXPECT_CALL(observer_, Observe(_, _, _)).WillOnce(QuitUIMessageLoop());
   registrar_.Add(&observer_,
                  NotificationType::AUTOFILL_ENTRIES_CHANGED,
                  NotificationService::AllSources());
   std::vector<webkit_glue::FormField> form_fields;
-  form_fields.push_back(
-      webkit_glue::FormField(EmptyString16(),
-                             kName1,
-                             EmptyString16(),
-                             kValue1));
+  AppendFormField(name1_, value1_, &form_fields);
   wds_->AddFormFieldValues(form_fields);
 
   // The message loop will exit when the mock observer is notified.
@@ -174,7 +178,7 @@ TEST_F(WebDataServiceTest, AutofillRemoveOne) {
   // This will verify that the correct notification is triggered,
   // passing the correct list of autofill keys in the details.
   const AutofillChange expected_changes[] = {
-    AutofillChange(AutofillChange::REMOVE, AutofillKey(kName1, kValue1))
+    AutofillChange(AutofillChange::REMOVE, AutofillKey(name1_, value1_))
   };
   EXPECT_CALL(
       observer_,
@@ -183,7 +187,42 @@ TEST_F(WebDataServiceTest, AutofillRemoveOne) {
               Property(&Details<const AutofillChangeList>::ptr,
                        Pointee(ElementsAreArray(expected_changes))))).
       WillOnce(QuitUIMessageLoop());
-  wds_->RemoveFormValueForElementName(kName1, kValue1);
+  wds_->RemoveFormValueForElementName(name1_, value1_);
+
+  // The message loop will exit when the mock observer is notified.
+  MessageLoop::current()->Run();
+}
+
+TEST_F(WebDataServiceTest, AutofillRemoveMany) {
+  TimeDelta one_day(TimeDelta::FromDays(1));
+  Time t = Time::Now();
+
+  EXPECT_CALL(observer_, Observe(_, _, _)).WillOnce(QuitUIMessageLoop());
+  registrar_.Add(&observer_,
+                 NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                 NotificationService::AllSources());
+  std::vector<webkit_glue::FormField> form_fields;
+  AppendFormField(name1_, value1_, &form_fields);
+  AppendFormField(name2_, value2_, &form_fields);
+  wds_->AddFormFieldValues(form_fields);
+
+  // The message loop will exit when the mock observer is notified.
+  MessageLoop::current()->Run();
+
+  // This will verify that the correct notification is triggered,
+  // passing the correct list of autofill keys in the details.
+  const AutofillChange expected_changes[] = {
+    AutofillChange(AutofillChange::REMOVE, AutofillKey(name1_, value1_)),
+    AutofillChange(AutofillChange::REMOVE, AutofillKey(name2_, value2_))
+  };
+  EXPECT_CALL(
+      observer_,
+      Observe(NotificationType(NotificationType::AUTOFILL_ENTRIES_CHANGED),
+              NotificationService::AllSources(),
+              Property(&Details<const AutofillChangeList>::ptr,
+                       Pointee(ElementsAreArray(expected_changes))))).
+      WillOnce(QuitUIMessageLoop());
+  wds_->RemoveFormElementsAddedBetween(t, t + one_day);
 
   // The message loop will exit when the mock observer is notified.
   MessageLoop::current()->Run();
