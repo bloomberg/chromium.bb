@@ -3128,3 +3128,6 @@ BUG29737 LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = TEXT PASS
 
 // Newly added test in r52235
 BUG_JPARENT WIN LINUX : LayoutTests/editing/selection/doubleclick-beside-cr-span.html = TEXT
+
+// WebKit update 52293->52323
+BUG30792 : LayoutTests/http/tests/security/xss-DENIED-assign-location-href-javascript.html = TEXT
