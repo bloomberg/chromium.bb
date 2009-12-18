@@ -46,7 +46,8 @@ var storageEnabled = window.localStorage != null;
 function navigate() {
   var select = document.getElementById('readerDropdown');
   var url =
-      feedReaderList[select.selectedIndex].url.replace("%s", escape(feedUrl));
+      feedReaderList[select.selectedIndex].url.replace(
+          "%s", escape(encodeURI(feedUrl)));
   document.location = url;
 }
 
@@ -116,6 +117,8 @@ function main() {
   req.onerror = handleError;
   req.open("GET", feedUrl, !synchronousRequest);
   req.send(null);
+
+  document.getElementById('feedUrl').href = feedUrl;
 }
 
 // Sets the title for the feed.

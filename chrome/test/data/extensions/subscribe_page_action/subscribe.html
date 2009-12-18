@@ -12,28 +12,36 @@
 </head>
 
 <body onload="main();">
-  <table border="0" cellpadding="0" cellspacing="0">
+
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
   <tr>
-    <td width="75" rowspan="2">
+    <td width="80" rowspan="2">
       <img src="feed-icon-64x64.png" alt="feed-icon" align="absmiddle" />
     </td>
-    <td height="60" valign="bottom">
-      <b><span id="title"></span></b><br>
-      <span>Subscribe to this feed using:</span>
-      <select id="readerDropdown" onChange="onSelectChanged()"></select>
-    </td>
-    <td valign="bottom">
-      <button onclick="navigate();">Subscribe Now</button>
-    </td>
+    <td height="40" valign="bottom"><b><span id="title"></span></b></td>
   </tr>
   <tr>
-    <td align="right" valign="top">
-      <a id="editLink" class="editLinks" href="javascript:void()"
-         onclick="showDialog()">Edit</a>&nbsp;
-      <a id="removeLink" class="editLinks" href="javascript:void()"
-         onclick="removeEntry()">Remove</a>&nbsp;
-    </td>
     <td>
+      <table border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" valign="top">
+            <div>
+              <span style="white-space: nowrap"
+                >Subscribe to this feed using:</span>
+              <select id="readerDropdown" onChange="onSelectChanged()"></select>
+            </div>
+            <div style="margin-top:-6px; margin-right: -2px">
+              <a id="editLink" class="editLinks" href="javascript:void()"
+                 onclick="showDialog()">Edit</a>&nbsp;
+              <a id="removeLink" class="editLinks" href="javascript:void()"
+                 onclick="removeEntry()">Remove</a>&nbsp;
+            </div>
+          </td>
+          <td valign="top">
+            <button onclick="navigate();">Subscribe Now</button>
+          </td>
+        </tr>
+      </table>
     </td>
   </tr>
   </table>
@@ -94,7 +102,14 @@
   </div>
 
   <div>&nbsp;</div>
-  <div class="splitter"><b>Feed preview</b></div><br>
+  <div class="splitter">
+    <span class="feedUrlSpan" id="feedUrlSpan">
+      <span class="feedUrl"
+        >[ <a id="feedUrl" class="feedUrl"
+              title="The feed page currently being previewed."
+           >Feed</a> ]</span></span>
+    <span><b>Feed preview</b></span>
+  </div>
   <div id="items"></div>
 </body>
 </html>
