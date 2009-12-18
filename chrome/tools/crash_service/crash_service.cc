@@ -37,7 +37,7 @@ bool CustomInfoToMap(const google_breakpad::ClientInfo* client_info,
                      const std::wstring& reporter_tag, CrashMap* map) {
   google_breakpad::CustomClientInfo info = client_info->GetCustomInfo();
 
-  for (int i = 0; i < info.count; ++i) {
+  for (uintptr_t i = 0; i < info.count; ++i) {
     (*map)[info.entries[i].name] = info.entries[i].value;
   }
 
