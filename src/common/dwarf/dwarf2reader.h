@@ -178,7 +178,7 @@ class LineInfoHandler {
 // The base of DWARF2/3 debug info is a DIE (Debugging Information
 // Entry.
 // DWARF groups DIE's into a tree and calls the root of this tree a
-// "compilation unit".  Most of the time, their is one compilation
+// "compilation unit".  Most of the time, there is one compilation
 // unit in the .debug_info section for each file that had debug info
 // generated.
 // Each DIE consists of
@@ -200,7 +200,7 @@ class LineInfoHandler {
 
 // As a warning to the user, it should be noted that the reason for
 // using absolute offsets from the beginning of .debug_info is that
-// DWARF2/3 support referencing DIE's from other DIE's by their offset
+// DWARF2/3 supports referencing DIE's from other DIE's by their offset
 // from either the current compilation unit start, *or* the beginning
 // of the .debug_info section.  This means it is possible to reference
 // a DIE in one compilation unit from a DIE in another compilation
@@ -214,7 +214,7 @@ class CompilationUnit {
  public:
 
   // Initialize a compilation unit.  This requires a map of sections,
-  // the offset of this compilation unit in the debug_info section, a
+  // the offset of this compilation unit in the .debug_info section, a
   // ByteReader, and a Dwarf2Handler class to call callbacks in.
   CompilationUnit(const SectionMap& sections, uint64 offset,
                   ByteReader* reader, Dwarf2Handler* handler);
@@ -224,8 +224,11 @@ class CompilationUnit {
 
   // Begin reading a Dwarf2 compilation unit, and calling the
   // callbacks in the Dwarf2Handler
-  // Return the offset of the end of the compilation unit - the passed
-  // in offset.
+
+  // Return the full length of the compilation unit, including
+  // headers. This plus the starting offset passed to the constructor
+  // is the offset of the end of the compilation unit --- and the
+  // start of the next compilation unit, if there is one.
   uint64 Start();
 
  private:
@@ -326,53 +329,51 @@ class Dwarf2Handler {
   virtual ~Dwarf2Handler() { }
 
   // Start to process a compilation unit at OFFSET from the beginning of the
-  // debug_info section.  Return false if you would like
-  // to skip this compilation unit.
+  // .debug_info section. Return false if you would like to skip this
+  // compilation unit.
   virtual bool StartCompilationUnit(uint64 offset, uint8 address_size,
                                     uint8 offset_size, uint64 cu_length,
                                     uint8 dwarf_version) { return false; }
 
-  // Start to process a DIE at OFFSET from the beginning of the
-  // debug_info section.  Return false if you would like to skip this
-  // DIE.
+  // Start to process a DIE at OFFSET from the beginning of the .debug_info
+  // section. Return false if you would like to skip this DIE.
   virtual bool StartDIE(uint64 offset, enum DwarfTag tag,
                         const AttributeList& attrs) { return false; }
 
-  // Called when we have an attribute with unsigned data to give to
-  // our handler.  The attribute is for the DIE at OFFSET from the
-  // beginning of compilation unit, has a name of ATTR, a form of
-  // FORM, and the actual data of the attribute is in DATA.
+  // Called when we have an attribute with unsigned data to give to our
+  // handler. The attribute is for the DIE at OFFSET from the beginning of the
+  // .debug_info section. Its name is ATTR, its form is FORM, and its value is
+  // DATA.
   virtual void ProcessAttributeUnsigned(uint64 offset,
                                         enum DwarfAttribute attr,
                                         enum DwarfForm form,
                                         uint64 data) { }
 
-  // Called when we have an attribute with signed data to give to
-  // our handler.  The attribute is for the DIE at OFFSET from the
-  // beginning of compilation unit, has a name of ATTR, a form of
-  // FORM, and the actual data of the attribute is in DATA.
+  // Called when we have an attribute with signed data to give to our handler.
+  // The attribute is for the DIE at OFFSET from the beginning of the
+  // .debug_info section. Its name is ATTR, its form is FORM, and its value is
+  // DATA.
   virtual void ProcessAttributeSigned(uint64 offset,
                                       enum DwarfAttribute attr,
                                       enum DwarfForm form,
                                       int64 data) { }
 
-  // Called when we have an attribute with a buffer of data to give to
-  // our handler.  The attribute is for the DIE at OFFSET from the
-  // beginning of compilation unit, has a name of ATTR, a form of
-  // FORM, and the actual data of the attribute is in DATA, and the
-  // length of the buffer is LENGTH.  The buffer is owned by the
-  // caller, not the callee, and may not persist for very long.  If
-  // you want the data to be available later, it needs to be copied.
+  // Called when we have an attribute with a buffer of data to give to our
+  // handler. The attribute is for the DIE at OFFSET from the beginning of the
+  // .debug_info section. Its name is ATTR, its form is FORM, DATA points to
+  // the buffer's contents, and its length in bytes is LENGTH. The buffer is
+  // owned by the caller, not the callee, and may not persist for very long.
+  // If you want the data to be available later, it needs to be copied.
   virtual void ProcessAttributeBuffer(uint64 offset,
                                       enum DwarfAttribute attr,
                                       enum DwarfForm form,
                                       const char* data,
                                       uint64 len) { }
 
-  // Called when we have an attribute with string data to give to
-  // our handler.  The attribute is for the DIE at OFFSET from the
-  // beginning of compilation unit, has a name of ATTR, a form of
-  // FORM, and the actual data of the attribute is in DATA.
+  // Called when we have an attribute with string data to give to our handler.
+  // The attribute is for the DIE at OFFSET from the beginning of the
+  // .debug_info section. Its name is ATTR, its form is FORM, and its value is
+  // DATA.
   virtual void ProcessAttributeString(uint64 offset,
                                       enum DwarfAttribute attr,
                                       enum DwarfForm form,

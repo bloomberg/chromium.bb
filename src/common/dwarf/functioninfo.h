@@ -125,7 +125,7 @@ class CUFunctionInfoHandler: public Dwarf2Handler {
   virtual ~CUFunctionInfoHandler() { }
 
   // Start to process a compilation unit at OFFSET from the beginning of the
-  // debug_info section.  We want to see all compilation units, so we
+  // .debug_info section.  We want to see all compilation units, so we
   // always return true.
 
   virtual bool StartCompilationUnit(uint64 offset, uint8 address_size,
@@ -133,13 +133,13 @@ class CUFunctionInfoHandler: public Dwarf2Handler {
                                     uint8 dwarf_version);
 
   // Start to process a DIE at OFFSET from the beginning of the
-  // debug_info section.  We only care about function related DIE's.
+  // .debug_info section.  We only care about function related DIE's.
   virtual bool StartDIE(uint64 offset, enum DwarfTag tag,
                         const AttributeList& attrs);
 
   // Called when we have an attribute with unsigned data to give to
   // our handler.  The attribute is for the DIE at OFFSET from the
-  // beginning of compilation unit, has a name of ATTR, a form of
+  // beginning of the .debug_info section, has a name of ATTR, a form of
   // FORM, and the actual data of the attribute is in DATA.
   virtual void ProcessAttributeUnsigned(uint64 offset,
                                         enum DwarfAttribute attr,
@@ -148,7 +148,7 @@ class CUFunctionInfoHandler: public Dwarf2Handler {
 
   // Called when we have an attribute with string data to give to
   // our handler.  The attribute is for the DIE at OFFSET from the
-  // beginning of compilation unit, has a name of ATTR, a form of
+  // beginning of the .debug_info section, has a name of ATTR, a form of
   // FORM, and the actual data of the attribute is in DATA.
   virtual void ProcessAttributeString(uint64 offset,
                                       enum DwarfAttribute attr,
