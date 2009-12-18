@@ -567,4 +567,4 @@ def TryChange(argv,
 
 
 if __name__ == "__main__":
-  sys.exit(TryChange(None, None, False))
+  sys.exit(TryChange(None, [], False))

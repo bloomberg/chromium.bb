@@ -94,7 +94,7 @@ class SVN(object):
     """
     c = [SVN.COMMAND]
     c.extend(args)
-
+    # TODO(maruel): This is very gclient-specific.
     gclient_utils.SubprocessCall(c, in_directory)
 
   @staticmethod
