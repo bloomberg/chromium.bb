@@ -142,7 +142,8 @@ class RenderWidget : public IPC::Channel::Listener,
                         const gfx::Rect& resizer_rect);
   void OnWasHidden();
   void OnWasRestored(bool needs_repainting);
-  void OnUpdateRectAck();
+  void OnPaintRectAck();
+  void OnScrollRectAck();
   void OnRequestMoveAck();
   void OnHandleInputEvent(const IPC::Message& message);
   void OnMouseCaptureLost();
@@ -166,9 +167,14 @@ class RenderWidget : public IPC::Channel::Listener,
 
   bool is_hidden() const { return is_hidden_; }
 
-  // True if an UpdateRect_ACK message is pending.
-  bool update_reply_pending() const {
-    return update_reply_pending_;
+  // True if a PaintRect_ACK message is pending.
+  bool paint_reply_pending() const {
+    return paint_reply_pending_;
+  }
+
+  // True if a ScrollRect_ACK message is pending.
+  bool scroll_reply_pending() const {
+    return current_scroll_buf_ != NULL;
   }
 
   bool next_paint_is_resize_ack() const;
@@ -232,20 +238,22 @@ class RenderWidget : public IPC::Channel::Listener,
   // The size of the RenderWidget.
   gfx::Size size_;
 
-  // The TransportDIB that is being used to transfer an image to the browser.
+  // Transport DIBs that are currently in use to transfer an image to the
+  // browser.
   TransportDIB* current_paint_buf_;
+  TransportDIB* current_scroll_buf_;
 
   PaintAggregator paint_aggregator_;
 
   // The area that must be reserved for drawing the resize corner.
   gfx::Rect resizer_rect_;
 
-  // Flags for the next ViewHostMsg_UpdateRect message.
+  // Flags for the next ViewHostMsg_PaintRect message.
   int next_paint_flags_;
 
-  // True if we are expecting an UpdateRect_ACK message (i.e., that a
-  // UpdateRect message has been sent).
-  bool update_reply_pending_;
+  // True if we are expecting a PaintRect_ACK message (i.e., that a PaintRect
+  // message has been sent).
+  bool paint_reply_pending_;
 
   // Set to true if we should ignore RenderWidget::Show calls.
   bool did_show_;

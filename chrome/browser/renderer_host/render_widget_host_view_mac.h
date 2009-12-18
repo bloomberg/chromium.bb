@@ -95,8 +95,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void UpdateCursor(const WebCursor& cursor);
   virtual void SetIsLoading(bool is_loading);
   virtual void IMEUpdateStatus(int control, const gfx::Rect& caret_rect);
-  virtual void DidPaintBackingStoreRects(const std::vector<gfx::Rect>& rects);
-  virtual void DidScrollBackingStoreRect(const gfx::Rect& rect, int dx, int dy);
+  virtual void DidPaintRect(const gfx::Rect& rect);
+  virtual void DidScrollRect(const gfx::Rect& rect, int dx, int dy);
   virtual void RenderViewGone();
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {};
   virtual void Destroy();

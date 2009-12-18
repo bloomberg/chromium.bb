@@ -311,7 +311,10 @@ void BackingStore::PaintRect(base::ProcessHandle process,
   XFreePixmap(display_, pixmap);
 }
 
-void BackingStore::ScrollRect(int dx, int dy,
+void BackingStore::ScrollRect(base::ProcessHandle process,
+                              TransportDIB* bitmap,
+                              const gfx::Rect& bitmap_rect,
+                              int dx, int dy,
                               const gfx::Rect& clip_rect,
                               const gfx::Size& view_size) {
   if (!display_)
@@ -343,6 +346,8 @@ void BackingStore::ScrollRect(int dx, int dy,
                 clip_rect.y() /* dest x */);
     }
   }
+
+  PaintRect(process, bitmap, bitmap_rect, bitmap_rect);
 }
 
 void BackingStore::ShowRect(const gfx::Rect& rect, XID target) {

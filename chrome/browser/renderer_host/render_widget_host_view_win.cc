@@ -568,13 +568,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lparam) {
   return TRUE;
 }
 
-void RenderWidgetHostViewWin::Redraw() {
-  RECT damage_bounds;
-  GetUpdateRect(&damage_bounds, FALSE);
-
-  ScopedGDIObject<HRGN> damage_region(CreateRectRgn(0, 0, 0, 0));
-  GetUpdateRgn(damage_region, FALSE);
-
+void RenderWidgetHostViewWin::Redraw(const gfx::Rect& rect) {
   // Paint the invalid region synchronously.  Our caller will not paint again
   // until we return, so by painting to the screen here, we ensure effective
   // rate-limiting of backing store updates.  This helps a lot on pages that
@@ -585,11 +579,12 @@ void RenderWidgetHostViewWin::Redraw() {
   // message dispatching we allow scrolling to be smooth, and also avoid the
   // browser process locking up if the plugin process is hung.
   //
-  RedrawWindow(NULL, damage_region, RDW_UPDATENOW | RDW_NOCHILDREN);
+  RedrawWindow(
+      &rect.ToRECT(), NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
 
   // Send the invalid rect in screen coordinates.
   gfx::Rect screen_rect = GetViewBounds();
-  gfx::Rect invalid_screen_rect(damage_bounds);
+  gfx::Rect invalid_screen_rect = rect;
   invalid_screen_rect.Offset(screen_rect.x(), screen_rect.y());
 
   LPARAM lparam = reinterpret_cast<LPARAM>(&invalid_screen_rect);
@@ -624,29 +619,31 @@ void RenderWidgetHostViewWin::DrawResizeCorner(const gfx::Rect& paint_rect,
   }
 }
 
-void RenderWidgetHostViewWin::DidPaintBackingStoreRects(
-    const std::vector<gfx::Rect>& rects) {
+void RenderWidgetHostViewWin::DidPaintRect(const gfx::Rect& rect) {
   if (is_hidden_)
     return;
 
-  for (size_t i = 0; i < rects.size(); ++i)
-    InvalidateRect(&rects[i].ToRECT(), false);
-
-  if (!about_to_validate_and_paint_)
-    Redraw();
+  if (about_to_validate_and_paint_)
+    InvalidateRect(&rect.ToRECT(), false);
+  else
+    Redraw(rect);
 }
 
-void RenderWidgetHostViewWin::DidScrollBackingStoreRect(
+void RenderWidgetHostViewWin::DidScrollRect(
     const gfx::Rect& rect, int dx, int dy) {
   if (is_hidden_)
     return;
 
-  // We need to pass in SW_INVALIDATE to ScrollWindowEx.  The documentation on
-  // MSDN states that it only applies to the HRGN argument, which is wrong.
-  // Not passing in this flag does not invalidate the region which was scrolled
-  // from, thus causing painting issues.
+  // We need to pass in SW_INVALIDATE to ScrollWindowEx.  The MSDN
+  // documentation states that it only applies to the HRGN argument, which is
+  // wrong.  Not passing in this flag does not invalidate the region which was
+  // scrolled from, thus causing painting issues.
   RECT clip_rect = rect.ToRECT();
   ScrollWindowEx(dx, dy, NULL, &clip_rect, NULL, NULL, SW_INVALIDATE);
+
+  RECT invalid_rect = {0};
+  GetUpdateRect(&invalid_rect);
+  Redraw(gfx::Rect(invalid_rect));
 }
 
 void RenderWidgetHostViewWin::RenderViewGone() {
@@ -768,12 +765,6 @@ void RenderWidgetHostViewWin::OnPaint(HDC dc) {
   // GetBackingStore(), so that if it updates the invalid rect we'll catch the
   // changes and repaint them.
   about_to_validate_and_paint_ = false;
-
-  // Grab the region to paint before creation of paint_dc since it clears the
-  // damage region.
-  ScopedGDIObject<HRGN> damage_region(CreateRectRgn(0, 0, 0, 0));
-  GetUpdateRgn(damage_region, FALSE);
-
   CPaintDC paint_dc(m_hWnd);
 
   gfx::Rect damaged_rect(paint_dc.m_ps.rcPaint);
@@ -781,37 +772,27 @@ void RenderWidgetHostViewWin::OnPaint(HDC dc) {
     return;
 
   if (backing_store) {
-    gfx::Rect bitmap_rect(gfx::Point(), backing_store->size());
+    gfx::Rect bitmap_rect(
+        0, 0, backing_store->size().width(), backing_store->size().height());
 
-    bool manage_colors = BackingStore::ColorManagementEnabled();
-    if (manage_colors)
-      SetICMMode(paint_dc.m_hDC, ICM_ON);
-
-    // Blit only the damaged regions from the backing store.
-    DWORD data_size = GetRegionData(damage_region, 0, NULL);
-    scoped_array<char> region_data_buf(new char[data_size]);
-    RGNDATA* region_data = reinterpret_cast<RGNDATA*>(region_data_buf.get());
-    GetRegionData(damage_region, data_size, region_data);
-
-    RECT* region_rects = reinterpret_cast<RECT*>(region_data->Buffer);
-    for (DWORD i = 0; i < region_data->rdh.nCount; ++i) {
-      gfx::Rect paint_rect = bitmap_rect.Intersect(gfx::Rect(region_rects[i]));
-      if (!paint_rect.IsEmpty()) {
-        DrawResizeCorner(paint_rect, backing_store->hdc());
-        BitBlt(paint_dc.m_hDC,
-               paint_rect.x(),
-               paint_rect.y(),
-               paint_rect.width(),
-               paint_rect.height(),
-               backing_store->hdc(),
-               paint_rect.x(),
-               paint_rect.y(),
-               SRCCOPY);
-      }
+    gfx::Rect paint_rect = bitmap_rect.Intersect(damaged_rect);
+    if (!paint_rect.IsEmpty()) {
+      DrawResizeCorner(paint_rect, backing_store->hdc());
+      bool manage_colors = BackingStore::ColorManagementEnabled();
+      if (manage_colors)
+        SetICMMode(paint_dc.m_hDC, ICM_ON);
+      BitBlt(paint_dc.m_hDC,
+             paint_rect.x(),
+             paint_rect.y(),
+             paint_rect.width(),
+             paint_rect.height(),
+             backing_store->hdc(),
+             paint_rect.x(),
+             paint_rect.y(),
+             SRCCOPY);
+      if (manage_colors)
+        SetICMMode(paint_dc.m_hDC, ICM_OFF);
     }
-
-    if (manage_colors)
-      SetICMMode(paint_dc.m_hDC, ICM_OFF);
 
     // Fill the remaining portion of the damaged_rect with the background
     if (damaged_rect.right() > bitmap_rect.right()) {

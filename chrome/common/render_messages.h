@@ -176,8 +176,8 @@ struct ViewHostMsg_FrameNavigate_Params {
 };
 
 // Values that may be OR'd together to form the 'flags' parameter of a
-// ViewHostMsg_UpdateRect_Params structure.
-struct ViewHostMsg_UpdateRect_Flags {
+// ViewHostMsg_PaintRect message.
+struct ViewHostMsg_PaintRect_Flags {
   enum {
     IS_RESIZE_ACK = 1 << 0,
     IS_RESTORE_ACK = 1 << 1,
@@ -189,12 +189,13 @@ struct ViewHostMsg_UpdateRect_Flags {
   static bool is_restore_ack(int flags) {
     return (flags & IS_RESTORE_ACK) != 0;
   }
+
   static bool is_repaint_ack(int flags) {
     return (flags & IS_REPAINT_ACK) != 0;
   }
 };
 
-struct ViewHostMsg_UpdateRect_Params {
+struct ViewHostMsg_PaintRect_Params {
   // The bitmap to be painted into the view at the locations specified by
   // update_rects.
   TransportDIB::Id bitmap;
@@ -202,18 +203,8 @@ struct ViewHostMsg_UpdateRect_Params {
   // The position and size of the bitmap.
   gfx::Rect bitmap_rect;
 
-  // The scroll offset.  Only one of these can be non-zero, and if they are
-  // both zero, then it means there is no scrolling and the scroll_rect is
-  // ignored.
-  int dx;
-  int dy;
-
-  // The rectangular region to scroll.
-  gfx::Rect scroll_rect;
-
   // The regions of the bitmap (in view coords) that contain updated pixels.
-  // In the case of scrolling, this includes the scroll damage rect.
-  std::vector<gfx::Rect> copy_rects;
+  std::vector<gfx::Rect> update_rects;
 
   // The size of the RenderView when this message was generated.  This is
   // included so the host knows how large the view is from the perspective of
@@ -226,20 +217,40 @@ struct ViewHostMsg_UpdateRect_Params {
 
   // The following describes the various bits that may be set in flags:
   //
-  //   ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK
+  //   ViewHostMsg_PaintRect_Flags::IS_RESIZE_ACK
   //     Indicates that this is a response to a ViewMsg_Resize message.
   //
-  //   ViewHostMsg_UpdateRect_Flags::IS_RESTORE_ACK
+  //   ViewHostMsg_PaintRect_Flags::IS_RESTORE_ACK
   //     Indicates that this is a response to a ViewMsg_WasRestored message.
   //
-  //   ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK
-  //     Indicates that this is a response to a ViewMsg_Repaint message.
-  //
   // If flags is zero, then this message corresponds to an unsoliticed paint
-  // request by the render view.  Any of the above bits may be set in flags,
+  // request by the render view.  Both of the above bits may be set in flags,
   // which would indicate that this paint message is an ACK for multiple
   // request messages.
   int flags;
+};
+
+// Parameters structure for ViewHostMsg_ScrollRect, which has too many data
+// parameters to be reasonably put in a predefined IPC message.
+struct ViewHostMsg_ScrollRect_Params {
+  // The bitmap to be painted into the rect exposed by scrolling.
+  TransportDIB::Id bitmap;
+
+  // The position and size of the bitmap.
+  gfx::Rect bitmap_rect;
+
+  // The scroll offset.  Only one of these can be non-zero.
+  int dx;
+  int dy;
+
+  // The rectangular region to scroll.
+  gfx::Rect clip_rect;
+
+  // The size of the RenderView when this message was generated.
+  gfx::Size view_size;
+
+  // New window locations for plugin child windows.
+  std::vector<webkit_glue::WebPluginGeometry> plugin_window_moves;
 };
 
 // Information on closing a tab. This is used both for ViewMsg_ClosePage, and
@@ -967,17 +978,14 @@ struct ParamTraits<ContextMenuParams> {
   }
 };
 
-// Traits for ViewHostMsg_UpdateRect_Params structure to pack/unpack.
+// Traits for ViewHostMsg_PaintRect_Params structure to pack/unpack.
 template <>
-struct ParamTraits<ViewHostMsg_UpdateRect_Params> {
-  typedef ViewHostMsg_UpdateRect_Params param_type;
+struct ParamTraits<ViewHostMsg_PaintRect_Params> {
+  typedef ViewHostMsg_PaintRect_Params param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.bitmap);
     WriteParam(m, p.bitmap_rect);
-    WriteParam(m, p.dx);
-    WriteParam(m, p.dy);
-    WriteParam(m, p.scroll_rect);
-    WriteParam(m, p.copy_rects);
+    WriteParam(m, p.update_rects);
     WriteParam(m, p.view_size);
     WriteParam(m, p.plugin_window_moves);
     WriteParam(m, p.flags);
@@ -986,13 +994,50 @@ struct ParamTraits<ViewHostMsg_UpdateRect_Params> {
     return
       ReadParam(m, iter, &p->bitmap) &&
       ReadParam(m, iter, &p->bitmap_rect) &&
-      ReadParam(m, iter, &p->dx) &&
-      ReadParam(m, iter, &p->dy) &&
-      ReadParam(m, iter, &p->scroll_rect) &&
-      ReadParam(m, iter, &p->copy_rects) &&
+      ReadParam(m, iter, &p->update_rects) &&
       ReadParam(m, iter, &p->view_size) &&
       ReadParam(m, iter, &p->plugin_window_moves) &&
       ReadParam(m, iter, &p->flags);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.bitmap, l);
+    l->append(L", ");
+    LogParam(p.bitmap_rect, l);
+    l->append(L", ");
+    LogParam(p.update_rects, l);
+    l->append(L", ");
+    LogParam(p.view_size, l);
+    l->append(L", ");
+    LogParam(p.plugin_window_moves, l);
+    l->append(L", ");
+    LogParam(p.flags, l);
+    l->append(L")");
+  }
+};
+
+// Traits for ViewHostMsg_ScrollRect_Params structure to pack/unpack.
+template <>
+struct ParamTraits<ViewHostMsg_ScrollRect_Params> {
+  typedef ViewHostMsg_ScrollRect_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.bitmap);
+    WriteParam(m, p.bitmap_rect);
+    WriteParam(m, p.dx);
+    WriteParam(m, p.dy);
+    WriteParam(m, p.clip_rect);
+    WriteParam(m, p.view_size);
+    WriteParam(m, p.plugin_window_moves);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->bitmap) &&
+      ReadParam(m, iter, &p->bitmap_rect) &&
+      ReadParam(m, iter, &p->dx) &&
+      ReadParam(m, iter, &p->dy) &&
+      ReadParam(m, iter, &p->clip_rect) &&
+      ReadParam(m, iter, &p->view_size) &&
+      ReadParam(m, iter, &p->plugin_window_moves);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -1004,15 +1049,11 @@ struct ParamTraits<ViewHostMsg_UpdateRect_Params> {
     l->append(L", ");
     LogParam(p.dy, l);
     l->append(L", ");
-    LogParam(p.scroll_rect, l);
-    l->append(L", ");
-    LogParam(p.copy_rects, l);
+    LogParam(p.clip_rect, l);
     l->append(L", ");
     LogParam(p.view_size, l);
     l->append(L", ");
     LogParam(p.plugin_window_moves, l);
-    l->append(L", ");
-    LogParam(p.flags, l);
     l->append(L")");
   }
 };

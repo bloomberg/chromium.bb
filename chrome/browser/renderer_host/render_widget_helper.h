@@ -37,20 +37,20 @@ struct ViewMsg_ClosePage_Params;
 //   RenderWidgetHelper is used to implement optimized resize.  When the
 //   RenderWidgetHost is resized, it sends a Resize message to its RenderWidget
 //   counterpart in the renderer process.  The RenderWidget generates a
-//   UpdateRect message in response to the Resize message, and it sets the
-//   IS_RESIZE_ACK flag in the UpdateRect message to true.
+//   PaintRect message in response to the Resize message, and it sets the
+//   IS_RESIZE_ACK flag in the PaintRect message to true.
 //
 //   Back in the browser process, when the RenderProcessHost's MessageFilter
-//   sees a UpdateRect message, it directs it to the RenderWidgetHelper by
-//   calling the DidReceiveUpdateMsg method.  That method stores the data for
-//   the UpdateRect message in a map, where it can be directly accessed by the
+//   sees a PaintRect message, it directs it to the RenderWidgetHelper by
+//   calling the DidReceivePaintMsg method.  That method stores the data for
+//   the PaintRect message in a map, where it can be directly accessed by the
 //   RenderWidgetHost on the UI thread during a call to RenderWidgetHost's
 //   GetBackingStore method.
 //
 //   When the RenderWidgetHost's GetBackingStore method is called, it first
 //   checks to see if it is waiting for a resize ack.  If it is, then it calls
-//   the RenderWidgetHelper's WaitForUpdateMsg to check if there is already a
-//   resulting UpdateRect message (or to wait a short amount of time for one to
+//   the RenderWidgetHelper's WaitForPaintMsg to check if there is already a
+//   resulting PaintRect message (or to wait a short amount of time for one to
 //   arrive).  The main goal of this mechanism is to short-cut the usual way in
 //   which IPC messages are proxied over to the UI thread via InvokeLater.
 //   This approach is necessary since window resize is followed up immediately
@@ -60,19 +60,19 @@ struct ViewMsg_ClosePage_Params;
 // OPTIMIZED TAB SWITCHING
 //
 //   When a RenderWidgetHost is in a background tab, it is flagged as hidden.
-//   This causes the corresponding RenderWidget to stop sending UpdateRect
+//   This causes the corresponding RenderWidget to stop sending PaintRect
 //   messages. The RenderWidgetHost also discards its backingstore when it is
 //   hidden, which helps free up memory.  As a result, when a RenderWidgetHost
 //   is restored, it can be momentarily without a backingstore.  (Restoring a
 //   RenderWidgetHost results in a WasRestored message being sent to the
-//   RenderWidget, which triggers a full UpdateRect message.)  This can lead to
+//   RenderWidget, which triggers a full PaintRect message.)  This can lead to
 //   an observed rendering glitch as the TabContents will just have to fill
 //   white overtop the RenderWidgetHost until the RenderWidgetHost receives a
-//   UpdateRect message to refresh its backingstore.
+//   PaintRect message to refresh its backingstore.
 //
 //   To avoid this 'white flash', the RenderWidgetHost again makes use of the
-//   RenderWidgetHelper's WaitForUpdateMsg method.  When the RenderWidgetHost's
-//   GetBackingStore method is called, it will call WaitForUpdateMsg if it has
+//   RenderWidgetHelper's WaitForPaintMsg method.  When the RenderWidgetHost's
+//   GetBackingStore method is called, it will call WaitForPaintMsg if it has
 //   no backingstore.
 //
 // TRANSPORT DIB CREATION
@@ -103,9 +103,9 @@ class RenderWidgetHelper
   // for documentation.
   void CancelResourceRequests(int render_widget_id);
   void CrossSiteClosePageACK(const ViewMsg_ClosePage_Params& params);
-  bool WaitForUpdateMsg(int render_widget_id,
-                        const base::TimeDelta& max_delay,
-                        IPC::Message* msg);
+  bool WaitForPaintMsg(int render_widget_id,
+                       const base::TimeDelta& max_delay,
+                       IPC::Message* msg);
 
 #if defined(OS_MACOSX)
   // Given the id of a transport DIB, return a mapping to it or NULL on error.
@@ -115,8 +115,8 @@ class RenderWidgetHelper
 
   // IO THREAD ONLY -----------------------------------------------------------
 
-  // Called on the IO thread when a UpdateRect message is received.
-  void DidReceiveUpdateMsg(const IPC::Message& msg);
+  // Called on the IO thread when a PaintRect message is received.
+  void DidReceivePaintMsg(const IPC::Message& msg);
 
   void CreateNewWindow(int opener_id,
                        bool user_gesture,
@@ -135,20 +135,20 @@ class RenderWidgetHelper
  private:
   // A class used to proxy a paint message.  PaintMsgProxy objects are created
   // on the IO thread and destroyed on the UI thread.
-  class UpdateMsgProxy;
-  friend class UpdateMsgProxy;
+  class PaintMsgProxy;
+  friend class PaintMsgProxy;
   friend class base::RefCountedThreadSafe<RenderWidgetHelper>;
 
   // Map from render_widget_id to live PaintMsgProxy instance.
-  typedef base::hash_map<int, UpdateMsgProxy*> UpdateMsgProxyMap;
+  typedef base::hash_map<int, PaintMsgProxy*> PaintMsgProxyMap;
 
   ~RenderWidgetHelper();
 
   // Called on the UI thread to discard a paint message.
-  void OnDiscardUpdateMsg(UpdateMsgProxy* proxy);
+  void OnDiscardPaintMsg(PaintMsgProxy* proxy);
 
   // Called on the UI thread to dispatch a paint message if necessary.
-  void OnDispatchUpdateMsg(UpdateMsgProxy* proxy);
+  void OnDispatchPaintMsg(PaintMsgProxy* proxy);
 
   // Called on the UI thread to finish creating a window.
   void OnCreateWindowOnUI(int opener_id,
@@ -179,12 +179,12 @@ class RenderWidgetHelper
   // A map of live paint messages.  Must hold pending_paints_lock_ to access.
   // The PaintMsgProxy objects are not owned by this map.  (See PaintMsgProxy
   // for details about how the lifetime of instances are managed.)
-  UpdateMsgProxyMap pending_paints_;
+  PaintMsgProxyMap pending_paints_;
   Lock pending_paints_lock_;
 
   int render_process_id_;
 
-  // Event used to implement WaitForUpdateMsg.
+  // Event used to implement WaitForPaintMsg.
   base::WaitableEvent event_;
 
   // The next routing id to use.

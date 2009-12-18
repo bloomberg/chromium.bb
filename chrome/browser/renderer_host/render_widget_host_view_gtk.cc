@@ -505,27 +505,21 @@ void RenderWidgetHostViewGtk::IMEUpdateStatus(int control,
   key_bindings_handler_->set_enabled(control != IME_DISABLE);
 }
 
-void RenderWidgetHostViewGtk::DidPaintBackingStoreRects(
-    const std::vector<gfx::Rect>& rects) {
+void RenderWidgetHostViewGtk::DidPaintRect(const gfx::Rect& rect) {
   if (is_hidden_)
     return;
 
-  for (size_t i = 0; i < rects.size(); ++i) {
-    if (about_to_validate_and_paint_) {
-      invalid_rect_ = invalid_rect_.Union(rects[i]);
-    } else {
-      Paint(rects[i]);
-    }
-  }
+  if (about_to_validate_and_paint_)
+    invalid_rect_ = invalid_rect_.Union(rect);
+  else
+    Paint(rect);
 }
 
-void RenderWidgetHostViewGtk::DidScrollBackingStoreRect(const gfx::Rect& rect,
-                                                        int dx, int dy) {
+void RenderWidgetHostViewGtk::DidScrollRect(const gfx::Rect& rect, int dx,
+                                            int dy) {
   if (is_hidden_)
     return;
 
-  // TODO(darin): Implement the equivalent of Win32's ScrollWindowEX.  Can that
-  // be done using XCopyArea?  Perhaps similar to BackingStore::ScrollRect?
   Paint(rect);
 }
 

@@ -31,9 +31,9 @@ void MockRenderProcessHost::CrossSiteClosePageACK(
     const ViewMsg_ClosePage_Params& params) {
 }
 
-bool MockRenderProcessHost::WaitForUpdateMsg(int render_widget_id,
-                                             const base::TimeDelta& max_delay,
-                                             IPC::Message* msg) {
+bool MockRenderProcessHost::WaitForPaintMsg(int render_widget_id,
+                                            const base::TimeDelta& max_delay,
+                                            IPC::Message* msg) {
   return false;
 }
 

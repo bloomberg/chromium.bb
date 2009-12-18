@@ -128,6 +128,10 @@ IPC_BEGIN_MESSAGES(View)
   // render view responds with a ViewHostMsg_Thumbnail.
   IPC_MESSAGE_ROUTED0(ViewMsg_CaptureThumbnail)
 
+  // Tells the render view that a ViewHostMsg_PaintRect message was processed.
+  // This signals the render view that it can send another PaintRect message.
+  IPC_MESSAGE_ROUTED0(ViewMsg_PaintRect_ACK)
+
   // Tells the render view to switch the CSS to print media type, renders every
   // requested pages and switch back the CSS to display media type.
   IPC_MESSAGE_ROUTED0(ViewMsg_PrintPages)
@@ -143,9 +147,9 @@ IPC_BEGIN_MESSAGES(View)
   // JS garbage, not in purging irreplaceable objects.
   IPC_MESSAGE_CONTROL0(ViewMsg_PurgeMemory)
 
-  // Tells the render view that a ViewHostMsg_UpdateRect message was processed.
-  // This signals the render view that it can send another UpdateRect message.
-  IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)
+  // Tells the render view that a ViewHostMsg_ScrollRect message was processed.
+  // This signals the render view that it can send another ScrollRect message.
+  IPC_MESSAGE_ROUTED0(ViewMsg_ScrollRect_ACK)
 
   // Message payload includes:
   // 1. A blob that should be cast to WebInputEvent
@@ -989,10 +993,15 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               navigating to a POST again and we're going to
                               show the POST interstitial */ )
 
-  // Sent to update part of the view.  In response to this message, the host
-  // generates a ViewMsg_UpdateRect_ACK message.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateRect,
-                      ViewHostMsg_UpdateRect_Params)
+  // Sent to paint part of the view.  In response to this message, the host
+  // generates a ViewMsg_PaintRect_ACK message.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_PaintRect,
+                      ViewHostMsg_PaintRect_Params)
+
+  // Sent to scroll part of the view.  In response to this message, the host
+  // generates a ViewMsg_ScrollRect_ACK message.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_ScrollRect,
+                      ViewHostMsg_ScrollRect_Params)
 
   // Acknowledges receipt of a ViewMsg_HandleInputEvent message.
   // Payload is a WebInputEvent::Type which is the type of the event, followed

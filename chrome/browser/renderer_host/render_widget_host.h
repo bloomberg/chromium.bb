@@ -38,8 +38,9 @@ class RenderWidgetHostView;
 class RenderWidgetHostPaintingObserver;
 class TransportDIB;
 class WebCursor;
+struct ViewHostMsg_PaintRect_Params;
+struct ViewHostMsg_ScrollRect_Params;
 struct ViewHostMsg_ShowPopup_Params;
-struct ViewHostMsg_UpdateRect_Params;
 
 // This class manages the browser side of a browser<->renderer HWND connection.
 // The HWND lives in the browser process, and windows events are sent over
@@ -412,7 +413,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgRenderViewGone();
   void OnMsgClose();
   void OnMsgRequestMove(const gfx::Rect& pos);
-  void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
+  void OnMsgPaintRect(const ViewHostMsg_PaintRect_Params& params);
+  void OnMsgScrollRect(const ViewHostMsg_ScrollRect_Params& params);
   void OnMsgInputEventAck(const IPC::Message& message);
   void OnMsgFocus();
   void OnMsgBlur();
@@ -442,7 +444,10 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Scrolls the given |clip_rect| in the backing by the given dx/dy amount. The
   // |dib| and its corresponding location |bitmap_rect| in the backing store
   // is the newly painted pixels by the renderer.
-  void ScrollBackingStoreRect(int dx, int dy, const gfx::Rect& clip_rect,
+  void ScrollBackingStoreRect(TransportDIB* dib,
+                              const gfx::Rect& bitmap_rect,
+                              int dx, int dy,
+                              const gfx::Rect& clip_rect,
                               const gfx::Size& view_size);
 
   // Called by OnMsgInputEventAck() to process a keyboard event ack message.

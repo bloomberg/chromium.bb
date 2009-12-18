@@ -99,7 +99,10 @@ void BackingStore::PaintRect(base::ProcessHandle process,
 }
 
 // Scroll the contents of our CGLayer
-void BackingStore::ScrollRect(int dx, int dy,
+void BackingStore::ScrollRect(base::ProcessHandle process,
+                              TransportDIB* bitmap,
+                              const gfx::Rect& bitmap_rect,
+                              int dx, int dy,
                               const gfx::Rect& clip_rect,
                               const gfx::Size& view_size) {
   DCHECK_NE(static_cast<bool>(cg_layer()), static_cast<bool>(cg_bitmap()));
@@ -155,6 +158,9 @@ void BackingStore::ScrollRect(int dx, int dy,
       cg_bitmap_.swap(new_bitmap);
     }
   }
+  // Now paint the new bitmap data
+  PaintRect(process, bitmap, bitmap_rect, bitmap_rect);
+  return;
 }
 
 CGLayerRef BackingStore::CreateCGLayer() {
