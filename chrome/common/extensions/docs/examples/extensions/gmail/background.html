@@ -84,7 +84,6 @@ LoadingAnimation.prototype.stop = function() {
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
   if (changeInfo.url && isGmailUrl(changeInfo.url)) {
-    console.log("saw gmail! updating...");
     getInboxCount(function(count) {
       updateUnreadCount(count);
     });
@@ -110,11 +109,6 @@ function scheduleRequest() {
   var delay = Math.min(randomness * pollIntervalMin * exponent,
                        pollIntervalMax);
   delay = Math.round(delay);
-
-  console.log("Scheduling request...");
-  console.log("  exponent: ", exponent);
-  console.log("  randomness: ", randomness);
-  console.log("  delay: ", delay);
 
   window.setTimeout(startRequest, delay);
 }
@@ -156,14 +150,10 @@ function getInboxCount(onSuccess, onError) {
   }
 
   try {
-    console.log("request..");
     xhr.onreadystatechange = function(){
-      console.log("readystate: " + xhr.readyState);
       if (xhr.readyState != 4)
         return;
 
-      console.log("responseText: " + xhr.responseText.substring(0, 200) +
-                    "...");
       if (xhr.responseXML) {
         var xmlDoc = xhr.responseXML;
         var fullCountSet = xmlDoc.evaluate("/gmail:feed/gmail:fullcount",
@@ -173,27 +163,21 @@ function getInboxCount(onSuccess, onError) {
           handleSuccess(fullCountNode.textContent);
           return;
         } else {
-          console.log("fullcount not found!");
           console.error("Error: feed retrieved, but no <fullcount> node " +
                         "found");
         }
-      } else {
-        console.log("No responseXML!");
       }
 
       handleError();
     }
 
     xhr.onerror = function(error) {
-      console.log("error");
-      console.log(error);
       handleError();
     }
 
     xhr.open("GET", getFeedUrl(), true);
     xhr.send(null);
   } catch(e) {
-    console.log("ex: " + e);
     console.error("exception: " + e);
     handleError();
   }
