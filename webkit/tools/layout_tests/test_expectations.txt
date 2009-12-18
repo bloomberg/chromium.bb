@@ -3056,10 +3056,6 @@ BUG30180 : LayoutTests/fast/text/international/hindi-whitespace.html = IMAGE PAS
 // New test with http://trac.webkit.org/changeset/51982
 LayoutTests/fast/events/basic-touch-events.html = TEXT
 
-BUG30185 : LayoutTests/websocket/tests/handshake-error.html = TEXT PASS
-BUG30185 : LayoutTests/websocket/tests/handshake-fail-by-cross-origin.html = TEXT PASS
-BUG30185 : LayoutTests/websocket/tests/handshake-fail-by-sub-protocol-mismatch.html = TEXT PASS
-
 // evan's fix rolled out in http://trac.webkit.org/changeset/52071 due to compat issues.
 BUG30343 LINUX : LayoutTests/fast/css/large-number-round-trip.html = TEXT
 
@@ -3113,7 +3109,6 @@ BUG_DGLAZKOV WIN : LayoutTests/svg/webarchive/svg-script-subresouces.svg = FAIL 
 BUG30543 : LayoutTests/storage/domstorage/localstorage/enumerate-with-length-and-key.html = CRASH PASS
 
 // Flaky.
-BUG30545 WIN : LayoutTests/websocket/tests/bad-sub-protocol.html = CRASH PASS
 BUG30593 LINUX MAC : LayoutTests/websocket/tests/url-with-credential.html = TEXT PASS
 BUG9798 WIN LINUX : LayoutTests/fast/loader/javascript-url-encoding-2.html = TIMEOUT PASS
 BUG9798 WIN RELEASE : LayoutTests/fast/loading/subframe-removes-itself.html = TEXT PASS
