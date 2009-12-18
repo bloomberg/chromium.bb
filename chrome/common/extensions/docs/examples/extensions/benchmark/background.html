@@ -37,6 +37,11 @@ window.results.data = new Array();
 window.testUrl = "";
 window.windowId = 0;
 
+// Constant StatCounter Names
+var kTCPReadBytes = "tcp.read_bytes";
+var kTCPWriteBytes = "tcp.write_bytes";
+var kRequestCount = "HttpNetworkTransaction.Count";
+
 // The list of currently running benchmarks
 var benchmarks = new Array();
 var benchmarkIndex = 0;
@@ -44,6 +49,7 @@ var benchmarkWindow = 0;
 
 function addBenchmark(benchmark) {
   benchmarks.push(benchmark);
+  benchmarkIndex = 0;  // Reset the counter when adding benchmarks.
 }
 
 // Array Remove - By John Resig (MIT Licensed)
@@ -113,6 +119,7 @@ function Benchmark() {
   var totalTime_;
   var me_ = this;
   var current_;
+  var initialRequestCount_;
   var initialReadBytes_;
   var initialWriteBytes_;
 
@@ -140,6 +147,8 @@ function Benchmark() {
     current_.bytesRead = 0;
     current_.bytesWritten = 0;
     current_.totalTime = 0;
+    current_.iterations = 0;
+    current_.requests = 0;
   }
 
   // Is the benchmark currently in progress.
@@ -187,6 +196,13 @@ function Benchmark() {
     }
   }
 
+  // Called before starting a page load.
+  this.pageStart = function() {
+    initialReadBytes_ = chrome.benchmarking.counter(kTCPReadBytes);
+    initialWriteBytes_ = chrome.benchmarking.counter(kTCPWriteBytes);
+    initialRequestCount_ = chrome.benchmarking.counter(kRequestCount);
+  }
+
   // Run a single page in the benchmark
   this.runPage = function() {
     if (window.clearCache) {
@@ -197,14 +213,12 @@ function Benchmark() {
       chrome.benchmarking.closeConnections();
     }
 
-    initialReadBytes = chrome.benchmarking.counter("tcp.read_bytes");
-    initialWriteBytes = chrome.benchmarking.counter("tcp.write_bytes");
-
-
     if (benchmarkWindow) {
       var benchmark = nextBenchmark();
+      benchmark.pageStart();
       chrome.tabs.update(benchmarkWindow.id, {"url": benchmark.url() });
     } else {
+      this.pageStart();
       chrome.tabs.create({"url": current_.url },
                          function(tab) { benchmarkWindow = tab; });
     }
@@ -221,9 +235,12 @@ function Benchmark() {
 
     if (paintTime < 0) {
       // If the user navigates away from the test while it is running,
-      // paint may not occur.
-      alert("No paint detected.  Did you navigate while the test was running?");
-      paintTime = totalTime;  // approximate.
+      // paint may not occur.  Also, some lightweight pages, such as the
+      // google home page, never trigger a paint measurement via the chrome
+      // page load timer.
+      // In this case, the time-to-first paint is effectively the same as the
+      // time to onLoad().
+      paintTime = totalTime;
     }
 
     // For our toolbar counters
@@ -231,13 +248,16 @@ function Benchmark() {
     count_++;
 
     // Record the result
+    current_.iterations++;
     current_.docLoadResults.push(docLoadTime);
     current_.paintResults.push(paintTime);
     current_.totalResults.push(totalTime);
-    current_.bytesRead += chrome.benchmarking.counter("tcp.read_bytes") -
-                          initialReadBytes;
-    current_.bytesWritten += chrome.benchmarking.counter("tcp.write_bytes") -
-                             initialWriteBytes;
+    current_.bytesRead += chrome.benchmarking.counter(kTCPReadBytes) -
+                          initialReadBytes_;
+    current_.bytesWritten += chrome.benchmarking.counter(kTCPWriteBytes) -
+                             initialWriteBytes_;
+    current_.requests += chrome.benchmarking.counter(kRequestCount) -
+                         initialRequestCount_;
     current_.totalTime += totalTime;
 
     if (--runCount_ == 0) {

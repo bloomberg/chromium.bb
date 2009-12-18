@@ -131,7 +131,7 @@ Array.stddev = function(array) {
     variance = variance + deviation * deviation;
   }
   variance = variance / count;
-  return Math.sqrt(variance).toFixed(2);
+  return Math.sqrt(variance);
 }
 
 // Object to summarize everything
@@ -171,11 +171,11 @@ function computeResults(data) {
     totals.docLoadMean /= count;
   }
 
-  // Find the biggest sample for our bar graph.
+  // Find the biggest average for our bar graph.
   max_sample = 0;
   for (var i = 0; i < data.data.length; i++) {
     if (data.data[i].max > max_sample) {
-      max_sample = data.data[i].max;
+      max_sample = data.data[i].mean;
     }
   }
 }
@@ -200,7 +200,8 @@ function jsinit() {
   setUrl(extension.testUrl);
 }
 
-function getWidth(mean, max_width) {
+function getWidth(mean, obj) {
+  var max_width = obj.offsetWidth;
   return Math.floor(max_width * (mean / max_sample));
 }
 
@@ -265,12 +266,14 @@ Clear Cache?<input id="clearcache" type="checkbox">
 <table id="t" class="list" width="100%">
   <tr>
   <th width=30%>url</th>
+  <th width=50>iterations</th>
   <th width=50>doc load mean</th>
   <th width=50>paint mean</th>
   <th width=50>total mean</th>
   <th width=50>stddev</th>
   <th width=50>min</th>
   <th width=50>max</th>
+  <th width=50># Requests</th>
   <th width=50>Read KB</th>
   <th width=50>Write KB</th>
   <th width=50>Read KBps</th>
@@ -280,9 +283,11 @@ Clear Cache?<input id="clearcache" type="checkbox">
 
   <tr id="t.total" jsselect="totals">
   <td class="url">TOTALS <span jscontent="url"></span></td>
+  <td class="avg" jseval="1"></td>
   <td class="avg"><span jseval="val = docLoadMean.toFixed(1)" jscontent="val"></span></td>
   <td class="avg"><span jseval="val = paintMean.toFixed(1)" jscontent="val"></span></td>
   <td class="avg"><span jseval="val = mean.toFixed(1)" jscontent="val"></span></td>
+  <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
@@ -294,13 +299,15 @@ Clear Cache?<input id="clearcache" type="checkbox">
   </tr>
 
   <tr jsselect="data">
-  <td class="url" jseval="$width = getWidth($this.mean, 600)"><div jsvalues=".style.width:$width" class="bggraph"><a jsvalues="href:$this.url" jscontent="url"></a></div></td>
+  <td class="url" jseval="$width = getWidth($this.mean, this)"><div jsvalues=".style.width:$width" class="bggraph"><a jsvalues="href:$this.url" jscontent="url"></a></div></td>
+  <td class="avg" jseval="val = iterations" jscontent="val"></td>
   <td class="avg" jseval="val = docLoadMean.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = paintMean.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = mean.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = stddev.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = min.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = max.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = requests" jscontent="val"></td>
   <td class="avg" jseval="val = readKB.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = writeKB.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = readbps.toFixed(1)" jscontent="val"></td>
@@ -310,7 +317,6 @@ Clear Cache?<input id="clearcache" type="checkbox">
   <tr jsdisplay="data.length == 0">
   <td colspan=11>No tests have been run yet.</td>
   </tr>
-  </div>
 </table>
 
 <script>
