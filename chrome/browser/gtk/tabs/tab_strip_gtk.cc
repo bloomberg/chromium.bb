@@ -711,9 +711,7 @@ void TabStripGtk::Init() {
 
   tabstrip_.Own(gtk_fixed_new());
   ViewIDUtil::SetID(tabstrip_.get(), VIEW_ID_TAB_STRIP);
-  // We want the tab strip to be horizontally shrinkable, so that the Chrome
-  // window can be resized freely.
-  gtk_widget_set_size_request(tabstrip_.get(), 0,
+  gtk_widget_set_size_request(tabstrip_.get(), -1,
                               TabGtk::GetMinimumUnselectedSize().height());
   gtk_widget_set_app_paintable(tabstrip_.get(), TRUE);
   gtk_drag_dest_set(tabstrip_.get(), GTK_DEST_DEFAULT_ALL,
