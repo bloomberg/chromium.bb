@@ -1,0 +1,29 @@
+# Copyright 2009 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+# Copyright 2009, Google Inc.
+
+Import('env')
+
+# TODO(cbiffle): enable this for ARM
+if env['BUILD_ARCHITECTURE'] == 'arm':
+  Return()
+
+# force inclusion of entire library, so that we can validate it
+# NOTE: This approach does not work for -lc because of tons of
+#       undefined symbols which would have to be stubbed out
+
+env.Prepend(LINKFLAGS=['-Wl,-whole-archive',
+                      '-lgcc',
+                      '-lm',
+                      '-lnacl',
+                      '-lsrpc',
+                      '-lpthread',
+                      '-Wl,-no-whole-archive'])
+
+nexe = env.ComponentProgram('dummy.nexe', 'dummy.c')
+node = env.CommandValidatorTestNacl(
+    'dummy_test.out',
+    image=[nexe],
+    )
+env.AddNodeToTestSuite(node, ['toolchain_tests'])

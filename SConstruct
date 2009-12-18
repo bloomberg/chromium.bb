@@ -245,13 +245,17 @@ pre_base_env.Replace(TARGET_ROOT = TARGET_ROOT)
 # ----------------------------------------------------------
 def CommandValidatorTestNacl(env, name, image,
                              validator_flags=None,
+                             validator=None,
                              size='medium',
                              **extra):
   # TODO(robertm): fix this soon
   if env['BUILD_SUBARCH'] == '64': return []
 
-  # TODO(robertm): fix this soon
-  if env['BUILD_ARCHITECTURE'] == 'arm': return []
+  if validator is None:
+    if env['BUILD_ARCHITECTURE'] == 'arm':
+      validator = 'arm-ncval-core'
+    else:
+      validator = 'ncval'
 
   # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
   if 'TRUSTED_ENV' not in env:
@@ -262,8 +266,8 @@ def CommandValidatorTestNacl(env, name, image,
     validator_flags = []
 
   t_env = env['TRUSTED_ENV']
-  # TODO(robertm): this may need more magic when we support arm
-  validator = t_env.File('${STAGING_DIR}/${PROGPREFIX}ncval${PROGSUFFIX}')
+  validator = t_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
+                         validator)
 
   command = [validator] + validator_flags + [image]
   return CommandTestAgainstGoldenOutput(env, name, command, size, **extra)
@@ -965,6 +969,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
           'tests/syscalls/nacl.scons',
           'tests/threads/nacl.scons',
           'tests/time/nacl.scons',
+          'tests/toolchain/nacl.scons',
           'tests/vim/nacl.scons',
           ####  ALPHABETICALLY SORTED ####
           ],
@@ -1029,6 +1034,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
       'tests/srpc_without_pthread/nacl.scons',
       'tests/sysbasic/nacl.scons',
 #      'tests/syscalls/nacl.scons',
+      'tests/toolchain/nacl.scons',
 #      'tests/threads/nacl.scons',
       'tests/vim/nacl.scons',
 
