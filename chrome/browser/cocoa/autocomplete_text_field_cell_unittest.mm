@@ -19,10 +19,27 @@ const CGFloat kWidth(300.0);
 // A narrow width for tests which test things that don't fit.
 const CGFloat kNarrowWidth(5.0);
 
+// A testing subclass that doesn't bother hooking up the Page Action itself.
+class TestPageActionImageView : public LocationBarViewMac::PageActionImageView {
+ public:
+  TestPageActionImageView() {}
+  ~TestPageActionImageView() {}
+};
+
+class TestPageActionViewList : public LocationBarViewMac::PageActionViewList {
+ public:
+  TestPageActionViewList()
+      : LocationBarViewMac::PageActionViewList(NULL, NULL, NULL) {}
+
+  void Add(LocationBarViewMac::PageActionImageView* view) {
+    views_.push_back(view);
+  }
+};
+
 class AutocompleteTextFieldCellTest : public CocoaTest {
  public:
   AutocompleteTextFieldCellTest() : security_image_view_(NULL, NULL),
-                                    page_action_views_(NULL, NULL, NULL) {
+                                    page_action_views_() {
     // Make sure this is wide enough to play games with the cell
     // decorations.
     const NSRect frame = NSMakeRect(0, 0, kWidth, 30);
@@ -44,7 +61,7 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
 
   NSTextField* view_;
   LocationBarViewMac::SecurityImageView security_image_view_;
-  LocationBarViewMac::PageActionViewList page_action_views_;
+  TestPageActionViewList page_action_views_;
 };
 
 // Basic view tests (AddRemove, Display).
@@ -254,7 +271,7 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
 }
 
 // Test that the security icon is at the right side of the cell.
-TEST_F(AutocompleteTextFieldCellTest, HintImageFrame) {
+TEST_F(AutocompleteTextFieldCellTest, SecurityImageFrame) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
   const NSRect bounds([view_ bounds]);
@@ -306,8 +323,96 @@ TEST_F(AutocompleteTextFieldCellTest, HintImageFrame) {
   EXPECT_TRUE(NSIsEmptyRect(iconRect));
 }
 
+// Test Page Action counts.
+TEST_F(AutocompleteTextFieldCellTest, PageActionCount) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+
+  TestPageActionImageView page_action_view;
+  TestPageActionImageView page_action_view2;
+
+  TestPageActionViewList list;
+  [cell setPageActionViewList:&list];
+
+  EXPECT_EQ(0u, [cell pageActionCount]);
+  list.Add(&page_action_view);
+  EXPECT_EQ(1u, [cell pageActionCount]);
+  list.Add(&page_action_view2);
+  EXPECT_EQ(2u, [cell pageActionCount]);
+}
+
+// Test that Page Action icons are properly placed.
+TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+  const NSRect bounds([view_ bounds]);
+  security_image_view_.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
+
+  TestPageActionImageView page_action_view;
+  // We'll assume that the extensions code enforces icons smaller than the
+  // location bar.
+  NSImage* image = [[[NSImage alloc]
+      initWithSize:NSMakeSize(NSHeight(bounds) - 4, NSHeight(bounds) - 4)]
+      autorelease];
+  page_action_view.SetImage(image);
+
+  TestPageActionImageView page_action_view2;
+  page_action_view2.SetImage(image);
+
+  TestPageActionViewList list;
+  list.Add(&page_action_view);
+  list.Add(&page_action_view2);
+  [cell setPageActionViewList:&list];
+
+  security_image_view_.SetVisible(false);
+  page_action_view.SetVisible(false);
+  page_action_view2.SetVisible(false);
+  EXPECT_TRUE(NSIsEmptyRect([cell pageActionFrameForIndex:0 inFrame:bounds]));
+  EXPECT_TRUE(NSIsEmptyRect([cell pageActionFrameForIndex:1 inFrame:bounds]));
+
+  // One page action, no security icon.
+  page_action_view.SetVisible(true);
+  NSRect iconRect0 = [cell pageActionFrameForIndex:0 inFrame:bounds];
+
+  EXPECT_FALSE(NSIsEmptyRect(iconRect0));
+  EXPECT_TRUE(NSContainsRect(bounds, iconRect0));
+
+  // Make sure we are right of the |drawingRect|.
+  NSRect drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect0));
+
+  // Make sure we're right of the |textFrame|.
+  NSRect textFrame = [cell textFrameForFrame:bounds];
+  EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect0));
+
+  // Two page actions plus a security icon.
+  page_action_view2.SetVisible(true);
+  security_image_view_.SetVisible(true);
+  iconRect0 = [cell pageActionFrameForIndex:0 inFrame:bounds];
+  NSRect iconRect1 = [cell pageActionFrameForIndex:1 inFrame:bounds];
+  NSRect lockRect = [cell securityImageFrameForFrame:bounds];
+
+  // Make sure they're all in the expected order, and right of the |drawingRect|
+  // and |textFrame|.
+  drawingRect = [cell drawingRectForBounds:bounds];
+  textFrame = [cell textFrameForFrame:bounds];
+
+  EXPECT_FALSE(NSIsEmptyRect(iconRect0));
+  EXPECT_TRUE(NSContainsRect(bounds, iconRect0));
+  EXPECT_FALSE(NSIsEmptyRect(iconRect1));
+  EXPECT_TRUE(NSContainsRect(bounds, iconRect1));
+  EXPECT_FALSE(NSIsEmptyRect(lockRect));
+  EXPECT_TRUE(NSContainsRect(bounds, lockRect));
+
+  EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect1));
+  EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect1));
+  EXPECT_LE(NSMaxX(iconRect1), NSMinX(iconRect0));
+  EXPECT_LE(NSMaxX(iconRect0), NSMinX(lockRect));
+}
+
 // Test that the cell correctly chooses the partial keyword if there's
-// no enough room.
+// not enough room.
 TEST_F(AutocompleteTextFieldCellTest, UsesPartialKeywordIfNarrow) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);

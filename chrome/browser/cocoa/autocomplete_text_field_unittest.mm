@@ -561,6 +561,7 @@ TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
   EXPECT_EQ(selectedRange.length, [[field_ stringValue] length]);
 }
 
+// Clicking the security icon should call its OnMousePressed.
 TEST_F(AutocompleteTextFieldObserverTest, SecurityIconMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
@@ -578,6 +579,7 @@ TEST_F(AutocompleteTextFieldObserverTest, SecurityIconMouseDown) {
   [field_ mouseDown:event];
 }
 
+// Clicking a Page Action icon should call its OnMousePressed.
 TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
