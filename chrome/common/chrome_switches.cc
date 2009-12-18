@@ -319,6 +319,12 @@ const char kInternalNaCl[]                  = "internal-nacl";
 // Runs a trusted Pepper plugin inside the renderer process.
 const char kInternalPepper[]                = "internal-pepper";
 
+#ifndef NDEBUG
+// Makes sure any sync login attempt will fail with an error.  (Only
+// used for testing.)
+const char kInvalidateSyncLogin[]           = "invalidate-sync-login";
+#endif
+
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 

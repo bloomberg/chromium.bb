@@ -101,6 +101,9 @@ extern const char kInProcessPlugins[];
 extern const char kIncognito[];
 extern const char kInternalNaCl[];
 extern const char kInternalPepper[];
+#ifndef NDEBUG
+extern const char kInvalidateSyncLogin[];
+#endif
 extern const char kJavaScriptFlags[];
 extern const char kLoadExtension[];
 extern const char kLoadPlugin[];

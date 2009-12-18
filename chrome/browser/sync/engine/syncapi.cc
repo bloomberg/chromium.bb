@@ -44,6 +44,7 @@
 #include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/user_settings.h"
+#include "chrome/common/chrome_switches.h"
 
 #if defined(OS_WIN)
 #pragma comment(lib, "iphlpapi.lib")
@@ -1021,6 +1022,12 @@ bool SyncManager::SyncInternal::Init(
   if (attempt_last_user_authentication &&
       auth_watcher()->settings()->GetLastUserAndServiceToken(
           SYNC_SERVICE_NAME, &username, &auth_token)) {
+#ifndef NDEBUG
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    if (command_line.HasSwitch(switches::kInvalidateSyncLogin)) {
+      auth_token += "bogus";
+    }
+#endif
     attempting_auth = AuthenticateForUser(username, auth_token);
   } else if (!lsid.empty()) {
     attempting_auth = true;
