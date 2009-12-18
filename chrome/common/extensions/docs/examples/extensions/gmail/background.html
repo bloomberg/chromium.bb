@@ -5,9 +5,6 @@ var animationFrames = 36;
 var animationSpeed = 10; // ms
 var canvas;
 var canvasContext;
-var gmail = "https://mail.google.com/";
-var gmailAtomRef = "https://mail.google.com/mail/feed/atom";
-var gmailRe = /https?\:\/\/mail.google.com\/(?!a\/)/;
 var loggedInImage;
 var pollIntervalMin = 1000 * 60;  // 1 minute
 var pollIntervalMax = 1000 * 60 * 60;  // 1 hour
@@ -17,6 +14,30 @@ var rotation = 0;
 var unreadCount = -1;
 var loadingAnimation = new LoadingAnimation();
 
+function getGmailUrl() {
+  var url = "https://mail.google.com/";
+  if (localStorage.customDomain)
+    url += localStorage.customDomain + "/";
+  else
+    url += "mail/"
+  return url;
+}
+
+function getFeedUrl() {
+  return getGmailUrl() + "feed/atom";
+}
+
+function isGmailUrl(url) {
+  // This is the Gmail we're looking for if:
+  // - starts with the correct gmail url
+  // - doesn't contain any other path chars
+  var gmail = getGmailUrl();
+  if (url.indexOf(gmail) != 0)
+    return false;
+
+  return url.length == gmail.length || url[gmail.length] == '?' ||
+                       url[gmail.length] == '#';
+}
 
 // A "loading" animation displayed while we wait for the first response from
 // Gmail. This animates the badge text with a dot that cycles from left to
@@ -62,7 +83,7 @@ LoadingAnimation.prototype.stop = function() {
 
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
-  if (changeInfo.url && gmailRe.test(changeInfo.url)) {
+  if (changeInfo.url && isGmailUrl(changeInfo.url)) {
     console.log("saw gmail! updating...");
     getInboxCount(function(count) {
       updateUnreadCount(count);
@@ -76,6 +97,7 @@ function init() {
   loggedInImage = document.getElementById('logged_in');
   canvasContext = canvas.getContext('2d');
 
+  chrome.browserAction.setBadgeBackgroundColor({color:[208, 0, 24, 255]});
   chrome.browserAction.setIcon({path: "gmail_logged_in.png"});
   loadingAnimation.start();
 
@@ -168,7 +190,7 @@ function getInboxCount(onSuccess, onError) {
       handleError();
     }
 
-    xhr.open("GET", gmailAtomRef, true);
+    xhr.open("GET", getFeedUrl(), true);
     xhr.send(null);
   } catch(e) {
     console.log("ex: " + e);
@@ -237,12 +259,12 @@ function drawIconAtRotation() {
 function goToInbox() {
   chrome.tabs.getAllInWindow(undefined, function(tabs) {
     for (var i = 0, tab; tab = tabs[i]; i++) {
-      if (tab.url && gmailRe.test(tab.url)) {
+      if (tab.url && isGmailUrl(tab.url)) {
         chrome.tabs.update(tab.id, {selected: true});
         return;
       }
     }
-    chrome.tabs.create({url: gmail});
+    chrome.tabs.create({url: getGmailUrl()});
   });
 }
 
