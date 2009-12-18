@@ -1887,11 +1887,3 @@
    ...
    fun:_ZN26SandboxedExtensionUnpacker17RewriteImageFilesEv
 }
-{
-   bug_30762
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN22ExtensionMessageBundle6CreateERKSt6vectorI10linked_ptrI15DictionaryValueESaIS3_EEPSs
-   fun:_ZN19extension_l10n_util19LoadMessageCatalogsERK8FilePathRKSsS4_RKSt3setISsSt4lessISsESaISsEEPSs
-}

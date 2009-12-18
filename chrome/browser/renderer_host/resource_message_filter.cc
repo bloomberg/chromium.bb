@@ -1207,12 +1207,12 @@ void ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
   std::string error;
-  ExtensionMessageBundle* bundle =
+  scoped_ptr<ExtensionMessageBundle> bundle(
       extension_file_util::LoadExtensionMessageBundle(
-          extension_path, default_locale, &error);
+          extension_path, default_locale, &error));
 
   std::map<std::string, std::string> dictionary_map;
-  if (bundle)
+  if (bundle.get())
     dictionary_map = *bundle->dictionary();
 
   ViewHostMsg_GetExtensionMessageBundle::WriteReplyParams(

@@ -158,10 +158,3 @@
    ...
    fun:SpellCheck::InitializeHunspell
 }
-{
-   bug_30762
-   Memcheck:Leak
-   ...
-   fun:ExtensionMessageBundle::Create
-   fun:extension_l10n_util::LoadMessageCatalogs
-}

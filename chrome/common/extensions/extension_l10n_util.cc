@@ -122,15 +122,15 @@ bool LocalizeExtension(Extension* extension,
 
   std::string default_locale = GetDefaultLocaleFromManifest(*manifest, error);
 
-  ExtensionMessageBundle* message_bundle =
-      extension_file_util::LoadExtensionMessageBundle(extension->path(),
-                                                      default_locale,
-                                                      error);
+  scoped_ptr<ExtensionMessageBundle> message_bundle(
+      extension_file_util::LoadExtensionMessageBundle(
+          extension->path(), default_locale, error));
 
-  if (!message_bundle && !error->empty())
+  if (!message_bundle.get() && !error->empty())
     return false;
 
-  if (message_bundle && !LocalizeManifest(*message_bundle, manifest, error))
+  if (message_bundle.get() &&
+      !LocalizeManifest(*message_bundle, manifest, error))
     return false;
 
   return true;
