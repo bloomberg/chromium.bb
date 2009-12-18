@@ -5,6 +5,7 @@
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 
 #include "base/logging.h"
+#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/status_bubble.h"
 #include "chrome/browser/views/frame/browser_extender.h"

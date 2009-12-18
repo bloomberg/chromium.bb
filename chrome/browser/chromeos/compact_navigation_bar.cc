@@ -13,6 +13,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/back_forward_menu_model_views.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/status_area_view.h"
 #include "chrome/browser/profile.h"

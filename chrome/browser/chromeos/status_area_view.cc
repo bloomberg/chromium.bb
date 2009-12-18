@@ -13,6 +13,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chromeos/clock_menu_button.h"
 #include "chrome/browser/chromeos/language_menu_button.h"
 #include "chrome/browser/chromeos/network_menu_button.h"

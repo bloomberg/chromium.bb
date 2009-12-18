@@ -129,6 +129,14 @@ class BrowserThemeProvider : public NonThreadSafe,
   // locally customized.)
   std::string GetThemeID() const;
 
+  // This class needs to keep track of the number of theme infobars so that we
+  // clean up unused themes.
+  void OnInfobarDisplayed();
+
+  // Decrements the number of theme infobars. If the last infobar has been
+  // destroyed, uninstalls all themes that aren't the currently selected.
+  void OnInfobarDestroyed();
+
   // Convert a bitfield alignment into a string like "top left". Public so that
   // it can be used to generate CSS values. Takes a bitfield of AlignmentMasks.
   static std::string AlignmentToString(int alignment);
@@ -214,6 +222,9 @@ class BrowserThemeProvider : public NonThreadSafe,
   Profile* profile_;
 
   scoped_refptr<BrowserThemePack> theme_pack_;
+
+  // The number of infobars currently displayed.
+  int number_of_infobars_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserThemeProvider);
 };

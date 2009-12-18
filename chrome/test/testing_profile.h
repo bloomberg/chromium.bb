@@ -135,7 +135,7 @@ class TestingProfile : public Profile {
   virtual void SetNativeTheme() {}
   virtual void ClearTheme() {}
   virtual Extension* GetTheme() { return NULL; }
-  virtual ThemeProvider* GetThemeProvider() {
+  virtual BrowserThemeProvider* GetThemeProvider() {
     InitThemes();
     return theme_provider_.get();
   }
