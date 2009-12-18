@@ -1174,13 +1174,46 @@ const int kDisabledIndex = 1;
   }
 }
 
+// Called when the "stop syncing" confirmation dialog started by
+// doSyncAction is finished.  Stop syncing only If the user clicked
+// OK.
+- (void)stopSyncAlertDidEnd:(NSAlert*)alert
+                 returnCode:(int)returnCode
+                contextInfo:(void*)contextInfo {
+  DCHECK(syncService_);
+  if (returnCode == NSAlertFirstButtonReturn) {
+    syncService_->DisableForUser();
+    ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
+  }
+}
+
+// Called when the user clicks the multi-purpose sync button in the
+// "Personal Stuff" pane.
 - (IBAction)doSyncAction:(id)sender {
   DCHECK(syncService_);
   if (syncService_->HasSyncSetupCompleted()) {
-    syncService_->DisableForUser();
-    ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
-    // TODO(akalin): Pop up a confirmation dialog before disabling syncing.
+    // If sync setup has completed that means the sync button was a
+    // "stop syncing" button.  Bring up a confirmation dialog before
+    // actually stopping syncing (see stopSyncAlertDidEnd).
+    scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
+    [alert addButtonWithTitle:l10n_util::GetNSStringWithFixup(
+        IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL)];
+    [alert addButtonWithTitle:l10n_util::GetNSStringWithFixup(
+        IDS_CANCEL)];
+    [alert setMessageText:l10n_util::GetNSStringWithFixup(
+        IDS_SYNC_STOP_SYNCING_BUTTON_LABEL)];
+    [alert setInformativeText:l10n_util::GetNSStringWithFixup(
+        IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL)];
+    [alert setAlertStyle:NSWarningAlertStyle];
+    const SEL kEndSelector =
+        @selector(stopSyncAlertDidEnd:returnCode:contextInfo:);
+    [alert beginSheetModalForWindow:[self window]
+                      modalDelegate:self
+                     didEndSelector:kEndSelector
+                        contextInfo:NULL];
   } else {
+    // Otherwise, the sync button was a "sync my bookmarks" button.
+    // Kick off the sync setup process.
     syncService_->EnableForUser();
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
   }
