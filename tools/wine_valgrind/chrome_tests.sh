@@ -128,6 +128,7 @@ base_unittests        fail-valgrind        ConditionVariableTest.LargeFastTaskTe
 base_unittests        fail-valgrind        ProcessUtilTest.CalcFreeMemory                       # fails under wine + valgrind TODO(thestig): investigate
 base_unittests        fail-valgrind        ProcessUtilTest.KillSlowChild                        # fails under wine + valgrind TODO(thestig): investigate
 base_unittests        fail-valgrind        ProcessUtilTest.SpawnChild                           # fails under wine + valgrind TODO(thestig): investigate
+base_unittests        flaky-valgrind       StatsTableTest.StatsCounterTimer                     # flaky, timing issues? TODO(thestig): investigate
 base_unittests        fail-valgrind        StatsTableTest.StatsRate                             # fails under wine + valgrind TODO(thestig): investigate
 base_unittests        fail-valgrind        StatsTableTest.StatsScope                            # fails under wine + valgrind TODO(thestig): investigate
 ipc_tests             flaky                IPCChannelTest.ChannelTest                           http://bugs.winehq.org/show_bug.cgi?id=20628
