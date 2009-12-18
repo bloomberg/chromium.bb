@@ -301,6 +301,8 @@ void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
   // We ignore whether the drag was a "success" or "failure" in Gtk's opinion.
   g_signal_connect(button->widget(), "drag-end",
                    G_CALLBACK(&OnDragEndThunk), this);
+  g_signal_connect(button->widget(), "drag-failed",
+                   G_CALLBACK(&OnDragFailedThunk), this);
 
   UpdateVisibility();
 }
@@ -360,6 +362,10 @@ void BrowserActionsToolbarGtk::DragStarted(BrowserActionButton* button,
 gboolean BrowserActionsToolbarGtk::OnDragMotion(GtkWidget* widget,
                                                 GdkDragContext* drag_context,
                                                 gint x, gint y, guint time) {
+  // Only handle drags we initiated.
+  if (!drag_button_)
+    return FALSE;
+
   drop_index_ = x < kButtonSize ? 0 : x / (kButtonSize + kButtonPadding);
   // We will go ahead and reorder the child in order to provide visual feedback
   // to the user. We don't inform the model that it has moved until the drag
@@ -378,4 +384,14 @@ void BrowserActionsToolbarGtk::OnDragEnd(GtkWidget* button,
 
   drag_button_ = NULL;
   drop_index_ = -1;
+}
+
+gboolean BrowserActionsToolbarGtk::OnDragFailed(GtkWidget* widget,
+                                                GdkDragContext* drag_context,
+                                                GtkDragResult result) {
+  // We connect to this signal and return TRUE so that the default failure
+  // animation (wherein the drag widget floats back to the start of the drag)
+  // does not show, and the drag-end signal is emitted immediately instead of
+  // several seconds later.
+  return TRUE;
 }

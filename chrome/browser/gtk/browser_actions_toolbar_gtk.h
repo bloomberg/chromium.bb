@@ -86,6 +86,16 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   }
   void OnDragEnd(GtkWidget* button, GdkDragContext* drag_context);
 
+  static gboolean OnDragFailedThunk(GtkWidget* widget,
+                                    GdkDragContext* drag_context,
+                                    GtkDragResult result,
+                                    BrowserActionsToolbarGtk* toolbar) {
+    return toolbar->OnDragFailed(widget, drag_context, result);
+  }
+  gboolean OnDragFailed(GtkWidget* widget,
+                        GdkDragContext* drag_context,
+                        GtkDragResult result);
+
   Browser* browser_;
 
   Profile* profile_;
