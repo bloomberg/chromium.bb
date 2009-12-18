@@ -85,6 +85,8 @@ then
   patch -p0 < "${THISDIR}/vbug205541.patch"
 
   # Add intercepts for tcmalloc memory functions.
+  # The corresponding feature request for Valgrind is at
+  # https://bugs.kde.org/show_bug.cgi?id=219156.
   patch -p0 < "${THISDIR}/intercept_tcmalloc.patch"
 
 

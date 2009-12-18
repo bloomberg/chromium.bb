@@ -2,15 +2,26 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
 ===================================================================
 --- coregrind/m_replacemalloc/vg_replace_malloc.c	(revision 10880)
 +++ coregrind/m_replacemalloc/vg_replace_malloc.c	(working copy)
-@@ -193,6 +193,7 @@
+@@ -193,6 +193,18 @@
  // malloc
  ALLOC_or_NULL(VG_Z_LIBSTDCXX_SONAME, malloc,      malloc);
  ALLOC_or_NULL(VG_Z_LIBC_SONAME,      malloc,      malloc);
++// Handle libtcmalloc's malloc() function.
++// Similar interceptors are added below to handle other libtcmalloc
++// allocation/deallocation functions.
++// soname=NONE means that a user's allocation function is intercepted.
 +ALLOC_or_NULL(NONE,                  malloc,      malloc);
++// Bash has sh_malloc() and sh_free() along with standard malloc() and free().
++// Sometimes these functions are called inconsistently (e.g. free() after
++// sh_malloc()). To deal with this we have to intercept the sh_*() functions
++// as well.
++ALLOC_or_NULL(NONE,                  sh_malloc,      malloc);
++// Handle Python's malloc.
++ALLOC_or_NULL(NONE,                  PyObject_Malloc,      malloc);
  #if defined(VGP_ppc32_aix5) || defined(VGP_ppc64_aix5)
  ALLOC_or_NULL(VG_Z_LIBC_SONAME,      malloc_common, malloc);
  #elif defined(VGO_darwin)
-@@ -205,20 +206,24 @@
+@@ -205,20 +217,24 @@
  // operator new(unsigned int), not mangled (for gcc 2.96)
  ALLOC_or_BOMB(VG_Z_LIBSTDCXX_SONAME,  builtin_new,    __builtin_new);
  ALLOC_or_BOMB(VG_Z_LIBC_SONAME,       builtin_new,    __builtin_new);
@@ -35,7 +46,7 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
  #endif
  
  // operator new(unsigned long), ARM/cfront mangling
-@@ -233,12 +238,14 @@
+@@ -233,12 +249,14 @@
  #if VG_WORDSIZE == 4
   ALLOC_or_NULL(VG_Z_LIBSTDCXX_SONAME, _ZnwjRKSt9nothrow_t,  __builtin_new);
   ALLOC_or_NULL(VG_Z_LIBC_SONAME,      _ZnwjRKSt9nothrow_t,  __builtin_new);
@@ -50,7 +61,7 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
  #endif
  
  // operator new(unsigned long, std::nothrow_t const&), ARM/cfront mangling
-@@ -252,17 +259,20 @@
+@@ -252,17 +270,20 @@
  // operator new[](unsigned int), not mangled (for gcc 2.96)
  ALLOC_or_BOMB(VG_Z_LIBSTDCXX_SONAME,  __builtin_vec_new, __builtin_vec_new );
  ALLOC_or_BOMB(VG_Z_LIBC_SONAME,       __builtin_vec_new, __builtin_vec_new );
@@ -71,7 +82,7 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
  #endif
  
  // operator new[](unsigned long), ARM/cfront mangling
-@@ -277,12 +287,14 @@
+@@ -277,12 +298,14 @@
  #if VG_WORDSIZE == 4
   ALLOC_or_NULL(VG_Z_LIBSTDCXX_SONAME, _ZnajRKSt9nothrow_t, __builtin_vec_new );
   ALLOC_or_NULL(VG_Z_LIBC_SONAME,      _ZnajRKSt9nothrow_t, __builtin_vec_new );
@@ -86,19 +97,22 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
  #endif
  
  // operator new [](unsigned long, std::nothrow_t const&), ARM/cfront mangling
-@@ -323,6 +335,7 @@
+@@ -323,6 +346,9 @@
  // free
  FREE(VG_Z_LIBSTDCXX_SONAME,  free,                 free );
  FREE(VG_Z_LIBC_SONAME,       free,                 free );
 +FREE(NONE,                   free,                 free );
++FREE(NONE,                   sh_free,              free );
++FREE(NONE,                   PyObject_Free,        free );
  #if defined(VGP_ppc32_aix5) || defined(VGP_ppc64_aix5)
  FREE(VG_Z_LIBC_SONAME,       free_common,          free );
  #elif defined(VGO_darwin)
-@@ -335,16 +348,19 @@
+@@ -335,16 +361,20 @@
  // cfree
  FREE(VG_Z_LIBSTDCXX_SONAME,  cfree,                free );
  FREE(VG_Z_LIBC_SONAME,       cfree,                free );
 +FREE(NONE,                   cfree,                free );
++FREE(NONE,                   sh_cfree,             free );
  
  
  /*---------------------- delete ----------------------*/
@@ -114,7 +128,7 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
  
  // operator delete(void*), ARM/cfront mangling
  #if defined(VGP_ppc32_aix5) || defined(VGP_ppc64_aix5)
-@@ -357,16 +373,19 @@
+@@ -357,16 +387,19 @@
  // operator delete(void*, std::nothrow_t const&), GNU mangling
  FREE(VG_Z_LIBSTDCXX_SONAME, _ZdlPvRKSt9nothrow_t,  __builtin_delete );
  FREE(VG_Z_LIBC_SONAME,      _ZdlPvRKSt9nothrow_t,  __builtin_delete );
@@ -134,7 +148,7 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
  
  // operator delete[](void*), ARM/cfront mangling
  #if defined(VGP_ppc32_aix5) || defined(VGP_ppc64_aix5)
-@@ -379,6 +398,7 @@
+@@ -379,6 +412,7 @@
  // operator delete[](void*, std::nothrow_t const&), GNU mangling
  FREE(VG_Z_LIBSTDCXX_SONAME,  _ZdaPvRKSt9nothrow_t, __builtin_vec_delete );
  FREE(VG_Z_LIBC_SONAME,       _ZdaPvRKSt9nothrow_t, __builtin_vec_delete );
@@ -142,39 +156,44 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
  
  
  /*---------------------- calloc ----------------------*/
-@@ -416,6 +436,7 @@
+@@ -416,6 +450,8 @@
     }
  
  CALLOC(VG_Z_LIBC_SONAME, calloc);
 +CALLOC(NONE,             calloc);
++CALLOC(NONE,             sh_calloc);
  #if defined(VGP_ppc32_aix5) || defined(VGP_ppc64_aix5)
  CALLOC(VG_Z_LIBC_SONAME, calloc_common);
  #elif defined(VGO_darwin)
-@@ -474,6 +495,7 @@
+@@ -474,6 +510,9 @@
     }
  
  REALLOC(VG_Z_LIBC_SONAME, realloc);
 +REALLOC(NONE,             realloc);
++REALLOC(NONE,             sh_realloc);
++REALLOC(NONE,             PyObject_Realloc);
  #if defined(VGP_ppc32_aix5) || defined(VGP_ppc64_aix5)
  REALLOC(VG_Z_LIBC_SONAME, realloc_common);
  #elif defined(VGO_darwin)
-@@ -530,6 +552,7 @@
+@@ -530,6 +569,8 @@
     }
  
  MEMALIGN(VG_Z_LIBC_SONAME, memalign);
 +MEMALIGN(NONE,             memalign);
++MEMALIGN(NONE,          sh_memalign);
  #if defined(VGO_darwin)
  ZONEMEMALIGN(VG_Z_LIBC_SONAME, malloc_zone_memalign);
  #endif
-@@ -572,6 +595,7 @@
+@@ -572,6 +613,8 @@
     }
  
  VALLOC(VG_Z_LIBC_SONAME, valloc);
 +VALLOC(NONE,             valloc);
++VALLOC(NONE,          sh_valloc);
  #if defined(VGO_darwin)
  ZONEVALLOC(VG_Z_LIBC_SONAME, malloc_zone_valloc);
  #endif
-@@ -592,6 +616,7 @@
+@@ -592,6 +635,7 @@
     }
  
  MALLOPT(VG_Z_LIBC_SONAME, mallopt);
@@ -182,7 +201,7 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
  
  
  /*---------------------- malloc_trim ----------------------*/
-@@ -628,6 +653,7 @@
+@@ -628,6 +672,7 @@
     }
  
  MALLOC_TRIM(VG_Z_LIBC_SONAME, malloc_trim);
@@ -190,7 +209,7 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
  
  
  /*---------------------- posix_memalign ----------------------*/
-@@ -658,6 +684,7 @@
+@@ -658,6 +703,7 @@
     }
  
  POSIX_MEMALIGN(VG_Z_LIBC_SONAME, posix_memalign);
@@ -198,7 +217,7 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
  #if defined(VGP_ppc32_aix5) || defined(VGP_ppc64_aix5)
  /* 27 Nov 07: it appears that xlc links into executables, a
     posix_memalign, which calls onwards to memalign_common, with the
-@@ -688,6 +715,7 @@
+@@ -688,6 +734,7 @@
  
  MALLOC_USABLE_SIZE(VG_Z_LIBC_SONAME, malloc_usable_size);
  MALLOC_USABLE_SIZE(VG_Z_LIBC_SONAME, malloc_size);
@@ -206,7 +225,7 @@ Index: coregrind/m_replacemalloc/vg_replace_malloc.c
  
  
  /*---------------------- (unimplemented) ----------------------*/
-@@ -742,6 +770,7 @@
+@@ -742,6 +789,7 @@
     }
  
  MALLINFO(VG_Z_LIBC_SONAME, mallinfo);
