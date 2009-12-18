@@ -241,7 +241,8 @@ net::Error FlipSession::Connect(const std::string& group_name,
 
 scoped_refptr<FlipStream> FlipSession::GetOrCreateStream(
     const HttpRequestInfo& request,
-    const UploadDataStream* upload_data) {
+    const UploadDataStream* upload_data,
+    LoadLog* log) {
   const GURL& url = request.url;
   const std::string& path = url.PathForRequest();
 
@@ -261,7 +262,8 @@ scoped_refptr<FlipStream> FlipSession::GetOrCreateStream(
     DCHECK(!it->second);
     // Server will assign a stream id when the push stream arrives.  Use 0 for
     // now.
-    FlipStream* stream = new FlipStream(this, 0, true);
+    LoadLog::AddEvent(log, LoadLog::TYPE_FLIP_STREAM_ADOPTED_PUSH_STREAM);
+    FlipStream* stream = new FlipStream(this, 0, true, log);
     stream->set_path(path);
     it->second = stream;
     return it->second;
@@ -270,7 +272,7 @@ scoped_refptr<FlipStream> FlipSession::GetOrCreateStream(
   const flip::FlipStreamId stream_id = GetNewStreamId();
 
   // If we still don't have a stream, activate one now.
-  stream = new FlipStream(this, stream_id, false);
+  stream = new FlipStream(this, stream_id, false, log);
   stream->set_priority(request.priority);
   stream->set_path(path);
   ActivateStream(stream);
@@ -809,7 +811,8 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
     CHECK(stream->stream_id() == 0);
     stream->set_stream_id(stream_id);
   } else {
-    stream = new FlipStream(this, stream_id, true);
+    // TODO(mbelshe): can we figure out how to use a LoadLog here?
+    stream = new FlipStream(this, stream_id, true, NULL);
   }
 
   // Activate a stream and parse the headers.

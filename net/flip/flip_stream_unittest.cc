@@ -106,7 +106,7 @@ TEST_F(FlipStreamTest, SendRequest) {
   TestCompletionCallback callback;
   HttpResponseInfo response;
 
-  scoped_refptr<FlipStream> stream(new FlipStream(session, 1, false));
+  scoped_refptr<FlipStream> stream(new FlipStream(session, 1, false, NULL));
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(NULL, &response, &callback));
 
   // Need to manually remove the flip session since normally it gets removed on

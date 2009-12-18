@@ -64,6 +64,23 @@ inline ::testing::AssertionResult LogContains(
   return ::testing::AssertionSuccess();
 }
 
+// Expect that the log contains an event, but don't care about where
+// as long as the index where it is found is greater than min_index.
+// Returns the position where the event was found.
+inline size_t ExpectLogContainsSomewhere(const LoadLog* log,
+                                         size_t min_index,
+                                         LoadLog::EventType expected_event,
+                                         LoadLog::EventPhase expected_phase) {
+  size_t i = 0;
+  for (; i < log->events().size(); ++i)
+    if (log->events()[i].type == expected_event &&
+        log->events()[i].phase == expected_phase)
+      break;
+  EXPECT_LT(i, log->events().size());
+  EXPECT_GE(i, min_index);
+  return i;
+}
+
 }  // namespace net
 
 #endif  // NET_BASE_LOAD_LOG_UNITTEST_H_

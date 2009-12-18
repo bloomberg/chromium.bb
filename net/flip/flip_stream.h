@@ -15,6 +15,7 @@
 #include "net/base/bandwidth_metrics.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_log.h"
 #include "net/flip/flip_framer.h"
 #include "net/flip/flip_protocol.h"
 
@@ -36,7 +37,8 @@ class UploadDataStream;
 class FlipStream : public base::RefCounted<FlipStream> {
  public:
   // FlipStream constructor
-  FlipStream(FlipSession* session, flip::FlipStreamId stream_id, bool pushed);
+  FlipStream(FlipSession* session, flip::FlipStreamId stream_id, bool pushed,
+             LoadLog* log);
 
   // Ideally I'd use two abstract classes as interfaces for these two sections,
   // but since we're ref counted, I can't make both abstract classes inherit
@@ -183,6 +185,8 @@ class FlipStream : public base::RefCounted<FlipStream> {
   int user_buffer_len_;
 
   bool cancelled_;
+
+  scoped_refptr<LoadLog> load_log_;
 
   DISALLOW_COPY_AND_ASSIGN(FlipStream);
 };

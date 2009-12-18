@@ -178,6 +178,25 @@ EVENT_TYPE(FLIP_TRANSACTION_READ_HEADERS)
 EVENT_TYPE(FLIP_TRANSACTION_READ_BODY)
 
 // ------------------------------------------------------------------------
+// FlipStream
+// ------------------------------------------------------------------------
+
+// Measures the time taken to send headers on a stream.
+EVENT_TYPE(FLIP_STREAM_SEND_HEADERS)
+
+// Measures the time taken to send the body (e.g. a POST) on a stream.
+EVENT_TYPE(FLIP_STREAM_SEND_BODY)
+
+// Measures the time taken to read headers on a stream.
+EVENT_TYPE(FLIP_STREAM_READ_HEADERS)
+
+// Measures the time taken to read the body on a stream.
+EVENT_TYPE(FLIP_STREAM_READ_BODY)
+
+// Logs that a stream attached to a pushed stream.
+EVENT_TYPE(FLIP_STREAM_ADOPTED_PUSH_STREAM)
+
+// ------------------------------------------------------------------------
 // HttpStreamParser
 // ------------------------------------------------------------------------
 

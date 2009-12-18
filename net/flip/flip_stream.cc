@@ -11,9 +11,8 @@
 
 namespace net {
 
-FlipStream::FlipStream(FlipSession* session,
-                       flip::FlipStreamId stream_id,
-                       bool pushed)
+FlipStream::FlipStream(FlipSession* session, flip::FlipStreamId stream_id,
+                       bool pushed, LoadLog* log)
     : stream_id_(stream_id),
       priority_(0),
       pushed_(pushed),
@@ -28,7 +27,8 @@ FlipStream::FlipStream(FlipSession* session,
       user_callback_(NULL),
       user_buffer_(NULL),
       user_buffer_len_(0),
-      cancelled_(false) {}
+      cancelled_(false),
+      load_log_(log) {}
 
 FlipStream::~FlipStream() {
   DLOG(INFO) << "Deleting FlipStream for stream " << stream_id_;
@@ -251,23 +251,35 @@ int FlipStream::DoLoop(int result) {
       // State machine 1: Send headers and wait for response headers.
       case STATE_SEND_HEADERS:
         CHECK(result == OK);
+        LoadLog::BeginEvent(load_log_,
+                            LoadLog::TYPE_FLIP_STREAM_SEND_HEADERS);
         result = DoSendHeaders();
         break;
       case STATE_SEND_HEADERS_COMPLETE:
+        LoadLog::EndEvent(load_log_,
+                          LoadLog::TYPE_FLIP_STREAM_SEND_HEADERS);
         result = DoSendHeadersComplete(result);
         break;
       case STATE_SEND_BODY:
         CHECK(result == OK);
+        LoadLog::BeginEvent(load_log_,
+                            LoadLog::TYPE_FLIP_STREAM_SEND_BODY);
         result = DoSendBody();
         break;
       case STATE_SEND_BODY_COMPLETE:
+        LoadLog::EndEvent(load_log_,
+                          LoadLog::TYPE_FLIP_STREAM_SEND_BODY);
         result = DoSendBodyComplete(result);
         break;
       case STATE_READ_HEADERS:
         CHECK(result == OK);
+        LoadLog::BeginEvent(load_log_,
+                            LoadLog::TYPE_FLIP_STREAM_READ_HEADERS);
         result = DoReadHeaders();
         break;
       case STATE_READ_HEADERS_COMPLETE:
+        LoadLog::EndEvent(load_log_,
+                          LoadLog::TYPE_FLIP_STREAM_READ_HEADERS);
         result = DoReadHeadersComplete(result);
         break;
 
@@ -276,9 +288,13 @@ int FlipStream::DoLoop(int result) {
       // the OnDataReceived()/OnClose()/ReadResponseHeaders()/etc.  Only reason
       // to do this is for consistency with the Http code.
       case STATE_READ_BODY:
+        LoadLog::BeginEvent(load_log_,
+                            LoadLog::TYPE_FLIP_STREAM_READ_BODY);
         result = DoReadBody();
         break;
       case STATE_READ_BODY_COMPLETE:
+        LoadLog::EndEvent(load_log_,
+                          LoadLog::TYPE_FLIP_STREAM_READ_BODY);
         result = DoReadBodyComplete(result);
         break;
       case STATE_DONE:

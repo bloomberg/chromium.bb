@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "net/base/completion_callback.h"
+#include "net/base/load_log_unittest.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/base/test_completion_callback.h"
@@ -260,7 +261,8 @@ class FlipNetworkTransactionTest : public PlatformTest {
   };
 
   TransactionHelperResult TransactionHelper(const HttpRequestInfo& request,
-                                            DelayedSocketData* data) {
+                                            DelayedSocketData* data,
+                                            LoadLog* log) {
     TransactionHelperResult out;
 
     // We disable SSL for this test.
@@ -274,7 +276,7 @@ class FlipNetworkTransactionTest : public PlatformTest {
 
     TestCompletionCallback callback;
 
-    int rv = trans->Start(&request, &callback, NULL);
+    int rv = trans->Start(&request, &callback, log);
     EXPECT_EQ(ERR_IO_PENDING, rv);
 
     out.rv = callback.WaitForResult();
@@ -333,7 +335,7 @@ TEST_F(FlipNetworkTransactionTest, Get) {
   request.load_flags = 0;
   scoped_refptr<DelayedSocketData> data(
       new DelayedSocketData(reads, 1, writes));
-  TransactionHelperResult out = TransactionHelper(request, data.get());
+  TransactionHelperResult out = TransactionHelper(request, data.get(), NULL);
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
@@ -368,7 +370,7 @@ TEST_F(FlipNetworkTransactionTest, Post) {
 
   scoped_refptr<DelayedSocketData> data(
       new DelayedSocketData(reads, 2, writes));
-  TransactionHelperResult out = TransactionHelper(request, data.get());
+  TransactionHelperResult out = TransactionHelper(request, data.get(), NULL);
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
@@ -415,7 +417,7 @@ static const unsigned char kEmptyPostSyn[] = {
   scoped_refptr<DelayedSocketData> data(
     new DelayedSocketData(reads, 1, writes));
 
-  TransactionHelperResult out = TransactionHelper(request, data);
+  TransactionHelperResult out = TransactionHelper(request, data, NULL);
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
@@ -435,7 +437,7 @@ TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
   request.load_flags = 0;
   scoped_refptr<DelayedSocketData> data(
       new DelayedSocketData(reads, 1, NULL));
-  TransactionHelperResult out = TransactionHelper(request, data.get());
+  TransactionHelperResult out = TransactionHelper(request, data.get(), NULL);
   EXPECT_EQ(ERR_SYN_REPLY_NOT_RECEIVED, out.rv);
 }
 
@@ -586,7 +588,7 @@ TEST_F(FlipNetworkTransactionTest, SynReplyHeaders) {
     request.load_flags = 0;
     scoped_refptr<DelayedSocketData> data(
         new DelayedSocketData(reads, 1, writes));
-    TransactionHelperResult out = TransactionHelper(request, data.get());
+    TransactionHelperResult out = TransactionHelper(request, data.get(), NULL);
     EXPECT_EQ(OK, out.rv);
     EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
     EXPECT_EQ("hello!", out.response_data);
@@ -661,7 +663,7 @@ TEST_F(FlipNetworkTransactionTest, InvalidSynReply) {
     request.load_flags = 0;
     scoped_refptr<DelayedSocketData> data(
         new DelayedSocketData(reads, 1, writes));
-    TransactionHelperResult out = TransactionHelper(request, data.get());
+    TransactionHelperResult out = TransactionHelper(request, data.get(), NULL);
     EXPECT_EQ(ERR_INVALID_RESPONSE, out.rv);
   }
 }
@@ -848,7 +850,7 @@ TEST_F(FlipNetworkTransactionTest, WriteError) {
   request.load_flags = 0;
   scoped_refptr<DelayedSocketData> data(
       new DelayedSocketData(reads, 2, writes));
-  TransactionHelperResult out = TransactionHelper(request, data.get());
+  TransactionHelperResult out = TransactionHelper(request, data.get(), NULL);
   EXPECT_EQ(ERR_FAILED, out.rv);
   data->Reset();
 }
@@ -874,7 +876,7 @@ TEST_F(FlipNetworkTransactionTest, PartialWrite) {
   request.load_flags = 0;
   scoped_refptr<DelayedSocketData> data(
       new DelayedSocketData(reads, kChunks, writes.get()));
-  TransactionHelperResult out = TransactionHelper(request, data.get());
+  TransactionHelperResult out = TransactionHelper(request, data.get(), NULL);
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
@@ -911,9 +913,73 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_ConnectFailure) {
     request.load_flags = 0;
     scoped_refptr<DelayedSocketData> data(
         new DelayedSocketData(connects[index], reads, 1, writes));
-    TransactionHelperResult out = TransactionHelper(request, data.get());
+    TransactionHelperResult out = TransactionHelper(request, data.get(), NULL);
     EXPECT_EQ(connects[index].result, out.rv);
   }
+}
+
+// Test that the LoadLog contains good data for a simple GET request.
+TEST_F(FlipNetworkTransactionTest, LoadLog) {
+  MockWrite writes[] = {
+    MockWrite(true, reinterpret_cast<const char*>(kGetSyn),
+              arraysize(kGetSyn)),
+    MockWrite(true, 0, 0)  // EOF
+  };
+
+  MockRead reads[] = {
+    MockRead(true, reinterpret_cast<const char*>(kGetSynReply),
+             arraysize(kGetSynReply)),
+    MockRead(true, reinterpret_cast<const char*>(kGetBodyFrame),
+             arraysize(kGetBodyFrame)),
+    MockRead(true, 0, 0)  // EOF
+  };
+
+  scoped_refptr<net::LoadLog> log(new net::LoadLog(net::LoadLog::kUnbounded));
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+  scoped_refptr<DelayedSocketData> data(
+      new DelayedSocketData(reads, 1, writes));
+  TransactionHelperResult out = TransactionHelper(request, data.get(),
+                                                  log);
+  EXPECT_EQ(OK, out.rv);
+  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+
+  // Check that the LoadLog was filled reasonably.
+  // This test is intentionally non-specific about the exact ordering of
+  // the log; instead we just check to make sure that certain events exist.
+  EXPECT_LT(0u, log->events().size());
+  int pos = 0;
+  // We know the first event at position 0.
+  net::ExpectLogContains(log, 0,
+      net::LoadLog::TYPE_FLIP_TRANSACTION_INIT_CONNECTION,
+      net::LoadLog::PHASE_BEGIN);
+  // For the rest of the events, allow additional events in the middle,
+  // but expect these to be logged in order.
+  pos = net::ExpectLogContainsSomewhere(log, 0,
+      net::LoadLog::TYPE_FLIP_TRANSACTION_INIT_CONNECTION,
+      net::LoadLog::PHASE_END);
+  pos = net::ExpectLogContainsSomewhere(log, pos + 1,
+      net::LoadLog::TYPE_FLIP_TRANSACTION_SEND_REQUEST,
+      net::LoadLog::PHASE_BEGIN);
+  pos = net::ExpectLogContainsSomewhere(log, pos + 1,
+      net::LoadLog::TYPE_FLIP_TRANSACTION_SEND_REQUEST,
+      net::LoadLog::PHASE_END);
+  pos = net::ExpectLogContainsSomewhere(log, pos + 1,
+      net::LoadLog::TYPE_FLIP_TRANSACTION_READ_HEADERS,
+      net::LoadLog::PHASE_BEGIN);
+  pos = net::ExpectLogContainsSomewhere(log, pos + 1,
+      net::LoadLog::TYPE_FLIP_TRANSACTION_READ_HEADERS,
+      net::LoadLog::PHASE_END);
+  pos = net::ExpectLogContainsSomewhere(log, pos + 1,
+      net::LoadLog::TYPE_FLIP_TRANSACTION_READ_BODY,
+      net::LoadLog::PHASE_BEGIN);
+  pos = net::ExpectLogContainsSomewhere(log, pos + 1,
+      net::LoadLog::TYPE_FLIP_TRANSACTION_READ_BODY,
+      net::LoadLog::PHASE_END);
 }
 
 }  // namespace net

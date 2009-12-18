@@ -56,8 +56,8 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // might also not have initiated the stream yet, but indicated it will via
   // X-Associated-Content.
   // Returns the new or existing stream.  Never returns NULL.
-  scoped_refptr<FlipStream> GetOrCreateStream(
-      const HttpRequestInfo& request, const UploadDataStream* upload_data);
+  scoped_refptr<FlipStream> GetOrCreateStream(const HttpRequestInfo& request,
+      const UploadDataStream* upload_data, LoadLog* log);
 
   // Write a data frame to the stream.
   // Used to create and queue a data frame for the given stream.

@@ -251,7 +251,7 @@ int FlipNetworkTransaction::DoSendRequest() {
   CHECK(!stream_.get());
   UploadDataStream* upload_data = request_->upload_data ?
       new UploadDataStream(request_->upload_data) : NULL;
-  stream_ = flip_->GetOrCreateStream(*request_, upload_data);
+  stream_ = flip_->GetOrCreateStream(*request_, upload_data, load_log_.get());
   return stream_->SendRequest(upload_data, &response_, &io_callback_);
 }
 
