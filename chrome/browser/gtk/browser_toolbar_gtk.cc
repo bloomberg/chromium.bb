@@ -699,12 +699,10 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
 void BrowserToolbarGtk::OnStateChanged() {
   DCHECK(sync_service_);
 
-  string16 label;
-  string16 link;
-  // TODO(akalin): use sync_ui_util::GetStatus instead.
-  sync_ui_util::MessageType type = sync_ui_util::GetStatusLabels(
-      sync_service_, &label, &link);
+  sync_ui_util::MessageType type = sync_ui_util::GetStatus(sync_service_);
 
+  // TODO(akalin): Refactor this logic into a function called GetSyncMenuLabel
+  // in sync_ui_util.h. And use the function in Windows/Mac code too.
   int menu_label = type == sync_ui_util::SYNCED ?
       IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL :
       type == sync_ui_util::SYNC_ERROR ?
