@@ -100,13 +100,13 @@ class Extension {
   };
 
   // The name of the manifest inside an extension.
-  static const char kManifestFilename[];
+  static const FilePath::CharType kManifestFilename[];
 
   // The name of locale folder inside an extension.
-  static const char kLocaleFolder[];
+  static const FilePath::CharType kLocaleFolder[];
 
   // The name of the messages file inside an extension.
-  static const char kMessagesFilename[];
+  static const FilePath::CharType kMessagesFilename[];
 
 #if defined(OS_WIN)
   static const char* kExtensionRegistryPath;
@@ -144,15 +144,12 @@ class Extension {
     return GetResourceURL(url(), relative_path);
   }
 
-  // Returns an extension resource object. The |extension_path| argument should
-  // be the path() from an Extension object.
-  // The |relative_path| can be untrusted user input.
-  // NOTE: Static so that it can be used from multiple threads.
-  static ExtensionResource GetResource(const FilePath& extension_path,
-                                       const std::string& relative_path);
-  ExtensionResource GetResource(const std::string& relative_path) {
-    return GetResource(path(), relative_path);
-  }
+  // Returns an extension resource object. |relative_path| should be UTF8
+  // encoded.
+  ExtensionResource GetResource(const std::string& relative_path);
+
+  // As above, but with |relative_path| following the file system's encoding.
+  ExtensionResource GetResource(const FilePath& relative_path);
 
   // |input| is expected to be the text of an rsa public or private key. It
   // tolerates the presence or absence of bracking header/footer like this:

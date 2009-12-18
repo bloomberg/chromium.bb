@@ -72,9 +72,12 @@ static bool IsAPIPermission(const std::string& str) {
 
 }  // namespace
 
-const char Extension::kManifestFilename[] = "manifest.json";
-const char Extension::kLocaleFolder[] = "_locales";
-const char Extension::kMessagesFilename[] = "messages.json";
+const FilePath::CharType Extension::kManifestFilename[] =
+    FILE_PATH_LITERAL("manifest.json");
+const FilePath::CharType Extension::kLocaleFolder[] =
+    FILE_PATH_LITERAL("_locales");
+const FilePath::CharType Extension::kMessagesFilename[] =
+    FILE_PATH_LITERAL("messages.json");
 
 // A list of all the keys allowed by themes.
 static const wchar_t* kValidThemeKeys[] = {
@@ -301,15 +304,14 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
     for (size_t script_index = 0; script_index < js->GetSize();
          ++script_index) {
       Value* value;
-      std::wstring relative;
+      std::string relative;
       if (!js->Get(script_index, &value) || !value->GetAsString(&relative)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidJs,
             IntToString(definition_index), IntToString(script_index));
         return false;
       }
-      // TODO(georged): Make GetResourceURL accept wstring too
-      GURL url = GetResourceURL(WideToUTF8(relative));
-      ExtensionResource resource = GetResource(WideToUTF8(relative));
+      GURL url = GetResourceURL(relative);
+      ExtensionResource resource = GetResource(relative);
       result->js_scripts().push_back(UserScript::File(
           resource.extension_root(), resource.relative_path(), url));
     }
@@ -319,15 +321,14 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
     for (size_t script_index = 0; script_index < css->GetSize();
          ++script_index) {
       Value* value;
-      std::wstring relative;
+      std::string relative;
       if (!css->Get(script_index, &value) || !value->GetAsString(&relative)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidCss,
             IntToString(definition_index), IntToString(script_index));
         return false;
       }
-      // TODO(georged): Make GetResourceURL accept wstring too
-      GURL url = GetResourceURL(WideToUTF8(relative));
-      ExtensionResource resource = GetResource(WideToUTF8(relative));
+      GURL url = GetResourceURL(relative);
+      ExtensionResource resource = GetResource(relative);
       result->css_scripts().push_back(UserScript::File(
           resource.extension_root(), resource.relative_path(), url));
     }
@@ -489,21 +490,6 @@ bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) {
   return false;
 }
 
-// static
-ExtensionResource Extension::GetResource(const FilePath& extension_path,
-                                         const std::string& relative_path) {
-  // IsAbsolutePath gets confused on Unix if relative path starts with /.
-  // Lets remove leading / if there is one.
-  size_t start_pos = relative_path.find_first_not_of("/");
-  if (start_pos == std::string::npos)
-    return ExtensionResource();
-  std::string trimmed_path = relative_path.substr(start_pos);
-
-  FilePath relative_resource_path;
-  return ExtensionResource(extension_path,
-                           relative_resource_path.AppendASCII(trimmed_path));
-}
-
 Extension::Extension(const FilePath& path)
     : converted_from_user_script_(false), is_theme_(false),
       background_page_ready_(false) {
@@ -523,6 +509,19 @@ Extension::Extension(const FilePath& path)
 #else
   path_ = path;
 #endif
+}
+
+ExtensionResource Extension::GetResource(const std::string& relative_path) {
+#if defined(OS_POSIX)
+  FilePath relative_file_path(relative_path);
+#elif defined(OS_WIN)
+  FilePath relative_file_path(UTF8ToWide(relative_path));
+#endif
+  return ExtensionResource(path(), relative_file_path);
+}
+
+ExtensionResource Extension::GetResource(const FilePath& relative_file_path) {
+  return ExtensionResource(path(), relative_file_path);
 }
 
 // TODO(rafaelw): Move ParsePEMKeyBytes, ProducePEM & FormatPEMForOutput to a

@@ -440,13 +440,12 @@ void ExtensionsDOMHandler::HandleOptionsMessage(const Value* value) {
 }
 
 void ExtensionsDOMHandler::HandleLoadMessage(const Value* value) {
-  std::string string_path;
+  FilePath::StringType string_path;
   CHECK(value->IsType(Value::TYPE_LIST));
   const ListValue* list = static_cast<const ListValue*>(value);
   CHECK(list->GetSize() == 1) << list->GetSize();
   CHECK(list->GetString(0, &string_path));
-  FilePath file_path = FilePath::FromWStringHack(ASCIIToWide(string_path));
-  extensions_service_->LoadExtension(file_path);
+  extensions_service_->LoadExtension(FilePath(string_path));
 }
 
 void ExtensionsDOMHandler::ShowAlert(const std::string& message) {
@@ -653,7 +652,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
 
   // Determine the sort order: Extensions loaded through --load-extensions show
   // up at the top. Disabled extensions show up at the bottom.
-    if (extension->location() == Extension::LOAD)
+  if (extension->location() == Extension::LOAD)
     extension_data->SetInteger(L"order", 1);
   else
     extension_data->SetInteger(L"order", 2);

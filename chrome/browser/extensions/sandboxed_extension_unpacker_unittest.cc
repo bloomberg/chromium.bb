@@ -128,7 +128,7 @@ TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
 
   // Check that there is no _locales folder.
   FilePath install_path =
-    GetInstallPath().AppendASCII(Extension::kLocaleFolder);
+    GetInstallPath().Append(Extension::kLocaleFolder);
   EXPECT_FALSE(file_util::PathExists(install_path));
 
   OnUnpackSucceeded();
@@ -146,10 +146,9 @@ TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
 
   // Check timestamp on _locales/en_US/messages.json.
   FilePath messages_file;
-  messages_file = GetInstallPath()
-      .AppendASCII(Extension::kLocaleFolder)
+  messages_file = GetInstallPath().Append(Extension::kLocaleFolder)
       .AppendASCII("en_US")
-      .AppendASCII(Extension::kMessagesFilename);
+      .Append(Extension::kMessagesFilename);
   file_util::FileInfo old_info;
   EXPECT_TRUE(file_util::GetFileInfo(messages_file, &old_info));
 

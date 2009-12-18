@@ -5,12 +5,12 @@
 #include "chrome/browser/extensions/extension_protocols.h"
 
 #include "base/string_util.h"
+#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
-#include "net/base/net_util.h"
 #include "net/url_request/url_request_file_job.h"
 
 // Factory registered with URLRequest to create URLRequestJobs for extension://
@@ -27,8 +27,8 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
     return NULL;
   }
 
-  ExtensionResource resource =
-    Extension::GetResource(directory_path, request->url().path());
+  ExtensionResource resource(directory_path,
+      extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
 
   return new URLRequestFileJob(request, resource.GetFilePath());
 }
@@ -43,8 +43,8 @@ static URLRequestJob* CreateUserScriptURLRequestJob(URLRequest* request,
   // chrome-user-script:/user-script-name.user.js
   FilePath directory_path = context->user_script_dir_path();
 
-  ExtensionResource resource =
-    Extension::GetResource(directory_path, request->url().path());
+  ExtensionResource resource(directory_path,
+      extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
 
   return new URLRequestFileJob(request, resource.GetFilePath());
 }

@@ -112,7 +112,7 @@ Extension* ConvertUserScriptToExtension(const FilePath& user_script_path,
 
   root->Set(keys::kContentScripts, content_scripts);
 
-  FilePath manifest_path = temp_dir.path().AppendASCII(
+  FilePath manifest_path = temp_dir.path().Append(
       Extension::kManifestFilename);
   JSONFileValueSerializer serializer(manifest_path);
   if (!serializer.Serialize(*root)) {

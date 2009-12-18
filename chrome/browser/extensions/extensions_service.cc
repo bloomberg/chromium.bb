@@ -811,7 +811,7 @@ void ExtensionsService::ReportExtensionLoadError(
                   Details<const std::string>(&error));
 
   // TODO(port): note that this isn't guaranteed to work properly on Linux.
-  std::string path_str = WideToASCII(extension_path.ToWStringHack());
+  std::string path_str = WideToUTF8(extension_path.ToWStringHack());
   std::string message = StringPrintf("Could not load extension from '%s'. %s",
                                      path_str.c_str(), error.c_str());
   ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);
@@ -929,7 +929,7 @@ void ExtensionsServiceBackend::LoadSingleExtension(
   file_util::AbsolutePath(&extension_path);
 
   LOG(INFO) << "Loading single extension from " <<
-      WideToASCII(extension_path.BaseName().ToWStringHack());
+      extension_path.BaseName().value();
 
   std::string error;
   Extension* extension = extension_file_util::LoadExtension(

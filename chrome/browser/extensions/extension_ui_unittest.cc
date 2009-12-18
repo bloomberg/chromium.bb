@@ -36,7 +36,7 @@ namespace {
     Extension extension(path);
     std::string error;
 
-    FilePath manifest_path = extension_path.AppendASCII(
+    FilePath manifest_path = extension_path.Append(
         Extension::kManifestFilename);
     scoped_ptr<DictionaryValue> extension_data(DeserializeJSONTestData(
         manifest_path, &error));

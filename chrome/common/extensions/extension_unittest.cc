@@ -42,7 +42,7 @@ TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0")
-      .AppendASCII(Extension::kManifestFilename);
+      .Append(Extension::kManifestFilename);
 
   JSONFileValueSerializer serializer(extensions_path);
   scoped_ptr<DictionaryValue> valid_value(

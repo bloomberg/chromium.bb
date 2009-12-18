@@ -9,7 +9,6 @@
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/net_util.h"
 
 ExtensionResource::ExtensionResource() {
 }

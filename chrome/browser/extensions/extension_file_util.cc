@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/json_value_serializer.h"
+#include "net/base/escape.h"
 #include "net/base/file_stream.h"
 
 namespace errors = extension_manifest_errors;
@@ -84,7 +85,7 @@ bool SanityCheckExtension(const FilePath& dir) {
   // Verify that the directory actually exists.
   // TODO(erikkay): A further step would be to verify that the extension
   // has actually loaded successfully.
-  FilePath manifest_file(dir.AppendASCII(Extension::kManifestFilename));
+  FilePath manifest_file(dir.Append(Extension::kManifestFilename));
   return file_util::PathExists(dir) && file_util::PathExists(manifest_file);
 }
 
@@ -108,7 +109,7 @@ Extension* LoadExtension(const FilePath& extension_path,
                          bool require_key,
                          std::string* error) {
   FilePath manifest_path =
-      extension_path.AppendASCII(Extension::kManifestFilename);
+      extension_path.Append(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
     *error = extension_manifest_errors::kManifestUnreadable;
     return NULL;
@@ -278,7 +279,8 @@ bool ValidateExtension(Extension* extension, std::string* error) {
 
   // Validate background page location.
   if (!extension->background_url().is_empty()) {
-    const std::string page_path = extension->background_url().path();
+    FilePath page_path = ExtensionURLToRelativeFilePath(
+        extension->background_url());
     const FilePath path = extension->GetResource(page_path).GetFilePath();
     if (!file_util::PathExists(path)) {
       *error = StringPrintf("Could not load background page '%s'.",
@@ -399,7 +401,7 @@ ExtensionMessageBundle* LoadExtensionMessageBundle(
     std::string* error) {
   error->clear();
   // Load locale information if available.
-  FilePath locale_path = extension_path.AppendASCII(Extension::kLocaleFolder);
+  FilePath locale_path = extension_path.Append(Extension::kLocaleFolder);
   if (!file_util::PathExists(locale_path))
     return NULL;
 
@@ -426,7 +428,7 @@ ExtensionMessageBundle* LoadExtensionMessageBundle(
 
 static bool ValidateLocaleInfo(const Extension& extension, std::string* error) {
   // default_locale and _locales have to be both present or both missing.
-  const FilePath path = extension.path().AppendASCII(Extension::kLocaleFolder);
+  const FilePath path = extension.path().Append(Extension::kLocaleFolder);
   bool path_exists = file_util::PathExists(path);
   std::string default_locale = extension.default_locale();
 
@@ -464,7 +466,7 @@ static bool ValidateLocaleInfo(const Extension& extension, std::string* error) {
         continue;
 
       FilePath messages_path =
-        locale_path.AppendASCII(Extension::kMessagesFilename);
+        locale_path.Append(Extension::kMessagesFilename);
 
       if (!file_util::PathExists(messages_path)) {
         *error = StringPrintf(
@@ -490,12 +492,12 @@ static bool ValidateLocaleInfo(const Extension& extension, std::string* error) {
 bool CheckForIllegalFilenames(const FilePath& extension_path,
                               std::string* error) {
   // Reserved underscore names.
-  static const char* reserved_names[] = {
+  static const FilePath::CharType* reserved_names[] = {
     Extension::kLocaleFolder,
-    "__MACOSX"
+    FILE_PATH_LITERAL("__MACOSX"),
   };
-  static std::set<std::string> reserved_underscore_names(
-    reserved_names, reserved_names + arraysize(reserved_names));
+  static std::set<FilePath::StringType> reserved_underscore_names(
+      reserved_names, reserved_names + arraysize(reserved_names));
 
   // Enumerate all files and directories in the extension root.
   // There is a problem when using pattern "_*" with FileEnumerator, so we have
@@ -507,14 +509,13 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
         file_util::FileEnumerator::DIRECTORIES |
           file_util::FileEnumerator::FILES));
 
-  FilePath files;
-  while (!(files = all_files.Next()).empty()) {
-    std::string filename =
-        WideToASCII(files.BaseName().ToWStringHack());
+  FilePath file;
+  while (!(file = all_files.Next()).empty()) {
+    FilePath::StringType filename = file.BaseName().value();
     // Skip all that don't start with "_".
-    if (filename.find_first_of("_") != 0) continue;
+    if (filename.find_first_of(FILE_PATH_LITERAL("_")) != 0) continue;
     if (reserved_underscore_names.find(filename) ==
-          reserved_underscore_names.end()) {
+        reserved_underscore_names.end()) {
       *error = StringPrintf(
         "Cannot load extension with file or directory name %s. "
         "Filenames starting with \"_\" are reserved for use by the system.",
@@ -524,6 +525,22 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
   }
 
   return true;
+}
+
+FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
+  std::string url_path = url.path();
+  if (url_path.empty() || url_path[0] != '/')
+    return FilePath();
+
+  // Drop the leading slash and convert %-encoded UTF8 to regular UTF8.
+  std::string file_path = UnescapeURLComponent(url_path.substr(1),
+      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
+
+#if defined(OS_POSIX)
+  return FilePath(file_path);
+#elif defined(OS_WIN)
+  return FilePath(UTF8ToWide(file_path));
+#endif
 }
 
 }  // namespace extension_file_util

@@ -162,7 +162,7 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesOnlyReserved) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  FilePath src_path = temp.path().AppendASCII(Extension::kLocaleFolder);
+  FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
   ASSERT_TRUE(file_util::CreateDirectory(src_path));
 
   std::string error;
@@ -174,7 +174,7 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesReservedAndIllegal) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  FilePath src_path = temp.path().AppendASCII(Extension::kLocaleFolder);
+  FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
   ASSERT_TRUE(file_util::CreateDirectory(src_path));
 
   src_path = temp.path().AppendASCII("_some_dir");

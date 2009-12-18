@@ -48,7 +48,7 @@ TEST(ExtensionFromUserScript, Basic) {
   EXPECT_TRUE(file_util::PathExists(
       extension->path().Append(script.js_scripts()[0].relative_path())));
   EXPECT_TRUE(file_util::PathExists(
-      extension->path().AppendASCII(Extension::kManifestFilename)));
+      extension->path().Append(Extension::kManifestFilename)));
 }
 
 TEST(ExtensionFromUserScript, NoMetdata) {
@@ -84,5 +84,5 @@ TEST(ExtensionFromUserScript, NoMetdata) {
   EXPECT_TRUE(file_util::PathExists(
       extension->path().Append(script.js_scripts()[0].relative_path())));
   EXPECT_TRUE(file_util::PathExists(
-      extension->path().AppendASCII(Extension::kManifestFilename)));
+      extension->path().Append(Extension::kManifestFilename)));
 }

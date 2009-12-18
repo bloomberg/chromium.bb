@@ -100,6 +100,9 @@ ExtensionMessageBundle* LoadExtensionMessageBundle(
 bool CheckForIllegalFilenames(const FilePath& extension_path,
                               std::string* error);
 
+// Get a relative file path from a chrome-extension:// URL.
+FilePath ExtensionURLToRelativeFilePath(const GURL& url);
+
 }  // extension_file_util
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FILE_UTIL_H_

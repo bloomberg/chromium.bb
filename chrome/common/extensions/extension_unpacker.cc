@@ -88,7 +88,7 @@ static bool PathContainsParentDirectory(const FilePath& path) {
 
 DictionaryValue* ExtensionUnpacker::ReadManifest() {
   FilePath manifest_path =
-      temp_install_dir_.AppendASCII(Extension::kManifestFilename);
+      temp_install_dir_.Append(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
     SetError(errors::kInvalidManifest);
     return NULL;
@@ -113,7 +113,7 @@ DictionaryValue* ExtensionUnpacker::ReadManifest() {
 bool ExtensionUnpacker::ReadAllMessageCatalogs(
     const std::string& default_locale) {
   FilePath locales_path =
-    temp_install_dir_.AppendASCII(Extension::kLocaleFolder);
+    temp_install_dir_.Append(Extension::kLocaleFolder);
 
   // Treat all folders under _locales as valid locales.
   file_util::FileEnumerator locales(locales_path,
@@ -134,7 +134,7 @@ bool ExtensionUnpacker::ReadAllMessageCatalogs(
       continue;
 
     FilePath messages_path =
-      locale_path.AppendASCII(Extension::kMessagesFilename);
+      locale_path.Append(Extension::kMessagesFilename);
 
     if (!ReadMessageCatalog(messages_path))
       return false;

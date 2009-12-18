@@ -264,7 +264,7 @@ DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
   }
 
   FilePath manifest_path =
-      extension_root_.AppendASCII(Extension::kManifestFilename);
+      extension_root_.Append(Extension::kManifestFilename);
   if (!file_util::WriteFile(manifest_path,
                             manifest_json.data(), manifest_json.size())) {
     ReportFailure("Error saving manifest.json.");
@@ -346,7 +346,7 @@ bool SandboxedExtensionUnpacker::RewriteCatalogFiles(
     }
 
     FilePath relative_path = FilePath::FromWStringHack(*key_it);
-    relative_path = relative_path.AppendASCII(Extension::kMessagesFilename);
+    relative_path = relative_path.Append(Extension::kMessagesFilename);
     if (relative_path.IsAbsolute() || relative_path.ReferencesParent()) {
       ReportFailure("Invalid path for catalog.");
       return false;
