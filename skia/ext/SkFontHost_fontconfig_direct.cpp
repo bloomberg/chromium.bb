@@ -46,6 +46,9 @@ bool FontConfigDirect::Match(std::string* result_family,
                              bool fileid_valid, unsigned fileid,
                              const std::string& family, bool* is_bold,
                              bool* is_italic) {
+    if (family.length() > kMaxFontFamilyLength)
+        return false;
+
     SkAutoMutexAcquire ac(mutex_);
     FcPattern* pattern = FcPatternCreate();
 

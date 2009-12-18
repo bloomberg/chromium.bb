@@ -41,6 +41,9 @@ bool FontConfigIPC::Match(std::string* result_family,
                           bool fileid_valid, unsigned fileid,
                           const std::string& family, bool* is_bold,
                           bool* is_italic) {
+    if (family.length() > kMaxFontFamilyLength)
+      return false;
+
     Pickle request;
     request.WriteInt(METHOD_MATCH);
     request.WriteBool(fileid_valid);

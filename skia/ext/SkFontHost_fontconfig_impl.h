@@ -38,7 +38,8 @@ class FontConfigInterface {
      *  @param fileid the fileid (as returned by this function) which we are
      *    trying to match.
      *  @param family (optional) the family of the font that we are trying to
-     *    match.
+     *    match. If the length of the |family| is greater then
+     *    kMaxFontFamilyLength, this function should immediately return false.
      *  @param is_bold (optional, set to NULL to ignore, in/out)
      *  @param is_italic (optional, set to NULL to ignore, in/out)
      *  @return true iff successful.
@@ -55,6 +56,8 @@ class FontConfigInterface {
     /** Open a font file given the fileid as returned by Match
      */
     virtual int Open(unsigned fileid) = 0;
+
+    static const unsigned kMaxFontFamilyLength = 2048;
 };
 
 #endif  // FontConfigInterface_DEFINED

@@ -100,11 +100,20 @@ class SandboxIPCProcess  {
 
   void HandleRequestFromRenderer(int fd) {
     std::vector<int> fds;
-    static const unsigned kMaxMessageLength = 2048;
-    char buf[kMaxMessageLength];
+
+    // A FontConfigIPC::METHOD_MATCH message could be kMaxFontFamilyLength
+    // bytes long (this is the largest message type).
+    // 128 bytes padding are necessary so recvmsg() does not return MSG_TRUNC
+    // error for a maximum length message.
+    char buf[FontConfigInterface::kMaxFontFamilyLength + 128];
+
     const ssize_t len = base::RecvMsg(fd, buf, sizeof(buf), &fds);
-    if (len == -1)
+    if (len == -1) {
+      // TODO: should send an error reply, or the sender might block forever.
+      NOTREACHED()
+          << "Sandbox host message is larger than kMaxFontFamilyLength";
       return;
+    }
     if (fds.size() == 0)
       return;
 
