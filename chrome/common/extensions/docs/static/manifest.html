@@ -70,20 +70,36 @@ and the <a href="https://chrome.google.com/extensions">extension gallery</a>.
 
 <p>
 One or more icons that represent the extension.
-We recommend that you provide icons in four sizes &mdash;
-16x16, 32x32, 48x48, and 128x128 pixels.
-The icons can be in any format supported by WebKit,
-such as BMP, GIF, ICO, JPEG, or PNG.
-Here's an example of specifying all four icon sizes:
+You should provide icons in two sizes &mdash;
+48x48 and 128x128 pixels.
+The 48x48 icon is used in the extensions management page
+(chrome://extensions).
+The 128x128 icon is used when the user installs the extension.
+</p>
+
+<p>
+Icons should generally be in PNG format,
+because PNG has the best support for transparency.
+They can, however, be in any format supported by WebKit,
+including BMP, GIF, ICO, and JPEG.
+Here's an example of specifying the icons:
 </p>
 
 <pre>
-"icons": { "16": "icon16.png",
-           "32": "icon32.png",
-           "48": "icon48.png",
+"icons": { "48": "icon48.png",
           "128": "icon128.png" },
 </pre>
 
+<p>
+If you submit your extension to the
+<a href="https://chrome.google.com/extensions">gallery</a>,
+you'll need to upload additional images,
+including a 32x32-pixel logo
+and at least one screenshot of your extension.
+For more information on gallery requirements,
+see the
+<a href="http://www.google.com/support/chrome/bin/answer.py?answer=113909">gallery help</a>.
+</p>
 
 <h3 id="name">name</h3>
 
