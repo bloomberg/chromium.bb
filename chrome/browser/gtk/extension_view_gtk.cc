@@ -8,10 +8,21 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 
+namespace {
+
+// The minimum/maximum dimensions of the extension view.
+// The minimum is just a little larger than the size of a browser action button.
+// The maximum is an arbitrary number that should be smaller than most screens.
+const int kMinWidth = 25;
+const int kMinHeight = 25;
+const int kMaxWidth = 800;
+const int kMaxHeight = 600;
+
+}  // namespace
+
 ExtensionViewGtk::ExtensionViewGtk(ExtensionHost* extension_host,
                                    Browser* browser)
-    : is_toolstrip_(false),
-      browser_(browser),
+    : browser_(browser),
       extension_host_(extension_host),
       render_widget_host_view_(NULL) {
 }
@@ -37,11 +48,11 @@ void ExtensionViewGtk::SetBackground(const SkBitmap& background) {
 }
 
 void ExtensionViewGtk::UpdatePreferredSize(const gfx::Size& new_size) {
-  // If we are showing in a shelf, then the shelf sets our height.
-  int height = is_toolstrip() ? -1 : new_size.height();
+  int width = std::max(kMinWidth, std::min(kMaxWidth, new_size.width()));
+  int height = std::max(kMinHeight, std::min(kMaxHeight, new_size.height()));
 
-  render_widget_host_view_->SetSize(gfx::Size(new_size.width(), height));
-  gtk_widget_set_size_request(native_view(), new_size.width(), height);
+  render_widget_host_view_->SetSize(gfx::Size(width, height));
+  gtk_widget_set_size_request(native_view(), width, height);
 }
 
 void ExtensionViewGtk::CreateWidgetHostView() {

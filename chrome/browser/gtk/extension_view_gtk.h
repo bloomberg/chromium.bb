@@ -25,9 +25,6 @@ class ExtensionViewGtk {
   gfx::NativeView native_view();
   Browser* browser() const { return browser_; }
 
-  bool is_toolstrip() const { return is_toolstrip_; }
-  void set_is_toolstrip(bool is_toolstrip) { is_toolstrip_ = is_toolstrip; }
-
   void SetBackground(const SkBitmap& background);
 
   // Method for the ExtensionHost to notify us about the correct size for
@@ -42,9 +39,6 @@ class ExtensionViewGtk {
 
  private:
   void CreateWidgetHostView();
-
-  // True if the contents are being displayed inside the extension shelf.
-  bool is_toolstrip_;
 
   Browser* browser_;
 
