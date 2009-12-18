@@ -2240,13 +2240,19 @@ void Browser::OnStartDownload(DownloadItem* download) {
   window()->GetDownloadShelf()->AddDownload(new DownloadItemModel(download));
 
   // Don't show the animation for "Save file" downloads.
-  if (download->total_bytes() > 0) {
-    TabContents* current_tab = GetSelectedTabContents();
-    // We make this check for the case of minimized windows, unit tests, etc.
-    if (platform_util::IsVisible(current_tab->GetNativeView()) &&
-        Animation::ShouldRenderRichAnimation())
-      DownloadStartedAnimation::Show(current_tab);
-  }
+  if (download->total_bytes() <= 0)
+    return;
+  
+  // For non-theme extensions, we don't show the download animation.
+  if (DownloadManager::IsExtensionInstall(download) &&
+      !ExtensionsService::IsDownloadFromMiniGallery(download->url()))
+    return;
+
+  TabContents* current_tab = GetSelectedTabContents();
+  // We make this check for the case of minimized windows, unit tests, etc.
+  if (platform_util::IsVisible(current_tab->GetNativeView()) &&
+      Animation::ShouldRenderRichAnimation())
+    DownloadStartedAnimation::Show(current_tab);
 }
 
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
