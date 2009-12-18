@@ -241,59 +241,51 @@ DirOpenResult DirectoryBackingStore::Load(MetahandlesIndex* entry_bucket,
 
 bool DirectoryBackingStore::SaveChanges(
     const Directory::SaveChangesSnapshot& snapshot) {
-  bool disk_full = false;
   sqlite3* dbhandle = LazyGetSaveHandle();
-  {
-    {
-      ScopedStatement begin(PrepareQuery(dbhandle,
-                                         "BEGIN EXCLUSIVE TRANSACTION"));
-      if (!StepDone(begin.get(), "BEGIN")) {
-        disk_full = true;
-        goto DoneDBTransaction;
-      }
-    }
 
-    for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
-         !disk_full && i != snapshot.dirty_metas.end(); ++i) {
-      DCHECK(i->is_dirty());
-      disk_full = !SaveEntryToDB(*i);
-    }
+  SQLTransaction transaction(dbhandle);
+  if (SQLITE_OK != transaction.BeginExclusive())
+    return false;
 
-    for (ExtendedAttributes::const_iterator i = snapshot.dirty_xattrs.begin();
-         !disk_full && i != snapshot.dirty_xattrs.end(); ++i) {
-      DCHECK(i->second.dirty);
-      if (i->second.is_deleted) {
-        disk_full = !DeleteExtendedAttributeFromDB(i);
-      } else {
-        disk_full = !SaveExtendedAttributeToDB(i);
-      }
-    }
+  for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
+       i != snapshot.dirty_metas.end(); ++i) {
+    DCHECK(i->is_dirty());
+    if (!SaveEntryToDB(*i))
+      return false;
+  }
 
-    if (!disk_full && (Directory::KERNEL_SHARE_INFO_DIRTY ==
-                       snapshot.kernel_info_status)) {
-      const Directory::PersistedKernelInfo& info = snapshot.kernel_info;
-      ScopedStatement update(PrepareQuery(dbhandle, "UPDATE share_info "
-          "SET last_sync_timestamp = ?, initial_sync_ended = ?, "
-          "store_birthday = ?, "
-          "next_id = ?",
-          info.last_sync_timestamp,
-          info.initial_sync_ended,
-          info.store_birthday,
-          info.next_id));
-      disk_full = !(StepDone(update.get(), "UPDATE share_info")
-                    && 1 == sqlite3_changes(dbhandle));
-    }
-    if (disk_full) {
-      ExecOrDie(dbhandle, "ROLLBACK TRANSACTION");
+  for (ExtendedAttributes::const_iterator i = snapshot.dirty_xattrs.begin();
+       i != snapshot.dirty_xattrs.end(); ++i) {
+    DCHECK(i->second.dirty);
+    if (i->second.is_deleted) {
+      if (!DeleteExtendedAttributeFromDB(i))
+        return false;
     } else {
-      ScopedStatement end_transaction(PrepareQuery(dbhandle,
-                                                   "COMMIT TRANSACTION"));
-      disk_full = !StepDone(end_transaction.get(), "COMMIT TRANSACTION");
+      if (!SaveExtendedAttributeToDB(i))
+        return false;
     }
   }
 
- DoneDBTransaction:
-  return !disk_full;
+  if (Directory::KERNEL_SHARE_INFO_DIRTY == snapshot.kernel_info_status) {
+    const Directory::PersistedKernelInfo& info = snapshot.kernel_info;
+    SQLStatement update;
+    update.prepare(dbhandle, "UPDATE share_info "
+                   "SET last_sync_timestamp = ?, initial_sync_ended = ?, "
+                   "store_birthday = ?, "
+                   "next_id = ?");
+    update.bind_int64(0, info.last_sync_timestamp);
+    update.bind_bool(1, info.initial_sync_ended);
+    update.bind_string(2, info.store_birthday);
+    update.bind_int64(3, info.next_id);
+
+    if (!(SQLITE_DONE == update.step() &&
+          SQLITE_OK == update.reset() &&
+          1 == update.changes())) {
+      return false;
+    }
+  }
+
+  return (SQLITE_OK == transaction.Commit());
 }
 
 DirOpenResult DirectoryBackingStore::InitializeTables() {
