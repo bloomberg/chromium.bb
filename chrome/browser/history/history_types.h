@@ -37,17 +37,6 @@ typedef int64 DownloadID;   // Identifier for a download.
 typedef int64 FavIconID;  // For FavIcons.
 typedef int64 SegmentID;  // URL segments for the most visited view.
 
-// Used as the return value for some databases' init function.
-enum InitStatus {
-  INIT_OK,
-
-  // Some error, usually I/O related opening the file.
-  INIT_FAILURE,
-
-  // The database is from a future version of the app and can not be read.
-  INIT_TOO_NEW,
-};
-
 // URLRow ---------------------------------------------------------------------
 
 typedef int64 URLID;

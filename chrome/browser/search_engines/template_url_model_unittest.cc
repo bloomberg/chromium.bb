@@ -31,7 +31,7 @@ class QuitTask2 : public Task {
 // Subclass the TestingProfile so that it can return a WebDataService.
 class TemplateURLModelTestingProfile : public TestingProfile {
  public:
-  TemplateURLModelTestingProfile() : TestingProfile() { }
+  TemplateURLModelTestingProfile() : TestingProfile() {}
 
   void SetUp() {
     // Name a subdirectory of the temp directory.
@@ -87,7 +87,7 @@ class TestingTemplateURLModel : public TemplateURLModel {
  private:
   std::wstring search_term_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(TestingTemplateURLModel);
+  DISALLOW_COPY_AND_ASSIGN(TestingTemplateURLModel);
 };
 
 class TemplateURLModelTest : public testing::Test,
@@ -739,3 +739,21 @@ TEST_F(TemplateURLModelTest, MergeDeletesUnusedProviders) {
   // Don't remove |t_url3|; we'd need to make it non-default first, and why
   // bother when the model shutdown will clean it up for us.
 }
+
+// Simulates failing to load the webdb and makes sure the default search
+// provider is valid.
+TEST_F(TemplateURLModelTest, FailedInit) {
+  VerifyLoad();
+
+  model_.reset(NULL);
+
+  profile_->GetWebDataService(Profile::EXPLICIT_ACCESS)->UnloadDatabase();
+  profile_->GetWebDataService(Profile::EXPLICIT_ACCESS)->set_failed_init(true);
+
+  ResetModel(false);
+  model_->Load();
+  BlockTillServiceProcessesRequests();
+
+  ASSERT_TRUE(model_->GetDefaultSearchProvider());
+}
+

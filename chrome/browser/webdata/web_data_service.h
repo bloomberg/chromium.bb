@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "app/sql/init_status.h"
 #include "base/file_path.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
@@ -401,6 +402,11 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   void RemoveFormValueForElementName(const string16& name,
                                      const string16& value);
 
+  // Testing
+#ifdef UNIT_TEST
+  void set_failed_init(bool value) { failed_init_ = value; }
+#endif
+
  protected:
   friend class TemplateURLModelTest;
   friend class TemplateURLModelTestingProfile;
@@ -429,6 +435,9 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
                           std::vector<TemplateURL*> > SetKeywordsRequest;
 
   ~WebDataService();
+
+  // Invoked on the main thread if initializing the db fails.
+  void DBInitFailed(sql::InitStatus init_status);
 
   // Initialize the database, if it hasn't already been initialized.
   void InitializeDatabaseIfNecessary();
@@ -533,6 +542,9 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
 
   typedef std::map<Handle, WebDataRequest*> RequestMap;
   RequestMap pending_requests_;
+
+  // MessageLoop the WebDataService is created on.
+  MessageLoop* main_loop_;
 
   DISALLOW_EVIL_CONSTRUCTORS(WebDataService);
 };

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_HISTORY_ARCHIVED_DATABASE_H_
 
 #include "app/sql/connection.h"
+#include "app/sql/init_status.h"
 #include "app/sql/meta_table.h"
 #include "base/basictypes.h"
 #include "chrome/browser/history/url_database.h"
@@ -48,7 +49,7 @@ class ArchivedDatabase : public URLDatabase,
   //
   // This assumes it is called from the init function inside a transaction. It
   // may commit the transaction and start a new one if migration requires it.
-  InitStatus EnsureCurrentVersion();
+  sql::InitStatus EnsureCurrentVersion();
 
   // The database.
   sql::Connection db_;

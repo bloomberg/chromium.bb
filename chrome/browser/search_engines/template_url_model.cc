@@ -59,6 +59,7 @@ class TemplateURLModel::LessWithPrefix {
 TemplateURLModel::TemplateURLModel(Profile* profile)
     : profile_(profile),
       loaded_(false),
+      load_failed_(false),
       load_handle_(0),
       default_search_provider_(NULL),
       next_id_(1) {
@@ -70,6 +71,7 @@ TemplateURLModel::TemplateURLModel(const Initializer* initializers,
                                    const int count)
     : profile_(NULL),
       loaded_(true),
+      load_failed_(false),
       load_handle_(0),
       service_(NULL),
       default_search_provider_(NULL),
@@ -521,7 +523,7 @@ void TemplateURLModel::SetDefaultSearchProvider(const TemplateURL* url) {
 }
 
 const TemplateURL* TemplateURLModel::GetDefaultSearchProvider() {
-  if (loaded_)
+  if (loaded_ && !load_failed_)
     return default_search_provider_;
 
   if (!prefs_default_search_provider_.get()) {
@@ -576,8 +578,10 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
   load_handle_ = 0;
 
   if (!result) {
-    // Results are null if the database went away.
+    // Results are null if the database went away or (most likely) wasn't
+    // loaded.
     loaded_ = true;
+    load_failed_ = true;
     NotifyLoaded();
     return;
   }

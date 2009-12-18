@@ -320,6 +320,9 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // Whether the keywords have been loaded.
   bool loaded_;
 
+  // Did loading fail? This is only valid if loaded_ is true.
+  bool load_failed_;
+
   // If non-zero, we're waiting on a load.
   WebDataService::Handle load_handle_;
 
@@ -340,8 +343,8 @@ class TemplateURLModel : public WebDataServiceConsumer,
   const TemplateURL* default_search_provider_;
 
   // The default search provider from preferences. This is only valid if
-  // GetDefaultSearchProvider is invoked and we haven't been loaded. Once loaded
-  // this is not used.
+  // GetDefaultSearchProvider is invoked and we haven't been loaded or loading
+  // failed. If loading was successful this is not used.
   scoped_ptr<TemplateURL> prefs_default_search_provider_;
 
   // ID assigned to next TemplateURL added to this model. This is an ever

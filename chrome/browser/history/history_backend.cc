@@ -504,15 +504,15 @@ void HistoryBackend::InitImpl() {
   // History database.
   db_.reset(new HistoryDatabase());
   switch (db_->Init(history_name, tmp_bookmarks_file)) {
-    case INIT_OK:
+    case sql::INIT_OK:
       break;
-    case INIT_FAILURE:
+    case sql::INIT_FAILURE:
       // A NULL db_ will cause all calls on this object to notice this error
       // and to not continue.
       delegate_->NotifyProfileError(IDS_COULDNT_OPEN_PROFILE_ERROR);
       db_.reset();
       return;
-    case INIT_TOO_NEW:
+    case sql::INIT_TOO_NEW:
       delegate_->NotifyProfileError(IDS_PROFILE_TOO_NEW_ERROR);
       db_.reset();
       return;
@@ -557,7 +557,7 @@ void HistoryBackend::InitImpl() {
   // Thumbnail database.
   thumbnail_db_.reset(new ThumbnailDatabase());
   if (thumbnail_db_->Init(thumbnail_name,
-                          history_publisher_.get()) != INIT_OK) {
+                          history_publisher_.get()) != sql::INIT_OK) {
     // Unlike the main database, we don't error out when the database is too
     // new because this error is much less severe. Generally, this shouldn't
     // happen since the thumbnail and main datbase versions should be in sync.

@@ -64,7 +64,7 @@ bool ArchivedDatabase::Init(const FilePath& file_name) {
   }
   CreateMainURLIndex();
 
-  if (EnsureCurrentVersion() != INIT_OK) {
+  if (EnsureCurrentVersion() != sql::INIT_OK) {
     db_.Close();
     return false;
   }
@@ -86,11 +86,11 @@ sql::Connection& ArchivedDatabase::GetDB() {
 
 // Migration -------------------------------------------------------------------
 
-InitStatus ArchivedDatabase::EnsureCurrentVersion() {
+sql::InitStatus ArchivedDatabase::EnsureCurrentVersion() {
   // We can't read databases newer than we were designed for.
   if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
     LOG(WARNING) << "Archived database is too new.";
-    return INIT_TOO_NEW;
+    return sql::INIT_TOO_NEW;
   }
 
   // NOTICE: If you are changing structures for things shared with the archived
@@ -103,7 +103,7 @@ InitStatus ArchivedDatabase::EnsureCurrentVersion() {
   if (cur_version == 1) {
     if (!DropStarredIDFromURLs()) {
       LOG(WARNING) << "Unable to update archived database to version 2.";
-      return INIT_FAILURE;
+      return sql::INIT_FAILURE;
     }
     ++cur_version;
     meta_table_.SetVersionNumber(cur_version);
@@ -118,6 +118,6 @@ InitStatus ArchivedDatabase::EnsureCurrentVersion() {
   LOG_IF(WARNING, cur_version < kCurrentVersionNumber) <<
       "Archived database version " << cur_version << " is too old to handle.";
 
-  return INIT_OK;
+  return sql::INIT_OK;
 }
 }  // namespace history

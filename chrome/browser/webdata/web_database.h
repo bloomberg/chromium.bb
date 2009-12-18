@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "app/sql/connection.h"
+#include "app/sql/init_status.h"
 #include "app/sql/meta_table.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -40,8 +41,8 @@ class WebDatabase {
   ~WebDatabase();
 
   // Initialize the database given a name. The name defines where the sqlite
-  // file is. If false is returned, no other method should be called.
-  bool Init(const FilePath& db_name);
+  // file is. If this returns an error code, no other method should be called.
+  sql::InitStatus Init(const FilePath& db_name);
 
   // Transactions management
   void BeginTransaction();

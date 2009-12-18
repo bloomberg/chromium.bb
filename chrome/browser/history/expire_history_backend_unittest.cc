@@ -113,8 +113,7 @@ class ExpireHistoryTest : public testing::Test,
 
     FilePath history_name = dir_.Append(kHistoryFile);
     main_db_.reset(new HistoryDatabase);
-    if (main_db_->Init(history_name, FilePath()) !=
-        INIT_OK)
+    if (main_db_->Init(history_name, FilePath()) != sql::INIT_OK)
       main_db_.reset();
 
     FilePath archived_name = dir_.Append(kArchivedHistoryFile);
@@ -124,7 +123,7 @@ class ExpireHistoryTest : public testing::Test,
 
     FilePath thumb_name = dir_.Append(kThumbnailFile);
     thumb_db_.reset(new ThumbnailDatabase);
-    if (thumb_db_->Init(thumb_name, NULL) != INIT_OK)
+    if (thumb_db_->Init(thumb_name, NULL) != sql::INIT_OK)
       thumb_db_.reset();
 
     text_db_.reset(new TextDatabaseManager(dir_,

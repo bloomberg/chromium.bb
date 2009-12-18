@@ -14,6 +14,8 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "webkit/glue/password_form.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,11 +28,13 @@ using base::Time;
 using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 
-WebDataService::WebDataService() : thread_(NULL),
-                                   db_(NULL),
-                                   failed_init_(false),
-                                   should_commit_(false),
-                                   next_request_handle_(1) {
+WebDataService::WebDataService()
+  : thread_(NULL),
+    db_(NULL),
+    failed_init_(false),
+    should_commit_(false),
+    next_request_handle_(1),
+    main_loop_(MessageLoop::current()) {
 }
 
 WebDataService::~WebDataService() {
@@ -407,6 +411,14 @@ WebDataService::Handle WebDataService::GetBlacklistLogins(
   return request->GetHandle();
 }
 
+void WebDataService::DBInitFailed(sql::InitStatus init_status) {
+  Source<WebDataService> source(this);
+  int message_id = (init_status == sql::INIT_FAILURE) ?
+      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR;
+  NotificationService::current()->Notify(NotificationType::PROFILE_ERROR,
+                                         source, Details<int>(&message_id));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // The following methods are executed in Chrome_WebDataThread.
@@ -433,10 +445,15 @@ void WebDataService::InitializeDatabaseIfNecessary() {
   // we only set db_ to the created database if creation is successful. That
   // way other methods won't do anything as db_ is still NULL.
   WebDatabase* db = new WebDatabase();
-  if (!db->Init(path_)) {
+  sql::InitStatus init_status = db->Init(path_);
+  if (init_status != sql::INIT_OK) {
     NOTREACHED() << "Cannot initialize the web database";
     failed_init_ = true;
     delete db;
+    if (main_loop_) {
+      main_loop_->PostTask(FROM_HERE,
+          NewRunnableMethod(this, &WebDataService::DBInitFailed, init_status));
+    }
     return;
   }
 

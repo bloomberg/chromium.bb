@@ -32,8 +32,9 @@ ThumbnailDatabase::~ThumbnailDatabase() {
   // The DBCloseScoper will delete the DB and the cache.
 }
 
-InitStatus ThumbnailDatabase::Init(const FilePath& db_name,
-                                   const HistoryPublisher* history_publisher) {
+sql::InitStatus ThumbnailDatabase::Init(
+    const FilePath& db_name,
+    const HistoryPublisher* history_publisher) {
   history_publisher_ = history_publisher;
 
   // Set the exceptional sqlite error handler.
@@ -60,7 +61,7 @@ InitStatus ThumbnailDatabase::Init(const FilePath& db_name,
   db_.set_exclusive_locking();
 
   if (!db_.Open(db_name))
-    return INIT_FAILURE;
+    return sql::INIT_FAILURE;
 
   // Scope initialization in a transaction so we can't be partially initialized.
   sql::Transaction transaction(&db_);
@@ -81,7 +82,7 @@ InitStatus ThumbnailDatabase::Init(const FilePath& db_name,
       !InitThumbnailTable() ||
       !InitFavIconsTable(false)) {
     db_.Close();
-    return INIT_FAILURE;
+    return sql::INIT_FAILURE;
   }
   InitFavIconsIndex();
 
@@ -89,7 +90,7 @@ InitStatus ThumbnailDatabase::Init(const FilePath& db_name,
   // in the wild, so we try to continue in that case.
   if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
     LOG(WARNING) << "Thumbnail database is too new.";
-    return INIT_TOO_NEW;
+    return sql::INIT_TOO_NEW;
   }
 
   int cur_version = meta_table_.GetVersionNumber();
@@ -97,7 +98,7 @@ InitStatus ThumbnailDatabase::Init(const FilePath& db_name,
     if (!UpgradeToVersion3()) {
       LOG(WARNING) << "Unable to update to thumbnail database to version 3.";
       db_.Close();
-      return INIT_FAILURE;
+      return sql::INIT_FAILURE;
     }
     ++cur_version;
   }
@@ -108,10 +109,10 @@ InitStatus ThumbnailDatabase::Init(const FilePath& db_name,
   // Initialization is complete.
   if (!transaction.Commit()) {
     db_.Close();
-    return INIT_FAILURE;
+    return sql::INIT_FAILURE;
   }
 
-  return INIT_OK;
+  return sql::INIT_OK;
 }
 
 bool ThumbnailDatabase::InitThumbnailTable() {

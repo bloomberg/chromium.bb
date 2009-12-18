@@ -60,8 +60,8 @@ HistoryDatabase::HistoryDatabase()
 HistoryDatabase::~HistoryDatabase() {
 }
 
-InitStatus HistoryDatabase::Init(const FilePath& history_name,
-                                 const FilePath& bookmarks_path) {
+sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
+                                      const FilePath& bookmarks_path) {
   // Set the exceptional sqlite error handler.
   db_.set_error_delegate(GetErrorHandlerForHistoryDb());
 
@@ -82,13 +82,13 @@ InitStatus HistoryDatabase::Init(const FilePath& history_name,
   // mode to start out for the in-memory backend to read the data).
 
   if (!db_.Open(history_name))
-    return INIT_FAILURE;
+    return sql::INIT_FAILURE;
 
   // Wrap the rest of init in a tranaction. This will prevent the database from
   // getting corrupted if we crash in the middle of initialization or migration.
   sql::Transaction committer(&db_);
   if (!committer.Begin())
-    return INIT_FAILURE;
+    return sql::INIT_FAILURE;
 
 #if defined(OS_MACOSX)
   // Exclude the history file and its journal from backups.
@@ -106,21 +106,21 @@ InitStatus HistoryDatabase::Init(const FilePath& history_name,
   // NOTE: If you add something here, also add it to
   //       RecreateAllButStarAndURLTables.
   if (!meta_table_.Init(&db_, kCurrentVersionNumber, kCompatibleVersionNumber))
-    return INIT_FAILURE;
+    return sql::INIT_FAILURE;
   if (!CreateURLTable(false) || !InitVisitTable() ||
       !InitKeywordSearchTermsTable() || !InitDownloadTable() ||
       !InitSegmentTables())
-    return INIT_FAILURE;
+    return sql::INIT_FAILURE;
   CreateMainURLIndex();
   CreateSupplimentaryURLIndices();
 
   // Version check.
-  InitStatus version_status = EnsureCurrentVersion(bookmarks_path);
-  if (version_status != INIT_OK)
+  sql::InitStatus version_status = EnsureCurrentVersion(bookmarks_path);
+  if (version_status != sql::INIT_OK)
     return version_status;
 
   ComputeDatabaseMetrics(history_name, db_);
-  return committer.Commit() ? INIT_OK : INIT_FAILURE;
+  return committer.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
 }
 
 void HistoryDatabase::BeginExclusiveMode() {
@@ -229,12 +229,12 @@ sql::Connection& HistoryDatabase::GetDB() {
 
 // Migration -------------------------------------------------------------------
 
-InitStatus HistoryDatabase::EnsureCurrentVersion(
+sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
     const FilePath& tmp_bookmarks_path) {
   // We can't read databases newer than we were designed for.
   if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
     LOG(WARNING) << "History database is too new.";
-    return INIT_TOO_NEW;
+    return sql::INIT_TOO_NEW;
   }
 
   // NOTICE: If you are changing structures for things shared with the archived
@@ -251,7 +251,7 @@ InitStatus HistoryDatabase::EnsureCurrentVersion(
     if (!MigrateBookmarksToFile(tmp_bookmarks_path) ||
         !DropStarredIDFromURLs()) {
       LOG(WARNING) << "Unable to update history database to version 16.";
-      return INIT_FAILURE;
+      return sql::INIT_FAILURE;
     }
     ++cur_version;
     meta_table_.SetVersionNumber(cur_version);
@@ -278,7 +278,7 @@ InitStatus HistoryDatabase::EnsureCurrentVersion(
   LOG_IF(WARNING, cur_version < kCurrentVersionNumber) <<
       "History database version " << cur_version << " is too old to handle.";
 
-  return INIT_OK;
+  return sql::INIT_OK;
 }
 
 #if !defined(OS_WIN)

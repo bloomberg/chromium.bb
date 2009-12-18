@@ -136,7 +136,7 @@ void WebDatabase::CommitTransaction() {
   db_.CommitTransaction();
 }
 
-bool WebDatabase::Init(const FilePath& db_name) {
+sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
   // Set the exceptional sqlite error handler.
   db_.set_error_delegate(GetErrorHandlerForWebDb());
 
@@ -154,19 +154,19 @@ bool WebDatabase::Init(const FilePath& db_name) {
   db_.set_exclusive_locking();
 
   if (!db_.Open(db_name))
-    return false;
+    return sql::INIT_FAILURE;
 
   // Initialize various tables
   sql::Transaction transaction(&db_);
   if (!transaction.Begin())
-    return false;
+    return sql::INIT_FAILURE;
 
   // Version check.
   if (!meta_table_.Init(&db_, kCurrentVersionNumber, kCompatibleVersionNumber))
-    return false;
+    return sql::INIT_FAILURE;
   if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
     LOG(WARNING) << "Web database is too new.";
-    return false;
+    return sql::INIT_TOO_NEW;
   }
 
   // Initialize the tables.
@@ -174,13 +174,13 @@ bool WebDatabase::Init(const FilePath& db_name) {
       !InitWebAppsTable() || !InitAutofillTable() ||
       !InitAutofillDatesTable()) {
     LOG(WARNING) << "Unable to initialize the web database.";
-    return false;
+    return sql::INIT_FAILURE;
   }
 
   // If the file on disk is an older database version, bring it up to date.
   MigrateOldVersionsAsNeeded();
 
-  return transaction.Commit();
+  return transaction.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
 }
 
 bool WebDatabase::SetWebAppImage(const GURL& url, const SkBitmap& image) {
