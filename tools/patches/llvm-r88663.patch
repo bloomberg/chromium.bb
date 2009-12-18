@@ -440,15 +440,37 @@ Index: lib/Target/ARM/ARMInstrVFP.td
                   [(store SPR:$src, addrmode5:$addr)]>;
  
  //===----------------------------------------------------------------------===//
-@@ -92,6 +92,8 @@
+@@ -92,22 +92,28 @@
  }
  } // mayLoad, hasExtraDefRegAllocReq
  
 +
-+// @LOCALMOD TODO: these probably have to be sandboxed as well
++// @LOCALMOD-START
  let mayStore = 1, hasExtraSrcRegAllocReq = 1 in {
  def VSTMD : AXDI5<(outs), (ins addrmode5:$addr, pred:$p, reglist:$wb,
                             variable_ops), IIC_fpStorem,
+-                 "vstm${addr:submode}${p}\t${addr:base}, $wb",
++//                 "vstm${addr:submode}${p}\t${addr:base}, $wb",
++                 "sfi_store_preamble ${addr:basereg}, ${p}\n\tvstm${addr:submode}${p}\t${addr:base}, $wb",
+                  []> {
+   let Inst{20} = 0;
+ }
+ 
+ def VSTMS : AXSI5<(outs), (ins addrmode5:$addr, pred:$p, reglist:$wb,
+                            variable_ops), IIC_fpStorem,
+-                 "vstm${addr:submode}${p}\t${addr:base}, $wb",
++//                 "vstm${addr:submode}${p}\t${addr:base}, $wb",
++                 "sfi_store_preamble ${addr:basereg}, ${p}\n\tvstm${addr:submode}${p}\t${addr:base}, $wb",
+                  []> {
+   let Inst{20} = 0;
+ }
+ } // mayStore, hasExtraSrcRegAllocReq
+ 
++// @LOCALMOD-END
++
+ // FLDMX, FSTMX - mixing S/D registers for pre-armv6 cores
+ 
+ //===----------------------------------------------------------------------===//
 Index: lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp
 ===================================================================
 --- lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp	(revision 88663)
