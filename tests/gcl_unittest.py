@@ -19,9 +19,8 @@ class GclTestsBase(SuperMoxTestBase):
     self.mox.StubOutWithMock(gcl.SVN, 'CaptureInfo')
     self.mox.StubOutWithMock(gcl, 'tempfile')
     self.mox.StubOutWithMock(gcl.upload, 'RealMain')
-    # These are not tested.
     self.mox.StubOutWithMock(gcl, 'ReadFile')
-    self.mox.StubOutWithMock(gcl, 'WriteFile')
+    self.mox.StubOutWithMock(gcl.gclient_utils, 'FileWrite')
 
 
 class GclUnittest(GclTestsBase):
@@ -41,7 +40,6 @@ class GclUnittest(GclTestsBase):
         'OptionallyDoPresubmitChecks', 'PresubmitCL', 'REPOSITORY_ROOT',
         'ReadFile', 'RunShell', 'RunShellWithReturnCode', 'SVN',
         'SendToRietveld', 'TryChange', 'UnknownFiles', 'UploadCL', 'Warn',
-        'WriteFile',
         'breakpad', 'gclient_utils', 'getpass', 'main', 'os', 'random', 're',
         'shutil', 'string', 'subprocess', 'sys', 'tempfile', 'upload',
         'urllib2',
@@ -215,8 +213,9 @@ class ChangeInfoUnittest(GclTestsBase):
 
   def testSaveEmpty(self):
     gcl.GetChangelistInfoFile('').AndReturn('foo')
-    gcl.WriteFile('foo', gcl.ChangeInfo._SEPARATOR.join(['0, 0, clean', '',
-                                                         '']))
+    gcl.gclient_utils.FileWrite(
+        'foo',
+        gcl.ChangeInfo._SEPARATOR.join(['0, 0, clean', '', '']))
     self.mox.ReplayAll()
 
     change_info = gcl.ChangeInfo('', 0, 0, '', None, self.fake_root_dir)
@@ -224,8 +223,9 @@ class ChangeInfoUnittest(GclTestsBase):
 
   def testSaveDirty(self):
     gcl.GetChangelistInfoFile('').AndReturn('foo')
-    gcl.WriteFile('foo', gcl.ChangeInfo._SEPARATOR.join(['0, 0, dirty', '',
-                                                         '']))
+    gcl.gclient_utils.FileWrite(
+        'foo',
+        gcl.ChangeInfo._SEPARATOR.join(['0, 0, dirty', '', '']))
     self.mox.ReplayAll()
 
     change_info = gcl.ChangeInfo('', 0, 0, '', None, self.fake_root_dir,

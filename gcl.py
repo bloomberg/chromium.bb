@@ -139,7 +139,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
         url_path = os.path.dirname(url_path)
       # Write a cached version even if there isn't a file, so we don't try to
       # fetch it each time.
-      WriteFile(cached_file, content)
+      gclient_utils.FileWrite(cached_file, content)
     else:
       content = ReadFile(cached_file)
     # Keep the content cached in memory.
@@ -211,13 +211,6 @@ def ReadFile(filename, flags='r'):
   result = f.read()
   f.close()
   return result
-
-
-def WriteFile(filename, contents):
-  """Overwrites the file with the given contents."""
-  f = open(filename, 'w')
-  f.write(contents)
-  f.close()
 
 
 def FilterFlag(args, flag):
@@ -306,7 +299,7 @@ class ChangeInfo(object):
         "%d, %d, %s" % (self.issue, self.patchset, needs_upload),
         "\n".join([f[0] + f[1] for f in self.GetFiles()]),
         self.description])
-    WriteFile(GetChangelistInfoFile(self.name), data)
+    gclient_utils.FileWrite(GetChangelistInfoFile(self.name), data)
 
   def Delete(self):
     """Removes the changelist information from disk."""
