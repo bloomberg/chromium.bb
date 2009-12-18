@@ -289,6 +289,9 @@ void MainMenu::TabContentsDelegateImpl::OpenURLFromTab(
 // LoadTask -------------------------------------------------------------------
 
 void MainMenu::LoadTask::Run() {
+  if (BrowserList::begin() == BrowserList::end())
+    return;  // No browser are around. Generally only happens during testing.
+
   MainMenu::Get();
 }
 
