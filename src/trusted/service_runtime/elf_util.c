@@ -417,7 +417,7 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
       continue;
     }
 
-    NaClLog(2, "loading segment %d", segnum);
+    NaClLog(2, "loading segment %d\n", segnum);
     end_vaddr = php->p_vaddr + php->p_filesz;
     /* integer overflow? */
     if (end_vaddr < php->p_vaddr) {
@@ -460,21 +460,14 @@ uint32_t NaClElfImageGetEntryPoint(struct NaClElfImage *image) {
 }
 
 
-/* TODO(robertm): this code should enforce that either 16 or 32 bit alignment is
-                  is set - there are currently some problems with ARM, though
-*/
 int NaClElfImageGetBundleSize(struct NaClElfImage *image) {
-  unsigned long eflags = image->ehdr.e_flags & EF_NACL_ALIGN_MASK;
-  if (eflags) {
-    if (eflags == EF_NACL_ALIGN_16) {
-     return 16;
-    } else if (eflags == EF_NACL_ALIGN_32) {
-      return 32;
-    } else {
-      NaClLog(LOG_ERROR, "strange alignment");
-      return 0;
-    }
-  } else {
+  switch (image->ehdr.e_flags & EF_NACL_ALIGN_MASK) {
+   case  EF_NACL_ALIGN_16:
+    return 16;
+   case EF_NACL_ALIGN_32:
     return 32;
+   default:
+    NaClLog(LOG_FATAL, "strange alignment");
+    return 0;
   }
 }

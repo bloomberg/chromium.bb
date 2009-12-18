@@ -97,6 +97,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
    * need to round it to be so.
    */
 
+  NaClLog(3, "Protecting guard pages for 0x%08"PRIxPTR"\n", start_addr);
   err = NaClMprotectGuards(nap, start_addr);
   if (err != LOAD_OK) return err;
 
