@@ -421,6 +421,15 @@
    fun:_Znw*
    fun:_ZN13TCMallocGuardC1Ev
 }
+{
+  # zlib is smarter than we are:
+  #   http://www.zlib.net/zlib_faq.html#faq36
+  zlib_conditional_jump_performance
+  Memcheck:Value4
+  fun:inflate_fast
+  fun:inflate
+  ...
+}
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
