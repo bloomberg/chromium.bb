@@ -493,12 +493,12 @@ void ExtensionsDOMHandler::OnPackSuccess(const FilePath& crx_file,
                                          const FilePath& pem_file) {
   std::string message;
   if (!pem_file.empty()) {
-    message = WideToASCII(l10n_util::GetStringF(
+    message = WideToUTF8(l10n_util::GetStringF(
         IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_NEW,
         crx_file.ToWStringHack(),
         pem_file.ToWStringHack()));
   } else {
-    message = WideToASCII(l10n_util::GetStringF(
+    message = WideToUTF8(l10n_util::GetStringF(
         IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_UPDATE,
         crx_file.ToWStringHack()));
   }
