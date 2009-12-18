@@ -56,6 +56,8 @@ function Page(result, continued, model) {
 
   this.changed = false;
 
+  this.isRendered = false;
+
   // All the date information is public so that owners can compare properties of
   // two items easily.
 
@@ -318,6 +320,10 @@ HistoryModel.prototype.clearModel_ = function() {
   this.requestedPage_ = 0;
 
   this.complete_ = false;
+
+  if (this.view_) {
+    this.view_.clear_();
+  }
 }
 
 /**
@@ -408,6 +414,8 @@ function HistoryView(model) {
 
   this.model_.setView(this);
 
+  this.currentPages_ = [];
+
   var self = this;
   window.onresize = function() {
     self.updateEntryAnchorWidth_();
@@ -437,10 +445,10 @@ HistoryView.prototype.reload = function() {
 
 /**
  * Switch to a specified page.
- * @param {string} term The string to search for.
- * @param {number} opt_page The page we wish to view.
+ * @param {number} page The page we wish to view.
  */
 HistoryView.prototype.setPage = function(page) {
+  this.clear_();
   this.pageIndex_ = parseInt(page, 10);
   window.scrollTo(0, 0);
   this.model_.requestPage(page);
@@ -464,11 +472,27 @@ HistoryView.prototype.onModelReady = function() {
 
 // HistoryView, private: ------------------------------------------------------
 /**
+ * Clear the results in the view.  Since we add results piecemeal, we need
+ * to clear them out when we switch to a new page or reload.
+ */
+HistoryView.prototype.clear_ = function() {
+  this.resultDiv_.innerHTML = '';
+  var pages = this.currentPages_;
+  for (var i = 0; i < pages.length; i++) {
+    pages[i].isRendered = false;
+  }
+  this.currentPages_ = [];
+}
+
+HistoryView.prototype.setPageRendered_ = function(page) {
+  page.isRendered = true;
+  this.currentPages_.push(page);
+}
+
+/**
  * Update the page with results.
  */
 HistoryView.prototype.displayResults_ = function() {
-  this.resultDiv_.innerHTML = '';
-
   var results = this.model_.getNumberedRange(
       this.pageIndex_ * RESULTS_PER_PAGE,
       this.pageIndex_ * RESULTS_PER_PAGE + RESULTS_PER_PAGE);
@@ -486,6 +510,9 @@ HistoryView.prototype.displayResults_ = function() {
   } else {
     var lastTime = Math.infinity;
     for (var i = 0, page; page = results[i]; i++) {
+      if (page.isRendered) {
+        continue;
+      }
       // Break across day boundaries and insert gaps for browsing pauses.
       var thisTime = page.time.getTime();
 
@@ -513,6 +540,7 @@ HistoryView.prototype.displayResults_ = function() {
 
       // Add entry.
       this.resultDiv_.appendChild(page.getBrowseResultDOM());
+      this.setPageRendered_(page);
     }
   }
 
@@ -544,6 +572,9 @@ HistoryView.prototype.displayNavBar_ = function() {
     navOutput += this.createPageNavHTML_(this.pageIndex_ - 1,
                                          localStrings.getString('newer'));
   }
+
+  // TODO(feldstein): this causes the navbar to not show up when your first
+  // page has the exact amount of results as RESULTS_PER_PAGE.
   if (this.model_.getSize() > (this.pageIndex_ + 1) * RESULTS_PER_PAGE) {
     navOutput += this.createPageNavHTML_(this.pageIndex_ + 1,
                                          localStrings.getString('older'));
@@ -684,7 +715,7 @@ PageState.getHashString = function(term, page) {
   if (term) {
     newHash.push("q=" + encodeURIComponent(term));
   }
-  if (page) {
+  if (page != undefined) {
     newHash.push("p=" + page);
   }
 
