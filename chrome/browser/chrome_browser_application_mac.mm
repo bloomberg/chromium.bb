@@ -32,15 +32,36 @@ static IMP gOriginalInitIMP = NULL;
   // Method only called when swizzled.
   DCHECK(_cmd == @selector(initWithName:reason:userInfo:));
 
-  // Dear reader: something you just did provoked an NSException.
-  // Please check your backtrace and see if you can't file a bug with
-  // a repro case.  You should be able to safely continue past the
-  // NOTREACHED(), but feel free to comment it out locally if it is
-  // making your job hard.
-  DLOG(ERROR) << "Someone is preparing to raise an exception!  "
-              << base::SysNSStringToUTF8(aName) << " *** "
-              << base::SysNSStringToUTF8(aReason);
-  NOTREACHED();
+  // Parts of Cocoa rely on creating and throwing exceptions. These are not
+  // worth bugging-out over. It is very important that there be zero chance that
+  // any Chromium code is on the stack; these must be created by Apple code and
+  // then immediately consumed by Apple code.
+  static const NSString* kAcceptableNSExceptionNames[] = {
+    // If an object does not support an accessibility attribute, this will
+    // get thrown.
+    NSAccessibilityException,
+
+    nil
+  };
+
+  BOOL found = NO;
+  for (int i = 0; kAcceptableNSExceptionNames[i]; ++i) {
+    if (aName == kAcceptableNSExceptionNames[i]) {
+      found = YES;
+    }
+  }
+
+  if (!found) {
+    // Dear reader: something you just did provoked an NSException.
+    // Please check your backtrace and see if you can't file a bug with
+    // a repro case.  You should be able to safely continue past the
+    // NOTREACHED(), but feel free to comment it out locally if it is
+    // making your job hard.
+    DLOG(ERROR) << "Someone is preparing to raise an exception!  "
+                << base::SysNSStringToUTF8(aName) << " *** "
+                << base::SysNSStringToUTF8(aReason);
+    NOTREACHED();
+  }
 
   // Forward to the original version.
   return gOriginalInitIMP(self, _cmd, aName, aReason, someUserInfo);
