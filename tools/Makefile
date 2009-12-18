@@ -73,6 +73,10 @@ ifeq ($(PLATFORM), Cygwin)
     DESTDIR := $(SDKROOT)
     SDKROOT := 
     PLATFORM:= Cygwin17
+    # CygWin1.7 changes over time and list of files required to run the binaries
+    # changes over time - use cygcheck (new tools in CygWin 1.7) to find list of
+    # .dll files and filter only .dll files in /bin (AKA /usr/bin depending on
+    # exact version of CygWin)
     CYGWIN_DLL_COPY= \
       cp -f `cygpath \` \
         cd $(DESTDIR)$(SDKROOT)/bin ; \
@@ -226,7 +230,7 @@ BUILD/stamp-binutils: BUILD/stamp-binutils-$(BINUTILS_VERSION) Makefile
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) fix_cygwin
+	$(MAKE) -f $(THISMAKEFILE) cygwin_redirector
 
 .PHONY: binutils
 binutils: BUILD/stamp-binutils
@@ -282,7 +286,7 @@ BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	cp $(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc.a \
 		$(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc_eh.a
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) fix_cygwin
+	$(MAKE) -f $(THISMAKEFILE) cygwin_redirector
 
 .PHONY: pregcc
 pregcc: BUILD/stamp-pregcc
@@ -404,7 +408,7 @@ endif
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
 	    DESTDIR=$(DESTDIR) install
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) fix_cygwin
+	$(MAKE) -f $(THISMAKEFILE) cygwin_redirector
 
 .PHONY: gcc
 gcc: BUILD/stamp-gcc
@@ -437,7 +441,7 @@ BUILD/stamp-gdb: BUILD/stamp-gdb-$(GDB_VERSION) #Makefile
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) fix_cygwin
+	$(MAKE) -f $(THISMAKEFILE) cygwin_redirector
 
 .PHONY: gdb
 gdb: BUILD/stamp-gdb
@@ -472,11 +476,15 @@ sdk_minimal_test: ALWAYS
 	 MODE=nacl sdk_minimal_test --verbose
 
 
-##################################################################
-# Fix cygwin 1.7 issues - must be done to make pregcc/gcc work
-##################################################################
+##########################################################################
+# Install CygWin 1.7 redirector
+##########################################################################
+# Two different cygwin1.dll files in %PATH% lead to trouble, but we'd like
+# to have our as/gcc/ld in %PATH% in SDK thus simple trick is employed:
+# we move compiled binary to libexec subdirectory and put very simple
+# MSVC-compiled redirector in it's place. This only works with CygWin 1.7+
 
-fix_cygwin: ALWAYS
+cygwin_redirector: ALWAYS
 	$(CYGWIN_DLL_COPY)
 ifeq ($(PLATFORM), Cygwin17)
 	mv -f $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
@@ -517,7 +525,7 @@ endif
 ifeq ($(CROSSARCH), nacl)
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
 endif
-	$(MAKE) -f $(THISMAKEFILE) fix_cygwin
+	$(MAKE) -f $(THISMAKEFILE) cygwin_redirector
 
 ##################################################################
 # Build an updated set of patches from the current build versions.
