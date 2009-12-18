@@ -441,11 +441,10 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
     // Adjust the anchor point to be at the center of the browser action button.
     arrowPoint.x += kBrowserActionWidth / 2;
 
-    popupController_ =
-        [[ExtensionPopupController showURL:action->popup_url()
-                                 inBrowser:browser_
-                                anchoredAt:arrowPoint
-                             arrowLocation:kTopRight] retain];
+    popupController_ = [ExtensionPopupController showURL:action->popup_url()
+                                               inBrowser:browser_
+                                              anchoredAt:arrowPoint
+                                           arrowLocation:kTopRight];
   } else {
     ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
        profile_, action->extension_id(), browser_);

@@ -212,8 +212,8 @@ void ExtensionBrowserEventRouter::OnBrowserSetLastActive(
 }
 
 void ExtensionBrowserEventRouter::TabCreatedAt(TabContents* contents,
-                                                int index,
-                                                bool foreground) {
+                                               int index,
+                                               bool foreground) {
   DispatchEventWithTab(contents->profile(), events::kOnTabCreated, contents);
 
   RegisterForTabNotifications(contents);

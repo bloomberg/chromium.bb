@@ -23,6 +23,7 @@
 @class AutocompleteTextField;
 class BubblePositioner;
 class CommandUpdater;
+@class ExtensionPopupController;
 class Profile;
 class ToolbarModel;
 
@@ -83,6 +84,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual std::wstring GetTitle() const;
 
   NSImage* GetTabButtonImage();
+  AutocompleteTextField* GetAutocompleteTextField() { return field_; }
 
   // Internals of OnChanged(), pulled out for purposes of unit
   // testing.  Sets up |field| based on the parameters, which are
@@ -207,6 +209,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     virtual void Observe(NotificationType type,
                          const NotificationSource& source,
                          const NotificationDetails& details);
+    void HidePopup();
 
     // The location bar view that owns us.
     LocationBarViewMac* owner_;
@@ -221,6 +224,9 @@ class LocationBarViewMac : public AutocompleteEditController,
     // A cache of images the Page Actions might need to show, mapped by path.
     typedef std::map<std::string, SkBitmap> PageActionMap;
     PageActionMap page_action_icons_;
+
+    // The controller for the popup displayed if a page action has one. Weak.
+    ExtensionPopupController* popupController_;
 
     // The object that is waiting for the image loading to complete
     // asynchronously.

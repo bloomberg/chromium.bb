@@ -17,6 +17,7 @@
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #include "chrome/browser/cocoa/event_utils.h"
+#import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -518,7 +519,22 @@ LocationBarViewMac::PageActionImageView::~PageActionImageView() {
 // popup depending on the Page Action.
 bool LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
   if (page_action_->has_popup()) {
-      NOTIMPLEMENTED();
+    AutocompleteTextField* textField = owner_->GetAutocompleteTextField();
+    NSWindow* window = [textField window];
+    NSRect relativeBounds = [[window contentView] convertRect:bounds
+                                                     fromView:textField];
+    NSPoint arrowPoint = [window convertBaseToScreen:NSMakePoint(
+        NSMinX(relativeBounds),
+        NSMinY(relativeBounds))];
+
+    // Adjust the anchor point to be at the center of the page action icon.
+    arrowPoint.x += [GetImage() size].width / 2;
+
+    popupController_ =
+        [ExtensionPopupController showURL:page_action_->popup_url()
+                                inBrowser:BrowserList::GetLastActive()
+                               anchoredAt:arrowPoint
+                            arrowLocation:kTopRight];
     } else {
       ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
           profile_, page_action_->extension_id(), page_action_->id(),
@@ -607,16 +623,20 @@ void LocationBarViewMac::PageActionImageView::Observe(
   switch (type.value) {
     case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       // If we aren't the host of the popup, then disregard the notification.
-      //if (!popup_ || Details<ExtensionHost>(popup_->host()) != details)
-      //  return;
-
-      //HidePopup();
-      NOTIMPLEMENTED();
+      if (popupController_ &&
+          Details<ExtensionHost>([popupController_ host]) == details) {
+        HidePopup();
+      }
       break;
     default:
       NOTREACHED() << "Unexpected notification";
       break;
   }
+}
+
+void LocationBarViewMac::PageActionImageView::HidePopup() {
+  [popupController_ close];
+  popupController_ = nil;
 }
 
 // PageActionViewList-----------------------------------------------------------
