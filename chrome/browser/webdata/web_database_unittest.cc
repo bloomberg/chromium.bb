@@ -584,7 +584,7 @@ TEST_F(WebDatabaseTest, Autofill) {
 
 TEST_F(WebDatabaseTest, Autofill_RemoveBetweenChanges) {
   WebDatabase db;
-  ASSERT_TRUE(db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
 
   TimeDelta one_day(TimeDelta::FromDays(1));
   Time t1 = Time::Now();
