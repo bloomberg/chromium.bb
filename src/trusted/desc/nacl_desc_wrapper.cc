@@ -215,7 +215,10 @@ DescWrapper* DescWrapperFactory::MakeShm(size_t size) {
   if (!common_data_->is_initialized()) {
     return NULL;
   }
-  size_t rounded_size = NaClRoundAllocPage(size);
+  // HACK: there's an inlining issue with this.
+  // size_t rounded_size = NaClRoundAllocPage(size);
+  size_t rounded_size = (size + 0xffff) & ~static_cast<size_t>(0xffff);
+  // TODO(sehr): fix the inlining issue.
   NaClHandle handle = CreateMemoryObject(rounded_size);
   if (kInvalidHandle == handle) {
     return NULL;
