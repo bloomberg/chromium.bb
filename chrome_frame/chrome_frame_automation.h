@@ -79,6 +79,17 @@ class ChromeFrameAutomationProxyImpl : public ChromeFrameAutomationProxy,
   friend class ProxyFactory;
 };
 
+// This structure contains information used for launching chrome.
+struct ChromeFrameLaunchParams {
+  int automation_server_launch_timeout;
+  GURL url;
+  GURL referrer;
+  std::wstring profile_name;
+  std::wstring extra_chrome_arguments;
+  bool perform_version_check;
+  bool incognito_mode;
+};
+
 // We must create and destroy automation proxy in a thread with a message loop.
 // Hence thread cannot be a member of the proxy.
 class ProxyFactory {
@@ -92,14 +103,10 @@ class ProxyFactory {
 
   ProxyFactory();
   ~ProxyFactory();
-  // FIXME: we should pass the result as output parameter, not as return value
-  // since, LaunchDelegate can be invoked before this function returns.
-  virtual void* GetAutomationServer(int launch_timeout,
-                                    const std::wstring& profile_name,
-                            // Extra command line argument when launching Chrome
-                                    const std::wstring& extra_argument,
-                                    bool perform_version_check,
-                                    LaunchDelegate* delegate);
+
+  virtual void GetAutomationServer(LaunchDelegate* delegate,
+                                   const ChromeFrameLaunchParams& params,
+                                   void** automation_server_id);
   virtual bool ReleaseAutomationServer(void* server_id);
 
  private:
@@ -113,9 +120,7 @@ class ProxyFactory {
   };
 
   void CreateProxy(ProxyCacheEntry* entry,
-                   int launch_timeout,
-                   const std::wstring& extra_chrome_arguments,
-                   bool perform_version_check,
+                   const ChromeFrameLaunchParams& params,
                    LaunchDelegate* delegate);
   void DestroyProxy(ProxyCacheEntry* entry);
 
@@ -300,7 +305,6 @@ class ChromeFrameAutomationClient
     return init_state_ == INITIALIZED;
   }
 
-  bool incognito_;
   HWND parent_window_;
   PlatformThreadId ui_thread_id_;
 
@@ -310,6 +314,7 @@ class ChromeFrameAutomationClient
   scoped_refptr<TabProxy> tab_;
   ChromeFrameDelegate* chrome_frame_delegate_;
   GURL url_;
+  GURL referrer_;
 
   // Handle to the underlying chrome window. This is a child of the external
   // tab window.
@@ -335,6 +340,12 @@ class ChromeFrameAutomationClient
   int tab_handle_;
   // Only used if we attach to an existing tab.
   intptr_t external_tab_cookie_;
+
+  // Set to true if we received a navigation request prior to the automation
+  // server being initialized.
+  bool navigate_after_initialization_;
+
+  ChromeFrameLaunchParams chrome_launch_params_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_AUTOMATION_H_

@@ -57,7 +57,8 @@ class ExternalTabContainer : public TabContentsDelegate,
             bool load_requests_via_automation,
             bool handle_top_level_requests,
             TabContents* existing_tab_contents,
-            const GURL& initial_url);
+            const GURL& initial_url,
+            const GURL& referrer);
 
   // Unhook the keystroke listener and notify about the closing TabContents.
   // This function gets called from three places, which is fine.

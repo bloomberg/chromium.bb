@@ -59,7 +59,8 @@ bool ExternalTabContainer::Init(Profile* profile,
                                 bool load_requests_via_automation,
                                 bool handle_top_level_requests,
                                 TabContents* existing_contents,
-                                const GURL& initial_url) {
+                                const GURL& initial_url,
+                                const GURL& referrer) {
   if (IsWindow()) {
     NOTREACHED();
     return false;
@@ -129,7 +130,7 @@ bool ExternalTabContainer::Init(Profile* profile,
     MessageLoop::current()->PostTask(
         FROM_HERE,
         external_method_factory_.NewRunnableMethod(
-            &ExternalTabContainer::Navigate, initial_url, GURL()));
+            &ExternalTabContainer::Navigate, initial_url, referrer));
   }
 
   // We need WS_POPUP to be on the window during initialization, but
@@ -318,6 +319,7 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
           load_requests_via_automation_,
           handle_top_level_requests_,
           new_contents,
+          GURL(),
           GURL());
 
       if (result) {

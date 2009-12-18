@@ -172,16 +172,15 @@ ProxyFactory::~ProxyFactory() {
   }
 }
 
-void* ProxyFactory::GetAutomationServer(int launch_timeout,
-    const std::wstring& profile_name,
-    const std::wstring& extra_argument,
-    bool perform_version_check,
-    LaunchDelegate* delegate) {
+void ProxyFactory::GetAutomationServer(
+    LaunchDelegate* delegate, const ChromeFrameLaunchParams& params,
+    void** automation_server_id) {
   ProxyCacheEntry* entry = NULL;
   // Find already existing launcher thread for given profile
   AutoLock lock(lock_);
   for (size_t i = 0; i < proxies_.container().size(); ++i) {
-    if (!lstrcmpiW(proxies_[i]->profile_name.c_str(), profile_name.c_str())) {
+    if (!lstrcmpiW(proxies_[i]->profile_name.c_str(),
+                   params.profile_name.c_str())) {
       entry = proxies_[i];
       DCHECK(entry->thread.get() != NULL);
       break;
@@ -189,34 +188,31 @@ void* ProxyFactory::GetAutomationServer(int launch_timeout,
   }
 
   if (entry == NULL) {
-    entry = new ProxyCacheEntry(profile_name);
+    entry = new ProxyCacheEntry(params.profile_name);
     proxies_.container().push_back(entry);
   } else {
     entry->ref_count++;
   }
 
+  DCHECK(delegate != NULL);
+  DCHECK(automation_server_id != NULL);
 
+  *automation_server_id = entry;
   // Note we always queue request to the launch thread, even if we already
   // have established proxy object. A simple lock around entry->proxy = proxy
   // would allow calling LaunchDelegate directly from here if
   // entry->proxy != NULL. Drawback is that callback may be invoked either in
   // main thread or in background thread, which may confuse the client.
   entry->thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ProxyFactory::CreateProxy, entry,
-      launch_timeout, extra_argument,
-      perform_version_check, delegate));
+      &ProxyFactory::CreateProxy, entry, params, delegate));
 
   entry->thread->message_loop()->PostDelayedTask(FROM_HERE,
       NewRunnableMethod(this, &ProxyFactory::SendUMAData, entry),
       uma_send_interval_);
-
-  return entry;
 }
 
 void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
-                               int launch_timeout,
-                               const std::wstring& extra_chrome_arguments,
-                               bool perform_version_check,
+                               const ChromeFrameLaunchParams& params,
                                LaunchDelegate* delegate) {
   DCHECK(entry->thread->thread_id() == PlatformThread::CurrentId());
   if (entry->proxy) {
@@ -231,7 +227,8 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
 
   // At same time we must destroy/stop the thread from another thread.
   ChromeFrameAutomationProxyImpl* proxy =
-      new ChromeFrameAutomationProxyImpl(launch_timeout);
+      new ChromeFrameAutomationProxyImpl(
+          params.automation_server_launch_timeout);
 
   // Launch browser
   scoped_ptr<CommandLine> command_line(
@@ -278,8 +275,8 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
 
   std::wstring command_line_string(command_line->command_line_string());
   // If there are any extra arguments, append them to the command line.
-  if (!extra_chrome_arguments.empty()) {
-    command_line_string += L' ' + extra_chrome_arguments;
+  if (!params.extra_chrome_arguments.empty()) {
+    command_line_string += L' ' + params.extra_chrome_arguments;
   }
 
   automation_server_launch_start_time_ = base::TimeTicks::Now();
@@ -411,13 +408,13 @@ ChromeFrameAutomationClient::ChromeFrameAutomationClient()
       automation_server_(NULL),
       automation_server_id_(NULL),
       ui_thread_id_(NULL),
-      incognito_(false),
       init_state_(UNINITIALIZED),
       use_chrome_network_(false),
       proxy_factory_(g_proxy_factory.get()),
       handle_top_level_requests_(false),
       tab_handle_(-1),
-      external_tab_cookie_(NULL) {
+      external_tab_cookie_(NULL),
+      navigate_after_initialization_(false) {
 }
 
 ChromeFrameAutomationClient::~ChromeFrameAutomationClient() {
@@ -434,7 +431,6 @@ bool ChromeFrameAutomationClient::Initialize(
     bool incognito) {
   DCHECK(!IsWindow());
   chrome_frame_delegate_ = chrome_frame_delegate;
-  incognito_ = incognito;
   ui_thread_id_ = PlatformThread::CurrentId();
 #ifndef NDEBUG
   // In debug mode give more time to work with a debugger.
@@ -464,10 +460,17 @@ bool ChromeFrameAutomationClient::Initialize(
   // InitializeComplete is called successfully.
   init_state_ = INITIALIZING;
 
-  automation_server_id_ = proxy_factory_->GetAutomationServer(
-      automation_server_launch_timeout,
-      profile_name, extra_chrome_arguments, perform_version_check,
-      static_cast<ProxyFactory::LaunchDelegate*>(this));
+  chrome_launch_params_.automation_server_launch_timeout =
+      automation_server_launch_timeout;
+  chrome_launch_params_.profile_name = profile_name;
+  chrome_launch_params_.extra_chrome_arguments = extra_chrome_arguments;
+  chrome_launch_params_.perform_version_check = perform_version_check;
+  chrome_launch_params_.url = url_;
+  chrome_launch_params_.incognito_mode = incognito;
+
+  proxy_factory_->GetAutomationServer(
+      static_cast<ProxyFactory::LaunchDelegate*>(this),
+      chrome_launch_params_, &automation_server_id_);
 
   return true;
 }
@@ -518,6 +521,7 @@ bool ChromeFrameAutomationClient::InitiateNavigation(
     return false;
 
   url_ = GURL(url);
+  referrer_ = GURL(referrer);
 
   // Catch invalid URLs early.
   if (!url_.is_valid() || !IsValidUrlScheme(UTF8ToWide(url), is_privileged)) {
@@ -526,8 +530,12 @@ bool ChromeFrameAutomationClient::InitiateNavigation(
     return false;
   }
 
+  navigate_after_initialization_ = false;
+
   if (is_initialized()) {
-    BeginNavigate(GURL(url), GURL(referrer));
+    BeginNavigate(url_, referrer_);
+  } else {
+    navigate_after_initialization_ = true;
   }
 
   return true;
@@ -707,14 +715,17 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
   DCHECK(IsWindow());
   DCHECK(automation_server_ != NULL);
 
+  // TODO(ananta)
+  // We should pass in the referrer for the initial navigation.
   const IPC::ExternalTabSettings settings = {
     m_hWnd,
     gfx::Rect(),
     WS_CHILD,
-    incognito_,
+    chrome_launch_params_.incognito_mode,
     !use_chrome_network_,
     handle_top_level_requests_,
-    GURL(url_)
+    chrome_launch_params_.url,
+    chrome_launch_params_.referrer,
   };
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -822,6 +833,12 @@ void ChromeFrameAutomationClient::InitializeComplete(
     // If the host already have a window, ask Chrome to re-parent.
     if (parent_window_)
       SetParentWindow(parent_window_);
+
+    // If host specified destination URL - navigate. Apparently we do not use
+    // accelerator table.
+    if (navigate_after_initialization_) {
+      BeginNavigate(url_, referrer_);
+    }
   }
 
   if (chrome_frame_delegate_) {
