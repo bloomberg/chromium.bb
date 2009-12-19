@@ -426,13 +426,6 @@
   #   http://www.zlib.net/zlib_faq.html#faq36
   zlib_conditional_jump_performance
   Memcheck:Value4
-  fun:inflate_fast
-  fun:inflate
-  ...
-}
-{
-  # http://www.zlib.net/zlib_faq.html#faq36
-  zlib_conditional_jump_performance_spdy
   ...
   fun:inflate
   fun:_ZN4flip10FlipFramer15DecompressFrameEPKNS_9FlipFrameE
