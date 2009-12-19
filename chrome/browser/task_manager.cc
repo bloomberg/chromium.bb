@@ -533,7 +533,14 @@ void TaskManagerModel::AddResource(TaskManager::Resource* resource) {
   // Create the ProcessMetrics for this process if needed (not in map).
   if (metrics_map_.find(process) == metrics_map_.end()) {
     base::ProcessMetrics* pm =
+#if !defined(OS_MACOSX)
         base::ProcessMetrics::CreateProcessMetrics(process);
+#else
+        // TODO(thakis): Write a port provider that knows the task ports of
+        // child processes.
+        base::ProcessMetrics::CreateProcessMetrics(process, NULL);
+#endif
+
     metrics_map_[process] = pm;
   }
 
@@ -770,12 +777,12 @@ void TaskManagerModel::OnJobRemoved(URLRequestJob* job) {
 }
 
 void TaskManagerModel::OnJobDone(URLRequestJob* job,
-                                      const URLRequestStatus& status) {
+                                 const URLRequestStatus& status) {
 }
 
 void TaskManagerModel::OnJobRedirect(URLRequestJob* job,
-                                          const GURL& location,
-                                          int status_code) {
+                                     const GURL& location,
+                                     int status_code) {
 }
 
 void TaskManagerModel::OnBytesRead(URLRequestJob* job, int byte_count) {
