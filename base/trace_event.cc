@@ -29,14 +29,7 @@ static const FilePath::CharType* kLogFileName =
 
 TraceLog::TraceLog() : enabled_(false), log_file_(NULL) {
   base::ProcessHandle proc = base::GetCurrentProcessHandle();
-#if !defined(OS_MACOSX)
   process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(proc));
-#else
-  // The default port provider is sufficient to get data for the current
-  // process.
-  process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(proc,
-                                                                    NULL));
-#endif
 }
 
 TraceLog::~TraceLog() {

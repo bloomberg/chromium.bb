@@ -1078,12 +1078,7 @@ void PeformUpdate(const std::wstring& initial_db,
   Time before_time = Time::Now();
   base::ProcessHandle handle = base::Process::Current().handle();
   scoped_ptr<base::ProcessMetrics> metric(
-#if !defined(OS_MACOSX)
       base::ProcessMetrics::CreateProcessMetrics(handle));
-#else
-      // Getting stats only for the current process is enough, so NULL is fine.
-      base::ProcessMetrics::CreateProcessMetrics(handle, NULL));
-#endif
   CHECK(metric->GetIOCounters(&before));
 
   std::vector<SBListChunkRanges> lists;
