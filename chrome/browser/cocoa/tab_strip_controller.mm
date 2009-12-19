@@ -120,7 +120,7 @@ private:
 - (NSInteger)numberOfOpenUnpinnedTabs;
 - (void)mouseMoved:(NSEvent*)event;
 - (void)setTabTrackingAreasEnabled:(BOOL)enabled;
-- (void)droppingURLsAt:(NSPoint)location
+- (void)droppingURLsAt:(NSPoint)point
             givesIndex:(NSInteger*)index
            disposition:(WindowOpenDisposition*)disposition;
 @end
@@ -1436,11 +1436,11 @@ private:
   [self setTabTrackingAreasEnabled:mouseInside_];
 }
 
-// Get the index and disposition for a potential URL(s) drop given a location
-// (in window base coordinates). It considers x coordinate of the given
-// location. If it's in the "middle" of a tab, it drops on that tab. If it's to
-// the left, it inserts to the left, and similarly for the right.
-- (void)droppingURLsAt:(NSPoint)location
+// Get the index and disposition for a potential URL(s) drop given a point (in
+// the |TabStripView|'s coordinates). It considers only the x-coordinate of the
+// given point. If it's in the "middle" of a tab, it drops on that tab. If it's
+// to the left, it inserts to the left, and similarly for the right.
+- (void)droppingURLsAt:(NSPoint)point
             givesIndex:(NSInteger*)index
            disposition:(WindowOpenDisposition*)disposition {
   // Proportion of the tab which is considered the "middle" (and causes things
@@ -1455,8 +1455,9 @@ private:
     DCHECK([view isKindOfClass:[TabView class]]);
 
     // Recall that |-[NSView frame]| is in its superview's coordinates, so a
-    // |TabView|'s frame is in the coordinates of the |TabStripView|.
-    NSRect frame = [tabStripView_ convertRectToBase:[view frame]];
+    // |TabView|'s frame is in the coordinates of the |TabStripView| (which
+    // matches the coordinate system of |point|).
+    NSRect frame = [view frame];
 
     // Modify the frame to make it "unoverlapped".
     frame.origin.x += kTabOverlap / 2.0;
@@ -1465,14 +1466,14 @@ private:
       frame.size.width = 1.0;  // try to avoid complete failure
 
     // Drop in a new tab to the left of tab |i|?
-    if (location.x < (frame.origin.x + kLRProportion * frame.size.width)) {
+    if (point.x < (frame.origin.x + kLRProportion * frame.size.width)) {
       *index = i;
       *disposition = NEW_FOREGROUND_TAB;
       return;
     }
 
     // Drop on tab |i|?
-    if (location.x <= (frame.origin.x +
+    if (point.x <= (frame.origin.x +
                        (1.0 - kLRProportion) * frame.size.width)) {
       *index = i;
       *disposition = CURRENT_TAB;
@@ -1489,8 +1490,10 @@ private:
   *disposition = NEW_FOREGROUND_TAB;
 }
 
-// Drop URLs at the given location.
-- (void)dropURLs:(NSArray*)urls at:(NSPoint)location {
+// (URLDropTargetController protocol)
+- (void)dropURLs:(NSArray*)urls inView:(NSView*)view at:(NSPoint)point {
+  DCHECK_EQ(view, tabStripView_.get());
+
   if ([urls count] < 1) {
     NOTREACHED();
     return;
@@ -1507,7 +1510,7 @@ private:
   // Get the index and disposition.
   NSInteger index;
   WindowOpenDisposition disposition;
-  [self droppingURLsAt:location
+  [self droppingURLsAt:point
             givesIndex:&index
            disposition:&disposition];
 
@@ -1529,15 +1532,16 @@ private:
   }
 }
 
-// Update (possibly showing) the indicator which indicates where an URL drop
-// would happen.
-- (void)indicateDropURLsAt:(NSPoint)location {
+// (URLDropTargetController protocol)
+- (void)indicateDropURLsInView:(NSView*)view at:(NSPoint)point {
+  DCHECK_EQ(view, tabStripView_.get());
+
   // The minimum y-coordinate at which one should consider place the arrow.
   const CGFloat arrowBaseY = 25;
 
   NSInteger index;
   WindowOpenDisposition disposition;
-  [self droppingURLsAt:location
+  [self droppingURLsAt:point
             givesIndex:&index
            disposition:&disposition];
 
@@ -1569,8 +1573,10 @@ private:
   [tabStripView_ setNeedsDisplay:YES];
 }
 
-// Hide the indicator which indicates where an URL drop would happen.
-- (void)hideDropURLsIndicator {
+// (URLDropTargetController protocol)
+- (void)hideDropURLsIndicatorInView:(NSView*)view {
+  DCHECK_EQ(view, tabStripView_.get());
+
   if ([tabStripView_ dropArrowShown]) {
     [tabStripView_ setDropArrowShown:NO];
     [tabStripView_ setNeedsDisplay:YES];
