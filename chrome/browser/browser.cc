@@ -1995,9 +1995,8 @@ void Browser::AddNewContents(TabContents* source,
 
   // If this is an application we can only have one tab so we need to process
   // this in tabbed browser window.
-  if (tabstrip_model_.count() > 0 &&
-      disposition != NEW_WINDOW && disposition != NEW_POPUP &&
-      type_ != TYPE_NORMAL) {
+  if (type_ != TYPE_NORMAL && tabstrip_model_.count() > 0 &&
+      disposition != NEW_WINDOW && disposition != NEW_POPUP) {
     Browser* b = GetOrCreateTabbedBrowser(profile_);
     DCHECK(b);
     PageTransition::Type transition = PageTransition::LINK;
@@ -2944,8 +2943,7 @@ bool Browser::CanCloseWithInProgressDownloads() {
 
 // static
 Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
-  Browser* browser = BrowserList::FindBrowserWithType(
-      profile, TYPE_NORMAL);
+  Browser* browser = BrowserList::FindBrowserWithType(profile, TYPE_NORMAL);
   if (!browser)
     browser = Browser::Create(profile);
   return browser;
@@ -2986,7 +2984,8 @@ void Browser::OpenURLAtIndex(TabContents* source,
 
   // If this is not a normal window (such as a popup or an application), we can
   // only have one tab so a new tab always goes into a tabbed browser window.
-  if (disposition != NEW_WINDOW && type_ != TYPE_NORMAL) {
+  if (type_ != TYPE_NORMAL &&
+      disposition != CURRENT_TAB && disposition != NEW_WINDOW) {
     // If the disposition is OFF_THE_RECORD we don't want to create a new
     // browser that will itself create another OTR browser. This will result in
     // a browser leak (and crash below because no tab is created or selected).
