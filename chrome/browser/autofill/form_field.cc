@@ -135,6 +135,10 @@ string16 FormField::GetEcmlPattern(const string16& ecml_name1,
 }
 
 FormFieldSet::FormFieldSet(FormStructure* fields) {
+  std::vector<AddressField*> addresses;
+
+  // First, find if there is one form field with an ECML name.  If there is,
+  // then we will match an element only if it is in the standard.
   bool is_ecml = CheckECML(fields);
 
   // Parse fields.
@@ -147,6 +151,29 @@ FormFieldSet::FormFieldSet(FormStructure* fields) {
     }
 
     push_back(form_field);
+
+    if (form_field->GetFormFieldType() == kAddressType) {
+      AddressField* address = static_cast<AddressField*>(form_field);
+      if (address->IsFullAddress())
+        addresses.push_back(address);
+    }
+  }
+
+  // Now determine an address type for each address. Note, if this is an ECML
+  // form, then we already got this info from the field names.
+  if (!is_ecml && !addresses.empty()) {
+    if (addresses.size() == 1) {
+      addresses[0]->SetType(addresses[0]->FindType());
+    } else {
+      AddressType type0 = addresses[0]->FindType();
+      AddressType type1 = addresses[1]->FindType();
+
+      // When there are two addresses on a page, they almost always appear in
+      // the order (billing, shipping).
+      bool reversed = (type0 == kShippingAddress && type1 == kBillingAddress);
+      addresses[0]->SetType(reversed ? kShippingAddress : kBillingAddress);
+      addresses[1]->SetType(reversed ? kBillingAddress : kShippingAddress);
+    }
   }
 }
 
