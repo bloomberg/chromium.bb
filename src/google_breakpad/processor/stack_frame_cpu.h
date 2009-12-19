@@ -168,6 +168,33 @@ struct StackFrameSPARC : public StackFrame {
   int context_validity;
 };
 
+struct StackFrameARM : public StackFrame {
+  // ContextValidity should eventually contain entries for the validity of
+  // other nonvolatile (callee-save) registers as in
+  // StackFrameX86::ContextValidity. I suspect this list is sufficient
+  // for arm stackwalking.
+  enum ContextValidity {
+    CONTEXT_VALID_NONE = 0,
+    CONTEXT_VALID_R13 = 1 << 0,
+    CONTEXT_VALID_R14 = 1 << 1,
+    CONTEXT_VALID_R15 = 1 << 2,
+    CONTEXT_VALID_ALL = -1
+  };
+
+  StackFrameARM() : context(), context_validity(CONTEXT_VALID_NONE) {}
+
+  // Register state.  This is only fully valid for the topmost frame in a
+  // stack.  In other frames, the values of nonvolatile registers may be
+  // present, given sufficient debugging information.  Refer to
+  // context_validity.
+  MDRawContextARM context;
+
+  // context_validity is actually ContextValidity, but int is used because
+  // the OR operator doesn't work well with enumerated types.  This indicates
+  // which fields in context are valid.
+  int context_validity;
+};
+
 }  // namespace google_breakpad
 
 #endif  // GOOGLE_BREAKPAD_PROCESSOR_STACK_FRAME_CPU_H__

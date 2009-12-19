@@ -52,6 +52,7 @@
 #include "processor/stackwalker_sparc.h"
 #include "processor/stackwalker_x86.h"
 #include "processor/stackwalker_amd64.h"
+#include "processor/stackwalker_arm.h"
 
 namespace google_breakpad {
 
@@ -180,6 +181,13 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
                                              context->GetContextSPARC(),
                                              memory, modules, supplier,
                                              resolver);
+      break;
+
+    case MD_CONTEXT_ARM:
+      cpu_stackwalker = new StackwalkerARM(system_info,
+                                           context->GetContextARM(),
+                                           memory, modules, supplier,
+                                           resolver);
       break;
   }
 

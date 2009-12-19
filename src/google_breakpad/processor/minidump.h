@@ -179,10 +179,11 @@ class MinidumpContext : public MinidumpStream {
   // Returns raw CPU-specific context data for the named CPU type.  If the
   // context data does not match the CPU type or does not exist, returns
   // NULL.
-  const MDRawContextX86*   GetContextX86() const;
-  const MDRawContextPPC*   GetContextPPC() const;
   const MDRawContextAMD64* GetContextAMD64() const;
+  const MDRawContextARM*   GetContextARM() const;
+  const MDRawContextPPC*   GetContextPPC() const;
   const MDRawContextSPARC* GetContextSPARC() const;
+  const MDRawContextX86*   GetContextX86() const;
  
   // Print a human-readable representation of the object to stdout.
   void Print();
@@ -216,7 +217,8 @@ class MinidumpContext : public MinidumpStream {
     MDRawContextAMD64* amd64;
     // on Solaris SPARC, sparc is defined as a numeric constant,
     // so variables can NOT be named as sparc
-    MDRawContextSPARC*  ctx_sparc;
+    MDRawContextSPARC* ctx_sparc;
+    MDRawContextARM*   arm;
   } context_;
 };
 

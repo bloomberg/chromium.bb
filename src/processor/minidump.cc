@@ -620,6 +620,61 @@ bool MinidumpContext::Read(u_int32_t expected_size) {
         break;
       }
 
+      case MD_CONTEXT_ARM: {
+        if (expected_size != sizeof(MDRawContextARM)) {
+          BPLOG(ERROR) << "MinidumpContext arm size mismatch, " <<
+            expected_size << " != " << sizeof(MDRawContextARM);
+          return false;
+        }
+
+        scoped_ptr<MDRawContextARM> context_arm(new MDRawContextARM());
+
+        // Set the context_flags member, which has already been read, and
+        // read the rest of the structure beginning with the first member
+        // after context_flags.
+        context_arm->context_flags = context_flags;
+
+        size_t flags_size = sizeof(context_arm->context_flags);
+        u_int8_t* context_after_flags =
+            reinterpret_cast<u_int8_t*>(context_arm.get()) + flags_size;
+        if (!minidump_->ReadBytes(context_after_flags,
+                                  sizeof(MDRawContextARM) - flags_size)) {
+          BPLOG(ERROR) << "MinidumpContext could not read arm context";
+          return false;
+        }
+
+        // Do this after reading the entire MDRawContext structure because
+        // GetSystemInfo may seek minidump to a new position.
+        if (!CheckAgainstSystemInfo(cpu_type)) {
+          BPLOG(ERROR) << "MinidumpContext arm does not match system info";
+          return false;
+        }
+
+        if (minidump_->swap()) {
+          // context_arm->context_flags was already swapped.
+          for (unsigned int ireg_index = 0;
+               ireg_index < MD_CONTEXT_ARM_GPR_COUNT;
+               ++ireg_index) {
+            Swap(&context_arm->iregs[ireg_index]);
+          }
+          Swap(&context_arm->cpsr);
+          Swap(&context_arm->float_save.fpscr);
+          for (unsigned int fpr_index = 0;
+               fpr_index < MD_FLOATINGSAVEAREA_ARM_FPR_COUNT;
+               ++fpr_index) {
+            Swap(&context_arm->float_save.regs[fpr_index]);
+          }
+          for (unsigned int fpe_index = 0;
+               fpe_index < MD_FLOATINGSAVEAREA_ARM_FPEXTRA_COUNT;
+               ++fpe_index) {
+            Swap(&context_arm->float_save.extra[fpe_index]);
+          }
+        }
+        context_.arm = context_arm.release();
+
+        break;
+      }
+
       default: {
         // Unknown context type - Don't log as an error yet. Let the 
         // caller work that out.
@@ -685,6 +740,15 @@ const MDRawContextSPARC* MinidumpContext::GetContextSPARC() const {
   return context_.ctx_sparc;
 }
 
+const MDRawContextARM* MinidumpContext::GetContextARM() const {
+  if (GetContextCPU() != MD_CONTEXT_ARM) {
+    BPLOG(ERROR) << "MinidumpContext cannot get arm context";
+    return NULL;
+  }
+
+  return context_.arm;
+}
+
 void MinidumpContext::FreeContext() {
   switch (GetContextCPU()) {
     case MD_CONTEXT_X86:
@@ -701,6 +765,10 @@ void MinidumpContext::FreeContext() {
 
     case MD_CONTEXT_SPARC:
       delete context_.ctx_sparc;
+      break;
+
+    case MD_CONTEXT_ARM:
+      delete context_.arm;
       break;
 
     default:
@@ -760,6 +828,11 @@ bool MinidumpContext::CheckAgainstSystemInfo(u_int32_t context_cpu_type) {
 
     case MD_CONTEXT_SPARC:
       if (system_info_cpu_type == MD_CPU_ARCHITECTURE_SPARC)
+        return_value = true;
+      break;
+
+    case MD_CONTEXT_ARM:
+      if (system_info_cpu_type == MD_CPU_ARCHITECTURE_ARM)
         return_value = true;
       break;
   }
@@ -964,6 +1037,36 @@ void MinidumpContext::Print() {
              context_sparc->float_save.filler);
       printf("  float_save.fsr      = 0x%" PRIx64 "\n",
              context_sparc->float_save.fsr);
+      break;
+    }
+
+    case MD_CONTEXT_ARM: {
+      const MDRawContextARM* context_arm = GetContextARM();
+      printf("MDRawContextARM\n");
+      printf("  context_flags       = 0x%x\n",
+             context_arm->context_flags);
+      for (unsigned int ireg_index = 0;
+           ireg_index < MD_CONTEXT_ARM_GPR_COUNT;
+           ++ireg_index) {
+        printf("  iregs[%2d]            = 0x%x\n",
+               ireg_index, context_arm->iregs[ireg_index]);
+      }
+      printf("  cpsr                = 0x%x\n", context_arm->cpsr);
+      printf("  float_save.fpscr     = 0x%" PRIx64 "\n",
+      for (unsigned int fpr_index = 0;
+           fpr_index < MD_FLOATINGSAVEAREA_ARM_FPR_COUNT;
+           ++fpr_index) {
+        printf("  float_save.regs[%2d] = 0x%" PRIx64 "\n",
+               fpr_index, context_arm->float_save.regs[fpr_index]);
+      }
+      for (unsigned int fpe_index = 0;
+           fpe_index < MD_FLOATINGSAVEAREA_ARM_FPEXTRA_COUNT;
+           ++fpe_index) {
+        printf("  float_save.extra[%2d] = 0x%" PRIx64 "\n",
+               fpe_index, context_arm->float_save.extra[fpe_index]);
+      }
+
+             context_arm->float_save.fpscr);
       break;
     }
 
@@ -2727,8 +2830,8 @@ MinidumpContext* MinidumpException::GetContext() {
 
     scoped_ptr<MinidumpContext> context(new MinidumpContext(minidump_));
 
-    // Don't log as an error if we can still fall back on th thread's context
-    // (which must be possible if we got his far.)
+    // Don't log as an error if we can still fall back on the thread's context
+    // (which must be possible if we got this far.)
     if (!context->Read(exception_.thread_context.data_size)) {
       BPLOG(INFO) << "MinidumpException cannot read context";
       return NULL;
@@ -3006,12 +3109,20 @@ string MinidumpSystemInfo::GetCPU() {
       cpu = "x86";
       break;
 
+    case MD_CPU_ARCHITECTURE_AMD64:
+      cpu = "x86-64";
+      break;
+
     case MD_CPU_ARCHITECTURE_PPC:
       cpu = "ppc";
       break;
 
     case MD_CPU_ARCHITECTURE_SPARC:
       cpu = "sparc";
+      break;
+
+    case MD_CPU_ARCHITECTURE_ARM:
+      cpu = "arm";
       break;
 
     default:
