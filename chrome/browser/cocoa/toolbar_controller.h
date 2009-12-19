@@ -11,7 +11,6 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/command_observer_bridge.h"
 #import "chrome/browser/cocoa/delayedmenu_button.h"
-#import "chrome/browser/cocoa/url_drop_target.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/common/pref_member.h"
 
@@ -42,8 +41,8 @@ class ToolbarModel;
 // Manages the bookmark bar and its position in the window relative to
 // the web content view.
 
-@interface ToolbarController : NSViewController<CommandObserverProtocol,
-                                                URLDropTargetController> {
+@interface ToolbarController :
+    NSViewController<CommandObserverProtocol> {
  @private
   ToolbarModel* toolbarModel_;  // weak, one per window
   CommandUpdater* commands_;  // weak, one per window

@@ -7,19 +7,15 @@
 
 #import <Cocoa/Cocoa.h>
 
-@protocol URLDropTarget;
-@protocol URLDropTargetController;
-
-// Object which coordinates the dropping of URLs on a given view, sending data
-// and updates to a controller.
 @interface URLDropTargetHandler : NSObject {
  @private
-  NSView<URLDropTarget>* view_;  // weak
+  NSView* view_;  // weak
 }
 
-// Initialize the given view, which must implement the |URLDropTarget| (below),
-// to accept drops of URLs.
-- (id)initWithView:(NSView<URLDropTarget>*)view;
+// Initialize the given view to accept drops of URLs; this requires the view's
+// window's controller to implement the |URLDropTargetWindowController| protocol
+// (below).
+- (id)initWithView:(NSView*)view;
 
 // The owner view should implement the following methods by calling the
 // |URLDropTargetHandler|'s version, and leave the others to the default
@@ -31,37 +27,20 @@
 
 @end  // @interface URLDropTargetHandler
 
-// Protocol which views that are URL drop targets and use |URLDropTargetHandler|
-// must implement.
-@protocol URLDropTarget
+@protocol URLDropTargetWindowController
 
-// Returns the controller which handles the drop.
-- (id<URLDropTargetController>)urlDropController;
+// The given URLs (an |NSArray| of |NSString|s) were dropped at the given
+// location (location in window base coordinates).
+- (void)dropURLs:(NSArray*)urls at:(NSPoint)location;
 
-// The following, which come from |NSDraggingDestination|, must be implemented
-// by calling the |URLDropTargetHandler|'s implementations.
-- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender;
-- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender;
-- (void)draggingExited:(id<NSDraggingInfo>)sender;
-- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender;
-
-@end  // @protocol URLDropTarget
-
-// Protocol for the controller which handles the actual drop data/drop updates.
-@protocol URLDropTargetController
-
-// The given URLs (an |NSArray| of |NSString|s) were dropped in the given view
-// at the given point (in that view's coordinates).
-- (void)dropURLs:(NSArray*)urls inView:(NSView*)view at:(NSPoint)point;
-
-// Dragging is in progress over the owner view (at the given point, in view
-// coordinates) and any indicator of location -- e.g., an arrow -- should be
-// updated/shown.
-- (void)indicateDropURLsInView:(NSView*)view at:(NSPoint)point;
+// Dragging is in progress over the owner view (at the given location, in window
+// base coordinates) and any indicator of location -- e.g., an arrow -- should
+// be updated/shown.
+- (void)indicateDropURLsAt:(NSPoint)location;
 
 // Dragging is over, and any indicator should be hidden.
-- (void)hideDropURLsIndicatorInView:(NSView*)view;
+- (void)hideDropURLsIndicator;
 
-@end  // @protocol URLDropTargetController
+@end  // @protocol URLDropTargetWindowController
 
 #endif  // CHROME_BROWSER_COCOA_URL_DROP_TARGET_H_

@@ -6,10 +6,9 @@
 #define CHROME_BROWSER_COCOA_AUTOCOMPLETE_TEXT_FIELD_H_
 
 #import <Cocoa/Cocoa.h>
+#import "chrome/browser/cocoa/styled_text_field.h"
 
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/styled_text_field.h"
-#import "chrome/browser/cocoa/url_drop_target.h"
 
 @class AutocompleteTextFieldCell;
 
@@ -76,16 +75,13 @@ class AutocompleteTextFieldObserver {
   virtual bool OnDoCommandBySelector(SEL cmd) = 0;
 };
 
-@interface AutocompleteTextField : StyledTextField<URLDropTarget> {
+@interface AutocompleteTextField : StyledTextField {
  @private
   // Undo manager for this text field.  We use a specific instance rather than
   // the standard undo manager in order to let us clear the undo stack at will.
   scoped_nsobject<NSUndoManager> undoManager_;
 
   AutocompleteTextFieldObserver* observer_;  // weak, owned by location bar.
-
-  // Handles being a drag-and-drop target.
-  scoped_nsobject<URLDropTargetHandler> dropHandler_;
 }
 
 @property AutocompleteTextFieldObserver* observer;

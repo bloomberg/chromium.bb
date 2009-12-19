@@ -47,7 +47,8 @@ class TabStripModelObserverBridge;
                       BookmarkBarControllerDelegate,
                       BrowserCommandExecutor,
                       ViewResizer,
-                      GTMThemeDelegate> {
+                      GTMThemeDelegate,
+                      URLDropTargetWindowController> {
  @private
   // The ordering of these members is important as it determines the order in
   // which they are destroyed. |browser_| needs to be destroyed last as most of
@@ -163,12 +164,6 @@ class TabStripModelObserverBridge;
 // tab/tab contents).
 - (void)updateBookmarkBarVisibilityWithAnimation:(BOOL)animate;
 
-// Return a weak pointer to the tab strip controller.
-- (TabStripController*)tabStripController;
-
-// Return a weak pointer to the toolbar controller.
-- (ToolbarController*)toolbarController;
-
 - (BOOL)isDownloadShelfVisible;
 
 // Lazily creates the download shelf in visible state if it doesn't exist yet.
@@ -215,6 +210,12 @@ class TabStripModelObserverBridge;
 // tab's sheet queue.
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
 
+// Implementation of the |URLDropTargetWindowController| protocol, which is
+// needed for URL dropping on the tab strip.
+- (void)dropURLs:(NSArray*)urls at:(NSPoint)location;
+- (void)indicateDropURLsAt:(NSPoint)location;
+- (void)hideDropURLsIndicator;
+
 @end
 
 // Methods which are either only for testing, or only public for testing.
@@ -242,6 +243,9 @@ class TabStripModelObserverBridge;
 
 // Return a point suitable for the topLeft for a bookmark bubble.
 - (NSPoint)topLeftForBubble;
+
+// Return a weak pointer to the toolbar controller.
+- (ToolbarController*)toolbarController;
 
 // Resets any saved state about window growth (due to showing the bookmark bar
 // or the download shelf), so that future shrinking will occur from the bottom.

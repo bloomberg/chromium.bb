@@ -43,6 +43,7 @@
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_view.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/common/pref_names.h"
@@ -835,6 +836,10 @@ willPositionSheet:(NSWindow*)sheet
   return enable;
 }
 
+- (ToolbarController*)toolbarController {
+  return toolbarController_.get();
+}
+
 // Called when the user picks a menu or toolbar item when this window is key.
 // Calls through to the browser object to execute the command. This assumes that
 // the command is supported and doesn't check, otherwise it would have been
@@ -1006,11 +1011,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (TabStripController*)tabStripController {
-  return tabStripController_.get();
-}
-
-- (ToolbarController*)toolbarController {
-  return toolbarController_.get();
+  return tabStripController_;
 }
 
 - (void)setIsLoading:(BOOL)isLoading {
@@ -1542,6 +1543,20 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   windowTopGrowth_ = 0;
   windowBottomGrowth_ = 0;
   isShrinkingFromZoomed_ = NO;
+}
+
+// Our implementation of the |URLDropTargetWindowController| protocol just
+// reflects everything to the |tabStripController_|.
+- (void)dropURLs:(NSArray*)urls at:(NSPoint)location {
+  [tabStripController_ dropURLs:urls at:location];
+}
+
+- (void)indicateDropURLsAt:(NSPoint)location {
+  [tabStripController_ indicateDropURLsAt:location];
+}
+
+- (void)hideDropURLsIndicator {
+  [tabStripController_ hideDropURLsIndicator];
 }
 
 @end

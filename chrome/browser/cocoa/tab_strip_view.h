@@ -12,7 +12,7 @@
 
 // A view class that handles rendering the tab strip
 
-@interface TabStripView : NSView<URLDropTarget> {
+@interface TabStripView : NSView {
  @private
   NSTimeInterval lastMouseUp_;
 

@@ -13,7 +13,6 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"
-#import "chrome/browser/cocoa/url_drop_target.h"
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
 
 @class TabView;
@@ -39,7 +38,6 @@ class ToolbarModel;
 
 @interface TabStripController :
   NSObject<TabControllerTarget,
-           URLDropTargetController,
            GTMWindowSheetControllerDelegate> {
  @private
   TabContents* currentTab_;   // weak, tab for which we're showing state
@@ -178,6 +176,13 @@ class ToolbarModel;
 
 // Default height for tabs.
 + (CGFloat)defaultTabHeight;
+
+// Effectively an implementation of the |URLDropTargetWindowController|
+// protocol, which the |BrowserWindowController| just reflects to us. This
+// needed for dropping URLs on the tab strip.
+- (void)dropURLs:(NSArray*)urls at:(NSPoint)location;
+- (void)indicateDropURLsAt:(NSPoint)location;
+- (void)hideDropURLsIndicator;
 
 // Returns the (lazily created) window sheet controller of this window. Used
 // for the per-tab sheets.

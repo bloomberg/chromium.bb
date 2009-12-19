@@ -4,8 +4,6 @@
 
 #import "chrome/browser/cocoa/tab_strip_view.h"
 
-#import "chrome/browser/cocoa/browser_window_controller.h"
-#import "chrome/browser/cocoa/tab_strip_controller.h"
 #include "base/logging.h"
 
 @implementation TabStripView
@@ -138,29 +136,22 @@
   lastMouseUp_ = (clickCount == 1) ? timestamp : -1000.0;
 }
 
-// (URLDropTarget protocol)
-- (id<URLDropTargetController>)urlDropController {
-  BrowserWindowController* windowController = [[self window] windowController];
-  DCHECK([windowController isKindOfClass:[BrowserWindowController class]]);
-  return [windowController tabStripController];
-}
-
-// (URLDropTarget protocol)
+// Required by |URLDropTargetHandler|.
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
   return [dropHandler_ draggingEntered:sender];
 }
 
-// (URLDropTarget protocol)
+// Required by |URLDropTargetHandler|.
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
   return [dropHandler_ draggingUpdated:sender];
 }
 
-// (URLDropTarget protocol)
+// Required by |URLDropTargetHandler|.
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
   return [dropHandler_ draggingExited:sender];
 }
 
-// (URLDropTarget protocol)
+// Required by |URLDropTargetHandler|.
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
   return [dropHandler_ performDragOperation:sender];
 }
