@@ -3117,17 +3117,13 @@ BUG9798 MAC RELEASE : LayoutTests/fast/borders/block-mask-overlay-image.html = T
 
 // Webkit roll 52198->52205
 // Newly added test in r52202
-BUG_JPARENT : LayoutTests/svg/filters/filter-source-position.svg = IMAGE+TEXT
-
-// Webkit roll 52205->52227
-// New expectations added in 52219
-BUG_JPARENT WIN LINUX : LayoutTests/svg/custom/empty-merge.svg = IMAGE+TEXT
+BUG29737 : LayoutTests/svg/filters/filter-source-position.svg = IMAGE+TEXT
 
 // Flaky since SVG filters turned on
 BUG29737 LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = TEXT PASS
 
 // Newly added test in r52235
-BUG_JPARENT WIN LINUX : LayoutTests/editing/selection/doubleclick-beside-cr-span.html = TEXT
+BUG30816 WIN LINUX : LayoutTests/editing/selection/doubleclick-beside-cr-span.html = TEXT
 
 // WebKit update 52293->52323
 BUG30792 : LayoutTests/http/tests/security/xss-DENIED-assign-location-href-javascript.html = TEXT
