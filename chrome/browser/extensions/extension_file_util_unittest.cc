@@ -254,6 +254,39 @@ TEST(ExtensionFileUtil, InvalidPrivacyBlacklist) {
       "Incorrect header.")) << error;
 }
 
+#define URL_PREFIX "chrome-extension://extension-id/"
+
+TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
+  struct TestCase {
+    const char* url;
+    const char* expected_relative_path;
+  } test_cases[] = {
+    { URL_PREFIX "simple.html",
+      "simple.html" },
+    { URL_PREFIX "directory/to/file.html",
+      "directory/to/file.html" },
+    { URL_PREFIX "escape%20spaces.html",
+      "escape spaces.html" },
+    { URL_PREFIX "%C3%9Cber.html",
+      "\xC3\x9C" "ber.html" },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    GURL url(test_cases[i].url);
+#if defined(OS_POSIX)
+    FilePath expected_path(test_cases[i].expected_relative_path);
+#elif defined(OS_WIN)
+    FilePath expected_path(UTF8ToWide(test_cases[i].expected_relative_path));
+#endif
+
+    FilePath actual_path =
+        extension_file_util::ExtensionURLToRelativeFilePath(url);
+    EXPECT_FALSE(actual_path.IsAbsolute()) <<
+      " For the path " << actual_path.value();
+    EXPECT_EQ(expected_path.value(), actual_path.value());
+  }
+}
+
 // TODO(aa): More tests as motivation allows. Maybe steal some from
 // ExtensionsService? Many of them could probably be tested here without the
 // MessageLoop shenanigans.
