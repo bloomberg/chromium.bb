@@ -65,7 +65,7 @@ class SVNWrapperTestCase(BaseTestCase):
   def testDir(self):
     members = [
         'COMMAND', 'Capture', 'CaptureHeadRevision', 'CaptureInfo',
-        'CaptureStatus', 'DiffItem', 'GetEmail',
+        'CaptureStatus', 'DiffItem', 'GetCheckoutRoot', 'GetEmail',
         'GetFileProperty', 'IsMoved', 'ReadSimpleAuth', 'Run',
         'RunAndFilterOutput', 'RunAndGetFileList',
         'RunCommand', 'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',

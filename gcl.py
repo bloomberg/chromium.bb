@@ -65,18 +65,9 @@ def GetRepositoryRoot():
   """
   global REPOSITORY_ROOT
   if not REPOSITORY_ROOT:
-    infos = SVN.CaptureInfo(os.getcwd(), print_error=False)
-    cur_dir_repo_root = infos.get("Repository Root")
-    if not cur_dir_repo_root:
+    REPOSITORY_ROOT = SVN.GetCheckoutRoot(os.getcwd())
+    if not REPOSITORY_ROOT:
       raise gclient_utils.Error("gcl run outside of repository")
-
-    REPOSITORY_ROOT = os.getcwd()
-    while True:
-      parent = os.path.dirname(REPOSITORY_ROOT)
-      if (SVN.CaptureInfo(parent, print_error=False).get(
-              "Repository Root") != cur_dir_repo_root):
-        break
-      REPOSITORY_ROOT = parent
   return REPOSITORY_ROOT
 
 

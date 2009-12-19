@@ -75,7 +75,6 @@ class GclUnittest(GclTestsBase):
     gcl.os.getcwd().AndReturn(root_path)
     result1 = { "Repository Root": "Some root" }
     gcl.SVN.CaptureInfo(root_path, print_error=False).AndReturn(result1)
-    gcl.os.getcwd().AndReturn(root_path)
     results2 = { "Repository Root": "A different root" }
     gcl.SVN.CaptureInfo(gcl.os.path.dirname(root_path),
                         print_error=False).AndReturn(results2)

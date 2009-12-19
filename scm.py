@@ -486,3 +486,22 @@ class SVN(object):
         break
       values[key] = value
     return values
+
+  @staticmethod
+  def GetCheckoutRoot(directory):
+    """Returns the top level directory of the current repository.
+
+    The directory is returned as an absolute path.
+    """
+    infos = SVN.CaptureInfo(directory, print_error=False)
+    cur_dir_repo_root = infos.get("Repository Root")
+    if not cur_dir_repo_root:
+      return None
+
+    while True:
+      parent = os.path.dirname(directory)
+      if (SVN.CaptureInfo(parent, print_error=False).get(
+              "Repository Root") != cur_dir_repo_root):
+        break
+      directory = parent
+    return directory

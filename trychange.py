@@ -138,10 +138,7 @@ class SVN(SCM):
     used.
     """
     previous_cwd = os.getcwd()
-    if root is None:
-      os.chdir(gcl.GetRepositoryRoot())
-    else:
-      os.chdir(root)
+    os.chdir(root or scm.SVN.GetCheckoutRoot(previous_cwd))
 
     # Directories will return None so filter them out.
     diff = filter(None, [scm.SVN.DiffItem(f) for f in files])
@@ -157,19 +154,23 @@ class SVN(SCM):
     return self.change_info.GetLocalRoot()
 
   def ProcessOptions(self):
+    checkout_root = None
     if not self.options.diff:
       # Generate the diff with svn and write it to the submit queue path.  The
       # files are relative to the repository root, but we need patches relative
       # to one level up from there (i.e., 'src'), so adjust both the file
       # paths and the root of the diff.
+      # TODO(maruel): Remove this hack.
       source_root = GetSourceRoot()
-      prefix = PathDifference(source_root, gcl.GetRepositoryRoot())
+      checkout_root = scm.SVN.GetCheckoutRoot(os.getcwd())
+      prefix = PathDifference(source_root, checkout_root)
       adjusted_paths = [os.path.join(prefix, x) for x in self.options.files]
       self.options.diff = self.GenerateDiff(adjusted_paths, root=source_root)
       self.change_info = gcl.LoadChangelistInfoForMultiple(self.options.name,
           gcl.GetRepositoryRoot(), True, True)
     if not self.options.email:
-      self.options.email = scm.SVN.GetEmail(gcl.GetRepositoryRoot())
+      checkout_root = checkout_root or scm.SVN.GetCheckoutRoot(os.getcwd())
+      self.options.email = scm.SVN.GetEmail(checkout_root)
 
 
 class GIT(SCM):
