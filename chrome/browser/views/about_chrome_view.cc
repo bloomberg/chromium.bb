@@ -137,9 +137,11 @@ void AboutChromeView::Init() {
   }
 
   current_version_ = version_info->file_version();
+#if !defined(GOOGLE_CHROME_BUILD)
   current_version_ += L" (";
   current_version_ += version_info->last_change();
   current_version_ += L")";
+#endif
 
   string16 version_modifier = platform_util::GetVersionStringModifier();
   if (version_modifier.length()) {

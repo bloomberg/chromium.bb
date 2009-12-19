@@ -129,16 +129,20 @@ static BOOL recentShownUserActionFailedStatus = NO;
       [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
 
   NSString* versionModifier = @"";
+  NSString* svnRevision = @"";
   string16 modifier = platform_util::GetVersionStringModifier();
   if (modifier.length())
     versionModifier = [NSString stringWithFormat:@" %@",
                                             base::SysUTF16ToNSString(modifier)];
 
+#if !defined(GOOGLE_CHROME_BUILD)
+  svnRevision = [NSString stringWithFormat:@" (%@)",
+                          [bundle objectForInfoDictionaryKey:@"SVNRevision"]];
+#endif
   // The format string is not localized, but this is how the displayed version
   // is built on Windows too.
-  NSString* svnRevision = [bundle objectForInfoDictionaryKey:@"SVNRevision"];
   NSString* version =
-    [NSString stringWithFormat:@"%@ (%@)%@",
+    [NSString stringWithFormat:@"%@%@%@",
               chromeVersion, svnRevision, versionModifier];
 
   [version_ setStringValue:version];
