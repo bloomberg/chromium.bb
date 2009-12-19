@@ -373,7 +373,7 @@
             ],
           },
           'configurations': {
-            'Debug': {
+            'Debug_Base': {
               'msvs_settings': {
                 'VCLinkerTool': {
                   'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
@@ -456,7 +456,7 @@
             ],
           },
           'configurations': {
-            'Debug': {
+            'Debug_Base': {
               'msvs_settings': {
                 'VCLinkerTool': {
                   'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
@@ -998,7 +998,7 @@
             ],
           },
           'configurations': {
-            'Debug': {
+            'Debug_Base': {
               'msvs_settings': {
                 'VCLinkerTool': {
                   'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
@@ -1133,7 +1133,7 @@
             '<(allocator_target)',
           ],
           'configurations': {
-            'Debug': {
+            'Debug_Base': {
               'msvs_settings': {
                 'VCLinkerTool': {
                   'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
@@ -1483,7 +1483,7 @@
             ],
           },
           'configurations': {
-            'Debug': {
+            'Debug_Base': {
               'msvs_settings': {
                 'VCLinkerTool': {
                   'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
@@ -1553,7 +1553,7 @@
             }],
             ['OS=="win"', {
               'configurations': {
-                'Debug': {
+                'Debug_Base': {
                   'msvs_settings': {
                     'VCLinkerTool': {
                       'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
@@ -1664,7 +1664,7 @@
                   '<(allocator_target)',
                 ],
                 'configurations': {
-                  'Debug': {
+                  'Debug_Base': {
                     'msvs_settings': {
                       'VCLinkerTool': {
                         'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
