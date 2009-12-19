@@ -9,6 +9,11 @@
 
 class Browser;
 
+namespace gfx {
+class Rect;
+class Size;
+}  // namespace gfx
+
 class BrowserActionTestUtil {
  public:
   explicit BrowserActionTestUtil(Browser* browser) : browser_(browser) {}
@@ -24,6 +29,24 @@ class BrowserActionTestUtil {
 
   // Returns the current tooltip for the browser action button.
   std::string GetTooltip(int index);
+
+// TODO(estade): http://crbug.com/29710 port to Linux
+#if !defined(TOOLKIT_GTK)
+  // Returns whether a browser action popup is being shown currently.
+  bool HasPopup();
+
+  // Returns the bounds of the current browser action popup.
+  gfx::Rect GetPopupBounds();
+
+  // Hides the given popup and returns whether the hide was successful.
+  bool HidePopup();
+
+  // Returns the minimum allowed size of an extension popup.
+  static gfx::Size GetMinPopupSize();
+
+  // Returns the maximum allowed size of an extension popup.
+  static gfx::Size GetMaxPopupSize();
+#endif
 
  private:
   Browser* browser_;  // weak

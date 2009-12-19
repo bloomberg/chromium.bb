@@ -190,4 +190,21 @@ const NSTimeInterval kAnimationDuration = 0.2;
   [[self window] makeKeyAndOrderFront:self];
 }
 
+// Private (TestingAPI)
+- (NSView*)view {
+  return extensionView_;
+}
+
+// Private (TestingAPI)
++ (NSSize)minPopupSize {
+  NSSize minSize = {kMinWidth, kMinHeight};
+  return minSize;
+}
+
+// Private (TestingAPI)
++ (NSSize)maxPopupSize {
+  NSSize maxSize = {kMaxWidth, kMaxHeight};
+  return maxSize;
+}
+
 @end

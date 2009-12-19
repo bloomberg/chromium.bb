@@ -8,6 +8,8 @@
 #include <gtk/gtk.h>
 #endif
 
+#include "base/gfx/rect.h"
+#include "base/gfx/size.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
@@ -20,20 +22,26 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/ui_test_utils.h"
 
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
-#include "chrome/browser/views/browser_actions_container.h"
-#include "chrome/browser/views/extensions/extension_popup.h"
-#include "chrome/browser/views/toolbar_view.h"
-#endif
-
 class BrowserActionApiTest : public ExtensionApiTest {
  public:
   BrowserActionApiTest() {}
   virtual ~BrowserActionApiTest() {}
 
+ protected:
   BrowserActionTestUtil GetBrowserActionsBar() {
     return BrowserActionTestUtil(browser());
   }
+
+// TODO(estade): http://crbug.com/29710 port to Linux
+#if !defined(TOOLKIT_GTK)
+  gfx::Rect OpenPopup(int index) {
+    ResultCatcher catcher;
+    GetBrowserActionsBar().Press(index);
+    EXPECT_TRUE(GetBrowserActionsBar().HasPopup());
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+    return GetBrowserActionsBar().GetPopupBounds();
+  }
+#endif  // !defined(TOOLKIT_GTK)
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
@@ -133,63 +141,36 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
   EXPECT_EQ("hi!", GetBrowserActionsBar().GetTooltip(0));
 }
 
-// TODO(estade): http://crbug.com/29710 port to Mac & Linux
-#if defined(OS_WIN)
+// TODO(estade): http://crbug.com/29710 port to Linux
+#if !defined(TOOLKIT_GTK)
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "browser_action/popup")));
 
   ResultCatcher catcher;
 
-  // This value is in api_test/popup/popup.html.
+  // The extension's popup's size grows by |growFactor| each click.
   const int growFactor = 500;
-  ASSERT_GT(ExtensionPopup::kMinHeight + growFactor * 2,
-            ExtensionPopup::kMaxHeight);
-  ASSERT_GT(ExtensionPopup::kMinWidth + growFactor * 2,
-            ExtensionPopup::kMaxWidth);
+  gfx::Size minSize = BrowserActionTestUtil::GetMinPopupSize();
+  gfx::Size maxSize = BrowserActionTestUtil::GetMaxPopupSize();
 
-  // Our initial expected size.
-  int width = ExtensionPopup::kMinWidth;
-  int height = ExtensionPopup::kMinHeight;
+  // Ensure that two clicks will exceed the maximum allowed size.
+  ASSERT_GT(minSize.height() + growFactor * 2, maxSize.height());
+  ASSERT_GT(minSize.width() + growFactor * 2, maxSize.width());
 
-  BrowserActionsContainer* browser_actions =
-      browser()->window()->GetBrowserWindowTesting()->GetToolbarView()->
-      browser_actions();
-  ASSERT_TRUE(browser_actions);
   // Simulate a click on the browser action and verify the size of the resulting
   // popup.  The first one tries to be 0x0, so it should be the min values.
-  GetBrowserActionsBar().Press(0);
-  EXPECT_TRUE(browser_actions->TestGetPopup() != NULL);
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-  gfx::Rect bounds = browser_actions->TestGetPopup()->view()->bounds();
-  EXPECT_EQ(width, bounds.width());
-  EXPECT_EQ(height, bounds.height());
-  browser_actions->HidePopup();
-  EXPECT_TRUE(browser_actions->TestGetPopup() == NULL);
+  gfx::Rect bounds = OpenPopup(0);
+  EXPECT_EQ(minSize, bounds.size());
+  EXPECT_TRUE(GetBrowserActionsBar().HidePopup());
 
-  // Do it again, and verify the new bigger size (the popup grows each time it's
-  // opened).
-  width = growFactor;
-  height = growFactor;
-  browser_actions->TestExecuteBrowserAction(0);
-  EXPECT_TRUE(browser_actions->TestGetPopup() != NULL);
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-  bounds = browser_actions->TestGetPopup()->view()->bounds();
-  EXPECT_EQ(width, bounds.width());
-  EXPECT_EQ(height, bounds.height());
-  browser_actions->HidePopup();
-  EXPECT_TRUE(browser_actions->TestGetPopup() == NULL);
+  bounds = OpenPopup(0);
+  EXPECT_EQ(gfx::Size(growFactor, growFactor), bounds.size());
+  EXPECT_TRUE(GetBrowserActionsBar().HidePopup());
 
   // One more time, but this time it should be constrained by the max values.
-  width = ExtensionPopup::kMaxWidth;
-  height = ExtensionPopup::kMaxHeight;
-  browser_actions->TestExecuteBrowserAction(0);
-  EXPECT_TRUE(browser_actions->TestGetPopup() != NULL);
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-  bounds = browser_actions->TestGetPopup()->view()->bounds();
-  EXPECT_EQ(width, bounds.width());
-  EXPECT_EQ(height, bounds.height());
-  browser_actions->HidePopup();
-  EXPECT_TRUE(browser_actions->TestGetPopup() == NULL);
+  bounds = OpenPopup(0);
+  EXPECT_EQ(maxSize, bounds.size());
+  EXPECT_TRUE(GetBrowserActionsBar().HidePopup());
 }
-#endif  // defined(OS_WIN)
+#endif  // !defined(TOOLKIT_GTK)

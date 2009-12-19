@@ -21,6 +21,19 @@ Size::Size(int width, int height) {
   set_height(height);
 }
 
+#if defined(OS_MACOSX)
+Size::Size(const CGSize& s) {
+  set_width(s.width);
+  set_height(s.height);
+}
+
+Size& Size::operator=(const CGSize& s) {
+  set_width(s.width);
+  set_height(s.height);
+  return *this;
+}
+#endif
+
 #if defined(OS_WIN)
 SIZE Size::ToSIZE() const {
   SIZE s;

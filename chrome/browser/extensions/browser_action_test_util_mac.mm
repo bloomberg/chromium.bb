@@ -4,11 +4,14 @@
 
 #include "browser_action_test_util.h"
 
+#include "base/gfx/rect.h"
+#include "base/gfx/size.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/extensions/browser_actions_controller.h"
+#import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 
 namespace {
@@ -43,4 +46,26 @@ void BrowserActionTestUtil::Press(int index) {
 std::string BrowserActionTestUtil::GetTooltip(int index) {
   NSString* tooltip = [GetButton(browser_, index) toolTip];
   return base::SysNSStringToUTF8(tooltip);
+}
+
+bool BrowserActionTestUtil::HasPopup() {
+  return [GetController(browser_) popup] != nil;
+}
+
+gfx::Rect BrowserActionTestUtil::GetPopupBounds() {
+  NSRect bounds = [[[GetController(browser_) popup] view] bounds];
+  return gfx::Rect(NSRectToCGRect(bounds));
+}
+
+bool BrowserActionTestUtil::HidePopup() {
+  [GetController(browser_) hidePopup];
+  return !HasPopup();
+}
+
+gfx::Size BrowserActionTestUtil::GetMinPopupSize() {
+  return gfx::Size(NSSizeToCGSize([ExtensionPopupController minPopupSize]));
+}
+
+gfx::Size BrowserActionTestUtil::GetMaxPopupSize() {
+  return gfx::Size(NSSizeToCGSize([ExtensionPopupController maxPopupSize]));
 }

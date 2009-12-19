@@ -55,4 +55,13 @@ class ExtensionHost;
                        arrowLocation:(BubbleArrowLocation)arrowLocation;
 @end
 
+@interface ExtensionPopupController(TestingAPI)
+// Returns a weak pointer to the current popup's view.
+- (NSView*)view;
+// Returns the minimum allowed size for an extension popup.
++ (NSSize)minPopupSize;
+// Returns the maximum allowed size for an extension popup.
++ (NSSize)maxPopupSize;
+@end
+
 #endif  // CHROME_BROWSER_COCOA_EXTENSIONS_EXTENSION_POPUP_CONTROLLER_H_

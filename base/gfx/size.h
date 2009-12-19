@@ -24,8 +24,15 @@ class Size {
  public:
   Size() : width_(0), height_(0) {}
   Size(int width, int height);
+#if defined(OS_MACOSX)
+  explicit Size(const CGSize& s);
+#endif
 
   ~Size() {}
+
+#if defined(OS_MACOSX)
+  Size& operator=(const CGSize& s);
+#endif
 
   int width() const { return width_; }
   int height() const { return height_; }

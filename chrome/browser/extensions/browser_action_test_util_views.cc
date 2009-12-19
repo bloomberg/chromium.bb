@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/browser_action_test_util.h"
 
+#include "base/gfx/rect.h"
+#include "base/gfx/size.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
@@ -42,4 +44,26 @@ std::string BrowserActionTestUtil::GetTooltip(int index) {
   GetContainer(browser_)->GetBrowserActionViewAt(0)->button()->
       GetTooltipText(0, 0, &text);
   return WideToUTF8(text);
+}
+
+bool BrowserActionTestUtil::HasPopup() {
+  return GetContainer(browser_)->TestGetPopup() != NULL;
+}
+
+gfx::Rect BrowserActionTestUtil::GetPopupBounds() {
+  return GetContainer(browser_)->TestGetPopup()->view()->bounds();
+}
+
+bool BrowserActionTestUtil::HidePopup() {
+  BrowserActionsContainer* container = GetContainer(browser_);
+  container->HidePopup();
+  return !HasPopup();
+}
+
+gfx::Size BrowserActionTestUtil::GetMinPopupSize() {
+  return gfx::Size(ExtensionPopup::kMinWidth, ExtensionPopup::kMinHeight);
+}
+
+gfx::Size BrowserActionTestUtil::GetMaxPopupSize() {
+  return gfx::Size(ExtensionPopup::kMaxWidth, ExtensionPopup::kMaxHeight);
 }
