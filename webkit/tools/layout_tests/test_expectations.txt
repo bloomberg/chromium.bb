@@ -2210,7 +2210,6 @@ BUG10446 LINUX : LayoutTests/editing/execCommand/selectAll.html = FAIL
 
 // Regressions from merge 41559:41588, probably just needs rebaselining.
 BUG10675 MAC : chrome/fast/forms/basic-textareas-quirks.html = FAIL
-BUG10675 MAC : chrome/fast/forms/basic-textareas.html = FAIL
 
 // Newly added test from 41613:41660 -- relies on ScriptCallStack::state() -- dglazkov should fix.
 BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAIL
@@ -2407,7 +2406,6 @@ BUG11251 WIN DEBUG : LayoutTests/fast/forms/textarea-width.html = FAIL
 BUG11251 SLOW WIN RELEASE : LayoutTests/fast/forms/textarea-width.html = FAIL
 BUG11251 WIN LINUX RELEASE : LayoutTests/fast/forms/text-control-intrinsic-widths.html = FAIL
 BUG11251 LINUX WIN DEBUG : LayoutTests/fast/forms/text-control-intrinsic-widths.html = FAIL
-BUG11251 : chrome/fast/forms/textarea-metrics.html = FAIL
 BUG11251 WIN LINUX : LayoutTests/svg/custom/svg-fonts-in-text-controls.html = FAIL
 BUG11251 WIN LINUX : LayoutTests/fast/forms/textarea-metrics.html = FAIL
 
