@@ -82,7 +82,7 @@
             ],
           },
           'configurations': {
-            'Common_Base': {
+            'Common': {
               'msvs_target_platform': 'x64',
             },
           },

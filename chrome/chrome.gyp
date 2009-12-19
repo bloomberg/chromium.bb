@@ -1764,7 +1764,7 @@
                 },
               },
               'configurations': {
-                'Debug_Base': {
+                'Debug': {
                   'msvs_settings': {
                     'VCLinkerTool': {
                       'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
@@ -2622,7 +2622,7 @@
                 }],
               ],
               'configurations': {
-                'Debug_Base': {
+                'Debug': {
                   'msvs_settings': {
                     'VCLinkerTool': {
                       'LinkIncremental': '<(msvs_large_module_debug_link_mode)',

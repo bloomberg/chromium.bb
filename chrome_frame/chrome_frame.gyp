@@ -583,7 +583,7 @@
       },
       'configurations': {
         # Bring back the standard library in debug buidls.
-        'Debug_Base': {
+        'Debug': {
           'msvs_settings': {
             'VCLinkerTool': {
               'IgnoreAllDefaultLibraries': "false",

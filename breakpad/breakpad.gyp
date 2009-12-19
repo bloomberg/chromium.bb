@@ -14,7 +14,7 @@
           'src',
         ],
         'configurations': {
-          'Debug_Base': {
+          'Debug': {
             'defines': [
               # This is needed for GTMLogger to work correctly.
               'DEBUG',
@@ -115,7 +115,7 @@
             ],
           },
           'configurations': {
-            'Release_Base': {
+            'Release': {
               'xcode_settings': {
                 # dump_syms crashes when built at -O1, -O2, and -O3.  It does
                 # not crash at -Os.  To play it safe, dump_syms is always built
