@@ -379,10 +379,10 @@ void DirectoryBackingStore::LoadExtendedAttributes(
     int64 metahandle = statement.column_int64(0);
 
     string path_string_key;
-    DCHECK(statement.column_string(1, &path_string_key));
+    statement.column_string(1, &path_string_key);
 
     ExtendedAttributeValue val;
-    DCHECK(statement.column_blob_as_vector(2, &(val.value)));
+    statement.column_blob_as_vector(2, &(val.value));
     val.is_deleted = false;
 
     ExtendedAttributeKey key(metahandle, path_string_key);
