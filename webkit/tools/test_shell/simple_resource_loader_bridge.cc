@@ -483,24 +483,18 @@ class SyncRequestProxy : public RequestProxy {
 
 class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
  public:
-  ResourceLoaderBridgeImpl(const std::string& method,
-                           const GURL& url,
-                           const GURL& first_party_for_cookies,
-                           const GURL& referrer,
-                           const std::string& headers,
-                           int load_flags,
-                           ResourceType::Type request_type,
-                           int appcache_host_id)
+  ResourceLoaderBridgeImpl(
+      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info)
       : params_(new RequestParams),
         proxy_(NULL) {
-    params_->method = method;
-    params_->url = url;
-    params_->first_party_for_cookies = first_party_for_cookies;
-    params_->referrer = referrer;
-    params_->headers = headers;
-    params_->load_flags = load_flags;
-    params_->request_type = request_type;
-    params_->appcache_host_id = appcache_host_id;
+    params_->method = request_info.method;
+    params_->url = request_info.url;
+    params_->first_party_for_cookies = request_info.first_party_for_cookies;
+    params_->referrer = request_info.referrer;
+    params_->headers = request_info.headers;
+    params_->load_flags = request_info.load_flags;
+    params_->request_type = request_info.request_type;
+    params_->appcache_host_id = request_info.appcache_host_id;
   }
 
   virtual ~ResourceLoaderBridgeImpl() {
@@ -631,23 +625,10 @@ class CookieGetter : public base::RefCountedThreadSafe<CookieGetter> {
 
 namespace webkit_glue {
 
-// factory function
+// Factory function.
 ResourceLoaderBridge* ResourceLoaderBridge::Create(
-    const std::string& method,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    const GURL& referrer,
-    const std::string& frame_origin,
-    const std::string& main_frame_origin,
-    const std::string& headers,
-    int load_flags,
-    int requestor_pid,
-    ResourceType::Type request_type,
-    int appcache_host_id,
-    int routing_id) {
-  return new ResourceLoaderBridgeImpl(method, url, first_party_for_cookies,
-                                      referrer, headers, load_flags,
-                                      request_type, appcache_host_id);
+    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
+  return new ResourceLoaderBridgeImpl(request_info);
 }
 
 // Issue the proxy resolve request on the io thread, and wait

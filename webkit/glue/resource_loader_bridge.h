@@ -38,6 +38,54 @@ namespace webkit_glue {
 
 class ResourceLoaderBridge {
  public:
+  // Structure used when calling ResourceLoaderBridge::Create().
+  struct RequestInfo {
+    RequestInfo();
+    ~RequestInfo();
+
+    // HTTP-style method name (e.g., "GET" or "POST").
+    std::string method;
+
+    // Absolute URL encoded in ASCII per the rules of RFC-2396.
+    GURL url;
+
+    // URL of the document in the top-level window, which may be checked by the
+    // third-party cookie blocking policy.
+    GURL first_party_for_cookies;
+
+    // Optional parameter, a URL with similar constraints in how it must be
+    // encoded as the url member.
+    GURL referrer;
+
+    std::string frame_origin;
+    std::string main_frame_origin;
+
+    // For HTTP(S) requests, the headers parameter can be a \r\n-delimited and
+    // \r\n-terminated list of MIME headers.  They should be ASCII-encoded using
+    // the standard MIME header encoding rules.  The headers parameter can also
+    // be null if no extra request headers need to be set.
+    std::string headers;
+
+    // Composed of the values defined in url_request_load_flags.h.
+    int load_flags;
+
+    // Process id of the process making the request.
+    int requestor_pid;
+
+    // Indicates if the current request is the main frame load, a sub-frame
+    // load, or a sub objects load.
+    ResourceType::Type request_type;
+
+    // Used for plugin to browser requests.
+    uint32 request_context;
+
+    // Identifies that appcache host this request is associated with.
+    int appcache_host_id;
+
+    // Used to associated the bridge with a frame's network context.
+    int routing_id;
+  };
+
   struct ResponseInfo {
     ResponseInfo();
     ~ResponseInfo();
@@ -144,45 +192,11 @@ class ResourceLoaderBridge {
   // INCLUDING during processing of callbacks.
   virtual ~ResourceLoaderBridge();
 
-  // Call this method to make a new instance.  The method name is a HTTP-style
-  // method name (e.g., "GET" or "POST").  The URL should be an absolute URL
-  // encoded in ASCII per the rules of RFC-2396.  The referrer parameter is
-  // optional (may be NULL) and is a URL with similar constraints in how it
-  // must be encoded.
+  // Call this method to make a new instance.
   //
   // For HTTP(S) POST requests, the AppendDataToUpload and AppendFileToUpload
   // methods may be called to construct the body of the request.
-  //
-  // For HTTP(S) requests, the headers parameter can be a \r\n-delimited and
-  // \r\n-terminated list of MIME headers.  They should be ASCII-encoded using
-  // the standard MIME header encoding rules.  The headers parameter can also
-  // be null if no extra request headers need to be set.
-  //
-  // first_party_for_cookies is the URL of the document in the top-level
-  // window, which may be checked by the third-party cookie blocking policy.
-  //
-  // load_flags is composed of the values defined in url_request_load_flags.h
-  //
-  // request_type indicates if the current request is the main frame load, a
-  // sub-frame load, or a sub objects load.
-  //
-  // appcache_host_id identifies that appcache host this request is
-  // associated with.
-  //
-  // routing_id passed to this function allows it to be associated with a
-  // frame's network context.
-  static ResourceLoaderBridge* Create(const std::string& method,
-                                      const GURL& url,
-                                      const GURL& first_party_for_cookies,
-                                      const GURL& referrer,
-                                      const std::string& frame_origin,
-                                      const std::string& main_frame_origin,
-                                      const std::string& headers,
-                                      int load_flags,
-                                      int requestor_pid,
-                                      ResourceType::Type request_type,
-                                      int appcache_host_id,
-                                      int routing_id);
+  static ResourceLoaderBridge* Create(const RequestInfo& request_info);
 
   // Call this method before calling Start() to append a chunk of binary data
   // to the request body.  May only be used with HTTP(S) POST requests.
@@ -232,7 +246,7 @@ class ResourceLoaderBridge {
   ResourceLoaderBridge();
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(ResourceLoaderBridge);
+  DISALLOW_COPY_AND_ASSIGN(ResourceLoaderBridge);
 };
 
 }  // namespace webkit_glue

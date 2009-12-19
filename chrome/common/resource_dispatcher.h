@@ -34,21 +34,10 @@ class ResourceDispatcher {
   // Creates a ResourceLoaderBridge for this type of dispatcher, this is so
   // this can be tested regardless of the ResourceLoaderBridge::Create
   // implementation.
-  webkit_glue::ResourceLoaderBridge* CreateBridge(const std::string& method,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    const GURL& referrer,
-    const std::string& frame_origin,
-    const std::string& main_frame_origin,
-    const std::string& headers,
-    int load_flags,
-    int origin_pid,
-    ResourceType::Type resource_type,
-    uint32 request_context /* used for plugin->browser requests */,
-    int appcache_host_id,
-    int routing_id,
-    int host_renderer_id,
-    int host_render_view_id);
+  webkit_glue::ResourceLoaderBridge* CreateBridge(
+      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info,
+      int host_renderer_id,
+      int host_render_view_id);
 
   // Adds a request from the pending_requests_ list, returning the new
   // requests' ID

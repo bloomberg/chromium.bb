@@ -151,21 +151,24 @@ class PluginRequestHandlerProxy
   }
 
   CPError Start(int renderer_id, int render_view_id) {
+    webkit_glue::ResourceLoaderBridge::RequestInfo request_info;
+    request_info.method = cprequest_->method;
+    request_info.url = GURL(cprequest_->url);
+    request_info.first_party_for_cookies =
+        GURL(cprequest_->url); // TODO(jackson): policy url?
+    request_info.referrer = GURL();  // TODO(mpcomplete): referrer?
+    request_info.frame_origin = "null";
+    request_info.main_frame_origin = "null";
+    request_info.headers = extra_headers_;
+    request_info.load_flags = load_flags_;
+    request_info.requestor_pid = base::GetCurrentProcId();
+    request_info.request_type = ResourceType::OBJECT;
+    request_info.request_context = cprequest_->context;
+    request_info.appcache_host_id = appcache::kNoHostId;
+    request_info.routing_id = MSG_ROUTING_CONTROL;
     bridge_.reset(
         PluginThread::current()->resource_dispatcher()->CreateBridge(
-            cprequest_->method,
-            GURL(cprequest_->url),
-            GURL(cprequest_->url),  // TODO(jackson): policy url?
-            GURL(),  // TODO(mpcomplete): referrer?
-            "null",  // frame_origin
-            "null",  // main_frame_origin
-            extra_headers_,
-            load_flags_,
-            base::GetCurrentProcId(),
-            ResourceType::OBJECT,
-            cprequest_->context,
-            appcache::kNoHostId,
-            MSG_ROUTING_CONTROL,
+            request_info,
             renderer_id,
             render_view_id));
     if (!bridge_.get())

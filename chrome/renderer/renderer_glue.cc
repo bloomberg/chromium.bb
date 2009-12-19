@@ -218,23 +218,8 @@ bool IsProtocolSupportedForMedia(const GURL& url) {
 
 // static factory function
 ResourceLoaderBridge* ResourceLoaderBridge::Create(
-    const std::string& method,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    const GURL& referrer,
-    const std::string& frame_origin,
-    const std::string& main_frame_origin,
-    const std::string& headers,
-    int load_flags,
-    int origin_pid,
-    ResourceType::Type resource_type,
-    int appcache_host_id,
-    int routing_id) {
-  ResourceDispatcher* dispatch = ChildThread::current()->resource_dispatcher();
-  return dispatch->CreateBridge(method, url, first_party_for_cookies, referrer,
-                                frame_origin, main_frame_origin, headers,
-                                load_flags, origin_pid, resource_type, 0,
-                                appcache_host_id, routing_id, -1 , -1);
+    const ResourceLoaderBridge::RequestInfo& request_info) {
+  return ChildThread::current()->CreateBridge(request_info, -1, -1);
 }
 
 // static factory function

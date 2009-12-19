@@ -148,11 +148,21 @@ class ResourceDispatcherTest : public testing::Test,
   }
 
   ResourceLoaderBridge* CreateBridge() {
-    ResourceLoaderBridge* bridge = dispatcher_->CreateBridge(
-        "GET", GURL(test_page_url), GURL(test_page_url), GURL(), "null",
-        "null", std::string(), 0, 0, ResourceType::SUB_RESOURCE, 0,
-        appcache::kNoHostId, MSG_ROUTING_CONTROL, -1, -1);
-    return bridge;
+    webkit_glue::ResourceLoaderBridge::RequestInfo request_info;
+    request_info.method = "GET";
+    request_info.url = GURL(test_page_url);
+    request_info.first_party_for_cookies = GURL(test_page_url);
+    request_info.referrer = GURL();
+    request_info.frame_origin = "null";
+    request_info.main_frame_origin = "null";
+    request_info.headers = std::string();
+    request_info.load_flags = 0;
+    request_info.requestor_pid = 0;
+    request_info.request_type = ResourceType::SUB_RESOURCE;
+    request_info.appcache_host_id = 0;
+    request_info.routing_id = appcache::kNoHostId;
+
+    return dispatcher_->CreateBridge(request_info, -1, -1);
   }
 
   std::vector<IPC::Message> message_queue_;

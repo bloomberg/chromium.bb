@@ -9,6 +9,18 @@
 
 namespace webkit_glue {
 
+ResourceLoaderBridge::RequestInfo::RequestInfo()
+    : load_flags(0),
+      requestor_pid(0),
+      request_type(ResourceType::MAIN_FRAME),
+      request_context(0),
+      appcache_host_id(0),
+      routing_id(0) {
+}
+
+ResourceLoaderBridge::RequestInfo::~RequestInfo() {
+}
+
 ResourceLoaderBridge::ResponseInfo::ResponseInfo() {
   content_length = -1;
   appcache_id = appcache::kNoCacheId;

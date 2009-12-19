@@ -44,21 +44,9 @@ namespace webkit_glue {
 class IPCResourceLoaderBridge : public ResourceLoaderBridge {
  public:
   IPCResourceLoaderBridge(ResourceDispatcher* dispatcher,
-                          const std::string& method,
-                          const GURL& url,
-                          const GURL& first_party_for_cookies,
-                          const GURL& referrer,
-                          const std::string& frame_origin,
-                          const std::string& main_frame_origin,
-                          const std::string& headers,
-                          int load_flags,
-                          int origin_pid,
-                          ResourceType::Type resource_type,
-                          uint32 request_context,
-                          int appcache_host_id,
-                          int routing_id,
-                          int host_renderer_id,
-                          int host_render_view_id);
+      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info,
+      int host_renderer_id,
+      int host_render_view_id);
   virtual ~IPCResourceLoaderBridge();
 
   // ResourceLoaderBridge
@@ -109,40 +97,28 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
 
 IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     ResourceDispatcher* dispatcher,
-    const std::string& method,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    const GURL& referrer,
-    const std::string& frame_origin,
-    const std::string& main_frame_origin,
-    const std::string& headers,
-    int load_flags,
-    int origin_child_id,
-    ResourceType::Type resource_type,
-    uint32 request_context,
-    int appcache_host_id,
-    int routing_id,
+    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info,
     int host_renderer_id,
     int host_render_view_id)
     : peer_(NULL),
       dispatcher_(dispatcher),
       request_id_(-1),
-      routing_id_(routing_id),
+      routing_id_(request_info.routing_id),
       host_renderer_id_(host_renderer_id),
       host_render_view_id_(host_render_view_id) {
   DCHECK(dispatcher_) << "no resource dispatcher";
-  request_.method = method;
-  request_.url = url;
-  request_.first_party_for_cookies = first_party_for_cookies;
-  request_.referrer = referrer;
-  request_.frame_origin = frame_origin;
-  request_.main_frame_origin = main_frame_origin;
-  request_.headers = headers;
-  request_.load_flags = load_flags;
-  request_.origin_child_id = origin_child_id;
-  request_.resource_type = resource_type;
-  request_.request_context = request_context;
-  request_.appcache_host_id = appcache_host_id;
+  request_.method = request_info.method;
+  request_.url = request_info.url;
+  request_.first_party_for_cookies = request_info.first_party_for_cookies;
+  request_.referrer = request_info.referrer;
+  request_.frame_origin = request_info.frame_origin;
+  request_.main_frame_origin = request_info.main_frame_origin;
+  request_.headers = request_info.headers;
+  request_.load_flags = request_info.load_flags;
+  request_.origin_child_id = request_info.requestor_pid;
+  request_.resource_type = request_info.request_type;
+  request_.request_context = request_info.request_context;
+  request_.appcache_host_id = request_info.appcache_host_id;
   request_.host_renderer_id = host_renderer_id_;
   request_.host_render_view_id = host_render_view_id_;
 
@@ -577,30 +553,10 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
 }
 
 webkit_glue::ResourceLoaderBridge* ResourceDispatcher::CreateBridge(
-    const std::string& method,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    const GURL& referrer,
-    const std::string& frame_origin,
-    const std::string& main_frame_origin,
-    const std::string& headers,
-    int flags,
-    int origin_pid,
-    ResourceType::Type resource_type,
-    uint32 request_context,
-    int appcache_host_id,
-    int route_id,
+    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info,
     int host_renderer_id,
     int host_render_view_id) {
-  return new webkit_glue::IPCResourceLoaderBridge(this, method, url,
-                                                  first_party_for_cookies,
-                                                  referrer, frame_origin,
-                                                  main_frame_origin, headers,
-                                                  flags, origin_pid,
-                                                  resource_type,
-                                                  request_context,
-                                                  appcache_host_id,
-                                                  route_id,
+  return new webkit_glue::IPCResourceLoaderBridge(this, request_info,
                                                   host_renderer_id,
                                                   host_render_view_id);
 }

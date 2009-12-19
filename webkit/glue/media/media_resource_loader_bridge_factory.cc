@@ -36,19 +36,21 @@ ResourceLoaderBridge* MediaResourceLoaderBridgeFactory::CreateBridge(
         int load_flags,
         int64 first_byte_position,
         int64 last_byte_position) {
-  return webkit_glue::ResourceLoaderBridge::Create(
-      "GET",
-      url,
-      url,
-      referrer_,
-      frame_origin_,
-      main_frame_origin_,
-      GenerateHeaders(first_byte_position, last_byte_position),
-      load_flags,
-      origin_pid_,
-      ResourceType::MEDIA,
-      appcache_host_id_,
-      routing_id_);
+  webkit_glue::ResourceLoaderBridge::RequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = url;
+  request_info.first_party_for_cookies = url;
+  request_info.referrer = referrer_;
+  request_info.frame_origin = frame_origin_;
+  request_info.main_frame_origin = main_frame_origin_;
+  request_info.headers = GenerateHeaders(first_byte_position,
+                                         last_byte_position);
+  request_info.load_flags = load_flags;
+  request_info.requestor_pid = origin_pid_;
+  request_info.request_type = ResourceType::MEDIA;
+  request_info.appcache_host_id = appcache_host_id_;
+  request_info.routing_id = routing_id_;
+  return webkit_glue::ResourceLoaderBridge::Create(request_info);
 }
 
 // static

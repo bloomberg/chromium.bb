@@ -95,6 +95,15 @@ void ChildThread::RemoveRoute(int32 routing_id) {
   router_.RemoveRoute(routing_id);
 }
 
+webkit_glue::ResourceLoaderBridge* ChildThread::CreateBridge(
+    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info,
+    int host_renderer_id,
+    int host_render_view_id) {
+  return resource_dispatcher()->
+      CreateBridge(request_info, host_renderer_id, host_render_view_id);
+}
+
+
 void ChildThread::OnMessageReceived(const IPC::Message& msg) {
   // Resource responses are sent to the resource dispatcher.
   if (resource_dispatcher_->OnMessageReceived(msg))

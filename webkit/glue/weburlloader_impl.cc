@@ -338,19 +338,21 @@ void WebURLLoaderImpl::Context::Start(
 
   // TODO(brettw) this should take parameter encoding into account when
   // creating the GURLs.
-  bridge_.reset(ResourceLoaderBridge::Create(
-      method,
-      url,
-      request.firstPartyForCookies(),
-      referrer_url,
-      frame_origin,
-      main_frame_origin,
-      flattener.GetBuffer(),
-      load_flags,
-      requestor_pid,
-      FromTargetType(request.targetType()),
-      request.appCacheHostID(),
-      request.requestorID()));
+
+  webkit_glue::ResourceLoaderBridge::RequestInfo request_info;
+  request_info.method = method;
+  request_info.url = url;
+  request_info.first_party_for_cookies = request.firstPartyForCookies();
+  request_info.referrer = referrer_url;
+  request_info.frame_origin = frame_origin;
+  request_info.main_frame_origin = main_frame_origin;
+  request_info.headers = flattener.GetBuffer();
+  request_info.load_flags = load_flags;
+  request_info.requestor_pid = requestor_pid;
+  request_info.request_type = FromTargetType(request.targetType());
+  request_info.appcache_host_id = request.appCacheHostID();
+  request_info.routing_id = request.requestorID();
+  bridge_.reset(ResourceLoaderBridge::Create(request_info));
 
   if (!request.httpBody().isNull()) {
     // GET and HEAD requests shouldn't have http bodies.

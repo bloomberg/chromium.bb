@@ -35,19 +35,22 @@ class UnittestTestServer : public HTTPTestServer {
 
   virtual bool MakeGETRequest(const std::string& page_name) {
     GURL url(TestServerPage(page_name));
+    webkit_glue::ResourceLoaderBridge::RequestInfo request_info;
+    request_info.method = "GET";
+    request_info.url = url;
+    request_info.first_party_for_cookies = url;
+    request_info.referrer = GURL();  // No referrer.
+    request_info.frame_origin = "null";
+    request_info.main_frame_origin = "null";
+    request_info.headers = std::string();  // No extra headers.
+    request_info.load_flags = net::LOAD_NORMAL;
+    request_info.requestor_pid = 0;
+    request_info.request_type = ResourceType::SUB_RESOURCE;
+    request_info.request_context = 0;
+    request_info.appcache_host_id = appcache::kNoHostId;
+    request_info.routing_id = 0;
     scoped_ptr<ResourceLoaderBridge> loader(
-      ResourceLoaderBridge::Create("GET",
-                                   url,
-                                   url,            // first_party_for_cookies
-                                   GURL(),         // no referrer
-                                   std::string(),  // no extra headers
-                                   "null",         // frame_origin
-                                   "null",         // main_frame_origin
-                                   net::LOAD_NORMAL,
-                                   0,
-                                   ResourceType::SUB_RESOURCE,
-                                   appcache::kNoHostId,
-                                   0));
+        ResourceLoaderBridge::Create(request_info));
     EXPECT_TRUE(loader.get());
 
     ResourceLoaderBridge::SyncLoadResponse resp;
