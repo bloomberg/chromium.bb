@@ -9,6 +9,55 @@ import StringIO
 import gclient_utils
 from super_mox import SuperMoxTestBase
 
+
+class GclientUtilsUnittest(SuperMoxTestBase):
+  """General gclient_utils.py tests."""
+  def testMembersChanged(self):
+    members = [
+        'CheckCall', 'CheckCallError', 'Error', 'FileRead', 'FileWrite',
+        'FullUrlFromRelative', 'FullUrlFromRelative2', 'GetNamedNodeText',
+        'GetNodeNamedAttributeText', 'IsUsingGit', 'ParseXML',
+        'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',
+        'SubprocessCall', 'SubprocessCallAndFilter', 'errno', 'os', 're',
+        'stat', 'subprocess', 'sys', 'time', 'xml',
+    ]
+    # If this test fails, you should add the relevant test.
+    self.compareMembers(gclient_utils, members)
+
+
+class CheckCallTestCase(SuperMoxTestBase):
+  def testCheckCallSuccess(self):
+    command = ['boo', 'foo', 'bar']
+    process = self.mox.CreateMockAnything()
+    process.retcode = 0
+    gclient_utils.subprocess.Popen(
+        command, cwd=None,
+        stdout=gclient_utils.subprocess.PIPE,
+        shell=gclient_utils.sys.platform.startswith('win')).AndReturn(process)
+    process.communicate().AndReturn(['bleh'])
+    self.mox.ReplayAll()
+    gclient_utils.CheckCall(command)
+
+  def testCheckCallFailure(self):
+    command = ['boo', 'foo', 'bar']
+    process = self.mox.CreateMockAnything()
+    process.retcode = 42
+    gclient_utils.subprocess.Popen(
+        command, cwd=None,
+        stdout=gclient_utils.subprocess.PIPE,
+        shell=gclient_utils.sys.platform.startswith('win')).AndReturn(process)
+    process.communicate().AndReturn(['bleh'])
+    self.mox.ReplayAll()
+    try:
+      gclient_utils.CheckCall(command)
+      self.fail()
+    except gclient_utils.CheckCallError, e:
+      self.assertEqual(e.command, command)
+      self.assertEqual(e.cwd, None)
+      self.assertEqual(e.retcode, 42)
+      self.assertEqual(e.stdout, 'bleh')
+
+
 class SubprocessCallAndFilterTestCase(SuperMoxTestBase):
   def testSubprocessCallAndFilter(self):
     command = ['boo', 'foo', 'bar']

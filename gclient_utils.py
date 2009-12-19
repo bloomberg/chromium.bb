@@ -25,6 +25,30 @@ import xml.dom.minidom
 import xml.parsers.expat
 
 
+class CheckCallError(OSError):
+  """CheckCall() returned non-0."""
+  def __init__(self, command, cwd, retcode, stdout):
+    OSError.__init__(self, command, cwd, retcode, stdout)
+    self.command = command
+    self.cwd = cwd
+    self.retcode = retcode
+    self.stdout = stdout
+
+
+def CheckCall(command, cwd=None):
+  """Like subprocess.check_call() but returns stdout.
+
+  Works on python 2.4
+  """
+  process = subprocess.Popen(command, cwd=cwd,
+                             shell=sys.platform.startswith('win'),
+                             stdout=subprocess.PIPE)
+  output = process.communicate()[0]
+  if process.retcode:
+    raise CheckCallError(command, cwd, process.retcode, output)
+  return output
+
+
 def SplitUrlRevision(url):
   """Splits url and returns a two-tuple: url, rev"""
   if url.startswith('ssh:'):

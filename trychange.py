@@ -22,6 +22,7 @@ import urllib
 import breakpad
 
 import gcl
+import gclient_utils
 import scm
 import presubmit_support
 import upload
@@ -116,13 +117,6 @@ def GetTryServerSettings():
 
 def EscapeDot(name):
   return name.replace('.', '-')
-
-
-def RunCommand(command):
-  output, retcode = gcl.RunShellWithReturnCode(command)
-  if retcode:
-    raise NoTryServerAccess(' '.join(command) + '\nOuput:\n' + output)
-  return output
 
 
 class SCM(object):
@@ -302,48 +296,47 @@ def _SendChangeSVN(options):
   # Do an empty checkout.
   temp_dir = tempfile.mkdtemp()
   temp_file = tempfile.NamedTemporaryFile()
-  temp_file_name = temp_file.name
   try:
-    # Don't use  '--non-interactive', since we want it to prompt for
-    # crendentials if necessary.
-    command = ['svn', 'checkout', '--depth', 'empty', '-q',
-               options.svn_repo, temp_dir]
-    if options.email:
-      command += ['--username', options.email]
-    # Don't use RunCommand() since svn may prompt for information.
-    use_shell = sys.platform.startswith("win")
-    subprocess.Popen(command, shell=use_shell).communicate()
-
-    # TODO(maruel): Use a subdirectory per user?
-    current_time = str(datetime.datetime.now()).replace(':', '.')
-    file_name = (EscapeDot(options.user) + '.' + EscapeDot(options.name) +
-                 '.%s.diff' % current_time)
-    full_path = os.path.join(temp_dir, file_name)
-    full_url = options.svn_repo + '/' + file_name
-    file_found = False
     try:
-      RunCommand(['svn', 'ls', full_url])
-      file_found = True
-    except NoTryServerAccess:
-      pass
-    if file_found:
-      # The file already exists in the repo. Note that commiting a file is a
-      # no-op if the file's content (the diff) is not modified. This is why the
-      # file name contains the date and time.
-      RunCommand(['svn', 'update', full_path])
-      f = open(full_path, 'wb')
-      f.write(options.diff)
-      f.close()
-    else:
-      # Add the file to the repo
-      f = open(full_path, 'wb')
-      f.write(options.diff)
-      f.close()
-      RunCommand(["svn", "add", full_path])
-    temp_file.write(description)
-    temp_file.flush()
-    RunCommand(["svn", "commit", full_path, '--file',
-                temp_file_name])
+      command = ['svn', 'checkout', '--depth', 'empty', '-q',
+                 options.svn_repo, temp_dir]
+      if options.email:
+        command += ['--username', options.email]
+      gclient_utils.CheckCall(command)
+
+      # TODO(maruel): Use a subdirectory per user?
+      current_time = str(datetime.datetime.now()).replace(':', '.')
+      file_name = (EscapeDot(options.user) + '.' + EscapeDot(options.name) +
+                   '.%s.diff' % current_time)
+      full_path = os.path.join(temp_dir, file_name)
+      full_url = options.svn_repo + '/' + file_name
+      file_found = False
+      try:
+        gclient_utils.CheckCall(['svn', 'ls', full_url])
+        file_found = True
+      except gclient_utils.CheckCallError:
+        pass
+      if file_found:
+        # The file already exists in the repo. Note that commiting a file is a
+        # no-op if the file's content (the diff) is not modified. This is why
+        # the file name contains the date and time.
+        gclient_utils.CheckCall(['svn', 'update', full_path])
+        f = open(full_path, 'wb')
+        f.write(options.diff)
+        f.close()
+      else:
+        # Add the file to the repo
+        f = open(full_path, 'wb')
+        f.write(options.diff)
+        f.close()
+        gclient_utils.CheckCall(["svn", "add", full_path])
+      temp_file.write(description)
+      temp_file.flush()
+      gclient_utils.CheckCall(["svn", "commit", full_path, '--file',
+                               temp_file.name])
+    except gclient_utils.CheckCallError, e:
+      raise NoTryServerAccess(' '.join(e.command) + '\nOuput:\n' +
+                              e.stdout)
   finally:
     temp_file.close()
     shutil.rmtree(temp_dir, True)
@@ -371,8 +364,10 @@ def GuessVCS(options):
   # Git has a command to test if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
   try:
-    out, returncode = gcl.RunShellWithReturnCode(["git", "rev-parse",
-                                                  "--is-inside-work-tree"])
+    out, returncode = subprocess.Popen(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        shell=sys.platform.startswith('win'),
+        stdout=subprocess.PIPE).communicate()[0]
     if returncode == 0:
       logging.info("Guessed VCS = Git")
       return GIT(options)
@@ -520,7 +515,7 @@ def TryChange(argv,
     if options.url:
       options.diff = urllib.urlopen(options.url).read()
     elif options.diff:
-      options.diff = gcl.gclient_utils.FileRead(options.diff, 'rb')
+      options.diff = gclient_utils.FileRead(options.diff, 'rb')
     # Process the VCS in any case at least to retrieve the email address.
     try:
       options.scm = GuessVCS(options)
