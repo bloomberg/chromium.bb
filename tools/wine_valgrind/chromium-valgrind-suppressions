@@ -147,6 +147,15 @@
    fun:CompactLangDet::DetectLanguage
 }
 {
+   bug_20653a
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:sqlite3OsWrite
+   fun:pager_write_pagelist
+}
+# End of suppressions that need de-duping.
+{
    bug_30547
    Memcheck:Leak
    ...
