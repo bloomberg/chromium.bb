@@ -149,6 +149,7 @@ class PasswordsPageView : public OptionsPageView,
                           public ConfirmMessageBoxObserver {
  public:
   explicit PasswordsPageView(Profile* profile);
+  virtual ~PasswordsPageView();
 
   // views::TableViewObserverImplementation.
   virtual void OnSelectionChanged();

@@ -80,6 +80,12 @@ ExceptionsPageView::ExceptionsPageView(Profile* profile)
       table_view_(NULL) {
 }
 
+ExceptionsPageView::~ExceptionsPageView() {
+  // The model is going away, prevent the table from accessing it.
+  if (table_view_)
+    table_view_->SetModel(NULL);
+}
+
 void ExceptionsPageView::OnSelectionChanged() {
   bool has_selection = table_view_->SelectedRowCount() > 0;
   remove_button_.SetEnabled(has_selection);

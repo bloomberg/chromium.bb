@@ -39,6 +39,7 @@ class ExceptionsPageView : public OptionsPageView,
                            public PasswordsTableModelObserver {
  public:
   explicit ExceptionsPageView(Profile* profile);
+  virtual ~ExceptionsPageView();
 
   // views::TableViewObserverImplementation.
   virtual void OnSelectionChanged();

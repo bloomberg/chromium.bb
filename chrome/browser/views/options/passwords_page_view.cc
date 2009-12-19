@@ -188,6 +188,12 @@ PasswordsPageView::PasswordsPageView(Profile* profile)
       current_selected_password_(NULL) {
 }
 
+PasswordsPageView::~PasswordsPageView() {
+  // The model is going away, prevent the table from accessing it.
+  if (table_view_)
+    table_view_->SetModel(NULL);
+}
+
 void PasswordsPageView::OnSelectionChanged() {
   bool has_selection = table_view_->SelectedRowCount() > 0;
   remove_button_.SetEnabled(has_selection);
