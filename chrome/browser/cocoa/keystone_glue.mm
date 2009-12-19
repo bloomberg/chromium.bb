@@ -32,6 +32,15 @@ typedef enum {
   kKSRegistrationDontKnowWhatKindOfTicket,
 } KSRegistrationTicketType;
 
+NSString* KSRegistrationVersionKey = @"Version";
+NSString* KSRegistrationExistenceCheckerTypeKey = @"ExistenceCheckerType";
+NSString* KSRegistrationExistenceCheckerStringKey = @"ExistenceCheckerString";
+NSString* KSRegistrationServerURLStringKey = @"URLString";
+NSString* KSRegistrationPreserveTrustedTesterTokenKey = @"PreserveTTT";
+NSString* KSRegistrationTagKey = @"Tag";
+NSString* KSRegistrationTagPathKey = @"TagPath";
+NSString* KSRegistrationTagKeyKey = @"TagKey";
+
 NSString *KSRegistrationDidCompleteNotification =
     @"KSRegistrationDidCompleteNotification";
 NSString *KSRegistrationPromotionDidCompleteNotification =
@@ -40,7 +49,6 @@ NSString *KSRegistrationPromotionDidCompleteNotification =
 NSString *KSRegistrationCheckForUpdateNotification =
     @"KSRegistrationCheckForUpdateNotification";
 NSString *KSRegistrationStatusKey = @"Status";
-NSString *KSRegistrationVersionKey = @"Version";
 NSString *KSRegistrationUpdateCheckErrorKey = @"Error";
 
 NSString *KSRegistrationStartUpdateNotification =
@@ -57,20 +65,10 @@ NSString *KSRegistrationRemoveExistingTag = @"";
 
 + (id)registrationWithProductID:(NSString*)productID;
 
-- (BOOL)registerWithVersion:(NSString*)version
-       existenceCheckerType:(KSExistenceCheckerType)xctype
-     existenceCheckerString:(NSString*)xc
-            serverURLString:(NSString*)serverURLString
-            preserveTTToken:(BOOL)preserveToken
-                        tag:(NSString*)tag;
+- (BOOL)registerWithParameters:(NSDictionary*)args;
 
-- (BOOL)promoteWithVersion:(NSString*)version
-      existenceCheckerType:(KSExistenceCheckerType)xctype
-    existenceCheckerString:(NSString*)xc
-           serverURLString:(NSString*)serverURLString
-           preserveTTToken:(BOOL)preserveToken
-                       tag:(NSString*)tag
-             authorization:(AuthorizationRef)authorization;
+- (BOOL)promoteWithParameters:(NSDictionary*)args
+                authorization:(AuthorizationRef)authorization;
 
 - (void)setActive;
 - (void)checkForUpdate;
@@ -80,6 +78,14 @@ NSString *KSRegistrationRemoveExistingTag = @"";
 @end  // @interface KSRegistration
 
 @interface KeystoneGlue(Private)
+
+// Returns the path to the application's Info.plist file.  This returns the
+// outer application bundle's Info.plist, not the framework's Info.plist.
+- (NSString*)appInfoPlistPath;
+
+// Returns a dictionary containing parameters to be used for a KSRegistration
+// -registerWithParameters: or -promoteWithParameters:authorization: call.
+- (NSDictionary*)keystoneParameters;
 
 // Called when Keystone registration completes.
 - (void)registrationComplete:(NSNotification*)notification;
@@ -144,6 +150,12 @@ const NSString* const kAutoupdateStatusNotification =
     @"AutoupdateStatusNotification";
 const NSString* const kAutoupdateStatusStatus = @"status";
 const NSString* const kAutoupdateStatusVersion = @"version";
+
+namespace {
+
+const NSString* const kChannelKey = @"KSChannelID";
+
+}  // namespace
 
 @implementation KeystoneGlue
 
@@ -233,7 +245,7 @@ const NSString* const kAutoupdateStatusVersion = @"version";
     return;
   }
 
-  NSString* channel = [infoDictionary objectForKey:@"KSChannelID"];
+  NSString* channel = [infoDictionary objectForKey:kChannelKey];
   // The stable channel has no tag.  If updating to stable, remove the
   // dev and beta tags since we've been "promoted".
   if (channel == nil)
@@ -268,15 +280,35 @@ const NSString* const kAutoupdateStatusVersion = @"version";
   return YES;
 }
 
+- (NSString*)appInfoPlistPath {
+  // NSBundle ought to have a way to access this path directly, but it
+  // doesn't.
+  return [[appPath_ stringByAppendingPathComponent:@"Contents"]
+             stringByAppendingPathComponent:@"Info.plist"];
+}
+
+- (NSDictionary*)keystoneParameters {
+  NSNumber* xcType = [NSNumber numberWithInt:kKSPathExistenceChecker];
+  NSNumber* preserveTTToken = [NSNumber numberWithBool:YES];
+  NSString* tagPath = [self appInfoPlistPath];
+
+  return [NSDictionary dictionaryWithObjectsAndKeys:
+             version_, KSRegistrationVersionKey,
+             xcType, KSRegistrationExistenceCheckerTypeKey,
+             appPath_, KSRegistrationExistenceCheckerStringKey,
+             url_, KSRegistrationServerURLStringKey,
+             preserveTTToken, KSRegistrationPreserveTrustedTesterTokenKey,
+             channel_, KSRegistrationTagKey,
+             tagPath, KSRegistrationTagPathKey,
+             kChannelKey, KSRegistrationTagKeyKey,
+             nil];
+}
+
 - (void)registerWithKeystone {
   [self updateStatus:kAutoupdateRegistering version:nil];
 
-  if (![registration_ registerWithVersion:version_
-                     existenceCheckerType:kKSPathExistenceChecker
-                   existenceCheckerString:appPath_
-                          serverURLString:url_
-                          preserveTTToken:YES
-                                      tag:channel_]) {
+  NSDictionary* parameters = [self keystoneParameters];
+  if (![registration_ registerWithParameters:parameters]) {
     [self updateStatus:kAutoupdateRegisterFailed version:nil];
     return;
   }
@@ -398,9 +430,7 @@ const NSString* const kAutoupdateStatusVersion = @"version";
 - (void)determineUpdateStatus {
   DCHECK(![NSThread isMainThread]);
 
-  NSString* appInfoPlistPath =
-      [[appPath_ stringByAppendingPathComponent:@"Contents"]
-          stringByAppendingPathComponent:@"Info.plist"];
+  NSString* appInfoPlistPath = [self appInfoPlistPath];
   NSDictionary* infoPlist =
       [NSDictionary dictionaryWithContentsOfFile:appInfoPlistPath];
   NSString* version = [infoPlist objectForKey:@"CFBundleShortVersionString"];
@@ -609,8 +639,8 @@ const NSString* const kAutoupdateStatusVersion = @"version";
   // causes http://b/2289908, which this workaround addresses.
   //
   // This is run synchronously, which isn't optimal, but
-  // -[KSRegistration promoteWithVersion:...] is currently synchronous too,
-  // and this operation needs to happen before that one.
+  // -[KSRegistration promoteWithParameters:authorization:] is currently
+  // synchronous too, and this operation needs to happen before that one.
   //
   // TODO(mark): Make asynchronous.  That only makes sense if the promotion
   // operation itself is asynchronous too.  http://b/2290009.  Hopefully,
@@ -647,13 +677,9 @@ const NSString* const kAutoupdateStatusVersion = @"version";
   // call.
   authorization_.swap(authorization);
 
-  if (![registration_ promoteWithVersion:version_
-                    existenceCheckerType:kKSPathExistenceChecker
-                  existenceCheckerString:appPath_
-                         serverURLString:url_
-                         preserveTTToken:YES
-                                     tag:channel_
-                           authorization:authorization_]) {
+  NSDictionary* parameters = [self keystoneParameters];
+  if (![registration_ promoteWithParameters:parameters
+                              authorization:authorization_]) {
     [self updateStatus:kAutoupdatePromoteFailed version:nil];
     authorization_.reset();
     return;

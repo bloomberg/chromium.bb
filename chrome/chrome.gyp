@@ -1206,13 +1206,15 @@
             {
               # Modify the Info.plist as needed.  The script explains why this
               # is needed.  This is also done in the helper_app and chrome_dll
-              # targets.  Use -b0 and -k0 to not include any Breakpad or
-              # Keystone information; that all goes into the framework's
-              # Info.plist.  Use -s1 to include Subversion information.
+              # targets.  Use -b0 to not include any Breakpad information; that
+              # all goes into the framework's Info.plist.  Keystone information
+              # is included if Keystone is enabled because the ticket will
+              # reference this Info.plist to determine the tag of the installed
+              # product.  Use -s1 to include Subversion information.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(tweak_info_plist_path)',
                          '-b0',
-                         '-k0',
+                         '-k<(mac_keystone)',
                          '-s1',
                          '<(branding)',
                          '<(mac_bundle_id)'],

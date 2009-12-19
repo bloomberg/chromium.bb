@@ -123,6 +123,79 @@ function ensure_writable_symlink() {
   return 0
 }
 
+# Prints the version of ksadmin, as reported by ksadmin --ksadmin-version, to
+# stdout.  This function operates with "static" variables: it will only check
+# the ksadmin version once per script run.  If ksadmin is old enough to not
+# support --ksadmin-version, or another error occurs, this function prints an
+# empty string.
+G_CHECKED_KSADMIN_VERSION=
+G_KSADMIN_VERSION=
+function ksadmin_version() {
+  if [ -z "${G_CHECKED_KSADMIN_VERSION}" ] ; then
+    G_CHECKED_KSADMIN_VERSION=1
+    G_KSADMIN_VERSION=$(ksadmin --ksadmin-version || true)
+  fi
+  echo "${G_KSADMIN_VERSION}"
+  return 0
+}
+
+# Compares the installed ksadmin version against a supplied version number,
+# and returns 0 (true) if the number to check is the same as or newer than the
+# installed Keystone.  Returns 1 (false) if the installed Keystone version
+# number cannot be determined or if the number to check is less than the
+# installed Keystone.  The check argument should be a string of the form
+# "major.minor.micro.build".
+function is_ksadmin_version_ge() {
+  CHECK_VERSION=${1}
+  KSADMIN_VERSION=$(ksadmin_version)
+  if [ -n "${KSADMIN_VERSION}" ] ; then
+    VER_RE='^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$'
+
+    KSADMIN_VERSION_MAJOR=$(sed -Ene "s/${VER_RE}/\1/p" <<< ${KSADMIN_VERSION})
+    KSADMIN_VERSION_MINOR=$(sed -Ene "s/${VER_RE}/\2/p" <<< ${KSADMIN_VERSION})
+    KSADMIN_VERSION_MICRO=$(sed -Ene "s/${VER_RE}/\3/p" <<< ${KSADMIN_VERSION})
+    KSADMIN_VERSION_BUILD=$(sed -Ene "s/${VER_RE}/\4/p" <<< ${KSADMIN_VERSION})
+
+    CHECK_VERSION_MAJOR=$(sed -Ene "s/${VER_RE}/\1/p" <<< ${CHECK_VERSION})
+    CHECK_VERSION_MINOR=$(sed -Ene "s/${VER_RE}/\2/p" <<< ${CHECK_VERSION})
+    CHECK_VERSION_MICRO=$(sed -Ene "s/${VER_RE}/\3/p" <<< ${CHECK_VERSION})
+    CHECK_VERSION_BUILD=$(sed -Ene "s/${VER_RE}/\4/p" <<< ${CHECK_VERSION})
+
+    if [ ${KSADMIN_VERSION_MAJOR} -gt ${CHECK_VERSION_MAJOR} ] ||
+       ([ ${KSADMIN_VERSION_MAJOR} -eq ${CHECK_VERSION_MAJOR} ] && (
+           [ ${KSADMIN_VERSION_MINOR} -gt ${CHECK_VERSION_MINOR} ] ||
+           ([ ${KSADMIN_VERSION_MINOR} -eq ${CHECK_VERSION_MINOR} ] && (
+               [ ${KSADMIN_VERSION_MICRO} -gt ${CHECK_VERSION_MICRO} ] ||
+               ([ ${KSADMIN_VERSION_MICRO} -eq ${CHECK_VERSION_MICRO} ] &&
+                [ ${KSADMIN_VERSION_BUILD} -ge ${CHECK_VERSION_BUILD} ])
+           ))
+       )) ; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+# Returns 0 (true) if ksadmin supports --tag.
+function ksadmin_supports_tag() {
+  KSADMIN_VERSION=$(ksadmin_version)
+  if [ -n "${KSADMIN_VERSION}" ] ; then
+    # A ksadmin that recognizes --ksadmin-version and provides a version
+    # number is new enough to recognize --tag.
+    return 0
+  fi
+  return 1
+}
+
+# Returns 0 (true) if ksadmin supports --tag-path and --tag-key.
+function ksadmin_supports_tagpath_tagkey() {
+  # --tag-path and --tag-key were introduced in Keystone 1.0.7.1306.
+  is_ksadmin_version_ge 1.0.7.1306
+  # The return value of is_ksadmin_version_ge is used as this function's
+  # return value.
+}
+
 # The argument should be the disk image path.  Make sure it exists.
 if [ $# -lt 1 ] || [ ! -d "${1}" ]; then
   exit 2
@@ -325,7 +398,9 @@ NEW_VERSION_KS=$(defaults read "${NEW_KS_PLIST}" "${KS_VERSION_KEY}" || exit 9)
 URL=$(defaults read "${NEW_KS_PLIST}" KSUpdateURL || exit 9)
 # The channel ID is optional.  Suppress stderr to prevent Keystone from seeing
 # possible error output.
-CHANNEL_ID=$(defaults read "${NEW_KS_PLIST}" KSChannelID 2>/dev/null || true)
+CHANNEL_ID_KEY=KSChannelID
+CHANNEL_ID=$(defaults read "${NEW_KS_PLIST}" "${CHANNEL_ID_KEY}" 2>/dev/null ||
+             true)
 
 # Make sure that the update was successful by comparing the version found in
 # the update with the version now on disk.
@@ -337,10 +412,25 @@ fi
 # lsregister's exit codes shouldn't be confused with this script's own.
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister "${DEST}" || true
 
+# Call ksadmin_version once to prime the global state.  This is needed because
+# subsequent calls to ksadmin_version that occur in $(...) expansions will not
+# affect the global state (although they can read from the already-initialized
+# global state) and thus will cause a new ksadmin --ksadmin-version process to
+# run for each check unless the globals have been properly initialized
+# beforehand.
+ksadmin_version >& /dev/null || true
+
 # Notify Keystone.
-KSADMIN_VERSION=$(ksadmin --ksadmin-version || true)
-if [ -n "${KSADMIN_VERSION}" ] ; then
-  # If ksadmin recognizes --ksadmin-version, it will recognize --tag.
+if ksadmin_supports_tagpath_tagkey ; then
+  ksadmin --register \
+          -P "${PRODUCT_ID}" \
+          --version "${NEW_VERSION_KS}" \
+          --xcpath "${DEST}" \
+          --url "${URL}" \
+          --tag "${CHANNEL_ID}" \
+          --tag-path "${DEST}/Contents/Info.plist" \
+          --tag-key "${CHANNEL_ID_KEY}" || exit 11
+elif ksadmin_supports_tag ; then
   ksadmin --register \
           -P "${PRODUCT_ID}" \
           --version "${NEW_VERSION_KS}" \
@@ -348,8 +438,6 @@ if [ -n "${KSADMIN_VERSION}" ] ; then
           --url "${URL}" \
           --tag "${CHANNEL_ID}" || exit 11
 else
-  # Older versions of ksadmin don't recognize --tag.  The application will
-  # set the tag when it runs.
   ksadmin --register \
           -P "${PRODUCT_ID}" \
           --version "${NEW_VERSION_KS}" \
