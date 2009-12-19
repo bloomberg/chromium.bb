@@ -56,6 +56,18 @@
    fun:NSSDecryptor::Init
 }
 {
+   # cannot reproduce this one locally, not sure why this is happening in libstdc++.
+   ignore_error_in_std_locale
+   Memcheck:Addr4
+   ...
+   fun:std::locale::~locale
+   ...
+   fun:testing::Message::~Message
+   fun:testing::AssertionResult::operator<<<enum net::LoadLog::EventPhase>
+   fun:net::LogContains
+   fun:SSLClientSocketTest_ConnectExpired_Test::TestBody
+}
+{
    wine_bug_20692_a
    Memcheck:Leak
    ...
@@ -109,7 +121,7 @@
 }
 {
    # Same leak exists in src/tools/valgrind/memcheck/suppressions.txt
-   # with a manged stack signature.
+   # with a mangled stack signature.
    intentional_ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test_leak
    Memcheck:Leak
    ...
@@ -157,4 +169,24 @@
    fun:AffixMgr::parse_affix
    ...
    fun:SpellCheck::InitializeHunspell
+}
+{
+   # TODO(thestig) investigate why this is happening
+   todo_net_unittest1
+   Memcheck:Leak
+   ...
+   fun:net::TCPClientSocketWin::Read
+   fun:net::HttpStreamParser::DoReadHeaders
+   ...
+   fun:net::HttpNetworkTransaction::OnIOComplete
+}
+{
+   # TODO(thestig) investigate why this is happening
+   todo_net_unittest2
+   Memcheck:Leak
+   ...
+   fun:net::TCPClientSocketWin::Read
+   fun:net::FtpNetworkTransaction::DoCtrlRead
+   ...
+   fun:URLRequestTestFTP_FLAKY_FTPCacheLoginBoxCredentials_Test::TestBody
 }
