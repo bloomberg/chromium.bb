@@ -500,7 +500,7 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor) {
     case ResultCodes::NORMAL_EXIT:
       outcome = kToastExpTriesOkGroup;
       break;
-    case ResultCodes::NORMAL_EXIT_EXP1:
+    case ResultCodes::NORMAL_EXIT_CANCEL:
       outcome = kToastExpCancelGroup;
       break;
     case ResultCodes::NORMAL_EXIT_EXP2:

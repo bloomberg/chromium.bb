@@ -88,24 +88,31 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
                           LOAD_WITH_ALTERED_SEARCH_PATH);
 }
 
-// record did_run "dr" in client state.
-bool RecordDidRun(const wchar_t* guid) {
+// Set did_run "dr" in omaha's client state for this product.
+bool SetDidRunState(const wchar_t* guid, const wchar_t* value) {
   std::wstring key_path(google_update::kRegPathClientState);
   key_path.append(L"\\").append(guid);
   HKEY reg_key;
   if (::RegCreateKeyExW(HKEY_CURRENT_USER, key_path.c_str(), 0, NULL,
                         REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL,
                         &reg_key, NULL) == ERROR_SUCCESS) {
-    const wchar_t kVal[] = L"1";
     ::RegSetValueExW(reg_key, google_update::kRegDidRunField, 0, REG_SZ,
-                     reinterpret_cast<const BYTE *>(kVal), sizeof(kVal));
+                     reinterpret_cast<const BYTE *>(value), ::lstrlenW(value));
     ::RegCloseKey(reg_key);
     return true;
   }
   return false;
 }
+
+bool RecordDidRun(const wchar_t* guid) {
+  return SetDidRunState(guid, L"1");
 }
 
+bool ClearDidRun(const wchar_t* guid) {
+  return SetDidRunState(guid, L"0");
+}
+
+}
 //=============================================================================
 
 MainDllLoader::MainDllLoader() : dll_(NULL) {
@@ -159,7 +166,6 @@ int MainDllLoader::Launch(HINSTANCE instance,
                             version.c_str());
 
   InitCrashReporterWithDllPath(file);
-
   OnBeforeLaunch(version);
 
   DLL_MAIN entry_point =
@@ -167,7 +173,8 @@ int MainDllLoader::Launch(HINSTANCE instance,
   if (!entry_point)
     return ResultCodes::BAD_PROCESS_TYPE;
 
-  return entry_point(instance, sbox_info, ::GetCommandLineW());
+  int rc = entry_point(instance, sbox_info, ::GetCommandLineW());
+  return OnBeforeExit(rc);
 }
 
 //=============================================================================
@@ -184,6 +191,17 @@ class ChromeDllLoader : public MainDllLoader {
   virtual void OnBeforeLaunch(const std::wstring& version) {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     RecordDidRun(dist->GetAppGuid().c_str());
+  }
+
+  virtual int OnBeforeExit(int return_code) {
+    // NORMAL_EXIT_CANCEL is used for experiments when the user cancels
+    // so we need to reset the did_run signal so omaha does not count
+    // this run as active usage.
+    if (ResultCodes::NORMAL_EXIT_CANCEL == return_code) {
+      BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+      ClearDidRun(dist->GetAppGuid().c_str());
+    }
+    return return_code;
   }
 };
 

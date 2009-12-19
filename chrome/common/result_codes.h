@@ -49,6 +49,11 @@ class ResultCodes {
     NORMAL_EXIT_EXP4,           // used for experiments and the actual meaning
                                 // depends on the experiment.
 
+    NORMAL_EXIT_CANCEL,         // For experiments this return code means that
+                                // the user canceled causes the did_run "dr"
+                                // signal to be reset so this chrome run does
+                                // not count as active chrome usage.
+
     PROFILE_IN_USE,             // The profile was in use on another host.
 
     EXIT_LAST_CODE              // Last return code (keep it last).
