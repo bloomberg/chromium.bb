@@ -77,6 +77,10 @@
 - (void)updateRuler {
 }
 
+// Let the |AutocompleteTextField| handle drops.
+- (void)updateDragTypeRegistration {
+}
+
 - (NSMenu*)menuForEvent:(NSEvent*)event {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@"TITLE"] autorelease];
   [menu addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CUT)

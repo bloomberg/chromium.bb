@@ -25,9 +25,11 @@
 #import "chrome/browser/cocoa/menu_button.h"
 #import "chrome/browser/cocoa/menu_controller.h"
 #import "chrome/browser/cocoa/toolbar_view.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
@@ -680,4 +682,37 @@ class PrefObserverBridge : public NotificationObserver {
   stack_bounds.Inset(kLocationStackEdgeWidth, 0);
   return stack_bounds;
 }
+
+// (URLDropTargetController protocol)
+- (void)dropURLs:(NSArray*)urls inView:(NSView*)view at:(NSPoint)point {
+  // TODO(viettrungluu): This code is more or less copied from the code in
+  // |TabStripController|. I'll refactor this soon to make it common and expand
+  // its capabilities (e.g., allow text DnD).
+  if ([urls count] < 1) {
+    NOTREACHED();
+    return;
+  }
+
+  //TODO(viettrungluu): dropping multiple URLs?
+  if ([urls count] > 1)
+    NOTIMPLEMENTED();
+
+  // Get the first URL and fix it up.
+  GURL url(URLFixerUpper::FixupURL(
+      base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string()));
+
+  browser_->GetSelectedTabContents()->OpenURL(url, GURL(), CURRENT_TAB,
+                                              PageTransition::TYPED);
+}
+
+// (URLDropTargetController protocol)
+- (void)indicateDropURLsInView:(NSView*)view at:(NSPoint)point {
+  // Do nothing.
+}
+
+// (URLDropTargetController protocol)
+- (void)hideDropURLsIndicatorInView:(NSView*)view {
+  // Do nothing.
+}
+
 @end
