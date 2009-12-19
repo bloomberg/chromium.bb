@@ -430,6 +430,14 @@
   fun:inflate
   ...
 }
+{
+  # http://www.zlib.net/zlib_faq.html#faq36
+  zlib_conditional_jump_performance_spdy
+  ...
+  fun:inflate
+  fun:_ZN4flip10FlipFramer15DecompressFrameEPKNS_9FlipFrameE
+  ...
+}
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
