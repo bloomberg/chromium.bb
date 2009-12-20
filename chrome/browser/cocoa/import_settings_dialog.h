@@ -25,10 +25,12 @@ class Profile;
   // The following are all bound via the properties below.
   BOOL importHistory_;
   BOOL importFavorites_;
+  BOOL importCookies_;
   BOOL importPasswords_;
   BOOL importSearchEngines_;
   BOOL historyAvailable_;
   BOOL favoritesAvailable_;
+  BOOL cookiesAvailable_;
   BOOL passwordsAvailable_;
   BOOL searchEnginesAvailable_;
 }
@@ -61,11 +63,13 @@ class Profile;
 // Bindings for the value of the import checkboxes.
 @property(assign, nonatomic) BOOL importHistory;
 @property(assign, nonatomic) BOOL importFavorites;
+@property(assign, nonatomic) BOOL importCookies;
 @property(assign, nonatomic) BOOL importPasswords;
 @property(assign, nonatomic) BOOL importSearchEngines;
 // Bindings for enabling/disabling the checkboxes.
 @property(assign, readonly, nonatomic) BOOL historyAvailable;
 @property(assign, readonly, nonatomic) BOOL favoritesAvailable;
+@property(assign, readonly, nonatomic) BOOL cookiesAvailable;
 @property(assign, readonly, nonatomic) BOOL passwordsAvailable;
 @property(assign, readonly, nonatomic) BOOL searchEnginesAvailable;
 

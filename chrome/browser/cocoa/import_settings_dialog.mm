@@ -13,6 +13,7 @@
 
 @property(assign, readwrite, nonatomic) BOOL historyAvailable;
 @property(assign, readwrite, nonatomic) BOOL favoritesAvailable;
+@property(assign, readwrite, nonatomic) BOOL cookiesAvailable;
 @property(assign, readwrite, nonatomic) BOOL passwordsAvailable;
 @property(assign, readwrite, nonatomic) BOOL searchEnginesAvailable;
 
@@ -63,17 +64,19 @@
 @synthesize sourceBrowserIndex = sourceBrowserIndex_;
 @synthesize importHistory = importHistory_;
 @synthesize importFavorites = importFavorites_;
+@synthesize importCookies = importCookies_;
 @synthesize importPasswords = importPasswords_;
 @synthesize importSearchEngines = importSearchEngines_;
 @synthesize historyAvailable = historyAvailable_;
 @synthesize favoritesAvailable = favoritesAvailable_;
+@synthesize cookiesAvailable = cookiesAvailable_;
 @synthesize passwordsAvailable = passwordsAvailable_;
 @synthesize searchEnginesAvailable = searchEnginesAvailable_;
 
 // Set bindings dependencies for importSomething property.
 + (NSSet*)keyPathsForValuesAffectingImportSomething {
   return [NSSet setWithObjects:@"importHistory", @"importFavorites",
-          @"importPasswords", @"importSearchEngines", nil];
+          @"importCookies", @"importPasswords", @"importSearchEngines", nil];
 }
 
 - (id)initWithProfile:(Profile*)profile
@@ -199,6 +202,8 @@
   [self setImportHistory:[self historyAvailable]];
   [self setFavoritesAvailable:(items & FAVORITES) ? YES : NO];
   [self setImportFavorites:[self favoritesAvailable]];
+  [self setCookiesAvailable:(items & COOKIES) ? YES : NO];
+  [self setImportCookies:[self cookiesAvailable]];
   [self setPasswordsAvailable:(items & PASSWORDS) ? YES : NO];
   [self setImportPasswords:[self passwordsAvailable]];
   [self setSearchEnginesAvailable:(items & SEARCH_ENGINES) ? YES : NO];
@@ -209,6 +214,7 @@
   uint16 servicesToImport = 0;
   if ([self importHistory]) servicesToImport |= HISTORY;
   if ([self importFavorites]) servicesToImport |= FAVORITES;
+  if ([self importCookies]) servicesToImport |= COOKIES;
   if ([self importPasswords]) servicesToImport |= PASSWORDS;
   if ([self importSearchEngines]) servicesToImport |= SEARCH_ENGINES;
   return servicesToImport;
@@ -219,7 +225,8 @@
 // and bound to the OK button's enable property.
 - (BOOL)importSomething {
   return [self importHistory] || [self importFavorites] ||
-      [self importPasswords] || [self importSearchEngines];
+      [self importCookies] || [self importPasswords] ||
+      [self importSearchEngines];
 }
 
 @end
