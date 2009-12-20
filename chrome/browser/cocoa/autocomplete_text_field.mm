@@ -6,6 +6,9 @@
 
 #include "base/logging.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/toolbar_controller.h"
+#import "chrome/browser/cocoa/url_drop_target.h"
 
 @implementation AutocompleteTextField
 
@@ -22,6 +25,7 @@
 
 - (void)awakeFromNib {
   DCHECK([[self cell] isKindOfClass:[AutocompleteTextFieldCell class]]);
+  dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
 }
 
 - (void)flagsChanged:(NSEvent*)theEvent {
@@ -250,6 +254,38 @@
                name:NSWindowDidResignKeyNotification
              object:[self window]];
   }
+}
+
+// (URLDropTarget protocol)
+- (id<URLDropTargetController>)urlDropController {
+  BrowserWindowController* windowController = [[self window] windowController];
+  DCHECK([windowController isKindOfClass:[BrowserWindowController class]]);
+  return [windowController toolbarController];
+}
+
+// (URLDropTarget protocol)
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
+  // Make ourself the first responder, which will select the text to indicate
+  // that our contents would be replaced by a drop.
+  // TODO(viettrungluu): crbug.com/30809 -- this is a hack since it steals focus
+  // and doesn't return it.
+  [[self window] makeFirstResponder:self];
+  return [dropHandler_ draggingEntered:sender];
+}
+
+// (URLDropTarget protocol)
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
+  return [dropHandler_ draggingUpdated:sender];
+}
+
+// (URLDropTarget protocol)
+- (void)draggingExited:(id<NSDraggingInfo>)sender {
+  return [dropHandler_ draggingExited:sender];
+}
+
+// (URLDropTarget protocol)
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
+  return [dropHandler_ performDragOperation:sender];
 }
 
 @end
