@@ -35,15 +35,19 @@ class CheckCallError(OSError):
     self.stdout = stdout
 
 
-def CheckCall(command, cwd=None):
+def CheckCall(command, cwd=None, print_error=True):
   """Like subprocess.check_call() but returns stdout.
 
   Works on python 2.4
   """
   try:
+    stderr = None
+    if not print_error:
+      stderr = subprocess.PIPE
     process = subprocess.Popen(command, cwd=cwd,
                                shell=sys.platform.startswith('win'),
-                               stdout=subprocess.PIPE)
+                               stdout=subprocess.PIPE,
+                               stderr=stderr)
     output = process.communicate()[0]
   except OSError, e:
     raise CheckCallError(command, cwd, errno, None)

@@ -881,6 +881,18 @@ def TryChange(change_info, args, swallow_exception):
     return path
 
   trychange_args = []
+  settings = {
+    'port': GetCodeReviewSetting('TRYSERVER_HTTP_PORT'),
+    'host': GetCodeReviewSetting('TRYSERVER_HTTP_HOST'),
+    'svn_repo': GetCodeReviewSetting('TRYSERVER_SVN_URL'),
+    'project': GetCodeReviewSetting('TRYSERVER_PROJECT'),
+    'root': GetCodeReviewSetting('TRYSERVER_ROOT'),
+    'patchlevel': GetCodeReviewSetting('TRYSERVER_PATCHLEVEL'),
+  }
+  for (k, v) in settings.iteritems():
+    if v:
+      trychange_args.extend(['--' + k, v])
+
   gclient_root = FindGclientRootDir(GetRepositoryRoot())
   if gclient_root:
     trychange_args.extend(['--root', PathDifference(gclient_root,

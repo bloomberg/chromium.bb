@@ -19,12 +19,13 @@ import sys
 import tempfile
 import urllib
 
-import breakpad
+try:
+  import breakpad
+except ImportError:
+  pass
 
-import gcl
 import gclient_utils
 import scm
-import presubmit_support
 
 __version__ = '1.2'
 
@@ -63,38 +64,6 @@ class InvalidScript(Exception):
 class NoTryServerAccess(Exception):
   def __str__(self):
     return self.args[0] + '\n' + HELP_STRING
-
-
-def GetTryServerSettings():
-  """Grab try server settings local to the repository."""
-  def _SafeResolve(host):
-    try:
-      return socket.getaddrinfo(host, None)
-    except socket.gaierror:
-      return None
-
-  settings = {}
-  settings['http_port'] = gcl.GetCodeReviewSetting('TRYSERVER_HTTP_PORT')
-  settings['http_host'] = gcl.GetCodeReviewSetting('TRYSERVER_HTTP_HOST')
-  settings['svn_repo'] = gcl.GetCodeReviewSetting('TRYSERVER_SVN_URL')
-  settings['default_project'] = gcl.GetCodeReviewSetting('TRYSERVER_PROJECT')
-  settings['default_root'] = gcl.GetCodeReviewSetting('TRYSERVER_ROOT')
-
-  # Pick a patchlevel, default to 0.
-  default_patchlevel = gcl.GetCodeReviewSetting('TRYSERVER_PATCHLEVEL')
-  if default_patchlevel:
-    default_patchlevel = int(default_patchlevel)
-  else:
-    default_patchlevel = 0
-  settings['default_patchlevel'] = default_patchlevel
-
-  # Use http is the http_host name resolve, fallback to svn otherwise.
-  if (settings['http_port'] and settings['http_host'] and
-      _SafeResolve(settings['http_host'])):
-    settings['default_transport'] = 'http'
-  elif settings.get('svn_repo'):
-    settings['default_transport'] = 'svn'
-  return settings
 
 
 def EscapeDot(name):
@@ -143,6 +112,17 @@ class SVN(SCM):
     """Return the path of the repository root."""
     return self.checkout_root
 
+  def GetBots(self):
+    try:
+      import gcl
+      return gcl.GetCachedFile('PRESUBMIT.py', use_root=True)
+    except ImportError:
+      try:
+        return gclient_utils.FileRead(os.path.join(self.checkout_root,
+                                                   'PRESUBMIT.py'))
+      except OSError:
+        return None
+
 
 class GIT(SCM):
   """Gathers the options and diff for a git checkout."""
@@ -183,6 +163,13 @@ class GIT(SCM):
   def GetLocalRoot(self):
     """Return the path of the repository root."""
     return self.checkout_root
+
+  def GetBots(self):
+    try:
+      return gclient_utils.FileRead(os.path.join(self.checkout_root,
+                                                 'PRESUBMIT.py'))
+    except OSError:
+      return None
 
 
 def _ParseSendChangeOptions(options):
@@ -270,7 +257,7 @@ def _SendChangeSVN(options):
       command = ['svn', 'checkout', '--depth', 'empty', '-q',
                  options.svn_repo, temp_dir]
       if options.email:
-        command += ['--username', options.email]
+        command.extend(['--username', options.email])
       gclient_utils.CheckCall(command)
 
       # TODO(maruel): Use a subdirectory per user?
@@ -281,7 +268,7 @@ def _SendChangeSVN(options):
       full_url = options.svn_repo + '/' + file_name
       file_found = False
       try:
-        gclient_utils.CheckCall(['svn', 'ls', full_url])
+        gclient_utils.CheckCall(['svn', 'ls', full_url], print_error=False)
         file_found = True
       except gclient_utils.CheckCallError:
         pass
@@ -289,20 +276,17 @@ def _SendChangeSVN(options):
         # The file already exists in the repo. Note that commiting a file is a
         # no-op if the file's content (the diff) is not modified. This is why
         # the file name contains the date and time.
-        gclient_utils.CheckCall(['svn', 'update', full_path])
-        f = open(full_path, 'wb')
-        f.write(options.diff)
-        f.close()
+        gclient_utils.CheckCall(['svn', 'update', full_path],
+                                print_error=False)
+        gclient_utils.FileWrite(full_path, options.diff, 'wb')
       else:
-        # Add the file to the repo
-        f = open(full_path, 'wb')
-        f.write(options.diff)
-        f.close()
-        gclient_utils.CheckCall(["svn", "add", full_path])
+        # Add the file to the repo.
+        gclient_utils.FileWrite(full_path, options.diff, 'wb')
+        gclient_utils.CheckCall(["svn", "add", full_path], print_error=False)
       temp_file.write(description)
       temp_file.flush()
       gclient_utils.CheckCall(["svn", "commit", full_path, '--file',
-                               temp_file.name])
+                               temp_file.name], print_error=False)
     except gclient_utils.CheckCallError, e:
       raise NoTryServerAccess(' '.join(e.command) + '\nOuput:\n' +
                               e.stdout)
@@ -353,11 +337,6 @@ def TryChange(argv,
     file_list: Default value to pass to --file.
     swallow_exception: Whether we raise or swallow exceptions.
   """
-  default_settings = GetTryServerSettings()
-  transport_functions = { 'http': _SendChangeHTTP, 'svn': _SendChangeSVN }
-  default_transport = transport_functions.get(
-      default_settings.get('default_transport'))
-
   # Parse argv
   parser = optparse.OptionParser(usage=USAGE,
                                  version=__version__,
@@ -397,9 +376,8 @@ def TryChange(argv,
   #                    "'release'"
   group.add_option("--target", help=optparse.SUPPRESS_HELP)
 
-  # TODO(bradnelson): help="Override which project to use"
-  group.add_option("--project", help=optparse.SUPPRESS_HELP,
-                   default=default_settings['default_project'])
+  group.add_option("--project",
+                   help="Override which project to use")
 
   # Override the list of tests to run, use multiple times to list many tests
   # (or comma separated)
@@ -418,11 +396,9 @@ def TryChange(argv,
                    help="Url where to grab a patch")
   group.add_option("--root",
                    help="Root to use for the patch; base subdirectory for "
-                        "patch created in a subdirectory",
-                   default=default_settings["default_root"])
+                        "patch created in a subdirectory")
   group.add_option("--patchlevel", type='int', metavar="LEVEL",
-                   help="Used as -pN parameter to patch",
-                   default=default_settings["default_patchlevel"])
+                   help="Used as -pN parameter to patch")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Access the try server by HTTP")
@@ -430,13 +406,10 @@ def TryChange(argv,
                    action="store_const",
                    const=_SendChangeHTTP,
                    dest="send_patch",
-                   default=default_transport,
                    help="Use HTTP to talk to the try server [default]")
   group.add_option("--host",
-                   default=default_settings['http_host'],
                    help="Host address")
   group.add_option("--port",
-                   default=default_settings['http_port'],
                    help="HTTP port")
   group.add_option("--proxy",
                    help="HTTP proxy")
@@ -450,7 +423,6 @@ def TryChange(argv,
                    help="Use SVN to talk to the try server")
   group.add_option("--svn_repo",
                    metavar="SVN_URL",
-                   default=default_settings['svn_repo'],
                    help="SVN url to use to write the changes in; --use_svn is "
                         "implied when using --svn_repo")
   parser.add_option_group(group)
@@ -491,14 +463,22 @@ def TryChange(argv,
 
     # Get try slaves from PRESUBMIT.py files if not specified.
     if not options.bot:
-      if options.url:
-        parser.error('You need to specify which bots to use.')
-      root_presubmit = gcl.GetCachedFile('PRESUBMIT.py', use_root=True)
-      options.bot = presubmit_support.DoGetTrySlaves(options.scm.GetFileNames(),
-                                                     options.scm.GetLocalRoot(),
-                                                     root_presubmit,
-                                                     False,
-                                                     sys.stdout)
+      # Even if the diff comes from options.url, use the local checkout for bot
+      # selection.
+      try:
+        # Get try slaves from PRESUBMIT.py files if not specified.
+        import presubmit_support
+        root_presubmit = options.scm.GetBots()
+        options.bot = presubmit_support.DoGetTrySlaves(
+            options.scm.GetFileNames(),
+            options.scm.GetLocalRoot(),
+            root_presubmit,
+            False,
+            sys.stdout)
+      except ImportError:
+        pass
+      # If no bot is specified, either the default pool will be selected or the
+      # try server will refuse the job. Either case we don't need to interfere.
 
     if options.name is None:
       if options.issue:

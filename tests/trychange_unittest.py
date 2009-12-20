@@ -35,11 +35,11 @@ class TryChangeUnittest(TryChangeTestsBase):
   """General trychange.py tests."""
   def testMembersChanged(self):
     members = [
-      'EscapeDot', 'GIT', 'GetTryServerSettings', 'GuessVCS',
+      'EscapeDot', 'GIT', 'GuessVCS',
       'HELP_STRING', 'InvalidScript', 'NoTryServerAccess',
-      'SCM', 'SVN', 'TryChange', 'USAGE', 'breakpad',
-      'datetime', 'gcl', 'gclient_utils', 'getpass', 'logging',
-      'optparse', 'os', 'presubmit_support', 'scm', 'shutil', 'socket',
+      'SCM', 'SVN', 'TryChange', 'USAGE',
+      'breakpad', 'datetime', 'gclient_utils', 'getpass', 'logging',
+      'optparse', 'os', 'scm', 'shutil', 'socket',
       'subprocess', 'sys', 'tempfile', 'urllib',
     ]
     # If this test fails, you should add the relevant test.
@@ -50,7 +50,7 @@ class SVNUnittest(TryChangeTestsBase):
   """trychange.SVN tests."""
   def testMembersChanged(self):
     members = [
-      'GetFileNames', 'GetLocalRoot',
+      'GetBots', 'GetFileNames', 'GetLocalRoot',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange.SVN, members)
@@ -74,7 +74,7 @@ class GITUnittest(TryChangeTestsBase):
   """trychange.GIT tests."""
   def testMembersChanged(self):
     members = [
-      'GetFileNames', 'GetLocalRoot',
+      'GetBots', 'GetFileNames', 'GetLocalRoot',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange.GIT, members)
