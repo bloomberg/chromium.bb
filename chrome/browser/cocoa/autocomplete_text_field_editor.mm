@@ -10,8 +10,16 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_*
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/toolbar_controller.h"
 
 @implementation AutocompleteTextFieldEditor
+
+- (id)initWithFrame:(NSRect)frameRect {
+  if ((self = [super initWithFrame:frameRect]))
+    dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
+  return self;
+}
 
 - (void)copy:(id)sender {
   NSPasteboard* pb = [NSPasteboard generalPasteboard];
@@ -77,15 +85,6 @@
 - (void)updateRuler {
 }
 
-#if 0
-// TODO(viettrungluu): This is causing a regression somehow. So let's disable it
-// and work from there. See also corresponding comment in
-// autocomplete_text_field.mm.
-// Let the |AutocompleteTextField| handle drops.
-- (void)updateDragTypeRegistration {
-}
-#endif
-
 - (NSMenu*)menuForEvent:(NSEvent*)event {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@"TITLE"] autorelease];
   [menu addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CUT)
@@ -129,6 +128,37 @@
   }
 
   return menu;
+}
+
+// (URLDropTarget protocol)
+- (id<URLDropTargetController>)urlDropController {
+  BrowserWindowController* windowController = [[self window] windowController];
+  DCHECK([windowController isKindOfClass:[BrowserWindowController class]]);
+  return [windowController toolbarController];
+}
+
+// (URLDropTarget protocol)
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
+  // Make ourself the first responder (even though we're presumably already the
+  // first responder), which will select the text to indicate that our contents
+  // would be replaced by a drop.
+  [[self window] makeFirstResponder:self];
+  return [dropHandler_ draggingEntered:sender];
+}
+
+// (URLDropTarget protocol)
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
+  return [dropHandler_ draggingUpdated:sender];
+}
+
+// (URLDropTarget protocol)
+- (void)draggingExited:(id<NSDraggingInfo>)sender {
+  return [dropHandler_ draggingExited:sender];
+}
+
+// (URLDropTarget protocol)
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
+  return [dropHandler_ performDragOperation:sender];
 }
 
 @end

@@ -4,6 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/scoped_nsobject.h"
+#import "chrome/browser/cocoa/url_drop_target.h"
+
 class AutocompleteTextFieldObserver;
 
 // AutocompleteTextFieldEditor customized the AutocompletTextField
@@ -14,7 +17,12 @@ class AutocompleteTextFieldObserver;
 // pasteboard).
 
 // Field editor used for the autocomplete field.
-@interface AutocompleteTextFieldEditor : NSTextView {
+@interface AutocompleteTextFieldEditor : NSTextView<URLDropTarget> {
+  // Handles being a drag-and-drop target. We handle DnD directly instead
+  // allowing the |AutocompletTextField| to handle it (by making an empty
+  // |-updateDragTypeRegistration|), since the latter results in a weird
+  // start-up time regression.
+  scoped_nsobject<URLDropTargetHandler> dropHandler_;
 }
 
 // Copy contents of the TextView to the designated clipboard as plain
