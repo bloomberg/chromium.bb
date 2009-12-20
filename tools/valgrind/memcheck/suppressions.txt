@@ -1912,3 +1912,25 @@
    ...
    fun:_ZN26SandboxedExtensionUnpacker17RewriteImageFilesEv
 }
+{
+   bug_30870
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeI4GURLEE8allocateEjPKv
+   fun:_ZNSt8_Rb_treeI4GURLS0_St9_IdentityIS0_ESt4lessIS0_ESaIS0_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeI4GURLS0_St9_IdentityIS0_ESt4lessIS0_ESaIS0_EE14_M_create_nodeERKS0_
+   fun:_ZNSt8_Rb_treeI4GURLS0_St9_IdentityIS0_ESt4lessIS0_ESaIS0_EE9_M_insertEPSt18_Rb_tree_node_baseS8_RKS0_
+   fun:_ZNSt8_Rb_treeI4GURLS0_St9_IdentityIS0_ESt4lessIS0_ESaIS0_EE16_M_insert_uniqueERKS0_
+   fun:_ZNSt3setI4GURLSt4lessIS0_ESaIS0_EE6insertERKS0_
+   fun:_ZN7history20ExpireHistoryBackend28BroadcastDeleteNotificationsEPNS0_18DeleteDependenciesE
+   fun:_ZN7history20ExpireHistoryBackend21ArchiveSomeOldHistoryEN4base4TimeEPKNS_20ExpiringVisitsReaderEi
+   fun:_ZN7history20ExpireHistoryBackend18DoArchiveIterationEv
+   fun:_Z16DispatchToMethodIN7history20ExpireHistoryBackendEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN27ScopedRunnableMethodFactoryIN7history20ExpireHistoryBackendEE14RunnableMethodIMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
