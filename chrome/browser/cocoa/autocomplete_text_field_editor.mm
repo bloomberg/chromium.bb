@@ -77,9 +77,14 @@
 - (void)updateRuler {
 }
 
+#if 0
+// TODO(viettrungluu): This is causing a regression somehow. So let's disable it
+// and work from there. See also corresponding comment in
+// autocomplete_text_field.mm.
 // Let the |AutocompleteTextField| handle drops.
 - (void)updateDragTypeRegistration {
 }
+#endif
 
 - (NSMenu*)menuForEvent:(NSEvent*)event {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@"TITLE"] autorelease];
