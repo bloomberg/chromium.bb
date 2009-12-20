@@ -27,7 +27,12 @@ class DiagnosticsModelTest : public testing::Test {
 // The test observer is used to know if the callbacks are being called.
 class UTObserver: public DiagnosticsModel::Observer {
  public:
-  UTObserver() : done_(false), progress_called_(0), finished_(0) {}
+  UTObserver()
+      : done_(false),
+        progress_called_(0),
+        finished_(0),
+        id_of_failed_stop_test(-1) {
+  }
 
   virtual void OnProgress(int id, int percent, DiagnosticsModel* model) {
     EXPECT_TRUE(model != NULL);
@@ -41,6 +46,10 @@ class UTObserver: public DiagnosticsModel::Observer {
   virtual void OnFinished(int id, DiagnosticsModel* model) {
     EXPECT_TRUE(model != NULL);
     ++finished_;
+    if (model->GetTest(id).GetResult() == DiagnosticsModel::TEST_FAIL_STOP) {
+      id_of_failed_stop_test = id;
+      ASSERT_TRUE(false);
+    }
   }
 
   virtual void OnDoneAll(DiagnosticsModel* model) {
@@ -58,12 +67,20 @@ class UTObserver: public DiagnosticsModel::Observer {
   bool done_;
   int progress_called_;
   int finished_;
+  int id_of_failed_stop_test;
 };
 
-// Test that the initial state is correct. We only have one test
+// We currently have more tests operational on windows.
+#if defined(OS_WIN)
+const int kDiagnosticsTestCount = 7;
+#else
+const int kDiagnosticsTestCount = 6;
+#endif
+
+// Test that the initial state is correct.
 TEST_F(DiagnosticsModelTest, BeforeRun) {
   int available = model_->GetTestAvailableCount();
-  EXPECT_EQ(1, available);
+  EXPECT_EQ(kDiagnosticsTestCount, available);
   EXPECT_EQ(0, model_->GetTestRunCount());
   EXPECT_EQ(DiagnosticsModel::TEST_NOT_RUN, model_->GetTest(0).GetResult());
 }
@@ -76,6 +93,6 @@ TEST_F(DiagnosticsModelTest, RunAll) {
   model_->RunAll(&observer);
   EXPECT_TRUE(observer.done());
   EXPECT_GT(observer.progress_called(), 0);
-  EXPECT_EQ(1, model_->GetTestRunCount());
-  EXPECT_EQ(1, observer.finished());
+  EXPECT_EQ(kDiagnosticsTestCount, model_->GetTestRunCount());
+  EXPECT_EQ(kDiagnosticsTestCount, observer.finished());
 }

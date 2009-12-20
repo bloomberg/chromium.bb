@@ -29,11 +29,12 @@ class DiagnosticTest : public DiagnosticsModel::TestInfo {
 
   // Runs the test. Returning false signals that no more tests should be run.
   // The actual outcome of the test should be set using the RecordXX functions.
-  bool Execute(DiagnosticsModel::Observer* observer, DiagnosticsModel* model) {
+  bool Execute(DiagnosticsModel::Observer* observer, DiagnosticsModel* model,
+               size_t index) {
     result_ = DiagnosticsModel::TEST_RUNNING;
-    observer->OnProgress(GetId(), 0, model);
+    observer->OnProgress(index, 0, model);
     bool keep_going = ExecuteImpl(observer);
-    observer->OnFinished(GetId(), model);
+    observer->OnFinished(index, model);
     return keep_going;
   }
 

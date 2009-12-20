@@ -568,6 +568,8 @@
         'browser/diagnostics/diagnostics_test.h',
         'browser/diagnostics/sqlite_diagnostics.cc',
         'browser/diagnostics/sqlite_diagnostics.h',
+        'browser/diagnostics/recon_diagnostics.cc',
+        'browser/diagnostics/recon_diagnostics.h',
         'browser/dock_info_gtk.cc',
         'browser/dock_info_win.cc',
         'browser/dock_info.cc',
