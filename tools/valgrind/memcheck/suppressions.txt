@@ -1859,11 +1859,26 @@
    fun:_ZN7WebCore11RenderLayer38updateCompositingAndLayerListsIfNeededEv
 }
 {
-   bug_30667
+   bug_30667a
    Memcheck:Value4
    fun:inflate
    fun:_ZN4flip10FlipFramer15DecompressFrameEPKNS_9FlipFrameE
-   fun:_ZN112_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_flip_flip_framer_test.cc_00000000_ECB8879436FlipFramerTest_BasicCompression_Test8TestBodyEv
+   ...
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
+{
+   bug_30667b
+   Memcheck:Cond
+   fun:inflate_fast
+   fun:inflate
+   fun:_ZN4flip10FlipFramer15DecompressFrameEPKNS_9FlipFrameE
+   ...
    fun:_ZN7testing4Test3RunEv
    fun:_ZN7testing8internal12TestInfoImpl3RunEv
    fun:_ZN7testing8TestCase3RunEv
