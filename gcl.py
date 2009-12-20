@@ -24,7 +24,7 @@ import breakpad
 from scm import SVN
 import gclient_utils
 
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 
 CODEREVIEW_SETTINGS = {
@@ -858,8 +858,35 @@ def TryChange(change_info, args, swallow_exception):
       return
     ErrorExit("You need to install trychange.py to use the try server.")
 
+  def PathDifference(root, subpath):
+    """Returns the difference subpath minus root."""
+    root = os.path.realpath(root)
+    subpath = os.path.realpath(subpath)
+    if not subpath.startswith(root):
+      return None
+    # If the root does not have a trailing \ or /, we add it so the returned
+    # path starts immediately after the seperator regardless of whether it is
+    # provided.
+    root = os.path.join(root, '')
+    return subpath[len(root):]
+
+  # Try to find the gclient root.
+  def FindGclientRootDir(from_dir):
+    path = os.path.realpath(from_dir)
+    while not os.path.exists(os.path.join(path, '.gclient')):
+      next = os.path.split(path)
+      if not next[1]:
+        return None
+      path = next[0]
+    return path
+
+  trychange_args = []
+  gclient_root = FindGclientRootDir(GetRepositoryRoot())
+  if gclient_root:
+    trychange_args.extend(['--root', PathDifference(gclient_root,
+                                                    GetRepositoryRoot())])
   if change_info:
-    trychange_args = ['--name', change_info.name]
+    trychange_args.extend(['--name', change_info.name])
     if change_info.issue:
       trychange_args.extend(["--issue", str(change_info.issue)])
     if change_info.patchset:
@@ -870,7 +897,8 @@ def TryChange(change_info, args, swallow_exception):
                         swallow_exception=swallow_exception,
                         prog='gcl try')
   else:
-    trychange.TryChange(args,
+    trychange_args.extend(args)
+    trychange.TryChange(trychange_args,
                         file_list=None,
                         swallow_exception=swallow_exception,
                         prog='gcl try')

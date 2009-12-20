@@ -29,7 +29,7 @@ class CheckCallTestCase(SuperMoxTestBase):
   def testCheckCallSuccess(self):
     command = ['boo', 'foo', 'bar']
     process = self.mox.CreateMockAnything()
-    process.retcode = 0
+    process.returncode = 0
     gclient_utils.subprocess.Popen(
         command, cwd=None,
         stdout=gclient_utils.subprocess.PIPE,
@@ -41,7 +41,7 @@ class CheckCallTestCase(SuperMoxTestBase):
   def testCheckCallFailure(self):
     command = ['boo', 'foo', 'bar']
     process = self.mox.CreateMockAnything()
-    process.retcode = 42
+    process.returncode = 42
     gclient_utils.subprocess.Popen(
         command, cwd=None,
         stdout=gclient_utils.subprocess.PIPE,

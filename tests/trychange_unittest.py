@@ -14,20 +14,33 @@ from super_mox import mox, SuperMoxTestBase
 
 class TryChangeTestsBase(SuperMoxTestBase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
-  pass
+  def setUp(self):
+    SuperMoxTestBase.setUp(self)
+    self.mox.StubOutWithMock(trychange.gclient_utils, 'CheckCall')
+    self.mox.StubOutWithMock(trychange.scm.GIT, 'Capture')
+    self.mox.StubOutWithMock(trychange.scm.GIT, 'GetEmail')
+    self.mox.StubOutWithMock(trychange.scm.SVN, 'DiffItem')
+    self.mox.StubOutWithMock(trychange.scm.SVN, 'GetCheckoutRoot')
+    self.mox.StubOutWithMock(trychange.scm.SVN, 'GetEmail')
+    self.fake_root = self.Dir()
+    self.expected_files = ['foo.txt', 'bar.txt']
+    self.options = optparse.Values()
+    self.options.files = self.expected_files
+    self.options.diff = None
+    self.options.name = None
+    self.options.email = None
 
 
 class TryChangeUnittest(TryChangeTestsBase):
   """General trychange.py tests."""
   def testMembersChanged(self):
     members = [
-      'EscapeDot', 'GIT', 'GetSourceRoot',
-      'GetTryServerSettings', 'GuessVCS',
-      'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PathDifference',
+      'EscapeDot', 'GIT', 'GetTryServerSettings', 'GuessVCS',
+      'HELP_STRING', 'InvalidScript', 'NoTryServerAccess',
       'SCM', 'SVN', 'TryChange', 'USAGE', 'breakpad',
       'datetime', 'gcl', 'gclient_utils', 'getpass', 'logging',
       'optparse', 'os', 'presubmit_support', 'scm', 'shutil', 'socket',
-      'subprocess', 'sys', 'tempfile', 'upload', 'urllib',
+      'subprocess', 'sys', 'tempfile', 'urllib',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)
@@ -35,64 +48,53 @@ class TryChangeUnittest(TryChangeTestsBase):
 
 class SVNUnittest(TryChangeTestsBase):
   """trychange.SVN tests."""
-  def setUp(self):
-    SuperMoxTestBase.setUp(self)
-    self.fake_root = '/fake_root'
-    self.expected_files = ['foo.txt', 'bar.txt']
-    change_info = trychange.gcl.ChangeInfo(
-        'test_change', 0, 0, 'desc',
-        [('M', f) for f in self.expected_files],
-        self.fake_root)
-    self.svn = trychange.SVN(None)
-    self.svn.change_info = change_info
-
   def testMembersChanged(self):
     members = [
-      'GenerateDiff', 'GetFileNames', 'GetLocalRoot', 'ProcessOptions',
-      'options'
+      'GetFileNames', 'GetLocalRoot',
     ]
     # If this test fails, you should add the relevant test.
-    self.compareMembers(trychange.SVN(None), members)
+    self.compareMembers(trychange.SVN, members)
 
-  def testGetFileNames(self):
+  def testBasic(self):
+    trychange.os.getcwd().AndReturn(self.fake_root)
+    trychange.scm.SVN.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
+    trychange.os.getcwd().AndReturn('pro')
+    trychange.os.chdir(self.fake_root)
+    trychange.scm.SVN.DiffItem(self.expected_files[0]).AndReturn('bleh')
+    trychange.scm.SVN.DiffItem(self.expected_files[1]).AndReturn('blew')
+    trychange.os.chdir('pro')
+    trychange.scm.SVN.GetEmail(self.fake_root).AndReturn('georges@example.com')
     self.mox.ReplayAll()
-    self.assertEqual(self.svn.GetFileNames(), self.expected_files)
-
-  def testGetLocalRoot(self):
-    self.mox.ReplayAll()
-    self.assertEqual(self.svn.GetLocalRoot(), self.fake_root)
+    svn = trychange.SVN(self.options)
+    self.assertEqual(svn.GetFileNames(), self.expected_files)
+    self.assertEqual(svn.GetLocalRoot(), self.fake_root)
 
 
 class GITUnittest(TryChangeTestsBase):
   """trychange.GIT tests."""
-  def setUp(self):
-    self.fake_root = trychange.os.path.join(
-        trychange.os.path.dirname(__file__), 'fake_root')
-    self.expected_files = ['foo.txt', 'bar.txt']
-    options = optparse.Values()
-    options.files = self.expected_files
-    self.git = trychange.GIT(options)
-    SuperMoxTestBase.setUp(self)
-
   def testMembersChanged(self):
     members = [
-      'GenerateDiff', 'GetFileNames', 'GetLocalRoot',
-      'GetPatchName', 'ProcessOptions', 'options'
+      'GetFileNames', 'GetLocalRoot',
     ]
     # If this test fails, you should add the relevant test.
-    self.compareMembers(trychange.GIT(None), members)
+    self.compareMembers(trychange.GIT, members)
 
-  def testGetFileNames(self):
-    self.mox.ReplayAll()
-    self.assertEqual(self.git.GetFileNames(), self.expected_files)
-
-  def testGetLocalRoot(self):
-    self.mox.StubOutWithMock(trychange.upload, 'RunShell')
-    trychange.upload.RunShell(['git', 'rev-parse', '--show-cdup']).AndReturn(
-        self.fake_root)
+  def testBasic(self):
+    trychange.gclient_utils.CheckCall(
+        ['git', 'rev-parse', '--show-cdup']).AndReturn(self.fake_root)
     trychange.os.path.abspath(self.fake_root).AndReturn(self.fake_root)
+    trychange.gclient_utils.CheckCall(
+        ['git', 'cl', 'upstream']).AndReturn('random branch')
+    trychange.gclient_utils.CheckCall(
+        ['git', 'diff-tree', '-p', '--no-prefix', 'random branch', 'HEAD']
+        ).AndReturn('This is a dummy diff\n+3\n-4\n')
+    trychange.gclient_utils.CheckCall(
+        ['git', 'symbolic-ref', 'HEAD']).AndReturn('refs/heads/another branch')
+    trychange.scm.GIT.GetEmail('.').AndReturn('georges@example.com')
     self.mox.ReplayAll()
-    self.assertEqual(self.git.GetLocalRoot(), self.fake_root)
+    git = trychange.GIT(self.options)
+    self.assertEqual(git.GetFileNames(), self.expected_files)
+    self.assertEqual(git.GetLocalRoot(), self.fake_root)
 
 
 if __name__ == '__main__':

@@ -40,12 +40,15 @@ def CheckCall(command, cwd=None):
 
   Works on python 2.4
   """
-  process = subprocess.Popen(command, cwd=cwd,
-                             shell=sys.platform.startswith('win'),
-                             stdout=subprocess.PIPE)
-  output = process.communicate()[0]
-  if process.retcode:
-    raise CheckCallError(command, cwd, process.retcode, output)
+  try:
+    process = subprocess.Popen(command, cwd=cwd,
+                               shell=sys.platform.startswith('win'),
+                               stdout=subprocess.PIPE)
+    output = process.communicate()[0]
+  except OSError, e:
+    raise CheckCallError(command, cwd, errno, None)
+  if process.returncode:
+    raise CheckCallError(command, cwd, process.returncode, output)
   return output
 
 

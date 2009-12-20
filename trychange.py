@@ -25,9 +25,8 @@ import gcl
 import gclient_utils
 import scm
 import presubmit_support
-import upload
 
-__version__ = '1.1.2'
+__version__ = '1.2'
 
 
 # Constants
@@ -64,23 +63,6 @@ class InvalidScript(Exception):
 class NoTryServerAccess(Exception):
   def __str__(self):
     return self.args[0] + '\n' + HELP_STRING
-
-
-def PathDifference(root, subpath):
-  """Returns the difference subpath minus root."""
-  if subpath.find(root) != 0:
-    return None
-  # If the root does not have a trailing \ or /, we add it so the returned path
-  # starts immediately after the seperator regardless of whether it is provided.
-  if not root.endswith(os.sep):
-    root += os.sep
-  return subpath[len(root):]
-
-
-def GetSourceRoot():
-  """Returns the absolute directory one level up from the repository root."""
-  # TODO(maruel): This is odd to assume that '..' is the source root.
-  return os.path.abspath(os.path.join(gcl.GetRepositoryRoot(), '..'))
 
 
 def GetTryServerSettings():
@@ -124,62 +106,62 @@ class SCM(object):
   def __init__(self, options):
     self.options = options
 
-  def ProcessOptions(self):
-    raise NotImplementedError
+  def GetFileNames(self):
+    """Return the list of files in the diff."""
+    return self.options.files
 
 
 class SVN(SCM):
   """Gathers the options and diff for a subversion checkout."""
-  def GenerateDiff(self, files, root):
+  def __init__(self, *args, **kwargs):
+    SCM.__init__(self, *args, **kwargs)
+    self.checkout_root = scm.SVN.GetCheckoutRoot(os.getcwd())
+    self.options.files
+    if not self.options.diff:
+      # Generate the diff from the scm.
+      self.options.diff = self._GenerateDiff()
+    if not self.options.email:
+      # Assumes the svn credential is an email address.
+      self.options.email = scm.SVN.GetEmail(self.checkout_root)
+
+  def _GenerateDiff(self):
     """Returns a string containing the diff for the given file list.
 
     The files in the list should either be absolute paths or relative to the
-    given root. If no root directory is provided, the repository root will be
-    used.
+    given root.
     """
     previous_cwd = os.getcwd()
-    os.chdir(root or scm.SVN.GetCheckoutRoot(previous_cwd))
-
+    os.chdir(self.checkout_root)
+    if not self.options.files:
+      self.options.files = [f[1] for f in scm.SVN.CaptureStatus(None)]
     # Directories will return None so filter them out.
-    diff = filter(None, [scm.SVN.DiffItem(f) for f in files])
+    diff = filter(None, [scm.SVN.DiffItem(f) for f in self.options.files])
     os.chdir(previous_cwd)
     return "".join(diff)
 
-  def GetFileNames(self):
-    """Return the list of files in the diff."""
-    return self.change_info.GetFileNames()
-
   def GetLocalRoot(self):
     """Return the path of the repository root."""
-    return self.change_info.GetLocalRoot()
-
-  def ProcessOptions(self):
-    checkout_root = None
-    if not self.options.diff:
-      # Generate the diff with svn and write it to the submit queue path.  The
-      # files are relative to the repository root, but we need patches relative
-      # to one level up from there (i.e., 'src'), so adjust both the file
-      # paths and the root of the diff.
-      # TODO(maruel): Remove this hack.
-      source_root = GetSourceRoot()
-      checkout_root = scm.SVN.GetCheckoutRoot(os.getcwd())
-      prefix = PathDifference(source_root, checkout_root)
-      adjusted_paths = [os.path.join(prefix, x) for x in self.options.files]
-      self.options.diff = self.GenerateDiff(adjusted_paths, root=source_root)
-      self.change_info = gcl.LoadChangelistInfoForMultiple(self.options.name,
-          gcl.GetRepositoryRoot(), True, True)
-    if not self.options.email:
-      checkout_root = checkout_root or scm.SVN.GetCheckoutRoot(os.getcwd())
-      self.options.email = scm.SVN.GetEmail(checkout_root)
+    return self.checkout_root
 
 
 class GIT(SCM):
   """Gathers the options and diff for a git checkout."""
-  def GenerateDiff(self):
+  def __init__(self, *args, **kwargs):
+    SCM.__init__(self, *args, **kwargs)
+    self.checkout_root = os.path.abspath(
+        gclient_utils.CheckCall(['git', 'rev-parse', '--show-cdup']).strip())
+    if not self.options.diff:
+      self.options.diff = self._GenerateDiff()
+    if not self.options.name:
+      self.options.name = self._GetPatchName()
+    if not self.options.email:
+      self.options.email = scm.GIT.GetEmail('.')
+
+  def _GenerateDiff(self):
     """Get the diff we'll send to the try server. We ignore the files list."""
-    branch = upload.RunShell(['git', 'cl', 'upstream']).strip()
-    diff = upload.RunShell(['git', 'diff-tree', '-p', '--no-prefix',
-                            branch, 'HEAD']).splitlines(True)
+    branch = gclient_utils.CheckCall(['git', 'cl', 'upstream']).strip()
+    diff = gclient_utils.CheckCall(['git', 'diff-tree', '-p', '--no-prefix',
+                                    branch, 'HEAD']).splitlines(True)
     for i in range(len(diff)):
       # In the case of added files, replace /dev/null with the path to the
       # file being added.
@@ -187,34 +169,20 @@ class GIT(SCM):
         diff[i] = '--- %s' % diff[i+1][4:]
     return ''.join(diff)
 
-  def GetFileNames(self):
-    """Return the list of files in the diff."""
-    return self.options.files
-
-  def GetLocalRoot(self):
-    """Return the path of the repository root."""
-    # TODO: check for errors here?
-    root = upload.RunShell(['git', 'rev-parse', '--show-cdup']).strip()
-    return os.path.abspath(root)
-
-  def GetPatchName(self):
+  def _GetPatchName(self):
     """Construct a name for this patch."""
     # TODO: perhaps include the hash of the current commit, to distinguish
     # patches?
-    branch = upload.RunShell(['git', 'symbolic-ref', 'HEAD']).strip()
+    branch = gclient_utils.CheckCall(['git', 'symbolic-ref', 'HEAD']).strip()
     if not branch.startswith('refs/heads/'):
       # TODO(maruel): Find a better type.
       raise NoTryServerAccess("Couldn't figure out branch name")
     branch = branch[len('refs/heads/'):]
     return branch
 
-  def ProcessOptions(self):
-    if not self.options.diff:
-      self.options.diff = self.GenerateDiff()
-    if not self.options.name:
-      self.options.name = self.GetPatchName()
-    if not self.options.email:
-      self.options.email = scm.GIT.GetEmail('.')
+  def GetLocalRoot(self):
+    """Return the path of the repository root."""
+    return self.checkout_root
 
 
 def _ParseSendChangeOptions(options):
@@ -365,17 +333,12 @@ def GuessVCS(options):
   # Git has a command to test if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
   try:
-    out, returncode = subprocess.Popen(
-        ["git", "rev-parse", "--is-inside-work-tree"],
-        shell=sys.platform.startswith('win'),
-        stdout=subprocess.PIPE).communicate()[0]
-    if returncode == 0:
-      logging.info("Guessed VCS = Git")
-      return GIT(options)
-  except OSError, (errno, message):
-    if errno != 2:  # ENOENT -- they don't have git installed.
+    gclient_utils.CheckCall(["git", "rev-parse", "--is-inside-work-tree"])
+    logging.info("Guessed VCS = Git")
+    return GIT(options)
+  except gclient_utils.CheckCallError, e:
+    if e.retcode != 2:  # ENOENT -- they don't have git installed.
       raise
-
   raise NoTryServerAccess("Could not guess version control system. "
                           "Are you in a working copy directory?")
 
@@ -520,7 +483,6 @@ def TryChange(argv,
     # Process the VCS in any case at least to retrieve the email address.
     try:
       options.scm = GuessVCS(options)
-      options.scm.ProcessOptions()
     except NoTryServerAccess, e:
       # If we got the diff, we don't care.
       if not options.diff:
