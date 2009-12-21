@@ -3132,3 +3132,14 @@ BUG30826 WIN : LayoutTests/platform/win/fast/events/panScroll-imageMap-noHref-sc
 
 // Flaky
 BUG30930 LINUX : LayoutTests/tables/mozilla/bugs/bug15933.html = IMAGE PASS
+
+// WebKit update 52372->52454
+BUG30938 MAC : LayoutTests/fast/backgrounds/svg-as-background-6.html = IMAGE
+BUG30938 : LayoutTests/svg/css/mask-with-shadow.svg = IMAGE
+BUG30938 WIN : LayoutTests/svg/custom/mask-excessive-malloc.svg = IMAGE
+BUG30938 WIN LINUX : LayoutTests/svg/custom/mask-inside-defs.svg = IMAGE
+BUG30938 WIN LINUX : LayoutTests/svg/custom/visibility-override-mask.svg = IMAGE
+BUG30938 WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
+BUG30939 WIN LINUX : LayoutTests/svg/custom/image-with-transform-clip-filter.svg = IMAGE
+BUG30939 : LayoutTests/svg/filters/filter-clip.svg = IMAGE+TEXT
+BUG30792 WIN LINUX : LayoutTests/fast/text/fake-italic.html = IMAGE+TEXT
