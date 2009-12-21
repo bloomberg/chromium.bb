@@ -32,6 +32,9 @@ void radeon_bo_ref(struct radeon_bo *bo)
 struct radeon_bo *radeon_bo_unref(struct radeon_bo *bo)
 {
     struct radeon_bo_int *boi = (struct radeon_bo_int *)bo;
+    if (bo == NULL)
+        return NULL;
+
     boi->cref--;
     return boi->bom->funcs->bo_unref(boi);
 }

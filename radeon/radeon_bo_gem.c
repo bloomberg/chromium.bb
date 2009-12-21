@@ -127,9 +127,6 @@ static struct radeon_bo *bo_unref(struct radeon_bo_int *boi)
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)boi;
     struct drm_gem_close args;
 
-    if (boi == NULL) {
-        return NULL;
-    }
     if (boi->cref) {
         return (struct radeon_bo *)boi;
     }
