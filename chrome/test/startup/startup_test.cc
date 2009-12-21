@@ -127,31 +127,13 @@ class StartupTest : public UITest {
   std::string pages_;
 };
 
-class StartupReferenceTest : public StartupTest {
- public:
-  // override the browser directory that is used by UITest::SetUp to cause it
-  // to use the reference build instead.
-  void SetUp() {
-    FilePath dir;
-    PathService::Get(chrome::DIR_TEST_TOOLS, &dir);
-    dir = dir.AppendASCII("reference_build");
-#if defined(OS_WIN)
-    dir = dir.AppendASCII("chrome");
-#elif defined(OS_LINUX)
-    dir = dir.AppendASCII("chrome_linux");
-#elif defined(OS_MACOSX)
-    dir = dir.AppendASCII("chrome_mac");
-#endif
-    browser_directory_ = dir;
-  }
-};
-
-TEST_F(StartupTest, Perf) {
+TEST_F(StartupTest, PerfWarm) {
   RunStartupTest("warm", "t", false /* not cold */, true /* important */,
                  UITest::DEFAULT_THEME);
 }
 
-TEST_F(StartupReferenceTest, Perf) {
+TEST_F(StartupTest, PerfReferenceWarm) {
+  UseReferenceBuild();
   RunStartupTest("warm", "t_ref", false /* not cold */,
                  true /* important */, UITest::DEFAULT_THEME);
 }
