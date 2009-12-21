@@ -8,14 +8,20 @@
 #include "app/slide_animation.h"
 #include "base/logging.h"
 
+#include "chrome/browser/gtk/gtk_expanded_container.h"
+
 namespace {
 
-void OnFixedSizeAllocate(GtkWidget* fixed,
-                         GtkAllocation* allocation,
-                         GtkWidget* child) {
-  // The size of the GtkFixed has changed. We want |child_| to match widths,
-  // but the height should not change.
-  gtk_widget_set_size_request(child, allocation->width, -1);
+void OnChildSizeRequest(GtkWidget* expanded,
+                        GtkWidget* child,
+                        GtkRequisition* requisition,
+                        gpointer control_child_size) {
+  // If |control_child_size| is true, then we want |child_| to match the width
+  // of the |widget_|, but the height of |child_| should not change.
+  if (!GPOINTER_TO_INT(control_child_size)) {
+    requisition->width = -1;
+  }
+  requisition->height = -1;
 }
 
 }  // namespace
@@ -29,16 +35,16 @@ SlideAnimatorGtk::SlideAnimatorGtk(GtkWidget* child,
     : child_(child),
       direction_(direction),
       delegate_(delegate) {
-  widget_.Own(gtk_fixed_new());
-  gtk_fixed_put(GTK_FIXED(widget_.get()), child, 0, 0);
+  widget_.Own(gtk_expanded_container_new());
+  gtk_container_add(GTK_CONTAINER(widget_.get()), child);
   gtk_widget_set_size_request(widget_.get(), -1, 0);
-  if (control_child_size) {
-    // If the child requests it, we will manually set the size request for
-    // |child_| every time the GtkFixed changes sizes. This is mainly useful
-    // for bars, where we want the child to expand to fill all available space.
-    g_signal_connect(widget_.get(), "size-allocate",
-                     G_CALLBACK(OnFixedSizeAllocate), child_);
-  }
+
+  // If the child requests it, we will manually set the size request for
+  // |child_| every time the |widget_| changes sizes. This is mainly useful
+  // for bars, where we want the child to expand to fill all available space.
+  g_signal_connect(widget_.get(), "child-size-request",
+                   G_CALLBACK(OnChildSizeRequest),
+                   GINT_TO_POINTER(control_child_size));
 
   // We connect to this signal to set an initial position for our child widget.
   // The reason we connect to this signal rather than setting the initial
@@ -106,8 +112,8 @@ void SlideAnimatorGtk::AnimationProgressed(const Animation* animation) {
   int showing_height = static_cast<int>(req.height *
                                         animation_->GetCurrentValue());
   if (direction_ == DOWN) {
-    gtk_fixed_move(GTK_FIXED(widget_.get()), child_, 0,
-                   showing_height - req.height);
+    gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(widget_.get()),
+                                child_, 0, showing_height - req.height);
     child_needs_move_ = false;
   }
   gtk_widget_set_size_request(widget_.get(), -1, showing_height);
@@ -126,7 +132,8 @@ void SlideAnimatorGtk::OnChildSizeAllocate(GtkWidget* child,
                                            GtkAllocation* allocation,
                                            SlideAnimatorGtk* slider) {
   if (slider->child_needs_move_) {
-    gtk_fixed_move(GTK_FIXED(slider->widget()), child, 0, -allocation->height);
+    gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(slider->widget()),
+                                child, 0, -allocation->height);
     slider->child_needs_move_ = false;
   }
 }

@@ -19,6 +19,7 @@
 #include "chrome/browser/gtk/blocked_popup_container_view_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
+#include "chrome/browser/gtk/gtk_expanded_container.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/sad_tab_gtk.h"
@@ -100,16 +101,6 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
   return FALSE;
 }
 
-// Used with gtk_container_foreach to change the sizes of the children of
-// |fixed_|.
-void SetSizeRequest(GtkWidget* widget, gpointer userdata) {
-  gfx::Size* size = static_cast<gfx::Size*>(userdata);
-  if (widget->allocation.width != size->width() ||
-      widget->allocation.height != size->height()) {
-    gtk_widget_set_size_request(widget, size->width(), size->height());
-  }
-}
-
 }  // namespace
 
 // static
@@ -120,16 +111,18 @@ TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
 TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
     : TabContentsView(tab_contents),
       floating_(gtk_floating_container_new()),
-      fixed_(gtk_fixed_new()),
+      expanded_(gtk_expanded_container_new()),
       popup_view_(NULL) {
-  gtk_widget_set_name(fixed_, "chrome-tab-contents-view");
-  g_signal_connect(fixed_, "size-allocate",
+  gtk_widget_set_name(expanded_, "chrome-tab-contents-view");
+  g_signal_connect(expanded_, "size-allocate",
                    G_CALLBACK(OnSizeAllocate), this);
+  g_signal_connect(expanded_, "child-size-request",
+                   G_CALLBACK(OnChildSizeRequest), this);
   g_signal_connect(floating_.get(), "set-floating-position",
                    G_CALLBACK(OnSetFloatingPosition), this);
 
-  gtk_container_add(GTK_CONTAINER(floating_.get()), fixed_);
-  gtk_widget_show(fixed_);
+  gtk_container_add(GTK_CONTAINER(floating_.get()), expanded_);
+  gtk_widget_show(expanded_);
   gtk_widget_show(floating_.get());
   registrar_.Add(this, NotificationType::TAB_CONTENTS_CONNECTED,
                  Source<TabContents>(tab_contents));
@@ -179,8 +172,6 @@ void TabContentsViewGtk::RemoveConstrainedWindow(
 
 void TabContentsViewGtk::CreateView(const gfx::Size& initial_size) {
   requested_size_ = initial_size;
-  gtk_widget_set_size_request(fixed_, requested_size_.width(),
-                              requested_size_.height());
 }
 
 RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
@@ -241,9 +232,9 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
   // animation.
   int x = 0;
   int y = 0;
-  if (fixed_->window)
-    gdk_window_get_origin(fixed_->window, &x, &y);
-  out->SetRect(x + fixed_->allocation.x, y + fixed_->allocation.y,
+  if (expanded_->window)
+    gdk_window_get_origin(expanded_->window, &x, &y);
+  out->SetRect(x + expanded_->allocation.x, y + expanded_->allocation.y,
                requested_size_.width(), requested_size_.height());
 }
 
@@ -360,7 +351,7 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
 // -----------------------------------------------------------------------------
 
 void TabContentsViewGtk::InsertIntoContentArea(GtkWidget* widget) {
-  gtk_fixed_put(GTK_FIXED(fixed_), widget, 0, 0);
+  gtk_container_add(GTK_CONTAINER(expanded_), widget);
 }
 
 gboolean TabContentsViewGtk::OnMouseDown(GtkWidget* widget,
@@ -369,9 +360,19 @@ gboolean TabContentsViewGtk::OnMouseDown(GtkWidget* widget,
   return FALSE;
 }
 
-gboolean TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
-                                            GtkAllocation* allocation,
+void TabContentsViewGtk::OnChildSizeRequest(GtkWidget* widget,
+                                            GtkWidget* child,
+                                            GtkRequisition* requisition,
                                             TabContentsViewGtk* view) {
+  if (view->tab_contents()->delegate()) {
+    requisition->height +=
+        view->tab_contents()->delegate()->GetExtraRenderViewHeight();
+  }
+}
+
+void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
+                                        GtkAllocation* allocation,
+                                        TabContentsViewGtk* view) {
   int width = allocation->width;
   int height = allocation->height;
   // |delegate()| can be NULL here during browser teardown.
@@ -379,7 +380,6 @@ gboolean TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
     height += view->tab_contents()->delegate()->GetExtraRenderViewHeight();
   gfx::Size size(width, height);
   view->requested_size_ = size;
-  gtk_container_foreach(GTK_CONTAINER(widget), SetSizeRequest, &size);
 
   // We manually tell our RWHV to resize the renderer content.  This avoids
   // spurious resizes from GTK+.
@@ -387,8 +387,6 @@ gboolean TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
     view->tab_contents()->render_widget_host_view()->SetSize(size);
   if (view->tab_contents()->interstitial_page())
     view->tab_contents()->interstitial_page()->SetSize(size);
-
-  return FALSE;
 }
 
 // static

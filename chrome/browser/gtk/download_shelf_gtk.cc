@@ -62,7 +62,9 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
 
   // Create |hbox_|.
   hbox_.Own(gtk_hbox_new(FALSE, kDownloadItemPadding));
-  gtk_widget_set_size_request(hbox_.get(), -1, kDownloadItemHeight);
+  // We want the download shelf to be horizontally shrinkable, so that the
+  // Chrome window can be resized freely even with many download items.
+  gtk_widget_set_size_request(hbox_.get(), 0, kDownloadItemHeight);
 
   // Get the padding and background color for |hbox_| right.
   GtkWidget* padding = gtk_alignment_new(0, 0, 1, 1);
