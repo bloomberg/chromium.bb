@@ -18,9 +18,6 @@ set -o errexit
 
 readonly CS_URL=http://www.codesourcery.com/sgpp/lite/arm/portal/package5383/public/arm-none-linux-gnueabi/arm-2009q3-67-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 
-# we need static version of libssl
-readonly LIBSSL_DEV=http://repository.maemo.org/pool/maemo4.0.1/free/o/openssl/libssl-dev_0.9.7e-4.osso2+3sarge3.osso6_armel.deb
-
 # TODO(robertm): temporarily use /usr/local/crosstool2 to not conflict
 #                with the working toolchain in /usr/local/crosstool
 export INSTALL_ROOT=/usr/local/crosstool-trusted
@@ -57,7 +54,7 @@ DownloadOrCopy() {
   if [[ -f "$2" ]] ; then
      echo "$2 already in place"
   elif [[ $1 =~  'http://' ]] ; then
-    SubBanner "downloading from $1"
+    SubBanner "downloading from $1 -> $2"
     wget $1 -O $2
   else
     SubBanner "copying from $1"
@@ -136,14 +133,69 @@ InstallTrustedLinkerScript() {
 InstallMissingHeaders() {
   Banner "installing openssl headers from local system"
   cp -r /usr/include/openssl ${JAIL}/usr/include/
-
-  Banner "installing X11 headers from local system"
-  cp -r /usr/include/X11 ${JAIL}/usr/include/
 }
+
+# ----------------------------------------------------------------------
+# armel deb files to complete our code sourcery jail
+# TODO: switch to the equivalent of these from a ubuntu karmic repo
+#
+# NOTE: We always need the libssl static lib and X11 headers
+#       The rest is for SDL support (sdl=armlocal)
+# ----------------------------------------------------------------------
+readonly REPO=http://repository.maemo.org/pool/maemo4.0.1/free
+
+readonly LIBSSL_DEV=${REPO}/o/openssl/libssl-dev_0.9.7e-4.osso2+3sarge3.osso6_armel.deb
+readonly LIBSDL_DEV=${REPO}/libs/libsdl1.2/libsdl1.2-dev_1.2.8-23_armel.deb
+readonly LIBX11_DEV=${REPO}/libx/libx11/libx11-dev_1.1.1-1osso3_armel.deb
+readonly LIBXEXT_DEV=${REPO}/libx/libxext/libxext-dev_1.0.3-2osso1_armel.deb
+readonly LIBXAU_DEV=${REPO}/libx/libxau/libxau-dev_1.0.3-2osso1_armel.deb
+readonly LIBXDMCP_DEV=${REPO}/libx/libxdmcp/libxdmcp-dev_1.0.2-2osso1_armel.deb
 
 
 InstallMissingLibraries() {
-  Banner "installing libcrypto.a"
+  Banner "installing xdmcp"
+  local package="${TMP}/${LIBXDMCP_DEV##*/}"
+  DownloadOrCopy ${LIBXDMCP_DEV} ${package}
+  SubBanner "extracting to ${JAIL}"
+  dpkg --fsys-tarfile ${package}\
+      | tar -xvf - --exclude=./usr/share -C ${JAIL}
+  rm -f ${JAIL}/usr/lib/libXdmcp.so
+  exit
+
+  Banner "installing xau"
+  local package="${TMP}/${LIBXAU_DEV##*/}"
+  DownloadOrCopy ${LIBXAU_DEV} ${package}
+  SubBanner "extracting to ${JAIL}"
+  dpkg --fsys-tarfile ${package}\
+      | tar -xvf - --exclude=./usr/share -C ${JAIL}
+  rm -f ${JAIL}/usr/lib/libXau.so
+
+
+  Banner "installing xext"
+  local package="${TMP}/${LIBXEXT_DEV##*/}"
+  DownloadOrCopy ${LIBXEXT_DEV} ${package}
+  SubBanner "extracting to ${JAIL}"
+  dpkg --fsys-tarfile ${package}\
+      | tar -xvf - --exclude=./usr/share -C ${JAIL}
+  rm -f ${JAIL}/usr/lib/libXext.so
+
+  Banner "installing x11"
+  local package="${TMP}/${LIBX11_DEV##*/}"
+  DownloadOrCopy ${LIBX11_DEV} ${package}
+  SubBanner "extracting to ${JAIL}"
+  dpkg --fsys-tarfile ${package}\
+      | tar -xvf - --exclude=./usr/share -C ${JAIL}
+  rm -f ${JAIL}/usr/lib/libX11.so
+
+  Banner "installing libsdl"
+  local package="${TMP}/${LIBSDL_DEV##*/}"
+  DownloadOrCopy ${LIBSDL_DEV} ${package}
+  SubBanner "extracting to ${JAIL}"
+  dpkg --fsys-tarfile ${package}\
+      | tar -xvf - --exclude=./usr/share -C ${JAIL}
+  rm -f ${JAIL}/usr/lib/libSDL.so
+
+  Banner "installing libcrypto"
   local package="${TMP}/${LIBSSL_DEV##*/}"
   DownloadOrCopy ${LIBSSL_DEV} ${package}
   SubBanner "extracting"
@@ -187,7 +239,10 @@ BuildAndInstallQemu() {
 # Main
 ######################################################################
 if [ $# -eq 0 ] ; then
+  echo
   echo "you must specify a mode on the commandline:"
+  echo
+  Usage
   exit -1
 fi
 
@@ -227,6 +282,26 @@ fi
 #@   update only qemu
 if [ ${MODE} = 'qemu_only' ] ; then
   BuildAndInstallQemu
+  exit 0
+fi
+
+#@
+#@ missing
+#@
+#@   update some missing libs and headers
+if [ ${MODE} = 'missing' ] ; then
+  mkdir -p /tmp/crosstool-trusted/
+  InstallMissingLibraries
+  InstallMissingHeaders
+  exit 0
+fi
+
+#@
+#@ tar <tarball>
+#@
+#@   tar everything up
+if [ ${MODE} = 'tar' ] ; then
+  CreateTarBall $1
   exit 0
 fi
 

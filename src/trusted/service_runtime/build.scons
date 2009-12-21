@@ -204,7 +204,7 @@ elif env.Bit('linux'):
 # ----------------------------------------------------------
 sdl_mode = ARGUMENTS.get('sdl', 'hermetic')
 # Require a valid sdl mode.
-if sdl_mode not in ['hermetic', 'local', 'none']:
+if sdl_mode not in ['hermetic', 'local', 'armlocal', 'none']:
   assert(0)
 
 if sdl_mode == 'none':
@@ -283,7 +283,7 @@ if env.Bit('windows'):
 
 # TODO(bradnelson): clean this up more
 sdl_dll = []
-if sdl_mode != 'none':
+if sdl_mode != 'none' and sdl_mode != 'armlocal':
   if env.Bit('windows'):
     sdl_dll += sdl_env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/SDL.dll')
     sdl_dll += sdl_env.Replicate('.', '$SDL_DIR/lib/SDL.dll')

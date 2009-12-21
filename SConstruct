@@ -352,9 +352,9 @@ def DemoSelLdrNacl(env,
   node = env.Command(target, deps, ' '.join(command))
   return node
 
-if pre_base_env['TARGET_ARCHITECTURE'] == 'x86':
-  # arm support would likely require some emulation magic
-  pre_base_env.AddMethod(DemoSelLdrNacl)
+# NOTE: This will not really work for ARM with user mode qemu.
+#       Support would likely require some emulation magic.
+pre_base_env.AddMethod(DemoSelLdrNacl)
 
 # ----------------------------------------------------------
 def CommandSelLdrTestNacl(env, name, command,

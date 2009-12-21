@@ -135,6 +135,22 @@ def _LocalSDL(env):
         ],
     )
 
+def _ARMLocalSDL(env):
+  """Set things up if sdl is locally installed for ARM."""
+  assert sys.platform in ['linux', 'linux2', 'posix']
+  code_sourcery_jail = '/usr/local/crosstool-trusted/arm-2009q3/arm-none-linux-gnueabi/libc'
+  env.SetDefault(
+      SDL_CPPPATH=code_sourcery_jail + '/usr/include/SDL',
+      SDL_LIBPATH=code_sourcery_jail + '/usr/lib',
+      SDL_LIBS=['SDL', 'SDLmain',
+                # additional deps which become visible when linking statically
+                'X11', 'dl', 'pthread', 'Xext', 'Xau', 'Xdmcp'],
+      SDL_VALIDATE_PATHS=[
+      (code_sourcery_jail + '/usr/lib/libSDL.a',
+             ('You are missing SDL on your system.',
+              'Run sudo apt-get install libsdl1.2-dev.')),
+        ],
+    )
 
 def generate(env):
   # NOTE: SCons requires the use of this name, which fails gpylint.
@@ -149,6 +165,8 @@ def generate(env):
   env['SDL_MODE'] = sdl_mode
   if sdl_mode == 'local':
     _LocalSDL(env)
+  elif sdl_mode == 'armlocal':
+    _ARMLocalSDL(env)
   elif sdl_mode == 'hermetic':
     _HermeticSDL(env)
   elif sdl_mode == 'none':
