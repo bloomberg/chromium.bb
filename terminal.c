@@ -57,7 +57,6 @@ struct terminal {
 	char *data;
 	int width, height, start, row, column;
 	int fd, master;
-	cairo_surface_t *surface;
 	GIOChannel *channel;
 	uint32_t modifiers;
 	char escape[64];
@@ -135,13 +134,13 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_t *cr;
 	cairo_font_extents_t extents;
 	int i, top_margin, side_margin;
+	cairo_surface_t *surface;
 	double d;
 
 	window_get_child_rectangle(terminal->window, &rectangle);
 
-	terminal->surface =
-		window_create_surface(terminal->window, &rectangle);
-	cr = cairo_create(terminal->surface);
+	surface = window_create_surface(terminal->window, &rectangle);
+	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr,
 			      terminal->color_scheme->bg.r,
@@ -190,7 +189,9 @@ terminal_draw_contents(struct terminal *terminal)
 
 	window_copy_surface(terminal->window,
 			    &rectangle,
-			    terminal->surface);
+			    surface);
+
+	cairo_surface_destroy(surface);
 }
 
 static void
@@ -426,9 +427,6 @@ handle_acknowledge(void *data,
 	struct terminal *terminal = data;
 
 	terminal->redraw_scheduled = 0;
-	if (key == 0)
-		cairo_surface_destroy(terminal->surface);
-
 	if (terminal->redraw_pending) {
 		terminal->redraw_pending = 0;
 		terminal_schedule_redraw(terminal);

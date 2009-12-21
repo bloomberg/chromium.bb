@@ -92,6 +92,12 @@ window_attach_surface(struct window *window)
 {
 	struct wl_visual *visual;
 
+	if (window->pending_surface != NULL)
+		return;
+
+	window->pending_surface =
+		cairo_surface_reference(window->cairo_surface);
+
 	visual = wl_display_get_premultiplied_argb_visual(window->display->display);
 	wl_surface_attach(window->surface,
 			  cairo_drm_surface_get_name(window->cairo_surface),
@@ -223,6 +229,9 @@ window_draw_fullscreen(struct window *window)
 void
 window_draw(struct window *window)
 {
+	if (window->cairo_surface != NULL)
+		cairo_surface_destroy(window->cairo_surface);
+
 	if (window->fullscreen)
 		window_draw_fullscreen(window);
 	else
@@ -235,15 +244,19 @@ window_handle_acknowledge(void *data,
 			  uint32_t key, uint32_t frame)
 {
 	struct window *window = data;
+	cairo_surface_t *pending;
 
 	/* The acknowledge event means that the server
 	 * processed our last commit request and we can now
 	 * safely free the old window buffer if we resized and
 	 * render the next frame into our back buffer.. */
 
-	if (key == 0 && window->cairo_surface != NULL) {
-		cairo_surface_destroy(window->cairo_surface);
-		window->cairo_surface = NULL;
+	if (key == 0) {
+		pending = window->pending_surface;
+		window->pending_surface = NULL;
+		if (pending != window->cairo_surface)
+			window_attach_surface(window);
+		cairo_surface_destroy(pending);
 	}
 }
 
@@ -568,13 +581,23 @@ window_copy(struct window *window,
 	    struct rectangle *rectangle,
 	    uint32_t name, uint32_t stride)
 {
-	wl_surface_copy(window->surface,
-			rectangle->x,
-			rectangle->y,
-			name, stride,
-			0, 0,
-			rectangle->width,
-			rectangle->height);
+	cairo_surface_t *surface;
+	cairo_t *cr;
+
+	surface = cairo_drm_surface_create_for_name (window->display->device,
+						     name, CAIRO_CONTENT_COLOR_ALPHA,
+						     rectangle->width, rectangle->height,
+						     stride);
+
+	cr = cairo_create (window->cairo_surface);
+
+	cairo_set_source_surface (cr,
+				  surface,
+				  rectangle->x, rectangle->y);
+
+	cairo_paint (cr);
+	cairo_destroy (cr);
+	cairo_surface_destroy (surface);
 }
 
 void
@@ -582,14 +605,16 @@ window_copy_surface(struct window *window,
 		    struct rectangle *rectangle,
 		    cairo_surface_t *surface)
 {
-	wl_surface_copy(window->surface,
-			rectangle->x,
-			rectangle->y,
-			cairo_drm_surface_get_name(surface),
-			cairo_drm_surface_get_stride(surface),
-			0, 0,
-			rectangle->width,
-			rectangle->height);
+	cairo_t *cr;
+
+	cr = cairo_create (window->cairo_surface);
+
+	cairo_set_source_surface (cr,
+				  surface,
+				  rectangle->x, rectangle->y);
+
+	cairo_paint (cr);
+	cairo_destroy (cr);
 }
 
 void
