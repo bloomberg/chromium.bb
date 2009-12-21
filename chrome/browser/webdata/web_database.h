@@ -130,12 +130,17 @@ class WebDatabase {
   //
   //////////////////////////////////////////////////////////////////////////////
 
-  // Records the form elements in |elements| in the database in the autofill
-  // table.
-  bool AddFormFieldValues(const std::vector<webkit_glue::FormField>& elements);
+  // Records the form elements in |elements| in the database in the
+  // autofill table.  A list of all added and updated autofill entries
+  // is returned in the changes out parameter.
+  bool AddFormFieldValues(const std::vector<webkit_glue::FormField>& elements,
+                          std::vector<AutofillChange>* changes);
 
-  // Records a single form element in in the database in the autofill table.
-  bool AddFormFieldValue(const webkit_glue::FormField& element);
+  // Records a single form element in in the database in the autofill
+  // table. A list of all added and updated autofill entries is
+  // returned in the changes out parameter.
+  bool AddFormFieldValue(const webkit_glue::FormField& element,
+                         std::vector<AutofillChange>* changes);
 
   // Retrieves a vector of all values which have been recorded in the autofill
   // table as the value in a form element with name |name| and which start with
@@ -208,14 +213,17 @@ class WebDatabase {
 
  private:
   FRIEND_TEST(WebDatabaseTest, Autofill);
+  FRIEND_TEST(WebDatabaseTest, Autofill_AddChanges);
   FRIEND_TEST(WebDatabaseTest, Autofill_RemoveBetweenChanges);
 
   // Methods for adding autofill entries at a specified time.  For
   // testing only.
   bool AddFormFieldValuesTime(
       const std::vector<webkit_glue::FormField>& elements,
+      std::vector<AutofillChange>* changes,
       base::Time time);
   bool AddFormFieldValueTime(const webkit_glue::FormField& element,
+                             std::vector<AutofillChange>* changes,
                              base::Time time);
 
   // Removes empty values for autofill that were incorrectly stored in the DB

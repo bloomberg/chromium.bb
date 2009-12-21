@@ -49,7 +49,7 @@ std::ostream& operator<<(std::ostream& os, const AutofillChange& change) {
 
 class WebDatabaseTest : public testing::Test {
  protected:
-
+  typedef std::vector<AutofillChange> AutofillChangeList;
   virtual void SetUp() {
     PathService::Get(chrome::DIR_TEST_DATA, &file_);
     const std::string test_db = "TestWebDatabase" +
@@ -417,32 +417,37 @@ TEST_F(WebDatabaseTest, Autofill) {
 
   // Simulate the submission of a handful of entries in a field called "Name",
   // some more often than others.
+  AutofillChangeList changes;
   EXPECT_TRUE(db.AddFormFieldValue(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 string16(),
-                ASCIIToUTF16("Superman"))));
+                ASCIIToUTF16("Superman")),
+      &changes));
   std::vector<string16> v;
   for (int i = 0; i < 5; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
         FormField(string16(),
                   ASCIIToUTF16("Name"),
                   string16(),
-                  ASCIIToUTF16("Clark Kent"))));
+                  ASCIIToUTF16("Clark Kent")),
+        &changes));
   }
   for (int i = 0; i < 3; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
         FormField(string16(),
                   ASCIIToUTF16("Name"),
                   string16(),
-                  ASCIIToUTF16("Clark Sutter"))));
+                  ASCIIToUTF16("Clark Sutter")),
+        &changes));
   }
   for (int i = 0; i < 2; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
         FormField(string16(),
                   ASCIIToUTF16("Favorite Color"),
                   string16(),
-                  ASCIIToUTF16("Green"))));
+                  ASCIIToUTF16("Green")),
+        &changes));
   }
 
   int count = 0;
@@ -511,7 +516,7 @@ TEST_F(WebDatabaseTest, Autofill) {
 
   // Removing all elements since the beginning of this function should remove
   // everything from the database.
-  std::vector<AutofillChange> changes;
+  changes.clear();
   EXPECT_TRUE(db.RemoveFormElementsAddedBetween(t1, Time(), &changes));
 
   const AutofillChange expected_changes[] = {
@@ -550,19 +555,23 @@ TEST_F(WebDatabaseTest, Autofill) {
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
                                              string16(),
-                                             string16())));
+                                             string16()),
+                                   &changes));
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
                                              string16(),
-                                             ASCIIToUTF16(" "))));
+                                             ASCIIToUTF16(" ")),
+                                   &changes));
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
                                              string16(),
-                                             ASCIIToUTF16("      "))));
+                                             ASCIIToUTF16("      ")),
+                                   &changes));
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
                                              string16(),
-                                             kValue)));
+                                             kValue),
+                                   &changes));
 
   // They should be stored normally as the DB layer does not check for empty
   // values.
@@ -590,20 +599,23 @@ TEST_F(WebDatabaseTest, Autofill_RemoveBetweenChanges) {
   Time t1 = Time::Now();
   Time t2 = t1 + one_day;
 
+  AutofillChangeList changes;
   EXPECT_TRUE(db.AddFormFieldValueTime(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 string16(),
                 ASCIIToUTF16("Superman")),
+      &changes,
       t1));
   EXPECT_TRUE(db.AddFormFieldValueTime(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 string16(),
                 ASCIIToUTF16("Superman")),
+      &changes,
       t2));
 
-  std::vector<AutofillChange> changes;
+  changes.clear();
   EXPECT_TRUE(db.RemoveFormElementsAddedBetween(t1, t2, &changes));
   ASSERT_EQ(1U, changes.size());
   EXPECT_EQ(AutofillChange(AutofillChange::UPDATE,
@@ -615,6 +627,43 @@ TEST_F(WebDatabaseTest, Autofill_RemoveBetweenChanges) {
   EXPECT_TRUE(db.RemoveFormElementsAddedBetween(t2, t2 + one_day, &changes));
   ASSERT_EQ(1U, changes.size());
   EXPECT_EQ(AutofillChange(AutofillChange::REMOVE,
+                             AutofillKey(ASCIIToUTF16("Name"),
+                                         ASCIIToUTF16("Superman"))),
+            changes[0]);
+}
+
+TEST_F(WebDatabaseTest, Autofill_AddChanges) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  TimeDelta one_day(TimeDelta::FromDays(1));
+  Time t1 = Time::Now();
+  Time t2 = t1 + one_day;
+
+  AutofillChangeList changes;
+  EXPECT_TRUE(db.AddFormFieldValueTime(
+      FormField(string16(),
+                ASCIIToUTF16("Name"),
+                string16(),
+                ASCIIToUTF16("Superman")),
+      &changes,
+      t1));
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ(AutofillChange(AutofillChange::ADD,
+                             AutofillKey(ASCIIToUTF16("Name"),
+                                         ASCIIToUTF16("Superman"))),
+            changes[0]);
+
+  changes.clear();
+  EXPECT_TRUE(db.AddFormFieldValueTime(
+      FormField(string16(),
+                ASCIIToUTF16("Name"),
+                string16(),
+                ASCIIToUTF16("Superman")),
+      &changes,
+      t2));
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ(AutofillChange(AutofillChange::UPDATE,
                              AutofillKey(ASCIIToUTF16("Name"),
                                          ASCIIToUTF16("Superman"))),
             changes[0]);

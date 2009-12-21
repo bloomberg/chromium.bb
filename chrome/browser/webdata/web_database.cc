@@ -804,18 +804,20 @@ bool WebDatabase::GetAllLogins(std::vector<PasswordForm*>* forms,
   return s.Succeeded();
 }
 
-bool WebDatabase::AddFormFieldValues(const std::vector<FormField>& elements) {
-  return AddFormFieldValuesTime(elements, Time::Now());
+bool WebDatabase::AddFormFieldValues(const std::vector<FormField>& elements,
+                                     std::vector<AutofillChange>* changes) {
+  return AddFormFieldValuesTime(elements, changes, Time::Now());
 }
 
 bool WebDatabase::AddFormFieldValuesTime(const std::vector<FormField>& elements,
+                                         std::vector<AutofillChange>* changes,
                                          base::Time time) {
   bool result = true;
   for (std::vector<FormField>::const_iterator
        itr = elements.begin();
        itr != elements.end();
        itr++) {
-    result = result && AddFormFieldValueTime(*itr, time);
+    result = result && AddFormFieldValueTime(*itr, changes, time);
   }
   return result;
 }
@@ -945,11 +947,13 @@ bool WebDatabase::SetCountOfFormElement(int64 pair_id, int count) {
   return true;
 }
 
-bool WebDatabase::AddFormFieldValue(const FormField& element) {
-  return AddFormFieldValueTime(element, base::Time::Now());
+bool WebDatabase::AddFormFieldValue(const FormField& element,
+                                    std::vector<AutofillChange>* changes) {
+  return AddFormFieldValueTime(element, changes, base::Time::Now());
 }
 
 bool WebDatabase::AddFormFieldValueTime(const FormField& element,
+                                        std::vector<AutofillChange>* changes,
                                         base::Time time) {
   int count = 0;
   int64 pair_id;
@@ -960,8 +964,18 @@ bool WebDatabase::AddFormFieldValueTime(const FormField& element,
   if (count == 0 && !InsertFormElement(element, &pair_id))
     return false;
 
-  return SetCountOfFormElement(pair_id, count + 1) &&
-      InsertPairIDAndDate(pair_id, time);
+  if (!SetCountOfFormElement(pair_id, count + 1))
+    return false;
+
+  if (!InsertPairIDAndDate(pair_id, time))
+    return false;
+
+  AutofillChange::Type change_type =
+      count == 0 ? AutofillChange::ADD : AutofillChange::UPDATE;
+  changes->push_back(
+      AutofillChange(change_type,
+                     AutofillKey(element.name(), element.value())));
+  return true;
 }
 
 bool WebDatabase::GetFormValuesForElementName(const string16& name,

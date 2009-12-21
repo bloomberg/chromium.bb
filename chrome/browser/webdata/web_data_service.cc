@@ -634,17 +634,9 @@ void WebDataService::AddFormFieldValuesImpl(
   InitializeDatabaseIfNecessary();
   const std::vector<FormField>& form_fields = request->GetArgument();
   if (db_ && !request->IsCancelled()) {
-    if (!db_->AddFormFieldValues(form_fields))
-      NOTREACHED();
-
     AutofillChangeList changes;
-    for (std::vector<FormField>::const_iterator itr = form_fields.begin();
-         itr != form_fields.end();
-         itr++) {
-      changes.push_back(
-          AutofillChange(AutofillChange::ADD,
-                         AutofillKey(itr->name(), itr->value())));
-    }
+    if (!db_->AddFormFieldValues(form_fields, &changes))
+      NOTREACHED();
     request->SetResult(
         new WDResult<AutofillChangeList>(AUTOFILL_CHANGES, changes));
     ScheduleCommit();
