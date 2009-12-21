@@ -40,13 +40,22 @@ class RequestTracker {
   typedef std::vector<RecentRequestInfo> RecentRequestInfoList;
   typedef bool (*RecentRequestsFilterFunc)(const GURL&);
 
-  // The maximum number of entries for |graveyard_|.
+  // The maximum number of entries for |graveyard_|, when in bounded mode.
   static const size_t kMaxGraveyardSize;
 
-  // The maximum size of URLs to stuff into RecentRequestInfo.
+  // The maximum size of URLs to stuff into RecentRequestInfo, when in bounded
+  // mode.
   static const size_t kMaxGraveyardURLSize;
 
-  RequestTracker() : next_graveyard_index_(0), graveyard_filter_func_(NULL) {}
+  // The maximum number of entries to use for LoadLogs when in bounded mode.
+  static const size_t kBoundedLoadLogMaxEntries;
+
+  RequestTracker()
+      : next_graveyard_index_(0),
+        graveyard_filter_func_(NULL),
+        is_unbounded_(false) {
+  }
+
   ~RequestTracker() {}
 
   // Returns a list of Requests that are alive.
@@ -90,10 +99,13 @@ class RequestTracker {
 
     RecentRequestInfo info;
     request->GetInfoForTracker(&info);
-    // Paranoia check: truncate |info.original_url| if it is really big.
-    const std::string& spec = info.original_url.possibly_invalid_spec();
-    if (spec.size() > kMaxGraveyardURLSize)
-      info.original_url = GURL(spec.substr(0, kMaxGraveyardURLSize));
+
+    if (!is_unbounded_) {
+      // Paranoia check: truncate |info.original_url| if it is really big.
+      const std::string& spec = info.original_url.possibly_invalid_spec();
+      if (spec.size() > kMaxGraveyardURLSize)
+        info.original_url = GURL(spec.substr(0, kMaxGraveyardURLSize));
+    }
 
     if (ShouldInsertIntoGraveyard(info)) {
       // Add into |graveyard_|.
@@ -109,6 +121,31 @@ class RequestTracker {
     graveyard_filter_func_ = filter_func;
   }
 
+  bool IsUnbounded() const {
+    return is_unbounded_;
+  }
+
+  void SetUnbounded(bool unbounded) {
+    // No change.
+    if (is_unbounded_ == unbounded)
+      return;
+
+    // If we are going from unbounded to bounded, we need to trim the
+    // graveyard. For simplicity we will simply clear it.
+    if (is_unbounded_ && !unbounded)
+      ClearRecentlyDeceased();
+
+    is_unbounded_ = unbounded;
+  }
+
+  // Creates a LoadLog using the unbounded/bounded constraints that
+  // apply to this tracker.
+  net::LoadLog* CreateLoadLog() {
+    if (IsUnbounded())
+      return new net::LoadLog(net::LoadLog::kUnbounded);
+    return new net::LoadLog(kBoundedLoadLogMaxEntries);
+  }
+
  private:
   bool ShouldInsertIntoGraveyard(const RecentRequestInfo& info) {
     if (!graveyard_filter_func_)
@@ -117,6 +154,13 @@ class RequestTracker {
   }
 
   void InsertIntoGraveyard(const RecentRequestInfo& info) {
+    if (is_unbounded_) {
+      graveyard_.push_back(info);
+      return;
+    }
+
+    // Otherwise enforce a bound on the graveyard size, by treating it as a
+    // circular buffer.
     if (graveyard_.size() < kMaxGraveyardSize) {
       // Still growing to maximum capacity.
       DCHECK_EQ(next_graveyard_index_, graveyard_.size());
@@ -133,6 +177,7 @@ class RequestTracker {
   size_t next_graveyard_index_;
   RecentRequestInfoList graveyard_;
   RecentRequestsFilterFunc graveyard_filter_func_;
+  bool is_unbounded_;
 };
 
 template<typename Request>
@@ -140,5 +185,8 @@ const size_t RequestTracker<Request>::kMaxGraveyardSize = 25;
 
 template<typename Request>
 const size_t RequestTracker<Request>::kMaxGraveyardURLSize = 1000;
+
+template<typename Request>
+const size_t RequestTracker<Request>::kBoundedLoadLogMaxEntries = 50;
 
 #endif  // NET_URL_REQUEST_REQUEST_TRACKER_H_

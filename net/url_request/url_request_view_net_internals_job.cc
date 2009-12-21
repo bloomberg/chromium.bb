@@ -480,6 +480,51 @@ bool GetViewCacheKeyFromPath(const std::string path,
   return true;
 }
 
+// Process any query strings in the request (for actions like toggling
+// full logging. As a side-effect, also append some status text to the HTML
+// describing what we did.
+void ProcessQueryStringCommands(URLRequestContext* context,
+                                const std::string& query,
+                                std::string* data) {
+  if (StartsWithASCII(query, "logging=", true)) {
+    bool enable_unbounded = StartsWithASCII(query, "logging=E", true);
+    context->url_request_tracker()->SetUnbounded(enable_unbounded);
+    context->socket_stream_tracker()->SetUnbounded(enable_unbounded);
+
+    if (enable_unbounded)
+      data->append("<i>Enabled full logging</i>\n");
+    else
+      data->append("<i>Disabled full logging, and cleared the recent "
+                   "requests</i>\n");
+
+  } else if (StartsWithASCII(query, "data=Clear", true)) {
+    context->url_request_tracker()->ClearRecentlyDeceased();
+    context->socket_stream_tracker()->ClearRecentlyDeceased();
+
+    data->append("<i>Cleared the recent request logs</i>\n");
+  }
+}
+
+// Append some HTML controls to |data| that allow the user to enable full
+// logging, and clear some of the already logged data.
+void DrawControlsHeader(URLRequestContext* context, std::string* data) {
+  bool is_full_logging_enabled =
+      context->url_request_tracker()->IsUnbounded() &&
+      context->socket_stream_tracker()->IsUnbounded();
+
+  data->append("<form action='' method=GET style='margin-bottom: 10px'>\n");
+  if (is_full_logging_enabled) {
+    data->append(
+        "<input type=submit name=logging value='Disable full logging' />");
+  } else {
+    data->append(
+        "<input type=submit name=logging value='Enable full logging' />");
+  }
+
+  data->append("<input type=submit name=data value='Clear recent requests' />");
+  data->append("</form>\n");
+}
+
 }  // namespace
 
 bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
@@ -490,6 +535,16 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
 
   URLRequestContext* context = request_->context();
   std::string details = url_format_->GetDetails(request_->url());
+
+  std::string query;
+
+  // Split out the query parameters.
+  std::string::size_type query_start = details.find('?');
+  if (query_start != std::string::npos) {
+    if (query_start + 1 < details.size())
+      query = details.substr(query_start + 1);
+    details = details.substr(0, query_start);
+  }
 
   data->clear();
 
@@ -513,6 +568,9 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
                "<p><a href='http://dev.chromium.org/"
                "developers/design-documents/view-net-internals'>"
                "Help: how do I use this?</a></p>");
+
+  ProcessQueryStringCommands(context, query, data);
+  DrawControlsHeader(context, data);
 
   SubSection* all = Singleton<AllSubSections>::get();
   SubSection* section = all;

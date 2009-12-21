@@ -44,8 +44,9 @@ class TestRequest {
 };
 
 
-TEST(RequestTrackerTest, Basic) {
+TEST(RequestTrackerTest, BasicBounded) {
   RequestTracker<TestRequest> tracker;
+  EXPECT_FALSE(tracker.IsUnbounded());
   EXPECT_EQ(0u, tracker.GetLiveRequests().size());
   EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
 
@@ -85,6 +86,7 @@ TEST(RequestTrackerTest, Basic) {
 
 TEST(RequestTrackerTest, GraveyardBounded) {
   RequestTracker<TestRequest> tracker;
+  EXPECT_FALSE(tracker.IsUnbounded());
   EXPECT_EQ(0u, tracker.GetLiveRequests().size());
   EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
 
@@ -111,9 +113,42 @@ TEST(RequestTrackerTest, GraveyardBounded) {
   }
 }
 
+TEST(RequestTrackerTest, GraveyardUnbounded) {
+  RequestTracker<TestRequest> tracker;
+  EXPECT_FALSE(tracker.IsUnbounded());
+  EXPECT_EQ(0u, tracker.GetLiveRequests().size());
+  EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
+
+  tracker.SetUnbounded(true);
+
+  EXPECT_TRUE(tracker.IsUnbounded());
+
+  // Add twice as many requests as would fit in the bounded graveyard.
+
+  size_t kMaxSize = RequestTracker<TestRequest>::kMaxGraveyardSize * 2;
+  for (size_t i = 0; i < kMaxSize; ++i) {
+    TestRequest req(GURL(StringPrintf("http://req%" PRIuS, i).c_str()));
+    tracker.Add(&req);
+    tracker.Remove(&req);
+  }
+
+  // Check that all of them got saved.
+
+  RequestTracker<TestRequest>::RecentRequestInfoList recent_reqs =
+      tracker.GetRecentlyDeceased();
+
+  ASSERT_EQ(kMaxSize, recent_reqs.size());
+
+  for (size_t i = 0; i < kMaxSize; ++i) {
+    GURL url(StringPrintf("http://req%" PRIuS, i).c_str());
+    EXPECT_EQ(url, recent_reqs[i].original_url);
+  }
+}
+
 // Check that very long URLs are truncated.
 TEST(RequestTrackerTest, GraveyardURLBounded) {
   RequestTracker<TestRequest> tracker;
+  EXPECT_FALSE(tracker.IsUnbounded());
 
   std::string big_url_spec("http://");
   big_url_spec.resize(2 * RequestTracker<TestRequest>::kMaxGraveyardURLSize,
@@ -134,6 +169,7 @@ TEST(RequestTrackerTest, GraveyardURLBounded) {
 // Test the doesn't fail if the URL was invalid. http://crbug.com/21423.
 TEST(URLRequestTrackerTest, TrackingInvalidURL) {
   RequestTracker<TestRequest> tracker;
+  EXPECT_FALSE(tracker.IsUnbounded());
 
   EXPECT_EQ(0u, tracker.GetLiveRequests().size());
   EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
@@ -158,6 +194,7 @@ bool ShouldRequestBeAddedToGraveyard(const GURL& url) {
 // saved into the recent requests list (graveyard), by using a filter.
 TEST(RequestTrackerTest, GraveyardCanBeFiltered) {
   RequestTracker<TestRequest> tracker;
+  EXPECT_FALSE(tracker.IsUnbounded());
 
   tracker.SetGraveyardFilter(ShouldRequestBeAddedToGraveyard);
 
@@ -186,6 +223,42 @@ TEST(RequestTrackerTest, GraveyardCanBeFiltered) {
             tracker.GetRecentlyDeceased()[0].original_url.spec());
   EXPECT_EQ("http://foo/",
             tracker.GetRecentlyDeceased()[1].original_url.spec());
+}
+
+// Convert an unbounded tracker back to being bounded.
+TEST(RequestTrackerTest, ConvertUnboundedToBounded) {
+  RequestTracker<TestRequest> tracker;
+  EXPECT_FALSE(tracker.IsUnbounded());
+  EXPECT_EQ(0u, tracker.GetLiveRequests().size());
+  EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
+
+  tracker.SetUnbounded(true);
+  EXPECT_TRUE(tracker.IsUnbounded());
+
+  // Add twice as many requests as would fit in the bounded graveyard.
+
+  size_t kMaxSize = RequestTracker<TestRequest>::kMaxGraveyardSize * 2;
+  for (size_t i = 0; i < kMaxSize; ++i) {
+    TestRequest req(GURL(StringPrintf("http://req%" PRIuS, i).c_str()));
+    tracker.Add(&req);
+    tracker.Remove(&req);
+  }
+
+  // Check that all of them got saved.
+  ASSERT_EQ(kMaxSize, tracker.GetRecentlyDeceased().size());
+
+  // Now make the tracker bounded, and add more entries to its graveyard.
+  tracker.SetUnbounded(false);
+
+  kMaxSize = RequestTracker<TestRequest>::kMaxGraveyardSize;
+  for (size_t i = 0; i < kMaxSize; ++i) {
+    TestRequest req(GURL(StringPrintf("http://req%" PRIuS, i).c_str()));
+    tracker.Add(&req);
+    tracker.Remove(&req);
+  }
+
+  // We should only have kMaxGraveyardSize entries now.
+  ASSERT_EQ(kMaxSize, tracker.GetRecentlyDeceased().size());
 }
 
 }  // namespace
