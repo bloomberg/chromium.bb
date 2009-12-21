@@ -941,6 +941,8 @@ TEST(CFACWithChrome, NavigateOk) {
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
           url, std::string(), false))));
 
+  EXPECT_CALL(cfd, GetBounds(testing::_)).Times(testing::AnyNumber());
+
 //  cfd.SetOnNavigationStateChanged();
   EXPECT_CALL(cfd,
       OnNavigationStateChanged(testing::_, testing::_))
@@ -1115,6 +1117,8 @@ TEST_F(CFACMockTest, MockedCreateTabOk) {
   EXPECT_CALL(cfd_, OnAutomationServerReady())
       .WillOnce(QUIT_LOOP(loop_));
 
+  EXPECT_CALL(proxy_, CancelAsync(testing::_)).Times(testing::AnyNumber());
+
   // Here we go!
   EXPECT_TRUE(client_->Initialize(&cfd_, timeout, false, profile_, L"", false));
   loop_.RunFor(10);
@@ -1135,6 +1139,8 @@ TEST_F(CFACMockTest, MockedCreateTabFailed) {
       .WillOnce(HandleCreateTab(tab_handle_, null_wnd, null_wnd));
 
   EXPECT_CALL(proxy_, CreateTabProxy(testing::_)).Times(0);
+
+  EXPECT_CALL(proxy_, CancelAsync(testing::_)).Times(testing::AnyNumber());
 
   Set_CFD_LaunchFailed(AUTOMATION_CREATE_TAB_FAILED);
 

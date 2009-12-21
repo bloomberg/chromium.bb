@@ -14,7 +14,7 @@ TEST(ChromeFrame, Launch) {
 
   mock_launch.Navigate("about:blank");
   loop.Run(NULL);
-  EXPECT_EQ(true, mock_launch.launch_result());
+  EXPECT_TRUE(mock_launch.launch_result());
 }
 
 TEST(ChromeFrame, Navigate) {
@@ -23,7 +23,7 @@ TEST(ChromeFrame, Navigate) {
 
   mock_navigate.NavigateRelativeFile(L"postmessage_basic_frame.html");
   loop.Run(NULL);
-  EXPECT_EQ(false, mock_navigate.navigation_result());
+  EXPECT_FALSE(mock_navigate.navigation_result());
 }
 
 TEST(ChromeFrame, PostMessage) {
@@ -32,7 +32,7 @@ TEST(ChromeFrame, PostMessage) {
 
   mock_postmessage.NavigateRelativeFile(L"postmessage_basic_frame.html");
   loop.Run(NULL);
-  EXPECT_EQ(false, mock_postmessage.postmessage_result());
+  EXPECT_FALSE(mock_postmessage.postmessage_result());
 }
 
 TEST(ChromeFrame, RequestStart) {
@@ -42,6 +42,6 @@ TEST(ChromeFrame, RequestStart) {
 
   mock_request_start.NavigateRelative(L"postmessage_basic_frame.html");
   loop.Run(NULL);
-  EXPECT_EQ(true, mock_request_start.request_start_result());
+  EXPECT_TRUE(mock_request_start.request_start_result());
 }
 
