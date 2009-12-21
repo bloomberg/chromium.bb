@@ -465,7 +465,7 @@ bool ChromeFrameAutomationClient::Initialize(
   chrome_launch_params_.profile_name = profile_name;
   chrome_launch_params_.extra_chrome_arguments = extra_chrome_arguments;
   chrome_launch_params_.perform_version_check = perform_version_check;
-  chrome_launch_params_.url = url_;
+  chrome_launch_params_.url = navigate_after_initialization_ ? GURL() : url_;
   chrome_launch_params_.incognito_mode = incognito;
 
   proxy_factory_->GetAutomationServer(
@@ -520,16 +520,17 @@ bool ChromeFrameAutomationClient::InitiateNavigation(
   if (url.empty())
     return false;
 
-  url_ = GURL(url);
-  referrer_ = GURL(referrer);
-
+  GURL parsed_url(url);
   // Catch invalid URLs early.
-  if (!url_.is_valid() || !IsValidUrlScheme(UTF8ToWide(url), is_privileged)) {
+  if (!parsed_url.is_valid() ||
+      !IsValidUrlScheme(UTF8ToWide(url), is_privileged)) {
     DLOG(ERROR) << "Invalid URL passed to InitiateNavigation: " << url
                 << " is_privileged=" << is_privileged;
     return false;
   }
 
+  url_ = parsed_url;
+  referrer_ = GURL(referrer);
   navigate_after_initialization_ = false;
 
   if (is_initialized()) {
