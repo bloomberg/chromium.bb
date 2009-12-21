@@ -3129,3 +3129,6 @@ BUG30792 : LayoutTests/http/tests/security/xss-DENIED-assign-location-href-javas
 // WebKit update 52323->52366
 BUG30825 WIN LINUX : LayoutTests/fast/dom/Element/id-in-deletebutton.html = TEXT
 BUG30826 WIN : LayoutTests/platform/win/fast/events/panScroll-imageMap-noHref-scroll.html = TEXT
+
+// Flaky
+BUG30930 LINUX : LayoutTests/tables/mozilla/bugs/bug15933.html = IMAGE PASS
