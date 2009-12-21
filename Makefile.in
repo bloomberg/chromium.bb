@@ -115,6 +115,7 @@ am_src_libbreakpad_la_OBJECTS = src/processor/basic_code_modules.lo \
 	src/processor/simple_symbol_supplier.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_amd64.lo \
+	src/processor/stackwalker_arm.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
@@ -161,6 +162,7 @@ src_processor_minidump_processor_unittest_DEPENDENCIES =  \
 	src/processor/pathname_stripper.lo \
 	src/processor/process_state.lo src/processor/stackwalker.lo \
 	src/processor/stackwalker_amd64.lo \
+	src/processor/stackwalker_arm.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
@@ -178,6 +180,7 @@ src_processor_minidump_stackwalk_DEPENDENCIES =  \
 	src/processor/simple_symbol_supplier.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_amd64.lo \
+	src/processor/stackwalker_arm.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
@@ -218,6 +221,7 @@ src_processor_stackwalker_selftest_DEPENDENCIES =  \
 	src/processor/minidump.lo src/processor/pathname_stripper.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_amd64.lo \
+	src/processor/stackwalker_arm.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
@@ -449,6 +453,8 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/stackwalker.cc \
 	src/processor/stackwalker_amd64.cc \
 	src/processor/stackwalker_amd64.h \
+	src/processor/stackwalker_arm.cc \
+	src/processor/stackwalker_arm.h \
 	src/processor/stackwalker_ppc.cc \
 	src/processor/stackwalker_ppc.h \
 	src/processor/stackwalker_sparc.cc \
@@ -507,6 +513,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/process_state.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_amd64.lo \
+	src/processor/stackwalker_arm.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
@@ -560,6 +567,7 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/pathname_stripper.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_amd64.lo \
+	src/processor/stackwalker_arm.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
@@ -589,6 +597,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/simple_symbol_supplier.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_amd64.lo \
+	src/processor/stackwalker_arm.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
@@ -835,6 +844,8 @@ src/processor/stackwalker.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/stackwalker_amd64.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/stackwalker_arm.lo: src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/stackwalker_ppc.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/stackwalker_sparc.lo: src/processor/$(am__dirstamp) \
@@ -1012,6 +1023,8 @@ mostlyclean-compile:
 	-rm -f src/processor/stackwalker.lo
 	-rm -f src/processor/stackwalker_amd64.$(OBJEXT)
 	-rm -f src/processor/stackwalker_amd64.lo
+	-rm -f src/processor/stackwalker_arm.$(OBJEXT)
+	-rm -f src/processor/stackwalker_arm.lo
 	-rm -f src/processor/stackwalker_ppc.$(OBJEXT)
 	-rm -f src/processor/stackwalker_ppc.lo
 	-rm -f src/processor/stackwalker_selftest.$(OBJEXT)
@@ -1048,6 +1061,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_unittest-minidump_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_amd64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_arm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_ppc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_selftest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_sparc.Plo@am__quote@

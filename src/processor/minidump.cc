@@ -1053,6 +1053,7 @@ void MinidumpContext::Print() {
       }
       printf("  cpsr                = 0x%x\n", context_arm->cpsr);
       printf("  float_save.fpscr     = 0x%" PRIx64 "\n",
+             context_arm->float_save.fpscr);
       for (unsigned int fpr_index = 0;
            fpr_index < MD_FLOATINGSAVEAREA_ARM_FPR_COUNT;
            ++fpr_index) {
@@ -1066,7 +1067,6 @@ void MinidumpContext::Print() {
                fpe_index, context_arm->float_save.extra[fpe_index]);
       }
 
-             context_arm->float_save.fpscr);
       break;
     }
 
