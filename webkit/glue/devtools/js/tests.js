@@ -1440,7 +1440,7 @@ TestSuite.prototype._checkScopeSectionDiv = function(
   this.assertTrue(scopeSectionDiv.hasStyleClass('expanded'), 'Section "' +
       scopeTitle + '" is collapsed.');
 
-  var propertyIt = this._nodeIterator('./ol[@class="properties"]/li',
+  var propertyIt = this._nodeIterator('./ol/li',
                                       scopeSectionDiv);
   var propertyLi;
   var foundProps = [];
