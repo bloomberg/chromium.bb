@@ -29,6 +29,10 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/mach_broker_mac.h"
+#endif
+
 namespace {
 
 // The delay between updates of the information (in ms).
@@ -536,9 +540,8 @@ void TaskManagerModel::AddResource(TaskManager::Resource* resource) {
 #if !defined(OS_MACOSX)
         base::ProcessMetrics::CreateProcessMetrics(process);
 #else
-        // TODO(thakis): Write a port provider that knows the task ports of
-        // child processes.
-        base::ProcessMetrics::CreateProcessMetrics(process, NULL);
+        base::ProcessMetrics::CreateProcessMetrics(process,
+                                                   MachBroker::instance());
 #endif
 
     metrics_map_[process] = pm;

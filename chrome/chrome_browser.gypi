@@ -1098,6 +1098,8 @@
         'browser/login_prompt_mac.h',
         'browser/login_prompt_mac.mm',
         'browser/login_prompt_win.cc',
+        'browser/mach_broker_mac.cc',
+        'browser/mach_broker_mac.h',
         'browser/memory_details.cc',
         'browser/memory_details_linux.cc',
         'browser/memory_details_mac.cc',
