@@ -76,10 +76,12 @@ class TCPConnectJob : public ConnectJob {
 
 class TCPClientSocketPool : public ClientSocketPool {
  public:
-  TCPClientSocketPool(int max_sockets,
-                      int max_sockets_per_group,
-                      HostResolver* host_resolver,
-                      ClientSocketFactory* client_socket_factory);
+  TCPClientSocketPool(
+      int max_sockets,
+      int max_sockets_per_group,
+      HostResolver* host_resolver,
+      ClientSocketFactory* client_socket_factory,
+      const scoped_refptr<NetworkChangeNotifier>& network_change_notifier);
 
   // ClientSocketPool methods:
 

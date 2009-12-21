@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "net/base/mock_host_resolver.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/client_socket.h"
@@ -197,10 +198,12 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
   TCPClientSocketPoolTest()
       : ignored_request_info_("ignored", 80),
         host_resolver_(new MockHostResolver),
+        notifier_(new MockNetworkChangeNotifier),
         pool_(new TCPClientSocketPool(kMaxSockets,
                                       kMaxSocketsPerGroup,
                                       host_resolver_,
-                                      &client_socket_factory_)) {
+                                      &client_socket_factory_,
+                                      notifier_)) {
   }
 
   int StartRequest(const std::string& group_name, RequestPriority priority) {
@@ -211,6 +214,7 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
   HostResolver::RequestInfo ignored_request_info_;
   scoped_refptr<MockHostResolver> host_resolver_;
   MockClientSocketFactory client_socket_factory_;
+  scoped_refptr<MockNetworkChangeNotifier> notifier_;
   scoped_refptr<TCPClientSocketPool> pool_;
 };
 
@@ -578,6 +582,32 @@ TEST_F(TCPClientSocketPoolTest, FailingActiveRequestWithPendingRequests) {
 
   for (int i = 0; i < kNumRequests; i++)
     EXPECT_EQ(ERR_CONNECTION_FAILED, requests_[i]->WaitForResult());
+}
+
+TEST_F(TCPClientSocketPoolTest, ResetIdleSocketsOnIPAddressChange) {
+  TestCompletionCallback callback;
+  ClientSocketHandle handle;
+  HostResolver::RequestInfo info("www.google.com", 80);
+  int rv = handle.Init("a", info, LOW, &callback, pool_.get(), NULL);
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_FALSE(handle.is_initialized());
+  EXPECT_FALSE(handle.socket());
+
+  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_TRUE(handle.is_initialized());
+  EXPECT_TRUE(handle.socket());
+
+  handle.Reset();
+
+  // Need to run all pending to release the socket back to the pool.
+  MessageLoop::current()->RunAllPending();
+
+  // Now we should have 1 idle socket.
+  EXPECT_EQ(1, pool_->IdleSocketCount());
+
+  // After an IP address change, we should have 0 idle sockets.
+  notifier_->NotifyIPAddressChange();
+  EXPECT_EQ(0, pool_->IdleSocketCount());
 }
 
 }  // namespace
