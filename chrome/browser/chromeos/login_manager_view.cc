@@ -15,7 +15,9 @@
 #include "views/focus/accelerator_handler.h"
 #include "views/grid_layout.h"
 #include "views/widget/widget.h"
+#include "views/window/non_client_view.h"
 #include "views/window/window.h"
+#include "views/window/window_gtk.h"
 
 using views::Background;
 using views::ColumnSet;
@@ -43,11 +45,55 @@ bool EmitLoginPromptReady() {
   return base::LaunchApp(argv, no_env, no_files, false, &handle);
 }
 
+// Acts as a frame view with no UI.
+class LoginManagerNonClientFrameView : public views::NonClientFrameView {
+ public:
+  explicit LoginManagerNonClientFrameView() : views::NonClientFrameView() {}
+
+  // Returns just the bounds of the window.
+  virtual gfx::Rect GetBoundsForClientView() const { return bounds(); }
+
+  // Doesn't add any size to the client bounds.
+  virtual gfx::Rect GetWindowBoundsForClientBounds(
+      const gfx::Rect& client_bounds) const {
+    return client_bounds;
+  }
+
+  // There is no system menu.
+  virtual gfx::Point GetSystemMenuPoint() const { return gfx::Point(); }
+  // There is no non client area.
+  virtual int NonClientHitTest(const gfx::Point& point) { return 0; }
+
+  // There is no non client area.
+  virtual void GetWindowMask(const gfx::Size& size,
+                             gfx::Path* window_mask) {}
+  virtual void EnableClose(bool enable) {}
+  virtual void ResetWindowControls() {}
+
+  DISALLOW_COPY_AND_ASSIGN(LoginManagerNonClientFrameView);
+};
+
+// Subclass of WindowGtk, for use as the top level login window.
+class LoginManagerWindow : public views::WindowGtk {
+ public:
+  static LoginManagerWindow* CreateLoginManagerWindow() {
+    LoginManagerWindow* login_manager_window = new LoginManagerWindow();
+    login_manager_window->GetNonClientView()->SetFrameView(
+        new LoginManagerNonClientFrameView());
+    login_manager_window->Init(NULL, gfx::Rect());
+    return login_manager_window;
+  }
+
+ private:
+  explicit LoginManagerWindow() : views::WindowGtk(new LoginManagerView()) {}
+
+  DISALLOW_COPY_AND_ASSIGN(LoginManagerWindow);
+};
+
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
 void ShowLoginManager() {
-  views::Window::CreateChromeWindow(NULL,
-                                    gfx::Rect(),
-                                    new LoginManagerView())->Show();
+  views::WindowGtk* window = LoginManagerWindow::CreateLoginManagerWindow();
+  window->Show();
   EmitLoginPromptReady();
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);

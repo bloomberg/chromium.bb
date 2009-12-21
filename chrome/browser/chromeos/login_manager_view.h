@@ -7,7 +7,7 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
-#include "views/window/dialog_delegate.h"
+#include "views/window/window_delegate.h"
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGER_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGER_VIEW_H_
