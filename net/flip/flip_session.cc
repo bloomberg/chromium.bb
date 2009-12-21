@@ -21,6 +21,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/socket/client_socket.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/tools/dump_cache/url_to_filename_encoder.h"
@@ -157,6 +158,17 @@ void CreateFlipHeadersFromHttpRequest(
   }
 }
 
+void AdjustSocketBufferSizes(ClientSocket* socket) {
+  // Adjust socket buffer sizes.
+  // FLIP uses one socket, and we want a really big buffer.
+  // This greatly helps on links with packet loss - we can even
+  // outperform Vista's dynamic window sizing algorithm.
+  // TODO(mbelshe): more study.
+  const int kSocketBufferSize = 512 * 1024;
+  socket->SetReceiveBufferSize(kSocketBufferSize);
+  socket->SetSendBufferSize(kSocketBufferSize);
+}
+
 }  // namespace
 
 // static
@@ -173,6 +185,7 @@ FlipSession::FlipSession(const std::string& host, HttpNetworkSession* session)
           write_callback_(this, &FlipSession::OnWriteComplete)),
       domain_(host),
       session_(session),
+      connection_(new ClientSocketHandle),
       read_buffer_(new IOBuffer(kReadBufferSize)),
       read_pending_(false),
       stream_hi_water_mark_(1),  // Always start at 1 for the first stream id.
@@ -203,14 +216,29 @@ FlipSession::~FlipSession() {
   // Cleanup all the streams.
   CloseAllStreams(net::ERR_ABORTED);
 
-  if (connection_.is_initialized()) {
+  if (connection_->is_initialized()) {
     // With Flip we can't recycle sockets.
-    connection_.socket()->Disconnect();
+    connection_->socket()->Disconnect();
   }
 
   // TODO(willchan): Don't hardcode port 80 here.
   DCHECK(!session_->flip_session_pool()->HasSession(
       HostResolver::RequestInfo(domain_, 80)));
+}
+
+void FlipSession::InitializeWithSocket(ClientSocketHandle* connection) {
+  static StatsCounter flip_sessions("flip.sessions");
+  flip_sessions.Increment();
+
+  AdjustSocketBufferSizes(connection->socket());
+
+  state_ = CONNECTED;
+  connection_.reset(connection);
+
+  // This is a newly initialized session that no client should have a handle to
+  // yet, so there's no need to start writing data as in OnTCPConnect(), but we
+  // should start reading data.
+  ReadSocket();
 }
 
 net::Error FlipSession::Connect(const std::string& group_name,
@@ -228,7 +256,7 @@ net::Error FlipSession::Connect(const std::string& group_name,
   static StatsCounter flip_sessions("flip.sessions");
   flip_sessions.Increment();
 
-  int rv = connection_.Init(group_name, host, priority, &connect_callback_,
+  int rv = connection_->Init(group_name, host, priority, &connect_callback_,
                             session_->tcp_socket_pool(), load_log);
   DCHECK(rv <= 0);
 
@@ -393,26 +421,19 @@ void FlipSession::OnTCPConnect(int result) {
     return;
   }
 
-  // Adjust socket buffer sizes.
-  // FLIP uses one socket, and we want a really big buffer.
-  // This greatly helps on links with packet loss - we can even
-  // outperform Vista's dynamic window sizing algorithm.
-  // TODO(mbelshe): more study.
-  const int kSocketBufferSize = 512 * 1024;
-  connection_.socket()->SetReceiveBufferSize(kSocketBufferSize);
-  connection_.socket()->SetSendBufferSize(kSocketBufferSize);
+  AdjustSocketBufferSizes(connection_->socket());
 
   if (use_ssl_) {
     // Add a SSL socket on top of our existing transport socket.
-    ClientSocket* socket = connection_.release_socket();
+    ClientSocket* socket = connection_->release_socket();
     // TODO(mbelshe): Fix the hostname.  This is BROKEN without having
     //                a real hostname.
     socket = session_->socket_factory()->CreateSSLClientSocket(
         socket, "" /* request_->url.HostNoBrackets() */ , ssl_config_);
-    connection_.set_socket(socket);
+    connection_->set_socket(socket);
     is_secure_ = true;
     // TODO(willchan): Plumb LoadLog into FLIP code.
-    int status = connection_.socket()->Connect(&ssl_connect_callback_, NULL);
+    int status = connection_->socket()->Connect(&ssl_connect_callback_, NULL);
     if (status != ERR_IO_PENDING)
       OnSSLConnect(status);
   } else {
@@ -532,7 +553,7 @@ void FlipSession::ReadSocket() {
   if (read_pending_)
     return;
 
-  int bytes_read = connection_.socket()->Read(read_buffer_.get(),
+  int bytes_read = connection_->socket()->Read(read_buffer_.get(),
                                               kReadBufferSize,
                                               &read_callback_);
   switch (bytes_read) {
@@ -610,7 +631,7 @@ void FlipSession::WriteSocket() {
     }
 
     write_pending_ = true;
-    int rv = connection_.socket()->Write(in_flight_write_.buffer(),
+    int rv = connection_->socket()->Write(in_flight_write_.buffer(),
         in_flight_write_.buffer()->BytesRemaining(), &write_callback_);
     if (rv == net::ERR_IO_PENDING)
       break;
@@ -733,7 +754,7 @@ scoped_refptr<FlipStream> FlipSession::GetPushStream(const std::string& path) {
 void FlipSession::GetSSLInfo(SSLInfo* ssl_info) {
   if (is_secure_) {
     SSLClientSocket* ssl_socket =
-        reinterpret_cast<SSLClientSocket*>(connection_.socket());
+        reinterpret_cast<SSLClientSocket*>(connection_->socket());
     ssl_socket->GetSSLInfo(ssl_info);
   }
 }

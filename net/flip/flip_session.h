@@ -108,6 +108,9 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   virtual ~FlipSession();
 
+  // Used by FlipSessionPool to initialize with a pre-existing socket.
+  void InitializeWithSocket(ClientSocketHandle* connection);
+
   // FlipFramerVisitorInterface
   virtual void OnError(flip::FlipFramer*);
   virtual void OnStreamFrameData(flip::FlipStreamId stream_id,
@@ -169,7 +172,7 @@ class FlipSession : public base::RefCounted<FlipSession>,
   scoped_refptr<HttpNetworkSession> session_;
 
   // The socket handle for this session.
-  ClientSocketHandle connection_;
+  scoped_ptr<ClientSocketHandle> connection_;
 
   // The read buffer used to read data from the socket.
   scoped_refptr<IOBuffer> read_buffer_;

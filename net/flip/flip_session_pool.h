@@ -15,7 +15,7 @@
 
 namespace net {
 
-class ClientSocket;
+class ClientSocketHandle;
 class FlipSession;
 class HttpNetworkSession;
 
@@ -30,13 +30,14 @@ class FlipSessionPool : public base::RefCounted<FlipSessionPool> {
   scoped_refptr<FlipSession> Get(
       const HostResolver::RequestInfo& info, HttpNetworkSession* session);
 
-  // Builds a FlipSession from an existing socket.
-  // TODO(willchan): Implement this to allow a HttpNetworkTransaction to
-  // upgrade a TCP connection from HTTP to FLIP.
+  // Builds a FlipSession from an existing socket.  Users should try calling
+  // Get() first to use an existing FlipSession so we don't get multiple
+  // FlipSessions per domain.  Note that ownership of |connection| is
+  // transferred from the caller to the FlipSession.
   scoped_refptr<FlipSession> GetFlipSessionFromSocket(
       const HostResolver::RequestInfo& info,
       HttpNetworkSession* session,
-      ClientSocket* socket);
+      ClientSocketHandle* connection);
 
   // TODO(willchan): Consider renaming to HasReusableSession, since perhaps we
   // should be creating a new session.

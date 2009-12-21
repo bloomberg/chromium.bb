@@ -44,9 +44,16 @@ scoped_refptr<FlipSession> FlipSessionPool::Get(
 scoped_refptr<FlipSession> FlipSessionPool::GetFlipSessionFromSocket(
     const HostResolver::RequestInfo& info,
     HttpNetworkSession* session,
-    ClientSocket* socket) {
-  NOTIMPLEMENTED();
-  return NULL;
+    ClientSocketHandle* connection) {
+  const std::string& domain = info.hostname();
+  FlipSessionList* list = GetSessionList(domain);
+  if (!list)
+    list = AddSessionList(domain);
+  DCHECK(list->empty());
+  scoped_refptr<FlipSession> flip_session(new FlipSession(domain, session));
+  flip_session->InitializeWithSocket(connection);
+  list->push_back(flip_session);
+  return flip_session;
 }
 
 bool FlipSessionPool::HasSession(const HostResolver::RequestInfo& info) const {

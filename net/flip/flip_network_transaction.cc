@@ -86,7 +86,6 @@ int FlipNetworkTransaction::Read(IOBuffer* buf, int buf_len,
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
   DCHECK(callback);
-  DCHECK(flip_.get());
 
   user_buffer_ = buf;
   user_buffer_len_ = buf_len;
@@ -252,6 +251,8 @@ int FlipNetworkTransaction::DoSendRequest() {
   UploadDataStream* upload_data = request_->upload_data ?
       new UploadDataStream(request_->upload_data) : NULL;
   stream_ = flip_->GetOrCreateStream(*request_, upload_data, load_log_.get());
+  // Release the reference to |flip_| since we don't need it anymore.
+  flip_ = NULL;
   return stream_->SendRequest(upload_data, &response_, &io_callback_);
 }
 
@@ -270,7 +271,7 @@ int FlipNetworkTransaction::DoReadHeaders() {
 
 int FlipNetworkTransaction::DoReadHeadersComplete(int result) {
   // TODO(willchan): Flesh out the support for HTTP authentication here.
-  return OK;
+  return result;
 }
 
 int FlipNetworkTransaction::DoReadBody() {
