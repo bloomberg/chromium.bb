@@ -99,9 +99,9 @@
             'breakpad_utilities',
           ],
           'sources': [
-            'src/common/mac/dwarf/bytereader.cc',
-            'src/common/mac/dwarf/dwarf2reader.cc',
-            'src/common/mac/dwarf/functioninfo.cc',
+            'src/common/dwarf/bytereader.cc',
+            'src/common/dwarf/dwarf2reader.cc',
+            'src/common/dwarf/functioninfo.cc',
             'src/common/mac/dump_syms.mm',
             'src/tools/mac/dump_syms/dump_syms_tool.mm',
           ],
