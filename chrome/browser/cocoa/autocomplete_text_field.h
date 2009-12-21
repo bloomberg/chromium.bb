@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/styled_text_field.h"
 #import "chrome/browser/cocoa/url_drop_target.h"
@@ -76,7 +77,8 @@ class AutocompleteTextFieldObserver {
   virtual bool OnDoCommandBySelector(SEL cmd) = 0;
 };
 
-@interface AutocompleteTextField : StyledTextField<URLDropTarget> {
+@interface AutocompleteTextField : StyledTextField<NSTextViewDelegate,
+                                                   URLDropTarget> {
  @private
   // Undo manager for this text field.  We use a specific instance rather than
   // the standard undo manager in order to let us clear the undo stack at will.
