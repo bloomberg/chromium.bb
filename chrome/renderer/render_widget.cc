@@ -455,18 +455,18 @@ void RenderWidget::DoDeferredUpdate() {
 
   HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
 
-  // The scroll damage is just another rectangle to paint and copy.
-  std::vector<gfx::Rect> copy_rects;
-  copy_rects.swap(update.paint_rects);
-  if (!scroll_damage.IsEmpty())
-    copy_rects.push_back(scroll_damage);
-
   // TODO(darin): Re-enable painting multiple damage rects once the
   // page-cycler regressions are resolved.  See bug 29589.
   if (update.scroll_rect.IsEmpty()) {
     update.paint_rects.clear();
     update.paint_rects.push_back(bounds);
   }
+
+  // The scroll damage is just another rectangle to paint and copy.
+  std::vector<gfx::Rect> copy_rects;
+  copy_rects.swap(update.paint_rects);
+  if (!scroll_damage.IsEmpty())
+    copy_rects.push_back(scroll_damage);
 
   for (size_t i = 0; i < copy_rects.size(); ++i)
     PaintRect(copy_rects[i], bounds.origin(), canvas.get());
