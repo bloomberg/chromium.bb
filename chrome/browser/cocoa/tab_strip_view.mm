@@ -165,4 +165,15 @@
   return [dropHandler_ performDragOperation:sender];
 }
 
+- (BOOL)accessibilityIsIgnored {
+  return NO;
+}
+
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  if ([attribute isEqual:NSAccessibilityRoleAttribute])
+    return NSAccessibilityGroupRole;
+
+  return [super accessibilityAttributeValue:attribute];
+}
+
 @end

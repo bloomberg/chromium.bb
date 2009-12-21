@@ -794,6 +794,23 @@ const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
+- (BOOL)accessibilityIsIgnored {
+  return NO;
+}
+
+- (NSArray*)accessibilityActionNames {
+  NSArray* parentActions = [super accessibilityActionNames];
+
+  return [parentActions arrayByAddingObject:NSAccessibilityPressAction];
+}
+
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  if ([attribute isEqual:NSAccessibilityRoleAttribute])
+    return NSAccessibilityButtonRole;
+
+  return [super accessibilityAttributeValue:attribute];
+}
+
 @end  // @implementation TabView
 
 @implementation TabView(Private)
