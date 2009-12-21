@@ -27,7 +27,6 @@ namespace {
 // time taken for each switch. It then prints out the times on the console,
 // with the aim that the page cycler parser can interpret these numbers to
 // draw graphs for page cycler Tab Switching Performance.
-// Usage Flags: --enable-logging --dump-histograms-on-exit --log-level=0
 class TabSwitchingUITest : public UITest {
  public:
   TabSwitchingUITest() {
@@ -50,6 +49,9 @@ class TabSwitchingUITest : public UITest {
     setenv(WideToASCII(env_vars::kLogFileName).c_str(),
            log_file_name_.value().c_str(), 1);
 #endif
+
+    // Add the necessary arguments to Chrome's launch command for these tests.
+    AddLaunchArguments();
 
     // Run the rest of the UITest initialization.
     UITest::SetUp();
@@ -165,6 +167,12 @@ class TabSwitchingUITest : public UITest {
   scoped_refptr<BrowserProxy> browser_proxy_;
 
  private:
+  void AddLaunchArguments() {
+    launch_arguments_.AppendSwitch(switches::kEnableLogging);
+    launch_arguments_.AppendSwitch(switches::kDumpHistogramsOnExit);
+    launch_arguments_.AppendSwitchWithValue(switches::kLoggingLevel, "0");
+  }
+
   DISALLOW_COPY_AND_ASSIGN(TabSwitchingUITest);
 };
 

@@ -1320,8 +1320,7 @@
       'type': 'executable',
       'msvs_guid': 'A34770EA-A574-43E8-9327-F79C04770E98',
       'run_as': {
-        'action': ['$(TargetPath)', '--gtest_print_time', '-enable-logging',
-                   '-dump-histograms-on-exit', '-log-level=0'],
+        'action': ['$(TargetPath)', '--gtest_print_time'],
       },
       'dependencies': [
         'chrome',
