@@ -36,9 +36,9 @@ TEST_F(RenderViewHostTest, BadMessageHandlerRenderViewHost) {
 // ReceivedBadMessage() handler.
 TEST_F(RenderViewHostTest, BadMessageHandlerRenderWidgetHost) {
   EXPECT_EQ(0, process()->bad_msg_count());
-  // craft an incorrect ViewHostMsg_PaintRect message. The real one has
+  // craft an incorrect ViewHostMsg_UpdateRect message. The real one has
   // one payload item but the one we construct has none.
-  IPC::Message message(0, ViewHostMsg_PaintRect::ID,
+  IPC::Message message(0, ViewHostMsg_UpdateRect::ID,
                        IPC::Message::PRIORITY_NORMAL);
   rvh()->TestOnMessageReceived(message);
   EXPECT_EQ(1, process()->bad_msg_count());

@@ -110,13 +110,14 @@ class RenderWidgetHostView {
   // (Worse, we might recursively call RenderWidgetHost::GetBackingStore().)
   // Thus implementers should generally paint as much of |rect| as possible
   // synchronously with as little overpainting as possible.
-  virtual void DidPaintRect(const gfx::Rect& rect) = 0;
+  virtual void DidPaintBackingStoreRects(
+      const std::vector<gfx::Rect>& rects) = 0;
 
   // Informs the view that a portion of the widget's backing store was scrolled
   // by dx pixels horizontally and dy pixels vertically. The view should copy
   // the exposed pixels from the backing store of the render widget (which has
   // already been scrolled) onto the screen.
-  virtual void DidScrollRect(
+  virtual void DidScrollBackingStoreRect(
       const gfx::Rect& rect, int dx, int dy) = 0;
 
   // Notifies the View that the renderer has ceased to exist.

@@ -347,15 +347,16 @@ void BrowserRenderProcessHost::CrossSiteClosePageACK(
   widget_helper_->CrossSiteClosePageACK(params);
 }
 
-bool BrowserRenderProcessHost::WaitForPaintMsg(int render_widget_id,
-                                               const base::TimeDelta& max_delay,
-                                               IPC::Message* msg) {
+bool BrowserRenderProcessHost::WaitForUpdateMsg(
+    int render_widget_id,
+    const base::TimeDelta& max_delay,
+    IPC::Message* msg) {
   // The post task to this thread with the process id could be in queue, and we
   // don't want to dispatch a message before then since it will need the handle.
   if (child_process_.get() && child_process_->IsStarting())
     return false;
 
-  return widget_helper_->WaitForPaintMsg(render_widget_id, max_delay, msg);
+  return widget_helper_->WaitForUpdateMsg(render_widget_id, max_delay, msg);
 }
 
 void BrowserRenderProcessHost::ReceivedBadMessage(uint32 msg_type) {

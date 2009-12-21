@@ -35,9 +35,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual int GetNextRoutingID();
   virtual void CancelResourceRequests(int render_widget_id);
   virtual void CrossSiteClosePageACK(const ViewMsg_ClosePage_Params& params);
-  virtual bool WaitForPaintMsg(int render_widget_id,
-                               const base::TimeDelta& max_delay,
-                               IPC::Message* msg);
+  virtual bool WaitForUpdateMsg(int render_widget_id,
+                                const base::TimeDelta& max_delay,
+                                IPC::Message* msg);
   virtual void ReceivedBadMessage(uint32 msg_type);
   virtual void WidgetRestored();
   virtual void WidgetHidden();

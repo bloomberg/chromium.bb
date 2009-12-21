@@ -14,24 +14,24 @@
 
 // A Task used with InvokeLater that we hold a pointer to in pending_paints_.
 // Instances are deleted by MessageLoop after it calls their Run method.
-class RenderWidgetHelper::PaintMsgProxy : public Task {
+class RenderWidgetHelper::UpdateMsgProxy : public Task {
  public:
-  PaintMsgProxy(RenderWidgetHelper* h, const IPC::Message& m)
+  UpdateMsgProxy(RenderWidgetHelper* h, const IPC::Message& m)
       : helper(h),
         message(m),
         cancelled(false) {
   }
 
-  ~PaintMsgProxy() {
+  ~UpdateMsgProxy() {
     // If the paint message was never dispatched, then we need to let the
     // helper know that we are going away.
     if (!cancelled && helper)
-      helper->OnDiscardPaintMsg(this);
+      helper->OnDiscardUpdateMsg(this);
   }
 
   virtual void Run() {
     if (!cancelled) {
-      helper->OnDispatchPaintMsg(this);
+      helper->OnDispatchUpdateMsg(this);
       helper = NULL;
     }
   }
@@ -40,7 +40,7 @@ class RenderWidgetHelper::PaintMsgProxy : public Task {
   IPC::Message message;
   bool cancelled;  // If true, then the message will not be dispatched.
 
-  DISALLOW_COPY_AND_ASSIGN(PaintMsgProxy);
+  DISALLOW_COPY_AND_ASSIGN(UpdateMsgProxy);
 };
 
 RenderWidgetHelper::RenderWidgetHelper()
@@ -94,17 +94,17 @@ void RenderWidgetHelper::CrossSiteClosePageACK(
                         params));
 }
 
-bool RenderWidgetHelper::WaitForPaintMsg(int render_widget_id,
-                                         const base::TimeDelta& max_delay,
-                                         IPC::Message* msg) {
+bool RenderWidgetHelper::WaitForUpdateMsg(int render_widget_id,
+                                          const base::TimeDelta& max_delay,
+                                          IPC::Message* msg) {
   base::TimeTicks time_start = base::TimeTicks::Now();
 
   for (;;) {
-    PaintMsgProxy* proxy = NULL;
+    UpdateMsgProxy* proxy = NULL;
     {
       AutoLock lock(pending_paints_lock_);
 
-      PaintMsgProxyMap::iterator it = pending_paints_.find(render_widget_id);
+      UpdateMsgProxyMap::iterator it = pending_paints_.find(render_widget_id);
       if (it != pending_paints_.end()) {
         proxy = it->second;
 
@@ -134,25 +134,25 @@ bool RenderWidgetHelper::WaitForPaintMsg(int render_widget_id,
   return false;
 }
 
-void RenderWidgetHelper::DidReceivePaintMsg(const IPC::Message& msg) {
+void RenderWidgetHelper::DidReceiveUpdateMsg(const IPC::Message& msg) {
   int render_widget_id = msg.routing_id();
 
-  PaintMsgProxy* proxy = NULL;
+  UpdateMsgProxy* proxy = NULL;
   {
     AutoLock lock(pending_paints_lock_);
 
-    PaintMsgProxyMap::value_type new_value(render_widget_id, NULL);
+    UpdateMsgProxyMap::value_type new_value(render_widget_id, NULL);
 
     // We expect only a single PaintRect message at a time.  Optimize for the
     // case that we don't already have an entry by using the 'insert' method.
-    std::pair<PaintMsgProxyMap::iterator, bool> result =
+    std::pair<UpdateMsgProxyMap::iterator, bool> result =
         pending_paints_.insert(new_value);
     if (!result.second) {
       NOTREACHED() << "Unexpected PaintRect message!";
       return;
     }
 
-    result.first->second = (proxy = new PaintMsgProxy(this, msg));
+    result.first->second = (proxy = new UpdateMsgProxy(this, msg));
   }
 
   // Notify anyone waiting on the UI thread that there is a new entry in the
@@ -164,14 +164,14 @@ void RenderWidgetHelper::DidReceivePaintMsg(const IPC::Message& msg) {
   ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, proxy);
 }
 
-void RenderWidgetHelper::OnDiscardPaintMsg(PaintMsgProxy* proxy) {
+void RenderWidgetHelper::OnDiscardUpdateMsg(UpdateMsgProxy* proxy) {
   const IPC::Message& msg = proxy->message;
 
   // Remove the proxy from the map now that we are going to handle it normally.
   {
     AutoLock lock(pending_paints_lock_);
 
-    PaintMsgProxyMap::iterator it = pending_paints_.find(msg.routing_id());
+    UpdateMsgProxyMap::iterator it = pending_paints_.find(msg.routing_id());
     DCHECK(it != pending_paints_.end());
     DCHECK(it->second == proxy);
 
@@ -179,8 +179,8 @@ void RenderWidgetHelper::OnDiscardPaintMsg(PaintMsgProxy* proxy) {
   }
 }
 
-void RenderWidgetHelper::OnDispatchPaintMsg(PaintMsgProxy* proxy) {
-  OnDiscardPaintMsg(proxy);
+void RenderWidgetHelper::OnDispatchUpdateMsg(UpdateMsgProxy* proxy) {
+  OnDiscardUpdateMsg(proxy);
 
   // It is reasonable for the host to no longer exist.
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);

@@ -124,8 +124,7 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnMsgRenderViewGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnMsgClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PaintRect, OnMsgPaintRect)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ScrollRect, OnMsgScrollRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnMsgUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
@@ -299,9 +298,9 @@ BackingStore* RenderWidgetHost::GetBackingStore(bool force_create) {
   if (resize_ack_pending_ || !backing_store) {
     IPC::Message msg;
     TimeDelta max_delay = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
-    if (process_->WaitForPaintMsg(routing_id_, max_delay, &msg)) {
-      ViewHostMsg_PaintRect::Dispatch(
-          &msg, this, &RenderWidgetHost::OnMsgPaintRect);
+    if (process_->WaitForUpdateMsg(routing_id_, max_delay, &msg)) {
+      ViewHostMsg_UpdateRect::Dispatch(
+          &msg, this, &RenderWidgetHost::OnMsgUpdateRect);
       backing_store = BackingStoreManager::GetBackingStore(this, current_size_);
     }
   }
@@ -618,15 +617,15 @@ void RenderWidgetHost::OnMsgRequestMove(const gfx::Rect& pos) {
   }
 }
 
-void RenderWidgetHost::OnMsgPaintRect(
-    const ViewHostMsg_PaintRect_Params& params) {
+void RenderWidgetHost::OnMsgUpdateRect(
+    const ViewHostMsg_UpdateRect_Params& params) {
   TimeTicks paint_start = TimeTicks::Now();
 
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
 
   bool is_resize_ack =
-      ViewHostMsg_PaintRect_Flags::is_resize_ack(params.flags);
+      ViewHostMsg_UpdateRect_Flags::is_resize_ack(params.flags);
 
   // resize_ack_pending_ needs to be cleared before we call DidPaintRect, since
   // that will end up reaching GetBackingStore.
@@ -637,7 +636,7 @@ void RenderWidgetHost::OnMsgPaintRect(
   }
 
   bool is_repaint_ack =
-      ViewHostMsg_PaintRect_Flags::is_repaint_ack(params.flags);
+      ViewHostMsg_UpdateRect_Flags::is_repaint_ack(params.flags);
   if (is_repaint_ack) {
     repaint_ack_pending_ = false;
     TimeDelta delta = TimeTicks::Now() - repaint_start_time_;
@@ -653,12 +652,19 @@ void RenderWidgetHost::OnMsgPaintRect(
   if (dib) {
     if (dib->size() < size) {
       DLOG(WARNING) << "Transport DIB too small for given rectangle";
-      process()->ReceivedBadMessage(ViewHostMsg_PaintRect__ID);
+      process()->ReceivedBadMessage(ViewHostMsg_UpdateRect__ID);
     } else {
+      // Scroll the backing store.
+      if (!params.scroll_rect.IsEmpty()) {
+        ScrollBackingStoreRect(params.dx, params.dy,
+                               params.scroll_rect,
+                               params.view_size);
+      }
+
       // Paint the backing store. This will update it with the renderer-supplied
       // bits. The view will read out of the backing store later to actually
       // draw to the screen.
-      PaintBackingStoreRect(dib, params.bitmap_rect, params.update_rects,
+      PaintBackingStoreRect(dib, params.bitmap_rect, params.copy_rects,
                             params.view_size);
     }
   }
@@ -667,7 +673,7 @@ void RenderWidgetHost::OnMsgPaintRect(
   // This must be done AFTER we're done painting with the bitmap supplied by the
   // renderer. This ACK is a signal to the renderer that the backing store can
   // be re-used, so the bitmap may be invalid after this call.
-  Send(new ViewMsg_PaintRect_ACK(routing_id_));
+  Send(new ViewMsg_UpdateRect_ACK(routing_id_));
 
   // We don't need to update the view if the view is hidden. We must do this
   // early return after the ACK is sent, however, or the renderer will not send
@@ -679,7 +685,12 @@ void RenderWidgetHost::OnMsgPaintRect(
   if (view_) {
     view_->MovePluginWindows(params.plugin_window_moves);
     view_being_painted_ = true;
-    view_->DidPaintRect(params.bitmap_rect);
+    if (!params.scroll_rect.IsEmpty()) {
+      view_->DidScrollBackingStoreRect(params.scroll_rect,
+                                       params.dx,
+                                       params.dy);
+    }
+    view_->DidPaintBackingStoreRects(params.copy_rects);
     view_being_painted_ = false;
   }
 
@@ -700,56 +711,7 @@ void RenderWidgetHost::OnMsgPaintRect(
 
   // Log the time delta for processing a paint message.
   TimeDelta delta = TimeTicks::Now() - paint_start;
-  UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgPaintRect", delta);
-}
-
-void RenderWidgetHost::OnMsgScrollRect(
-    const ViewHostMsg_ScrollRect_Params& params) {
-  TimeTicks scroll_start = TimeTicks::Now();
-
-  DCHECK(!params.view_size.IsEmpty());
-
-  const size_t size = params.bitmap_rect.height() *
-                      params.bitmap_rect.width() * 4;
-  TransportDIB* dib = process_->GetTransportDIB(params.bitmap);
-  if (dib) {
-    if (dib->size() < size) {
-      LOG(WARNING) << "Transport DIB too small for given rectangle";
-      process()->ReceivedBadMessage(ViewHostMsg_PaintRect__ID);
-    } else {
-      // Scroll the backing store.
-      ScrollBackingStoreRect(dib, params.bitmap_rect,
-                             params.dx, params.dy,
-                             params.clip_rect, params.view_size);
-    }
-  }
-
-  // ACK early so we can prefetch the next ScrollRect if there is a next one.
-  // This must be done AFTER we're done painting with the bitmap supplied by the
-  // renderer. This ACK is a signal to the renderer that the backing store can
-  // be re-used, so the bitmap may be invalid after this call.
-  Send(new ViewMsg_ScrollRect_ACK(routing_id_));
-
-  // We don't need to update the view if the view is hidden. We must do this
-  // early return after the ACK is sent, however, or the renderer will not send
-  // is more data.
-  if (is_hidden_)
-    return;
-
-  // Paint the view. Watch out: it might be destroyed already.
-  if (view_) {
-    view_being_painted_ = true;
-    view_->MovePluginWindows(params.plugin_window_moves);
-    view_->DidScrollRect(params.clip_rect, params.dx, params.dy);
-    view_being_painted_ = false;
-  }
-
-  if (painting_observer_)
-    painting_observer_->WidgetDidUpdateBackingStore(this);
-
-  // Log the time delta for processing a scroll message.
-  TimeDelta delta = TimeTicks::Now() - scroll_start;
-  UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgScrollRect", delta);
+  UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgUpdateRect", delta);
 }
 
 void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
@@ -891,9 +853,7 @@ void RenderWidgetHost::PaintBackingStoreRect(
   }
 }
 
-void RenderWidgetHost::ScrollBackingStoreRect(TransportDIB* bitmap,
-                                              const gfx::Rect& bitmap_rect,
-                                              int dx, int dy,
+void RenderWidgetHost::ScrollBackingStoreRect(int dx, int dy,
                                               const gfx::Rect& clip_rect,
                                               const gfx::Size& view_size) {
   if (is_hidden_) {
@@ -910,8 +870,7 @@ void RenderWidgetHost::ScrollBackingStoreRect(TransportDIB* bitmap,
   BackingStore* backing_store = BackingStoreManager::Lookup(this);
   if (!backing_store || (backing_store->size() != view_size))
     return;
-  backing_store->ScrollRect(process_->GetHandle(), bitmap, bitmap_rect,
-                            dx, dy, clip_rect, view_size);
+  backing_store->ScrollRect(dx, dy, clip_rect, view_size);
 }
 
 void RenderWidgetHost::ToggleSpellPanel(bool is_currently_visible) {
