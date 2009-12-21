@@ -486,6 +486,7 @@ LocationBarViewMac::PageActionImageView::PageActionImageView(
     : owner_(owner),
       profile_(profile),
       page_action_(page_action),
+      popup_controller_(nil),
       current_tab_id_(-1),
       preview_enabled_(false) {
   Extension* extension = profile->GetExtensionsService()->GetExtensionById(
@@ -530,7 +531,7 @@ bool LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
     // Adjust the anchor point to be at the center of the page action icon.
     arrowPoint.x += [GetImage() size].width / 2;
 
-    popupController_ =
+    popup_controller_ =
         [ExtensionPopupController showURL:page_action_->popup_url()
                                 inBrowser:BrowserList::GetLastActive()
                                anchoredAt:arrowPoint
@@ -622,9 +623,8 @@ void LocationBarViewMac::PageActionImageView::Observe(
     const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-      // If we aren't the host of the popup, then disregard the notification.
-      if (popupController_ &&
-          Details<ExtensionHost>([popupController_ host]) == details) {
+      if (popup_controller_ &&
+          Details<ExtensionHost>([popup_controller_ host]) == details) {
         HidePopup();
       }
       break;
@@ -635,8 +635,8 @@ void LocationBarViewMac::PageActionImageView::Observe(
 }
 
 void LocationBarViewMac::PageActionImageView::HidePopup() {
-  [popupController_ close];
-  popupController_ = nil;
+  [popup_controller_ close];
+  popup_controller_ = nil;
 }
 
 // PageActionViewList-----------------------------------------------------------

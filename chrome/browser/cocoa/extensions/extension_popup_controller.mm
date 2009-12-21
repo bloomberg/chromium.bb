@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_service.h"
 
 // The minimum/maximum dimensions of the popup.
 // The minimum is just a little larger than the size of the button itself.
@@ -95,7 +96,10 @@ const NSTimeInterval kAnimationDuration = 0.2;
 
 - (void)windowDidResignKey:(NSNotification *)notification {
   DCHECK_EQ([notification object], [self window]);
-  [self close];
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+      Source<Profile>(host_->profile()),
+      Details<ExtensionHost>(host_.get()));
 }
 
 - (void)close {

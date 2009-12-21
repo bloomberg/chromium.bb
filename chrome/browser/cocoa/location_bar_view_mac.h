@@ -200,6 +200,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     PageActionImageView() : owner_(NULL),
                             profile_(NULL),
                             page_action_(NULL),
+                            popup_controller_(nil),
                             tracker_(NULL),
                             current_tab_id_(-1),
                             preview_enabled_(false) {}
@@ -226,7 +227,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     PageActionMap page_action_icons_;
 
     // The controller for the popup displayed if a page action has one. Weak.
-    ExtensionPopupController* popupController_;
+    ExtensionPopupController* popup_controller_;
 
     // The object that is waiting for the image loading to complete
     // asynchronously.

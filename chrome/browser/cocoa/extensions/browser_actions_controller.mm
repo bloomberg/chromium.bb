@@ -281,11 +281,13 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
         [owner_ browserActionVisibilityHasChanged];
         break;
       }
-      case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-        if (Details<ExtensionHost>([[owner_ popup] host]) != details)
-          return;
-        [owner_ hidePopup];
+      case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+        ExtensionPopupController* popup = [owner_ popup];
+        if (popup && Details<ExtensionHost>([popup host]) == details)
+          [owner_ hidePopup];
+
         break;
+      }
       default:
         NOTREACHED() << L"Unexpected notification";
     }
