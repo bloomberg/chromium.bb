@@ -21,17 +21,24 @@ TEST(LoadLogTest, Basic) {
   scoped_refptr<LoadLog> log(new LoadLog(10));
 
   // Logs start off empty.
-  EXPECT_EQ(0u, log->events().size());
+  EXPECT_EQ(0u, log->entries().size());
   EXPECT_EQ(0u, log->num_entries_truncated());
 
   // Add 3 entries.
 
-  log->Add(MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL, LoadLog::PHASE_BEGIN);
-  log->Add(MakeTime(2), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
-  log->Add(MakeTime(11), LoadLog::TYPE_HOST_RESOLVER_IMPL_OBSERVER_ONSTART,
-           LoadLog::PHASE_END);
+  log->Add(LoadLog::Entry(MakeTime(0),
+                          LoadLog::Event(LoadLog::TYPE_HOST_RESOLVER_IMPL,
+                                         LoadLog::PHASE_BEGIN)));
+  log->Add(LoadLog::Entry(MakeTime(2),
+                          LoadLog::Event(LoadLog::TYPE_CANCELLED,
+                                         LoadLog::PHASE_NONE)));
+  log->Add(
+      LoadLog::Entry(
+          MakeTime(11),
+          LoadLog::Event(LoadLog::TYPE_HOST_RESOLVER_IMPL_OBSERVER_ONSTART,
+                         LoadLog::PHASE_END)));
 
-  EXPECT_EQ(3u, log->events().size());
+  EXPECT_EQ(3u, log->entries().size());
   EXPECT_EQ(0u, log->num_entries_truncated());
 
   ExpectLogContains(log, 0, MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL,
@@ -52,10 +59,12 @@ TEST(LoadLogTest, Truncation) {
 
   // Max it out.
   for (size_t i = 0; i < kMaxNumEntries; ++i) {
-    log->Add(MakeTime(i), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
+    log->Add(LoadLog::Entry(MakeTime(i),
+                            LoadLog::Event(LoadLog::TYPE_CANCELLED,
+                                           LoadLog::PHASE_NONE)));
   }
 
-  EXPECT_EQ(kMaxNumEntries, log->events().size());
+  EXPECT_EQ(kMaxNumEntries, log->entries().size());
   EXPECT_EQ(0u, log->num_entries_truncated());
 
   // Check the last entry.
@@ -64,11 +73,17 @@ TEST(LoadLogTest, Truncation) {
                     LoadLog::PHASE_NONE);
 
   // Add three entries while maxed out (will cause truncation)
-  log->Add(MakeTime(0), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
-  log->Add(MakeTime(1), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
-  log->Add(MakeTime(2), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
+  log->Add(LoadLog::Entry(MakeTime(0),
+                          LoadLog::Event(LoadLog::TYPE_CANCELLED,
+                                         LoadLog::PHASE_NONE)));
+  log->Add(LoadLog::Entry(MakeTime(1),
+                          LoadLog::Event(LoadLog::TYPE_CANCELLED,
+                                         LoadLog::PHASE_NONE)));
+  log->Add(LoadLog::Entry(MakeTime(2),
+                          LoadLog::Event(LoadLog::TYPE_CANCELLED,
+                                         LoadLog::PHASE_NONE)));
 
-  EXPECT_EQ(kMaxNumEntries, log->events().size());
+  EXPECT_EQ(kMaxNumEntries, log->entries().size());
   EXPECT_EQ(3u, log->num_entries_truncated());
 
   // Check the last entry -- it should be the final entry we added.
@@ -81,18 +96,25 @@ TEST(LoadLogTest, Append) {
   scoped_refptr<LoadLog> log1(new LoadLog(10));
   scoped_refptr<LoadLog> log2(new LoadLog(10));
 
-  log1->Add(MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL,
-            LoadLog::PHASE_BEGIN);
+  log1->Add(LoadLog::Entry(MakeTime(0),
+                           LoadLog::Event(LoadLog::TYPE_HOST_RESOLVER_IMPL,
+                                          LoadLog::PHASE_BEGIN)));
 
-  log2->Add(MakeTime(3), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
-  log2->Add(MakeTime(9), LoadLog::TYPE_HOST_RESOLVER_IMPL, LoadLog::PHASE_END);
+  log2->Add(LoadLog::Entry(MakeTime(3),
+                           LoadLog::Event(LoadLog::TYPE_CANCELLED,
+                                          LoadLog::PHASE_NONE)));
+  log2->Add(LoadLog::Entry(MakeTime(9),
+                           LoadLog::Event(LoadLog::TYPE_HOST_RESOLVER_IMPL,
+                                          LoadLog::PHASE_END)));
 
   log1->Append(log2);
 
   // Add something else to log2 (should NOT be reflected in log1).
-  log2->Add(MakeTime(19), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
+  log2->Add(LoadLog::Entry(MakeTime(19),
+                           LoadLog::Event(LoadLog::TYPE_CANCELLED,
+                                          LoadLog::PHASE_NONE)));
 
-  EXPECT_EQ(3u, log1->events().size());
+  EXPECT_EQ(3u, log1->entries().size());
   EXPECT_EQ(0u, log1->num_entries_truncated());
 
   ExpectLogContains(log1, 0, MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL,
@@ -114,15 +136,19 @@ TEST(LoadLogTest, AppendWithTruncation) {
   scoped_refptr<LoadLog> log1(new LoadLog(kMaxNumEntries));
   scoped_refptr<LoadLog> log2(new LoadLog(kMaxNumEntries));
   for (size_t i = 0; i < 6; ++i) {
-    log1->Add(MakeTime(i), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
-    log2->Add(MakeTime(2 * i), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
+    log1->Add(LoadLog::Entry(MakeTime(i),
+                             LoadLog::Event(LoadLog::TYPE_CANCELLED,
+                                            LoadLog::PHASE_NONE)));
+    log2->Add(LoadLog::Entry(MakeTime(2 * i),
+                             LoadLog::Event(LoadLog::TYPE_CANCELLED,
+                                            LoadLog::PHASE_NONE)));
   }
 
   // Append log2 to log1.
   log1->Append(log2);
 
   // The combined log totalled 12 entries, so 2 must have been dropped.
-  EXPECT_EQ(10u, log1->events().size());
+  EXPECT_EQ(10u, log1->entries().size());
   EXPECT_EQ(2u, log1->num_entries_truncated());
 
   // Combined log should end with the final entry of log2.
@@ -136,6 +162,21 @@ TEST(LoadLogTest, EventTypeToString) {
   EXPECT_STREQ("HOST_RESOLVER_IMPL_OBSERVER_ONSTART",
                LoadLog::EventTypeToString(
                   LoadLog::TYPE_HOST_RESOLVER_IMPL_OBSERVER_ONSTART));
+}
+
+TEST(LoadLogTest, String) {
+  scoped_refptr<LoadLog> log(new LoadLog(10));
+
+  // Make sure that AddStringLiteral() adds a literal and not a std::string.
+  // (in case there is any funny-business with implicit conversions).
+  LoadLog::AddStringLiteral(log, "This is a literal");
+  log->Add(LoadLog::Entry(MakeTime(0), "Another literal"));
+  log->Add(LoadLog::Entry(MakeTime(0), std::string("Now a std::string")));
+
+  ASSERT_EQ(3u, log->entries().size());
+  EXPECT_EQ(LoadLog::Entry::TYPE_STRING_LITERAL, log->entries()[0].type);
+  EXPECT_EQ(LoadLog::Entry::TYPE_STRING_LITERAL, log->entries()[1].type);
+  EXPECT_EQ(LoadLog::Entry::TYPE_STRING, log->entries()[2].type);
 }
 
 }  // namespace

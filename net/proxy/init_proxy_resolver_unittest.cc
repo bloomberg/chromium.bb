@@ -177,7 +177,7 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
 
   // Check the LoadLog was filled correctly.
-  EXPECT_EQ(6u, log->events().size());
+  EXPECT_EQ(6u, log->entries().size());
   ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
                     LoadLog::PHASE_BEGIN);
   ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
@@ -210,7 +210,7 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
   EXPECT_EQ("", resolver.pac_bytes());
 
   // Check the LoadLog was filled correctly.
-  EXPECT_EQ(4u, log->events().size());
+  EXPECT_EQ(4u, log->entries().size());
   ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
                     LoadLog::PHASE_BEGIN);
   ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
@@ -310,7 +310,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   // Check the LoadLog was filled correctly.
   // (Note that the Fetch and Set states are repeated since both WPAD and custom
   // PAC scripts are tried).
-  EXPECT_EQ(10u, log->events().size());
+  EXPECT_EQ(10u, log->entries().size());
   ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
                     LoadLog::PHASE_BEGIN);
   ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,

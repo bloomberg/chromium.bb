@@ -168,7 +168,7 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
 
   // The mock proxy resolver should have written 1 log entry. And
   // on completion, this should have been copied into |log0|.
-  EXPECT_EQ(1u, log0->events().size());
+  EXPECT_EQ(1u, log0->entries().size());
 
   // Start 3 more requests (request1 to request3).
 

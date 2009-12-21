@@ -25,10 +25,12 @@ inline void ExpectLogContains(const LoadLog* log,
                               base::TimeTicks expected_time,
                               LoadLog::EventType expected_event,
                               LoadLog::EventPhase expected_phase) {
-  ASSERT_LT(i, log->events().size());
-  EXPECT_TRUE(expected_time == log->events()[i].time);
-  EXPECT_EQ(expected_event, log->events()[i].type);
-  EXPECT_EQ(expected_phase, log->events()[i].phase);
+  ASSERT_LT(i, log->entries().size());
+  const LoadLog::Entry& entry = log->entries()[i];
+  EXPECT_EQ(LoadLog::Entry::TYPE_EVENT, entry.type);
+  EXPECT_TRUE(expected_time == entry.time);
+  EXPECT_EQ(expected_event, entry.event.type);
+  EXPECT_EQ(expected_phase, entry.event.phase);
 }
 
 // Same as above, but without an expectation for the timestamp.
@@ -36,9 +38,11 @@ inline void ExpectLogContains(const LoadLog* log,
                               size_t i,
                               LoadLog::EventType expected_event,
                               LoadLog::EventPhase expected_phase) {
-  ASSERT_LT(i, log->events().size());
-  EXPECT_EQ(expected_event, log->events()[i].type);
-  EXPECT_EQ(expected_phase, log->events()[i].phase);
+  ASSERT_LT(i, log->entries().size());
+  const LoadLog::Entry& entry = log->entries()[i];
+  EXPECT_EQ(LoadLog::Entry::TYPE_EVENT, entry.type);
+  EXPECT_EQ(expected_event, entry.event.type);
+  EXPECT_EQ(expected_phase, entry.event.phase);
 }
 
 inline ::testing::AssertionResult LogContains(
@@ -47,18 +51,22 @@ inline ::testing::AssertionResult LogContains(
     LoadLog::EventType expected_event,
     LoadLog::EventPhase expected_phase) {
   // Negative indices are reverse indices.
-  size_t j = (i < 0) ? log.events().size() + i : i;
-  if (j >= log.events().size())
+  size_t j = (i < 0) ? log.entries().size() + i : i;
+  if (j >= log.entries().size())
     return ::testing::AssertionFailure() << j << " is out of bounds.";
-  if (expected_event != log.events()[j].type) {
+  const LoadLog::Entry& entry = log.entries()[j];
+  if (entry.type != LoadLog::Entry::TYPE_EVENT) {
+    return ::testing::AssertionFailure() << "Not a TYPE_EVENT entry";
+  }
+  if (expected_event != entry.event.type) {
     return ::testing::AssertionFailure()
-        << "Actual event: " << LoadLog::EventTypeToString(log.events()[j].type)
+        << "Actual event: " << LoadLog::EventTypeToString(entry.event.type)
         << ". Expected event: " << LoadLog::EventTypeToString(expected_event)
         << ".";
   }
-  if (expected_phase != log.events()[j].phase) {
+  if (expected_phase != entry.event.phase) {
     return ::testing::AssertionFailure()
-        << "Actual phase: " << log.events()[j].phase
+        << "Actual phase: " << entry.event.phase
         << ". Expected phase: " << expected_phase << ".";
   }
   return ::testing::AssertionSuccess();
@@ -72,11 +80,14 @@ inline size_t ExpectLogContainsSomewhere(const LoadLog* log,
                                          LoadLog::EventType expected_event,
                                          LoadLog::EventPhase expected_phase) {
   size_t i = 0;
-  for (; i < log->events().size(); ++i)
-    if (log->events()[i].type == expected_event &&
-        log->events()[i].phase == expected_phase)
+  for (; i < log->entries().size(); ++i) {
+    const LoadLog::Entry& entry = log->entries()[i];
+    if (entry.type == LoadLog::Entry::TYPE_EVENT &&
+        entry.event.type == expected_event &&
+        entry.event.phase == expected_phase)
       break;
-  EXPECT_LT(i, log->events().size());
+  }
+  EXPECT_LT(i, log->entries().size());
   EXPECT_GE(i, min_index);
   return i;
 }

@@ -22,26 +22,26 @@ const char* LoadLog::EventTypeToString(EventType event) {
   return NULL;
 }
 
-void LoadLog::Add(const Event& event) {
+void LoadLog::Add(const Entry& entry) {
   // Minor optimization. TODO(eroman): use StackVector instead.
-  if (events_.empty())
-    events_.reserve(10);  // It is likely we will have at least 10 entries.
+  if (entries_.empty())
+    entries_.reserve(10);  // It is likely we will have at least 10 entries.
 
   // Enforce a bound of |max_num_entries_| -- once we reach it, keep overwriting
   // the final entry in the log.
 
-  if (events_.size() + 1 <= max_num_entries_ ||
+  if (entries_.size() + 1 <= max_num_entries_ ||
       max_num_entries_ == kUnbounded) {
-    events_.push_back(event);
+    entries_.push_back(entry);
   } else {
     num_entries_truncated_ += 1;
-    events_[max_num_entries_ - 1] = event;
+    entries_[max_num_entries_ - 1] = entry;
   }
 }
 
 void LoadLog::Append(const LoadLog* log) {
-  for (size_t i = 0; i < log->events().size(); ++i)
-    Add(log->events()[i]);
+  for (size_t i = 0; i < log->entries().size(); ++i)
+    Add(log->entries()[i]);
   num_entries_truncated_ += log->num_entries_truncated();
 }
 

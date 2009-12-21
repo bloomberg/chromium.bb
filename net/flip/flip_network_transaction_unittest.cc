@@ -951,7 +951,7 @@ TEST_F(FlipNetworkTransactionTest, LoadLog) {
   // Check that the LoadLog was filled reasonably.
   // This test is intentionally non-specific about the exact ordering of
   // the log; instead we just check to make sure that certain events exist.
-  EXPECT_LT(0u, log->events().size());
+  EXPECT_LT(0u, log->entries().size());
   int pos = 0;
   // We know the first event at position 0.
   net::ExpectLogContains(log, 0,

@@ -6,6 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/string_util.h"
+#include "net/base/net_errors.h"
 
 namespace net {
 namespace {
@@ -45,17 +46,17 @@ class FormatHelper {
       }
 
       int indentation_spaces = entries_[i].indentation * kSpacesPerIndentation;
-      std::string event_str = GetEventString(i);
+      std::string entry_str = GetEntryString(i);
 
       result += StringPrintf("t=%s: %s%s",
           PadStringLeft(GetTimeString(i), max_time_width).c_str(),
           PadStringLeft("", indentation_spaces).c_str(),
-          event_str.c_str());
+          entry_str.c_str());
 
-      if (entries_[i].event->phase == LoadLog::PHASE_BEGIN) {
+      if (entries_[i].IsBeginEvent()) {
         // Summarize how long this block lasted.
         int padding = ((max_indentation - entries_[i].indentation) *
-            kSpacesPerIndentation) + (max_type_width - event_str.size());
+            kSpacesPerIndentation) + (max_type_width - entry_str.size());
         result += StringPrintf("%s [dt=%s]",
             PadStringLeft("", padding).c_str(),
             PadStringLeft(GetBlockDtString(i), max_dt_width).c_str());
@@ -70,10 +71,20 @@ class FormatHelper {
 
  private:
   struct Entry {
-    explicit Entry(const LoadLog::Event* event)
-        : event(event), indentation(0), block_index(-1) {}
+    explicit Entry(const LoadLog::Entry* log_entry)
+        : log_entry(log_entry), indentation(0), block_index(-1) {}
 
-    const LoadLog::Event* event;
+    bool IsBeginEvent() const {
+      return log_entry->type == LoadLog::Entry::TYPE_EVENT &&
+             log_entry->event.phase == LoadLog::PHASE_BEGIN;
+    }
+
+    bool IsEndEvent() const {
+      return log_entry->type == LoadLog::Entry::TYPE_EVENT &&
+             log_entry->event.phase == LoadLog::PHASE_END;
+    }
+
+    const LoadLog::Entry* log_entry;
     size_t indentation;
     int block_index;  // The index of the matching start / end of block.
   };
@@ -81,17 +92,17 @@ class FormatHelper {
   void PopulateEntries(const LoadLog* log) {
     int current_indentation = 0;
 
-    for (size_t i = 0; i < log->events().size(); ++i) {
-      Entry entry(&log->events()[i]);
+    for (size_t i = 0; i < log->entries().size(); ++i) {
+      Entry entry(&log->entries()[i]);
 
       entry.indentation = current_indentation;
 
-      if (entry.event->phase == LoadLog::PHASE_BEGIN) {
+      if (entry.IsBeginEvent()) {
         // Indent everything contained in this block.
         current_indentation++;
       }
 
-      if (entry.event->phase == LoadLog::PHASE_END) {
+      if (entry.IsEndEvent()) {
         int start_index = FindStartOfBlockIndex(entry);
         if (start_index != -1) {
           // Point the start / end of block at each other.
@@ -110,12 +121,12 @@ class FormatHelper {
   }
 
   int FindStartOfBlockIndex(const Entry& entry) {
-    DCHECK_EQ(LoadLog::PHASE_END, entry.event->phase);
+    DCHECK(entry.IsEndEvent());
 
     // Find the matching  start of block by scanning backwards.
     for (int i = entries_.size() - 1; i >= 0; --i) {
-      if (entries_[i].event->phase == LoadLog::PHASE_BEGIN &&
-          entries_[i].event->type == entry.event->type) {
+      if (entries_[i].IsBeginEvent() &&
+          entries_[i].log_entry->event.type == entry.log_entry->event.type) {
         return i;
       }
     }
@@ -129,10 +140,11 @@ class FormatHelper {
     *max_time_width = *max_indentation = *max_type_width = *max_dt_width = 0;
     for (size_t i = 0; i < entries_.size(); ++i) {
       *max_time_width = std::max(*max_time_width, GetTimeString(i).size());
-      *max_type_width = std::max(*max_type_width, GetEventString(i).size());
+      if (entries_[i].log_entry->type == LoadLog::Entry::TYPE_EVENT)
+        *max_type_width = std::max(*max_type_width, GetEntryString(i).size());
       *max_indentation = std::max(*max_indentation, entries_[i].indentation);
 
-      if (entries_[i].event->phase == LoadLog::PHASE_BEGIN)
+      if (entries_[i].IsBeginEvent())
         *max_dt_width = std::max(*max_dt_width, GetBlockDtString(i).size());
     }
   }
@@ -143,39 +155,58 @@ class FormatHelper {
       // Block is not closed, implicitly close it at EOF.
       end_index = entries_.size() - 1;
     }
-    int64 dt_ms = (entries_[end_index].event->time -
-                   entries_[start_index].event->time).InMilliseconds();
+    int64 dt_ms = (entries_[end_index].log_entry->time -
+                   entries_[start_index].log_entry->time).InMilliseconds();
 
     return Int64ToString(dt_ms);
   }
 
   std::string GetTimeString(size_t index) {
-    int64 t_ms = (entries_[index].event->time -
+    int64 t_ms = (entries_[index].log_entry->time -
                   base::TimeTicks()).InMilliseconds();
     return Int64ToString(t_ms);
   }
 
-  std::string GetEventString(size_t index) {
-    const LoadLog::Event* event = entries_[index].event;
-    const char* type_str = LoadLog::EventTypeToString(event->type);
+  std::string GetEntryString(size_t index) {
+    const LoadLog::Entry* entry = entries_[index].log_entry;
 
-    LoadLog::EventPhase phase = event->phase;
+    std::string entry_str;
+    LoadLog::EventPhase phase = LoadLog::PHASE_NONE;
+    switch (entry->type) {
+      case LoadLog::Entry::TYPE_EVENT:
+        entry_str = LoadLog::EventTypeToString(entry->event.type);
+        phase = entry->event.phase;
 
-    if (phase == LoadLog::PHASE_BEGIN &&
-        index + 1 < entries_.size() &&
-        static_cast<size_t>(entries_[index + 1].block_index) == index) {
-      // If this starts an empty block, we will pretend it is a PHASE_NONE
-      // so we don't print the "+" prefix.
-      phase = LoadLog::PHASE_NONE;
+        if (phase == LoadLog::PHASE_BEGIN &&
+            index + 1 < entries_.size() &&
+            static_cast<size_t>(entries_[index + 1].block_index) == index) {
+          // If this starts an empty block, we will pretend it is a PHASE_NONE
+          // so we don't print the "+" prefix.
+          phase = LoadLog::PHASE_NONE;
+        }
+        break;
+      case LoadLog::Entry::TYPE_ERROR_CODE:
+        entry_str = StringPrintf("error code: %d (%s)",
+                                 entry->error_code,
+                                 ErrorToString(entry->error_code));
+        break;
+      case LoadLog::Entry::TYPE_STRING:
+        entry_str = StringPrintf("\"%s\"", entry->string.c_str());
+        break;
+      case LoadLog::Entry::TYPE_STRING_LITERAL:
+        entry_str = StringPrintf("\"%s\"", entry->literal);
+        break;
+      default:
+        NOTREACHED();
     }
 
     switch (phase) {
       case LoadLog::PHASE_BEGIN:
-        return std::string("+") + type_str;
+        return std::string("+") + entry_str;
       case LoadLog::PHASE_END:
-        return std::string("-") + type_str;
+        return std::string("-") + entry_str;
       case LoadLog::PHASE_NONE:
-        return std::string(" ") + type_str;
+        return std::string(" ") + entry_str;
       default:
         NOTREACHED();
         return std::string();
