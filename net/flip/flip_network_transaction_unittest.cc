@@ -39,7 +39,15 @@ class SessionDependencies {
       : host_resolver(new MockHostResolver),
         proxy_service(CreateNullProxyService()),
         ssl_config_service(new SSLConfigServiceDefaults),
-        flip_session_pool(new FlipSessionPool) {}
+        flip_session_pool(new FlipSessionPool) {
+    // Note: The CancelledTransaction test does cleanup by running all tasks
+    // in the message loop (RunAllPending).  Unfortunately, that doesn't clean
+    // up tasks on the host resolver thread; and TCPConnectJob is currently
+    // not cancellable.  Using synchronous lookups allows the test to shutdown
+    // cleanly.  Until we have cancellable TCPConnectJobs, use synchronous
+    // lookups.
+    host_resolver->set_synchronous_mode(true);
+  }
 
   // Custom proxy service dependency.
   explicit SessionDependencies(ProxyService* proxy_service)
@@ -441,10 +449,7 @@ TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
   EXPECT_EQ(ERR_SYN_REPLY_NOT_RECEIVED, out.rv);
 }
 
-// TODO(willchan): Look into why TCPConnectJobs are still alive when this test
-// goes away.  They're calling into the ClientSocketFactory which doesn't exist
-// anymore, so it crashes.
-TEST_F(FlipNetworkTransactionTest, DISABLED_CancelledTransaction) {
+TEST_F(FlipNetworkTransactionTest, CancelledTransaction) {
   MockWrite writes[] = {
     MockWrite(true, reinterpret_cast<const char*>(kGetSyn),
               arraysize(kGetSyn)),

@@ -395,6 +395,9 @@ bool FlipSession::CancelStream(flip::FlipStreamId stream_id) {
   if (!IsStreamActive(stream_id))
     return false;
 
+  // TODO(mbelshe): We should send a FIN_STREAM control frame here
+  //                so that the server can cancel a large send.
+
   // TODO(mbelshe): Write a method for tearing down a stream
   //                that cleans it out of the active list, the pending list,
   //                etc.
@@ -531,7 +534,11 @@ void FlipSession::OnWriteComplete(int result) {
         DCHECK_GT(result, static_cast<int>(flip::FlipFrame::size()));
         result -= static_cast<int>(flip::FlipFrame::size());
       }
-      stream->OnWriteComplete(result);
+
+      // It is possible that the stream was cancelled while we were writing
+      // to the socket.
+      if (!stream->cancelled())
+        stream->OnWriteComplete(result);
 
       // Cleanup the write which just completed.
       in_flight_write_.release();
@@ -770,6 +777,7 @@ void FlipSession::OnStreamFrameData(flip::FlipStreamId stream_id,
   LOG(INFO) << "Flip data for stream " << stream_id << ", " << len << " bytes";
   bool valid_stream = IsStreamActive(stream_id);
   if (!valid_stream) {
+    // NOTE:  it may just be that the stream was cancelled.
     LOG(WARNING) << "Received data frame for invalid stream " << stream_id;
     return;
   }
@@ -866,6 +874,7 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
   flip::FlipStreamId stream_id = frame->stream_id();
   bool valid_stream = IsStreamActive(stream_id);
   if (!valid_stream) {
+    // NOTE:  it may just be that the stream was cancelled.
     LOG(WARNING) << "Received SYN_REPLY for invalid stream " << stream_id;
     return;
   }
@@ -903,6 +912,7 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
 
   scoped_refptr<FlipStream> stream = active_streams_[stream_id];
   CHECK(stream->stream_id() == stream_id);
+  CHECK(!stream->cancelled());
   HttpResponseInfo response;
   if (FlipHeadersToHttpResponse(*headers, &response)) {
     GetSSLInfo(&response.ssl_info);
@@ -949,11 +959,13 @@ void FlipSession::OnFin(const flip::FlipFinStreamControlFrame* frame) {
   flip::FlipStreamId stream_id = frame->stream_id();
   bool valid_stream = IsStreamActive(stream_id);
   if (!valid_stream) {
+    // NOTE:  it may just be that the stream was cancelled.
     LOG(WARNING) << "Received FIN for invalid stream" << stream_id;
     return;
   }
   scoped_refptr<FlipStream> stream = active_streams_[stream_id];
   CHECK(stream->stream_id() == stream_id);
+  CHECK(!stream->cancelled());
   if (frame->status() == 0) {
     stream->OnDataReceived(NULL, 0);
   } else {

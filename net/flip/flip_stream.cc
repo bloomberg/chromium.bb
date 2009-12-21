@@ -146,16 +146,7 @@ void FlipStream::Cancel() {
   cancelled_ = true;
   user_callback_ = NULL;
 
-  // TODO(willchan): Should we also call FlipSession::CancelStream()?  What
-  // makes more sense?  If we cancel the stream, perhaps we should send the
-  // server a control packet to tell it to stop sending to the dead stream.  But
-  // then does FlipSession deactivate the stream?  It would log warnings for
-  // data packets for an invalid stream then, unless we maintained some data
-  // structure to keep track of cancelled stream ids.  Ugh.  Currently
-  // FlipStream does not call CancelStream().  We should free up all the memory
-  // associated with the stream though (ditch all the IOBuffers) and at all
-  // FlipSession's entrypoints into FlipStream check |cancelled_| and not copy
-  // the data.
+  session_->CancelStream(stream_id_);
 }
 
 void FlipStream::OnResponseReceived(const HttpResponseInfo& response) {
@@ -231,6 +222,8 @@ bool FlipStream::OnDataReceived(const char* data, int length) {
 }
 
 void FlipStream::OnWriteComplete(int status) {
+  // TODO(mbelshe): Check for cancellation here.  If we're cancelled, we
+  // should discontinue the DoLoop.
   DoLoop(status);
 }
 
