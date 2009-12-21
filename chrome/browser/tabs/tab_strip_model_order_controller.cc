@@ -39,7 +39,7 @@ int TabStripModelOrderController::DetermineInsertionIndex(
     }
     NavigationController* opener =
         &tabstrip_->GetSelectedTabContents()->controller();
-    // Get the index of the next item opened by this tab, and insert before
+    // Get the index of the next item opened by this tab, and insert after
     // it...
     int index = tabstrip_->GetIndexOfLastTabContentsOpenedBy(
         opener, tabstrip_->selected_index());

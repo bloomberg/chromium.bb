@@ -113,9 +113,6 @@ class RenderViewContextMenu {
   // a text selection.
   GURL selection_navigation_url_;
 
-  // The transition type of |selection_navigation_url_|.
-  PageTransition::Type transition_;
-
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };
 

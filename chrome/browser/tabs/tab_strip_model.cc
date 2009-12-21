@@ -396,28 +396,36 @@ void TabStripModel::AddTabContents(TabContents* contents,
                                    bool force_index,
                                    PageTransition::Type transition,
                                    bool foreground) {
+  // If the newly-opened tab is part of the same task as the parent tab, we want
+  // to inherit the parent's "group" attribute, so that if this tab is then
+  // closed we'll jump back to the parent tab.
+  // TODO(jbs): Perhaps instead of trying to infer this we should expose
+  // inherit_group directly to callers, who may have more context
+  bool inherit_group = false;
+
   if (transition == PageTransition::LINK && !force_index) {
-    // Only try to be clever if we're opening a LINK.
+    // We assume tabs opened via link clicks are part of the same task as their
+    // parent.  Note that when |force_index| is true (e.g. when the user
+    // drag-and-drops a link to the tab strip), callers aren't really handling
+    // link clicks, they just want to score the navigation like a link click in
+    // the history backend, so we don't inherit the group in this case.
     index = order_controller_->DetermineInsertionIndex(
         contents, transition, foreground);
+    inherit_group = true;
   } else {
     // For all other types, respect what was passed to us, normalizing -1s.
     if (index < 0)
       index = count();
   }
 
-  // Tabs opened from links inherit the "group" attribute of the Tab from which
-  // they were opened. This means when they're closed, that Tab will be
-  // selected again.
-  bool inherit_group = transition == PageTransition::LINK;
-  if (!inherit_group) {
+  if (transition == PageTransition::TYPED && index == count()) {
     // Also, any tab opened at the end of the TabStrip with a "TYPED"
     // transition inherit group as well. This covers the cases where the user
     // creates a New Tab (e.g. Ctrl+T, or clicks the New Tab button), or types
     // in the address bar and presses Alt+Enter. This allows for opening a new
     // Tab to quickly look up something. When this Tab is closed, the old one
     // is re-selected, not the next-adjacent.
-    inherit_group = transition == PageTransition::TYPED && index == count();
+    inherit_group = true;
   }
   InsertTabContentsAt(index, contents, foreground, inherit_group);
   if (inherit_group && transition == PageTransition::TYPED)

@@ -225,7 +225,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
   bool is_search;
   profile_->GetSearchVersusNavigateClassifier()->Classify(
       params_.selection_text, std::wstring(), &is_search,
-      &selection_navigation_url_, &transition_, NULL, NULL);
+      &selection_navigation_url_, NULL, NULL, NULL);
   if (!selection_navigation_url_.is_valid())
     return;
 
@@ -653,7 +653,7 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
 
     case IDS_CONTENT_CONTEXT_VIEWPAGESOURCE:
       OpenURL(GURL("view-source:" + params_.page_url.spec()),
-              NEW_FOREGROUND_TAB, PageTransition::GENERATED);
+              NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
 
     case IDS_CONTENT_CONTEXT_INSPECTELEMENT:
@@ -692,7 +692,7 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
 
     case IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE:
       OpenURL(GURL("view-source:" + params_.frame_url.spec()),
-              NEW_FOREGROUND_TAB, PageTransition::GENERATED);
+              NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
 
     case IDS_CONTENT_CONTEXT_VIEWFRAMEINFO: {
@@ -743,7 +743,8 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
 
     case IDS_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDS_CONTENT_CONTEXT_GOTOURL: {
-      OpenURL(selection_navigation_url_, NEW_FOREGROUND_TAB, transition_);
+      OpenURL(selection_navigation_url_, NEW_FOREGROUND_TAB,
+              PageTransition::LINK);
       break;
     }
 
