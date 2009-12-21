@@ -17,9 +17,10 @@
 @implementation ChooseAnotherFolder
 @end
 
-@interface BookmarkBubbleController ()
+@interface BookmarkBubbleController (PrivateAPI)
 - (void)updateBookmarkNode;
 - (void)fillInFolderList;
+- (void)parentWindowWillClose:(NSNotification*)notification;
 @end
 
 @implementation BookmarkBubbleController
@@ -54,7 +55,7 @@
     // Watch to see if the parent window closes, and if so, close this one.
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center addObserver:self
-               selector:@selector(windowWillClose:)
+               selector:@selector(parentWindowWillClose:)
                    name:NSWindowWillCloseNotification
                  object:parentWindow_];
   }
@@ -66,7 +67,13 @@
   [super dealloc];
 }
 
-- (void)windowWillClose:(NSNotification *)notification {
+- (void)parentWindowWillClose:(NSNotification*)notification {
+  [self close];
+}
+
+- (void)windowWillClose:(NSNotification*)notification {
+  // We caught a close so we don't need to watch for the parent closing.
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self autorelease];
 }
 

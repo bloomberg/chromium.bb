@@ -10,7 +10,12 @@
  @private
   // Is self in the process of closing.
   BOOL closing_;
+  // If NO the window will close immediately instead of fading out.
+  // Default YES.
+  BOOL delayOnClose_;
 }
+
+@property BOOL delayOnClose;
 
 @end
 

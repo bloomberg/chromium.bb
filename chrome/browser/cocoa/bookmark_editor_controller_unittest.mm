@@ -177,6 +177,7 @@ TEST_F(BookmarkEditorControllerYesNodeTest, YesNodeShowTree) {
 }
 
 class BookmarkEditorControllerTreeTest : public CocoaTest {
+
  public:
   BrowserTestHelper browser_helper_;
   BookmarkEditorController* controller_;
@@ -185,6 +186,8 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
   const BookmarkNode* group_bb_;
   const BookmarkNode* group_c_;
   const BookmarkNode* bookmark_bb_3_;
+  GURL bb3_url_1_;
+  GURL bb3_url_2_;
 
   BookmarkEditorControllerTreeTest() {
     // Set up a small bookmark hierarchy, which will look as follows:
@@ -210,8 +213,13 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
     model.AddURL(group_bb_, 0, L"bb-0", GURL("http://bb-0.com"));
     model.AddURL(group_bb_, 1, L"bb-1", GURL("http://bb-1.com"));
     model.AddURL(group_bb_, 2, L"bb-2", GURL("http://bb-2.com"));
-    bookmark_bb_3_ =
-    model.AddURL(group_bb_, 3, L"bb-3", GURL("http://bb-3.com"));
+
+    // To find it later, this bookmark name must always have a URL
+    // of http://bb-3.com or https://bb-3.com
+    bb3_url_1_ = GURL("http://bb-3.com");
+    bb3_url_2_ = GURL("https://bb-3.com");
+    bookmark_bb_3_ = model.AddURL(group_bb_, 3, L"bb-3", bb3_url_1_);
+
     model.AddURL(group_bb_, 4, L"bb-4", GURL("http://bb-4.com"));
     model.AddURL(group_b_, 2, L"b-1", GURL("http://b-2.com"));
     model.AddURL(group_b_, 3, L"b-2", GURL("http://b-3.com"));
@@ -244,6 +252,22 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
     controller_ = NULL;
     CocoaTest::TearDown();
   }
+
+  // After changing a node, pointers to the node may be invalid.  This
+  // is because the node itself may not be updated; it may removed and
+  // a new one is added in that location.  (Implementation detail of
+  // BookmarkEditorController).  This method updates the class's
+  // bookmark_bb_3_ so that it points to the new node for testing.
+  void UpdateBB3() {
+    std::vector<const BookmarkNode*> nodes;
+    BookmarkModel* model = browser_helper_.profile()->GetBookmarkModel();
+    model->GetNodesByURL(bb3_url_1_, &nodes);
+    if (nodes.size() == 0)
+      model->GetNodesByURL(bb3_url_2_, &nodes);
+    DCHECK(nodes.size());
+    bookmark_bb_3_ = nodes[0];
+  }
+
 };
 
 TEST_F(BookmarkEditorControllerTreeTest, VerifyBookmarkTestModel) {
@@ -301,6 +325,7 @@ TEST_F(BookmarkEditorControllerTreeTest, RenameBookmarkInPlace) {
   const BookmarkNode* oldParent = bookmark_bb_3_->GetParent();
   [controller_ setDisplayName:@"NEW NAME"];
   [controller_ ok:nil];
+  UpdateBB3();
   const BookmarkNode* newParent = bookmark_bb_3_->GetParent();
   ASSERT_EQ(newParent, oldParent);
   int childIndex = newParent->IndexOfChild(bookmark_bb_3_);
@@ -309,8 +334,9 @@ TEST_F(BookmarkEditorControllerTreeTest, RenameBookmarkInPlace) {
 
 TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkURLInPlace) {
   const BookmarkNode* oldParent = bookmark_bb_3_->GetParent();
-  [controller_ setDisplayURL:@"http://NEWURL.com"];
+  [controller_ setDisplayURL:@"https://bb-3.com"];
   [controller_ ok:nil];
+  UpdateBB3();
   const BookmarkNode* newParent = bookmark_bb_3_->GetParent();
   ASSERT_EQ(newParent, oldParent);
   int childIndex = newParent->IndexOfChild(bookmark_bb_3_);
@@ -320,6 +346,7 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkURLInPlace) {
 TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkGroup) {
   [controller_ selectTestNodeInBrowser:group_c_];
   [controller_ ok:nil];
+  UpdateBB3();
   const BookmarkNode* parent = bookmark_bb_3_->GetParent();
   ASSERT_EQ(parent, group_c_);
   int childIndex = parent->IndexOfChild(bookmark_bb_3_);
@@ -330,6 +357,7 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeNameAndBookmarkGroup) {
   [controller_ setDisplayName:@"NEW NAME"];
   [controller_ selectTestNodeInBrowser:group_c_];
   [controller_ ok:nil];
+  UpdateBB3();
   const BookmarkNode* parent = bookmark_bb_3_->GetParent();
   ASSERT_EQ(parent, group_c_);
   int childIndex = parent->IndexOfChild(bookmark_bb_3_);

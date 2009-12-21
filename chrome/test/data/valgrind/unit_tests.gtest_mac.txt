@@ -9,13 +9,6 @@ WebDropTargetTest.Data
 # Following tests fail on valgrind.
 # See http://crbug.com/30370.
 AutocompleteTextFieldEditorTest.CutCopyTest
-# See http://crbug.com/30371.
-BookmarkBubbleControllerTest.TestNewParentSameName
-# See http://crbug.com/30373.
-BookmarkEditorControllerTreeTest.RenameBookmarkInPlace
-BookmarkEditorControllerTreeTest.ChangeBookmarkURLInPlace
-BookmarkEditorControllerTreeTest.ChangeBookmarkGroup
-BookmarkEditorControllerTreeTest.ChangeNameAndBookmarkGroup
 # See http://crbug.com/30375.
 DownloadUtilTest.AddFileToPasteboardTest
 # See http://crbug.com/30378.
@@ -25,8 +18,6 @@ FindPasteboardTest.SendsNotificationWhenTextChanges
 RenderViewTest.MacTestCmdUp
 
 # Folowing tests do not pass memcheck test.
-# See http://crbug.com/30381.
-BookmarkMenuTest.Basics
 # See http://crbug.com/30384.
 ChromeBrowserWindowTest.DoesHideTitle
 # See http://crbug.com/30386.

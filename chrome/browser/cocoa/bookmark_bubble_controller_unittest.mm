@@ -27,14 +27,17 @@ class BookmarkBubbleControllerTest : public CocoaTest {
 
   virtual void TearDown() {
     [controller_ close];
+    controller_ = nil;
     CocoaTest::TearDown();
   }
 
   // Returns a controller but ownership not transferred.
   // Only one of these will be valid at a time.
   BookmarkBubbleController* ControllerForNode(const BookmarkNode* node) {
-    if (controller_)
+    if (controller_ && !IsWindowClosing()) {
       [controller_ close];
+      controller_ = nil;
+    }
     controller_ = [[BookmarkBubbleController alloc]
                       initWithParentWindow:test_window()
                           topLeftForBubble:TopLeftForBubble()
@@ -42,6 +45,8 @@ class BookmarkBubbleControllerTest : public CocoaTest {
                                       node:node
                          alreadyBookmarked:YES];
     EXPECT_TRUE([controller_ window]);
+    // The window must be gone or we'll fail a unit test with windows left open.
+    [static_cast<InfoBubbleWindow*>([controller_ window]) setDelayOnClose:NO];
     [controller_ showWindow:nil];
     return controller_;
   }

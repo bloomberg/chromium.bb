@@ -51,6 +51,8 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
 
 @implementation InfoBubbleWindow
 
+@synthesize delayOnClose = delayOnClose_;
+
 - (id)initWithContentRect:(NSRect)contentRect
                 styleMask:(NSUInteger)aStyle
                   backing:(NSBackingStoreType)bufferingType
@@ -63,6 +65,7 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
     [self setExcludedFromWindowsMenu:YES];
     [self setOpaque:NO];
     [self setHasShadow:YES];
+    delayOnClose_ = YES;
 
     // Start invisible. Will be made visible when ordered front.
     [self setAlphaValue:0.0];
@@ -96,12 +99,17 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
 - (void)close {
   // Block the window from receiving events while it fades out.
   closing_ = YES;
-  // Apply animations to hide self.
-  [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext]
+
+  if (!delayOnClose_) {
+    [self finishCloseAfterAnimation];
+  } else {
+    // Apply animations to hide self.
+    [NSAnimationContext beginGrouping];
+    [[NSAnimationContext currentContext]
       gtm_setDuration:kOrderOutAnimationDuration];
-  [[self animator] setAlphaValue:0.0];
-  [NSAnimationContext endGrouping];
+    [[self animator] setAlphaValue:0.0];
+    [NSAnimationContext endGrouping];
+  }
 }
 
 // Called by InfoBubbleWindowCloser when the window is to be really closed
@@ -151,4 +159,5 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
 - (BOOL)isClosing {
   return closing_;
 }
+
 @end

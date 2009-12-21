@@ -11,15 +11,15 @@
 namespace {
 
 class BookmarkMenuTest : public CocoaTest {
- public:
 };
 
 TEST_F(BookmarkMenuTest, Basics) {
-  scoped_nsobject<BookmarkMenu> menu;
-  menu.reset([[BookmarkMenu alloc] initWithTitle:@"title"]);
-  [menu addItem:[[NSMenuItem alloc] initWithTitle:@"item"
-                                           action:NULL
-                                    keyEquivalent:@""]];
+  scoped_nsobject<BookmarkMenu> menu([[BookmarkMenu alloc]
+                                       initWithTitle:@"title"]);
+  scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc] initWithTitle:@"item"
+                                                              action:NULL
+                                                       keyEquivalent:@""]);
+  [menu addItem:item];
   NSValue* value = [NSValue valueWithPointer:menu.get()];
   [menu setRepresentedObject:value];
   EXPECT_EQ((void*)menu.get(), (void*)[menu node]);
