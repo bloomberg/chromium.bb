@@ -117,9 +117,6 @@ SUBSTRING : renderwidgethost::~renderwidgethost___renderviewhost::`scalar deleti
 # 21862
 PREFIX : urlrequesthttpjob::factory___urlrequestjobmanager::createjob___urlrequest::start
 
-# 30790
-PREFIX : v8::internal::map::updatecodecache___v8::internal::stubcache::computeloadcallback___v8::internal::loadic::updatecaches___v8::internal::loadic::load___v8::internal::loadic_miss
-
 # 23138
 PREFIX : tabrestoreservice::save___tabrestoreservice::~tabrestoreservice___tabrestoreservice::`scalar deleting destructor'
 
