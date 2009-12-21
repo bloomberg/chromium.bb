@@ -23,6 +23,7 @@
 #include "V8Binding.h"
 #include "V8CustomBinding.h"
 #include "V8DOMWrapper.h"
+#include "V8InspectorFrontendHost.h"
 #include "V8Proxy.h"
 #include "V8Utilities.h"
 #include <wtf/OwnPtr.h>
@@ -173,7 +174,7 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
       WebDevToolsFrontendImpl::JsLoaded);
   dev_tools_host.AddProtoFunction(
       "search",
-      WebCore::V8Custom::v8InspectorFrontendHostSearchCallback);
+      WebCore::V8InspectorFrontendHost::searchCallback);
   dev_tools_host.AddProtoFunction(
       "platform",
       WebDevToolsFrontendImpl::JsPlatform);
