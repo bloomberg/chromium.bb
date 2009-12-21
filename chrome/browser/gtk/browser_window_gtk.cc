@@ -799,6 +799,10 @@ void BrowserWindowGtk::Close() {
   if (!CanClose())
     return;
 
+  // We're going to destroy the window, make sure the tab strip isn't running
+  // any animations which may still reference GtkWidgets.
+  tabstrip_->StopAnimation();
+
   SaveWindowPosition();
 
   if (accel_group_) {

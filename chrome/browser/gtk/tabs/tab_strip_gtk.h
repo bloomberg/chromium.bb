@@ -141,6 +141,7 @@ class TabStripGtk : public TabStripModelObserver,
   static const int pinned_to_non_pinned_gap_;
 
  private:
+  friend class BrowserWindowGtk;
   friend class DraggedTabControllerGtk;
   friend class InsertTabAnimation;
   friend class RemoveTabAnimation;
@@ -367,6 +368,9 @@ class TabStripGtk : public TabStripModelObserver,
 
   // -- Animations -------------------------------------------------------------
 
+  // Stops the current animation.
+  void StopAnimation();
+
   // A generic Layout method for various classes of TabStrip animations,
   // including Insert, Remove and Resize Layout cases.
   void AnimationLayout(double unselected_width);
@@ -379,12 +383,6 @@ class TabStripGtk : public TabStripModelObserver,
   void StartPinnedTabAnimation(int index);
   void StartPinAndMoveTabAnimation(int from_index, int to_index,
                                    const gfx::Rect& start_bounds);
-
-  // Returns true if detach or select changes in the model should be reflected
-  // in the TabStrip. This returns false if we're closing all tabs in the
-  // TabStrip and so we should prevent updating. This is not const because we
-  // use this as a signal to cancel any active animations.
-  bool CanUpdateDisplay();
 
   // Notifies the TabStrip that the specified TabAnimation has completed.
   // Optionally a full Layout will be performed, specified by |layout|.
