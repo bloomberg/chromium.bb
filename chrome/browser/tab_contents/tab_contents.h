@@ -32,6 +32,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
+#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/property_bag.h"
@@ -368,6 +369,7 @@ class TabContents : public PageNavigator,
 
   // Execute code in this tab.
   void ExecuteCode(int request_id, const std::string& extension_id,
+                   const std::vector<URLPattern>& host_permissions,
                    bool is_js_code, const std::string& code_string,
                    bool all_frames);
 

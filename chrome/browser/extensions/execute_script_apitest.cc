@@ -7,10 +7,13 @@
 // This test failed at times on the Vista dbg builder and has been marked as
 // flaky for now. Bug http://code.google.com/p/chromium/issues/detail?id=28630
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_ExecuteScript) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
+  // We need a.com to be a little bit slow to trigger a race condition.
+  host_resolver()->AddRuleWithLatency("a.com", "127.0.0.1", 500);
   host_resolver()->AddRule("b.com", "127.0.0.1");
+  host_resolver()->AddRule("c.com", "127.0.0.1");
   StartHTTPServer();
 
   ASSERT_TRUE(RunExtensionTest("executescript/basic")) << message_;
   ASSERT_TRUE(RunExtensionTest("executescript/in_frame")) << message_;
+  ASSERT_TRUE(RunExtensionTest("executescript/permissions")) << message_;
 }

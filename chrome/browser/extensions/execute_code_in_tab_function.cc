@@ -68,6 +68,8 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   DCHECK(browser);
   DCHECK(contents);
 
+  // NOTE: This can give the wrong answer due to race conditions, but it is OK,
+  // we check again in the renderer.
   if (!GetExtension()->CanAccessHost(contents->GetURL())) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kCannotAccessPageError, contents->GetURL().spec());
@@ -135,6 +137,12 @@ void ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
     return;
   }
 
+  Extension* extension = GetExtension();
+  if (!extension) {
+    SendResponse(false);
+    return;
+  }
+
   bool is_js_code = true;
   std::string function_name = name();
   if (function_name == TabsInsertCSSFunction::function_name()) {
@@ -145,8 +153,9 @@ void ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   registrar_.Add(this, NotificationType::TAB_CODE_EXECUTED,
                  NotificationService::AllSources());
   AddRef();  // balanced in Observe()
-  contents->ExecuteCode(request_id(), extension_id(), is_js_code,
-                        code_string, all_frames_);
+  contents->ExecuteCode(request_id(), extension->id(),
+                        extension->host_permissions(), is_js_code, code_string,
+                        all_frames_);
 }
 
 void ExecuteCodeInTabFunction::Observe(NotificationType type,

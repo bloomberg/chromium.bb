@@ -501,6 +501,39 @@ struct ViewMsg_DOMStorageEvent_Params {
   DOMStorageType storage_type_;
 };
 
+// Allows an extension to execute code in a tab.
+struct ViewMsg_ExecuteCode_Params {
+  ViewMsg_ExecuteCode_Params(){}
+  ViewMsg_ExecuteCode_Params(int request_id, const std::string& extension_id,
+                             const std::vector<URLPattern>& host_permissions,
+                             bool is_javascript, const std::string& code,
+                             bool all_frames)
+    : request_id(request_id), extension_id(extension_id),
+      host_permissions(host_permissions), is_javascript(is_javascript),
+      code(code), all_frames(all_frames) {
+  }
+
+  // The extension API request id, for responding.
+  int request_id;
+
+  // The ID of the requesting extension. To know which isolated world to
+  // execute the code inside of.
+  std::string extension_id;
+
+  // The host permissions of the requesting extension. So that we can check them
+  // right before injecting, to avoid any race conditions.
+  std::vector<URLPattern> host_permissions;
+
+  // Whether the code is JavaScript or CSS.
+  bool is_javascript;
+
+  // String of code to execute.
+  std::string code;
+
+  // Whether to inject into all frames, or only the root frame.
+  bool all_frames;
+};
+
 namespace IPC {
 
 template <>
@@ -2240,6 +2273,32 @@ struct ParamTraits<webkit_glue::WebCookie> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<WebCookie>");
+  }
+};
+
+template<>
+struct ParamTraits<ViewMsg_ExecuteCode_Params> {
+  typedef ViewMsg_ExecuteCode_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.request_id);
+    WriteParam(m, p.extension_id);
+    WriteParam(m, p.host_permissions);
+    WriteParam(m, p.is_javascript);
+    WriteParam(m, p.code);
+    WriteParam(m, p.all_frames);
+  }
+
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->request_id) &&
+      ReadParam(m, iter, &p->extension_id) &&
+      ReadParam(m, iter, &p->host_permissions) &&
+      ReadParam(m, iter, &p->is_javascript) &&
+      ReadParam(m, iter, &p->code) &&
+      ReadParam(m, iter, &p->all_frames);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"<ViewMsg_ExecuteCode_Params>");
   }
 };
 

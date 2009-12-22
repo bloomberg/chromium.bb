@@ -214,6 +214,16 @@ static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
     result->push_back(urls[i]);
 }
 
+static bool UrlMatchesPermissions(
+    const GURL& url, const std::vector<URLPattern>& host_permissions) {
+  for (size_t i = 0; i < host_permissions.size(); ++i) {
+    if (host_permissions[i].MatchesUrl(url))
+      return true;
+  }
+
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int32 RenderView::next_page_id_ = 1;
@@ -2358,10 +2368,9 @@ void RenderView::OnUserScriptIdleTriggered(WebFrame* frame) {
   WebFrame* main_frame = webview()->mainFrame();
   if (frame == main_frame) {
     while (!pending_code_execution_queue_.empty()) {
-      scoped_refptr<CodeExecutionInfo> info =
+      linked_ptr<ViewMsg_ExecuteCode_Params>& params =
           pending_code_execution_queue_.front();
-      ExecuteCodeImpl(main_frame, info->request_id, info->extension_id,
-                      info->is_js_code, info->code_string, info->all_frames);
+      ExecuteCodeImpl(main_frame, *params);
       pending_code_execution_queue_.pop();
     }
   }
@@ -3807,57 +3816,53 @@ void RenderView::OnSetEditCommandsForNextKeyEvent(
   edit_commands_ = edit_commands;
 }
 
-void RenderView::OnExecuteCode(int request_id, const std::string& extension_id,
-                               bool is_js_code,
-                               const std::string& code_string,
-                               bool all_frames) {
+void RenderView::OnExecuteCode(const ViewMsg_ExecuteCode_Params& params) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (!main_frame) {
-    Send(new ViewMsg_ExecuteCodeFinished(routing_id_, request_id, false));
+    Send(new ViewMsg_ExecuteCodeFinished(routing_id_, params.request_id,
+                                         false));
     return;
   }
 
   WebDataSource* ds = main_frame->dataSource();
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   if (!navigation_state->user_script_idle_scheduler()->has_run()) {
-    scoped_refptr<CodeExecutionInfo> info = new CodeExecutionInfo(
-        request_id, extension_id, is_js_code, code_string, all_frames);
-    pending_code_execution_queue_.push(info);
+    pending_code_execution_queue_.push(
+        linked_ptr<ViewMsg_ExecuteCode_Params>(
+            new ViewMsg_ExecuteCode_Params(params)));
     return;
   }
 
-  ExecuteCodeImpl(main_frame, request_id, extension_id, is_js_code,
-                  code_string, all_frames);
+  ExecuteCodeImpl(main_frame, params);
 }
 
 void RenderView::ExecuteCodeImpl(WebFrame* frame,
-                                 int request_id,
-                                 const std::string& extension_id,
-                                 bool is_js_code,
-                                 const std::string& code_string,
-                                 bool all_frames) {
+                                 const ViewMsg_ExecuteCode_Params& params) {
   std::vector<WebFrame*> frame_vector;
   frame_vector.push_back(frame);
-  if (all_frames)
+  if (params.all_frames)
     GetAllChildFrames(frame, &frame_vector);
 
   for (std::vector<WebFrame*>::iterator frame_it = frame_vector.begin();
        frame_it != frame_vector.end(); ++frame_it) {
     WebFrame* frame = *frame_it;
-    if (is_js_code) {
+    if (params.is_javascript) {
+      if (!UrlMatchesPermissions(frame->url(), params.host_permissions))
+        continue;
+
       std::vector<WebScriptSource> sources;
       sources.push_back(
-          WebScriptSource(WebString::fromUTF8(code_string)));
-      UserScriptSlave::InsertInitExtensionCode(&sources, extension_id);
+          WebScriptSource(WebString::fromUTF8(params.code)));
+      UserScriptSlave::InsertInitExtensionCode(&sources, params.extension_id);
       frame->executeScriptInIsolatedWorld(
-          UserScriptSlave::GetIsolatedWorldId(extension_id),
+          UserScriptSlave::GetIsolatedWorldId(params.extension_id),
           &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
     } else {
-      frame->insertStyleText(WebString::fromUTF8(code_string), WebString());
+      frame->insertStyleText(WebString::fromUTF8(params.code), WebString());
     }
   }
 
-  Send(new ViewMsg_ExecuteCodeFinished(routing_id_, request_id, true));
+  Send(new ViewMsg_ExecuteCodeFinished(routing_id_, params.request_id, true));
 }
 
 void RenderView::Close() {

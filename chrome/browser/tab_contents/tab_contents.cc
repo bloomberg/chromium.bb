@@ -815,12 +815,13 @@ void TabContents::CloseAllSuppressedPopups() {
 }
 
 void TabContents::ExecuteCode(int request_id, const std::string& extension_id,
+                              const std::vector<URLPattern>& host_permissions,
                               bool is_js_code, const std::string& code_string,
                               bool all_frames) {
   render_view_host()->Send(
-      new ViewMsg_ExecuteCode(render_view_host()->routing_id(), request_id,
-                              extension_id, is_js_code, code_string,
-                              all_frames));
+      new ViewMsg_ExecuteCode(render_view_host()->routing_id(),
+          ViewMsg_ExecuteCode_Params(request_id, extension_id, host_permissions,
+                                     is_js_code, code_string, all_frames)));
 }
 
 void TabContents::PopupNotificationVisibilityChanged(bool visible) {
