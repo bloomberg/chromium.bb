@@ -1108,8 +1108,7 @@
    fun:_Znw*
    fun:_ZN7WebCore26PlatformMessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS_18MessagePortChannel9EventDataEEE
    fun:_ZN7WebCore18MessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS0_9EventDataEEE
-   fun:*
-   fun:_ZN7WebCore8V8Custom32v8MessagePortPostMessageCallbackERKN2v89ArgumentsE
+   ...
 }
 {
    bug_23104
