@@ -17,6 +17,7 @@
 #include "base/lazy_instance.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
+#include "base/platform_thread.h"
 #include "base/process_util.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -72,6 +73,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/resource.h>
+#include "base/eintr_wrapper.h"
 #endif
 
 #if defined(USE_LINUX_BREAKPAD)
@@ -169,30 +171,99 @@ void RunUIMessageLoop(BrowserProcess* browser_process) {
 void SIGCHLDHandler(int signal) {
 }
 
+int g_shutdown_pipe_write_fd = -1;
+int g_shutdown_pipe_read_fd = -1;
+
 // Common code between SIG{HUP, INT, TERM}Handler.
-void GracefulShutdownHandler(int signal, const int expected_signal) {
-  DCHECK_EQ(signal, expected_signal);
-  LOG(INFO) << "Addressing signal " << expected_signal << " on "
-            << PlatformThread::CurrentId();
-
-  bool posted = ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit));
-
+void GracefulShutdownHandler(int signal) {
   // Reinstall the default handler.  We had one shot at graceful shutdown.
   struct sigaction action;
   memset(&action, 0, sizeof(action));
   action.sa_handler = SIG_DFL;
-  CHECK(sigaction(expected_signal, &action, NULL) == 0);
+  CHECK(sigaction(signal, &action, NULL) == 0);
 
-  if (posted) {
-    LOG(INFO) << "Posted task to UI thread; resetting signal "
-              << expected_signal << " handler";
-  } else {
+  RAW_CHECK(g_shutdown_pipe_write_fd != -1);
+  RAW_CHECK(g_shutdown_pipe_read_fd != -1);
+  size_t bytes_written = 0;
+  do {
+    int rv = HANDLE_EINTR(
+        write(g_shutdown_pipe_write_fd,
+              reinterpret_cast<const char*>(&signal) + bytes_written,
+              sizeof(signal) - bytes_written));
+    RAW_CHECK(rv >= 0);
+    bytes_written += rv;
+  } while (bytes_written < sizeof(signal));
+
+  RAW_LOG(INFO,
+          "Successfully wrote to shutdown pipe, resetting signal handler.");
+}
+
+// See comment in BrowserMain, where sigaction is called.
+void SIGHUPHandler(int signal) {
+  RAW_CHECK(signal == SIGHUP);
+  RAW_LOG(INFO, "Handling SIGHUP.");
+  GracefulShutdownHandler(signal);
+}
+
+// See comment in BrowserMain, where sigaction is called.
+void SIGINTHandler(int signal) {
+  RAW_CHECK(signal == SIGINT);
+  RAW_LOG(INFO, "Handling SIGINT.");
+  GracefulShutdownHandler(signal);
+}
+
+// See comment in BrowserMain, where sigaction is called.
+void SIGTERMHandler(int signal) {
+  RAW_CHECK(signal == SIGTERM);
+  RAW_LOG(INFO, "Handling SIGTERM.");
+  GracefulShutdownHandler(signal);
+}
+
+class ShutdownDetector : public PlatformThread::Delegate {
+ public:
+  explicit ShutdownDetector(int shutdown_fd);
+
+  virtual void ThreadMain();
+
+ private:
+  const int shutdown_fd_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownDetector);
+};
+
+ShutdownDetector::ShutdownDetector(int shutdown_fd)
+    : shutdown_fd_(shutdown_fd) {
+  CHECK(shutdown_fd_ != -1);
+}
+
+void ShutdownDetector::ThreadMain() {
+  int signal;
+  size_t bytes_read = 0;
+  ssize_t ret;
+  do {
+    ret = HANDLE_EINTR(
+        read(shutdown_fd_,
+             reinterpret_cast<char*>(&signal) + bytes_read,
+             sizeof(signal) - bytes_read));
+    if (ret < 0) {
+      NOTREACHED() << "Unexpected error: " << strerror(errno);
+      break;
+    } else if (ret == 0) {
+      NOTREACHED() << "Unexpected closure of shutdown pipe.";
+      break;
+    }
+    bytes_read += ret;
+  } while (bytes_read < sizeof(signal));
+
+  LOG(INFO) << "Handling shutdown for signal " << signal << ".";
+
+  if (!ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit))) {
     // Without a UI thread to post the exit task to, there aren't many
     // options.  Raise the signal again.  The default handler will pick it up
     // and cause an ungraceful exit.
-    LOG(WARNING) << "No UI thread, exiting ungracefully";
+    LOG(WARNING) << "No UI thread, exiting ungracefully.";
     kill(getpid(), signal);
 
     // The signal may be handled on another thread.  Give that a chance to
@@ -205,24 +276,9 @@ void GracefulShutdownHandler(int signal, const int expected_signal) {
     // normally used to indicate an exit by this signal's default handler.
     // This mechanism isn't a de jure standard, but even in the worst case, it
     // should at least result in an immediate exit.
-    LOG(WARNING) << "Still here, exiting really ungracefully";
+    LOG(WARNING) << "Still here, exiting really ungracefully.";
     _exit(signal | (1 << 7));
   }
-}
-
-// See comment in BrowserMain, where sigaction is called.
-void SIGHUPHandler(int signal) {
-  GracefulShutdownHandler(signal, SIGHUP);
-}
-
-// See comment in BrowserMain, where sigaction is called.
-void SIGINTHandler(int signal) {
-  GracefulShutdownHandler(signal, SIGINT);
-}
-
-// See comment in BrowserMain, where sigaction is called.
-void SIGTERMHandler(int signal) {
-  GracefulShutdownHandler(signal, SIGTERM);
 }
 
 // Sets the file descriptor soft limit to |max_descriptors| or the OS hard
@@ -362,6 +418,23 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Register the main thread by instantiating it, but don't call any methods.
   ChromeThread main_thread(ChromeThread::UI, MessageLoop::current());
+
+#if defined(OS_POSIX)
+  int pipefd[2];
+  int ret = pipe(pipefd);
+  if (ret < 0) {
+    PLOG(DFATAL) << "Failed to create pipe";
+  } else {
+    g_shutdown_pipe_read_fd = pipefd[0];
+    g_shutdown_pipe_write_fd = pipefd[1];
+    const size_t kShutdownDetectorThreadStackSize = 4096;
+    if (!PlatformThread::CreateNonJoinable(
+        kShutdownDetectorThreadStackSize,
+        new ShutdownDetector(g_shutdown_pipe_read_fd))) {
+      LOG(DFATAL) << "Failed to create shutdown detector task.";
+    }
+  }
+#endif  // defined(OS_POSIX)
 
   FilePath user_data_dir;
 #if defined(OS_WIN)
