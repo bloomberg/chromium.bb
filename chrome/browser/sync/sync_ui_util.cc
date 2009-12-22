@@ -122,8 +122,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       } else if (auth_error.state() != AuthError::NONE) {
         if (status_label) {
           status_label->clear();
+          GetStatusLabelsForAuthError(auth_error, service, status_label, NULL);
         }
-        GetStatusLabelsForAuthError(auth_error, service, status_label, NULL);
         result_type = SYNC_ERROR;
       } else if (!status.authenticated) {
         if (status_label) {
@@ -177,4 +177,3 @@ void OpenSyncMyBookmarksDialog(
 }
 
 }  // namespace sync_ui_util
-
