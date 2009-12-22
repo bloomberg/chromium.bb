@@ -492,7 +492,7 @@ void ProcessQueryStringCommands(URLRequestContext* context,
     context->socket_stream_tracker()->SetUnbounded(enable_unbounded);
 
     if (enable_unbounded)
-      data->append("<i>Enabled full logging</i>\n");
+      data->append("<i>Enabled full logging for this session.</i>\n");
     else
       data->append("<i>Disabled full logging, and cleared the recent "
                    "requests</i>\n");

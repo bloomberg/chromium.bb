@@ -137,6 +137,11 @@ class LoadLog : public base::RefCountedThreadSafe<LoadLog> {
       log->Add(Entry(base::TimeTicks::Now(), literal));
   }
 
+  static void AddString(LoadLog* log, const std::string& string) {
+    if (log)
+      log->Add(Entry(base::TimeTicks::Now(), string));
+  }
+
   // --------------------------------------------------------------------------
 
   // Returns the list of all entries in the log.

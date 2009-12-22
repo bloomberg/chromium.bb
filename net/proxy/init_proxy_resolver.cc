@@ -5,7 +5,9 @@
 #include "net/proxy/init_proxy_resolver.h"
 
 #include "base/compiler_specific.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "net/base/load_log.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_config.h"
@@ -127,10 +129,11 @@ int InitProxyResolver::DoFetchPacScript() {
 
   const GURL& pac_url = current_pac_url();
 
-  LOG(INFO) << "Starting fetch of PAC script " << pac_url;
+  LoadLog::AddString(load_log_, pac_url.spec());
 
   if (!proxy_script_fetcher_) {
-    LOG(ERROR) << "Can't download PAC script, because no fetcher specified";
+    LoadLog::AddStringLiteral(load_log_,
+        "Can't download PAC script, because no fetcher was specified");
     return ERR_UNEXPECTED;
   }
 
@@ -140,12 +143,14 @@ int InitProxyResolver::DoFetchPacScript() {
 int InitProxyResolver::DoFetchPacScriptComplete(int result) {
   DCHECK(resolver_->expects_pac_bytes());
 
+  LoadLog::AddString(load_log_,
+      StringPrintf(
+          "Completed fetch with result %s. Received %" PRIuS " bytes",
+          ErrorToString(result),
+          pac_bytes_.size()));
+
   LoadLog::EndEvent(load_log_,
       LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT);
-
-  LOG(INFO) << "Completed PAC script fetch of " << current_pac_url()
-            << " with result " << ErrorToString(result)
-            << ". Fetched a total of " << pac_bytes_.size() << " bytes";
 
   if (result != OK)
     return TryToFallbackPacUrl(result);
@@ -168,14 +173,19 @@ int InitProxyResolver::DoSetPacScript() {
 }
 
 int InitProxyResolver::DoSetPacScriptComplete(int result) {
-  LoadLog::EndEvent(load_log_,
-      LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT);
-
   if (result != OK) {
-    LOG(INFO) << "Failed configuring PAC using " << current_pac_url()
-              << " with error " << ErrorToString(result);
+    LoadLog::AddString(load_log_,
+        StringPrintf("Failed initializing the PAC script with error: %s",
+                     ErrorToString(result)));
+    LoadLog::EndEvent(load_log_,
+        LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT);
     return TryToFallbackPacUrl(result);
   }
+
+  LoadLog::AddStringLiteral(load_log_, "Successfully initialized PAC script.");
+
+  LoadLog::EndEvent(load_log_,
+      LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT);
   return result;
 }
 
@@ -190,7 +200,7 @@ int InitProxyResolver::TryToFallbackPacUrl(int error) {
   // Advance to next URL in our list.
   ++current_pac_url_index_;
 
-  LOG(INFO) << "Falling back to next PAC URL...";
+  LoadLog::AddStringLiteral(load_log_, "Falling back to next PAC URL...");
 
   next_state_ = GetStartState();
 

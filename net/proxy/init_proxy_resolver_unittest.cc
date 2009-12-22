@@ -6,6 +6,7 @@
 
 #include "net/base/net_errors.h"
 #include "net/base/load_log.h"
+#include "net/base/load_log_util.h"
 #include "net/base/load_log_unittest.h"
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/init_proxy_resolver.h"
@@ -177,18 +178,18 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
 
   // Check the LoadLog was filled correctly.
-  EXPECT_EQ(6u, log->entries().size());
+  EXPECT_EQ(9u, log->entries().size());
   ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
                     LoadLog::PHASE_BEGIN);
   ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
                     LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 2, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+  ExpectLogContains(log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
                     LoadLog::PHASE_END);
-  ExpectLogContains(log, 3, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
+  ExpectLogContains(log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
                     LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
+  ExpectLogContains(log, 7, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
                     LoadLog::PHASE_END);
-  ExpectLogContains(log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER,
+  ExpectLogContains(log, 8, LoadLog::TYPE_INIT_PROXY_RESOLVER,
                     LoadLog::PHASE_END);
 }
 
@@ -210,14 +211,14 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
   EXPECT_EQ("", resolver.pac_bytes());
 
   // Check the LoadLog was filled correctly.
-  EXPECT_EQ(4u, log->entries().size());
+  EXPECT_EQ(6u, log->entries().size());
   ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
                     LoadLog::PHASE_BEGIN);
   ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
                     LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 2, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+  ExpectLogContains(log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
                     LoadLog::PHASE_END);
-  ExpectLogContains(log, 3, LoadLog::TYPE_INIT_PROXY_RESOLVER,
+  ExpectLogContains(log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER,
                     LoadLog::PHASE_END);
 }
 
@@ -310,26 +311,26 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   // Check the LoadLog was filled correctly.
   // (Note that the Fetch and Set states are repeated since both WPAD and custom
   // PAC scripts are tried).
-  EXPECT_EQ(10u, log->entries().size());
+  EXPECT_EQ(17u, log->entries().size());
   ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
                     LoadLog::PHASE_BEGIN);
   ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
                     LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 2, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+  ExpectLogContains(log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
                     LoadLog::PHASE_END);
-  ExpectLogContains(log, 3, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
+  ExpectLogContains(log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
                     LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
-                    LoadLog::PHASE_END);
-  ExpectLogContains(log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 6, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-                    LoadLog::PHASE_END);
   ExpectLogContains(log, 7, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 8, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
                     LoadLog::PHASE_END);
-  ExpectLogContains(log, 9, LoadLog::TYPE_INIT_PROXY_RESOLVER,
+  ExpectLogContains(log, 9, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+                    LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 12, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+                    LoadLog::PHASE_END);
+  ExpectLogContains(log, 13, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
+                    LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 15, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
+                    LoadLog::PHASE_END);
+  ExpectLogContains(log, 16, LoadLog::TYPE_INIT_PROXY_RESOLVER,
                     LoadLog::PHASE_END);
 }
 
