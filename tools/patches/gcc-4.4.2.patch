@@ -1507,7 +1507,192 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  (define_insn "*tls_local_dynamic_base_32_gnu"
    [(set (match_operand:SI 0 "register_operand" "=a")
  	(unspec:SI [(match_operand:SI 1 "register_operand" "b")
-@@ -21562,9 +21973,11 @@
+@@ -19140,7 +19551,19 @@
+ 	(mem:BLK (match_dup 4)))
+    (use (match_dup 5))]
+   "TARGET_64BIT"
+-  "rep movsq"
++{
++ if (flag_control_integrity)
++  {
++    return "movl\t%%esi, %%esi\nleaq\t(%%r15,%%rsi), %%rsi\n"
++	   "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
++	   "rep movsq"
++	   "\nmovl\t%%esi, %%esi\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "rep movsq";
++ }
++}
+   [(set_attr "type" "str")
+    (set_attr "prefix_rep" "1")
+    (set_attr "memory" "both")
+@@ -19178,7 +19601,19 @@
+ 	(mem:BLK (match_dup 4)))
+    (use (match_dup 5))]
+   "TARGET_64BIT"
+-  "rep movs{l|d}"
++{
++ if (flag_control_integrity)
++  {
++    return "movl\t%%esi, %%esi\nleaq\t(%%r15,%%rsi), %%rsi\n"
++	   "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
++	   "rep movs{l|d}"
++	   "\nmovl\t%%esi, %%esi\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "rep movs{l|d}";
++ }
++}
+   [(set_attr "type" "str")
+    (set_attr "prefix_rep" "1")
+    (set_attr "memory" "both")
+@@ -19212,7 +19647,19 @@
+ 	(mem:BLK (match_dup 4)))
+    (use (match_dup 5))]
+   "TARGET_64BIT"
+-  "rep movsb"
++{
++ if (flag_control_integrity)
++  {
++    return "movl\t%%esi, %%esi\nleaq\t(%%r15,%%rsi), %%rsi\n"
++	   "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
++	   "rep movsb"
++	   "\nmovl\t%%esi, %%esi\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "rep movsb";
++ }
++}
+   [(set_attr "type" "str")
+    (set_attr "prefix_rep" "1")
+    (set_attr "memory" "both")
+@@ -19392,7 +19839,18 @@
+    (use (match_operand:DI 2 "register_operand" "a"))
+    (use (match_dup 4))]
+   "TARGET_64BIT"
+-  "rep stosq"
++{
++ if (flag_control_integrity)
++  {
++    return "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
++	   "rep stosq"
++	   "\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "rep stosq";
++ }
++}
+   [(set_attr "type" "str")
+    (set_attr "prefix_rep" "1")
+    (set_attr "memory" "store")
+@@ -19426,7 +19884,18 @@
+    (use (match_operand:SI 2 "register_operand" "a"))
+    (use (match_dup 4))]
+   "TARGET_64BIT"
+-  "rep stos{l|d}"
++{
++ if (flag_control_integrity)
++  {
++    return "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
++	   "rep stos{l|d}"
++	   "\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "rep stos{l|d}";
++ }
++}
+   [(set_attr "type" "str")
+    (set_attr "prefix_rep" "1")
+    (set_attr "memory" "store")
+@@ -19458,7 +19927,18 @@
+    (use (match_operand:QI 2 "register_operand" "a"))
+    (use (match_dup 4))]
+   "TARGET_64BIT"
+-  "rep stosb"
++{
++ if (flag_control_integrity)
++  {
++    return "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
++	   "rep stosb"
++	   "\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "rep stosb";
++ }
++}
+   [(set_attr "type" "str")
+    (set_attr "prefix_rep" "1")
+    (set_attr "memory" "store")
+@@ -19585,7 +20065,19 @@
+    (clobber (match_operand:DI 1 "register_operand" "=D"))
+    (clobber (match_operand:DI 2 "register_operand" "=c"))]
+   "TARGET_64BIT"
+-  "repz cmpsb"
++{
++ if (flag_control_integrity)
++  {
++    return "movl\t%%esi, %%esi\nleaq\t(%%r15,%%rsi), %%rsi\n"
++	   "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
++	   "repz cmpsb"
++	   "\nmovl\t%%esi, %%esi\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "repz cmpsb";
++ }
++}
+   [(set_attr "type" "str")
+    (set_attr "mode" "QI")
+    (set_attr "prefix_rep" "1")])
+@@ -19638,7 +20130,19 @@
+    (clobber (match_operand:DI 1 "register_operand" "=D"))
+    (clobber (match_operand:DI 2 "register_operand" "=c"))]
+   "TARGET_64BIT"
+-  "repz cmpsb"
++{
++ if (flag_control_integrity)
++  {
++    return "movl\t%%esi, %%esi\nleaq\t(%%r15,%%rsi), %%rsi\n"
++	   "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
++	   "repz cmpsb"
++	   "\nmovl\t%%esi, %%esi\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "repz cmpsb";
++ }
++}
+   [(set_attr "type" "str")
+    (set_attr "mode" "QI")
+    (set_attr "prefix_rep" "1")])
+@@ -19699,7 +20203,18 @@
+    (clobber (match_operand:DI 1 "register_operand" "=D"))
+    (clobber (reg:CC FLAGS_REG))]
+   "TARGET_64BIT"
+-  "repnz scasb"
++{
++ if (flag_control_integrity)
++  {
++    return "movl\t%%esi, %%esi\nleaq\t(%%r15,%%rsi), %%rsi\n"
++	   "repnz scasb"
++	   "\nmovl\t%%esi, %%esi";
++  }
++ else
++  {
++    return "repnz scasb";
++ }
++}
+   [(set_attr "type" "str")
+    (set_attr "mode" "QI")
+    (set_attr "prefix_rep" "1")])
+@@ -21562,9 +22077,11 @@
  	(call (mem:QI (match_operand:SI 1 "sibcall_insn_operand" "s,U"))
  	      (match_operand:SI 2 "" "")))]
    "SIBLING_CALL_P (insn) && !TARGET_64BIT"
@@ -1522,7 +1707,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "callv")])
  
  (define_insn "*call_value_1_rex64"
-@@ -21618,11 +22031,14 @@
+@@ -21618,11 +22135,14 @@
  	(call (mem:QI (match_operand:DI 1 "sibcall_insn_operand" "s,U"))
  	      (match_operand:DI 2 "" "")))]
    "SIBLING_CALL_P (insn) && TARGET_64BIT"
@@ -1540,7 +1725,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  ;; We used to use "int $5", in honor of #BR which maps to interrupt vector 5.
  ;; That, however, is usually mapped by the OS to SIGSEGV, which is often
  ;; caught for use by garbage collectors and the like.  Using an insn that
-@@ -21675,7 +22091,10 @@
+@@ -21675,7 +22195,10 @@
    if (TARGET_AVX && GET_CODE (XEXP (operands[0], 0)) != PLUS)
      gcc_unreachable ();
  
