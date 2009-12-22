@@ -414,7 +414,19 @@ LRESULT HandleDragAndDrop(PluginObject *obj, WPARAM wParam) {
   return 1;
 }
 
+static const UINT kDestroyWindowMessageID = WM_USER + 1;
+
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+  // To work around deadlocks caused by calling DestroyWindow
+  // synchronously during plugin destruction in Chrome's multi-process
+  // architecture, we call DestroyWindow asynchronously.
+  if (Msg == kDestroyWindowMessageID) {
+    ::DestroyWindow(hWnd);
+    // Do not touch anything related to the plugin; it has likely
+    // already been destroyed.
+    return 0;
+  }
+
   PluginObject *obj = PluginObject::GetPluginProperty(hWnd);
   if (obj == NULL) {                   // It's not my window
     return 1;  // 0 often means we handled it.
@@ -670,7 +682,7 @@ void CleanupAllWindows(PluginObject *obj) {
   if (obj->GetContentHWnd()) {
     ::KillTimer(obj->GetContentHWnd(), 0);
     PluginObject::ClearPluginProperty(obj->GetContentHWnd());
-    ::DestroyWindow(obj->GetContentHWnd());
+    ::PostMessage(obj->GetContentHWnd(), kDestroyWindowMessageID, 0, 0);
     obj->SetContentHWnd(NULL);
   }
 
