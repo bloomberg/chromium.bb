@@ -3129,6 +3129,9 @@ BUG30826 WIN : LayoutTests/platform/win/fast/events/panScroll-imageMap-noHref-sc
 // Flaky
 BUG30930 LINUX : LayoutTests/tables/mozilla/bugs/bug15933.html = IMAGE PASS
 
+BUG31026 MAC DEBUG : LayoutTests/http/tests/appcache/crash-when-navigating-away-then-back.html = PASS CRASH
+BUG31028 LINUX DEBUG : LayoutTests/svg/custom/feDisplacementMap-01.svg = IMAGE+TEXT IMAGE TEXT
+
 // WebKit update 52372->52454
 BUG30938 MAC : LayoutTests/fast/backgrounds/svg-as-background-6.html = IMAGE
 BUG30938 : LayoutTests/svg/css/mask-with-shadow.svg = IMAGE

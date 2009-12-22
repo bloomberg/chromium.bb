@@ -1108,7 +1108,6 @@
    fun:_Znw*
    fun:_ZN7WebCore26PlatformMessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS_18MessagePortChannel9EventDataEEE
    fun:_ZN7WebCore18MessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS0_9EventDataEEE
-   ...
 }
 {
    bug_23104
