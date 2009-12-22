@@ -1,15 +1,16 @@
 {
-  "name": "News Reader",
+  "name": "__MSG_name__",
   "version": "1.1",
-  "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.",
+  "description": "__MSG_description__",
   "icons": { "128": "news_icon.png" },
   "browser_action": {
-    "default_title": "Google News",
+    "default_title": "__MSG_default_title__",
     "default_icon": "news_action.png",
     "popup": "feed.html"
   },
   "permissions": [
     "tabs",
     "http://news.google.com/*"
-  ]
+  ],
+  "default_locale": "en"
 }
