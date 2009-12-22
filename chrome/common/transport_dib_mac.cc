@@ -38,11 +38,13 @@ TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
 
 // static
 TransportDIB* TransportDIB::Map(TransportDIB::Handle handle) {
+  if (!is_valid(handle))
+    return NULL;
+
   TransportDIB* dib = new TransportDIB(handle);
   struct stat st;
-  fstat(handle.fd, &st);
-
-  if (!dib->shared_memory_.Map(st.st_size)) {
+  if ((fstat(handle.fd, &st) != 0) ||
+      (!dib->shared_memory_.Map(st.st_size))) {
     delete dib;
     HANDLE_EINTR(close(handle.fd));
     return NULL;
