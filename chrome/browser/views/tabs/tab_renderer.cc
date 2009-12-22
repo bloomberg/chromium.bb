@@ -526,11 +526,10 @@ void TabRenderer::Layout() {
     close_button_->SetVisible(false);
   }
 
+  int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
+  int title_top = kTopPadding + (content_height - title_font_height) / 2;
   // Size the Title text to fill the remaining space.
   if (!pinned() || width() >= kPinnedTabRendererAsTabWidth) {
-    // Size the Title text to fill the remaining space.
-    int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
-    int title_top = kTopPadding + (content_height - title_font_height) / 2;
     // If the user has big fonts, the title will appear rendered too far down
     // on the y-axis if we use the regular top padding, so we need to adjust it
     // so that the text appears centered.
@@ -548,6 +547,8 @@ void TabRenderer::Layout() {
     }
     title_bounds_.SetRect(title_left, title_top, title_width,
                           title_font_height);
+  } else {
+    title_bounds_.SetRect(title_left, title_top, 0, 0);
   }
 
   // Certain UI elements within the Tab (the favicon, etc.) are not represented
