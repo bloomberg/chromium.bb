@@ -47,6 +47,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)
+#include "chrome/browser/browser_main.h"
 #include "chrome/browser/cocoa/keystone_infobar.h"
 #endif
 
@@ -647,6 +648,15 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
 
 void BrowserInit::LaunchWithProfile::AddStartupURLs(
     std::vector<GURL>* startup_urls) const {
+#if defined(OS_MACOSX)
+  // On Mac, startup URLs are usually delivered by Launch Services, not on the
+  // command line. Get them.
+  DCHECK(Platform::IsStartupComplete());
+  startup_urls->insert(startup_urls->end(), Platform::GetStartupURLs().begin(),
+                       Platform::GetStartupURLs().end());
+  Platform::ClearStartupURLs();
+#endif
+
   // If we have urls specified beforehand (i.e. from command line) use them
   // and nothing else.
   if (!startup_urls->empty())

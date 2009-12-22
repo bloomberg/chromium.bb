@@ -62,6 +62,24 @@ void RecordBreakpadStatusUMA(MetricsService* metrics) {
   metrics->RecordBreakpadHasDebugger(DebugUtil::BeingDebugged());
 }
 
+bool IsStartupComplete() {
+  AppController* appController = [NSApp delegate];
+  DCHECK(appController);
+  return static_cast<bool>([appController startupComplete]);
+}
+
+const std::vector<GURL>& GetStartupURLs() {
+  AppController* appController = [NSApp delegate];
+  DCHECK(appController);
+  return [appController startupURLs];
+}
+
+void ClearStartupURLs() {
+  AppController* appController = [NSApp delegate];
+  DCHECK(appController);
+  [appController clearStartupURLs];
+}
+
 }  // namespace Platform
 
 // From browser_main_win.h, stubs until we figure out the right thing...

@@ -451,7 +451,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 #endif
 
-
   if (is_first_run) {
 #if defined(OS_WIN)
     // During first run we read the google_update registry key to find what
@@ -901,8 +900,20 @@ int BrowserMain(const MainFunctionParams& parameters) {
     MessageLoopForUI::current()->PostTask(FROM_HERE, parameters.ui_task);
     RunUIMessageLoop(browser_process.get());
   } else {
-    // We are in regular browser boot sequence. Open initial stabs and enter
-    // the main message loop.
+    // We are in regular browser boot sequence.
+#if defined(OS_MACOSX)
+    // On Mac, the message which provides the browser with the startup URLs and
+    // the Apple Event which generates |-applicationDidFinishLaunching:| are
+    // queued up.
+    // TODO(viettrungluu): This is what seems to happen *AFAICT*. This is a bit
+    // fragile. The DCHECK() below will fail if |-aDFL:| is not reached, but
+    // there is currently no way to tell if subsequent messages are processed.
+    // This is evidently fragile, and should be made more robust.
+    MessageLoopForUI::current()->RunAllPending();
+    DCHECK(Platform::IsStartupComplete());
+#endif
+
+    // Open initial tabs and enter the main message loop.
     if (browser_init.Start(parsed_command_line, std::wstring(), profile,
                            &result_code)) {
       // Call Recycle() here as late as possible, before going into the loop
