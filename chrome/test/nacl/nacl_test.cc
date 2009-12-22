@@ -117,7 +117,8 @@ TEST_F(NaClTest, ServerTest) {
 }
 
 
-TEST_F(NaClTest, SrpcHelloWorld) {
+// http://crbug.com/30990
+TEST_F(NaClTest, FLAKY_SrpcHelloWorld) {
   FilePath srpc_hw_file(kSrpcHwHtmlFileName);
   RunTest(srpc_hw_file, action_max_timeout_ms());
 }
