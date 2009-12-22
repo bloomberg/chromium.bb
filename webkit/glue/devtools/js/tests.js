@@ -227,7 +227,7 @@ TestSuite.prototype.testEnableResourcesTab = function() {
   this.showPanel('resources');
 
   var test = this;
-  this.addSniffer(WebInspector, '_addResource',
+  this.addSniffer(WebInspector, 'updateResource',
       function(identifier, payload) {
         test.assertEquals('simple_page.html', payload.lastPathComponent);
         WebInspector.panels.resources.refresh();
@@ -311,22 +311,8 @@ TestSuite.prototype.testResourceHeaders = function() {
 
   var test = this;
 
-  var requestOk = false;
   var responseOk = false;
   var timingOk = false;
-
-  this.addSniffer(WebInspector, '_addResource',
-      function(identifier, payload) {
-        var resource = this.resources[identifier];
-        if (resource.mainResource) {
-          // We are only interested in secondary resources in this test.
-          return;
-        }
-
-        var requestHeaders = JSON.stringify(resource.requestHeaders);
-        test.assertContains(requestHeaders, 'Accept');
-        requestOk = true;
-      }, true);
 
   this.addSniffer(WebInspector, 'updateResource',
       function(identifier, payload) {
@@ -335,6 +321,9 @@ TestSuite.prototype.testResourceHeaders = function() {
           // We are only interested in secondary resources in this test.
           return;
         }
+
+        var requestHeaders = JSON.stringify(resource.requestHeaders);
+        test.assertContains(requestHeaders, 'Accept');
 
         if (payload.didResponseChange) {
           var responseHeaders = JSON.stringify(resource.responseHeaders);
@@ -350,7 +339,6 @@ TestSuite.prototype.testResourceHeaders = function() {
         }
 
         if (payload.didCompletionChange) {
-          test.assertTrue(requestOk);
           test.assertTrue(responseOk);
           test.assertTrue(timingOk);
           test.assertTrue(typeof resource.endTime != 'undefined');
