@@ -18,7 +18,35 @@
 namespace gpu {
 namespace gles2 {
 
+// Check that certain assumptions the code makes are true. There are places in
+// the code where shared memory is passed direclty to GL. Example, glUniformiv,
+// glShaderSource. The command buffer code assumes GLint and GLsizei (and maybe
+// a few others) are 32bits. If they are not 32bits the code will have to change
+// to call those GL functions with service side memory and then copy the results
+// to shared memory, converting the sizes.
+COMPILE_ASSERT(sizeof(GLint) == sizeof(uint32),  // NOLINT
+               GLint_not_same_size_as_uint32);
+COMPILE_ASSERT(sizeof(GLsizei) == sizeof(uint32),  // NOLINT
+               GLint_not_same_size_as_uint32);
+
 namespace {
+
+size_t GetGLTypeSize(GLenum type) {
+  switch (type) {
+    case GL_BYTE:
+      return sizeof(GLbyte);  // NOLINT
+    case GL_UNSIGNED_BYTE:
+      return sizeof(GLubyte);  // NOLINT
+    case GL_SHORT:
+      return sizeof(GLshort);  // NOLINT
+    case GL_UNSIGNED_SHORT:
+      return sizeof(GLushort);  // NOLINT
+    case GL_FLOAT:
+      return sizeof(GLfloat);  // NOLINT
+    default:
+      return 0;
+  }
+}
 
 // Returns the address of the first byte after a struct.
 template <typename T>
@@ -26,20 +54,24 @@ const void* AddressAfterStruct(const T& pod) {
   return reinterpret_cast<const uint8*>(&pod) + sizeof(pod);
 }
 
-// Returns the address of the frst byte after the struct.
+// Returns the address of the frst byte after the struct or NULL if size >
+// immediate_data_size.
 template <typename RETURN_TYPE, typename COMMAND_TYPE>
-RETURN_TYPE GetImmediateDataAs(const COMMAND_TYPE& pod) {
-  return static_cast<RETURN_TYPE>(const_cast<void*>(AddressAfterStruct(pod)));
+RETURN_TYPE GetImmediateDataAs(const COMMAND_TYPE& pod,
+                               uint32 size,
+                               uint32 immediate_data_size) {
+  return (size <= immediate_data_size) ?
+      static_cast<RETURN_TYPE>(const_cast<void*>(AddressAfterStruct(pod))) :
+      NULL;
 }
 
-// Checks if there is enough immediate data.
-template<typename T>
-bool CheckImmediateDataSize(
+// Computes the data size for certain gl commands like glUniform.
+uint32 ComputeImmediateDataSize(
     uint32 immediate_data_size,
     GLuint count,
     size_t size,
     unsigned int elements_per_unit) {
-  return immediate_data_size == count * size * elements_per_unit;
+  return count * size * elements_per_unit;
 }
 
 // A struct to hold info about each command.
@@ -58,39 +90,6 @@ const CommandInfo g_command_info[] = {
 
   #undef GLES2_CMD_OP
 };
-
-// These commands convert from c calls to local os calls.
-void GLGenBuffersHelper(GLsizei n, GLuint* ids) {
-  glGenBuffersARB(n, ids);
-}
-
-void GLGenFramebuffersHelper(GLsizei n, GLuint* ids) {
-  glGenFramebuffersEXT(n, ids);
-}
-
-void GLGenRenderbuffersHelper(GLsizei n, GLuint* ids) {
-  glGenRenderbuffersEXT(n, ids);
-}
-
-void GLGenTexturesHelper(GLsizei n, GLuint* ids) {
-  glGenTextures(n, ids);
-}
-
-void GLDeleteBuffersHelper(GLsizei n, GLuint* ids) {
-  glDeleteBuffersARB(n, ids);
-}
-
-void GLDeleteFramebuffersHelper(GLsizei n, GLuint* ids) {
-  glDeleteFramebuffersEXT(n, ids);
-}
-
-void GLDeleteRenderbuffersHelper(GLsizei n, GLuint* ids) {
-  glDeleteRenderbuffersEXT(n, ids);
-}
-
-void GLDeleteTexturesHelper(GLsizei n, GLuint* ids) {
-  glDeleteTextures(n, ids);
-}
 
 namespace GLErrorBit {
 enum GLErrorBit {
@@ -221,6 +220,131 @@ bool IdMap::GetClientId(GLuint service_id, GLuint* client_id) {
 // cmd stuff to outside this class.
 class GLES2DecoderImpl : public GLES2Decoder {
  public:
+  // Info about Vertex Attributes. This is used to track what the user currently
+  // has bound on each Vertex Attribute so that checking can be done at
+  // glDrawXXX time.
+  class VertexAttribInfo {
+   public:
+    VertexAttribInfo()
+        : enabled_(false),
+          size_(0),
+          type_(0),
+          offset_(0),
+          real_stride_(0),
+          buffer_(0),
+          buffer_size_(0),
+          num_elements_(0) {
+    }
+    // Returns true if this VertexAttrib can access index.
+    bool CanAccess(GLuint index);
+
+    void set_enabled(bool enabled) {
+      enabled_ = enabled;
+    }
+
+    GLuint buffer() const {
+      return buffer_;
+    }
+
+    void Clear() {
+      buffer_ = 0;
+      SetBufferSize(0);
+    }
+
+    void SetBufferSize(GLsizeiptr buffer_size) {
+      buffer_size_ = buffer_size;
+      if (offset_ > buffer_size || real_stride_ == 0) {
+        num_elements_ = 0;
+      } else {
+        uint32 size = buffer_size - offset_;
+        num_elements_ = size / real_stride_ +
+            (size % real_stride_ >= GetGLTypeSize(type_) ? 1 : 0);
+      }
+    }
+
+    void SetInfo(
+        GLuint buffer,
+        GLsizeiptr buffer_size,
+        GLint size,
+        GLenum type,
+        GLsizei real_stride,
+        GLsizei offset) {
+      DCHECK(real_stride > 0);
+      buffer_ = buffer;
+      size_ = size;
+      type_ = type;
+      real_stride_ = real_stride;
+      offset_ = offset;
+      SetBufferSize(buffer_size);
+    }
+
+   private:
+    // Whether or not this attribute is enabled.
+    bool enabled_;
+
+    // number of components (1, 2, 3, 4)
+    GLint size_;
+
+    // GL_BYTE, GL_FLOAT, etc. See glVertexAttribPointer.
+    GLenum type_;
+
+    // The offset into the buffer.
+    GLsizei offset_;
+
+    // The stride that will be used to access the buffer. This is the actual
+    // stide, NOT the GL bogus stride. In other words there is never a stride
+    // of 0.
+    GLsizei real_stride_;
+
+    // The service side name of the buffer bound to this attribute. 0 = invalid
+    GLuint buffer_;
+
+    // The size of the buffer.
+    GLsizeiptr buffer_size_;
+
+    // The number of elements that can be accessed.
+    GLuint num_elements_;
+  };
+
+  // Info about Buffers currently in the system.
+  struct BufferInfo {
+    BufferInfo()
+        : size(0) {
+    }
+
+    explicit BufferInfo(GLsizeiptr _size)
+        : size(_size) {
+    }
+
+    GLsizeiptr size;
+  };
+
+  // This is used to track which attributes a particular program needs
+  // so we can verify at glDrawXXX time that every attribute is either disabled
+  // or if enabled that it points to a valid source.
+  class ProgramInfo {
+   public:
+    typedef std::vector<GLuint> AttribLocationVector;
+
+    ProgramInfo() {
+    }
+
+    void SetNumAttributes(int num_attribs) {
+      attrib_locations_.resize(num_attribs);
+    }
+
+    void SetAttributeLocation(GLuint index, int location) {
+      DCHECK(index < attrib_locations_.size());
+      attrib_locations_[index] = location;
+    }
+
+    const AttribLocationVector& GetAttribLocations() const {
+      return attrib_locations_;
+    }
+   private:
+    AttribLocationVector attrib_locations_;
+  };
+
   GLES2DecoderImpl();
 
   // Overridden from AsyncAPIInterface.
@@ -237,40 +361,58 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Overridden from GLES2Decoder.
   virtual void Destroy();
 
+  // Removes any buffers in the VertexAtrribInfos and BufferInfos. This is used
+  // on glDeleteBuffers so we can make sure the user does not try to render
+  // with deleted buffers.
+  void RemoveBufferInfo(GLuint buffer_id);
+
  private:
   bool InitPlatformSpecific();
   bool InitGlew();
 
   // Template to help call glGenXXX functions.
-  template <void gl_gen_function(GLsizei, GLuint*)>
+  template <void gl_gen_function(GLES2DecoderImpl*, GLsizei, GLuint*)>
   bool GenGLObjects(GLsizei n, const GLuint* client_ids) {
     // TODO(gman): Verify client ids are unused.
     scoped_array<GLuint>temp(new GLuint[n]);
-    gl_gen_function(n, temp.get());
+    gl_gen_function(this, n, temp.get());
     // TODO(gman): check for success before copying results.
-    for (GLsizei ii = 0; ii < n; ++ii) {
-      if (!id_map_.AddMapping(client_ids[ii], temp[ii])) {
-        // TODO(gman): fail.
-      }
-    }
-    return true;
+    return RegisterObjects(n, client_ids, temp.get());
   }
 
   // Template to help call glDeleteXXX functions.
-  template <void gl_delete_function(GLsizei, GLuint*)>
+  template <void gl_delete_function(GLES2DecoderImpl*, GLsizei, GLuint*)>
   bool DeleteGLObjects(GLsizei n, const GLuint* client_ids) {
     scoped_array<GLuint>temp(new GLuint[n]);
-    // TODO(gman): check for success before copying results.
-    for (GLsizei ii = 0; ii < n; ++ii) {
-      if (id_map_.GetServiceId(client_ids[ii], &temp[ii])) {
-        id_map_.RemoveMapping(client_ids[ii], temp[ii]);
-      } else {
-        temp[ii] = 0;
-      }
-    }
-    gl_delete_function(n, temp.get());
+    UnregisterObjects(n, client_ids, temp.get());
+    gl_delete_function(this, n, temp.get());
     return true;
   }
+
+  // Register client ids with generated service ids.
+  bool RegisterObjects(
+      GLsizei n, const GLuint* client_ids, const GLuint* service_ids);
+
+  // Unregisters client ids with service ids.
+  void UnregisterObjects(
+    GLsizei n, const GLuint* client_ids, GLuint* service_ids);
+
+  // Gets the program info for the given program. Returns NULL if none exists.
+  // Programs that have no had glLinkProgram succesfully called on them will
+  // not exist.
+  ProgramInfo* GetProgramInfo(GLuint program);
+
+  // Updates the program info for the given program.
+  void UpdateProgramInfo(GLuint program);
+
+  // Deletes the program info for the given program.
+  void RemoveProgramInfo(GLuint program);
+
+  // Gets the buffer info for the given buffer.
+  const BufferInfo* GetBufferInfo(GLuint buffer);
+
+  // Sets the info for a buffer.
+  void SetBufferInfo(GLuint buffer, GLsizeiptr size);
 
   // Wrapper for glCreateProgram
   void CreateProgramHelper(GLuint client_id);
@@ -281,14 +423,45 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Wrapper for glBindBuffer since we need to track the current targets.
   void DoBindBuffer(GLenum target, GLuint buffer);
 
+  // Wrapper for glDrawArrays.
+  void DoDrawArrays(GLenum mode, GLint first, GLsizei count);
+
+  // Wrapper for glDisableVertexAttribArray.
+  void DoDisableVertexAttribArray(GLuint index);
+
+  // Wrapper for glEnableVertexAttribArray.
+  void DoEnableVertexAttribArray(GLuint index);
+
+  // Wrapper for glLinkProgram
+  void DoLinkProgram(GLuint program);
+
   // Swaps the buffers (copies/renders to the current window).
   void DoSwapBuffers();
+
+  // Wrapper for glUseProgram
+  void DoUseProgram(GLuint program);
 
   // Gets the GLError through our wrapper.
   GLenum GetGLError();
 
   // Sets our wrapper for the GLError.
   void SetGLError(GLenum error);
+
+  // Copies the real GL errors to the wrapper. This is so we can
+  // make sure there are no native GL errors before calling some GL function
+  // so that on return we know any error generated was for that specific
+  // command.
+  void CopyRealGLErrorsToWrapper();
+
+  // Checks if the current program and vertex attributes are valid for drawing.
+  bool IsDrawValid(GLuint max_vertex_accessed);
+
+  // Gets the buffer id for a given target.
+  GLuint GetBufferForTarget(GLenum target) {
+    DCHECK(target == GL_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER);
+    return target == GL_ARRAY_BUFFER ? bound_array_buffer_ :
+                                       bound_element_array_buffer_;
+  }
 
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
@@ -324,6 +497,26 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // to call glDrawElements.
   GLuint bound_element_array_buffer_;
 
+  // The maximum vertex attributes.
+  GLuint max_vertex_attribs_;
+
+  // Info for each vertex attribute saved so we can check at glDrawXXX time
+  // if it is safe to draw.
+  scoped_array<VertexAttribInfo> vertex_attrib_infos_;
+
+  // Info for each buffer in the system.
+  // TODO(gman): Choose a faster container.
+  typedef std::map<GLuint, BufferInfo> BufferInfoMap;
+  BufferInfoMap buffer_infos_;
+
+  // Info for each "successfully linked" program by service side program Id.
+  // TODO(gman): Choose a faster container.
+  typedef std::map<GLuint, ProgramInfo> ProgramInfoMap;
+  ProgramInfoMap program_infos_;
+
+  // The program in current use through glUseProgram.
+  ProgramInfo* current_program_info_;
+
 #if defined(OS_WIN)
   HDC device_context_;
   HGLRC gl_context_;
@@ -346,6 +539,8 @@ GLES2DecoderImpl::GLES2DecoderImpl()
       unpack_alignment_(4),
       bound_array_buffer_(0),
       bound_element_array_buffer_(0),
+      max_vertex_attribs_(0),
+      current_program_info_(NULL),
 #ifdef OS_WIN
       device_context_(NULL),
       gl_context_(NULL),
@@ -359,6 +554,17 @@ bool GLES2DecoderImpl::Initialize() {
   if (!InitGlew())
     return false;
   CHECK_GL_ERROR();
+
+  // Lookup GL things we need to know.
+  GLint value;
+  glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &value);
+  max_vertex_attribs_ = value;
+
+  DCHECK_GE(max_vertex_attribs_, 8u);
+
+  vertex_attrib_infos_.reset(new VertexAttribInfo[max_vertex_attribs_]);
+  memset(vertex_attrib_infos_.get(), 0,
+         sizeof(vertex_attrib_infos_[0]) * max_vertex_attribs_);
 
   //glBindFramebuffer(0, 0);
   return true;
@@ -533,8 +739,83 @@ bool GetWindowsPixelFormat(HWND window,
   return true;
 }
 
+// These commands convert from c calls to local os calls.
+void GLGenBuffersHelper(
+    GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
+  glGenBuffersARB(n, ids);
+}
+
+void GLGenFramebuffersHelper(
+    GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
+  glGenFramebuffersEXT(n, ids);
+}
+
+void GLGenRenderbuffersHelper(
+    GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
+  glGenRenderbuffersEXT(n, ids);
+}
+
+void GLGenTexturesHelper(
+    GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
+  glGenTextures(n, ids);
+}
+
+void GLDeleteBuffersHelper(
+    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
+  glDeleteBuffersARB(n, ids);
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    decoder->RemoveBufferInfo(ids[ii]);
+  }
+}
+
+void GLDeleteFramebuffersHelper(
+    GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
+  glDeleteFramebuffersEXT(n, ids);
+}
+
+void GLDeleteRenderbuffersHelper(
+    GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
+  glDeleteRenderbuffersEXT(n, ids);
+}
+
+void GLDeleteTexturesHelper(
+    GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
+  glDeleteTextures(n, ids);
+}
+
 }  // anonymous namespace
 #endif
+
+bool GLES2DecoderImpl::RegisterObjects(
+    GLsizei n, const GLuint* client_ids, const GLuint* service_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (!id_map_.AddMapping(client_ids[ii], service_ids[ii])) {
+      // TODO(gman): fail.
+    }
+  }
+  return true;
+}
+
+void GLES2DecoderImpl::UnregisterObjects(
+    GLsizei n, const GLuint* client_ids, GLuint* service_ids) {
+  // TODO(gman): check for success before copying results.
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (id_map_.GetServiceId(client_ids[ii], &service_ids[ii])) {
+      id_map_.RemoveMapping(client_ids[ii], service_ids[ii]);
+    } else {
+      service_ids[ii] = 0;
+    }
+  }
+}
+
+void GLES2DecoderImpl::RemoveBufferInfo(GLuint buffer_id) {
+  for (GLuint ii = 0; ii < max_vertex_attribs_; ++ii) {
+    if (vertex_attrib_infos_[ii].buffer() == buffer_id) {
+      vertex_attrib_infos_[ii].Clear();
+    }
+  }
+  buffer_infos_.erase(buffer_id);
+}
 
 bool GLES2DecoderImpl::InitPlatformSpecific() {
 #if defined(OS_WIN)
@@ -678,8 +959,10 @@ parse_error::ParseError GLES2DecoderImpl::DoCommand(
         #undef GLES2_CMD_OP
       }
       if (debug()) {
-        if (glGetError() != 0) {
+        GLenum error;
+        while ((error = glGetError()) != GL_NO_ERROR) {
           // TODO(gman): Change output to something useful for NaCl.
+          SetGLError(error);
           printf("GL ERROR b4: %s\n", GetCommandName(command));
         }
       }
@@ -723,6 +1006,24 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint buffer) {
   glBindBuffer(target, buffer);
 }
 
+void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
+  if (index < max_vertex_attribs_) {
+    vertex_attrib_infos_[index].set_enabled(false);
+    glEnableVertexAttribArray(index);
+  } else {
+    SetGLError(GL_INVALID_VALUE);
+  }
+}
+
+void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
+  if (index < max_vertex_attribs_) {
+    vertex_attrib_infos_[index].set_enabled(true);
+    glEnableVertexAttribArray(index);
+  } else {
+    SetGLError(GL_INVALID_VALUE);
+  }
+}
+
 parse_error::ParseError GLES2DecoderImpl::HandleDeleteShader(
     uint32 immediate_data_size, const gles2::DeleteShader& c) {
   GLuint shader = c.shader;
@@ -731,7 +1032,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleDeleteShader(
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
-  glDeleteProgram(service_id);
+  glDeleteShader(service_id);
   id_map_.RemoveMapping(shader, service_id);
   return parse_error::kParseNoError;
 }
@@ -744,10 +1045,30 @@ parse_error::ParseError GLES2DecoderImpl::HandleDeleteProgram(
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
+  RemoveProgramInfo(program);
   glDeleteProgram(service_id);
   id_map_.RemoveMapping(program, service_id);
   return parse_error::kParseNoError;
 }
+
+void GLES2DecoderImpl::DoDrawArrays(
+    GLenum mode, GLint first, GLsizei count) {
+  if (IsDrawValid(first + count - 1)) {
+    glDrawArrays(mode, first, count);
+  }
+}
+
+void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
+  CopyRealGLErrorsToWrapper();
+  glLinkProgram(program);
+  GLenum error = glGetError();
+  if (error != GL_NO_ERROR) {
+    RemoveProgramInfo(program);
+    SetGLError(error);
+  } else {
+    UpdateProgramInfo(program);
+  }
+};
 
 // NOTE: If you need to know the results of SwapBuffers (like losing
 //    the context) then add a new command. Do NOT make SwapBuffers synchronous.
@@ -760,6 +1081,17 @@ void GLES2DecoderImpl::DoSwapBuffers() {
   DCHECK(window());
   window()->SwapBuffers();
 #endif
+}
+
+void GLES2DecoderImpl::DoUseProgram(GLuint program) {
+  ProgramInfo* info = GetProgramInfo(program);
+  if (!info) {
+    // Program was not linked successfully. (ie, glLinkProgram)
+    SetGLError(GL_INVALID_OPERATION);
+  } else {
+    current_program_info_ = info;
+    glUseProgram(program);
+  }
 }
 
 GLenum GLES2DecoderImpl::GetGLError() {
@@ -786,6 +1118,97 @@ void GLES2DecoderImpl::SetGLError(GLenum error) {
   error_bits_ |= GLErrorToErrorBit(error);
 }
 
+void GLES2DecoderImpl::CopyRealGLErrorsToWrapper() {
+  GLenum error;
+  while ((error = glGetError()) != GL_NO_ERROR) {
+    SetGLError(error);
+  }
+}
+
+const GLES2DecoderImpl::BufferInfo* GLES2DecoderImpl::GetBufferInfo(
+    GLuint buffer) {
+  BufferInfoMap::iterator it = buffer_infos_.find(buffer);
+  return it != buffer_infos_.end() ? &it->second : NULL;
+}
+
+void GLES2DecoderImpl::SetBufferInfo(GLuint buffer, GLsizeiptr size) {
+  buffer_infos_[buffer] = BufferInfo(size);
+
+  // Also go through VertexAttribInfo and update any info that references
+  // the same buffer.
+  for (GLuint ii = 0; ii < max_vertex_attribs_; ++ii) {
+    if (vertex_attrib_infos_[ii].buffer() == buffer) {
+      vertex_attrib_infos_[ii].SetBufferSize(size);
+    }
+  }
+}
+
+GLES2DecoderImpl::ProgramInfo* GLES2DecoderImpl::GetProgramInfo(
+    GLuint program) {
+  ProgramInfoMap::iterator it = program_infos_.find(program);
+  return it != program_infos_.end() ? &it->second : NULL;
+}
+
+void GLES2DecoderImpl::UpdateProgramInfo(GLuint program) {
+  ProgramInfo* info = GetProgramInfo(program);
+  if (!info) {
+    std::pair<ProgramInfoMap::iterator, bool> result =
+        program_infos_.insert(std::make_pair(program, ProgramInfo()));
+    DCHECK(result.second);
+    info = &result.first->second;
+  }
+  GLint num_attribs = 0;
+  GLint max_len = 0;
+  glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &num_attribs);
+  info->SetNumAttributes(num_attribs);
+  glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
+  // TODO(gman): Should we check for error?
+  scoped_array<char> name_buffer(new char[max_len + 1]);
+  for (GLint ii = 0; ii < num_attribs; ++ii) {
+    GLsizei length;
+    GLsizei size;
+    GLenum type;
+    glGetActiveAttrib(
+        program, ii, max_len + 1, &length, &size, &type, name_buffer.get());
+    // TODO(gman): Should we check for error?
+    GLint location = glGetAttribLocation(program, name_buffer.get());
+    info->SetAttributeLocation(ii, num_attribs);
+  }
+}
+
+void GLES2DecoderImpl::RemoveProgramInfo(GLuint program) {
+  ProgramInfoMap::iterator it = program_infos_.find(program);
+  if (it != program_infos_.end()) {
+    if (current_program_info_ == &it->second) {
+      current_program_info_ = NULL;
+    }
+    program_infos_.erase(it);
+  }
+}
+
+bool GLES2DecoderImpl::VertexAttribInfo::CanAccess(GLuint index) {
+  return !enabled_ || (buffer_ != 0 && index < num_elements_);
+}
+
+bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
+  if (current_program_info_) {
+    // Validate that all attribs current program needs are setup correctly.
+    const ProgramInfo::AttribLocationVector& locations =
+        current_program_info_->GetAttribLocations();
+    for (size_t ii = 0; ii < locations.size(); ++ii) {
+      GLuint location = locations[ii];
+      DCHECK_LT(location, max_vertex_attribs_);
+      if (!vertex_attrib_infos_[location].CanAccess(max_vertex_accessed)) {
+        SetGLError(GL_INVALID_OPERATION);
+      }
+    }
+    return true;
+  }
+  // We do not set a GL error here because the GL spec says no error if the
+  // program is invalid.
+  return false;
+};
+
 parse_error::ParseError GLES2DecoderImpl::HandleDrawElements(
     uint32 immediate_data_size, const gles2::DrawElements& c) {
   if (bound_element_array_buffer_ != 0) {
@@ -797,9 +1220,15 @@ parse_error::ParseError GLES2DecoderImpl::HandleDrawElements(
       SetGLError(GL_INVALID_VALUE);
     } else {
       const GLvoid* indices = reinterpret_cast<const GLvoid*>(c.index_offset);
-      // TODO(gman): Validate indices
-      // TOOD(gman): Validate all attribs current program needs are setup.
-      glDrawElements(mode, count, type, indices);
+      // TODO(gman): Validate indices. Get maximum index.
+      //
+      // This value should be computed by walking the index buffer from 0 to
+      // count and finding the maximum vertex accessed.
+      // For now we'll special case 0 to not check.
+      GLuint max_vertex_accessed = 0;
+      if (IsDrawValid(max_vertex_accessed)) {
+        glDrawElements(mode, count, type, indices);
+      }
     }
   } else {
     SetGLError(GL_INVALID_VALUE);
@@ -865,8 +1294,8 @@ parse_error::ParseError GLES2DecoderImpl::HandleShaderSourceImmediate(
   }
   GLsizei count = c.count;
   uint32 data_size = c.data_size;
-  // TODO(gman): need to check that data_size is in range for arg_count.
-  const char** data = GetImmediateDataAs<const char**>(c);
+  const char** data = GetImmediateDataAs<const char**>(
+      c, data_size, immediate_data_size);
   if (!data) {
     return parse_error::kParseOutOfBounds;
   }
@@ -876,21 +1305,35 @@ parse_error::ParseError GLES2DecoderImpl::HandleShaderSourceImmediate(
 
 parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
     uint32 immediate_data_size, const gles2::VertexAttribPointer& c) {
-  // TODO(gman): Is this a valid check or does this check have to come
-  //    at glDrawElements time.
   if (bound_array_buffer_ != 0) {
     GLuint indx = c.indx;
     GLint size = c.size;
     GLenum type = c.type;
     GLboolean normalized = c.normalized;
     GLsizei stride = c.stride;
-    GLuint offset = c.offset;
-    const void* ptr = reinterpret_cast<const void*>(c.offset);
+    GLsizei offset = c.offset;
+    const void* ptr = reinterpret_cast<const void*>(offset);
     if (!ValidateGLenumVertexAttribType(type) ||
-        !ValidateGLenumVertexAttribSize(size)) {
+        !ValidateGLenumVertexAttribSize(size) ||
+        indx >= max_vertex_attribs_ ||
+        stride < 0) {
       SetGLError(GL_INVALID_VALUE);
       return parse_error::kParseNoError;
     }
+    const BufferInfo* buffer_info = GetBufferInfo(bound_array_buffer_);
+    GLsizei component_size = GetGLTypeSize(type);
+    GLsizei real_stride = stride != 0 ? stride : component_size * size;
+    if (offset % component_size > 0) {
+      SetGLError(GL_INVALID_VALUE);
+      return parse_error::kParseNoError;
+    }
+    vertex_attrib_infos_[indx].SetInfo(
+        bound_array_buffer_,
+        buffer_info ? buffer_info->size : 0,
+        size,
+        type,
+        real_stride,
+        offset);
     glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
   } else {
     SetGLError(GL_INVALID_VALUE);
@@ -975,9 +1418,8 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocationImmediate(
     return parse_error::kParseNoError;
   }
   uint32 name_size = c.data_size;
-  const char* name = GetImmediateDataAs<const char*>(c);
-  // TODO(gman): Make sure validate checks arg_count
-  //     covers data_size.
+  const char* name = GetImmediateDataAs<const char*>(
+      c, name_size, immediate_data_size);
   GLint* location = GetSharedMemoryAs<GLint*>(
       c.location_shm_id, c.location_shm_offset, sizeof(GLint));
   if (!location || !name) {
@@ -1016,9 +1458,8 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocationImmediate(
     return parse_error::kParseNoError;
   }
   uint32 name_size = c.data_size;
-  const char* name = GetImmediateDataAs<const char*>(c);
-  // TODO(gman): Make sure validate checks arg_count
-  //     covers data_size.
+  const char* name = GetImmediateDataAs<const char*>(
+      c, name_size, immediate_data_size);
   GLint* location = GetSharedMemoryAs<GLint*>(
       c.location_shm_id, c.location_shm_offset, sizeof(GLint));
   if (!location || !name) {
@@ -1043,13 +1484,26 @@ parse_error::ParseError GLES2DecoderImpl::HandleBufferData(
       return parse_error::kParseOutOfBounds;
     }
   }
-  // TODO(gman): Validate case where data is NULL.
   if (!ValidateGLenumBufferTarget(target) ||
       !ValidateGLenumBufferUsage(usage)) {
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
+  // Clear the buffer to 0 if no initial data was passed in.
+  scoped_array<int8> zero;
+  if (!data) {
+    zero.reset(new int8[size]);
+    memset(zero.get(), 0, size);
+    data = zero.get();
+  }
+  CopyRealGLErrorsToWrapper();
   glBufferData(target, size, data, usage);
+  GLenum error = glGetError();
+  if (error != GL_NO_ERROR) {
+    SetGLError(error);
+  } else {
+    SetBufferInfo(GetBufferForTarget(target), size);
+  }
   return parse_error::kParseNoError;
 }
 
@@ -1057,15 +1511,25 @@ parse_error::ParseError GLES2DecoderImpl::HandleBufferDataImmediate(
     uint32 immediate_data_size, const gles2::BufferDataImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
-  const void* data = GetImmediateDataAs<const void*>(c);
+  const void* data = GetImmediateDataAs<const void*>(
+      c, size, immediate_data_size);
+  if (!data) {
+    return parse_error::kParseOutOfBounds;
+  }
   GLenum usage = static_cast<GLenum>(c.usage);
   if (!ValidateGLenumBufferTarget(target) ||
       !ValidateGLenumBufferUsage(usage)) {
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
-  // TODO(gman): Handle case where data is NULL.
+  CopyRealGLErrorsToWrapper();
   glBufferData(target, size, data, usage);
+  GLenum error = glGetError();
+  if (error != GL_NO_ERROR) {
+    SetGLError(error);
+  } else {
+    SetBufferInfo(GetBufferForTarget(target), size);
+  }
   return parse_error::kParseNoError;
 }
 
@@ -1093,7 +1557,12 @@ parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2D(
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
-  // TODO(gman): Validate case where data is NULL.
+  scoped_array<int8> zero;
+  if (!data) {
+    zero.reset(new int8[image_size]);
+    memset(zero.get(), 0, image_size);
+    data = zero.get();
+  }
   glCompressedTexImage2D(
       target, level, internal_format, width, height, border, image_size, data);
   return parse_error::kParseNoError;
@@ -1108,9 +1577,8 @@ parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2DImmediate(
   GLsizei height = static_cast<GLsizei>(c.height);
   GLint border = static_cast<GLint>(c.border);
   GLsizei image_size = static_cast<GLsizei>(c.imageSize);
-  const void* data = GetImmediateDataAs<const void*>(c);
-  // Immediate version.
-  // TODO(gman): Handle case where data is NULL.
+  const void* data = GetImmediateDataAs<const void*>(
+      c, image_size, immediate_data_size);
   if (!data) {
     return parse_error::kParseOutOfBounds;
   }
@@ -1153,7 +1621,12 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexImage2D(
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
-  // TODO(gman): Validate case where data is NULL.
+  scoped_array<int8> zero;
+  if (!pixels) {
+    zero.reset(new int8[pixels_size]);
+    memset(zero.get(), 0, pixels_size);
+    pixels = zero.get();
+  }
   glTexImage2D(
       target, level, internal_format, width, height, border, format, type,
       pixels);
@@ -1170,9 +1643,10 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexImage2DImmediate(
   GLint border = static_cast<GLint>(c.border);
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
-  const void* pixels = GetImmediateDataAs<const void*>(c);
-  // Immediate version.
-  // TODO(gman): Handle case where data is NULL.
+  uint32 size = GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment_);
+  const void* pixels = GetImmediateDataAs<const void*>(
+      c, size, immediate_data_size);
   if (!pixels) {
     return parse_error::kParseOutOfBounds;
   }

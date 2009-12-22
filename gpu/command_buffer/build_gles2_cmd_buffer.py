@@ -663,10 +663,13 @@ _FUNCTION_INFO = {
   'DeleteShader': {'type': 'Custom', 'DecoderFunc': 'DoDeleteShader'},
   'DeleteTextures': {'type': 'DELn'},
   'DepthRangef': {'DecoderFunc': 'glDepthRange'},
+  'DisableVertexAttribArray': {'DecoderFunc': 'DoDisableVertexAttribArray'},
+  'DrawArrays': { 'DecoderFunc': 'DoDrawArrays'},
   'DrawElements': {
     'type': 'Manual',
     'cmd_args': 'GLenum mode, GLsizei count, GLenum type, GLuint index_offset',
   },
+  'EnableVertexAttribArray': {'DecoderFunc': 'DoEnableVertexAttribArray'},
   'FramebufferRenderbuffer': {'DecoderFunc': 'glFramebufferRenderbufferEXT'},
   'FramebufferTexture2D': {'DecoderFunc': 'glFramebufferTexture2DEXT'},
   'GenerateMipmap': {'DecoderFunc': 'glGenerateMipmapEXT'},
@@ -724,6 +727,7 @@ _FUNCTION_INFO = {
   'IsRenderbuffer': {'type': 'Is', 'DecoderFunc': 'glIsRenderbufferEXT'},
   'IsShader': {'type': 'Is'},
   'IsTexture': {'type': 'Is'},
+  'LinkProgram': {'DecoderFunc': 'DoLinkProgram'},
   'PixelStorei': {'type': 'Manual'},
   'RenderbufferStorage': {'DecoderFunc': 'glRenderbufferStorageEXT'},
   'ReadPixels': {'type': 'Custom', 'immediate': False},
@@ -751,6 +755,7 @@ _FUNCTION_INFO = {
   'UniformMatrix2fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 4},
   'UniformMatrix3fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 9},
   'UniformMatrix4fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 16},
+  'UseProgram': {'DecoderFunc': 'DoUseProgram'},
   'VertexAttrib1fv': {'type': 'PUT', 'data_type': 'GLfloat', 'count': 1},
   'VertexAttrib2fv': {'type': 'PUT', 'data_type': 'GLfloat', 'count': 2},
   'VertexAttrib3fv': {'type': 'PUT', 'data_type': 'GLfloat', 'count': 3},
@@ -941,6 +946,10 @@ class TypeHandler(object):
     file.Write("}\n")
     file.Write("\n")
 
+  def WriteGetDataSizeCode(self, func, file):
+    """Writes the code to set data_size used in validation"""
+    pass
+
   def WriteImmediateCmdSizeTest(self, func, file):
     """Writes a size test for an immediate version of a command."""
     file.Write("  // TODO(gman): Compute correct size.\n")
@@ -948,8 +957,6 @@ class TypeHandler(object):
 
   def WriteImmediateHandlerImplementation (self, func, file):
     """Writes the handler impl for the immediate version of a command."""
-    file.Write("  // Immediate version.\n")
-    func.WriteHandlerValidation(file)
     file.Write("  %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
 
@@ -959,8 +966,13 @@ class TypeHandler(object):
         "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
-    for arg in func.GetOriginalArgs():
-      arg.WriteGetCode(file)
+    if len(func.GetOriginalArgs()) > 0:
+      last_arg = func.GetLastOriginalArg()
+      all_but_last_arg = func.GetOriginalArgs()[:-1]
+      for arg in all_but_last_arg:
+        arg.WriteGetCode(file)
+      self.WriteGetDataSizeCode(func, file)
+      last_arg.WriteGetCode(file)
     func.WriteHandlerValidation(file)
     func.WriteHandlerImplementation(file)
     file.Write("  return parse_error::kParseNoError;\n")
@@ -973,8 +985,12 @@ class TypeHandler(object):
         "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
-    for arg in func.GetOriginalArgs():
+    last_arg = func.GetLastOriginalArg()
+    all_but_last_arg = func.GetOriginalArgs()[:-1]
+    for arg in all_but_last_arg:
       arg.WriteGetCode(file)
+    self.WriteGetDataSizeCode(func, file)
+    last_arg.WriteGetCode(file)
     func.WriteHandlerValidation(file)
     func.WriteHandlerImplementation(file)
     file.Write("  return parse_error::kParseNoError;\n")
@@ -1199,46 +1215,34 @@ class ManualHandler(CustomHandler):
       CustomHandler.WriteImmediateCmdGetTotalSize(self, func, file)
 
 
-class DataHandler(CustomHandler):
+class DataHandler(TypeHandler):
   """Handler for glBufferData, glBufferSubData, glTexImage2D, glTexSubImage2D,
      glCompressedTexImage2D, glCompressedTexImageSub2D."""
   def __init__(self):
-    CustomHandler.__init__(self)
+    TypeHandler.__init__(self)
 
-  def WriteServiceImplementation(self, func, file):
+  def WriteGetDataSizeCode(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write(
-        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
-    for arg in func.GetCmdArgs():
-      arg.WriteGetCode(file)
-
     # TODO(gman): Move this data to _FUNCTION_INFO?
-    if func.name == 'BufferData':
+    name = func.name
+    if name.endswith("Immediate"):
+      name = name[0:-9]
+    if name == 'BufferData':
       file.Write("  uint32 data_size = size;\n")
-    elif func.name == 'BufferSubData':
+    elif name == 'BufferSubData':
       file.Write("  uint32 data_size = size;\n")
-    elif func.name == 'CompressedTexImage2D':
+    elif name == 'CompressedTexImage2D':
       file.Write("  uint32 data_size = imageSize;\n")
-    elif func.name == 'CompressedTexSubImage2D':
+    elif name == 'CompressedTexSubImage2D':
       file.Write("  uint32 data_size = imageSize;\n")
-    elif func.name == 'TexImage2D':
-      file.Write("  uint32 pixels_size = GLES2Util::ComputeImageDataSize(\n")
+    elif name == 'TexImage2D':
+      file.Write("  uint32 data_size = GLES2Util::ComputeImageDataSize(\n")
       file.Write("      width, height, format, type, unpack_alignment_);\n")
-    elif func.name == 'TexSubImage2D':
-      file.Write("  uint32 pixels_size = GLES2Util::ComputeImageDataSize(\n")
+    elif name == 'TexSubImage2D':
+      file.Write("  uint32 data_size = GLES2Util::ComputeImageDataSize(\n")
       file.Write("      width, height, format, type, unpack_alignment_);\n")
     else:
-      file.Write("  uint32 data_size = 0;  // TODO(gman): get correct size!\n")
-
-    for arg in func.GetOriginalArgs():
-      arg.WriteGetAddress(file)
-    func.WriteHandlerValidation(file)
-    func.WriteHandlerImplementation(file)
-    file.Write("  return parse_error::kParseNoError;\n")
-    file.Write("}\n")
-    file.Write("\n")
+      file.Write("// uint32 data_size = 0;  // TODO(gman): get correct size!\n")
 
   def WriteImmediateCmdGetTotalSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -1277,6 +1281,29 @@ class DataHandler(CustomHandler):
           "    uint32 total_size = 0;  // TODO(gman): get correct size\n")
     file.Write("  EXPECT_EQ(sizeof(cmd), total_size);\n")
 
+  def WriteImmediateCmdInit(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("  void Init(%s) {\n" % func.MakeTypedCmdArgString("_"))
+    self.WriteImmediateCmdGetTotalSize(func, file)
+    file.Write("    SetHeader(total_size);\n")
+    args = func.GetCmdArgs()
+    for arg in args:
+      file.Write("    %s = _%s;\n" % (arg.name, arg.name))
+    file.Write("  }\n")
+    file.Write("\n")
+
+  def WriteImmediateCmdSet(self, func, file):
+    """Overrriden from TypeHandler."""
+    copy_args = func.MakeCmdArgString("_", False)
+    file.Write("  void* Set(void* cmd%s) {\n" %
+               func.MakeTypedCmdArgString("_", True))
+    self.WriteImmediateCmdGetTotalSize(func, file)
+    file.Write("    static_cast<ValueType*>(cmd)->Init(%s);\n" % copy_args)
+    file.Write("    return NextImmediateCmdAddressTotalSize<ValueType>("
+               "cmd, total_size);\n")
+    file.Write("  }\n")
+    file.Write("\n")
+
   def WriteImmediateFormatTest(self, func, file):
     """Overrriden from TypeHandler."""
     # TODO(gman): Remove this exception.
@@ -1298,15 +1325,17 @@ class GENnHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     pass
 
+  def WriteGetDataSizeCode(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("  uint32 data_size = n * sizeof(GLuint);\n")
+
   def WriteHandlerImplementation (self, func, file):
     """Overrriden from TypeHandler."""
-    func.WriteHandlerValidation(file)
     file.Write("  GenGLObjects<GL%sHelper>(n, %s);\n" %
                (func.name, func.GetLastOriginalArg().name))
 
   def WriteImmediateHandlerImplementation(self, func, file):
     """Overrriden from TypeHandler."""
-    func.WriteHandlerValidation(file)
     file.Write("  GenGLObjects<GL%sHelper>(n, %s);\n" %
                (func.original_name, func.GetLastOriginalArg().name))
 
@@ -1435,7 +1464,6 @@ class CreateHandler(TypeHandler):
   def WriteHandlerImplementation (self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("  uint32 client_id = c.client_id;\n")
-    func.WriteHandlerValidation(file)
     file.Write("  %sHelper(%s);\n" %
                (func.name, func.MakeCmdArgString("")))
 
@@ -1463,15 +1491,17 @@ class DELnHandler(TypeHandler):
   def __init__(self):
     TypeHandler.__init__(self)
 
+  def WriteGetDataSizeCode(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("  uint32 data_size = n * sizeof(GLuint);\n")
+
   def WriteHandlerImplementation (self, func, file):
     """Overrriden from TypeHandler."""
-    func.WriteHandlerValidation(file)
     file.Write("  DeleteGLObjects<GL%sHelper>(n, %s);\n" %
                (func.name, func.GetLastOriginalArg().name))
 
   def WriteImmediateHandlerImplementation (self, func, file):
     """Overrriden from TypeHandler."""
-    func.WriteHandlerValidation(file)
     file.Write("  DeleteGLObjects<GL%sHelper>(n, %s);\n" %
                (func.original_name, func.GetLastOriginalArg().name))
 
@@ -1650,13 +1680,11 @@ class PUTHandler(TypeHandler):
   def __init__(self):
     TypeHandler.__init__(self)
 
-  def WriteImmediateValidationCode(self, func, file):
+  def WriteGetDataSizeCode(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("  if (!CheckImmediateDataSize<%s>("
-               "immediate_data_size, 1, sizeof(%s), %d)) {\n" %
-               (func.name, func.info.data_type, func.info.count))
-    file.Write("    return parse_error::kParseOutOfBounds;\n")
-    file.Write("  }\n")
+    file.Write("  uint32 data_size = ComputeImmediateDataSize("
+               "immediate_data_size, 1, sizeof(%s), %d);\n" %
+               (func.info.data_type, func.info.count))
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
@@ -1783,13 +1811,11 @@ class PUTnHandler(TypeHandler):
   def __init__(self):
     TypeHandler.__init__(self)
 
-  def WriteImmediateValidationCode(self, func, file):
+  def WriteGetDataSizeCode(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("  if (!CheckImmediateDataSize<%s>("
-               "immediate_data_size, count, sizeof(%s), %d)) {\n" %
-               (func.name, func.info.data_type, func.info.count))
-    file.Write("    return parse_error::kParseOutOfBounds;\n")
-    file.Write("  }\n")
+    file.Write("  uint32 data_size = ComputeImmediateDataSize("
+               "immediate_data_size, 1, sizeof(%s), %d);\n" %
+               (func.info.data_type, func.info.count))
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
@@ -1960,9 +1986,8 @@ class GLcharHandler(TypeHandler):
 
     file.Write("  uint32 name_size = c.data_size;\n")
     file.Write(
-        "  const char* name = GetImmediateDataAs<const char*>(c);\n")
-    file.Write("  // TODO(gman): Make sure validate checks\n")
-    file.Write("  //     immediate_data_size covers data_size.\n")
+        "  const char* name = GetImmediateDataAs<const char*>(\n")
+    file.Write("      c, name_size, immediate_data_size);\n")
     func.WriteHandlerValidation(file)
     arg_string = ", ".join(["%s" % arg.name for arg in all_but_last_arg])
     file.Write("  String name_str(name, name_size);\n")
@@ -2129,9 +2154,8 @@ class GetGLcharHandler(GLcharHandler):
 
     file.Write("  uint32 name_size = c.data_size;\n")
     file.Write(
-        "  const char* name = GetImmediateDataAs<const char*>(c);\n")
-    file.Write("  // TODO(gman): Make sure validate checks\n")
-    file.Write("  //     immediate_data_size covers data_size.\n")
+        "  const char* name = GetImmediateDataAs<const char*>(\n")
+    file.Write("      c, name_size, immediate_data_size);\n")
     file.Write("  GLint* location = GetSharedMemoryAs<GLint*>(\n")
     file.Write(
         "      c.location_shm_id, c.location_shm_offset, sizeof(*location));\n")
@@ -2316,6 +2340,44 @@ class STRnHandler(TypeHandler):
     file.Write("// TODO(gman): Implement this\n")
     TypeHandler.WriteGLES2ImplementationHeader(self, func, file)
 
+  def WriteServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write(
+        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+    file.Write(
+        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+    args = func.GetOriginalArgs()
+    all_but_last_2_args = args[:-2]
+    for arg in all_but_last_2_args:
+      arg.WriteGetCode(file)
+    self.WriteGetDataSizeCode(func, file)
+    size_arg = args[-2]
+    file.Write("  uint32 size_shm_id = c.%s_shm_id;\n" % size_arg.name)
+    file.Write("  uint32 size_shm_offset = c.%s_shm_offset;\n" % size_arg.name)
+    file.Write("  GLsizei* length = NULL;\n")
+    file.Write("  if (size_shm_id != 0 || size_shm_offset != 0) {\n"
+               "    length = GetSharedMemoryAs<GLsizei*>(\n"
+               "        size_shm_id, size_shm_offset, sizeof(*length));\n"
+               "    if (!length) {\n"
+               "      return parse_error::kParseOutOfBounds;\n"
+               "    }\n"
+               "  }\n")
+    dest_arg = args[-1]
+    bufsize_arg = args[-3]
+    file.Write(
+        "  %s %s = GetSharedMemoryAs<%s>(\n" %
+        (dest_arg.type, dest_arg.name, dest_arg.type))
+    file.Write(
+        "      c.%s_shm_id, c.%s_shm_offset, %s);\n" %
+        (dest_arg.name, dest_arg.name, bufsize_arg.name))
+    for arg in all_but_last_2_args + [dest_arg]:
+      arg.WriteValidationCode(file)
+    func.WriteValidationCode(file)
+    func.WriteHandlerImplementation(file)
+    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("}\n")
+    file.Write("\n")
+
 
 class FunctionInfo(object):
   """Holds info about a function."""
@@ -2427,8 +2489,9 @@ class ImmediatePointerArgument(Argument):
   def WriteGetCode(self, file):
     """Overridden from Argument."""
     file.Write(
-      "  %s %s = GetImmediateDataAs<%s>(c);\n" %
-       (self.type, self.name, self.type))
+      "  %s %s = GetImmediateDataAs<%s>(\n" %
+      (self.type, self.name, self.type))
+    file.Write("      c, data_size, immediate_data_size);\n")
 
   def WriteValidationCode(self, file):
     """Overridden from Argument."""
@@ -2462,7 +2525,7 @@ class PointerArgument(Argument):
         "  %s %s = GetSharedMemoryAs<%s>(\n" %
         (self.type, self.name, self.type))
     file.Write(
-        "      c.%s_shm_id, c.%s_shm_offset, 0 /* TODO(gman): size */);\n" %
+        "      c.%s_shm_id, c.%s_shm_offset, data_size);\n" %
         (self.name, self.name))
 
   def WriteGetAddress(self, file):
