@@ -28,7 +28,7 @@ class ToolbarView;
 
 // The BrowserActionButton is a specialization of the MenuButton class.
 // It acts on a ExtensionAction, in this case a BrowserAction and handles
-// loading the image for the button asynchronously on the file thread to
+// loading the image for the button asynchronously on the file thread.
 class BrowserActionButton : public views::MenuButton,
                             public views::ButtonListener,
                             public ImageLoadingTracker::Observer,

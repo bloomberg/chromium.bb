@@ -31,7 +31,6 @@ BrowserBubble::BrowserBubble(views::View* view, views::Widget* frame,
       visible_(false),
       delegate_(NULL),
       attached_(false) {
-  frame_native_view_ = frame_->GetNativeView();
   gfx::Size size = view->GetPreferredSize();
   bounds_.SetRect(origin.x(), origin.y(), size.width(), size.height());
   InitPopup();

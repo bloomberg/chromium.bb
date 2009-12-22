@@ -13,7 +13,8 @@
 class BubbleWidget : public views::WidgetWin {
  public:
   explicit BubbleWidget(BrowserBubble* bubble)
-      : bubble_(bubble), closed_(false) {
+      : bubble_(bubble),
+        closed_(false) {
     set_window_style(WS_POPUP | WS_CLIPCHILDREN);
     set_window_ex_style(WS_EX_TOOLWINDOW);
   }
@@ -68,15 +69,15 @@ class BubbleWidget : public views::WidgetWin {
   }
 
  private:
-  bool closed_;
   BrowserBubble* bubble_;
+  bool closed_;
 };
 
 void BrowserBubble::InitPopup() {
   // popup_ is a Widget, but we need to do some WidgetWin stuff first, then
   // we'll assign it into popup_.
   views::WidgetWin* pop = new BubbleWidget(this);
-  pop->Init(frame_native_view_, bounds_);
+  pop->Init(frame_->GetNativeView(), bounds_);
   pop->SetContentsView(view_);
 
   popup_ = pop;

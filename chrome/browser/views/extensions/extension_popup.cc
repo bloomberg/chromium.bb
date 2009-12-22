@@ -17,6 +17,11 @@
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
+#if defined(OS_LINUX)
+#include "chrome/browser/views/tabs/tab_overview_types.h"
+#include "views/widget/widget_gtk.h"
+#endif
+
 using views::Widget;
 
 // The minimum/maximum dimensions of the popup.
@@ -46,11 +51,23 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
   // TODO(erikkay) Some of this border code is derived from InfoBubble.
   // We should see if we can unify these classes.
 
+  gfx::NativeView native_window = frame->GetNativeView();
+#if defined(OS_LINUX)
+  border_widget_ = new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
+  static_cast<views::WidgetGtk*>(border_widget_)->MakeTransparent();
+  static_cast<views::WidgetGtk*>(border_widget_)->make_transient_to_parent();
+#else
   border_widget_ = Widget::CreatePopupWidget(Widget::Transparent,
                                              Widget::NotAcceptEvents,
                                              Widget::DeleteOnDestroy);
-  gfx::NativeView native_window = frame->GetNativeView();
+#endif
   border_widget_->Init(native_window, bounds());
+#if defined(OS_LINUX)
+  TabOverviewTypes::instance()->SetWindowType(
+      border_widget_->GetNativeView(),
+      TabOverviewTypes::WINDOW_TYPE_CHROME_INFO_BUBBLE,
+      NULL);
+#endif
 
   border_ = new BubbleBorder;
   border_->set_arrow_location(arrow_location);

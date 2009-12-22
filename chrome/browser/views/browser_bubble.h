@@ -85,7 +85,7 @@ class BrowserBubble {
   void ResizeToView();
 
   // Returns the NativeView containing that popup.
-  gfx::NativeView native_view() const { return frame_native_view_; }
+  gfx::NativeView native_view() const { return frame_->GetNativeView(); }
 
  protected:
   // Create the popup widget.
@@ -99,7 +99,6 @@ class BrowserBubble {
 
   // The frame that this bubble is attached to.
   views::Widget* frame_;
-  gfx::NativeView frame_native_view_;
 
  private:
   // The view that is displayed in this bubble.
