@@ -230,7 +230,7 @@ if [ ${MODE} = 'build_gsl' ] ; then
 fi
 
 #@
-#@ download_xoas
+#@ download_xaos
 #@
 #@
 if [ ${MODE} = 'download_xaos' ] ; then

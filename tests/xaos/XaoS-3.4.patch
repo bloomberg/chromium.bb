@@ -74,6 +74,17 @@ diff -uNr XaoS-3.4/configure.in XaoS-mod/configure.in
      src/ui/ui-drv/dga/Makefile src/ui/ui-drv/win32/Makefile
      src/ui/ui-drv/BeOS/Makefile doc/Makefile help/Makefile 
      src/ui/ui-drv/gtk/Makefile src/sffe/Makefile
+diff -uNr XaoS-3.4/src/engine/i386.c XaoS-mod/src/engine/i386.c
+--- XaoS-3.4/src/engine/i386.c	2009-12-22 09:16:15.000000000 +0100
++++ XaoS-mod/src/engine/i386.c	2009-12-22 09:29:52.000000000 +0100
+@@ -21,7 +21,6 @@
+   unsigned short cw;
+ 
+   asm volatile ("                                                    \n\
+-      wait                                                          \n\
+       fstcw  %0                                                       ": /* outputs */ "=m" (cw)
+ 		:		/* inputs */
+     );
 diff -uNr XaoS-3.4/src/i18n/Makefile.in XaoS-mod/src/i18n/Makefile.in
 --- XaoS-3.4/src/i18n/Makefile.in	2008-06-01 19:13:25.000000000 -0400
 +++ XaoS-mod/src/i18n/Makefile.in	2008-12-04 19:36:22.918238000 -0500
