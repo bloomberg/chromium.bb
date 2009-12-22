@@ -105,7 +105,9 @@
     'appcache': {
       'filepath': 'appcache/.*',
     },
-
+    'gpu': {
+      'filepath': 'gpu/.*',
+    },
   },
 
   'WATCHLISTS': {
@@ -148,5 +150,6 @@
     'chrome_frame' : ['amit@chromium.org'],
     'nacl' : ['native-client-reviews@googlegroups.com'],
     'appcache': ['michaeln@chromium.org'],
+    'gpu': ['apatrick@chromium.org'],
   },
 }
