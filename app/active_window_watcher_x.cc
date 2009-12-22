@@ -8,6 +8,8 @@
 
 #include "app/active_window_watcher_x.h"
 
+static Atom kNetActiveWindowAtom = None;
+
 // static
 void ActiveWindowWatcherX::AddObserver(Observer* observer) {
   Singleton<ActiveWindowWatcherX>::get()->observers_.AddObserver(observer);
@@ -23,33 +25,58 @@ ActiveWindowWatcherX::ActiveWindowWatcherX() {
 }
 
 void ActiveWindowWatcherX::Init() {
+  GdkAtom kNetActiveWindow = gdk_atom_intern("_NET_ACTIVE_WINDOW", FALSE);
+  kNetActiveWindowAtom = gdk_x11_atom_to_xatom_for_display(
+      gdk_screen_get_display(gdk_screen_get_default()), kNetActiveWindow);
+
+  GdkWindow* root = gdk_get_default_root_window();
   // Set up X Event filter to listen for PropertyChange X events.  These events
   // tell us when the active window changes.
-  GdkWindow* root = gdk_screen_get_root_window(gdk_screen_get_default());
   gdk_window_add_filter(root, &ActiveWindowWatcherX::OnWindowXEvent, this);
-  XSelectInput(GDK_WINDOW_XDISPLAY(root), GDK_WINDOW_XID(root),
-               PropertyChangeMask);
+  XSelectInput(
+      GDK_WINDOW_XDISPLAY(root), GDK_WINDOW_XID(root), PropertyChangeMask);
 }
 
 void ActiveWindowWatcherX::NotifyActiveWindowChanged() {
-  GdkWindow* active_window = gdk_screen_get_active_window(
-      gdk_screen_get_default());
+  // We don't use gdk_screen_get_active_window() because it caches
+  // whether or not the window manager supports _NET_ACTIVE_WINDOW.
+  // This causes problems at startup for chromiumos.
+  Atom type = None;
+  int format = 0;  // size in bits of each item in 'property'
+  long unsigned int num_items = 0, remaining_bytes = 0;
+  unsigned char* property = NULL;
 
-  // If the window manager doesn't support _NET_ACTIVE_WINDOW, we don't know
-  // which window is active and just give up.
-  if (!active_window)
-    return;
+  XGetWindowProperty(gdk_x11_get_default_xdisplay(),
+                     GDK_WINDOW_XID(gdk_get_default_root_window()),
+                     kNetActiveWindowAtom,
+                     0,      // offset into property data to read
+                     1,      // length to get in 32-bit quantities
+                     False,  // deleted
+                     AnyPropertyType,
+                     &type,
+                     &format,
+                     &num_items,
+                     &remaining_bytes,
+                     &property);
 
-  FOR_EACH_OBSERVER(Observer, observers_, ActiveWindowChanged(active_window));
+  // Check that the property was set and contained a single 32-bit item.
+  if (format == 32 && num_items == 1 && remaining_bytes == 0) {
+    int xid = *reinterpret_cast<int*>(property);
+    GdkWindow* active_window = gdk_window_lookup(xid);
+
+    if (active_window) {
+      FOR_EACH_OBSERVER(
+          Observer,
+          observers_,
+          ActiveWindowChanged(active_window));
+    }
+  }
+  if (property)
+    XFree(property);
 }
 
 GdkFilterReturn ActiveWindowWatcherX::OnWindowXEvent(GdkXEvent* xevent,
     GdkEvent* event, gpointer window_watcher) {
-  static const GdkAtom kNetActiveWindow = gdk_atom_intern(
-      "_NET_ACTIVE_WINDOW", FALSE);
-  static const Atom kNetActiveWindowAtom = gdk_x11_atom_to_xatom_for_display(
-        gdk_screen_get_display(gdk_screen_get_default()), kNetActiveWindow);
-
   ActiveWindowWatcherX* watcher = reinterpret_cast<ActiveWindowWatcherX*>(
       window_watcher);
   XEvent* xev = static_cast<XEvent*>(xevent);
