@@ -216,3 +216,19 @@ EVENT_TYPE(SOCKET_STREAM_SENT)
 
 // A message received on the SocketStream.
 EVENT_TYPE(SOCKET_STREAM_RECEIVED)
+
+// ------------------------------------------------------------------------
+// SOCKS5ClientSocket
+// ------------------------------------------------------------------------
+
+// The time spent sending the "greeting" to the SOCKS server.
+EVENT_TYPE(SOCKS5_GREET_WRITE)
+
+// The time spent waiting for the "greeting" response from the SOCKS server.
+EVENT_TYPE(SOCKS5_GREET_READ)
+
+// The time spent sending the CONNECT request to the SOCKS server.
+EVENT_TYPE(SOCKS5_HANDSHAKE_WRITE)
+
+// The time spent waiting for the response to the CONNECT request.
+EVENT_TYPE(SOCKS5_HANDSHAKE_READ)
