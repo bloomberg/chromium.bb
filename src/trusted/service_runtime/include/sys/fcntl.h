@@ -91,6 +91,4 @@
 #define NACL_ABI_F_UNLKSYS 4 /* remove remote locks for a given system */
 #endif  /* !_POSIX_SOURCE */
 
-extern int open (const char *file, int oflag, ...);
-
 #endif

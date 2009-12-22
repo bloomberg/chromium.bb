@@ -71,7 +71,9 @@ void LoadNaClAppNotify::Run(NPStream* stream, const char* fname) {
            static_cast<void*>(stream),
            fname));
   if (NULL != fname) {
-    plugin()->Load(stream->url, fname);
+    plugin()->set_nacl_module_origin(nacl::UrlToOrigin(stream->url));
+    plugin()->set_local_url(fname);
+    plugin()->Load();
   }
 }
 
@@ -80,7 +82,9 @@ void LoadNaClAppNotify::Run(const char *url,
                             int32_t size) {
   dprintf(("LoadNaClAppNotify Run %s, %p, %x\n", url, buffer, size));
   if (NULL != buffer) {
-    plugin()->Load(url, url, buffer, size);
+    plugin()->set_nacl_module_origin(nacl::UrlToOrigin(url));
+    plugin()->set_local_url(url);
+    plugin()->Load(buffer, size);
   }
 }
 
