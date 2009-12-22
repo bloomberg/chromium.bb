@@ -119,19 +119,19 @@ function main() {
 function handleFeedParsingFailed(error) {
   var feed = document.getElementById("feed");
   feed.className = "error";
-  feed.innerText = chrome.i18n.getMessage("error", error);
+  feed.innerText = "Error: " + error;
 }
 
 // Handles errors during the XMLHttpRequest.
 function handleError() {
-  handleFeedParsingFailed(chrome.i18n.getMessage('failed_to_fetch_rss'));
+  handleFeedParsingFailed('Failed to fetch RSS feed.');
 }
 
 // Handles parsing the feed data we got back from XMLHttpRequest.
 function handleResponse() {
   var doc = req.responseXML;
   if (!doc) {
-    handleFeedParsingFailed(chrome.i18n.getMessage('not_a_valid_feed'));
+    handleFeedParsingFailed("Not a valid feed.");
     return;
   }
   buildPreview(doc);
@@ -190,7 +190,7 @@ function buildPreview(doc) {
     if (itemTitle) {
       itemTitle = itemTitle.textContent;
     } else {
-      itemTitle = chrome.i18n.getMessage("unknown_title");
+      itemTitle = "Unknown title";
     }
 
     // Grab the description.
@@ -235,7 +235,7 @@ function buildPreview(doc) {
   if (moreStoriesUrl) {
     var more = document.createElement("a");
     more.className = "more";
-    more.innerText = chrome.i18n.getMessage("more_stories");
+    more.innerText = "More stories \u00BB";
     more.addEventListener("click", moreStories);
     feed.appendChild(more);
   }
