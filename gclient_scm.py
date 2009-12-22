@@ -6,11 +6,48 @@
 
 import logging
 import os
+import posixpath
 import re
 import subprocess
 
 import scm
 import gclient_utils
+
+
+class DiffFilterer(object):
+  """Simple class which tracks which file is being diffed and
+  replaces instances of its file name in the original and
+  working copy lines of the svn diff output."""
+  index_string = "Index: "
+  original_prefix = "--- "
+  working_prefix = "+++ "
+
+  def __init__(self, relpath):
+    # Note that we always use '/' as the path separator to be
+    # consistent with svn's cygwin-style output on Windows
+    self._relpath = relpath.replace("\\", "/")
+    self._current_file = ""
+    self._replacement_file = ""
+
+  def SetCurrentFile(self, file):
+    self._current_file = file
+    # Note that we always use '/' as the path separator to be
+    # consistent with svn's cygwin-style output on Windows
+    self._replacement_file = posixpath.join(self._relpath, file)
+
+  def ReplaceAndPrint(self, line):
+    print(line.replace(self._current_file, self._replacement_file))
+
+  def Filter(self, line):
+    if (line.startswith(self.index_string)):
+      self.SetCurrentFile(line[len(self.index_string):])
+      self.ReplaceAndPrint(line)
+    else:
+      if (line.startswith(self.original_prefix) or
+          line.startswith(self.working_prefix)):
+        self.ReplaceAndPrint(line)
+      else:
+        print line
 
 
 ### SCM abstraction layer
@@ -69,7 +106,7 @@ class SCMWrapper(object):
       raise gclient_utils.Error('Unknown command %s' % command)
 
     if not command in dir(self):
-      raise gclient_utils.Error('Command %s not implemnted in %s wrapper' % (
+      raise gclient_utils.Error('Command %s not implemented in %s wrapper' % (
           command, self.scm_name))
 
     return getattr(self, command)(options, args, file_list)
@@ -98,6 +135,16 @@ class GitWrapper(SCMWrapper, scm.GIT):
       os.makedirs(export_path)
     self._Run(['checkout-index', '-a', '--prefix=%s/' % export_path],
               redirect_stdout=False)
+
+  def pack(self, options, args, file_list):
+    """Generates a patch file which can be applied to the root of the
+    repository."""
+    __pychecker__ = 'unusednames=file_list,options'
+    path = os.path.join(self._root_dir, self.relpath)
+    merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
+    command = ['diff', merge_base]
+    filterer = DiffFilterer(self.relpath)
+    self.RunAndFilterOutput(command, path, False, False, filterer.Filter)
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -277,6 +324,17 @@ class SVNWrapper(SCMWrapper, scm.SVN):
     command = ['export', '--force', '.']
     command.append(export_path)
     self.Run(command, os.path.join(self._root_dir, self.relpath))
+
+  def pack(self, options, args, file_list):
+    """Generates a patch file which can be applied to the root of the
+    repository."""
+    __pychecker__ = 'unusednames=file_list,options'
+    path = os.path.join(self._root_dir, self.relpath)
+    command = ['diff']
+    command.extend(args)
+
+    filterer = DiffFilterer(self.relpath)
+    self.RunAndFilterOutput(command, path, False, False, filterer.Filter)
 
   def update(self, options, args, file_list):
     """Runs SCM to update or transparently checkout the working copy.
@@ -465,48 +523,3 @@ class SVNWrapper(SCMWrapper, scm.SVN):
       # There's no file list to retrieve.
     else:
       self.RunAndGetFileList(options, command, path, file_list)
-
-  def pack(self, options, args, file_list):
-    """Generates a patch file which can be applied to the root of the
-    repository."""
-    __pychecker__ = 'unusednames=file_list,options'
-    path = os.path.join(self._root_dir, self.relpath)
-    command = ['diff']
-    command.extend(args)
-    # Simple class which tracks which file is being diffed and
-    # replaces instances of its file name in the original and
-    # working copy lines of the svn diff output.
-    class DiffFilterer(object):
-      index_string = "Index: "
-      original_prefix = "--- "
-      working_prefix = "+++ "
-
-      def __init__(self, relpath):
-        # Note that we always use '/' as the path separator to be
-        # consistent with svn's cygwin-style output on Windows
-        self._relpath = relpath.replace("\\", "/")
-        self._current_file = ""
-        self._replacement_file = ""
-
-      def SetCurrentFile(self, file):
-        self._current_file = file
-        # Note that we always use '/' as the path separator to be
-        # consistent with svn's cygwin-style output on Windows
-        self._replacement_file = self._relpath + '/' + file
-
-      def ReplaceAndPrint(self, line):
-        print(line.replace(self._current_file, self._replacement_file))
-
-      def Filter(self, line):
-        if (line.startswith(self.index_string)):
-          self.SetCurrentFile(line[len(self.index_string):])
-          self.ReplaceAndPrint(line)
-        else:
-          if (line.startswith(self.original_prefix) or
-              line.startswith(self.working_prefix)):
-            self.ReplaceAndPrint(line)
-          else:
-            print line
-
-    filterer = DiffFilterer(self.relpath)
-    self.RunAndFilterOutput(command, path, False, False, filterer.Filter)

@@ -68,6 +68,38 @@ class GIT(object):
     return results
 
   @staticmethod
+  def RunAndFilterOutput(args,
+                         in_directory,
+                         print_messages,
+                         print_stdout,
+                         filter):
+    """Runs a command, optionally outputting to stdout.
+
+    stdout is passed line-by-line to the given filter function. If
+    print_stdout is true, it is also printed to sys.stdout as in Run.
+
+    Args:
+      args: A sequence of command line parameters to be passed.
+      in_directory: The directory where svn is to be run.
+      print_messages: Whether to print status messages to stdout about
+        which commands are being run.
+      print_stdout: Whether to forward program's output to stdout.
+      filter: A function taking one argument (a string) which will be
+        passed each line (with the ending newline character removed) of
+        program's output for filtering.
+
+    Raises:
+      gclient_utils.Error: An error occurred while running the command.
+    """
+    command = [GIT.COMMAND]
+    command.extend(args)
+    gclient_utils.SubprocessCallAndFilter(command,
+                                          in_directory,
+                                          print_messages,
+                                          print_stdout,
+                                          filter=filter)
+
+  @staticmethod
   def GetEmail(repo_root):
     """Retrieves the user email address if known."""
     # We could want to look at the svn cred when it has a svn remote but it
@@ -333,31 +365,26 @@ class SVN(object):
                          print_messages,
                          print_stdout,
                          filter):
-    """Runs svn checkout, update, status, or diff, optionally outputting
-    to stdout.
+    """Runs a command, optionally outputting to stdout.
 
-    The first item in args must be either "checkout", "update",
-    "status", or "diff".
-
-    svn's stdout is passed line-by-line to the given filter function. If
+    stdout is passed line-by-line to the given filter function. If
     print_stdout is true, it is also printed to sys.stdout as in Run.
 
     Args:
-      args: A sequence of command line parameters to be passed to svn.
+      args: A sequence of command line parameters to be passed.
       in_directory: The directory where svn is to be run.
       print_messages: Whether to print status messages to stdout about
-        which Subversion commands are being run.
-      print_stdout: Whether to forward Subversion's output to stdout.
+        which commands are being run.
+      print_stdout: Whether to forward program's output to stdout.
       filter: A function taking one argument (a string) which will be
         passed each line (with the ending newline character removed) of
-        Subversion's output for filtering.
+        program's output for filtering.
 
     Raises:
-      Error: An error occurred while running the svn command.
+      gclient_utils.Error: An error occurred while running the command.
     """
     command = [SVN.COMMAND]
     command.extend(args)
-
     gclient_utils.SubprocessCallAndFilter(command,
                                           in_directory,
                                           print_messages,

@@ -362,8 +362,8 @@ from :3
         'COMMAND', 'Capture', 'CaptureStatus', 'FetchUpstreamTuple',
         'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
         'GetEmail', 'GetPatchName', 'GetSVNBranch',
-        'GetUpstream', 'IsGitSvn', 'ShortBranchName',
-        'RunCommand', 'cleanup', 'diff', 'export', 'relpath', 'revert',
+        'GetUpstream', 'IsGitSvn', 'RunAndFilterOutput', 'ShortBranchName',
+        'RunCommand', 'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
         'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',
     ]
 
