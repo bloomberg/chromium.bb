@@ -91,6 +91,11 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
 
   void FetchManifest(bool is_first_fetch);
 
+  // Add extra HTTP headers to the request based on the response info and
+  // start the URL request.
+  void AddHttpHeadersAndFetch(URLRequest* request,
+                              const net::HttpResponseInfo* info);
+
   void OnResponseCompleted(URLRequest* request);
 
   // Retries a 503 request with retry-after header of 0.

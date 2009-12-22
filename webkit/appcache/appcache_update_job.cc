@@ -198,10 +198,58 @@ void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
       UpdateJobInfo::MANIFEST_FETCH : UpdateJobInfo::MANIFEST_REFETCH;
   manifest_url_request_->SetUserData(this, new UpdateJobInfo(fetch_type));
   manifest_url_request_->set_context(service_->request_context());
-  // TODO(jennb): add "If-Modified-Since" if have previous date
   manifest_url_request_->set_load_flags(
       manifest_url_request_->load_flags() | net::LOAD_DISABLE_INTERCEPT);
-  manifest_url_request_->Start();
+
+  // Add any necessary Http headers before sending fetch request.
+  if (is_first_fetch) {
+    AppCacheEntry* entry = (update_type_ == UPGRADE_ATTEMPT) ?
+        group_->newest_complete_cache()->GetEntry(manifest_url_) : NULL;
+    if (entry) {
+      // Asynchronously load response info for manifest from newest cache.
+      service_->storage()->LoadResponseInfo(manifest_url_,
+                                            entry->response_id(), this);
+    } else {
+      AddHttpHeadersAndFetch(manifest_url_request_, NULL);
+    }
+  } else {
+    DCHECK(internal_state_ == REFETCH_MANIFEST);
+    DCHECK(manifest_response_info_.get());
+    AddHttpHeadersAndFetch(manifest_url_request_,
+                           manifest_response_info_.get());
+  }
+}
+
+void AppCacheUpdateJob::AddHttpHeadersAndFetch(
+    URLRequest* request, const net::HttpResponseInfo* info) {
+  DCHECK(request);
+  if (info) {
+    std::string extra_headers;
+
+    // Add If-Modified-Since header if response info has Last-Modified header.
+    const std::string last_modified = "Last-Modified";
+    std::string last_modified_value;
+    info->headers->EnumerateHeader(NULL, last_modified, &last_modified_value);
+    if (!last_modified_value.empty()) {
+      extra_headers.append("If-Modified-Since: ");
+      extra_headers.append(last_modified_value);
+    }
+
+    // Add If-None-Match header if resposne info has ETag header.
+    const std::string etag = "ETag";
+    std::string etag_value;
+    info->headers->EnumerateHeader(NULL, etag, &etag_value);
+    if (!etag_value.empty()) {
+      if (!extra_headers.empty())
+        extra_headers.append("\r\n");
+      extra_headers.append("If-None-Match: ");
+      extra_headers.append(etag_value);
+    }
+
+    if (!extra_headers.empty())
+      request->SetExtraRequestHeaders(extra_headers);
+  }
+  request->Start();
 }
 
 void AppCacheUpdateJob::OnResponseStarted(URLRequest *request) {
@@ -1018,17 +1066,24 @@ bool AppCacheUpdateJob::MaybeLoadFromNewestCache(const GURL& url,
 
 void AppCacheUpdateJob::OnResponseInfoLoaded(
     AppCacheResponseInfo* response_info, int64 response_id) {
+  const net::HttpResponseInfo* http_info = response_info ?
+      response_info->http_response_info() : NULL;
+
+  // Needed response info for a manifest fetch request.
+  if (internal_state_ == FETCH_MANIFEST) {
+    AddHttpHeadersAndFetch(manifest_url_request_, http_info);
+    return;
+  }
+
   LoadingResponses::iterator found = loading_responses_.find(response_id);
   DCHECK(found != loading_responses_.end());
   const GURL& url = found->second;
 
-  if (!response_info) {
+  if (!http_info) {
     LoadFromNewestCacheFailed(url);  // no response found
   } else {
     // Check if response can be re-used according to HTTP caching semantics.
     // Responses with a "vary" header get treated as expired.
-    const net::HttpResponseInfo* http_info =
-        response_info->http_response_info();
     const std::string name = "vary";
     std::string value;
     void* iter = NULL;

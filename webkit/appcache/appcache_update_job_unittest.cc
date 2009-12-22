@@ -131,7 +131,7 @@ class RetryRequestTestJob : public URLRequestTestJob {
   }
 
   static URLRequestJob* RetryFactory(URLRequest* request,
-                                   const std::string& scheme) {
+                                     const std::string& scheme) {
     ++num_requests_;
     if (num_retries_ > 0 && request->original_url() == kRetryUrl) {
       --num_retries_;
@@ -205,6 +205,72 @@ int RetryRequestTestJob::num_requests_ = 0;
 int RetryRequestTestJob::num_retries_;
 RetryRequestTestJob::RetryHeader RetryRequestTestJob::retry_after_;
 int RetryRequestTestJob::expected_requests_ = 0;
+
+// Helper class to check for certain HTTP headers.
+class HttpHeadersRequestTestJob : public URLRequestTestJob {
+ public:
+  // Call this at the start of each HTTP header-related test.
+  static void Initialize(const std::string& expect_if_modified_since,
+                         const std::string& expect_if_none_match) {
+    expect_if_modified_since_ = expect_if_modified_since;
+    expect_if_none_match_ = expect_if_none_match;
+  }
+
+  // Verifies results at end of test and resets class.
+  static void Verify() {
+    if (!expect_if_modified_since_.empty())
+      EXPECT_TRUE(saw_if_modified_since_);
+    if (!expect_if_none_match_.empty())
+      EXPECT_TRUE(saw_if_none_match_);
+
+    // Reset.
+    expect_if_modified_since_.clear();
+    saw_if_modified_since_ = false;
+    expect_if_none_match_.clear();
+    saw_if_none_match_ = false;
+    already_checked_ = false;
+  }
+
+  static URLRequestJob* IfModifiedSinceFactory(URLRequest* request,
+                                               const std::string& scheme) {
+    if (!already_checked_) {
+      already_checked_ = true;  // only check once for a test
+      const std::string& extra_headers = request->extra_request_headers();
+      const std::string if_modified_since = "If-Modified-Since: ";
+      size_t pos = extra_headers.find(if_modified_since);
+      if (pos != std::string::npos) {
+        saw_if_modified_since_ = (0 == extra_headers.compare(
+            pos + if_modified_since.length(),
+            expect_if_modified_since_.length(),
+            expect_if_modified_since_));
+      }
+
+      const std::string if_none_match = "If-None-Match: ";
+      pos = extra_headers.find(if_none_match);
+      if (pos != std::string::npos) {
+        saw_if_none_match_ = (0 == extra_headers.compare(
+            pos + if_none_match.length(),
+            expect_if_none_match_.length(),
+            expect_if_none_match_));
+      }
+    }
+    return NULL;
+  }
+
+ private:
+  static std::string expect_if_modified_since_;
+  static bool saw_if_modified_since_;
+  static std::string expect_if_none_match_;
+  static bool saw_if_none_match_;
+  static bool already_checked_;
+};
+
+// static
+std::string HttpHeadersRequestTestJob::expect_if_modified_since_;
+bool HttpHeadersRequestTestJob::saw_if_modified_since_ = false;
+std::string HttpHeadersRequestTestJob::expect_if_none_match_;
+bool HttpHeadersRequestTestJob::saw_if_none_match_ = false;
+bool HttpHeadersRequestTestJob::already_checked_ = false;
 
 class AppCacheUpdateJobTest : public testing::Test,
                               public AppCacheGroup::UpdateObserver {
@@ -2116,6 +2182,258 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_->AddUpdateObserver(this);
   }
 
+  void IfModifiedSinceTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    old_factory_ = URLRequest::RegisterProtocolFactory(
+        "http", HttpHeadersRequestTestJob::IfModifiedSinceFactory);
+    registered_factory_ = true;
+
+    MakeService();
+    group_ = new AppCacheGroup(service_.get(), GURL("http://headertest"), 111);
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    // First test against a cache attempt. Will start manifest fetch
+    // synchronously.
+    HttpHeadersRequestTestJob::Initialize("", "");
+    MockFrontend mock_frontend;
+    AppCacheHost host(1, &mock_frontend, service_.get());
+    update->StartUpdate(&host, GURL::EmptyGURL());
+    HttpHeadersRequestTestJob::Verify();
+    delete update;
+
+    // Now simulate a refetch manifest request. Will start fetch request
+    // synchronously.
+    const char data[] =
+        "HTTP/1.1 200 OK\0"
+        "\0";
+    net::HttpResponseHeaders* headers =
+        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
+    response_info->headers = headers;  // adds ref to headers
+
+    HttpHeadersRequestTestJob::Initialize("", "");
+    update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+    group_->update_status_ = AppCacheGroup::DOWNLOADING;
+    update->manifest_response_info_.reset(response_info);
+    update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+    update->FetchManifest(false);  // not first request
+    HttpHeadersRequestTestJob::Verify();
+    delete update;
+
+    // Change the headers to include a Last-Modified header. Manifest refetch
+    // should include If-Modified-Since header.
+    const char data2[] =
+        "HTTP/1.1 200 OK\0"
+        "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
+        "\0";
+    net::HttpResponseHeaders* headers2 =
+        new net::HttpResponseHeaders(std::string(data2, arraysize(data2)));
+    response_info = new net::HttpResponseInfo();
+    response_info->headers = headers2;
+
+    HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT", "");
+    update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+    group_->update_status_ = AppCacheGroup::DOWNLOADING;
+    update->manifest_response_info_.reset(response_info);
+    update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+    update->FetchManifest(false);  // not first request
+    HttpHeadersRequestTestJob::Verify();
+    delete update;
+
+    UpdateFinished();
+  }
+
+  void IfModifiedSinceUpgradeTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT", "");
+    old_factory_ = URLRequest::RegisterProtocolFactory(
+        "http", HttpHeadersRequestTestJob::IfModifiedSinceFactory);
+    registered_factory_ = true;
+
+    MakeService();
+    group_ = new AppCacheGroup(
+        service_.get(), http_server_->TestServerPage("files/manifest1"), 111);
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    // Give the newest cache a manifest enry that is in storage.
+    response_writer_.reset(
+        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
+                                        response_writer_->response_id());
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    host->AssociateCache(cache);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_old_cache_ = cache;
+    tested_manifest_ = MANIFEST1;
+    MockFrontend::HostIds ids1(1, host->host_id());
+    frontend->AddExpectedEvent(ids1, CHECKING_EVENT);
+    frontend->AddExpectedEvent(ids1, DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(ids1, PROGRESS_EVENT);
+    frontend->AddExpectedEvent(ids1, PROGRESS_EVENT);
+    frontend->AddExpectedEvent(ids1, UPDATE_READY_EVENT);
+
+    // Seed storage with expected manifest response info that will cause
+    // an If-Modified-Since header to be put in the manifest fetch request.
+    const char data[] =
+        "HTTP/1.1 200 OK\0"
+        "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
+        "\0";
+    net::HttpResponseHeaders* headers =
+        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
+    response_info->headers = headers;  // adds ref to headers
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        new HttpResponseInfoIOBuffer(response_info);  // adds ref to info
+    write_callback_.reset(
+        new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
+    response_writer_->WriteInfo(io_buffer, write_callback_.get());
+
+    // Start update after data write completes asynchronously.
+  }
+
+  void IfNoneMatchUpgradeTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    HttpHeadersRequestTestJob::Initialize("", "\"LadeDade\"");
+    old_factory_ = URLRequest::RegisterProtocolFactory(
+        "http", HttpHeadersRequestTestJob::IfModifiedSinceFactory);
+    registered_factory_ = true;
+
+    MakeService();
+    group_ = new AppCacheGroup(
+        service_.get(), http_server_->TestServerPage("files/manifest1"), 111);
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    // Give the newest cache a manifest enry that is in storage.
+    response_writer_.reset(
+        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
+                                        response_writer_->response_id());
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    host->AssociateCache(cache);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_old_cache_ = cache;
+    tested_manifest_ = MANIFEST1;
+    MockFrontend::HostIds ids1(1, host->host_id());
+    frontend->AddExpectedEvent(ids1, CHECKING_EVENT);
+    frontend->AddExpectedEvent(ids1, DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(ids1, PROGRESS_EVENT);
+    frontend->AddExpectedEvent(ids1, PROGRESS_EVENT);
+    frontend->AddExpectedEvent(ids1, UPDATE_READY_EVENT);
+
+    // Seed storage with expected manifest response info that will cause
+    // an If-None-Match header to be put in the manifest fetch request.
+    const char data[] =
+        "HTTP/1.1 200 OK\0"
+        "ETag: \"LadeDade\"\0"
+        "\0";
+    net::HttpResponseHeaders* headers =
+        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
+    response_info->headers = headers;  // adds ref to headers
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        new HttpResponseInfoIOBuffer(response_info);  // adds ref to info
+    write_callback_.reset(
+        new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
+    response_writer_->WriteInfo(io_buffer, write_callback_.get());
+
+    // Start update after data write completes asynchronously.
+  }
+
+  void IfNoneMatchRefetchTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    HttpHeadersRequestTestJob::Initialize("", "\"LadeDade\"");
+    old_factory_ = URLRequest::RegisterProtocolFactory(
+        "http", HttpHeadersRequestTestJob::IfModifiedSinceFactory);
+    registered_factory_ = true;
+
+    MakeService();
+    group_ = new AppCacheGroup(service_.get(), GURL("http://headertest"), 111);
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    // Simulate a refetch manifest request that uses an ETag header.
+    const char data[] =
+        "HTTP/1.1 200 OK\0"
+        "ETag: \"LadeDade\"\0"
+        "\0";
+    net::HttpResponseHeaders* headers =
+        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
+    response_info->headers = headers;  // adds ref to headers
+
+    update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+    group_->update_status_ = AppCacheGroup::DOWNLOADING;
+    update->manifest_response_info_.reset(response_info);
+    update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+    update->FetchManifest(false);  // not first request
+    HttpHeadersRequestTestJob::Verify();
+    delete update;
+
+    UpdateFinished();
+  }
+
+  void MultipleHeadersRefetchTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    // Verify that code is correct when building multiple extra headers.
+    HttpHeadersRequestTestJob::Initialize(
+        "Sat, 29 Oct 1994 19:43:31 GMT", "\"LadeDade\"");
+    old_factory_ = URLRequest::RegisterProtocolFactory(
+        "http", HttpHeadersRequestTestJob::IfModifiedSinceFactory);
+    registered_factory_ = true;
+
+    MakeService();
+    group_ = new AppCacheGroup(service_.get(), GURL("http://headertest"), 111);
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    // Simulate a refetch manifest request that uses an ETag header.
+    const char data[] =
+        "HTTP/1.1 200 OK\0"
+        "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
+        "ETag: \"LadeDade\"\0"
+        "\0";
+    net::HttpResponseHeaders* headers =
+        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
+    response_info->headers = headers;  // adds ref to headers
+
+    update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+    group_->update_status_ = AppCacheGroup::DOWNLOADING;
+    update->manifest_response_info_.reset(response_info);
+    update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+    update->FetchManifest(false);  // not first request
+    HttpHeadersRequestTestJob::Verify();
+    delete update;
+
+    UpdateFinished();
+  }
+
   void WaitForUpdateToFinish() {
     if (group_->update_status() == AppCacheGroup::IDLE)
       UpdateFinished();
@@ -2190,6 +2508,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   // has finished. Cannot verify update job internals as update is deleted.
   void VerifyExpectations() {
     RetryRequestTestJob::Verify();
+    HttpHeadersRequestTestJob::Verify();
 
     EXPECT_EQ(expect_group_obsolete_, group_->is_obsolete());
 
@@ -2711,6 +3030,26 @@ TEST_F(AppCacheUpdateJobTest, StartUpdateMidDownload) {
 
 TEST_F(AppCacheUpdateJobTest, QueueMasterEntry) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::QueueMasterEntryTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, IfModifiedSince) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::IfModifiedSinceTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, IfModifiedSinceUpgrade) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::IfModifiedSinceUpgradeTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, IfNoneMatchUpgrade) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::IfNoneMatchUpgradeTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, IfNoneMatchRefetch) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::IfNoneMatchRefetchTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, MultipleHeadersRefetch) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::MultipleHeadersRefetchTest);
 }
 
 }  // namespace appcache

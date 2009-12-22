@@ -146,6 +146,11 @@ void AppCacheResponseReader::ReadInfo(HttpResponseInfoIOBuffer* info_buf,
   }
 
   int size = entry_->GetDataSize(kResponseInfoIndex);
+  if (size <= 0) {
+    ScheduleIOCompletionCallback(net::ERR_CACHE_MISS);
+    return;
+  }
+
   info_buffer_ = info_buf;
   buffer_ = new net::IOBuffer(size);
   ReadRaw(kResponseInfoIndex, 0, buffer_.get(), size);
