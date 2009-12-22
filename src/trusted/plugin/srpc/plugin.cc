@@ -409,17 +409,23 @@ void Plugin::set_local_url(const char* name) {
 }
 
 // Create a new service node from a downloaded service.
-bool Plugin::Load() {
-  return Load(NULL, 0);
+bool Plugin::Load(std::string remote_url, const char* local_url) {
+  return Load(remote_url, local_url, NULL, 0);
 }
 
-bool Plugin::Load(const void* buffer, int32_t size) {
+bool Plugin::Load(std::string remote_url,
+                  const char* local_url,
+                  const void* buffer,
+                  int32_t size) {
   if (NULL == buffer) {
-    dprintf(("Plugin::Load(%s)\n", local_url_));
+    dprintf(("Plugin::Load(%s)\n", local_url));
   } else {
     dprintf(("Plugin::Load(%p, %d)\n", buffer, size));
   }
 
+  // Save the origin and local_url.
+  set_nacl_module_origin(nacl::UrlToOrigin(remote_url));
+  set_local_url(local_url);
   // If the page origin where the EMBED/OBJECT tag occurs is not in
   // the whitelist, refuse to load.  If the NaCl module's origin is
   // not in the whitelist, also refuse to load.
@@ -487,6 +493,8 @@ bool Plugin::Load(const void* buffer, int32_t size) {
   dprintf(("  Load: established socket %p\n", static_cast<void *>(socket_)));
   // Plugin takes ownership of socket_ from service_runtime_interface_,
   // so we do not need to call NPN_RetainObject.
+  // Invoke the onload handler, if any.
+  plugin_interface->RunOnloadHandler(plugin_interface->GetPluginIdentifier());
   return true;
 }
 

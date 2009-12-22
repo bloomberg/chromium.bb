@@ -32,9 +32,6 @@
 
 // Portable interface for browser interaction - NPAPI implementation
 
-#include "native_client/src/include/portability_io.h"
-#include "native_client/src/include/portability_string.h"
-
 #include <setjmp.h>
 #include <stdio.h>
 #include <string.h>
@@ -42,8 +39,9 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "native_client/src/include/nacl_elf.h"
+#include "native_client/src/include/portability_io.h"
+#include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
@@ -165,17 +163,19 @@ bool PortablePluginInterface::GetOrigin(
         break;
     }
 
-    if (!NPN_GetProperty(instance, win_obj,
-      (NPIdentifier)PortablePluginInterface::kLocationIdent,
-      &loc_value)) {
+    if (!NPN_GetProperty(instance,
+                         win_obj,
+                         reinterpret_cast<NPIdentifier>(kLocationIdent),
+                         &loc_value)) {
         dprintf(("GetOrigin: no location property value\n"));
         break;
     }
     NPObject *loc_obj = NPVARIANT_TO_OBJECT(loc_value);
 
-    if (!NPN_GetProperty(instance, loc_obj,
-      (NPIdentifier)PortablePluginInterface::kHrefIdent,
-      &href_value)) {
+    if (!NPN_GetProperty(instance,
+                         loc_obj,
+                         reinterpret_cast<NPIdentifier>(kHrefIdent),
+                         &href_value)) {
         dprintf(("GetOrigin: no href property value\n"));
         break;
     }
@@ -193,6 +193,93 @@ bool PortablePluginInterface::GetOrigin(
   return (NULL != *origin);
 }
 
+bool PortablePluginInterface::RunOnloadHandler(
+    nacl_srpc::PluginIdentifier plugin_identifier) {
+  NPP instance = plugin_identifier;
+  NPVariant onload_value;
+  NPVariant dummy_return;
+
+  VOID_TO_NPVARIANT(onload_value);
+  VOID_TO_NPVARIANT(dummy_return);
+
+  do {
+    NPObject* element_obj;
+    if (NPERR_NO_ERROR
+      != NPN_GetValue(instance, NPNVPluginElementNPObject, &element_obj)) {
+      dprintf(("RunOnloadHandler: No plugin element object\n"));
+      break;
+    }
+    if (!NPN_GetProperty(instance,
+                         element_obj,
+                         reinterpret_cast<NPIdentifier>(kOnloadIdent),
+                         &onload_value)) {
+      dprintf(("RunOnloadHandler: no onload property value\n"));
+      break;
+    }
+    if (!NPVARIANT_IS_VOID(onload_value) &&
+        !NPVARIANT_IS_OBJECT(onload_value)) {
+      dprintf(("RunOnloadHandler: onload property is not an object\n"));
+      break;
+    }
+    if (!NPN_InvokeDefault(instance,
+                           NPVARIANT_TO_OBJECT(onload_value),
+                           NULL,
+                           0,
+                           &dummy_return)) {
+      dprintf(("RunOnloadHandler: attempt to invoke onload failed\n"));
+      break;
+    }
+  } while (0);
+
+  NPN_ReleaseVariantValue(&onload_value);
+  NPN_ReleaseVariantValue(&dummy_return);
+
+  return true;
+}
+
+bool PortablePluginInterface::RunOnfailHandler(
+    nacl_srpc::PluginIdentifier plugin_identifier) {
+  NPP instance = plugin_identifier;
+  NPVariant onfail_value;
+  NPVariant dummy_return;
+
+  VOID_TO_NPVARIANT(onfail_value);
+  VOID_TO_NPVARIANT(dummy_return);
+
+  do {
+    NPObject* element_obj;
+    if (NPERR_NO_ERROR
+      != NPN_GetValue(instance, NPNVPluginElementNPObject, &element_obj)) {
+      dprintf(("RunOnfailHandler: No plugin element object\n"));
+      break;
+    }
+    if (!NPN_GetProperty(instance,
+                         element_obj,
+                         reinterpret_cast<NPIdentifier>(kOnfailIdent),
+                         &onfail_value)) {
+      dprintf(("RunOnfailHandler: no onfail property value\n"));
+      break;
+    }
+    if (!NPVARIANT_IS_VOID(onfail_value) &&
+        !NPVARIANT_IS_OBJECT(onfail_value)) {
+      dprintf(("RunOnfailHandler: onfail property is not an object\n"));
+      break;
+    }
+    if (!NPN_InvokeDefault(instance,
+                           NPVARIANT_TO_OBJECT(onfail_value),
+                           NULL,
+                           0,
+                           &dummy_return)) {
+      dprintf(("RunOnfailHandler: attempt to invoke onfail failed\n"));
+      break;
+    }
+  } while (0);
+
+  NPN_ReleaseVariantValue(&onfail_value);
+  NPN_ReleaseVariantValue(&dummy_return);
+
+  return true;
+}
 
 void* PortablePluginInterface::BrowserAlloc(int size) {
   return NPN_MemAlloc(size);

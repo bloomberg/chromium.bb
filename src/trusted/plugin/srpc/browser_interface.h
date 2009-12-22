@@ -35,12 +35,11 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_BROWSER_INTERFACE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_BROWSER_INTERFACE_H_
 
-#include "native_client/src/include/portability.h"
-
 #include <stdio.h>
 #include <map>
 #include <string>
-#include "base/basictypes.h"
+
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
 namespace nacl_srpc {
@@ -79,6 +78,10 @@ class PortablePluginInterface {
                     int length);
   static bool GetOrigin(nacl_srpc::PluginIdentifier plugin_identifier,
                         std::string **origin);
+  // To indicate successful loading of a module, invoke the onload handler.
+  static bool RunOnloadHandler(nacl_srpc::PluginIdentifier plugin_identifier);
+  // To indicate unsuccessful loading of a module, invoke the onfail handler.
+  static bool RunOnfailHandler(nacl_srpc::PluginIdentifier plugin_identifier);
   static void* BrowserAlloc(int size);
   static void BrowserRelease(void* ptr);
   static char *MemAllocStrdup(const char *str);

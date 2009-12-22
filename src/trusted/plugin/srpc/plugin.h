@@ -65,10 +65,15 @@ class Plugin : public PortableHandle {
 
   void set_local_url(const char*);
 
-  // Load from the local URL saved in local_url_.
-  bool Load();
+  // Load from the local URL saved in local_url.
+  // Saves local_url in local_url_ and origin in nacl_module_origin_.
+  bool Load(std::string remote_url, const char* local_url);
   // Load nexe binary from the provided buffer.
-  bool Load(const void* buffer, int32_t size);
+  // Saves local_url in local_url_ and origin in nacl_module_origin_.
+  bool Load(std::string remote_url,
+            const char* local_url,
+            const void* buffer,
+            int32_t size);
 
   // Log a message by sending it to the service runtime.
   bool LogAtServiceRuntime(int severity, std::string msg);
