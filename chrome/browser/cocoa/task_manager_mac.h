@@ -14,16 +14,22 @@
 @interface TaskManagerWindowController : NSWindowController {
  @private
   IBOutlet NSTableView* tableView_;
+  IBOutlet NSButton* endProcessButton_;
+  TaskManager* taskManager_;  // weak
   TaskManagerModel* model_;  // weak
 }
 
 // Creates and shows the task manager's window.
-- (id)initWithModel:(TaskManagerModel*)model;
+- (id)initWithTaskManager:(TaskManager*)taskManager;
 
 // Refreshes all data in the task manager table.
 - (void)reloadData;
 
+// Callback for "Stats for nerds" link.
 - (IBAction)statsLinkClicked:(id)sender;
+
+// Callback for "End process" button.
+- (IBAction)killSelectedProcesses:(id)sender;
 @end
 
 // This class listens to task changed events sent by chrome.

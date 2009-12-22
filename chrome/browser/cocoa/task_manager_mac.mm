@@ -13,8 +13,8 @@
 #include "grit/generated_resources.h"
 
 // TODO(thakis): Autoremember window size/pos (and selected columns?)
-// TODO(thakis): Activate button iff something is selected, hook it up
 // TODO(thakis): Column sort comparator
+// TODO(thakis): Double-clicking a tab should activate that tab
 // TODO(thakis): Clicking column header doesn't sort
 // TODO(thakis): Double-clicking a row seems to do something on win/linux
 // TODO(thakis): On window close, stop updating
@@ -27,6 +27,7 @@
 - (void)setUpTableColumns;
 - (void)setUpTableHeaderContextMenu;
 - (void)toggleColumn:(id)sender;
+- (void)adjustEndProcessButton;
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,12 +35,13 @@
 
 @implementation TaskManagerWindowController
 
-- (id)initWithModel:(TaskManagerModel*)model {
+- (id)initWithTaskManager:(TaskManager*)taskManager {
   NSString* nibpath = [mac_util::MainAppBundle()
                         pathForResource:@"TaskManager"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
-    model_ = model;
+    taskManager_ = taskManager;
+    model_ = taskManager_->model();
     [[self window] makeKeyAndOrderFront:self];
   }
   return self;
@@ -47,15 +49,26 @@
 
 - (void)reloadData {
   [tableView_ reloadData];
+  [self adjustEndProcessButton];
 }
 
 - (IBAction)statsLinkClicked:(id)sender {
   TaskManager::GetInstance()->OpenAboutMemory();
 }
 
+- (IBAction)killSelectedProcesses:(id)sender {
+  NSIndexSet* selection = [tableView_ selectedRowIndexes];
+  for (NSUInteger i = [selection lastIndex];
+       i != NSNotFound;
+       i = [selection indexLessThanIndex:i]) {
+    taskManager_->KillProcess(i);
+  }
+}
+
 - (void)awakeFromNib {
   [self setUpTableColumns];
   [self setUpTableHeaderContextMenu];
+  [self adjustEndProcessButton];
 }
 
 // Adds a column which has the given string id as title. |isVisible| specifies
@@ -129,6 +142,30 @@
   [item setState:newState];
   [tableView_ sizeToFit];
   [tableView_ setNeedsDisplay];
+}
+
+// This function appropriately sets the enabled states on the table's editing
+// buttons.
+- (void)adjustEndProcessButton {
+  bool selection_contains_browser_process = false;
+
+  NSIndexSet* selection = [tableView_ selectedRowIndexes];
+  for (NSUInteger i = [selection lastIndex];
+       i != NSNotFound;
+       i = [selection indexLessThanIndex:i]) {
+    if (taskManager_->IsBrowserProcess(i)) {
+      selection_contains_browser_process = true;
+      break;
+    }
+  }
+
+  bool enabled = [selection count] > 0 && !selection_contains_browser_process;
+  [endProcessButton_ setEnabled:enabled];
+}
+
+// Table view delegate method.
+- (void)tableViewSelectionDidChange:(NSNotification*)aNotification {
+  [self adjustEndProcessButton];
 }
 
 @end
@@ -216,7 +253,7 @@ TaskManagerMac::TaskManagerMac()
   : task_manager_(TaskManager::GetInstance()),
     model_(TaskManager::GetInstance()->model()) {
   window_controller_.reset(
-      [[TaskManagerWindowController alloc] initWithModel:model_]);
+      [[TaskManagerWindowController alloc] initWithTaskManager:task_manager_]);
   model_->AddObserver(this);
 }
 
