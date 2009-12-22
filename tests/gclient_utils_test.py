@@ -17,8 +17,8 @@ class GclientUtilsUnittest(SuperMoxTestBase):
         'CheckCall', 'CheckCallError', 'Error', 'FileRead', 'FileWrite',
         'FindGclientRoot',
         'FullUrlFromRelative', 'FullUrlFromRelative2', 'GetNamedNodeText',
-        'GetNodeNamedAttributeText', 'IsUsingGit', 'ParseXML',
-        'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',
+        'GetNodeNamedAttributeText', 'IsUsingGit', 'PathDifference',
+        'ParseXML', 'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',
         'SubprocessCall', 'SubprocessCallAndFilter', 'errno', 'os', 're',
         'stat', 'subprocess', 'sys', 'time', 'xml',
     ]

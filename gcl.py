@@ -819,18 +819,6 @@ def TryChange(change_info, args, swallow_exception):
       return
     ErrorExit("You need to install trychange.py to use the try server.")
 
-  def PathDifference(root, subpath):
-    """Returns the difference subpath minus root."""
-    root = os.path.realpath(root)
-    subpath = os.path.realpath(subpath)
-    if not subpath.startswith(root):
-      return None
-    # If the root does not have a trailing \ or /, we add it so the returned
-    # path starts immediately after the seperator regardless of whether it is
-    # provided.
-    root = os.path.join(root, '')
-    return subpath[len(root):]
-
   trychange_args = []
   settings = {
     'port': GetCodeReviewSetting('TRYSERVER_HTTP_PORT'),
@@ -846,8 +834,9 @@ def TryChange(change_info, args, swallow_exception):
 
   gclient_root = gclient_utils.FindGclientRoot(GetRepositoryRoot())
   if gclient_root:
-    trychange_args.extend(['--root', PathDifference(gclient_root,
-                                                    GetRepositoryRoot())])
+    trychange_args.extend(['--root',
+                           gclient_utils.PathDifference(gclient_root,
+                                                        GetRepositoryRoot())])
   if change_info:
     trychange_args.extend(['--name', change_info.name])
     if change_info.issue:

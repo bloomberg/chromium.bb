@@ -427,6 +427,8 @@ def TryChange(argv,
   parser.add_option_group(group)
 
   options, args = parser.parse_args(argv)
+  if len(args) == 1 and args[0] == 'help':
+    parser.print_help()
 
   # Switch the default accordingly if there was no default send_patch.
   if not options.send_patch:
@@ -437,19 +439,15 @@ def TryChange(argv,
     else:
       parser.error('Please specify an access method.')
 
-  if len(args) == 1 and args[0] == 'help':
-    parser.print_help()
-  if (not options.files and (not options.issue and options.patchset) and
-      not options.diff and not options.url):
-    # TODO(maruel): It should just try the modified files showing up in a
-    # svn status.
-    parser.error('Nothing to try, changelist is empty.')
-
   try:
     # Convert options.diff into the content of the diff.
     if options.url:
+      if options.files:
+        parser.error('You cannot specify files and --url at the same time.')
       options.diff = urllib.urlopen(options.url).read()
     elif options.diff:
+      if options.files:
+        parser.error('You cannot specify files and --diff at the same time.')
       options.diff = gclient_utils.FileRead(options.diff, 'rb')
     # Process the VCS in any case at least to retrieve the email address.
     try:
@@ -486,8 +484,8 @@ def TryChange(argv,
         options.name = 'Unnamed'
         print('Note: use --name NAME to change the try job name.')
     if not options.email:
-      print('Warning: TRYBOT_RESULTS_EMAIL_ADDRESS is not set. Try server '
-            'results might\ngo to: %s@google.com.\n' % options.user)
+      parser.error('Using an anonymous checkout. Please use --email or set '
+                   'the TRYBOT_RESULTS_EMAIL_ADDRESS environment variable.')
     else:
       print('Results will be emailed to: ' + options.email)
 

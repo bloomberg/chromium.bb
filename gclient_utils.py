@@ -317,3 +317,15 @@ def FindGclientRoot(from_dir):
       return None
     path = next[0]
   return path
+
+def PathDifference(root, subpath):
+  """Returns the difference subpath minus root."""
+  root = os.path.realpath(root)
+  subpath = os.path.realpath(subpath)
+  if not subpath.startswith(root):
+    return None
+  # If the root does not have a trailing \ or /, we add it so the returned
+  # path starts immediately after the seperator regardless of whether it is
+  # provided.
+  root = os.path.join(root, '')
+  return subpath[len(root):]
