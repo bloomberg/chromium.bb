@@ -18,7 +18,7 @@
 namespace {
 
 // Different platforms need slightly different constants to look good.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
 const int kTextSize = 9;
 const int kBottomMargin = 0;
 const int kPadding = 2;
