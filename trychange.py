@@ -99,14 +99,16 @@ class SVN(SCM):
     The files in the list should either be absolute paths or relative to the
     given root.
     """
-    previous_cwd = os.getcwd()
-    os.chdir(self.checkout_root)
     if not self.options.files:
-      self.options.files = [f[1] for f in scm.SVN.CaptureStatus(None)]
-    # Directories will return None so filter them out.
-    diff = filter(None, [scm.SVN.DiffItem(f) for f in self.options.files])
-    os.chdir(previous_cwd)
-    return "".join(diff)
+      previous_cwd = os.getcwd()
+      os.chdir(self.checkout_root)
+      excluded = ['!', '?', 'X', ' ', '~']
+      self.options.files = [
+          f[1] for f in scm.SVN.CaptureStatus(self.checkout_root)
+          if f[0][0] not in excluded
+      ]
+      os.chdir(previous_cwd)
+    return scm.SVN.GenerateDiff(self.options.files, full_move=True)
 
   def GetLocalRoot(self):
     """Return the path of the repository root."""
@@ -120,7 +122,7 @@ class SVN(SCM):
       try:
         return gclient_utils.FileRead(os.path.join(self.checkout_root,
                                                    'PRESUBMIT.py'))
-      except OSError:
+      except (IOError, OSError):
         return None
 
 
@@ -139,15 +141,7 @@ class GIT(SCM):
 
   def _GenerateDiff(self):
     """Get the diff we'll send to the try server. We ignore the files list."""
-    branch = gclient_utils.CheckCall(['git', 'cl', 'upstream']).strip()
-    diff = gclient_utils.CheckCall(['git', 'diff-tree', '-p', '--no-prefix',
-                                    branch, 'HEAD']).splitlines(True)
-    for i in range(len(diff)):
-      # In the case of added files, replace /dev/null with the path to the
-      # file being added.
-      if diff[i].startswith('--- /dev/null'):
-        diff[i] = '--- %s' % diff[i+1][4:]
-    return ''.join(diff)
+    return scm.GIT.GenerateDiff(self.checkout_root)
 
   def _GetPatchName(self):
     """Construct a name for this patch."""
@@ -168,7 +162,7 @@ class GIT(SCM):
     try:
       return gclient_utils.FileRead(os.path.join(self.checkout_root,
                                                  'PRESUBMIT.py'))
-    except OSError:
+    except (IOError, OSError):
       return None
 
 

@@ -18,8 +18,10 @@ class TryChangeTestsBase(SuperMoxTestBase):
     SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(trychange.gclient_utils, 'CheckCall')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'Capture')
+    self.mox.StubOutWithMock(trychange.scm.GIT, 'GenerateDiff')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GetEmail')
     self.mox.StubOutWithMock(trychange.scm.SVN, 'DiffItem')
+    self.mox.StubOutWithMock(trychange.scm.SVN, 'GenerateDiff')
     self.mox.StubOutWithMock(trychange.scm.SVN, 'GetCheckoutRoot')
     self.mox.StubOutWithMock(trychange.scm.SVN, 'GetEmail')
     self.fake_root = self.Dir()
@@ -58,11 +60,8 @@ class SVNUnittest(TryChangeTestsBase):
   def testBasic(self):
     trychange.os.getcwd().AndReturn(self.fake_root)
     trychange.scm.SVN.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
-    trychange.os.getcwd().AndReturn('pro')
-    trychange.os.chdir(self.fake_root)
-    trychange.scm.SVN.DiffItem(self.expected_files[0]).AndReturn('bleh')
-    trychange.scm.SVN.DiffItem(self.expected_files[1]).AndReturn('blew')
-    trychange.os.chdir('pro')
+    trychange.scm.SVN.GenerateDiff(['foo.txt', 'bar.txt'],
+                                   full_move=True).AndReturn('A diff')
     trychange.scm.SVN.GetEmail(self.fake_root).AndReturn('georges@example.com')
     self.mox.ReplayAll()
     svn = trychange.SVN(self.options)
@@ -83,13 +82,9 @@ class GITUnittest(TryChangeTestsBase):
     trychange.gclient_utils.CheckCall(
         ['git', 'rev-parse', '--show-cdup']).AndReturn(self.fake_root)
     trychange.os.path.abspath(self.fake_root).AndReturn(self.fake_root)
+    trychange.scm.GIT.GenerateDiff(self.fake_root).AndReturn('a diff')
     trychange.gclient_utils.CheckCall(
-        ['git', 'cl', 'upstream']).AndReturn('random branch')
-    trychange.gclient_utils.CheckCall(
-        ['git', 'diff-tree', '-p', '--no-prefix', 'random branch', 'HEAD']
-        ).AndReturn('This is a dummy diff\n+3\n-4\n')
-    trychange.gclient_utils.CheckCall(
-        ['git', 'symbolic-ref', 'HEAD']).AndReturn('refs/heads/another branch')
+        ['git', 'symbolic-ref', 'HEAD']).AndReturn('refs/heads/random branch')
     trychange.scm.GIT.GetEmail('.').AndReturn('georges@example.com')
     self.mox.ReplayAll()
     git = trychange.GIT(self.options)

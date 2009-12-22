@@ -32,6 +32,7 @@ class CheckCallTestCase(SuperMoxTestBase):
     process.returncode = 0
     gclient_utils.subprocess.Popen(
         command, cwd=None,
+        stderr=None,
         stdout=gclient_utils.subprocess.PIPE,
         shell=gclient_utils.sys.platform.startswith('win')).AndReturn(process)
     process.communicate().AndReturn(['bleh'])
@@ -44,6 +45,7 @@ class CheckCallTestCase(SuperMoxTestBase):
     process.returncode = 42
     gclient_utils.subprocess.Popen(
         command, cwd=None,
+        stderr=None,
         stdout=gclient_utils.subprocess.PIPE,
         shell=gclient_utils.sys.platform.startswith('win')).AndReturn(process)
     process.communicate().AndReturn(['bleh'])

@@ -6,6 +6,7 @@
 
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -18,7 +19,7 @@ class GIT(object):
   COMMAND = "git"
 
   @staticmethod
-  def Capture(args, in_directory=None, print_error=True):
+  def Capture(args, in_directory=None, print_error=True, error_ok=False):
     """Runs git, capturing output sent to stdout as a string.
 
     Args:
@@ -30,20 +31,12 @@ class GIT(object):
     """
     c = [GIT.COMMAND]
     c.extend(args)
-
-    # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for
-    # the git.exe executable, but shell=True makes subprocess on Linux fail
-    # when it's called with a list because it only tries to execute the
-    # first string ("git").
-    stderr = None
-    if not print_error:
-      stderr = subprocess.PIPE
-    return subprocess.Popen(c,
-                            cwd=in_directory,
-                            shell=sys.platform.startswith('win'),
-                            stdout=subprocess.PIPE,
-                            stderr=stderr).communicate()[0]
-
+    try:
+      return gclient_utils.CheckCall(c, in_directory, print_error)
+    except gclient_utils.CheckCallError:
+      if error_ok:
+        return ''
+      raise
 
   @staticmethod
   def CaptureStatus(files, upstream_branch='origin'):
@@ -75,7 +68,118 @@ class GIT(object):
     """Retrieves the user email address if known."""
     # We could want to look at the svn cred when it has a svn remote but it
     # should be fine for now, users should simply configure their git settings.
-    return GIT.Capture(['config', 'user.email'], repo_root).strip()
+    return GIT.Capture(['config', 'user.email'],
+                       repo_root, error_ok=True).strip()
+
+  @staticmethod
+  def ShortBranchName(branch):
+    """Converts a name like 'refs/heads/foo' to just 'foo'."""
+    return branch.replace('refs/heads/', '')
+
+  @staticmethod
+  def GetBranchRef(cwd):
+    """Returns the short branch name, e.g. 'master'."""
+    return GIT.Capture(['symbolic-ref', 'HEAD'], cwd).strip()
+
+  @staticmethod
+  def IsGitSvn(cwd):
+    """Returns true if this repo looks like it's using git-svn."""
+    # If you have any "svn-remote.*" config keys, we think you're using svn.
+    try:
+      GIT.Capture(['config', '--get-regexp', r'^svn-remote\.'], cwd)
+      return True
+    except gclient_utils.CheckCallError:
+      return False
+
+  @staticmethod
+  def GetSVNBranch(cwd):
+    """Returns the svn branch name if found."""
+    # Try to figure out which remote branch we're based on.
+    # Strategy:
+    # 1) find all git-svn branches and note their svn URLs.
+    # 2) iterate through our branch history and match up the URLs.
+
+    # regexp matching the git-svn line that contains the URL.
+    git_svn_re = re.compile(r'^\s*git-svn-id: (\S+)@', re.MULTILINE)
+
+    # Get the refname and svn url for all refs/remotes/*.
+    remotes = GIT.Capture(
+        ['for-each-ref', '--format=%(refname)', 'refs/remotes'],
+        cwd).splitlines()
+    svn_refs = {}
+    for ref in remotes:
+      match = git_svn_re.search(
+          GIT.Capture(['cat-file', '-p', ref], cwd))
+      if match:
+        svn_refs[match.group(1)] = ref
+
+    svn_branch = ''
+    if len(svn_refs) == 1:
+      # Only one svn branch exists -- seems like a good candidate.
+      svn_branch = svn_refs.values()[0]
+    elif len(svn_refs) > 1:
+      # We have more than one remote branch available.  We don't
+      # want to go through all of history, so read a line from the
+      # pipe at a time.
+      # The -100 is an arbitrary limit so we don't search forever.
+      cmd = ['git', 'log', '-100', '--pretty=medium']
+      proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=cwd)
+      for line in proc.stdout:
+        match = git_svn_re.match(line)
+        if match:
+          url = match.group(1)
+          if url in svn_refs:
+            svn_branch = svn_refs[url]
+            proc.stdout.close()  # Cut pipe.
+            break
+    return svn_branch
+
+  @staticmethod
+  def FetchUpstreamTuple(cwd):
+    """Returns a tuple containg remote and remote ref,
+       e.g. 'origin', 'refs/heads/master'
+    """
+    remote = '.'
+    branch = GIT.ShortBranchName(GIT.GetBranchRef(cwd))
+    upstream_branch = None
+    upstream_branch = GIT.Capture(
+        ['config', 'branch.%s.merge' % branch], error_ok=True).strip()
+    if upstream_branch:
+      remote = GIT.Capture(
+          ['config', 'branch.%s.remote' % branch],
+          error_ok=True).strip()
+    else:
+      # Fall back on trying a git-svn upstream branch.
+      if GIT.IsGitSvn(cwd):
+        upstream_branch = GIT.GetSVNBranch(cwd)
+      # Fall back on origin/master if it exits.
+      if not upstream_branch:
+        GIT.Capture(['branch', '-r']).split().count('origin/master')
+        remote = 'origin'
+        upstream_branch = 'refs/heads/master'
+    return remote, upstream_branch
+
+  @staticmethod
+  def GetUpstream(cwd):
+    """Gets the current branch's upstream branch."""
+    remote, upstream_branch = GIT.FetchUpstreamTuple(cwd)
+    if remote is not '.':
+      upstream_branch = upstream_branch.replace('heads', 'remotes/' + remote)
+    return upstream_branch
+
+  @staticmethod
+  def GenerateDiff(cwd, branch=None):
+    """Diffs against the upstream branch or optionally another branch."""
+    if not branch:
+      branch = GIT.GetUpstream(cwd)
+    diff = GIT.Capture(['diff-tree', '-p', '--no-prefix', branch, 'HEAD'],
+                       cwd).splitlines(True)
+    for i in range(len(diff)):
+      # In the case of added files, replace /dev/null with the path to the
+      # file being added.
+      if diff[i].startswith('--- /dev/null'):
+        diff[i] = '--- %s' % diff[i+1][4:]
+    return ''.join(diff)
 
 
 class SVN(object):
@@ -392,8 +496,11 @@ class SVN(object):
       return output
 
   @staticmethod
-  def DiffItem(filename):
-    """Diff a single file"""
+  def DiffItem(filename, full_move=False):
+    """Diffs a single file.
+
+    Be sure to be in the appropriate directory before calling to have the
+    expected relative path."""
     # Use svn info output instead of os.path.isdir because the latter fails
     # when the file is deleted.
     if SVN.CaptureInfo(filename).get("Node Kind") == "directory":
@@ -404,33 +511,64 @@ class SVN(object):
     # work, since they can have another diff executable in their path that
     # gives different line endings.  So we use a bogus temp directory as the
     # config directory, which gets around these problems.
-    if sys.platform.startswith("win"):
-      parent_dir = tempfile.gettempdir()
-    else:
-      parent_dir = sys.path[0]  # tempdir is not secure.
-    bogus_dir = os.path.join(parent_dir, "temp_svn_config")
-    if not os.path.exists(bogus_dir):
-      os.mkdir(bogus_dir)
-    # Grabs the diff data.
-    data = SVN.Capture(["diff", "--config-dir", bogus_dir, filename], None)
-
-    # We know the diff will be incorrectly formatted. Fix it.
-    if SVN.IsMoved(filename):
-      file_content = gclient_utils.FileRead(filename, 'rb')
-      # Prepend '+' to every lines.
-      file_content = ['+' + i for i in file_content.splitlines(True)]
-      nb_lines = len(file_content)
-      # We need to use / since patch on unix will fail otherwise.
-      filename = filename.replace('\\', '/')
-      data = "Index: %s\n" % filename
-      data += ("============================================================="
-               "======\n")
-      # Note: Should we use /dev/null instead?
-      data += "--- %s\n" % filename
-      data += "+++ %s\n" % filename
-      data += "@@ -0,0 +1,%d @@\n" % nb_lines
-      data += ''.join(file_content)
+    bogus_dir = tempfile.mkdtemp()
+    try:
+      # Grabs the diff data.
+      data = SVN.Capture(["diff", "--config-dir", bogus_dir, filename], None)
+      if data:
+        pass
+      elif SVN.IsMoved(filename):
+        if full_move:
+          file_content = gclient_utils.FileRead(filename, 'rb')
+          # Prepend '+' to every lines.
+          file_content = ['+' + i for i in file_content.splitlines(True)]
+          nb_lines = len(file_content)
+          # We need to use / since patch on unix will fail otherwise.
+          filename = filename.replace('\\', '/')
+          data = "Index: %s\n" % filename
+          data += '=' * 67 + '\n'
+          # Note: Should we use /dev/null instead?
+          data += "--- %s\n" % filename
+          data += "+++ %s\n" % filename
+          data += "@@ -0,0 +1,%d @@\n" % nb_lines
+          data += ''.join(file_content)
+        else:
+          #  svn diff on a mv/cp'd file outputs nothing.
+          # We put in an empty Index entry so upload.py knows about them.
+          data = "Index: %s\n" % filename
+      else:
+        # The file is not modified anymore. It should be removed from the set.
+        pass
+    finally:
+      shutil.rmtree(bogus_dir)
     return data
+
+  @staticmethod
+  def GenerateDiff(filenames, root=None, full_move=False):
+    """Returns a string containing the diff for the given file list.
+
+    The files in the list should either be absolute paths or relative to the
+    given root. If no root directory is provided, the repository root will be
+    used.
+    The diff will always use relative paths.
+    """
+    previous_cwd = os.getcwd()
+    root = os.path.join(root or SVN.GetCheckoutRoot(previous_cwd), '')
+    def RelativePath(path, root):
+      """We must use relative paths."""
+      if path.startswith(root):
+        return path[len(root):]
+      return path
+    try:
+      os.chdir(root)
+      diff = "".join(filter(None,
+                            [SVN.DiffItem(RelativePath(f, root),
+                                          full_move=full_move)
+                             for f in filenames]))
+    finally:
+      os.chdir(previous_cwd)
+    return diff
+
 
   @staticmethod
   def GetEmail(repo_root):

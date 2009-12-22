@@ -65,8 +65,8 @@ class SVNWrapperTestCase(BaseTestCase):
   def testDir(self):
     members = [
         'COMMAND', 'Capture', 'CaptureHeadRevision', 'CaptureInfo',
-        'CaptureStatus', 'DiffItem', 'GetCheckoutRoot', 'GetEmail',
-        'GetFileProperty', 'IsMoved', 'ReadSimpleAuth', 'Run',
+        'CaptureStatus', 'DiffItem', 'GenerateDiff', 'GetCheckoutRoot',
+        'GetEmail', 'GetFileProperty', 'IsMoved', 'ReadSimpleAuth', 'Run',
         'RunAndFilterOutput', 'RunAndGetFileList',
         'RunCommand', 'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
         'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',
@@ -359,7 +359,9 @@ from :3
 
   def testDir(self):
     members = [
-        'COMMAND', 'Capture', 'CaptureStatus', 'GetEmail',
+        'COMMAND', 'Capture', 'CaptureStatus', 'FetchUpstreamTuple',
+        'GenerateDiff', 'GetBranchRef', 'GetEmail', 'GetSVNBranch',
+        'GetUpstream', 'IsGitSvn', 'ShortBranchName',
         'RunCommand', 'cleanup', 'diff', 'export', 'relpath', 'revert',
         'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',
     ]

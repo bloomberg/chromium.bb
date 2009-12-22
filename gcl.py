@@ -680,46 +680,7 @@ def GetEditor():
 
 
 def GenerateDiff(files, root=None):
-  """Returns a string containing the diff for the given file list.
-
-  The files in the list should either be absolute paths or relative to the
-  given root. If no root directory is provided, the repository root will be
-  used.
-  """
-  previous_cwd = os.getcwd()
-  if root is None:
-    os.chdir(GetRepositoryRoot())
-  else:
-    os.chdir(root)
-
-  # If the user specified a custom diff command in their svn config file,
-  # then it'll be used when we do svn diff, which we don't want to happen
-  # since we want the unified diff.  Using --diff-cmd=diff doesn't always
-  # work, since they can have another diff executable in their path that
-  # gives different line endings.  So we use a bogus temp directory as the
-  # config directory, which gets around these problems.
-  bogus_dir = tempfile.mkdtemp()
-  diff = []
-  for filename in files:
-    # TODO(maruel): Use SVN.DiffItem().
-    # Use svn info output instead of os.path.isdir because the latter fails
-    # when the file is deleted.
-    if SVN.CaptureInfo(filename).get('Node Kind') == 'directory':
-      continue
-    output = RunShell(["svn", "diff", "--config-dir", bogus_dir, filename])
-    if output:
-      diff.append(output)
-    elif SVN.IsMoved(filename):
-      #  svn diff on a mv/cp'd file outputs nothing.
-      # We put in an empty Index entry so upload.py knows about them.
-      diff.append("\nIndex: %s\n" % filename)
-    else:
-      # The file is not modified anymore. It should be removed from the set.
-      pass
-  shutil.rmtree(bogus_dir)
-  os.chdir(previous_cwd)
-  return "".join(diff)
-
+  return SVN.GenerateDiff(files, root=root)
 
 
 def OptionallyDoPresubmitChecks(change_info, committing, args):
