@@ -122,11 +122,11 @@ def ReadSuppressionsFromFile(filename):
         cur_descr = ''
         cur_type = ''
         cur_stack = []
-      elif not cur_type:
-        cur_type = line
-        continue
       elif not cur_descr:
         cur_descr = line
+        continue
+      elif not cur_type:
+        cur_type = line
         continue
       elif line.startswith('fun:'):
         line = line[4:]
