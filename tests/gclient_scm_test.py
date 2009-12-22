@@ -360,7 +360,8 @@ from :3
   def testDir(self):
     members = [
         'COMMAND', 'Capture', 'CaptureStatus', 'FetchUpstreamTuple',
-        'GenerateDiff', 'GetBranchRef', 'GetEmail', 'GetSVNBranch',
+        'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
+        'GetEmail', 'GetPatchName', 'GetSVNBranch',
         'GetUpstream', 'IsGitSvn', 'ShortBranchName',
         'RunCommand', 'cleanup', 'diff', 'export', 'relpath', 'revert',
         'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',

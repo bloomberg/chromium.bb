@@ -19,6 +19,8 @@ class TryChangeTestsBase(SuperMoxTestBase):
     self.mox.StubOutWithMock(trychange.gclient_utils, 'CheckCall')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'Capture')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GenerateDiff')
+    self.mox.StubOutWithMock(trychange.scm.GIT, 'GetCheckoutRoot')
+    self.mox.StubOutWithMock(trychange.scm.GIT, 'GetPatchName')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GetEmail')
     self.mox.StubOutWithMock(trychange.scm.SVN, 'DiffItem')
     self.mox.StubOutWithMock(trychange.scm.SVN, 'GenerateDiff')
@@ -79,13 +81,11 @@ class GITUnittest(TryChangeTestsBase):
     self.compareMembers(trychange.GIT, members)
 
   def testBasic(self):
-    trychange.gclient_utils.CheckCall(
-        ['git', 'rev-parse', '--show-cdup']).AndReturn(self.fake_root)
-    trychange.os.path.abspath(self.fake_root).AndReturn(self.fake_root)
+    trychange.os.getcwd().AndReturn(self.fake_root)
+    trychange.scm.GIT.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.GIT.GenerateDiff(self.fake_root).AndReturn('a diff')
-    trychange.gclient_utils.CheckCall(
-        ['git', 'symbolic-ref', 'HEAD']).AndReturn('refs/heads/random branch')
-    trychange.scm.GIT.GetEmail('.').AndReturn('georges@example.com')
+    trychange.scm.GIT.GetPatchName(self.fake_root).AndReturn('bleh-1233')
+    trychange.scm.GIT.GetEmail(self.fake_root).AndReturn('georges@example.com')
     self.mox.ReplayAll()
     git = trychange.GIT(self.options)
     self.assertEqual(git.GetFileNames(), self.expected_files)

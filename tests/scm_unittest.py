@@ -24,7 +24,7 @@ class RootTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'GIT', 'SVN',
+        'GIT', 'SVN', 'ValidateEmail',
         'gclient_utils', 'os', 're', 'shutil', 'subprocess', 'sys', 'tempfile',
         'xml',
     ]
@@ -117,8 +117,9 @@ from :3
     self.mox.ReplayAll()
     members = [
         'COMMAND', 'Capture', 'CaptureStatus', 'FetchUpstreamTuple',
-        'GenerateDiff', 'GetBranchRef', 'GetEmail', 'GetSVNBranch',
-        'GetUpstream', 'IsGitSvn', 'ShortBranchName'
+        'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
+        'GetEmail', 'GetPatchName', 'GetSVNBranch',
+        'GetUpstream', 'IsGitSvn', 'ShortBranchName',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.GIT, members)

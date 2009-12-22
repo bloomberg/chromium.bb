@@ -85,7 +85,6 @@ class SVN(SCM):
   def __init__(self, *args, **kwargs):
     SCM.__init__(self, *args, **kwargs)
     self.checkout_root = scm.SVN.GetCheckoutRoot(os.getcwd())
-    self.options.files
     if not self.options.diff:
       # Generate the diff from the scm.
       self.options.diff = self._GenerateDiff()
@@ -130,29 +129,13 @@ class GIT(SCM):
   """Gathers the options and diff for a git checkout."""
   def __init__(self, *args, **kwargs):
     SCM.__init__(self, *args, **kwargs)
-    self.checkout_root = os.path.abspath(
-        gclient_utils.CheckCall(['git', 'rev-parse', '--show-cdup']).strip())
+    self.checkout_root = scm.GIT.GetCheckoutRoot(os.getcwd())
     if not self.options.diff:
-      self.options.diff = self._GenerateDiff()
+      self.options.diff = scm.GIT.GenerateDiff(self.checkout_root)
     if not self.options.name:
-      self.options.name = self._GetPatchName()
+      self.options.name = scm.GIT.GetPatchName(self.checkout_root)
     if not self.options.email:
-      self.options.email = scm.GIT.GetEmail('.')
-
-  def _GenerateDiff(self):
-    """Get the diff we'll send to the try server. We ignore the files list."""
-    return scm.GIT.GenerateDiff(self.checkout_root)
-
-  def _GetPatchName(self):
-    """Construct a name for this patch."""
-    # TODO: perhaps include the hash of the current commit, to distinguish
-    # patches?
-    branch = gclient_utils.CheckCall(['git', 'symbolic-ref', 'HEAD']).strip()
-    if not branch.startswith('refs/heads/'):
-      # TODO(maruel): Find a better type.
-      raise NoTryServerAccess("Couldn't figure out branch name")
-    branch = branch[len('refs/heads/'):]
-    return branch
+      self.options.email = scm.GIT.GetEmail(self.checkout_root)
 
   def GetLocalRoot(self):
     """Return the path of the repository root."""

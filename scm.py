@@ -14,6 +14,10 @@ import xml.dom.minidom
 
 import gclient_utils
 
+def ValidateEmail(email):
+ return (re.match(r"^[a-zA-Z0-9._%-+]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email)
+         is not None)
+
 
 class GIT(object):
   COMMAND = "git"
@@ -78,8 +82,13 @@ class GIT(object):
 
   @staticmethod
   def GetBranchRef(cwd):
-    """Returns the short branch name, e.g. 'master'."""
+    """Returns the full branch reference, e.g. 'refs/heads/master'."""
     return GIT.Capture(['symbolic-ref', 'HEAD'], cwd).strip()
+
+  @staticmethod
+  def GetBranch(cwd):
+    """Returns the short branch name, e.g. 'master'."""
+    return GIT.ShortBranchName(GIT.BranchRef(cwd))
 
   @staticmethod
   def IsGitSvn(cwd):
@@ -140,7 +149,7 @@ class GIT(object):
        e.g. 'origin', 'refs/heads/master'
     """
     remote = '.'
-    branch = GIT.ShortBranchName(GIT.GetBranchRef(cwd))
+    branch = GIT.GetBranch(cwd)
     upstream_branch = None
     upstream_branch = GIT.Capture(
         ['config', 'branch.%s.merge' % branch], error_ok=True).strip()
@@ -180,6 +189,21 @@ class GIT(object):
       if diff[i].startswith('--- /dev/null'):
         diff[i] = '--- %s' % diff[i+1][4:]
     return ''.join(diff)
+
+  @staticmethod
+  def GetPatchName(cwd):
+    """Constructs a name for this patch."""
+    short_sha = GIT.Capture(['rev-parse', '--short=4', 'HEAD'], cwd).strip()
+    return "%s-%s" % (GIT.GetBranch(cwd), short_sha)
+
+  @staticmethod
+  def GetCheckoutRoot(cwd):
+    """Returns the top level directory of the current repository.
+
+    The directory is returned as an absolute path.
+    """
+    return os.path.abspath(GIT.Capture(['rev-parse', '--show-cdup'],
+                                       cwd).strip())
 
 
 class SVN(object):
