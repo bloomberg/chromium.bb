@@ -115,6 +115,7 @@ class SVN(SCM):
 
   def GetBots(self):
     try:
+      # Try to search on the subversion repository for the file.
       import gcl
       return gcl.GetCachedFile('PRESUBMIT.py', use_root=True)
     except ImportError:
@@ -143,6 +144,7 @@ class GIT(SCM):
 
   def GetBots(self):
     try:
+      # A git checkout is always a full checkout.
       return gclient_utils.FileRead(os.path.join(self.checkout_root,
                                                  'PRESUBMIT.py'))
     except (IOError, OSError):
