@@ -30,8 +30,10 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
-/* TODO(sehr): make this just NACL_LINUX once ARM SHM works */
-#if NACL_LINUX && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
+#ifndef __native_client__
+/* TODO(robertm): for ARM both __native_client__ and NACL_LINUX are true
+   this needs to be fixed */
+#if NACL_LINUX
 # include <sys/ipc.h>
 # include <sys/mman.h>
 # include <sys/shm.h>
@@ -40,6 +42,7 @@
 # include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
 # include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #endif  /* NACL_LINUX */
+#endif  /* __native_client__ */
 
 /* Table for keeping track of descriptors passed to/from sel_universal */
 typedef struct DescList DescList;
@@ -87,8 +90,10 @@ static NaClSrpcImcDescType DescFromPlatformDesc(int fd, int mode) {
 #endif  /* __native_client__ */
 }
 
-/* TODO(sehr): make this just NACL_LINUX once ARM SHM works */
-#if NACL_LINUX && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
+/* TODO(robertm): for ARM both __native_client__ and NACL_LINUX are true
+   this needs to be fixed */
+#ifndef __native_client__
+#if NACL_LINUX
 static void* kSysvShmAddr = (void*) (intptr_t) -1;
 static struct NaClDescSysvShm* shm_desc = NULL;
 
@@ -176,6 +181,7 @@ cleanup:
   return kNaClSrpcInvalidImcDesc;
 }
 #endif  /* NACL_LINUX */
+#endif  /* __native_client__ */
 
 static void BuildDefaultDescList() {
 #ifdef __native_client__
@@ -748,10 +754,14 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
     } else if (0 == strcmp("descs", command)) {
       PrintDescList();
     } else if (0 == strcmp("sysv", command)) {
-      /* TODO(sehr): make this just NACL_LINUX once ARM SHM works */
-#if NACL_LINUX && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
+
+#ifndef __native_client__
+/* TODO(robertm): for ARM both __native_client__ and NACL_LINUX are true
+   this needs to be fixed */
+#if NACL_LINUX
       AddDescToList(SysvShmDesc(), "SysV shared memory");
 #endif  /* NACL_LINUX */
+#endif /* __native_client__ */
     } else if (0 == strcmp("quit", command)) {
       break;
     } else if (0 == strcmp("rpc", command)) {
