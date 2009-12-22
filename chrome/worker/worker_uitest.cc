@@ -180,13 +180,6 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
 #define SharedWorkerFastLayoutTests FLAKY_SharedWorkerFastLayoutTests
 #endif
 
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// These tests are flaky on linux/views builds.
-// See http://crbug.com/28808.
-#define MessagePorts FLAKY_MessagePorts
-#define SharedWorkerFastLayoutTests FLAKY_SharedWorkerFastLayoutTests
-#endif
-
 TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "shared-worker-constructor.html",

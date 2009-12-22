@@ -47,13 +47,6 @@ class BrowserEncodingTest : public UITest {
   FilePath temp_sub_resource_dir_;
 };
 
-#if defined(OS_CHROMEOS)
-// These tests are flaky on linux/views builds.
-// See http://crbug.com/28808.
-#define TestEncodingAliasMapping FLAKY_TestEncodingAliasMapping
-#define TestEncodingAutoDetect FLAKY_TestEncodingAutoDetect
-#endif
-
 // TODO(jnd): 1. Some encodings are missing here. It'll be added later. See
 // http://crbug.com/13306.
 // 2. Add more files with multiple encoding name variants for each canonical

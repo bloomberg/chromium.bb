@@ -90,9 +90,6 @@ class SessionRestoreUITest : public UITest {
 // This test is flaky on linux/views builds.
 // See http://crbug.com/28808.
 #define NormalAndPopup FLAKY_NormalAndPopup
-#define Basic FLAKY_Basic
-#define TwoTabsSecondSelected FLAKY_TwoTabsSecondSelected
-#define RestoresForwardAndBackwardNavs FLAKY_RestoresForwardAndBackwardNavs
 #endif
 
 

@@ -82,8 +82,9 @@ TEST_F(ProcessSingletonLinuxTest, CheckSocketFile) {
 }
 
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// This test is flaky on linux/views builds.
-// See http://crbug.com/28808.
+// The following tests in linux/view does not pass without a window manager,
+// which is true in build/try bots.
+// See http://crbug.com/30953.
 #define NotifyOtherProcessSuccess FLAKY_NotifyOtherProcessSuccess
 #define NotifyOtherProcessHostChanged FLAKY_NotifyOtherProcessHostChanged
 #endif
