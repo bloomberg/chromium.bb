@@ -340,26 +340,6 @@ inline float inline_sqrt(float x) {
 }
 
 
-inline float inline_acos(float x) {
-  register float ret;
-  asm("\tfld      %0\n"
-      "\tfmul     %0\n"
-      "\tfld1\n"
-      "\tfsubp\n"
-      "\tfsqrt\n"
-      "\tfxch     %%st(1)\n"
-      "\tfpatan" : "=t"(ret) : "0"(x) : "st(1)");
-  return ret;
-}
-
-
-inline float inline_sin(float x) {
-  register float ret;
-  asm("\tfsin\n" : "=t"(ret) : "0"(x));
-  return ret;
-}
-
-
 // This is the meat of the ray tracer.  Given a pixel span (x0, x1) on
 // scanline y, shoot rays into the scene and render what they hit.  Use
 // scanline coherence to do a few optimizations
@@ -427,7 +407,7 @@ void Planet::wRenderPixelSpan(int x0, int x1, int y) {
     float dp = planet_equator_x_ * nx +
                planet_equator_y_ * ny +
                planet_equator_z_ * nz;
-    float w = dp / inline_sin(ang);
+    float w = dp / sin(ang);
     if (w > 1.0f) w = 1.0f;
     if (w < -1.0f) w = -1.0f;
     float th = acos_.TableLerp(w) * kOneOver2PI;
@@ -748,7 +728,7 @@ void RunDemo(Surface *surface) {
     "\n",
     "Image Credit:\n",
     "\n",
-    "NASA Goddard Space Flight Center Image by Reto Stöckli (land surface,\n",
+    "NASA Goddard Space Flight Center Image by Reto Stï¿½ckli (land surface,\n",
     "shallow water, clouds). Enhancements by Robert Simmon (ocean color,\n",
     "compositing, 3D globes, animation).\n",
     "Data and technical support: MODIS Land Group; MODIS Science Data,\n",
