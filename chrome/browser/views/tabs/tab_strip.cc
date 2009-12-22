@@ -722,6 +722,8 @@ TabStrip::TabStrip(TabStripModel* model)
 }
 
 TabStrip::~TabStrip() {
+  active_animation_.reset(NULL);
+
   // TODO(beng): (1031854) Restore this line once XPFrame/VistaFrame are dead.
   // model_->RemoveObserver(this);
 
@@ -732,6 +734,10 @@ TabStrip::~TabStrip() {
   // crash in the case where the user closes the window after closing a tab
   // but before moving the mouse.
   RemoveMessageLoopObserver();
+
+  // The children (tabs) may callback to us from their destructor. Delete them
+  // so that if they call back we aren't in a weird state.
+  RemoveAllChildViews(true);
 }
 
 bool TabStrip::CanProcessInputEvents() const {
