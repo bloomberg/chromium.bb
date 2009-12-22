@@ -16,4 +16,8 @@ class Profile;
 void ShowExtensionDisabledUI(ExtensionsService* service, Profile* profile,
                              Extension* extension);
 
+// Shows the extension install dialog.
+void ShowExtensionDisabledDialog(ExtensionsService* service, Profile* profile,
+                                 Extension* extension);
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DISABLED_INFOBAR_DELEGATE_H_

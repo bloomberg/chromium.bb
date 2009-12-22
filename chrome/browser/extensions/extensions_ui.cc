@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -386,7 +387,15 @@ void ExtensionsDOMHandler::HandleEnableMessage(const Value* value) {
   CHECK(list->GetString(0, &extension_id));
   CHECK(list->GetString(1, &enable_str));
   if (enable_str == "true") {
-    extensions_service_->EnableExtension(extension_id);
+    ExtensionPrefs* prefs = extensions_service_->extension_prefs();
+    if (prefs->DidExtensionEscalatePermissions(extension_id)) {
+      Extension* extension =
+          extensions_service_->GetExtensionById(extension_id, true);
+      ShowExtensionDisabledDialog(extensions_service_,
+                                  dom_ui_->GetProfile(), extension);
+    } else {
+      extensions_service_->EnableExtension(extension_id);
+    }
   } else {
     extensions_service_->DisableExtension(extension_id);
   }

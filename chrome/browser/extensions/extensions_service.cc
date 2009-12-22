@@ -620,6 +620,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
           // Extension has changed permissions significantly. Disable it. We
           // send a notification below.
           extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
+          extension_prefs_->SetShowInstallWarningOnEnable(extension, true);
         }
       } else {
         // We already have the extension of the same or older version.
