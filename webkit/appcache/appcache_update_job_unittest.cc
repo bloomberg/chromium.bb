@@ -2384,8 +2384,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers;  // adds ref to headers
 
-    update = new AppCacheUpdateJob(service_.get(), group_);
-    group_->update_job_ = update;
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_.reset(response_info);
     update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
@@ -2422,8 +2420,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers;  // adds ref to headers
 
-    update = new AppCacheUpdateJob(service_.get(), group_);
-    group_->update_job_ = update;
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_.reset(response_info);
     update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
