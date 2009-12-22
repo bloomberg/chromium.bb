@@ -33,12 +33,10 @@ class Profile;
   PreferencesWindowController* prefsController_;  // Weak.
   AboutWindowController* aboutController_;  // Weak.
 
-  // If we're told to open URLs (in particular, via |-application:openFiles:| by
-  // Launch Services) before we've launched the browser, we queue them up in
-  // |startupURLs_| so that they can go in the first browser window/tab.
-  // |startupComplete_| is automatically initialized to |NO|.
-  std::vector<GURL> startupURLs_;
-  BOOL startupComplete_;
+  // URLs that need to be opened when the app is fully initialized. Because it's
+  // only needed during early startup, it points to a valid vector during early
+  // startup and is NULL during the rest of app execution.
+  scoped_ptr<std::vector<GURL> > pendingURLs_;
 
   // Outlets for the close tab/window menu items so that we can adjust the
   // commmand-key equivalent depending on the kind of window and how many
@@ -51,8 +49,6 @@ class Profile;
   // to it.
   IBOutlet NSMenu* helpMenu_;
 }
-
-@property(readonly, nonatomic) BOOL startupComplete;
 
 - (void)didEndMainMessageLoop;
 - (Profile*)defaultProfile;
@@ -67,12 +63,6 @@ class Profile;
 
 // Delegate method to return the dock menu.
 - (NSMenu*)applicationDockMenu:(NSApplication*)sender;
-
-// Get the URLs that Launch Services expects the browser to open at startup.
-- (const std::vector<GURL>&)startupURLs;
-
-// Clear the list of startup URLs.
-- (void)clearStartupURLs;
 
 @end
 

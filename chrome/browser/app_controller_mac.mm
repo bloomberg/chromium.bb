@@ -45,7 +45,6 @@
 #include "chrome/common/temp_scaffolding_stubs.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "net/base/net_util.h"
 
 // 10.6 adds a public API for the Spotlight-backed search menu item in the Help
 // menu.  Provide the declaration so it can be called below when building with
@@ -81,12 +80,12 @@ static bool g_is_opening_new_window = false;
 
 @implementation AppController
 
-@synthesize startupComplete = startupComplete_;
-
 // This method is called very early in application startup (ie, before
 // the profile is loaded or any preferences have been registered). Defer any
 // user-data initialization until -applicationDidFinishLaunching:.
 - (void)awakeFromNib {
+  pendingURLs_.reset(new std::vector<GURL>());
+
   // We need to register the handlers early to catch events fired on launch.
   NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
   [em setEventHandler:self
@@ -97,6 +96,10 @@ static bool g_is_opening_new_window = false;
           andSelector:@selector(getUrl:withReply:)
         forEventClass:'WWW!'    // A particularly ancient AppleEvent that dates
            andEventID:'OURL'];  // back to the Spyglass days.
+  [em setEventHandler:self
+          andSelector:@selector(openFiles:withReply:)
+        forEventClass:kCoreEventClass
+           andEventID:kAEOpenDocuments];
 
   // Register for various window layering changes. We use these to update
   // various UI elements (command-key equivalents, etc) when the frontmost
@@ -350,10 +353,12 @@ static bool g_is_opening_new_window = false;
 
   // Since Chrome is localized to more languages than the OS, tell Cocoa which
   // menu is the Help so it can add the search item to it.
-  if (helpMenu_ && [NSApp respondsToSelector:@selector(setHelpMenu:)])
+  if (helpMenu_ && [NSApp respondsToSelector:@selector(setHelpMenu:)]) {
     [NSApp setHelpMenu:helpMenu_];
+  }
 
-  startupComplete_ = YES;
+  // Now that we're initialized we can open any URLs we've been holding onto.
+  [self openPendingURLs];
 }
 
 // This is called after profiles have been loaded and preferences registered.
@@ -654,9 +659,9 @@ static bool g_is_opening_new_window = false;
 // openings through that for uniform handling.
 
 - (void)openURLs:(const std::vector<GURL>&)urls {
-  // If the browser hasn't started yet, just queue up the URLs.
-  if (!startupComplete_) {
-    startupURLs_.insert(startupURLs_.end(), urls.begin(), urls.end());
+  if (pendingURLs_.get()) {
+    // too early to open; save for later
+    pendingURLs_->insert(pendingURLs_->end(), urls.begin(), urls.end());
     return;
   }
 
@@ -672,6 +677,17 @@ static bool g_is_opening_new_window = false;
   launch.OpenURLsInBrowser(browser, false, urls);
 }
 
+- (void)openPendingURLs {
+  // Since the existence of pendingURLs_ is a flag that it's too early to
+  // open URLs, we need to reset pendingURLs_.
+  std::vector<GURL> urls;
+  swap(urls, *pendingURLs_);
+  pendingURLs_.reset();
+
+  if (urls.size())
+    [self openURLs:urls];
+}
+
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply {
   NSString* urlStr = [[event paramDescriptorForKeyword:keyDirectObject]
@@ -684,19 +700,37 @@ static bool g_is_opening_new_window = false;
   [self openURLs:gurlVector];
 }
 
-- (void)application:(NSApplication*)sender
-          openFiles:(NSArray*)filenames {
+- (void)openFiles:(NSAppleEventDescriptor*)event
+        withReply:(NSAppleEventDescriptor*)reply {
+  // Ordinarily we'd use the NSApplication delegate method
+  // -application:openFiles:, but Cocoa tries to be smart and it sends files
+  // specified on the command line into that delegate method. That's too smart
+  // for us (our setup isn't done by the time Cocoa triggers the delegate method
+  // and we crash). Since all we want are files dropped on the app icon, and we
+  // have cross-platform code to handle the command-line files anyway, an Apple
+  // Event handler fits the bill just right.
+  NSAppleEventDescriptor* fileList =
+      [event paramDescriptorForKeyword:keyDirectObject];
+  if (!fileList)
+    return;
   std::vector<GURL> gurlVector;
-  for (NSString* file in filenames) {
-    GURL gurl = net::FilePathToFileURL(FilePath(base::SysNSStringToUTF8(file)));
+
+  for (NSInteger i = 1; i <= [fileList numberOfItems]; ++i) {
+    NSAppleEventDescriptor* fileAliasDesc = [fileList descriptorAtIndex:i];
+    if (!fileAliasDesc)
+      continue;
+    NSAppleEventDescriptor* fileURLDesc =
+        [fileAliasDesc coerceToDescriptorType:typeFileURL];
+    if (!fileURLDesc)
+      continue;
+    NSData* fileURLData = [fileURLDesc data];
+    if (!fileURLData)
+      continue;
+    GURL gurl(std::string((char*)[fileURLData bytes], [fileURLData length]));
     gurlVector.push_back(gurl);
   }
-  if (!gurlVector.empty())
-    [self openURLs:gurlVector];
-  else
-    NOTREACHED() << "Nothing to open!";
 
-  [sender replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
+  [self openURLs:gurlVector];
 }
 
 // Called when the preferences window is closed. We use this to release the
@@ -798,14 +832,6 @@ static bool g_is_opening_new_window = false;
   [dockMenu addItem:item];
 
   return dockMenu;
-}
-
-- (const std::vector<GURL>&)startupURLs {
-  return startupURLs_;
-}
-
-- (void)clearStartupURLs {
-  startupURLs_.clear();
 }
 
 @end

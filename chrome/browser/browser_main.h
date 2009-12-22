@@ -7,11 +7,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
-#include <vector>
-class GURL;
-#endif
-
 struct MainFunctionParams;
 class MetricsService;
 
@@ -30,23 +25,6 @@ void DidEndMainMessageLoop();
 // attempting to initialize crash reporting) and the presence of a debugger
 // are registered with the UMA metrics service.
 void RecordBreakpadStatusUMA(MetricsService* metrics);
-
-#if defined(OS_MACOSX)
-// On Mac, files/URLs to open at startup aren't typically provided on the
-// command line, but rather by Launch Services via an Apple Event. We spin a UI
-// message loop early to catch this event in the app controller and store the
-// URLs.
-
-// Has the app controller been told that it is done? (I.e., has it received
-// |-applicationDidFinishLaunching:|?)
-bool IsStartupComplete();
-
-// The following functions retrieves the URLs and clears the list of URLs,
-// respectively.
-const std::vector<GURL>& GetStartupURLs();
-void ClearStartupURLs();
-
-#endif
 
 }  // namespace Platform
 
