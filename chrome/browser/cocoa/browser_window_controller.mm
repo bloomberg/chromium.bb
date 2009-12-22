@@ -1716,8 +1716,11 @@ willPositionSheet:(NSWindow*)sheet
 
 - (CGFloat)layoutBookmarkBarAtMaxY:(CGFloat)maxY width:(CGFloat)width {
   NSView* bookmarkBarView = [bookmarkBarController_ view];
-  [bookmarkBarView setHidden:NO];
   NSRect bookmarkBarFrame = [bookmarkBarView frame];
+  BOOL oldHidden = [bookmarkBarView isHidden];
+  BOOL newHidden = ![self isBookmarkBarVisible];
+  if (oldHidden != newHidden)
+    [bookmarkBarView setHidden:newHidden];
   bookmarkBarFrame.origin.y = maxY - NSHeight(bookmarkBarFrame);
   bookmarkBarFrame.size.width = width;
   [bookmarkBarView setFrame:bookmarkBarFrame];

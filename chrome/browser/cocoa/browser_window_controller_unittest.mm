@@ -183,8 +183,10 @@ void CheckViewPositions(BrowserWindowController* controller) {
     NSRect bookmark = [[controller bookmarkView] frame];
     EXPECT_EQ(NSMaxY(infobar), NSMinY(bookmark));
     EXPECT_EQ(NSMaxY(bookmark), NSMinY(toolbar));
+    EXPECT_FALSE([[controller bookmarkView] isHidden]);
   } else {
     EXPECT_EQ(NSMaxY(infobar), NSMinY(toolbar));
+    EXPECT_TRUE([[controller bookmarkView] isHidden]);
   }
 
   EXPECT_EQ(NSMaxY(contentView), NSMaxY(toolbar));
