@@ -1,0 +1,39 @@
+# There are three kinds of suppressions in this file.
+# 1. third party stuff we have no control over
+#
+# 2. intentional unit test errors, or stuff that is somehow a false positive
+# in our own code, or stuff that is so trivial it's not worth fixing
+#
+# 3. Suppressions for real chromium bugs that are not yet fixed.
+# These should all be in chromium's bug tracking system (but a few aren't yet).
+# Periodically we should sweep this file and the bug tracker clean by
+# running overnight and removing outdated bugs/suppressions.
+#-----------------------------------------------------------------------
+
+# 1. third party stuff we have no control over
+#-----------------------------------------------------------------------
+# 2. intentional unit test errors, or stuff that is somehow a false positive
+# in our own code, or stuff that is so trivial it's not worth fixing
+{
+   Heapcheck sanity test (ToolsSanityTest.MemoryLeak).
+   Heapcheck:Leak
+   fun:ToolsSanityTest_MemoryLeak_Test::TestBody
+}
+#-----------------------------------------------------------------------
+# 3. Suppressions for real chromium bugs that are not yet fixed.
+# These should all be in chromium's bug tracking system (but a few aren't yet).
+# Periodically we should sweep this file and the bug tracker clean by
+# running overnight and removing outdated bugs/suppressions.
+
+# RSAPrivateKeyUnitTest (base_unittests) leaks memory.
+{
+   bug_28118_a
+   Heapcheck:Leak
+   fun:PR_NewLock
+}
+{
+   bug_28118_b
+   Heapcheck:Leak
+   fun:PORT_ZAlloc_Util
+}
+
