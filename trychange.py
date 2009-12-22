@@ -202,6 +202,15 @@ def _SendChangeHTTP(options):
       proxies = {}
     else:
       proxies = {'http': options.proxy, 'https': options.proxy}
+
+  if options.dry_run:
+    # Last minute fake.
+    for (k,v) in values.iteritems():
+      if k != 'patch':
+        print("%s=%s" % (k,v))
+    print values['patch']
+    return
+
   try:
     connection = urllib.urlopen(url, urllib.urlencode(values), proxies=proxies)
   except IOError, e:
@@ -228,6 +237,12 @@ def _SendChangeSVN(options):
   description = ''
   for (k,v) in values.iteritems():
     description += "%s=%s\n" % (k,v)
+
+  if options.dry_run:
+    # Last minute fake.
+    print str(descriptions)
+    print diff
+    return
 
   # Do an empty checkout.
   temp_dir = tempfile.mkdtemp()
@@ -338,6 +353,8 @@ def TryChange(argv,
                    help="Update rietveld issue try job status")
   group.add_option("--patchset", type='int',
                    help="Update rietveld issue try job status")
+  group.add_option("--dry_run", action='store_true',
+                   help="Just prints the diff and quits")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Try job options")
@@ -357,7 +374,8 @@ def TryChange(argv,
   group.add_option("--target", help=optparse.SUPPRESS_HELP)
 
   group.add_option("--project",
-                   help="Override which project to use")
+                   help="Override which project to use. Projects are defined "
+                        "server-side to define what default bot set to use")
 
   # Override the list of tests to run, use multiple times to list many tests
   # (or comma separated)
@@ -474,8 +492,9 @@ def TryChange(argv,
 
     # Send the patch.
     options.send_patch(options)
-    print 'Patch \'%s\' sent to try server: %s' % (options.name,
-                                                   ', '.join(options.bot))
+    if not options.dry_run:
+      print 'Patch \'%s\' sent to try server: %s' % (options.name,
+                                                     ', '.join(options.bot))
   except (InvalidScript, NoTryServerAccess), e:
     if swallow_exception:
       return 1

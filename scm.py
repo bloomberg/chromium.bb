@@ -88,7 +88,7 @@ class GIT(object):
   @staticmethod
   def GetBranch(cwd):
     """Returns the short branch name, e.g. 'master'."""
-    return GIT.ShortBranchName(GIT.BranchRef(cwd))
+    return GIT.ShortBranchName(GIT.GetBranchRef(cwd))
 
   @staticmethod
   def IsGitSvn(cwd):
