@@ -222,8 +222,9 @@ def _SendChangeHTTP(options):
                                                                   str(e.args)))
   if not connection:
     raise NoTryServerAccess('%s is unaccessible.' % url)
-  if connection.read() != 'OK':
-    raise NoTryServerAccess('%s is unaccessible.' % url)
+  response = connection.read()
+  if response != 'OK':
+    raise NoTryServerAccess('%s is unaccessible. Got:\n%s' % (url, response))
 
 
 def _SendChangeSVN(options):
@@ -493,8 +494,10 @@ def TryChange(argv,
     # Send the patch.
     options.send_patch(options)
     if not options.dry_run:
-      print 'Patch \'%s\' sent to try server: %s' % (options.name,
-                                                     ', '.join(options.bot))
+      text = 'Patch \'%s\' sent to try server' % options.name
+      if options.bot:
+        text += ': %s' % ', '.join(options.bot)
+      print(text)
   except (InvalidScript, NoTryServerAccess), e:
     if swallow_exception:
       return 1
