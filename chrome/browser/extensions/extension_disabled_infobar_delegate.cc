@@ -38,8 +38,6 @@ class ExtensionDisabledDialogDelegate
 
   // ExtensionInstallUI::Delegate
   virtual void InstallUIProceed() {
-    ExtensionPrefs* prefs = service_->extension_prefs();
-    prefs->SetShowInstallWarningOnEnable(extension_, false);
     service_->EnableExtension(extension_->id());
     Release();
   }
@@ -158,10 +156,4 @@ void ShowExtensionDisabledUI(ExtensionsService* service, Profile* profile,
 
   tab_contents->AddInfoBar(new ExtensionDisabledInfobarDelegate(
       tab_contents, service, extension));
-}
-
-void ShowExtensionDisabledDialog(ExtensionsService* service, Profile* profile,
-                                 Extension* extension) {
-  // This object manages its own lifetime.
-  new ExtensionDisabledDialogDelegate(profile, service, extension);
 }

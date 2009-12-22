@@ -33,9 +33,6 @@ const wchar_t kPrefVersion[] = L"manifest.version";
 // Indicates if an extension is blacklisted:
 const wchar_t kPrefBlacklist[] = L"blacklist";
 
-// Indicates whether to show an install warning when the user enables.
-const wchar_t kShowInstallWarning[] = L"install_warning_on_enable";
-
 // A preference that tracks extension shelf configuration.  This is a list
 // object read from the Preferences file, containing a list of toolstrip URLs.
 const wchar_t kExtensionShelf[] = L"extensions.shelf";
@@ -136,20 +133,19 @@ DictionaryValue* ExtensionPrefs::CopyCurrentExtensions() {
   return new DictionaryValue;
 }
 
-bool ExtensionPrefs::ReadBooleanFromPref(
-    DictionaryValue* ext, const std::wstring& pref_key) {
-  if (!ext->HasKey(pref_key)) return false;
-  bool bool_value = false;
-  if (!ext->GetBoolean(pref_key, &bool_value)) {
-    NOTREACHED() << "Failed to fetch " << pref_key << " flag.";
-    // In case we could not fetch the flag, we treat it as false.
+bool ExtensionPrefs::IsBlacklistBitSet(DictionaryValue* ext) {
+  if (!ext->HasKey(kPrefBlacklist)) return false;
+  bool is_blacklisted = false;
+  if (!ext->GetBoolean(kPrefBlacklist, &is_blacklisted)) {
+    NOTREACHED() << "Failed to fetch blacklist flag.";
+    // In case we could not fetch the flag, we consider the extension
+    // is NOT blacklisted.
     return false;
   }
-  return bool_value;
+  return is_blacklisted;
 }
 
-bool ExtensionPrefs::ReadExtensionPrefBoolean(
-    const std::string& extension_id, const std::wstring& pref_key) {
+bool ExtensionPrefs::IsExtensionBlacklisted(const std::string& extension_id) {
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
   DCHECK(extensions);
 
@@ -163,20 +159,7 @@ bool ExtensionPrefs::ReadExtensionPrefBoolean(
     // No such extension yet.
     return false;
   }
-  return ReadBooleanFromPref(ext, pref_key);
-}
-
-bool ExtensionPrefs::IsBlacklistBitSet(DictionaryValue* ext) {
-  return ReadBooleanFromPref(ext, kPrefBlacklist);
-}
-
-bool ExtensionPrefs::IsExtensionBlacklisted(const std::string& extension_id) {
-  return ReadExtensionPrefBoolean(extension_id, kExtensionsPref);
-}
-
-bool ExtensionPrefs::DidExtensionEscalatePermissions(
-    const std::string& extension_id) {
-  return ReadExtensionPrefBoolean(extension_id, kShowInstallWarning);
+  return IsBlacklistBitSet(ext);
 }
 
 void ExtensionPrefs::UpdateBlacklist(
@@ -365,13 +348,6 @@ void ExtensionPrefs::SetExtensionState(Extension* extension,
                                        Extension::State state) {
   UpdateExtensionPref(extension->id(), kPrefState,
                       Value::CreateIntegerValue(state));
-  prefs_->SavePersistentPrefs();
-}
-
-void ExtensionPrefs::SetShowInstallWarningOnEnable(
-    Extension* extension, bool require) {
-  UpdateExtensionPref(extension->id(), kShowInstallWarning,
-                      Value::CreateBooleanValue(require));
   prefs_->SavePersistentPrefs();
 }
 
