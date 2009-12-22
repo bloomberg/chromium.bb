@@ -831,16 +831,6 @@ def TryChange(change_info, args, swallow_exception):
     root = os.path.join(root, '')
     return subpath[len(root):]
 
-  # Try to find the gclient root.
-  def FindGclientRootDir(from_dir):
-    path = os.path.realpath(from_dir)
-    while not os.path.exists(os.path.join(path, '.gclient')):
-      next = os.path.split(path)
-      if not next[1]:
-        return None
-      path = next[0]
-    return path
-
   trychange_args = []
   settings = {
     'port': GetCodeReviewSetting('TRYSERVER_HTTP_PORT'),
@@ -854,7 +844,7 @@ def TryChange(change_info, args, swallow_exception):
     if v:
       trychange_args.extend(['--' + k, v])
 
-  gclient_root = FindGclientRootDir(GetRepositoryRoot())
+  gclient_root = gclient_utils.FindGclientRoot(GetRepositoryRoot())
   if gclient_root:
     trychange_args.extend(['--root', PathDifference(gclient_root,
                                                     GetRepositoryRoot())])

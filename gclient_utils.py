@@ -307,3 +307,13 @@ def IsUsingGit(root, paths):
     if os.path.exists(os.path.join(root, path, '.git')):
       return True
   return False
+
+def FindGclientRoot(from_dir):
+  """Tries to find the gclient root."""
+  path = os.path.realpath(from_dir)
+  while not os.path.exists(os.path.join(path, '.gclient')):
+    next = os.path.split(path)
+    if not next[1]:
+      return None
+    path = next[0]
+  return path

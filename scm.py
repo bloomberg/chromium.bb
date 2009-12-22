@@ -177,12 +177,17 @@ class GIT(object):
     return upstream_branch
 
   @staticmethod
-  def GenerateDiff(cwd, branch=None):
-    """Diffs against the upstream branch or optionally another branch."""
+  def GenerateDiff(cwd, branch=None, full_move=False):
+    """Diffs against the upstream branch or optionally another branch.
+
+    full_move means that move or copy operations should completely recreate the
+    files, usually in the prospect to apply the patch for a try job."""
     if not branch:
       branch = GIT.GetUpstream(cwd)
-    diff = GIT.Capture(['diff-tree', '-p', '--no-prefix', branch, 'HEAD'],
-                       cwd).splitlines(True)
+    command = ['diff-tree', '-p', '--no-prefix', branch, 'HEAD']
+    if not full_move:
+      command.append('-C')
+    diff = GIT.Capture(command, cwd).splitlines(True)
     for i in range(len(diff)):
       # In the case of added files, replace /dev/null with the path to the
       # file being added.
@@ -524,7 +529,9 @@ class SVN(object):
     """Diffs a single file.
 
     Be sure to be in the appropriate directory before calling to have the
-    expected relative path."""
+    expected relative path.
+    full_move means that move or copy operations should completely recreate the
+    files, usually in the prospect to apply the patch for a try job."""
     # Use svn info output instead of os.path.isdir because the latter fails
     # when the file is deleted.
     if SVN.CaptureInfo(filename).get("Node Kind") == "directory":

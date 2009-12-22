@@ -15,6 +15,7 @@ class GclientUtilsUnittest(SuperMoxTestBase):
   def testMembersChanged(self):
     members = [
         'CheckCall', 'CheckCallError', 'Error', 'FileRead', 'FileWrite',
+        'FindGclientRoot',
         'FullUrlFromRelative', 'FullUrlFromRelative2', 'GetNamedNodeText',
         'GetNodeNamedAttributeText', 'IsUsingGit', 'ParseXML',
         'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',

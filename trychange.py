@@ -132,7 +132,8 @@ class GIT(SCM):
     SCM.__init__(self, *args, **kwargs)
     self.checkout_root = scm.GIT.GetCheckoutRoot(os.getcwd())
     if not self.options.diff:
-      self.options.diff = scm.GIT.GenerateDiff(self.checkout_root)
+      self.options.diff = scm.GIT.GenerateDiff(self.checkout_root,
+                                               full_move=True)
     if not self.options.name:
       self.options.name = scm.GIT.GetPatchName(self.checkout_root)
     if not self.options.email:

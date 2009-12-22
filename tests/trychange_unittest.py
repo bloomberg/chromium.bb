@@ -83,7 +83,8 @@ class GITUnittest(TryChangeTestsBase):
   def testBasic(self):
     trychange.os.getcwd().AndReturn(self.fake_root)
     trychange.scm.GIT.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
-    trychange.scm.GIT.GenerateDiff(self.fake_root).AndReturn('a diff')
+    trychange.scm.GIT.GenerateDiff(self.fake_root,
+                                   full_move=True).AndReturn('a diff')
     trychange.scm.GIT.GetPatchName(self.fake_root).AndReturn('bleh-1233')
     trychange.scm.GIT.GetEmail(self.fake_root).AndReturn('georges@example.com')
     self.mox.ReplayAll()
