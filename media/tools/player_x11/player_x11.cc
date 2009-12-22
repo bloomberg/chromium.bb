@@ -19,6 +19,7 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
+#include "media/filters/omx_video_decoder.h"
 #include "media/tools/player_x11/x11_video_renderer.h"
 
 Display* g_display = NULL;
@@ -64,6 +65,9 @@ bool InitPipeline(MessageLoop* message_loop,
   factories->AddFactory(media::FileDataSource::CreateFactory());
   factories->AddFactory(media::FFmpegAudioDecoder::CreateFactory());
   factories->AddFactory(media::FFmpegDemuxer::CreateFilterFactory());
+  if (CommandLine::ForCurrentProcess()->HasSwitch("use-omx")) {
+    factories->AddFactory(media::OmxVideoDecoder::CreateFactory());
+  }
   factories->AddFactory(media::FFmpegVideoDecoder::CreateFactory());
   factories->AddFactory(X11VideoRenderer::CreateFactory(g_display, g_window));
 
@@ -153,10 +157,10 @@ int main(int argc, char** argv) {
         usleep(10000);
       }
     }
+    pipeline->Stop(NULL);
+  } else{
+    std::cout << "Pipeline initialization failed..." << std::endl;
   }
-
-  std::cout << "Stopping..." << std::endl;
-  pipeline->Stop(NULL);
 
   // Cleanup tasks.
   thread->Stop();

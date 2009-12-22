@@ -81,7 +81,8 @@ void OmxCodec::Feed(InputBuffer* buffer, FeedCallback* callback) {
 }
 
 void OmxCodec::Flush(Callback* callback) {
-  // TODO(hclam): implement.
+  callback->Run();
+  delete callback;
 }
 
 OmxCodec::State OmxCodec::GetState() const {
@@ -349,8 +350,9 @@ void OmxCodec::Transition_EmptyToLoaded() {
   else
     LOG(ERROR) << "Error: Unsupported codec " << codec_;
   // Assume QCIF.
-  port_format.format.video.nFrameWidth  = 176;
-  port_format.format.video.nFrameHeight = 144;
+  // TODO(ajwong): This MUST come from the client library somehow.
+  port_format.format.video.nFrameWidth  = 720;
+  port_format.format.video.nFrameHeight = 480;
   omxresult = OMX_SetParameter(decoder_handle_,
                                OMX_IndexParamPortDefinition,
                                &port_format);

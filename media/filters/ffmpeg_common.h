@@ -56,6 +56,18 @@ class ScopedPtrAVFree {
   }
 };
 
+// This assumes that the AVPacket being captured was allocated outside of
+// FFmpeg via the new operator.  Do not use this with AVPacket instances that
+// are allocated via malloc() or av_malloc().
+class ScopedPtrAVFreePacket {
+ public:
+  inline void operator()(void* x) const {
+    AVPacket* packet = static_cast<AVPacket*>(x);
+    av_free_packet(packet);
+    delete packet;
+  }
+};
+
 
 // FFmpeg MIME types.
 namespace mime_type {

@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_VIDEO_DECODE_ENGINE_H_
 #define MEDIA_FILTERS_VIDEO_DECODE_ENGINE_H_
 
+#include "media/base/buffers.h"  // For VideoSurface.
+
 // FFmpeg types.
 //
 // TODO(ajwong): Try to cut the dependency on the FFmpeg types.
@@ -22,6 +24,7 @@ class VideoDecodeEngine {
   enum State {
     kCreated,
     kNormal,
+    kStopped,
     kError,
   };
 

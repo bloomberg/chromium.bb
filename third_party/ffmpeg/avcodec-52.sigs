@@ -21,3 +21,4 @@ void avcodec_init(void);
 AVBitStreamFilterContext *av_bitstream_filter_init(const char *name);
 int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc, AVCodecContext *avctx, const char *args, uint8_t **poutbuf, int *poutbuf_size, const uint8_t *buf, int buf_size, int keyframe);
 void av_bitstream_filter_close(AVBitStreamFilterContext *bsf);
+void av_destruct_packet(AVPacket *pkt);

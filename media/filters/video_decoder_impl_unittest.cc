@@ -15,6 +15,8 @@
 #include "media/filters/ffmpeg_common.h"
 #include "media/filters/ffmpeg_interfaces.h"
 #include "media/filters/ffmpeg_video_decoder.h"
+#include "media/filters/video_decode_engine.h"
+#include "media/filters/video_decoder_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -54,10 +56,10 @@ class MockVideoDecodeEngine : public VideoDecodeEngine {
 };
 
 // Class that just mocks the private functions.
-class DecoderPrivateMock : public FFmpegVideoDecoder {
+class DecoderPrivateMock : public VideoDecoderImpl {
  public:
   DecoderPrivateMock(VideoDecodeEngine* engine)
-      : FFmpegVideoDecoder(engine) {
+      : VideoDecoderImpl(engine) {
   }
 
   MOCK_METHOD3(EnqueueVideoFrame, bool(VideoSurface::Format surface_format,
@@ -75,20 +77,23 @@ class DecoderPrivateMock : public FFmpegVideoDecoder {
 
 // Fixture class to facilitate writing tests.  Takes care of setting up the
 // FFmpeg, pipeline and filter host mocks.
-class FFmpegVideoDecoderTest : public testing::Test {
+class VideoDecoderImplTest : public testing::Test {
  protected:
   static const int kWidth;
   static const int kHeight;
-  static const FFmpegVideoDecoder::TimeTuple kTestPts1;
-  static const FFmpegVideoDecoder::TimeTuple kTestPts2;
+  static const VideoDecoderImpl::TimeTuple kTestPts1;
+  static const VideoDecoderImpl::TimeTuple kTestPts2;
 
-  FFmpegVideoDecoderTest() {
+  VideoDecoderImplTest() {
     MediaFormat media_format;
     media_format.SetAsString(MediaFormat::kMimeType, mime_type::kFFmpegVideo);
 
-    // Create an FFmpegVideoDecoder, and MockVideoDecodeEngine.
+    // Create an VideoDecoderImpl, and MockVideoDecodeEngine.  We use an
+    // FFmpegVideoDecoder to instantiate a full VideoDecoderImpl with an engine.
+    //
+    // TODO(ajwong): Break the test's dependency on FFmpegVideoDecoder.
     factory_ = FFmpegVideoDecoder::CreateFactory();
-    decoder_ = factory_->Create<FFmpegVideoDecoder>(media_format);
+    decoder_ = factory_->Create<VideoDecoderImpl>(media_format);
     engine_ = new StrictMock<MockVideoDecodeEngine>();
 
     DCHECK(decoder_);
@@ -115,7 +120,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
     MockFFmpeg::set(&mock_ffmpeg_);
   }
 
-  virtual ~FFmpegVideoDecoderTest() {
+  virtual ~VideoDecoderImplTest() {
     // Call Stop() to shut down internal threads.
     decoder_->Stop();
 
@@ -129,7 +134,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   // Fixture members.
   scoped_refptr<FilterFactory> factory_;
   MockVideoDecodeEngine* engine_;  // Owned by |decoder_|.
-  scoped_refptr<FFmpegVideoDecoder> decoder_;
+  scoped_refptr<VideoDecoderImpl> decoder_;
   scoped_refptr<StrictMock<MockFFmpegDemuxerStream> > demuxer_;
   scoped_refptr<DataBuffer> buffer_;
   scoped_refptr<DataBuffer> end_of_stream_buffer_;
@@ -145,19 +150,19 @@ class FFmpegVideoDecoderTest : public testing::Test {
   StrictMock<MockFFmpeg> mock_ffmpeg_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecoderTest);
+  DISALLOW_COPY_AND_ASSIGN(VideoDecoderImplTest);
 };
 
-const int FFmpegVideoDecoderTest::kWidth = 1280;
-const int FFmpegVideoDecoderTest::kHeight = 720;
-const FFmpegVideoDecoder::TimeTuple FFmpegVideoDecoderTest::kTestPts1 =
+const int VideoDecoderImplTest::kWidth = 1280;
+const int VideoDecoderImplTest::kHeight = 720;
+const VideoDecoderImpl::TimeTuple VideoDecoderImplTest::kTestPts1 =
     { base::TimeDelta::FromMicroseconds(123),
       base::TimeDelta::FromMicroseconds(50) };
-const FFmpegVideoDecoder::TimeTuple FFmpegVideoDecoderTest::kTestPts2 =
+const VideoDecoderImpl::TimeTuple VideoDecoderImplTest::kTestPts2 =
     { base::TimeDelta::FromMicroseconds(456),
       base::TimeDelta::FromMicroseconds(60) };
 
-TEST(FFmpegVideoDecoderFactoryTest, Create) {
+TEST(VideoDecoderImplFactoryTest, Create) {
   // Should only accept video/x-ffmpeg mime type.
   scoped_refptr<FilterFactory> factory = FFmpegVideoDecoder::CreateFactory();
   MediaFormat media_format;
@@ -174,7 +179,7 @@ TEST(FFmpegVideoDecoderFactoryTest, Create) {
   ASSERT_TRUE(decoder);
 }
 
-TEST_F(FFmpegVideoDecoderTest, Initialize_QueryInterfaceFails) {
+TEST_F(VideoDecoderImplTest, Initialize_QueryInterfaceFails) {
   // Test QueryInterface returning NULL.
   EXPECT_CALL(*demuxer_, QueryInterface(AVStreamProvider::interface_id()))
       .WillOnce(ReturnNull());
@@ -186,7 +191,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_QueryInterfaceFails) {
   message_loop_.RunAllPending();
 }
 
-TEST_F(FFmpegVideoDecoderTest, Initialize_EngineFails) {
+TEST_F(VideoDecoderImplTest, Initialize_EngineFails) {
   // Test successful initialization.
   AVStreamProvider* av_stream_provider = demuxer_;
   EXPECT_CALL(*demuxer_, QueryInterface(AVStreamProvider::interface_id()))
@@ -208,7 +213,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_EngineFails) {
   message_loop_.RunAllPending();
 }
 
-TEST_F(FFmpegVideoDecoderTest, Initialize_Successful) {
+TEST_F(VideoDecoderImplTest, Initialize_Successful) {
   // Test successful initialization.
   AVStreamProvider* av_stream_provider = demuxer_;
   EXPECT_CALL(*demuxer_, QueryInterface(AVStreamProvider::interface_id()))
@@ -241,7 +246,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_Successful) {
   EXPECT_EQ(kHeight, height);
 }
 
-TEST_F(FFmpegVideoDecoderTest, FindPtsAndDuration) {
+TEST_F(VideoDecoderImplTest, FindPtsAndDuration) {
   // Start with an empty timestamp queue.
   PtsHeap pts_heap;
 
@@ -251,13 +256,13 @@ TEST_F(FFmpegVideoDecoderTest, FindPtsAndDuration) {
 
   // Setup the last known pts to be at 100 microseconds with a have 16
   // duration.
-  FFmpegVideoDecoder::TimeTuple last_pts;
+  VideoDecoderImpl::TimeTuple last_pts;
   last_pts.timestamp = base::TimeDelta::FromMicroseconds(100);
   last_pts.duration = base::TimeDelta::FromMicroseconds(16);
 
   // Simulate an uninitialized yuv_frame.
   yuv_frame_.pts = AV_NOPTS_VALUE;
-  FFmpegVideoDecoder::TimeTuple result_pts =
+  VideoDecoderImpl::TimeTuple result_pts =
       decoder_->FindPtsAndDuration(time_base, pts_heap, last_pts, &yuv_frame_);
   EXPECT_EQ(116, result_pts.timestamp.InMicroseconds());
   EXPECT_EQ(500000, result_pts.duration.InMicroseconds());
@@ -300,7 +305,7 @@ TEST_F(FFmpegVideoDecoderTest, FindPtsAndDuration) {
   EXPECT_EQ(1500000, result_pts.duration.InMicroseconds());
 }
 
-TEST_F(FFmpegVideoDecoderTest, DoDecode_TestStateTransition) {
+TEST_F(VideoDecoderImplTest, DoDecode_TestStateTransition) {
   // Simulates a input sequence of three buffers, and six decode requests to
   // exercise the state transitions, and bookkeeping logic of DoDecode.
   //
@@ -359,20 +364,20 @@ TEST_F(FFmpegVideoDecoderTest, DoDecode_TestStateTransition) {
   EXPECT_CALL(done_cb, Run()).Times(6);
 
   // Setup initial state and check that it is sane.
-  ASSERT_EQ(FFmpegVideoDecoder::kNormal, mock_decoder->state_);
+  ASSERT_EQ(VideoDecoderImpl::kNormal, mock_decoder->state_);
   ASSERT_TRUE(base::TimeDelta() == mock_decoder->last_pts_.timestamp);
   ASSERT_TRUE(base::TimeDelta() == mock_decoder->last_pts_.duration);
 
   // Decode once, which should simulate a buffering call.
   mock_decoder->DoDecode(buffer_, done_cb.CreateTask());
-  EXPECT_EQ(FFmpegVideoDecoder::kNormal, mock_decoder->state_);
+  EXPECT_EQ(VideoDecoderImpl::kNormal, mock_decoder->state_);
   ASSERT_TRUE(base::TimeDelta() == mock_decoder->last_pts_.timestamp);
   ASSERT_TRUE(base::TimeDelta() == mock_decoder->last_pts_.duration);
   EXPECT_FALSE(mock_decoder->pts_heap_.IsEmpty());
 
   // Decode a second time, which should yield the first frame.
   mock_decoder->DoDecode(buffer_, done_cb.CreateTask());
-  EXPECT_EQ(FFmpegVideoDecoder::kNormal, mock_decoder->state_);
+  EXPECT_EQ(VideoDecoderImpl::kNormal, mock_decoder->state_);
   EXPECT_TRUE(kTestPts1.timestamp == mock_decoder->last_pts_.timestamp);
   EXPECT_TRUE(kTestPts1.duration == mock_decoder->last_pts_.duration);
   EXPECT_FALSE(mock_decoder->pts_heap_.IsEmpty());
@@ -380,7 +385,7 @@ TEST_F(FFmpegVideoDecoderTest, DoDecode_TestStateTransition) {
   // Decode a third time, with a regular buffer.  The decode will error
   // out, but the state should be the same.
   mock_decoder->DoDecode(buffer_, done_cb.CreateTask());
-  EXPECT_EQ(FFmpegVideoDecoder::kNormal, mock_decoder->state_);
+  EXPECT_EQ(VideoDecoderImpl::kNormal, mock_decoder->state_);
   EXPECT_TRUE(kTestPts1.timestamp == mock_decoder->last_pts_.timestamp);
   EXPECT_TRUE(kTestPts1.duration == mock_decoder->last_pts_.duration);
   EXPECT_FALSE(mock_decoder->pts_heap_.IsEmpty());
@@ -388,7 +393,7 @@ TEST_F(FFmpegVideoDecoderTest, DoDecode_TestStateTransition) {
   // Decode a fourth time, with an end of stream buffer.  This should
   // yield the second frame, and stay in flushing mode.
   mock_decoder->DoDecode(end_of_stream_buffer_, done_cb.CreateTask());
-  EXPECT_EQ(FFmpegVideoDecoder::kFlushCodec, mock_decoder->state_);
+  EXPECT_EQ(VideoDecoderImpl::kFlushCodec, mock_decoder->state_);
   EXPECT_TRUE(kTestPts2.timestamp == mock_decoder->last_pts_.timestamp);
   EXPECT_TRUE(kTestPts2.duration == mock_decoder->last_pts_.duration);
   EXPECT_FALSE(mock_decoder->pts_heap_.IsEmpty());
@@ -396,7 +401,7 @@ TEST_F(FFmpegVideoDecoderTest, DoDecode_TestStateTransition) {
   // Decode a fifth time with an end of stream buffer.  this should
   // yield the third frame.
   mock_decoder->DoDecode(end_of_stream_buffer_, done_cb.CreateTask());
-  EXPECT_EQ(FFmpegVideoDecoder::kFlushCodec, mock_decoder->state_);
+  EXPECT_EQ(VideoDecoderImpl::kFlushCodec, mock_decoder->state_);
   EXPECT_TRUE(kTestPts1.timestamp == mock_decoder->last_pts_.timestamp);
   EXPECT_TRUE(kTestPts1.duration == mock_decoder->last_pts_.duration);
   EXPECT_TRUE(mock_decoder->pts_heap_.IsEmpty());
@@ -404,13 +409,13 @@ TEST_F(FFmpegVideoDecoderTest, DoDecode_TestStateTransition) {
   // Decode a sixth time with an end of stream buffer.  This should
   // Move into kDecodeFinished.
   mock_decoder->DoDecode(end_of_stream_buffer_, done_cb.CreateTask());
-  EXPECT_EQ(FFmpegVideoDecoder::kDecodeFinished, mock_decoder->state_);
+  EXPECT_EQ(VideoDecoderImpl::kDecodeFinished, mock_decoder->state_);
   EXPECT_TRUE(kTestPts1.timestamp == mock_decoder->last_pts_.timestamp);
   EXPECT_TRUE(kTestPts1.duration == mock_decoder->last_pts_.duration);
   EXPECT_TRUE(mock_decoder->pts_heap_.IsEmpty());
 }
 
-TEST_F(FFmpegVideoDecoderTest, DoDecode_EnqueueVideoFrameError) {
+TEST_F(VideoDecoderImplTest, DoDecode_EnqueueVideoFrameError) {
   MockVideoDecodeEngine* mock_engine = new StrictMock<MockVideoDecodeEngine>();
   scoped_refptr<DecoderPrivateMock> mock_decoder =
       new StrictMock<DecoderPrivateMock>(mock_engine);
@@ -441,13 +446,13 @@ TEST_F(FFmpegVideoDecoderTest, DoDecode_EnqueueVideoFrameError) {
   mock_decoder->DoDecode(buffer_, done_cb.CreateTask());
 }
 
-TEST_F(FFmpegVideoDecoderTest, DoDecode_FinishEnqueuesEmptyFrames) {
+TEST_F(VideoDecoderImplTest, DoDecode_FinishEnqueuesEmptyFrames) {
   MockVideoDecodeEngine* mock_engine = new StrictMock<MockVideoDecodeEngine>();
   scoped_refptr<DecoderPrivateMock> mock_decoder =
       new StrictMock<DecoderPrivateMock>(mock_engine);
 
   // Move the decoder into the finished state for this test.
-  mock_decoder->state_ = FFmpegVideoDecoder::kDecodeFinished;
+  mock_decoder->state_ = VideoDecoderImpl::kDecodeFinished;
 
   // Expect 2 calls, make two calls.  If kDecodeFinished is set, the buffer is
   // not even examined.
@@ -461,18 +466,18 @@ TEST_F(FFmpegVideoDecoderTest, DoDecode_FinishEnqueuesEmptyFrames) {
   mock_decoder->DoDecode(buffer_, done_cb.CreateTask());
   mock_decoder->DoDecode(end_of_stream_buffer_, done_cb.CreateTask());
 
-  EXPECT_EQ(FFmpegVideoDecoder::kDecodeFinished, mock_decoder->state_);
+  EXPECT_EQ(VideoDecoderImpl::kDecodeFinished, mock_decoder->state_);
 }
 
-TEST_F(FFmpegVideoDecoderTest, DoSeek) {
+TEST_F(VideoDecoderImplTest, DoSeek) {
   // Simulates receiving a call to DoSeek() while in every possible state.  In
   // every case, it should clear the timestamp queue, flush the decoder and
   // reset the state to kNormal.
   const base::TimeDelta kZero;
-  const FFmpegVideoDecoder::DecoderState kStates[] = {
-    FFmpegVideoDecoder::kNormal,
-    FFmpegVideoDecoder::kFlushCodec,
-    FFmpegVideoDecoder::kDecodeFinished,
+  const VideoDecoderImpl::DecoderState kStates[] = {
+    VideoDecoderImpl::kNormal,
+    VideoDecoderImpl::kFlushCodec,
+    VideoDecoderImpl::kDecodeFinished,
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kStates); ++i) {
@@ -499,7 +504,7 @@ TEST_F(FFmpegVideoDecoderTest, DoSeek) {
     // Seek and verify the results.
     mock_decoder->DoSeek(kZero, done_cb.CreateTask());
     EXPECT_TRUE(mock_decoder->pts_heap_.IsEmpty());
-    EXPECT_EQ(FFmpegVideoDecoder::kNormal, mock_decoder->state_);
+    EXPECT_EQ(VideoDecoderImpl::kNormal, mock_decoder->state_);
   }
 }
 

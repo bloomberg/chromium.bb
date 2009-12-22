@@ -6,6 +6,7 @@
 #include "media/base/data_buffer.h"
 #include "media/base/mock_ffmpeg.h"
 #include "media/base/mock_task.h"
+#include "media/filters/ffmpeg_video_decode_engine.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
