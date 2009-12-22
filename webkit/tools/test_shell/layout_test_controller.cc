@@ -19,6 +19,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/dom_operations.h"
@@ -777,6 +778,9 @@ void LayoutTestController::dumpSelectionRect(
 void LayoutTestController::display(
     const CppArgumentList& args, CppVariant* result) {
   WebViewHost* view_host = shell_->webViewHost();
+  const WebKit::WebSize& size = view_host->webview()->size();
+  gfx::Rect rect(size.width, size.height);
+  view_host->UpdatePaintRect(rect);
   view_host->Paint();
   view_host->DisplayRepaintMask();
   result->SetNull();

@@ -700,11 +700,10 @@ BUG20292 : LayoutTests/fast/forms/input-list.html = FAIL
 BUG20292 : LayoutTests/fast/forms/input-selectedoption.html = FAIL
 
 // Add support for inspector layout tests.
-BUG26734 LINUX MAC SKIP : LayoutTests/inspector = FAIL
+BUG26734 LINUX MAC SKIP : LayoutTests/inspector = PASS
 BUG26734 SKIP : LayoutTests/inspector/console-format-collections.html = TEXT
 BUG26734 SKIP : LayoutTests/inspector/console-format.html = TEXT
 BUG26734 SKIP : LayoutTests/inspector/settings-set-get.html = TEXT
-BUG26734 SKIP : LayoutTests/inspector/timeline-paint.html = TEXT
 
 // Fails due to storage APIs not implemented.  Might be worth re-baselining
 // temporarily so the rest of the conditions are still tested.
