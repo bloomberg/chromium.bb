@@ -29,8 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,19 +43,18 @@
 #include <pthread.h>
 #include <nacl/nacl_srpc.h>
 
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/untrusted/av/nacl_av.h"
 #include "native_client/src/untrusted/av/nacl_av_priv.h"
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-extern int __nacl_multimedia_init(int subsystems);
-extern int __nacl_multimedia_shutdown();
-extern int __nacl_video_init(int width, int height);
-extern int __nacl_video_shutdown();
-extern int __nacl_video_update(const void* data);
-extern int __nacl_video_poll_event(union NaClMultimediaEvent *event);
-extern int __nacl_audio_init(enum NaClAudioFormat format,
-                             int desired_samples, int *obtained_samples);
-extern int __nacl_audio_shutdown();
-extern int __nacl_audio_stream(const void *data, size_t *size);
+/*
+ * NOTE: On x86 the sched_yield function gets picked up from
+ * src/third_party/nacl_sdk/linux/sdk/nacl-sdk/nacl/include/sys/sched.h
+ * not sure whether this is intentional. On ARM we do not have this header.
+ * TODO(sehr): look into the sched_yield issue
+ */
+extern int sched_yield(void);
 
 static const float NACL_BRIDGE_TIMEOUT = 2.0f;
 
@@ -330,7 +327,7 @@ int nacl_multimedia_init(int subsystems) {
   }
 
   /* initialize service runtime portion of multimedia */
-  r = __nacl_multimedia_init(nacl_multimedia.sr_subsystems);
+  r = NACL_SYSCALL(multimedia_init)(nacl_multimedia.sr_subsystems);
   if (0 == r) {
     Log("nacl_av: multimedia initialized\n");
     nacl_multimedia.initialized = 1;
@@ -366,7 +363,7 @@ int nacl_multimedia_shutdown() {
       Fatal("nacl_multimedia_shutdown: video not shutdown\n");
     }
   }
-  r = __nacl_multimedia_shutdown();
+  r = NACL_SYSCALL(multimedia_shutdown)();
   if (0 == r) {
     nacl_multimedia.embedded = 0;
     nacl_multimedia.subsystems = 0;
@@ -463,7 +460,7 @@ int nacl_video_init(int width, int height) {
     r = nacl_video_bridge_init();
   } else {
     /* running in a seperate SDL window */
-    r = __nacl_video_init(width, height);
+    r = NACL_SYSCALL(video_init)(width, height);
   }
   /* on success, set that we have video */
   if (0 == r) {
@@ -499,7 +496,7 @@ int nacl_video_shutdown() {
     r = nacl_video_bridge_shutdown();
   } else {
     /* running in a seperate SDL window */
-    r = __nacl_video_shutdown();
+    r = NACL_SYSCALL(video_shutdown)();
   }
   /* on success, release video */
   if (0 == r) {
@@ -533,7 +530,7 @@ int nacl_video_update(const void* data) {
     r = nacl_video_bridge_update(data);
   } else {
     /* update via service runtime */
-    r = __nacl_video_update(data);
+    r = NACL_SYSCALL(video_update)(data);
   }
   m = pthread_mutex_unlock(&nacl_multimedia_mutex);
   if (0 != m) {
@@ -563,7 +560,7 @@ int nacl_video_poll_event(union NaClMultimediaEvent *event) {
     r = nacl_video_bridge_poll_event(event);
   } else {
     /* poll event via service runtime */
-    r = __nacl_video_poll_event(event);
+    r = NACL_SYSCALL(video_poll_event)(event);
   }
   m = pthread_mutex_unlock(&nacl_multimedia_mutex);
   if (0 != m) {
@@ -574,16 +571,16 @@ int nacl_video_poll_event(union NaClMultimediaEvent *event) {
 
 int nacl_audio_init(enum NaClAudioFormat format,
                     int desired_samples, int *obtained_samples) {
-  int r = __nacl_audio_init(format, desired_samples, obtained_samples);
+  int r = NACL_SYSCALL(audio_init)(format, desired_samples, obtained_samples);
   return RetValErrno(r);
 }
 
 int nacl_audio_shutdown() {
-  int r = __nacl_audio_shutdown();
+  int r = NACL_SYSCALL(audio_shutdown)();
   return RetValErrno(r);
 }
 
 int nacl_audio_stream(const void *data, size_t *size) {
-  int r = __nacl_audio_stream(data, size);
+  int r = NACL_SYSCALL(audio_stream)(data, size);
   return RetValErrno(r);
 }

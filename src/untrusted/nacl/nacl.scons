@@ -14,7 +14,7 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 # object files.  Placing multiple definitions in one file may result in
 # object code bloat or possibly multiple definitions.
 
-sources_c = [
+sources = [
     'av_wait.c',
     'clock.c',
     'close.c',
@@ -62,15 +62,6 @@ sources_c = [
     'write.c',
     ]
 
-# TODO(ARM_PORT)
-if env.get('TARGET_ARCHITECTURE') == 'x86':
-  sources_asm = [
-      # TODO: eliminate this
-      'nacl_multimedia.S',
-    ]
-else:
-  sources_asm = []
-
-env.ComponentLibrary('libnacl', sources_asm + sources_c)
+env.ComponentLibrary('libnacl', sources)
 
 env.AddLibraryToSdk(['libnacl'])
