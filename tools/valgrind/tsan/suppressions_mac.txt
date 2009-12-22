@@ -132,3 +132,9 @@
 # running overnight and removing outdated bugs/suppressions.
 
 # Nothing here yet, but updates will be submitted soon.
+{
+  bug_30960
+  ThreadSanitizer:Race
+  ...
+  fun:*net*NetworkChangeNotifierThreadD*E*
+}
