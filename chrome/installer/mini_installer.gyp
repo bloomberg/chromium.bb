@@ -60,7 +60,7 @@
             },
           },
           'configurations': {
-            'Debug': {
+            'Debug_Base': {
               'msvs_settings': {
                 'VCCLCompilerTool': {
                   'BasicRuntimeChecks': '0',

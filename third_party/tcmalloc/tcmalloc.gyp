@@ -19,7 +19,7 @@
       ],
       'direct_dependent_settings': {
         'configurations': {
-          'Common': {
+          'Common_Base': {
             'msvs_settings': {
               'VCLinkerTool': {
                 'IgnoreDefaultLibraryNames': ['libcmtd.lib', 'libcmt.lib'],
@@ -150,7 +150,7 @@
         },
       },
       'configurations': {
-        'Debug': {
+        'Debug_Base': {
           'msvs_settings': {
             'VCCLCompilerTool': {
               'RuntimeLibrary': '0',

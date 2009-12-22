@@ -282,7 +282,7 @@
             '../third_party/skia/include/core',
           ],
           'configurations': {
-            'Common': {
+            'Common_Base': {
               'msvs_target_platform': 'x64',
             },
           },
