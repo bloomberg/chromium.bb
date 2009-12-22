@@ -865,16 +865,14 @@ def TryChange(change_info, args, swallow_exception):
     if change_info.patchset:
       trychange_args.extend(["--patchset", str(change_info.patchset)])
     trychange_args.extend(args)
-    trychange.TryChange(trychange_args,
-                        file_list=change_info.GetFileNames(),
-                        swallow_exception=swallow_exception,
-                        prog='gcl try')
+    file_list = change_info.GetFileNames()
   else:
     trychange_args.extend(args)
-    trychange.TryChange(trychange_args,
-                        file_list=None,
-                        swallow_exception=swallow_exception,
-                        prog='gcl try')
+    file_list = None
+  trychange.TryChange(trychange_args,
+                      file_list=file_list,
+                      swallow_exception=swallow_exception,
+                      prog='gcl try')
 
 
 def Commit(change_info, args):
