@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/gpu_plugin.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
@@ -70,6 +71,8 @@ PluginService::PluginService()
   if (command_line->HasSwitch(switches::kInternalNaCl))
     RegisterInternalNaClPlugin();
 #endif
+
+  chrome::RegisterInternalGPUPlugin();
 
 #if defined(OS_WIN)
   hkcu_key_.Create(

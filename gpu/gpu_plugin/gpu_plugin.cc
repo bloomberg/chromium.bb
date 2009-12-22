@@ -47,7 +47,7 @@ NPError NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
 }
 }
 
-NPError NP_GetEntryPoints(NPPluginFuncs* funcs) {
+NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs) {
   funcs->newp = NPP_New;
   funcs->destroy = NPP_Destroy;
   funcs->setwindow = NPP_SetWindow;
@@ -61,7 +61,7 @@ NPError NP_GetEntryPoints(NPPluginFuncs* funcs) {
 NPError API_CALL NP_Initialize(NPNetscapeFuncs *browser_funcs,
                                NPPluginFuncs* plugin_funcs) {
 #else
-NPError NP_Initialize(NPNetscapeFuncs *browser_funcs) {
+NPError API_CALL NP_Initialize(NPNetscapeFuncs *browser_funcs) {
 #endif
   if (!browser_funcs)
     return NPERR_INVALID_FUNCTABLE_ERROR;
@@ -73,7 +73,7 @@ NPError NP_Initialize(NPNetscapeFuncs *browser_funcs) {
   return NPERR_NO_ERROR;
 }
 
-NPError NP_Shutdown() {
+NPError API_CALL NP_Shutdown() {
   return NPERR_NO_ERROR;
 }
 }  // namespace gpu_plugin

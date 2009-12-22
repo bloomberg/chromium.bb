@@ -21,19 +21,19 @@ class IdAllocator {
   IdAllocator();
 
   // Allocates a new resource ID.
-  gpu::ResourceId AllocateID() {
+  ResourceId AllocateID() {
     unsigned int bit = FindFirstFree();
     SetBit(bit, true);
     return bit;
   }
 
   // Frees a resource ID.
-  void FreeID(gpu::ResourceId id) {
+  void FreeID(ResourceId id) {
     SetBit(id, false);
   }
 
   // Checks whether or not a resource ID is in use.
-  bool InUse(gpu::ResourceId id) {
+  bool InUse(ResourceId id) {
     return GetBit(id);
   }
  private:

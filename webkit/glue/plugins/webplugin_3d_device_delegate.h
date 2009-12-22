@@ -46,6 +46,20 @@ class WebPlugin3DDeviceDelegate {
   virtual NPError Device3DDestroyContext(NPDeviceContext3D* context) {
     return NPERR_GENERIC_ERROR;
   }
+  virtual NPError Device3DCreateBuffer(NPDeviceContext3D* context,
+                                       size_t size,
+                                       int32* id) {
+    return NPERR_GENERIC_ERROR;
+  }
+  virtual NPError Device3DDestroyBuffer(NPDeviceContext3D* context,
+                                        int32 id) {
+    return NPERR_GENERIC_ERROR;
+  }
+  virtual NPError Device3DMapBuffer(NPDeviceContext3D* context,
+                                    int32 id,
+                                    NPDeviceBuffer* buffer) {
+    return NPERR_GENERIC_ERROR;
+  }
 
  protected:
   WebPlugin3DDeviceDelegate() {}

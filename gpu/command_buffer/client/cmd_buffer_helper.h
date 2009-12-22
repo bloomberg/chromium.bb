@@ -31,7 +31,7 @@ namespace gpu {
 //                              // commands have been executed.
 class CommandBufferHelper {
  public:
-  explicit CommandBufferHelper(gpu::CommandBuffer* command_buffer);
+  explicit CommandBufferHelper(CommandBuffer* command_buffer);
   virtual ~CommandBufferHelper();
 
   bool Initialize();
@@ -170,8 +170,8 @@ class CommandBufferHelper {
     return (get_ - put_ - 1 + entry_count_) % entry_count_;
   }
 
-  gpu::CommandBuffer* command_buffer_;
-  ::base::SharedMemory* ring_buffer_;
+  CommandBuffer* command_buffer_;
+  Buffer ring_buffer_;
   CommandBufferEntry *entries_;
   int32 entry_count_;
   int32 token_;

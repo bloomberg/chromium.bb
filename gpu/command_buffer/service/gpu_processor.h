@@ -18,8 +18,8 @@ namespace gpu {
 
 // This class processes commands in a command buffer. It is event driven and
 // posts tasks to the current message loop to do additional work.
-class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
-                     public gpu::CommandBufferEngine {
+class GPUProcessor : public base::RefCounted<GPUProcessor>,
+                     public CommandBufferEngine {
  public:
   explicit GPUProcessor(CommandBuffer* command_buffer);
 
@@ -37,21 +37,8 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
 
   virtual void ProcessCommands();
 
-  virtual bool SetWindow(gfx::PluginWindowHandle handle, int width, int height);
-
   // Implementation of CommandBufferEngine.
-
-  // Gets the base address of a registered shared memory buffer.
-  // Parameters:
-  //   shm_id: the identifier for the shared memory buffer.
-  virtual void *GetSharedMemoryAddress(int32 shm_id);
-
-  // Gets the size of a registered shared memory buffer.
-  // Parameters:
-  //   shm_id: the identifier for the shared memory buffer.
-  virtual size_t GetSharedMemorySize(int32 shm_id);
-
-  // Sets the token value.
+  virtual Buffer GetSharedMemoryBuffer(int32 shm_id);
   virtual void set_token(int32 token);
 
  private:

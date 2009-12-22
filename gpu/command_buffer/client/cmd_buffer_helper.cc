@@ -9,8 +9,6 @@
 
 namespace gpu {
 
-using gpu::CommandBuffer;
-
 CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),
       entries_(NULL),
@@ -23,14 +21,10 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
 
 bool CommandBufferHelper::Initialize() {
   ring_buffer_ = command_buffer_->GetRingBuffer();
-  if (!ring_buffer_)
+  if (!ring_buffer_.ptr)
     return false;
 
-  // Map the ring buffer into this process.
-  if (!ring_buffer_->Map(ring_buffer_->max_size()))
-    return false;
-
-  entries_ = static_cast<CommandBufferEntry*>(ring_buffer_->memory());
+  entries_ = static_cast<CommandBufferEntry*>(ring_buffer_.ptr);
   entry_count_ = command_buffer_->GetSize();
   get_ = command_buffer_->GetGetOffset();
   put_ = command_buffer_->GetPutOffset();

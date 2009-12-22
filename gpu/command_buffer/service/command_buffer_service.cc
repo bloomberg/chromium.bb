@@ -6,6 +6,8 @@
 
 #include <limits>
 
+#include "gpu/command_buffer/common/cmd_buffer_common.h"
+
 using ::base::SharedMemory;
 
 namespace gpu {
@@ -24,7 +26,7 @@ CommandBufferService::CommandBufferService()
 CommandBufferService::~CommandBufferService() {
 }
 
-base::SharedMemory* CommandBufferService::Initialize(int32 size) {
+bool CommandBufferService::Initialize(int32 size) {
   // Fail if already initialized.
   if (ring_buffer_.get())
     return false;
@@ -32,17 +34,24 @@ base::SharedMemory* CommandBufferService::Initialize(int32 size) {
   size_ = size;
 
   ring_buffer_.reset(new SharedMemory);
-  if (ring_buffer_->Create(std::wstring(), false, false, size_)) {
-    if (ring_buffer_->Map(size_))
-      return ring_buffer_.get();
+  size_t size_bytes = size * sizeof(CommandBufferEntry);
+  if (ring_buffer_->Create(std::wstring(), false, false, size_bytes)) {
+    if (ring_buffer_->Map(size_bytes))
+      return true;
   }
 
   ring_buffer_.reset();
-  return NULL;
+  return false;
 }
 
-SharedMemory* CommandBufferService::GetRingBuffer() {
-  return ring_buffer_.get();
+Buffer CommandBufferService::GetRingBuffer() {
+  Buffer buffer;
+  if (ring_buffer_.get()) {
+    buffer.ptr = ring_buffer_->memory();
+    buffer.size = ring_buffer_->max_size();
+    buffer.shared_memory = ring_buffer_.get();
+  }
+  return buffer;
 }
 
 int32 CommandBufferService::GetSize() {
@@ -123,14 +132,27 @@ void CommandBufferService::DestroyTransferBuffer(int32 handle) {
   }
 }
 
-::base::SharedMemory* CommandBufferService::GetTransferBuffer(int32 handle) {
+Buffer CommandBufferService::GetTransferBuffer(int32 handle) {
   if (handle < 0)
-    return NULL;
+    return Buffer();
 
   if (static_cast<size_t>(handle) >= registered_objects_.size())
-    return NULL;
+    return Buffer();
 
-  return registered_objects_[handle].get();
+  base::SharedMemory* shared_memory = registered_objects_[handle].get();
+  if (!shared_memory)
+    return Buffer();
+
+  if (!shared_memory->memory()) {
+    if (!shared_memory->Map(shared_memory->max_size()))
+      return Buffer();
+  }
+
+  Buffer buffer;
+  buffer.ptr = shared_memory->memory();
+  buffer.size = shared_memory->max_size();
+  buffer.shared_memory = shared_memory;
+  return buffer;
 }
 
 int32 CommandBufferService::GetToken() {

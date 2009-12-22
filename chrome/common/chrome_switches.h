@@ -74,6 +74,7 @@ extern const char kEnableExtensionToolstrips[];
 extern const char kEnableFastback[];
 extern const char kEnableFileCookies[];
 extern const char kEnableGeolocation[];
+extern const char kEnableGPUPlugin[];
 extern const char kDisableLocalStorage[];
 extern const char kEnableLogging[];
 extern const char kEnableMonitorProfile[];

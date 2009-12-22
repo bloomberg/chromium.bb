@@ -171,6 +171,8 @@ NPError NPP_New(NPMIMEType pluginType,
         browser->createobject(instance, PluginObject::GetPluginClass()));
     instance->pdata = obj;
     event_handler = new EventHandler(instance);
+
+    obj->New(pluginType, argc, argn, argv);
   }
 
   return NPERR_NO_ERROR;

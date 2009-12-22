@@ -114,6 +114,26 @@ static NPError Device2DDestroyContext(NPP id,
   return NPERR_GENERIC_ERROR;
 }
 
+static NPError Device2DCreateBuffer(NPP id,
+                                    NPDeviceContext* context,
+                                    size_t size,
+                                    int32* buffer_id) {
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device2DDestroyBuffer(NPP id,
+                                     NPDeviceContext* context,
+                                     int32 buffer_id) {
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device2DMapBuffer(NPP id,
+                                 NPDeviceContext* context,
+                                 int32 buffer_id,
+                                 NPDeviceBuffer* buffer) {
+  return NPERR_GENERIC_ERROR;
+}
+
 // 3D device API ---------------------------------------------------------------
 
 static NPError Device3DQueryCapability(NPP id, int32 capability, int32* value) {
@@ -196,6 +216,41 @@ static NPError Device3DDestroyContext(NPP id,
   return NPERR_GENERIC_ERROR;
 }
 
+static NPError Device3DCreateBuffer(NPP id,
+                                    NPDeviceContext* context,
+                                    size_t size,
+                                    int32* buffer_id) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device3DCreateBuffer(
+        static_cast<NPDeviceContext3D*>(context), size, buffer_id);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device3DDestroyBuffer(NPP id,
+                                     NPDeviceContext* context,
+                                     int32 buffer_id) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device3DDestroyBuffer(
+        static_cast<NPDeviceContext3D*>(context), buffer_id);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device3DMapBuffer(NPP id,
+                                 NPDeviceContext* context,
+                                 int32 buffer_id,
+                                 NPDeviceBuffer* buffer) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device3DMapBuffer(
+        static_cast<NPDeviceContext3D*>(context), buffer_id, buffer);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
 // -----------------------------------------------------------------------------
 
 static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
@@ -207,6 +262,9 @@ static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
     Device2DGetStateContext,
     Device2DFlushContext,
     Device2DDestroyContext,
+    Device2DCreateBuffer,
+    Device2DDestroyBuffer,
+    Device2DMapBuffer,
   };
   static NPDevice device_3d = {
     Device3DQueryCapability,
@@ -216,6 +274,9 @@ static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
     Device3DGetStateContext,
     Device3DFlushContext,
     Device3DDestroyContext,
+    Device3DCreateBuffer,
+    Device3DDestroyBuffer,
+    Device3DMapBuffer,
   };
 
   switch (device_id) {

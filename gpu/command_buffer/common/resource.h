@@ -10,7 +10,6 @@
 
 #include <algorithm>
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/command_buffer/common/logging.h"
 

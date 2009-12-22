@@ -508,6 +508,8 @@
         'common/dom_storage_type.h',
         'common/filter_policy.h',
         'common/gears_api.h',
+        'common/gpu_plugin.cc',
+        'common/gpu_plugin.h',
         'common/gtk_tree.cc',
         'common/gtk_tree.h',
         'common/gtk_util.cc',
@@ -772,6 +774,9 @@
       # end up using this module as well.
       'conditions': [
         ['OS=="win"', {
+          'dependencies': [
+            '../gpu/gpu.gyp:command_buffer_service',
+          ],
           'defines': [
             '__STD_C',
             '_CRT_SECURE_NO_DEPRECATE',
@@ -780,8 +785,6 @@
           'include_dirs': [
             'third_party/wtl/include',
           ],
-        },],
-        ['enable_gpu==1', {
           'sources': [
             'plugin/command_buffer_stub.cc',
             'plugin/command_buffer_stub.h',

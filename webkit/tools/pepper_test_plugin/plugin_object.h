@@ -28,13 +28,16 @@
 
 #include "base/basictypes.h"
 #include "base/gfx/size.h"
+#include "base/scoped_ptr.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
+#include "webkit/tools/pepper_test_plugin/command_buffer_pepper.h"
 #include "webkit/glue/plugins/nphostapi.h"
 
 extern NPNetscapeFuncs* browser;
 
 class PluginObject {
  public:
-  PluginObject(NPP npp);
+  explicit PluginObject(NPP npp);
   ~PluginObject();
 
   static NPClass* GetPluginClass();
@@ -42,14 +45,25 @@ class PluginObject {
   NPObject* header() { return &header_; }
   NPP npp() const { return npp_; }
 
+  void New(NPMIMEType pluginType, int16 argc, char* argn[], char* argv[]);
   void SetWindow(const NPWindow& window);
+  void Draw3D();
 
  private:
+  bool InitializeCommandBuffer();
+
   NPObject header_;
   NPP npp_;
   NPObject* test_object_;
+  int dimensions_;
 
   NPDevice* device2d_;
+
+  // TODO(apatrick): this destruction order causes the plugin to crash on
+  // shutdown.
+  scoped_ptr<CommandBufferPepper> command_buffer_;
+  scoped_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
+  scoped_ptr<gpu::gles2::GLES2CmdHelper> helper_;
 
   gfx::Size size_;
 

@@ -204,6 +204,9 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 // Enable Geolocation support.
 const char kEnableGeolocation[]       = "enable-geolocation";
 
+// Enable the GPU plugin and Pepper 3D rendering.
+const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
+
 // Disable LocalStorage.
 const char kDisableLocalStorage[]            = "disable-local-storage";
 

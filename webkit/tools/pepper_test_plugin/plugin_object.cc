@@ -29,6 +29,8 @@
 #include <string>
 
 #include "base/logging.h"
+#include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/gles2_demo_cc.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -247,13 +249,6 @@ PluginObject::PluginObject(NPP npp)
     : npp_(npp),
       test_object_(browser->createobject(npp, GetTestClass())),
       device2d_(NULL) {
-  if (!extensions) {
-    browser->getvalue(npp_, NPNVPepperExtensions,
-                      reinterpret_cast<void*>(&extensions));
-    CHECK(extensions);
-  }
-  device2d_ = extensions->acquireDevice(npp, NPPepper2DDevice);
-  CHECK(device2d_);
 }
 
 PluginObject::~PluginObject() {
@@ -266,24 +261,105 @@ NPClass* PluginObject::GetPluginClass() {
   return &plugin_class;
 }
 
+namespace {
+void Draw3DCallback(void* data) {
+  static_cast<PluginObject*>(data)->Draw3D();
+}
+}
+
+void PluginObject::New(NPMIMEType pluginType,
+                       int16 argc,
+                       char* argn[],
+                       char* argv[]) {
+  // Default to 2D rendering.
+  dimensions_ = 2;
+
+  for (int i = 0; i < argc; ++i) {
+    if (strcmp(argn[i], "dimensions") == 0)
+      dimensions_ = atoi(argv[i]);
+  }
+
+  if (!extensions) {
+    browser->getvalue(npp_, NPNVPepperExtensions,
+                      reinterpret_cast<void*>(&extensions));
+    CHECK(extensions);
+  }
+  device2d_ = extensions->acquireDevice(npp_, NPPepper2DDevice);
+  CHECK(device2d_);
+}
+
 void PluginObject::SetWindow(const NPWindow& window) {
-  size_.set_width(window.width);
-  size_.set_height(window.height);
+  if (dimensions_ == 2) {
+    size_.set_width(window.width);
+    size_.set_height(window.height);
 
-  NPDeviceContext2DConfig config;
-  NPDeviceContext2D context;
-  device2d_->initializeContext(npp_, &config, &context);
+    NPDeviceContext2DConfig config;
+    NPDeviceContext2D context;
+    device2d_->initializeContext(npp_, &config, &context);
 
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, window.width, window.height);
-  bitmap.setPixels(context.region);
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, window.width, window.height);
+    bitmap.setPixels(context.region);
 
-  SkCanvas canvas(bitmap);
-  DrawSampleBitmap(canvas, window.width, window.height);
+    SkCanvas canvas(bitmap);
+    DrawSampleBitmap(canvas, window.width, window.height);
 
-  // TODO(brettw) figure out why this cast is necessary, the functions seem to
-  // match. Could be a calling convention mismatch?
-  NPDeviceFlushContextCallbackPtr callback =
-      reinterpret_cast<NPDeviceFlushContextCallbackPtr>(&FlushCallback);
-  device2d_->flushContext(npp_, &context, callback, NULL);
+    // TODO(brettw) figure out why this cast is necessary, the functions seem to
+    // match. Could be a calling convention mismatch?
+    NPDeviceFlushContextCallbackPtr callback =
+        reinterpret_cast<NPDeviceFlushContextCallbackPtr>(&FlushCallback);
+    device2d_->flushContext(npp_, &context, callback, NULL);
+  } else {
+    if (!command_buffer_.get()) {
+      if (!InitializeCommandBuffer())
+        return;
+    }
+
+    gles2_implementation_->Viewport(0, 0, window.width, window.height);
+
+    // Schedule the first call to Draw.
+    browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
+  }
+}
+
+void PluginObject::Draw3D() {
+  // Render some stuff.
+  gles2::g_gl_impl = gles2_implementation_.get();
+  GLFromCPPTestFunction();
+  gles2::GetGLContext()->SwapBuffers();
+  helper_->Flush();
+  gles2::g_gl_impl = NULL;
+
+  // Schedule another call to Draw.
+  browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
+}
+
+bool PluginObject::InitializeCommandBuffer() {
+  const static int32 kCommandBufferSize = 512 * 1024;
+  command_buffer_.reset(new CommandBufferPepper(npp_, browser));
+  if (command_buffer_->Initialize(kCommandBufferSize)) {
+    helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
+    if (helper_->Initialize()) {
+
+      const int32 kTransferBufferSize = 512 * 1024;
+      int32 transfer_buffer_id =
+          command_buffer_->CreateTransferBuffer(kTransferBufferSize);
+      gpu::Buffer transfer_buffer =
+          command_buffer_->GetTransferBuffer(transfer_buffer_id);
+      if (transfer_buffer.ptr) {
+        gles2_implementation_.reset(new gpu::gles2::GLES2Implementation(
+            helper_.get(),
+            transfer_buffer.size,
+            transfer_buffer.ptr,
+            transfer_buffer_id));
+        return true;
+      }
+    }
+
+    helper_.reset();
+  }
+
+  command_buffer_.reset();
+
+  return false;
 }

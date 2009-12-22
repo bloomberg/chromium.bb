@@ -8,6 +8,8 @@
 #include "chrome/plugin/command_buffer_stub.h"
 #include "chrome/plugin/plugin_channel.h"
 
+using gpu::Buffer;
+
 CommandBufferStub::CommandBufferStub(PluginChannel* channel,
                                      gfx::NativeView view)
     : channel_(channel),
@@ -42,23 +44,25 @@ void CommandBufferStub::OnInitialize(int32 size,
   // Assume service is responsible for duplicating the handle from the calling
   // process.
   base::ProcessHandle peer_handle;
-  if (base::OpenProcessHandle(channel_->peer_pid(), &peer_handle))
+  if (!base::OpenProcessHandle(channel_->peer_pid(), &peer_handle))
     return;
 
   command_buffer_.reset(new gpu::CommandBufferService);
 
   // Initialize the CommandBufferService and GPUProcessor.
-  base::SharedMemory* shared_memory = command_buffer_->Initialize(size);
-  if (shared_memory) {
-    processor_ = new gpu::GPUProcessor(command_buffer_.get());
-    if (processor_->Initialize(view_)) {
-      command_buffer_->SetPutOffsetChangeCallback(
-          NewCallback(processor_.get(),
-                      &gpu::GPUProcessor::ProcessCommands));
-      shared_memory->ShareToProcess(peer_handle, ring_buffer);
-    } else {
-      processor_ = NULL;
-      command_buffer_.reset();
+  if (command_buffer_->Initialize(size)) {
+    Buffer buffer = command_buffer_->GetRingBuffer();
+    if (buffer.shared_memory) {
+      processor_ = new gpu::GPUProcessor(command_buffer_.get());
+      if (processor_->Initialize(view_)) {
+        command_buffer_->SetPutOffsetChangeCallback(
+            NewCallback(processor_.get(),
+                        &gpu::GPUProcessor::ProcessCommands));
+        buffer.shared_memory->ShareToProcess(peer_handle, ring_buffer);
+      } else {
+        processor_ = NULL;
+        command_buffer_.reset();
+      }
     }
   }
 
@@ -85,19 +89,23 @@ void CommandBufferStub::OnDestroyTransferBuffer(int32 id) {
   command_buffer_->DestroyTransferBuffer(id);
 }
 
-void CommandBufferStub::OnGetTransferBuffer(int32 id,
-                         base::SharedMemoryHandle* transfer_buffer) {
+void CommandBufferStub::OnGetTransferBuffer(
+    int32 id,
+    base::SharedMemoryHandle* transfer_buffer,
+    size_t* size) {
   *transfer_buffer = 0;
+  *size = 0;
 
   // Assume service is responsible for duplicating the handle to the calling
   // process.
   base::ProcessHandle peer_handle;
-  if (base::OpenProcessHandle(channel_->peer_pid(), &peer_handle))
+  if (!base::OpenProcessHandle(channel_->peer_pid(), &peer_handle))
     return;
 
-  base::SharedMemory* shared_memory = command_buffer_->GetTransferBuffer(id);
-  if (shared_memory) {
-    shared_memory->ShareToProcess(peer_handle, transfer_buffer);
+  Buffer buffer = command_buffer_->GetTransferBuffer(id);
+  if (buffer.shared_memory) {
+    buffer.shared_memory->ShareToProcess(peer_handle, transfer_buffer);
+    *size = buffer.shared_memory->max_size();
   }
 
   base::CloseProcessHandle(peer_handle);

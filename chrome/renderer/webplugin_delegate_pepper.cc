@@ -18,6 +18,7 @@
 #include "base/string_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/glue_util.h"
@@ -28,6 +29,11 @@
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/webkit_glue.h"
 
+#if defined(ENABLE_GPU)
+#include "webkit/glue/plugins/plugin_constants_win.h"
+#endif
+
+using gpu::Buffer;
 using webkit_glue::WebPlugin;
 using webkit_glue::WebPluginDelegate;
 using webkit_glue::WebPluginResourceClient;
@@ -53,6 +59,7 @@ uint32 WebPluginDelegatePepper::next_buffer_id = 0;
 WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
     const FilePath& filename,
     const std::string& mime_type,
+    const base::WeakPtr<RenderView>& render_view,
     gfx::PluginWindowHandle containing_view) {
   scoped_refptr<NPAPI::PluginLib> plugin_lib =
       NPAPI::PluginLib::CreatePluginLib(filename);
@@ -65,7 +72,9 @@ WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
 
   scoped_refptr<NPAPI::PluginInstance> instance =
       plugin_lib->CreateInstance(mime_type);
-  return new WebPluginDelegatePepper(containing_view, instance.get());
+  return new WebPluginDelegatePepper(render_view,
+                                     containing_view,
+                                     instance.get());
 }
 
 bool WebPluginDelegatePepper::Initialize(
@@ -97,9 +106,6 @@ bool WebPluginDelegatePepper::Initialize(
   // the window handle and validate the same. The window handle can be
   // retreived via NPN_GetValue of NPNVnetscapeWindow.
   instance_->set_window_handle(parent_);
-
-  // This is a windowless plugin, so set it to have a NULL handle.
-  plugin_->SetWindow(NULL);
 
   plugin_url_ = url.spec();
 
@@ -146,6 +152,10 @@ void WebPluginDelegatePepper::UpdateGeometry(
                           window_rect_.width(), window_rect.height());
   new_committed.allocPixels();
   committed_bitmap_ = new_committed;
+
+  // Forward the new geometry to the nested plugin instance.
+  if (nested_delegate_)
+    nested_delegate_->UpdateGeometry(window_rect, clip_rect);
 
   if (!instance())
     return;
@@ -247,6 +257,11 @@ NPError WebPluginDelegatePepper::Device2DQueryConfig(
 NPError WebPluginDelegatePepper::Device2DInitializeContext(
     const NPDeviceContext2DConfig* config,
     NPDeviceContext2D* context) {
+  // This is a windowless plugin, so set it to have a NULL handle. Defer this
+  // until we know the plugin will use the 2D device. If it uses the 3D device
+  // it will have a window handle.
+  plugin_->SetWindow(NULL);
+
   int width = window_rect_.width();
   int height = window_rect_.height();
   uint32 buffer_size = width * height * kBytesPerPixel;
@@ -392,6 +407,49 @@ NPError WebPluginDelegatePepper::Device3DQueryConfig(
 NPError WebPluginDelegatePepper::Device3DInitializeContext(
     const NPDeviceContext3DConfig* config,
     NPDeviceContext3D* context) {
+#if defined(ENABLE_GPU)
+  // Check to see if the GPU plugin is already initialized and fail if so.
+  if (nested_delegate_)
+    return NPERR_GENERIC_ERROR;
+
+  // Create an instance of the GPU plugin that is responsible for 3D
+  // rendering.
+  nested_delegate_ = new WebPluginDelegateProxy(kGPUPluginMimeType,
+                                                render_view_);
+
+  // TODO(apatrick): should the GPU plugin be attached to plugin_?
+  if (nested_delegate_->Initialize(GURL(),
+                                   std::vector<std::string>(),
+                                   std::vector<std::string>(),
+                                   plugin_,
+                                   false)) {
+    // Ask the GPU plugin to create a command buffer and return a proxy.
+    command_buffer_.reset(nested_delegate_->CreateCommandBuffer());
+    if (command_buffer_.get()) {
+      // Initialize the proxy command buffer.
+      if (command_buffer_->Initialize(config->commandBufferEntries)) {
+        // Initialize the 3D context.
+        context->reserved = NULL;
+        Buffer ring_buffer = command_buffer_->GetRingBuffer();
+        context->commandBuffer = ring_buffer.ptr;
+        context->commandBufferEntries = command_buffer_->GetSize();
+        context->getOffset = command_buffer_->GetGetOffset();
+        context->putOffset = command_buffer_->GetPutOffset();
+
+        // Ensure the service knows the window size before rendering anything.
+        nested_delegate_->UpdateGeometry(window_rect_, clip_rect_);
+
+        return NPERR_NO_ERROR;
+      }
+    }
+
+    command_buffer_.reset();
+  }
+
+  nested_delegate_->PluginDestroyed();
+  nested_delegate_ = NULL;
+#endif  // ENABLE_GPU
+
   return NPERR_GENERIC_ERROR;
 }
 
@@ -406,7 +464,32 @@ NPError WebPluginDelegatePepper::Device3DGetStateContext(
     NPDeviceContext3D* context,
     int32 state,
     int32* value) {
-  return NPERR_GENERIC_ERROR;
+#if defined(ENABLE_GPU)
+  if (!command_buffer_.get())
+    return NPERR_GENERIC_ERROR;
+
+  switch (state) {
+    case NPDeviceContext3DState_GetOffset:
+      context->getOffset = *value = command_buffer_->GetGetOffset();
+      break;
+    case NPDeviceContext3DState_PutOffset:
+      *value = command_buffer_->GetPutOffset();
+      break;
+    case NPDeviceContext3DState_Token:
+      *value = command_buffer_->GetToken();
+      break;
+    case NPDeviceContext3DState_ParseError:
+      *value = command_buffer_->ResetParseError();
+      break;
+    case NPDeviceContext3DState_ErrorStatus:
+      *value = command_buffer_->GetErrorStatus() ? 1 : 0;
+      break;
+    default:
+      return NPERR_GENERIC_ERROR;
+  };
+#endif  // ENABLE_GPU
+
+  return NPERR_NO_ERROR;
 }
 
 NPError WebPluginDelegatePepper::Device3DFlushContext(
@@ -414,37 +497,75 @@ NPError WebPluginDelegatePepper::Device3DFlushContext(
     NPDeviceContext3D* context,
     NPDeviceFlushContextCallbackPtr callback,
     void* user_data) {
-  return NPERR_GENERIC_ERROR;
+#if defined(ENABLE_GPU)
+  DCHECK(callback == NULL);
+  context->getOffset = command_buffer_->SyncOffsets(context->putOffset);
+#endif  // ENABLE_GPU
+  return NPERR_NO_ERROR;
 }
 
 NPError WebPluginDelegatePepper::Device3DDestroyContext(
     NPDeviceContext3D* context) {
-  return NPERR_GENERIC_ERROR;
+#if defined(ENABLE_GPU)
+  command_buffer_.reset();
+
+  if (nested_delegate_) {
+    nested_delegate_->PluginDestroyed();
+    nested_delegate_ = NULL;
+  }
+#endif  // ENABLE_GPU
+
+  return NPERR_NO_ERROR;
 }
 
-bool WebPluginDelegatePepper::IsPluginDelegateWindow(
-    gfx::NativeWindow window) {
-  return false;
+NPError WebPluginDelegatePepper::Device3DCreateBuffer(
+    NPDeviceContext3D* context,
+    size_t size,
+    int32* id) {
+#if defined(ENABLE_GPU)
+  *id = command_buffer_->CreateTransferBuffer(size);
+  if (*id < 0)
+    return NPERR_GENERIC_ERROR;
+#endif  // ENABLE_GPU
+
+  return NPERR_NO_ERROR;
 }
 
-bool WebPluginDelegatePepper::GetPluginNameFromWindow(
-    gfx::NativeWindow window, std::wstring *plugin_name) {
-  return false;
+NPError WebPluginDelegatePepper::Device3DDestroyBuffer(
+    NPDeviceContext3D* context,
+    int32 id) {
+#if defined(ENABLE_GPU)
+  command_buffer_->DestroyTransferBuffer(id);
+#endif  // ENABLE_GPU
+  return NPERR_NO_ERROR;
 }
 
-bool WebPluginDelegatePepper::IsDummyActivationWindow(
-    gfx::NativeWindow window) {
-  return false;
+NPError WebPluginDelegatePepper::Device3DMapBuffer(
+    NPDeviceContext3D* context,
+    int32 id,
+    NPDeviceBuffer* np_buffer) {
+#if defined(ENABLE_GPU)
+  Buffer gpu_buffer = command_buffer_->GetTransferBuffer(id);
+  np_buffer->ptr = gpu_buffer.ptr;
+  np_buffer->size = gpu_buffer.size;
+  if (!np_buffer->ptr)
+    return NPERR_GENERIC_ERROR;
+#endif  // ENABLE_GPU
+
+  return NPERR_NO_ERROR;
 }
 
 WebPluginDelegatePepper::WebPluginDelegatePepper(
+    const base::WeakPtr<RenderView>& render_view,
     gfx::PluginWindowHandle containing_view,
     NPAPI::PluginInstance *instance)
-    : plugin_(NULL),
+    : render_view_(render_view),
+      plugin_(NULL),
       instance_(instance),
       parent_(containing_view),
       buffer_size_(0),
-      plugin_buffer_(0) {
+      plugin_buffer_(0),
+      nested_delegate_(NULL) {
   // For now we keep a window struct, although it isn't used.
   memset(&window_, 0, sizeof(window_));
   // All Pepper plugins are windowless and transparent.
@@ -458,18 +579,27 @@ WebPluginDelegatePepper::~WebPluginDelegatePepper() {
 }
 
 void WebPluginDelegatePepper::PluginDestroyed() {
+  if (nested_delegate_) {
+    nested_delegate_->PluginDestroyed();
+    nested_delegate_ = NULL;
+  }
   delete this;
 }
 
 void WebPluginDelegatePepper::Paint(WebKit::WebCanvas* canvas,
                                     const gfx::Rect& rect) {
 #if defined(OS_WIN)
-  // Blit from background_context to context.
-  if (!committed_bitmap_.isNull()) {
-    gfx::Point origin(window_rect_.origin().x(), window_rect_.origin().y());
-    canvas->drawBitmap(committed_bitmap_,
-                       SkIntToScalar(window_rect_.origin().x()),
-                       SkIntToScalar(window_rect_.origin().y()));
+  if (nested_delegate_) {
+    // TODO(apatrick): The GPU plugin will render to an offscreen render target.
+    //    Need to copy it to the screen here.
+  } else {
+    // Blit from background_context to context.
+    if (!committed_bitmap_.isNull()) {
+      gfx::Point origin(window_rect_.origin().x(), window_rect_.origin().y());
+      canvas->drawBitmap(committed_bitmap_,
+                         SkIntToScalar(window_rect_.origin().x()),
+                         SkIntToScalar(window_rect_.origin().y()));
+    }
   }
 #endif
 }

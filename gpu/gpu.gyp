@@ -85,6 +85,7 @@
       ],
       'sources': [
         'command_buffer/common/bitfield_helpers.h',
+        'command_buffer/common/buffer.h',
         'command_buffer/common/cmd_buffer_common.h',
         'command_buffer/common/cmd_buffer_common.cc',
         'command_buffer/common/command_buffer.h',
@@ -278,7 +279,7 @@
     },
     {
       'target_name': 'gpu_plugin',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         'command_buffer_service',
@@ -312,24 +313,40 @@
       ],
     },
     {
-      'target_name': 'gles2_demo',
-      'type': 'executable',
+      'target_name': 'gles2_demo_lib',
+      'type': 'static_library',
       'dependencies': [
         'command_buffer_client',
-        'command_buffer_service',
         'gles2_lib',
         'gles2_c_lib',
-        'gpu_plugin',
       ],
       'sources': [
-        'command_buffer/client/gles2_demo.cc',
         'command_buffer/client/gles2_demo_c.h',
         'command_buffer/client/gles2_demo_c.c',
         'command_buffer/client/gles2_demo_cc.h',
         'command_buffer/client/gles2_demo_cc.cc',
       ],
     },
-  ]
+  ],
+  'conditions': [
+    ['OS == "win"',
+      {
+        'targets': [
+          {
+            'target_name': 'gles2_demo',
+            'type': 'executable',
+            'dependencies': [
+              'command_buffer_service',
+              'gles2_demo_lib',
+            ],
+            'sources': [
+              'command_buffer/client/gles2_demo.cc',
+            ],
+          },
+        ],
+      },
+    ],
+  ],
 }
 
 # Local Variables:

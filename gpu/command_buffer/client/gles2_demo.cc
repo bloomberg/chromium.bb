@@ -25,6 +25,7 @@
 #include "gpu/command_buffer/client/gles2_demo_cc.h"
 
 using base::SharedMemory;
+using gpu::Buffer;
 using gpu::GPUProcessor;
 using gpu::CommandBufferService;
 using gpu::gles2::GLES2CmdHelper;
@@ -45,9 +46,8 @@ GLES2Demo::GLES2Demo() {
 
 bool GLES2Demo::Setup(void* hwnd, int32 size) {
   scoped_ptr<CommandBufferService> command_buffer(new CommandBufferService);
-  if (!command_buffer->Initialize(size)) {
+  if (!command_buffer->Initialize(size))
     return NULL;
-  }
 
   scoped_refptr<GPUProcessor> gpu_processor(
       new GPUProcessor(command_buffer.get()));
@@ -67,19 +67,15 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
   size_t transfer_buffer_size = 512 * 1024;
   int32 transfer_buffer_id =
       command_buffer->CreateTransferBuffer(transfer_buffer_size);
-  ::base::SharedMemory* shared_memory =
+  Buffer transfer_buffer =
       command_buffer->GetTransferBuffer(transfer_buffer_id);
-  if (!shared_memory->Map(transfer_buffer_size)) {
+  if (!transfer_buffer.ptr)
     return false;
-  }
-  void* transfer_buffer = shared_memory->memory();
-  if (!transfer_buffer) {
-    return false;
-  }
+
 
   gles2::g_gl_impl = new GLES2Implementation(helper,
-                                             transfer_buffer_size,
-                                             transfer_buffer,
+                                             transfer_buffer.size,
+                                             transfer_buffer.ptr,
                                              transfer_buffer_id);
 
   return command_buffer.release() != NULL;

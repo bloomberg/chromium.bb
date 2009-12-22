@@ -1153,7 +1153,7 @@ CommandBufferProxy* WebPluginDelegateProxy::CreateCommandBuffer() {
   return new CommandBufferProxy(channel_host_, command_buffer_id);
 #else
   return NULL;
-#endif
+#endif  // ENABLE_GPU
 }
 
 void WebPluginDelegateProxy::OnCancelDocumentLoad() {

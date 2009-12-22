@@ -21,6 +21,12 @@ typedef void NPUserData;
 /* unique id for each device interface */
 typedef int32 NPDeviceID;
 
+
+typedef struct _NPDeviceBuffer {
+  void* ptr;
+  size_t size;
+} NPDeviceBuffer;
+
 /* completion callback for flush device */
 typedef void (*NPDeviceFlushContextCallbackPtr)(
     NPP instace,
@@ -67,6 +73,25 @@ typedef NPError (*NPDeviceFlushContextPtr)(
 typedef NPError (*NPDeviceDestroyContextPtr)(
     NPP instance,
     NPDeviceContext* context);
+/* Create a buffer associated with a particular context. The usage of the */
+/* buffer is device specific. The lifetime of the buffer is scoped with the */
+/* lifetime of the context. */
+typedef NPError (*NPDeviceCreateBufferPtr)(
+    NPP instance,
+    NPDeviceContext* context,
+    size_t size,
+    int32* id);
+/* Destroy a buffer associated with a particular context. */
+typedef NPError (*NPDeviceDestroyBufferPtr)(
+    NPP instance,
+    NPDeviceContext* context,
+    int32 id);
+/* Map a buffer id to its address. */
+typedef NPError (*NPDeviceMapBufferPtr)(
+    NPP instance,
+    NPDeviceContext* context,
+    int32 id,
+    NPDeviceBuffer* buffer);
 
 /* forward decl typdef structs */
 typedef struct NPDevice NPDevice;
@@ -81,6 +106,9 @@ struct NPDevice {
   NPDeviceGetStateContextPtr getStateContext;
   NPDeviceFlushContextPtr flushContext;
   NPDeviceDestroyContextPtr destroyContext;
+  NPDeviceCreateBufferPtr createBuffer;
+  NPDeviceDestroyBufferPtr destroyBuffer;
+  NPDeviceMapBufferPtr mapBuffer;
 };
 
 /* returns NULL if deviceID unavailable / unrecognized */
@@ -225,13 +253,36 @@ typedef struct _NPDeviceContext2D
 #define NPPepper3DDevice 2
 
 typedef struct _NPDeviceContext3DConfig {
+  int32 commandBufferEntries;
 } NPDeviceContext3DConfig;
+
+typedef enum {
+  // The offset the command buffer service has read to.
+  NPDeviceContext3DState_GetOffset,
+  // The offset the plugin instance has written to.
+  NPDeviceContext3DState_PutOffset,
+  // The last token processed by the command buffer service.
+  NPDeviceContext3DState_Token,
+  // The most recent parse error. Getting this value resets the parse error
+  // if it recoverable.
+  NPDeviceContext3DState_ParseError,
+  // Wether the command buffer has encountered an unrecoverable error.
+  NPDeviceContext3DState_ErrorStatus,
+} NPDeviceContext3DState;
 
 typedef struct _NPDeviceContext3D
 {
   void* reserved;
-  void* buffer;
-  int32 bufferLength;
+
+  // Buffer in which commands are stored.
+  void* commandBuffer;
+  int32 commandBufferEntries;
+
+  // Offset in command buffer reader has reached. Synchronized on flush.
+  int32 getOffset;
+
+  // Offset in command buffer writer has reached. Synchronized on flush.
+  int32 putOffset;
 } NPDeviceContext3D;
 
 #endif  /* _NP_EXTENSIONS_H_ */

@@ -15,16 +15,16 @@ namespace gpu_plugin {
 
 // Declarations of NPAPI plugin entry points.
 
-NPError NP_GetEntryPoints(NPPluginFuncs* funcs);
+NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs);
 
 #if defined(OS_LINUX)
-NPError NP_Initialize(NPNetscapeFuncs *browser_funcs,
+NPError API_CALL NP_Initialize(NPNetscapeFuncs *browser_funcs,
                       NPPluginFuncs* plugin_funcs);
 #else
-NPError NP_Initialize(NPNetscapeFuncs* browser_funcs);
+NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs);
 #endif
 
-NPError NP_Shutdown();
+NPError API_CALL NP_Shutdown();
 
 }  // namespace gpu_plugin
 

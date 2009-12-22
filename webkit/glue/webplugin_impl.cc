@@ -74,7 +74,7 @@ namespace {
 // specified in the response header.
 class MultiPartResponseClient : public WebURLLoaderClient {
  public:
-  MultiPartResponseClient(WebPluginResourceClient* resource_client)
+  explicit MultiPartResponseClient(WebPluginResourceClient* resource_client)
       : resource_client_(resource_client) {
     Clear();
   }
@@ -398,7 +398,7 @@ WebPluginImpl::~WebPluginImpl() {
 
 void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
   if (window) {
-    DCHECK(!windowless_);  // Make sure not called twice.
+    DCHECK(!windowless_);
     window_ = window;
     if (page_delegate_) {
       // Tell the view delegate that the plugin window was created, so that it

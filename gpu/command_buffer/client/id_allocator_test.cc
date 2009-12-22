@@ -9,8 +9,6 @@
 
 namespace gpu {
 
-using gpu::ResourceId;
-
 class IdAllocatorTest : public testing::Test {
  protected:
   virtual void SetUp() {}

@@ -2671,7 +2671,10 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
 #if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
     if (use_pepper_host) {
       return WebPluginDelegatePepper::Create(
-          path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
+          path,
+          *mime_type_to_use,
+          AsWeakPtr(),
+          gfx::NativeViewFromId(host_window_));
     } else {
       return WebPluginDelegateImpl::Create(
           path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));

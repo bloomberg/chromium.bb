@@ -15,6 +15,7 @@
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/gpu_plugin.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/plugin/plugin_thread.h"
@@ -111,6 +112,8 @@ int PluginMain(const MainFunctionParams& parameters) {
       FreeLibrary(sandbox_test_module);
     }
 #endif
+
+    chrome::RegisterInternalGPUPlugin();
 
     MessageLoop::current()->Run();
   }

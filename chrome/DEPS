@@ -1,6 +1,6 @@
 include_rules = [
   "+app",
-  "+gpu/command_buffer",
+  "+gpu",
   "+net",
   "+printing",
   "+views",

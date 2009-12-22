@@ -128,7 +128,7 @@ class FencedAllocator {
   // the other functions that return a block index).
   Offset AllocInBlock(BlockIndex index, unsigned int size);
 
-  gpu::CommandBufferHelper *helper_;
+  CommandBufferHelper *helper_;
   Container blocks_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FencedAllocator);

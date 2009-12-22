@@ -43,9 +43,10 @@ IPC_BEGIN_MESSAGES(CommandBuffer)
 
   // Get the shared memory handle for a transfer buffer mapped to the callers
   // process.
-  IPC_SYNC_MESSAGE_ROUTED1_1(CommandBufferMsg_GetTransferBuffer,
+  IPC_SYNC_MESSAGE_ROUTED1_2(CommandBufferMsg_GetTransferBuffer,
                              int32 /* id */,
-                             base::SharedMemoryHandle /* transfer_buffer */)
+                             base::SharedMemoryHandle /* transfer_buffer */,
+                             size_t /* size */)
 
   // Get the most recently processed token. Used for implementing fences.
   IPC_SYNC_MESSAGE_ROUTED0_1(CommandBufferMsg_GetToken,

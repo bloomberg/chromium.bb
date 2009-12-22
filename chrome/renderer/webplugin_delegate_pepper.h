@@ -18,7 +18,10 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "base/weak_ptr.h"
 #include "chrome/common/transport_dib.h"
+#include "chrome/renderer/render_view.h"
+#include "chrome/renderer/command_buffer_proxy.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
@@ -32,16 +35,11 @@ class PluginInstance;
 // An implementation of WebPluginDelegate for Pepper in-process plugins.
 class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
  public:
-  static WebPluginDelegatePepper* Create(const FilePath& filename,
-      const std::string& mime_type, gfx::PluginWindowHandle containing_view);
-
-  static bool IsPluginDelegateWindow(gfx::NativeWindow window);
-  static bool GetPluginNameFromWindow(gfx::NativeWindow window,
-                                      std::wstring *plugin_name);
-
-  // Returns true if the window handle passed in is that of the dummy
-  // activation window for windowless plugins.
-  static bool IsDummyActivationWindow(gfx::NativeWindow window);
+  static WebPluginDelegatePepper* Create(
+      const FilePath& filename,
+      const std::string& mime_type,
+      const base::WeakPtr<RenderView>& render_view,
+      gfx::PluginWindowHandle containing_view);
 
   // WebPluginDelegate implementation
   virtual bool Initialize(const GURL& url,
@@ -118,9 +116,16 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
                                        NPDeviceFlushContextCallbackPtr callback,
                                        void* user_data);
   virtual NPError Device3DDestroyContext(NPDeviceContext3D* context);
+  virtual NPError Device3DCreateBuffer(NPDeviceContext3D* context,
+                                       size_t size,
+                                       int32* id);
+  virtual NPError Device3DDestroyBuffer(NPDeviceContext3D* context,
+                                        int32 id);
+  virtual NPError Device3DMapBuffer(NPDeviceContext3D* context,
+                                    int32 id,
+                                    NPDeviceBuffer* buffer);
   // End of WebPluginDelegate implementation.
 
-  bool IsWindowless() const { return true; }
   gfx::Rect GetRect() const { return window_rect_; }
   gfx::Rect GetClipRect() const { return clip_rect_; }
 
@@ -128,8 +133,10 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   FilePath GetPluginPath();
 
  private:
-  WebPluginDelegatePepper(gfx::PluginWindowHandle containing_view,
-                          NPAPI::PluginInstance *instance);
+  WebPluginDelegatePepper(
+      const base::WeakPtr<RenderView>& render_view,
+      gfx::PluginWindowHandle containing_view,
+      NPAPI::PluginInstance *instance);
   ~WebPluginDelegatePepper();
 
   // Tells the plugin about the current state of the window.
@@ -143,6 +150,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
 
   // Closes down and destroys our plugin instance.
   void DestroyInstance();
+
+  base::WeakPtr<RenderView> render_view_;
 
   webkit_glue::WebPlugin* plugin_;
   scoped_refptr<NPAPI::PluginInstance> instance_;
@@ -175,6 +184,12 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
 
   // The url with which the plugin was instantiated.
   std::string plugin_url_;
+
+  // The nested GPU plugin and its command buffer proxy.
+  WebPluginDelegateProxy* nested_delegate_;
+#if defined(ENABLE_GPU)
+  scoped_ptr<CommandBufferProxy> command_buffer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegatePepper);
 };

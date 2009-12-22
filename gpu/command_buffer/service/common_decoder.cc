@@ -35,14 +35,14 @@ bool CommonDecoder::Bucket::SetData(
 void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
                                             unsigned int offset,
                                             unsigned int size) {
-  void* shm_addr = engine_->GetSharedMemoryAddress(shm_id);
-  if (!shm_addr) return NULL;
-  size_t shm_size = engine_->GetSharedMemorySize(shm_id);
+  Buffer buffer = engine_->GetSharedMemoryBuffer(shm_id);
+  if (!buffer.ptr)
+    return NULL;
   unsigned int end = offset + size;
-  if (end > shm_size || end < offset) {
+  if (end > buffer.size || end < offset) {
     return NULL;
   }
-  return static_cast<int8 *>(shm_addr) + offset;
+  return static_cast<int8*>(buffer.ptr) + offset;
 }
 
 const char* CommonDecoder::GetCommonCommandName(

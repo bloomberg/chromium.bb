@@ -14,7 +14,7 @@ namespace gles2 {
 // A class that helps write GL command buffers.
 class GLES2CmdHelper : public CommandBufferHelper {
  public:
-  explicit GLES2CmdHelper(gpu::CommandBuffer* command_buffer)
+  explicit GLES2CmdHelper(CommandBuffer* command_buffer)
       : CommandBufferHelper(command_buffer) {
   }
   virtual ~GLES2CmdHelper() {

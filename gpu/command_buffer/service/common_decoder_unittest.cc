@@ -78,13 +78,13 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   }
 
   // Overridden from CommandBufferEngine.
-  virtual void* GetSharedMemoryAddress(int32 shm_id) {
-    return (shm_id == kValidShmId) ? buffer_ : NULL;
-  }
-
-  // Overridden from CommandBufferEngine.
-  virtual size_t GetSharedMemorySize(int32 shm_id) {
-    return (shm_id == kValidShmId) ? kBufferSize : 0;
+  virtual Buffer GetSharedMemoryBuffer(int32 shm_id) {
+    Buffer buffer;
+    if (shm_id == kValidShmId) {
+      buffer.ptr = buffer_;
+      buffer.size = kBufferSize;
+    }
+    return buffer;
   }
 
   template <typename T>

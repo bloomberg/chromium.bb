@@ -452,6 +452,7 @@
           ],
           'dependencies': [
             '../build/win/system.gyp:cygwin',
+            '../gpu/gpu.gyp:gpu_plugin',
             'default_plugin/default_plugin.gyp:default_plugin',
           ],
           'sources!': [

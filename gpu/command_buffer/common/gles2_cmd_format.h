@@ -69,7 +69,7 @@ struct GetAttribLocation {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  gpu::CommandHeader header;
+  CommandHeader header;
   uint32 program;
   uint32 name_shm_id;
   uint32 name_shm_offset;
@@ -132,7 +132,7 @@ struct GetAttribLocationImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
-  gpu::CommandHeader header;
+  CommandHeader header;
   uint32 program;
   uint32 location_shm_id;
   uint32 location_shm_offset;
@@ -189,7 +189,7 @@ struct GetUniformLocation {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  gpu::CommandHeader header;
+  CommandHeader header;
   uint32 program;
   uint32 name_shm_id;
   uint32 name_shm_offset;
@@ -252,7 +252,7 @@ struct GetUniformLocationImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
-  gpu::CommandHeader header;
+  CommandHeader header;
   uint32 program;
   uint32 location_shm_id;
   uint32 location_shm_offset;

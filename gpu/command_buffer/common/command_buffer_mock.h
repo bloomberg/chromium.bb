@@ -16,13 +16,13 @@ class MockCommandBuffer : public CommandBuffer {
  public:
   MockCommandBuffer() {
     ON_CALL(*this, GetRingBuffer())
-      .WillByDefault(testing::Return(static_cast<base::SharedMemory*>(NULL)));
+      .WillByDefault(testing::Return(Buffer()));
     ON_CALL(*this, GetTransferBuffer(testing::_))
-      .WillByDefault(testing::Return(static_cast<base::SharedMemory*>(NULL)));
+      .WillByDefault(testing::Return(Buffer()));
   }
 
-  MOCK_METHOD1(Initialize, base::SharedMemory*(int32 size));
-  MOCK_METHOD0(GetRingBuffer, base::SharedMemory*());
+  MOCK_METHOD1(Initialize, bool(int32 size));
+  MOCK_METHOD0(GetRingBuffer, Buffer());
   MOCK_METHOD0(GetSize, int32());
   MOCK_METHOD1(SyncOffsets, int32(int32 put_offset));
   MOCK_METHOD0(GetGetOffset, int32());
@@ -31,7 +31,7 @@ class MockCommandBuffer : public CommandBuffer {
   MOCK_METHOD1(SetPutOffsetChangeCallback, void(Callback0::Type* callback));
   MOCK_METHOD1(CreateTransferBuffer, int32(size_t size));
   MOCK_METHOD1(DestroyTransferBuffer, void(int32 handle));
-  MOCK_METHOD1(GetTransferBuffer, base::SharedMemory*(int32 handle));
+  MOCK_METHOD1(GetTransferBuffer, Buffer(int32 handle));
   MOCK_METHOD0(GetToken, int32());
   MOCK_METHOD1(SetToken, void(int32 token));
   MOCK_METHOD0(ResetParseError, int32());

@@ -369,7 +369,7 @@ void WebPluginDelegateStub::OnCreateCommandBuffer(int* route_id) {
   *route_id = command_buffer_stub_->route_id();
 #else
   *route_id = 0;
-#endif
+#endif  // ENABLE_GPU
 }
 
 void WebPluginDelegateStub::CreateSharedBuffer(

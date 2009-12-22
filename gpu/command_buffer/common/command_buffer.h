@@ -5,8 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_H_
 #define GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_H_
 
-#include "base/shared_memory.h"
 #include "base/task.h"
+#include "gpu/command_buffer/common/buffer.h"
 
 namespace gpu {
 
@@ -21,10 +21,10 @@ class CommandBuffer {
 
   // Initialize the command buffer with the given size (number of command
   // entries).
-  virtual base::SharedMemory* Initialize(int32 size) = 0;
+  virtual bool Initialize(int32 size) = 0;
 
-  // Gets the shared memory ring buffer object for the command buffer.
-  virtual base::SharedMemory* GetRingBuffer() = 0;
+  // Gets the ring buffer for the command buffer.
+  virtual Buffer GetRingBuffer() = 0;
 
   virtual int32 GetSize() = 0;
 
@@ -54,15 +54,15 @@ class CommandBuffer {
   // Takes ownership of callback. The callback is invoked on the plugin thread.
   virtual void SetPutOffsetChangeCallback(Callback0::Type* callback) = 0;
 
-  // Create a shared memory transfer buffer and return a handle that uniquely
+  // Create a transfer buffer and return a handle that uniquely
   // identifies it or -1 on error.
   virtual int32 CreateTransferBuffer(size_t size) = 0;
 
-  // Destroy a shared memory transfer buffer and recycle the handle.
+  // Destroy a transfer buffer and recycle the handle.
   virtual void DestroyTransferBuffer(int32 id) = 0;
 
-  // Get the shared memory associated with a handle.
-  virtual base::SharedMemory* GetTransferBuffer(int32 handle) = 0;
+  // Get the transfer buffer associated with a handle.
+  virtual Buffer GetTransferBuffer(int32 handle) = 0;
 
   // Get the current token value. This is used for by the writer to defer
   // changes to shared memory objects until the reader has reached a certain

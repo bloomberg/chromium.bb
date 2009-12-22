@@ -20,16 +20,15 @@ void GPUProcessor::ProcessCommands() {
 
   int commands_processed = 0;
   while (commands_processed < commands_per_update_ && !parser_->IsEmpty()) {
-    gpu::parse_error::ParseError parse_error =
-        parser_->ProcessCommand();
+    parse_error::ParseError parse_error = parser_->ProcessCommand();
     switch (parse_error) {
-      case gpu::parse_error::kParseUnknownCommand:
-      case gpu::parse_error::kParseInvalidArguments:
+      case parse_error::kParseUnknownCommand:
+      case parse_error::kParseInvalidArguments:
         command_buffer_->SetParseError(parse_error);
         break;
 
-      case gpu::parse_error::kParseInvalidSize:
-      case gpu::parse_error::kParseOutOfBounds:
+      case parse_error::kParseInvalidSize:
+      case parse_error::kParseOutOfBounds:
         command_buffer_->SetParseError(parse_error);
         command_buffer_->RaiseErrorStatus();
         return;
@@ -46,29 +45,8 @@ void GPUProcessor::ProcessCommands() {
   }
 }
 
-void *GPUProcessor::GetSharedMemoryAddress(int32 shm_id) {
-  ::base::SharedMemory* shared_memory =
-      command_buffer_->GetTransferBuffer(shm_id);
-  if (!shared_memory)
-    return NULL;
-
-  if (!shared_memory->memory()) {
-    if (!shared_memory->Map(shared_memory->max_size()))
-      return NULL;
-  }
-
-  return shared_memory->memory();
-}
-
-// TODO(apatrick): Consolidate this with the above and return both the address
-// and size.
-size_t GPUProcessor::GetSharedMemorySize(int32 shm_id) {
-  ::base::SharedMemory* shared_memory =
-      command_buffer_->GetTransferBuffer(shm_id);
-  if (!shared_memory)
-    return 0;
-
-  return shared_memory->max_size();
+Buffer GPUProcessor::GetSharedMemoryBuffer(int32 shm_id) {
+  return command_buffer_->GetTransferBuffer(shm_id);
 }
 
 void GPUProcessor::set_token(int32 token) {

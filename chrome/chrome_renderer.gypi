@@ -148,15 +148,6 @@
         ],
       },
       'conditions': [
-        ['enable_gpu==1', {
-          'dependencies': [
-            '../gpu/gpu.gyp:gpu_plugin',
-          ],
-          'sources': [
-            'renderer/command_buffer_proxy.cc',
-            'renderer/command_buffer_proxy.h',
-          ],
-        }],
         ['disable_nacl!=1', {
           'dependencies': [
             'nacl',
@@ -173,6 +164,10 @@
         ['OS=="win"', {
           'include_dirs': [
             'third_party/wtl/include',
+          ],
+          'sources': [
+            'renderer/command_buffer_proxy.cc',
+            'renderer/command_buffer_proxy.h',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {

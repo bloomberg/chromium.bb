@@ -14,8 +14,6 @@
 
 namespace gpu {
 
-using gpu::CommandBufferService;
-using gpu::GPUProcessor;
 using testing::Return;
 using testing::Mock;
 using testing::Truly;
@@ -41,16 +39,15 @@ class CommandBufferHelperTest : public testing::Test {
         .WillRepeatedly(Return(parse_error::kParseNoError));
 
     command_buffer_.reset(new CommandBufferService);
-    base::SharedMemory* ring_buffer = command_buffer_->Initialize(
-        kNumCommandEntries);
+    command_buffer_->Initialize(kNumCommandEntries);
+    Buffer ring_buffer = command_buffer_->GetRingBuffer();
 
-
-    parser_ = new gpu::CommandParser(ring_buffer->memory(),
-                                                kCommandBufferSizeBytes,
-                                                0,
-                                                kCommandBufferSizeBytes,
-                                                0,
-                                                api_mock_.get());
+    parser_ = new CommandParser(ring_buffer.ptr,
+                                ring_buffer.size,
+                                0,
+                                ring_buffer.size,
+                                0,
+                                api_mock_.get());
 
     scoped_refptr<GPUProcessor> gpu_processor(new GPUProcessor(
         command_buffer_.get(), NULL, parser_, 1));
@@ -111,7 +108,7 @@ class CommandBufferHelperTest : public testing::Test {
   MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<CommandBufferService> command_buffer_;
-  gpu::CommandParser* parser_;
+  CommandParser* parser_;
   scoped_ptr<CommandBufferHelper> helper_;
   Sequence sequence_;
 };

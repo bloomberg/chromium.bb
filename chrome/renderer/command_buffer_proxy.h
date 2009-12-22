@@ -33,8 +33,8 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual bool Send(IPC::Message* msg);
 
   // CommandBuffer implementation:
-  virtual base::SharedMemory* Initialize(int32 size);
-  virtual base::SharedMemory* GetRingBuffer();
+  virtual bool Initialize(int32 size);
+  virtual gpu::Buffer GetRingBuffer();
   virtual int32 GetSize();
   virtual int32 SyncOffsets(int32 put_offset);
   virtual int32 GetGetOffset();
@@ -43,7 +43,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual void SetPutOffsetChangeCallback(Callback0::Type* callback);
   virtual int32 CreateTransferBuffer(size_t size);
   virtual void DestroyTransferBuffer(int32 id);
-  virtual base::SharedMemory* GetTransferBuffer(int32 handle);
+  virtual gpu::Buffer GetTransferBuffer(int32 handle);
   virtual int32 GetToken();
   virtual void SetToken(int32 token);
   virtual int32 ResetParseError();
@@ -57,7 +57,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   scoped_ptr<base::SharedMemory> ring_buffer_;
 
   // Local cache of id to transfer buffer mapping.
-  typedef std::map<int32, linked_ptr<base::SharedMemory> > TransferBufferMap;
+  typedef std::map<int32, gpu::Buffer> TransferBufferMap;
   TransferBufferMap transfer_buffers_;
 
   scoped_refptr<PluginChannelHost> channel_;

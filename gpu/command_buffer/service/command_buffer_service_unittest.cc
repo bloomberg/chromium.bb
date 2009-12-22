@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/thread.h"
+#include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,20 +27,28 @@ class CommandBufferServiceTest : public testing::Test {
 };
 
 TEST_F(CommandBufferServiceTest, NullRingBufferByDefault) {
-  EXPECT_TRUE(NULL == command_buffer_->GetRingBuffer());
+  EXPECT_TRUE(NULL == command_buffer_->GetRingBuffer().ptr);
 }
 
 TEST_F(CommandBufferServiceTest, InitializesCommandBuffer) {
-  base::SharedMemory* ring_buffer = command_buffer_->Initialize(1024);
-  EXPECT_TRUE(NULL != ring_buffer);
-  EXPECT_EQ(ring_buffer, command_buffer_->GetRingBuffer());
-  EXPECT_GT(command_buffer_->GetSize(), 0);
+  EXPECT_TRUE(command_buffer_->Initialize(1024));
+  EXPECT_TRUE(NULL != command_buffer_->GetRingBuffer().ptr);
+  EXPECT_EQ(1024, command_buffer_->GetSize());
+  EXPECT_EQ(1024 * sizeof(CommandBufferEntry),
+            command_buffer_->GetRingBuffer().size);
+}
+
+TEST_F(CommandBufferServiceTest, InitializationSizeIsInEntriesNotBytes) {
+  EXPECT_TRUE(command_buffer_->Initialize(1024));
+  EXPECT_TRUE(NULL != command_buffer_->GetRingBuffer().ptr);
+  EXPECT_GE(1024 * sizeof(CommandBufferEntry),
+            command_buffer_->GetRingBuffer().size);
 }
 
 TEST_F(CommandBufferServiceTest, InitializeFailsSecondTime) {
   SharedMemory* ring_buffer = new SharedMemory;
-  EXPECT_TRUE(NULL != command_buffer_->Initialize(1024));
-  EXPECT_TRUE(NULL == command_buffer_->Initialize(1024));
+  EXPECT_TRUE(command_buffer_->Initialize(1024));
+  EXPECT_FALSE(command_buffer_->Initialize(1024));
 }
 
 TEST_F(CommandBufferServiceTest, GetAndPutOffsetsDefaultToZero) {
@@ -77,23 +86,23 @@ TEST_F(CommandBufferServiceTest, CanSyncGetAndPutOffset) {
 }
 
 TEST_F(CommandBufferServiceTest, ZeroHandleMapsToNull) {
-  EXPECT_TRUE(NULL == command_buffer_->GetTransferBuffer(0));
+  EXPECT_TRUE(NULL == command_buffer_->GetTransferBuffer(0).ptr);
 }
 
 TEST_F(CommandBufferServiceTest, NegativeHandleMapsToNull) {
-  EXPECT_TRUE(NULL == command_buffer_->GetTransferBuffer(-1));
+  EXPECT_TRUE(NULL == command_buffer_->GetTransferBuffer(-1).ptr);
 }
 
 TEST_F(CommandBufferServiceTest, OutOfRangeHandleMapsToNull) {
-  EXPECT_TRUE(NULL == command_buffer_->GetTransferBuffer(1));
+  EXPECT_TRUE(NULL == command_buffer_->GetTransferBuffer(1).ptr);
 }
 
 TEST_F(CommandBufferServiceTest, CanCreateTransferBuffers) {
   int32 handle = command_buffer_->CreateTransferBuffer(1024);
   EXPECT_EQ(1, handle);
-  SharedMemory* buffer = command_buffer_->GetTransferBuffer(handle);
-  ASSERT_TRUE(NULL != buffer);
-  EXPECT_EQ(1024, buffer->max_size());
+  Buffer buffer = command_buffer_->GetTransferBuffer(handle);
+  ASSERT_TRUE(NULL != buffer.ptr);
+  EXPECT_EQ(1024, buffer.size);
 }
 
 TEST_F(CommandBufferServiceTest, CreateTransferBufferReturnsDistinctHandles) {
@@ -111,7 +120,7 @@ TEST_F(CommandBufferServiceTest,
 
 TEST_F(CommandBufferServiceTest, CannotUnregisterHandleZero) {
   command_buffer_->DestroyTransferBuffer(0);
-  EXPECT_TRUE(NULL == command_buffer_->GetTransferBuffer(0));
+  EXPECT_TRUE(NULL == command_buffer_->GetTransferBuffer(0).ptr);
   EXPECT_EQ(1, command_buffer_->CreateTransferBuffer(1024));
 }
 

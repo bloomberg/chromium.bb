@@ -6,6 +6,8 @@
 #define CHROME_PLUGIN_WEBPLUGIN_DELEGATE_STUB_H_
 
 #include <queue>
+#include <string>
+#include <vector>
 
 #include "base/gfx/rect.h"
 #include "base/ref_counted.h"

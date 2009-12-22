@@ -9,6 +9,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_CMD_BUFFER_ENGINE_H_
 
 #include "base/basictypes.h"
+#include "gpu/command_buffer/common/buffer.h"
 
 namespace gpu {
 
@@ -20,15 +21,10 @@ class CommandBufferEngine {
   virtual ~CommandBufferEngine() {
   }
 
-  // Gets the base address of a registered shared memory buffer.
+  // Gets the base address and size of a registered shared memory buffer.
   // Parameters:
   //   shm_id: the identifier for the shared memory buffer.
-  virtual void *GetSharedMemoryAddress(int32 shm_id) = 0;
-
-  // Gets the size of a registered shared memory buffer.
-  // Parameters:
-  //   shm_id: the identifier for the shared memory buffer.
-  virtual size_t GetSharedMemorySize(int32 shm_id) = 0;
+  virtual Buffer GetSharedMemoryBuffer(int32 shm_id) = 0;
 
   // Sets the token value.
   virtual void set_token(int32 token) = 0;

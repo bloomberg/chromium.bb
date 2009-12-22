@@ -37,19 +37,17 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle) {
     return false;
 
   // Map the ring buffer and create the parser.
-  ::base::SharedMemory* ring_buffer = command_buffer_->GetRingBuffer();
-  if (ring_buffer) {
-    size_t size = ring_buffer->max_size();
-    if (!ring_buffer->Map(size)) {
-      return false;
-    }
-
-    void* ptr = ring_buffer->memory();
-    parser_.reset(new gpu::CommandParser(ptr, size, 0, size, 0,
-                                                    decoder_.get()));
+  Buffer ring_buffer = command_buffer_->GetRingBuffer();
+  if (ring_buffer.ptr) {
+    parser_.reset(new CommandParser(ring_buffer.ptr,
+                                    ring_buffer.size,
+                                    0,
+                                    ring_buffer.size,
+                                    0,
+                                    decoder_.get()));
   } else {
-    parser_.reset(new gpu::CommandParser(NULL, 0, 0, 0, 0,
-                                                    decoder_.get()));
+    parser_.reset(new CommandParser(NULL, 0, 0, 0, 0,
+                                    decoder_.get()));
   }
 
   // Initialize GAPI immediately if the window handle is valid.
@@ -64,17 +62,4 @@ void GPUProcessor::Destroy() {
     decoder_->set_hwnd(NULL);
   }
 }
-
-bool GPUProcessor::SetWindow(gfx::PluginWindowHandle handle,
-                             int width,
-                             int height) {
-  if (handle == NULL) {
-    // Destroy GAPI when the window handle becomes invalid.
-    Destroy();
-    return true;
-  } else {
-    return Initialize(handle);
-  }
-}
-
 }  // namespace gpu

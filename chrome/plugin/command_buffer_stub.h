@@ -43,7 +43,8 @@ class CommandBufferStub : public IPC::Channel::Listener,
   void OnCreateTransferBuffer(int32 size, int32* id);
   void OnDestroyTransferBuffer(int32 id);
   void OnGetTransferBuffer(int32 id,
-                           base::SharedMemoryHandle* transfer_buffer);
+                           base::SharedMemoryHandle* transfer_buffer,
+                           size_t* size);
   void OnGetToken(int32* token);
   void OnResetParseError(int32* parse_error);
   void OnGetErrorStatus(bool* error_status);

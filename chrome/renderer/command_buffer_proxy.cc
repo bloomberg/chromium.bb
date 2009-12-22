@@ -8,6 +8,9 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/plugin_channel_host.h"
+#include "gpu/command_buffer/common/cmd_buffer_common.h"
+
+using gpu::Buffer;
 
 CommandBufferProxy::CommandBufferProxy(
     PluginChannelHost* channel,
@@ -18,6 +21,14 @@ CommandBufferProxy::CommandBufferProxy(
 }
 
 CommandBufferProxy::~CommandBufferProxy() {
+  // Delete all the locally cached shared memory objects, closing the handle
+  // in this process.
+  for (TransferBufferMap::iterator it = transfer_buffers_.begin();
+       it != transfer_buffers_.end();
+       ++it) {
+    delete it->second.shared_memory;
+    it->second.shared_memory = NULL;
+  }
 }
 
 bool CommandBufferProxy::Send(IPC::Message* msg) {
@@ -30,10 +41,10 @@ bool CommandBufferProxy::Send(IPC::Message* msg) {
   return false;
 }
 
-base::SharedMemory* CommandBufferProxy::Initialize(int32 size) {
+bool CommandBufferProxy::Initialize(int32 size) {
   DCHECK(!ring_buffer_.get());
 
-  // Initialize the service. Assuming we are in the renderer process, the GPU
+  // Initialize the service. Assuming we are sandboxed, the GPU
   // process is responsible for duplicating the handle. This might not be true
   // for NaCl.
   base::SharedMemoryHandle handle;
@@ -42,18 +53,22 @@ base::SharedMemory* CommandBufferProxy::Initialize(int32 size) {
     ring_buffer_.reset(new base::SharedMemory(handle, false));
     if (ring_buffer_->Map(size * sizeof(int32))) {
       size_ = size;
-      return ring_buffer_.get();
+      return true;
     }
 
     ring_buffer_.reset();
   }
 
-  return NULL;
+  return false;
 }
 
-base::SharedMemory* CommandBufferProxy::GetRingBuffer() {
+Buffer CommandBufferProxy::GetRingBuffer() {
   // Return locally cached ring buffer.
-  return ring_buffer_.get();
+  Buffer buffer;
+  buffer.ptr = ring_buffer_->memory();
+  buffer.size = size_ * sizeof(gpu::CommandBufferEntry);
+  buffer.shared_memory = ring_buffer_.get();
+  return buffer;
 }
 
 int32 CommandBufferProxy::GetSize() {
@@ -107,30 +122,55 @@ int32 CommandBufferProxy::CreateTransferBuffer(size_t size) {
 
 void CommandBufferProxy::DestroyTransferBuffer(int32 id) {
   // Remove the transfer buffer from the client side4 cache.
-  transfer_buffers_.erase(id);
+  TransferBufferMap::iterator it = transfer_buffers_.find(id);
+  DCHECK(it != transfer_buffers_.end());
+
+  // Delete the shared memory object, closing the handle in this process.
+  delete it->second.shared_memory;
+
+  transfer_buffers_.erase(it);
 
   Send(new CommandBufferMsg_DestroyTransferBuffer(route_id_, id));
 }
 
-base::SharedMemory* CommandBufferProxy::GetTransferBuffer(int32 id) {
+Buffer CommandBufferProxy::GetTransferBuffer(int32 id) {
   // Check local cache to see if there is already a client side shared memory
   // object for this id.
   TransferBufferMap::iterator it = transfer_buffers_.find(id);
-  if (it != transfer_buffers_.end())
-    return it->second.get();
+  if (it != transfer_buffers_.end()) {
+    return it->second;
+  }
 
   // Assuming we are in the renderer process, the service is responsible for
   // duplicating the handle. This might not be true for NaCl.
   base::SharedMemoryHandle handle;
-  if (!Send(new CommandBufferMsg_GetTransferBuffer(route_id_, id, &handle)))
-    return NULL;
+  size_t size;
+  if (!Send(new CommandBufferMsg_GetTransferBuffer(route_id_,
+                                                   id,
+                                                   &handle,
+                                                   &size))) {
+    return Buffer();
+  }
 
   // Cache the transfer buffer shared memory object client side.
-  base::SharedMemory* transfer_buffer =
+  base::SharedMemory* shared_memory =
       new base::SharedMemory(handle, false, base::GetCurrentProcessHandle());
-  transfer_buffers_[id].reset(transfer_buffer);
 
-  return transfer_buffer;
+  // Map the shared memory on demand.
+  if (!shared_memory->memory()) {
+    if (!shared_memory->Map(shared_memory->max_size())) {
+      delete shared_memory;
+      return Buffer();
+    }
+  }
+
+  Buffer buffer;
+  buffer.ptr = shared_memory->memory();
+  buffer.size = size;
+  buffer.shared_memory = shared_memory;
+  transfer_buffers_[id] = buffer;
+
+  return buffer;
 }
 
 int32 CommandBufferProxy::GetToken() {
