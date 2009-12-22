@@ -147,11 +147,6 @@
       },
       'x86_Base': {
         'abstract': 1,
-        'defines': [
-          'NACL_PLATFORM=x86',
-          'NACL_TARGET_SUBARCH=32',
-          'NACL_BUILD_SUBARCH=32',
-        ],
         'configuration_platform': 'Win32',
         'msvs_settings': {
           'VCLinkerTool': {
@@ -161,16 +156,6 @@
       },
       'x64_Base': {
         'abstract': 1,
-        'defines!': [
-          'NACL_PLATFORM=x86',
-          'NACL_TARGET_SUBARCH=32',
-          'NACL_BUILD_SUBARCH=32',
-        ],
-        'defines': [
-          'NACL_PLATFORM=x86',
-          'NACL_TARGET_SUBARCH=64',
-          'NACL_BUILD_SUBARCH=64',
-        ],
         'msvs_configuration_platform': 'x64',
         'msvs_settings': {
           'VCLinkerTool': {
