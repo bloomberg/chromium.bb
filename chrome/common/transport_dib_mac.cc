@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 
 #include "base/eintr_wrapper.h"
+#include "base/logging.h"
 #include "base/shared_memory.h"
 #include "skia/ext/platform_canvas.h"
 
@@ -40,7 +41,8 @@ TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
 TransportDIB* TransportDIB::Map(TransportDIB::Handle handle) {
   TransportDIB* dib = new TransportDIB(handle);
   struct stat st;
-  fstat(handle.fd, &st);
+  int result = fstat(handle.fd, &st);
+  DCHECK_EQ(result, 0) << "fstat failed";
 
   if (!dib->shared_memory_.Map(st.st_size)) {
     delete dib;
