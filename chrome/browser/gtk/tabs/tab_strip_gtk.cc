@@ -335,6 +335,14 @@ class RemoveTabAnimation : public TabStripGtk::TabAnimation {
       end_pinned_count--;
     GenerateStartAndEndWidths(tab_count, tab_count - 1, start_pinned_count,
                               end_pinned_count);
+    // If the last non-pinned tab is being removed we force a layout on
+    // completion. This is necessary as the value returned by GetTabHOffset
+    // changes once the tab is actually removed (which happens at the end of
+    // the animation), and unless we layout GetTabHOffset won't be called after
+    // the removal.
+    set_layout_on_completion(start_pinned_count > 0 &&
+                             start_pinned_count == end_pinned_count &&
+                             tab_count == start_pinned_count + 1);
   }
 
   virtual ~RemoveTabAnimation() {}
