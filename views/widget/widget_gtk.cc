@@ -265,10 +265,7 @@ void WidgetGtk::Init(GtkWidget* parent,
   // Force creation of the RootView if it hasn't been created yet.
   GetRootView();
 
-  // TODO(sky): nuke this once toolkit_views becomes chromeos.
-#if !defined(CHROMEOS_TRANSITIONAL)
   default_theme_provider_.reset(new DefaultThemeProvider());
-#endif
 
   // Make container here.
   CreateGtkWidget(parent, bounds);

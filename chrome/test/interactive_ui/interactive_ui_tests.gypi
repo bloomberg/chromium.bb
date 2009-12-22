@@ -69,7 +69,7 @@
         '<(DEPTH)/webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
       ],
     }],  # target_arch
-    ['OS=="linux" and toolkit_views==1', {
+    ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
       'dependencies': [
         '<(DEPTH)/views/views.gyp:views',
       ],

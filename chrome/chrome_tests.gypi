@@ -336,7 +336,7 @@
             'browser/process_singleton_linux_uitest.cc',
           ],
         }],
-        ['OS=="linux" and toolkit_views==1', {
+        ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
           'dependencies': [
             '../views/views.gyp:views',
           ],
@@ -856,7 +856,7 @@
         '../third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
       ],
       'conditions': [
-        ['chromeos==0 and toolkit_views==0', {
+        ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
           ],
@@ -1155,13 +1155,11 @@
           'dependencies': [
             '../views/views.gyp:views',
           ],
-        }],
-        ['OS=="linux" and toolkit_views==1', {
           'sources': [
             '<@(browser_tests_sources_views_specific)',
           ],
         }],
-        ['OS=="linux" and toolkit_views==0', {
+        ['OS=="linux" and toolkit_views==0 and chromeos==0', {
           'sources': [
             'browser/extensions/browser_action_test_util_gtk.cc',
             'browser/gtk/view_id_util_browsertest.cc',
@@ -1223,7 +1221,7 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['OS=="linux" and toolkit_views==1', {
+        ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
           'dependencies': [
             '../views/views.gyp:views',
           ],
@@ -1309,7 +1307,7 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['OS=="win" or (OS=="linux" and toolkit_views==1)', {
+        ['OS=="win" or (OS=="linux" and (toolkit_views==1 or chromeos==1))', {
           'dependencies': [
             '../views/views.gyp:views',
           ],
@@ -1548,7 +1546,7 @@
                 'browser/visitedlink_perftest.cc',
               ],
             }],
-            ['OS=="win" or (OS=="linux" and toolkit_views==1)', {
+            ['OS=="win" or (OS=="linux" and (toolkit_views==1 or chromeos==1))', {
               'dependencies': [
                 '../views/views.gyp:views',
               ],

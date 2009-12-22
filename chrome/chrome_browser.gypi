@@ -1854,13 +1854,6 @@
             'CHROME_V8',
           ],
         }],
-        ['chromeos==1 and toolkit_views==0', {
-          'sources/': [
-            ['exclude', '^browser/chromeos/browser_extenders.cc'],
-            ['exclude', '^browser/gtk/external_protocol_dialog_gtk.cc'],
-            ['exclude', '^browser/gtk/external_protocol_dialog_gtk.h'],
-           ],
-        }],
         ['chromeos==0 and toolkit_views==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
@@ -1878,11 +1871,12 @@
             '../base/base.gyp:linux_versioninfo',
           ],
           'sources!': [
+             # Exclude extension shelf for toolstrips.
             'browser/views/extensions/extension_shelf.cc',
             'browser/views/extensions/extension_shelf.h',
             'browser/views/extensions/extension_view.cc',
             'browser/views/extensions/extension_view.h',
-                    # Windows-specific files.
+             # Windows-specific files.
             'browser/password_manager/password_store_win.cc',
             'browser/password_manager/password_store_win.h',
           ],
@@ -1915,13 +1909,6 @@
                 'browser/crash_handler_host_linux_stub.cc',
               ],
             }],
-          ],
-        }],
-        ['OS=="linux" and toolkit_views==0', {
-          'sources!': [
-            'browser/bookmarks/bookmark_drop_info.cc',
-            'browser/views/autocomplete/autocomplete_popup_gtk.cc',
-            'browser/views/autocomplete/autocomplete_popup_gtk.h'
           ],
         }],
         ['OS=="freebsd"', {
@@ -2120,7 +2107,7 @@
             ['exclude', '^browser/views/'],
           ],
           'conditions': [
-            ['toolkit_views==1',{
+            ['OS=="linux" and (toolkit_views==1 or chromeos==1)',{
               'sources/': [
                 ['include', '^browser/dock_info_gtk.cc'],
                 ['include', '^browser/dock_info.cc'],
@@ -2332,41 +2319,26 @@
                 ['exclude', '^browser/browser_list_gtk.cc'],
               ],
             }],
-            ['OS=="linux" and toolkit_views==0', {
+#            ['OS=="linux" and toolkit_views==1', {
+#              'sources/': [
+#                ['include', '^browser/views/frame/standard_extender.h'],
+#                ['include', '^browser/views/frame/standard_extender.cc'],
+#                ['include', '^browser/gtk/external_protocol_dialog_gtk.cc'],
+#                ['include', '^browser/gtk/external_protocol_dialog_gtk.h'],
+#              ],
+#            }],
+            ['OS=="linux" and chromeos==0 and toolkit_views==0', {
               'sources/': [
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
                 ['include', '^browser/printing/print_dialog_gtk.h'],
+                ['exclude', '^browser/bookmarks/bookmark_drop_info.cc'],
+                ['exclude', '^browser/views/autocomplete/autocomplete_popup_gtk.cc'],
+                ['exclude', '^browser/views/autocomplete/autocomplete_popup_gtk.h'],
               ],
             }],
-            ['chromeos==1 or toolkit_views==1',{
+            ['OS=="linux" and (chromeos==1 or toolkit_views==1)',{
               'dependencies': [
-                '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
-                '../third_party/protobuf2/protobuf.gyp:protoc#host',
-                '../third_party/chromeos_login_manager/chromeos_login_manager/chromeos_login_manager.gyp:session',
-                '../third_party/chromeos_login_manager/chromeos_login_manager/chromeos_login_manager.gyp:emit_login_prompt_ready',
-                'browser/chromeos/cros_api.gyp:cros_api',
                 '../views/views.gyp:views',
-              ],
-              'actions': [
-                {
-                  'action_name': 'my_proto',
-                  'inputs': [
-                    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-                    'browser/metrics/system_metrics.proto',
-                  ],
-                  'outputs': [
-                    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.cc',
-                    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.h',
-                  ],
-                  'dependencies': [
-                    '../third_party/protobuf2/protobuf.gyp:protoc',
-                  ],
-                  'action': [
-                    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-                    'browser/metrics/system_metrics.proto',
-                    '--cpp_out=<(INTERMEDIATE_DIR)/chrome',
-                  ],
-                },
               ],
               'include_dirs': [
                 '<(INTERMEDIATE_DIR)',
@@ -2411,6 +2383,37 @@
                 ['include', 'browser/views/tabs/tab_overview_types.h'],
               ],
             }],
+            ['OS=="linux" and (chromeos==1 or toolkit_views==1)',{
+              'dependencies': [
+
+                '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+                '../third_party/protobuf2/protobuf.gyp:protoc#host',
+                '../third_party/chromeos_login_manager/chromeos_login_manager/chromeos_login_manager.gyp:session',
+                '../third_party/chromeos_login_manager/chromeos_login_manager/chromeos_login_manager.gyp:emit_login_prompt_ready',
+                '../third_party/cros/cros_api.gyp:cros_api',
+              ],
+              'actions': [
+                {
+                  'action_name': 'my_proto',
+                  'inputs': [
+                    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+                    'browser/metrics/system_metrics.proto',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.cc',
+                    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.h',
+                  ],
+                  'dependencies': [
+                    '../third_party/protobuf2/protobuf.gyp:protoc',
+                  ],
+                  'action': [
+                    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+                    'browser/metrics/system_metrics.proto',
+                    '--cpp_out=<(INTERMEDIATE_DIR)/chrome',
+                  ],
+                },
+              ],
+            }],
           ],
           # Exclude files that should be excluded for all non-Windows platforms.
           'sources!': [
@@ -2431,7 +2434,7 @@
           ],
         }],
         # views depends on webkit headers.
-        ['OS=="win" or toolkit_views==1',{
+        ['OS=="win" or chromeos==1 or toolkit_views==1',{
           'dependencies': [
             '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
