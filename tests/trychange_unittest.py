@@ -54,43 +54,43 @@ class SVNUnittest(TryChangeTestsBase):
   """trychange.SVN tests."""
   def testMembersChanged(self):
     members = [
-      'GetBots', 'GetFileNames', 'GetLocalRoot',
+      'GenerateDiff', 'GetBots', 'GetFileNames', 'GetLocalRoot',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange.SVN, members)
 
   def testBasic(self):
-    trychange.os.getcwd().AndReturn(self.fake_root)
     trychange.scm.SVN.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
-    trychange.scm.SVN.GenerateDiff(['foo.txt', 'bar.txt'],
+    trychange.scm.SVN.GenerateDiff(['foo.txt', 'bar.txt'], self.fake_root,
                                    full_move=True).AndReturn('A diff')
     trychange.scm.SVN.GetEmail(self.fake_root).AndReturn('georges@example.com')
     self.mox.ReplayAll()
-    svn = trychange.SVN(self.options)
+    svn = trychange.SVN(self.options, self.fake_root)
     self.assertEqual(svn.GetFileNames(), self.expected_files)
     self.assertEqual(svn.GetLocalRoot(), self.fake_root)
+    self.assertEqual(svn.GenerateDiff(), 'A diff')
 
 
 class GITUnittest(TryChangeTestsBase):
   """trychange.GIT tests."""
   def testMembersChanged(self):
     members = [
-      'GetBots', 'GetFileNames', 'GetLocalRoot',
+      'GenerateDiff', 'GetBots', 'GetFileNames', 'GetLocalRoot',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange.GIT, members)
 
   def testBasic(self):
-    trychange.os.getcwd().AndReturn(self.fake_root)
     trychange.scm.GIT.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.GIT.GenerateDiff(self.fake_root,
-                                   full_move=True).AndReturn('a diff')
+                                   full_move=True).AndReturn('A diff')
     trychange.scm.GIT.GetPatchName(self.fake_root).AndReturn('bleh-1233')
     trychange.scm.GIT.GetEmail(self.fake_root).AndReturn('georges@example.com')
     self.mox.ReplayAll()
-    git = trychange.GIT(self.options)
+    git = trychange.GIT(self.options, self.fake_root)
     self.assertEqual(git.GetFileNames(), self.expected_files)
     self.assertEqual(git.GetLocalRoot(), self.fake_root)
+    self.assertEqual(git.GenerateDiff(), 'A diff')
 
 
 if __name__ == '__main__':

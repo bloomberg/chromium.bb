@@ -662,6 +662,7 @@ class SVN(object):
 
     The directory is returned as an absolute path.
     """
+    directory = os.path.abspath(directory)
     infos = SVN.CaptureInfo(directory, print_error=False)
     cur_dir_repo_root = infos.get("Repository Root")
     if not cur_dir_repo_root:

@@ -17,10 +17,12 @@ class GclTestsBase(SuperMoxTestBase):
     self.fake_root_dir = self.RootDir()
     self.mox.StubOutWithMock(gcl, 'RunShell')
     self.mox.StubOutWithMock(gcl.SVN, 'CaptureInfo')
+    self.mox.StubOutWithMock(gcl.SVN, 'GetCheckoutRoot')
     self.mox.StubOutWithMock(gcl, 'tempfile')
     self.mox.StubOutWithMock(gcl.upload, 'RealMain')
     self.mox.StubOutWithMock(gcl.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(gcl.gclient_utils, 'FileWrite')
+    gcl.REPOSITORY_ROOT = None
 
 
 class GclUnittest(GclTestsBase):
@@ -60,26 +62,17 @@ class GclUnittest(GclTestsBase):
     pass
 
   def testGetRepositoryRootNone(self):
-    gcl.REPOSITORY_ROOT = None
-    gcl.os.getcwd().AndReturn("/bleh/prout")
-    result = {
-      "Repository Root": ""
-    }
-    gcl.SVN.CaptureInfo("/bleh/prout", print_error=False).AndReturn(result)
+    gcl.os.getcwd().AndReturn(self.fake_root_dir)
+    gcl.SVN.GetCheckoutRoot(self.fake_root_dir).AndReturn(None)
     self.mox.ReplayAll()
-    self.assertRaises(Exception, gcl.GetRepositoryRoot)
+    self.assertRaises(gcl.gclient_utils.Error, gcl.GetRepositoryRoot)
 
   def testGetRepositoryRootGood(self):
-    gcl.REPOSITORY_ROOT = None
     root_path = gcl.os.path.join('bleh', 'prout', 'pouet')
     gcl.os.getcwd().AndReturn(root_path)
-    result1 = { "Repository Root": "Some root" }
-    gcl.SVN.CaptureInfo(root_path, print_error=False).AndReturn(result1)
-    results2 = { "Repository Root": "A different root" }
-    gcl.SVN.CaptureInfo(gcl.os.path.dirname(root_path),
-                        print_error=False).AndReturn(results2)
+    gcl.SVN.GetCheckoutRoot(root_path).AndReturn(root_path + '.~')
     self.mox.ReplayAll()
-    self.assertEquals(gcl.GetRepositoryRoot(), root_path)
+    self.assertEquals(gcl.GetRepositoryRoot(), root_path + '.~')
 
   def testGetCachedFile(self):
     # TODO(maruel): TEST ME

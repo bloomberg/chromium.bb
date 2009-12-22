@@ -151,6 +151,18 @@ class SVNTestCase(BaseSCMTestCase):
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.SVN, members)
 
+  def testGetCheckoutRoot(self):
+    self.mox.StubOutWithMock(scm.SVN, 'CaptureInfo')
+    scm.os.path.abspath(self.root_dir + 'x').AndReturn(self.root_dir)
+    result1 = { "Repository Root": "Some root" }
+    scm.SVN.CaptureInfo(self.root_dir, print_error=False).AndReturn(result1)
+    results2 = { "Repository Root": "A different root" }
+    scm.SVN.CaptureInfo(scm.os.path.dirname(self.root_dir),
+                        print_error=False).AndReturn(results2)
+    self.mox.ReplayAll()
+    self.assertEquals(scm.SVN.GetCheckoutRoot(self.root_dir + 'x'),
+                      self.root_dir)
+
   def testGetFileInfo(self):
     xml_text = r"""<?xml version="1.0"?>
 <info>

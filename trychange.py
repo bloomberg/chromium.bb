@@ -72,42 +72,42 @@ def EscapeDot(name):
 
 class SCM(object):
   """Simplistic base class to implement one function: ProcessOptions."""
-  def __init__(self, options):
+  def __init__(self, options, cwd):
+    self.checkout_root = cwd
     self.options = options
+    self.files = self.options.files
+    self.options.files = None
 
   def GetFileNames(self):
     """Return the list of files in the diff."""
-    return self.options.files
+    return self.files
 
 
 class SVN(SCM):
   """Gathers the options and diff for a subversion checkout."""
   def __init__(self, *args, **kwargs):
     SCM.__init__(self, *args, **kwargs)
-    self.checkout_root = scm.SVN.GetCheckoutRoot(os.getcwd())
-    if not self.options.diff:
-      # Generate the diff from the scm.
-      self.options.diff = self._GenerateDiff()
+    self.checkout_root = scm.SVN.GetCheckoutRoot(self.checkout_root)
     if not self.options.email:
       # Assumes the svn credential is an email address.
       self.options.email = scm.SVN.GetEmail(self.checkout_root)
 
-  def _GenerateDiff(self):
+  def GenerateDiff(self):
     """Returns a string containing the diff for the given file list.
 
     The files in the list should either be absolute paths or relative to the
     given root.
     """
-    if not self.options.files:
+    if not self.files:
       previous_cwd = os.getcwd()
       os.chdir(self.checkout_root)
       excluded = ['!', '?', 'X', ' ', '~']
-      self.options.files = [
+      self.files = [
           f[1] for f in scm.SVN.CaptureStatus(self.checkout_root)
           if f[0][0] not in excluded
       ]
       os.chdir(previous_cwd)
-    return scm.SVN.GenerateDiff(self.options.files, full_move=True)
+    return scm.SVN.GenerateDiff(self.files, self.checkout_root, full_move=True)
 
   def GetLocalRoot(self):
     """Return the path of the repository root."""
@@ -130,10 +130,7 @@ class GIT(SCM):
   """Gathers the options and diff for a git checkout."""
   def __init__(self, *args, **kwargs):
     SCM.__init__(self, *args, **kwargs)
-    self.checkout_root = scm.GIT.GetCheckoutRoot(os.getcwd())
-    if not self.options.diff:
-      self.options.diff = scm.GIT.GenerateDiff(self.checkout_root,
-                                               full_move=True)
+    self.checkout_root = scm.GIT.GetCheckoutRoot(self.checkout_root)
     if not self.options.name:
       self.options.name = scm.GIT.GetPatchName(self.checkout_root)
     if not self.options.email:
@@ -142,6 +139,10 @@ class GIT(SCM):
   def GetLocalRoot(self):
     """Return the path of the repository root."""
     return self.checkout_root
+
+  def GenerateDiff(self):
+    # For now, ignores self.files
+    return scm.GIT.GenerateDiff(self.checkout_root, full_move=True)
 
   def GetBots(self):
     try:
@@ -291,7 +292,7 @@ def _SendChangeSVN(options):
     shutil.rmtree(temp_dir, True)
 
 
-def GuessVCS(options):
+def GuessVCS(options, cwd):
   """Helper to guess the version control system.
 
   NOTE: Very similar to upload.GuessVCS. Doesn't look for hg since we don't
@@ -306,16 +307,16 @@ def GuessVCS(options):
   """
   __pychecker__ = 'no-returnvalues'
   # Subversion has a .svn in all working directories.
-  if os.path.isdir('.svn'):
+  if os.path.isdir(os.path.join(cwd, '.svn')):
     logging.info("Guessed VCS = Subversion")
-    return SVN(options)
+    return SVN(options, cwd)
 
   # Git has a command to test if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
   try:
-    gclient_utils.CheckCall(["git", "rev-parse", "--is-inside-work-tree"])
+    gclient_utils.CheckCall(["git", "rev-parse", "--is-inside-work-tree"], cwd)
     logging.info("Guessed VCS = Git")
-    return GIT(options)
+    return GIT(options, cwd)
   except gclient_utils.CheckCallError, e:
     if e.retcode != 2:  # ENOENT -- they don't have git installed.
       raise
@@ -398,6 +399,9 @@ def TryChange(argv,
                         "patch created in a subdirectory")
   group.add_option("--patchlevel", type='int', metavar="LEVEL",
                    help="Used as -pN parameter to patch")
+  group.add_option("--sub_rep", action="append", default=["."],
+                   help="Subcheckout to use in addition. This is mainly "
+                        "useful for gclient-style checkouts.")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Access the try server by HTTP")
@@ -440,6 +444,15 @@ def TryChange(argv,
       parser.error('Please specify an access method.')
 
   try:
+    # Process the VCS in any case at least to retrieve the email address.
+    checkouts = []
+    for item in options.sub_rep:
+      checkout = GuessVCS(options, item)
+      if checkout.GetLocalRoot() in [c.GetLocalRoot() for c in checkouts]:
+        parser.error('Specified the root %s two times.' %
+                     checkout.GetLocalRoot())
+      checkouts.append(checkout)
+
     # Convert options.diff into the content of the diff.
     if options.url:
       if options.files:
@@ -449,26 +462,30 @@ def TryChange(argv,
       if options.files:
         parser.error('You cannot specify files and --diff at the same time.')
       options.diff = gclient_utils.FileRead(options.diff, 'rb')
-    # Process the VCS in any case at least to retrieve the email address.
-    try:
-      options.scm = GuessVCS(options)
-    except NoTryServerAccess, e:
-      # If we got the diff, we don't care.
-      if not options.diff:
-        # TODO(maruel): Raise what?
-        raise
+    else:
+      # Use this as the base.
+      root = checkouts[0].GetLocalRoot()
+      diffs = []
+      for checkout in checkouts:
+        diff = checkout.GenerateDiff().splitlines(True)
+        # Munge it.
+        path_diff = gclient_utils.PathDifference(root, checkout.GetLocalRoot())
+        for i in range(len(diff)):
+          if diff[i].startswith('--- ') or diff[i].startswith('+++ '):
+            diff[i] = diff[i][0:3] + path_diff + diff[i][4:]
+        diffs.extend(diff)
+      options.diff = ''.join(diffs)
 
-    # Get try slaves from PRESUBMIT.py files if not specified.
     if not options.bot:
+      # Get try slaves from PRESUBMIT.py files if not specified.
       # Even if the diff comes from options.url, use the local checkout for bot
       # selection.
       try:
-        # Get try slaves from PRESUBMIT.py files if not specified.
         import presubmit_support
-        root_presubmit = options.scm.GetBots()
+        root_presubmit = checkouts[0].GetBots()
         options.bot = presubmit_support.DoGetTrySlaves(
-            options.scm.GetFileNames(),
-            options.scm.GetLocalRoot(),
+            checkouts[0].GetFileNames(),
+            checkouts[0].GetLocalRoot(),
             root_presubmit,
             False,
             sys.stdout)
