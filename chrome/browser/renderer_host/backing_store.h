@@ -136,7 +136,21 @@ class BackingStore {
 #elif defined(OS_MACOSX)
   scoped_cftyperef<CGContextRef> cg_bitmap_;
   scoped_cftyperef<CGLayerRef> cg_layer_;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) && defined(USE_GL)
+  Display* const display_;
+
+  // The parent window for this backing store.
+  const XID root_window_;
+
+  unsigned int texture_id_;  // 0 when uninitialized.
+
+  // The size of the texture loaded into GL. This is 0x0 when there is no
+  // texture loaded. This may be different than the size of the backing store
+  // because we could have been resized without yet getting the updated
+  // bitmap.
+  gfx::Size texture_size_;
+
+#elif defined(OS_LINUX) && !defined(USE_GL)
   // Paints the bitmap from the renderer onto the backing store without
   // using Xrender to composite the pixmaps.
   void PaintRectWithoutXrender(TransportDIB* bitmap,
