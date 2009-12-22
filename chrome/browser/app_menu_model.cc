@@ -18,14 +18,11 @@
 AppMenuModel::AppMenuModel(menus::SimpleMenuModel::Delegate* delegate,
                            Browser* browser)
     : menus::SimpleMenuModel(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          profiles_helper_(new GetProfilesHelper(this))),
       browser_(browser) {
   Build();
 }
 
 AppMenuModel::~AppMenuModel() {
-  profiles_helper_->OnDelegateDeleted();
 }
 
 void AppMenuModel::Build() {
@@ -37,9 +34,12 @@ void AppMenuModel::Build() {
   // done.  See OnGetProfilesDone().
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableUserDataDirProfiles)) {
+    // Triggers profile list refresh in case it's changed.
+    UserDataManager::Get()->RefreshUserDataDirProfiles();
+
     if (!profiles_menu_contents_.get()) {
-      profiles_helper_->GetProfiles(NULL);
       profiles_menu_contents_.reset(new menus::SimpleMenuModel(delegate()));
+      BuildProfileSubMenu();
     }
     AddSubMenuWithStringId(IDS_PROFILE_MENU, profiles_menu_contents_.get());
   }
@@ -92,14 +92,14 @@ void AppMenuModel::Build() {
   }
 }
 
-void AppMenuModel::OnGetProfilesDone(
-    const std::vector<std::wstring>& profiles) {
+void AppMenuModel::BuildProfileSubMenu() {
   // Nothing to do if the menu has gone away.
   if (!profiles_menu_contents_.get())
     return;
 
-  // Store the latest list of profiles in the browser.
-  browser_->set_user_data_dir_profiles(profiles);
+  // Use the list of profiles in the browser.
+  const std::vector<std::wstring>& profiles =
+      browser_->user_data_dir_profiles();
 
   // Add direct submenu items for profiles.
   std::vector<std::wstring>::const_iterator iter = profiles.begin();

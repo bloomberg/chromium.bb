@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -64,7 +65,23 @@ class LaunchChromeForProfileIndexHelper : GetProfilesHelper::Delegate {
   DISALLOW_COPY_AND_ASSIGN(LaunchChromeForProfileIndexHelper);
 };
 
-}  // namespace
+// Helper to update global user data dir profiles list.
+class UserDataDirProfilesUpdater : GetProfilesHelper::Delegate {
+ public:
+  UserDataDirProfilesUpdater();
+  virtual ~UserDataDirProfilesUpdater();
+
+  // Request profiles via GetProfilesHelper.
+  void Run();
+
+  // GetProfilesHelper::Delegate method.
+  void OnGetProfilesDone(const std::vector<std::wstring>& profiles);
+
+ private:
+  scoped_refptr<GetProfilesHelper> profiles_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserDataDirProfilesUpdater);
+};
 
 LaunchChromeForProfileIndexHelper::LaunchChromeForProfileIndexHelper(
     const UserDataManager* manager,
@@ -92,6 +109,29 @@ void LaunchChromeForProfileIndexHelper::OnGetProfilesDone(
   // We are done, delete ourselves.
   delete this;
 }
+
+UserDataDirProfilesUpdater::UserDataDirProfilesUpdater()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(
+          profiles_helper_(new GetProfilesHelper(this))) {
+}
+
+UserDataDirProfilesUpdater::~UserDataDirProfilesUpdater() {
+  profiles_helper_->OnDelegateDeleted();
+}
+
+void UserDataDirProfilesUpdater::Run() {
+  profiles_helper_->GetProfiles(NULL);
+}
+
+void UserDataDirProfilesUpdater::OnGetProfilesDone(
+    const std::vector<std::wstring>& profiles) {
+  g_browser_process->user_data_dir_profiles() = profiles;
+
+  // We are done, delete ourselves.
+  delete this;
+}
+
+}  // namespace
 
 // Separator used in folder names between the prefix and the profile name.
 // For e.g. a folder for the profile "Joe" would be named "User Data-Joe".
@@ -264,6 +304,12 @@ bool UserDataManager::CreateDesktopShortcutForProfile(
   NOTIMPLEMENTED();
   return false;
 #endif
+}
+
+void UserDataManager::RefreshUserDataDirProfiles() const {
+  // UserDataDirProfilesUpdater will delete itself when done.
+  UserDataDirProfilesUpdater* updater = new UserDataDirProfilesUpdater();
+  updater->Run();
 }
 
 GetProfilesHelper::GetProfilesHelper(Delegate* delegate)

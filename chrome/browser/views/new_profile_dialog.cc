@@ -104,6 +104,7 @@ bool NewProfileDialog::Accept() {
         profile_name);
 
   UserDataManager::Get()->LaunchChromeForProfile(profile_name);
+  UserDataManager::Get()->RefreshUserDataDirProfiles();
   return true;
 }
 

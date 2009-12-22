@@ -65,6 +65,9 @@ class UserDataManager {
   // on a separate thread.
   void LaunchChromeForProfile(int index) const;
 
+  // Updates global user data dir profile list stored in g_browser_process.
+  void RefreshUserDataDirProfiles() const;
+
  private:
   // Gets the name of the profile from the name of the folder.
   // Returns false if the folder does not correspond to a profile folder, true
