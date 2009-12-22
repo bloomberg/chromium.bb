@@ -26,4 +26,15 @@
   return [[super strokeColor] colorWithAlphaComponent:[self dividerOpacity]];
 }
 
+- (BOOL)accessibilityIsIgnored {
+  return NO;
+}
+
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  if ([attribute isEqual:NSAccessibilityRoleAttribute])
+    return NSAccessibilityToolbarRole;
+
+  return [super accessibilityAttributeValue:attribute];
+}
+
 @end
