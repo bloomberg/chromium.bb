@@ -1,5 +1,5 @@
 /* C++ code produced by gperf version 3.0.3 */
-/* Command-line: gperf -a -L C++ -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test2 -D effective_tld_names_unittest2.gperf  */
+/* Command-line: gperf -a -L C++ -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test2 -D -T effective_tld_names_unittest2.gperf  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
       && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
@@ -35,13 +35,8 @@
 // can be found in the LICENSE file.
 // Test file used by registry_controlled_domain_unittest.
 // We edit this file manually, then run
-// gperf -a -L "C++" -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test2 -D effective_tld_names_unittest2.gperf >  effective_tld_names_unittest2.cc
+// gperf -a -L "C++" -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test2 -D -T effective_tld_names_unittest2.gperf >  effective_tld_names_unittest2.cc
 // to generate the perfect hashmap.
-#line 10 "effective_tld_names_unittest2.gperf"
-struct DomainRule {
-  const char *name;
-  int type;  // 1: exception, 2: wildcard
-};
 
 #define TOTAL_KEYWORDS 2
 #define MIN_WORD_LENGTH 2

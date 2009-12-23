@@ -4,7 +4,7 @@
 // can be found in the LICENSE file.
 // Test file used by registry_controlled_domain_unittest.
 // We edit this file manually, then run
-// gperf -a -L "C++" -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test2 -D effective_tld_names_unittest2.gperf >  effective_tld_names_unittest2.cc
+// gperf -a -L "C++" -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test2 -D -T effective_tld_names_unittest2.gperf >  effective_tld_names_unittest2.cc
 // to generate the perfect hashmap.
 %}
 struct DomainRule {
