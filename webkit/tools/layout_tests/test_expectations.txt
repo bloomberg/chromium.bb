@@ -3129,10 +3129,3 @@ BUG30938 WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 BUG30939 WIN LINUX : LayoutTests/svg/custom/image-with-transform-clip-filter.svg = IMAGE
 BUG30939 : LayoutTests/svg/filters/filter-clip.svg = IMAGE+TEXT
 BUG30792 WIN LINUX : LayoutTests/fast/text/fake-italic.html = IMAGE+TEXT
-
-// WebKit update 52468:52520
-BUG_LEVIN : LayoutTests/http/tests/security/listener/xss-inactive-closure.html = TEXT
-BUG_LEVIN : LayoutTests/websocket/tests/bad-sub-protocol.html = TEXT
-BUG_LEVIN : LayoutTests/websocket/tests/url-parsing.html = TEXT
-BUG_LEVIN : LayoutTests/fast/forms/basic-textareas-quirks.html = IMAGE IMAGE+TEXT
-BUG_LEVIN WIN LINUX : LayoutTests/fast/forms/basic-selects.html = IMAGE+TEXT
