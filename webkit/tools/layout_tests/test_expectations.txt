@@ -3136,11 +3136,3 @@ BUG_LEVIN : LayoutTests/websocket/tests/bad-sub-protocol.html = TEXT
 BUG_LEVIN : LayoutTests/websocket/tests/url-parsing.html = TEXT
 BUG_LEVIN : LayoutTests/fast/forms/basic-textareas-quirks.html = IMAGE IMAGE+TEXT
 BUG_LEVIN WIN LINUX : LayoutTests/fast/forms/basic-selects.html = IMAGE+TEXT
-
-BUG_LEVIN DEBUG MAC : LayoutTests/editing/deleting/delete-line-011.html = CRASH
-BUG_LEVIN DEBUG MAC : LayoutTests/editing/inserting/insert-br-004.html = CRASH
-BUG_LEVIN DEBUG MAC : LayoutTests/editing/inserting/insert-tab-004.html = CRASH
-BUG_LEVIN DEBUG MAC : LayoutTests/editing/pasteboard/paste-text-015.html = CRASH
-BUG_LEVIN DEBUG MAC : LayoutTests/editing/selection/4932260-2.html = CRASH
-BUG_LEVIN DEBUG MAC : LayoutTests/editing/unsupported-content/table-delete-003.html = CRASH
-BUG_LEVIN DEBUG MAC : LayoutTests/fast/text/international/thai-line-breaks.html = CRASH
