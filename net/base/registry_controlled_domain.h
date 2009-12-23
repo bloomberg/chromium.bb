@@ -110,16 +110,15 @@
 #ifndef NET_BASE_REGISTRY_CONTROLLED_DOMAIN_H_
 #define NET_BASE_REGISTRY_CONTROLLED_DOMAIN_H_
 
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/string_piece.h"
 
 class GURL;
 
 template <typename T>
 struct DefaultSingletonTraits;
+struct DomainRule;
 
 namespace net {
 
@@ -201,7 +200,7 @@ class RegistryControlledDomainService {
  protected:
   // The entire protected API is only for unit testing.  I mean it.  Don't make
   // me come over there!
-  RegistryControlledDomainService() { Init(); }
+  RegistryControlledDomainService();
 
   // Set the RegistryControledDomainService instance to be used internally.
   // |instance| will supersede the singleton instance normally used.  If
@@ -211,91 +210,28 @@ class RegistryControlledDomainService {
   static RegistryControlledDomainService* SetInstance(
       RegistryControlledDomainService* instance);
 
-  // Sets the copied_domain_data_ of the current instance (creating one,
-  // if necessary), then parses it.
-  static void UseDomainData(const std::string& data);
+  typedef const struct DomainRule* (*FindDomainPtr)(const char *, unsigned int);
+
+  // Used for unit tests, so that a different perfect hash map from the full
+  // list is used.
+  static void UseFindDomainFunction(FindDomainPtr function);
 
  private:
   // To allow construction of the internal singleton instance.
   friend struct DefaultSingletonTraits<RegistryControlledDomainService>;
-
-  void Init();
-
-  // A DomainEntry is a combination of the domain name (as a StringPiece, so
-  // that we can reference external memory without copying), and two bits of
-  // information, if it's an exception and/or wildcard entry.  Note: we don't
-  // consider the attributes when doing comparisons, so as far as any data
-  // structures our concerned (ex our set), two DomainEntry's are equal as long
-  // as their StringPiece (the domain) is equal.  This is the behavior we want.
-  class DomainEntry : public base::StringPiece {
-   public:
-    struct DomainEntryAttributes {
-      DomainEntryAttributes() : exception(false), wildcard(false) { }
-      ~DomainEntryAttributes() { }
-
-      void Combine(const DomainEntryAttributes& other) {
-        if (other.exception) exception = true;
-        if (other.wildcard) wildcard = true;
-      }
-
-      bool exception;
-      bool wildcard;
-    };
-
-    DomainEntry() : base::StringPiece() { }
-    DomainEntry(const char* ptr, size_type size)
-        : base::StringPiece(ptr, size) { }
-    ~DomainEntry() { }
-
-    // We override StringPiece's operator < to make it more efficent, since we
-    // don't care that it's sorted lexigraphically and we want to ignore the
-    // attributes when we are doing the comparisons.
-    bool operator<(const DomainEntry& other) const {
-      // If we are the same size, call up to StringPiece's real less than.
-      if (size() == other.size())
-        return *static_cast<const base::StringPiece*>(this) < other;
-      // Consider ourselves less if we are smaller
-      return size() < other.size();
-    }
-
-    DomainEntryAttributes attributes;
-  };
-
-  // An entry in the set of domain specifications, describing the properties
-  // that apply to that domain rule.
-  typedef std::set<DomainEntry> DomainSet;
-
-  // Parses a list of effective-TLD rules, building the domain_set_.  Rules are
-  // assumed to be syntactically valid.  We operate on a StringPiece.  If we
-  // were populated from an embedded resource, we will reference the embedded
-  // resource directly.  If we were populated through UseDomainData, then our
-  // StringPiece will reference our local copy in copied_domain_data_.
-  void ParseDomainData(const base::StringPiece& data);
 
   // Returns the singleton instance, after attempting to initialize it.
   // NOTE that if the effective-TLD data resource can't be found, the instance
   // will be initialized and continue operation with simple default TLD data.
   static RegistryControlledDomainService* GetInstance();
 
-  // Adds one rule, assumed to be valid, to the domain_set_.
-  void AddRule(const base::StringPiece& rule_str);
-
   // Internal workings of the static public methods.  See above.
   static std::string GetDomainAndRegistryImpl(const std::string& host);
   size_t GetRegistryLengthImpl(const std::string& host,
                                bool allow_unknown_registries);
 
-  // A set of our DomainEntry's.
-  DomainSet domain_set_;
-
-  // An optional copy of the full domain rule data.  If we're loaded from a
-  // resource, then we just reference the resource directly without copying,
-  // and copied_domain_data_ is not used.  If we are populated through
-  // UseDomainData() then we copy that data here and reference it.
-  std::string copied_domain_data_;
-
-  // The actual domain data that we parse on startup.
-  static const char kDomainData[];
+  // Function that returns a DomainRule given a domain.
+  FindDomainPtr find_domain_function_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryControlledDomainService);
 };

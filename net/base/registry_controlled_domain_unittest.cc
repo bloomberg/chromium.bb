@@ -6,14 +6,22 @@
 #include "net/base/registry_controlled_domain.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "effective_tld_names_unittest1.cc"
+#undef TOTAL_KEYWORDS
+#undef MIN_WORD_LENGTH
+#undef MAX_WORD_LENGTH
+#undef MIN_HASH_VALUE
+#undef MAX_HASH_VALUE
+#include "effective_tld_names_unittest2.cc"
+
 namespace {
 
 class TestRegistryControlledDomainService :
     public net::RegistryControlledDomainService {
  public:
-  // Sets and parses the given data.
-  static void UseDomainData(const std::string& data) {
-    net::RegistryControlledDomainService::UseDomainData(data);
+  // Sets the given data.
+  static void UseDomainData(FindDomainPtr function) {
+    net::RegistryControlledDomainService::UseFindDomainFunction(function);
   }
 
   // Creates a new dedicated instance to be used for testing, deleting any
@@ -41,10 +49,6 @@ class RegistryControlledDomainTest : public testing::Test {
   }
 };
 
-// Convenience functions to shorten the names for repeated use below.
-void SetTestData(const std::string& data) {
-  TestRegistryControlledDomainService::UseDomainData(data);
-}
 
 std::string GetDomainFromURL(const std::string& url) {
   return TestRegistryControlledDomainService::GetDomainAndRegistry(GURL(url));
@@ -72,33 +76,9 @@ bool CompareDomains(const std::string& url1, const std::string& url2) {
   return TestRegistryControlledDomainService::SameDomainOrHost(g1, g2);
 }
 
-TEST_F(RegistryControlledDomainTest, TestParsing) {
-  // Ensure that various simple and pathological cases parse without hanging or
-  // crashing.  Testing the correctness of the parsing directly would require
-  // opening the singleton class up more.
-  SetTestData("com");
-  SetTestData("abc.com\n");
-  SetTestData("abc.com\ndef.com\n*.abc.com\n!foo.abc.com");
-  SetTestData("abc.com.\n");
-  SetTestData("");
-  SetTestData("*.");
-  SetTestData("!");
-  SetTestData(".");
-}
-
-static const char kTestData[] = "jp\n"            // 1
-                                "ac.jp\n"         // 2
-                                "*.bar.jp\n"      // 3
-                                "*.baz.bar.jp\n"  // 4
-                                "*.foo.bar.jp\n"  // 5
-                                "!foo.bar.jp\n"   // 6
-                                "!pref.bar.jp\n"  // 7
-                                "bar.baz.com\n"   // 8
-                                "*.c\n"           // 9
-                                "!b.c";           // 10
-
 TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
-  SetTestData(kTestData);
+  TestRegistryControlledDomainService::UseDomainData(
+      Perfect_Hash_Test1::FindDomain);
 
   // Test GURL version of GetDomainAndRegistry().
   EXPECT_EQ("baz.jp", GetDomainFromURL("http://a.baz.jp/file.html"));   // 1
@@ -109,14 +89,13 @@ TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
   EXPECT_EQ("", GetDomainFromURL("http://baz.bar.jp"));                 // 3 4
   EXPECT_EQ("a.b.baz.bar.jp", GetDomainFromURL("http://a.b.baz.bar.jp"));
                                                                         // 4
-  EXPECT_EQ("foo.bar.jp", GetDomainFromURL("http://foo.bar.jp"));       // 3 5 6
-  EXPECT_EQ("pref.bar.jp", GetDomainFromURL("http://baz.pref.bar.jp")); // 7
+  EXPECT_EQ("pref.bar.jp", GetDomainFromURL("http://baz.pref.bar.jp")); // 5
   EXPECT_EQ("b.bar.baz.com.", GetDomainFromURL("http://a.b.bar.baz.com."));
-                                                                        // 8
-  EXPECT_EQ("a.d.c", GetDomainFromURL("http://a.d.c"));                 // 9
-  EXPECT_EQ("a.d.c", GetDomainFromURL("http://.a.d.c"));                // 9
-  EXPECT_EQ("a.d.c", GetDomainFromURL("http://..a.d.c"));               // 9
-  EXPECT_EQ("b.c", GetDomainFromURL("http://a.b.c"));                   // 9 10
+                                                                        // 6
+  EXPECT_EQ("a.d.c", GetDomainFromURL("http://a.d.c"));                 // 7
+  EXPECT_EQ("a.d.c", GetDomainFromURL("http://.a.d.c"));                // 7
+  EXPECT_EQ("a.d.c", GetDomainFromURL("http://..a.d.c"));               // 7
+  EXPECT_EQ("b.c", GetDomainFromURL("http://a.b.c"));                   // 7 8
   EXPECT_EQ("baz.com", GetDomainFromURL("http://baz.com"));             // none
   EXPECT_EQ("baz.com.", GetDomainFromURL("http://baz.com."));           // none
 
@@ -140,13 +119,12 @@ TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
   EXPECT_EQ("", GetDomainFromHost(L"bar.jp"));                         // 3
   EXPECT_EQ("", GetDomainFromHost(L"baz.bar.jp"));                     // 3 4
   EXPECT_EQ("a.b.baz.bar.jp", GetDomainFromHost(L"a.b.baz.bar.jp"));   // 3 4
-  EXPECT_EQ("foo.bar.jp", GetDomainFromHost(L"foo.bar.jp"));           // 3 5 6
-  EXPECT_EQ("pref.bar.jp", GetDomainFromHost(L"baz.pref.bar.jp"));     // 7
-  EXPECT_EQ("b.bar.baz.com.", GetDomainFromHost(L"a.b.bar.baz.com.")); // 8
-  EXPECT_EQ("a.d.c", GetDomainFromHost(L"a.d.c"));                     // 9
-  EXPECT_EQ("a.d.c", GetDomainFromHost(L".a.d.c"));                    // 9
-  EXPECT_EQ("a.d.c", GetDomainFromHost(L"..a.d.c"));                   // 9
-  EXPECT_EQ("b.c", GetDomainFromHost(L"a.b.c"));                       // 9 10
+  EXPECT_EQ("pref.bar.jp", GetDomainFromHost(L"baz.pref.bar.jp"));     // 5
+  EXPECT_EQ("b.bar.baz.com.", GetDomainFromHost(L"a.b.bar.baz.com.")); // 6
+  EXPECT_EQ("a.d.c", GetDomainFromHost(L"a.d.c"));                     // 7
+  EXPECT_EQ("a.d.c", GetDomainFromHost(L".a.d.c"));                    // 7
+  EXPECT_EQ("a.d.c", GetDomainFromHost(L"..a.d.c"));                   // 7
+  EXPECT_EQ("b.c", GetDomainFromHost(L"a.b.c"));                       // 7 8
   EXPECT_EQ("baz.com", GetDomainFromHost(L"baz.com"));                 // none
   EXPECT_EQ("baz.com.", GetDomainFromHost(L"baz.com."));               // none
 
@@ -159,7 +137,8 @@ TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
 }
 
 TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
-  SetTestData(kTestData);
+  TestRegistryControlledDomainService::UseDomainData(
+      Perfect_Hash_Test1::FindDomain);
 
   // Test GURL version of GetRegistryLength().
   EXPECT_EQ(2U, GetRegistryLengthFromURL("http://a.baz.jp/file.html", false));
@@ -172,15 +151,14 @@ TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
   EXPECT_EQ(0U, GetRegistryLengthFromURL("http://baz.bar.jp", false));  // 3 4
   EXPECT_EQ(12U, GetRegistryLengthFromURL("http://a.b.baz.bar.jp", false));
                                                                         // 4
-  EXPECT_EQ(6U, GetRegistryLengthFromURL("http://foo.bar.jp", false));  // 3 5 6
   EXPECT_EQ(6U, GetRegistryLengthFromURL("http://baz.pref.bar.jp", false));
-                                                                        // 7
+                                                                        // 5
   EXPECT_EQ(11U, GetRegistryLengthFromURL("http://a.b.bar.baz.com", false));
-                                                                        // 8
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://a.d.c", false));       // 9
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://.a.d.c", false));      // 9
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://..a.d.c", false));     // 9
-  EXPECT_EQ(1U, GetRegistryLengthFromURL("http://a.b.c", false));       // 9 10
+                                                                        // 6
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://a.d.c", false));       // 7
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://.a.d.c", false));      // 7
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://..a.d.c", false));     // 7
+  EXPECT_EQ(1U, GetRegistryLengthFromURL("http://a.b.c", false));       // 7 8
   EXPECT_EQ(0U, GetRegistryLengthFromURL("http://baz.com", false));     // none
   EXPECT_EQ(0U, GetRegistryLengthFromURL("http://baz.com.", false));    // none
   EXPECT_EQ(3U, GetRegistryLengthFromURL("http://baz.com", true));      // none
@@ -209,14 +187,13 @@ TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
   EXPECT_EQ(0U, GetRegistryLengthFromHost(L"bar.jp", false));           // 3
   EXPECT_EQ(0U, GetRegistryLengthFromHost(L"baz.bar.jp", false));       // 3 4
   EXPECT_EQ(12U, GetRegistryLengthFromHost(L"a.b.baz.bar.jp", false));  // 4
-  EXPECT_EQ(6U, GetRegistryLengthFromHost(L"foo.bar.jp", false));       // 3 5 6
-  EXPECT_EQ(6U, GetRegistryLengthFromHost(L"baz.pref.bar.jp", false));  // 7
+  EXPECT_EQ(6U, GetRegistryLengthFromHost(L"baz.pref.bar.jp", false));  // 5
   EXPECT_EQ(11U, GetRegistryLengthFromHost(L"a.b.bar.baz.com", false));
-                                                                        // 8
-  EXPECT_EQ(3U, GetRegistryLengthFromHost(L"a.d.c", false));            // 9
-  EXPECT_EQ(3U, GetRegistryLengthFromHost(L".a.d.c", false));           // 9
-  EXPECT_EQ(3U, GetRegistryLengthFromHost(L"..a.d.c", false));          // 9
-  EXPECT_EQ(1U, GetRegistryLengthFromHost(L"a.b.c", false));            // 9 10
+                                                                        // 6
+  EXPECT_EQ(3U, GetRegistryLengthFromHost(L"a.d.c", false));            // 7
+  EXPECT_EQ(3U, GetRegistryLengthFromHost(L".a.d.c", false));           // 7
+  EXPECT_EQ(3U, GetRegistryLengthFromHost(L"..a.d.c", false));          // 7
+  EXPECT_EQ(1U, GetRegistryLengthFromHost(L"a.b.c", false));            // 7 8
   EXPECT_EQ(0U, GetRegistryLengthFromHost(L"baz.com", false));          // none
   EXPECT_EQ(0U, GetRegistryLengthFromHost(L"baz.com.", false));         // none
   EXPECT_EQ(3U, GetRegistryLengthFromHost(L"baz.com", true));           // none
@@ -233,7 +210,8 @@ TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
 }
 
 TEST_F(RegistryControlledDomainTest, TestSameDomainOrHost) {
-  SetTestData("jp\nbar.jp");
+  TestRegistryControlledDomainService::UseDomainData(
+      Perfect_Hash_Test2::FindDomain);
 
   EXPECT_EQ(true, CompareDomains("http://a.b.bar.jp/file.html",
                                  "http://a.b.bar.jp/file.html")); // b.bar.jp

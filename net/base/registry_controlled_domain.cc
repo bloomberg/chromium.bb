@@ -47,7 +47,16 @@
 #include "net/base/net_module.h"
 #include "net/base/net_util.h"
 
+#include "effective_tld_names.cc"
+
 namespace net {
+
+static const int kExceptionRule = 1;
+static const int kWildcardRule = 2;
+
+RegistryControlledDomainService::RegistryControlledDomainService()
+    : find_domain_function_(Perfect_Hash::FindDomain) {
+}
 
 // static
 std::string RegistryControlledDomainService::GetDomainAndRegistry(
@@ -202,19 +211,25 @@ size_t RegistryControlledDomainService::GetRegistryLengthImpl(
   if (next_dot >= host_check_len)  // Catches std::string::npos as well.
     return 0;  // This can't have a registry + domain.
   while (1) {
-    DomainSet::iterator iter = domain_set_.find(
-      DomainEntry(host.data() + curr_start, host_check_len - curr_start));
-    if (iter != domain_set_.end()) {
+    const char* domain_str = host.data() + curr_start;
+    int domain_length = host_check_len - curr_start;
+    const DomainRule* rule = find_domain_function_(domain_str, domain_length);
+
+    // We need to compare the string after finding a match because the
+    // no-collisions of perfect hashing only refers to items in the set.  Since
+    // we're searching for arbitrary domains, there could be collisions.
+    if (rule &&
+        base::strncasecmp(domain_str, rule->name, domain_length) == 0) {
       // Exception rules override wildcard rules when the domain is an exact
       // match, but wildcards take precedence when there's a subdomain.
-      if (iter->attributes.wildcard && (prev_start != std::string::npos)) {
+      if (rule->type == kWildcardRule && (prev_start != std::string::npos)) {
         // If prev_start == host_check_begin, then the host is the registry
         // itself, so return 0.
         return (prev_start == host_check_begin) ?
             0 : (host.length() - prev_start);
       }
 
-      if (iter->attributes.exception) {
+      if (rule->type == kExceptionRule) {
         if (next_dot == std::string::npos) {
           // If we get here, we had an exception rule with no dots (e.g.
           // "!foo").  This would only be valid if we had a corresponding
@@ -266,55 +281,10 @@ RegistryControlledDomainService* RegistryControlledDomainService::GetInstance()
 }
 
 // static
-void RegistryControlledDomainService::UseDomainData(const std::string& data) {
+void RegistryControlledDomainService::UseFindDomainFunction(
+    FindDomainPtr function) {
   RegistryControlledDomainService* instance = GetInstance();
-  instance->copied_domain_data_ = data;
-  instance->ParseDomainData(instance->copied_domain_data_);
-}
-
-void RegistryControlledDomainService::Init() {
-  ParseDomainData(kDomainData);
-}
-
-void RegistryControlledDomainService::ParseDomainData(
-    const base::StringPiece& data) {
-  domain_set_.clear();
-
-  size_t line_end = 0;
-  size_t line_start = 0;
-  while (line_start < data.size()) {
-    line_end = data.find('\n', line_start);
-    if (line_end == base::StringPiece::npos)
-      line_end = data.size();
-    AddRule(base::StringPiece(data.data() + line_start, line_end - line_start));
-    line_start = line_end + 1;
-  }
-}
-
-void RegistryControlledDomainService::AddRule(
-    const base::StringPiece& rule_str) {
-  DomainEntry rule(rule_str.data(), rule_str.size());
-
-  // Valid rules may be either wild or exceptions, but not both.
-  if (rule.starts_with("!")) {
-    rule.remove_prefix(1);
-    rule.attributes.exception = true;
-  } else if (rule.starts_with("*.")) {
-    rule.remove_prefix(2);
-    rule.attributes.wildcard = true;
-  }
-
-  DomainSet::iterator prev_rule = domain_set_.find(rule);
-  if (prev_rule != domain_set_.end()) {
-    // We found a rule with the same domain, combine the attributes.
-    // This could happen for example when a domain is both a wildcard
-    // and an exception (ex *.google.com and !google.com).  Sets are immutable,
-    // we'll erase the old one, and insert a new one with the new attributes.
-    rule.attributes.Combine(prev_rule->attributes);
-    domain_set_.erase(prev_rule);
-  }
-
-  domain_set_.insert(rule);
+  instance->find_domain_function_ = function;
 }
 
 }  // namespace net
