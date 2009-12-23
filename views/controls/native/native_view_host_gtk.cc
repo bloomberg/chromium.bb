@@ -63,7 +63,7 @@ void NativeViewHostGtk::NativeViewAttached() {
   // TODO(port): figure out focus.
 }
 
-void NativeViewHostGtk::NativeViewDetaching() {
+void NativeViewHostGtk::NativeViewDetaching(bool destroyed) {
   DCHECK(host_->native_view());
 
   g_signal_handler_disconnect(G_OBJECT(host_->native_view()),
@@ -75,6 +75,14 @@ void NativeViewHostGtk::NativeViewDetaching() {
   focus_signal_id_ = 0;
 
   installed_clip_ = false;
+
+  if (fixed_ && !destroyed) {
+    DCHECK_NE(static_cast<gfx::NativeView>(NULL),
+              gtk_widget_get_parent(host_->native_view()));
+    gtk_container_remove(GTK_CONTAINER(fixed_), host_->native_view());
+    DCHECK_EQ(
+        0U, g_list_length(gtk_container_get_children(GTK_CONTAINER(fixed_))));
+  }
 
   g_object_unref(G_OBJECT(host_->native_view()));
 }
@@ -200,7 +208,9 @@ void NativeViewHostGtk::DestroyFixed() {
     // widget from the moment it is attached.
     gtk_container_remove(GTK_CONTAINER(fixed_), host_->native_view());
   }
-
+  // fixed_ should not have any children this point.
+  DCHECK_EQ(0U,
+            g_list_length(gtk_container_get_children(GTK_CONTAINER(fixed_))));
   gtk_widget_destroy(fixed_);
   fixed_ = NULL;
 }

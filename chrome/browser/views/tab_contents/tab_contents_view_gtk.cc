@@ -150,6 +150,9 @@ void TabContentsViewGtk::CreateView(const gfx::Size& initial_size) {
   set_delete_on_destroy(false);
   WidgetGtk::Init(NULL, gfx::Rect(0, 0, initial_size.width(),
                                   initial_size.height()));
+  // We need to own the widget in order to attach/detach the native view
+  // to container.
+  gtk_object_ref(GTK_OBJECT(GetNativeView()));
 }
 
 RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
@@ -413,4 +416,3 @@ gboolean TabContentsViewGtk::OnMouseMove(GtkWidget* widget,
         tab_contents(), views::Screen::GetCursorScreenPoint(), true);
   return FALSE;
 }
-

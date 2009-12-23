@@ -28,7 +28,7 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
 
   // Overridden from NativeViewHostWrapper:
   virtual void NativeViewAttached();
-  virtual void NativeViewDetaching();
+  virtual void NativeViewDetaching(bool destroyed);
   virtual void AddedToWidget();
   virtual void RemovedFromWidget();
   virtual void InstallClip(int x, int y, int w, int h);
@@ -86,4 +86,3 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
 }  // namespace views
 
 #endif  // VIEWS_CONTROLS_NATIVE_HOST_VIEW_GTK_H_
-

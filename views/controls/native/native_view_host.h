@@ -81,6 +81,10 @@ class NativeViewHost : public View {
   virtual std::string GetClassName() const;
 
  private:
+  // Detach the native view. |destroyed| is true if the native view is
+  // detached because it's being destroyed, or false otherwise.
+  void Detach(bool destroyed);
+
   // The attached native view.
   gfx::NativeView native_view_;
 

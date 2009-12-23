@@ -39,7 +39,7 @@ void NativeViewHostWin::NativeViewAttached() {
   host_->Layout();
 }
 
-void NativeViewHostWin::NativeViewDetaching() {
+void NativeViewHostWin::NativeViewDetaching(bool destroyed) {
   installed_clip_ = false;
 }
 

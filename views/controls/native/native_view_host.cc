@@ -40,6 +40,7 @@ NativeViewHost::~NativeViewHost() {
 }
 
 void NativeViewHost::Attach(gfx::NativeView native_view) {
+  DCHECK(native_view);
   DCHECK(!native_view_);
   native_view_ = native_view;
   // If set_focus_view() has not been invoked, this view is the one that should
@@ -50,9 +51,7 @@ void NativeViewHost::Attach(gfx::NativeView native_view) {
 }
 
 void NativeViewHost::Detach() {
-  DCHECK(native_view_);
-  native_wrapper_->NativeViewDetaching();
-  native_view_ = NULL;
+  Detach(false);
 }
 
 void NativeViewHost::SetPreferredSize(const gfx::Size& size) {
@@ -63,7 +62,7 @@ void NativeViewHost::SetPreferredSize(const gfx::Size& size) {
 void NativeViewHost::NativeViewDestroyed() {
   // Detach so we can clear our state and notify the native_wrapper_ to release
   // ref on the native view.
-  Detach();
+  Detach(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -144,6 +143,15 @@ std::string NativeViewHost::GetClassName() const {
 
 void NativeViewHost::Focus() {
   native_wrapper_->SetFocus();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeViewHost, private:
+
+void NativeViewHost::Detach(bool destroyed) {
+  DCHECK(native_view_);
+  native_wrapper_->NativeViewDetaching(destroyed);
+  native_view_ = NULL;
 }
 
 }  // namespace views

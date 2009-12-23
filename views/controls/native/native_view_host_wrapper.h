@@ -23,8 +23,9 @@ class NativeViewHostWrapper {
 
   // Called before the attached gfx::NativeView is detached from the
   // NativeViewHost, allowing the wrapper to perform platform-specific
-  // cleanup.
-  virtual void NativeViewDetaching() = 0;
+  // cleanup. |destroyed| is true if the native view is detached
+  // because it's being destroyed, or false otherwise.
+  virtual void NativeViewDetaching(bool destroyed) = 0;
 
   // Called when our associated NativeViewHost is added to a View hierarchy
   // rooted at a valid Widget.

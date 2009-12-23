@@ -112,6 +112,7 @@ WidgetGtk::WidgetGtk(Type type)
 }
 
 WidgetGtk::~WidgetGtk() {
+  DCHECK(delete_on_destroy_ || widget_ == NULL);
   if (type_ != TYPE_CHILD)
     ActiveWindowWatcherX::RemoveObserver(this);
   MessageLoopForUI::current()->RemoveObserver(this);
@@ -441,8 +442,10 @@ void WidgetGtk::Close() {
 }
 
 void WidgetGtk::CloseNow() {
-  if (widget_)
+  if (widget_) {
     gtk_widget_destroy(widget_);
+    widget_ = NULL;
+  }
 }
 
 void WidgetGtk::Show() {

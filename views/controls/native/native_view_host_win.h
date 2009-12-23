@@ -20,7 +20,7 @@ class NativeViewHostWin : public NativeViewHostWrapper {
 
   // Overridden from NativeViewHostWrapper:
   virtual void NativeViewAttached();
-  virtual void NativeViewDetaching();
+  virtual void NativeViewDetaching(bool destroyed);
   virtual void AddedToWidget();
   virtual void RemovedFromWidget();
   virtual void InstallClip(int x, int y, int w, int h);
