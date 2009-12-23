@@ -267,7 +267,7 @@ typedef enum {
   // if it recoverable.
   NPDeviceContext3DState_ParseError,
   // Wether the command buffer has encountered an unrecoverable error.
-  NPDeviceContext3DState_ErrorStatus,
+  NPDeviceContext3DState_ErrorStatus
 } NPDeviceContext3DState;
 
 typedef struct _NPDeviceContext3D
