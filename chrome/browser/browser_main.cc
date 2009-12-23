@@ -491,8 +491,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
     g_browser_process->set_application_locale("en-US");
   } else {
     // Mac starts it earlier in Platform::WillInitializeMainMessageLoop (because
-    // it is needed when loading the MainMenu.nib and the language doesn't depend
-    // on anything since it comes from Cocoa.
+    // it is needed when loading the MainMenu.nib and the language doesn't
+    // depend on anything since it comes from Cocoa.
 #if defined(OS_MACOSX)
     g_browser_process->set_application_locale(l10n_util::GetLocaleOverride());
 #else
@@ -843,6 +843,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   MetricsService* metrics = NULL;
   if (!parsed_command_line.HasSwitch(switches::kDisableMetrics)) {
+#if defined(OS_WIN)
+    if (InstallUtil::IsChromeFrameProcess())
+      MetricsLog::set_version_extension("-F");
+#endif  // defined(OS_WIN)
+
     bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
     bool record_only =
         parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly);

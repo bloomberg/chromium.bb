@@ -29,6 +29,9 @@ using base::TimeDelta;
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif
 
+// static
+std::string MetricsLog::version_extension_;
+
 // libxml take xmlChar*, which is unsigned char*
 inline const unsigned char* UnsignedChar(const char* input) {
   return reinterpret_cast<const unsigned char*>(input);
@@ -76,10 +79,10 @@ void MetricsLog::CloseLog() {
   locked_ = true;
 
   int result = xmlTextWriterEndDocument(writer_);
-  DCHECK(result >= 0);
+  DCHECK_GE(result, 0);
 
   result = xmlTextWriterFlush(writer_);
-  DCHECK(result >= 0);
+  DCHECK_GE(result, 0);
 }
 
 int MetricsLog::GetEncodedLogSize() {
@@ -297,6 +300,8 @@ std::string MetricsLog::GetVersionString() {
       FileVersionInfo::CreateFileVersionInfoForCurrentModule());
   if (version_info.get()) {
     std::string version = WideToUTF8(version_info->product_version());
+    if (!version_extension_.empty())
+      version += version_extension_;
     if (!version_info->is_official_build())
       version.append("-devel");
     return version;
@@ -683,7 +688,7 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
 void MetricsLog::RecordHistogramDelta(const Histogram& histogram,
                                       const Histogram::SampleSet& snapshot) {
   DCHECK(!locked_);
-  DCHECK(0 != snapshot.TotalCount());
+  DCHECK_NE(0, snapshot.TotalCount());
   snapshot.CheckSize(histogram);
 
   // We will ignore the MAX_INT/infinite value in the last element of range[].

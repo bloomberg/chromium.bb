@@ -106,6 +106,11 @@ class MetricsLog {
   // Get the current version of the application as a string.
   static std::string GetVersionString();
 
+  // Use |extension| in all uploaded appversions in addition to the standard
+  // version string.
+  static void set_version_extension(const std::string& extension) {
+    version_extension_ = extension;
+  }
  protected:
   // Returns a string containing the current time.
   // Virtual so that it can be overridden for testing.
@@ -183,6 +188,9 @@ class MetricsLog {
   // key/value pairs in profile_metrics.
   void WriteProfileMetrics(const std::wstring& key,
                            const DictionaryValue& profile_metrics);
+
+  // An extension that is appended to the appversion in each log.
+  static std::string version_extension_;
 
   base::Time start_time_;
   base::Time end_time_;

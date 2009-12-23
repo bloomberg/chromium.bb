@@ -236,12 +236,6 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
   command_line->AppendSwitchWithValue(switches::kAutomationClientChannelID,
       ASCIIToWide(proxy->channel_id()));
 
-  // The metrics bug out because they attempt to use URLFetcher with a
-  // null URLRequestContext::default_request_context_. Turn them off for now.
-  // TODO(robertshield): Figure out why this is. It appears to have something
-  // to do with an improperly set up profile...
-  command_line->AppendSwitch(switches::kDisableMetrics);
-
   // Run Chrome in Chrome Frame mode. In practice, this modifies the paths
   // and registry keys that Chrome looks in via the BrowserDistribution
   // mechanism.
