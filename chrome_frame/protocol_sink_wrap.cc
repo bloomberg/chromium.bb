@@ -263,8 +263,6 @@ STDMETHODIMP ProtocolSinkWrap::ReportProgress(ULONG status_code,
       if (!LowerCaseEqualsASCII(status_text, status_text_end,
                                 kTextHtmlMimeType)) {
         renderer_type_ = OTHER;
-      } else {
-        CheckAndReportChromeMimeTypeForRequest();
       }
     }
   }
