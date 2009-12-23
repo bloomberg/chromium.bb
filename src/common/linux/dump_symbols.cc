@@ -27,29 +27,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <assert.h>
-#include <cxxabi.h>
 #include <elf.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <link.h>
-#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
-#include <algorithm>
-#include <cstdarg>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <functional>
-#include <list>
-#include <map>
 #include <string>
-#include <vector>
 
+#include "common/linux/dump_stabs.h"
 #include "common/linux/dump_symbols.h"
 #include "common/linux/file_id.h"
 #include "common/linux/module.h"
@@ -59,23 +50,10 @@
 namespace {
 
 using google_breakpad::Module;
-using std::vector;
+using google_breakpad::DumpStabsHandler;
 
 // Stab section name.
 static const char *kStabName = ".stab";
-
-// Demangle using abi call.
-// Older GCC may not support it.
-static std::string Demangle(const std::string &mangled) {
-  int status = 0;
-  char *demangled = abi::__cxa_demangle(mangled.c_str(), NULL, NULL, &status);
-  if (status == 0 && demangled != NULL) {
-    std::string str(demangled);
-    free(demangled);
-    return str;
-  }
-  return std::string(mangled);
-}
 
 // Fix offset into virtual address by adding the mapped base into offsets.
 // Make life easier when want to find something by offset.
@@ -126,192 +104,6 @@ static const ElfW(Shdr) *FindSectionByName(const char *name,
       return sections + i;
   }
   return NULL;
-}
-
-// Our handler class for STABS data.
-class DumpStabsHandler: public google_breakpad::StabsHandler {
- public:
-  DumpStabsHandler(Module *module) :
-      module_(module),
-      comp_unit_base_address_(0),
-      current_function_(NULL),
-      current_source_file_(NULL),
-      current_source_file_name_(NULL) { }
-
-  bool StartCompilationUnit(const char *name, uint64_t address,
-                            const char *build_directory);
-  bool EndCompilationUnit(uint64_t address);
-  bool StartFunction(const std::string &name, uint64_t address);
-  bool EndFunction(uint64_t address);
-  bool Line(uint64_t address, const char *name, int number);
-  void Warning(const char *format, ...);
-
-  // Do any final processing necessary to make module_ contain all the
-  // data provided by the STABS reader.
-  //
-  // Because STABS does not provide reliable size information for
-  // functions and lines, we need to make a pass over the data after
-  // processing all the STABS to compute those sizes.  We take care of
-  // that here.
-  void Finalize();
-
- private:
-
-  // An arbitrary, but very large, size to use for functions whose
-  // size we can't compute properly.
-  static const uint64_t kFallbackSize = 0x10000000;
-
-  // The module we're contributing debugging info to.
-  Module *module_;
-
-  // The functions we've generated so far.  We don't add these to
-  // module_ as we parse them.  Instead, we wait until we've computed
-  // their ending address, and their lines' ending addresses.
-  //
-  // We could just stick them in module_ from the outset, but if
-  // module_ already contains data gathered from other debugging
-  // formats, that would complicate the size computation.
-  vector<Module::Function *> functions_;
-
-  // Boundary addresses.  STABS doesn't necessarily supply sizes for
-  // functions and lines, so we need to compute them ourselves by
-  // finding the next object.
-  vector<Module::Address> boundaries_;
-
-  // The base address of the current compilation unit.  We use this to
-  // recognize functions we should omit from the symbol file.  (If you
-  // know the details of why we omit these, please patch this
-  // comment.)
-  Module::Address comp_unit_base_address_;
-
-  // The function we're currently contributing lines to.
-  Module::Function *current_function_;
-
-  // The last Module::File we got a line number in.
-  Module::File *current_source_file_;
-
-  // The pointer in the .stabstr section of the name that
-  // current_source_file_ is built from.  This allows us to quickly
-  // recognize when the current line is in the same file as the
-  // previous one (which it usually is).
-  const char *current_source_file_name_;
-};
-    
-bool DumpStabsHandler::StartCompilationUnit(const char *name, uint64_t address,
-                                            const char *build_directory) {
-  assert(! comp_unit_base_address_);
-  current_source_file_name_ = name;
-  current_source_file_ = module_->FindFile(name);
-  comp_unit_base_address_ = address;
-  boundaries_.push_back(static_cast<Module::Address>(address));
-  return true;
-}
-
-bool DumpStabsHandler::EndCompilationUnit(uint64_t address) {
-  assert(comp_unit_base_address_);
-  comp_unit_base_address_ = 0;
-  current_source_file_ = NULL;
-  current_source_file_name_ = NULL;
-  if (address)
-    boundaries_.push_back(static_cast<Module::Address>(address));
-  return true;
-}
-
-bool DumpStabsHandler::StartFunction(const std::string &name,
-                                     uint64_t address) {
-  assert(! current_function_);
-  Module::Function *f = new Module::Function;
-  f->name_ = Demangle(name);
-  f->address_ = address;
-  f->size_ = 0;           // We compute this in DumpStabsHandler::Finalize().
-  f->parameter_size_ = 0; // We don't provide this information.
-  current_function_ = f;
-  boundaries_.push_back(static_cast<Module::Address>(address));
-  return true;
-}
-
-bool DumpStabsHandler::EndFunction(uint64_t address) {
-  assert(current_function_);
-  // Functions in this compilation unit should have address bigger
-  // than the compilation unit's starting address.  There may be a lot
-  // of duplicated entries for functions in the STABS data; only one
-  // entry can meet this requirement.
-  //
-  // (I don't really understand the above comment; just bringing it
-  // along from the previous code, and leaving the behaivor unchanged.
-  // If you know the whole story, please patch this comment.  --jimb)
-  if (current_function_->address_ >= comp_unit_base_address_)
-    functions_.push_back(current_function_);
-  else
-    delete current_function_;
-  current_function_ = NULL;
-  if (address)
-    boundaries_.push_back(static_cast<Module::Address>(address));
-  return true;
-}
-
-bool DumpStabsHandler::Line(uint64_t address, const char *name, int number) {
-  assert(current_function_);
-  assert(current_source_file_);
-  if (name != current_source_file_name_) {
-    current_source_file_ = module_->FindFile(name);
-    current_source_file_name_ = name;
-  }
-  Module::Line line;
-  line.address_ = address;
-  line.size_ = 0;  // We compute this in DumpStabsHandler::Finalize().
-  line.file_ = current_source_file_;
-  line.number_ = number;
-  current_function_->lines_.push_back(line);
-  return true;
-}
-
-void DumpStabsHandler::Warning(const char *format, ...) {
-  va_list args;
-  va_start(args, format);
-  vfprintf(stderr, format, args);
-  va_end(args);
-}
-
-void DumpStabsHandler::Finalize() {
-  // Sort our boundary list, so we can search it quickly.
-  sort(boundaries_.begin(), boundaries_.end());
-  // Sort all functions by address, just for neatness.
-  sort(functions_.begin(), functions_.end(),
-       Module::Function::CompareByAddress);
-  for (vector<Module::Function *>::iterator func_it = functions_.begin();
-       func_it != functions_.end();
-       func_it++) {
-    Module::Function *f = *func_it;
-    // Compute the function f's size.
-    vector<Module::Address>::iterator boundary
-        = std::upper_bound(boundaries_.begin(), boundaries_.end(), f->address_);
-    if (boundary != boundaries_.end())
-      f->size_ = *boundary - f->address_;
-    else
-      // If this is the last function in the module, and the STABS
-      // reader was unable to give us its ending address, then assign
-      // it a bogus, very large value.  This will happen at most once
-      // per module: since we've added all functions' addresses to the
-      // boundary table, only one can be the last.
-      f->size_ = kFallbackSize;
-
-    // Compute sizes for each of the function f's lines --- if it has any.
-    if (! f->lines_.empty()) {
-      stable_sort(f->lines_.begin(), f->lines_.end(),
-                  Module::Line::CompareByAddress);
-      vector<Module::Line>::iterator last_line = f->lines_.end() - 1;
-      for (vector<Module::Line>::iterator line_it = f->lines_.begin();
-           line_it != last_line; line_it++)
-        line_it[0].size_ = line_it[1].address_ - line_it[0].address_;
-      // Compute the size of the last line from f's end address.
-      last_line->size_ = (f->address_ + f->size_) - last_line->address_;
-    }
-  }
-  // Now that everything has a size, add our functions to the module, and
-  // dispose of our private list.
-  module_->AddFunctions(functions_.begin(), functions_.end());
-  functions_.clear();
 }
 
 static bool LoadSymbols(const ElfW(Shdr) *stab_section,

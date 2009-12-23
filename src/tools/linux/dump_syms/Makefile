@@ -61,6 +61,7 @@ COVERAGE_SOURCES =
 ### debugging information in Linux executables.
 all:: dump_syms
 dump_syms:					\
+	dump_stabs.o				\
 	dump_syms.o				\
 	dump_symbols.o				\
 	file_id.o				\
@@ -74,6 +75,7 @@ clean::
 dump_syms.o: dump_syms.cc
 
 VPATH += $(SRC)/common/linux
+dump_stabs.o: dump_stabs.cc
 dump_symbols.o: dump_symbols.cc
 file_id.o: file_id.cc
 module.o: module.cc
