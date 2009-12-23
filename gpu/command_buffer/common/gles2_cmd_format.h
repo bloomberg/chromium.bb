@@ -8,8 +8,11 @@
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_H_
 
 // This is here because service side code must include the system's version of
-// the GL headers where as client side code includes the Chrome version.
-#ifdef GLES2_GPU_SERVICE
+// the GL headers where as client side code includes the Chrome version. Also
+// the unit test code must include a mock GL header.
+#if defined(UNIT_TEST)
+#include "gpu/command_buffer/service/gl_mock.h"
+#elif defined(GLES2_GPU_SERVICE)
 #include <GL/glew.h>
 #if defined(OS_WIN)
 #include <GL/wglew.h>
@@ -26,6 +29,8 @@
 
 namespace gpu {
 namespace gles2 {
+
+#pragma pack(push, 1)
 
 #include "gpu/command_buffer/common/gles2_cmd_format_autogen.h"
 
@@ -273,6 +278,7 @@ COMPILE_ASSERT(
 COMPILE_ASSERT(offsetof(GetUniformLocationImmediate, data_size) == 16,
                OffsetOf_GetUniformLocationImmediate_data_size_not_16);
 
+#pragma pack(pop)
 
 }  // namespace gles2
 }  // namespace gpu

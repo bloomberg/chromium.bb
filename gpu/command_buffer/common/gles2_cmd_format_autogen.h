@@ -1,7 +1,5 @@
 // This file is auto-generated. DO NOT EDIT!
 
-#pragma pack(push, 1)
-
 struct ActiveTexture {
   typedef ActiveTexture ValueType;
   static const CommandId kCmdId = kActiveTexture;
@@ -8082,5 +8080,4 @@ COMPILE_ASSERT(sizeof(SwapBuffers) == 4,
 COMPILE_ASSERT(offsetof(SwapBuffers, header) == 0,
                OffsetOf_SwapBuffers_header_not_0);
 
-#pragma pack(pop)
 

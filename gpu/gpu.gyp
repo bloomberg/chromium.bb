@@ -5,6 +5,19 @@
 {
   'variables': {
     'chromium_code': 1,
+    # This is defined here because we need to compile this set of files
+    # twice with different defines. Once so it calls real GL, again so it
+    # calls mock GL for the unit tests.
+    'gpu_source_files': [
+      'command_buffer/service/gles2_cmd_decoder.h',
+      'command_buffer/service/gles2_cmd_decoder_autogen.h',
+      'command_buffer/service/gles2_cmd_decoder.cc',
+      'command_buffer/service/gles2_cmd_validation.h',
+      'command_buffer/service/gles2_cmd_validation.cc',
+      'command_buffer/service/gles2_cmd_validation_autogen.h',
+      'command_buffer/service/gles2_cmd_validation_implementation_autogen.h',
+      'command_buffer/service/gl_utils.h',
+    ],
   },
   'includes': [
     '../build/common.gypi',
@@ -173,10 +186,6 @@
       'direct_dependent_settings': {
         'sources': [
           'command_buffer/common/bitfield_helpers_test.cc',
-          'command_buffer/common/gles2_cmd_format_test.cc',
-          'command_buffer/common/gles2_cmd_format_test_autogen.h',
-          'command_buffer/common/gles2_cmd_id_test.cc',
-          'command_buffer/common/gles2_cmd_id_test_autogen.h',
         ],
       },
     },
@@ -207,7 +216,7 @@
       },
     },
     {
-      'target_name': 'command_buffer_service',
+      'target_name': 'command_buffer_service_impl',
       'type': 'static_library',
       'include_dirs': [
         '..',
@@ -219,7 +228,6 @@
       },
       'dependencies': [
         'command_buffer_common',
-        'gl_libs',
       ],
       'sources': [
         'command_buffer/service/common_decoder.cc',
@@ -229,14 +237,6 @@
         'command_buffer/service/command_buffer_service.h',
         'command_buffer/service/cmd_parser.cc',
         'command_buffer/service/cmd_parser.h',
-        'command_buffer/service/gles2_cmd_decoder.h',
-        'command_buffer/service/gles2_cmd_decoder_autogen.h',
-        'command_buffer/service/gles2_cmd_decoder.cc',
-        'command_buffer/service/gles2_cmd_validation.h',
-        'command_buffer/service/gles2_cmd_validation.cc',
-        'command_buffer/service/gles2_cmd_validation_autogen.h',
-        'command_buffer/service/gles2_cmd_validation_implementation_autogen.h',
-        'command_buffer/service/gl_utils.h',
         'command_buffer/service/gpu_processor.h',
         'command_buffer/service/gpu_processor.cc',
         'command_buffer/service/gpu_processor_mock.h',
@@ -265,15 +265,44 @@
       ],
     },
     {
+      'target_name': 'command_buffer_service',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
+      'dependencies': [
+        'command_buffer_service_impl',
+        'gl_libs',
+      ],
+      'sources': [
+        '<@(gpu_source_files)',
+      ],
+    },
+    {
       'target_name': 'command_buffer_service_unittests',
       'type': 'none',
       'direct_dependent_settings': {
         'sources': [
+          '<@(gpu_source_files)',
           'command_buffer/service/cmd_parser_test.cc',
           'command_buffer/service/command_buffer_service_unittest.cc',
           'command_buffer/service/common_decoder_unittest.cc',
           'command_buffer/service/gpu_processor_unittest.cc',
           'command_buffer/service/resource_test.cc',
+          'command_buffer/service/gl_interface.h',
+          'command_buffer/service/gl_interface.cc',
+          'command_buffer/service/gl_mock.h',
+          'command_buffer/service/gl_mock.cc',
+          'command_buffer/service/gles2_cmd_decoder_unittest.cc',
+          'command_buffer/common/gles2_cmd_format_test.cc',
+          'command_buffer/common/gles2_cmd_format_test_autogen.h',
+          'command_buffer/common/gles2_cmd_id_test.cc',
+          'command_buffer/common/gles2_cmd_id_test_autogen.h',
         ],
       },
     },
@@ -308,7 +337,7 @@
         'command_buffer_client_unittests',
         'command_buffer_common',
         'command_buffer_common_unittests',
-        'command_buffer_service',
+        'command_buffer_service_impl',
         'command_buffer_service_unittests',
       ],
     },

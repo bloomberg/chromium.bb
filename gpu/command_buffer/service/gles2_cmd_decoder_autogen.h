@@ -72,7 +72,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleBindBuffer(
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   DoBindBuffer(target, buffer);
@@ -88,7 +88,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleBindFramebuffer(
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumFrameBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glBindFramebufferEXT(target, framebuffer);
@@ -104,7 +104,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleBindRenderbuffer(
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumRenderBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glBindRenderbufferEXT(target, renderbuffer);
@@ -120,7 +120,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleBindTexture(
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureBindTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glBindTexture(target, texture);
@@ -141,7 +141,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleBlendEquation(
     uint32 immediate_data_size, const gles2::BlendEquation& c) {
   GLenum mode = static_cast<GLenum>(c.mode);
   if (!ValidateGLenumEquation(mode)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glBlendEquation(mode);
@@ -153,11 +153,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleBlendEquationSeparate(
   GLenum modeRGB = static_cast<GLenum>(c.modeRGB);
   GLenum modeAlpha = static_cast<GLenum>(c.modeAlpha);
   if (!ValidateGLenumEquation(modeRGB)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumEquation(modeAlpha)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glBlendEquationSeparate(modeRGB, modeAlpha);
@@ -169,11 +169,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleBlendFunc(
   GLenum sfactor = static_cast<GLenum>(c.sfactor);
   GLenum dfactor = static_cast<GLenum>(c.dfactor);
   if (!ValidateGLenumSrcBlendFactor(sfactor)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumDstBlendFactor(dfactor)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glBlendFunc(sfactor, dfactor);
@@ -187,19 +187,19 @@ parse_error::ParseError GLES2DecoderImpl::HandleBlendFuncSeparate(
   GLenum srcAlpha = static_cast<GLenum>(c.srcAlpha);
   GLenum dstAlpha = static_cast<GLenum>(c.dstAlpha);
   if (!ValidateGLenumSrcBlendFactor(srcRGB)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumDstBlendFactor(dstRGB)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumSrcBlendFactor(srcAlpha)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumDstBlendFactor(dstAlpha)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
@@ -215,7 +215,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleBufferSubData(
   const void* data = GetSharedMemoryAs<const void*>(
       c.data_shm_id, c.data_shm_offset, data_size);
   if (!ValidateGLenumBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (data == NULL) {
@@ -234,7 +234,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleBufferSubDataImmediate(
   const void* data = GetImmediateDataAs<const void*>(
       c, data_size, immediate_data_size);
   if (!ValidateGLenumBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (data == NULL) {
@@ -248,7 +248,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleCheckFramebufferStatus(
     uint32 immediate_data_size, const gles2::CheckFramebufferStatus& c) {
   GLenum target = static_cast<GLenum>(c.target);
   if (!ValidateGLenumFrameBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glCheckFramebufferStatusEXT(target);
@@ -321,7 +321,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexSubImage2D(
   const void* data = GetSharedMemoryAs<const void*>(
       c.data_shm_id, c.data_shm_offset, data_size);
   if (!ValidateGLenumTextureTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (data == NULL) {
@@ -348,7 +348,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexSubImage2DImmediate
   const void* data = GetImmediateDataAs<const void*>(
       c, data_size, immediate_data_size);
   if (!ValidateGLenumTextureTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (data == NULL) {
@@ -370,7 +370,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleCopyTexImage2D(
   GLsizei height = static_cast<GLsizei>(c.height);
   GLint border = static_cast<GLint>(c.border);
   if (!ValidateGLenumTextureTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glCopyTexImage2D(target, level, internalformat, x, y, width, height, border);
@@ -388,7 +388,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleCopyTexSubImage2D(
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   if (!ValidateGLenumTextureTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
@@ -406,7 +406,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleCreateShader(
     uint32 immediate_data_size, const gles2::CreateShader& c) {
   GLenum type = static_cast<GLenum>(c.type);
   if (!ValidateGLenumShaderType(type)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   uint32 client_id = c.client_id;
@@ -418,7 +418,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleCullFace(
     uint32 immediate_data_size, const gles2::CullFace& c) {
   GLenum mode = static_cast<GLenum>(c.mode);
   if (!ValidateGLenumFaceType(mode)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glCullFace(mode);
@@ -533,7 +533,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleDepthFunc(
     uint32 immediate_data_size, const gles2::DepthFunc& c) {
   GLenum func = static_cast<GLenum>(c.func);
   if (!ValidateGLenumCmpFunction(func)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glDepthFunc(func);
@@ -575,7 +575,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleDisable(
     uint32 immediate_data_size, const gles2::Disable& c) {
   GLenum cap = static_cast<GLenum>(c.cap);
   if (!ValidateGLenumCapability(cap)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glDisable(cap);
@@ -595,7 +595,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleDrawArrays(
   GLint first = static_cast<GLint>(c.first);
   GLsizei count = static_cast<GLsizei>(c.count);
   if (!ValidateGLenumDrawMode(mode)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   DoDrawArrays(mode, first, count);
@@ -606,7 +606,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleEnable(
     uint32 immediate_data_size, const gles2::Enable& c) {
   GLenum cap = static_cast<GLenum>(c.cap);
   if (!ValidateGLenumCapability(cap)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glEnable(cap);
@@ -643,15 +643,15 @@ parse_error::ParseError GLES2DecoderImpl::HandleFramebufferRenderbuffer(
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumFrameBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumAttachment(attachment)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumRenderBufferTarget(renderbuffertarget)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glFramebufferRenderbufferEXT(
@@ -671,15 +671,15 @@ parse_error::ParseError GLES2DecoderImpl::HandleFramebufferTexture2D(
   }
   GLint level = static_cast<GLint>(c.level);
   if (!ValidateGLenumFrameBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumAttachment(attachment)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureTarget(textarget)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glFramebufferTexture2DEXT(target, attachment, textarget, texture, level);
@@ -690,7 +690,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleFrontFace(
     uint32 immediate_data_size, const gles2::FrontFace& c) {
   GLenum mode = static_cast<GLenum>(c.mode);
   if (!ValidateGLenumFaceMode(mode)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glFrontFace(mode);
@@ -727,7 +727,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleGenerateMipmap(
     uint32 immediate_data_size, const gles2::GenerateMipmap& c) {
   GLenum target = static_cast<GLenum>(c.target);
   if (!ValidateGLenumTextureBindTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glGenerateMipmapEXT(target);
@@ -837,11 +837,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetBufferParameteriv(
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumBufferParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -887,15 +887,15 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetFramebufferAttachmentParamete
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumFrameBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumAttachment(attachment)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumFrameBufferParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -934,7 +934,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetProgramiv(
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumProgramParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -981,11 +981,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumRenderBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumRenderBufferParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -1009,7 +1009,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetShaderiv(
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumShaderParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -1077,7 +1077,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetString(
     uint32 immediate_data_size, const gles2::GetString& c) {
   GLenum name = static_cast<GLenum>(c.name);
   if (!ValidateGLenumStringType(name)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glGetString(name);
@@ -1094,11 +1094,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetTexParameterfv(
   params = GetSharedMemoryAs<GLfloat*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumTextureTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -1118,11 +1118,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetTexParameteriv(
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumTextureTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -1142,7 +1142,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetVertexAttribfv(
   params = GetSharedMemoryAs<GLfloat*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumVertexAttribute(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -1162,7 +1162,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetVertexAttribiv(
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumVertexAttribute(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -1177,11 +1177,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleHint(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum mode = static_cast<GLenum>(c.mode);
   if (!ValidateGLenumHintTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumHintMode(mode)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glHint(target, mode);
@@ -1207,7 +1207,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleIsEnabled(
   GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
   if (!ValidateGLenumCapability(cap)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   *result_dst = glIsEnabled(cap);
@@ -1312,11 +1312,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleRenderbufferStorage(
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   if (!ValidateGLenumRenderBufferTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumRenderBufferFormat(internalformat)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glRenderbufferStorageEXT(target, internalformat, width, height);
@@ -1347,7 +1347,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleStencilFunc(
   GLint ref = static_cast<GLint>(c.ref);
   GLuint mask = static_cast<GLuint>(c.mask);
   if (!ValidateGLenumCmpFunction(func)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glStencilFunc(func, ref, mask);
@@ -1361,11 +1361,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleStencilFuncSeparate(
   GLint ref = static_cast<GLint>(c.ref);
   GLuint mask = static_cast<GLuint>(c.mask);
   if (!ValidateGLenumFaceType(face)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumCmpFunction(func)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glStencilFuncSeparate(face, func, ref, mask);
@@ -1384,7 +1384,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleStencilMaskSeparate(
   GLenum face = static_cast<GLenum>(c.face);
   GLuint mask = static_cast<GLuint>(c.mask);
   if (!ValidateGLenumFaceType(face)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glStencilMaskSeparate(face, mask);
@@ -1397,15 +1397,15 @@ parse_error::ParseError GLES2DecoderImpl::HandleStencilOp(
   GLenum zfail = static_cast<GLenum>(c.zfail);
   GLenum zpass = static_cast<GLenum>(c.zpass);
   if (!ValidateGLenumStencilOp(fail)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumStencilOp(zfail)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumStencilOp(zpass)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glStencilOp(fail, zfail, zpass);
@@ -1419,19 +1419,19 @@ parse_error::ParseError GLES2DecoderImpl::HandleStencilOpSeparate(
   GLenum zfail = static_cast<GLenum>(c.zfail);
   GLenum zpass = static_cast<GLenum>(c.zpass);
   if (!ValidateGLenumFaceType(face)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumStencilOp(fail)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumStencilOp(zfail)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumStencilOp(zpass)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glStencilOpSeparate(face, fail, zfail, zpass);
@@ -1444,11 +1444,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexParameterf(
   GLenum pname = static_cast<GLenum>(c.pname);
   GLfloat param = static_cast<GLfloat>(c.param);
   if (!ValidateGLenumTextureBindTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glTexParameterf(target, pname, param);
@@ -1464,11 +1464,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexParameterfv(
   const GLfloat* params = GetSharedMemoryAs<const GLfloat*>(
       c.params_shm_id, c.params_shm_offset, data_size);
   if (!ValidateGLenumTextureBindTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -1487,11 +1487,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexParameterfvImmediate(
   const GLfloat* params = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (!ValidateGLenumTextureBindTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -1507,11 +1507,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexParameteri(
   GLenum pname = static_cast<GLenum>(c.pname);
   GLint param = static_cast<GLint>(c.param);
   if (!ValidateGLenumTextureBindTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glTexParameteri(target, pname, param);
@@ -1527,11 +1527,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexParameteriv(
   const GLint* params = GetSharedMemoryAs<const GLint*>(
       c.params_shm_id, c.params_shm_offset, data_size);
   if (!ValidateGLenumTextureBindTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -1550,11 +1550,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexParameterivImmediate(
   const GLint* params = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
   if (!ValidateGLenumTextureBindTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureParameter(pname)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (params == NULL) {
@@ -1579,15 +1579,15 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexSubImage2D(
   const void* pixels = GetSharedMemoryAs<const void*>(
       c.pixels_shm_id, c.pixels_shm_offset, data_size);
   if (!ValidateGLenumTextureTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureFormat(format)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumPixelType(type)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (pixels == NULL) {
@@ -1613,15 +1613,15 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexSubImage2DImmediate(
   const void* pixels = GetImmediateDataAs<const void*>(
       c, data_size, immediate_data_size);
   if (!ValidateGLenumTextureTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumTextureFormat(format)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (!ValidateGLenumPixelType(type)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   if (pixels == NULL) {

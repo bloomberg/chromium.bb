@@ -140,7 +140,9 @@ GLenum GLErrorBitToGLError(uint32 error_bit) {
 
 }  // anonymous namespace.
 
-#if defined(OS_LINUX)
+#if defined(UNIT_TEST)
+GLES2Decoder::GLES2Decoder() {
+#elif defined(OS_LINUX)
 GLES2Decoder::GLES2Decoder()
     : debug_(false),
       window_(NULL) {
@@ -517,7 +519,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // The program in current use through glUseProgram.
   ProgramInfo* current_program_info_;
 
-#if defined(OS_WIN)
+#if defined(UNIT_TEST)
+#elif defined(OS_WIN)
   HDC device_context_;
   HGLRC gl_context_;
 #endif
@@ -541,7 +544,8 @@ GLES2DecoderImpl::GLES2DecoderImpl()
       bound_element_array_buffer_(0),
       max_vertex_attribs_(0),
       current_program_info_(NULL),
-#ifdef OS_WIN
+#if defined(UNIT_TEST)
+#elif defined(OS_WIN)
       device_context_(NULL),
       gl_context_(NULL),
 #endif
@@ -570,8 +574,10 @@ bool GLES2DecoderImpl::Initialize() {
   return true;
 }
 
-#if defined(OS_WIN)
 namespace {
+
+#if defined(UNIT_TEST)
+#elif defined(OS_WIN)
 
 const PIXELFORMATDESCRIPTOR kPixelFormatDescriptor = {
   sizeof(kPixelFormatDescriptor),    // Size of structure.
@@ -739,6 +745,8 @@ bool GetWindowsPixelFormat(HWND window,
   return true;
 }
 
+#endif  // OS_WIN
+
 // These commands convert from c calls to local os calls.
 void GLGenBuffersHelper(
     GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
@@ -784,7 +792,6 @@ void GLDeleteTexturesHelper(
 }
 
 }  // anonymous namespace
-#endif
 
 bool GLES2DecoderImpl::RegisterObjects(
     GLsizei n, const GLuint* client_ids, const GLuint* service_ids) {
@@ -818,7 +825,8 @@ void GLES2DecoderImpl::RemoveBufferInfo(GLuint buffer_id) {
 }
 
 bool GLES2DecoderImpl::InitPlatformSpecific() {
-#if defined(OS_WIN)
+#if defined(UNIT_TEST)
+#elif defined(OS_WIN)
   device_context_ = ::GetDC(hwnd());
 
   int pixel_format;
@@ -858,6 +866,7 @@ bool GLES2DecoderImpl::InitPlatformSpecific() {
 }
 
 bool GLES2DecoderImpl::InitGlew() {
+#if !defined(UNIT_TEST)
   DLOG(INFO) << "Initializing GL and GLEW for GLES2Decoder.";
 
   GLenum glew_error = glewInit();
@@ -907,12 +916,14 @@ bool GLES2DecoderImpl::InitGlew() {
   }
   if (!extensions_found)
     return false;
+#endif
 
   return true;
 }
 
 void GLES2DecoderImpl::Destroy() {
-#ifdef OS_LINUX
+#if defined(UNIT_TEST)
+#elif defined(OS_LINUX)
   DCHECK(window());
   window()->Destroy();
 #endif
@@ -1073,11 +1084,10 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
 // NOTE: If you need to know the results of SwapBuffers (like losing
 //    the context) then add a new command. Do NOT make SwapBuffers synchronous.
 void GLES2DecoderImpl::DoSwapBuffers() {
-#ifdef OS_WIN
+#if defined(UNIT_TEST)
+#elif defined(OS_WIN)
   ::SwapBuffers(device_context_);
-#endif
-
-#ifdef OS_LINUX
+#elif defined(OS_LINUX)
   DCHECK(window());
   window()->SwapBuffers();
 #endif

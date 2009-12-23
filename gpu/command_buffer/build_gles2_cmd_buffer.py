@@ -2449,7 +2449,7 @@ class EnumArgument(Argument):
 
   def WriteValidationCode(self, file):
     file.Write("  if (!Validate%s(%s)) {\n" % (self.enum_type, self.name))
-    file.Write("    SetGLError(GL_INVALID_VALUE);\n")
+    file.Write("    SetGLError(GL_INVALID_ENUM);\n")
     file.Write("    return parse_error::kParseNoError;\n")
     file.Write("  }\n")
 
@@ -3047,13 +3047,10 @@ class GLGenerator(object):
     """Writes the command buffer format"""
     file = CWriter(filename)
     self.WriteHeader(file)
-    file.Write("#pragma pack(push, 1)\n")
-    file.Write("\n")
 
     for func in self.functions:
       func.WriteStruct(file)
 
-    file.Write("#pragma pack(pop)\n")
     file.Write("\n")
     file.Close()
 
