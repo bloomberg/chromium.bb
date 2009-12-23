@@ -145,17 +145,17 @@ bool Module::Write(FILE *stream) {
   for (vector<Function *>::const_iterator func_it = functions_.begin();
        func_it != functions_.end(); func_it++) {
     Function *func = *func_it;
-    if (0 > fprintf(stream, "FUNC %lx %lx %lu %s\n",
-                    (unsigned long) (func->address_ - load_address_),
-                    (unsigned long) func->size_,
-                    (unsigned long) func->parameter_size_,
+    if (0 > fprintf(stream, "FUNC %llx %llx %llx %s\n",
+                    (unsigned long long) (func->address_ - load_address_),
+                    (unsigned long long) func->size_,
+                    (unsigned long long) func->parameter_size_,
                     func->name_.c_str()))
       return ReportError();
     for (vector<Line>::iterator line_it = func->lines_.begin();
          line_it != func->lines_.end(); line_it++)
-      if (0 > fprintf(stream, "%lx %lx %d %d\n",
-                      (unsigned long) (line_it->address_ - load_address_),
-                      (unsigned long) line_it->size_,
+      if (0 > fprintf(stream, "%llx %llx %d %d\n",
+                      (unsigned long long) (line_it->address_ - load_address_),
+                      (unsigned long long) line_it->size_,
                       line_it->number_,
                       line_it->file_->source_id_))
         return ReportError();
