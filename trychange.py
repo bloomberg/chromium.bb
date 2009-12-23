@@ -12,6 +12,7 @@ import getpass
 import logging
 import optparse
 import os
+import posixpath
 import shutil
 import socket
 import subprocess
@@ -32,12 +33,11 @@ __version__ = '1.2'
 
 # Constants
 HELP_STRING = "Sorry, Tryserver is not available."
-USAGE = r"""%prog [change_name] [options]
+USAGE = r"""%prog [options]
 
 Client-side script to send a try job to the try server. It communicates to
 the try server by either writting to a svn repository or by directly connecting
 to the server by HTTP.
-
 
 Examples:
   Try a change against a particular revision:
@@ -54,7 +54,10 @@ Examples:
   Running only on a 'mac' slave with revision 123 and clobber first; specify
   manually the 3 source files to use for the try job:
     %prog --bot mac --revision 123 --clobber -f src/a.cc -f src/a.h
-            -f include/b.h"""
+            -f include/b.h
+
+  When called from gcl, use the format gcl try <change_name>.
+"""
 
 class InvalidScript(Exception):
   def __str__(self):
@@ -77,10 +80,56 @@ class SCM(object):
     self.options = options
     self.files = self.options.files
     self.options.files = None
+    self.codereview_settings = None
+    self.codereview_settings_file = 'codereview.settings'
 
   def GetFileNames(self):
     """Return the list of files in the diff."""
     return self.files
+
+  def GetCodeReviewSetting(self, key):
+    """Returns a value for the given key for this repository.
+
+    Uses gcl-style settings from the repository."""
+    if self.codereview_settings is None:
+      self.codereview_settings = {}
+      settings_file = self.ReadRootFile(self.codereview_settings_file)
+      if settings_file:
+        for line in settings_file.splitlines():
+          if not line or line.lstrip().startswith('#'):
+            continue
+          k, v = line.split(":", 1)
+          self.codereview_settings[k.strip()] = v.strip()
+    return self.codereview_settings.get(key, '')
+
+  def GclStyleSettings(self):
+    """Set default settings based on the gcl-style settings from the
+    repository."""
+    settings = {
+      'port': self.GetCodeReviewSetting('TRYSERVER_HTTP_PORT'),
+      'host': self.GetCodeReviewSetting('TRYSERVER_HTTP_HOST'),
+      'svn_repo': self.GetCodeReviewSetting('TRYSERVER_SVN_URL'),
+      'project': self.GetCodeReviewSetting('TRYSERVER_PROJECT'),
+      'root': self.GetCodeReviewSetting('TRYSERVER_ROOT'),
+      'patchlevel': self.GetCodeReviewSetting('TRYSERVER_PATCHLEVEL'),
+    }
+    for (k, v) in settings.iteritems():
+      if v and getattr(self.options, k) is None:
+        setattr(self.options, k, v)
+
+  def GclientStyleSettings(self):
+    """Find the root, assuming a gclient-style checkout."""
+    if not self.options.no_gclient and not self.options.root:
+      root = self.GetLocalRoot()
+      gclient_root = gclient_utils.FindGclientRoot(root)
+      if gclient_root:
+        self.options.root = gclient_utils.PathDifference(gclient_root, root)
+
+  def AutomagicalSettings(self):
+    """Determines settings based on supported code review and checkout tools.
+    """
+    self.GclStyleSettings()
+    self.GclientStyleSettings()
 
 
 class SVN(SCM):
@@ -91,6 +140,23 @@ class SVN(SCM):
     if not self.options.email:
       # Assumes the svn credential is an email address.
       self.options.email = scm.SVN.GetEmail(self.checkout_root)
+
+  def ReadRootFile(self, filename):
+    try:
+      # Try to search on the subversion repository for the file.
+      import gcl
+      data = gcl.GetCachedFile(filename, use_root=True)
+      logging.debug('%s:\n%s' % (filename, data))
+      return data
+    except ImportError:
+      try:
+        data = gclient_utils.FileRead(os.path.join(self.checkout_root,
+                                                   filename))
+        logging.debug('%s:\n%s' % (filename, data))
+        return data
+      except (IOError, OSError):
+        logging.debug('%s:\nNone' % filename)
+        return None
 
   def GenerateDiff(self):
     """Returns a string containing the diff for the given file list.
@@ -113,18 +179,6 @@ class SVN(SCM):
     """Return the path of the repository root."""
     return self.checkout_root
 
-  def GetBots(self):
-    try:
-      # Try to search on the subversion repository for the file.
-      import gcl
-      return gcl.GetCachedFile('PRESUBMIT.py', use_root=True)
-    except ImportError:
-      try:
-        return gclient_utils.FileRead(os.path.join(self.checkout_root,
-                                                   'PRESUBMIT.py'))
-      except (IOError, OSError):
-        return None
-
 
 class GIT(SCM):
   """Gathers the options and diff for a git checkout."""
@@ -136,6 +190,16 @@ class GIT(SCM):
     if not self.options.email:
       self.options.email = scm.GIT.GetEmail(self.checkout_root)
 
+  def ReadRootFile(self, filename):
+    try:
+      # A git checkout is always a full checkout.
+      data = gclient_utils.FileRead(os.path.join(self.checkout_root, filename))
+      logging.debug('%s:\n%s' % (filename, data))
+      return data
+    except (IOError, OSError):
+      logging.debug('%s:\nNone' % filename)
+      return None
+
   def GetLocalRoot(self):
     """Return the path of the repository root."""
     return self.checkout_root
@@ -143,14 +207,6 @@ class GIT(SCM):
   def GenerateDiff(self):
     # For now, ignores self.files
     return scm.GIT.GenerateDiff(self.checkout_root, full_move=True)
-
-  def GetBots(self):
-    try:
-      # A git checkout is always a full checkout.
-      return gclient_utils.FileRead(os.path.join(self.checkout_root,
-                                                 'PRESUBMIT.py'))
-    except (IOError, OSError):
-      return None
 
 
 def _ParseSendChangeOptions(options):
@@ -193,6 +249,7 @@ def _SendChangeHTTP(options):
         'server port to connect to.')
 
   values = _ParseSendChangeOptions(options)
+  description = ''.join("%s=%s\n" % (k,v) for (k,v) in values.iteritems())
   values['patch'] = options.diff
 
   url = 'http://%s:%s/send_try_patch' % (options.host, options.port)
@@ -204,17 +261,16 @@ def _SendChangeHTTP(options):
     else:
       proxies = {'http': options.proxy, 'https': options.proxy}
 
+  logging.info(description)
+  logging.info(url)
+  logging.info(options.diff)
   if options.dry_run:
-    # Last minute fake.
-    for (k,v) in values.iteritems():
-      if k != 'patch':
-        print("%s=%s" % (k,v))
-    print values['patch']
     return
 
   try:
     connection = urllib.urlopen(url, urllib.urlencode(values), proxies=proxies)
   except IOError, e:
+    logging.warning(str(e))
     if (values.get('bot') and len(e.args) > 2 and
         e.args[2] == 'got a bad status line'):
       raise NoTryServerAccess('%s is unaccessible. Bad --bot argument?' % url)
@@ -236,14 +292,11 @@ def _SendChangeSVN(options):
                             ' try server svn repository to connect to.')
 
   values = _ParseSendChangeOptions(options)
-  description = ''
-  for (k,v) in values.iteritems():
-    description += "%s=%s\n" % (k,v)
-
+  description = ''.join("%s=%s\n" % (k,v) for (k,v) in values.iteritems())
+  logging.info(description)
+  logging.info(options.svn_repo)
+  logging.info(options.diff)
   if options.dry_run:
-    # Last minute fake.
-    print str(descriptions)
-    print diff
     return
 
   # Do an empty checkout.
@@ -308,14 +361,14 @@ def GuessVCS(options, cwd):
   __pychecker__ = 'no-returnvalues'
   # Subversion has a .svn in all working directories.
   if os.path.isdir(os.path.join(cwd, '.svn')):
-    logging.info("Guessed VCS = Subversion")
+    logging.info("GuessVCS(%s) = Subversion" % cwd)
     return SVN(options, cwd)
 
   # Git has a command to test if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
   try:
     gclient_utils.CheckCall(["git", "rev-parse", "--is-inside-work-tree"], cwd)
-    logging.info("Guessed VCS = Git")
+    logging.info("GuessVCS(%s) = Git" % cwd)
     return GIT(options, cwd)
   except gclient_utils.CheckCallError, e:
     if e.retcode != 2:  # ENOENT -- they don't have git installed.
@@ -338,7 +391,8 @@ def TryChange(argv,
   parser = optparse.OptionParser(usage=USAGE,
                                  version=__version__,
                                  prog=prog)
-
+  parser.add_option("-v", "--verbose", action="count", default=0,
+                    help="Prints debugging infos")
   group = optparse.OptionGroup(parser, "Result and status")
   group.add_option("-u", "--user", default=getpass.getuser(),
                    help="Owner user name [default: %default]")
@@ -399,9 +453,11 @@ def TryChange(argv,
                         "patch created in a subdirectory")
   group.add_option("--patchlevel", type='int', metavar="LEVEL",
                    help="Used as -pN parameter to patch")
-  group.add_option("--sub_rep", action="append", default=["."],
+  group.add_option("--sub_rep", action="append", default=[],
                    help="Subcheckout to use in addition. This is mainly "
                         "useful for gclient-style checkouts.")
+  group.add_option("--no_gclient", action="store_true",
+                   help="Disable automatic search for gclient checkout.")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Access the try server by HTTP")
@@ -434,24 +490,36 @@ def TryChange(argv,
   if len(args) == 1 and args[0] == 'help':
     parser.print_help()
 
-  # Switch the default accordingly if there was no default send_patch.
-  if not options.send_patch:
-    if options.port and options.host:
-      options.send_patch = _SendChangeHTTP
-    elif options.svn_repo:
-      options.send_patch = _SendChangeSVN
-    else:
-      parser.error('Please specify an access method.')
+  if options.verbose == 0:
+    logging.basicConfig(level=logging.ERROR)
+  elif options.verbose == 1:
+    logging.basicConfig(level=logging.WARNING)
+  elif options.verbose == 2:
+    logging.basicConfig(level=logging.INFO)
+  elif options.verbose > 2:
+    logging.basicConfig(level=logging.DEBUG)
 
   try:
-    # Process the VCS in any case at least to retrieve the email address.
+    # Always include os.getcwd() in the checkout settings.
     checkouts = []
+    checkouts.append(GuessVCS(options, os.getcwd()))
+    checkouts[0].AutomagicalSettings()
     for item in options.sub_rep:
       checkout = GuessVCS(options, item)
       if checkout.GetLocalRoot() in [c.GetLocalRoot() for c in checkouts]:
         parser.error('Specified the root %s two times.' %
                      checkout.GetLocalRoot())
       checkouts.append(checkout)
+
+    # If there was no transport selected yet, now we must have enough data to
+    # select one.
+    if not options.send_patch:
+      if options.port and options.host:
+        options.send_patch = _SendChangeHTTP
+      elif options.svn_repo:
+        options.send_patch = _SendChangeSVN
+      else:
+        parser.error('Please specify an access method.')
 
     # Convert options.diff into the content of the diff.
     if options.url:
@@ -472,7 +540,7 @@ def TryChange(argv,
         path_diff = gclient_utils.PathDifference(root, checkout.GetLocalRoot())
         for i in range(len(diff)):
           if diff[i].startswith('--- ') or diff[i].startswith('+++ '):
-            diff[i] = diff[i][0:3] + path_diff + diff[i][4:]
+            diff[i] = diff[i][0:4] + posixpath.join(path_diff, diff[i][4:])
         diffs.extend(diff)
       options.diff = ''.join(diffs)
 
@@ -482,7 +550,7 @@ def TryChange(argv,
       # selection.
       try:
         import presubmit_support
-        root_presubmit = checkouts[0].GetBots()
+        root_presubmit = checkouts[0].ReadRootFile('PRESUBMIT.py')
         options.bot = presubmit_support.DoGetTrySlaves(
             checkouts[0].GetFileNames(),
             checkouts[0].GetLocalRoot(),

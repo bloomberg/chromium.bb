@@ -15,6 +15,7 @@
 """Generic utils."""
 
 import errno
+import logging
 import os
 import re
 import stat
@@ -40,6 +41,7 @@ def CheckCall(command, cwd=None, print_error=True):
 
   Works on python 2.4
   """
+  logging.debug(command)
   try:
     stderr = None
     if not print_error:
@@ -162,6 +164,7 @@ def RemoveDirectory(*path):
   In the ordinary case, this is not a problem: for our purposes, the user
   will never lack write permission on *path's parent.
   """
+  logging.debug(path)
   file_path = os.path.join(*path)
   if not os.path.exists(file_path):
     return
@@ -256,7 +259,7 @@ def SubprocessCallAndFilter(command,
   exit with an exit status of fail_status.  If fail_status is None (the
   default), gclient will raise an Error exception.
   """
-
+  logging.debug(command)
   if print_messages:
     print("\n________ running \'%s\' in \'%s\'"
           % (' '.join(command), in_directory))
@@ -316,6 +319,7 @@ def FindGclientRoot(from_dir):
     if not next[1]:
       return None
     path = next[0]
+  logging.info('Found gclient root at ' + path)
   return path
 
 def PathDifference(root, subpath):

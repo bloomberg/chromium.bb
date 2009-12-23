@@ -54,7 +54,9 @@ class SVNUnittest(TryChangeTestsBase):
   """trychange.SVN tests."""
   def testMembersChanged(self):
     members = [
-      'GenerateDiff', 'GetBots', 'GetFileNames', 'GetLocalRoot',
+      'AutomagicalSettings', 'GclStyleSettings', 'GclientStyleSettings',
+      'GetCodeReviewSetting', 'ReadRootFile',
+      'GenerateDiff', 'GetFileNames', 'GetLocalRoot',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange.SVN, members)
@@ -75,7 +77,9 @@ class GITUnittest(TryChangeTestsBase):
   """trychange.GIT tests."""
   def testMembersChanged(self):
     members = [
-      'GenerateDiff', 'GetBots', 'GetFileNames', 'GetLocalRoot',
+      'AutomagicalSettings', 'GclStyleSettings', 'GclientStyleSettings',
+      'GetCodeReviewSetting', 'ReadRootFile',
+      'GenerateDiff', 'GetFileNames', 'GetLocalRoot',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange.GIT, members)

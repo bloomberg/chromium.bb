@@ -820,23 +820,6 @@ def TryChange(change_info, args, swallow_exception):
     ErrorExit("You need to install trychange.py to use the try server.")
 
   trychange_args = []
-  settings = {
-    'port': GetCodeReviewSetting('TRYSERVER_HTTP_PORT'),
-    'host': GetCodeReviewSetting('TRYSERVER_HTTP_HOST'),
-    'svn_repo': GetCodeReviewSetting('TRYSERVER_SVN_URL'),
-    'project': GetCodeReviewSetting('TRYSERVER_PROJECT'),
-    'root': GetCodeReviewSetting('TRYSERVER_ROOT'),
-    'patchlevel': GetCodeReviewSetting('TRYSERVER_PATCHLEVEL'),
-  }
-  for (k, v) in settings.iteritems():
-    if v:
-      trychange_args.extend(['--' + k, v])
-
-  gclient_root = gclient_utils.FindGclientRoot(GetRepositoryRoot())
-  if gclient_root:
-    trychange_args.extend(['--root',
-                           gclient_utils.PathDifference(gclient_root,
-                                                        GetRepositoryRoot())])
   if change_info:
     trychange_args.extend(['--name', change_info.name])
     if change_info.issue:
