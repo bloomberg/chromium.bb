@@ -175,6 +175,9 @@ LinuxDumper::ElfFileIdentifierForMapping(unsigned int mapping_id,
     sys_close(fd);
     return false;
   }
+#if defined(__x86_64)
+#define sys_mmap2 sys_mmap
+#endif
   void* base = sys_mmap2(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
   sys_close(fd);
   if (base == MAP_FAILED)
