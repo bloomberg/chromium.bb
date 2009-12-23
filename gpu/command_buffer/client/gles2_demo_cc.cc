@@ -10,8 +10,6 @@
 
 namespace {
 
-int g_width = 512;
-int g_height = 512;
 GLuint g_texture = 0;
 int g_textureLoc = -1;
 GLuint g_programObject = 0;
@@ -189,6 +187,3 @@ void GLFromCPPTestFunction() {
   }
   Draw();
 }
-
-
-

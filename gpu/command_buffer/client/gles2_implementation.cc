@@ -17,6 +17,10 @@ static GLuint ToGLuint(const void* ptr) {
   return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
 }
 
+#if !defined(COMPILER_MSVC)
+const size_t GLES2Implementation::kMaxSizeOfSimpleResult;
+#endif
+
 GLES2Implementation::GLES2Implementation(
       GLES2CmdHelper* helper,
       size_t transfer_buffer_size,
