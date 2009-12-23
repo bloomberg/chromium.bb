@@ -33,9 +33,15 @@ export NACL_SDK_LIB="${NACL_SDK_INSTALL}/lib"
 export NACL_SDK_LIB2="${NACL_SDK_INSTALL}/usr/lib"
 export NACL_SDK_INCLUDE="${NACL_SDK_INSTALL}/include"
 
+# NOTE: NACL_* defines are currently needed for building extra_sdk, e.g.
+#       for including sel_ldr.h and atomic_ops.h from nc_thread.s
+# TODO(robertm): fix this
 SHARED_CFLAGS="-nostdinc \
                -nostdlib \
                -D__native_client__=1 \
+               -DNACL_TARGET_ARCH=arm \
+               -DNACL_TARGET_SUBARCH=32 \
+               -DNACL_LINUX=1 \
                -march=armv6 \
                -ffixed-r9 \
                -static \
