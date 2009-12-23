@@ -11,6 +11,10 @@
 #include "views/layout_manager.h"
 #include "views/view.h"
 
+namespace gfx {
+class Insets;
+}
+
 // GridLayout is a LayoutManager that positions child Views in a grid. You
 // define the structure of the Grid first, then add the Views.
 // The following creates a trivial grid with two columns separated by
@@ -102,6 +106,7 @@ class GridLayout : public LayoutManager {
 
   // Sets the insets. All views are placed relative to these offsets.
   void SetInsets(int top, int left, int bottom, int right);
+  void SetInsets(const gfx::Insets& insets);
 
   // Creates a new column set with the specified id and returns it.
   // The id is later used when starting a new row.

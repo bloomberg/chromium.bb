@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "app/gfx/insets.h"
 #include "views/standard_layout.h"
 #include "views/view.h"
 
@@ -688,6 +689,10 @@ void GridLayout::SetInsets(int top, int left, int bottom, int right) {
   bottom_inset_ = bottom;
   left_inset_ = left;
   right_inset_ = right;
+}
+
+void GridLayout::SetInsets(const gfx::Insets& insets) {
+  SetInsets(insets.top(), insets.left(), insets.bottom(), insets.right());
 }
 
 ColumnSet* GridLayout::AddColumnSet(int id) {
