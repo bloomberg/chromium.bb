@@ -17,6 +17,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_comptr_win.h"
 #include "googleurl/src/gurl.h"
+#include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/ie8_types.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
@@ -173,8 +174,16 @@ END_COM_MAP()
       const wchar_t* url);
 
   void DetermineRendererType();
+
   HRESULT OnReadImpl(void* buffer, ULONG size, ULONG* size_read,
       InternetProtocol_Read_Fn orig_read);
+
+  // This function determines whether the current request should be handled
+  // by Chrome. If yes it reports the mime type as application/chromepage,
+  // which ensures that the ChromeFrame is instantiated for handling this
+  // request.
+  // Returns S_OK on success.
+  HRESULT CheckAndReportChromeMimeTypeForRequest();
 
   bool is_undetermined() const {
     return (UNDETERMINED == renderer_type_);

@@ -248,6 +248,9 @@ STDMETHODIMP ProtocolSinkWrap::ReportProgress(ULONG status_code,
     LPCWSTR status_text) {
   DLOG(INFO) << "ProtocolSinkWrap::ReportProgress: Code:" << status_code <<
       " Text: " << (status_text ? status_text : L"");
+  if (!delegate_) {
+    return E_FAIL;
+  }
   if ((BINDSTATUS_MIMETYPEAVAILABLE == status_code) ||
       (BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE == status_code)) {
     // If we have a MIMETYPE and that MIMETYPE is not "text/html". we don't
@@ -259,13 +262,16 @@ STDMETHODIMP ProtocolSinkWrap::ReportProgress(ULONG status_code,
       if (!LowerCaseEqualsASCII(status_text, status_text_end,
                                 kTextHtmlMimeType)) {
         renderer_type_ = OTHER;
+      } else {
+        CheckAndReportChromeMimeTypeForRequest();
       }
     }
   }
 
-  HRESULT hr = E_FAIL;
-  if (delegate_)
+  HRESULT hr = S_OK;
+  if (delegate_ && renderer_type_ != CHROME) {
     hr = delegate_->ReportProgress(status_code, status_text);
+  }
   return hr;
 }
 
@@ -304,33 +310,7 @@ STDMETHODIMP ProtocolSinkWrap::ReportData(DWORD flags, ULONG progress,
 
   HRESULT hr = S_OK;
   if (is_undetermined()) {
-    HRESULT hr_read = S_OK;
-    while (hr_read == S_OK) {
-      ULONG size_read = 0;
-      hr_read = protocol_->Read(buffer_ + buffer_size_,
-          kMaxContentSniffLength - buffer_size_, &size_read);
-      buffer_size_ += size_read;
-
-      // Attempt to determine the renderer type if we have received
-      // sufficient data. Do not attempt this when we are called recursively.
-      if (report_data_recursiveness_ < 2 && (S_FALSE == hr_read) ||
-         (buffer_size_ >= kMaxContentSniffLength)) {
-        DetermineRendererType();
-        if (renderer_type() == CHROME) {
-          // Workaround for IE 8 and "nosniff". See:
-          // http://blogs.msdn.com/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx
-          delegate_->ReportProgress(
-              BINDSTATUS_SERVER_MIMETYPEAVAILABLE, kChromeMimeType);
-          // For IE < 8.
-          delegate_->ReportProgress(
-              BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE, kChromeMimeType);
-
-          delegate_->ReportData(
-              BSCF_LASTDATANOTIFICATION | BSCF_DATAFULLYAVAILABLE, 0, 0);
-        }
-        break;
-      }
-    }
+    CheckAndReportChromeMimeTypeForRequest();
   }
 
   // we call original only if the renderer type is other
@@ -580,6 +560,46 @@ void ProtocolSinkWrap::DetermineRendererType() {
       }
     }
   }
+}
+
+HRESULT ProtocolSinkWrap::CheckAndReportChromeMimeTypeForRequest() {
+  if (!is_undetermined())
+    return S_OK;
+
+  HRESULT hr_read = S_OK;
+  while (hr_read == S_OK) {
+    ULONG size_read = 0;
+    hr_read = protocol_->Read(buffer_ + buffer_size_,
+        kMaxContentSniffLength - buffer_size_, &size_read);
+    buffer_size_ += size_read;
+
+    // Attempt to determine the renderer type if we have received
+    // sufficient data. Do not attempt this when we are called recursively.
+    if (report_data_recursiveness_ < 2 && (S_FALSE == hr_read) ||
+       (buffer_size_ >= kMaxContentSniffLength)) {
+      DetermineRendererType();
+      if (renderer_type() == CHROME) {
+        // Workaround for IE 8 and "nosniff". See:
+        // http://blogs.msdn.com/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx
+        delegate_->ReportProgress(
+            BINDSTATUS_SERVER_MIMETYPEAVAILABLE, kChromeMimeType);
+        // For IE < 8.
+        delegate_->ReportProgress(
+            BINDSTATUS_MIMETYPEAVAILABLE, kChromeMimeType);
+
+        delegate_->ReportProgress(
+            BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE, kChromeMimeType);
+
+        delegate_->ReportData(
+            BSCF_FIRSTDATANOTIFICATION, 0, 0);
+
+        delegate_->ReportData(
+            BSCF_LASTDATANOTIFICATION | BSCF_DATAFULLYAVAILABLE, 0, 0);
+      }
+      break;
+    }
+  }
+  return hr_read;
 }
 
 HRESULT ProtocolSinkWrap::OnReadImpl(void* buffer, ULONG size, ULONG* size_read,
