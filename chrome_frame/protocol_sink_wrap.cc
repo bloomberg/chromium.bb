@@ -65,7 +65,8 @@ CComAutoCriticalSection ProtocolSinkWrap::sink_map_lock_;
 ProtocolSinkWrap::ProtocolSinkWrap()
     : protocol_(NULL), renderer_type_(UNDETERMINED),
       buffer_size_(0), buffer_pos_(0), is_saved_result_(false),
-      result_code_(0), result_error_(0), report_data_recursiveness_(0) {
+      result_code_(0), result_error_(0), report_data_recursiveness_(0),
+      determining_renderer_type_(false) {
   memset(buffer_, 0, arraysize(buffer_));
 }
 
@@ -566,6 +567,13 @@ HRESULT ProtocolSinkWrap::CheckAndReportChromeMimeTypeForRequest() {
   if (!is_undetermined())
     return S_OK;
 
+  // This function could get invoked recursively in the context of
+  // IInternetProtocol::Read. Check for the same and bail.
+  if (determining_renderer_type_)
+    return S_OK;
+
+  determining_renderer_type_ = true;
+
   HRESULT hr_read = S_OK;
   while (hr_read == S_OK) {
     ULONG size_read = 0;
@@ -599,6 +607,8 @@ HRESULT ProtocolSinkWrap::CheckAndReportChromeMimeTypeForRequest() {
       break;
     }
   }
+
+  determining_renderer_type_ = false;
   return hr_read;
 }
 

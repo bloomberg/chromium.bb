@@ -237,6 +237,10 @@ END_COM_MAP()
 
   std::wstring url_;
 
+  // Set to true if we are in the context of determining the desired renderer
+  // type.
+  bool determining_renderer_type_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ProtocolSinkWrap);
 };
