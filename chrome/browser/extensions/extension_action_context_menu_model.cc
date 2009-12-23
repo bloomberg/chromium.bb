@@ -27,7 +27,7 @@ ExtensionActionContextMenuModel::ExtensionActionContextMenuModel(
   : ALLOW_THIS_IN_INITIALIZER_LIST(SimpleMenuModel(this)),
     extension_(extension),
     delegate_(delegate) {
-  AddItem(NAME, ASCIIToUTF16(extension->name()));
+  AddItem(NAME, UTF8ToUTF16(extension->name()));
   AddSeparator();
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS);
   AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
