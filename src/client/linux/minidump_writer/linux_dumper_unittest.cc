@@ -27,12 +27,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <limits.h>
 #include <unistd.h>
 
 #include "client/linux/minidump_writer/linux_dumper.h"
+#include "common/linux/file_id.h"
 #include "breakpad_googletest_includes.h"
 
 using namespace google_breakpad;
+
+// This provides a wrapper around system calls which may be
+// interrupted by a signal and return EINTR. See man 7 signal.
+#define HANDLE_EINTR(x) ({ \
+  typeof(x) __eintr_result__; \
+  do { \
+    __eintr_result__ = x; \
+  } while (__eintr_result__ == -1 && errno == EINTR); \
+  __eintr_result__;\
+})
 
 namespace {
 typedef testing::Test LinuxDumperTest;
@@ -115,4 +127,57 @@ TEST(LinuxDumperTest, MappingsIncludeLinuxGate) {
     EXPECT_EQ(linux_gate_loc, reinterpret_cast<void*>(mapping->start_addr));
     EXPECT_EQ(0, memcmp(linux_gate_loc, ELFMAG, SELFMAG));
   }
+}
+
+TEST(LinuxDumperTest, FileIDsMatch) {
+  // Calculate the File ID of our binary using both
+  // FileID::ElfFileIdentifier and LinuxDumper::ElfFileIdentifierForMapping
+  // and ensure that we get the same result from both.
+  char exe_name[PATH_MAX];
+  ssize_t len = readlink("/proc/self/exe", exe_name, PATH_MAX - 1);
+  ASSERT_NE(len, -1);
+  exe_name[len] = '\0';
+
+  int fds[2];
+  ASSERT_NE(-1, pipe(fds));
+
+  // fork a child so we can ptrace it
+  const pid_t child = fork();
+  if (child == 0) {
+    close(fds[1]);
+    // now wait forever for the parent
+    char b;
+    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    close(fds[0]);
+    syscall(__NR_exit);
+  }
+  close(fds[0]);
+
+  LinuxDumper dumper(child);
+  ASSERT_TRUE(dumper.Init());
+  const wasteful_vector<MappingInfo*> mappings = dumper.mappings();
+  bool found_exe = false;
+  unsigned i;
+  for (i = 0; i < mappings.size(); ++i) {
+    const MappingInfo* mapping = mappings[i];
+    if (!strcmp(mapping->name, exe_name)) {
+      found_exe = true;
+      break;
+    }
+  }
+  ASSERT_TRUE(found_exe);
+
+  uint8_t identifier1[sizeof(MDGUID)];
+  uint8_t identifier2[sizeof(MDGUID)];
+  EXPECT_TRUE(dumper.ElfFileIdentifierForMapping(i, identifier1));
+  FileID fileid(exe_name);
+  EXPECT_TRUE(fileid.ElfFileIdentifier(identifier2));
+  char identifier_string1[37];
+  char identifier_string2[37];
+  FileID::ConvertIdentifierToString(identifier1, identifier_string1,
+                                    37);
+  FileID::ConvertIdentifierToString(identifier2, identifier_string2,
+                                    37);
+  EXPECT_STREQ(identifier_string1, identifier_string2);
+  close(fds[1]);
 }

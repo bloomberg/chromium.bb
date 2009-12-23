@@ -547,26 +547,11 @@ class MinidumpWriter {
       const uint32_t cv_signature = MD_CVINFOPDB70_SIGNATURE;
       memcpy(cv_ptr, &cv_signature, sizeof(cv_signature));
       cv_ptr += sizeof(cv_signature);
-
-      {
-        // We XOR the first page of the file to get a signature for it.
-        uint8_t xor_buf[sizeof(MDGUID)];
-        size_t done = 0;
-        uint8_t* signature = cv_ptr;
-        cv_ptr += sizeof(xor_buf);
-
-        my_memset(signature, 0, sizeof(xor_buf));
-        while (done < 4096) {
-          dumper_.CopyFromProcess(xor_buf, crashing_tid_,
-                                  (void *) (mod.base_of_image + done),
-                                  sizeof(xor_buf));
-          for (unsigned i = 0; i < sizeof(xor_buf); ++i)
-            signature[i] ^= xor_buf[i];
-          done += sizeof(xor_buf);
-        }
-        my_memset(cv_ptr, 0, sizeof(uint32_t));  // Set age to 0 on Linux.
-        cv_ptr += sizeof(uint32_t);
-      }
+      uint8_t* signature = cv_ptr;
+      cv_ptr += sizeof(MDGUID);
+      dumper_.ElfFileIdentifierForMapping(i, signature);
+      my_memset(cv_ptr, 0, sizeof(uint32_t));  // Set age to 0 on Linux.
+      cv_ptr += sizeof(uint32_t);
 
       // Write pdb_file_name
       memcpy(cv_ptr, filename_ptr, filename_len + 1);

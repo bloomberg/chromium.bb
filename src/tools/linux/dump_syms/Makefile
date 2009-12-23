@@ -113,6 +113,22 @@ stabs_reader_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
 clean::
 	rm -f stabs_reader_unittest
 
+### Unit tests for google_breakpad::FileID.
+check: check-file_id_unittest
+check-file_id_unittest: file_id_unittest
+file_id_unittest:				\
+	gmock-all.o				\
+	gtest-all.o				\
+	gtest_main.o				\
+	file_id.o				\
+	$(empty)
+CPP_EXECUTABLES += file_id_unittest
+file_id_unittest.o: file_id_unittest.cc
+file_id_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
+				         $(GMOCK_CPPFLAGS)
+clean::
+	rm -f file_id_unittest
+
 
 ### Generic compilation rules.
 

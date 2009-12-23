@@ -42,15 +42,20 @@
 #include <string.h>
 
 #include <unistd.h>
+#include <elf.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <link.h>
 
 #include <sys/types.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 
+#include <algorithm>
+
 #include "client/linux/minidump_writer/directory_reader.h"
 #include "client/linux/minidump_writer/line_reader.h"
+#include "common/linux/file_id.h"
 #include "common/linux/linux_libc_support.h"
 #include "common/linux/linux_syscall_support.h"
 
@@ -154,6 +159,30 @@ LinuxDumper::BuildProcPath(char* path, pid_t pid, const char* node) const {
   memcpy(path + 6 + pid_len, "/", 1);
   memcpy(path + 6 + pid_len + 1, node, node_len);
   memcpy(path + total_length, "\0", 1);
+}
+
+bool
+LinuxDumper::ElfFileIdentifierForMapping(unsigned int mapping_id,
+                                         uint8_t identifier[sizeof(MDGUID)])
+{
+  assert(mapping_id < mappings_.size());
+  const MappingInfo* mapping = mappings_[mapping_id];
+  int fd = sys_open(mapping->name, O_RDONLY, 0);
+  if (fd < 0)
+    return false;
+  struct kernel_stat st;
+  if (sys_fstat(fd, &st) != 0) {
+    sys_close(fd);
+    return false;
+  }
+  void* base = sys_mmap2(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  sys_close(fd);
+  if (base == MAP_FAILED)
+    return false;
+
+  bool success = FileID::ElfFileIdentifierFromMappedFile(base, identifier);
+  sys_munmap(base, st.st_size);
+  return success;
 }
 
 void*

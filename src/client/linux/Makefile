@@ -39,6 +39,7 @@ TEST_CC_SRC=handler/exception_handler_unittest.cc \
 	    minidump_writer/line_reader_unittest.cc \
 	    minidump_writer/linux_dumper_unittest.cc \
 	    minidump_writer/minidump_writer_unittest.cc \
+	    ../../common/linux/file_id.cc \
 	    $(GOOGLETEST_CC_SRC)
 
 TEST_CC_OBJ=$(patsubst %.cc, $(OBJ_DIR)/%.o,$(TEST_CC_SRC))
