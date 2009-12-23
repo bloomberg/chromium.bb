@@ -14,13 +14,11 @@
 
 // TODO(thakis): Autoremember window size/pos (and selected columns?)
 // TODO(thakis): Column sort comparator
-// TODO(thakis): Double-clicking a tab should activate that tab
 // TODO(thakis): Clicking column header doesn't sort
-// TODO(thakis): Double-clicking a row seems to do something on win/linux
 // TODO(thakis): On window close, stop updating
 // TODO(thakis): Favicons in rows
 // TODO(thakis): Default sort column
-// TODO(thakis): Metrics are all wrong (some fixed when about:memory lands?)
+// TODO(thakis): Metrics for all processes except browser process are missing.
 
 @interface TaskManagerWindowController (Private)
 - (void)addColumnWithId:(int)columnId visible:(BOOL)isVisible;
@@ -65,10 +63,19 @@
   }
 }
 
+- (void)selectDoubleClickedTab:(id)sender {
+  NSInteger row = [tableView_ clickedRow];
+  if (row < 0)
+    return;  // Happens e.g. if the table header is double-clicked.
+  taskManager_->ActivateProcess(row);
+}
+
 - (void)awakeFromNib {
   [self setUpTableColumns];
   [self setUpTableHeaderContextMenu];
   [self adjustEndProcessButton];
+
+  [tableView_ setDoubleAction:@selector(selectDoubleClickedTab:)];
 }
 
 // Adds a column which has the given string id as title. |isVisible| specifies

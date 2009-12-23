@@ -30,6 +30,9 @@
 
 // Callback for "End process" button.
 - (IBAction)killSelectedProcesses:(id)sender;
+
+// Callback for double clicks on the table.
+- (void)selectDoubleClickedTab:(id)sender;
 @end
 
 // This class listens to task changed events sent by chrome.
