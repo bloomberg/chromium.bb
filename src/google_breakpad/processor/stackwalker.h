@@ -53,7 +53,7 @@ class MemoryRegion;
 class MinidumpContext;
 class SourceLineResolverInterface;
 struct StackFrame;
-struct StackFrameInfo;
+struct WindowsFrameInfo;
 class SymbolSupplier;
 class SystemInfo;
 
@@ -135,7 +135,7 @@ class Stackwalker {
   // the caller.
   virtual StackFrame* GetCallerFrame(
       const CallStack *stack,
-      const vector< linked_ptr<StackFrameInfo> > &stack_frame_info) = 0;
+      const vector< linked_ptr<WindowsFrameInfo> > &stack_frame_info) = 0;
 
   // The optional SymbolSupplier for resolving source line info.
   SymbolSupplier *supplier_;

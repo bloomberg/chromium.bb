@@ -72,7 +72,7 @@ class StackwalkerSPARC : public Stackwalker {
   virtual StackFrame* GetContextFrame();
   virtual StackFrame* GetCallerFrame(
       const CallStack *stack,
-      const vector< linked_ptr<StackFrameInfo> > &stack_frame_info);
+      const vector< linked_ptr<WindowsFrameInfo> > &stack_frame_info);
 
   // Stores the CPU context corresponding to the innermost stack frame to
   // be returned by GetContextFrame.

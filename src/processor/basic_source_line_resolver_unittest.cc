@@ -35,7 +35,7 @@
 #include "processor/linked_ptr.h"
 #include "processor/logging.h"
 #include "processor/scoped_ptr.h"
-#include "processor/stack_frame_info.h"
+#include "processor/windows_frame_info.h"
 
 #define ASSERT_TRUE(cond) \
   if (!(cond)) {                                                        \
@@ -55,7 +55,7 @@ using google_breakpad::CodeModule;
 using google_breakpad::linked_ptr;
 using google_breakpad::scoped_ptr;
 using google_breakpad::StackFrame;
-using google_breakpad::StackFrameInfo;
+using google_breakpad::WindowsFrameInfo;
 
 class TestCodeModule : public CodeModule {
  public:
@@ -106,7 +106,7 @@ static bool RunTests() {
   StackFrame frame;
   frame.instruction = 0x1000;
   frame.module = NULL;
-  scoped_ptr<StackFrameInfo> frame_info(resolver.FillSourceLineInfo(&frame));
+  scoped_ptr<WindowsFrameInfo> frame_info(resolver.FillSourceLineInfo(&frame));
   ASSERT_FALSE(frame.module);
   ASSERT_TRUE(frame.function_name.empty());
   ASSERT_EQ(frame.function_base, 0);
@@ -173,7 +173,7 @@ static bool RunTests() {
   ASSERT_EQ(frame_info->prolog_size, 1);
 
   frame.instruction = 0x216f;
-  StackFrameInfo *s;
+  WindowsFrameInfo *s;
   s = resolver.FillSourceLineInfo(&frame);
   ASSERT_EQ(frame.function_name, "Public2_1");
   delete s;

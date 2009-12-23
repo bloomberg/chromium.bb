@@ -43,7 +43,7 @@
 #include "google_breakpad/processor/stack_frame_cpu.h"
 #include "processor/linked_ptr.h"
 #include "processor/logging.h"
-#include "processor/stack_frame_info.h"
+#include "processor/windows_frame_info.h"
 
 namespace google_breakpad {
 
@@ -88,7 +88,7 @@ StackFrame* StackwalkerX86::GetContextFrame() {
 
 StackFrame* StackwalkerX86::GetCallerFrame(
     const CallStack *stack,
-    const vector< linked_ptr<StackFrameInfo> > &stack_frame_info) {
+    const vector< linked_ptr<WindowsFrameInfo> > &stack_frame_info) {
   if (!memory_ || !stack) {
     BPLOG(ERROR) << "Can't get caller frame without memory or stack";
     return NULL;
@@ -96,7 +96,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(
   StackFrameX86::FrameTrust trust = StackFrameX86::FRAME_TRUST_NONE;
   StackFrameX86 *last_frame = static_cast<StackFrameX86*>(
       stack->frames()->back());
-  StackFrameInfo *last_frame_info = stack_frame_info.back().get();
+  WindowsFrameInfo *last_frame_info = stack_frame_info.back().get();
 
   // This stackwalker sets each frame's %esp to its value immediately prior
   // to the CALL into the callee.  This means that %esp points to the last
@@ -133,10 +133,10 @@ StackFrame* StackwalkerX86::GetCallerFrame(
   int frames_already_walked = stack_frame_info.size();
   u_int32_t last_frame_callee_parameter_size = 0;
   if (frames_already_walked >= 2) {
-    StackFrameInfo *last_frame_callee_info =
+    WindowsFrameInfo *last_frame_callee_info =
         stack_frame_info[frames_already_walked - 2].get();
     if (last_frame_callee_info &&
-        last_frame_callee_info->valid & StackFrameInfo::VALID_PARAMETER_SIZE) {
+        last_frame_callee_info->valid & WindowsFrameInfo::VALID_PARAMETER_SIZE) {
       last_frame_callee_parameter_size =
           last_frame_callee_info->parameter_size;
     }
@@ -153,7 +153,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(
   dictionary["$esp"] = last_frame->context.esp;
   dictionary[".cbCalleeParams"] = last_frame_callee_parameter_size;
 
-  if (last_frame_info && last_frame_info->valid == StackFrameInfo::VALID_ALL) {
+  if (last_frame_info && last_frame_info->valid == WindowsFrameInfo::VALID_ALL) {
     // FPO debugging data is available.  Initialize constants.
     dictionary[".cbSavedRegs"] = last_frame_info->saved_register_size;
     dictionary[".cbLocals"] = last_frame_info->local_size;
@@ -163,7 +163,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(
                                    last_frame_info->saved_register_size;
   }
   if (last_frame_info &&
-      last_frame_info->valid & StackFrameInfo::VALID_PARAMETER_SIZE) {
+      last_frame_info->valid & WindowsFrameInfo::VALID_PARAMETER_SIZE) {
     // This is treated separately because it can either come from FPO data or
     // from other debugging data.
     dictionary[".cbParams"] = last_frame_info->parameter_size;
@@ -181,7 +181,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(
   string program_string;
   bool traditional_frame = true;
   bool recover_ebp = true;
-  if (last_frame_info && last_frame_info->valid == StackFrameInfo::VALID_ALL) {
+  if (last_frame_info && last_frame_info->valid == WindowsFrameInfo::VALID_ALL) {
     // FPO data available.
     traditional_frame = false;
     trust = StackFrameX86::FRAME_TRUST_CFI;

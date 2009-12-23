@@ -46,7 +46,7 @@
 #include "google_breakpad/processor/stack_frame.h"
 #include "processor/linked_ptr.h"
 #include "processor/scoped_ptr.h"
-#include "processor/stack_frame_info.h"
+#include "processor/windows_frame_info.h"
 
 using std::map;
 using std::vector;
@@ -117,8 +117,8 @@ class BasicSourceLineResolver::Module {
   // with the result.  Additional debugging information, if available, is
   // returned.  If no additional information is available, returns NULL.
   // A NULL return value is not an error.  The caller takes ownership of
-  // any returned StackFrameInfo object.
-  StackFrameInfo* LookupAddress(StackFrame *frame) const;
+  // any returned WindowsFrameInfo object.
+  WindowsFrameInfo* LookupAddress(StackFrame *frame) const;
 
  private:
   friend class BasicSourceLineResolver;
@@ -175,7 +175,7 @@ class BasicSourceLineResolver::Module {
   // StackInfoTypes.  These are split by type because there may be overlaps
   // between maps of different types, but some information is only available
   // as certain types.
-  ContainedRangeMap< MemAddr, linked_ptr<StackFrameInfo> >
+  ContainedRangeMap< MemAddr, linked_ptr<WindowsFrameInfo> >
       stack_info_[STACK_INFO_LAST];
 };
 
@@ -236,7 +236,7 @@ bool BasicSourceLineResolver::HasModule(const string &module_name) const {
   return modules_->find(module_name) != modules_->end();
 }
 
-StackFrameInfo* BasicSourceLineResolver::FillSourceLineInfo(
+WindowsFrameInfo* BasicSourceLineResolver::FillSourceLineInfo(
     StackFrame *frame) const {
   if (frame->module) {
     ModuleMap::const_iterator it = modules_->find(frame->module->code_file());
@@ -413,11 +413,11 @@ bool BasicSourceLineResolver::Module::LoadMap(const string &map_file) {
   return LoadMapFromBuffer(map_buffer);
 }
 
-StackFrameInfo* BasicSourceLineResolver::Module::LookupAddress(
+WindowsFrameInfo* BasicSourceLineResolver::Module::LookupAddress(
     StackFrame *frame) const {
   MemAddr address = frame->instruction - frame->module->base_address();
 
-  linked_ptr<StackFrameInfo> retrieved_info;
+  linked_ptr<WindowsFrameInfo> retrieved_info;
   // Check for debugging info first, before any possible early returns.
   //
   // We only know about STACK_INFO_FRAME_DATA and STACK_INFO_FPO.  Prefer
@@ -429,9 +429,9 @@ StackFrameInfo* BasicSourceLineResolver::Module::LookupAddress(
     stack_info_[STACK_INFO_FPO].RetrieveRange(address, &retrieved_info);
   }
 
-  scoped_ptr<StackFrameInfo> frame_info;
+  scoped_ptr<WindowsFrameInfo> frame_info;
   if (retrieved_info.get()) {
-    frame_info.reset(new StackFrameInfo());
+    frame_info.reset(new WindowsFrameInfo());
     frame_info->CopyFrom(*retrieved_info.get());
   }
 
@@ -489,9 +489,9 @@ StackFrameInfo* BasicSourceLineResolver::Module::LookupAddress(
     // about how much space their parameters consume on the stack.  Prefer
     // the STACK stuff (above), but if it's not present, take the
     // information from the FUNC or PUBLIC line.
-    frame_info.reset(new StackFrameInfo());
+    frame_info.reset(new WindowsFrameInfo());
     frame_info->parameter_size = parameter_size;
-    frame_info->valid |= StackFrameInfo::VALID_PARAMETER_SIZE;
+    frame_info->valid |= WindowsFrameInfo::VALID_PARAMETER_SIZE;
   }
 
   return frame_info.release();
@@ -681,8 +681,8 @@ bool BasicSourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
   // if ContainedRangeMap were modified to allow replacement of
   // already-stored values.
 
-  linked_ptr<StackFrameInfo> stack_frame_info(
-      new StackFrameInfo(prolog_size,
+  linked_ptr<WindowsFrameInfo> stack_frame_info(
+      new WindowsFrameInfo(prolog_size,
                          epilog_size,
                          parameter_size,
                          saved_register_size,

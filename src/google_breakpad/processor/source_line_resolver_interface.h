@@ -40,7 +40,7 @@ namespace google_breakpad {
 using std::string;
 
 struct StackFrame;
-struct StackFrameInfo;
+struct WindowsFrameInfo;
 
 class SourceLineResolverInterface {
  public:
@@ -68,9 +68,9 @@ class SourceLineResolverInterface {
   // module_name fields must already be filled in.  Additional debugging
   // information, if available, is returned.  If the information is not
   // available, returns NULL.  A NULL return value does not indicate an
-  // error.  The caller takes ownership of any returned StackFrameInfo
+  // error.  The caller takes ownership of any returned WindowsFrameInfo
   // object.
-  virtual StackFrameInfo* FillSourceLineInfo(StackFrame *frame) const = 0;
+  virtual WindowsFrameInfo* FillSourceLineInfo(StackFrame *frame) const = 0;
 
  protected:
   // SourceLineResolverInterface cannot be instantiated except by subclasses

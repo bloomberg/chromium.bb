@@ -47,7 +47,7 @@
 #include "processor/linked_ptr.h"
 #include "processor/logging.h"
 #include "processor/scoped_ptr.h"
-#include "processor/stack_frame_info.h"
+#include "processor/windows_frame_info.h"
 #include "processor/stackwalker_ppc.h"
 #include "processor/stackwalker_sparc.h"
 #include "processor/stackwalker_x86.h"
@@ -78,7 +78,7 @@ bool Stackwalker::Walk(CallStack *stack) {
   // stack_frame_info parallels the CallStack.  The vector is passed to the
   // GetCallerFrame function.  It contains information that may be helpful
   // for stackwalking.
-  vector< linked_ptr<StackFrameInfo> > stack_frame_info;
+  vector< linked_ptr<WindowsFrameInfo> > stack_frame_info;
 
   // Begin with the context frame, and keep getting callers until there are
   // no more.
@@ -91,7 +91,7 @@ bool Stackwalker::Walk(CallStack *stack) {
     // frame_pointer fields.  The frame structure comes from either the
     // context frame (above) or a caller frame (below).
 
-    linked_ptr<StackFrameInfo> frame_info;
+    linked_ptr<WindowsFrameInfo> frame_info;
 
     // Resolve the module information, if a module map was provided.
     if (modules_) {

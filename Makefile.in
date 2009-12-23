@@ -475,7 +475,7 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/scoped_ptr.h \
 	src/processor/simple_symbol_supplier.cc \
 	src/processor/simple_symbol_supplier.h \
-	src/processor/stack_frame_info.h \
+	src/processor/windows_frame_info.h \
 	src/processor/stackwalker.cc \
 	src/processor/stackwalker_amd64.cc \
 	src/processor/stackwalker_amd64.h \

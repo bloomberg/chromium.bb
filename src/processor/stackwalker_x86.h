@@ -68,7 +68,7 @@ class StackwalkerX86 : public Stackwalker {
   virtual StackFrame* GetContextFrame();
   virtual StackFrame* GetCallerFrame(
       const CallStack *stack,
-      const vector< linked_ptr<StackFrameInfo> > &stack_frame_info);
+      const vector< linked_ptr<WindowsFrameInfo> > &stack_frame_info);
 
   // Scan the stack starting at location_start, looking for an address
   // that looks like a valid instruction pointer. Addresses must
