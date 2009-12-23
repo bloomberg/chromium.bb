@@ -994,6 +994,10 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
 
 if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
     nacl_env['TARGET_ARCHITECTURE'] == 'arm'):
+  # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
+  nacl_env.FilterOut(CCFLAGS = ['-Werror'])
+  nacl_env.Append(CFLAGS = ['-Werror'])
+
   # NOTE: we change the linker command line to make it possible to
   #       sneak in startup and cleanup code
   linkcom = (nacl_env['LINKCOM'].replace('$LINK ', '$LINK $LINKFLAGS_FIRST ') +
@@ -1136,10 +1140,8 @@ if ARGUMENTS.get('sdl', 'hermetic') != 'none':
 
 # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
 if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
-  nacl_extra_sdk_env.FilterOut(
-      CCFLAGS = ['-Werror',])
-  nacl_extra_sdk_env.Append(
-      CFLAGS = ['-Werror',])
+  nacl_extra_sdk_env.FilterOut(CCFLAGS = ['-Werror'])
+  nacl_extra_sdk_env.Append(CFLAGS = ['-Werror'])
 
 environment_list.append(nacl_extra_sdk_env)
 
