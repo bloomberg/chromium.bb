@@ -15,6 +15,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+/* NOTE: needed for mallopt() hack below */
+#include <malloc.h>
+#endif
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -225,6 +229,14 @@ int main(int  ac,
   struct NaClEnvCleanser        filtered_env;
 
   const char* sandbox_fd_string;
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  /* TODO(bsy): look into this */
+  /* BUG: http://code.google.com/p/nativeclient/issues/detail?id=232 */
+  /* set malloc options to not use mmap */
+  /* without this hack the ARM port does not work on real HW */
+  mallopt(M_MMAP_MAX, 0);
+#endif
 
   /* do expiration check first */
   if (NaClHasExpired()) {
