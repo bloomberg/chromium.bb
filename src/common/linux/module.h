@@ -123,20 +123,20 @@ class Module {
   void SetLoadAddress(Address load_address);
 
   // Add FUNCTION to the module.
-  // Destroying this module frees all Function objects that have been
-  // added with this function.
+  // This module owns all Function objects added with this function:
+  // destroying the module destroys them as well.
   void AddFunction(Function *function);
 
   // Add all the functions in [BEGIN,END) to the module.
-  // Destroying this module frees all Function objects that have been
-  // added with this function.
+  // This module owns all Function objects added with this function:
+  // destroying the module destroys them as well.
   void AddFunctions(vector<Function *>::iterator begin,
                     vector<Function *>::iterator end);
 
-  // If this module has a file named NAME, return a pointer to it.  If
+  // If this module has a file named NAME, return a pointer to it. If
   // it has none, then create one and return a pointer to the new
-  // file.  Destroying this module frees all File objects that have
-  // been created using this function, or with Insert.
+  // file. This module owns all File objects created using these
+  // functions; destroying the module destroys them as well.
   File *FindFile(const string &name);
   File *FindFile(const char *name);
 
