@@ -38,6 +38,7 @@ class MockFFmpeg {
                    const char* args, uint8_t** poutbuf, int* poutbuf_size,
                    const uint8_t* buf, int buf_size, int keyframe));
   MOCK_METHOD1(AVBitstreamFilterClose, void(AVBitStreamFilterContext* bsf));
+  MOCK_METHOD1(AVDestructPacket, void(AVPacket* packet));
 
   MOCK_METHOD5(AVOpenInputFile, int(AVFormatContext** format,
                                     const char* filename,

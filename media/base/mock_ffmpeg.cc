@@ -204,6 +204,11 @@ int av_dup_packet(AVPacket* packet) {
 void av_log_set_level(int level) {
   media::MockFFmpeg::get()->AVLogSetLevel(level);
 }
+
+void av_destruct_packet(AVPacket *pkt) {
+  media::MockFFmpeg::get()->AVDestructPacket(pkt);
+}
+
 }  // extern "C"
 
 }  // namespace media
