@@ -29,6 +29,7 @@
 
 #include <cerrno>
 #include <cstring>
+
 #include "common/linux/module.h"
 
 namespace google_breakpad {
@@ -62,6 +63,11 @@ void Module::AddFunctions(vector<Function *>::iterator begin,
   functions_.insert(functions_.end(), begin, end);
 }
 
+void Module::GetFunctions(vector<Function *> *vec,
+                          vector<Function *>::iterator i) {
+  vec->insert(i, functions_.begin(), functions_.end());
+}
+
 Module::File *Module::FindFile(const string &name) {
   // A tricky bit here.  The key of each map entry needs to be a
   // pointer to the entry's File's name string.  This means that we
@@ -88,6 +94,17 @@ Module::File *Module::FindFile(const string &name) {
 Module::File *Module::FindFile(const char *name) {
   string name_string = name;
   return FindFile(name_string);
+}
+
+Module::File *Module::FindExistingFile(const string &name) {
+  FileByNameMap::iterator it = files_.find(&name);
+  return (it == files_.end()) ? NULL : it->second;
+}
+
+void Module::GetFiles(vector<File *> *vec) {
+  vec->clear();
+  for (FileByNameMap::iterator it = files_.begin(); it != files_.end(); it++)
+    vec->push_back(it->second);
 }
 
 void Module::AssignSourceIds() {
@@ -129,8 +146,9 @@ bool Module::Write(FILE *stream) {
                   name_.c_str()))
     return ReportError();
 
-  // Write out files.
   AssignSourceIds();
+
+  // Write out files.
   for (FileByNameMap::iterator file_it = files_.begin();
        file_it != files_.end(); file_it++) {
     File *file = file_it->second;

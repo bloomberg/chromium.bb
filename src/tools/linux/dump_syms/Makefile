@@ -52,7 +52,8 @@ SRC = ../../..
 # dependencies using $(CXX). Value accumulated throughout the file.
 CPP_EXECUTABLES = 
 
-# Source files whose coverage we are interested in. Value accumulated
+# Add the names of source files whose coverage you'd like 'make
+# coverage' to report on to this variable. Value accumulated
 # throughout the file.
 COVERAGE_SOURCES = 
 
@@ -79,6 +80,7 @@ dump_stabs.o: dump_stabs.cc
 dump_symbols.o: dump_symbols.cc
 file_id.o: file_id.cc
 module.o: module.cc
+COVERAGE_SOURCES += module.cc
 stabs_reader.o: stabs_reader.cc
 COVERAGE_SOURCES += stabs_reader.cc
 
@@ -130,6 +132,22 @@ file_id_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
 				         $(GMOCK_CPPFLAGS)
 clean::
 	rm -f file_id_unittest
+
+
+### Unit tests for google_breakpad::Module.
+check: check-module_unittest
+check-module_unittest: module_unittest
+module_unittest:				\
+	gtest-all.o				\
+	gtest_main.o				\
+	module.o				\
+	module_unittest.o			\
+	$(empty)
+CPP_EXECUTABLES += module_unittest
+module_unittest.o: module_unittest.cc
+module_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) $(GMOCK_CPPFLAGS)
+clean::
+	rm -f module_unittest
 
 
 ### Generic compilation rules.

@@ -140,9 +140,32 @@ class Module {
   File *FindFile(const string &name);
   File *FindFile(const char *name);
 
-  // Write this module to STREAM in the breakpad symbol format.
-  // Return true if all goes well, or false if an error occurs.  This
-  // method writes out:
+  // If this module has a file named NAME, return a pointer to it.
+  // Otherwise, return NULL.
+  File *FindExistingFile(const string &name);
+
+  // Insert pointers to the functions added to this module at I in
+  // VEC. (Since this is effectively a copy of the function list, this
+  // is mostly useful for testing; other uses should probably get a
+  // more appropriate interface.)
+  void GetFunctions(vector<Function *> *vec, vector<Function *>::iterator i);
+
+  // Clear VEC and fill it with pointers to the Files added to this
+  // module, sorted by name. (Since this is effectively a copy of the
+  // function list, this is mostly useful for testing; other uses
+  // should probably get a more appropriate interface.)
+  void GetFiles(vector<File *> *vec);
+
+  // Find those files in this module that are actually referred to by
+  // functions' line number data, and assign them source id numbers.
+  // Set the source id numbers for all other files --- unused by the
+  // source line data --- to -1.  We do this before writing out the
+  // symbol file, at which point we omit any unused files.
+  void AssignSourceIds();
+
+  // Call AssignSourceIds, and write this module to STREAM in the
+  // breakpad symbol format. Return true if all goes well, or false if
+  // an error occurs. This method writes out:
   // - a header based on the values given to the constructor,
   // - the source files added via FindFile, and finally
   // - the functions added via AddFunctions, each with its lines.
@@ -151,13 +174,6 @@ class Module {
   bool Write(FILE *stream);
 
 private:
-
-  // Find those files in this module that are actually referred to by
-  // functions' line number data, and assign them source id numbers.
-  // Set the source id numbers for all other files --- unused by the
-  // source line data --- to -1.  We do this before writing out the
-  // symbol file, at which point we omit any unused files.
-  void AssignSourceIds();
 
   // Report an error that has occurred writing the symbol file, using
   // errno to find the appropriate cause.  Return false.
