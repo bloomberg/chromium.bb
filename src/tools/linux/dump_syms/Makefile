@@ -77,6 +77,7 @@ dump_syms.o: dump_syms.cc
 
 VPATH += $(SRC)/common/linux
 dump_stabs.o: dump_stabs.cc
+COVERAGE_SOURCES += dump_stabs.cc
 dump_symbols.o: dump_symbols.cc
 file_id.o: file_id.cc
 module.o: module.cc
@@ -148,6 +149,23 @@ module_unittest.o: module_unittest.cc
 module_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) $(GMOCK_CPPFLAGS)
 clean::
 	rm -f module_unittest
+
+
+### Unit tests for google_breakpad::DumpStabsHandler.
+check: check-dump_stabs_unittest
+check-dump_stabs_unittest: dump_stabs_unittest
+dump_stabs_unittest:					\
+	gtest-all.o					\
+	gtest_main.o					\
+	dump_stabs.o					\
+	dump_stabs_unittest.o				\
+	module.o					\
+	$(empty)
+CPP_EXECUTABLES += dump_stabs_unittest
+dump_stabs_unittest.o: dump_stabs_unittest.cc
+dump_stabs_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) $(GMOCK_CPPFLAGS)
+clean::
+	rm -f dump_stabs_unittest
 
 
 ### Generic compilation rules.
