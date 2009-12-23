@@ -48,6 +48,7 @@ extern const char kInvalidUrlError[];
 extern const char kInternalVisibleTabCaptureError[];
 extern const char kNotImplementedError[];
 extern const char kCannotAccessPageError[];
+extern const char kCannotScriptGalleryError[];
 extern const char kSupportedInWindowsOnlyError[];
 
 extern const char kNoCodeOrFileToExecuteError[];

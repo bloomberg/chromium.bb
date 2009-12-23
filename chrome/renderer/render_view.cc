@@ -26,6 +26,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/plugin_messages.h"
@@ -3841,6 +3842,13 @@ void RenderView::OnExecuteCode(const ViewMsg_ExecuteCode_Params& params) {
 
 void RenderView::ExecuteCodeImpl(WebFrame* frame,
                                  const ViewMsg_ExecuteCode_Params& params) {
+  // Don't execute scripts in gallery pages.
+  GURL frame_url = GURL(frame->url());
+  if (frame_url.host() == GURL(extension_urls::kGalleryBrowsePrefix).host()) {
+    Send(new ViewMsg_ExecuteCodeFinished(routing_id_, params.request_id, true));
+    return;
+  }
+
   std::vector<WebFrame*> frame_vector;
   frame_vector.push_back(frame);
   if (params.all_frames)
