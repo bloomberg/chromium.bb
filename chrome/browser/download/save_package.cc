@@ -42,9 +42,10 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context.h"
-#include "webkit/glue/dom_serializer_delegate.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPageSerializerClient.h"
 
 using base::Time;
+using WebKit::WebPageSerializerClient;
 
 // This structure is for storing parameters which we will use to create a
 // SavePackage object later.
@@ -901,9 +902,8 @@ void SavePackage::GetSerializedHtmlDataForCurrentPageWithLocalLinks() {
 void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
                                                const std::string& data,
                                                int32 status) {
-  webkit_glue::DomSerializerDelegate::PageSavingSerializationStatus flag =
-      static_cast<webkit_glue::DomSerializerDelegate::
-                      PageSavingSerializationStatus>(status);
+  WebPageSerializerClient::PageSerializationStatus flag =
+      static_cast<WebPageSerializerClient::PageSerializationStatus>(status);
   // Check current state.
   if (wait_state_ != HTML_DATA)
     return;
@@ -911,7 +911,7 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
   int id = tab_id();
   // If the all frames are finished saving, we need to close the
   // remaining SaveItems.
-  if (flag == webkit_glue::DomSerializerDelegate::ALL_FRAMES_ARE_FINISHED) {
+  if (flag == WebPageSerializerClient::AllFramesAreFinished) {
     for (SaveUrlItemMap::iterator it = in_progress_items_.begin();
          it != in_progress_items_.end(); ++it) {
       ChromeThread::PostTask(
@@ -949,7 +949,7 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
   }
 
   // Current frame is completed saving, call finish in file thread.
-  if (flag == webkit_glue::DomSerializerDelegate::CURRENT_FRAME_IS_FINISHED) {
+  if (flag == WebPageSerializerClient::CurrentFrameIsFinished) {
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(file_manager_,

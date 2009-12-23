@@ -992,6 +992,7 @@ void UITest::WaitForGeneratedFileAndCheck(const FilePath& generated_file,
     // parameter: need_equal.
     int64 generated_file_size = 0;
     int64 original_file_size = 0;
+
     EXPECT_TRUE(file_util::GetFileSize(generated_file, &generated_file_size));
     EXPECT_TRUE(file_util::GetFileSize(original_file, &original_file_size));
     if (need_equal) {

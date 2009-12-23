@@ -43,10 +43,10 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPageSerializerClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
-#include "webkit/glue/dom_serializer_delegate.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/password_form_dom_manager.h"
@@ -116,8 +116,8 @@ typedef base::RefCountedData<int> SharedRenderViewCounter;
 class RenderView : public RenderWidget,
                    public WebKit::WebViewClient,
                    public WebKit::WebFrameClient,
+                   public WebKit::WebPageSerializerClient,
                    public webkit_glue::WebPluginPageDelegate,
-                   public webkit_glue::DomSerializerDelegate,
                    public base::SupportsWeakPtr<RenderView> {
  public:
   // Visit all RenderViews with a live WebView (i.e., RenderViews that have
@@ -351,6 +351,11 @@ class RenderView : public RenderWidget,
   virtual void reportFindInPageSelection(
       int request_id, int active_match_ordinal, const WebKit::WebRect& sel);
 
+  // webPageSerializerClient
+  virtual void didSerializeDataForFrame(const WebKit::WebURL& frame_url,
+                                        const WebKit::WebCString& data,
+                                        PageSerializationStatus status);
+
   // webkit_glue::WebPluginPageDelegate
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
       const GURL& url,
@@ -366,10 +371,6 @@ class RenderView : public RenderWidget,
       const gfx::Size& size,
       const std::string& json_arguments,
       std::string* json_retval);
-
-  // DomSerializerDelegate
-  virtual void DidSerializeDataForFrame(const GURL& frame_url,
-      const std::string& data, PageSavingSerializationStatus status);
 
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderView();

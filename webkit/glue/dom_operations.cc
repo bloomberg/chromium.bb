@@ -19,7 +19,6 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "HTMLAllCollection.h"
 #include "HTMLElement.h"
 #include "HTMLFormElement.h"
-#include "HTMLFrameOwnerElement.h"
 #include "HTMLHeadElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLLinkElement.h"
@@ -31,23 +30,33 @@ MSVC_POP_WARNING();
 #undef LOG
 
 #include "base/string_util.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNodeCollection.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 // TODO(yaar) Eventually should not depend on api/src.
 #include "third_party/WebKit/WebKit/chromium/src/DOMUtilitiesPrivate.h"
 #include "third_party/WebKit/WebKit/chromium/src/WebFrameImpl.h"
 #include "webkit/glue/dom_operations.h"
-#include "webkit/glue/dom_operations_private.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webpasswordautocompletelistener_impl.h"
 
 using WebCore::String;
 using WebKit::FrameLoaderClientImpl;
+using WebKit::WebDocument;
+using WebKit::WebElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebFrameImpl;
+using WebKit::WebInputElement;
 using WebKit::WebNode;
+using WebKit::WebNodeCollection;
 using WebKit::WebVector;
 using WebKit::WebView;
 
@@ -64,7 +73,7 @@ struct SavableResourcesUniqueCheck {
   std::set<GURL>* frames_set;
   // Collection of all frames we go through when getting all savable resource
   // links.
-  std::vector<WebFrameImpl*>* frames;
+  std::vector<WebFrame*>* frames;
 
   SavableResourcesUniqueCheck()
       : resources_set(NULL),
@@ -72,7 +81,7 @@ struct SavableResourcesUniqueCheck {
         frames(NULL) {}
 
   SavableResourcesUniqueCheck(std::set<GURL>* resources_set,
-      std::set<GURL>* frames_set, std::vector<WebFrameImpl*>* frames)
+      std::set<GURL>* frames_set, std::vector<WebFrame*>* frames)
       : resources_set(resources_set),
         frames_set(frames_set),
         frames(frames) {}
@@ -81,25 +90,28 @@ struct SavableResourcesUniqueCheck {
 // Get all savable resource links from current element. One element might
 // have more than one resource link. It is possible to have some links
 // in one CSS stylesheet.
-void GetSavableResourceLinkForElement(WebCore::Element* element,
-    WebCore::Document* current_doc, SavableResourcesUniqueCheck* unique_check,
+void GetSavableResourceLinkForElement(
+    const WebElement& element,
+    const WebDocument& current_doc,
+    SavableResourcesUniqueCheck* unique_check,
     webkit_glue::SavableResourcesResult* result) {
+
   // Handle frame and iframe tag.
-  bool is_frame_element;
-  WebFrameImpl* web_frame =
-      webkit_glue::GetWebFrameImplFromElement(element, &is_frame_element);
-  if (is_frame_element) {
-    if (web_frame)
-      unique_check->frames->push_back(web_frame);
+  if (element.hasTagName("iframe") ||
+      element.hasTagName("frame")) {
+    WebFrame* sub_frame = WebFrame::fromFrameOwnerElement(element);
+    if (sub_frame)
+      unique_check->frames->push_back(sub_frame);
     return;
   }
+
   // Check whether the node has sub resource URL or not.
-  const WebCore::AtomicString* value =
+  WebString value =
       webkit_glue::GetSubResourceLinkFromElement(element);
-  if (!value)
+  if (value.isNull())
     return;
   // Get absolute URL.
-  GURL u(webkit_glue::KURLToGURL(current_doc->completeURL((*value).string())));
+  GURL u = current_doc.completeURL(value);
   // ignore invalid URL
   if (!u.is_valid())
     return;
@@ -113,35 +125,25 @@ void GetSavableResourceLinkForElement(WebCore::Element* element,
     return;
   result->resources_list->push_back(u);
   // Insert referrer for above new resource link.
-  if (current_doc->frame()) {
-    GURL u(webkit_glue::KURLToGURL(
-        WebCore::KURL(WebCore::ParsedURLString,
-                      current_doc->frame()->loader()->outgoingReferrer())));
-    result->referrers_list->push_back(u);
-  } else {
-    // Insert blank referrer.
-    result->referrers_list->push_back(GURL());
-  }
+  result->referrers_list->push_back(GURL());
 }
 
 // Get all savable resource links from current WebFrameImpl object pointer.
-void GetAllSavableResourceLinksForFrame(WebFrameImpl* current_frame,
+void GetAllSavableResourceLinksForFrame(WebFrame* current_frame,
     SavableResourcesUniqueCheck* unique_check,
     webkit_glue::SavableResourcesResult* result,
     const char** savable_schemes) {
   // Get current frame's URL.
-  const WebCore::KURL& current_frame_kurl =
-      current_frame->frame()->loader()->url();
-  GURL current_frame_gurl(webkit_glue::KURLToGURL(current_frame_kurl));
+  GURL current_frame_url = current_frame->url();
 
   // If url of current frame is invalid, ignore it.
-  if (!current_frame_gurl.is_valid())
+  if (!current_frame_url.is_valid())
     return;
 
   // If url of current frame is not a savable protocol, ignore it.
   bool is_valid_protocol = false;
   for (int i = 0; savable_schemes[i] != NULL; ++i) {
-    if (current_frame_gurl.SchemeIs(savable_schemes[i])) {
+    if (current_frame_url.SchemeIs(savable_schemes[i])) {
       is_valid_protocol = true;
       break;
     }
@@ -150,20 +152,20 @@ void GetAllSavableResourceLinksForFrame(WebFrameImpl* current_frame,
     return;
 
   // If find same frame we have recorded, ignore it.
-  if (!unique_check->frames_set->insert(current_frame_gurl).second)
+  if (!unique_check->frames_set->insert(current_frame_url).second)
     return;
 
   // Get current using document.
-  WebCore::Document* current_doc = current_frame->frame()->document();
+  WebDocument current_doc = current_frame->document();
   // Go through all descent nodes.
-  PassRefPtr<WebCore::HTMLCollection> all = current_doc->all();
+  WebNodeCollection all = current_doc.all();
   // Go through all node in this frame.
-  for (WebCore::Node* node = all->firstItem(); node != NULL;
-       node = all->nextItem()) {
+  for (WebNode node = all.firstItem(); !node.isNull();
+       node = all.nextItem()) {
     // We only save HTML resources.
-    if (!node->isHTMLElement())
+    if (!node.isElementNode())
       continue;
-    WebCore::Element* element = static_cast<WebCore::Element*>(node);
+    WebElement element = node.toElement<WebElement>();
     GetSavableResourceLinkForElement(element,
                                      current_doc,
                                      unique_check,
@@ -360,159 +362,45 @@ void FillPasswordForm(WebView* view,
   }
 }
 
-WebFrameImpl* GetWebFrameImplFromElement(WebCore::Element* element,
-                                         bool* is_frame_element) {
-  *is_frame_element = false;
-  if (element->hasTagName(WebCore::HTMLNames::iframeTag) ||
-      element->hasTagName(WebCore::HTMLNames::frameTag)) {
-    *is_frame_element = true;
-    if (element->isFrameOwnerElement()) {
-      // Check whether this frame has content.
-      WebCore::HTMLFrameOwnerElement* frame_element =
-          static_cast<WebCore::HTMLFrameOwnerElement*>(element);
-      WebCore::Frame* content_frame = frame_element->contentFrame();
-      return WebFrameImpl::fromFrame(content_frame);
+WebString GetSubResourceLinkFromElement(const WebElement& element) {
+  const char* attribute_name = NULL;
+  if (element.hasTagName("img") ||
+      element.hasTagName("script")) {
+    attribute_name = "src";
+  } else if (element.hasTagName("input")) {
+    const WebInputElement input = element.toConstElement<WebInputElement>();
+    if (input.inputType() == WebInputElement::Image) {
+      attribute_name = "src";
     }
-  }
-  return NULL;
-}
-
-const WebCore::AtomicString* GetSubResourceLinkFromElement(
-    const WebCore::Element* element) {
-  const WebCore::QualifiedName* attribute_name = NULL;
-  if (element->hasTagName(WebCore::HTMLNames::imgTag) ||
-      element->hasTagName(WebCore::HTMLNames::scriptTag) ||
-      element->hasTagName(WebCore::HTMLNames::linkTag)) {
-    // Get value.
-    if (element->hasTagName(WebCore::HTMLNames::linkTag)) {
+  } else if (element.hasTagName("body") ||
+             element.hasTagName("table") ||
+             element.hasTagName("tr") ||
+             element.hasTagName("td")) {
+    attribute_name = "background";
+  } else if (element.hasTagName("blockquote") ||
+             element.hasTagName("q") ||
+             element.hasTagName("del") ||
+             element.hasTagName("ins")) {
+    attribute_name = "cite";
+  } else if (element.hasTagName("link")) {
     // If the link element is not linked to css, ignore it.
-      const WebCore::HTMLLinkElement* link =
-          static_cast<const WebCore::HTMLLinkElement*>(element);
-      if (!link->sheet())
-        return NULL;
+    if (LowerCaseEqualsASCII(element.getAttribute("type"), "text/css")) {
       // TODO(jnd). Add support for extracting links of sub-resources which
       // are inside style-sheet such as @import, url(), etc.
       // See bug: http://b/issue?id=1111667.
-      attribute_name = &WebCore::HTMLNames::hrefAttr;
-    } else {
-      attribute_name = &WebCore::HTMLNames::srcAttr;
+      attribute_name = "href";
     }
-  } else if (element->hasTagName(WebCore::HTMLNames::inputTag)) {
-    const WebCore::HTMLInputElement* input =
-        static_cast<const WebCore::HTMLInputElement*>(element);
-    if (input->inputType() == WebCore::HTMLInputElement::IMAGE) {
-      attribute_name = &WebCore::HTMLNames::srcAttr;
-    }
-  } else if (element->hasTagName(WebCore::HTMLNames::bodyTag) ||
-             element->hasTagName(WebCore::HTMLNames::tableTag) ||
-             element->hasTagName(WebCore::HTMLNames::trTag) ||
-             element->hasTagName(WebCore::HTMLNames::tdTag)) {
-    attribute_name = &WebCore::HTMLNames::backgroundAttr;
-  } else if (element->hasTagName(WebCore::HTMLNames::blockquoteTag) ||
-             element->hasTagName(WebCore::HTMLNames::qTag) ||
-             element->hasTagName(WebCore::HTMLNames::delTag) ||
-             element->hasTagName(WebCore::HTMLNames::insTag)) {
-    attribute_name = &WebCore::HTMLNames::citeAttr;
   }
   if (!attribute_name)
-    return NULL;
-  const WebCore::AtomicString* value =
-      &element->getAttribute(*attribute_name);
+    return WebString();
+  WebString value = element.getAttribute(WebString::fromUTF8(attribute_name));
   // If value has content and not start with "javascript:" then return it,
   // otherwise return NULL.
-  if (value && !value->isEmpty() &&
-      !value->startsWith("javascript:", false))
+  if (!value.isNull() && !value.isEmpty() &&
+      !StartsWithASCII(value.utf8(),"javascript:", false))
     return value;
 
-  return NULL;
-}
-
-bool ElementHasLegalLinkAttribute(const WebCore::Element* element,
-                                  const WebCore::QualifiedName& attr_name) {
-  if (attr_name == WebCore::HTMLNames::srcAttr) {
-    // Check src attribute.
-    if (element->hasTagName(WebCore::HTMLNames::imgTag) ||
-        element->hasTagName(WebCore::HTMLNames::scriptTag) ||
-        element->hasTagName(WebCore::HTMLNames::iframeTag) ||
-        element->hasTagName(WebCore::HTMLNames::frameTag))
-      return true;
-    if (element->hasTagName(WebCore::HTMLNames::inputTag)) {
-      const WebCore::HTMLInputElement* input =
-          static_cast<const WebCore::HTMLInputElement*>(element);
-      if (input->inputType() == WebCore::HTMLInputElement::IMAGE)
-        return true;
-    }
-  } else if (attr_name == WebCore::HTMLNames::hrefAttr) {
-    // Check href attribute.
-    if (element->hasTagName(WebCore::HTMLNames::linkTag) ||
-        element->hasTagName(WebCore::HTMLNames::aTag) ||
-        element->hasTagName(WebCore::HTMLNames::areaTag))
-      return true;
-  } else if (attr_name == WebCore::HTMLNames::actionAttr) {
-    if (element->hasTagName(WebCore::HTMLNames::formTag))
-      return true;
-  } else if (attr_name == WebCore::HTMLNames::backgroundAttr) {
-    if (element->hasTagName(WebCore::HTMLNames::bodyTag) ||
-        element->hasTagName(WebCore::HTMLNames::tableTag) ||
-        element->hasTagName(WebCore::HTMLNames::trTag) ||
-        element->hasTagName(WebCore::HTMLNames::tdTag))
-      return true;
-  } else if (attr_name == WebCore::HTMLNames::citeAttr) {
-    if (element->hasTagName(WebCore::HTMLNames::blockquoteTag) ||
-        element->hasTagName(WebCore::HTMLNames::qTag) ||
-        element->hasTagName(WebCore::HTMLNames::delTag) ||
-        element->hasTagName(WebCore::HTMLNames::insTag))
-      return true;
-  } else if (attr_name == WebCore::HTMLNames::classidAttr ||
-             attr_name == WebCore::HTMLNames::dataAttr) {
-    if (element->hasTagName(WebCore::HTMLNames::objectTag))
-      return true;
-  } else if (attr_name == WebCore::HTMLNames::codebaseAttr) {
-    if (element->hasTagName(WebCore::HTMLNames::objectTag) ||
-        element->hasTagName(WebCore::HTMLNames::appletTag))
-      return true;
-  }
-  return false;
-}
-
-WebFrameImpl* GetWebFrameImplFromWebViewForSpecificURL(WebView* view,
-                                                       const GURL& page_url) {
-  WebFrame* main_frame = view->mainFrame();
-  if (!main_frame)
-    return NULL;
-  WebFrameImpl* main_frame_impl = static_cast<WebFrameImpl*>(main_frame);
-
-  std::vector<WebFrameImpl*> frames;
-  // First, process main frame.
-  frames.push_back(main_frame_impl);
-  // Collect all frames inside the specified frame.
-  for (int i = 0; i < static_cast<int>(frames.size()); ++i) {
-    WebFrameImpl* current_frame = frames[i];
-    // Get current using document.
-    WebCore::Document* current_doc = current_frame->frame()->document();
-    // Check whether current frame is target or not.
-    const WebCore::KURL& current_frame_kurl =
-        current_frame->frame()->loader()->url();
-    GURL current_frame_gurl(KURLToGURL(current_frame_kurl));
-    if (page_url == current_frame_gurl)
-      return current_frame;
-    // Go through sub-frames.
-    RefPtr<WebCore::HTMLCollection> all = current_doc->all();
-    for (WebCore::Node* node = all->firstItem(); node != NULL;
-         node = all->nextItem()) {
-      if (!node->isHTMLElement())
-        continue;
-      WebCore::Element* element = static_cast<WebCore::Element*>(node);
-      // Check frame tag and iframe tag.
-      bool is_frame_element;
-      WebFrameImpl* web_frame = GetWebFrameImplFromElement(
-          element, &is_frame_element);
-      if (is_frame_element && web_frame)
-        frames.push_back(web_frame);
-    }
-  }
-
-  return NULL;
+  return WebString();
 }
 
 // Get all savable resource links from current webview, include main
@@ -527,12 +415,12 @@ bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
 
   std::set<GURL> resources_set;
   std::set<GURL> frames_set;
-  std::vector<WebFrameImpl*> frames;
+  std::vector<WebFrame*> frames;
   SavableResourcesUniqueCheck unique_check(&resources_set,
                                            &frames_set,
                                            &frames);
 
-  GURL main_page_gurl(KURLToGURL(main_frame_impl->frame()->loader()->url()));
+  GURL main_page_gurl(main_frame_impl->url());
 
   // Make sure we are saving same page between embedder and webkit.
   // If page has being navigated, embedder will get three empty vector,

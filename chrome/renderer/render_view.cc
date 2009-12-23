@@ -65,6 +65,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
@@ -72,6 +73,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
@@ -90,7 +92,6 @@
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/dom_operations.h"
-#include "webkit/glue/dom_serializer.h"
 #include "webkit/glue/image_decoder.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/simple_data_source.h"
@@ -121,6 +122,7 @@ using WebKit::WebColor;
 using WebKit::WebColorName;
 using WebKit::WebConsoleMessage;
 using WebKit::WebContextMenuData;
+using WebKit::WebCString;
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDevToolsAgent;
@@ -138,6 +140,8 @@ using WebKit::WebMediaPlayerClient;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNavigationType;
 using WebKit::WebNode;
+using WebKit::WebPageSerializer;
+using WebKit::WebPageSerializerClient;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
 using WebKit::WebPoint;
@@ -3349,19 +3353,29 @@ void RenderView::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
     const std::vector<GURL>& links,
     const std::vector<FilePath>& local_paths,
     const FilePath& local_directory_name) {
-  webkit_glue::DomSerializer dom_serializer(webview()->mainFrame(),
-                                            true,
-                                            this,
-                                            links,
-                                            local_paths,
-                                            local_directory_name);
-  dom_serializer.SerializeDom();
+
+  // Convert std::vector of GURLs to WebVector<WebURL>
+  WebVector<WebURL> weburl_links(links);
+
+  // Convert std::vector of std::strings to WebVector<WebString>
+  WebVector<WebString> webstring_paths(local_paths.size());
+  for (size_t i = 0; i < local_paths.size(); i++)
+    webstring_paths[i] = webkit_glue::FilePathToWebString(local_paths[i]);
+
+  WebPageSerializer::serialize(webview()->mainFrame(),
+                               true, this, weburl_links, webstring_paths,
+                               webkit_glue::FilePathToWebString(
+                                   local_directory_name));
 }
 
-void RenderView::DidSerializeDataForFrame(const GURL& frame_url,
-    const std::string& data, PageSavingSerializationStatus status) {
-  Send(new ViewHostMsg_SendSerializedHtmlData(routing_id_,
-      frame_url, data, static_cast<int32>(status)));
+void RenderView::didSerializeDataForFrame(const WebURL& frame_url,
+    const WebCString& data,
+    WebPageSerializerClient::PageSerializationStatus status) {
+  Send(new ViewHostMsg_SendSerializedHtmlData(
+    routing_id_,
+    frame_url,
+    data.data(),
+    static_cast<int32>(status)));
 }
 
 void RenderView::OnMsgShouldClose() {
