@@ -35,6 +35,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <nacl/nacl_imc.h>
 #include <nacl/nacl_npapi.h>

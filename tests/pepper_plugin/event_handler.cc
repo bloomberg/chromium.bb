@@ -27,6 +27,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include <string>
 
 #include "native_client/src/include/nacl_macros.h"
