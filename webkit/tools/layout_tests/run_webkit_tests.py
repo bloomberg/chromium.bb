@@ -158,8 +158,8 @@ class TestRunner:
     else:
       self._http_server = http_server.Lighttpd(options.results_directory)
 
-    self._shardable_directories = ['chrome', 'LayoutTests', 'fast',
-        'svg', 'loader', 'editing']
+    self._shardable_directories = ['LayoutTests', 'fast', 'svg', 'loader',
+        'editing']
 
     # The http tests are very stable on mac/linux.
     # TODO(ojan): Make the http server on Windows be apache so we can turn
@@ -373,8 +373,6 @@ class TestRunner:
     # provide better parallelization. We should at least be able to do so
     # for some directories (e.g. LayoutTests/dom).
     index = test_file.rfind(os.sep + 'LayoutTests' + os.sep)
-    if index is -1:
-      index = test_file.rfind(os.sep + 'chrome' + os.sep)
 
     test_file = test_file[index + 1:]
     test_file_parts = test_file.split(os.sep, 1)
@@ -1385,11 +1383,9 @@ def main(options, args):
   if options.clobber_old_results:
     # Just clobber the actual test results directories since the other files
     # in the results directory are explicitly used for cross-run tracking.
-    test_dirs = ("LayoutTests", "chrome")
-    for directory in test_dirs:
-      path = os.path.join(options.results_directory, directory)
-      if os.path.exists(path):
-        shutil.rmtree(path)
+    path = os.path.join(options.results_directory, 'LayoutTests')
+    if os.path.exists(path):
+      shutil.rmtree(path)
 
   # Ensure platform is valid and force it to the form 'chromium-<platform>'.
   options.platform = path_utils.PlatformName(options.platform)

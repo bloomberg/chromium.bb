@@ -32,14 +32,8 @@ class PathNotFound(Exception): pass
 
 def LayoutTestsDir(path=None):
   """Returns the fully-qualified path to the directory containing the input
-  data for the specified layout test.
-
-  We have not fully upstreamed all of our layout tests, so we need to
-  potentially return two different places."""
-  if path and path.find('LayoutTests') == -1:
-    return PathFromBase('webkit', 'data', 'layout_tests')
-  else:
-    return PathFromBase('third_party', 'WebKit');
+  data for the specified layout test."""
+  return PathFromBase('third_party', 'WebKit');
 
 def ChromiumBaselinePath(platform=None):
   """Returns the full path to the directory containing expected
@@ -197,9 +191,6 @@ def FilenameToUri(full_path):
     # Note: the root is LayoutTests/, not LayoutTests/websocket/tests/
     relative_path = relative_path[len(LAYOUTTESTS_DIR):]
     port = 8880
-  elif relative_path.find("/http/") >= 0:
-    # chrome/http/tests run off of port 8081 with the full path
-    port = 8081
 
   # Make LayoutTests/http/tests/local run as local files. This is to mimic the
   # logic in run-webkit-tests.
