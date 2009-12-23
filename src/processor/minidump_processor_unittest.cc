@@ -204,16 +204,16 @@ TEST_F(MinidumpProcessorTest, TestBasicProcessing) {
   ASSERT_EQ(state.system_info()->cpu_info, kSystemInfoCPUInfo);
   ASSERT_TRUE(state.crashed());
   ASSERT_EQ(state.crash_reason(), "EXCEPTION_ACCESS_VIOLATION");
-  ASSERT_EQ(state.crash_address(), 0x45);
-  ASSERT_EQ(state.threads()->size(), 1);
+  ASSERT_EQ(state.crash_address(), 0x45U);
+  ASSERT_EQ(state.threads()->size(), size_t(1));
   ASSERT_EQ(state.requesting_thread(), 0);
 
   CallStack *stack = state.threads()->at(0);
   ASSERT_TRUE(stack);
-  ASSERT_EQ(stack->frames()->size(), 4);
+  ASSERT_EQ(stack->frames()->size(), 4U);
 
   ASSERT_TRUE(stack->frames()->at(0)->module);
-  ASSERT_EQ(stack->frames()->at(0)->module->base_address(), 0x400000);
+  ASSERT_EQ(stack->frames()->at(0)->module->base_address(), 0x400000U);
   ASSERT_EQ(stack->frames()->at(0)->module->code_file(), "c:\\test_app.exe");
   ASSERT_EQ(stack->frames()->at(0)->function_name,
             "`anonymous namespace'::CrashFunction");
@@ -221,7 +221,7 @@ TEST_F(MinidumpProcessorTest, TestBasicProcessing) {
   ASSERT_EQ(stack->frames()->at(0)->source_line, 58);
 
   ASSERT_TRUE(stack->frames()->at(1)->module);
-  ASSERT_EQ(stack->frames()->at(1)->module->base_address(), 0x400000);
+  ASSERT_EQ(stack->frames()->at(1)->module->base_address(), 0x400000U);
   ASSERT_EQ(stack->frames()->at(1)->module->code_file(), "c:\\test_app.exe");
   ASSERT_EQ(stack->frames()->at(1)->function_name, "main");
   ASSERT_EQ(stack->frames()->at(1)->source_file_name, "c:\\test_app.cc");
@@ -229,7 +229,7 @@ TEST_F(MinidumpProcessorTest, TestBasicProcessing) {
 
   // This comes from the CRT
   ASSERT_TRUE(stack->frames()->at(2)->module);
-  ASSERT_EQ(stack->frames()->at(2)->module->base_address(), 0x400000);
+  ASSERT_EQ(stack->frames()->at(2)->module->base_address(), 0x400000U);
   ASSERT_EQ(stack->frames()->at(2)->module->code_file(), "c:\\test_app.exe");
   ASSERT_EQ(stack->frames()->at(2)->function_name, "__tmainCRTStartup");
   ASSERT_EQ(stack->frames()->at(2)->source_file_name,
@@ -238,14 +238,14 @@ TEST_F(MinidumpProcessorTest, TestBasicProcessing) {
 
   // No debug info available for kernel32.dll
   ASSERT_TRUE(stack->frames()->at(3)->module);
-  ASSERT_EQ(stack->frames()->at(3)->module->base_address(), 0x7c800000);
+  ASSERT_EQ(stack->frames()->at(3)->module->base_address(), 0x7c800000U);
   ASSERT_EQ(stack->frames()->at(3)->module->code_file(),
             "C:\\WINDOWS\\system32\\kernel32.dll");
   ASSERT_TRUE(stack->frames()->at(3)->function_name.empty());
   ASSERT_TRUE(stack->frames()->at(3)->source_file_name.empty());
   ASSERT_EQ(stack->frames()->at(3)->source_line, 0);
 
-  ASSERT_EQ(state.modules()->module_count(), 13);
+  ASSERT_EQ(state.modules()->module_count(), 13U);
   ASSERT_TRUE(state.modules()->GetMainModule());
   ASSERT_EQ(state.modules()->GetMainModule()->code_file(), "c:\\test_app.exe");
   ASSERT_FALSE(state.modules()->GetModuleForAddress(0));

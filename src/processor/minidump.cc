@@ -3747,8 +3747,8 @@ bool Minidump::ReadBytes(void* bytes, size_t count) {
   }
   stream_->read(static_cast<char*>(bytes), count);
   size_t bytes_read = stream_->gcount();
-  if (static_cast<size_t>(bytes_read) != count) {
-    if (bytes_read == -1) {
+  if (bytes_read != count) {
+    if (bytes_read == size_t(-1)) {
       string error_string;
       int error_code = ErrnoString(&error_string);
       BPLOG(ERROR) << "ReadBytes: error " << error_code << ": " << error_string;

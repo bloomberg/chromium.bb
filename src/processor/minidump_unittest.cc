@@ -65,7 +65,7 @@ TEST_F(MinidumpTest, TestMinidumpFromFile) {
   ASSERT_TRUE(minidump.Read());
   const MDRawHeader* header = minidump.header();
   ASSERT_NE(header, (MDRawHeader*)NULL);
-  ASSERT_EQ(header->signature, MD_HEADER_SIGNATURE);
+  ASSERT_EQ(header->signature, u_int32_t(MD_HEADER_SIGNATURE));
   //TODO: add more checks here
 }
 
@@ -91,7 +91,7 @@ TEST_F(MinidumpTest, TestMinidumpFromStream) {
   ASSERT_TRUE(minidump.Read());
   const MDRawHeader* header = minidump.header();
   ASSERT_NE(header, (MDRawHeader*)NULL);
-  ASSERT_EQ(header->signature, MD_HEADER_SIGNATURE);
+  ASSERT_EQ(header->signature, u_int32_t(MD_HEADER_SIGNATURE));
   //TODO: add more checks here
 }
 
