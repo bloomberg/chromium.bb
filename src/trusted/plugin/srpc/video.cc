@@ -38,7 +38,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #endif  // NACL_WINDOWS
-#if NACL_LINUX && defined(MOZ_X11) && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
+#if NACL_LINUX && defined(MOZ_X11)
 #include <sched.h>
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
@@ -87,7 +87,7 @@ void VideoGlobalUnlock() {
 }
 
 
-#if NACL_LINUX && defined(MOZ_X11) && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
+#if NACL_LINUX && defined(MOZ_X11)
 static int XKeysymToNaCl(KeySym xsym) {
   if ((xsym & 0xFF00) == 0x0000)
     return xsym;
@@ -1145,7 +1145,7 @@ bool VideoMap::SetWindow(PluginWindow *window) {
           reinterpret_cast<WNDPROC>(VideoMap::WindowProcedure));
       SetWindowLong(hwnd, GWL_USERDATA, reinterpret_cast<LONG>(this));
 #endif  // NACL_WINDOWS
-#if NACL_LINUX && defined(MOZ_X11) && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
+#if NACL_LINUX && defined(MOZ_X11)
       // open X11 display, add X11 event listener
       dprintf(("VideoMap::SetWindow adding X11 display\n"));
       set_platform_specific(XOpenDisplay(NULL));
@@ -1405,7 +1405,7 @@ VideoMap::~VideoMap() {
     video_callback_data_ = ReleaseCallbackData(video_callback_data_);
   }
   if (NULL != platform_specific()) {
-#if NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
+#if NACL_LINUX && defined(MOZ_X11)
     XCloseDisplay(static_cast<Display *>(platform_specific()));
 #endif
     set_platform_specific(NULL);

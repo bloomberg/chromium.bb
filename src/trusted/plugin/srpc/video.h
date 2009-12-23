@@ -41,7 +41,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #endif  // NACL_WINDOWS
-#if NACL_LINUX && defined(MOZ_X11) && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
+#if NACL_LINUX && defined(MOZ_X11)
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
 #endif  // NACL_LINUX && defined(MOZ_X11)
@@ -149,7 +149,7 @@ class VideoMap {
                                            WPARAM wparam,
                                            LPARAM lparam);
 #endif  // NACL_WINDOWS
-#if NACL_LINUX && defined(MOZ_X11) && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
+#if NACL_LINUX && defined(MOZ_X11)
   static void XEventHandler(Widget widget,
                             VideoMap* video,
                             XEvent* xevent,

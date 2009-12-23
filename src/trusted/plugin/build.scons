@@ -71,15 +71,9 @@ if not env.Bit('mac'):
 if env.Bit('linux'):
     env.Append(
         CCFLAGS=['-fPIC', '-Wno-long-long',],
-        CPPDEFINES = ['XP_UNIX'],
-    )
-
-    # NOTE: for arm the dependency on X11 is currently unsatisfiable
-    if env['TARGET_ARCHITECTURE'] == 'x86':
-      env.Append(
-          CPPDEFINES = ['MOZ_X11'],
-          LIBS = ['dl', 'Xt', 'X11'],
-          )
+        CPPDEFINES = ['XP_UNIX', 'MOZ_X11'],
+        LIBS = ['dl', 'Xt', 'X11', 'crypto'],
+        )
 
     # We usually try to build things statically, but the plugin is a .so
     env.FilterOut(LINKFLAGS=['-static'])

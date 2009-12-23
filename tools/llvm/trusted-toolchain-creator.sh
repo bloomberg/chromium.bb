@@ -147,6 +147,7 @@ readonly REPO=http://repository.maemo.org/pool/maemo4.0.1/free
 readonly LIBSSL_DEV=${REPO}/o/openssl/libssl-dev_0.9.7e-4.osso2+3sarge3.osso6_armel.deb
 readonly LIBSDL_DEV=${REPO}/libs/libsdl1.2/libsdl1.2-dev_1.2.8-23_armel.deb
 readonly LIBX11_DEV=${REPO}/libx/libx11/libx11-dev_1.1.1-1osso3_armel.deb
+readonly LIBXT_DEV=${REPO}/libx/libxt/libxt-dev_1.0.5-2osso1_armel.deb
 readonly LIBXEXT_DEV=${REPO}/libx/libxext/libxext-dev_1.0.3-2osso1_armel.deb
 readonly LIBXAU_DEV=${REPO}/libx/libxau/libxau-dev_1.0.3-2osso1_armel.deb
 readonly LIBXDMCP_DEV=${REPO}/libx/libxdmcp/libxdmcp-dev_1.0.2-2osso1_armel.deb
@@ -160,7 +161,6 @@ InstallMissingLibraries() {
   dpkg --fsys-tarfile ${package}\
       | tar -xvf - --exclude=./usr/share -C ${JAIL}
   rm -f ${JAIL}/usr/lib/libXdmcp.so
-  exit
 
   Banner "installing xau"
   local package="${TMP}/${LIBXAU_DEV##*/}"
@@ -187,6 +187,14 @@ InstallMissingLibraries() {
       | tar -xvf - --exclude=./usr/share -C ${JAIL}
   rm -f ${JAIL}/usr/lib/libX11.so
 
+  Banner "installing xt"
+  local package="${TMP}/${LIBXT_DEV##*/}"
+  DownloadOrCopy ${LIBXT_DEV} ${package}
+  SubBanner "extracting to ${JAIL}"
+  dpkg --fsys-tarfile ${package}\
+      | tar -xvf - --exclude=./usr/share -C ${JAIL}
+  rm -f ${JAIL}/usr/lib/libXt.so
+
   Banner "installing libsdl"
   local package="${TMP}/${LIBSDL_DEV##*/}"
   DownloadOrCopy ${LIBSDL_DEV} ${package}
@@ -202,6 +210,8 @@ InstallMissingLibraries() {
   dpkg --fsys-tarfile ${package}\
       | tar -xf - -C ${TMP} ./usr/lib/libcrypto.a
   cp ${TMP}/usr/lib/libcrypto.a ${JAIL}/usr/lib/
+  rm -f ./usr/lib/libcrypto*so
+  rm -f ./lib/libcrypto*
 }
 
 
