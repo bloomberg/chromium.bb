@@ -44,8 +44,6 @@ const char kInternalVisibleTabCaptureError[] =
 const char kNotImplementedError[] = "This call is not yet implemented";
 const char kCannotAccessPageError[] = "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";
-const char kCannotScriptGalleryError[] = "The extensions gallery cannot be "
-    "scripted.";
 const char kSupportedInWindowsOnlyError[] = "Supported in Windows only";
 
 const char kNoCodeOrFileToExecuteError[] = "No source code or file specified.";

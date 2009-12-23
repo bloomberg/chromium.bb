@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/file_reader.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 
 namespace keys = extension_tabs_module_constants;
@@ -68,16 +67,6 @@ bool ExecuteCodeInTabFunction::RunImpl() {
 
   DCHECK(browser);
   DCHECK(contents);
-
-  // Disallow executeScript when the target contents is a gallery page.
-  // This mirrors a check in UserScriptSlave::InjectScripts
-  // NOTE: This can give the wrong answer due to race conditions, but it is OK,
-  // we check again in the renderer.
-  if (contents->GetURL().host() ==
-      GURL(extension_urls::kGalleryBrowsePrefix).host()) {
-    error_ = keys::kCannotScriptGalleryError;
-    return false;
-  }
 
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
