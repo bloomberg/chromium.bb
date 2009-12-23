@@ -196,7 +196,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
   widget_helper_ = new RenderWidgetHelper();
 
   registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile));
   registrar_.Add(this, NotificationType::SPELLCHECK_HOST_REINITIALIZED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::SPELLCHECK_WORD_ADDED,
@@ -575,7 +575,10 @@ void BrowserRenderProcessHost::InitVisitedLinks() {
 
 void BrowserRenderProcessHost::InitUserScripts() {
   UserScriptMaster* user_script_master = profile()->GetUserScriptMaster();
-  DCHECK(user_script_master);
+
+  // Incognito profiles won't have user scripts.
+  if (!user_script_master)
+    return;
 
   if (!user_script_master->ScriptsReady()) {
     // No scripts ready.  :(

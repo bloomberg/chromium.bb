@@ -279,19 +279,20 @@ void UserScriptMaster::ScriptReloader::RunScan(
 }
 
 
-UserScriptMaster::UserScriptMaster(const FilePath& script_dir)
+UserScriptMaster::UserScriptMaster(const FilePath& script_dir, Profile* profile)
     : user_script_dir_(script_dir),
       extensions_service_ready_(false),
-      pending_scan_(false) {
+      pending_scan_(false),
+      profile_(profile) {
   if (!user_script_dir_.value().empty())
     AddWatchedPath(script_dir);
 
   registrar_.Add(this, NotificationType::EXTENSIONS_READY,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile_));
 }
 
 UserScriptMaster::~UserScriptMaster() {
@@ -332,7 +333,7 @@ void UserScriptMaster::NewScriptsAvailable(base::SharedMemory* handle) {
 
     NotificationService::current()->Notify(
         NotificationType::USER_SCRIPTS_UPDATED,
-        NotificationService::AllSources(),
+        Source<Profile>(profile_),
         Details<base::SharedMemory>(handle));
   }
 }

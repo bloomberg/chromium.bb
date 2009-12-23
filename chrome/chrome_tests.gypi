@@ -1103,6 +1103,7 @@
         'browser/extensions/extension_messages_apitest.cc',
         'browser/extensions/extension_override_apitest.cc',
         'browser/extensions/extension_toolstrip_apitest.cc',
+        'browser/extensions/incognito_noscript_apitest.cc',
         'browser/extensions/isolated_world_apitest.cc',
         'browser/extensions/page_action_apitest.cc',
         'browser/extensions/stubs_apitest.cc',

@@ -250,7 +250,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual UserScriptMaster* GetUserScriptMaster() {
-    return profile_->GetUserScriptMaster();
+    return NULL;
   }
 
   virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() {
@@ -667,7 +667,7 @@ void ProfileImpl::InitExtensions() {
   FilePath script_dir;  // Don't look for user scripts in any directory.
                         // TODO(aa): We should just remove this functionality,
                         // since it isn't used anymore.
-  user_script_master_ = new UserScriptMaster(script_dir);
+  user_script_master_ = new UserScriptMaster(script_dir, this);
 
   extensions_service_ = new ExtensionsService(
       this,

@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Test bringing up a master on a specific directory, putting a script
@@ -80,7 +81,9 @@ class UserScriptMasterTest : public testing::Test,
 
 // Test that we get notified even when there are no scripts.
 TEST_F(UserScriptMasterTest, NoScripts) {
-  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_));
+  TestingProfile profile;
+  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_,
+                                                              &profile));
   master->StartScan();
   message_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
   message_loop_.Run();
@@ -92,7 +95,9 @@ TEST_F(UserScriptMasterTest, NoScripts) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Test that we get notified about new scripts after they're added.
 TEST_F(UserScriptMasterTest, NewScripts) {
-  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_));
+  TestingProfile profile;
+  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_,
+                                                              &profile));
 
   FilePath path = script_dir_.AppendASCII("script.user.js");
 
@@ -112,13 +117,15 @@ TEST_F(UserScriptMasterTest, NewScripts) {
 
 // Test that we get notified about scripts if they're already in the test dir.
 TEST_F(UserScriptMasterTest, ExistingScripts) {
+  TestingProfile profile;
   FilePath path = script_dir_.AppendASCII("script.user.js");
 
   const char content[] = "some content";
   size_t written = file_util::WriteFile(path, content, sizeof(content));
   ASSERT_EQ(written, sizeof(content));
 
-  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_));
+  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_,
+                                                              &profile));
   master->StartScan();
 
   message_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);

@@ -33,8 +33,8 @@ class SimpleTestJob : public URLRequestTestJob {
 
 class MockUserScriptMaster : public UserScriptMaster {
  public:
-  explicit MockUserScriptMaster(const FilePath& script_dir)
-      : UserScriptMaster(script_dir) {}
+  explicit MockUserScriptMaster(const FilePath& script_dir, Profile* profile)
+      : UserScriptMaster(script_dir, profile) {}
 
   virtual void StartScan() {
     // Do nothing. We want to manually control when scans occur.
@@ -237,7 +237,8 @@ class UserScriptListenerTest : public testing::Test {
 
     resource_tester_ = new ResourceDispatcherHostTester();
 
-    master_ = new MockUserScriptMaster(profile_.GetExtensionsInstallDir());
+    master_ = new MockUserScriptMaster(profile_.GetExtensionsInstallDir(),
+                                       &profile_);
 
     profile_.InitializeExtensionsService();
   }

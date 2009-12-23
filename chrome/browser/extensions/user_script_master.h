@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/notification_registrar.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -28,7 +29,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
  public:
   // For testability, the constructor takes the path the scripts live in.
   // This is normally a directory inside the profile.
-  explicit UserScriptMaster(const FilePath& script_dir);
+  explicit UserScriptMaster(const FilePath& script_dir, Profile* profile);
 
   // Add a watched directory. All scripts will be reloaded when any file in
   // this directory changes.
@@ -163,6 +164,9 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   // that we're currently mid-scan and then start over again once the scan
   // finishes.  This boolean tracks whether another scan is pending.
   bool pending_scan_;
+
+  // The profile for which the scripts managed here are installed.
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(UserScriptMaster);
 };
