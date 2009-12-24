@@ -11,6 +11,7 @@
 #include "base/stats_counters.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "net/base/connection_type_histograms.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_log.h"
 #include "net/base/net_util.h"
@@ -417,6 +418,12 @@ LoadState FlipSession::GetLoadState() const {
 
 void FlipSession::OnTCPConnect(int result) {
   LOG(INFO) << "Flip socket connected (result=" << result << ")";
+
+  // We shouldn't be coming through this path if we didn't just open a fresh
+  // socket (or have an error trying to do so).
+  DCHECK(!connection_->socket() || !connection_->is_reused());
+
+  UpdateConnectionTypeHistograms(CONNECTION_SPDY, result >= 0);
 
   if (result != net::OK) {
     DCHECK_LT(result, 0);

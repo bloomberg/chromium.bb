@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/stats_counters.h"
 #include "net/base/host_resolver.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -46,6 +47,8 @@ int FlipNetworkTransaction::Start(const HttpRequestInfo* request_info,
                                   LoadLog* load_log) {
   CHECK(request_info);
   CHECK(callback);
+
+  SIMPLE_STATS_COUNTER("FlipNetworkTransaction.Count");
 
   load_log_ = load_log;
   request_ = request_info;
