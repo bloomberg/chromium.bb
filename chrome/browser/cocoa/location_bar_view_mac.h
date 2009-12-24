@@ -33,7 +33,8 @@ class ToolbarModel;
 
 class LocationBarViewMac : public AutocompleteEditController,
                            public LocationBar,
-                           public LocationBarTesting {
+                           public LocationBarTesting,
+                           public NotificationObserver {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
                      const BubblePositioner* bubble_positioner,
@@ -95,6 +96,11 @@ class LocationBarViewMac : public AutocompleteEditController,
                             const bool is_keyword_hint,
                             const bool show_search_hint,
                             NSImage* image);
+
+  // Overridden from NotificationObserver.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Used to display a clickable icon in the location bar.
   class LocationBarImageView {
@@ -324,6 +330,9 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // The transition type to use for the navigation.
   PageTransition::Type transition_;
+
+  // Used to register for notifications received by NotificationObserver.
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewMac);
 };

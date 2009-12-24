@@ -99,6 +99,10 @@ LocationBarViewMac::LocationBarViewMac(
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   [cell setSecurityImageView:&security_image_view_];
   [cell setPageActionViewList:page_action_views_];
+
+  registrar_.Add(this,
+      NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+      NotificationService::AllSources());
 }
 
 LocationBarViewMac::~LocationBarViewMac() {
@@ -395,6 +399,25 @@ void LocationBarViewMac::SetSecurityIcon(ToolbarModel::Icon icon) {
       break;
   }
   [field_ resetFieldEditorFrameIfNeeded];
+}
+
+void LocationBarViewMac::Observe(NotificationType type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
+      TabContents* contents =
+          BrowserList::GetLastActive()->GetSelectedTabContents();
+      if (Details<TabContents>(contents) != details)
+        return;
+
+      [field_ setNeedsDisplay:YES];
+      break;
+    }
+    default:
+      NOTREACHED() << "Unexpected notification";
+      break;
+  }
 }
 
 // LocationBarImageView---------------------------------------------------------
