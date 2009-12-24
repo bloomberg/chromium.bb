@@ -45,6 +45,9 @@ class HeapcheckWrapper(object):
     self.PutEnvAndLog('NSS_DISABLE_ARENA_FREE_LIST', '1')
     self.PutEnvAndLog('GTEST_DEATH_TEST_USE_FORK', '1')
     self.PutEnvAndLog('HEAPCHECK', self._mode)
+    self.PutEnvAndLog('PPROF_PATH',
+        google.path_utils.ScriptDir() +
+        '/../../third_party/tcmalloc/chromium/src/pprof')
 
     common.RunSubprocess(proc, self._timeout)
 
