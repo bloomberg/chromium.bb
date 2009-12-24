@@ -30,6 +30,7 @@ devtools.InspectorBackendImpl = function() {
   this.installInspectorControllerDelegate_('removeAttribute');
   this.installInspectorControllerDelegate_('removeDOMStorageItem');
   this.installInspectorControllerDelegate_('removeNode');
+  this.installInspectorControllerDelegate_('saveFrontendSettings');
   this.installInspectorControllerDelegate_('setAttribute');
   this.installInspectorControllerDelegate_('setDOMStorageItem');
   this.installInspectorControllerDelegate_('setTextNodeValue');
