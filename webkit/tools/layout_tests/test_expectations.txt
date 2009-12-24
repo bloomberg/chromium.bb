@@ -3129,3 +3129,13 @@ BUG30938 WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 BUG30939 WIN LINUX : LayoutTests/svg/custom/image-with-transform-clip-filter.svg = IMAGE
 BUG30939 : LayoutTests/svg/filters/filter-clip.svg = IMAGE+TEXT
 BUG30792 WIN LINUX : LayoutTests/fast/text/fake-italic.html = IMAGE+TEXT
+
+// WebKit roll 52468->52535
+BUG31108 WIN LINUX : LayoutTests/fast/text/international/bidi-layout-across-linebreak.html = TEXT
+BUG31108 : LayoutTests/http/tests/security/listener/xss-inactive-closure.html = TEXT
+BUG31108 : LayoutTests/websocket/tests/bad-sub-protocol.html = TEXT
+BUG31108 : LayoutTests/websocket/tests/url-parsing.html = TEXT
+BUG31108 LINUX LayoutTests/editing/inserting/12882.html = IMAGE
+BUG31108 WIN LINUX : LayoutTests/fast/forms/basic-selects.html = IMAGE+TEXT
+BUG31108 WIN LINUX : LayoutTests/fast/forms/basic-textareas-quirks.html = IMAGE+TEXT
+BUG31108 MAC : LayoutTests/fast/forms/basic-textareas-quirks.html = IMAGE
