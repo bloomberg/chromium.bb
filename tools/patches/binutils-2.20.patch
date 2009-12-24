@@ -1307,7 +1307,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
 +      /* String operations can include two sandbox prefixes */
 +      int mem_op = operand_type_check (i.types[0], anymem) ? 0 : 1;
 +      if ((i.nacl_truncate[0] && !i.tm.operand_types[mem_op].bitfield.esseg)
-+          || (i.nacl_truncate[1] && !i.tm.operand_types[mem_op+1].bitfield.esseg))
++          || ((i.nacl_truncate[1] && !i.tm.operand_types[mem_op+1].bitfield.esseg))
 +	{
 +	  p = frag_more (6);
 +	  p[0] = 0x89; // MOV %ESI, %ESI instruction
