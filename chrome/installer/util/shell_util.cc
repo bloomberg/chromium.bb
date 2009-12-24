@@ -168,8 +168,8 @@ class RegistryEntry {
     // start->Internet shortcut.
     std::wstring start_menu(ShellUtil::kRegStartMenuInternet);
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    entries->push_front(new RegistryEntry(start_menu,
-                                          dist->GetApplicationName()));
+    std::wstring app_name = dist->GetApplicationName() + suffix;
+    entries->push_front(new RegistryEntry(start_menu, app_name));
     return true;
   }
 
