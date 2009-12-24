@@ -1507,7 +1507,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  (define_insn "*tls_local_dynamic_base_32_gnu"
    [(set (match_operand:SI 0 "register_operand" "=a")
  	(unspec:SI [(match_operand:SI 1 "register_operand" "b")
-@@ -19140,7 +19551,19 @@
+@@ -19140,7 +19551,18 @@
  	(mem:BLK (match_dup 4)))
     (use (match_dup 5))]
    "TARGET_64BIT"
@@ -1516,8 +1516,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 + if (flag_control_integrity)
 +  {
 +    return "movl\t%%esi, %%esi\nleaq\t(%%r15,%%rsi), %%rsi\n"
-+	   "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
-+	   "rep movsq"
++	   "rep movsq (%%rsi),%%nacl:(%%rdi),%%r15"
 +	   "\nmovl\t%%esi, %%esi\nmovl\t%%edi, %%edi";
 +  }
 + else
@@ -1528,7 +1527,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "both")
-@@ -19178,7 +19601,19 @@
+@@ -19178,7 +19600,18 @@
  	(mem:BLK (match_dup 4)))
     (use (match_dup 5))]
    "TARGET_64BIT"
@@ -1537,8 +1536,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 + if (flag_control_integrity)
 +  {
 +    return "movl\t%%esi, %%esi\nleaq\t(%%r15,%%rsi), %%rsi\n"
-+	   "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
-+	   "rep movs{l|d}"
++	   "rep movs{l|d} (%%rsi),%%nacl:(%%rdi),%%r15"
 +	   "\nmovl\t%%esi, %%esi\nmovl\t%%edi, %%edi";
 +  }
 + else
@@ -1549,7 +1547,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "both")
-@@ -19212,7 +19647,19 @@
+@@ -19212,7 +19645,18 @@
  	(mem:BLK (match_dup 4)))
     (use (match_dup 5))]
    "TARGET_64BIT"
@@ -1558,8 +1556,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 + if (flag_control_integrity)
 +  {
 +    return "movl\t%%esi, %%esi\nleaq\t(%%r15,%%rsi), %%rsi\n"
-+	   "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
-+	   "rep movsb"
++	   "rep movsb (%%rsi),%%nacl:(%%rdi),%%r15"
 +	   "\nmovl\t%%esi, %%esi\nmovl\t%%edi, %%edi";
 +  }
 + else
@@ -1570,7 +1567,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "both")
-@@ -19392,7 +19839,18 @@
+@@ -19392,7 +19836,17 @@
     (use (match_operand:DI 2 "register_operand" "a"))
     (use (match_dup 4))]
    "TARGET_64BIT"
@@ -1578,8 +1575,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 +{
 + if (flag_control_integrity)
 +  {
-+    return "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
-+	   "rep stosq"
++    return "rep stosq %%rax,%%nacl:(%%rdi),%%r15"
 +	   "\nmovl\t%%edi, %%edi";
 +  }
 + else
@@ -1590,7 +1586,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "store")
-@@ -19426,7 +19884,18 @@
+@@ -19426,7 +19880,17 @@
     (use (match_operand:SI 2 "register_operand" "a"))
     (use (match_dup 4))]
    "TARGET_64BIT"
@@ -1598,8 +1594,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 +{
 + if (flag_control_integrity)
 +  {
-+    return "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
-+	   "rep stos{l|d}"
++    return "rep stos{l|d} %%eax,%%nacl:(%%rdi),%%r15"
 +	   "\nmovl\t%%edi, %%edi";
 +  }
 + else
@@ -1610,7 +1605,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "store")
-@@ -19458,7 +19927,18 @@
+@@ -19458,7 +19922,17 @@
     (use (match_operand:QI 2 "register_operand" "a"))
     (use (match_dup 4))]
    "TARGET_64BIT"
@@ -1618,8 +1613,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 +{
 + if (flag_control_integrity)
 +  {
-+    return "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
-+	   "rep stosb"
++    return "rep stosb %%al,%%nacl:(%%rdi),%%r15"
 +	   "\nmovl\t%%edi, %%edi";
 +  }
 + else
@@ -1630,7 +1624,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "store")
-@@ -19585,7 +20065,19 @@
+@@ -19585,7 +20059,19 @@
     (clobber (match_operand:DI 1 "register_operand" "=D"))
     (clobber (match_operand:DI 2 "register_operand" "=c"))]
    "TARGET_64BIT"
@@ -1651,7 +1645,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "mode" "QI")
     (set_attr "prefix_rep" "1")])
-@@ -19638,7 +20130,19 @@
+@@ -19638,7 +20123,19 @@
     (clobber (match_operand:DI 1 "register_operand" "=D"))
     (clobber (match_operand:DI 2 "register_operand" "=c"))]
    "TARGET_64BIT"
@@ -1672,7 +1666,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "mode" "QI")
     (set_attr "prefix_rep" "1")])
-@@ -19699,7 +20203,18 @@
+@@ -19699,7 +20195,19 @@
     (clobber (match_operand:DI 1 "register_operand" "=D"))
     (clobber (reg:CC FLAGS_REG))]
    "TARGET_64BIT"
@@ -1680,9 +1674,10 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 +{
 + if (flag_control_integrity)
 +  {
-+    return "movl\t%%esi, %%esi\nleaq\t(%%r15,%%rsi), %%rsi\n"
++    /* Note: %rdi is used, but in reality it's memory read, not store */
++    return "movl\t%%edi, %%edi\nleaq\t(%%r15,%%rdi), %%rdi\n"
 +	   "repnz scasb"
-+	   "\nmovl\t%%esi, %%esi";
++	   "\nmovl\t%%edi, %%edi";
 +  }
 + else
 +  {
@@ -1692,7 +1687,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "mode" "QI")
     (set_attr "prefix_rep" "1")])
-@@ -21562,9 +22077,11 @@
+@@ -21562,9 +22070,11 @@
  	(call (mem:QI (match_operand:SI 1 "sibcall_insn_operand" "s,U"))
  	      (match_operand:SI 2 "" "")))]
    "SIBLING_CALL_P (insn) && !TARGET_64BIT"
@@ -1707,7 +1702,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "callv")])
  
  (define_insn "*call_value_1_rex64"
-@@ -21618,11 +22135,14 @@
+@@ -21618,11 +22128,14 @@
  	(call (mem:QI (match_operand:DI 1 "sibcall_insn_operand" "s,U"))
  	      (match_operand:DI 2 "" "")))]
    "SIBLING_CALL_P (insn) && TARGET_64BIT"
@@ -1725,7 +1720,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  ;; We used to use "int $5", in honor of #BR which maps to interrupt vector 5.
  ;; That, however, is usually mapped by the OS to SIGSEGV, which is often
  ;; caught for use by garbage collectors and the like.  Using an insn that
-@@ -21675,7 +22195,10 @@
+@@ -21675,7 +22188,10 @@
    if (TARGET_AVX && GET_CODE (XEXP (operands[0], 0)) != PLUS)
      gcc_unreachable ();
  

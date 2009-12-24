@@ -834,7 +834,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/i386/strlen.S newlib-1.17.0/new
 diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/newlib/libc/machine/x86_64/memcpy.S
 --- newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S	2007-08-28 23:56:49.000000000 +0200
 +++ newlib-1.17.0/newlib/libc/machine/x86_64/memcpy.S	2009-12-17 15:51:40.000000000 +0100
-@@ -14,20 +14,25 @@
+@@ -14,20 +14,23 @@
    SOTYPE_FUNCTION(memcpy)
  
  SYM (memcpy):
@@ -854,13 +854,12 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
 -  movq    $8, rcx
 -  subq    r8, rcx
 -  subq    rcx, rdx
+-  rep     movsb
 +  movl    $8, ecx
 +  subl    r8d, ecx
 +  subl    ecx, edx
 +  
-+  movl    edi, edi
-+  addq    r15, rdi
-   rep     movsb
++  rep     movsb (rsi), %nacl:(rdi), r15
  
  quadword_aligned:
 -  cmpq    $256, rdx
@@ -868,7 +867,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
    jb      quadword_copy
  
    movq    rax, -8  (rsp)
-@@ -35,8 +40,8 @@
+@@ -35,8 +38,8 @@
    movq    r13, -24 (rsp)
    movq    r14, -32 (rsp)
  
@@ -879,7 +878,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
  
    .p2align 4
  loop:
-@@ -52,14 +57,14 @@
+@@ -52,14 +55,14 @@
    movq    48 (rsi), r13
    movq    56 (rsi), r14
  
@@ -902,7 +901,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
  
    movq     64 (rsi), rax
    movq     72 (rsi), r8
-@@ -70,44 +75,55 @@
+@@ -70,44 +73,47 @@
    movq    112 (rsi), r13
    movq    120 (rsi), r14
  
@@ -934,11 +933,10 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
    sfence
 -  movq    rdx, rcx
 -  andq    $127, rcx
+-  rep     movsb
 +  movl    edx, ecx
 +  andl    $127, ecx
-+  movl    edi, edi
-+  addq    r15, rdi
-   rep     movsb
++  rep     movsb (rsi), %nacl:(rdi), r15
    movq    -8  (rsp), rax
    movq    -16 (rsp), r12
    movq    -24 (rsp), r13
@@ -950,11 +948,10 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
  
  byte_copy:
 -  movq    rdx, rcx
-+  movl    edx, ecx
-+  movl    edi, edi
-+  addq    r15, rdi
-   rep     movsb
+-  rep     movsb
 -  ret
++  movl    edx, ecx
++  rep     movsb (rsi), %nacl:(rdi), r15
 +  pop     r11
 +  nacljmp r11d, r15
  
@@ -965,23 +962,21 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.17.0/n
 +  movl    edx, ecx
 +  shrl    $3, ecx
    .p2align 4
-+  movl    edi, edi
-+  addq    r15, rdi
-   rep     movsq
+-  rep     movsq
 -  movq    rdx, rcx
 -  andq    $7, rcx
+-  rep     movsb                   /* Copy the remaining bytes */
+-  ret
++  rep     movsq (rsi), %nacl:(rdi), r15
 +  movl    edx, ecx
 +  andl    $7, ecx
-+  movl    edi, edi
-+  addq    r15, rdi
-   rep     movsb                   /* Copy the remaining bytes */
--  ret
++  rep     movsb (rsi), %nacl:(rdi), r15 /* Copy the remaining bytes */
 +  pop     r11
 +  nacljmp r11d, r15
 diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/newlib/libc/machine/x86_64/memset.S
 --- newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S	2007-08-28 23:56:49.000000000 +0200
 +++ newlib-1.17.0/newlib/libc/machine/x86_64/memset.S	2009-12-17 15:51:47.000000000 +0100
-@@ -14,75 +14,90 @@
+@@ -14,75 +14,80 @@
    SOTYPE_FUNCTION(memset)
  
  SYM (memset):
@@ -1005,13 +1000,12 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
 -  movq    $8, rcx
 -  subq    r8, rcx
 -  subq    rcx, rdx
+-  rep     stosb
+-  movq    rdx, rcx
 +  movl    $8, ecx
 +  subl    r8d, ecx
 +  subl    ecx, edx
-+  mov     edi, edi
-+  add     r15, rdi
-   rep     stosb
--  movq    rdx, rcx
++  rep     stosb al, %nacl:(rdi), r15
 +  movl    edx, ecx
  
  quadword_aligned:
@@ -1070,24 +1064,22 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
    sfence
 -  movq    rdx, rcx
 -  andq    $127, rcx
-+  movl    edx, ecx
-+  andl    $127, ecx
-+  movl    edi, edi
-+  addq    r15, rdi
-   rep     stosb
+-  rep     stosb
 -  movq    r9, rax
 -  ret
++  movl    edx, ecx
++  andl    $127, ecx
++  rep     stosb al, %nacl:(rdi), r15
 +  movl    r9d, eax
 +  pop     r11
 +  nacljmp r11d, r15
  
  
  byte_set:
-+  movl    edi, edi
-+  addq    r15, rdi
-   rep     stosb
+-  rep     stosb
 -  movq    r9, rax
 -  ret
++  rep     stosb al, %nacl:(rdi), r15
 +  movl    r9d, eax
 +  pop     r11
 +  nacljmp r11d, r15
@@ -1097,18 +1089,16 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
 -  shrq    $3, rcx
 +  shrl    $3, ecx
    .p2align 4
-+  movl    edi, edi
-+  addq    r15, rdi
-   rep     stosq
+-  rep     stosq
 -  movq    rdx, rcx
 -  andq    $7, rcx
-+  movl    edx, ecx
-+  andl    $7, ecx
-+  movl    edi, edi
-+  addq    r15, rdi
-   rep     stosb                   /* Store the remaining bytes */
+-  rep     stosb                   /* Store the remaining bytes */
 -  movq    r9, rax
 -  ret
++  rep     stosq rax, %nacl:(rdi), r15
++  movl    edx, ecx
++  andl    $7, ecx
++  rep     stosb al, %nacl:(rdi), r15 /* Store the remaining bytes */
 +  movl    r9d, eax
 +  pop     r11
 +  nacljmp r11d, r15
