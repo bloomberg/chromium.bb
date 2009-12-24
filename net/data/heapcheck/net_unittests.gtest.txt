@@ -1,0 +1,4 @@
+# http://crbug.com/31129 -- forking Python servers may break heapchecker's
+# symbolization.
+URLRequestTestHTTP.*
+
