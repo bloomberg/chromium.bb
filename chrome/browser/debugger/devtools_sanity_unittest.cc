@@ -373,13 +373,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepIn) {
 }
 
 // Tests that scope can be expanded and contains expected variables.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestExpandScope) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestExpandScope) {
   RunTest("testExpandScope", kDebuggerClosurePage);
 }
 
 // Tests that intrinsic properties(__proto__, prototype, constructor) are
 // present.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDebugIntrinsicProperties) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestDebugIntrinsicProperties) {
   RunTest("testDebugIntrinsicProperties", kDebuggerIntrinsicPropertiesPage);
 }
 
