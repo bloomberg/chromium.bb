@@ -162,7 +162,8 @@ class SessionService : public BaseSessionService,
     TYPE_NORMAL = 0,
     TYPE_POPUP = 1,
     TYPE_APP = 2,
-    TYPE_APP_POPUP = TYPE_APP + TYPE_POPUP
+    TYPE_APP_POPUP = TYPE_APP + TYPE_POPUP,
+    TYPE_DEVTOOLS = TYPE_APP + 4
   };
 
   void Init();

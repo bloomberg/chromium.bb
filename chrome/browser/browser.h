@@ -56,7 +56,8 @@ class Browser : public TabStripModelDelegate,
     TYPE_POPUP = 2,
     TYPE_APP = 4,
     TYPE_APP_POPUP = TYPE_APP | TYPE_POPUP,
-    TYPE_ANY = TYPE_NORMAL | TYPE_POPUP | TYPE_APP
+    TYPE_DEVTOOLS = TYPE_APP | 8,
+    TYPE_ANY = TYPE_NORMAL | TYPE_POPUP | TYPE_APP | TYPE_DEVTOOLS
   };
 
   // Possible elements of the Browser window.
@@ -103,6 +104,10 @@ class Browser : public TabStripModelDelegate,
   // the specified app. Passing popup=true will create a TYPE_APP_POPUP browser
   static Browser* CreateForApp(const std::wstring& app_name, Profile* profile,
                                bool is_popup);
+
+  // Like Create, but creates a tabstrip-less and toolbar-less
+  // DevTools "app" window.
+  static Browser* CreateForDevTools(Profile* profile);
 
   // Set overrides for the initial window bounds and maximized state.
   void set_override_bounds(const gfx::Rect& bounds) {
@@ -559,6 +564,7 @@ class Browser : public TabStripModelDelegate,
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
   virtual void DetachContents(TabContents* source);
   virtual bool IsPopup(TabContents* source);
+  virtual bool CanReloadContents(TabContents* source) const;
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
   virtual void URLStarredChanged(TabContents* source, bool starred);
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);

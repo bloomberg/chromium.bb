@@ -10,8 +10,10 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -353,10 +355,14 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_FORWARD:
       return source_tab_contents_->controller().CanGoForward();
 
+    case IDS_CONTENT_CONTEXT_RELOAD:
+      return source_tab_contents_->delegate()->CanReloadContents(
+          source_tab_contents_);
+
     case IDS_CONTENT_CONTEXT_VIEWPAGESOURCE:
     case IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE:
     case IDS_CONTENT_CONTEXT_INSPECTELEMENT:
-    // Viewing page info is not a delveloper command but is meaningful for the
+    // Viewing page info is not a developer command but is meaningful for the
     // same set of pages which developer commands are meaningful for.
     case IDS_CONTENT_CONTEXT_VIEWPAGEINFO:
       return IsDevCommandEnabled(id);
@@ -472,7 +478,6 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY:
       return !params_.misspelled_word.empty();
 
-    case IDS_CONTENT_CONTEXT_RELOAD:
     case IDS_CONTENT_CONTEXT_COPYIMAGE:
     case IDS_CONTENT_CONTEXT_PRINT:
     case IDS_CONTENT_CONTEXT_SEARCHWEBFOR:

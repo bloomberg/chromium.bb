@@ -123,6 +123,10 @@ class TabContentsDelegate {
   // call. ConstrainedWindows shouldn't be able to be blurred.
   virtual bool CanBlur() const { return true; }
 
+  // Whether the specified tab can be reloaded.
+  // Reloading can be disabled e. g. for the DevTools window.
+  virtual bool CanReloadContents(TabContents* source) const { return true; }
+
   // Return the rect where to display the resize corner, if any, otherwise
   // an empty rect.
   virtual gfx::Rect GetRootWindowResizerRect() const { return gfx::Rect(); }

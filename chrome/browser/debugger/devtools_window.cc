@@ -24,6 +24,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 
+const std::wstring DevToolsWindow::kDevToolsApp = L"DevToolsApp";
 
 // static
 TabContents* DevToolsWindow::GetDevToolsContents(TabContents* inspected_tab) {
@@ -175,7 +176,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   std::wstring wp_key = L"";
   wp_key.append(prefs::kBrowserWindowPlacement);
   wp_key.append(L"_");
-  wp_key.append(L"DevToolsApp");
+  wp_key.append(kDevToolsApp);
 
   PrefService* prefs = g_browser_process->local_state();
   if (!prefs->FindPreference(wp_key.c_str())) {
@@ -193,7 +194,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
     defaults->SetBoolean(L"always_on_top", false);
   }
 
-  browser_ = Browser::CreateForApp(L"DevToolsApp", profile_, false);
+  browser_ = Browser::CreateForDevTools(profile_);
   browser_->tabstrip_model()->AddTabContents(
       tab_contents_, -1, false, PageTransition::START_PAGE, true);
 }

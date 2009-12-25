@@ -23,6 +23,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -58,7 +59,6 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/window_sizer.h"
-#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -235,6 +235,14 @@ Browser* Browser::CreateForApp(const std::wstring& app_name,
                                Profile* profile, bool is_popup) {
   Browser* browser = new Browser(is_popup? TYPE_APP_POPUP : TYPE_APP, profile);
   browser->app_name_ = app_name;
+  browser->CreateBrowserWindow();
+  return browser;
+}
+
+// static
+Browser* Browser::CreateForDevTools(Profile* profile) {
+  Browser* browser = new Browser(TYPE_DEVTOOLS, profile);
+  browser->app_name_ = DevToolsWindow::kDevToolsApp;
   browser->CreateBrowserWindow();
   return browser;
 }
@@ -1792,6 +1800,10 @@ bool Browser::RunUnloadListenerBeforeClosing(TabContents* contents) {
   return false;
 }
 
+bool Browser::CanReloadContents(TabContents* source) const {
+  return type() != TYPE_DEVTOOLS;
+}
+
 bool Browser::CanCloseContentsAt(int index) {
   if (tabstrip_model_.count() > 1)
     return true;
@@ -2241,7 +2253,7 @@ void Browser::OnStartDownload(DownloadItem* download) {
   // Don't show the animation for "Save file" downloads.
   if (download->total_bytes() <= 0)
     return;
-  
+
   // For non-theme extensions, we don't show the download animation.
   if (download->is_extension_install() &&
       !ExtensionsService::IsDownloadFromMiniGallery(download->url()))
@@ -2628,6 +2640,18 @@ void Browser::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_MENU,
       SavePackage::IsSavableContents(current_tab->contents_mime_type()) &&
       SavePackage::IsSavableURL(savable_url));
+
+  // Disable certain items if running DevTools
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD,
+                                        CanReloadContents(current_tab));
+  bool enabled_for_non_devtools = type() != TYPE_DEVTOOLS;
+  command_updater_.UpdateCommandEnabled(IDC_FIND, enabled_for_non_devtools);
+  command_updater_.UpdateCommandEnabled(IDC_FIND_NEXT,
+                                        enabled_for_non_devtools);
+  command_updater_.UpdateCommandEnabled(IDC_FIND_PREVIOUS,
+                                        enabled_for_non_devtools);
+  command_updater_.UpdateCommandEnabled(IDC_COPY_URL,
+                                        enabled_for_non_devtools);
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,

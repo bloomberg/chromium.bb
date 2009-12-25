@@ -19,6 +19,7 @@
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -500,9 +501,14 @@ bool TabStripModel::IsContextMenuCommandEnabled(
   DCHECK(command_id > CommandFirst && command_id < CommandLast);
   switch (command_id) {
     case CommandNewTab:
-    case CommandReload:
     case CommandCloseTab:
       return true;
+    case CommandReload:
+      if (TabContents* contents = GetTabContentsAt(context_index)) {
+        return contents->delegate()->CanReloadContents(contents);
+      } else {
+        return false;
+      }
     case CommandCloseOtherTabs:
       return count() > 1;
     case CommandCloseTabsToRight:
