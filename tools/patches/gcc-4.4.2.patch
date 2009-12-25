@@ -1645,7 +1645,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "mode" "QI")
     (set_attr "prefix_rep" "1")])
-@@ -19638,7 +20123,19 @@
+@@ -19638,7 +20124,19 @@
     (clobber (match_operand:DI 1 "register_operand" "=D"))
     (clobber (match_operand:DI 2 "register_operand" "=c"))]
    "TARGET_64BIT"
@@ -1666,7 +1666,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "mode" "QI")
     (set_attr "prefix_rep" "1")])
-@@ -19699,7 +20195,19 @@
+@@ -19699,7 +20197,19 @@
     (clobber (match_operand:DI 1 "register_operand" "=D"))
     (clobber (reg:CC FLAGS_REG))]
    "TARGET_64BIT"
@@ -1687,7 +1687,37 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "mode" "QI")
     (set_attr "prefix_rep" "1")])
-@@ -21562,9 +22070,11 @@
+@@ -20241,13 +20751,27 @@
+ 	          && INTVAL (operands[2]) != -128)))
+ 	{
+ 	  operands[2] = GEN_INT (-INTVAL (operands[2]));
++          if (flag_control_integrity
++	      && (REGNO (operands[0]) == SP_REG)
++	      && (REGNO (operands[1]) != BP_REG))
++	    return "naclssp{q}\t{%2, %%r15|%%r15, %2}";
+ 	  return "sub{q}\t{%2, %0|%0, %2}";
+ 	}
++      if (flag_control_integrity
++	  && (REGNO (operands[0]) == SP_REG)
++	  && (REGNO (operands[1]) != BP_REG))
++        return "naclasp{q}\t{%2, %%r15|%%r15, %2}";
+       return "add{q}\t{%2, %0|%0, %2}";
+ 
+     case TYPE_LEA:
+-      operands[2] = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
+-      return "lea{q}\t{%a2, %0|%0, %a2}";
++      if (!flag_control_integrity
++	  || (REGNO (operands[0]) != SP_REG)
++	  || (REGNO (operands[1]) == BP_REG))
++	{
++	  operands[2] = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
++	  return "lea{q}\t{%a2, %0|%0, %a2}";
++	}
++      gcc_unreachable ();
+ 
+     default:
+       gcc_unreachable ();
+@@ -21562,9 +22086,11 @@
  	(call (mem:QI (match_operand:SI 1 "sibcall_insn_operand" "s,U"))
  	      (match_operand:SI 2 "" "")))]
    "SIBLING_CALL_P (insn) && !TARGET_64BIT"
@@ -1702,7 +1732,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "callv")])
  
  (define_insn "*call_value_1_rex64"
-@@ -21618,11 +22128,14 @@
+@@ -21618,11 +22144,14 @@
  	(call (mem:QI (match_operand:DI 1 "sibcall_insn_operand" "s,U"))
  	      (match_operand:DI 2 "" "")))]
    "SIBLING_CALL_P (insn) && TARGET_64BIT"
@@ -1720,7 +1750,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  ;; We used to use "int $5", in honor of #BR which maps to interrupt vector 5.
  ;; That, however, is usually mapped by the OS to SIGSEGV, which is often
  ;; caught for use by garbage collectors and the like.  Using an insn that
-@@ -21675,7 +22188,10 @@
+@@ -21675,7 +22204,10 @@
    if (TARGET_AVX && GET_CODE (XEXP (operands[0], 0)) != PLUS)
      gcc_unreachable ();
  

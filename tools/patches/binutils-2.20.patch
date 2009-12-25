@@ -1228,7 +1228,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
  	}
      }
    else
-@@ -5560,19 +5652,173 @@
+@@ -5560,19 +5652,217 @@
  }
  
  static void
@@ -1351,6 +1351,44 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
 +    }
 +}
 +
++
++static int imm_size (unsigned int n);
++
++
++static void
++insert_add_sp_sandbox_code (offsetT insn_start_off)
++{
++  char *p = frag_more(2);
++  if (imm_size (0) == 1)
++    p[0] = 0x83; // ADD imm8, %esp
++  else
++    p[0] = 0x81; // ADD imm32, %esp
++  p[1] = 0xc4;
++  output_imm (frag_now, insn_start_off);
++  // Second operand is SP
++  i.rm.regmem = 4;
++  // Immediate was already used
++  i.imm_operands = 0;
++}
++
++
++static void
++insert_sub_sp_sandbox_code (offsetT insn_start_off)
++{
++  char *p = frag_more(2);
++  if (imm_size (0) == 1)
++    p[0] = 0x83; // ADD imm8, %esp
++  else
++    p[0] = 0x81; // ADD imm32, %esp
++  p[1] = 0xec;
++  output_imm (frag_now, insn_start_off);
++  // Second operand is SP
++  i.rm.regmem = 4;
++  // Immediate was already used
++  i.imm_operands = 0;
++}
++
++
 +static int
 +frag_is_a_call (void)
 +{
@@ -1398,12 +1436,18 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
 +    else if (!strcmp(i.tm.name, "nacljmp")) {
 +      insert_sandbox_jmp();
 +    }
++    else if (!strcmp(i.tm.name, "naclasp")) {
++      insert_add_sp_sandbox_code(insn_start_off);
++    }
++    else if (!strcmp(i.tm.name, "naclssp")) {
++      insert_sub_sp_sandbox_code(insn_start_off);
++    }
 +  }
 +
    /* Output jumps.  */
    if (i.tm.opcode_modifier.jump)
      output_branch ();
-@@ -5612,10 +5858,10 @@
+@@ -5612,10 +5902,10 @@
  		      if (prefix != REPE_PREFIX_OPCODE
  			  || (i.prefix[LOCKREP_PREFIX]
  			      != REPE_PREFIX_OPCODE))
@@ -1416,7 +1460,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
  		}
  	      break;
  	    case 1:
-@@ -5624,6 +5870,10 @@
+@@ -5624,6 +5914,10 @@
  	      abort ();
  	    }
  
@@ -1427,7 +1471,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
  	  /* The prefix bytes.  */
  	  for (j = ARRAY_SIZE (i.prefix), q = i.prefix; j > 0; j--, q++)
  	    if (*q)
-@@ -5700,10 +5950,18 @@
+@@ -5700,10 +5994,18 @@
  	}
  
        if (i.disp_operands)
@@ -1446,7 +1490,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
      }
  
  #ifdef DEBUG386
-@@ -5712,6 +5970,74 @@
+@@ -5712,6 +6014,74 @@
        pi ("" /*line*/, &i);
      }
  #endif /* DEBUG386  */
@@ -1521,7 +1565,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
  }
  
  /* Return the size of the displacement operand N.  */
-@@ -6858,8 +7184,44 @@
+@@ -6858,8 +7228,44 @@
      }
    else if (*op_string == REGISTER_PREFIX)
      {
@@ -1568,7 +1612,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
      }
    else if (*op_string == IMMEDIATE_PREFIX)
      {
-@@ -7725,6 +8087,8 @@
+@@ -7725,6 +8131,8 @@
  #define OPTION_MOLD_GCC (OPTION_MD_BASE + 9)
  #define OPTION_MSSE2AVX (OPTION_MD_BASE + 10)
  #define OPTION_MSSE_CHECK (OPTION_MD_BASE + 11)
@@ -1577,7 +1621,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
  
  struct option md_longopts[] =
  {
-@@ -7743,6 +8107,8 @@
+@@ -7743,6 +8151,8 @@
    {"mold-gcc", no_argument, NULL, OPTION_MOLD_GCC},
    {"msse2avx", no_argument, NULL, OPTION_MSSE2AVX},
    {"msse-check", required_argument, NULL, OPTION_MSSE_CHECK},
@@ -1586,7 +1630,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
    {NULL, no_argument, NULL, 0}
  };
  size_t md_longopts_size = sizeof (md_longopts);
-@@ -7953,6 +8319,20 @@
+@@ -7953,6 +8363,20 @@
  	as_fatal (_("Invalid -msse-check= option: `%s'"), arg);
        break;
  
@@ -1607,7 +1651,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
      default:
        return 0;
      }
-@@ -8597,4 +8977,19 @@
+@@ -8597,4 +9021,19 @@
        bss_section = saved_bss_section;
      }
  }
@@ -2761,7 +2805,7 @@ diff -uNr binutils-2.20.orig/ld/scripttempl/naclelf.sc binutils-2.20/ld/scriptte
 diff -uNr binutils-2.20.orig/opcodes/i386-opc.tbl binutils-2.20/opcodes/i386-opc.tbl
 --- binutils-2.20.orig/opcodes/i386-opc.tbl	2009-07-24 17:41:20.000000000 +0200
 +++ binutils-2.20/opcodes/i386-opc.tbl	2009-11-23 13:58:30.000000000 +0100
-@@ -209,6 +209,25 @@
+@@ -209,6 +209,30 @@
  or, 2, 0xc, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
  or, 2, 0x80, 0x1, 1, 0, W|Modrm|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  
@@ -2770,6 +2814,11 @@ diff -uNr binutils-2.20.orig/opcodes/i386-opc.tbl binutils-2.20/opcodes/i386-opc
 +nacljmp, 1, 0xff, 0x4, 1, CpuNo64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32 }
 +naclcall, 2, 0xff, 0x2, 1, Cpu64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32, Reg64 }
 +nacljmp, 2, 0xff, 0x4, 1, Cpu64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32, Reg64 }
++naclasp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm8S, Reg64 }
++naclasp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm32S, Reg64 }
++naclssp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm8S, Reg64 }
++naclssp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm32S, Reg64 }
++
 +// Native client string operations
 +cmps, 3, 0xa6, None, 1, Cpu64, W|No_sSuf|No_ldSuf|IsString, { Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S|EsSeg, Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg64 }
 +scmp, 3, 0xa6, None, 1, Cpu64, W|No_sSuf|No_ldSuf|IsString, { Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S|EsSeg, Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg64 }
@@ -2790,7 +2839,7 @@ diff -uNr binutils-2.20.orig/opcodes/i386-opc.tbl binutils-2.20/opcodes/i386-opc
 diff -uNr binutils-2.20.orig/opcodes/i386-tbl.h binutils-2.20/opcodes/i386-tbl.h
 --- binutils-2.20.orig/opcodes/i386-tbl.h	2009-09-07 14:08:10.000000000 +0200
 +++ binutils-2.20/opcodes/i386-tbl.h	2009-11-23 13:58:30.000000000 +0100
-@@ -1587,6 +1587,580 @@
+@@ -1587,6 +1587,632 @@
        { { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
  	  1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 
  	  0, 0, 1, 0, 0 } } } },
@@ -2835,6 +2884,58 @@ diff -uNr binutils-2.20.orig/opcodes/i386-tbl.h binutils-2.20/opcodes/i386-tbl.h
 +      1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 +      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 +    { { { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } },
++      { { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } } } },
++  { "naclasp", 2, 0x01, None, 1,
++    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
++        0, 0 } },
++    { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
++    { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } },
++      { { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } } } },
++  { "naclasp", 2, 0x01, None, 1,
++    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
++        0, 0 } },
++    { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
++    { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } },
++      { { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } } } },
++  { "naclssp", 2, 0x01, None, 1,
++    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
++        0, 0 } },
++    { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
++    { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } },
++      { { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } } } },
++  { "naclssp", 2, 0x01, None, 1,
++    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
++        0, 0 } },
++    { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
++    { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 
 +	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 +	  0, 0, 0, 0, 0 } },
 +      { { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -3371,7 +3472,7 @@ diff -uNr binutils-2.20.orig/opcodes/i386-tbl.h binutils-2.20/opcodes/i386-tbl.h
    { "xor", 2, 0x30, None, 1,
      { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-@@ -3568,342 +4142,6 @@
+@@ -3568,342 +4194,6 @@
      { { { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
  	  1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 
  	  0, 0, 1, 0, 0 } } } },
