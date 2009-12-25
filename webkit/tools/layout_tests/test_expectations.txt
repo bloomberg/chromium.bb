@@ -2206,7 +2206,8 @@ BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAI
 BUG9161 : LayoutTests/fast/forms/basic-textareas.html = FAIL
 
 // Tests that fail in debug mode on linux
-BUG10454 LINUX DEBUG : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH
+BUG10454 LINUX DEBUG : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH IMAGE
+BUG31146 LINUX RELEASE : LayoutTests/svg/custom/mask-excessive-malloc.svg = IMAGE
 
 // This test hits a stack-overflow exception earlier in debug mode than in
 // release mode on Windows.
@@ -3139,3 +3140,10 @@ BUG31108 LINUX : LayoutTests/editing/inserting/12882.html = IMAGE
 BUG31108 WIN LINUX : LayoutTests/fast/forms/basic-selects.html = IMAGE+TEXT
 BUG31108 WIN LINUX : LayoutTests/fast/forms/basic-textareas-quirks.html = IMAGE+TEXT
 BUG31108 MAC : LayoutTests/fast/forms/basic-textareas-quirks.html = IMAGE
+
+// WebKit roll 52535->52554
+BUG31146 WIN LINUX : LayoutTests/editing/selection/select-text-overflow-ellipsis.html = IMAGE+TEXT
+BUG31146 MAC : LayoutTests/editing/selection/select-text-overflow-ellipsis.html = IMAGE
+BUG31146 WIN LINUX :  LayoutTests/svg/custom/grayscale-gradient-mask.svg = IMAGE
+BUG31146 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-displace-01-f.svg = TEXT
+BUG31146 WIN : LayoutTests/inspector/console-clear.html = TEXT
