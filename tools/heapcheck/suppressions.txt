@@ -19,6 +19,42 @@
    Heapcheck:Leak
    fun:ToolsSanityTest_MemoryLeak_Test::TestBody
 }
+{
+   Intentional leak in DiskCacheBackendTest::BackendInvalidEntry
+   Heapcheck:Leak
+   ...
+   fun:DiskCacheBackendTest::BackendInvalidEntry
+}
+{
+   Intentional leak in DiskCacheBackendTest::BackendInvalidEntryRead
+   Heapcheck:Leak
+   ...
+   fun:DiskCacheBackendTest::BackendInvalidEntryRead
+}
+{
+   Intentional leak in DiskCacheBackendTest::BackendInvalidEntryWithLoad
+   Heapcheck:Leak
+   ...
+   fun:DiskCacheBackendTest::BackendInvalidEntryWithLoad
+}
+{
+   Intentional leak in DiskCacheBackendTest::BackendTrimInvalidEntry
+   Heapcheck:Leak
+   ...
+   fun:DiskCacheBackendTest::BackendTrimInvalidEntry
+}
+{
+   Intentional leak in DiskCacheBackendTest::BackendTrimInvalidEntry2
+   Heapcheck:Leak
+   ...
+   fun:DiskCacheBackendTest::BackendTrimInvalidEntry2
+}
+{
+   Intentional leak in DiskCacheBackendTest::BackendInvalidEntryEnumeration
+   Heapcheck:Leak
+   ...
+   fun:DiskCacheBackendTest::BackendInvalidEntryEnumeration
+}
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
@@ -36,4 +72,14 @@
    Heapcheck:Leak
    fun:PORT_ZAlloc_Util
 }
-
+{
+   bug_30547
+   Heapcheck:Leak
+   fun:std::string::_Rep::_S_create
+   fun:base::JSONWriter::Write
+   fun:JSONStringValueSerializer::Serialize
+   fun:BookmarkStorage::SerializeData
+   fun:BookmarkStorage::SaveNow
+   fun:BookmarkStorage::BookmarkModelDeleted
+   fun:BookmarkModel::~BookmarkModel
+}
