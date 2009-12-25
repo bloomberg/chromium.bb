@@ -154,7 +154,8 @@ DownloadItem::DownloadItem(int32 download_id,
                            int render_process_id,
                            int request_id,
                            bool is_dangerous,
-                           bool save_as)
+                           bool save_as,
+                           bool is_extension_install)
     : id_(download_id),
       full_path_(path),
       path_uniquifier_(path_uniquifier),
@@ -175,7 +176,8 @@ DownloadItem::DownloadItem(int32 download_id,
       original_name_(original_name),
       render_process_id_(render_process_id),
       request_id_(request_id),
-      save_as_(save_as) {
+      save_as_(save_as),
+      is_extension_install_(is_extension_install) {
   Init(true /* start progress timer */);
 }
 
@@ -543,6 +545,13 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(info);
 
+  // Check whether this download is for an extension install or not.
+  if (!info->save_as) {  // Allow extensions to be explicitly saved.
+    if (UserScript::HasUserScriptFileExtension(info->url) ||
+        info->mime_type == Extension::kMimeType)
+      info->is_extension_install = true;
+  }
+
   // Freeze the user's preference for showing a Save As dialog.  We're going to
   // bounce around a bunch of threads and we don't want to worry about race
   // conditions where the user changes this pref out from under us.
@@ -550,7 +559,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     // But never obey the preference for extension installation. Note that we
     // only care here about the case where an extension is installed, not when
     // one is downloaded with "save as...".
-    if (!IsExtensionInstall(info))
+    if (!info->is_extension_install)
       info->save_as = true;
   }
 
@@ -570,7 +579,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     // b) They are an extension that is not from the gallery
     if (IsDangerous(info->suggested_path.BaseName()))
       info->is_dangerous = true;
-    else if (IsExtensionInstall(info) &&
+    else if (info->is_extension_install &&
              !ExtensionsService::IsDownloadFromGallery(info->url,
                                                        info->referrer_url)) {
       info->is_dangerous = true;
@@ -693,7 +702,8 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
                                 info->child_id,
                                 info->request_id,
                                 info->is_dangerous,
-                                info->save_as);
+                                info->save_as,
+                                info->is_extension_install);
     download->set_manager(this);
     in_progress_[info->download_id] = download;
   } else {
@@ -725,7 +735,7 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
   // handles, so we use a negative value. Eventually, they could overlap, but
   // you'd have to do enough downloading that your ISP would likely stab you in
   // the neck first. YMMV.
-  if (profile_->IsOffTheRecord() || IsExtensionInstall(download)) {
+  if (profile_->IsOffTheRecord() || download->is_extension_install()) {
     static int64 fake_db_handle = kUninitializedHandle - 1;
     OnCreateDownloadEntryComplete(*info, fake_db_handle--);
   } else {
@@ -848,7 +858,7 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
     dangerous_finished_.erase(it);
 
   // Handle chrome extensions explicitly and skip the shell execute.
-  if (IsExtensionInstall(download)) {
+  if (download->is_extension_install()) {
     OpenChromeExtension(download->full_path(), download->url(),
                         download->referrer_url());
     download->set_auto_opened(true);
@@ -1229,7 +1239,7 @@ void DownloadManager::OpenDownload(const DownloadItem* download,
                                    gfx::NativeView parent_window) {
   // Open Chrome extensions with ExtensionsService. For everything else do shell
   // execute.
-  if (IsExtensionInstall(download)) {
+  if (download->is_extension_install()) {
     OpenChromeExtension(download->full_path(), download->url(),
                         download->referrer_url());
   } else {
@@ -1466,26 +1476,6 @@ void DownloadManager::GenerateSafeFilename(const std::string& mime_type,
     }
   }
 #endif
-}
-
-bool DownloadManager::IsExtensionInstall(const DownloadItem* item) {
-  if (item->save_as())
-    return false;
-
-  if (UserScript::HasUserScriptFileExtension(item->url()))
-    return true;
-
-  return item->mime_type() == Extension::kMimeType;
-}
-
-bool DownloadManager::IsExtensionInstall(const DownloadCreateInfo* info) {
-  if (info->save_as)
-    return false;
-
-  if (UserScript::HasUserScriptFileExtension(info->url))
-    return true;
-
-  return info->mime_type == Extension::kMimeType;
 }
 
 // Operations posted to us from the history service ----------------------------

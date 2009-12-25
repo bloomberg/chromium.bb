@@ -315,7 +315,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     // Create the ok button.
     GtkWidget* dangerous_accept = gtk_button_new_with_label(
         l10n_util::GetStringUTF8(
-            DownloadManager::IsExtensionInstall(download_model->download()) ?
+            download_model->download()->is_extension_install() ?
                 IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_SAVE_DOWNLOAD).c_str());
     g_signal_connect(dangerous_accept, "clicked",
                      G_CALLBACK(OnDangerousAccept), this);
@@ -567,7 +567,7 @@ void DownloadItemGtk::UpdateDangerWarning() {
     // We create |dangerous_warning| as a wide string so we can more easily
     // calculate its length in characters.
     std::wstring dangerous_warning;
-    if (DownloadManager::IsExtensionInstall(get_download())) {
+    if (get_download()->is_extension_install()) {
       dangerous_warning =
           l10n_util::GetString(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
     } else {

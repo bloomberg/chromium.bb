@@ -118,7 +118,8 @@ class DownloadItem {
                int render_process_id,
                int request_id,
                bool is_dangerous,
-               bool save_as);
+               bool save_as,
+               bool is_extension_install);
 
   ~DownloadItem();
 
@@ -215,6 +216,7 @@ class DownloadItem {
   FilePath original_name() const { return original_name_; }
   void set_original_name(const FilePath& name) { original_name_ = name; }
   bool save_as() const { return save_as_; }
+  bool is_extension_install() const { return is_extension_install_; }
 
   // Returns the file-name that should be reported to the user, which is
   // file_name_ for safe downloads and original_name_ for dangerous ones with
@@ -299,6 +301,9 @@ class DownloadItem {
 
   // True if the item was downloaded as a result of 'save as...'
   bool save_as_;
+
+  // True if the item was downloaded for an extension installation.
+  bool is_extension_install_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItem);
 };
@@ -459,10 +464,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // full path to a file.
   void GenerateSafeFilename(const std::string& mime_type,
                             FilePath* file_name);
-
-  // Used to determine whether the download item is an extension file or not.
-  static bool IsExtensionInstall(const DownloadItem* item);
-  static bool IsExtensionInstall(const DownloadCreateInfo* info);
 
   // Runs the network cancel.  Must be called on the IO thread.
   static void OnCancelDownloadRequest(ResourceDispatcherHost* rdh,

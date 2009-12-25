@@ -2243,7 +2243,7 @@ void Browser::OnStartDownload(DownloadItem* download) {
     return;
   
   // For non-theme extensions, we don't show the download animation.
-  if (DownloadManager::IsExtensionInstall(download) &&
+  if (download->is_extension_install() &&
       !ExtensionsService::IsDownloadFromMiniGallery(download->url()))
     return;
 

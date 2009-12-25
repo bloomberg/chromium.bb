@@ -304,7 +304,7 @@ bool SavePackage::Init() {
 
   // Create the fake DownloadItem and display the view.
   download_ = new DownloadItem(1, saved_main_file_path_, 0, page_url_, GURL(),
-      "", FilePath(), Time::Now(), 0, -1, -1, false, false);
+      "", FilePath(), Time::Now(), 0, -1, -1, false, false, false);
   download_->set_manager(tab_contents_->profile()->GetDownloadManager());
   tab_contents_->OnStartDownload(download_);
 

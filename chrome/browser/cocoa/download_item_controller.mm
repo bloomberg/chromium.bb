@@ -140,7 +140,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     NSString* confirmButtonTitle;
     // The dangerous download label and button text are different for an
     // extension file.
-    if (DownloadManager::IsExtensionInstall(downloadModel->download())) {
+    if (downloadModel->download()->is_extension_install()) {
       dangerousWarning = l10n_util::GetNSStringWithFixup(
           IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
       confirmButtonTitle = l10n_util::GetNSStringWithFixup(
