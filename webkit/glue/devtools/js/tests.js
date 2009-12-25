@@ -1115,14 +1115,11 @@ TestSuite.prototype._waitForScriptPause = function(expectations, callback) {
       WebInspector,
       'pausedScript',
       function(callFrames) {
-        test.assertEquals(expectations.functionsOnStack.length,
-                          callFrames.length,
-                          'Unexpected stack depth');
-
         var functionsOnStack = [];
         for (var i = 0; i < callFrames.length; i++) {
           functionsOnStack.push(callFrames[i].functionName);
         }
+
         test.assertEquals(
             expectations.functionsOnStack.join(','),
             functionsOnStack.join(','), 'Unexpected stack.');
@@ -1598,8 +1595,8 @@ TestSuite.prototype._findChildProperty = function(
 TestSuite.prototype._hookGetPropertiesCallback = function(hook, code) {
   var orig = InjectedScriptAccess.getProperties;
   InjectedScriptAccess.getProperties = function(objectProxy,
-      ignoreHasOwnProperty, callback) {
-    orig.call(InjectedScriptAccess, objectProxy, ignoreHasOwnProperty,
+      ignoreHasOwnProperty, abbreviate, callback) {
+    orig.call(InjectedScriptAccess, objectProxy, ignoreHasOwnProperty, abbreviate,
         function() {
           callback.apply(this, arguments);
           hook();

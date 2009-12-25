@@ -409,7 +409,7 @@ WebInspector.UIString = function(string) {
 (function () {
 var orig = InjectedScriptAccess.getProperties;
 InjectedScriptAccess.getProperties = function(
-    objectProxy, ignoreHasOwnProperty, callback) {
+    objectProxy, ignoreHasOwnProperty, abbreviate, callback) {
   if (objectProxy.isScope) {
     devtools.tools.getDebuggerAgent().resolveScope(objectProxy.objectId,
         callback);
