@@ -82,6 +82,10 @@ DEFINE_bool(cleanup_old_heap_profiles,
             EnvToBool("HEAP_PROFILE_CLEANUP", true),
             "At initialization time, delete old heap profiles.");
 
+DEFINE_int32(heap_check_max_leaks,
+             EnvToInt("HEAP_CHECK_MAX_LEAKS", 20),
+             "The maximum number of leak reports to print.");
+
 //----------------------------------------------------------------------
 
 // header of the dumped heap profile
@@ -539,7 +543,9 @@ void HeapProfileTable::Snapshot::ReportLeaks(const char* checker_name,
 
   // Report a bounded number of leaks to keep the leak report from
   // growing too long.
-  const int to_report = (n > 20) ? 20 : n;
+  const int to_report =
+      (FLAGS_heap_check_max_leaks > 0 &&
+       n > FLAGS_heap_check_max_leaks) ? FLAGS_heap_check_max_leaks : n;
   RAW_LOG(ERROR, "The %d largest leaks:", to_report);
 
   // Print
