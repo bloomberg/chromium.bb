@@ -557,10 +557,8 @@ base::ProcessHandle BrowserRenderProcessHost::GetHandle() {
   if (run_renderer_in_process() || !child_process_.get())
     return base::Process::Current().handle();
 
-  if (child_process_->IsStarting()) {
-    NOTREACHED() << "BrowserRenderProcessHost::GetHandle() called early!";
+  if (child_process_->IsStarting())
     return base::kNullProcessHandle;
-  }
 
   return child_process_->GetHandle();
 }
