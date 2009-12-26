@@ -261,6 +261,7 @@ def _SendChangeHTTP(options):
     else:
       proxies = {'http': options.proxy, 'https': options.proxy}
 
+  logging.warning('Sending by HTTP')
   logging.info(description)
   logging.info(url)
   logging.info(options.diff)
@@ -293,6 +294,7 @@ def _SendChangeSVN(options):
 
   values = _ParseSendChangeOptions(options)
   description = ''.join("%s=%s\n" % (k,v) for (k,v) in values.iteritems())
+  logging.warning('Sending by SVN')
   logging.info(description)
   logging.info(options.svn_repo)
   logging.info(options.diff)
@@ -343,6 +345,14 @@ def _SendChangeSVN(options):
   finally:
     temp_file.close()
     shutil.rmtree(temp_dir, True)
+
+
+def PrintSuccess(options):
+  if not options.dry_run:
+    text = 'Patch \'%s\' sent to try server' % options.name
+    if options.bot:
+      text += ': %s' % ', '.join(options.bot)
+    print(text)
 
 
 def GuessVCS(options, cwd):
@@ -511,15 +521,12 @@ def TryChange(argv,
                      checkout.GetLocalRoot())
       checkouts.append(checkout)
 
+    can_http = options.port and options.host
+    can_svn = options.svn_repo
     # If there was no transport selected yet, now we must have enough data to
     # select one.
-    if not options.send_patch:
-      if options.port and options.host:
-        options.send_patch = _SendChangeHTTP
-      elif options.svn_repo:
-        options.send_patch = _SendChangeSVN
-      else:
-        parser.error('Please specify an access method.')
+    if not options.send_patch and not (can_http or can_svn):
+      parser.error('Please specify an access method.')
 
     # Convert options.diff into the content of the diff.
     if options.url:
@@ -575,12 +582,22 @@ def TryChange(argv,
       print('Results will be emailed to: ' + options.email)
 
     # Send the patch.
-    options.send_patch(options)
-    if not options.dry_run:
-      text = 'Patch \'%s\' sent to try server' % options.name
-      if options.bot:
-        text += ': %s' % ', '.join(options.bot)
-      print(text)
+    if options.send_patch:
+      # If forced.
+      options.send_patch(options)
+      PrintSuccess(options)
+      return 0
+    try:
+      if can_http:
+        _SendChangeHTTP(options)
+        PrintSuccess(options)
+        return 0
+    except NoTryServerAccess:
+      if not can_svn:
+        raise
+    _SendChangeSVN(options)
+    PrintSuccess(options)
+    return 0
   except (InvalidScript, NoTryServerAccess), e:
     if swallow_exception:
       return 1

@@ -40,10 +40,10 @@ class TryChangeUnittest(TryChangeTestsBase):
   def testMembersChanged(self):
     members = [
       'EscapeDot', 'GIT', 'GuessVCS',
-      'HELP_STRING', 'InvalidScript', 'NoTryServerAccess',
+      'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PrintSuccess',
       'SCM', 'SVN', 'TryChange', 'USAGE',
       'breakpad', 'datetime', 'gclient_utils', 'getpass', 'logging',
-      'optparse', 'os', 'scm', 'shutil', 'socket',
+      'optparse', 'os', 'posixpath', 'scm', 'shutil', 'socket',
       'subprocess', 'sys', 'tempfile', 'urllib',
     ]
     # If this test fails, you should add the relevant test.
