@@ -54,6 +54,8 @@ class RenderWidgetHostViewGtkWidget {
 #else
     gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &gfx::kGdkGreen);
 #endif
+    // Allow the browser window to be resized freely.
+    gtk_widget_set_size_request(widget, 0, 0);
 
     gtk_widget_add_events(widget, GDK_EXPOSURE_MASK |
                                   GDK_POINTER_MOTION_MASK |
