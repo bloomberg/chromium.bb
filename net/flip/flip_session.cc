@@ -194,7 +194,11 @@ FlipSession::FlipSession(const std::string& host, HttpNetworkSession* session)
       delayed_write_pending_(false),
       is_secure_(false),
       error_(OK),
-      state_(IDLE) {
+      state_(IDLE),
+      streams_initiated_count_(0),
+      streams_pushed_count_(0),
+      streams_pushed_and_claimed_count_(0),
+      streams_abandoned_count_(0) {
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
 
   flip_framer_.set_visitor(this);
@@ -225,6 +229,20 @@ FlipSession::~FlipSession() {
   // TODO(willchan): Don't hardcode port 80 here.
   DCHECK(!session_->flip_session_pool()->HasSession(
       HostResolver::RequestInfo(domain_, 80)));
+
+  // Record per-session histograms here.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdyStreamsPerSession",
+      streams_initiated_count_,
+      0, 300, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdyStreamsPushedPerSession",
+      streams_pushed_count_,
+      0, 300, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdyStreamsPushedAndClaimedPerSession",
+      streams_pushed_and_claimed_count_,
+      0, 300, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdyStreamsAbandonedPerSession",
+      streams_abandoned_count_,
+      0, 300, 50);
 }
 
 void FlipSession::InitializeWithSocket(ClientSocketHandle* connection) {
@@ -280,8 +298,11 @@ scoped_refptr<FlipStream> FlipSession::GetOrCreateStream(
   // Check if we have a push stream for this path.
   if (request.method == "GET") {
     stream = GetPushStream(path);
-    if (stream)
+    if (stream) {
+      DCHECK(streams_pushed_and_claimed_count_ < streams_pushed_count_);
+      streams_pushed_and_claimed_count_++;
       return stream;
+    }
   }
 
   // Check if we have a pending push stream for this url.
@@ -305,6 +326,9 @@ scoped_refptr<FlipStream> FlipSession::GetOrCreateStream(
   stream->set_priority(request.priority);
   stream->set_path(path);
   ActivateStream(stream);
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdyPriorityCount",
+      static_cast<int>(request.priority), 0, 10, 11);
 
   LOG(INFO) << "FlipStream: Creating stream " << stream_id << " for " << url;
 
@@ -333,6 +357,7 @@ scoped_refptr<FlipStream> FlipSession::GetOrCreateStream(
   flip_requests.Increment();
 
   LOG(INFO) << "FETCHING: " << request.url.spec();
+  streams_initiated_count_++;
 
   LOG(INFO) << "FLIP SYN_STREAM HEADERS ----------------------------------";
   DumpFlipHeaders(headers);
@@ -691,6 +716,7 @@ void FlipSession::CloseAllStreams(net::Error code) {
   }
 
   if (pushed_streams_.size()) {
+    streams_abandoned_count_ += pushed_streams_.size();
     abandoned_push_streams.Add(pushed_streams_.size());
     pushed_streams_.clear();
   }
@@ -811,9 +837,11 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
     return;
   }
 
-  LOG(INFO) << "FlipSession: SynReply received for stream: " << stream_id;
+  streams_pushed_count_++;
 
-  LOG(INFO) << "FLIP SYN_REPLY RESPONSE HEADERS -----------------------";
+  LOG(INFO) << "FlipSession: Syn received for stream: " << stream_id;
+
+  LOG(INFO) << "FLIP SYN RESPONSE HEADERS -----------------------";
   DumpFlipHeaders(*headers);
 
   // TODO(mbelshe): DCHECK that this is a GET method?

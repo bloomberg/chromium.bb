@@ -223,6 +223,12 @@ class FlipSession : public base::RefCounted<FlipSession>,
   net::Error error_;
   State state_;
 
+  // Some statistics counters for the session.
+  int streams_initiated_count_;
+  int streams_pushed_count_;
+  int streams_pushed_and_claimed_count_;
+  int streams_abandoned_count_;
+
   static bool use_ssl_;
 };
 
