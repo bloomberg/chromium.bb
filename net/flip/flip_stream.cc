@@ -28,7 +28,10 @@ FlipStream::FlipStream(FlipSession* session, flip::FlipStreamId stream_id,
       user_buffer_(NULL),
       user_buffer_len_(0),
       cancelled_(false),
-      load_log_(log) {}
+      load_log_(log),
+      send_bytes_(0),
+      recv_bytes_(0),
+      histograms_recorded_(false) {}
 
 FlipStream::~FlipStream() {
   DLOG(INFO) << "Deleting FlipStream for stream " << stream_id_;
@@ -98,6 +101,8 @@ int FlipStream::ReadResponseBody(
       }
       bytes_read += bytes_to_copy;
     }
+    if (bytes_read > 0)
+      recv_bytes_ += bytes_read;
     return bytes_read;
   } else if (response_complete_) {
     return response_status_;
@@ -129,6 +134,8 @@ int FlipStream::SendRequest(UploadDataStream* upload_data,
       delete upload_data;
   }
 
+  send_time_ = base::TimeTicks::Now();
+
   DCHECK_EQ(io_state_, STATE_NONE);
   if (!pushed_)
     io_state_ = STATE_SEND_HEADERS;
@@ -157,6 +164,8 @@ void FlipStream::OnResponseReceived(const HttpResponseInfo& response) {
   *response_ = response;  // TODO(mbelshe): avoid copy.
   DCHECK(response_->headers);
 
+  recv_first_byte_time_ = base::TimeTicks::Now();
+
   if (io_state_ == STATE_NONE) {
     CHECK(pushed_);
   } else if (io_state_ == STATE_READ_HEADERS_COMPLETE) {
@@ -183,6 +192,10 @@ bool FlipStream::OnDataReceived(const char* data, int length) {
     OnClose(ERR_SYN_REPLY_NOT_RECEIVED);
     return false;
   }
+
+  if (length > 0)
+    recv_bytes_ += length;
+  recv_last_byte_time_ = base::TimeTicks::Now();
 
   // A zero-length read means that the stream is being closed.
   if (!length) {
@@ -224,6 +237,10 @@ bool FlipStream::OnDataReceived(const char* data, int length) {
 void FlipStream::OnWriteComplete(int status) {
   // TODO(mbelshe): Check for cancellation here.  If we're cancelled, we
   // should discontinue the DoLoop.
+
+  if (status > 0)
+    send_bytes_ += status;
+
   DoLoop(status);
 }
 
@@ -234,6 +251,8 @@ void FlipStream::OnClose(int status) {
 
   if (user_callback_)
     DoCallback(status);
+
+  UpdateHistograms();
 }
 
 int FlipStream::DoLoop(int result) {
@@ -389,6 +408,28 @@ int FlipStream::DoReadBodyComplete(int result) {
   // TODO(mbelshe): merge FlipStreamParser with FlipStream and then this
   // makes sense.
   return ERR_IO_PENDING;
+}
+
+void FlipStream::UpdateHistograms() {
+  if (histograms_recorded_)
+    return;
+
+  histograms_recorded_ = true;
+
+  // We need all timers to be filled in, otherwise metrics can be bogus.
+  if (send_time_.is_null() || recv_first_byte_time_.is_null() ||
+      recv_last_byte_time_.is_null())
+    return;
+
+  UMA_HISTOGRAM_TIMES("Net.SpdyStreamTimeToFirstByte",
+      recv_first_byte_time_ - send_time_);
+  UMA_HISTOGRAM_TIMES("Net.SpdyStreamDownloadTime",
+      recv_last_byte_time_ - recv_first_byte_time_);
+  UMA_HISTOGRAM_TIMES("Net.SpdyStreamTime",
+      recv_last_byte_time_ - send_time_);
+
+  UMA_HISTOGRAM_COUNTS("Net.SpdySendBytes", send_bytes_);
+  UMA_HISTOGRAM_COUNTS("Net.SpdyRecvBytes", recv_bytes_);
 }
 
 }  // namespace net

@@ -156,6 +156,10 @@ class FlipStream : public base::RefCounted<FlipStream> {
   int DoReadBody();
   int DoReadBodyComplete(int result);
 
+  // Update the histograms.  Can safely be called repeatedly, but should only
+  // be called after the stream has completed.
+  void UpdateHistograms();
+
   flip::FlipStreamId stream_id_;
   std::string path_;
   int priority_;
@@ -187,6 +191,13 @@ class FlipStream : public base::RefCounted<FlipStream> {
   bool cancelled_;
 
   scoped_refptr<LoadLog> load_log_;
+
+  base::TimeTicks send_time_;
+  base::TimeTicks recv_first_byte_time_;
+  base::TimeTicks recv_last_byte_time_;
+  int send_bytes_;
+  int recv_bytes_;
+  bool histograms_recorded_;
 
   DISALLOW_COPY_AND_ASSIGN(FlipStream);
 };
