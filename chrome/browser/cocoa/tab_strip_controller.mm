@@ -331,6 +331,12 @@ private:
                owner:self
             userInfo:nil]);
     [tabStripView_ addTrackingArea:trackingArea_.get()];
+
+    // Set accessibility descriptions. http://openradar.appspot.com/7496255
+    NSString* description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_NEWTAB);
+    [[newTabButton_ cell]
+        accessibilitySetOverrideValue:description
+                         forAttribute:NSAccessibilityDescriptionAttribute];
   }
   return self;
 }

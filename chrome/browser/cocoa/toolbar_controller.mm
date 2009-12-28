@@ -36,6 +36,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -258,6 +259,44 @@ class PrefObserverBridge : public NotificationObserver {
   // We want a dynamic tooltip on the go button, so tell the go button to ask
   // use for the tooltip
   [goButton_ addToolTipRect:[goButton_ bounds] owner:self userData:nil];
+
+  // Set accessibility descriptions. http://openradar.appspot.com/7496255
+  NSString* description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_BACK);
+  [[backButton_ cell]
+      accessibilitySetOverrideValue:description
+                       forAttribute:NSAccessibilityDescriptionAttribute];
+  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_FORWARD);
+  [[forwardButton_ cell]
+      accessibilitySetOverrideValue:description
+                       forAttribute:NSAccessibilityDescriptionAttribute];
+  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_RELOAD);
+  [[reloadButton_ cell]
+      accessibilitySetOverrideValue:description
+                       forAttribute:NSAccessibilityDescriptionAttribute];
+  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_HOME);
+  [[homeButton_ cell]
+      accessibilitySetOverrideValue:description
+                       forAttribute:NSAccessibilityDescriptionAttribute];
+  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_STAR);
+  [[starButton_ cell]
+      accessibilitySetOverrideValue:description
+                       forAttribute:NSAccessibilityDescriptionAttribute];
+  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_LOCATION);
+  [[locationBar_ cell]
+      accessibilitySetOverrideValue:description
+                       forAttribute:NSAccessibilityDescriptionAttribute];
+  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_GO);
+  [[goButton_ cell]
+      accessibilitySetOverrideValue:description
+                       forAttribute:NSAccessibilityDescriptionAttribute];
+  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_PAGE);
+  [[pageButton_ cell]
+      accessibilitySetOverrideValue:description
+                       forAttribute:NSAccessibilityDescriptionAttribute];
+  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_APP);
+  [[wrenchButton_ cell]
+      accessibilitySetOverrideValue:description
+                       forAttribute:NSAccessibilityDescriptionAttribute];
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {
