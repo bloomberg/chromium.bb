@@ -467,12 +467,7 @@ void ProfileSyncService::RemoveObserver(Observer* observer) {
 }
 
 void ProfileSyncService::SyncEvent(SyncEventCodes code) {
-  static scoped_refptr<Histogram> histogram =
-      LinearHistogram::LinearHistogramFactoryGet("Sync.EventCodes",
-          MIN_SYNC_EVENT_CODE + 1, MAX_SYNC_EVENT_CODE - 1,
-          MAX_SYNC_EVENT_CODE);
-  histogram->SetFlags(kUmaTargetedHistogramFlag);
-  histogram->Add(code);
+  UMA_HISTOGRAM_ENUMERATION("Sync.EventCodes", code, MAX_SYNC_EVENT_CODE);
 }
 
 bool ProfileSyncService::IsSyncEnabled() {

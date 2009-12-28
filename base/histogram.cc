@@ -20,12 +20,8 @@ using base::TimeDelta;
 
 typedef Histogram::Count Count;
 
-// static
-const int Histogram::kHexRangePrintingFlag = 0x8000;
-
-scoped_refptr<Histogram> Histogram::HistogramFactoryGet(
-    const std::string& name, Sample minimum, Sample maximum,
-    size_t bucket_count) {
+scoped_refptr<Histogram> Histogram::FactoryGet(const std::string& name,
+    Sample minimum, Sample maximum, size_t bucket_count, Flags flags) {
   scoped_refptr<Histogram> histogram(NULL);
 
   // Defensive code.
@@ -48,14 +44,15 @@ scoped_refptr<Histogram> Histogram::HistogramFactoryGet(
 
   DCHECK(HISTOGRAM == histogram->histogram_type());
   DCHECK(histogram->HasConstructorArguments(minimum, maximum, bucket_count));
+  histogram->SetFlags(flags);
   return histogram;
 }
 
-scoped_refptr<Histogram> Histogram::HistogramFactoryGet(
-    const std::string& name, base::TimeDelta minimum, base::TimeDelta maximum,
-    size_t bucket_count) {
-  return HistogramFactoryGet(name,
-      minimum.InMilliseconds(), maximum.InMilliseconds(), bucket_count);
+scoped_refptr<Histogram> Histogram::FactoryGet(const std::string& name,
+    base::TimeDelta minimum, base::TimeDelta maximum, size_t bucket_count,
+    Flags flags) {
+  return FactoryGet(name, minimum.InMilliseconds(), maximum.InMilliseconds(),
+                    bucket_count, flags);
 }
 
 Histogram::Histogram(const std::string& name, Sample minimum,
@@ -64,7 +61,7 @@ Histogram::Histogram(const std::string& name, Sample minimum,
     declared_min_(minimum),
     declared_max_(maximum),
     bucket_count_(bucket_count),
-    flags_(0),
+    flags_(kNoFlags),
     ranges_(bucket_count + 1, 0),
     sample_() {
   Initialize();
@@ -76,14 +73,13 @@ Histogram::Histogram(const std::string& name, TimeDelta minimum,
     declared_min_(static_cast<int> (minimum.InMilliseconds())),
     declared_max_(static_cast<int> (maximum.InMilliseconds())),
     bucket_count_(bucket_count),
-    flags_(0),
+    flags_(kNoFlags),
     ranges_(bucket_count + 1, 0),
     sample_() {
   Initialize();
 }
 
 Histogram::~Histogram() {
-  DCHECK(!(kPlannedLeakFlag & flags_));
   if (StatisticsRecorder::dump_on_exit()) {
     std::string output;
     WriteAscii(true, "\n", &output);
@@ -184,7 +180,7 @@ void Histogram::WriteAscii(bool graph_it, const std::string& newline,
 bool Histogram::ValidateBucketRanges() const {
   // Standard assertions that all bucket ranges should satisfy.
   DCHECK(ranges_.size() == bucket_count_ + 1);
-  DCHECK(0 == ranges_[0]);
+  DCHECK_EQ(0, ranges_[0]);
   DCHECK(declared_min() == ranges_[1]);
   DCHECK(declared_max() == ranges_[bucket_count_ - 1]);
   DCHECK(kSampleType_MAX == ranges_[bucket_count_]);
@@ -197,12 +193,12 @@ void Histogram::Initialize() {
     declared_min_ = 1;
   if (declared_max_ >= kSampleType_MAX)
     declared_max_ = kSampleType_MAX - 1;
-  DCHECK(declared_min_ > 0);  // We provide underflow bucket.
+  DCHECK_GT(declared_min_, 0);  // We provide underflow bucket.
   DCHECK(declared_min_ <= declared_max_);
-  DCHECK(1 < bucket_count_);
+  DCHECK_LT(1u, bucket_count_);
   size_t maximal_bucket_count = declared_max_ - declared_min_ + 2;
   DCHECK(bucket_count_ <= maximal_bucket_count);
-  DCHECK(0 == ranges_[0]);
+  DCHECK_EQ(0, ranges_[0]);
   ranges_[bucket_count_] = kSampleType_MAX;
   InitializeBucketRange();
   DCHECK(ValidateBucketRanges());
@@ -330,7 +326,7 @@ void Histogram::WriteAsciiHeader(const SampleSet& snapshot,
                 histogram_name().c_str(),
                 sample_count);
   if (0 == sample_count) {
-    DCHECK(0 == snapshot.sum());
+    DCHECK_EQ(0, snapshot.sum());
   } else {
     double average = static_cast<float>(snapshot.sum()) / sample_count;
     double variance = static_cast<float>(snapshot.square_sum())/sample_count
@@ -416,7 +412,7 @@ bool Histogram::DeserializeHistogramInfo(const std::string& histogram_info) {
   int declared_min;
   int declared_max;
   int histogram_type;
-  int flags;
+  int pickle_flags;
   std::string histogram_name;
   SampleSet sample;
 
@@ -425,29 +421,25 @@ bool Histogram::DeserializeHistogramInfo(const std::string& histogram_info) {
       !pickle.ReadInt(&iter, &declared_max) ||
       !pickle.ReadSize(&iter, &bucket_count) ||
       !pickle.ReadInt(&iter, &histogram_type) ||
-      !pickle.ReadInt(&iter, &flags) ||
+      !pickle.ReadInt(&iter, &pickle_flags) ||
       !sample.Histogram::SampleSet::Deserialize(&iter, pickle)) {
     LOG(ERROR) << "Picke error decoding Histogram: " << histogram_name;
     return false;
   }
+  Flags flags = static_cast<Flags>(pickle_flags & ~kIPCSerializationSourceFlag);
 
   DCHECK(histogram_type != NOT_VALID_IN_RENDERER);
 
   scoped_refptr<Histogram> render_histogram(NULL);
 
   if (histogram_type ==  HISTOGRAM) {
-    render_histogram = Histogram::HistogramFactoryGet(
-        histogram_name, declared_min, declared_max, bucket_count);
+    render_histogram = Histogram::FactoryGet(
+        histogram_name, declared_min, declared_max, bucket_count, flags);
   } else if (histogram_type == LINEAR_HISTOGRAM) {
-    render_histogram = LinearHistogram::LinearHistogramFactoryGet(
-        histogram_name, declared_min, declared_max, bucket_count);
+    render_histogram = LinearHistogram::FactoryGet(
+        histogram_name, declared_min, declared_max, bucket_count, flags);
   } else if (histogram_type == BOOLEAN_HISTOGRAM) {
-    render_histogram = BooleanHistogram::BooleanHistogramFactoryGet(
-        histogram_name);
-  } else if (histogram_type == THREAD_SAFE_HISTOGRAM) {
-    render_histogram =
-        ThreadSafeHistogram::ThreadSafeHistogramFactoryGet(
-            histogram_name, declared_min, declared_max, bucket_count);
+    render_histogram = BooleanHistogram::FactoryGet(histogram_name, flags);
   } else {
     LOG(ERROR) << "Error Deserializing Histogram Unknown histogram_type: " <<
         histogram_type;
@@ -463,9 +455,8 @@ bool Histogram::DeserializeHistogramInfo(const std::string& histogram_info) {
     DLOG(INFO) << "Single process mode, histogram observed and not copied: " <<
         histogram_name;
   } else {
+    DCHECK(flags == (flags & render_histogram->flags()));
     render_histogram->AddSampleSet(sample);
-    render_histogram->SetFlags(flags & ~kIPCSerializationSourceFlag
-                               & ~kPlannedLeakFlag);
   }
 
   return true;
@@ -496,9 +487,9 @@ void Histogram::SampleSet::Accumulate(Sample value,  Count count,
   counts_[index] += count;
   sum_ += count * value;
   square_sum_ += (count * value) * static_cast<int64>(value);
-  DCHECK(counts_[index] >= 0);
-  DCHECK(sum_ >= 0);
-  DCHECK(square_sum_ >= 0);
+  DCHECK_GE(counts_[index], 0);
+  DCHECK_GE(sum_, 0);
+  DCHECK_GE(square_sum_, 0);
 }
 
 Count Histogram::SampleSet::TotalCount() const {
@@ -528,7 +519,7 @@ void Histogram::SampleSet::Subtract(const SampleSet& other) {
   square_sum_ -= other.square_sum_;
   for (size_t index = 0; index < counts_.size(); ++index) {
     counts_[index] -= other.counts_[index];
-    DCHECK(counts_[index] >= 0);
+    DCHECK_GE(counts_[index], 0);
   }
 }
 
@@ -545,9 +536,9 @@ bool Histogram::SampleSet::Serialize(Pickle* pickle) const {
 }
 
 bool Histogram::SampleSet::Deserialize(void** iter, const Pickle& pickle) {
-  DCHECK(counts_.size() == 0);
-  DCHECK(sum_ == 0);
-  DCHECK(square_sum_ == 0);
+  DCHECK_EQ(counts_.size(), 0u);
+  DCHECK_EQ(sum_, 0);
+  DCHECK_EQ(square_sum_, 0);
 
   size_t counts_size;
 
@@ -575,9 +566,9 @@ bool Histogram::SampleSet::Deserialize(void** iter, const Pickle& pickle) {
 // buckets.
 //------------------------------------------------------------------------------
 
-scoped_refptr<Histogram> LinearHistogram::LinearHistogramFactoryGet(
+scoped_refptr<Histogram> LinearHistogram::FactoryGet(
     const std::string& name, Sample minimum, Sample maximum,
-    size_t bucket_count) {
+    size_t bucket_count, Flags flags) {
   scoped_refptr<Histogram> histogram(NULL);
 
   if (minimum <= 0)
@@ -598,15 +589,15 @@ scoped_refptr<Histogram> LinearHistogram::LinearHistogramFactoryGet(
 
   DCHECK(LINEAR_HISTOGRAM == histogram->histogram_type());
   DCHECK(histogram->HasConstructorArguments(minimum, maximum, bucket_count));
-
+  histogram->SetFlags(flags);
   return histogram;
 }
 
-scoped_refptr<Histogram> LinearHistogram::LinearHistogramFactoryGet(
-    const std::string& name, base::TimeDelta minimum, base::TimeDelta maximum,
-    size_t bucket_count) {
-  return LinearHistogramFactoryGet(name, minimum.InMilliseconds(),
-      maximum.InMilliseconds(), bucket_count);
+scoped_refptr<Histogram> LinearHistogram::FactoryGet(const std::string& name,
+    base::TimeDelta minimum, base::TimeDelta maximum, size_t bucket_count,
+    Flags flags) {
+  return FactoryGet(name, minimum.InMilliseconds(), maximum.InMilliseconds(),
+                    bucket_count, flags);
 }
 
 LinearHistogram::LinearHistogram(const std::string& name, Sample minimum,
@@ -647,7 +638,7 @@ bool LinearHistogram::PrintEmptyBucket(size_t index) const {
 
 
 void LinearHistogram::InitializeBucketRange() {
-  DCHECK(0 < declared_min());  // 0 is the underflow bucket here.
+  DCHECK_LT(0, declared_min());  // 0 is the underflow bucket here.
   double min = declared_min();
   double max = declared_max();
   size_t i;
@@ -670,8 +661,8 @@ double LinearHistogram::GetBucketSize(Count current, size_t i) const {
 // This section provides implementation for BooleanHistogram.
 //------------------------------------------------------------------------------
 
-scoped_refptr<Histogram> BooleanHistogram::BooleanHistogramFactoryGet(
-    const std::string& name) {
+scoped_refptr<Histogram> BooleanHistogram::FactoryGet(const std::string& name,
+                                                      Flags flags) {
   scoped_refptr<Histogram> histogram(NULL);
 
   if (StatisticsRecorder::FindHistogram(name, &histogram)) {
@@ -686,62 +677,9 @@ scoped_refptr<Histogram> BooleanHistogram::BooleanHistogramFactoryGet(
   }
 
   DCHECK(BOOLEAN_HISTOGRAM == histogram->histogram_type());
-
+  histogram->SetFlags(flags);
   return histogram;
 }
-
-//------------------------------------------------------------------------------
-// This section provides implementation for ThreadSafeHistogram.
-//------------------------------------------------------------------------------
-
-scoped_refptr<Histogram> ThreadSafeHistogram::ThreadSafeHistogramFactoryGet(
-    const std::string& name, Sample minimum, Sample maximum,
-    size_t bucket_count) {
-  scoped_refptr<Histogram> histogram(NULL);
-
-  if (minimum <= 0)
-    minimum = 1;
-  if (maximum >= kSampleType_MAX)
-    maximum = kSampleType_MAX - 1;
-
-  if (StatisticsRecorder::FindHistogram(name, &histogram)) {
-    DCHECK(histogram.get() != NULL);
-  } else {
-    histogram = new ThreadSafeHistogram(name, minimum, maximum, bucket_count);
-    scoped_refptr<Histogram> registered_histogram(NULL);
-    StatisticsRecorder::FindHistogram(name, &registered_histogram);
-    if (registered_histogram.get() != NULL &&
-        registered_histogram.get() != histogram.get())
-      histogram = registered_histogram;
-  }
-
-  DCHECK(THREAD_SAFE_HISTOGRAM == histogram->histogram_type());
-  DCHECK(histogram->HasConstructorArguments(minimum, maximum, bucket_count));
-  return histogram;
-}
-
-ThreadSafeHistogram::ThreadSafeHistogram(const std::string& name,
-     Sample minimum, Sample maximum, size_t bucket_count)
-    : Histogram(name, minimum, maximum, bucket_count),
-      lock_() {
-  }
-
-void ThreadSafeHistogram::Remove(int value) {
-  if (value >= kSampleType_MAX)
-    value = kSampleType_MAX - 1;
-  size_t index = BucketIndex(value);
-  Accumulate(value, -1, index);
-}
-
-void ThreadSafeHistogram::Accumulate(Sample value, Count count, size_t index) {
-  AutoLock lock(lock_);
-  Histogram::Accumulate(value, count, index);
-}
-
-void ThreadSafeHistogram::SnapshotSample(SampleSet* sample) const {
-  AutoLock lock(lock_);
-  Histogram::SnapshotSample(sample);
-};
 
 
 //------------------------------------------------------------------------------
@@ -862,8 +800,8 @@ void StatisticsRecorder::GetHistogramsForRenderer(Histograms* output) {
        histograms_->end() != it;
        ++it) {
     scoped_refptr<Histogram> histogram = it->second;
-    if (!(histogram->flags() & kIPCSerializationSourceFlag))
-      histogram->SetFlags(kIPCSerializationSourceFlag);
+    if (!(histogram->flags() & Histogram::kIPCSerializationSourceFlag))
+      histogram->SetFlags(Histogram::kIPCSerializationSourceFlag);
     output->push_back(histogram);
   }
 }

@@ -505,13 +505,11 @@ static void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
   if (min <= 0)
     min = 1;
-  scoped_refptr<Histogram> histogram =
-      Histogram::HistogramFactoryGet(name, min, max, buckets);
-  // We verify this was not being destructed by setting a novel "PlannedLeak"
-  // flag and watching out for the flag in the destructor.
-  histogram->SetFlags(kUmaTargetedHistogramFlag | kPlannedLeakFlag);
+  scoped_refptr<Histogram> histogram = Histogram::FactoryGet(
+      name, min, max, buckets, Histogram::kUmaTargetedHistogramFlag);
   // We'll end up leaking these histograms, unless there is some code hiding in
   // there to do the dec-ref.
+  // TODO(jar): Handle reference counting in webkit glue.
   histogram->AddRef();
   return histogram.get();
 }

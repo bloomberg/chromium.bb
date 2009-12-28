@@ -31,14 +31,11 @@ enum SSLBlockingPageEvent {
   SHOW,
   PROCEED,
   DONT_PROCEED,
+  UNUSED_ENUM,
 };
 
 void RecordSSLBlockingPageStats(SSLBlockingPageEvent event) {
-  static scoped_refptr<Histogram> histogram =
-      LinearHistogram::LinearHistogramFactoryGet(
-          "interstial.ssl", 1, 2, 3);
-  histogram->SetFlags(kUmaTargetedHistogramFlag);
-  histogram->Add(event);
+  UMA_HISTOGRAM_ENUMERATION("interstial.ssl", event, UNUSED_ENUM);
 }
 
 }  // namespace

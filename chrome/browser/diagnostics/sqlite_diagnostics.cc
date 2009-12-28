@@ -43,11 +43,7 @@ class BasicSqliteErrrorHandler : public sql::ErrorDelegate {
   static void RecordErrorInHistogram(int error) {
     // The histogram values from sqlite result codes go currently from 1 to
     // 26 currently but 50 gives them room to grow.
-    static scoped_refptr<Histogram> histogram =
-        LinearHistogram::LinearHistogramFactoryGet(kHistogramNames[unique], 1,
-                                                   50, 51);
-    histogram->SetFlags(kUmaTargetedHistogramFlag);
-    histogram->Add(error);
+    UMA_HISTOGRAM_ENUMERATION(kHistogramNames[unique], error, 50);
   }
 };
 

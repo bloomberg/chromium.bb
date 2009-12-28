@@ -66,14 +66,11 @@ enum SafeBrowsingBlockingPageEvent {
   SHOW,
   PROCEED,
   DONT_PROCEED,
+  UNUSED_ENUM,
 };
 
 void RecordSafeBrowsingBlockingPageStats(SafeBrowsingBlockingPageEvent event) {
-  static scoped_refptr<Histogram> histogram =
-      LinearHistogram::LinearHistogramFactoryGet("interstial.safe_browsing",
-                                                 1, 2, 3);
-  histogram->SetFlags(kUmaTargetedHistogramFlag);
-  histogram->Add(event);
+  UMA_HISTOGRAM_ENUMERATION("interstial.safe_browsing", event, UNUSED_ENUM);
 }
 
 }  // namespace

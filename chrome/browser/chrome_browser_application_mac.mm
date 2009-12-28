@@ -112,11 +112,8 @@ size_t BinForException(NSException* exception) {
 }
 
 void RecordExceptionWithUma(NSException* exception) {
-  static scoped_refptr<Histogram> histogram =
-      LinearHistogram::LinearHistogramFactoryGet("OSX.NSException",
-          0, kUnknownNSException, kUnknownNSException + 1);
-  histogram->SetFlags(kUmaTargetedHistogramFlag);
-  histogram->Add(BinForException(exception));
+  UMA_HISTOGRAM_ENUMERATION("OSX.NSException",
+      BinForException(exception), kUnknownNSException);
 }
 
 void Terminate() {

@@ -92,14 +92,12 @@ class JankObserver : public base::RefCountedThreadSafe<JankObserver>,
         slow_processing_counter_(std::string("Chrome.SlowMsg") + thread_name),
         queueing_delay_counter_(std::string("Chrome.DelayMsg") + thread_name),
         total_time_watchdog_(excessive_duration, thread_name, watchdog_enable) {
-    process_times_ = Histogram::HistogramFactoryGet(
-        (std::string("Chrome.ProcMsgL ") + thread_name),
-        1, 3600000, 50);
-    total_times_ = Histogram::HistogramFactoryGet(
-        (std::string("Chrome.TotalMsgL ") + thread_name),
-        1, 3600000, 50);
-    process_times_->SetFlags(kUmaTargetedHistogramFlag);
-    total_times_->SetFlags(kUmaTargetedHistogramFlag);
+    process_times_ = Histogram::FactoryGet(
+        std::string("Chrome.ProcMsgL ") + thread_name,
+        1, 3600000, 50, Histogram::kUmaTargetedHistogramFlag);
+    total_times_ = Histogram::FactoryGet(
+        std::string("Chrome.TotalMsgL ") + thread_name,
+        1, 3600000, 50, Histogram::kUmaTargetedHistogramFlag);
   }
 
   // Attaches the observer to the current thread's message loop. You can only

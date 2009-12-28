@@ -44,83 +44,52 @@
 // Provide easy general purpose histogram in a macro, just like stats counters.
 // The first four macros use 50 buckets.
 
-#define HISTOGRAM_TIMES(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), base::TimeDelta::FromMilliseconds(1), \
-        base::TimeDelta::FromSeconds(10), 50); \
-    counter->AddTime(sample); \
-  } while (0)
+#define HISTOGRAM_TIMES(name, sample) HISTOGRAM_CUSTOM_TIMES( \
+    name, sample, base::TimeDelta::FromMilliseconds(1), \
+    base::TimeDelta::FromSeconds(10), 50)
 
-#define HISTOGRAM_COUNTS(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), 1, 1000000, 50); \
-    counter->Add(sample); \
-  } while (0)
+#define HISTOGRAM_COUNTS(name, sample) HISTOGRAM_CUSTOM_COUNTS( \
+    name, sample, 1, 1000000, 50)
 
-#define HISTOGRAM_COUNTS_100(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), 1, 100, 50); \
-    counter->Add(sample); \
-  } while (0)
+#define HISTOGRAM_COUNTS_100(name, sample) HISTOGRAM_CUSTOM_COUNTS( \
+    name, sample, 1, 100, 50)
 
-#define HISTOGRAM_COUNTS_10000(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), 1, 10000, 50); \
-    counter->Add(sample); \
-  } while (0)
+#define HISTOGRAM_COUNTS_10000(name, sample) HISTOGRAM_CUSTOM_COUNTS( \
+    name, sample, 1, 10000, 50)
 
 #define HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), min, max, bucket_count); \
+    static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
+        name, min, max, bucket_count, Histogram::kNoFlags); \
     counter->Add(sample); \
   } while (0)
 
-#define HISTOGRAM_PERCENTAGE(name, under_one_hundred) do { \
-    static scoped_refptr<Histogram> counter = \
-        LinearHistogram::LinearHistogramFactoryGet(\
-            (name), 1, 100, 101); \
-    counter->Add(under_one_hundred); \
-  } while (0)
+#define HISTOGRAM_PERCENTAGE(name, under_one_hundred) \
+    HISTOGRAM_ENUMERATION(name, under_one_hundred, 101)
 
 // For folks that need real specific times, use this to select a precise range
 // of times you want plotted, and the number of buckets you want used.
 #define HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), min, max, bucket_count); \
+    static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
+        name, min, max, bucket_count, Histogram::kNoFlags); \
     counter->AddTime(sample); \
   } while (0)
 
 // DO NOT USE THIS.  It is being phased out, in favor of HISTOGRAM_CUSTOM_TIMES.
 #define HISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), min, max, bucket_count); \
+    static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
+        name, min, max, bucket_count, Histogram::kNoFlags); \
     if ((sample) < (max)) counter->AddTime(sample); \
   } while (0)
 
-//------------------------------------------------------------------------------
-// This macro set is for a histogram that can support both addition and removal
-// of samples. It should be used to render the accumulated asset allocation
-// of some samples.  For example, it can sample memory allocation sizes, and
-// memory releases (as negative samples).
-// To simplify the interface, only non-zero values can be sampled, with positive
-// numbers indicating addition, and negative numbers implying dimunition
-// (removal).
-// Note that the underlying ThreadSafeHistogram() uses locking to ensure that
-// counts are precise (no chance of losing an addition or removal event, due to
-// multithread racing). This precision is required to prevent missed-counts from
-// resulting in drift, as the calls to Remove() for a given value should always
-// be equal in number or fewer than the corresponding calls to Add().
+// Support histograming of an enumerated value.  The samples should always be
+// less than boundary_value.
 
-#define ASSET_HISTOGRAM_COUNTS(name, sample) do { \
-    static scoped_refptr<Histogram> counter = \
-        ThreadSafeHistogram::ThreadSafeHistogramFactoryGet(\
-            (name), 1, 1000000, 50); \
-    if (0 == sample) break; \
-    if (sample >= 0) \
-      counter->Add(sample); \
-    else\
-      counter->Remove(-sample); \
+#define HISTOGRAM_ENUMERATION(name, sample, boundary_value) do { \
+    static scoped_refptr<Histogram> counter = LinearHistogram::FactoryGet( \
+        name, 1, boundary_value, boundary_value + 1, Histogram::kNoFlags); \
+    counter->Add(sample); \
   } while (0)
+
 
 //------------------------------------------------------------------------------
 // Define Debug vs non-debug flavors of macros.
@@ -128,8 +97,6 @@
 
 #define DHISTOGRAM_TIMES(name, sample) HISTOGRAM_TIMES(name, sample)
 #define DHISTOGRAM_COUNTS(name, sample) HISTOGRAM_COUNTS(name, sample)
-#define DASSET_HISTOGRAM_COUNTS(name, sample) ASSET_HISTOGRAM_COUNTS(name, \
-                                                                     sample)
 #define DHISTOGRAM_PERCENTAGE(name, under_one_hundred) HISTOGRAM_PERCENTAGE(\
     name, under_one_hundred)
 #define DHISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
@@ -137,21 +104,22 @@
 #define DHISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count) \
     HISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count)
 #define DHISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) \
-  HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count)
+    HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count)
+#define DHISTOGRAM_ENUMERATION(name, sample, boundary_value) \
+    HISTOGRAM_ENUMERATION(name, sample, boundary_value)
 
 #else  // NDEBUG
 
 #define DHISTOGRAM_TIMES(name, sample) do {} while (0)
 #define DHISTOGRAM_COUNTS(name, sample) do {} while (0)
-#define DASSET_HISTOGRAM_COUNTS(name, sample) do {} while (0)
 #define DHISTOGRAM_PERCENTAGE(name, under_one_hundred) do {} while (0)
 #define DHISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
     do {} while (0)
 #define DHISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count) \
     do {} while (0)
 #define DHISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) \
-  do {} while (0)
-
+    do {} while (0)
+#define DHISTOGRAM_ENUMERATION(name, sample, boundary_value) do {} while (0)
 
 #endif  // NDEBUG
 
@@ -161,109 +129,64 @@
 // Not all systems support such UMA, but if they do, the following macros
 // should work with the service.
 
-static const int kUmaTargetedHistogramFlag = 0x1;
+#define UMA_HISTOGRAM_TIMES(name, sample) UMA_HISTOGRAM_CUSTOM_TIMES( \
+    name, sample, base::TimeDelta::FromMilliseconds(1), \
+    base::TimeDelta::FromSeconds(10), 50)
 
-// This indicates the histogram is pickled to be sent across an IPC Channel.
-// If we observe this flag during unpickle method, then we are running in a
-// single process mode.
-static const int kIPCSerializationSourceFlag = 1 << 4;
-
-// Some histograms aren't currently destroyed.  Until such users properly
-// decref those histograms, we will mark there histograms as planned to leak so
-// that we can catch any user that directly tries to call delete "directly"
-// rather than using the reference counting features that should take care of
-// this.
-// TODO(jar): Make this flag unnecessary!
-static const int kPlannedLeakFlag = 1 << 5;
-
-#define UMA_HISTOGRAM_TIMES(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), base::TimeDelta::FromMilliseconds(1), \
-        base::TimeDelta::FromSeconds(10), 50); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
-    counter->AddTime(sample); \
-  } while (0)
-
-#define UMA_HISTOGRAM_MEDIUM_TIMES(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), base::TimeDelta::FromMilliseconds(10), \
-        base::TimeDelta::FromMinutes(3), 50); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
-    counter->AddTime(sample); \
-  } while (0)
+#define UMA_HISTOGRAM_MEDIUM_TIMES(name, sample) UMA_HISTOGRAM_CUSTOM_TIMES( \
+    name, sample, base::TimeDelta::FromMilliseconds(10), \
+    base::TimeDelta::FromMinutes(3), 50)
 
 // Use this macro when times can routinely be much longer than 10 seconds.
-#define UMA_HISTOGRAM_LONG_TIMES(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), base::TimeDelta::FromMilliseconds(1), \
-        base::TimeDelta::FromHours(1), 50); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
-    counter->AddTime(sample); \
-  } while (0)
+#define UMA_HISTOGRAM_LONG_TIMES(name, sample) UMA_HISTOGRAM_CUSTOM_TIMES( \
+    name, sample, base::TimeDelta::FromMilliseconds(1), \
+    base::TimeDelta::FromHours(1), 50)
 
 #define UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), min, max, bucket_count); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
+    static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
+        name, min, max, bucket_count, Histogram::kUmaTargetedHistogramFlag); \
     counter->AddTime(sample); \
   } while (0)
 
+// DO NOT USE THIS.  It is being phased out, in favor of HISTOGRAM_CUSTOM_TIMES.
 #define UMA_HISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), min, max, bucket_count); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
+    static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
+        name, min, max, bucket_count, Histogram::kUmaTargetedHistogramFlag); \
     if ((sample) < (max)) counter->AddTime(sample); \
   } while (0)
 
-#define UMA_HISTOGRAM_COUNTS(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), 1, 1000000, 50); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
-    counter->Add(sample); \
-  } while (0)
+#define UMA_HISTOGRAM_COUNTS(name, sample) UMA_HISTOGRAM_CUSTOM_COUNTS( \
+    name, sample, 1, 1000000, 50)
 
-#define UMA_HISTOGRAM_COUNTS_100(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), 1, 100, 50); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
-    counter->Add(sample); \
-  } while (0)
+#define UMA_HISTOGRAM_COUNTS_100(name, sample) UMA_HISTOGRAM_CUSTOM_COUNTS( \
+    name, sample, 1, 100, 50)
 
-#define UMA_HISTOGRAM_COUNTS_10000(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), 1, 10000, 50); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
-    counter->Add(sample); \
-  } while (0)
+#define UMA_HISTOGRAM_COUNTS_10000(name, sample) UMA_HISTOGRAM_CUSTOM_COUNTS( \
+    name, sample, 1, 10000, 50)
 
 #define UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), min, max, bucket_count); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
+    static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
+        name, min, max, bucket_count, Histogram::kUmaTargetedHistogramFlag); \
     counter->Add(sample); \
   } while (0)
 
-#define UMA_HISTOGRAM_MEMORY_KB(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), 1000, 500000, 50); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
+#define UMA_HISTOGRAM_MEMORY_KB(name, sample) UMA_HISTOGRAM_CUSTOM_COUNTS( \
+    name, sample, 1000, 500000, 50)
+
+#define UMA_HISTOGRAM_MEMORY_MB(name, sample) UMA_HISTOGRAM_CUSTOM_COUNTS( \
+    name, sample, 1, 1000, 50)
+
+#define UMA_HISTOGRAM_PERCENTAGE(name, under_one_hundred) \
+    UMA_HISTOGRAM_ENUMERATION(name, under_one_hundred, 101)
+
+#define UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value) do { \
+    DCHECK(sample < boundary_value); \
+    static scoped_refptr<Histogram> counter = LinearHistogram::FactoryGet( \
+        name, 1, boundary_value, boundary_value + 1, \
+        Histogram::kUmaTargetedHistogramFlag); \
     counter->Add(sample); \
   } while (0)
 
-#define UMA_HISTOGRAM_MEMORY_MB(name, sample) do { \
-    static scoped_refptr<Histogram> counter = Histogram::HistogramFactoryGet(\
-        (name), 1, 1000, 50); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
-    counter->Add(sample); \
-  } while (0)
-
-#define UMA_HISTOGRAM_PERCENTAGE(name, under_one_hundred) do { \
-    static scoped_refptr<Histogram> counter = \
-        LinearHistogram::LinearHistogramFactoryGet(\
-            (name), 1, 100, 101); \
-    counter->SetFlags(kUmaTargetedHistogramFlag); \
-    counter->Add(under_one_hundred); \
-  } while (0)
 
 //------------------------------------------------------------------------------
 
@@ -271,7 +194,6 @@ class Pickle;
 class Histogram;
 class LinearHistogram;
 class BooleanHistogram;
-class ThreadSafeHistogram;
 
 namespace disk_cache {
   class StatsHistogram;
@@ -287,21 +209,32 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   typedef std::vector<Count> Counts;
   typedef std::vector<Sample> Ranges;
 
-  static const int kHexRangePrintingFlag;
-
   /* These enums are meant to facilitate deserialization of renderer histograms
      into the browser. */
   enum ClassType {
     HISTOGRAM,
     LINEAR_HISTOGRAM,
     BOOLEAN_HISTOGRAM,
-    THREAD_SAFE_HISTOGRAM,
     NOT_VALID_IN_RENDERER
   };
 
   enum BucketLayout {
     EXPONENTIAL,
     LINEAR
+  };
+
+  enum Flags {
+    kNoFlags = 0,
+    kUmaTargetedHistogramFlag = 0x1,  // Histogram should be UMA uploaded.
+
+    // Indicate that the histogram was pickled to be sent across an IPC Channel.
+    // If we observe this flag on a histogram being aggregated into after IPC,
+    // then we are running in a single process mode, and the aggregation should
+    // not take place (as we would be aggregating back into the source
+    // histogram!).
+    kIPCSerializationSourceFlag = 0x10,
+
+    kHexRangePrintingFlag = 0x8000,  // Fancy bucket-naming supported.
   };
 
   struct DescriptionPair {
@@ -348,10 +281,11 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   //----------------------------------------------------------------------------
   // minimum should start from 1. 0 is invalid as a minimum. 0 is an implicit
   // default underflow bucket.
-  static scoped_refptr<Histogram> HistogramFactoryGet(const std::string& name,
-      Sample minimum, Sample maximum, size_t bucket_count);
-  static scoped_refptr<Histogram> HistogramFactoryGet(const std::string& name,
-      base::TimeDelta minimum, base::TimeDelta maximum, size_t bucket_count);
+  static scoped_refptr<Histogram> FactoryGet(const std::string& name,
+      Sample minimum, Sample maximum, size_t bucket_count, Flags flags);
+  static scoped_refptr<Histogram> FactoryGet(const std::string& name,
+      base::TimeDelta minimum, base::TimeDelta maximum, size_t bucket_count,
+      Flags flags);
 
   void Add(int value);
 
@@ -365,9 +299,6 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
 
   void AddSampleSet(const SampleSet& sample);
 
-  // This method is an interface, used only by ThreadSafeHistogram.
-  virtual void Remove(int value) { DCHECK(false); }
-
   // This method is an interface, used only by LinearHistogram.
   virtual void SetRangeDescriptions(const DescriptionPair descriptions[])
       { DCHECK(false); }
@@ -380,8 +311,8 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   // Support generic flagging of Histograms.
   // 0x1 Currently used to mark this histogram to be recorded by UMA..
   // 0x8000 means print ranges in hex.
-  void SetFlags(int flags) { flags_ |= flags; }
-  void ClearFlags(int flags) { flags_ &= ~flags; }
+  void SetFlags(Flags flags) { flags_ = static_cast<Flags> (flags_ | flags); }
+  void ClearFlags(Flags flags) { flags_ = static_cast<Flags>(flags_ & ~flags); }
   int flags() const { return flags_; }
 
   // Convenience methods for serializing/deserializing the histograms.
@@ -510,7 +441,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   size_t bucket_count_;  // Dimension of counts_[].
 
   // Flag the histogram for recording by UMA via metric_services.h.
-  int flags_;
+  Flags flags_;
 
   // For each index, show the least value that can be stored in the
   // corresponding bucket. We also append one extra element in this array,
@@ -539,12 +470,11 @@ class LinearHistogram : public Histogram {
 
   /* minimum should start from 1. 0 is as minimum is invalid. 0 is an implicit
      default underflow bucket. */
-  static scoped_refptr<Histogram> LinearHistogramFactoryGet(
-      const std::string& name, Sample minimum, Sample maximum,
-      size_t bucket_count);
-  static scoped_refptr<Histogram> LinearHistogramFactoryGet(
-      const std::string& name, base::TimeDelta minimum,
-      base::TimeDelta maximum, size_t bucket_count);
+  static scoped_refptr<Histogram> FactoryGet(const std::string& name,
+      Sample minimum, Sample maximum, size_t bucket_count, Flags flags);
+  static scoped_refptr<Histogram> FactoryGet(const std::string& name,
+      base::TimeDelta minimum, base::TimeDelta maximum, size_t bucket_count,
+      Flags flags);
 
  protected:
   LinearHistogram(const std::string& name, Sample minimum,
@@ -582,8 +512,8 @@ class LinearHistogram : public Histogram {
 // BooleanHistogram is a histogram for booleans.
 class BooleanHistogram : public LinearHistogram {
  public:
-  static scoped_refptr<Histogram> BooleanHistogramFactoryGet(
-      const std::string& name);
+  static scoped_refptr<Histogram> FactoryGet(const std::string& name,
+      Flags flags);
 
   virtual ClassType histogram_type() const { return BOOLEAN_HISTOGRAM; }
 
@@ -591,42 +521,10 @@ class BooleanHistogram : public LinearHistogram {
 
  private:
   explicit BooleanHistogram(const std::string& name)
-    : LinearHistogram(name, 1, 2, 3) {
+      : LinearHistogram(name, 1, 2, 3) {
   }
 
   DISALLOW_COPY_AND_ASSIGN(BooleanHistogram);
-};
-
-//------------------------------------------------------------------------------
-// This section provides implementation for ThreadSafeHistogram.
-//------------------------------------------------------------------------------
-
-class ThreadSafeHistogram : public Histogram {
- public:
-  static scoped_refptr<Histogram> ThreadSafeHistogramFactoryGet(
-      const std::string& name, Sample minimum, Sample maximum,
-      size_t bucket_count);
-
-  virtual ClassType histogram_type() const { return THREAD_SAFE_HISTOGRAM; }
-
-  // Provide the analog to Add()
-  virtual void Remove(int value);
-
- protected:
-  ThreadSafeHistogram(const std::string& name, Sample minimum,
-                      Sample maximum, size_t bucket_count);
-
-  virtual ~ThreadSafeHistogram() {}
-
-  // Provide locked versions to get precise counts.
-  virtual void Accumulate(Sample value, Count count, size_t index);
-
-  virtual void SnapshotSample(SampleSet* sample) const;
-
- private:
-  mutable Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadSafeHistogram);
 };
 
 //------------------------------------------------------------------------------

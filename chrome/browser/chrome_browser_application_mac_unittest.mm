@@ -65,7 +65,7 @@ TEST(ChromeApplicationMacTest, RecordException) {
   // We should have exactly the right number of exceptions.
   StatisticsRecorder::GetSnapshot("OSX.NSException", &histograms);
   EXPECT_EQ(1U, histograms.size());
-  EXPECT_EQ(kUmaTargetedHistogramFlag, histograms[0]->flags());
+  EXPECT_EQ(Histogram::kUmaTargetedHistogramFlag, histograms[0]->flags());
   Histogram::SampleSet sample;
   histograms[0]->SnapshotSample(&sample);
   EXPECT_EQ(4, sample.counts(0));

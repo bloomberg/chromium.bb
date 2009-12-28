@@ -1877,7 +1877,7 @@ void MetricsService::RecordCurrentHistograms() {
   for (StatisticsRecorder::Histograms::iterator it = histograms.begin();
        histograms.end() != it;
        ++it) {
-    if ((*it)->flags() & kUmaTargetedHistogramFlag)
+         if ((*it)->flags() & Histogram::kUmaTargetedHistogramFlag)
       // TODO(petersont): Only record historgrams if they are not precluded by
       // the UMA response data.
       // Bug http://code.google.com/p/chromium/issues/detail?id=2739.
