@@ -24,12 +24,14 @@
 
 namespace browser {
 
-void ShowBugReportView(views::Widget* parent,
+#if !defined(OS_CHROMEOS)
+void ShowBugReportView(views::Window* parent,
                        Profile* profile,
                        TabContents* tab) {
   // Bug report view hasn't been implemented on gtk yet.
   NOTIMPLEMENTED();
 }
+#endif
 
 void ShowClearBrowsingDataView(views::Widget* parent,
                                Profile* profile) {

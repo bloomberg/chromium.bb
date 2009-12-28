@@ -20,15 +20,19 @@ PageMenuModel::PageMenuModel(menus::SimpleMenuModel::Delegate* delegate,
 }
 
 void PageMenuModel::Build() {
+#if !defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS);
   AddSeparator();
+#endif
   AddItemWithStringId(IDC_CUT, IDS_CUT);
   AddItemWithStringId(IDC_COPY, IDS_COPY);
   AddItemWithStringId(IDC_PASTE, IDS_PASTE);
   AddSeparator();
   AddItemWithStringId(IDC_FIND, IDS_FIND);
+#if !defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
+#endif
   AddSeparator();
 
   zoom_menu_model_.reset(new ZoomMenuModel(delegate()));
@@ -37,16 +41,12 @@ void PageMenuModel::Build() {
   encoding_menu_model_.reset(new EncodingMenuModel(browser_));
   AddSubMenuWithStringId(IDS_ENCODING_MENU, encoding_menu_model_.get());
 
-#if !defined(OS_CHROMEOS)
   AddSeparator();
   devtools_menu_model_.reset(new DevToolsMenuModel(delegate()));
   AddSubMenuWithStringId(IDS_DEVELOPER_MENU, devtools_menu_model_.get());
 
   AddSeparator();
   AddItemWithStringId(IDC_REPORT_BUG, IDS_REPORT_BUG);
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

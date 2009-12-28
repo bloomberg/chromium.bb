@@ -2351,6 +2351,8 @@
                 ['exclude', 'browser/gtk/about_chrome_dialog.h'],
                 ['include', 'browser/views/about_chrome_view.cc'],
                 ['include', 'browser/views/about_chrome_view.h'],
+                ['include', 'browser/views/bug_report_view.cc'],
+                ['include', 'browser/views/bug_report_view.h'],
                 ['include', 'browser/views/event_utils.cc'],
                 ['include', 'browser/views/event_utils.h'],
                 ['include', 'browser/views/new_browser_window_widget.cc'],

@@ -6,7 +6,6 @@
 
 #include "app/combobox_model.h"
 #include "app/l10n_util.h"
-#include "app/win_util.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
 #include "chrome/browser/bug_report_util.h"
@@ -30,6 +29,10 @@
 #include "views/widget/widget.h"
 #include "views/window/client_view.h"
 #include "views/window/window.h"
+
+#if !defined(OS_CHROMEOS)
+#include "app/win_util.h"
+#endif
 
 using views::ColumnSet;
 using views::GridLayout;
@@ -84,21 +87,25 @@ class BugReportComboBoxModel : public ComboboxModel {
 namespace browser {
 
 // Global "display this dialog" function declared in browser_dialogs.h.
-void ShowBugReportView(views::Widget* parent,
+void ShowBugReportView(views::Window* parent,
                        Profile* profile,
                        TabContents* tab) {
   BugReportView* view = new BugReportView(profile, tab);
 
+#if !defined(OS_CHROMEOS)
+  // TODO(davemoore) implement this for ChromiumOS. derat has code in
+  // the window manager (snapshot.cc) that we can start with.
   // Grab an exact snapshot of the window that the user is seeing (i.e. as
   // rendered--do not re-render, and include windowed plugins).
   std::vector<unsigned char> *screenshot_png = new std::vector<unsigned char>;
-  win_util::GrabWindowSnapshot(parent->GetNativeView(), screenshot_png);
+  win_util::GrabWindowSnapshot(parent->GetNativeWindow(), screenshot_png);
   // The BugReportView takes ownership of the png data, and will dispose of
   // it in its destructor.
   view->set_png_data(screenshot_png);
+#endif
 
   // Create and show the dialog.
-  views::Window::CreateChromeWindow(parent->GetNativeView(), gfx::Rect(),
+  views::Window::CreateChromeWindow(parent->GetNativeWindow(), gfx::Rect(),
                                     view)->Show();
 }
 
@@ -119,7 +126,7 @@ BugReportView::BugReportView(Profile* profile, TabContents* tab)
   // We want to use the URL of the current committed entry (the current URL may
   // actually be the pending one).
   if (tab->controller().GetActiveEntry()) {
-    page_url_text_->SetText(UTF8ToWide(
+    page_url_text_->SetText(UTF8ToUTF16(
         tab->controller().GetActiveEntry()->url().spec()));
   }
 
@@ -156,16 +163,24 @@ void BugReportView::SetupControl() {
 
   description_label_ = new views::Label(
       l10n_util::GetString(IDS_BUGREPORT_DESCRIPTION_LABEL));
+#if defined(OS_CHROMEOS)
+  // TODO(davemoore) Remove this when gtk textfields support multiline.
+  description_text_ = new views::Textfield;
+#else
   description_text_ =
       new views::Textfield(views::Textfield::STYLE_MULTILINE);
   description_text_->SetHeightInLines(kDescriptionLines);
+#endif
 
   include_page_source_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_PAGE_SOURCE_CHKBOX));
   include_page_source_checkbox_->SetChecked(true);
+
+#if !defined(OS_CHROMEOS)
   include_page_image_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_PAGE_IMAGE_CHKBOX));
   include_page_image_checkbox_->SetChecked(true);
+#endif
 
   // Arranges controls by using GridLayout.
   const int column_set_id = 0;
@@ -211,9 +226,12 @@ void BugReportView::SetupControl() {
   // layout->SkipColumns(1);
   // layout->AddView(include_page_source_checkbox_);
   // layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, column_set_id);
-  layout->SkipColumns(1);
-  layout->AddView(include_page_image_checkbox_);
+  if (include_page_image_checkbox_) {
+    layout->StartRow(0, column_set_id);
+    layout->SkipColumns(1);
+    layout->AddView(include_page_image_checkbox_);
+  }
+
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 }
 
@@ -235,22 +253,23 @@ void BugReportView::ItemChanged(views::Combobox* combobox,
   description_text_->SetEnabled(!is_phishing_report);
   description_text_->SetReadOnly(is_phishing_report);
   if (is_phishing_report) {
-    old_report_text_ = description_text_->text();
-    description_text_->SetText(std::wstring());
+    old_report_text_ = UTF16ToWide(description_text_->text());
+    description_text_->SetText(EmptyString16());
   } else if (!old_report_text_.empty()) {
-    description_text_->SetText(old_report_text_);
+    description_text_->SetText(WideToUTF16Hack(old_report_text_));
     old_report_text_.clear();
   }
   include_page_source_checkbox_->SetEnabled(!is_phishing_report);
   include_page_source_checkbox_->SetChecked(!is_phishing_report);
-  include_page_image_checkbox_->SetEnabled(!is_phishing_report);
-  include_page_image_checkbox_->SetChecked(!is_phishing_report);
-
+  if (include_page_image_checkbox_) {
+    include_page_image_checkbox_->SetEnabled(!is_phishing_report);
+    include_page_image_checkbox_->SetChecked(!is_phishing_report);
+  }
   GetDialogClientView()->UpdateDialogButtons();
 }
 
 void BugReportView::ContentsChanged(views::Textfield* sender,
-                                    const std::wstring& new_contents) {
+                                    const string16& new_contents) {
 }
 
 bool BugReportView::HandleKeystroke(views::Textfield* sender,
@@ -302,16 +321,22 @@ bool BugReportView::Accept() {
   if (IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK)) {
     if (problem_type_ == BugReportUtil::PHISHING_PAGE)
       BugReportUtil::ReportPhishing(tab_,
-                                    WideToUTF8(page_url_text_->text()));
+          UTF16ToUTF8(page_url_text_->text()));
     else
       BugReportUtil::SendReport(profile_,
           WideToUTF8(page_title_text_->GetText()),
           problem_type_,
-          WideToUTF8(page_url_text_->text()),
-          WideToUTF8(description_text_->text()),
+          UTF16ToUTF8(page_url_text_->text()),
+          UTF16ToUTF8(description_text_->text()),
+#if defined(OS_CHROMEOS)
+          NULL,
+          0
+#else
           include_page_image_checkbox_->checked() && png_data_.get() ?
               reinterpret_cast<const char *>(&((*png_data_.get())[0])) : NULL,
-          png_data_->size());
+          png_data_->size()
+#endif
+          );
   }
   return true;
 }

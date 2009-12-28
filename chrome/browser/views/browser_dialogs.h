@@ -35,7 +35,7 @@ class Window;
 namespace browser {
 
 // Shows the "Report a problem with this page" dialog box. See BugReportView.
-void ShowBugReportView(views::Widget* parent,
+void ShowBugReportView(views::Window* parent,
                        Profile* profile,
                        TabContents* tab);
 

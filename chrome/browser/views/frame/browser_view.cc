@@ -1106,7 +1106,7 @@ void BrowserView::ShowReportBugDialog() {
   TabContents* current_tab = browser_->GetSelectedTabContents();
   if (!current_tab)
     return;
-  browser::ShowBugReportView(GetWidget(), browser_->profile(), current_tab);
+  browser::ShowBugReportView(GetWindow(), browser_->profile(), current_tab);
 }
 
 void BrowserView::ShowClearBrowsingDataDialog() {
