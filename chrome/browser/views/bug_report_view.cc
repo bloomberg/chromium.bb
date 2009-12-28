@@ -30,7 +30,9 @@
 #include "views/window/client_view.h"
 #include "views/window/window.h"
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+#include "chrome/common/x11_util.h"
+#else
 #include "app/win_util.h"
 #endif
 
@@ -92,17 +94,19 @@ void ShowBugReportView(views::Window* parent,
                        TabContents* tab) {
   BugReportView* view = new BugReportView(profile, tab);
 
-#if !defined(OS_CHROMEOS)
-  // TODO(davemoore) implement this for ChromiumOS. derat has code in
-  // the window manager (snapshot.cc) that we can start with.
   // Grab an exact snapshot of the window that the user is seeing (i.e. as
   // rendered--do not re-render, and include windowed plugins).
   std::vector<unsigned char> *screenshot_png = new std::vector<unsigned char>;
+
+#if defined(OS_CHROMEOS)
+  x11_util::GrabWindowSnapshot(parent->GetNativeWindow(), screenshot_png);
+#else
   win_util::GrabWindowSnapshot(parent->GetNativeWindow(), screenshot_png);
+#endif
+
   // The BugReportView takes ownership of the png data, and will dispose of
   // it in its destructor.
   view->set_png_data(screenshot_png);
-#endif
 
   // Create and show the dialog.
   views::Window::CreateChromeWindow(parent->GetNativeWindow(), gfx::Rect(),
@@ -176,11 +180,9 @@ void BugReportView::SetupControl() {
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_PAGE_SOURCE_CHKBOX));
   include_page_source_checkbox_->SetChecked(true);
 
-#if !defined(OS_CHROMEOS)
   include_page_image_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_PAGE_IMAGE_CHKBOX));
   include_page_image_checkbox_->SetChecked(true);
-#endif
 
   // Arranges controls by using GridLayout.
   const int column_set_id = 0;
@@ -328,14 +330,9 @@ bool BugReportView::Accept() {
           problem_type_,
           UTF16ToUTF8(page_url_text_->text()),
           UTF16ToUTF8(description_text_->text()),
-#if defined(OS_CHROMEOS)
-          NULL,
-          0
-#else
           include_page_image_checkbox_->checked() && png_data_.get() ?
               reinterpret_cast<const char *>(&((*png_data_.get())[0])) : NULL,
           png_data_->size()
-#endif
           );
   }
   return true;
