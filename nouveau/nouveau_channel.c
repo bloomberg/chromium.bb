@@ -111,6 +111,7 @@ nouveau_channel_free(struct nouveau_channel **chan)
 
 	FIRE_RING(&nvchan->base);
 
+	nouveau_pushbuf_fini(&nvchan->base);
 	nouveau_bo_unmap(nvchan->notifier_bo);
 	nouveau_bo_ref(NULL, &nvchan->notifier_bo);
 

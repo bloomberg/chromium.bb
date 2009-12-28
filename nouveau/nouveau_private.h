@@ -64,6 +64,8 @@ struct nouveau_pushbuf_priv {
 
 int
 nouveau_pushbuf_init(struct nouveau_channel *);
+void
+nouveau_pushbuf_fini(struct nouveau_channel *);
 
 struct nouveau_channel_priv {
 	struct nouveau_channel base;

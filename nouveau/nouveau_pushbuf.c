@@ -80,13 +80,13 @@ nouveau_pushbuf_space(struct nouveau_channel *chan, unsigned min)
 		nvpb->pushbuf = NULL;
 	}
 
-	nvpb->size = min < PB_MIN_USER_DWORDS ? PB_MIN_USER_DWORDS : min;	
+	nvpb->size = min < PB_MIN_USER_DWORDS ? PB_MIN_USER_DWORDS : min;
 	nvpb->pushbuf = malloc(sizeof(uint32_t) * nvpb->size);
 
 	nvpb->base.channel = chan;
 	nvpb->base.remaining = nvpb->size;
 	nvpb->base.cur = nvpb->pushbuf;
-	
+
 	return 0;
 }
 
@@ -165,9 +165,19 @@ nouveau_pushbuf_init(struct nouveau_channel *chan)
 			       sizeof(struct drm_nouveau_gem_pushbuf_bo));
 	nvpb->relocs = calloc(NOUVEAU_GEM_MAX_RELOCS,
 			      sizeof(struct drm_nouveau_gem_pushbuf_reloc));
-	
+
 	chan->pushbuf = &nvpb->base;
 	return 0;
+}
+
+void
+nouveau_pushbuf_fini(struct nouveau_channel *chan)
+{
+	struct nouveau_channel_priv *nvchan = nouveau_channel(chan);
+	struct nouveau_pushbuf_priv *nvpb = &nvchan->pb;
+	nouveau_pushbuf_fini_call(chan);
+	free(nvpb->buffers);
+	free(nvpb->relocs);
 }
 
 int
