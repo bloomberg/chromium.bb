@@ -68,6 +68,7 @@ LoadState TCPConnectJob::GetLoadState() const {
 
 int TCPConnectJob::ConnectInternal() {
   next_state_ = kStateResolveHost;
+  start_time_ = base::TimeTicks::Now();
   return DoLoop(OK);
 }
 
@@ -130,10 +131,18 @@ int TCPConnectJob::DoTCPConnect() {
 int TCPConnectJob::DoTCPConnectComplete(int result) {
   if (result == OK) {
     DCHECK(connect_start_time_ != base::TimeTicks());
-    base::TimeDelta connect_duration =
-        base::TimeTicks::Now() - connect_start_time_;
+    DCHECK(start_time_ != base::TimeTicks());
+    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeDelta total_duration = now - start_time_;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Net.DNS_Resolution_And_TCP_Connection_Latency2",
+        total_duration,
+        base::TimeDelta::FromMilliseconds(1),
+        base::TimeDelta::FromMinutes(10),
+        100);
 
-    UMA_HISTOGRAM_CLIPPED_TIMES("Net.TCP_Connection_Latency",
+    base::TimeDelta connect_duration = now - connect_start_time_;
+    UMA_HISTOGRAM_CUSTOM_TIMES("Net.TCP_Connection_Latency",
         connect_duration,
         base::TimeDelta::FromMilliseconds(1),
         base::TimeDelta::FromMinutes(10),

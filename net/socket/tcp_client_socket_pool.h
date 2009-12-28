@@ -68,7 +68,10 @@ class TCPConnectJob : public ConnectJob {
   AddressList addresses_;
   State next_state_;
 
-  // The time the Connect() method was called (if it got called).
+  // The time Connect() was called.
+  base::TimeTicks start_time_;
+
+  // The time the connect was started (after DNS finished).
   base::TimeTicks connect_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPConnectJob);
