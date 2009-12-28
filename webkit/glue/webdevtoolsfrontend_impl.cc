@@ -82,7 +82,11 @@ class ToolsAgentNativeDelegateImpl : public ToolsAgentNativeDelegate {
   // ToolsAgentNativeDelegate implementation.
   virtual void DidGetResourceContent(int request_id, const String& content) {
     if (!resource_content_requests_.contains(request_id)) {
-      ASSERT_NOT_REACHED();
+      // This can happen when the redirect source content is reported
+      // (after a new Delegate has been created due to JsReset, thus losing the
+      // |request_id| put into resource_content_requests_ by RequestSent)
+      // which we should ignore. We cannot identify the case relying solely on
+      // the |content| (which may or may not be null for various 3xx responses).
       return;
     }
     ResourceContentRequestData request =
