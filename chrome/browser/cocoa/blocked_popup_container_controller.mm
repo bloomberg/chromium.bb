@@ -311,7 +311,8 @@ void GetURLAndTitleForPopup(
     string16 reason;
     container_->GetHostAndReasonForNotice(i, &host, &reason);
     NSString* titleStr =
-        l10n_util::GetNSStringF(IDS_NOTICE_TITLE_FORMAT, UTF8ToUTF16(host));
+        l10n_util::GetNSStringF(IDS_NOTICE_TITLE_FORMAT, UTF8ToUTF16(host),
+                                                         reason);
     scoped_nsobject<NSMenuItem> item(
         [[NSMenuItem alloc] initWithTitle:titleStr
                                    action:@selector(menuAction:)
