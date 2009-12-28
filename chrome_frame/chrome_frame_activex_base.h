@@ -1005,7 +1005,7 @@ END_MSG_MAP()
     HRESULT hr = S_FALSE;
     ScopedComPtr<IBrowserService2> bs2;
     if (S_OK == DoQueryService(SID_STopLevelBrowser, m_spInPlaceSite,
-                               bs2.Receive())) {
+                               bs2.Receive()) && bs2.get()) {
       hr = bs2->v_MayTranslateAccelerator(const_cast<MSG*>(&msg));
     } else {
       // IE8 doesn't support IBrowserService2 unless you enable a special,

@@ -210,9 +210,12 @@ HRESULT DoQueryService(const IID& service_id, IUnknown* unk, T** service) {
   ScopedComPtr<IServiceProvider> service_provider;
   HRESULT hr = service_provider.QueryFrom(unk);
   if (!service_provider)
-    return hr;
+    return E_NOINTERFACE;
 
-  return service_provider->QueryService(service_id, service);
+  hr = service_provider->QueryService(service_id, service);
+  if (*service == NULL)
+    return E_NOINTERFACE;
+  return hr;
 }
 
 // Get url (display name) from a moniker, |bind_context| is optional
