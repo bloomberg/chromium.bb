@@ -23,11 +23,12 @@ void PageMenuModel::Build() {
 #if !defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS);
   AddSeparator();
-#endif
+  // TODO(davemoore) Implement cut / copy / paste
   AddItemWithStringId(IDC_CUT, IDS_CUT);
   AddItemWithStringId(IDC_COPY, IDS_COPY);
   AddItemWithStringId(IDC_PASTE, IDS_PASTE);
   AddSeparator();
+#endif
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 #if !defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);

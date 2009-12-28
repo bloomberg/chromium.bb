@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/menu_model_test.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PageMenuModelTest : public BrowserWithTestWindowTest,
@@ -15,18 +16,20 @@ class PageMenuModelTest : public BrowserWithTestWindowTest,
 
 TEST_F(PageMenuModelTest, Basics) {
   PageMenuModel model(&delegate_, browser());
+  int itemCount = model.GetItemCount();
 
   // Verify it has items. The number varies by platform, so we don't check
   // the exact number.
-  EXPECT_GT(model.GetItemCount(), 10);
+  // TODO(davemoore) cros only has 8 items right now.
+  EXPECT_GT(itemCount, 7);
 
   // Execute a couple of the items and make sure it gets back to our delegate.
   // We can't use CountEnabledExecutable() here because the encoding menu's
   // delegate is internal, it doesn't use the one we pass in.
   model.ActivatedAt(0);
   EXPECT_TRUE(model.IsEnabledAt(0));
-  model.ActivatedAt(3);
-  EXPECT_TRUE(model.IsEnabledAt(3));
+  model.ActivatedAt(itemCount - 1);
+  EXPECT_TRUE(model.IsEnabledAt(itemCount - 1));
   EXPECT_EQ(delegate_.execute_count_, 2);
   EXPECT_EQ(delegate_.enable_count_, 2);
 
@@ -34,8 +37,16 @@ TEST_F(PageMenuModelTest, Basics) {
   delegate_.enable_count_ = 0;
 
   // Choose something from the zoom submenu and make sure it makes it back to
-  // the delegate as well.
-  menus::MenuModel* zoomModel = model.GetSubmenuModelAt(10);
+  // the delegate as well. Use the first submenu as the zoom one.
+  int zoomModelIndex = -1;
+  for (int i = 0; i < itemCount; ++i) {
+    if (model.GetTypeAt(i) == menus::MenuModel::TYPE_SUBMENU) {
+      zoomModelIndex = i;
+      break;
+    }
+  }
+  EXPECT_GT(zoomModelIndex, -1);
+  menus::MenuModel* zoomModel = model.GetSubmenuModelAt(zoomModelIndex);
   EXPECT_TRUE(zoomModel);
   EXPECT_GT(zoomModel->GetItemCount(), 1);
   zoomModel->ActivatedAt(1);
