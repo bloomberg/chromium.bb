@@ -804,9 +804,47 @@ const CGFloat kRapidCloseDist = 2.5;
   return [parentActions arrayByAddingObject:NSAccessibilityPressAction];
 }
 
+- (NSArray*)accessibilityAttributeNames {
+  NSMutableArray* attributes =
+      [[super accessibilityAttributeNames] mutableCopy];
+  [attributes addObject:NSAccessibilityTitleAttribute];
+  [attributes addObject:NSAccessibilityEnabledAttribute];
+
+  return attributes;
+}
+
+- (BOOL)accessibilityIsAttributeSettable:(NSString*)attribute {
+  if ([attribute isEqual:NSAccessibilityTitleAttribute])
+    return NO;
+
+  if ([attribute isEqual:NSAccessibilityEnabledAttribute])
+    return NO;
+
+  return [super accessibilityIsAttributeSettable:attribute];
+}
+
 - (id)accessibilityAttributeValue:(NSString*)attribute {
   if ([attribute isEqual:NSAccessibilityRoleAttribute])
     return NSAccessibilityButtonRole;
+
+  if ([attribute isEqual:NSAccessibilityTitleAttribute])
+    return [controller_ title];
+
+  if ([attribute isEqual:NSAccessibilityEnabledAttribute])
+    return [NSNumber numberWithBool:YES];
+
+  if ([attribute isEqual:NSAccessibilityChildrenAttribute]) {
+    // The subviews (icon and text) are clutter; filter out everything but
+    // useful controls.
+    NSArray* children = [super accessibilityAttributeValue:attribute];
+    NSMutableArray* okChildren = [NSMutableArray array];
+    for (id child in children) {
+      if ([child isKindOfClass:[NSButtonCell class]])
+        [okChildren addObject:child];
+    }
+
+    return okChildren;
+  }
 
   return [super accessibilityAttributeValue:attribute];
 }

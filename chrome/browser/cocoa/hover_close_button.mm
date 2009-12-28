@@ -4,7 +4,9 @@
 
 #import "hover_close_button.h"
 
+#include "app/l10n_util.h"
 #include "base/nsimage_cache_mac.h"
+#include "grit/generated_resources.h"
 
 namespace  {
 
@@ -17,6 +19,12 @@ const NSString* kHoverImageString = @"close_bar_h.pdf";
 
 - (void)awakeFromNib {
   [self setTrackingEnabled:YES];
+
+  // Set accessibility description.
+  NSString* description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_CLOSE);
+  [[self cell]
+      accessibilitySetOverrideValue:description
+                       forAttribute:NSAccessibilityDescriptionAttribute];
 }
 
 - (void)dealloc {
