@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # A python script that combines the javascript files needed by jstemplate into
 # a single file.

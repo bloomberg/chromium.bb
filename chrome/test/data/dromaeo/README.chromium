@@ -6,8 +6,8 @@ This benchmark was slightly modified to enable Chromium automation.
 
 How to update:
 
-0) remove all the files from this dir, but keep README.chromium
+0) remove all the files from this dir, but keep README.chromium and LICENSE
 1) pull new version from git://github.com/antonm/dromaeo.git into a separate
 directory;
 2) run 'make web' to build standalone version;
-4) copy all the files from web dir into this directory.
+3) copy all the files from web dir into this directory.

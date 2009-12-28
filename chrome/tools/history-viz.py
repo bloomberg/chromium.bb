@@ -1,6 +1,7 @@
 #!/usr/bin/python
-#
-# Copyright 2008 Google Inc. All Rights Reserved.
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Process a History database and dump a .dot file suitable for GraphViz.
 
