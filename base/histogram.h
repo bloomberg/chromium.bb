@@ -180,7 +180,6 @@
     UMA_HISTOGRAM_ENUMERATION(name, under_one_hundred, 101)
 
 #define UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value) do { \
-    DCHECK(sample < boundary_value); \
     static scoped_refptr<Histogram> counter = LinearHistogram::FactoryGet( \
         name, 1, boundary_value, boundary_value + 1, \
         Histogram::kUmaTargetedHistogramFlag); \
