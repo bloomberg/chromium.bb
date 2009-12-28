@@ -703,7 +703,6 @@ BUG20292 : LayoutTests/fast/forms/input-selectedoption.html = FAIL
 BUG26734 LINUX MAC SKIP : LayoutTests/inspector = PASS
 BUG26734 SKIP : LayoutTests/inspector/console-format-collections.html = TEXT
 BUG26734 SKIP : LayoutTests/inspector/console-format.html = TEXT
-BUG26734 SKIP : LayoutTests/inspector/settings-set-get.html = TEXT
 
 // Fails due to storage APIs not implemented.  Might be worth re-baselining
 // temporarily so the rest of the conditions are still tested.
@@ -3108,7 +3107,7 @@ BUG29737 LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = TEXT PASS
 BUG30816 WIN LINUX : LayoutTests/editing/selection/doubleclick-beside-cr-span.html = TEXT
 
 // WebKit update 52293->52323
-BUG30792 : LayoutTests/http/tests/security/xss-DENIED-assign-location-href-javascript.html = TEXT
+BUG30503 : LayoutTests/http/tests/security/xss-DENIED-assign-location-href-javascript.html = TEXT
 
 // WebKit update 52323->52366
 BUG30825 WIN LINUX : LayoutTests/fast/dom/Element/id-in-deletebutton.html = TEXT
@@ -3129,17 +3128,17 @@ BUG30938 WIN LINUX : LayoutTests/svg/custom/visibility-override-mask.svg = IMAGE
 BUG30938 WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 BUG30939 WIN LINUX : LayoutTests/svg/custom/image-with-transform-clip-filter.svg = IMAGE
 BUG30939 : LayoutTests/svg/filters/filter-clip.svg = IMAGE+TEXT
-BUG30792 WIN LINUX : LayoutTests/fast/text/fake-italic.html = IMAGE+TEXT
+BUG30503 WIN LINUX : LayoutTests/fast/text/fake-italic.html = IMAGE+TEXT
 
 // WebKit roll 52468->52535
 BUG31108 WIN LINUX : LayoutTests/fast/text/international/bidi-layout-across-linebreak.html = TEXT
-BUG31108 : LayoutTests/http/tests/security/listener/xss-inactive-closure.html = TEXT
+BUG30503 : LayoutTests/http/tests/security/listener/xss-inactive-closure.html = TEXT
 BUG31108 : LayoutTests/websocket/tests/bad-sub-protocol.html = TEXT
 BUG31108 : LayoutTests/websocket/tests/url-parsing.html = TEXT
 BUG31108 LINUX : LayoutTests/editing/inserting/12882.html = IMAGE
-BUG31108 WIN LINUX : LayoutTests/fast/forms/basic-selects.html = IMAGE+TEXT
-BUG31108 WIN LINUX : LayoutTests/fast/forms/basic-textareas-quirks.html = IMAGE+TEXT
-BUG31108 MAC : LayoutTests/fast/forms/basic-textareas-quirks.html = IMAGE
+BUG30503 WIN LINUX : LayoutTests/fast/forms/basic-selects.html = IMAGE+TEXT
+BUG30503 WIN LINUX : LayoutTests/fast/forms/basic-textareas-quirks.html = IMAGE+TEXT
+BUG30503 MAC : LayoutTests/fast/forms/basic-textareas-quirks.html = IMAGE
 
 // WebKit roll 52535->52554
 BUG31146 WIN LINUX : LayoutTests/editing/selection/select-text-overflow-ellipsis.html = IMAGE+TEXT
