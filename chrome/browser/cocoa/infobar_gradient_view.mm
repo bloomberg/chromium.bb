@@ -45,4 +45,15 @@ const double kBackgroundColorBottom[3] =
 
 // This view is intentionally not opaque because it overlaps with the findbar.
 
+- (BOOL)accessibilityIsIgnored {
+  return NO;
+}
+
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  if ([attribute isEqual:NSAccessibilityRoleAttribute])
+    return NSAccessibilityGroupRole;
+
+  return [super accessibilityAttributeValue:attribute];
+}
+
 @end
