@@ -1731,3 +1731,20 @@ TEST_F(ChromeFrameTestWithWebServer,
                     L"WidgetMode_MultipleInstancesTest");
 }
 
+const wchar_t kChromeFrameFullTabModeXMLHttpRequestAuthHeaderTestUrl[] =
+    L"files/xmlhttprequest_authorization_header_test.html";
+
+TEST_F(ChromeFrameTestWithWebServer,
+       FullTabModeIE_ChromeFrameXHRAuthHeaderTest) {
+  chrome_frame_test::TimedMsgLoop loop;
+
+  ASSERT_TRUE(
+      LaunchBrowser(IE,
+                    kChromeFrameFullTabModeXMLHttpRequestAuthHeaderTestUrl));
+
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  chrome_frame_test::CloseAllIEWindows();
+  ASSERT_TRUE(
+      CheckResultFile(L"FullTab_XMLHttpRequestAuthorizationHeaderTest", "OK"));
+}

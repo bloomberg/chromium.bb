@@ -24,7 +24,6 @@ using base::TimeDelta;
 // StartAsync(). These must be lower case.
 static const char* kFilteredHeaderStrings[] = {
   "accept",
-  "authorization",
   "cache-control",
   "connection",
   "cookie",
