@@ -432,7 +432,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   // ASCII version of original name given to the constructor.  All identically
   // named instances will  be coalesced cross-project TODO(jar).
   // If a user needs one histogram name to be called by several places in a
-  // single process, a central function should be defined by teh user, which
+  // single process, a central function should be defined by the user, which
   // defins the single declared instance of the named histogram.
   const std::string histogram_name_;
   Sample declared_min_;  // Less than this goes into counts_[0]
