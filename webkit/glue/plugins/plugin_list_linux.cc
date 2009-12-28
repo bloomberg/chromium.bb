@@ -86,7 +86,8 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
     plugin_dirs->push_back(FilePath(home).Append(".mozilla/plugins"));
 
   // 3) NS_SYSTEM_PLUGINS_DIR:
-  // This varies across different versions of Firefox, so check 'em all.
+  // This varies across different browsers and versions, so check 'em all.
+  plugin_dirs->push_back(FilePath("/usr/lib/browser-plugins"));
   plugin_dirs->push_back(FilePath("/usr/lib/mozilla/plugins"));
   plugin_dirs->push_back(FilePath("/usr/lib/firefox/plugins"));
   plugin_dirs->push_back(FilePath("/usr/lib/xulrunner-addons/plugins"));
@@ -94,6 +95,7 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 #if defined(ARCH_CPU_64_BITS)
   // On my Ubuntu system, /usr/lib64 is a symlink to /usr/lib.
   // But a user reported on their Fedora system they are separate.
+  plugin_dirs->push_back(FilePath("/usr/lib64/browser-plugins"));
   plugin_dirs->push_back(FilePath("/usr/lib64/mozilla/plugins"));
   plugin_dirs->push_back(FilePath("/usr/lib64/firefox/plugins"));
   plugin_dirs->push_back(FilePath("/usr/lib64/xulrunner-addons/plugins"));
