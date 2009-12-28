@@ -411,6 +411,16 @@ void WebPluginDelegateProxy::OnChannelError() {
 
 void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
                                             const gfx::Rect& clip_rect) {
+  // window_rect becomes either a window in native windowing system
+  // coords, or a backing buffer.  In either case things will go bad
+  // if the rectangle is very large.
+  if (window_rect.width() < 0  || window_rect.width() > (1<<15) ||
+      window_rect.height() < 0 || window_rect.height() > (1<<15) ||
+      // Clip to 8m pixels; we know this won't overflow due to above checks.
+      window_rect.width() * window_rect.height() > (8<<20)) {
+    return;
+  }
+
   plugin_rect_ = window_rect;
 
   bool bitmaps_changed = false;
