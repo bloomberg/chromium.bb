@@ -12,6 +12,7 @@
 #include "base/file_path.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/form_field.h"
@@ -145,7 +146,9 @@ template <class T> class WDObjectResult : public WDTypedResult {
 
 class WebDataServiceConsumer;
 
-class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
+class WebDataService
+    : public base::RefCountedThreadSafe<WebDataService,
+                                        ChromeThread::DeleteOnUIThread> {
  public:
 
   // All requests return an opaque handle of the following type.
@@ -429,6 +432,8 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   //////////////////////////////////////////////////////////////////////////////
  private:
   friend class base::RefCountedThreadSafe<WebDataService>;
+  friend class ChromeThread;
+  friend class DeleteTask<WebDataService>;
   friend class ShutdownTask;
 
   typedef GenericRequest2<std::vector<const TemplateURL*>,
@@ -507,8 +512,6 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
 
   void GetWebAppImagesImpl(GenericRequest<GURL>* request);
 
-  base::Thread* thread() { return thread_; }
-
   // Schedule a task on our worker thread.
   void ScheduleTask(Task* t);
 
@@ -518,8 +521,8 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   // Return the next request handle.
   int GetNextRequestHandle();
 
-  // Our worker thread. All requests are processed from that thread.
-  base::Thread* thread_;
+  // True once initialization has started.
+  bool is_running_;
 
   // The path with which to initialize the database.
   FilePath path_;

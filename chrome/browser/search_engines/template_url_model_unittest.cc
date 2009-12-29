@@ -4,6 +4,7 @@
 
 #include "base/path_service.h"
 #include "base/thread.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/test/testing_profile.h"
@@ -34,6 +35,9 @@ class TemplateURLModelTestingProfile : public TestingProfile {
   TemplateURLModelTestingProfile() : TestingProfile() {}
 
   void SetUp() {
+    db_thread_.reset(new ChromeThread(ChromeThread::DB));
+    db_thread_->Start();
+
     // Name a subdirectory of the temp directory.
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
     test_dir_ = test_dir_.AppendASCII("TemplateURLModelTest");
@@ -50,6 +54,11 @@ class TemplateURLModelTestingProfile : public TestingProfile {
   void TearDown() {
     // Clean up the test directory.
     service_->Shutdown();
+    // Note that we must ensure the DB thread is stopped after WDS
+    // shutdown (so it can commit pending transactions) but before
+    // deleting the test profile directory, otherwise we may not be
+    // able to delete it due to an open transaction.
+    db_thread_->Stop();
     ASSERT_TRUE(file_util::Delete(test_dir_, true));
     ASSERT_FALSE(file_util::PathExists(test_dir_));
   }
@@ -61,6 +70,7 @@ class TemplateURLModelTestingProfile : public TestingProfile {
  private:
   scoped_refptr<WebDataService> service_;
   FilePath test_dir_;
+  scoped_ptr<ChromeThread> db_thread_;
 };
 
 // Trivial subclass of TemplateURLModel that records the last invocation of
@@ -142,10 +152,9 @@ class TemplateURLModelTest : public testing::Test,
   // Blocks the caller until the service has finished servicing all pending
   // requests.
   void BlockTillServiceProcessesRequests() {
-    // Schedule a task on the background thread that is processed after all
-    // pending requests on the background thread.
-    profile_->GetWebDataService(Profile::EXPLICIT_ACCESS)->thread()->
-        message_loop()->PostTask(FROM_HERE, new QuitTask2());
+    // Schedule a task on the DB thread that is processed after all
+    // pending requests on the DB thread.
+    ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new QuitTask2());
     // Run the current message loop. QuitTask2, when run, invokes Quit,
     // which unblocks this.
     MessageLoop::current()->Run();
@@ -756,4 +765,3 @@ TEST_F(TemplateURLModelTest, FailedInit) {
 
   ASSERT_TRUE(model_->GetDefaultSearchProvider());
 }
-
