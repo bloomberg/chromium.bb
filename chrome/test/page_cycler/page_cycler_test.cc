@@ -175,17 +175,26 @@ class PageCyclerTest : public UITest {
     UITest::SetUp();
   }
 
-  // For HTTP tests, the name must be safe for use in a URL without escaping.
-  void RunPageCycler(const char* name, std::wstring* pages,
-                     std::string* timings, bool use_http) {
+  virtual FilePath GetDataPath(const char* name) {
     // Make sure the test data is checked out
     FilePath test_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &test_path);
     test_path = test_path.Append(FILE_PATH_LITERAL("data"));
     test_path = test_path.Append(FILE_PATH_LITERAL("page_cycler"));
     test_path = test_path.AppendASCII(name);
-    ASSERT_TRUE(file_util::PathExists(test_path)) << "Missing test data"
-                                                  << test_path.value();
+    return test_path;
+  }
+
+  virtual bool HasErrors(const std::string /*timings*/) {
+    return false;
+  }
+
+  // For HTTP tests, the name must be safe for use in a URL without escaping.
+  void RunPageCycler(const char* name, std::wstring* pages,
+                     std::string* timings, bool use_http) {
+    FilePath test_path = GetDataPath(name);
+    ASSERT_TRUE(file_util::DirectoryExists(test_path))
+        << "Missing test directory " << test_path.value();
 
 #if defined(OS_MACOSX)
     PopulateUBC(test_path);
@@ -233,7 +242,7 @@ class PageCyclerTest : public UITest {
     std::string timings;
     size_t start_size = base::GetSystemCommitCharge();
     RunPageCycler(name, &pages, &timings, use_http);
-    if (timings.empty())
+    if (timings.empty() || HasErrors(timings))
       return;
     size_t stop_size = base::GetSystemCommitCharge();
 
@@ -321,6 +330,75 @@ class PageCyclerExtensionTest : public PageCyclerTest {
   }
 };
 
+static FilePath GetDatabaseDataPath(const char* name) {
+  FilePath test_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &test_path);
+  test_path = test_path.Append(FILE_PATH_LITERAL("tools"));
+  test_path = test_path.Append(FILE_PATH_LITERAL("page_cycler"));
+  test_path = test_path.Append(FILE_PATH_LITERAL("database"));
+  test_path = test_path.AppendASCII(name);
+  return test_path;
+}
+
+static bool HasDatabaseErrors(const std::string timings) {
+  size_t pos = 0;
+  size_t new_pos = 0;
+  std::string time_str;
+  int time = 0;
+  do {
+    new_pos = timings.find(',', pos);
+    if (new_pos == std::string::npos)
+      new_pos = timings.length();
+    time_str = timings.substr(pos, new_pos - pos);
+    if (!StringToInt(time_str, &time)) {
+      LOG(ERROR) << "Invalid time reported: " << time_str;
+      return true;
+    }
+    if (time < 0) {
+      switch (time) {
+        case -1:
+          LOG(ERROR) << "Error while opening the database.";
+          break;
+        case -2:
+          LOG(ERROR) << "Error while setting up the database.";
+          break;
+        case -3:
+          LOG(ERROR) << "Error while running the transactions.";
+          break;
+        default:
+          LOG(ERROR) << "Unknown error: " << time;
+      }
+      return true;
+    }
+
+    pos = new_pos + 1;
+  } while (pos < timings.length());
+
+  return false;
+}
+
+class PageCyclerDatabaseTest : public PageCyclerTest {
+ public:
+  virtual FilePath GetDataPath(const char* name) {
+    return GetDatabaseDataPath(name);
+  }
+
+  virtual bool HasErrors(const std::string timings) {
+    return HasDatabaseErrors(timings);
+  }
+};
+
+class PageCyclerDatabaseReferenceTest : public PageCyclerReferenceTest {
+ public:
+  virtual FilePath GetDataPath(const char* name) {
+    return GetDatabaseDataPath(name);
+  }
+
+  virtual bool HasErrors(const std::string timings) {
+    return HasDatabaseErrors(timings);
+  }
+};
+
 // This macro simplifies setting up regular and reference build tests.
 #define PAGE_CYCLER_TESTS(test, name, use_http) \
 TEST_F(PageCyclerTest, name) { \
@@ -328,6 +406,16 @@ TEST_F(PageCyclerTest, name) { \
 } \
 TEST_F(PageCyclerReferenceTest, name) { \
   RunTest(test, use_http); \
+}
+
+// This macro simplifies setting up regular and reference build tests
+// for HTML5 database tests.
+#define PAGE_CYCLER_DATABASE_TESTS(test, name) \
+TEST_F(PageCyclerDatabaseTest, name) { \
+  RunTest(test, false); \
+} \
+TEST_F(PageCyclerDatabaseReferenceTest, name) { \
+  RunTest(test, false); \
 }
 
 // These are shorthand for File vs. Http tests.
@@ -364,5 +452,20 @@ PAGE_CYCLER_HTTP_TESTS("intl2", Intl2Http);
 PAGE_CYCLER_HTTP_TESTS("dom", DomHttp);
 PAGE_CYCLER_HTTP_TESTS("bloat", BloatHttp);
 
+// HTML5 database tests
+PAGE_CYCLER_DATABASE_TESTS("select-transactions",
+                           SelectTransactions);
+PAGE_CYCLER_DATABASE_TESTS("select-readtransactions",
+                           SelectReadTransactions);
+PAGE_CYCLER_DATABASE_TESTS("select-readtransactions-read-results",
+                           SelectReadTransactionsReadResults);
+PAGE_CYCLER_DATABASE_TESTS("insert-transactions",
+                           InsertTransactions);
+PAGE_CYCLER_DATABASE_TESTS("update-transactions",
+                           UpdateTransactions);
+PAGE_CYCLER_DATABASE_TESTS("delete-transactions",
+                           DeleteTransactions);
+PAGE_CYCLER_DATABASE_TESTS("pseudo-random-transactions",
+                           PseudoRandomTransactions);
 
 }  // namespace
