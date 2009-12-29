@@ -1614,6 +1614,7 @@
   },
   {
     "namespace": "i18n",
+    "unprivileged": true,
     "types": [],
     "functions": [
       {
@@ -1633,7 +1634,7 @@
       {
         "name": "getMessage",
         "type": "function",
-        "nodoc": true,
+        "unprivileged": true,
         "description": "Get a message from the extension language catalog, for a current locale.",
         "parameters": [
           { "type": "string",

@@ -15,7 +15,6 @@ var chrome = chrome || {};
   native function GetNextRequestId();
   native function OpenChannelToTab();
   native function GetRenderViewId();
-  native function GetL10nMessage();
   native function GetPopupParentWindow();
   native function GetPopupView();
   native function SetExtensionActionIcon();
@@ -425,11 +424,6 @@ var chrome = chrome || {};
         tabIdProxy[name] = new chrome.Event("devtools." + tabId + "." + name);
       });
       return tabIdProxy;
-    }
-
-    apiFunctions["i18n.getMessage"].handleRequest =
-        function(message_name, placeholders) {
-      return GetL10nMessage(message_name, placeholders);
     }
 
     apiFunctions["experimental.popup.show"].handleRequest =

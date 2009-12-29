@@ -24,4 +24,16 @@ chrome.test.runTests([
 
     chrome.test.succeed();
   },
+  function getMessageFromContentScript() {
+    chrome.extension.onRequest.addListener(
+      function(request, sender, sendResponse) {
+        chrome.test.assertEq(request, "Number of errors: 19");
+      }
+    );
+    chrome.test.log("Creating tab...");
+    chrome.tabs.create({
+      url: "http://localhost:1337/files/extensions/test_file.html"
+    });
+    chrome.test.succeed();
+  }
 ]);

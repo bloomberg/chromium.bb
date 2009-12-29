@@ -217,8 +217,8 @@
                     <ol>
                       <li>
                         <a href="#method-getAcceptLanguages">getAcceptLanguages</a>
-                      </li><li style="display: none; ">
-                        <a href="#method-anchor">methodName</a>
+                      </li><li>
+                        <a href="#method-getMessage">getMessage</a>
                       </li>
                     </ol>
                   </li>
@@ -469,27 +469,105 @@ For other examples and for help in viewing the source code, see
 
               </div> <!-- /description -->
 
-            </div><div class="apiItem" style="display: none; ">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
+            </div><div class="apiItem">
+              <a name="method-getMessage"></a> <!-- method-anchor -->
+              <h4>getMessage</h4>
 
-              <div class="summary"><span>void</span>
+              <div class="summary"><span>string</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
+                  <span>chrome.i18n.getMessage</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
+                      <var><span>messageName</span></var></span><span class="optional"><span>, </span><span>string or array of string</span>
+                      <var><span>substitutions</span></var></span>)</div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Get a message from the extension language catalog, for a current locale.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
-                    </div>
+          <dt>
+            <var>messageName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Message name from the extension catalog.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>substitutions</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string or array of string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>1 - 9 substitution parameters, if the message requires any.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
                   </div>
                 </dl>
 
@@ -498,12 +576,50 @@ For other examples and for help in viewing the source code, see
                 <dl>
                   <div>
                     <div>
-                    </div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Message localized for current locale.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
                   </div>
                 </dl>
 
                 <!-- CALLBACK -->
-                <div>
+                <div style="display: none; ">
                   <div>
                   <h4>Callback function</h4>
                   <p>

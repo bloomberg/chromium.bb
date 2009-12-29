@@ -4,10 +4,16 @@
 
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 
+#include <map>
+#include <string>
+
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
+#include "base/singleton.h"
 #include "base/values.h"
+#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/render_thread.h"
@@ -29,6 +35,12 @@ using bindings_utils::ExtensionBase;
 
 namespace {
 
+// A map of message name to message.
+typedef std::map<std::string, std::string> L10nMessagesMap;
+
+// A map of extension ID to l10n message map.
+typedef std::map<std::string, L10nMessagesMap > ExtensionToL10nMessagesMap;
+
 struct ExtensionData {
   struct PortData {
     int ref_count;  // how many contexts have a handle to this port
@@ -36,16 +48,36 @@ struct ExtensionData {
     PortData() : ref_count(0), disconnected(false) {}
   };
   std::map<int, PortData> ports;  // port ID -> data
+  // Maps extension ID to message map.
+  ExtensionToL10nMessagesMap extension_l10n_messages_map_;
 };
-bool HasPortData(int port_id) {
+
+static bool HasPortData(int port_id) {
   return Singleton<ExtensionData>::get()->ports.find(port_id) !=
       Singleton<ExtensionData>::get()->ports.end();
 }
-ExtensionData::PortData& GetPortData(int port_id) {
+
+static ExtensionData::PortData& GetPortData(int port_id) {
   return Singleton<ExtensionData>::get()->ports[port_id];
 }
-void ClearPortData(int port_id) {
+
+static void ClearPortData(int port_id) {
   Singleton<ExtensionData>::get()->ports.erase(port_id);
+}
+
+static ExtensionToL10nMessagesMap* GetExtensionToL10nMessagesMap() {
+  return &Singleton<ExtensionData>()->extension_l10n_messages_map_;
+}
+
+static L10nMessagesMap* GetL10nMessagesMap(const std::string extension_id) {
+  ExtensionToL10nMessagesMap::iterator it =
+      Singleton<ExtensionData>()->extension_l10n_messages_map_.find(
+          extension_id);
+  if (it != Singleton<ExtensionData>()->extension_l10n_messages_map_.end()) {
+    return &(it->second);
+  } else {
+    return NULL;
+  }
 }
 
 const char kPortClosedError[] = "Attempting to use a disconnected port object";
@@ -72,6 +104,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(PortAddRef);
     } else if (name->Equals(v8::String::New("PortRelease"))) {
       return v8::FunctionTemplate::New(PortRelease);
+    } else if (name->Equals(v8::String::New("GetL10nMessage"))) {
+      return v8::FunctionTemplate::New(GetL10nMessage);
     }
     return ExtensionBase::GetNativeFunction(name);
   }
@@ -157,6 +191,81 @@ class ExtensionImpl : public ExtensionBase {
       }
     }
     return v8::Undefined();
+  }
+
+  static v8::Handle<v8::Value> GetL10nMessage(const v8::Arguments& args) {
+    if (args.Length() != 3 || !args[0]->IsString()) {
+      NOTREACHED() << "Bad arguments";
+      return v8::Undefined();
+    }
+
+    std::string extension_id;
+    if (args[2]->IsNull() || !args[2]->IsString()) {
+      return v8::Undefined();
+    } else {
+      extension_id = *v8::String::Utf8Value(args[2]->ToString());
+      if (extension_id.empty())
+        return v8::Undefined();
+    }
+
+    L10nMessagesMap* l10n_messages = GetL10nMessagesMap(extension_id);
+    if (!l10n_messages) {
+      // Get the current RenderView so that we can send a routed IPC message
+      // from the correct source.
+      RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+      if (!renderview)
+        return v8::Undefined();
+
+      L10nMessagesMap messages;
+      // A sync call to load message catalogs for current extension.
+      renderview->Send(new ViewHostMsg_GetExtensionMessageBundle(
+          extension_id, &messages));
+
+      if (messages.empty())
+        return v8::Undefined();
+
+      // Save messages we got.
+      ExtensionToL10nMessagesMap& l10n_messages_map =
+          *GetExtensionToL10nMessagesMap();
+      l10n_messages_map[extension_id] = messages;
+
+      l10n_messages = GetL10nMessagesMap(extension_id);
+      if (!l10n_messages)
+        return v8::Undefined();
+    }
+
+    std::string message_name = *v8::String::AsciiValue(args[0]);
+    std::string message =
+        ExtensionMessageBundle::GetL10nMessage(message_name, *l10n_messages);
+
+    std::vector<std::string> substitutions;
+    if (args[1]->IsNull() || args[1]->IsUndefined()) {
+      // chrome.i18n.getMessage("message_name");
+      // chrome.i18n.getMessage("message_name", null);
+      return v8::String::New(message.c_str());
+    } else if (args[1]->IsString()) {
+      // chrome.i18n.getMessage("message_name", "one param");
+      std::string substitute = *v8::String::Utf8Value(args[1]->ToString());
+      substitutions.push_back(substitute);
+    } else if (args[1]->IsArray()) {
+      // chrome.i18n.getMessage("message_name", ["more", "params"]);
+      v8::Array* placeholders = static_cast<v8::Array*>(*args[1]);
+      uint32_t count = placeholders->Length();
+      if (count <= 0 || count > 9)
+        return v8::Undefined();
+      for (uint32_t i = 0; i < count; ++i) {
+        std::string substitute =
+            *v8::String::Utf8Value(
+                placeholders->Get(v8::Integer::New(i))->ToString());
+        substitutions.push_back(substitute);
+      }
+    } else {
+      NOTREACHED() << "Couldn't parse second parameter.";
+      return v8::Undefined();
+    }
+
+    return v8::String::New(ReplaceStringPlaceholders(
+        message, substitutions, NULL).c_str());
   }
 };
 

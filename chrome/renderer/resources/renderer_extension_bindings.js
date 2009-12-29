@@ -17,6 +17,7 @@ var chrome = chrome || {};
   native function PortRelease(portId);
   native function PostMessage(portId, msg);
   native function GetChromeHidden();
+  native function GetL10nMessage();
 
   var chromeHidden = GetChromeHidden();
 
@@ -201,6 +202,11 @@ var chrome = chrome || {};
       return "chrome-extension://" + extensionId + "/" + path;
     };
 
+    chrome.i18n = chrome.i18n || {};
+    chrome.i18n.getMessage = function(message_name, placeholders) {
+      return GetL10nMessage(message_name, placeholders, extensionId);
+    };
+
     if (warnOnPrivilegedApiAccess) {
       setupApiStubs();
     }
@@ -236,13 +242,14 @@ var chrome = chrome || {};
     var privileged = [
       // Entire namespaces.
       "bookmarks", "browserAction", "devtools", "experimental.extension",
-      "experimental.history", "experimental.popup", "i18n", "pageAction",
-      "pageActions", "tabs", "test", "toolstrip", "windows",
+      "experimental.history", "experimental.popup", "pageAction", "pageActions",
+      "tabs", "test", "toolstrip", "windows",
 
       // Functions/events/properties within the extension namespace.
       "extension.getBackgroundPage", "extension.getExtensionTabs",
       "extension.getToolstrips", "extension.getViews", "extension.lastError",
-      "extension.onConnectExternal", "extension.onRequestExternal"
+      "extension.onConnectExternal", "extension.onRequestExternal",
+      "i18n.getAcceptLanguages"
     ];
     for (var i = 0; i < privileged.length; i++) {
       createStub(privileged[i]);
