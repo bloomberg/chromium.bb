@@ -137,7 +137,6 @@
       'type': '<(library)',
       'msvs_guid': '0B945915-31A7-4A07-A5B5-568D737A39B1',
       'dependencies': [
-        '../app/app.gyp:app_base',
         '../net/net.gyp:net',
         '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
       ],
@@ -147,8 +146,6 @@
         'appcache/appcache.h',
         'appcache/appcache_backend_impl.cc',
         'appcache/appcache_backend_impl.h',
-        'appcache/appcache_database.cc',
-        'appcache/appcache_database.h',
         'appcache/appcache_entry.h',
         'appcache/appcache_frontend_impl.cc',
         'appcache/appcache_frontend_impl.h',
@@ -191,7 +188,6 @@
       'type': '<(library)',
       'msvs_guid': '1DA00DDD-44E5-4C56-B2CC-414FB0164492',
       'dependencies': [
-        '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../third_party/sqlite/sqlite.gyp:sqlite',
       ],

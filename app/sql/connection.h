@@ -143,12 +143,12 @@ class Connection {
   // Initialization ------------------------------------------------------------
 
   // Initializes the SQL connection for the given file, returning true if the
-  // file could be opened. You can call this or OpenInMemory.
+  // file could be opened. You can call this or InitInMemory to initialize.
   bool Open(const FilePath& path);
 
   // Initializes the SQL connection for a temporary in-memory database. There
   // will be no associated file on disk, and the initial database will be
-  // empty. You can call this or Open.
+  // empty. You must call this or Init to open the database.
   bool OpenInMemory();
 
   // Returns trie if the database has been successfully opened.

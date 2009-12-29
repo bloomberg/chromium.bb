@@ -77,7 +77,7 @@ class AppCacheGroupTest : public testing::Test {
 TEST(AppCacheGroupTest, AddRemoveCache) {
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, GURL("http://foo.com"), 111);
+      new AppCacheGroup(&service, GURL::EmptyGURL(), 111);
 
   base::TimeTicks ticks = base::TimeTicks::Now();
 
@@ -146,8 +146,7 @@ TEST(AppCacheGroupTest, AddRemoveCache) {
 TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   MockAppCacheService service;
   TestAppCacheFrontend frontend;
-  AppCacheGroup* group =
-      new AppCacheGroup(&service, GURL("http://foo.com"), 111);
+  AppCacheGroup* group = new AppCacheGroup(&service, GURL::EmptyGURL(), 111);
 
   AppCacheHost host1(1, &frontend, &service);
   AppCacheHost host2(2, &frontend, &service);

@@ -300,7 +300,6 @@ void AppCacheHost::FinishCacheSelection(
 void AppCacheHost::ObserveGroupBeingUpdated(AppCacheGroup* group) {
   DCHECK(!group_being_updated_);
   group_being_updated_ = group;
-  newest_cache_of_group_being_updated_ = group->newest_complete_cache();
   group->AddUpdateObserver(this);
 }
 
@@ -312,7 +311,6 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
   SetSwappableCache(group);
 
   group_being_updated_ = NULL;
-  newest_cache_of_group_being_updated_ = NULL;
 }
 
 void AppCacheHost::SetSwappableCache(AppCacheGroup* group) {
