@@ -106,7 +106,6 @@ FindBarView::FindBarView(FindBarHost* host)
 
   find_previous_button_ = new views::ImageButton(this);
   find_previous_button_->set_tag(FIND_PREVIOUS_TAG);
-  find_previous_button_->SetEnabled(false);
   find_previous_button_->SetFocusable(true);
   find_previous_button_->SetImage(views::CustomButton::BS_NORMAL,
       rb.GetBitmapNamed(IDR_FINDINPAGE_PREV));
@@ -120,7 +119,6 @@ FindBarView::FindBarView(FindBarHost* host)
 
   find_next_button_ = new views::ImageButton(this);
   find_next_button_->set_tag(FIND_NEXT_TAG);
-  find_next_button_->SetEnabled(false);
   find_next_button_->SetFocusable(true);
   find_next_button_->SetImage(views::CustomButton::BS_NORMAL,
       rb.GetBitmapNamed(IDR_FINDINPAGE_NEXT));
@@ -182,29 +180,16 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
         l10n_util::GetStringF(IDS_FIND_IN_PAGE_COUNT,
                               IntToWString(result.active_match_ordinal()),
                               IntToWString(result.number_of_matches())));
+
+    UpdateMatchCountAppearance(result.number_of_matches() == 0 &&
+                               result.final_update());
   } else {
     // If there was no text entered, we don't show anything in the result count
     // area.
     match_count_text_->SetText(std::wstring());
-  }
 
-  if (find_text.empty() || result.number_of_matches() > 0 ||
-      !have_valid_range) {
-    // If there was no text entered or there were results, the match_count label
-    // should have a normal background color. We also reset the background if
-    // we don't have_valid_range, so that the text field will not show red
-    // background when reopened after an unsuccessful find.
-    ResetMatchCountBackground();
-  } else if (result.final_update()) {
-    // Otherwise we show an error background behind the match_count label.
-    match_count_text_->set_background(
-        views::Background::CreateSolidBackground(kBackgroundColorNoMatch));
-    match_count_text_->SetColor(kTextColorNoMatch);
+    UpdateMatchCountAppearance(false);
   }
-
-  // Make sure Find Next and Find Previous are enabled if we found any matches.
-  find_previous_button_->SetEnabled(result.number_of_matches() > 0);
-  find_next_button_->SetEnabled(result.number_of_matches() > 0);
 
   // The match_count label may have increased/decreased in size so we need to
   // do a layout and repaint the dialog so that the find text field doesn't
@@ -215,12 +200,8 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
 
 void FindBarView::SetFocusAndSelection() {
   find_text_->RequestFocus();
-  if (!find_text_->text().empty()) {
+  if (!find_text_->text().empty())
     find_text_->SelectAll();
-
-    find_previous_button_->SetEnabled(true);
-    find_next_button_->SetEnabled(true);
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -483,10 +464,16 @@ bool FindBarView::HandleKeystroke(views::Textfield* sender,
   return false;
 }
 
-void FindBarView::ResetMatchCountBackground() {
-  match_count_text_->set_background(
+void FindBarView::UpdateMatchCountAppearance(bool no_match) {
+  if (no_match) {
+    match_count_text_->set_background(
+        views::Background::CreateSolidBackground(kBackgroundColorNoMatch));
+    match_count_text_->SetColor(kTextColorNoMatch);
+  } else {
+    match_count_text_->set_background(
       views::Background::CreateSolidBackground(kBackgroundColorMatch));
-  match_count_text_->SetColor(kTextColorMatchCount);
+    match_count_text_->SetColor(kTextColorMatchCount);
+  }
 }
 
 bool FindBarView::FocusForwarderView::OnMousePressed(

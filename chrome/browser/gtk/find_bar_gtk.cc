@@ -372,16 +372,14 @@ void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
         l10n_util::GetStringFUTF8(IDS_FIND_IN_PAGE_COUNT,
             IntToString16(result.active_match_ordinal()),
             IntToString16(result.number_of_matches())).c_str());
-    UpdateMatchLabelAppearance(result.number_of_matches() == 0);
+    UpdateMatchLabelAppearance(result.number_of_matches() == 0 &&
+                               result.final_update());
   } else {
     // If there was no text entered, we don't show anything in the result count
     // area.
     gtk_label_set_text(GTK_LABEL(match_count_label_), "");
     UpdateMatchLabelAppearance(false);
   }
-
-  // TODO(brettw) enable or disable the find next/previous buttons depending
-  // on whether any matches were found.
 }
 
 void FindBarGtk::AudibleAlert() {

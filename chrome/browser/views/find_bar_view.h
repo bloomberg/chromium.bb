@@ -69,8 +69,8 @@ class FindBarView : public DropdownBarView,
                                const views::Textfield::Keystroke& key);
 
  private:
-  // Resets the background for the match count label.
-  void ResetMatchCountBackground();
+  // Update the appearance for the match count label.
+  void UpdateMatchCountAppearance(bool no_match);
 
   // Overridden from views::View.
   virtual void ThemeChanged();
