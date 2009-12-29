@@ -40,7 +40,7 @@ GdkCursor* GetInlineCustomCursor(CustomCursorType type) {
 
 }  // end anonymous namespace
 
-GdkCursorType WebCursor::GetCursorType() const {
+int WebCursor::GetCursorType() const {
   // http://library.gnome.org/devel/gdk/2.12/gdk-Cursors.html has images
   // of the default X theme, but beware that the user's cursor theme can
   // change everything.

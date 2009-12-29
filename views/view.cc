@@ -25,8 +25,12 @@
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
+
 #if defined(OS_WIN)
 #include "views/accessibility/view_accessibility_wrapper.h"
+#endif
+#if defined(OS_LINUX)
+#include "app/scoped_handle_gtk.h"
 #endif
 
 namespace views {

@@ -673,7 +673,8 @@ void RenderWidgetHostViewGtk::ShowCurrentCursor() {
       break;
 
     default:
-      gdk_cursor = gtk_util::GetCursor(current_cursor_.GetCursorType());
+      gdk_cursor = gtk_util::GetCursor(
+          static_cast<GdkCursorType>(current_cursor_.GetCursorType()));
   }
   gdk_window_set_cursor(view_.get()->window, gdk_cursor);
   // The window now owns the cursor.

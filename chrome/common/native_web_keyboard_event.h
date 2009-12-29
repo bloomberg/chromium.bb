@@ -16,8 +16,8 @@
 #else
 class NSEvent;
 #endif  // __OBJC__
-#elif defined(OS_LINUX)
-#include <gdk/gdk.h>
+#elif defined(OS_POSIX)
+typedef struct _GdkEventKey GdkEventKey;
 #endif
 
 // Owns a platform specific event; used to pass own and pass event through

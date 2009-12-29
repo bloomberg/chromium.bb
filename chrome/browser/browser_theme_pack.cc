@@ -8,6 +8,7 @@
 
 #include "app/gfx/codec/png_codec.h"
 #include "app/gfx/skbitmap_operations.h"
+#include "app/resource_bundle.h"
 #include "base/data_pack.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"

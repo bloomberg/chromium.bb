@@ -4,6 +4,8 @@
 
 #include "chrome/common/native_web_keyboard_event.h"
 
+#include <gdk/gdk.h>
+
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 
 using WebKit::WebInputEventFactory;

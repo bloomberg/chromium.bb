@@ -11,7 +11,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 #if defined(OS_LINUX)
-#include <gdk/gdk.h>
+typedef struct _GdkColor GdkColor;
+typedef struct _GdkPixbuf GdkPixbuf;
 #elif defined(OS_MACOSX)
 #ifdef __OBJC__
 @class NSColor;

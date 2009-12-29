@@ -5,6 +5,7 @@
 #include "chrome/browser/views/detachable_toolbar_view.h"
 
 #include "app/gfx/canvas.h"
+#include "app/resource_bundle.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils.h"

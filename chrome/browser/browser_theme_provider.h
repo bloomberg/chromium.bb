@@ -8,22 +8,23 @@
 #include <map>
 #include <set>
 #include <string>
-#include <vector>
 
-#include "app/gfx/color_utils.h"
-#include "app/resource_bundle.h"
 #include "app/theme_provider.h"
-#include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
 
-class Extension;
-class Profile;
-class DictionaryValue;
-class PrefService;
-class BrowserThemeProviderTest;
+namespace color_utils {
+  struct HSL;
+}
+
 class BrowserThemePack;
+class BrowserThemeProviderTest;
+class DictionaryValue;
+class Extension;
+class FilePath;
+class PrefService;
+class Profile;
+class ResourceBundle;
 
 class BrowserThemeProvider : public NonThreadSafe,
                              public ThemeProvider {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 
+#include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_theme_provider.h"

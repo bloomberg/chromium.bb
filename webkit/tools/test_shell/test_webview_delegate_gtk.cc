@@ -114,7 +114,8 @@ void TestWebViewDelegate::closeWidgetSoon() {
 
 void TestWebViewDelegate::didChangeCursor(const WebCursorInfo& cursor_info) {
   current_cursor_.InitFromCursorInfo(cursor_info);
-  GdkCursorType cursor_type = current_cursor_.GetCursorType();
+  GdkCursorType cursor_type =
+      static_cast<GdkCursorType>(current_cursor_.GetCursorType());
   GdkCursor* gdk_cursor;
   if (cursor_type == GDK_CURSOR_IS_PIXMAP) {
     // TODO(port): WebKit bug https://bugs.webkit.org/show_bug.cgi?id=16388 is

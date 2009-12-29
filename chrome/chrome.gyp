@@ -466,6 +466,11 @@
             'plugin/command_buffer_stub.h',
           ],
         },],
+        ['OS=="linux" or OS=="freebsd"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
+        }],
       ],
     },
     {

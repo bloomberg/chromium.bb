@@ -6,6 +6,7 @@
 
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"

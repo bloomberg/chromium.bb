@@ -416,10 +416,6 @@
             '../build/linux/system.gyp:gtk',
             '../base/base.gyp:linux_versioninfo',
           ],
-          'export_dependent_settings': [
-            # Users of webcursor.h need the GTK include path.
-            '../build/linux/system.gyp:gtk',
-          ],
           'sources!': [
             'glue/plugins/plugin_stubs.cc',
           ],

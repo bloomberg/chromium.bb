@@ -6,6 +6,7 @@
 
 #include "app/gfx/codec/png_codec.h"
 #include "app/gfx/skbitmap_operations.h"
+#include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"

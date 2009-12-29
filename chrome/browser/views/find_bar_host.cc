@@ -23,6 +23,10 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
+#if defined(OS_LINUX)
+#include "app/scoped_handle_gtk.h"
+#endif
+
 using gfx::Path;
 
 namespace browser {

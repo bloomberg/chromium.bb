@@ -9,6 +9,7 @@
 #include "app/gfx/color_utils.h"
 #include "app/gfx/gtk_util.h"
 #include "app/gfx/skbitmap_operations.h"
+#include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"

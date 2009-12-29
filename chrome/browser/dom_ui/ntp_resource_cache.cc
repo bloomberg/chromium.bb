@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 
 #include "app/animation.h"
+#include "app/gfx/color_utils.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"

@@ -48,10 +48,10 @@ class NSTextField;
 #endif  // __OBJC__
 #elif defined(USE_X11)
 typedef struct _GdkCursor GdkCursor;
+typedef struct _GdkRegion GdkRegion;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 typedef struct _cairo cairo_t;
-typedef struct _GdkRegion GdkRegion;
 #endif
 
 namespace gfx {
