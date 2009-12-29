@@ -18,36 +18,12 @@
 
 namespace {
 
-// The y offset from the center at which to paint the icon.
-const int kSadTabOffset = -64;
-// The spacing between the icon and the title.
-const int kIconTitleSpacing = 20;
-// The spacing between the title and the message.
-const int kTitleMessageSpacing = 15;
-const int kMessageLinkSpacing = 15;
-const int kTabHorzMargin = 13;
-const double kBackgroundColorTop[3] = {
-  35.0 / 255.0, 48.0 / 255.0, 64.0 / 255.0 };
-const double kBackgroundColorBottom[3] = {
-  35.0 / 255.0, 48.0 / 255.0, 64.0 / 255.0 };
+// Background color of the content (a grayish blue).
+const GdkColor kBackgroundColor = GDK_COLOR_RGB(35, 48, 64);
 
-struct SadTabGtkConstants {
-  SadTabGtkConstants()
-      : sad_tab_bitmap(
-            ResourceBundle::GetSharedInstance().GetPixbufNamed(IDR_SAD_TAB)),
-        title(l10n_util::GetStringUTF8(IDS_SAD_TAB_TITLE)),
-        message(l10n_util::GetStringUTF8(IDS_SAD_TAB_MESSAGE)),
-        learn_more_url(l10n_util::GetStringUTF8(IDS_CRASH_REASON_URL)) {}
-
-  const GdkPixbuf* sad_tab_bitmap;
-  std::string title;
-  std::string message;
-  std::string learn_more_url;
-};
-
-base::LazyInstance<SadTabGtkConstants>
-    g_sad_tab_constants(base::LINKER_INITIALIZED);
-
+// Construct a centered GtkLabel with a white foreground.
+// |format| is a printf-style format containing a %s;
+// |str| is substituted into the format.
 GtkWidget* MakeWhiteMarkupLabel(const char* format, const std::string& str) {
   GtkWidget* label = gtk_label_new(NULL);
   char* markup = g_markup_printf_escaped(format, str.c_str());
@@ -68,50 +44,53 @@ GtkWidget* MakeWhiteMarkupLabel(const char* format, const std::string& str) {
 }  // namespace
 
 SadTabGtk::SadTabGtk(TabContents* tab_contents)
-  : width_(0),
-    height_(0),
-    tab_contents_(tab_contents) {
+  : tab_contents_(tab_contents) {
   DCHECK(tab_contents_);
 
   // Use an event box to get the background painting correctly.
   event_box_.Own(gtk_event_box_new());
-  gtk_widget_set_app_paintable(event_box_.get(), TRUE);
-  g_signal_connect(event_box_.get(), "expose-event",
-                   G_CALLBACK(OnBackgroundExposeThunk), this);
-  // Listen to signal for resizing of widget.
-  g_signal_connect(event_box_.get(), "size-allocate",
-                   G_CALLBACK(OnSizeAllocateThunk), this);
+  gtk_widget_modify_bg(event_box_.get(), GTK_STATE_NORMAL, &kBackgroundColor);
+  // Allow ourselves to be resized arbitrarily small.
+  gtk_widget_set_size_request(event_box_.get(), 0, 0);
 
-  // Use an alignment to set the top and horizontal paddings. The padding will
-  // be set later when we receive expose-event which gives us the width and
-  // height of the widget.
-  top_padding_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_container_add(GTK_CONTAINER(event_box_.get()), top_padding_);
+  GtkWidget* centering = gtk_alignment_new(0.5, 0.5, 0.0, 0.0);
+  gtk_container_add(GTK_CONTAINER(event_box_.get()), centering);
 
   // Use a vertical box to contain icon, title, message and link.
   GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(top_padding_), vbox);
-
-  const SadTabGtkConstants& sad_tab_constants = g_sad_tab_constants.Get();
+  gtk_container_add(GTK_CONTAINER(centering), vbox);
 
   // Add center-aligned image.
   GtkWidget* image = gtk_image_new_from_pixbuf(
-      const_cast<GdkPixbuf*>(sad_tab_constants.sad_tab_bitmap));
+      ResourceBundle::GetSharedInstance().GetPixbufNamed(IDR_SAD_TAB));
   gtk_misc_set_alignment(GTK_MISC(image), 0.5, 0.5);
-  gtk_box_pack_start(GTK_BOX(vbox), image, FALSE, FALSE, kIconTitleSpacing);
+  gtk_box_pack_start(GTK_BOX(vbox), image, FALSE, FALSE, 0);
+
+  // Add spacer between image and title.
+  GtkWidget* spacer = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(spacer), "<span size=\"larger\"> </span>");
+  gtk_box_pack_start(GTK_BOX(vbox), spacer, FALSE, FALSE, 0);
 
   // Add center-aligned title.
   GtkWidget* title = MakeWhiteMarkupLabel(
       "<span size=\"larger\" style=\"normal\"><b>%s</b></span>",
-      sad_tab_constants.title);
-  gtk_box_pack_start(GTK_BOX(vbox), title, FALSE, FALSE, kTitleMessageSpacing);
+      l10n_util::GetStringUTF8(IDS_SAD_TAB_TITLE));
+  gtk_box_pack_start(GTK_BOX(vbox), title, FALSE, FALSE, 0);
+
+  // Add spacer between title and message.
+  spacer = gtk_label_new(" ");
+  gtk_box_pack_start(GTK_BOX(vbox), spacer, FALSE, FALSE, 0);
 
   // Add center-aligned message.
-  message_ = MakeWhiteMarkupLabel("<span style=\"normal\">%s</span>",
-                                  sad_tab_constants.message);
-  gtk_label_set_line_wrap(GTK_LABEL(message_), TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox), message_, FALSE, FALSE,
-                     kMessageLinkSpacing);
+  GtkWidget* message =
+      MakeWhiteMarkupLabel("<span style=\"normal\">%s</span>",
+                           l10n_util::GetStringUTF8(IDS_SAD_TAB_MESSAGE));
+  gtk_label_set_line_wrap(GTK_LABEL(message), TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox), message, FALSE, FALSE, 0);
+
+  // Add spacer between message and link.
+  spacer = gtk_label_new(" ");
+  gtk_box_pack_start(GTK_BOX(vbox), spacer, FALSE, FALSE, 0);
 
   if (tab_contents_ != NULL) {
     // Add the learn-more link and center-align it in an alignment.
@@ -132,59 +111,9 @@ SadTabGtk::~SadTabGtk() {
   event_box_.Destroy();
 }
 
-gboolean SadTabGtk::OnBackgroundExpose(
-    GtkWidget* widget, GdkEventExpose* event) {
-  // Clip to our damage rect.
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(event->window));
-  cairo_rectangle(cr, event->area.x, event->area.y,
-                  event->area.width, event->area.height);
-  cairo_clip(cr);
-
-  // Draw the gradient background.
-  int half_width = width_ / 2;
-  cairo_pattern_t* pattern = cairo_pattern_create_linear(
-      half_width, 0,  half_width, height_);
-  cairo_pattern_add_color_stop_rgb(
-      pattern, 0.0,
-      kBackgroundColorTop[0], kBackgroundColorTop[1], kBackgroundColorTop[2]);
-  cairo_pattern_add_color_stop_rgb(
-      pattern, 1.0,
-      kBackgroundColorBottom[0], kBackgroundColorBottom[1],
-      kBackgroundColorBottom[2]);
-  cairo_set_source(cr, pattern);
-  cairo_paint(cr);
-  cairo_pattern_destroy(pattern);
-
-  cairo_destroy(cr);
-
-  return FALSE;  // Propagate expose event to children.
-}
-
-void SadTabGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
-  // Only readjust top and horizontal paddings if height of widget has changed.
-  if (allocation->height != 0 && allocation->height != height_) {
-    height_ = allocation->height;
-    const SadTabGtkConstants& sad_tab_constants = g_sad_tab_constants.Get();
-    int icon_height = gdk_pixbuf_get_height(sad_tab_constants.sad_tab_bitmap);
-    int icon_y = ((height_ - icon_height) / 2) + kSadTabOffset;
-    gtk_alignment_set_padding(GTK_ALIGNMENT(top_padding_), std::max(icon_y, 0),
-                              0, kTabHorzMargin, kTabHorzMargin);
-  }
-
-  // Only readjust width for message if width of widget has changed.
-  if (allocation->width != 0 && allocation->width != width_) {
-    width_ = allocation->width;
-    // If necessary, set width for wrappable message.
-    int message_width = width_ - (kTabHorzMargin * 2);
-    if (message_width > -1)
-      gtk_widget_set_size_request(message_, message_width, -1);
-  }
-}
-
 void SadTabGtk::OnLinkButtonClick() {
   if (tab_contents_ != NULL) {
-    const SadTabGtkConstants& sad_tab_constants = g_sad_tab_constants.Get();
-    tab_contents_->OpenURL(GURL(sad_tab_constants.learn_more_url.c_str()),
+    tab_contents_->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_CRASH_REASON_URL)),
         GURL(), CURRENT_TAB, PageTransition::LINK);
   }
 }
