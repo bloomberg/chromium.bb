@@ -29,6 +29,7 @@ _page_shell_html = _template_dir + "/page_shell.html"
 _generator_html = _build_dir + "/generator.html"
 
 _expected_output_preamble = "<!DOCTYPE html>"
+_expected_output_postamble = "</body></html>"
 
 # HACK! This is required because we can only depend on python 2.4 and
 # the calling environment may not be setup to set the PYTHONPATH
@@ -63,6 +64,7 @@ def RenderPage(name, test_shell):
   result = p.stdout.read()
 
   content_start = result.find(_expected_output_preamble)
+  content_end = result.find(_expected_output_postamble)
   if (content_start < 0):
     if (result.startswith("#TEST_TIMED_OUT")):
       raise Exception("test_shell returned TEST_TIMED_OUT.\n" +
@@ -73,7 +75,7 @@ def RenderPage(name, test_shell):
                         "\nAnd open it in chrome using the file: scheme.\n" +
                         "Look from javascript errors via the inspector.")
     raise Exception("test_shell returned unexpected output: " + result)
-  result = result[content_start:]
+  result = result[content_start:content_end + len(_expected_output_postamble)] + "\n"
 
   # remove the trailing #EOF that test shell appends to the output.
   result = result.replace('#EOF', '')
