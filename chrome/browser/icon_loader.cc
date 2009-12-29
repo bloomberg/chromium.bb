@@ -26,7 +26,7 @@ IconLoader::~IconLoader() {
 void IconLoader::Start() {
   target_message_loop_ = MessageLoop::current();
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_GTK)
   // This call must happen on the UI thread before we can start loading icons.
   mime_util::DetectGtkTheme();
 #endif
