@@ -1,7 +1,8 @@
-We include a snapshot of gmock from http://googlemock.googlecode.com/svn/trunk
-with chromium.patch applied.
+We include a snapshot of gmock from http://googlemock.googlecode.com/svn/trunk.
+(Why not pull from it directly via DEPS?  Because it uses svn:externals, which
+confuses gclient.)
 
-Current revision: 222
+Current revision: 254
 
 
 -- HOW TO USE --
@@ -21,11 +22,6 @@ In particular, the "For Dummies" guide is a good place to start.  The
 
 -- RECREATING PACKAGE --
 
-Starting with r173, gmock began distributing a pared down version of tr1 tuple
-that can be used on compilers without TR1.  This means that we will no longer
-need TR1 or boost on windows.
-
-Recreating this package is now just exporting the wanted revision.
 Example:
 
     svn export --ignore-externals \

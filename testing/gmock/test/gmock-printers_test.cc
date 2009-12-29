@@ -77,7 +77,7 @@ class StreamableInGlobal {
   virtual ~StreamableInGlobal() {}
 };
 
-inline void operator<<(::std::ostream& os, const StreamableInGlobal& x) {
+inline void operator<<(::std::ostream& os, const StreamableInGlobal& /* x */) {
   os << "StreamableInGlobal";
 }
 
@@ -107,7 +107,7 @@ void PrintTo(const PrintableViaPrintTo& x, ::std::ostream* os) {
 template <typename T>
 class PrintableViaPrintToTemplate {
  public:
-  explicit PrintableViaPrintToTemplate(const T& value) : value_(value) {}
+  explicit PrintableViaPrintToTemplate(const T& a_value) : value_(a_value) {}
 
   const T& value() const { return value_; }
  private:
@@ -440,11 +440,17 @@ TEST(PrintPointerToPointerTest, IntPointerPointer) {
 
 // Tests printing (non-member) function pointers.
 
-void MyFunction(int n) {}
+void MyFunction(int /* n */) {}
 
 TEST(PrintPointerTest, NonMemberFunctionPointer) {
-  EXPECT_EQ(PrintPointer(reinterpret_cast<const void*>(&MyFunction)),
-            Print(&MyFunction));
+  // We cannot directly cast &MyFunction to const void* because the
+  // standard disallows casting between pointers to functions and
+  // pointers to objects, and some compilers (e.g. GCC 3.4) enforce
+  // this limitation.
+  EXPECT_EQ(
+      PrintPointer(reinterpret_cast<const void*>(
+          reinterpret_cast<internal::BiggestInt>(&MyFunction))),
+      Print(&MyFunction));
   int (*p)(bool) = NULL;  // NOLINT
   EXPECT_EQ("NULL", Print(p));
 }
@@ -458,7 +464,7 @@ struct Foo {
  public:
   virtual ~Foo() {}
   int MyMethod(char x) { return x + 1; }
-  virtual char MyVirtualMethod(int n) { return 'a'; }
+  virtual char MyVirtualMethod(int /* n */) { return 'a'; }
 
   int value;
 };
@@ -554,7 +560,6 @@ TEST(PrintStringTest, StringInGlobalNamespace) {
 }
 #endif  // GTEST_HAS_GLOBAL_STRING
 
-#if GTEST_HAS_STD_STRING
 // ::std::string.
 TEST(PrintStringTest, StringInStdNamespace) {
   const char s[] = "'\"\?\\\a\b\f\n\0\r\t\v\x7F\xFF a";
@@ -562,7 +567,6 @@ TEST(PrintStringTest, StringInStdNamespace) {
   EXPECT_EQ("\"'\\\"\\?\\\\\\a\\b\\f\\n\\0\\r\\t\\v\\x7F\\xFF a\\0\"",
             Print(str));
 }
-#endif  // GTEST_HAS_STD_STRING
 
 // Tests printing ::wstring and ::std::wstring.
 
@@ -599,7 +603,7 @@ class AllowsGenericStreaming {};
 template <typename Char, typename CharTraits>
 std::basic_ostream<Char, CharTraits>& operator<<(
     std::basic_ostream<Char, CharTraits>& os,
-    const AllowsGenericStreaming& a) {
+    const AllowsGenericStreaming& /* a */) {
   return os << "AllowsGenericStreaming";
 }
 
@@ -616,7 +620,7 @@ class AllowsGenericStreamingTemplate {};
 template <typename Char, typename CharTraits, typename T>
 std::basic_ostream<Char, CharTraits>& operator<<(
     std::basic_ostream<Char, CharTraits>& os,
-    const AllowsGenericStreamingTemplate<T>& a) {
+    const AllowsGenericStreamingTemplate<T>& /* a */) {
   return os << "AllowsGenericStreamingTemplate";
 }
 
@@ -637,7 +641,7 @@ class AllowsGenericStreamingAndImplicitConversionTemplate {
 template <typename Char, typename CharTraits, typename T>
 std::basic_ostream<Char, CharTraits>& operator<<(
     std::basic_ostream<Char, CharTraits>& os,
-    const AllowsGenericStreamingAndImplicitConversionTemplate<T>& a) {
+    const AllowsGenericStreamingAndImplicitConversionTemplate<T>& /* a */) {
   return os << "AllowsGenericStreamingAndImplicitConversionTemplate";
 }
 
@@ -973,7 +977,12 @@ TEST(PrintReferenceTest, HandlesFunctionPointer) {
   void (*fp)(int n) = &MyFunction;
   const string fp_pointer_string =
       PrintPointer(reinterpret_cast<const void*>(&fp));
-  const string fp_string = PrintPointer(reinterpret_cast<const void*>(fp));
+  // We cannot directly cast &MyFunction to const void* because the
+  // standard disallows casting between pointers to functions and
+  // pointers to objects, and some compilers (e.g. GCC 3.4) enforce
+  // this limitation.
+  const string fp_string = PrintPointer(reinterpret_cast<const void*>(
+      reinterpret_cast<internal::BiggestInt>(fp)));
   EXPECT_EQ("@" + fp_pointer_string + " " + fp_string,
             PrintByRef(fp));
 }
