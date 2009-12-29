@@ -135,6 +135,11 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   // Keep a reference to the group being updated until the update completes.
   scoped_refptr<AppCacheGroup> group_being_updated_;
 
+  // Similarly, keep a reference to the newest cache of the group until the
+  // update completes. When adding a new master entry to a cache that is not
+  // in use in any other host, this reference keeps the cache in  memory.
+  scoped_refptr<AppCache> newest_cache_of_group_being_updated_;
+
   // Keep a reference to the cache of the main resource so it survives frame
   // navigations.
   scoped_refptr<AppCache> main_resource_cache_;

@@ -20,6 +20,8 @@ class AppCacheResponseInfo;
 // currently in memory.
 class AppCacheWorkingSet {
  public:
+  typedef std::map<GURL, AppCacheGroup*> GroupMap;
+
   ~AppCacheWorkingSet();
 
   void AddCache(AppCache* cache);
@@ -36,6 +38,10 @@ class AppCacheWorkingSet {
     return (it != groups_.end()) ? it->second : NULL;
   }
 
+  const GroupMap* GetGroupsInOrigin(const GURL& origin_url) {
+    return GetMutableGroupsInOrigin(origin_url);
+  }
+
   void AddResponseInfo(AppCacheResponseInfo* response_info);
   void RemoveResponseInfo(AppCacheResponseInfo* response_info);
   AppCacheResponseInfo* GetResponseInfo(int64 id) {
@@ -45,10 +51,17 @@ class AppCacheWorkingSet {
 
  private:
   typedef base::hash_map<int64, AppCache*> CacheMap;
-  typedef std::map<GURL, AppCacheGroup*> GroupMap;
+  typedef std::map<GURL, GroupMap> GroupsByOriginMap;
   typedef base::hash_map<int64, AppCacheResponseInfo*> ResponseInfoMap;
+
+  GroupMap* GetMutableGroupsInOrigin(const GURL& origin_url) {
+    GroupsByOriginMap::iterator it = groups_by_origin_.find(origin_url);
+    return (it != groups_by_origin_.end()) ? &it->second : NULL;
+  }
+
   CacheMap caches_;
   GroupMap groups_;
+  GroupsByOriginMap groups_by_origin_;  // origin -> (manifest -> group)
   ResponseInfoMap response_infos_;
 };
 

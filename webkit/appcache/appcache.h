@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/manifest_parser.h"
 
@@ -75,6 +76,22 @@ class AppCache : public base::RefCounted<AppCache> {
   // Do not use the manifest after this call.
   void InitializeWithManifest(Manifest* manifest);
 
+  // Initializes the cache with the information in the database records.
+  void InitializeWithDatabaseRecords(
+      const AppCacheDatabase::CacheRecord& cache_record,
+      const std::vector<AppCacheDatabase::EntryRecord>& entries,
+      const std::vector<AppCacheDatabase::FallbackNameSpaceRecord>& fallbacks,
+      const std::vector<AppCacheDatabase::OnlineWhiteListRecord>& whitelists);
+
+  // Returns the database records to be stored in the AppCacheDatabase
+  // to represent this cache.
+  void ToDatabaseRecords(
+      const AppCacheGroup* group,
+      AppCacheDatabase::CacheRecord* cache_record,
+      std::vector<AppCacheDatabase::EntryRecord>* entries,
+      std::vector<AppCacheDatabase::FallbackNameSpaceRecord>* fallbacks,
+      std::vector<AppCacheDatabase::OnlineWhiteListRecord>* whitelists);
+
   bool FindResponseForRequest(const GURL& url,
       AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
       GURL* found_fallback_namespace, bool* found_network_namespace);
@@ -82,6 +99,7 @@ class AppCache : public base::RefCounted<AppCache> {
  private:
   friend class AppCacheGroup;
   friend class AppCacheHost;
+  friend class AppCacheStorageImplTest;
   friend class AppCacheUpdateJobTest;
   friend class base::RefCounted<AppCache>;
 

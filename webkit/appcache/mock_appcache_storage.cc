@@ -124,8 +124,6 @@ void MockAppCacheStorage::MarkEntryAsForeign(
     if (entry)
       entry->add_types(AppCacheEntry::FOREIGN);
   }
-  // TODO(michaeln): in real storage update in storage, and if this cache is
-  // being loaded be sure to update the memory cache upon load completion.
 }
 
 void MockAppCacheStorage::MakeGroupObsolete(
@@ -140,7 +138,7 @@ void MockAppCacheStorage::MakeGroupObsolete(
 }
 
 AppCacheResponseReader* MockAppCacheStorage::CreateResponseReader(
-    const GURL& origin, int64 response_id) {
+    const GURL& manifest_url, int64 response_id) {
   return new AppCacheResponseReader(response_id, disk_cache());
 }
 
@@ -203,14 +201,6 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
 
   if (delegate_ref->delegate)
     delegate_ref->delegate->OnGroupAndNewestCacheStored(group, true);
-
-  // We don't bother with removing responses from 'mock' storage
-  // TODO(michaeln): for 'real' storage...
-  // std::set<int64> doomed_responses_ = responses from old caches
-  // std::set<int64> needed_responses_ = responses from newest cache
-  // foreach(needed_responses_)
-  //  doomed_responses_.remove(needed_response_);
-  // DoomResponses(group->manifest_url(), doomed_responses_);
 }
 
 namespace {

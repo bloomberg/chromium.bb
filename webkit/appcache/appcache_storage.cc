@@ -8,6 +8,9 @@
 
 namespace appcache {
 
+// static
+const int64 AppCacheStorage::kUnitializedId = -1;
+
 AppCacheStorage::AppCacheStorage(AppCacheService* service)
     : last_cache_id_(kUnitializedId), last_group_id_(kUnitializedId),
       last_response_id_(kUnitializedId), service_(service)  {

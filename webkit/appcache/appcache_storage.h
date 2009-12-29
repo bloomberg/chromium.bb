@@ -299,7 +299,7 @@ class AppCacheStorage {
   PendingResponseInfoLoads pending_info_loads_;
 
   // The set of last ids must be retrieved from storage prior to being used.
-  static const int64 kUnitializedId = -1;
+  static const int64 kUnitializedId;
 
   FRIEND_TEST(AppCacheStorageTest, DelegateReferences);
   DISALLOW_COPY_AND_ASSIGN(AppCacheStorage);
