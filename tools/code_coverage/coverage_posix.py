@@ -39,6 +39,12 @@ Linux:
 --trim=False: by default we trim away tests known to be problematic on
   specific platforms.  If set to false we do NOT trim out tests.
 
+--xvfb=True: By default we use Xvfb to make sure DISPLAY is valid
+  (Linux only).  if set to False, do not use Xvfb.  TODO(jrg): convert
+  this script from the compile stage of a builder to a
+  RunPythonCommandInBuildDir() command to avoid the need for this
+  step.
+
 Strings after all options are considered tests to run.  Test names
 have all text before a ':' stripped to help with gyp compatibility.
 For example, ../base/base.gyp:base_unittests is interpreted as a test
@@ -52,6 +58,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 import traceback
 
 class Coverage(object):
@@ -76,6 +83,7 @@ class Coverage(object):
     self.FindPrograms()
     self.ConfirmPlatformAndPaths()
     self.tests = []
+    self.xvfb_pid = 0
 
   def FindInPath(self, program):
     """Find program in our path.  Return abs path to it, or None."""
@@ -233,8 +241,14 @@ class Coverage(object):
     cmdlist = [self.perf, '-start:coverage', '-output:' + self.vsts_output]
     self.Run(cmdlist)
 
+  def BeforeRunAllTests(self):
+    """Called right before we run all tests."""
+    if self.IsLinux() and self.options.xvfb:
+      self.StartXvfb()
+
   def RunTests(self):
     """Run all unit tests and generate appropriate lcov files."""
+    self.BeforeRunAllTests()
     for fulltest in self.tests:
       if not os.path.exists(fulltest):
         logging.info(fulltest + ' does not exist')
@@ -284,6 +298,50 @@ class Coverage(object):
     if self.IsPosix():
       # On POSIX we can do it all at once without running out of memory.
       self.GenerateLcovPosix()
+    if self.IsLinux() and self.options.xvfb:
+      self.StopXvfb()
+
+  def StartXvfb(self):
+    """Start Xvfb and set an appropriate DISPLAY environment.  Linux only.
+
+    Copied from http://src.chromium.org/viewvc/chrome/trunk/tools/buildbot/
+      scripts/slave/slave_utils.py?view=markup
+    with some simplifications (e.g. no need to use xdisplaycheck, save
+    pid in var not file, etc)
+    """
+    logging.info('Xvfb: starting')
+    proc = subprocess.Popen(["Xvfb", ":9", "-screen", "0", "1024x768x24",
+                             "-ac"],
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    self.xvfb_pid = proc.pid
+    if not self.xvfb_pid:
+      logging.info('Could not start Xvfb')
+      return
+    os.environ['DISPLAY'] = ":9"
+    # Now confirm, giving a chance for it to start if needed.
+    logging.info('Xvfb: confirming')
+    for test in range(10):
+      proc = subprocess.Popen('xdpyinfo >/dev/null', shell=True)
+      pid, retcode = os.waitpid(proc.pid, 0)
+      if retcode == 0:
+        break
+      time.sleep(0.5)
+    if retcode != 0:
+      logging.info('Warning: could not confirm Xvfb happiness')
+    else:
+      logging.info('Xvfb: OK')
+
+  def StopXvfb(self):
+    """Stop Xvfb if needed.  Linux only."""
+    if self.xvfb_pid:
+      logging.info('Xvfb: killing')
+      try:
+        os.kill(self.xvfb_pid, signal.SIGKILL)
+      except:
+        pass
+      del os.environ['DISPLAY']
+      self.xvfb_pid = 0
+
 
   def GenerateLcovPosix(self):
     """Convert profile data to lcov."""
@@ -383,6 +441,11 @@ def main():
                     dest='trim',
                     default=True,
                     help='Trim out tests?  Default True.')
+  parser.add_option('-x',
+                    '--xvfb',
+                    dest='xvfb',
+                    default=True,
+                    help='Use Xvfb for tests?  Default True.')
   (options, args) = parser.parse_args()
   if not options.directory:
     parser.error('Directory not specified')
