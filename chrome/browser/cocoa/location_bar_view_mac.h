@@ -185,9 +185,7 @@ class LocationBarViewMac : public AutocompleteEditController,
 
     int current_tab_id() { return current_tab_id_; }
 
-    void set_preview_enabled(bool preview_enabled) {
-      preview_enabled_ = preview_enabled;
-    }
+    void set_preview_enabled(bool enabled) { preview_enabled_ = enabled; }
 
     // Either notify listeners or show a popup depending on the Page Action.
     // Virtual so it can be overridden for testing.
@@ -200,6 +198,13 @@ class LocationBarViewMac : public AutocompleteEditController,
     // visible or hidden. |contents| is the TabContents that is active, |url|
     // is the current page URL.
     void UpdateVisibility(TabContents* contents, const GURL& url);
+
+    // Sets the tooltip for this Page Action image.
+    void SetToolTip(NSString* tooltip);
+    void SetToolTip(std::string tooltip);
+
+    // Returns the tooltip for this Page Action image or |nil| if there is none.
+    const NSString* GetToolTip();
 
    protected:
     // For unit testing only.
@@ -246,7 +251,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     GURL current_url_;
 
     // The string to show for a tooltip.
-    std::string tooltip_;
+    scoped_nsobject<NSString> tooltip_;
 
     // This is used for post-install visual feedback. The page_action icon
     // is briefly shown even if it hasn't been enabled by it's extension.

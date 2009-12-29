@@ -411,6 +411,7 @@ void LocationBarViewMac::Observe(NotificationType type,
       if (Details<TabContents>(contents) != details)
         return;
 
+      [field_ updateCursorAndToolTipRects];
       [field_ setNeedsDisplay:YES];
       break;
     }
@@ -603,10 +604,7 @@ void LocationBarViewMac::PageActionImageView::UpdateVisibility(
   bool visible = preview_enabled_ ||
                  page_action_->GetIsVisible(current_tab_id_);
   if (visible) {
-    // Set the tooltip.
-    tooltip_ = page_action_->GetTitle(current_tab_id_);
-    // TODO(port): implement tooltips
-    //SetTooltipText(ASCIIToWide(tooltip_));
+    SetToolTip(page_action_->GetTitle(current_tab_id_));
 
     // Set the image.
     // It can come from three places. In descending order of priority:
@@ -638,6 +636,26 @@ void LocationBarViewMac::PageActionImageView::UpdateVisibility(
       SetImage(gfx::SkBitmapToNSImage(skia_icon));
   }
   SetVisible(visible);
+}
+
+void LocationBarViewMac::PageActionImageView::SetToolTip(NSString* tooltip) {
+  if (!tooltip) {
+    tooltip_.reset();
+    return;
+  }
+  tooltip_.reset([tooltip retain]);
+}
+
+void LocationBarViewMac::PageActionImageView::SetToolTip(std::string tooltip) {
+  if (tooltip.empty()) {
+    SetToolTip(nil);
+    return;
+  }
+  SetToolTip(base::SysUTF8ToNSString(tooltip));
+}
+
+const NSString* LocationBarViewMac::PageActionImageView::GetToolTip() {
+  return tooltip_.get();
 }
 
 void LocationBarViewMac::PageActionImageView::Observe(

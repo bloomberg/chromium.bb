@@ -383,6 +383,8 @@ class PrefObserverBridge : public NotificationObserver {
                shouldRestoreState:(BOOL)shouldRestore {
   locationBarView_->Update(tab, shouldRestore ? true : false);
 
+  [locationBar_ updateCursorAndToolTipRects];
+
   if (browserActionsController_.get()) {
     [browserActionsController_ update];
   }

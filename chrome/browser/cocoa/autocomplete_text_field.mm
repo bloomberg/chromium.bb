@@ -156,11 +156,13 @@
 }
 
 // Overriden to pass OnFrameChanged() notifications to |observer_|.
+// Additionally, cursor and tooltip rects need to be updated.
 - (void)setFrame:(NSRect)frameRect {
   [super setFrame:frameRect];
   if (observer_) {
     observer_->OnFrameChanged();
   }
+  [self updateCursorAndToolTipRects];
 }
 
 // Due to theming, parts of the field are transparent.
@@ -191,6 +193,42 @@
 
 - (void)clearUndoChain {
   [undoManager_ removeAllActions];
+}
+
+// Any image within the field (Page Actions or the security icon) should have
+// the arrow cursor shown instead of the I-beam.
+- (void)resetCursorRects {
+  AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
+  NSRect iconRect = [cell securityImageFrameForFrame:[self bounds]];
+  [self addCursorRect:iconRect cursor:[NSCursor arrowCursor]];
+
+  const size_t pageActionCount = [cell pageActionCount];
+  for (size_t i = 0; i < pageActionCount; ++i) {
+    iconRect = [cell pageActionFrameForIndex:i inFrame:[self bounds]];
+    [self addCursorRect:iconRect cursor:[NSCursor arrowCursor]];
+  }
+}
+
+- (void)updateCursorAndToolTipRects {
+  // This will force |resetCursorRects| to be called, as it is not to be called
+  // directly.
+  [[self window] invalidateCursorRectsForView:self];
+
+  // |removeAllToolTips| only removes those set on the current NSView, not any
+  // subviews. Unless more tooltips are added to this view, this should suffice
+  // in place of managing a set of NSToolTipTag objects.
+  [self removeAllToolTips];
+
+  AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
+  const size_t pageActionCount = [cell pageActionCount];
+  for (size_t i = 0; i < pageActionCount; ++i) {
+    NSRect iconRect = [cell pageActionFrameForIndex:i inFrame:[self bounds]];
+    NSString* tooltip = [cell pageActionToolTipForIndex:i];
+    if (!tooltip)
+      continue;
+
+    [self addToolTipRect:iconRect owner:tooltip userData:nil];
+  }
 }
 
 // NOTE(shess): http://crbug.com/19116 describes a weird bug which

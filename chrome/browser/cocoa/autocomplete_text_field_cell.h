@@ -72,6 +72,10 @@
 // at the given index. May be NSZeroRect if the index's action is not visible.
 - (NSRect)pageActionFrameForIndex:(size_t)index inFrame:(NSRect)cellFrame;
 
+// Returns the string to be shown on hover for the Page Action icon at the
+// given index.
+- (NSString*)pageActionToolTipForIndex:(size_t)index;
+
 // Called when the Page Action at the given index, whose icon is drawn in the
 // iconFrame, is visible and clicked. Passed through to the list of views to
 // handle the click.

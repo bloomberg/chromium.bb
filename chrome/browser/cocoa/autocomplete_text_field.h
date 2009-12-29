@@ -103,6 +103,11 @@ class AutocompleteTextFieldObserver {
 // Clears the undo chain for this text field.
 - (void)clearUndoChain;
 
+// Updates cursor and tooltip rects depending on the contents of the text field
+// e.g. the security icon should have a default pointer shown on hover instead
+// of an I-beam.
+- (void)updateCursorAndToolTipRects;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_AUTOCOMPLETE_TEXT_FIELD_H_
