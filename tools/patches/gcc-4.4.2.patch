@@ -255,7 +255,94 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386-protos.h gcc-4.4.2/gcc/config/i386
 diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
 --- gcc-4.4.2.orig/gcc/config/i386/i386.c	2009-09-21 16:22:40.000000000 +0200
 +++ gcc-4.4.2/gcc/config/i386/i386.c	2009-12-25 11:10:19.000000000 +0100
-@@ -7452,6 +7452,8 @@
+@@ -6593,36 +6593,39 @@
+ 	 sse_prologue_save insn template that produces computed jump across
+ 	 SSE saves.  We need some preparation work to get this working.  */
+ 
+-      label = gen_label_rtx ();
+-      label_ref = gen_rtx_LABEL_REF (Pmode, label);
++      if (!flag_control_integrity)
++	{
++	  label = gen_label_rtx ();
++	  label_ref = gen_rtx_LABEL_REF (Pmode, label);
+ 
+-      /* Compute address to jump to :
+-         label - eax*4 + nnamed_sse_arguments*4 Or
+-         label - eax*5 + nnamed_sse_arguments*5 for AVX.  */
+-      tmp_reg = gen_reg_rtx (Pmode);
+-      nsse_reg = gen_reg_rtx (Pmode);
+-      emit_insn (gen_zero_extendqidi2 (nsse_reg, gen_rtx_REG (QImode, AX_REG)));
+-      emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
+-			      gen_rtx_MULT (Pmode, nsse_reg,
+-					    GEN_INT (4))));
++	  /* Compute address to jump to :
++	     label - eax*4 + nnamed_sse_arguments*4 Or
++	     label - eax*5 + nnamed_sse_arguments*5 for AVX.  */
++	  tmp_reg = gen_reg_rtx (Pmode);
++	  nsse_reg = gen_reg_rtx (Pmode);
++	  emit_insn (gen_zero_extendqidi2 (nsse_reg, gen_rtx_REG (QImode, AX_REG)));
++	  emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
++				  gen_rtx_MULT (Pmode, nsse_reg,
++						GEN_INT (4))));
+ 
+-      /* vmovaps is one byte longer than movaps.  */
+-      if (TARGET_AVX)
+-	emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
+-				gen_rtx_PLUS (Pmode, tmp_reg,
+-					      nsse_reg)));
+-
+-      if (cum->sse_regno)
+-	emit_move_insn
+-	  (nsse_reg,
+-	   gen_rtx_CONST (DImode,
+-			  gen_rtx_PLUS (DImode,
+-					label_ref,
+-					GEN_INT (cum->sse_regno
+-						 * (TARGET_AVX ? 5 : 4)))));
+-      else
+-	emit_move_insn (nsse_reg, label_ref);
+-      emit_insn (gen_subdi3 (nsse_reg, nsse_reg, tmp_reg));
++	  /* vmovaps is one byte longer than movaps.  */
++	  if (TARGET_AVX)
++	    emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
++				    gen_rtx_PLUS (Pmode, tmp_reg,
++						  nsse_reg)));
++
++	  if (cum->sse_regno)
++	    emit_move_insn
++	      (nsse_reg,
++	       gen_rtx_CONST (DImode,
++			      gen_rtx_PLUS (DImode,
++					    label_ref,
++					    GEN_INT (cum->sse_regno
++						     * (TARGET_AVX ? 5 : 4)))));
++	  else
++	    emit_move_insn (nsse_reg, label_ref);
++	  emit_insn (gen_subdi3 (nsse_reg, nsse_reg, tmp_reg));
++	}
+ 
+       /* Compute address of memory block we save into.  We always use pointer
+ 	 pointing 127 bytes after first byte to store - this is needed to keep
+@@ -6638,8 +6641,16 @@
+       set_mem_align (mem, BITS_PER_WORD);
+ 
+       /* And finally do the dirty job!  */
+-      emit_insn (gen_sse_prologue_save (mem, nsse_reg,
+-					GEN_INT (cum->sse_regno), label));
++      if (flag_control_integrity)
++	{
++	  emit_insn (gen_nacl_sse_prologue_save (mem,
++						 GEN_INT (cum->sse_regno)));
++	}
++      else
++	{
++	  emit_insn (gen_sse_prologue_save (mem, nsse_reg,
++					    GEN_INT (cum->sse_regno), label));
++	}
+     }
+ }
+ 
+@@ -7452,6 +7463,8 @@
  	  (*targetm.asm_out.unique_section) (decl, 0);
  	  switch_to_section (get_named_section (decl, NULL, 0));
  
@@ -264,7 +351,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	  (*targetm.asm_out.globalize_label) (asm_out_file, name);
  	  fputs ("\t.hidden\t", asm_out_file);
  	  assemble_name (asm_out_file, name);
-@@ -7461,14 +7463,30 @@
+@@ -7461,14 +7474,30 @@
        else
  	{
  	  switch_to_section (text_section);
@@ -295,7 +382,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
    if (NEED_INDICATE_EXEC_STACK)
      file_end_indicate_exec_stack ();
-@@ -8688,6 +8706,8 @@
+@@ -8688,6 +8717,8 @@
    if (style == 0)
      return;
  
@@ -304,7 +391,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
    if (crtl->args.pops_args && crtl->args.size)
      {
        rtx popc = GEN_INT (crtl->args.pops_args);
-@@ -8696,22 +8716,38 @@
+@@ -8696,22 +8727,38 @@
  	 return address, do explicit add, and jump indirectly to the
  	 caller.  */
  
@@ -352,7 +439,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  }
  
  /* Reset from the function's potential modifications.  */
-@@ -8746,6 +8782,87 @@
+@@ -8746,6 +8793,87 @@
     grossly off.  Return -1 if the address contains ASHIFT, so it is not
     strictly valid, but still used for computing length of lea instruction.  */
  
@@ -440,7 +527,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  int
  ix86_decompose_address (rtx addr, struct ix86_address *out)
  {
-@@ -8757,7 +8874,18 @@
+@@ -8757,7 +8885,18 @@
    enum ix86_address_seg seg = SEG_DEFAULT;
  
    if (REG_P (addr) || GET_CODE (addr) == SUBREG)
@@ -459,7 +546,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
    else if (GET_CODE (addr) == PLUS)
      {
        rtx addends[4], op;
-@@ -8768,9 +8896,17 @@
+@@ -8768,9 +8907,17 @@
  	{
  	  if (n >= 4)
  	    return 0;
@@ -477,7 +564,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
        while (GET_CODE (op) == PLUS);
        if (n >= 4)
  	return 0;
-@@ -8785,6 +8921,11 @@
+@@ -8785,6 +8932,11 @@
  	      if (index)
  		return 0;
  	      index = XEXP (op, 0);
@@ -489,7 +576,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	      scale_rtx = XEXP (op, 1);
  	      break;
  
-@@ -8799,10 +8940,31 @@
+@@ -8799,10 +8951,31 @@
  
  	    case REG:
  	    case SUBREG:
@@ -521,7 +608,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	      else
  		return 0;
  	      break;
-@@ -8824,6 +8986,11 @@
+@@ -8824,6 +8997,11 @@
    else if (GET_CODE (addr) == MULT)
      {
        index = XEXP (addr, 0);		/* index*scale */
@@ -533,7 +620,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
        scale_rtx = XEXP (addr, 1);
      }
    else if (GET_CODE (addr) == ASHIFT)
-@@ -8832,6 +8999,11 @@
+@@ -8832,6 +9010,11 @@
  
        /* We're called for lea too, which implements ashift on occasion.  */
        index = XEXP (addr, 0);
@@ -545,7 +632,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
        tmp = XEXP (addr, 1);
        if (!CONST_INT_P (tmp))
  	return 0;
-@@ -9297,9 +9469,10 @@
+@@ -9297,9 +9480,10 @@
  	  goto report_error;
  	}
  
@@ -558,7 +645,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	  goto report_error;
  	}
  
-@@ -9333,9 +9506,16 @@
+@@ -9333,9 +9517,16 @@
  	  goto report_error;
  	}
  
@@ -577,7 +664,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	  goto report_error;
  	}
  
-@@ -9514,7 +9694,9 @@
+@@ -9514,7 +9705,9 @@
    rtx addr = orig;
    rtx new_rtx = orig;
    rtx base;
@@ -587,7 +674,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  #if TARGET_MACHO
    if (TARGET_MACHO && !TARGET_64BIT)
      {
-@@ -9562,7 +9744,7 @@
+@@ -9562,7 +9755,7 @@
  	}
        else new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmpreg);
      }
@@ -596,7 +683,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
      {
        /* This symbol may be referenced via a displacement from the PIC
  	 base address (@GOTOFF).  */
-@@ -9573,14 +9755,14 @@
+@@ -9573,14 +9766,14 @@
  	addr = XEXP (addr, 0);
        if (GET_CODE (addr) == PLUS)
  	  {
@@ -616,7 +703,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
        if (reg != 0)
  	{
-@@ -9602,19 +9784,19 @@
+@@ -9602,19 +9795,19 @@
                && SYMBOL_REF_DLLIMPORT_P (XEXP (XEXP (addr, 0), 0)))
              {
                rtx t = legitimize_dllimport_symbol (XEXP (XEXP (addr, 0), 0), true);
@@ -641,7 +728,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	  /* Use directly gen_movsi, otherwise the address is loaded
  	     into register for CSE.  We don't want to CSE this addresses,
  	     instead we CSE addresses from the GOT table, so skip this.  */
-@@ -9628,16 +9810,16 @@
+@@ -9628,16 +9821,16 @@
  
  	  if (reload_in_progress)
  	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
@@ -664,7 +751,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	  emit_move_insn (reg, new_rtx);
  	  new_rtx = reg;
  	}
-@@ -9653,7 +9835,7 @@
+@@ -9653,7 +9846,7 @@
  	      new_rtx = reg;
  	    }
  	  else
@@ -673,7 +760,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	}
        else if (GET_CODE (addr) == CONST)
  	{
-@@ -9674,18 +9856,18 @@
+@@ -9674,18 +9867,18 @@
  
  	  /* Check first to see if this is a constant offset from a @GOTOFF
  	     symbol reference.  */
@@ -697,7 +784,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
  		  if (reg != 0)
  		    {
-@@ -9698,9 +9880,9 @@
+@@ -9698,9 +9891,9 @@
  		  if (INTVAL (op1) < -16*1024*1024
  		      || INTVAL (op1) >= 16*1024*1024)
  		    {
@@ -710,7 +797,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  		    }
  		}
  	    }
-@@ -9716,10 +9898,10 @@
+@@ -9716,10 +9909,10 @@
  		{
  		  if (GET_CODE (new_rtx) == PLUS && CONSTANT_P (XEXP (new_rtx, 1)))
  		    {
@@ -723,7 +810,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  		}
  	    }
  	}
-@@ -9878,6 +10060,15 @@
+@@ -9878,6 +10071,15 @@
        break;
  
      case TLS_MODEL_LOCAL_EXEC:
@@ -739,7 +826,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
        off = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x),
  			    (TARGET_64BIT || TARGET_ANY_GNU_TLS)
  			    ? UNSPEC_NTPOFF : UNSPEC_TPOFF);
-@@ -10166,7 +10357,21 @@
+@@ -10166,7 +10368,21 @@
  	  rtx temp = gen_reg_rtx (Pmode);
  	  rtx val  = force_operand (XEXP (x, 1), temp);
  	  if (val != temp)
@@ -761,7 +848,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
  	  XEXP (x, 1) = temp;
  	  return x;
-@@ -10177,7 +10382,21 @@
+@@ -10177,7 +10393,21 @@
  	  rtx temp = gen_reg_rtx (Pmode);
  	  rtx val  = force_operand (XEXP (x, 0), temp);
  	  if (val != temp)
@@ -783,7 +870,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
  	  XEXP (x, 0) = temp;
  	  return x;
-@@ -11437,9 +11656,23 @@
+@@ -11437,9 +11667,23 @@
        break;
      case SEG_FS:
      case SEG_GS:
@@ -808,7 +895,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
        break;
      default:
        gcc_unreachable ();
-@@ -12329,6 +12562,7 @@
+@@ -12329,6 +12573,7 @@
  {
    rtx op0, op1;
    enum tls_model model;
@@ -816,7 +903,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
    op0 = operands[0];
    op1 = operands[1];
-@@ -12365,14 +12599,28 @@
+@@ -12365,14 +12610,28 @@
        if (tmp)
  	{
  	  tmp = force_operand (tmp, NULL);
@@ -850,7 +937,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
      {
        if (TARGET_MACHO && !TARGET_64BIT)
  	{
-@@ -12381,8 +12629,8 @@
+@@ -12381,8 +12640,8 @@
  	    {
  	      rtx temp = ((reload_in_progress
  			   || ((op0 && REG_P (op0))
@@ -861,7 +948,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	      op1 = machopic_indirect_data_reference (op1, temp);
  	      op1 = machopic_legitimize_pic_address (op1, mode,
  						     temp == op1 ? 0 : temp);
-@@ -12396,8 +12644,8 @@
+@@ -12396,8 +12655,8 @@
        else
  	{
  	  if (MEM_P (op0))
@@ -872,7 +959,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	    {
  	      rtx reg = !can_create_pseudo_p () ? op0 : NULL_RTX;
  	      op1 = legitimize_pic_address (op1, reg);
-@@ -12447,6 +12695,12 @@
+@@ -12447,6 +12706,12 @@
  	}
      }
  
@@ -885,7 +972,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
    emit_insn (gen_rtx_SET (VOIDmode, op0, op1));
  }
  
-@@ -19048,7 +19302,7 @@
+@@ -19048,7 +19313,7 @@
  {
    int i;
  
@@ -894,7 +981,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
      {
        rtx set = PATTERN (insn);
  
-@@ -19057,7 +19311,10 @@
+@@ -19057,7 +19322,10 @@
  
        gcc_assert (GET_CODE (set) == SET);
  
@@ -1771,18 +1858,83 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  ;; We used to use "int $5", in honor of #BR which maps to interrupt vector 5.
  ;; That, however, is usually mapped by the OS to SIGSEGV, which is often
  ;; caught for use by garbage collectors and the like.  Using an insn that
-@@ -21675,7 +22204,10 @@
-   if (TARGET_AVX && GET_CODE (XEXP (operands[0], 0)) != PLUS)
-     gcc_unreachable ();
+@@ -21664,7 +22193,7 @@
+    (use (match_operand:DI 1 "register_operand" "r"))
+    (use (match_operand:DI 2 "const_int_operand" "i"))
+    (use (label_ref:DI (match_operand 3 "" "X")))]
+-  "TARGET_64BIT
++  "TARGET_64BIT && !flag_control_integrity
+    && INTVAL (operands[4]) + X86_64_SSE_REGPARM_MAX * 16 - 16 < 128
+    && INTVAL (operands[4]) + INTVAL (operands[2]) * 16 >= -128"
+ {
+@@ -21702,6 +22231,67 @@
+    (set_attr "prefix" "maybe_vex")
+    (set_attr "mode" "DI")])
  
--  output_asm_insn ("jmp\t%A1", operands);
-+  if (flag_control_integrity)
-+    output_asm_insn ("nacljmp\t%k1,%%r15", operands);
-+  else
-+    output_asm_insn ("jmp\t%A1", operands);
-   for (i = X86_64_SSE_REGPARM_MAX - 1; i >= INTVAL (operands[2]); i--)
-     {
-       operands[4] = adjust_address (operands[0], DImode, i*16);
++(define_expand "nacl_sse_prologue_save"
++  [(parallel [(set (match_operand:BLK 0 "" "")
++		   (unspec:BLK [(reg:DI 21)
++				(reg:DI 22)
++				(reg:DI 23)
++				(reg:DI 24)
++				(reg:DI 25)
++				(reg:DI 26)
++				(reg:DI 27)
++				(reg:DI 28)] UNSPEC_SSE_PROLOGUE_SAVE))
++	      (use (match_operand:DI 1 "immediate_operand" ""))])]
++  "TARGET_64BIT"
++  "")
++
++(define_insn "*nacl_sse_prologue_save_insn"
++  [(set (mem:BLK (plus:DI (match_operand:DI 0 "register_operand" "R")
++			  (match_operand:DI 2 "const_int_operand" "n")))
++	(unspec:BLK [(reg:DI 21)
++		     (reg:DI 22)
++		     (reg:DI 23)
++		     (reg:DI 24)
++		     (reg:DI 25)
++		     (reg:DI 26)
++		     (reg:DI 27)
++		     (reg:DI 28)] UNSPEC_SSE_PROLOGUE_SAVE))
++   (use (match_operand:DI 1 "const_int_operand" "i"))]
++  "TARGET_64BIT && flag_control_integrity
++   && INTVAL (operands[2]) + X86_64_SSE_REGPARM_MAX * 16 - 16 < 128
++   && INTVAL (operands[2]) + INTVAL (operands[1]) * 16 >= -128"
++{
++  int i;
++  operands[0] = gen_rtx_MEM (Pmode,
++			     gen_rtx_PLUS (Pmode, operands[0], operands[2]));
++  /* VEX instruction with a REX prefix will #UD.  */
++  if (TARGET_AVX && GET_CODE (XEXP (operands[0], 0)) != PLUS)
++    gcc_unreachable ();
++
++  for (i = X86_64_SSE_REGPARM_MAX - 1; i >= INTVAL (operands[1]); i--)
++    {
++      operands[2] = adjust_address (operands[0], DImode, i*16);
++      operands[3] = gen_rtx_REG (TImode, SSE_REGNO (i));
++      PUT_MODE (operands[2], TImode);
++      if (GET_CODE (XEXP (operands[0], 0)) != PLUS)
++        output_asm_insn ("rex", operands);
++      output_asm_insn ("%vmovaps\t{%3, %2|%2, %3}", operands);
++    }
++  return "";
++}
++  [(set_attr "type" "other")
++   (set_attr "length_immediate" "0")
++   (set_attr "length_address" "0")
++   (set (attr "length")
++     (if_then_else
++       (eq (symbol_ref "TARGET_AVX") (const_int 0))
++       (const_string "34")
++       (const_string "42")))
++   (set_attr "memory" "store")
++   (set_attr "modrm" "0")
++   (set_attr "prefix" "maybe_vex")
++   (set_attr "mode" "DI")])
++
+ (define_expand "prefetch"
+   [(prefetch (match_operand 0 "address_operand" "")
+ 	     (match_operand:SI 1 "const_int_operand" "")
 diff -uNr gcc-4.4.2.orig/gcc/config/i386/nacl.h gcc-4.4.2/gcc/config/i386/nacl.h
 --- gcc-4.4.2.orig/gcc/config/i386/nacl.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-4.4.2/gcc/config/i386/nacl.h	2009-12-25 11:10:19.000000000 +0100
