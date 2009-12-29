@@ -64,20 +64,30 @@ SSLSocketAdapter::SSLSocketAdapter(AsyncSocket* socket)
         io_callback_(this, &SSLSocketAdapter::OnIO)),
       ssl_connected_(false),
       state_(STATE_NONE) {
-  socket_ = new TransportSocket(socket, this);
+  transport_socket_ = new TransportSocket(socket, this);
 }
 
 int SSLSocketAdapter::StartSSL(const char* hostname, bool restartable) {
   DCHECK(!restartable);
+  hostname_ = hostname;
 
+  if (socket_->GetState() != Socket::CS_CONNECTED) {
+    state_ = STATE_SSL_WAIT;
+    return 0;
+  } else {
+    return BeginSSL();
+  }
+}
+
+int SSLSocketAdapter::BeginSSL() {
   // SSLConfigService is not thread-safe, and the default values for SSLConfig
   // are correct for us, so we don't use the config service to initialize this
   // object.
   net::SSLConfig ssl_config;
-  socket_->set_addr(talk_base::SocketAddress(hostname));
+  transport_socket_->set_addr(talk_base::SocketAddress(hostname_.c_str()));
   ssl_socket_.reset(
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-          socket_, hostname, ssl_config));
+          transport_socket_, hostname_.c_str(), ssl_config));
 
   int result = ssl_socket_->Connect(&connected_callback_, NULL);
 
@@ -138,6 +148,7 @@ int SSLSocketAdapter::Recv(void* buf, size_t len) {
     case STATE_READ:
     case STATE_WRITE:
     case STATE_WRITE_COMPLETE:
+    case STATE_SSL_WAIT:
       SetError(EWOULDBLOCK);
       return -1;
 
@@ -170,6 +181,7 @@ void SSLSocketAdapter::OnIO(int result) {
     case STATE_NONE:
     case STATE_READ_COMPLETE:
     case STATE_WRITE_COMPLETE:
+    case STATE_SSL_WAIT:
     default:
       NOTREACHED();
       break;
@@ -177,13 +189,26 @@ void SSLSocketAdapter::OnIO(int result) {
 }
 
 void SSLSocketAdapter::OnReadEvent(talk_base::AsyncSocket* socket) {
-  if (!socket_->OnReadEvent(socket))
+  if (!transport_socket_->OnReadEvent(socket))
     AsyncSocketAdapter::OnReadEvent(socket);
 }
 
 void SSLSocketAdapter::OnWriteEvent(talk_base::AsyncSocket* socket) {
-  if (!socket_->OnWriteEvent(socket))
+  if (!transport_socket_->OnWriteEvent(socket))
     AsyncSocketAdapter::OnWriteEvent(socket);
+}
+
+void SSLSocketAdapter::OnConnectEvent(talk_base::AsyncSocket* socket) {
+  if (state_ != STATE_SSL_WAIT) {
+    AsyncSocketAdapter::OnConnectEvent(socket);
+  } else {
+    state_ = STATE_NONE;
+    int result = BeginSSL();
+    if (0 != result) {
+      // TODO(zork): Handle this case gracefully.
+      LOG(WARNING) << "BeginSSL() failed with " << result;
+    }
+  }
 }
 
 TransportSocket::TransportSocket(talk_base::AsyncSocket* socket,

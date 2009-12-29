@@ -105,7 +105,8 @@ class SSLSocketAdapter : public talk_base::AsyncSocketAdapter {
     STATE_READ,
     STATE_READ_COMPLETE,
     STATE_WRITE,
-    STATE_WRITE_COMPLETE
+    STATE_WRITE_COMPLETE,
+    STATE_SSL_WAIT
   };
 
   void OnConnected(int result);
@@ -113,9 +114,13 @@ class SSLSocketAdapter : public talk_base::AsyncSocketAdapter {
 
   void OnReadEvent(talk_base::AsyncSocket * socket);
   void OnWriteEvent(talk_base::AsyncSocket * socket);
+  void OnConnectEvent(talk_base::AsyncSocket * socket);
+
+  int BeginSSL();
 
   bool ignore_bad_cert_;
-  TransportSocket* socket_;
+  std::string hostname_;
+  TransportSocket* transport_socket_;
   scoped_ptr<net::SSLClientSocket> ssl_socket_;
   net::CompletionCallbackImpl<SSLSocketAdapter> connected_callback_;
   net::CompletionCallbackImpl<SSLSocketAdapter> io_callback_;
