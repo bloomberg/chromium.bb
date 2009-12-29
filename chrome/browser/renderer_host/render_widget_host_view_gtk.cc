@@ -19,6 +19,7 @@
 #include <string>
 
 #include "app/gfx/gtk_util.h"
+#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -564,10 +565,20 @@ void RenderWidgetHostViewGtk::Destroy() {
 }
 
 void RenderWidgetHostViewGtk::SetTooltipText(const std::wstring& tooltip_text) {
-  if (tooltip_text.empty()) {
+  // Maximum number of characters we allow in a tooltip.
+  const int kMaxTooltipLength = 8 << 10;
+  // Clamp the tooltip length to kMaxTooltipLength so that we don't
+  // accidentally DOS the user with a mega tooltip (since GTK doesn't do
+  // this itself).
+  // I filed https://bugzilla.gnome.org/show_bug.cgi?id=604641 upstream.
+  const std::wstring& clamped_tooltip =
+      l10n_util::TruncateString(tooltip_text, kMaxTooltipLength);
+
+  if (clamped_tooltip.empty()) {
     gtk_widget_set_has_tooltip(view_.get(), FALSE);
   } else {
-    gtk_widget_set_tooltip_text(view_.get(), WideToUTF8(tooltip_text).c_str());
+    gtk_widget_set_tooltip_text(view_.get(),
+                                WideToUTF8(clamped_tooltip).c_str());
   }
 }
 
