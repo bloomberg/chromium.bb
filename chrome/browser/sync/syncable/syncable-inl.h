@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_SYNCABLE_INL_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_SYNCABLE_INL_H_
 
-#include "chrome/browser/sync/util/query_helpers.h"
 #include "chrome/browser/sync/util/row_iterator.h"
+#include "chrome/common/sqlite_utils.h"
 
 namespace syncable {
 
@@ -21,8 +21,8 @@ class LessField {
 
 struct IdRowTraits {
   typedef syncable::Id RowType;
-  void Extract(sqlite3_stmt* statement, syncable::Id* id) const {
-    GetColumn(statement, 0, id);
+  void Extract(SQLStatement* statement, syncable::Id* id) const {
+    id->s_ = statement->column_string(0);
   }
 };
 

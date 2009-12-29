@@ -43,57 +43,19 @@ static void RegisterPathNameCollate(sqlite3* dbhandle) {
       NULL, &ComparePathNames16));
 }
 
-static inline bool IsSqliteErrorOurFault(int result) {
-  switch (result) {
-    case SQLITE_MISMATCH:
-    case SQLITE_CONSTRAINT:
-    case SQLITE_MISUSE:
-    case SQLITE_RANGE:
-      return true;
-    default:
-      return false;
-  }
-}
-
 namespace {
 
-// This small helper class reduces the amount of code in the table upgrade code
-// below and also CHECKs as soon as there's an issue.
-class StatementExecutor {
- public:
-  explicit StatementExecutor(sqlite3* dbhandle) : dbhandle_(dbhandle) {
-    result_ = SQLITE_DONE;
-  }
-  int Exec(const char* query) {
-    if (SQLITE_DONE != result_)
-      return result_;
-    result_ = ::Exec(dbhandle_, query);
-    CHECK(!IsSqliteErrorOurFault(result_)) << query;
-    return result_;
-  }
-  template <typename T1>
-  int Exec(const char* query, T1 arg1) {
-    if (SQLITE_DONE != result_)
-      return result_;
-    result_ = ::Exec(dbhandle_, query, arg1);
-    CHECK(!IsSqliteErrorOurFault(result_)) << query;
-    return result_;
-  }
-  int result() {
-    return result_;
-  }
-  void set_result(int result) {
-    result_ = result;
-    CHECK(!IsSqliteErrorOurFault(result_)) << result_;
-  }
-  bool healthy() const {
-    return SQLITE_DONE == result_;
-  }
- private:
-  sqlite3* dbhandle_;
-  int result_;
-  DISALLOW_COPY_AND_ASSIGN(StatementExecutor);
-};
+int ExecQuery(sqlite3* dbhandle, const char* query) {
+  SQLStatement statement;
+  int result = statement.prepare(dbhandle, query);
+  if (SQLITE_OK != result)
+    return result;
+  do {
+    result = statement.step();
+  } while (SQLITE_ROW == result);
+
+  return result;
+}
 
 }  // namespace
 
@@ -160,16 +122,6 @@ EntryKernel* UnpackEntry(SQLStatement* statement) {
     result = NULL;
   }
   return result;
-}
-
-static bool StepDone(sqlite3_stmt* statement, const char* failed_call) {
-  int result = sqlite3_step(statement);
-  if (SQLITE_DONE == result && SQLITE_OK == (result = sqlite3_reset(statement)))
-    return true;
-  // Some error code.
-  LOG(WARNING) << failed_call << " failed with result " << result;
-  CHECK(!IsSqliteErrorOurFault(result));
-  return false;
 }
 
 static string ComposeCreateTableColumnSpecs(const ColumnSpec* begin,
@@ -393,20 +345,27 @@ void DirectoryBackingStore::LoadExtendedAttributes(
 }
 
 void DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
-  ScopedStatement query(PrepareQuery(load_dbhandle_,
-      "SELECT last_sync_timestamp, initial_sync_ended, "
-      "store_birthday, next_id, cache_guid "
-      "FROM share_info"));
-  CHECK(SQLITE_ROW == sqlite3_step(query.get()));
-  GetColumn(query.get(), 0, &info->kernel_info.last_sync_timestamp);
-  GetColumn(query.get(), 1, &info->kernel_info.initial_sync_ended);
-  GetColumn(query.get(), 2, &info->kernel_info.store_birthday);
-  GetColumn(query.get(), 3, &info->kernel_info.next_id);
-  GetColumn(query.get(), 4, &info->cache_guid);
-  query.reset(PrepareQuery(load_dbhandle_,
-      "SELECT MAX(metahandle) FROM metas"));
-  CHECK(SQLITE_ROW == sqlite3_step(query.get()));
-  GetColumn(query.get(), 0, &info->max_metahandle);
+  {
+    SQLStatement query;
+    query.prepare(load_dbhandle_,
+                  "SELECT last_sync_timestamp, initial_sync_ended, "
+                  "store_birthday, next_id, cache_guid "
+                  "FROM share_info");
+    CHECK(SQLITE_ROW == query.step());
+    info->kernel_info.last_sync_timestamp = query.column_int64(0);
+    info->kernel_info.initial_sync_ended = query.column_bool(1);
+    info->kernel_info.store_birthday = query.column_string(2);
+    info->kernel_info.next_id = query.column_int64(3);
+    info->cache_guid = query.column_string(4);
+  }
+
+  {
+    SQLStatement query;
+    query.prepare(load_dbhandle_,
+                  "SELECT MAX(metahandle) FROM metas");
+    CHECK(SQLITE_ROW == query.step());
+    info->max_metahandle = query.column_int64(0);
+  }
 }
 
 bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
@@ -441,23 +400,31 @@ bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
 bool DirectoryBackingStore::SaveExtendedAttributeToDB(
     ExtendedAttributes::const_iterator i) {
   DCHECK(save_dbhandle_);
-  ScopedStatement insert(PrepareQuery(save_dbhandle_,
-      "INSERT INTO extended_attributes "
-      "(metahandle, key, value) "
-      "values ( ?, ?, ? )",
-      i->first.metahandle, i->first.key, i->second.value));
-  return StepDone(insert.get(), "SaveExtendedAttributeToDB()")
-      && 1 == sqlite3_changes(LazyGetSaveHandle());
+  SQLStatement insert;
+  insert.prepare(save_dbhandle_,
+                 "INSERT INTO extended_attributes "
+                 "(metahandle, key, value) "
+                 "values ( ?, ?, ? )");
+  insert.bind_int64(0, i->first.metahandle);
+  insert.bind_string(1, i->first.key);
+  insert.bind_blob(2, &i->second.value.at(0), i->second.value.size());
+  return (SQLITE_DONE == insert.step() &&
+          SQLITE_OK == insert.reset() &&
+          1 == insert.changes());
 }
 
 bool DirectoryBackingStore::DeleteExtendedAttributeFromDB(
     ExtendedAttributes::const_iterator i) {
   DCHECK(save_dbhandle_);
-  ScopedStatement delete_attribute(PrepareQuery(save_dbhandle_,
-      "DELETE FROM extended_attributes "
-      "WHERE metahandle = ? AND key = ? ",
-      i->first.metahandle, i->first.key));
-  if (!StepDone(delete_attribute.get(), "DeleteExtendedAttributeFromDB()")) {
+  SQLStatement delete_attribute;
+  delete_attribute.prepare(save_dbhandle_,
+                           "DELETE FROM extended_attributes "
+                           "WHERE metahandle = ? AND key = ? ");
+  delete_attribute.bind_int64(0, i->first.metahandle);
+  delete_attribute.bind_string(1, i->first.key);
+  if (!(SQLITE_DONE == delete_attribute.step() &&
+        SQLITE_OK == delete_attribute.reset() &&
+        1 == delete_attribute.changes())) {
     LOG(ERROR) << "DeleteExtendedAttributeFromDB(),StepDone() failed "
         << "for metahandle: " << i->first.metahandle << " key: "
         << i->first.key;
@@ -476,17 +443,30 @@ void DirectoryBackingStore::DropDeletedEntries() {
   static const char delete_metas[] = "DELETE FROM metas WHERE metahandle IN "
                                      "(SELECT metahandle from death_row)";
   // Put all statements into a transaction for better performance
-  ExecOrDie(load_dbhandle_, "BEGIN TRANSACTION");
-  ExecOrDie(load_dbhandle_, "CREATE TEMP TABLE death_row (metahandle BIGINT)");
-  ExecOrDie(load_dbhandle_, "INSERT INTO death_row "
-            "SELECT metahandle from metas WHERE is_del > 0 "
-            " AND is_unsynced < 1"
-            " AND is_unapplied_update < 1");
-  StatementExecutor x(load_dbhandle_);
-  x.Exec(delete_extended_attributes);
-  x.Exec(delete_metas);
-  ExecOrDie(load_dbhandle_, "DROP TABLE death_row");
-  ExecOrDie(load_dbhandle_, "COMMIT TRANSACTION");
+  SQLTransaction transaction(load_dbhandle_);
+  transaction.Begin();
+  if (SQLITE_DONE != ExecQuery(
+                         load_dbhandle_,
+                         "CREATE TEMP TABLE death_row (metahandle BIGINT)")) {
+    return;
+  }
+  if (SQLITE_DONE != ExecQuery(load_dbhandle_,
+                               "INSERT INTO death_row "
+                               "SELECT metahandle from metas WHERE is_del > 0 "
+                               " AND is_unsynced < 1"
+                               " AND is_unapplied_update < 1")) {
+    return;
+  }
+  if (SQLITE_DONE != ExecQuery(load_dbhandle_, delete_extended_attributes)) {
+    return;
+  }
+  if (SQLITE_DONE != ExecQuery(load_dbhandle_, delete_metas)) {
+    return;
+  }
+  if (SQLITE_DONE != ExecQuery(load_dbhandle_, "DROP TABLE death_row")) {
+    return;
+  }
+  transaction.Commit();
 }
 
 void DirectoryBackingStore::SafeDropTable(const char* table_name) {
@@ -503,11 +483,12 @@ void DirectoryBackingStore::SafeDropTable(const char* table_name) {
 int DirectoryBackingStore::CreateExtendedAttributeTable() {
   SafeDropTable("extended_attributes");
   LOG(INFO) << "CreateExtendedAttributeTable";
-  return Exec(load_dbhandle_, "CREATE TABLE extended_attributes("
-      "metahandle bigint, "
-      "key varchar(127), "
-      "value blob, "
-      "PRIMARY KEY(metahandle, key) ON CONFLICT REPLACE)");
+  return ExecQuery(load_dbhandle_,
+                   "CREATE TABLE extended_attributes("
+                   "metahandle bigint, "
+                   "key varchar(127), "
+                   "value blob, "
+                   "PRIMARY KEY(metahandle, key) ON CONFLICT REPLACE)");
 }
 
 void DirectoryBackingStore::DropAllTables() {
@@ -520,55 +501,80 @@ void DirectoryBackingStore::DropAllTables() {
 int DirectoryBackingStore::CreateTables() {
   LOG(INFO) << "First run, creating tables";
   // Create two little tables share_version and share_info
-  int result = Exec(load_dbhandle_, "CREATE TABLE share_version ("
-                    "id VARCHAR(128) primary key, data INT)");
-  result = SQLITE_DONE != result ? result :
-      Exec(load_dbhandle_, "INSERT INTO share_version VALUES(?, ?)",
-           dir_name_, kCurrentDBVersion);
-  result = SQLITE_DONE != result ? result :
-      Exec(load_dbhandle_, "CREATE TABLE share_info ("
-           "id VARCHAR(128) primary key, "
-           "last_sync_timestamp INT, "
-           "name VARCHAR(128), "
-           // Gets set if the syncer ever gets updates from the
-           // server and the server returns 0.  Lets us detect the
-           // end of the initial sync.
-           "initial_sync_ended BIT default 0, "
-           "store_birthday VARCHAR(256), "
-           "db_create_version VARCHAR(128), "
-           "db_create_time int, "
-           "next_id bigint default -2, "
-           "cache_guid VARCHAR(32))");
-  result = SQLITE_DONE != result ? result :
-      Exec(load_dbhandle_, "INSERT INTO share_info VALUES"
-           "(?, "  // id
-           "0, "   // last_sync_timestamp
-           "?, "   // name
-           "?, "   // initial_sync_ended
-           "?, "   // store_birthday
-           "?, "   // db_create_version
-           "?, "   // db_create_time
-           "-2, "  // next_id
-           "?)",   // cache_guid
-           dir_name_,                  // id
-           dir_name_,                  // name
-           false,                        // initial_sync_ended
-           "",                           // store_birthday
-           SYNC_ENGINE_VERSION_STRING,   // db_create_version
-           static_cast<int32>(time(0)),  // db_create_time
-           GenerateCacheGUID());         // cache_guid
+  int result = ExecQuery(load_dbhandle_,
+                         "CREATE TABLE share_version ("
+                         "id VARCHAR(128) primary key, data INT)");
+  if (result != SQLITE_DONE)
+    return result;
+  {
+    SQLStatement statement;
+    statement.prepare(load_dbhandle_, "INSERT INTO share_version VALUES(?, ?)");
+    statement.bind_string(0, dir_name_);
+    statement.bind_int(1, kCurrentDBVersion);
+    result = statement.step();
+  }
+  if (result != SQLITE_DONE)
+    return result;
+  result = ExecQuery(load_dbhandle_,
+                     "CREATE TABLE share_info ("
+                     "id VARCHAR(128) primary key, "
+                     "last_sync_timestamp INT, "
+                     "name VARCHAR(128), "
+                     // Gets set if the syncer ever gets updates from the
+                     // server and the server returns 0.  Lets us detect the
+                     // end of the initial sync.
+                     "initial_sync_ended BIT default 0, "
+                     "store_birthday VARCHAR(256), "
+                     "db_create_version VARCHAR(128), "
+                     "db_create_time int, "
+                     "next_id bigint default -2, "
+                     "cache_guid VARCHAR(32))");
+  if (result != SQLITE_DONE)
+    return result;
+  {
+    SQLStatement statement;
+    statement.prepare(load_dbhandle_, "INSERT INTO share_info VALUES"
+                                      "(?, "  // id
+                                      "0, "   // last_sync_timestamp
+                                      "?, "   // name
+                                      "?, "   // initial_sync_ended
+                                      "?, "   // store_birthday
+                                      "?, "   // db_create_version
+                                      "?, "   // db_create_time
+                                      "-2, "  // next_id
+                                      "?)");   // cache_guid);
+    statement.bind_string(0, dir_name_);                   // id
+    statement.bind_string(1, dir_name_);                   // name
+    statement.bind_bool(2, false);                         // initial_sync_ended
+    statement.bind_string(3, "");                          // store_birthday
+    statement.bind_string(4, SYNC_ENGINE_VERSION_STRING);  // db_create_version
+    statement.bind_int(5, static_cast<int32>(time(0)));    // db_create_time
+    statement.bind_string(6, GenerateCacheGUID());         // cache_guid
+    result = statement.step();
+  }
+  if (result != SQLITE_DONE)
+    return result;
   // Create the big metas table.
   string query = "CREATE TABLE metas " + ComposeCreateTableColumnSpecs
       (g_metas_columns, g_metas_columns + arraysize(g_metas_columns));
-  result = SQLITE_DONE != result ? result : Exec(load_dbhandle_, query.c_str());
-  // Insert the entry for the root into the metas table.
-  const int64 now = Now();
-  result = SQLITE_DONE != result ? result :
-    Exec(load_dbhandle_, "INSERT INTO metas "
-         "( id, metahandle, is_dir, ctime, mtime) "
-         "VALUES ( \"r\", 1, 1, ?, ?)",
-         now, now);
-  result = SQLITE_DONE != result ? result : CreateExtendedAttributeTable();
+  result = ExecQuery(load_dbhandle_, query.c_str());
+  if (result != SQLITE_DONE)
+    return result;
+  {
+    // Insert the entry for the root into the metas table.
+    const int64 now = Now();
+    SQLStatement statement;
+    statement.prepare(load_dbhandle_,
+                      "INSERT INTO metas "
+                      "( id, metahandle, is_dir, ctime, mtime) "
+                      "VALUES ( \"r\", 1, 1, ?, ?)");
+    statement.bind_int64(0, now);
+    statement.bind_int64(1, now);
+    result = statement.step();
+  }
+  if (result != SQLITE_DONE)
+    return result;
+  result = CreateExtendedAttributeTable();
   return result;
 }
 

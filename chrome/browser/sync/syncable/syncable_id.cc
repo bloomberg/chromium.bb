@@ -7,7 +7,6 @@
 #include <iosfwd>
 
 #include "base/string_util.h"
-#include "chrome/browser/sync/util/query_helpers.h"
 
 using std::ostream;
 using std::string;

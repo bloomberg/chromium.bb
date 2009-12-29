@@ -21,14 +21,13 @@ struct sqlite3_stmt;
 
 namespace syncable {
 struct EntryKernel;
+struct IdRowTraits;
 class Id;
 }  // namespace syncable
 
 class MockConnectionManager;
 class SQLStatement;
 
-sqlite3_stmt* BindArg(sqlite3_stmt*, const syncable::Id&, int index);
-void GetColumn(sqlite3_stmt*, int index, syncable::Id* value);
 std::ostream& operator << (std::ostream& out, const syncable::Id& id);
 browser_sync::FastDump& operator <<
   (browser_sync::FastDump& out, const syncable::Id& id);
@@ -47,6 +46,7 @@ namespace syncable {
 // 3. s<server provided opaque id> for items that the server knows about.
 class Id {
   friend syncable::EntryKernel* UnpackEntry(SQLStatement* statement);
+  friend struct syncable::IdRowTraits;
   friend int BindFields(const EntryKernel& entry, SQLStatement* statement);
   friend std::ostream& ::operator << (std::ostream& out,
                                       const syncable::Id& id);
