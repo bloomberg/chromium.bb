@@ -237,7 +237,7 @@ class Coverage(object):
     """Run all unit tests and generate appropriate lcov files."""
     for fulltest in self.tests:
       if not os.path.exists(fulltest):
-        logging.fatal(fulltest + ' does not exist')
+        logging.info(fulltest + ' does not exist')
         if self.options.strict:
           sys.exit(2)
       else:
@@ -260,9 +260,10 @@ class Coverage(object):
       self.AfterRunOneTest(fulltest)
 
       if retcode:
-        logging.fatal('COVERAGE: test %s failed; return code: %d' %
+        logging.info('COVERAGE: test %s failed; return code: %d.' %
                       (fulltest, retcode))
         if self.options.strict:
+          logging.fatal('Test failure is fatal.')
           sys.exit(retcode)
     self.AfterRunAllTests()
 
