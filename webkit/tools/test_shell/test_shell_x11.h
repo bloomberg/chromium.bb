@@ -1,3 +1,7 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #ifndef WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_X11_H
 #define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_X11_H
 
