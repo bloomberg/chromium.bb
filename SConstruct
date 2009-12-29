@@ -364,7 +364,10 @@ def CommandSelLdrTestNacl(env, name, command,
                           size='medium',
                           **extra):
   if env['BUILD_SUBARCH'] == '64':
-    return []
+    if ARGUMENTS.get('loader', 'none') != 'none':
+      loader = ARGUMENTS.get('loader')
+    else:
+      return []
 
   # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
   if 'TRUSTED_ENV' not in env:

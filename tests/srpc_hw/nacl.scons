@@ -42,6 +42,10 @@ env.Publish('srpc_hw.nexe', 'run',
 if env['TARGET_ARCHITECTURE'] == 'arm':
   Return()
 
+# TODO(dpolukhin): enable for x86-64 ASAP.
+if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '64':
+  Return()
+
 node = env.BrowserTester(
      'srpc_hw_browser_test.out',
      url='srpc_hw.html',
