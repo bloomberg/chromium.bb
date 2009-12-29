@@ -776,9 +776,9 @@ private:
       currentMouse = [tabStripView_ convertPoint:currentMouse fromView:nil];
       NSString* imageName = nil;
       if (NSPointInRect(currentMouse, newTabNewFrame)) {
-        imageName = @"newtab_h";
+        imageName = @"newtab_h.pdf";
       } else {
-        imageName = @"newtab";
+        imageName = @"newtab.pdf";
       }
       [newTabButton_ setImage:nsimage_cache::ImageNamed(imageName)];
 
