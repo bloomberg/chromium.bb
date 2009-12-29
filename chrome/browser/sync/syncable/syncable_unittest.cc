@@ -16,7 +16,6 @@
 // file.
 #if defined(OS_WIN)
 #include <tchar.h>
-#include <atlbase.h>
 #include <process.h>
 #endif  // defined(OS_WIN)
 
@@ -185,7 +184,7 @@ class TestUnsaveableDirectory : public Directory {
 class SyncableDirectoryTest : public testing::Test {
  protected:
   static const FilePath::CharType kFilePath[];
-  static const string kName;
+  static const char kName[];
   static const Id kId;
 
   // SetUp() is called before each test case is run.
@@ -235,7 +234,7 @@ class SyncableDirectoryTest : public testing::Test {
 
 const FilePath::CharType SyncableDirectoryTest::kFilePath[] =
     FILE_PATH_LITERAL("Test.sqlite3");
-const string SyncableDirectoryTest::kName("Foo");
+const char SyncableDirectoryTest::kName[] = "Foo";
 const Id SyncableDirectoryTest::kId(TestIdFactory::FromNumber(-99));
 
 TEST_F(SyncableDirectoryTest, TestBasicLookupNonExistantID) {
@@ -700,7 +699,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
     EXPECT_TRUE(e1.GetKernelCopy().is_dirty());
   }
   ASSERT_TRUE(dir_->SaveChanges());
-  
+
   // Make sure the item is no longer dirty after saving,
   // and make a modification.
   {
@@ -784,16 +783,16 @@ TEST(SyncableDirectoryManager, TestFileRelease) {
 }
 
 class ThreadOpenTestDelegate : public PlatformThread::Delegate {
-  public:
-   explicit ThreadOpenTestDelegate(DirectoryManager* dm)
-       : directory_manager_(dm) {}
-   DirectoryManager* const directory_manager_;
+ public:
+  explicit ThreadOpenTestDelegate(DirectoryManager* dm)
+      : directory_manager_(dm) {}
+  DirectoryManager* const directory_manager_;
 
-  private:
-   // PlatformThread::Delegate methods:
-   virtual void ThreadMain() {
+ private:
+  // PlatformThread::Delegate methods:
+  virtual void ThreadMain() {
     CHECK(directory_manager_->Open("Open"));
-   }
+  }
 
   DISALLOW_COPY_AND_ASSIGN(ThreadOpenTestDelegate);
 };
@@ -823,26 +822,26 @@ struct Step {
 };
 
 class ThreadBugDelegate : public PlatformThread::Delegate {
-  public:
-   // a role is 0 or 1, meaning this thread does the odd or event steps.
-   ThreadBugDelegate(int role, Step* step, DirectoryManager* dirman)
-       : role_(role), step_(step), directory_manager_(dirman) {}
+ public:
+  // a role is 0 or 1, meaning this thread does the odd or event steps.
+  ThreadBugDelegate(int role, Step* step, DirectoryManager* dirman)
+      : role_(role), step_(step), directory_manager_(dirman) {}
 
-  protected:
-   const int role_;
-   Step* const step_;
-   DirectoryManager* const directory_manager_;
+ protected:
+  const int role_;
+  Step* const step_;
+  DirectoryManager* const directory_manager_;
 
-   // PlatformThread::Delegate methods:
-   virtual void ThreadMain() {
-     const string dirname = "ThreadBug1";
-     AutoLock scoped_lock(step_->mutex);
+  // PlatformThread::Delegate methods:
+  virtual void ThreadMain() {
+    const string dirname = "ThreadBug1";
+    AutoLock scoped_lock(step_->mutex);
 
-     while (step_->number < 3) {
-       while (step_->number % 2 != role_) {
-         step_->condvar.Wait();
-       }
-       switch (step_->number) {
+    while (step_->number < 3) {
+      while (step_->number % 2 != role_) {
+        step_->condvar.Wait();
+      }
+      switch (step_->number) {
       case 0:
         directory_manager_->Open(dirname);
         break;
@@ -871,8 +870,8 @@ class ThreadBugDelegate : public PlatformThread::Delegate {
        }
        step_->number += 1;
        step_->condvar.Signal();
-     }
-   }
+    }
+  }
 
   DISALLOW_COPY_AND_ASSIGN(ThreadBugDelegate);
 };
@@ -990,45 +989,46 @@ TEST(SyncableDirectoryManager, DirectoryKernelStalenessBug) {
 }
 
 class StressTransactionsDelegate : public PlatformThread::Delegate {
-  public:
-   StressTransactionsDelegate(DirectoryManager* dm, string dirname,
-                                      int thread_number)
-       : directory_manager_(dm), dirname_(dirname),
-         thread_number_(thread_number) {}
+ public:
+  StressTransactionsDelegate(DirectoryManager* dm, string dirname,
+                             int thread_number)
+      : directory_manager_(dm), dirname_(dirname),
+        thread_number_(thread_number) {}
 
-  private:
-   DirectoryManager* const directory_manager_;
-   string dirname_;
-   const int thread_number_;
+ private:
+  DirectoryManager* const directory_manager_;
+  string dirname_;
+  const int thread_number_;
 
-   // PlatformThread::Delegate methods:
-   virtual void ThreadMain() {
-     ScopedDirLookup dir(directory_manager_, dirname_);
-     CHECK(dir.good());
-     int entry_count = 0;
-     string path_name;
+  // PlatformThread::Delegate methods:
+  virtual void ThreadMain() {
+    ScopedDirLookup dir(directory_manager_, dirname_);
+    CHECK(dir.good());
+    int entry_count = 0;
+    string path_name;
 
-     for (int i = 0; i < 20; ++i) {
-       const int rand_action = rand() % 10;
-       if (rand_action < 4 && !path_name.empty()) {
-         ReadTransaction trans(dir, __FILE__, __LINE__);
-         CHECK(1 == CountEntriesWithName(&trans, trans.root_id(), path_name));
-         PlatformThread::Sleep(rand() % 10);
-       } else {
-         string unique_name = StringPrintf("%d.%d", thread_number_,
-           entry_count++);
-         path_name.assign(unique_name.begin(), unique_name.end());
-         WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-         MutableEntry e(&trans, CREATE, trans.root_id(), path_name);
-         CHECK(e.good());
-         PlatformThread::Sleep(rand() % 20);
-         e.Put(IS_UNSYNCED, true);
-         if (e.Put(ID, TestIdFactory::FromNumber(rand())) &&
-           e.Get(ID).ServerKnows() && !e.Get(ID).IsRoot())
+    for (int i = 0; i < 20; ++i) {
+      const int rand_action = rand() % 10;
+      if (rand_action < 4 && !path_name.empty()) {
+        ReadTransaction trans(dir, __FILE__, __LINE__);
+        CHECK(1 == CountEntriesWithName(&trans, trans.root_id(), path_name));
+        PlatformThread::Sleep(rand() % 10);
+      } else {
+        string unique_name = StringPrintf("%d.%d", thread_number_,
+            entry_count++);
+        path_name.assign(unique_name.begin(), unique_name.end());
+        WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+        MutableEntry e(&trans, CREATE, trans.root_id(), path_name);
+        CHECK(e.good());
+        PlatformThread::Sleep(rand() % 20);
+        e.Put(IS_UNSYNCED, true);
+        if (e.Put(ID, TestIdFactory::FromNumber(rand())) &&
+            e.Get(ID).ServerKnows() && !e.Get(ID).IsRoot()) {
            e.Put(BASE_VERSION, 1);
-       }
+        }
+      }
     }
-   }
+  }
 
   DISALLOW_COPY_AND_ASSIGN(StressTransactionsDelegate);
 };

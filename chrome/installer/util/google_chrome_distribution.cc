@@ -7,7 +7,6 @@
 
 #include "chrome/installer/util/google_chrome_distribution.h"
 
-#include <atlbase.h>
 #include <windows.h>
 #include <msi.h>
 

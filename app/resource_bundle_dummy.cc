@@ -4,7 +4,6 @@
 
 #include "app/resource_bundle.h"
 
-#include <atlbase.h>
 #include <windows.h>
 
 #include "app/gfx/font.h"
