@@ -172,7 +172,15 @@ bool DebugUtil::BeingDebugged() {
   return pid_index < status.size() && status[pid_index] != '0';
 }
 
-#endif  // OS_LINUX
+#elif defined(OS_FREEBSD)
+
+bool DebugUtil::BeingDebugged() {
+  // TODO(benl): can we determine this under FreeBSD?
+  NOTIMPLEMENTED();
+  return false;
+}
+
+#endif
 
 // static
 void DebugUtil::BreakDebugger() {

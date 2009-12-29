@@ -20,7 +20,7 @@ std::string GetFileMimeType(const FilePath& filepath);
 // Get the mime type for a byte vector.
 std::string GetDataMimeType(const std::string& data);
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_GTK)
 // This detects the current GTK theme by calling gtk_settings_get_default().
 // It should only be executed on the UI thread and must be called before
 // GetMimeIcon().

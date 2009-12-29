@@ -9,7 +9,7 @@
 
 #if defined(OS_MACOSX)
 #include <mach/mach.h>
-#elif defined(OS_LINUX)
+#else
 #include <sys/syscall.h>
 #include <unistd.h>
 #endif
@@ -35,6 +35,9 @@ PlatformThreadId PlatformThread::CurrentId() {
   return mach_thread_self();
 #elif defined(OS_LINUX)
   return syscall(__NR_gettid);
+#elif defined(OS_FREEBSD)
+  // TODO(BSD): find a better thread ID
+  return reinterpret_cast<int64>(pthread_self());
 #endif
 }
 

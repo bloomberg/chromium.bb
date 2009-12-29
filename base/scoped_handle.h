@@ -11,7 +11,7 @@
 
 #if defined(OS_WIN)
 #include "base/scoped_handle_win.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/scoped_handle_gtk.h"
 #endif
 
