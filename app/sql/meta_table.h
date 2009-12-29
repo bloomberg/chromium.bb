@@ -16,19 +16,16 @@ class Statement;
 
 class MetaTable {
  public:
+  // Returns true if the 'meta' table exists.
+  static bool DoesTableExist(Connection* db);
+
   MetaTable();
   ~MetaTable();
 
   // Initializes the MetaTableHelper, creating the meta table if necessary. For
   // new tables, it will initialize the version number to |version| and the
   // compatible version number to |compatible_version|.
-  //
-  // The name of the database in the sqlite connection (for tables named with
-  // the "db_name.table_name" scheme is given in |db_name|. If empty, it is
-  // assumed there is no database name.
-  bool Init(Connection* db,
-            int version,
-            int compatible_version);
+  bool Init(Connection* db, int version, int compatible_version);
 
   // The version number of the database. This should be the version number of
   // the creator of the file. The version number will be 0 if there is no
@@ -73,11 +70,6 @@ class MetaTable {
   bool PrepareGetStatement(Statement* statement, const char* key);
 
   Connection* db_;
-
-  // Name of the database within the connection, if there is one. When empty,
-  // there is no special database name and the table name can be used
-  // unqualified.
-  std::string db_name_;
 
   DISALLOW_COPY_AND_ASSIGN(MetaTable);
 };

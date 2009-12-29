@@ -73,15 +73,37 @@ class SimpleAppCacheSystem : public MessageLoop::DestructionObserver {
       instance_->GetExtraResponseBits(request, cache_id, manifest_url);
   }
 
- private:
-  friend class SimpleBackendProxy;
-  friend class SimpleFrontendProxy;
-  friend class appcache::AppCacheThread;
+  // Some unittests create their own IO and DB threads.
 
   enum AppCacheThreadID {
     DB_THREAD_ID,
     IO_THREAD_ID,
   };
+
+  class ThreadProvider {
+   public:
+    virtual ~ThreadProvider() {}
+    virtual bool PostTask(
+        int id,
+        const tracked_objects::Location& from_here,
+        Task* task) = 0;
+    virtual bool CurrentlyOn(int id) = 0;
+  };
+
+  static void set_thread_provider(ThreadProvider* provider) {
+    DCHECK(instance_);
+    DCHECK(!provider || !instance_->thread_provider_);
+    instance_->thread_provider_ = provider;
+  }
+
+  static ThreadProvider* thread_provider() {
+    return instance_ ? instance_->thread_provider_ : NULL;
+  }
+
+ private:
+  friend class SimpleBackendProxy;
+  friend class SimpleFrontendProxy;
+  friend class appcache::AppCacheThread;
 
   // Instance methods called by our static public methods
   void InitOnUIThread(const FilePath& cache_directory);
@@ -135,6 +157,9 @@ class SimpleAppCacheSystem : public MessageLoop::DestructionObserver {
 
   // We start a thread for use as the DB thread.
   base::Thread db_thread_;
+
+  // Some unittests create there own IO and DB threads.
+  ThreadProvider* thread_provider_;
 
   // A low-tech singleton.
   static SimpleAppCacheSystem* instance_;

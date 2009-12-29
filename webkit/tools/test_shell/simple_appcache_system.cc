@@ -26,6 +26,10 @@ bool AppCacheThread::PostTask(
     int id,
     const tracked_objects::Location& from_here,
     Task* task) {
+  if (SimpleAppCacheSystem::thread_provider()) {
+    return SimpleAppCacheSystem::thread_provider()->PostTask(
+        id, from_here, task);
+  }
   scoped_ptr<Task> task_ptr(task);
   MessageLoop* loop = SimpleAppCacheSystem::GetMessageLoop(id);
   if (loop)
@@ -34,6 +38,8 @@ bool AppCacheThread::PostTask(
 }
 
 bool AppCacheThread::CurrentlyOn(int id) {
+  if (SimpleAppCacheSystem::thread_provider())
+    return SimpleAppCacheSystem::thread_provider()->CurrentlyOn(id);
   return MessageLoop::current() == SimpleAppCacheSystem::GetMessageLoop(id);
 }
 
@@ -268,7 +274,8 @@ SimpleAppCacheSystem::SimpleAppCacheSystem()
           backend_proxy_(new SimpleBackendProxy(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           frontend_proxy_(new SimpleFrontendProxy(this))),
-      backend_impl_(NULL), service_(NULL), db_thread_("AppCacheDBThread") {
+      backend_impl_(NULL), service_(NULL), db_thread_("AppCacheDBThread"),
+      thread_provider_(NULL) {
   DCHECK(!instance_);
   instance_ = this;
 }
@@ -346,11 +353,11 @@ void SimpleAppCacheSystem::WillDestroyCurrentMessageLoop() {
   DCHECK(is_io_thread());
   DCHECK(backend_impl_->hosts().empty());
 
-  io_message_loop_ = NULL;
   delete backend_impl_;
   delete service_;
   backend_impl_ = NULL;
   service_ = NULL;
+  io_message_loop_ = NULL;
 
   // Just in case the main thread is waiting on it.
   backend_proxy_->SignalEvent();

@@ -79,6 +79,84 @@ void AppCache::InitializeWithManifest(Manifest* manifest) {
             SortByLength);
 }
 
+void AppCache::InitializeWithDatabaseRecords(
+    const AppCacheDatabase::CacheRecord& cache_record,
+    const std::vector<AppCacheDatabase::EntryRecord>& entries,
+    const std::vector<AppCacheDatabase::FallbackNameSpaceRecord>& fallbacks,
+    const std::vector<AppCacheDatabase::OnlineWhiteListRecord>& whitelists) {
+  DCHECK(cache_id_ == cache_record.cache_id);
+  online_whitelist_all_ = cache_record.online_wildcard;
+  update_time_ = cache_record.update_time;
+
+  for (size_t i = 0; i < entries.size(); ++i) {
+    const AppCacheDatabase::EntryRecord& entry = entries.at(i);
+    AddEntry(entry.url, AppCacheEntry(entry.flags, entry.response_id));
+  }
+
+  for (size_t i = 0; i < fallbacks.size(); ++i) {
+    const AppCacheDatabase::FallbackNameSpaceRecord& fallback = fallbacks.at(i);
+    fallback_namespaces_.push_back(
+        FallbackNamespace(fallback.namespace_url, fallback.fallback_entry_url));
+  }
+
+  // Sort the fallback namespaces by url string length, longest to shortest,
+  // since longer matches trump when matching a url to a namespace.
+  std::sort(fallback_namespaces_.begin(), fallback_namespaces_.end(),
+            SortByLength);
+
+  if (!online_whitelist_all_) {
+    for (size_t i = 0; i < whitelists.size(); ++i) {
+      online_whitelist_namespaces_.push_back(whitelists.at(i).namespace_url);
+    }
+  }
+}
+
+void AppCache::ToDatabaseRecords(
+    const AppCacheGroup* group,
+    AppCacheDatabase::CacheRecord* cache_record,
+    std::vector<AppCacheDatabase::EntryRecord>* entries,
+    std::vector<AppCacheDatabase::FallbackNameSpaceRecord>* fallbacks,
+    std::vector<AppCacheDatabase::OnlineWhiteListRecord>* whitelists) {
+  DCHECK(group && cache_record && entries && fallbacks && whitelists);
+  DCHECK(entries->empty() && fallbacks->empty() && whitelists->empty());
+
+  cache_record->cache_id = cache_id_;
+  cache_record->group_id = group->group_id();
+  cache_record->online_wildcard = online_whitelist_all_;
+  cache_record->update_time = update_time_;
+
+  for (EntryMap::const_iterator iter = entries_.begin();
+       iter != entries_.end(); ++iter) {
+    entries->push_back(AppCacheDatabase::EntryRecord());
+    AppCacheDatabase::EntryRecord& record = entries->back();
+    record.url = iter->first;
+    record.cache_id = cache_id_;
+    record.flags = iter->second.types();
+    record.response_id = iter->second.response_id();
+  }
+
+  GURL origin = group->manifest_url().GetOrigin();
+
+  for (size_t i = 0; i < fallback_namespaces_.size(); ++i) {
+    fallbacks->push_back(AppCacheDatabase::FallbackNameSpaceRecord());
+    AppCacheDatabase::FallbackNameSpaceRecord& record = fallbacks->back();
+    record.cache_id = cache_id_;
+    record.origin = origin;
+    record.namespace_url = fallback_namespaces_[i].first;
+    record.fallback_entry_url = fallback_namespaces_[i].second;
+  }
+
+  if (!online_whitelist_all_) {
+    for (size_t i = 0; i < online_whitelist_namespaces_.size(); ++i) {
+      whitelists->push_back(AppCacheDatabase::OnlineWhiteListRecord());
+      AppCacheDatabase::OnlineWhiteListRecord& record = whitelists->back();
+      record.cache_id = cache_id_;
+      record.namespace_url = online_whitelist_namespaces_[i];
+    }
+  }
+}
+
+
 bool AppCache::FindResponseForRequest(const GURL& url,
     AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
     GURL* found_fallback_namespace, bool* found_network_namespace) {

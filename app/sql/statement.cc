@@ -30,6 +30,7 @@ Statement::~Statement() {
 }
 
 void Statement::Assign(scoped_refptr<Connection::StatementRef> ref) {
+  Reset();
   ref_ = ref;
 }
 

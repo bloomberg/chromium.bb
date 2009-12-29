@@ -5,10 +5,11 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_THREAD_H_
 #define WEBKIT_APPCACHE_APPCACHE_THREAD_H_
 
+#include "base/task.h"
+
 namespace tracked_objects {
 class Location;
 }
-class Task;
 
 namespace appcache {
 
@@ -30,6 +31,13 @@ class AppCacheThread {
                        const tracked_objects::Location& from_here,
                        Task* task);
   static bool CurrentlyOn(int id);
+
+  template <class T>
+  static bool DeleteSoon(int id,
+                         const tracked_objects::Location& from_here,
+                         T* object) {
+    return PostTask(id, from_here, new DeleteTask<T>(object));
+  }
 
  private:
   AppCacheThread();
