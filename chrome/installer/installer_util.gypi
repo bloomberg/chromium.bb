@@ -25,6 +25,8 @@
           'util/delete_reg_value_work_item.h',
           'util/delete_tree_work_item.cc',
           'util/delete_tree_work_item.h',
+          'util/google_chrome_distribution.cc',
+          'util/google_chrome_distribution.h',
           'util/google_update_constants.cc',
           'util/google_update_constants.h',
           'util/google_update_settings.cc',
@@ -82,8 +84,6 @@
             'util/compat_checks.h',
             'util/delete_after_reboot_helper.cc',
             'util/delete_after_reboot_helper.h',
-            'util/google_chrome_distribution.cc',
-            'util/google_chrome_distribution.h',
             'util/helper.cc',
             'util/helper.h',
             'util/html_dialog.h',
@@ -110,6 +110,9 @@
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)',
+          ],
+          'sources': [
+            'util/google_chrome_distribution_dummy.cc',
           ],
           'configurations': {
             'Common_Base': {

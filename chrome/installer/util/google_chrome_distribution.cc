@@ -122,6 +122,9 @@ bool RelaunchSetup(const std::wstring& flag, int value) {
 
 }  // namespace
 
+// The functions below are not used by the 64-bit Windows binary -
+// see the comment in google_chrome_distribution_dummy.cc
+#ifndef _WIN64
 bool GoogleChromeDistribution::BuildUninstallMetricsString(
     DictionaryValue* uninstall_metrics_dict, std::wstring* metrics) {
   DCHECK(NULL != metrics);
@@ -185,6 +188,7 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
 
   return true;
 }
+#endif
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
     const installer::Version& version, const std::wstring& local_data_path,
@@ -431,6 +435,9 @@ void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
   key.Close();
 }
 
+// The functions below are not used by the 64-bit Windows binary -
+// see the comment in google_chrome_distribution_dummy.cc
+#ifndef _WIN64
 // Currently we only have one experiment: the inactive user toast. Which only
 // applies for users doing upgrades and non-systemwide install.
 void GoogleChromeDistribution::LaunchUserExperiment(
@@ -518,3 +525,4 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor) {
   base::LaunchApp(InstallUtil::GetChromeUninstallCmd(false),
                   false, false, NULL);
 }
+#endif
