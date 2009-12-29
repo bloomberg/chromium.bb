@@ -1,0 +1,21 @@
+URL: http://opengles-book.com/
+Version: 
+License: 
+License File: 
+
+Description:
+Code samples from OpenGL ES 2.0 Programming Guide.
+Authors: Aaftab Munshi, Dan Ginsburg, Dave Shreiner
+Publisher: Addison-Wesley Professional
+ISBN: 0321502795
+
+Local Modifications:
+  Removed files that chromium did not need:
+    - Bin/*
+    - Common/Doc/*
+    - Common/Include/EGL/*
+    - Common/Include/GLES2/*
+    - Common/Include/KD/*
+    - Common/Lib/*
+    - Lib/*
+    - *.vcproj, *.sln
