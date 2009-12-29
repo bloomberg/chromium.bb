@@ -29,7 +29,7 @@ using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 
 WebDataService::WebDataService()
-  : is_running_(false),
+  : thread_(NULL),
     db_(NULL),
     failed_init_(false),
     should_commit_(false),
@@ -38,8 +38,8 @@ WebDataService::WebDataService()
 }
 
 WebDataService::~WebDataService() {
-  if (is_running_ && db_) {
-    DLOG_ASSERT("WebDataService dtor called without Shutdown");
+  if (thread_) {
+    Shutdown();
   }
 }
 
@@ -51,18 +51,47 @@ bool WebDataService::Init(const FilePath& profile_path) {
 
 bool WebDataService::InitWithPath(const FilePath& path) {
   path_ = path;
-  is_running_ = true;
+
+  thread_ = new base::Thread("Chrome_WebDataThread");
+  if (!thread_->Start()) {
+    delete thread_;
+    thread_ = NULL;
+    return false;
+  }
+
   ScheduleTask(NewRunnableMethod(this,
       &WebDataService::InitializeDatabaseIfNecessary));
   return true;
 }
 
+class ShutdownTask : public Task {
+ public:
+  explicit ShutdownTask(WebDataService* wds) : service_(wds) {
+  }
+  virtual void Run() {
+    service_->ShutdownDatabase();
+  }
+
+ private:
+
+  WebDataService* service_;
+};
+
 void WebDataService::Shutdown() {
-  UnloadDatabase();
+  if (thread_) {
+    // We cannot use NewRunnableMethod() because this can be called from our
+    // destructor. NewRunnableMethod() would AddRef() this instance.
+    ScheduleTask(new ShutdownTask(this));
+
+    // The thread destructor sends a message to terminate the thread and waits
+    // until the thread has exited.
+    delete thread_;
+    thread_ = NULL;
+  }
 }
 
 bool WebDataService::IsRunning() const {
-  return is_running_;
+  return thread_ != NULL;
 }
 
 void WebDataService::UnloadDatabase() {
@@ -77,8 +106,8 @@ void WebDataService::ScheduleCommit() {
 }
 
 void WebDataService::ScheduleTask(Task* t) {
-  if (is_running_)
-    ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, t);
+  if (thread_)
+    thread_->message_loop()->PostTask(FROM_HERE, t);
   else
     NOTREACHED() << "Task scheduled after Shutdown()";
 }
