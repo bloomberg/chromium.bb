@@ -150,10 +150,13 @@ CPError CPB_GetCommandLineArgumentsCommon(const char* url,
   // chrome.
   // Note: Do not change this flag!  Old Gears shortcuts will break if you do!
   std::string url_string(url);
-  ReplaceSubstringsAfterOffset(&url_string, 0, "\"", "\\\"");
-  ReplaceSubstringsAfterOffset(&url_string, 0, "%", "%%");
-  ReplaceSubstringsAfterOffset(&url_string, 0, ";", "");
-  ReplaceSubstringsAfterOffset(&url_string, 0, "$", "");
+  ReplaceSubstringsAfterOffset(&url_string, 0, "\\", "%5C");
+  ReplaceSubstringsAfterOffset(&url_string, 0, "\"", "%22");
+  ReplaceSubstringsAfterOffset(&url_string, 0, ";",  "%3B");
+  ReplaceSubstringsAfterOffset(&url_string, 0, "$",  "%24");
+#if defined(OS_WIN)  // Windows shortcuts can't escape % so we use \x instead.
+  ReplaceSubstringsAfterOffset(&url_string, 0, "%",  "\\x");
+#endif
   std::wstring url_w = UTF8ToWide(url_string);
   // TODO(evanm): use CommandLine APIs instead of this.
   arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kApp) +

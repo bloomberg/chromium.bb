@@ -132,7 +132,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "#!/usr/bin/env xdg-open\n"
       "Name=http://evil.com/evil%20--join-the-b0tnet\n"
       "Exec=/opt/google/chrome/google-chrome "
-      "--app=\"http://evil.com/evil%%20--join-the-b0tnet\"\n"
+      "--app=\"http://evil.com/evil%20--join-the-b0tnet\"\n"
     },
     { "http://evil.com/evil; rm -rf /; \"; rm -rf $HOME >ownz0red",
       "Innocent Title",
@@ -144,10 +144,10 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "#!/usr/bin/env xdg-open\n"
       "Name=Innocent Title\n"
       "Exec=/opt/google/chrome/google-chrome "
-      "--app=\"http://evil.com/evil%%20rm%%20-rf%%20/%%20%%22%%20rm%%20"
-      "-rf%%20HOME%%20%%3Eownz0red\"\n"
+      "--app=\"http://evil.com/evil%3B%20rm%20-rf%20/%3B%20%22%3B%20rm%20"
+      "-rf%20%24HOME%20%3Eownz0red\"\n"
     },
-    { "http://evil.com/evil | cat `echo ownz0red` >/dev/null\\",
+    { "http://evil.com/evil | cat `echo ownz0red` >/dev/null",
       "Innocent Title",
       "chrome-http__evil.com_evil",
 
@@ -157,8 +157,8 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "#!/usr/bin/env xdg-open\n"
       "Name=Innocent Title\n"
       "Exec=/opt/google/chrome/google-chrome "
-      "--app=\"http://evil.com/evil%%20%%7C%%20cat%%20%%60echo%%20ownz0red"
-      "%%60%%20%%3E/dev/null/\"\n"
+      "--app=\"http://evil.com/evil%20%7C%20cat%20%60echo%20ownz0red"
+      "%60%20%3E/dev/null\"\n"
     },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
