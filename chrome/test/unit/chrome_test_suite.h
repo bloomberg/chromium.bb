@@ -13,9 +13,6 @@
 #include "app/resource_bundle.h"
 #include "base/stats_table.h"
 #include "base/file_util.h"
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#endif
 #include "base/path_service.h"
 #include "base/ref_counted.h"
 #include "base/scoped_nsautorelease_pool.h"
@@ -28,6 +25,28 @@
 #include "chrome/test/testing_browser_process.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
+
+#if defined(OS_POSIX)
+#include "base/shared_memory.h"
+#endif
+
+namespace {
+
+void RemoveSharedMemoryFile(std::string& filename) {
+  // Stats uses SharedMemory under the hood. On posix, this results in a file
+  // on disk.
+#if defined(OS_POSIX)
+  base::SharedMemory memory;
+  memory.Delete(UTF8ToWide(filename));
+#endif
+}
+
+}  // namespace
+
 
 // In many cases it may be not obvious that a test makes a real DNS lookup.
 // We generally don't want to rely on external DNS servers for our tests,
@@ -109,11 +128,13 @@ class ChromeTestSuite : public TestSuite {
     // output, it'll pass regardless of the system language.
     ResourceBundle::InitSharedInstance(L"en-US");
 
-    // initialize the global StatsTable for unit_tests
-    std::string statsfile = "unit_tests";
+    // initialize the global StatsTable for unit_tests (make sure the file
+    // doesn't exist before opening it so the test gets a clean slate)
+    stats_filename_ = "unit_tests";
     std::string pid_string = StringPrintf("-%d", base::GetCurrentProcId());
-    statsfile += pid_string;
-    stats_table_ = new StatsTable(statsfile, 20, 200);
+    stats_filename_ += pid_string;
+    RemoveSharedMemoryFile(stats_filename_);
+    stats_table_ = new StatsTable(stats_filename_, 20, 200);
     StatsTable::set_current(stats_table_);
   }
 
@@ -130,6 +151,7 @@ class ChromeTestSuite : public TestSuite {
     // Tear down shared StatsTable; prevents unit_tests from leaking it.
     StatsTable::set_current(NULL);
     delete stats_table_;
+    RemoveSharedMemoryFile(stats_filename_);
 
     // Delete the test_user_data dir recursively
     FilePath user_data_dir;
@@ -142,6 +164,10 @@ class ChromeTestSuite : public TestSuite {
   }
 
   StatsTable* stats_table_;
+  // The name used for the stats file so it can be cleaned up on posix during
+  // test shutdown.
+  std::string stats_filename_;
+
   ScopedOleInitializer ole_initializer_;
   scoped_refptr<WarningHostResolverProc> host_resolver_proc_;
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
