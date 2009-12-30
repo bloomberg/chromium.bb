@@ -241,12 +241,25 @@ bool SetFileBackupExclusion(const FilePath& file_path, bool exclude) {
   NSString* filePath =
       [NSString stringWithUTF8String:file_path.value().c_str()];
 
-  // If being asked to exclude something in a temp directory, just lie and say
-  // it was done.  TimeMachine will already ignore temp directories.  This keeps
-  // the temporary profiles used by unittests from being added to the exclude
-  // list.  Otherwise, as the list grows the bots slow down due to
-  // reading/writes all the temporary profiles used over time.
-  if ([filePath hasPrefix:@"/tmp/"] ||
+  // If being asked to exclude something in a tmp directory, just lie and say it
+  // was done.  TimeMachine will already ignore tmp directories.  This keeps the
+  // temporary profiles used by unittests from being added to the exclude list.
+  // Otherwise, as /Library/Preferences/com.apple.TimeMachine.plist grows the
+  // bots slow down due to reading/writing all the temporary profiles used over
+  // time.
+
+  NSString* tmpDir = NSTemporaryDirectory();
+  // Make sure the temp dir is terminated with a slash
+  if (tmpDir && ![tmpDir hasSuffix:@"/"])
+    tmpDir = [tmpDir stringByAppendingString:@"/"];
+  // '/var' is a link to '/private/var', make sure to check both forms.
+  NSString* privateTmpDir = nil;
+  if ([tmpDir hasPrefix:@"/var/"])
+    privateTmpDir = [@"/private" stringByAppendingString:tmpDir];
+
+  if ((tmpDir && [filePath hasPrefix:tmpDir]) ||
+      (privateTmpDir && [filePath hasPrefix:privateTmpDir]) ||
+      [filePath hasPrefix:@"/tmp/"] ||
       [filePath hasPrefix:@"/var/tmp/"] ||
       [filePath hasPrefix:@"/private/tmp/"] ||
       [filePath hasPrefix:@"/private/var/tmp/"]) {
