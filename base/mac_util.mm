@@ -240,6 +240,19 @@ FilePath GetAppBundlePath(const FilePath& exec_name) {
 bool SetFileBackupExclusion(const FilePath& file_path, bool exclude) {
   NSString* filePath =
       [NSString stringWithUTF8String:file_path.value().c_str()];
+
+  // If being asked to exclude something in a temp directory, just lie and say
+  // it was done.  TimeMachine will already ignore temp directories.  This keeps
+  // the temporary profiles used by unittests from being added to the exclude
+  // list.  Otherwise, as the list grows the bots slow down due to
+  // reading/writes all the temporary profiles used over time.
+  if ([filePath hasPrefix:@"/tmp/"] ||
+      [filePath hasPrefix:@"/var/tmp/"] ||
+      [filePath hasPrefix:@"/private/tmp/"] ||
+      [filePath hasPrefix:@"/private/var/tmp/"]) {
+    return true;
+  }
+
   NSURL* url = [NSURL fileURLWithPath:filePath];
   // Note that we always set CSBackupSetItemExcluded's excludeByPath param
   // to true.  This prevents a problem with toggling the setting: if the file
