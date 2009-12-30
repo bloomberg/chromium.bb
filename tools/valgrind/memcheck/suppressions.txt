@@ -1429,40 +1429,6 @@
    bug_27993
    Memcheck:Leak
    fun:_Znw*
-   fun:_Z11NewCallbackI22AppCacheDispatcherHostbPvEPN9Callback2IT0_T1_E4TypeEPT_MS8_FvS3_S4_E
-   fun:_ZN22AppCacheDispatcherHost10InitializeEPN3IPC7Message6SenderEii
-   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
-   fun:_ZN3IPC12ChannelProxy7Context18OnChannelConnectedEi
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
-   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
-   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
-   fun:event_process_active
-   fun:event_base_loop
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
-   bug_27993
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z11NewCallbackI22AppCacheDispatcherHostN8appcache6StatusEPvEPN9Callback2IT0_T1_E4TypeEPT_MSA_FvS5_S6_E
-   fun:_ZN22AppCacheDispatcherHost10InitializeEPN3IPC7Message6SenderEii
-   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
-   fun:_ZN3IPC12ChannelProxy7Context18OnChannelConnectedEi
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
-   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
-   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
-   fun:event_process_active
-   fun:event_base_loop
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
-   bug_27993
-   Memcheck:Leak
-   fun:_Znw*
    fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeIP24DOMStorageDispatcherHostEE8allocateEmPKv
    fun:_ZNSt8_Rb_treeIP24DOMStorageDispatcherHostS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE11_M_get_nodeEv
    fun:_ZNSt8_Rb_treeIP24DOMStorageDispatcherHostS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE14_M_create_nodeERKS1_
@@ -1481,58 +1447,6 @@
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
-   bug_27993
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIP4TaskE8allocateEmPKv
-   fun:_ZNSt11_Deque_baseIP4TaskSaIS1_EE16_M_allocate_nodeEv
-   fun:_ZNSt11_Deque_baseIP4TaskSaIS1_EE15_M_create_nodesEPPS1_S5_
-   fun:_ZNSt11_Deque_baseIP4TaskSaIS1_EE17_M_initialize_mapEm
-   fun:_ZNSt11_Deque_baseIP4TaskSaIS1_EEC2ERKS2_m
-   fun:_ZNSt5dequeIP4TaskSaIS1_EEC2ERKS2_
-   fun:_ZNSt5dequeIP4TaskSaIS1_EEC1ERKS2_
-   fun:_ZN8appcache19MockAppCacheStorageC2EPNS_15AppCacheServiceE
-   fun:_ZN8appcache19AppCacheStorageImplC2EPNS_15AppCacheServiceE
-   fun:_ZN8appcache19AppCacheStorageImplC1EPNS_15AppCacheServiceE
-   fun:_ZN8appcache15AppCacheService10InitializeERK8FilePath
-   fun:_ZN21ChromeAppCacheServiceC2ERK8FilePathb
-   fun:_ZN21ChromeAppCacheServiceC1ERK8FilePathb
-   fun:_ZN12_GLOBAL__N_118FactoryForOriginal6CreateEv
-   fun:_ZN29ChromeURLRequestContextGetter20GetURLRequestContextEv
-   fun:_ZN22AppCacheDispatcherHost10InitializeEPN3IPC7Message6SenderEii
-   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
-   fun:_ZN3IPC12ChannelProxy7Context18OnChannelConnectedEi
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
-   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
-   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
-}
-{
-   bug_27993
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIPNS_15_Hashtable_nodeISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEEEEE8allocateEmPKv
-   fun:_ZNSt12_Vector_baseIPN9__gnu_cxx15_Hashtable_nodeISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEEEESaISA_EE11_M_allocateEm
-   fun:_ZNSt6vectorIPN9__gnu_cxx15_Hashtable_nodeISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEEEESaISA_EE20_M_allocate_and_copyIPSA_EESE_mT_SF_
-   fun:_ZNSt6vectorIPN9__gnu_cxx15_Hashtable_nodeISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEEEESaISA_EE7reserveEm
-   fun:_ZN9__gnu_cxx9hashtableISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEExNS_4hashIxEESt10_Select1stIS7_ESt8equal_toIxESaIS6_EE21_M_initialize_bucketsEm
-   fun:_ZN9__gnu_cxx9hashtableISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEExNS_4hashIxEESt10_Select1stIS7_ESt8equal_toIxESaIS6_EEC2EmRKS9_RKSD_RKSaIS7_E
-   fun:_ZN9__gnu_cxx9hashtableISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEExNS_4hashIxEESt10_Select1stIS7_ESt8equal_toIxESaIS6_EEC1EmRKS9_RKSD_RKSaIS7_E
-   fun:_ZN9__gnu_cxx8hash_mapIx13scoped_refptrIN8appcache8AppCacheEENS_4hashIxEESt8equal_toIxESaIS4_EEC2Ev
-   fun:_ZN9__gnu_cxx8hash_mapIx13scoped_refptrIN8appcache8AppCacheEENS_4hashIxEESt8equal_toIxESaIS4_EEC1Ev
-   fun:_ZN8appcache19MockAppCacheStorageC2EPNS_15AppCacheServiceE
-   fun:_ZN8appcache19AppCacheStorageImplC2EPNS_15AppCacheServiceE
-   fun:_ZN8appcache19AppCacheStorageImplC1EPNS_15AppCacheServiceE
-   fun:_ZN8appcache15AppCacheService10InitializeERK8FilePath
-   fun:_ZN21ChromeAppCacheServiceC2ERK8FilePathb
-   fun:_ZN21ChromeAppCacheServiceC1ERK8FilePathb
-   fun:_ZN12_GLOBAL__N_118FactoryForOriginal6CreateEv
-   fun:_ZN29ChromeURLRequestContextGetter20GetURLRequestContextEv
-   fun:_ZN22AppCacheDispatcherHost10InitializeEPN3IPC7Message6SenderEii
-   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
-   fun:_ZN3IPC12ChannelProxy7Context18OnChannelConnectedEi
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
 }
 {
    bug_28026
