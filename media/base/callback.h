@@ -104,19 +104,7 @@ class CleanupCallback : public CallbackType {
 
   template <typename T>
   void DeleteWhenDone(T* ptr) {
-    class Deleter : public Task {
-     public:
-      Deleter(T* p) : ptr_(p) {}
-
-      virtual void Run() {
-        delete ptr_;
-      }
-
-     private:
-      T* ptr_;
-    };
-
-    RunWhenDone(new Deleter(ptr));
+    RunWhenDone(new DeleteTask<T>(ptr));
   }
 
   void RunWhenDone(Task* ptr) {
