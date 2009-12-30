@@ -865,9 +865,6 @@ BUG8635 LINUX : LayoutTests/svg/batik/paints/patternRegions.svg = IMAGE+TEXT
 BUG8635 LINUX WIN RELEASE : LayoutTests/svg/custom/pattern-cycle-detection.svg = FAIL
 BUG8635 LINUX WIN DEBUG : LayoutTests/svg/custom/pattern-cycle-detection.svg = FAIL
 
-BUG19559 LINUX WIN : LayoutTests/svg/batik/text/textEffect.svg = FAIL
-BUG19559 LINUX WIN : LayoutTests/svg/batik/text/textEffect3.svg = FAIL
-
 BUG8763 LINUX WIN MAC : LayoutTests/svg/custom/use-on-g-containing-foreignObject-and-image.svg = IMAGE
 
 // smiley.png should be shown with xml:base and xml:base on parent.
@@ -2177,12 +2174,6 @@ BUG10430 LINUX : LayoutTests/svg/W3C-SVG-1.1/text-intro-05-t.svg = FAIL
 BUG10430 LINUX WIN : LayoutTests/svg/text/text-fonts-01-t.svg = FAIL
 BUG10430 LINUX WIN : LayoutTests/svg/text/text-intro-05-t.svg = FAIL
 
-// New tests from merge 41181:41217
-
-// Regressions from merge 41217:41268
-// SVG Mask-related tests. Most likely result of http://trac.webkit.org/changeset/41266.
-BUG10434 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
-
 // Regression from merge 41268:41286
 // See above comment about this test on linux/win.
 BUG10435 MAC : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
@@ -2976,7 +2967,6 @@ BUG29737 MAC : LayoutTests/svg/custom/feComponentTransfer-Discrete.svg = IMAGE+T
 BUG29737 MAC : LayoutTests/svg/custom/feComponentTransfer-Gamma.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/custom/feComponentTransfer-Linear.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/custom/feComponentTransfer-Table.svg = IMAGE+TEXT
-BUG29737 MAC : LayoutTests/svg/custom/image-with-transform-clip-filter.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/custom/text-filter.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feComposite.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feDisplacementMap.svg = IMAGE+TEXT
@@ -2986,7 +2976,6 @@ BUG29737 MAC : LayoutTests/svg/filters/shadow-on-filter.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/dom/operatorAttribute.html = TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feMerge-wrong-input.svg = TEXT
 BUG29737 MAC : LayoutTests/svg/custom/use-elementInstance-event-target.svg = IMAGE
-
 BUG29737 MAC : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/filterRes.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = IMAGE
@@ -3071,7 +3060,6 @@ BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/manifest-with-empty-file.ht
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/wrong-content-type.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/wrong-signature.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/online-whitelist.html = TIMEOUT PASS
-BUG25977 WIN DEBUG : LayoutTests/svg/filters/big-sized-filter.svg = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/top-frame-1.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/whitelist-wildcard.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/resource-redirect.html = TIMEOUT PASS
@@ -3121,7 +3109,6 @@ BUG30826 WIN : LayoutTests/platform/win/fast/events/panScroll-imageMap-noHref-sc
 BUG30930 LINUX : LayoutTests/tables/mozilla/bugs/bug15933.html = IMAGE PASS
 
 BUG31026 MAC DEBUG : LayoutTests/http/tests/appcache/crash-when-navigating-away-then-back.html = PASS CRASH
-BUG31028 LINUX DEBUG : LayoutTests/svg/custom/feDisplacementMap-01.svg = IMAGE+TEXT IMAGE TEXT
 
 // WebKit update 52372->52454
 BUG30938 MAC : LayoutTests/fast/backgrounds/svg-as-background-6.html = IMAGE
@@ -3129,8 +3116,6 @@ BUG30938 : LayoutTests/svg/css/mask-with-shadow.svg = IMAGE
 BUG30938 WIN : LayoutTests/svg/custom/mask-excessive-malloc.svg = IMAGE
 BUG30938 LINUX : LayoutTests/svg/custom/mask-inside-defs.svg = IMAGE
 BUG30938 LINUX : LayoutTests/svg/custom/visibility-override-mask.svg = IMAGE
-BUG30938 WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
-BUG30939 WIN LINUX : LayoutTests/svg/custom/image-with-transform-clip-filter.svg = IMAGE
 BUG30939 : LayoutTests/svg/filters/filter-clip.svg = IMAGE+TEXT
 
 // WebKit roll 52468->52535
@@ -3163,3 +3148,7 @@ BUG31302 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
 BUG31302 LINUX : LayoutTests/svg/custom/circular-marker-reference-3.svg = TEXT PASS
 BUG31302 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-blend-01-b.svg = TEXT PASS
 BUG31302 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
+
+// WebKit roll 52633 -> 52667
+BUG_AJWONG WIN : LayoutTests/svg/batik/text/textFeatures.svg = TEXT
+BUG_AJWONG WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE

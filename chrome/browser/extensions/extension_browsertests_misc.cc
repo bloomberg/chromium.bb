@@ -483,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
 }
 
 // Tests that message passing between extensions and tabs works.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_MessagingExtensionTab) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
                     .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
 }
 
 // Tests that message passing between extensions and content scripts works.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_MessagingContentScript) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
