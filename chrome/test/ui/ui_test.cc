@@ -96,7 +96,7 @@ const char kEnableErrorDialogs[] = "enable-errdialogs";
 // #define WAIT_FOR_DEBUGGER_ON_OPEN 1
 
 UITest::UITest()
-    : testing::Test(),
+    : PlatformTest(),
       launch_arguments_(CommandLine::ARGUMENTS_ONLY),
       expected_errors_(0),
       expected_crashes_(0),

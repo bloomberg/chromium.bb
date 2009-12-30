@@ -31,7 +31,7 @@
 // AutomationProxy here, but many files that #include this one don't
 // themselves #include automation_proxy.h.
 #include "chrome/test/automation/automation_proxy.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 class AutomationProxy;
 class BrowserProxy;
@@ -40,7 +40,7 @@ class FilePath;
 class GURL;
 class TabProxy;
 
-class UITest : public testing::Test {
+class UITest : public PlatformTest {
  protected:
   // String to display when a test fails because the crash service isn't
   // running.
