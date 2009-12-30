@@ -138,7 +138,7 @@ class TransportDIB {
 #elif defined(USE_X11)
   int key_;  // SysV shared memory id
   void* address_;  // mapped address
-  XID x_shm_;  // X id for the shared segment
+  XSharedMemoryId x_shm_;  // X id for the shared segment
   Display* display_;  // connection to the X server
 #endif
   size_t size_;  // length, in bytes

@@ -460,7 +460,7 @@ XRenderPictFormat* GetRenderARGB32Format(Display* dpy) {
   return pictformat;
 }
 
-XID AttachSharedMemory(Display* display, int shared_memory_key) {
+XSharedMemoryId AttachSharedMemory(Display* display, int shared_memory_key) {
   DCHECK(QuerySharedMemorySupport(display));
 
   XShmSegmentInfo shminfo;
@@ -476,7 +476,7 @@ XID AttachSharedMemory(Display* display, int shared_memory_key) {
   return shminfo.shmseg;
 }
 
-void DetachSharedMemory(Display* display, XID shmseg) {
+void DetachSharedMemory(Display* display, XSharedMemoryId shmseg) {
   DCHECK(QuerySharedMemorySupport(display));
 
   XShmSegmentInfo shminfo;

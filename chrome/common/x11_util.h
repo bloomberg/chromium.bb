@@ -21,6 +21,7 @@ typedef struct _GdkDrawable GdkWindow;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 typedef unsigned long XID;
+typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.
 typedef struct _XDisplay Display;
 
 namespace base {
@@ -102,10 +103,10 @@ bool GetXWindowStack(std::vector<XID>* windows);
 // window.
 void RestackWindow(XID window, XID sibling, bool above);
 
-// Return a handle to a server side pixmap. |shared_memory_key| is a SysV
+// Return a handle to a X ShmSeg. |shared_memory_key| is a SysV
 // IPC key. The shared memory region must contain 32-bit pixels.
-XID AttachSharedMemory(Display* display, int shared_memory_support);
-void DetachSharedMemory(Display* display, XID shmseg);
+XSharedMemoryId AttachSharedMemory(Display* display, int shared_memory_support);
+void DetachSharedMemory(Display* display, XSharedMemoryId shmseg);
 
 // Return a handle to an XRender picture where |pixmap| is a handle to a
 // pixmap containing Skia ARGB data.
