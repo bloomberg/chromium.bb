@@ -325,11 +325,13 @@ void AboutMemory(AboutSource* source, int request_id) {
   handler->StartFetch();
 }
 
+#ifdef TRACK_ALL_TASK_OBJECTS
 static std::string AboutObjects(const std::string& query) {
   std::string data;
   tracked_objects::ThreadData::WriteHTML(query, &data);
   return data;
 }
+#endif  // TRACK_ALL_TASK_OBJECTS
 
 std::string AboutPlugins() {
   // Strings used in the JsTemplate file.
