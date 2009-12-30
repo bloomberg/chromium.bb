@@ -44,6 +44,11 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 
 namespace {
 
+// The images names used for different states of the new tab button.
+NSString* const kNewTabHoverImage = @"newtab_h.pdf";
+NSString* const kNewTabImage = @"newtab.pdf";
+NSString* const kNewTabPressedImage = @"newtab_p.pdf";
+
 // A value to indicate tab layout should use the full available width of the
 // view.
 const CGFloat kUseFullAvailableWidth = -1.0;
@@ -292,6 +297,11 @@ private:
     [newTabButton_ setTarget:nil];
     [newTabButton_ setAction:@selector(commandDispatch:)];
     [newTabButton_ setTag:IDC_NEW_TAB];
+    // Set the images from code because Cocoa fails to find them in our sub
+    // bundle during tests.
+    [newTabButton_ setImage:nsimage_cache::ImageNamed(kNewTabImage)];
+    [newTabButton_
+        setAlternateImage:nsimage_cache::ImageNamed(kNewTabPressedImage)];
     newTabTrackingArea_.reset(
         [[NSTrackingArea alloc] initWithRect:[newTabButton_ bounds]
                                      options:(NSTrackingMouseEnteredAndExited |
@@ -776,9 +786,9 @@ private:
       currentMouse = [tabStripView_ convertPoint:currentMouse fromView:nil];
       NSString* imageName = nil;
       if (NSPointInRect(currentMouse, newTabNewFrame)) {
-        imageName = @"newtab_h.pdf";
+        imageName = kNewTabHoverImage;
       } else {
-        imageName = @"newtab.pdf";
+        imageName = kNewTabImage;
       }
       [newTabButton_ setImage:nsimage_cache::ImageNamed(imageName)];
 
@@ -1359,7 +1369,7 @@ private:
     [self setTabTrackingAreasEnabled:YES];
     [self mouseMoved:event];
   } else if ([area isEqual:newTabTrackingArea_]) {
-    [newTabButton_ setImage:nsimage_cache::ImageNamed(@"newtab_h.pdf")];
+    [newTabButton_ setImage:nsimage_cache::ImageNamed(kNewTabHoverImage)];
   }
 }
 
@@ -1376,7 +1386,7 @@ private:
     hoveredTab_ = nil;
     [self layoutTabs];
   } else if ([area isEqual:newTabTrackingArea_]) {
-    [newTabButton_ setImage:nsimage_cache::ImageNamed(@"newtab.pdf")];
+    [newTabButton_ setImage:nsimage_cache::ImageNamed(kNewTabImage)];
   }
 }
 
