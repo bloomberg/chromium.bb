@@ -1435,7 +1435,7 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
     case AuthWatcherEvent::GAIA_AUTH_FAILED:     // Invalid GAIA credentials.
       if (event.auth_results->auth_error == browser_sync::CaptchaRequired) {
         auth_problem_ = AuthError::CAPTCHA_REQUIRED;
-        std::string url_string("http://www.google.com/accounts/");
+        std::string url_string("https://www.google.com/accounts/");
         url_string += event.auth_results->captcha_url;
         GURL captcha(url_string);
         observer_->OnAuthError(AuthError::FromCaptchaChallenge(
