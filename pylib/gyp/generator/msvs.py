@@ -702,7 +702,9 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
       settings_fixed = {}
       for setting, value in settings.iteritems():
         if type(value) == list:
-          if tool == 'VCLinkerTool' and setting == 'AdditionalDependencies':
+          if ((tool == 'VCLinkerTool' and
+               setting == 'AdditionalDependencies') or
+              setting == 'AdditionalOptions'):
             settings_fixed[setting] = ' '.join(value)
           else:
             settings_fixed[setting] = ';'.join(value)
