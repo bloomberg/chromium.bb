@@ -10,7 +10,7 @@
 #include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/app_menu_model.h"
-#include "chrome/browser/back_forward_menu_model_views.h"
+#include "chrome/browser/back_forward_menu_model.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/page_menu_model.h"
@@ -148,8 +148,8 @@ class ToolbarView : public AccessibleToolbarView,
     return display_mode_ == DISPLAYMODE_NORMAL;
   }
 
-  scoped_ptr<BackForwardMenuModelViews> back_menu_model_;
-  scoped_ptr<BackForwardMenuModelViews> forward_menu_model_;
+  scoped_ptr<BackForwardMenuModel> back_menu_model_;
+  scoped_ptr<BackForwardMenuModel> forward_menu_model_;
 
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;

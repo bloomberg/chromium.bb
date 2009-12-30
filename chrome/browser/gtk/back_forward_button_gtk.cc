@@ -7,10 +7,11 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
+#include "app/menus/menu_model.h"
 #include "base/message_loop.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/back_forward_menu_model.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/gtk/back_forward_menu_model_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/profile.h"
@@ -50,11 +51,11 @@ BackForwardButtonGtk::BackForwardButtonGtk(Browser* browser, bool is_forward)
       GTK_ICON_SIZE_SMALL_TOOLBAR));
   gtk_widget_set_tooltip_text(widget(),
                               l10n_util::GetStringUTF8(tooltip).c_str());
-  menu_model_.reset(new BackForwardMenuModelGtk(browser,
-      is_forward ?
-          BackForwardMenuModel::FORWARD_MENU :
-          BackForwardMenuModel::BACKWARD_MENU,
-      this));
+  menu_model_.reset(
+      new BackForwardMenuModel(browser,
+          is_forward ?
+              BackForwardMenuModel::FORWARD_MENU :
+              BackForwardMenuModel::BACKWARD_MENU));
 
   g_signal_connect(widget(), "clicked",
                    G_CALLBACK(OnClick), this);
@@ -75,12 +76,24 @@ BackForwardButtonGtk::BackForwardButtonGtk(Browser* browser, bool is_forward)
 BackForwardButtonGtk::~BackForwardButtonGtk() {
 }
 
-void BackForwardButtonGtk::StoppedShowingMenu() {
+void BackForwardButtonGtk::StoppedShowing() {
   button_->UnsetPaintOverride();
 }
 
+bool BackForwardButtonGtk::IsCommandEnabled(int command_id) const {
+  return menu_model_->IsEnabledAt(command_id);
+}
+
+void BackForwardButtonGtk::ExecuteCommand(int command_id) {
+  menu_model_->ActivatedAt(command_id);
+}
+
+bool BackForwardButtonGtk::AlwaysShowImages() const {
+  return true;
+}
+
 void BackForwardButtonGtk::ShowBackForwardMenu() {
-  menu_.reset(new MenuGtk(menu_model_.get(), true));
+  menu_.reset(new MenuGtk(this, menu_model_.get()));
   button_->SetPaintOverride(GTK_STATE_ACTIVE);
 
   // gtk_menu_popup will ignore the first mouse button release if it matches
@@ -139,3 +152,4 @@ gboolean BackForwardButtonGtk::OnMouseMove(GtkWidget* widget,
   button->ShowBackForwardMenu();
   return FALSE;
 }
+

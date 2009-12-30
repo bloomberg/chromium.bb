@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,10 @@
 
 #include <string>
 
+#include "app/menus/menu_model.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 class Browser;
 class SkBitmap;
@@ -22,7 +24,7 @@ class NavigationEntry;
 // Interface for the showing of the dropdown menu for the Back/Forward buttons.
 // Actual implementations are platform-specific.
 ///////////////////////////////////////////////////////////////////////////////
-class BackForwardMenuModel {
+class BackForwardMenuModel : public menus::MenuModel {
  public:
   // These are IDs used to identify individual UI elements within the
   // browser window using View::GetViewByID.
@@ -33,6 +35,37 @@ class BackForwardMenuModel {
 
   BackForwardMenuModel(Browser* browser, ModelType model_type);
   virtual ~BackForwardMenuModel() { }
+
+  // MenuModel implementation.
+  virtual bool HasIcons() const;
+  // Returns how many items the menu should show, including history items,
+  // chapter-stops, separators and the Show Full History link. This function
+  // uses GetHistoryItemCount() and GetChapterStopCount() internally to figure
+  // out the total number of items to show.
+  virtual int GetItemCount() const;
+  virtual ItemType GetTypeAt(int index) const;
+  virtual int GetCommandIdAt(int index) const;
+  virtual string16 GetLabelAt(int index) const;
+  virtual bool IsLabelDynamicAt(int index) const;
+  virtual bool GetAcceleratorAt(int index,
+                                menus::Accelerator* accelerator) const;
+  virtual bool IsItemCheckedAt(int index) const;
+  virtual int GetGroupIdAt(int index) const;
+  virtual bool GetIconAt(int index, SkBitmap* icon) const;
+  virtual bool IsEnabledAt(int index) const;
+  virtual MenuModel* GetSubmenuModelAt(int index) const;
+  virtual void HighlightChangedTo(int index);
+  virtual void ActivatedAt(int index);
+  virtual void MenuWillShow();
+
+  // Is the item at |index| a separator?
+  bool IsSeparator(int index) const;
+
+ private:
+  // Allows the unit test to use its own dummy tab contents.
+  void set_test_tab_contents(TabContents* test_tab_contents) {
+    test_tab_contents_ = test_tab_contents;
+  }
 
   // Returns how many history items the menu should show. For example, if the
   // navigation controller of the current tab has a current entry index of 5 and
@@ -50,12 +83,6 @@ class BackForwardMenuModel {
   // returned does not include the separator lines before and after the
   // chapter-stops.
   int GetChapterStopCount(int history_items) const;
-
-  // Returns how many items the menu should show, including history items,
-  // chapter-stops, separators and the Show Full History link. This function
-  // uses GetHistoryItemCount() and GetChapterStopCount() internally to figure
-  // out the total number of items to show.
-  int GetTotalItemCount() const;
 
   // Finds the next chapter-stop in the NavigationEntryList starting from
   // the index specified in |start_from| and continuing in the direction
@@ -85,56 +112,34 @@ class BackForwardMenuModel {
   // function returns -1.
   int FindChapterStop(int offset, bool forward, int skip) const;
 
-  // Execute the command associated with |menu_id|.
-  void ExecuteCommandById(int menu_id);
-
-  // Is the item at |menu_id| a separator?
-  bool IsSeparator(int menu_id) const;
-
-  // Get the display text for the item. This should not be called on a
-  // separator.
-  string16 GetItemLabel(int menu_id) const;
-
-  // Get the display icon for the item. This should not be called on a
-  // separator or an item that does not have an icon.
-  const SkBitmap& GetItemIcon(int menu_id) const;
-
-  // Returns true if there is an icon for this menu item.
-  bool ItemHasIcon(int menu_id) const;
-
-  // Does the item does something when you click on it?
-  bool ItemHasCommand(int menu_id) const;
-
-#ifdef UNIT_TEST
-  // Allows the unit test to use its own dummy tab contents.
-  void set_test_tab_contents(TabContents* test_tab_contents) {
-    test_tab_contents_ = test_tab_contents;
-  }
-#endif
-
-  // Allow the unit test to use the "Show Full History" label.
-  string16 GetShowFullHistoryLabel() const;
-
-  // Retrieves the TabContents pointer to use, which is either the one that
-  // the unit test sets (using SetTabContentsForUnitTest) or the one from
-  // the browser window.
-  TabContents* GetTabContents() const;
-
   // How many items (max) to show in the back/forward history menu dropdown.
   static const int kMaxHistoryItems;
 
   // How many chapter-stops (max) to show in the back/forward dropdown list.
   static const int kMaxChapterStops;
 
- protected:
   // Converts a menu item id, as passed in through one of the menu delegate
   // functions and converts it into an absolute index into the
-  // NavigationEntryList vector. |menu_id| can point to a separator, or the
+  // NavigationEntryList vector. |index| can point to a separator, or the
   // "Show Full History" link in which case this function returns -1.
-  int MenuIdToNavEntryIndex(int menu_id) const;
+  int MenuIndexToNavEntryIndex(int index) const;
+
+  // Does the item have a command associated with it?
+  bool ItemHasCommand(int index) const;
+
+  // Returns true if there is an icon for this menu item.
+  bool ItemHasIcon(int index) const;
+
+  // Allow the unit test to use the "Show Full History" label.
+  string16 GetShowFullHistoryLabel() const;
 
   // Looks up a NavigationEntry by menu id.
-  NavigationEntry* GetNavigationEntry(int menu_id) const;
+  NavigationEntry* GetNavigationEntry(int index) const;
+
+  // Retrieves the TabContents pointer to use, which is either the one that
+  // the unit test sets (using SetTabContentsForUnitTest) or the one from
+  // the browser window.
+  TabContents* GetTabContents() const;
 
   // Build a string version of a user action on this menu, used as an
   // identifier for logging user behavior.
@@ -151,7 +156,11 @@ class BackForwardMenuModel {
   // back button.
   ModelType model_type_;
 
- private:
+  friend class BackFwdMenuModelTest;
+  FRIEND_TEST(BackFwdMenuModelTest, BasicCase);
+  FRIEND_TEST(BackFwdMenuModelTest, MaxItemsTest);
+  FRIEND_TEST(BackFwdMenuModelTest, ChapterStops);
+
   DISALLOW_COPY_AND_ASSIGN(BackForwardMenuModel);
 };
 

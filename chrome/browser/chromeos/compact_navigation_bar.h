@@ -14,7 +14,7 @@
 #include "views/view.h"
 
 class AutocompleteEditViewGtk;
-class BackForwardMenuModelViews;
+class BackForwardMenuModel;
 class Browser;
 
 namespace views {
@@ -87,8 +87,8 @@ class CompactNavigationBar : public views::View,
   views::NativeViewHost* location_entry_view_;
 
   // History menu for back and forward buttons.
-  scoped_ptr<BackForwardMenuModelViews> back_menu_model_;
-  scoped_ptr<BackForwardMenuModelViews> forward_menu_model_;
+  scoped_ptr<BackForwardMenuModel> back_menu_model_;
+  scoped_ptr<BackForwardMenuModel> forward_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(CompactNavigationBar);
 };

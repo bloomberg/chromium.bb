@@ -110,10 +110,10 @@ ToolbarView::ToolbarView(Browser* browser)
 }
 
 void ToolbarView::Init(Profile* profile) {
-  back_menu_model_.reset(new BackForwardMenuModelViews(
-      browser_, BackForwardMenuModel::BACKWARD_MENU, GetWidget()));
-  forward_menu_model_.reset(new BackForwardMenuModelViews(
-      browser_, BackForwardMenuModel::FORWARD_MENU, GetWidget()));
+  back_menu_model_.reset(new BackForwardMenuModel(
+      browser_, BackForwardMenuModel::BACKWARD_MENU));
+  forward_menu_model_.reset(new BackForwardMenuModel(
+      browser_, BackForwardMenuModel::FORWARD_MENU));
 
   // Create all the individual Views in the Toolbar.
   CreateLeftSideControls();

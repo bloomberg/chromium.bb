@@ -6,6 +6,7 @@
 
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
+#include "app/menus/menu_model.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
@@ -22,6 +23,7 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
                  const MenuCreateMaterial* menu_data,
                  GtkAccelGroup* accel_group)
     : delegate_(delegate),
+      model_(NULL),
       dummy_accel_group_(gtk_accel_group_new()),
       menu_(gtk_menu_new()),
       factory_(this) {
@@ -29,14 +31,16 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
   BuildMenuIn(menu_.get(), menu_data, accel_group);
 }
 
-MenuGtk::MenuGtk(MenuGtk::Delegate* delegate, bool load)
+MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
+                 menus::MenuModel* model)
     : delegate_(delegate),
+      model_(model),
       dummy_accel_group_(NULL),
       menu_(gtk_menu_new()),
       factory_(this) {
   ConnectSignalHandlers();
-  if (load)
-    BuildMenuFromDelegate();
+  if (model)
+    BuildMenuFromModel();
 }
 
 MenuGtk::~MenuGtk() {
@@ -143,9 +147,6 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
           l10n_util::GetStringUTF16(menu_data->label_argument));
     } else if (menu_data->label_id) {
       label = l10n_util::GetStringUTF8(menu_data->label_id);
-    } else if (menu_data->type != MENU_SEPARATOR) {
-      label = delegate_->GetLabel(menu_data->id);
-      DCHECK(!label.empty());
     }
 
     label = ConvertAcceleratorsFromWindowsStyle(label);
@@ -223,18 +224,24 @@ GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
   return menu_item;
 }
 
-void MenuGtk::BuildMenuFromDelegate() {
-  // Note that the menu IDs start at 1, not 0.
-  for (int i = 1; i <= delegate_->GetItemCount(); ++i) {
+void MenuGtk::BuildMenuFromModel() {
+  for (int i = 0; i < model_->GetItemCount(); ++i) {
     GtkWidget* menu_item = NULL;
 
-    if (delegate_->IsItemSeparator(i)) {
+    // TODO(estade): support these commands.
+    DCHECK_NE(model_->GetTypeAt(i), menus::MenuModel::TYPE_CHECK);
+    DCHECK_NE(model_->GetTypeAt(i), menus::MenuModel::TYPE_RADIO);
+    DCHECK_NE(model_->GetTypeAt(i), menus::MenuModel::TYPE_SUBMENU);
+
+    SkBitmap icon;
+    if (model_->GetTypeAt(i) == menus::MenuModel::TYPE_SEPARATOR) {
       menu_item = gtk_separator_menu_item_new();
-    } else if (delegate_->HasIcon(i)) {
-      const SkBitmap* icon = delegate_->GetIcon(i);
-      menu_item = BuildMenuItemWithImage(delegate_->GetLabel(i), *icon);
+    } else if (model_->GetIconAt(i, &icon)) {
+      menu_item = BuildMenuItemWithImage(UTF16ToUTF8(model_->GetLabelAt(i)),
+                                         icon);
     } else {
-      menu_item = gtk_menu_item_new_with_label(delegate_->GetLabel(i).c_str());
+      menu_item = gtk_menu_item_new_with_label(
+          UTF16ToUTF8(model_->GetLabelAt(i)).c_str());
     }
 
     AppendMenuItem(i, menu_item);

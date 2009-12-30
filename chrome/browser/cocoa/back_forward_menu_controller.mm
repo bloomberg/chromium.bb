@@ -10,6 +10,7 @@
 #include "chrome/browser/back_forward_menu_model.h"
 #import "chrome/browser/cocoa/delayedmenu_button.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 using base::SysUTF16ToNSString;
 using gfx::SkBitmapToNSImage;
@@ -49,7 +50,7 @@ using gfx::SkBitmapToNSImage;
 
   // Remove old menu items (backwards order is as good as any).
   for (NSInteger i = [menu numberOfItems]; i > 0; i--)
-    [menu removeItemAtIndex:(i-1)];
+    [menu removeItemAtIndex:(i - 1)];
 
   // 0-th item must be blank. (This is because we use a pulldown list, for which
   // Cocoa uses the 0-th item as "title" in the button.)
@@ -57,24 +58,22 @@ using gfx::SkBitmapToNSImage;
                      action:nil
               keyEquivalent:@""
                     atIndex:0];
-  for (int menuID = 1; menuID <= model_->GetTotalItemCount(); menuID++) {
+  for (int menuID = 0; menuID < model_->GetItemCount(); menuID++) {
     if (model_->IsSeparator(menuID)) {
       [menu insertItem:[NSMenuItem separatorItem]
-               atIndex:menuID];
+               atIndex:(menuID + 1)];
     } else {
       // Create a menu item with the right label.
       NSMenuItem* menuItem = [[NSMenuItem alloc]
-              initWithTitle:SysUTF16ToNSString(model_->GetItemLabel(menuID))
+              initWithTitle:SysUTF16ToNSString(model_->GetLabelAt(menuID))
                      action:nil
               keyEquivalent:@""];
       [menuItem autorelease];
 
-      // Only enable it if it's supposed to do something.
-      [menuItem setEnabled:(model_->ItemHasCommand(menuID) ? YES : NO)];
-
+      SkBitmap icon;
       // Icon (if it has one).
-      if (model_->ItemHasIcon(menuID))
-        [menuItem setImage:SkBitmapToNSImage(model_->GetItemIcon(menuID))];
+      if (model_->GetIconAt(menuID, &icon))
+        [menuItem setImage:SkBitmapToNSImage(icon)];
 
       // This will make it call our |-executeMenuItem:| method. We store the
       // |menuID| (or |menu_id|) in the tag.
@@ -84,7 +83,7 @@ using gfx::SkBitmapToNSImage;
 
       // Put it in the menu!
       [menu insertItem:menuItem
-               atIndex:menuID];
+               atIndex:(menuID + 1)];
     }
   }
 }
@@ -94,7 +93,7 @@ using gfx::SkBitmapToNSImage;
 - (void)executeMenuItem:(id)sender {
   DCHECK([sender isKindOfClass:[NSMenuItem class]]);
   int menuID = [sender tag];
-  model_->ExecuteCommandById(menuID);
+  model_->ActivatedAt(menuID);
 }
 
 @end  // @implementation BackForwardMenuController

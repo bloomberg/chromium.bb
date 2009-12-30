@@ -16,6 +16,10 @@
 
 class SkBitmap;
 
+namespace menus {
+class MenuModel;
+}
+
 struct MenuCreateMaterial;
 
 class MenuGtk {
@@ -39,12 +43,6 @@ class MenuGtk {
     // the user clicks away from the menu.
     virtual void StoppedShowing() {}
 
-    // Functions needed for creation of non-static menus.
-    virtual int GetItemCount() const { return 0; }
-    virtual bool IsItemSeparator(int command_id) const { return false; }
-    virtual std::string GetLabel(int command_id) const { return std::string(); }
-    virtual bool HasIcon(int command_id) const { return false; }
-    virtual const SkBitmap* GetIcon(int command_id) const { return NULL; }
     // Return true if we should override the "gtk-menu-images" system setting
     // when showing image menu items for this menu.
     virtual bool AlwaysShowImages() const { return false; }
@@ -55,8 +53,10 @@ class MenuGtk {
   MenuGtk(MenuGtk::Delegate* delegate, const MenuCreateMaterial* menu_data,
           GtkAccelGroup* accel_group);
   // Creates a MenuGtk that uses |delegate| to perform actions.  Builds the
-  // menu using |delegate| if |load| is true.
-  MenuGtk(MenuGtk::Delegate* delegate, bool load);
+  // menu using |model_| if non-NULL.
+  // TODO(estade): MenuModel support is only partial. Only TYPE_SEPARATOR and
+  // TYPE_COMMAND are currently implemented.
+  MenuGtk(MenuGtk::Delegate* delegate, menus::MenuModel* model);
   ~MenuGtk();
 
   // Initialize GTK signal handlers.
@@ -124,9 +124,8 @@ class MenuGtk {
   GtkWidget* BuildMenuItemWithImage(const std::string& label,
                                     const SkBitmap& icon);
 
-  // A function that creates a GtkMenu from |delegate_|. This function is not
-  // recursive and does not support sub-menus.
-  void BuildMenuFromDelegate();
+  // A function that creates a GtkMenu from |model_|.
+  void BuildMenuFromModel();
 
   // Contains implementation for OnMenuShow.
   void UpdateMenu();
@@ -145,6 +144,9 @@ class MenuGtk {
 
   // Queries this object about the menu state.
   MenuGtk::Delegate* delegate_;
+
+  // If non-NULL, the MenuModel that we use to populate the GTK menu.
+  menus::MenuModel* model_;
 
   // For some menu items, we want to show the accelerator, but not actually
   // explicitly handle it. To this end we connect those menu items' accelerators

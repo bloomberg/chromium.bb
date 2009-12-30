@@ -8,22 +8,25 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/gtk/custom_button.h"
+#include "chrome/browser/gtk/menu_gtk.h"
 
-class BackForwardMenuModelGtk;
+class BackForwardMenuModel;
 class Browser;
-class MenuGtk;
 
 typedef struct _GtkWidget GtkWidget;
 
 // When clicked, these buttons will navigate forward or backward. When
 // pressed and held, they show a dropdown menu of recent web sites.
-class BackForwardButtonGtk {
+class BackForwardButtonGtk : MenuGtk::Delegate {
  public:
   BackForwardButtonGtk(Browser* browser, bool is_forward);
   virtual ~BackForwardButtonGtk();
 
-  // The dropdown menu is no longer showing.
-  void StoppedShowingMenu();
+  // MenuGtk::Delegate implementation.
+  virtual void StoppedShowing();
+  virtual bool IsCommandEnabled(int command_id) const;
+  virtual void ExecuteCommand(int command_id);
+  bool AlwaysShowImages() const;
 
   GtkWidget* widget() { return button_->widget(); }
 
@@ -57,8 +60,8 @@ class BackForwardButtonGtk {
   // Whether this button is a forward button.
   bool is_forward_;
 
-  // The dropdown menu delegate.
-  scoped_ptr<BackForwardMenuModelGtk> menu_model_;
+  // The dropdown menu model.
+  scoped_ptr<BackForwardMenuModel> menu_model_;
 
   // The y position of the last mouse down event.
   int y_position_of_last_press_;

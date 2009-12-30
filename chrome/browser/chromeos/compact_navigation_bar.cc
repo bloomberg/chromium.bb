@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
-#include "chrome/browser/back_forward_menu_model_views.h"
+#include "chrome/browser/back_forward_menu_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/browser_window.h"
@@ -65,10 +65,10 @@ void CompactNavigationBar::Init() {
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
 
-  back_menu_model_.reset(new BackForwardMenuModelViews(
-      browser_, BackForwardMenuModel::BACKWARD_MENU, GetWidget()));
-  forward_menu_model_.reset(new BackForwardMenuModelViews(
-      browser_, BackForwardMenuModel::FORWARD_MENU, GetWidget()));
+  back_menu_model_.reset(new BackForwardMenuModel(
+      browser_, BackForwardMenuModel::BACKWARD_MENU));
+  forward_menu_model_.reset(new BackForwardMenuModel(
+      browser_, BackForwardMenuModel::FORWARD_MENU));
 
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
 
