@@ -77,19 +77,19 @@ void AboutTcmallocRendererCallback(base::ProcessId pid, std::string output) {
 
 namespace {
 
-// The paths used for the about pages.
+// The (alphabetized) paths used for the about pages.
+const char kCreditsPath[] = "credits";
 const char kDnsPath[] = "dns";
 const char kHistogramsPath[] = "histograms";
-const char kObjectsPath[] = "objects";
 const char kMemoryRedirectPath[] = "memory-redirect";
 const char kMemoryPath[] = "memory";
-const char kTcmallocPath[] = "tcmalloc";
 const char kPluginsPath[] = "plugins";
 const char kStatsPath[] = "stats";
-const char kVersionPath[] = "version";
-const char kCreditsPath[] = "credits";
-const char kTermsPath[] = "terms";
 const char kSyncPath[] = "sync";
+const char kTasksPath[] = "tasks";
+const char kTcmallocPath[] = "tcmalloc";
+const char kTermsPath[] = "terms";
+const char kVersionPath[] = "version";
 
 #if defined(OS_CHROMEOS)
 const char kOSCreditsPath[] = "os-credits";
@@ -325,7 +325,7 @@ void AboutMemory(AboutSource* source, int request_id) {
   handler->StartFetch();
 }
 
-std::string AboutObjects(const std::string& query) {
+static std::string AboutObjects(const std::string& query) {
   std::string data;
   tracked_objects::ThreadData::WriteHTML(query, &data);
   return data;
@@ -675,8 +675,10 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
     return;
   } else if (path == kMemoryRedirectPath) {
     response = GetAboutMemoryRedirectResponse();
-  } else if (path == kObjectsPath) {
+#ifdef TRACK_ALL_TASK_OBJECTS
+  } else if (path == kTasksPath) {
     response = AboutObjects(info);
+#endif
   } else if (path == kPluginsPath) {
     response = AboutPlugins();
   } else if (path == kStatsPath) {

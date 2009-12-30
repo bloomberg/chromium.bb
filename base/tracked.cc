@@ -77,8 +77,7 @@ void Tracked::SetBirthPlace(const Location& from_here) {
   ThreadData* current_thread_data = ThreadData::current();
   if (!current_thread_data)
     return;  // Shutdown started, and this thread wasn't registered.
-  tracked_births_ = current_thread_data->FindLifetime(from_here);
-  tracked_births_->RecordBirth();
+  tracked_births_ = current_thread_data->TallyABirth(from_here);
 }
 
 void Tracked::ResetBirthTime() {
