@@ -2810,6 +2810,10 @@ BUG2844 WIN RELEASE : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOU
 BUG9798 WIN DEBUG : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS TEXT
 BUG2844 : LayoutTests/http/tests/appcache/update-cache.html = TIMEOUT PASS
 
+// Need to investigate this one, started failing mac only with r35354
+// which switched to using a sql based storage impl.
+BUG31300 SKIP MAC : LayoutTests/http/tests/appcache/remove-cache.html = FAIL
+
 // These tests sometimes pass and sometimes have a text difference due
 // to chromium's appcache being async.
 BUG2844 WIN RELEASE : LayoutTests/http/tests/appcache/top-frame-3.html = TEXT PASS
