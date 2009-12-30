@@ -17,6 +17,7 @@
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHTTPHeaderVisitor.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
@@ -32,7 +33,9 @@ using base::TimeDelta;
 using WebKit::WebData;
 using WebKit::WebHTTPBody;
 using WebKit::WebHTTPHeaderVisitor;
+using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
+using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLLoader;
 using WebKit::WebURLLoaderClient;
@@ -413,6 +416,12 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   // request that resulted from the redirect.
   WebURLRequest new_request(new_url);
   new_request.setFirstPartyForCookies(request_.firstPartyForCookies());
+
+  WebString referrer_string = WebString::fromUTF8("Referer");
+  WebString referrer = request_.httpHeaderField(referrer_string);
+  if (!WebSecurityPolicy::shouldHideReferrer(new_url, referrer))
+    new_request.setHTTPHeaderField(referrer_string, referrer);
+
   if (response.httpStatusCode() == 307)
     new_request.setHTTPMethod(request_.httpMethod());
 
