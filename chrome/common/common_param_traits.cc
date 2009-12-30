@@ -27,24 +27,20 @@ struct SkBitmap_Data {
   // The height of the bitmap in pixels.
   uint32 fHeight;
 
-  // The number of bytes between subsequent rows of the bitmap.
-  uint32 fRowBytes;
-
   void InitSkBitmapDataForTransfer(const SkBitmap& bitmap) {
     fConfig = bitmap.config();
     fWidth = bitmap.width();
     fHeight = bitmap.height();
-    fRowBytes = bitmap.rowBytes();
   }
 
   // Returns whether |bitmap| successfully initialized.
   bool InitSkBitmapFromData(SkBitmap* bitmap, const char* pixels,
                             size_t total_pixels) const {
     if (total_pixels) {
-      bitmap->setConfig(fConfig, fWidth, fHeight, fRowBytes);
+      bitmap->setConfig(fConfig, fWidth, fHeight, 0);
       if (!bitmap->allocPixels())
         return false;
-      if (total_pixels > bitmap->getSize())
+      if (total_pixels != bitmap->getSize())
         return false;
       memcpy(bitmap->getPixels(), pixels, total_pixels);
     }
@@ -205,15 +201,17 @@ bool ParamTraits<webkit_glue::WebApplicationInfo>::Read(
     ReadParam(m, iter, &icon_count);
   if (!result)
     return false;
-  for (size_t i = 0; i < icon_count && result; ++i) {
+  for (size_t i = 0; i < icon_count; ++i) {
     param_type::IconInfo icon_info;
     result =
         ReadParam(m, iter, &icon_info.url) &&
         ReadParam(m, iter, &icon_info.width) &&
         ReadParam(m, iter, &icon_info.height);
+    if (!result)
+      return false;
     r->icons.push_back(icon_info);
   }
-  return result;
+  return true;
 }
 
 void ParamTraits<webkit_glue::WebApplicationInfo>::Log(
