@@ -404,14 +404,14 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
 
     gfx::NativeWindow frame_window =
         toolbar_->browser()->window()->GetNativeHandle();
-    BubbleBorder::ArrowLocation arrowLocation = UILayoutIsRightToLeft() ?
+    BubbleBorder::ArrowLocation arrow_location = UILayoutIsRightToLeft() ?
         BubbleBorder::TOP_LEFT : BubbleBorder::TOP_RIGHT;
     popup_ = ExtensionPopup::Show(browser_action->popup_url(),
                                   toolbar_->browser(),
                                   toolbar_->browser()->profile(),
                                   frame_window,
                                   rect,
-                                  arrowLocation,
+                                  arrow_location,
                                   true);  // Activate the popup window.
     popup_->set_delegate(this);
     popup_button_ = button;
