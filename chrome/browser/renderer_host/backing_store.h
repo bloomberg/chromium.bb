@@ -160,8 +160,8 @@ class BackingStore {
   // This is the connection to the X server where this backing store will be
   // displayed.
   Display* const display_;
-  // If this is true, then |connection_| is good for MIT-SHM (X shared memory).
-  const bool use_shared_memory_;
+  // What flavor, if any, MIT-SHM (X shared memory) support we have.
+  const x11_util::SharedMemorySupport shared_memory_support_;
   // If this is true, then we can use Xrender to composite our pixmaps.
   const bool use_render_;
   // If |use_render_| is false, this is the number of bits-per-pixel for |depth|

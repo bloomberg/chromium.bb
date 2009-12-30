@@ -52,7 +52,7 @@ BackingStore::BackingStore(RenderWidgetHost* widget,
     : render_widget_host_(widget),
       size_(size),
       display_(x11_util::GetXDisplay()),
-      use_shared_memory_(x11_util::QuerySharedMemorySupport(display_)),
+      shared_memory_support_(x11_util::QuerySharedMemorySupport(display_)),
       use_render_(x11_util::QueryRenderSupport(display_)),
       visual_(visual),
       visual_depth_(depth),
@@ -80,7 +80,7 @@ BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
     : render_widget_host_(widget),
       size_(size),
       display_(NULL),
-      use_shared_memory_(false),
+      shared_memory_support_(x11_util::SHARED_MEMORY_NONE),
       use_render_(false),
       visual_(NULL),
       visual_depth_(-1),
@@ -241,12 +241,9 @@ void BackingStore::PaintRect(base::ProcessHandle process,
   Picture picture;
   Pixmap pixmap;
 
-  if (use_shared_memory_) {
-    const XID shmseg = bitmap->MapToX(display_);
-
-    XShmSegmentInfo shminfo;
-    memset(&shminfo, 0, sizeof(shminfo));
-    shminfo.shmseg = shmseg;
+  if (shared_memory_support_ == x11_util::SHARED_MEMORY_PIXMAP) {
+    XShmSegmentInfo shminfo = {0};
+    shminfo.shmseg = bitmap->MapToX(display_);
 
     // The NULL in the following is the |data| pointer: this is an artifact of
     // Xlib trying to be helpful, rather than just exposing the X protocol. It
@@ -255,35 +252,58 @@ void BackingStore::PaintRect(base::ProcessHandle process,
     // difference between the |data| pointer and the address of the mapping in
     // |shminfo|. Since both are NULL, the offset will be calculated to be 0,
     // which is correct for us.
-    pixmap = XShmCreatePixmap(display_, root_window_, NULL, &shminfo, width,
-                              height, 32);
+    pixmap = XShmCreatePixmap(display_, root_window_, NULL, &shminfo,
+                              width, height, 32);
   } else {
-    // No shared memory support, we have to copy the bitmap contents to the X
-    // server. Xlib wraps the underlying PutImage call behind several layers of
-    // functions which try to convert the image into the format which the X
-    // server expects. The following values hopefully disable all conversions.
-    XImage image;
-    memset(&image, 0, sizeof(image));
-
-    image.width = width;
-    image.height = height;
-    image.depth = 32;
-    image.bits_per_pixel = 32;
-    image.format = ZPixmap;
-    image.byte_order = LSBFirst;
-    image.bitmap_unit = 8;
-    image.bitmap_bit_order = LSBFirst;
-    image.bytes_per_line = width * 4;
-    image.red_mask = 0xff;
-    image.green_mask = 0xff00;
-    image.blue_mask = 0xff0000;
-    image.data = static_cast<char*>(bitmap->memory());
-
+    // We don't have shared memory pixmaps.  Fall back to creating a pixmap
+    // ourselves and putting an image on it.
     pixmap = XCreatePixmap(display_, root_window_, width, height, 32);
     GC gc = XCreateGC(display_, pixmap, 0, NULL);
-    XPutImage(display_, pixmap, gc, &image,
-              0, 0 /* source x, y */, 0, 0 /* dest x, y */,
-              width, height);
+
+    if (shared_memory_support_ == x11_util::SHARED_MEMORY_PUTIMAGE) {
+      const XID shmseg = bitmap->MapToX(display_);
+
+      XShmSegmentInfo shminfo;
+      memset(&shminfo, 0, sizeof(shminfo));
+      shminfo.shmseg = shmseg;
+      shminfo.shmaddr = static_cast<char*>(bitmap->memory());
+
+      // TODO(evanm): verify that Xlib isn't doing any conversions here.
+      XImage* image = XShmCreateImage(display_, static_cast<Visual*>(visual_),
+                                      32, ZPixmap,
+                                      shminfo.shmaddr, &shminfo,
+                                      width, height);
+      XShmPutImage(display_, pixmap, gc, image,
+                   0, 0 /* source x, y */, 0, 0 /* dest x, y */,
+                   width, height, False /* send_event */);
+      XDestroyImage(image);
+    } else { // case SHARED_MEMORY_NONE
+      // No shared memory support, we have to copy the bitmap contents
+      // to the X server. Xlib wraps the underlying PutImage call
+      // behind several layers of functions which try to convert the
+      // image into the format which the X server expects. The
+      // following values hopefully disable all conversions.
+      XImage image;
+      memset(&image, 0, sizeof(image));
+
+      image.width = width;
+      image.height = height;
+      image.depth = 32;
+      image.bits_per_pixel = 32;
+      image.format = ZPixmap;
+      image.byte_order = LSBFirst;
+      image.bitmap_unit = 8;
+      image.bitmap_bit_order = LSBFirst;
+      image.bytes_per_line = width * 4;
+      image.red_mask = 0xff;
+      image.green_mask = 0xff00;
+      image.blue_mask = 0xff0000;
+      image.data = static_cast<char*>(bitmap->memory());
+
+      XPutImage(display_, pixmap, gc, &image,
+                0, 0 /* source x, y */, 0, 0 /* dest x, y */,
+                width, height);
+    }
     XFreeGC(display_, gc);
   }
 
@@ -303,8 +323,9 @@ void BackingStore::PaintRect(base::ProcessHandle process,
                    copy_rect.height());              // height
 
   // In the case of shared memory, we wait for the composite to complete so that
-  // we are sure that the X server has finished reading.
-  if (use_shared_memory_)
+  // we are sure that the X server has finished reading from the shared memory
+  // segment.
+  if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)
     XSync(display_, False);
 
   XRenderFreePicture(display_, picture);
@@ -383,7 +404,7 @@ SkBitmap BackingStore::PaintRectToBitmap(const gfx::Rect& rect) {
 
   XImage* image;
   XShmSegmentInfo shminfo;  // Used only when shared memory is enabled.
-  if (use_shared_memory_) {
+  if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE) {
     // Use shared memory for faster copies when it's available.
     Visual* visual = static_cast<Visual*>(visual_);
     memset(&shminfo, 0, sizeof(shminfo));
@@ -422,7 +443,7 @@ SkBitmap BackingStore::PaintRectToBitmap(const gfx::Rect& rect) {
   // TODO(jhawkins): Need to convert the image data if the image bits per pixel
   // is not 32.
   if (image->bits_per_pixel != 32) {
-    if (use_shared_memory_)
+    if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)
       DestroySharedImage(display_, image, &shminfo);
     else
       XDestroyImage(image);
@@ -439,7 +460,7 @@ SkBitmap BackingStore::PaintRectToBitmap(const gfx::Rect& rect) {
       reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0));
   memcpy(bitmap_data, image->data, image->bytes_per_line * height);
 
-  if (use_shared_memory_)
+  if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)
     DestroySharedImage(display_, image, &shminfo);
   else
     XDestroyImage(image);

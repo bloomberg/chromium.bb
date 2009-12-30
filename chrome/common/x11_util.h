@@ -37,20 +37,32 @@ namespace x11_util {
 // These functions use the GDK default display and this /must/ be called from
 // the UI thread. Thus, they don't support multiple displays.
 
-// These functions cache their results.
+// These functions cache their results ---------------------------------
 
 // Check if there's an open connection to an X server.
 bool XDisplayExists();
 // Return an X11 connection for the current, primary display.
 Display* GetXDisplay();
-// Return true iff the connection supports X shared memory
-bool QuerySharedMemorySupport(Display* dpy);
+
+// X shared memory comes in three flavors:
+// 1) SHM pixmaps + putimage,
+// 2) SHM putimage,
+// 3) No SHM support.
+enum SharedMemorySupport {
+  SHARED_MEMORY_PIXMAP,
+  SHARED_MEMORY_PUTIMAGE,
+  SHARED_MEMORY_NONE
+};
+// Return the shared memory type of our X connection.
+SharedMemorySupport QuerySharedMemorySupport(Display* dpy);
+
 // Return true iff the display supports Xrender
 bool QueryRenderSupport(Display* dpy);
+
 // Return the default screen number for the display
 int GetDefaultScreen(Display* display);
 
-// These functions do not cache their results
+// These functions do not cache their results --------------------------
 
 // Get the X window id for the default root window
 XID GetX11RootWindow();

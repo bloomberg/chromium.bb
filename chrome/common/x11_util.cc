@@ -66,22 +66,17 @@ Display* GetXDisplay() {
   return display;
 }
 
-static bool DoQuerySharedMemorySupport(Display* dpy) {
+static SharedMemorySupport DoQuerySharedMemorySupport(Display* dpy) {
   int dummy;
   Bool pixmaps_supported;
-  // Query the server's support for shared memory
+  // Query the server's support for XSHM.
   if (!XShmQueryVersion(dpy, &dummy, &dummy, &pixmaps_supported))
-    return false;
-  // If the server doesn't support shared memory, give up. (Note that if
-  // |shared_pixmaps| is true, it just means that the server /supports/ shared
-  // memory, not that it will work on this connection.)
-  if (!pixmaps_supported)
-    return false;
+    return SHARED_MEMORY_NONE;
 
   // Next we probe to see if shared memory will really work
   int shmkey = shmget(IPC_PRIVATE, 1, 0666);
   if (shmkey == -1)
-    return false;
+    return SHARED_MEMORY_NONE;
   void* address = shmat(shmkey, NULL, 0);
   // Mark the shared memory region for deletion
   shmctl(shmkey, IPC_RMID, NULL);
@@ -97,14 +92,14 @@ static bool DoQuerySharedMemorySupport(Display* dpy) {
     result = false;
   shmdt(address);
   if (!result)
-    return false;
+    return SHARED_MEMORY_NONE;
 
   XShmDetach(dpy, &shminfo);
-  return true;
+  return pixmaps_supported ? SHARED_MEMORY_PIXMAP : SHARED_MEMORY_PUTIMAGE;
 }
 
-bool QuerySharedMemorySupport(Display* dpy) {
-  static bool shared_memory_support = false;
+SharedMemorySupport QuerySharedMemorySupport(Display* dpy) {
+  static SharedMemorySupport shared_memory_support = SHARED_MEMORY_NONE;
   static bool shared_memory_support_cached = false;
 
   if (shared_memory_support_cached)
