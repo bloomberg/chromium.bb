@@ -198,7 +198,7 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
 // If LOGGING is not explicitly defined, default to enabled in debug mode
 #if defined(SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS)
 #if !defined(LOGGING)
-#if defined(_DEBUG) && !defined(NDEBUG)
+#if !defined(NDEBUG)
 #define LOGGING 1
 #else
 #define LOGGING 0

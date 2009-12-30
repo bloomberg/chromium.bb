@@ -74,11 +74,11 @@ std::string ErrorName(int err, const talk_base::ConstantLabel * err_table) {
 // LogMessage
 /////////////////////////////////////////////////////////////////////////////
 
-#if _DEBUG
+#if LOGGING
 static const int LOG_DEFAULT = LS_INFO;
-#else  // !_DEBUG
+#else
 static const int LOG_DEFAULT = LogMessage::NO_LOGGING;
-#endif  // !_DEBUG
+#endif
 
 // By default, release builds don't log, debug builds at info level
 int LogMessage::min_sev_ = LOG_DEFAULT;
