@@ -47,8 +47,8 @@ void RunMessageLoopForAWhile() {
 TEST(WorkerThreadTickerTest, Basic) {
   MessageLoop loop;
 
-  WorkerThreadTicker ticker(50);
   TestCallback callback;
+  WorkerThreadTicker ticker(50);
   EXPECT_FALSE(ticker.IsRunning());
   EXPECT_TRUE(ticker.RegisterTickHandler(&callback));
   EXPECT_TRUE(ticker.UnregisterTickHandler(&callback));
@@ -65,8 +65,8 @@ TEST(WorkerThreadTickerTest, Basic) {
 TEST(WorkerThreadTickerTest, Callback) {
   MessageLoop loop;
 
-  WorkerThreadTicker ticker(50);
   TestCallback callback;
+  WorkerThreadTicker ticker(50);
   ASSERT_TRUE(ticker.RegisterTickHandler(&callback));
 
   ASSERT_TRUE(ticker.Start());
@@ -99,8 +99,8 @@ TEST(WorkerThreadTickerTest, OutOfScope) {
 TEST(WorkerThreadTickerTest, LongCallback) {
   MessageLoop loop;
 
-  WorkerThreadTicker ticker(50);
   LongCallback callback;
+  WorkerThreadTicker ticker(50);
   ASSERT_TRUE(ticker.RegisterTickHandler(&callback));
 
   ASSERT_TRUE(ticker.Start());
