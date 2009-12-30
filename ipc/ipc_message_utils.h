@@ -63,13 +63,13 @@ class MessageIterator {
   explicit MessageIterator(const Message& m) : msg_(m), iter_(NULL) {
   }
   int NextInt() const {
-    int val;
+    int val = -1;
     if (!msg_.ReadInt(&iter_, &val))
       NOTREACHED();
     return val;
   }
   intptr_t NextIntPtr() const {
-    intptr_t val;
+    intptr_t val = 0;
     if (!msg_.ReadIntPtr(&iter_, &val))
       NOTREACHED();
     return val;
