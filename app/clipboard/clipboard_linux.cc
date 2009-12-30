@@ -169,8 +169,8 @@ void Clipboard::WriteHTML(const char* markup_data,
   // TODO(estade): We need to expand relative links with |url_data|.
   static const char* html_prefix = "<meta http-equiv=\"content-type\" "
                                    "content=\"text/html; charset=utf-8\">";
-  int html_prefix_len = strlen(html_prefix);
-  int total_len = html_prefix_len + markup_len;
+  size_t html_prefix_len = strlen(html_prefix);
+  size_t total_len = html_prefix_len + markup_len;
 
   char* data = new char[total_len];
   snprintf(data, total_len, "%s", html_prefix);
