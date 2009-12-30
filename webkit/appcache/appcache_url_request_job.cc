@@ -175,13 +175,6 @@ int AppCacheURLRequestJob::GetResponseCode() const {
   return http_info()->headers->response_code();
 }
 
-bool AppCacheURLRequestJob::GetMoreData() {
-  // TODO(michaeln): This method is in the URLRequestJob interface,
-  // but its never called by anything, it can be removed from the
-  // base class.
-  return false;
-}
-
 bool AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size,
                                         int *bytes_read) {
   DCHECK(is_delivering_appcache_response());

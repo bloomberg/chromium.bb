@@ -103,7 +103,6 @@ class AppCacheURLRequestJob : public URLRequestJob,
   virtual net::LoadState GetLoadState() const;
   virtual bool GetCharset(std::string* charset);
   virtual void GetResponseInfo(net::HttpResponseInfo* info);
-  virtual bool GetMoreData();
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read);
 
   // Sets extra request headers for Job types that support request headers.

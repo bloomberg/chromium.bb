@@ -76,9 +76,6 @@ class URLRequestInetJob : public URLRequestJob {
   // OnIOComplete to be called.
   bool ProcessRequestError(int error);
 
-  // Called by URLRequestJob to get more data from the data stream of this job.
-  virtual bool GetMoreData();
-
   // Cleans up the connection, if necessary, and closes the connection and
   // request handles. May be called multiple times, it will be a NOP if
   // there is nothing to do.

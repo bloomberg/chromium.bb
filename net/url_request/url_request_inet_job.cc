@@ -247,16 +247,6 @@ bool URLRequestInetJob::ProcessRequestError(int error) {
   return false;
 }
 
-bool URLRequestInetJob::GetMoreData() {
-  if (!is_waiting_ && !is_done()) {
-    // The connection is still in the middle of transmission.
-    // Return true so InternetReadFileExA can be called again.
-    return true;
-  } else {
-    return false;
-  }
-}
-
 void URLRequestInetJob::CleanupConnection() {
   if (!request_handle_ && !connection_handle_)
     return;  // nothing to clean up
