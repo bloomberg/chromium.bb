@@ -2,7 +2,7 @@ vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "native_client_trunk": "http://nativeclient.googlecode.com/svn/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
-  "gyp_rev": "760",
+  "gyp_rev": "770",
   "gtest_rev": "267",
   "tools_rev": "1108",
   "python_rev": "22967",

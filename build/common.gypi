@@ -641,13 +641,18 @@
             'DebugInformationFormat': '3',
           },
           'VCLibrarianTool': {
-            'AdditionalOptions': '/ignore:4221',
+            'AdditionalOptions': ['/ignore:4221'],
             'AdditionalLibraryDirectories':
               ['<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Lib'],
           },
           'VCLinkerTool': {
-            'AdditionalOptions':
-              '/safeseh:NO /dynamicbase:NO /ignore:4199 /ignore:4221 /nxcompat',
+            'AdditionalOptions': [
+              '/safeseh:NO',
+              '/dynamicbase:NO',
+              '/ignore:4199',
+              '/ignore:4221',
+              '/nxcompat',
+            ],
             'AdditionalDependencies': [
               'wininet.lib',
               'version.lib',
