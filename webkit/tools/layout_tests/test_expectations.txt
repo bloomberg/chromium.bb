@@ -2204,9 +2204,9 @@ BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAI
 // Newly added tests.
 BUG9161 : LayoutTests/fast/forms/basic-textareas.html = FAIL
 
-// Tests that fail in debug mode on linux
-BUG10454 LINUX DEBUG : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH IMAGE
-BUG31146 LINUX RELEASE : LayoutTests/svg/custom/mask-excessive-malloc.svg = IMAGE
+// Tests that fail on linux (formerly debug-only, but release too as of
+// WebKit r52633).
+BUG10454 BUG31146 LINUX : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH IMAGE
 
 // This test hits a stack-overflow exception earlier in debug mode than in
 // release mode on Windows.
@@ -2798,13 +2798,13 @@ BUG_OJAN LINUX : LayoutTests/http/tests/xmlhttprequest/cache-override.html = TEX
 // Likely it's because this test depends on some other http test running before
 // it that no longer does (or vice versa, some other test running before it
 // is causing it to fail).
-BUG9798 LINUX RELEASE : LayoutTests/http/tests/security/clipboard/clipboard-file-access.html = TEXT PASS
+BUG9798 LINUX : LayoutTests/http/tests/security/clipboard/clipboard-file-access.html = TEXT PASS
 
 // These tests time out *and* are slow. The test should be fixed to not timeout,
 // then should be marked as SLOW/PASS.
 BUG2844 : LayoutTests/http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS
 BUG2844 : LayoutTests/http/tests/appcache/fail-on-update.html = TIMEOUT PASS TEXT
-BUG2844 : LayoutTests/http/tests/appcache/offline-access.html = TIMEOUT PASS
+BUG2844 BUG31302 : LayoutTests/http/tests/appcache/offline-access.html = TIMEOUT PASS CRASH
 BUG2844 LINUX: LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS
 BUG2844 WIN RELEASE : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS TEXT
@@ -3096,8 +3096,8 @@ BUG30543 : LayoutTests/storage/domstorage/localstorage/enumerate-with-length-and
 // Flaky.
 BUG30593 LINUX MAC : LayoutTests/websocket/tests/url-with-credential.html = TEXT PASS
 BUG9798 WIN LINUX : LayoutTests/fast/loader/javascript-url-encoding-2.html = TIMEOUT PASS
-BUG9798 RELEASE : LayoutTests/fast/loading/subframe-removes-itself.html = TEXT PASS
-BUG9798 LINUX MAC RELEASE : LayoutTests/fast/loader/invalid-charset-on-script-crashes-loader.html = TIMEOUT PASS
+BUG9798 : LayoutTests/fast/loading/subframe-removes-itself.html = TEXT PASS
+BUG9798 LINUX MAC : LayoutTests/fast/loader/invalid-charset-on-script-crashes-loader.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/fast/borders/block-mask-overlay-image.html = TEXT PASS
 
 // Webkit roll 52198->52205
@@ -3127,8 +3127,8 @@ BUG31028 LINUX DEBUG : LayoutTests/svg/custom/feDisplacementMap-01.svg = IMAGE+T
 BUG30938 MAC : LayoutTests/fast/backgrounds/svg-as-background-6.html = IMAGE
 BUG30938 : LayoutTests/svg/css/mask-with-shadow.svg = IMAGE
 BUG30938 WIN : LayoutTests/svg/custom/mask-excessive-malloc.svg = IMAGE
-BUG30938 WIN LINUX : LayoutTests/svg/custom/mask-inside-defs.svg = IMAGE
-BUG30938 WIN LINUX : LayoutTests/svg/custom/visibility-override-mask.svg = IMAGE
+BUG30938 LINUX : LayoutTests/svg/custom/mask-inside-defs.svg = IMAGE
+BUG30938 LINUX : LayoutTests/svg/custom/visibility-override-mask.svg = IMAGE
 BUG30938 WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 BUG30939 WIN LINUX : LayoutTests/svg/custom/image-with-transform-clip-filter.svg = IMAGE
 BUG30939 : LayoutTests/svg/filters/filter-clip.svg = IMAGE+TEXT
@@ -3146,3 +3146,20 @@ BUG31146 MAC : LayoutTests/editing/selection/select-text-overflow-ellipsis.html 
 BUG31146 WIN LINUX :  LayoutTests/svg/custom/grayscale-gradient-mask.svg = IMAGE
 BUG31146 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-displace-01-f.svg = TEXT
 BUG31146 WIN : LayoutTests/inspector/console-clear.html = TEXT
+
+// WebKit update 52554->52633
+// TODO(pamg): investigate
+BUG31302 WIN : LayoutTests/security/block-test-no-port.html = TEXT PASS
+BUG31302 WIN : LayoutTests/security/block-test.html = TEXT PASS
+BUG31302 WIN : LayoutTests/plugins/embed-attributes-setting.html = TIMEOUT PASS
+BUG31302 : LayoutTests/fast/events/keydown-numpad-keys.html = TEXT
+BUG31302 WIN : LayoutTests/inspector/console-dirxml.html = TEXT
+BUG31302 WIN LINUX : LayoutTests/svg/custom/empty-mask.svg = TEXT
+BUG31302 : LayoutTests/svg/custom/global-constructors.html = TEXT
+BUG31302 WIN LINUX : LayoutTests/svg/custom/mask-on-multiple-objects.svg = IMAGE
+BUG31302 MAC : LayoutTests/fast/forms/select-style.html = IMAGE PASS
+BUG31302 LINUX : LayoutTests/platform/chromium/fast/dom/interval.html = TEXT PASS
+BUG31302 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
+BUG31302 LINUX : LayoutTests/svg/custom/circular-marker-reference-3.svg = TEXT PASS
+BUG31302 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-blend-01-b.svg = TEXT PASS
+BUG31302 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
