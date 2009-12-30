@@ -63,6 +63,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   using DownloadShelfContextMenu::OPEN_WHEN_COMPLETE;
   using DownloadShelfContextMenu::ALWAYS_OPEN_TYPE;
   using DownloadShelfContextMenu::CANCEL;
+  using DownloadShelfContextMenu::TOGGLE_PAUSE;
 };
 
 @interface DownloadItemController (Private)
@@ -291,6 +292,8 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     actionId = DownloadShelfContextMenuMac::SHOW_IN_FOLDER;
   } else if (action == @selector(handleCancel:)) {
     actionId = DownloadShelfContextMenuMac::CANCEL;
+  } else if (action == @selector(handleTogglePause:)) {
+    actionId = DownloadShelfContextMenuMac::TOGGLE_PAUSE;
   } else {
     NOTREACHED();
     return YES;
@@ -320,6 +323,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (IBAction)handleCancel:(id)sender {
   menuBridge_->ExecuteItemCommand(DownloadShelfContextMenuMac::CANCEL);
+}
+
+- (IBAction)handleTogglePause:(id)sender {
+  menuBridge_->ExecuteItemCommand(DownloadShelfContextMenuMac::TOGGLE_PAUSE);
 }
 
 @end

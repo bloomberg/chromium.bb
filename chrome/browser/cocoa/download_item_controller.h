@@ -98,6 +98,7 @@ class DownloadShelfContextMenuMac;
 - (IBAction)handleAlwaysOpen:(id)sender;
 - (IBAction)handleReveal:(id)sender;
 - (IBAction)handleCancel:(id)sender;
+- (IBAction)handleTogglePause:(id)sender;
 
 @end
 
