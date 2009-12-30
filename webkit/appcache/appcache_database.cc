@@ -769,6 +769,8 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
   }
 
   db_.reset(new sql::Connection);
+  meta_table_.reset(new sql::MetaTable);
+
   bool opened = use_in_memory_db ? db_->OpenInMemory()
                                  : db_->Open(db_file_path_);
   if (opened)
@@ -784,17 +786,13 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
 }
 
 bool AppCacheDatabase::EnsureDatabaseVersion() {
-  bool did_create_meta_table = !sql::MetaTable::DoesTableExist(db_.get());
+  if (!sql::MetaTable::DoesTableExist(db_.get()))
+    return CreateSchema();
 
-  meta_table_.reset(new sql::MetaTable);
   if (!meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion))
     return false;
 
-  if (did_create_meta_table)
-    return CreateSchema();
-
   if (meta_table_->GetCompatibleVersionNumber() > kCurrentVersion) {
-    DCHECK(!did_create_meta_table);
     LOG(WARNING) << "AppCache database is too new.";
     return false;
   }
@@ -803,6 +801,7 @@ bool AppCacheDatabase::EnsureDatabaseVersion() {
     return UpgradeSchema();
 
 #ifndef NDEBUG
+  DCHECK(sql::MetaTable::DoesTableExist(db_.get()));
   for (int i = 0; i < kTableCount; ++i) {
     DCHECK(db_->DoesTableExist(kTables[i].table_name));
   }
@@ -814,6 +813,9 @@ bool AppCacheDatabase::EnsureDatabaseVersion() {
 bool AppCacheDatabase::CreateSchema() {
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
+    return false;
+
+  if (!meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion))
     return false;
 
   for (int i = 0; i < kTableCount; ++i) {
