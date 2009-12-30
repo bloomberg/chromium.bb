@@ -45,13 +45,13 @@ bool XDisplayExists();
 Display* GetXDisplay();
 
 // X shared memory comes in three flavors:
-// 1) SHM pixmaps + putimage,
+// 1) No SHM support,
 // 2) SHM putimage,
-// 3) No SHM support.
+// 3) SHM pixmaps + putimage.
 enum SharedMemorySupport {
-  SHARED_MEMORY_PIXMAP,
+  SHARED_MEMORY_NONE,
   SHARED_MEMORY_PUTIMAGE,
-  SHARED_MEMORY_NONE
+  SHARED_MEMORY_PIXMAP
 };
 // Return the shared memory type of our X connection.
 SharedMemorySupport QuerySharedMemorySupport(Display* dpy);
