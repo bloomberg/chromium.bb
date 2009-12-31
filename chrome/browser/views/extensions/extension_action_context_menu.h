@@ -12,17 +12,13 @@
 class Extension;
 
 // Displays the context menu for extension action icons (browser/page actions).
-class ExtensionActionContextMenu : public ExtensionInstallUI::Delegate {
+class ExtensionActionContextMenu {
  public:
   ExtensionActionContextMenu();
   ~ExtensionActionContextMenu();
 
   // Display the context menu at a given point.
   void Run(Extension* extension, const gfx::Point& point);
-
-  // ExtensionInstallUI::Delegate overrides.
-  virtual void InstallUIProceed();
-  virtual void InstallUIAbort() {}
 
  private:
   // The options menu.

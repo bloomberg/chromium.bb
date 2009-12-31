@@ -9,12 +9,14 @@
 #include "app/gfx/canvas_paint.h"
 #include "app/gfx/gtk_util.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/extensions/extension_action_context_menu_model.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/gtk/extension_popup_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
@@ -49,7 +51,8 @@ GtkTargetEntry GetDragTargetEntry() {
 }  // namespace
 
 class BrowserActionButton : public NotificationObserver,
-                            public ImageLoadingTracker::Observer {
+                            public ImageLoadingTracker::Observer,
+                            public MenuGtk::Delegate {
  public:
   BrowserActionButton(BrowserActionsToolbarGtk* toolbar,
                       Extension* extension)
@@ -75,8 +78,10 @@ class BrowserActionButton : public NotificationObserver,
                     Extension::kBrowserActionIconMaxSize));
     }
 
+    g_signal_connect(button_.get(), "button-press-event",
+                     G_CALLBACK(OnButtonPress), this);
     g_signal_connect(button_.get(), "clicked",
-                     G_CALLBACK(OnButtonClicked), this);
+                     G_CALLBACK(OnClicked), this);
     g_signal_connect_after(button_.get(), "expose-event",
                            G_CALLBACK(OnExposeEvent), this);
     g_signal_connect(button_.get(), "drag-begin",
@@ -165,7 +170,25 @@ class BrowserActionButton : public NotificationObserver,
             toolbar_->browser()->profile())->UseGtkTheme());
   }
 
-  static void OnButtonClicked(GtkWidget* widget, BrowserActionButton* action) {
+  static gboolean OnButtonPress(GtkWidget* widget,
+                                GdkEvent* event,
+                                BrowserActionButton* action) {
+    if (event->button.button != 3)
+      return FALSE;
+
+    if (!action->context_menu_model_.get()) {
+      action->context_menu_model_.reset(
+          new ExtensionActionContextMenuModel(action->extension_));
+    }
+
+    action->context_menu_.reset(
+        new MenuGtk(action, action->context_menu_model_.get()));
+
+    action->context_menu_->Popup(widget, event);
+    return TRUE;
+  }
+
+  static void OnClicked(GtkWidget* widget, BrowserActionButton* action) {
     if (action->extension_->browser_action()->has_popup()) {
       ExtensionPopupGtk::Show(
           action->extension_->browser_action()->popup_url(),
@@ -223,6 +246,10 @@ class BrowserActionButton : public NotificationObserver,
   GdkPixbuf* default_icon_;
 
   NotificationRegistrar registrar_;
+
+  // The context menu view and model for this extension action.
+  scoped_ptr<MenuGtk> context_menu_;
+  scoped_ptr<ExtensionActionContextMenuModel> context_menu_model_;
 
   friend class BrowserActionsToolbarGtk;
 };

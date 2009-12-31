@@ -23,10 +23,9 @@ enum MenuEntries {
 };
 
 ExtensionActionContextMenuModel::ExtensionActionContextMenuModel(
-    Extension* extension, ExtensionInstallUI::Delegate* delegate)
+    Extension* extension)
   : ALLOW_THIS_IN_INITIALIZER_LIST(SimpleMenuModel(this)),
-    extension_(extension),
-    delegate_(delegate) {
+    extension_(extension) {
   AddItem(NAME, UTF8ToUTF16(extension->name()));
   AddSeparator();
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS);
@@ -90,7 +89,7 @@ void ExtensionActionContextMenuModel::ExecuteCommand(int command_id) {
                             &uninstall_icon);
 
       ExtensionInstallUI client(profile);
-      client.ConfirmUninstall(delegate_, extension_, uninstall_icon.get());
+      client.ConfirmUninstall(this, extension_, uninstall_icon.get());
       break;
     }
     case MANAGE: {
@@ -102,4 +101,11 @@ void ExtensionActionContextMenuModel::ExecuteCommand(int command_id) {
      NOTREACHED() << "Unknown option";
      break;
   }
+}
+
+void ExtensionActionContextMenuModel::InstallUIProceed() {
+  // TODO(finnur): GetLastActive returns NULL in unit tests.
+  Browser* browser = BrowserList::GetLastActive();
+  std::string id = extension_->id();
+  browser->profile()->GetExtensionsService()->UninstallExtension(id, false);
 }

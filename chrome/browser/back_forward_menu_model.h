@@ -118,9 +118,9 @@ class BackForwardMenuModel : public menus::MenuModel {
   // How many chapter-stops (max) to show in the back/forward dropdown list.
   static const int kMaxChapterStops;
 
-  // Converts a menu item id, as passed in through one of the menu delegate
-  // functions and converts it into an absolute index into the
-  // NavigationEntryList vector. |index| can point to a separator, or the
+  // Takes a menu item index as passed in through one of the menu delegate
+  // functions and converts it into an index into the NavigationEntryList
+  // vector. |index| can point to a separator, or the
   // "Show Full History" link in which case this function returns -1.
   int MenuIndexToNavEntryIndex(int index) const;
 

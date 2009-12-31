@@ -109,21 +109,12 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   }
 
   virtual void ExecuteCommand(int id) {
-    // We delay executing the command so the menu will popdown before it is
-    // executed. This way if the command ends up destroying us the current event
-    // will have released its ref beforehand.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &DownloadShelfContextMenuGtk::DoCommand, id));
+    ExecuteItemCommand(id);
   }
 
   virtual void StoppedShowing() {
     download_item_->menu_showing_ = false;
     gtk_widget_queue_draw(download_item_->menu_button_);
-  }
-
-  void DoCommand(int id) {
-    ExecuteItemCommand(id);
   }
 
  private:

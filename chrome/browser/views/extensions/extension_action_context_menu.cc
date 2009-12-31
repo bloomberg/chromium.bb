@@ -21,14 +21,7 @@ void ExtensionActionContextMenu::Run(Extension* extension,
   extension_ = extension;
 
   context_menu_contents_.reset(
-      new ExtensionActionContextMenuModel(extension, this));
+      new ExtensionActionContextMenuModel(extension));
   context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
   context_menu_menu_->RunContextMenuAt(point);
-}
-
-void ExtensionActionContextMenu::InstallUIProceed() {
-  // TODO(finnur): GetLastActive returns NULL in unit tests.
-  Browser* browser = BrowserList::GetLastActive();
-  std::string id = extension_->id();
-  browser->profile()->GetExtensionsService()->UninstallExtension(id, false);
 }

@@ -30,13 +30,13 @@ class MenuGtk {
     virtual ~Delegate() { }
 
     // Returns whether the menu item for this command should be enabled.
-    virtual bool IsCommandEnabled(int command_id) const = 0;
+    virtual bool IsCommandEnabled(int command_id) const { return false; }
 
     // Returns whether this command is checked (for checkbox menu items only).
     virtual bool IsItemChecked(int command_id) const { return false; }
 
     // Executes the command.
-    virtual void ExecuteCommand(int command_id) = 0;
+    virtual void ExecuteCommand(int command_id) {}
 
     // Called when the menu stops showing. This will be called along with
     // ExecuteCommand if the user clicks an item, but will also be called when
@@ -130,6 +130,14 @@ class MenuGtk {
   // Contains implementation for OnMenuShow.
   void UpdateMenu();
 
+  // Dispatches to either |model_| (if it is non-null) or |delegate_|. The
+  // reason for this awkwardness is that we are in a transitional period where
+  // we support both MenuModel and Delegate as a menu controller.
+  // TODO(estade): remove controller functions from Delegate.
+  // http://crbug.com/31365
+  bool IsCommandEnabled(int id);
+  void ExecuteCommand(int id);
+
   // Callback for when a menu item is clicked.
   static void OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu);
 
@@ -145,7 +153,8 @@ class MenuGtk {
   // Queries this object about the menu state.
   MenuGtk::Delegate* delegate_;
 
-  // If non-NULL, the MenuModel that we use to populate the GTK menu.
+  // If non-NULL, the MenuModel that we use to populate and control the GTK
+  // menu (overriding the delegate as a controller).
   menus::MenuModel* model_;
 
   // For some menu items, we want to show the accelerator, but not actually

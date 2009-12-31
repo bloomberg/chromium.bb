@@ -80,14 +80,6 @@ void BackForwardButtonGtk::StoppedShowing() {
   button_->UnsetPaintOverride();
 }
 
-bool BackForwardButtonGtk::IsCommandEnabled(int command_id) const {
-  return menu_model_->IsEnabledAt(command_id);
-}
-
-void BackForwardButtonGtk::ExecuteCommand(int command_id) {
-  menu_model_->ActivatedAt(command_id);
-}
-
 bool BackForwardButtonGtk::AlwaysShowImages() const {
   return true;
 }

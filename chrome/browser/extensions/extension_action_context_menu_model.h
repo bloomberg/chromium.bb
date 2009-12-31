@@ -14,10 +14,10 @@ class Extension;
 // page actions).
 class ExtensionActionContextMenuModel
     : public menus::SimpleMenuModel,
-      public menus::SimpleMenuModel::Delegate {
+      public menus::SimpleMenuModel::Delegate,
+      public ExtensionInstallUI::Delegate {
  public:
-  ExtensionActionContextMenuModel(Extension* extension,
-                                  ExtensionInstallUI::Delegate* delegate);
+  explicit ExtensionActionContextMenuModel(Extension* extension);
   ~ExtensionActionContextMenuModel();
 
   // SimpleMenuModel behavior overrides.
@@ -27,12 +27,13 @@ class ExtensionActionContextMenuModel
                                           menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
+  // ExtensionInstallUI::Delegate overrides.
+  virtual void InstallUIProceed();
+  virtual void InstallUIAbort() {}
+
  private:
   // The extension we are displaying the context menu for.
   Extension* extension_;
-
-  // The delegate that handles the extension Uninstall operation.
-  ExtensionInstallUI::Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionContextMenuModel);
 };

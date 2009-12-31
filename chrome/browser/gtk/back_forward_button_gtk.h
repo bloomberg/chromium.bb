@@ -24,8 +24,6 @@ class BackForwardButtonGtk : MenuGtk::Delegate {
 
   // MenuGtk::Delegate implementation.
   virtual void StoppedShowing();
-  virtual bool IsCommandEnabled(int command_id) const;
-  virtual void ExecuteCommand(int command_id);
   bool AlwaysShowImages() const;
 
   GtkWidget* widget() { return button_->widget(); }

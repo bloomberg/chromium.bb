@@ -101,8 +101,7 @@ void MenuGtk::Popup(GtkWidget* widget, GdkEvent* event) {
   DCHECK(event->type == GDK_BUTTON_PRESS)
       << "Non-button press event sent to RunMenuAt";
 
-  GdkEventButton* event_button = reinterpret_cast<GdkEventButton*>(event);
-  Popup(widget, event_button->button, event_button->time);
+  Popup(widget, event->button.button, event->button.time);
 }
 
 void MenuGtk::Popup(GtkWidget* widget, gint button_type, guint32 timestamp) {
@@ -278,8 +277,14 @@ void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
   }
 
   // The menu item can still be activated by hotkeys even if it is disabled.
-  if (menu->delegate_->IsCommandEnabled(id))
-    menu->delegate_->ExecuteCommand(id);
+  if (menu->IsCommandEnabled(id)) {
+    // We delay execution because the command may destroy us, and we want to let
+    // the current stack unwind so the event handling code will release its
+    // reference on our GtkMenu* and the OwnedWidgetGtk won't complain during
+    // destruction.
+    MessageLoop::current()->PostTask(FROM_HERE,
+        menu->factory_.NewRunnableMethod(&MenuGtk::ExecuteCommand, id));
+  }
 }
 
 // static
@@ -350,6 +355,20 @@ void MenuGtk::UpdateMenu() {
   gtk_container_foreach(GTK_CONTAINER(menu_.get()), SetMenuItemInfo, this);
 }
 
+// http://crbug.com/31365
+bool MenuGtk::IsCommandEnabled(int id) {
+  return model_ ? model_->IsEnabledAt(id) :
+                  delegate_->IsCommandEnabled(id);
+}
+
+// http://crbug.com/31365
+void MenuGtk::ExecuteCommand(int id) {
+  if (model_)
+    model_->ActivatedAt(id);
+  else
+    delegate_->ExecuteCommand(id);
+}
+
 // static
 void MenuGtk::OnMenuShow(GtkWidget* widget, MenuGtk* menu) {
   MessageLoop::current()->PostTask(FROM_HERE,
@@ -400,8 +419,7 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
   }
 
   if (GTK_IS_MENU_ITEM(widget)) {
-    gtk_widget_set_sensitive(
-        widget, menu->delegate_->IsCommandEnabled(id));
+    gtk_widget_set_sensitive(widget, menu->IsCommandEnabled(id));
 
     GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget));
     if (submenu) {
