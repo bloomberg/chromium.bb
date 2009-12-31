@@ -92,6 +92,10 @@ BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 
+// Usually <1s in release, ~1s in debug, but occasionally >5s in release.
+BUG27335 WIN RELEASE : LayoutTests/plugins/embed-attributes-setting.html = PASS TIMEOUT
+BUG27335 WIN DEBUG SLOW : LayoutTests/plugins/embed-attributes-setting.html = PASS
+
 // --- collecting results for supported-xml-content-types.html ---
 // was slow, started to timeout
 BUG18702 MAC WIN : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
@@ -854,6 +858,14 @@ BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 BUG9071 WIN : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL
 BUG9071 LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL
 
+// Flaky: fails about 5% of the time.
+BUG31342 WIN RELEASE : LayoutTests/security/block-test-no-port.html = TEXT PASS
+BUG31342 WIN RELEASE : LayoutTests/security/block-test.html = TEXT PASS
+
+// Fails in debug. Windows used to be only flaky, but now fails consistently
+// starting with the 52554->52633 merge.
+BUG31363 DEBUG WIN LINUX : LayoutTests/platform/chromium/fast/dom/interval.html = TEXT PASS
+
 // -----------------------------------------------------------------
 // SVG TESTS
 // -----------------------------------------------------------------
@@ -910,6 +922,19 @@ BUG10291 WIN LINUX : LayoutTests/svg/batik/paints/patternRegionA.svg = FAIL
 BUG10291 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-pattern-01-b.svg = FAIL
 
 BUG10415 WIN LINUX : LayoutTests/svg/custom/pattern-with-transformation.svg = FAIL
+
+// New in WebKit r52559
+BUG31344 : LayoutTests/svg/custom/global-constructors.html = TEXT
+
+// New in WebKit r52580.
+BUG31345 WIN LINUX : LayoutTests/svg/custom/mask-on-multiple-objects.svg = IMAGE
+
+// New in WebKit r52608.
+BUG31360 : LayoutTests/fast/events/keydown-numpad-keys.html = TEXT
+
+// Text fails very rarely, 1/200 runs or fewer.
+BUG29737 LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
+BUG29737 MAC RELEASE : LayoutTests/svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
 
 // -----------------------------------------------------------------
 // End SVG Regressions
@@ -2072,6 +2097,9 @@ BUG23560 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-conv-01-f.svg = FAIL
 // This begin crashing some of the time after Webkit merge to r49997
 BUG23560 MAC : LayoutTests/fast/overflow/003.xml = IMAGE
 
+// Fails the first run, passes the flaky-check: corruption from a prior test?
+BUG31362 MAC : LayoutTests/fast/forms/select-style.html = IMAGE
+
 // -----------------------------------------------------------------
 // END MAC PORT TESTS
 // -----------------------------------------------------------------
@@ -2194,10 +2222,6 @@ BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAI
 // New failures from 41660:41709
 // Newly added tests.
 BUG9161 : LayoutTests/fast/forms/basic-textareas.html = FAIL
-
-// Tests that fail on linux (formerly debug-only, but release too as of
-// WebKit r52633).
-BUG10454 BUG31146 LINUX : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH IMAGE
 
 // This test hits a stack-overflow exception earlier in debug mode than in
 // release mode on Windows.
@@ -2789,13 +2813,14 @@ BUG_OJAN LINUX : LayoutTests/http/tests/xmlhttprequest/cache-override.html = TEX
 // Likely it's because this test depends on some other http test running before
 // it that no longer does (or vice versa, some other test running before it
 // is causing it to fail).
+// Failed only in Release until the 52554->52633 WebKit merge.
 BUG9798 LINUX : LayoutTests/http/tests/security/clipboard/clipboard-file-access.html = TEXT PASS
 
 // These tests time out *and* are slow. The test should be fixed to not timeout,
 // then should be marked as SLOW/PASS.
 BUG2844 : LayoutTests/http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS
 BUG2844 : LayoutTests/http/tests/appcache/fail-on-update.html = TIMEOUT PASS TEXT
-BUG2844 BUG31302 : LayoutTests/http/tests/appcache/offline-access.html = TIMEOUT PASS CRASH
+BUG2844 : LayoutTests/http/tests/appcache/offline-access.html = TIMEOUT PASS
 BUG2844 LINUX: LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS
 BUG2844 WIN RELEASE : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS TEXT
@@ -3073,7 +3098,7 @@ BUG30543 : LayoutTests/storage/domstorage/localstorage/enumerate-with-length-and
 // Flaky.
 BUG30593 LINUX MAC : LayoutTests/websocket/tests/url-with-credential.html = TEXT PASS
 BUG9798 WIN LINUX : LayoutTests/fast/loader/javascript-url-encoding-2.html = TIMEOUT PASS
-BUG9798 : LayoutTests/fast/loading/subframe-removes-itself.html = TEXT PASS
+BUG9798 RELEASE : LayoutTests/fast/loading/subframe-removes-itself.html = TEXT PASS
 BUG9798 LINUX MAC : LayoutTests/fast/loader/invalid-charset-on-script-crashes-loader.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/fast/borders/block-mask-overlay-image.html = TEXT PASS
 
@@ -3099,12 +3124,14 @@ BUG30930 LINUX : LayoutTests/tables/mozilla/bugs/bug15933.html = IMAGE PASS
 
 BUG31026 MAC DEBUG : LayoutTests/http/tests/appcache/crash-when-navigating-away-then-back.html = PASS CRASH
 
+// Release began crashing in the r52554->52633 WebKit merge.
+// Formerly, Release failed (IMAGE) and Debug crashed.
+BUG31146 BUG31338 LINUX : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH
+
 // WebKit update 52372->52454
 BUG30938 MAC : LayoutTests/fast/backgrounds/svg-as-background-6.html = IMAGE
 BUG30938 : LayoutTests/svg/css/mask-with-shadow.svg = IMAGE
 BUG30938 WIN : LayoutTests/svg/custom/mask-excessive-malloc.svg = IMAGE
-BUG30938 LINUX : LayoutTests/svg/custom/mask-inside-defs.svg = IMAGE
-BUG30938 LINUX : LayoutTests/svg/custom/visibility-override-mask.svg = IMAGE
 BUG30939 : LayoutTests/svg/filters/filter-clip.svg = IMAGE+TEXT
 
 // WebKit roll 52468->52535
@@ -3121,22 +3148,10 @@ BUG31146 WIN LINUX :  LayoutTests/svg/custom/grayscale-gradient-mask.svg = IMAGE
 BUG31146 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-displace-01-f.svg = TEXT
 BUG31146 WIN : LayoutTests/inspector/console-clear.html = TEXT
 
-// WebKit update 52554->52633
-// TODO(pamg): investigate
-BUG31302 WIN : LayoutTests/security/block-test-no-port.html = TEXT PASS
-BUG31302 WIN : LayoutTests/security/block-test.html = TEXT PASS
-BUG31302 WIN : LayoutTests/plugins/embed-attributes-setting.html = TIMEOUT PASS
-BUG31302 : LayoutTests/fast/events/keydown-numpad-keys.html = TEXT
-BUG31302 WIN : LayoutTests/inspector/console-dirxml.html = TEXT
-BUG31302 WIN LINUX : LayoutTests/svg/custom/empty-mask.svg = TEXT
-BUG31302 : LayoutTests/svg/custom/global-constructors.html = TEXT
-BUG31302 WIN LINUX : LayoutTests/svg/custom/mask-on-multiple-objects.svg = IMAGE
-BUG31302 MAC : LayoutTests/fast/forms/select-style.html = IMAGE PASS
-BUG31302 LINUX : LayoutTests/platform/chromium/fast/dom/interval.html = TEXT PASS
-BUG31302 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
-BUG31302 LINUX : LayoutTests/svg/custom/circular-marker-reference-3.svg = TEXT PASS
-BUG31302 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-blend-01-b.svg = TEXT PASS
-BUG31302 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
+// Began failing in the 52554->52633 merge. (Debug has been slow for at least
+// 700 runs as of that merge.)
+BUG31257 WIN RELEASE : LayoutTests/inspector/console-dirxml.html = TEXT
+BUG31257 WIN DEBUG SLOW: LayoutTests/inspector/console-dirxml.html = TEXT
 
 // WebKit roll 52633 -> 52667
 BUG_AJWONG WIN : LayoutTests/svg/batik/text/textFeatures.svg = TEXT
