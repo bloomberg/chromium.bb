@@ -138,6 +138,7 @@ class NormalExtender : public BrowserExtender,
                           main_menu_size.width(), bounds.height());
 
     // Layout status area after tab strip.
+    status_area_->Update();
     gfx::Size status_size = status_area_->GetPreferredSize();
     status_area_->SetBounds(bounds.x() + bounds.width() - status_size.width(),
                             bounds.y(), status_size.width(),
@@ -213,7 +214,6 @@ class NormalExtender : public BrowserExtender,
   virtual void ToggleCompactNavigationBar() {
     compact_navigation_bar_enabled_ = !compact_navigation_bar_enabled_;
     compact_navigation_bar_->SetFocusable(compact_navigation_bar_enabled_);
-    status_area_->Update();
   }
 
   virtual void OnMouseEnteredToTab(Tab* tab) {
