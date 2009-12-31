@@ -12,7 +12,6 @@
 
 #include "base/gfx/point.h"
 #include "base/task.h"
-#include "chrome/common/owned_widget_gtk.h"
 
 class SkBitmap;
 
@@ -111,7 +110,7 @@ class MenuGtk {
                                     gboolean* push_in,
                                     gpointer userdata);
 
-  GtkWidget* widget() const { return menu_.get(); }
+  GtkWidget* widget() const { return menu_; }
 
  private:
   // A recursive function that transforms a MenuCreateMaterial tree into a set
@@ -164,7 +163,7 @@ class MenuGtk {
 
   // gtk_menu_popup() does not appear to take ownership of popup menus, so
   // MenuGtk explicitly manages the lifetime of the menu.
-  OwnedWidgetGtk menu_;
+  GtkWidget* menu_;
 
   // True when we should ignore "activate" signals.  Used to prevent
   // menu items from getting activated when we are setting up the

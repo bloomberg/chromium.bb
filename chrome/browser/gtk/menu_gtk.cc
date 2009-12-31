@@ -28,7 +28,7 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
       menu_(gtk_menu_new()),
       factory_(this) {
   ConnectSignalHandlers();
-  BuildMenuIn(menu_.get(), menu_data, accel_group);
+  BuildMenuIn(menu_, menu_data, accel_group);
 }
 
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
@@ -44,7 +44,6 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
 }
 
 MenuGtk::~MenuGtk() {
-  menu_.Destroy();
   STLDeleteContainerPointers(submenus_we_own_.begin(), submenus_we_own_.end());
   if (dummy_accel_group_)
     g_object_unref(dummy_accel_group_);
@@ -53,8 +52,8 @@ MenuGtk::~MenuGtk() {
 void MenuGtk::ConnectSignalHandlers() {
   // We connect afterwards because OnMenuShow calls SetMenuItemInfo, which may
   // take a long time or even start a nested message loop.
-  g_signal_connect(menu_.get(), "show", G_CALLBACK(OnMenuShow), this);
-  g_signal_connect(menu_.get(), "hide", G_CALLBACK(OnMenuHidden), this);
+  g_signal_connect(menu_, "show", G_CALLBACK(OnMenuShow), this);
+  g_signal_connect(menu_, "hide", G_CALLBACK(OnMenuHidden), this);
 }
 
 void MenuGtk::AppendMenuItemWithLabel(int command_id,
@@ -83,7 +82,7 @@ void MenuGtk::AppendCheckMenuItemWithLabel(int command_id,
 void MenuGtk::AppendSeparator() {
   GtkWidget* menu_item = gtk_separator_menu_item_new();
   gtk_widget_show(menu_item);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu_.get()), menu_item);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_), menu_item);
 }
 
 void MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
@@ -94,7 +93,7 @@ void MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
                    G_CALLBACK(OnMenuItemActivated), this);
 
   gtk_widget_show(menu_item);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu_.get()), menu_item);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_), menu_item);
 }
 
 void MenuGtk::Popup(GtkWidget* widget, GdkEvent* event) {
@@ -105,7 +104,7 @@ void MenuGtk::Popup(GtkWidget* widget, GdkEvent* event) {
 }
 
 void MenuGtk::Popup(GtkWidget* widget, gint button_type, guint32 timestamp) {
-  gtk_menu_popup(GTK_MENU(menu_.get()), NULL, NULL,
+  gtk_menu_popup(GTK_MENU(menu_), NULL, NULL,
                  WidgetMenuPositionFunc,
                  widget,
                  button_type, timestamp);
@@ -114,21 +113,21 @@ void MenuGtk::Popup(GtkWidget* widget, gint button_type, guint32 timestamp) {
 void MenuGtk::PopupAsContext(guint32 event_time) {
   // TODO(estade): |button| value of 3 (6th argument) is not strictly true,
   // but does it matter?
-  gtk_menu_popup(GTK_MENU(menu_.get()), NULL, NULL, NULL, NULL, 3, event_time);
+  gtk_menu_popup(GTK_MENU(menu_), NULL, NULL, NULL, NULL, 3, event_time);
 }
 
 void MenuGtk::PopupAsContextAt(guint32 event_time, gfx::Point point) {
-  gtk_menu_popup(GTK_MENU(menu_.get()), NULL, NULL,
+  gtk_menu_popup(GTK_MENU(menu_), NULL, NULL,
                  PointMenuPositionFunc, &point, 3, event_time);
 }
 
 void MenuGtk::PopupAsFromKeyEvent(GtkWidget* widget) {
   Popup(widget, 0, gtk_get_current_event_time());
-  gtk_menu_shell_select_first(GTK_MENU_SHELL(menu_.get()), FALSE);
+  gtk_menu_shell_select_first(GTK_MENU_SHELL(menu_), FALSE);
 }
 
 void MenuGtk::Cancel() {
-  gtk_menu_popdown(GTK_MENU(menu_.get()));
+  gtk_menu_popdown(GTK_MENU(menu_));
 }
 
 void MenuGtk::BuildMenuIn(GtkWidget* menu,
@@ -178,7 +177,7 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
     } else if (menu_data->custom_submenu) {
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item),
-                                menu_data->custom_submenu->menu_.get());
+                                menu_data->custom_submenu->menu_);
       submenus_we_own_.push_back(menu_data->custom_submenu);
     }
 
@@ -277,14 +276,8 @@ void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
   }
 
   // The menu item can still be activated by hotkeys even if it is disabled.
-  if (menu->IsCommandEnabled(id)) {
-    // We delay execution because the command may destroy us, and we want to let
-    // the current stack unwind so the event handling code will release its
-    // reference on our GtkMenu* and the OwnedWidgetGtk won't complain during
-    // destruction.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        menu->factory_.NewRunnableMethod(&MenuGtk::ExecuteCommand, id));
-  }
+  if (menu->IsCommandEnabled(id))
+    menu->ExecuteCommand(id);
 }
 
 // static
@@ -352,7 +345,7 @@ void MenuGtk::PointMenuPositionFunc(GtkMenu* menu,
 }
 
 void MenuGtk::UpdateMenu() {
-  gtk_container_foreach(GTK_CONTAINER(menu_.get()), SetMenuItemInfo, this);
+  gtk_container_foreach(GTK_CONTAINER(menu_), SetMenuItemInfo, this);
 }
 
 // http://crbug.com/31365
