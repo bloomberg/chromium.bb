@@ -16,6 +16,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -29,6 +30,7 @@ class BubblePositioner;
 class Browser;
 class CommandUpdater;
 class ExtensionAction;
+class ExtensionActionContextMenuModel;
 class GtkThemeProvider;
 class Profile;
 class SkBitmap;
@@ -105,7 +107,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
   static const GdkColor kBackgroundColorByLevel[3];
 
  private:
-  class PageActionViewGtk : public ImageLoadingTracker::Observer {
+  class PageActionViewGtk : public ImageLoadingTracker::Observer,
+                            public MenuGtk::Delegate {
    public:
     PageActionViewGtk(
         LocationBarViewGtk* owner, Profile* profile,
@@ -130,11 +133,19 @@ class LocationBarViewGtk : public AutocompleteEditController,
     void TestActivatePageAction();
 
    private:
-    static gboolean OnButtonPressed(GtkWidget* sender, GdkEventButton* event,
-                                    PageActionViewGtk* page_action_view);
-    static gboolean OnExposeEvent(GtkWidget* widget,
-                                  GdkEventExpose* event,
-                                  PageActionViewGtk* page_action_view);
+    static gboolean OnButtonPressedThunk(GtkWidget* sender,
+                                         GdkEvent* event,
+                                         PageActionViewGtk* page_action_view) {
+      return page_action_view->OnButtonPressed(sender, event);
+    }
+    gboolean OnButtonPressed(GtkWidget* sender, GdkEvent* event);
+
+    static gboolean OnExposeEventThunk(GtkWidget* widget,
+                                       GdkEventExpose* event,
+                                       PageActionViewGtk* page_action_view) {
+      return page_action_view->OnExposeEvent(widget, event);
+    }
+    gboolean OnExposeEvent(GtkWidget* widget, GdkEventExpose* event);
 
     // The location bar view that owns us.
     LocationBarViewGtk* owner_;
@@ -169,6 +180,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // The URL we are currently showing the icon for.
     GURL current_url_;
+
+    // The context menu view and model for this extension action.
+    scoped_ptr<MenuGtk> context_menu_;
+    scoped_ptr<ExtensionActionContextMenuModel> context_menu_model_;
 
     DISALLOW_COPY_AND_ASSIGN(PageActionViewGtk);
   };

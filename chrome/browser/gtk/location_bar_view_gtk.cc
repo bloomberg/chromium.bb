@@ -19,9 +19,10 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_action_context_menu_model.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/extension_popup_gtk.h"
 #include "chrome/browser/gtk/first_run_bubble.h"
@@ -714,9 +715,9 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
   // Make the event box not visible so it does not paint a background.
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
   g_signal_connect(event_box_.get(), "button-press-event",
-                   G_CALLBACK(&OnButtonPressed), this);
+                   G_CALLBACK(&OnButtonPressedThunk), this);
   g_signal_connect_after(event_box_.get(), "expose-event",
-                         G_CALLBACK(OnExposeEvent), this);
+                         G_CALLBACK(OnExposeEventThunk), this);
 
   image_.Own(gtk_image_new());
   gtk_container_add(GTK_CONTAINER(event_box_.get()), image_.get());
@@ -855,39 +856,47 @@ void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(SkBitmap* image,
 }
 
 void LocationBarViewGtk::PageActionViewGtk::TestActivatePageAction() {
-  GdkEventButton event;
-  event.button = 1;
-  OnButtonPressed(widget(), &event, this);
+  GdkEvent event;
+  event.button.button = 1;
+  OnButtonPressed(widget(), &event);
 }
 
-// static
 gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     GtkWidget* sender,
-    GdkEventButton* event,
-    LocationBarViewGtk::PageActionViewGtk* page_action_view) {
-  ExtensionAction* page_action = page_action_view->page_action_;
-  if (page_action->has_popup()) {
-    ExtensionPopupGtk::Show(
-        page_action->popup_url(),
-        page_action_view->owner_->browser_,
-        gtk_util::GetWidgetRectRelativeToToplevel(
-            page_action_view->event_box_.get()));
+    GdkEvent* event) {
+  if (event->button.button != 3) {
+    if (page_action_->has_popup()) {
+      ExtensionPopupGtk::Show(
+          page_action_->popup_url(),
+          owner_->browser_,
+          gtk_util::GetWidgetRectRelativeToToplevel(event_box_.get()));
+    } else {
+      ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+          profile_,
+          page_action_->extension_id(),
+          page_action_->id(),
+          current_tab_id_,
+          current_url_.spec(),
+          event->button.button);
+    }
   } else {
-    ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
-        page_action_view->profile_,
-        page_action->extension_id(),
-        page_action->id(),
-        page_action_view->current_tab_id_,
-        page_action_view->current_url_.spec(),
-        event->button);
+    Extension* extension = profile_->GetExtensionsService()->GetExtensionById(
+        page_action()->extension_id(), false);
+
+    if (!context_menu_model_.get())
+      context_menu_model_.reset(new ExtensionActionContextMenuModel(extension));
+
+    context_menu_.reset(
+        new MenuGtk(this, context_menu_model_.get()));
+    context_menu_->Popup(sender, event);
   }
-  return true;
+
+  return TRUE;
 }
 
-// static
 gboolean LocationBarViewGtk::PageActionViewGtk::OnExposeEvent(
-    GtkWidget* widget, GdkEventExpose* event, PageActionViewGtk* view) {
-  TabContents* contents = view->owner_->browser_->GetSelectedTabContents();
+    GtkWidget* widget, GdkEventExpose* event) {
+  TabContents* contents = owner_->browser_->GetSelectedTabContents();
   if (!contents)
     return FALSE;
 
@@ -895,12 +904,12 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnExposeEvent(
   if (tab_id < 0)
     return FALSE;
 
-  std::string badge_text = view->page_action_->GetBadgeText(tab_id);
+  std::string badge_text = page_action_->GetBadgeText(tab_id);
   if (badge_text.empty())
     return FALSE;
 
   gfx::CanvasPaint canvas(event, false);
   gfx::Rect bounding_rect(widget->allocation);
-  view->page_action_->PaintBadge(&canvas, bounding_rect, tab_id);
+  page_action_->PaintBadge(&canvas, bounding_rect, tab_id);
   return FALSE;
 }
