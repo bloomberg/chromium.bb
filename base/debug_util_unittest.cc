@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Note: this test currently only fully works on Linux Debug builds.
+// See comments in the #ifdef soup if you intend to change this.
 TEST(StackTrace, OutputToStream) {
   StackTrace trace;
 
@@ -34,14 +36,12 @@ TEST(StackTrace, OutputToStream) {
             std::string::npos) <<
       "Unable to resolve symbols.  Skipping rest of test.";
 
-#if 0
-// TODO(ajwong): Disabling checking of symbol resolution since it depends
-//  on whether or not symbols are present, and there are too many
-//  configurations to reliably ensure that symbols are findable.
 #if defined(OS_MACOSX)
+#if 0
+  // Disabled due to -fvisibility=hidden in build config.
 
-  // Symbol resolution via the backtrace_symbol funciton does not work well
-  // in OsX.
+  // Symbol resolution via the backtrace_symbol function does not work well
+  // in OS X.
   // See this thread:
   //
   //    http://lists.apple.com/archives/darwin-dev/2009/Mar/msg00111.html
@@ -56,14 +56,20 @@ TEST(StackTrace, OutputToStream) {
       << "Expected to find start in backtrace:\n"
       << backtrace_message;
 
+#endif
 #elif defined(__GLIBCXX__)
-
+  // This branch is for gcc-compiled code, but not Mac due to the
+  // above #if.
   // Expect a demangled symbol.
   EXPECT_TRUE(backtrace_message.find("testing::Test::Run()") !=
               std::string::npos)
       << "Expected a demangled symbol in backtrace:\n"
       << backtrace_message;
-#else  // defined(__GLIBCXX__)
+
+#elif 0
+  // This is the fall-through case; it used to cover Windows.
+  // But it's disabled because of varying buildbot configs;
+  // some lack symbols.
 
   // Expect to at least find main.
   EXPECT_TRUE(backtrace_message.find("main") != std::string::npos)
@@ -83,5 +89,4 @@ TEST(StackTrace, OutputToStream) {
       << backtrace_message;
 
 #endif  // define(OS_MACOSX)
-#endif
 }
