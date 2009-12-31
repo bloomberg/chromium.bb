@@ -3126,7 +3126,7 @@ BUG31026 MAC DEBUG : LayoutTests/http/tests/appcache/crash-when-navigating-away-
 
 // Release began crashing in the r52554->52633 WebKit merge.
 // Formerly, Release failed (IMAGE) and Debug crashed.
-BUG31146 BUG31338 LINUX : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH
+BUG31146 BUG31338 LINUX : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH IMAGE
 
 // WebKit update 52372->52454
 BUG30938 MAC : LayoutTests/fast/backgrounds/svg-as-background-6.html = IMAGE
