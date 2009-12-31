@@ -208,7 +208,8 @@ WebData WebKitClientImpl::loadResource(const char* name) {
     { "mediaSoundDisabled", IDR_MEDIA_SOUND_DISABLED },
     { "mediaSliderThumb", IDR_MEDIA_SLIDER_THUMB },
     { "mediaVolumeSliderThumb", IDR_MEDIA_VOLUME_SLIDER_THUMB },
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+    // TODO(port): rename these to "skia" instead of "Linux".
     { "linuxCheckboxOff", IDR_LINUX_CHECKBOX_OFF },
     { "linuxCheckboxOn", IDR_LINUX_CHECKBOX_ON },
     { "linuxCheckboxDisabledOff", IDR_LINUX_CHECKBOX_DISABLED_OFF },

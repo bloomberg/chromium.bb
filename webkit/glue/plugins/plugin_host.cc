@@ -705,24 +705,22 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       }
       break;
     }
+  #if !defined(OS_MACOSX)  // OS X doesn't have windowed plugins.
     case NPNVnetscapeWindow: {
-  #if defined(OS_WIN) || defined(OS_LINUX)
       scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
       gfx::PluginWindowHandle handle = plugin->window_handle();
       *((void**)value) = (void*)handle;
       rv = NPERR_NO_ERROR;
-  #else
-      NOTIMPLEMENTED();
-  #endif
       break;
     }
+  #endif
     case NPNVjavascriptEnabledBool: {
       // yes, JS is enabled.
       *((void**)value) = (void*)1;
       rv = NPERR_NO_ERROR;
       break;
     }
-  #if defined(OS_LINUX)
+  #if defined(TOOLKIT_USES_GTK)
     case NPNVToolkit:
       // Tell them we are GTK2.  (The alternative is GTK 1.2.)
       *reinterpret_cast<int*>(value) = NPNVGtk2;
@@ -730,7 +728,6 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       break;
 
     case NPNVSupportsXEmbedBool:
-      // Yes, we support XEmbed.
       *reinterpret_cast<NPBool*>(value) = TRUE;
       rv = NPERR_NO_ERROR;
       break;

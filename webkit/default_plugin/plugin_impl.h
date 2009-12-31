@@ -4,8 +4,8 @@
 
 #if defined(OS_WIN)
 #include "webkit/default_plugin/plugin_impl_win.h"
-#elif defined (OS_MACOSX)
+#elif defined(OS_MACOSX)
 #include "webkit/default_plugin/plugin_impl_mac.h"
-#elif defined (OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include "webkit/default_plugin/plugin_impl_gtk.h"
 #endif

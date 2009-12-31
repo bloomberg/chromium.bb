@@ -33,7 +33,7 @@ bool MockWebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
     case BufferStandard:
       break;
     case BufferSelection:
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
       break;
 #endif
     default:

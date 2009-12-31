@@ -31,9 +31,9 @@ namespace NPAPI {
 class PluginInstance;
 
 // This struct holds entry points into a plugin.  The entry points are
-// slightly different between Linux and other platforms.
+// slightly different between Win/Mac and Unixes.
 struct PluginEntryPoints {
-#if !defined(OS_LINUX) && !defined(OS_FREEBSD)
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
   NP_GetEntryPointsFunc np_getentrypoints;
 #endif
   NP_InitializeFunc np_initialize;

@@ -37,7 +37,7 @@ void TestShellRequestContext::Init(
   accept_language_ = "en-us,en";
   accept_charset_ = "iso-8859-1,*,utf-8";
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Use no proxy to avoid ProxyConfigServiceLinux.
   // Enabling use of the ProxyConfigServiceLinux requires:
   // -Calling from a thread with a TYPE_UI MessageLoop,
@@ -45,6 +45,7 @@ void TestShellRequestContext::Init(
   // -Keep in mind that proxy auto configuration is also
   //  non-functional on linux in this context because of v8 threading
   //  issues.
+  // TODO(port): rename "linux" to some nonspecific unix.
   scoped_ptr<net::ProxyConfigService> proxy_config_service(
       new net::ProxyConfigServiceFixed(net::ProxyConfig()));
 #else

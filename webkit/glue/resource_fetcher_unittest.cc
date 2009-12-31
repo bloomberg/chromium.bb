@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(OS_LINUX)
-#include <gtk/gtk.h>
-#endif
+#include "webkit/glue/resource_fetcher.h"
 
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/unittest_test_server.h"
-#include "webkit/glue/resource_fetcher.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include <gtk/gtk.h>
+#endif
 
 using WebKit::WebFrame;
 using WebKit::WebURLResponse;
@@ -76,7 +77,7 @@ class FetcherDelegate {
 #if defined(OS_WIN)
     timer_id_ = ::SetTimer(NULL, NULL, interval,
                            &FetcherDelegate::TimerCallback);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
     timer_id_ = g_timeout_add(interval, &FetcherDelegate::TimerCallback, NULL);
 #elif defined(OS_MACOSX)
     // CFAbsoluteTime is in seconds and |interval| is in ms, so make sure we
@@ -93,7 +94,7 @@ class FetcherDelegate {
   void DestroyTimer() {
 #if defined(OS_WIN)
     ::KillTimer(NULL, timer_id_);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
     g_source_remove(timer_id_);
 #elif defined(OS_MACOSX)
     CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), timer_id_,
@@ -108,7 +109,7 @@ class FetcherDelegate {
                                      DWORD ms) {
     instance_->TimerFired();
   }
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   static gboolean TimerCallback(gpointer data) {
     instance_->TimerFired();
     return true;
@@ -137,7 +138,7 @@ class FetcherDelegate {
  private:
 #if defined(OS_WIN)
   UINT_PTR timer_id_;
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   guint timer_id_;
 #elif defined(OS_MACOSX)
   CFRunLoopTimerRef timer_id_;

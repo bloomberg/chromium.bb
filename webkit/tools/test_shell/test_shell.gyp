@@ -134,7 +134,7 @@
             'npapi_test_plugin',
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             'test_shell_resources',
             '../../../build/linux/system.gyp:gtk',
@@ -148,7 +148,7 @@
             ['exclude', '_x11\\.cc$'],
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           # See below TODO in the Windows branch.
           'copies': [
             {
@@ -212,7 +212,7 @@
         'pak_path': '<(INTERMEDIATE_DIR)/repack/test_shell.pak',
       },
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'actions': [
             {
               'action_name': 'test_shell_repack',
@@ -295,7 +295,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -445,7 +445,7 @@
           ],
           'sources': [ '<@(test_shell_windows_resource_files)' ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             'test_shell_pak',
             '../../../build/linux/system.gyp:gtk',
@@ -557,7 +557,7 @@
             ],
           },
         }],
-        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
+        ['(OS=="linux" or OS=="freebsd" or OS=="openbsd") and (target_arch=="x64" or target_arch=="arm")', {
           # Shared libraries need -fPIC on x86-64
           'cflags': ['-fPIC']
         }],
@@ -659,7 +659,7 @@
                 '../../glue/plugins/test/plugin_windowless_test.cc',
               ],
             }],
-            ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
+            ['(OS=="linux" or OS=="freebsd" or OS=="openbsd") and (target_arch=="x64" or target_arch=="arm")', {
               # Shared libraries need -fPIC on x86-64
               'cflags': ['-fPIC']
             }],
@@ -667,7 +667,7 @@
         },
       ],
     }],
-    ['OS=="linux"', {
+    ['OS=="linux"  or OS=="freebsd" or OS=="openbsd"', {
       'targets': [
         {
           'target_name': 'test_shell_resources',

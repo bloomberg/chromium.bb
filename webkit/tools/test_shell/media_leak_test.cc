@@ -12,7 +12,7 @@
 class MediaLeakTest : public TestShellTest {
 };
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
 
 // This test plays a Theora video file for 1 second. It tries to expose
 // memory leaks during a normal playback.

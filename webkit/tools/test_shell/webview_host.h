@@ -11,7 +11,8 @@
 #include "base/basictypes.h"
 #include "base/gfx/rect.h"
 #include "webkit/tools/test_shell/webwidget_host.h"
-#if defined(OS_LINUX)
+
+#if defined(TOOLKIT_USES_GTK)
 #include "webkit/glue/plugins/gtk_plugin_container_manager.h"
 #endif
 
@@ -34,7 +35,7 @@ class WebViewHost : public WebWidgetHost {
 
   WebKit::WebView* webview() const;
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   // Create a new plugin parent container for a given plugin XID.
   void CreatePluginContainer(gfx::PluginWindowHandle id);
 
@@ -55,7 +56,7 @@ class WebViewHost : public WebWidgetHost {
   }
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   // Helper class that creates and moves plugin containers.
   GtkPluginContainerManager plugin_container_manager_;
 #endif

@@ -975,7 +975,7 @@ TestWebViewDelegate::TestWebViewDelegate(TestShell* shell)
       page_id_(-1),
       last_page_id_updated_(-1),
       using_fake_rect_(false),
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
       cursor_type_(GDK_X_CURSOR),
 #endif
       smart_insert_delete_enabled_(true),

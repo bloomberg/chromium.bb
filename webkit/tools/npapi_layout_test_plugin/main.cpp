@@ -49,21 +49,21 @@
 #define EXPORT
 #endif
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 #include <X11/Xlib.h>
 #endif
 
 // Plugin entry points
 extern "C" {
     EXPORT NPError NPAPI NP_Initialize(NPNetscapeFuncs *browserFuncs
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
                                 , NPPluginFuncs *pluginFuncs
 #endif
                                 );
     EXPORT NPError NPAPI NP_GetEntryPoints(NPPluginFuncs *pluginFuncs);
     EXPORT void NPAPI NP_Shutdown(void);
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
     EXPORT NPError NPAPI NP_GetValue(NPP instance, NPPVariable variable, void *value);
     EXPORT const char* NPAPI NP_GetMIMEDescription(void);
 #endif
@@ -71,13 +71,13 @@ extern "C" {
 
 // Plugin entry points
 EXPORT NPError NPAPI NP_Initialize(NPNetscapeFuncs *browserFuncs
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
                             , NPPluginFuncs *pluginFuncs
 #endif
 )
 {
     browser = browserFuncs;
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
     return NP_GetEntryPoints(pluginFuncs);
 #else
     return NPERR_NO_ERROR;
@@ -318,7 +318,7 @@ int16 NPP_HandleEvent(NPP instance, void *event)
 
     fflush(stdout);
 
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
     XEvent* evt = static_cast<XEvent*>(event);
     XButtonPressedEvent* bpress_evt = reinterpret_cast<XButtonPressedEvent*>(evt);
     XButtonReleasedEvent* brelease_evt = reinterpret_cast<XButtonReleasedEvent*>(evt);
@@ -445,7 +445,7 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value)
     NPError err = NPERR_NO_ERROR;
 
     switch (variable) {
-#if defined(OS_LINUX)
+#if defined(USE_X11)
         case NPPVpluginNameString:
             *((const char **)value) = "WebKit Test PlugIn";
             break;
@@ -478,7 +478,7 @@ NPError NPP_SetValue(NPP instance, NPNVariable variable, void *value)
     return NPERR_GENERIC_ERROR;
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 EXPORT NPError NPAPI NP_GetValue(NPP instance, NPPVariable variable, void *value)
 {
     return NPP_GetValue(instance, variable, value);

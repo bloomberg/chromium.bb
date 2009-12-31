@@ -309,7 +309,7 @@ typedef struct _NPNetscapeFuncs {
 //
 // NPAPI library entry points
 //
-#if defined(OS_LINUX) || defined(OS_FREEBSD)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 typedef NPError (API_CALL * NP_InitializeFunc)(NPNetscapeFuncs* pNFuncs,
                                                NPPluginFuncs* pPFuncs);
 #else

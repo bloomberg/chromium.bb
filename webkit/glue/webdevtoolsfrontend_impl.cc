@@ -390,11 +390,15 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsLoaded(
 // static
 v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsPlatform(
     const v8::Arguments& args) {
-#if defined OS_MACOSX
+#if defined(OS_MACOSX)
   return v8String("mac-leopard");
-#elif defined OS_LINUX
+#elif defined(OS_LINUX)
   return v8String("linux");
-#else
+#elif defined(OS_FREEBSD)
+  return v8String("freebsd");
+#elif defined(OS_OPENBSD)
+  return v8String("openbsd");
+#elif defined(OS_WIN)
   return v8String("windows");
 #endif
 }

@@ -173,7 +173,7 @@ bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
       *result = Clipboard::BUFFER_STANDARD;
       break;
     case BufferSelection:
-#if defined(OS_LINUX)
+#if defined(USE_X11)
       *result = Clipboard::BUFFER_SELECTION;
       break;
 #endif

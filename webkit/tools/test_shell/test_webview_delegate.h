@@ -18,7 +18,7 @@
 #include <map>
 #include <string>
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdkcursor.h>
 #endif
 
@@ -352,7 +352,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   scoped_refptr<TestDropDelegate> drop_delegate_;
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   // The type of cursor the window is currently using.
   // Used for judging whether a new SetCursor call is actually changing the
   // cursor.

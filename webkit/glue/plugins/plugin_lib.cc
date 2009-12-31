@@ -103,7 +103,7 @@ NPError PluginLib::NP_Initialize() {
   if (host == 0)
     return NPERR_GENERIC_ERROR;
 
-#if defined(OS_LINUX) || defined(OS_FREEBSD)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   NPError rv = entry_points_.np_initialize(host->host_functions(),
                                            &plugin_funcs_);
 #else
@@ -176,7 +176,7 @@ bool PluginLib::Load() {
     if (entry_points_.np_initialize == 0)
       rv = false;
 
-#if !defined(OS_LINUX) && !defined(OS_FREEBSD)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     entry_points_.np_getentrypoints =
         (NP_GetEntryPointsFunc)base::GetFunctionPointerFromNativeLibrary(
             library, "NP_GetEntryPoints");
@@ -196,7 +196,7 @@ bool PluginLib::Load() {
   if (rv) {
     plugin_funcs_.size = sizeof(plugin_funcs_);
     plugin_funcs_.version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
-#if !defined(OS_LINUX) && !defined(OS_FREEBSD) && !defined(OS_MACOSX)
+#if !defined(OS_POSIX)
     if (entry_points_.np_getentrypoints(&plugin_funcs_) != NPERR_NO_ERROR)
       rv = false;
 #else

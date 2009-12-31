@@ -13,7 +13,7 @@
       ['exclude', '/(gtk|win|x11)_[^/]*\\.cc$'],
     ],
     'conditions': [
-      ['OS=="linux"', {'sources/': [
+      ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {'sources/': [
         ['include', '/gtk/'],
         ['include', '_(gtk|linux|posix|skia|x)\\.cc$'],
         ['include', '/(gtk|x11)_[^/]*\\.cc$'],
@@ -297,7 +297,7 @@
         '../chrome/third_party/wtl/include',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:x11',
@@ -375,7 +375,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../chrome/chrome.gyp:packed_resources',

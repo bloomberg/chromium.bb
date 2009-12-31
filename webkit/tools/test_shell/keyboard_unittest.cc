@@ -64,10 +64,10 @@ class KeyboardTest : public testing::Test {
   // platforms, but meta (command) on Mac.
   const char* InterpretOSModifierKeyPress(char key_code) {
     WebKeyboardEvent keyboard_event;
-#if defined(OS_WIN) || defined(OS_LINUX)
-    WebInputEvent::Modifiers os_modifier = WebInputEvent::ControlKey;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
     WebInputEvent::Modifiers os_modifier = WebInputEvent::MetaKey;
+#else
+    WebInputEvent::Modifiers os_modifier = WebInputEvent::ControlKey;
 #endif
     SetupKeyDownEvent(&keyboard_event, key_code, os_modifier);
     return InterpretKeyEvent(keyboard_event, PlatformKeyboardEvent::RawKeyDown);

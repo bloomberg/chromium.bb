@@ -5,7 +5,7 @@
 #include "build/build_config.h"
 #include "webkit/glue/plugins/test/plugin_javascript_open_popup.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 #include "third_party/npapi/bindings/npapi_x11.h"
 #endif
 #include "webkit/glue/plugins/test/plugin_client.h"
@@ -63,7 +63,7 @@ bool ExecuteJavascriptPopupWindowTargetPluginTest::CheckWindow(
   return false;
 }
 
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 // This code blindly follows the same sorts of verifications done on
 // the Windows side.  Does it make sense on X?  Maybe not really, but
 // it can't hurt to do extra validations.

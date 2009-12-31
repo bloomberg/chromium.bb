@@ -433,7 +433,7 @@ bool View::HitTest(const gfx::Point& l) const {
       // TODO: can this use SkRegion's contains instead?
 #if defined(OS_WIN)
       return !!PtInRegion(rgn, l.x(), l.y());
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
       return gdk_region_point_in(rgn.Get(), l.x(), l.y());
 #endif
     }

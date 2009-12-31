@@ -8,7 +8,7 @@
 #if defined(OS_WIN)
 #include <objidl.h>
 #include <mlang.h>
-#elif defined(OS_LINUX) || defined(OS_FREEBSD)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <sys/utsname.h>
 #endif
 
@@ -368,7 +368,7 @@ std::string BuildOSCpuInfo() {
                                                &os_minor_version,
                                                &os_bugfix_version);
 #endif
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Should work on any Posix system.
   struct utsname unixinfo;
   uname(&unixinfo);
@@ -421,7 +421,7 @@ void BuildUserAgent(bool mimic_chrome1, bool mimic_windows,
       "Windows";
 #elif defined(OS_MACOSX)
       "Macintosh";
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
       "X11";              // strange, but that's what Firefox uses
 #else
       "?";
@@ -499,7 +499,7 @@ const std::string& GetUserAgent(const GURL& url) {
         BuildUserAgent(true, false, &g_user_agent->mimic_chrome1_user_agent);
       return g_user_agent->mimic_chrome1_user_agent;
     }
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
     else if (MatchPatternASCII(url.host(), "*.mail.yahoo.com")) {
       // mail.yahoo.com is ok with Windows Chrome but not Linux Chrome.
       // http://bugs.chromium.org/11136
