@@ -1793,7 +1793,9 @@
             '../media/media.gyp:media_unittests',
             '../net/net.gyp:net_unittests',
             '../printing/printing.gyp:printing_unittests',
-            'ui_tests',
+            # Mac coverage bot having trouble launching a profiled
+            # Chromium from within ui_tests; disabling for now.
+            # 'ui_tests',
             'unit_tests',
           ],
           'actions': [
