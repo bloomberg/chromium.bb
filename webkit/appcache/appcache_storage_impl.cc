@@ -70,9 +70,12 @@ class AppCacheStorageImpl::DatabaseTask
 void AppCacheStorageImpl::DatabaseTask::Schedule() {
   DCHECK(storage_);
   DCHECK(AppCacheThread::CurrentlyOn(AppCacheThread::io()));
-  storage_->scheduled_database_tasks_.push_back(this);
-  AppCacheThread::PostTask(AppCacheThread::db(), FROM_HERE,
-      NewRunnableMethod(this, &DatabaseTask::CallRun));
+  if (AppCacheThread::PostTask(AppCacheThread::db(), FROM_HERE,
+          NewRunnableMethod(this, &DatabaseTask::CallRun))) {
+    storage_->scheduled_database_tasks_.push_back(this);
+  } else {
+    NOTREACHED() << "The database thread is not running.";
+  }
 }
 
 void AppCacheStorageImpl::DatabaseTask::CancelCompletion() {
