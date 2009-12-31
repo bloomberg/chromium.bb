@@ -193,7 +193,6 @@ void Histogram::Initialize() {
     declared_min_ = 1;
   if (declared_max_ >= kSampleType_MAX)
     declared_max_ = kSampleType_MAX - 1;
-  DCHECK_GT(declared_min_, 0);  // We provide underflow bucket.
   DCHECK(declared_min_ <= declared_max_);
   DCHECK_LT(1u, bucket_count_);
   size_t maximal_bucket_count = declared_max_ - declared_min_ + 2;
@@ -423,9 +422,17 @@ bool Histogram::DeserializeHistogramInfo(const std::string& histogram_info) {
       !pickle.ReadInt(&iter, &histogram_type) ||
       !pickle.ReadInt(&iter, &pickle_flags) ||
       !sample.Histogram::SampleSet::Deserialize(&iter, pickle)) {
-    LOG(ERROR) << "Picke error decoding Histogram: " << histogram_name;
+    LOG(ERROR) << "Pickle error decoding Histogram: " << histogram_name;
     return false;
   }
+  // Since these fields may have come from an untrusted renderer, do additional
+  // checks above and beyond those in Histogram::Initialize()
+  if (declared_max <= 0 || declared_min <= 0 || declared_max < declared_min ||
+      INT_MAX / sizeof(Count) <= bucket_count || bucket_count < 2) {
+    LOG(ERROR) << "Values error decoding Histogram: " << histogram_name;
+    return false;
+  }
+
   Flags flags = static_cast<Flags>(pickle_flags & ~kIPCSerializationSourceFlag);
 
   DCHECK(histogram_type != NOT_VALID_IN_RENDERER);
@@ -548,14 +555,14 @@ bool Histogram::SampleSet::Deserialize(void** iter, const Pickle& pickle) {
     return false;
   }
 
-  if (counts_size <= 0)
+  if (counts_size == 0)
     return false;
 
-  counts_.resize(counts_size, 0);
   for (size_t index = 0; index < counts_size; ++index) {
-    if (!pickle.ReadInt(iter, &counts_[index])) {
+    int i;
+    if (!pickle.ReadInt(iter, &i))
       return false;
-    }
+    counts_.push_back(i);
   }
 
   return true;

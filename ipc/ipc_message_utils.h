@@ -451,22 +451,16 @@ struct ParamTraits<std::vector<P> > {
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
     int size;
+    // ReadLength() checks for < 0 itself.
     if (!m->ReadLength(iter, &size))
       return false;
     // Resizing beforehand is not safe, see BUG 1006367 for details.
-    if (m->IteratorHasRoomFor(*iter, size * sizeof(P))) {
-      r->resize(size);
-      for (int i = 0; i < size; i++) {
-        if (!ReadParam(m, iter, &(*r)[i]))
-          return false;
-      }
-    } else {
-      for (int i = 0; i < size; i++) {
-        P element;
-        if (!ReadParam(m, iter, &element))
-          return false;
-        r->push_back(element);
-      }
+    if (INT_MAX / sizeof(P) <= static_cast<size_t>(size))
+      return false;
+    r->resize(size);
+    for (int i = 0; i < size; i++) {
+      if (!ReadParam(m, iter, &(*r)[i]))
+        return false;
     }
     return true;
   }

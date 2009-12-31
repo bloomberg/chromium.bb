@@ -861,14 +861,15 @@ struct ParamTraits<webkit_glue::FormFieldValues> {
           ReadParam(m, iter, &p->target_url);
       size_t elements_size = 0;
       result = result && ReadParam(m, iter, &elements_size);
-      p->elements.resize(elements_size);
       for (size_t i = 0; i < elements_size; i++) {
         string16 label, name, type, value;
         result = result && ReadParam(m, iter, &label);
         result = result && ReadParam(m, iter, &name);
         result = result && ReadParam(m, iter, &type);
         result = result && ReadParam(m, iter, &value);
-        p->elements[i] = webkit_glue::FormField(label, name, type, value);
+        if (result)
+          p->elements.push_back(
+            webkit_glue::FormField(label, name, type, value));
       }
       return result;
   }
