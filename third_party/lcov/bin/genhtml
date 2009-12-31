@@ -4177,7 +4177,8 @@ sub write_source($$$$$$)
 	}
 
 	open(SOURCE_HANDLE, "<".$source_filename)
-		or die("ERROR: cannot open $source_filename for reading!\n");
+          # or die("ERROR: cannot open $source_filename for reading!\n");
+          or open(SOURCE_HANDLE, "</dev/null");
 	
 	write_source_prolog(*HTML_HANDLE);
 

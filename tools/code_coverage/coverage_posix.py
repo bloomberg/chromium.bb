@@ -61,6 +61,7 @@ import sys
 import time
 import traceback
 
+
 class Coverage(object):
   """Doitall class for code coverage."""
 
@@ -166,6 +167,7 @@ class Coverage(object):
       logging.info('After trimming tests we have ' + ' '.join(self.tests))
       return
     if self.IsLinux():
+      # self.tests = filter(lambda t: t.endswith('base_unittests'), self.tests)
       return
     if self.IsMac():
       exclusion = ['automated_ui_tests']
@@ -260,8 +262,10 @@ class Coverage(object):
 
       # If asked, make this REAL fast for testing.
       if self.options.fast_test:
+        logging.info('Running as a FAST test for testing')
         # cmdlist.append('--gtest_filter=RenderWidgetHost*')
-        cmdlist.append('--gtest_filter=CommandLine*')
+        # cmdlist.append('--gtest_filter=CommandLine*')
+        cmdlist.append('--gtest_filter=C*')
 
       self.BeforeRunOneTest(fulltest)
       logging.info('Running test ' + str(cmdlist))
@@ -295,9 +299,11 @@ class Coverage(object):
 
   def AfterRunAllTests(self):
     """Do things right after running ALL tests."""
+    # On POSIX we can do it all at once without running out of memory.
+    # This contrasts with Windows where we must do it after each test.
     if self.IsPosix():
-      # On POSIX we can do it all at once without running out of memory.
       self.GenerateLcovPosix()
+    # Only on Linux do we have the Xvfb step.
     if self.IsLinux() and self.options.xvfb:
       self.StopXvfb()
 
@@ -344,17 +350,26 @@ class Coverage(object):
 
 
   def GenerateLcovPosix(self):
-    """Convert profile data to lcov."""
+    """Convert profile data to lcov on Mac or Linux."""
+    if self.IsLinux():
+      # With Linux/make the current directory for this command is
+      # .../src/chrome but we need to be in .../src for the relative
+      # path of source files to be correct.  On Mac source files are
+      # compiled with abs paths so this isn't a problem.
+      start_dir = os.getcwd()
+      os.chdir('..')
     command = [self.mcov,
                '--directory', self.directory_parent,
                '--output', self.coverage_info_file]
-    print >>sys.stderr, 'Assembly command: ' + ' '.join(command)
+    logging.info('Assembly command: ' + ' '.join(command))
     retcode = subprocess.call(command)
     if retcode:
       logging.fatal('COVERAGE: %s failed; return code: %d' %
                     (command[0], retcode))
       if self.options.strict:
         sys.exit(retcode)
+    if self.IsLinux():
+      os.chdir(start_dir)
 
   def GenerateLcovWindows(self, testname=None):
     """Convert VSTS format to lcov.  Appends coverage data to sum file."""
