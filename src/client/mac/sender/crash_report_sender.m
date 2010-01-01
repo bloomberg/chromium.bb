@@ -896,8 +896,8 @@ doCommandBySelector:(SEL)commandSelector {
                          forKey:@BREAKPAD_VERSION];
   [socorroDictionary_ setObject:@"ProductName"
                          forKey:@BREAKPAD_PRODUCT];
-  [socorroDictionary_ setObject:@"ProductName"
-                         forKey:@BREAKPAD_PRODUCT];
+  [socorroDictionary_ setObject:@"Email"
+                         forKey:@BREAKPAD_EMAIL];
 }
 
 - (NSMutableDictionary *)dictionaryForServerType:(NSString *)serverType {
