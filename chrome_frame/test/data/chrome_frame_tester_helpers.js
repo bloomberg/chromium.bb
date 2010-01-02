@@ -145,6 +145,9 @@ function reloadUsingCFProtocol() {
 }
 
 function isRunningInChrome() {
+  var is_chrome_frame = /chromeframe/.test(navigator.userAgent.toLowerCase());
+  if (is_chrome_frame)
+    return 0;
   var is_chrome = /chrome/.test(navigator.userAgent.toLowerCase());
   return is_chrome;
 }
