@@ -57,9 +57,9 @@ class TabOverviewTypes {
 
     // The contents of a popup window.
     //   param[0]: X ID of associated titlebar, which must be mapped before
-    //             its panel
+    //             its content
     //   param[1]: Initial state for panel (0 is collapsed, 1 is expanded)
-    WINDOW_TYPE_CHROME_PANEL,
+    WINDOW_TYPE_CHROME_PANEL_CONTENT,
 
     // A small window representing a collapsed panel in the panel bar and
     // drawn above the panel when it's expanded.

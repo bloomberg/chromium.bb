@@ -123,7 +123,7 @@ void PanelController::Init(const gfx::Rect window_bounds) {
   type_params.push_back(expanded_ ? 1 : 0);
   tab_overview->SetWindowType(
       GTK_WIDGET(panel_),
-      TabOverviewTypes::WINDOW_TYPE_CHROME_PANEL,
+      TabOverviewTypes::WINDOW_TYPE_CHROME_PANEL_CONTENT,
       &type_params);
 
   g_signal_connect(
