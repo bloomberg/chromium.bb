@@ -37,6 +37,7 @@ void RendererHistogramSnapshots::UploadAllHistrograms(int sequence_number) {
   for (StatisticsRecorder::Histograms::iterator it = histograms.begin();
        histograms.end() != it;
        it++) {
+    (*it)->SetFlags(Histogram::kIPCSerializationSourceFlag);
     UploadHistrogram(**it, &pickled_histograms);
   }
   // Send the sequence number and list of pickled histograms over synchronous

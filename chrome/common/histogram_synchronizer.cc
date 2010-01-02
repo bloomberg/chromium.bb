@@ -240,6 +240,9 @@ int HistogramSynchronizer::GetNextAvaibleSequenceNumber(
     RendererHistogramRequester requester) {
   AutoLock auto_lock(lock_);
   ++next_available_sequence_number_;
+  if (0 > next_available_sequence_number_)  // We wrapped around.
+    next_available_sequence_number_ = kReservedSequenceNumber + 1;
+  DCHECK(next_available_sequence_number_ != kReservedSequenceNumber);
   if (requester == ASYNC_HISTOGRAMS) {
     async_sequence_number_ = next_available_sequence_number_;
     async_renderers_pending_ = 0;

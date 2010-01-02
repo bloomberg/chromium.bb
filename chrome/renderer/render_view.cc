@@ -26,6 +26,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/histogram_synchronizer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/page_zoom.h"
@@ -3755,6 +3756,16 @@ void RenderView::DumpLoadHistograms() const {
   }
 
   navigation_state->set_load_histograms_recorded(true);
+
+  // Since there are currently no guarantees that renderer histograms will be
+  // sent to the browser, we initiate a PostTask here to be sure that we send
+  // the histograms we generated.  Without this call, pages that don't have an
+  // on-close-handler might generate data that is lost when the renderer is
+  // shutdown abruptly (perchance because the user closed the tab).
+  if (RenderThread::current()) {
+    RenderThread::current()->SendHistograms(
+        HistogramSynchronizer::kReservedSequenceNumber);
+  }
 }
 
 void RenderView::LogNavigationState(const NavigationState* state,

@@ -26,6 +26,8 @@ class HistogramSynchronizer : public
     SYNCHRONOUS_HISTOGRAMS
   };
 
+  static const int kReservedSequenceNumber = 0;
+
   HistogramSynchronizer();
 
   ~HistogramSynchronizer();

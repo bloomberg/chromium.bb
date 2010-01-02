@@ -392,7 +392,7 @@ std::string Histogram::SerializeHistogramInfo(const Histogram& histogram,
   pickle.WriteInt(histogram.declared_max());
   pickle.WriteSize(histogram.bucket_count());
   pickle.WriteInt(histogram.histogram_type());
-  pickle.WriteInt(histogram.flags() & ~kIPCSerializationSourceFlag);
+  pickle.WriteInt(histogram.flags());
 
   snapshot.Serialize(&pickle);
   return std::string(static_cast<const char*>(pickle.data()), pickle.size());
@@ -425,6 +425,7 @@ bool Histogram::DeserializeHistogramInfo(const std::string& histogram_info) {
     LOG(ERROR) << "Pickle error decoding Histogram: " << histogram_name;
     return false;
   }
+  DCHECK(pickle_flags & kIPCSerializationSourceFlag);
   // Since these fields may have come from an untrusted renderer, do additional
   // checks above and beyond those in Histogram::Initialize()
   if (declared_max <= 0 || declared_min <= 0 || declared_max < declared_min ||
@@ -795,21 +796,6 @@ void StatisticsRecorder::GetHistograms(Histograms* output) {
        histograms_->end() != it;
        ++it) {
     output->push_back(it->second);
-  }
-}
-
-// static
-void StatisticsRecorder::GetHistogramsForRenderer(Histograms* output) {
-  if (!histograms_)
-    return;
-  AutoLock auto_lock(*lock_);
-  for (HistogramMap::iterator it = histograms_->begin();
-       histograms_->end() != it;
-       ++it) {
-    scoped_refptr<Histogram> histogram = it->second;
-    if (!(histogram->flags() & Histogram::kIPCSerializationSourceFlag))
-      histogram->SetFlags(Histogram::kIPCSerializationSourceFlag);
-    output->push_back(histogram);
   }
 }
 

@@ -554,10 +554,6 @@ class StatisticsRecorder {
   // Method for extracting histograms which were marked for use by UMA.
   static void GetHistograms(Histograms* output);
 
-  // Method for extracting histograms for renderer and the histogram's flag is
-  // set to kIPCSerializationSourceFlag.
-  static void GetHistogramsForRenderer(Histograms* output);
-
   // Find a histogram by name. It matches the exact name. This method is thread
   // safe.
   static bool FindHistogram(const std::string& query,
