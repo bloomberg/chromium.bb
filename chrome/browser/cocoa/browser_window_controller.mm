@@ -1447,14 +1447,15 @@ willPositionSheet:(NSWindow*)sheet
   else if ([event deltaX] < -0.5)
     command = IDC_FORWARD;
   else if ([event deltaY] > 0.5)
-    ;  // TODO(pinkerton): figure out page-up
+    ;  // TODO(pinkerton): figure out page-up, http://crbug.com/16305
   else if ([event deltaY] < -0.5)
-    ;  // TODO(pinkerton): figure out page-down
+    ;  // TODO(pinkerton): figure out page-down, http://crbug.com/16305
 
   // Ensure the command is valid first (ExecuteCommand() won't do that) and
   // then make it so.
   if (browser_->command_updater()->IsCommandEnabled(command))
-    browser_->ExecuteCommand(command);
+    browser_->ExecuteCommandWithDisposition(command,
+        event_utils::WindowOpenDispositionFromNSEvent(event));
 }
 
 // Delegate method called when window is resized.
