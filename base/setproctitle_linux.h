@@ -11,7 +11,9 @@ extern "C" {
 
 // Set the process title that will show in "ps" and similar tools. Takes
 // printf-style format string and arguments. After calling setproctitle()
-// the original main() argv[] array should not be used.
+// the original main() argv[] array should not be used. By default, the
+// original argv[0] is prepended to the format; this can be disabled by
+// including a '-' as the first character of the format string.
 void setproctitle(const char* fmt, ...);
 
 // Initialize state needed for setproctitle() on Linux. Pass the argv pointer
