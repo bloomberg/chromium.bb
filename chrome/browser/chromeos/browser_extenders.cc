@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "app/gfx/canvas.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/theme_provider.h"
 #include "base/command_line.h"
@@ -31,6 +32,17 @@
 namespace {
 
 const char* kChromeOsWindowManagerName = "chromeos-wm";
+const int kCompactNavbarSpaceHeight = 3;
+
+class Spacer : public views::View {
+  SkBitmap* background_;
+ public:
+  explicit Spacer(SkBitmap* bitmap) : background_(bitmap) {}
+
+  void Paint(gfx::Canvas* canvas) {
+    canvas->TileImageInt(*background_, 0, 0, width(), height());
+  }
+};
 
 // NormalExtender adds ChromeOS specific controls and menus to a BrowserView
 // created with Browser::TYPE_NORMAL. This extender adds controls to
@@ -81,6 +93,10 @@ class NormalExtender : public BrowserExtender,
     browser_view()->AddChildView(status_area_);
     status_area_->Init();
 
+    SkBitmap* theme_toolbar = theme_provider->GetBitmapNamed(IDR_THEME_TOOLBAR);
+    spacer_ = new Spacer(theme_toolbar);
+    browser_view()->AddChildView(spacer_);
+
     InitSystemMenu();
     chromeos::MainMenu::ScheduleCreation();
 
@@ -105,20 +121,28 @@ class NormalExtender : public BrowserExtender,
     }
   }
 
-  virtual gfx::Rect Layout(const gfx::Rect& bounds) {
+  virtual void Layout(const gfx::Rect& bounds,
+                      gfx::Rect* tabstrip_bounds,
+                      int* bottom) {
+    if (browser_view()->IsTabStripVisible()) {
+      *bottom = bounds.bottom();
+    } else {
+      *bottom = 0;
+    }
     // Skip if there is no space to layout, or if the browser is in
     // fullscreen mode.
     if (bounds.IsEmpty() || browser_view()->IsFullscreen()) {
       main_menu_->SetVisible(false);
       compact_navigation_bar_->SetVisible(false);
       status_area_->SetVisible(false);
-      return bounds;
+      tabstrip_bounds->SetRect(bounds.x(), bounds.y(),
+                               bounds.width(), bounds.height());
+      return;
     } else {
       main_menu_->SetVisible(true);
       compact_navigation_bar_->SetVisible(compact_navigation_bar_enabled_);
       status_area_->SetVisible(true);
     }
-
     /* TODO(oshima):
      * Disabling the ability to update location bar on re-layout bacause
      * tabstrip state may not be in sync with the browser's state when
@@ -157,9 +181,16 @@ class NormalExtender : public BrowserExtender,
                                          bounds.height() - 1);
       curx += cnb_bounds.width();
       width -= cnb_bounds.width();
+
+      spacer_->SetVisible(true);
+      spacer_->SetBounds(0, *bottom, browser_view()->width(),
+                         kCompactNavbarSpaceHeight);
+      *bottom += kCompactNavbarSpaceHeight;
+    } else {
+      spacer_->SetVisible(false);
     }
     width = std::max(0, width);  // In case there is no space left.
-    return gfx::Rect(curx, bounds.y(), width, bounds.height());
+    tabstrip_bounds->SetRect(curx, bounds.y(), width, bounds.height());
   }
 
   virtual bool NonClientHitTest(const gfx::Point& point) {
@@ -289,6 +320,10 @@ class NormalExtender : public BrowserExtender,
   // A flag to specify if the browser window should be maximized.
   bool force_maximized_window_;
 
+  // A spacer under the tap strip used when the compact navigation bar
+  // is active.
+  Spacer* spacer_;
+
   DISALLOW_COPY_AND_ASSIGN(NormalExtender);
 };
 
@@ -320,8 +355,11 @@ class PopupExtender : public BrowserExtender {
     gtk_window_resize(native_window, bounds.width(), bounds.height());
   }
 
-  virtual gfx::Rect Layout(const gfx::Rect& bounds) {
-    return bounds;
+  virtual void Layout(const gfx::Rect& bounds,
+                      gfx::Rect* tabstrip_bounds,
+                      int* bottom) {
+    *bottom = 0;
+    tabstrip_bounds->SetRect(0, 0, 0, 0);
   }
 
   virtual bool NonClientHitTest(const gfx::Point& point) {

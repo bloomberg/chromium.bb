@@ -32,9 +32,13 @@ class BrowserExtender {
   // Initializes the extender.
   virtual void Init() = 0;
 
-  // Layouts controls within the given bounds and returns the remaining
-  // bounds for tabstip to be layed out.
-  virtual gfx::Rect Layout(const gfx::Rect& bounds) = 0;
+  // Layouts controls within the given bounds. The |tabstrip_bounds| will be
+  // filled with the remaining bounds for tabstip to be layed out and
+  // the |bottom| will be filled with the y location where toolbar should be
+  // layed out, in BrowserView cooridnates.
+  virtual void Layout(const gfx::Rect& bounds,
+                      gfx::Rect* tabstrip_bounds,
+                      int* bottom) = 0;
 
   // Tests if the given |point|, which is given in BrowserView coordinates,
   // hits any of controls.

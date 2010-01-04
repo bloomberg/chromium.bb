@@ -1928,25 +1928,22 @@ void BrowserView::InitSystemMenu() {
 #endif
 
 int BrowserView::LayoutTabStrip() {
-  gfx::Rect tabstrip_bounds = frame_->GetBoundsForTabStrip(tabstrip_);
+  gfx::Rect layout_bounds = frame_->GetBoundsForTabStrip(tabstrip_);
   gfx::Rect toolbar_bounds = GetToolbarBounds();
   tabstrip_->SetBackgroundOffset(
-      gfx::Point(tabstrip_bounds.x() - toolbar_bounds.x(),
-                 tabstrip_bounds.y()));
+      gfx::Point(layout_bounds.x() - toolbar_bounds.x(),
+                 layout_bounds.y()));
 
-  gfx::Point tabstrip_origin = tabstrip_bounds.origin();
+  gfx::Point tabstrip_origin = layout_bounds.origin();
   ConvertPointToView(GetParent(), this, &tabstrip_origin);
-  tabstrip_bounds.set_origin(tabstrip_origin);
+  layout_bounds.set_origin(tabstrip_origin);
 
   // Layout extra components.
-  tabstrip_bounds = browser_extender_->Layout(tabstrip_bounds);
-
-  bool visible = IsTabStripVisible();
-  int y = visible ? tabstrip_bounds.y() : 0;
-  int height = visible ? tabstrip_bounds.height() : 0;
-  int bottom = y + height;
-  tabstrip_->SetVisible(visible);
-  tabstrip_->SetBounds(tabstrip_bounds.x(), y, tabstrip_bounds.width(), height);
+  int bottom = 0;
+  gfx::Rect tabstrip_bounds;
+  browser_extender_->Layout(layout_bounds, &tabstrip_bounds, &bottom);
+  tabstrip_->SetVisible(IsTabStripVisible());
+  tabstrip_->SetBounds(tabstrip_bounds);
   return bottom;
 }
 

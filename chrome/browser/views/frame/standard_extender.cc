@@ -4,6 +4,9 @@
 
 #include "chrome/browser/views/frame/browser_extender.h"
 
+#include "base/gfx/rect.h"
+#include "chrome/browser/views/frame/browser_view.h"
+
 class Tab;
 
 namespace {
@@ -20,7 +23,18 @@ class StandardExtender : public BrowserExtender {
  private:
   // BrowserExtender overrides.
   virtual void Init() {}
-  virtual gfx::Rect Layout(const gfx::Rect& bounds) { return bounds; }
+  virtual void Layout(const gfx::Rect& bounds,
+                      gfx::Rect* tabstrip_bounds,
+                      int* bottom) {
+    if (browser_view()->IsTabStripVisible()) {
+      *bottom = bounds.bottom();
+      tabstrip_bounds->SetRect(
+          bounds.x(), bounds.y(), bounds.width(), bounds.height());
+    } else {
+      *bottom = 0;
+      tabstrip_bounds->SetRect(0, 0, 0, 0);
+    }
+  }
   virtual bool NonClientHitTest(const gfx::Point& point) { return false; }
   virtual void Show() {}
   virtual void Close() {}
