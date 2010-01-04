@@ -1,34 +1,8 @@
 /*
- * Copyright 2009, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright (c) 2009 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that be
+ * found in the LICENSE file.
  */
-
 
 /*
  * Defines SSE instructions.
@@ -52,523 +26,612 @@
 #define ARRAYSIZE(a) sizeof(a)/sizeof(a[0])
 #endif
 
-/* Define prefix array that covers opcodes with OF and 66OF prefices. */
-static OpcodePrefix g_prefix0F_pair[2] = {
-  Prefix0F,
-  Prefix660F
-};
+/* Here's a slightly different strategy for how to encode some of */
+/* the SSE* instructions.                                         */
+static void DefineVpsWpsInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define prefix array that covers opcodes with 0F prefices. */
-static OpcodePrefix g_prefix0F_only[2] = {
-  Prefix0F,
-  OpcodePrefixEnumSize
-};
+static void DefineWpsVpsInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_E_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
+}
 
-/* Define prefix array that covers opcodes with 0F38 and 660F38 preficies. */
-static OpcodePrefix g_prefix0F38_pair[2] = {
-  Prefix0F38,
-  Prefix660F38
-};
+static void DefineVq_Mq_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(M_Operand, OpFlag(OpUse));
+}
 
-/* Define prefix array that covers opcodew with preifx 0F3A and 660F3A
- * prefices.
- */
-static OpcodePrefix g_prefix0F3A_pair[2] = {
-  Prefix0F3A,
-  Prefix660F3A
-};
+static void DefineMq_Vq_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(M_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
+}
 
-/* Define prefix array that only applies for the prefix 660F. */
-static OpcodePrefix g_prefix660F_only[2] = {
-  OpcodePrefixEnumSize,
-  Prefix660F,
-};
+static void DefineVpsWq_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define prefix array that only applies for the prefix 660F38. */
-static OpcodePrefix g_prefix660F38_only[2] = {
-  OpcodePrefixEnumSize,
-  Prefix660F38,
-};
+static void DefineWssVssInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_E_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
+}
 
-/* Define prefix array that only applies for the prefix F20F. */
-static OpcodePrefix g_prefixF20F_only[2] = {
-  PrefixF20F,
-  OpcodePrefixEnumSize
-};
+static void DefineVssWssInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define prefix array that only applies for the prefix F30F. */
-static OpcodePrefix g_prefixF30F_only[2] = {
-  PrefixF30F,
-  OpcodePrefixEnumSize
-};
+static void DefineVpdWpdInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define an operand kind pair that use the E_Operand value for
- * prefix opcodes, independent of the appearance of prefix 66.
- */
-static OperandKind g_E_Operand[2] = {
-  E_Operand,
-  E_Operand
-};
+static void DefineWpdVpdInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_E_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
+}
 
-/* Define an operand kind pair that uses the G_Operand value for
- * prefix opcodes, independent of the appearance of prefix 66.
- */
-static OperandKind g_G_Operand[2] = {
-  G_Operand,
-  G_Operand
-};
+static void DefineVpdWq_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define an operand kind pair that uses Mmx_G_Operand for the
- * prefix opcodes without prefix 66, and uses the Xmm_G_Operand
- * for the prefix opcodes with prefix 66.
- */
-static OperandKind g_Mm_G_Operand[2] = {
-  Mmx_G_Operand,
-  Xmm_G_Operand
-};
+static void DefineVsdWsdInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define an operand kind pair that uses Mmx_E_Operand for the
- * prefix opcodes without prefix 66, and uses the Xmm_E_Operand
- * for the prefix opcodes with prefix 66.
- */
-static OperandKind g_Mm_E_Operand[2] = {
-  Mmx_E_Operand,
-  Xmm_E_Operand
-};
+static void DefineWsdVsdInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_E_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
+}
 
-/* Define an operand kind pair that uses Xmm_G_Operand for both forms. */
-static OperandKind g_Xmm_G_Operand[2] = {
-  Xmm_G_Operand,
-  Xmm_G_Operand
-};
+static void DefineVq_Wq_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define an operand kind pair that uses Xmm_E_Operand for both forms. */
-static OperandKind g_Xmm_E_Operand[2] = {
-  Xmm_E_Operand,
-  Xmm_E_Operand
-};
+static void DefineVpsQpiInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+}
 
-static OperandKind g_Mmx_G_Operand[2] = {
-  Mmx_G_Operand,
-  Mmx_G_Operand,
-};
+static void DefineMpsVpsInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(M_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+}
 
-static OperandKind g_Mmx_E_Operand[2] = {
-  Mmx_E_Operand,
-  Mmx_E_Operand,
-};
+static void DefinePpiWpsInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define the NaCL instruction type as NACLi_SSE for both kinds of opcode
- * prefices.
- */
-static NaClInstType g_SSE[2] = {
-  NACLi_SSE,
-  NACLi_SSE
-};
+static void DefineVpdQpiInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpUse));
+}
 
-/* Define the NaCL instruction type as NACLi_SSE2 for both kinds of opcode
- * prefices.
- */
-static NaClInstType g_SSE2[2] = {
-  NACLi_SSE2,
-  NACLi_SSE2
-};
+static void DefineMpdVpdInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(M_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
+}
 
-/* Define the NaCl instruction type as NACLi_SSSE3 for both kinds of opcode
- * prefices.
- */
-static NaClInstType g_SSSE3[2] = {
-  NACLi_SSSE3,
-  NACLi_SSSE3
-};
+static void DefinePpiWpdInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Mmx_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define the Nacl instruction type as NACLi_SSE41 for both kinds of opcode
- * prefices.
- */
-static NaClInstType g_SSE41[2] = {
-  NACLi_SSE41,
-  NACLi_SSE41
-};
+static void DefineQpiWpdInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Mmx_E_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define the Nacl instruction type as NACLi_SSE42 for both kinds of opcode
- * prefices.
- */
-static NaClInstType g_SSE42[2] = {
-  NACLi_SSE41,
-  NACLi_SSE41
-};
+static void DefineVsdEdqInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+}
 
-/* Define the Nacl instruction type as NACLi_MMX for opcode prefices not
- * containing the 66 prefix, and NACLi_SSE2 for the opcode prefices containing
- * the 66 prefix.
- */
-static NaClInstType g_MMX_or_SSE2[2] = {
-  NACLi_MMX,
-  NACLi_SSE2
-};
+static void DefineGdqWsdInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define the NaCl instruction type as NACLi_MMX for both kinds of opcode
- * prefices.
- */
-static NaClInstType g_MMX[2] = {
-  NACLi_MMX,
-  NACLi_MMX,
-};
+static void DefineGdqUpsInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define the NaCl instruction type as NACLi_SSE for opcode prefices not
- * containing the 66 prefix, and NACLi_SSE2 for the opcode prefices containing
- * th e66 prefix.
- */
-static NaClInstType g_SSE_or_SSE2[2] = {
-  NACLi_SSE,
-  NACLi_SSE2
-};
+static void DefineGdqUpdInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define no additional (opcode) flags being specified for either of the opcode
- * prefices.
- */
-static OpcodeFlags g_no_flags[2] = {
-  0,
-  0
-};
+static void DefineVdqWdqInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define an additional (opcode) flag OperandSize_v for all opcode prefices. */
-static OpcodeFlags g_OperandSize_v[2] = {
-  InstFlag(OperandSize_v),
-  InstFlag(OperandSize_v) | InstFlag(OperandSizeIgnore66)
-};
+static void DefineGd_UdqInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-#define InstFlags_OperandSize_o \
-  (InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | \
-   InstFlag(OpcodeUsesRexW))
+static void DefineMdqVdqInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(M_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
+}
 
-/* Define additional (opcode) flags OperandSize_o and OpcodeUseRexW for all
- * opcode prefices.
- */
-static OpcodeFlags g_OperandSize_o[2] = {
-  InstFlags_OperandSize_o,
-  InstFlags_OperandSize_o,
-};
+static void DefineVpdWdqInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Define a structure containing information on the SSE instructions it is
- * to define. Each field is a two-element array specifying the value to use
- * when a 66 doesn't appear, and when a 66 prefix does appear.
- */
-typedef struct {
-  /* Define the instruction opcode prefices being specified. */
-  OpcodePrefix* prefix;
-  /* Define the last byte of the instruction opcode being defined. */
-  uint8_t opcode;
-  /* Define the instruction (mnemonic) that is being specified. */
-  InstMnemonic inst;
-  /* Define the operand kind to use for the first operand of the instruction. */
-  OperandKind* op1kind;
-  /* Define the operand kind to use for the second operand of the
-   * instruction.
-   */
-  OperandKind* op2kind;
-  /* Define the NaCL instruction type for the instruction being specified. */
-  NaClInstType* insttype;
-  /* Define any additional opcode flags that should be specified for the
-   * instruction.
-   */
-  OpcodeFlags* flags;
-} InstOpcodeMnemonic;
+static void DefineVdqUdqInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+}
 
-/* Specify binary instructions that act as move instructions, (i.e. copy data
- * from thier second operand, to thier first operand.
- */
-static InstOpcodeMnemonic g_MoveOps[] = {
-  /* TODO(karl) - Check what other instructions should be using g_OperandSize_v
-   * and g_OpreandSize_o to check sizes (using new flag OperandSizeIgnore66 to
-   * help differentiate sizes).
-   */
-  {g_prefix0F38_pair, 0xC1, InstPabsb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F38_pair, 0x1D, InstPabsw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F38_pair, 0x1E, InstPabsd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix660F38_only, 0x41, InstPhminposuw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefixF20F_only, 0x10, InstMovsd, g_Xmm_G_Operand, g_Xmm_E_Operand,
-   g_SSE2, g_no_flags},
-  {g_prefixF20F_only, 0x11, InstMovsd, g_Xmm_E_Operand, g_Xmm_G_Operand,
-   g_SSE2, g_no_flags},
-  {g_prefixF30F_only, 0x10, InstMovss, g_Xmm_G_Operand, g_Xmm_E_Operand,
-   g_SSE, g_no_flags},
-  {g_prefixF30F_only, 0x11, InstMovss, g_Xmm_E_Operand, g_Xmm_G_Operand,
-   g_SSE, g_no_flags},
-  {g_prefix0F_pair, 0x6e, InstMovd, g_Mm_G_Operand, g_E_Operand,
-   g_MMX_or_SSE2, g_OperandSize_v},
-  {g_prefix0F_pair, 0x6e, InstMovq, g_Mm_G_Operand, g_E_Operand,
-   g_MMX_or_SSE2, g_OperandSize_o},
-  {g_prefix0F_pair, 0x7e, InstMovd, g_E_Operand, g_Mm_G_Operand,
-   g_MMX_or_SSE2, g_OperandSize_v},
-  {g_prefix0F_pair, 0x7e, InstMovd, g_E_Operand, g_Mm_G_Operand,
-   g_MMX_or_SSE2, g_OperandSize_o},
-  {g_prefix0F_only, 0x6f, InstMovq, g_Mmx_G_Operand, g_Mmx_E_Operand,
-   g_MMX, g_no_flags},
-  {g_prefix0F_only, 0x7f, InstMovq, g_Mmx_E_Operand, g_Mmx_G_Operand,
-   g_MMX, g_no_flags},
-  {g_prefixF30F_only, 0x7e, InstMovq, g_Xmm_G_Operand, g_Xmm_E_Operand,
-   g_SSE2, g_no_flags},
-  {g_prefix660F_only, 0xD6, InstMovq, g_Xmm_E_Operand, g_Xmm_G_Operand,
-   g_SSE2, g_no_flags},
-  {g_prefixF30F_only, 0x6F, InstMovdqu, g_Xmm_G_Operand, g_Xmm_E_Operand,
-   g_SSE2, g_no_flags},
-  {g_prefixF30F_only, 0x7F, InstMovdqu, g_Xmm_E_Operand, g_Xmm_G_Operand,
-   g_SSE2, g_no_flags},
-  {g_prefix0F_only, 0xE7, InstMovntq, g_E_Operand, g_Mmx_G_Operand,
-   g_SSE, g_no_flags},
-};
+static void DefineVdqMdqInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(M_Operand, OpFlag(OpUse));
+}
 
-/* Specify binary instructions that apply a binary operation to both
- * the first and second arguments, and stores the result in the first
- * argument.
- */
-static InstOpcodeMnemonic g_BinaryOps[] = {
-  /* TODO(karl) - Check what other instructions should be using g_OperandSize_v
-   * and g_OpreandSize_o to check sizes (using new flag OperandSizeIgnore66 to
-   * help differentiate sizes).
-   */
-  {g_prefix0F_pair, 0x63, InstPacksswb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0x6B, InstPackssdw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix660F38_only, 0x2b, InstPackusdw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix0F_pair, 0x67, InstPackuswb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xFC, InstPaddb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xFD, InstPaddw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xFE, InstPaddd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xD4, InstPaddq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xEC, InstPaddsb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xED, InstPaddsw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xDC, InstPaddusb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xDD, InstPaddusw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F3A_pair, 0x0F, InstPalignr, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F_pair, 0xDB, InstPand, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xDF, InstPandn, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xE0, InstPavgb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xE3, InstPavgw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE_or_SSE2, g_no_flags},
-  {g_prefix660F38_only, 0x10, InstPblendvb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x3A, InstPblendw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix0F_pair, 0x74, InstPcmpeqb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0x75, InstPcmpeqw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0x76, InstPcmpeqd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix660F38_only, 0x29, InstPcmpeqq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix0F_pair, 0x64, InstPcmpgtb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0x65, InstPcmpgtw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0x66, InstPcmpgtd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix660F38_only, 0x37, InstPcmpgtq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE42, g_no_flags},
-  {g_prefix0F38_pair, 0x01, InstPhaddw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F38_pair, 0x02, InstPhaddd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F38_pair, 0x03, InstPhaddsw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F38_pair, 0x05, InstPhsubw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F38_pair, 0x06, InstPhsubd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F38_pair, 0x07, InstPhsubsw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F38_pair, 0x04, InstPmaddubsw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F_pair, 0xF5, InstPmaddwd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix660F38_only, 0x3c, InstPmaxsb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x3D, InstPmaxsd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix0F_pair, 0xEE, InstPmaxsw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xDE, InstPmaxub, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE_or_SSE2, g_no_flags},
-  {g_prefix660F38_only, 0x3F, InstPmaxud, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x3E, InstPmaxuw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x39, InstPminsb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x38, InstPminsd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix0F_pair, 0xEA, InstPminsw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xDA, InstPminub, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE_or_SSE2, g_no_flags},
-  {g_prefix660F38_only, 0x3B, InstPminud, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x3A, InstPminuw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  /* TODO(karl) The second operand of pmovmskb can only b a MM register. Does
-   * the instruction use the Effective address to compute?
-   */
-  {g_prefix0F_pair, 0xD7, InstPmovmskb, g_G_Operand, g_Mm_E_Operand,
-   g_SSE_or_SSE2, g_OperandSize_v},
-  {g_prefix0F_pair, 0xD7, InstPmovmskb, g_G_Operand, g_Mm_E_Operand,
-   g_SSE_or_SSE2, g_OperandSize_o},
-  {g_prefix660F38_only, 0x20, InstPmovsxbw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x21, InstPmovsxbd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x22, InstPmovsxbq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x23, InstPmovsxwd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x24, InstPmovsxwq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x25, InstPmovsxdq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x30, InstPmovzxbw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x31, InstPmovzxbd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x32, InstPmovzxbq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x33, InstPmovzxwd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x34, InstPmovzxwq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x35, InstPmovzxdq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix660F38_only, 0x28, InstPmuldq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix0F38_pair, 0x0B, InstPmulhrsw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F_pair, 0xE4, InstPmulhuw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xE5, InstPmulhw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix660F38_only, 0x40, InstPmulld, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE41, g_no_flags},
-  {g_prefix0F_pair, 0xD5, InstPmullw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xF4, InstPmuludq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xEB, InstPor, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xF6, InstPsadbw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE_or_SSE2, g_no_flags},
-  {g_prefix0F38_pair, 0x00, InstPshufb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F38_pair, 0x08, InstPsignb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F38_pair, 0x09, InstPsignw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F38_pair, 0x0A, InstPsignd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSSE3, g_no_flags},
-  {g_prefix0F_pair, 0xF1, InstPsllw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xF2, InstPslld, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xF3, InstPsllq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xE1, InstPsraw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xE2, InstPsrad, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xD1, InstPsrlw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xD2, InstPsrld, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xD3, InstPsrlq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xF8, InstPsubb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xF9, InstPsubw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xFA, InstPsubd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xFB, InstPsubq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xE8, InstPsubsb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xE9, InstPsubsw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xD8, InstPsubusb, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xD9, InstPsubusw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0x68, InstPunpckhbw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0x69, InstPunpckhbd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0x6A, InstPunpckhbq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0x60, InstPunpcklbw, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0x61, InstPunpcklwd, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0x62, InstPunpckldq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefix660F_only, 0x6C, InstPunpcklqdq, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_SSE2, g_no_flags},
-  {g_prefix0F_pair, 0xEF, InstPxor, g_Mm_G_Operand, g_Mm_E_Operand,
-   g_MMX_or_SSE2, g_no_flags},
-  {g_prefixF20F_only, 0x5F, InstMaxsd, g_Xmm_G_Operand, g_Xmm_E_Operand,
-   g_SSE2, g_no_flags},
-  {g_prefixF30F_only, 0x51, InstSqrtss, g_Xmm_G_Operand, g_Xmm_E_Operand,
-   g_SSE, g_no_flags},
-};
 
-void DefineSseOpcodes() {
-  int i;
-  int j;
+static void DefineEdqVdqInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
+}
 
-  /* Define General Move and Binary operations */
-  for (i = 0; i < 2; ++i) {
-    /* Define move (and possibly modify) instructions. */
-    for (j = 0; j < ARRAYSIZE(g_MoveOps); ++j) {
-      if (OpcodePrefixEnumSize != g_MoveOps[j].prefix[i]) {
-        DefineOpcodePrefix(g_MoveOps[j].prefix[i]);
-        DefineOpcode(g_MoveOps[j].opcode,
-                     g_MoveOps[j].insttype[i],
-                     g_MoveOps[j].flags[i] | InstFlag(OpcodeUsesModRm),
-                     g_MoveOps[j].inst);
-        DefineOperand(g_MoveOps[j].op1kind[i], OpFlag(OpSet));
-        DefineOperand(g_MoveOps[j].op2kind[i], OpFlag(OpUse));
-      }
-    }
+static void DefinePq_Qd_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Mmx_G_Operand, OpFlag(OpSet));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpUse));
+}
 
-    /* Define binary instructions. */
-    for (j = 0; j < ARRAYSIZE(g_BinaryOps); ++j) {
-      if (OpcodePrefixEnumSize != g_BinaryOps[j].prefix[i]) {
-        DefineOpcodePrefix(g_BinaryOps[j].prefix[i]);
-        DefineOpcode(g_BinaryOps[j].opcode,
-                     g_BinaryOps[j].insttype[i],
-                     g_BinaryOps[j].flags[i] | InstFlag(OpcodeUsesModRm),
-                     g_BinaryOps[j].inst);
-        DefineOperand(g_BinaryOps[j].op1kind[i], OpFlag(OpSet) | OpFlag(OpUse));
-        DefineOperand(g_BinaryOps[j].op2kind[i], OpFlag(OpUse));
-      }
-    }
-  }
+static void DefinePq_Qq_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Mmx_G_Operand, OpFlag(OpSet));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpUse));
+}
+
+static void DefineEdqPd_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(E_Operand, OpFlag(OpSet));
+  DefineOperand(Mmx_G_Operand, OpFlag(OpUse));
+}
+
+static void DefineQq_Pq_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Mmx_E_Operand, OpFlag(OpSet));
+  DefineOperand(Mmx_G_Operand, OpFlag(OpUse));
+}
+
+static void DefineMq_Pq_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(M_Operand, OpFlag(OpSet));
+  DefineOperand(Mmx_G_Operand, OpFlag(OpUse));
+}
+
+static void DefineGd_Nq_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpUse));
+}
+
+static void DefinePq_Nq_Inst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Mmx_E_Operand, OpFlag(OpSet));
+  DefineOperand(Mmx_G_Operand, OpFlag(OpUse));
+}
+
+static void DefinePd_EdqInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Mmx_G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+}
+
+static void DefineWdqVdqInst(NaClInstType itype, uint8_t opbyte,
+                             OpcodePrefix prefix, InstMnemonic inst) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opbyte, itype, InstFlag(OpcodeUsesModRm), inst);
+  DefineOperand(Xmm_E_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
+}
+
+static void DefineBinarySseOpcodes() {
+  DefineVpsWpsInst(NACLi_SSE, 0x10, Prefix0F, InstMovups);
+  DefineWpsVpsInst(NACLi_SSE, 0x11, Prefix0F, InstMovups);
+  DefineVq_Mq_Inst(NACLi_SSE, 0x12, Prefix0F, InstMovlps);
+  DefineMq_Vq_Inst(NACLi_SSE, 0x13, Prefix0F, InstMovlps);
+  DefineVpsWq_Inst(NACLi_SSE, 0x14, Prefix0F, InstUnpcklps);
+  DefineVpsWq_Inst(NACLi_SSE, 0x15, Prefix0F, InstUnpckhps);
+  DefineVq_Mq_Inst(NACLi_SSE, 0x16, Prefix0F, InstMovhps);
+  DefineMq_Vq_Inst(NACLi_SSE, 0x17, Prefix0F, InstMovhps);
+  DefineVssWssInst(NACLi_SSE, 0x10, PrefixF30F, InstMovss);
+  DefineWssVssInst(NACLi_SSE, 0x11, PrefixF30F, InstMovss);
+
+  DefineVpdWpdInst(NACLi_SSE2, 0x10, Prefix660F, InstMovupd);
+  DefineWpdVpdInst(NACLi_SSE2, 0x11, Prefix660F, InstMovupd);
+  DefineVq_Mq_Inst(NACLi_SSE2, 0x12, Prefix660F, InstMovlpd);
+  DefineMq_Vq_Inst(NACLi_SSE2, 0x13, Prefix660F, InstMovlpd);
+  DefineVpdWq_Inst(NACLi_SSE2, 0x14, Prefix660F, InstUnpcklpd);
+  DefineVpdWq_Inst(NACLi_SSE2, 0x15, Prefix660F, InstUnpckhpd);
+  DefineVq_Mq_Inst(NACLi_SSE2, 0x16, Prefix660F, InstMovhpd);
+  DefineMq_Vq_Inst(NACLi_SSE2, 0x17, Prefix660F, InstMovhpd);
+
+  DefineVsdWsdInst(NACLi_SSE2, 0x10, PrefixF20F, InstMovsd);
+  DefineWsdVsdInst(NACLi_SSE2, 0x11, PrefixF20F, InstMovsd);
+
+  DefineVq_Wq_Inst(NACLi_SSE3, 0x12, PrefixF20F, InstMovddup);
+  DefineVq_Wq_Inst(NACLi_SSE3, 0x12, PrefixF30F, InstMovsldup);
+  DefineVq_Wq_Inst(NACLi_SSE3, 0x16, PrefixF30F, InstMovshdup);
+
+  DefineVpsWpsInst(NACLi_SSE, 0x28, Prefix0F, InstMovaps);
+  DefineWpsVpsInst(NACLi_SSE, 0x29, Prefix0F, InstMovaps);
+  DefineVpsQpiInst(NACLi_SSE, 0x2a, Prefix0F, InstCvtpi2ps);
+  DefineMpsVpsInst(NACLi_SSE, 0x2b, Prefix0F, InstMovntps);
+  DefinePpiWpsInst(NACLi_SSE, 0x2c, Prefix0F, InstCvttps2pi);
+  DefinePpiWpsInst(NACLi_SSE, 0x2d, Prefix0F, InstCvtps2pi);
+  DefineVssWssInst(NACLi_SSE, 0x2e, Prefix0F, InstUcomiss);
+  DefineVssWssInst(NACLi_SSE, 0x2f, Prefix0F, InstComiss);
+
+  DefineVpsQpiInst(NACLi_SSE, 0x2a, PrefixF30F, InstCvtsi2ss);
+  DefineMpsVpsInst(NACLi_SSE4A, 0x2b, PrefixF30F, InstMovntss);
+  DefinePpiWpsInst(NACLi_SSE, 0x2c, PrefixF30F, InstCvttss2si);
+  DefinePpiWpsInst(NACLi_SSE, 0x2d, PrefixF30F, InstCvtss2si);
+
+  DefineVpdWpdInst(NACLi_SSE2, 0x28, Prefix660F, InstMovapd);
+  DefineWpdVpdInst(NACLi_SSE2, 0x29, Prefix660F, InstMovapd);
+  DefineVpdQpiInst(NACLi_SSE2, 0x2a, Prefix660F, InstCvtpi2pd);
+  DefineMpdVpdInst(NACLi_SSE2, 0x2b, Prefix660F, InstMovntpd);
+  DefinePpiWpdInst(NACLi_SSE2, 0x2c, Prefix660F, InstCvttpd2pi);
+  DefineQpiWpdInst(NACLi_SSE2, 0x2d, Prefix660F, InstCvtpd2pi);
+  DefineVsdWsdInst(NACLi_SSE2, 0x2e, Prefix660F, InstUcomisd);
+  DefineVsdWsdInst(NACLi_SSE2, 0x2f, Prefix660F, InstComisd);
+
+  DefineVsdEdqInst(NACLi_SSE2, 0x2a, PrefixF20F, InstCvtsi2sd);
+  DefineGdqWsdInst(NACLi_SSE2, 0x2c, PrefixF20F, InstCvttsd2si);
+  DefineGdqWsdInst(NACLi_SSE2, 0x2d, PrefixF20F, InstCvtsd2si);
+
+  DefineGdqUpsInst(NACLi_SSE, 0x50, Prefix0F, InstMovmskps);
+  DefineVpsWpsInst(NACLi_SSE, 0x51, Prefix0F, InstSqrtps);
+  DefineVpsWpsInst(NACLi_SSE, 0x52, Prefix0F, InstRsqrtps);
+  DefineVpsWpsInst(NACLi_SSE, 0x53, Prefix0F, InstRcpps);
+  DefineVpsWpsInst(NACLi_SSE, 0x54, Prefix0F, InstAndps);
+  DefineVpsWpsInst(NACLi_SSE, 0x55, Prefix0F, InstAndnps);
+  DefineVpsWpsInst(NACLi_SSE, 0x56, Prefix0F, InstOrps);
+  DefineVpsWpsInst(NACLi_SSE, 0x57, Prefix0F, InstXorps);
+
+  DefineGdqUpdInst(NACLi_SSE2, 0x50, Prefix660F, InstMovmskpd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x51, Prefix660F, InstSqrtpd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x54, Prefix660F, InstAndpd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x55, Prefix660F, InstAndnpd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x56, Prefix660F, InstOrpd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x57, Prefix660F, InstXorpd);
+
+  DefineVsdWsdInst(NACLi_SSE2, 0x51, PrefixF20F, InstSqrtsd);
+
+  DefineVssWssInst(NACLi_SSE, 0x51, PrefixF30F, InstSqrtss);
+  DefineVssWssInst(NACLi_SSE, 0x52, PrefixF30F, InstRsqrtps);
+  DefineVssWssInst(NACLi_SSE, 0x53, PrefixF30F, InstRcpps);
+
+  DefineVpsWpsInst(NACLi_SSE, 0x58, Prefix0F, InstAddps);
+  DefineVpsWpsInst(NACLi_SSE, 0x59, Prefix0F, InstMulps);
+  DefineVpsWpsInst(NACLi_SSE2, 0x5a, Prefix0F, InstCvtps2pd);
+  DefineVpsWpsInst(NACLi_SSE2, 0x5b, Prefix0F, InstCvtdq2ps);
+  DefineVpsWpsInst(NACLi_SSE, 0x5c, Prefix0F, InstSubps);
+  DefineVpsWpsInst(NACLi_SSE, 0x5d, Prefix0F, InstMinps);
+  DefineVpsWpsInst(NACLi_SSE, 0x5e, Prefix0F, InstDivps);
+  DefineVpsWpsInst(NACLi_SSE, 0x5f, Prefix0F, InstMaxps);
+
+  DefineVssWssInst(NACLi_SSE, 0x58, PrefixF30F, InstAddss);
+  DefineVssWssInst(NACLi_SSE, 0x59, PrefixF30F, InstMulss);
+  DefineVssWssInst(NACLi_SSE2, 0x5a, PrefixF30F, InstCvtss2sd);
+  DefineVssWssInst(NACLi_SSE2, 0x5b, PrefixF30F, InstCvttps2dq);
+  DefineVssWssInst(NACLi_SSE, 0x5c, PrefixF30F, InstSubss);
+  DefineVssWssInst(NACLi_SSE, 0x5d, PrefixF30F, InstMinss);
+  DefineVssWssInst(NACLi_SSE, 0x5e, PrefixF30F, InstDivss);
+  DefineVssWssInst(NACLi_SSE, 0x5f, PrefixF30F, InstMaxss);
+
+  DefineVpdWpdInst(NACLi_SSE2, 0x58, Prefix660F, InstAddpd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x59, Prefix660F, InstMulpd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x5a, Prefix660F, InstCvtss2sd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x5b, Prefix660F, InstCvtps2dq);
+  DefineVpdWpdInst(NACLi_SSE2, 0x5c, Prefix660F, InstSubpd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x5d, Prefix660F, InstMinpd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x5e, Prefix660F, InstDivpd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x5f, Prefix660F, InstMaxpd);
+
+  DefineVsdWsdInst(NACLi_SSE2, 0x58, PrefixF20F, InstAddsd);
+  DefineVsdWsdInst(NACLi_SSE2, 0x59, PrefixF20F, InstMulsd);
+  DefineVssWssInst(NACLi_SSE2, 0x5a, PrefixF20F, InstCvtsd2ss);
+  /* hole at 5D */
+  DefineVsdWsdInst(NACLi_SSE2, 0x5c, PrefixF20F, InstSubsd);
+  DefineVsdWsdInst(NACLi_SSE2, 0x5d, PrefixF20F, InstMinsd);
+  DefineVsdWsdInst(NACLi_SSE2, 0x5e, PrefixF20F, InstDivsd);
+  DefineVsdWsdInst(NACLi_SSE2, 0x5f, PrefixF20F, InstMaxsd);
+
+  /* pshufw is done below */
+
+  DefineVdqWdqInst(NACLi_SSE2, 0x60, Prefix660F, InstPunpcklbw);
+  DefineVdqWdqInst(NACLi_SSE2, 0x61, Prefix660F, InstPunpcklwd);
+  DefineVdqWdqInst(NACLi_SSE2, 0x62, Prefix660F, InstPunpckldq);
+  DefineVdqWdqInst(NACLi_SSE2, 0x63, Prefix660F, InstPacksswb);
+  DefineVdqWdqInst(NACLi_SSE2, 0x64, Prefix660F, InstPcmpgtb);
+  DefineVdqWdqInst(NACLi_SSE2, 0x65, Prefix660F, InstPcmpgtw);
+  DefineVdqWdqInst(NACLi_SSE2, 0x66, Prefix660F, InstPcmpgtd);
+  DefineVdqWdqInst(NACLi_SSE2, 0x67, Prefix660F, InstPackuswb);
+
+  /* a bunch of MMX instructions at 0x68-0x6f with no prefix */
+  DefineVdqWdqInst(NACLi_SSE2, 0x6f, PrefixF30F, InstMovdqu);
+  DefineVdqWdqInst(NACLi_SSE2, 0x68, Prefix660F, InstPunpckhbw);
+  DefineVdqWdqInst(NACLi_SSE2, 0x69, Prefix660F, InstPunpckhwd);
+  DefineVdqWdqInst(NACLi_SSE2, 0x6a, Prefix660F, InstPunpckhdq);
+  DefineVdqWdqInst(NACLi_SSE2, 0x6b, Prefix660F, InstPackssdw);
+  DefineVdqWdqInst(NACLi_SSE2, 0x6c, Prefix660F, InstPunpcklqdq);
+  DefineVdqWdqInst(NACLi_SSE2, 0x6d, Prefix660F, InstPunpckhqdq);
+  DefineVdqWdqInst(NACLi_SSE2, 0x6e, Prefix660F, InstMovd);
+  DefineVdqWdqInst(NACLi_SSE2, 0x6f, Prefix660F, InstMovdqa);
+
+  DefineVdqWdqInst(NACLi_SSE2, 0x74, Prefix660F, InstPcmpeqb);
+  DefineVdqWdqInst(NACLi_SSE2, 0x75, Prefix660F, InstPcmpeqw);
+  DefineVdqWdqInst(NACLi_SSE2, 0x76, Prefix660F, InstPcmpeqd);
+
+  DefineVpdWpdInst(NACLi_SSE2, 0x7c, Prefix660F, InstHaddpd);
+  DefineVpdWpdInst(NACLi_SSE2, 0x7d, Prefix660F, InstHsubpd);
+  DefineVpsWpsInst(NACLi_SSE3, 0x7c, PrefixF20F, InstHaddps);
+  DefineVpsWpsInst(NACLi_SSE3, 0x7d, PrefixF20F, InstHsubps);
+  /* 0x7e and 0x7f are for some move opcodes that are done elsewhere */
+  DefineEdqVdqInst(NACLi_SSE2, 0x7e, Prefix660F, InstMovd);
+  DefineVq_Wq_Inst(NACLi_SSE2, 0x7e, PrefixF30F, InstMovq);
+  DefineWdqVdqInst(NACLi_SSE2, 0x7f, Prefix660F, InstMovdqa);
+  DefineWdqVdqInst(NACLi_SSE2, 0x7f, PrefixF30F, InstMovdqu);
+
+  DefineVpsWpsInst(NACLi_SSE3, 0xd0, PrefixF20F, InstAddsubps);
+  DefineVpdWpdInst(NACLi_SSE3, 0xd0, Prefix660F, InstAddsubpd);
+  DefineVdqWdqInst(NACLi_SSE2, 0xd1, Prefix660F, InstPsrlw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xd2, Prefix660F, InstPsrld);
+  DefineVdqWdqInst(NACLi_SSE2, 0xd3, Prefix660F, InstPsrlq);
+  DefineVdqWdqInst(NACLi_SSE2, 0xd4, Prefix660F, InstPaddq);
+  DefineVdqWdqInst(NACLi_SSE2, 0xd5, Prefix660F, InstPmullw);
+  /* 0xd6 - movq */
+  DefineGd_UdqInst(NACLi_SSE2, 0xd7, Prefix660F, InstPmovmskb);
+
+  DefineVdqWdqInst(NACLi_SSE2, 0xd8, Prefix660F, InstPsubusb);
+  DefineVdqWdqInst(NACLi_SSE2, 0xd9, Prefix660F, InstPsubusw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xda, Prefix660F, InstPminub);
+  DefineVdqWdqInst(NACLi_SSE2, 0xdb, Prefix660F, InstPand);
+  DefineVdqWdqInst(NACLi_SSE2, 0xdc, Prefix660F, InstPaddusb);
+  DefineVdqWdqInst(NACLi_SSE2, 0xdd, Prefix660F, InstPaddusw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xde, Prefix660F, InstPmaxub);
+  DefineVdqWdqInst(NACLi_SSE2, 0xdf, Prefix660F, InstPandn);
+
+  DefineVdqWdqInst(NACLi_SSE2, 0xe0, Prefix660F, InstPavgb);
+  DefineVdqWdqInst(NACLi_SSE2, 0xe1, Prefix660F, InstPsraw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xe2, Prefix660F, InstPsrad);
+  DefineVdqWdqInst(NACLi_SSE2, 0xe3, Prefix660F, InstPavgw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xe4, Prefix660F, InstPmulhuw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xe5, Prefix660F, InstPmulhw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xe6, Prefix660F, InstCvttpd2dq);
+  DefineMdqVdqInst(NACLi_SSE2, 0xe7, Prefix660F, InstMovntdq);
+  DefineVpdWdqInst(NACLi_SSE2, 0xe6, PrefixF30F, InstCvttdq2pd);
+
+  DefineVdqWdqInst(NACLi_SSE2, 0xe8, Prefix660F, InstPsubsb);
+  DefineVdqWdqInst(NACLi_SSE2, 0xe9, Prefix660F, InstPsubsw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xea, Prefix660F, InstPminsw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xeb, Prefix660F, InstPor);
+  DefineVdqWdqInst(NACLi_SSE2, 0xec, Prefix660F, InstPaddsb);
+  DefineVdqWdqInst(NACLi_SSE2, 0xed, Prefix660F, InstPaddsw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xee, Prefix660F, InstPmaxsw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xef, Prefix660F, InstPxor);
+
+  DefineVdqWdqInst(NACLi_SSE2, 0xf1, Prefix660F, InstPsllw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xf2, Prefix660F, InstPslld);
+  DefineVdqWdqInst(NACLi_SSE2, 0xf3, Prefix660F, InstPsllq);
+  DefineVdqWdqInst(NACLi_SSE2, 0xf4, Prefix660F, InstPmuludq);
+  DefineVdqWdqInst(NACLi_SSE2, 0xf5, Prefix660F, InstPmaddwd);
+  DefineVdqWdqInst(NACLi_SSE2, 0xf6, Prefix660F, InstPsadbw);
+  DefineVdqUdqInst(NACLi_SSE2, 0xf7, Prefix660F, InstMaskmovdqu);
+
+  DefineVdqMdqInst(NACLi_SSE3, 0xf0, PrefixF20F, InstLddqu);
+
+  DefineVdqWdqInst(NACLi_SSE2, 0xf8, Prefix660F, InstPsubb);
+  DefineVdqWdqInst(NACLi_SSE2, 0xf9, Prefix660F, InstPsubw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xfa, Prefix660F, InstPsubd);
+  DefineVdqWdqInst(NACLi_SSE2, 0xfb, Prefix660F, InstPsubq);
+  DefineVdqWdqInst(NACLi_SSE2, 0xfc, Prefix660F, InstPaddb);
+  DefineVdqWdqInst(NACLi_SSE2, 0xfd, Prefix660F, InstPaddw);
+  DefineVdqWdqInst(NACLi_SSE2, 0xfe, Prefix660F, InstPaddd);
+}
+
+static void DefineMmxOpcodes() {
+  /*  0x77 NACLi_MMX Prefix0f InstEmms */
+
+  DefinePq_Qd_Inst(NACLi_MMX, 0x60, Prefix0F, InstPunpcklbw);
+  DefinePq_Qd_Inst(NACLi_MMX, 0x61, Prefix0F, InstPunpcklwd);
+  DefinePq_Qd_Inst(NACLi_MMX, 0x62, Prefix0F, InstPunpckldq);
+  DefinePq_Qq_Inst(NACLi_MMX, 0x63, Prefix0F, InstPacksswb);
+  DefinePq_Qq_Inst(NACLi_MMX, 0x64, Prefix0F, InstPcmpgtb);
+  DefinePq_Qq_Inst(NACLi_MMX, 0x65, Prefix0F, InstPcmpgtw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0x66, Prefix0F, InstPcmpgtd);
+  DefinePq_Qq_Inst(NACLi_MMX, 0x67, Prefix0F, InstPackuswb);
+
+  DefinePq_Qd_Inst(NACLi_MMX, 0x68, Prefix0F, InstPunpckhbw);
+  DefinePq_Qd_Inst(NACLi_MMX, 0x69, Prefix0F, InstPunpckhwd);
+  DefinePq_Qd_Inst(NACLi_MMX, 0x6a, Prefix0F, InstPunpckhdq);
+  DefinePq_Qd_Inst(NACLi_MMX, 0x6b, Prefix0F, InstPackssdw);
+  DefinePd_EdqInst(NACLi_MMX, 0x6e, Prefix0F, InstMovd);
+  DefinePq_Qq_Inst(NACLi_MMX, 0x6f, Prefix0F, InstMovq);
+
+  DefinePq_Qq_Inst(NACLi_MMX, 0x74, Prefix0F, InstPcmpeqb);
+  DefinePq_Qq_Inst(NACLi_MMX, 0x75, Prefix0F, InstPcmpeqw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0x76, Prefix0F, InstPcmpeqd);
+
+  DefineEdqPd_Inst(NACLi_MMX, 0x7e, Prefix0F, InstMovd);
+  DefineQq_Pq_Inst(NACLi_MMX, 0x7f, Prefix0F, InstMovq);
+
+  DefinePq_Qq_Inst(NACLi_MMX, 0xd1, Prefix0F, InstPsrlw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xd2, Prefix0F, InstPsrld);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xd3, Prefix0F, InstPsrlq);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xd4, Prefix0F, InstPaddq);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xd5, Prefix0F, InstPmullw);
+  DefineGd_Nq_Inst(NACLi_MMX, 0xd7, Prefix0F, InstPmovmskb);
+
+  DefinePq_Qq_Inst(NACLi_MMX, 0xd8, Prefix0F, InstPsubusb);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xd9, Prefix0F, InstPsubusw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xda, Prefix0F, InstPminub);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xdb, Prefix0F, InstPand);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xdc, Prefix0F, InstPaddusb);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xdd, Prefix0F, InstPaddusw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xde, Prefix0F, InstPmaxub);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xdf, Prefix0F, InstPandn);
+
+  DefinePq_Qq_Inst(NACLi_MMX, 0xe0, Prefix0F, InstPavgb);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xe1, Prefix0F, InstPsraw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xe2, Prefix0F, InstPsrad);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xe3, Prefix0F, InstPavgw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xe4, Prefix0F, InstPmulhuw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xe5, Prefix0F, InstPmulhw);
+  DefineMq_Pq_Inst(NACLi_MMX, 0xe7, Prefix0F, InstMovntq);
+
+  DefinePq_Qq_Inst(NACLi_MMX, 0xe8, Prefix0F, InstPsubsb);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xe9, Prefix0F, InstPsubsw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xea, Prefix0F, InstPminsw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xeb, Prefix0F, InstPor);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xec, Prefix0F, InstPaddwb);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xed, Prefix0F, InstPaddsw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xee, Prefix0F, InstPmaxsw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xef, Prefix0F, InstPxor);
+
+  DefinePq_Qq_Inst(NACLi_MMX, 0xf1, Prefix0F, InstPsllw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xf2, Prefix0F, InstPslld);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xf3, Prefix0F, InstPsllq);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xf4, Prefix0F, InstPsmuludq);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xf5, Prefix0F, InstPmaddwd);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xf6, Prefix0F, InstPsadbw);
+  DefinePq_Nq_Inst(NACLi_MMX, 0xf7, Prefix0F, InstMasmovq);
+
+  DefinePq_Qq_Inst(NACLi_MMX, 0xf8, Prefix0F, InstPsubb);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xf9, Prefix0F, InstPsubw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xfa, Prefix0F, InstPsubd);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xfb, Prefix0F, InstPsubq);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xfc, Prefix0F, InstPaddb);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xfd, Prefix0F, InstPaddw);
+  DefinePq_Qq_Inst(NACLi_MMX, 0xfe, Prefix0F, InstPaddd);
+}
+
+static void DefineNarySseOpcodes() {
 
   /* TODO(karl) - Check what other instructions should be using g_OperandSize_v
    * and g_OpreandSize_o to check sizes (using new flag OperandSizeIgnore66 to
@@ -1033,106 +1096,6 @@ void DefineSseOpcodes() {
   DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
   DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
 
-  /* f2 0f 2a /r    CVTSI2SD xmm, r/m32    */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x2a,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v),
-               InstCvtsi2sd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(E_Operand, OpFlag(OpUse));
-
-  /* f2 REX.W 0f 2a /r    CVTSI2SD xmm, r/m64    */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x2a,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW),
-               InstCvtsi2sd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(E_Operand, OpFlag(OpUse));
-
-  /* f2 0f 2d /r    CVTSD2SI r32, xmm/m64    */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x2d,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v),
-               InstCvtsd2si);
-  DefineOperand(G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f2 REX.W 0f 2d /r    CVTSD2SI r64, xmm/m64    */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x2d,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW),
-               InstCvtsd2si);
-  DefineOperand(G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-
-  /* f2 0f 2c /r    CVTTSD2SI r32, xmm/m64    */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x2c,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v),
-               InstCvttsd2si);
-  DefineOperand(G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f2 REX.W 0f 2c /r    CVTTSD2SI r64, xmm/m64    */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x2c,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW),
-               InstCvttsd2si);
-  DefineOperand(G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f2 0f 58 /r  addsd xmm1, xmm2/m64  SSE2 RexR */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x58,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstAddsd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f3 0f 58 /r  addss xmm1, xmm2/m32  SSE RexR */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x58,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstAddss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* 66 0f 55 /r  andnpd xmm1, xmm2/m128   SSE2 RexR */
-  DefineOpcodePrefix(Prefix660F);
-  DefineOpcode(0x55,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstAndnpd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* 66 0f 54 /r  andpd xmm1, xmm2/m128  SSE2 RexR */
-  DefineOpcodePrefix(Prefix660F);
-  DefineOpcode(0x54,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstAndpd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* 0f 54 /r  andps xmm1, xmm2/m128  SSE RexR */
-  DefineOpcodePrefix(Prefix0F);
-  DefineOpcode(0x54,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstAndps);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
   /* f2 0f c2 /r ib  cmpsd xmm1, xmm2/m64, imm8  SSE2 RexR */
   DefineOpcodePrefix(PrefixF20F);
   DefineOpcode(0xc2,
@@ -1142,247 +1105,10 @@ void DefineSseOpcodes() {
   DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
   DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
+}
 
-  /* f2 0f 5a /r  cvtsd2ss xmm1, xmm2/m64  SSE2 */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x5a,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstCvtsd2ss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f3 0f 2a /r  cvtsi2ss xmm, r/m32  SSE */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x2a,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstCvtsi2ss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(E_Operand, OpFlag(OpUse));
-
-  /* f3 REX.W 0f 2a /r cvtsi2ss xmm, r/m64  SSE */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x2a,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW),
-               InstCvtsi2ss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(E_Operand, OpFlag(OpUse));
-
-  /* f3 0f 5a /r  cvtss2sd xmm1, xmm2/m32  SSE2 RexR */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x5a,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstCvtss2sd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f3 0f 2c /r  cvttss2si r32,xmm/m32  SSE RexR */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x2c,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstCvttss2si);
-  DefineOperand(G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f3 REX.W 0f 2c /r  cvttss2si r64,xmm/m32  SSE RexR */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x2c,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW),
-               InstCvttss2si);
-  DefineOperand(G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f2 0f 5e /r  divsd xmm1, xmm2/m64  SSE2 RexR */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x5e,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstDivsd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f3 0f 5e /r  divss xmm1, xmm2/m32  SSE RexR */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x5e,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstDivss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f3 0f 5f /r  maxss xmm1, xmm2/m32  SSE RexR */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x5f,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstMaxss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f2 0f 5d /r  minsd xmm1, xmm2/m64  SSE2 RexR */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x5d,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstMinsd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f3 0f 5d /r  minss xmm1, xmm2/m32  SSE RexR */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x5d,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstMinss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* 66 0f 28 /r  movapd xmm1, xmm2/m128  SSE2 RexR */
-  DefineOpcodePrefix(Prefix660F);
-  DefineOpcode(0x28,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstMovapd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* 66 0f 29 /r  movapd xmm2/m128, xmm1  SSE2 RexR */
-  DefineOpcodePrefix(Prefix660F);
-  DefineOpcode(0x29,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstMovapd);
-  DefineOperand(Xmm_E_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
-
-  /* 0f 28 /r  movaps xmm1, xmm2/m128  SSE RexR */
-  DefineOpcodePrefix(Prefix0F);
-  DefineOpcode(0x28,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstMovaps);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* 0f 29 /r  movaps xmm2/m128, xmm1  SSE RexR */
-  DefineOpcodePrefix(Prefix0F);
-  DefineOpcode(0x29,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstMovaps);
-  DefineOperand(Xmm_E_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
-
-  /* f3 0f 10 /r  movss xmm1, xmm2/m32  SSE RexR */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x10,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstMovss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f3 0f 11 /r  movss xmm2/m32, xmm1  SSE RexR */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x11,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstMovss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f2 0f 59 /r  mulsd xmm1, xmm2/m64  SSE2 RexR */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x59,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstMulsd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f3 0f 59 /r  mulss xmm1, xmm2/m32  SSE RexR */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x59,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstMulss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* 66 0f 56 /r  orpd xmm1, xmm2/m128  SSE2 RexR */
-  DefineOpcodePrefix(Prefix660F);
-  DefineOpcode(0x56,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstOrpd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f2 0f 51 /r  sqrtsd xmm1, xmm2/64  SSE2 RexR */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x51,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstSqrtsd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* f2 0f 5c /r  subsd xmm1, xmm2/m64  SSE2 RexR */
-  DefineOpcodePrefix(PrefixF20F);
-  DefineOpcode(0x5c,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstSubsd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* F3 0f 5C /r  subss xmm1, xmm2/m32  SSE RexR */
-  DefineOpcodePrefix(PrefixF30F);
-  DefineOpcode(0x5c,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstSubss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* 66 0f 2e /r  ucomisd xmm1, xmm2/m64 SSE2 RexR */
-  DefineOpcodePrefix(Prefix660F);
-  DefineOpcode(0x2e,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstUcomisd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* 0f 2e /r  ucomiss xmm1, xmm2/m32  SSE RexR */
-  DefineOpcodePrefix(Prefix0F);
-  DefineOpcode(0x2e,
-               NACLi_SSE,
-               InstFlag(OpcodeUsesModRm),
-               InstUcomiss);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* 66 0f 57 /r  xorpd xmm1, xmm2/m128  SSE2 RexR */
-  DefineOpcodePrefix(Prefix660F);
-  DefineOpcode(0x57,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstXorpd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
-
-  /* 0f 57 /r  xorps xmm1, xmm2/m128  SSE RexR */
-  DefineOpcodePrefix(Prefix0F);
-  DefineOpcode(0x57,
-               NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstXorps);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+void DefineSseOpcodes() {
+  DefineNarySseOpcodes();
+  DefineBinarySseOpcodes();
+  DefineMmxOpcodes();
 }
