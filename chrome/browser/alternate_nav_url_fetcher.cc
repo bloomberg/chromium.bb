@@ -13,6 +13,7 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
 
 AlternateNavURLFetcher::AlternateNavURLFetcher(
@@ -86,9 +87,31 @@ void AlternateNavURLFetcher::OnURLFetchComplete(const URLFetcher* source,
       (((response_code / 100) == 2) ||
        (response_code == 401) || (response_code == 407))) {
     state_ = SUCCEEDED;
+
+    // The following TLD+1s are used as destinations by ISPs/DNS providers/etc.
+    // who return provider-controlled pages to arbitrary user navigation
+    // attempts.  Because this can result in infobars on large fractions of user
+    // searches, we don't show automatic infobars for these.  Note that users
+    // can still choose to explicitly navigate to or search for pages in these
+    // domains, and can still get infobars for cases that wind up on other
+    // domains (e.g. legit intranet sites), we're just trying to avoid
+    // erroneously harassing the user with our own UI prompts.
+    const char* kBlacklistedSites[] = {
+        "comcast.com",
+        "opendns.com",
+        "verizon.net",
+    };
+    for (size_t i = 0; i < arraysize(kBlacklistedSites); ++i) {
+      if (net::RegistryControlledDomainService::SameDomainOrHost(
+          url, GURL(kBlacklistedSites[i]))) {
+        state_ = FAILED;
+        break;
+      }
+    }
   } else {
     state_ = FAILED;
   }
+
   ShowInfobarIfPossible();
 }
 
