@@ -91,4 +91,16 @@
 #define NACL_ABI_F_UNLKSYS 4 /* remove remote locks for a given system */
 #endif  /* !_POSIX_SOURCE */
 
+#ifdef __native_client__
+#ifdef __cplusplus
+extern "C" {
+#endif  /* __cplusplus */
+
+extern int open(const char *file, int oflag, ...);
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif  /* __cplusplus */
+#endif  /* __native_client__ */
+
 #endif
