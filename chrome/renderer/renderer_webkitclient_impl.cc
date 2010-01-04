@@ -295,11 +295,6 @@ WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
   return WebString::fromUTF8(family_name);
 }
 
-void RendererWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
-    WebKit::WebFontRenderStyle* out, const char* family, int sizeAndStyle) {
-  renderer_sandbox_support::getRenderStyleForStrike(out, family, sizeAndStyle);
-}
-
 #endif
 
 //------------------------------------------------------------------------------
