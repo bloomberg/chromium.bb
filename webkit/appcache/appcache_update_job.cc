@@ -265,6 +265,7 @@ void AppCacheUpdateJob::OnResponseStarted(URLRequest *request) {
       info->SetUpResponseWriter(
           service_->storage()->CreateResponseWriter(manifest_url_),
           this, request);
+      stored_response_ids_.push_back(info->response_writer_->response_id());
       scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
           new HttpResponseInfoIOBuffer(
               new net::HttpResponseInfo(request->response_info()));
@@ -671,6 +672,7 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
     } else {
       manifest_response_writer_.reset(
           service_->storage()->CreateResponseWriter(manifest_url_));
+      stored_response_ids_.push_back(manifest_response_writer_->response_id());
       scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
           new HttpResponseInfoIOBuffer(manifest_response_info_.release());
       manifest_response_writer_->WriteInfo(io_buffer,
@@ -1210,15 +1212,14 @@ void AppCacheUpdateJob::ClearPendingMasterEntries() {
 }
 
 void AppCacheUpdateJob::DiscardInprogressCache() {
+  service_->storage()->DoomResponses(manifest_url_, stored_response_ids_);
+
   if (!inprogress_cache_)
     return;
 
   AppCache::AppCacheHosts& hosts = inprogress_cache_->associated_hosts();
   while (!hosts.empty())
     (*hosts.begin())->AssociateCache(NULL);
-
-  // TODO(jennb): Cleanup stored responses for entries in the cache?
-  // May not be necessary if handled automatically by storage layer.
 
   inprogress_cache_ = NULL;
 }

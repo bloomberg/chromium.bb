@@ -236,6 +236,10 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   std::string loaded_manifest_data_;
   scoped_ptr<AppCacheResponseReader> manifest_response_reader_;
 
+  // Response ids stored by this update job, used to cleanup in
+  // error conditions.
+  std::vector<int64> stored_response_ids_;
+
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_info_write_callback_;
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_write_callback_;
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_read_callback_;

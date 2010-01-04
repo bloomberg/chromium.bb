@@ -816,7 +816,10 @@ AppCacheResponseWriter* AppCacheStorageImpl::CreateResponseWriter(
 
 void AppCacheStorageImpl::DoomResponses(
     const GURL& manifest_url, const std::vector<int64>& response_ids) {
-  // TODO(michaeln): do something here when deleting responses
+  for (std::vector<int64>::const_iterator it = response_ids.begin();
+       it != response_ids.end(); ++it) {
+    disk_cache()->DoomEntry(Int64ToString(*it));
+  }
 }
 
 AppCacheStorageImpl::CacheLoadTask*
