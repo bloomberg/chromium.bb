@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "base/string_util.h"
+#include "chrome/browser/autofill/autofill_type.h"
+#include "chrome/browser/autofill/field_types.h"
 
 // This class is an interface for collections of form fields, grouped by type.
 // The information in objects of this class is managed by the
@@ -46,7 +49,7 @@ class FormGroup {
 
   // Returns the label for this FormGroup item. This should be overridden for
   // form group items that implement a label.
-  virtual string16 Label() const { return EmptyString(); }
+  virtual string16 Label() const { return EmptyString16(); }
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_FORM_GROUP_H_

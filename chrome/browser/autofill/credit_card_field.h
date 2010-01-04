@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ class CreditCardField : public FormField {
  public:
   // FormField implementation:
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
-  virtual FormFieldType GetFormFieldType() { return kCreditCardType; }
+  virtual FormFieldType GetFormFieldType() const { return kCreditCardType; }
   virtual int priority() const { return 4; }
 
   static CreditCardField* Parse(
