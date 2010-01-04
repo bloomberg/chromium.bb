@@ -297,7 +297,6 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   EXPECT_FALSE(host.group_being_updated_);
   EXPECT_FALSE(host.swappable_cache_.get());  // group2 had no newest cache
 }
-// TODO(michaeln): Flesh these tests out more.
 
 }  // namespace appcache
 

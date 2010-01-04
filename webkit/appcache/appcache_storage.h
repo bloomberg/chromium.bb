@@ -204,7 +204,6 @@ class AppCacheStorage {
 
   // Helper used to manage an async LoadResponseInfo calls on behalf of
   // multiple callers.
-  // TODO(michaeln): this may be generalizable for other load/store 'tasks'
   class ResponseInfoLoadTask {
    public:
     ResponseInfoLoadTask(const GURL& manifest_url, int64 response_id,
