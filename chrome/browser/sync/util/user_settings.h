@@ -19,6 +19,10 @@ extern "C" struct sqlite3;
 
 namespace browser_sync {
 
+void ExecOrDie(sqlite3* dbhandle, const char *query);
+std::string APEncode(const std::string& in);
+std::string APDecode(const std::string& in);
+
 class URLFactory;
 
 class UserSettings {

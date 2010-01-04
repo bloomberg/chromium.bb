@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
 #include <string>
 
 #include "base/file_util.h"
@@ -9,11 +10,16 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/user_settings.h"
-#include "chrome/browser/sync/util/query_helpers.h"
+#include "chrome/common/sqlite_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using browser_sync::APEncode;
+using browser_sync::APDecode;
+using browser_sync::ExecOrDie;
 using browser_sync::FilePathToUTF8;
 using browser_sync::UserSettings;
+
+using std::numeric_limits;
 
 static const FilePath::CharType kV10UserSettingsDB[] =
     FILE_PATH_LITERAL("Version10Settings.sqlite3");
@@ -30,7 +36,7 @@ class UserSettingsTest : public testing::Test {
     sqlite3* primer_handle = NULL;
     v10_user_setting_db_path_ =
         destination_directory.Append(FilePath(kV10UserSettingsDB));
-    ASSERT_EQ(SQLITE_OK, SqliteOpen(v10_user_setting_db_path_, &primer_handle));
+    ASSERT_EQ(SQLITE_OK, OpenSqliteDb(v10_user_setting_db_path_, &primer_handle));
     old_style_sync_data_path_ =
         destination_directory.Append(FilePath(kOldStyleSyncDataDB));
 
@@ -46,15 +52,31 @@ class UserSettingsTest : public testing::Test {
 
     // Create and populate version table.
     ExecOrDie(primer_handle, "CREATE TABLE db_version ( version )");
-    ExecOrDie(primer_handle, "INSERT INTO db_version values ( ? )", 10);
+    {
+      SQLStatement statement;
+      const char query[] = "INSERT INTO db_version values ( ? )";
+      statement.prepare(primer_handle, query);
+      statement.bind_int(0, 10);
+      if (SQLITE_DONE != statement.step()) {
+        LOG(FATAL) << query << "\n" << sqlite3_errmsg(primer_handle);
+      }
+    }
     // Create shares table.
     ExecOrDie(primer_handle, "CREATE TABLE shares"
               " (email, share_name, file_name,"
               "  PRIMARY KEY(email, share_name) ON CONFLICT REPLACE)");
     // Populate a share.
-    ExecOrDie(primer_handle, "INSERT INTO shares values ( ?, ?, ?)",
-              "foo@foo.com", "foo@foo.com",
-              FilePathToUTF8(old_style_sync_data_path_));
+    {
+      SQLStatement statement;
+      const char query[] = "INSERT INTO shares values ( ?, ?, ? )";
+      statement.prepare(primer_handle, query);
+      statement.bind_string(0, "foo@foo.com");
+      statement.bind_string(1, "foo@foo.com");
+      statement.bind_string(2, FilePathToUTF8(old_style_sync_data_path_));
+      if (SQLITE_DONE != statement.step()) {
+        LOG(FATAL) << query << "\n" << sqlite3_errmsg(primer_handle);
+      }
+    }
     sqlite3_close(primer_handle);
   }
 
@@ -86,16 +108,17 @@ TEST_F(UserSettingsTest, MigrateFromV10ToV11) {
 
   // Now poke around using sqlite to see if UserSettings migrated properly.
   sqlite3* handle = NULL;
-  ASSERT_EQ(SQLITE_OK, SqliteOpen(v10_user_setting_db_path(), &handle));
+  ASSERT_EQ(SQLITE_OK, OpenSqliteDb(v10_user_setting_db_path(), &handle));
 
   // Note that we don't use ScopedStatement to avoid closing the sqlite handle
   // before finalizing the statement.
-  sqlite3_stmt* version_query =
-      PrepareQuery(handle, "SELECT version FROM db_version");
-  ASSERT_EQ(SQLITE_ROW, sqlite3_step(version_query));
-  const int version = sqlite3_column_int(version_query, 0);
-  EXPECT_EQ(11, version);
-  sqlite3_finalize(version_query);
+  {
+    SQLStatement version_query;
+    version_query.prepare(handle, "SELECT version FROM db_version");
+    ASSERT_EQ(SQLITE_ROW, version_query.step());
+    const int version = version_query.column_int(0);
+    EXPECT_EQ(11, version);
+  }
 
   EXPECT_FALSE(file_util::PathExists(old_style_sync_data_path()));
 
@@ -106,4 +129,15 @@ TEST_F(UserSettingsTest, MigrateFromV10ToV11) {
   ASSERT_TRUE(file_util::ReadFileToString(new_style_path, &contents));
   EXPECT_TRUE(sync_data() == contents);
   sqlite3_close(handle);
+}
+
+TEST_F(UserSettingsTest, APEncode) {
+  string test;
+  char i;
+  for (i = numeric_limits<char>::min(); i < numeric_limits<char>::max(); ++i)
+    test.push_back(i);
+  test.push_back(i);
+  const string encoded = APEncode(test);
+  const string decoded = APDecode(encoded);
+  ASSERT_EQ(test, decoded);
 }
