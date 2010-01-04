@@ -717,7 +717,7 @@ int ChromeMain(int argc, char** argv) {
 #endif
 
     std::string sandbox_cmd;
-    if (sandbox_binary)
+    if (sandbox_binary && !parsed_command_line.HasSwitch(switches::kNoSandbox))
       sandbox_cmd = sandbox_binary;
 
     // Tickle the sandbox host and zygote host so they fork now.
