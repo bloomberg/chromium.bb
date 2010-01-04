@@ -99,6 +99,8 @@ void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
 
   window_ = gtk_window_new(GTK_WINDOW_POPUP);
   gtk_widget_set_app_paintable(window_, TRUE);
+  // Resizing is handled by the program, not user.
+  gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
 
   // Attach our accelerator group to the window with an escape accelerator.
   gtk_accel_group_connect(accel_group_, GDK_Escape,
