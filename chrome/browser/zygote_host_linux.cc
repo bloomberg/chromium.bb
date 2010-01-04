@@ -164,7 +164,8 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
         StringToInt(inode_output, &pid_);
       }
     }
-    CHECK(pid_ > 0) << "Did not find zygote process";
+    CHECK(pid_ > 0) << "Did not find zygote process (using sandbox binary "
+        << sandbox_binary_ << ")";
 
     if (process != pid_) {
       // Reap the sandbox.
