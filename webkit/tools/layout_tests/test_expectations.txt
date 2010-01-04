@@ -3147,5 +3147,8 @@ BUG_AJWONG WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 
 // WebKit roll 52672 -> 52751
 // New test with results only on platform/mac - need to snapshot the results for Chromium.
-BUG_DIMICH WIN LINUX MAC : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE
+BUG_DIMICH WIN LINUX MAC : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT
 BUG_DIMICH LINUX : LayoutTests/fast/repaint/table-cell-overflow.html = IMAGE PASS
+BUG_DIMICH LINUX : LayoutTests/animations/3d/change-transform-in-end-event.html = TEXT
+BUG_DIMICH LINUX : LayoutTests/animations/3d/state-at-end-event-transform.html = TEXT
+
