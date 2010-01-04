@@ -470,7 +470,9 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstancePost) {
   SimpleBrowserTest(IE, kCFIPostPage, L"CFInstancePost");
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstancePost) {
+// This test randomly fails on the ChromeFrame builder.
+// Bug http://code.google.com/p/chromium/issues/detail?id=31532
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstancePost) {
   SimpleBrowserTest(FIREFOX, kCFIPostPage, L"CFInstancePost");
 }
 
@@ -492,7 +494,9 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceRPC) {
   SimpleBrowserTest(IE, kCFIRPCPage, L"CFInstanceRPC");
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceRPC) {
+// This test randomly fails on the ChromeFrame builder.
+// Bug http://code.google.com/p/chromium/issues/detail?id=31532
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceRPC) {
   SimpleBrowserTest(FIREFOX, kCFIRPCPage, L"CFInstanceRPC");
 }
 
