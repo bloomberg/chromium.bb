@@ -71,10 +71,12 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
 class WebDataServiceTest : public testing::Test {
  public:
   WebDataServiceTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_) {}
+      : ui_thread_(ChromeThread::UI, &message_loop_),
+        db_thread_(ChromeThread::DB) {}
 
  protected:
   virtual void SetUp() {
+    db_thread_.Start();
     name1_ = ASCIIToUTF16("name1");
     name2_ = ASCIIToUTF16("name2");
     value1_ = ASCIIToUTF16("value1");
@@ -94,6 +96,7 @@ class WebDataServiceTest : public testing::Test {
       wds_->Shutdown();
     file_util::Delete(profile_dir_, true);
 
+    db_thread_.Stop();
     MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
     MessageLoop::current()->Run();
   }
@@ -110,6 +113,7 @@ class WebDataServiceTest : public testing::Test {
 
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
+  ChromeThread db_thread_;
   string16 name1_;
   string16 name2_;
   string16 value1_;
