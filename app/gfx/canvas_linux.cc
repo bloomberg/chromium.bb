@@ -167,6 +167,7 @@ static void SetupPangoLayout(PangoLayout* layout,
 void Canvas::SizeStringInt(const std::wstring& text,
                            const gfx::Font& font,
                            int* width, int* height, int flags) {
+  int org_width = *width;
   cairo_surface_t* surface =
       cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
   cairo_t* cr = cairo_create(surface);
@@ -178,6 +179,22 @@ void Canvas::SizeStringInt(const std::wstring& text,
   pango_layout_set_text(layout, utf8.data(), utf8.size());
 
   pango_layout_get_pixel_size(layout, width, height);
+
+  if (org_width > 0 && flags & Canvas::MULTI_LINE &&
+      pango_layout_is_wrapped(layout)) {
+    // The text wrapped. There seems to be a bug in Pango when this happens
+    // such that the width returned from pango_layout_get_pixel_size is too
+    // small. Using the width from pango_layout_get_pixel_size in this case
+    // results in wrapping across more lines, which requires a bigger height.
+    // As a workaround we use the original width, which is not necessarily
+    // exactly correct, but isn't wrong by much.
+    //
+    // It looks like Pango uses the size of whitespace in calculating wrapping
+    // but doesn't include the size of the whitespace when the extents are
+    // asked for. See the loop in pango-layout.c process_item that determines
+    // where to wrap.
+    *width = org_width;
+  }
 
   g_object_unref(layout);
   cairo_destroy(cr);
