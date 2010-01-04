@@ -2411,7 +2411,7 @@ void AutocompleteEditViewWin::BuildContextMenu() {
   context_menu_contents_.reset(new menus::SimpleMenuModel(this));
   // Set up context menu.
   if (popup_window_mode_) {
-    context_menu_contents_->AddItemWithStringId(IDS_COPY, IDS_COPY);
+    context_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);
   } else {
     context_menu_contents_->AddItemWithStringId(IDS_UNDO, IDS_UNDO);
     context_menu_contents_->AddSeparator();
