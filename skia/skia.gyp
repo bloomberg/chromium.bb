@@ -543,6 +543,7 @@
       'include_dirs': [
         '..',
         'config',
+        '../third_party/skia/include/config',
         '../third_party/skia/include/core',
         '../third_party/skia/include/effects',
         '../third_party/skia/include/images',
@@ -653,6 +654,7 @@
       'direct_dependent_settings': {
         'include_dirs': [
           'config',
+          '../third_party/skia/include/config',
           '../third_party/skia/include/core',
           '../third_party/skia/include/effects',
           'ext',
@@ -685,6 +687,7 @@
       'include_dirs': [
         '..',
         'config',
+        '../third_party/skia/include/config',
         '../third_party/skia/include/core',
         '../third_party/skia/include/effects',
         '../third_party/skia/include/images',
