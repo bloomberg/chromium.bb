@@ -58,6 +58,10 @@ class ExtensionPrefs {
   // Called to change the extension's state when it is enabled/disabled.
   void SetExtensionState(Extension* extension, Extension::State);
 
+  // If |require| is true, the preferences for |extension| will be set to
+  // require the install warning when the user tries to enable.
+  void SetShowInstallWarningOnEnable(Extension* extension, bool require);
+
   // Returns the version string for the currently installed extension, or
   // the empty string if not found.
   std::string GetVersionString(const std::string& extension_id);
@@ -77,6 +81,9 @@ class ExtensionPrefs {
 
   // Based on extension id, checks prefs to see if it is blacklisted.
   bool IsExtensionBlacklisted(const std::string& id);
+
+  // Did the extension ask to escalate its permission during an upgrade?
+  bool DidExtensionEscalatePermissions(const std::string& id);
 
   // Saves ExtensionInfo for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't be saved
@@ -101,6 +108,14 @@ class ExtensionPrefs {
 
   // Deletes the pref dictionary for extension |id|.
   void DeleteExtensionPrefs(const std::string& id);
+
+  // Reads a boolean pref from |ext| with key |pref_key|.
+  // Return false if the value is false or kPrefBlacklist does not exist.
+  bool ReadBooleanFromPref(DictionaryValue* ext, const std::wstring& pref_key);
+
+  // Reads a boolean pref |pref_key| from extension with id |extension_id|.
+  bool ReadExtensionPrefBoolean(const std::string& extension_id,
+                                const std::wstring& pref_key);
 
   // Ensures and returns a mutable dictionary for extension |id|'s prefs.
   DictionaryValue* GetOrCreateExtensionPref(const std::string& id);

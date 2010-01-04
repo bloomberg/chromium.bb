@@ -7,6 +7,9 @@
 
 #include <string>
 
+#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/common/extensions/extension_resource.h"
+
 class Extension;
 class ExtensionsService;
 class Profile;
@@ -15,5 +18,9 @@ class Profile;
 // to higher permissions.
 void ShowExtensionDisabledUI(ExtensionsService* service, Profile* profile,
                              Extension* extension);
+
+// Shows the extension install dialog.
+void ShowExtensionDisabledDialog(ExtensionsService* service, Profile* profile,
+                                 Extension* extension);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DISABLED_INFOBAR_DELEGATE_H_
