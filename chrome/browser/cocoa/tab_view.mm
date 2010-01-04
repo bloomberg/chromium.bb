@@ -264,6 +264,12 @@ const CGFloat kRapidCloseDist = 2.5;
 
   dragOrigin_ = [NSEvent mouseLocation];
 
+  // If the tab gets torn off, the tab controller will be removed from the tab
+  // strip and then deallocated. This will also result in *us* being
+  // deallocated. Both these are bad, so we prevent this by retaining the
+  // controller.
+  scoped_nsobject<TabController> controller([controller_ retain]);
+
   // Because we move views between windows, we need to handle the event loop
   // ourselves. Ideally we should use the standard event loop.
   while (1) {
@@ -286,12 +292,12 @@ const CGFloat kRapidCloseDist = 2.5;
       // and the mouse hasn't moved too much, we close the tab.
       if (closeButtonActive &&
           (dx*dx + dy*dy) <= kRapidCloseDist*kRapidCloseDist &&
-          [controller_ inRapidClosureMode]) {
+          [controller inRapidClosureMode]) {
         NSPoint hitLocation =
             [[self superview] convertPoint:[theEvent locationInWindow]
                                   fromView:nil];
         if ([self hitTest:hitLocation] == closeButton_) {
-          [controller_ closeTab:self];
+          [controller closeTab:self];
           break;
         }
       }

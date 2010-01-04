@@ -947,8 +947,8 @@ private:
   }
 }
 
-// Remove all knowledge about this tab and it's associated
-// controller and remove the view from the strip.
+// Remove all knowledge about this tab and its associated controller, and remove
+// the view from the strip.
 - (void)removeTab:(TabController*)controller {
   NSUInteger index = [tabArray_ indexOfObject:controller];
 
@@ -961,6 +961,12 @@ private:
   // Remove the view from the tab strip.
   NSView* tab = [controller view];
   [tab removeFromSuperview];
+
+  // Remove ourself as an observer.
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:NSViewDidUpdateTrackingAreasNotification
+              object:tab];
 
   // Clear the tab controller's target.
   // TODO(viettrungluu): [crbug.com/23829] Find a better way to handle the tab
