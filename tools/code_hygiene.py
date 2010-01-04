@@ -45,6 +45,7 @@ import signal
 import subprocess
 import sys
 import time
+import platform
 
 # ======================================================================
 VERBOSE = 0
@@ -59,6 +60,7 @@ HTML_CHECKER = ['tidy', '-errors']
 # From depot_tools
 # to see a list of all filters run: 'depot_tools/cpplint.py --filter='
 CPP_CHECKER = ['cpplint.py', '--filter=-build/header_guard']
+
 
 # From depot_tools (currently not uses -- too many false positives
 # to see a list of all filters run: 'depot_tools/cpplint.py --filter='
@@ -110,7 +112,8 @@ class ExternalChecker(object):
     try:
       retcode, stdout, stderr = RunCommand(self._commandline + [filename])
     except Exception, err:
-      print 'cannot excuted of command %s failed reason: %s ' % (
+      print 'Error processing %s:' % filename
+      print '  Cannot execute command %s. failed reason: %s ' % (
           str(self._commandline), str(err))
       return []
     if retcode == 0:
@@ -303,6 +306,8 @@ VALID_INCLUDE_PREFIX = [
     'third_party/',
     'gtest/',
     'gen/native_client/',
+    'base/',
+    'chrome/common',
     ]
 
 
