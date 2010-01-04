@@ -359,6 +359,11 @@ void MockAppCacheStorage::ProcessMakeGroupObsolete(
 
   group->set_obsolete(true);
 
+  // Also remove from the working set, caches for an 'obsolete' group
+  // may linger in use, but the group itself cannot be looked up by
+  // 'manifest_url' in the working set any longer.
+  working_set()->RemoveGroup(group);
+
   if (delegate_ref->delegate)
     delegate_ref->delegate->OnGroupMadeObsolete(group, true);
 }
@@ -406,10 +411,6 @@ void MockAppCacheStorage::AddStoredGroup(AppCacheGroup* group) {
 }
 
 void MockAppCacheStorage::RemoveStoredGroup(AppCacheGroup* group) {
-  // Also remove from the working set, caches for an 'obsolete' group
-  // may linger in use, but the group itself cannot be looked up by
-  // 'manifest_url' in the working set any longer.
-  working_set()->RemoveGroup(group);
   stored_groups_.erase(group->manifest_url());
 }
 

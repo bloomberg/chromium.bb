@@ -583,6 +583,11 @@ void AppCacheStorageImpl::MakeGroupObsoleteTask::RunCompleted() {
   if (success_) {
     storage_->origins_with_groups_.swap(origins_with_groups_);
     group_->set_obsolete(true);
+
+    // Also remove from the working set, caches for an 'obsolete' group
+    // may linger in use, but the group itself cannot be looked up by
+    // 'manifest_url' in the working set any longer.
+    storage_->working_set()->RemoveGroup(group_);
   }
   FOR_EACH_DELEGATE(delegates_, OnGroupMadeObsolete(group_, success_));
   group_ = NULL;

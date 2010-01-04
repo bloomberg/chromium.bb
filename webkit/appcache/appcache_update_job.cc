@@ -133,6 +133,7 @@ AppCacheUpdateJob::~AppCacheUpdateJob() {
 void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
                                     const GURL& new_master_resource) {
   DCHECK(group_->update_job() == this);
+  DCHECK(!group_->is_obsolete());
 
   bool is_new_pending_master_entry = false;
   if (!new_master_resource.is_empty()) {

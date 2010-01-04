@@ -2821,14 +2821,7 @@ BUG9798 LINUX : LayoutTests/http/tests/security/clipboard/clipboard-file-access.
 BUG2844 : LayoutTests/http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS
 BUG2844 : LayoutTests/http/tests/appcache/fail-on-update.html = TIMEOUT PASS TEXT
 BUG2844 : LayoutTests/http/tests/appcache/offline-access.html = TIMEOUT PASS
-BUG2844 LINUX: LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS
-BUG2844 WIN RELEASE : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS
-BUG9798 WIN DEBUG : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS TEXT
 BUG2844 : LayoutTests/http/tests/appcache/update-cache.html = TIMEOUT PASS
-
-// Need to investigate this one, started failing mac only with r35354
-// which switched to using a sql based storage impl.
-BUG31300 SKIP MAC : LayoutTests/http/tests/appcache/remove-cache.html = FAIL
 
 // These tests sometimes pass and sometimes have a text difference due
 // to chromium's appcache being async.

@@ -269,14 +269,17 @@ void AppCacheHost::FinishCacheSelection(
     DCHECK(cache->owning_group());
     DCHECK(new_master_entry_url_.is_empty());
     AssociateCache(cache);
-    cache->owning_group()->StartUpdateWithHost(this);
-    ObserveGroupBeingUpdated(cache->owning_group());
+    if (!cache->owning_group()->is_obsolete()) {
+      cache->owning_group()->StartUpdateWithHost(this);
+      ObserveGroupBeingUpdated(cache->owning_group());
+    }
   } else if (group) {
     // If document was loaded using HTTP GET or equivalent, and, there is a
     // manifest URL, and manifest URL has the same origin as document.
     // Invoke the application cache update process for manifest URL, with
     // the browsing context being navigated, and with document and the
     // resource from which document was loaded as the new master resourse.
+    DCHECK(!group->is_obsolete());
     DCHECK(new_master_entry_url_.is_valid());
     AssociateCache(NULL);  // The UpdateJob may produce one for us later.
     group->StartUpdateWithNewMasterEntry(this, new_master_entry_url_);

@@ -171,7 +171,9 @@ void AppCacheGroup::RunQueuedUpdates() {
       queued_observers_.RemoveObserver(host);
       observers_.AddObserver(host);
     }
-    StartUpdateWithNewMasterEntry(host, it->second);
+
+    if (!is_obsolete())
+      StartUpdateWithNewMasterEntry(host, it->second);
   }
 }
 
@@ -189,7 +191,7 @@ bool AppCacheGroup::FindObserver(UpdateObserver* find_me,
 void AppCacheGroup::ScheduleUpdateRestart(int delay_ms) {
   DCHECK(!restart_update_task_);
   restart_update_task_ =
-    NewRunnableMethod(this, &AppCacheGroup::RunQueuedUpdates);
+      NewRunnableMethod(this, &AppCacheGroup::RunQueuedUpdates);
   MessageLoop::current()->PostDelayedTask(FROM_HERE, restart_update_task_,
                                           delay_ms);
 }
