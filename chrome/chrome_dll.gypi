@@ -189,7 +189,6 @@
                 'app/nibs/DownloadItem.xib',
                 'app/nibs/DownloadShelf.xib',
                 'app/nibs/EditSearchEngine.xib',
-                'app/nibs/ExtensionShelf.xib',
                 'app/nibs/FindBar.xib',
                 'app/nibs/FirstRunDialog.xib',
                 'app/nibs/FontLanguageSettings.xib',
