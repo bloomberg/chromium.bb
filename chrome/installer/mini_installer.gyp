@@ -42,21 +42,31 @@
             'VCCLCompilerTool': {
               'EnableIntrinsicFunctions': 'true',
               'BufferSecurityCheck': 'false',
+              'BasicRuntimeChecks': '0',
             },
             'VCLinkerTool': {
-              'AdditionalOptions':
-                '/safeseh:no /dynamicbase:no /ignore:4199 /ignore:4221 /nxcompat',
               'RandomizedBaseAddress': '1',
               'DataExecutionPrevention': '0',
-              'AdditionalLibraryDirectories':
-                ['<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Lib;<(PRODUCT_DIR)/lib'],
-              # TODO(bradnelson): change when vsprops are all in gyp.
+              'AdditionalLibraryDirectories': [
+                '<(DEPTH)/third_party/platformsdk_win7/files/Lib',
+                '<(PRODUCT_DIR)/lib'
+              ],
               'DelayLoadDLLs': [],
               'EntryPointSymbol': 'MainEntryPoint',
               'GenerateMapFile': 'true',
               'IgnoreAllDefaultLibraries': 'true',
               'OptimizeForWindows98': '1',
               'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
+              'AdditionalDependencies': [
+                '"$(VCInstallDir)crt\\src\\intel\\mt_lib\\memset.obj"',
+                '"$(VCInstallDir)crt\\src\\intel\\mt_lib\\P4_memset.obj"',
+                'shlwapi.lib',
+              ],
+            },
+            'VCManifestTool': {
+              'AdditionalManifestFiles': [
+                '$(ProjectDir)\\mini_installer\\mini_installer.exe.manifest',
+              ],
             },
           },
           'configurations': {
@@ -65,25 +75,32 @@
                 'VCCLCompilerTool': {
                   'BasicRuntimeChecks': '0',
                 },
-                # TODO(bradnelson): Add these back to common configuration
-                # when vsprops goes away.
                 'VCLinkerTool': {
-                  'AdditionalDependencies': [
-                    '"$(VCInstallDir)crt\\src\\intel\\mt_lib\\memset.obj"',
-                    '"$(VCInstallDir)crt\\src\\intel\\mt_lib\\P4_memset.obj"',
-                    'shlwapi.lib',
+                  'AdditionalOptions': [
+                    '/safeseh:no',
+                    '/dynamicbase:no',
+                    '/ignore:4199',
+                    '/ignore:4221',
+                    '/nxcompat',
                   ],
-                },
-                'VCManifestTool': {
-                  'AdditionalManifestFiles': '$(ProjectDir)\\mini_installer\\mini_installer.exe.manifest',
                 },
               },
             },
-            'Release': {
-              'msvs_props': ['mini_installer/mini_installer_release.vsprops'],
+            'Release_Base': {
+              'includes': ['../../build/internal/release_defaults.gypi'],
               'msvs_settings': {
                 'VCCLCompilerTool': {
+                  'EnableIntrinsicFunctions': 'true',
                   'BasicRuntimeChecks': '0',
+                  'BufferSecurityCheck': 'false',
+                },
+                'VCLinkerTool': {
+                  'AdditionalOptions': [
+                    '/SAFESEH:NO',
+                    '/NXCOMPAT',
+                    '/DYNAMICBASE:NO',
+                    '/FIXED',
+                  ],
                 },
               },
             },
