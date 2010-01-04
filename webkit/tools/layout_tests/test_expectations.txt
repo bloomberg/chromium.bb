@@ -3144,3 +3144,8 @@ BUG31257 WIN DEBUG SLOW: LayoutTests/inspector/console-dirxml.html = TEXT
 // WebKit roll 52633 -> 52667
 BUG_AJWONG WIN : LayoutTests/svg/batik/text/textFeatures.svg = TEXT
 BUG_AJWONG WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
+
+// WebKit roll 52672 -> 52751
+// New test with results only on platform/mac - need to snapshot the results for Chromium.
+BUG_DIMICH WIN LINUX MAC : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE
+BUG_DIMICH LINUX : LayoutTests/fast/repaint/table-cell-overflow.html = IMAGE PASS
