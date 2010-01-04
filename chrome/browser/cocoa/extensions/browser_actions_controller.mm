@@ -443,6 +443,10 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
     // Adjust the anchor point to be at the center of the browser action button.
     arrowPoint.x += kBrowserActionWidth / 2;
 
+    // Close any existing (or loading) popup owned by this controller.
+    if (popupController_)
+      [self hidePopup];
+
     popupController_ = [ExtensionPopupController showURL:action->popup_url()
                                                inBrowser:browser_
                                               anchoredAt:arrowPoint
