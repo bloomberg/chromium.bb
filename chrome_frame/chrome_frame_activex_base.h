@@ -133,6 +133,10 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
 
 extern bool g_first_launch_by_process_;
 
+// Posted when the worker thread used for handling URL requests in IE finishes
+// uninitialization.
+#define WM_WORKER_THREAD_UNINITIALIZED_MSG (WM_APP + 1)
+
 // Common implementation for ActiveX and Active Document
 template <class T, const CLSID& class_id>
 class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
@@ -554,10 +558,23 @@ END_MSG_MAP()
   LRESULT OnDestroy(UINT message, WPARAM wparam, LPARAM lparam,
                     BOOL& handled) {  // NO_LINT
     if (worker_thread_.message_loop()) {
-      worker_thread_.message_loop()->PostTask(
-          FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStop));
       if (automation_client_.get())
         automation_client_->CleanupRequests();
+
+      worker_thread_.message_loop()->PostTask(
+          FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStop));
+
+      MSG msg = {0};
+      while (GetMessage(&msg, NULL, WM_USER,
+                        WM_WORKER_THREAD_UNINITIALIZED_MSG)) {
+        if (msg.hwnd == m_hWnd &&
+            msg.message == WM_WORKER_THREAD_UNINITIALIZED_MSG) {
+          break;
+        }
+
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+      }
       worker_thread_.Stop();
     }
     return 0;
@@ -1090,6 +1107,7 @@ END_MSG_MAP()
 
   void OnWorkerStop() {
     CoUninitialize();
+    PostMessage(WM_WORKER_THREAD_UNINITIALIZED_MSG, 0, 0);
   }
 
   ScopedBstr url_;

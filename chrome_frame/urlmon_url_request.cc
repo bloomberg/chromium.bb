@@ -5,6 +5,7 @@
 #include "chrome_frame/urlmon_url_request.h"
 
 #include <wininet.h>
+#include <urlmon.h>
 
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -21,6 +22,203 @@
 static const LARGE_INTEGER kZero = {0};
 static const ULARGE_INTEGER kUnsignedZero = {0};
 int UrlmonUrlRequest::instance_count_ = 0;
+
+// This class wraps the IBindCtx interface which is passed in when our active
+// document object is instantiated. The IBindCtx interface is created on
+// the UI thread and hence cannot be used as is on the worker thread which
+// handles URL requests. We unmarshal the IBindCtx interface and invoke
+// the corresponding method on the unmarshaled object. The object implementing
+// the IBindCtx interface also implements IMarshal. However it seems to have a
+// bug where in subsequent download requests for the same URL fail. We work
+// around this issue by using the standard marshaler instead.
+class WrappedBindContext : public IBindCtx,
+                           public CComObjectRootEx<CComMultiThreadModel> {
+ public:
+  WrappedBindContext() {
+    DLOG(INFO) << "In " << __FUNCTION__;
+  }
+
+  ~WrappedBindContext() {
+    DLOG(INFO) << "In " << __FUNCTION__ << " : Destroying object: " << this;
+  }
+
+  BEGIN_COM_MAP(WrappedBindContext)
+    COM_INTERFACE_ENTRY(IBindCtx)
+    COM_INTERFACE_ENTRY_IID(IID_IAsyncBindCtx, WrappedBindContext)
+    COM_INTERFACE_ENTRY(IUnknown)
+  END_COM_MAP()
+
+  HRESULT Initialize(IBindCtx* context) {
+    DCHECK(context != NULL);
+    HRESULT hr = CoGetStandardMarshal(__uuidof(IBindCtx),
+                                      context,
+                                      MSHCTX_INPROC,
+                                      NULL,
+                                      MSHLFLAGS_NORMAL,
+                                      standard_marshal_.Receive());
+    if (FAILED(hr)) {
+      NOTREACHED() << __FUNCTION__
+                   << ": CoGetStandardMarshal failed. Error:"
+                   << hr;
+      return hr;
+    }
+
+    DCHECK(standard_marshal_.get() != NULL);
+    DCHECK(marshaled_stream_.get() == NULL);
+
+    CreateStreamOnHGlobal(NULL, TRUE, marshaled_stream_.Receive());
+    DCHECK(marshaled_stream_.get() != NULL);
+
+    hr = standard_marshal_->MarshalInterface(marshaled_stream_,
+                                             __uuidof(IBindCtx),
+                                             context,
+                                             MSHCTX_INPROC,
+                                             NULL,
+                                             MSHLFLAGS_NORMAL);
+    if (FAILED(hr)) {
+      NOTREACHED() << __FUNCTION__
+                   << ": MarshalInterface failed. Error:"
+                   << hr;
+    }
+    return hr;
+  }
+
+  STDMETHOD(RegisterObjectBound)(IUnknown* object) {
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+
+    ScopedComPtr<IBindCtx> bind_context;
+    HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
+    if (bind_context.get()) {
+      hr = bind_context->RegisterObjectBound(object);
+    }
+    return hr;
+  }
+
+  STDMETHOD(RevokeObjectBound)(IUnknown* object) {
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+
+    ScopedComPtr<IBindCtx> bind_context;
+    HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
+    if (bind_context.get()) {
+      hr = bind_context->RevokeObjectBound(object);
+    }
+    return hr;
+  }
+
+  STDMETHOD(ReleaseBoundObjects)() {
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+
+    ScopedComPtr<IBindCtx> bind_context;
+    HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
+    if (bind_context.get()) {
+      hr = bind_context->ReleaseBoundObjects();
+    }
+    return hr;
+  }
+
+  STDMETHOD(SetBindOptions)(BIND_OPTS* bind_options) {
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+
+    ScopedComPtr<IBindCtx> bind_context;
+    HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
+    if (bind_context.get()) {
+      hr = bind_context->SetBindOptions(bind_options);
+    }
+    return hr;
+  }
+
+  STDMETHOD(GetBindOptions)(BIND_OPTS* bind_options) {
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+
+    ScopedComPtr<IBindCtx> bind_context;
+    HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
+    if (bind_context.get()) {
+      hr = bind_context->GetBindOptions(bind_options);
+    }
+    return hr;
+  }
+
+  STDMETHOD(GetRunningObjectTable)(IRunningObjectTable** table) {
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+
+    ScopedComPtr<IBindCtx> bind_context;
+    HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
+    if (bind_context.get()) {
+      hr = bind_context->GetRunningObjectTable(table);
+    }
+    return hr;
+  }
+
+  STDMETHOD(RegisterObjectParam)(LPOLESTR key, IUnknown* object) {
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+
+    ScopedComPtr<IBindCtx> bind_context;
+    HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
+    if (bind_context.get()) {
+      hr = bind_context->RegisterObjectParam(key, object);
+    }
+    return hr;
+  }
+
+  STDMETHOD(GetObjectParam)(LPOLESTR key, IUnknown** object) {
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+
+    ScopedComPtr<IBindCtx> bind_context;
+    HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
+    if (bind_context.get()) {
+      hr = bind_context->GetObjectParam(key, object);
+    }
+    return hr;
+  }
+
+  STDMETHOD(EnumObjectParam)(IEnumString** enum_string) {
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+
+    ScopedComPtr<IBindCtx> bind_context;
+    HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
+    if (bind_context.get()) {
+      hr = bind_context->EnumObjectParam(enum_string);
+    }
+    return hr;
+  }
+
+  STDMETHOD(RevokeObjectParam)(LPOLESTR key) {
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+
+    ScopedComPtr<IBindCtx> bind_context;
+    HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
+    if (bind_context.get()) {
+      hr = bind_context->RevokeObjectParam(key);
+    }
+    return hr;
+  }
+
+ private:
+  HRESULT GetMarshalledBindContext(IBindCtx** bind_context) {
+    DCHECK(bind_context != NULL);
+    DCHECK(standard_marshal_.get() != NULL);
+
+    if (!marshalled_bind_context_.get()) {
+      LARGE_INTEGER offset = {0};
+      marshaled_stream_->Seek(offset, STREAM_SEEK_SET, NULL);
+      HRESULT hr = standard_marshal_->UnmarshalInterface(
+          marshaled_stream_, __uuidof(IBindCtx),
+          reinterpret_cast<void**>(marshalled_bind_context_.Receive()));
+      if (FAILED(hr)) {
+        NOTREACHED() << __FUNCTION__
+                     << "UnmarshalInterface failed. Error:"
+                     << hr;
+        return hr;
+      }
+      DCHECK(marshalled_bind_context_.get() != NULL);
+    }
+    return marshalled_bind_context_.QueryInterface(bind_context);
+  }
+
+  ScopedComPtr<IStream> marshaled_stream_;
+  ScopedComPtr<IBindCtx> marshalled_bind_context_;
+  ScopedComPtr<IMarshal> standard_marshal_;
+};
 
 UrlmonUrlRequest::UrlmonUrlRequest()
     : pending_read_size_(0),
@@ -361,7 +559,7 @@ STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
   return S_OK;
 }
 
-STDMETHODIMP UrlmonUrlRequest::OnObjectAvailable(REFIID iid, IUnknown *object) {
+STDMETHODIMP UrlmonUrlRequest::OnObjectAvailable(REFIID iid, IUnknown* object) {
   // We are calling BindToStorage on the moniker we should always get called
   // back on OnDataAvailable and should never get OnObjectAvailable
   NOTREACHED();
@@ -614,8 +812,25 @@ HRESULT UrlmonUrlRequest::ConnectToExistingMoniker(IMoniker* moniker,
   DCHECK(moniker_.get() == NULL);
   DCHECK(bind_context_.get() == NULL);
 
+  CComObject<WrappedBindContext>* bind_context = NULL;
+  HRESULT hr = CComObject<WrappedBindContext>::CreateInstance(&bind_context);
+  if (FAILED(hr)) {
+    NOTREACHED() << "Failed to instantiate wrapped bind context. Error:" << hr;
+    return hr;
+  }
+
+  bind_context->AddRef();
+  hr = bind_context->Initialize(context);
+  DCHECK(SUCCEEDED(hr));
+
+  hr = bind_context->QueryInterface(bind_context_.Receive());
+  bind_context->Release();
+
+  if (FAILED(hr)) {
+    NOTREACHED() << "Failed to QI for IBindCtx on wrapper. Error:" << hr;
+    return hr;
+  }
   moniker_ = moniker;
-  bind_context_ = context;
   set_url(WideToUTF8(url));
   return S_OK;
 }
