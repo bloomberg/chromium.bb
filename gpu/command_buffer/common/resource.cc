@@ -23,6 +23,7 @@ unsigned int GetBytesPerBlock(Format format) {
       return 16;
     case kDXT1:
       return 8;
+    case kUnknown:
     default:
       // TODO(petersont): Add DXT3/5 support.
       LOG(FATAL) << "Invalid format";
@@ -41,6 +42,7 @@ unsigned int GetBlockSizeX(Format format) {
       return 1;
     case kDXT1:
       return 4;
+    case kUnknown:
     default:
       // TODO(petersont): Add DXT3/5 support.
       LOG(FATAL) << "Invalid format";
@@ -81,6 +83,8 @@ unsigned int GetDataSize(DataType type) {
       return sizeof(ResourceId);  // NOLINT
     case kTexture:
       return sizeof(ResourceId);  // NOLINT
+    case kNumTypes:
+    case kMake32Bit:
     default:
       LOG(FATAL) << "Invalid type.";
       return 0;
