@@ -888,8 +888,6 @@ BUG23463 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-symbol-01-b.svg = IMAGE
 BUG23463 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-use-01-t.svg = IMAGE
 BUG23463 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-symbol-01-b.svg = IMAGE+TEXT
 BUG23463 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-use-01-t.svg = IMAGE+TEXT
-// SENORBLANCO: restore this after rebaseline
-// BUG23463 WIN LINUX MAC : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = IMAGE+TEXT
 BUG23463 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = IMAGE+TEXT
 
 // Merge 39744:39829 - regression
@@ -2987,7 +2985,6 @@ BUG29737 MAC : LayoutTests/svg/filters/feDisplacementMap.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feGaussianBlur.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feTile.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/shadow-on-filter.svg = IMAGE+TEXT
-BUG29737 MAC : LayoutTests/svg/dom/operatorAttribute.html = TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feMerge-wrong-input.svg = TEXT
 BUG29737 MAC : LayoutTests/svg/custom/use-elementInstance-event-target.svg = IMAGE
 BUG29737 MAC : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE+TEXT
@@ -2998,11 +2995,9 @@ BUG29737 MAC : LayoutTests/svg/filters/sourceAlpha.svg = IMAGE+TEXT
 // More Webkit Roll to r51875
 BUG29737 WIN LINUX : LayoutTests/fast/repaint/block-selection-gap-in-composited-layer.html = IMAGE+TEXT
 BUG29737 WIN LINUX : LayoutTests/fast/repaint/block-selection-gap-in-table-cell.html = IMAGE+TEXT
-BUG29737 WIN LINUX : LayoutTests/svg/dom/operatorAttribute.html = TEXT
-BUG29737 WIN : LayoutTests/svg/filters/feComposite.svg = TIMEOUT CRASH
+BUG29737 : LayoutTests/svg/dom/operatorAttribute.html = TEXT
 
-// Don't think this is related to SVG filters, but crashing anyway:
-BUG_SENORBLANCO WIN : LayoutTests/platform/mac/editing/pasteboard/text-precomposed.html = CRASH TEXT
+BUG29737 WIN : LayoutTests/svg/filters/feComposite.svg = TIMEOUT CRASH
 
 // WebKit Roll to r51915
 BUG29928 SKIP : LayoutTests/websocket/tests/sub-protocol-with-space.html = TEXT
