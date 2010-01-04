@@ -1,32 +1,6 @@
-/*
- * Copyright 2009, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/* Copyright (c) 2009 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* nc_protect_base.h - For 64-bit mode, verifies that no instruction
@@ -92,6 +66,30 @@ void NcBaseRegisterMemoryDestroy(NcValidatorState* state,
   free(locals);
 }
 
+/* Returns true if the instruction is of the form
+ *   OP %esp, C
+ * where OP in { add , sub } and C is a 32 bit constant.
+ */
+static Bool NcIsAddOrSubBoundedConstFromEsp(NcInstState* inst) {
+  Opcode* opcode = NcInstStateOpcode(inst);
+  ExprNodeVector* vector = NcInstStateNodeVector(inst);
+  return (InstAdd == opcode->name || InstSub == opcode->name) &&
+      2 == NcGetOpcodeNumberOperands(opcode) &&
+      /* Note: Since the vector contains a list of operand expressions, the
+       * first operand reference is always at index zero, and its first child
+       * (where the register would be defined) is at index 1.
+       */
+      ExprRegister == vector->node[1].kind &&
+      RegESP == GetNodeRegister(&vector->node[1]) &&
+      /* Note: Since the first subtree is a register operand, it uses
+       * nodes 0 and 1 in the vector (node 0 is the operand reference, and
+       * node 1 is its child defining a register value). The second operand
+       * reference therefore lies at node 2, and if the operand is defined by
+       * a 32 bit constant, it is the first kid of node 2, which is node 3.
+       */
+      ExprConstant == vector->node[3].kind;
+}
+
 void NcBaseRegisterValidator(struct NcValidatorState* state,
                              struct NcInstIter* iter,
                              NcBaseRegisterLocals* locals) {
@@ -122,54 +120,88 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
             case RegRSP:
               /* Only allow one of:
                * (1) mov %rsp, %rbp
+               *     Note: this is part of an exit from a function, and
+               *     is used in the pattern:
+               *        mov %rsp, %rbp
+               *        pop %rbp
                * (2) %esp = zero extend 32-bit value
                *     or %rsp, %rbase
                * (3) One of the following instructions:
                *     Push or Call.
                *     Pop and the operand is the implicit stack update.
+               *
+               *     Note that entering a function corresponds to the pattern:
+               *        push %rpb
+               *        mov %rbp, %rsp
+               * (4) Allow stack updates of the form:
+               *        OP %esp, C
+               *        add %rsp, %r15
+               *     where OP is in { add , sub }, and C is a constant.
                */
-              if (inst_name != InstPush && inst_name != InstCall) {
-                if (inst_name == InstPop) {
-                  /* case (3) pop -- see above */
-                  int reg_operand_index = GetExprNodeParentIndex(vector, i);
-                  ExprNode* reg_operand = &vector->node[reg_operand_index];
-                  if (OperandReference == reg_operand->kind &&
-                      (inst_opcode->operands[reg_operand->value].flags &
-                       OpFlag(OpImplicit))) {
-                      MaybeReportPreviousBad(state, locals);
-                      return;
-                  }
-                } else if (InstOr == inst_name) {
-                  /* case (2) -- see above */
-                  if (NcIsOrUsingRegister(inst_opcode, vector, RegRSP,
-                                          state->base_register) &&
-                      NcInstIterHasLookbackState(iter, 1)) {
-                    NcInstState* prev_inst =
-                        NcInstIterGetLookbackState(iter, 1);
-                    if (NcAssignsRegisterWithZeroExtends(prev_inst, RegESP)) {
-                      /* Matches, but we need to add that one can't branch into
-                       * the middle of this pattern. Then mark the assignment to
-                       * ESP as legal, and report any other found problems on
-                       * previous instructions.
-                       */
-                      NcMarkInstructionJumpIllegal(state, inst);
-                      locals->esp_set_inst = NULL;
+              switch (inst_name) {
+                case InstPush:
+                case InstCall:
+                  /* case 3 (simple). */
+                  return;
+                case InstPop:
+                  { /* case (3) pop -- see above */
+                    int reg_operand_index = GetExprNodeParentIndex(vector, i);
+                    ExprNode* reg_operand = &vector->node[reg_operand_index];
+                    if (OperandReference == reg_operand->kind &&
+                        (inst_opcode->operands[reg_operand->value].flags &
+                         OpFlag(OpImplicit))) {
                       MaybeReportPreviousBad(state, locals);
                       return;
                     }
                   }
-                } if (NcIsMovUsingRegisters(inst_opcode, vector,
-                                            RegRSP, RegRBP)) {
-                  /* case (1) -- see above */
-                  MaybeReportPreviousBad(state, locals);
-                  return;
-                }
-                /* If reached, assume that not a special case. */
-                NcValidatorInstMessage(
-                    LOG_ERROR, state, inst,
-                    "Illegal change to register RSP\n");
-                MaybeReportPreviousBad(state, locals);
+                  break;
+                case InstOr:
+                case InstAdd:
+                case InstSub: {
+                    /* case 2/4 (depending on instruction name). */
+                    Bool or_case = (inst_name == InstOr);
+                    if (NcIsBinarySetUsingRegisters(
+                            inst_opcode, inst_name, vector, RegRSP,
+                            (or_case ? state->base_register : RegR15)) &&
+                        NcInstIterHasLookbackState(iter, 1)) {
+                      NcInstState* prev_inst =
+                          NcInstIterGetLookbackState(iter, 1);
+                      if (or_case
+                          ? NcAssignsRegisterWithZeroExtends(prev_inst, RegESP)
+                          : NcIsAddOrSubBoundedConstFromEsp(prev_inst)) {
+                        /* Matches, but we need to add that one can't branch
+                         * into the middle of this pattern. Then mark the
+                         * assignment as legal, and report any other found
+                         * problems on previous instructions.
+                         */
+                        NcMarkInstructionJumpIllegal(state, inst);
+                        locals->esp_set_inst = NULL;
+                        MaybeReportPreviousBad(state, locals);
+                        return;
+                      }
+                    }
+                  }
+                  break;
+                default:
+                  if (NcIsMovUsingRegisters(inst_opcode, vector,
+                                                 RegRSP, RegRBP)) {
+                    /* case (1) -- see above */
+                    /* Matches, but we need to add that one can't branch into
+                     * the middle of this pattern. Then mark the assignment to
+                     * RSP as legal, and report any other found problems on
+                     * previous instructions.
+                     */
+                    NcMarkInstructionJumpIllegal(state, inst);
+                    MaybeReportPreviousBad(state, locals);
+                    return;
+                  }
+                  break;
               }
+              /* If reached, assume that not a special case. */
+              NcValidatorInstMessage(
+                  LOG_ERROR, state, inst,
+                  "Illegal change to register RSP\n");
+              MaybeReportPreviousBad(state, locals);
               break;
             case RegRBP:
               /* Only allow: mov %rbp, %rsp. */

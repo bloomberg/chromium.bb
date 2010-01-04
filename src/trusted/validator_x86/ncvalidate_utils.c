@@ -45,52 +45,46 @@
 
 const OperandFlags NcOpSetOrUse = OpFlag(OpSet) | OpFlag(OpUse);
 
+Bool NcIsBinaryUsingRegisters(Opcode* opcode,
+                              InstMnemonic name,
+                              ExprNodeVector* vector,
+                              OperandKind reg_1,
+                              OperandKind reg_2) {
+  return name == opcode->name &&
+      2 == NcGetOpcodeNumberOperands(opcode) &&
+      /* Note: Since the vector contains a list of operand expressions, the
+       * first operand reference is always at index zero, and its first child
+       * (where the register would be defined) is at index 1.
+       */
+      ExprRegister == vector->node[1].kind &&
+      reg_1 == GetNodeRegister(&vector->node[1]) &&
+      /* Note: Since the first subtree is a register operand, it uses
+       * nodes 0 and 1 in the vector (node 0 is the operand reference, and
+       * node 1 is its child defining a register value). The second operand
+       * reference therefore lies at node 2, and if the operand is defined by
+       * a register, it is the first kid of node 2, which is node 3.
+       */
+      ExprRegister == vector->node[3].kind &&
+      reg_2 == GetNodeRegister(&vector->node[3]);
+}
+
 Bool NcIsMovUsingRegisters(Opcode* opcode,
                            ExprNodeVector* vector,
                            OperandKind reg_set,
                            OperandKind reg_use) {
-  return InstMov == opcode->name &&
-      2 == NcGetOpcodeNumberOperands(opcode) &&
+  return NcIsBinaryUsingRegisters(opcode, InstMov, vector, reg_set, reg_use) &&
       OpFlag(OpSet) == (NcGetOpcodeOperand(opcode, 0)->flags & NcOpSetOrUse) &&
-      OpFlag(OpUse) == (NcGetOpcodeOperand(opcode, 1)->flags & NcOpSetOrUse) &&
-      /* Note: Since the vector contains a list of operand expressions, the
-       * first operand reference is always at index zero, and its first child
-       * (where the register would be defined) is at index 1.
-       */
-      ExprRegister == vector->node[1].kind &&
-      reg_set == GetNodeRegister(&vector->node[1]) &&
-      /* Note: Since the first subtree is a register operand, it uses
-       * nodes 0 and 1 in the vector (node 0 is the operand reference, and
-       * node 1 is its child defining a register value). The second operand
-       * reference therefore lies at node 2, and if the operand is defined by
-       * a register, it is the first kid of node 2, which is node 3.
-       */
-      ExprRegister == vector->node[3].kind &&
-      reg_use == GetNodeRegister(&vector->node[3]);
+      OpFlag(OpUse) == (NcGetOpcodeOperand(opcode, 1)->flags & NcOpSetOrUse);
 }
 
-Bool NcIsOrUsingRegister(Opcode* opcode,
-                         ExprNodeVector* vector,
-                         OperandKind reg_set,
-                         OperandKind reg_use) {
-  return InstOr == opcode->name &&
-      2 == NcGetOpcodeNumberOperands(opcode) &&
+Bool NcIsBinarySetUsingRegisters(Opcode* opcode,
+                                 InstMnemonic name,
+                                 ExprNodeVector* vector,
+                                 OperandKind reg_1,
+                                 OperandKind reg_2) {
+  return NcIsBinaryUsingRegisters(opcode, name, vector, reg_1, reg_2) &&
       NcOpSetOrUse == (NcGetOpcodeOperand(opcode, 0)->flags & NcOpSetOrUse) &&
-      OpFlag(OpUse) == (NcGetOpcodeOperand(opcode, 1)->flags & NcOpSetOrUse) &&
-      /* Note: Since the vector contains a list of operand expressions, the
-       * first operand reference is always at index zero, and its first child
-       * (where the register would be defined) is at index 1.
-       */
-      ExprRegister == vector->node[1].kind &&
-      reg_set == GetNodeRegister(&vector->node[1]) &&
-      /* Note: Since the first subtree is a register operand, it uses
-       * nodes 0 and 1 in the vector (node 0 is the operand reference, and
-       * node 1 is its child defining a register value). The second operand
-       * reference therefore lies at node 2, and if the operand is defined by
-       * a register, it is the first kid of node 2, which is node 3.
-       */
-      ExprRegister == vector->node[3].kind &&
-      reg_use == GetNodeRegister(&vector->node[3]);
+      OpFlag(OpUse) == (NcGetOpcodeOperand(opcode, 1)->flags & NcOpSetOrUse);
 }
 
 Bool NcOperandOneIsRegisterSet(NcInstState* inst,
