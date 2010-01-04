@@ -31,9 +31,14 @@ class ProcessInfoSnapshot {
   ProcessInfoSnapshot();
   ~ProcessInfoSnapshot();
 
+  // Maximum size of lists of PIDs which this class will accept; used in
+  // |Sample()| below.
+  static const size_t kMaxPidListSize;
+
   // Capture a snapshot of process memory information (by running ps) for the
   // given list of PIDs. Call only from the file thread.
-  //   |pid_list| - list of |ProcessId|s on which to capture information.
+  //   |pid_list| - list of |ProcessId|s on which to capture information; must
+  //     have no more than |kMaxPidListSize| (above) entries,
   //   returns - |true| if okay, |false| on error.
   bool Sample(std::vector<base::ProcessId> pid_list);
 

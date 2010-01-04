@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "base/logging.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 
@@ -21,12 +22,23 @@ ProcessInfoSnapshot::~ProcessInfoSnapshot() {
   Reset();
 }
 
+const size_t ProcessInfoSnapshot::kMaxPidListSize = 1000;
+
 // Capture the information by calling '/bin/ps'.
 // Note: we ignore the "tsiz" (text size) display option of ps because it's
 // always zero (tested on 10.5 and 10.6).
 bool ProcessInfoSnapshot::Sample(std::vector<base::ProcessId> pid_list) {
   const char* kPsPathName = "/bin/ps";
   Reset();
+
+  // Nothing to do if no PIDs given.
+  if (pid_list.size() == 0)
+    return true;
+  if (pid_list.size() > kMaxPidListSize) {
+    // The spec says |pid_list| *must* not have more than this many entries.
+    NOTREACHED();
+    return false;
+  }
 
   std::vector<std::string> argv;
   argv.push_back(kPsPathName);
@@ -43,8 +55,8 @@ bool ProcessInfoSnapshot::Sample(std::vector<base::ProcessId> pid_list) {
 
   std::string output;
   CommandLine command_line(argv);
-  if (!base::GetAppOutputRestricted(command_line,
-                                    &output, (pid_list.size() + 10) * 100)) {
+  // Limit output read to a megabyte for safety.
+  if (!base::GetAppOutputRestricted(command_line, &output, 1024 * 1024)) {
     LOG(ERROR) << "Failure running " << kPsPathName << " to acquire data.";
     return false;
   }
