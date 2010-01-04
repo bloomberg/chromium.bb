@@ -134,6 +134,8 @@ class SandboxIPCProcess  {
       HandleLocaltime(fd, pickle, iter, fds);
     } else if (kind == LinuxSandbox::METHOD_GET_CHILD_WITH_INODE) {
       HandleGetChildWithInode(fd, pickle, iter, fds);
+    } else if (kind == LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE) {
+      HandleGetStyleForStrike(fd, pickle, iter, fds);
     }
 
   error:
@@ -239,6 +241,30 @@ class SandboxIPCProcess  {
     } else {
       reply.WriteString("");
     }
+    SendRendererReply(fds, reply, -1);
+  }
+
+  void HandleGetStyleForStrike(int fd, const Pickle& pickle, void* iter,
+                               std::vector<int>& fds) {
+    std::string family;
+    int sizeAndStyle;
+
+    if (!pickle.ReadString(&iter, &family) ||
+        !pickle.ReadInt(&iter, &sizeAndStyle)) {
+      return;
+    }
+
+    WebKit::WebFontRenderStyle style;
+    WebFontInfo::renderStyleForStrike(&style, family.c_str(), sizeAndStyle);
+
+    Pickle reply;
+    reply.WriteInt(style.useBitmaps);
+    reply.WriteInt(style.useAutoHint);
+    reply.WriteInt(style.useHinting);
+    reply.WriteInt(style.hintStyle);
+    reply.WriteInt(style.useAntiAlias);
+    reply.WriteInt(style.useSubpixel);
+
     SendRendererReply(fds, reply, -1);
   }
 

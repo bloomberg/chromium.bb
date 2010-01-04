@@ -9,6 +9,10 @@
 
 #include <string>
 
+namespace WebKit {
+struct WebFontRenderStyle;
+}
+
 namespace renderer_sandbox_support {
 
 // Return a font family which provides glyphs for the Unicode code points
@@ -19,6 +23,9 @@ namespace renderer_sandbox_support {
 // Returns: the font family or an empty string if the request could not be
 // satisfied.
 std::string getFontFamilyForCharacters(const uint16_t* utf16, size_t num_utf16);
+
+void getRenderStyleForStrike(WebKit::WebFontRenderStyle* out, const char* family,
+                             int sizeAndStyle);
 
 };  // namespace render_sandbox_support
 
