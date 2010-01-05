@@ -11,9 +11,9 @@
 using gpu::Buffer;
 
 CommandBufferStub::CommandBufferStub(PluginChannel* channel,
-                                     gfx::PluginWindowHandle window)
+                                     gfx::NativeView view)
     : channel_(channel),
-      window_(window) {
+      view_(view) {
   route_id_ = channel->GenerateRouteID();
   channel->AddRoute(route_id_, this, false);
 }
@@ -54,7 +54,7 @@ void CommandBufferStub::OnInitialize(int32 size,
     Buffer buffer = command_buffer_->GetRingBuffer();
     if (buffer.shared_memory) {
       processor_ = new gpu::GPUProcessor(command_buffer_.get());
-      if (processor_->Initialize(window_)) {
+      if (processor_->Initialize(view_)) {
         command_buffer_->SetPutOffsetChangeCallback(
             NewCallback(processor_.get(),
                         &gpu::GPUProcessor::ProcessCommands));
@@ -93,7 +93,7 @@ void CommandBufferStub::OnGetTransferBuffer(
     int32 id,
     base::SharedMemoryHandle* transfer_buffer,
     size_t* size) {
-  *transfer_buffer = base::SharedMemoryHandle();
+  *transfer_buffer = 0;
   *size = 0;
 
   // Assume service is responsible for duplicating the handle to the calling

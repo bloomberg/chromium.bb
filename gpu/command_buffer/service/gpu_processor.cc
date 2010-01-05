@@ -9,25 +9,6 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-GPUProcessor::GPUProcessor(CommandBuffer* command_buffer)
-    : command_buffer_(command_buffer),
-      commands_per_update_(100) {
-  DCHECK(command_buffer);
-  decoder_.reset(gles2::GLES2Decoder::Create());
-  decoder_->set_engine(this);
-}
-
-GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
-                           gles2::GLES2Decoder* decoder,
-                           CommandParser* parser,
-                           int commands_per_update)
-    : command_buffer_(command_buffer),
-      commands_per_update_(commands_per_update) {
-  DCHECK(command_buffer);
-  decoder_.reset(decoder);
-  parser_.reset(parser);
-}
-
 GPUProcessor::~GPUProcessor() {
 }
 
@@ -51,8 +32,6 @@ void GPUProcessor::ProcessCommands() {
         command_buffer_->SetParseError(parse_error);
         command_buffer_->RaiseErrorStatus();
         return;
-      case gpu::parse_error::kParseNoError:
-        break;
     }
 
     ++commands_processed;

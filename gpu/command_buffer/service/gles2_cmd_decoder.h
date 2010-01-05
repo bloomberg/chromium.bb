@@ -8,16 +8,14 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
 
 #include <build/build_config.h>
-#if defined(OS_WIN)
+#if defined(OS_LINUX)
+#include "gpu/command_buffer/service/x_utils.h"
+#elif defined(OS_WIN)
 #include <windows.h>
 #endif
 #include "gpu/command_buffer/service/common_decoder.h"
 
 namespace gpu {
-// Forward-declared instead of including x_utils.h, because including glx.h
-// causes havok.
-class XWindowWrapper;
-
 namespace gles2 {
 
 // This class implements the AsyncAPIInterface interface, decoding GLES2

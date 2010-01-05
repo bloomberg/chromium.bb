@@ -153,20 +153,12 @@ Buffer CommandBufferProxy::GetTransferBuffer(int32 id) {
   }
 
   // Cache the transfer buffer shared memory object client side.
-#if defined(OS_WIN)
-  // TODO(piman): Does Windows needs this version of the constructor ? It
-  // duplicates the handle, but I'm not sure why it is necessary - it was
-  // already duped by the CommandBufferStub.
   base::SharedMemory* shared_memory =
       new base::SharedMemory(handle, false, base::GetCurrentProcessHandle());
-#else
-  base::SharedMemory* shared_memory =
-      new base::SharedMemory(handle, false);
-#endif
 
   // Map the shared memory on demand.
   if (!shared_memory->memory()) {
-    if (!shared_memory->Map(size)) {
+    if (!shared_memory->Map(shared_memory->max_size())) {
       delete shared_memory;
       return Buffer();
     }

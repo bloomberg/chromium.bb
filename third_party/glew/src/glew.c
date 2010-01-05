@@ -9557,7 +9557,7 @@ GLboolean glxewGetExtension (const char* name)
 /*   if (glXQueryExtensionsString == NULL || glXGetCurrentDisplay == NULL) return GL_FALSE; */
 /*   p = (GLubyte*)glXQueryExtensionsString(glXGetCurrentDisplay(), DefaultScreen(glXGetCurrentDisplay())); */
   if (__glewXGetClientString == NULL) {
-    __glewXGetClientString = (PFNGLXGETCLIENTSTRINGPROC) glewGetProcAddress((const GLubyte *)"glXGetClientString");
+    __glewXGetClientString = (PFNGLXGETCLIENTSTRINGPROC) glewGetProcAddress("glXGetClientString");
   }
   if (__glewXGetClientString == NULL) return GL_FALSE;
   if (glXGetCurrentDisplay == NULL) return GL_FALSE;
@@ -9580,7 +9580,7 @@ GLenum glxewContextInit (GLXEW_CONTEXT_ARG_DEF_LIST)
   int major, minor;
   static PFNGLXQUERYVERSIONPROC __glewXQueryVersion = NULL;
   if (__glewXQueryVersion == NULL) {
-    __glewXQueryVersion = (PFNGLXQUERYVERSIONPROC) glewGetProcAddress((const GLubyte *)"glXQueryVersion");
+    __glewXQueryVersion = (PFNGLXQUERYVERSIONPROC) glewGetProcAddress("glXQueryVersion");
   }
   if (__glewXQueryVersion == NULL) return GL_FALSE;
   /* initialize core GLX 1.2 */
