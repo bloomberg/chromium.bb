@@ -48,6 +48,11 @@ AC_ARG_ENABLE(intel,
 	      [Enable support for intel's KMS API (default: auto)]),
 	      [INTEL=$enableval], [INTEL=auto])
 
+AC_ARG_ENABLE(vmwgfx-experimental-api,
+	      AS_HELP_STRING([--enable-vmwgfx-experimental-api],
+	      [Install vmwgfx's experimental kernel API header (default: disabled)]),
+	      [VMWGFX=$enableval], [VMWGFX=no])
+
 AC_ARG_ENABLE(nouveau-experimental-api,
 	      AS_HELP_STRING([--enable-nouveau-experimental-api],
 	      [Enable support for nouveau's experimental API (default: disabled)]),
@@ -134,6 +139,8 @@ if test "x$UDEV" = xyes; then
 	AC_DEFINE(UDEV, 1, [Have UDEV support])
 fi
 
+AM_CONDITIONAL(HAVE_VMWGFX, [test "x$VMWGFX" = xyes])
+
 AM_CONDITIONAL(HAVE_NOUVEAU, [test "x$NOUVEAU" = xyes])
 
 AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" = xyes])
@@ -216,6 +223,7 @@ echo ""
 echo "$PACKAGE_STRING will be compiled with:"
 echo ""
 echo "  Intel API      $INTEL"
+echo "  vmwgfx API     $VMWGFX"
 echo "  Radeon API     $RADEON"
 echo "  Nouveau API    $NOUVEAU"
 echo ""
