@@ -54,19 +54,10 @@ ProfileSyncService::ProfileSyncService(Profile* profile)
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false) {
-
-  // Register associator impls for all currently synced data types, and hook
-  // them up to the associated change processors.  If you add a new data type
-  // and want that data type to be synced, call CreateGlue with appropriate
-  // association and change processing implementations.
-
-  // Bookmarks.
-  InstallGlue<BookmarkModelAssociator, BookmarkChangeProcessor>();
 }
 
 ProfileSyncService::~ProfileSyncService() {
   Shutdown(false);
-  STLDeleteElements(&change_processors_);
 }
 
 void ProfileSyncService::Initialize() {
@@ -156,6 +147,13 @@ void ProfileSyncService::StartUp() {
   if (backend_.get())
     return;
 
+  // Register associator impls for all currently synced data types, and hook
+  // them up to the associated change processors.  If you add a new data type
+  // and want that data type to be synced, call CreateGlue with appropriate
+  // association and change processing implementations.
+  // Bookmarks.
+  InstallGlue<BookmarkModelAssociator, BookmarkChangeProcessor>();
+
   last_synced_time_ = base::Time::FromInternalValue(
       profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
 
@@ -183,6 +181,8 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   // Clear all associations and throw away the association manager instance.
   model_associator_->DisassociateModels();
   model_associator_->CleanupAllAssociators();
+
+  STLDeleteElements(&change_processors_);
 
   // Clear various flags.
   is_auth_in_progress_ = false;
