@@ -12,8 +12,3 @@ Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
   return new Balloon(notification, profile, this);
 }
 
-bool BalloonCollectionImpl::Layout::RefreshSystemMetrics() {
-  // TODO(johnnyg): http://crbug.com/23066.  Part of future Mac support.
-  return false;
-}
-

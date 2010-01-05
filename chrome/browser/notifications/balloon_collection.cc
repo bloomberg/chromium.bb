@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/window_sizer.h"
 
 namespace {
 
@@ -206,4 +207,20 @@ gfx::Point BalloonCollectionImpl::Layout::NextPosition(
       break;
   }
   return gfx::Point(x, y);
+}
+
+bool BalloonCollectionImpl::Layout::RefreshSystemMetrics() {
+  bool changed = false;
+
+  scoped_ptr<WindowSizer::MonitorInfoProvider> info_provider(
+      WindowSizer::CreateDefaultMonitorInfoProvider());
+
+  gfx::Rect new_work_area = info_provider->GetPrimaryMonitorWorkArea();
+  if (!work_area_.Equals(new_work_area)) {
+    work_area_.SetRect(new_work_area.x(), new_work_area.y(),
+                       new_work_area.width(), new_work_area.height());
+    changed = true;
+  }
+
+  return changed;
 }

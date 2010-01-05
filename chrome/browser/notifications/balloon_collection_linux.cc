@@ -11,8 +11,3 @@ Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
   // TODO(johnnyg): http://crbug.com/23954.  Hook up to views.
   return new Balloon(notification, profile, this);
 }
-
-bool BalloonCollectionImpl::Layout::RefreshSystemMetrics() {
-  // TODO(johnnyg): http://crbug.com/23954.  Part of future Linux support.
-  return false;
-}
