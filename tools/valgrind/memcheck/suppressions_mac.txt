@@ -545,24 +545,11 @@
    bug_31586a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsPN3net13CookieMonster15CanonicalCookieEEEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3net13CookieMonster15CanonicalCookieEESt10_Select1stIS6_ESt4lessISsESaIS6_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3net13CookieMonster15CanonicalCookieEESt10_Select1stIS6_ESt4lessISsESaIS6_EE14_M_create_nodeERKS6_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3net13CookieMonster15CanonicalCookieEESt10_Select1stIS6_ESt4lessISsESaIS6_EE9_M_insertEPSt18_Rb_tree_node_baseSE_RKS6_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3net13CookieMonster15CanonicalCookieEESt10_Select1stIS6_ESt4lessISsESaIS6_EE12insert_equalERKS6_
-   fun:_ZNSt8multimapISsPN3net13CookieMonster15CanonicalCookieESt4lessISsESaISt4pairIKSsS3_EEE6insertERKS8_
+   ...
    fun:_ZN3net13CookieMonster20InternalInsertCookieERKSsPNS0_15CanonicalCookieEb
    fun:_ZN3net13CookieMonster36SetCookieWithCreationTimeWithOptionsERK4GURLRKSsRKN4base4TimeERKNS_13CookieOptionsE
    fun:_ZN3net13CookieMonster20SetCookieWithOptionsERK4GURLRKSsRKNS_13CookieOptionsE
    fun:_ZN3net13CookieMonster9SetCookieERK4GURLRKSs
-   fun:_ZN12_GLOBAL__N_149CookiesWindowControllerTest_TreeNodesRemoved_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    bug_31586b
@@ -575,13 +562,6 @@
    fun:_ZN16CookiesTreeModelC1EP7Profile
    fun:-[CookiesWindowController initWithProfile:]
    fun:_ZN12_GLOBAL__N_127CookiesWindowControllerTest5SetUpEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    bug_31634a
