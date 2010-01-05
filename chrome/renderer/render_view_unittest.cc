@@ -22,7 +22,7 @@ using WebKit::WebString;
 using WebKit::WebTextDirection;
 using WebKit::WebURLError;
 
-#if !defined(OS_LINUX)
+#if 0 // !defined(OS_LINUX)
 static WebCompositionCommand ToCompositionCommand(int string_type) {
   switch (string_type) {
     default:
@@ -144,7 +144,7 @@ TEST_F(RenderViewTest, OnImeStateChanged) {
 // RenderWidget class, but also call some RenderWidget members, e.g.
 // ExecuteJavaScript(), RenderWidget::OnSetFocus(), etc.
 // Disabled on Linux: http://crbug.com/27927
-#if !defined(OS_LINUX)
+#if 0 // !defined(OS_LINUX)
 TEST_F(RenderViewTest, ImeComposition) {
   enum ImeCommand {
     IME_INITIALIZE,
