@@ -154,19 +154,19 @@
 // This function appropriately sets the enabled states on the table's editing
 // buttons.
 - (void)adjustEndProcessButton {
-  bool selection_contains_browser_process = false;
+  bool selectionContainsBrowserProcess = false;
 
   NSIndexSet* selection = [tableView_ selectedRowIndexes];
   for (NSUInteger i = [selection lastIndex];
        i != NSNotFound;
        i = [selection indexLessThanIndex:i]) {
     if (taskManager_->IsBrowserProcess(i)) {
-      selection_contains_browser_process = true;
+      selectionContainsBrowserProcess = true;
       break;
     }
   }
 
-  bool enabled = [selection count] > 0 && !selection_contains_browser_process;
+  bool enabled = [selection count] > 0 && !selectionContainsBrowserProcess;
   [endProcessButton_ setEnabled:enabled];
 }
 
