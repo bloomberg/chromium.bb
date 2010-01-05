@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/notifier/communicator/ssl_socket_adapter.h"
 
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "net/base/ssl_config_service.h"
@@ -80,6 +81,15 @@ int SSLSocketAdapter::StartSSL(const char* hostname, bool restartable) {
 }
 
 int SSLSocketAdapter::BeginSSL() {
+  if (!MessageLoop::current()) {
+    // Certificate verification is done via the Chrome message loop.
+    // Without this check, if we don't have a chrome message loop the
+    // SSL connection just hangs silently.
+    LOG(DFATAL) << "Chrome message loop (needed by SSL certificate "
+                << "verification) does not exist";
+    return net::ERR_UNEXPECTED;
+  }
+
   // SSLConfigService is not thread-safe, and the default values for SSLConfig
   // are correct for us, so we don't use the config service to initialize this
   // object.
