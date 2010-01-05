@@ -726,7 +726,7 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
                               int             desc) {
   struct NaClDesc             *channel;
   struct NaClImcTypedMsgHdr   hdr;
-  int                         rv;
+  ssize_t                     rv;
 
   struct NaClNrdXferEffector  nnxep;
 
@@ -767,7 +767,7 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
   (*nnxep.base.vtbl->Dtor)(&nnxep.base);
 
   NaClLog(1,
-          "NaClSendServiceAddressTo: descriptor %d, error %d\n",
+          "NaClSendServiceAddressTo: descriptor %d, error %"PRIdS"\n",
           desc,
           rv);
 }

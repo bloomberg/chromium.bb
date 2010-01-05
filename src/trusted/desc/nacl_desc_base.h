@@ -275,14 +275,14 @@ struct NaClDescVtbl {
   int (*Broadcast)(struct NaClDesc          *vself,
                    struct NaClDescEffector  *effp) NACL_WUR;
 
-  int (*SendMsg)(struct NaClDesc                *vself,
-                 struct NaClDescEffector        *effp,
-                 struct NaClMessageHeader const *dgram,
-                 int                            flags) NACL_WUR;
-  int (*RecvMsg)(struct NaClDesc          *vself,
-                 struct NaClDescEffector  *effp,
-                 struct NaClMessageHeader *dgram,
-                 int                      flags) NACL_WUR;
+  ssize_t (*SendMsg)(struct NaClDesc                *vself,
+                     struct NaClDescEffector        *effp,
+                     struct NaClMessageHeader const *dgram,
+                     int                            flags) NACL_WUR;
+  ssize_t (*RecvMsg)(struct NaClDesc          *vself,
+                     struct NaClDescEffector  *effp,
+                     struct NaClMessageHeader *dgram,
+                     int                      flags) NACL_WUR;
   int (*ConnectAddr)(struct NaClDesc          *vself,
                      struct NaClDescEffector  *effp) NACL_WUR;
   int (*AcceptConn)(struct NaClDesc         *vself,
@@ -586,11 +586,11 @@ int NaClDescSignalNotImplemented(struct NaClDesc          *vself,
 int NaClDescBroadcastNotImplemented(struct NaClDesc         *vself,
                                     struct NaClDescEffector *effp);
 
-int NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
-                                  struct NaClDescEffector        *effp,
-                                  struct NaClMessageHeader const *dgram,
-                                  int                            flags);
-int NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
+ssize_t NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
+                                      struct NaClDescEffector        *effp,
+                                      struct NaClMessageHeader const *dgram,
+                                      int                            flags);
+ssize_t NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
                                   struct NaClDescEffector   *effp,
                                   struct NaClMessageHeader  *dgram,
                                   int                       flags);

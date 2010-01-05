@@ -57,7 +57,7 @@ int main(int ac, char **av) {
   int                         opt;
   char const                  *message = NULL;
   char                        *conn_addr = NULL;
-  int                         rv;
+  ssize_t                     rv;
   struct NaClDesc             *channel;
   struct NaClNrdXferEffector  eff;
   struct NaClDescEffector     *effp;
@@ -125,7 +125,7 @@ int main(int ac, char **av) {
   }
 
   if (0 != (rv = NaClCommonDescMakeBoundSock(pair))) {
-    fprintf(stderr, "make bound sock returned %d\n", rv);
+    fprintf(stderr, "make bound sock returned %"PRIdS"\n", rv);
     return 2;
   }
 
@@ -150,7 +150,7 @@ int main(int ac, char **av) {
     fflush(stdout);
 
     if (0 != (rv = (*pair[0]->vtbl->AcceptConn)(pair[0], effp))) {
-      fprintf(stderr, "AcceptConn returned %d\n", rv);
+      fprintf(stderr, "AcceptConn returned %"PRIdS"\n", rv);
       return 4;
     }
 
@@ -170,10 +170,23 @@ int main(int ac, char **av) {
 
     rv = NaClImcRecvTypedMessage(channel, effp, &msg_hdr, 0);
 
-    printf("Receive returned %d\n", rv);
+    printf("Receive returned %"PRIdS"\n", rv);
 
-    if (rv >= 0) {
-      printf("Data bytes: %.*s\n", rv, data_buffer);
+    if (!NaClIsNegErrno(rv)) {
+      /* Sanity check: make sure the return value is within range.
+       * This is a panic check because NaClImcRecvTypedMessage should
+       * never return more than the amount of data we asked for, and
+       * that should never be more than INT_MAX.
+       */
+      if(((size_t)rv > sizeof data_buffer) || (rv > INT_MAX)) {
+        NaClLog(LOG_FATAL, "Buffer overflow in NaClImcRecvTypedMessage. "
+                "Requested %"PRIdS" bytes, received %"PRIdS".",
+                sizeof data_buffer, rv);
+      }
+      /* Casting rv to int here because otherwise the pedantic Mac compiler
+       * will complain. Cast is safe due to the range check above.
+       */
+      printf("Data bytes: %.*s\n", (int)rv, data_buffer);
       printf("Got %"PRIdNACL_SIZE" NaCl descriptors\n", msg_hdr.ndesc_length);
 
       for (i = 0; i < msg_hdr.ndesc_length; ++i) {
@@ -225,7 +238,7 @@ int main(int ac, char **av) {
 
     rv = (*ndcc.base.vtbl->ConnectAddr)((struct NaClDesc *) &ndcc, effp);
 
-    printf("Connect returned %d\n", rv);
+    printf("Connect returned %"PRIdS"\n", rv);
 
     if (0 != rv) {
       fprintf(stderr, "Client could not connect\n");
@@ -269,7 +282,7 @@ int main(int ac, char **av) {
       desc_buffer[0] = NULL;
     }
 
-    printf("Send returned %d\n", rv);
+    printf("Send returned %"PRIdS"\n", rv);
   }
 
   (*effp->vtbl->Dtor)(effp);

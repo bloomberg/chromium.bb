@@ -1490,6 +1490,7 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
                                  struct NaClImcMsgHdr *nimhp,
                                  int                  flags) {
   int32_t                   retval = -NACL_ABI_EINVAL;
+  ssize_t                   ssize_retval;
   uintptr_t                 sysaddr;
   /* copy of user-space data for validation */
   struct NaClImcMsgHdr      kern_nimh;
@@ -1608,9 +1609,9 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
   }
   kern_msg_hdr.flags = kern_nimh.flags;
 
-  retval = NaClImcSendTypedMessage(ndp, natp->effp, &kern_msg_hdr, flags);
+  ssize_retval = NaClImcSendTypedMessage(ndp, natp->effp, &kern_msg_hdr, flags);
 
-  if (retval < 0) {
+  if (NaClIsNegErrno(ssize_retval)) {
     /*
      * NaClWouldBlock uses TSD (for both the errno-based and
      * GetLastError()-based implementations), so this is threadsafe.
@@ -1626,6 +1627,11 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
        */
       retval = -NACL_ABI_EIO;
     }
+  } else if (ssize_retval > INT32_MAX || ssize_retval < INT32_MIN) {
+    retval = -NACL_ABI_EOVERFLOW;
+  } else {
+    /* cast is safe due to range checks above */
+    retval = (int32_t)ssize_retval;
   }
 
 cleanup:
@@ -1646,7 +1652,8 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
                                  int                  d,
                                  struct NaClImcMsgHdr *nimhp,
                                  int                  flags) {
-  int                       retval = -NACL_ABI_EINVAL;
+  int32_t                   retval = -NACL_ABI_EINVAL;
+  ssize_t                   ssize_retval;
   uintptr_t                 sysaddr;
   struct NaClImcMsgHdr      *kern_nimhp;
   size_t                    i;
@@ -1754,15 +1761,25 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
 
   recv_hdr.flags = 0;  /* just to make it obvious; IMC will clear it for us */
 
-  retval = NaClImcRecvTypedMessage(ndp, natp->effp, &recv_hdr, flags);
+  ssize_retval = NaClImcRecvTypedMessage(ndp, natp->effp, &recv_hdr, flags);
   /*
    * retval is number of user payload bytes received and excludes the
    * header bytes.
    */
-  NaClLog(3, "NaClCommonSysImc_RecvMsg: NaClImcRecvTypedMessage returned %d\n",
-          retval);
-  if (retval < 0) {
+  NaClLog(3, "NaClCommonSysImc_RecvMsg: "
+          "NaClImcRecvTypedMessage returned %"PRIdS"\n",
+          ssize_retval);
+  if (NaClIsNegErrno(ssize_retval)) {
+    /* negative error numbers all have valid 32-bit representations,
+     * so this cast is safe. */
+    retval = (int32_t)ssize_retval;
     goto cleanup;
+  } else if (ssize_retval > INT32_MAX || ssize_retval < INT32_MIN) {
+    retval = -NACL_ABI_EOVERFLOW;
+    goto cleanup;
+  } else {
+    /* cast is safe due to range check above */
+    retval = (int32_t)ssize_retval;
   }
 
   /*

@@ -19,6 +19,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
@@ -201,7 +202,7 @@ int __NaClSrpcImcWriteDesc(NaClSrpcImcDescType desc,
  */
 NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel) {
   NaClSrpcImcBuffer* buffer;
-  int                retval;
+  ssize_t            retval;
   double             start_usec = 0.0;
   double             this_usec;
 
@@ -225,9 +226,9 @@ NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel) {
     this_usec = __NaClSrpcGetUsec();
     channel->imc_read_usec += this_usec;
   }
-  if (0 <= retval) {
+  if (!NaClIsNegErrno(retval)) {
     channel->receive_buf.next_byte = 0;
-    channel->receive_buf.last_byte = retval;
+    channel->receive_buf.last_byte = nacl_abi_size_t_saturate(retval);
   } else {
     dprintf((SIDE "READ: read failed.\n"));
     return NULL;
@@ -240,7 +241,7 @@ NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel) {
  * channel. It returns 1 if successful, or 0 otherwise.
  */
 int __NaClSrpcImcFlush(NaClSrpcImcBuffer* buffer, NaClSrpcChannel* channel) {
-  int            retval;
+  ssize_t        retval;
   double         start_usec = 0.0;
   double         this_usec;
   buffer->iovec[0].length = buffer->next_byte;

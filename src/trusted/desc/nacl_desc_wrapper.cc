@@ -570,12 +570,12 @@ int DescWrapper::Broadcast() {
   return desc_->vtbl->Broadcast(desc_, common_data_->effp());
 }
 
-int DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
+ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   struct NaClImcTypedMsgHdr header;
-  int ret = -NACL_ABI_ENOMEM;
-  size_t diov_length = dgram->iov_length;
-  size_t ddescv_length = dgram->ndescv_length;
-  size_t i;
+  ssize_t ret = -NACL_ABI_ENOMEM;
+  nacl_abi_size_t diov_length = dgram->iov_length;
+  nacl_abi_size_t ddescv_length = dgram->ndescv_length;
+  nacl_abi_size_t i;
 
   // Initialize to allow simple cleanups.
   header.ndescv = NULL;
@@ -616,12 +616,12 @@ cleanup:
   return ret;
 }
 
-int DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
+ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   struct NaClImcTypedMsgHdr header;
-  int ret = -NACL_ABI_ENOMEM;
-  size_t diov_length = dgram->iov_length;
-  size_t ddescv_length = dgram->ndescv_length;
-  size_t i;
+  ssize_t ret = -NACL_ABI_ENOMEM;
+  nacl_abi_size_t diov_length = dgram->iov_length;
+  nacl_abi_size_t ddescv_length = dgram->ndescv_length;
+  nacl_abi_size_t i;
 
   // Initialize to allow simple cleanups.
   header.ndescv = NULL;

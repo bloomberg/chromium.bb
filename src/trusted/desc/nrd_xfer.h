@@ -85,7 +85,7 @@ struct NaClImcTypedMsgHdr {
  * an IMC channel.  Returns the number of bytes sent on success, and
  * a negated errno value (essentially the kernel return ABI) on error.
  */
-int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
+ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
                                 struct NaClDescEffector         *effp,
                                 const struct NaClImcTypedMsgHdr *nitmhp,
                                 int32_t                         flags);
@@ -96,7 +96,7 @@ int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
  * success, and a negative value, a negated errno value, on error
  * (the kernel return ABI).
  */
-int32_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
+ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
                                 struct NaClDescEffector   *effp,
                                 struct NaClImcTypedMsgHdr *nitmhp,
                                 int32_t                   flags);

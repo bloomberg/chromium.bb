@@ -36,6 +36,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+#include <limits>
 /* TODO: eliminate this */
 #if NACL_WINDOWS
 #include <io.h>
@@ -53,6 +54,7 @@
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
@@ -62,21 +64,37 @@ namespace nacl {
 #ifndef __native_client__
 
 int SendDatagram(HtpHandle socket, const HtpHeader* message, int flags) {
-  int32_t result = NaClImcSendTypedMessage(socket, NULL,
+  ssize_t result = NaClImcSendTypedMessage(socket, NULL,
       reinterpret_cast<const struct NaClImcTypedMsgHdr*>(message), flags);
-  if (result < 0) {
+
+  if (result > std::numeric_limits<int>::max()) {
+    result = -NACL_ABI_EOVERFLOW;
+  }
+
+  if (NaClIsNegErrno(result)) {
+    // TODO(ilewis,bsy): should we be setting errno here?
     return -1;
   }
-  return result;
+
+  // cast is safe due to checks above
+  return static_cast<int>(result);
 }
 
 int ReceiveDatagram(HtpHandle socket, HtpHeader* message, int flags) {
-  int32_t result = NaClImcRecvTypedMessage(socket, NULL,
+  ssize_t result = NaClImcRecvTypedMessage(socket, NULL,
       reinterpret_cast<struct NaClImcTypedMsgHdr*>(message), flags);
-  if (result < 0) {
+
+  if (result > std::numeric_limits<int>::max()) {
+    result = -NACL_ABI_EOVERFLOW;
+  }
+
+  if (NaClIsNegErrno(result)) {
+    // TODO(ilewis,bsy): should we be setting errno here?
     return -1;
   }
-  return result;
+
+  // cast is safe due to checks above
+  return static_cast<int>(result);
 }
 
 int Close(HtpHandle handle) {

@@ -42,6 +42,7 @@
  */
 
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_imc_api.h"
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,15 +60,15 @@ typedef int NaClHandle;
 #endif
 
 struct NaClImcMsgIoVec {
-  void    *base;
-  size_t  length;
+  void            *base;
+  nacl_abi_size_t length;
 };
 
 struct NaClImcMsgHdr {
   struct NaClImcMsgIoVec  *iov;
-  size_t                  iov_length;
+  nacl_abi_size_t         iov_length;
   int                     *descv;
-  size_t                  desc_length;
+  nacl_abi_size_t         desc_length;
   int                     flags;
 };
 

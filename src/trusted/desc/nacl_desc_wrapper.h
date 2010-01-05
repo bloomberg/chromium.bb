@@ -71,8 +71,8 @@ class DescWrapper {
 
  public:
   struct MsgIoVec {
-    void*  base;
-    size_t length;
+    void*           base;
+    nacl_abi_size_t length;
   };
 
   struct MsgHeader {
@@ -178,11 +178,11 @@ class DescWrapper {
 
   // Send a message.
   // Returns bytes sent on success, negative NaCl ABI errno on failure.
-  int SendMsg(const MsgHeader* dgram, int flags);
+  ssize_t SendMsg(const MsgHeader* dgram, int flags);
 
   // Receive a message.
   // Returns bytes received on success, negative NaCl ABI errno on failure.
-  int RecvMsg(MsgHeader* dgram, int flags);
+  ssize_t RecvMsg(MsgHeader* dgram, int flags);
 
   // Connect to a socket address.
   // Returns a valid DescWrapper on success, NULL on failure.

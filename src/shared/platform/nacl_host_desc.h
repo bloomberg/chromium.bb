@@ -76,10 +76,20 @@ typedef struct stat64 nacl_host_stat_t;
 typedef struct stat nacl_host_stat_t;
 #elif NACL_WINDOWS
 typedef struct _stati64 nacl_host_stat_t;
+#elif defined __native_client__
+/* nacl_host_stat_t not exposed to NaCl module code */
 #else
 # error "what OS?"
 #endif
 
+/* TODO(ilewis, bsy): it seems like these error functions are useful in more
+ * places than just the NaClDesc library. Move them to a more central header.
+ * When that's done, it should be possible to include this header *only* from
+ * host code, removing the need for the #ifdef __native_client__ directives.
+ *
+ * Currently that's not possible, unless we want to forego NaClIsNegErrno in
+ * trusted code, and go back to writing if(retval < 0) to check for errors.
+ */
 static INLINE int NaClIsNegErrno(int64_t val) {
   /*
    * On 64-bit Linux, the app has the entire 32-bit address space
@@ -98,6 +108,9 @@ extern int NaClXlateErrno(int errnum);
 
 extern int NaClXlateNaClSyncStatus(NaClSyncStatus status);
 
+#ifndef __native_client__ /* these functions are not exposed to NaCl modules
+                           * (see TODO comment above)
+                           */
 /*
  * Mapping data from a file.
  *
@@ -272,5 +285,7 @@ extern int NaClHostDescStat(char const        *host_os_pathname,
 extern int NaClProtMap(int abi_prot);
 
 EXTERN_C_END
+
+#endif // defined __native_client__
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_HOST_DESC_H__ */

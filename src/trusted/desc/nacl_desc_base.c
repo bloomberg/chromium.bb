@@ -432,10 +432,10 @@ int NaClDescBroadcastNotImplemented(struct NaClDesc         *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
-                                  struct NaClDescEffector        *effp,
-                                  struct NaClMessageHeader const *dgram,
-                                  int                            flags) {
+ssize_t NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
+                                      struct NaClDescEffector        *effp,
+                                      struct NaClMessageHeader const *dgram,
+                                      int                            flags) {
   UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(dgram);
   UNREFERENCED_PARAMETER(flags);
@@ -446,10 +446,10 @@ int NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
-                                  struct NaClDescEffector   *effp,
-                                  struct NaClMessageHeader  *dgram,
-                                  int                       flags) {
+ssize_t NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
+                                      struct NaClDescEffector   *effp,
+                                      struct NaClMessageHeader  *dgram,
+                                      int                       flags) {
   UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(dgram);
   UNREFERENCED_PARAMETER(flags);
