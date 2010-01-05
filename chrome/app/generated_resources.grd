@@ -1060,11 +1060,11 @@ each locale. -->
       </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_NEW_BUTTON"
                desc="Text of the new button in the search engines editor">
-        Add...
+        &amp;Add...
       </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_REMOVE_BUTTON"
                desc="Text of the remove button in the search engines editor">
-        Remove
+        &amp;Remove
       </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_EDIT_BUTTON"
                desc="Text of the edit button in the search engines editor">

@@ -152,8 +152,10 @@ void KeywordEditorView::Init() {
   GtkWidget* button_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(hbox), button_box, FALSE, FALSE, 0);
 
-  add_button_ = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_SEARCH_ENGINES_EDITOR_NEW_BUTTON).c_str());
+  add_button_ = gtk_button_new_with_mnemonic(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+          l10n_util::GetStringUTF8(
+              IDS_SEARCH_ENGINES_EDITOR_NEW_BUTTON)).c_str());
   g_signal_connect(G_OBJECT(add_button_), "clicked",
                    G_CALLBACK(OnAddButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_box), add_button_, FALSE, FALSE, 0);
@@ -164,9 +166,10 @@ void KeywordEditorView::Init() {
                    G_CALLBACK(OnEditButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_box), edit_button_, FALSE, FALSE, 0);
 
-  remove_button_ = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(
-          IDS_SEARCH_ENGINES_EDITOR_REMOVE_BUTTON).c_str());
+  remove_button_ = gtk_button_new_with_mnemonic(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+          l10n_util::GetStringUTF8(
+              IDS_SEARCH_ENGINES_EDITOR_REMOVE_BUTTON)).c_str());
   g_signal_connect(G_OBJECT(remove_button_), "clicked",
                    G_CALLBACK(OnRemoveButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_box), remove_button_, FALSE, FALSE, 0);
