@@ -22,6 +22,9 @@ const int kMinAllowedBalloonCount = 2;
 const int kVerticalEdgeMargin = 5;
 const int kHorizontalEdgeMargin = 5;
 
+// Space between balloons.
+const int kInterBalloonMargin = 5;
+
 }  // namespace
 
 // static
@@ -177,20 +180,24 @@ gfx::Point BalloonCollectionImpl::Layout::NextPosition(
     case HORIZONTALLY_FROM_BOTTOM_LEFT:
       x = position_iterator->x();
       y = position_iterator->y() - balloon_size.height();
-      position_iterator->set_x(position_iterator->x() + balloon_size.width());
+      position_iterator->set_x(position_iterator->x() + balloon_size.width() +
+                               kInterBalloonMargin);
       break;
     case HORIZONTALLY_FROM_BOTTOM_RIGHT:
-      position_iterator->set_x(position_iterator->x() - balloon_size.width());
+      position_iterator->set_x(position_iterator->x() - balloon_size.width() -
+                               kInterBalloonMargin);
       x = position_iterator->x();
       y = position_iterator->y() - balloon_size.height();
       break;
     case VERTICALLY_FROM_TOP_RIGHT:
       x = position_iterator->x() - balloon_size.width();
       y = position_iterator->y();
-      position_iterator->set_y(position_iterator->y() + balloon_size.height());
+      position_iterator->set_y(position_iterator->y() + balloon_size.height() +
+                               kInterBalloonMargin);
       break;
     case VERTICALLY_FROM_BOTTOM_RIGHT:
-      position_iterator->set_y(position_iterator->y() - balloon_size.height());
+      position_iterator->set_y(position_iterator->y() - balloon_size.height() -
+                               kInterBalloonMargin);
       x = position_iterator->x() - balloon_size.width();
       y = position_iterator->y();
       break;
