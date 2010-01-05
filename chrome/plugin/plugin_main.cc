@@ -39,7 +39,10 @@ void TrimInterposeEnvironment();
 
 // Initializes the global Cocoa application object.
 void InitializeChromeApplication();
-#endif  // OS_MACOSX
+#elif defined(OS_LINUX)
+// Work around an unimplemented instruction in 64-bit Flash.
+void WorkaroundFlashLAHF();
+#endif
 
 // main() routine for running as the plugin process.
 int PluginMain(const MainFunctionParams& parameters) {
@@ -67,6 +70,11 @@ int PluginMain(const MainFunctionParams& parameters) {
   // process name that shows up in "ps" etc. for plugins show as "exe"
   // instead of "chrome" or something reasonable. Try to fix it.
   CommandLine::SetProcTitle();
+
+#if defined(ARCH_CPU_64_BITS)
+  WorkaroundFlashLAHF();
+#endif
+
 #elif defined(OS_WIN)
   sandbox::TargetServices* target_services =
       parameters.sandbox_info_.TargetServices();

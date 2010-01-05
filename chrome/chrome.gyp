@@ -438,6 +438,7 @@
         'plugin/plugin_interpose_util_mac.mm',
         'plugin/plugin_interpose_util_mac.h',
         'plugin/plugin_main.cc',
+        'plugin/plugin_main_linux.cc',
         'plugin/plugin_main_mac.mm',
         'plugin/plugin_thread.cc',
         'plugin/plugin_thread.h',
