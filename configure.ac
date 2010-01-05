@@ -44,9 +44,9 @@ AC_ARG_ENABLE(udev,	AS_HELP_STRING([--enable-udev],
 				[UDEV=$enableval], [UDEV=no])
 
 AC_ARG_ENABLE(libkms,
-	      AS_HELP_STRING([--disable-libkms],
-	      [Enable KMS mm abstraction library (default: yes)]),
-	      [LIBKMS=$enableval], [LIBKMS=yes])
+	      AS_HELP_STRING([--enable-libkms],
+	      [Enable KMS mm abstraction library (default: disabled)]),
+	      [LIBKMS=$enableval], [LIBKMS=no])
 
 AC_ARG_ENABLE(intel,
 	      AS_HELP_STRING([--disable-intel],
