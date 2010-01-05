@@ -7,8 +7,8 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/in_process_webkit/storage_area.h"
-#include "chrome/browser/in_process_webkit/storage_namespace.h"
+#include "chrome/browser/in_process_webkit/dom_storage_area.h"
+#include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 
 static const char* kLocalStorageDirectory = "Local Storage";
@@ -46,9 +46,9 @@ DOMStorageContext::~DOMStorageContext() {
     delete storage_namespace_map_.begin()->second;
 }
 
-StorageNamespace* DOMStorageContext::LocalStorage() {
+DOMStorageNamespace* DOMStorageContext::LocalStorage() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  StorageNamespace* storage_namespace = GetStorageNamespace(
+  DOMStorageNamespace* storage_namespace = GetStorageNamespace(
       kLocalStorageNamespaceId);
   if (storage_namespace)
     return storage_namespace;
@@ -59,29 +59,29 @@ StorageNamespace* DOMStorageContext::LocalStorage() {
     MigrateLocalStorageDirectory(data_path);
     dir_path = data_path.AppendASCII(kLocalStorageDirectory);
   }
-  return StorageNamespace::CreateLocalStorageNamespace(this, dir_path);
+  return DOMStorageNamespace::CreateLocalStorageNamespace(this, dir_path);
 }
 
-StorageNamespace* DOMStorageContext::NewSessionStorage() {
+DOMStorageNamespace* DOMStorageContext::NewSessionStorage() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  return StorageNamespace::CreateSessionStorageNamespace(this);
+  return DOMStorageNamespace::CreateSessionStorageNamespace(this);
 }
 
-void DOMStorageContext::RegisterStorageArea(StorageArea* storage_area) {
+void DOMStorageContext::RegisterStorageArea(DOMStorageArea* storage_area) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   int64 id = storage_area->id();
   DCHECK(!GetStorageArea(id));
   storage_area_map_[id] = storage_area;
 }
 
-void DOMStorageContext::UnregisterStorageArea(StorageArea* storage_area) {
+void DOMStorageContext::UnregisterStorageArea(DOMStorageArea* storage_area) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   int64 id = storage_area->id();
   DCHECK(GetStorageArea(id));
   storage_area_map_.erase(id);
 }
 
-StorageArea* DOMStorageContext::GetStorageArea(int64 id) {
+DOMStorageArea* DOMStorageContext::GetStorageArea(int64 id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   StorageAreaMap::iterator iter = storage_area_map_.find(id);
   if (iter == storage_area_map_.end())
@@ -90,7 +90,7 @@ StorageArea* DOMStorageContext::GetStorageArea(int64 id) {
 }
 
 void DOMStorageContext::RegisterStorageNamespace(
-    StorageNamespace* storage_namespace) {
+    DOMStorageNamespace* storage_namespace) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   int64 id = storage_namespace->id();
   DCHECK(!GetStorageNamespace(id));
@@ -98,14 +98,14 @@ void DOMStorageContext::RegisterStorageNamespace(
 }
 
 void DOMStorageContext::UnregisterStorageNamespace(
-    StorageNamespace* storage_namespace) {
+    DOMStorageNamespace* storage_namespace) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   int64 id = storage_namespace->id();
   DCHECK(GetStorageNamespace(id));
   storage_namespace_map_.erase(id);
 }
 
-StorageNamespace* DOMStorageContext::GetStorageNamespace(int64 id) {
+DOMStorageNamespace* DOMStorageContext::GetStorageNamespace(int64 id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   StorageNamespaceMap::iterator iter = storage_namespace_map_.find(id);
   if (iter == storage_namespace_map_.end())
@@ -140,7 +140,7 @@ void DOMStorageContext::PurgeMemory() {
   // because it is backed by disk and can be reloaded later.  If we purge a
   // SessionStorage namespace, its data will be gone forever, because it isn't
   // currently backed by disk.
-  StorageNamespace* local_storage =
+  DOMStorageNamespace* local_storage =
       GetStorageNamespace(kLocalStorageNamespaceId);
   if (local_storage)
     local_storage->PurgeMemory();

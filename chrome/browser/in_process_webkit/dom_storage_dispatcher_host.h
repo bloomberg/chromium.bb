@@ -8,7 +8,7 @@
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/tracked.h"
-#include "chrome/browser/in_process_webkit/storage_area.h"
+#include "chrome/browser/in_process_webkit/dom_storage_area.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/common/dom_storage_type.h"
 #include "ipc/ipc_message.h"

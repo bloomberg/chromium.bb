@@ -2,8 +2,8 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_STORAGE_NAMESPACE_H_
-#define CHROME_BROWSER_IN_PROCESS_WEBKIT_STORAGE_NAMESPACE_H_
+#ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_NAMESPACE_H_
+#define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_NAMESPACE_H_
 
 #include "base/string16.h"
 #include "base/hash_tables.h"
@@ -11,9 +11,9 @@
 #include "chrome/common/dom_storage_type.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
+class DOMStorageArea;
 class DOMStorageContext;
 class FilePath;
-class StorageArea;
 
 namespace WebKit {
 class WebStorageArea;
@@ -21,17 +21,17 @@ class WebStorageNamespace;
 }
 
 // Only to be used on the WebKit thread.
-class StorageNamespace {
+class DOMStorageNamespace {
  public:
-  static StorageNamespace* CreateLocalStorageNamespace(
+  static DOMStorageNamespace* CreateLocalStorageNamespace(
       DOMStorageContext* dom_storage_context, const FilePath& data_dir_path);
-  static StorageNamespace* CreateSessionStorageNamespace(
+  static DOMStorageNamespace* CreateSessionStorageNamespace(
       DOMStorageContext* dom_storage_context);
 
-  ~StorageNamespace();
+  ~DOMStorageNamespace();
 
-  StorageArea* GetStorageArea(const string16& origin);
-  StorageNamespace* Copy();
+  DOMStorageArea* GetStorageArea(const string16& origin);
+  DOMStorageNamespace* Copy();
   void PurgeMemory();
 
   const DOMStorageContext* dom_storage_context() const {
@@ -41,21 +41,21 @@ class StorageNamespace {
   DOMStorageType dom_storage_type() const { return dom_storage_type_; }
 
   // Creates a WebStorageArea for the given origin.  This should only be called
-  // by an owned StorageArea.
+  // by an owned DOMStorageArea.
   WebKit::WebStorageArea* CreateWebStorageArea(const string16& origin);
 
  private:
   // Called by the static factory methods above.
-  StorageNamespace(DOMStorageContext* dom_storage_context,
-                   int64 id,
-                   const WebKit::WebString& data_dir_path,
-                   DOMStorageType storage_type);
+  DOMStorageNamespace(DOMStorageContext* dom_storage_context,
+                      int64 id,
+                      const WebKit::WebString& data_dir_path,
+                      DOMStorageType storage_type);
 
   // Creates the underlying WebStorageNamespace on demand.
   void CreateWebStorageNamespaceIfNecessary();
 
   // All the storage areas we own.
-  typedef base::hash_map<string16, StorageArea*> OriginToStorageAreaMap;
+  typedef base::hash_map<string16, DOMStorageArea*> OriginToStorageAreaMap;
   OriginToStorageAreaMap origin_to_storage_area_;
 
   // The DOMStorageContext that owns us.
@@ -77,7 +77,7 @@ class StorageNamespace {
   // The quota for each storage area.  Suggested by the spec.
   static const unsigned kLocalStorageQuota = 5 * 1024 * 1024;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(StorageNamespace);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageNamespace);
 };
 
-#endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_STORAGE_NAMESPACE_H_
+#endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_NAMESPACE_H_

@@ -6,9 +6,9 @@
 
 #include "base/nullable_string16.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/in_process_webkit/dom_storage_area.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
-#include "chrome/browser/in_process_webkit/storage_area.h"
-#include "chrome/browser/in_process_webkit/storage_namespace.h"
+#include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/render_messages.h"
@@ -157,7 +157,7 @@ void DOMStorageDispatcherHost::OnNamespaceId(DOMStorageType storage_type,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  StorageNamespace* new_namespace;
+  DOMStorageNamespace* new_namespace;
   if (storage_type == DOM_STORAGE_LOCAL)
     new_namespace = Context()->LocalStorage();
   else
@@ -177,7 +177,7 @@ void DOMStorageDispatcherHost::OnCloneNamespaceId(int64 namespace_id,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  StorageNamespace* existing_namespace =
+  DOMStorageNamespace* existing_namespace =
       Context()->GetStorageNamespace(namespace_id);
   if (!existing_namespace) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(
@@ -185,7 +185,7 @@ void DOMStorageDispatcherHost::OnCloneNamespaceId(int64 namespace_id,
     delete reply_msg;
     return;
   }
-  StorageNamespace* new_namespace = existing_namespace->Copy();
+  DOMStorageNamespace* new_namespace = existing_namespace->Copy();
   ViewHostMsg_DOMStorageCloneNamespaceId::WriteReplyParams(reply_msg,
                                                            new_namespace->id());
   Send(reply_msg);
@@ -202,7 +202,7 @@ void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  StorageNamespace* storage_namespace =
+  DOMStorageNamespace* storage_namespace =
       Context()->GetStorageNamespace(namespace_id);
   if (!storage_namespace) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(
@@ -210,7 +210,7 @@ void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
     delete reply_msg;
     return;
   }
-  StorageArea* storage_area = storage_namespace->GetStorageArea(origin);
+  DOMStorageArea* storage_area = storage_namespace->GetStorageArea(origin);
   ViewHostMsg_DOMStorageCloneNamespaceId::WriteReplyParams(reply_msg,
                                                            storage_area->id());
   Send(reply_msg);
@@ -225,7 +225,7 @@ void DOMStorageDispatcherHost::OnLength(int64 storage_area_id,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
+  DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(
         ViewHostMsg_DOMStorageLength::ID, process_handle_);
@@ -247,7 +247,7 @@ void DOMStorageDispatcherHost::OnKey(int64 storage_area_id, unsigned index,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
+  DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(
         ViewHostMsg_DOMStorageKey::ID, process_handle_);
@@ -270,7 +270,7 @@ void DOMStorageDispatcherHost::OnGetItem(int64 storage_area_id,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
+  DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(
         ViewHostMsg_DOMStorageGetItem::ID, process_handle_);
@@ -294,7 +294,7 @@ void DOMStorageDispatcherHost::OnSetItem(
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   bool quota_exception = false;
-  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
+  DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(
         ViewHostMsg_DOMStorageSetItem::ID, process_handle_);
@@ -317,7 +317,7 @@ void DOMStorageDispatcherHost::OnRemoveItem(
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
+  DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(
         ViewHostMsg_DOMStorageRemoveItem::ID, process_handle_);
@@ -336,7 +336,7 @@ void DOMStorageDispatcherHost::OnClear(int64 storage_area_id, const GURL& url) {
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
+  DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(
         ViewHostMsg_DOMStorageClear::ID, process_handle_);

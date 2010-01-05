@@ -2,10 +2,10 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include "chrome/browser/in_process_webkit/storage_area.h"
+#include "chrome/browser/in_process_webkit/dom_storage_area.h"
 
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
-#include "chrome/browser/in_process_webkit/storage_namespace.h"
+#include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
@@ -13,54 +13,54 @@
 using WebKit::WebStorageArea;
 using WebKit::WebURL;
 
-StorageArea::StorageArea(const string16& origin,
-                         int64 id,
-                         StorageNamespace* owner)
+DOMStorageArea::DOMStorageArea(const string16& origin,
+                               int64 id,
+                               DOMStorageNamespace* owner)
     : origin_(origin),
       id_(id),
       owner_(owner) {
   DCHECK(owner_);
 }
 
-StorageArea::~StorageArea() {
+DOMStorageArea::~DOMStorageArea() {
 }
 
-unsigned StorageArea::Length() {
+unsigned DOMStorageArea::Length() {
   CreateWebStorageAreaIfNecessary();
   return storage_area_->length();
 }
 
-NullableString16 StorageArea::Key(unsigned index) {
+NullableString16 DOMStorageArea::Key(unsigned index) {
   CreateWebStorageAreaIfNecessary();
   return storage_area_->key(index);
 }
 
-NullableString16 StorageArea::GetItem(const string16& key) {
+NullableString16 DOMStorageArea::GetItem(const string16& key) {
   CreateWebStorageAreaIfNecessary();
   return storage_area_->getItem(key);
 }
 
-void StorageArea::SetItem(const string16& key, const string16& value,
-                          bool* quota_exception) {
+void DOMStorageArea::SetItem(const string16& key, const string16& value,
+                             bool* quota_exception) {
   CreateWebStorageAreaIfNecessary();
   storage_area_->setItem(key, value, WebURL(), *quota_exception);
 }
 
-void StorageArea::RemoveItem(const string16& key) {
+void DOMStorageArea::RemoveItem(const string16& key) {
   CreateWebStorageAreaIfNecessary();
   storage_area_->removeItem(key, WebURL());
 }
 
-void StorageArea::Clear() {
+void DOMStorageArea::Clear() {
   CreateWebStorageAreaIfNecessary();
   storage_area_->clear(WebURL());
 }
 
-void StorageArea::PurgeMemory() {
+void DOMStorageArea::PurgeMemory() {
   storage_area_.reset();
 }
 
-void StorageArea::CreateWebStorageAreaIfNecessary() {
+void DOMStorageArea::CreateWebStorageAreaIfNecessary() {
   if (!storage_area_.get())
     storage_area_.reset(owner_->CreateWebStorageArea(origin_));
 }
