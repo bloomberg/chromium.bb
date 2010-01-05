@@ -13,7 +13,6 @@
 #include "chrome/common/pref_service.h"
 #include "net/url_request/url_request_context.h"
 
-class Blacklist;
 class BlacklistManager;
 class CommandLine;
 class Profile;
@@ -192,8 +191,8 @@ class ChromeURLRequestContext : public URLRequestContext {
 
   const HostZoomMap* host_zoom_map() const { return host_zoom_map_; }
 
-  // Gets the Privacy Blacklist, if any for this context.
-  const Blacklist* GetBlacklist() const;
+  // Gets the Privacy Blacklist Manager, if any for this context.
+  BlacklistManager* GetBlacklistManager() const;
 
   // Callback for when new extensions are loaded.
   void OnNewExtensions(const std::string& id,

@@ -49,9 +49,6 @@ class Blacklist {
   static const unsigned int kModifyReceivedHeaders;
   static const unsigned int kFilterByHeaders;
 
-  // Key used to access data attached to URLRequest objects.
-  static const void* const kRequestDataKey;
-
   // Converts a stringized filter attribute (see above) back to its integer
   // value. Returns 0 on error.
   static unsigned int String2Attribute(const std::string&);

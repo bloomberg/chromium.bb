@@ -6042,9 +6042,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_BLACKLIST_MESSAGE" desc="Message shown instead of a blocked element.">
       The following Privacy Blacklists prevented this content from showing:
     </message>
-    <message name="IDS_BLACKLIST_UNBLOCK" desc="Prompt to unblock a blacklisted element.">
-      Click to unblock
-    </message>
     <message name="IDS_BLACKLIST_BLOCKED_COOKIES" desc="Cookies was blacklisted.">
       Cookies not sent
     </message>

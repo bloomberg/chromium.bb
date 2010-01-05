@@ -70,6 +70,7 @@ class BlacklistManager
   // Compile all persistent blacklists to one binary blacklist stored on disk.
   void CompileBlacklist();
   void DoCompileBlacklist(const std::vector<FilePath>& source_blacklists);
+  void OnBlacklistCompilationReadErrors(const std::vector<string16>& errors);
   void OnBlacklistCompilationFinished(bool success);
 
   // Read all blacklists from disk (the compiled one and also the transient
@@ -79,6 +80,10 @@ class BlacklistManager
   void DoReadBlacklist(const std::vector<FilePath>& transient_blacklists);
   void UpdatePublishedCompiledBlacklist(Blacklist* blacklist);
   void OnBlacklistReadFinished(bool success);
+
+  // Sets the |compiled_blacklist_| to NULL to indicate that the blacklist is
+  // not ready.
+  void ResetPublishedCompiledBlacklist();
 
   // True after the first blacklist read has finished (regardless of success).
   // Used to avoid an infinite loop.

@@ -40,9 +40,6 @@ const unsigned int Blacklist::kModifyReceivedHeaders =
 const unsigned int Blacklist::kFilterByHeaders =
     kModifyReceivedHeaders | kBlockByType;
 
-// Value is not important, here just that the object has an address.
-const void* const Blacklist::kRequestDataKey = 0;
-
 unsigned int Blacklist::String2Attribute(const std::string& s) {
   if (s == STRINGIZE(kBlockAll))
     return kBlockAll;

@@ -21,11 +21,15 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
+#include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_test_constants.h"
 #include "net/base/ssl_config_service_defaults.h"
+#include "net/disk_cache/disk_cache.h"
+#include "net/ftp/ftp_network_layer.h"
+#include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
 #include "net/socket/ssl_test_util.h"
 #include "net/url_request/url_request.h"
@@ -41,16 +45,12 @@ const std::string kDefaultHostName("localhost");
 
 using base::TimeDelta;
 
-// This URLRequestContext does not use a local cache.
 class TestURLRequestContext : public URLRequestContext {
  public:
   TestURLRequestContext() {
     host_resolver_ = net::CreateSystemHostResolver();
     proxy_service_ = net::ProxyService::CreateNull();
-    ssl_config_service_ = new net::SSLConfigServiceDefaults;
-    http_transaction_factory_ =
-        net::HttpNetworkLayer::CreateFactory(host_resolver_,
-            proxy_service_, ssl_config_service_);
+    Init();
   }
 
   explicit TestURLRequestContext(const std::string& proxy) {
@@ -58,15 +58,39 @@ class TestURLRequestContext : public URLRequestContext {
     net::ProxyConfig proxy_config;
     proxy_config.proxy_rules.ParseFromString(proxy);
     proxy_service_ = net::ProxyService::CreateFixed(proxy_config);
-    ssl_config_service_ = new net::SSLConfigServiceDefaults;
-    http_transaction_factory_ =
-        net::HttpNetworkLayer::CreateFactory(host_resolver_,
-            proxy_service_, ssl_config_service_);
+    Init();
   }
 
  protected:
-  ~TestURLRequestContext() {
+  virtual ~TestURLRequestContext() {
+    delete ftp_transaction_factory_;
     delete http_transaction_factory_;
+  }
+
+ private:
+  void Init() {
+    ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
+    ssl_config_service_ = new net::SSLConfigServiceDefaults;
+    http_transaction_factory_ =
+        new net::HttpCache(
+          net::HttpNetworkLayer::CreateFactory(host_resolver_, proxy_service_,
+                                               ssl_config_service_),
+          disk_cache::CreateInMemoryCacheBackend(0));
+    // In-memory cookie store.
+    cookie_store_ = new net::CookieMonster();
+    accept_language_ = "en-us,fr";
+    accept_charset_ = "iso-8859-1,*,utf-8";
+  }
+};
+
+// TODO(phajdan.jr): Migrate callers to the new name and remove the typedef.
+typedef TestURLRequestContext URLRequestTestContext;
+
+class TestURLRequest : public URLRequest {
+ public:
+  TestURLRequest(const GURL& url, Delegate* delegate)
+      : URLRequest(url, delegate) {
+    set_context(new TestURLRequestContext());
   }
 };
 

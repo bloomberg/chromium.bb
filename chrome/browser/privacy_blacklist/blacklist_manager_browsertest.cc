@@ -4,6 +4,7 @@
 
 #include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 
+#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
@@ -13,10 +14,10 @@
 #include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "grit/browser_resources.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -45,32 +46,12 @@ class BlacklistManagerBrowserTest : public ExtensionBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
 
-    received_blacklist_notification_ = false;
     host_resolver()->AddSimulatedFailure("www.example.com");
-  }
-
-  // NotificationObserver
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    if (type != NotificationType::BLACKLIST_MANAGER_ERROR &&
-        type != NotificationType::BLACKLIST_MANAGER_BLACKLIST_READ_FINISHED) {
-      ExtensionBrowserTest::Observe(type, source, details);
-      return;
-    }
-    received_blacklist_notification_ = true;
-    MessageLoop::current()->Quit();
   }
 
  protected:
   BlacklistManager* GetBlacklistManager() {
     return browser()->profile()->GetBlacklistManager();
-  }
-
-  bool GetAndResetReceivedBlacklistNotification() {
-    bool result = received_blacklist_notification_;
-    received_blacklist_notification_ = false;
-    return result;
   }
 
   bool BlacklistHasMatch(const std::string& url) {
@@ -83,30 +64,20 @@ class BlacklistManagerBrowserTest : public ExtensionBrowserTest {
     ui_test_utils::RunMessageLoop();
     return has_match;
   }
-
- private:
-  bool received_blacklist_notification_;
 };
 
-IN_PROC_BROWSER_TEST_F(BlacklistManagerBrowserTest, FLAKY_Basic) {
+IN_PROC_BROWSER_TEST_F(BlacklistManagerBrowserTest, Basic) {
   static const char kTestUrl[] = "http://www.example.com/annoying_ads/ad.jpg";
-
-  NotificationRegistrar registrar;
-  registrar.Add(this,
-                NotificationType::BLACKLIST_MANAGER_BLACKLIST_READ_FINISHED,
-                Source<Profile>(browser()->profile()));
 
   // Test loading an extension with blacklist.
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("privacy_blacklist")));
 
-  // Wait until the blacklist is loaded and ready.
-  if (!GetAndResetReceivedBlacklistNotification())
-    ui_test_utils::RunMessageLoop();
-
-  // The blacklist should block our test URL.
-  EXPECT_TRUE(BlacklistHasMatch(kTestUrl));
-
-  // TODO(phajdan.jr): Verify that we really blocked the request etc.
+  // Navigate to a blacklisted URL. The request should be blocked.
   ui_test_utils::NavigateToURL(browser(), GURL(kTestUrl));
+  string16 expected_title(l10n_util::GetStringUTF16(IDS_BLACKLIST_TITLE));
+  string16 tab_title;
+  ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
+  EXPECT_EQ(expected_title, tab_title);
+  EXPECT_TRUE(BlacklistHasMatch(kTestUrl));
 }

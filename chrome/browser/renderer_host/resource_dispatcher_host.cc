@@ -29,6 +29,9 @@
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
+#include "chrome/browser/privacy_blacklist/blacklist_listener.h"
+#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
+#include "chrome/browser/privacy_blacklist/blacklist_request_info.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/async_resource_handler.h"
 #include "chrome/browser/renderer_host/buffered_resource_handler.h"
@@ -260,6 +263,11 @@ ResourceDispatcherHost::ResourceDispatcherHost()
           kMaxOutstandingRequestsCostPerProcess),
       receiver_(NULL) {
   ResourceQueue::DelegateSet resource_queue_delegates;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePrivacyBlacklists)) {
+    blacklist_listener_ = new BlacklistListener(&resource_queue_);
+    resource_queue_delegates.insert(blacklist_listener_.get());
+  }
   resource_queue_delegates.insert(user_script_listener_.get());
   resource_queue_.Initialize(resource_queue_delegates);
 }
@@ -424,69 +432,6 @@ void ResourceDispatcherHost::BeginRequest(
     }
     return;
   }
-  std::string url = request_data.url.spec();
-
-  // Note that context can still be NULL here when running unit tests.
-  Blacklist::Match* match = context && context->GetBlacklist() ?
-      context->GetBlacklist()->findMatch(request_data.url) : NULL;
-  if (match && match->IsBlocked(request_data.url)) {
-    // This is a special path where calling happens without the URLRequest
-    // being created, so we must delete the match ourselves. Ensures this
-    // happens by using a scoped pointer.
-    scoped_ptr<Blacklist::Match> match_scope(match);
-
-    URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
-    std::string data =
-        request_data.resource_type != ResourceType::SUB_RESOURCE ?
-        blocked_.GetHTML(url, match) : blocked_.GetImage(match);
-    std::string headers = blocked_.GetHeaders(url);
-
-    if (sync_result) {
-      SyncLoadResult result;
-      result.status = status;
-      result.final_url = request_data.url;
-      result.data.swap(data);
-      ViewHostMsg_SyncLoad::WriteReplyParams(sync_result, result);
-      receiver_->Send(sync_result);
-    } else {
-      bool success = false;
-      base::SharedMemory shared;
-      if (shared.Create(std::wstring(), false, false, data.size())) {
-        if (shared.Map(data.size())) {
-          std::copy(data.c_str(), data.c_str() + data.size(),
-                    static_cast<std::string::value_type*>(shared.memory()));
-          base::SharedMemoryHandle handle;
-          if (shared.GiveToProcess(receiver_->handle(), &handle)) {
-            ResourceResponseHead header;
-            header.mime_type = "text/html";
-            header.content_length = -1;
-            header.status = status;
-            header.headers = new net::HttpResponseHeaders(headers);
-            receiver_->Send(new ViewMsg_Resource_ReceivedResponse(
-                route_id, request_id, header));
-            receiver_->Send(new ViewMsg_Resource_DataReceived(
-                route_id, request_id, handle, data.size()));
-            receiver_->Send(new ViewMsg_Resource_RequestComplete(
-                route_id, request_id, status, std::string()));
-            success = true;
-          }
-        }
-      }
-      if (!success) {
-        // Cannot send a substitution response, just cancel.
-        receiver_->Send(new ViewMsg_Resource_RequestComplete(
-            route_id,
-            request_id,
-            URLRequestStatus(URLRequestStatus::CANCELED, net::ERR_ABORTED),
-            std::string()));
-      }
-    }
-    return;
-  }
-
-  // To fetch a blocked resource, convert the unblock URL to the original one.
-  GURL gurl = request_data.url.scheme() != chrome::kUnblockScheme ?
-      request_data.url : GURL(blocked_.GetOriginalURL(url));
 
   // Ensure the Chrome plugins are loaded, as they may intercept network
   // requests.  Does nothing if they are already loaded.
@@ -497,33 +442,27 @@ void ResourceDispatcherHost::BeginRequest(
   // Construct the event handler.
   scoped_refptr<ResourceHandler> handler;
   if (sync_result) {
-    handler = new SyncResourceHandler(receiver_, gurl, sync_result);
+    handler = new SyncResourceHandler(receiver_, request_data.url, sync_result);
   } else {
     handler = new AsyncResourceHandler(receiver_,
                                        child_id,
                                        route_id,
                                        receiver_->handle(),
-                                       gurl,
+                                       request_data.url,
                                        this);
   }
 
   if (HandleExternalProtocol(request_id, child_id, route_id,
-                             gurl, request_data.resource_type,
+                             request_data.url, request_data.resource_type,
                              handler)) {
     return;
   }
 
   // Construct the request.
-  URLRequest* request = new URLRequest(gurl, this);
-  if (match) {
-    request->SetUserData(&Blacklist::kRequestDataKey, match);
-  }
+  URLRequest* request = new URLRequest(request_data.url, this);
   request->set_method(request_data.method);
   request->set_first_party_for_cookies(request_data.first_party_for_cookies);
-
-  if (!match || !(match->attributes() & Blacklist::kDontSendReferrer))
-    request->set_referrer(request_data.referrer.spec());
-
+  request->set_referrer(request_data.referrer.spec());
   request->SetExtraRequestHeaders(request_data.headers);
 
   int load_flags = request_data.load_flags;
@@ -565,8 +504,7 @@ void ResourceDispatcherHost::BeginRequest(
   // RenderViewHost with a pending cross-site request.  We only check this for
   // MAIN_FRAME requests. Unblock requests only come from a blocked page, do
   // not count as cross-site, otherwise it gets blocked indefinitely.
-  if (request_data.url.scheme() != chrome::kUnblockScheme &&
-      request_data.resource_type == ResourceType::MAIN_FRAME &&
+  if (request_data.resource_type == ResourceType::MAIN_FRAME &&
       process_type == ChildProcessInfo::RENDER_PROCESS &&
       Singleton<CrossSiteRequestManager>::get()->
           HasPendingCrossSiteRequest(child_id, route_id)) {
@@ -579,11 +517,11 @@ void ResourceDispatcherHost::BeginRequest(
   }
 
   if (safe_browsing_->enabled() &&
-      safe_browsing_->CanCheckUrl(gurl)) {
+      safe_browsing_->CanCheckUrl(request_data.url)) {
     handler = new SafeBrowsingResourceHandler(handler,
                                               child_id,
                                               route_id,
-                                              gurl,
+                                              request_data.url,
                                               request_data.resource_type,
                                               safe_browsing_,
                                               this,
@@ -617,6 +555,14 @@ void ResourceDispatcherHost::BeginRequest(
   appcache::AppCacheInterceptor::SetExtraRequestInfo(
       request, context ? context->appcache_service() : NULL, child_id,
       request_data.appcache_host_id, request_data.resource_type);
+
+  // Associate Privacy Blacklist information with the request.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePrivacyBlacklists)) {
+    request->SetUserData(&BlacklistRequestInfo::kURLRequestDataKey,
+        new BlacklistRequestInfo(request_data.url, request_data.resource_type,
+            context ? context->GetBlacklistManager() : NULL));
+  }
 
   BeginRequestInternal(request);
 }
@@ -1147,11 +1093,14 @@ bool ResourceDispatcherHost::CompleteResponseStarted(URLRequest* request) {
   scoped_refptr<ResourceResponse> response = new ResourceResponse;
   PopulateResourceResponse(request, info->filter_policy(), response);
 
-  const URLRequest::UserData* d =
-      request->GetUserData(&Blacklist::kRequestDataKey);
-  if (d) {
-    const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
-    if (match->attributes() & Blacklist::kBlockByType) {
+  BlacklistRequestInfo* request_info =
+      BlacklistRequestInfo::FromURLRequest(request);
+  if (request_info) {
+    const BlacklistManager* blacklist_manager =
+        request_info->GetBlacklistManager();
+    const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
+    scoped_ptr<Blacklist::Match> match(blacklist->findMatch(request->url()));
+    if (match.get() && match->attributes() & Blacklist::kBlockByType) {
       if (match->MatchType(response->response_head.mime_type))
         return false;  // TODO(idanan): Generate a replacement response.
     }

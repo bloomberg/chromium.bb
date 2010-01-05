@@ -26,6 +26,7 @@
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
+#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 #include "chrome/browser/privacy_blacklist/blacklist_ui.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
@@ -140,6 +141,16 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
 #else
   NOTIMPLEMENTED();
 #endif
+}
+
+Blacklist::Match* GetPrivacyBlacklistMatchForURL(
+    const GURL& url, ChromeURLRequestContext* context) {
+  BlacklistManager* blacklist_manager = context->GetBlacklistManager();
+  // TODO(phajdan.jr): DCHECK(blacklist_manager) when blacklists are stable.
+  if (!blacklist_manager)
+    return NULL;
+  const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
+  return blacklist->findMatch(url);
 }
 
 }  // namespace
@@ -465,22 +476,20 @@ void ResourceMessageFilter::OnSetCookie(const GURL& url,
                                         const std::string& cookie) {
   ChromeURLRequestContext* context = GetRequestContextForURL(url);
 
-  if (context->cookie_policy()->CanSetCookie(url, first_party_for_cookies)) {
-    const Blacklist* blacklist = context->GetBlacklist();
-    if (blacklist) {
-      scoped_ptr<Blacklist::Match> match(blacklist->findMatch(url));
-      if (match.get()) {
-        if (match->attributes() & Blacklist::kDontPersistCookies) {
-          context->cookie_store()->SetCookie(url,
-              Blacklist::StripCookieExpiry(cookie));
-        } else if (!(match->attributes() & Blacklist::kDontStoreCookies)) {
-          context->cookie_store()->SetCookie(url, cookie);
-        }
-        return;
-      }
+  if (!context->cookie_policy()->CanSetCookie(url, first_party_for_cookies))
+    return;
+  scoped_ptr<Blacklist::Match> match(
+      GetPrivacyBlacklistMatchForURL(url, context));
+  if (match.get()) {
+    if (match->attributes() & Blacklist::kDontPersistCookies) {
+      context->cookie_store()->SetCookie(url,
+          Blacklist::StripCookieExpiry(cookie));
+    } else if (!(match->attributes() & Blacklist::kDontStoreCookies)) {
+      context->cookie_store()->SetCookie(url, cookie);
     }
-    context->cookie_store()->SetCookie(url, cookie);
+    return;
   }
+  context->cookie_store()->SetCookie(url, cookie);
 }
 
 void ResourceMessageFilter::OnGetCookies(const GURL& url,

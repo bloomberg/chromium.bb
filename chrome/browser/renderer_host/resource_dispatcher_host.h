@@ -22,12 +22,13 @@
 #include "base/process.h"
 #include "base/timer.h"
 #include "chrome/common/child_process_info.h"
-#include "chrome/browser/privacy_blacklist/blocked_response.h"
+#include "chrome/browser/privacy_blacklist/blacklist_interceptor.h"
 #include "chrome/browser/renderer_host/resource_queue.h"
 #include "ipc/ipc_message.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
 
+class BlacklistListener;
 class CrossSiteResourceHandler;
 class DownloadFileManager;
 class DownloadRequestManager;
@@ -409,6 +410,13 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // We own the save file manager.
   scoped_refptr<SaveFileManager> save_file_manager_;
 
+  // Handles requests blocked by privacy blacklists.
+  BlacklistInterceptor blacklist_interceptor_;
+
+  // Makes sure that each request is reliably checked against the privacy
+  // blacklist.
+  scoped_refptr<BlacklistListener> blacklist_listener_;
+
   scoped_refptr<UserScriptListener> user_script_listener_;
 
   scoped_refptr<SafeBrowsingService> safe_browsing_;
@@ -458,9 +466,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // Used during IPC message dispatching so that the handlers can get a pointer
   // to the source of the message.
   Receiver* receiver_;
-
-  // Keeps track of elements blocked by the Privacy Blacklist.
-  chrome::BlockedResponse blocked_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHost);
 };

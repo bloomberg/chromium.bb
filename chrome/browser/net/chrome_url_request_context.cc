@@ -7,13 +7,13 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/privacy_blacklist/blacklist_manager.h"
+#include "chrome/browser/privacy_blacklist/blacklist_request_info.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -676,49 +676,66 @@ const std::string& ChromeURLRequestContext::GetUserAgent(
 
 bool ChromeURLRequestContext::InterceptCookie(const URLRequest* request,
                                               std::string* cookie) {
-  const URLRequest::UserData* d =
-      request->GetUserData(&Blacklist::kRequestDataKey);
-  if (d) {
-    const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
-    if (match->attributes() & Blacklist::kDontStoreCookies) {
-      NotificationService::current()->Notify(
-          NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
-          Source<const ChromeURLRequestContext>(this),
-          Details<const URLRequest>(request));
+  BlacklistRequestInfo* request_info =
+      BlacklistRequestInfo::FromURLRequest(request);
+  // Requests which don't go through ResourceDispatcherHost don't have privacy
+  // blacklist request data.
+  if (!request_info)
+    return true;
+  const BlacklistManager* blacklist_manager =
+      request_info->GetBlacklistManager();
+  // TODO(phajdan.jr): remove the NULL check when blacklists are stable.
+  if (!blacklist_manager)
+    return NULL;
+  const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
+  scoped_ptr<Blacklist::Match> match(blacklist->findMatch(request->url()));
+  if (!match.get())
+    return true;
+  if (match->attributes() & Blacklist::kDontStoreCookies) {
+    NotificationService::current()->Notify(
+        NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
+        Source<const ChromeURLRequestContext>(this),
+        Details<const URLRequest>(request));
 
-      cookie->clear();
-      return false;
-    }
-    if (match->attributes() & Blacklist::kDontPersistCookies) {
-      *cookie = Blacklist::StripCookieExpiry(*cookie);
-    }
+    cookie->clear();
+    return false;
+  }
+  if (match->attributes() & Blacklist::kDontPersistCookies) {
+    *cookie = Blacklist::StripCookieExpiry(*cookie);
   }
   return true;
 }
 
 bool ChromeURLRequestContext::AllowSendingCookies(const URLRequest* request)
     const {
-  const URLRequest::UserData* d =
-      request->GetUserData(&Blacklist::kRequestDataKey);
-  if (d) {
-    const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
-    if (match->attributes() & Blacklist::kDontSendCookies) {
-      NotificationService::current()->Notify(
-          NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
-          Source<const ChromeURLRequestContext>(this),
-          Details<const URLRequest>(request));
+  BlacklistRequestInfo* request_info =
+      BlacklistRequestInfo::FromURLRequest(request);
+  // Requests which don't go through ResourceDispatcherHost don't have privacy
+  // blacklist request data.
+  if (!request_info)
+    return true;
+  const BlacklistManager* blacklist_manager =
+      request_info->GetBlacklistManager();
+  // TODO(phajdan.jr): remove the NULL check when blacklists are stable.
+  if (!blacklist_manager)
+    return NULL;
+  const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
+  scoped_ptr<Blacklist::Match> match(blacklist->findMatch(request->url()));
+  if (!match.get())
+    return true;
+  if (match->attributes() & Blacklist::kDontSendCookies) {
+    NotificationService::current()->Notify(
+        NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
+        Source<const ChromeURLRequestContext>(this),
+        Details<const URLRequest>(request));
 
-      return false;
-    }
+    return false;
   }
   return true;
 }
 
-const Blacklist* ChromeURLRequestContext::GetBlacklist() const {
-  // TODO(phajdan.jr): Remove the check when Privacy Blacklists become stable.
-  if (!blacklist_manager_)
-    return NULL;
-  return blacklist_manager_->GetCompiledBlacklist();
+BlacklistManager* ChromeURLRequestContext::GetBlacklistManager() const {
+  return blacklist_manager_.get();
 }
 
 void ChromeURLRequestContext::OnNewExtensions(

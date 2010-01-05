@@ -6,99 +6,17 @@
 
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/thread.h"
-#include "base/values.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
+#include "chrome/browser/privacy_blacklist/blacklist_test_util.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-class MyTestingProfile : public TestingProfile {
- public:
-  MyTestingProfile() {
-    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    path_ = temp_dir_.path();
-  }
-
- private:
-  ScopedTempDir temp_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(MyTestingProfile);
-};
-
-class TestBlacklistPathProvider : public BlacklistPathProvider {
- public:
-  explicit TestBlacklistPathProvider(Profile* profile) : profile_(profile) {
-  }
-
-  virtual bool AreBlacklistPathsReady() const {
-    return true;
-  }
-
-  virtual std::vector<FilePath> GetPersistentBlacklistPaths() {
-    return persistent_paths_;
-  }
-
-  virtual std::vector<FilePath> GetTransientBlacklistPaths() {
-    return transient_paths_;
-  }
-
-  void AddPersistentPath(const FilePath& path) {
-    persistent_paths_.push_back(path);
-    SendUpdateNotification();
-  }
-
-  void AddTransientPath(const FilePath& path) {
-    transient_paths_.push_back(path);
-    SendUpdateNotification();
-  }
-
-  void clear() {
-    persistent_paths_.clear();
-    transient_paths_.clear();
-    SendUpdateNotification();
-  }
-
- private:
-  void SendUpdateNotification() {
-    ListValue* privacy_blacklists = new ListValue;
-    privacy_blacklists->Append(new StringValue("dummy.pbl"));
-
-    DictionaryValue manifest;
-    manifest.SetString(extension_manifest_keys::kVersion, "1.0");
-    manifest.SetString(extension_manifest_keys::kName, "test");
-    manifest.Set(extension_manifest_keys::kPrivacyBlacklists,
-                 privacy_blacklists);
-
-#if defined(OS_WIN)
-    FilePath path(FILE_PATH_LITERAL("c:\\foo"));
-#elif defined(OS_POSIX)
-    FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
-    Extension extension(path);
-    std::string error;
-    ASSERT_TRUE(extension.InitFromValue(manifest, false, &error));
-    ASSERT_TRUE(error.empty());
-
-    NotificationService::current()->Notify(
-        NotificationType::EXTENSION_LOADED,
-        Source<Profile>(profile_),
-        Details<Extension>(&extension));
-  }
-
-  Profile* profile_;
-
-  std::vector<FilePath> persistent_paths_;
-  std::vector<FilePath> transient_paths_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBlacklistPathProvider);
-};
 
 class BlacklistManagerTest : public testing::Test, public NotificationObserver {
  public:
@@ -146,7 +64,7 @@ class BlacklistManagerTest : public testing::Test, public NotificationObserver {
 
   FilePath test_data_dir_;
 
-  MyTestingProfile profile_;
+  BlacklistTestingProfile profile_;
 
   TestBlacklistPathProvider path_provider_;
 
@@ -199,7 +117,6 @@ TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
   const Blacklist* blacklist2 = manager->GetCompiledBlacklist();
 
   // Added a real blacklist, the manager should recompile.
-  EXPECT_NE(blacklist1, blacklist2);
   EXPECT_TRUE(BlacklistHasMatch(blacklist2, "http://host/annoying_ads/ad.jpg"));
   EXPECT_FALSE(BlacklistHasMatch(blacklist2, "http://host/other_ads/ad.jpg"));
 
@@ -238,7 +155,7 @@ TEST_F(BlacklistManagerTest, BlacklistPathReadError) {
   FilePath bogus_path(test_data_dir_.AppendASCII("does_not_exist_randomness"));
   ASSERT_FALSE(file_util::PathExists(bogus_path));
   path_provider_.AddPersistentPath(bogus_path);
-  WaitForBlacklistError();
+  WaitForBlacklistUpdate();
 
   const Blacklist* blacklist = manager->GetCompiledBlacklist();
   EXPECT_TRUE(blacklist);
