@@ -583,3 +583,82 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+{
+   bug_31634a
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFDictionaryInit
+   fun:CFDictionaryCreate
+   fun:classDescription
+   fun:classDescription
+   fun:classDescription
+   fun:propertyInfoForSelector
+   fun:CAObject_resolveInstanceMethod
+   fun:_class_resolveMethod
+   fun:_class_lookupMethodAndLoadCache
+   fun:objc_msgSend
+   fun:_ZN15StatusBubbleMac9SetStatusERKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN7Browser13TabSelectedAtEP11TabContentsS1_ib
+   fun:_ZN13TabStripModel26ChangeSelectedContentsFromEP11TabContentsib
+   fun:_ZN13TabStripModel19InsertTabContentsAtEiP11TabContentsbb
+   fun:_ZN13TabStripModel14AddTabContentsEP11TabContentsibjb
+   fun:_ZN7Browser13AddTabWithURLERK4GURLS2_jbibP12SiteInstance
+   fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
+   fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7Profileb
+   fun:_ZN12_GLOBAL__N_113LaunchBrowserERK11CommandLineP7ProfileRKSbIwSt11char_traitsIwESaIwEEbPiP11BrowserInit
+   fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRKSbIwSt11char_traitsIwESaIwEEbP7ProfilePiPS_
+}
+{
+   bug_31634b
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFDictionaryInit
+   fun:CFDictionaryCreate
+   fun:classDescription
+   fun:propertyInfoForSelector
+   fun:CAObject_resolveInstanceMethod
+   fun:_class_resolveMethod
+   fun:_class_lookupMethodAndLoadCache
+   fun:objc_msgSend
+   fun:_ZN15StatusBubbleMac9SetStatusERKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN7Browser13TabSelectedAtEP11TabContentsS1_ib
+   fun:_ZN13TabStripModel26ChangeSelectedContentsFromEP11TabContentsib
+   fun:_ZN13TabStripModel19InsertTabContentsAtEiP11TabContentsbb
+   fun:_ZN13TabStripModel14AddTabContentsEP11TabContentsibjb
+   fun:_ZN7Browser13AddTabWithURLERK4GURLS2_jbibP12SiteInstance
+   fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
+   fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7Profileb
+   fun:_ZN12_GLOBAL__N_113LaunchBrowserERK11CommandLineP7ProfileRKSbIwSt11char_traitsIwESaIwEEbPiP11BrowserInit
+   fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRKSbIwSt11char_traitsIwESaIwEEbP7ProfilePiPS_
+   fun:_ZN11BrowserInit5StartERK11CommandLineRKSbIwSt11char_traitsIwESaIwEEP7ProfilePi
+   fun:_Z11BrowserMainRK18MainFunctionParams
+}
+{
+   bug_31634c
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFDictionaryInit
+   fun:CFDictionaryCreate
+   fun:classDescription
+   fun:classDescription
+   fun:propertyInfoForSelector
+   fun:CAObject_resolveInstanceMethod
+   fun:_class_resolveMethod
+   fun:_class_lookupMethodAndLoadCache
+   fun:objc_msgSend
+
+   fun:_ZN15StatusBubbleMac9SetStatusERKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN7Browser13TabSelectedAtEP11TabContentsS1_ib
+   fun:_ZN13TabStripModel26ChangeSelectedContentsFromEP11TabContentsib
+   fun:_ZN13TabStripModel19InsertTabContentsAtEiP11TabContentsbb
+   fun:_ZN13TabStripModel14AddTabContentsEP11TabContentsibjb
+   fun:_ZN7Browser13AddTabWithURLERK4GURLS2_jbibP12SiteInstance
+   fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
+   fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7Profileb
+   fun:_ZN12_GLOBAL__N_113LaunchBrowserERK11CommandLineP7ProfileRKSbIwSt11char_traitsIwESaIwEEbPiP11BrowserInit
+   fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRKSbIwSt11char_traitsIwESaIwEEbP7ProfilePiPS_
+   fun:_ZN11BrowserInit5StartERK11CommandLineRKSbIwSt11char_traitsIwESaIwEEP7ProfilePi
+}
