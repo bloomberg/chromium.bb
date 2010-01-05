@@ -96,8 +96,9 @@ def TestShellPath(target):
 
 def ApacheExecutablePath():
   """Returns the executable path to start Apache"""
-  return path_utils.PathFromBase('third_party', 'cygwin', "usr", "sbin",
-      "httpd.exe")
+  path = path_utils.PathFromBase('third_party', 'cygwin', "usr", "sbin")
+  # Don't return httpd.exe since we want to use this from cygwin.
+  return os.path.join(path, "httpd")
 
 def ApacheConfigFilePath():
   """Returns the path to Apache config file"""
@@ -126,6 +127,9 @@ def ShutDownHTTPServer(server_pid):
         Unused in this implementation of the method.
   """
   subprocess.Popen(('taskkill.exe', '/f', '/im', 'LightTPD.exe'),
+                   stdout=subprocess.PIPE,
+                   stderr=subprocess.PIPE).wait()
+  subprocess.Popen(('taskkill.exe', '/f', '/im', 'httpd.exe'),
                    stdout=subprocess.PIPE,
                    stderr=subprocess.PIPE).wait()
 
