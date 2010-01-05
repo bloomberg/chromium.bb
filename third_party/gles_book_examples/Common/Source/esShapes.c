@@ -19,6 +19,7 @@
 #include "esUtil.h"
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 ///
 // Defines
@@ -50,8 +51,8 @@
 /// \return The number of indices required for rendering the buffers (the number of indices stored in the indices array
 ///         if it is not NULL ) as a GL_TRIANGLE_STRIP
 //
-int ESUTIL_API esGenSphere ( int numSlices, float radius, GLfloat **vertices, GLfloat **normals, 
-                             GLfloat **texCoords, GLuint **indices )
+int esGenSphere ( int numSlices, float radius, GLfloat **vertices, GLfloat **normals, 
+                  GLfloat **texCoords, GLuint **indices )
 {
    int i;
    int j;
@@ -137,8 +138,8 @@ int ESUTIL_API esGenSphere ( int numSlices, float radius, GLfloat **vertices, GL
 /// \return The number of indices required for rendering the buffers (the number of indices stored in the indices array
 ///         if it is not NULL ) as a GL_TRIANGLE_STRIP
 //
-int ESUTIL_API esGenCube ( float scale, GLfloat **vertices, GLfloat **normals, 
-                           GLfloat **texCoords, GLuint **indices )
+int esGenCube ( float scale, GLfloat **vertices, GLfloat **normals, 
+                GLfloat **texCoords, GLuint **indices )
 {
    int i;
    int numVertices = 24;
