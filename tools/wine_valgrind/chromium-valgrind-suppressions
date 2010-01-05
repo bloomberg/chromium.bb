@@ -67,6 +67,41 @@
    fun:net::LogContains
    fun:SSLClientSocketTest_ConnectExpired_Test::TestBody
 }
+# Not sure why Valgrind started to think everything happening in the
+# usr1_handler is invalid. Can't seem to reproduce these locally.
+# This happens in URLFetcherTest.SameThreadsTest.
+{
+   ignore_wine_ntdll_usr1_handler_a
+   Memcheck:Addr1
+   ...
+   fun:usr1_handler
+}
+{
+   ignore_wine_ntdll_usr1_handler_b
+   Memcheck:Addr2
+   ...
+   fun:usr1_handler
+}
+{
+   ignore_wine_ntdll_usr1_handler_c
+   Memcheck:Addr4
+   ...
+   fun:usr1_handler
+}
+{
+   # This occurs at the same time as the usr1_handler errors above.
+   ignore_wine_ntdll_no_symbol
+   Memcheck:Addr4
+   obj:.*ntdll.dll.so
+}
+{
+   # mysterious leaks in rsaenh.dll.so, no symbols / incorrect symbols.
+   ignore_wine_rsaenh_no_symbols
+   Memcheck:Leak
+   fun:RtlAllocateHeap
+   obj:*rsaenh.dll.so
+
+}
 {
    wine_bug_20692_a
    Memcheck:Leak
@@ -83,6 +118,17 @@
    ...
    fun:CryptGenKey
    fun:base::RSAPrivateKey::Create
+}
+{
+   wine_bug_21260
+   Memcheck:Leak
+   fun:RtlAllocateHeap
+   ...
+   fun:ranges_add
+   fun:set_main_item
+   fun:LISTVIEW_SetItemT
+   fun:LISTVIEW_SetItemState
+
 }
 {
    # Boy, oh, boy do we need a better way to deal with this.
@@ -178,6 +224,16 @@
    fun:AffixMgr::parse_affix
    ...
    fun:SpellCheck::InitializeHunspell
+}
+{
+   bug_31640
+   Memcheck:Leak
+   fun:RtlAllocateHeap
+   ...
+   fun:xmlGetGlobalState
+   fun:__xmlGenericError
+   fun:ScopedXmlErrorFunc::ScopedXmlErrorFunc
+   fun:UpdateManifest::Parse
 }
 {
    # TODO(thestig) investigate why this is happening

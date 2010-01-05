@@ -814,7 +814,7 @@
 }
 # aw, heck, sometimes the symbols aren't there?
 {
-   <insert_a_suppression_name_here>
+   msacm_leaks_no_symbols
    Memcheck:Leak
    fun:calloc
    obj:*
