@@ -367,11 +367,10 @@ int32_t SRPC_Plugin::Write(NPStream* stream,
       dprintf(("default run\n"));
       nacl_srpc::Plugin* real_plugin =
         static_cast<nacl_srpc::Plugin*>(plugin_->get_handle());
-      real_plugin->set_nacl_module_origin(nacl::UrlToOrigin(stream->url));
-      real_plugin->set_local_url(stream->url);
-      real_plugin->Load(stream_buffer->get_buffer(),
+      real_plugin->Load(stream->url,
+                        stream->url,
+                        stream_buffer->get_buffer(),
                         stream_buffer->size());
-
       delete(stream_buffer);
       stream->pdata = NULL;
     }
@@ -400,9 +399,7 @@ void SRPC_Plugin::StreamAsFile(NPStream* stream,
     dprintf(("default run\n"));
     nacl_srpc::Plugin* real_plugin =
         static_cast<nacl_srpc::Plugin*>(plugin_->get_handle());
-    real_plugin->set_nacl_module_origin(nacl::UrlToOrigin(stream->url));
-    real_plugin->set_local_url(fname);
-    real_plugin->Load();
+    real_plugin->Load(stream->url, fname);
   }
 }
 
@@ -439,6 +436,9 @@ void SRPC_Plugin::URLNotify(const char* url,
     dprintf(("Unable to open: '%s' rsn %d\n", url, reason));
     if (NULL != closure) {
       closure->Run(NULL, NULL);
+    } else {
+      plugin()->get_handle()->GetPortablePluginInterface()->RunOnfailHandler(
+          GetPluginIdentifier());
     }
   }
   delete closure;  // NB: delete NULL is okay

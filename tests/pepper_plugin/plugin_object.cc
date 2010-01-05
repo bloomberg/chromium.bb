@@ -210,31 +210,26 @@ NPClass plugin_class = {
 
 // Bitmap painting -------------------------------------------------------------
 
-#ifdef PEPPER2D_ENABLED
+// Ugly green gradient filled rectangle.
 void DrawSampleBitmap(NPDeviceContext2D* context, int width, int height) {
-  SkRect rect;
-  rect.set(SkIntToScalar(0), SkIntToScalar(0),
-           SkIntToScalar(width), SkIntToScalar(height));
-  SkPath path;
-  path.addOval(rect);
+  int stride = context->stride;
+  unsigned char* buffer = reinterpret_cast<unsigned char*>(context->region);
+  static const int kPixelStride = 4;
 
-  // Create a gradient shader going from opaque green to transparent.
-  SkPaint paint;
-  paint.setAntiAlias(true);
+  if (0 == height || 0 == width)
+    return;
 
-  SkColor grad_colors[2];
-  grad_colors[0] = SkColorSetARGB(0xFF, 0x00, 0xFF, 0x00);
-  grad_colors[1] = SkColorSetARGB(0x00, 0x00, 0xFF, 0x00);
-  SkPoint grad_points[2];
-  grad_points[0].set(SkIntToScalar(0), SkIntToScalar(0));
-  grad_points[1].set(SkIntToScalar(0), SkIntToScalar(height));
-  paint.setShader(SkGradientShader::CreateLinear(
-      grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode))
-      ->safeUnref();
-
-  canvas.drawPath(path, paint);
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      int index = (i * stride + j) * kPixelStride;
+      // ARGB
+      buffer[index + 0] = 0xff / height * i;
+      buffer[index + 1] = 0x00;
+      buffer[index + 2] = 0xff;
+      buffer[index + 3] = 0x00;
+    }
+  }
 }
-#endif  // PEPPER2D_ENABLED
 
 void FlushCallback(NPP instance, NPDeviceContext* context,
                    NPError err, void* user_data) {
@@ -258,6 +253,20 @@ PluginObject::PluginObject(NPP npp)
   }
   device2d_ = extensions->acquireDevice(npp, NPPepper2DDevice);
   assert(NULL != device2d_);
+
+  NPDeviceContext2DConfig config;
+  NPDeviceContext2D context;
+  device2d_->initializeContext(npp_, &config, &context);
+
+#ifdef DCS
+  DrawSampleBitmap(&context, 400, 400);
+
+  // TODO(brettw) figure out why this cast is necessary, the functions seem to
+  // match. Could be a calling convention mismatch?
+  NPDeviceFlushContextCallbackPtr callback =
+      reinterpret_cast<NPDeviceFlushContextCallbackPtr>(&FlushCallback);
+  device2d_->flushContext(npp_, &context, callback, NULL);
+#endif  // DCS
 }
 
 PluginObject::~PluginObject() {
@@ -274,18 +283,11 @@ void PluginObject::SetWindow(const NPWindow& window) {
   NPDeviceContext2D context;
   device2d_->initializeContext(npp_, &config, &context);
 
-#ifdef PEPPER2D_ENABLED
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, window.width, window.height);
-  bitmap.setPixels(context.u.graphicsRgba.region);
-
-  SkCanvas canvas(bitmap);
-  DrawSampleBitmap(canvas, window.width, window.height);
+  DrawSampleBitmap(&context, window.width, window.height);
 
   // TODO(brettw) figure out why this cast is necessary, the functions seem to
   // match. Could be a calling convention mismatch?
   NPDeviceFlushContextCallbackPtr callback =
       reinterpret_cast<NPDeviceFlushContextCallbackPtr>(&FlushCallback);
   device2d_->flushContext(npp_, &context, callback, NULL);
-#endif  // PEPPER2D_ENABLED
 }
