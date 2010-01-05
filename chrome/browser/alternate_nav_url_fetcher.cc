@@ -97,9 +97,10 @@ void AlternateNavURLFetcher::OnURLFetchComplete(const URLFetcher* source,
     // domains (e.g. legit intranet sites), we're just trying to avoid
     // erroneously harassing the user with our own UI prompts.
     const char* kBlacklistedSites[] = {
-        "comcast.com",
-        "opendns.com",
-        "verizon.net",
+        // NOTE: Use complete URLs, because GURL() doesn't do fixup!
+        "http://comcast.com/",
+        "http://opendns.com/",
+        "http://verizon.net/",
     };
     for (size_t i = 0; i < arraysize(kBlacklistedSites); ++i) {
       if (net::RegistryControlledDomainService::SameDomainOrHost(
