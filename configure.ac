@@ -19,7 +19,7 @@
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 AC_PREREQ(2.60)
-AC_INIT([libdrm], 2.4.16, [dri-devel@lists.sourceforge.net], libdrm)
+AC_INIT([libdrm], 2.4.17, [dri-devel@lists.sourceforge.net], libdrm)
 AC_USE_SYSTEM_EXTENSIONS
 AC_CONFIG_SRCDIR([Makefile.am])
 AM_INIT_AUTOMAKE([dist-bzip2])
@@ -52,6 +52,11 @@ AC_ARG_ENABLE(intel,
 	      AS_HELP_STRING([--disable-intel],
 	      [Enable support for intel's KMS API (default: auto)]),
 	      [INTEL=$enableval], [INTEL=auto])
+
+AC_ARG_ENABLE(vmwgfx-experimental-api,
+	      AS_HELP_STRING([--enable-vmwgfx-experimental-api],
+	      [Install vmwgfx's experimental kernel API header (default: disabled)]),
+	      [VMWGFX=$enableval], [VMWGFX=no])
 
 AC_ARG_ENABLE(nouveau-experimental-api,
 	      AS_HELP_STRING([--enable-nouveau-experimental-api],
@@ -141,6 +146,8 @@ fi
 
 AM_CONDITIONAL(HAVE_LIBKMS, [test "x$LIBKMS" = xyes])
 
+AM_CONDITIONAL(HAVE_VMWGFX, [test "x$VMWGFX" = xyes])
+
 AM_CONDITIONAL(HAVE_NOUVEAU, [test "x$NOUVEAU" = xyes])
 
 AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" = xyes])
@@ -226,6 +233,7 @@ echo "$PACKAGE_STRING will be compiled with:"
 echo ""
 echo "  libkms         $LIBKMS"
 echo "  Intel API      $INTEL"
+echo "  vmwgfx API     $VMWGFX"
 echo "  Radeon API     $RADEON"
 echo "  Nouveau API    $NOUVEAU"
 echo ""

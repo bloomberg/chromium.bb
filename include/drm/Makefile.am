@@ -36,3 +36,8 @@ klibdrminclude_HEADERS = \
 	sis_drm.h \
 	via_drm.h \
 	mach64_drm.h
+
+
+if HAVE_VMWGFX
+klibdrminclude_HEADERS += vmwgfx_drm.h
+endif

@@ -35,6 +35,8 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include "radeon_cs.h"
+#include "radeon_cs_int.h"
+#include "radeon_bo_int.h"
 #include "radeon_cs_gem.h"
 #include "radeon_bo_gem.h"
 #include "drm.h"
@@ -53,15 +55,15 @@ struct cs_reloc_gem {
 #define RELOC_SIZE (sizeof(struct cs_reloc_gem) / sizeof(uint32_t))
 
 struct cs_gem {
-    struct radeon_cs            base;
+    struct radeon_cs_int            base;
     struct drm_radeon_cs        cs;
     struct drm_radeon_cs_chunk  chunks[2];
     unsigned                    nrelocs;
     uint32_t                    *relocs;
-    struct radeon_bo            **relocs_bo;
+    struct radeon_bo_int        **relocs_bo;
 };
 
-static struct radeon_cs *cs_gem_create(struct radeon_cs_manager *csm,
+static struct radeon_cs_int *cs_gem_create(struct radeon_cs_manager *csm,
                                        uint32_t ndw)
 {
     struct cs_gem *csg;
@@ -84,7 +86,7 @@ static struct radeon_cs *cs_gem_create(struct radeon_cs_manager *csm,
     csg->base.relocs_total_size = 0;
     csg->base.crelocs = 0;
     csg->nrelocs = 4096 / (4 * 4) ;
-    csg->relocs_bo = (struct radeon_bo**)calloc(1,
+    csg->relocs_bo = (struct radeon_bo_int**)calloc(1,
                                                 csg->nrelocs*sizeof(void*));
     if (csg->relocs_bo == NULL) {
         free(csg->base.packets);
@@ -104,21 +106,22 @@ static struct radeon_cs *cs_gem_create(struct radeon_cs_manager *csm,
     csg->chunks[1].chunk_id = RADEON_CHUNK_ID_RELOCS;
     csg->chunks[1].length_dw = 0;
     csg->chunks[1].chunk_data = (uint64_t)(uintptr_t)csg->relocs;
-    return (struct radeon_cs*)csg;
+    return (struct radeon_cs_int*)csg;
 }
 
-static int cs_gem_write_reloc(struct radeon_cs *cs,
+static int cs_gem_write_reloc(struct radeon_cs_int *cs,
                               struct radeon_bo *bo,
                               uint32_t read_domain,
                               uint32_t write_domain,
                               uint32_t flags)
 {
+    struct radeon_bo_int *boi = (struct radeon_bo_int *)bo;
     struct cs_gem *csg = (struct cs_gem*)cs;
     struct cs_reloc_gem *reloc;
     uint32_t idx;
     unsigned i;
 
-    assert(bo->space_accounted);
+    assert(boi->space_accounted);
 
     /* check domains */
     if ((read_domain && write_domain) || (!read_domain && !write_domain)) {
@@ -162,8 +165,8 @@ static int cs_gem_write_reloc(struct radeon_cs *cs,
             /* update flags */
             reloc->flags |= (flags & reloc->flags);
             /* write relocation packet */
-            radeon_cs_write_dword(cs, 0xc0001000);
-            radeon_cs_write_dword(cs, idx);
+            radeon_cs_write_dword((struct radeon_cs *)cs, 0xc0001000);
+            radeon_cs_write_dword((struct radeon_cs *)cs, idx);
             return 0;
         }
     }
@@ -176,7 +179,7 @@ static int cs_gem_write_reloc(struct radeon_cs *cs,
         if (tmp == NULL) {
             return -ENOMEM;
         }
-        csg->relocs_bo = (struct radeon_bo**)tmp;
+        csg->relocs_bo = (struct radeon_bo_int **)tmp;
         size = ((csg->nrelocs + 1) * RELOC_SIZE * 4);
         tmp = (uint32_t*)realloc(csg->relocs, size);
         if (tmp == NULL) {
@@ -186,7 +189,7 @@ static int cs_gem_write_reloc(struct radeon_cs *cs,
         csg->nrelocs += 1;
         csg->chunks[1].chunk_data = (uint64_t)(uintptr_t)csg->relocs;
     }
-    csg->relocs_bo[csg->base.crelocs] = bo;
+    csg->relocs_bo[csg->base.crelocs] = boi;
     idx = (csg->base.crelocs++) * RELOC_SIZE;
     reloc = (struct cs_reloc_gem*)&csg->relocs[idx];
     reloc->handle = bo->handle;
@@ -195,33 +198,31 @@ static int cs_gem_write_reloc(struct radeon_cs *cs,
     reloc->flags = flags;
     csg->chunks[1].length_dw += RELOC_SIZE;
     radeon_bo_ref(bo);
-    cs->relocs_total_size += bo->size;
-    radeon_cs_write_dword(cs, 0xc0001000);
-    radeon_cs_write_dword(cs, idx);
+    cs->relocs_total_size += boi->size;
+    radeon_cs_write_dword((struct radeon_cs *)cs, 0xc0001000);
+    radeon_cs_write_dword((struct radeon_cs *)cs, idx);
     return 0;
 }
 
-static int cs_gem_begin(struct radeon_cs *cs,
+static int cs_gem_begin(struct radeon_cs_int *cs,
                         uint32_t ndw,
                         const char *file,
                         const char *func,
                         int line)
 {
 
-    if (cs->section) {
+    if (cs->section_ndw) {
         fprintf(stderr, "CS already in a section(%s,%s,%d)\n",
                 cs->section_file, cs->section_func, cs->section_line);
         fprintf(stderr, "CS can't start section(%s,%s,%d)\n",
                 file, func, line);
         return -EPIPE;
     }
-    cs->section = 1;
     cs->section_ndw = ndw;
     cs->section_cdw = 0;
     cs->section_file = file;
     cs->section_func = func;
     cs->section_line = line;
-
 
     if (cs->cdw + ndw > cs->ndw) {
         uint32_t tmp, *ptr;
@@ -235,22 +236,20 @@ static int cs_gem_begin(struct radeon_cs *cs,
         cs->packets = ptr;
         cs->ndw = tmp;
     }
-
     return 0;
 }
 
-static int cs_gem_end(struct radeon_cs *cs,
+static int cs_gem_end(struct radeon_cs_int *cs,
                       const char *file,
                       const char *func,
                       int line)
 
 {
-    if (!cs->section) {
+    if (!cs->section_ndw) {
         fprintf(stderr, "CS no section to end at (%s,%s,%d)\n",
                 file, func, line);
         return -EPIPE;
     }
-    cs->section = 0;
     if (cs->section_ndw != cs->section_cdw) {
         fprintf(stderr, "CS section size missmatch start at (%s,%s,%d) %d vs %d\n",
                 cs->section_file, cs->section_func, cs->section_line, cs->section_ndw, cs->section_cdw);
@@ -258,10 +257,11 @@ static int cs_gem_end(struct radeon_cs *cs,
                 file, func, line);
         return -EPIPE;
     }
+    cs->section_ndw = 0;
     return 0;
 }
 
-static int cs_gem_emit(struct radeon_cs *cs)
+static int cs_gem_emit(struct radeon_cs_int *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
     uint64_t chunk_array[2];
@@ -280,7 +280,7 @@ static int cs_gem_emit(struct radeon_cs *cs)
                             &csg->cs, sizeof(struct drm_radeon_cs));
     for (i = 0; i < csg->base.crelocs; i++) {
 	    csg->relocs_bo[i]->space_accounted = 0;
-	    radeon_bo_unref(csg->relocs_bo[i]);
+	    radeon_bo_unref((struct radeon_bo *)csg->relocs_bo[i]);
 	    csg->relocs_bo[i] = NULL;
     }
 
@@ -290,7 +290,7 @@ static int cs_gem_emit(struct radeon_cs *cs)
     return r;
 }
 
-static int cs_gem_destroy(struct radeon_cs *cs)
+static int cs_gem_destroy(struct radeon_cs_int *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
 
@@ -301,7 +301,7 @@ static int cs_gem_destroy(struct radeon_cs *cs)
     return 0;
 }
 
-static int cs_gem_erase(struct radeon_cs *cs)
+static int cs_gem_erase(struct radeon_cs_int *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
     unsigned i;
@@ -309,21 +309,21 @@ static int cs_gem_erase(struct radeon_cs *cs)
     if (csg->relocs_bo) {
         for (i = 0; i < csg->base.crelocs; i++) {
             if (csg->relocs_bo[i]) {
-                radeon_bo_unref(csg->relocs_bo[i]);
+	        radeon_bo_unref((struct radeon_bo *)csg->relocs_bo[i]);
                 csg->relocs_bo[i] = NULL;
             }
         }
     }
     cs->relocs_total_size = 0;
     cs->cdw = 0;
-    cs->section = 0;
+    cs->section_ndw = 0;
     cs->crelocs = 0;
     csg->chunks[0].length_dw = 0;
     csg->chunks[1].length_dw = 0;
     return 0;
 }
 
-static int cs_gem_need_flush(struct radeon_cs *cs)
+static int cs_gem_need_flush(struct radeon_cs_int *cs)
 {
     return 0; //(cs->relocs_total_size > (32*1024*1024));
 }
@@ -350,7 +350,7 @@ static int cs_gem_need_flush(struct radeon_cs *cs)
 #define CP_PACKET0_GET_ONE_REG_WR(h) (((h) >> 15) & 1)
 #define CP_PACKET3_GET_OPCODE(h) (((h) >> 8) & 0xFF)
 
-static void cs_gem_print(struct radeon_cs *cs, FILE *file)
+static void cs_gem_print(struct radeon_cs_int *cs, FILE *file)
 {
     unsigned opcode;
     unsigned reg;

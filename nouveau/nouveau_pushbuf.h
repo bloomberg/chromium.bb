@@ -111,6 +111,14 @@ BEGIN_RING(struct nouveau_channel *chan, struct nouveau_grobj *gr,
 	chan->pushbuf->remaining -= (size + 1);
 }
 
+/* non-incrementing BEGIN_RING */
+static __inline__ void
+BEGIN_RING_NI(struct nouveau_channel *chan, struct nouveau_grobj *gr,
+	   unsigned mthd, unsigned size)
+{
+	BEGIN_RING(chan, gr, mthd | 0x40000000, size);
+}
+
 static __inline__ void
 FIRE_RING(struct nouveau_channel *chan)
 {
