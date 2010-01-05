@@ -592,6 +592,7 @@
         'browser/cocoa/cocoa_test_helper.h',
         'browser/cocoa/cocoa_test_helper.mm',
         'browser/cocoa/command_observer_bridge_unittest.mm',
+        'browser/cocoa/cookies_window_controller_unittest.mm',
         'browser/cocoa/custom_home_pages_model_unittest.mm',
         'browser/cocoa/delayedmenu_button_unittest.mm',
         'browser/cocoa/download_shelf_mac_unittest.mm',

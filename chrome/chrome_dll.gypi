@@ -186,6 +186,7 @@
                 'app/nibs/BookmarkNameFolder.xib',
                 'app/nibs/BrowserWindow.xib',
                 'app/nibs/ClearBrowsingData.xib',
+                'app/nibs/Cookies.xib',
                 'app/nibs/DownloadItem.xib',
                 'app/nibs/DownloadShelf.xib',
                 'app/nibs/EditSearchEngine.xib',

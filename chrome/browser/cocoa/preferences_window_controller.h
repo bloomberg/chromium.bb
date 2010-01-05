@@ -9,6 +9,7 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/common/pref_member.h"
 
+@class CookiesWindowController;
 @class CustomHomePagesModel;
 @class FontLanguageSettingsController;
 class PrefObserverBridge;
@@ -128,6 +129,7 @@ class ProfileSyncService;
 - (IBAction)doSyncAction:(id)sender;
 
 // Under the hood
+- (IBAction)showCookies:(id)sender;
 - (IBAction)browseDownloadLocation:(id)sender;
 - (IBAction)privacyLearnMore:(id)sender;
 - (IBAction)changeFontAndLanguageSettings:(id)sender;

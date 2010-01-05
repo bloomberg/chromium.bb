@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
+#import "chrome/browser/cocoa/cookies_window_controller.h"
 #import "chrome/browser/cocoa/custom_home_pages_model.h"
 #import "chrome/browser/cocoa/font_language_settings_controller.h"
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
@@ -1297,6 +1298,14 @@ const int kDisabledIndex = 1;
     defaultDownloadLocation_.SetValue(base::SysNSStringToWide([path path]));
     [self didChangeValueForKey:@"defaultDownloadLocation"];
   }
+}
+
+// Shows the cookies controller.
+- (IBAction)showCookies:(id)sender {
+  // The controller will clean itself up.
+  CookiesWindowController* controller =
+      [[CookiesWindowController alloc] initWithProfile:profile_];
+  [controller attachSheetTo:[self window]];
 }
 
 // Bring up an open panel to allow the user to set a new downloads location.

@@ -25,6 +25,9 @@ include_rules = [
   # Allow inclusion of the database library.
   "+webkit/database",
 
+  # Allow Apple code ImageAndTextCell.
+  "+third_party/apple",
+
   # Allow inclusion of Mozilla interface headers.
   "+third_party/mozilla",
 

@@ -382,6 +382,10 @@
         'browser/cocoa/command_observer_bridge.mm',
         'browser/cocoa/constrained_window_mac.h',
         'browser/cocoa/constrained_window_mac.mm',
+        'browser/cooca/cookie_tree_node.h',
+        'browser/cocoa/cookie_tree_node.mm',
+        'browser/cocoa/cookies_window_controller.h',
+        'browser/cocoa/cookies_window_controller.mm',
         'browser/cocoa/custom_home_pages_model.h',
         'browser/cocoa/custom_home_pages_model.mm',
         'browser/cocoa/delayedmenu_button.h',
@@ -1937,6 +1941,9 @@
           ],
           'sources': [
             'browser/net/ssl_config_service_manager_system.cc',
+            # Build Apple sample code
+            '../third_party/apple/ImageAndTextCell.h',
+            '../third_party/apple/ImageAndTextCell.m',
             # Build the necessary GTM sources
             '../third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.h',
             '../third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.m',
@@ -1970,6 +1977,7 @@
             '../base/chrome_application_mac.h',
           ],
           'include_dirs': [
+            '../third_party/apple',
             '../third_party/GTM',
             '../third_party/GTM/AppKit',
             '../third_party/GTM/Foundation',
