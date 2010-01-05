@@ -24,6 +24,11 @@ class NineBox {
   // ids that will be passed to the resource bundle.  Use 0 for no image.
   NineBox(int top_left, int top, int top_right, int left, int center, int right,
           int bottom_left, int bottom, int bottom_right);
+
+  // Construct a NineBox from a single image and insets indicating the sizes
+  // of the edges and corners.
+  NineBox(int image, int top_margin, int bottom_margin, int left_margin,
+          int right_margin);
   ~NineBox();
 
   // Render the NineBox to |dst|.
@@ -46,6 +51,7 @@ class NineBox {
 
  private:
   GdkPixbuf* images_[9];
+  bool unref_pixbufs_on_destroy_;
 };
 
 #endif  // CHROME_BROWSER_GTK_NINE_BOX_H_

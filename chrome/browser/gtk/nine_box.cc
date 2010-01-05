@@ -32,7 +32,8 @@ void TileImage(cairo_t* cr, GdkPixbuf* src,
 }  // namespace
 
 NineBox::NineBox(int top_left, int top, int top_right, int left, int center,
-                 int right, int bottom_left, int bottom, int bottom_right) {
+                 int right, int bottom_left, int bottom, int bottom_right)
+    : unref_pixbufs_on_destroy_(false) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   images_[0] = top_left ? rb.GetPixbufNamed(top_left) : NULL;
   images_[1] = top ? rb.GetPixbufNamed(top) : NULL;
@@ -45,7 +46,45 @@ NineBox::NineBox(int top_left, int top, int top_right, int left, int center,
   images_[8] = bottom_right ? rb.GetPixbufNamed(bottom_right) : NULL;
 }
 
+NineBox::NineBox(int image, int top_margin, int bottom_margin, int left_margin,
+                 int right_margin)
+    : unref_pixbufs_on_destroy_(true) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  GdkPixbuf* pixbuf = rb.GetPixbufNamed(image);
+  int width = gdk_pixbuf_get_width(pixbuf);
+  int height = gdk_pixbuf_get_height(pixbuf);
+  int inset_width = left_margin + right_margin;
+  int inset_height = top_margin + bottom_margin;
+
+  images_[0] = gdk_pixbuf_new_subpixbuf(pixbuf, 0, 0, left_margin, top_margin);
+  images_[1] = gdk_pixbuf_new_subpixbuf(pixbuf, left_margin, 0,
+                                        width - inset_width, top_margin);
+  images_[2] = gdk_pixbuf_new_subpixbuf(pixbuf, width - right_margin, 0,
+                                        right_margin, top_margin);
+  images_[3] = gdk_pixbuf_new_subpixbuf(pixbuf, 0, top_margin,
+                                        left_margin, height - inset_height);
+  images_[4] = gdk_pixbuf_new_subpixbuf(pixbuf, left_margin, top_margin,
+                                        width - inset_width,
+                                        height - inset_height);
+  images_[5] = gdk_pixbuf_new_subpixbuf(pixbuf, width - right_margin,
+                                        top_margin, right_margin,
+                                        height - inset_height);
+  images_[6] = gdk_pixbuf_new_subpixbuf(pixbuf, 0, height - bottom_margin,
+                                        left_margin, bottom_margin);
+  images_[7] = gdk_pixbuf_new_subpixbuf(pixbuf, left_margin,
+                                        height - bottom_margin,
+                                        width - inset_width, bottom_margin);
+  images_[8] = gdk_pixbuf_new_subpixbuf(pixbuf, width - right_margin,
+                                        height - bottom_margin,
+                                        right_margin, bottom_margin);
+}
+
 NineBox::~NineBox() {
+  if (unref_pixbufs_on_destroy_) {
+    for (int i = 0; i < 9; i++) {
+      g_object_unref(images_[i]);
+    }
+  }
 }
 
 void NineBox::RenderToWidget(GtkWidget* dst) const {
