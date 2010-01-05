@@ -1,4 +1,12 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file is auto-generated. DO NOT EDIT!
+
 // This file contains unit tests for gles2 commmand ids
+#ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_ID_TEST_AUTOGEN_H_
+#define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_ID_TEST_AUTOGEN_H_
 
 // *** These IDs MUST NOT CHANGE!!! ***
 // Changing them will break all client programs.
@@ -356,4 +364,6 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
   COMPILE_ASSERT(SwapBuffers::kCmdId == 431,
                  GLES2_SwapBuffers_kCmdId_mismatch);
 }
+
+#endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_ID_TEST_AUTOGEN_H_
 

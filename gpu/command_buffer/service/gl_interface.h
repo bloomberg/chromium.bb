@@ -11,6 +11,27 @@
 
 #include <GLES2/gl2types.h>
 
+// These are Desktop GL constants that we want to test that our GLES2
+// implemenation does not let through.
+#define GL_PROXY_TEXTURE_CUBE_MAP 0x851B
+#define GL_BGR 0x80E0
+#define GL_BGRA 0x80E1
+#define GL_UNPACK_SWAP_BYTES 0x0CF0
+#define GL_PACK_SWAP_BYTES 0x0D00
+#define GL_PERSPECTIVE_CORRECTION_HINT 0x0C50
+#define GL_QUADS 0x0007
+#define GL_POLYGON 0x0009
+#define GL_FOG 0x0B60
+#define GL_CLIP_PLANE0 0x3000
+#define GL_GENERATE_MIPMAP 0x8191
+#define GL_PIXEL_PACK_BUFFER 0x88EB
+#define GL_POINT_SPRITE 0x8861
+#define GL_MIN 0x8007
+#define GL_MAX 0x8008
+#define GL_TEXTURE_1D 0x0DE0
+#define GL_TEXTURE_3D 0x806F
+#define GL_DOUBLE 0x140A
+
 namespace gles2 {
 
 class GLInterface {

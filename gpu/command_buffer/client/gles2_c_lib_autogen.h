@@ -1,8 +1,12 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // This file is auto-generated. DO NOT EDIT!
 
-
 // These functions emluate GLES2 over command buffers.
-
+#ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
+#define GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 
 void GLES2ActiveTexture(GLenum texture) {
   gles2::GetGLContext()->ActiveTexture(texture);
@@ -76,32 +80,26 @@ void GLES2CompileShader(GLuint shader) {
 void GLES2CompressedTexImage2D(
     GLenum target, GLint level, GLenum internalformat, GLsizei width,
     GLsizei height, GLint border, GLsizei imageSize, const void* data) {
-  gles2::GetGLContext(
-      )->CompressedTexImage2D(
-          target, level, internalformat, width, height, border, imageSize,
-          data);
+  gles2::GetGLContext()->CompressedTexImage2D(
+      target, level, internalformat, width, height, border, imageSize, data);
 }
 void GLES2CompressedTexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLsizei imageSize, const void* data) {
-  gles2::GetGLContext(
-      )->CompressedTexSubImage2D(
-          target, level, xoffset, yoffset, width, height, format, imageSize,
-          data);
+  gles2::GetGLContext()->CompressedTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, imageSize, data);
 }
 void GLES2CopyTexImage2D(
     GLenum target, GLint level, GLenum internalformat, GLint x, GLint y,
     GLsizei width, GLsizei height, GLint border) {
-  gles2::GetGLContext(
-      )->CopyTexImage2D(
-          target, level, internalformat, x, y, width, height, border);
+  gles2::GetGLContext()->CopyTexImage2D(
+      target, level, internalformat, x, y, width, height, border);
 }
 void GLES2CopyTexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
     GLsizei width, GLsizei height) {
-  gles2::GetGLContext(
-      )->CopyTexSubImage2D(
-          target, level, xoffset, yoffset, x, y, width, height);
+  gles2::GetGLContext()->CopyTexSubImage2D(
+      target, level, xoffset, yoffset, x, y, width, height);
 }
 GLuint GLES2CreateProgram() {
   return gles2::GetGLContext()->CreateProgram();
@@ -170,15 +168,14 @@ void GLES2Flush() {
 void GLES2FramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint renderbuffer) {
-  gles2::GetGLContext(
-      )->FramebufferRenderbuffer(
-          target, attachment, renderbuffertarget, renderbuffer);
+  gles2::GetGLContext()->FramebufferRenderbuffer(
+      target, attachment, renderbuffertarget, renderbuffer);
 }
 void GLES2FramebufferTexture2D(
     GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
     GLint level) {
-  gles2::GetGLContext(
-      )->FramebufferTexture2D(target, attachment, textarget, texture, level);
+  gles2::GetGLContext()->FramebufferTexture2D(
+      target, attachment, textarget, texture, level);
 }
 void GLES2FrontFace(GLenum mode) {
   gles2::GetGLContext()->FrontFace(mode);
@@ -201,14 +198,14 @@ void GLES2GenTextures(GLsizei n, GLuint* textures) {
 void GLES2GetActiveAttrib(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
-  gles2::GetGLContext(
-      )->GetActiveAttrib(program, index, bufsize, length, size, type, name);
+  gles2::GetGLContext()->GetActiveAttrib(
+      program, index, bufsize, length, size, type, name);
 }
 void GLES2GetActiveUniform(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
-  gles2::GetGLContext(
-      )->GetActiveUniform(program, index, bufsize, length, size, type, name);
+  gles2::GetGLContext()->GetActiveUniform(
+      program, index, bufsize, length, size, type, name);
 }
 void GLES2GetAttachedShaders(
     GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders) {
@@ -231,9 +228,8 @@ void GLES2GetFloatv(GLenum pname, GLfloat* params) {
 }
 void GLES2GetFramebufferAttachmentParameteriv(
     GLenum target, GLenum attachment, GLenum pname, GLint* params) {
-  gles2::GetGLContext(
-      )->GetFramebufferAttachmentParameteriv(
-          target, attachment, pname, params);
+  gles2::GetGLContext()->GetFramebufferAttachmentParameteriv(
+      target, attachment, pname, params);
 }
 void GLES2GetIntegerv(GLenum pname, GLint* params) {
   gles2::GetGLContext()->GetIntegerv(pname, params);
@@ -258,8 +254,8 @@ void GLES2GetShaderInfoLog(
 }
 void GLES2GetShaderPrecisionFormat(
     GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision) {
-  gles2::GetGLContext(
-      )->GetShaderPrecisionFormat(shadertype, precisiontype, range, precision);
+  gles2::GetGLContext()->GetShaderPrecisionFormat(
+      shadertype, precisiontype, range, precision);
 }
 void GLES2GetShaderSource(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
@@ -335,8 +331,8 @@ void GLES2ReadPixels(
 }
 void GLES2RenderbufferStorage(
     GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
-  gles2::GetGLContext(
-      )->RenderbufferStorage(target, internalformat, width, height);
+  gles2::GetGLContext()->RenderbufferStorage(
+      target, internalformat, width, height);
 }
 void GLES2SampleCoverage(GLclampf value, GLboolean invert) {
   gles2::GetGLContext()->SampleCoverage(value, invert);
@@ -345,8 +341,8 @@ void GLES2Scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
   gles2::GetGLContext()->Scissor(x, y, width, height);
 }
 void GLES2ShaderSource(
-    GLuint shader, GLsizei count, const char** string, const GLint* length) {
-  gles2::GetGLContext()->ShaderSource(shader, count, string, length);
+    GLuint shader, GLsizei count, const char** str, const GLint* length) {
+  gles2::GetGLContext()->ShaderSource(shader, count, str, length);
 }
 void GLES2StencilFunc(GLenum func, GLint ref, GLuint mask) {
   gles2::GetGLContext()->StencilFunc(func, ref, mask);
@@ -372,10 +368,9 @@ void GLES2TexImage2D(
     GLenum target, GLint level, GLint internalformat, GLsizei width,
     GLsizei height, GLint border, GLenum format, GLenum type,
     const void* pixels) {
-  gles2::GetGLContext(
-      )->TexImage2D(
-          target, level, internalformat, width, height, border, format, type,
-          pixels);
+  gles2::GetGLContext()->TexImage2D(
+      target, level, internalformat, width, height, border, format, type,
+      pixels);
 }
 void GLES2TexParameterf(GLenum target, GLenum pname, GLfloat param) {
   gles2::GetGLContext()->TexParameterf(target, pname, param);
@@ -392,10 +387,8 @@ void GLES2TexParameteriv(GLenum target, GLenum pname, const GLint* params) {
 void GLES2TexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLenum type, const void* pixels) {
-  gles2::GetGLContext(
-      )->TexSubImage2D(
-          target, level, xoffset, yoffset, width, height, format, type,
-          pixels);
+  gles2::GetGLContext()->TexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, type, pixels);
 }
 void GLES2Uniform1f(GLint location, GLfloat x) {
   gles2::GetGLContext()->Uniform1f(location, x);
@@ -492,8 +485,8 @@ void GLES2VertexAttrib4fv(GLuint indx, const GLfloat* values) {
 void GLES2VertexAttribPointer(
     GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
     const void* ptr) {
-  gles2::GetGLContext(
-      )->VertexAttribPointer(indx, size, type, normalized, stride, ptr);
+  gles2::GetGLContext()->VertexAttribPointer(
+      indx, size, type, normalized, stride, ptr);
 }
 void GLES2Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   gles2::GetGLContext()->Viewport(x, y, width, height);
@@ -501,4 +494,6 @@ void GLES2Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
 void GLES2SwapBuffers() {
   gles2::GetGLContext()->SwapBuffers();
 }
+
+#endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

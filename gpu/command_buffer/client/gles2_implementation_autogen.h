@@ -1,7 +1,14 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // This file is auto-generated. DO NOT EDIT!
 
 // This file is included by gles2_implementation.h to declare the
 // GL api functions.
+#ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
+#define GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
+
 void ActiveTexture(GLenum texture) {
   helper_->ActiveTexture(texture);
 }
@@ -467,7 +474,7 @@ void Scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
 }
 
 void ShaderSource(
-    GLuint shader, GLsizei count, const char** string, const GLint* length);
+    GLuint shader, GLsizei count, const char** str, const GLint* length);
 
 void StencilFunc(GLenum func, GLint ref, GLuint mask) {
   helper_->StencilFunc(func, ref, mask);
@@ -648,4 +655,6 @@ void Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
 void SwapBuffers() {
   helper_->SwapBuffers();
 }
+
+#endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

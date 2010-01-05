@@ -63,6 +63,9 @@ class GLES2Decoder : public CommonDecoder {
   // Destroys the graphics context.
   virtual void Destroy() = 0;
 
+  // Gets a service id by client id.
+  virtual uint32 GetServiceIdForTesting(uint32 client_id) = 0;
+
  protected:
   GLES2Decoder();
 

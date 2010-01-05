@@ -1,3 +1,12 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file is auto-generated. DO NOT EDIT!
+
+#ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
+#define GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
+
   void ActiveTexture(GLenum texture) {
     gles2::ActiveTexture& c = GetCmdSpace<gles2::ActiveTexture>();
     c.Init(texture);
@@ -17,11 +26,10 @@
 
   void BindAttribLocationImmediate(
       GLuint program, GLuint index, const char* name) {
-    const uint32 size = gles2::BindAttribLocationImmediate::ComputeSize(name);
+    const uint32 data_size = strlen(name);
     gles2::BindAttribLocationImmediate& c =
-        GetImmediateCmdSpaceTotalSize<gles2::BindAttribLocationImmediate>(
-            size);
-    c.Init(program, index, name);
+        GetImmediateCmdSpace<gles2::BindAttribLocationImmediate>(data_size);
+    c.Init(program, index, name, data_size);
   }
 
   void BindBuffer(GLenum target, GLuint buffer) {
@@ -1111,4 +1119,6 @@
     gles2::SwapBuffers& c = GetCmdSpace<gles2::SwapBuffers>();
     c.Init();
   }
+
+#endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

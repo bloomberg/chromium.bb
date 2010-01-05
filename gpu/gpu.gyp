@@ -299,6 +299,7 @@
           'command_buffer/service/gl_mock.h',
           'command_buffer/service/gl_mock.cc',
           'command_buffer/service/gles2_cmd_decoder_unittest.cc',
+          'command_buffer/service/gles2_cmd_decoder_unittest_autogen.h',
           'command_buffer/common/gles2_cmd_format_test.cc',
           'command_buffer/common/gles2_cmd_format_test_autogen.h',
           'command_buffer/common/gles2_cmd_id_test.cc',

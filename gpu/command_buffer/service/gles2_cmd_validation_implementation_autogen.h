@@ -1,5 +1,11 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // This file is auto-generated. DO NOT EDIT!
 
+#ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_
+#define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_
 
 bool ValidateGLenumBufferParameter(GLenum value) {
   switch (value) {
@@ -303,7 +309,16 @@ bool ValidateGLenumFrameBufferTarget(GLenum value) {
   }
 }
 
-bool ValidateGLenumPixelStoreAlignment(GLenum value) {
+bool ValidateGLbooleanFalse(GLenum value) {
+  switch (value) {
+    case false:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool ValidateGLintPixelStoreAlignment(GLenum value) {
   switch (value) {
     case 1:
     case 2:
@@ -415,7 +430,7 @@ bool ValidateGLenumStencilOp(GLenum value) {
   }
 }
 
-bool ValidateGLenumVertexAttribSize(GLenum value) {
+bool ValidateGLintVertexAttribSize(GLenum value) {
   switch (value) {
     case 1:
     case 2:
@@ -484,4 +499,6 @@ bool ValidateGLenumVertexPointer(GLenum value) {
       return false;
   }
 }
+
+#endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_
 

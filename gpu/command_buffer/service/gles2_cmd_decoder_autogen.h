@@ -1,6 +1,12 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // This file is auto-generated. DO NOT EDIT!
 
 // It is included by gles2_cmd_decoder.cc
+#ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
+#define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
 
 parse_error::ParseError GLES2DecoderImpl::HandleActiveTexture(
     uint32 immediate_data_size, const gles2::ActiveTexture& c) {
@@ -333,7 +339,6 @@ parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexSubImage2D(
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexSubImage2DImmediate(
-    
     uint32 immediate_data_size,
     const gles2::CompressedTexSubImage2DImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
@@ -706,7 +711,9 @@ parse_error::ParseError GLES2DecoderImpl::HandleGenBuffers(
   if (buffers == NULL) {
     return parse_error::kParseOutOfBounds;
   }
-  GenGLObjects<GLGenBuffersHelper>(n, buffers);
+  if (!GenGLObjects<GLGenBuffersHelper>(n, buffers)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
@@ -719,7 +726,9 @@ parse_error::ParseError GLES2DecoderImpl::HandleGenBuffersImmediate(
   if (buffers == NULL) {
     return parse_error::kParseOutOfBounds;
   }
-  GenGLObjects<GLGenBuffersHelper>(n, buffers);
+  if (!GenGLObjects<GLGenBuffersHelper>(n, buffers)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
@@ -743,7 +752,9 @@ parse_error::ParseError GLES2DecoderImpl::HandleGenFramebuffers(
   if (framebuffers == NULL) {
     return parse_error::kParseOutOfBounds;
   }
-  GenGLObjects<GLGenFramebuffersHelper>(n, framebuffers);
+  if (!GenGLObjects<GLGenFramebuffersHelper>(n, framebuffers)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
@@ -756,7 +767,9 @@ parse_error::ParseError GLES2DecoderImpl::HandleGenFramebuffersImmediate(
   if (framebuffers == NULL) {
     return parse_error::kParseOutOfBounds;
   }
-  GenGLObjects<GLGenFramebuffersHelper>(n, framebuffers);
+  if (!GenGLObjects<GLGenFramebuffersHelper>(n, framebuffers)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
@@ -769,7 +782,9 @@ parse_error::ParseError GLES2DecoderImpl::HandleGenRenderbuffers(
   if (renderbuffers == NULL) {
     return parse_error::kParseOutOfBounds;
   }
-  GenGLObjects<GLGenRenderbuffersHelper>(n, renderbuffers);
+  if (!GenGLObjects<GLGenRenderbuffersHelper>(n, renderbuffers)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
@@ -782,7 +797,9 @@ parse_error::ParseError GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
   if (renderbuffers == NULL) {
     return parse_error::kParseOutOfBounds;
   }
-  GenGLObjects<GLGenRenderbuffersHelper>(n, renderbuffers);
+  if (!GenGLObjects<GLGenRenderbuffersHelper>(n, renderbuffers)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
@@ -795,7 +812,9 @@ parse_error::ParseError GLES2DecoderImpl::HandleGenTextures(
   if (textures == NULL) {
     return parse_error::kParseOutOfBounds;
   }
-  GenGLObjects<GLGenTexturesHelper>(n, textures);
+  if (!GenGLObjects<GLGenTexturesHelper>(n, textures)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
@@ -808,7 +827,9 @@ parse_error::ParseError GLES2DecoderImpl::HandleGenTexturesImmediate(
   if (textures == NULL) {
     return parse_error::kParseOutOfBounds;
   }
-  GenGLObjects<GLGenTexturesHelper>(n, textures);
+  if (!GenGLObjects<GLGenTexturesHelper>(n, textures)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
@@ -875,7 +896,6 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetFloatv(
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
-    
     uint32 immediate_data_size,
     const gles2::GetFramebufferAttachmentParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
@@ -1957,6 +1977,10 @@ parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix2fv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
+  if (!ValidateGLbooleanFalse(transpose)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
   if (value == NULL) {
     return parse_error::kParseOutOfBounds;
   }
@@ -1973,6 +1997,10 @@ parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (!ValidateGLbooleanFalse(transpose)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
   if (value == NULL) {
     return parse_error::kParseOutOfBounds;
   }
@@ -1989,6 +2017,10 @@ parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix3fv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 9);
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
+  if (!ValidateGLbooleanFalse(transpose)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
   if (value == NULL) {
     return parse_error::kParseOutOfBounds;
   }
@@ -2005,6 +2037,10 @@ parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 9);
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (!ValidateGLbooleanFalse(transpose)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
   if (value == NULL) {
     return parse_error::kParseOutOfBounds;
   }
@@ -2021,6 +2057,10 @@ parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix4fv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 16);
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
+  if (!ValidateGLbooleanFalse(transpose)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
   if (value == NULL) {
     return parse_error::kParseOutOfBounds;
   }
@@ -2037,6 +2077,10 @@ parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 16);
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (!ValidateGLbooleanFalse(transpose)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
   if (value == NULL) {
     return parse_error::kParseOutOfBounds;
   }
@@ -2231,4 +2275,6 @@ parse_error::ParseError GLES2DecoderImpl::HandleSwapBuffers(
   DoSwapBuffers();
   return parse_error::kParseNoError;
 }
+
+#endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
 

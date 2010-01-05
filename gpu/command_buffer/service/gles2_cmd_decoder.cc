@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include <vector>
 #include <string>
 #include <map>
@@ -12,7 +13,6 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 
 namespace gpu {
@@ -141,7 +141,8 @@ GLenum GLErrorBitToGLError(uint32 error_bit) {
 }  // anonymous namespace.
 
 #if defined(UNIT_TEST)
-GLES2Decoder::GLES2Decoder() {
+GLES2Decoder::GLES2Decoder()
+    : debug_(false) {
 #elif defined(OS_LINUX)
 GLES2Decoder::GLES2Decoder()
     : debug_(false),
@@ -151,7 +152,8 @@ GLES2Decoder::GLES2Decoder()
     : debug_(false),
       hwnd_(NULL) {
 #else
-GLES2Decoder::GLES2Decoder() {
+GLES2Decoder::GLES2Decoder()
+    : debug_(false) {
 #endif
 }
 
@@ -271,7 +273,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
         GLenum type,
         GLsizei real_stride,
         GLsizei offset) {
-      DCHECK(real_stride > 0);
+      DCHECK_GT(real_stride, 0);
       buffer_ = buffer;
       size_ = size;
       type_ = type;
@@ -363,6 +365,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Overridden from GLES2Decoder.
   virtual void Destroy();
 
+  // Overridden from GLES2Decoder.
+  virtual uint32 GetServiceIdForTesting(uint32 client_id);
+
   // Removes any buffers in the VertexAtrribInfos and BufferInfos. This is used
   // on glDeleteBuffers so we can make sure the user does not try to render
   // with deleted buffers.
@@ -375,10 +380,15 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Template to help call glGenXXX functions.
   template <void gl_gen_function(GLES2DecoderImpl*, GLsizei, GLuint*)>
   bool GenGLObjects(GLsizei n, const GLuint* client_ids) {
-    // TODO(gman): Verify client ids are unused.
+    if (n < 0) {
+      SetGLError(GL_INVALID_VALUE);
+      return true;
+    }
+    if (!ValidateIdsAreUnused(n, client_ids)) {
+      return false;
+    }
     scoped_array<GLuint>temp(new GLuint[n]);
     gl_gen_function(this, n, temp.get());
-    // TODO(gman): check for success before copying results.
     return RegisterObjects(n, client_ids, temp.get());
   }
 
@@ -390,6 +400,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
     gl_delete_function(this, n, temp.get());
     return true;
   }
+
+  // Check that the given ids are not used.
+  bool ValidateIdsAreUnused(GLsizei n, const GLuint* client_ids);
 
   // Register client ids with generated service ids.
   bool RegisterObjects(
@@ -570,7 +583,7 @@ bool GLES2DecoderImpl::Initialize() {
   memset(vertex_attrib_infos_.get(), 0,
          sizeof(vertex_attrib_infos_[0]) * max_vertex_attribs_);
 
-  //glBindFramebuffer(0, 0);
+  // glBindFramebuffer(0, 0);
   return true;
 }
 
@@ -793,11 +806,34 @@ void GLDeleteTexturesHelper(
 
 }  // anonymous namespace
 
+uint32 GLES2DecoderImpl::GetServiceIdForTesting(uint32 client_id) {
+#if defined(UNIT_TEST)
+  GLuint service_id;
+  bool result = id_map_.GetServiceId(client_id, &service_id);
+  return result ? service_id : 0u;
+#else
+  DCHECK(false);
+  return 0u;
+#endif
+}
+
+bool GLES2DecoderImpl::ValidateIdsAreUnused(
+    GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    GLuint service_id;
+    if (id_map_.GetServiceId(client_ids[ii], &service_id)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool GLES2DecoderImpl::RegisterObjects(
     GLsizei n, const GLuint* client_ids, const GLuint* service_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (!id_map_.AddMapping(client_ids[ii], service_ids[ii])) {
-      // TODO(gman): fail.
+      NOTREACHED();
+      return false;
     }
   }
   return true;
@@ -805,7 +841,6 @@ bool GLES2DecoderImpl::RegisterObjects(
 
 void GLES2DecoderImpl::UnregisterObjects(
     GLsizei n, const GLuint* client_ids, GLuint* service_ids) {
-  // TODO(gman): check for success before copying results.
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (id_map_.GetServiceId(client_ids[ii], &service_ids[ii])) {
       id_map_.RemoveMapping(client_ids[ii], service_ids[ii]);
@@ -1020,7 +1055,7 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint buffer) {
 void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
   if (index < max_vertex_attribs_) {
     vertex_attrib_infos_[index].set_enabled(false);
-    glEnableVertexAttribArray(index);
+    glDisableVertexAttribArray(index);
   } else {
     SetGLError(GL_INVALID_VALUE);
   }
@@ -1324,7 +1359,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
     GLsizei offset = c.offset;
     const void* ptr = reinterpret_cast<const void*>(offset);
     if (!ValidateGLenumVertexAttribType(type) ||
-        !ValidateGLenumVertexAttribSize(size) ||
+        !ValidateGLintVertexAttribSize(size) ||
         indx >= max_vertex_attribs_ ||
         stride < 0) {
       SetGLError(GL_INVALID_VALUE);
@@ -1380,7 +1415,7 @@ parse_error::ParseError GLES2DecoderImpl::HandlePixelStorei(
   GLenum pname = c.pname;
   GLenum param = c.param;
   if (!ValidateGLenumPixelStore(pname) ||
-      !ValidateGLenumPixelStoreAlignment(param)) {
+      !ValidateGLintPixelStoreAlignment(param)) {
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }

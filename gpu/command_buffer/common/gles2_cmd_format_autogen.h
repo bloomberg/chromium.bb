@@ -1,4 +1,11 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // This file is auto-generated. DO NOT EDIT!
+
+#ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
+#define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 
 struct ActiveTexture {
   typedef ActiveTexture ValueType;
@@ -133,31 +140,29 @@ struct BindAttribLocationImmediate {
   static const CommandId kCmdId = kBindAttribLocationImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
 
-  static uint32 ComputeDataSize(const char* s) {
-    return strlen(s);
-  }
-
-  static uint32 ComputeSize(const char* s) {
+  static uint32 ComputeSize(uint32 data_size) {
     return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(s));  // NOLINT
+        sizeof(ValueType) + data_size);  // NOLINT
   }
 
-  void SetHeader(const char* s) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(s));
+  void SetHeader(uint32 data_size) {
+    header.SetCmdBySize<ValueType>(data_size);
   }
 
-  void Init(GLuint _program, GLuint _index, const char* _name) {
-    SetHeader(_name);
+  void Init(
+      GLuint _program, GLuint _index, const char* _name, uint32 _data_size) {
+    SetHeader(_data_size);
     program = _program;
     index = _index;
-    data_size = strlen(_name);
-    memcpy(ImmediateDataAddress(this), _name, data_size);
+    data_size = _data_size;
+    memcpy(ImmediateDataAddress(this), _name, _data_size);
   }
 
-  void* Set(void* cmd, GLuint _program, GLuint _index, const char* _name) {
-    static_cast<ValueType*>(cmd)->Init(_program, _index, _name);
-    const uint32 size = ComputeSize(_name);
-    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  void* Set(
+      void* cmd, GLuint _program, GLuint _index, const char* _name,
+      uint32 _data_size) {
+    static_cast<ValueType*>(cmd)->Init(_program, _index, _name, _data_size);
+    return NextImmediateCmdAddress<ValueType>(cmd, _data_size);
   }
 
   gpu::CommandHeader header;
@@ -8080,4 +8085,6 @@ COMPILE_ASSERT(sizeof(SwapBuffers) == 4,
 COMPILE_ASSERT(offsetof(SwapBuffers, header) == 0,
                OffsetOf_SwapBuffers_header_not_0);
 
+
+#endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

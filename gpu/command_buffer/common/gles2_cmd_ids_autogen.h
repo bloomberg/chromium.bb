@@ -1,4 +1,11 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // This file is auto-generated. DO NOT EDIT!
+
+#ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_IDS_AUTOGEN_H_
+#define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_IDS_AUTOGEN_H_
 
 #define GLES2_COMMAND_LIST(OP) \
   OP(ActiveTexture)                                            /* 256 */ \
@@ -185,4 +192,6 @@ enum CommandId {
 #undef GLES2_CMD_OP
   kNumCommands
 };
+
+#endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_IDS_AUTOGEN_H_
 
