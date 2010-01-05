@@ -3144,8 +3144,12 @@ BUG31257 WIN DEBUG SLOW: LayoutTests/inspector/console-dirxml.html = TEXT
 BUG_AJWONG WIN : LayoutTests/svg/batik/text/textFeatures.svg = TEXT
 BUG_AJWONG WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 
-// New tests, need chromium baseline.
+// New test, needs chromium baseline.
 BUG_DIMICH LINUX WIN : LayoutTests/fast/repaint/subtree-layoutstate-transform.html = IMAGE+TEXT
-BUG_DIMICH LINUX WIN : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT
+
+// New test, needs chromium baseline.
+BUG_DIMICH WIN : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT
+// On Linux, sometimes the text dump matches. Not sure why.
+BUG_DIMICH LINUX : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE
 // New test, needs IMAGE baseline for mac because svg filter is a tad different.
 BUG_DIMICH MAC : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE
