@@ -55,11 +55,14 @@ class BookmarkNode;
 
 // Exposed only for unit tests.
 @interface BookmarkTreeController (UnitTesting)
-
+@property (readonly) NSOutlineView* outline;
 - (BOOL)copyToPasteboard:(NSPasteboard*)pb;
 - (BOOL)pasteFromPasteboard:(NSPasteboard*)pb;
-@property (readonly) NSOutlineView* outline;
-
+- (const BookmarkNode*)nodeForDropOnItem:(id)item
+                           proposedIndex:(NSInteger*)childIndex;
+- (void)moveNodes:(std::vector<const BookmarkNode*>)nodes
+         toFolder:(const BookmarkNode*)dstParent
+          atIndex:(int)dstIndex;
 @end
 
 

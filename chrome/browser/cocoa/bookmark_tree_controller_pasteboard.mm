@@ -111,13 +111,13 @@ static void flattenNode(const BookmarkNode* node,
     for (id item in items) {
       draggedNodes_.push_back([self nodeFromItem:item]);
     }
-    [pb addTypes:[NSArray arrayWithObject: kCustomPboardType] owner: self];
+    [pb addTypes:[NSArray arrayWithObject:kCustomPboardType] owner:self];
     [pb setData:[NSData data] forType:kCustomPboardType];
   }
 
   // Add single URL:
   if ([urls count] == 1) {
-    [pb addTypes:[NSArray arrayWithObject: NSURLPboardType] owner: self];
+    [pb addTypes:[NSArray arrayWithObject:NSURLPboardType] owner:self];
     NSString* firstURLStr = [urls objectAtIndex:0];
     [pb setString:firstURLStr forType:NSURLPboardType];
   }
@@ -339,6 +339,30 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
   return NSDragOperationCopy;
 }
 
+// Determine the parent to insert into and the child index to insert at.
+- (const BookmarkNode*)nodeForDropOnItem:(id)item
+                           proposedIndex:(NSInteger*)childIndex {
+  const BookmarkNode* targetNode = [self nodeFromItem:item];
+  if (!targetNode->is_folder()) {
+    // If our target is a leaf, and we are dropping on it.
+    if (*childIndex == NSOutlineViewDropOnItemIndex) {
+      return NULL;
+    } else {
+      // We will be dropping on the item's parent at the target index
+      // of this child, plus one.
+      const BookmarkNode* oldTargetNode = targetNode;
+      targetNode = targetNode->GetParent();
+      *childIndex = targetNode->IndexOfChild(oldTargetNode) + 1;
+    }
+  } else {
+    if (*childIndex == NSOutlineViewDropOnItemIndex) {
+      // Insert it at the end, if we were dropping on it
+      *childIndex = targetNode->GetChildCount();
+    }
+  }
+  return targetNode;
+}
+
 // Actually handles the drop.
 - (BOOL)outlineView:(NSOutlineView*)outlineView
          acceptDrop:(id <NSDraggingInfo>)info
@@ -347,26 +371,11 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
 {
   NSPasteboard* pb = [info draggingPasteboard];
 
-  const BookmarkNode* targetNode = [self nodeFromItem:item];
-
   // Determine the parent to insert into and the child index to insert at.
-  if (!targetNode->is_folder()) {
-    // If our target is a leaf, and we are dropping on it.
-    if (childIndex == NSOutlineViewDropOnItemIndex) {
-      return NO;
-    } else {
-      // We will be dropping on the item's parent at the target index
-      // of this child, plus one.
-      const BookmarkNode* oldTargetNode = targetNode;
-      targetNode = targetNode->GetParent();
-      childIndex = targetNode->IndexOfChild(oldTargetNode) + 1;
-    }
-  } else {
-    if (childIndex == NSOutlineViewDropOnItemIndex) {
-      // Insert it at the end, if we were dropping on it
-      childIndex = targetNode->GetChildCount();
-    }
-  }
+  const BookmarkNode* targetNode = [self nodeForDropOnItem:item
+                                             proposedIndex:&childIndex];
+  if (!targetNode)
+    return NO;
 
   if ([info draggingSource] == outlineView &&
       [[pb types] containsObject:kCustomPboardType]) {
@@ -394,7 +403,7 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
 }
 
 - (BOOL)pasteFromPasteboard:(NSPasteboard*)pb {
-  NSArray* plist = [self readPropertyListFromPasteboard: pb];
+  NSArray* plist = [self readPropertyListFromPasteboard:pb];
   if (!plist)
     return NO;
 
