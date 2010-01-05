@@ -3085,7 +3085,6 @@ BUG_DGLAZKOV WIN : LayoutTests/svg/webarchive/svg-script-subresouces.svg = FAIL 
 BUG30543 : LayoutTests/storage/domstorage/localstorage/enumerate-with-length-and-key.html = CRASH PASS
 
 // Flaky.
-BUG30593 LINUX MAC : LayoutTests/websocket/tests/url-with-credential.html = TEXT PASS
 BUG9798 WIN LINUX : LayoutTests/fast/loader/javascript-url-encoding-2.html = TIMEOUT PASS
 BUG9798 RELEASE : LayoutTests/fast/loading/subframe-removes-itself.html = TEXT PASS
 BUG9798 LINUX MAC : LayoutTests/fast/loader/invalid-charset-on-script-crashes-loader.html = TIMEOUT PASS
