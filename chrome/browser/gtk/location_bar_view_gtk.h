@@ -107,8 +107,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   static const GdkColor kBackgroundColorByLevel[3];
 
  private:
-  class PageActionViewGtk : public ImageLoadingTracker::Observer,
-                            public MenuGtk::Delegate {
+  class PageActionViewGtk : public ImageLoadingTracker::Observer {
    public:
     PageActionViewGtk(
         LocationBarViewGtk* owner, Profile* profile,

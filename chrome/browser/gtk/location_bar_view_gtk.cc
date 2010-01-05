@@ -887,7 +887,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
       context_menu_model_.reset(new ExtensionActionContextMenuModel(extension));
 
     context_menu_.reset(
-        new MenuGtk(this, context_menu_model_.get()));
+        new MenuGtk(NULL, context_menu_model_.get()));
     context_menu_->Popup(sender, event);
   }
 

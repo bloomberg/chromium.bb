@@ -51,8 +51,7 @@ GtkTargetEntry GetDragTargetEntry() {
 }  // namespace
 
 class BrowserActionButton : public NotificationObserver,
-                            public ImageLoadingTracker::Observer,
-                            public MenuGtk::Delegate {
+                            public ImageLoadingTracker::Observer {
  public:
   BrowserActionButton(BrowserActionsToolbarGtk* toolbar,
                       Extension* extension)
@@ -182,7 +181,7 @@ class BrowserActionButton : public NotificationObserver,
     }
 
     action->context_menu_.reset(
-        new MenuGtk(action, action->context_menu_model_.get()));
+        new MenuGtk(NULL, action->context_menu_model_.get()));
 
     action->context_menu_->Popup(widget, event);
     return TRUE;

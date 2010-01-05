@@ -9,9 +9,12 @@
 #include "app/gtk_dnd_util.h"
 #include "app/gfx/path.h"
 #include "app/l10n_util.h"
+#include "app/menus/accelerator_gtk.h"
 #include "app/resource_bundle.h"
+#include "base/keyboard_codes_posix.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/standard_menus.h"
+#include "chrome/browser/tab_menu_model.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -28,39 +31,12 @@ int GetTitleWidth(gfx::Font* font, std::wstring title) {
 
 }  // namespace
 
-class TabGtk::ContextMenuController : public MenuGtk::Delegate {
+class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate {
  public:
   explicit ContextMenuController(TabGtk* tab)
-      : tab_(tab) {
-    static const MenuCreateMaterial context_menu_blueprint[] = {
-        { MENU_NORMAL, TabStripModel::CommandNewTab, IDS_TAB_CXMENU_NEWTAB,
-            0, NULL, GDK_t, GDK_CONTROL_MASK, true },
-        { MENU_SEPARATOR },
-        { MENU_NORMAL, TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD,
-            0, NULL, GDK_r, GDK_CONTROL_MASK, true },
-        { MENU_NORMAL, TabStripModel::CommandDuplicate,
-            IDS_TAB_CXMENU_DUPLICATE },
-        { MENU_CHECKBOX, TabStripModel::CommandTogglePinned,
-            IDS_TAB_CXMENU_PIN_TAB },
-        { MENU_SEPARATOR },
-        { MENU_NORMAL, TabStripModel::CommandCloseTab, IDS_TAB_CXMENU_CLOSETAB,
-            0, NULL, GDK_w, GDK_CONTROL_MASK, true },
-        { MENU_NORMAL, TabStripModel::CommandCloseOtherTabs,
-          IDS_TAB_CXMENU_CLOSEOTHERTABS },
-        { MENU_NORMAL, TabStripModel::CommandCloseTabsToRight,
-            IDS_TAB_CXMENU_CLOSETABSTORIGHT },
-        { MENU_NORMAL, TabStripModel::CommandCloseTabsOpenedBy,
-            IDS_TAB_CXMENU_CLOSETABSOPENEDBY },
-        { MENU_SEPARATOR },
-        { MENU_NORMAL, TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB,
-            0, NULL, GDK_t, GDK_CONTROL_MASK | GDK_SHIFT_MASK, true },
-        { MENU_NORMAL, TabStripModel::CommandBookmarkAllTabs,
-            IDS_TAB_CXMENU_BOOKMARK_ALL_TABS, 0, NULL, GDK_d,
-            GDK_CONTROL_MASK | GDK_SHIFT_MASK, true },
-        { MENU_END },
-    };
-
-    menu_.reset(new MenuGtk(this, context_menu_blueprint, NULL));
+      : tab_(tab),
+        model_(this) {
+    menu_.reset(new MenuGtk(NULL, &model_));
   }
 
   virtual ~ContextMenuController() {}
@@ -75,25 +51,44 @@ class TabGtk::ContextMenuController : public MenuGtk::Delegate {
   }
 
  private:
-  // MenuGtk::Delegate implementation:
-  virtual bool IsCommandEnabled(int command_id) const {
-    if (!tab_)
-      return false;
-
-    return tab_->delegate()->IsCommandEnabledForTab(
-        static_cast<TabStripModel::ContextMenuCommand>(command_id), tab_);
-  }
-
-  virtual bool IsItemChecked(int command_id) const {
+  // Overridden from menus::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdChecked(int command_id) const {
     if (!tab_ || command_id != TabStripModel::CommandTogglePinned)
       return false;
     return tab_->is_pinned();
   }
-
+  virtual bool IsCommandIdEnabled(int command_id) const {
+    return tab_ && tab_->delegate()->IsCommandEnabledForTab(
+        static_cast<TabStripModel::ContextMenuCommand>(command_id),
+        tab_);
+  }
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator) {
+    switch (command_id) {
+      case TabStripModel::CommandNewTab:
+        *accelerator = menus::AcceleratorGtk(base::VKEY_T, false, true, false);
+        break;
+      case TabStripModel::CommandReload:
+        *accelerator = menus::AcceleratorGtk(base::VKEY_R, false, true, false);
+        break;
+      case TabStripModel::CommandCloseTab:
+        *accelerator = menus::AcceleratorGtk(base::VKEY_W, false, true, false);
+        break;
+      case TabStripModel::CommandRestoreTab:
+        *accelerator = menus::AcceleratorGtk(base::VKEY_T, true, true, false);
+        break;
+      case TabStripModel::CommandBookmarkAllTabs:
+        *accelerator = menus::AcceleratorGtk(base::VKEY_D, true, true, false);
+        break;
+      default:
+        return false;
+    }
+    return true;
+  }
   virtual void ExecuteCommand(int command_id) {
     if (!tab_)
       return;
-
     tab_->delegate()->ExecuteCommandForTab(
         static_cast<TabStripModel::ContextMenuCommand>(command_id), tab_);
   }
@@ -104,6 +99,9 @@ class TabGtk::ContextMenuController : public MenuGtk::Delegate {
   // The Tab the context menu was brought up for. Set to NULL when the menu
   // is canceled.
   TabGtk* tab_;
+
+  // The model.
+  TabMenuModel model_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuController);
 };

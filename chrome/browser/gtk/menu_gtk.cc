@@ -6,6 +6,7 @@
 
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
+#include "app/menus/accelerator_gtk.h"
 #include "app/menus/menu_model.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -35,9 +36,10 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
                  menus::MenuModel* model)
     : delegate_(delegate),
       model_(model),
-      dummy_accel_group_(NULL),
+      dummy_accel_group_(gtk_accel_group_new()),
       menu_(gtk_menu_new()),
       factory_(this) {
+  DCHECK(delegate || model);
   ConnectSignalHandlers();
   if (model)
     BuildMenuFromModel();
@@ -45,8 +47,7 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
 
 MenuGtk::~MenuGtk() {
   STLDeleteContainerPointers(submenus_we_own_.begin(), submenus_we_own_.end());
-  if (dummy_accel_group_)
-    g_object_unref(dummy_accel_group_);
+  g_object_unref(dummy_accel_group_);
 }
 
 void MenuGtk::ConnectSignalHandlers() {
@@ -219,7 +220,7 @@ GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
                                 gtk_image_new_from_pixbuf(pixbuf));
   g_object_unref(pixbuf);
-  if (delegate_->AlwaysShowImages())
+  if (delegate_ && delegate_->AlwaysShowImages())
     gtk_util::SetAlwaysShowImage(menu_item);
 
   return menu_item;
@@ -230,19 +231,41 @@ void MenuGtk::BuildMenuFromModel() {
     GtkWidget* menu_item = NULL;
 
     // TODO(estade): support these commands.
-    DCHECK_NE(model_->GetTypeAt(i), menus::MenuModel::TYPE_CHECK);
     DCHECK_NE(model_->GetTypeAt(i), menus::MenuModel::TYPE_RADIO);
     DCHECK_NE(model_->GetTypeAt(i), menus::MenuModel::TYPE_SUBMENU);
 
     SkBitmap icon;
-    if (model_->GetTypeAt(i) == menus::MenuModel::TYPE_SEPARATOR) {
-      menu_item = gtk_separator_menu_item_new();
-    } else if (model_->GetIconAt(i, &icon)) {
-      menu_item = BuildMenuItemWithImage(UTF16ToUTF8(model_->GetLabelAt(i)),
-                                         icon);
-    } else {
-      menu_item = gtk_menu_item_new_with_label(
-          UTF16ToUTF8(model_->GetLabelAt(i)).c_str());
+    std::string label =
+        ConvertAcceleratorsFromWindowsStyle(UTF16ToUTF8(model_->GetLabelAt(i)));
+
+    switch (model_->GetTypeAt(i)) {
+      case menus::MenuModel::TYPE_SEPARATOR:
+        menu_item = gtk_separator_menu_item_new();
+        break;
+
+      case menus::MenuModel::TYPE_CHECK:
+        menu_item = gtk_check_menu_item_new_with_mnemonic(label.c_str());
+        break;
+
+      case menus::MenuModel::TYPE_COMMAND:
+        if (model_->GetIconAt(i, &icon))
+          menu_item = BuildMenuItemWithImage(label, icon);
+        else
+          menu_item = gtk_menu_item_new_with_mnemonic(label.c_str());
+        break;
+
+      default:
+        NOTREACHED();
+    }
+
+    menus::AcceleratorGtk accelerator;
+    if (model_->GetAcceleratorAt(i, &accelerator)) {
+      gtk_widget_add_accelerator(menu_item,
+                                 "activate",
+                                 dummy_accel_group_,
+                                 accelerator.GetGdkKeyCode(),
+                                 accelerator.gdk_modifier_type(),
+                                 GTK_ACCEL_VISIBLE);
     }
 
     AppendMenuItem(i, menu_item);
@@ -365,6 +388,12 @@ void MenuGtk::ExecuteCommand(int id) {
     delegate_->ExecuteCommand(id);
 }
 
+// http://crbug.com/31365
+bool MenuGtk::IsItemChecked(int id) {
+  return model_ ? model_->IsItemCheckedAt(id) :
+                  delegate_->IsItemChecked(id);
+}
+
 // static
 void MenuGtk::OnMenuShow(GtkWidget* widget, MenuGtk* menu) {
   MessageLoop::current()->PostTask(FROM_HERE,
@@ -373,7 +402,8 @@ void MenuGtk::OnMenuShow(GtkWidget* widget, MenuGtk* menu) {
 
 // static
 void MenuGtk::OnMenuHidden(GtkWidget* widget, MenuGtk* menu) {
-  menu->delegate_->StoppedShowing();
+  if (menu->delegate_)
+    menu->delegate_->StoppedShowing();
 }
 
 // static
@@ -410,7 +440,7 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
     // root of the MenuGtk and we want to disable *all* MenuGtks, including
     // submenus.
     block_activation_ = true;
-    gtk_check_menu_item_set_active(item, menu->delegate_->IsItemChecked(id));
+    gtk_check_menu_item_set_active(item, menu->IsItemChecked(id));
     block_activation_ = false;
   }
 

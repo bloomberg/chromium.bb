@@ -139,6 +139,7 @@ class MenuGtk {
   // http://crbug.com/31365
   bool IsCommandEnabled(int id);
   void ExecuteCommand(int id);
+  bool IsItemChecked(int id);
 
   // Callback for when a menu item is clicked.
   static void OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu);
