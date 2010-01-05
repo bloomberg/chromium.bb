@@ -8,6 +8,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
+#include <wininet.h>
 
 // Copied min/max defs from windows headers to appease atlimage.h.
 // TODO(slightlyoff): Figure out of more recent platform SDK's (> 6.1)

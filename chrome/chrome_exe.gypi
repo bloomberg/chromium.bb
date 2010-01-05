@@ -134,7 +134,7 @@
           # TODO(gregoryd): This could be shared with the 64-bit target, but
           # it does not work due to a gyp issue.
           'dependencies': [
-            '../chrome_frame/chrome_frame.gyp:npchrome_tab',
+            '../chrome_frame/chrome_frame.gyp:npchrome_frame',
           ],
         }],
         ['OS=="linux" or OS=="freebsd"', {
@@ -529,7 +529,7 @@
               # TODO(gregoryd): This could be shared with the 32-bit target, but
               # it does not work due to a gyp issue.
               'dependencies': [
-                '../chrome_frame/chrome_frame.gyp:npchrome_tab',
+                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
               ],
             }],
           ],

@@ -195,7 +195,8 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
     const wchar_t* page, const wchar_t* result_file_to_check) {
   std::wstring plugin_path;
   PathService::Get(base::DIR_MODULE, &plugin_path);
-  file_util::AppendToPath(&plugin_path, L"servers/npchrome_tab.dll");
+  file_util::AppendToPath(&plugin_path, L"servers");
+  file_util::AppendToPath(&plugin_path, kChromeFrameDllName);
 
   static FileVersionInfo* version_info =
       FileVersionInfo::CreateFileVersionInfo(plugin_path);
@@ -204,7 +205,7 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
   if (version_info)
     version = version_info->product_version();
 
-  // If we can't find the npchrome_tab.dll in the src tree, we turn to
+  // If we can't find the Chrome Frame DLL in the src tree, we turn to
   // the directory where chrome is installed.
   if (!version_info) {
     installer::Version* ver_system = InstallUtil::GetChromeVersion(true);
@@ -212,11 +213,11 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
     ASSERT_TRUE(ver_system || ver_user);
 
     bool system_install = ver_system ? true : false;
-    std::wstring npchrome_path(installer::GetChromeInstallPath(system_install));
-    file_util::AppendToPath(&npchrome_path,
+    std::wstring cf_dll_path(installer::GetChromeInstallPath(system_install));
+    file_util::AppendToPath(&cf_dll_path,
         ver_system ? ver_system->GetString() : ver_user->GetString());
-    file_util::AppendToPath(&npchrome_path, L"npchrome_tab.dll");
-    version_info = FileVersionInfo::CreateFileVersionInfo(npchrome_path);
+    file_util::AppendToPath(&cf_dll_path, kChromeFrameDllName);
+    version_info = FileVersionInfo::CreateFileVersionInfo(cf_dll_path);
     if (version_info)
       version = version_info->product_version();
   }

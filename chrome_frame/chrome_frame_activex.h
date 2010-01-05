@@ -125,6 +125,4 @@ END_MSG_MAP()
 
 };
 
-OBJECT_ENTRY_AUTO(__uuidof(ChromeFrame), ChromeFrameActivex)
-
 #endif  // CHROME_FRAME_CHROME_FRAME_ACTIVEX_H_

@@ -33,7 +33,7 @@ BEGIN
             VALUE "MIMEType", "application/chromeframe"
             VALUE "FileExtents", "chromeframe"
             VALUE "FileOpenName", "chromeframe"
-            VALUE "OriginalFilename", "npchrome_tab.dll"
+            VALUE "OriginalFilename", "npchrome_frame.dll"
             VALUE "LastChange", "@LASTCHANGE@"
             VALUE "Official Build", "@OFFICIAL_BUILD@"
         END

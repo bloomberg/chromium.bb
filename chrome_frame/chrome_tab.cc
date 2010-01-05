@@ -24,9 +24,12 @@
 #include "chrome/common/chrome_constants.h"
 #include "grit/chrome_frame_resources.h"
 #include "chrome_frame/bho.h"
+#include "chrome_frame/chrome_active_document.h"
+#include "chrome_frame/chrome_frame_activex.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_reporting.h"
 #include "chrome_frame/chrome_launcher.h"
+#include "chrome_frame/chrome_protocol.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
 
@@ -44,6 +47,12 @@ static const GUID kChromeFrameProvider =
     { 0x562bfc3, 0x2550, 0x45b4,
         { 0xbd, 0x8e, 0xa3, 0x10, 0x58, 0x3d, 0x3a, 0x6f } };
 
+// Object entries go here instead of with each object, so that we can move
+// the objects to a lib. Also reduces magic.
+OBJECT_ENTRY_AUTO(CLSID_ChromeFrameBHO, Bho)
+OBJECT_ENTRY_AUTO(__uuidof(ChromeActiveDocument), ChromeActiveDocument)
+OBJECT_ENTRY_AUTO(__uuidof(ChromeFrame), ChromeFrameActivex)
+OBJECT_ENTRY_AUTO(__uuidof(ChromeProtocol), ChromeProtocol)
 
 class ChromeTabModule
     : public AtlPerUserModule<CAtlDllModuleT<ChromeTabModule> > {

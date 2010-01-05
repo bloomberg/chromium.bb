@@ -309,3 +309,55 @@ TEST_F(HtmlUtilUnittest, GetChromeFrameUserAgent) {
   std::string ua(call1);
   EXPECT_EQ("chromeframe/0.0", ua);
 }
+
+TEST(HttpUtils, HasFrameBustingHeader) {
+  // Simple negative cases.
+  EXPECT_FALSE(http_utils::HasFrameBustingHeader(""));
+  EXPECT_FALSE(http_utils::HasFrameBustingHeader("Content-Type: text/plain"));
+  // Explicit negative cases, test that we ignore case.
+  EXPECT_FALSE(http_utils::HasFrameBustingHeader("X-Frame-Options: ALLOWALL"));
+  EXPECT_FALSE(http_utils::HasFrameBustingHeader("X-Frame-Options: allowall"));
+  EXPECT_FALSE(http_utils::HasFrameBustingHeader("X-Frame-Options: ALLowalL"));
+  // Added space, ensure stripped out
+  EXPECT_FALSE(http_utils::HasFrameBustingHeader(
+    "X-Frame-Options: ALLOWALL "));
+  // Added space with linefeed, ensure still stripped out
+  EXPECT_FALSE(http_utils::HasFrameBustingHeader(
+    "X-Frame-Options: ALLOWALL \r\n"));
+  // Multiple identical headers, all of them allowing framing.
+  EXPECT_FALSE(http_utils::HasFrameBustingHeader(
+    "X-Frame-Options: ALLOWALL\r\n"
+    "X-Frame-Options: ALLOWALL\r\n"
+    "X-Frame-Options: ALLOWALL"));
+  // Interleave with other headers.
+  EXPECT_FALSE(http_utils::HasFrameBustingHeader(
+    "Content-Type: text/plain\r\n"
+    "X-Frame-Options: ALLOWALL\r\n"
+    "Content-Length: 42"));
+
+  // Simple positive cases.
+  EXPECT_TRUE(http_utils::HasFrameBustingHeader("X-Frame-Options: deny"));
+  EXPECT_TRUE(http_utils::HasFrameBustingHeader(
+    "X-Frame-Options: SAMEorigin"));
+
+  // Allowall entries do not override the denying entries, are
+  // order-independent, and the deny entries can interleave with
+  // other headers.
+  EXPECT_TRUE(http_utils::HasFrameBustingHeader(
+    "Content-Length: 42\r\n"
+    "X-Frame-Options: ALLOWall\r\n"
+    "X-Frame-Options: deny\r\n"));
+  EXPECT_TRUE(http_utils::HasFrameBustingHeader(
+    "X-Frame-Options: ALLOWall\r\n"
+    "Content-Length: 42\r\n"
+    "X-Frame-Options: SAMEORIGIN\r\n"));
+  EXPECT_TRUE(http_utils::HasFrameBustingHeader(
+    "X-Frame-Options: deny\r\n"
+    "X-Frame-Options: ALLOWall\r\n"
+    "Content-Length: 42\r\n"));
+  EXPECT_TRUE(http_utils::HasFrameBustingHeader(
+    "X-Frame-Options: SAMEORIGIN\r\n"
+    "X-Frame-Options: ALLOWall\r\n"));
+}
+
+

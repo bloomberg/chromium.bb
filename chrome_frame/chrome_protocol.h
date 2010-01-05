@@ -60,6 +60,4 @@ class ATL_NO_VTABLE ChromeProtocol
   STDMETHOD(UnlockRequest)(void);
 };
 
-OBJECT_ENTRY_AUTO(__uuidof(ChromeProtocol), ChromeProtocol)
-
 #endif  // CHROME_FRAME_CHROME_PROTOCOL_H_

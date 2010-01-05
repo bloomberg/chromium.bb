@@ -12,6 +12,8 @@
 
 #include "base/file_path.h"
 
+extern const wchar_t kChromeFrameDllName[];
+
 // Helper class used to register different chrome frame DLLs while running
 // tests. At construction, this registers the DLL found in the build path.
 // At destruction, again registers the DLL found in the build path if another
@@ -34,10 +36,10 @@ class ScopedChromeFrameRegistrar {
   static void RegisterDefaults();
 
  private:
-  // Contains the path of the most recently registered npchrome_tab.dll.
+  // Contains the path of the most recently registered Chrome Frame DLL.
   std::wstring new_chrome_frame_dll_path_;
 
-  // Contains the path of the npchrome_tab.dll to be registered at destruction.
+  // Contains the path of the Chrome Frame DLL to be registered at destruction.
   std::wstring original_dll_path_;
 };
 

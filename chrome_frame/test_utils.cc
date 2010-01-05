@@ -19,13 +19,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Statics
+const wchar_t kChromeFrameDllName[] = L"npchrome_frame.dll";
 
+// Statics
 FilePath ScopedChromeFrameRegistrar::GetChromeFrameBuildPath() {
   FilePath build_path;
   PathService::Get(chrome::DIR_APP, &build_path);
   build_path = build_path.Append(L"servers").
-                          Append(L"npchrome_tab.dll");
+                          Append(kChromeFrameDllName);
   file_util::PathExists(build_path);
   return build_path;
 }
@@ -92,7 +93,7 @@ void ScopedChromeFrameRegistrar::RegisterReferenceChromeFrameBuild() {
   file_util::AppendToPath(&reference_build_dir, L"reference_build");
   file_util::AppendToPath(&reference_build_dir, L"chrome_frame");
   file_util::AppendToPath(&reference_build_dir, L"servers");
-  file_util::AppendToPath(&reference_build_dir, L"npchrome_tab.dll");
+  file_util::AppendToPath(&reference_build_dir, kChromeFrameDllName);
 
   RegisterChromeFrameAtPath(reference_build_dir);
 }

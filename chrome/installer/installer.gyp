@@ -266,7 +266,7 @@
           'conditions': [
             ['chrome_frame_define==1', {
               'dependencies': [
-                '../../chrome_frame/chrome_frame.gyp:npchrome_tab',
+                '../../chrome_frame/chrome_frame.gyp:npchrome_frame',
               ],
             }],
             # TODO(mark):  <(branding_dir) should be defined by the

@@ -133,7 +133,7 @@ class ChromeFrameActiveXContainer
     OnReadyStateChanged(ready_state);
 
     if (ready_state == READYSTATE_COMPLETE) {
-      if(!starting_url_.empty()) {
+      if (!starting_url_.empty()) {
         Navigate(starting_url_.c_str());
       } else {
         PostMessage(WM_CLOSE);
@@ -286,8 +286,9 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
     chrome_dll_ = dir_app_.Append(FILE_PATH_LITERAL("chrome.dll"));
     chrome_exe_ = dir_app_.Append(
         FilePath::FromWStringHack(chrome::kBrowserProcessExecutableName));
+    chrome_frame_dll_ = dir_app_.Append(FILE_PATH_LITERAL("servers"));
     chrome_frame_dll_ = dir_app_.Append(
-        FILE_PATH_LITERAL("servers\\npchrome_tab.dll"));
+        FilePath::FromWStringHack(kChromeFrameDllName));
   }
   virtual void TearDown() {}
 
@@ -327,7 +328,7 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
       timings[i] = end_time - start_time;
 
       CoFreeUnusedLibraries();
-      ASSERT_TRUE(GetModuleHandle(L"npchrome_tab.dll") == NULL);
+      ASSERT_TRUE(GetModuleHandle(kChromeFrameDllName) == NULL);
 
       // TODO(beng): Can't shut down so quickly. Figure out why, and fix. If we
       // do, we crash.
@@ -821,7 +822,6 @@ class ChromeFrameActiveXMemoryTest : public MemoryTestBase {
     PrintResults(test_name_.c_str());
 
     CoFreeUnusedLibraries();
-    //ASSERT_TRUE(GetModuleHandle(L"npchrome_tab.dll") == NULL);
   }
 
   void NavigateImpl(const std::string& url) {

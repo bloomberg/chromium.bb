@@ -34,7 +34,7 @@ CommandLine* CreateLaunchCommandLine() {
   // TODO(joi) As optimization, could launch Chrome directly when running at
   // medium integrity.  (Requires bringing in code to read SIDs, etc.)
 
-  // The launcher EXE will be in the same directory as the npchrome_tab DLL,
+  // The launcher EXE will be in the same directory as the Chrome Frame DLL,
   // so create a full path to it based on this assumption.  Since our unit
   // tests also use this function, and live in the directory above, we test
   // existence of the file and try the path that includes the /servers/

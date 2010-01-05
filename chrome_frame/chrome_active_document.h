@@ -328,6 +328,4 @@ END_EXEC_COMMAND_MAP()
   OLEINPLACEFRAMEINFO frame_info_;
 };
 
-OBJECT_ENTRY_AUTO(__uuidof(ChromeActiveDocument), ChromeActiveDocument)
-
 #endif  // CHROME_FRAME_CHROME_ACTIVE_DOCUMENT_H_

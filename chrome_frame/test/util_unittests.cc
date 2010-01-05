@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/file_version_info.h"
-#include "chrome_frame/test/chrome_frame_unittests.h"
 #include "chrome_frame/utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 const wchar_t kChannelName[] = L"-dev";
 const wchar_t kSuffix[] = L"-fix";

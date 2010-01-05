@@ -108,8 +108,5 @@ END_SINK_MAP()
   static _ATL_FUNC_INFO kBeforeNavigate2Info;
 };
 
-// Add Bho to class library table so IE can CoCreate it.
-OBJECT_ENTRY_AUTO(CLSID_ChromeFrameBHO, Bho);
-
 #endif  // CHROME_FRAME_BHO_H_
 

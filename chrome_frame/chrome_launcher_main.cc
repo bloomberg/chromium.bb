@@ -29,7 +29,7 @@ extern "C" void __cdecl WinMainCRTStartup() {
   // directory in the DLL search path.
   //
   // The code is a bit verbose because we can't use the standard library.
-  const wchar_t kBaseName[] = L"npchrome_tab.dll";
+  const wchar_t kBaseName[] = L"npchrome_frame.dll";
   wchar_t file_path[MAX_PATH + (sizeof(kBaseName) / sizeof(kBaseName[0])) + 1];
   file_path[0] = L'\0';
   ::GetModuleFileName(::GetModuleHandle(NULL), file_path, MAX_PATH);
@@ -38,11 +38,11 @@ extern "C" void __cdecl WinMainCRTStartup() {
   //
   // Proof for security purposes, since we can't use the safe string
   // manipulation functions from the runtime:
-  // - File_path is always null-terminated, by us initially and by 
+  // - File_path is always null-terminated, by us initially and by
   //   ::GetModuleFileName if it puts anything into the buffer.
   // - If there is no slash in the path then it's a relative path, not an
   //   absolute one, and the code ends up creating a relative path to
-  //   npchrome_tab.dll.
+  //   npchrome_frame.dll.
   // - It's safe to use lstrcatW since we know the maximum length of both
   //   parts we are concatenating, and we know the buffer will fit them in
   //   the worst case.
@@ -51,7 +51,7 @@ extern "C" void __cdecl WinMainCRTStartup() {
   CLM_ASSERT(slash_index > 0);
   while (slash_index > 0 && file_path[slash_index] != L'\\')
     --slash_index;
-  // Invariant: 0 <= slash_index < MAX_PATH and it is either the index of 
+  // Invariant: 0 <= slash_index < MAX_PATH and it is either the index of
   // the last \ in the path, or 0.
   if (slash_index != 0)
     ++slash_index;  // don't remove the last '\'
@@ -63,7 +63,7 @@ extern "C" void __cdecl WinMainCRTStartup() {
   HMODULE chrome_tab = ::LoadLibrary(file_path);
   CLM_ASSERT(chrome_tab);
   if (chrome_tab) {
-    chrome_launcher::CfLaunchChromeProc proc = 
+    chrome_launcher::CfLaunchChromeProc proc =
         reinterpret_cast<chrome_launcher::CfLaunchChromeProc>(
             ::GetProcAddress(chrome_tab, "CfLaunchChrome"));
     CLM_ASSERT(proc);
