@@ -236,6 +236,14 @@
    fun:UpdateManifest::Parse
 }
 {
+   bug_31643
+   Memcheck:Leak
+   ...
+   fun:operator new
+   fun:browser_sync::BookmarkModelWorker::CallDoWorkFromModelSafeThreadAndWait
+   fun:Syncer::SyncShare
+}
+{
    # TODO(thestig) investigate why this is happening
    todo_net_unittest1
    Memcheck:Leak
