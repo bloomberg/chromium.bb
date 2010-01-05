@@ -3001,7 +3001,6 @@ BUG29737 : LayoutTests/svg/dom/operatorAttribute.html = TEXT
 BUG29737 WIN : LayoutTests/svg/filters/feComposite.svg = TIMEOUT CRASH
 
 // WebKit Roll to r51915
-BUG29928 SKIP : LayoutTests/websocket/tests/sub-protocol-with-space.html = TEXT
 BUG29930 : LayoutTests/fast/loader/input-element-page-cache-crash.html = TIMEOUT PASS
 
 // Was first marked as (WIN: TEXT, LINUX: TEXT,  MAC: IMAGE+TEXT) by
