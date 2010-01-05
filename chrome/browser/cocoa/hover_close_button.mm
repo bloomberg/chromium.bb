@@ -17,8 +17,20 @@ const NSString* kHoverImageString = @"close_bar_h.pdf";
 
 @implementation HoverCloseButton
 
+- (id)initWithFrame:(NSRect)frameRect {
+  if ((self = [super initWithFrame:frameRect])) {
+    [self commonInit];
+  }
+  return self;
+}
+
 - (void)awakeFromNib {
+  [self commonInit];
+}
+
+- (void)commonInit {
   [self setTrackingEnabled:YES];
+  [self updateTrackingAreas];
 
   // Set accessibility description.
   NSString* description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_CLOSE);

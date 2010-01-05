@@ -16,4 +16,8 @@
 
 // Enables or disables the |NSTrackingRect|s for the button.
 - (void)setTrackingEnabled:(BOOL)enabled;
+
+// Sets up the button's images, tracking areas, and accessibility info
+// when instantiated via initWithFrame or awakeFromNib.
+- (void)commonInit;
 @end

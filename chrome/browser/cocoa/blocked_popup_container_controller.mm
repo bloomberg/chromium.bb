@@ -114,9 +114,6 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
   closeButton_.reset([[HoverCloseButton alloc] initWithFrame:closeFrame]);
   [closeButton_ setAutoresizingMask:NSViewMinXMargin];
   [closeButton_ setButtonType:NSMomentaryChangeButton];
-  [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar.pdf")];
-  [closeButton_
-      setAlternateImage:nsimage_cache::ImageNamed(@"close_bar_p.pdf")];
   [closeButton_ setBordered:NO];
   [closeButton_ setTarget:self];
   [closeButton_ setAction:@selector(closePopup:)];
