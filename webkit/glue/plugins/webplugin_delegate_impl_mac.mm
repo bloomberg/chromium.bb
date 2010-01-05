@@ -459,6 +459,19 @@ static bool WebInputEventIsWebKeyboardEvent(const WebInputEvent& event) {
   }
 }
 
+static NSInteger CocoaModifiersFromWebEvent(const WebInputEvent& event) {
+  NSInteger modifiers = 0;
+  if (event.modifiers & WebInputEvent::ControlKey)
+    modifiers |= NSControlKeyMask;
+  if (event.modifiers & WebInputEvent::ShiftKey)
+    modifiers |= NSShiftKeyMask;
+  if (event.modifiers & WebInputEvent::AltKey)
+    modifiers |= NSAlternateKeyMask;
+  if (event.modifiers & WebInputEvent::MetaKey)
+    modifiers |= NSCommandKeyMask;
+  return modifiers;
+}
+
 static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
                                      NPEvent *np_event) {
   np_event->where.h = event.globalX;
@@ -555,12 +568,7 @@ static bool NPCocoaEventFromWebMouseEvent(const WebMouseEvent& event,
                                           NPCocoaEvent *np_cocoa_event) {
   np_cocoa_event->data.mouse.pluginX = event.x;
   np_cocoa_event->data.mouse.pluginY = event.y;
-
-  if (event.modifiers & WebInputEvent::ControlKey)
-    np_cocoa_event->data.mouse.modifierFlags |= controlKey;
-  if (event.modifiers & WebInputEvent::ShiftKey)
-    np_cocoa_event->data.mouse.modifierFlags |= shiftKey;
-
+  np_cocoa_event->data.mouse.modifierFlags |= CocoaModifiersFromWebEvent(event);
   np_cocoa_event->data.mouse.clickCount = event.clickCount;
   switch (event.button) {
     case WebMouseEvent::ButtonLeft:
@@ -603,10 +611,7 @@ static bool NPCocoaEventFromWebMouseWheelEvent(const WebMouseWheelEvent& event,
   np_cocoa_event->type = NPCocoaEventScrollWheel;
   np_cocoa_event->data.mouse.pluginX = event.x;
   np_cocoa_event->data.mouse.pluginY = event.y;
-  if (event.modifiers & WebInputEvent::ControlKey)
-    np_cocoa_event->data.mouse.modifierFlags |= controlKey;
-  if (event.modifiers & WebInputEvent::ShiftKey)
-    np_cocoa_event->data.mouse.modifierFlags |= shiftKey;
+  np_cocoa_event->data.mouse.modifierFlags |= CocoaModifiersFromWebEvent(event);
   np_cocoa_event->data.mouse.deltaX = event.deltaX;
   np_cocoa_event->data.mouse.deltaY = event.deltaY;
   return true;
@@ -622,14 +627,7 @@ static bool NPCocoaEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
       reinterpret_cast<NPNSString*>(
           [NSString stringWithFormat:@"%S", event.unmodifiedText]);
 
-  if (event.modifiers & WebInputEvent::ControlKey)
-    np_cocoa_event->data.key.modifierFlags |= controlKey;
-  if (event.modifiers & WebInputEvent::ShiftKey)
-    np_cocoa_event->data.key.modifierFlags |= shiftKey;
-  if (event.modifiers & WebInputEvent::AltKey)
-    np_cocoa_event->data.key.modifierFlags |= cmdKey;
-  if (event.modifiers & WebInputEvent::MetaKey)
-    np_cocoa_event->data.key.modifierFlags |= optionKey;
+  np_cocoa_event->data.key.modifierFlags |= CocoaModifiersFromWebEvent(event);
 
   if (event.modifiers & WebInputEvent::IsAutoRepeat)
     np_cocoa_event->data.key.isARepeat = true;
