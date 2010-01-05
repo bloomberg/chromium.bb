@@ -2123,6 +2123,7 @@ BUG21386 LINUX : LayoutTests/fast/repaint/table-col-background.html = FAIL
 BUG21386 LINUX : LayoutTests/fast/repaint/table-row.html = FAIL
 BUG21386 LINUX : LayoutTests/fast/repaint/table-section-overflow.html = FAIL
 BUG21386 LINUX : LayoutTests/fast/layers/layer-content-visibility-change.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/table-cell-overflow.html = FAIL
 
 // TODO(tc): flaky.
 BUG10391 LINUX : LayoutTests/fast/events/5056619.html = FAIL
@@ -3144,3 +3145,9 @@ BUG31257 WIN DEBUG SLOW: LayoutTests/inspector/console-dirxml.html = TEXT
 // WebKit roll 52633 -> 52667
 BUG_AJWONG WIN : LayoutTests/svg/batik/text/textFeatures.svg = TEXT
 BUG_AJWONG WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
+
+// New tests, need chromium baseline.
+BUG_DIMICH LINUX WIN : LayoutTests/fast/repaint/subtree-layoutstate-transform.html = IMAGE+TEXT
+BUG_DIMICH LINUX WIN : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT
+// New test, needs IMAGE baseline for mac because svg filter is a tad different.
+BUG_DIMICH MAC : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE
