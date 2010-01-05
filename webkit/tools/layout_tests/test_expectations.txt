@@ -3124,8 +3124,6 @@ BUG30939 : LayoutTests/svg/filters/filter-clip.svg = IMAGE+TEXT
 // WebKit roll 52468->52535
 BUG31108 WIN LINUX : LayoutTests/fast/text/international/bidi-layout-across-linebreak.html = TEXT
 BUG31252 : LayoutTests/http/tests/security/listener/xss-inactive-closure.html = TEXT
-BUG31108 : LayoutTests/websocket/tests/bad-sub-protocol.html = TEXT
-BUG31108 : LayoutTests/websocket/tests/url-parsing.html = TEXT
 BUG31108 LINUX : LayoutTests/editing/inserting/12882.html = IMAGE
 
 // WebKit roll 52535->52554
