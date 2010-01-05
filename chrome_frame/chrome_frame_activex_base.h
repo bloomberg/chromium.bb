@@ -245,6 +245,7 @@ END_MSG_MAP()
   }
 
   void FinalRelease() {
+    Uninitialize();
   }
 
   static HRESULT WINAPI InterfaceNotSupported(void* pv, REFIID riid, void** ppv,

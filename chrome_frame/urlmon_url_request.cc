@@ -240,7 +240,7 @@ UrlmonUrlRequest::~UrlmonUrlRequest() {
 bool UrlmonUrlRequest::Start() {
   DCHECK_EQ(PlatformThread::CurrentId(), thread_);
 
-  if (!worker_thread_) {
+  if (!worker_thread_ || !worker_thread_->message_loop()) {
     NOTREACHED() << __FUNCTION__ << " Urlmon request thread not initialized";
     return false;
   }
@@ -266,7 +266,7 @@ bool UrlmonUrlRequest::Start() {
 void UrlmonUrlRequest::Stop() {
   DCHECK_EQ(PlatformThread::CurrentId(), thread_);
 
-  if (!worker_thread_) {
+  if (!worker_thread_ || !worker_thread_->message_loop()) {
     NOTREACHED() << __FUNCTION__ << " Urlmon request thread not initialized";
     return;
   }
@@ -320,7 +320,7 @@ bool UrlmonUrlRequest::Read(int bytes_to_read) {
 
   DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this);
 
-  if (!worker_thread_) {
+  if (!worker_thread_ || !worker_thread_->message_loop()) {
     NOTREACHED() << __FUNCTION__ << " Urlmon request thread not initialized";
     return false;
   }
@@ -830,6 +830,7 @@ HRESULT UrlmonUrlRequest::ConnectToExistingMoniker(IMoniker* moniker,
     NOTREACHED() << "Failed to QI for IBindCtx on wrapper. Error:" << hr;
     return hr;
   }
+
   moniker_ = moniker;
   set_url(WideToUTF8(url));
   return S_OK;
