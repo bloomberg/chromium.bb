@@ -188,7 +188,6 @@ extern const char kWaitForDebuggerChildren[];
 extern const char kWebWorkerProcessPerCore[];
 extern const char kWebWorkerShareProcesses[];
 extern const char kWinHttpProxyResolver[];
-extern const char kWininetFtp[];
 extern const char kWorkerProcess[];
 extern const char kWorkerStartupDialog[];
 extern const char kZygoteCmdPrefix[];

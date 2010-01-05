@@ -168,16 +168,8 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   }
   context->set_http_transaction_factory(cache);
 
-  // The kWininetFtp switch is Windows specific because we have two FTP
-  // implementations on Windows.
-#if defined(OS_WIN)
-  if (!command_line.HasSwitch(switches::kWininetFtp))
-    context->set_ftp_transaction_factory(
-        new net::FtpNetworkLayer(context->host_resolver()));
-#else
   context->set_ftp_transaction_factory(
       new net::FtpNetworkLayer(context->host_resolver()));
-#endif
 
   // setup cookie store
   if (!context->cookie_store()) {
@@ -272,16 +264,8 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
           switches::kDisableByteRangeSupport))
     cache->set_enable_range_support(false);
 
-  // The kWininetFtp switch is Windows specific because we have two FTP
-  // implementations on Windows.
-#if defined(OS_WIN)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kWininetFtp))
-    context->set_ftp_transaction_factory(
-        new net::FtpNetworkLayer(context->host_resolver()));
-#else
   context->set_ftp_transaction_factory(
       new net::FtpNetworkLayer(context->host_resolver()));
-#endif
 
   // Create a separate AppCacheService for OTR mode.
   context->set_appcache_service(

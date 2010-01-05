@@ -658,9 +658,6 @@ const char kWebWorkerShareProcesses[]       = "web-worker-share-processes";
 // to use Chromium's network stack to fetch, and V8 to evaluate.
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 
-// On Windows only: use the old WinInet-based ftp implemetation.
-const char kWininetFtp[]                    = "wininet-ftp";
-
 // Causes the process to run as a worker subprocess.
 const char kWorkerProcess[]                 = "worker";
 
