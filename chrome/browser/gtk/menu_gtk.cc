@@ -145,6 +145,9 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
           l10n_util::GetStringUTF16(menu_data->label_argument));
     } else if (menu_data->label_id) {
       label = l10n_util::GetStringUTF8(menu_data->label_id);
+    } else if (menu_data->type != MENU_SEPARATOR) {
+      label = delegate_->GetLabel(menu_data->id);
+      DCHECK(!label.empty());
     }
 
     label = ConvertAcceleratorsFromWindowsStyle(label);

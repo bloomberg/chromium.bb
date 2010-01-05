@@ -34,6 +34,9 @@ class MenuGtk {
     // Returns whether this command is checked (for checkbox menu items only).
     virtual bool IsItemChecked(int command_id) const { return false; }
 
+    // Gets the label. Only needs to be implemented for custom (dynamic) labels.
+    virtual std::string GetLabel(int command_id) const { return std::string(); }
+
     // Executes the command.
     virtual void ExecuteCommand(int command_id) {}
 
