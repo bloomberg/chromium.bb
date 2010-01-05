@@ -342,13 +342,8 @@ void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
   bool do_open = force_open;
   DevToolsClientHost* host = GetDevToolsClientHostFor(inspected_rvh);
   if (!host) {
-#if defined OS_MACOSX
-    // TODO(pfeldman): Implement dock on Mac OS.
-    bool docked = false;
-#else
     bool docked = inspected_rvh->process()->profile()->GetPrefs()->
         GetBoolean(prefs::kDevToolsOpenDocked);
-#endif
     host = new DevToolsWindow(
         inspected_rvh->site_instance()->browsing_instance()->profile(),
         inspected_rvh,

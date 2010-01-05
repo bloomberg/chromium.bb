@@ -31,6 +31,10 @@ TabContents* DevToolsWindow::GetDevToolsContents(TabContents* inspected_tab) {
   if (!inspected_tab) {
     return NULL;
   }
+
+  if (!DevToolsManager::GetInstance())
+    return NULL;  // Happens only in tests.
+
   DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
           GetDevToolsClientHostFor(inspected_tab->render_view_host());
   if (!client_host) {

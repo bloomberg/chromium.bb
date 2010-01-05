@@ -35,7 +35,6 @@ class ConstrainedWindowMac;
 class LocationBar;
 class StatusBubbleMac;
 class TabContents;
-@class TabContentsController;
 @class TabStripController;
 class TabStripModelObserverBridge;
 @class TabStripView;
@@ -214,6 +213,9 @@ class TabStripModelObserverBridge;
 // Closes the tab sheet |window| and potentially shows the next sheet in the
 // tab's sheet queue.
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
+
+// Shows or hides the docked web inspector depending on |contents|'s state.
+- (void)updateDevToolsForContents:(TabContents*)contents;
 
 @end
 

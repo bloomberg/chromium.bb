@@ -16,6 +16,7 @@
 #import "chrome/browser/cocoa/url_drop_target.h"
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
 
+@class TabContentsController;
 @class TabView;
 @class TabStripView;
 
@@ -36,7 +37,6 @@ class ToolbarModel;
 // then handles replacing the contentView of the window. As tabs are switched,
 // the single child of the contentView is swapped around to hold the contents
 // (toolbar and all) representing that tab.
-
 @interface TabStripController :
   NSObject<TabControllerTarget,
            URLDropTargetController,
@@ -53,13 +53,19 @@ class ToolbarModel;
   scoped_ptr<TabStripModelObserverBridge> bridge_;
   Browser* browser_;  // weak
   TabStripModel* tabStripModel_;  // weak
+  
   // Access to the TabContentsControllers (which own the parent view
-  // for the toolbar and associated tab contents) given an index. This needs
-  // to be kept in the same order as the tab strip's model as we will be
-  // using its index from the TabStripModelObserver calls.
+  // for the toolbar and associated tab contents) given an index. Call
+  // |indexFromModelIndex:| to convert a |tabStripModel_| index to a
+  // |tabContentsArray_| index. Do NOT assume that the indices of
+  // |tabStripModel_| and this array are identical, this is e.g. not true while
+  // tabs are animating closed (closed tabs are removed from |tabStripModel_|
+  // immediately, but from |tabContentsArray_| only after their close animation
+  // has completed).
   scoped_nsobject<NSMutableArray> tabContentsArray_;
-  // An array of TabControllers which manage the actual tab views. As above,
-  // this is kept in the same order as the tab strip model.
+  // An array of TabControllers which manage the actual tab views. See note
+  // above |tabContentsArray_|. |tabContentsArray_| and |tabArray_| always
+  // contain objects belonging to the same tabs at the same indices.
   scoped_nsobject<NSMutableArray> tabArray_;
 
   // Set of TabControllers that are currently animating closed.
@@ -183,10 +189,14 @@ class ToolbarModel;
 // for the per-tab sheets.
 - (GTMWindowSheetController*)sheetController;
 
+// Returns the currently active TabContentsController.
+- (TabContentsController*)activeTabContentsController;
+
 // See comments in browser_window_controller.h for documentation about these
 // functions.
 - (BOOL)attachConstrainedWindow:(ConstrainedWindowMac*)window;
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
+- (void)updateDevToolsForContents:(TabContents*)contents;
 
 @end
 

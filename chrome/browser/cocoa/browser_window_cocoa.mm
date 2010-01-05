@@ -144,7 +144,8 @@ void BrowserWindowCocoa::ShelfVisibilityChanged() {
 }
 
 void BrowserWindowCocoa::UpdateDevTools() {
-  NOTIMPLEMENTED();
+  [controller_ updateDevToolsForContents:
+      browser_->tabstrip_model()->GetSelectedTabContents()];
 }
 
 void BrowserWindowCocoa::FocusDevTools() {

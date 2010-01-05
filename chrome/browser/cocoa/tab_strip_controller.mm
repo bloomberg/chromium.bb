@@ -28,6 +28,7 @@
 #import "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/cocoa/tab_view.h"
 #import "chrome/browser/cocoa/throbber_view.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -461,10 +462,15 @@ private:
 }
 
 // Given an index into the tab model, returns the index into the tab controller
-// array accounting for tabs that are currently closing. For example, if there
-// are two tabs in the process of closing before |index|, this returns
-// |index| + 2. If there are no closing tabs, this will return |index|.
+// or tab contents controller array accounting for tabs that are currently
+// closing. For example, if there are two tabs in the process of closing before
+// |index|, this returns |index| + 2. If there are no closing tabs, this will
+// return |index|.
 - (NSInteger)indexFromModelIndex:(NSInteger)index {
+  DCHECK(index >= 0);
+  if (index < 0)
+    return index;
+
   NSInteger i = 0;
   for (TabController* controller in tabArray_.get()) {
     if ([closingControllers_ containsObject:controller]) {
@@ -937,6 +943,7 @@ private:
 
   // Swap in the contents for the new tab.
   [self swapInTabAtIndex:modelIndex];
+  [self updateDevToolsForContents:newContents];
 
   if (newContents) {
     newContents->DidBecomeSelected();
@@ -1041,6 +1048,9 @@ private:
   } else {
     [self removeTab:tab];
   }
+
+  // Does nothing, purely for consistency with the windows/linux code.
+  [self updateDevToolsForContents:NULL];
 
   // Send a broadcast that the number of tabs have changed.
   [[NSNotificationCenter defaultCenter]
@@ -1612,6 +1622,17 @@ private:
   return sheetController_.get();
 }
 
+- (TabContentsController*)activeTabContentsController {
+  int modelIndex = tabStripModel_->selected_index();
+  if (modelIndex < 0)
+    return nil;
+  NSInteger index = [self indexFromModelIndex:modelIndex];
+  if (index < 0 || 
+      index >= (NSInteger)[tabContentsArray_ count])
+    return nil;
+  return [tabContentsArray_ objectAtIndex:index];
+}
+
 - (void)gtm_systemRequestsVisibilityForView:(NSView*)view {
   // This implementation is required by GTMWindowSheetController.
 
@@ -1632,7 +1653,7 @@ private:
   // View hierarchy of the contents view:
   // NSView  -- switchView, same for all tabs
   // +-  NSView  -- TabContentsController's view
-  //     +- NSBox
+  //     +- NSSplitView
   //        +- TabContentsViewCocoa
   // We use the TabContentsController's view in |swapInTabAtIndex|, so we have
   // to pass it to the sheet controller here.
@@ -1704,6 +1725,26 @@ private:
           static_cast<BrowserWindowController*>(controller));
     }
   }
+}
+
+- (void)updateDevToolsForContents:(TabContents*)contents {
+  int modelIndex = tabStripModel_->GetIndexOfTabContents(contents);
+
+  // This happens e.g. if one hits cmd-q with a docked devtools window open.
+  if (modelIndex == TabStripModel::kNoTab)
+    return;
+
+  NSInteger index = [self indexFromModelIndex:modelIndex];
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, (NSInteger)[tabContentsArray_ count]);
+  if (index < 0 || index >= (NSInteger)[tabContentsArray_ count])
+    return;
+
+  TabContentsController* tabController =
+      [tabContentsArray_ objectAtIndex:index];
+  TabContents* devtoolsContents = contents ?
+      DevToolsWindow::GetDevToolsContents(contents) : NULL;
+  [tabController showDevToolsContents:devtoolsContents];
 }
 
 @end

@@ -12,18 +12,19 @@ class TabContentsCommandObserver;
 class TabStripModel;
 
 // A class that controls the web contents of a tab. It manages displaying the
-// native view for a given TabContents in |contentsBox_|. Note that just
-// creating the class does not display the view in |contentsBox_|. We defer
-// inserting it until the box is the correct size to avoid multiple resize
-// messages to the renderer. You must call |-ensureContentsVisible| to display
-// the render widget host view.
+// native view for a given TabContents and optionally its docked devtools in
+// |contentsContainer_|.
+// Note that just creating the class does not display the view in
+// |contentsContainer_|. We defer inserting it until the box is the correct size
+// to avoid multiple resize messages to the renderer. You must call
+// |-ensureContentsVisible| to display the render widget host view.
 
 @interface TabContentsController : NSViewController {
  @private
   TabContentsCommandObserver* observer_;  // nil if |commands_| is nil
   TabContents* contents_;  // weak
 
-  IBOutlet NSBox* contentsBox_;
+  IBOutlet NSSplitView* contentsContainer_;
 }
 
 // Create the contents of a tab represented by |contents| and loaded from the
@@ -49,6 +50,15 @@ class TabStripModel;
 // an entirely new tab contents object.
 - (void)tabDidChange:(TabContents*)updatedContents;
 
+// Shows |devToolsContents| in a split view, or removes the bottom view in the
+// split viewif |devToolsContents| is NULL.
+// TODO(thakis): Either move this to tab_window or move infobar handling to here
+// too -- http://crbug.com/31633 .
+- (void)showDevToolsContents:(TabContents*)devToolsContents;
+
+// Returns the height required by devtools and divider, or 0 if no devtools are
+// docked to the tab.
+- (CGFloat)devToolsHeight;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TAB_CONTENTS_CONTROLLER_H_

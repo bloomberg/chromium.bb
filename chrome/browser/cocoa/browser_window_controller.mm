@@ -39,6 +39,7 @@
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/sad_tab_controller.h"
 #import "chrome/browser/cocoa/status_bubble_mac.h"
+#import "chrome/browser/cocoa/tab_contents_controller.h"
 #import "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
@@ -390,6 +391,10 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {
   [tabStripController_ removeConstrainedWindow:window];
+}
+
+- (void)updateDevToolsForContents:(TabContents*)contents {
+  [tabStripController_ updateDevToolsForContents:contents];
 }
 
 // Called when the user wants to close a window or from the shutdown process.
@@ -884,7 +889,8 @@ willPositionSheet:(NSWindow*)sheet
 // StatusBubble delegate method: tell the status bubble how far above the bottom
 // of the window it should position itself.
 - (float)verticalOffsetForStatusBubble {
-  return verticalOffsetForStatusBubble_;
+  return verticalOffsetForStatusBubble_ +
+         [[tabStripController_ activeTabContentsController] devToolsHeight];
 }
 
 - (GTMWindowSheetController*)sheetController {
@@ -1085,7 +1091,6 @@ willPositionSheet:(NSWindow*)sheet
   [[controller tabStripController] setFrameOfSelectedTab:tabRect];
   return controller;
 }
-
 
 - (void)insertPlaceholderForTab:(TabView*)tab
                           frame:(NSRect)frame

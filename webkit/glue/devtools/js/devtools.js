@@ -176,12 +176,6 @@ WebInspector.loaded = function() {
   Preferences.heapProfilerPresent = true;
   oldLoaded.call(this);
 
-  // Hide dock button on Mac OS.
-  // TODO(pfeldman): remove once Mac OS docking is implemented.
-  if (InspectorFrontendHost.platform().indexOf('mac') == 0) {
-    document.getElementById('dock-status-bar-item').addStyleClass('hidden');
-  }
-
   InspectorFrontendHost.loaded();
 };
 
