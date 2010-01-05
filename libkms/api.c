@@ -26,6 +26,7 @@
  **************************************************************************/
 
 
+#include "config.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,7 +34,11 @@
 
 int kms_create(int fd, struct kms_driver **out)
 {
+#ifdef HAVE_VMWGFX
 	return vmwgfx_create(fd, out);
+#else
+	return -ENOSYS;
+#endif
 }
 
 int kms_get_prop(struct kms_driver *kms, unsigned key, unsigned *out)

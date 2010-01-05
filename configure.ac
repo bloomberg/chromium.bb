@@ -147,6 +147,9 @@ fi
 AM_CONDITIONAL(HAVE_LIBKMS, [test "x$LIBKMS" = xyes])
 
 AM_CONDITIONAL(HAVE_VMWGFX, [test "x$VMWGFX" = xyes])
+if test "x$VMWGFX" = xyes; then
+	AC_DEFINE(HAVE_VMWGFX, 1, [Have vmwgfx kernel headers])
+fi
 
 AM_CONDITIONAL(HAVE_NOUVEAU, [test "x$NOUVEAU" = xyes])
 
