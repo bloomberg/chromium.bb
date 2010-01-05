@@ -19,6 +19,7 @@
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/window_sizer.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -252,6 +253,15 @@ willPositionSheet:(NSWindow*)sheet
       windowRect.set_width(minSize.width);
     if (windowRect.height() < minSize.height)
       windowRect.set_height(minSize.height);
+
+    // When we are given x/y coordinates of 0 on a created popup window, assume
+    // none were given by the window.open() command.
+    if (browser_->type() & Browser::TYPE_POPUP &&
+        windowRect.x() == 0 && windowRect.y() == 0) {
+      gfx::Size size = windowRect.size();
+      windowRect.set_origin(WindowSizer::GetDefaultPopupOrigin(size));
+    }
+
     windowShim_->SetBounds(windowRect);
 
     // Puts the incognito badge on the window frame, if necessary. Do this
