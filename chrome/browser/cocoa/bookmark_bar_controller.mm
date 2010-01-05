@@ -394,7 +394,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   [[self backgroundGradientView] setShowsDivider:showsDivider];
 
   // Make sure we're shown.
-  [[self view] setHidden:([self isVisible] ? NO : YES)];
+  [[self view] setHidden:![self isVisible]];
 
   // Update everything else.
   [self layoutSubviews];
@@ -1074,8 +1074,8 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // like the contextual menu which is invoked when not over a
 // bookmark.  On Safari that menu has a "new folder" option.
 - (void)addNodesToButtonList:(const BookmarkNode*)node {
-  BOOL hidden = (node->GetChildCount() == 0) ? NO : YES;
-  [[buttonView_ noItemTextfield] setHidden:hidden];
+  BOOL hideNoItemWarning = node->GetChildCount() > 0;
+  [[buttonView_ noItemTextfield] setHidden:hideNoItemWarning];
 
   int xOffset = 0;
   for (int i = 0; i < node->GetChildCount(); i++) {
@@ -1439,45 +1439,45 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 // (BookmarkBarState protocol)
 - (BOOL)isVisible {
-  return (barIsEnabled_ && (visualState_ == bookmarks::kShowingState ||
-                            visualState_ == bookmarks::kDetachedState)) ?
-      YES : NO;
+  return barIsEnabled_ && (visualState_ == bookmarks::kShowingState ||
+                           visualState_ == bookmarks::kDetachedState ||
+                           lastVisualState_ == bookmarks::kShowingState ||
+                           lastVisualState_ == bookmarks::kDetachedState);
 }
 
 // (BookmarkBarState protocol)
 - (BOOL)isAnimationRunning {
-  return (lastVisualState_ == bookmarks::kInvalidState) ? NO : YES;
+  return lastVisualState_ != bookmarks::kInvalidState;
 }
 
 // (BookmarkBarState protocol)
 - (BOOL)isInState:(bookmarks::VisualState)state {
-  return (visualState_ == state &&
-          lastVisualState_ == bookmarks::kInvalidState) ? YES : NO;
+  return visualState_ == state &&
+         lastVisualState_ == bookmarks::kInvalidState;
 }
 
 // (BookmarkBarState protocol)
 - (BOOL)isAnimatingToState:(bookmarks::VisualState)state {
-  return (visualState_ == state &&
-          lastVisualState_ != bookmarks::kInvalidState) ? YES : NO;
+  return visualState_ == state &&
+         lastVisualState_ != bookmarks::kInvalidState;
 }
 
 // (BookmarkBarState protocol)
 - (BOOL)isAnimatingFromState:(bookmarks::VisualState)state {
-  return (lastVisualState_ == state) ? YES : NO;
+  return lastVisualState_ == state;
 }
 
 // (BookmarkBarState protocol)
 - (BOOL)isAnimatingFromState:(bookmarks::VisualState)fromState
                      toState:(bookmarks::VisualState)toState {
-  return (lastVisualState_ == fromState && visualState_ == toState) ? YES : NO;
+  return lastVisualState_ == fromState && visualState_ == toState;
 }
 
 // (BookmarkBarState protocol)
 - (BOOL)isAnimatingBetweenState:(bookmarks::VisualState)fromState
                        andState:(bookmarks::VisualState)toState {
-  return ((lastVisualState_ == fromState && visualState_ == toState) ||
-          (visualState_ == fromState && lastVisualState_ == toState)) ?
-      YES : NO;
+  return (lastVisualState_ == fromState && visualState_ == toState) ||
+         (visualState_ == fromState && lastVisualState_ == toState);
 }
 
 // (BookmarkBarState protocol)
