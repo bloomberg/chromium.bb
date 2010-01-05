@@ -3,8 +3,10 @@ chrome-wrapper
 chrome.pak
 chrome_sandbox
 chrome.1
+emit_login_prompt_ready
 libffmpegsumo.so
 locales
 product_logo_48.png
 resources
+session
 xdg-settings
