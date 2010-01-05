@@ -5,4 +5,17 @@
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// TODO(jorlow): Write some tests. http://crbug.com/16155
+TEST(WebKitThreadTest, ExposedInChromeThread) {
+  int* null = NULL;  // Help the template system out.
+  EXPECT_FALSE(ChromeThread::DeleteSoon(ChromeThread::WEBKIT, FROM_HERE, null));
+  {
+    WebKitThread thread;
+    EXPECT_FALSE(ChromeThread::DeleteSoon(ChromeThread::WEBKIT,
+                                          FROM_HERE, null));
+    thread.Initialize();
+    EXPECT_TRUE(ChromeThread::DeleteSoon(ChromeThread::WEBKIT,
+                                         FROM_HERE, null));
+  }
+  EXPECT_FALSE(ChromeThread::DeleteSoon(ChromeThread::WEBKIT,
+                                        FROM_HERE, null));
+}

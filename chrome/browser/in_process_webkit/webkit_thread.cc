@@ -22,12 +22,10 @@ WebKitThread::~WebKitThread() {
 }
 
 void WebKitThread::Initialize() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(!webkit_thread_.get());
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
-    // TODO(jorlow): This thread should be used (and started) in single process
-    //               mode rather than following different code paths.
+    // TODO(jorlow): We need a better story for single process mode.
     return;
   }
 
