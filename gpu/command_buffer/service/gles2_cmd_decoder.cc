@@ -982,7 +982,7 @@ parse_error::ParseError GLES2DecoderImpl::DoCommand(
     unsigned int command,
     unsigned int arg_count,
     const void* cmd_data) {
-  parse_error::ParseError result;
+  parse_error::ParseError result = parse_error::kParseNoError;
   if (debug()) {
     // TODO(gman): Change output to something useful for NaCl.
     printf("cmd: %s\n", GetCommandName(command));
