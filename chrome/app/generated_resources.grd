@@ -5984,6 +5984,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Recently Closed
         </message>
         <!-- Bookmarks menu -->
+        <message name="IDS_BOOKMARK_MANAGER_MAC" desc="The Mac menu item for opening the bookmark manager, in the bookmark menu.">
+          Bookmark Manager
+        </message>
         <message name="IDS_BOOKMARK_CURRENT_PAGE_MAC" desc="The Mac menu item for bookmarking the current page in the bookmark menu.">
           Bookmark This Page...
         </message>

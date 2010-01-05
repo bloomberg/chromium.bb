@@ -183,6 +183,7 @@
                 'app/nibs/BookmarkBar.xib',
                 'app/nibs/BookmarkBubble.xib',
                 'app/nibs/BookmarkEditor.xib',
+                'app/nibs/BookmarkManager.xib',
                 'app/nibs/BookmarkNameFolder.xib',
                 'app/nibs/BrowserWindow.xib',
                 'app/nibs/ClearBrowsingData.xib',

@@ -10,6 +10,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_list.h"
+#import "chrome/browser/cocoa/bookmark_manager_controller.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/bug_report_window_controller.h"
@@ -253,7 +254,7 @@ void BrowserWindowCocoa::ShowTaskManager() {
 }
 
 void BrowserWindowCocoa::ShowBookmarkManager() {
-  NOTIMPLEMENTED();
+  [BookmarkManagerController showBookmarkManager:browser_->profile()];
 }
 
 void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,
