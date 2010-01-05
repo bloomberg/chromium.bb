@@ -3151,3 +3151,5 @@ BUG_DIMICH WIN : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg
 BUG_DIMICH LINUX : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE
 // New test, needs IMAGE baseline for mac because svg filter is a tad different.
 BUG_DIMICH MAC : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE
+
+BUG31623 WIN: LayoutTests/http/tests/appcache/remove-cache.html = PASS TEXT TIMEOUT
