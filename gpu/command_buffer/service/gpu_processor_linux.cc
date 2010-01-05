@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <windows.h>
-
+#include <gdk/gdkx.h>
 #include "gpu/command_buffer/service/gpu_processor.h"
+#include "gpu/command_buffer/service/x_utils.h"
 
 using ::base::SharedMemory;
 
@@ -14,7 +14,7 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle) {
   DCHECK(handle);
 
   // Cannot reinitialize.
-  if (decoder_->hwnd() != NULL)
+  if (decoder_->window() != NULL)
     return false;
 
   // Map the ring buffer and create the parser.
@@ -32,15 +32,19 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle) {
   }
 
   // Initialize GAPI immediately if the window handle is valid.
-  decoder_->set_hwnd(handle);
+  XWindowWrapper *window = new XWindowWrapper(GDK_DISPLAY(), handle);
+  decoder_->set_window_wrapper(window);
   return decoder_->Initialize();
 }
 
 void GPUProcessor::Destroy() {
   // Destroy GAPI if window handle has not already become invalid.
-  if (decoder_->hwnd()) {
+  XWindowWrapper *window = decoder_->window();
+  if (window) {
     decoder_->Destroy();
-    decoder_->set_hwnd(NULL);
+    decoder_->set_window_wrapper(NULL);
+    delete window;
   }
 }
+
 }  // namespace gpu

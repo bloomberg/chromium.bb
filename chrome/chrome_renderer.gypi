@@ -165,10 +165,6 @@
           'include_dirs': [
             'third_party/wtl/include',
           ],
-          'sources': [
-            'renderer/command_buffer_proxy.cc',
-            'renderer/command_buffer_proxy.h',
-          ],
           'conditions': [
             ['win_use_allocator_shim==1', {
               'dependencies': [
@@ -178,6 +174,12 @@
                 '<(allocator_target)',
               ],
             }],
+          ],
+        }],
+        ['OS=="win" or (OS=="linux" and target_arch!="arm")', {
+          'sources': [
+            'renderer/command_buffer_proxy.cc',
+            'renderer/command_buffer_proxy.h',
           ],
         }],
       ],

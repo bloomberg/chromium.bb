@@ -450,9 +450,6 @@
       # end up using this module as well.
       'conditions': [
         ['OS=="win"', {
-          'dependencies': [
-            '../gpu/gpu.gyp:command_buffer_service',
-          ],
           'defines': [
             '__STD_C',
             '_CRT_SECURE_NO_DEPRECATE',
@@ -460,6 +457,11 @@
           ],
           'include_dirs': [
             'third_party/wtl/include',
+          ],
+        }],
+        ['OS=="win" or (OS=="linux" and target_arch!="arm")', {
+          'dependencies': [
+            '../gpu/gpu.gyp:command_buffer_service',
           ],
           'sources': [
             'plugin/command_buffer_stub.cc',
