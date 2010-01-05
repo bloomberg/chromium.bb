@@ -11,7 +11,7 @@
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 
-typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int);
+typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int, unichar);
 
 @implementation ChromeEventProcessingWindow
 
@@ -23,10 +23,11 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int);
   const bool shiftKey = modifers & NSShiftKeyMask;
   const bool cntrlKey = modifers & NSControlKeyMask;
   const bool optKey = modifers & NSAlternateKeyMask;
-  const int keyCode = [event keyCode];
+  const unichar keyCode = [event keyCode];
+  const unichar keyChar = KeyCharacterForEvent(event);
 
   int cmdNum = commandForKeyboardShortcut(cmdKey, shiftKey, cntrlKey, optKey,
-      keyCode);
+      keyCode, keyChar);
 
   if (cmdNum != -1) {
     id executor = [self delegate];

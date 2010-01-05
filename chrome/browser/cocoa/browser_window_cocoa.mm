@@ -452,14 +452,15 @@ int BrowserWindowCocoa::GetCommandId(const NativeWebKeyboardEvent& event) {
   const bool cntrlKey = (modifiers & NSControlKeyMask) != 0;
   const bool optKey = (modifiers & NSAlternateKeyMask) != 0;
   const int keyCode = [event.os_event keyCode];
+  const unichar keyChar = KeyCharacterForEvent(event.os_event);
 
   int cmdNum = CommandForWindowKeyboardShortcut(
-      cmdKey, shiftKey, cntrlKey, optKey, keyCode);
+      cmdKey, shiftKey, cntrlKey, optKey, keyCode, keyChar);
   if (cmdNum != -1)
     return cmdNum;
 
   cmdNum = CommandForBrowserKeyboardShortcut(
-      cmdKey, shiftKey, cntrlKey, optKey, keyCode);
+      cmdKey, shiftKey, cntrlKey, optKey, keyCode, keyChar);
   if (cmdNum != -1)
     return cmdNum;
 
@@ -478,6 +479,7 @@ bool BrowserWindowCocoa::HandleKeyboardEventInternal(NSEvent* event) {
     // "previous tab", it takes precedence over the built-in "history back"
     // binding. Other than that, the |redispatchEvent| call would take care of
     // invoking the original menu item shortcut as well.
+
     if ([[NSApp mainMenu] performKeyEquivalent:event])
       return true;
 

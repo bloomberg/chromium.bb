@@ -12,11 +12,18 @@ struct KeyboardShortcutData {
   bool shift_key;
   bool cntrl_key;
   bool opt_key;
+  // Either one of vkey_code or key_char must be specified.  For keys
+  // whose virtual key code is hardware-dependent (kVK_ANSI_*) key_char
+  // should be specified instead.
+  // Set 0 for the one you do not want to specify.
   int vkey_code;  // Virtual Key code for the command.
+  unichar key_char;  // Key event characters for the command as reported by
+                     // [NSEvent charactersIgnoringModifiers].
   int chrome_command;  // The chrome command # to execute for this shortcut.
 };
 
-// Check if a given keycode + modifiers correspond to a given Chrome command.
+// Check if a given keycode + modifiers (or keychar + modifiers if the
+// |key_char| is specified) correspond to a given Chrome command.
 // returns: Command number (as passed to Browser::ExecuteCommand) or -1 if there
 // was no match.
 //
@@ -39,21 +46,30 @@ struct KeyboardShortcutData {
 // which first checks if the current web page wants to handle the shortcut).
 int CommandForWindowKeyboardShortcut(
     bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
-    int vkey_code);
+    int vkey_code, unichar key_char);
 
 // This returns shortcuts that should work no matter what component of the
 // browser is focused. They are executed by the window, after any view has the
 // opportunity to override the shortcut
 int CommandForDelayedWindowKeyboardShortcut(
     bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
-    int vkey_code);
+    int vkey_code, unichar key_char);
 
 // This returns shortcuts that should work only if the tab contents have focus
 // (e.g. cmd-left, which shouldn't do history navigation if e.g. the omnibox has
 // focus).
 int CommandForBrowserKeyboardShortcut(
     bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
-    int vkey_code);
+    int vkey_code, unichar key_char);
+
+// Returns a keyboard event character for the given |event|.  In most cases
+// this returns the first character of [NSEvent charactersIgnoringModifiers],
+// but when [NSEvent character] has different printable ascii character
+// we may return the first character of [NSEvent characters] instead.
+// (E.g. for dvorak-qwerty layout we want [NSEvent characters] rather than
+// [charactersIgnoringModifiers] for command keys.  Similarly, on german
+// layout we want '{' character rather than '8' for opt-8.)
+unichar KeyCharacterForEvent(NSEvent* event);
 
 // For testing purposes.
 const KeyboardShortcutData* GetWindowKeyboardShortcutTable(size_t* num_entries);
