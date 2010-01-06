@@ -33,11 +33,7 @@ void OmxVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   frame_bytes_ = (width_ * height_ * 3) / 2;
 
   // TODO(ajwong): Find the right way to determine the Omx component name.
-  media::OmxCodec::OmxMediaFormat input_format;
-  input_format.codec = OmxCodec::kCodecH264;
-  media::OmxCodec::OmxMediaFormat output_format;
-  output_format.codec = OmxCodec::kCodecRaw;
-  omx_codec_->Setup("OMX.st.video_decoder.avc", input_format, output_format);
+  omx_codec_->Setup("OMX.st.video_decoder.avc", OmxCodec::kCodecH264);
   omx_codec_->SetErrorCallback(
       NewCallback(this, &OmxVideoDecodeEngine::OnHardwareError));
   omx_codec_->Start();

@@ -15,10 +15,7 @@
 // // Initialization.
 // MessageLoop message_loop;
 // OmxCodec* decoder = new OmxCodec(&message_loop);
-// media::OmxCodec::OmxMediaFormat input_format, output_format;
-// input_format.codec = kCodecH264;
-// output_format.codec = kCodecRaw;
-// decoder->Setup(component_name, input_format, output_format);
+// decoder->Setup(component_name, kCodecH264);
 // decoder->SetErrorCallback(NewCallback(this, &Client::ErrorCallback));
 //
 // // Start is asynchronous. But we don't need to wait for it to proceed.
@@ -109,71 +106,14 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
     kCodecMpeg4,
     kCodecH263,
     kCodecVc1,
-    kCodecRaw,  // hacky.
   };
-
-  // TODO(jiesun) figure out what surface format Samsung support.
-  enum OmxSurfaceFormat {
-    kOmxSurfaceFormatNV21,
-    kOmxSurfaceFormatNV21Tiled,
-    kOmxSurfaceFormatNV12,
-  };
-
-  typedef struct {
-    int width;
-    int height;
-    int stride;     // n/a to compressed stream
-    int frame_rate;
-    int bit_rate;   // n/a to raw stream
-    int profile;    // n/a to raw stream
-    int level;      // n/a to raw stream
-    int i_dist;     // i frame distance; >0 if p frame is enabled
-    int p_dist;     // p frame distance; >0 if b frame is enabled
-  } OmxMediaFormatVideoHeader;
-
-  typedef struct {
-    OmxMediaFormatVideoHeader h;
-    OmxSurfaceFormat color_space;
-  } OmxMediaFormatVideoRaw;
-
-  typedef struct {
-    OmxMediaFormatVideoHeader h;
-    int slice_enable;
-    int max_ref_frames;
-    int num_ref_l0, num_ref_l1;
-    int cabac_enable;
-    int cabac_init_idc;
-    int deblock_enable;
-    int frame_mbs_only_flags;
-    int mbaff_enable;
-    int bdirect_spatial_temporal;
-  } OmxMediaFormatVideoH264;
-
-  typedef struct {
-    OmxMediaFormatVideoHeader h;
-    int ac_pred_enable;
-    int time_inc_res;
-    int slice_enable;
-  } OmxMediaFormatVideoMPEG4;
-
-  typedef struct {
-    // hTODO(jiesun) should change Coded to something format.
-    Codec codec;
-    union {
-      OmxMediaFormatVideoRaw raw;
-      OmxMediaFormatVideoH264 h264;
-      OmxMediaFormatVideoMPEG4 mpeg4;
-    };
-  } OmxMediaFormat;
 
   OmxCodec(MessageLoop* message_loop);
   virtual ~OmxCodec();
 
-  // Set the component name and input/output media format.
-  // TODO(hclam): Remove |component|.
-  void Setup(const char* component,
-             const OmxMediaFormat& Input,
-             const OmxMediaFormat& Output);
+  // Set the component name and input codec format.
+  // TODO(hclam): Add input format and output format. Also remove |component|.
+  void Setup(const char* component, Codec codec);
 
   // Set the error callback. In case of error the callback will be called.
   void SetErrorCallback(Callback* callback);
@@ -198,7 +138,8 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   void Flush(Callback* callback);
 
   // Getters for private members.
-  OMX_COMPONENTTYPE* component_handle() { return component_handle_; }
+  OMX_COMPONENTTYPE* decoder_handle() { return decoder_handle_; }
+  Codec codec() { return codec_; }
   int input_port() { return input_port_; }
   int output_port() { return output_port_; }
 
@@ -207,7 +148,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
 
  protected:
   // Returns the component name given the codec.
-  virtual const char* GetComponentName(Codec codec) { return component_name_; }
+  virtual const char* GetComponentName(Codec codec) { return ""; }
 
   // Inherit from subclass to allow device specific configurations.
   virtual bool DeviceSpecificConfig() { return true; }
@@ -344,6 +285,8 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   int output_port_;
   bool output_eos_;
 
+  OMX_COMPONENTTYPE* decoder_handle_;
+
   // |state_| records the current state. During state transition
   // |next_state_| is the next state that this machine will transition
   // to. After a state transition is completed and the state becomes
@@ -354,11 +297,8 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   State next_state_;
 
   // TODO(hclam): We should keep a list of component names.
-  const char* component_name_;
-  OMX_COMPONENTTYPE* component_handle_;
-  bool encoder_;
-  OmxMediaFormat input_format_;
-  OmxMediaFormat output_format_;
+  const char* component_;
+  Codec codec_;
   MessageLoop* message_loop_;
 
   scoped_ptr<Callback> stop_callback_;

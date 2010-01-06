@@ -26,9 +26,10 @@ OmxCodec::OmxCodec(MessageLoop* message_loop)
       output_buffer_size_(0),
       output_port_(0),
       output_eos_(false),
+      decoder_handle_(NULL),
       state_(kEmpty),
       next_state_(kEmpty),
-      component_handle_(NULL),
+      codec_(kCodecNone),
       message_loop_(message_loop) {
 }
 
@@ -42,16 +43,10 @@ OmxCodec::~OmxCodec() {
   DCHECK(output_queue_.empty());
 }
 
-void OmxCodec::Setup(
-    const char* component,
-    const OmxCodec::OmxMediaFormat& input_format,
-    const OmxCodec::OmxMediaFormat& output_format) {
+void OmxCodec::Setup(const char* component, Codec codec) {
   DCHECK_EQ(kEmpty, state_);
-  DCHECK(input_format.codec != kCodecNone);
-  component_name_ = component;
-  input_format_ = input_format;
-  output_format_ = output_format;
-  encoder_ = input_format_.codec == kCodecRaw;
+  component_ = component;
+  codec_ = codec;
 }
 
 void OmxCodec::SetErrorCallback(Callback* callback) {
@@ -60,7 +55,7 @@ void OmxCodec::SetErrorCallback(Callback* callback) {
 }
 
 void OmxCodec::Start() {
-  DCHECK_NE(kCodecNone, input_format_.codec);
+  DCHECK_NE(kCodecNone, codec_);
 
   message_loop_->PostTask(
       FROM_HERE,
@@ -182,7 +177,7 @@ bool OmxCodec::AllocateInputBuffers() {
   for(int i = 0; i < input_buffer_count_; ++i) {
     OMX_BUFFERHEADERTYPE* buffer;
     OMX_ERRORTYPE error =
-        OMX_AllocateBuffer(component_handle_, &buffer, input_port_,
+        OMX_AllocateBuffer(decoder_handle_, &buffer, input_port_,
                            NULL, input_buffer_size_);
     if (error != OMX_ErrorNone)
       return false;
@@ -202,7 +197,7 @@ bool OmxCodec::AllocateOutputBuffers() {
   for(int i = 0; i < output_buffer_count_; ++i) {
     OMX_BUFFERHEADERTYPE* buffer;
     OMX_ERRORTYPE error =
-        OMX_AllocateBuffer(component_handle_, &buffer, output_port_,
+        OMX_AllocateBuffer(decoder_handle_, &buffer, output_port_,
                            NULL, output_buffer_size_);
     if (error != OMX_ErrorNone)
       return false;
@@ -216,7 +211,7 @@ void OmxCodec::FreeInputBuffers() {
 
   // Calls to OMX to free buffers.
   for(size_t i = 0; i < input_buffers_.size(); ++i)
-    OMX_FreeBuffer(component_handle_, input_port_, input_buffers_[i]);
+    OMX_FreeBuffer(decoder_handle_, input_port_, input_buffers_[i]);
   input_buffers_.clear();
 
   // Empty available buffer queue.
@@ -230,7 +225,7 @@ void OmxCodec::FreeOutputBuffers() {
 
   // Calls to OMX to free buffers.
   for(size_t i = 0; i < output_buffers_.size(); ++i)
-    OMX_FreeBuffer(component_handle_, output_port_, output_buffers_[i]);
+    OMX_FreeBuffer(decoder_handle_, output_port_, output_buffers_[i]);
   output_buffers_.clear();
 
   // Empty available buffer queue.
@@ -293,10 +288,10 @@ void OmxCodec::Transition_EmptyToLoaded() {
   // 2. Get the handle to the component. After OMX_GetHandle(),
   //    the component is in loaded state.
   // TODO(hclam): We should have a list of componant names instead.
-  OMX_STRING component = const_cast<OMX_STRING>(component_name_);
-  OMX_HANDLETYPE handle = reinterpret_cast<OMX_HANDLETYPE>(component_handle_);
+  OMX_STRING component = const_cast<OMX_STRING>(component_);
+  OMX_HANDLETYPE handle = reinterpret_cast<OMX_HANDLETYPE>(decoder_handle_);
   omxresult = OMX_GetHandle(&handle, component, this, &callback);
-  component_handle_ = reinterpret_cast<OMX_COMPONENTTYPE*>(handle);
+  decoder_handle_ = reinterpret_cast<OMX_COMPONENTTYPE*>(handle);
   if (omxresult != OMX_ErrorNone) {
     LOG(ERROR) << "Failed to Load the component: " << component;
     StateTransitionTask(kError);
@@ -307,7 +302,7 @@ void OmxCodec::Transition_EmptyToLoaded() {
   //    number of ports and index of the first port.
   OMX_PORT_PARAM_TYPE port_param;
   ResetPortHeader(*this, &port_param);
-  omxresult = OMX_GetParameter(component_handle_, OMX_IndexParamVideoInit,
+  omxresult = OMX_GetParameter(decoder_handle_, OMX_IndexParamVideoInit,
                                &port_param);
   if (omxresult != OMX_ErrorNone) {
     LOG(ERROR) << "ERROR - Failed to get Port Param";
@@ -331,7 +326,7 @@ void OmxCodec::Transition_EmptyToLoaded() {
   OMX_PARAM_PORTDEFINITIONTYPE port_format;
   ResetPortHeader(*this, &port_format);
   port_format.nPortIndex = input_port_;
-  omxresult = OMX_GetParameter(component_handle_,
+  omxresult = OMX_GetParameter(decoder_handle_,
                                OMX_IndexParamPortDefinition,
                                &port_format);
   if (omxresult != OMX_ErrorNone) {
@@ -344,21 +339,21 @@ void OmxCodec::Transition_EmptyToLoaded() {
     StateTransitionTask(kError);
     return;
   }
-  if (input_format_.codec == kCodecH264)
+  if (codec_ == kCodecH264)
     port_format.format.video.eCompressionFormat = OMX_VIDEO_CodingAVC;
-  else if (input_format_.codec == kCodecMpeg4)
+  else if (codec_ == kCodecMpeg4)
     port_format.format.video.eCompressionFormat = OMX_VIDEO_CodingMPEG4;
-  else if (input_format_.codec == kCodecH263)
+  else if (codec_ == kCodecH263)
     port_format.format.video.eCompressionFormat = OMX_VIDEO_CodingH263;
-  else if (input_format_.codec == kCodecVc1)
+  else if (codec_ == kCodecVc1)
     port_format.format.video.eCompressionFormat = OMX_VIDEO_CodingWMV;
   else
-    LOG(ERROR) << "Error: Unsupported codec " << input_format_.codec;
+    LOG(ERROR) << "Error: Unsupported codec " << codec_;
   // Assume QCIF.
   // TODO(ajwong): This MUST come from the client library somehow.
   port_format.format.video.nFrameWidth  = 720;
   port_format.format.video.nFrameHeight = 480;
-  omxresult = OMX_SetParameter(component_handle_,
+  omxresult = OMX_SetParameter(decoder_handle_,
                                OMX_IndexParamPortDefinition,
                                &port_format);
   if (omxresult != OMX_ErrorNone) {
@@ -374,7 +369,7 @@ void OmxCodec::Transition_EmptyToLoaded() {
   // This will have the new mini buffer count in port_format.nBufferCountMin.
   // Save this value to input_buf_count.
   port_format.nPortIndex = port_param.nStartPortNumber;
-  omxresult = OMX_GetParameter(component_handle_,
+  omxresult = OMX_GetParameter(decoder_handle_,
                                OMX_IndexParamPortDefinition,
                                &port_format);
   if (omxresult != OMX_ErrorNone) {
@@ -393,7 +388,7 @@ void OmxCodec::Transition_EmptyToLoaded() {
   // 8. Obtain the information about the output port.
   ResetPortHeader(*this, &port_format);
   port_format.nPortIndex = output_port_;
-  omxresult = OMX_GetParameter(component_handle_,
+  omxresult = OMX_GetParameter(decoder_handle_,
                                OMX_IndexParamPortDefinition,
                                &port_format);
   if (omxresult != OMX_ErrorNone) {
@@ -412,10 +407,10 @@ void OmxCodec::Transition_EmptyToLoaded() {
   // 9. Codec specific configurations.
   // This sets the NAL length size. 0 means we are using a 3 byte start code.
   // Other values specifies number of bytes of the NAL length.
-  if (input_format_.codec == kCodecH264) {
+  if (codec_ == kCodecH264) {
     OMX_VIDEO_CONFIG_NALSIZE naluSize;
     naluSize.nNaluBytes = 0;
-    omxresult = OMX_SetConfig(component_handle_,
+    omxresult = OMX_SetConfig(decoder_handle_,
                               OMX_IndexConfigVideoNalSize, (OMX_PTR)&naluSize);
     if (omxresult != OMX_ErrorNone) {
       LOG(ERROR) << "Error - SetConfig failed";
@@ -438,7 +433,7 @@ void OmxCodec::Transition_LoadedToIdle() {
   DCHECK_EQ(kLoaded, GetState());
 
   // 1. Sets decoder to idle state.
-  OMX_ERRORTYPE omxresult = OMX_SendCommand(component_handle_,
+  OMX_ERRORTYPE omxresult = OMX_SendCommand(decoder_handle_,
                                             OMX_CommandStateSet,
                                             OMX_StateIdle, 0);
   if (omxresult != OMX_ErrorNone) {
@@ -470,7 +465,7 @@ void OmxCodec::Transition_IdleToExecuting() {
   DCHECK_EQ(kIdle, GetState());
 
   // Transist to executing state.
-  OMX_ERRORTYPE omxresult = OMX_SendCommand(component_handle_,
+  OMX_ERRORTYPE omxresult = OMX_SendCommand(decoder_handle_,
                                             OMX_CommandStateSet,
                                             OMX_StateExecuting, 0);
   if (omxresult != OMX_ErrorNone) {
@@ -489,7 +484,7 @@ void OmxCodec::Transition_ExecutingToDisable() {
   DCHECK_EQ(kExecuting, GetState());
 
   // Send DISABLE command.
-  OMX_ERRORTYPE omxresult = OMX_SendCommand(component_handle_,
+  OMX_ERRORTYPE omxresult = OMX_SendCommand(decoder_handle_,
                                             OMX_CommandPortDisable,
                                             output_port_, 0);
   if (omxresult != OMX_ErrorNone) {
@@ -512,7 +507,7 @@ void OmxCodec::Transition_DisableToEnable() {
   DCHECK_EQ(kPortSettingDisable, GetState());
 
   // Send Enable command.
-  OMX_ERRORTYPE omxresult = OMX_SendCommand(component_handle_,
+  OMX_ERRORTYPE omxresult = OMX_SendCommand(decoder_handle_,
                                             OMX_CommandPortEnable,
                                             output_port_, 0);
   if (omxresult != OMX_ErrorNone) {
@@ -525,7 +520,7 @@ void OmxCodec::Transition_DisableToEnable() {
   OMX_PARAM_PORTDEFINITIONTYPE port_format;
   ResetPortHeader(*this, &port_format);
   port_format.nPortIndex = output_port_;
-  omxresult = OMX_GetParameter(component_handle_, OMX_IndexParamPortDefinition,
+  omxresult = OMX_GetParameter(decoder_handle_, OMX_IndexParamPortDefinition,
                                &port_format);
   if (omxresult != OMX_ErrorNone) {
     LOG(ERROR) << "Error - GetParameter failed";
@@ -555,7 +550,7 @@ void OmxCodec::Transition_DisableToIdle() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kPortSettingDisable, GetState());
 
-  OMX_ERRORTYPE omxresult = OMX_SendCommand(component_handle_,
+  OMX_ERRORTYPE omxresult = OMX_SendCommand(decoder_handle_,
                                             OMX_CommandStateSet,
                                             OMX_StateIdle, 0);
   if (omxresult != OMX_ErrorNone) {
@@ -580,7 +575,7 @@ void OmxCodec::Transition_EnableToIdle() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kPortSettingEnable, GetState());
 
-  OMX_ERRORTYPE omxresult = OMX_SendCommand(component_handle_,
+  OMX_ERRORTYPE omxresult = OMX_SendCommand(decoder_handle_,
                                             OMX_CommandStateSet,
                                             OMX_StateIdle, 0);
   if (omxresult != OMX_ErrorNone) {
@@ -597,7 +592,7 @@ void OmxCodec::Transition_ExecutingToIdle() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kExecuting, GetState());
 
-  OMX_ERRORTYPE omxresult = OMX_SendCommand(component_handle_,
+  OMX_ERRORTYPE omxresult = OMX_SendCommand(decoder_handle_,
                                             OMX_CommandStateSet,
                                             OMX_StateIdle, 0);
   if (omxresult != OMX_ErrorNone) {
@@ -616,7 +611,7 @@ void OmxCodec::Transition_IdleToLoaded() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kIdle, GetState());
 
-  OMX_ERRORTYPE omxresult = OMX_SendCommand(component_handle_,
+  OMX_ERRORTYPE omxresult = OMX_SendCommand(decoder_handle_,
                                             OMX_CommandStateSet,
                                             OMX_StateLoaded, 0);
   if (omxresult != OMX_ErrorNone) {
@@ -638,11 +633,11 @@ void OmxCodec::Transition_LoadedToEmpty() {
   DCHECK_EQ(kLoaded, GetState());
 
   // Free the decoder handle.
-  OMX_ERRORTYPE result = OMX_FreeHandle(component_handle_);
+  OMX_ERRORTYPE result = OMX_FreeHandle(decoder_handle_);
   if (result != OMX_ErrorNone) {
     LOG(ERROR) << "Error - Terminate: OMX_FreeHandle error. Error code: " << result;
   }
-  component_handle_ = NULL;
+  decoder_handle_ = NULL;
 
   // Deinit OpenMAX
   // TODO(hclam): move this out.
@@ -670,9 +665,9 @@ void OmxCodec::Transition_Error() {
   // send a command to disable ports for us to free buffers.
   if (old_state == kExecuting || old_state == kIdle ||
       old_state == kPortSettingEnable || old_state == kPortSettingDisable) {
-    DCHECK(component_handle_);
-    OMX_SendCommand(component_handle_, OMX_CommandPortDisable, input_port_, 0);
-    OMX_SendCommand(component_handle_, OMX_CommandPortDisable, output_port_, 0);
+    DCHECK(decoder_handle_);
+    OMX_SendCommand(decoder_handle_, OMX_CommandPortDisable, input_port_, 0);
+    OMX_SendCommand(decoder_handle_, OMX_CommandPortDisable, output_port_, 0);
   }
 
   // Free input and output buffers.
@@ -684,11 +679,11 @@ void OmxCodec::Transition_Error() {
   FreeOutputQueue();
 
   // Free decoder handle.
-  if (component_handle_) {
-    OMX_ERRORTYPE result = OMX_FreeHandle(component_handle_);
+  if (decoder_handle_) {
+    OMX_ERRORTYPE result = OMX_FreeHandle(decoder_handle_);
     if (result != OMX_ErrorNone)
       LOG(ERROR) << "Error - OMX_FreeHandle error. Error code: " << result;
-    component_handle_ = NULL;
+    decoder_handle_ = NULL;
   }
 
   // Deinit OpenMAX.
@@ -922,7 +917,7 @@ void OmxCodec::EmptyBufferTask() {
     omx_buffer->nFlags |= input_eos_ ? OMX_BUFFERFLAG_EOS : 0;
 
     // Give this buffer to OMX.
-    OMX_ERRORTYPE ret = OMX_EmptyThisBuffer(component_handle_, omx_buffer);
+    OMX_ERRORTYPE ret = OMX_EmptyThisBuffer(decoder_handle_, omx_buffer);
     if (ret != OMX_ErrorNone) {
       LOG(ERROR) << "ERROR - OMX_EmptyThisBuffer failed with result " << ret;
       StateTransitionTask(kError);
@@ -972,7 +967,7 @@ void OmxCodec::FillBufferTask() {
     omx_buffer->nOutputPortIndex = output_port_;
     omx_buffer->pAppPrivate = this;
     omx_buffer->nFlags &= ~OMX_BUFFERFLAG_EOS;
-    OMX_ERRORTYPE ret = OMX_FillThisBuffer(component_handle_, omx_buffer);
+    OMX_ERRORTYPE ret = OMX_FillThisBuffer(decoder_handle_, omx_buffer);
     if (OMX_ErrorNone != ret) {
       LOG(ERROR) << "Error - OMX_FillThisBuffer failed with result " << ret;
       StateTransitionTask(kError);
@@ -1010,7 +1005,7 @@ void OmxCodec::InitialFillBuffer() {
     omx_buffer->pAppPrivate = this;
     // Need to clear the EOS flag.
     omx_buffer->nFlags &= ~OMX_BUFFERFLAG_EOS;
-    OMX_ERRORTYPE ret = OMX_FillThisBuffer(component_handle_, omx_buffer);
+    OMX_ERRORTYPE ret = OMX_FillThisBuffer(decoder_handle_, omx_buffer);
 
     if (OMX_ErrorNone != ret) {
       LOG(ERROR) << "Error - OMX_FillThisBuffer failed with result " << ret;
