@@ -78,8 +78,7 @@ def LigHTTPdPHPPath():
 
 def WDiffPath():
   """Path to the WDiff executable, which we assume is already installed and
-     in the user's $PATH.
-  """
+  in the user's $PATH."""
   return 'wdiff'
 
 def ImageDiffPath(target):
@@ -134,12 +133,8 @@ def ShutDownHTTPServer(server_pid):
   if server_pid is None:
     # This isn't ideal, since it could conflict with web server processes not
     # started by http_server.py, but good enough for now.
-    null = open("/dev/null");
-    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'lighttpd'],
-                    stderr=null)
-    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'apache2'],
-                    stderr=null)
-    null.close()
+    KillAllProcess('lighttpd')
+    KillAllProcess('apache2')
   else:
     try:
       os.kill(server_pid, signal.SIGTERM)
@@ -157,11 +152,15 @@ def KillProcess(pid):
   """
   os.kill(pid, signal.SIGKILL)
 
+def KillAllProcess(process_name):
+  null = open("/dev/null");
+  subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), process_name],
+                  stderr=null)
+  null.close()
+
 def KillAllTestShells():
-   """Kills all instances of the test_shell binary currently running."""
-   subprocess.Popen(('killall', '-TERM', 'test_shell'),
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE).wait()
+  """Kills all instances of the test_shell binary currently running."""
+  KillAllProcess('test_shell')
 
 #
 # Private helper functions

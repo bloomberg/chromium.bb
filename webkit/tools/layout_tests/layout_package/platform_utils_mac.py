@@ -52,7 +52,7 @@ def BaselineSearchPath(all_versions=False):
 
 def WDiffPath():
   """Path to the WDiff executable, which we assume is already installed and
-      in the user's $PATH."""
+  in the user's $PATH."""
   return 'wdiff'
 
 def ImageDiffPath(target):
@@ -111,18 +111,8 @@ def ShutDownHTTPServer(server_pid):
   if server_pid is None:
     # TODO(mmoss) This isn't ideal, since it could conflict with lighttpd
     # processes not started by http_server.py, but good enough for now.
-
-    # On 10.6, killall has a new constraint: -SIGNALNAME or
-    # -SIGNALNUMBER must come first.  Example problem:
-    #   $ killall -u $USER -TERM lighttpd
-    #   killall: illegal option -- T
-    # Use of the earlier -TERM placement is just fine on 10.5.
-    null = open("/dev/null");
-    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'lighttpd'],
-                    stderr=null)
-    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'httpd'],
-                    stderr=null)
-    null.close()
+    KillAllProcess('lighttpd')
+    KillAllProcess('httpd')
   else:
     try:
       os.kill(server_pid, signal.SIGTERM)
@@ -140,8 +130,17 @@ def KillProcess(pid):
   """
   os.kill(pid, signal.SIGKILL)
 
+def KillAllProcess(process_name):
+  # On Mac OS X 10.6, killall has a new constraint: -SIGNALNAME or
+  # -SIGNALNUMBER must come first.  Example problem:
+  #   $ killall -u $USER -TERM lighttpd
+  #   killall: illegal option -- T
+  # Use of the earlier -TERM placement is just fine on 10.5.
+  null = open("/dev/null");
+  subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), process_name],
+                  stderr=null)
+  null.close()
+
 def KillAllTestShells():
-   """Kills all instances of the test_shell binary currently running."""
-   subprocess.Popen(('killall', '-TERM', 'test_shell'),
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE).wait()
+  """Kills all instances of the test_shell binary currently running."""
+  KillAllProcess('TestShell')
