@@ -2674,21 +2674,21 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
     }
   }
   if (in_process_plugin) {
+#if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
     if (use_pepper_host) {
       return WebPluginDelegatePepper::Create(
           path,
           *mime_type_to_use,
           AsWeakPtr(),
-          0);
+          gfx::NativeViewFromId(host_window_));
     } else {
-#if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
       return WebPluginDelegateImpl::Create(
           path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
-#else
-      NOTIMPLEMENTED();
-      return NULL;
-#endif
     }
+#else
+    NOTIMPLEMENTED();
+    return NULL;
+#endif
   }
 
   return new WebPluginDelegateProxy(*mime_type_to_use, AsWeakPtr());

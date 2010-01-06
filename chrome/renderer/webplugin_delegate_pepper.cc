@@ -588,7 +588,7 @@ void WebPluginDelegatePepper::PluginDestroyed() {
 
 void WebPluginDelegatePepper::Paint(WebKit::WebCanvas* canvas,
                                     const gfx::Rect& rect) {
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN)
   if (nested_delegate_) {
     // TODO(apatrick): The GPU plugin will render to an offscreen render target.
     //    Need to copy it to the screen here.

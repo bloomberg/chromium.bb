@@ -34,21 +34,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#if defined(INDEPENDENT_PLUGIN)
-#include <iostream>
-#define LOG(x) std::cerr
-#else
 #include "base/logging.h"
 #include "base/string_util.h"
-#endif
-#include "webkit/glue/plugins/nphostapi.h"
 #include "webkit/tools/pepper_test_plugin/plugin_object.h"
 #include "webkit/tools/pepper_test_plugin/event_handler.h"
 
-#if __GNUC__ >= 4
-#define EXPORT __attribute__ ((visibility("default")))
-#elif defined(_MSC_VER)
-#define EXPORT __declspec(dllexport)
+#ifdef WIN32
+#define NPAPI WINAPI
+#else
+#define NPAPI
 #endif
 
 namespace {
@@ -57,14 +51,7 @@ void Log(NPP instance, const char* format, ...) {
   va_list args;
   va_start(args, format);
   std::string message("PLUGIN: ");
-#if defined(INDEPENDENT_PLUGIN)
-  {
-    char msgbuf[100];
-    vsnprintf(msgbuf, 100, format, args);
-  }
-#else
   StringAppendV(&message, format, args);
-#endif
   va_end(args);
 
   NPObject* window_object = 0;
@@ -112,25 +99,34 @@ void Log(NPP instance, const char* format, ...) {
 // Plugin entry points
 extern "C" {
 
-EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs
+#if defined(OS_WIN)
+//__declspec(dllexport)
+#endif
+NPError NPAPI NP_Initialize(NPNetscapeFuncs* browser_funcs
 #if defined(OS_LINUX)
                             , NPPluginFuncs* plugin_funcs
 #endif
                             );
-EXPORT NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* plugin_funcs);
+#if defined(OS_WIN)
+//__declspec(dllexport)
+#endif
+NPError NPAPI NP_GetEntryPoints(NPPluginFuncs* plugin_funcs);
 
-EXPORT void API_CALL NP_Shutdown() {
+#if defined(OS_WIN)
+//__declspec(dllexport)
+#endif
+void NPAPI NP_Shutdown() {
 }
 
 #if defined(OS_LINUX)
-EXPORT NPError API_CALL NP_GetValue(NPP instance, NPPVariable variable, void* value);
-EXPORT const char* API_CALL NP_GetMIMEDescription();
+NPError NP_GetValue(NPP instance, NPPVariable variable, void* value);
+const char* NP_GetMIMEDescription();
 #endif
 
 }  // extern "C"
 
 // Plugin entry points
-EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs
+NPError NPAPI NP_Initialize(NPNetscapeFuncs* browser_funcs
 #if defined(OS_LINUX)
                             , NPPluginFuncs* plugin_funcs
 #endif
@@ -145,7 +141,7 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs
 
 // Entrypoints -----------------------------------------------------------------
 
-NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* plugin_funcs) {
+NPError NPAPI NP_GetEntryPoints(NPPluginFuncs* plugin_funcs) {
   plugin_funcs->version = 11;
   plugin_funcs->size = sizeof(plugin_funcs);
   plugin_funcs->newp = NPP_New;
@@ -275,11 +271,11 @@ NPError NPP_SetValue(NPP instance, NPNVariable variable, void* value) {
 }
 
 #if defined(OS_LINUX)
-NPError API_CALL NP_GetValue(NPP instance, NPPVariable variable, void* value) {
+NPError NP_GetValue(NPP instance, NPPVariable variable, void* value) {
   return NPP_GetValue(instance, variable, value);
 }
 
-const char* API_CALL NP_GetMIMEDescription() {
-  return "pepper-application/x-pepper-test-plugin::Pepper Test";
+const char* NP_GetMIMEDescription() {
+  return "pepper-application/x-pepper-test-plugin pepper test;";
 }
 #endif
