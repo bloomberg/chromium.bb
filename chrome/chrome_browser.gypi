@@ -96,6 +96,8 @@
         'browser/autofill/contact_info.h',
         'browser/autofill/credit_card_field.cc',
         'browser/autofill/credit_card_field.h',
+        'browser/autofill/credit_card.cc',
+        'browser/autofill/credit_card.h',
         'browser/autofill/field_types.h',
         'browser/autofill/form_field.cc',
         'browser/autofill/form_field.h',
