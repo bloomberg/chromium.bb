@@ -1497,6 +1497,13 @@ var dnd = {
       this.startY = item.offsetTop;
       this.startScreenX = e.screenX;
       this.startScreenY = e.screenY;
+
+      // We don't want to focus the item on mousedown. However, to prevent focus
+      // one has to call preventDefault but this also prevents the drag and drop
+      // (sigh) so we only prevent it when the user is not doing a left mouse
+      // button drag.
+      if (e.button != 0) // LEFT
+        e.preventDefault();
     }
   },
 
