@@ -371,37 +371,6 @@ class AppCacheResponseTest : public testing::Test {
     TestFinished();
   }
 
-  // AmountWritten ----------------------------------------------------
-
-  void AmountWritten() {
-    static const char kHttpHeaders[] =
-        "HTTP/1.0 200 OK\0\0";
-    std::string raw_headers(kHttpHeaders, arraysize(kHttpHeaders));
-    net::HttpResponseInfo* head = MakeHttpResponseInfo(raw_headers);
-    int expected_amount_written =
-        GetHttpResponseInfoSize(head) + kNumBlocks * kBlockSize;
-
-    // Push tasks in reverse order.
-    PushNextTask(method_factory_.NewRunnableMethod(
-        &AppCacheResponseTest::Verify_AmountWritten, expected_amount_written));
-    for (int i = 0; i < kNumBlocks; ++i) {
-      PushNextTask(method_factory_.NewRunnableMethod(
-          &AppCacheResponseTest::WriteOneBlock, kNumBlocks - i));
-    }
-    PushNextTask(method_factory_.NewRunnableMethod(
-        &AppCacheResponseTest::WriteResponseHead, head));
-
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
-    written_response_id_ = writer_->response_id();
-    ScheduleNextTask();
-  }
-
-  void Verify_AmountWritten(int expected_amount_written) {
-    EXPECT_EQ(expected_amount_written, writer_->amount_written());
-    TestFinished();
-  }
-
-
   // WriteThenVariouslyReadResponse -------------------------------------------
 
   void WriteThenVariouslyReadResponse() {
@@ -687,10 +656,6 @@ TEST_F(AppCacheResponseTest, LoadResponseInfo_Miss) {
 
 TEST_F(AppCacheResponseTest, LoadResponseInfo_Hit) {
   RunTestOnIOThread(&AppCacheResponseTest::LoadResponseInfo_Hit);
-}
-
-TEST_F(AppCacheResponseTest, AmountWritten) {
-  RunTestOnIOThread(&AppCacheResponseTest::AmountWritten);
 }
 
 TEST_F(AppCacheResponseTest, WriteThenVariouslyReadResponse) {

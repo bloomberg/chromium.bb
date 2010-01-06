@@ -184,9 +184,6 @@ class AppCacheResponseWriter : public AppCacheResponseIO {
   // Returns true if there is a write pending.
   bool IsWritePending() { return IsIOPending(); }
 
-  // Returns the amount written, info and data.
-  int64 amount_written() { return info_size_ + write_position_; }
-
  private:
   friend class AppCacheStorageImpl;
   friend class MockAppCacheStorage;
@@ -194,12 +191,11 @@ class AppCacheResponseWriter : public AppCacheResponseIO {
   // Should only be constructed by the storage class.
   AppCacheResponseWriter(int64 response_id, disk_cache::Backend* disk_cache)
       : AppCacheResponseIO(response_id, disk_cache),
-        info_size_(0), write_position_(0), write_amount_(0) {}
+        write_position_(0), write_amount_(0) {}
 
   virtual void OnIOComplete(int result);
   bool CreateEntryIfNeeded();
 
-  int info_size_;
   int write_position_;
   int write_amount_;
 };

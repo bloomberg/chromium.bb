@@ -38,15 +38,13 @@ const struct {
     "(cache_id INTEGER PRIMARY KEY,"
     " group_id INTEGER,"
     " online_wildcard INTEGER CHECK(online_wildcard IN (0, 1)),"
-    " update_time INTEGER,"
-    " cache_size INTEGER)" },  // intentionally not normalized
+    " update_time INTEGER)" },
 
   { kEntriesTable,
     "(cache_id INTEGER,"
     " url TEXT,"
     " flags INTEGER,"
-    " response_id INTEGER,"
-    " response_size INTEGER)" },
+    " response_id INTEGER)" },
 
   { kFallbackNameSpacesTable,
     "(cache_id INTEGER,"
@@ -317,7 +315,7 @@ bool AppCacheDatabase::FindCache(int64 cache_id, CacheRecord* record) {
     return false;
 
   const char* kSql =
-      "SELECT cache_id, group_id, online_wildcard, update_time, cache_size"
+      "SELECT cache_id, group_id, online_wildcard, update_time"
       " FROM Caches WHERE cache_id = ?";
 
   sql::Statement statement;
@@ -338,7 +336,7 @@ bool AppCacheDatabase::FindCacheForGroup(int64 group_id, CacheRecord* record) {
     return false;
 
   const char* kSql =
-      "SELECT cache_id, group_id, online_wildcard, update_time, cache_size"
+      "SELECT cache_id, group_id, online_wildcard, update_time"
       "  FROM Caches WHERE group_id = ?";
 
   sql::Statement statement;
@@ -359,8 +357,8 @@ bool AppCacheDatabase::InsertCache(const CacheRecord* record) {
 
   const char* kSql =
       "INSERT INTO Caches (cache_id, group_id, online_wildcard,"
-      "                    update_time, cache_size)"
-      "  VALUES(?, ?, ?, ?, ?)";
+      "                    update_time)"
+      "  VALUES(?, ?, ?, ?)";
 
   sql::Statement statement;
   if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
@@ -375,8 +373,6 @@ bool AppCacheDatabase::InsertCache(const CacheRecord* record) {
   // as an intermediary step.
   statement.BindInt64(3,
     (record->update_time - base::TimeTicks()).InMicroseconds());
-
-  statement.BindInt64(4, record->cache_size);
 
   return statement.Run();
 }
@@ -403,7 +399,7 @@ bool AppCacheDatabase::FindEntriesForCache(
     return false;
 
   const char* kSql =
-      "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
+      "SELECT cache_id, url, flags, response_id FROM Entries"
       "  WHERE cache_id = ?";
 
   sql::Statement statement;
@@ -427,7 +423,7 @@ bool AppCacheDatabase::FindEntriesForUrl(
     return false;
 
   const char* kSql =
-      "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
+      "SELECT cache_id, url, flags, response_id FROM Entries"
       "  WHERE url = ?";
 
   sql::Statement statement;
@@ -452,7 +448,7 @@ bool AppCacheDatabase::FindEntry(
     return false;
 
   const char* kSql =
-      "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
+      "SELECT cache_id, url, flags, response_id FROM Entries"
       "  WHERE cache_id = ? AND url = ?";
 
   sql::Statement statement;
@@ -475,8 +471,8 @@ bool AppCacheDatabase::InsertEntry(const EntryRecord* record) {
     return false;
 
   const char* kSql =
-      "INSERT INTO Entries (cache_id, url, flags, response_id, response_size)"
-      "  VALUES(?, ?, ?, ?, ?)";
+      "INSERT INTO Entries (cache_id, url, flags, response_id)"
+      "  VALUES(?, ?, ?, ?)";
 
   sql::Statement statement;
   if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
@@ -486,7 +482,6 @@ bool AppCacheDatabase::InsertEntry(const EntryRecord* record) {
   statement.BindString(1, record->url.spec());
   statement.BindInt(2, record->flags);
   statement.BindInt64(3, record->response_id);
-  statement.BindInt64(4, record->response_size);
   return statement.Run();
 }
 
@@ -733,8 +728,6 @@ void AppCacheDatabase::ReadCacheRecord(
   // as an intermediary step.
   record->update_time = base::TimeTicks() +
       base::TimeDelta::FromMicroseconds(statement.ColumnInt64(3));
-
-  record->cache_size = statement.ColumnInt64(4);
 }
 
 void AppCacheDatabase::ReadEntryRecord(
@@ -743,7 +736,6 @@ void AppCacheDatabase::ReadEntryRecord(
   record->url = GURL(statement.ColumnString(1));
   record->flags = statement.ColumnInt(2);
   record->response_id = statement.ColumnInt64(3);
-  record->response_size = statement.ColumnInt64(4);
 }
 
 void AppCacheDatabase::ReadFallbackNameSpaceRecord(

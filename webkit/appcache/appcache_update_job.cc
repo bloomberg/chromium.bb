@@ -539,10 +539,8 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
         static_cast<UpdateJobInfo*>(request->GetUserData(this));
     DCHECK(info->response_writer_.get());
     entry.set_response_id(info->response_writer_->response_id());
-    entry.set_response_size(info->response_writer_->amount_written());
 
-    if (!inprogress_cache_->AddOrModifyEntry(url, entry))
-      service_->storage()->DoomResponse(manifest_url_, entry.response_id());
+    inprogress_cache_->AddOrModifyEntry(url, entry);
 
     // Foreign entries will be detected during cache selection.
     // Note: 6.9.4, step 17.9 possible optimization: if resource is HTML or XML
@@ -569,7 +567,6 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
       AppCacheEntry* copy = cache->GetEntry(url);
       if (copy) {
         entry.set_response_id(copy->response_id());
-        entry.set_response_size(copy->response_size());
         inprogress_cache_->AddOrModifyEntry(url, entry);
       }
     }
@@ -610,12 +607,8 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLRequest* request) {
         group_->newest_complete_cache();
     DCHECK(info->response_writer_.get());
     AppCacheEntry master_entry(AppCacheEntry::MASTER,
-                               info->response_writer_->response_id(),
-                               info->response_writer_->amount_written());
-    if (!cache->AddOrModifyEntry(url, master_entry)) {
-      service_->storage()->DoomResponse(
-          manifest_url_, master_entry.response_id());
-    }
+                               info->response_writer_->response_id());
+    cache->AddOrModifyEntry(url, master_entry);
 
     // In no-update case, associate host with the newest cache.
     if (!inprogress_cache_) {
@@ -708,10 +701,8 @@ void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {
 void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
   if (result > 0) {
     AppCacheEntry entry(AppCacheEntry::MANIFEST,
-        manifest_response_writer_->response_id(),
-        manifest_response_writer_->amount_written());
-    if (!inprogress_cache_->AddOrModifyEntry(manifest_url_, entry))
-      service_->storage()->DoomResponse(manifest_url_, entry.response_id());
+        manifest_response_writer_->response_id());
+    inprogress_cache_->AddOrModifyEntry(manifest_url_, entry);
     CompleteInprogressCache();
   } else {
     // Treat storage failure as if refetch of manifest failed.
@@ -1105,16 +1096,10 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
         http_info->headers->EnumerateHeader(&iter, name, &value)) {
       LoadFromNewestCacheFailed(url);
     } else {
-      DCHECK(group_->newest_complete_cache());
-      AppCacheEntry* copy_me = group_->newest_complete_cache()->GetEntry(url);
-      DCHECK(copy_me);
-      DCHECK(copy_me->response_id() == response_id);
-
       AppCache::EntryMap::iterator it = url_file_list_.find(url);
       DCHECK(it != url_file_list_.end());
       AppCacheEntry& entry = it->second;
       entry.set_response_id(response_id);
-      entry.set_response_size(copy_me->response_size());
       inprogress_cache_->AddOrModifyEntry(url, entry);
       ++url_fetches_completed_;
     }

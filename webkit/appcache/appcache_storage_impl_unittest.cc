@@ -458,7 +458,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Change the cache.
     base::TimeTicks now = base::TimeTicks::Now();
-    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::MASTER, 1, 100));
+    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::MASTER));
     cache_->set_update_time(now);
 
     PushNextTask(method_factory_.NewRunnableMethod(
@@ -482,7 +482,6 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(1, cache_record.group_id);
     EXPECT_FALSE(cache_record.online_wildcard);
     EXPECT_TRUE(expected_update_time == cache_record.update_time);
-    EXPECT_EQ(100, cache_record.cache_size);
 
     std::vector<AppCacheDatabase::EntryRecord> entry_records;
     EXPECT_TRUE(database()->FindEntriesForCache(1, &entry_records));
@@ -490,8 +489,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(1 , entry_records[0].cache_id);
     EXPECT_EQ(kEntryUrl, entry_records[0].url);
     EXPECT_EQ(AppCacheEntry::MASTER, entry_records[0].flags);
-    EXPECT_EQ(1, entry_records[0].response_id);
-    EXPECT_EQ(100, entry_records[0].response_size);
+    EXPECT_EQ(0, entry_records[0].response_id);
 
     TestFinished();
   }

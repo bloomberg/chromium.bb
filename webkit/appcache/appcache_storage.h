@@ -140,15 +140,9 @@ class AppCacheStorage {
   virtual AppCacheResponseWriter* CreateResponseWriter(
       const GURL& manifest_url) = 0;
 
-  // Schedules the imminent deletion of many responses.
+  // Schedules the deletion of many responses.
   virtual void DoomResponses(
       const GURL& manifest_url, const std::vector<int64>& response_ids) = 0;
-
-  // Schedules the imminent deletion of a single response.
-  void DoomResponse(const GURL& manifest_url, int64 response_id) {
-    std::vector<int64> response_ids(1, response_id);
-    DoomResponses(manifest_url, response_ids);
-  }
 
   // Generates unique storage ids for different object types.
   int64 NewCacheId() {
