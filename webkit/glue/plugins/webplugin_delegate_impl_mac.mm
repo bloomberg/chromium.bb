@@ -95,13 +95,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
 #endif
   instance->set_windowless(true);
 
-  const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
-  if (plugin_info.name.find(L"QuickTime") != std::wstring::npos) {
-    // In some cases, QuickTime inexpicably negotiates the CoreGraphics drawing
-    // model, but then proceeds as if it were using QuickDraw. Until we support
-    // CoreAnimation, just ignore what QuickTime asks for.
-    quirks_ |= PLUGIN_QUIRK_IGNORE_NEGOTIATED_DRAWING_MODEL;
-  }
   std::set<WebPluginDelegateImpl*>* delegates = g_active_delegates.Pointer();
   delegates->insert(this);
 }
@@ -115,7 +108,7 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
 
 void WebPluginDelegateImpl::PluginDestroyed() {
   if (instance_->event_model() == NPEventModelCarbon) {
-    if (PluginDrawingModel() == NPDrawingModelQuickDraw) {
+    if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
       // Tell the plugin it should stop drawing into the window (which will go
       // away when the next idle event arrives).
       window_.x = 0;
@@ -160,7 +153,7 @@ void WebPluginDelegateImpl::PlatformInitialize() {
   qd_port_.port =
       GetWindowPort(reinterpret_cast<WindowRef>(cg_context_.window));
 
-  switch (PluginDrawingModel()) {
+  switch (instance()->drawing_model()) {
 #ifndef NP_NO_QUICKDRAW
     case NPDrawingModelQuickDraw:
       window_.window = &qd_port_;
@@ -263,7 +256,7 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
   static StatsRate plugin_paint("Plugin.Paint");
   StatsScope<StatsRate> scope(plugin_paint);
 
-  switch (PluginDrawingModel()) {
+  switch (instance()->drawing_model()) {
 #ifndef NP_NO_QUICKDRAW
     case NPDrawingModelQuickDraw: {
       // Plugins using the QuickDraw drawing model do not restrict their
@@ -318,7 +311,7 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
     return;
 
   int y_offset = 0;
-  if (PluginDrawingModel() == NPDrawingModelCoreGraphics) {
+  if (instance()->drawing_model() == NPDrawingModelCoreGraphics) {
     // Get the dummy window structure height; we're pretenting the plugin takes up
     // the whole (dummy) window, but the clip rect and x/y are relative to the
     // full window region, not just the content region.
@@ -389,12 +382,6 @@ void WebPluginDelegateImpl::SetFocus() {
     focus_notifier_(this);
   else
     FocusNotify(this);
-}
-
-int WebPluginDelegateImpl::PluginDrawingModel() {
-  if (quirks_ & PLUGIN_QUIRK_IGNORE_NEGOTIATED_DRAWING_MODEL)
-    return NPDrawingModelQuickDraw;
-  return instance()->drawing_model();
 }
 
 void WebPluginDelegateImpl::UpdateWindowLocation(const WebMouseEvent& event) {
@@ -701,7 +688,7 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
 #endif
 
   bool ret = false;
-  switch (PluginDrawingModel()) {
+  switch (instance()->drawing_model()) {
 #ifndef NP_NO_QUICKDRAW
     case NPDrawingModelQuickDraw:
       SetPort(qd_port_.port);
@@ -731,7 +718,7 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
     }
   }
 
-  if (PluginDrawingModel() == NPDrawingModelCoreGraphics)
+  if (instance()->drawing_model() == NPDrawingModelCoreGraphics)
     CGContextRestoreGState(cg_context_.context);
 
   return ret;
@@ -786,7 +773,7 @@ void WebPluginDelegateImpl::OnNullEvent() {
   // repaint.
   // TODO: only do this if the contents of the offscreen window has changed,
   // so as not to spam the renderer with an unchanging image.
-  if (PluginDrawingModel() == NPDrawingModelQuickDraw)
+  if (instance()->drawing_model() == NPDrawingModelQuickDraw)
     instance()->webplugin()->Invalidate();
 #endif
 
