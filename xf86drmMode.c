@@ -206,7 +206,11 @@ retry:
 	r->crtcs      = drmAllocCpy(U642VOID(res.crtc_id_ptr), res.count_crtcs, sizeof(uint32_t));
 	r->connectors = drmAllocCpy(U642VOID(res.connector_id_ptr), res.count_connectors, sizeof(uint32_t));
 	r->encoders   = drmAllocCpy(U642VOID(res.encoder_id_ptr), res.count_encoders, sizeof(uint32_t));
-	if (!r->fbs || !r->crtcs || !r->connectors || !r->encoders) {
+	if ((res.count_fbs && !r->fbs) ||
+	    (res.count_crtcs && !r->crtcs) ||
+	    (res.count_connectors && !r->connectors) ||
+	    (res.count_encoders && !r->encoders))
+	{
 		drmFree(r->fbs);
 		drmFree(r->crtcs);
 		drmFree(r->connectors);
