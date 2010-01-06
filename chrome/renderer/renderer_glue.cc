@@ -10,7 +10,6 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#include <wininet.h>
 #endif
 
 #include "app/clipboard/clipboard.h"
