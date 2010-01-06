@@ -136,13 +136,15 @@ void drmModeFreeEncoder(drmModeEncoderPtr ptr)
 
 drmModeResPtr drmModeGetResources(int fd)
 {
-	struct drm_mode_card_res res;
+	struct drm_mode_card_res res, counts;
 	drmModeResPtr r = 0;
 
+retry:
 	memset(&res, 0, sizeof(struct drm_mode_card_res));
-
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res))
 		return 0;
+
+	counts = res;
 
 	if (res.count_fbs)
 		res.fb_id_ptr = VOID2U64(drmMalloc(res.count_fbs*sizeof(uint32_t)));
@@ -153,18 +155,31 @@ drmModeResPtr drmModeGetResources(int fd)
 	if (res.count_encoders)
 		res.encoder_id_ptr = VOID2U64(drmMalloc(res.count_encoders*sizeof(uint32_t)));
 
-	if (drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res)) {
-		r = NULL;
+	if (drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res))
 		goto err_allocs;
+
+	/* The number of available connectors and etc may have changed with a
+	 * hotplug event in between the ioctls, in which case the field is
+	 * silently ignored by the kernel.
+	 */
+	if (counts.count_fbs < res.count_fbs ||
+	    counts.count_crtcs < res.count_crtcs ||
+	    counts.count_connectors < res.count_connectors ||
+	    counts.count_encoders < res.count_encoders)
+	{
+		drmFree(U642VOID(res.fb_id_ptr));
+		drmFree(U642VOID(res.crtc_id_ptr));
+		drmFree(U642VOID(res.connector_id_ptr));
+		drmFree(U642VOID(res.encoder_id_ptr));
+
+		goto retry;
 	}
 
 	/*
 	 * return
 	 */
-
-
 	if (!(r = drmMalloc(sizeof(*r))))
-		return 0;
+		goto err_allocs;
 
 	r->min_width     = res.min_width;
 	r->max_width     = res.max_width;
