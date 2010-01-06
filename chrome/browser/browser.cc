@@ -97,6 +97,10 @@
 #include "chrome/common/child_process_host.h"
 #endif  // OS_WIN
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/automation/ui_controls.h"
+#endif
+
 #if !defined(OS_MACOSX)
 #include "chrome/browser/dock_info.h"
 #endif
@@ -1106,7 +1110,7 @@ void Browser::OverrideEncoding(int encoding_id) {
   }
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 // TODO(devint): http://b/issue?id=1117225 Cut, Copy, and Paste are always
 // enabled in the page menu regardless of whether the command will do
 // anything. When someone selects the menu item, we just act as if they hit
@@ -1114,6 +1118,11 @@ void Browser::OverrideEncoding(int encoding_id) {
 // to windows. The real fix to this bug is to disable the commands when they
 // won't do anything. We'll need something like an overall clipboard command
 // manager to do that.
+
+// TODO(oshima): Enabling this for chromeos, but not for linux. It's safe
+// to assume ctrl-x/c/v are cut, copy and paste on chromeos, but not on
+// linux. See http://crbug.com/18030. We should switch to whatever linux/gtk
+// will implement.
 
 void Browser::Cut() {
   UserMetrics::RecordAction("Cut", profile_);
@@ -1132,7 +1141,7 @@ void Browser::Paste() {
   ui_controls::SendKeyPress(window()->GetNativeHandle(), base::VKEY_V, true,
                             false, false);
 }
-#endif  // #if defined(OS_WIN)
+#endif  // #if defined(OS_WIN) || defined(OS_CHROMEOS)
 
 void Browser::Find() {
   UserMetrics::RecordAction("Find", profile_);
@@ -1541,7 +1550,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_ENCODING_WINDOWS1255:
     case IDC_ENCODING_WINDOWS1258:  OverrideEncoding(id);          break;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
     // Clipboard commands
     case IDC_CUT:                   Cut();                         break;
     case IDC_COPY:                  Copy();                        break;

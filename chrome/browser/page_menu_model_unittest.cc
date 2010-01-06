@@ -20,8 +20,7 @@ TEST_F(PageMenuModelTest, Basics) {
 
   // Verify it has items. The number varies by platform, so we don't check
   // the exact number.
-  // TODO(davemoore) cros only has 8 items right now.
-  EXPECT_GT(itemCount, 7);
+  EXPECT_GT(itemCount, 10);
 
   // Execute a couple of the items and make sure it gets back to our delegate.
   // We can't use CountEnabledExecutable() here because the encoding menu's
