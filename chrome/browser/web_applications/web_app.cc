@@ -181,7 +181,7 @@ bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image) {
 // when finished (either success or failure).
 class CreateShortcutTask : public Task {
  public:
-  CreateShortcutTask(const FilePath& root_dir,
+  CreateShortcutTask(const FilePath& profile_path,
                      const ShellIntegration::ShortcutInfo& shortcut_info,
                      web_app::CreateShortcutCallback* callback);
 
@@ -213,6 +213,9 @@ class CreateShortcutTask : public Task {
   // Path to store persisted data for web app.
   FilePath web_app_path_;
 
+  // Out copy of profile path.
+  FilePath profile_path_;
+
   // Our copy of short cut data.
   ShellIntegration::ShortcutInfo shortcut_info_;
 
@@ -224,10 +227,12 @@ class CreateShortcutTask : public Task {
 };
 
 CreateShortcutTask::CreateShortcutTask(
-    const FilePath& root_dir,
+    const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     web_app::CreateShortcutCallback* callback)
-    : web_app_path_(GetWebAppDataDirectory(root_dir, shortcut_info.url)),
+    : web_app_path_(GetWebAppDataDirectory(web_app::GetDataDir(profile_path),
+                                           shortcut_info.url)),
+      profile_path_(profile_path),
       shortcut_info_(shortcut_info),
       callback_(callback),
       message_loop_(MessageLoop::current()) {
@@ -349,6 +354,11 @@ bool CreateShortcutTask::CreateShortcut() {
   }
   std::wstring wide_switchs(UTF8ToWide(switches));
 
+  // Generates app id from web app url and profile path.
+  std::wstring app_id = ShellIntegration::GetAppId(
+      web_app::GenerateApplicationNameFromURL(shortcut_info_.url).c_str(),
+      profile_path_);
+
   bool success = true;
   for (size_t i = 0; i < shortcut_paths.size(); ++i) {
     FilePath shortcut_file = shortcut_paths[i].Append(file_name).
@@ -360,7 +370,7 @@ bool CreateShortcutTask::CreateShortcut() {
         shortcut_info_.description.c_str(),
         icon_file.value().c_str(),
         0,
-        web_app::GenerateApplicationNameFromURL(shortcut_info_.url).c_str());
+        app_id.c_str());
   }
 
   if (success && pin_to_taskbar) {
@@ -426,8 +436,8 @@ class UpdateShortcutWorker : public NotificationObserver {
   // Cached shortcut data from the tab_contents_.
   ShellIntegration::ShortcutInfo shortcut_info_;
 
-  // Root dir of web app data.
-  FilePath root_dir_;
+  // Our copy of profile path.
+  FilePath profile_path_;
 
   // File name of shortcut/ico file based on app title.
   FilePath file_name_;
@@ -440,7 +450,7 @@ class UpdateShortcutWorker : public NotificationObserver {
 
 UpdateShortcutWorker::UpdateShortcutWorker(TabContents* tab_contents)
     : tab_contents_(tab_contents),
-      root_dir_(web_app::GetDataDir(tab_contents->profile())) {
+      profile_path_(tab_contents->profile()->GetPath()) {
   web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
   web_app::GetIconsInfo(tab_contents_->web_app_info(), &unprocessed_icons_);
   file_name_ = GetSanitizedFileName(shortcut_info_.title);
@@ -564,21 +574,33 @@ void UpdateShortcutWorker::UpdateShortcuts() {
 void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
-  FilePath web_app_path = GetWebAppDataDirectory(root_dir_, shortcut_info_.url);
+  FilePath web_app_path = GetWebAppDataDirectory(
+      web_app::GetDataDir(profile_path_), shortcut_info_.url);
   FilePath icon_file = web_app_path.Append(file_name_).ReplaceExtension(
       FILE_PATH_LITERAL(".ico"));
   CheckAndSaveIcon(icon_file, shortcut_info_.favicon);
 
+  // Update existing shortcuts' description, icon and app id.
   CheckExistingShortcuts();
-  if (shortcut_files_.empty()) {
-    // No shortcuts to update.
-    OnShortcutsUpdated(true);
-  } else {
-    // Re-create shortcuts to make sure application url, name and description
-    // are up to date
-    web_app::CreateShortcut(root_dir_, shortcut_info_,
-        NewCallback(this, &UpdateShortcutWorker::OnShortcutsUpdated));
+  if (!shortcut_files_.empty()) {
+    // Generates app id from web app url and profile path.
+    std::wstring app_id = ShellIntegration::GetAppId(
+        web_app::GenerateApplicationNameFromURL(shortcut_info_.url).c_str(),
+        profile_path_);
+
+    for (size_t i = 0; i < shortcut_files_.size(); ++i) {
+      file_util::UpdateShortcutLink(NULL,
+          shortcut_files_[i].value().c_str(),
+          NULL,
+          NULL,
+          shortcut_info_.description.c_str(),
+          icon_file.value().c_str(),
+          0,
+          app_id.c_str());
+    }
   }
+
+  OnShortcutsUpdated(true);
 }
 
 void UpdateShortcutWorker::OnShortcutsUpdated(bool) {
@@ -646,9 +668,8 @@ bool IsValidUrl(const GURL& url) {
   return false;
 }
 
-FilePath GetDataDir(Profile* profile) {
-  DCHECK(profile);
-  return profile->GetPath().Append(chrome::kWebAppDirname);
+FilePath GetDataDir(const FilePath& profile_path) {
+  return profile_path.Append(chrome::kWebAppDirname);
 }
 
 void GetIconsInfo(const webkit_glue::WebApplicationInfo& app_info,

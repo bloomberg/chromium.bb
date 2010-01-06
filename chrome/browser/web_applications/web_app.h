@@ -25,20 +25,20 @@ std::wstring GenerateApplicationNameFromURL(const GURL& url);
 typedef Callback1<bool>::Type CreateShortcutCallback;
 
 // Creates a shortcut for web application based on given shortcut data.
-// |root_dir| is used as root directory for persisted data such as icon.
+// |profile_path| is used as root directory for persisted data such as icon.
 // Directory layout is similar to what Gears has, i.e. an web application's
 // file is stored under "#/host_name/scheme_port", where '#' is the
 // |root_dir|.
 void CreateShortcut(
-    const FilePath& data_dir,
+    const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     CreateShortcutCallback* callback);
 
 // Returns true if given url is a valid web app url.
 bool IsValidUrl(const GURL& url);
 
-// Returns data dir for web apps for given profile.
-FilePath GetDataDir(Profile* profile);
+// Returns data dir for web apps for given profile path.
+FilePath GetDataDir(const FilePath& profile_path);
 
 // Extracts icons info from web app data. Take only square shaped icons and
 // sort them from smallest to largest.

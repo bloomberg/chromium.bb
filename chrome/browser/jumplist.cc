@@ -29,6 +29,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -381,7 +382,8 @@ HRESULT UpdateTaskCategory(ScopedComPtr<ICustomDestinationList> list,
 // * Creating an ICustomDestinationList instance;
 // * Updating the categories of the ICustomDestinationList instance, and;
 // * Sending it to Taskbar of Windows 7.
-bool UpdateJumpList(const ShellLinkItemList& most_visited_pages,
+bool UpdateJumpList(const wchar_t* app_id,
+                    const ShellLinkItemList& most_visited_pages,
                     const ShellLinkItemList& recently_closed_pages) {
   // JumpList is implemented only on Windows 7 or later.
   // So, we should return now when this function is called on earlier versions
@@ -397,7 +399,7 @@ bool UpdateJumpList(const ShellLinkItemList& most_visited_pages,
     return false;
 
   // Set the App ID for this JumpList.
-  destination_list->SetAppID(l10n_util::GetString(IDS_PRODUCT_NAME).c_str());
+  destination_list->SetAppID(app_id);
 
   // Start a transaction that updates the JumpList of this application.
   // This implementation just replaces the all items in this JumpList, so
@@ -480,10 +482,12 @@ bool UpdateJumpList(const ShellLinkItemList& most_visited_pages,
 // 3. Post this task to the file thread.
 class JumpListUpdateTask : public Task {
  public:
-  JumpListUpdateTask(const FilePath& icon_dir,
+  JumpListUpdateTask(const wchar_t* app_id,
+                     const FilePath& icon_dir,
                      const ShellLinkItemList& most_visited_pages,
                      const ShellLinkItemList& recently_closed_pages)
-    : icon_dir_(icon_dir),
+    : app_id_(app_id),
+      icon_dir_(icon_dir),
       most_visited_pages_(most_visited_pages),
       recently_closed_pages_(recently_closed_pages) {
   }
@@ -492,6 +496,9 @@ class JumpListUpdateTask : public Task {
   // Represents an entry point of this task.
   // When we post this task to a file thread, the thread calls this function.
   void Run();
+
+  // App id to associate with the jump list.
+  std::wstring app_id_;
 
   // The directory which contains JumpList icons.
   FilePath icon_dir_;
@@ -545,7 +552,7 @@ void JumpListUpdateTask::Run() {
   // We finished collecting all resources needed for updating an appliation
   // JumpList. So, create a new JumpList and replace the current JumpList
   // with it.
-  UpdateJumpList(most_visited_pages_, recently_closed_pages_);
+  UpdateJumpList(app_id_.c_str(), most_visited_pages_, recently_closed_pages_);
 
   // Delete all items in these lists now since we don't need the ShellLinkItem
   // objects in these lists.
@@ -582,6 +589,7 @@ bool JumpList::AddObserver(Profile* profile) {
   if (!tab_restore_service)
     return false;
 
+  app_id_ = ShellIntegration::GetChromiumAppId(profile->GetPath());
   icon_dir_ = profile->GetPath().Append(chrome::kJumpListIconDirname);
   profile_ = profile;
   tab_restore_service->AddObserver(this);
@@ -756,8 +764,8 @@ void JumpList::OnFavIconDataAvailable(
   // the file thread.
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
-      new JumpListUpdateTask(
-          icon_dir_, most_visited_pages_, recently_closed_pages_));
+      new JumpListUpdateTask(app_id_.c_str(), icon_dir_, most_visited_pages_,
+                             recently_closed_pages_));
 
   // Delete all items in these lists since we don't need these lists any longer.
   most_visited_pages_.clear();

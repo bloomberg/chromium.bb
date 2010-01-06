@@ -74,6 +74,18 @@ class ShellIntegration {
   static void CreateDesktopShortcut(const ShortcutInfo& shortcut_info);
 #endif  // defined(OS_LINUX)
 
+#if defined(OS_WIN)
+  // Generates Win7 app id for given app name and profile path. The returned app
+  // id is in the format of "|app_name|[.<profile_id>]". "profile_id" is
+  // appended when user override the default value.
+  static std::wstring GetAppId(const wchar_t* app_name,
+                               const FilePath& profile_path);
+
+  // Generates Win7 app id for Chromium by calling GetAppId with
+  // chrome::kBrowserAppID as app_name.
+  static std::wstring GetChromiumAppId(const FilePath& profile_path);
+#endif  // defined(OS_WIN)
+
   // The current default browser UI state
   enum DefaultBrowserUIState {
     STATE_PROCESSING,

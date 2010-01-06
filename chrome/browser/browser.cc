@@ -89,6 +89,7 @@
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/task_manager.h"
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/browser/view_ids.h"
@@ -258,9 +259,12 @@ void Browser::CreateBrowserWindow() {
 #if defined(OS_WIN)
   // Set the app user model id for this application to that of the application
   // name.  See http://crbug.com/7028.
-  win_util::SetAppIdForWindow(type_ & TYPE_APP ? app_name_ :
-                              std::wstring(chrome::kBrowserAppID),
-                              window()->GetNativeHandle());
+  win_util::SetAppIdForWindow(
+      type_ & TYPE_APP ?
+      ShellIntegration::GetAppId(app_name_.c_str(),
+                                 profile_->GetPath()) :
+      ShellIntegration::GetChromiumAppId(profile_->GetPath()),
+      window()->GetNativeHandle());
 #endif
 
   NotificationService::current()->Notify(

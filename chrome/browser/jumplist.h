@@ -171,6 +171,9 @@ class JumpList : public TabRestoreService::Observer {
   // The Profile object used for listening its events.
   Profile* profile_;
 
+  // App id to associate with the jump list.
+  std::wstring app_id_;
+
   // The directory which contains JumpList icons.
   FilePath icon_dir_;
 

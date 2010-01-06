@@ -18,6 +18,8 @@
 #include "base/task.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
@@ -25,6 +27,44 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
+
+namespace {
+
+// Helper function for ShellIntegration::GetAppId to generates profile id
+// from profile path. "profile_id"  is composed of sanitized basenames of
+// user data dir and profile dir joined by a ".".
+std::wstring GetProfileIdFromPath(const FilePath& profile_path) {
+  // Return empty string if profile_path is empty
+  if (profile_path.empty())
+    return EmptyWString();
+
+  FilePath default_user_data_dir;
+  // Return empty string if profile_path is in default user data
+  // dir and is the default profile.
+  if (chrome::GetDefaultUserDataDirectory(&default_user_data_dir) &&
+      profile_path.DirName() == default_user_data_dir &&
+      profile_path.BaseName().value() == chrome::kNotSignedInProfile)
+    return EmptyWString();
+
+  // Get joined basenames of user data dir and profile.
+  std::wstring basenames = profile_path.DirName().BaseName().value() +
+      L"." + profile_path.BaseName().value();
+
+  std::wstring profile_id;
+  profile_id.reserve(basenames.size());
+
+  // Generate profile_id from sanitized basenames.
+  for (size_t i = 0; i < basenames.length(); ++i) {
+    if (IsAsciiAlpha(basenames[i]) ||
+        IsAsciiDigit(basenames[i]) ||
+        basenames[i] == L'.')
+      profile_id += basenames[i];
+  }
+
+  return profile_id;
+}
+
+};
 
 bool ShellIntegration::SetAsDefaultBrowser() {
   std::wstring chrome_exe;
@@ -147,4 +187,23 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
       ff_default = true;
   }
   return ff_default;
+}
+
+std::wstring ShellIntegration::GetAppId(const wchar_t* app_name,
+                                        const FilePath& profile_path) {
+  std::wstring app_id(app_name);
+
+  std::wstring profile_id(GetProfileIdFromPath(profile_path));
+  if (!profile_id.empty()) {
+    app_id += L".";
+    app_id += profile_id;
+  }
+
+  // App id should be less than 128 chars.
+  DCHECK(app_id.length() < 128);
+  return app_id;
+}
+
+std::wstring ShellIntegration::GetChromiumAppId(const FilePath& profile_path) {
+  return GetAppId(chrome::kBrowserAppID, profile_path);
 }

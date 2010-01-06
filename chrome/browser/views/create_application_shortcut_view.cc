@@ -381,7 +381,7 @@ bool CreateApplicationShortcutView::Accept() {
   shortcut_info_.create_in_quick_launch_bar = false;
 #endif
 
-  web_app::CreateShortcut(web_app::GetDataDir(tab_contents_->profile()),
+  web_app::CreateShortcut(tab_contents_->profile()->GetPath(),
                           shortcut_info_,
                           NULL);
 
