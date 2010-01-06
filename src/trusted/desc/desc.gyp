@@ -34,6 +34,77 @@
     '../../../build/common.gypi',
   ],
   'target_defaults': {
+    'variables':{
+      'target_base': 'none',
+    },
+    'target_conditions': [
+      ['target_base=="nrd_xfer"', {
+        'sources': [
+          'nacl_desc_base.c',
+          'nacl_desc_base.h',
+          'nacl_desc_cond.c',
+          'nacl_desc_cond.h',
+          'nacl_desc_conn_cap.c',
+          'nacl_desc_conn_cap.h',
+          'nacl_desc_dir.c',
+          'nacl_desc_dir.h',
+          'nacl_desc_effector.h',
+          'nacl_desc_effector_cleanup.c',
+          'nacl_desc_effector_cleanup.h',
+          'nacl_desc_effector_ldr.c',
+          'nacl_desc_effector_ldr.h',
+          'nacl_desc_imc.c',
+          'nacl_desc_imc.h',
+          'nacl_desc_imc_bound_desc.c',
+          'nacl_desc_imc_bound_desc.h',
+          'nacl_desc_imc_shm.c',
+          'nacl_desc_imc_shm.h',
+          'nacl_desc_io.c',
+          'nacl_desc_io.h',
+          'nacl_desc_mutex.c',
+          'nacl_desc_mutex.h',
+          'nacl_desc_semaphore.c',
+          'nacl_desc_semaphore.h',
+          'nacl_desc_sync_socket.c',
+          'nacl_desc_sync_socket.h',
+          'nacl_desc_wrapper.cc',
+          'nacl_desc_wrapper.h',
+          'nrd_all_modules.c',
+          'nrd_all_modules.h',
+          # nrd_xfer_obj = env_no_strict_aliasing.ComponentObject('nrd_xfer.c')
+          'nrd_xfer.c',
+          'nrd_xfer.h',
+          'nrd_xfer_effector.c',
+          'nrd_xfer_effector.h',
+        ],
+        # TODO(bsy,bradnelson): when gyp can do per-file flags, make
+        # -fno-strict-aliasing and -Wno-missing-field-initializers
+        # apply only to nrd_xfer.c
+        'cflags': [
+          '-fno-strict-aliasing',
+          '-Wno-missing-field-initializers'
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS': [
+            '-fno-strict-aliasing',
+            '-Wno-missing-field-initializers'
+          ]
+        },
+        'conditions': [
+          ['OS=="linux"', { 'sources': [
+              'linux/nacl_desc.c',
+              'linux/nacl_desc_sysv_shm.c',
+              'linux/nacl_desc_sysv_shm.h',
+          ]}],
+          ['OS=="mac"', { 'sources': [
+              'linux/nacl_desc.c',
+          ]}],
+          ['OS=="win"', { 'sources': [
+              'win/nacl_desc.c',
+          ]}],
+        ],
+      },
+    ]],
   },
   'conditions': [
     ['OS=="linux"', {
@@ -62,70 +133,25 @@
     {
       'target_name': 'nrd_xfer',
       'type': 'static_library',
-      'sources': [
-        'nacl_desc_base.c',
-        'nacl_desc_base.h',
-        'nacl_desc_cond.c',
-        'nacl_desc_cond.h',
-        'nacl_desc_conn_cap.c',
-        'nacl_desc_conn_cap.h',
-        'nacl_desc_dir.c',
-        'nacl_desc_dir.h',
-        'nacl_desc_effector.h',
-        'nacl_desc_effector_cleanup.c',
-        'nacl_desc_effector_cleanup.h',
-        'nacl_desc_effector_ldr.c',
-        'nacl_desc_effector_ldr.h',
-        'nacl_desc_imc.c',
-        'nacl_desc_imc.h',
-        'nacl_desc_imc_bound_desc.c',
-        'nacl_desc_imc_bound_desc.h',
-        'nacl_desc_imc_shm.c',
-        'nacl_desc_imc_shm.h',
-        'nacl_desc_io.c',
-        'nacl_desc_io.h',
-        'nacl_desc_mutex.c',
-        'nacl_desc_mutex.h',
-        'nacl_desc_semaphore.c',
-        'nacl_desc_semaphore.h',
-        'nacl_desc_sync_socket.c',
-        'nacl_desc_sync_socket.h',
-        'nacl_desc_wrapper.cc',
-        'nacl_desc_wrapper.h',
-        'nrd_all_modules.c',
-        'nrd_all_modules.h',
-        # nrd_xfer_obj = env_no_strict_aliasing.ComponentObject('nrd_xfer.c')
-        'nrd_xfer.c',
-        'nrd_xfer.h',
-        'nrd_xfer_effector.c',
-        'nrd_xfer_effector.h',
-      ],
-      # TODO(bsy,bradnelson): when gyp can do per-file flags, make
-      # -fno-strict-aliasing and -Wno-missing-field-initializers
-      # apply only to nrd_xfer.c
-      'cflags': [
-        '-fno-strict-aliasing',
-        '-Wno-missing-field-initializers'
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS': [
-          '-fno-strict-aliasing',
-          '-Wno-missing-field-initializers'
-        ]
+      'variables': {
+        'target_base': 'nrd_xfer',
       },
-      'conditions': [
-        ['OS=="linux"', { 'sources': [
-            'linux/nacl_desc.c',
-            'linux/nacl_desc_sysv_shm.c',
-            'linux/nacl_desc_sysv_shm.h',
-        ]}],
-        ['OS=="mac"', { 'sources': [
-            'linux/nacl_desc.c',
-        ]}],
-        ['OS=="win"', { 'sources': [
-            'win/nacl_desc.c',
-        ]}],
+      'dependencies': [
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
       ],
+    },
+    {
+      'target_name': 'nrd_xfer64',
+      'type': 'static_library',
+      'variables': {
+        'target_base': 'nrd_xfer',
+      },
+      'configurations': {
+        'Common_Base': {
+          'msvs_target_platform': 'x64',
+        },
+      },
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
