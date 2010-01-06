@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -339,8 +339,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // First try with an empty dictionary.
   action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
   ASSERT_TRUE(action != NULL);
-  ASSERT_STREQ("", error_msg.c_str());
-  error_msg = "";
+  ASSERT_TRUE(error_msg.empty());
 
   // Now setup some values to use in the action.
   const std::string id("MyExtensionActionId");
@@ -359,19 +358,19 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // Parse and read back the values from the object.
   action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_STREQ("", error_msg.c_str());
-  ASSERT_STREQ(id.c_str(), action->id().c_str());
+  ASSERT_TRUE(error_msg.empty());
+  ASSERT_EQ(id, action->id());
   // No title, so fall back to name.
-  ASSERT_STREQ(name.c_str(), action->GetTitle(1).c_str());
+  ASSERT_EQ(name, action->GetTitle(1));
   ASSERT_EQ(2u, action->icon_paths()->size());
-  ASSERT_STREQ(img1.c_str(), action->icon_paths()->at(0).c_str());
-  ASSERT_STREQ(img2.c_str(), action->icon_paths()->at(1).c_str());
+  ASSERT_EQ(img1, (*action->icon_paths())[0]);
+  ASSERT_EQ(img2, (*action->icon_paths())[1]);
 
   // Explicitly set the same type and parse again.
   input.SetString(keys::kType, values::kPageActionTypeTab);
   action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_STREQ("", error_msg.c_str());
+  ASSERT_TRUE(error_msg.empty());
 
   // Make a deep copy of the input and remove one key at a time and see if we
   // get the right error.
@@ -382,17 +381,14 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   copy->Remove(keys::kPageActionId, NULL);
   action.reset(extension.LoadExtensionActionHelper(copy.get(), &error_msg));
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_STREQ("", error_msg.c_str());
-  error_msg = "";
 
   // Then remove the name key. It's optional, so no error.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kName, NULL);
   action.reset(extension.LoadExtensionActionHelper(copy.get(), &error_msg));
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_STREQ("", action->GetTitle(1).c_str());
-  ASSERT_STREQ("", error_msg.c_str());
-  error_msg = "";
+  ASSERT_TRUE(action->GetTitle(1).empty());
+  ASSERT_TRUE(error_msg.empty());
 
   // Then remove the icon paths key.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
@@ -415,7 +411,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // Parse and read back the values from the object.
   action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
   ASSERT_TRUE(action.get());
-  ASSERT_STREQ("", error_msg.c_str());
+  ASSERT_TRUE(error_msg.empty());
   ASSERT_EQ(kTitle, action->GetTitle(1));
   ASSERT_EQ(0u, action->icon_paths()->size());
 
@@ -434,8 +430,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_EQ(kTitle, action->GetTitle(1));
-  ASSERT_STREQ("", error_msg.c_str());
-  error_msg = "";
+  ASSERT_TRUE(error_msg.empty());
 
   input.Remove(keys::kPageActionDefaultTitle, NULL);
   action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));

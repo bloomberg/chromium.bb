@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ TEST(LabelTest, FontPropertyCourier) {
   gfx::Font font = gfx::Font::CreateFont(font_name, 30);
   label.SetFont(font);
   gfx::Font font_used = label.GetFont();
-  EXPECT_STREQ(font_name.c_str(), font_used.FontName().c_str());
+  EXPECT_EQ(font_name, font_used.FontName());
   EXPECT_EQ(30, font_used.FontSize());
 }
 #endif
@@ -33,7 +33,7 @@ TEST(LabelTest, FontPropertyArial) {
   gfx::Font font = gfx::Font::CreateFont(font_name, 30);
   label.SetFont(font);
   gfx::Font font_used = label.GetFont();
-  EXPECT_STREQ(font_name.c_str(), font_used.FontName().c_str());
+  EXPECT_EQ(font_name, font_used.FontName());
   EXPECT_EQ(30, font_used.FontSize());
 }
 
@@ -41,7 +41,7 @@ TEST(LabelTest, TextProperty) {
   Label label;
   std::wstring test_text(L"A random string.");
   label.SetText(test_text);
-  EXPECT_STREQ(test_text.c_str(), label.GetText().c_str());
+  EXPECT_EQ(test_text, label.GetText());
 }
 
 TEST(LabelTest, UrlProperty) {
@@ -49,8 +49,8 @@ TEST(LabelTest, UrlProperty) {
   std::string my_url("http://www.orkut.com/some/Random/path");
   GURL url(my_url);
   label.SetURL(url);
-  EXPECT_STREQ(my_url.c_str(), label.GetURL().spec().c_str());
-  EXPECT_STREQ(UTF8ToWide(my_url).c_str(), label.GetText().c_str());
+  EXPECT_EQ(my_url, label.GetURL().spec());
+  EXPECT_EQ(UTF8ToWide(my_url), label.GetText());
 }
 
 TEST(LabelTest, ColorProperty) {
@@ -117,17 +117,17 @@ TEST(LabelTest, TooltipProperty) {
 
   std::wstring tooltip;
   EXPECT_TRUE(label.GetTooltipText(0, 0, &tooltip));
-  EXPECT_STREQ(test_text.c_str(), tooltip.c_str());
+  EXPECT_EQ(test_text, tooltip);
 
   std::wstring tooltip_text(L"The tooltip!");
   label.SetTooltipText(tooltip_text);
   EXPECT_TRUE(label.GetTooltipText(0, 0, &tooltip));
-  EXPECT_STREQ(tooltip_text.c_str(), tooltip.c_str());
+  EXPECT_EQ(tooltip_text, tooltip);
 
   std::wstring empty_text;
   label.SetTooltipText(empty_text);
   EXPECT_TRUE(label.GetTooltipText(0, 0, &tooltip));
-  EXPECT_STREQ(test_text.c_str(), tooltip.c_str());
+  EXPECT_EQ(test_text, tooltip);
 
   // Make the label big enough to hold the text
   // and expect there to be no tooltip.
@@ -137,7 +137,7 @@ TEST(LabelTest, TooltipProperty) {
   // Verify that setting the tooltip still shows it.
   label.SetTooltipText(tooltip_text);
   EXPECT_TRUE(label.GetTooltipText(0, 0, &tooltip));
-  EXPECT_STREQ(tooltip_text.c_str(), tooltip.c_str());
+  EXPECT_EQ(tooltip_text, tooltip);
   // Clear out the tooltip.
   label.SetTooltipText(empty_text);
 
@@ -152,7 +152,7 @@ TEST(LabelTest, TooltipProperty) {
   // Verify that setting the tooltip still shows it.
   label.SetTooltipText(tooltip_text);
   EXPECT_TRUE(label.GetTooltipText(0, 0, &tooltip));
-  EXPECT_STREQ(tooltip_text.c_str(), tooltip.c_str());
+  EXPECT_EQ(tooltip_text, tooltip);
   // Clear out the tooltip.
   label.SetTooltipText(empty_text);
 }
@@ -168,7 +168,7 @@ TEST(LabelTest, Accessibility) {
 
   std::wstring name;
   EXPECT_TRUE(label.GetAccessibleName(&name));
-  EXPECT_STREQ(test_text.c_str(), name.c_str());
+  EXPECT_EQ(test_text, name);
 
   AccessibilityTypes::State state;
   EXPECT_TRUE(label.GetAccessibleState(&state));
@@ -315,7 +315,7 @@ TEST(LabelTest, DrawSingleLineString) {
 
   // Centered text.
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_STREQ(test_text.c_str(), paint_text.c_str());
+  EXPECT_EQ(test_text, paint_text);
   // The text should be centered horizontally and vertically.
   EXPECT_EQ(extra.width() / 2, text_bounds.x());
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
@@ -328,7 +328,7 @@ TEST(LabelTest, DrawSingleLineString) {
   paint_text.clear();
   text_bounds.SetRect(0, 0, 0, 0);
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_STREQ(test_text.c_str(), paint_text.c_str());
+  EXPECT_EQ(test_text, paint_text);
   // The text should be left aligned horizontally and centered vertically.
   EXPECT_EQ(0, text_bounds.x());
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
@@ -341,7 +341,7 @@ TEST(LabelTest, DrawSingleLineString) {
   paint_text.clear();
   text_bounds.SetRect(0, 0, 0, 0);
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_STREQ(test_text.c_str(), paint_text.c_str());
+  EXPECT_EQ(test_text, paint_text);
   // The text should be right aligned horizontally and centered vertically.
   EXPECT_EQ(extra.width(), text_bounds.x());
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
@@ -371,7 +371,7 @@ TEST(LabelTest, DrawSingleLineString) {
   paint_text.clear();
   text_bounds.SetRect(0, 0, 0, 0);
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_STREQ(test_text.c_str(), paint_text.c_str());
+  EXPECT_EQ(test_text, paint_text);
   // The text should be centered horizontally and vertically within the border.
   EXPECT_EQ(border.left() + extra.width() / 2, text_bounds.x());
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
@@ -384,7 +384,7 @@ TEST(LabelTest, DrawSingleLineString) {
   paint_text.clear();
   text_bounds.SetRect(0, 0, 0, 0);
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_STREQ(test_text.c_str(), paint_text.c_str());
+  EXPECT_EQ(test_text, paint_text);
   // The text should be left aligned horizontally and centered vertically.
   EXPECT_EQ(border.left(), text_bounds.x());
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
@@ -397,7 +397,7 @@ TEST(LabelTest, DrawSingleLineString) {
   paint_text.clear();
   text_bounds.SetRect(0, 0, 0, 0);
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_STREQ(test_text.c_str(), paint_text.c_str());
+  EXPECT_EQ(test_text, paint_text);
   // The text should be right aligned horizontally and centered vertically.
   EXPECT_EQ(border.left() + extra.width(), text_bounds.x());
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
@@ -427,7 +427,7 @@ TEST(LabelTest, DrawMultiLineString) {
   gfx::Rect text_bounds;
   int flags;
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_STREQ(test_text.c_str(), paint_text.c_str());
+  EXPECT_EQ(test_text, paint_text);
   EXPECT_EQ(0, text_bounds.x());
   EXPECT_EQ(0, text_bounds.y());
   EXPECT_GT(text_bounds.width(), kMinTextDimension);
@@ -447,7 +447,7 @@ TEST(LabelTest, DrawMultiLineString) {
   paint_text.clear();
   text_bounds.SetRect(0, 0, 0, 0);
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_STREQ(test_text.c_str(), paint_text.c_str());
+  EXPECT_EQ(test_text, paint_text);
   EXPECT_EQ(0, text_bounds.x());
   EXPECT_EQ(0, text_bounds.y());
   EXPECT_GT(text_bounds.width(), kMinTextDimension);
@@ -466,7 +466,7 @@ TEST(LabelTest, DrawMultiLineString) {
   paint_text.clear();
   text_bounds.SetRect(0, 0, 0, 0);
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_STREQ(test_text.c_str(), paint_text.c_str());
+  EXPECT_EQ(test_text, paint_text);
   EXPECT_EQ(0, text_bounds.x());
   EXPECT_EQ(0, text_bounds.y());
   EXPECT_GT(text_bounds.width(), kMinTextDimension);
@@ -492,7 +492,7 @@ TEST(LabelTest, DrawMultiLineString) {
   paint_text.clear();
   text_bounds.SetRect(0, 0, 0, 0);
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  EXPECT_STREQ(test_text.c_str(), paint_text.c_str());
+  EXPECT_EQ(test_text, paint_text);
   EXPECT_EQ(center_bounds.x() + border.left(), text_bounds.x());
   EXPECT_EQ(center_bounds.y() + border.top(), text_bounds.y());
   EXPECT_EQ(center_bounds.width(), text_bounds.width());
