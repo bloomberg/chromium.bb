@@ -43,11 +43,12 @@ TEST(AppCacheTest, AddModifyEntry) {
 
   const GURL kUrl2("http://bar.com");
   AppCacheEntry entry2(AppCacheEntry::FALLBACK);
-  cache->AddOrModifyEntry(kUrl2, entry2);
+  EXPECT_TRUE(cache->AddOrModifyEntry(kUrl2, entry2));
   EXPECT_EQ(entry2.types(), cache->GetEntry(kUrl2)->types());
 
+  // Expected to return false when an existing entry is modified.
   AppCacheEntry entry3(AppCacheEntry::EXPLICIT);
-  cache->AddOrModifyEntry(kUrl1, entry3);
+  EXPECT_FALSE(cache->AddOrModifyEntry(kUrl1, entry3));
   EXPECT_EQ((AppCacheEntry::MASTER | AppCacheEntry::EXPLICIT),
             cache->GetEntry(kUrl1)->types());
   EXPECT_EQ(entry2.types(), cache->GetEntry(kUrl2)->types());  // unchanged

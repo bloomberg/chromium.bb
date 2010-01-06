@@ -24,13 +24,17 @@ class AppCacheEntry {
     FALLBACK = 1 << 4,
   };
 
-  AppCacheEntry() : types_(0), response_id_(kNoResponseId) {}
+  AppCacheEntry()
+    : types_(0), response_id_(kNoResponseId), response_size_(0) {}
 
   explicit AppCacheEntry(int type)
-    : types_(type), response_id_(kNoResponseId) {}
+    : types_(type), response_id_(kNoResponseId), response_size_(0) {}
 
   AppCacheEntry(int type, int64 response_id)
-    : types_(type), response_id_(response_id) {}
+    : types_(type), response_id_(response_id), response_size_(0) {}
+
+  AppCacheEntry(int type, int64 response_id, int64 response_size)
+    : types_(type), response_id_(response_id), response_size_(response_size) {}
 
   int types() const { return types_; }
   void add_types(int added_types) { types_ |= added_types; }
@@ -44,9 +48,13 @@ class AppCacheEntry {
   void set_response_id(int64 id) { response_id_ = id; }
   bool has_response_id() const { return response_id_ != kNoResponseId; }
 
+  int64 response_size() const { return response_size_; }
+  void set_response_size(int64 size) { response_size_ = size; }
+
  private:
   int types_;
   int64 response_id_;
+  int64 response_size_;
 };
 
 }  // namespace appcache

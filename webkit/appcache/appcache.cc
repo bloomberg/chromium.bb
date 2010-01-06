@@ -44,13 +44,15 @@ void AppCache::AddEntry(const GURL& url, const AppCacheEntry& entry) {
   entries_.insert(EntryMap::value_type(url, entry));
 }
 
-void AppCache::AddOrModifyEntry(const GURL& url, const AppCacheEntry& entry) {
+bool AppCache::AddOrModifyEntry(const GURL& url, const AppCacheEntry& entry) {
   std::pair<EntryMap::iterator, bool> ret =
       entries_.insert(EntryMap::value_type(url, entry));
 
   // Entry already exists.  Merge the types of the new and existing entries.
   if (!ret.second)
     ret.first->second.add_types(entry.types());
+
+  return ret.second;
 }
 
 AppCacheEntry* AppCache::GetEntry(const GURL& url) {
@@ -90,7 +92,8 @@ void AppCache::InitializeWithDatabaseRecords(
 
   for (size_t i = 0; i < entries.size(); ++i) {
     const AppCacheDatabase::EntryRecord& entry = entries.at(i);
-    AddEntry(entry.url, AppCacheEntry(entry.flags, entry.response_id));
+    AddEntry(entry.url, AppCacheEntry(entry.flags, entry.response_id,
+                                      entry.response_size));
   }
 
   for (size_t i = 0; i < fallbacks.size(); ++i) {
@@ -124,6 +127,7 @@ void AppCache::ToDatabaseRecords(
   cache_record->group_id = group->group_id();
   cache_record->online_wildcard = online_whitelist_all_;
   cache_record->update_time = update_time_;
+  cache_record->cache_size = 0;
 
   for (EntryMap::const_iterator iter = entries_.begin();
        iter != entries_.end(); ++iter) {
@@ -133,6 +137,8 @@ void AppCache::ToDatabaseRecords(
     record.cache_id = cache_id_;
     record.flags = iter->second.types();
     record.response_id = iter->second.response_id();
+    record.response_size = iter->second.response_size();
+    cache_record->cache_size += record.response_size;
   }
 
   GURL origin = group->manifest_url().GetOrigin();

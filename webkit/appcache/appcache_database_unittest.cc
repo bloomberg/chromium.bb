@@ -89,6 +89,7 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   entry.url = GURL("http://blah/1");
   entry.flags = AppCacheEntry::MASTER;
   entry.response_id = 1;
+  entry.response_size = 100;
   EXPECT_TRUE(db.InsertEntry(&entry));
   EXPECT_FALSE(db.InsertEntry(&entry));
 
@@ -96,12 +97,14 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   entry.url = GURL("http://blah/2");
   entry.flags = AppCacheEntry::EXPLICIT;
   entry.response_id = 2;
+  entry.response_size = 200;
   EXPECT_TRUE(db.InsertEntry(&entry));
 
   entry.cache_id = 2;
   entry.url = GURL("http://blah/3");
   entry.flags = AppCacheEntry::MANIFEST;
   entry.response_id = 3;
+  entry.response_size = 300;
   EXPECT_TRUE(db.InsertEntry(&entry));
 
   std::vector<AppCacheDatabase::EntryRecord> found;
@@ -112,6 +115,7 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   EXPECT_EQ(GURL("http://blah/1"), found[0].url);
   EXPECT_EQ(AppCacheEntry::MASTER, found[0].flags);
   EXPECT_EQ(1, found[0].response_id);
+  EXPECT_EQ(100, found[0].response_size);
   found.clear();
 
   EXPECT_TRUE(db.AddEntryFlags(GURL("http://blah/1"), 1,
@@ -127,10 +131,12 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   EXPECT_EQ(GURL("http://blah/2"), found[0].url);
   EXPECT_EQ(AppCacheEntry::EXPLICIT, found[0].flags);
   EXPECT_EQ(2, found[0].response_id);
+  EXPECT_EQ(200, found[0].response_size);
   EXPECT_EQ(2, found[1].cache_id);
   EXPECT_EQ(GURL("http://blah/3"), found[1].url);
   EXPECT_EQ(AppCacheEntry::MANIFEST, found[1].flags);
   EXPECT_EQ(3, found[1].response_id);
+  EXPECT_EQ(300, found[1].response_size);
   found.clear();
 
   EXPECT_TRUE(db.DeleteEntriesForCache(2));
@@ -159,6 +165,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   record.group_id = 1;
   record.online_wildcard = true;
   record.update_time = kZeroTimeTicks;
+  record.cache_size = 100;
   EXPECT_TRUE(db.InsertCache(&record));
   EXPECT_FALSE(db.InsertCache(&record));
 
@@ -168,6 +175,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   EXPECT_EQ(1, record.group_id);
   EXPECT_TRUE(record.online_wildcard);
   EXPECT_TRUE(kZeroTimeTicks == record.update_time);
+  EXPECT_EQ(100, record.cache_size);
 
   record = kZeroRecord;
   EXPECT_TRUE(db.FindCacheForGroup(1, &record));
@@ -175,6 +183,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   EXPECT_EQ(1, record.group_id);
   EXPECT_TRUE(record.online_wildcard);
   EXPECT_TRUE(kZeroTimeTicks == record.update_time);
+  EXPECT_EQ(100, record.cache_size);
 
   EXPECT_TRUE(db.DeleteCache(1));
   EXPECT_FALSE(db.FindCache(1, &record));

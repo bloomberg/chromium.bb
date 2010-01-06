@@ -47,8 +47,9 @@ class AppCache : public base::RefCounted<AppCache> {
   void AddEntry(const GURL& url, const AppCacheEntry& entry);
 
   // Adds a new entry or modifies an existing entry by merging the types
-  // of the new entry with the existing entry.
-  void AddOrModifyEntry(const GURL& url, const AppCacheEntry& entry);
+  // of the new entry with the existing entry. Returns true if a new entry
+  // is added, false if the flags are merged into an existing entry.
+  bool AddOrModifyEntry(const GURL& url, const AppCacheEntry& entry);
 
   // Do not store the returned object as it could be deleted anytime.
   AppCacheEntry* GetEntry(const GURL& url);

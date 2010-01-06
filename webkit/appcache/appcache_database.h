@@ -37,6 +37,7 @@ class AppCacheDatabase {
     int64 group_id;
     bool online_wildcard;
     base::TimeTicks update_time;
+    int64 cache_size;  // the sum of all response sizes in this cache
   };
 
   struct EntryRecord {
@@ -44,6 +45,7 @@ class AppCacheDatabase {
     GURL url;
     int flags;
     int64 response_id;
+    int64 response_size;
   };
 
   struct FallbackNameSpaceRecord {

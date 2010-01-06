@@ -256,6 +256,8 @@ void AppCacheResponseWriter::OnIOComplete(int result) {
     DCHECK(write_amount_ == result);
     if (!info_buffer_.get())
       write_position_ += result;
+    else
+      info_size_ = result;
   }
   InvokeUserCompletionCallback(result);
 }
