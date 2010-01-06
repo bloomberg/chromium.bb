@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(darin): Eliminate these WebCore includes
 #include "config.h"
+#include "GlyphPageTreeNode.h"
+#undef LOG
+
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
@@ -12,23 +16,6 @@
 #include <sys/utsname.h>
 #endif
 
-#include "BackForwardList.h"
-#include "Document.h"
-#include "FrameTree.h"
-#include "FrameView.h"
-#include "Frame.h"
-#include "GlyphPageTreeNode.h"
-#include "HistoryItem.h"
-#include "ImageSource.h"
-#include "KURL.h"
-#include "Page.h"
-#include "PlatformString.h"
-#include "RenderTreeAsText.h"
-#include "RenderView.h"
-#include "ScriptController.h"
-#include "SharedBuffer.h"
-
-#undef LOG
 #include "base/file_version_info.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
@@ -42,31 +29,34 @@
 #endif
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #if defined(OS_WIN)
 #include "third_party/WebKit/WebKit/chromium/public/win/WebInputEventFactory.h"
 #endif
 #include "third_party/WebKit/WebKit/chromium/src/WebFrameImpl.h"
-#include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
 
 #include "webkit_version.h"  // Generated
 
 using WebKit::WebCanvas;
+using WebKit::WebData;
+using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebFrameImpl;
 using WebKit::WebHistoryItem;
+using WebKit::WebImage;
+using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebVector;
 using WebKit::WebView;
-using WebKit::WebViewImpl;
-
-namespace {
 
 static const char kLayoutTestsPattern[] = "/LayoutTests/";
 static const std::string::size_type kLayoutTestsPatternSize =
@@ -78,8 +68,6 @@ static const std::string::size_type kDataUrlPatternSize =
 static const char kFileTestPrefix[] = "(file test):";
 static const char kChrome1ProductString[] = "Chrome/1.0.154.53";
 
-}
-
 //------------------------------------------------------------------------------
 // webkit_glue impl:
 
@@ -89,38 +77,36 @@ namespace webkit_glue {
 bool g_forcefully_terminate_plugin_process = false;
 
 void SetJavaScriptFlags(const std::wstring& str) {
-#if USE(V8)
+#if WEBKIT_USING_V8
   std::string utf8_str = WideToUTF8(str);
-  WebCore::ScriptController::setFlags(utf8_str.data(), static_cast<int>(utf8_str.size()));
+  v8::V8::SetFlagsFromString(
+      utf8_str.data(), static_cast<int>(utf8_str.size()));
 #endif
 }
 
 void EnableWebCoreNotImplementedLogging() {
+  // TODO(darin): Add a WebKit API to allow this to be set.
   WebCore::LogNotYetImplemented.state = WTFLogChannelOn;
 }
 
 std::wstring DumpDocumentText(WebFrame* web_frame) {
-  WebFrameImpl* webFrameImpl = static_cast<WebFrameImpl*>(web_frame);
-  WebCore::Frame* frame = webFrameImpl->frame();
-
   // We use the document element's text instead of the body text here because
   // not all documents have a body, such as XML documents.
-  WebCore::Element* documentElement = frame->document()->documentElement();
-  if (!documentElement) {
+  WebElement document_element = web_frame->document().documentElement();
+  if (document_element.isNull())
     return std::wstring();
-  }
-  return StringToStdWString(documentElement->innerText());
+
+  return UTF16ToWideHack(document_element.innerText());
 }
 
 std::wstring DumpFramesAsText(WebFrame* web_frame, bool recursive) {
-  WebFrameImpl* webFrameImpl = static_cast<WebFrameImpl*>(web_frame);
   std::wstring result;
 
   // Add header for all but the main frame. Skip empty frames.
-  if (webFrameImpl->parent() &&
-      webFrameImpl->frame()->document()->documentElement()) {
+  if (web_frame->parent() &&
+      !web_frame->document().documentElement().isNull()) {
     result.append(L"\n--------\nFrame: '");
-    result.append(UTF16ToWideHack(webFrameImpl->name()));
+    result.append(UTF16ToWideHack(web_frame->name()));
     result.append(L"'\n--------\n");
   }
 
@@ -128,58 +114,46 @@ std::wstring DumpFramesAsText(WebFrame* web_frame, bool recursive) {
   result.append(L"\n");
 
   if (recursive) {
-    WebCore::Frame* child = webFrameImpl->frame()->tree()->firstChild();
-    for (; child; child = child->tree()->nextSibling()) {
-      result.append(
-          DumpFramesAsText(WebFrameImpl::fromFrame(child), recursive));
-    }
+    WebFrame* child = web_frame->firstChild();
+    for (; child; child = child->nextSibling())
+      result.append(DumpFramesAsText(child, recursive));
   }
 
   return result;
 }
 
 std::wstring DumpRenderer(WebFrame* web_frame) {
-  WebFrameImpl* webFrameImpl = static_cast<WebFrameImpl*>(web_frame);
-  WebCore::Frame* frame = webFrameImpl->frame();
-
-  WebCore::String frameText = WebCore::externalRepresentation(frame);
-  return StringToStdWString(frameText);
+  return UTF16ToWideHack(web_frame->renderTreeAsText());
 }
 
 bool CounterValueForElementById(WebFrame* web_frame, const std::string& id,
                                 std::wstring* counter_value) {
-  WebFrameImpl* webFrameImpl = static_cast<WebFrameImpl*>(web_frame);
-  WebCore::Frame* frame = webFrameImpl->frame();
+  WebString result =
+      web_frame->counterValueForElementById(WebString::fromUTF8(id));
+  if (result.isNull())
+    return false;
 
-  WebCore::Element* element =
-      frame->document()->getElementById(WebCore::AtomicString(id.c_str()));
-  if (!element)
-      return false;
-  WebCore::String counterValue = WebCore::counterValueForElement(element);
-  *counter_value = StringToStdWString(counterValue);
+  *counter_value = UTF16ToWideHack(result);
   return true;
 }
 
 std::wstring DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
-  WebFrameImpl* webFrameImpl = static_cast<WebFrameImpl*>(web_frame);
-  WebCore::IntSize offset = webFrameImpl->frameView()->scrollOffset();
+  gfx::Size offset = web_frame->scrollOffset();
   std::wstring result;
 
   if (offset.width() > 0 || offset.height() > 0) {
-    if (webFrameImpl->parent()) {
-      StringAppendF(&result, L"frame '%ls' ", StringToStdWString(
-          webFrameImpl->frame()->tree()->name()).c_str());
+    if (web_frame->parent()) {
+      StringAppendF(&result, L"frame '%ls' ", UTF16ToWide(
+          web_frame->name()).c_str());
     }
     StringAppendF(&result, L"scrolled to %d,%d\n",
                   offset.width(), offset.height());
   }
 
   if (recursive) {
-    WebCore::Frame* child = webFrameImpl->frame()->tree()->firstChild();
-    for (; child; child = child->tree()->nextSibling()) {
-      result.append(DumpFrameScrollPosition(WebFrameImpl::fromFrame(child),
-                                            recursive));
-    }
+    WebFrame* child = web_frame->firstChild();
+    for (; child; child = child->nextSibling())
+      result.append(DumpFrameScrollPosition(child, recursive));
   }
 
   return result;
@@ -250,18 +224,12 @@ std::wstring DumpHistoryState(const std::string& history_state, int indent,
 }
 
 void ResetBeforeTestRun(WebView* view) {
-  WebFrameImpl* webframe = static_cast<WebFrameImpl*>(view->mainFrame());
-  WebCore::Frame* frame = webframe->frame();
+  WebFrame* web_frame = view->mainFrame();
 
   // Reset the main frame name since tests always expect it to be empty.  It
   // is normally not reset between page loads (even in IE and FF).
-  if (frame && frame->tree())
-    frame->tree()->setName(WebCore::emptyAtom);
-
-  // This is papering over b/850700.  But it passes a few more tests, so we'll
-  // keep it for now.
-  if (frame && frame->script())
-    frame->script()->setEventHandlerLineNumber(0);
+  if (web_frame)
+    web_frame->clearName();
 
 #if defined(OS_WIN)
   // Reset the last click information so the clicks generated from previous
@@ -288,9 +256,8 @@ void CheckForLeaks() {
 }
 
 bool DecodeImage(const std::string& image_data, SkBitmap* image) {
-  WebKit::WebData web_data(image_data.data(), image_data.length());
-  WebKit::WebImage web_image(WebKit::WebImage::fromData(web_data,
-                                                        WebKit::WebSize()));
+  WebData web_data(image_data.data(), image_data.length());
+  WebImage web_image(WebImage::fromData(web_data, WebSize()));
   if (web_image.isNull())
     return false;
 
@@ -323,11 +290,11 @@ WebString FilePathStringToWebString(const FilePath::StringType& str) {
 #endif
 }
 
-FilePath WebStringToFilePath(const WebKit::WebString& str) {
+FilePath WebStringToFilePath(const WebString& str) {
   return FilePath(WebStringToFilePathString(str));
 }
 
-WebKit::WebString FilePathToWebString(const FilePath& file_path) {
+WebString FilePathToWebString(const FilePath& file_path) {
   return FilePathStringToWebString(file_path.value());
 }
 
@@ -538,6 +505,7 @@ WebCanvas* ToWebCanvas(skia::PlatformCanvas* canvas) {
 }
 
 int GetGlyphPageCount() {
+  // TODO(darin): Add a WebKit API to expose this counter.
   return WebCore::GlyphPageTreeNode::treeGlyphPageCount();
 }
 
