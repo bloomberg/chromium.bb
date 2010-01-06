@@ -60,8 +60,9 @@ base::AtExitManager g_at_exit_manager;
 
 bool g_xembed_support = false;
 
-// This is a #define set on the build command-line for greater flexibility.
+#ifdef O3D_PLUGIN_ENV_VARS_FILE
 static const char *kEnvVarsFilePath = O3D_PLUGIN_ENV_VARS_FILE;
+#endif
 
 static void DrawPlugin(PluginObject *obj) {
   // Limit drawing to no more than once every timer tick.
@@ -628,6 +629,7 @@ NPError InitializePlugin() {
 
   DLOG(INFO) << "NP_Initialize";
 
+#ifdef O3D_PLUGIN_ENV_VARS_FILE
   // Before doing anything more, we first load our environment variables file.
   // This file is a newline-delimited list of any system-specific environment
   // variables that need to be set in the browser. Since we are a shared library
@@ -637,6 +639,7 @@ NPError InitializePlugin() {
   // variables are already set when we initialize our shared library
   // dependencies.
   o3d::LoadEnvironmentVariablesFile(kEnvVarsFilePath);
+#endif
 
   // Check for XEmbed support in the browser.
   NPBool xembed_support = 0;

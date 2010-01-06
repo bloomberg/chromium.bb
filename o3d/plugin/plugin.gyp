@@ -75,6 +75,12 @@
   'targets': [
     {
       # This is the shared library version of the plugin.
+      'variables': {
+        # Default values. Can be overridden with GYP_DEFINES for ease of
+        # repackaging.
+        'plugin_rpath%'         : '/opt/google/o3d/lib',      # empty => none
+        'plugin_env_vars_file%' : '/opt/google/o3d/envvars',  # empty => none
+      },
       'target_name': 'npo3dautoplugin',
       'type': 'loadable_module',
       'dependencies': [
@@ -206,14 +212,28 @@
             'ldflags': [
               '-z',
               'nodelete',
+              '-Wl,--gc-sections',
             ],
             'link_settings': {
               'libraries': [
                 '-lGL',
               ],
             },
-            'defines': [
-              'O3D_PLUGIN_ENV_VARS_FILE="/opt/google/o3d/envvars"',
+            'conditions' : [
+              ['plugin_rpath != ""',
+                {
+                  'ldflags': [
+                    '-Wl,-rpath', '-Wl,<(plugin_rpath)',
+                  ],
+                },
+              ],
+              ['plugin_env_vars_file != ""',
+                {
+                  'defines': [
+                    'O3D_PLUGIN_ENV_VARS_FILE="<(plugin_env_vars_file)"',
+                  ],
+                },
+              ],
             ],
           },
         ],
@@ -268,6 +288,12 @@
         # tree.
         'targets': [
           {
+            'variables': {
+              # By default the built-in Chrome version does not read an env
+              # vars file, but this can be overridden by giving a different
+              # value for this.
+              'plugin_env_vars_file%' : '',
+            },
             'target_name': 'o3dPlugin',
             'type': 'static_library',
             'dependencies': [
@@ -363,9 +389,6 @@
                       '-lGL',
                     ],
                   },
-                  'defines': [
-                    'O3D_PLUGIN_ENV_VARS_FILE="/opt/google/o3d/envvars"',
-                  ],
                   # On Linux, shared library targets aren't copied to the
                   # product dir automatically.  Filed GYP issue #74 to address this.
                   # TODO(gspencer): Remove when issue #74 is resolved.
@@ -376,6 +399,15 @@
                         '<(PRODUCT_DIR)/obj/o3d/plugin/<(SHARED_LIB_PREFIX)<(_target_name)<(SHARED_LIB_SUFFIX)',
                       ],
                     },
+                  ],
+                  'conditions' : [
+                    ['plugin_env_vars_file != ""',
+                      {
+                        'defines': [
+                          'O3D_PLUGIN_ENV_VARS_FILE="<(plugin_env_vars_file)"',
+                        ],
+                      },
+                    ],
                   ],
                 },
               ],
