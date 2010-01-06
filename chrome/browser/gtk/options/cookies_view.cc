@@ -77,7 +77,8 @@ CookiesView::CookiesView(Profile* profile)
 
 void CookiesView::Init() {
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_COOKIES_WINDOW_TITLE).c_str(),
+      l10n_util::GetStringUTF8(
+          IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE).c_str(),
       NULL,
       GTK_DIALOG_NO_SEPARATOR,
       GTK_STOCK_CLOSE,

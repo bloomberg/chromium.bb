@@ -616,7 +616,8 @@ PrivacySection::PrivacySection(Profile* profile)
                      FALSE, FALSE, 0);
 
   GtkWidget* show_cookies_button = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_SHOWCOOKIES).c_str());
+      l10n_util::GetStringUTF8(
+          IDS_OPTIONS_COOKIES_SHOWCOOKIES_WEBSITE_PERMISSIONS).c_str());
   g_signal_connect(show_cookies_button, "clicked",
                    G_CALLBACK(OnShowCookiesButtonClicked), this);
   // Stick it in an hbox so it doesn't expand to the whole width.
