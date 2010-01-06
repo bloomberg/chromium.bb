@@ -1217,7 +1217,7 @@ void GLES2DecoderImpl::UpdateProgramInfo(GLuint program) {
         program, ii, max_len + 1, &length, &size, &type, name_buffer.get());
     // TODO(gman): Should we check for error?
     GLint location = glGetAttribLocation(program, name_buffer.get());
-    info->SetAttributeLocation(ii, num_attribs);
+    info->SetAttributeLocation(ii, location);
   }
 }
 
