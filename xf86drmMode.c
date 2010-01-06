@@ -146,14 +146,26 @@ retry:
 
 	counts = res;
 
-	if (res.count_fbs)
+	if (res.count_fbs) {
 		res.fb_id_ptr = VOID2U64(drmMalloc(res.count_fbs*sizeof(uint32_t)));
-	if (res.count_crtcs)
+		if (!res.fb_id_ptr)
+			goto err_allocs;
+	}
+	if (res.count_crtcs) {
 		res.crtc_id_ptr = VOID2U64(drmMalloc(res.count_crtcs*sizeof(uint32_t)));
-	if (res.count_connectors)
+		if (!res.crtc_id_ptr)
+			goto err_allocs;
+	}
+	if (res.count_connectors) {
 		res.connector_id_ptr = VOID2U64(drmMalloc(res.count_connectors*sizeof(uint32_t)));
-	if (res.count_encoders)
+		if (!res.connector_id_ptr)
+			goto err_allocs;
+	}
+	if (res.count_encoders) {
 		res.encoder_id_ptr = VOID2U64(drmMalloc(res.count_encoders*sizeof(uint32_t)));
+		if (!res.encoder_id_ptr)
+			goto err_allocs;
+	}
 
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res))
 		goto err_allocs;
@@ -189,11 +201,19 @@ retry:
 	r->count_crtcs   = res.count_crtcs;
 	r->count_connectors = res.count_connectors;
 	r->count_encoders = res.count_encoders;
-	/* TODO we realy should test if these allocs fails. */
-	r->fbs           = drmAllocCpy(U642VOID(res.fb_id_ptr), res.count_fbs, sizeof(uint32_t));
-	r->crtcs         = drmAllocCpy(U642VOID(res.crtc_id_ptr), res.count_crtcs, sizeof(uint32_t));
-	r->connectors       = drmAllocCpy(U642VOID(res.connector_id_ptr), res.count_connectors, sizeof(uint32_t));
-	r->encoders      = drmAllocCpy(U642VOID(res.encoder_id_ptr), res.count_encoders, sizeof(uint32_t));
+
+	r->fbs        = drmAllocCpy(U642VOID(res.fb_id_ptr), res.count_fbs, sizeof(uint32_t));
+	r->crtcs      = drmAllocCpy(U642VOID(res.crtc_id_ptr), res.count_crtcs, sizeof(uint32_t));
+	r->connectors = drmAllocCpy(U642VOID(res.connector_id_ptr), res.count_connectors, sizeof(uint32_t));
+	r->encoders   = drmAllocCpy(U642VOID(res.encoder_id_ptr), res.count_encoders, sizeof(uint32_t));
+	if (!r->fbs || !r->crtcs || !r->connectors || !r->encoders) {
+		drmFree(r->fbs);
+		drmFree(r->crtcs);
+		drmFree(r->connectors);
+		drmFree(r->encoders);
+		drmFree(r);
+		r = 0;
+	}
 
 err_allocs:
 	drmFree(U642VOID(res.fb_id_ptr));
