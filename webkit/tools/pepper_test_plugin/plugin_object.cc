@@ -28,12 +28,16 @@
 #include <stdio.h>
 #include <string>
 
+#if defined(INDEPENDENT_PLUGIN)
+#define CHECK(x)
+#else
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/gles2_demo_cc.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#endif
 #include "webkit/tools/pepper_test_plugin/event_handler.h"
 #include "webkit/tools/pepper_test_plugin/test_object.h"
 
@@ -210,7 +214,26 @@ NPClass plugin_class = {
 
 // Bitmap painting -------------------------------------------------------------
 
-void DrawSampleBitmap(SkCanvas& canvas, int width, int height) {
+#if defined(INDEPENDENT_PLUGIN)
+void DrawSampleBitmap(void *region, int width, int height) {
+  int32 *bitmap = reinterpret_cast<int32 *>(region);
+
+  for (int h = 0; h < height; ++h) {
+    uint8 opacity = (h * 0xff) / height;
+    for (int w = 0; w < width; ++w) {
+      // kudos to apatrick for noticing we're using premultiplied alpha
+      uint8 greenness = (w * opacity) / width;
+      *bitmap++ = (opacity << 24) | (greenness << 8);
+    }
+  }
+}
+#else
+void DrawSampleBitmap(void *region, int width, int height) {
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+  bitmap.setPixels(region);
+
+  SkCanvas canvas(bitmap);
   SkRect rect;
   rect.set(SkIntToScalar(0), SkIntToScalar(0),
            SkIntToScalar(width), SkIntToScalar(height));
@@ -233,7 +256,7 @@ void DrawSampleBitmap(SkCanvas& canvas, int width, int height) {
 
   canvas.drawPath(path, paint);
 }
-
+#endif
 void FlushCallback(NPP instance, NPDeviceContext* context,
                    NPError err, void* user_data) {
 }
@@ -290,19 +313,14 @@ void PluginObject::New(NPMIMEType pluginType,
 
 void PluginObject::SetWindow(const NPWindow& window) {
   if (dimensions_ == 2) {
-    size_.set_width(window.width);
-    size_.set_height(window.height);
+    width_ = window.width;
+    height_ = window.height;
 
     NPDeviceContext2DConfig config;
     NPDeviceContext2D context;
     device2d_->initializeContext(npp_, &config, &context);
 
-    SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, window.width, window.height);
-    bitmap.setPixels(context.region);
-
-    SkCanvas canvas(bitmap);
-    DrawSampleBitmap(canvas, window.width, window.height);
+    DrawSampleBitmap(context.region, width_, height_);
 
     // TODO(brettw) figure out why this cast is necessary, the functions seem to
     // match. Could be a calling convention mismatch?
@@ -310,6 +328,7 @@ void PluginObject::SetWindow(const NPWindow& window) {
         reinterpret_cast<NPDeviceFlushContextCallbackPtr>(&FlushCallback);
     device2d_->flushContext(npp_, &context, callback, NULL);
   } else {
+#if !defined(INDEPENDENT_PLUGIN)
     if (!command_buffer_.get()) {
       if (!InitializeCommandBuffer())
         return;
@@ -319,10 +338,12 @@ void PluginObject::SetWindow(const NPWindow& window) {
 
     // Schedule the first call to Draw.
     browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
+#endif
   }
 }
 
 void PluginObject::Draw3D() {
+#if !defined(INDEPENDENT_PLUGIN)
   // Render some stuff.
   gles2::g_gl_impl = gles2_implementation_.get();
   GLFromCPPTestFunction();
@@ -332,9 +353,11 @@ void PluginObject::Draw3D() {
 
   // Schedule another call to Draw.
   browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
+#endif
 }
 
 bool PluginObject::InitializeCommandBuffer() {
+#if !defined(INDEPENDENT_PLUGIN)
   const static int32 kCommandBufferSize = 512 * 1024;
   command_buffer_.reset(new CommandBufferPepper(npp_, browser));
   if (command_buffer_->Initialize(kCommandBufferSize)) {
@@ -360,6 +383,7 @@ bool PluginObject::InitializeCommandBuffer() {
   }
 
   command_buffer_.reset();
+#endif
 
   return false;
 }

@@ -27,11 +27,12 @@
 #define WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_PLUGIN_OBJECT_H_
 
 #include "base/basictypes.h"
-#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
+#include "webkit/glue/plugins/nphostapi.h"
+#if !defined(INDEPENDENT_PLUGIN)
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "webkit/tools/pepper_test_plugin/command_buffer_pepper.h"
-#include "webkit/glue/plugins/nphostapi.h"
+#endif
 
 extern NPNetscapeFuncs* browser;
 
@@ -61,11 +62,14 @@ class PluginObject {
 
   // TODO(apatrick): this destruction order causes the plugin to crash on
   // shutdown.
+#if !defined(INDEPENDENT_PLUGIN)
   scoped_ptr<CommandBufferPepper> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> helper_;
+#endif
 
-  gfx::Size size_;
+  int width_;
+  int height_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginObject);
 };
