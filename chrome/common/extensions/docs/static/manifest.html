@@ -26,6 +26,7 @@ are <b>name</b> and <b>version</b>.
   <em>// Recommended</em>
   "<a href="#description">description</a>": "<em>A plain text description</em>",
   "<a href="#icons">icons</a>": { ... },
+  "<a href="#default_locale">default_locale</a>": "en",
 
   <em>// Pick one (or none)</em>
   "<a href="browserAction.html">browser_action</a>": {...},
@@ -100,6 +101,19 @@ and at least one screenshot of your extension.
 For more information on gallery requirements,
 see the
 <a href="http://www.google.com/support/chrome/bin/answer.py?answer=113909">gallery help</a>.
+</p>
+
+<h3 id="default_locale">default_locale</h3>
+
+<p>
+Specifies the subdirectory of <code>_locales</code>
+that contains the default strings for this extension.
+This field is <b>required</b> in extensions
+that have a <code>_locales</code> directory;
+it <b>must be absent</b> in extensions
+that have no <code>_locales</code> directory.
+For details, see
+<a href="i18n.html">Internationalization</a>.
 </p>
 
 <h3 id="name">name</h3>

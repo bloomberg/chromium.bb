@@ -1,14 +1,318 @@
-<div id="pageData-name" class="pageData">i18n</div>
+<div id="pageData-name" class="pageData">Internationalization (i18n)</div>
+
+<!--
+[NOTEs for editors:
+ * Try to be consistent about string vs. message
+-->
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-Use the <code>chrome.i18n</code> module to manipulate the i18n related browser
-settings, such as the accept languages.
-<!-- [PENDING: add when getMessage works: "or to get localized messages for the current locale."] -->
+Use the <code>chrome.i18n</code> module to
+get localized messages for the current locale,
+from either the extension or its content script.
+You can also use this module to get the languages that the browser accepts.
 </p>
+
+<h2 id="l10">How to support multiple languages</h2>
+
+<p>
+To simplify translating your extension,
+<em>internationalize</em> it by
+putting all its user-visible strings
+in a file named <code>messages.json</code>.
+For example, let's say you have an extension
+with the files shown in the following figure:
+</p>
+
+<img src="images/i18n-before.gif" alt=""
+ width="" height="">
+
+<p>
+To internationalize this extension,
+put each user-visible string into a messages file.
+For an extension that's in English,
+the messages file can be at
+<code>_locales/en/messages.json</code>.
+Each message has a name.
+The extension's manifest and JavaScript code
+use this name to get the localized message.
+</p>
+
+<p>
+The next figure shows an internationalized extension
+that has only English strings.
+</p>
+
+<img src="images/i18n-after-1.gif" alt=""
+ width="" height="">
+
+<p class="note">
+<b>Important:</b>
+If an extension has a <code>_locales</code> directory,
+the <a href="manifest.html">manifest</a>
+<b>must</b> define "default_locale".
+</p>
+
+<p>
+Once an extension is internationalized,
+translating it is simple.
+You just copy <code>messages.json</code>,
+translate it,
+and put the copy into a new directory under <code>_locales</code>.
+For example, to support Spanish,
+just put the translated copy of <code>messages.json</code>
+under <code>_locales/es</code>.
+The following figure shows the extension with a new Spanish translation.
+</p>
+
+<img src="images/i18n-after-2.gif" alt=""
+ width="" height="">
+
+<p>
+Some notes about internationalizing extensions:
+</p>
+
+<ul>
+  <li><p>
+    Use only <a href="#overview-locales">supported locales</a>!
+  </p></li>
+
+  <li>
+    In <code>manifest.json</code>,
+    refer to a string named <em>messagename</em> like this:
+    <pre>__MSG_<em>messagename</em>__</pre>
+  </li>
+
+  <li>
+    In your extension's JavaScript code,
+    refer to a string named <em>messagename</em>
+    like this:
+    <pre>chrome.i18n.getMessage("<em>messagename</em>")</pre>
+
+  <li> <p>
+    In each call to <code>getMessage()</code>,
+    you can supply up to 9 strings
+    to be included in the message.
+    See <a href="#examples-getMessage">Examples: getMessage</a>
+    for details.
+    </p>
+  </li>
+
+  <li>
+    In <code>messages.json</code>,
+    each user-visible string has a name, a "message" item,
+    and an optional "description" item.
+    The name is a key
+    such as "extName" or "search_string"
+    that identifies the string.
+    The "message" specifies
+    the value of the string in this locale.
+    The optional "description"
+    provides help to translators,
+    who might not be able to see how the string is used in your extension.
+    For example:
+<pre>
+{
+  "search_string": {
+    "message": "hello%20world",
+    "description": "The string we search for. Put %20 between words that go together."
+  },
+  ...
+}</pre>
+  </li>
+
+</ul>
+
+<!--
+For more information, see
+<a href="message.html">Formats: Message Files</a>.
+[PENDING: write this page!]
+-->
+
+<h2 id="overview-locales">Locales</h2>
+
+<p>
+Extensions can use all the locales that Google Chrome supports,
+plus a few (such as <code>en</code>)
+that let a single translation support multiple variations of a language
+(such as <code>en_GB</code> and <code>en_US</code>).
+</p>
+
+
+<h3 id="locales-supported">Supported locales</h3>
+
+<p>
+Your extension can use any of the following locales:
+</p>
+
+<p>
+<code>am  ar  bg  bn  ca  cs  da  de  el  en  en_GB  en_US  es  es_419  et  fi  fil  fr  gu  he  hi  hr  hu  id  it  ja  kn  ko  lt
+lv  ml  mr  nb  nl  or  pl  pt  pt_BR  pt_PT  ro  ru  sk  sl  sr  sv  sw  ta  te  th  tr  uk  vi  zh  zh_CN  zh_TW</code>
+</p>
+
+
+<h3 id="locales-usage">How extensions find strings</h3>
+
+<p>
+You don't have to define every string for every locale
+that your internationalized extension supports.
+As long as the default locale's <code>messages.json</code> file
+has a value for every string,
+your extension will run no matter how sparse a translation is.
+Here's how the extension system searches for a message:
+</p>
+
+<ol>
+  <li>
+     Search the messages file (if any)
+     for the user's preferred locale.
+     For example, when Google Chrome's locale is set to
+     British English (<code>en_GB</code>),
+     the system first looks for the message in
+     <code>_locales/en_GB/messages.json</code>.
+     If that file exists and the message is there,
+     the system looks no further.
+  </li>
+  <li>
+     If the user's preferred locale has a region
+     (that is, the locale has an underscore: _),
+     search the locale without that region.
+     For example, if the <code>en_GB</code> messages file
+     doesn't exist or doesn't contain the message,
+     the system looks in the <code>en</code> messages file.
+     If that file exists and the message is there,
+     the system looks no further.
+  </li>
+  <li>
+     Search the messages file for the extension's default locale.
+     For example, if the extension's "default_locale" is set to "es",
+     and neither <code>_locales/en_GB/messages.json</code>
+     nor <code>_locales/en/messages.json</code> contains the message,
+     the extension uses the message from
+     <code>_locales/es/messages.json</code>.
+  </li>
+</ol>
+
+<p>
+In the following figure,
+the message named "color" is in all three locales
+that the extension supports,
+but "extName" is in only two of the locales.
+Where a user running Google Chrome in US English sees the heading "Color",
+a user running it in British English sees "Colour".
+Both US English and British English users
+see the extension name "Hello World".
+Because the default language is Spanish,
+users running Google Chrome in any non-English language
+see the heading "Color" and the extension name "Hola mundo".
+</p>
+
+<img src="images/i18n-strings.gif" alt=""
+ width="496" height="490" />
+
+<h3 id="locales-testing">How to set your browser's locale</h3>
+
+<p>
+When you test translations, you might want to set your browser's locale.
+Here's how.
+</p>
+
+<h4 id="testing-win">Windows</h4>
+
+<ol>
+  <li> Tools menu (wrench) > <b>Options</b> </li>
+  <li> Choose the <b>Under the Hood</b> tab </li>
+  <li> Scroll down to <b>Web Content</b> </li>
+  <li> Click <b>Change font and language settings</b> </li>
+  <li> Choose the <b>Languages</b> tab </li>
+  <li> Use the drop down to set the <b>Google Chrome language</b> </li>
+  <li> Restart Chrome </li>
+</ol>
+
+<h4 id="testing-mac">Mac OS X</h4>
+
+<ol>
+  <li> From the Apple menu, choose <b>System Preferences</b> </li>
+  <li> Under the <b>Personal</b> section, choose <b>International</b> </li>
+  <li> Choose your language and location </li>
+  <li> Restart Chrome </li>
+</ol>
+
+<h4 id="testing-linux">Linux</h4>
+
+<p>
+Set the language environment variable, and then launch Google Chrome.
+For example:
+</p>
+
+<pre>
+LANGUAGE=es ./chrome
+</pre>
+
 
 <h2 id="overview-examples">Examples</h2>
 
+<p>
+You can find simple examples of internationalization in the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/">examples/api/i18n</a>
+directory.
+For a more complete example, see
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_i18n/">examples/extensions/news_i18n</a>
+(compare it to
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/">examples/extensions/news</a>).
+For other examples and for help in viewing the source code, see
+<a href="samples.html">Samples</a>.
+</p>
+
+
+<h3 id="examples-getMessage">Examples: getMessage</h3>
+
+<!--
+[PENDING: improve this section. it should probably start with a
+one-variable example that includes the messages.json code.]
+-->
+
+<p>
+The following code gets a localized message from the browser
+and displays it as a string.
+It replaces two placeholders within the message with the strings
+"string1" and "string2".
+</p>
+
+<pre>
+function getMessage() {
+  var message = chrome.i18n.getMessage("click_here", ["string1", "string2"]);
+  document.getElementById("languageSpan").innerHTML = message;
+}
+</pre>
+
+<p>
+Here's how you'd supply and use a single string:
+</p>
+
+<pre>
+<em>// In JavaScript code</em>
+status.innerText = chrome.i18n.getMessage("error", errorDetails);
+
+<em>// In messages.json</em>
+"error": {
+  "message": "Error: $details$",
+  "description": "Generic error template. Expects error parameter to be passed in.",
+  "placeholders": {
+    "details": {
+      "content": "$1",
+      "example": "Failed to fetch RSS feed."
+    }
+  }
+}
+</pre>
+
+<p>
+For more information about placeholders,
+see the <a href="http://dev.chromium.org/developers/design-documents/extensions/i18n#TOC-Replacement-policy">internationalization design doc</a>.
+</p>
+
+<h3 id="example-accept-languages">Example: getAcceptLanguages</h3>
 <p>
 The following code gets accept-languages from the browser and displays them as a
 string by separating each accept-language with ','.
@@ -22,28 +326,5 @@ function getAcceptLanguages() {
   })
 }
 </pre>
-
-<!-- [PENDING: add the following when getMessage is working]
-<p>
-The following code gets a localized message from the browser and displays it as a
-string. It replaces two placeholders within the message with values arg1 and
-arg2.
-</p>
-
-<pre>
-function getMessage() {
-  var message = chrome.i18n.getMessage("click_here", ["arg1", "arg2"]);
-  document.getElementById("languageSpan").innerHTML = message;
-}
-</pre>
--->
-
-<p>
-You can find simple examples of internationalization in the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/">examples/api/i18n</a>
-directory.
-For other examples and for help in viewing the source code, see
-<a href="samples.html">Samples</a>.
-</p>
 
 <!-- END AUTHORED CONTENT -->
