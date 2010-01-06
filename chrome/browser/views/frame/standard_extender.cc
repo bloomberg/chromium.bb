@@ -47,6 +47,7 @@ class StandardExtender : public BrowserExtender {
   virtual void OnMouseEnteredToTab(Tab* tab) {}
   virtual void OnMouseMovedOnTab(Tab* tab) {}
   virtual void OnMouseExitedFromTab(Tab* tab) {}
+  virtual int GetMainMenuWidth() const { return 0; };
 
   DISALLOW_COPY_AND_ASSIGN(StandardExtender);
 };

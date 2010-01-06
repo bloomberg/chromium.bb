@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
@@ -213,9 +214,10 @@ OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {
 
 gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     TabStrip* tabstrip) const {
+  int x_offset = browser_view_->browser_extender()->GetMainMenuWidth();
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
       (otr_avatar_bounds_.right() + kOTRSideSpacing) :
-      NonClientBorderThickness();
+      NonClientBorderThickness() + x_offset;
   int tabstrip_width = minimize_button_->x() - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
       kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
@@ -1062,7 +1064,9 @@ void OpaqueBrowserFrameView::LayoutOTRAvatar() {
   } else {
     tabstrip_height = otr_height = 0;
   }
-  otr_avatar_bounds_.SetRect(NonClientBorderThickness() + kOTRSideSpacing,
+  int x_offset = browser_view_->browser_extender()->GetMainMenuWidth();
+  otr_avatar_bounds_.SetRect(NonClientBorderThickness() + kOTRSideSpacing +
+                             x_offset,
                              top_height + tabstrip_height - otr_height,
                              otr_avatar_icon.width(), otr_height);
 }

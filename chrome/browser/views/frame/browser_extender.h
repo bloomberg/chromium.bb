@@ -79,6 +79,10 @@ class BrowserExtender {
   // Called when a mouse exited from the |tab|.
   virtual void OnMouseExitedFromTab(Tab* tab) = 0;
 
+  // Returns the main menu's width.  This is used in the opaque frame
+  // to layout otr icons and tabstrips.
+  virtual int GetMainMenuWidth() const = 0;
+
   // Tells if the browser can be closed.
   bool can_close() const {
     return can_close_;

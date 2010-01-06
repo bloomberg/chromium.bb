@@ -158,7 +158,13 @@ class NormalExtender : public BrowserExtender,
 
     // Layout main menu before tab strip.
     gfx::Size main_menu_size = main_menu_->GetPreferredSize();
-    main_menu_->SetBounds(bounds.x(), bounds.y(),
+
+    // TODO(oshima): Use 0 for x position for now as this is
+    // sufficient for chromeos where the window is always
+    // maximized. The correct value is
+    // OpaqueBrowserFrameView::NonClientBorderThickness() and we will
+    // consider exposing it once we settle on the UI.
+    main_menu_->SetBounds(0, bounds.y(),
                           main_menu_size.width(), bounds.height());
 
     // Layout status area after tab strip.
@@ -167,8 +173,8 @@ class NormalExtender : public BrowserExtender,
     status_area_->SetBounds(bounds.x() + bounds.width() - status_size.width(),
                             bounds.y(), status_size.width(),
                             status_size.height());
-    int curx = bounds.x() + main_menu_size.width();
-    int width = bounds.width() - main_menu_size.width() - status_size.width();
+    int curx = bounds.x();
+    int width = bounds.width() - status_size.width();
 
     if (compact_navigation_bar_->IsVisible()) {
       gfx::Size cnb_bounds = compact_navigation_bar_->GetPreferredSize();
@@ -261,6 +267,10 @@ class NormalExtender : public BrowserExtender,
 
   virtual bool ShouldForceMaximizedWindow() {
     return force_maximized_window_;
+  }
+
+  virtual int GetMainMenuWidth() const {
+    return main_menu_->GetPreferredSize().width();
   }
 
  private:
@@ -410,6 +420,10 @@ class PopupExtender : public BrowserExtender {
     return false;
   }
 
+  virtual int GetMainMenuWidth() const {
+    return 0;
+  }
+
   // Controls interactions with the window manager for popup panels.
   scoped_ptr<chromeos::PanelController> panel_controller_;
 
@@ -423,11 +437,8 @@ class PopupExtender : public BrowserExtender {
 
 // static
 BrowserExtender* BrowserExtender::Create(BrowserView* browser_view) {
-  BrowserExtender* extender;
   if (browser_view->browser()->type() & Browser::TYPE_POPUP)
-    extender = new PopupExtender(browser_view);
+    return new PopupExtender(browser_view);
   else
-    extender = new NormalExtender(browser_view);
-  extender->Init();
-  return extender;
+    return new NormalExtender(browser_view);
 }
