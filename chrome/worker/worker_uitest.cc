@@ -329,6 +329,11 @@ TEST_F(WorkerTest, MessagePorts) {
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
+#if defined(OS_LINUX)
+// http://crbug.com/30307
+#define LimitPerPage FLAKY_LimitPerPage
+#endif
+
 TEST_F(WorkerTest, LimitPerPage) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   GURL url = GetTestUrl(L"workers", L"many_workers.html");
