@@ -51,6 +51,10 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
 
   WidgetGtk* GetHostWidget() const;
 
+  // Returns the descendant of fixed_ that has focus, or NULL if focus is not
+  // on a descendant of fixed_.
+  GtkWidget* GetFocusedDescendant();
+
   // Invoked from the 'destroy' signal.
   static void CallDestroy(GtkObject* object, NativeViewHostGtk* host);
 

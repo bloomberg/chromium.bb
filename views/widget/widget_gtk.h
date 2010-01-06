@@ -38,12 +38,17 @@ class WidgetGtk
   // Type of widget.
   enum Type {
     // Used for popup type windows (bubbles, menus ...).
+    // NOTE: on X windows of this type can NOT get focus. If you need a popup
+    // like widget that can be focused use TYPE_WINDOW and set the window type
+    // to WINDOW_TYPE_CHROME_INFO_BUBBLE.
     TYPE_POPUP,
-    // A top level window with no title, no control buttons.
-    // control.
+
+    // A top level window with no title or control buttons.
     TYPE_WINDOW,
+
     // A top level, decorated window.
     TYPE_DECORATED_WINDOW,
+
     // A child widget.
     TYPE_CHILD
   };

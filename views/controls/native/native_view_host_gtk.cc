@@ -182,6 +182,17 @@ void NativeViewHostGtk::SetFocus() {
 // NativeViewHostGtk, private:
 
 void NativeViewHostGtk::CreateFixed(bool needs_window) {
+  GtkWidget* focused_widget = GetFocusedDescendant();
+  bool fixed_is_focused = (focused_widget == fixed_);
+
+  if (focused_widget) {
+    // A descendant of our fixed has focus. When we destroy the fixed focus is
+    // automatically moved. Temporarily move focus to our host widget, then
+    // restore focus after we create the new fixed_. This way focus hasn't
+    // really moved.
+    gtk_widget_grab_focus(GetHostWidget()->GetNativeView());
+  }
+
   DestroyFixed();
 
   fixed_ = gtk_fixed_new();
@@ -192,8 +203,16 @@ void NativeViewHostGtk::CreateFixed(bool needs_window) {
   WidgetGtk* widget_gtk = GetHostWidget();
   if (widget_gtk)
     widget_gtk->AddChild(fixed_);
+
   if (host_->native_view())
     gtk_container_add(GTK_CONTAINER(fixed_), host_->native_view());
+
+  if (widget_gtk && host_->native_view() && focused_widget) {
+    if (fixed_is_focused)
+      gtk_widget_grab_focus(fixed_);
+    else
+      gtk_widget_grab_focus(focused_widget);
+  }
 }
 
 void NativeViewHostGtk::DestroyFixed() {
@@ -217,6 +236,22 @@ void NativeViewHostGtk::DestroyFixed() {
 
 WidgetGtk* NativeViewHostGtk::GetHostWidget() const {
   return static_cast<WidgetGtk*>(host_->GetWidget());
+}
+
+GtkWidget* NativeViewHostGtk::GetFocusedDescendant() {
+  if (!fixed_)
+    return NULL;
+  WidgetGtk* host = GetHostWidget();
+  if (!host)
+    return NULL;
+  GtkWidget* top_level = gtk_widget_get_toplevel(host->GetNativeView());
+  if (!top_level || !GTK_IS_WINDOW(top_level))
+    return NULL;
+  GtkWidget* focused = gtk_window_get_focus(GTK_WINDOW(top_level));
+  if (!focused)
+    return NULL;
+  return (focused == fixed_ || gtk_widget_is_ancestor(focused, fixed_)) ?
+      focused : NULL;
 }
 
 // static
