@@ -17,8 +17,30 @@ namespace {
   };
 };
 
+
+// Since buildtime is highly variable, this function will scan an output log and
+// replace it with a consistent number.
+static void NormalizeBuildtime(std::string* xml_encoded) {
+  std::string prefix = "buildtime=\"";
+  const char postfix = '\"';
+  size_t offset = xml_encoded->find(prefix);
+  ASSERT_GT(offset, 0u);
+  offset += prefix.size();
+  size_t postfix_position = xml_encoded->find(postfix, offset);
+  ASSERT_GT(postfix_position, offset);
+  for (size_t i = offset; i < postfix_position; ++i) {
+    char digit = xml_encoded->at(i);
+    ASSERT_GE(digit, '0');
+    ASSERT_LE(digit, '9');
+  }
+
+  // Insert a single fake buildtime.
+  xml_encoded->replace(offset, postfix_position - offset, "123246");
+}
+
 TEST(MetricsLogTest, EmptyRecord) {
-  std::string expected_output = "<log clientid=\"bogus client ID\"/>";
+  std::string expected_output =
+      "<log clientid=\"bogus client ID\" buildtime=\"123456789\"/>";
 
   MetricsLog log("bogus client ID", 0);
   log.CloseLog();
@@ -28,6 +50,8 @@ TEST(MetricsLogTest, EmptyRecord) {
 
   std::string encoded;
   ASSERT_TRUE(log.GetEncodedLog(WriteInto(&encoded, size), size));
+  NormalizeBuildtime(&encoded);
+  NormalizeBuildtime(&expected_output);
 
   ASSERT_EQ(expected_output, encoded);
 }
@@ -50,14 +74,14 @@ class NoTimeMetricsLog : public MetricsLog {
 
 TEST(MetricsLogTest, WindowEvent) {
   std::string expected_output =
-    "<log clientid=\"bogus client ID\">\n"
-    " <window action=\"create\" windowid=\"0\" session=\"0\" time=\"\"/>\n"
-    " <window action=\"open\" windowid=\"1\" parent=\"0\" "
-        "session=\"0\" time=\"\"/>\n"
-    " <window action=\"close\" windowid=\"1\" parent=\"0\" "
-        "session=\"0\" time=\"\"/>\n"
-    " <window action=\"destroy\" windowid=\"0\" session=\"0\" time=\"\"/>\n"
-    "</log>";
+      "<log clientid=\"bogus client ID\" buildtime=\"123456789\">\n"
+      " <window action=\"create\" windowid=\"0\" session=\"0\" time=\"\"/>\n"
+      " <window action=\"open\" windowid=\"1\" parent=\"0\" "
+          "session=\"0\" time=\"\"/>\n"
+      " <window action=\"close\" windowid=\"1\" parent=\"0\" "
+          "session=\"0\" time=\"\"/>\n"
+      " <window action=\"destroy\" windowid=\"0\" session=\"0\" time=\"\"/>\n"
+      "</log>";
 
   NoTimeMetricsLog log("bogus client ID", 0);
   log.RecordWindowEvent(MetricsLog::WINDOW_CREATE, 0, -1);
@@ -73,17 +97,19 @@ TEST(MetricsLogTest, WindowEvent) {
 
   std::string encoded;
   ASSERT_TRUE(log.GetEncodedLog(WriteInto(&encoded, size), size));
+  NormalizeBuildtime(&encoded);
+  NormalizeBuildtime(&expected_output);
 
   ASSERT_EQ(expected_output, encoded);
 }
 
 TEST(MetricsLogTest, LoadEvent) {
   std::string expected_output =
-    "<log clientid=\"bogus client ID\">\n"
-    " <document action=\"load\" docid=\"1\" window=\"3\" loadtime=\"7219\" "
-    "origin=\"link\" "
-    "session=\"0\" time=\"\"/>\n"
-    "</log>";
+      "<log clientid=\"bogus client ID\" buildtime=\"123456789\">\n"
+      " <document action=\"load\" docid=\"1\" window=\"3\" loadtime=\"7219\" "
+      "origin=\"link\" "
+      "session=\"0\" time=\"\"/>\n"
+      "</log>";
 
   NoTimeMetricsLog log("bogus client ID", 0);
   log.RecordLoadEvent(3, GURL("http://google.com"), PageTransition::LINK,
@@ -98,6 +124,8 @@ TEST(MetricsLogTest, LoadEvent) {
 
   std::string encoded;
   ASSERT_TRUE(log.GetEncodedLog(WriteInto(&encoded, size), size));
+  NormalizeBuildtime(&encoded);
+  NormalizeBuildtime(&expected_output);
 
   ASSERT_EQ(expected_output, encoded);
 }
