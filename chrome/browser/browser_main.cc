@@ -818,8 +818,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Perform A/B test to measure global impact of SDCH support.
   // Set up a field trial to see what disabling SDCH does to latency of page
   // layout globally.
-  FieldTrial::Probability kSDCH_DIVISOR = 100;
-  FieldTrial::Probability kSDCH_PROBABILITY_PER_GROUP = 50;  // 50% probability.
+  FieldTrial::Probability kSDCH_DIVISOR = 10000;
+  FieldTrial::Probability kSDCH_DISABLE_PROBABILITY = 5;  // 0.05% probability.
   scoped_refptr<FieldTrial> sdch_trial =
       new FieldTrial("GlobalSdch", kSDCH_DIVISOR);
 
@@ -830,9 +830,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
         parsed_command_line.GetSwitchValueASCII(switches::kSdchFilter);
   } else {
     sdch_trial->AppendGroup("_global_disable_sdch",
-                            kSDCH_PROBABILITY_PER_GROUP);
+                            kSDCH_DISABLE_PROBABILITY);
     int sdch_enabled = sdch_trial->AppendGroup("_global_enable_sdch",
-                                               kSDCH_PROBABILITY_PER_GROUP);
+        FieldTrial::kAllRemainingProbability);
     if (sdch_enabled != sdch_trial->group())
       sdch_supported_domain = "never_enabled_sdch_for_any_domain";
   }
