@@ -191,9 +191,16 @@ be available for now. -->
       <message name="IDS_IMPORTER_LOCK_TEXT" desc="The message to be displayed on dialog">
         Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Chromium, save your work and close all Firefox windows. Then click Continue.
       </message>
-      <message name="IDS_BUGREPORT_CHROME_MISBEHAVES">
-        Chromium is misbehaving
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_BUGREPORT_CHROME_MISBEHAVES" desc="Report a bug/problem type: Browser is misbehaving">
+          Chromium is misbehaving
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_BUGREPORT_CHROME_MISBEHAVES" desc="In Title Case: Report a bug/problem type: Browser is misbehaving">
+          Chromium is Misbehaving
+        </message>
+      </if>
       <message name="IDS_ABOUT_CHROME_TITLE" desc="Dialog title">
         About Chromium
       </message>

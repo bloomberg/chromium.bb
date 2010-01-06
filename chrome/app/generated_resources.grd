@@ -3233,36 +3233,67 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BUGREPORT_INCLUDE_PAGE_IMAGE_CHKBOX" desc="Checkbox for including page image">
         Send screen shot of current page
       </message>
-      <message name="IDS_BUGREPORT_SEND_REPORT" desc="Text for OK button on dialog">
-        Send report
-      </message>
-      <message name="IDS_BUGREPORT_SEND_PHISHING_REPORT" desc="Text for report phishing button">
-        Open phishing report
-      </message>
-      <message name="IDS_BUGREPORT_BUG_TYPE">
+      <message name="IDS_BUGREPORT_BUG_TYPE" desc="Label for bug type">
         Bug type:
       </message>
-      <message name="IDS_BUGREPORT_PAGE_WONT_LOAD">
-        Page won't load
-      </message>
-      <message name="IDS_BUGREPORT_PAGE_LOOKS_ODD">
-        Page looks odd
-      </message>
-      <message name="IDS_BUGREPORT_PHISHING_PAGE">
-        Phishing page
-      </message>
-      <message name="IDS_BUGREPORT_CANT_SIGN_IN">
-        Can't sign in
-      </message>
-      <message name="IDS_BUGREPORT_SOMETHING_MISSING">
-        Something's missing
-      </message>
-      <message name="IDS_BUGREPORT_BROWSER_CRASH">
-        Browser crash... go boom
-      </message>
-      <message name="IDS_BUGREPORT_OTHER_PROBLEM">
-        Other problem
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_BUGREPORT_SEND_REPORT" desc="Text for OK button on dialog">
+          Send report
+        </message>
+        <message name="IDS_BUGREPORT_SEND_PHISHING_REPORT" desc="Text for report phishing button">
+          Open phishing report
+        </message>
+        <message name="IDS_BUGREPORT_PAGE_WONT_LOAD" desc="Report a bug/problem type: Page won't load">
+          Page won't load
+        </message>
+        <message name="IDS_BUGREPORT_PAGE_LOOKS_ODD" desc="Report a bug/problem type: Page looks odd">
+          Page looks odd
+        </message>
+        <message name="IDS_BUGREPORT_PHISHING_PAGE" desc="Report a bug/problem type: Phishing page">
+          Phishing page
+        </message>
+        <message name="IDS_BUGREPORT_CANT_SIGN_IN" desc="Report a bug/problem type: Can't sign in">
+          Can't sign in
+        </message>
+        <message name="IDS_BUGREPORT_SOMETHING_MISSING" desc="Report a bug/problem type: Something's missing">
+          Something's missing
+        </message>
+        <message name="IDS_BUGREPORT_BROWSER_CRASH" desc="Report a bug/problem type: Browser crashed">
+          Browser crash... go boom
+        </message>
+        <message name="IDS_BUGREPORT_OTHER_PROBLEM" desc="Report a bug/problem type: Other problem">
+          Other problem
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_BUGREPORT_SEND_REPORT" desc="In Title Case: Text for OK button on dialog">
+          Send Report
+        </message>
+        <message name="IDS_BUGREPORT_SEND_PHISHING_REPORT" desc="In Title Case: Text for report phishing button">
+          Open Phishing Report
+        </message>
+        <message name="IDS_BUGREPORT_PAGE_WONT_LOAD" desc="In Title Case: Report a bug/problem type: Page won't load">
+          Page Won't Load
+        </message>
+        <message name="IDS_BUGREPORT_PAGE_LOOKS_ODD" desc="In Title Case: Report a bug/problem type: Page looks odd">
+          Page Looks Odd
+        </message>
+        <message name="IDS_BUGREPORT_PHISHING_PAGE" desc="In Title Case: Report a bug/problem type: Phishing page">
+          Phishing Page
+        </message>
+        <message name="IDS_BUGREPORT_CANT_SIGN_IN" desc="In Title Case: Report a bug/problem type: Can't sign in">
+          Can't Sign In
+        </message>
+        <message name="IDS_BUGREPORT_SOMETHING_MISSING" desc="In Title Case: Report a bug/problem type: Something's missing">
+          Something's Missing
+        </message>
+        <message name="IDS_BUGREPORT_BROWSER_CRASH" desc="In Title Case: Report a bug/problem type: Browser crashed">
+          Browser Crash... Go Boom
+        </message>
+        <message name="IDS_BUGREPORT_OTHER_PROBLEM" desc="In Title Case: Report a bug/problem type: Other problem">
+          Other Problem
+        </message>
+      </if>
 
       <!-- Clear Browsing Data -->
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">
