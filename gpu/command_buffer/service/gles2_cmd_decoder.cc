@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+
+#include <stdio.h>
+
 #include <vector>
 #include <string>
 #include <map>
