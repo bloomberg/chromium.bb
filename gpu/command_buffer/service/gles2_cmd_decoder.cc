@@ -14,6 +14,9 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
+#if defined(OS_LINUX)
+#include "gpu/command_buffer/service/x_utils.h"
+#endif
 
 namespace gpu {
 namespace gles2 {
@@ -982,7 +985,6 @@ parse_error::ParseError GLES2DecoderImpl::DoCommand(
   parse_error::ParseError result = parse_error::kParseNoError;
   if (debug()) {
     // TODO(gman): Change output to something useful for NaCl.
-    const char* f = GetCommandName(command);
     printf("cmd: %s\n", GetCommandName(command));
   }
   unsigned int command_index = command - kStartPoint - 1;
@@ -1757,4 +1759,3 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetActiveAttrib(
 
 }  // namespace gles2
 }  // namespace gpu
-

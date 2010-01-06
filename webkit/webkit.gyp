@@ -428,7 +428,12 @@
                        ['exclude', r'/gtk_']],
         }],
         ['OS!="mac"', {
-          'sources/': [['exclude', '_mac\\.(cc|mm)$']]
+          'sources/': [['exclude', '_mac\\.(cc|mm)$']],
+        }],
+        ['OS=="win" or (OS=="linux" and target_arch!="arm")', {
+          'dependencies': [
+            '../gpu/gpu.gyp:gpu_plugin',
+          ],
         }],
         ['OS!="win"', {
           'sources/': [['exclude', '_win\\.cc$']],
@@ -446,7 +451,6 @@
           ],
           'dependencies': [
             '../build/win/system.gyp:cygwin',
-            '../gpu/gpu.gyp:gpu_plugin',
             'default_plugin/default_plugin.gyp:default_plugin',
           ],
           'sources!': [

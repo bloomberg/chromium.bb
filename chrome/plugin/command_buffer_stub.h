@@ -21,7 +21,7 @@ class CommandBufferService;
 class CommandBufferStub : public IPC::Channel::Listener,
                           public IPC::Message::Sender {
  public:
-  CommandBufferStub(PluginChannel* channel, gfx::NativeView view);
+  CommandBufferStub(PluginChannel* channel, gfx::PluginWindowHandle window);
 
   virtual ~CommandBufferStub();
 
@@ -50,7 +50,7 @@ class CommandBufferStub : public IPC::Channel::Listener,
   void OnGetErrorStatus(bool* error_status);
 
   scoped_refptr<PluginChannel> channel_;
-  gfx::NativeView view_;
+  gfx::PluginWindowHandle window_;
   int route_id_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_refptr<gpu::GPUProcessor> processor_;

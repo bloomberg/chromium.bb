@@ -38,8 +38,13 @@ int16 NPP_HandleEvent(NPP instance, void* event) {
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   if (!instance)
     return NPERR_INVALID_INSTANCE_ERROR;
-
-  return NPERR_GENERIC_ERROR;
+  switch (variable) {
+    case NPPVpluginNeedsXEmbed:
+      *static_cast<NPBool *>(value) = 1;
+      return NPERR_NO_ERROR;
+    default:
+      return NPERR_INVALID_PARAM;
+  }
 }
 
 NPError NPP_SetValue(NPP instance, NPNVariable variable, void *value) {

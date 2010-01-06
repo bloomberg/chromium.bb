@@ -250,9 +250,13 @@
         ['OS == "linux"',
           {
             'sources': [
+              'command_buffer/service/gpu_processor_linux.cc',
               'command_buffer/service/x_utils.cc',
               'command_buffer/service/x_utils.h',
             ],
+            'dependencies': [
+              '../build/linux/system.gyp:gtk',
+            ]
           },
         ],
         ['OS == "win"',
