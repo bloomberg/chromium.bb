@@ -162,9 +162,10 @@ class TestApp {
     base::Time stop_time = base::Time::Now();
     base::TimeDelta duration = stop_time - start_time_;
     int64 micro_sec = duration.InMicroseconds();
-    printf("\n<<< frame delivered : %lld >>>", frame_count_);
-    printf("\n<<< time used(us) : %lld >>>", micro_sec);
-    printf("\n<<< fps : %lld >>>", frame_count_ * 1000000 / micro_sec);
+    // TODO(hclam): Linux 64bit doesn't like the following lines.
+    // printf("\n<<< frame delivered : %lld >>>", frame_count_);
+    // printf("\n<<< time used(us) : %lld >>>", micro_sec);
+    // printf("\n<<< fps : %lld >>>", frame_count_ * 1000000 / micro_sec);
     // printf("\n<<< bitrate>>> : %lld\n", bit_count_ * 1000000 / micro_sec);
     printf("\n");
   }
