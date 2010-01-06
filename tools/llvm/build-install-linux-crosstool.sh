@@ -14,6 +14,7 @@ set -o errexit
 echo -n "Welcome to LLVM Linux/X86_64 -> Linux/ARM crosstool "
 echo "builder/installer; some steps will require sudo privileges."
 
+readonly CLIENT_TOP="$(pwd)/../../../"
 readonly INSTALL_ROOT="${INSTALL_ROOT:-/usr/local/crosstool}"
 # Both $USER and root *must* have read/write access to this dir.
 readonly SCRATCH_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/llvm-project.XXXXXX")
@@ -38,10 +39,10 @@ readonly CROSS_TARGET_LD="${CODE_SOURCERY_BIN}/${CROSS_TARGET}-ld"
 
 readonly SYSROOT="${CODE_SOURCERY_ROOT}/${CROSS_TARGET}/libc"
 
-readonly LLVM_PKG_PATH="${LLVM_PKG_PATH:-${HOME}/llvm-project/snapshots}"
+readonly LLVM_PKG_PATH="${LLVM_PKG_PATH:-${CLIENT_TOP}/third_party/llvm/}"
 
 # Latest SVN revision known to be working in this configuration.
-readonly LLVM_DEFAULT_REV="70786"
+readonly LLVM_DEFAULT_REV="88663"
 
 readonly LLVM_PKG="llvm-${LLVM_SVN_REV:-${LLVM_DEFAULT_REV}}.tar.bz2"
 readonly LLVM_SRC_DIR="${SRC_ROOT}/llvm"
