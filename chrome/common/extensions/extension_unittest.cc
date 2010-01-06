@@ -23,7 +23,8 @@ namespace errors = extension_manifest_errors;
 class ExtensionTest : public testing::Test {
 };
 
-TEST(ExtensionTest, InitFromValueInvalid) {
+// TODO(mad): http://crbug.com/26214
+TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
 #if defined(OS_WIN)
   FilePath path(FILE_PATH_LITERAL("c:\\foo"));
 #elif defined(OS_POSIX)
@@ -250,17 +251,6 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   input_value->Set(keys::kDefaultLocale, Value::CreateStringValue(""));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidDefaultLocale));
-
-  // Test invalid minimum_chrome_version.
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
-  input_value->Set(keys::kMinimumChromeVersion, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidMinimumChromeVersion));
-
-  input_value->Set(keys::kMinimumChromeVersion,
-                   Value::CreateStringValue("88.8"));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPatternASCII(error, errors::kChromeVersionTooLow));
 }
 
 TEST(ExtensionTest, InitFromValueValid) {
@@ -291,12 +281,6 @@ TEST(ExtensionTest, InitFromValueValid) {
   EXPECT_EQ("", error);
   EXPECT_EQ("chrome-extension", extension.options_url().scheme());
   EXPECT_EQ("/options.html", extension.options_url().path());
-
-  // Test with a minimum_chrome_version.
-  input_value.SetString(keys::kMinimumChromeVersion, "1.0");
-  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
-  EXPECT_EQ("", error);
-  // The minimum chrome version is not stored in the Extension object.
 }
 
 TEST(ExtensionTest, GetResourceURLAndPath) {

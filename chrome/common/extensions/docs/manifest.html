@@ -210,8 +210,6 @@
                 </li><li>
                   <a href="#name">name</a>
                 </li><li>
-                  <a href="#minimum_chrome_version">Minimum Chrome Version</a>
-                </li><li>
                   <a href="#permissions">permissions</a>
                 </li><li>
                   <a href="#version">version</a>
@@ -297,7 +295,6 @@ are <b>name</b> and <b>version</b>.
   "<a href="background_pages.html">background_page</a>": "<em>aFile</em>.html",
   "<a href="override.html">chrome_url_overrides</a>": {...},
   "<a href="content_scripts.html">content_scripts</a>": [...],
-  "<a href="#minimum_chrome_version">minimum_chrome_version</a>": "x.y",
   "<a href="options.html">options_page</a>": "<em>aFile</em>.html",
   "<a href="#permissions">permissions</a>": [...],
   "<a href="npapi.html">plugins</a>": [...],
@@ -373,14 +370,7 @@ extension management UI,
 and the <a href="https://chrome.google.com/extensions">extension gallery</a>.
 </p>
 
-<h3 id="minimum_chrome_version">Minimum Chrome Version</h3>
-
-<p>
-The version of Google Chrome that your extension requires, if any.
-The format for this string is the same as for the <a href="#version">version
-field</a>.
-
-</p><h3 id="permissions">permissions</h3>
+<h3 id="permissions">permissions</h3>
 
 <p>
 An array of permissions that the extension might use.

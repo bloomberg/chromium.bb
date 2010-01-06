@@ -4,14 +4,12 @@
 
 #include "chrome/common/extensions/extension.h"
 
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"
@@ -26,7 +24,6 @@
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
-#include "grit/chromium_strings.h"
 #include "webkit/glue/image_decoder.h"
 
 #if defined(OS_WIN)
@@ -758,46 +755,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
           errors::kInvalidUpdateURL, tmp);
       return false;
     }
-  }
-
-  // Validate minimum Chrome version (if present). We don't need to store this,
-  // since the extension is not valid if it is incorrect.
-  if (source.HasKey(keys::kMinimumChromeVersion)) {
-    std::string minimum_version_string;
-    if (!source.GetString(keys::kMinimumChromeVersion,
-                          &minimum_version_string)) {
-      *error = errors::kInvalidMinimumChromeVersion;
-      return false;
-    }
-
-    scoped_ptr<Version> minimum_version(
-        Version::GetVersionFromString(minimum_version_string));
-    if (!minimum_version.get()) {
-      *error = errors::kInvalidMinimumChromeVersion;
-      return false;
-    }
-
-    scoped_ptr<FileVersionInfo> current_version_info(
-        FileVersionInfo::CreateFileVersionInfoForCurrentModule());
-    if (!current_version_info.get()) {
-      DCHECK(false);
-      return false;
-    }
-
-    scoped_ptr<Version> current_version(
-        Version::GetVersionFromString(current_version_info->file_version()));
-    if (!current_version.get()) {
-      DCHECK(false);
-      return false;
-    }
-
-    if (current_version->CompareTo(*minimum_version) < 0) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kChromeVersionTooLow,
-          l10n_util::GetStringUTF8(IDS_PRODUCT_NAME),
-          minimum_version_string);
-      return false;
-   }
   }
 
   // Initialize converted_from_user_script (if present)

@@ -352,8 +352,7 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       process_type == switches::kZygoteProcess ||
 #endif
       process_type == switches::kRendererProcess ||
-      process_type == switches::kExtensionProcess ||
-      process_type == switches::kUtilityProcess;
+      process_type == switches::kExtensionProcess;
 }
 
 }  // namespace
