@@ -351,7 +351,7 @@ BUILD/stamp-gcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	mkdir BUILD/build-gcc-$(CROSSARCH)
 ifeq ($(PLATFORM), Cygwin17)
 	mkdir BUILD/build-gcc-$(CROSSARCH)/gcc
-	cp -af $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
+	cp -af $(DESTDIR)$(SDKROOT)/libexec/cyg*.dll \
 	    BUILD/build-gcc-$(CROSSARCH)/gcc
 	cp -af $(DESTDIR)$(SDKROOT)/nacl \
 	    BUILD/build-gcc-$(CROSSARCH)/nacl
