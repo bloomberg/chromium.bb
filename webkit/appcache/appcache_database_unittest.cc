@@ -89,6 +89,7 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   entry.url = GURL("http://blah/1");
   entry.flags = AppCacheEntry::MASTER;
   entry.response_id = 1;
+  entry.response_size = 100;
   EXPECT_TRUE(db.InsertEntry(&entry));
   EXPECT_FALSE(db.InsertEntry(&entry));
 
@@ -96,12 +97,14 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   entry.url = GURL("http://blah/2");
   entry.flags = AppCacheEntry::EXPLICIT;
   entry.response_id = 2;
+  entry.response_size = 200;
   EXPECT_TRUE(db.InsertEntry(&entry));
 
   entry.cache_id = 2;
   entry.url = GURL("http://blah/3");
   entry.flags = AppCacheEntry::MANIFEST;
   entry.response_id = 3;
+  entry.response_size = 300;
   EXPECT_TRUE(db.InsertEntry(&entry));
 
   std::vector<AppCacheDatabase::EntryRecord> found;
@@ -112,6 +115,7 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   EXPECT_EQ(GURL("http://blah/1"), found[0].url);
   EXPECT_EQ(AppCacheEntry::MASTER, found[0].flags);
   EXPECT_EQ(1, found[0].response_id);
+  EXPECT_EQ(100, found[0].response_size);
   found.clear();
 
   EXPECT_TRUE(db.AddEntryFlags(GURL("http://blah/1"), 1,
@@ -127,10 +131,12 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   EXPECT_EQ(GURL("http://blah/2"), found[0].url);
   EXPECT_EQ(AppCacheEntry::EXPLICIT, found[0].flags);
   EXPECT_EQ(2, found[0].response_id);
+  EXPECT_EQ(200, found[0].response_size);
   EXPECT_EQ(2, found[1].cache_id);
   EXPECT_EQ(GURL("http://blah/3"), found[1].url);
   EXPECT_EQ(AppCacheEntry::MANIFEST, found[1].flags);
   EXPECT_EQ(3, found[1].response_id);
+  EXPECT_EQ(300, found[1].response_size);
   found.clear();
 
   EXPECT_TRUE(db.DeleteEntriesForCache(2));
@@ -151,14 +157,15 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   scoped_refptr<TestErrorDelegate> error_delegate(new TestErrorDelegate);
   db.db_->set_error_delegate(error_delegate);
 
-  const AppCacheDatabase::CacheRecord kZeroRecord = {0};
-  AppCacheDatabase::CacheRecord record = kZeroRecord;
+  const AppCacheDatabase::CacheRecord kZeroRecord;
+  AppCacheDatabase::CacheRecord record;
   EXPECT_FALSE(db.FindCache(1, &record));
 
   record.cache_id = 1;
   record.group_id = 1;
   record.online_wildcard = true;
   record.update_time = kZeroTimeTicks;
+  record.cache_size = 100;
   EXPECT_TRUE(db.InsertCache(&record));
   EXPECT_FALSE(db.InsertCache(&record));
 
@@ -168,6 +175,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   EXPECT_EQ(1, record.group_id);
   EXPECT_TRUE(record.online_wildcard);
   EXPECT_TRUE(kZeroTimeTicks == record.update_time);
+  EXPECT_EQ(100, record.cache_size);
 
   record = kZeroRecord;
   EXPECT_TRUE(db.FindCacheForGroup(1, &record));
@@ -175,6 +183,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   EXPECT_EQ(1, record.group_id);
   EXPECT_TRUE(record.online_wildcard);
   EXPECT_TRUE(kZeroTimeTicks == record.update_time);
+  EXPECT_EQ(100, record.cache_size);
 
   EXPECT_TRUE(db.DeleteCache(1));
   EXPECT_FALSE(db.FindCache(1, &record));
@@ -194,8 +203,8 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   const GURL kManifestUrl("http://blah/manifest");
   const GURL kOrigin(kManifestUrl.GetOrigin());
 
-  const AppCacheDatabase::GroupRecord kZeroRecord = {0, GURL(), GURL()};
-  AppCacheDatabase::GroupRecord record = kZeroRecord;
+  const AppCacheDatabase::GroupRecord kZeroRecord;
+  AppCacheDatabase::GroupRecord record;
   std::vector<AppCacheDatabase::GroupRecord> records;
 
   // Behavior with an empty table
@@ -305,9 +314,8 @@ TEST(AppCacheDatabaseTest, FallbackNameSpaceRecords) {
   const GURL kBarFallbackEntry("http://bar/entry");
   const GURL kBarOrigin(kBarNameSpace1.GetOrigin());
 
-  const AppCacheDatabase::FallbackNameSpaceRecord kZeroRecord =
-      { 0, GURL(), GURL(), GURL() };
-  AppCacheDatabase::FallbackNameSpaceRecord record = kZeroRecord;
+  const AppCacheDatabase::FallbackNameSpaceRecord kZeroRecord;
+  AppCacheDatabase::FallbackNameSpaceRecord record;
   std::vector<AppCacheDatabase::FallbackNameSpaceRecord> records;
 
   // Behavior with an empty table
@@ -401,8 +409,8 @@ TEST(AppCacheDatabaseTest, OnlineWhiteListRecords) {
   const GURL kFooNameSpace2("http://foo/namespace2");
   const GURL kBarNameSpace1("http://bar/namespace1");
 
-  const AppCacheDatabase::OnlineWhiteListRecord kZeroRecord = { 0, GURL() };
-  AppCacheDatabase::OnlineWhiteListRecord record = kZeroRecord;
+  const AppCacheDatabase::OnlineWhiteListRecord kZeroRecord;
+  AppCacheDatabase::OnlineWhiteListRecord record;
   std::vector<AppCacheDatabase::OnlineWhiteListRecord> records;
 
   // Behavior with an empty table
