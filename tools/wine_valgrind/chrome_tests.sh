@@ -252,6 +252,9 @@ init_runtime() {
     then
       export DISPLAY=":$VNC"
       vncserver -kill "$DISPLAY" || true
+      # VNC servers don't clean these up if they get a SIGKILL, and would then
+      # refuse to start because these files are there.
+      rm -f "/tmp/.X${VNC}-lock" "/tmp/.X11-unix/X${VNC}"
       vncserver "$DISPLAY" -ac -depth 24 -geometry 1024x768
     fi
     $dry_run rm -rf $WINEPREFIX
