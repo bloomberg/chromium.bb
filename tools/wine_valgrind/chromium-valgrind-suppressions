@@ -103,6 +103,34 @@
 
 }
 {
+   # Maybe a leak in _strtoi64() ?? StringToInt64() seems to be leak free.
+   ignore_strtio64_leak
+   Memcheck:Leak
+   fun:RtlAllocateHeap
+   ...
+   fun:StringToInt64
+   fun:net::HttpResponseHeaders::ParseStatusLine
+}
+{
+   # A leak in _wfopen_s() ?? ReadFileToString() behaves correctly.
+   ignore_wfopen_s_leak
+   Memcheck:Leak
+   fun:RtlAllocateHeap
+   ...
+   fun:_wfopen_s
+   fun:file_util::ReadFileToString
+   fun:FileReader::ReadFileOnBackgroundThread
+}
+{
+   # Leaking an 8 byte Clipboard object in the test code.
+   Memcheck:Leak
+   fun:RtlAllocateHeap
+   ...
+   fun:operator new
+   fun:TestViewsDelegate::GetClipboard
+   fun:views::NativeTextfieldWin::OnCopy
+}
+{
    wine_bug_20692_a
    Memcheck:Leak
    ...
@@ -242,6 +270,14 @@
    fun:operator new
    fun:browser_sync::BookmarkModelWorker::CallDoWorkFromModelSafeThreadAndWait
    fun:Syncer::SyncShare
+}
+{
+   bug_31644
+   Memcheck:Leak
+   ...
+   fun:operator new
+   fun:NewRunnableMethod<ExtensionsServiceBackend,void (__thiscall ExtensionsServiceBackend::*)(void)>
+   fun:ExtensionsService::ClearProvidersForTesting
 }
 {
    # TODO(thestig) investigate why this is happening
