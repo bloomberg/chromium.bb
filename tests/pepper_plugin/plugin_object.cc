@@ -210,7 +210,7 @@ NPClass plugin_class = {
 
 // Bitmap painting -------------------------------------------------------------
 
-// Ugly green gradient filled rectangle.
+// Ugly gradient filled rectangle.
 void DrawSampleBitmap(NPDeviceContext2D* context, int width, int height) {
   int stride = context->stride;
   unsigned char* buffer = reinterpret_cast<unsigned char*>(context->region);
@@ -219,14 +219,20 @@ void DrawSampleBitmap(NPDeviceContext2D* context, int width, int height) {
   if (0 == height || 0 == width)
     return;
 
+  static const float kVStep = 1.0 / static_cast<float>(height);
+  static const float kHStep = 1.0 / static_cast<float>(width);
+  static const float kAlphaStep = 1.0 / static_cast<float>(width + height);
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
-      int index = (i * stride + j) * kPixelStride;
-      // ARGB
-      buffer[index + 0] = 0xff / height * i;
-      buffer[index + 1] = 0x00;
-      buffer[index + 2] = 0xff;
-      buffer[index + 3] = 0x00;
+      int index = i * stride + j * kPixelStride;
+      float alpha = 1.0 - (i + j) * kAlphaStep;
+      float red = i * kVStep;
+      float green = j * kHStep;
+      // BGRA, premultiplied alpha.
+      buffer[index + 0] = 0x00;
+      buffer[index + 1] = static_cast<unsigned char>(green * alpha * 255);
+      buffer[index + 2] = static_cast<unsigned char>(red * alpha * 255);
+      buffer[index + 3] = static_cast<unsigned char>(alpha * 255);
     }
   }
 }
@@ -258,7 +264,6 @@ PluginObject::PluginObject(NPP npp)
   NPDeviceContext2D context;
   device2d_->initializeContext(npp_, &config, &context);
 
-#ifdef DCS
   DrawSampleBitmap(&context, 400, 400);
 
   // TODO(brettw) figure out why this cast is necessary, the functions seem to
@@ -266,7 +271,6 @@ PluginObject::PluginObject(NPP npp)
   NPDeviceFlushContextCallbackPtr callback =
       reinterpret_cast<NPDeviceFlushContextCallbackPtr>(&FlushCallback);
   device2d_->flushContext(npp_, &context, callback, NULL);
-#endif  // DCS
 }
 
 PluginObject::~PluginObject() {

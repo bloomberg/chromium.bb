@@ -17,11 +17,11 @@ This page embeds a NaCl module for testing Pepper.
 <table>
 <tr>
 <td valign="top" width="50%">
-  <object name="nacl_module"
+  <embed name="nacl_module"
          id="plugin"
          name="nacl_module"
          type="application/x-nacl-srpc"
-         data="pepper_plugin.nexe"
+         src="pepper_plugin.nexe"
          width="400"
          height="400" />
 </td>
@@ -38,7 +38,7 @@ This page embeds a NaCl module for testing Pepper.
 //<![CDATA[
 var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
                           document.getElementById("status"),
-                          10);
+                          1000);
 
 // we use a custom detector for whether a module is ready or not
 nacllib.numModulesReady = function(modules) {

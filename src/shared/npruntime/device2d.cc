@@ -47,7 +47,6 @@ static NPError InitializeContext(NPP instance,
                                  NPDeviceContext* context) {
   NPDeviceContext2D* context2d = reinterpret_cast<NPDeviceContext2D*>(context);
   int shm_desc = kInvalidDesc;
-  int sync_desc = kInvalidDesc;
   void* map_addr = MAP_FAILED;
   Device2DImpl* impl = NULL;
 
@@ -102,9 +101,6 @@ cleanup:
   }
   if (kInvalidDesc != shm_desc) {
     close(shm_desc);
-  }
-  if (kInvalidDesc != sync_desc) {
-    close(sync_desc);
   }
   delete impl;
   return NPERR_GENERIC_ERROR;

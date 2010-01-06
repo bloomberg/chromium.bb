@@ -98,7 +98,7 @@ NACL_SRPC_METHOD_ARRAY(NPModule::srpc_methods) = {
   { "NPN_Construct:CCCi:iCC", NPObjectStub::Construct },
   { "NPN_SetException:Cs:", NPObjectStub::SetException },
   { "Device2DInitialize:i:hiiiii", Device2DInitialize },
-  { "Device2DFlush:i:hiiiii", Device2DFlush },
+  { "Device2DFlush:i:iiiii", Device2DFlush },
   { NULL, NULL }
 };
 
@@ -349,6 +349,13 @@ NaClSrpcError NPModule::Device2DInitialize(NaClSrpcChannel* channel,
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
   NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
   UNREFERENCED_PARAMETER(channel);
+  // Initialize the return values in case of failure.
+  outputs[0]->u.hval = NULL;
+  outputs[1]->u.ival = -1;
+  outputs[2]->u.ival = -1;
+  outputs[3]->u.ival = -1;
+  outputs[4]->u.ival = -1;
+  outputs[5]->u.ival = -1;
 
   if (NULL == module->extensions_) {
     if (NPERR_NO_ERROR !=
@@ -357,18 +364,22 @@ NaClSrpcError NPModule::Device2DInitialize(NaClSrpcChannel* channel,
       // should always be taken except in Pepper-enabled browsers.
       return NACL_SRPC_RESULT_APP_ERROR;
     }
-    if (NULL != module->extensions_) {
+    if (NULL == module->extensions_) {
       return NACL_SRPC_RESULT_APP_ERROR;
     }
   }
   if (NULL == module->device2d_) {
     module->device2d_ =
         module->extensions_->acquireDevice(npp, NPPepper2DDevice);
-    if (NULL != module->device2d_) {
+    if (NULL == module->device2d_) {
       return NACL_SRPC_RESULT_APP_ERROR;
     }
   }
   if (NULL == module->context2d_) {
+    module->context2d_ = new(std::nothrow) NPDeviceContext2D;
+    if (NULL == module->context2d_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
     NPError retval =
         module->device2d_->initializeContext(npp, NULL, &module->context2d_);
     if (NPERR_NO_ERROR != retval) {
