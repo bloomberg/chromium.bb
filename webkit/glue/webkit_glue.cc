@@ -249,9 +249,11 @@ void DumpLeakedObject(const char* file, int line, const char* object, int count)
 
 void CheckForLeaks() {
 #ifndef NDEBUG
+#if 0
   int count = WebFrameImpl::liveObjectCount();
   if (count)
     DumpLeakedObject(__FILE__, __LINE__, "WebFrame", count);
+#endif
 #endif
 }
 
