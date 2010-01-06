@@ -123,6 +123,7 @@
 }
 {
    # Leaking an 8 byte Clipboard object in the test code.
+   ignore_get_clipboard
    Memcheck:Leak
    fun:RtlAllocateHeap
    ...
@@ -291,11 +292,14 @@
 }
 {
    # TODO(thestig) investigate why this is happening
+   # This is a bit flaky, but it happens with both
+   # FLAKY_FTPDirectoryListing_Test and FLAKY_FTPCacheLoginBoxCredentials_Test
    todo_net_unittest2
    Memcheck:Leak
    ...
    fun:net::TCPClientSocketWin::Read
    fun:net::FtpNetworkTransaction::DoCtrlRead
-   ...
-   fun:URLRequestTestFTP_FLAKY_FTPCacheLoginBoxCredentials_Test::TestBody
+   fun:net::FtpNetworkTransaction::DoLoop
+   fun:net::FtpNetworkTransaction::OnIOComplete
+   fun:DispatchToMethod<net::FtpNetworkTransaction,void (__thiscall net::FtpNetworkTransaction::*)(int),int;>
 }
