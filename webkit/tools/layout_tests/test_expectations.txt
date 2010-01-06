@@ -3158,7 +3158,5 @@ BUG31623 WIN: LayoutTests/http/tests/appcache/remove-cache.html = PASS TEXT TIME
 BUG31642 WIN MAC DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-30-t.svg = CRASH PASS
 BUG31642 LINUX DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE+TEXT CRASH
 
-// WebKit roll 52793 -> 52852
-BUG_ANTONM : LayoutTests/fast/repaint/block-no-inflow-children.html = MISSING
 // Needs a rebaseline
 BUG_ANTONM : LayoutTests/fast/repaint/float-new-in-block.html = FAIL PASS
