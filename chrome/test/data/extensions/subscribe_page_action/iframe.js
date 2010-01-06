@@ -68,18 +68,25 @@ function buildPreview(doc) {
 
     /* Grab the link URL. */
     var itemLink = item.getElementsByTagName('link');
-    var link = itemLink[0].childNodes[0];
-    if (link)
-      link = itemLink[0].childNodes[0].nodeValue;
-    else
-      link = itemLink[0].getAttribute('href');
+    var link = "";
+    if (itemLink.length > 0) {
+      link = itemLink[0].childNodes[0];
+      if (link)
+        link = itemLink[0].childNodes[0].nodeValue;
+      else
+        link = itemLink[0].getAttribute('href');
+    }
 
     var tr = document.createElement("tr");
     var td = document.createElement("td");
 
-    var anchor = document.createElement("a");
+    /* If we found a link we'll create an anchor element,
+    otherwise just use a bold headline for the title. */
+    var anchor = (link != "") ? document.createElement("a") :
+                                document.createElement("strong");
     anchor.id = "anchor_" + String(i);
-    anchor.href = link;
+    if (link != "")
+      anchor.href = link;
     anchor.appendChild(document.createTextNode(itemTitle));
     anchor.className = "item_title";
 

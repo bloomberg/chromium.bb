@@ -38,6 +38,7 @@ const std::wstring kValidFeed2 = L"files/feeds/feed2.xml";
 const std::wstring kValidFeed3 = L"files/feeds/feed3.xml";
 const std::wstring kValidFeed4 = L"files/feeds/feed4.xml";
 const std::wstring kValidFeed5 = L"files/feeds/feed5.xml";
+const std::wstring kValidFeedNoLinks = L"files/feeds/feed_nolinks.xml";
 const std::wstring kInvalidFeed1 = L"files/feeds/feed_invalid1.xml";
 const std::wstring kInvalidFeed2 = L"files/feeds/feed_invalid2.xml";
 const std::wstring kLocalization =
@@ -480,6 +481,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
                     "element 'anchor_0' not found",
                     "element 'desc_0' not found",
                     "Not a valid feed.");
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeedNoLinks) {
+  HTTPTestServer* server = StartHTTPServer();
+  // Valid feed but containing no links.
+  GetParsedFeedData(server, kValidFeedNoLinks, browser(),
+                    "Feed for 'MyFeedTitle'",
+                    "Title with no link",
+                    "Desc",
+                    "No error");
 }
 
 // Tests that message passing between extensions and tabs works.
