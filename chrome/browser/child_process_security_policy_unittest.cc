@@ -173,6 +173,14 @@ TEST_F(ChildProcessSecurityPolicyTest, ViewSource) {
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
                                 GURL("view-source:file:///etc/passwd")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
+  EXPECT_FALSE(p->CanRequestURL(
+      kRendererID, GURL("view-source:view-source:http://www.google.com/")));
+  EXPECT_FALSE(p->CanRequestURL(
+      kRendererID, GURL("view-source:print:http://www.google.com/")));
+  EXPECT_TRUE(p->CanRequestURL(
+      kRendererID, GURL("print:view-source:http://www.google.com/")));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID,
+                                GURL("print:print:http://www.google.com/")));
 
   p->GrantRequestURL(kRendererID, GURL("view-source:file:///etc/passwd"));
   // View source needs to be able to request the embedded scheme.

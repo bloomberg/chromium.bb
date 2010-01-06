@@ -302,8 +302,14 @@ bool ChildProcessSecurityPolicy::CanRequestURL(
     if (url.SchemeIs(chrome::kViewSourceScheme) ||
         url.SchemeIs(chrome::kPrintScheme)) {
       // View-source and print URL's are allowed if the renderer is permitted
-      // to request the embedded URL.
-      return CanRequestURL(renderer_id, GURL(url.path()));
+      // to request the embedded URL. Careful to avoid pointless recursion.
+      GURL child_url(url.path());
+      if (child_url.SchemeIs(chrome::kPrintScheme) ||
+          (child_url.SchemeIs(chrome::kViewSourceScheme) &&
+           url.SchemeIs(chrome::kViewSourceScheme)))
+          return false;
+
+      return CanRequestURL(renderer_id, child_url);
     }
 
     if (LowerCaseEqualsASCII(url.spec(), chrome::kAboutBlankURL))
