@@ -425,10 +425,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // desired bounds. If |compute_bounds_only| = FALSE, the bounds are set.
   gfx::Size LayoutItems(bool compute_bounds_only);
 
-  // Determines whether the sync error button should appear on the bookmarks
-  // bar.
-  bool ShouldShowSyncErrorButton();
-
   // Creates the sync error button and adds it as a child view.
   views::TextButton* CreateSyncErrorButton();
 

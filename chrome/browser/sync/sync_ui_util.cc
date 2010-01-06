@@ -160,6 +160,22 @@ MessageType GetStatus(ProfileSyncService* service) {
   return sync_ui_util::GetStatusInfo(service, NULL, NULL);
 }
 
+bool ShouldShowSyncErrorButton(ProfileSyncService* service) {
+  return service && service->HasSyncSetupCompleted() &&
+      (GetStatus(service) == sync_ui_util::SYNC_ERROR);
+}
+
+string16 GetSyncMenuLabel(ProfileSyncService* service) {
+  MessageType type = GetStatus(service);
+
+  if (type == sync_ui_util::SYNCED)
+    return l10n_util::GetStringUTF16(IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL);
+  else if (type == sync_ui_util::SYNC_ERROR)
+    return l10n_util::GetStringUTF16(IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL);
+  else
+    return l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+}
+
 void OpenSyncMyBookmarksDialog(
     Profile* profile, ProfileSyncService::SyncEventCodes code) {
   ProfileSyncService* service =

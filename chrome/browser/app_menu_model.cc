@@ -57,20 +57,8 @@ void AppMenuModel::Build() {
 
   AddSeparator();
   if (ProfileSyncService::IsSyncEnabled()) {
-    string16 label;
-    string16 link;
-    // TODO(akalin): use sync_ui_util::GetStatus instead.
-    sync_ui_util::MessageType type = sync_ui_util::GetStatusLabels(
-        browser_->profile()->GetOriginalProfile()->GetProfileSyncService(),
-        &label, &link);
-    if (type == sync_ui_util::SYNCED) {
-      label = l10n_util::GetStringUTF16(IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL);
-    } else if (type == sync_ui_util::SYNC_ERROR) {
-      label = l10n_util::GetStringUTF16(
-          IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL);
-    } else {
-      label = l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
-    }
+    string16 label = sync_ui_util::GetSyncMenuLabel(
+        browser_->profile()->GetOriginalProfile()->GetProfileSyncService());
     AddItem(IDC_SYNC_BOOKMARKS, label);
     AddSeparator();
   }

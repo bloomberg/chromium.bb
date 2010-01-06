@@ -699,15 +699,8 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
 void BrowserToolbarGtk::OnStateChanged() {
   DCHECK(sync_service_);
 
-  sync_ui_util::MessageType type = sync_ui_util::GetStatus(sync_service_);
-
-  // TODO(akalin): Refactor this logic into a function called GetSyncMenuLabel
-  // in sync_ui_util.h. And use the function in Windows/Mac code too.
-  int menu_label = type == sync_ui_util::SYNCED ?
-      IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL :
-      type == sync_ui_util::SYNC_ERROR ?
-      IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL :
-      IDS_SYNC_START_SYNC_BUTTON_LABEL;
+  std::string menu_label = UTF16ToUTF8(
+      sync_ui_util::GetSyncMenuLabel(sync_service_));
 
   gtk_container_foreach(GTK_CONTAINER(app_menu_->widget()), &SetSyncMenuLabel,
                         &menu_label);
@@ -720,9 +713,8 @@ void BrowserToolbarGtk::SetSyncMenuLabel(GtkWidget* widget, gpointer userdata) {
           g_object_get_data(G_OBJECT(widget), "menu-data"));
   if (data) {
     if (data->id == IDC_SYNC_BOOKMARKS) {
-      std::string label;
-      label = l10n_util::GetStringUTF8(*((int *)userdata));
-      label = gtk_util::ConvertAcceleratorsFromWindowsStyle(label);
+      std::string label = gtk_util::ConvertAcceleratorsFromWindowsStyle(
+          *reinterpret_cast<const std::string*>(userdata));
       GtkWidget *menu_label = gtk_bin_get_child(GTK_BIN(widget));
       gtk_label_set_label(GTK_LABEL(menu_label), label.c_str());
     }

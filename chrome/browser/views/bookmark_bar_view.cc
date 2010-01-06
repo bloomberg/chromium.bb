@@ -487,7 +487,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
 
   int sync_error_total_width = 0;
   gfx::Size sync_error_button_pref = sync_error_button_->GetPreferredSize();
-  if (ShouldShowSyncErrorButton())
+  if (sync_ui_util::ShouldShowSyncErrorButton(sync_service_))
     sync_error_total_width += kButtonPadding + sync_error_button_pref.width();
 
   gfx::Size other_bookmarked_pref =
@@ -1607,8 +1607,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 
   int sync_error_total_width = 0;
   gfx::Size sync_error_button_pref = sync_error_button_->GetPreferredSize();
-  const bool should_show_sync_error_button = ShouldShowSyncErrorButton();
-  if (should_show_sync_error_button) {
+  if (sync_ui_util::ShouldShowSyncErrorButton(sync_service_)) {
     sync_error_total_width += kButtonPadding + sync_error_button_pref.width();
   }
   const int max_x = width - other_bookmarked_pref.width() - kButtonPadding -
@@ -1681,7 +1680,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 
   // Set the real bounds of the sync error button only if it needs to appear on
   // the bookmarks bar.
-  if (should_show_sync_error_button) {
+  if (sync_ui_util::ShouldShowSyncErrorButton(sync_service_)) {
     x += kButtonPadding;
     if (!compute_bounds_only) {
       sync_error_button_->SetBounds(
@@ -1710,24 +1709,6 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     }
   }
   return prefsize;
-}
-
-// The sync state reported by the profile sync service determines whether or
-// not the re-login indicator button should be visible.
-bool BookmarkBarView::ShouldShowSyncErrorButton() {
-  bool show_sync_error_button(false);
-  if (sync_service_ && sync_service_->HasSyncSetupCompleted()) {
-    string16 status_text;
-    string16 link_text;
-    // TODO(akalin): use sync_ui_util::GetStatus instead.
-    sync_ui_util::MessageType sync_status;
-    sync_status = sync_ui_util::GetStatusLabels(
-        sync_service_, &status_text, &link_text);
-    if (sync_status == sync_ui_util::SYNC_ERROR) {
-      show_sync_error_button = true;
-    }
-  }
-  return show_sync_error_button;
 }
 
 views::TextButton* BookmarkBarView::CreateSyncErrorButton() {

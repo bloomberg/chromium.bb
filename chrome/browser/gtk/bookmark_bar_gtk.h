@@ -266,10 +266,6 @@ class BookmarkBarGtk : public AnimationDelegate,
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 
-  // Determines whether the sync error button should appear on the bookmarks
-  // bar.
-  bool ShouldShowSyncErrorButton();
-
   // Creates the sync error button and adds it as a child view.
   GtkWidget* CreateSyncErrorButton();
 

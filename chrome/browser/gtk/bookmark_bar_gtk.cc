@@ -311,7 +311,7 @@ void BookmarkBarGtk::Show(bool animate) {
       gdk_window_lower(event_box_->window);
   }
 
-  if (ShouldShowSyncErrorButton()) {
+  if (sync_ui_util::ShouldShowSyncErrorButton(sync_service_)) {
     gtk_widget_show(sync_error_button_);
   } else {
     gtk_widget_hide(sync_error_button_);
@@ -343,7 +343,7 @@ void BookmarkBarGtk::Hide(bool animate) {
 }
 
 void BookmarkBarGtk::OnStateChanged() {
-  if (ShouldShowSyncErrorButton()) {
+  if (sync_ui_util::ShouldShowSyncErrorButton(sync_service_)) {
     gtk_widget_show(sync_error_button_);
   } else {
     gtk_widget_hide(sync_error_button_);
@@ -1296,11 +1296,4 @@ void BookmarkBarGtk::PopupForButtonNextTo(GtkWidget* button,
   int shift = dir == GTK_MENU_DIR_PARENT ? -1 : 1;
   button_idx = (button_idx + shift + folder_list.size()) % folder_list.size();
   PopupForButton(folder_list[button_idx]);
-}
-
-// The sync state reported by the profile sync service determines whether or
-// not the re-login indicator button should be visible.
-bool BookmarkBarGtk::ShouldShowSyncErrorButton() {
-  return sync_service_ && sync_service_->HasSyncSetupCompleted() &&
-      (sync_ui_util::GetStatus(sync_service_) == sync_ui_util::SYNC_ERROR);
 }

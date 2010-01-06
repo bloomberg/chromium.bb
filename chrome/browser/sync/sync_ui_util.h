@@ -20,6 +20,9 @@ enum MessageType {
   SYNC_ERROR,  // A sync error (such as invalid credentials) has occurred.
 };
 
+// TODO(akalin): audit the use of ProfileSyncService* service below,
+// and use const ProfileSyncService& service where possible.
+
 // Create status and link labels for the current status labels and link text
 // by querying |service|.
 MessageType GetStatusLabels(ProfileSyncService* service,
@@ -27,6 +30,12 @@ MessageType GetStatusLabels(ProfileSyncService* service,
                             string16* link_label);
 
 MessageType GetStatus(ProfileSyncService* service);
+
+// Determines whether or not the sync error button should be visible.
+bool ShouldShowSyncErrorButton(ProfileSyncService* service);
+
+// Returns a string with the synchronization status.
+string16 GetSyncMenuLabel(ProfileSyncService* service);
 
 // Open the appropriate sync dialog for the given profile (which can be
 // incognito).  |code| should be one of the START_FROM_* codes.
