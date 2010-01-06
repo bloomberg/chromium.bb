@@ -430,7 +430,7 @@ void TestShell::SizeTo(int width, int height) {
 
 static void AlarmHandler(int signatl) {
   // If the alarm alarmed, kill the process since we have a really bad hang.
-  puts("#TEST_TIMED_OUT\n");
+  puts("\n#TEST_TIMED_OUT\n");
   puts("#EOF\n");
   fflush(stdout);
   TestShell::ShutdownTestShell();
