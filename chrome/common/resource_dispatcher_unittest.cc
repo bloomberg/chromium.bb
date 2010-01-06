@@ -159,8 +159,8 @@ class ResourceDispatcherTest : public testing::Test,
     request_info.load_flags = 0;
     request_info.requestor_pid = 0;
     request_info.request_type = ResourceType::SUB_RESOURCE;
-    request_info.appcache_host_id = 0;
-    request_info.routing_id = appcache::kNoHostId;
+    request_info.appcache_host_id = appcache::kNoHostId;
+    request_info.routing_id = 0;
 
     return dispatcher_->CreateBridge(request_info, -1, -1);
   }
