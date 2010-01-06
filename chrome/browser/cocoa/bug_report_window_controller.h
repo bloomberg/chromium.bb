@@ -100,7 +100,7 @@ class TabContents;
 @property (copy, nonatomic) NSString* pageTitle;
 @property (copy, nonatomic) NSString* pageURL;
 @property BOOL sendScreenshot;
-@property BOOL disableScreenshotCheckbox;
+@property BOOL disableScreenshotCheckbox;
 @property (readonly, nonatomic) NSArray* bugTypeList;
 
 @end
