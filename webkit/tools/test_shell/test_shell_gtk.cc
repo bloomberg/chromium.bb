@@ -181,114 +181,117 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
   // We have fontconfig parse a config file from our resources file. This
   // sets a number of aliases ("sans"->"Arial" etc), but doesn't include any
   // font directories.
-
-  // fontconfig only knows how to load font config configs from a file name, so
-  // we write to a temp file.
-  base::StringPiece font_config_xml;
-  g_resource_data_pack->GetStringPiece(IDR_LINUX_FONT_CONFIG, &font_config_xml);
-  FilePath fontconfig_path;
-  if (!file_util::CreateTemporaryFile(&fontconfig_path)) {
-    LOG(FATAL) << "failed to create temp font config file";
-  }
-  if (-1 == file_util::WriteFile(fontconfig_path,
-                                 font_config_xml.data(),
-                                 font_config_xml.length())) {
-    LOG(FATAL) << "failed to write temp font config file";
-  }
-
-  FcInit();
-
-  FcConfig* fontcfg = FcConfigCreate();
-  if (!FcConfigParseAndLoad(fontcfg, FilePathAsFcChar(fontconfig_path),
-                            true)) {
-    LOG(FATAL) << "Failed to parse fontconfig config file";
-  }
-  // We can delete the temp file after font config has parsed it.
-  file_util::Delete(fontconfig_path, false);
-
-  // This is the list of fonts that fontconfig will know about. It will try its
-  // best to match based only on the fonts here in. The paths are where these
-  // fonts are found on our Ubuntu boxes.
-  static const char *const fonts[] = {
-    "/usr/share/fonts/truetype/msttcorefonts/Arial.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Arial_Bold_Italic.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Arial_Italic.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS_Bold.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Courier_New.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold_Italic.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Courier_New_Italic.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Georgia.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Georgia_Bold.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Georgia_Bold_Italic.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Georgia_Italic.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Impact.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Bold.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Bold_Italic.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Italic.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold_Italic.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Italic.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Verdana.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold_Italic.ttf",
-    "/usr/share/fonts/truetype/msttcorefonts/Verdana_Italic.ttf",
-    "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_ta.ttf",
-    "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_pa.ttf",
-    "/usr/share/fonts/truetype/ttf-indic-fonts-core/MuktiNarrow.ttf",
-  };
-  for (size_t i = 0; i < arraysize(fonts); ++i) {
-    if (access(fonts[i], R_OK)) {
-      LOG(FATAL) << "You are missing " << fonts[i] << ". "
-                 << "Try installing msttcorefonts. Also see "
-                 << "http://code.google.com/p/chromium/wiki/"
-                 << "LinuxBuildInstructions";
+  if (layout_test_mode) {
+    // fontconfig only knows how to load font config configs from a
+    // file name, so we write to a temp file.
+    base::StringPiece font_config_xml;
+    g_resource_data_pack->GetStringPiece(IDR_LINUX_FONT_CONFIG,
+                                         &font_config_xml);
+    FilePath fontconfig_path;
+    if (!file_util::CreateTemporaryFile(&fontconfig_path)) {
+      LOG(FATAL) << "failed to create temp font config file";
     }
-    if (!FcConfigAppFontAddFile(fontcfg, (FcChar8 *) fonts[i]))
-      LOG(FATAL) << "Failed to load font " << fonts[i];
-  }
-
-  // We special case these fonts because they're only needed in a few layout tests.
-  static const char* const optional_fonts[] = {
-    "/usr/share/fonts/truetype/ttf-lucida/LucidaSansRegular.ttf",
-    "/usr/share/fonts/truetype/kochi/kochi-gothic.ttf",
-    "/usr/share/fonts/truetype/kochi/kochi-mincho.ttf",
-    "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf",
-  };
-  for (size_t i = 0; i < arraysize(optional_fonts); ++i) {
-    const char* font = optional_fonts[i];
-    if (access(font, R_OK) < 0) {
-      LOG(WARNING) << "You are missing " << font << ". "
-                   << "Without this, some layout tests will fail. "
-                   << "It's not a major problem.  See the build instructions "
-                   << "for more information on where to get all the data.";
-    } else {
-      if (!FcConfigAppFontAddFile(fontcfg, (FcChar8 *) font))
-        LOG(FATAL) << "Failed to load font " << font;
+    if (-1 == file_util::WriteFile(fontconfig_path,
+                                   font_config_xml.data(),
+                                   font_config_xml.length())) {
+      LOG(FATAL) << "failed to write temp font config file";
     }
-  }
 
-  // Also load the layout-test-specific "Ahem" font.
-  base::StringPiece ahem_font;
-  g_resource_data_pack->GetStringPiece(IDR_AHEM_FONT, &ahem_font);
-  g_ahem_path = new FilePath;
-  if (!file_util::CreateTemporaryFile(g_ahem_path)) {
-    LOG(FATAL) << "failed to create temp ahem font";
-  }
-  if (-1 == file_util::WriteFile(*g_ahem_path, ahem_font.data(),
-                                 ahem_font.length())) {
-    LOG(FATAL) << "failed to write temp ahem font";
-  }
-  if (!FcConfigAppFontAddFile(fontcfg, FilePathAsFcChar(*g_ahem_path))) {
-    LOG(FATAL) << "Failed to load font " << g_ahem_path->value().c_str();
-  }
+    FcInit();
 
-  if (!FcConfigSetCurrent(fontcfg))
-    LOG(FATAL) << "Failed to set the default font configuration";
+    FcConfig* fontcfg = FcConfigCreate();
+    if (!FcConfigParseAndLoad(fontcfg, FilePathAsFcChar(fontconfig_path),
+                              true)) {
+      LOG(FATAL) << "Failed to parse fontconfig config file";
+    }
+    // We can delete the temp file after font config has parsed it.
+    file_util::Delete(fontconfig_path, false);
+
+    // This is the list of fonts that fontconfig will know about. It
+    // will try its best to match based only on the fonts here in. The
+    // paths are where these fonts are found on our Ubuntu boxes.
+    static const char *const fonts[] = {
+      "/usr/share/fonts/truetype/msttcorefonts/Arial.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Arial_Bold_Italic.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Arial_Italic.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS_Bold.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Courier_New.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold_Italic.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Courier_New_Italic.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Georgia.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Georgia_Bold.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Georgia_Bold_Italic.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Georgia_Italic.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Impact.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Bold.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Bold_Italic.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Italic.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold_Italic.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Italic.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Verdana.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold_Italic.ttf",
+      "/usr/share/fonts/truetype/msttcorefonts/Verdana_Italic.ttf",
+      "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_ta.ttf",
+      "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_pa.ttf",
+      "/usr/share/fonts/truetype/ttf-indic-fonts-core/MuktiNarrow.ttf",
+    };
+    for (size_t i = 0; i < arraysize(fonts); ++i) {
+      if (access(fonts[i], R_OK)) {
+        LOG(FATAL) << "You are missing " << fonts[i] << ". "
+                   << "Try installing msttcorefonts. Also see "
+                   << "http://code.google.com/p/chromium/wiki/"
+                   << "LinuxBuildInstructions";
+      }
+      if (!FcConfigAppFontAddFile(fontcfg, (FcChar8 *) fonts[i]))
+        LOG(FATAL) << "Failed to load font " << fonts[i];
+    }
+
+    // We special case these fonts because they're only needed in a
+    // few layout tests.
+    static const char* const optional_fonts[] = {
+      "/usr/share/fonts/truetype/ttf-lucida/LucidaSansRegular.ttf",
+      "/usr/share/fonts/truetype/kochi/kochi-gothic.ttf",
+      "/usr/share/fonts/truetype/kochi/kochi-mincho.ttf",
+      "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf",
+    };
+    for (size_t i = 0; i < arraysize(optional_fonts); ++i) {
+      const char* font = optional_fonts[i];
+      if (access(font, R_OK) < 0) {
+        LOG(WARNING) << "You are missing " << font << ". "
+                     << "Without this, some layout tests will fail. "
+                     << "It's not a major problem.  See the build instructions "
+                     << "for more information on where to get all the data.";
+      } else {
+        if (!FcConfigAppFontAddFile(fontcfg, (FcChar8 *) font))
+          LOG(FATAL) << "Failed to load font " << font;
+      }
+    }
+
+    // Also load the layout-test-specific "Ahem" font.
+    base::StringPiece ahem_font;
+    g_resource_data_pack->GetStringPiece(IDR_AHEM_FONT, &ahem_font);
+    g_ahem_path = new FilePath;
+    if (!file_util::CreateTemporaryFile(g_ahem_path)) {
+      LOG(FATAL) << "failed to create temp ahem font";
+    }
+    if (-1 == file_util::WriteFile(*g_ahem_path, ahem_font.data(),
+                                   ahem_font.length())) {
+      LOG(FATAL) << "failed to write temp ahem font";
+    }
+    if (!FcConfigAppFontAddFile(fontcfg, FilePathAsFcChar(*g_ahem_path))) {
+      LOG(FATAL) << "Failed to load font " << g_ahem_path->value().c_str();
+    }
+
+    if (!FcConfigSetCurrent(fontcfg))
+      LOG(FATAL) << "Failed to set the default font configuration";
+  }
 
   // Install an signal handler so we clean up after ourselves.
   signal(SIGINT, TerminationSignalHandler);
