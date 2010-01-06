@@ -19,6 +19,7 @@ const wchar_t* kDescription = L"description";
 const wchar_t* kIcons = L"icons";
 const wchar_t* kJs = L"js";
 const wchar_t* kMatches = L"matches";
+const wchar_t* kMinimumChromeVersion = L"minimum_chrome_version";
 const wchar_t* kIncludeGlobs = L"include_globs";
 const wchar_t* kExcludeGlobs = L"exclude_globs";
 const wchar_t* kName = L"name";
@@ -67,6 +68,8 @@ const char* kPageActionTypePermanent = "permanent";
 // printf because we want to unit test them and scanf is hard to make
 // cross-platform.
 namespace extension_manifest_errors {
+const char* kChromeVersionTooLow =
+    "This extension requires * version * or greater.";
 const char* kInvalidAllFrames =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char* kInvalidBrowserAction =
@@ -80,7 +83,7 @@ const char* kInvalidContentScriptsList =
 const char* kInvalidCss =
     "Invalid value for 'content_scripts[*].css[*]'.";
 const char* kInvalidCssList =
-    "Required value 'content_scripts[*].css is invalid.";
+    "Required value 'content_scripts[*].css' is invalid.";
 const char* kInvalidDescription =
     "Invalid value for 'description'.";
 const char* kInvalidGlobList =
@@ -94,18 +97,20 @@ const char* kInvalidIconPath =
 const char* kInvalidJs =
     "Invalid value for 'content_scripts[*].js[*]'.";
 const char* kInvalidJsList =
-    "Required value 'content_scripts[*].js is invalid.";
+    "Required value 'content_scripts[*].js' is invalid.";
 const char* kInvalidKey =
     "Value 'key' is missing or invalid.";
 const char* kInvalidManifest =
     "Manifest file is invalid.";
 const char* kInvalidMatchCount =
-    "Invalid value for 'content_scripts[*].matches. There must be at least one "
-    "match specified.";
+    "Invalid value for 'content_scripts[*].matches'. There must be at least"
+    "one match specified.";
 const char* kInvalidMatch =
     "Invalid value for 'content_scripts[*].matches[*]'.";
 const char* kInvalidMatches =
     "Required value 'content_scripts[*].matches' is missing or invalid.";
+const char* kInvalidMinimumChromeVersion =
+    "Invalid value for 'minimum_chrome_version'.";
 const char* kInvalidName =
     "Required value 'name' is missing or invalid.";
 const char* kInvalidPageAction =
