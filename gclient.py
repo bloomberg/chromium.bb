@@ -1140,7 +1140,7 @@ def Main(argv):
   option_parser.add_option("", "--spec", default=None,
                            help=("(config only) create a gclient file "
                                  "containing the provided string"))
-  option_parser.add_option("", "--verbose", action="store_true", default=False,
+  option_parser.add_option("-v", "--verbose", action="count", default=0,
                            help="produce additional output for diagnostics")
   option_parser.add_option("", "--manually_grab_svn_rev", action="store_true",
                            default=False,
@@ -1174,7 +1174,7 @@ def Main(argv):
     option_parser.print_help()
     return 0
 
-  if options.verbose:
+  if options.verbose > 1:
     logging.basicConfig(level=logging.DEBUG)
 
   # Files used for configuration and state saving.
