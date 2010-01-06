@@ -70,9 +70,6 @@ TEST(DatabaseTrackerTest, TestIt) {
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DatabaseTracker> tracker(new DatabaseTracker(temp_dir.path()));
 
-  // Get the default quota for all origins.
-  const int64 kDefaultQuota = tracker->GetOriginQuota(EmptyString16());
-
   // Add two observers.
   TestObserver observer1;
   TestObserver observer2;
@@ -89,24 +86,43 @@ TEST(DatabaseTrackerTest, TestIt) {
   const string16 kDB3 = ASCIIToUTF16("db3");
   const string16 kDescription = ASCIIToUTF16("database_description");
 
+  // Get the quota for kOrigin1 and kOrigin2
+  DatabaseTracker::CachedOriginInfo* origin1_info =
+      tracker->GetCachedOriginInfo(kOrigin1);
+  DatabaseTracker::CachedOriginInfo* origin2_info =
+      tracker->GetCachedOriginInfo(kOrigin1);
+  EXPECT_TRUE(origin1_info);
+  EXPECT_TRUE(origin2_info);
+  int64 origin1_quota = origin1_info->Quota();
+  int64 origin2_quota = origin2_info->Quota();
+  EXPECT_EQ(origin1_quota, tracker->GetOriginSpaceAvailable(kOrigin1));
+  EXPECT_EQ(origin2_quota, tracker->GetOriginSpaceAvailable(kOrigin2));
+
+  // Set a new quota for kOrigin1
+  origin1_quota *= 2;
+  tracker->SetOriginQuota(kOrigin1, origin1_quota);
+  origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
+  EXPECT_TRUE(origin1_info);
+  EXPECT_EQ(origin1_quota, origin1_info->Quota());
+
   tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
                           &database_size, &space_available);
   EXPECT_EQ(0, database_size);
-  EXPECT_EQ(kDefaultQuota, space_available);
+  EXPECT_EQ(origin1_quota, space_available);
   tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
                           &database_size, &space_available);
   EXPECT_EQ(0, database_size);
-  EXPECT_EQ(kDefaultQuota, space_available);
+  EXPECT_EQ(origin2_quota, space_available);
   tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, 0,
                           &database_size, &space_available);
   EXPECT_EQ(0, database_size);
-  EXPECT_EQ(kDefaultQuota, space_available);
+  EXPECT_EQ(origin1_quota, space_available);
 
   // Tell the tracker that a database has changed.
   // Even though nothing has changed, the observers should be notified.
   tracker->DatabaseModified(kOrigin1, kDB1);
-  CheckNotificationReceived(&observer1, kOrigin1, kDB1, 0, kDefaultQuota);
-  CheckNotificationReceived(&observer2, kOrigin1, kDB1, 0, kDefaultQuota);
+  CheckNotificationReceived(&observer1, kOrigin1, kDB1, 0, origin1_quota);
+  CheckNotificationReceived(&observer2, kOrigin1, kDB1, 0, origin1_quota);
 
   // Write some data to each file and check that the listeners are
   // called with the appropriate values.
@@ -121,28 +137,38 @@ TEST(DatabaseTrackerTest, TestIt) {
   EXPECT_EQ(4, file_util::WriteFile(
       tracker->GetFullDBFilePath(kOrigin1, kDB3), "aaaa", 4));
   tracker->DatabaseModified(kOrigin1, kDB1);
-  CheckNotificationReceived(&observer1, kOrigin1, kDB1, 1, kDefaultQuota - 1);
-  CheckNotificationReceived(&observer2, kOrigin1, kDB1, 1, kDefaultQuota - 1);
+  CheckNotificationReceived(&observer1, kOrigin1, kDB1, 1, origin1_quota - 1);
+  CheckNotificationReceived(&observer2, kOrigin1, kDB1, 1, origin1_quota - 1);
   tracker->DatabaseModified(kOrigin2, kDB2);
-  CheckNotificationReceived(&observer1, kOrigin2, kDB2, 2, kDefaultQuota - 2);
-  CheckNotificationReceived(&observer2, kOrigin2, kDB2, 2, kDefaultQuota - 2);
+  CheckNotificationReceived(&observer1, kOrigin2, kDB2, 2, origin2_quota - 2);
+  CheckNotificationReceived(&observer2, kOrigin2, kDB2, 2, origin2_quota - 2);
   tracker->DatabaseModified(kOrigin1, kDB3);
-  CheckNotificationReceived(&observer1, kOrigin1, kDB3, 4, kDefaultQuota - 5);
-  CheckNotificationReceived(&observer2, kOrigin1, kDB3, 4, kDefaultQuota - 5);
+  CheckNotificationReceived(&observer1, kOrigin1, kDB3, 4, origin1_quota - 5);
+  CheckNotificationReceived(&observer2, kOrigin1, kDB3, 4, origin1_quota - 5);
+
+  // Make sure the available space for kOrigin1 and kOrigin2 changed accordingly
+  EXPECT_EQ(origin1_quota - 5, tracker->GetOriginSpaceAvailable(kOrigin1));
+  EXPECT_EQ(origin2_quota - 2, tracker->GetOriginSpaceAvailable(kOrigin2));
+
+  // Close all databases
+  tracker->DatabaseClosed(kOrigin1, kDB1);
+  tracker->DatabaseClosed(kOrigin2, kDB2);
+  tracker->DatabaseClosed(kOrigin1, kDB3);
 
   // Open an existing database and check the reported size
   tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
                           &database_size, &space_available);
   EXPECT_EQ(1, database_size);
-  EXPECT_EQ(kDefaultQuota - 5, space_available);
+  EXPECT_EQ(origin1_quota - 5, space_available);
 
   // Make sure that the observers are notified even if
   // the size of the database hasn't changed.
   EXPECT_EQ(1, file_util::WriteFile(
       tracker->GetFullDBFilePath(kOrigin1, kDB1), "b", 1));
   tracker->DatabaseModified(kOrigin1, kDB1);
-  CheckNotificationReceived(&observer1, kOrigin1, kDB1, 1, kDefaultQuota - 5);
-  CheckNotificationReceived(&observer2, kOrigin1, kDB1, 1, kDefaultQuota - 5);
+  CheckNotificationReceived(&observer1, kOrigin1, kDB1, 1, origin1_quota - 5);
+  CheckNotificationReceived(&observer2, kOrigin1, kDB1, 1, origin1_quota - 5);
+  tracker->DatabaseClosed(kOrigin1, kDB1);
 
   // Remove an observer; this should clear all caches.
   tracker->RemoveObserver(&observer2);
@@ -156,8 +182,9 @@ TEST(DatabaseTrackerTest, TestIt) {
   EXPECT_EQ(6, file_util::WriteFile(
       tracker->GetFullDBFilePath(kOrigin1, kDB3), "dddddd", 6));
   tracker->DatabaseModified(kOrigin1, kDB1);
-  CheckNotificationReceived(&observer1, kOrigin1, kDB1, 5, kDefaultQuota - 11);
+  CheckNotificationReceived(&observer1, kOrigin1, kDB1, 5, origin1_quota - 11);
   EXPECT_FALSE(observer2.DidReceiveNewNotification());
+  EXPECT_EQ(origin1_quota - 11, tracker->GetOriginSpaceAvailable(kOrigin1));
 
   // Close the tracker database and clear all caches.
   // Then make sure that DatabaseOpened() still returns the correct result.
@@ -165,16 +192,70 @@ TEST(DatabaseTrackerTest, TestIt) {
   tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
                           &database_size, &space_available);
   EXPECT_EQ(5, database_size);
-  EXPECT_EQ(kDefaultQuota - 11, space_available);
+  EXPECT_EQ(origin1_quota - 11, space_available);
 
   // Close the tracker database and clear all caches. Then make sure that
   // DatabaseModified() still calls the observers with correct values.
   tracker->CloseTrackerDatabaseAndClearCaches();
   tracker->DatabaseModified(kOrigin1, kDB3);
-  CheckNotificationReceived(&observer1, kOrigin1, kDB3, 6, kDefaultQuota - 11);
+  CheckNotificationReceived(&observer1, kOrigin1, kDB3, 6, origin1_quota - 11);
+  tracker->DatabaseClosed(kOrigin1, kDB1);
 
-  // Clean up.
+  // Remove all observers.
   tracker->RemoveObserver(&observer1);
+
+  // Trying to delete a database in use should fail
+  tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, 0,
+                          &database_size, &space_available);
+  EXPECT_FALSE(tracker->DeleteDatabase(kOrigin1, kDB3));
+  origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
+  EXPECT_TRUE(origin1_info);
+  EXPECT_EQ(6, origin1_info->GetDatabaseSize(kDB3));
+  tracker->DatabaseClosed(kOrigin1, kDB3);
+
+  // Delete a database and make sure the space used by that origin is updated
+  EXPECT_TRUE(tracker->DeleteDatabase(kOrigin1, kDB3));
+  origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
+  EXPECT_TRUE(origin1_info);
+  EXPECT_EQ(origin1_quota - 5, tracker->GetOriginSpaceAvailable(kOrigin1));
+  EXPECT_EQ(5, origin1_info->GetDatabaseSize(kDB1));
+  EXPECT_EQ(0, origin1_info->GetDatabaseSize(kDB3));
+
+  // Get all data for all origins
+  std::vector<OriginInfo> origins_info;
+  EXPECT_TRUE(tracker->GetAllOriginsInfo(&origins_info));
+  EXPECT_EQ(size_t(2), origins_info.size());
+  EXPECT_EQ(kOrigin1, origins_info[0].GetOrigin());
+  EXPECT_EQ(5, origins_info[0].TotalSize());
+  EXPECT_EQ(origin1_quota, origins_info[0].Quota());
+  EXPECT_EQ(5, origins_info[0].GetDatabaseSize(kDB1));
+  EXPECT_EQ(0, origins_info[0].GetDatabaseSize(kDB3));
+
+  EXPECT_EQ(kOrigin2, origins_info[1].GetOrigin());
+  EXPECT_EQ(2, origins_info[1].TotalSize());
+  EXPECT_EQ(origin2_quota, origins_info[1].Quota());
+
+  // Trying to delete an origin with databases in use should fail
+  tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
+                          &database_size, &space_available);
+  EXPECT_FALSE(tracker->DeleteOrigin(kOrigin1));
+  origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
+  EXPECT_TRUE(origin1_info);
+  EXPECT_EQ(5, origin1_info->GetDatabaseSize(kDB1));
+  tracker->DatabaseClosed(kOrigin1, kDB1);
+
+  // Delete an origin that doesn't have any database in use
+  EXPECT_TRUE(tracker->DeleteOrigin(kOrigin1));
+  origins_info.clear();
+  EXPECT_TRUE(tracker->GetAllOriginsInfo(&origins_info));
+  EXPECT_EQ(size_t(1), origins_info.size());
+  EXPECT_EQ(kOrigin2, origins_info[0].GetOrigin());
+
+  origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
+  EXPECT_TRUE(origin1_info);
+  EXPECT_EQ(origin1_quota, origin1_info->Quota());
+  EXPECT_EQ(0, origin1_info->TotalSize());
+  EXPECT_EQ(origin1_quota, tracker->GetOriginSpaceAvailable(kOrigin1));
 }
 
 }  // namespace webkit_database

@@ -67,6 +67,12 @@ void DatabaseDispatcherHost::AddObserver() {
 
 void DatabaseDispatcherHost::RemoveObserver() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  // If the renderer process died without closing all databases,
+  // then we need to manually close those connections
+  db_tracker_->CloseDatabases(database_connections_);
+  database_connections_.RemoveAllConnections();
+
   db_tracker_->RemoveObserver(this);
 }
 
@@ -305,7 +311,7 @@ void DatabaseDispatcherHost::DatabaseOpened(const string16& origin_identifier,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   int64 database_size = 0;
   int64 space_available = 0;
-  AddAccessedOrigin(origin_identifier);
+  database_connections_.AddConnection(origin_identifier, database_name);
   db_tracker_->DatabaseOpened(origin_identifier, database_name, description,
                               estimated_size, &database_size, &space_available);
   ChromeThread::PostTask(
@@ -331,7 +337,8 @@ void DatabaseDispatcherHost::OnDatabaseModified(
 void DatabaseDispatcherHost::DatabaseModified(const string16& origin_identifier,
                                               const string16& database_name) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  if (!HasAccessedOrigin(origin_identifier)) {
+  if (!database_connections_.IsDatabaseOpened(
+          origin_identifier, database_name)) {
     ReceivedBadMessage(ViewHostMsg_DatabaseModified::ID);
     return;
   }
@@ -352,12 +359,14 @@ void DatabaseDispatcherHost::OnDatabaseClosed(const string16& origin_identifier,
 void DatabaseDispatcherHost::DatabaseClosed(const string16& origin_identifier,
                                             const string16& database_name) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  if (!HasAccessedOrigin(origin_identifier)) {
+  if (!database_connections_.IsDatabaseOpened(
+          origin_identifier, database_name)) {
     ReceivedBadMessage(ViewHostMsg_DatabaseClosed::ID);
     return;
   }
 
   db_tracker_->DatabaseClosed(origin_identifier, database_name);
+  database_connections_.RemoveConnection(origin_identifier, database_name);
 }
 
 void DatabaseDispatcherHost::OnDatabaseSizeChanged(
@@ -366,7 +375,7 @@ void DatabaseDispatcherHost::OnDatabaseSizeChanged(
     int64 database_size,
     int64 space_available) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  if (HasAccessedOrigin(origin_identifier)) {
+  if (database_connections_.IsOriginUsed(origin_identifier)) {
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(this,
@@ -375,16 +384,4 @@ void DatabaseDispatcherHost::OnDatabaseSizeChanged(
                               origin_identifier, database_name,
                               database_size, space_available)));
   }
-}
-
-void DatabaseDispatcherHost::AddAccessedOrigin(
-    const string16& origin_identifier) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  accessed_origins_.insert(origin_identifier);
-}
-
-bool DatabaseDispatcherHost::HasAccessedOrigin(
-    const string16& origin_identifier) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  return (accessed_origins_.find(origin_identifier) != accessed_origins_.end());
 }

@@ -38,8 +38,10 @@ class DatabasesTable {
   bool UpdateDatabaseDetails(const DatabaseDetails& details);
   bool DeleteDatabaseDetails(const string16& origin_identifier,
                              const string16& database_name);
+  bool GetAllOrigins(std::vector<string16>* origins);
   bool GetAllDatabaseDetailsForOrigin(const string16& origin_identifier,
                                       std::vector<DatabaseDetails>* details);
+  bool DeleteOrigin(const string16& origin_identifier);
  private:
   sql::Connection* db_;
 };

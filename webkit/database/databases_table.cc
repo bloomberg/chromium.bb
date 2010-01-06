@@ -112,12 +112,24 @@ bool DatabasesTable::DeleteDatabaseDetails(const string16& origin_identifier,
   return false;
 }
 
+bool DatabasesTable::GetAllOrigins(std::vector<string16>* origins) {
+  sql::Statement statement(db_->GetCachedStatement(
+      SQL_FROM_HERE, "SELECT DISTINCT origin FROM Databases ORDER BY origin"));
+  if (statement.is_valid()) {
+    while (statement.Step())
+      origins->push_back(UTF8ToUTF16(statement.ColumnString(0)));
+    return statement.Succeeded();
+  }
+
+  return false;
+}
+
 bool DatabasesTable::GetAllDatabaseDetailsForOrigin(
     const string16& origin_identifier,
     std::vector<DatabaseDetails>* details_vector) {
   sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "SELECT name, description, estimated_size "
-                     "FROM Databases WHERE origin = ? ORDER BY origin, name"));
+                     "FROM Databases WHERE origin = ? ORDER BY name"));
   if (statement.is_valid() &&
       statement.BindString(0, UTF16ToUTF8(origin_identifier))) {
     while (statement.Step()) {
@@ -129,6 +141,17 @@ bool DatabasesTable::GetAllDatabaseDetailsForOrigin(
       details_vector->push_back(details);
     }
     return statement.Succeeded();
+  }
+
+  return false;
+}
+
+bool DatabasesTable::DeleteOrigin(const string16& origin_identifier) {
+  sql::Statement delete_statement(db_->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM Databases WHERE origin = ?"));
+  if (delete_statement.is_valid() &&
+      delete_statement.BindString(0, UTF16ToUTF8(origin_identifier))) {
+    return (delete_statement.Run() && db_->GetLastChangeCount());
   }
 
   return false;

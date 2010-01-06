@@ -4,12 +4,11 @@
 
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/databases_table.h"
 
-namespace webkit_database {
+namespace {
 
 class TestErrorDelegate : public sql::ErrorDelegate {
  public:
@@ -19,6 +18,10 @@ class TestErrorDelegate : public sql::ErrorDelegate {
     return error;
   }
 };
+
+}  // namespace
+
+namespace webkit_database {
 
 static void CheckDetailsAreEqual(const DatabaseDetails& d1,
                                  const DatabaseDetails& d2) {
@@ -36,7 +39,6 @@ static bool DatabasesTableIsEmpty(sql::Connection* db) {
 
 TEST(DatabasesTableTest, TestIt) {
   // Initialize the 'Databases' table.
-  ScopedTempDir temp_dir;
   sql::Connection db;
 
   // Set an error delegate that will make all operations return false on error.
@@ -44,8 +46,7 @@ TEST(DatabasesTableTest, TestIt) {
   db.set_error_delegate(error_delegate);
 
   // Initialize the temp dir and the 'Databases' table.
-  EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  EXPECT_TRUE(db.Open(temp_dir.path().Append(FILE_PATH_LITERAL("tracker.db"))));
+  EXPECT_TRUE(db.OpenInMemory());
   DatabasesTable databases_table(&db);
   EXPECT_TRUE(databases_table.Init());
 
@@ -115,6 +116,23 @@ TEST(DatabasesTableTest, TestIt) {
   EXPECT_EQ(size_t(2), details_out_origin1.size());
   CheckDetailsAreEqual(details_in1, details_out_origin1[0]);
   CheckDetailsAreEqual(details_in2, details_out_origin1[1]);
+
+  // Get the list of all origins: should be "origin1" and "origin2".
+  std::vector<string16> origins_out;
+  EXPECT_TRUE(databases_table.GetAllOrigins(&origins_out));
+  EXPECT_EQ(size_t(2), origins_out.size());
+  EXPECT_EQ(details_in1.origin_identifier, origins_out[0]);
+  EXPECT_EQ(details_in3.origin_identifier, origins_out[1]);
+
+  // Delete an origin and check that it's no longer in the table.
+  origins_out.clear();
+  EXPECT_TRUE(databases_table.DeleteOrigin(details_in3.origin_identifier));
+  EXPECT_TRUE(databases_table.GetAllOrigins(&origins_out));
+  EXPECT_EQ(size_t(1), origins_out.size());
+  EXPECT_EQ(details_in1.origin_identifier, origins_out[0]);
+
+  // Deleting an origin that doesn't have any record in this table should fail.
+  EXPECT_FALSE(databases_table.DeleteOrigin(ASCIIToUTF16("unknown_origin")));
 
   // Delete the details for 'db1' and check that they're no longer there.
   EXPECT_TRUE(databases_table.DeleteDatabaseDetails(

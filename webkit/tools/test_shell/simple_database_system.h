@@ -13,6 +13,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabaseObserver.h"
+#include "webkit/database/database_connections.h"
 #include "webkit/database/database_tracker.h"
 
 class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
@@ -73,6 +74,8 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
 
   Lock file_names_lock_;
   base::hash_map<string16, FilePath> file_names_;
+
+  webkit_database::DatabaseConnections database_connections_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_DATABASE_SYSTEM_H_
