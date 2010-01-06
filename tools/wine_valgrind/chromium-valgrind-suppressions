@@ -112,6 +112,16 @@
    fun:net::HttpResponseHeaders::ParseStatusLine
 }
 {
+   # A leak in _vsnprintf_s?
+   ignore_vsnprintf_s
+   Memcheck:Leak
+   fun:RtlAllocateHeap
+   ...
+   fun:_vsnprintf_s
+   fun:base::vsnprintf
+   fun:vsnprintfT
+}
+{
    # A leak in _wfopen_s() ?? ReadFileToString() behaves correctly.
    ignore_wfopen_s_leak
    Memcheck:Leak
