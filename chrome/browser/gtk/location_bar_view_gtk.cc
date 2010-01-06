@@ -72,6 +72,9 @@ const GdkColor kEvTextColor = GDK_COLOR_RGB(0x00, 0x96, 0x14);  // Green.
 const GdkColor kKeywordBackgroundColor = GDK_COLOR_RGB(0xf0, 0xf4, 0xfa);
 const GdkColor kKeywordBorderColor = GDK_COLOR_RGB(0xcb, 0xde, 0xf7);
 
+// Use weak gray for showing search and keyword hint text.
+const GdkColor kHintTextColor = GDK_COLOR_RGB(0x75, 0x75, 0x75);
+
 // Size of the rounding of the "Search site for:" box.
 const int kCornerSize = 3;
 
@@ -93,6 +96,25 @@ std::wstring GetKeywordName(Profile* profile,
 void CountVisibleWidgets(GtkWidget* widget, gpointer count) {
   if (GTK_WIDGET_VISIBLE(widget))
     *static_cast<int*>(count) += 1;
+}
+
+// Build a short string to use in keyword-search when the field isn't
+// very big.
+// TODO(suzhe): Copied from views/location_bar_view.cc. Try to share.
+std::wstring CalculateMinString(const std::wstring& description) {
+  // Chop at the first '.' or whitespace.
+  const size_t dot_index = description.find(L'.');
+  const size_t ws_index = description.find_first_of(kWhitespaceWide);
+  size_t chop_index = std::min(dot_index, ws_index);
+  std::wstring min_string;
+  if (chop_index == std::wstring::npos) {
+    // No dot or whitespace, truncate to at most 3 chars.
+    min_string = l10n_util::TruncateString(description, 3);
+  } else {
+    min_string = description.substr(0, chop_index);
+  }
+  l10n_util::AdjustStringForLocaleDirection(min_string, &min_string);
+  return min_string;
 }
 
 }  // namespace
@@ -117,11 +139,13 @@ LocationBarViewGtk::LocationBarViewGtk(
       security_warning_icon_image_(NULL),
       info_label_(NULL),
       tab_to_search_box_(NULL),
-      tab_to_search_label_(NULL),
+      tab_to_search_full_label_(NULL),
+      tab_to_search_partial_label_(NULL),
       tab_to_search_hint_(NULL),
       tab_to_search_hint_leading_label_(NULL),
       tab_to_search_hint_icon_(NULL),
       tab_to_search_hint_trailing_label_(NULL),
+      type_to_search_hint_(NULL),
       profile_(NULL),
       command_updater_(command_updater),
       toolbar_model_(toolbar_model),
@@ -131,7 +155,11 @@ LocationBarViewGtk::LocationBarViewGtk(
       transition_(PageTransition::TYPED),
       first_run_bubble_(this),
       popup_window_mode_(false),
-      theme_provider_(NULL) {
+      theme_provider_(NULL),
+      entry_box_width_(0),
+      show_selected_keyword_(false),
+      show_keyword_hint_(false),
+      show_search_hint_(false) {
 }
 
 LocationBarViewGtk::~LocationBarViewGtk() {
@@ -179,17 +207,44 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   g_signal_connect(hbox_.get(), "expose-event",
                    G_CALLBACK(&HandleExposeThunk), this);
 
+  // Put |tab_to_search_box_|, |location_entry_|, |tab_to_search_hint_| and
+  // |type_to_search_hint_| into a sub hbox, so that we can make this part
+  // horizontally shrinkable without affecting other elements in the location
+  // bar.
+  GtkWidget* entry_box = gtk_hbox_new(FALSE, kInnerPadding);
+  gtk_widget_show(entry_box);
+  gtk_widget_set_size_request(entry_box, 0, -1);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), entry_box, TRUE, TRUE, 0);
+
+  // We need to adjust the visibility of the search hint widgets according to
+  // the horizontal space in the |entry_box|.
+  g_signal_connect(entry_box, "size-allocate",
+                   G_CALLBACK(&OnEntryBoxSizeAllocateThunk), this);
+
   // Tab to search (the keyword box on the left hand side).
-  tab_to_search_label_ = gtk_label_new(NULL);
+  // Put full and partial labels into a GtkFixed, so that we can show one of
+  // them and hide the other easily.
+  tab_to_search_full_label_ = gtk_label_new(NULL);
+  tab_to_search_partial_label_ = gtk_label_new(NULL);
+  GtkWidget* tab_to_search_label_fixed = gtk_fixed_new();
+  gtk_fixed_put(GTK_FIXED(tab_to_search_label_fixed),
+                tab_to_search_full_label_, 0, 0);
+  gtk_fixed_put(GTK_FIXED(tab_to_search_label_fixed),
+                tab_to_search_partial_label_, 0, 0);
 
   // This creates a box around the keyword text with a border, background color,
   // and padding around the text.
   tab_to_search_box_ = gtk_util::CreateGtkBorderBin(
-      tab_to_search_label_, NULL, 1, 1, 2, 2);
+      tab_to_search_label_fixed, NULL, 1, 1, 2, 2);
   gtk_widget_set_name(tab_to_search_box_, "chrome-tab-to-search-box");
   gtk_util::ActAsRoundedWindow(tab_to_search_box_, kBorderColor, kCornerSize,
                                gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), tab_to_search_box_, FALSE, FALSE, 0);
+  // Show all children widgets of |tab_to_search_box_| initially, except
+  // |tab_to_search_partial_label_|.
+  gtk_widget_show_all(tab_to_search_box_);
+  gtk_widget_hide(tab_to_search_box_);
+  gtk_widget_hide(tab_to_search_partial_label_);
+  gtk_box_pack_start(GTK_BOX(entry_box), tab_to_search_box_, FALSE, FALSE, 0);
 
   GtkWidget* align = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   // TODO(erg): Like in BrowserToolbarGtk, this used to have a code path on
@@ -209,15 +264,17 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                               0, 0);
   }
   gtk_container_add(GTK_CONTAINER(align), location_entry_->widget());
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), align, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(entry_box), align, TRUE, TRUE, 0);
 
   // Tab to search notification (the hint on the right hand side).
   tab_to_search_hint_ = gtk_hbox_new(FALSE, 0);
   gtk_widget_set_name(tab_to_search_hint_, "chrome-tab-to-search-hint");
   tab_to_search_hint_leading_label_ = gtk_label_new(NULL);
+  gtk_widget_set_sensitive(tab_to_search_hint_leading_label_, FALSE);
   tab_to_search_hint_icon_ = gtk_image_new_from_pixbuf(
       rb.GetPixbufNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB));
   tab_to_search_hint_trailing_label_ = gtk_label_new(NULL);
+  gtk_widget_set_sensitive(tab_to_search_hint_trailing_label_, FALSE);
   gtk_box_pack_start(GTK_BOX(tab_to_search_hint_),
                      tab_to_search_hint_leading_label_,
                      FALSE, FALSE, 0);
@@ -227,9 +284,18 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_box_pack_start(GTK_BOX(tab_to_search_hint_),
                      tab_to_search_hint_trailing_label_,
                      FALSE, FALSE, 0);
+  // Show all children widgets of |tab_to_search_hint_| initially.
+  gtk_widget_show_all(tab_to_search_hint_);
+  gtk_widget_hide(tab_to_search_hint_);
   // tab_to_search_hint_ gets hidden initially in OnChanged.  Hiding it here
   // doesn't work, someone is probably calling show_all on our parent box.
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), tab_to_search_hint_, FALSE, FALSE, 4);
+  gtk_box_pack_end(GTK_BOX(entry_box), tab_to_search_hint_, FALSE, FALSE, 0);
+
+  // Type to search hint is on the right hand side.
+  type_to_search_hint_ =
+      gtk_label_new(l10n_util::GetStringUTF8(IDS_OMNIBOX_EMPTY_TEXT).c_str());
+  gtk_widget_set_sensitive(type_to_search_hint_, FALSE);
+  gtk_box_pack_end(GTK_BOX(entry_box), type_to_search_hint_, FALSE, FALSE, 0);
 
   // Pack info_label_ and security icons in hbox.  We hide/show them
   // by SetSecurityIcon() and SetInfoText().
@@ -326,22 +392,18 @@ void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
 void LocationBarViewGtk::OnChanged() {
   const std::wstring keyword(location_entry_->model()->keyword());
   const bool is_keyword_hint = location_entry_->model()->is_keyword_hint();
-  const bool show_selected_keyword = !keyword.empty() && !is_keyword_hint;
-  const bool show_keyword_hint = !keyword.empty() && is_keyword_hint;
+  show_selected_keyword_ = !keyword.empty() && !is_keyword_hint;
+  show_keyword_hint_ = !keyword.empty() && is_keyword_hint;
+  show_search_hint_ = location_entry_->model()->show_search_hint();
+  DCHECK(keyword.empty() || !show_search_hint_);
 
-  if (show_selected_keyword) {
+  if (show_selected_keyword_)
     SetKeywordLabel(keyword);
-    gtk_widget_show_all(tab_to_search_box_);
-  } else {
-    gtk_widget_hide_all(tab_to_search_box_);
-  }
 
-  if (show_keyword_hint) {
+  if (show_keyword_hint_)
     SetKeywordHintLabel(keyword);
-    gtk_widget_show_all(tab_to_search_hint_);
-  } else {
-    gtk_widget_hide_all(tab_to_search_hint_);
-  }
+
+  AdjustChildrenVisibility();
 }
 
 void LocationBarViewGtk::OnInputInProgress(bool in_progress) {
@@ -512,20 +574,24 @@ void LocationBarViewGtk::Observe(NotificationType type,
         BrowserThemeProvider::COLOR_FRAME);
     gtk_util::SetRoundedWindowBorderColor(tab_to_search_box_, border_color);
 
-    gtk_util::SetLabelColor(tab_to_search_label_, NULL);
+    gtk_util::SetLabelColor(tab_to_search_full_label_, NULL);
+    gtk_util::SetLabelColor(tab_to_search_partial_label_, NULL);
     gtk_util::SetLabelColor(tab_to_search_hint_leading_label_, NULL);
     gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_, NULL);
+    gtk_util::SetLabelColor(type_to_search_hint_, NULL);
   } else {
     gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL,
                          &kKeywordBackgroundColor);
     gtk_util::SetRoundedWindowBorderColor(tab_to_search_box_,
                                           kKeywordBorderColor);
 
-    gtk_util::SetLabelColor(tab_to_search_label_, &gfx::kGdkBlack);
+    gtk_util::SetLabelColor(tab_to_search_full_label_, &gfx::kGdkBlack);
+    gtk_util::SetLabelColor(tab_to_search_partial_label_, &gfx::kGdkBlack);
     gtk_util::SetLabelColor(tab_to_search_hint_leading_label_,
-                            &gfx::kGdkBlack);
+                            &kHintTextColor);
     gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_,
-                            &gfx::kGdkBlack);
+                            &kHintTextColor);
+    gtk_util::SetLabelColor(type_to_search_hint_, &kHintTextColor);
   }
 }
 
@@ -621,12 +687,14 @@ void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
     return;
 
   const std::wstring short_name = GetKeywordName(profile_, keyword);
-  // TODO(deanm): Windows does some measuring of the text here and truncates
-  // it if it's too long?
-  std::wstring full_name(l10n_util::GetStringF(IDS_OMNIBOX_KEYWORD_TEXT,
-                                               short_name));
-  gtk_label_set_text(GTK_LABEL(tab_to_search_label_),
+  std::wstring full_name(l10n_util::GetStringF(
+      IDS_OMNIBOX_KEYWORD_TEXT, short_name));
+  std::wstring partial_name(l10n_util::GetStringF(
+      IDS_OMNIBOX_KEYWORD_TEXT, CalculateMinString(short_name)));
+  gtk_label_set_text(GTK_LABEL(tab_to_search_full_label_),
                      WideToUTF8(full_name).c_str());
+  gtk_label_set_text(GTK_LABEL(tab_to_search_partial_label_),
+                     WideToUTF8(partial_name).c_str());
 }
 
 void LocationBarViewGtk::SetKeywordHintLabel(const std::wstring& keyword) {
@@ -695,6 +763,89 @@ gboolean LocationBarViewGtk::OnSecurityIconPressed(
   }
   tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
   return true;
+}
+
+void LocationBarViewGtk::OnEntryBoxSizeAllocate(GtkAllocation* allocation) {
+  if (entry_box_width_ != allocation->width) {
+    entry_box_width_ = allocation->width;
+    AdjustChildrenVisibility();
+  }
+}
+
+void LocationBarViewGtk::AdjustChildrenVisibility() {
+  int text_width = location_entry_->TextWidth();
+  int available_width = entry_box_width_ - text_width - kInnerPadding;
+
+  // Only one of |tab_to_search_box_|, |tab_to_search_hint_| and
+  // |type_to_search_hint_| can be visible at the same time.
+  if (!show_selected_keyword_ && GTK_WIDGET_VISIBLE(tab_to_search_box_)) {
+    gtk_widget_hide(tab_to_search_box_);
+  } else if (!show_keyword_hint_ && GTK_WIDGET_VISIBLE(tab_to_search_hint_)) {
+    gtk_widget_hide(tab_to_search_hint_);
+    location_entry_->set_enable_tab_to_search(false);
+  } else if (!show_search_hint_ && GTK_WIDGET_VISIBLE(type_to_search_hint_)) {
+    gtk_widget_hide(type_to_search_hint_);
+  }
+
+  if (!show_selected_keyword_ && !show_keyword_hint_ && !show_search_hint_)
+    return;
+
+  if (show_selected_keyword_) {
+    GtkRequisition box, full_label, partial_label;
+    gtk_widget_size_request(tab_to_search_box_, &box);
+    gtk_widget_size_request(tab_to_search_full_label_, &full_label);
+    gtk_widget_size_request(tab_to_search_partial_label_, &partial_label);
+    int full_partial_width_diff = full_label.width - partial_label.width;
+    int full_box_width;
+    int partial_box_width;
+    if (GTK_WIDGET_VISIBLE(tab_to_search_full_label_)) {
+      full_box_width = box.width;
+      partial_box_width = full_box_width - full_partial_width_diff;
+    } else {
+      partial_box_width = box.width;
+      full_box_width = partial_box_width + full_partial_width_diff;
+    }
+
+    if (partial_box_width >= entry_box_width_ - kInnerPadding) {
+      gtk_widget_hide(tab_to_search_box_);
+    } else if (full_box_width >= available_width) {
+      gtk_widget_hide(tab_to_search_full_label_);
+      gtk_widget_show(tab_to_search_partial_label_);
+      gtk_widget_show(tab_to_search_box_);
+    } else if (full_box_width < available_width) {
+      gtk_widget_hide(tab_to_search_partial_label_);
+      gtk_widget_show(tab_to_search_full_label_);
+      gtk_widget_show(tab_to_search_box_);
+    }
+  } else if (show_keyword_hint_) {
+    GtkRequisition leading, icon, trailing;
+    gtk_widget_size_request(tab_to_search_hint_leading_label_, &leading);
+    gtk_widget_size_request(tab_to_search_hint_icon_, &icon);
+    gtk_widget_size_request(tab_to_search_hint_trailing_label_, &trailing);
+    int full_width = leading.width + icon.width + trailing.width;
+
+    if (icon.width >= entry_box_width_ - kInnerPadding) {
+      gtk_widget_hide(tab_to_search_hint_);
+      location_entry_->set_enable_tab_to_search(false);
+    } else if (full_width >= available_width) {
+      gtk_widget_hide(tab_to_search_hint_leading_label_);
+      gtk_widget_hide(tab_to_search_hint_trailing_label_);
+      gtk_widget_show(tab_to_search_hint_);
+      location_entry_->set_enable_tab_to_search(true);
+    } else if (full_width < available_width) {
+      gtk_widget_show(tab_to_search_hint_leading_label_);
+      gtk_widget_show(tab_to_search_hint_trailing_label_);
+      gtk_widget_show(tab_to_search_hint_);
+      location_entry_->set_enable_tab_to_search(true);
+    }
+  } else if (show_search_hint_) {
+    GtkRequisition requisition;
+    gtk_widget_size_request(type_to_search_hint_, &requisition);
+    if (requisition.width >= available_width)
+      gtk_widget_hide(type_to_search_hint_);
+    else if (requisition.width < available_width)
+      gtk_widget_show(type_to_search_hint_);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

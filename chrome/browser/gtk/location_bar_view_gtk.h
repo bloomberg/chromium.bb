@@ -216,6 +216,20 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   void ShowFirstRunBubbleInternal(bool use_OEM_bubble);
 
+  static void OnEntryBoxSizeAllocateThunk(GtkWidget* widget,
+                                          GtkAllocation* allocation,
+                                          gpointer userdata) {
+    reinterpret_cast<LocationBarViewGtk*>(userdata)->
+        OnEntryBoxSizeAllocate(allocation);
+  }
+  void OnEntryBoxSizeAllocate(GtkAllocation* allocation);
+
+  // Show or hide |tab_to_search_box_|, |tab_to_search_hint_| and
+  // |type_to_search_hint_| according to the value of |show_selected_keyword_|,
+  // |show_keyword_hint_|, |show_search_hint_| and the available horizontal
+  // space in the location bar.
+  void AdjustChildrenVisibility();
+
   // The outermost widget we want to be hosted.
   OwnedWidgetGtk hbox_;
 
@@ -232,13 +246,17 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // Area on the left shown when in tab to search mode.
   GtkWidget* tab_to_search_box_;
-  GtkWidget* tab_to_search_label_;
+  GtkWidget* tab_to_search_full_label_;
+  GtkWidget* tab_to_search_partial_label_;
 
   // Hint to user that they can tab-to-search by hitting tab.
   GtkWidget* tab_to_search_hint_;
   GtkWidget* tab_to_search_hint_leading_label_;
   GtkWidget* tab_to_search_hint_icon_;
   GtkWidget* tab_to_search_hint_trailing_label_;
+
+  // Hint to user that the inputted text is not a keyword or url.
+  GtkWidget* type_to_search_hint_;
 
   scoped_ptr<AutocompleteEditViewGtk> location_entry_;
 
@@ -272,6 +290,19 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkThemeProvider* theme_provider_;
 
   NotificationRegistrar registrar_;
+
+  // Width of the hbox that holds |tab_to_search_box_|, |location_entry_| and
+  // |tab_to_search_hint_|.
+  int entry_box_width_;
+
+  // Indicate if |tab_to_search_box_| should be shown.
+  bool show_selected_keyword_;
+
+  // Indicate if |tab_to_search_hint_| should be shown.
+  bool show_keyword_hint_;
+
+  // Indicate if |type_to_search_hint_| should be shown.
+  bool show_search_hint_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
 };

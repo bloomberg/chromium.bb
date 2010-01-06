@@ -138,7 +138,8 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       enter_was_pressed_(false),
       tab_was_pressed_(false),
       paste_clipboard_requested_(false),
-      enter_was_inserted_(false) {
+      enter_was_inserted_(false),
+      enable_tab_to_search_(true) {
   model_->SetPopupModel(popup_view_->GetModel());
 }
 
@@ -1066,8 +1067,8 @@ void AutocompleteEditViewGtk::HandleBackSpace() {
 
 void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget) {
   // Trigger Tab to search behavior only when Tab key is pressed.
-  if (tab_was_pressed_ && model_->is_keyword_hint() &&
-      !model_->keyword().empty()) {
+  if (tab_was_pressed_ && enable_tab_to_search_ &&
+      model_->is_keyword_hint() && !model_->keyword().empty()) {
     model_->AcceptKeyword();
 
     // If Tab to search behavior is triggered, then stop the signal emission to

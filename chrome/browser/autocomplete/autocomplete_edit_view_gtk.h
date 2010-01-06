@@ -119,6 +119,13 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   void SetBaseColor();
 
+  // Used by LocationBarViewGtk to inform AutocompleteEditViewGtk if the tab to
+  // search should be enabled or not. See the comment of |enable_tab_to_search_|
+  // for details.
+  void set_enable_tab_to_search(bool enable) {
+    enable_tab_to_search_ = enable;
+  }
+
  private:
   // TODO(deanm): Would be nice to insulate the thunkers better, etc.
   static void HandleBeginUserActionThunk(GtkTextBuffer* unused, gpointer self) {
@@ -443,6 +450,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // insecure schemes). If the range is size one or less, no strikethrough
   // is needed.
   CharRange strikethrough_;
+
+  // Indicate if the tab to search should be enabled or not. It's true by
+  // default and will only be set to false if the location bar view is not able
+  // to show the tab to search hint.
+  bool enable_tab_to_search_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
 };
