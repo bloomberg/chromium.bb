@@ -83,7 +83,6 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
   // Plugins that we know don't work at all.
   const char* blacklisted_plugin_mimes[] = {
-    "application/x-director",             // Crashes during initialization.
     "application/x-googlegears",          // Safari-specific.
     "application/x-id-quakelive",         // Crashes on load.
     "application/x-vnd.movenetworks.qm",  // Crashes on Snow Leopard.
