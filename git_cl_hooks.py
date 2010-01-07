@@ -9,6 +9,7 @@ import sys
 
 import breakpad
 
+import gcl
 import presubmit_support
 import scm
 import watchlists
@@ -39,9 +40,12 @@ class ChangeOptions:
     if not m:
       raise Exception("Could not parse log message: %s" % log)
     name = m.group(1)
-    description = m.group(2)
     files = scm.GIT.CaptureStatus([root], upstream_branch)
     issue = Backquote(['git', 'cl', 'status', '--field=id'])
+    if issue == "None":
+      description = m.group(2)
+    else:
+      description = gcl.GetIssueDescription(int(issue))
     patchset = None
     self.change = presubmit_support.GitChange(name, description, absroot, files,
                                               issue, patchset)
