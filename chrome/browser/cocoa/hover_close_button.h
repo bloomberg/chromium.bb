@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+
 #include "base/scoped_nsobject.h"
 
 // The standard close button for our Mac UI which is the "x"
@@ -20,4 +21,11 @@
 // Sets up the button's images, tracking areas, and accessibility info
 // when instantiated via initWithFrame or awakeFromNib.
 - (void)commonInit;
+
+// Checks to see whether the mouse is in the button's bounds and update
+// the image in case it gets out of sync.  This occurs when you close a
+// tab so the tab to the left of it takes its place, and drag the button
+// without moving the mouse before you press the button down.
+- (void)checkImageState;
+
 @end

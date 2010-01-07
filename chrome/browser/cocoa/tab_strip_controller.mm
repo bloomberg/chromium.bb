@@ -343,6 +343,16 @@ private:
             userInfo:nil]);
     [tabStripView_ addTrackingArea:trackingArea_.get()];
 
+    // Check to see if the mouse is currently in our bounds so we can
+    // enable the tracking areas.  Otherwise we won't get hover states
+    // or tab gradients if we load the window up under the mouse.
+    NSPoint mouseLoc = [[view window] mouseLocationOutsideOfEventStream];
+    mouseLoc = [view convertPointFromBase:mouseLoc];
+    if (NSPointInRect(mouseLoc, [view bounds])) {
+      [self setTabTrackingAreasEnabled:YES];
+      mouseInside_ = YES;
+    }
+
     // Set accessibility descriptions. http://openradar.appspot.com/7496255
     NSString* description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_NEWTAB);
     [[newTabButton_ cell]

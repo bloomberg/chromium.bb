@@ -52,6 +52,16 @@ const NSString* kHoverImageString = @"close_bar_h.pdf";
   [self setImage:nsimage_cache::ImageNamed(kNormalImageString)];
 }
 
+- (void)mouseDown:(NSEvent*)theEvent {
+  [super mouseDown:theEvent];
+  // We need to check the image state after the mouseDown event loop finishes.
+  // It's possible that we won't get a mouseExited event if the button was
+  // moved under the mouse during tab resize, instead of the mouse moving over
+  // the button.
+  // http://crbug.com/31279
+  [self checkImageState];
+}
+
 - (void)setTrackingEnabled:(BOOL)enabled {
   if (enabled) {
     closeTrackingArea_.reset(
@@ -61,6 +71,12 @@ const NSString* kHoverImageString = @"close_bar_h.pdf";
                                        owner:self
                                     userInfo:nil]);
     [self addTrackingArea:closeTrackingArea_.get()];
+
+    // If you have a separate window that overlaps the close button, and you
+    // move the mouse directly over the close button without entering another
+    // part of the tab strip, we don't get any mouseEntered event since the
+    // tracking area was disabled when we entered.
+    [self checkImageState];
   } else {
     if (closeTrackingArea_.get()) {
       [self removeTrackingArea:closeTrackingArea_.get()];
@@ -71,11 +87,15 @@ const NSString* kHoverImageString = @"close_bar_h.pdf";
 
 - (void)updateTrackingAreas {
   [super updateTrackingAreas];
+  [self checkImageState];
+}
+
+- (void)checkImageState {
   if (closeTrackingArea_.get()) {
     // Update the close buttons if the tab has moved.
     NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
     mouseLoc = [self convertPointFromBase:mouseLoc];
-    NSString* name = NSPointInRect(mouseLoc, [self frame]) ?
+    NSString* name = NSPointInRect(mouseLoc, [self bounds]) ?
         kHoverImageString : kNormalImageString;
     NSImage* newImage = nsimage_cache::ImageNamed(name);
     NSImage* buttonImage = [self image];
@@ -84,4 +104,5 @@ const NSString* kHoverImageString = @"close_bar_h.pdf";
     }
   }
 }
+
 @end
