@@ -13,7 +13,11 @@
 #include <sys/socket.h>
 #include "base/message_loop.h"
 #include "net/base/net_errors.h"
+#if defined(USE_SYSTEM_LIBEVENT)
+#include <event.h>
+#else
 #include "third_party/libevent/event.h"
+#endif
 #include "base/message_pump_libevent.h"
 #endif
 

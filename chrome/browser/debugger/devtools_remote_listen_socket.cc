@@ -18,7 +18,11 @@
 #include "base/message_loop.h"
 #include "base/message_pump_libevent.h"
 #include "net/base/net_errors.h"
+#if defined(USE_SYSTEM_LIBEVENT)
+#include <event.h>
+#else
 #include "third_party/libevent/event.h"
+#endif
 #endif
 
 #include "base/eintr_wrapper.h"
