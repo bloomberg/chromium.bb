@@ -159,12 +159,10 @@ class ExtensionsStartupTest : public ExtensionStartupTestBase {
   }
 };
 
-#if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
   WaitForServicesToStart(3, true);
   TestInjection(true, true);
 }
-#endif  // defined(OS_WIN)
 
 // ExtensionsLoadTest
 // Ensures that we can startup the browser with --load-extension and see them

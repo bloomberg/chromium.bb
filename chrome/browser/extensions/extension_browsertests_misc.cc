@@ -20,7 +20,6 @@
 #include "chrome/browser/views/extensions/extension_shelf.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #endif
-
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/notification_service.h"
@@ -223,12 +222,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
 // keep these from working
 #define MAYBE_PageAction DISABLED_PageAction
 #define MAYBE_UnloadPageAction DISABLED_UnloadPageAction
-#define MAYBE_TitleLocalizationBrowserAction DISABLED_TitleLocalizationBrowserAction
 #define MAYBE_TitleLocalizationPageAction DISABLED_TitleLocalizationPageAction
 #else
 #define MAYBE_PageAction PageAction
 #define MAYBE_UnloadPageAction UnloadPageAction
-#define MAYBE_TitleLocalizationBrowserAction TitleLocalizationBrowserAction
 #define MAYBE_TitleLocalizationPageAction TitleLocalizationPageAction
 #endif
 
@@ -280,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_UnloadPageAction) {
 
 // Tests that tooltips of a browser action icon can be specified using UTF8.
 // See http://crbug.com/25349.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_TitleLocalizationBrowserAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized"));
   ASSERT_TRUE(LoadExtension(extension_path));
