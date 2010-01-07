@@ -26,7 +26,8 @@ bool DropdownBarHost::disable_animations_during_testing_ = false;
 DropdownBarHost::DropdownBarHost(BrowserView* browser_view)
     : browser_view_(browser_view),
       animation_offset_(0),
-      esc_accel_target_registered_(false) {
+      esc_accel_target_registered_(false),
+      is_visible_(false) {
 }
 
 void DropdownBarHost::Init(DropdownBarView* view) {
@@ -58,15 +59,20 @@ DropdownBarHost::~DropdownBarHost() {
   focus_tracker_.reset(NULL);
 }
 
-void DropdownBarHost::Show() {
+void DropdownBarHost::Show(bool animate) {
   // Stores the currently focused view, and tracks focus changes so that we can
   // restore focus when the dropdown widget is closed.
   focus_tracker_.reset(new views::ExternalFocusTracker(view_, focus_manager_));
 
-  if (disable_animations_during_testing_) {
-    animation_->Reset(1);
-    AnimationProgressed(animation_.get());
+  if (!animate || disable_animations_during_testing_) {
+    if (!is_visible_) {
+      // Don't re-start the animation.
+      is_visible_ = true;
+      animation_->Reset(1);
+      AnimationProgressed(animation_.get());
+    }
   } else {
+    is_visible_ = true;
     animation_->Reset();
     animation_->Show();
   }
@@ -81,10 +87,15 @@ bool DropdownBarHost::IsAnimating() const {
 }
 
 void DropdownBarHost::Hide(bool animate) {
+  if (!IsVisible()) {
+    return;
+  }
   if (animate && !disable_animations_during_testing_) {
     animation_->Reset(1.0);
     animation_->Hide();
   } else {
+    StopAnimation();
+    is_visible_ = false;
     host_->Hide();
   }
 }
@@ -94,7 +105,7 @@ void DropdownBarHost::StopAnimation() {
 }
 
 bool DropdownBarHost::IsVisible() const {
-  return host_->IsVisible();
+  return is_visible_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,6 +160,7 @@ void DropdownBarHost::AnimationEnded(const Animation* animation) {
   if (!animation_->IsShowing()) {
     // Animation has finished closing.
     host_->Hide();
+    is_visible_ = false;
   } else {
     // Animation has finished opening.
   }
