@@ -621,8 +621,9 @@ class SVN(object):
     try:
       os.chdir(root)
       diff = "".join(filter(None,
-                            [SVN.DiffItem(RelativePath(f, root, revision),
-                                          full_move=full_move)
+                            [SVN.DiffItem(RelativePath(f, root),
+                                          full_move=full_move,
+                                          revision=revision)
                              for f in filenames]))
     finally:
       os.chdir(previous_cwd)
