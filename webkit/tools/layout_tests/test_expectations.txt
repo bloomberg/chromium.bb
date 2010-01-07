@@ -3185,3 +3185,6 @@ BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/text/text-text-03-b.svg = IMAGE
 BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/text/text-text-04-t.svg = IMAGE
 BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-text-07-t.svg = IMAGE
 BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-text-08-b.svg = IMAGE
+
+// WebKit Roll 52930:52943
+BUG_DGLAZKOV : LayoutTests/fast/css/css3-space-in-nth-and-lang.html = MISSING
