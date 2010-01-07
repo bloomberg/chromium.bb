@@ -437,8 +437,18 @@ bool FlipSession::IsStreamActive(flip::FlipStreamId stream_id) const {
 }
 
 LoadState FlipSession::GetLoadState() const {
-  // TODO(mbelshe): needs more work
-  return LOAD_STATE_CONNECTING;
+  // NOTE: The application only queries the LoadState via the
+  //       FlipNetworkTransaction, and details are only needed when
+  //       we're in the process of connecting.
+
+  // If we're connecting, defer to the connection to give us the actual
+  // LoadState.
+  if (state_ == CONNECTING)
+    return connection_->GetLoadState();
+
+  // Just report that we're idle since the session could be doing
+  // many things concurrently.
+  return LOAD_STATE_IDLE;
 }
 
 void FlipSession::OnTCPConnect(int result) {
