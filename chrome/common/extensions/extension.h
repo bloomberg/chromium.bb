@@ -73,12 +73,10 @@ class Extension {
   static const char* kTabPermission;
   static const char* kBookmarkPermission;
   static const char* kNotificationPermission;
+  static const char* kExperimentalPermission;
 
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;
-
-  // Experimental extension APIs are guarded by the following flag.
-  static const char* kExperimentalName;
 
   struct PrivacyBlacklistInfo {
     FilePath path;  // Path to the plain-text blacklist.

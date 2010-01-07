@@ -61,15 +61,15 @@ static void ConvertHexadecimalToIDAlphabet(std::string* id) {
 // Returns true if the given string is an API permission (see kPermissionNames).
 static bool IsAPIPermission(const std::string& str) {
   for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
-    if (str == Extension::kPermissionNames[i])
+    if (str == Extension::kPermissionNames[i]) {
+      if (str == Extension::kExperimentalPermission &&
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableExperimentalExtensionApis)) {
+        return false;
+      }
       return true;
+    }
   }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis) &&
-      str == Extension::kExperimentalName)
-    return true;
-
   return false;
 }
 
@@ -116,16 +116,16 @@ const int Extension::kBrowserActionIconMaxSize = 19;
 const char* Extension::kTabPermission = "tabs";
 const char* Extension::kBookmarkPermission = "bookmarks";
 const char* Extension::kNotificationPermission = "notifications";
+const char* Extension::kExperimentalPermission = "experimental";
 
 const char* Extension::kPermissionNames[] = {
   Extension::kTabPermission,
   Extension::kBookmarkPermission,
-  Extension::kNotificationPermission
+  Extension::kNotificationPermission,
+  Extension::kExperimentalPermission
 };
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);
-
-const char* Extension::kExperimentalName = "experimental";
 
 Extension::~Extension() {
 }

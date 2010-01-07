@@ -1,0 +1,33 @@
+<script>
+// All of these tests should pass, since this extension has requested all of the
+// permissions.
+
+var pass = chrome.test.callbackPass;
+
+chrome.test.runTests([
+  function history() {
+    try {
+      var query = { 'search': '', 'maxResults': 1 };
+      chrome.experimental.history.search(query, pass(function(results) {}));
+    } catch (e) {
+      chrome.test.fail();
+    }
+  },
+
+  function bookmarks() {
+    try {
+      chrome.bookmarks.get("1", pass(function(results) {}));
+    } catch (e) {
+      chrome.test.fail();
+    }
+  },
+
+  function tabs() {
+    try {
+      chrome.tabs.getSelected(null, pass(function(results) {}));
+    } catch (e) {
+      chrome.test.fail();
+    }
+  }
+]);
+</script>

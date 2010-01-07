@@ -1114,6 +1114,7 @@
         'browser/extensions/incognito_noscript_apitest.cc',
         'browser/extensions/isolated_world_apitest.cc',
         'browser/extensions/page_action_apitest.cc',
+        'browser/extensions/permissions_apitest.cc',
         'browser/extensions/stubs_apitest.cc',
         'browser/gtk/bookmark_manager_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',

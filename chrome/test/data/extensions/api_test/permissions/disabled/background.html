@@ -1,0 +1,37 @@
+<script>
+// All of these tests should fail, since this extension has requested no
+// permissions.
+
+chrome.test.runTests([
+  function history() {
+    try {
+      var query = { 'search': '', 'maxResults': 1 };
+      chrome.experimental.history.search(query, function(results) {
+        chrome.test.fail();
+      });
+    } catch (e) {
+      chrome.test.succeed();
+    }
+  },
+
+  function bookmarks() {
+    try {
+      chrome.bookmarks.get("1", function(results) {
+        chrome.test.fail();
+      });
+    } catch (e) {
+      chrome.test.succeed();
+    }
+  },
+
+  function tabs() {
+    try {
+      chrome.tabs.getSelected(null, function(results) {
+        chrome.test.fail();
+      });
+    } catch (e) {
+      chrome.test.succeed();
+    }
+  }
+]);
+</script>
