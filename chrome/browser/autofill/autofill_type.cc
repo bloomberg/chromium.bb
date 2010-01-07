@@ -39,7 +39,7 @@ AutoFillType::AutoFillTypeDefinition kAutoFillTypeDefinitions[] = {
 
   { ADDRESS_HOME_LINE1, AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_LINE1, "Home Address Line 1" },
   { ADDRESS_HOME_LINE2, AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_LINE2, "Home Address Line 2" },
-  { ADDRESS_HOME_APPT_NUM, AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_APPT_NUM, "Home Address Apartment Number" },
+  { ADDRESS_HOME_APT_NUM, AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_APT_NUM, "Home Address Apartment Number" },
   { ADDRESS_HOME_CITY, AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_CITY,  "Home Address City" },
   { ADDRESS_HOME_STATE, AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_STATE, "Home Address State" },
   { ADDRESS_HOME_ZIP, AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_ZIP, "Home Address Zip Code" },
@@ -47,7 +47,7 @@ AutoFillType::AutoFillTypeDefinition kAutoFillTypeDefinitions[] = {
 
   { ADDRESS_BILLING_LINE1, AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_LINE1, "Billing Address Line 1" },
   { ADDRESS_BILLING_LINE2, AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_LINE2, "Billing Address Line 2" },
-  { ADDRESS_BILLING_APPT_NUM, AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_APPT_NUM, "Billing Address Apartment Number" },
+  { ADDRESS_BILLING_APT_NUM, AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_APT_NUM, "Billing Address Apartment Number" },
   { ADDRESS_BILLING_CITY, AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_CITY,  "Billing Address City" },
   { ADDRESS_BILLING_STATE, AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_STATE, "Billing Address State" },
   { ADDRESS_BILLING_ZIP, AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_ZIP, "Billing Address Zip Code" },

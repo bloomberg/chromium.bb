@@ -11,6 +11,7 @@ class FormGroup;
 
 class HomePhoneNumber : public PhoneNumber {
  public:
+  HomePhoneNumber() {}
   virtual FormGroup* Clone() const { return new HomePhoneNumber(*this); }
 
  protected:

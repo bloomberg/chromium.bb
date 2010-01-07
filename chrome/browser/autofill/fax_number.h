@@ -11,6 +11,7 @@ class FormGroup;
 
 class FaxNumber : public PhoneNumber {
  public:
+  FaxNumber() {}
   virtual FormGroup* Clone() const { return new FaxNumber(*this); }
 
  protected:

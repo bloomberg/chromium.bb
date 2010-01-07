@@ -98,7 +98,7 @@ void Address::SetInfo(const AutoFillType& type, const string16& value) {
     set_line1(value);
   else if (subgroup == AutoFillType::ADDRESS_LINE2)
     set_line2(value);
-  else if (subgroup == AutoFillType::ADDRESS_APPT_NUM)
+  else if (subgroup == AutoFillType::ADDRESS_APT_NUM)
     set_apt_num(value);
   else if (subgroup == AutoFillType::ADDRESS_CITY)
     set_city(value);
@@ -207,7 +207,7 @@ bool Address::FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
   } else if (subgroup == AutoFillType::ADDRESS_LINE2 &&
              StartsWith(line2(), info, false)) {
     *match = line2();
-  } else if (subgroup == AutoFillType::ADDRESS_APPT_NUM &&
+  } else if (subgroup == AutoFillType::ADDRESS_APT_NUM &&
              StartsWith(apt_num(), info, true)) {
     *match = apt_num();
   } else if (subgroup == AutoFillType::ADDRESS_CITY &&

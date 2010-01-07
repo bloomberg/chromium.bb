@@ -25,8 +25,8 @@ class HomeAddress : public Address {
     return ADDRESS_HOME_LINE2;
   }
 
-  virtual AutoFillFieldType GetApptNumType() const {
-    return ADDRESS_HOME_APPT_NUM;
+  virtual AutoFillFieldType GetAptNumType() const {
+    return ADDRESS_HOME_APT_NUM;
   }
 
   virtual AutoFillFieldType GetCityType() const {

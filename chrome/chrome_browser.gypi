@@ -90,6 +90,8 @@
         'browser/autofill/autofill_infobar_delegate.h',
         'browser/autofill/autofill_manager.cc',
         'browser/autofill/autofill_manager.h',
+        'browser/autofill/autofill_profile.cc',
+        'browser/autofill/autofill_profile.h',
         'browser/autofill/autofill_type.cc',
         'browser/autofill/autofill_type.h',
         'browser/autofill/billing_address.h',

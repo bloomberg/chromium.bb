@@ -24,7 +24,7 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
     case kGenericAddress:
       address_line1 = ADDRESS_HOME_LINE1;
       address_line2 = ADDRESS_HOME_LINE2;
-      address_appt_num = ADDRESS_HOME_APPT_NUM;
+      address_appt_num = ADDRESS_HOME_APT_NUM;
       address_city = ADDRESS_HOME_CITY;
       address_state = ADDRESS_HOME_STATE;
       address_zip = ADDRESS_HOME_ZIP;
@@ -34,7 +34,7 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
     case kBillingAddress:
       address_line1 = ADDRESS_BILLING_LINE1;
       address_line2 = ADDRESS_BILLING_LINE2;
-      address_appt_num = ADDRESS_BILLING_APPT_NUM;
+      address_appt_num = ADDRESS_BILLING_APT_NUM;
       address_city = ADDRESS_BILLING_CITY;
       address_state = ADDRESS_BILLING_STATE;
       address_zip = ADDRESS_BILLING_ZIP;

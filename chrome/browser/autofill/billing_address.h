@@ -25,8 +25,8 @@ class BillingAddress : public Address {
     return ADDRESS_BILLING_LINE2;
   }
 
-  virtual AutoFillFieldType GetApptNumType() const {
-    return ADDRESS_BILLING_APPT_NUM;
+  virtual AutoFillFieldType GetAptNumType() const {
+    return ADDRESS_BILLING_APT_NUM;
   }
 
   virtual AutoFillFieldType GetCityType() const {

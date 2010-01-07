@@ -31,7 +31,7 @@ class AutoFillType {
     // Address subgroups.
     ADDRESS_LINE1,
     ADDRESS_LINE2,
-    ADDRESS_APPT_NUM,
+    ADDRESS_APT_NUM,
     ADDRESS_CITY,
     ADDRESS_STATE,
     ADDRESS_ZIP,
