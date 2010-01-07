@@ -451,8 +451,11 @@ void WidgetGtk::CloseNow() {
 }
 
 void WidgetGtk::Show() {
-  if (widget_)
+  if (widget_) {
     gtk_widget_show(widget_);
+    if (widget_->window)
+      gdk_window_raise(widget_->window);
+  }
 }
 
 void WidgetGtk::Hide() {
