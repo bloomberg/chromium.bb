@@ -4,12 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsBasics) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
   StartHTTPServer();
   ASSERT_TRUE(RunExtensionTest("tabs/basics")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsConnect) {
-  StartHTTPServer();
-  ASSERT_TRUE(RunExtensionTest("tabs/connect")) << message_;
 }

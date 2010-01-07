@@ -16,6 +16,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/extensions/extension_shelf.h"
+#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
