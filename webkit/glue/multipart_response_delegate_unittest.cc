@@ -541,12 +541,9 @@ TEST(MultipartResponseTest, MultipartByteRangeParsingTest) {
 TEST(MultipartResponseTest, MultipartContentRangesTest) {
   WebURLResponse response1;
   response1.initialize();
-  response1.setMIMEType(WebString::fromUTF8("application/pdf"));
-  response1.setHTTPHeaderField(WebString::fromUTF8("Content-Length"),
-                               WebString::fromUTF8("200"));
-  response1.setHTTPHeaderField(
-      WebString::fromUTF8("Content-Range"),
-      WebString::fromUTF8("bytes 1000-1050/5000"));
+  response1.setMIMEType("application/pdf");
+  response1.setHTTPHeaderField("Content-Length", "200");
+  response1.setHTTPHeaderField("Content-Range", "bytes 1000-1050/5000");
 
   int content_range_lower_bound = 0;
   int content_range_upper_bound = 0;
@@ -561,18 +558,46 @@ TEST(MultipartResponseTest, MultipartContentRangesTest) {
 
   WebURLResponse response2;
   response2.initialize();
-  response2.setMIMEType(WebString::fromUTF8("application/pdf"));
-  response2.setHTTPHeaderField(WebString::fromUTF8("Content-Length"),
-                               WebString::fromUTF8("200"));
-  response2.setHTTPHeaderField(
-      WebString::fromUTF8("Content-Range"),
-      WebString::fromUTF8("bytes 1000/1050"));
+  response2.setMIMEType("application/pdf");
+  response2.setHTTPHeaderField("Content-Length", "200");
+  response2.setHTTPHeaderField("Content-Range", "bytes 1000/1050");
 
   content_range_lower_bound = 0;
   content_range_upper_bound = 0;
 
   result = MultipartResponseDelegate::ReadContentRanges(
       response2, &content_range_lower_bound,
+      &content_range_upper_bound);
+
+  EXPECT_EQ(result, false);
+
+  WebURLResponse response3;
+  response3.initialize();
+  response3.setMIMEType("application/pdf");
+  response3.setHTTPHeaderField("Content-Length", "200");
+  response3.setHTTPHeaderField("Range", "bytes 1000-1050/5000");
+
+  content_range_lower_bound = 0;
+  content_range_upper_bound = 0;
+
+  result = MultipartResponseDelegate::ReadContentRanges(
+      response3, &content_range_lower_bound,
+      &content_range_upper_bound);
+
+  EXPECT_EQ(result, true);
+  EXPECT_EQ(content_range_lower_bound, 1000);
+  EXPECT_EQ(content_range_upper_bound, 1050);
+
+  WebURLResponse response4;
+  response4.initialize();
+  response4.setMIMEType("application/pdf");
+  response4.setHTTPHeaderField("Content-Length", "200");
+
+  content_range_lower_bound = 0;
+  content_range_upper_bound = 0;
+
+  result = MultipartResponseDelegate::ReadContentRanges(
+      response4, &content_range_lower_bound,
       &content_range_upper_bound);
 
   EXPECT_EQ(result, false);

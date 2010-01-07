@@ -285,8 +285,15 @@ bool MultipartResponseDelegate::ReadContentRanges(
     int* content_range_lower_bound,
     int* content_range_upper_bound) {
 
-  std::string content_range =
-      response.httpHeaderField(WebString::fromUTF8("Content-Range")).utf8();
+  std::string content_range = response.httpHeaderField("Content-Range").utf8();
+  if (content_range.empty()) {
+    content_range = response.httpHeaderField("Range").utf8();
+  }
+
+  if (content_range.empty()) {
+    DLOG(WARNING) << "Failed to read content range from response.";
+    return false;
+  }
 
   size_t byte_range_lower_bound_start_offset = content_range.find(" ");
   if (byte_range_lower_bound_start_offset == std::string::npos) {
