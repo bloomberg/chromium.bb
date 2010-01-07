@@ -369,6 +369,9 @@ TabContents::~TabContents() {
     UMA_HISTOGRAM_TIMES("Tab.Close",
         base::TimeTicks::Now() - tab_close_start_time_);
   }
+
+  if (cld_helper_.get())
+    cld_helper_->CancelLanguageDetection();
 }
 
 // static
@@ -635,6 +638,24 @@ void TabContents::WasHidden() {
 void TabContents::Activate() {
   if (delegate_)
     delegate_->ActivateContents(this);
+}
+
+void TabContents::PageLanguageDetected() {
+  DCHECK(cld_helper_.get());
+
+  NavigationEntry* entry = controller_.GetActiveEntry();
+  if (process()->id() == cld_helper_->renderer_process_id() &&
+      entry && entry->page_id() == cld_helper_->page_id()) {
+    entry->set_language(cld_helper_->language());
+  }
+
+  std::string lang = cld_helper_->language();
+  NotificationService::current()->Notify(
+      NotificationType::TAB_LANGUAGE_DETERMINED,
+      Source<RenderViewHost>(render_view_host()),
+      Details<std::string>(&lang));
+
+  cld_helper_ = NULL;  // Release the CLD helper.
 }
 
 void TabContents::ShowContents() {
@@ -1074,10 +1095,6 @@ void TabContents::StopFinding(bool clear_selection) {
   find_op_aborted_ = true;
   last_search_result_ = FindNotificationDetails();
   render_view_host()->StopFinding(clear_selection);
-}
-
-void TabContents::GetPageLanguage() {
-  render_view_host()->GetPageLanguage();
 }
 
 void TabContents::OnSavePage() {
@@ -1733,6 +1750,38 @@ void TabContents::OnDidGetApplicationInfo(
 
   if (delegate())
     delegate()->OnDidGetApplicationInfo(this, page_id);
+}
+
+void TabContents::OnPageContents(const GURL& url,
+                                 int renderer_process_id,
+                                 int32 page_id,
+                                 const std::wstring& contents) {
+  // Don't index any https pages. People generally don't want their bank
+  // accounts, etc. indexed on their computer, especially since some of these
+  // things are not marked cachable.
+  // TODO(brettw) we may want to consider more elaborate heuristics such as
+  // the cachability of the page. We may also want to consider subframes (this
+  // test will still index subframes if the subframe is SSL).
+  if (!url.SchemeIsSecure()) {
+    Profile* p = profile();
+    if (p && !p->IsOffTheRecord()) {
+      HistoryService* hs = p->GetHistoryService(Profile::IMPLICIT_ACCESS);
+      if (hs)
+        hs->SetPageContents(url, contents);
+    }
+  }
+
+  // Detect the page language.  The detection happens on the file thread.
+  // PageLanguageDetected() is called when the language has been detected.
+  if (cld_helper_.get()) {
+    // There is already a language detection in flight, cancel it to avoid
+    // having multiple PageLanguageDetected() notifications on this tab. (They
+    // would cause a crasher as cld_helper_ would be NULLed on the 1st
+    // notification).
+    cld_helper_->CancelLanguageDetection();
+  }
+  cld_helper_ = new CLDHelper(this, renderer_process_id, page_id, contents);
+  cld_helper_->DetectLanguage();
 }
 
 void TabContents::DidStartProvisionalLoadForFrame(

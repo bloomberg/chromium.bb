@@ -17,6 +17,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
+#include "chrome/test/ui_test_utils.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -194,7 +195,9 @@ class TabContentsTest : public RenderViewHostTestHarness {
  public:
   TabContentsTest()
       : RenderViewHostTestHarness(),
-        ui_thread_(ChromeThread::UI, &message_loop_) {
+        ui_thread_(ChromeThread::UI, &message_loop_),
+        file_thread_(ChromeThread::FILE) {
+    file_thread_.Start();
   }
 
  private:
@@ -206,6 +209,7 @@ class TabContentsTest : public RenderViewHostTestHarness {
   }
 
   ChromeThread ui_thread_;
+  ChromeThread file_thread_;
 };
 
 // Test to make sure that title updates get stripped of whitespace.
@@ -1426,4 +1430,102 @@ TEST_F(TabContentsTest, NoJSMessageOnInterstitials) {
       kGURL, MessageBoxFlags::kIsJavascriptAlert, dummy_message,
       &did_suppress_message);
   EXPECT_TRUE(did_suppress_message);
+}
+
+// TODO(port): The compact language detection library works only for Windows.
+#if defined(OS_WIN)
+// Tests the normal case of language detection when a page loads.
+TEST_F(TabContentsTest, NormalLanguageDetection) {
+  const GURL kURL("http://www.google.com");
+  const std::wstring kPageContent(L"C'est le contenu de la page. Fantastique!");
+
+  // Navigate to a page.
+  NavigateAndCommit(kURL);
+
+  NavigationEntry* entry = contents()->controller().GetActiveEntry();
+  ASSERT_TRUE(entry);
+
+  // Simulate the PageContents message that triggers the language detection.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageContents(0,
+                                                        kURL, entry->page_id(),
+                                                        kPageContent));
+  std::string language = ui_test_utils::WaitForLanguageDetection(contents());
+  EXPECT_EQ("fr", language);
+}
+
+// Tests the case of language detection when several page loads happen for the
+// same page.
+TEST_F(TabContentsTest, LanguageDetectionMultipleLoads) {
+  const GURL kURL("http://www.google.com");
+  const std::wstring kPageContent(L"The page contents. It is fantastic!");
+
+  // Navigate to a page.
+  NavigateAndCommit(kURL);
+
+  NavigationEntry* entry = contents()->controller().GetActiveEntry();
+  ASSERT_TRUE(entry);
+
+  // Simulate 2 PageContents messages that triggers the language detection.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageContents(0,
+                                                        kURL, entry->page_id(),
+                                                        kPageContent));
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageContents(0,
+                                                        kURL, entry->page_id(),
+                                                        kPageContent));
+  std::string language = ui_test_utils::WaitForLanguageDetection(contents());
+  EXPECT_EQ("en", language);
+}
+
+// Tests the case of language detection when several page loads happen.
+TEST_F(TabContentsTest, LanguageDetectionMultipleNavigations) {
+  const GURL kURL1("http://www.google.com");
+  const GURL kURL2("http://www.yahoo.com");
+  const std::wstring kPageContent1(L"The page contents. It is fantastic!");
+  const std::wstring kPageContent2(L"C'est le contenu de la page.Fantastique!");
+  // Navigate to the first page.
+  NavigateAndCommit(kURL1);
+  NavigationEntry* entry = contents()->controller().GetActiveEntry();
+  ASSERT_TRUE(entry);
+
+  // Simulate the PageContents message that triggers the language detection.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageContents(0,
+                                                        kURL1, entry->page_id(),
+                                                        kPageContent1));
+
+  // Before the language notification is back to the UI thread, navigate to a
+  // new page.
+  NavigateAndCommit(kURL2);
+  entry = contents()->controller().GetActiveEntry();
+  ASSERT_TRUE(entry);
+
+  // Simulate the PageContents message that triggers the language detection.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageContents(0,
+                                                        kURL2, entry->page_id(),
+                                                        kPageContent2));
+
+  std::string language = ui_test_utils::WaitForLanguageDetection(contents());
+  EXPECT_EQ("fr", language);
+}
+#endif
+
+// Tests the case of language detection when the tab is closed before the
+// detection has been performed.
+TEST_F(TabContentsTest, LanguageDetectionClosedTab) {
+  const GURL kURL("http://www.google.com");
+  const std::wstring kPageContent(L"The page contents. It is fantastic!");
+  // Navigate to the page.
+  NavigateAndCommit(kURL);
+  NavigationEntry* entry = contents()->controller().GetActiveEntry();
+  ASSERT_TRUE(entry);
+
+  // Simulate the PageContents message that triggers the language detection.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageContents(0,
+                                                       kURL, entry->page_id(),
+                                                       kPageContent));
+
+  // Now close the tab.
+  DeleteContents();
+
+  // Run all pending message to make sure nothing crashes.
+  MessageLoop::current()->RunAllPending();
 }
