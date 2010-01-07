@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(darin): Eliminate these WebCore includes
-#include "config.h"
-#include "GlyphPageTreeNode.h"
-#undef LOG
-
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
@@ -31,8 +26,11 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebGlyphCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
@@ -40,9 +38,9 @@
 #if defined(OS_WIN)
 #include "third_party/WebKit/WebKit/chromium/public/win/WebInputEventFactory.h"
 #endif
-#include "third_party/WebKit/WebKit/chromium/src/WebFrameImpl.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
+#include "v8/include/v8.h"
 
 #include "webkit_version.h"  // Generated
 
@@ -50,7 +48,7 @@ using WebKit::WebCanvas;
 using WebKit::WebData;
 using WebKit::WebElement;
 using WebKit::WebFrame;
-using WebKit::WebFrameImpl;
+using WebKit::WebGlyphCache;
 using WebKit::WebHistoryItem;
 using WebKit::WebImage;
 using WebKit::WebSize;
@@ -85,8 +83,7 @@ void SetJavaScriptFlags(const std::wstring& str) {
 }
 
 void EnableWebCoreNotImplementedLogging() {
-  // TODO(darin): Add a WebKit API to allow this to be set.
-  WebCore::LogNotYetImplemented.state = WTFLogChannelOn;
+  WebKit::enableLogChannel("NotYetImplemented");
 }
 
 std::wstring DumpDocumentText(WebFrame* web_frame) {
@@ -249,11 +246,9 @@ void DumpLeakedObject(const char* file, int line, const char* object, int count)
 
 void CheckForLeaks() {
 #ifndef NDEBUG
-#if 0
-  int count = WebFrameImpl::liveObjectCount();
+  int count = WebFrame::instanceCount();
   if (count)
     DumpLeakedObject(__FILE__, __LINE__, "WebFrame", count);
-#endif
 #endif
 }
 
@@ -507,8 +502,7 @@ WebCanvas* ToWebCanvas(skia::PlatformCanvas* canvas) {
 }
 
 int GetGlyphPageCount() {
-  // TODO(darin): Add a WebKit API to expose this counter.
-  return WebCore::GlyphPageTreeNode::treeGlyphPageCount();
+  return WebGlyphCache::pageCount();
 }
 
 bool g_enable_media_cache = false;
