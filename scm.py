@@ -234,13 +234,11 @@ class GIT(object):
     return "%s-%s" % (GIT.GetBranch(cwd), short_sha)
 
   @staticmethod
-  def GetCheckoutRoot(cwd):
-    """Returns the top level directory of the current repository.
-
-    The directory is returned as an absolute path.
+  def GetCheckoutRoot(path):
+    """Returns the top level directory of a git checkout as an absolute path.
     """
-    return os.path.abspath(GIT.Capture(['rev-parse', '--show-cdup'],
-                                       cwd).strip())
+    root = GIT.Capture(['rev-parse', '--show-cdup'], path).strip()
+    return os.path.abspath(os.path.join(path, root))
 
 
 class SVN(object):

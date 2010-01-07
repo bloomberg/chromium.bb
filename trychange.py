@@ -8,14 +8,13 @@ to the server by HTTP.
 """
 
 import datetime
+import errno
 import getpass
 import logging
 import optparse
 import os
 import posixpath
 import shutil
-import socket
-import subprocess
 import sys
 import tempfile
 import urllib
@@ -120,7 +119,7 @@ class SCM(object):
   def GclientStyleSettings(self):
     """Find the root, assuming a gclient-style checkout."""
     if not self.options.no_gclient and not self.options.root:
-      root = self.GetLocalRoot()
+      root = self.checkout_root
       gclient_root = gclient_utils.FindGclientRoot(root)
       if gclient_root:
         self.options.root = gclient_utils.PathDifference(gclient_root, root)
@@ -131,6 +130,9 @@ class SCM(object):
     self.GclStyleSettings()
     self.GclientStyleSettings()
 
+  def ReadRootFile(self, filename):
+    raise NotImplementedError()
+
 
 class SVN(SCM):
   """Gathers the options and diff for a subversion checkout."""
@@ -140,6 +142,7 @@ class SVN(SCM):
     if not self.options.email:
       # Assumes the svn credential is an email address.
       self.options.email = scm.SVN.GetEmail(self.checkout_root)
+    logging.info("SVN(%s)" % self.checkout_root)
 
   def ReadRootFile(self, filename):
     try:
@@ -175,10 +178,6 @@ class SVN(SCM):
       os.chdir(previous_cwd)
     return scm.SVN.GenerateDiff(self.files, self.checkout_root, full_move=True)
 
-  def GetLocalRoot(self):
-    """Return the path of the repository root."""
-    return self.checkout_root
-
 
 class GIT(SCM):
   """Gathers the options and diff for a git checkout."""
@@ -189,6 +188,7 @@ class GIT(SCM):
       self.options.name = scm.GIT.GetPatchName(self.checkout_root)
     if not self.options.email:
       self.options.email = scm.GIT.GetEmail(self.checkout_root)
+    logging.info("GIT(%s)" % self.checkout_root)
 
   def ReadRootFile(self, filename):
     try:
@@ -199,10 +199,6 @@ class GIT(SCM):
     except (IOError, OSError):
       logging.debug('%s:\nNone' % filename)
       return None
-
-  def GetLocalRoot(self):
-    """Return the path of the repository root."""
-    return self.checkout_root
 
   def GenerateDiff(self):
     # For now, ignores self.files
@@ -355,13 +351,13 @@ def PrintSuccess(options):
     print(text)
 
 
-def GuessVCS(options, cwd):
+def GuessVCS(options, path):
   """Helper to guess the version control system.
 
   NOTE: Very similar to upload.GuessVCS. Doesn't look for hg since we don't
   support it yet.
 
-  This examines the current directory, guesses which SCM we're using, and
+  This examines the path directory, guesses which SCM we're using, and
   returns an instance of the appropriate class.  Exit with an error if we can't
   figure it out.
 
@@ -369,19 +365,22 @@ def GuessVCS(options, cwd):
     A SCM instance. Exits if the SCM can't be guessed.
   """
   __pychecker__ = 'no-returnvalues'
+  logging.info("GuessVCS(%s)" % path)
   # Subversion has a .svn in all working directories.
-  if os.path.isdir(os.path.join(cwd, '.svn')):
-    logging.info("GuessVCS(%s) = Subversion" % cwd)
-    return SVN(options, cwd)
+  if os.path.isdir(os.path.join(path, '.svn')):
+    return SVN(options, path)
 
   # Git has a command to test if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
   try:
-    gclient_utils.CheckCall(["git", "rev-parse", "--is-inside-work-tree"], cwd)
-    logging.info("GuessVCS(%s) = Git" % cwd)
-    return GIT(options, cwd)
+    gclient_utils.CheckCall(["git", "rev-parse", "--is-inside-work-tree"],
+                            path)
+    return GIT(options, path)
   except gclient_utils.CheckCallError, e:
-    if e.retcode != 2:  # ENOENT -- they don't have git installed.
+    if e.retcode != errno.ENOENT and e.retcode != 128:
+      # ENOENT == 2 = they don't have git installed.
+      # 128 = git error code when not in a repo.
+      logging.warn(e.retcode)
       raise
   raise NoTryServerAccess("Could not guess version control system. "
                           "Are you in a working copy directory?")
@@ -461,9 +460,9 @@ def TryChange(argv,
   group.add_option("--root",
                    help="Root to use for the patch; base subdirectory for "
                         "patch created in a subdirectory")
-  group.add_option("--patchlevel", type='int', metavar="LEVEL",
+  group.add_option("-p", "--patchlevel", type='int', metavar="LEVEL",
                    help="Used as -pN parameter to patch")
-  group.add_option("--sub_rep", action="append", default=[],
+  group.add_option("-s", "--sub_rep", action="append", default=[],
                    help="Subcheckout to use in addition. This is mainly "
                         "useful for gclient-style checkouts.")
   group.add_option("--no_gclient", action="store_true",
@@ -476,9 +475,9 @@ def TryChange(argv,
                    const=_SendChangeHTTP,
                    dest="send_patch",
                    help="Use HTTP to talk to the try server [default]")
-  group.add_option("--host",
+  group.add_option("-H", "--host",
                    help="Host address")
-  group.add_option("--port",
+  group.add_option("-P", "--port",
                    help="HTTP port")
   group.add_option("--proxy",
                    help="HTTP proxy")
@@ -490,7 +489,7 @@ def TryChange(argv,
                    const=_SendChangeSVN,
                    dest="send_patch",
                    help="Use SVN to talk to the try server")
-  group.add_option("--svn_repo",
+  group.add_option("-S", "--svn_repo",
                    metavar="SVN_URL",
                    help="SVN url to use to write the changes in; --use_svn is "
                         "implied when using --svn_repo")
@@ -500,14 +499,15 @@ def TryChange(argv,
   if len(args) == 1 and args[0] == 'help':
     parser.print_help()
 
-  if options.verbose == 0:
-    logging.basicConfig(level=logging.ERROR)
-  elif options.verbose == 1:
-    logging.basicConfig(level=logging.WARNING)
-  elif options.verbose == 2:
-    logging.basicConfig(level=logging.INFO)
-  elif options.verbose > 2:
-    logging.basicConfig(level=logging.DEBUG)
+  if not swallow_exception:
+    if options.verbose == 0:
+      logging.basicConfig(level=logging.ERROR)
+    elif options.verbose == 1:
+      logging.basicConfig(level=logging.WARNING)
+    elif options.verbose == 2:
+      logging.basicConfig(level=logging.INFO)
+    elif options.verbose > 2:
+      logging.basicConfig(level=logging.DEBUG)
 
   try:
     # Always include os.getcwd() in the checkout settings.
@@ -515,10 +515,11 @@ def TryChange(argv,
     checkouts.append(GuessVCS(options, os.getcwd()))
     checkouts[0].AutomagicalSettings()
     for item in options.sub_rep:
-      checkout = GuessVCS(options, item)
-      if checkout.GetLocalRoot() in [c.GetLocalRoot() for c in checkouts]:
+      checkout = GuessVCS(options, os.path.join(checkouts[0].checkout_root,
+                                                item))
+      if checkout.checkout_root in [c.checkout_root for c in checkouts]:
         parser.error('Specified the root %s two times.' %
-                     checkout.GetLocalRoot())
+                     checkout.checkout_root)
       checkouts.append(checkout)
 
     can_http = options.port and options.host
@@ -539,12 +540,12 @@ def TryChange(argv,
       options.diff = gclient_utils.FileRead(options.diff, 'rb')
     else:
       # Use this as the base.
-      root = checkouts[0].GetLocalRoot()
+      root = checkouts[0].checkout_root
       diffs = []
       for checkout in checkouts:
         diff = checkout.GenerateDiff().splitlines(True)
         # Munge it.
-        path_diff = gclient_utils.PathDifference(root, checkout.GetLocalRoot())
+        path_diff = gclient_utils.PathDifference(root, checkout.checkout_root)
         for i in range(len(diff)):
           if diff[i].startswith('--- ') or diff[i].startswith('+++ '):
             diff[i] = diff[i][0:4] + posixpath.join(path_diff, diff[i][4:])
@@ -560,7 +561,7 @@ def TryChange(argv,
         root_presubmit = checkouts[0].ReadRootFile('PRESUBMIT.py')
         options.bot = presubmit_support.DoGetTrySlaves(
             checkouts[0].GetFileNames(),
-            checkouts[0].GetLocalRoot(),
+            checkouts[0].checkout_root,
             root_presubmit,
             False,
             sys.stdout)

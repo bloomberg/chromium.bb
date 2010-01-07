@@ -41,7 +41,7 @@ def CheckCall(command, cwd=None, print_error=True):
 
   Works on python 2.4
   """
-  logging.debug(command)
+  logging.debug("%s, cwd=%s" % (str(command), str(cwd)))
   try:
     stderr = None
     if not print_error:
@@ -52,7 +52,7 @@ def CheckCall(command, cwd=None, print_error=True):
                                stderr=stderr)
     output = process.communicate()[0]
   except OSError, e:
-    raise CheckCallError(command, cwd, errno, None)
+    raise CheckCallError(command, cwd, e.errno, None)
   if process.returncode:
     raise CheckCallError(command, cwd, process.returncode, output)
   return output

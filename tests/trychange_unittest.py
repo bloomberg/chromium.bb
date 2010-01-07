@@ -43,8 +43,8 @@ class TryChangeUnittest(TryChangeTestsBase):
       'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PrintSuccess',
       'SCM', 'SVN', 'TryChange', 'USAGE',
       'breakpad', 'datetime', 'gclient_utils', 'getpass', 'logging',
-      'optparse', 'os', 'posixpath', 'scm', 'shutil', 'socket',
-      'subprocess', 'sys', 'tempfile', 'urllib',
+      'optparse', 'os', 'posixpath', 'scm', 'shutil', 'sys', 'tempfile',
+      'urllib',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)
