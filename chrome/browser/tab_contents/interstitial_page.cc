@@ -17,6 +17,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -24,7 +25,6 @@
 #include "chrome/common/bindings_policy.h"
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/common/gtk_util.h"
 #endif
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
@@ -137,17 +137,15 @@ InterstitialPage::InterstitialPage(TabContents* tab,
       resource_dispatcher_host_notified_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(rvh_view_delegate_(
           new InterstitialPageRVHViewDelegate(this))) {
+  renderer_preferences_util::UpdateFromSystemSettings(
+      &renderer_preferences_, tab_->profile());
+
   InitInterstitialPageMap();
   // It would be inconsistent to create an interstitial with no new navigation
   // (which is the case when the interstitial was triggered by a sub-resource on
   // a page) when we have a pending entry (in the process of loading a new top
   // frame).
   DCHECK(new_navigation || !tab->controller().pending_entry());
-
-#if defined(TOOLKIT_GTK)
-  gtk_util::InitRendererPrefsFromGtkSettings(&renderer_preferences_,
-      GtkThemeProvider::GetFrom(tab->profile())->UseGtkTheme());
-#endif
 }
 
 InterstitialPage::~InterstitialPage() {

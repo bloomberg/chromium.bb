@@ -171,11 +171,13 @@ void GtkThemeProvider::InitThemesFor(NotificationObserver* observer) {
 
 void GtkThemeProvider::SetTheme(Extension* extension) {
   profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, false);
+  LoadDefaultValues();
   BrowserThemeProvider::SetTheme(extension);
 }
 
 void GtkThemeProvider::UseDefaultTheme() {
   profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, false);
+  LoadDefaultValues();
   BrowserThemeProvider::UseDefaultTheme();
 }
 
@@ -238,26 +240,7 @@ GdkColor GtkThemeProvider::GetBorderColor() const {
 
 void GtkThemeProvider::GetScrollbarColors(GdkColor* thumb_active_color,
                                           GdkColor* thumb_inactive_color,
-                                          GdkColor* track_color,
-                                          bool use_gtk_theme) {
-  if (!use_gtk_theme) {
-    // If using the default non-GTK colors, pick some reasonable choices of
-    // different greys.
-    thumb_active_color->pixel   = 0;
-    thumb_active_color->red     = 64250;
-    thumb_active_color->green   = 63736;
-    thumb_active_color->blue    = 62965;
-    thumb_inactive_color->pixel = 0;
-    thumb_inactive_color->red   = 61680;
-    thumb_inactive_color->green = 60395;
-    thumb_inactive_color->blue  = 58853;
-    track_color->pixel          = 0;
-    track_color->red            = 58339;
-    track_color->green          = 56797;
-    track_color->blue           = 55512;
-    return;
-  }
-
+                                          GdkColor* track_color) {
   // Create window containing scrollbar elements
   GtkWidget* window    = gtk_window_new(GTK_WINDOW_POPUP);
   GtkWidget* fixed     = gtk_fixed_new();
@@ -390,6 +373,7 @@ void GtkThemeProvider::LoadThemePrefs() {
   if (use_gtk_) {
     LoadGtkValues();
   } else {
+    LoadDefaultValues();
     BrowserThemeProvider::LoadThemePrefs();
   }
 }
@@ -556,6 +540,22 @@ void GtkThemeProvider::LoadGtkValues() {
                       &inactive_frame_color);
   SetTintToExactColor(BrowserThemeProvider::TINT_FRAME_INCOGNITO_INACTIVE,
                       &inactive_frame_color);
+
+  focus_ring_color_ = GdkToSkColor(&button_color);
+  GdkColor thumb_active_color, thumb_inactive_color, track_color;
+  GtkThemeProvider::GetScrollbarColors(&thumb_active_color,
+                                       &thumb_inactive_color,
+                                       &track_color);
+  thumb_active_color_ = GdkToSkColor(&thumb_active_color);
+  thumb_inactive_color_ = GdkToSkColor(&thumb_inactive_color);
+  track_color_ = GdkToSkColor(&track_color);
+}
+
+void GtkThemeProvider::LoadDefaultValues() {
+  focus_ring_color_ = SkColorSetARGB(255, 229, 151, 0);
+  thumb_active_color_ = SkColorSetRGB(250, 248, 245);
+  thumb_inactive_color_ = SkColorSetRGB(240, 235, 229);
+  track_color_ = SkColorSetRGB(227, 221, 216);
 }
 
 void GtkThemeProvider::SetThemeColorFromGtk(int id, GdkColor* color) {

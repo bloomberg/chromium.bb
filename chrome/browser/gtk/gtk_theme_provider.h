@@ -72,8 +72,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Used when rendering scrollbars.
   static void GetScrollbarColors(GdkColor* thumb_active_color,
                                  GdkColor* thumb_inactive_color,
-                                 GdkColor* track_color,
-                                 bool use_gtk_theme);
+                                 GdkColor* track_color);
 
   // Expose the inner label. Only used for testing.
   GtkWidget* fake_label() { return fake_label_.get(); }
@@ -83,9 +82,16 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // to send the image to the server on each expose.
   CairoCachedSurface* GetSurfaceNamed(int id, GtkWidget* widget_on_display);
 
-  // These functions do not add a ref to the returned pixbuf, and it should not be
-  // unreffed.
-  // If |native| is true, get the GTK_STOCK version of the icon.
+  // Returns colors that we pass to webkit to match the system theme.
+  const SkColor& get_focus_ring_color() const { return focus_ring_color_; }
+  const SkColor& get_thumb_active_color() const { return thumb_active_color_; }
+  const SkColor& get_thumb_inactive_color() const {
+    return thumb_inactive_color_;
+  }
+  const SkColor& get_track_color() const { return track_color_; }
+
+  // These functions do not add a ref to the returned pixbuf, and it should not
+  // be unreffed.  If |native| is true, get the GTK_STOCK version of the icon.
   static GdkPixbuf* GetFolderIcon(bool native);
   static GdkPixbuf* GetDefaultFavicon(bool native);
 
@@ -108,7 +114,12 @@ class GtkThemeProvider : public BrowserThemeProvider,
                          GtkStyle* previous_style,
                          GtkThemeProvider* provider);
 
+  // Extracts colors and tints from the GTK theme, both for the
+  // BrowserThemeProvider interface and the colors we send to webkit.
   void LoadGtkValues();
+
+  // Sets the values that we send to webkit to safe defaults.
+  void LoadDefaultValues();
 
   // Sets the underlying theme colors/tints from a GTK color.
   void SetThemeColorFromGtk(int id, GdkColor* color);
@@ -153,6 +164,13 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // caller while |use_gtk_| is true.
   ColorMap colors_;
   TintMap tints_;
+
+  // Colors that we pass to WebKit. These are generated each time the theme
+  // changes.
+  SkColor focus_ring_color_;
+  SkColor thumb_active_color_;
+  SkColor thumb_inactive_color_;
+  SkColor track_color_;
 
   // Image cache of lazily created images, created when requested by
   // GetBitmapNamed().

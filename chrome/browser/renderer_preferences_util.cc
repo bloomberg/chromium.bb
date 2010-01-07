@@ -4,7 +4,6 @@
 
 #include "chrome/browser/renderer_preferences_util.h"
 
-#include "base/singleton.h"
 #include "chrome/browser/profile.h"
 
 #if defined(OS_LINUX)
@@ -14,17 +13,19 @@
 
 namespace renderer_preferences_util {
 
-RendererPreferences GetInitedRendererPreferences(Profile* profile) {
-  RendererPreferences* prefs = Singleton<RendererPreferences>::get();
+void UpdateFromSystemSettings(RendererPreferences* prefs, Profile* profile) {
 #if defined(OS_LINUX)
-  static bool inited = false;
-  if (!inited) {
-    gtk_util::InitRendererPrefsFromGtkSettings(prefs,
-      GtkThemeProvider::GetFrom(profile)->UseGtkTheme());
-    inited = true;
-  }
-#endif
-  return *prefs;
+  gtk_util::UpdateGtkFontSettings(prefs);
+
+#if !defined(TOOLKIT_VIEWS)
+  GtkThemeProvider* provider = GtkThemeProvider::GetFrom(profile);
+
+  prefs->focus_ring_color = provider->get_focus_ring_color();
+  prefs->thumb_active_color = provider->get_thumb_active_color();
+  prefs->thumb_inactive_color = provider->get_thumb_inactive_color();
+  prefs->track_color = provider->get_track_color();
+#endif  // !defined(TOOLKIT_VIEWS)
+#endif  // defined(OS_LINUX)
 }
 
 }  // renderer_preferences_util

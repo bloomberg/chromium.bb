@@ -245,7 +245,9 @@ void MainMenu::RequestMove(const gfx::Rect& new_bounds) {
 }
 
 RendererPreferences MainMenu::GetRendererPrefs(Profile* profile) const {
-  return renderer_preferences_util::GetInitedRendererPreferences(profile);
+  RendererPreferences preferences;
+  renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
+  return preferences;
 }
 
 void MainMenu::CreateNewWindow(int route_id) {

@@ -11,7 +11,8 @@ class Profile;
 
 namespace renderer_preferences_util {
 
-RendererPreferences GetInitedRendererPreferences(Profile* profile);
+// Copies system configuration preferences into |prefs|.
+void UpdateFromSystemSettings(RendererPreferences* prefs, Profile* profile);
 
 }  // namespace renderer_preferences_util
 

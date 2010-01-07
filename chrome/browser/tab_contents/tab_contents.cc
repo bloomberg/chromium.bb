@@ -258,9 +258,11 @@ TabContents::TabContents(Profile* profile,
       last_javascript_message_dismissal_(),
       suppress_javascript_messages_(false),
       is_showing_before_unload_dialog_(false),
-      renderer_preferences_(
-        renderer_preferences_util::GetInitedRendererPreferences(profile)),
+      renderer_preferences_(),
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI) {
+  renderer_preferences_util::UpdateFromSystemSettings(
+      &renderer_preferences_, profile);
+
 #if defined(OS_CHROMEOS)
   // Make sure the thumbnailer is started before starting the render manager.
   // The thumbnailer will want to listen for RVH creations, one of which will
@@ -2589,6 +2591,8 @@ void TabContents::Observe(NotificationType type,
 
 #if defined(OS_LINUX)
     case NotificationType::BROWSER_THEME_CHANGED: {
+      renderer_preferences_util::UpdateFromSystemSettings(
+          &renderer_preferences_, profile());
       render_view_host()->SyncRendererPrefs();
       break;
     }

@@ -428,7 +428,9 @@ void ExtensionHost::Close(RenderViewHost* render_view_host) {
 }
 
 RendererPreferences ExtensionHost::GetRendererPrefs(Profile* profile) const {
-  return renderer_preferences_util::GetInitedRendererPreferences(profile);
+  RendererPreferences preferences;
+  renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
+  return preferences;
 }
 
 WebPreferences ExtensionHost::GetWebkitPrefs() {
