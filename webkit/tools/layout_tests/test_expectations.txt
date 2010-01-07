@@ -3133,11 +3133,8 @@ BUG31146 WIN LINUX :  LayoutTests/svg/custom/grayscale-gradient-mask.svg = IMAGE
 BUG_DIMICH LINUX WIN : LayoutTests/fast/repaint/subtree-layoutstate-transform.html = IMAGE+TEXT
 
 // New test, needs chromium baseline.
-BUG_DIMICH WIN : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT
 // On Linux, sometimes the text dump matches. Not sure why.
 BUG_DIMICH LINUX : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE
-// New test, needs IMAGE baseline for mac because svg filter is a tad different.
-BUG_DIMICH MAC : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE
 
 BUG31623 WIN: LayoutTests/http/tests/appcache/remove-cache.html = PASS TEXT TIMEOUT
 
@@ -3145,17 +3142,11 @@ BUG31623 WIN: LayoutTests/http/tests/appcache/remove-cache.html = PASS TEXT TIME
 BUG31642 WIN MAC DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-30-t.svg = CRASH PASS
 BUG31642 LINUX DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE+TEXT CRASH
 
-// Needs a rebaseline
-BUG_ANTONM : LayoutTests/fast/repaint/float-new-in-block.html = FAIL PASS
-
 // WebKit roll 52852 -> 52867
 BUG_JAPHET MAC : LayoutTests/svg/custom/marker-strokeWidth-changes.svg = FAIL
 BUG_JAPHET WIN : LayoutTests/svg/custom/feDisplacementMap-01.svg = TEXT
 BUG_JAPHET WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 BUG_JAPHET : LayoutTests/websocket/tests/frame-lengths.html = PASS TIMEOUT
-
-// WebKit Roll 52930:52943
-BUG_DGLAZKOV : LayoutTests/fast/css/css3-space-in-nth-and-lang.html = MISSING
 
 // WebKit Roll 52943:52952
 // All rebaselines!!! WOOO!! Due to: http://trac.webkit.org/changeset/52947
