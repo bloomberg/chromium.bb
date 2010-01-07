@@ -839,6 +839,9 @@ TEST_F(FocusManagerTest, FocusNativeControls) {
 // Test that when activating/deactivating the top window, the focus is stored/
 // restored properly.
 TEST_F(FocusManagerTest, FocusStoreRestore) {
+  // Simulate an activate, otherwise the deactivate isn't going to do anything.
+  SimulateActivateWindow();
+
   NativeButton* button = new NativeButton(NULL, L"Press me");
   View* view = new View();
   view->SetFocusable(true);

@@ -432,6 +432,22 @@ class WidgetGtk
   // hasn't changed, we can end up getting stuck in a never ending loop.
   gfx::Size size_;
 
+  // This is initially false and when the first focus-in event is received this
+  // is set to true and no additional processing is done. Subsequently when
+  // focus-in is received we do the normal focus manager processing.
+  //
+  // This behavior is necessitated by Gtk/X sending focus events
+  // asynchronously. The initial sequence for windows is typically: show,
+  // request focus on some widget. Because of async events on Gtk this becomes
+  // show, request focus, get focus in event which ends up clearing focus
+  // (first request to FocusManager::RestoreFocusedView ends up clearing focus).
+  bool got_initial_focus_in_;
+
+  // If true, we've received a focus-in event. If false we've received a
+  // focus-out event. We can get multiple focus-out events in a row, we use
+  // this to determine whether we should process the event.
+  bool has_focus_;
+
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };
 

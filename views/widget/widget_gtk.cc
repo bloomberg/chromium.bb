@@ -98,7 +98,9 @@ WidgetGtk::WidgetGtk(Type type)
       drag_data_(NULL),
       in_paint_now_(false),
       is_active_(false),
-      transient_to_parent_(false) {
+      transient_to_parent_(false),
+      got_initial_focus_in_(false),
+      has_focus_(false) {
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -778,15 +780,26 @@ gboolean WidgetGtk::OnButtonRelease(GtkWidget* widget, GdkEventButton* event) {
 }
 
 gboolean WidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
+  if (has_focus_)
+    return false;  // This is the second focus-in event in a row, ignore it.
+  has_focus_ = true;
+
   if (type_ == TYPE_CHILD)
     return false;
 
-  // The top-level window got focus, restore the last focused view.
-  focus_manager_->RestoreFocusedView();
+  // See description of got_initial_focus_in_ for details on this.
+  if (!got_initial_focus_in_)
+    got_initial_focus_in_ = true;
+  else
+    focus_manager_->RestoreFocusedView();
   return false;
 }
 
 gboolean WidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
+  if (!has_focus_)
+    return false;  // This is the second focus-out event in a row, ignore it.
+  has_focus_ = false;
+
   if (type_ == TYPE_CHILD)
     return false;
 
