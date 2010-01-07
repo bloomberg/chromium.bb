@@ -3157,34 +3157,5 @@ BUG_JAPHET WIN : LayoutTests/svg/custom/feDisplacementMap-01.svg = TEXT
 BUG_JAPHET WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 BUG_JAPHET : LayoutTests/websocket/tests/frame-lengths.html = PASS TIMEOUT
 
-// WebKit roll 52899:52930
-// Look like rebaselines
-BUG_DGLAZKOV : LayoutTests/svg/W3C-SVG-1.1/text-deco-01-b.svg = IMAGE
-BUG_DGLAZKOV MAC: LayoutTests/svg/W3C-SVG-1.1/text-path-01-b.svg = IMAGE
-BUG_DGLAZKOV : LayoutTests/svg/W3C-SVG-1.1/text-text-03-b.svg = IMAGE
-BUG_DGLAZKOV WIN MAC : LayoutTests/svg/W3C-SVG-1.1/text-text-07-t.svg = IMAGE
-BUG_DGLAZKOV : LayoutTests/svg/batik/text/textDecoration2.svg = IMAGE
-BUG_DGLAZKOV MAC : LayoutTests/svg/batik/text/textEffect3.svg = IMAGE
-BUG_DGLAZKOV : LayoutTests/svg/batik/text/textFeatures.svg = FAIL
-BUG_DGLAZKOV WIN MAC : LayoutTests/svg/batik/text/textGlyphOrientationHorizontal.svg = IMAGE
-BUG_DGLAZKOV WIN : LayoutTests/svg/batik/text/textLayout2.svg = IMAGE
-BUG_DGLAZKOV WIN : LayoutTests/svg/batik/text/textOnPath2.svg = IMAGE
-BUG_DGLAZKOV WIN : LayoutTests/svg/batik/text/textOnPath3.svg = IMAGE
-BUG_DGLAZKOV MAC : LayoutTests/svg/batik/text/textOnPathSpaces.svg = IMAGE
-BUG_DGLAZKOV WIN MAC : LayoutTests/svg/batik/text/textProperties.svg = IMAGE
-BUG_DGLAZKOV : LayoutTests/svg/batik/text/textStyles.svg = IMAGE
-BUG_DGLAZKOV MAC : LayoutTests/svg/batik/text/verticalText.svg = IMAGE
-BUG_DGLAZKOV MAC : LayoutTests/svg/batik/text/verticalTextOnPath.svg = IMAGE
-BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/text/selection-background-color.xhtml = IMAGE+TEXT
-BUG_DGLAZKOV MAC : LayoutTests/svg/text/selection-background-color.xhtml = IMAGE
-BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/text/text-align-04-b.svg = IMAGE
-BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-path-01-b.svg = IMAGE
-BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-spacing-01-b.svg = IMAGE
-BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-text-01-b.svg = IMAGE
-BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/text/text-text-03-b.svg = IMAGE
-BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/text/text-text-04-t.svg = IMAGE
-BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-text-07-t.svg = IMAGE
-BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-text-08-b.svg = IMAGE
-
 // WebKit Roll 52930:52943
 BUG_DGLAZKOV : LayoutTests/fast/css/css3-space-in-nth-and-lang.html = MISSING
