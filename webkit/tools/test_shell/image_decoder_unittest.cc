@@ -75,8 +75,8 @@ void VerifyImage(WebCore::ImageDecoder* decoder,
       decoder->frameBufferAtIndex(frame_index);
   ASSERT_NE(static_cast<WebCore::RGBA32Buffer*>(NULL), image_buffer) <<
       path.value();
-  // EXPECT_EQ(WebCore::RGBA32Buffer::FrameComplete, image_buffer->status()) <<
-  //     path.value();
+  EXPECT_EQ(WebCore::RGBA32Buffer::FrameComplete, image_buffer->status()) <<
+      path.value();
   EXPECT_FALSE(decoder->failed()) << path.value();
 
   // Calculate MD5 sum.
@@ -97,8 +97,8 @@ void VerifyImage(WebCore::ImageDecoder* decoder,
   memcpy(&expected_digest, file_bytes.data(), sizeof expected_digest);
 
   // Verify that the sums are the same.
-  // EXPECT_EQ(0, memcmp(&expected_digest, &actual_digest, sizeof(MD5Digest))) <<
-  //     path.value();
+  EXPECT_EQ(0, memcmp(&expected_digest, &actual_digest, sizeof(MD5Digest))) <<
+      path.value();
 }
 #endif
 
