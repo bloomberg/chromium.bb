@@ -1205,6 +1205,38 @@ RootView* Widget::FindRootView(HWND hwnd) {
   return root_view;
 }
 
+// Enumerate child windows as they could have RootView distinct from
+// the HWND's root view.
+BOOL CALLBACK EnumAllRootViewsChildProc(HWND hwnd, LPARAM l_param) {
+  RootView* root_view =
+      reinterpret_cast<RootView*>(GetProp(hwnd, kRootViewWindowProperty));
+  if (root_view) {
+    std::set<RootView*>* root_views_set =
+        reinterpret_cast<std::set<RootView*>*>(l_param);
+    root_views_set->insert(root_view);
+  }
+  return TRUE;  // Keep enumerating.
+}
+
+void Widget::FindAllRootViews(HWND window,
+                              std::vector<RootView*>* root_views) {
+  RootView* root_view =
+      reinterpret_cast<RootView*>(GetProp(window, kRootViewWindowProperty));
+  std::set<RootView*> root_views_set;
+  if (root_view)
+    root_views_set.insert(root_view);
+  // Enumerate all children and check if they have a RootView.
+  EnumChildWindows(window, EnumAllRootViewsChildProc,
+      reinterpret_cast<LPARAM>(&root_views_set));
+  root_views->clear();
+  root_views->reserve(root_views_set.size());
+  for (std::set<RootView*>::iterator it = root_views_set.begin();
+      it != root_views_set.end();
+      ++it)
+    root_views->push_back(*it);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 

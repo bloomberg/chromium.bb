@@ -110,7 +110,9 @@ DialogClientView::DialogClientView(Window* owner, View* contents_view)
       cancel_button_(NULL),
       default_button_(NULL),
       extra_view_(NULL),
-      accepted_(false) {
+      accepted_(false),
+      listening_to_focus_(false),
+      saved_focus_manager_(NULL) {
   InitClass();
 }
 
@@ -236,6 +238,17 @@ void DialogClientView::CancelWindow() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// DialogClientView, View overrides:
+
+void DialogClientView::NativeViewHierarchyChanged(bool attached,
+                                                  gfx::NativeView native_view,
+                                                  RootView* root_view) {
+  if (attached) {
+    UpdateFocusListener();
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // DialogClientView, ClientView overrides:
 
 bool DialogClientView::CanClose() const {
@@ -251,10 +264,11 @@ bool DialogClientView::CanClose() const {
 }
 
 void DialogClientView::WindowClosing() {
-  FocusManager* focus_manager = GetFocusManager();
-  DCHECK(focus_manager);
-  if (focus_manager)
-     focus_manager->RemoveFocusChangeListener(this);
+  if (listening_to_focus_) {
+    DCHECK(saved_focus_manager_);
+    if (saved_focus_manager_)
+       saved_focus_manager_->RemoveFocusChangeListener(this);
+  }
   ClientView::WindowClosing();
 }
 
@@ -302,12 +316,7 @@ void DialogClientView::ViewHierarchyChanged(bool is_add, View* parent,
     ShowDialogButtons();
     ClientView::ViewHierarchyChanged(is_add, parent, child);
 
-    FocusManager* focus_manager = GetFocusManager();
-    // Listen for focus change events so we can update the default button.
-    DCHECK(focus_manager);  // bug #1291225: crash reports seem to indicate it
-                            // can be NULL.
-    if (focus_manager)
-      focus_manager->AddFocusChangeListener(this);
+    UpdateFocusListener();
 
     // The "extra view" must be created and installed after the contents view
     // has been inserted into the view hierarchy.
@@ -502,5 +511,28 @@ void DialogClientView::Close() {
   window()->Close();
   GetDialogDelegate()->OnClose();
 }
+
+void DialogClientView::UpdateFocusListener() {
+  FocusManager* focus_manager = GetFocusManager();
+  // Listen for focus change events so we can update the default button.
+  // focus_manager can be NULL when the dialog is created on un-shown view.
+  // We start listening for focus changes when the page is visible.
+  // Focus manager could also change if window host changes a parent.
+  if (listening_to_focus_) {
+    if (saved_focus_manager_ == focus_manager)
+      return;
+    DCHECK(saved_focus_manager_);
+    if (saved_focus_manager_)
+      saved_focus_manager_->RemoveFocusChangeListener(this);
+    listening_to_focus_ = false;
+  }
+  saved_focus_manager_ = focus_manager;
+  // Listen for focus change events so we can update the default button.
+  if (focus_manager) {
+    focus_manager->AddFocusChangeListener(this);
+    listening_to_focus_ = true;
+  }
+}
+
 
 }  // namespace views

@@ -58,8 +58,10 @@ View::View()
       is_parent_owned_(true),
       notify_when_visible_bounds_in_root_changes_(false),
       registered_for_visible_bounds_notification_(false),
+      accelerator_registration_delayed_(false),
       next_focusable_view_(NULL),
       previous_focusable_view_(NULL),
+      accelerator_focus_manager_(NULL),
       registered_accelerator_count_(0),
       context_menu_controller_(NULL),
 #if defined(OS_WIN)
@@ -686,10 +688,16 @@ void View::ViewHierarchyChangedImpl(bool register_accelerators,
     if (is_add) {
       // If you get this registration, you are part of a subtree that has been
       // added to the view hierarchy.
-      RegisterPendingAccelerators();
+      if (GetFocusManager()) {
+        RegisterPendingAccelerators();
+      } else {
+        // Delay accelerator registration until visible as we do not have
+        // focus manager until then.
+        accelerator_registration_delayed_ = true;
+      }
     } else {
       if (child == this)
-        UnregisterAccelerators();
+        UnregisterAccelerators(false);
     }
   }
 
@@ -703,6 +711,34 @@ void View::PropagateVisibilityNotifications(View* start, bool is_visible) {
 }
 
 void View::VisibilityChanged(View* starting_from, bool is_visible) {
+}
+
+void View::PropagateNativeViewHierarchyChanged(bool attached,
+                                               gfx::NativeView native_view,
+                                               RootView* root_view) {
+  for (int i = 0, count = GetChildViewCount(); i < count; ++i)
+    GetChildViewAt(i)->PropagateNativeViewHierarchyChanged(attached,
+                                                           native_view,
+                                                           root_view);
+  NativeViewHierarchyChanged(attached, native_view, root_view);
+}
+
+void View::NativeViewHierarchyChanged(bool attached,
+                                      gfx::NativeView native_view,
+                                      RootView* root_view) {
+  FocusManager* focus_manager = GetFocusManager();
+  if (!accelerator_registration_delayed_ &&
+      accelerator_focus_manager_ &&
+      accelerator_focus_manager_ != focus_manager) {
+    UnregisterAccelerators(true);
+    accelerator_registration_delayed_ = true;
+  }
+  if (accelerator_registration_delayed_ && attached) {
+    if (focus_manager) {
+      RegisterPendingAccelerators();
+      accelerator_registration_delayed_ = false;
+    }
+  }
 }
 
 void View::SetNotifyWhenVisibleBoundsInRootChanges(bool value) {
@@ -988,18 +1024,16 @@ void View::RemoveAccelerator(const Accelerator& accelerator) {
     return;
   }
 
-  FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager) {
-    // We may not have a FocusManager if the window containing us is being
-    // closed, in which case the FocusManager is being deleted so there is
-    // nothing to unregister.
-    focus_manager->UnregisterAccelerator(accelerator, this);
+  // If accelerator_focus_manager_ is NULL then we did not registered
+  // accelerators so there is nothing to unregister.
+  if (accelerator_focus_manager_) {
+    accelerator_focus_manager_->UnregisterAccelerator(accelerator, this);
   }
 }
 
 void View::ResetAccelerators() {
   if (accelerators_.get())
-    UnregisterAccelerators();
+    UnregisterAccelerators(false);
 }
 
 void View::RegisterPendingAccelerators() {
@@ -1016,8 +1050,8 @@ void View::RegisterPendingAccelerators() {
     return;
   }
 
-  FocusManager* focus_manager = GetFocusManager();
-  if (!focus_manager) {
+  accelerator_focus_manager_ = GetFocusManager();
+  if (!accelerator_focus_manager_) {
     // Some crash reports seem to show that we may get cases where we have no
     // focus manager (see bug #1291225).  This should never be the case, just
     // making sure we don't crash.
@@ -1033,26 +1067,28 @@ void View::RegisterPendingAccelerators() {
   std::vector<Accelerator>::const_iterator iter;
   for (iter = accelerators_->begin() + registered_accelerator_count_;
        iter != accelerators_->end(); ++iter) {
-    focus_manager->RegisterAccelerator(*iter, this);
+    accelerator_focus_manager_->RegisterAccelerator(*iter, this);
   }
   registered_accelerator_count_ = accelerators_->size();
 }
 
-void View::UnregisterAccelerators() {
+void View::UnregisterAccelerators(bool leave_data_intact) {
   if (!accelerators_.get())
     return;
 
   RootView* root_view = GetRootView();
   if (root_view) {
-    FocusManager* focus_manager = GetFocusManager();
-    if (focus_manager) {
+    if (accelerator_focus_manager_) {
       // We may not have a FocusManager if the window containing us is being
       // closed, in which case the FocusManager is being deleted so there is
       // nothing to unregister.
-      focus_manager->UnregisterAccelerators(this);
+      accelerator_focus_manager_->UnregisterAccelerators(this);
+      accelerator_focus_manager_ = NULL;
     }
-    accelerators_->clear();
-    accelerators_.reset();
+    if (!leave_data_intact) {
+      accelerators_->clear();
+      accelerators_.reset();
+    }
     registered_accelerator_count_ = 0;
   }
 }

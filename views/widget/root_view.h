@@ -152,6 +152,10 @@ class RootView : public View,
   // Used to set the View parent after the view has been created.
   virtual void SetFocusTraversableParentView(View* view);
 
+  // Called when parent of the host changed.
+  void NotifyNativeViewHierarchyChanged(bool attached,
+                                        gfx::NativeView native_view);
+
   // Returns the name of this class: views/RootView
   virtual std::string GetClassName() const;
 

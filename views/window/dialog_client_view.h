@@ -50,6 +50,11 @@ class DialogClientView : public ClientView,
   NativeButton* ok_button() const { return ok_button_; }
   NativeButton* cancel_button() const { return cancel_button_; }
 
+  // Overridden from View:
+  virtual void NativeViewHierarchyChanged(bool attached,
+                                          gfx::NativeView native_view,
+                                          RootView* root_view);
+
   // Overridden from ClientView:
   virtual bool CanClose() const;
   virtual void WindowClosing();
@@ -98,6 +103,9 @@ class DialogClientView : public ClientView,
   // Closes the window.
   void Close();
 
+  // Updates focus listener.
+  void UpdateFocusListener();
+
   // The dialog buttons.
   NativeButton* ok_button_;
   NativeButton* cancel_button_;
@@ -113,6 +121,12 @@ class DialogClientView : public ClientView,
 
   // True if the window was Accepted by the user using the OK button.
   bool accepted_;
+
+  // true if focus listener is added.
+  bool listening_to_focus_;
+
+  // When ancestor gets changed focus manager gets changed as well.
+  FocusManager* saved_focus_manager_;
 
   // Static resource initialization
   static void InitClass();

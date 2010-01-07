@@ -1019,6 +1019,18 @@ class View : public AcceleratorTarget {
   // invoked for that view as well as all the children recursively.
   virtual void VisibilityChanged(View* starting_from, bool is_visible);
 
+  // Called when the native view hierarchy changed.
+  // |attached| is true if that view has been attached to a new NativeView
+  // hierarchy, false if it has been detached.
+  // |native_view| is the NativeView this view was attached/detached from, and
+  // |root_view| is the root view associated with the NativeView.
+  // Views created without a native view parent don't have a focus manager.
+  // When this function is called they could do the processing that requires
+  // it - like registering accelerators, for example.
+  virtual void NativeViewHierarchyChanged(bool attached,
+                                          gfx::NativeView native_view,
+                                          RootView* root_view);
+
   // Called when the preferred size of a child view changed.  This gives the
   // parent an opportunity to do a fresh layout if that makes sense.
   virtual void ChildPreferredSizeChanged(View* child) {}
@@ -1136,6 +1148,12 @@ class View : public AcceleratorTarget {
   // Call VisibilityChanged() recursively for all children.
   void PropagateVisibilityNotifications(View* from, bool is_visible);
 
+  // Propagates NativeViewHierarchyChanged() notification through all the
+  // children.
+  void PropagateNativeViewHierarchyChanged(bool attached,
+                                           gfx::NativeView native_view,
+                                           RootView* root_view);
+
   // Takes care of registering/unregistering accelerators if
   // |register_accelerators| true and calls ViewHierarchyChanged().
   void ViewHierarchyChangedImpl(bool register_accelerators,
@@ -1184,7 +1202,9 @@ class View : public AcceleratorTarget {
   void RegisterPendingAccelerators();
 
   // Unregisters all the keyboard accelerators associated with this view.
-  void UnregisterAccelerators();
+  // |leave_data_intact| if true does not remove data from accelerators_ array,
+  // so it could be re-registered with other focus manager
+  void UnregisterAccelerators(bool leave_data_intact);
 
   // This View's bounds in the parent coordinate system.
   gfx::Rect bounds_;
@@ -1219,6 +1239,10 @@ class View : public AcceleratorTarget {
   // has been invoked.
   bool registered_for_visible_bounds_notification_;
 
+  // true if when we were added to hierarchy we were without focus manager
+  // attempt addition when ancestor chain changed.
+  bool accelerator_registration_delayed_;
+
   // List of descendants wanting notification when their visible bounds change.
   scoped_ptr<ViewList> descendants_to_notify_;
 
@@ -1227,6 +1251,9 @@ class View : public AcceleratorTarget {
 
   // Next view to be focused when the Shift-Tab key combination is pressed.
   View* previous_focusable_view_;
+
+  // Focus manager accelerators registered on.
+  FocusManager* accelerator_focus_manager_;
 
   // The list of accelerators. List elements in the range
   // [0, registered_accelerator_count_) are already registered to FocusManager,

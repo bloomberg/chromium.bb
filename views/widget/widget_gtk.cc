@@ -1302,6 +1302,42 @@ RootView* Widget::FindRootView(GtkWindow* window) {
   return root_view;
 }
 
+static void AllRootViewsLocatorCallback(GtkWidget* widget,
+                                        gpointer root_view_p) {
+  std::set<RootView*>* root_views_set =
+      reinterpret_cast<std::set<RootView*>*>(root_view_p);
+  RootView *root_view = WidgetGtk::GetRootViewForWidget(widget);
+  if (!root_view && GTK_IS_CONTAINER(widget)) {
+    // gtk_container_foreach only iterates over children, not all descendants,
+    // so we have to recurse here to get all descendants.
+    gtk_container_foreach(GTK_CONTAINER(widget), AllRootViewsLocatorCallback,
+        root_view_p);
+  } else {
+    if (root_view)
+      root_views_set->insert(root_view);
+  }
+}
+
+// static
+void Widget::FindAllRootViews(GtkWindow* window,
+                              std::vector<RootView*>* root_views) {
+  RootView* root_view = WidgetGtk::GetRootViewForWidget(GTK_WIDGET(window));
+  if (root_view)
+    root_views->push_back(root_view);
+
+  std::set<RootView*> root_views_set;
+
+  // Enumerate all children and check if they have a RootView.
+  gtk_container_foreach(GTK_CONTAINER(window), AllRootViewsLocatorCallback,
+      reinterpret_cast<gpointer>(&root_views_set));
+  root_views->clear();
+  root_views->reserve(root_views_set.size());
+  for (std::set<RootView*>::iterator it = root_views_set.begin();
+      it != root_views_set.end();
+      ++it)
+    root_views->push_back(*it);
+}
+
 // static
 Widget* Widget::GetWidgetFromNativeView(gfx::NativeView native_view) {
   gpointer raw_widget = g_object_get_data(G_OBJECT(native_view), kWidgetKey);

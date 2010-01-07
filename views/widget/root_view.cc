@@ -764,6 +764,11 @@ void RootView::SetFocusTraversableParentView(View* view) {
   focus_traversable_parent_view_ = view;
 }
 
+void RootView::NotifyNativeViewHierarchyChanged(bool attached,
+                                                gfx::NativeView native_view) {
+  PropagateNativeViewHierarchyChanged(attached, native_view, this);
+}
+
 // static
 View* RootView::FindSelectedViewForGroup(View* view) {
   if (view->IsGroupFocusTraversable() ||

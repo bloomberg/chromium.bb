@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 namespace views {
@@ -25,7 +26,6 @@ NativeViewHostWin::~NativeViewHostWin() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostWin, NativeViewHostWrapper implementation:
-
 void NativeViewHostWin::NativeViewAttached() {
   DCHECK(host_->native_view())
       << "Impossible detatched tab case; See crbug.com/6316";
@@ -37,10 +37,28 @@ void NativeViewHostWin::NativeViewAttached() {
   // Need to set the HWND's parent before changing its size to avoid flashing.
   SetParent(host_->native_view(), host_->GetWidget()->GetNativeView());
   host_->Layout();
+  // Notify children that parent changed, so they could adjust the focus
+  std::vector<RootView*> root_views;
+  Widget::FindAllRootViews(host_->native_view(), &root_views);
+  for (std::vector<RootView*>::iterator it = root_views.begin();
+       it < root_views.end();
+       ++it) {
+    (*it)->NotifyNativeViewHierarchyChanged(true,
+        host_->GetWidget()->GetNativeView());
+  }
 }
 
 void NativeViewHostWin::NativeViewDetaching(bool destroyed) {
   installed_clip_ = false;
+  // Notify children that parent is removed
+  std::vector<RootView*> root_views;
+  Widget::FindAllRootViews(host_->native_view(), &root_views);
+  for (std::vector<RootView*>::iterator it = root_views.begin();
+       it < root_views.end();
+       ++it) {
+    (*it)->NotifyNativeViewHierarchyChanged(false,
+        host_->GetWidget()->GetNativeView());
+  }
 }
 
 void NativeViewHostWin::AddedToWidget() {
