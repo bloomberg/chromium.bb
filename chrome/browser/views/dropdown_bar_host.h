@@ -49,7 +49,7 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // Returns true if the dropdown bar view is visible, or false otherwise.
   bool IsVisible() const;
   // Shows the dropdown bar.
-  void Show(bool animate);
+  void Show();
   // Hides the dropdown bar.
   void Hide(bool animate);
   // Selects text in the entry field and set focus.
@@ -84,12 +84,12 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // having to poll it while it animates to open/closed status.
   static bool disable_animations_during_testing_;
 
-  // Returns the browser view that the dropdown belongs to.
-  BrowserView* browser_view() const { return browser_view_; }
-
  protected:
   // Returns the dropdown bar view.
   DropdownBarView* view() const { return view_; }
+
+  // Returns the browser view that the dropdown belongs to.
+  BrowserView* browser_view() const { return browser_view_; }
 
   // Returns the focus tracker.
   views::ExternalFocusTracker* focus_tracker() const {
@@ -143,11 +143,6 @@ class DropdownBarHost : public views::AcceleratorTarget,
       const TabContents* contents,
       const views::Textfield::Keystroke& key_stroke);
 
-  // Returns the animation for the dropdown.
-  SlideAnimation* animation() {
-    return animation_.get();
-  }
-
  private:
   // The BrowserView that created us.
   BrowserView* browser_view_;
@@ -176,10 +171,6 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // Host is the Widget implementation that is created and maintained by the
   // dropdown bar. It contains the DropdownBarView.
   scoped_ptr<views::Widget> host_;
-
-  // A flag to manually manage visibility. GTK/X11 is asynchrnous and
-  // the state of the widget can be out of sync.
-  bool is_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(DropdownBarHost);
 };

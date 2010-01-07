@@ -782,8 +782,7 @@ void TabStrip::DestroyDraggedSourceTab(Tab* tab) {
 }
 
 gfx::Rect TabStrip::GetIdealBounds(int index) {
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, GetTabCount());
+  DCHECK(index >= 0 && index < GetTabCount());
   return tab_data_.at(index).ideal_bounds;
 }
 
@@ -1954,7 +1953,6 @@ void TabStrip::RemoveTabAt(int index) {
     removed->GetParent()->RemoveChildView(removed);
     delete removed;
   }
-  GenerateIdealBounds();
 }
 
 void TabStrip::HandleGlobalMouseMoveEvent() {

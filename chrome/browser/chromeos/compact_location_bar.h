@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_COMPACT_LOCATION_BAR_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_COMPACT_LOCATION_BAR_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_COMPACT_LOCATION_BAR_H_
+#define CHROME_BROWSER_CHROMEOS_COMPACT_LOCATION_BAR_H_
 
 #include "base/basictypes.h"
+#include "base/timer.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/chromeos/compact_location_bar_host.h"
-#include "chrome/browser/views/dropdown_bar_view.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
 
@@ -28,27 +27,41 @@ class NativeViewHost;
 
 namespace chromeos {
 
-// CompactLocationBarView is a version of location bar that is shown under
+// CompactLocationBar is a version of location bar that is shown under
 // a tab for short priod of used when Chrome is in the compact
 // navigation bar mode.
-class CompactLocationBarView : public DropdownBarView,
-                               public views::ButtonListener,
-                               public AutocompleteEditController,
-                               public BubblePositioner {
+// TODO(oshima): re-implement w/o using a popup, like a FindBar.
+class CompactLocationBar : public views::View,
+                           public views::ButtonListener,
+                           public AutocompleteEditController,
+                           public BubblePositioner {
  public:
-  explicit CompactLocationBarView(CompactLocationBarHost* host);
-  ~CompactLocationBarView();
+  explicit CompactLocationBar(BrowserView* browser_view);
+  ~CompactLocationBar();
 
-  // Claims focus for the text field and selects its contents.
-  virtual void SetFocusAndSelection();
+  // Returns the bounds to locale the compact location bar under the tab.
+  gfx::Rect GetBoundsUnderTab(const Tab* tab) const;
 
-  void Update(const TabContents* contents);
+  // (Re)Starts the popup timer that hides the popup after X seconds.
+  void StartPopupTimer();
+
+  // Updates the content and the location of the compact location bar.
+  void Update(const Tab* tab, const TabContents* contents);
+
+  // Updates the location of the location bar popup under the given tab.
+  void UpdateBounds(const Tab* tab);
 
  private:
   Browser* browser() const;
 
+  // Cancels the popup timer.
+  void CancelPopupTimer();
+
+  // Hides the popup window.
+  void HidePopup();
+
   // Called when the view is added to the tree to initialize the
-  // CompactLocationBarView.
+  // CompactLocationBar.
   void Init();
 
   // Overridden from views::View.
@@ -57,7 +70,8 @@ class CompactLocationBarView : public DropdownBarView,
   virtual void Paint(gfx::Canvas* canvas);
   virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
                                     views::View* child);
-  virtual void Focus();
+  virtual void OnMouseEntered(const views::MouseEvent& event);
+  virtual void OnMouseExited(const views::MouseEvent& event);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -68,8 +82,8 @@ class CompactLocationBarView : public DropdownBarView,
                                     PageTransition::Type transition,
                                     const GURL& alternate_nav_url);
   virtual void OnChanged();
-  virtual void OnKillFocus();
-  virtual void OnSetFocus();
+  virtual void OnKillFocus() {}
+  virtual void OnSetFocus() {}
   virtual void OnInputInProgress(bool in_progress);
   virtual SkBitmap GetFavIcon() const;
   virtual std::wstring GetTitle() const;
@@ -77,9 +91,8 @@ class CompactLocationBarView : public DropdownBarView,
   // BubblePositioner implementation.
   virtual gfx::Rect GetLocationStackBounds() const;
 
-  CompactLocationBarHost* clb_host() {
-    return static_cast<CompactLocationBarHost*>(host());
-  }
+  BrowserView* browser_view_;
+  const TabContents* current_contents_;
 
   views::ImageButton* reload_;
   scoped_ptr<AutocompleteEditViewGtk> location_entry_;
@@ -88,9 +101,14 @@ class CompactLocationBarView : public DropdownBarView,
   // scoped_ptr<ToolbarStarToggleGtk> star_;
   views::NativeViewHost* star_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(CompactLocationBarView);
+  scoped_ptr<base::OneShotTimer<CompactLocationBar> > popup_timer_;
+
+  // A popup window to show the compact location bar.
+  views::Widget* popup_;
+
+  DISALLOW_COPY_AND_ASSIGN(CompactLocationBar);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_COMPACT_LOCATION_BAR_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_COMPACT_LOCATION_BAR_H_

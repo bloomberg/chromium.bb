@@ -51,7 +51,7 @@ FindBarHost::~FindBarHost() {
 }
 
 void FindBarHost::Show() {
-  DropdownBarHost::Show(true);
+  DropdownBarHost::Show();
 }
 
 void FindBarHost::SetFocusAndSelection() {

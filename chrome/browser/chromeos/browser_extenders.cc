@@ -9,7 +9,7 @@
 #include "app/theme_provider.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/chromeos/compact_location_bar_host.h"
+#include "chrome/browser/chromeos/compact_location_bar.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/status_area_view.h"
@@ -82,8 +82,8 @@ class NormalExtender : public BrowserExtender,
     browser_view()->AddChildView(main_menu_);
 
     Browser* browser = browser_view()->browser();
-    compact_location_bar_host_.reset(
-        new chromeos::CompactLocationBarHost(browser_view()));
+    compact_location_bar_.reset(
+        new chromeos::CompactLocationBar(browser_view()));
     compact_navigation_bar_ = new chromeos::CompactNavigationBar(browser);
     browser_view()->AddChildView(compact_navigation_bar_);
     compact_navigation_bar_->Init();
@@ -151,8 +151,8 @@ class NormalExtender : public BrowserExtender,
      * Filed a bug: http://crbug.com/30612.
     if (compact_navigation_bar_->IsVisible()) {
       // Update the size and location of the compact location bar.
-      int index = browser_view()->browser()->selected_index();
-      compact_location_bar_host_->Update(index, false);
+      compact_location_bar_->UpdateBounds(
+          browser_view()->tabstrip()->GetSelectedTab());
     }
     */
 
@@ -247,7 +247,6 @@ class NormalExtender : public BrowserExtender,
   virtual void ToggleCompactNavigationBar() {
     compact_navigation_bar_enabled_ = !compact_navigation_bar_enabled_;
     compact_navigation_bar_->SetFocusable(compact_navigation_bar_enabled_);
-    compact_location_bar_host_->SetEnabled(compact_navigation_bar_enabled_);
   }
 
   virtual void OnMouseEnteredToTab(Tab* tab) {
@@ -255,13 +254,11 @@ class NormalExtender : public BrowserExtender,
   }
 
   virtual void OnMouseMovedOnTab(Tab* tab) {
-    // TODO(oshima): remove this method from extender once we settled
-    // on the compact location bar behavior.
+    ShowCompactLocationBarUnderSelectedTab();
   }
 
   virtual void OnMouseExitedFromTab(Tab* tab) {
-    // TODO(oshima): remove this method from extender once we settled
-    // on the compact location bar behavior.
+    compact_location_bar_->StartPopupTimer();
   }
 
   virtual bool ShouldForceMaximizedWindow() {
@@ -277,8 +274,9 @@ class NormalExtender : public BrowserExtender,
   void ShowCompactLocationBarUnderSelectedTab() {
     if (!compact_navigation_bar_enabled_)
       return;
-    int index = browser_view()->browser()->selected_index();
-    compact_location_bar_host_->Update(index, true);
+    compact_location_bar_->Update(
+        browser_view()->tabstrip()->GetSelectedTab(),
+        browser_view()->browser()->GetSelectedTabContents());
   }
 
   // Creates system menu.
@@ -322,8 +320,8 @@ class NormalExtender : public BrowserExtender,
   // A toggle flag to show/hide the compact navigation bar.
   bool compact_navigation_bar_enabled_;
 
-  // CompactLocationBarHost.
-  scoped_ptr<chromeos::CompactLocationBarHost> compact_location_bar_host_;
+  // CompactLocationBar view.
+  scoped_ptr<chromeos::CompactLocationBar> compact_location_bar_;
 
   // A flag to specify if the browser window should be maximized.
   bool force_maximized_window_;
