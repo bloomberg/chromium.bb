@@ -163,6 +163,7 @@ const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
       url.append(".com");
       const BookmarkNode* child_nofavicon_bm =
          AddURL(model, bm_folder, child_index, child_bm_title, GURL(url));
+      EXPECT_TRUE(child_nofavicon_bm != NULL);
     } else {
       // Remaining % of time - Add Bookmark folders
       wstring child_bmfolder_title(bm_folder->GetTitle());
@@ -170,6 +171,7 @@ const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
       child_bmfolder_title.append(IntToWString(index));
       const BookmarkNode* child_bm_folder =
           AddGroup(model, bm_folder, child_index, child_bmfolder_title);
+      EXPECT_TRUE(child_bm_folder != NULL);
     }
   }
   return bm_folder;
