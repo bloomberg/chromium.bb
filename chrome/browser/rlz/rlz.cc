@@ -8,6 +8,8 @@
 
 #include "chrome/browser/rlz/rlz.h"
 
+#include <algorithm>
+
 #include <windows.h>
 #include <process.h>
 
@@ -206,9 +208,10 @@ class DailyPingTask : public Task {
   }
 
   // Organic brands all start with GG, such as GGCM.
-  static bool is_organic(const std::wstring brand) {
+  static bool is_organic(const std::wstring& brand) {
     return (brand.size() < 2) ? false : (brand.substr(0,2) == L"GG");
   }
+
 };
 
 // Performs late RLZ initialization and RLZ event recording for chrome.
@@ -225,6 +228,13 @@ class DelayedInitTask : public Task {
     // because sometimes the very act of loading the dll causes QEMU to crash.
     if (::GetEnvironmentVariableW(env_vars::kHeadless, NULL, 0))
       return;
+    // For organic brandcodes do not use rlz at all. Empty brandcode usually
+    // means a chromium install. This is ok.
+    std::wstring brand;
+    GoogleUpdateSettings::GetBrand(&brand);
+    if (is_strict_organic(brand))
+      return;
+
     if (!LoadRLZLibrary(directory_key_))
       return;
     // Do the initial event recording if is the first run or if we have an
@@ -278,6 +288,16 @@ class DelayedInitTask : public Task {
     if (!urlref)
       return false;
     return urlref->HasGoogleBaseURLs();
+  }
+
+  static bool is_strict_organic(const std::wstring& brand) {
+    const wchar_t* kBrands[] = { L"CHOA", L"CHOB", L"CHOC", L"CHOT", L"CHOU",
+                                 L"CHOR", L"CHOQ", L"CHOP", L"CHON", L"CHOO",
+                                 L"CHPD", L"CHPE", L"CHPF", L"CHPG", L"GGLS",
+                                 L"GGLA" };
+    const wchar_t** end = &kBrands[arraysize(kBrands)];
+    const wchar_t** found = std::find(&kBrands[0], end, brand);
+    return (found != end);
   }
 
   int directory_key_;
