@@ -57,7 +57,7 @@
         "name": "connect",
         "type": "function",
         "unprivileged": true,
-        "description": "Attempts to connect to other listeners within the extension (such as the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Extensions may connect to content scripts embedded in tabs via <a href='broken'><var>chrome.tabs.connectToTab</var></a>.",
+        "description": "Attempts to connect to other listeners within the extension (such as the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Extensions may connect to content scripts embedded in tabs via <a href='tabs.html#method-connect'><code>chrome.tabs.connect()</code></a>.",
         "parameters": [
           {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
           {
