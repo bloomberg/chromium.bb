@@ -177,6 +177,8 @@ unit_tests            crash-valgrind       NullModelTableViewTest.*             
 unit_tests            crash-valgrind       RenderViewTest.OnPrintPageAsBitmap                   http://bugs.winehq.org/show_bug.cgi?id=20657 (for wine oom)
 unit_tests            crash-valgrind       TableViewTest.*                                      http://bugs.winehq.org/show_bug.cgi?id=20553
 unit_tests            dontcare-hangwin     UtilityProcessHostTest.ExtensionUnpacker
+unit_tests            dontcare             FirefoxImporterTest.Firefox2NSS3Decryptor            # FF2 dlls without symbols cause leaks
+unit_tests            dontcare             ImporterTest.Firefox2Importer                        # FF2 dlls without symbols cause leaks
 unit_tests            dontcare             SpellCheckTest.SpellCheckText
 unit_tests            fail                 EncryptorTest.EncryptionDecryption                   http://bugs.winehq.org/show_bug.cgi?id=20495
 unit_tests            fail                 EncryptorTest.String16EncryptionDecryption           http://bugs.winehq.org/show_bug.cgi?id=20495
