@@ -1038,20 +1038,21 @@ void NPN_UnscheduleTimer(NPP id, uint32 timer_id) {
     plugin->UnscheduleTimer(timer_id);
 }
 
-NPError NPN_PopUpContextMenu(NPP instance, NPMenu* menu) {
+NPError NPN_PopUpContextMenu(NPP id, NPMenu* menu) {
   NOTIMPLEMENTED();
   return NPERR_GENERIC_ERROR;
 }
 
-NPBool NPN_ConvertPoint(NPP instance, double sourceX, double sourceY,
+NPBool NPN_ConvertPoint(NPP id, double sourceX, double sourceY,
                         NPCoordinateSpace sourceSpace,
                         double *destX, double *destY,
                         NPCoordinateSpace destSpace) {
-  NOTIMPLEMENTED();
-  if (destX)
-    *destX = sourceX;
-  if (destY)
-    *destY = sourceY;
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin.get()) {
+    return plugin->ConvertPoint(sourceX, sourceY, sourceSpace,
+                                destX, destY, destSpace);
+  }
+  NOTREACHED();
   return FALSE;
 }
 

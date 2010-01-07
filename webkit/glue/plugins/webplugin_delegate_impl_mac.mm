@@ -416,6 +416,9 @@ void WebPluginDelegateImpl::UpdateWindowLocation(const WebMouseEvent& event) {
   last_window_x_offset_ = event.globalX - event.windowX;
   last_window_y_offset_ = event.globalY - event.windowY;
 
+  instance_->set_plugin_origin(gfx::Point(event.globalX - event.x,
+                                          event.globalY - event.y));
+
   UpdateDummyWindowBoundsWithOffset(event.windowX - event.x,
                                     event.windowY - event.y, 0, 0);
 }

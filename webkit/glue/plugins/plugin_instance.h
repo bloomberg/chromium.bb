@@ -17,6 +17,7 @@
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gfx/point.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "webkit/glue/plugins/nphostapi.h"
@@ -107,6 +108,9 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void set_drawing_model(int value) { drawing_model_ = value; }
   int event_model() { return event_model_; }
   void set_event_model(int value) { event_model_ = value; }
+  // Updates the instance's tracking of the location of the plugin location
+  // relative to the upper left of the screen.
+  void set_plugin_origin(gfx::Point origin) { plugin_origin_ = origin; }
 #endif
 
   // Creates a stream for sending an URL.  If notify_needed
@@ -156,6 +160,11 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
                        void (*func)(NPP id, uint32 timer_id));
 
   void UnscheduleTimer(uint32 timer_id);
+
+  bool ConvertPoint(double source_x, double source_y,
+                    NPCoordinateSpace source_space,
+                    double* dest_x, double* dest_y,
+                    NPCoordinateSpace dest_space);
 
   //
   // NPAPI methods for calling the Plugin Instance
@@ -247,6 +256,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 #if defined(OS_MACOSX)
   int                                      drawing_model_;
   int                                      event_model_;
+  gfx::Point                               plugin_origin_;
 #endif
   MessageLoop*                             message_loop_;
   scoped_refptr<PluginStreamUrl>           plugin_data_stream_;
