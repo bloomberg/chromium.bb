@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
+#include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -57,7 +58,7 @@ SSLSocketAdapter* SSLSocketAdapter::Create(AsyncSocket* socket) {
 }
 
 SSLSocketAdapter::SSLSocketAdapter(AsyncSocket* socket)
-    : AsyncSocketAdapter(socket),
+    : SSLAdapter(socket),
       ignore_bad_cert_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
         connected_callback_(this, &SSLSocketAdapter::OnConnected)),
@@ -104,6 +105,7 @@ int SSLSocketAdapter::BeginSSL() {
   if (result == net::ERR_IO_PENDING || result == net::OK) {
     return 0;
   } else {
+    LOG(ERROR) << "Could not start SSL: " << net::ErrorToString(result);
     return result;
   }
 }

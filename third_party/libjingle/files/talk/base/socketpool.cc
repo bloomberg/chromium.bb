@@ -139,7 +139,6 @@ StreamInterface*
 NewSocketPool::RequestConnectedStream(const SocketAddress& remote, int* err) {
   AsyncSocket* socket = factory_->CreateAsyncSocket(SOCK_STREAM);
   if (!socket) {
-    ASSERT(false);
     if (err)
       *err = -1;
     return NULL;
@@ -186,7 +185,6 @@ ReuseSocketPool::RequestConnectedStream(const SocketAddress& remote, int* err) {
     LOG(LS_INFO) << "ReuseSocketPool - Creating new socket";
     AsyncSocket* socket = factory_->CreateAsyncSocket(SOCK_STREAM);
     if (!socket) {
-      ASSERT(false);
       if (err)
         *err = -1;
       return NULL;

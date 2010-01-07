@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "chrome/browser/sync/notifier/base/ssl_adapter.h"
 #include "chrome/browser/sync/notifier/gaia_auth/gaiaauth.h"
 #include "talk/base/asynchttprequest.h"
 #include "talk/base/firewallsocketserver.h"
@@ -80,7 +81,12 @@ class GaiaAuth::WorkerThread : public talk_base::SignalThread {
       success_ = true;
       error_ = false;
     } else {
-      talk_base::PhysicalSocketServer physical;
+      // SocketFactory::CreateSSLAdapter() is called on the following
+      // object somewhere in the depths of libjingle so we wrap it
+      // with SSLAdapterSocketFactory to make sure it returns the
+      // right SSLAdapter (see http://crbug.com/30721 ).
+      notifier::SSLAdapterSocketFactory<talk_base::PhysicalSocketServer>
+          physical;
       talk_base::SocketServer* ss = &physical;
       if (firewall_) {
         ss = new talk_base::FirewallSocketServer(ss, firewall_);
@@ -94,7 +100,18 @@ class GaiaAuth::WorkerThread : public talk_base::SignalThread {
       }
       factory.SetLogging(talk_base::LS_VERBOSE, "GaiaAuth");
 
+#if defined(OS_WIN)
       talk_base::ReuseSocketPool pool(&factory);
+#else
+      // On non-Windows platforms our SSL socket wrapper
+      // implementation does not support restartable SSL sockets, so
+      // we turn it off and use a NewSocketPool instead.  This means
+      // that we create separate connections for each HTTP request but
+      // this is okay since we do only two (in GaiaRequestSid() and
+      // GaiaRequestAuthToken()).
+      factory.SetUseRestartableSSLSockets(false);
+      talk_base::NewSocketPool pool(&factory);
+#endif
       talk_base::HttpClient http(agent_, &pool);
 
       talk_base::HttpMonitor monitor(ss);

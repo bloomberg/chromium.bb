@@ -30,6 +30,7 @@
 
 #include "talk/base/socket.h"
 #include "talk/base/asyncsocket.h"
+#include "talk/base/ssladapter.h"
 
 namespace talk_base {
 
@@ -44,6 +45,11 @@ public:
   // Returns a new socket for nonblocking communication.  The type can be
   // SOCK_DGRAM and SOCK_STREAM.
   virtual AsyncSocket* CreateAsyncSocket(int type) = 0;
+
+  // Wraps the given socket in an SSL adapter.
+  virtual SSLAdapter* CreateSSLAdapter(AsyncSocket* socket) {
+    return SSLAdapter::Create(socket);
+  }
 };
 
 } // namespace talk_base

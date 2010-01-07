@@ -8,18 +8,13 @@
 #include <string>
 
 #include "base/logging.h"
+#include "chrome/browser/sync/notifier/base/ssl_adapter.h"
 #include "chrome/browser/sync/notifier/communicator/product_info.h"
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#include "chrome/browser/sync/notifier/communicator/ssl_socket_adapter.h"
-#endif
 #include "talk/base/byteorder.h"
 #include "talk/base/common.h"
 #include "talk/base/firewallsocketserver.h"
 #include "talk/base/logging.h"
 #include "talk/base/socketadapters.h"
-#if defined(OS_WIN)
-#include "talk/base/ssladapter.h"
-#endif
 #include "talk/xmpp/xmppengine.h"
 
 namespace notifier {
@@ -137,12 +132,8 @@ bool XmppSocketAdapter::Connect(const talk_base::SocketAddress& addr) {
   }
 
 #if defined(FEATURE_ENABLE_SSL)
-#if defined(OS_WIN)
-  talk_base::SSLAdapter* ssl = talk_base::SSLAdapter::Create(socket);
-#else
-  notifier::SSLSocketAdapter* ssl = notifier::SSLSocketAdapter::Create(socket);
-#endif
-  socket = ssl;
+  talk_base::SSLAdapter* ssl_adapter = notifier::CreateSSLAdapter(socket);
+  socket = ssl_adapter;  // For our purposes the SSL adapter is the socket.
 #endif
 
   socket->SignalReadEvent.connect(this, &XmppSocketAdapter::OnReadEvent);
@@ -329,13 +320,8 @@ bool XmppSocketAdapter::StartTls(const std::string& verify_host_name) {
 
   ASSERT(write_buffer_length_ == 0);
 
-#if defined(OS_WIN)
   talk_base::SSLAdapter* ssl_adapter =
       static_cast<talk_base::SSLAdapter*>(socket_);
-#else
-  notifier::SSLSocketAdapter* ssl_adapter =
-      static_cast<notifier::SSLSocketAdapter*>(socket_);
-#endif
 
   if (allow_unverified_certs_) {
     ssl_adapter->set_ignore_bad_cert(true);

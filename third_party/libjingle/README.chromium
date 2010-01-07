@@ -40,3 +40,6 @@ Local Modifications:
     library.  The #define guard is SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS.
   * Updated signalthread.* and dependencies to add threadcounting and
     improve multithread safety.
+  * Added a CreateSSLAdapter() function to SocketFactory to allow SSL
+    adapter creation behavior to be overridden.
+  * Improved handling and error-checking of SSL adapters.

@@ -70,9 +70,15 @@ talk_base::AsyncSocket * SslSocketFactory::CreateAsyncSocket(int type) {
   }
 
   if (!hostname_.empty()) {
-    talk_base::SSLAdapter * ssl_adapter = talk_base::SSLAdapter::Create(socket);
+    talk_base::SSLAdapter * ssl_adapter = factory_->CreateSSLAdapter(socket);
     ssl_adapter->set_ignore_bad_cert(ignore_bad_cert_);
-    ssl_adapter->StartSSL(hostname_.c_str(), true);
+    int error = ssl_adapter->StartSSL(hostname_.c_str(),
+                                      use_restartable_ssl_sockets_);
+    if (error != 0) {
+      LOG(LS_WARNING) << "Could not start SSL; error = " << error;
+      delete ssl_adapter;
+      return 0;
+    }
     socket = ssl_adapter;
   }
 

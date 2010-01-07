@@ -621,6 +621,8 @@
         'browser/sync/notifier/base/network_status_detector_task_mt.h',
         'browser/sync/notifier/base/posix/time_posix.cc',
         'browser/sync/notifier/base/signal_thread_task.h',
+        'browser/sync/notifier/base/ssl_adapter.h',
+        'browser/sync/notifier/base/ssl_adapter.cc',
         'browser/sync/notifier/base/static_assert.h',
         'browser/sync/notifier/base/task_pump.cc',
         'browser/sync/notifier/base/task_pump.h',

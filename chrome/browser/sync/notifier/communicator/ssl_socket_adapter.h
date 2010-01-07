@@ -12,6 +12,7 @@
 #include "net/socket/client_socket.h"
 #include "net/socket/ssl_client_socket.h"
 #include "talk/base/asyncsocket.h"
+#include "talk/base/ssladapter.h"
 
 namespace net {
 class LoadLog;
@@ -77,12 +78,9 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
 // This provides a talk_base::AsyncSocketAdapter interface around Chromium's
 // net::SSLClientSocket class.  This allows notifier to use Chromium's SSL
 // implementation instead of OpenSSL.
-class SSLSocketAdapter : public talk_base::AsyncSocketAdapter {
+class SSLSocketAdapter : public talk_base::SSLAdapter {
  public:
   explicit SSLSocketAdapter(talk_base::AsyncSocket* socket);
-
-  bool ignore_bad_cert() const { return ignore_bad_cert_; }
-  void set_ignore_bad_cert(bool ignore) { ignore_bad_cert_ = ignore; }
 
   // StartSSL returns 0 if successful, or non-zero on failure.
   // If StartSSL is called while the socket is closed or connecting, the SSL
