@@ -91,6 +91,7 @@ BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/loading/onload-vs-immediate-r
 BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
+BUG24182 WIN DEBUG SLOW: LayoutTests/inspector/console-dirxml.html = PASS
 
 // Usually <1s in release, ~1s in debug, but occasionally >5s in release.
 BUG27335 WIN RELEASE : LayoutTests/plugins/embed-attributes-setting.html = PASS TIMEOUT
@@ -3126,18 +3127,11 @@ BUG30939 : LayoutTests/svg/filters/filter-clip.svg = IMAGE+TEXT
 // WebKit roll 52468->52535
 BUG31108 WIN LINUX : LayoutTests/fast/text/international/bidi-layout-across-linebreak.html = TEXT
 BUG31252 : LayoutTests/http/tests/security/listener/xss-inactive-closure.html = TEXT
-BUG31108 LINUX : LayoutTests/editing/inserting/12882.html = IMAGE
 
 // WebKit roll 52535->52554
 BUG31146 WIN LINUX : LayoutTests/editing/selection/select-text-overflow-ellipsis.html = IMAGE+TEXT
 BUG31146 MAC : LayoutTests/editing/selection/select-text-overflow-ellipsis.html = IMAGE
 BUG31146 WIN LINUX :  LayoutTests/svg/custom/grayscale-gradient-mask.svg = IMAGE
-BUG31146 WIN : LayoutTests/inspector/console-clear.html = TEXT
-
-// Began failing in the 52554->52633 merge. (Debug has been slow for at least
-// 700 runs as of that merge.)
-BUG31257 WIN RELEASE : LayoutTests/inspector/console-dirxml.html = TEXT
-BUG31257 WIN DEBUG SLOW: LayoutTests/inspector/console-dirxml.html = TEXT
 
 // WebKit roll 52633 -> 52667
 BUG_AJWONG WIN : LayoutTests/svg/batik/text/textFeatures.svg = TEXT
