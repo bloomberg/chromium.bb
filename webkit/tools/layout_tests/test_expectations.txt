@@ -1101,9 +1101,6 @@ BUG19897 WIN LINUX : LayoutTests/svg/custom/getscreenctm-in-mixed-content2.xhtml
 
 BUG10306 LINUX : LayoutTests/svg/carto.net/combobox.svg = FAIL
 
-// There are a ugly room between black strokes and white painting of characters.
-BUG10307 WIN : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = FAIL
-
 // Linux pixeltest failure: slightly different shade of composited
 // alpha in bottom group.
 BUG10310 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-opacity-01-b.svg = FAIL
@@ -2973,7 +2970,7 @@ BUG29737 LINUX : LayoutTests/svg/filters/feComposite.svg = FAIL TIMEOUT CRASH
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-blend-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-color-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-comptran-01-b.svg = IMAGE+TEXT
-BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = IMAGE+TEXT
+BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-gauss-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-morph-01-f.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-offset-01-b.svg = IMAGE+TEXT
@@ -3134,7 +3131,6 @@ BUG31146 MAC : LayoutTests/editing/selection/select-text-overflow-ellipsis.html 
 BUG31146 WIN LINUX :  LayoutTests/svg/custom/grayscale-gradient-mask.svg = IMAGE
 
 // WebKit roll 52633 -> 52667
-BUG_AJWONG WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 
 // New test, needs chromium baseline.
 BUG_DIMICH LINUX WIN : LayoutTests/fast/repaint/subtree-layoutstate-transform.html = IMAGE+TEXT
@@ -3156,26 +3152,7 @@ BUG31642 LINUX DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE+
 BUG_ANTONM : LayoutTests/fast/repaint/float-new-in-block.html = FAIL PASS
 
 // WebKit roll 52852 -> 52867
-BUG_JAPHET WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/painting-marker-01-f.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/painting-marker-02-f.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/painting-marker-03-f.svg = FAIL
-BUG_JAPHET WIN : LayoutTests/svg/custom/circular-marker-reference-1.svg = TEXT
-BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/circular-marker-reference-2.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/circular-marker-reference-3.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/circular-marker-reference-4.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/js-late-marker-creation.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/marker-default-width-height.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/marker-overflow-clip.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/non-circular-marker-reference.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/shapes-supporting-markers.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/filters-composite-02-b.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/filters-displace-01-f.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/filters-image-01-b.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/custom/feDisplacementMap-01.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/marker-referencePoint.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/custom/marker-strokeWidth-changes.svg = FAIL
-BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/marker-opacity.svg = FAIL
+BUG_JAPHET MAC : LayoutTests/svg/custom/marker-strokeWidth-changes.svg = FAIL
 BUG_JAPHET : LayoutTests/websocket/tests/frame-lengths.html = PASS TIMEOUT
 
 // WebKit roll 52899:52930
