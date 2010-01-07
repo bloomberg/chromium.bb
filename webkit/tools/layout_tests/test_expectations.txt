@@ -974,9 +974,6 @@ BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-36-t.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-40-t.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-14-b.svg = FAIL
 
-// Pixel test passes. Texts differ by 1 on SVGRenderText bounding box.
-BUG10297 LINUX : LayoutTests/svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE
-
 // No anti-aliasing on the text.
 BUG10298 LINUX : LayoutTests/svg/custom/use-on-disallowed-foreign-object-3.svg = FAIL
 
@@ -3159,3 +3156,19 @@ BUG_JAPHET : LayoutTests/websocket/tests/frame-lengths.html = PASS TIMEOUT
 
 // WebKit Roll 52930:52943
 BUG_DGLAZKOV : LayoutTests/fast/css/css3-space-in-nth-and-lang.html = MISSING
+
+// WebKit Roll 52943:52952
+// All rebaselines!!! WOOO!! Due to: http://trac.webkit.org/changeset/52947
+BUG_DGLAZKOV WIN LINUX : LayoutTests/editing/pasteboard/pasting-object.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/block/basic/013.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/dom/HTMLObjectElement/vspace-hspace-as-number.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/dynamic/flash-replacement-test.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/frames/001.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/invalid/residual-style.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/parser/001.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/replaced/007.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/replaced/replaced-breaking.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/plugins/embed-attributes-style.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/plugins/netscape-dom-access.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/custom/getsvgdocument.html = TEXT
+BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = TEXT
