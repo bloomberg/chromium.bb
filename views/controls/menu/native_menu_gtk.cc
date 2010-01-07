@@ -66,7 +66,9 @@ NativeMenuGtk::NativeMenuGtk(menus::MenuModel* model)
     : model_(model),
       menu_(NULL),
       menu_shown_(false),
-      suppress_activate_signal_(false) {
+      suppress_activate_signal_(false),
+      menu_activated_(false),
+      activated_index_(-1) {
 }
 
 NativeMenuGtk::~NativeMenuGtk() {
@@ -77,6 +79,8 @@ NativeMenuGtk::~NativeMenuGtk() {
 // NativeMenuGtk, MenuWrapper implementation:
 
 void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
+  menu_activated_ = false;
+
   UpdateStates();
   Position position = { point, static_cast<Menu2::Alignment>(alignment) };
   // TODO(beng): value of '1' will not work for context menus!
@@ -95,6 +99,14 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
 
   g_signal_handler_disconnect(G_OBJECT(menu_), handle_id);
   menu_shown_ = false;
+
+  // Call into the model after the nested message loop quits. This way if the
+  // model ends up deleting us, or MessageLoop::Quit takes a while, there aren't
+  // any problems.
+  if (menu_activated_ && model_->IsEnabledAt(activated_index_) &&
+      MenuTypeCanExecute(model_->GetTypeAt(activated_index_))) {
+    model_->ActivatedAt(activated_index_);
+  }
 }
 
 void NativeMenuGtk::CancelMenu() {
@@ -293,10 +305,8 @@ void NativeMenuGtk::OnActivate(GtkMenuItem* menu_item) {
     return;
   }
 
-  if (model_->IsEnabledAt(position) &&
-      MenuTypeCanExecute(model_->GetTypeAt(position))) {
-    model_->ActivatedAt(position);
-  }
+  menu_activated_ = true;
+  activated_index_ = position;
 }
 
 // static

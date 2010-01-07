@@ -63,6 +63,12 @@ class NativeMenuGtk : public MenuWrapper {
   // state is changed by |UpdateStates()| API.
   bool suppress_activate_signal_;
 
+  // Did the user select something from the menu?
+  bool menu_activated_;
+
+  // If menu_activated_ is true, this is the index of the item.
+  int activated_index_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeMenuGtk);
 };
 
