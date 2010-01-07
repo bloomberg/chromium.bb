@@ -89,8 +89,8 @@ void DebuggerAgentImpl::CreateUtilityContext(
   //
   // Install a security handler with V8.
   global_template->SetAccessCheckCallbacks(
-      V8Custom::v8DOMWindowNamedSecurityCheck,
-      V8Custom::v8DOMWindowIndexedSecurityCheck,
+      V8DOMWindow::namedSecurityCheck,
+      V8DOMWindow::indexedSecurityCheck,
       v8::Integer::New(V8ClassIndex::DOMWINDOW));
   // We set number of internal fields to match that in V8DOMWindow wrapper.
   // See http://crbug.com/28961

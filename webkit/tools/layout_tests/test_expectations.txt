@@ -2678,7 +2678,8 @@ BUG26045 LINUX DEBUG : LayoutTests/fast/frames/frame-set-same-src.html = CRASH P
 BUG25433 WIN LINUX : LayoutTests/css2.1/t040103-ident-03-c.html = IMAGE
 
 // Got flaky with Webkit roll 49958:49961
-BUG_JOHNNYG LINUX DEBUG : LayoutTests/svg/custom/marker-overflow-clip.svg = PASS TEXT
+// Now needs rebaseline
+// BUG_JOHNNYG LINUX DEBUG : LayoutTests/svg/custom/marker-overflow-clip.svg = PASS TEXT
 
 // WebKit roll 49961:49992
 // Added in http://trac.webkit.org/changeset/49990
@@ -2964,7 +2965,7 @@ BUG29748 LINUX : LayoutTests/tables/mozilla_expected_failures/other/test4.html =
 BUG29748 WIN DEBUG : LayoutTests/fast/forms/input-align-image.html = IMAGE+TEXT PASS
 
 // More Webkit Roll to r51875
-BUG29737 LINUX : LayoutTests/svg/filters/feComposite.svg = TIMEOUT CRASH
+BUG29737 LINUX : LayoutTests/svg/filters/feComposite.svg = FAIL TIMEOUT CRASH
 
 // More Webkit Roll to r51875
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-blend-01-b.svg = IMAGE+TEXT
@@ -2998,7 +2999,7 @@ BUG29737 WIN LINUX : LayoutTests/fast/repaint/block-selection-gap-in-composited-
 BUG29737 WIN LINUX : LayoutTests/fast/repaint/block-selection-gap-in-table-cell.html = IMAGE+TEXT
 BUG29737 : LayoutTests/svg/dom/operatorAttribute.html = TEXT
 
-BUG29737 WIN : LayoutTests/svg/filters/feComposite.svg = TIMEOUT CRASH
+BUG29737 WIN : LayoutTests/svg/filters/feComposite.svg = FAIL TIMEOUT CRASH
 
 // WebKit Roll to r51915
 BUG29930 : LayoutTests/fast/loader/input-element-page-cache-crash.html = TIMEOUT PASS
@@ -3130,7 +3131,6 @@ BUG31108 LINUX : LayoutTests/editing/inserting/12882.html = IMAGE
 BUG31146 WIN LINUX : LayoutTests/editing/selection/select-text-overflow-ellipsis.html = IMAGE+TEXT
 BUG31146 MAC : LayoutTests/editing/selection/select-text-overflow-ellipsis.html = IMAGE
 BUG31146 WIN LINUX :  LayoutTests/svg/custom/grayscale-gradient-mask.svg = IMAGE
-BUG31146 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-displace-01-f.svg = TEXT
 BUG31146 WIN : LayoutTests/inspector/console-clear.html = TEXT
 
 // Began failing in the 52554->52633 merge. (Debug has been slow for at least
@@ -3160,3 +3160,24 @@ BUG31642 LINUX DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE+
 
 // Needs a rebaseline
 BUG_ANTONM : LayoutTests/fast/repaint/float-new-in-block.html = FAIL PASS
+
+// WebKit roll 52852 -> 52867
+BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/painting-marker-01-f.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/painting-marker-02-f.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/painting-marker-03-f.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/circular-marker-reference-2.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/circular-marker-reference-3.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/circular-marker-reference-4.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/js-late-marker-creation.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/marker-default-width-height.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/marker-overflow-clip.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/non-circular-marker-reference.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/shapes-supporting-markers.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/filters-composite-02-b.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/filters-displace-01-f.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/filters-image-01-b.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/feDisplacementMap-01.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/marker-referencePoint.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/marker-strokeWidth-changes.svg = FAIL
+BUG_JAPHET : LayoutTests/svg/custom/marker-opacity.svg = FAIL
