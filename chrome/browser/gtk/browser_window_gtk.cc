@@ -208,6 +208,10 @@ const struct AcceleratorMapping {
   { GDK_w, IDC_CLOSE_TAB, GDK_CONTROL_MASK },
   { GDK_t, IDC_RESTORE_TAB,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+  { GDK_t, IDC_NEW_TAB, GDK_CONTROL_MASK },
+  { GDK_n, IDC_NEW_WINDOW, GDK_CONTROL_MASK },
+  { GDK_n, IDC_NEW_INCOGNITO_WINDOW,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
 
   { GDK_1, IDC_SELECT_TAB_0, GDK_CONTROL_MASK },
   { GDK_2, IDC_SELECT_TAB_1, GDK_CONTROL_MASK },
@@ -288,6 +292,13 @@ const struct AcceleratorMapping {
   { XF86XK_Reload, IDC_RELOAD, GdkModifierType(0) },
   { XF86XK_Refresh, IDC_RELOAD, GdkModifierType(0) },
 
+  // Dev tools.
+  { GDK_u, IDC_VIEW_SOURCE, GDK_CONTROL_MASK },
+  { GDK_i, IDC_DEV_TOOLS, GDK_CONTROL_MASK },
+  { GDK_j, IDC_DEV_TOOLS_CONSOLE,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+  { GDK_Escape, IDC_TASK_MANAGER, GDK_SHIFT_MASK },
+
   // Miscellany.
   { GDK_d, IDC_BOOKMARK_ALL_TABS,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
@@ -296,19 +307,26 @@ const struct AcceleratorMapping {
   { XF86XK_Favorites, IDC_SHOW_BOOKMARK_BAR, GdkModifierType(0) },
   { XF86XK_History, IDC_SHOW_HISTORY, GdkModifierType(0) },
   { GDK_o, IDC_OPEN_FILE, GDK_CONTROL_MASK },
-  { GDK_F11, IDC_FULLSCREEN, GdkModifierType(0) },
-  { GDK_u, IDC_VIEW_SOURCE, GDK_CONTROL_MASK },
+  { GDK_f, IDC_FIND, GDK_CONTROL_MASK },
   { GDK_p, IDC_PRINT, GDK_CONTROL_MASK },
-  { GDK_Escape, IDC_TASK_MANAGER, GDK_SHIFT_MASK },
+  { GDK_b, IDC_SHOW_BOOKMARK_BAR, GDK_CONTROL_MASK },
+  { GDK_b, IDC_SHOW_BOOKMARK_MANAGER,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+  { GDK_F11, IDC_FULLSCREEN, GdkModifierType(0) },
   { GDK_Delete, IDC_CLEAR_BROWSING_DATA,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+  { GDK_h, IDC_SHOW_HISTORY, GDK_CONTROL_MASK },
+  { GDK_j, IDC_SHOW_DOWNLOADS, GDK_CONTROL_MASK },
+  { GDK_F1, IDC_HELP_PAGE, GdkModifierType(0) },
 
 #if defined(OS_CHROMEOS)
   { GDK_f, IDC_FULLSCREEN,
     GdkModifierType(GDK_CONTROL_MASK | GDK_MOD1_MASK) },
   { GDK_Delete, IDC_TASK_MANAGER,
     GdkModifierType(GDK_CONTROL_MASK | GDK_MOD1_MASK) },
-  { GDK_comma, IDC_CONTROL_PANEL, GdkModifierType(GDK_CONTROL_MASK) },
+  { GDK_comma, IDC_CONTROL_PANEL, GDK_CONTROL_MASK },
+#else
+  { GDK_q, IDC_EXIT, GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
 #endif
 };
 

@@ -190,7 +190,7 @@ class TaskManagerGtk::ContextMenuController : public MenuGtk::Delegate {
  public:
   explicit ContextMenuController(TaskManagerGtk* task_manager)
       : task_manager_(task_manager) {
-    menu_.reset(new MenuGtk(this, false));
+    menu_.reset(new MenuGtk(this));
     for (int i = kTaskManagerPage; i < kTaskManagerColumnCount; i++) {
       menu_->AppendCheckMenuItemWithLabel(
           i, l10n_util::GetStringUTF8(TaskManagerColumnIDToResourceID(i)));
@@ -225,7 +225,7 @@ class TaskManagerGtk::ContextMenuController : public MenuGtk::Delegate {
     return TreeViewColumnIsVisible(task_manager_->treeview_, colid);
   }
 
-  virtual void ExecuteCommand(int command_id) {
+  virtual void ExecuteCommandById(int command_id) {
     if (!task_manager_)
       return;
 

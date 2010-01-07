@@ -38,7 +38,7 @@ class MenuGtk {
     virtual std::string GetLabel(int command_id) const { return std::string(); }
 
     // Executes the command.
-    virtual void ExecuteCommand(int command_id) {}
+    virtual void ExecuteCommandById(int command_id) {}
 
     // Called when the menu stops showing. This will be called along with
     // ExecuteCommand if the user clicks an item, but will also be called when
@@ -52,12 +52,12 @@ class MenuGtk {
 
   // Builds a MenuGtk that uses |delegate| to perform actions and |menu_data|
   // to create the menu.
-  MenuGtk(MenuGtk::Delegate* delegate, const MenuCreateMaterial* menu_data,
-          GtkAccelGroup* accel_group);
+  MenuGtk(MenuGtk::Delegate* delegate, const MenuCreateMaterial* menu_data);
+  // Builds a MenuGtk that uses |delegate| to perform actions and build the
+  // menu.
+  explicit MenuGtk(MenuGtk::Delegate* delegate);
   // Creates a MenuGtk that uses |delegate| to perform actions.  Builds the
-  // menu using |model_| if non-NULL.
-  // TODO(estade): MenuModel support is only partial. Only TYPE_SEPARATOR and
-  // TYPE_COMMAND are currently implemented.
+  // menu using |model_|.
   MenuGtk(MenuGtk::Delegate* delegate, menus::MenuModel* model);
   ~MenuGtk();
 
@@ -71,6 +71,9 @@ class MenuGtk {
   void AppendCheckMenuItemWithLabel(int command_id, const std::string& label);
   void AppendSeparator();
   void AppendMenuItem(int command_id, GtkWidget* menu_item);
+  void AppendMenuItemToMenu(int command_id,
+                            GtkWidget* menu_item,
+                            GtkWidget* menu);
 
   // Displays the menu. |timestamp| is the time of activation. The popup is
   // statically positioned at |widget|.
@@ -119,8 +122,7 @@ class MenuGtk {
   // A recursive function that transforms a MenuCreateMaterial tree into a set
   // of GtkMenuItems.
   void BuildMenuIn(GtkWidget* menu,
-                   const MenuCreateMaterial* menu_data,
-                   GtkAccelGroup* accel_group);
+                   const MenuCreateMaterial* menu_data);
 
   // Builds a GtkImageMenuItem.
   GtkWidget* BuildMenuItemWithImage(const std::string& label,
@@ -128,18 +130,20 @@ class MenuGtk {
 
   // A function that creates a GtkMenu from |model_|.
   void BuildMenuFromModel();
+  // Implementation of the above; called recursively.
+  void BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu);
 
   // Contains implementation for OnMenuShow.
   void UpdateMenu();
 
-  // Dispatches to either |model_| (if it is non-null) or |delegate_|. The
+  // Dispatches to either |model| (if it is non-null) or |delegate_|. The
   // reason for this awkwardness is that we are in a transitional period where
   // we support both MenuModel and Delegate as a menu controller.
   // TODO(estade): remove controller functions from Delegate.
   // http://crbug.com/31365
-  bool IsCommandEnabled(int id);
-  void ExecuteCommand(int id);
-  bool IsItemChecked(int id);
+  bool IsCommandEnabled(menus::MenuModel* model, int id);
+  void ExecuteCommand(menus::MenuModel* model, int id);
+  bool IsItemChecked(menus::MenuModel* model, int id);
 
   // Callback for when a menu item is clicked.
   static void OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu);

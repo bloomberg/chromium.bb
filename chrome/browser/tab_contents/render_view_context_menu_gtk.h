@@ -34,7 +34,7 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
   // Menu::Delegate implementation ---------------------------------------------
   virtual bool IsCommandEnabled(int id) const;
   virtual bool IsItemChecked(int id) const;
-  virtual void ExecuteCommand(int id);
+  virtual void ExecuteCommandById(int id);
   virtual std::string GetLabel(int id) const;
   virtual void StoppedShowing();
 

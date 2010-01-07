@@ -1335,7 +1335,7 @@ gboolean BookmarkManagerGtk::OnTreeViewKeyPress(
 
   if (bm->organize_menu_.get() &&
       bm->organize_menu_->IsCommandEnabled(command)) {
-    bm->organize_menu_->ExecuteCommand(command);
+    bm->organize_menu_->ExecuteCommandById(command);
     return TRUE;
   }
 

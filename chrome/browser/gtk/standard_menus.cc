@@ -51,9 +51,9 @@ struct MenuCreateMaterial developer_menu_materials_no_inspector[] = {
 struct MenuCreateMaterial standard_page_menu_materials[] = {
   { MENU_NORMAL, IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS },
   { MENU_SEPARATOR },
-  { MENU_NORMAL, IDC_CUT, IDS_CUT, 0, NULL, GDK_x, GDK_CONTROL_MASK, true },
-  { MENU_NORMAL, IDC_COPY, IDS_COPY, 0, NULL, GDK_c, GDK_CONTROL_MASK, true },
-  { MENU_NORMAL, IDC_PASTE, IDS_PASTE, 0, NULL, GDK_v, GDK_CONTROL_MASK, true },
+  { MENU_NORMAL, IDC_CUT, IDS_CUT, 0, NULL, GDK_x, GDK_CONTROL_MASK },
+  { MENU_NORMAL, IDC_COPY, IDS_COPY, 0, NULL, GDK_c, GDK_CONTROL_MASK },
+  { MENU_NORMAL, IDC_PASTE, IDS_PASTE, 0, NULL, GDK_v, GDK_CONTROL_MASK },
   { MENU_SEPARATOR },
   { MENU_NORMAL, IDC_FIND, IDS_FIND, 0, NULL, GDK_f, GDK_CONTROL_MASK },
   { MENU_NORMAL, IDC_SAVE_PAGE, IDS_SAVE_PAGE, 0, NULL, GDK_s,
@@ -118,7 +118,7 @@ const MenuCreateMaterial* GetStandardPageMenu(Profile* profile,
   EncodingMenuController::EncodingMenuItemList items;
   controller.GetEncodingMenuItems(profile, &items);
 
-  MenuGtk* encodings_menu = new MenuGtk(delegate, false);
+  MenuGtk* encodings_menu = new MenuGtk(delegate);
   GSList* radio_group = NULL;
   for (EncodingMenuController::EncodingMenuItemList::const_iterator i =
            items.begin();

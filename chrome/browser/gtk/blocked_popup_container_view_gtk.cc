@@ -149,7 +149,7 @@ bool BlockedPopupContainerViewGtk::IsItemChecked(int id) const {
   return false;
 }
 
-void BlockedPopupContainerViewGtk::ExecuteCommand(int id) {
+void BlockedPopupContainerViewGtk::ExecuteCommandById(int id) {
   DCHECK_GT(id, 0);
   size_t id_size_t = static_cast<size_t>(id);
 
@@ -220,7 +220,7 @@ void BlockedPopupContainerViewGtk::Init() {
 
 void BlockedPopupContainerViewGtk::OnMenuButtonClicked(
     GtkButton *button, BlockedPopupContainerViewGtk* container) {
-  container->launch_menu_.reset(new MenuGtk(container, false));
+  container->launch_menu_.reset(new MenuGtk(container));
 
   // Set items 1 .. popup_count as individual popups.
   size_t popup_count = container->model_->GetBlockedPopupCount();

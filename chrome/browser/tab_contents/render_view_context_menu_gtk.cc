@@ -25,7 +25,7 @@ RenderViewContextMenuGtk::~RenderViewContextMenuGtk() {
 
 void RenderViewContextMenuGtk::DoInit() {
   DoneMakingMenu(&menu_);
-  gtk_menu_.reset(new MenuGtk(this, menu_.data(), NULL));
+  gtk_menu_.reset(new MenuGtk(this, menu_.data()));
 }
 
 void RenderViewContextMenuGtk::Popup(const gfx::Point& point) {
@@ -42,7 +42,7 @@ bool RenderViewContextMenuGtk::IsItemChecked(int id) const {
   return ItemIsChecked(id);
 }
 
-void RenderViewContextMenuGtk::ExecuteCommand(int id) {
+void RenderViewContextMenuGtk::ExecuteCommandById(int id) {
   ExecuteItemCommand(id);
 }
 

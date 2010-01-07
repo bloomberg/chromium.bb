@@ -124,7 +124,7 @@ class BrowserTitlebar : public MenuGtk::Delegate,
   // MenuGtk::Delegate implementation:
   virtual bool IsCommandEnabled(int command_id) const;
   virtual bool IsItemChecked(int command_id) const;
-  virtual void ExecuteCommand(int command_id);
+  virtual void ExecuteCommandById(int command_id);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

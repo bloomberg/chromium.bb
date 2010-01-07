@@ -293,7 +293,7 @@ void BookmarkContextMenuGtk::DelegateDestroyed() {
   delegate_ = NULL;
 }
 
-void BookmarkContextMenuGtk::ExecuteCommand(int id) {
+void BookmarkContextMenuGtk::ExecuteCommandById(int id) {
   if (delegate_)
     delegate_->WillExecuteCommand();
 
@@ -526,7 +526,7 @@ void BookmarkContextMenuGtk::ModelChanged() {
 }
 
 void BookmarkContextMenuGtk::CreateMenuObject() {
-  menu_.reset(new MenuGtk(this, false));
+  menu_.reset(new MenuGtk(this));
 }
 
 void BookmarkContextMenuGtk::AppendItem(int id) {

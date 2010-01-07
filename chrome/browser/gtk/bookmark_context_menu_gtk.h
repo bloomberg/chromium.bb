@@ -70,7 +70,7 @@ class BookmarkContextMenuGtk : public BookmarkModelObserver,
   void DelegateDestroyed();
 
   // Menu::Delegate / MenuGtk::Delegate methods.
-  virtual void ExecuteCommand(int id);
+  virtual void ExecuteCommandById(int id);
   virtual bool IsItemChecked(int id) const;
   virtual bool IsCommandEnabled(int id) const;
 

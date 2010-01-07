@@ -125,14 +125,14 @@ GdkColor PickLuminosityContrastingColor(const GdkColor* base,
 
 MenuCreateMaterial g_favicon_menu[] = {
   { MENU_NORMAL, IDC_BACK, IDS_CONTENT_CONTEXT_BACK, 0, NULL,
-    GDK_Left, GDK_MOD1_MASK, true },
+    GDK_Left, GDK_MOD1_MASK },
   { MENU_NORMAL, IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD, 0, NULL,
-    GDK_Right, GDK_MOD1_MASK, true },
+    GDK_Right, GDK_MOD1_MASK },
   { MENU_NORMAL, IDC_RELOAD, IDS_APP_MENU_RELOAD, 0, NULL,
-    GDK_R, GDK_CONTROL_MASK, true },
+    GDK_R, GDK_CONTROL_MASK },
   { MENU_SEPARATOR },
   { MENU_NORMAL, IDC_RESTORE_TAB, IDS_RESTORE_TAB, 0, NULL,
-    GDK_T, GDK_CONTROL_MASK | GDK_SHIFT_MASK, true },
+    GDK_T, GDK_CONTROL_MASK | GDK_SHIFT_MASK },
   { MENU_NORMAL, IDC_DUPLICATE_TAB, IDS_APP_MENU_DUPLICATE_APP_WINDOW },
   { MENU_NORMAL, IDC_COPY_URL, IDS_APP_MENU_COPY_URL },
   { MENU_NORMAL, IDC_SHOW_AS_TAB, IDS_SHOW_AS_TAB },
@@ -501,7 +501,7 @@ void BrowserTitlebar::UpdateTextColor() {
 void BrowserTitlebar::ShowFaviconMenu(GdkEventButton* event) {
   if (!favicon_menu_.get()) {
     favicon_menu_.reset(new MenuGtk(this,
-        GetFaviconMenu(browser_window_->browser()->profile(), this), NULL));
+        GetFaviconMenu(browser_window_->browser()->profile(), this)));
   }
 
   favicon_menu_->Popup(app_mode_favicon_, reinterpret_cast<GdkEvent*>(event));
@@ -596,12 +596,12 @@ void BrowserTitlebar::ShowContextMenu() {
   if (!context_menu_.get()) {
     static const MenuCreateMaterial context_menu_blueprint[] = {
         { MENU_NORMAL, IDC_NEW_TAB, IDS_TAB_CXMENU_NEWTAB, 0, NULL,
-            GDK_t, GDK_CONTROL_MASK, true },
+            GDK_t, GDK_CONTROL_MASK },
         { MENU_NORMAL, IDC_RESTORE_TAB, IDS_RESTORE_TAB, 0, NULL,
-            GDK_t, GDK_CONTROL_MASK | GDK_SHIFT_MASK, true },
+            GDK_t, GDK_CONTROL_MASK | GDK_SHIFT_MASK },
         { MENU_SEPARATOR },
         { MENU_NORMAL, IDC_TASK_MANAGER, IDS_TASK_MANAGER, 0, NULL,
-            GDK_Escape, GDK_SHIFT_MASK, true },
+            GDK_Escape, GDK_SHIFT_MASK },
 #if !defined(OS_CHROMEOS)
         { MENU_SEPARATOR },
         { MENU_CHECKBOX, kShowWindowDecorationsCommand,
@@ -610,7 +610,7 @@ void BrowserTitlebar::ShowContextMenu() {
         { MENU_END },
     };
 
-    context_menu_.reset(new MenuGtk(this, context_menu_blueprint, NULL));
+    context_menu_.reset(new MenuGtk(this, context_menu_blueprint));
   }
 
   context_menu_->PopupAsContext(gtk_get_current_event_time());
@@ -646,7 +646,7 @@ bool BrowserTitlebar::IsItemChecked(int command_id) const {
   return false;
 }
 
-void BrowserTitlebar::ExecuteCommand(int command_id) {
+void BrowserTitlebar::ExecuteCommandById(int command_id) {
   if (command_id == kShowWindowDecorationsCommand) {
     PrefService* prefs = browser_window_->browser()->profile()->GetPrefs();
     prefs->SetBoolean(prefs::kUseCustomChromeFrame,

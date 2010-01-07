@@ -11,8 +11,10 @@
 #include "app/gfx/gtk_util.h"
 #include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
+#include "app/menus/accelerator_gtk.h"
 #include "app/resource_bundle.h"
 #include "base/base_paths.h"
+#include "base/keyboard_codes_posix.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -79,6 +81,8 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
                                            this,
                                            browser)),
       model_(browser->toolbar_model()),
+      page_menu_model_(this, browser),
+      app_menu_model_(this, browser),
       browser_(browser),
       window_(window),
       profile_(NULL),
@@ -107,13 +111,10 @@ BrowserToolbarGtk::~BrowserToolbarGtk() {
 
   offscreen_entry_.Destroy();
 
-  // When we created our MenuGtk objects, we pass them a pointer to our accel
-  // group. Make sure to tear them down before |accel_group_|.
   page_menu_.reset();
   app_menu_.reset();
   page_menu_button_.Destroy();
   app_menu_button_.Destroy();
-  g_object_unref(accel_group_);
 }
 
 void BrowserToolbarGtk::Init(Profile* profile,
@@ -144,14 +145,6 @@ void BrowserToolbarGtk::Init(Profile* profile,
   // normal sizing".
   gtk_widget_set_size_request(toolbar_, -1, ShouldOnlyShowLocation() ?
       kToolbarHeightLocationBarOnly : kToolbarHeight);
-
-  // A GtkAccelGroup is not InitiallyUnowned, meaning we get a real reference
-  // count starting at one.  We don't want the lifetime to be managed by the
-  // top level window, since the lifetime should be tied to the C++ object.
-  // When we add the accelerator group, the window will take a reference, but
-  // we still hold on to the original, and thus own a reference to the group.
-  accel_group_ = gtk_accel_group_new();
-  gtk_window_add_accel_group(top_level_window, accel_group_);
 
   // Group back and forward into an hbox so there's no spacing between them.
   GtkWidget* back_forward_hbox_ = gtk_hbox_new(FALSE, 0);
@@ -214,8 +207,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
       theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_PAGE));
   gtk_container_add(GTK_CONTAINER(page_menu), page_menu_image_);
 
-  page_menu_.reset(new MenuGtk(this, GetStandardPageMenu(profile_, this),
-                               accel_group_));
+  page_menu_.reset(new MenuGtk(this, &page_menu_model_));
   gtk_box_pack_start(GTK_BOX(menus_hbox_), page_menu, FALSE, FALSE, 0);
 
   GtkWidget* chrome_menu = BuildToolbarMenuButton(
@@ -226,7 +218,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
   app_menu_image_ = gtk_image_new_from_pixbuf(
       theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_CHROME));
   gtk_container_add(GTK_CONTAINER(chrome_menu), app_menu_image_);
-  app_menu_.reset(new MenuGtk(this, GetStandardAppMenu(), accel_group_));
+
+  app_menu_.reset(new MenuGtk(this, &app_menu_model_));
   gtk_box_pack_start(GTK_BOX(menus_hbox_), chrome_menu, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(toolbar_), menus_hbox_, FALSE, FALSE, 0);
@@ -336,11 +329,20 @@ void BrowserToolbarGtk::EnabledStateChangedForCommand(int id, bool enabled) {
 
 // MenuGtk::Delegate -----------------------------------------------------------
 
-bool BrowserToolbarGtk::IsCommandEnabled(int command_id) const {
-  return browser_->command_updater()->IsCommandEnabled(command_id);
+void BrowserToolbarGtk::StoppedShowing() {
+  gtk_chrome_button_unset_paint_state(
+      GTK_CHROME_BUTTON(page_menu_button_.get()));
+  gtk_chrome_button_unset_paint_state(
+      GTK_CHROME_BUTTON(app_menu_button_.get()));
 }
 
-bool BrowserToolbarGtk::IsItemChecked(int id) const {
+// menus::SimpleMenuModel::Delegate
+
+bool BrowserToolbarGtk::IsCommandIdEnabled(int id) const {
+  return browser_->command_updater()->IsCommandEnabled(id);
+}
+
+bool BrowserToolbarGtk::IsCommandIdChecked(int id) const {
   if (!profile_)
     return false;
 
@@ -362,11 +364,110 @@ void BrowserToolbarGtk::ExecuteCommand(int id) {
   browser_->ExecuteCommand(id);
 }
 
-void BrowserToolbarGtk::StoppedShowing() {
-  gtk_chrome_button_unset_paint_state(
-      GTK_CHROME_BUTTON(page_menu_button_.get()));
-  gtk_chrome_button_unset_paint_state(
-      GTK_CHROME_BUTTON(app_menu_button_.get()));
+bool BrowserToolbarGtk::GetAcceleratorForCommandId(
+    int id,
+    menus::Accelerator* accelerator) {
+  switch (id) {
+    case IDC_ZOOM_PLUS:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_ADD, false, true, false);
+      break;
+
+    case IDC_ZOOM_NORMAL:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_NUMPAD0,
+                                           false, true, false);
+      break;
+
+    case IDC_ZOOM_MINUS:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_SUBTRACT,
+                                           false, true, false);
+      break;
+
+    case IDC_VIEW_SOURCE:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_U, false, true, false);
+      break;
+
+    case IDC_DEV_TOOLS:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_I, true, true, false);
+      break;
+
+    case IDC_DEV_TOOLS_CONSOLE:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_J, true, true, false);
+      break;
+
+    case IDC_TASK_MANAGER:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_ESCAPE,
+                                           true, false, false);
+      break;
+
+    case IDC_CUT:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_X, false, true, false);
+      break;
+
+    case IDC_COPY:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_C, false, true, false);
+      break;
+
+    case IDC_PASTE:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_V, false, true, false);
+      break;
+
+    case IDC_FIND:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_F, false, true, false);
+      break;
+
+    case IDC_SAVE_PAGE:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_S, false, true, false);
+      break;
+
+    case IDC_PRINT:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_P, false, true, false);
+      break;
+
+    case IDC_NEW_TAB:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_T, false, true, false);
+      break;
+
+    case IDC_NEW_WINDOW:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_N, false, true, false);
+      break;
+
+    case IDC_NEW_INCOGNITO_WINDOW:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_N, true, true, false);
+      break;
+
+    case IDC_SHOW_BOOKMARK_BAR:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_B, false, true, false);
+      break;
+
+    case IDC_FULLSCREEN:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_F11, false, false, false);
+      break;
+
+    case IDC_SHOW_HISTORY:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_H, false, true, false);
+      break;
+
+    case IDC_SHOW_BOOKMARK_MANAGER:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_B, true, true, false);
+      break;
+
+    case IDC_SHOW_DOWNLOADS:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_J, false, true, false);
+      break;
+
+    case IDC_HELP_PAGE:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_F1, false, false, false);
+      break;
+
+    case IDC_EXIT:
+      *accelerator = menus::AcceleratorGtk(base::VKEY_Q, true, true, false);
+      break;
+
+    default:
+      return false;
+  }
+
+  return true;
 }
 
 // NotificationObserver --------------------------------------------------------

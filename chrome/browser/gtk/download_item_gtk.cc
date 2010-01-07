@@ -93,7 +93,7 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
     if (menu_.get() == NULL ||
         (download_is_complete && !menu_is_for_complete_download_)) {
       menu_.reset(new MenuGtk(this, download_is_complete ?
-          finished_download_menu : in_progress_download_menu, NULL));
+          finished_download_menu : in_progress_download_menu));
       menu_is_for_complete_download_ = download_is_complete;
     }
     menu_->Popup(widget, event);
@@ -108,7 +108,7 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
     return ItemIsChecked(id);
   }
 
-  virtual void ExecuteCommand(int id) {
+  virtual void ExecuteCommandById(int id) {
     ExecuteItemCommand(id);
   }
 

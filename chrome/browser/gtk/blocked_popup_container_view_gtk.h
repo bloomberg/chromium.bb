@@ -63,7 +63,7 @@ class BlockedPopupContainerViewGtk : public BlockedPopupContainerView,
   // Overridden from MenuGtk::Delegate:
   virtual bool IsCommandEnabled(int command_id) const;
   virtual bool IsItemChecked(int command_id) const;
-  virtual void ExecuteCommand(int command_id);
+  virtual void ExecuteCommandById(int command_id);
 
  private:
   // For the static constructor BlockedPopupContainerView::Create().

@@ -8,11 +8,14 @@
 #include <gtk/gtk.h>
 #include <string>
 
+#include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -37,6 +40,7 @@ class ToolbarStarToggleGtk;
 // events back to the Browser.
 class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                           public ProfileSyncServiceObserver,
+                          public menus::SimpleMenuModel::Delegate,
                           public MenuGtk::Delegate,
                           public NotificationObserver,
                           public BubblePositioner,
@@ -77,10 +81,14 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   virtual void EnabledStateChangedForCommand(int id, bool enabled);
 
   // Overridden from MenuGtk::Delegate:
-  virtual bool IsCommandEnabled(int command_id) const;
-  virtual bool IsItemChecked(int id) const;
-  virtual void ExecuteCommand(int command_id);
   virtual void StoppedShowing();
+
+  // Overridden from menus::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdEnabled(int id) const;
+  virtual bool IsCommandIdChecked(int id) const;
+  virtual void ExecuteCommand(int id);
+  virtual bool GetAcceleratorForCommandId(int id,
+                                          menus::Accelerator* accelerator);
 
   // NotificationObserver implementation.
   void Observe(NotificationType type,
@@ -183,9 +191,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // The location bar view.
   scoped_ptr<LocationBarViewGtk> location_bar_;
 
-  // A pointer to our window's accelerator list.
-  GtkAccelGroup* accel_group_;
-
   // All the buttons in the toolbar.
   scoped_ptr<BackForwardButtonGtk> back_, forward_;
   scoped_ptr<CustomDrawButton> reload_;
@@ -207,6 +212,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   scoped_ptr<MenuGtk> page_menu_;
   scoped_ptr<MenuGtk> app_menu_;
+
+  PageMenuModel page_menu_model_;
+  AppMenuModel app_menu_model_;
 
   Browser* browser_;
   BrowserWindowGtk* window_;
