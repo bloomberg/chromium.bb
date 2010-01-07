@@ -308,8 +308,6 @@
         'browser/chromeos/usb_mount_observer.h',
         'browser/chromeos/version_loader.cc',
         'browser/chromeos/version_loader.h',
-        'browser/cld_helper.cc',
-        'browser/cld_helper.h',
         'browser/cocoa/about_ipc_bridge.h',
         'browser/cocoa/about_ipc_bridge.mm',
         'browser/cocoa/about_ipc_controller.h',

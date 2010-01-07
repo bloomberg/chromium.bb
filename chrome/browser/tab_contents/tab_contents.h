@@ -18,7 +18,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/cancelable_request.h"
-#include "chrome/browser/cld_helper.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/fav_icon_helper.h"
@@ -289,9 +288,6 @@ class TabContents : public PageNavigator,
   // to the foreground if necessary.
   void Activate();
 
-  // Called by CLDHelper to notify the language of a page has been detected.
-  void PageLanguageDetected();
-
   // TODO(brettw) document these.
   virtual void ShowContents();
   virtual void HideContents();
@@ -541,6 +537,9 @@ class TabContents : public PageNavigator,
   const FindNotificationDetails& find_result() const {
     return last_search_result_;
   }
+
+  // Get the most probable language of the text content in the tab.
+  void GetPageLanguage();
 
   // Misc state & callbacks ----------------------------------------------------
 
@@ -815,10 +814,6 @@ class TabContents : public PageNavigator,
   virtual void OnDidGetApplicationInfo(
       int32 page_id,
       const webkit_glue::WebApplicationInfo& info);
-  virtual void OnPageContents(const GURL& url,
-                              int renderer_process_id,
-                              int32 page_id,
-                              const std::wstring& contents);
 
   // RenderViewHostDelegate::Resource implementation.
   virtual void DidStartProvisionalLoadForFrame(RenderViewHost* render_view_host,
@@ -1182,9 +1177,6 @@ class TabContents : public PageNavigator,
   // Can be NULL in which case we defer to the request context from the
   // profile
   scoped_refptr<URLRequestContextGetter> request_context_;
-
-  // Used to retrieve the language of the current page.
-  scoped_refptr<CLDHelper> cld_helper_;
 
   // ---------------------------------------------------------------------------
 
