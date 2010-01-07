@@ -173,7 +173,7 @@ void WebPluginDelegateImpl::PlatformInitialize() {
 #endif
     case NPDrawingModelCoreGraphics:
 #ifndef NP_NO_CARBON
-      if (instance()->drawing_model() == NPEventModelCarbon)
+      if (instance()->event_model() == NPEventModelCarbon)
         window_.window = &cg_context_;
 #endif
       window_.type = NPWindowTypeDrawable;
