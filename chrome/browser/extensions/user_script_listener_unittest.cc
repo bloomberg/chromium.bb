@@ -211,10 +211,6 @@ class ExtensionTestingProfile : public TestingProfile {
     service_ = NULL;
   }
 
-  // Duplicate old functionality from TestingProfile. The ContextGetter
-  // provided by TestingProfile only has support for the CookieMonster.
-  virtual URLRequestContextGetter* GetRequestContext() { return NULL; }
-
   virtual ExtensionsService* GetExtensionsService() {
     return service_.get();
   }

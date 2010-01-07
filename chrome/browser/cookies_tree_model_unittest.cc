@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,41 @@
 
 namespace {
 
+class TestURLRequestContext : public URLRequestContext {
+ public:
+  TestURLRequestContext() {
+    cookie_store_ = new net::CookieMonster();
+  }
+};
+
+class TestURLRequestContextGetter : public URLRequestContextGetter {
+ public:
+  virtual URLRequestContext* GetURLRequestContext() {
+    if (!context_)
+      context_ = new TestURLRequestContext();
+    return context_.get();
+  }
+ private:
+  scoped_refptr<URLRequestContext> context_;
+};
+
+class CookieTestingProfile : public TestingProfile {
+ public:
+  virtual URLRequestContextGetter* GetRequestContext() {
+    if (!url_request_context_getter_.get())
+      url_request_context_getter_ = new TestURLRequestContextGetter;
+    return url_request_context_getter_.get();
+  }
+  virtual ~CookieTestingProfile() {}
+
+  net::CookieMonster* GetCookieMonster() {
+    return GetRequestContext()->GetCookieStore()->GetCookieMonster();
+  }
+
+ private:
+  scoped_refptr<URLRequestContextGetter> url_request_context_getter_;
+};
+
 class CookiesTreeModelTest : public testing::Test {
  public:
   CookiesTreeModelTest() : io_thread_(ChromeThread::IO, &message_loop_) {
@@ -24,7 +59,7 @@ class CookiesTreeModelTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    profile_.reset(new TestingProfile());
+    profile_.reset(new CookieTestingProfile());
   }
 
   // Get the cookie names in the cookie list, as a comma seperated string.
@@ -81,7 +116,7 @@ class CookiesTreeModelTest : public testing::Test {
   MessageLoop message_loop_;
   ChromeThread io_thread_;
 
-  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<CookieTestingProfile> profile_;
 };
 
 TEST_F(CookiesTreeModelTest, RemoveAll) {
