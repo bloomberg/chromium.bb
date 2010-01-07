@@ -3147,19 +3147,3 @@ BUG_JAPHET MAC : LayoutTests/svg/custom/marker-strokeWidth-changes.svg = FAIL
 BUG_JAPHET WIN : LayoutTests/svg/custom/feDisplacementMap-01.svg = TEXT
 BUG_JAPHET WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 BUG_JAPHET : LayoutTests/websocket/tests/frame-lengths.html = PASS TIMEOUT
-
-// WebKit Roll 52943:52952
-// All rebaselines!!! WOOO!! Due to: http://trac.webkit.org/changeset/52947
-BUG_DGLAZKOV WIN LINUX : LayoutTests/editing/pasteboard/pasting-object.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/block/basic/013.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/dom/HTMLObjectElement/vspace-hspace-as-number.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/dynamic/flash-replacement-test.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/frames/001.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/invalid/residual-style.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/parser/001.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/replaced/007.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/replaced/replaced-breaking.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/plugins/embed-attributes-style.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/plugins/netscape-dom-access.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/custom/getsvgdocument.html = TEXT
-BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = TEXT

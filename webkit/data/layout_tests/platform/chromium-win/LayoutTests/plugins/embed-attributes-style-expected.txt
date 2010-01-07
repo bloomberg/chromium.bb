@@ -11,17 +11,17 @@ layer at (0,0) size 800x600
       RenderBlock {HR} at (0,56) size 784x2 [border: (1px inset #000000)]
       RenderBlock {DIV} at (0,66) size 784x0
       RenderBlock {DIV} at (0,66) size 784x105
-        RenderPartObject {EMBED} at (0,0) size 50x100
+        RenderEmbeddedObject {EMBED} at (0,0) size 50x100
         RenderText {#text} at (50,85) size 115x19
           text run at (50,85) width 4: " "
           text run at (54,85) width 111: "valign top attribute"
       RenderBlock {DIV} at (0,171) size 784x105
-        RenderPartObject {EMBED} at (0,0) size 50x100
+        RenderEmbeddedObject {EMBED} at (0,0) size 50x100
         RenderText {#text} at (50,85) size 125x19
           text run at (50,85) width 4: " "
           text run at (54,85) width 121: "border 5px attribute"
       RenderBlock {DIV} at (0,276) size 784x107
-        RenderPartObject {EMBED} at (0,0) size 52x102 [border: (1px dashed #000000)]
+        RenderEmbeddedObject {EMBED} at (0,0) size 52x102 [border: (1px dashed #000000)]
         RenderText {#text} at (52,87) size 97x19
           text run at (52,87) width 4: " "
           text run at (56,87) width 93: "hidden attribute"
