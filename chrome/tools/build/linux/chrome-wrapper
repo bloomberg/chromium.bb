@@ -25,6 +25,22 @@ exists_desktop_file() {
     return 1
 }
 
+# Checks a file to see if it's a 32 or 64-bit
+check_executable() {
+    out=$(file $(readlink -f $1) 2> /dev/null)
+    echo $out | grep -qs "ELF 32-bit LSB"
+    if [ $? = 0 ]; then
+        echo 32
+        return
+    fi
+    echo $out | grep -qs "ELF 64-bit LSB"
+    if [ $? = 0 ]; then
+        echo 64
+        return
+    fi
+    echo neither
+}
+
 # Generate a desktop file that will run this script
 generate_desktop_file() {
     apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
@@ -61,6 +77,47 @@ esac
 
 # Always use our ffmpeg and other shared libs.
 export LD_LIBRARY_PATH="$HERE:$HERE/lib:$HERE/lib.target:$LD_LIBRARY_PATH"
+
+MISSING_LIBS=$(ldd "$HERE/chrome" 2> /dev/null |grep "not found$" | cut -d" " -f 1|sed 's/\t//')
+CHROME_ARCH=$(check_executable "$HERE/chrome")
+uname -m | grep -qs x86_64
+if [ $? = 1 ]; then
+    LIBDIRS="/lib /lib32 /usr/lib /usr/lib32"
+else
+    LIBDIRS="/lib64 /lib /usr/lib64 /usr/lib"
+fi
+
+echo $MISSING_LIBS | grep -qs libbz2.so.1.0
+if [ $? = 0 ]; then
+    for dir in $LIBDIRS
+    do
+        if [ -e "$dir/libbz2.so.1" ]; then
+            LIB_ARCH=$(check_executable "$dir/libbz2.so.1")
+            if [ "$CHROME_ARCH" = "$LIB_ARCH" ]; then
+                ln -s "$dir/libbz2.so.1" "$HERE/libbz2.so.1.0"
+                break;
+            fi
+        fi
+    done
+fi
+
+for lib in libnspr4.so.0d libnss3.so.1d libnssutil3.so.1d libplc4.so.0d libplds4.so.0d libsmime3.so.1d libssl3.so.1d
+do
+    echo $MISSING_LIBS | grep -qs $lib
+    if [ $? = 0 ]; then
+        reallib=$(echo $lib | sed 's/\.[01]d$//')
+        for dir in $LIBDIRS
+        do
+            if [ -e "$dir/$reallib" ]; then
+                LIB_ARCH=$(check_executable "$dir/$reallib")
+                if [ "$CHROME_ARCH" = "$LIB_ARCH" ]; then
+                    ln -s "$dir/$reallib" "$HERE/$lib"
+                    break;
+                fi
+            fi
+        done
+    fi
+done
 
 # Custom version string for this release. This can be used to add a downstream
 # vendor string or release channel information.
