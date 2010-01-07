@@ -312,6 +312,10 @@ void IconUtil::InitializeBitmapHeader(BITMAPV5HEADER* header, int width,
   // <http://msdn.microsoft.com/en-us/library/ms536531(VS.85).aspx> and
   // <http://b/1283121>.
   header->bV5CSType = LCS_WINDOWS_COLOR_SPACE;
+
+  // Use a valid value for bV5Intent as 0 is not a valid one.
+  // <http://msdn.microsoft.com/en-us/library/dd183381(VS.85).aspx>
+  header->bV5Intent = LCS_GM_IMAGES;
 }
 
 void IconUtil::SetSingleIconImageInformation(const SkBitmap& bitmap,
