@@ -30,6 +30,7 @@ void UpdateManifest::ParseError(const char* details, ...) {
     errors_ += "\r\n";
   }
   StringAppendV(&errors_, details, args);
+  va_end(args);
 }
 
 // Checks whether a given node's name matches |expected_name| and
@@ -75,6 +76,7 @@ static void XmlErrorFunc(void *context, const char *message, ...) {
   va_start(args, message);
   std::string* error = static_cast<std::string*>(context);
   StringAppendV(error, message, args);
+  va_end(args);
 }
 
 // Utility class for cleaning up the xml document when leaving a scope.
