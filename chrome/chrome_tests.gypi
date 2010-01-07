@@ -1513,105 +1513,6 @@
         }],
       ],
     },
-    {
-      'target_name': 'sync_integration_tests',
-      'type': 'executable',
-      'dependencies': [
-        'browser',
-        'chrome',
-        'chrome_resources',
-        'common',
-        'debugger',
-        'renderer',
-        'chrome_resources',
-        'chrome_strings',
-        'syncapi',
-        'test_support_unit',
-        '../printing/printing.gyp:printing',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-        '../third_party/icu/icu.gyp:icui18n',
-        '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/libxml/libxml.gyp:libxml',
-        '../third_party/npapi/npapi.gyp:npapi',
-        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
-      ],
-      'include_dirs': [
-        '..',
-        '<(INTERMEDIATE_DIR)',
-      ],
-      # TODO(phajdan.jr): Only temporary, to make transition easier.
-      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
-      'sources': [
-        'app/chrome_dll_resource.h',
-        'test/in_process_browser_test.cc',
-        'test/in_process_browser_test.h',
-        'test/live_sync/bookmark_model_verifier.cc',
-        'test/live_sync/bookmark_model_verifier.h',
-        'test/live_sync/live_bookmarks_sync_test.cc',
-        'test/live_sync/live_bookmarks_sync_test.h',
-        'test/live_sync/profile_sync_service_test_harness.cc',
-        'test/live_sync/profile_sync_service_test_harness.h',
-        'test/live_sync/single_client_live_bookmarks_sync_unittest.cc',
-        'test/live_sync/two_client_live_bookmarks_sync_test.cc',
-        'test/test_launcher/run_all_unittests.cc',
-        'test/test_notification_tracker.cc',
-        'test/test_notification_tracker.h',
-        'test/testing_browser_process.h',
-        'test/ui_test_utils_linux.cc',
-        'test/ui_test_utils_mac.cc',
-        'test/ui_test_utils_win.cc',
-        'test/data/resource.h',
-      ],
-      'conditions': [
-        # Plugin code.
-        ['OS=="linux" or OS=="win"', {
-          'dependencies': [
-            'plugin',
-           ],
-          'export_dependent_settings': [
-            'plugin',
-          ],
-        }],
-        # Linux-specific rules.
-        ['OS=="linux"', {
-           'dependencies': [
-             '../build/linux/system.gyp:gtk',
-           ],
-        }],
-        # Windows-specific rules.
-        ['OS=="win"', {
-          'sources': [
-            'app/chrome_dll.rc',
-            'app/chrome_dll_version.rc.version',
-            'test/data/resource.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
-          ],
-          'include_dirs': [
-            'third_party/wtl/include',
-          ],
-          'dependencies': [
-            'chrome_dll_version',
-            'installer/installer.gyp:installer_util_strings',
-            '../views/views.gyp:views',
-            '<(allocator_target)',
-          ],
-          'configurations': {
-            'Debug': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                },
-              },
-            },
-          },
-        }],
-      ],
-    },
   ],
   'conditions': [
     ['OS!="mac"', {
@@ -1684,6 +1585,106 @@
     },],  # OS!="mac"
     ['OS=="win"', {
       'targets': [
+        {
+          # Windows-only for now; this has issues with scons
+          # regarding use of run_all_unittests.cc.
+          # TODO(zork): add target to linux build.
+          'target_name': 'sync_integration_tests',
+          'type': 'executable',
+            'dependencies': [
+              'browser',
+              'chrome',
+              'chrome_resources',
+              'common',
+              'debugger',
+              'renderer',
+              'chrome_resources',
+              'chrome_strings',
+              'syncapi',
+              'test_support_unit',
+              '../printing/printing.gyp:printing',
+              '../skia/skia.gyp:skia',
+              '../testing/gtest.gyp:gtest',
+              '../third_party/icu/icu.gyp:icui18n',
+              '../third_party/icu/icu.gyp:icuuc',
+              '../third_party/libxml/libxml.gyp:libxml',
+              '../third_party/npapi/npapi.gyp:npapi',
+              '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+            ],
+            'include_dirs': [
+              '..',
+              '<(INTERMEDIATE_DIR)',
+            ],
+            # TODO(phajdan.jr): Only temporary, to make transition easier.
+            'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
+            'sources': [
+              'app/chrome_dll.rc',
+              'app/chrome_dll_resource.h',
+              'app/chrome_dll_version.rc.version',
+              'test/in_process_browser_test.cc',
+              'test/in_process_browser_test.h',
+              'test/live_sync/bookmark_model_verifier.cc',
+              'test/live_sync/bookmark_model_verifier.h',
+              'test/live_sync/live_bookmarks_sync_test.cc',
+              'test/live_sync/live_bookmarks_sync_test.h',
+              'test/live_sync/profile_sync_service_test_harness.cc',
+              'test/live_sync/profile_sync_service_test_harness.h',
+              'test/live_sync/single_client_live_bookmarks_sync_unittest.cc',
+              'test/live_sync/two_client_live_bookmarks_sync_test.cc',
+              'test/test_launcher/run_all_unittests.cc',
+              'test/test_notification_tracker.cc',
+              'test/test_notification_tracker.h',
+              'test/testing_browser_process.h',
+              'test/ui_test_utils_linux.cc',
+              'test/ui_test_utils_mac.cc',
+              'test/ui_test_utils_win.cc',
+              'test/data/resource.h',
+              'test/data/resource.rc',
+              '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
+              '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+              '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+              '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+              '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
+            ],
+            'conditions': [
+              # Plugin code.
+              ['OS=="linux" or OS=="win"', {
+                'dependencies': [
+                  'plugin',
+                 ],
+                'export_dependent_settings': [
+                  'plugin',
+                ],
+              }],
+              # Linux-specific rules.
+              ['OS=="linux"', {
+                 'dependencies': [
+                   '../build/linux/system.gyp:gtk',
+                 ],
+              }],
+              # Windows-specific rules.
+              ['OS=="win"', {
+                'include_dirs': [
+                  'third_party/wtl/include',
+                 ],
+                'dependencies': [
+                  'chrome_dll_version',
+                  'installer/installer.gyp:installer_util_strings',
+                  '../views/views.gyp:views',
+                  '<(allocator_target)',
+                ],
+                'configurations': {
+                  'Debug_Base': {
+                    'msvs_settings': {
+                      'VCLinkerTool': {
+                        'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                      },
+                    },
+                  },
+                },
+              }],
+            ],
+        },
         {
           'target_name': 'plugin_tests',
           'type': 'executable',

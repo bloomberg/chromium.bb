@@ -159,7 +159,7 @@ class LiveSyncTestPrePopulatedHistory1K
     PathService::Get(chrome::DIR_USER_DATA, &dest_user_data_dir);
     dest_user_data_dir = dest_user_data_dir.Append(
         FILE_PATH_LITERAL("Default"));
-    file_util::CreateDirectory(dest_user_data_dir);
+    file_util::CreateDirectoryW(dest_user_data_dir);
     FilePath sync_data_source;
     PathService::Get(base::DIR_SOURCE_ROOT, &sync_data_source);
     sync_data_source = sync_data_source.Append(FILE_PATH_LITERAL("chrome"));
@@ -177,7 +177,7 @@ class LiveSyncTestPrePopulatedHistory1K
     FilePath source_file = sync_data.Next();
     while (!source_file.empty()) {
       FilePath dest_file = dest_user_data_dir.Append(source_file.BaseName());
-      ASSERT_TRUE(file_util::CopyFile(source_file, dest_file));
+      ASSERT_TRUE(file_util::CopyFileW(source_file, dest_file));
       source_file = sync_data.Next();
     }
   }
@@ -300,14 +300,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, Sanity) {
   {
     const BookmarkNode* google_one = verifier->AddURL(model_one, bbn_one, 0,
         L"Google", google_url);
-    ASSERT_TRUE(google_one != NULL);
 
     // To make this test deterministic, we wait here so there is no race to
     // decide which bookmark actually gets position 0.
     ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
     const BookmarkNode* yahoo_two = verifier->AddURL(model_two, bbn_two, 0,
         L"Yahoo", GURL("http://www.yahoo.com"));
-    ASSERT_TRUE(yahoo_two != NULL);
   }
   ASSERT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
   verifier->ExpectMatch(model_one);
@@ -321,7 +319,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, Sanity) {
     verifier->SetTitle(model_one, bbn_one->GetChild(0), L"Yahoo!!");
     const BookmarkNode* cnn_one = verifier->AddURL(model_one,
         bbn_one, 1, L"CNN", GURL("http://www.cnn.com"));
-    ASSERT_TRUE(cnn_one != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -330,7 +327,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, Sanity) {
   {
     const BookmarkNode* facebook_two = verifier->AddURL(model_two,
         bbn_two, 0, L"Facebook", GURL("http://www.facebook.com"));
-    ASSERT_TRUE(facebook_two != NULL);
   }
 
   // AwaitMutualSyncCycleCompletion blocks the calling object before the
@@ -387,7 +383,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   {
     const BookmarkNode* google = verifier->AddURL(model_one, bbn_one, 0,
         title, initial_url);
-    ASSERT_TRUE(google != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
 
@@ -479,7 +474,6 @@ IN_PROC_BROWSER_TEST_F(LiveSyncTestPrePopulatedHistory1K,
   {
     const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one, 0,
         L"Welcome to Facebook! | Facebook", GURL("http://www.facebook.com"));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -505,7 +499,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     // Let's add first bookmark folder to client1
     const BookmarkNode* new_folder_one =
         verifier->AddGroup(model_one, bbn_one, 0, L"TestFolder");
-    ASSERT_TRUE(new_folder_one != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -530,7 +523,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   {
     const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one, 0,
         L"TestBookmark", GURL("http://www.nofaviconurl.com"));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -553,10 +545,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   {
     const BookmarkNode* ftp_bm = verifier->AddURL(model_one, bbn_one, 0,
         L"FTPBookmark", GURL("ftp://ftp.testbookmark.com"));
-    ASSERT_TRUE(ftp_bm != NULL);
     const BookmarkNode* file_bm = verifier->AddURL(model_one, bbn_one, 1,
         L"FileBookmark", GURL("file:///"));
-    ASSERT_TRUE(file_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -585,7 +575,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     const BookmarkNode* test_bm1 = verifier->AddURL(
         model_one, new_folder_one, 0,
         L"BM Test", GURL("http://www.bmtest.com"));
-    ASSERT_TRUE(test_bm1 != NULL);
   }
 
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
@@ -616,7 +605,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm =
         verifier->AddURL(model_one, bbn_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   for (int index = 0; index < 10; index++) {
     wstring title(L"TestBookmark");
@@ -626,7 +614,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm =
         verifier->AddURL(model_one, other_bm_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -659,7 +646,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
         url.append(".com");
         const BookmarkNode* nofavicon_bm =
             verifier->AddURL(model_one, bbn_one, index, title, GURL(url));
-        ASSERT_TRUE(nofavicon_bm != NULL);
     } else {
         // Remaining % of time - Add Bookmark folders
         wstring title(L"BB - TestBMFolder");
@@ -678,7 +664,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
               url.append(".com");
               const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
                     bm_folder, index, child_title, GURL(url));
-              ASSERT_TRUE(nofavicon_bm != NULL);
             }
         }
     }
@@ -692,7 +677,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm =
         verifier->AddURL(model_one, other_bm_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -717,10 +701,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   {
     const BookmarkNode* google_bm = verifier->AddURL(model_one, bbn_one, 0,
         L"Google", GURL("http://www.google.com"));
-    ASSERT_TRUE(google_bm != NULL);
     const BookmarkNode* google_news_bm = verifier->AddURL(model_one, bbn_one, 1,
         L"Google", GURL("http://www.google.com/news"));
-    ASSERT_TRUE(google_news_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -878,14 +860,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
         const BookmarkNode* nofavicon_bm =
             verifier->AddURL(model_one, test_bm_folder, index,
             title, GURL(url));
-        ASSERT_TRUE(nofavicon_bm != NULL);
     } else {
         // Remaining % of time - Add Bookmark folders
         wstring title(L"Test BMFolder - ChildTestBMFolder");
         title.append(IntToWString(index));
         const BookmarkNode* bm_folder =
             verifier->AddGroup(model_one, test_bm_folder, index, title);
-        ASSERT_TRUE(bm_folder != NULL);
     }
   }
 
@@ -928,7 +908,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm =
         verifier->AddURL(model_one, bbn_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
 
   // Let's add first bookmark folder under parent_bm_folder.
@@ -947,14 +926,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
         const BookmarkNode* nofavicon_bm =
             verifier->AddURL(model_one, test_bm_folder, index,
             title, GURL(url));
-        ASSERT_TRUE(nofavicon_bm != NULL);
     } else {
         // Remaining % of time - Add Bookmark folders
         wstring title(L"Test BMFolder - ChildTestBMFolder");
         title.append(IntToWString(index));
         const BookmarkNode* bm_folder =
             verifier->AddGroup(model_one, test_bm_folder, index, title);
-        ASSERT_TRUE(bm_folder != NULL);
     }
   }
 
@@ -1019,7 +996,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   {
     const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one, 0,
         L"TestBookmark", GURL("http://www.nofaviconurl.com"));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1057,7 +1033,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     const BookmarkNode* nofavicon_bm = verifier->AddURL(
         model_one, bbn_one, index,
         title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1098,7 +1073,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm =
         verifier->AddURL(model_one, bm_folder_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1140,7 +1114,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     const BookmarkNode* nofavicon_bm = verifier->AddURL(
         model_one, bm_folder_one,
         index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1182,7 +1155,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm =
         verifier->AddURL(model_one, bm_folder_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1223,7 +1195,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm =
         verifier->AddURL(model_one, bm_folder_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1254,7 +1225,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   // Let's add first bookmark folder to client1
   const BookmarkNode* bm_folder_one =
     verifier->AddGroup(model_one, bbn_one, 0, L"TestFolder");
-  ASSERT_TRUE(bm_folder_one != NULL);
 
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1280,14 +1250,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
   const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
   const BookmarkNode* other_bm_one = model_one->other_node();
-  ASSERT_TRUE(other_bm_one != NULL);
 
   verifier->ExpectMatch(model_one);
   verifier->ExpectMatch(model_two);
   // Let's add first bookmark folder to client1
   const BookmarkNode* bm_folder_one =
       verifier->AddGroup(model_one, bbn_one, 0, L"TestFolder");
-  ASSERT_TRUE(bm_folder_one != NULL);
   // Let's add some bookmarks(without favicon)
   for (int index = 1; index < 15; index++) {
     int random_int = base::RandInt(1, 100);
@@ -1300,14 +1268,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       url.append(".com");
       const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one,
           index, title, GURL(url));
-      ASSERT_TRUE(nofavicon_bm != NULL);
     } else {
       // Remaining % of time - Add Bookmark folders
       wstring title(L"BB - TestBMFolder");
       title.append(IntToWString(index));
       const BookmarkNode* bm_folder = verifier->AddGroup(model_one, bbn_one,
           index, title);
-      ASSERT_TRUE(bm_folder != NULL);
      }
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
@@ -1332,16 +1298,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
   const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
-  ASSERT_TRUE(bbn_one != NULL);
   const BookmarkNode* other_bm_one = model_one->other_node();
-  ASSERT_TRUE(other_bm_one != NULL);
 
   verifier->ExpectMatch(model_one);
   verifier->ExpectMatch(model_two);
   // Let's add bookmark and bookmark folder to client1
   const BookmarkNode* yahoo = verifier->AddURL(model_one, bbn_one, 0,
       L"Yahoo!", GURL("http://www.yahoo.com"));
-  ASSERT_TRUE(yahoo != NULL);
   const BookmarkNode* bm_folder_one =
       verifier->AddGroup(model_one, bbn_one, 1, L"TestFolder");
   // Let's add some bookmarks(without favicon) and folders to
@@ -1357,14 +1320,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
         url.append(".com");
         const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one,
             index, title, GURL(url));
-        ASSERT_TRUE(nofavicon_bm != NULL);
     } else {
         // Remaining % of time - Add Bookmark folders
         wstring title(L"BB - TestBMFolder");
         title.append(IntToWString(index));
         const BookmarkNode* bm_folder = verifier->AddGroup(model_one, bbn_one,
             index, title);
-        ASSERT_TRUE(bm_folder != NULL);
      }
   }
 
@@ -1377,7 +1338,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
         bm_folder_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1403,14 +1363,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
   const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
   const BookmarkNode* other_bm_one = model_one->other_node();
-  ASSERT_TRUE(other_bm_one != NULL);
 
   verifier->ExpectMatch(model_one);
   verifier->ExpectMatch(model_two);
   // Let's add bookmark and bookmark folder to client1
   const BookmarkNode* yahoo = verifier->AddURL(model_one, bbn_one, 0,
       L"Yahoo", GURL("http://www.yahoo.com"));
-  ASSERT_TRUE(yahoo != NULL);
   const BookmarkNode* bm_folder_one =
       verifier->AddGroup(model_one, bbn_one, 1, L"TestFolder");
   // Let's add some bookmarks(without favicon) and folders to
@@ -1426,14 +1384,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
         url.append(".com");
         const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one,
             index, title, GURL(url));
-        ASSERT_TRUE(nofavicon_bm != NULL);
     } else {
         // Remaining % of time - Add Bookmark folders
         wstring title(L"BB - TestBMFolder");
         title.append(IntToWString(index));
         const BookmarkNode* bm_folder = verifier->AddGroup(model_one, bbn_one,
             index, title);
-        ASSERT_TRUE(bm_folder != NULL);
      }
   }
 
@@ -1450,7 +1406,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       url.append(".com");
       const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
           bm_folder_one, index, title, GURL(url));
-      ASSERT_TRUE(nofavicon_bm != NULL);
     } else {
         // Remaining % of time - Add Bookmark folders
         wstring title(L"Level2 - TestBMFolder");
@@ -1472,14 +1427,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
               url.append(".com");
               const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
                   l2_bm_folder, index2, title, GURL(url));
-              ASSERT_TRUE(nofavicon_bm != NULL);
             } else {
                 // Remaining % of time - Add Bookmark folders
                 wstring title(L"Level3 - TestBMFolder");
                 title.append(IntToWString(index));
                 const BookmarkNode* l3_bm_folder =
                     verifier->AddGroup(model_one, l2_bm_folder, index2, title);
-                ASSERT_TRUE(l3_bm_folder != NULL);
              }
           }  // end inner for loop
         }
@@ -1525,7 +1478,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm =
         verifier->AddURL(model_one, bbn_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
 
   // Let's add first bookmark folder under parent_bm_folder.
@@ -1544,14 +1496,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
         const BookmarkNode* nofavicon_bm =
             verifier->AddURL(model_one, test_bm_folder, index, title,
             GURL(url));
-        ASSERT_TRUE(nofavicon_bm != NULL);
     } else {
         // Remaining % of time - Add Bookmark folders
         wstring title(L"Test BMFolder - ChildTestBMFolder");
         title.append(IntToWString(index));
         const BookmarkNode* bm_folder =
             verifier->AddGroup(model_one, test_bm_folder, index, title);
-        ASSERT_TRUE(bm_folder != NULL);
     }
   }
 
@@ -1584,11 +1534,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   const BookmarkNode* bm_a = verifier->AddURL(
       model_one, bbn_one, 0, L"Bookmark A",
       GURL("http://www.nofaviconurla.com"));
-  ASSERT_TRUE(bm_a != NULL);
   const BookmarkNode* bm_b = verifier->AddURL(
       model_one, bbn_one, 1, L"Bookmark B",
       GURL("http://www.nofaviconurlb.com"));
-  ASSERT_TRUE(bm_b != NULL);
 
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1625,7 +1573,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
         bbn_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
 
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
@@ -1651,18 +1598,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
   const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
   const BookmarkNode* other_bm_one = model_one->other_node();
-  ASSERT_TRUE(other_bm_one != NULL);
 
   verifier->ExpectMatch(model_one);
   verifier->ExpectMatch(model_two);
   // Let's add bookmark and bookmark folder to client1
   const BookmarkNode* yahoo = verifier->AddURL(model_one, bbn_one, 0,
       L"Yahoo", GURL("http://www.yahoo.com"));
-  ASSERT_TRUE(yahoo != NULL);
   const BookmarkNode* bm_folder_one =
       verifier->AddGroup(model_one, bbn_one, 1, L"TestFolder");
   // Let's add some bookmarks(without favicon) to bookmark bar
   for (int index = 2; index < 10; index++) {
+    int random_int = base::RandInt(1, 100);
     wstring title(L"BB - TestBookmark");
     title.append(IntToWString(index));
     string url("http://www.nofaviconurl");
@@ -1670,7 +1616,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one,
         index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1697,18 +1642,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
   const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
   const BookmarkNode* other_bm_one = model_one->other_node();
-  ASSERT_TRUE(other_bm_one != NULL);
 
   verifier->ExpectMatch(model_one);
   verifier->ExpectMatch(model_two);
   // Let's add bookmark and bookmark folder to client1
   const BookmarkNode* yahoo = verifier->AddURL(model_one, bbn_one, 0,
       L"Yahoo", GURL("http://www.yahoo.com"));
-  ASSERT_TRUE(yahoo != NULL);
   const BookmarkNode* bm_folder_one =
       verifier->AddGroup(model_one, bbn_one, 1, L"TestFolder");
   // Let's add some bookmarks(without favicon) to bm_folder_one
   for (int index = 0; index < 10; index++) {
+    int random_int = base::RandInt(1, 100);
     wstring title(L"BB - TestBookmark");
     title.append(IntToWString(index));
     string url("http://www.nofaviconurl");
@@ -1716,7 +1660,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
         bm_folder_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1770,7 +1713,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm =
         verifier->AddURL(model_one, child_folder, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
 
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
@@ -1808,15 +1750,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   const BookmarkNode* bm_a = verifier->AddURL(
       model_one, parent_folder, 0, L"Bookmark A",
       GURL("http://www.nofaviconurl-a.com"));
-  ASSERT_TRUE(bm_a != NULL);
   const BookmarkNode* bm_b = verifier->AddURL(
       model_one, parent_folder, 1, L"Bookmark B",
       GURL("http://www.nofaviconurl-b.com"));
-  ASSERT_TRUE(bm_b != NULL);
   const BookmarkNode* bm_c = verifier->AddURL(
       model_one, parent_folder, 2, L"Bookmark C",
       GURL("http://www.nofaviconurl-c.com"));
-  ASSERT_TRUE(bm_c != NULL);
   const BookmarkNode* child_folder =
       verifier->AddGroup(model_one, parent_folder, 3, L"Test Child BMFolder");
 
@@ -1824,23 +1763,18 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   const BookmarkNode* bm_d = verifier->AddURL(
       model_one, child_folder, 0, L"Bookmark D",
       GURL("http://www.nofaviconurl-d.com"));
-  ASSERT_TRUE(bm_d != NULL);
   const BookmarkNode* bm_e = verifier->AddURL(
       model_one, child_folder, 1, L"Bookmark E",
       GURL("http://www.nofaviconurl-e.com"));
-  ASSERT_TRUE(bm_e != NULL);
   const BookmarkNode* bm_f = verifier->AddURL(
       model_one, child_folder, 2, L"Bookmark F",
       GURL("http://www.nofaviconurl-f.com"));
-  ASSERT_TRUE(bm_f != NULL);
   const BookmarkNode* bm_g = verifier->AddURL(
       model_one, child_folder, 3, L"Bookmark G",
       GURL("http://www.nofaviconurl-g.com"));
-  ASSERT_TRUE(bm_g != NULL);
   const BookmarkNode* bm_h = verifier->AddURL(
       model_one, child_folder, 4, L"Bookmark H",
       GURL("http://www.nofaviconurl-h.com"));
-  ASSERT_TRUE(bm_h != NULL);
 
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -1885,7 +1819,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       url.append(".com");
       const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
           bm_folder, index, title, GURL(url));
-      ASSERT_TRUE(nofavicon_bm != NULL);
     }
     wstring title(L"Test BMFolder-");
     title.append(IntToWString(level));
@@ -1955,7 +1888,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       url.append(".com");
       const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
           bm_folder, index, title, GURL(url));
-      ASSERT_TRUE(nofavicon_bm != NULL);
     }
     wstring title(L"Test BMFolder-");
     title.append(IntToWString(level));
@@ -2028,7 +1960,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       url.append(".com");
       const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
           bm_folder, index, title, GURL(url));
-      ASSERT_TRUE(nofavicon_bm != NULL);
     }
     wstring title(L"Test BMFolder-");
     title.append(IntToWString(level));
@@ -2085,7 +2016,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       url.append(".com");
       const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
           bm_folder, index, title, GURL(url));
-      ASSERT_TRUE(nofavicon_bm != NULL);
     }
     wstring title(L"Test BMFolder-");
     title.append(IntToWString(level));
@@ -2109,7 +2039,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
         my_bm_folder, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
 
   // Let's wait until all the changes populate to another client.
@@ -2154,7 +2083,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       url.append(".com");
       const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
           bm_folder, index, title, GURL(url));
-      ASSERT_TRUE(nofavicon_bm != NULL);
     }
     wstring title(L"Test BMFolder-");
     title.append(IntToWString(level));
@@ -2178,7 +2106,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
         my_bm_folder, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm != NULL);
   }
 
   // Let's wait until all the changes populate to another client.
@@ -2213,10 +2140,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
   const BookmarkNode* bm_folder_a =
     verifier->AddNonEmptyGroup(model_one, bbn_one, 0, L"TestBMFolderA", 10);
-  ASSERT_TRUE(bm_folder_a != NULL);
   const BookmarkNode* bm_folder_b =
     verifier->AddNonEmptyGroup(model_one, bbn_one, 1, L"TestBMFolderB", 10);
-  ASSERT_TRUE(bm_folder_b != NULL);
 
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -2248,7 +2173,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     title.append(IntToWString(index));
     const BookmarkNode* child_bm_folder = verifier->AddNonEmptyGroup(
         model_one, bbn_one, index, title, 10);
-    ASSERT_TRUE(child_bm_folder != NULL);
   }
 
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
@@ -2297,17 +2221,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   {
     const BookmarkNode* bm_foo1 = model_one->AddURL(
         bbn_one, 0, L"Foo1", GURL("http://www.foo1.com"));
-    ASSERT_TRUE(bm_foo1 != NULL);
     const BookmarkNode* bm_foo3 = model_two->AddURL(
         bbn_two, 0, L"Foo3", GURL("http://www.foo3.com"));
-    ASSERT_TRUE(bm_foo3 != NULL);
 
     const BookmarkNode* bm_foo2 = model_one->AddURL(
         bbn_one, 1, L"Foo2", GURL("http://www.foo2.com"));
-    ASSERT_TRUE(bm_foo2 != NULL);
     const BookmarkNode* bm_foo4 = model_two->AddURL(
         bbn_two, 1, L"Foo4", GURL("http://www.foo4.com"));
-    ASSERT_TRUE(bm_foo4 != NULL);
   }
 
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletionWithConflict(client2()));
@@ -2369,10 +2289,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm_client1 =
         model_one->AddURL(bbn_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm_client1 != NULL);
     const BookmarkNode* nofavicon_bm_client2 =
         model_two->AddURL(bbn_two, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm_client2 != NULL);
   }
 
   // Let's add some different bookmarks (without favicon) to client1.
@@ -2384,7 +2302,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm_client1 =
         model_one->AddURL(bbn_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm_client1 != NULL);
   }
 
    // Let's add some different bookmarks (without favicon) to client2.
@@ -2396,7 +2313,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm_client2 =
         model_two->AddURL(bbn_two, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm_client2 != NULL);
   }
 
   // Set up sync on both clients.
@@ -2438,10 +2354,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm_client1 =
         model_one->AddURL(bbn_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm_client1 != NULL);
     const BookmarkNode* nofavicon_bm_client2 =
         model_two->AddURL(bbn_two, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm_client2 != NULL);
   }
 
   // Let's add some different bookmarks (without favicon) to client2.
@@ -2453,7 +2367,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm_client2 =
         model_two->AddURL(bbn_two, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm_client2 != NULL);
   }
 
   // Set up sync on both clients.
@@ -2495,10 +2408,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     url.append(".com");
     const BookmarkNode* nofavicon_bm_client1 =
         model_one->AddURL(bbn_one, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm_client1 != NULL);
     const BookmarkNode* nofavicon_bm_client2 =
         model_two->AddURL(bbn_two, index, title, GURL(url));
-    ASSERT_TRUE(nofavicon_bm_client2 != NULL);
   }
 
   // Set up sync on both clients.
