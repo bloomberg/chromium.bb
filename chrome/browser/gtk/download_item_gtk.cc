@@ -340,6 +340,7 @@ DownloadItemGtk::~DownloadItemGtk() {
   get_download()->RemoveObserver(this);
   g_signal_handlers_disconnect_by_func(parent_shelf_->GetHBox(),
       reinterpret_cast<gpointer>(OnShelfResized), this);
+  gtk_widget_show_all(parent_shelf_->GetHBox());
 
   hbox_.Destroy();
   progress_area_.Destroy();
