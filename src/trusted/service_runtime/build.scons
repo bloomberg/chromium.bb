@@ -432,7 +432,7 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
   sdl_env.Requires(mmap_test_exe, crt)
   sdl_env.Requires(mmap_test_exe, sdl_dll)
 
-  if env['TARGET_ARCHITECTURE'] == 'x86':
+  if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
     # TODO(robertm): This test emits lots of messages to stderr
     node = sdl_env.CommandTestAgainstGoldenOutput (
         "mmap_test.out",
@@ -739,7 +739,8 @@ if (env['BUILD_ARCHITECTURE'] == 'x86' and
     env['BUILD_SUBARCH'] == '32' and
     not env.Bit('windows')):
   cmp_script = '${SCONSTRUCT_DIR}/tools/file_cmp_test.py'
-  checkedin_file = '${SCONSTRUCT_DIR}/src/trusted/service_runtime/arch/x86_64/tramp_data.h'
+  checkedin_file = ('${SCONSTRUCT_DIR}/src/trusted/service_runtime/'
+                    'arch/x86_64/tramp_data.h')
   generated_file = tramp_data_header[0]
 
   command = ['${PYTHON}', cmp_script, checkedin_file, generated_file]
@@ -748,7 +749,8 @@ if (env['BUILD_ARCHITECTURE'] == 'x86' and
     action = ' '.join(command))
   env.AddNodeToTestSuite(node, ['small_tests'], 'tramp_data')
 
-  checkedin_file = '${SCONSTRUCT_DIR}/src/trusted/service_runtime/arch/x86_64/springboard_data.h'
+  checkedin_file = ('${SCONSTRUCT_DIR}/src/trusted/service_runtime/'
+                    'arch/x86_64/springboard_data.h')
   generated_file = springboard_data_header[0]
   node = env.Command(target = None,
     source = [checkedin_file, cmp_script],

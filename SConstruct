@@ -991,9 +991,14 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
             'tests/selenium_dummy/nacl.scons',
             'tests/tone/nacl.scons',
             'tests/voronoi/nacl.scons',
-
-            'tools/tests/nacl.scons',
             ])
+    if nacl_env['BUILD_SUBARCH'] == '32':
+      nacl_env.Append(
+          BUILD_SCONSCRIPTS = [
+              # This test assumes we have a compiler, which is not yet fully
+              # true for 64-bit.
+              'tools/tests/nacl.scons',
+          ])
 
 if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
     nacl_env['TARGET_ARCHITECTURE'] == 'arm'):
