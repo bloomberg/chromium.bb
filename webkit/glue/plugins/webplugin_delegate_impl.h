@@ -260,7 +260,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   gfx::PluginWindowHandle parent_;
   NPWindow window_;
 #if defined(OS_MACOSX)
+#ifndef NP_NO_CARBON
   NP_CGContext cg_context_;
+#endif
 #ifndef NP_NO_QUICKDRAW
   NP_Port qd_port_;
   GWorldPtr qd_world_;

@@ -90,6 +90,9 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       user_gesture_message_posted_(this),
       user_gesture_msg_factory_(this) {
   memset(&window_, 0, sizeof(window_));
+#ifndef NP_NO_CARBON
+  memset(&cg_context_, 0, sizeof(cg_context_));
+#endif
 #ifndef NP_NO_QUICKDRAW
   memset(&qd_port_, 0, sizeof(qd_port_));
 #endif
@@ -102,12 +105,16 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
   std::set<WebPluginDelegateImpl*>* delegates = g_active_delegates.Pointer();
   delegates->erase(this);
-  FakePluginWindowTracker::SharedInstance()->RemoveFakeWindowForDelegate(
-      this, reinterpret_cast<WindowRef>(cg_context_.window));
+#ifndef NP_NO_CARBON
+  if (cg_context_.window) {
+    FakePluginWindowTracker::SharedInstance()->RemoveFakeWindowForDelegate(
+        this, reinterpret_cast<WindowRef>(cg_context_.window));
+  }
+#endif
 }
 
 void WebPluginDelegateImpl::PluginDestroyed() {
-  if (instance_->event_model() == NPEventModelCarbon) {
+  if (instance()->event_model() == NPEventModelCarbon) {
     if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
       // Tell the plugin it should stop drawing into the window (which will go
       // away when the next idle event arrives).
@@ -141,17 +148,21 @@ void WebPluginDelegateImpl::PlatformInitialize() {
   // destroyPlugin in WebNetscapePluginView.mm, for examples).
   quirks_ |= PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY;
 
-  // Create a stand-in for the browser window so that the plugin will have
-  // a non-NULL WindowRef to which it can refer.
-  FakePluginWindowTracker* window_tracker =
-      FakePluginWindowTracker::SharedInstance();
-  cg_context_.window = window_tracker->GenerateFakeWindowForDelegate(this);
-  cg_context_.context = NULL;
-  Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
-  SetWindowBounds(reinterpret_cast<WindowRef>(cg_context_.window),
-                  kWindowContentRgn, &window_bounds);
-  qd_port_.port =
-      GetWindowPort(reinterpret_cast<WindowRef>(cg_context_.window));
+#ifndef NP_NO_CARBON
+  if (instance()->event_model() == NPEventModelCarbon) {
+    // Create a stand-in for the browser window so that the plugin will have
+    // a non-NULL WindowRef to which it can refer.
+    FakePluginWindowTracker* window_tracker =
+        FakePluginWindowTracker::SharedInstance();
+    cg_context_.window = window_tracker->GenerateFakeWindowForDelegate(this);
+    cg_context_.context = NULL;
+    Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
+    SetWindowBounds(reinterpret_cast<WindowRef>(cg_context_.window),
+                    kWindowContentRgn, &window_bounds);
+    qd_port_.port =
+        GetWindowPort(reinterpret_cast<WindowRef>(cg_context_.window));
+  }
+#endif
 
   switch (instance()->drawing_model()) {
 #ifndef NP_NO_QUICKDRAW
@@ -161,7 +172,10 @@ void WebPluginDelegateImpl::PlatformInitialize() {
       break;
 #endif
     case NPDrawingModelCoreGraphics:
-      window_.window = &cg_context_;
+#ifndef NP_NO_CARBON
+      if (instance()->drawing_model() == NPEventModelCarbon)
+        window_.window = &cg_context_;
+#endif
       window_.type = NPWindowTypeDrawable;
       break;
     default:
@@ -169,12 +183,14 @@ void WebPluginDelegateImpl::PlatformInitialize() {
       break;
   }
 
+#ifndef NP_NO_CARBON
   // If the plugin wants Carbon events, fire up a source of idle events.
-  if (instance_->event_model() == NPEventModelCarbon) {
+  if (instance()->event_model() == NPEventModelCarbon) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         null_event_factory_.NewRunnableMethod(
             &WebPluginDelegateImpl::OnNullEvent), kPluginIdleThrottleDelayMs);
   }
+#endif
   plugin_->SetWindow(NULL);
 }
 
@@ -183,14 +199,17 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
 }
 
 void WebPluginDelegateImpl::UpdateContext(CGContextRef context) {
+#ifndef NP_NO_CARBON
   // Flash on the Mac apparently caches the context from the struct it receives
   // in NPP_SetWindow, and continues to use it even when the contents of the
   // struct have changed, so we need to call NPP_SetWindow again if the context
   // changes.
-  if (context != cg_context_.context) {
+  if (instance()->event_model() == NPEventModelCarbon &&
+      context != cg_context_.context) {
     cg_context_.context = context;
     WindowlessSetWindow(true);
   }
+#endif
 }
 
 void WebPluginDelegateImpl::Paint(CGContextRef context, const gfx::Rect& rect) {
@@ -248,10 +267,14 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
 
 void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
                                             const gfx::Rect& damage_rect) {
-  // If we somehow get a paint before we've set up the plugin window, bail.
-  if (!cg_context_.context)
-    return;
-  DCHECK(cg_context_.context == context);
+#ifndef NP_NO_CARBON
+  if (instance()->event_model() == NPEventModelCarbon) {
+    // If we somehow get a paint before we've set up the plugin window, bail.
+    if (!cg_context_.context)
+      return;
+    DCHECK(cg_context_.context == context);
+  }
+#endif
 
   static StatsRate plugin_paint("Plugin.Paint");
   StatsScope<StatsRate> scope(plugin_paint);
@@ -280,6 +303,7 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
     case NPDrawingModelCoreGraphics: {
       CGContextSaveGState(context);
       switch (instance()->event_model()) {
+#ifndef NP_NO_CARBON
         case NPEventModelCarbon: {
           NPEvent paint_event = { 0 };
           paint_event.what = updateEvt;
@@ -288,6 +312,7 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
           instance()->NPP_HandleEvent(&paint_event);
           break;
         }
+#endif
         case NPEventModelCocoa: {
           NPCocoaEvent paint_event;
           memset(&paint_event, 0, sizeof(NPCocoaEvent));
@@ -311,15 +336,18 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
     return;
 
   int y_offset = 0;
-  if (instance()->drawing_model() == NPDrawingModelCoreGraphics) {
-    // Get the dummy window structure height; we're pretenting the plugin takes up
-    // the whole (dummy) window, but the clip rect and x/y are relative to the
-    // full window region, not just the content region.
+#ifndef NP_NO_CARBON
+  if (instance()->event_model() == NPEventModelCarbon &&
+      instance()->drawing_model() == NPDrawingModelCoreGraphics) {
+    // Get the dummy window structure height; we're pretenting the plugin takes
+    // up the whole (dummy) window, but the clip rect and x/y are relative to
+    // the full window region, not just the content region.
     Rect titlebar_bounds;
     WindowRef window = reinterpret_cast<WindowRef>(cg_context_.window);
     GetWindowBounds(window, kWindowTitleBarRgn, &titlebar_bounds);
     y_offset = titlebar_bounds.bottom - titlebar_bounds.top;
   }
+#endif
   // It's not clear what we should do in the QD case; Safari always seems to use
   // 0, whereas Firefox uses the offset in the window and passes -offset as
   // port_y in the NP_Port structure. Since the port we are using corresponds
@@ -394,6 +422,9 @@ void WebPluginDelegateImpl::UpdateWindowLocation(const WebMouseEvent& event) {
 
 void WebPluginDelegateImpl::UpdateDummyWindowBoundsWithOffset(
     int x_offset, int y_offset, int new_width, int new_height) {
+  if (instance()->event_model() == NPEventModelCocoa)
+    return;
+
   int target_x = last_window_x_offset_ + x_offset;
   int target_y = last_window_y_offset_ + y_offset;
   WindowRef window = reinterpret_cast<WindowRef>(cg_context_.window);
@@ -651,9 +682,12 @@ static bool NPCocoaEventFromWebInputEvent(const WebInputEvent& event,
 
 bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
                                              WebCursorInfo* cursor) {
+#ifndef NP_NO_CARBON
   // If we somehow get an event before we've set up the plugin window, bail.
-  if (!cg_context_.context)
+  if (instance()->event_model() == NPEventModelCarbon &&
+      !cg_context_.context)
     return false;
+#endif
   DCHECK(windowless_) << "events should only be received in windowless mode";
   DCHECK(cursor != NULL);
 
@@ -695,7 +729,10 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
       break;
 #endif
     case NPDrawingModelCoreGraphics:
-      CGContextSaveGState(cg_context_.context);
+#ifndef NP_NO_CARBON
+      if (instance()->event_model() == NPEventModelCarbon)
+        CGContextSaveGState(cg_context_.context);
+#endif
       break;
   }
 
@@ -718,8 +755,11 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
     }
   }
 
-  if (instance()->drawing_model() == NPDrawingModelCoreGraphics)
+#ifndef NP_NO_CARBON
+  if (instance()->event_model() == NPEventModelCarbon &&
+      instance()->drawing_model() == NPDrawingModelCoreGraphics)
     CGContextRestoreGState(cg_context_.context);
+#endif
 
   return ret;
 }
@@ -737,7 +777,7 @@ void WebPluginDelegateImpl::OnNullEvent() {
     return;
 #ifndef NP_NO_CARBON
   if (!webkit_glue::IsPluginRunningInRendererProcess()) {
-    switch (instance_->event_model()) {
+    switch (instance()->event_model()) {
       case NPEventModelCarbon:
         // If the plugin is running in a subprocess, drain any pending system
         // events so that the plugin's event handlers will get called on any
@@ -754,7 +794,7 @@ void WebPluginDelegateImpl::OnNullEvent() {
     }
   }
 
-  if (instance_->event_model() == NPEventModelCarbon) {
+  if (instance()->event_model() == NPEventModelCarbon) {
     // Send an idle event so that the plugin can do background work
     NPEvent np_event = {0};
     np_event.what = nullEvent;
@@ -778,7 +818,7 @@ void WebPluginDelegateImpl::OnNullEvent() {
 #endif
 
 #ifndef NP_NO_CARBON
-  if (instance_->event_model() == NPEventModelCarbon) {
+  if (instance()->event_model() == NPEventModelCarbon) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         null_event_factory_.NewRunnableMethod(
             &WebPluginDelegateImpl::OnNullEvent),
