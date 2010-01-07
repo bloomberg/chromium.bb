@@ -152,3 +152,5 @@ PREFIX : webcore::imageeventsender::dispatchpendingevents
 # 31632 - v8 handling non-html badly?
 PREFIX : v8::internal::context::global_context___v8::internal::top::computelocation___v8::internal::top::dothrow___v8::internal::top::throwillegaloperation___v8::internal::runtime_newclosure___v8::internal::invoke___v8::internal::execution::call___v8::script::run___webcore::v8proxy::runscript___webcore::v8proxy::evaluate___webcore::scriptcontroller::evaluate___webcore::scriptcontroller::executescript___webcore::htmltokenizer::scriptexecution___webcore::htmltokenizer::executeexternalscriptsifready___webcore::htmltokenizer::notifyfinished___webcore::cachedresource::addclient___webcore::htmltokenizer::scripthandler___webcore::htmltokenizer::parsenonhtmltext___webcore::htmltokenizer::parsetag_
 
+# 31731
+PREFIX : webcore::scriptcontroller::isenabled___webcore::v8proxy::mainworldcontext___webcore::tov8context
