@@ -164,8 +164,6 @@ void NativeViewHostGtk::ShowWidget(int x, int y, int w, int h) {
   // Size and place the hosted NativeView.
   gtk_widget_set_size_request(host_->native_view(), child_w, child_h);
   gtk_fixed_move(GTK_FIXED(fixed_), host_->native_view(), child_x, child_y);
-  GtkAllocation alloc = { child_x, child_y, child_w, child_y};
-  gtk_widget_size_allocate(host_->native_view(), &alloc);
 
   gtk_widget_show(fixed_);
   gtk_widget_show(host_->native_view());
