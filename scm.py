@@ -571,7 +571,7 @@ class SVN(object):
     try:
       # Grabs the diff data.
       command = ["diff", "--config-dir", bogus_dir, filename]
-      if revision is not None:
+      if revision:
         command.extend(['--revision', revision])
       data = SVN.Capture(command, None)
       if data:
