@@ -2,12 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8statetable.h"
-
-// This code is copied from google3/util/utf8/internal/utf8statetable.cc and was
-// not modified (it generates a lot of lint warnings, but I decided not to fix
-// them to simplify its maintenance).
-
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8statetable.h"
 
 // Return true if current Tbl pointer is within state0 range
 // Note that unsigned compare checks both ends of range simultaneously

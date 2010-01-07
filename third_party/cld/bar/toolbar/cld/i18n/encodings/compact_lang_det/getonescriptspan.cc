@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/getonescriptspan.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/getonescriptspan.h"
 #include <stdio.h>
 #include <string.h>
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/lang_enc.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/utf8propjustletter.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/utf8propletterscriptnum.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/utf8scannotjustletterspecial.h"
+#include "bar/toolbar/cld/i18n/encodings/lang_enc.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/utf8propjustletter.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/utf8propletterscriptnum.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/utf8scannotjustletterspecial.h"
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_google.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_htmlutils.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unilib.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8statetable.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8utils.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_google.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_htmlutils.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unilib.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8statetable.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8utils.h"
 
 static const Language GRAY_LANG = (Language)254;
 

@@ -22,8 +22,8 @@
 #ifndef I18N_ENCODINGS_LANG_ENC_H__
 #define I18N_ENCODINGS_LANG_ENC_H__
 
-#include "third_party/cld/bar/toolbar/cld/i18n/languages/public/languages.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/public/encodings.h"
+#include "bar/toolbar/cld/i18n/languages/public/languages.h"
+#include "bar/toolbar/cld/i18n/encodings/public/encodings.h"
 
 
 // EncodingsForLanguage
@@ -224,7 +224,6 @@ bool EncFromCountryCode(const char* country_code, Encoding* enc);
 // Some, but not all, documents in Hebrew/Arabic/Persian etc. will be visual.
 // The other documents in those languages, and all documents in non-RTL
 // languages, will be NOT_VISUAL_DOCUMENT.
-// See http://wiki/Main/RtlLanguages for details.
 enum VisualType {
   NOT_VISUAL_DOCUMENT = 0,
   VISUAL_HEBREW_HTML,  // HTML documents in the legacy visual order.

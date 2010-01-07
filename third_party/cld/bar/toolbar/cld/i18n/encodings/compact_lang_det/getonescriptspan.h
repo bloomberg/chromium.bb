@@ -5,8 +5,8 @@
 #ifndef I18N_ENCODINGS_COMPACT_LANG_DET_GETONESCRIPTSPAN_H_
 #define I18N_ENCODINGS_COMPACT_LANG_DET_GETONESCRIPTSPAN_H_
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/letterscript_enum.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_impl.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/letterscript_enum.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_impl.h"
 
 namespace getone {
   static const int kMaxScriptBuffer = 4096;

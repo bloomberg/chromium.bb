@@ -7,7 +7,7 @@
 
 #if !defined(CLD_WINDOWS)
 
-#include "third_party/cld/base/logging.h"
+#include "base/logging.h"
 
 #else
 

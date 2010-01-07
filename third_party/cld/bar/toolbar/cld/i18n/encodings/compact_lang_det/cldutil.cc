@@ -1,17 +1,17 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/cldutil.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/cldutil_dbg.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_generated_meanscore.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/utf8propletterscriptnum.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_logging.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unilib.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8statetable.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/cldutil.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/cldutil_dbg.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/generated/compact_lang_det_generated_meanscore.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/utf8propletterscriptnum.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_logging.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unilib.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8statetable.h"
 
 // Runtime routines for hashing, looking up, and scoring
 // unigrams (CJK), bigrams (CJK), quadgrams, and octagrams.

@@ -1153,7 +1153,7 @@ void RenderViewHost::OnDeterminePageTextReply(
     int num_languages = 0;
     bool is_reliable = false;
     const char* language_iso_code = LanguageCodeISO639_1(
-        DetectLanguageOfUnicodeText(page_text.c_str(), true, &is_reliable,
+        DetectLanguageOfUnicodeText(NULL, page_text.c_str(), true, &is_reliable,
                                     &num_languages, NULL));
     std::string language(language_iso_code);
     NotificationService::current()->Notify(

@@ -18,15 +18,15 @@
 
 #include "base/port.h"
 #include "base/basictypes.h"
-#include "third_party/cld/base/commandlineflags.h"
-#include "third_party/cld/base/crash.h"
-#include "third_party/cld/base/dynamic_annotations.h"
-#include "third_party/cld/base/macros.h"
-#include "third_party/cld/base/scoped_ptr.h"
-#include "third_party/cld/base/stl_decl_msvc.h"
-#include "third_party/cld/base/log_severity.h"
-#include "third_party/cld/base/vlog_is_on.h"
-#include "third_party/cld/base/global_strip_options.h"
+#include "base/commandlineflags.h"
+#include "base/crash.h"
+#include "base/dynamic_annotations.h"
+#include "base/macros.h"
+#include "base/scoped_ptr.h"
+#include "base/stl_decl_msvc.h"
+#include "base/log_severity.h"
+#include "base/vlog_is_on.h"
+#include "global_strip_options.h"
 
 // Make a bunch of macros for logging.  The way to log things is to stream
 // things to LOG(<a particular severity level>).  E.g.,

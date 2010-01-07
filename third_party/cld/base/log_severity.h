@@ -6,7 +6,7 @@
 #define BASE_LOG_SEVERITY_H_
 
 #include "base/port.h"
-#include "third_party/cld/base/commandlineflags.h"
+#include "base/commandlineflags.h"
 
 // Variables of type LogSeverity are widely taken to lie in the range
 // [0, NUM_SEVERITIES-1].  Be careful to preserve this assumption if

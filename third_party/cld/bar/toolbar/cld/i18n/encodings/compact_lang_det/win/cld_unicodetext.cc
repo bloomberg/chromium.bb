@@ -1,28 +1,33 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unicodetext.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unicodetext.h"
 
 #include <tchar.h>
 #include <windows.h>
 
 #include <vector>  // to compile bar/common/component.h
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_scopedptr.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/normalizedunicodetext.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_scopedptr.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/normalizedunicodetext.h"
 
-std::string NormalizeText(const WCHAR* text,
-                          int* num_languages,
-                          DWORD* error_code) {
+
+// Detects a language of the UTF-16 encoded zero-terminated text.
+// Returns: Language enum.
+Language DetectLanguageOfUnicodeText(
+    const CompactLangDet::DetectionTables* detection_tables,
+    const WCHAR* text, bool is_plain_text,
+    bool* is_reliable, int* num_languages,
+    DWORD* error_code) {
   if (!text || !num_languages) {
     if (error_code)
       *error_code = ERROR_INVALID_PARAMETER;
-    return std::string();
+    return NUM_LANGUAGES;
   }
 
-  // Normalize text here.  We do not check the return value here since there
+  // Normalize text first.  We do not check the return value here since there
   // is no meaningful recovery we can do in case of failure anyway.
   // Since the vast majority of texts on the Internet is already normalized
   // and languages which require normalization are easy to recognize by CLD
@@ -40,12 +45,12 @@ std::string NormalizeText(const WCHAR* text,
   if (!lowercase_text_size) {
     if (error_code)
       *error_code = ::GetLastError();
-    return std::string();
+    return NUM_LANGUAGES;
   }
 
   scoped_array<WCHAR> lowercase_text(new WCHAR[lowercase_text_size]);
   if (!lowercase_text.get())
-    return std::string();
+    return NUM_LANGUAGES;
 
   // Covert text to lowercase.
   int lowercasing_result =
@@ -55,7 +60,7 @@ std::string NormalizeText(const WCHAR* text,
   if (!lowercasing_result) {
     if (error_code)
       *error_code = ::GetLastError();
-    return std::string();
+    return NUM_LANGUAGES;
   }
 
   // Determine the size of the buffer required to covert text to UTF-8.
@@ -67,48 +72,26 @@ std::string NormalizeText(const WCHAR* text,
   if (!utf8_encoded_buffer_size) {
     if (error_code)
       *error_code = ::GetLastError();
-    return std::string();
+    return NUM_LANGUAGES;
   }
 
-  scoped_array<char> utf8_encoded_buffer(new char[utf8_encoded_buffer_size]);
+  scoped_array<char> utf8_encoded_buffer(
+      new char[utf8_encoded_buffer_size]);
 
   // Convert text to UTF-8.
   int utf8_encoding_result =
       ::WideCharToMultiByte(CP_UTF8, 0,
                             lowercase_text.get(), -1,
-                            utf8_encoded_buffer.get(),
-                            utf8_encoded_buffer_size,
+                            utf8_encoded_buffer.get(), utf8_encoded_buffer_size,
                             NULL, NULL);
   if (!utf8_encoding_result) {
     if (error_code)
       *error_code = ::GetLastError();
-    return std::string();
+    return NUM_LANGUAGES;
   }
 
   if (error_code)
     *error_code = 0;
-
-  return std::string(utf8_encoded_buffer.get());
-}
-
-
-// Detects a language of the UTF-16 encoded zero-terminated text.
-// Returns: Language enum.
-// TODO : make it reuse already allocated buffers to avoid excessive
-// allocate/free call pairs.  The idea is to have two buffers allocated and
-// alternate their use for every Windows API call.
-// Let's leave it as it is, simple and working and optimize it as the next step
-// if it will consume too much resources (after careful measuring, indeed).
-Language DetectLanguageOfUnicodeText(const WCHAR* text, bool is_plain_text,
-                                     bool* is_reliable, int* num_languages,
-                                     DWORD* error_code) {
-  // Normalize text.
-  std::string utf8_encoded_string_buffer = NormalizeText(text, num_languages,
-                                                         error_code);
-  if (utf8_encoded_string_buffer.empty())
-    return NUM_LANGUAGES;
-
-  int utf8_encoded_buffer_size = utf8_encoded_string_buffer.length();
 
   // Engage core CLD library language detection.
   Language language3[3] = {
@@ -123,7 +106,8 @@ Language DetectLanguageOfUnicodeText(const WCHAR* text, bool is_plain_text,
   // See the actual code in compact_lang_det_impl.cc, CalcSummaryLang function.
   // language3 array is always set according to the detection results and
   // is not affected by this heuristic.
-  CompactLangDet::DetectLanguageSummary(utf8_encoded_string_buffer.c_str(),
+  CompactLangDet::DetectLanguageSummary(detection_tables,
+                                        utf8_encoded_buffer.get(),
                                         utf8_encoded_buffer_size,
                                         is_plain_text, language3, percent3,
                                         &text_bytes, is_reliable);
@@ -131,9 +115,9 @@ Language DetectLanguageOfUnicodeText(const WCHAR* text, bool is_plain_text,
   // Calcualte a number of languages detected in more than 20% of the text.
   const int kMinTextPercentToCountLanguage = 20;
   *num_languages = 0;
-  COMPILE_ASSERT(ARRAYSIZE(language3) == ARRAYSIZE(percent3),
+  COMPILE_ASSERT(arraysize(language3) == arraysize(percent3),
                  language3_and_percent3_should_be_of_the_same_size);
-  for (int i = 0; i < ARRAYSIZE(language3); ++i) {
+  for (int i = 0; i < arraysize(language3); ++i) {
     if (IsValidLanguage(language3[i]) && !IS_LANGUAGE_UNKNOWN(language3[i]) &&
         percent3[i] >= kMinTextPercentToCountLanguage) {
       ++*num_languages;
@@ -141,45 +125,4 @@ Language DetectLanguageOfUnicodeText(const WCHAR* text, bool is_plain_text,
   }
 
   return language3[0];
-}
-
-void DetectLanguageSummaryOfUnicodeText(const WCHAR* text,
-                                        bool is_plain_text,
-                                        Language language[3],
-                                        int percent[3],
-                                        int* text_bytes,
-                                        bool* is_reliable) {
-  int num_languages;
-  DWORD error_code;
-  std::string utf8_encoded_string_buffer = NormalizeText(text, &num_languages,
-                                                         &error_code);
-
-  // Normalize text.
-  if (utf8_encoded_string_buffer.empty())
-    return;
-
-  int utf8_encoded_buffer_size = utf8_encoded_string_buffer.length();
-
-  // Engage core CLD library language detection.
-  language[0] = language[1] = language[2] = UNKNOWN_LANGUAGE;
-  percent[0] = 100;
-  percent[1] = percent[2] = 0;
-
-  if (utf8_encoded_string_buffer.empty()) {
-    *is_reliable = false;
-    *text_bytes = 0;
-    return;
-  }
-
-  // We ignore return value here due to the problem described in bug 1800161.
-  // For example, translate.google.com was detected as Indonesian.  It happened
-  // due to the heuristic in CLD, which ignores English as a top language
-  // in the presence of another reliably detected language.
-  // See the actual code in compact_lang_det_impl.cc, CalcSummaryLang function.
-  // language3 array is always set according to the detection results and
-  // is not affected by this heuristic.
-  CompactLangDet::DetectLanguageSummary(utf8_encoded_string_buffer.c_str(),
-                                        utf8_encoded_buffer_size,
-                                        is_plain_text, language, percent,
-                                        text_bytes, is_reliable);
 }

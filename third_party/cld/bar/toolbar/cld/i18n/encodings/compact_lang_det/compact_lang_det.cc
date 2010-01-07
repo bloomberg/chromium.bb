@@ -1,10 +1,10 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_impl.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_impl.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
 
 // String is "code_version - data_scrape_date"
 static const char* kDetectLanguageVersion = "V1.6 - 20081121";
@@ -13,6 +13,7 @@ static const char* kDetectLanguageVersion = "V1.6 - 20081121";
 
 // Scan interchange-valid UTF-8 bytes and detect most likely language
 Language CompactLangDet::DetectLanguage(
+                          const DetectionTables* tables,
                           const char* buffer,
                           int buffer_length,
                           bool is_plain_text,
@@ -29,6 +30,7 @@ Language CompactLangDet::DetectLanguage(
   Language language_hint = UNKNOWN_LANGUAGE;
 
   Language lang = CompactLangDetImpl::DetectLanguageSummaryV25(
+                          tables,
                           buffer,
                           buffer_length,
                           is_plain_text,
@@ -52,6 +54,7 @@ Language CompactLangDet::DetectLanguage(
 
 // Scan interchange-valid UTF-8 bytes and detect list of top 3 languages.
 Language CompactLangDet::DetectLanguageSummary(
+                          const DetectionTables* tables,
                           const char* buffer,
                           int buffer_length,
                           bool is_plain_text,
@@ -68,6 +71,7 @@ Language CompactLangDet::DetectLanguageSummary(
   Language language_hint = UNKNOWN_LANGUAGE;
 
   Language lang = CompactLangDetImpl::DetectLanguageSummaryV25(
+                          tables,
                           buffer,
                           buffer_length,
                           is_plain_text,
@@ -92,6 +96,7 @@ Language CompactLangDet::DetectLanguageSummary(
 // Same as above, with hints supplied
 // Scan interchange-valid UTF-8 bytes and detect list of top 3 languages.
 Language CompactLangDet::DetectLanguageSummary(
+                          const DetectionTables* tables,
                           const char* buffer,
                           int buffer_length,
                           bool is_plain_text,
@@ -108,6 +113,7 @@ Language CompactLangDet::DetectLanguageSummary(
   Language plus_one = UNKNOWN_LANGUAGE;
 
   Language lang = CompactLangDetImpl::DetectLanguageSummaryV25(
+                          tables,
                           buffer,
                           buffer_length,
                           is_plain_text,
@@ -135,6 +141,7 @@ Language CompactLangDet::DetectLanguageSummary(
 // Extended languages are additional Google interface languages and Unicode
 // single-language scripts, from ext_lang_enc.h
 Language CompactLangDet::ExtDetectLanguageSummary(
+                          const DetectionTables* tables,
                           const char* buffer,
                           int buffer_length,
                           bool is_plain_text,
@@ -151,6 +158,7 @@ Language CompactLangDet::ExtDetectLanguageSummary(
   Language language_hint = UNKNOWN_LANGUAGE;
 
   Language lang = CompactLangDetImpl::DetectLanguageSummaryV25(
+                          tables,
                           buffer,
                           buffer_length,
                           is_plain_text,
@@ -175,6 +183,7 @@ Language CompactLangDet::ExtDetectLanguageSummary(
 // Extended languages are additional Google interface languages and Unicode
 // single-language scripts, from ext_lang_enc.h
 Language CompactLangDet::ExtDetectLanguageSummary(
+                          const DetectionTables* tables,
                           const char* buffer,
                           int buffer_length,
                           bool is_plain_text,
@@ -191,6 +200,7 @@ Language CompactLangDet::ExtDetectLanguageSummary(
   Language plus_one = UNKNOWN_LANGUAGE;
 
   Language lang = CompactLangDetImpl::DetectLanguageSummaryV25(
+                          tables,
                           buffer,
                           buffer_length,
                           is_plain_text,
@@ -215,6 +225,7 @@ Language CompactLangDet::ExtDetectLanguageSummary(
 // gibberish
 //
 Language CompactLangDet::ExtDetectLanguageSummary(
+                        const DetectionTables* tables,
                         const char* buffer,
                         int buffer_length,
                         bool is_plain_text,
@@ -231,6 +242,7 @@ Language CompactLangDet::ExtDetectLanguageSummary(
   Language plus_one = UNKNOWN_LANGUAGE;
 
   Language lang = CompactLangDetImpl::DetectLanguageSummaryV25(
+                          tables,
                           buffer,
                           buffer_length,
                           is_plain_text,
@@ -256,3 +268,4 @@ Language CompactLangDet::ExtDetectLanguageSummary(
 const char* CompactLangDet::DetectLanguageVersion() {
   return kDetectLanguageVersion;
 }
+

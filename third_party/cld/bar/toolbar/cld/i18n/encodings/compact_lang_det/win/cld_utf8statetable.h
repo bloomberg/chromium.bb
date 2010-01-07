@@ -7,15 +7,11 @@
 
 #if !defined(CLD_WINDOWS)
 
-#include "third_party/cld/util/utf8/utf8statetable.h"
+#include "util/utf8/utf8statetable.h"
 
 #else
 
-// This code is copied from google3/util/utf8/internal/utf8statetable.cc and was
-// not modified (it generates a lot of lint warnings, but I decided not to fix
-// them to simplify its maintenance).
-
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
 
 // These four-byte entries compactly encode how many bytes 0..255 to delete
 // in making a string replacement, how many bytes to add 0..255, and the offset

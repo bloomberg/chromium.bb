@@ -1,7 +1,7 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+//
 // Unit test compact language detector
 //
 // Small version, covering these languages only:
@@ -17,19 +17,17 @@
 //
 
 #include <string>
-
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/ext_lang_enc.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/unittest_data.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/ext_lang_enc.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/unittest_data.h"
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unicodetext.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_google.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_google.h"
 
-//DEFINE_bool(html, false, "Print language spans in HTML on stderr");
-//DEFINE_bool(detail, false, "Print incoming text to stderr");
-//DEFINE_bool(skipbig, false, "Skip BigInputTests");
+DEFINE_bool(html, false, "Print language spans in HTML on stderr");
+DEFINE_bool(detail, false, "Print incoming text to stderr");
+DEFINE_bool(skipbig, false, "Skip BigInputTests");
 
 // Test strings.
 // These are all included here to make the unit test self-contained.
@@ -39,10 +37,6 @@ const char* kTeststr_en =
   "jury of members two courts combine for the purpose the most important cases "
   "of all are brought jurors or";
 
-const char* kTeststr_en_fr_de =
-    " a backup credit card by visiting your billing preferences page or visit the adwords help centre for more details https adwords google com support bin answer py answer hl en we were unable to process the payment of for your outstanding google adwords"  // ENGLISH
-    " a accès aux collections et aux frontaux qui lui ont été attribués il peut consulter et modifier ses collections et exporter des configurations de collection toutefois il ne peut pas créer ni supprimer des collections enfin il a accès aux fonctions"  // FRENCH
-    " abschnitt ordner aktivieren werden die ordnereinstellungen im farbabschnitt deaktiviert öchten sie wirklich fortfahren eldtypen angeben optional n diesem schritt geben sie für jedesfeld aus dem datenset den typ an ieser schritt ist optional eldtypen";  // GERMAN
 
 // UTF8 constants. Use a UTF-8 aware editor for this file
 const char* kTeststr_ks =
@@ -117,7 +111,7 @@ class CompactLangDetTest : public testing::Test {
     bool is_plain_text = true;
     bool is_reliable;
 
-    Language lang = CompactLangDet::DetectLanguage(src, strlen(src),
+    Language lang = CompactLangDet::DetectLanguage(NULL, src, strlen(src),
                                                    is_plain_text,
                                                    &is_reliable);
     return lang;
@@ -132,7 +126,8 @@ class CompactLangDetTest : public testing::Test {
     int text_bytes;
     bool is_reliable;
 
-    Language lang =  CompactLangDet::ExtDetectLanguageSummary(src, strlen(src),
+    Language lang =  CompactLangDet::ExtDetectLanguageSummary(NULL,
+                            src, strlen(src),
                             is_plain_text,
                             language3,
                             percent3,
@@ -140,21 +135,8 @@ class CompactLangDetTest : public testing::Test {
                             &is_reliable);
     return lang;
   }
+};    // end class CompactLangDetTest
 
-  // Detect the top three languages using DetectLanguageSummary.
-  void TestDetectLanguageSummary(const char* src, Language* language3) {
-    bool is_plain_text = true;
-    int percent3[3];
-    int text_bytes;
-    bool is_reliable;
-
-    CompactLangDet::DetectLanguageSummary(src, strlen(src), is_plain_text,
-                                          language3, percent3, &text_bytes,
-                                          &is_reliable);
-  }
-};  // End class CompactLangDetTest.
-
-}  // End namespace.
 
 TEST_F(CompactLangDetTest, EasyTests) {
   EXPECT_EQ(ENGLISH, TestCompactLangDetPlain(kTeststr_en));
@@ -408,11 +390,14 @@ TEST_F(CompactLangDetTest, ExtendedTests) {
 }
 
 
-TEST_F(CompactLangDetTest, DetectLanguageSummaryTests) {
-  Language language3[3];
-  TestDetectLanguageSummary(kTeststr_en_fr_de, language3);
-  EXPECT_EQ(FRENCH, language3[0]);
-  EXPECT_EQ(GERMAN, language3[1]);
-  EXPECT_EQ(ENGLISH, language3[2]);
+}  // End namespace
+
+#if !defined(CLD_WINDOWS)
+int main(int argc, char** argv) {
+  FLAGS_logtostderr = true;
+  InitGoogle("Unit test for CLD small", &argc, &argv, false);
+  return RUN_ALL_TESTS();
 }
+#endif
+
 

@@ -2067,6 +2067,7 @@
           ],
           'include_dirs': [
             'third_party/wtl/include',
+            '../third_party/cld',
           ],
           'dependencies': [
             '../gears/gears.gyp:gears',

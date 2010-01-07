@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,15 @@
 
 #include <windows.h>
 
-#include "third_party/cld/bar/toolbar/cld/i18n/languages/public/languages.h"
+#include "bar/toolbar/cld/i18n/languages/public/languages.h"
 
+namespace CompactLangDet {
+  struct DetectionTables;
+}  // namespace CompactLangDet
 
 // Detects a language of the UTF-16 encoded zero-terminated text.
+// [in] detection_tables - internal CLD data tables (see compact_lang_det.h).
+//     Can be NULL, in this case CLD will fall back to builtin static tables.
 // [in] text - UTF-16 encoded text to detect a language of.
 // [in] is_plain_text - true if plain text, false otherwise (e.g. HTML).
 // [out] is_reliable - true, if returned language was detected reliably.
@@ -26,23 +31,11 @@
 //     Returns NUM_LANGUAGES in case of any error.
 //     See googleclient/bar/toolbar/cld/i18n/languages/internal/languages.cc
 //     for details.
-Language DetectLanguageOfUnicodeText(const WCHAR* text, bool is_plain_text,
-                                     bool* is_reliable, int* num_languages,
-                                     DWORD* error_code);
+Language DetectLanguageOfUnicodeText(
+    const CompactLangDet::DetectionTables* detection_tables,
+    const WCHAR* text, bool is_plain_text,
+    bool* is_reliable, int* num_languages,
+    DWORD* error_code);
 
-// Detects the top 3 languages in the UTF-16 encoded zero-terminated text.
-// [in] text - UTF-16 encoded text.
-// [in] is_plain_text - true if plain text, false otherwise (e.g. HTML).
-// [out] language[3] - Top 3 languages (default: UNKNOWN_LANGUAGE)
-// [out] percent[3] - Percentages of the languages (default: language3[0] = 100.
-//                  language3[1] = language3[2] = 0).
-// [out] is_reliable - true if reliable.
-// See CompactLangDet::DetectLanguageSummary() for more information.
-void DetectLanguageSummaryOfUnicodeText(const WCHAR* text,
-                                        bool is_plain_text,
-                                        Language language[3],
-                                        int percent[3],
-                                        int* text_bytes,
-                                        bool* is_reliable);
 
 #endif  // BAR_TOOLBAR_CLD_I18N_ENCODINGS_COMPACT_LANG_DET_WIN_CLD_UNICODETEXT_H_

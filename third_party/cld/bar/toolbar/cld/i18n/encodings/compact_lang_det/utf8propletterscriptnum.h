@@ -10,7 +10,7 @@
 #ifndef EXPERIMENTAL_USERS_DSITES_LANGDET_UTF8PROPLETTERSCRIPTNUM_H__
 #define EXPERIMENTAL_USERS_DSITES_LANGDET_UTF8PROPLETTERSCRIPTNUM_H__
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8statetable.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8statetable.h"
 
 #define X__ (kExitIllegalStructure)
 #define RJ_ (kExitReject)

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,11 @@
 #define I18N_ENCODINGS_COMPACT_LANG_DET_CLDUTIL_H_
 
 #include <string>
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_macros.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/ext_lang_enc.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/tote.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8statetable.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/ext_lang_enc.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/tote.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8statetable.h"
 
 namespace cld {
 
@@ -593,7 +592,7 @@ namespace cld {
 
 
   // Defines Top40 packed languages
-  //
+
   // Tier 0/1 Language enum list (16)
   //   ENGLISH, /*no en_GB,*/ FRENCH, ITALIAN, GERMAN, SPANISH,    // E - FIGS
   //   DUTCH, CHINESE, CHINESE_T, JAPANESE, KOREAN,

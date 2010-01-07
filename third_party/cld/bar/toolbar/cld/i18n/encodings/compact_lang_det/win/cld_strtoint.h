@@ -13,7 +13,7 @@
 
 #include <stdlib.h>
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
 
 // This implementation is not as good as the one in base/strtoint.h,
 // but it's sufficient for our purposes.

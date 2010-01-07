@@ -1,12 +1,12 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef I18N_ENCODINGS_COMPACT_LANG_DET_COMPACT_LANG_DET_IMPL_H_
 #define I18N_ENCODINGS_COMPACT_LANG_DET_COMPACT_LANG_DET_IMPL_H_
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/lang_enc.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
+#include "bar/toolbar/cld/i18n/encodings/lang_enc.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
 
 
 static const int kCLDFlagFinish = 1;
@@ -55,6 +55,7 @@ Hint -- EXPERIMENTAL flag for compact_lang_det_test.cc to indicate a language
 
 UseWords -- In additon to scoring quad/uni/nil-grams, score complete words
 
+
 Tentative decision logic:
 
 In the middle of first pass -- After 4KB of text, look at the front 256 bytes
@@ -70,6 +71,10 @@ At the end of the first pass --
           other crap.
 ***/
 
+
+namespace CompactLangDet {
+  struct DetectionTables;
+}  // namespace CompactLangDet
 
 
 namespace CompactLangDetImpl {
@@ -139,6 +144,7 @@ namespace CompactLangDetImpl {
   //
 
   Language DetectLanguageSummaryV25(
+                        const CompactLangDet::DetectionTables* tables,
                         const char* buffer,
                         int buffer_length,
                         bool is_plain_text,

@@ -8,7 +8,7 @@
 #include <assert.h>         // for use with down_cast<>
 #include <string.h>         // for memcpy
 
-#include "third_party/cld/base/macros.h"
+#include "base/macros.h"
 
 
 // Use implicit_cast as a safe version of static_cast or const_cast

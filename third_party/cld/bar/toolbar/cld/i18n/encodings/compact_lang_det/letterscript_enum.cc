@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/letterscript_enum.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/letterscript_enum.h"
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_logging.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_logging.h"
 
 static const char* kUnicodeLScriptNames[ULScript_NUM_SCRIPTS] = {
   "Common",

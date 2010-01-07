@@ -1,13 +1,6 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// NOTE:
-// This code has not yet been evaluated against LangId, which is the official
-// production language identification system. However, it seems to be of
-// similar precison overall, and it covers all the Google languages in
-//   i18n/languages/proto/languages.proto
-// except the four Creoles_and_Pigins.
 
 // Baybayin (ancient script of the Philippines) is detected as TAGALOG.
 // Chu Nom (Vietnamese ancient Han characters) is detected as VIETNAMESE.
@@ -55,8 +48,12 @@
 #ifndef I18N_ENCODINGS_COMPACT_LANG_DET_COMPACT_LANG_DET_H_
 #define I18N_ENCODINGS_COMPACT_LANG_DET_COMPACT_LANG_DET_H_
 
-#include "third_party/cld/bar/toolbar/cld/i18n/languages/public/languages.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_impl.h"
+#include "bar/toolbar/cld/i18n/languages/public/languages.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_utf8statetable.h"
+
+namespace cld {
+  struct CLDTableSummary;
+}  // namespace cld
 
 namespace CompactLangDet {
   // Scan interchange-valid UTF-8 bytes and detect most likely language,
@@ -102,8 +99,13 @@ namespace CompactLangDet {
   // fixed limit (currently 160KB of non-tag letters).
   //
 
+  struct DetectionTables {
+    const cld::CLDTableSummary* quadgram_obj;
+    const UTF8PropObj* unigram_obj;
+  };
+
   // Scan interchange-valid UTF-8 bytes and detect most likely language
-  Language DetectLanguage(
+  Language DetectLanguage(const DetectionTables* tables,
                           const char* buffer,
                           int buffer_length,
                           bool is_plain_text,
@@ -112,6 +114,7 @@ namespace CompactLangDet {
   // Scan interchange-valid UTF-8 bytes and detect list of top 3 languages.
   // language3[0] is also the return value
   Language DetectLanguageSummary(
+                          const DetectionTables* tables,
                           const char* buffer,
                           int buffer_length,
                           bool is_plain_text,
@@ -124,6 +127,7 @@ namespace CompactLangDet {
   // Scan interchange-valid UTF-8 bytes and detect list of top 3 languages.
   // language3[0] is also the return value
   Language DetectLanguageSummary(
+                          const DetectionTables* tables,
                           const char* buffer,
                           int buffer_length,
                           bool is_plain_text,
@@ -144,6 +148,7 @@ namespace CompactLangDet {
   //
   // language3[0] is also the return value
   Language ExtDetectLanguageSummary(
+                          const DetectionTables* tables,
                           const char* buffer,
                           int buffer_length,
                           bool is_plain_text,
@@ -162,6 +167,7 @@ namespace CompactLangDet {
   //
   // language3[0] is also the return value
   Language ExtDetectLanguageSummary(
+                          const DetectionTables* tables,
                           const char* buffer,
                           int buffer_length,
                           bool is_plain_text,
@@ -179,6 +185,7 @@ namespace CompactLangDet {
   // gibberish
   //
   Language ExtDetectLanguageSummary(
+                          const DetectionTables* tables,
                           const char* buffer,
                           int buffer_length,
                           bool is_plain_text,

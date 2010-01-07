@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/normalizedunicodetext.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/normalizedunicodetext.h"
 
 #include <tchar.h>
 #include <windows.h>
 #include <winnls.h>
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_scopedptr.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_scopedptr.h"
 
 
 namespace {

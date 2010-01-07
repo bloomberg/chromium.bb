@@ -501,6 +501,7 @@
       ],
       'include_dirs': [
         '..',
+        '../third_party/cld',
       ],
       'defines': [
         'CLD_WINDOWS',

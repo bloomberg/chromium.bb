@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "bar/toolbar/cld/i18n/languages/public/languages.h"
+
 #include "base/string_util.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/languages/public/languages.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
 
 
 Language default_language() {return ENGLISH;}
@@ -293,20 +294,23 @@ bool LanguageFromCode(const char* lang_code, Language *language) {
   // five-letter language codes "zh-cn" and "zh-tw" which are used by
   // front-ends such as GWS to distinguish Simplified from Traditional
   // Chinese.
-  if (!base::strcasecmp(lang_code, "zh-cn") || !base::strcasecmp(lang_code, "zh_cn")) {
+  if (!base::strcasecmp(lang_code, "zh-cn") ||
+      !base::strcasecmp(lang_code, "zh_cn")) {
     *language = CHINESE;
     return true;
   }
-  if (!base::strcasecmp(lang_code, "zh-tw") || !base::strcasecmp(lang_code, "zh_tw")) {
+  if (!base::strcasecmp(lang_code, "zh-tw") ||
+      !base::strcasecmp(lang_code, "zh_tw")) {
     *language = CHINESE_T;
     return true;
   }
-  if (!base::strcasecmp(lang_code, "sr-me") || !base::strcasecmp(lang_code, "sr_me")) {
+  if (!base::strcasecmp(lang_code, "sr-me") ||
+      !base::strcasecmp(lang_code, "sr_me")) {
     *language = MONTENEGRIN;
     return true;
   }
 
-  // Process language-code synonyms per http://wiki/Main/IIISynonyms.
+  // Process language-code synonyms.
   if (!base::strcasecmp(lang_code, "he")) {
     *language = HEBREW;  // Use "iw".
     return true;
@@ -320,6 +324,7 @@ bool LanguageFromCode(const char* lang_code, Language *language) {
     return true;
   }
 
+  // Process language-detection synonyms.
   // These distinct languages cannot be differentiated by our current
   // language-detection algorithms.
   if (!base::strcasecmp(lang_code, "fil")) {

@@ -1,14 +1,18 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// This file extends lang_enc.cc with additional languages and extended routines
+// It is current with Unicode 5.1 (beta Jan 2008)
+//
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/ext_lang_enc.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_macros.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_strtoint.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/ext_lang_enc.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_macros.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_strtoint.h"
 
 // Language names above NUM_LANGUAGES
 // These are also the C enum declared names
@@ -201,7 +205,7 @@ COMPILE_ASSERT(arraysize(kExtLangDeclaredName) == NUM_LANGUAGES,
 
 
 // Language codes above NUM_LANGUAGES
-// I made all these up, except Klingon from ISO-639-2
+// I made all these up, except Klingon from ISO-639-2 (dsites)
 // NOTE: zza is a standard name
 static const char* const kExtLanguageCode[] = {
   // "X_BORK_BORK_BORK", "X_PIG_LATIN", "X_HACKER", "X_KLINGON", "X_ELMER_FUDD",
@@ -538,3 +542,4 @@ Language NormalizeLanguage(Language lang) {
 
   return lang;
 }
+

@@ -28,7 +28,7 @@
 #ifndef BASE_TYPE_TRAITS_H_
 #define BASE_TYPE_TRAITS_H_
 
-#include "third_party/cld/base/template_util.h"     // For true_type and false_type
+#include "base/template_util.h"     // For true_type and false_type
 #include <utility>                  // For pair
 
 namespace base {

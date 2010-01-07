@@ -44,10 +44,10 @@
 
 ***/
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/subsetsequence.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/subsetsequence.h"
 #include <stdio.h>
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_logging.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_logging.h"
 
 void DumpInts(const char* label, const int* v, int n) {
   printf("%s ", label);

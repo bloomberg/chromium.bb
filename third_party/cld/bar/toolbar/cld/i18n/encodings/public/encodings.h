@@ -23,7 +23,7 @@
 
 #ifndef SWIG
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/proto/encodings.pb.h"
+#include "bar/toolbar/cld/i18n/encodings/proto/encodings.pb.h"
 
 // We must have this for compatibility.
 // COMMENTED OUT TO REDUCE DEPENDENCIES ON GOOGLE3 CODE
@@ -129,7 +129,6 @@ bool IsHebrewEncoding(Encoding e);
 // ---------------------
 //
 // Returns true if the encoding is a right-to-left encoding.
-// See http://wiki/Main/RtlLanguages.
 //
 // Note that the name of this function is somewhat misleading. There is nothing
 // "right to left" about these encodings. They merely contain code points for
@@ -149,7 +148,6 @@ bool IsRightToLeftEncoding(Encoding enc);
 // right-to-left and applies the BiDi algorithm to. Therefore the characters
 // appear in reading order in the file, and indexing, snippet generation etc.
 // should all just work with no special processing.
-// See http://wiki/Main/RtlLanguages.
 //
 // TODO(benjy): Get rid of this function. The only special-case we
 // should need to worry about are visual encodings.
@@ -167,7 +165,6 @@ bool IsLogicalRightToLeftEncoding(Encoding enc);
 // unfortunately some visual pages persist to this day. These documents require
 // special processing so that we don't index or snippet them with each line
 // reversed.
-// See http://wiki/Main/RtlLanguages.
 bool IsVisualRightToLeftEncoding(Encoding enc);
 
 // IsIso2022Encoding

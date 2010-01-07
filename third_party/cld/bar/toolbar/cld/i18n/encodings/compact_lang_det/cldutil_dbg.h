@@ -1,21 +1,22 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef I18N_ENCODINGS_COMPACT_LANG_DET_CLDUTIL_DBG_H_
 #define I18N_ENCODINGS_COMPACT_LANG_DET_CLDUTIL_DBG_H_
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/cldutil.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/cldutil.h"
 #include <string>
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/ext_lang_enc.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/tote.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/ext_lang_enc.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/tote.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
 
 DECLARE_bool(dbgscore);
 DECLARE_bool(dbglookup);
 DECLARE_bool(dbgreli);
 
+using std::string;
 
 namespace cld {
 

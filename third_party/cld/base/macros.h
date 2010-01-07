@@ -1,7 +1,7 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+//
 // Various Google-specific macros.
 //
 // This code is compiled directly on many platforms, including client
@@ -14,10 +14,7 @@
 
 #include <stddef.h>         // For size_t
 
-// We use our own  local  version of type traits while we're waiting
-// for TR1 type traits to be standardized. Define some macros so that
-// most google3 code doesn't have to work with type traits directly.
-#include "third_party/cld/base/type_traits.h"
+#include "base/type_traits.h"
 
 
 // The COMPILE_ASSERT macro can be used to verify that a compile time
@@ -34,14 +31,10 @@
 // The second argument to the macro is the name of the variable. If
 // the expression is false, most compilers will issue a warning/error
 // containing the name of the variable.
-/*
-template <bool>
-struct CompileAssert {
-};
 
 #define COMPILE_ASSERT(expr, msg) \
   typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
-*/
+
 // Implementation details of COMPILE_ASSERT:
 //
 // - COMPILE_ASSERT works by defining an array type that has -1
@@ -86,6 +79,13 @@ struct CompileAssert {
 
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class
+//
+// For disallowing only assign or copy, write the code directly, but declare
+// the intend in a comment, for example:
+// void operator=(const TypeName&);  // DISALLOW_ASSIGN
+// Note, that most uses of DISALLOW_ASSIGN and DISALLOW_COPY are broken
+// semantically, one should either use disallow both or neither. Try to
+// avoid these in new code.
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
@@ -173,13 +173,11 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 // - wan 2005-11-16
 //
 // Starting with Visual C++ 2005, WinNT.h includes ARRAYSIZE.
-
 #if !defined(COMPILER_MSVC) || (defined(_MSC_VER) && _MSC_VER < 1400)
 #define ARRAYSIZE(a) \
   ((sizeof(a) / sizeof(*(a))) / \
    static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
 #endif
-
 
 // A macro to turn a symbol into a string
 #define AS_STRING(x)   AS_STRING_INTERNAL(x)
@@ -196,13 +194,6 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 // Implementation note: the typedef at the end is just to make it legal
 // to put a semicolon after DECLARE_POD(foo).
 //
-// The only reason this matters is that a few parts of the google3
-// code base either require their template arguments to be PODs
-// (e.g. compact_vector) or are able to use a more efficient code path
-// when their template arguments are PODs (e.g. sparse_hash_map). You
-// should use DECLARE_POD if you have written a class that you intend
-// to use with one of those components, and if you know that your
-// class satisfies all of the conditions to be a POD type.
 //
 // So what's a POD?  The C++ standard (clause 9 paragraph 4) gives a
 // full definition, but a good rule of thumb is that a struct is a POD

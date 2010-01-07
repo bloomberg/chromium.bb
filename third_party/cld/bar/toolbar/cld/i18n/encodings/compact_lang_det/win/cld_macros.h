@@ -5,7 +5,7 @@
 #ifndef BAR_TOOLBAR_CLD_I18N_ENCODINGS_COMPACT_LANG_DET_WIN_CLD_MACROS_H_
 #define BAR_TOOLBAR_CLD_I18N_ENCODINGS_COMPACT_LANG_DET_WIN_CLD_MACROS_H_
 
-#include "third_party/cld/base/macros.h"
+#include "base/macros.h"
 
 // Checks for Win32 result and if it indicates failure, returns it.
 #define RETURN_IF_ERROR(cmd) \

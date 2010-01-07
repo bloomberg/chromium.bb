@@ -40,8 +40,8 @@
 #include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/port.h"
-#include "third_party/cld/base/commandlineflags.h"
-#include "third_party/cld/base/log_severity.h"
+#include "base/commandlineflags.h"
+#include "base/log_severity.h"
 
 DECLARE_int32(v);  // in vlog_is_on.cc
 DECLARE_bool(silent_init);  // in google.cc
@@ -101,7 +101,9 @@ const Atomic32 kDefaultSite = kUseFlag << 16;
 
 // The global epoch is the least significant half of an Atomic32, and
 // may only be accessed through atomic operations.
-inline Atomic32 GlobalEpoch() { return Acquire_Load(&vlog_epoch) & 0x0000FFFF; }
+inline Atomic32 GlobalEpoch() {
+  return Acquire_Load(&vlog_epoch) & 0x0000FFFF;
+}
 
 // The least significant half of a site is the epoch.
 inline int SiteEpoch(Atomic32 site) { return site & 0x0000FFFF; }

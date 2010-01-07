@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,18 @@
 // This interface defines the Language enum and functions that depend
 // only on Language values.
 
+// A hash-function for Language, hash<Language>, is defined in
+// i18n/languages/public/languages-hash.h
+
 #ifndef SWIG
 // Language enum defined in languages.proto
 // Also description on how to add languages.
-#include "third_party/cld/bar/toolbar/cld/i18n/languages/proto/languages.pb.h"
+#include "bar/toolbar/cld/i18n/languages/proto/languages.pb.h"
 
 // We need this for compatibility:
 // - The Language enum in the default namespace.
+// COMMENTED OUT TO REDUCE DEPENDENCIES ON GOOGLE3 CODE
+//using namespace i18n::languages;
 
 #else
 // And we must have a swig-compatible enum.
@@ -23,6 +28,9 @@
 #include "i18n/languages/internal/languages_proto_wrapper.h"
 
 #endif
+
+// COMMENTED OUT TO REDUCE DEPENDENCIES ON GOOGLE3 CODE
+//#include "util/utf8/proptables/script_enum.h"
 
 const int kNumLanguages = NUM_LANGUAGES;
 
@@ -124,7 +132,7 @@ bool IsSameLanguage(Language lang1, Language lang2);
 // This function only returns true for languages that are always, unequivocally
 // written in right-to-left script.
 //
-// TODO : If we want to do anything special with multi-script languages
+// TODO(benjy): If we want to do anything special with multi-script languages
 // we should create new 'languages' for each language+script, as we do for
 // traditional vs. simplified Chinese. However most such languages are rare in
 // use and even rarer on the web, so this is unlikely to be something we'll
@@ -341,8 +349,6 @@ const char* LanguageNameFromCode(const char* language_code);
 // ----------------------------
 //
 // Given a language code, convert the dash "-" to underscore "_".
-// This is because some module of google3 use the underscore form
-// ISO 639 specification.
 //
 // Specifically, if result_length <= strlen(lang_code), set result[0]
 // to '\0' and return false. Otherwise, copy lang_code to result,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_htmlutils.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_htmlutils.h"
 
 // Src points to '&'
 // Writes entity value to dst. Returns take(src), put(dst) byte counts

@@ -8,7 +8,7 @@
 #include <tchar.h>
 #include <windows.h>
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_scopedptr.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_scopedptr.h"
 
 
 #if (WINVER < 0x0600)

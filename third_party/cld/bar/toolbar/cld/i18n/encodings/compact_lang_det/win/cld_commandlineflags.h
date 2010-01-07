@@ -5,9 +5,11 @@
 #ifndef BAR_TOOLBAR_CLD_I18N_ENCODINGS_COMPACT_LANG_DET_WIN_CLD_COMMANDLINEFLAGS_H_
 #define BAR_TOOLBAR_CLD_I18N_ENCODINGS_COMPACT_LANG_DET_WIN_CLD_COMMANDLINEFLAGS_H_
 
-#include "third_party/cld/base/commandlineflags.h"
+#if !defined(CLD_WINDOWS)
 
-#if defined(CLD_WINDOWS)
+#include "base/commandlineflags.h"
+
+#else
 
 #undef DEFINE_bool
 #define DEFINE_bool(name, default_value, comment) \

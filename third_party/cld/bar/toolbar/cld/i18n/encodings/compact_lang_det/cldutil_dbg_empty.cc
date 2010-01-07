@@ -1,9 +1,18 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/cldutil_dbg.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/cldutil_dbg.h"
+//#include <string>
+
+//#include "base/logging.h"
+//#include "i18n/encodings/compact_lang_det/generated/compact_lang_det_generated_meanscore.h"
+//#include "i18n/encodings/compact_lang_det/utf8propletterscriptnum.h"
+//#include "third_party/utf/utf.h"            // for UTFmax
+//#include "util/utf8/unicodeprops.h"
+//#include "util/utf8/unilib.h"
+//#include "util/utf8/utf8statetable.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
 
 DEFINE_bool(dbgscore, false, "Print picture of score calculation");
 DEFINE_bool(dbglookup, false, "Print every quad/uni lookup in score calc");
@@ -64,3 +73,4 @@ namespace cld {
 
 
 }       // End namespace cld
+

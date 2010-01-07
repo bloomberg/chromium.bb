@@ -7,8 +7,8 @@
 #ifndef I18N_ENCODINGS_COMPACT_LANG_DET_SUBSETSEQUENCE_H_
 #define I18N_ENCODINGS_COMPACT_LANG_DET_SUBSETSEQUENCE_H_
 
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_google.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_google.h"
 
 
 class SubsetSequence {

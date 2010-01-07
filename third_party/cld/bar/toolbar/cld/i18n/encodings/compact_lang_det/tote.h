@@ -6,7 +6,7 @@
 #define I18N_ENCODINGS_COMPACT_LANG_DET_TOTE_H_
 
 #include <stdio.h>
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h"
 
 // Take a set of <key, value> pairs and tote them up.
 // After explicitly sorting, retrieve top key, value pairs

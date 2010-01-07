@@ -9,9 +9,9 @@
 #include <wininet.h>   // to compile common/scopedptr.h
 
 // This include has to be out of order to compile to compile common/scopedptr.h
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_macros.h"
-#include "third_party/cld/bar/common/scopedlibrary.h"
-#include "third_party/cld/bar/common/scopedptr.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_scoped_ptr.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_macros.h"
+#include "bar/common/scopedlibrary.h"
+#include "bar/common/scopedptr.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_scoped_ptr.h"
 
 #endif  // BAR_TOOLBAR_CLD_I18N_ENCODINGS_COMPACT_LANG_DET_WIN_CLD_SCOPEDPTR_H_

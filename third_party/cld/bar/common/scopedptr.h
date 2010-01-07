@@ -1,9 +1,11 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef BAR_COMMON_SCOPEDPTR_H_
 #define BAR_COMMON_SCOPEDPTR_H_
+
+#include <wininet.h>
 
 //  Boxer for dumb types, allows you to associate cleanup code when the object
 //  falls off the stack. Destructor implementation must be provided for each

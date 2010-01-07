@@ -1,17 +1,22 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// This file extends lang_enc.h with additional languages and extended routines.
+// It is current with Unicode 5.1 (March 2008)
+//
 
 #ifndef I18N_ENCODINGS_COMPACT_LANG_DET_EXT_LANG_ENC_H__
 #define I18N_ENCODINGS_COMPACT_LANG_DET_EXT_LANG_ENC_H__
 
-#include "third_party/cld/bar/toolbar/cld/i18n/languages/public/languages.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/letterscript_enum.h"
+#include "bar/toolbar/cld/i18n/languages/public/languages.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/letterscript_enum.h"
 
 
 // Leave a small gap after the base languages, so adding one or two is easy.
 // Just reduce the gap here (currently 5 entries)
 
+// Montengrin added, so reducing this from 5 to 4. dsites 2008.10.06
 #define EXT_LANGUAGE_BASE (NUM_LANGUAGES + 4)
 
 // Google UI languages

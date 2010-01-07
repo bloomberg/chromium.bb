@@ -1,12 +1,13 @@
-// Copyright 2009 Google Inc.  All Rights Reserved.
-// Author: alekseys@google.com (Aleksey Shlyapnikov)
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // This code is not actually used, it was copied here for the reference only.
 // See cld_htmlutils_windows.cc for Windows version of this code.
 
-#include "cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unilib.h"
+#include "i18n/encodings/compact_lang_det/cld_unilib.h"
 
-#include "cld/util/utf8/unilib.h"
+#include "util/utf8/unilib.h"
 
 namespace cld_UniLib {
 
