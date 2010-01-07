@@ -109,7 +109,6 @@
    fun:RtlAllocateHeap
    ...
    fun:StringToInt64
-   fun:net::HttpResponseHeaders::ParseStatusLine
 }
 {
    # A leak in _vsnprintf_s?
@@ -311,5 +310,5 @@
    fun:net::FtpNetworkTransaction::DoCtrlRead
    fun:net::FtpNetworkTransaction::DoLoop
    fun:net::FtpNetworkTransaction::OnIOComplete
-   fun:DispatchToMethod<net::FtpNetworkTransaction,void (__thiscall net::FtpNetworkTransaction::*)(int),int;>
+   fun:DispatchToMethod<net::FtpNetworkTransaction,void (__thiscall net::FtpNetworkTransaction::*)(int),int>
 }
