@@ -237,11 +237,11 @@ struct EntryKernel {
   inline void mark_dirty() {
     dirty_ = true;
   }
-  
+
   inline void clear_dirty() {
     dirty_ = false;
   }
-  
+
   inline bool is_dirty() const {
     return dirty_;
   }
@@ -302,13 +302,13 @@ struct EntryKernel {
   inline const std::string& ref(StringField field) const {
     return string_fields[field - STRING_FIELDS_BEGIN];
   }
-  inline Blob ref(BlobField field) const {
+  inline const Blob& ref(BlobField field) const {
     return blob_fields[field - BLOB_FIELDS_BEGIN];
   }
   inline bool ref(BitTemp field) const {
     return bit_temps[field - BIT_TEMPS_BEGIN];
   }
-  
+
  private:
   // Tracks whether this entry needs to be saved to the database.
   bool dirty_;

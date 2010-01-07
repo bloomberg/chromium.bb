@@ -627,6 +627,7 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
   EntryKernel create_pre_save, update_pre_save;
   EntryKernel create_post_save, update_post_save;
   string create_name =  "Create";
+  string favicon_bytes = "PNG";
 
   {
     WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
@@ -634,11 +635,20 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
     MutableEntry update(&trans, CREATE_NEW_UPDATE_ITEM, update_id);
     create.Put(IS_UNSYNCED, true);
     update.Put(IS_UNAPPLIED_UPDATE, true);
+    syncable::Blob fav(favicon_bytes.data(),
+                       favicon_bytes.data() + favicon_bytes.size());
+    create.Put(BOOKMARK_FAVICON, fav);
+    update.Put(BOOKMARK_FAVICON, fav);
     create_pre_save = create.GetKernelCopy();
     update_pre_save = update.GetKernelCopy();
     create_id = create.Get(ID);
   }
+
   dir_->SaveChanges();
+  dir_.reset(new Directory());
+  ASSERT_TRUE(dir_.get());
+  ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName));
+  ASSERT_TRUE(dir_->good());
 
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
@@ -680,6 +690,14 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
     EXPECT_EQ(update_pre_save.ref((StringField)i),
               update_post_save.ref((StringField)i))
               << "String field #" << i << " changed during save/load";
+  }
+  for ( ; i < BLOB_FIELDS_END; ++i) {
+    EXPECT_EQ(create_pre_save.ref((BlobField)i),
+              create_post_save.ref((BlobField)i))
+              << "Blob field #" << i << " changed during save/load";
+    EXPECT_EQ(update_pre_save.ref((BlobField)i),
+              update_post_save.ref((BlobField)i))
+              << "Blob field #" << i << " changed during save/load";
   }
 }
 
