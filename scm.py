@@ -550,7 +550,7 @@ class SVN(object):
       return output
 
   @staticmethod
-  def DiffItem(filename, full_move=False):
+  def DiffItem(filename, full_move=False, revision=None):
     """Diffs a single file.
 
     Be sure to be in the appropriate directory before calling to have the
@@ -570,7 +570,10 @@ class SVN(object):
     bogus_dir = tempfile.mkdtemp()
     try:
       # Grabs the diff data.
-      data = SVN.Capture(["diff", "--config-dir", bogus_dir, filename], None)
+      command = ["diff", "--config-dir", bogus_dir, filename]
+      if revision is not None:
+        command.extend(['--revision', revision])
+      data = SVN.Capture(command, None)
       if data:
         pass
       elif SVN.IsMoved(filename):
@@ -600,7 +603,7 @@ class SVN(object):
     return data
 
   @staticmethod
-  def GenerateDiff(filenames, root=None, full_move=False):
+  def GenerateDiff(filenames, root=None, full_move=False, revision=None):
     """Returns a string containing the diff for the given file list.
 
     The files in the list should either be absolute paths or relative to the
@@ -618,7 +621,7 @@ class SVN(object):
     try:
       os.chdir(root)
       diff = "".join(filter(None,
-                            [SVN.DiffItem(RelativePath(f, root),
+                            [SVN.DiffItem(RelativePath(f, root, revision),
                                           full_move=full_move)
                              for f in filenames]))
     finally:

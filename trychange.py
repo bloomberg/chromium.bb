@@ -74,8 +74,12 @@ def EscapeDot(name):
 
 class SCM(object):
   """Simplistic base class to implement one function: ProcessOptions."""
-  def __init__(self, options, cwd):
-    self.checkout_root = cwd
+  def __init__(self, options, path):
+    items = path.split('@')
+    assert len(items) <= 2
+    self.checkout_root = items[0]
+    items.append(None)
+    self.diff_against = items[1]
     self.options = options
     self.files = self.options.files
     self.options.files = None
@@ -176,7 +180,8 @@ class SVN(SCM):
           if f[0][0] not in excluded
       ]
       os.chdir(previous_cwd)
-    return scm.SVN.GenerateDiff(self.files, self.checkout_root, full_move=True)
+    return scm.SVN.GenerateDiff(self.files, self.checkout_root, full_move=True,
+                                revision=self.diff_against)
 
 
 class GIT(SCM):
@@ -202,7 +207,8 @@ class GIT(SCM):
 
   def GenerateDiff(self):
     # For now, ignores self.files
-    return scm.GIT.GenerateDiff(self.checkout_root, full_move=True)
+    return scm.GIT.GenerateDiff(self.checkout_root, full_move=True,
+                                branch=self.diff_against)
 
 
 def _ParseSendChangeOptions(options):
@@ -365,16 +371,17 @@ def GuessVCS(options, path):
     A SCM instance. Exits if the SCM can't be guessed.
   """
   __pychecker__ = 'no-returnvalues'
+  real_path = path.split('@')[0]
   logging.info("GuessVCS(%s)" % path)
   # Subversion has a .svn in all working directories.
-  if os.path.isdir(os.path.join(path, '.svn')):
+  if os.path.isdir(os.path.join(real_path, '.svn')):
     return SVN(options, path)
 
   # Git has a command to test if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
   try:
     gclient_utils.CheckCall(["git", "rev-parse", "--is-inside-work-tree"],
-                            path)
+                            real_path)
     return GIT(options, path)
   except gclient_utils.CheckCallError, e:
     if e.retcode != errno.ENOENT and e.retcode != 128:
@@ -464,7 +471,9 @@ def TryChange(argv,
                    help="Used as -pN parameter to patch")
   group.add_option("-s", "--sub_rep", action="append", default=[],
                    help="Subcheckout to use in addition. This is mainly "
-                        "useful for gclient-style checkouts.")
+                        "useful for gclient-style checkouts. Use @rev or "
+                        "@branch or @branch1..branch2 to specify the "
+                        "revision/branch to diff against.")
   group.add_option("--no_gclient", action="store_true",
                    help="Disable automatic search for gclient checkout.")
   parser.add_option_group(group)

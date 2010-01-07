@@ -63,8 +63,10 @@ class SVNUnittest(TryChangeTestsBase):
 
   def testBasic(self):
     trychange.scm.SVN.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
-    trychange.scm.SVN.GenerateDiff(['foo.txt', 'bar.txt'], self.fake_root,
-                                   full_move=True).AndReturn('A diff')
+    trychange.scm.SVN.GenerateDiff(['foo.txt', 'bar.txt'],
+                                   self.fake_root,
+                                   full_move=True,
+                                   revision=None).AndReturn('A diff')
     trychange.scm.SVN.GetEmail(self.fake_root).AndReturn('georges@example.com')
     self.mox.ReplayAll()
     svn = trychange.SVN(self.options, self.fake_root)
@@ -87,7 +89,8 @@ class GITUnittest(TryChangeTestsBase):
   def testBasic(self):
     trychange.scm.GIT.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.GIT.GenerateDiff(self.fake_root,
-                                   full_move=True).AndReturn('A diff')
+                                   full_move=True,
+                                   branch=None).AndReturn('A diff')
     trychange.scm.GIT.GetPatchName(self.fake_root).AndReturn('bleh-1233')
     trychange.scm.GIT.GetEmail(self.fake_root).AndReturn('georges@example.com')
     self.mox.ReplayAll()
