@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,12 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/common/pref_service.h"
+#include "net/base/cookie_monster.h"
 
 class TestingProfile : public Profile {
  public:
@@ -100,6 +102,9 @@ class TestingProfile : public Profile {
   void set_has_history_service(bool has_history_service) {
     has_history_service_ = has_history_service;
   }
+  net::CookieMonster* GetCookieMonster() {
+    return GetRequestContext()->GetCookieStore()->GetCookieMonster();
+  }
   virtual SearchVersusNavigateClassifier* GetSearchVersusNavigateClassifier() {
     return NULL;
   }
@@ -139,11 +144,16 @@ class TestingProfile : public Profile {
     InitThemes();
     return theme_provider_.get();
   }
-  virtual URLRequestContextGetter* GetRequestContext() { return NULL; }
+
+  // Returns a testing ContextGetter. This getter is currently only capable of
+  // returning a Context that helps test the CookieMonster. See implementation
+  // comments for more details.
+  virtual URLRequestContextGetter* GetRequestContext();
   virtual URLRequestContextGetter* GetRequestContextForMedia() { return NULL; }
   virtual URLRequestContextGetter* GetRequestContextForExtensions() {
       return NULL;
   }
+
   virtual net::SSLConfigService* GetSSLConfigService() { return NULL; }
   virtual BlacklistManager* GetBlacklistManager() { return NULL; }
   virtual HostZoomMap* GetHostZoomMap() { return NULL; }
@@ -229,6 +239,10 @@ class TestingProfile : public Profile {
   // The theme provider. Created lazily by GetThemeProvider()/InitThemes().
   scoped_ptr<BrowserThemeProvider> theme_provider_;
   bool created_theme_provider_;
+
+  // Internally, this is a TestURLRequestContextGetter that creates a dummy
+  // request context. Currently, only the CookieMonster is hooked up.
+  scoped_refptr<URLRequestContextGetter> request_context_;
 
   // Do we have a history service? This defaults to the value of
   // history_service, but can be explicitly set.

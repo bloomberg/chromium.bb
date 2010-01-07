@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,10 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_constants.h"
+#include "net/url_request/url_request_context.h"
 #include "webkit/database/database_tracker.h"
 
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
@@ -74,6 +76,33 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadObserver);
+};
+
+// This context is used to assist testing the CookieMonster by providing a
+// valid CookieStore. This can probably be expanded to test other aspects of
+// the context as well.
+class TestURLRequestContext : public URLRequestContext {
+ public:
+  TestURLRequestContext() {
+    cookie_store_ = new net::CookieMonster();
+  }
+};
+
+// Used to return a dummy context (normally the context is on the IO thread).
+// The one here can be run on the main test thread. Note that this can lead to
+// a leak if your test does not have a ChromeThread::IO in it because
+// URLRequestContextGetter is defined as a ReferenceCounted object with a
+// DeleteOnIOThread trait.
+class TestURLRequestContextGetter : public URLRequestContextGetter {
+ public:
+  virtual URLRequestContext* GetURLRequestContext() {
+    if (!context_)
+      context_ = new TestURLRequestContext();
+    return context_.get();
+  }
+
+ private:
+  scoped_refptr<URLRequestContext> context_;
 };
 
 }  // namespace
@@ -200,6 +229,12 @@ void TestingProfile::InitThemes() {
     theme_provider_->Init(this);
     created_theme_provider_ = true;
   }
+}
+
+URLRequestContextGetter* TestingProfile::GetRequestContext() {
+  if (!request_context_)
+    request_context_ = new TestURLRequestContextGetter();
+  return request_context_.get();
 }
 
 NTPResourceCache* TestingProfile::GetNTPResourceCache() {
