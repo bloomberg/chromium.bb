@@ -142,6 +142,15 @@ class LoadLog : public base::RefCountedThreadSafe<LoadLog> {
       log->Add(Entry(base::TimeTicks::Now(), string));
   }
 
+  static void AddErrorCode(LoadLog* log, int error) {
+    if (log)
+      log->Add(Entry(base::TimeTicks::Now(), error));
+  }
+
+  static bool IsUnbounded(const LoadLog* log) {
+    return log && log->is_unbounded();
+  }
+
   // --------------------------------------------------------------------------
 
   // Returns the list of all entries in the log.
@@ -158,6 +167,10 @@ class LoadLog : public base::RefCountedThreadSafe<LoadLog> {
   // Returns the bound on the size of the log.
   size_t max_num_entries() const {
     return max_num_entries_;
+  }
+
+  bool is_unbounded() const {
+    return max_num_entries_ == kUnbounded;
   }
 
   // Returns a C-String symbolic name for |event|.
