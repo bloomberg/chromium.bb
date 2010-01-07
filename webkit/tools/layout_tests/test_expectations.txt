@@ -3134,7 +3134,6 @@ BUG31146 MAC : LayoutTests/editing/selection/select-text-overflow-ellipsis.html 
 BUG31146 WIN LINUX :  LayoutTests/svg/custom/grayscale-gradient-mask.svg = IMAGE
 
 // WebKit roll 52633 -> 52667
-BUG_AJWONG WIN : LayoutTests/svg/batik/text/textFeatures.svg = TEXT
 BUG_AJWONG WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 
 // New test, needs chromium baseline.
@@ -3157,24 +3156,53 @@ BUG31642 LINUX DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE+
 BUG_ANTONM : LayoutTests/fast/repaint/float-new-in-block.html = FAIL PASS
 
 // WebKit roll 52852 -> 52867
-BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/painting-marker-01-f.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/painting-marker-02-f.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/painting-marker-03-f.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/painting-marker-01-f.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/painting-marker-02-f.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/painting-marker-03-f.svg = FAIL
 BUG_JAPHET WIN : LayoutTests/svg/custom/circular-marker-reference-1.svg = TEXT
-BUG_JAPHET : LayoutTests/svg/custom/circular-marker-reference-2.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/custom/circular-marker-reference-3.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/custom/circular-marker-reference-4.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/custom/js-late-marker-creation.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/custom/marker-default-width-height.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/circular-marker-reference-2.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/circular-marker-reference-3.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/circular-marker-reference-4.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/js-late-marker-creation.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/marker-default-width-height.svg = FAIL
 BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/marker-overflow-clip.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/custom/non-circular-marker-reference.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/custom/shapes-supporting-markers.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/non-circular-marker-reference.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/shapes-supporting-markers.svg = FAIL
 BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/filters-composite-02-b.svg = FAIL
 BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/filters-displace-01-f.svg = FAIL
 BUG_JAPHET : LayoutTests/svg/W3C-SVG-1.1/filters-image-01-b.svg = FAIL
 BUG_JAPHET : LayoutTests/svg/custom/feDisplacementMap-01.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/custom/marker-referencePoint.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/marker-referencePoint.svg = FAIL
 BUG_JAPHET : LayoutTests/svg/custom/marker-strokeWidth-changes.svg = FAIL
-BUG_JAPHET : LayoutTests/svg/custom/marker-opacity.svg = FAIL
+BUG_JAPHET WIN LINUX : LayoutTests/svg/custom/marker-opacity.svg = FAIL
 BUG_JAPHET : LayoutTests/websocket/tests/frame-lengths.html = PASS TIMEOUT
+
+// WebKit roll 52899:52930
+// Look like rebaselines
+BUG_DGLAZKOV : LayoutTests/svg/W3C-SVG-1.1/text-deco-01-b.svg = IMAGE
+BUG_DGLAZKOV MAC: LayoutTests/svg/W3C-SVG-1.1/text-path-01-b.svg = IMAGE
+BUG_DGLAZKOV : LayoutTests/svg/W3C-SVG-1.1/text-text-03-b.svg = IMAGE
+BUG_DGLAZKOV WIN MAC : LayoutTests/svg/W3C-SVG-1.1/text-text-07-t.svg = IMAGE
+BUG_DGLAZKOV : LayoutTests/svg/batik/text/textDecoration2.svg = IMAGE
+BUG_DGLAZKOV MAC : LayoutTests/svg/batik/text/textEffect3.svg = IMAGE
+BUG_DGLAZKOV : LayoutTests/svg/batik/text/textFeatures.svg = FAIL
+BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/batik/text/textGlyphOrientationHorizontal.svg = IMAGE
+BUG_DGLAZKOV WIN : LayoutTests/svg/batik/text/textLayout2.svg = IMAGE
+BUG_DGLAZKOV WIN : LayoutTests/svg/batik/text/textOnPath2.svg = IMAGE
+BUG_DGLAZKOV WIN : LayoutTests/svg/batik/text/textOnPath3.svg = IMAGE
+BUG_DGLAZKOV MAC : LayoutTests/svg/batik/text/textOnPathSpaces.svg = IMAGE
+BUG_DGLAZKOV WIN MAC : LayoutTests/svg/batik/text/textProperties.svg = IMAGE
+BUG_DGLAZKOV : LayoutTests/svg/batik/text/textStyles.svg = IMAGE
+BUG_DGLAZKOV MAC : LayoutTests/svg/batik/text/verticalText.svg = IMAGE
+BUG_DGLAZKOV MAC : LayoutTests/svg/batik/text/verticalTextOnPath.svg = IMAGE
+BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/text/selection-background-color.xhtml = IMAGE+TEXT
+BUG_DGLAZKOV MAC : LayoutTests/svg/text/selection-background-color.xhtml = IMAGE
+BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/text/text-align-04-b.svg = IMAGE
+BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-path-01-b.svg = IMAGE
+BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-spacing-01-b.svg = IMAGE
+BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-text-01-b.svg = IMAGE
+BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/text/text-text-03-b.svg = IMAGE
+BUG_DGLAZKOV WIN LINUX : LayoutTests/svg/text/text-text-04-t.svg = IMAGE
+BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-text-07-t.svg = IMAGE
+BUG_DGLAZKOV WIN : LayoutTests/svg/text/text-text-08-b.svg = IMAGE
