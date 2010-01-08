@@ -2813,7 +2813,7 @@ BUG9798 LINUX : LayoutTests/http/tests/security/clipboard/clipboard-file-access.
 // then should be marked as SLOW/PASS.
 BUG2844 : LayoutTests/http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS
 BUG2844 : LayoutTests/http/tests/appcache/fail-on-update.html = TIMEOUT PASS TEXT
-BUG2844 : LayoutTests/http/tests/appcache/offline-access.html = TIMEOUT PASS
+BUG2844 : LayoutTests/http/tests/appcache/offline-access.html = TIMEOUT PASS CRASH
 BUG2844 : LayoutTests/http/tests/appcache/update-cache.html = TIMEOUT PASS
 
 // These tests sometimes pass and sometimes have a text difference due
