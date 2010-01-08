@@ -475,10 +475,14 @@ def TryChange(argv,
                         "@branch or @branch1..branch2 to specify the "
                         "revision/branch to diff against.")
   # Mostly chromium-specific
-  group.add_option("--webkit", action="append_const",
-                   const="third_party/WebKit",
-                   dest="sub_rep",
-                   help="Shorthand for -s third_party/WebKit")
+  try:
+    group.add_option("--webkit", action="append_const",
+                     const="third_party/WebKit",
+                     dest="sub_rep",
+                     help="Shorthand for -s third_party/WebKit")
+  except optparse.OptionError:
+    # append_const is not supported on 2.4. Too bad.
+    pass
   group.add_option("--no_gclient", action="store_true",
                    help="Disable automatic search for gclient checkout.")
   parser.add_option_group(group)
