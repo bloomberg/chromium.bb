@@ -286,8 +286,13 @@ class GitWrapper(SCMWrapper, scm.GIT):
       cwd = self.checkout_path
     cmd = [self.COMMAND]
     cmd.extend(args)
-    sp = subprocess.Popen(cmd, cwd=cwd, stdout=stdout)
-    output = sp.communicate()[0]
+    logging.debug(cmd)
+    try:
+      sp = subprocess.Popen(cmd, cwd=cwd, stdout=stdout)
+      output = sp.communicate()[0]
+    except OSError:
+      raise gclient_utils.Error("git command '%s' failed to run." %
+              ' '.join(cmd) + "\nCheck that you have git installed.")
     if checkrc and sp.returncode:
       raise gclient_utils.Error('git command %s returned %d' %
                                 (args[0], sp.returncode))
