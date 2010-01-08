@@ -1,11 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
 #define CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
 
-#include "net/base/mock_host_resolver.h"
 #include "net/url_request/url_request_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,6 +40,7 @@ class RuleBasedHostResolverProc;
 class InProcessBrowserTest : public testing::Test {
  public:
   InProcessBrowserTest();
+  virtual ~InProcessBrowserTest();
 
   // We do this so we can be used in a Task.
   void AddRef() {}

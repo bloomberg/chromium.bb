@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,8 +136,9 @@ class Upgrade {
 };
 #endif
 
-// A subclass of BrowserProcessImpl that does not have a GoogleURLTracker
-// so we don't fetch as we have no IO thread (see bug #1292702).
+// A subclass of BrowserProcessImpl that does not have a GoogleURLTracker or
+// IntranetRedirectDetector so we don't do any URL fetches (as we have no IO
+// thread to fetch on).
 class FirstRunBrowserProcess : public BrowserProcessImpl {
  public:
   explicit FirstRunBrowserProcess(const CommandLine& command_line)
@@ -146,6 +147,9 @@ class FirstRunBrowserProcess : public BrowserProcessImpl {
   virtual ~FirstRunBrowserProcess() { }
 
   virtual GoogleURLTracker* google_url_tracker() { return NULL; }
+  virtual IntranetRedirectDetector* intranet_redirect_detector() {
+    return NULL;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FirstRunBrowserProcess);

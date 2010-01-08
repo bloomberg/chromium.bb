@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -797,19 +797,19 @@ int BrowserMain(const MainFunctionParams& parameters) {
   RegisterMetadataURLRequestHandler();
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
-  // the global GoogleURLTracker instance, which will promptly go to sleep for
-  // five seconds (to avoid slowing startup), and wake up afterwards to see if
-  // it should do anything else.  If we don't cause this creation now, it won't
-  // happen until someone else asks for the tracker, at which point we may no
-  // longer want to sleep for five seconds.
+  // the global GoogleURLTracker and IntranetRedirectDetector instances, which
+  // will promptly go to sleep for five and seven seconds, respectively (to
+  // avoid slowing startup), and wake up afterwards to see if they should do
+  // anything else.
   //
   // A simpler way of doing all this would be to have some function which could
-  // give the time elapsed since startup, and simply have the tracker check that
-  // when asked to initialize itself, but this doesn't seem to exist.
+  // give the time elapsed since startup, and simply have these objects check
+  // that when asked to initialize themselves, but this doesn't seem to exist.
   //
-  // This can't be created in the BrowserProcessImpl constructor because it
-  // needs to read prefs that get set after that runs.
+  // These can't be created in the BrowserProcessImpl constructor because they
+  // need to read prefs that get set after that runs.
   browser_process->google_url_tracker();
+  browser_process->intranet_redirect_detector();
 
   // Have Chrome plugins write their data to the profile directory.
   PluginService::GetInstance()->SetChromePluginDataDir(profile->GetPath());

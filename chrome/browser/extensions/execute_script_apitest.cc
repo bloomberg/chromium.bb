@@ -1,8 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 20109 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "net/base/mock_host_resolver.h"
 
 // This test failed at times on the Vista dbg builder and has been marked as
 // flaky for now. Bug http://code.google.com/p/chromium/issues/detail?id=28630

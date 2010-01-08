@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -518,6 +518,10 @@ const wchar_t kShouldShowWelcomePage[] = L"show-welcome-page";
 // most cases, and use it to send traffic to the correct Google host or with the
 // correct Google domain/country code for whatever location the user is in.
 const wchar_t kLastKnownGoogleURL[] = L"browser.last_known_google_url";
+
+// String containing the last known intranet redirect URL, if any.  See
+// intranet_redirect_detector.h for more information.
+const wchar_t kLastKnownIntranetRedirectOrigin[] = L"";
 
 // Integer containing the system Country ID the first time we checked the
 // template URL prepopulate data.  This is used to avoid adding a whole bunch of

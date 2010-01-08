@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/icon_manager.h"
+#include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
@@ -182,12 +183,14 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // any pending URLFetchers, and avoid creating any more.
   SdchDictionaryFetcher::Shutdown();
 
-  // We need to destroy the MetricsService and GoogleURLTracker before the
-  // io_thread_ gets destroyed, since both destructors can call the URLFetcher
-  // destructor, which does an PostDelayedTask operation on the IO thread.  (The
-  // IO thread will handle that URLFetcher operation before going away.)
+  // We need to destroy the MetricsService, GoogleURLTracker, and
+  // IntranetRedirectDetector before the io_thread_ gets destroyed, since their
+  // destructors can call the URLFetcher destructor, which does a
+  // PostDelayedTask operation on the IO thread.  (The IO thread will handle
+  // that URLFetcher operation before going away.)
   metrics_service_.reset();
   google_url_tracker_.reset();
+  intranet_redirect_detector_.reset();
 
   // Need to clear profiles (download managers) before the io_thread_.
   profile_manager_.reset();
@@ -459,6 +462,13 @@ void BrowserProcessImpl::CreateGoogleURLTracker() {
   DCHECK(google_url_tracker_.get() == NULL);
   scoped_ptr<GoogleURLTracker> google_url_tracker(new GoogleURLTracker);
   google_url_tracker_.swap(google_url_tracker);
+}
+
+void BrowserProcessImpl::CreateIntranetRedirectDetector() {
+  DCHECK(intranet_redirect_detector_.get() == NULL);
+  scoped_ptr<IntranetRedirectDetector> intranet_redirect_detector(
+      new IntranetRedirectDetector);
+  intranet_redirect_detector_.swap(intranet_redirect_detector);
 }
 
 void BrowserProcessImpl::CreateNotificationUIManager() {

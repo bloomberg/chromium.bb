@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
@@ -32,6 +33,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
+#include "net/base/mock_host_resolver.h"
 #include "sandbox/src/dep.h"
 
 #if defined(OS_LINUX)
@@ -74,6 +76,9 @@ InProcessBrowserTest::InProcessBrowserTest()
       single_process_(false),
       original_single_process_(false),
       initial_timeout_(kInitialTimeoutInMS) {
+}
+
+InProcessBrowserTest::~InProcessBrowserTest() {
 }
 
 void InProcessBrowserTest::SetUp() {
@@ -152,7 +157,8 @@ void InProcessBrowserTest::SetUp() {
   params.ui_task =
       NewRunnableMethod(this, &InProcessBrowserTest::RunTestOnMainThreadLoop);
 
-  host_resolver_ = new net::RuleBasedHostResolverProc(NULL);
+  host_resolver_ = new net::RuleBasedHostResolverProc(
+      new IntranetRedirectHostResolverProc(NULL));
 
   // Something inside the browser does this lookup implicitly. Make it fail
   // to avoid external dependency. It won't break the tests.

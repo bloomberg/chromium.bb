@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -82,37 +83,7 @@ void AlternateNavURLFetcher::OnURLFetchComplete(const URLFetcher* source,
                                                 const ResponseCookies& cookies,
                                                 const std::string& data) {
   DCHECK(fetcher_.get() == source);
-  if (status.is_success() &&
-      // HTTP 2xx, 401, and 407 all indicate that the target address exists.
-      (((response_code / 100) == 2) ||
-       (response_code == 401) || (response_code == 407))) {
-    state_ = SUCCEEDED;
-
-    // The following TLD+1s are used as destinations by ISPs/DNS providers/etc.
-    // who return provider-controlled pages to arbitrary user navigation
-    // attempts.  Because this can result in infobars on large fractions of user
-    // searches, we don't show automatic infobars for these.  Note that users
-    // can still choose to explicitly navigate to or search for pages in these
-    // domains, and can still get infobars for cases that wind up on other
-    // domains (e.g. legit intranet sites), we're just trying to avoid
-    // erroneously harassing the user with our own UI prompts.
-    const char* kBlacklistedSites[] = {
-        // NOTE: Use complete URLs, because GURL() doesn't do fixup!
-        "http://comcast.com/",
-        "http://opendns.com/",
-        "http://verizon.net/",
-    };
-    for (size_t i = 0; i < arraysize(kBlacklistedSites); ++i) {
-      if (net::RegistryControlledDomainService::SameDomainOrHost(
-          url, GURL(kBlacklistedSites[i]))) {
-        state_ = FAILED;
-        break;
-      }
-    }
-  } else {
-    state_ = FAILED;
-  }
-
+  SetStatusFromURLFetch(url, status, response_code);
   ShowInfobarIfPossible();
 }
 
@@ -148,6 +119,47 @@ bool AlternateNavURLFetcher::LinkClicked(WindowOpenDisposition disposition) {
 
 void AlternateNavURLFetcher::InfoBarClosed() {
   delete this;
+}
+
+void AlternateNavURLFetcher::SetStatusFromURLFetch(
+    const GURL& url,
+    const URLRequestStatus& status,
+    int response_code) {
+  if (!status.is_success() ||
+      // HTTP 2xx, 401, and 407 all indicate that the target address exists.
+      (((response_code / 100) != 2) &&
+       (response_code != 401) && (response_code != 407)) ||
+      // Fail if we're redirected to a common location.  This is the "automatic
+      // heuristic" version of the explicit blacklist below; see comments there.
+      net::RegistryControlledDomainService::SameDomainOrHost(url,
+          IntranetRedirectDetector::RedirectOrigin())) {
+    state_ = FAILED;
+    return;
+  }
+
+  // The following TLD+1s are used as destinations by ISPs/DNS providers/etc.
+  // who return provider-controlled pages to arbitrary user navigation attempts.
+  // Because this can result in infobars on large fractions of user searches, we
+  // don't show automatic infobars for these.  Note that users can still choose
+  // to explicitly navigate to or search for pages in these domains, and can
+  // still get infobars for cases that wind up on other domains (e.g. legit
+  // intranet sites), we're just trying to avoid erroneously harassing the user
+  // with our own UI prompts.
+  const char* kBlacklistedSites[] = {
+      // NOTE: Use complete URLs, because GURL() doesn't do fixup!
+      "http://comcast.com/",
+      "http://opendns.com/",
+      "http://verizon.net/",
+  };
+  for (size_t i = 0; i < arraysize(kBlacklistedSites); ++i) {
+    if (net::RegistryControlledDomainService::SameDomainOrHost(url,
+        GURL(kBlacklistedSites[i]))) {
+      state_ = FAILED;
+      return;
+    }
+  }
+
+  state_ = SUCCEEDED;
 }
 
 void AlternateNavURLFetcher::ShowInfobarIfPossible() {

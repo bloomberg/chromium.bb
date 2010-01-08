@@ -1097,6 +1097,8 @@
         'browser/input_window_dialog.h',
         'browser/input_window_dialog_gtk.cc',
         'browser/input_window_dialog_win.cc',
+        'browser/intranet_redirect_detector.cc',
+        'browser/intranet_redirect_detector.h',
         'browser/jankometer.cc',
         'browser/jankometer.h',
         'browser/jumplist.cc',

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,6 +182,13 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return google_url_tracker_.get();
   }
 
+  virtual IntranetRedirectDetector* intranet_redirect_detector() {
+    DCHECK(CalledOnValidThread());
+    if (!intranet_redirect_detector_.get())
+      CreateIntranetRedirectDetector();
+    return intranet_redirect_detector_.get();
+  }
+
   virtual const std::string& GetApplicationLocale() {
     DCHECK(!locale_.empty());
     return locale_;
@@ -225,6 +232,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateDebuggerWrapper(int port);
   void CreateDevToolsManager();
   void CreateGoogleURLTracker();
+  void CreateIntranetRedirectDetector();
   void CreateNotificationUIManager();
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
@@ -282,6 +290,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   scoped_ptr<AutomationProviderList> automation_provider_list_;
 
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
+  scoped_ptr<IntranetRedirectDetector> intranet_redirect_detector_;
 
   scoped_ptr<NotificationService> main_notification_service_;
 

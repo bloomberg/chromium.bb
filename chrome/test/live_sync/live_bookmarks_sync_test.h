@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,9 @@
 class BookmarkModel;
 class BookmarkNode;
 class Profile;
+namespace net {
+class ScopedDefaultHostResolverProc;
+}
 
 namespace switches {
 extern const wchar_t kSyncUserForTest[];
@@ -27,8 +30,8 @@ extern const wchar_t kSyncPasswordForTest[];
 // without a valid sync server set up.
 class LiveBookmarksSyncTest : public InProcessBrowserTest {
  public:
-  LiveBookmarksSyncTest() { }
-  ~LiveBookmarksSyncTest() { }
+  LiveBookmarksSyncTest();
+  ~LiveBookmarksSyncTest();
 
   virtual void SetUp() {
     // At this point, the browser hasn't been launched, and no services are
