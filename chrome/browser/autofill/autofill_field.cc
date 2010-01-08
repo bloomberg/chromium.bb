@@ -13,7 +13,7 @@ namespace {
 
 static std::string Hash32Bit(const std::string& str) {
   std::string hash_bin = base::SHA1HashString(str);
-  DCHECK(hash_bin.length() == 20);
+  DCHECK_EQ(20U, hash_bin.length());
 
   uint32 hash32 = ((hash_bin[0] & 0xFF) << 24) |
                   ((hash_bin[1] & 0xFF) << 16) |
@@ -62,4 +62,8 @@ void AutoFillField::set_heuristic_type(const AutoFillFieldType& type) {
     heuristic_type_ = type;
   else
     heuristic_type_ = UNKNOWN_TYPE;
+}
+
+bool AutoFillField::IsFieldFillable() const {
+  return type() != UNKNOWN_TYPE;
 }

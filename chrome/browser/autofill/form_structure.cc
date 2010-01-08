@@ -33,7 +33,7 @@ namespace {
 
 static std::string Hash64Bit(const std::string& str) {
   std::string hash_bin = base::SHA1HashString(str);
-  DCHECK(hash_bin.length() == 20);
+  DCHECK_EQ(20U, hash_bin.length());
 
   uint64 hash64 = (((static_cast<uint64>(hash_bin[0])) & 0xFF) << 56) |
                   (((static_cast<uint64>(hash_bin[1])) & 0xFF) << 48) |
@@ -193,7 +193,7 @@ void FormStructure::set_possible_types(int index, const FieldTypeSet& types) {
     fields_[index]->set_possible_types(types);
 }
 
-AutoFillField* FormStructure::field(int index) {
+const AutoFillField* FormStructure::field(int index) const {
   return fields_[index];
 }
 

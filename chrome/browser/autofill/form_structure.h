@@ -47,7 +47,7 @@ class FormStructure {
   // Sets the possible types for the field at |index|.
   void set_possible_types(int index, const FieldTypeSet& types);
 
-  AutoFillField* field(int index);
+  const AutoFillField* field(int index) const;
   size_t field_count() const;
 
   // Used for iterating over the fields.
