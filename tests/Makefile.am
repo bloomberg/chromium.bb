@@ -12,6 +12,10 @@ noinst_PROGRAMS = \
 
 SUBDIRS =
 
+if HAVE_LIBKMS
+SUBDIRS += kmstest
+endif
+
 if HAVE_INTEL
 endif
 
