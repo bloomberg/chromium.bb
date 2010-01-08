@@ -1384,7 +1384,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
 
 const wchar_t kChromeFrameFullTabModeKeyEventUrl[] = L"files/keyevent.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ChromeFrameKeyboardTest) {
+// Marking this test FLAKY as it fails at times on the buildbot.
+// http://code.google.com/p/chromium/issues/detail?id=26549
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ChromeFrameKeyboardTest) {
   chrome_frame_test::TimedMsgLoop loop;
 
   ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeKeyEventUrl));
@@ -1542,7 +1544,9 @@ const wchar_t kAnchor3Url[] = L"http://localhost:1337/files/anchor.html#a3";
 
 // Full tab mode back/forward test
 // Launch and navigate chrome frame to a set of URLs and test back forward
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForwardAnchor) {
+// Marking this test FLAKY as it fails at times on the buildbot.
+// http://code.google.com/p/chromium/issues/detail?id=26549
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   const char tab_enter_keystrokes[] = { VK_TAB, VK_RETURN, 0 };
   static const std::string tab_enter(tab_enter_keystrokes);
   chrome_frame_test::TimedMsgLoop loop;
