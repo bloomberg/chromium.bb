@@ -3144,3 +3144,6 @@ BUG_JAPHET MAC : LayoutTests/svg/custom/marker-strokeWidth-changes.svg = FAIL
 BUG_JAPHET WIN : LayoutTests/svg/custom/feDisplacementMap-01.svg = TEXT
 BUG_JAPHET WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 BUG_JAPHET : LayoutTests/websocket/tests/frame-lengths.html = PASS TIMEOUT
+
+// Flaky crash
+BUG31794 WIN MAC : LayoutTests/storage/domstorage/localstorage/enumerate-storage.html = CRASH PASS
