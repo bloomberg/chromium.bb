@@ -102,6 +102,10 @@ void BookmarkDragData::WriteToClipboard(Profile* profile) const {
 
     scw.WriteBookmark(title, url);
     scw.WriteHyperlink(EscapeForHTML(UTF16ToUTF8(title)), url);
+
+    // Also write the URL to the clipboard as text so that it can be pasted
+    // into text fields
+    scw.WriteURL(UTF8ToUTF16(url));
   }
 
   Pickle pickle;
