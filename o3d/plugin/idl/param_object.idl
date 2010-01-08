@@ -61,7 +61,7 @@ class ParamObject : NamedObject {
          \li 'o3d.ParamRenderDepthStencilSurface'
          \li 'o3d.ParamSampler'
          \li 'o3d.ParamSkin'
-         \li 'o3d.ParamSteamBank'
+         \li 'o3d.ParamStreamBank'
          \li 'o3d.ParamState'
          \li 'o3d.ParamString'
          \li 'o3d.ParamTexture'
