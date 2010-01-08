@@ -13,6 +13,9 @@ namespace google_update {
 // related to install as it is used by MSI to identify Gears.
 extern const wchar_t kGearsUpgradeCode[];
 
+// The GUID Google Update uses to keep track of Chrome upgrades.
+extern const wchar_t kChromeUpgradeCode[];
+
 extern const wchar_t kRegPathClients[];
 
 // The difference between ClientState and ClientStateMedium is that the former

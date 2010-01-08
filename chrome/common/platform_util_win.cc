@@ -17,6 +17,7 @@
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
+#include "chrome/installer/util/google_update_constants.h"
 #include "googleurl/src/gurl.h"
 
 namespace platform_util {
@@ -159,67 +160,43 @@ void SimpleErrorBox(gfx::NativeWindow parent,
 
 
 namespace {
-// Constants copied from src/tools/channel_changer/channel_changer.cc.
 
-// The Google Update key to read to find out which branch you are on.
-const wchar_t* const kChromeClientStateKey =
-    L"Software\\Google\\Update\\ClientState\\"
-    L"{8A69D345-D564-463C-AFF1-A69D9E530F96}";
-
-// The Google Client key to read to find out which branch you are on.
-const wchar_t* const kChromeClientsKey =
-    L"Software\\Google\\Update\\Clients\\"
-    L"{8A69D345-D564-463C-AFF1-A69D9E530F96}";
-
-// The Google Update value that defines which branch you are on.
-const wchar_t* const kBranchKey = L"ap";
-
-// The suffix Google Update sometimes adds to the channel name (channel names
-// are defined in kBranchStrings), indicating that a full install is needed. We
-// strip this out (if present) for the purpose of determining which channel you
-// are on.
-const wchar_t* const kChannelSuffix = L"-full";
-
-// See DetectBranch() in src/tools/channel_changer/channel_changer.cc.
 std::wstring CurrentChromeChannel() {
-  std::wstring update_branch = L"stable";  // default if we get confused.
-
   // See if we can find the Clients key on the HKLM branch.
   HKEY registry_hive = HKEY_LOCAL_MACHINE;
-  RegKey google_update_hklm(registry_hive, kChromeClientsKey, KEY_READ);
+  std::wstring key = google_update::kRegPathClients + std::wstring(L"\\") +
+                     google_update::kChromeUpgradeCode;
+  RegKey google_update_hklm(registry_hive, key.c_str(), KEY_READ);
   if (!google_update_hklm.Valid()) {
     // HKLM failed us, try the same for the HKCU branch.
     registry_hive = HKEY_CURRENT_USER;
-    RegKey google_update_hkcu(registry_hive, kChromeClientsKey, KEY_READ);
+    RegKey google_update_hkcu(registry_hive, key.c_str(), KEY_READ);
     if (!google_update_hkcu.Valid()) {
       // Unknown.
       registry_hive = 0;
     }
   }
 
+  std::wstring update_branch;
   if (registry_hive != 0) {
     // Now that we know which hive to use, read the 'ap' key from it.
-    RegKey client_state(registry_hive, kChromeClientStateKey, KEY_READ);
-    client_state.ReadValue(kBranchKey, &update_branch);
-
-    // We look for '1.1-beta' or '1.1-dev', but Google Update might have added
-    // '-full' to the channel name, which we need to strip out to determine what
-    // channel you are on.
-    std::wstring suffix = kChannelSuffix;
-    if (update_branch.length() > suffix.length()) {
-      size_t index = update_branch.rfind(suffix);
-      if (index != std::wstring::npos &&
-          index == update_branch.length() - suffix.length()) {
-        update_branch = update_branch.substr(0, index);
-      }
-    }
+    std::wstring key = google_update::kRegPathClientState +
+                       std::wstring(L"\\") + google_update::kChromeUpgradeCode;
+    RegKey client_state(registry_hive, key.c_str(), KEY_READ);
+    client_state.ReadValue(google_update::kRegApField, &update_branch);
   }
 
-  // Map to something pithy for human consumption.
-  if ((update_branch == L"2.0-dev") ||(update_branch == L"1.1-dev"))
-    update_branch = L"dev";
-  else if (update_branch == L"1.1-beta")
+  // Map to something pithy for human consumption. There are no rules as to
+  // what the ap string can contain, but generally it will contain a number
+  // followed by a dash followed by the branch name (and then some random
+  // suffix). We fall back on empty string, in case we fail to parse (or the
+  // branch is stable).
+  if (update_branch.find(L"-beta") != std::wstring::npos)
     update_branch = L"beta";
+  else if (update_branch.find(L"-dev") != std::wstring::npos)
+    update_branch = L"dev";
+  else
+    update_branch = L"";
 
   return update_branch;
 }

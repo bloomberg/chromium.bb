@@ -190,6 +190,9 @@ class AboutChromeView : public views::View,
   // Our current version.
   std::wstring current_version_;
 
+  // Additional information about the version (channel and build number).
+  std::wstring version_details_;
+
   // The version Google Update reports is available to us.
   std::wstring new_version_available_;
 
