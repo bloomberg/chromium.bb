@@ -20,14 +20,25 @@ class AppMenuModel : public menus::SimpleMenuModel {
                         Browser* browser);
   virtual ~AppMenuModel();
 
+  // Override this to handle the sync menu item (whose label is
+  // updated dynamically).
+  virtual bool IsLabelDynamicAt(int index) const;
+  virtual string16 GetLabelAt(int index) const;
+
  private:
   void Build();
   void BuildProfileSubMenu();
+
+  string16 GetSyncMenuLabel() const;
+  bool IsSyncItem(int index) const;
 
   // Contents of the profiles menu to populate with profile names.
   scoped_ptr<menus::SimpleMenuModel> profiles_menu_contents_;
 
   Browser* browser_;  // weak
+
+  bool sync_item_enabled_;
+  int sync_item_index_;  // -1 if sync_item_enabled_ is false.
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuModel);
 };

@@ -15,14 +15,31 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+// TODO(akalin): Now that AppMenuModel handles the sync item
+// dynamically, we don't need to refresh the menu on Windows/Linux.
+// Remove that code and make sure it works.
+
 AppMenuModel::AppMenuModel(menus::SimpleMenuModel::Delegate* delegate,
                            Browser* browser)
     : menus::SimpleMenuModel(delegate),
-      browser_(browser) {
+      browser_(browser),
+      // For now, we assume that sync cannot be enabled/disabled after
+      // launch.
+      sync_item_enabled_(ProfileSyncService::IsSyncEnabled()),
+      sync_item_index_(-1) {
   Build();
 }
 
 AppMenuModel::~AppMenuModel() {
+}
+
+bool AppMenuModel::IsLabelDynamicAt(int index) const {
+  return IsSyncItem(index) || SimpleMenuModel::IsLabelDynamicAt(index);
+}
+
+string16 AppMenuModel::GetLabelAt(int index) const {
+  return IsSyncItem(index) ?
+      GetSyncMenuLabel() : SimpleMenuModel::GetLabelAt(index);
 }
 
 void AppMenuModel::Build() {
@@ -56,10 +73,11 @@ void AppMenuModel::Build() {
   AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
 
   AddSeparator();
-  if (ProfileSyncService::IsSyncEnabled()) {
-    string16 label = sync_ui_util::GetSyncMenuLabel(
-        browser_->profile()->GetOriginalProfile()->GetProfileSyncService());
-    AddItem(IDC_SYNC_BOOKMARKS, label);
+  if (sync_item_enabled_) {
+    AddItem(IDC_SYNC_BOOKMARKS, GetSyncMenuLabel());
+    // TODO(akalin): Make it possible to get the index in a less
+    // hackish way.
+    sync_item_index_ = GetItemCount() - 1;
     AddSeparator();
   }
 #if defined(OS_MACOSX)
@@ -109,3 +127,14 @@ void AppMenuModel::BuildProfileSubMenu() {
       IDC_NEW_PROFILE,
       IDS_SELECT_PROFILE_DIALOG_NEW_PROFILE_ENTRY);
 }
+
+string16 AppMenuModel::GetSyncMenuLabel() const {
+  DCHECK(sync_item_enabled_);
+  return sync_ui_util::GetSyncMenuLabel(
+      browser_->profile()->GetOriginalProfile()->GetProfileSyncService());
+}
+
+bool AppMenuModel::IsSyncItem(int index) const {
+  return sync_item_enabled_ && (index == sync_item_index_);
+}
+

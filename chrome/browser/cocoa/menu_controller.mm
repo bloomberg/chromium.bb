@@ -122,6 +122,11 @@
     BOOL checked = model->IsItemCheckedAt(modelIndex);
     DCHECK([(id)item isKindOfClass:[NSMenuItem class]]);
     [(id)item setState:(checked ? NSOnState : NSOffState)];
+    if (model->IsLabelDynamicAt(modelIndex)) {
+      NSString* label =
+          l10n_util::FixUpWindowsStyleLabel(model->GetLabelAt(modelIndex));
+      [(id)item setTitle:label];
+    }
     return model->IsEnabledAt(modelIndex);
   }
   return NO;
