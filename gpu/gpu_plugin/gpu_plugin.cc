@@ -50,7 +50,8 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
 NPError NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
   return NPERR_NO_ERROR;
 }
-}
+
+}  // namespace
 
 NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs) {
   funcs->newp = NPP_New;
