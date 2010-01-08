@@ -55,7 +55,7 @@ class MyDelegate : public ResolveProxyMsgHelper::Delegate {
 TEST(ResolveProxyMsgHelperTest, Sequential) {
   net::MockAsyncProxyResolver* resolver = new net::MockAsyncProxyResolver;
   scoped_refptr<net::ProxyService> service(
-      new net::ProxyService(new MockProxyConfigService, resolver));
+      new net::ProxyService(new MockProxyConfigService, resolver, NULL));
 
   MyDelegate delegate;
   ResolveProxyMsgHelper helper(&delegate, service);
@@ -118,7 +118,7 @@ TEST(ResolveProxyMsgHelperTest, Sequential) {
 TEST(ResolveProxyMsgHelperTest, QueueRequests) {
   net::MockAsyncProxyResolver* resolver = new net::MockAsyncProxyResolver;
   scoped_refptr<net::ProxyService> service(
-      new net::ProxyService(new MockProxyConfigService, resolver));
+      new net::ProxyService(new MockProxyConfigService, resolver, NULL));
 
   MyDelegate delegate;
   ResolveProxyMsgHelper helper(&delegate, service);
@@ -185,7 +185,7 @@ TEST(ResolveProxyMsgHelperTest, QueueRequests) {
 TEST(ResolveProxyMsgHelperTest, CancelPendingRequests) {
   net::MockAsyncProxyResolver* resolver = new net::MockAsyncProxyResolver;
   scoped_refptr<net::ProxyService> service(
-      new net::ProxyService(new MockProxyConfigService, resolver));
+      new net::ProxyService(new MockProxyConfigService, resolver, NULL));
 
   MyDelegate delegate;
   scoped_ptr<ResolveProxyMsgHelper> helper(

@@ -55,7 +55,7 @@ void TestShellRequestContext::Init(
 #endif
   host_resolver_ = net::CreateSystemHostResolver();
   proxy_service_ = net::ProxyService::Create(proxy_config_service.release(),
-                                             false, NULL, NULL);
+                                             false, NULL, NULL, NULL);
   ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
 
   net::HttpCache *cache;

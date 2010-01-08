@@ -96,6 +96,8 @@ net::ProxyService* CreateProxyService(
       proxy_config_service,
       use_v8,
       context,
+      NULL, // TODO(eroman): Pass a valid NetworkChangeNotifier implementation
+            //               (http://crbug.com/12293).
       io_loop);
 }
 
