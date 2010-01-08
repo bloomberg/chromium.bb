@@ -13,6 +13,39 @@
 static const char kTestCompleteCookie[] = "status";
 static const char kTestCompleteSuccess[] = "OK";
 
+// Layout test files for WorkerFastLayoutTest for the WorkerFastLayoutTest
+// shards.
+static const char* kWorkerFastLayoutTestFiles[] = {
+  "stress-js-execution.html",
+  "use-machine-stack.html",
+  "worker-call.html",
+#if defined(OS_WIN)
+  // This test occasionally fails on valgrind (http://crbug.com/30212).
+  "worker-cloneport.html",
+#endif
+  "worker-close.html",
+  "worker-constructor.html",
+  "worker-context-gc.html",
+  "worker-context-multi-port.html",
+  "worker-event-listener.html",
+  "worker-gc.html",
+  // worker-lifecycle.html relies on layoutTestController.workerThreadCount
+  // which is not currently implemented.
+  // "worker-lifecycle.html",
+  "worker-location.html",
+  "worker-messageport.html",
+  // Disabled after r27089 (WebKit merge), http://crbug.com/22947
+  // "worker-messageport-gc.html",
+  "worker-multi-port.html",
+  "worker-navigator.html",
+  "worker-replace-global-constructor.html",
+  "worker-replace-self.html",
+  "worker-script-error.html",
+  "worker-terminate.html",
+  "worker-timeout.html"
+};
+static const int kWorkerFastLayoutTestShards = 3;
+
 class WorkerTest : public UILayoutTest {
  protected:
   virtual ~WorkerTest() { }
@@ -74,6 +107,35 @@ class WorkerTest : public UILayoutTest {
     EXPECT_EQ(number_of_processes, cur_process_count);
     return false;
   }
+
+  void RunWorkerFastLayoutTests(size_t shard) {
+    FilePath fast_test_dir;
+    fast_test_dir = fast_test_dir.AppendASCII("LayoutTests");
+    fast_test_dir = fast_test_dir.AppendASCII("fast");
+
+    FilePath worker_test_dir;
+    worker_test_dir = worker_test_dir.AppendASCII("workers");
+    InitializeForLayoutTest(fast_test_dir, worker_test_dir, false);
+
+    // Worker tests also rely on common files in js/resources.
+    FilePath js_dir = fast_test_dir.AppendASCII("js");
+    FilePath resource_dir;
+    resource_dir = resource_dir.AppendASCII("resources");
+    AddResourceForLayoutTest(js_dir, resource_dir);
+
+    for (size_t i = 0; i < arraysize(kWorkerFastLayoutTestFiles); ++i) {
+      if ((i % kWorkerFastLayoutTestShards) == shard) {
+        printf ("Test: %s\n", kWorkerFastLayoutTestFiles[i]);
+        RunLayoutTest(kWorkerFastLayoutTestFiles[i], false);
+      }
+    }
+
+    // Navigate away from to a blank page so that any workers are cleaned up.
+    // This helps leaks trackers do a better job of reporting.
+    scoped_refptr<TabProxy> tab(GetActiveTab());
+    GURL about_url(std::string("file://localhost/"));
+    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
+  }
 };
 
 
@@ -113,64 +175,24 @@ TEST_F(WorkerTest, IncognitoSharedWorkers) {
 
 #if defined(OS_LINUX)
 // Crashes on Linux - http://crbug.com/22898
-#define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
-#elif defined (OS_MACOSX)
-#define WorkerFastLayoutTests FLAKY_WorkerFastLayoutTests
+#define WorkerFastLayoutTests0 DISABLED_WorkerFastLayoutTests0
+#define WorkerFastLayoutTests1 DISABLED_WorkerFastLayoutTests1
+#define WorkerFastLayoutTests2 DISABLED_WorkerFastLayoutTests2
 #endif
 
-TEST_F(WorkerTest, WorkerFastLayoutTests) {
-  static const char* kLayoutTestFiles[] = {
-    "stress-js-execution.html",
-    "use-machine-stack.html",
-    "worker-call.html",
-#if defined(OS_WIN)
-    // This test occasionally fails on valgrind (http://crbug.com/30212).
-    "worker-cloneport.html",
-#endif
-    "worker-close.html",
-    "worker-constructor.html",
-    "worker-context-gc.html",
-    "worker-context-multi-port.html",
-    "worker-event-listener.html",
-    "worker-gc.html",
-    // worker-lifecycle.html relies on layoutTestController.workerThreadCount
-    // which is not currently implemented.
-    // "worker-lifecycle.html",
-    "worker-location.html",
-    "worker-messageport.html",
-    // Disabled after r27089 (WebKit merge), http://crbug.com/22947
-    // "worker-messageport-gc.html",
-    "worker-multi-port.html",
-    "worker-navigator.html",
-    "worker-replace-global-constructor.html",
-    "worker-replace-self.html",
-    "worker-script-error.html",
-    "worker-terminate.html",
-    "worker-timeout.html"
-  };
+TEST_F(WorkerTest, WorkerFastLayoutTests0) {
+  SCOPED_TRACE("");
+  RunWorkerFastLayoutTests(0);
+}
 
-  FilePath fast_test_dir;
-  fast_test_dir = fast_test_dir.AppendASCII("LayoutTests");
-  fast_test_dir = fast_test_dir.AppendASCII("fast");
+TEST_F(WorkerTest, WorkerFastLayoutTests1) {
+  SCOPED_TRACE("");
+  RunWorkerFastLayoutTests(1);
+}
 
-  FilePath worker_test_dir;
-  worker_test_dir = worker_test_dir.AppendASCII("workers");
-  InitializeForLayoutTest(fast_test_dir, worker_test_dir, false);
-
-  // Worker tests also rely on common files in js/resources.
-  FilePath js_dir = fast_test_dir.AppendASCII("js");
-  FilePath resource_dir;
-  resource_dir = resource_dir.AppendASCII("resources");
-  AddResourceForLayoutTest(js_dir, resource_dir);
-
-  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
-    RunLayoutTest(kLayoutTestFiles[i], false);
-
-  // Navigate away from to a blank page so that any workers are cleaned up. This
-  // helps leaks trackers do a better job of reporting.
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  GURL about_url(std::string("file://localhost/"));
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
+TEST_F(WorkerTest, WorkerFastLayoutTests2) {
+  SCOPED_TRACE("");
+  RunWorkerFastLayoutTests(2);
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
