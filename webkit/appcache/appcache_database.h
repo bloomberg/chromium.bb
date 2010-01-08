@@ -72,7 +72,8 @@ class AppCacheDatabase {
   void CloseConnection();
   bool FindOriginsWithGroups(std::set<GURL>* origins);
   bool FindLastStorageIds(
-      int64* last_group_id, int64* last_cache_id, int64* last_response_id);
+      int64* last_group_id, int64* last_cache_id, int64* last_response_id,
+      int64* last_deletable_response_rowid);
 
   bool FindGroup(int64 group_id, GroupRecord* record);
   bool FindGroupForManifestUrl(const GURL& manifest_url, GroupRecord* record);
@@ -115,6 +116,11 @@ class AppCacheDatabase {
       const std::vector<OnlineWhiteListRecord>& records);
   bool DeleteOnlineWhiteListForCache(int64 cache_id);
 
+  bool GetDeletableResponseIds(std::vector<int64>* response_ids,
+                               int64 max_rowid, int limit);
+  bool InsertDeletableResponseIds(const std::vector<int64>& response_ids);
+  bool DeleteDeletableResponseIds(const std::vector<int64>& response_ids);
+
   // So our callers can wrap operations in transactions.
   sql::Connection* db_connection() {
     LazyOpen(true);
@@ -122,6 +128,11 @@ class AppCacheDatabase {
   }
 
  private:
+  bool RunCachedStatementWithIds(
+      const sql::StatementID& statement_id, const char* sql,
+      const std::vector<int64>& ids);
+  bool RunUniqueStatementWithInt64Result(const char* sql, int64* result);
+
   bool PrepareUniqueStatement(const char* sql, sql::Statement* statement);
   bool PrepareCachedStatement(
       const sql::StatementID& id, const char* sql, sql::Statement* statement);
@@ -159,6 +170,7 @@ class AppCacheDatabase {
   FRIEND_TEST(AppCacheDatabaseTest, LazyOpen);
   FRIEND_TEST(AppCacheDatabaseTest, OnlineWhiteListRecords);
   FRIEND_TEST(AppCacheDatabaseTest, ReCreate);
+  FRIEND_TEST(AppCacheDatabaseTest, DeletableResponseIds);
   DISALLOW_COPY_AND_ASSIGN(AppCacheDatabase);
 };
 

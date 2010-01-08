@@ -114,12 +114,14 @@ class AppCacheStorageImpl::InitTask : public DatabaseTask {
   int64 last_group_id_;
   int64 last_cache_id_;
   int64 last_response_id_;
+  int64 last_deletable_response_rowid_;
   std::set<GURL> origins_with_groups_;
 };
 
 void AppCacheStorageImpl::InitTask::Run() {
   database_->FindLastStorageIds(
-      &last_group_id_, &last_cache_id_, &last_response_id_);
+      &last_group_id_, &last_cache_id_, &last_response_id_,
+      &last_deletable_response_rowid_);
   database_->FindOriginsWithGroups(&origins_with_groups_);
 }
 

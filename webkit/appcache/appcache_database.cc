@@ -24,6 +24,7 @@ const char* kCachesTable = "Caches";
 const char* kEntriesTable = "Entries";
 const char* kFallbackNameSpacesTable = "FallbackNameSpaces";
 const char* kOnlineWhiteListsTable = "OnlineWhiteLists";
+const char* kDeletableResponseIdsTable = "DeletableResponseIds";
 
 const struct {
   const char* table_name;
@@ -57,6 +58,9 @@ const struct {
   { kOnlineWhiteListsTable,
     "(cache_id INTEGER,"
     " namespace_url TEXT)" },
+
+  { kDeletableResponseIdsTable,
+    "(response_id INTEGER NOT NULL)" },
 };
 
 const struct {
@@ -109,6 +113,11 @@ const struct {
     kOnlineWhiteListsTable,
     "(cache_id)",
     false },
+
+  { "DeletableResponsesIdIndex",
+    kDeletableResponseIdsTable,
+    "(response_id)",
+    true },
 };
 
 const int kTableCount = ARRAYSIZE_UNSAFE(kTables);
@@ -155,38 +164,41 @@ bool AppCacheDatabase::FindOriginsWithGroups(std::set<GURL>* origins) {
 }
 
 bool AppCacheDatabase::FindLastStorageIds(
-    int64* last_group_id, int64* last_cache_id, int64* last_response_id) {
-  DCHECK(last_group_id && last_cache_id && last_response_id);
+    int64* last_group_id, int64* last_cache_id, int64* last_response_id,
+    int64* last_deletable_response_rowid) {
+  DCHECK(last_group_id && last_cache_id && last_response_id &&
+         last_deletable_response_rowid);
 
   *last_group_id = 0;
   *last_cache_id = 0;
   *last_response_id = 0;
+  *last_deletable_response_rowid = 0;
 
   if (!LazyOpen(false))
     return false;
 
-  sql::Statement statement;
-
-  const char* kSql1 = "SELECT MAX(group_id) FROM Groups";
-  if (!PrepareUniqueStatement(kSql1, &statement) ||
-      !statement.Step()) {
+  const char* kMaxGroupIdSql = "SELECT MAX(group_id) FROM Groups";
+  const char* kMaxCacheIdSql = "SELECT MAX(cache_id) FROM Caches";
+  const char* kMaxDeletableResponseRowIdSql =
+      "SELECT MAX(rowid) FROM DeletableResponseIds";
+  int64 group_id;
+  int64 cache_id;
+  int64 deletable_response_rowid;
+  if (!RunUniqueStatementWithInt64Result(kMaxGroupIdSql, &group_id) ||
+      !RunUniqueStatementWithInt64Result(kMaxCacheIdSql, &cache_id) ||
+      !RunUniqueStatementWithInt64Result(kMaxDeletableResponseRowIdSql,
+                                         &deletable_response_rowid)) {
     return false;
   }
-  int64 group_id = statement.ColumnInt64(0);
 
-  const char* kSql2 = "SELECT MAX(cache_id) FROM Caches";
-  if (!PrepareUniqueStatement(kSql2, &statement) ||
-      !statement.Step()) {
-    return false;
-  }
-  int64 cache_id = statement.ColumnInt64(0);
-
-  // TODO(michaeln): SELECT MAX(responseId) FROM Where/How ?
+  // TODO(michaeln): SELECT MAX(responseId) FROM somewhere,
+  // or retrieve from the meta_table.
   int64 response_id = 0;
 
   *last_group_id = group_id;
   *last_cache_id = cache_id;
   *last_response_id = response_id;
+  *last_deletable_response_rowid = deletable_response_rowid;
   return true;
 }
 
@@ -444,7 +456,6 @@ bool AppCacheDatabase::FindEntriesForUrl(
   return statement.Succeeded();
 }
 
-
 bool AppCacheDatabase::FindEntry(
     int64 cache_id, const GURL& url, EntryRecord* record) {
   DCHECK(record);
@@ -492,13 +503,18 @@ bool AppCacheDatabase::InsertEntry(const EntryRecord* record) {
 
 bool AppCacheDatabase::InsertEntryRecords(
     const std::vector<EntryRecord>& records) {
+  if (records.empty())
+    return true;
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin())
+    return false;
   std::vector<EntryRecord>::const_iterator iter = records.begin();
   while (iter != records.end()) {
     if (!InsertEntry(&(*iter)))
       return false;
     ++iter;
   }
-  return true;
+  return transaction.Commit();
 }
 
 bool AppCacheDatabase::DeleteEntriesForCache(int64 cache_id) {
@@ -603,13 +619,18 @@ bool AppCacheDatabase::InsertFallbackNameSpace(
 
 bool AppCacheDatabase::InsertFallbackNameSpaceRecords(
     const std::vector<FallbackNameSpaceRecord>& records) {
+  if (records.empty())
+    return true;
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin())
+    return false;
   std::vector<FallbackNameSpaceRecord>::const_iterator iter = records.begin();
   while (iter != records.end()) {
     if (!InsertFallbackNameSpace(&(*iter)))
       return false;
     ++iter;
   }
-  return true;
+  return transaction.Commit();
 }
 
 bool AppCacheDatabase::DeleteFallbackNameSpacesForCache(int64 cache_id) {
@@ -669,13 +690,18 @@ bool AppCacheDatabase::InsertOnlineWhiteList(
 
 bool AppCacheDatabase::InsertOnlineWhiteListRecords(
     const std::vector<OnlineWhiteListRecord>& records) {
+  if (records.empty())
+    return true;
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin())
+    return false;
   std::vector<OnlineWhiteListRecord>::const_iterator iter = records.begin();
   while (iter != records.end()) {
     if (!InsertOnlineWhiteList(&(*iter)))
       return false;
     ++iter;
   }
-  return true;
+  return transaction.Commit();
 }
 
 bool AppCacheDatabase::DeleteOnlineWhiteListForCache(int64 cache_id) {
@@ -691,6 +717,77 @@ bool AppCacheDatabase::DeleteOnlineWhiteListForCache(int64 cache_id) {
 
   statement.BindInt64(0, cache_id);
   return statement.Run();
+}
+
+bool AppCacheDatabase::GetDeletableResponseIds(
+    std::vector<int64>* response_ids, int64 max_rowid, int limit) {
+  if (!LazyOpen(false))
+    return false;
+
+  const char* kSql =
+      "SELECT response_id FROM DeletableResponseIds "
+      "  WHERE rowid <= ?"
+      "  LIMIT ?";
+  sql::Statement statement;
+  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
+    return false;
+
+  statement.BindInt64(0, max_rowid);
+  statement.BindInt64(1, limit);
+  while (statement.Step())
+    response_ids->push_back(statement.ColumnInt64(0));
+  return statement.Succeeded();
+}
+
+bool AppCacheDatabase::InsertDeletableResponseIds(
+    const std::vector<int64>& response_ids) {
+  const char* kSql =
+      "INSERT INTO DeletableResponseIds (response_id) VALUES (?)";
+  return RunCachedStatementWithIds(SQL_FROM_HERE, kSql, response_ids);
+}
+
+bool AppCacheDatabase::DeleteDeletableResponseIds(
+    const std::vector<int64>& response_ids) {
+  const char* kSql =
+      "DELETE FROM DeletableResponseIds WHERE response_id = ?";
+  return RunCachedStatementWithIds(SQL_FROM_HERE, kSql, response_ids);
+}
+
+bool AppCacheDatabase::RunCachedStatementWithIds(
+    const sql::StatementID& statement_id, const char* sql,
+    const std::vector<int64>& ids) {
+  if (!LazyOpen(true))
+    return false;
+
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin())
+    return false;
+
+  sql::Statement statement;
+  if (!PrepareCachedStatement(statement_id, sql, &statement))
+    return false;
+
+  std::vector<int64>::const_iterator iter = ids.begin();
+  while (iter != ids.end()) {
+    statement.BindInt64(0, *iter);
+    if (!statement.Run())
+      return false;
+    statement.Reset();
+    ++iter;
+  }
+
+  return transaction.Commit();
+}
+
+bool AppCacheDatabase::RunUniqueStatementWithInt64Result(
+    const char* sql, int64* result) {
+  sql::Statement statement;
+  if (!PrepareUniqueStatement(sql, &statement) ||
+      !statement.Step()) {
+    return false;
+  }
+  *result = statement.ColumnInt64(0);
+  return true;
 }
 
 bool AppCacheDatabase::PrepareUniqueStatement(

@@ -37,12 +37,14 @@ TEST(AppCacheDatabaseTest, LazyOpen) {
   EXPECT_FALSE(db.LazyOpen(false));
   EXPECT_TRUE(db.LazyOpen(true));
 
-  int64 group_id, cache_id, response_id;
-  group_id = cache_id = response_id = 0;
-  EXPECT_TRUE(db.FindLastStorageIds(&group_id, &cache_id, &response_id));
+  int64 group_id, cache_id, response_id, deleteable_response_rowid;
+  group_id = cache_id = response_id = deleteable_response_rowid = 0;
+  EXPECT_TRUE(db.FindLastStorageIds(&group_id, &cache_id, &response_id,
+                                    &deleteable_response_rowid));
   EXPECT_EQ(0, group_id);
   EXPECT_EQ(0, cache_id);
   EXPECT_EQ(0, response_id);
+  EXPECT_EQ(0, deleteable_response_rowid);
 
   std::set<GURL> origins;
   EXPECT_TRUE(db.FindOriginsWithGroups(&origins));
@@ -442,6 +444,77 @@ TEST(AppCacheDatabaseTest, OnlineWhiteListRecords) {
   records.clear();
   EXPECT_TRUE(db.FindOnlineWhiteListForCache(1, &records));
   EXPECT_TRUE(records.empty());
+}
+
+TEST(AppCacheDatabaseTest, DeletableResponseIds) {
+  const FilePath kEmptyPath;
+  AppCacheDatabase db(kEmptyPath);
+  EXPECT_TRUE(db.LazyOpen(true));
+
+  scoped_refptr<TestErrorDelegate> error_delegate(new TestErrorDelegate);
+  db.db_->set_error_delegate(error_delegate);
+
+  std::vector<int64> ids;
+
+  EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 100));
+  EXPECT_TRUE(ids.empty());
+  ids.push_back(0);
+  EXPECT_TRUE(db.DeleteDeletableResponseIds(ids));
+  EXPECT_TRUE(db.InsertDeletableResponseIds(ids));
+
+  ids.clear();
+  EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 100));
+  EXPECT_EQ(1U, ids.size());
+  EXPECT_EQ(0, ids[0]);
+
+  int64 unused, deleteable_response_rowid;
+  unused = deleteable_response_rowid = 0;
+  EXPECT_TRUE(db.FindLastStorageIds(&unused, &unused, &unused,
+                                    &deleteable_response_rowid));
+  EXPECT_EQ(1, deleteable_response_rowid);
+
+
+  // Expected to fail due to the duplicate id, 0 is already in the table.
+  ids.clear();
+  ids.push_back(0);
+  ids.push_back(1);
+  EXPECT_FALSE(db.InsertDeletableResponseIds(ids));
+
+  ids.clear();
+  for (int i = 1; i < 10; ++i)
+    ids.push_back(i);
+  EXPECT_TRUE(db.InsertDeletableResponseIds(ids));
+  EXPECT_TRUE(db.FindLastStorageIds(&unused, &unused, &unused,
+                                    &deleteable_response_rowid));
+  EXPECT_EQ(10, deleteable_response_rowid);
+
+  ids.clear();
+  EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 100));
+  EXPECT_EQ(10U, ids.size());
+  for (int i = 0; i < 10; ++i)
+    EXPECT_EQ(i, ids[i]);
+
+  // Ensure the limit is respected.
+  ids.clear();
+  EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 5));
+  EXPECT_EQ(5U, ids.size());
+  for (size_t i = 0; i < ids.size(); ++i)
+    EXPECT_EQ(i, ids[i]);
+
+  // Ensure the max_rowid is respected (the first rowid is 1).
+  ids.clear();
+  EXPECT_TRUE(db.GetDeletableResponseIds(&ids, 5, 100));
+  EXPECT_EQ(5U, ids.size());
+  for (size_t i = 0; i < ids.size(); ++i)
+    EXPECT_EQ(i, ids[i]);
+
+  // Ensure that we can delete from the table.
+  EXPECT_TRUE(db.DeleteDeletableResponseIds(ids));
+  ids.clear();
+  EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 100));
+  EXPECT_EQ(5U, ids.size());
+  for (size_t i = 0; i < ids.size(); ++i)
+    EXPECT_EQ(i + 5, ids[i]);
 }
 
 }  // namespace appcache
