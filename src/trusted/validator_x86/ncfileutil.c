@@ -108,6 +108,16 @@ static off_t readat(const int fd, void *buf, const off_t sz, const size_t at) {
   return nread;
 }
 
+static const char* GetEiClassName(unsigned char c) {
+  if (c == ELFCLASS32) {
+    return "(32 bit executable)";
+  } else if (c == ELFCLASS64) {
+    return "(64 bit executable)";
+  } else {
+    return "(invalid class)";
+  }
+}
+
 static int nc_load(ncfile *ncf, int fd, int nc_rules) {
 
   Elf_Ehdr h;
@@ -137,6 +147,11 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
     nc_error_fn("nc_load(%s): bad ABI version %d\n", ncf->fname,
             h.e_ident[EI_ABIVERSION]);
     /* return -1; */
+  }
+
+  if (h.e_ident[EI_CLASS] != NACL_ELF_CLASS) {
+    nc_error_fn("nc_load(%s): bad EI CLASS %d %s\n", ncf->fname,
+                h.e_ident[EI_CLASS], GetEiClassName(h.e_ident[EI_CLASS]));
   }
 
   if ((h.e_flags & EF_NACL_ALIGN_MASK) == EF_NACL_ALIGN_16) {

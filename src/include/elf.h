@@ -69,8 +69,10 @@ EXTERN_C_BEGIN
 #endif
 #if NACL_TARGET_SUBARCH == 64
 # define PRI_ADDR_ALL_WIDTH "016"
+# define NACL_ELF_CLASS ELFCLASS64
 #elif NACL_TARGET_SUBARCH == 32
 # define PRI_ADDR_ALL_WIDTH "08"
+# define NACL_ELF_CLASS ELFCLASS32
 #else
 # error "NACL_TARGET_SUBARCH must be defined to be 32 or 64"
 #endif
