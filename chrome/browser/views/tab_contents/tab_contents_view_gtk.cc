@@ -232,7 +232,14 @@ void TabContentsViewGtk::OnTabCrashed() {
 
 void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
   // TODO(brettw) this is a hack and should be removed. See tab_contents_view.h.
-  WasSized(size);
+
+  // We're contained in a fixed. To have the fixed relay us out to |size|, set
+  // the size request, which triggers OnSizeAllocate.
+  gtk_widget_set_size_request(GetNativeView(), size.width(), size.height());
+
+  // We need to send this immediately.
+  if (tab_contents()->render_widget_host_view())
+    tab_contents()->render_widget_host_view()->SetSize(size);
 }
 
 void TabContentsViewGtk::Focus() {
