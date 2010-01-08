@@ -140,12 +140,12 @@ cd ../xaos
 ./xaos_tool.sh all
 Firefox http://localhost:5103/tests/xaos/xaos.html
 # Lua demo
-cd ../lua
+## cd ../lua
 # TODO: the "nacl" stuff should be implemented as USE_NACL=1
-make allclean nacl
-make download nacl
-make release nacl
-Firefox http://localhost:5103/tests/lua/lua.html
+## make allclean nacl
+## make download nacl
+## make release nacl
+## Firefox http://localhost:5103/tests/lua/lua.html
 # AWK demo
 cd ../awk
 make allclean nacl
