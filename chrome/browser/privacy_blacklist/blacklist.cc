@@ -182,10 +182,13 @@ Blacklist::Match* Blacklist::findMatch(const GURL& url) const {
       !url.SchemeIs(chrome::kHttpsScheme) &&
       !url.SchemeIs(chrome::kFtpScheme))
     return 0;
+  std::string url_spec = url.host() + url.path();
+  if (!url.query().empty())
+    url_spec = url_spec + "?" + url.query();
   Match* match = NULL;
   for (EntryList::const_iterator i = blacklist_.begin();
        i != blacklist_.end(); ++i) {
-    if (Matches((*i)->pattern(), url.host() + url.path())) {
+    if (Matches((*i)->pattern(), url_spec)) {
       if (!match)
         match = new Match;
       match->AddEntry(i->get());
