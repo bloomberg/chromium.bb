@@ -7,11 +7,6 @@
   "permissions": [],
   "allow_reload": false,
   "order": 2,
-  "content_scripts": [
-    {
-      "matches": ["http://localhost/*"],
-      "js": ["page.js"]
-    }
-  ],
+  "content_scripts": [],
   "views": []
 }

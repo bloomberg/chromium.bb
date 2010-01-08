@@ -1,0 +1,9 @@
+<script>
+chrome.extension.onConnectExternal.addListener(function(port) {
+  port.onMessage.addListener(function(msg) {
+    if (msg.testConnectExternal) {
+      port.postMessage({success: true, senderId: port.sender.id});
+    }
+  });
+});
+</script>

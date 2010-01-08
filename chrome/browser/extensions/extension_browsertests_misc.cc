@@ -493,48 +493,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeedNoLinks) {
                     "No error");
 }
 
-// Tests that message passing between extensions and tabs works.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_MessagingExtensionTab) {
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
-                    .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
-                    .AppendASCII("1.0")));
-
-  // Get the ExtensionHost that is hosting our toolstrip page.
-  ExtensionProcessManager* manager =
-      browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host = FindHostWithPath(manager, "/toolstrip.html", 1);
-
-  // Load the tab that will communicate with our toolstrip.
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GURL("chrome-extension://bjafgdebaacbbbecmhlhpofkepfkgcpa/page.html"));
-
-  // Test extension->tab messaging.
-  bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testPostMessage()", &result);
-  EXPECT_TRUE(result);
-
-  // Test tab->extension messaging.
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testPostMessageFromTab()", &result);
-  EXPECT_TRUE(result);
-
-  // Test disconnect event dispatch.
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testDisconnect()", &result);
-  EXPECT_TRUE(result);
-
-  // Test disconnect is fired on tab close.
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
-  EXPECT_TRUE(result);
-}
-
 // Tests that an error raised during an async function still fires
 // the callback, but sets chrome.extension.lastError.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
@@ -549,65 +507,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   bool result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testLastError()", &result);
-  EXPECT_TRUE(result);
-}
-
-// Tests that message passing between extensions and content scripts works.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_MessagingContentScript) {
-  HTTPTestServer* server = StartHTTPServer();
-
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
-                    .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
-                    .AppendASCII("1.0")));
-
-  UserScriptMaster* master = browser()->profile()->GetUserScriptMaster();
-  if (!master->ScriptsReady()) {
-    // Wait for UserScriptMaster to finish its scan.
-    NotificationRegistrar registrar;
-    registrar.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
-                  NotificationService::AllSources());
-    ui_test_utils::RunMessageLoop();
-  }
-  ASSERT_TRUE(master->ScriptsReady());
-
-  // Get the ExtensionHost that is hosting our toolstrip page.
-  ExtensionProcessManager* manager =
-      browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host = FindHostWithPath(manager, "/toolstrip.html", 1);
-
-  // Load the tab whose content script will communicate with our toolstrip.
-  GURL url = server->TestServerPageW(kTestFile);
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // Test extension->tab messaging.
-  bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testPostMessage()", &result);
-  EXPECT_TRUE(result);
-
-  // Test port naming.
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testPortName()", &result);
-  EXPECT_TRUE(result);
-
-  // Test tab->extension messaging.
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testPostMessageFromTab()", &result);
-  EXPECT_TRUE(result);
-
-  // Test disconnect event dispatch.
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testDisconnect()", &result);
-  EXPECT_TRUE(result);
-
-  // Test disconnect is fired on tab close.
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
   EXPECT_TRUE(result);
 }
 
@@ -670,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DisableEnable) {
   ExtensionProcessManager* manager =
       browser()->profile()->GetExtensionProcessManager();
 
-  // Load an extension, expect the toolstrip to be available.
+  // Load an extension, expect the background page to be available.
   ASSERT_FALSE(service->HasInstalledExtensions());
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
@@ -678,21 +577,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DisableEnable) {
                     .AppendASCII("1.0")));
   EXPECT_EQ(1u, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
-  EXPECT_TRUE(FindHostWithPath(manager, "/toolstrip.html", 1));
+  EXPECT_TRUE(FindHostWithPath(manager, "/background.html", 1));
   ASSERT_TRUE(service->HasInstalledExtensions());
 
-  // After disabling, the toolstrip should go away.
+  // After disabling, the background page should go away.
   service->DisableExtension("bjafgdebaacbbbecmhlhpofkepfkgcpa");
   EXPECT_EQ(0u, service->extensions()->size());
   EXPECT_EQ(1u, service->disabled_extensions()->size());
-  EXPECT_FALSE(FindHostWithPath(manager, "/toolstrip.html", 0));
+  EXPECT_FALSE(FindHostWithPath(manager, "/background.html", 0));
   ASSERT_TRUE(service->HasInstalledExtensions());
 
   // And bring it back.
   service->EnableExtension("bjafgdebaacbbbecmhlhpofkepfkgcpa");
   EXPECT_EQ(1u, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
-  EXPECT_TRUE(FindHostWithPath(manager, "/toolstrip.html", 1));
+  EXPECT_TRUE(FindHostWithPath(manager, "/background.html", 1));
   ASSERT_TRUE(service->HasInstalledExtensions());
 }
 
