@@ -152,7 +152,7 @@ class SVN(SCM):
     try:
       # Try to search on the subversion repository for the file.
       import gcl
-      data = gcl.GetCachedFile(filename, use_root=True)
+      data = gcl.GetCachedFile(filename)
       logging.debug('%s:\n%s' % (filename, data))
       return data
     except ImportError:
