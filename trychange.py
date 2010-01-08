@@ -263,7 +263,7 @@ def _SendChangeHTTP(options):
     else:
       proxies = {'http': options.proxy, 'https': options.proxy}
 
-  logging.warning('Sending by HTTP')
+  logging.info('Sending by HTTP')
   logging.info(description)
   logging.info(url)
   logging.info(options.diff)
@@ -296,7 +296,7 @@ def _SendChangeSVN(options):
 
   values = _ParseSendChangeOptions(options)
   description = ''.join("%s=%s\n" % (k,v) for (k,v) in values.iteritems())
-  logging.warning('Sending by SVN')
+  logging.info('Sending by SVN')
   logging.info(description)
   logging.info(options.svn_repo)
   logging.info(options.diff)
@@ -474,6 +474,11 @@ def TryChange(argv,
                         "useful for gclient-style checkouts. Use @rev or "
                         "@branch or @branch1..branch2 to specify the "
                         "revision/branch to diff against.")
+  # Mostly chromium-specific
+  group.add_option("--webkit", action="append_const",
+                   const="third_party/WebKit",
+                   dest="sub_rep",
+                   help="Shorthand for -s third_party/WebKit")
   group.add_option("--no_gclient", action="store_true",
                    help="Disable automatic search for gclient checkout.")
   parser.add_option_group(group)
@@ -517,6 +522,8 @@ def TryChange(argv,
       logging.basicConfig(level=logging.INFO)
     elif options.verbose > 2:
       logging.basicConfig(level=logging.DEBUG)
+
+  logging.debug(argv)
 
   try:
     # Always include os.getcwd() in the checkout settings.

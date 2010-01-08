@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 """Wrapper for trychange.py for git checkout."""
 
+import logging
 import sys
 
 try:
@@ -35,4 +36,6 @@ if __name__ == '__main__':
         '--issue', GetRietveldIssueNumber(),
         '--patchset', patchset,
     ])
+  # Hack around a limitation in logging.
+  logging.getLogger().handlers = []
   sys.exit(trychange.TryChange(args, [], False, 'git-try'))
