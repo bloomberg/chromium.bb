@@ -38,9 +38,8 @@
 
 namespace o3d {
 
-bool GetGLProcedures();
-int SemanticNameToGLVertexAttribute(const char* semantic);
-Stream::Semantic GLVertexAttributeToStream(const unsigned int attr, int *index);
+bool SemanticNameToSemantic(
+    const String& name, Stream::Semantic* semantic, int* semantic_index);
 
 }  // namespace o3d
 

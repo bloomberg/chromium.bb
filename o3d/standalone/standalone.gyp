@@ -58,7 +58,6 @@
         ['renderer == "gles2"',
           {
             'dependencies': [
-              '../build/libs.gyp:cg_libs',
               '../build/libs.gyp:gles2_libs',
             ],
           },

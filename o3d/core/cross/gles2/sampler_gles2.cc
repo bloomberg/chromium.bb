@@ -42,7 +42,9 @@ namespace o3d {
 SamplerGLES2::SamplerGLES2(ServiceLocator* service_locator)
     : Sampler(service_locator),
       renderer_(static_cast<RendererGLES2*>(
-          service_locator->GetService<Renderer>())) {
+          service_locator->GetService<Renderer>())),
+      texture_unit_group_set_count_(renderer_->GetTextureGroupSetCount() - 1),
+      texture_unit_(0) {
 }
 
 SamplerGLES2::~SamplerGLES2() {
@@ -131,7 +133,7 @@ GLenum GLTextureTarget(Texture* texture) {
 
 }  // namespace
 
-void SamplerGLES2::SetTextureAndStates(CGparameter cg_param) {
+GLint SamplerGLES2::SetTextureAndStates(GLES2Parameter gl_param) {
   // Get the texture object associated with this sampler.
   Texture* texture_object = texture();
 
@@ -151,65 +153,65 @@ void SamplerGLES2::SetTextureAndStates(CGparameter cg_param) {
     texture_object = renderer_->error_texture();
   }
 
-  GLuint handle = static_cast<GLuint>(reinterpret_cast<intptr_t>(
+  GLint handle = static_cast<GLint>(reinterpret_cast<intptr_t>(
       texture_object->GetTextureHandle()));
   if (handle) {
-    cgGLSetTextureParameter(cg_param, handle);
-    cgGLEnableTextureParameter(cg_param);
-  } else {
-    cgGLSetTextureParameter(cg_param, 0);
-    cgGLDisableTextureParameter(cg_param);
-    return;
-  }
-
-  // TODO(o3d): this is a slow check and needs to be moved to initialization
-  //     time.
-  GLenum target = GLTextureTarget(texture_object);
-
-  if (target) {
-    GLenum texture_unit = cgGLGetTextureEnum(cg_param);
-    ::glActiveTextureARB(texture_unit);
-    glBindTexture(target, handle);
-    glTexParameteri(target,
-                    GL_TEXTURE_WRAP_S,
-                    GLAddressMode(address_mode_u(), GL_REPEAT));
-    glTexParameteri(target,
-                    GL_TEXTURE_WRAP_T,
-                    GLAddressMode(address_mode_v(), GL_REPEAT));
-    if (texture_object->IsA(TextureCUBE::GetApparentClass())) {
+    // TODO(o3d): this is a slow check and needs to be moved to initialization
+    //     time.
+    GLenum target = GLTextureTarget(texture_object);
+    if (target) {
+      int renderer_texture_unit_group_set_count =
+          renderer_->GetTextureGroupSetCount();
+      if (renderer_texture_unit_group_set_count !=
+          texture_unit_group_set_count_) {
+        texture_unit_group_set_count_ = renderer_texture_unit_group_set_count;
+        texture_unit_ = renderer_->GetNextTextureUnit();
+      }
+      ::glActiveTextureARB(GL_TEXTURE0 + texture_unit_);
+      glBindTexture(target, handle);
       glTexParameteri(target,
-                      GL_TEXTURE_WRAP_R,
-                      GLAddressMode(address_mode_w(), GL_REPEAT));
-    }
-    glTexParameteri(target,
-                    GL_TEXTURE_MIN_FILTER,
-                    GLMinFilter(min_filter(), mip_filter()));
-    glTexParameteri(target,
-                    GL_TEXTURE_MAG_FILTER,
-                    GLMagFilter(mag_filter()));
+                      GL_TEXTURE_WRAP_S,
+                      GLAddressMode(address_mode_u(), GL_REPEAT));
+      glTexParameteri(target,
+                      GL_TEXTURE_WRAP_T,
+                      GLAddressMode(address_mode_v(), GL_REPEAT));
+      if (texture_object->IsA(TextureCUBE::GetApparentClass())) {
+        glTexParameteri(target,
+                        GL_TEXTURE_WRAP_R,
+                        GLAddressMode(address_mode_w(), GL_REPEAT));
+      }
+      glTexParameteri(target,
+                      GL_TEXTURE_MIN_FILTER,
+                      GLMinFilter(min_filter(), mip_filter()));
+      glTexParameteri(target,
+                      GL_TEXTURE_MAG_FILTER,
+                      GLMagFilter(mag_filter()));
 
-    Float4 color = border_color();
-    GLfloat gl_color[4] = {color[0], color[1], color[2], color[3]};
-    glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, gl_color);
+      Float4 color = border_color();
+      GLfloat gl_color[4] = {color[0], color[1], color[2], color[3]};
+      glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, gl_color);
 
-    // Check for anisotropic texture filtering.
-    if (GLEW_EXT_texture_filter_anisotropic) {
-      int gl_max_anisotropy =
-          (min_filter() == ANISOTROPIC) ? max_anisotropy() : 1;
-      glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, gl_max_anisotropy);
+      // Check for anisotropic texture filtering.
+      if (GLEW_EXT_texture_filter_anisotropic) {
+        int gl_max_anisotropy =
+            (min_filter() == ANISOTROPIC) ? max_anisotropy() : 1;
+        glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                        gl_max_anisotropy);
+      }
     }
   }
+
+  return texture_unit_;
 }
 
-void SamplerGLES2::ResetTexture(CGparameter cg_param) {
+void SamplerGLES2::ResetTexture(GLES2Parameter gl_param) {
   Texture* the_texture = texture();
   if (the_texture) {
     // TODO(o3d): this is a slow check and needs to be moved to initialization
     //     time.
     GLenum target = GLTextureTarget(the_texture);
     if (target) {
-      GLenum texture_unit = cgGLGetTextureEnum(cg_param);
-      glActiveTextureARB(texture_unit);
+      glActiveTextureARB(GL_TEXTURE0 + texture_unit_);
       glBindTexture(target, 0);
     }
   }

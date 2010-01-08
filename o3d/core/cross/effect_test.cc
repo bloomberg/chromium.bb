@@ -74,6 +74,54 @@ void EffectTest::TearDown() {
 
 namespace {
 
+#if defined(RENDERER_GLES2)
+
+char kLambertEffect[] =
+    "attribute vec4 position; // : POSITION;                            \n"
+    "attribute vec3 normal; // : NORMAL;                                \n"
+    "attribute vec2 texcoord1; // : TEXCOORD1;                          \n"
+    "                                                                   \n"
+    "uniform mat4 worldViewProjection; // : WorldViewProjection;        \n"
+    "uniform mat4 world; // : World;                                    \n"
+    "uniform mat4 worldInverseTranspose; // : WorldInverseTranspose;    \n"
+    "uniform vec3 lightWorldPos;                                        \n"
+    "                                                                   \n"
+    "varying vec3 v_n; // : TEXCOORD1;                                  \n"
+    "varying vec3 v_l; // : TEXCOORD2;                                  \n"
+    "varying vec2 v_diffuseUV; // : TEXCOORD0;                          \n"
+    "                                                                   \n"
+    "void main() {                                                      \n"
+    "  gl_Position = worldViewProjection * position;                    \n"
+    "  v_n = (worldInverseTranspose * vec4(normal, 0)).xyz;             \n"
+    "  v_l = lightWorldPos - (world * position).xyz;                    \n"
+    "  v_diffuseUV = texcoord1;                                         \n"
+    "}                                                                  \n"
+    "                                                                   \n"
+    "// This hack is here for now since O3D only allows one string      \n"
+    "// to be passed to Effect::loadFromFXString                        \n"
+    "// #o3d SplitMarker                                                \n"
+    "                                                                   \n"
+    "uniform vec4 lightColor;                                           \n"
+    "uniform vec4 emissive;                                             \n"
+    "uniform vec4 ambient;                                              \n"
+    "uniform sampler2D diffuseSampler;                                  \n"
+    "                                                                   \n"
+    "varying vec3 v_n; // : TEXCOORD1;                                  \n"
+    "varying vec3 v_l; // : TEXCOORD2;                                  \n"
+    "varying vec2 v_diffuseUV; // : TEXCOORD0;                          \n"
+    "                                                                   \n"
+    "void main() {                                                      \n"
+    "  vec4 diffuse = texture2D(diffuseSampler, v_diffuseUV);           \n"
+    "  vec3 l = normalize(v_l);                                         \n"
+    "  vec3 n = normalize(v_n);                                         \n"
+    "  vec4 litR = vec4(dot(n,l),0,0,0); // fixme hack!                 \n"
+    "  gl_FragColor = emissive+lightColor*(ambient+diffuse*litR.y);     \n"
+    "}                                                                  \n"
+    "// #o3d MatrixLoadOrder RowMajor                                   \n"
+    "";
+
+#else
+
 char kLambertEffect[] =
     "struct a2v {                                            \n"
     "float4 pos : POSITION;                                  \n"
@@ -118,6 +166,8 @@ char kLambertEffect[] =
     "// #o3d MatrixLoadOrder RowMajor                        \n"
     "";
 
+#endif
+
 struct ParamInfo {
   const char* name;
   const ObjectBase::Class* type;
@@ -126,6 +176,23 @@ struct ParamInfo {
   const ObjectBase::Class* sas_type;
 };
 
+#if defined(RENDERER_GLES2)
+ParamInfo expected_params[] = {
+  { "lightWorldPos", ParamFloat3::GetApparentClass(), 0, "", NULL, },
+  { "lightColor", ParamFloat4::GetApparentClass(), 0, "", NULL, },
+  { "emissive", ParamFloat4::GetApparentClass(), 0, "", NULL, },
+  { "ambient", ParamFloat4::GetApparentClass(), 0, "", NULL, },
+  { "diffuseSampler", ParamSampler::GetApparentClass(), 0, "", NULL, },
+  { "worldViewProjection", ParamMatrix4::GetApparentClass(), 0,
+    "WORLDVIEWPROJECTION",
+    WorldViewProjectionParamMatrix4::GetApparentClass(), },
+  { "world", ParamMatrix4::GetApparentClass(), 0,
+    "WORLD", WorldParamMatrix4::GetApparentClass(), },
+  { "worldInverseTranspose", ParamMatrix4::GetApparentClass(), 0,
+    "WORLDINVERSETRANSPOSE",
+    WorldInverseTransposeParamMatrix4::GetApparentClass(), },
+};
+#else
 ParamInfo expected_params[] = {
   { "lightWorldPos", ParamFloat3::GetApparentClass(), 0, "", NULL, },
   { "lightColor", ParamFloat4::GetApparentClass(), 0, "", NULL, },
@@ -141,6 +208,7 @@ ParamInfo expected_params[] = {
   { "worldIT", ParamMatrix4::GetApparentClass(), 0, "WORLDINVERSETRANSPOSE",
     WorldInverseTransposeParamMatrix4::GetApparentClass(), },
 };
+#endif
 
 EffectStreamInfo expected_streams[] = {
   EffectStreamInfo(Stream::POSITION, 0),

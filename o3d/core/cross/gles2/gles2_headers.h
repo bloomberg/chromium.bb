@@ -36,8 +36,6 @@
 #if defined(OS_WIN)
 #include <GL/wglew.h>
 #endif
-#include <Cg/cg.h>
-#include <Cg/cgGL.h>
 
 #endif  // O3D_CORE_CROSS_GLES2_GL_HEADERS_H_
 

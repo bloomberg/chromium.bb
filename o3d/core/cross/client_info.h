@@ -66,6 +66,15 @@ class ClientInfo {
     return software_renderer_;
   }
 
+  // Whether or not shaders are GLSL.
+  bool glsl() const {
+#if defined(RENDERER_GLES2)
+    return true;
+#else
+    return false;
+#endif
+  }
+
   // Whether or not the underlying GPU supports non power of 2 textures.
   // NOTE: O3D always supports non power of 2 textures from a public API
   // point of view and massages the data underneath to make this work.

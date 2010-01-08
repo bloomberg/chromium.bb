@@ -37,40 +37,17 @@
 
 namespace o3d {
 
-// Define this to debug GLES2 errors. This has a significant performance hit.
-// #define GL_ERROR_DEBUGGING
-
 // convert a byte offset into a Vertex Buffer Object into a GLvoid* for
 // use with glVertexPointer(), glNormalPointer(), glVertexAttribPointer(),
 // etc. after having used a glBindBuffer().
-#define BUFFER_OFFSET(i) (reinterpret_cast<char *>(NULL)+(i))
-
-// Writes any Cg errors to the log with a descriptive message.
-// NOTE: macros used to make sure the LOG calls note the correct
-// line number and source file.
-#define DLOG_CG_ERROR(message) {                \
-  CGerror error = cgGetError();                 \
-  DLOG_IF(INFO, error != CG_NO_ERROR)           \
-      << message << " : "                       \
-      << cgGetErrorString(error);               \
-}
-
-// Writes any Cg errors to the log with a descriptive message, along with
-// the error messages from the CGC compiler.
-#define DLOG_CG_COMPILER_ERROR(message, cg_context) { \
-  CGerror error = cgGetError();                       \
-  DLOG_IF(ERROR, error == CG_NO_ERROR)                \
-      << message << " : " << cgGetErrorString(error); \
-  if (error == CG_COMPILER_ERROR) {                   \
-    DLOG(ERROR) << "CGC compiler output :\n"          \
-                << cgGetLastListing(cg_context);      \
-  }                                                   \
+inline GLvoid* BufferOffset(unsigned i) {
+  return static_cast<int8 *>(NULL)+(i);
 }
 
 #ifdef GL_ERROR_DEBUGGING
 #define CHECK_GL_ERROR() do {                                         \
   GLenum gl_error = glGetError();                                     \
-  LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GLES2 Error :" << gl_error; \
+  LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error :" << gl_error; \
 } while(0)
 #else  // GL_ERROR_DEBUGGING
 #define CHECK_GL_ERROR() void(0)

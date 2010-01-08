@@ -31,8 +31,7 @@
 
 
 // This file contains the definition of the RendererGLES2 class that provides
-// low-level access for O3D to graphics hardware using the OpenGLES2 API
-// and Cg Runtime.
+// low-level access for O3D to graphics hardware using the OpenGLES2 API.
 
 #ifndef O3D_CORE_CROSS_GLES2_RENDERER_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_RENDERER_GLES2_H_
@@ -51,8 +50,7 @@ class Effect;
 class DrawEffect;
 class SemanticManager;
 
-// Implements the genereric Renderer interface using OpenGLES2 and the Cg
-// Runtime.
+// Implements the genereric Renderer interface using OpenGLES2.
 class RendererGLES2 : public Renderer {
  public:
   // Creates a default Renderer.
@@ -158,9 +156,20 @@ class RendererGLES2 : public Renderer {
   // Makes this renderer active on the current thread.
   bool MakeCurrent();
 
-  inline CGcontext cg_context() const { return cg_context_; }
-  inline CGprofile cg_vertex_profile() const { return cg_vertex_profile_; }
-  inline CGprofile cg_fragment_profile() const { return cg_fragment_profile_; }
+  // Called by EffectGLES2::PrepareForDraw before setting any parameters.
+  void ResetTextureGroupSetCount() {
+    ++texture_unit_group_set_count_;
+    next_texture_unit_ = 0;
+  }
+
+  int GetTextureGroupSetCount() {
+    return texture_unit_group_set_count_;
+  }
+
+  // Samplers call this if their texture group set count is out of date.
+  GLenum GetNextTextureUnit() {
+    return next_texture_unit_++;
+  }
 
  protected:
   // Keep the constructor protected so only factory methods can create
@@ -243,7 +252,6 @@ class RendererGLES2 : public Renderer {
   // Indicates we're rendering fullscreen rather than in the plugin region.
   bool fullscreen_;
 
-
 #ifdef OS_WIN
   // Handle to the GLES2 device.
   HWND window_;
@@ -265,11 +273,6 @@ class RendererGLES2 : public Renderer {
   // Handle to the framebuffer-object used while rendering to off-screen
   // targets.
   GLuint render_surface_framebuffer_;
-
-  // Cg Runtime variables.
-  CGcontext cg_context_;
-  CGprofile cg_vertex_profile_;
-  CGprofile cg_fragment_profile_;
 
   friend class AlphaReferenceHandler;
   bool alpha_function_ref_changed_;
@@ -330,6 +333,13 @@ class RendererGLES2 : public Renderer {
 
   // Sets the stencils states for either front, back or both facing polys.
   void SetStencilStates(GLenum face, const StencilStates& stencil_states);
+
+  // Sampler test against this to see if their cached texture unit is valid.
+  int texture_unit_group_set_count_;
+
+  // The next texture unit to use. This is reset with ResetTextureUnit
+  // and retrieved with GetNextTextureUnit.
+  GLenum next_texture_unit_;
 };
 
 }  // namespace o3d

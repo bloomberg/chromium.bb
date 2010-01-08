@@ -43,7 +43,6 @@
 #include "core/cross/gles2/draw_element_gles2.h"
 #include "core/cross/gles2/stream_bank_gles2.h"
 #include "core/cross/gles2/utils_gles2-inl.h"
-#include "Cg/cgGL.h"
 
 // Someone defines min, conflicting with std::min
 #ifdef min
@@ -94,7 +93,7 @@ void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
 
   // If this PrimitiveGLES2 has an effect we haven't seen before (or it's the
   // first time through), initalize the parameter lists before drawing with it.
-  if (effect_gl->cg_vertex_program() && effect_gl->cg_fragment_program()) {
+  if (effect_gl->gl_program()) {
     // Set up the current CGeffect.
     if (!param_cache_gl->ValidateAndCacheParams(effect_gl,
                                                 draw_element_gl,
@@ -102,17 +101,15 @@ void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
                                                 stream_bank_gl,
                                                 material,
                                                 override)) {
-      Stream::Semantic missing_semantic;
-      int missing_semnatic_index;
+      String missing_stream;
       if (!stream_bank_gl->CheckForMissingVertexStreams(
               varying_map,
-              &missing_semantic,
-              &missing_semnatic_index)) {
+              effect_gl->gl_program(),
+              &missing_stream)) {
         param_cache_gl->ClearParamCache();
         O3D_ERROR(service_locator())
             << "Required Stream "
-            << Stream::GetSemanticDescription(missing_semantic) << ":"
-            << missing_semnatic_index << " missing on Primitive '" << name()
+            << missing_stream << " missing on Primitive '" << name()
             << "' using Material '" << material->name()
             << "' with Effect '" << effect_gl->name() << "'";
         return;
@@ -131,7 +128,9 @@ void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
   stream_bank_gl->UpdateStreams();
 
   unsigned int max_vertices;
-  if (!stream_bank_gl->BindStreamsForRendering(varying_map, &max_vertices)) {
+  if (!stream_bank_gl->BindStreamsForRendering(varying_map,
+                                               effect_gl->gl_program(),
+                                               &max_vertices)) {
     return;
   }
 
@@ -235,13 +234,14 @@ void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
   if (draw) {
     DCHECK_NE(gl_primitive_type, static_cast<unsigned int>(GL_NONE));
     renderer->AddPrimitivesRendered(number_primitives_);
-    if (indexed())
+    if (indexed()) {
       glDrawElements(gl_primitive_type,
                      index_count,
                      GL_UNSIGNED_INT,
-                     BUFFER_OFFSET(start_index() * sizeof(uint32)));  // NOLINT
-    else
+                     BufferOffset(start_index() * sizeof(uint32)));  // NOLINT
+    } else {
       glDrawArrays(gl_primitive_type, start_index(), index_count);
+    }
   }
 
   // Clean up the shaders.
@@ -251,7 +251,7 @@ void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
   for (ParamCacheGLES2::VaryingParameterMap::iterator i = varying_map.begin();
        i != varying_map.end();
        ++i) {
-    cgGLDisableClientState(i->first);
+    glDisableVertexAttribArray(i->first);
   }
   CHECK_GL_ERROR();
 }

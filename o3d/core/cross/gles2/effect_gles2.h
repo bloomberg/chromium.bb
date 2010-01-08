@@ -59,20 +59,23 @@ class ParamTexture;
 class RendererGLES2;
 class SemanticManager;
 
+// TODO(gman): Replace.
+typedef GLuint GLES2Parameter;
+
 // A class to set an effect parameter from an O3D parameter.
 class EffectParamHandlerGLES2 : public RefCounted {
  public:
   typedef SmartPointer<EffectParamHandlerGLES2> Ref;
   virtual ~EffectParamHandlerGLES2() { }
 
-  // Sets a GLES2/Cg Effect Parameter by an O3D Param.
+  // Sets a GLES2 Effect Parameter by an O3D Param.
   virtual void SetEffectParam(
-      RendererGLES2* renderer, CGparameter cg_param) = 0;
+      RendererGLES2* renderer, GLES2Parameter param) = 0;
 
-  // Resets a GLES2/Cg Effect parameter to default (currently only
-  // unbinds textures contained in Sampler params).
+  // Resets a GLES2 Effect parameter to default (currently only unbinds textures
+  // contained in Sampler params).
   virtual void ResetEffectParam(
-      RendererGLES2* renderer, CGparameter cg_param) {}
+      RendererGLES2* renderer, GLES2Parameter param) {}
 };
 
 // EffectGLES2 is an implementation of the Effect object for OpenGLES2.  It
@@ -81,7 +84,7 @@ class EffectParamHandlerGLES2 : public RefCounted {
 // provided separately as shader code or together in an FX file.
 class EffectGLES2 : public Effect {
  public:
-  EffectGLES2(ServiceLocator* service_locator, CGcontext cg_context);
+  explicit EffectGLES2(ServiceLocator* service_locator);
   virtual ~EffectGLES2();
 
   // Reads the vertex and fragment shaders from string in the FX format.
@@ -104,16 +107,8 @@ class EffectGLES2 : public Effect {
   virtual void GetStreamInfo(
       EffectStreamInfoArray* info_array);
 
-  // Given a CG_SAMPLER parameter, find the corresponding CG_TEXTURE
-  // parameterand from this CG_TEXTURE, find a matching Param by name in a list
-  // of ParamObject.
-  // TODO(o3d): remove this (OLD path for textures).
-  ParamTexture* GetTextureParamFromCgSampler(
-      CGparameter cg_sampler,
-      const std::vector<ParamObject*> &param_objects);
-
-  CGprogram cg_vertex_program() { return cg_vertex_; }
-  CGprogram cg_fragment_program() { return cg_fragment_; }
+  GLuint gl_program() { return gl_program_; }
+  int compile_count() { return compile_count_; }
 
  private:
   // Loops through all the parameters in the ShapeDataGLES2 and updates the
@@ -121,13 +116,13 @@ class EffectGLES2 : public Effect {
   void UpdateShaderUniformsFromEffect(ParamCacheGLES2* param_cache_gl);
   // Undoes the effect of the above.  For now, this unbinds textures.
   void ResetShaderUniforms(ParamCacheGLES2* param_cache_gl);
-  void GetShaderParamInfo(CGprogram program,
-                          CGenum name_space,
+  void GetShaderParamInfo(GLuint program,
                           std::map<String, EffectParameterInfo>* info_map);
   void GetVaryingVertexShaderParamInfo(
-      CGprogram program,
-      CGenum name_space,
+      GLuint program,
       std::vector<EffectStreamInfo>* info_array);
+  void ClearProgram();
+  GLuint LoadShader(GLenum type, const char* shader_src);
 
   // TODO(o3d): remove these (OLD path for textures).
   void SetTexturesFromEffect(ParamCacheGLES2* param_cache_gl);
@@ -137,9 +132,8 @@ class EffectGLES2 : public Effect {
   SemanticManager* semantic_manager_;
   RendererGLES2* renderer_;
 
-  CGcontext cg_context_;
-  CGprogram cg_vertex_;
-  CGprogram cg_fragment_;
+  GLuint gl_program_;
+  int compile_count_;
 
   // TODO(o3d): remove this (OLD path for textures).
   std::map<String, String> sampler_to_texture_map_;

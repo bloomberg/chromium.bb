@@ -42,7 +42,6 @@
 #include "core/cross/gles2/renderer_gles2.h"
 #include "core/cross/gles2/draw_element_gles2.h"
 #include "core/cross/gles2/utils_gles2-inl.h"
-#include "Cg/cgGL.h"
 
 // Someone defines min, conflicting with std::min
 #ifdef min
@@ -67,6 +66,29 @@ GLenum GLDataType(const Field& field) {
   return GL_INVALID_ENUM;
 }
 
+String GetAttribName(GLuint gl_program, GLES2Parameter gl_param) {
+  GLchar buffer[1024];
+  GLsizei name_len;
+  GLint size;
+  GLenum type;
+  glGetActiveAttrib(gl_program,
+                    gl_param,
+                    sizeof(buffer),
+                    &name_len,
+                    &size,
+                    &type,
+                    &buffer[0]);
+  if (name_len == 0) {
+    return String("**NO INFO FOR ATTRIB**");
+  }
+  return String(&buffer[0], name_len);
+}
+
+String GetAttribSemantic(GLuint gl_program, GLES2Parameter gl_param) {
+  // GLES doesn't have semantics so for now we just return the names.
+  return GetAttribName(gl_program, gl_param);
+}
+
 }  // anonymous namespace
 
 // Number of times to log a repeated event before giving up.
@@ -85,27 +107,28 @@ StreamBankGLES2::~StreamBankGLES2() {
 
 bool StreamBankGLES2::CheckForMissingVertexStreams(
     ParamCacheGLES2::VaryingParameterMap& varying_map,
-    Stream::Semantic* missing_semantic,
-    int* missing_semantic_index) {
-  DCHECK(missing_semantic);
-  DCHECK(missing_semantic_index);
+    GLuint gl_program,
+    String* missing_stream) {
+  DCHECK(missing_stream);
   DLOG(INFO) << "StreamBankGLES2 InsertMissingVertexStreams";
-  // Match CG_VARYING parameters to Buffers with the matching semantics.
+  // Match VARYING parameters to Buffers with the matching semantics.
   ParamCacheGLES2::VaryingParameterMap::iterator i;
   for (i = varying_map.begin(); i != varying_map.end(); ++i) {
-    CGparameter cg_param = i->first;
-    const char* semantic_string = cgGetParameterSemantic(cg_param);
-    int attr = SemanticNameToGLVertexAttribute(semantic_string);
-    int index = 0;
-    Stream::Semantic semantic = GLVertexAttributeToStream(attr, &index);
-    int stream_index = FindVertexStream(semantic, index);
+    GLES2Parameter gl_param = i->first;
+    String semantic_string(GetAttribSemantic(gl_program, gl_param));
+    Stream::Semantic semantic;
+    int semantic_index;
+    if (!SemanticNameToSemantic(semantic_string, &semantic, &semantic_index)) {
+      *missing_stream = semantic_string;
+    }
+    int stream_index = FindVertexStream(semantic, semantic_index);
     if (stream_index >= 0) {
       // record the matched stream into the varying parameter map for later
       // use by StreamBankGLES2::Draw().
       i->second = stream_index;
       DLOG(INFO)
-          << "StreamBankGLES2 Matched CG_PARAMETER \""
-          << cgGetParameterName(cg_param) << " : "
+          << "StreamBankGLES2 Matched PARAMETER \""
+          << GetAttribName(gl_program, gl_param) << " : "
           << semantic_string << "\" to stream "
           << stream_index << " \""
           << vertex_stream_params_.at(
@@ -113,8 +136,7 @@ bool StreamBankGLES2::CheckForMissingVertexStreams(
           << "\"";
     } else {
       // no matching stream was found.
-      *missing_semantic = semantic;
-      *missing_semantic_index = index;
+      *missing_stream = semantic_string;
       return false;
     }
   }
@@ -124,6 +146,7 @@ bool StreamBankGLES2::CheckForMissingVertexStreams(
 
 bool StreamBankGLES2::BindStreamsForRendering(
     const ParamCacheGLES2::VaryingParameterMap& varying_map,
+    GLuint gl_program,
     unsigned int* max_vertices) {
   *max_vertices = UINT_MAX;
   // Loop over varying params setting up the streams.
@@ -152,8 +175,8 @@ bool StreamBankGLES2::BindStreamsForRendering(
     if (element_count > 4) {
       element_count = 0;
       DLOG_FIRST_N(ERROR, kNumLoggedEvents)
-          << "Unable to find stream for CGparameter: "
-          << cgGetParameterName(i->first);
+          << "Unable to find stream for attrib: "
+          << GetAttribName(gl_program, i->first);
     }
 
     // In the num_elements = 1 case we want to do the D3D stride = 0 thing.
@@ -169,15 +192,16 @@ bool StreamBankGLES2::BindStreamsForRendering(
       // stride at the API level, and instead maybe provide a way to pss a
       // constant value - but the DX version relies on being able to pass a 0
       // stride, so the whole thing needs a bit of rewrite.
-      cgGLDisableClientState(i->first);
+      glDisableVertexAttribArray(i->first);
     } else {
       glBindBufferARB(GL_ARRAY_BUFFER, vbuffer->gl_buffer());
-      cgGLSetParameterPointer(i->first,
-                              element_count,
-                              GLDataType(field),
-                              vbuffer->stride(),
-                              BUFFER_OFFSET(field.offset()));
-      cgGLEnableClientState(i->first);
+      glVertexAttribPointer(i->first,
+                            element_count,
+                            GLDataType(field),
+                            false,
+                            vbuffer->stride(),
+                            BufferOffset(field.offset()));
+      glEnableVertexAttribArray(i->first);
       *max_vertices = std::min(*max_vertices, stream.GetMaxVertices());
     }
   }

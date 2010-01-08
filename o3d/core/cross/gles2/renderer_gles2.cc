@@ -31,8 +31,7 @@
 
 
 // This file contains the definition of the RendererGLES2 class that
-// implements the abstract Renderer API using OpenGLES2 and the Cg
-// Runtime.
+// implements the abstract Renderer API using OpenGLES2.
 
 
 #include "core/cross/gles2/renderer_gles2.h"
@@ -546,7 +545,6 @@ RendererGLES2::RendererGLES2(ServiceLocator* service_locator)
       mac_cgl_context_(0),
 #endif
       render_surface_framebuffer_(0),
-      cg_context_(NULL),
       alpha_function_ref_changed_(true),
       alpha_function_(GL_ALWAYS),
       alpha_ref_(0.f),
@@ -714,33 +712,9 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
   if (!GLEW_VERSION_2_0 && !GLEW_EXT_blend_equation_separate) {
     DLOG(ERROR) << "Separate blend function extension missing.";
   }
-  // create a Cg Runtime.
-  cg_context_ = cgCreateContext();
-  DLOG_CG_ERROR("Creating Cg context");
-  // NOTE: the first CGerror number after the recreation of a
-  // CGcontext (the second time through) seems to be trashed. Please
-  // ignore any "CG ERROR: Invalid context handle." message on this
-  // function - Invalid context handle isn't one of therror states of
-  // cgCreateContext().
   DLOG(INFO) << "OpenGLES2 Vendor: " << ::glGetString(GL_VENDOR);
   DLOG(INFO) << "OpenGLES2 Renderer: " << ::glGetString(GL_RENDERER);
   DLOG(INFO) << "OpenGLES2 Version: " << ::glGetString(GL_VERSION);
-  DLOG(INFO) << "Cg Version: " << cgGetString(CG_VERSION);
-  cg_vertex_profile_ = cgGLGetLatestProfile(CG_GL_VERTEX);
-  cgGLSetOptimalOptions(cg_vertex_profile_);
-  DLOG(INFO) << "Best Cg vertex profile = "
-             << cgGetProfileString(cg_vertex_profile_);
-  cg_fragment_profile_ = cgGLGetLatestProfile(CG_GL_FRAGMENT);
-  cgGLSetOptimalOptions(cg_fragment_profile_);
-  DLOG(INFO) << "Best Cg fragment profile = "
-             << cgGetProfileString(cg_fragment_profile_);
-  // Set up all Cg State Assignments for OpenGLES2.
-  cgGLRegisterStates(cg_context_);
-  DLOG_CG_ERROR("Registering GLES2 StateAssignments");
-  cgGLSetDebugMode(CG_FALSE);
-  // Enable the profiles we use.
-  cgGLEnableProfile(CG_PROFILE_ARBVP1);
-  cgGLEnableProfile(CG_PROFILE_ARBFP1);
   // get some limits for this profile.
   GLint max_vertex_attribs = 0;
   ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
@@ -769,11 +743,6 @@ void RendererGLES2::DestroyCommonGLES2() {
   MakeCurrentLazy();
   if (render_surface_framebuffer_) {
     ::glDeleteFramebuffersEXT(1, &render_surface_framebuffer_);
-  }
-
-  if (cg_context_) {
-    cgDestroyContext(cg_context_);
-    cg_context_ = NULL;
   }
 }
 
@@ -1000,7 +969,7 @@ Renderer::InitStatus RendererGLES2::InitPlatformSpecific(
   return SUCCESS;
 }
 
-// Releases the Cg Context and deletes the GLES2 device.
+// Deletes the GLES2 device.
 void RendererGLES2::Destroy() {
   DLOG(INFO) << "Destroy RendererGLES2";
   DestroyCommonGLES2();
@@ -1497,7 +1466,7 @@ IndexBuffer::Ref RendererGLES2::CreateIndexBuffer() {
 Effect::Ref RendererGLES2::CreateEffect() {
   DLOG(INFO) << "RendererGLES2 CreateEffect";
   MakeCurrentLazy();
-  return Effect::Ref(new EffectGLES2(service_locator(), cg_context_));
+  return Effect::Ref(new EffectGLES2(service_locator()));
 }
 
 Sampler::Ref RendererGLES2::CreateSampler() {

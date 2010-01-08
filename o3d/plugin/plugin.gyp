@@ -112,7 +112,6 @@
           {
             'dependencies': [
               '../build/libs.gyp:gles2_libs',
-              '../build/libs.gyp:cg_libs',
             ],
           },
         ],
@@ -325,7 +324,6 @@
                 {
                   'dependencies': [
                     '../build/libs.gyp:gles2_libs',
-                    '../build/libs.gyp:cg_libs',
                   ],
                 },
               ],

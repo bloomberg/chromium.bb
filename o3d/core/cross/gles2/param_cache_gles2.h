@@ -49,9 +49,10 @@ class ParamCacheGLES2 : public ParamCache {
  public:
   ParamCacheGLES2(SemanticManager* semantic_manager, Renderer* renderer);
 
-  typedef std::map<CGparameter, int> VaryingParameterMap;
-  typedef std::map<CGparameter, EffectParamHandlerGLES2::Ref> UniformParameterMap;
-  typedef std::map<CGparameter, ParamTexture*> SamplerParameterMap;
+  typedef std::map<GLES2Parameter, int> VaryingParameterMap;
+  typedef std::map<GLES2Parameter,
+    EffectParamHandlerGLES2::Ref> UniformParameterMap;
+  typedef std::map<GLES2Parameter, ParamTexture*> SamplerParameterMap;
 
   // Overridden from ParamCache.
   virtual void UpdateCache(Effect* effect,
@@ -62,7 +63,6 @@ class ParamCacheGLES2 : public ParamCache {
 
   VaryingParameterMap& varying_map() { return varying_map_; }
   UniformParameterMap& uniform_map() { return uniform_map_; }
-  SamplerParameterMap& sampler_map() { return sampler_map_; }
 
  protected:
   // Overridden from ParamCache
@@ -70,33 +70,25 @@ class ParamCacheGLES2 : public ParamCache {
   virtual bool ValidateEffect(Effect* effect);
 
  private:
-
   SemanticManager* semantic_manager_;
   Renderer* renderer_;
 
-  // Records the last two shaders used on this cache, allowing us to rescan the
-  // shader parameters if the user changes the shader on an active cache.
-  CGprogram last_vertex_program_;
-  CGprogram last_fragment_program_;
+  // Used to track if the shader on the Effect has changed and
+  // therefore we need to rebuild our cache.
+  int last_compile_count_;
 
-  // Search the leaf parameters of a CGeffect and it's shaders for
-  // parameters using cgGetFirstEffectParameter() /
-  // cgGetFirstLeafParameter() / cgGetNextLeafParameter(). Add the
-  // CGparameters found to the parameter maps on the DrawElement.
-  void ScanCgEffectParameters(CGprogram cg_vertex,
-                              CGprogram fragment,
+  // Search the leaf parameters of a GLSL program for parameters and add the
+  // parameters found to the parameter maps on the DrawElement.
+  void ScanGLEffectParameters(GLuint gl_program,
                               ParamObject* draw_element,
                               ParamObject* element,
                               Material* material,
                               ParamObject* override);
 
-  // A map of varying CGparameter to Stream index.
+  // A map of varying GLES2Parameter to Stream index.
   VaryingParameterMap varying_map_;
-  // A map of uniform CGparameter to Param objects.
+  // A map of uniform GLES2Parameter to Param objects.
   UniformParameterMap uniform_map_;
-  // A map of uniform CG_SAMPLER CGparameters to ParamTexture objects.
-  // TODO(o3d): remove this (OLD path for textures).
-  SamplerParameterMap sampler_map_;
 };
 }  // o3d
 

@@ -93,9 +93,7 @@ TEST_F(RendererTest, InitAndDestroyRenderer) {
   RendererGL* gl_renderer = down_cast<RendererGL*>(renderer.get());
   EXPECT_TRUE(gl_renderer->cg_context() != NULL);
 #elif defined(RENDERER_GLES2)
-  // test that the Cg Context was correctly created
   RendererGLES2* gles2_renderer = down_cast<RendererGLES2*>(renderer.get());
-  EXPECT_TRUE(gles2_renderer->cg_context() != NULL);
 #endif
   // destroy the renderer
   renderer->Destroy();
@@ -107,8 +105,6 @@ TEST_F(RendererTest, InitAndDestroyRenderer) {
   // check that the renderer no longer has a Cg Context.
   EXPECT_FALSE(gl_renderer->cg_context() != NULL);
 #elif defined(RENDERER_GLES2)
-  // check that the renderer no longer has a Cg Context.
-  EXPECT_FALSE(gles2_renderer->cg_context() != NULL);
 #endif
 }
 

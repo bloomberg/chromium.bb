@@ -56,13 +56,14 @@ class StreamBankGLES2 : public StreamBank {
   //   true if all streams were bound.
   bool BindStreamsForRendering(
       const ParamCacheGLES2::VaryingParameterMap& varying_map,
+      GLuint gl_program,
       unsigned int* max_vertices);
 
   // Checks for all required streams before rendering.
   bool CheckForMissingVertexStreams(
       ParamCacheGLES2::VaryingParameterMap& varying_map,
-      Stream::Semantic* missing_semantic,
-      int* missing_semantic_index);
+      GLuint gl_program,
+      String* missing_stream);
 
  private:
   int FindVertexStream(Stream::Semantic semantic, int index);
