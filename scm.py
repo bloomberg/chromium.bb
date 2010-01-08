@@ -333,6 +333,7 @@ class SVN(object):
     for i in range(1, 10):
       previous_list_len = len(file_list)
       failure = []
+
       def CaptureMatchingLines(line):
         match = compiled_pattern.search(line)
         if match:
@@ -341,6 +342,7 @@ class SVN(object):
           # We can't raise an exception. We can't alias a variable. Use a cheap
           # way.
           failure.append(True)
+
       try:
         SVN.RunAndFilterOutput(args,
                                in_directory,
@@ -355,6 +357,8 @@ class SVN(object):
             # An aborted checkout is now an update.
             args[0] = 'update'
           continue
+        # No progress was made, bail out.
+        raise
       break
 
   @staticmethod
