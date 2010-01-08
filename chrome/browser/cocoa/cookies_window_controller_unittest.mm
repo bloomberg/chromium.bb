@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "app/tree_model.h"
 #import "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cookies_window_controller.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/net/url_request_context_getter.h"
@@ -53,50 +54,16 @@
 }
 @end
 
-// Copied from src/chrome/cookies_tree_model_unittest.cc.
 namespace {
-
-class TestURLRequestContext : public URLRequestContext {
- public:
-  TestURLRequestContext() {
-    cookie_store_ = new net::CookieMonster();
-  }
-};
-
-class TestURLRequestContextGetter : public URLRequestContextGetter {
- public:
-  virtual URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestURLRequestContext();
-    return context_.get();
-  }
- private:
-  scoped_refptr<URLRequestContext> context_;
-};
-
-class CookieTestingProfile : public TestingProfile {
- public:
-  virtual URLRequestContextGetter* GetRequestContext() {
-    if (!url_request_context_getter_.get())
-      url_request_context_getter_ = new TestURLRequestContextGetter();
-    return url_request_context_getter_.get();
-  }
-  virtual ~CookieTestingProfile() {}
-
-  net::CookieMonster* GetCookieMonster() {
-    return GetRequestContext()->GetCookieStore()->GetCookieMonster();
-  }
-
- private:
-  scoped_refptr<URLRequestContextGetter> url_request_context_getter_;
-};
 
 class CookiesWindowControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
+    TestingProfile* profile = browser_helper_.profile();
+    profile->CreateRequestContext();
     controller_.reset(
-        [[CookiesWindowController alloc] initWithProfile:&profile_]);
+        [[CookiesWindowController alloc] initWithProfile:profile]);
   }
 
   virtual void TearDown() {
@@ -113,7 +80,8 @@ class CookiesWindowControllerTest : public CocoaTest {
     return [controller_ modelObserver]->FindCocoaNode(node, start);
   }
 
-  CookieTestingProfile profile_;
+ protected:
+  BrowserTestHelper browser_helper_;
   scoped_nsobject<CookiesWindowController> controller_;
 };
 
@@ -164,9 +132,9 @@ TEST_F(CookiesWindowControllerTest, FindCocoaNodeRecursive) {
 }
 
 TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
-  net::CookieMonster* cm = profile_.GetCookieMonster();
+  net::CookieMonster* cm = browser_helper_.profile()->GetCookieMonster();
   cm->SetCookie(GURL("http://foo.com"), "A=B");
-  CookiesTreeModel model(&profile_);
+  CookiesTreeModel model(browser_helper_.profile());
 
   // Root --> foo.com --> Cookies --> A. Create node for 'A'.
   TreeModelNode* node = model.GetRoot()->GetChild(0)->GetChild(0)->GetChild(0);
@@ -185,9 +153,9 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
 }
 
 TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
-  net::CookieMonster* cm = profile_.GetCookieMonster();
+  net::CookieMonster* cm = browser_helper_.profile()->GetCookieMonster();
   cm->SetCookie(GURL("http://foo.com"), "A=B");
-  CookiesTreeModel model(&profile_);
+  CookiesTreeModel model(browser_helper_.profile());
 
   // Root --> foo.com --> Cookies --> A. Create node for 'foo.com'.
   CookieTreeNode* node = model.GetRoot()->GetChild(0);
@@ -224,11 +192,12 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
 
 TEST_F(CookiesWindowControllerTest, TreeNodesAdded) {
   const GURL url = GURL("http://foo.com");
-  net::CookieMonster* cm = profile_.GetCookieMonster();
+  TestingProfile* profile = browser_helper_.profile();
+  net::CookieMonster* cm = profile->GetCookieMonster();
   cm->SetCookie(url, "A=B");
 
   controller_.reset(
-      [[CookiesWindowController alloc] initWithProfile:&profile_]);
+      [[CookiesWindowController alloc] initWithProfile:profile]);
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
@@ -262,13 +231,14 @@ TEST_F(CookiesWindowControllerTest, TreeNodesAdded) {
 
 TEST_F(CookiesWindowControllerTest, TreeNodesRemoved) {
   const GURL url = GURL("http://foo.com");
-  net::CookieMonster* cm = profile_.GetCookieMonster();
+  TestingProfile* profile = browser_helper_.profile();
+  net::CookieMonster* cm = profile->GetCookieMonster();
   cm->SetCookie(url, "A=B");
   cm->SetCookie(url, "C=D");
   cm->SetCookie(url, "E=F");
 
   controller_.reset(
-      [[CookiesWindowController alloc] initWithProfile:&profile_]);
+      [[CookiesWindowController alloc] initWithProfile:profile]);
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
@@ -291,13 +261,14 @@ TEST_F(CookiesWindowControllerTest, TreeNodesRemoved) {
 
 TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
   const GURL url = GURL("http://foo.com");
-  net::CookieMonster* cm = profile_.GetCookieMonster();
+  TestingProfile* profile = browser_helper_.profile();
+  net::CookieMonster* cm = profile->GetCookieMonster();
   cm->SetCookie(url, "A=B");
   cm->SetCookie(url, "C=D");
   cm->SetCookie(url, "E=F");
 
   controller_.reset(
-      [[CookiesWindowController alloc] initWithProfile:&profile_]);
+      [[CookiesWindowController alloc] initWithProfile:profile]);
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
@@ -337,11 +308,12 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
 
 TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
   const GURL url = GURL("http://foo.com");
-  net::CookieMonster* cm = profile_.GetCookieMonster();
+  TestingProfile* profile = browser_helper_.profile();
+  net::CookieMonster* cm = profile->GetCookieMonster();
   cm->SetCookie(url, "A=B");
 
   controller_.reset(
-      [[CookiesWindowController alloc] initWithProfile:&profile_]);
+      [[CookiesWindowController alloc] initWithProfile:profile]);
 
   CookiesTreeModel* model = [controller_ treeModel];
   // Root --> foo.com --> Cookies.
