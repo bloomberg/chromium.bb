@@ -24,9 +24,9 @@ class RootTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'GIT', 'SVN', 'ValidateEmail',
-        'gclient_utils', 'os', 're', 'shutil', 'subprocess', 'sys', 'tempfile',
-        'xml',
+        'GetCasedPath', 'GIT', 'SVN', 'ValidateEmail',
+        'gclient_utils', 'glob', 'os', 're', 'shutil', 'subprocess', 'sys',
+        'tempfile', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm, members)
@@ -153,7 +153,9 @@ class SVNTestCase(BaseSCMTestCase):
 
   def testGetCheckoutRoot(self):
     self.mox.StubOutWithMock(scm.SVN, 'CaptureInfo')
+    self.mox.StubOutWithMock(scm, 'GetCasedPath')
     scm.os.path.abspath(self.root_dir + 'x').AndReturn(self.root_dir)
+    scm.GetCasedPath(self.root_dir).AndReturn(self.root_dir)
     result1 = { "Repository Root": "Some root" }
     scm.SVN.CaptureInfo(self.root_dir, print_error=False).AndReturn(result1)
     results2 = { "Repository Root": "A different root" }

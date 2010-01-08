@@ -4,6 +4,7 @@
 
 """SCM-specific utility classes."""
 
+import glob
 import os
 import re
 import shutil
@@ -17,6 +18,26 @@ import gclient_utils
 def ValidateEmail(email):
  return (re.match(r"^[a-zA-Z0-9._%-+]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email)
          is not None)
+
+
+def GetCasedPath(path):
+  """Elcheapos way to get the real path case on Windows."""
+  if sys.platform.startswith('win') and os.path.exists(path):
+    # Reconstruct the path.
+    path = os.path.abspath(path)
+    paths = path.split('\\')
+    for i in range(len(paths)):
+      if i == 0:
+        # Skip drive letter.
+        continue
+      subpath = '\\'.join(paths[:i+1])
+      prev = len('\\'.join(paths[:i]))
+      # glob.glob will return the cased path for the last item only. This is why
+      # we are calling it in a loop. Extract the data we want and put it back
+      # into the list.
+      paths[i] = glob.glob(subpath + '*')[0][prev+1:len(subpath)]
+    path = '\\'.join(paths)
+  return path
 
 
 class GIT(object):
@@ -587,7 +608,6 @@ class SVN(object):
           file_content = ['+' + i for i in file_content.splitlines(True)]
           nb_lines = len(file_content)
           # We need to use / since patch on unix will fail otherwise.
-          filename = filename.replace('\\', '/')
           data = "Index: %s\n" % filename
           data += '=' * 67 + '\n'
           # Note: Should we use /dev/null instead?
@@ -616,10 +636,11 @@ class SVN(object):
     The diff will always use relative paths.
     """
     previous_cwd = os.getcwd()
-    root = os.path.join(root or SVN.GetCheckoutRoot(previous_cwd), '')
+    root = root or SVN.GetCheckoutRoot(previous_cwd)
+    root = os.path.normcase(os.path.join(root, ''))
     def RelativePath(path, root):
       """We must use relative paths."""
-      if path.startswith(root):
+      if os.path.normcase(path).startswith(root):
         return path[len(root):]
       return path
     try:
@@ -707,4 +728,4 @@ class SVN(object):
               "Repository Root") != cur_dir_repo_root):
         break
       directory = parent
-    return directory
+    return GetCasedPath(directory)

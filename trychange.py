@@ -568,7 +568,8 @@ def TryChange(argv,
         path_diff = gclient_utils.PathDifference(root, checkout.checkout_root)
         for i in range(len(diff)):
           if diff[i].startswith('--- ') or diff[i].startswith('+++ '):
-            diff[i] = diff[i][0:4] + posixpath.join(path_diff, diff[i][4:])
+            new_file = posixpath.join(path_diff, diff[i][4:]).replace('\\', '/')
+            diff[i] = diff[i][0:4] + new_file
         diffs.extend(diff)
       options.diff = ''.join(diffs)
 
