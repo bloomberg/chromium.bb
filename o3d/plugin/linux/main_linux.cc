@@ -747,7 +747,6 @@ NPError NPP_Destroy(NPP instance, NPSavedData **save) {
     obj->event_handler_id_ = 0;
     obj->window_ = 0;
     obj->drawable_ = 0;
-    obj->display_ = NULL;
 
     obj->TearDown();
     NPN_ReleaseObject(obj);
@@ -807,7 +806,7 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
 
     obj->CreateRenderer(default_display);
     obj->client()->Init();
-    obj->display_ = display;
+    obj->SetDisplay(display);
     obj->window_ = xwindow;
     obj->drawable_ = drawable;
   }
@@ -863,16 +862,16 @@ gboolean PluginObject::OnGtkConfigure(GtkWidget *widget,
   if (fullscreen_pending_) {
     // Our fullscreen window has been placed and sized. Switch to it.
     fullscreen_pending_ = false;
-    Window fullscreen_window =
-        GDK_WINDOW_XID(gtk_fullscreen_container_->window);
+    fullscreen_window_ = GDK_WINDOW_XID(gtk_fullscreen_container_->window);
     DisplayWindowLinux display;
     display.set_display(display_);
-    display.set_window(fullscreen_window);
+    display.set_window(fullscreen_window_);
     prev_width_ = renderer()->width();
     prev_height_ = renderer()->height();
     if (!renderer()->GoFullscreen(display, fullscreen_region_mode_id_)) {
       gtk_widget_destroy(gtk_fullscreen_container_);
       gtk_fullscreen_container_ = NULL;
+      fullscreen_window_ = 0;
       // The return value is for whether we handled the event, not whether it
       // was successful, so return TRUE event for error.
       return TRUE;
@@ -964,6 +963,7 @@ void PluginObject::CancelFullscreenDisplay() {
   gtk_widget_destroy(gtk_fullscreen_container_);
   gtk_widget_unref(gtk_fullscreen_container_);
   gtk_fullscreen_container_ = NULL;
+  fullscreen_window_ = 0;
   fullscreen_ = false;
 }
 }  // namespace _o3d

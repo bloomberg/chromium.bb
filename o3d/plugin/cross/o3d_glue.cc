@@ -49,6 +49,10 @@
 #include "plugin_mac.h"
 #endif
 
+#ifdef OS_LINUX
+#include <X11/cursorfont.h>
+#endif
+
 namespace glue {
 namespace _o3d {
 
@@ -134,6 +138,7 @@ PluginObject::PluginObject(NPP npp)
 #ifdef OS_LINUX
       display_(NULL),
       window_(0),
+      fullscreen_window_(0),
       xt_widget_(NULL),
       xt_app_context_(NULL),
       xt_interval_(0),
@@ -156,7 +161,7 @@ PluginObject::PluginObject(NPP npp)
       cursor_type_(o3d::Cursor::DEFAULT),
       prev_width_(0),
       prev_height_(0) {
-#ifdef OS_WIN
+#if defined(OS_WIN) || defined(OS_LINUX)
   memset(cursors_, 0, sizeof(cursors_));
 #endif
 
@@ -210,10 +215,11 @@ void PluginObject::Init(int argc, char* argn[], char* argv[]) {
 void PluginObject::TearDown() {
 #ifdef OS_WIN
   ClearPluginProperty(hWnd_);
-#endif  // OS_WIN
-#ifdef OS_MACOSX
+#elif defined(OS_MACOSX)
   o3d::ReleaseSafariBrowserWindow(mac_cocoa_window_);
-#endif
+#elif defined(OS_LINUX)
+  SetDisplay(NULL);
+#endif  // OS_WIN
   UnmapAll();
 
   // Delete the StreamManager to cleanup any streams that are in midflight.
@@ -866,8 +872,70 @@ void PluginObject::PlatformSpecificSetCursor() {
 
 #ifdef OS_LINUX
 
+void PluginObject::SetDisplay(Display *display) {
+  if (display_ != display) {
+    if (display_) {
+      for (int i = 0; i < o3d::Cursor::NUM_CURSORS; ++i) {
+        if (cursors_[i]) {
+          XFreeCursor(display_, cursors_[i]);
+          cursors_[i] = 0;
+        }
+      }
+    }
+    display_ = display;
+  }
+}
+
+static unsigned int O3DToX11Cursor(o3d::Cursor::CursorType cursor_type) {
+  switch (cursor_type) {
+    case o3d::Cursor::DEFAULT:
+      return XC_arrow;
+    case o3d::Cursor::NONE:
+      NOTIMPLEMENTED();
+      return XC_arrow;
+    case o3d::Cursor::CROSSHAIR:
+      return XC_crosshair;
+    case o3d::Cursor::POINTER:
+      return XC_hand2;
+    case o3d::Cursor::E_RESIZE:
+      return XC_right_side;
+    case o3d::Cursor::NE_RESIZE:
+      return XC_top_right_corner;
+    case o3d::Cursor::NW_RESIZE:
+      return XC_top_left_corner;
+    case o3d::Cursor::N_RESIZE:
+      return XC_top_side;
+    case o3d::Cursor::SE_RESIZE:
+      return XC_bottom_right_corner;
+    case o3d::Cursor::SW_RESIZE:
+      return XC_bottom_left_corner;
+    case o3d::Cursor::S_RESIZE:
+      return XC_bottom_side;
+    case o3d::Cursor::W_RESIZE:
+      return XC_left_side;
+    case o3d::Cursor::MOVE:
+      return XC_fleur;
+    case o3d::Cursor::TEXT:
+      return XC_xterm;
+    case o3d::Cursor::WAIT:
+      return XC_watch;
+    case o3d::Cursor::PROGRESS:
+      NOTIMPLEMENTED();
+      return XC_watch;
+    case o3d::Cursor::HELP:
+      NOTIMPLEMENTED();
+      return XC_arrow;
+  }
+  return XC_arrow;
+}
+
 void PluginObject::PlatformSpecificSetCursor() {
-  // TODO: fill this in.
+  if (!cursors_[cursor_type_]) {
+    cursors_[cursor_type_] =
+        XCreateFontCursor(display_, O3DToX11Cursor(cursor_type_));
+  }
+  Window window = fullscreen_ ? fullscreen_window_ : window_;
+  XDefineCursor(display_, window, cursors_[cursor_type_]);
 }
 
 #endif  // OS_LINUX

@@ -224,6 +224,7 @@ class PluginObject: public NPObject {
                           GdkEventConfigure *configure_event);
   gboolean OnGtkDelete(GtkWidget *widget,
                        GdkEvent *configure);
+  void SetDisplay(Display *display);
 #elif defined(OS_MACOSX)
   void SetFullscreenOverlayMacWindow(WindowRef window) {
     mac_fullscreen_overlay_window_ = window;
@@ -279,8 +280,8 @@ class PluginObject: public NPObject {
 
 #endif  //  OS_MACOSX
 #ifdef OS_LINUX
-  Display *display_;
   Window window_;
+  Window fullscreen_window_;
 
   // Xt mode
   Widget xt_widget_;
@@ -477,6 +478,9 @@ class PluginObject: public NPObject {
   HCURSOR cursors_[o3d::Cursor::NUM_CURSORS];  // loaded windows cursors.
   HCURSOR hCursor_;
   bool painted_once_;
+#elif defined(OS_LINUX)
+  Display *display_;
+  Cursor cursors_[o3d::Cursor::NUM_CURSORS];  // loaded windows cursors.
 #endif  // OS_WIN
 
 #if defined(CB_SERVICE_REMOTE)
