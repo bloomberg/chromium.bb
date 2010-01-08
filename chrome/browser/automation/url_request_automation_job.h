@@ -6,7 +6,6 @@
 #ifndef CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
 #define CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
 
-#include <vector>
 #include "chrome/common/ref_counted_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -51,12 +50,6 @@ class URLRequestAutomationJob : public URLRequestJob {
   int request_id() const {
     return request_id_;
   }
-
-  // Returns true if the cookie passed in exists in the list of cookies
-  // parsed from the HTTP response header.
-  static bool IsCookiePresentInCookieHeader(
-      const std::string& cookie_name,
-      const std::vector<std::string>& header_cookies);
 
  protected:
   // Protected URLRequestJob override.

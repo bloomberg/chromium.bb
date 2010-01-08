@@ -5,8 +5,6 @@
 #include <windows.h>
 #include <atlsecurity.h>
 #include <shellapi.h>
-#include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
@@ -24,7 +22,6 @@
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/html_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "chrome/browser/automation/url_request_automation_job.h"
 
 const char kChromeFrameUserAgent[] = "chromeframe";
 
@@ -363,25 +360,4 @@ TEST(HttpUtils, HasFrameBustingHeader) {
     "X-Frame-Options: ALLOWall\r\n"));
 }
 
-TEST(HttpCookieTest, IdentifyDuplicateCookieTest) {
-  std::vector<std::string> header_cookies;
-  header_cookies.push_back("BLAHHH; Path=/;");
-
-  EXPECT_FALSE(URLRequestAutomationJob::IsCookiePresentInCookieHeader(
-                  "BLAHHH=1", header_cookies));
-
-  header_cookies.clear();
-
-  header_cookies.push_back("BLAHHH=1; Path=/;");
-
-  EXPECT_TRUE(URLRequestAutomationJob::IsCookiePresentInCookieHeader(
-                  "BLAHHH=1", header_cookies));
-
-  header_cookies.clear();
-
-  header_cookies.push_back("BLAH=1; Path=/blah;");
-
-  EXPECT_FALSE(URLRequestAutomationJob::IsCookiePresentInCookieHeader(
-                  "BLAH", header_cookies));
-}
 

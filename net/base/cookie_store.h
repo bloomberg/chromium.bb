@@ -59,10 +59,6 @@ class CookieStore : public base::RefCountedThreadSafe<CookieStore> {
     return NULL;
   };
 
-  // Deletes the passed in cookie for the specified URL.
-  virtual void DeleteCookie(const GURL& url,
-                            const std::string& cookie_name) = 0;
-
  protected:
   friend class base::RefCountedThreadSafe<CookieStore>;
   virtual ~CookieStore() {}

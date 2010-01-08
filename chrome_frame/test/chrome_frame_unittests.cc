@@ -1745,8 +1745,9 @@ TEST_F(ChromeFrameTestWithWebServer,
        FullTabModeIE_ChromeFrameXHRAuthHeaderTest) {
   chrome_frame_test::TimedMsgLoop loop;
 
-  ASSERT_TRUE(LaunchBrowser(
-                  IE, kChromeFrameFullTabModeXMLHttpRequestAuthHeaderTestUrl));
+  ASSERT_TRUE(
+      LaunchBrowser(IE,
+                    kChromeFrameFullTabModeXMLHttpRequestAuthHeaderTestUrl));
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
@@ -1754,19 +1755,3 @@ TEST_F(ChromeFrameTestWithWebServer,
   ASSERT_TRUE(
       CheckResultFile(L"FullTab_XMLHttpRequestAuthorizationHeaderTest", "OK"));
 }
-
-const wchar_t kChromeFrameFullTabModeDeleteCookieTest[] =
-    L"files/fulltab_delete_cookie_test.html";
-
-TEST_F(ChromeFrameTestWithWebServer,
-       FullTabModeIE_ChromeFrameDeleteCookieTest) {
-  chrome_frame_test::TimedMsgLoop loop;
-
-  ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeDeleteCookieTest));
-
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
-
-  chrome_frame_test::CloseAllIEWindows();
-  ASSERT_TRUE(CheckResultFile(L"FullTab_DeleteCookieTest", "OK"));
-}
-

@@ -538,7 +538,12 @@ void ResourceMessageFilter::OnGetRawCookies(
 void ResourceMessageFilter::OnDeleteCookie(const GURL& url,
                                            const std::string& cookie_name) {
   URLRequestContext* context = GetRequestContextForURL(url);
-  context->cookie_store()->DeleteCookie(url, cookie_name);
+  net::CookieMonster* cookie_monster = context->cookie_store()->
+      GetCookieMonster();
+  if (!cookie_monster)
+    return;
+
+  cookie_monster->DeleteCookie(url, cookie_name);
 }
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
