@@ -681,6 +681,7 @@ const char kEnableGView[]                   = "enable-gview";
 
 // Enable experimental Chrome-as-a-login-manager behavior.
 const char kLoginManager[]                  = "login-manager";
+const char kSessionManagerPipe[]            = "session-manager-pipe";
 
 // Attempts to load libcros and validate it, then exits. A nonzero return code
 // means the library could not be loaded correctly.

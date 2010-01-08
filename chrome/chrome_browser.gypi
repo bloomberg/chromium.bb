@@ -262,6 +262,7 @@
         'browser/chromeos/external_protocol_dialog.h',
         'browser/chromeos/gview_request_interceptor.cc',
         'browser/chromeos/gview_request_interceptor.h',
+        'browser/chromeos/ipc_message.h', 
         'browser/chromeos/language_library.cc',
         'browser/chromeos/language_library.h',
         'browser/chromeos/language_menu_button.cc',

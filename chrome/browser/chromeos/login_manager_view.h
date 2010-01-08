@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include "chrome/browser/chromeos/ipc_message.h"
 #include "views/accelerator.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
@@ -12,11 +13,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGER_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGER_VIEW_H_
 
+class FilePath;
+
 class LoginManagerView : public views::View,
                          public views::WindowDelegate,
                          public views::Textfield::Controller {
  public:
-  LoginManagerView();
+  LoginManagerView(const FilePath& pipe_name);
   virtual ~LoginManagerView();
 
   // Initialize the controls on the dialog.
@@ -39,6 +42,8 @@ class LoginManagerView : public views::View,
 
   // Creates all examples and start UI event loop.
  private:
+  FILE* pipe_;
+
   views::Textfield* username_field_;
   views::Textfield* password_field_;
 
@@ -57,6 +62,11 @@ class LoginManagerView : public views::View,
   bool Authenticate(const std::string& username,
                     const std::string& password);
 
+  bool Send(IpcMessage outgoing);
+
+  // Asynchronously emits the login-prompt-ready upstart signal.
+  bool EmitLoginPromptReady();
+
   // Asynchronously launches the Chrome OS window manager.
   bool RunWindowManager(const std::string& username);
 
@@ -72,4 +82,3 @@ class LoginManagerView : public views::View,
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGER_VIEW_H_
-

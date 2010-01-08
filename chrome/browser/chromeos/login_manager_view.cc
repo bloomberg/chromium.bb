@@ -4,11 +4,16 @@
 
 #include "chrome/browser/chromeos/login_manager_view.h"
 
+#include <signal.h>
+#include <sys/types.h>
+
 #include "app/resource_bundle.h"
+#include "base/file_path.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "chrome/browser/chromeos/image_background.h"
+#include "chrome/browser/chromeos/ipc_message.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/theme_resources.h"
 #include "views/controls/label.h"
@@ -35,15 +40,6 @@ const int kTextfieldWidth = 286;
 const int kBottomPadding = 112;
 
 namespace browser {
-
-bool EmitLoginPromptReady() {
-  base::ProcessHandle handle;
-  std::vector<std::string> argv;
-  argv.push_back("/opt/google/chrome/emit_login_prompt_ready");
-  base::environment_vector no_env;
-  base::file_handle_mapping_vector no_files;
-  return base::LaunchApp(argv, no_env, no_files, false, &handle);
-}
 
 // Acts as a frame view with no UI.
 class LoginManagerNonClientFrameView : public views::NonClientFrameView {
@@ -76,8 +72,10 @@ class LoginManagerNonClientFrameView : public views::NonClientFrameView {
 // Subclass of WindowGtk, for use as the top level login window.
 class LoginManagerWindow : public views::WindowGtk {
  public:
-  static LoginManagerWindow* CreateLoginManagerWindow() {
-    LoginManagerWindow* login_manager_window = new LoginManagerWindow();
+  static LoginManagerWindow* CreateLoginManagerWindow(
+      const FilePath& pipe_name) {
+    LoginManagerWindow* login_manager_window =
+        new LoginManagerWindow(pipe_name);
     login_manager_window->GetNonClientView()->SetFrameView(
         new LoginManagerNonClientFrameView());
     login_manager_window->Init(NULL, gfx::Rect());
@@ -85,16 +83,18 @@ class LoginManagerWindow : public views::WindowGtk {
   }
 
  private:
-  explicit LoginManagerWindow() : views::WindowGtk(new LoginManagerView()) {}
+  explicit LoginManagerWindow(const FilePath& pipe_name)
+      : views::WindowGtk(new LoginManagerView(pipe_name)) {
+  }
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerWindow);
 };
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
-void ShowLoginManager() {
-  views::WindowGtk* window = LoginManagerWindow::CreateLoginManagerWindow();
+void ShowLoginManager(const FilePath& pipe_name) {
+  views::WindowGtk* window =
+      LoginManagerWindow::CreateLoginManagerWindow(pipe_name);
   window->Show();
-  EmitLoginPromptReady();
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);
   MessageLoop::current()->Run();
@@ -102,11 +102,14 @@ void ShowLoginManager() {
 }
 }  // namespace browser
 
-LoginManagerView::LoginManagerView() {
+LoginManagerView::LoginManagerView(const FilePath& pipe_name)
+      : pipe_(fopen(pipe_name.value().c_str(), "w")) {
   Init();
 }
 
 LoginManagerView::~LoginManagerView() {
+  if (pipe_)
+    fclose(pipe_);
   MessageLoop::current()->Quit();
 }
 
@@ -189,6 +192,7 @@ void LoginManagerView::BuildWindow() {
   }
 
   layout->AddPaddingRow(1, 0);
+  EmitLoginPromptReady();
 }
 
 views::View* LoginManagerView::GetContentsView() {
@@ -212,18 +216,23 @@ bool LoginManagerView::Authenticate(const std::string& username,
          child_exit_code == 0;
 }
 
-bool LoginManagerView::RunWindowManager(const std::string& username) {
-  base::ProcessHandle handle;
-  std::vector<std::string> argv;
-  // TODO(cmasone): we'll want this to be configurable.
-  argv.push_back("/etc/init.d/start_wm.sh");
-  base::environment_vector env;
+bool LoginManagerView::Send(IpcMessage outgoing) {
+  if (pipe_) {
+    if (fwrite(&outgoing, sizeof(IpcMessage), 1, pipe_) == 1) {
+      // since we're only writing 1 "member", fwrite will return 1 on success
+      // and 0 on failure.  On success, we want to flush the buffer.
+      return fflush(pipe_) != EOF;
+    }
+  }
+  return false;
+}
 
-  // TODO(cmasone): This is a legacy way of communication the logged in user's
-  //                email to xscreensaver.  Figure out a better way.
-  env.push_back(std::pair<std::string, std::string>("CHROMEOS_USER", username));
-  base::file_handle_mapping_vector no_files;
-  return base::LaunchApp(argv, env, no_files, false, &handle);
+bool LoginManagerView::EmitLoginPromptReady() {
+  return Send(EMIT_LOGIN);
+}
+
+bool LoginManagerView::RunWindowManager(const std::string& username) {
+  return Send(START_SESSION);
 }
 
 void LoginManagerView::SetupSession(const std::string& username) {
@@ -270,5 +279,3 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
   // Return false so that processing does not end
   return false;
 }
-
-
