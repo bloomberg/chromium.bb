@@ -42,10 +42,10 @@ class ChangeOptions:
     name = m.group(1)
     files = scm.GIT.CaptureStatus([root], upstream_branch)
     issue = Backquote(['git', 'cl', 'status', '--field=id'])
-    if issue == "None":
-      description = m.group(2)
-    else:
+    try:
       description = gcl.GetIssueDescription(int(issue))
+    except ValueError:
+      description = m.group(2)
     patchset = None
     self.change = presubmit_support.GitChange(name, description, absroot, files,
                                               issue, patchset)
