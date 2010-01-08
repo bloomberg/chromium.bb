@@ -129,6 +129,15 @@ void WebPluginDelegatePepper::DestroyInstance() {
 
     instance_ = 0;
   }
+
+  // Destroy the nested GPU plugin only after first destroying the underlying
+  // Pepper plugin. This is so the Pepper plugin does not attempt to issue
+  // rendering commands after the GPU plugin has stopped processing them and
+  // responding to them.
+  if (nested_delegate_) {
+    nested_delegate_->PluginDestroyed();
+    nested_delegate_ = NULL;
+  }
 }
 
 void WebPluginDelegatePepper::UpdateGeometry(
@@ -579,10 +588,6 @@ WebPluginDelegatePepper::~WebPluginDelegatePepper() {
 }
 
 void WebPluginDelegatePepper::PluginDestroyed() {
-  if (nested_delegate_) {
-    nested_delegate_->PluginDestroyed();
-    nested_delegate_ = NULL;
-  }
   delete this;
 }
 

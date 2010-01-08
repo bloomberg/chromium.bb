@@ -40,6 +40,10 @@ GLES2Implementation::GLES2Implementation(
   result_shm_offset_ = transfer_buffer_.GetOffset(result_buffer_);
 }
 
+GLES2Implementation::~GLES2Implementation() {
+  transfer_buffer_.Free(result_buffer_);
+}
+
 void GLES2Implementation::MakeIds(GLsizei n, GLuint* ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
     ids[ii] = id_allocator_.AllocateID();

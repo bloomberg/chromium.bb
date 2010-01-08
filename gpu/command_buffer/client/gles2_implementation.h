@@ -27,6 +27,8 @@ class GLES2Implementation {
       void* transfer_buffer,
       int32 transfer_buffer_id);
 
+  ~GLES2Implementation();
+
   // The GLES2CmdHelper being used by this GLES2Implementation. You can use
   // this to issue cmds at a lower level for certain kinds of optimization.
   GLES2CmdHelper* helper() const {

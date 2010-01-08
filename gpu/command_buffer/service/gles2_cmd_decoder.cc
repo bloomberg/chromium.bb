@@ -1148,8 +1148,7 @@ GLenum GLES2DecoderImpl::GetGLError() {
   // Check the GL error first, then our wrapped error.
   GLenum error = glGetError();
   if (error == GL_NO_ERROR && error_bits_ != 0) {
-    uint32 mask = 1;
-    while (mask) {
+    for (uint32 mask = 1; mask != 0; mask = mask << 1) {
       if ((error_bits_ & mask) != 0) {
         error = GLErrorBitToGLError(mask);
         break;

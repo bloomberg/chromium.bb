@@ -59,11 +59,9 @@ class PluginObject {
 
   NPDevice* device2d_;
 
-  // TODO(apatrick): this destruction order causes the plugin to crash on
-  // shutdown.
   scoped_ptr<CommandBufferPepper> command_buffer_;
-  scoped_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> helper_;
+  scoped_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
 
   gfx::Size size_;
 
