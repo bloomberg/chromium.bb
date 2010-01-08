@@ -86,6 +86,12 @@ def CopyAllFilesToStagingDir(config, distribution, staging_dir, output_dir):
     CopySectionFilesToStagingDir(config, distribution.upper(),
                                  staging_dir, output_dir)
 
+def IsChromeFrameFile(file):
+  for cf_file in ['npchrome_frame', 'chrome_launcher']:
+    if file.lower().find(cf_file) != -1:
+      return True
+  return False
+
 def CopySectionFilesToStagingDir(config, section, staging_dir, output_dir):
   """Copies installer archive files specified in section to staging dir.
   This method copies reads section from config file and copies all the files
@@ -99,7 +105,16 @@ def CopySectionFilesToStagingDir(config, section, staging_dir, output_dir):
     if not os.path.exists(dst):
       os.makedirs(dst)
     for file in glob.glob(os.path.join(output_dir, option)):
-      shutil.copy(file, dst)
+      if IsChromeFrameFile(file):
+        try:
+          shutil.copy(file, dst)
+        except IOError:
+          # TODO(robertshield): Temporary hack to work around problems building
+          # Chrome Frame binaries on non-Chrome Frame builders. Remove this
+          # asap.
+          print 'Error attempting to copy ' + file + ' to ' + dst
+      else:
+        shutil.copy(file, dst)
 
 def GenerateDiffPatch(options, orig_file, new_file, patch_file):
   if (options.diff_algorithm == "COURGETTE"):
