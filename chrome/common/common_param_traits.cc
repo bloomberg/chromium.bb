@@ -5,6 +5,7 @@
 #include "chrome/common/common_param_traits.h"
 
 #include "base/gfx/rect.h"
+#include "chrome/common/chrome_constants.h"
 #include "googleurl/src/gurl.h"
 #ifndef EXCLUDE_SKIA_DEPENDENCIES
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -99,7 +100,7 @@ void ParamTraits<GURL>::Write(Message* m, const GURL& p) {
 
 bool ParamTraits<GURL>::Read(const Message* m, void** iter, GURL* p) {
   std::string s;
-  if (!m->ReadString(iter, &s)) {
+  if (!m->ReadString(iter, &s) || s.length() > chrome::kMaxURLChars) {
     *p = GURL();
     return false;
   }
