@@ -66,7 +66,12 @@ static void GetWidgetPositionOnScreen(GtkWidget* widget, int* x, int *y) {
   while (root && !GTK_IS_WINDOW(root)) {
     root = gtk_widget_get_parent(root);
   }
-  DCHECK(root);
+  if (!root) {
+    // If root is null we're not parented. Return 0x0 and assume the caller will
+    // query again when we're parented.
+    *x = *y = 0;
+    return;
+  }
   // Translate the coordinate from widget to root window.
   gtk_widget_translate_coordinates(widget, root, 0, 0, x, y);
   // Then adjust the position with the position of the root window.
