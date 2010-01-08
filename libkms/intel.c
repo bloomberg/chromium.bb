@@ -149,14 +149,16 @@ intel_bo_create(struct kms_driver *kms,
 		tile.stride = bo->base.pitch;
 
 		ret = drmCommandWriteRead(kms->fd, DRM_I915_GEM_SET_TILING, &tile, sizeof(tile));
-		if (ret != 0)
-			goto err_destroy;
+#if 0
+		if (ret) {
+			kms_bo_destroy(out);
+			return ret;
+		}
+#endif
 	}
 
 	return 0;
 
-err_destroy:
-	kms_bo_destroy(out);
 err_free:
 	free(bo);
 	return ret;
