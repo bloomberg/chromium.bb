@@ -42,9 +42,10 @@ function test_git_svn {
 # Update git checkouts prior the cygwin check, we don't want to use msysgit.
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.git" ]
 then
-  # Skip this call since it fails outside a git checkout.
-  #test_git_svn
-  (cd "$base_dir"; git svn rebase -q -q)
+  cd $base_dir
+  test_git_svn
+  git svn rebase -q -q
+  cd - > /dev/null
 fi
 
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/git-cl-repo/.git" ]
