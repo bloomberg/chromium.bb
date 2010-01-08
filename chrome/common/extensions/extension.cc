@@ -1079,8 +1079,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
   }
 
   // Initialize page action (optional).
-  DictionaryValue* page_action_value = NULL;
-
   if (source.HasKey(keys::kPageActions)) {
     ListValue* list_value;
     if (!source.GetList(keys::kPageActions, &list_value)) {
@@ -1088,29 +1086,28 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       return false;
     }
 
-    size_t list_value_length = list_value->GetSize();
-
-    if (list_value_length == 0u) {
-      // A list with zero items is allowed, and is equivalent to not having
-      // a page_actions key in the manifest.  Don't set |page_action_value|.
-    } else if (list_value_length == 1u) {
-      if (!list_value->GetDictionary(0, &page_action_value)) {
-        *error = errors::kInvalidPageAction;
-        return false;
-      }
-    } else {  // list_value_length > 1u.
+    if (list_value->GetSize() != 1u) {
       *error = errors::kInvalidPageActionsListSize;
       return false;
     }
+
+    DictionaryValue* page_action_value;
+    if (!list_value->GetDictionary(0, &page_action_value)) {
+      *error = errors::kInvalidPageAction;
+      return false;
+    }
+
+    page_action_.reset(
+        LoadExtensionActionHelper(page_action_value, error));
+    if (!page_action_.get())
+      return false;  // Failed to parse page action definition.
   } else if (source.HasKey(keys::kPageAction)) {
+    DictionaryValue* page_action_value;
     if (!source.GetDictionary(keys::kPageAction, &page_action_value)) {
       *error = errors::kInvalidPageAction;
       return false;
     }
-  }
 
-  // If page_action_value is not NULL, then there was a valid page action.
-  if (page_action_value) {
     page_action_.reset(
         LoadExtensionActionHelper(page_action_value, error));
     if (!page_action_.get())
@@ -1120,7 +1117,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
   // Initialize browser action (optional).
   if (source.HasKey(keys::kBrowserAction)) {
     // Restrict extensions to one UI surface.
-    if (page_action_.get()) {
+    if (source.HasKey(keys::kPageAction) || source.HasKey(keys::kPageActions)) {
       *error = errors::kOneUISurfaceOnly;
       return false;
     }
