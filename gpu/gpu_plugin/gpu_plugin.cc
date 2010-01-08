@@ -82,4 +82,5 @@ NPError API_CALL NP_Initialize(NPNetscapeFuncs *browser_funcs) {
 NPError API_CALL NP_Shutdown() {
   return NPERR_NO_ERROR;
 }
+
 }  // namespace gpu_plugin
