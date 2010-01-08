@@ -674,6 +674,8 @@ void NavigationController::RendererDidNavigateToExistingPage(
          entry->site_instance() == tab_contents_->GetSiteInstance());
   entry->set_site_instance(tab_contents_->GetSiteInstance());
 
+  entry->set_has_post_data(params.is_post);
+
   // The entry we found in the list might be pending if the user hit
   // back/forward/reload. This load should commit it (since it's already in the
   // list, we can just discard the pending pointer).

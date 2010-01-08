@@ -767,6 +767,62 @@ TEST_F(NavigationControllerTest, Redirect) {
   EXPECT_FALSE(controller().CanGoForward());
 }
 
+// Similar to Redirect above, but the first URL is requested by POST,
+// the second URL is requested by GET. NavigationEntry::has_post_data_
+// must be cleared. http://crbug.com/21245
+TEST_F(NavigationControllerTest, PostThenRedirect) {
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller());
+
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");  // Redirection target
+
+  // First request as POST
+  controller().LoadURL(url1, GURL(), PageTransition::TYPED);
+  controller().GetActiveEntry()->set_has_post_data(true);
+
+  EXPECT_EQ(0U, notifications.size());
+  rvh()->SendNavigate(0, url2);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      NotificationType::NAV_ENTRY_COMMITTED));
+
+  // Second request
+  controller().LoadURL(url1, GURL(), PageTransition::TYPED);
+
+  EXPECT_TRUE(controller().pending_entry());
+  EXPECT_EQ(controller().pending_entry_index(), -1);
+  EXPECT_EQ(url1, controller().GetActiveEntry()->url());
+
+  ViewHostMsg_FrameNavigate_Params params = {0};
+  params.page_id = 0;
+  params.url = url2;
+  params.transition = PageTransition::SERVER_REDIRECT;
+  params.redirects.push_back(GURL("http://foo1"));
+  params.redirects.push_back(GURL("http://foo2"));
+  params.should_update_history = false;
+  params.gesture = NavigationGestureAuto;
+  params.is_post = false;
+
+  NavigationController::LoadCommittedDetails details;
+
+  EXPECT_EQ(0U, notifications.size());
+  EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
+  EXPECT_TRUE(notifications.Check1AndReset(
+      NotificationType::NAV_ENTRY_COMMITTED));
+
+  EXPECT_TRUE(details.type == NavigationType::SAME_PAGE);
+  EXPECT_EQ(controller().entry_count(), 1);
+  EXPECT_EQ(controller().last_committed_entry_index(), 0);
+  EXPECT_TRUE(controller().GetLastCommittedEntry());
+  EXPECT_EQ(controller().pending_entry_index(), -1);
+  EXPECT_FALSE(controller().pending_entry());
+  EXPECT_EQ(url2, controller().GetActiveEntry()->url());
+  EXPECT_FALSE(controller().GetActiveEntry()->has_post_data());
+
+  EXPECT_FALSE(controller().CanGoBack());
+  EXPECT_FALSE(controller().CanGoForward());
+}
+
 // A redirect right off the bat should be a NEW_PAGE.
 TEST_F(NavigationControllerTest, ImmediateRedirect) {
   TestNotificationTracker notifications;
