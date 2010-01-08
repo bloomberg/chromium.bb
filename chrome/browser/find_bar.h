@@ -27,7 +27,8 @@ class FindBar {
       FindBarController* find_bar_controller) = 0;
 
   // Shows the find bar. Any previous search string will again be visible.
-  virtual void Show() = 0;
+  // If |animate| is true, we try to slide the find bar in.
+  virtual void Show(bool animate) = 0;
 
   // Hide the find bar.  If |animate| is true, we try to slide the find bar
   // away.
@@ -62,26 +63,6 @@ class FindBar {
 
   // No match was found; play an audible alert.
   virtual void AudibleAlert() = 0;
-
-  // Returns the rectangle representing where to position the find bar. It uses
-  // GetDialogBounds and positions itself within that, either to the left (if an
-  // InfoBar is present) or to the right (no InfoBar). If
-  // |avoid_overlapping_rect| is specified, the return value will be a rectangle
-  // located immediately to the left of |avoid_overlapping_rect|, as long as
-  // there is enough room for the dialog to draw within the bounds. If not, the
-  // dialog position returned will overlap |avoid_overlapping_rect|.
-  // Note: |avoid_overlapping_rect| is expected to use coordinates relative to
-  // the top of the page area, (it will be converted to coordinates relative to
-  // the top of the browser window, when comparing against the dialog
-  // coordinates). The returned value is relative to the browser window.
-  virtual gfx::Rect GetDialogPosition(gfx::Rect avoid_overlapping_rect) = 0;
-
-  // Moves the dialog window to the provided location, moves it to top in the
-  // z-order (HWND_TOP, not HWND_TOPMOST) and shows the window (if hidden).
-  // It then calls UpdateWindowEdges to make sure we don't overwrite the Chrome
-  // window border. If |no_redraw| is set, the window is getting moved but not
-  // sized, and should not be redrawn to reduce update flicker.
-  virtual void SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) = 0;
 
   virtual bool IsFindBarVisible() = 0;
 

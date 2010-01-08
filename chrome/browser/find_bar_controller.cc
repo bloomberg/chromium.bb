@@ -29,7 +29,7 @@ void FindBarController::Show() {
   // selected TabContents.
   if (!tab_contents_->find_ui_active()) {
     tab_contents_->set_find_ui_active(true);
-    find_bar_->Show();
+    find_bar_->Show(true);
   }
   find_bar_->SetFocusAndSelection();
 }
@@ -101,8 +101,7 @@ void FindBarController::ChangeTabContents(TabContents* contents) {
     // visible state. We also want to reset the window location so that
     // we don't surprise the user by popping up to the left for no apparent
     // reason.
-    gfx::Rect new_pos = find_bar_->GetDialogPosition(gfx::Rect());
-    find_bar_->SetDialogPosition(new_pos, false);
+    find_bar_->Show(false);
   }
 
   UpdateFindBarForCurrentResult();

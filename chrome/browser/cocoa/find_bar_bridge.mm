@@ -16,8 +16,8 @@ FindBarBridge::FindBarBridge()
 FindBarBridge::~FindBarBridge() {
 }
 
-void FindBarBridge::Show() {
-  [cocoa_controller_ showFindBar:YES];  // with animation.
+void FindBarBridge::Show(bool animate) {
+  [cocoa_controller_ showFindBar:(animate ? YES : NO)];
 }
 
 void FindBarBridge::Hide(bool animate) {
@@ -52,22 +52,11 @@ bool FindBarBridge::IsFindBarVisible() {
 void FindBarBridge::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
                                           bool no_redraw) {
   // http://crbug.com/11084
+  // http://crbug.com/22036
 }
 
 void FindBarBridge::StopAnimation() {
   [cocoa_controller_ stopAnimation];
-}
-
-gfx::Rect FindBarBridge::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
-  // http://crbug.com/22036
-  return gfx::Rect();
-}
-
-void FindBarBridge::SetDialogPosition(const gfx::Rect& new_pos,
-                                      bool no_redraw) {
-  // TODO(rohitrao): Do something useful here.  For now, just show the findbar.
-  // http://crbug.com/22036
-  [cocoa_controller_ showFindBar:NO];  // Do not animate.
 }
 
 void FindBarBridge::RestoreSavedFocus() {

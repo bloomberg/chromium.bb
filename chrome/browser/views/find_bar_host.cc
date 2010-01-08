@@ -50,8 +50,8 @@ FindBarHost::FindBarHost(BrowserView* browser_view)
 FindBarHost::~FindBarHost() {
 }
 
-void FindBarHost::Show() {
-  DropdownBarHost::Show();
+void FindBarHost::Show(bool animate) {
+  DropdownBarHost::Show(animate);
 }
 
 void FindBarHost::SetFocusAndSelection() {

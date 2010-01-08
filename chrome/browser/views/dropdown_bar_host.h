@@ -49,7 +49,7 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // Returns true if the dropdown bar view is visible, or false otherwise.
   bool IsVisible() const;
   // Shows the dropdown bar.
-  void Show();
+  void Show(bool animate);
   // Hides the dropdown bar.
   void Hide(bool animate);
   // Selects text in the entry field and set focus.

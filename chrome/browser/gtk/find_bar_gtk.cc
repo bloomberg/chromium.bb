@@ -298,12 +298,16 @@ void FindBarGtk::InitWidgets() {
   gtk_widget_show(widget());
 }
 
-void FindBarGtk::Show() {
-  slide_widget_->Open();
-  selection_rect = gfx::Rect();
-  Reposition();
-  if (container_->window)
-    gdk_window_raise(container_->window);
+void FindBarGtk::Show(bool animate) {
+  if (animate) {
+    slide_widget_->Open();
+    selection_rect = gfx::Rect();
+    Reposition();
+    if (container_->window)
+      gdk_window_raise(container_->window);
+  } else {
+    slide_widget_->OpenWithoutAnimation();
+  }
 }
 
 void FindBarGtk::Hide(bool animate) {
@@ -406,10 +410,6 @@ gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
       view_location, dialog_bounds, avoid_overlapping_rect);
 
   return new_pos;
-}
-
-void FindBarGtk::SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) {
-  slide_widget_->OpenWithoutAnimation();
 }
 
 bool FindBarGtk::IsFindBarVisible() {

@@ -54,7 +54,7 @@ class FindBarBridge : public FindBar {
   }
 
   // Methods from FindBar.
-  virtual void Show();
+  virtual void Show(bool animate);
   virtual void Hide(bool animate);
   virtual void SetFocusAndSelection();
   virtual void ClearResults(const FindNotificationDetails& results);
@@ -63,8 +63,6 @@ class FindBarBridge : public FindBar {
   virtual void UpdateUIForFindResult(const FindNotificationDetails& result,
                                      const string16& find_text);
   virtual void AudibleAlert();
-  virtual gfx::Rect GetDialogPosition(gfx::Rect avoid_overlapping_rect);
-  virtual void SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw);
   virtual bool IsFindBarVisible();
   virtual void RestoreSavedFocus();
   virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect,

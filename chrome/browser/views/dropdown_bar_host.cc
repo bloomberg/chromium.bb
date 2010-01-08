@@ -58,12 +58,12 @@ DropdownBarHost::~DropdownBarHost() {
   focus_tracker_.reset(NULL);
 }
 
-void DropdownBarHost::Show() {
+void DropdownBarHost::Show(bool animate) {
   // Stores the currently focused view, and tracks focus changes so that we can
   // restore focus when the dropdown widget is closed.
   focus_tracker_.reset(new views::ExternalFocusTracker(view_, focus_manager_));
 
-  if (disable_animations_during_testing_) {
+  if (!animate || disable_animations_during_testing_) {
     animation_->Reset(1);
     AnimationProgressed(animation_.get());
   } else {
