@@ -498,14 +498,14 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
   ids.clear();
   EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 5));
   EXPECT_EQ(5U, ids.size());
-  for (size_t i = 0; i < ids.size(); ++i)
+  for (int i = 0; i < static_cast<int>(ids.size()); ++i)
     EXPECT_EQ(i, ids[i]);
 
   // Ensure the max_rowid is respected (the first rowid is 1).
   ids.clear();
   EXPECT_TRUE(db.GetDeletableResponseIds(&ids, 5, 100));
   EXPECT_EQ(5U, ids.size());
-  for (size_t i = 0; i < ids.size(); ++i)
+  for (int i = 0; i < static_cast<int>(ids.size()); ++i)
     EXPECT_EQ(i, ids[i]);
 
   // Ensure that we can delete from the table.
@@ -513,7 +513,7 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
   ids.clear();
   EXPECT_TRUE(db.GetDeletableResponseIds(&ids, kint64max, 100));
   EXPECT_EQ(5U, ids.size());
-  for (size_t i = 0; i < ids.size(); ++i)
+  for (int i = 0; i < static_cast<int>(ids.size()); ++i)
     EXPECT_EQ(i + 5, ids[i]);
 }
 
