@@ -110,8 +110,8 @@ def CookTarball(tgz_name, build_mode):
     build_mode: --mode parameter for scons
   """
   # Pick where to construct the tarball.
-  if sys.platform in ['win32']:
-    tmp_dir = 'c:\\nacl_tarball'
+  if sys.platform == 'win32':
+    tmp_dir = 'c:/nacl_tarball'
   else:
     tmp_dir = '/tmp/nacl_tarball'
 
@@ -166,7 +166,7 @@ def CookTarball(tgz_name, build_mode):
                 ignore_errors=True)
 
   # Pick scons version.
-  if sys.platform in ['win32']:
+  if sys.platform == 'win32':
     scons = os.path.join(dst_dir, 'native_client', 'scons.bat')
   else:
     scons = os.path.join(dst_dir, 'native_client', 'scons')
@@ -190,30 +190,30 @@ def CookTarball(tgz_name, build_mode):
       'linux': 'linux',
       'linux2': 'linux',
   }[sys.platform]
-  if sys.platform in ['win32', 'cygwin']:
-    pwd = '`cygpath -u ${PWD}`'
-  else:
-    pwd = '`pwd`'
-  cmd = ('MAKEINFO=%(pwd)s/makeinfo_dummy '
+  cmd = ('PATH=$PATH:/cygdrive/c/cygwin/bin '
+         'MAKEINFO=`pwd`/makeinfo_dummy '
          'make '
-         'SDKLOC=%(pwd)s/../src/third_party/nacl_sdk/%(tool_platform)s/sdk '
-         'HAMMER=scons') % {'tool_platform': tool_platform,
-                            'pwd': pwd}
-  if sys.platform in ['win32', 'cygwin']:
+         'SDKLOC=`pwd`/../src/third_party/nacl_sdk/%(tool_platform)s/sdk '
+         'HAMMER=scons') % {'tool_platform': tool_platform}
+  if sys.platform == 'win32':
     cmd = "c:\\cygwin\\bin\\bash -c '%s'" % cmd
-  subprocess.call(cmd, shell=True,
-                  cwd=os.path.join(dst_dir, 'native_client', 'tools'))
+  ret = subprocess.call(cmd, shell=True,
+                        cwd=os.path.join(dst_dir, 'native_client', 'tools'))
+  if ret:
+    return ret
 
   # Drop tools BUILD intermediate output.
   shutil.rmtree(os.path.join(dst_dir, 'native_client', 'tools', 'BUILD'),
                 ignore_errors=True)
 
   # Build the desired version.
-  subprocess.call([scons,
-                   '--mode='+build_mode,
-                   '--verbose',
-                   'DOXYGEN=%s' % doxy_path],
-                  cwd=os.path.join(dst_dir, 'native_client'))
+  ret = subprocess.call([scons,
+                        '--mode='+build_mode,
+                        '--verbose',
+                        'DOXYGEN=%s' % doxy_path],
+                        cwd=os.path.join(dst_dir, 'native_client'))
+  if ret:
+    return ret
 
   # Drop items only needed for sdk build.
   shutil.rmtree(os.path.join(dst_dir, 'third_party', 'binutils'),
@@ -237,15 +237,21 @@ def CookTarball(tgz_name, build_mode):
     DeleteAllMatching(os.path.join(dst_dir, 'native_client', 'scons-out'), ext)
 
   # Zip/tar it up.
-  if sys.platform in ['win32']:
+  if sys.platform in ['win32', 'cygwin']:
     out_file = os.path.abspath(tgz_name + '.zip')
     RemoveIfExists(out_file)
-    subprocess.call(['zip', '-vr', out_file, '.'],
-                    cwd=os.path.join(tmp_dir))
+    ret = subprocess.call(['zip', '-vr', out_file, '.'],
+                          cwd=os.path.join(tmp_dir))
+    if ret:
+      return ret
   else:
     out_file = os.path.abspath(tgz_name + '.tgz')
-    subprocess.call(['tar', 'cvfz', out_file, './'],
-                    cwd=os.path.join(tmp_dir))
+    ret = subprocess.call(['tar', 'cvfz', out_file, './'],
+                          cwd=os.path.join(tmp_dir))
+    if ret:
+      return ret
+  # Success.
+  return 0
 
 
 def main(argv):
