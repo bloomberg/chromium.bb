@@ -555,12 +555,7 @@
    bug_31586b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN12_GLOBAL__N_120CookieTestingProfile17GetRequestContextEv
-   fun:_ZN16CookiesTreeModel21LoadCookiesWithFilterERKSbIwSt11char_traitsIwESaIwEE
-   fun:_ZN16CookiesTreeModel11LoadCookiesEv
-   fun:_ZN16CookiesTreeModelC2EP7Profile
-   fun:_ZN16CookiesTreeModelC1EP7Profile
-   fun:-[CookiesWindowController initWithProfile:]
+   fun:_ZN14TestingProfile20CreateRequestContextEv
    fun:_ZN12_GLOBAL__N_127CookiesWindowControllerTest5SetUpEv
 }
 {
