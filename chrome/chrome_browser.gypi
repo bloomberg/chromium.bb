@@ -2034,6 +2034,7 @@
                   'app/nibs/DownloadShelf.xib',
                   'app/nibs/EditSearchEngine.xib',
                   'app/nibs/FirstRunDialog.xib',
+                  'app/nibs/FontLanguageSettings.xib',
                   'app/nibs/HttpAuthLoginSheet.xib',
                   'app/nibs/HungRendererDialog.xib',
                   'app/nibs/ImportSettingsDialog.xib',
