@@ -353,7 +353,7 @@ TEST_F(WorkerTest, MessagePorts) {
 
 #if defined(OS_LINUX)
 // http://crbug.com/30307
-#define LimitPerPage FLAKY_LimitPerPage
+#define LimitPerPage DISABLED_LimitPerPage
 #endif
 
 TEST_F(WorkerTest, LimitPerPage) {
