@@ -72,7 +72,8 @@ FirstLastNameField* FirstLastNameField::Parse2(
   // asks, in stuffy English style, for just initials and a surname,
   // so we match "initials" here (and just fill in a first name there,
   // American-style).
-  if (!ParseText(&q, ASCIIToUTF16("first name|initials|fname"), &v.first_name_))
+  if (!ParseText(&q, ASCIIToUTF16("first name|firstname|initials|fname"),
+                 &v.first_name_))
     return NULL;
 
   // We check for a middle initial before checking for a middle name
@@ -86,7 +87,8 @@ FirstLastNameField* FirstLastNameField::Parse2(
     ParseText(&q, ASCIIToUTF16("middle name|mname"), &v.middle_name_);
   }
 
-  if (!ParseText(&q, ASCIIToUTF16("last name|lname|surname"), &v.last_name_))
+  if (!ParseText(&q, ASCIIToUTF16("last name|lastname|lname|surname"),
+                 &v.last_name_))
     return NULL;
 
   *iter = q;

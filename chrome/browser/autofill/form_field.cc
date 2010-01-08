@@ -52,8 +52,8 @@ bool FormField::Match(AutoFillField* field, const string16& pattern) {
   // For now, we apply the same pattern to the field's label and the field's
   // name.  Matching the name is a bit of a long shot for many patterns, but
   // it generally doesn't hurt to try.
-  if (re.match(WebKit::WebString(field->label())) ||
-      re.match(WebKit::WebString(field->name()))) {
+  if (re.match(WebKit::WebString(field->label())) != -1 ||
+      re.match(WebKit::WebString(field->name())) != -1) {
     return true;
   }
 
