@@ -529,7 +529,10 @@ void RenderWidgetHostViewGtk::DidScrollBackingStoreRect(const gfx::Rect& rect,
 
   // TODO(darin): Implement the equivalent of Win32's ScrollWindowEX.  Can that
   // be done using XCopyArea?  Perhaps similar to BackingStore::ScrollRect?
-  Paint(rect);
+  if (about_to_validate_and_paint_)
+    invalid_rect_ = invalid_rect_.Union(rect);
+  else
+    Paint(rect);
 }
 
 void RenderWidgetHostViewGtk::RenderViewGone() {
