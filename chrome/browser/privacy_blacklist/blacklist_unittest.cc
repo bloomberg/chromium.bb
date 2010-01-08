@@ -20,7 +20,7 @@ TEST(BlacklistTest, Generic) {
 
   Blacklist blacklist;
   ASSERT_TRUE(BlacklistIO::ReadBinary(&blacklist, input));
-
+  
   Blacklist::EntryList entries(blacklist.entries_begin(),
                                blacklist.entries_end());
 
@@ -59,7 +59,7 @@ TEST(BlacklistTest, Generic) {
 
   Blacklist::ProviderList providers(blacklist.providers_begin(),
                                     blacklist.providers_end());
-
+  
   ASSERT_EQ(1U, providers.size());
   EXPECT_EQ("Sample", providers[0]->name());
   EXPECT_EQ("http://www.google.com", providers[0]->url());
@@ -167,36 +167,6 @@ TEST(BlacklistTest, Generic) {
   EXPECT_TRUE(header1 == Blacklist::StripCookies(header1));
   EXPECT_TRUE(header2 == Blacklist::StripCookies(header2));
   EXPECT_TRUE(header4 == Blacklist::StripCookies(header3));
-}
-
-TEST(BlacklistTest, QueryStringMatch) {
-  Blacklist blacklist;
-
-  Blacklist::Provider *provider = new Blacklist::Provider("test",
-                                                          "http://test.com/");
-  blacklist.AddProvider(provider);
-  blacklist.AddEntry(new Blacklist::Entry("@/script?@", provider));
-  blacklist.AddEntry(new Blacklist::Entry("@?badparam@", provider));
-
-  // No matches for URLs without query string
-  EXPECT_FALSE(blacklist.findMatch(GURL("http://badparam.com/")));
-  EXPECT_FALSE(blacklist.findMatch(GURL("http://script.bad.org/")));
-
-  // Expected rule matches.
-  Blacklist::Match* match;
-  match = blacklist.findMatch(GURL("http://host.com/script?q=x"));
-  EXPECT_TRUE(match);
-  if (match) {
-    EXPECT_EQ(1U, match->entries().size());
-    delete match;
-  }
-
-  match = blacklist.findMatch(GURL("http://host.com/img?badparam=x"));
-  EXPECT_TRUE(match);
-  if (match) {
-    EXPECT_EQ(1U, match->entries().size());
-    delete match;
-  }
 }
 
 TEST(BlacklistTest, PatternMatch) {
