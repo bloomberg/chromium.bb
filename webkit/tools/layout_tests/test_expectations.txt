@@ -3147,3 +3147,6 @@ BUG_JAPHET : LayoutTests/websocket/tests/frame-lengths.html = PASS TIMEOUT
 
 // Flaky crash
 BUG31794 WIN MAC : LayoutTests/storage/domstorage/localstorage/enumerate-storage.html = CRASH PASS
+
+// Flaky
+BUG31803 LINUX : LayoutTests/editing/inserting/12882.html = IMAGE PASS
