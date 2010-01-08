@@ -828,8 +828,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   EXPECT_FALSE(result);
 }
 
+// TODO(asargent): This test seems to crash on linux buildbots.
+// (http://crbug.com/31737)
+#if !defined(OS_LINUX)
 // Tests extension autoupdate.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_AutoUpdate) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, AutoUpdate) {
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
@@ -877,6 +880,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_AutoUpdate) {
   ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extensions->at(0)->id());
   ASSERT_EQ("2.0", extensions->at(0)->VersionString());
 }
+#endif  // !defined(OS_LINUX)
 
 // Used to simulate a click on the first button named 'Options'.
 static const wchar_t* jscript_click_option_button =
