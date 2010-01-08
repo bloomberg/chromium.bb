@@ -219,6 +219,15 @@ bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
 #endif
 }
 
+// Key event location code introduced in DOM Level 3.
+// See also: http://www.w3.org/TR/DOM-Level-3-Events/#events-keyboardevents
+enum KeyLocationCode {
+  DOM_KEY_LOCATION_STANDARD      = 0x00,
+  DOM_KEY_LOCATION_LEFT          = 0x01,
+  DOM_KEY_LOCATION_RIGHT         = 0x02,
+  DOM_KEY_LOCATION_NUMPAD        = 0x03
+};
+
 }  // anonymous namespace
 
 EventSendingController::EventSendingController(TestShell* shell)
@@ -578,6 +587,14 @@ void EventSendingController::keyDown(
 
     if (needs_shift_key_modifier)
       event_down.modifiers |= WebInputEvent::ShiftKey;
+
+    // See if KeyLocation argument is given.
+    if (args.size() >= 3 && args[2].isNumber()) {
+      int location = args[2].ToInt32();
+      if (location == DOM_KEY_LOCATION_NUMPAD) {
+        event_down.modifiers |= WebInputEvent::IsKeyPad;
+      }
+    }
 
     event_char = event_up = event_down;
     event_up.type = WebInputEvent::KeyUp;

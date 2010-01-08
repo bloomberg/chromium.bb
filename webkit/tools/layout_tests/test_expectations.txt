@@ -929,9 +929,6 @@ BUG31344 : LayoutTests/svg/custom/global-constructors.html = TEXT
 // New in WebKit r52580.
 BUG31345 WIN LINUX : LayoutTests/svg/custom/mask-on-multiple-objects.svg = IMAGE
 
-// New in WebKit r52608.
-BUG31360 : LayoutTests/fast/events/keydown-numpad-keys.html = TEXT
-
 // Text fails very rarely, 1/200 runs or fewer.
 BUG29737 LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
 BUG29737 MAC RELEASE : LayoutTests/svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
