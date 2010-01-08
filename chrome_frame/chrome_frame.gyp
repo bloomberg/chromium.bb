@@ -176,6 +176,7 @@
         '../third_party/libxslt/libxslt.gyp:libxslt',
         'chrome_frame_strings',
         'chrome_frame_npapi',
+        'npchrome_frame',
         'xulrunner_sdk',
       ],
       'sources': [
@@ -253,6 +254,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/libxslt/libxslt.gyp:libxslt',
         'chrome_frame_strings',
+        'npchrome_frame',
         'xulrunner_sdk',
       ],
       'sources': [
@@ -313,6 +315,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         'chrome_frame_npapi',
+        'npchrome_frame',
       ],
       'sources': [
         '../net/url_request/url_request_unittest.cc',
@@ -611,12 +614,6 @@
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
         '../build/temp_gyp/googleurl.gyp:googleurl',
-        # FIXME(slightlyoff):
-        #   gigantic hack to get these to build from main Chrome sln.
-        'chrome_frame_perftests',
-        'chrome_frame_tests',
-        'chrome_frame_unittests',
-        'chrome_frame_net_tests',
       ],
       'sources': [
         'chrome_frame_npapi.rgs',
