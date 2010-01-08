@@ -32,13 +32,34 @@
 #include <string.h>
 #include "internal.h"
 
+struct create_record
+{
+	unsigned vendor;
+	unsigned chip;
+	int (*func)(int fd, struct kms_driver **out);
+};
+
+static struct create_record table[] = {
+#ifdef HAVE_VMWGFX
+	{ 0x15ad, 0x0405, vmwgfx_create }, /* VMware vGPU */
+#endif
+	{ 0, 0, NULL },
+};
+
 int kms_create(int fd, struct kms_driver **out)
 {
-#ifdef HAVE_VMWGFX
-	return vmwgfx_create(fd, out);
-#else
+	unsigned vendor_id, chip_id;
+	int ret, i;
+
+	ret = linux_get_pciid_from_fd(fd, &vendor_id, &chip_id);
+	if (ret)
+		return ret;
+
+	for (i = 0; table[i].func; i++)
+		if (table[i].vendor == vendor_id && table[i].chip == chip_id)
+			return table[i].func(fd, out);
+
 	return -ENOSYS;
-#endif
 }
 
 int kms_get_prop(struct kms_driver *kms, unsigned key, unsigned *out)

@@ -24,46 +24,65 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
+/*
+ * Thanks to krh and jcristau for the tips on
+ * going from fd to pci id via fstat and udev.
+ */
 
 
-#ifndef INTERNAL_H_
-#define INTERNAL_H_
+#include <errno.h>
+#include <stdio.h>
+#include <xf86drm.h>
+#include <sys/stat.h>
 
-#include "libkms.h"
+#include "internal.h"
 
-struct kms_driver
+#define LIBUDEV_I_KNOW_THE_API_IS_SUBJECT_TO_CHANGE
+#include <libudev.h>
+
+int linux_get_pciid_from_fd(int fd, unsigned *vendor_id, unsigned *chip_id)
 {
-	int (*get_prop)(struct kms_driver *kms, const unsigned key,
-			unsigned *out);
-	int (*destroy)(struct kms_driver *kms);
+	struct udev *udev;
+	struct udev_device *device;
+	struct udev_device *parent;
+	const char *pci_id;
+	struct stat buffer;
+	int ret;
 
-	int (*bo_create)(struct kms_driver *kms,
-			 unsigned width,
-			 unsigned height,
-			 enum kms_bo_type type,
-			 const unsigned *attr,
-			 struct kms_bo **out);
-	int (*bo_get_prop)(struct kms_bo *bo, const unsigned key,
-			   unsigned *out);
-	int (*bo_map)(struct kms_bo *bo, void **out);
-	int (*bo_unmap)(struct kms_bo *bo);
-	int (*bo_destroy)(struct kms_bo *bo);
+	ret = fstat(fd, &buffer);
+	if (ret)
+		return -EINVAL;
 
-	int fd;
-};
+	if (!S_ISCHR(buffer.st_mode))
+		return -EINVAL;
 
-struct kms_bo
-{
-	struct kms_driver *kms;
-	void *ptr;
-	size_t size;
-	size_t offset;
-	size_t pitch;
-	unsigned handle;
-};
+	udev = udev_new();
+	if (!udev)
+		return -ENOMEM;
 
-int linux_get_pciid_from_fd(int fd, unsigned *vendor_id, unsigned *chip_id);
+	device = udev_device_new_from_devnum(udev, 'c', buffer.st_rdev);
+	if (!device)
+		goto err_free_udev;
 
-int vmwgfx_create(int fd, struct kms_driver **out);
+	parent = udev_device_get_parent(device);
+	if (!parent)
+		goto err_free_device;
 
-#endif
+	pci_id = udev_device_get_property_value(parent, "PCI_ID");
+	if (!pci_id)
+		goto err_free_device;
+
+	if (sscanf(pci_id, "%x:%x", vendor_id, chip_id) != 2)
+		goto err_free_device;
+
+	udev_device_unref(device);
+	udev_unref(udev);
+
+	return 0;
+
+err_free_device:
+	udev_device_unref(device);
+err_free_udev:
+	udev_unref(udev);
+	return -EINVAL;
+}
