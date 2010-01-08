@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -191,6 +192,7 @@ class SessionRestoreImpl : public NotificationObserver {
 
     if (synchronous_) {
       MessageLoop::current()->Run();
+      ProcessSessionWindows(&windows_);
       delete this;
       return;
     }
@@ -202,6 +204,7 @@ class SessionRestoreImpl : public NotificationObserver {
   }
 
   ~SessionRestoreImpl() {
+    STLDeleteElements(&windows_);
   }
 
   virtual void Observe(NotificationType type,
@@ -238,9 +241,6 @@ class SessionRestoreImpl : public NotificationObserver {
       browser->window()->Show();
     }
 
-    if (synchronous_)
-      MessageLoop::current()->Quit();
-
     if (succeeded) {
       DCHECK(tab_loader_.get());
       // TabLoader delets itself when done loading.
@@ -258,6 +258,16 @@ class SessionRestoreImpl : public NotificationObserver {
 
   void OnGotSession(SessionService::Handle handle,
                     std::vector<SessionWindow*>* windows) {
+    if (synchronous_) {
+      // See comment above windows_ as to why we don't process immediately.
+      windows_.swap(*windows);
+      MessageLoop::current()->Quit();
+      return;
+    }
+    ProcessSessionWindows(windows);
+  }
+
+  void ProcessSessionWindows(std::vector<SessionWindow*>* windows) {
     if (windows->empty()) {
       // Restore was unsuccessful.
       FinishedTabCreation(false, false);
@@ -416,6 +426,12 @@ class SessionRestoreImpl : public NotificationObserver {
 
   // Responsible for loading the tabs.
   scoped_ptr<TabLoader> tab_loader_;
+
+  // When synchronous we run a nested message loop. To avoid creating windows
+  // from the nested message loop (which can make exiting the nested message
+  // loop take a while) we cache the SessionWindows here and create the actual
+  // windows when the nested message loop exits.
+  std::vector<SessionWindow*> windows_;
 
   NotificationRegistrar registrar_;
 };
