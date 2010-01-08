@@ -2480,7 +2480,11 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB, true);
+// TODO(viettrungluu): Temporarily disabled on Mac. Must disable here (not in
+// BWC) so that it also affects the wrench menu. http://crbug.com/31638
+#if !defined(OS_MACOSX)
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, true);
+#endif
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
 #if defined(TOOLKIT_VIEWS)
   command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, true);
@@ -2551,7 +2555,11 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS, false);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS, true);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_CONSOLE, true);
+// TODO(viettrungluu): Temporarily disabled on Mac. Must disable here (not in
+// BWC) so that it also affects the page menu. http://crbug.com/13156
+#if !defined(OS_MACOSX)
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
+#endif
   command_updater_.UpdateCommandEnabled(IDC_SELECT_PROFILE, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER, true);
