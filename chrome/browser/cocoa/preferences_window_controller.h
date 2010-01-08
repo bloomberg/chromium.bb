@@ -133,6 +133,7 @@ class ProfileSyncService;
 - (IBAction)browseDownloadLocation:(id)sender;
 - (IBAction)privacyLearnMore:(id)sender;
 - (IBAction)changeFontAndLanguageSettings:(id)sender;
+- (IBAction)showCertificates:(id)sender;
 
 // When a toolbar button is clicked
 - (IBAction)toolbarButtonSelected:(id)sender;

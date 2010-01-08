@@ -776,6 +776,16 @@ class PrefObserverBridge : public NotificationObserver,
   return paths;
 }
 
+// Launch the Keychain Access app.
+- (void)launchKeychainAccess {
+  NSString* const kKeychainBundleId = @"com.apple.keychainaccess";
+  [[NSWorkspace sharedWorkspace]
+      launchAppWithBundleIdentifier:kKeychainBundleId
+                            options:0L
+     additionalEventParamDescriptor:nil
+                   launchIdentifier:nil];
+}
+
 //-------------------------------------------------------------------------
 // Basics panel
 
@@ -1132,13 +1142,8 @@ const int kDisabledIndex = 1;
 // Called to launch the Keychain Access app to show the user's stored
 // passwords.
 - (IBAction)showSavedPasswords:(id)sender {
-  NSString* const kKeychainBundleId = @"com.apple.keychainaccess";
   [self recordUserAction:"Options_ShowPasswordsExceptions"];
-  [[NSWorkspace sharedWorkspace]
-      launchAppWithBundleIdentifier:kKeychainBundleId
-                            options:0L
-     additionalEventParamDescriptor:nil
-                   launchIdentifier:nil];
+  [self launchKeychainAccess];
 }
 
 // Called to import data from other browsers (Safari, Firefox, etc).
@@ -1332,118 +1337,6 @@ const int kDisabledIndex = 1;
                    GURL(), NEW_WINDOW, PageTransition::LINK);
 }
 
-- (IBAction)toolbarButtonSelected:(id)sender {
-  DCHECK([sender isKindOfClass:[NSToolbarItem class]]);
-  OptionsPage page = [self getPageForToolbarItem:sender];
-  [self displayPreferenceViewForPage:page animate:YES];
-}
-
-// Helper to update the window to display a preferences view for a page.
-- (void)displayPreferenceViewForPage:(OptionsPage)page
-                             animate:(BOOL)animate {
-  NSWindow* prefsWindow = [self window];
-
-  // Needs to go *after* the call to [self window], which triggers
-  // awakeFromNib if necessary.
-  NSView* prefsView = [self getPrefsViewForPage:page];
-  NSView* contentView = [prefsWindow contentView];
-
-  // Normally there is only one view, but if the user clicks really quickly, the
-  // animation could still been running, and the last view is the one that was
-  // animating in.
-  NSArray* subviews = [contentView subviews];
-  NSView* currentPrefsView = nil;
-  if ([subviews count]) {
-    currentPrefsView = [subviews lastObject];
-  }
-
-  // Make sure we aren't being told to display the same thing again.
-  if (currentPrefsView == prefsView) {
-    return;
-  }
-
-  // Remember new options page as current page.
-  if (page != OPTIONS_PAGE_DEFAULT)
-    lastSelectedPage_.SetValue(page);
-
-  // Stop any running animation, and remove any past views that were on the way
-  // out.
-  [animation_ stopAnimation];
-  if ([subviews count]) {
-    RemoveAllButLastView(subviews);
-  }
-
-  NSRect prefsViewFrame = [prefsView frame];
-  NSRect contentViewFrame = [contentView frame];
-  if (animate) {
-    // NSViewAnimation doesn't seem to honor subview resizing as it animates the
-    // Window's frame.  So instead of trying to get the top in the right place,
-    // just set the origin where it should be at the end, and let the fade/size
-    // slide things into the right spot.
-    prefsViewFrame.origin.y = 0.0;
-  } else {
-    // The prefView is anchored to the top of its parent, so set its origin so
-    // that the top is where it should be.  When the window's frame is set, the
-    // origin will be adjusted to keep it in the right spot.
-    prefsViewFrame.origin.y =
-        NSHeight(contentViewFrame) - NSHeight(prefsViewFrame);
-  }
-  [prefsView setFrame:prefsViewFrame];
-
-  // Add the view.
-  [contentView addSubview:prefsView];
-  [prefsWindow setInitialFirstResponder:prefsView];
-
-  // Update the window title.
-  NSToolbarItem* toolbarItem = [self getToolbarItemForPage:page];
-  [prefsWindow setTitle:[toolbarItem label]];
-
-  // Figure out the size of the window.
-  NSRect windowFrame = [prefsWindow frame];
-  CGFloat titleToolbarHeight =
-      NSHeight(windowFrame) - NSHeight(contentViewFrame);
-  windowFrame.size.height =
-      NSHeight(prefsViewFrame) + titleToolbarHeight;
-  DCHECK_GE(NSWidth(windowFrame), NSWidth(prefsViewFrame))
-      << "Initial width set wasn't wide enough.";
-  windowFrame.origin.y = NSMaxY([prefsWindow frame]) - NSHeight(windowFrame);
-
-  // Now change the size.
-  if (animate) {
-    NSDictionary* oldViewOut =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-         currentPrefsView, NSViewAnimationTargetKey,
-         NSViewAnimationFadeOutEffect, NSViewAnimationEffectKey,
-         nil];
-    NSDictionary* newViewIn =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-         prefsView, NSViewAnimationTargetKey,
-         NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
-         nil];
-    NSDictionary* windowResize =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-         prefsWindow, NSViewAnimationTargetKey,
-         [NSValue valueWithRect:windowFrame], NSViewAnimationEndFrameKey,
-         nil];
-    [animation_ setViewAnimations:
-        [NSArray arrayWithObjects:oldViewOut, newViewIn, windowResize, nil]];
-    [animation_ startAnimation];
-  } else {
-    [currentPrefsView removeFromSuperviewWithoutNeedingDisplay];
-    // If not animating, odds are we don't want to display either (because it
-    // is initial window setup).
-    [prefsWindow setFrame:windowFrame display:NO];
-  }
-}
-
-- (void)animationDidEnd:(NSAnimation*)animation {
-  DCHECK_EQ(animation_.get(), animation);
-  // Animation finished, remove everything but the view we just added (it will
-  // be last in the list).
-  NSArray* subviews = [[[self window] contentView] subviews];
-  RemoveAllButLastView(subviews);
-}
-
 // Returns whether the alternate error page checkbox should be checked based
 // on the preference.
 - (BOOL)showAlternateErrorPages {
@@ -1614,6 +1507,14 @@ const int kDisabledIndex = 1;
         contextInfo:nil];
 }
 
+// Called to launch the Keychain Access app to show the user's stored
+// certificates. Note there's no way to script the app to auto-select the
+// certificates.
+- (IBAction)showCertificates:(id)sender {
+  [self recordUserAction:"Options_ManagerCerts"];
+  [self launchKeychainAccess];
+}
+
 //-------------------------------------------------------------------------
 
 // Callback when preferences are changed. |prefName| is the name of the
@@ -1659,6 +1560,118 @@ const int kDisabledIndex = 1;
 // Show the preferences window.
 - (IBAction)showPreferences:(id)sender {
   [self showWindow:sender];
+}
+
+- (IBAction)toolbarButtonSelected:(id)sender {
+  DCHECK([sender isKindOfClass:[NSToolbarItem class]]);
+  OptionsPage page = [self getPageForToolbarItem:sender];
+  [self displayPreferenceViewForPage:page animate:YES];
+}
+
+// Helper to update the window to display a preferences view for a page.
+- (void)displayPreferenceViewForPage:(OptionsPage)page
+                             animate:(BOOL)animate {
+  NSWindow* prefsWindow = [self window];
+
+  // Needs to go *after* the call to [self window], which triggers
+  // awakeFromNib if necessary.
+  NSView* prefsView = [self getPrefsViewForPage:page];
+  NSView* contentView = [prefsWindow contentView];
+
+  // Normally there is only one view, but if the user clicks really quickly, the
+  // animation could still been running, and the last view is the one that was
+  // animating in.
+  NSArray* subviews = [contentView subviews];
+  NSView* currentPrefsView = nil;
+  if ([subviews count]) {
+    currentPrefsView = [subviews lastObject];
+  }
+
+  // Make sure we aren't being told to display the same thing again.
+  if (currentPrefsView == prefsView) {
+    return;
+  }
+
+  // Remember new options page as current page.
+  if (page != OPTIONS_PAGE_DEFAULT)
+    lastSelectedPage_.SetValue(page);
+
+  // Stop any running animation, and remove any past views that were on the way
+  // out.
+  [animation_ stopAnimation];
+  if ([subviews count]) {
+    RemoveAllButLastView(subviews);
+  }
+
+  NSRect prefsViewFrame = [prefsView frame];
+  NSRect contentViewFrame = [contentView frame];
+  if (animate) {
+    // NSViewAnimation doesn't seem to honor subview resizing as it animates the
+    // Window's frame.  So instead of trying to get the top in the right place,
+    // just set the origin where it should be at the end, and let the fade/size
+    // slide things into the right spot.
+    prefsViewFrame.origin.y = 0.0;
+  } else {
+    // The prefView is anchored to the top of its parent, so set its origin so
+    // that the top is where it should be.  When the window's frame is set, the
+    // origin will be adjusted to keep it in the right spot.
+    prefsViewFrame.origin.y =
+        NSHeight(contentViewFrame) - NSHeight(prefsViewFrame);
+  }
+  [prefsView setFrame:prefsViewFrame];
+
+  // Add the view.
+  [contentView addSubview:prefsView];
+  [prefsWindow setInitialFirstResponder:prefsView];
+
+  // Update the window title.
+  NSToolbarItem* toolbarItem = [self getToolbarItemForPage:page];
+  [prefsWindow setTitle:[toolbarItem label]];
+
+  // Figure out the size of the window.
+  NSRect windowFrame = [prefsWindow frame];
+  CGFloat titleToolbarHeight =
+      NSHeight(windowFrame) - NSHeight(contentViewFrame);
+  windowFrame.size.height =
+      NSHeight(prefsViewFrame) + titleToolbarHeight;
+  DCHECK_GE(NSWidth(windowFrame), NSWidth(prefsViewFrame))
+      << "Initial width set wasn't wide enough.";
+  windowFrame.origin.y = NSMaxY([prefsWindow frame]) - NSHeight(windowFrame);
+
+  // Now change the size.
+  if (animate) {
+    NSDictionary* oldViewOut =
+        [NSDictionary dictionaryWithObjectsAndKeys:
+         currentPrefsView, NSViewAnimationTargetKey,
+         NSViewAnimationFadeOutEffect, NSViewAnimationEffectKey,
+         nil];
+    NSDictionary* newViewIn =
+        [NSDictionary dictionaryWithObjectsAndKeys:
+         prefsView, NSViewAnimationTargetKey,
+         NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
+         nil];
+    NSDictionary* windowResize =
+        [NSDictionary dictionaryWithObjectsAndKeys:
+         prefsWindow, NSViewAnimationTargetKey,
+         [NSValue valueWithRect:windowFrame], NSViewAnimationEndFrameKey,
+         nil];
+    [animation_ setViewAnimations:
+        [NSArray arrayWithObjects:oldViewOut, newViewIn, windowResize, nil]];
+    [animation_ startAnimation];
+  } else {
+    [currentPrefsView removeFromSuperviewWithoutNeedingDisplay];
+    // If not animating, odds are we don't want to display either (because it
+    // is initial window setup).
+    [prefsWindow setFrame:windowFrame display:NO];
+  }
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  DCHECK_EQ(animation_.get(), animation);
+  // Animation finished, remove everything but the view we just added (it will
+  // be last in the list).
+  NSArray* subviews = [[[self window] contentView] subviews];
+  RemoveAllButLastView(subviews);
 }
 
 - (void)switchToPage:(OptionsPage)page animate:(BOOL)animate {
