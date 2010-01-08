@@ -40,6 +40,7 @@ struct create_record
 };
 
 static struct create_record table[] = {
+	{ 0x8086, 0x2a42, intel_create }, /* i965 */
 #ifdef HAVE_VMWGFX
 	{ 0x15ad, 0x0405, vmwgfx_create }, /* VMware vGPU */
 #endif

@@ -66,4 +66,6 @@ int linux_get_pciid_from_fd(int fd, unsigned *vendor_id, unsigned *chip_id);
 
 int vmwgfx_create(int fd, struct kms_driver **out);
 
+int intel_create(int fd, struct kms_driver **out);
+
 #endif

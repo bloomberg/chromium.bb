@@ -10,6 +10,7 @@ libkms_la_LIBADD = \
 
 libkms_la_SOURCES = \
 	linux.c \
+	intel.c \
 	api.c
 
 if HAVE_VMWGFX
