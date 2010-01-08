@@ -44,6 +44,7 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual void ContinueDraggingDetachedTab();
   virtual ThemeProvider* GetThemeProviderForFrame() const;
   virtual bool AlwaysUseNativeFrame() const;
+  virtual views::View* GetFrameView() const;
 
  protected:
   // Overridden from views::WindowWin:

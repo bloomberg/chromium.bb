@@ -63,6 +63,9 @@ class BrowserFrame {
   // if there are no themes applied on Vista, or if there are themes applied and
   // this browser window is an app or popup.
   virtual bool AlwaysUseNativeFrame() const = 0;
+
+  // Returns the NonClientFrameView of this frame.
+  virtual views::View* GetFrameView() const = 0;
 };
 
 #endif  // CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_H_

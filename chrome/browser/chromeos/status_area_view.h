@@ -12,7 +12,7 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/view.h"
 
-class Browser;
+class BrowserView;
 
 namespace chromeos {
 
@@ -34,9 +34,7 @@ class StatusAreaView : public views::View,
     OPEN_TABS_ON_RIGHT
   };
 
-  // NOTE: this takes the handle to the window as browser->window() may not
-  // have been assigned yet.
-  StatusAreaView(Browser* browser, gfx::NativeWindow window);
+  explicit StatusAreaView(BrowserView* browser_view);
   virtual ~StatusAreaView() {}
 
   void Init();
@@ -48,7 +46,6 @@ class StatusAreaView : public views::View,
   // views::View* overrides.
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
 
   static OpenTabsMode GetOpenTabsMode();
   static void SetOpenTabsMode(OpenTabsMode mode);
@@ -67,11 +64,7 @@ class StatusAreaView : public views::View,
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // The browser window that owns us.
-  Browser* browser_;
-
-  // Browser's NativeWindow. See description above constructor as to why this
-  // is cached.
-  gfx::NativeWindow window_;
+  BrowserView* browser_view_;
 
   ClockMenuButton* clock_view_;
   LanguageMenuButton* language_view_;

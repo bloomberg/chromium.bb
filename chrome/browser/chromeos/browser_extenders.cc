@@ -84,12 +84,11 @@ class NormalExtender : public BrowserExtender,
     Browser* browser = browser_view()->browser();
     compact_location_bar_.reset(
         new chromeos::CompactLocationBar(browser_view()));
-    compact_navigation_bar_ = new chromeos::CompactNavigationBar(browser);
+    compact_navigation_bar_ =
+        new chromeos::CompactNavigationBar(browser_view());
     browser_view()->AddChildView(compact_navigation_bar_);
     compact_navigation_bar_->Init();
-    status_area_ = new chromeos::StatusAreaView(
-        browser,
-        browser_view()->GetWindow()->GetNativeWindow());
+    status_area_ = new chromeos::StatusAreaView(browser_view());
     browser_view()->AddChildView(status_area_);
     status_area_->Init();
 

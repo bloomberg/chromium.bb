@@ -124,6 +124,10 @@ bool BrowserFrameGtk::AlwaysUseNativeFrame() const {
   return false;
 }
 
+views::View* BrowserFrameGtk::GetFrameView() const {
+  return browser_frame_view_;
+}
+
 ThemeProvider* BrowserFrameGtk::GetThemeProvider() const {
   return profile_->GetThemeProvider();
 }

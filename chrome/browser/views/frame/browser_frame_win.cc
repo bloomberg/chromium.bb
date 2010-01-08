@@ -107,6 +107,10 @@ bool BrowserFrameWin::AlwaysUseNativeFrame() const {
       win_util::ShouldUseVistaFrame());
 }
 
+views::View* BrowserFrameWin::GetFrameView() const {
+  return browser_frame_view_;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::WindowWin overrides:
 

@@ -20,6 +20,8 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/event_utils.h"
+#include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/theme_background.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/button_dropdown.h"
@@ -47,8 +49,8 @@ static const int kURLPadding = 2;
 ////////////////////////////////////////////////////////////////////////////////
 // CompactNavigationBar public:
 
-CompactNavigationBar::CompactNavigationBar(Browser* browser)
-    : browser_(browser),
+CompactNavigationBar::CompactNavigationBar(BrowserView* browser_view)
+    : browser_view_(browser_view),
       initialized_(false) {
   SetFocusable(true);
 }
@@ -61,14 +63,14 @@ CompactNavigationBar::~CompactNavigationBar() {
 void CompactNavigationBar::Init() {
   DCHECK(!initialized_);
   initialized_ = true;
-
-  browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
-  browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
+  Browser* browser = browser_view_->browser();
+  browser->command_updater()->AddCommandObserver(IDC_BACK, this);
+  browser->command_updater()->AddCommandObserver(IDC_FORWARD, this);
 
   back_menu_model_.reset(new BackForwardMenuModel(
-      browser_, BackForwardMenuModel::BACKWARD_MENU));
+      browser, BackForwardMenuModel::BACKWARD_MENU));
   forward_menu_model_.reset(new BackForwardMenuModel(
-      browser_, BackForwardMenuModel::FORWARD_MENU));
+      browser, BackForwardMenuModel::FORWARD_MENU));
 
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
 
@@ -104,8 +106,8 @@ void CompactNavigationBar::Init() {
 
   // URL bar construction.
   location_entry_.reset(new AutocompleteEditViewGtk(
-      this, browser_->toolbar_model(), browser_->profile(),
-      browser_->command_updater(), false, this));
+      this, browser->toolbar_model(), browser->profile(),
+      browser->command_updater(), false, this));
   location_entry_->Init();
   gtk_widget_show_all(location_entry_->widget());
   gtk_widget_hide(location_entry_->widget());
@@ -114,6 +116,8 @@ void CompactNavigationBar::Init() {
   AddChildView(location_entry_view_);
   location_entry_view_->set_focus_view(this);
   location_entry_view_->Attach(location_entry_->widget());
+
+  set_background(new ThemeBackground(browser_view_));
 }
 
 void CompactNavigationBar::Focus() {
@@ -176,19 +180,7 @@ void CompactNavigationBar::Layout() {
 }
 
 void CompactNavigationBar::Paint(gfx::Canvas* canvas) {
-  ThemeProvider* theme = browser_->profile()->GetThemeProvider();
-
-  // Fill the background.
-  int image_name;
-  if (browser_->window()->IsActive()) {
-    image_name = browser_->profile()->IsOffTheRecord() ?
-                 IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
-  } else {
-    image_name = browser_->profile()->IsOffTheRecord() ?
-                 IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
-  }
-  SkBitmap* background = theme->GetBitmapNamed(image_name);
-  canvas->TileImageInt(*background, 0, 0, width(), height());
+  PaintBackground(canvas);
 
   // Draw a white box around the edit field so that it looks larger. This is
   // kind of what the default GTK location bar does, although they have a
@@ -216,7 +208,7 @@ void CompactNavigationBar::ButtonPressed(
       location_entry_->RevertAll();
       break;
   }
-  browser_->ExecuteCommandWithDisposition(
+  browser_view_->browser()->ExecuteCommandWithDisposition(
       id, event_utils::DispositionFromEventFlags(sender->mouse_event_flags()));
 }
 
@@ -289,21 +281,22 @@ void CompactNavigationBar::EnabledStateChangedForCommand(int id, bool enabled) {
 
 void CompactNavigationBar::AddTabWithURL(const GURL& url,
                                          PageTransition::Type transition) {
+  Browser* browser = browser_view_->browser();
   switch (StatusAreaView::GetOpenTabsMode()) {
     case StatusAreaView::OPEN_TABS_ON_LEFT: {
       // Add the new tab at the first non-pinned location.
-      int index = browser_->tabstrip_model()->IndexOfFirstNonPinnedTab();
-      browser_->AddTabWithURL(url, GURL(), transition,
+      int index = browser->tabstrip_model()->IndexOfFirstNonPinnedTab();
+      browser->AddTabWithURL(url, GURL(), transition,
                               true, index, true, NULL);
       break;
     }
     case StatusAreaView::OPEN_TABS_CLOBBER: {
-      browser_->GetSelectedTabContents()->controller().LoadURL(
+      browser->GetSelectedTabContents()->controller().LoadURL(
           url, GURL(), transition);
       break;
     }
     case StatusAreaView::OPEN_TABS_ON_RIGHT: {
-      browser_->AddTabWithURL(url, GURL(), transition, true, -1, true, NULL);
+      browser->AddTabWithURL(url, GURL(), transition, true, -1, true, NULL);
       break;
     }
   }

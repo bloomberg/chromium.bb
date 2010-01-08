@@ -19,12 +19,9 @@
 #include "chrome/browser/chromeos/network_menu_button.h"
 #include "chrome/browser/chromeos/power_menu_button.h"
 #include "chrome/browser/chromeos/status_area_button.h"
-#if !defined(TOOLKIT_VIEWS)
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#else
-#include "chrome/browser/views/frame/browser_view.h"
-#endif
 #include "chrome/browser/profile.h"
+#include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/theme_background.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/chromium_strings.h"
@@ -32,6 +29,7 @@
 #include "grit/theme_resources.h"
 #include "views/controls/menu/menu.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/window/window.h"
 
 namespace chromeos {
 
@@ -58,12 +56,7 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
   explicit OptionsMenuModel(Browser* browser)
       : SimpleMenuModel(this),
         browser_(browser) {
-#if defined(TOOLKIT_VIEWS)
     AddItemWithStringId(IDC_COMPACT_NAVBAR, IDS_COMPACT_NAVBAR);
-#else
-    AddItem(static_cast<int>(CREATE_NEW_WINDOW),
-            ASCIIToUTF16("New window"));
-#endif
     AddSeparator();
 
     AddItem(static_cast<int>(StatusAreaView::OPEN_TABS_ON_LEFT),
@@ -90,21 +83,9 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
   }
   virtual void ExecuteCommand(int command_id) {
     switch (command_id) {
-#if defined(TOOLKIT_VIEWS)
       case IDC_COMPACT_NAVBAR:
         browser_->ExecuteCommand(command_id);
         break;
-#else
-      case CREATE_NEW_WINDOW:
-        // Reach into the GTK browser window and enable the flag to create the
-        // next window as a compact nav one.
-        // TODO(brettw) this is an evil hack, and is here so this can be tested.
-        // Remove it eventually.
-        static_cast<BrowserWindowGtk*>(browser_->window())->
-            set_next_window_should_use_compact_nav();
-        browser_->ExecuteCommand(IDC_NEW_WINDOW);
-        break;
-#endif
       case StatusAreaView::OPEN_TABS_ON_LEFT:
       case StatusAreaView::OPEN_TABS_CLOBBER:
       case StatusAreaView::OPEN_TABS_ON_RIGHT:
@@ -126,10 +107,8 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
 StatusAreaView::OpenTabsMode StatusAreaView::open_tabs_mode_ =
     StatusAreaView::OPEN_TABS_ON_LEFT;
 
-StatusAreaView::StatusAreaView(Browser* browser,
-                               gfx::NativeWindow window)
-    : browser_(browser),
-      window_(window),
+StatusAreaView::StatusAreaView(BrowserView* browser_view)
+    : browser_view_(browser_view),
       clock_view_(NULL),
       language_view_(NULL),
       network_view_(NULL),
@@ -138,14 +117,14 @@ StatusAreaView::StatusAreaView(Browser* browser,
 }
 
 void StatusAreaView::Init() {
-  ThemeProvider* theme = browser_->profile()->GetThemeProvider();
-
+  ThemeProvider* theme = browser_view_->frame()->GetThemeProviderForFrame();
+  Browser* browser = browser_view_->browser();
   // Language.
-  language_view_ = new LanguageMenuButton(browser_);
+  language_view_ = new LanguageMenuButton(browser);
   AddChildView(language_view_);
 
   // Clock.
-  clock_view_ = new ClockMenuButton(browser_);
+  clock_view_ = new ClockMenuButton(browser);
   AddChildView(clock_view_);
 
   // Battery.
@@ -153,23 +132,21 @@ void StatusAreaView::Init() {
   AddChildView(battery_view_);
 
   // Network.
-  network_view_ = new NetworkMenuButton(window_);
+  network_view_ = new NetworkMenuButton(
+      browser_view_->GetWindow()->GetNativeWindow());
+
   AddChildView(network_view_);
 
   // Menu.
   menu_view_ = new StatusAreaButton(this);
   menu_view_->SetIcon(*theme->GetBitmapNamed(IDR_STATUSBAR_MENU));
   AddChildView(menu_view_);
+
+  set_background(new ThemeBackground(browser_view_));
 }
 
 void StatusAreaView::Update() {
-#if defined(TOOLKIT_VIEWS)
-  // We only turn on/off the menu for views because
-  // gtk version will not hide the toolbar in compact
-  // navigation bar mode.
-  menu_view_->SetVisible(
-      !browser_->window()->IsToolbarVisible());
-#endif
+  menu_view_->SetVisible(!browser_view_->IsToolbarVisible());
 }
 
 gfx::Size StatusAreaView::GetPreferredSize() {
@@ -214,26 +191,6 @@ void StatusAreaView::Layout() {
   }
 }
 
-void StatusAreaView::Paint(gfx::Canvas* canvas) {
-  ThemeProvider* theme = browser_->profile()->GetThemeProvider();
-
-  // Fill the background.
-  int image_name;
-  if (browser_->window()->IsActive()) {
-    image_name = browser_->profile()->IsOffTheRecord() ?
-                 IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
-  } else {
-    image_name = browser_->profile()->IsOffTheRecord() ?
-                 IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
-  }
-  SkBitmap* background = theme->GetBitmapNamed(image_name);
-  canvas->TileImageInt(
-      *background,
-      0, kCustomFrameBackgroundVerticalOffset,
-      0, 0,
-      width(), height());
-}
-
 // static
 StatusAreaView::OpenTabsMode StatusAreaView::GetOpenTabsMode() {
   return open_tabs_mode_;
@@ -248,7 +205,7 @@ void StatusAreaView::CreateAppMenu() {
   if (app_menu_contents_.get())
     return;
 
-  options_menu_contents_.reset(new OptionsMenuModel(browser_));
+  options_menu_contents_.reset(new OptionsMenuModel(browser_view_->browser()));
 
   app_menu_contents_.reset(new menus::SimpleMenuModel(this));
   app_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
@@ -291,14 +248,16 @@ void StatusAreaView::CreateAppMenu() {
 
 bool StatusAreaView::IsCommandIdChecked(int command_id) const {
   if (command_id == IDC_SHOW_BOOKMARK_BAR)
-    return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+    return browser_view_->browser()->profile()->GetPrefs()->GetBoolean(
+        prefs::kShowBookmarkBar);
   return false;
 }
 
 bool StatusAreaView::IsCommandIdEnabled(int command_id) const {
+  Browser* browser = browser_view_->browser();
   if (command_id == IDC_RESTORE_TAB)
-    return browser_->CanRestoreTab();
-  return browser_->command_updater()->IsCommandEnabled(command_id);
+    return browser->CanRestoreTab();
+  return browser->command_updater()->IsCommandEnabled(command_id);
 }
 
 bool StatusAreaView::GetAcceleratorForCommandId(
@@ -308,7 +267,7 @@ bool StatusAreaView::GetAcceleratorForCommandId(
 }
 
 void StatusAreaView::ExecuteCommand(int command_id) {
-  browser_->ExecuteCommand(command_id);
+  browser_view_->browser()->ExecuteCommand(command_id);
 }
 
 void StatusAreaView::RunMenu(views::View* source, const gfx::Point& pt) {

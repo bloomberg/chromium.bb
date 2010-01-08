@@ -33,6 +33,7 @@ class BrowserFrameGtk : public BrowserFrame,
   virtual void ContinueDraggingDetachedTab();
   virtual ThemeProvider* GetThemeProviderForFrame() const;
   virtual bool AlwaysUseNativeFrame() const;
+  virtual views::View* GetFrameView() const;
 
   // Overridden from views::Widget:
   virtual ThemeProvider* GetThemeProvider() const;
