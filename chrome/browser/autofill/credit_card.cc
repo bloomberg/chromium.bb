@@ -113,7 +113,7 @@ string16 CreditCard::GetFieldText(const AutoFillType& type) const {
       string16 year = Expiration2DigitYearAsString();
       if (!month.empty() && !year.empty())
         return month + ASCIIToUTF16("/") + year;
-      return EmptyString16();
+      return string16();
     }
 
     case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR: {
@@ -121,7 +121,7 @@ string16 CreditCard::GetFieldText(const AutoFillType& type) const {
       string16 year = Expiration4DigitYearAsString();
       if (!month.empty() && !year.empty())
         return month + ASCIIToUTF16("/") + year;
-      return EmptyString16();
+      return string16();
     }
 
     case CREDIT_CARD_TYPE:
@@ -135,7 +135,7 @@ string16 CreditCard::GetFieldText(const AutoFillType& type) const {
 
     default:
       // ComputeDataPresentForArray will hit this repeatedly.
-      return EmptyString16();
+      return string16();
   }
 }
 
@@ -186,7 +186,7 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
 
 string16 CreditCard::ExpirationMonthAsString() const {
   if (expiration_month_ == 0)
-    return EmptyString16();
+    return string16();
 
   string16 month = IntToString16(expiration_month_);
   if (expiration_month_ >= 10)
@@ -199,14 +199,14 @@ string16 CreditCard::ExpirationMonthAsString() const {
 
 string16 CreditCard::Expiration4DigitYearAsString() const {
   if (expiration_year_ == 0)
-    return EmptyString16();
+    return string16();
 
   return IntToString16(Expiration4DigitYear());
 }
 
 string16 CreditCard::Expiration2DigitYearAsString() const {
   if (expiration_year_ == 0)
-    return EmptyString16();
+    return string16();
 
   return IntToString16(Expiration2DigitYear());
 }

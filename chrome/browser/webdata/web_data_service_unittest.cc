@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,10 +105,7 @@ class WebDataServiceTest : public testing::Test {
                        const string16& value,
                        std::vector<webkit_glue::FormField>* form_fields) {
     form_fields->push_back(
-        webkit_glue::FormField(EmptyString16(),
-                               name,
-                               EmptyString16(),
-                               value));
+        webkit_glue::FormField(string16(), name, string16(), value));
   }
 
   MessageLoopForUI message_loop_;
@@ -156,7 +153,7 @@ TEST_F(WebDataServiceTest, AutofillAdd) {
   WebDataService::Handle handle;
   static const int limit = 10;
   handle = wds_->GetFormValuesForElementName(
-      name1_, EmptyString16(), limit, &consumer);
+      name1_, string16(), limit, &consumer);
 
   // The message loop will exit when the consumer is called.
   MessageLoop::current()->Run();

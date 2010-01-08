@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
   found_entry_ = AppCacheEntry();
   found_fallback_entry_ = AppCacheEntry();
   found_cache_id_ = kNoCacheId;
-  found_manifest_url_ = GURL::EmptyGURL();
+  found_manifest_url_ = GURL();
   found_network_namespace_ = false;
 
   if (is_main_request_)

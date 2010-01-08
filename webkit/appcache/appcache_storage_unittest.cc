@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,15 +37,13 @@ TEST_F(AppCacheStorageTest, AddRemoveCache) {
 
 TEST_F(AppCacheStorageTest, AddRemoveGroup) {
   MockAppCacheService service;
-  scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, GURL::EmptyGURL(), 111);
+  scoped_refptr<AppCacheGroup> group = new AppCacheGroup(&service, GURL(), 111);
 
-  EXPECT_EQ(group.get(),
-            service.storage()->working_set()->GetGroup(GURL::EmptyGURL()));
+  EXPECT_EQ(group.get(), service.storage()->working_set()->GetGroup(GURL()));
 
   service.storage()->working_set()->RemoveGroup(group);
 
-  EXPECT_TRUE(!service.storage()->working_set()->GetGroup(GURL::EmptyGURL()));
+  EXPECT_TRUE(!service.storage()->working_set()->GetGroup(GURL()));
 
   // Removing non-existing group from service should not fail.
   MockAppCacheService dummy;

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -611,9 +611,9 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
   // should be grouped together.
   webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
       new webkit_glue::MediaResourceLoaderBridgeFactory(
-          GURL::EmptyGURL(),  // referrer
-          "null",             // frame origin
-          "null",             // main_frame_origin
+          GURL(),  // referrer
+          "null",  // frame origin
+          "null",  // main_frame_origin
           base::GetCurrentProcId(),
           appcache::kNoHostId,
           0);

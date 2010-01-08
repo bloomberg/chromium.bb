@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,14 +47,14 @@ static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
 
   if (template_html.empty()) {
     NOTREACHED() << "unable to load template. ID: " << IDR_NOTIFICATION_HTML;
-    return EmptyString16();
+    return string16();
   }
 
   std::vector<string16> subst;
   if (icon_url.is_valid())
     subst.push_back(UTF8ToUTF16(icon_url.spec()));
   else
-    subst.push_back(EmptyString16());
+    subst.push_back(string16());
 
   subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(title))));
   subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(body))));
@@ -62,7 +62,7 @@ static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
   if (icon_url.is_valid()) {
     subst.push_back(ASCIIToUTF16("margin-left:56px;"));
   } else {
-    subst.push_back(EmptyString16());
+    subst.push_back(string16());
   }
 
   string16 format_string = ASCIIToUTF16("data:text/html;charset=utf-8,"

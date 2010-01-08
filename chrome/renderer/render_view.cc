@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1870,9 +1870,9 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   // TODO(hclam): obtain the following parameters from |client|.
   webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
       new webkit_glue::MediaResourceLoaderBridgeFactory(
-          GURL::EmptyGURL(),  // referrer
-          "null",             // frame origin
-          "null",             // main_frame_origin
+          GURL(),  // referrer
+          "null",  // frame origin
+          "null",  // main_frame_origin
           base::GetCurrentProcId(),
           appcache::kNoHostId,
           routing_id());
@@ -2832,12 +2832,12 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
     // we fetch alternate error pages over HTTP, we would be allowing a network
     // attacker to manipulate the contents of the response if we tried to use
     // the link doctor here.
-    return GURL::EmptyGURL();
+    return GURL();
   }
 
   // Grab the base URL from the browser process.
   if (!alternate_error_page_url_.is_valid())
-    return GURL::EmptyGURL();
+    return GURL();
 
   // Strip query params from the failed URL.
   GURL::Replacements remove_params;

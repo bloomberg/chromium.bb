@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,8 +190,8 @@ class HistoryService : public CancelableRequestProvider,
 
   // For adding pages to history where no tracking information can be done.
   void AddPage(const GURL& url) {
-    AddPage(url, NULL, 0, GURL::EmptyGURL(), PageTransition::LINK,
-            history::RedirectList(), false);
+    AddPage(url, NULL, 0, GURL(), PageTransition::LINK, history::RedirectList(),
+            false);
   }
 
   // Sets the title for the given page. The page should be in history. If it

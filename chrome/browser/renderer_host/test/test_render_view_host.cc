@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,11 +49,11 @@ void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {
 
   params.page_id = page_id;
   params.url = url;
-  params.referrer = GURL::EmptyGURL();
+  params.referrer = GURL();
   params.transition = PageTransition::LINK;
   params.redirects = std::vector<GURL>();
   params.should_update_history = true;
-  params.searchable_form_url = GURL::EmptyGURL();
+  params.searchable_form_url = GURL();
   params.searchable_form_encoding = std::string();
   params.password_form = PasswordForm();
   params.security_info = std::string();

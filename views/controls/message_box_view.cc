@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ MessageBoxView::MessageBoxView(int dialog_flags,
 std::wstring MessageBoxView::GetInputText() {
   if (prompt_field_)
     return UTF16ToWideHack(prompt_field_->text());
-  return EmptyWString();
+  return std::wstring();
 }
 
 bool MessageBoxView::IsCheckBoxSelected() {

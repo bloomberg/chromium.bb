@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -549,7 +549,7 @@ void PluginProcessHost::OnGetCookies(uint32 request_context,
     *cookies = context->cookie_store()->GetCookies(url);
   } else {
     DLOG(ERROR) << "Could not serve plugin cookies request.";
-    *cookies = EmptyString();
+    cookies->clear();
   }
 }
 

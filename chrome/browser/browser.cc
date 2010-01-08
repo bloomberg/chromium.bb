@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -512,7 +512,7 @@ void Browser::FormatTitleForDisplay(string16* title) {
   size_t match_index;
   while ((match_index = title->find(L'\n', current_index)) !=
          std::wstring::npos) {
-    title->replace(match_index, 1, EmptyString16());
+    title->replace(match_index, 1, string16());
     current_index = match_index;
   }
 }
@@ -2644,7 +2644,7 @@ void Browser::UpdateCommandsForTabState() {
   // page) from the NavigationEntry because its reflects their origin rather
   // than the display one (returned by GetURL) which may be different (like
   // having "view-source:" on the front).
-  GURL savable_url = (active_entry) ? active_entry->url() : GURL::EmptyGURL();
+  GURL savable_url = (active_entry) ? active_entry->url() : GURL();
 
   command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE,
       SavePackage::IsSavableURL(savable_url));

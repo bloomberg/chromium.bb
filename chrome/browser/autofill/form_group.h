@@ -49,7 +49,7 @@ class FormGroup {
 
   // Returns the label for this FormGroup item. This should be overridden for
   // form group items that implement a label.
-  virtual string16 Label() const { return EmptyString16(); }
+  virtual string16 Label() const { return string16(); }
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_FORM_GROUP_H_

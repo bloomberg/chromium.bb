@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ namespace {
 std::wstring GetProfileIdFromPath(const FilePath& profile_path) {
   // Return empty string if profile_path is empty
   if (profile_path.empty())
-    return EmptyWString();
+    return std::wstring();
 
   FilePath default_user_data_dir;
   // Return empty string if profile_path is in default user data
@@ -44,7 +44,7 @@ std::wstring GetProfileIdFromPath(const FilePath& profile_path) {
   if (chrome::GetDefaultUserDataDirectory(&default_user_data_dir) &&
       profile_path.DirName() == default_user_data_dir &&
       profile_path.BaseName().value() == chrome::kNotSignedInProfile)
-    return EmptyWString();
+    return std::wstring();
 
   // Get joined basenames of user data dir and profile.
   std::wstring basenames = profile_path.DirName().BaseName().value() +

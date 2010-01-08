@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -439,9 +439,8 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
       // different (like having "view-source:" on the front).
       NavigationEntry* active_entry =
           source_tab_contents_->controller().GetActiveEntry();
-      GURL savable_url = (active_entry) ? active_entry->url() :
-                                          GURL::EmptyGURL();
-      return SavePackage::IsSavableURL(savable_url);
+      return SavePackage::IsSavableURL(
+          (active_entry) ? active_entry->url() : GURL());
     }
 
     case IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB:

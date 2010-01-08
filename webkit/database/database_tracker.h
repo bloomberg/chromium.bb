@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,7 +119,7 @@ class DatabaseTracker
 
   class CachedOriginInfo : public OriginInfo {
    public:
-    CachedOriginInfo() : OriginInfo(EmptyString16(), 0, 0) {}
+    CachedOriginInfo() : OriginInfo(string16(), 0, 0) {}
     void SetOrigin(const string16& origin) { origin_ = origin; }
     void SetQuota(int64 new_quota) { quota_ = new_quota; }
     void SetDatabaseSize(const string16& database_name, int64 new_size) {

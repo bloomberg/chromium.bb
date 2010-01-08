@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ TEST(ManifestParserTest, NoManifestUrl) {
   const std::string kData("CACHE MANIFEST\r"
     "relative/tobase.com\r"
     "http://absolute.com/addme.com");
-  const GURL kUrl = GURL::EmptyGURL();
+  const GURL kUrl;
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
   EXPECT_TRUE(manifest.explicit_urls.empty());
   EXPECT_TRUE(manifest.fallback_namespaces.empty());

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
 
   // Starts an update for a doc loaded from an application cache.
   void StartUpdateWithHost(AppCacheHost* host)  {
-    StartUpdateWithNewMasterEntry(host, GURL::EmptyGURL());
+    StartUpdateWithNewMasterEntry(host, GURL());
   }
 
   // Starts an update for a doc loaded using HTTP GET or equivalent with

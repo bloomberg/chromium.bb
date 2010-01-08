@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,12 +54,12 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   // if the resulting behavior is just too insane).
   if (is_selection_pending()) {
     service_->storage()->CancelDelegateCallbacks(this);
-    pending_selected_manifest_url_ = GURL::EmptyGURL();
+    pending_selected_manifest_url_ = GURL();
     pending_selected_cache_id_ = kNoCacheId;
   } else if (associated_cache()) {
     AssociateCache(NULL);
   }
-  new_master_entry_url_ = GURL::EmptyGURL();
+  new_master_entry_url_ = GURL();
 
   // 6.9.6 The application cache selection algorithm.
   // The algorithm is started here and continues in FinishCacheSelection,
@@ -93,7 +93,7 @@ void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
                                       int64 cache_document_was_loaded_from) {
   service_->storage()->MarkEntryAsForeign(
       document_url, cache_document_was_loaded_from);
-  SelectCache(document_url, kNoCacheId, GURL::EmptyGURL());
+  SelectCache(document_url, kNoCacheId, GURL());
 }
 
 void AppCacheHost::GetStatusWithCallback(GetStatusCallback* callback,
@@ -236,7 +236,7 @@ void AppCacheHost::LoadOrCreateGroup(const GURL& manifest_url) {
 void AppCacheHost::OnGroupLoaded(AppCacheGroup* group,
                                 const GURL& manifest_url) {
   DCHECK(manifest_url == pending_selected_manifest_url_);
-  pending_selected_manifest_url_ = GURL::EmptyGURL();
+  pending_selected_manifest_url_ = GURL();
   FinishCacheSelection(NULL, group);
 }
 

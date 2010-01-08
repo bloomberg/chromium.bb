@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -256,7 +256,7 @@ void BugReportView::ItemChanged(views::Combobox* combobox,
   description_text_->SetReadOnly(is_phishing_report);
   if (is_phishing_report) {
     old_report_text_ = UTF16ToWide(description_text_->text());
-    description_text_->SetText(EmptyString16());
+    description_text_->SetText(string16());
   } else if (!old_report_text_.empty()) {
     description_text_->SetText(WideToUTF16Hack(old_report_text_));
     old_report_text_.clear();

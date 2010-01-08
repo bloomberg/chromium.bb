@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1957,7 +1957,7 @@ void TabStripGtk::OnNewTabClicked(GtkWidget* widget, TabStripGtk* tabstrip) {
       // a search query if necessary.
       AutocompleteController controller(tabstrip->model_->profile());
       controller.Start(UTF8ToWide(selection_text),
-                       EmptyWString(),  // desired_tld
+                       std::wstring(),  // desired_tld
                        true,            // prevent_inline_autocomplete
                        false,           // prefer_keyword
                        true);           // synchronous_only

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,9 +123,8 @@ void ToolbarModel::GetIconHoverText(std::wstring* text) {
   switch (ssl.security_style()) {
     case SECURITY_STYLE_AUTHENTICATED: {
       if (ssl.has_mixed_content()) {
-        SSLErrorInfo error_info =
-            SSLErrorInfo::CreateError(SSLErrorInfo::MIXED_CONTENTS,
-                                      NULL, GURL::EmptyGURL());
+        SSLErrorInfo error_info = SSLErrorInfo::CreateError(
+            SSLErrorInfo::MIXED_CONTENTS, NULL, GURL());
         text->assign(error_info.short_description());
       } else {
         DCHECK(entry->url().has_host());
@@ -191,11 +190,11 @@ void ToolbarModel::CreateErrorText(NavigationEntry* entry, std::wstring* text) {
                                        &errors);
   if (ssl.has_mixed_content()) {
     errors.push_back(SSLErrorInfo::CreateError(SSLErrorInfo::MIXED_CONTENTS,
-                                               NULL, GURL::EmptyGURL()));
+                                               NULL, GURL()));
   }
   if (ssl.has_unsafe_content()) {
     errors.push_back(SSLErrorInfo::CreateError(SSLErrorInfo::UNSAFE_CONTENTS,
-                                               NULL, GURL::EmptyGURL()));
+                                               NULL, GURL()));
   }
 
   int error_count = static_cast<int>(errors.size());

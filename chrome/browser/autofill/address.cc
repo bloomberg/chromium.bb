@@ -89,7 +89,7 @@ string16 Address::GetFieldText(const AutoFillType& type) const {
   if (field_type == GetCountryType())
     return country();
 
-  return EmptyString16();
+  return string16();
 }
 
 void Address::SetInfo(const AutoFillType& type, const string16& value) {

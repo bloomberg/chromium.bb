@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -224,19 +224,19 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
 
   // Javascript URLs have no site.
   test_url = GURL("javascript:foo();");
-  EXPECT_EQ(GURL::EmptyGURL(), SiteInstance::GetSiteForURL(test_url));
+  EXPECT_EQ(GURL(), SiteInstance::GetSiteForURL(test_url));
 
   test_url = GURL("http://foo/a.html");
   EXPECT_EQ(GURL("http://foo"), SiteInstance::GetSiteForURL(test_url));
 
   test_url = GURL("file:///C:/Downloads/");
-  EXPECT_EQ(GURL::EmptyGURL(), SiteInstance::GetSiteForURL(test_url));
+  EXPECT_EQ(GURL(), SiteInstance::GetSiteForURL(test_url));
 
   // TODO(creis): Do we want to special case file URLs to ensure they have
   // either no site or a special "file://" site?  We currently return
   // "file://home/" as the site, which seems broken.
   // test_url = GURL("file://home/");
-  // EXPECT_EQ(GURL::EmptyGURL(), SiteInstance::GetSiteForURL(test_url));
+  // EXPECT_EQ(GURL(), SiteInstance::GetSiteForURL(test_url));
 }
 
 // Test of distinguishing URLs from different sites.  Most of this logic is

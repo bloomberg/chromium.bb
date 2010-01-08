@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -758,7 +758,7 @@ void GeneralPageView::InitStartupGroup() {
 
   startup_group_ = new OptionsGroupView(
       contents, l10n_util::GetString(IDS_OPTIONS_STARTUP_GROUP_NAME),
-      EmptyWString(), true);
+      std::wstring(), true);
 }
 
 void GeneralPageView::InitHomepageGroup() {
@@ -810,7 +810,7 @@ void GeneralPageView::InitHomepageGroup() {
 
   homepage_group_ = new OptionsGroupView(
       contents, l10n_util::GetString(IDS_OPTIONS_HOMEPAGE_GROUP_NAME),
-      EmptyWString(), true);
+      std::wstring(), true);
 }
 
 
@@ -846,7 +846,7 @@ void GeneralPageView::InitDefaultSearchGroup() {
 
   default_search_group_ = new OptionsGroupView(
       contents, l10n_util::GetString(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME),
-      EmptyWString(), true);
+      std::wstring(), true);
 }
 
 void GeneralPageView::InitDefaultBrowserGroup() {
@@ -879,7 +879,7 @@ void GeneralPageView::InitDefaultBrowserGroup() {
 
   default_browser_group_ = new OptionsGroupView(
       contents, l10n_util::GetString(IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME),
-      EmptyWString(), false);
+      std::wstring(), false);
 
   default_browser_worker_->StartCheckDefaultBrowser();
 }

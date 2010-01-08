@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,7 +122,7 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
   mock_frontend_.last_status_ = OBSOLETE;
 
   AppCacheHost host(1, &mock_frontend_, &service_);
-  host.SelectCache(GURL("http://whatever/"), kNoCacheId, GURL::EmptyGURL());
+  host.SelectCache(GURL("http://whatever/"), kNoCacheId, GURL());
 
   // We should have received an OnCacheSelected msg
   EXPECT_EQ(1, mock_frontend_.last_host_id_);
@@ -235,8 +235,7 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   EXPECT_FALSE(host.swappable_cache_.get());
 
   scoped_refptr<AppCacheGroup> group1 =
-      new AppCacheGroup(&service_, GURL::EmptyGURL(),
-                        service_.storage()->NewGroupId());
+      new AppCacheGroup(&service_, GURL(), service_.storage()->NewGroupId());
   host.SetSwappableCache(group1);
   EXPECT_FALSE(host.swappable_cache_.get());
 

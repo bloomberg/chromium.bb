@@ -84,7 +84,7 @@ string16 ContactInfo::GetFieldText(const AutoFillType& type) const {
     return last();
 
   if (field_type == NAME_MIDDLE_INITIAL)
-    MiddleInitial();
+    return MiddleInitial();
 
   if (field_type == NAME_FULL)
     return FullName();
@@ -98,7 +98,7 @@ string16 ContactInfo::GetFieldText(const AutoFillType& type) const {
   if (field_type == COMPANY_NAME)
     return company_name();
 
-  return EmptyString16();
+  return string16();
 }
 
 void ContactInfo::SetInfo(const AutoFillType& type, const string16& value) {
@@ -122,7 +122,7 @@ void ContactInfo::SetInfo(const AutoFillType& type, const string16& value) {
 
 string16 ContactInfo::FullName() const {
   if (first_.empty())
-    return EmptyString16();
+    return string16();
 
   std::vector<string16> full_name;
   full_name.push_back(first_);
@@ -141,7 +141,7 @@ string16 ContactInfo::FullName() const {
 
 string16 ContactInfo::MiddleInitial() const {
   if (middle_.empty())
-    return EmptyString16();
+    return string16();
 
   string16 middle_name(middle());
   string16 initial;
