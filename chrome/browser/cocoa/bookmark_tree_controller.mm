@@ -112,6 +112,17 @@
   [outline_ deselectAll:self];
 }
 
+- (IBAction)editTitle:(id)sender {
+  if ([outline_ numberOfSelectedRows] != 1) {
+    NSBeep();
+    return;
+  }
+  [outline_ editColumn:[outline_ columnWithIdentifier:@"title"]
+                   row:[outline_ selectedRow]
+             withEvent:[NSApp currentEvent]
+                select:YES];
+}
+
 
 #pragma mark -
 #pragma mark DATA SOURCE:
@@ -244,10 +255,25 @@
 }
 
 - (void)keyDown:(NSEvent*)event {
-  if ([event keyCode] == 51)    // Delete key
-    [self delete:self];
-  else
-    [super keyDown:event];
+  NSString* chars = [event charactersIgnoringModifiers];
+  if ([chars length] == 1) {
+    switch ([chars characterAtIndex:0]) {
+      case NSDeleteCharacter:
+      case NSDeleteFunctionKey:
+        [self delete:self];
+        return;
+      case NSCarriageReturnCharacter:
+      case NSEnterCharacter:
+        [(BookmarkTreeController*)[self delegate] editTitle:self];
+        return;
+      case NSTabCharacter:
+        // For some reason NSTableView responds to the tab key by editing
+        // the selected row. Override this with the normal behavior.
+        [[self window] selectNextKeyView:self];
+        return;
+    }
+  }
+  [super keyDown:event];
 }
 
 @end

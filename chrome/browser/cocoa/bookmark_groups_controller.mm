@@ -119,6 +119,24 @@
   [manager_ bookmarkModel]->Remove(parent, parent->IndexOfChild(sel));
 }
 
+- (IBAction)editTitle:(id)sender {
+  if ([groupsTable_ numberOfSelectedRows] != 1) {
+    NSBeep();
+    return;
+  }
+  int row = [groupsTable_ selectedRow];
+  if (![self tableView:groupsTable_
+      shouldEditTableColumn:[[groupsTable_ tableColumns] objectAtIndex:0]
+                   row:row]) {
+    NSBeep();
+    return;
+  }
+  [groupsTable_ editColumn:0
+                       row:row
+                 withEvent:[NSApp currentEvent]
+                    select:YES];
+}
+
 
 #pragma mark -
 #pragma mark LIST VIEW:
@@ -135,6 +153,25 @@
                           row:(NSInteger)row {
   id item = [groups_ objectAtIndex:row];
   return base::SysWideToNSString([manager_ nodeFromItem:item]->GetTitle());
+}
+
+- (void)tableView:(NSTableView*)tableView
+   setObjectValue:(id)value
+   forTableColumn:(NSTableColumn*)tableColumn
+              row:(NSInteger)row {
+
+  id item = [groups_ objectAtIndex:row];
+  const BookmarkNode* node = [manager_ nodeFromItem:item];
+  [manager_ bookmarkModel]->SetTitle(node, base::SysNSStringToWide(value));
+}
+
+- (BOOL)        tableView:(NSTableView*)tableView
+    shouldEditTableColumn:(NSTableColumn*)tableColumn
+                      row:(NSInteger)row {
+  id item = [groups_ objectAtIndex:row];
+  const BookmarkNode* node = [manager_ nodeFromItem:item];
+  // Prevent rename of top-level nodes like 'bookmarks bar'.
+  return node->GetParent() && node->GetParent()->GetParent();
 }
 
 // Sets a table cell's icon before it's drawn (NSTableView delegate).
@@ -156,10 +193,25 @@
 }
 
 - (void)keyDown:(NSEvent*)event {
-  if ([event keyCode] == 51)      // Delete key
-    [self delete:self];
-  else
-    [super keyDown:event];
+  NSString* chars = [event charactersIgnoringModifiers];
+  if ([chars length] == 1) {
+    switch ([chars characterAtIndex:0]) {
+      case NSDeleteCharacter:
+      case NSDeleteFunctionKey:
+        [self delete:self];
+        return;
+      case NSCarriageReturnCharacter:
+      case NSEnterCharacter:
+        [(BookmarkGroupsController*)[self delegate] editTitle:self];
+        return;
+      case NSTabCharacter:
+        // For some reason NSTableView responds to the tab key by editing
+        // the selected row. Override this with the normal behavior.
+        [[self window] selectNextKeyView:self];
+        return;
+    }
+  }
+  [super keyDown:event];
 }
 
 @end
