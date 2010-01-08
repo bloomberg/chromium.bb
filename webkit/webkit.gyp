@@ -283,6 +283,7 @@
         'glue/plugins/plugin_host.h',
         'glue/plugins/plugin_instance.cc',
         'glue/plugins/plugin_instance.h',
+        'glue/plugins/plugin_instance_mac.mm',
         'glue/plugins/plugin_lib.cc',
         'glue/plugins/plugin_lib.h',
         'glue/plugins/plugin_lib_linux.cc',

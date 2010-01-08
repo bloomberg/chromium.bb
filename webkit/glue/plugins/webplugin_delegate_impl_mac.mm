@@ -752,6 +752,7 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
         LOG(WARNING) << "NPCocoaEventFromWebInputEvent failed";
         return false;
       }
+      NPAPI::ScopedCurrentPluginEvent event_scope(instance(), &np_cocoa_event);
       ret = instance()->NPP_HandleEvent(
           reinterpret_cast<NPEvent*>(&np_cocoa_event)) != 0;
       break;

@@ -39,6 +39,7 @@ PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
 #if defined (OS_MACOSX)
       drawing_model_(0),
       event_model_(0),
+      currently_handled_event_(NULL),
 #endif
       message_loop_(MessageLoop::current()),
       load_manually_(false),
@@ -405,6 +406,13 @@ void PluginInstance::UnscheduleTimer(uint32 timer_id) {
   if (it != timers_.end())
     timers_.erase(it);
 }
+
+#if !defined(OS_MACOSX)
+NPError PluginInstance::PopUpContextMenu(NPMenu* menu) {
+  NOTIMPLEMENTED();
+  return NPERR_GENERIC_ERROR;
+}
+#endif
 
 void PluginInstance::OnTimerCall(void (*func)(NPP id, uint32 timer_id),
                                  NPP id,

@@ -37,6 +37,9 @@ class PluginHost;
 class PluginStream;
 class PluginStreamUrl;
 class PluginDataStream;
+#if defined(OS_MACOSX)
+class ScopedCurrentPluginEvent;
+#endif
 
 // A PluginInstance is an active, running instance of a Plugin.
 // A single plugin may have many PluginInstances.
@@ -166,6 +169,8 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
                     double* dest_x, double* dest_y,
                     NPCoordinateSpace dest_space);
 
+  NPError PopUpContextMenu(NPMenu* menu);
+
   //
   // NPAPI methods for calling the Plugin Instance
   //
@@ -208,6 +213,17 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
  private:
   friend class base::RefCountedThreadSafe<PluginInstance>;
+
+#if defined(OS_MACOSX)
+  friend class ScopedCurrentPluginEvent;
+  // Sets the event that the plugin is currently handling. The object is not
+  // owned or copied, so the caller must call this again with NULL before the
+  // event pointer becomes invalid. Clients use ScopedCurrentPluginEvent rather
+  // than calling this directly.
+  void set_currently_handled_event(NPCocoaEvent* event) {
+    currently_handled_event_ = event;
+  }
+#endif
 
   virtual ~PluginInstance();
 
@@ -257,6 +273,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   int                                      drawing_model_;
   int                                      event_model_;
   gfx::Point                               plugin_origin_;
+  NPCocoaEvent*                            currently_handled_event_;  // weak
 #endif
   MessageLoop*                             message_loop_;
   scoped_refptr<PluginStreamUrl>           plugin_data_stream_;
@@ -289,6 +306,25 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
   DISALLOW_EVIL_CONSTRUCTORS(PluginInstance);
 };
+
+#if defined(OS_MACOSX)
+// Helper to simplify correct usage of set_currently_handled_event.
+// Instantiating will set |instance|'s currently handled to |event| for the
+// lifetime of the object, then NULL when it goes out of scope.
+class ScopedCurrentPluginEvent {
+ public:
+  ScopedCurrentPluginEvent(PluginInstance* instance, NPCocoaEvent* event)
+      : instance_(instance) {
+    instance_->set_currently_handled_event(event);
+  }
+  ~ScopedCurrentPluginEvent() {
+    instance_->set_currently_handled_event(NULL);
+  }
+ private:
+  scoped_refptr<PluginInstance> instance_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedCurrentPluginEvent);
+};
+#endif
 
 } // namespace NPAPI
 
