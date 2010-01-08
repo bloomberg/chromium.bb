@@ -178,9 +178,13 @@ class NormalExtender : public BrowserExtender,
 
     if (compact_navigation_bar_->IsVisible()) {
       gfx::Size cnb_bounds = compact_navigation_bar_->GetPreferredSize();
-      compact_navigation_bar_->SetBounds(curx, bounds.y(),
+      // This (+1/-1) is a quick hack for the bug
+      // http://code.google.com/p/chromium-os/issues/detail?id=1010
+      // while investigating the issue. It could be in gtk or around
+      // NativeViewHostGtk::CreateFixed, but it will take some time.
+      compact_navigation_bar_->SetBounds(curx, bounds.y() + 1,
                                          cnb_bounds.width(),
-                                         bounds.height());
+                                         bounds.height() - 1);
       curx += cnb_bounds.width();
       width -= cnb_bounds.width();
 
