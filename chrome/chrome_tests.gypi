@@ -1445,7 +1445,6 @@
         'browser/sync/util/crypto_helpers_unittest.cc',
         'browser/sync/util/event_sys_unittest.cc',
         'browser/sync/util/extensions_activity_monitor_unittest.cc',
-        'browser/sync/util/query_helpers_unittest.cc',
         'browser/sync/util/user_settings_unittest.cc',
         'test/file_test_utils.cc',
         'test/sync/engine/mock_gaia_authenticator.cc',

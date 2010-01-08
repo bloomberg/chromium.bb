@@ -10,13 +10,14 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#include <limits>
+
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
-#include "chrome/browser/sync/util/query_helpers.h"
 #include "chrome/common/sqlite_utils.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 
@@ -164,9 +165,32 @@ DirectoryBackingStore::~DirectoryBackingStore() {
 
 bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
     sqlite3** handle) const {
-  if (SQLITE_OK == SqliteOpen(backing_filepath_, handle)) {
+  if (SQLITE_OK == OpenSqliteDb(backing_filepath_, handle)) {
+    sqlite3_busy_timeout(*handle, std::numeric_limits<int>::max());
+    {
+      SQLStatement statement;
+      statement.prepare(*handle, "PRAGMA fullfsync = 1");
+      if (SQLITE_DONE != statement.step()) {
+        LOG(FATAL) << sqlite3_errmsg(*handle);
+      }
+    }
+    {
+      SQLStatement statement;
+      statement.prepare(*handle, "PRAGMA synchronous = 2");
+      if (SQLITE_DONE != statement.step()) {
+        LOG(FATAL) << sqlite3_errmsg(*handle);
+      }
+    }
     sqlite3_busy_timeout(*handle, kDirectoryBackingStoreBusyTimeoutMs);
     RegisterPathNameCollate(*handle);
+#if defined(OS_WIN)
+    // Do not index this file. Scanning can occur every time we close the file,
+    // which causes long delays in SQLite's file locking.
+    const DWORD attrs = GetFileAttributes(backing_filepath_.value().c_str());
+    const BOOL attrs_set =
+      SetFileAttributes(backing_filepath_.value().c_str(),
+                        attrs | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED);
+#endif
 
     return true;
   }

@@ -808,8 +808,6 @@
         'browser/sync/util/extensions_activity_monitor.cc',
         'browser/sync/util/extensions_activity_monitor.h',
         'browser/sync/util/fast_dump.h',
-        'browser/sync/util/query_helpers.cc',
-        'browser/sync/util/query_helpers.h',
         'browser/sync/util/row_iterator.h',
         'browser/sync/util/signin.h',
         'browser/sync/util/sync_types.h',
