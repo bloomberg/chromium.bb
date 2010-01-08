@@ -15,50 +15,6 @@
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-class TestURLRequestContext : public URLRequestContext {
- public:
-  TestURLRequestContext() {
-    cookie_store_ = new net::CookieMonster();
-  }
-
- private:
-  ~TestURLRequestContext() {}
-};
-
-class TestURLRequestContextGetter : public URLRequestContextGetter {
- public:
-  virtual URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestURLRequestContext();
-    return context_;
-  }
- private:
-  ~TestURLRequestContextGetter() {}
-
-  scoped_refptr<URLRequestContext> context_;
-};
-
-class CookieTestingProfile : public TestingProfile {
- public:
-  virtual URLRequestContextGetter* GetRequestContext() {
-    if (!url_request_context_getter_.get())
-      url_request_context_getter_ = new TestURLRequestContextGetter;
-    return url_request_context_getter_.get();
-  }
-  virtual ~CookieTestingProfile() {}
-
-  net::CookieMonster* GetCookieMonster() {
-    return GetRequestContext()->GetCookieStore()->GetCookieMonster();
-  }
-
- private:
-  scoped_refptr<URLRequestContextGetter> url_request_context_getter_;
-};
-
-}  // namespace
-
 class CookiesViewTest : public testing::Test {
  public:
   CookiesViewTest() : io_thread_(ChromeThread::IO, &message_loop_) {
@@ -68,7 +24,8 @@ class CookiesViewTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    profile_.reset(new CookieTestingProfile());
+    profile_.reset(new TestingProfile());
+    profile_->CreateRequestContext();
   }
 
   void CheckDetailsSensitivity(gboolean expected,
@@ -190,7 +147,7 @@ class CookiesViewTest : public testing::Test {
   MessageLoop message_loop_;
   ChromeThread io_thread_;
 
-  scoped_ptr<CookieTestingProfile> profile_;
+  scoped_ptr<TestingProfile> profile_;
 };
 
 TEST_F(CookiesViewTest, Empty) {
