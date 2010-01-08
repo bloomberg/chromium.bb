@@ -42,7 +42,7 @@ class TryChangeUnittest(TryChangeTestsBase):
       'EscapeDot', 'GIT', 'GuessVCS',
       'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PrintSuccess',
       'SCM', 'SVN', 'TryChange', 'USAGE',
-      'breakpad', 'datetime', 'gclient_utils', 'getpass', 'logging',
+      'breakpad', 'datetime', 'errno', 'gclient_utils', 'getpass', 'logging',
       'optparse', 'os', 'posixpath', 'scm', 'shutil', 'sys', 'tempfile',
       'urllib',
     ]
@@ -56,7 +56,7 @@ class SVNUnittest(TryChangeTestsBase):
     members = [
       'AutomagicalSettings', 'GclStyleSettings', 'GclientStyleSettings',
       'GetCodeReviewSetting', 'ReadRootFile',
-      'GenerateDiff', 'GetFileNames', 'GetLocalRoot',
+      'GenerateDiff', 'GetFileNames',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange.SVN, members)
@@ -71,7 +71,7 @@ class SVNUnittest(TryChangeTestsBase):
     self.mox.ReplayAll()
     svn = trychange.SVN(self.options, self.fake_root)
     self.assertEqual(svn.GetFileNames(), self.expected_files)
-    self.assertEqual(svn.GetLocalRoot(), self.fake_root)
+    self.assertEqual(svn.checkout_root, self.fake_root)
     self.assertEqual(svn.GenerateDiff(), 'A diff')
 
 
@@ -81,7 +81,7 @@ class GITUnittest(TryChangeTestsBase):
     members = [
       'AutomagicalSettings', 'GclStyleSettings', 'GclientStyleSettings',
       'GetCodeReviewSetting', 'ReadRootFile',
-      'GenerateDiff', 'GetFileNames', 'GetLocalRoot',
+      'GenerateDiff', 'GetFileNames',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange.GIT, members)
@@ -96,7 +96,7 @@ class GITUnittest(TryChangeTestsBase):
     self.mox.ReplayAll()
     git = trychange.GIT(self.options, self.fake_root)
     self.assertEqual(git.GetFileNames(), self.expected_files)
-    self.assertEqual(git.GetLocalRoot(), self.fake_root)
+    self.assertEqual(git.checkout_root, self.fake_root)
     self.assertEqual(git.GenerateDiff(), 'A diff')
 
 
