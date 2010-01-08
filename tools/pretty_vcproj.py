@@ -1,12 +1,14 @@
 #!/usr/bin/python2.5
-# Copyright 2009 Google Inc.
-# All Rights Reserved.
+
+# Copyright (c) 2009 Google Inc. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Make the format of a vcproj really pretty.
 
    This script normalize and sort an xml. It also fetches all the properties
    inside linked vsprops and include them explicitly in the vcproj.
-   
+
    It outputs the resulting xml to stdout.
 """
 
@@ -146,13 +148,13 @@ def CleanupVcproj(node):
         sub_node.data = sub_node.data.replace("\r", "")
         sub_node.data = sub_node.data.replace("\n", "")
         sub_node.data = sub_node.data.rstrip()
-        
+
   # Fix all the semicolon separated attributes to be sorted, and we also
   # remove the dups.
   if node.attributes:
     for (name, value) in node.attributes.items():
       sorted_list = sorted(value.split(';'))
-      unique_list = [] 
+      unique_list = []
       [unique_list.append(i) for i in sorted_list if not unique_list.count(i)]
       node.setAttribute(name, ';'.join(unique_list))
       if not value:
@@ -160,7 +162,7 @@ def CleanupVcproj(node):
 
   if node.childNodes:
     node.normalize()
-    
+
   # For each node, take a copy, and remove it from the list.
   node_array = []
   while node.childNodes and node.childNodes[0]:
@@ -175,7 +177,7 @@ def CleanupVcproj(node):
     else:
       node_array.append(current)
 
-    
+
   # Sort the list.
   node_array.sort(CmpNode())
 
@@ -309,6 +311,6 @@ def main(argv):
   # user.
   #print dom.toprettyxml(newl="\n")
   PrettyPrintNode(dom.documentElement)
-  
+
 if __name__ == '__main__':
   main(sys.argv)
