@@ -123,9 +123,15 @@ void FakeExternalTab::Initialize() {
   cmd->AppendSwitch(switches::kSingleProcess);
 
   browser_process_.reset(new BrowserProcessImpl(*cmd));
-  RenderProcessHost::set_run_renderer_in_process(true);
   // BrowserProcessImpl's constructor should set g_browser_process.
   DCHECK(g_browser_process);
+  // Set the app locale and create the child threads.
+  g_browser_process->set_application_locale("en-US");
+  g_browser_process->db_thread();
+  g_browser_process->file_thread();
+  g_browser_process->io_thread();
+
+  RenderProcessHost::set_run_renderer_in_process(true);
 
   Profile* profile = g_browser_process->profile_manager()->
       GetDefaultProfile(FilePath(user_data()));
