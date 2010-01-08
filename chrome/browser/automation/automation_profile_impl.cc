@@ -105,6 +105,11 @@ class AutomationCookieStore : public net::CookieStore {
     return original_cookie_store_->GetCookiesWithOptions(url, options);
   }
 
+  virtual void DeleteCookie(const GURL& url,
+                            const std::string& cookie_name) {
+    return original_cookie_store_->DeleteCookie(url, cookie_name);
+  }
+
  protected:
   void SendIPCMessageOnIOThread(IPC::Message* m) {
     if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {

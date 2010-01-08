@@ -12,6 +12,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/test/automation/automation_messages.h"
+#include "net/base/cookie_monster.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -256,6 +257,7 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
            redirect_url_.c_str());
 
   URLRequestContext* ctx = request_->context();
+  std::vector<std::string> response_cookies;
 
   if (!response.headers.empty()) {
     headers_ = new net::HttpResponseHeaders(
@@ -264,7 +266,6 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
     // Parse and set HTTP cookies.
     const std::string name = "Set-Cookie";
     std::string value;
-    std::vector<std::string> response_cookies;
 
     void* iter = NULL;
     while (headers_->EnumerateHeader(&iter, name, &value)) {
@@ -291,10 +292,20 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
     StringTokenizer cookie_parser(response.persistent_cookies, ";");
 
     while (cookie_parser.GetNext()) {
-      net::CookieOptions options;
-      ctx->cookie_store()->SetCookieWithOptions(url_for_cookies,
-                                                cookie_parser.token(),
-                                                options);
+      std::string cookie_string = cookie_parser.token();
+      // Only allow cookies with valid name value pairs.
+      if (cookie_string.find('=') != std::string::npos) {
+        TrimWhitespace(cookie_string, TRIM_ALL, &cookie_string);
+        // Ignore duplicate cookies, i.e. cookies passed in from the host
+        // browser which also exist in the response header.
+        if (!IsCookiePresentInCookieHeader(cookie_string,
+                                           response_cookies)) {
+            net::CookieOptions options;
+            ctx->cookie_store()->SetCookieWithOptions(url_for_cookies,
+                                                      cookie_string,
+                                                      options);
+        }
+      }
     }
   }
 
@@ -436,3 +447,19 @@ void URLRequestAutomationJob::DisconnectFromMessageFilter() {
     message_filter_ = NULL;
   }
 }
+
+bool URLRequestAutomationJob::IsCookiePresentInCookieHeader(
+    const std::string& cookie_line,
+    const std::vector<std::string>& header_cookies) {
+  net::CookieMonster::ParsedCookie parsed_current_cookie(cookie_line);
+  for (size_t index = 0; index < header_cookies.size(); index++) {
+    net::CookieMonster::ParsedCookie parsed_header_cookie(
+        header_cookies[index]);
+
+    if (parsed_header_cookie.Name() == parsed_current_cookie.Name())
+      return true;
+  }
+
+  return false;
+}
+

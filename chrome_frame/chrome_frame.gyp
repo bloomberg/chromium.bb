@@ -108,7 +108,11 @@
       'type': 'executable',
       'dependencies': [
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../chrome/chrome.gyp:browser',     
         '../chrome/chrome.gyp:common',
+        '../chrome/chrome.gyp:debugger',
+        '../chrome/chrome.gyp:nacl',
+        '../chrome/chrome.gyp:renderer',
         '../chrome/chrome.gyp:utility',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -617,6 +621,7 @@
       'sources': [
         'chrome_frame_npapi.rgs',
         'chrome_frame_npapi_entrypoints.cc',
+        'chrome_frame_npapi_entrypoints.h',
         'chrome_tab.cc',
         'chrome_tab.def',
         'chrome_tab.h',
