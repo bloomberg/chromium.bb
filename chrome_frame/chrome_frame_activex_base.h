@@ -42,6 +42,7 @@
 #include "chrome_frame/com_type_info_holder.h"
 #include "chrome_frame/urlmon_url_request.h"
 #include "grit/generated_resources.h"
+#include "net/base/cookie_monster.h"
 
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
@@ -523,10 +524,17 @@ END_MSG_MAP()
                                 const std::string& cookie) {
     std::string name;
     std::string data;
+
     size_t name_end = cookie.find('=');
     if (std::string::npos != name_end) {
-      name = cookie.substr(0, name_end);
-      data = cookie.substr(name_end + 1);
+      net::CookieMonster::ParsedCookie parsed_cookie = cookie;
+      name = parsed_cookie.Name();
+      // Verify if the cookie is being deleted. The cookie format is as below
+      // value[; expires=date][; domain=domain][; path=path][; secure]
+      // If the first semicolon appears immediately after the name= string,
+      // it means that the cookie is being deleted.
+      if (!parsed_cookie.Value().empty())
+        data = cookie.substr(name_end + 1);
     } else {
       data = cookie;
     }
