@@ -122,7 +122,7 @@ const char* kInvalidPageActionIconPath =
 const char* kInvalidPageActionsList =
     "Invalid value for 'page_actions'.";
 const char* kInvalidPageActionsListSize =
-    "Invalid value for 'page_actions'. There can be only one.";
+    "Invalid value for 'page_actions'. There can be at most one page action.";
 const char* kInvalidPageActionId =
     "Required value 'id' is missing or invalid.";
 const char* kInvalidPageActionDefaultTitle =
