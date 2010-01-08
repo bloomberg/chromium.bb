@@ -2145,7 +2145,6 @@ BUG10397 LINUX : LayoutTests/fast/transforms/transformed-document-element.html =
 
 // Merge 39744:39913? - regressions
 BUG10403 LINUX : LayoutTests/svg/custom/animate-path-morphing.svg = FAIL
-BUG10403 LINUX : LayoutTests/svg/custom/circular-marker-reference-1.svg = FAIL
 
 // might need to be rebaselined in win, 'DRAFT' rendering incorrect before
 BUG10405 WIN : LayoutTests/svg/custom/struct-use-09-b.svg = FAIL
@@ -2373,7 +2372,6 @@ BUG10530 DEBUG SLOW : LayoutTests/fast/dom/Window/window-function-frame-getter-p
 BUG10760 LINUX : LayoutTests/fast/forms/input-text-scroll-left-on-blur.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/inline/25277-2.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/inline/25277.html = FAIL
-BUG10760 MAC : LayoutTests/svg/custom/marker-overflow-clip.svg = FAIL
 BUG10760 LINUX : LayoutTests/svg/custom/marker-child-changes.svg = PASS FAIL
 BUG10760 LINUX : LayoutTests/svg/custom/marker-viewBox-changes.svg = FAIL
 
@@ -2670,10 +2668,6 @@ BUG26045 LINUX DEBUG : LayoutTests/fast/frames/frame-set-same-src.html = CRASH P
 // Incorrect baseline removed.
 BUG25433 WIN LINUX : LayoutTests/css2.1/t040103-ident-03-c.html = IMAGE
 
-// Got flaky with Webkit roll 49958:49961
-// Now needs rebaseline
-// BUG_JOHNNYG LINUX DEBUG : LayoutTests/svg/custom/marker-overflow-clip.svg = PASS TEXT
-
 // WebKit roll 49961:49992
 // Added in http://trac.webkit.org/changeset/49990
 BUG25884 WIN LINUX : LayoutTests/fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-zoom-and-scroll.html = FAIL
@@ -2964,7 +2958,6 @@ BUG29737 LINUX : LayoutTests/svg/filters/feComposite.svg = FAIL TIMEOUT CRASH
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-blend-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-color-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-comptran-01-b.svg = IMAGE+TEXT
-BUG29737 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-gauss-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-morph-01-f.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-offset-01-b.svg = IMAGE+TEXT
@@ -3140,7 +3133,6 @@ BUG31642 WIN MAC DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-30-t.svg = CRAS
 BUG31642 LINUX DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE+TEXT CRASH
 
 // WebKit roll 52852 -> 52867
-BUG_JAPHET MAC : LayoutTests/svg/custom/marker-strokeWidth-changes.svg = FAIL
 BUG_JAPHET WIN : LayoutTests/svg/custom/feDisplacementMap-01.svg = TEXT
 BUG_JAPHET WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 BUG_JAPHET : LayoutTests/websocket/tests/frame-lengths.html = PASS TIMEOUT
