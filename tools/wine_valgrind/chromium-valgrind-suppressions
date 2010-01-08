@@ -92,7 +92,7 @@
    # This occurs at the same time as the usr1_handler errors above.
    ignore_wine_ntdll_no_symbol
    Memcheck:Addr4
-   obj:.*ntdll.dll.so
+   obj:*ntdll.dll.so
 }
 {
    # mysterious leaks in rsaenh.dll.so, no symbols / incorrect symbols.
@@ -103,8 +103,16 @@
 
 }
 {
+   # Maybe a leak in strtoi() ?? StringToInt() seems to be leak free.
+   ignore_strtoi_leak
+   Memcheck:Leak
+   fun:RtlAllocateHeap
+   ...
+   fun:StringToInt
+}
+{
    # Maybe a leak in _strtoi64() ?? StringToInt64() seems to be leak free.
-   ignore_strtio64_leak
+   ignore_strtoi64_leak
    Memcheck:Leak
    fun:RtlAllocateHeap
    ...
@@ -156,17 +164,6 @@
    ...
    fun:CryptGenKey
    fun:base::RSAPrivateKey::Create
-}
-{
-   wine_bug_21260
-   Memcheck:Leak
-   fun:RtlAllocateHeap
-   ...
-   fun:ranges_add
-   fun:set_main_item
-   fun:LISTVIEW_SetItemT
-   fun:LISTVIEW_SetItemState
-
 }
 {
    # Boy, oh, boy do we need a better way to deal with this.
