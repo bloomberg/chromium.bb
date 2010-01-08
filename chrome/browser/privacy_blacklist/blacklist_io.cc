@@ -47,6 +47,7 @@ bool BlacklistIO::ReadText(Blacklist* blacklist,
                            const FilePath& path,
                            std::string* error_string) {
   DCHECK(blacklist);
+  DCHECK(error_string);
 
   // Memory map for efficient parsing. If the file cannot fit in available
   // memory it would be the least of our worries. Typical blacklist files
