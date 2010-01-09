@@ -219,6 +219,19 @@ void GetWidgetSizeFromCharacters(GtkWidget* widget, double width_chars,
   g_object_unref(context);
 }
 
+void SetWindowWidthFromResources(GtkWindow* window, int resource_id,
+                                 bool resizable) {
+  int width;
+  gtk_util::GetWidgetSizeFromResources(GTK_WIDGET(window), resource_id, 0,
+                                       &width, NULL);
+  if (resizable) {
+    gtk_window_set_default_size(window, width, -1);
+  } else {
+    gtk_widget_set_size_request(GTK_WIDGET(window), width, -1);
+  }
+  gtk_window_set_resizable(window, resizable ? TRUE : FALSE);
+}
+
 void RemoveAllChildren(GtkWidget* container) {
   gtk_container_foreach(GTK_CONTAINER(container), RemoveWidget, container);
 }

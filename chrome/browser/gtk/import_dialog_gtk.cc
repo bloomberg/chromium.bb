@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 
 // static
 void ImportDialogGtk::Show(GtkWindow* parent, Profile* profile) {
@@ -35,6 +36,10 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile)
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_REJECT,
       NULL);
+  gtk_widget_realize(dialog_);
+  gtk_util::SetWindowWidthFromResources(GTK_WINDOW(dialog_),
+                                        IDS_IMPORT_DIALOG_WIDTH_CHARS,
+                                        /* resizable */ false);
   importer_host_->set_parent_window(GTK_WINDOW(dialog_));
 
   // Add import button separately as we might need to disable it, if
@@ -44,10 +49,6 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile)
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
   GTK_WIDGET_SET_FLAGS(import_button, GTK_CAN_DEFAULT);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_ACCEPT);
-
-  // TODO(rahulk): find how to set size properly so that the dialog
-  // box width is at least enough to display full title.
-  gtk_widget_set_size_request(dialog_, 300, -1);
 
   GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
@@ -114,7 +115,6 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile)
 
   g_signal_connect(dialog_, "response",
                    G_CALLBACK(HandleOnResponseDialog), this);
-  gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
   gtk_widget_show_all(dialog_);
 }
 

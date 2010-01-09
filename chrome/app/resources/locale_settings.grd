@@ -663,6 +663,11 @@
       <message name="IDS_DOWNLOAD_IN_PROGRESS_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
         4
       </message>
+
+      <!-- The width for the "create application shortcuts" dialog in characters. -->
+      <message name="IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+        55
+      </message>
     </messages>
   </release>
 </grit>

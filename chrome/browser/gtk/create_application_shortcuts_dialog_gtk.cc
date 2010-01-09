@@ -8,6 +8,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 
 // static
 void CreateApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
@@ -33,6 +34,10 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_REJECT,
       NULL);
+  gtk_widget_realize(dialog);
+  gtk_util::SetWindowWidthFromResources(GTK_WINDOW(dialog),
+                                        IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS,
+                                        /* resizable */ false);
   gtk_util::AddButtonToDialog(dialog,
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_COMMIT).c_str(),
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
@@ -63,7 +68,6 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
 
   g_signal_connect(dialog, "response",
                    G_CALLBACK(HandleOnResponseDialog), this);
-  gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
   gtk_widget_show_all(dialog);
 }
 

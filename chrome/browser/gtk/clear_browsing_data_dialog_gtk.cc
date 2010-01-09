@@ -12,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 
 // static
 void ClearBrowsingDataDialogGtk::Show(GtkWindow* parent, Profile* profile) {
@@ -29,6 +30,10 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_REJECT,
       NULL);
+  gtk_widget_realize(dialog);
+  gtk_util::SetWindowWidthFromResources(GTK_WINDOW(dialog),
+                                        IDS_CLEARDATA_DIALOG_WIDTH_CHARS,
+                                        /* resizable */ false);
   gtk_util::AddButtonToDialog(dialog,
       l10n_util::GetStringUTF8(IDS_CLEAR_BROWSING_DATA_COMMIT).c_str(),
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
@@ -127,7 +132,6 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
 
   g_signal_connect(dialog, "response",
                    G_CALLBACK(HandleOnResponseDialog), this);
-  gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
   gtk_widget_show_all(dialog);
 }
 
