@@ -5,9 +5,11 @@
 #include "chrome/browser/views/theme_background.h"
 
 #include "app/gfx/canvas.h"
+#include "app/resource_bundle.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/view.h"
@@ -17,17 +19,28 @@ ThemeBackground::ThemeBackground(BrowserView* browser_view)
 }
 
 void ThemeBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
-  int image_name;
-  Browser* browser = browser_view_->browser();
-  if (browser->window()->IsActive()) {
-    image_name = browser->profile()->IsOffTheRecord() ?
-        IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+  SkBitmap* background;
+
+  // Never theme app and popup windows.
+  if (!browser_view_->IsBrowserTypeNormal()) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    if (browser_view_->IsActive())
+      background = rb.GetBitmapNamed(IDR_FRAME);
+    else
+      background = rb.GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
   } else {
-    image_name = browser->profile()->IsOffTheRecord() ?
-        IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
+    Profile* profile = browser_view_->browser()->profile();
+    ThemeProvider* theme = profile->GetThemeProvider();
+    if (browser_view_->IsActive()) {
+      background = theme->GetBitmapNamed(
+          profile->IsOffTheRecord() ?
+          IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME);
+    } else {
+      background = theme->GetBitmapNamed(
+          profile->IsOffTheRecord() ?
+          IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE);
+    }
   }
-  ThemeProvider* theme = browser->profile()->GetThemeProvider();
-  SkBitmap* background = theme->GetBitmapNamed(image_name);
 
   gfx::Point origin(0, 0);
   views::View::ConvertPointToView(view,
