@@ -184,17 +184,23 @@ std::wstring CurrentChromeChannel() {
                        std::wstring(L"\\") + google_update::kChromeUpgradeCode;
     RegKey client_state(registry_hive, key.c_str(), KEY_READ);
     client_state.ReadValue(google_update::kRegApField, &update_branch);
+    // If the parent folder exists (we have a valid install) but the
+    // 'ap' key is empty, we necessarily are the stable channel.
+    if (update_branch.empty() && client_state.Valid()) {
+      update_branch = L"stable";
+    }
   }
 
   // Map to something pithy for human consumption. There are no rules as to
   // what the ap string can contain, but generally it will contain a number
   // followed by a dash followed by the branch name (and then some random
-  // suffix). We fall back on empty string, in case we fail to parse (or the
-  // branch is stable).
+  // suffix). We fall back on empty string in case we fail to parse.
   if (update_branch.find(L"-beta") != std::wstring::npos)
     update_branch = L"beta";
   else if (update_branch.find(L"-dev") != std::wstring::npos)
     update_branch = L"dev";
+  else if (update_branch.find(L"stable") != std::wstring::npos)
+    update_branch = L"stable";
   else
     update_branch = L"";
 
