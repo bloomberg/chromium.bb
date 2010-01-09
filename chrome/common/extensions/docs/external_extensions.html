@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Match Patterns - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>External Extensions - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -151,7 +151,6 @@
                   <li><a href="background_pages.html">Background Pages</a></li>
                   <li><a href="content_scripts.html">Content Scripts</a></li>
                   <li><a href="xhr.html">Cross-Origin XHR</a></li>
-                  <li><a href="i18n.html">Internationalization</a></li>
                   <li><a href="messaging.html">Message Passing</a></li>
                   <li><a href="npapi.html">NPAPI Plugins</a></li>
                 </ul>
@@ -160,7 +159,7 @@
                 <ul>
                   <li><a href="autoupdate.html">Autoupdating</a></li>
                   <li><a href="packaging.html">Packaging</a></li>
-                 <li><a href="external_extensions.html">External Extensions</a></li>
+                 <li class="leftNavSelected">External Extensions</li>
                 </ul>
               </li>
             </ul>
@@ -175,7 +174,7 @@
               <li>Formats
                 <ul>
                   <li><a href="manifest.html">Manifest Files</a></li>
-                  <li class="leftNavSelected">Match Patterns</li>
+                  <li><a href="match_patterns.html">Match Patterns</a></li>
                   <!-- <li>Packages (.crx)</li> -->
                 </ul>
               </li>
@@ -189,21 +188,42 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Match Patterns</h1>
+        <h1 class="page_title">External Extensions</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" style="display: none; ">
+        <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a>h2Name</a>
+              <a href="#preferences">Using the Preferences File</a>
               <ol>
-                <li>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#registry">Using the Windows Registry</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#updating">Updating and Uninstalling</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#faq">FAQ</a>
+              <ol>
+                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
-              <li>
+              <li style="display: none; ">
                 <a href="#apiReference">API reference</a>
                 <ol>
                   <li>
@@ -245,197 +265,155 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Match Patterns</div>
+        <div id="static"><div id="pageData-name" class="pageData">External Extensions</div>
+<div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-<a href="content_scripts.html">Content scripts</a> operate on
-a set of URLs defined by match patterns.
-You can put one or more match patterns
-in the <code>"matches"</code> part of
-a content script's section of the manifest.
-This page describes the match pattern syntax —
-the rules you need to follow when you specify
-which URLs your content script affects.
-</p>
+Google Chrome implements a mechanism
+to detect when an external extension
+needs to be installed.
+Typically, this could be leveraged
+by 3rd party vendors
+to install an extension whenever
+the user installs their software.
+Another use case includes network admins,
+who want to install the same extensions
+throughout their company. 
 
-<p>
-A match pattern is essentially a URL
-that begins with <code>http</code>, <code>https</code>,
-<code>file</code>, or <code>ftp</code>,
-and that can contain '<code>*</code>' characters.
-Each match pattern has 3 parts:</p>
-<p></p>
+</p><p>
+Google Chrome supports two ways of
+installing external extensions:
+using a preferences JSON file,
+or using the Windows registry
+(Windows only). 
 
-<ul>
-  <li> <em>scheme</em> —
-    for example, <code>http</code> or <code>file</code>
-  </li>
-  <li> <em>host</em> —
-    for example, <code>www.google.com</code>
-    or <code>*.google.com</code>
-    or <code>*</code>;
-    if the scheme is <code>file</code>,
-    there is no <em>host</em> part
-  </li>
-  <li> <em>path</em> —
-    for example, <code>/*</code>, <code>/foo* </code>,
-    or <code>/foo/bar </code>
-  </li>
-</ul>
+</p><p>
+<b>Important:</b> Before you begin,
+make sure you have <a href="packaging.html">packaged
+crx file</a> that installs successfully,
+and make a note of both the version
+of the extension and its id (see chrome://extensions/).
+For the rest of this text, we'll assume you
+the extension version is
+<code>1.0</code> and its id is <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>. 
 
-<p>Here's the basic syntax:</p>
+</p><h2 id="preferences">Using the Preferences File</h2>
 
-<pre><em>&lt;url-pattern&gt;</em> := <em>&lt;scheme&gt;</em>://<em>&lt;host&gt;</em><em>&lt;path&gt;</em><br><em>&lt;scheme&gt;</em> := 'http' | 'https' | 'file' | 'ftp'<br><em>&lt;host&gt;</em> := '*' | '*.' <em>&lt;any char except '/' and '*'&gt;</em>+<br><em>&lt;path&gt;</em> := '/' <em>&lt;any chars&gt;</em></pre>
+<ol>
+<li>Make the .crx extension file available
+to the machine you want to install the extension
+on (copy it to a local directory
+or to a network share, ie. <code>\\server\share\extension.crx</code>). 
+</li><li>Locate the external_extensions.json file under the Chrome
+installation directory and add the following key inside
+the curly brackets (note the extra escaping for the slashes,
+which is also required when specifying local directories):
+<pre>{
+  "aaaaaaaaaabbbbbbbbbbcccccccccc": {
+    "external_crx": "\\\\server\\share\\extension.crx",
+    "external_version": "1.0"
+  }
+}</pre>
+</li><li>Save the json file.
+</li><li>Launch Chrome and go to chrome://extensions
+and you should see the extension listed.
+</li></ol>
 
-<p>
-The meaning of '<code>*</code>' depends on whether
-it's in the <em>host</em> or the <em>path</em> part.
-If the <em>host</em> is just <code>*</code>,
-then it matches any host.
-If the <em>host</em> is <code>*.<em>hostname</em></code>,
-then it matches the specified host or any of its subdomains.
-In the <em>path</em> section,
-each '<code>*</code>' matches 0 or more characters.
-The following table shows some valid patterns.
-</p>
 
-<table class="columns">
-<tbody>
-<tr>
-  <th style="margin-left:0; padding-left:0">Pattern</th>
-  <th style="margin-left:0; padding-left:0">What it does</th>
-  <th style="margin-left:0; padding-left:0">Examples of matching URLs</th>
-</tr>
+<h2 id="registry">Using the Windows Registry</h2>
 
-<tr>
-  <td>
-    <code>http://*/*</code>
-  </td>
+<ol>
+<li>Make the .crx extension file available
+to the machine you want to install the extension on
+(copy it to a local directory or to a network share,
+ie. <code>\\server\share\extension.crx</code>).
+</li><li>Find (or create the following key) in the
+registry:<br>
+32 bit Windows: <code>HKEY_LOCAL_MACHINE\Software\Google\Chrome\Extensions</code><br>
+64 bit Windows: <code>HKEY_LOCAL_MACHINE\Software\Wow6432Node\Google\Chrome\Extensions</code>
+</li><li>Create a new key (folder)
+under the Extensions key with the
+same name as the id of your extension (<code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>).
+</li><li>Create two string values (<code>REG_SZ</code>):<br>
+path: <code>\\server\share\extension.crx</code><br>
+version: <code>1.0</code>
+</li><li>Launch the browser and go to
+chrome://extensions and you should
+see the extension listed. 
+</li></ol>
 
-  <td>Matches any URL that uses the <code>http</code> scheme</td>
+<h2 id="updating">Updating and Uninstalling</h2>
 
-  <td>
-    http://www.google.com/<br>
-    http://example.org/foo/bar.html
-  </td>
-</tr>
+<p>Google Chrome scans the metadata entries
+in the preferences and registry
+each time the browser starts, and makes
+any necessary changes to the installed
+external extensions.
 
-<tr>
-  <td>
-    <code>http://*/foo*</code>
-  </td>
+</p><p>To update your extension to a new version,
+update the file, and then update the version
+in the preferences or registry.
 
-  <td>
-    Matches any URL that uses the <code>http</code> scheme, on any host,
-    as long as the path starts with <code>/foo</code>
-  </td>
+</p><p>To uninstall your extension
+(eg if your software is uninstalled),
+remove the metadata from the preferences file
+or registry.
 
-  <td>
-    http://example.com/foo/bar.html<br>
-    http://www.google.com/foo<b></b>
-  </td>
-</tr>
+</p><h2 id="faq">FAQ</h2>
 
-<tr>
-  <td>
-    <code>https://*.google.com/foo*bar </code>
-  </td>
+<p><b>Can I specify a URL as a path to the external extension?</b>
+</p><p>Not at this time.
+Chrome only supports absolute/relative local paths
+and UNC paths.
+Relative paths are relative
+to the Extensions directory
+(where the external_extensions.json file is located). 
+<br>
+<br>
 
-  <td>
-    Matches any URL that uses the <code>https</code> scheme,
-    is on a google.com host
-    (such as www.google.com, docs.google.com, or google.com),
-    as long as the path starts with <code>/foo</code>
-    and ends with <code>bar</code>
-  </td>
+</p><p><b>What are some common mistakes when installing with the preferences file?</b>
+</p><ul>
+<li>Not specifying the same id/version
+as the one listed in the .crx
+</li><li>external_extension.json is not in the right location
+</li><li>Syntax error in json file
+(forgetting to separate entries with comma or
+leaving a trailing comma somewhere)
+</li><li>Extra curly brackets around the top level dictionary
+</li><li>JSON file entry points to the wrong path
+to the .crx (or path specified but no filename)
+</li><li>Permissions problems on a network share
+</li></ul>
 
-  <td>
-    http://www.google.com/foo/baz/bar<br>
-    http://docs.google.com/foobar
-  </td>
-</tr>
+<br>
 
-<tr>
-  <td>
-    <code>http://example.org/foo/bar.html </code>
-  </td>
+<p><b>What are some common mistakes when installing with the registry?</b>
+</p><ul>
+<li>Not specifying the same id/version as the one listed in the .crx
+</li><li>Key created in the wrong location in the registry
+</li><li>Registry entry points to the wrong path to the .crx (or path specified but no filename)
+</li><li>Backslashes in UNC path not escaped (eg <code>\\server\share\file</code> (incorrect), instead of <code>\\\\server\\share\\extension</code> (correct)
+</li><li>Permissions problems on a network share
+</li></ul>
 
-  <td>Matches the specified URL</td>
+<br>
 
-  <td>
-    http://example.org/foo/bar.html
-  </td>
-</tr>
+<p><b>What if the user uninstalls the extension?</b>
+</p><p>If the user uninstalls the extension through the UI, it will no
+longer be installed or updated on each startup. In other words, the
+external extension is blacklisted.
 
-<tr>
-  <td>
-    <code>file:///foo*</code>
-  </td>
+<br><br>
 
-  <td>Matches any local file whose path starts with <code>/foo</code></td>
 
-  <td>
-    file:///foo/bar.html<br>
-    file:///foo
-  </td>
-</tr>
-
-<tr>
-  <td>
-    <code>http://127.0.0.1/*</code>
-  </td>
-
-  <td>
-    Matches any URL that uses the <code>http</code> scheme
-    and is on the host 127.0.0.1
-  </td>
-  <td>
-    http://127.0.0.1/<br>
-    http://127.0.0.1/foo/bar.html
-  </td>
-</tr>
-</tbody>
-</table>
-
-<p>
-Here are some examples of <em>invalid</em> pattern matches:
-</p>
-
-<table class="columns">
-<tbody>
-<tr>
-  <th style="margin-left:0; padding-left:0">Bad pattern</th>
-  <th style="margin-left:0; padding-left:0">Why it's bad</th>
-</tr>
-
-<tr>
-  <td><code>http://*</code></td>
-  <td>No <em>path</em></td>
-</tr>
-
-<tr>
-  <td><code>http://*foo/bar</code></td>
-  <td>'*' in the <em>host</em> can be followed only by a '.' or '/'</td>
-</tr>
-
-<tr>
-  <td><code>http://foo.*.bar/baz&nbsp; </code></td>
-  <td>If '*' is in the <em>host</em>, it must be the first character</td>
-  </tr>
-
-<tr>
-  <td><code>http:/bar</code></td>
-  <td>Missing <em>scheme</em> separator ("/" should be "//")</td>
-</tr>
-
-<tr>
-  <td><code>foo://*</code></td>
-  <td>Invalid <em>scheme</em></td>
-</tr>
-</tbody>
-</table>
-
-</div>
+</p><p><b>How do I get off the blacklist?</b>
+</p><p>If the user uninstalls your extension, you should respect that
+decision. However, if you (the developer) accidentally uninstalled
+your extension through the UI,
+you can remove the blacklist tag
+by installing the extension normally
+through the UI, then uninstalling it.
+</p></div>
 
         <!-- API PAGE -->
         <div class="apiPage" style="display: none; ">
