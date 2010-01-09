@@ -536,16 +536,6 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
   URLRequestContext* context = request_->context();
   std::string details = url_format_->GetDetails(request_->url());
 
-  std::string query;
-
-  // Split out the query parameters.
-  std::string::size_type query_start = details.find('?');
-  if (query_start != std::string::npos) {
-    if (query_start + 1 < details.size())
-      query = details.substr(query_start + 1);
-    details = details.substr(0, query_start);
-  }
-
   data->clear();
 
   // Use a different handler for "view-cache/*" subpaths.
@@ -554,6 +544,16 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
     GURL url = url_format_->MakeURL(kViewHttpCacheSubPath + std::string("/"));
     ViewCacheHelper::GetEntryInfoHTML(cache_key, context, url.spec(), data);
     return true;
+  }
+
+  std::string query;
+
+  // Split out the query parameters.
+  std::string::size_type query_start = details.find('?');
+  if (query_start != std::string::npos) {
+    if (query_start + 1 < details.size())
+      query = details.substr(query_start + 1);
+    details = details.substr(0, query_start);
   }
 
   data->append("<!DOCTYPE HTML>"
