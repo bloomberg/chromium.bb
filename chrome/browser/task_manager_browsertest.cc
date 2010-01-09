@@ -97,6 +97,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   WaitForResourceChange(2);
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/31663
+#define NoticeExtensionChanges DISABLED_NoticeExtensionChanges
+#endif
+
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
   EXPECT_EQ(0, model()->ResourceCount());
 
