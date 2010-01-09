@@ -23,6 +23,17 @@
         'app_framework/platform.h',
       ],
     },
+    {
+      'target_name': 'hello_triangle',
+      'type': 'executable',
+      'dependencies': [
+        'app_framework',
+        '../../third_party/gles_book_examples/gles_book_examples.gyp:hello_triangle',
+      ],
+      'sources': [
+        'hello_triangle/main.cc',
+      ],
+    },
   ]
 }
 
