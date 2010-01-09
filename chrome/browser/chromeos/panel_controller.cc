@@ -153,11 +153,18 @@ bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
     NOTREACHED();
     return false;
   }
+
+  // Get the last titlebar width that we saw in a ConfigureNotify event -- we
+  // need to give drag positions in terms of the top-right corner of the
+  // titlebar window.  See WM_NOTIFY_PANEL_DRAGGED's declaration for details.
+  gint title_width = 1;
+  gtk_window_get_size(GTK_WINDOW(title_), &title_width, NULL);
+
   GdkEventButton last_button_event = gdk_event->button;
   mouse_down_ = true;
   mouse_down_abs_x_ = last_button_event.x_root;
   mouse_down_abs_y_ = last_button_event.y_root;
-  mouse_down_offset_x_ = event.x();
+  mouse_down_offset_x_ = event.x() - title_width;
   mouse_down_offset_y_ = event.y();
   dragging_ = false;
   gdk_event_free(gdk_event);
@@ -210,7 +217,8 @@ bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
     }
   }
   if (dragging_) {
-    TabOverviewTypes::Message msg(TabOverviewTypes::Message::WM_MOVE_PANEL);
+    TabOverviewTypes::Message msg(
+        TabOverviewTypes::Message::WM_NOTIFY_PANEL_DRAGGED);
     msg.set_param(0, panel_xid_);
     msg.set_param(1, last_motion_event.x_root - mouse_down_offset_x_);
     msg.set_param(2, last_motion_event.y_root - mouse_down_offset_y_);

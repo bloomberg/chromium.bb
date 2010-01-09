@@ -214,4 +214,12 @@ TabOverviewTypes::TabOverviewTypes() {
   wm_message_atom_ = type_to_atom_[ATOM_CHROME_WM_MESSAGE];
 
   wm_ = XGetSelectionOwner(x11_util::GetXDisplay(), type_to_atom_[ATOM_WM_S0]);
+
+  // Let the window manager know which version of the IPC messages we support.
+  Message msg(Message::WM_NOTIFY_IPC_VERSION);
+  // TODO: The version number is the latest listed in tab_overview_types.h --
+  // ideally, once this header is shared between Chrome and the Chrome OS window
+  // manager, we'll just define the version statically in the header.
+  msg.set_param(0, 1);
+  SendMessage(msg);
 }

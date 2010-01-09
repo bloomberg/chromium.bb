@@ -78,6 +78,8 @@ class TabOverviewTypes {
 
   struct Message {
    public:
+    // NOTE: Don't remove values from this enum; it is shared between
+    // Chrome and the window manager.
     enum Type {
       UNKNOWN = 0,
 
@@ -122,19 +124,30 @@ class TabOverviewTypes {
       //   param[2]: Y coordinate
       WM_MOVE_FLOATING_TAB,
 
-      // Instruct the WM to move a panel.
-      //   param[0]: X ID of the panel window
-      //   param[1]: X coordinate to which the panel should be moved
-      //   param[2]: Y coordinate
-      WM_MOVE_PANEL,
+      // Notify the WM that a panel has been dragged.
+      //   param[0]: X ID of the panel's content window
+      //   param[1]: X coordinate to which the upper-right corner of the
+      //             panel's titlebar window was dragged
+      //   param[2]: Y coordinate to which the upper-right corner of the
+      //             panel's titlebar window was dragged
+      // Note: The point given is actually that of one pixel to the right
+      // of the upper-right corner of the titlebar window.  For example, a
+      // no-op move message for a 10-pixel wide titlebar whose upper-left
+      // point is at (0, 0) would contain the X and Y paremeters (10, 0):
+      // in other words, the position of the titlebar's upper-left point
+      // plus its width.  This is intended to make both the Chrome and WM
+      // side of things simpler and to avoid some easy-to-make off-by-one
+      // errors.
+      WM_NOTIFY_PANEL_DRAGGED,
 
       // Notify the WM that the panel drag is complete (that is, the mouse
       // button has been released).
-      //   param[0]: X ID of the panel window
+      //   param[0]: X ID of the panel's content window
       WM_NOTIFY_PANEL_DRAG_COMPLETE,
 
-      // Instruct the WM to focus a window.  This is used when a tab is
-      // clicked in a tab overview window.
+      // Instruct the WM to focus a window (either top-level or a panel).
+      // This is used when a tab is clicked in a tab overview window, or
+      // when the user clicks on a panel's titlebar to expand it.
       //   param[0]: X ID of the window to focus
       WM_FOCUS_WINDOW,
 
@@ -144,8 +157,33 @@ class TabOverviewTypes {
       CHROME_NOTIFY_LAYOUT_MODE,
 
       // Instruct the WM to enter overview mode.
-      //   param[0]: X ID of the window show the tab overview for.
+      //   param[0]: X ID of the window to show the tab overview for.
       WM_SWITCH_TO_OVERVIEW_MODE,
+
+      // Let the WM know which version of this file Chrome is using.  It's
+      // difficult to make changes synchronously to Chrome and the WM (our
+      // build scripts can use a locally-built Chromium, the latest one
+      // from the buildbot, or an older hardcoded version), so it's useful
+      // to be able to maintain compatibility in the WM with versions of
+      // Chrome that exhibit older behavior.
+      //
+      // Chrome should send a message to the WM at startup containing the
+      // latest version from the list below.  For backwards compatibility,
+      // the WM assumes version 0 if it doesn't receive a message.  Here
+      // are the changes that have been made in successive versions of the
+      // protocol:
+      //
+      // 1: WM_NOTIFY_PANEL_DRAGGED contains the position of the
+      //    upper-right, rather than upper-left, corner of of the titlebar
+      //    window
+      //
+      // TODO: The latest version should be hardcoded in this file once the
+      // file is being shared between Chrome and the WM so Chrome can just
+      // pull it from there.  Better yet, the message could be sent
+      // automatically in WmIpc's c'tor.
+      //
+      //   param[0]: version of this protocol currently supported
+      WM_NOTIFY_IPC_VERSION,
 
       kNumTypes,
     };
