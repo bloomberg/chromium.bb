@@ -28,7 +28,6 @@ class MockCommandBuffer : public CommandBuffer {
   MOCK_METHOD0(GetGetOffset, int32());
   MOCK_METHOD1(SetGetOffset, void(int32 get_offset));
   MOCK_METHOD0(GetPutOffset, int32());
-  MOCK_METHOD1(SetPutOffsetChangeCallback, void(Callback0::Type* callback));
   MOCK_METHOD1(CreateTransferBuffer, int32(size_t size));
   MOCK_METHOD1(DestroyTransferBuffer, void(int32 handle));
   MOCK_METHOD1(GetTransferBuffer, Buffer(int32 handle));

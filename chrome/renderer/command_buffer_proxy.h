@@ -40,7 +40,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual int32 GetGetOffset();
   virtual void SetGetOffset(int32 get_offset);
   virtual int32 GetPutOffset();
-  virtual void SetPutOffsetChangeCallback(Callback0::Type* callback);
   virtual int32 CreateTransferBuffer(size_t size);
   virtual void DestroyTransferBuffer(int32 id);
   virtual gpu::Buffer GetTransferBuffer(int32 handle);

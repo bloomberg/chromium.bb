@@ -31,7 +31,6 @@ class CommandBufferService : public CommandBuffer {
   virtual int32 GetGetOffset();
   virtual void SetGetOffset(int32 get_offset);
   virtual int32 GetPutOffset();
-  virtual void SetPutOffsetChangeCallback(Callback0::Type* callback);
   virtual int32 CreateTransferBuffer(size_t size);
   virtual void DestroyTransferBuffer(int32 id);
   virtual Buffer GetTransferBuffer(int32 handle);
@@ -41,6 +40,18 @@ class CommandBufferService : public CommandBuffer {
   virtual void SetParseError(int32 parse_error);
   virtual bool GetErrorStatus();
   virtual void RaiseErrorStatus();
+
+  // Sets a callback that should be posted on another thread whenever the put
+  // offset is changed. The callback must not return until some progress has
+  // been made (unless the command buffer is empty), i.e. the
+  // get offset must have changed. It need not process the entire command
+  // buffer though. This allows concurrency between the writer and the reader
+  // while giving the writer a means of waiting for the reader to make some
+  // progress before attempting to write more to the command buffer. Avoiding
+  // the use of a synchronization primitive like a condition variable to
+  // synchronize reader and writer reduces the risk of deadlock.
+  // Takes ownership of callback. The callback is invoked on the plugin thread.
+  virtual void SetPutOffsetChangeCallback(Callback0::Type* callback);
 
  private:
   scoped_ptr< base::SharedMemory> ring_buffer_;

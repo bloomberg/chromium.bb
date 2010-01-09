@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_H_
 #define GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_H_
 
-#include "base/task.h"
+#include "base/basictypes.h"
 #include "gpu/command_buffer/common/buffer.h"
 
 namespace gpu {
@@ -41,18 +41,6 @@ class CommandBuffer {
 
   // Returns the current put offset. This can be called from any thread.
   virtual int32 GetPutOffset() = 0;
-
-  // Sets a callback that should be posted on another thread whenever the put
-  // offset is changed. The callback must not return until some progress has
-  // been made (unless the command buffer is empty), i.e. the
-  // get offset must have changed. It need not process the entire command
-  // buffer though. This allows concurrency between the writer and the reader
-  // while giving the writer a means of waiting for the reader to make some
-  // progress before attempting to write more to the command buffer. Avoiding
-  // the use of a synchronization primitive like a condition variable to
-  // synchronize reader and writer reduces the risk of deadlock.
-  // Takes ownership of callback. The callback is invoked on the plugin thread.
-  virtual void SetPutOffsetChangeCallback(Callback0::Type* callback) = 0;
 
   // Create a transfer buffer and return a handle that uniquely
   // identifies it or -1 on error.

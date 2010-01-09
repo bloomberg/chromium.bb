@@ -107,11 +107,6 @@ int32 CommandBufferProxy::GetPutOffset() {
   return -1;
 }
 
-void CommandBufferProxy::SetPutOffsetChangeCallback(Callback0::Type* callback) {
-  // Not implemented in proxy.
-  NOTREACHED();
-}
-
 int32 CommandBufferProxy::CreateTransferBuffer(size_t size) {
   int32 id;
   if (Send(new CommandBufferMsg_CreateTransferBuffer(route_id_, size, &id)))

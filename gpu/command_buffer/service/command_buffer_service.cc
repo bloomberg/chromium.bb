@@ -84,11 +84,6 @@ int32 CommandBufferService::GetPutOffset() {
   return put_offset_;
 }
 
-void CommandBufferService::SetPutOffsetChangeCallback(
-    Callback0::Type* callback) {
-  put_offset_change_callback_.reset(callback);
-}
-
 int32 CommandBufferService::CreateTransferBuffer(size_t size) {
   linked_ptr<SharedMemory> buffer(new SharedMemory);
   if (!buffer->Create(std::wstring(), false, false, size))
@@ -181,6 +176,11 @@ bool CommandBufferService::GetErrorStatus() {
 
 void CommandBufferService::RaiseErrorStatus() {
   error_status_ = true;
+}
+
+void CommandBufferService::SetPutOffsetChangeCallback(
+    Callback0::Type* callback) {
+  put_offset_change_callback_.reset(callback);
 }
 
 }  // namespace gpu

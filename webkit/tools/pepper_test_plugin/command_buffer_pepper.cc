@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "webkit/tools/pepper_test_plugin/command_buffer_pepper.h"
+#include "base/logging.h"
 
 using base::SharedMemory;
 using gpu::Buffer;
@@ -94,12 +95,6 @@ int32 CommandBufferPepper::GetPutOffset() {
   }
 
   return value;
-}
-
-void CommandBufferPepper::SetPutOffsetChangeCallback(
-    Callback0::Type* callback) {
-  // Not implemented by proxy.
-  NOTREACHED();
 }
 
 int32 CommandBufferPepper::CreateTransferBuffer(size_t size) {
