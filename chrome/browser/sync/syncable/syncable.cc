@@ -277,7 +277,7 @@ EntryKernel* Directory::GetEntryById(const Id& id,
                                      ScopedKernelLock* const lock) {
   DCHECK(kernel_);
   // First look up in memory
-  kernel_->needle.ref(ID) = id;
+  kernel_->needle.put(ID, id);
   IdsIndex::iterator id_found = kernel_->ids_index->find(&kernel_->needle);
   if (id_found != kernel_->ids_index->end()) {
     // Found it in memory.  Easy.
@@ -311,7 +311,7 @@ EntryKernel* Directory::GetEntryByHandle(const int64 metahandle) {
 EntryKernel* Directory::GetEntryByHandle(const int64 metahandle,
                                          ScopedKernelLock* lock) {
   // Look up in memory
-  kernel_->needle.ref(META_HANDLE) = metahandle;
+  kernel_->needle.put(META_HANDLE, metahandle);
   MetahandlesIndex::iterator found =
     kernel_->metahandles_index->find(&kernel_->needle);
   if (found != kernel_->metahandles_index->end()) {
@@ -342,14 +342,14 @@ struct AllPathsMatcher : public PathMatcher {
   }
 
   virtual Index::iterator lower_bound(Index* index) {
-    needle_.ref(PARENT_ID) = parent_id_;
-    needle_.ref(META_HANDLE) = std::numeric_limits<int64>::min();
+    needle_.put(PARENT_ID, parent_id_);
+    needle_.put(META_HANDLE, std::numeric_limits<int64>::min());
     return index->lower_bound(&needle_);
   }
 
   virtual Index::iterator upper_bound(Index* index) {
-    needle_.ref(PARENT_ID) = parent_id_;
-    needle_.ref(META_HANDLE) = std::numeric_limits<int64>::max();
+    needle_.put(PARENT_ID, parent_id_);
+    needle_.put(META_HANDLE, std::numeric_limits<int64>::max());
     return index->upper_bound(&needle_);
   }
 };
@@ -391,11 +391,11 @@ void ZeroFields(EntryKernel* entry, int first_field) {
   // Note that bitset<> constructor sets all bits to zero, and strings
   // initialize to empty.
   for ( ; i < INT64_FIELDS_END; ++i)
-    entry->ref(static_cast<Int64Field>(i)) = 0;
+    entry->put(static_cast<Int64Field>(i), 0);
   for ( ; i < ID_FIELDS_END; ++i)
-    entry->ref(static_cast<IdField>(i)).Clear();
+    entry->mutable_ref(static_cast<IdField>(i)).Clear();
   for ( ; i < BIT_FIELDS_END; ++i)
-    entry->ref(static_cast<BitField>(i)) = false;
+    entry->put(static_cast<BitField>(i), false);
   if (i < BLOB_FIELDS_END)
     i = BLOB_FIELDS_END;
 }
@@ -420,14 +420,14 @@ void Directory::InsertEntry(EntryKernel* entry, ScopedKernelLock* lock) {
 void Directory::Undelete(EntryKernel* const entry) {
   DCHECK(entry->ref(IS_DEL));
   ScopedKernelLock lock(this);
-  entry->ref(IS_DEL) = false;
+  entry->put(IS_DEL, false);
   entry->mark_dirty();
   CHECK(kernel_->parent_id_child_index->insert(entry).second);
 }
 
 void Directory::Delete(EntryKernel* const entry) {
   DCHECK(!entry->ref(IS_DEL));
-  entry->ref(IS_DEL) = true;
+  entry->put(IS_DEL, true);
   entry->mark_dirty();
   ScopedKernelLock lock(this);
   CHECK(1 == kernel_->parent_id_child_index->erase(entry));
@@ -438,7 +438,7 @@ bool Directory::ReindexId(EntryKernel* const entry, const Id& new_id) {
   if (NULL != GetEntryById(new_id, &lock))
     return false;
   CHECK(1 == kernel_->ids_index->erase(entry));
-  entry->ref(ID) = new_id;
+  entry->put(ID, new_id);
   CHECK(kernel_->ids_index->insert(entry).second);
   return true;
 }
@@ -448,7 +448,7 @@ void Directory::ReindexParentId(EntryKernel* const entry,
 
   ScopedKernelLock lock(this);
   if (entry->ref(IS_DEL)) {
-    entry->ref(PARENT_ID) = new_parent_id;
+    entry->put(PARENT_ID, new_parent_id);
     return;
   }
 
@@ -457,7 +457,7 @@ void Directory::ReindexParentId(EntryKernel* const entry,
   }
 
   CHECK(1 == kernel_->parent_id_child_index->erase(entry));
-  entry->ref(PARENT_ID) = new_parent_id;
+  entry->put(PARENT_ID, new_parent_id);
   CHECK(kernel_->parent_id_child_index->insert(entry).second);
 }
 
@@ -532,7 +532,7 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   // Now drop everything we can out of memory.
   for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
-    kernel_->needle.ref(META_HANDLE) = i->ref(META_HANDLE);
+    kernel_->needle.put(META_HANDLE, i->ref(META_HANDLE));
     MetahandlesIndex::iterator found =
         kernel_->metahandles_index->find(&kernel_->needle);
     EntryKernel* entry = (found == kernel_->metahandles_index->end() ?
@@ -575,7 +575,7 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
   // that SaveChanges will at least try again later.
   for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
-    kernel_->needle.ref(META_HANDLE) = i->ref(META_HANDLE);
+    kernel_->needle.put(META_HANDLE, i->ref(META_HANDLE));
     MetahandlesIndex::iterator found =
         kernel_->metahandles_index->find(&kernel_->needle);
     if (found != kernel_->metahandles_index->end()) {
@@ -1014,20 +1014,20 @@ void MutableEntry::Init(WriteTransaction* trans, const Id& parent_id,
   kernel_ = new EntryKernel;
   ZeroFields(kernel_, BEGIN_FIELDS);
   kernel_->mark_dirty();
-  kernel_->ref(ID) = trans->directory_->NextId();
-  kernel_->ref(META_HANDLE) = trans->directory_->NextMetahandle();
-  kernel_->ref(PARENT_ID) = parent_id;
-  kernel_->ref(NON_UNIQUE_NAME) = name;
+  kernel_->put(ID, trans->directory_->NextId());
+  kernel_->put(META_HANDLE, trans->directory_->NextMetahandle());
+  kernel_->put(PARENT_ID, parent_id);
+  kernel_->put(NON_UNIQUE_NAME, name);
   const int64 now = Now();
-  kernel_->ref(CTIME) = now;
-  kernel_->ref(MTIME) = now;
+  kernel_->put(CTIME, now);
+  kernel_->put(MTIME, now);
   // We match the database defaults here
-  kernel_->ref(BASE_VERSION) = CHANGES_VERSION;
+  kernel_->put(BASE_VERSION, CHANGES_VERSION);
   trans->directory()->InsertEntry(kernel_);
   // Because this entry is new, it was originally deleted.
-  kernel_->ref(IS_DEL) = true;
+  kernel_->put(IS_DEL, true);
   trans->SaveOriginal(kernel_);
-  kernel_->ref(IS_DEL) = false;
+  kernel_->put(IS_DEL, false);
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
@@ -1040,12 +1040,12 @@ MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
   }
   kernel_ = new EntryKernel;
   ZeroFields(kernel_, BEGIN_FIELDS);
-  kernel_->ref(ID) = id;
+  kernel_->put(ID, id);
   kernel_->mark_dirty();
-  kernel_->ref(META_HANDLE) = trans->directory_->NextMetahandle();
-  kernel_->ref(IS_DEL) = true;
+  kernel_->put(META_HANDLE, trans->directory_->NextMetahandle());
+  kernel_->put(IS_DEL, true);
   // We match the database defaults here
-  kernel_->ref(BASE_VERSION) = CHANGES_VERSION;
+  kernel_->put(BASE_VERSION, CHANGES_VERSION);
   trans->directory()->InsertEntry(kernel_);
   trans->SaveOriginal(kernel_);
 }
@@ -1080,7 +1080,7 @@ bool MutableEntry::PutIsDel(bool is_del) {
 bool MutableEntry::Put(Int64Field field, const int64& value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
-    kernel_->ref(field) = value;
+    kernel_->put(field, value);
     kernel_->mark_dirty();
   }
   return true;
@@ -1096,7 +1096,7 @@ bool MutableEntry::Put(IdField field, const Id& value) {
       dir()->ReindexParentId(kernel_, value);
       PutPredecessor(Id());
     } else {
-      kernel_->ref(field) = value;
+      kernel_->put(field, value);
     }
     kernel_->mark_dirty();
   }
@@ -1106,7 +1106,7 @@ bool MutableEntry::Put(IdField field, const Id& value) {
 bool MutableEntry::Put(BaseVersion field, int64 value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
-    kernel_->ref(field) = value;
+    kernel_->put(field, value);
     kernel_->mark_dirty();
   }
   return true;
@@ -1119,7 +1119,7 @@ bool MutableEntry::Put(StringField field, const string& value) {
 bool MutableEntry::PutImpl(StringField field, const string& value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
-    kernel_->ref(field) = value;
+    kernel_->put(field, value);
     kernel_->mark_dirty();
   }
   return true;
@@ -1139,7 +1139,7 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
       CHECK(index->insert(kernel_->ref(META_HANDLE)).second);
     else
       CHECK(1 == index->erase(kernel_->ref(META_HANDLE)));
-    kernel_->ref(field) = value;
+    kernel_->put(field, value);
     kernel_->mark_dirty();
   }
   return true;

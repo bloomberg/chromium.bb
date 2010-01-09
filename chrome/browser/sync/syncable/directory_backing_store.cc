@@ -100,22 +100,22 @@ EntryKernel* UnpackEntry(SQLStatement* statement) {
     CHECK(statement->column_count() == static_cast<int>(FIELD_COUNT));
     int i = 0;
     for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
-      result->ref(static_cast<Int64Field>(i)) =
-          statement->column_int64(i);
+      result->put(static_cast<Int64Field>(i), statement->column_int64(i));
     }
     for ( ; i < ID_FIELDS_END; ++i) {
-      result->ref(static_cast<IdField>(i)).s_ = statement->column_string(i);
+      result->mutable_ref(static_cast<IdField>(i)).s_ =
+          statement->column_string(i);
     }
     for ( ; i < BIT_FIELDS_END; ++i) {
-      result->ref(static_cast<BitField>(i)) =
-          (0 != statement->column_int(i));
+      result->put(static_cast<BitField>(i), (0 != statement->column_int(i)));
     }
     for ( ; i < STRING_FIELDS_END; ++i) {
-      result->ref(static_cast<StringField>(i)) = statement->column_string(i);
+      result->put(static_cast<StringField>(i), 
+          statement->column_string(i));
     }
     for ( ; i < BLOB_FIELDS_END; ++i) {
       statement->column_blob_as_vector(
-        i, &result->ref(static_cast<BlobField>(i)));
+        i, &result->mutable_ref(static_cast<BlobField>(i)));
     }
     ZeroFields(result, i);
   } else {

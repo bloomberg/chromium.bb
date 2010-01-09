@@ -221,11 +221,9 @@ typedef std::set<std::string> AttributeKeySet;
 // Why the singular enums?  So the code compile-time dispatches instead of
 // runtime dispatches as it would with a single enum and an if() statement.
 
-// The EntryKernel class contains the actual data for an entry.  It
-// would be a private class, except the number of required friend
-// declarations would bloat the code.
+// The EntryKernel class contains the actual data for an entry.
 struct EntryKernel {
- protected:
+ private:
   std::string string_fields[STRING_FIELDS_COUNT];
   Blob blob_fields[BLOB_FIELDS_COUNT];
   int64 int64_fields[INT64_FIELDS_COUNT];
@@ -246,38 +244,39 @@ struct EntryKernel {
     return dirty_;
   }
 
-  // Contain all this error-prone arithmetic in one place.
-  inline int64& ref(MetahandleField field) {
-    return int64_fields[field - INT64_FIELDS_BEGIN];
+  // Setters.
+  inline void put(MetahandleField field, int64 value) {
+    int64_fields[field - INT64_FIELDS_BEGIN] = value;
   }
-  inline int64& ref(Int64Field field) {
-    return int64_fields[field - INT64_FIELDS_BEGIN];
+  inline void put(Int64Field field, int64 value) {
+    int64_fields[field - INT64_FIELDS_BEGIN] = value;
   }
-  inline Id& ref(IdField field) {
-    return id_fields[field - ID_FIELDS_BEGIN];
+  inline void put(IdField field, const Id& value) {
+    id_fields[field - ID_FIELDS_BEGIN] = value;
   }
-  inline int64& ref(BaseVersion field) {
-    return int64_fields[field - INT64_FIELDS_BEGIN];
+  inline void put(BaseVersion field, int64 value) {
+    int64_fields[field - INT64_FIELDS_BEGIN] = value;
   }
-  inline std::bitset<BIT_FIELDS_COUNT>::reference ref(IndexedBitField field) {
-    return bit_fields[field - BIT_FIELDS_BEGIN];
+  inline void put(IndexedBitField field, bool value) {
+    bit_fields[field - BIT_FIELDS_BEGIN] = value;
   }
-  inline std::bitset<BIT_FIELDS_COUNT>::reference ref(IsDelField field) {
-    return bit_fields[field - BIT_FIELDS_BEGIN];
+  inline void put(IsDelField field, bool value) {
+    bit_fields[field - BIT_FIELDS_BEGIN] = value;
   }
-  inline std::bitset<BIT_FIELDS_COUNT>::reference ref(BitField field) {
-    return bit_fields[field - BIT_FIELDS_BEGIN];
+  inline void put(BitField field, bool value) {
+    bit_fields[field - BIT_FIELDS_BEGIN] = value;
   }
-  inline std::string& ref(StringField field) {
-    return string_fields[field - STRING_FIELDS_BEGIN];
+  inline void put(StringField field, const std::string& value) {
+    string_fields[field - STRING_FIELDS_BEGIN] = value;
   }
-  inline Blob& ref(BlobField field) {
-    return blob_fields[field - BLOB_FIELDS_BEGIN];
+  inline void put(BlobField field, const Blob& value) {
+    blob_fields[field - BLOB_FIELDS_BEGIN] = value;
   }
-  inline std::bitset<BIT_TEMPS_COUNT>::reference ref(BitTemp field) {
-    return bit_temps[field - BIT_TEMPS_BEGIN];
+  inline void put(BitTemp field, bool value) {
+    bit_temps[field - BIT_TEMPS_BEGIN] = value;
   }
 
+  // Const ref getters.
   inline int64 ref(MetahandleField field) const {
     return int64_fields[field - INT64_FIELDS_BEGIN];
   }
@@ -309,6 +308,16 @@ struct EntryKernel {
     return bit_temps[field - BIT_TEMPS_BEGIN];
   }
 
+  // Non-const, mutable ref getters for object types only.
+  inline std::string& mutable_ref(StringField field) {
+    return string_fields[field - STRING_FIELDS_BEGIN];
+  }
+  inline Blob& mutable_ref(BlobField field) {
+    return blob_fields[field - BLOB_FIELDS_BEGIN];
+  }
+  inline Id& mutable_ref(IdField field) {
+    return id_fields[field - ID_FIELDS_BEGIN];
+  }
  private:
   // Tracks whether this entry needs to be saved to the database.
   bool dirty_;
@@ -462,7 +471,7 @@ class MutableEntry : public Entry {
   inline bool PutField(FieldType field, const ValueType& value) {
     DCHECK(kernel_);
     if (kernel_->ref(field) != value) {
-      kernel_->ref(field) = value;
+      kernel_->put(field, value);
       kernel_->mark_dirty();
     }
     return true;
@@ -471,7 +480,7 @@ class MutableEntry : public Entry {
   template <typename TempType, typename ValueType>
   inline bool PutTemp(TempType field, const ValueType& value) {
     DCHECK(kernel_);
-    kernel_->ref(field) = value;
+    kernel_->put(field, value);
     return true;
   }
 
