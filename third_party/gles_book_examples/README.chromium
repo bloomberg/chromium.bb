@@ -17,5 +17,11 @@ Local Modifications:
     - Common/Include/GLES2/*
     - Common/Include/KD/*
     - Common/Lib/*
+    - Common/Source/esUtil_win32.c
     - Lib/*
     - *.vcproj, *.sln
+
+  Added header files for individual examples so that they can be compiled as
+  static libraries:
+    - Chapter_2/Hello_Triangle/Hello_Triangle.h
+    - Chapter_8/Simple_VertexShader/Simple_VertexShader.h

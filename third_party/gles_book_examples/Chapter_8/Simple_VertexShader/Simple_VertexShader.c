@@ -13,38 +13,16 @@
 //    This is a simple example that draws a rotating cube in perspective
 //    using a vertex shader to transform the object
 //
+
+#include "Simple_VertexShader.h"
 #include <stdlib.h>
-#include "esUtil.h"
-
-typedef struct
-{
-   // Handle to a program object
-   GLuint programObject;
-
-   // Attribute locations
-   GLint  positionLoc;
-
-   // Uniform locations
-   GLint  mvpLoc;
-   
-   // Vertex daata
-   GLfloat  *vertices;
-   GLuint   *indices;
-   int       numIndices;
-
-   // Rotation angle
-   GLfloat   angle;
-
-   // MVP matrix
-   ESMatrix  mvpMatrix;
-} UserData;
 
 ///
 // Initialize the shader and program object
 //
-int Init ( ESContext *esContext )
+int svsInit ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   SVSUserData *userData = esContext->userData;
    GLbyte vShaderStr[] =  
       "uniform mat4 u_mvpMatrix;                   \n"
       "attribute vec4 a_position;                  \n"
@@ -53,8 +31,9 @@ int Init ( ESContext *esContext )
       "   gl_Position = u_mvpMatrix * a_position;  \n"
       "}                                           \n";
    
+   // TODO(alokp): Shaders containing "precision" do not compile.
    GLbyte fShaderStr[] =  
-      "precision mediump float;                            \n"
+      "//precision mediump float;                            \n"
       "void main()                                         \n"
       "{                                                   \n"
       "  gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );        \n"
@@ -80,13 +59,12 @@ int Init ( ESContext *esContext )
    return TRUE;
 }
 
-
 ///
 // Update MVP matrix based on time
 //
-void Update ( ESContext *esContext, float deltaTime )
+void svsUpdate ( ESContext *esContext, float deltaTime )
 {
-   UserData *userData = (UserData*) esContext->userData;
+   SVSUserData *userData = (SVSUserData*) esContext->userData;
    ESMatrix perspective;
    ESMatrix modelview;
    float    aspect;
@@ -120,9 +98,9 @@ void Update ( ESContext *esContext, float deltaTime )
 ///
 // Draw a triangle using the shader pair created in Init()
 //
-void Draw ( ESContext *esContext )
+void svsDraw ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   SVSUserData *userData = esContext->userData;
    
    // Set the viewport
    glViewport ( 0, 0, esContext->width, esContext->height );
@@ -147,15 +125,16 @@ void Draw ( ESContext *esContext )
    // Draw the cube
    glDrawElements ( GL_TRIANGLES, userData->numIndices, GL_UNSIGNED_INT, userData->indices );
 
-   eglSwapBuffers ( esContext->eglDisplay, esContext->eglSurface );
+   // TODO(alokp): glFlush should not be necessary with SwapBuffers.
+   glFlush();
 }
 
 ///
 // Cleanup
 //
-void ShutDown ( ESContext *esContext )
+void svsShutDown ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   SVSUserData *userData = esContext->userData;
 
    if ( userData->vertices != NULL )
    {
@@ -169,26 +148,4 @@ void ShutDown ( ESContext *esContext )
 
    // Delete program object
    glDeleteProgram ( userData->programObject );
-}
-
-
-int main ( int argc, char *argv[] )
-{
-   ESContext esContext;
-   UserData  userData;
-
-   esInitContext ( &esContext );
-   esContext.userData = &userData;
-
-   esCreateWindow ( &esContext, "Simple Texture 2D", 320, 240, ES_WINDOW_RGB );
-   
-   if ( !Init ( &esContext ) )
-      return 0;
-
-   esRegisterDrawFunc ( &esContext, Draw );
-   esRegisterUpdateFunc ( &esContext, Update );
-   
-   esMainLoop ( &esContext );
-
-   ShutDown ( &esContext );
 }

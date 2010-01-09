@@ -12,7 +12,10 @@
 //
 //    This file contains the Win32 implementation of a TGA image loader
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif  // WIN32_LEAN_AND_MEAN
+
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>

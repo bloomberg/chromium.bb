@@ -8,26 +8,31 @@
 //            http://www.opengles-book.com
 //
 
-// esUtil_win.h
-//
-//   API-neutral interface for creating windows.  Implementation needs to be provided per-platform.
+#ifndef HELLO_TRIANGLE_H
+#define HELLO_TRIANGLE_H
 
-#ifndef ESUTIL_WIN_H
-#define ESUTIL_WIN_H
+#include "esUtil.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
 
-///
-//  WinTGALoad()
-//    
-//      TGA loader win32 implementation
-//
-int WinTGALoad ( const char *fileName, char **buffer, int *width, int *height );
+typedef struct
+{
+   // Handle to a program object
+   GLuint programObject;
+   // Handle to vbo object
+   GLuint vbo;
+
+} HTUserData;
+
+extern int htInit ( ESContext *esContext );
+
+extern void htDraw ( ESContext *esContext );
+
+extern void htShutDown ( ESContext *esContext );
 
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
-
-#endif // ESUTIL_WIN_H
+#endif  // HELLO_TRIANGLE_H

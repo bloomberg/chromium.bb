@@ -40,7 +40,7 @@
 /// \param shaderSrc Shader source string
 /// \return A new shader object on success, 0 on failure
 //
-GLuint ESUTIL_API esLoadShader ( GLenum type, const char *shaderSrc )
+GLuint esLoadShader ( GLenum type, const char *shaderSrc )
 {
    GLuint shader;
    GLint compiled;
@@ -93,7 +93,7 @@ GLuint ESUTIL_API esLoadShader ( GLenum type, const char *shaderSrc )
 /// \param fragShaderSrc Fragment shader source code
 /// \return A new program object linked with the vertex/fragment shader pair, 0 on failure
 //
-GLuint ESUTIL_API esLoadProgram ( const char *vertShaderSrc, const char *fragShaderSrc )
+GLuint esLoadProgram ( const char *vertShaderSrc, const char *fragShaderSrc )
 {
    GLuint vertexShader;
    GLuint fragmentShader;
