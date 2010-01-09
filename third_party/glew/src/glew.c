@@ -8865,6 +8865,28 @@ GLenum wglewContextInit (WGLEW_CONTEXT_ARG_DEF_LIST)
 
 #elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
 
+PFNGLXQUERYEXTENSIONPROC __glewXQueryExtension = NULL;
+PFNGLXQUERYVERSIONPROC __glewXQueryVersion = NULL;
+PFNGLXGETCONFIGPROC __glewXGetConfig = NULL;
+PFNGLXCHOOSEVISUALPROC __glewXChooseVisual = NULL;
+PFNGLXCREATEGLXPIXMAPPROC __glewXCreateGLXPixmap = NULL;
+PFNGLXDESTROYGLXPIXMAPPROC __glewXDestroyGLXPixmap = NULL;
+PFNGLXCREATECONTEXTPROC __glewXCreateContext = NULL;
+PFNGLXDESTROYCONTEXTPROC __glewXDestroyContext = NULL;
+PFNGLXISDIRECTPROC __glewXIsDirect = NULL;
+PFNGLXCOPYCONTEXTPROC __glewXCopyContext = NULL;
+PFNGLXMAKECURRENTPROC __glewXMakeCurrent = NULL;
+PFNGLXGETCURRENTCONTEXTPROC __glewXGetCurrentContext = NULL;
+PFNGLXGETCURRENTDRAWABLEPROC __glewXGetCurrentDrawable = NULL;
+PFNGLXWAITGLPROC __glewXWaitGL = NULL;
+PFNGLXWAITXPROC __glewXWaitX = NULL;
+PFNGLXSWAPBUFFERSPROC __glewXSwapBuffers = NULL;
+PFNGLXUSEXFONTPROC __glewXUseXFont = NULL;
+
+PFNGLXQUERYEXTENSIONSSTRINGPROC __glewXQueryExtensionsString = NULL;
+PFNGLXGETCLIENTSTRINGPROC __glewXGetClientString = NULL;
+PFNGLXQUERYSERVERSTRINGPROC __glewXQueryServerString = NULL;
+
 PFNGLXGETCURRENTDISPLAYPROC __glewXGetCurrentDisplay = NULL;
 
 PFNGLXCHOOSEFBCONFIGPROC __glewXChooseFBConfig = NULL;
@@ -9040,6 +9062,38 @@ GLboolean __GLXEW_SUN_get_transparent_index = GL_FALSE;
 GLboolean __GLXEW_SUN_video_resize = GL_FALSE;
 
 #endif /* !GLEW_MX */
+
+#ifdef GLX_VERSION_1_1
+
+static GLboolean _glewInit_GLX_VERSION_1_1 (GLXEW_CONTEXT_ARG_DEF_INIT) {
+  GLboolean r = GL_FALSE;
+
+  r = ((glXQueryExtension = (PFNGLXQUERYEXTENSIONPROC)glewGetProcAddress((const GLubyte*)"glXQueryExtension")) == NULL) || r;
+  r = ((glXQueryVersion = (PFNGLXQUERYVERSIONPROC)glewGetProcAddress((const GLubyte*)"glXQueryVersion")) == NULL) || r;
+  r = ((glXGetConfig = (PFNGLXGETCONFIGPROC)glewGetProcAddress((const GLubyte*)"glXGetConfig")) == NULL) || r;
+  r = ((glXChooseVisual = (PFNGLXCHOOSEVISUALPROC)glewGetProcAddress((const GLubyte*)"glXChooseVisual")) == NULL) || r;
+  r = ((glXCreateGLXPixmap = (PFNGLXCREATEGLXPIXMAPPROC)glewGetProcAddress((const GLubyte*)"glXCreateGLXPixmap")) == NULL) || r;
+  r = ((glXDestroyGLXPixmap = (PFNGLXDESTROYGLXPIXMAPPROC)glewGetProcAddress((const GLubyte*)"glXDestroyGLXPixmap")) == NULL) || r;
+  r = ((glXCreateContext = (PFNGLXCREATECONTEXTPROC)glewGetProcAddress((const GLubyte*)"glXCreateContext")) == NULL) || r;
+  r = ((glXDestroyContext = (PFNGLXDESTROYCONTEXTPROC)glewGetProcAddress((const GLubyte*)"glXDestroyContext")) == NULL) || r;
+  r = ((glXIsDirect = (PFNGLXISDIRECTPROC)glewGetProcAddress((const GLubyte*)"glXIsDirect")) == NULL) || r;
+  r = ((glXCopyContext = (PFNGLXCOPYCONTEXTPROC)glewGetProcAddress((const GLubyte*)"glXCopyContext")) == NULL) || r;
+  r = ((glXMakeCurrent = (PFNGLXMAKECURRENTPROC)glewGetProcAddress((const GLubyte*)"glXMakeCurrent")) == NULL) || r;
+  r = ((glXGetCurrentContext = (PFNGLXGETCURRENTCONTEXTPROC)glewGetProcAddress((const GLubyte*)"glXGetCurrentContext")) == NULL) || r;
+  r = ((glXGetCurrentDrawable = (PFNGLXGETCURRENTDRAWABLEPROC)glewGetProcAddress((const GLubyte*)"glXGetCurrentDrawable")) == NULL) || r;
+  r = ((glXWaitGL = (PFNGLXWAITGLPROC)glewGetProcAddress((const GLubyte*)"glXWaitGL")) == NULL) || r;
+  r = ((glXWaitX = (PFNGLXWAITXPROC)glewGetProcAddress((const GLubyte*)"glXWaitX")) == NULL) || r;
+  r = ((glXSwapBuffers = (PFNGLXSWAPBUFFERSPROC)glewGetProcAddress((const GLubyte*)"glXSwapBuffers")) == NULL) || r;
+  r = ((glXUseXFont = (PFNGLXUSEXFONTPROC)glewGetProcAddress((const GLubyte*)"glXUseXFont")) == NULL) || r;
+
+  r = ((glXQueryExtensionsString = (PFNGLXQUERYEXTENSIONSSTRINGPROC)glewGetProcAddress((const GLubyte*)"glXQueryExtensionsString")) == NULL) || r;
+  r = ((glXGetClientString = (PFNGLXGETCLIENTSTRINGPROC)glewGetProcAddress((const GLubyte*)"glXGetClientString")) == NULL) || r;
+  r = ((glXQueryServerString = (PFNGLXQUERYSERVERSTRINGPROC)glewGetProcAddress((const GLubyte*)"glXQueryServerString")) == NULL) || r;
+
+  return r;
+}
+
+#endif
 
 #ifdef GLX_VERSION_1_2
 
@@ -9546,7 +9600,13 @@ static GLboolean _glewInit_GLX_SUN_video_resize (GLXEW_CONTEXT_ARG_DEF_INIT)
 
 /* ------------------------------------------------------------------------ */
 
-typedef const char* ( * PFNGLXGETCLIENTSTRINGPROC) (Display *dpy, int name);
+#if !defined(GLEW_MX)
+GLenum glxewInit () {
+  if (_glewInit_GLX_VERSION_1_1(GLEW_CONTEXT_ARG_VAR_INIT)) return GLEW_ERROR_GLX_VERSION_11_ONLY;
+
+  return GLEW_OK;
+}
+#endif
 
 GLboolean glxewGetExtension (const char* name)
 {    
@@ -9572,8 +9632,6 @@ GLboolean glxewGetExtension (const char* name)
   }
   return GL_FALSE;
 }
-
-typedef Bool (* PFNGLXQUERYVERSIONPROC) (Display *dpy, int *major, int *minor);
 
 GLenum glxewContextInit (GLXEW_CONTEXT_ARG_DEF_LIST)
 {

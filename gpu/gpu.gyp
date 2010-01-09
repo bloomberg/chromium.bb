@@ -54,7 +54,6 @@
                 '-L<(PRODUCT_DIR)',
               ],
               'libraries': [
-                '-lGL',
                 '-lX11',
               ],
             },
@@ -255,6 +254,7 @@
               'command_buffer/service/x_utils.h',
             ],
             'dependencies': [
+              'gl_libs',
               '../build/linux/system.gyp:gtk',
             ]
           },

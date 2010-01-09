@@ -7,7 +7,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_X_UTILS_H_
 #define GPU_COMMAND_BUFFER_SERVICE_X_UTILS_H_
 
-#include <GL/glx.h>
+#include <GL/glxew.h>
 #include "base/basictypes.h"
 #include "gpu/command_buffer/common/logging.h"
 

@@ -140,23 +140,41 @@ typedef struct __GLXcontextRec *GLXContext;
 
 typedef unsigned int GLXVideoDeviceNV; 
 
-extern Bool glXQueryExtension (Display *dpy, int *errorBase, int *eventBase);
-extern Bool glXQueryVersion (Display *dpy, int *major, int *minor);
-extern int glXGetConfig (Display *dpy, XVisualInfo *vis, int attrib, int *value);
-extern XVisualInfo* glXChooseVisual (Display *dpy, int screen, int *attribList);
-extern GLXPixmap glXCreateGLXPixmap (Display *dpy, XVisualInfo *vis, Pixmap pixmap);
-extern void glXDestroyGLXPixmap (Display *dpy, GLXPixmap pix);
-extern GLXContext glXCreateContext (Display *dpy, XVisualInfo *vis, GLXContext shareList, Bool direct);
-extern void glXDestroyContext (Display *dpy, GLXContext ctx);
-extern Bool glXIsDirect (Display *dpy, GLXContext ctx);
-extern void glXCopyContext (Display *dpy, GLXContext src, GLXContext dst, GLulong mask);
-extern Bool glXMakeCurrent (Display *dpy, GLXDrawable drawable, GLXContext ctx);
-extern GLXContext glXGetCurrentContext (void);
-extern GLXDrawable glXGetCurrentDrawable (void);
-extern void glXWaitGL (void);
-extern void glXWaitX (void);
-extern void glXSwapBuffers (Display *dpy, GLXDrawable drawable);
-extern void glXUseXFont (Font font, int first, int count, int listBase);
+typedef Bool ( * PFNGLXQUERYEXTENSIONPROC) (Display *dpy, int *errorBase, int *eventBase);
+typedef Bool ( * PFNGLXQUERYVERSIONPROC) (Display *dpy, int *major, int *minor);
+typedef int ( * PFNGLXGETCONFIGPROC) (Display *dpy, XVisualInfo *vis, int attrib, int *value);
+typedef XVisualInfo* ( * PFNGLXCHOOSEVISUALPROC) (Display *dpy, int screen, int *attribList);
+typedef GLXPixmap ( * PFNGLXCREATEGLXPIXMAPPROC) (Display *dpy, XVisualInfo *vis, Pixmap pixmap);
+typedef void ( * PFNGLXDESTROYGLXPIXMAPPROC) (Display *dpy, GLXPixmap pix);
+typedef GLXContext ( * PFNGLXCREATECONTEXTPROC) (Display *dpy, XVisualInfo *vis, GLXContext shareList, Bool direct);
+typedef void ( * PFNGLXDESTROYCONTEXTPROC) (Display *dpy, GLXContext ctx);
+typedef Bool ( * PFNGLXISDIRECTPROC) (Display *dpy, GLXContext ctx);
+typedef void ( * PFNGLXCOPYCONTEXTPROC) (Display *dpy, GLXContext src, GLXContext dst, GLulong mask);
+typedef Bool ( * PFNGLXMAKECURRENTPROC) (Display *dpy, GLXDrawable drawable, GLXContext ctx);
+typedef GLXContext ( * PFNGLXGETCURRENTCONTEXTPROC) (void);
+typedef GLXDrawable ( * PFNGLXGETCURRENTDRAWABLEPROC) (void);
+typedef void ( * PFNGLXWAITGLPROC) (void);
+typedef void ( * PFNGLXWAITXPROC) (void);
+typedef void ( * PFNGLXSWAPBUFFERSPROC) (Display *dpy, GLXDrawable drawable);
+typedef void ( * PFNGLXUSEXFONTPROC) (Font font, int first, int count, int listBase);
+
+#define glXQueryExtension GLXEW_GET_FUN(__glewXQueryExtension)
+#define glXQueryVersion GLXEW_GET_FUN(__glewXQueryVersion)
+#define glXGetConfig GLXEW_GET_FUN(__glewXGetConfig)
+#define glXChooseVisual GLXEW_GET_FUN(__glewXChooseVisual)
+#define glXCreateGLXPixmap GLXEW_GET_FUN(__glewXCreateGLXPixmap)
+#define glXDestroyGLXPixmap GLXEW_GET_FUN(__glewXDestroyGLXPixmap)
+#define glXCreateContext GLXEW_GET_FUN(__glewXCreateContext)
+#define glXDestroyContext GLXEW_GET_FUN(__glewXDestroyContext)
+#define glXIsDirect GLXEW_GET_FUN(__glewXIsDirect)
+#define glXCopyContext GLXEW_GET_FUN(__glewXCopyContext)
+#define glXMakeCurrent GLXEW_GET_FUN(__glewXMakeCurrent)
+#define glXGetCurrentContext GLXEW_GET_FUN(__glewXGetCurrentContext)
+#define glXGetCurrentDrawable GLXEW_GET_FUN(__glewXGetCurrentDrawable)
+#define glXWaitGL GLXEW_GET_FUN(__glewXWaitGL)
+#define glXWaitX GLXEW_GET_FUN(__glewXWaitX)
+#define glXSwapBuffers GLXEW_GET_FUN(__glewXSwapBuffers)
+#define glXUseXFont GLXEW_GET_FUN(__glewXUseXFont)
 
 #define GLXEW_VERSION_1_0 GLXEW_GET_VAR(__GLXEW_VERSION_1_0)
 
@@ -171,9 +189,13 @@ extern void glXUseXFont (Font font, int first, int count, int listBase);
 #define GLX_VERSION 0x2
 #define GLX_EXTENSIONS 0x3
 
-extern const char* glXQueryExtensionsString (Display *dpy, int screen);
-extern const char* glXGetClientString (Display *dpy, int name);
-extern const char* glXQueryServerString (Display *dpy, int screen, int name);
+typedef const char* (* PFNGLXQUERYEXTENSIONSSTRINGPROC) (Display *dpy, int screen);
+typedef const char* (* PFNGLXGETCLIENTSTRINGPROC) (Display *dpy, int name);
+typedef const char* (* PFNGLXQUERYSERVERSTRINGPROC) (Display *dpy, int screen, int name);
+
+#define glXQueryExtensionsString GLXEW_GET_FUN(__glewXQueryExtensionsString)
+#define glXGetClientString GLXEW_GET_FUN(__glewXGetClientString)
+#define glXQueryServerString GLXEW_GET_FUN(__glewXQueryServerString)
 
 #define GLXEW_VERSION_1_1 GLXEW_GET_VAR(__GLXEW_VERSION_1_1)
 
@@ -1186,6 +1208,28 @@ typedef int ( * PFNGLXVIDEORESIZESUNPROC) (Display* display, GLXDrawable window,
 #define GLXEW_EXPORT extern
 #endif /* GLEW_MX */
 
+extern PFNGLXQUERYEXTENSIONPROC __glewXQueryExtension;
+extern PFNGLXQUERYVERSIONPROC __glewXQueryVersion;
+extern PFNGLXGETCONFIGPROC __glewXGetConfig;
+extern PFNGLXCHOOSEVISUALPROC __glewXChooseVisual;
+extern PFNGLXCREATEGLXPIXMAPPROC __glewXCreateGLXPixmap;
+extern PFNGLXDESTROYGLXPIXMAPPROC __glewXDestroyGLXPixmap;
+extern PFNGLXCREATECONTEXTPROC __glewXCreateContext;
+extern PFNGLXDESTROYCONTEXTPROC __glewXDestroyContext;
+extern PFNGLXISDIRECTPROC __glewXIsDirect;
+extern PFNGLXCOPYCONTEXTPROC __glewXCopyContext;
+extern PFNGLXMAKECURRENTPROC __glewXMakeCurrent;
+extern PFNGLXGETCURRENTCONTEXTPROC __glewXGetCurrentContext;
+extern PFNGLXGETCURRENTDRAWABLEPROC __glewXGetCurrentDrawable;
+extern PFNGLXWAITGLPROC __glewXWaitGL;
+extern PFNGLXWAITXPROC __glewXWaitX;
+extern PFNGLXSWAPBUFFERSPROC __glewXSwapBuffers;
+extern PFNGLXUSEXFONTPROC __glewXUseXFont;
+
+extern PFNGLXQUERYEXTENSIONSSTRINGPROC __glewXQueryExtensionsString;
+extern PFNGLXGETCLIENTSTRINGPROC __glewXGetClientString;
+extern PFNGLXQUERYSERVERSTRINGPROC __glewXQueryServerString;
+
 extern PFNGLXGETCURRENTDISPLAYPROC __glewXGetCurrentDisplay;
 
 extern PFNGLXCHOOSEFBCONFIGPROC __glewXChooseFBConfig;
@@ -1384,6 +1428,7 @@ extern GLboolean glxewContextIsSupported (GLXEWContext* ctx, const char* name);
 #define GLXEW_GET_VAR(x) (*(const GLboolean*)&x)
 #define GLXEW_GET_FUN(x) x
 
+extern GLenum glxewInit ();
 extern GLboolean glxewIsSupported (const char* name);
 
 #endif /* GLEW_MX */

@@ -4,13 +4,36 @@
 
 // This class implements the XWindowWrapper class.
 
+#include <dlfcn.h>
+
 #include "gpu/command_buffer/service/precompile.h"
 #include "gpu/command_buffer/common/logging.h"
 #include "gpu/command_buffer/service/x_utils.h"
 
 namespace gpu {
 
+// Some versions of NVIDIA's GL libGL.so include a broken version of
+// dlopen/dlsym, and so linking it into chrome breaks it. So we dynamically
+// load it, and use glew to dynamically resolve symbols.
+// See http://code.google.com/p/chromium/issues/detail?id=16800
+
+static bool g_glew_initialized = false;
+
 bool XWindowWrapper::Initialize() {
+  if (!g_glew_initialized) {
+    void* handle = dlopen("libGL.so.1", RTLD_LAZY | RTLD_GLOBAL);
+    if (!handle) {
+      LOG(ERROR) << "Could not find libGL.so.1";
+      return false;
+    }
+
+    // Initializes context-independent parts of GLEW
+    if (glxewInit() != GLEW_OK) {
+      LOG(ERROR) << "GLXEW failed initialization";
+      return false;
+    }
+    g_glew_initialized = true;
+  }
   XWindowAttributes attributes;
   XGetWindowAttributes(display_, window_, &attributes);
   XVisualInfo visual_info_template;
@@ -32,6 +55,21 @@ bool XWindowWrapper::Initialize() {
     DLOG(ERROR) << "Couldn't create GL context.";
     return false;
   }
+  if (!MakeCurrent()) {
+    return false;
+  }
+
+  // Initializes context-dependent parts of GLEW
+  if (glewInit() != GLEW_OK) {
+    LOG(ERROR) << "GLEW failed initialization";
+    return false;
+  }
+
+  if (!glewIsSupported("GL_VERSION_2_0")) {
+    LOG(ERROR) << "GL implementation doesn't support GL version 2.0";
+    return false;
+  }
+
   return true;
 }
 
