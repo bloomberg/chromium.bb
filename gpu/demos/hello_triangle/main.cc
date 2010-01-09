@@ -8,7 +8,7 @@
 // OpenGL ES 2.0 rendering.
 
 #include "gpu/demos/app_framework/application.h"
-#include "third_party/gles_book_examples/Chapter_2/Hello_Triangle/Hello_Triangle.h"
+#include "third_party/gles2_book/Chapter_2/Hello_Triangle/Hello_Triangle.h"
 
 namespace gpu_demos {
 class HelloTriangle : public Application {

@@ -28,7 +28,7 @@
       'type': 'executable',
       'dependencies': [
         'app_framework',
-        '../../third_party/gles_book_examples/gles_book_examples.gyp:hello_triangle',
+        '../../third_party/gles2_book/gles_book_examples.gyp:hello_triangle',
       ],
       'sources': [
         'hello_triangle/main.cc',
