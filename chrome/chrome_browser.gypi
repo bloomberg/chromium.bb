@@ -1884,7 +1884,7 @@
             'CHROME_V8',
           ],
         }],
-        ['chromeos==0 and toolkit_views==0', {
+        ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
           ],
@@ -2358,14 +2358,14 @@
                 ['exclude', '^browser/browser_list_gtk.cc'],
               ],
             }],
-#            ['OS=="linux" and toolkit_views==1', {
-#              'sources/': [
-#                ['include', '^browser/views/frame/standard_extender.h'],
-#                ['include', '^browser/views/frame/standard_extender.cc'],
-#                ['include', '^browser/gtk/external_protocol_dialog_gtk.cc'],
-#                ['include', '^browser/gtk/external_protocol_dialog_gtk.h'],
-#              ],
-#            }],
+            ['OS=="linux" and toolkit_views==1', {
+              'sources/': [
+                ['include', '^browser/views/frame/standard_extender.h'],
+                ['include', '^browser/views/frame/standard_extender.cc'],
+                ['include', '^browser/gtk/external_protocol_dialog_gtk.cc'],
+                ['include', '^browser/gtk/external_protocol_dialog_gtk.h'],
+              ],
+            }],
             ['OS=="linux" and chromeos==0 and toolkit_views==0', {
               'sources/': [
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
@@ -2424,7 +2424,7 @@
                 ['include', 'browser/views/tabs/tab_overview_types.h'],
               ],
             }],
-            ['OS=="linux" and (chromeos==1 or toolkit_views==1)',{
+            ['OS=="linux" and chromeos==1',{
               'dependencies': [
 
                 '../third_party/protobuf2/protobuf.gyp:protobuf_lite',

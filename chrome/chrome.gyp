@@ -174,7 +174,7 @@
             '-E', '<(branded_env)',
           ],
           'conditions': [
-            ['chromeos==1 or toolkit_views==1', {
+            ['chromeos==1', {
               'action': ['-D', 'chromeos'],
             }],
             ['use_titlecase_in_grd_files==1', {
@@ -258,7 +258,7 @@
                     'build', '-o', '<(grit_out_dir)',
                     '-D', '<(chrome_build)'],
           'conditions': [
-            ['chromeos==1 or toolkit_views==1', {
+            ['chromeos==1', {
               'action': ['-D', 'chromeos'],
             }],
             ['use_titlecase_in_grd_files==1', {
@@ -315,7 +315,7 @@
             '-D', '<(chrome_build)'
           ],
           'conditions': [
-            ['chromeos==1 or toolkit_views==1', {
+            ['chromeos==1', {
               'action': ['-D', 'chromeos'],
             }],
             ['use_titlecase_in_grd_files==1', {

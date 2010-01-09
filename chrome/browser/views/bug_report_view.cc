@@ -30,7 +30,7 @@
 #include "views/window/client_view.h"
 #include "views/window/window.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 #include "chrome/common/x11_util.h"
 #else
 #include "app/win_util.h"
@@ -98,7 +98,7 @@ void ShowBugReportView(views::Window* parent,
   // rendered--do not re-render, and include windowed plugins).
   std::vector<unsigned char> *screenshot_png = new std::vector<unsigned char>;
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   x11_util::GrabWindowSnapshot(parent->GetNativeWindow(), screenshot_png);
 #else
   win_util::GrabWindowSnapshot(parent->GetNativeWindow(), screenshot_png);
@@ -167,7 +167,7 @@ void BugReportView::SetupControl() {
 
   description_label_ = new views::Label(
       l10n_util::GetString(IDS_BUGREPORT_DESCRIPTION_LABEL));
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   // TODO(davemoore) Remove this when gtk textfields support multiline.
   description_text_ = new views::Textfield;
 #else
