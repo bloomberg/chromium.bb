@@ -357,11 +357,13 @@ std::string AboutPlugins() {
   localized_strings.SetString(L"enabled_no",
       l10n_util::GetString(IDS_ABOUT_PLUGINS_ENABLED_NO));
 
+  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
+
   static const base::StringPiece plugins_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_PLUGINS_HTML));
 
-  return jstemplate_builder::GetTemplateHtml(
+  return jstemplate_builder::GetTemplatesHtml(
       plugins_html, &localized_strings, "t" /* template root node id */);
 }
 
@@ -496,14 +498,13 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
     return std::string();
   }
 
-  std::wstring webkit_version = UTF8ToWide(webkit_glue::GetWebKitVersion());
+  std::string webkit_version = webkit_glue::GetWebKitVersion();
 #ifdef CHROME_V8
-  const char* v8_vers = v8::V8::GetVersion();
-  std::wstring js_version = UTF8ToWide(v8_vers);
-  std::wstring js_engine = L"V8";
+  std::string js_version(v8::V8::GetVersion());
+  std::string js_engine = "V8";
 #else
-  std::wstring js_version = webkit_version;
-  std::wstring js_engine = L"JavaScriptCore";
+  std::string js_version = webkit_version;
+  std::string js_engine = "JavaScriptCore";
 #endif
 
   localized_strings->SetString(L"name",
@@ -526,20 +527,15 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
     localized_strings->SetString(L"official",
       l10n_util::GetString(IDS_ABOUT_VERSION_UNOFFICIAL));
   }
-  localized_strings->SetString(L"useragent",
-      UTF8ToWide(webkit_glue::GetUserAgent(GURL())));
+  localized_strings->SetString(L"useragent", webkit_glue::GetUserAgent(GURL(),
+      g_browser_process->GetApplicationLocale()));
 
   static const std::string version_html(
       ResourceBundle::GetSharedInstance().GetDataResource(
           IDR_ABOUT_VERSION_HTML));
 
-  std::string output = version_html;
-  jstemplate_builder::AppendJsonHtml(localized_strings, &output);
-  jstemplate_builder::AppendI18nTemplateSourceHtml(&output);
-  jstemplate_builder::AppendI18nTemplateProcessHtml(&output);
-  jstemplate_builder::AppendJsTemplateSourceHtml(&output);
-  jstemplate_builder::AppendJsTemplateProcessHtml("t", &output);
-  return output;
+  return jstemplate_builder::GetTemplatesHtml(
+      version_html, localized_strings, "t" /* template root node id */);
 }
 
 static void AddBoolSyncDetail(ListValue* details, const std::wstring& stat_name,
