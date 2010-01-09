@@ -438,6 +438,8 @@ GtkWidget* SelectFileDialogImpl::CreateSaveAsDialog(const std::string& title,
                                         last_saved_path_->value().c_str());
   }
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), FALSE);
+  gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog),
+                                                 TRUE);
   g_signal_connect(G_OBJECT(dialog), "response",
                    G_CALLBACK(OnSelectSingleFileDialogResponse), this);
   return dialog;
