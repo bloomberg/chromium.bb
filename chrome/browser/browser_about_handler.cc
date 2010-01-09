@@ -527,8 +527,7 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
     localized_strings->SetString(L"official",
       l10n_util::GetString(IDS_ABOUT_VERSION_UNOFFICIAL));
   }
-  localized_strings->SetString(L"useragent", webkit_glue::GetUserAgent(GURL(),
-      g_browser_process->GetApplicationLocale()));
+  localized_strings->SetString(L"useragent", webkit_glue::GetUserAgent(GURL()));
 
   static const std::string version_html(
       ResourceBundle::GetSharedInstance().GetDataResource(
