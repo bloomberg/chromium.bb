@@ -393,6 +393,15 @@ def GuessVCS(options, path):
                           "Are you in a working copy directory?")
 
 
+def GetMungedDiff(path_diff, diff):
+  # Munge paths to match svn.
+  for i in range(len(diff)):
+    if diff[i].startswith('--- ') or diff[i].startswith('+++ '):
+      new_file = posixpath.join(path_diff, diff[i][4:]).replace('\\', '/')
+      diff[i] = diff[i][0:4] + new_file
+  return diff
+
+
 def TryChange(argv,
               file_list,
               swallow_exception,
@@ -427,6 +436,8 @@ def TryChange(argv,
                    help="Update rietveld issue try job status")
   group.add_option("--dry_run", action='store_true',
                    help="Just prints the diff and quits")
+  group.add_option("--rietveld_url",
+                   help="The code review url.")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Try job options")
@@ -558,19 +569,27 @@ def TryChange(argv,
       if options.files:
         parser.error('You cannot specify files and --diff at the same time.')
       options.diff = gclient_utils.FileRead(options.diff, 'rb')
+    elif options.issue:
+      # Retrieve the patch from rietveld when the diff is not specified.
+      try:
+        import simplejson
+      except ImportError:
+        parser.error('simplejson library is missing, please install.')
+      api_url = 'http://%s/api/%d' % (options.rietveld_url, options.issue)
+      contents = simplejson.loads(urllib.urlopen(api_url).read())
+      diff_url = ('http://%s/download/issue%d_%d.diff' %
+          (options.rietveld_url,  options.issue, contents['patchsets'][-1]))
+      diff = GetMungedDiff('', urllib.urlopen(diff_url).readlines())
+      options.diff = ''.join(diff)
     else:
       # Use this as the base.
       root = checkouts[0].checkout_root
       diffs = []
       for checkout in checkouts:
         diff = checkout.GenerateDiff().splitlines(True)
-        # Munge it.
         path_diff = gclient_utils.PathDifference(root, checkout.checkout_root)
-        for i in range(len(diff)):
-          if diff[i].startswith('--- ') or diff[i].startswith('+++ '):
-            new_file = posixpath.join(path_diff, diff[i][4:]).replace('\\', '/')
-            diff[i] = diff[i][0:4] + new_file
-        diffs.extend(diff)
+        # Munge it.
+        diffs.extend(GetMungedDiff(path_diff, diff))
       options.diff = ''.join(diffs)
 
     if not options.bot:

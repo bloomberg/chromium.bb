@@ -28,6 +28,11 @@ def GetRietveldPatchsetNumber():
       error_ok=True)
 
 
+def GetRietveldServerUrl():
+  return GIT.Capture(
+      ['config', 'rietveld.server'], error_ok=True).strip()
+
+
 if __name__ == '__main__':
   args = sys.argv[:]
   patchset = GetRietveldPatchsetNumber()
@@ -36,6 +41,10 @@ if __name__ == '__main__':
         '--issue', GetRietveldIssueNumber(),
         '--patchset', patchset,
     ])
+  else:
+    rietveld_url = GetRietveldServerUrl()
+    if rietveld_url:
+      args.extend(['--rietveld_url', GetRietveldServerUrl()])
   # Hack around a limitation in logging.
   logging.getLogger().handlers = []
   sys.exit(trychange.TryChange(args, [], False, 'git-try'))
