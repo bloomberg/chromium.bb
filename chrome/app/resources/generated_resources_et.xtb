@@ -567,7 +567,7 @@
 <translation id="1099979722614954862"><ph name="PRODUCT_NAME"/>'il on nüüd <ph name="BEGIN_LINK"/>laiendid<ph name="END_LINK"/> ja <ph name="BEGIN2_LINK"/>järjehoidjate sünkroonimise funktsioon<ph name="END2_LINK"/>.</translation>
 <translation id="5966654788342289517">Isiklikud asjad</translation>
 <translation id="2576802705154232609">Veebiklipid</translation>
-<translation id="8664389313780386848">&amp;Vaata lehekülje allikat</translation>
+<translation id="8664389313780386848">Vaata lehekülje lähtekoodi</translation>
 <translation id="3089982169226026948">Valige profiil</translation>
 <translation id="57646104491463491">Muutmise kuupäev</translation>
 <translation id="6402372417119601621">Sisestatud voogu ei õnnestunud laadida.</translation>
@@ -804,7 +804,7 @@
 <translation id="1017280919048282932">&amp;Lisa sõnaraamat</translation>
 <translation id="1829244130665387512">Otsi leheküljelt</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> päeva</translation>
-<translation id="701080569351381435">Kuva allikas</translation>
+<translation id="701080569351381435">Kuva Lähtekood</translation>
 <translation id="5107325588313356747">Sellele programmile ligipääsu peitmiseks peate selle installima, kasutades juhtpaneelil \n<ph name="CONTROL_PANEL_APPLET_NAME"/>.\n\nKas soovite <ph name="CONTROL_PANEL_APPLET_NAME"/> käivitada?</translation>
 <translation id="7631887513477658702">Ava alati &amp;seda tüüpi failid</translation>
 <translation id="8627795981664801467">Turvalised ühendused ainult</translation>

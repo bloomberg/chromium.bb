@@ -636,7 +636,7 @@
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
 <translation id="5738216285593517904">Vis anbefalinger</translation>
 <translation id="5264618369089706215">Søgninger</translation>
-<translation id="1168020859489941584">Åbner i <ph name="TIME_REMAINING"/> ...</translation>
+<translation id="1168020859489941584">Åbner om <ph name="TIME_REMAINING"/> ...</translation>
 <translation id="7814458197256864873">&amp;Kopier</translation>
 <translation id="4692623383562244444">Søgemaskiner</translation>
 <translation id="2233040275795129413">Livsstil</translation>
@@ -1106,7 +1106,7 @@
 <translation id="170407012880898501">Gem tekst fra formularer for at gøre det nemmere at udfylde dem</translation>
 <translation id="8116972784401310538">&amp;Bogmærkeadministrator</translation>
 <translation id="1849632043866553433">Programcaches</translation>
-<translation id="4927301649992043040">Pakkeudvidelse</translation>
+<translation id="4927301649992043040">Pak udvidelse</translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> minutter siden</translation>
 <translation id="5116628073786783676">Ge&amp;m lyd som...</translation>
@@ -1332,7 +1332,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="7685049629764448582">JavaScript-hukommelse</translation>
 <translation id="4508765956121923607">Vis k&amp;ilde</translation>
 <translation id="8080048886850452639">K&amp;opier lydens webadresse</translation>
-<translation id="5849869942539715694">Pakkeudvidelse ...</translation>
+<translation id="5849869942539715694">Pak udvidelse ...</translation>
 <translation id="7339785458027436441">Kontroller stavning under indtastning</translation>
 <translation id="1384721974622518101">Vidste du, at du kan søge direkte fra feltet ovenfor?</translation>
 <translation id="8203365863660628138">Bekræft installation</translation>

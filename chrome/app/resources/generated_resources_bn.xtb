@@ -101,6 +101,7 @@
 <translation id="443008484043213881">সরঞ্জামসমূহ</translation>
 <translation id="314605055819837597">ব্যবহারকারী ডেটা</translation>
 <translation id="8534801226027872331">এই ক্ষেত্রে, আপনার ব্রাউজারে উপস্থিত শংসাপত্রে ত্রুটি আছে এবং বোঝা যাবে না৷ এর অর্থ হতে পারে, আমরা শংসাপত্রের মধ্যে থাকা পরিচয় তথ্য অথবা কানেকশন নিরাপদ করার জন্য ব্যবহৃত শংসাপত্রের অন্য কিছু তথ্য বুঝতে পারছি না৷ আপনার এগিয়ে যাওয়া উচিত নয়৷</translation>
+<translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> এখন <ph name="BEGIN_LINK"/> এক্সটেনশন আছে<ph name="END_LINK"/> এবং <ph name="BEGIN_BUTTON"/>বুকমার্ক সিঙ্ক<ph name="END_BUTTON"/>।</translation>
 <translation id="3147949335879360642">আপনার বুকমার্কগুলি মার্জ করা হবে৷</translation>
 <translation id="4422347585044846479">এই পৃষ্ঠার বুকমার্ক সম্পাদনা করুন</translation>
 <translation id="7367545749698325833">আপনি নিজের বুকমার্কগুলি ও সেটিংস অন্যান্য ব্রাউজার থেকে আমদানি করতে পারেন বা এই কম্পিউটার থেকে আপনার ব্রাউজিংয়ের ডেটা সাফ করতে পারেন৷</translation>
@@ -148,6 +149,7 @@
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ঘন্টা বাকি</translation>
 <translation id="1720675772864601791">অনিরাপদ ছবিগুলি মঞ্জুর করুন</translation>
 <translation id="471372654970523967"><ph name="NETWORKDEVICE"/> চালু করুন</translation>
+<translation id="6431347207794742960">এই কম্পিউটারে সকল ব্যবহারকারীর জন্য <ph name="PRODUCT_NAME"/> স্বয়ংক্রিয় আপডেটগুলো সেটআপ করবে।</translation>
 <translation id="4001299999465067131">উপরের ছবিতে যেমন দেখানো আছে তেমনভাবে অক্ষরগুলি লিখুন৷</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="5233638681132016545">নতুন ট্যাব</translation>
@@ -181,7 +183,7 @@
 <translation id="3873963583678942942">(শিরোনামহীন)</translation>
 <translation id="8725178340343806893">পছন্দসই/বুকমার্কস</translation>
 <translation id="5177526793333269655">থাম্বনেইল দর্শন</translation>
-<translation id="8926389886865778422">আর ডিজ্ঞাসা করবেন না</translation>
+<translation id="8926389886865778422">আর জিজ্ঞাসা করবেন না</translation>
 <translation id="3605499851022050619">নিরাপদ ব্রাউজিং ডায়গনিস্টিক পৃষ্ঠা</translation>
 <translation id="4307992518367153382">বুনিয়াদি</translation>
 <translation id="5912378097832178659">&amp;সার্চ ইঞ্জিন সম্পাদনা...</translation>
@@ -223,6 +225,7 @@
 <translation id="2678063897982469759">পুনঃ সক্ষম</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="1965338962645102116">সরঞ্জামদণ্ড বুকমার্কস Chrome-এ আমদানি করতে, আপনাকে অবশ্যই নিজের Google অ্যাকাউন্টে লগ ইন করতে হবে৷  দয়া করে লগ ইন করুন এবং আবার আমদানির চেষ্টা করুন৷</translation>
+<translation id="5035846689029228055">বুকমার্ক সিঙ্ক:</translation>
 <translation id="5922220455727404691">SSL 3.0 ব্যবহার করুন</translation>
 <translation id="5903264686717710770">শিরোনাম:</translation>
 <translation id="8899851313684471736">নতুন &amp;উইন্ডোতে লিঙ্ক খুলুন</translation>
@@ -620,6 +623,7 @@
 <translation id="2819994928625218237">&amp;কোনও বানানের সাজেশন নেই</translation>
 <translation id="4316305410440790958">নতুন &amp;ট্যাবে ফ্রেম খুলুন</translation>
 <translation id="9142623379911037913">ডেস্কটপ বিজ্ঞপ্তিগুলি দেখানোর জন্য <ph name="SITE"/>-কে মঞ্জুরি দেবেন?</translation>
+<translation id="4196320913210960460">টুলস মেনুতে এক্সটেনশনে ক্লিক করে আপনার ইনস্টল করা এক্সটেনশনগুলি পরিচালনা করতে পারেন।</translation>
 <translation id="9118804773997839291">নীচে সমস্ত অনিরাপদ উপাদানের একটি তালিকা রয়েছে৷  কোনও নির্দিষ্ট উপাদানের জন্য থ্রেডে আরও তথ্যের জন্য ডায়াগনস্টিক লিঙ্কটিকে ক্লিক করুন৷</translation>
 <translation id="3664021239099029884">সমস্ত ডাউনলোড দেখুন</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> মিনিট আগে</translation>
@@ -633,6 +637,7 @@
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> day ago</translation>
 <translation id="5256138355144269748">অবরুদ্ধ পপ-আপ</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> সেকেন্ড</translation>
+<translation id="1077946062898560804">সকল ব্যবহারকারীর জন্য স্বয়ংক্রিয় আপডেটগুলো সেটআপ করুন</translation>
 <translation id="3122496702278727796">ডেটা ডিরেক্টরি তৈরি করতে ব্যর্থ</translation>
 <translation id="8888930795132369495">ফাইল &amp;পথ অনুলিপি করুন</translation>
 <translation id="4517036173149081027">ডাউনলোড বন্ধ ও বাতিল করুন</translation>
@@ -825,6 +830,7 @@
 <translation id="8755376271068075440">&amp;বৃহত্তর</translation>
 <translation id="8187473050234053012">সার্ভারের নিরাপত্তা শংসাপত্র প্রত্যাহার করা হয়েছে!</translation>
 <translation id="4273720809906836559">বুকমার্ক সিঙ্ক</translation>
+<translation id="6003177993629630467"><ph name="PRODUCT_NAME"/> নিজেকে আপডেট রাখতে হয়ত সক্ষম নয়।</translation>
 <translation id="152482086482215392"><ph name="NUMBER_ONE"/> সেকেন্ড বাকি</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="1970746430676306437">পৃষ্ঠা &amp;তথ্য দেখুন</translation>
@@ -916,6 +922,7 @@
         বুকমার্কের সাথে মার্জ করা হবে৷ মার্জ করার পরে আপনার বুকমার্কগুলিকে সাজানোর জন্য আপনি বুকমার্ক পরিচালকটিকে
         ব্যবহার করতে পারেন৷</translation>
 <translation id="8502249598105294518"><ph name="PRODUCT_NAME"/> কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
+<translation id="8590375307970699841">স্বয়ংক্রিয় আপডেটগুলো সেটআপ করুন</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> ঘন্টা আগে</translation>
 <translation id="768570155019561996">এই এক্সটেনশানটি একাধিক ওয়েবসাইটে আপনার ব্যক্তিগত ডেটাতে অ্যাক্সেস থাকবে৷</translation>
 <translation id="7180865173735832675">কাস্টমাইজ করুন</translation>
@@ -1021,6 +1028,7 @@
 <translation id="3009731429620355204">অধিবেশনগুলি</translation>
 <translation id="7658590191988721853">উল্লম্ব কিনারা স্ক্রোলিং সক্ষম করুন</translation>
 <translation id="5190835502935405962">বুকমার্ক দণ্ড</translation>
+<translation id="5438430601586617544">(প্যাক করা নেই)</translation>
 <translation id="6460601847208524483">পরবর্তী খুঁজুন</translation>
 <translation id="3473034187222004855">ফাইল &amp;পথ অনুলিপি করুন</translation>
 <translation id="3038131737570201586">এই এক্সটেনশানটির একাধিক ওয়েবসাইটে আপনার ব্রাউজিং ইতিহাসে এবং ব্যক্তিগত ডেটাতে অ্যাক্সেস থাকবে৷</translation>
@@ -1295,6 +1303,7 @@
 <translation id="1918141783557917887">&amp;ক্ষুদ্রতর</translation>
 <translation id="4065006016613364460">ছবির URL ক&amp;পি করুন</translation>
 <translation id="6965382102122355670">ওকে</translation>
+<translation id="4481249487722541506">প্যাক না করা এক্সটেনশন লোড করুন...</translation>
 <translation id="8542113417382134668">Serif হরফ:</translation>
 <translation id="2149973817440762519">বুকমার্ক সম্পাদনা করুন</translation>
 <translation id="430831869130657585">সাফিক্স</translation>

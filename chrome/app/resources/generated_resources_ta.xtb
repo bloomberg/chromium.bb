@@ -149,6 +149,7 @@
 <translation id="7511635910912978956">இன்னும் <ph name="NUMBER_FEW"/> மணிநேரம் உள்ளது</translation>
 <translation id="1720675772864601791">பாதுகாப்பற்ற படங்களை அனுமதி</translation>
 <translation id="471372654970523967"><ph name="NETWORKDEVICE"/> ஐ இயக்கு</translation>
+<translation id="6431347207794742960">இந்த கணினியில் எல்லா பயனர்களுக்கும் <ph name="PRODUCT_NAME"/> தானாக புதுப்பித்தலை அமைப்பார்</translation>
 <translation id="4001299999465067131">மேலே உள்ள படத்தில் காண்பிக்கப்படும் எழுத்துகளை அதில் உள்ளவாறு உள்ளிடுக.</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="5233638681132016545">புதிய தாவல்</translation>
@@ -636,6 +637,7 @@
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> day ago</translation>
 <translation id="5256138355144269748">தடுக்கப்பட்ட பாப்-அப்</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> நொடி</translation>
+<translation id="1077946062898560804">எல்லா பயனர்களுக்கும் தானாக புதுப்பித்தலை அமைக்கவும்</translation>
 <translation id="3122496702278727796">ஒரு தரவு கோப்பகத்தை உருவாக்குவதில் தோல்வியடைந்தது</translation>
 <translation id="8888930795132369495">கோப்பின் &amp;பாதையை நகலெடு</translation>
 <translation id="4517036173149081027">மூடு மற்றும் பதிவிறக்கத்தை ரத்து செய்</translation>
@@ -828,6 +830,7 @@
 <translation id="8755376271068075440">&amp;பெரியது</translation>
 <translation id="8187473050234053012">சர்வரின் பாதுகாப்பு சான்றிதழ் திரும்பப் பெறப்பட்டது!</translation>
 <translation id="4273720809906836559">புக்மார்க் ஒத்திசைவு</translation>
+<translation id="6003177993629630467"><ph name="PRODUCT_NAME"/> தன்னையே புதுப்பிக்க இயலாது போகலாம்.</translation>
 <translation id="152482086482215392">இன்னும் <ph name="NUMBER_ONE"/> நொடிகள் உள்ளன</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="1970746430676306437">பக்கத்தின் &amp;தகவலைக் காட்டு</translation>
@@ -919,6 +922,7 @@
         ஒன்றிணைக்கப்படும். இந்த ஒன்றிணைவுக்கு பின்னர்
         புக்மார்க் நிர்வாகியின் மூலம்  புக்மார்க்குகளை நீங்கள் நிர்வகிக்கலாம்.</translation>
 <translation id="8502249598105294518"><ph name="PRODUCT_NAME"/> ஐ தனிப்பயனாக்கி கட்டுப்படுத்துக</translation>
+<translation id="8590375307970699841">தானாக புதுப்பித்தலை அமைக்கவும்</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> hours ago</translation>
 <translation id="768570155019561996">பல வலைத்தளங்களிலும் உள்ள உங்கள் தனிப்பட்ட தரவுகளுக்கான அணுகலை இந்த நீட்டிப்பு பெறும். </translation>
 <translation id="7180865173735832675">தனிப்பயனாக்கு</translation>

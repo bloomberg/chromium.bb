@@ -5,6 +5,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">ጨርስ</translation>
 <translation id="5613020302032141669">ግራ ቀስት</translation>
+<translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> ፋይል(.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">ሰርዝ</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -39,7 +40,7 @@
 <translation id="5583640892426849032">የኋሊት መደምሰሻ</translation>
 <translation id="436869212180315161">ይጫኑ</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
-<translation id="7000311294523403548">ርእስ ኣልባ ድረ-ገጽ</translation>
+<translation id="7000311294523403548">ርእስ አልባ ድረ-ገጽ</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6965382102122355670">እሺ</translation>
 <translation id="8328145009876646418">የግራ ጠርዝ</translation>

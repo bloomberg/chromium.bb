@@ -8,12 +8,12 @@
 <translation id="5048533449481078685">ዝርዝር አመልካች</translation>
 <translation id="4202807286478387388">ዝለል</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
-<translation id="4317653869502688143">እባክዎ <ph name="PLUGIN"/> ተሰኪን ለመጫን መፈለግዎን ያረጋግጡ፡፡ የሚያምኗቸውን ተሰኪዎች ብቻ መጫን ይኖርብዎታል፡፡</translation>
+<translation id="4317653869502688143">እባክዎ <ph name="PLUGIN"/> ተሰኪን ለመጫን መፈለግዎን ያረጋግጡ። የሚያምኗቸውን ተሰኪዎች ብቻ መጫን ይኖርብዎታል።</translation>
 <translation id="7658239707568436148">ሰርዝ</translation>
 <translation id="795667975304826397">ምንም ፋይል አልተመረጠም</translation>
 <translation id="1275511093094545429"><ph name="PLUGIN"/> ተሰኪ ያስፈልጋል</translation>
 <translation id="8662565117025751661">የሚወርድ ተሰኪ…</translation>
-<translation id="8141602879876242471">ይህ ሊፈለግ የሚችል መረጃ ጠቋሚ ነው፡፡ የፍለጋ ቁልፍ ቃላት አስገባ፡-</translation>
+<translation id="8141602879876242471">ይህ ሊፈለግ የሚችል መረጃ ጠቋሚ ነው። የፍለጋ ቁልፍ ቃላት አስገባ፡-</translation>
 <translation id="6845533974506654842">ተጫን</translation>
 <translation id="8244226242650769279">የምስል ካርታ</translation>
 <translation id="1383141426028388991">ከ<ph name="URL"/> ተሰኪ ለመጫን አልተቻለም</translation>
@@ -31,12 +31,12 @@
 <translation id="6663448176199120256">የቅርብ ጊዜ ፍለጋዎችን</translation>
 <translation id="3600343118165084788">ተሰኪ ለማውረድ እዚህ ይጫኑ</translation>
 <translation id="6807599807928161586">የድር ክልል</translation>
-<translation id="5939518447894949180">ዳግም ኣስጀምር</translation>
+<translation id="5939518447894949180">ዳግም አስጀምር</translation>
 <translation id="3771786644471114952">ተሰኪ አግኝ</translation>
 <translation id="1842960171412779397">ምረጥ</translation>
 <translation id="6119846243427417423">አግብር</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ፋይሎች</translation>
-<translation id="3926627843712816530">እባክዎ ይህን ተሰኪ ለመጫን መፈለግዎን ያረጋግጡ፡፡ የሚያምኗቸውን ተሰኪዎች ብቻ መጫን ይኖርብዎታል፡፡</translation>
+<translation id="3926627843712816530">እባክዎ ይህን ተሰኪ ለመጫን መፈለግዎን ያረጋግጡ። የሚያምኗቸውን ተሰኪዎች ብቻ መጫን ይኖርብዎታል።</translation>
 <translation id="4838490908464673667">የሚፈለገው ተሰኪ አልተጫነም</translation>
 <translation id="8597182159515967513">ርእስ</translation>
 <translation id="2653659639078652383">አስገባ</translation>

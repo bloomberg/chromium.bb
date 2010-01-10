@@ -147,6 +147,7 @@
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ಗಂಟೆಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="1720675772864601791">ಅಸುರಕ್ಷಿತ ಇಮೇಜ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ</translation>
 <translation id="471372654970523967"><ph name="NETWORKDEVICE"/> ಆನ್ ಮಾಡಿ</translation>
+<translation id="6431347207794742960">ಈ ಕಂಪ್ಯೂಟರ್‌ನ ಎಲ್ಲ ಬಳಕೆದಾರರಿಗಾಗಿ <ph name="PRODUCT_NAME"/> ಸ್ವಯಂಚಾಲಿತ ನವೀಕರಣಗಳನ್ನು ಹೊಂದಿಸುತ್ತದೆ.</translation>
 <translation id="4001299999465067131">ಈ ಮೇಲಿನ ಇಮೇಜ್‌ನಲ್ಲಿ ತೋರಿಸಿದಂತೆಯೇ ಅಕ್ಷರಗಳನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="5233638681132016545">ಹೊಸ ಟ್ಯಾಬ್</translation>
@@ -633,6 +634,7 @@
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> day ago</translation>
 <translation id="5256138355144269748">ನಿರ್ಬಂಧಿಸಿದ Pop-up</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> ಸೆಕೆಂಡು</translation>
+<translation id="1077946062898560804">ಎಲ್ಲ ಬಳಕೆದಾರರಿಗೆ ಸ್ವಯಂಚಾಲಿತ ನವೀಕರಣಗಳನ್ನು ಹೊಂದಿಸಿ </translation>
 <translation id="3122496702278727796">ಡೇಟಾ ಡೈರೆಕ್ಟರಿ ರಚಿಸಲು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="8888930795132369495">ಫೈಲ್ &amp;ಪಾಥ್ ನಕಲು ಮಾಡಿ</translation>
 <translation id="4517036173149081027">ಮುಚ್ಚಿ ಮತ್ತು ಡೌನ್‌ಲೋಡ್ ರದ್ದುಮಾಡಿ</translation>
@@ -825,6 +827,7 @@
 <translation id="8755376271068075440">&amp;ದೊಡ್ಡದು</translation>
 <translation id="8187473050234053012">ಸರ್ವರ್‌ನ ಭದ್ರತಾ ಪ್ರಮಾಣಪತ್ರ ಹಿಂತೆಗೆದುಕೊಂಡಿದೆ!</translation>
 <translation id="4273720809906836559">ಬುಕ್‌ಮಾರ್ಕ್ ಸಿಂಕ್</translation>
+<translation id="6003177993629630467"><ph name="PRODUCT_NAME"/> ತಾನಾಗಿಯೇ ನವೀಕರಣ ಹೊಂದಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="152482086482215392"><ph name="NUMBER_ONE"/> ಸೆಕೆಂಡುಗಳು ಉಳಿದಿದೆ</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="1970746430676306437">ಪುಟ &amp;ಮಾಹಿತಿಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
@@ -914,6 +917,7 @@
 <translation id="4478664379124702289">ಇದರಂತೆ ಲಿಂ&amp;ಕ್ ಅನ್ನು ಉಳಿಸಿ...</translation>
 <translation id="1044231968500257587">ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಆನ್‌ಲೈನ್ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಈ ಯಂತ್ರದಲ್ಲಿರುವ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳೊಂದಿಗೆ ವಿಲೀನಗೊಳಿಸಲಾಗುವುದು. ವಿಲೀನಗೊಳಿಸಿದ ನಂತರ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಸಂಯೋಜಿಸಲು ನೀವು ಬುಕ್‌ಮಾರ್ಕ್ ನಿರ್ವಾಹಕವನ್ನು ಬಳಸಬಹುದು.</translation>
 <translation id="8502249598105294518"><ph name="PRODUCT_NAME"/> ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ</translation>
+<translation id="8590375307970699841">ಸ್ವಯಂಚಾಲಿತ ನವೀಕರಣಗಳನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> hours ago</translation>
 <translation id="768570155019561996">ಅನೇಕ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಖಾಸಗಿ ಡೇಟಾಗೆ ಈ ವಿಸ್ತರಣೆಯು ಪ್ರವೇಶವನ್ನು ಹೊಂದಿರುತ್ತದೆ.</translation>
 <translation id="7180865173735832675">ಕಸ್ಟಮೈಸ್</translation>

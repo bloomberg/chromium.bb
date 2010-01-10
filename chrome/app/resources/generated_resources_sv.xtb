@@ -25,14 +25,14 @@
 <translation id="4364779374839574930">Ingen skrivare hittades. Installera en skrivare.</translation>
 <translation id="8595062045771121608">I det här fallet har servercertifikatet eller CA-medelcertifikatet som visas för din webbläsare signerats med en svag signaturalgoritm som RSA-MD2. Nya rön från datorforskare visar att signaturalgoritmen är svagare än man hittills trott. Därför används inte signaturalgoritmen av många tillförlitliga webbplatser längre. Det innebär att det här certifikatet kan vara en förfalskning. Du bör inte fortsätta.</translation>
 <translation id="7567293639574541773">&amp;Granska komponent</translation>
-<translation id="36224234498066874">Rensa webbläsardata...</translation>
+<translation id="36224234498066874">Rensa webbinformation...</translation>
 <translation id="8571213806525832805">Senaste fyra veckorna</translation>
 <translation id="6021004449668343960">Sans serif-teckensnitt:</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> hours ago</translation>
 <translation id="8460952460426246415">Nu kommer dina bokmärken att synkroniseras mellan alla datorer där du har aktiverat synkronisering.</translation>
 <translation id="4422428420715047158">Domän:</translation>
 <translation id="4021918302616263355">Sök i <ph name="ENGINE"/> efter <ph name="SEARCH_TERMS"/></translation>
-<translation id="5376169624176189338">Klicka om du vill återvända, vänta om du vill se historik</translation>
+<translation id="5376169624176189338">Klicka om du vill återvända, håll nere om du vill se historik</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> sekunder kvar</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="7383539497402338906">Med bokmärkessynkronisering är det enkelt att använda en uppsättning bokmärken på flera datorer.
@@ -86,7 +86,7 @@
 <translation id="873849583815421063">Avslutar...</translation>
 <translation id="5819484510464120153">Skapa &amp;programgenvägar...</translation>
 <translation id="1748246833559136615">Ge upp</translation>
-<translation id="8927064607636892008">Ett fel uppstod när webbsidan skulle visas. Fortsätt genom att klicka på Hämta igen eller besök en annan sida.</translation>
+<translation id="8927064607636892008">Ett fel uppstod när webbsidan skulle visas. Fortsätt genom att klicka på Läs in igen eller besök en annan sida.</translation>
 <translation id="3593566984437245095">Nyhet i Chrome</translation>
 <translation id="5667293444945855280">Skadlig programvara</translation>
 <translation id="5613020302032141669">Vänsterpil</translation>
@@ -272,7 +272,7 @@
 <translation id="932327136139879170">Startsida</translation>
 <translation id="2560794850818211873">K&amp;opiera videons webbadress</translation>
 <translation id="5600907569873192868"><ph name="NUMBER_MANY"/> minuter kvar</translation>
-<translation id="908263542783690259">Rensa sökhistorik</translation>
+<translation id="908263542783690259">Rensa webbhistorik</translation>
 <translation id="7484645889979462775">Aldrig på den här webbplatsen</translation>
 <translation id="8666066831007952346"><ph name="NUMBER_TWO"/> dagar kvar</translation>
 <translation id="2374144379568843525">&amp;Dölj stavningspanel</translation>
@@ -376,9 +376,9 @@
 <translation id="3549657413697417275">Sök i historik</translation>
 <translation id="7344633671344536647">Webbinformation:</translation>
 <translation id="4250680216510889253">Nej</translation>
-<translation id="6291953229176937411">&amp;Visa i sökare</translation>
+<translation id="6291953229176937411">&amp;Visa i Finder</translation>
 <translation id="7905536804357499080">Använd aktuell</translation>
-<translation id="8933960630081805351">&amp;Visa i sökare</translation>
+<translation id="8933960630081805351">&amp;Visa i Finder</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="1871540228654219948">Webbplatsen på adressen &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; innehåller komponenter från webbplatser som verkar innehålla skadliga program, dvs. program som kan skada datorn eller köras utan ditt tillstånd. Det kan räcka med att besöka en webbplats med skadliga program för att datorn ska infekteras.</translation>
 <translation id="8899388739470541164">Vietnamesiska</translation>
@@ -442,7 +442,7 @@
 <translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>Du surfar inkognito<ph name="END_BOLD"/>. När du tittar på sidor i detta fönster visas det inte i webbläsarens historik eller sökhistoriken, och det lämnas inga spår på datorn, t.ex. kakor, när du stänger inkognitofönstret. Alla filer som du laddar ner eller bokmärken som du skapar sparas dock. <ph name="LINE_BREAK"/>        <ph name="BEGIN_BOLD"/>Att surfa inkognito påverkar inte hur andra människor, servrar eller program beter sig. Var uppmärksam på följande:<ph name="END_BOLD"/>        <ph name="BEGIN_LIST"/>          <ph name="BEGIN_LIST_ITEM"/>Webbplatser som samlar in eller delar information om dig<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Internet-tjänsteleverantörer eller anställda som spårar vilka sidor du besöker<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Fientliga program som spårar dina tangenttryckningar i utbyte mot gratis smilisar<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Övervakning av hemliga agenter<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Personer som står bakom dig<ph name="END_LIST_ITEM"/>        <ph name="END_LIST"/>        <ph name="BEGIN_LINK"/>Läs mer<ph name="END_LINK"/> om att surfa inkognito.</translation>
 <translation id="4439241094464540230">&lt;Ny profil&gt;...</translation>
 <translation id="2135787500304447609">&amp;Återuppta</translation>
-<translation id="1813414402673211292">Rensa sökdata</translation>
+<translation id="1813414402673211292">Rensa webbinformation</translation>
 <translation id="2356762928523809690">Servern för uppdatering är inte tillgänglig (fel: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Utvalt tema</translation>
 <translation id="219008588003277019">Native Client-modul: <ph name="NEXE_NAME"/></translation>
@@ -782,7 +782,7 @@
 <translation id="8019305344918958688">Bu... Inga tillägg har installerats :-(</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="4720829798001058201">Nu är dina bokmärken synkroniserade med Google Dokument! Om du vill slå ihop och synkronisera dina bokmärken med Chrome på en annan dator genomför du bara samma installation på den datorn.</translation>
-<translation id="2496180316473517155">Sökhistorik</translation>
+<translation id="2496180316473517155">Webbhistorik</translation>
 <translation id="602251597322198729">Den här webbplatsen försöker hämta flera filer. Vill du tillåta detta?</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> timmar</translation>
 <translation id="4550394366889370499">Nytt fönster i &amp;profil</translation>
@@ -1006,7 +1006,7 @@
 <translation id="5875565123733157100">Feltyp:</translation>
 <translation id="1813278315230285598">Tjänster</translation>
 <translation id="373572798843615002">1 flik</translation>
-<translation id="3616741288025931835">&amp;Rensa webbläsardata...</translation>
+<translation id="3616741288025931835">&amp;Rensa webbinformation...</translation>
 <translation id="2440604414813129000">Visa &amp;källa</translation>
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">Återuppta</translation>
@@ -1023,7 +1023,7 @@
 <translation id="1676388805288306495">Byt standardinställt teckensnitt och språk på webbsidor.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Visa ramkälla</translation>
-<translation id="7564847347806291057">Avsluta åtgärd</translation>
+<translation id="7564847347806291057">Avsluta process</translation>
 <translation id="7851589172948533362">Verifierad av <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Läs mer om lösenordsfiske.</translation>
 <translation id="307767688111441685">Sidan ser konstig ut</translation>
@@ -1180,10 +1180,10 @@
 <translation id="4771973620359291008">Ett okänt fel uppstod.</translation>
 <translation id="762904068808419792">Skriv din sökfråga här</translation>
 <translation id="8155798677707647270">Installerar ny version...</translation>
-<translation id="6886871292305414135">Öppna länk på ny &amp;flik</translation>
+<translation id="6886871292305414135">Öppna länk i ny &amp;flik</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="6308937455967653460">Spara l&amp;änk som...</translation>
-<translation id="5421136146218899937">Ta bort sökdata...</translation>
+<translation id="5421136146218899937">Ta bort webbinformation...</translation>
 <translation id="3285322247471302225">Ny &amp;flik</translation>
 <translation id="3943582379552582368">&amp;Bakåt</translation>
 <translation id="7607002721634913082">Pausad</translation>
@@ -1209,7 +1209,7 @@
 <translation id="176587472219019965">&amp;Nytt fönster</translation>
 <translation id="8689341121182997459">Utgångsdatum:</translation>
 <translation id="1857842694030005096">Mer information om felet</translation>
-<translation id="4880827082731008257">Sökhistorik</translation>
+<translation id="4880827082731008257">Sök i historiken</translation>
 <translation id="8661290697478713397">Öppna länk i inko&amp;gnitofönster</translation>
 <translation id="4197700912384709145"><ph name="NUMBER_ZERO"/> sekunder</translation>
 <translation id="8609465669617005112">Flytta upp</translation>
@@ -1262,7 +1262,7 @@
 <translation id="3533943170037501541">Välkommen till din startsida!</translation>
 <translation id="3218306954729745977">Visa ‎nyligen stängda flikar</translation>
 <translation id="3737554291183722650">Sidrubrik:</translation>
-<translation id="1581962803218266616">Visa i sökare</translation>
+<translation id="1581962803218266616">Visa i Finder</translation>
 <translation id="4726901538158498735">Standardsökning:</translation>
 <translation id="923467487918828349">Visa alla</translation>
 <translation id="5101042277149003567">Öppna alla bokmärken</translation>
@@ -1286,7 +1286,7 @@
 <translation id="2052895926110224873">Det gick inte att hämta dina svartlistor för sekretess.</translation>
 <translation id="2445081178310039857">Tilläggets rotkatalog måste anges.</translation>
 <translation id="8251578425305135684">Miniatyren har tagits bort.</translation>
-<translation id="3037605927509011580">Åh, hämta!</translation>
+<translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
 <translation id="1918141783557917887">&amp;Mindre</translation>
 <translation id="4065006016613364460">K&amp;opiera bildwebbadress</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -1311,7 +1311,7 @@
 <translation id="3030701886340141944">Vill du hålla koll på fler webbplatser på samma ställe? Testa
         <ph name="BEGIN_LINK"/>Google Reader<ph name="END_LINK"/></translation>
 <translation id="2770465223704140727">Ta bort från listan</translation>
-<translation id="6053401458108962351">&amp;Ta bort sökdata...</translation>
+<translation id="6053401458108962351">&amp;Ta bort webbinformation...</translation>
 <translation id="2339641773402824483">Söker efter uppdateringar...</translation>
 <translation id="8600200086690278232">Utvalda webbklipp</translation>
 <translation id="8582728318425382804">Cookies och webbplatsbehörighet</translation>

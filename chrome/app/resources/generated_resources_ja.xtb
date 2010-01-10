@@ -909,9 +909,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="8414273245158967435"><ph name="NAME_OF_EXTENSION"/> が無効です。ブックマークの同期をオフにすると、拡張機能のページからこの拡張機能を再度有効にできます。拡張機能のページにはツール メニューからアクセスできます。</translation>
 <translation id="4478664379124702289">リンク先を別名で保存(&amp;K)...</translation>
-<translation id="1044231968500257587">既存のオンライン ブックマークはこのパソコンの
-        ブックマークに統合されます。ブックマーク マネージャを使用して、統合後に
-        ブックマークを整理できます。</translation>
+<translation id="1044231968500257587">既存のオンライン ブックマークはこのパソコンのブックマークに統合されます。ブックマーク マネージャを使用して、統合後にブックマークを整理できます。</translation>
 <translation id="8502249598105294518"><ph name="PRODUCT_NAME"/> の設定</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> 時間前</translation>
 <translation id="768570155019561996">この拡張機能は、複数のウェブサイトであなたの個人データにアクセス可能です。</translation>

@@ -11,7 +11,7 @@
 <translation id="2160383474450212653">Betűtípusok és nyelvek</translation>
 <translation id="4405141258442788789">A művelet túllépte az időkeretet.</translation>
 <translation id="5048179823246820836">Skandináv</translation>
-<translation id="1763046204212875858">Parancsikonok létrehozása az alkalmazásokhoz</translation>
+<translation id="1763046204212875858">Parancsikon létrehozása az alkalmazáshoz</translation>
 <translation id="561349411957324076">Kész</translation>
 <translation id="6156863943908443225">Szkript gyorsítótár</translation>
 <translation id="4610656722473172270">Google Eszköztár</translation>
@@ -623,7 +623,7 @@
 <translation id="5360606537916580043">Utolsó nap</translation>
 <translation id="6589689504565594563">Cookie-k törlése</translation>
 <translation id="1682548588986054654">Új &amp;inkognitóablak</translation>
-<translation id="6833901631330113163">Dél-Európai</translation>
+<translation id="6833901631330113163">Dél-európai</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> napja</translation>
 <translation id="5256138355144269748">Blokkolt felugró ablak</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> másodperc</translation>
@@ -650,7 +650,7 @@
 <translation id="5167270755190684957">Google Chrome témák galériája</translation>
 <translation id="8382913212082956454">&amp;E-mail cím másolása</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> másodperce</translation>
-<translation id="6419902127459849040">Közép-Európai</translation>
+<translation id="6419902127459849040">Közép-európai</translation>
 <translation id="5298219193514155779">Téma készítője:</translation>
 <translation id="1047726139967079566">Könyvjelző hozzáadása ehhez az oldalhoz...</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> másodperc van hátra</translation>
@@ -659,7 +659,7 @@
 <translation id="2454247629720664989">Kulcsszó</translation>
 <translation id="3950820424414687140">Bejelentkezés</translation>
 <translation id="2840798130349147766">Internetes adatbázis</translation>
-<translation id="1628736721748648976">Kódolás</translation>
+<translation id="1628736721748648976">Karakterkódolás</translation>
 <translation id="6521850982405273806">Hibajelentés</translation>
 <translation id="1769104665586091481">Link megnyitása új &amp;ablakban</translation>
 <translation id="8503813439785031346">Felhasználónév</translation>
@@ -884,7 +884,7 @@
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">Ez a weboldal nem érhető el.</translation>
 <translation id="8520668773617044689">Firefox</translation>
-<translation id="8434177709403049435">&amp;Kódolás</translation>
+<translation id="8434177709403049435">&amp;Karakterkódolás</translation>
 <translation id="7895330511272068835">A pluginekről</translation>
 <translation id="9012607008263791152">Úgy értesültünk, hogy ez a webhely árthat számítógépének.</translation>
 <translation id="1441458099223378239">Nem tudok bejelentkezni a fiókomba</translation>
@@ -932,7 +932,7 @@
 <translation id="8182985032676093812"><ph name="PAGE_URL"/> forrása</translation>
 <translation id="7042418530779813870">Beille&amp;sztés és keresés</translation>
 <translation id="2101225219012730419">Verzió:</translation>
-<translation id="1570242578492689919">Betűtípusok és kódolás</translation>
+<translation id="1570242578492689919">Betűtípusok és karakterkódolás</translation>
 <translation id="3031557471081358569">Válassza ki az importálandó elemeket:</translation>
 <translation id="3031433885594348982">Kapcsolódása (<ph name="DOMAIN"/>) bites titkosítással titkosított.</translation>
 <translation id="4047345532928475040">N/A</translation>
@@ -1053,7 +1053,7 @@
 <translation id="5034259512732355072">Másik mappa kiválasztása...</translation>
 <translation id="5074322878757699801">Adatok importálása...</translation>
 <translation id="7505152414826719222">Helyi tárhely</translation>
-<translation id="5706242308519462060">Alapértelmezett kódolás:</translation>
+<translation id="5706242308519462060">Alapértelmezett karakterkódolás:</translation>
 <translation id="5280833172404792470">Kilépés a teljes képernyős módból (<ph name="ACCELERATOR"/>)</translation>
 <translation id="4000986992587584088">Mindig mutassa a felugró ablakokat innen: <ph name="URL"/></translation>
 <translation id="129553762522093515">Nemrégiben bezárt</translation>

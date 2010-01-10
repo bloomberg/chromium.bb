@@ -915,9 +915,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="8414273245158967435"><ph name="NAME_OF_EXTENSION"/>已停用。如果您关闭了“书签同步”功能，则可以通过“工具”菜单访问扩展程序网页，然后在该网页中重新启用此扩展程序。</translation>
 <translation id="4478664379124702289">链接存储为(&amp;K)...</translation>
-<translation id="1044231968500257587">您现有的在线书签将与
-        此计算机上的书签合并。您可以在合并后使用书签管理器整理
-        您的书签。</translation>
+<translation id="1044231968500257587">您现有的在线书签将与此计算机上的书签合并。您可以在合并后使用书签管理器整理您的书签。</translation>
 <translation id="8502249598105294518">自定义和控制<ph name="PRODUCT_NAME"/></translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> 小时前</translation>
 <translation id="768570155019561996">此扩展程序将有权访问您在多个网站上的私人数据。</translation>

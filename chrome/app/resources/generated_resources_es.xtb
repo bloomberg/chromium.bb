@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="6779164083355903755">Elimina&amp;r</translation>
-<translation id="861462429358727464">Cierra las pestañas abiertas por esta pestaña</translation>
+<translation id="861462429358727464">Cerrar pestañas abiertas por esta pestaña</translation>
 <translation id="7040807039050164757">&amp;Comprobar ortografía en este campo</translation>
 <translation id="3581034179710640788">El certificado de seguridad del sitio ha caducado.</translation>
 <translation id="8275038454117074363">Importar</translation>
@@ -672,7 +672,7 @@
 <translation id="4805261289453566571">Volver a acceder</translation>
 <translation id="4188026131102273494">Palabra clave:</translation>
 <translation id="2290414052248371705">Mostrar todo el contenido</translation>
-<translation id="6434892175081553796">Cierra las pestañas abiertas por esta pestaña</translation>
+<translation id="6434892175081553796">Cerrar pestañas abiertas por esta pestaña</translation>
 <translation id="3268761268932257769">Cargar imágenes automáticamente</translation>
 <translation id="7227780179130368205">Detectado software malintencionado.</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
@@ -737,7 +737,7 @@
 <translation id="5821668936183240062">siguiente</translation>
 <translation id="4708849949179781599">Salir de <ph name="PRODUCT_NAME"/></translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> de <ph name="TOTAL_SIZE"/></translation>
-<translation id="6644512095122093795">Solicita si desea guardar contraseñas</translation>
+<translation id="6644512095122093795">Solicitar si deseo guardar contraseñas</translation>
 <translation id="5384051050210890146">Selecciona certificados SSL fiables.</translation>
 <translation id="6865323153634004209">Personalizar esta configuración</translation>
 <translation id="7487067081878637334">Tecnología</translation>

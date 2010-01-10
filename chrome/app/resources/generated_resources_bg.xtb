@@ -7,7 +7,7 @@
 <translation id="3581034179710640788">Сертификатът за сигурност на сайта е с изтекла валидност!</translation>
 <translation id="8275038454117074363">Импортиране</translation>
 <translation id="8418445294933751433">&amp;Показване като раздел</translation>
-<translation id="6985276906761169321">ID:</translation>
+<translation id="6985276906761169321">Идент. №:</translation>
 <translation id="2160383474450212653">Шрифтове и езици</translation>
 <translation id="4405141258442788789">Времето за изчакване на операцията изтече.</translation>
 <translation id="5048179823246820836">Скандинавски</translation>
@@ -35,8 +35,8 @@
 <translation id="5376169624176189338">Кликнете, за да се върнете назад. Задръжте, за да видите историята.</translation>
 <translation id="6310545596129886942">Остават <ph name="NUMBER_FEW"/> сек</translation>
 <translation id="9181716872983600413">Unicode</translation>
-<translation id="7383539497402338906">Със синхронизирането на отметки е лесно да имате един и същ набор отметки на няколко компютъра.
-        Когато активирате синхронизирането, те ще бъдат съхранени онлайн в профила ви в Google.
+<translation id="7383539497402338906">С функцията за синхронизиране на отметки лесно можете да поддържате един и същ набор отметки на няколко компютъра.
+        Когато активирате тази функция, те ще бъдат съхранени онлайн в профила ви в Google.
         Всеки допълнителен компютър, на който активирате синхронизирането, ще получи същите отметки.</translation>
 <translation id="1383861834909034572">Ще се отвори след изтегляне</translation>
 <translation id="4211171103079968550">Активиране на Java</translation>
@@ -101,7 +101,7 @@
 <translation id="443008484043213881">Инструменти</translation>
 <translation id="314605055819837597">Потребителски данни</translation>
 <translation id="8534801226027872331">В този случай представеният на браузъра ви сертификат съдържа грешки, които не могат да бъдат изтълкувани. Това може да означава, че не можем да разберем информацията за самоличността в самия сертификат или друга информация в него, използвана за подсигуряването на връзката. Не продължавайте нататък!</translation>
-<translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> вече има <ph name="BEGIN_LINK"/>разширения<ph name="END_LINK"/> и <ph name="BEGIN_BUTTON"/>синхронизиране на отметки<ph name="END_BUTTON"/>.</translation>
+<translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> вече има <ph name="BEGIN_LINK"/>разширения<ph name="END_LINK"/> и функция за <ph name="BEGIN_BUTTON"/>синхронизиране на отметки<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Отметките ви ще бъдат обединени.</translation>
 <translation id="4422347585044846479">Редактиране на отметката за тази страница</translation>
 <translation id="7367545749698325833">Можете да импортирате своите отметки и настройки от други браузъри или да изчистите данните си за сърфирането от този компютър.</translation>
@@ -142,7 +142,7 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> сек</translation>
 <translation id="5098629044894065541">Иврит</translation>
 <translation id="7751559664766943798">Непрекъснато показване на лентата на отметките</translation>
-<translation id="144136026008224475">Изтегляне на още разширения &gt;&gt;</translation>
+<translation id="144136026008224475">Изтеглете още разширения &gt;&gt;</translation>
 <translation id="8584280235376696778">&amp;Отваряне на видеоклипа в нов раздел</translation>
 <translation id="2845382757467349449">Непрекъснато показване на лентата на отметките</translation>
 <translation id="6827094223626760756">визуализация</translation>
@@ -288,7 +288,7 @@
 <translation id="1608306110678187802">П&amp;ечат на рамката...</translation>
 <translation id="4948468046837535074">Отваряне на следните страници:</translation>
 <translation id="6978121630131642226">Търсещи машини</translation>
-<translation id="6745994589677103306"/>
+<translation id="6745994589677103306">Отказ</translation>
 <translation id="855081842937141170">Фиксиране на раздела</translation>
 <translation id="2723893843198727027">Режим за програмисти:</translation>
 <translation id="5362741141255528695">Изберете файла с личен ключ.</translation>
@@ -377,7 +377,7 @@
 <translation id="7344633671344536647">Данни за сърфирането:</translation>
 <translation id="4250680216510889253">Не</translation>
 <translation id="6291953229176937411">&amp;Показване във Finder</translation>
-<translation id="7905536804357499080">Използване на текущия</translation>
+<translation id="7905536804357499080">Използване на текущите</translation>
 <translation id="8933960630081805351">&amp;Показване във Finder</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="1871540228654219948">Уебсайтът на адрес &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; съдържа елементи от сайтове, които изглежда хостват злонамерен софтуер. Това е софтуер, който може да навреди на компютъра ви или да извършва операции без вашето съгласие.  Компютърът ви може да се зарази дори само при посещение на сайт, съдържащ подобен софтуер.</translation>
@@ -445,7 +445,7 @@
 <translation id="1813414402673211292">Изчистване на данните за сърфирането</translation>
 <translation id="2356762928523809690">Няма достъп до сървъра за актуализация (грешка: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Представена тема</translation>
-<translation id="219008588003277019">Модул в Native Client: <ph name="NEXE_NAME"/></translation>
+<translation id="219008588003277019">Модул в клиента за директно изпълнение: <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446">Търсене с <ph name="SITE_NAME"/>:</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="7616581516194661584">Дублиране</translation>
@@ -494,7 +494,7 @@
 <translation id="9157595877708044936">Настройва се...</translation>
 <translation id="1823768272150895732">Шрифт</translation>
 <translation id="4475552974751346499">&amp;Търсене във файловете за изтегляне</translation>
-<translation id="5339267765524260207">Ако деактивирате синхронизирането, отметките ви няма повече да се синхронизират със съхранените в профила ви в Google или на другите ви машини. Няма да бъдат изтрити никакви отметки. Всички съществуващи ще останат на този компютър и в профила ви в Google.</translation>
+<translation id="5339267765524260207">Ако деактивирате синхронизирането, отметките ви няма повече да се синхронизират със съхранените в профила ви в Google или на другите ви машини. Няма да бъдат изтрити отметки. Всички съществуващи ще останат на този компютър и в профила ви в Google.</translation>
 <translation id="1111153019813902504">Скорошни отметки</translation>
 <translation id="7497564420220535101">Запазване на екранна &amp;снимка...</translation>
 <translation id="3786934874263773074">&amp;Търсене в страницата</translation>
@@ -565,7 +565,7 @@
 <translation id="8789544147407756448">Получи се срив в следното разширение : <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478">Остават <ph name="NUMBER_FEW"/> мин</translation>
 <translation id="2022540532491530427">Копиране на &amp;файла</translation>
-<translation id="1099979722614954862"><ph name="PRODUCT_NAME"/> вече има <ph name="BEGIN_LINK"/>разширения<ph name="END_LINK"/> и <ph name="BEGIN2_LINK"/>синхронизиране на отметки<ph name="END2_LINK"/>.</translation>
+<translation id="1099979722614954862"><ph name="PRODUCT_NAME"/> вече има <ph name="BEGIN_LINK"/>разширения<ph name="END_LINK"/> и функция за <ph name="BEGIN2_LINK"/>синхронизиране на отметки<ph name="END2_LINK"/>.</translation>
 <translation id="5966654788342289517">Лични неща</translation>
 <translation id="2576802705154232609">Уеб изрезки</translation>
 <translation id="8664389313780386848">&amp;Преглед на изходния код на страницата</translation>
@@ -875,7 +875,7 @@
         уеб изрезките си и добавете още източници.</translation>
 <translation id="5285267187067365830">Инсталиране на приставката...</translation>
 <translation id="1166212789817575481">Затваряне на разделите отдясно</translation>
-<translation id="6472893788822429178">Показване на бутона „Начало“</translation>
+<translation id="6472893788822429178">Показване на бутона „Начална страница“</translation>
 <translation id="5685236799358487266">Добавяне като търсе&amp;ща машина...</translation>
 <translation id="3437016096396740659">Батерията е заредена</translation>
 <translation id="7907591526440419938">Отваряне на файл</translation>
@@ -917,7 +917,7 @@
 <translation id="7397054681783221164">Следните елементи да се заличат:</translation>
 <translation id="4891251785049117953">Изчистване на запазените данни за попълване на формуляри</translation>
 <translation id="1531836666020185856">Представени</translation>
-<translation id="580571955903695899">Подреждане по азбучен ред</translation>
+<translation id="580571955903695899">Преподреждане по азбучен ред</translation>
 <translation id="5230516054153933099">Прозорец</translation>
 <translation id="7554791636758816595">Нов раздел</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
@@ -1093,7 +1093,7 @@
 <translation id="4876916865079819322">Синхронизиране на отметките ми</translation>
 <translation id="146000042969587795">Тази рамка бе блокирана, защото съдържанието й е несигурно.</translation>
 <translation id="8112223930265703044">Всичко</translation>
-<translation id="8023801379949507775">Актуализиране на разширенията сега</translation>
+<translation id="8023801379949507775">Актуализирайте разширенията сега</translation>
 <translation id="1983108933174595844">Изпращане на екранна снимка на текущата страница</translation>
 <translation id="436869212180315161">Натиснете</translation>
 <translation id="8241707690549784388">Страницата, която търсите, използва въведената от вас информация. Ако се върнете на тази страница, действията, които вече сте изпълнили, може да бъдат повторени. Искате ли да продължите?</translation>

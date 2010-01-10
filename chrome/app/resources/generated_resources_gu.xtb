@@ -100,6 +100,7 @@
 <translation id="443008484043213881">ટૂલ્સ</translation>
 <translation id="314605055819837597">વપરાશકર્તા ડેટા</translation>
 <translation id="8534801226027872331">આ કિસ્સામાં, તમારા બ્રાઉઝરને પ્રસ્તુત કરેલા પ્રમાણપત્રમાં ભૂલ છે અને સમજી શકાય તેવું નથી.  આનો અર્થ એ હોઈ શકે કે પ્રમાણપત્રની અંદરની માહિતી અથવા કનેક્શનને સુરક્ષિત કરવા ઉપયોગમાં લેવાયેલી પ્રમાણપત્રની અમુક માહિતીને અમે ઓળખી અને સમજી શકતા નથી.  તમારે આગળ વધવું ન જોઈએ.</translation>
+<translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> પાસે <ph name="BEGIN_LINK"/>એક્સટેન્શન્સ<ph name="END_LINK"/> અને <ph name="BEGIN_BUTTON"/>બુકમાર્ક સમન્વય<ph name="END_BUTTON"/></translation>
 <translation id="3147949335879360642">તમારા બુકમાર્ક્સ મર્જ થશે.</translation>
 <translation id="4422347585044846479">આ પૃષ્ઠ માટે બુકમાર્ક સંપાદિત કરો</translation>
 <translation id="7367545749698325833">તમે અન્ય બ્રાઉઝર્સથી તમારા બુકમાર્ક્સ અને સેટિંગ્સ આયાત કરી શકો છો અથવા આ કમ્પ્યુટરમાંથી તમારો બ્રાઉઝિંગ ડેટા સાફ કરી શકો છો.</translation>
@@ -147,6 +148,7 @@
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> કલાક બાકી</translation>
 <translation id="1720675772864601791">અસુરક્ષિત છબીઓને અનુમતિ આપો</translation>
 <translation id="471372654970523967"><ph name="NETWORKDEVICE"/> ચાલુ કરો</translation>
+<translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> આ કમ્પ્યૂટરના બધા વપરાશકર્તા માટે સ્વચાલિત અપડેટ્સ સેટ કરશે.</translation>
 <translation id="4001299999465067131">ઉપર છબીમાં દર્શાવ્યા મુજબ અક્ષરો દાખલ કરો.</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="5233638681132016545">નવું ટૅબ</translation>
@@ -222,6 +224,7 @@
 <translation id="2678063897982469759">ફરી સક્ષમ કરો</translation>
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="1965338962645102116">ટૂલબાર બુકમાર્ક્સને Chrome માં આયાત કરવા માટે, તમારે તમારા Google એકાઉન્ટમાં લૉગ ઇન થવું આવશ્યક છે.  કૃપા કરીને લૉગ ઇન કરો અને ફરીથી આયાત કરવાનો પ્રયાસ કરો.</translation>
+<translation id="5035846689029228055">બુકમાર્ક સમન્વય:</translation>
 <translation id="5922220455727404691">SSL 3.0 નો ઉપયોગ કરો</translation>
 <translation id="5903264686717710770">શીર્ષક:</translation>
 <translation id="8899851313684471736">નવી &amp;વિંડોમાં લિંક ખોલો</translation>
@@ -619,6 +622,7 @@
 <translation id="2819994928625218237">જોડણી સૂચનો &amp;નહીં</translation>
 <translation id="4316305410440790958">નવા &amp;ટૅબમાં ફ્રેમ ખોલો</translation>
 <translation id="9142623379911037913"><ph name="SITE"/> ને ડેસ્કટૉપ સૂચનાઓ બતાવવાની અનુમતિ આપીએ?</translation>
+<translation id="4196320913210960460">તમે ટુલ્સ મેનુમાં એક્સટેન્શનને ક્લિક કરીને ઇન્સ્ટોલ કરેલા એક્સટેન્શન્સને મેનેજ કરી શકો છો.</translation>
 <translation id="9118804773997839291">નીચે પૃષ્ઠ માટેનાં બધા અસુરક્ષિત ઘટકોની સૂચિ છે. વિશિષ્ટ ઘટક માટેનાં થ્રેડ પર વધુ માહિતી માટે ડાયગ્નોસ્ટિક લિંક પર ક્લિક કરો.</translation>
 <translation id="3664021239099029884">બધા ડાઉનલોડ્સ જુઓ</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> મિનિટ પહેલા</translation>
@@ -632,6 +636,7 @@
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> day ago</translation>
 <translation id="5256138355144269748">અવરોધિત પોપ-અપ</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> સેકન્ડ</translation>
+<translation id="1077946062898560804">બધા વપરાશકર્તા માટે સ્વચાલિત અપડેટ્સ સેટ કરો</translation>
 <translation id="3122496702278727796">ડેટા ડાયરેક્ટરી બનાવવામાટે નિષ્ફળ</translation>
 <translation id="8888930795132369495">ફાઇલ પા&amp;થને કૉપિ કરો</translation>
 <translation id="4517036173149081027">બંધ કરો અને ડાઉનલોડ કરવાનું રદ કરો</translation>
@@ -824,6 +829,7 @@
 <translation id="8755376271068075440">&amp;વધુ મોટું</translation>
 <translation id="8187473050234053012">સર્વરનું સુરક્ષા પ્રમાણપત્ર રદ કરાયું છે!</translation>
 <translation id="4273720809906836559">બુકમાર્ક સમન્વયન</translation>
+<translation id="6003177993629630467"><ph name="PRODUCT_NAME"/> પોતાને અપડેટ રાખી શકશે નહીં.</translation>
 <translation id="152482086482215392"><ph name="NUMBER_ONE"/> સેકન્ડ બાકી</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="1970746430676306437">પૃષ્ઠ &amp;માહિતી જુઓ</translation>
@@ -913,6 +919,7 @@
 <translation id="4478664379124702289">લિં&amp;કને આ રીતે સાચવો...</translation>
 <translation id="1044231968500257587">તમારા અસ્તિત્વમાંના ઑનલાઇન બુકમાર્ક્સ આ મશીન પરનાં બુકમાર્ક્સ સાથે મર્જ થશે. તમે મર્જ થયા પછી બુકમાર્ક્સને ગોઠવવા માટે બુકમાર્ક વ્યવસ્થાપકનો ઉપયોગ કરી શકો છો.</translation>
 <translation id="8502249598105294518"><ph name="PRODUCT_NAME"/> કસ્ટમાઇઝ કરો અને નિયંત્રિત કરો</translation>
+<translation id="8590375307970699841">સ્વચાલિત અપડેટ્સ સેટ કરો</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> hours ago</translation>
 <translation id="768570155019561996">આ એક્સટેંશન પાસે બહુવિધ વેબસાઇટ્સ પરનાં તમારા ખાનગી ડેટાની ઍક્સેસ હશે.</translation>
 <translation id="7180865173735832675">કસ્ટમાઇઝ કરો</translation>
@@ -1018,6 +1025,7 @@
 <translation id="3009731429620355204">સત્રો</translation>
 <translation id="7658590191988721853">ઉભા કિનારાના સ્ક્રોલિંગને સક્ષમ કરો</translation>
 <translation id="5190835502935405962">બુકમાર્ક્સ બાર</translation>
+<translation id="5438430601586617544">(અનપેક્ડ)</translation>
 <translation id="6460601847208524483">આગલું શોધો</translation>
 <translation id="3473034187222004855">ફાઇલ પા&amp;થને કૉપિ કરો</translation>
 <translation id="3038131737570201586">આ એક્સટેંશન પાસે બહુવિધ વેબસાઇટ્સ પરના તમારા બ્રાઉઝિંગ ઇતિહાસ અને ખાનગી ડેટાની ઍક્સેસ હશે. </translation>
@@ -1293,6 +1301,7 @@
 <translation id="1918141783557917887">&amp;નાનું</translation>
 <translation id="4065006016613364460">છબી URL ની કૉ&amp;પિ કરો</translation>
 <translation id="6965382102122355670">ઓકે</translation>
+<translation id="4481249487722541506">અનપેક્ડ એક્સટેન્શનને લોડ કરો...</translation>
 <translation id="8542113417382134668">Serif ફૉન્ટ:</translation>
 <translation id="2149973817440762519">બુકમાર્ક સંપાદિત કરો</translation>
 <translation id="430831869130657585">સફિક્સ</translation>
