@@ -569,7 +569,7 @@ def TryChange(argv,
       if options.files:
         parser.error('You cannot specify files and --diff at the same time.')
       options.diff = gclient_utils.FileRead(options.diff, 'rb')
-    elif options.issue:
+    elif options.issue and options.patchset is None:
       # Retrieve the patch from rietveld when the diff is not specified.
       try:
         import simplejson
