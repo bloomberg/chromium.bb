@@ -2557,9 +2557,9 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_CONSOLE, true);
 // TODO(viettrungluu): Temporarily disabled on Mac. Must disable here (not in
 // BWC) so that it also affects the page menu. http://crbug.com/13156
-#if !defined(OS_MACOSX)
+//#if !defined(OS_MACOSX)
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
-#endif
+//#endif
   command_updater_.UpdateCommandEnabled(IDC_SELECT_PROFILE, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER, true);
