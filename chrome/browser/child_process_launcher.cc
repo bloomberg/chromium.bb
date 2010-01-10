@@ -23,10 +23,6 @@
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/mach_broker_mac.h"
-#endif
-
 #if defined(OS_POSIX)
 #include "base/global_descriptors_posix.h"
 #endif
@@ -167,14 +163,6 @@ class ChildProcessLauncher::Context
       // Actually launch the app.
       if (!base::LaunchApp(cmd_line->argv(), env, fds_to_map, false, &handle))
         handle = base::kNullProcessHandle;
-
-
-#if defined(OS_MACOSX)
-task_t foobar(pid_t pid);
-  MachBroker::instance()->RegisterPid(
-             handle,
-             MachBroker::MachInfo().SetTask(foobar(handle)));
-#endif
     }
 #endif
 
