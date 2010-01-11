@@ -240,3 +240,22 @@ TEST_F(UserScriptMasterTest, Parse7) {
   EXPECT_EQ("http://*.mail.google.com/*",
             script.url_patterns()[0].GetAsString());
 }
+
+TEST_F(UserScriptMasterTest, Parse8) {
+  // Greasemonkey allows there to be any leading text before the comment marker.
+  const std::string text(
+    "// ==UserScript==\n"
+    "adsasdfasf// @name hello\n"
+    "  // @description\twiggity woo\n"
+    "\t// @match  \t http://mail.yahoo.com/*\n"
+    "// ==/UserScript==\n");
+
+  UserScript script;
+  EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
+      text, &script));
+  ASSERT_EQ("hello", script.name());
+  ASSERT_EQ("wiggity woo", script.description());
+  ASSERT_EQ(1U, script.url_patterns().size());
+  EXPECT_EQ("http://mail.yahoo.com/*",
+            script.url_patterns()[0].GetAsString());
+}

@@ -26,11 +26,16 @@
 static bool GetDeclarationValue(const base::StringPiece& line,
                                 const base::StringPiece& prefix,
                                 std::string* value) {
-  if (!line.starts_with(prefix))
+  base::StringPiece::size_type index = line.find(prefix);
+  if (index == base::StringPiece::npos)
     return false;
 
-  std::string temp(line.data() + prefix.length(),
-                   line.length() - prefix.length());
+  std::string temp(line.data() + index + prefix.length(),
+                   line.length() - index - prefix.length());
+
+  if (temp.size() == 0 || !IsWhitespace(temp[0]))
+    return false;
+
   TrimWhitespaceASCII(temp, TRIM_ALL, value);
   return true;
 }
@@ -56,13 +61,13 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
 
   static const base::StringPiece kUserScriptBegin("// ==UserScript==");
   static const base::StringPiece kUserScriptEng("// ==/UserScript==");
-  static const base::StringPiece kNamespaceDeclaration("// @namespace ");
-  static const base::StringPiece kNameDeclaration("// @name ");
-  static const base::StringPiece kDescriptionDeclaration("// @description ");
-  static const base::StringPiece kIncludeDeclaration("// @include ");
-  static const base::StringPiece kExcludeDeclaration("// @exclude ");
-  static const base::StringPiece kMatchDeclaration("// @match ");
-  static const base::StringPiece kRunAtDeclaration("// @run-at ");
+  static const base::StringPiece kNamespaceDeclaration("// @namespace");
+  static const base::StringPiece kNameDeclaration("// @name");
+  static const base::StringPiece kDescriptionDeclaration("// @description");
+  static const base::StringPiece kIncludeDeclaration("// @include");
+  static const base::StringPiece kExcludeDeclaration("// @exclude");
+  static const base::StringPiece kMatchDeclaration("// @match");
+  static const base::StringPiece kRunAtDeclaration("// @run-at");
   static const base::StringPiece kRunAtDocumentStartValue("document-start");
   static const base::StringPiece kRunAtDocumentEndValue("document-end");
 
