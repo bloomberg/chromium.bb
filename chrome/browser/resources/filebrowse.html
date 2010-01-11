@@ -116,7 +116,7 @@ li.filebrowserow span.name {
 }
 
 div.title {
-  text-align: center;
+  text-align: right;
   position: relative;
   font-size: .8em;
   font-weight: bold;
@@ -178,6 +178,14 @@ div.playbackcontainer {
   width: 100%;
   height: 100%;
   background: black;
+}
+
+div.scanningcontainer {
+  top: 0;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
 }
 
 div.container {
@@ -325,6 +333,14 @@ function getDataForPath(path) {
   }
 };
 
+function setUpForScanning() {
+  var header = $('header');
+  document.body.removeChild(header);
+  var main = $('main');
+  main.className = 'scanningcontainer';
+  main.textContent = 'Scanning Device...';
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Document Functions:
 /**
@@ -334,7 +350,9 @@ function load() {
   if (document.location.href.indexOf('#') != -1) {
     var currentpathArray = document.location.href.split('#');
     var path = currentpathArray[1];
-    if (pathIsVideoFile(path) || pathIsAudioFile(path)) {
+    if (path == 'scanningdevice') {
+      setUpForScanning();
+    } else if (pathIsVideoFile(path) || pathIsAudioFile(path)) {
       setUpForPlayback(path);
     } else {
       pathArray.push(path);

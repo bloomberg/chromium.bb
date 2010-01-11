@@ -23,11 +23,18 @@ class MountLibrary {
   // Used to house an instance of each found mount device.
   struct Disk {
     Disk() {}
-    Disk(const std::string& devicepath, const std::string& mountpath)
+    Disk(const std::string& devicepath,
+         const std::string& mountpath,
+         const std::string& systempath)
         : device_path(devicepath),
-          mount_path(mountpath) {}
+          mount_path(mountpath),
+          system_path(systempath) {}
+    // The path of the device, used by devicekit-disks.
     std::string device_path;
+    // The path to the mount point of this device. Will be empty if not mounted.
     std::string mount_path;
+    // The path of the device according to the udev system.
+    std::string system_path;
   };
   typedef std::vector<Disk> DiskVector;
 

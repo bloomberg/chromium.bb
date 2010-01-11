@@ -42,13 +42,17 @@ void MountLibrary::ParseDisks(const MountStatus& status) {
   for (int i = 0; i < status.size; i++) {
     std::string path;
     std::string mountpath;
+    std::string systempath;
     if (status.disks[i].path != NULL) {
       path = status.disks[i].path;
     }
     if (status.disks[i].mountpath != NULL) {
       mountpath = status.disks[i].mountpath;
     }
-    disks_.push_back(Disk(path, mountpath));
+    if (status.disks[i].systempath != NULL) {
+      systempath = status.disks[i].systempath;
+    }
+    disks_.push_back(Disk(path, mountpath, systempath));
   }
 }
 
