@@ -164,6 +164,7 @@ void PopulateURLResponse(
   response->setSecurityInfo(info.security_info);
   response->setAppCacheID(info.appcache_id);
   response->setAppCacheManifestURL(info.appcache_manifest_url);
+  response->setWasFetchedViaSPDY(info.was_fetched_via_spdy);
 
   const net::HttpResponseHeaders* headers = info.headers;
   if (!headers)

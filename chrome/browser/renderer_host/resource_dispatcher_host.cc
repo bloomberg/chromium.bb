@@ -238,6 +238,8 @@ void PopulateResourceResponse(URLRequest* request,
   response->response_head.filter_policy = filter_policy;
   response->response_head.content_length = request->GetExpectedContentSize();
   request->GetMimeType(&response->response_head.mime_type);
+  response->response_head.was_fetched_via_spdy =
+      request->was_fetched_via_spdy();
   appcache::AppCacheInterceptor::GetExtraResponseInfo(
       request,
       &response->response_head.appcache_id,

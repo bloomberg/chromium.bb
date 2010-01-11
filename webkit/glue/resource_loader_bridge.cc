@@ -24,6 +24,7 @@ ResourceLoaderBridge::RequestInfo::~RequestInfo() {
 ResourceLoaderBridge::ResponseInfo::ResponseInfo() {
   content_length = -1;
   appcache_id = appcache::kNoCacheId;
+  was_fetched_via_spdy = false;
 }
 
 ResourceLoaderBridge::ResponseInfo::~ResponseInfo() {

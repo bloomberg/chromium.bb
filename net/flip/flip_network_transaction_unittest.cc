@@ -293,6 +293,7 @@ class FlipNetworkTransactionTest : public PlatformTest {
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
     EXPECT_TRUE(response->headers != NULL);
+    EXPECT_TRUE(response->was_fetched_via_spdy);
     out.status_line = response->headers->GetStatusLine();
     out.response_info = *response;  // Make a copy so we can verify.
 
@@ -673,7 +674,6 @@ TEST_F(FlipNetworkTransactionTest, InvalidSynReply) {
   }
 }
 
-// TODO(mbelshe):  This test is broken right now and we need to fix it!
 TEST_F(FlipNetworkTransactionTest, DISABLED_ServerPush) {
   // Reply with the X-Associated-Content header.
   static const unsigned char syn_reply[] = {
@@ -887,8 +887,6 @@ TEST_F(FlipNetworkTransactionTest, PartialWrite) {
   EXPECT_EQ("hello!", out.response_data);
 }
 
-// Disabled due to flaky mac (and possibly linux) valgrind errors.
-// http://crbug.com/29471
 TEST_F(FlipNetworkTransactionTest, DISABLED_ConnectFailure) {
   MockConnect connects[]  = {
     MockConnect(true, ERR_NAME_NOT_RESOLVED),

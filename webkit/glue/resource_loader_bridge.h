@@ -121,6 +121,9 @@ class ResourceLoaderBridge {
     // The manifest url of the appcache this response was loaded from.
     // Note: this value is only populated for main resource requests.
     GURL appcache_manifest_url;
+
+    // True if the response was delivered using SPDY.
+    bool was_fetched_via_spdy;
   };
 
   // See the SyncLoad method declared below.  (The name of this struct is not

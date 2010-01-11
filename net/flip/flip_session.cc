@@ -54,7 +54,13 @@ namespace net {
 
 namespace {
 
-const int kReadBufferSize = 32 * 1024;
+#ifdef WIN32
+// We use an artificially small buffer size on windows because the async IO
+// system will artifiially delay IO completions when we use large buffers.
+const int kReadBufferSize = 2 * 1024;
+#else
+const int kReadBufferSize = 8 * 1024;
+#endif
 
 // Convert a FlipHeaderBlock into an HttpResponseInfo.
 // |headers| input parameter with the FlipHeaderBlock.
@@ -115,6 +121,7 @@ bool FlipHeadersToHttpResponse(const flip::FlipHeaderBlock& headers,
   }
 
   response->headers = new HttpResponseHeaders(raw_headers);
+  response->was_fetched_via_spdy = true;
   return true;
 }
 
@@ -198,7 +205,8 @@ FlipSession::FlipSession(const std::string& host, HttpNetworkSession* session)
       streams_initiated_count_(0),
       streams_pushed_count_(0),
       streams_pushed_and_claimed_count_(0),
-      streams_abandoned_count_(0) {
+      streams_abandoned_count_(0),
+      bytes_received_(0) {
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
 
   flip_framer_.set_visitor(this);
@@ -530,6 +538,8 @@ void FlipSession::OnReadComplete(int bytes_read) {
     CloseSessionOnError(error);
     return;
   }
+
+  bytes_received_ += bytes_read;
 
   char *data = read_buffer_->data();
   while (bytes_read &&

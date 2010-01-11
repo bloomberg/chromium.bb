@@ -128,7 +128,9 @@ class LoadTimesExtensionWrapper : public v8::Extension {
         load_times->Set(
             v8::String::New("navigationType"),
             v8::String::New(GetNavigationType(data_source->navigationType())));
-
+        load_times->Set(
+            v8::String::New("wasFetchedViaSpdy"),
+            v8::Boolean::New(navigation_state->was_fetched_via_spdy()));
         return load_times;
       }
     }
