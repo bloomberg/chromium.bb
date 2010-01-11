@@ -195,16 +195,19 @@
   [undoManager_ removeAllActions];
 }
 
-// Any image within the field (Page Actions or the security icon) should have
-// the arrow cursor shown instead of the I-beam.
+// Show the I-beam cursor unless the mouse is over an image within the field
+// (Page Actions or the security icon) in which case show the arrow cursor.
 - (void)resetCursorRects {
+  NSRect fieldBounds = [self bounds];
+  [self addCursorRect:fieldBounds cursor:[NSCursor IBeamCursor]];
+
   AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
-  NSRect iconRect = [cell securityImageFrameForFrame:[self bounds]];
+  NSRect iconRect = [cell securityImageFrameForFrame:fieldBounds];
   [self addCursorRect:iconRect cursor:[NSCursor arrowCursor]];
 
   const size_t pageActionCount = [cell pageActionCount];
   for (size_t i = 0; i < pageActionCount; ++i) {
-    iconRect = [cell pageActionFrameForIndex:i inFrame:[self bounds]];
+    iconRect = [cell pageActionFrameForIndex:i inFrame:fieldBounds];
     [self addCursorRect:iconRect cursor:[NSCursor arrowCursor]];
   }
 }
