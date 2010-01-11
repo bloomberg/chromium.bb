@@ -44,6 +44,7 @@ public:
   // HtmlDialogTabContentsDelegate declarations.
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
 private:
   HtmlDialogWindowController* controller_;  // weak
@@ -166,6 +167,20 @@ void HtmlDialogWindowDelegateBridge::MoveContents(TabContents* source,
 void HtmlDialogWindowDelegateBridge::ToolbarSizeChanged(
     TabContents* source, bool is_animating) {
   // TODO(akalin): Figure out what to do here.
+}
+
+// A simplified version of BrowserWindowCocoa::HandleKeyboardEvent().
+// We don't handle global keyboard shortcuts here, but that's fine since
+// they're all browser-specific. (This may change in the future.)
+void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char)
+    return;
+
+  ChromeEventProcessingWindow* event_window =
+      static_cast<ChromeEventProcessingWindow*>([controller_ window]);
+
+  [event_window redispatchEvent:event.os_event];
 }
 
 @implementation HtmlDialogWindowController (InternalAPI)

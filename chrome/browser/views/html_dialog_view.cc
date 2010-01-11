@@ -150,6 +150,18 @@ void HtmlDialogView::ToolbarSizeChanged(TabContents* source,
   Layout();
 }
 
+// A simplified version of BrowserView::HandleKeyboardEvent().
+// We don't handle global keyboard shortcuts here, but that's fine since
+// they're all browser-specific. (This may change in the future.)
+void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+#if defined(OS_WIN)
+  // Any unhandled keyboard/character messages should be defproced.
+  // This allows stuff like F10, etc to work correctly.
+  DefWindowProc(event.os_event.hwnd, event.os_event.message,
+                  event.os_event.wParam, event.os_event.lParam);
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogView:
 

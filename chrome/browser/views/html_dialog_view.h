@@ -68,6 +68,7 @@ class HtmlDialogView
   // Overridden from TabContentsDelegate:
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
  private:
   // This view is a delegate to the HTML content since it needs to get notified

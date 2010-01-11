@@ -102,6 +102,19 @@ void HtmlDialogGtk::ToolbarSizeChanged(TabContents* source,
   // Ignored.
 }
 
+// A simplified version of BrowserWindowGtk::HandleKeyboardEvent().
+// We don't handle global keyboard shortcuts here, but that's fine since
+// they're all browser-specific. (This may change in the future.)
+void HtmlDialogGtk::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  GdkEventKey* os_event = event.os_event;
+  if (!os_event || event.type == WebKit::WebInputEvent::Char)
+    return;
+
+  // To make sure the default key bindings can still work, such as Escape to
+  // close the dialog.
+  gtk_bindings_activate_event(GTK_OBJECT(dialog_), os_event);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogGtk:
 
