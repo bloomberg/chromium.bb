@@ -637,3 +637,19 @@
    fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRKSbIwSt11char_traitsIwESaIwEEbP7ProfilePiPS_
    fun:_ZN11BrowserInit5StartERK11CommandLineRKSbIwSt11char_traitsIwESaIwEEP7ProfilePi
 }
+{
+   bug_31985
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net16HttpNetworkLayer10GetSessionEv
+   fun:_ZN3net16HttpNetworkLayer17CreateTransactionEP10scoped_ptrINS_15HttpTransactionEE
+   fun:_ZN3net9HttpCache11Transaction13DoSendRequestEv
+   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
+   fun:_ZN3net9HttpCache11Transaction19BeginNetworkRequestEv
+   fun:_ZN3net9HttpCache11Transaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
+   fun:_ZN17URLRequestHttpJob16StartTransactionEv
+   fun:_ZN17URLRequestHttpJob5StartEv
+   fun:_ZN10URLRequest8StartJobEP13URLRequestJob
+   fun:_ZN10URLRequest5StartEv
+   fun:_ZN10URLFetcher4Core15StartURLRequestEv
+}
