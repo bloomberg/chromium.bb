@@ -46,8 +46,9 @@ class AppCacheStorageImpl : public AppCacheStorage {
  private:
   friend class AppCacheStorageImplTest;
 
-  // A handful of tasks used to perform database operations on the
-  // background database thread.
+  // The AppCacheStorageImpl class methods and datamembers may only be
+  // accessed on the IO thread. This class manufactures seperate DatabaseTasks
+  // which access the DB on a seperate background thread.
   class DatabaseTask;
   class InitTask;
   class CloseConnectionTask;
@@ -58,6 +59,9 @@ class AppCacheStorageImpl : public AppCacheStorage {
   class FindMainResponseTask;
   class MarkEntryAsForeignTask;
   class MakeGroupObsoleteTask;
+  class GetDeletableResponseIdsTask;
+  class InsertDeletableResponseIdsTask;
+  class DeleteDeletableResponseIdsTask;
 
   typedef std::deque<DatabaseTask*> DatabaseTaskQueue;
   typedef std::map<int64, CacheLoadTask*> PendingCacheLoads;
@@ -76,6 +80,11 @@ class AppCacheStorageImpl : public AppCacheStorage {
   void ScheduleSimpleTask(Task* task);
   void RunOnePendingSimpleTask();
 
+  void DelayedStartDeletingUnusedResponses();
+  void StartDeletingResponses(const std::vector<int64>& response_ids);
+  void ScheduleDeleteOneResponse();
+  void DeleteOneResponse();
+
   // Sometimes we can respond without having to query the database.
   void DeliverShortCircuitedFindMainResponse(
       const GURL& url, AppCacheEntry found_entry,
@@ -93,6 +102,13 @@ class AppCacheStorageImpl : public AppCacheStorage {
   PendingCacheLoads pending_cache_loads_;
   PendingGroupLoads pending_group_loads_;
   PendingForeignMarkings pending_foreign_markings_;
+
+  // Structures to keep track of lazy response deletion.
+  std::deque<int64> deletable_response_ids_;
+  std::vector<int64> deleted_response_ids_;
+  bool is_response_deletion_scheduled_;
+  bool did_start_deleting_responses_;
+  int64 last_deletable_response_rowid_;
 
   // Created on the IO thread, but only used on the DB thread.
   AppCacheDatabase* database_;

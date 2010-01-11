@@ -106,7 +106,8 @@ class AppCacheStorageImpl::InitTask : public DatabaseTask {
  public:
   explicit InitTask(AppCacheStorageImpl* storage)
       : DatabaseTask(storage), last_group_id_(0),
-        last_cache_id_(0), last_response_id_(0) {}
+        last_cache_id_(0), last_response_id_(0),
+        last_deletable_response_rowid_(0) {}
 
   virtual void Run();
   virtual void RunCompleted();
@@ -129,7 +130,14 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
   storage_->last_group_id_ = last_group_id_;
   storage_->last_cache_id_ = last_cache_id_;
   storage_->last_response_id_ = last_response_id_;
+  storage_->last_deletable_response_rowid_ = last_deletable_response_rowid_;
   storage_->origins_with_groups_.swap(origins_with_groups_);
+
+  const int kDelayMillis = 5 * 60 * 1000;  // Five minutes.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    storage_->method_factory_.NewRunnableMethod(
+        &AppCacheStorageImpl::DelayedStartDeletingUnusedResponses),
+    kDelayMillis);
 }
 
 // CloseConnectionTask -------
@@ -602,11 +610,66 @@ void AppCacheStorageImpl::MakeGroupObsoleteTask::CancelCompletion() {
   group_ = NULL;
 }
 
+// GetDeletableResponseIdsTask -------
+
+class AppCacheStorageImpl::GetDeletableResponseIdsTask : public DatabaseTask {
+ public:
+  GetDeletableResponseIdsTask(AppCacheStorageImpl* storage, int64 max_rowid)
+      : DatabaseTask(storage), max_rowid_(max_rowid) {}
+  virtual void Run();
+  virtual void RunCompleted();
+  int64 max_rowid_;
+  std::vector<int64> response_ids_;
+};
+
+void AppCacheStorageImpl::GetDeletableResponseIdsTask::Run() {
+  const int kSqlLimit = 1000;
+  database_->GetDeletableResponseIds(&response_ids_, max_rowid_, kSqlLimit);
+}
+
+void AppCacheStorageImpl::GetDeletableResponseIdsTask::RunCompleted() {
+  if (!response_ids_.empty())
+    storage_->StartDeletingResponses(response_ids_);
+}
+
+// InsertDeletableResponseIdsTask -------
+
+class AppCacheStorageImpl::InsertDeletableResponseIdsTask
+    : public DatabaseTask {
+ public:
+  explicit InsertDeletableResponseIdsTask(AppCacheStorageImpl* storage)
+      : DatabaseTask(storage) {}
+  virtual void Run();
+  std::vector<int64> response_ids_;
+};
+
+void AppCacheStorageImpl::InsertDeletableResponseIdsTask::Run() {
+  database_->InsertDeletableResponseIds(response_ids_);
+}
+
+// DeleteDeletableResponseIdsTask -------
+
+class AppCacheStorageImpl::DeleteDeletableResponseIdsTask
+    : public DatabaseTask {
+ public:
+  explicit DeleteDeletableResponseIdsTask(AppCacheStorageImpl* storage)
+      : DatabaseTask(storage) {}
+  virtual void Run();
+  std::vector<int64> response_ids_;
+};
+
+void AppCacheStorageImpl::DeleteDeletableResponseIdsTask::Run() {
+  database_->DeleteDeletableResponseIds(response_ids_);
+}
+
 
 // AppCacheStorageImpl ---------------------------------------------------
 
 AppCacheStorageImpl::AppCacheStorageImpl(AppCacheService* service)
     : AppCacheStorage(service), is_incognito_(false),
+      is_response_deletion_scheduled_(false),
+      did_start_deleting_responses_(false),
+      last_deletable_response_rowid_(0), database_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
@@ -818,10 +881,81 @@ AppCacheResponseWriter* AppCacheStorageImpl::CreateResponseWriter(
 
 void AppCacheStorageImpl::DoomResponses(
     const GURL& manifest_url, const std::vector<int64>& response_ids) {
-  for (std::vector<int64>::const_iterator it = response_ids.begin();
-       it != response_ids.end(); ++it) {
-    disk_cache()->DoomEntry(Int64ToString(*it));
+  if (response_ids.empty())
+    return;
+
+  // Start deleting them from the disk cache incrementally.
+  StartDeletingResponses(response_ids);
+
+  // Also schedule a database task to record these ids in the
+  // deletable responses table.
+  // TODO(michaeln): There is a race here. If the browser crashes
+  // prior to committing these rows to the database and prior to us
+  // having deleted them from the disk cache, we'll never delete them.
+  scoped_refptr<InsertDeletableResponseIdsTask> task =
+      new InsertDeletableResponseIdsTask(this);
+  task->response_ids_ = response_ids;
+  task->Schedule();
+}
+
+void AppCacheStorageImpl::DelayedStartDeletingUnusedResponses() {
+  // Only if we haven't already begun.
+  if (!did_start_deleting_responses_) {
+    scoped_refptr<GetDeletableResponseIdsTask> task =
+        new GetDeletableResponseIdsTask(this, last_deletable_response_rowid_);
+    task->Schedule();
   }
+}
+
+void AppCacheStorageImpl::StartDeletingResponses(
+    const std::vector<int64>& response_ids) {
+  DCHECK(!response_ids.empty());
+  did_start_deleting_responses_ = true;
+  deletable_response_ids_.insert(
+      deletable_response_ids_.end(),
+      response_ids.begin(), response_ids.end());
+  if (!is_response_deletion_scheduled_)
+    ScheduleDeleteOneResponse();
+}
+
+void AppCacheStorageImpl::ScheduleDeleteOneResponse() {
+  DCHECK(!is_response_deletion_scheduled_);
+  const int kDelayMillis = 10;
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &AppCacheStorageImpl::DeleteOneResponse),
+      kDelayMillis);
+  is_response_deletion_scheduled_ = true;
+}
+
+void AppCacheStorageImpl::DeleteOneResponse() {
+  DCHECK(is_response_deletion_scheduled_);
+  DCHECK(!deletable_response_ids_.empty());
+
+  is_response_deletion_scheduled_ = false;
+
+  int64 id = deletable_response_ids_.front();
+  deletable_response_ids_.pop_front();
+  disk_cache()->DoomEntry(Int64ToString(id));
+  deleted_response_ids_.push_back(id);
+
+  const size_t kBatchSize = 50U;
+  if (deleted_response_ids_.size() >= kBatchSize ||
+      deletable_response_ids_.empty()) {
+    scoped_refptr<DeleteDeletableResponseIdsTask> task =
+        new DeleteDeletableResponseIdsTask(this);
+    task->response_ids_.swap(deleted_response_ids_);
+    task->Schedule();
+  }
+
+  if (deletable_response_ids_.empty()) {
+    scoped_refptr<GetDeletableResponseIdsTask> task =
+        new GetDeletableResponseIdsTask(this, last_deletable_response_rowid_);
+    task->Schedule();
+    return;
+  }
+
+  ScheduleDeleteOneResponse();
 }
 
 AppCacheStorageImpl::CacheLoadTask*
