@@ -2873,9 +2873,9 @@ BUG29944 WIN : LayoutTests/websocket/tests/unicode.html = TEXT PASS
 BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/canvas/set-colors.html = TEXT
 
 // Failures from WebKit merge 51711:51724
-BUG_AJWONG : LayoutTests/fast/js/string-property-deletion.html = TEXT
-BUG_AJWONG : LayoutTests/svg/carto.net/selectionlist.svg = IMAGE PASS
-BUG_AJWONG WIN :LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE+TEXT PASS
+BUG32003 : LayoutTests/fast/js/string-property-deletion.html = TEXT
+BUG31998 LINUX : LayoutTests/svg/carto.net/selectionlist.svg = IMAGE PASS
+BUG31997 DEBUG WIN : LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE+TEXT PASS
 BUG29943 WIN : LayoutTests/websocket/tests/send.html = TEXT PASS
 
 // Failures from Webkit merger 51724 -> 51772
@@ -3056,9 +3056,6 @@ BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/reload.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/wrong-signature-2.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/top-frame-4.html = TIMEOUT TEXT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/top-frame-3.html = TIMEOUT TEXT PASS
-
-// Crash of unknown origin :(
-BUG_DGLAZKOV LINUX : LayoutTests/fast/images/svg-as-background.html = CRASH PASS
 
 // Another crash of unknown origin
 // First crash at http://src.chromium.org/viewvc/chrome?view=rev&revision=34558, which doesn't make much sense.
