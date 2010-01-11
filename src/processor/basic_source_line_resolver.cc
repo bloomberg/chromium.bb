@@ -114,11 +114,15 @@ class BasicSourceLineResolver::Module {
   bool LoadMapFromBuffer(const string &map_buffer);
 
   // Looks up the given relative address, and fills the StackFrame struct
-  // with the result.  Additional debugging information, if available, is
-  // returned.  If no additional information is available, returns NULL.
-  // A NULL return value is not an error.  The caller takes ownership of
-  // any returned WindowsFrameInfo object.
-  WindowsFrameInfo* LookupAddress(StackFrame *frame) const;
+  // with the result.
+  void LookupAddress(StackFrame *frame) const;
+
+  // If Windows stack walking information is available covering ADDRESS,
+  // return a WindowsFrameInfo structure describing it. If the information
+  // is not available, returns NULL. A NULL return value does not indicate
+  // an error. The caller takes ownership of any returned WindowsFrameInfo
+  // object.
+  WindowsFrameInfo *FindWindowsFrameInfo(const StackFrame *frame) const;
 
  private:
   friend class BasicSourceLineResolver;
@@ -236,12 +240,21 @@ bool BasicSourceLineResolver::HasModule(const string &module_name) const {
   return modules_->find(module_name) != modules_->end();
 }
 
-WindowsFrameInfo* BasicSourceLineResolver::FillSourceLineInfo(
-    StackFrame *frame) const {
+void BasicSourceLineResolver::FillSourceLineInfo(StackFrame *frame) const {
   if (frame->module) {
     ModuleMap::const_iterator it = modules_->find(frame->module->code_file());
     if (it != modules_->end()) {
-      return it->second->LookupAddress(frame);
+      it->second->LookupAddress(frame);
+    }
+  }
+}
+
+WindowsFrameInfo *BasicSourceLineResolver::FindWindowsFrameInfo(
+    const StackFrame *frame) const {
+  if (frame->module) {
+    ModuleMap::const_iterator it = modules_->find(frame->module->code_file());
+    if (it != modules_->end()) {
+      return it->second->FindWindowsFrameInfo(frame);
     }
   }
   return NULL;
@@ -413,42 +426,15 @@ bool BasicSourceLineResolver::Module::LoadMap(const string &map_file) {
   return LoadMapFromBuffer(map_buffer);
 }
 
-WindowsFrameInfo* BasicSourceLineResolver::Module::LookupAddress(
-    StackFrame *frame) const {
+void BasicSourceLineResolver::Module::LookupAddress(StackFrame *frame) const {
   MemAddr address = frame->instruction - frame->module->base_address();
 
-  linked_ptr<WindowsFrameInfo> retrieved_info;
-  // Check for debugging info first, before any possible early returns.
-  //
-  // We only know about STACK_INFO_FRAME_DATA and STACK_INFO_FPO.  Prefer
-  // them in this order.  STACK_INFO_FRAME_DATA is the newer type that
-  // includes its own program string.  STACK_INFO_FPO is the older type
-  // corresponding to the FPO_DATA struct.  See stackwalker_x86.cc.
-  if (!stack_info_[STACK_INFO_FRAME_DATA].RetrieveRange(address,
-                                                        &retrieved_info)) {
-    stack_info_[STACK_INFO_FPO].RetrieveRange(address, &retrieved_info);
-  }
-
-  scoped_ptr<WindowsFrameInfo> frame_info;
-  if (retrieved_info.get()) {
-    frame_info.reset(new WindowsFrameInfo());
-    frame_info->CopyFrom(*retrieved_info.get());
-  }
-
-  // First, look for a matching FUNC range.  Use RetrieveNearestRange instead
-  // of RetrieveRange so that the nearest function can be compared to the
-  // nearest PUBLIC symbol if the address does not lie within the function.
-  // Having access to the highest function below address, even when address
-  // is outside of the function, is useful: if the function is higher than
-  // the nearest PUBLIC symbol, then it means that the PUBLIC symbols is not
-  // valid for the address, and no function information should be filled in.
-  // Using RetrieveNearestRange instead of RetrieveRange means that we need
-  // to verify that address is within the range before using a FUNC.
-  //
-  // If no FUNC containing the address is found, look for the nearest PUBLIC
-  // symbol, being careful not to use a public symbol at a lower address than
-  // the nearest FUNC.
-  int parameter_size = 0;
+  // First, look for a FUNC record that covers address. Use
+  // RetrieveNearestRange instead of RetrieveRange so that, if there
+  // is no such function, we can use the next function to bound the
+  // extent of the PUBLIC symbol we find, below. This does mean we
+  // need to check that address indeed falls within the function we
+  // find; do the range comparison in an overflow-friendly way.
   linked_ptr<Function> func;
   linked_ptr<PublicSymbol> public_symbol;
   MemAddr function_base;
@@ -456,9 +442,7 @@ WindowsFrameInfo* BasicSourceLineResolver::Module::LookupAddress(
   MemAddr public_address;
   if (functions_.RetrieveNearestRange(address, &func,
                                       &function_base, &function_size) &&
-      address >= function_base && address < function_base + function_size) {
-    parameter_size = func->parameter_size;
-
+      address >= function_base && address - function_size < function_base) {
     frame->function_name = func->name;
     frame->function_base = frame->module->base_address() + function_base;
 
@@ -474,27 +458,55 @@ WindowsFrameInfo* BasicSourceLineResolver::Module::LookupAddress(
     }
   } else if (public_symbols_.Retrieve(address,
                                       &public_symbol, &public_address) &&
-             (!func.get() || public_address > function_base + function_size)) {
-    parameter_size = public_symbol->parameter_size;
-
+             (!func.get() || public_address - function_size > function_base)) {
     frame->function_name = public_symbol->name;
     frame->function_base = frame->module->base_address() + public_address;
-  } else {
-    // No FUNC or PUBLIC data available.
-    return frame_info.release();
+  }
+}
+
+WindowsFrameInfo *BasicSourceLineResolver::Module::FindWindowsFrameInfo(
+    const StackFrame *frame) const {
+  MemAddr address = frame->instruction - frame->module->base_address();
+  scoped_ptr<WindowsFrameInfo> result(new WindowsFrameInfo());
+
+  // We only know about STACK_INFO_FRAME_DATA and STACK_INFO_FPO.  Prefer
+  // them in this order.  STACK_INFO_FRAME_DATA is the newer type that
+  // includes its own program string.  STACK_INFO_FPO is the older type
+  // corresponding to the FPO_DATA struct.  See stackwalker_x86.cc.
+  linked_ptr<WindowsFrameInfo> frame_info;
+  if ((stack_info_[STACK_INFO_FRAME_DATA].RetrieveRange(address, &frame_info))
+      || (stack_info_[STACK_INFO_FPO].RetrieveRange(address, &frame_info))) {
+    result->CopyFrom(*frame_info.get());
+    return result.release();
   }
 
-  if (!frame_info.get()) {
-    // Even without a relevant STACK line, many functions contain information
-    // about how much space their parameters consume on the stack.  Prefer
-    // the STACK stuff (above), but if it's not present, take the
-    // information from the FUNC or PUBLIC line.
-    frame_info.reset(new WindowsFrameInfo());
-    frame_info->parameter_size = parameter_size;
-    frame_info->valid |= WindowsFrameInfo::VALID_PARAMETER_SIZE;
+  // Even without a relevant STACK line, many functions contain
+  // information about how much space their parameters consume on the
+  // stack. Use RetrieveNearestRange instead of RetrieveRange, so that
+  // we can use the function to bound the extent of the PUBLIC symbol,
+  // below. However, this does mean we need to check that ADDRESS
+  // falls within the retrieved function's range; do the range
+  // comparison in an overflow-friendly way.
+  linked_ptr<Function> function;
+  MemAddr function_base, function_size;
+  if (functions_.RetrieveNearestRange(address, &function,
+                                      &function_base, &function_size) && 
+      address >= function_base && address - function_base < function_size) {
+    result->parameter_size = function->parameter_size;
+    result->valid |= WindowsFrameInfo::VALID_PARAMETER_SIZE;
+    return result.release();
   }
 
-  return frame_info.release();
+  // PUBLIC symbols might have a parameter size. Use the function we
+  // found above to limit the range the public symbol covers.
+  linked_ptr<PublicSymbol> public_symbol;
+  MemAddr public_address;
+  if (public_symbols_.Retrieve(address, &public_symbol, &public_address) &&
+      (!function.get() || public_address - function_size > function_base)) {
+    result->parameter_size = public_symbol->parameter_size;
+  }
+  
+  return NULL;
 }
 
 // static

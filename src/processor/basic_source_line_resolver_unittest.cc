@@ -104,9 +104,10 @@ static bool RunTests() {
   TestCodeModule module1("module1");
 
   StackFrame frame;
+  scoped_ptr<WindowsFrameInfo> frame_info;
   frame.instruction = 0x1000;
   frame.module = NULL;
-  scoped_ptr<WindowsFrameInfo> frame_info(resolver.FillSourceLineInfo(&frame));
+  resolver.FillSourceLineInfo(&frame);
   ASSERT_FALSE(frame.module);
   ASSERT_TRUE(frame.function_name.empty());
   ASSERT_EQ(frame.function_base, 0);
@@ -115,7 +116,7 @@ static bool RunTests() {
   ASSERT_EQ(frame.source_line_base, 0);
 
   frame.module = &module1;
-  frame_info.reset(resolver.FillSourceLineInfo(&frame));
+  resolver.FillSourceLineInfo(&frame);
   ASSERT_EQ(frame.function_name, "Function1_1");
   ASSERT_TRUE(frame.module);
   ASSERT_EQ(frame.module->code_file(), "module1");
@@ -123,6 +124,7 @@ static bool RunTests() {
   ASSERT_EQ(frame.source_file_name, "file1_1.cc");
   ASSERT_EQ(frame.source_line, 44);
   ASSERT_EQ(frame.source_line_base, 0x1000);
+  frame_info.reset(resolver.FindWindowsFrameInfo(&frame));
   ASSERT_TRUE(frame_info.get());
   ASSERT_FALSE(frame_info->allocates_base_pointer);
   ASSERT_EQ(frame_info->program_string,
@@ -131,37 +133,40 @@ static bool RunTests() {
   ClearSourceLineInfo(&frame);
   frame.instruction = 0x800;
   frame.module = &module1;
-  frame_info.reset(resolver.FillSourceLineInfo(&frame));
+  resolver.FillSourceLineInfo(&frame);
   ASSERT_TRUE(VerifyEmpty(frame));
+  frame_info.reset(resolver.FindWindowsFrameInfo(&frame));
   ASSERT_FALSE(frame_info.get());
 
   frame.instruction = 0x1280;
-  frame_info.reset(resolver.FillSourceLineInfo(&frame));
+  resolver.FillSourceLineInfo(&frame);
   ASSERT_EQ(frame.function_name, "Function1_3");
   ASSERT_TRUE(frame.source_file_name.empty());
   ASSERT_EQ(frame.source_line, 0);
+  frame_info.reset(resolver.FindWindowsFrameInfo(&frame));
   ASSERT_TRUE(frame_info.get());
   ASSERT_FALSE(frame_info->allocates_base_pointer);
   ASSERT_TRUE(frame_info->program_string.empty());
 
   frame.instruction = 0x1380;
-  frame_info.reset(resolver.FillSourceLineInfo(&frame));
+  resolver.FillSourceLineInfo(&frame);
   ASSERT_EQ(frame.function_name, "Function1_4");
   ASSERT_TRUE(frame.source_file_name.empty());
   ASSERT_EQ(frame.source_line, 0);
+  frame_info.reset(resolver.FindWindowsFrameInfo(&frame));
   ASSERT_TRUE(frame_info.get());
   ASSERT_FALSE(frame_info->allocates_base_pointer);
   ASSERT_FALSE(frame_info->program_string.empty());
 
   frame.instruction = 0x2000;
-  frame_info.reset(resolver.FillSourceLineInfo(&frame));
+  frame_info.reset(resolver.FindWindowsFrameInfo(&frame));
   ASSERT_FALSE(frame_info.get());
 
   TestCodeModule module2("module2");
 
   frame.instruction = 0x2181;
   frame.module = &module2;
-  frame_info.reset(resolver.FillSourceLineInfo(&frame));
+  resolver.FillSourceLineInfo(&frame);
   ASSERT_EQ(frame.function_name, "Function2_2");
   ASSERT_EQ(frame.function_base, 0x2170);
   ASSERT_TRUE(frame.module);
@@ -169,14 +174,13 @@ static bool RunTests() {
   ASSERT_EQ(frame.source_file_name, "file2_2.cc");
   ASSERT_EQ(frame.source_line, 21);
   ASSERT_EQ(frame.source_line_base, 0x2180);
+  frame_info.reset(resolver.FindWindowsFrameInfo(&frame));
   ASSERT_TRUE(frame_info.get());
   ASSERT_EQ(frame_info->prolog_size, 1);
 
   frame.instruction = 0x216f;
-  WindowsFrameInfo *s;
-  s = resolver.FillSourceLineInfo(&frame);
+  resolver.FillSourceLineInfo(&frame);
   ASSERT_EQ(frame.function_name, "Public2_1");
-  delete s;
 
   ClearSourceLineInfo(&frame);
   frame.instruction = 0x219f;
@@ -186,10 +190,8 @@ static bool RunTests() {
 
   frame.instruction = 0x21a0;
   frame.module = &module2;
-  s = resolver.FillSourceLineInfo(&frame);
+  resolver.FillSourceLineInfo(&frame);
   ASSERT_EQ(frame.function_name, "Public2_2");
-
-  delete s;
 
   ASSERT_FALSE(resolver.LoadModule("module3",
                                    testdata_dir + "/module3_bad.out"));

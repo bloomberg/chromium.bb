@@ -63,7 +63,9 @@ class BasicSourceLineResolver : public SourceLineResolverInterface {
 
   virtual bool HasModule(const string &module_name) const;
 
-  virtual WindowsFrameInfo* FillSourceLineInfo(StackFrame *frame) const;
+  virtual void FillSourceLineInfo(StackFrame *frame) const;
+
+  virtual WindowsFrameInfo *FindWindowsFrameInfo(const StackFrame *frame) const;
 
  private:
   template<class T> class MemAddrMap;

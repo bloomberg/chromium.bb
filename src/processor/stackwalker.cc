@@ -118,7 +118,8 @@ bool Stackwalker::Walk(CallStack *stack) {
               return false;
           }
         }
-        frame_info.reset(resolver_->FillSourceLineInfo(frame.get()));
+        resolver_->FillSourceLineInfo(frame.get());
+        frame_info.reset(resolver_->FindWindowsFrameInfo(frame.get()));
       }
     }
 
