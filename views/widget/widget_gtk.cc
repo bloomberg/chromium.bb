@@ -384,7 +384,11 @@ void WidgetGtk::SetContentsView(View* view) {
 }
 
 void WidgetGtk::GetBounds(gfx::Rect* out, bool including_frame) const {
-  DCHECK(widget_);
+  if (!widget_) {
+    // Due to timing we can get a request for the bounds after Close.
+    *out = gfx::Rect(gfx::Point(0, 0), size_);
+    return;
+  }
 
   int x = 0, y = 0, w, h;
   if (GTK_IS_WINDOW(widget_)) {
