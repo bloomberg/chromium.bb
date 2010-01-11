@@ -762,8 +762,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // testing against a bunch of special cases that are taken care early on.
   PrepareRestartOnCrashEnviroment(parsed_command_line);
 
-  // Initialize and maintain DNS prefetcher module.
-  chrome_browser_net::DnsPrefetcherInit dns_prefetch(user_prefs, local_state);
+  // Initialize and maintain DNS prefetcher module. Also registers an observer
+  // to clear the host cache when closing incognito mode.
+  chrome_browser_net::DnsGlobalInit dns_prefetch(user_prefs, local_state);
 
   scoped_refptr<FieldTrial> socket_late_binding_trial =
       new FieldTrial("SocketLateBinding", 100);

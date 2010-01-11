@@ -34,7 +34,7 @@ using base::TimeDelta;
 
 namespace chrome_browser_net {
 
-static void DiscardAllPrefetchState();
+static void ChangedToOnTheRecord();
 static void DnsMotivatedPrefetch(const std::string& hostname,
                                  DnsHostInfo::ResolutionMotivation motivation);
 static void DnsPrefetchMotivatedList(
@@ -42,10 +42,10 @@ static void DnsPrefetchMotivatedList(
     DnsHostInfo::ResolutionMotivation motivation);
 
 // static
-const size_t DnsPrefetcherInit::kMaxConcurrentLookups = 8;
+const size_t DnsGlobalInit::kMaxPrefetchConcurrentLookups = 8;
 
 // static
-const int DnsPrefetcherInit::kMaxQueueingDelayMs = 1000;
+const int DnsGlobalInit::kMaxPrefetchQueueingDelayMs = 1000;
 
 // Host resolver shared by DNS prefetcher, and the main URLRequestContext.
 static net::HostResolver* global_host_resolver = NULL;
@@ -72,8 +72,12 @@ void OnTheRecord(bool enable) {
   if (on_the_record_switch == enable)
     return;
   on_the_record_switch = enable;
-  if (on_the_record_switch)
-    DiscardAllPrefetchState();  // Destroy all evidence of our OTR session.
+  if (on_the_record_switch) {
+    ChromeThread::PostTask(
+        ChromeThread::IO,
+        FROM_HERE,
+        NewRunnableFunction(ChangedToOnTheRecord));
+  }
 }
 
 void RegisterPrefs(PrefService* local_state) {
@@ -409,9 +413,6 @@ void InitDnsPrefetch(TimeDelta max_queue_delay, size_t max_concurrent,
     dns_master = new DnsMaster(GetGlobalHostResolver(),
                                max_queue_delay, max_concurrent);
     dns_master->AddRef();
-    // We did the initialization, so we should prime the pump, and set up
-    // the DNS resolution system to run.
-    Singleton<OffTheRecordObserver>::get()->Register();
 
     if (user_prefs) {
       bool enabled = user_prefs->GetBoolean(prefs::kDnsPrefetchingEnabled);
@@ -457,16 +458,19 @@ void FreeDnsPrefetchResources() {
   dns_master = NULL;
 }
 
-static void DiscardAllPrefetchState() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (!dns_master)
-    return;
+static void ChangedToOnTheRecord() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  ChromeThread::PostTask(
-      ChromeThread::IO,
-      FROM_HERE,
-      NewRunnableMethod(dns_master,
-                        &DnsMaster::DiscardAllResults));
+  if (dns_master) {
+    // Destroy all evidence of our OTR session.
+    dns_master->DnsMaster::DiscardAllResults();
+  }
+
+  // Clear the host cache to avoid showing entries from the OTR session
+  // in about:net-internals.
+  net::HostCache* host_cache = GetGlobalHostResolver()->GetHostCache();
+  if (host_cache)
+    host_cache->clear();
 }
 
 //------------------------------------------------------------------------------
@@ -610,8 +614,8 @@ static void RestoreSubresourceReferrers(PrefService* local_state) {
 // Methods for the helper class that is used to startup and teardown the whole
 // DNS prefetch system.
 
-DnsPrefetcherInit::DnsPrefetcherInit(PrefService* user_prefs,
-                                     PrefService* local_state) {
+DnsGlobalInit::DnsGlobalInit(PrefService* user_prefs,
+                             PrefService* local_state) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // Set up a field trial to see what disabling DNS pre-resolution does to
   // latency of page loads.
@@ -639,12 +643,16 @@ DnsPrefetcherInit::DnsPrefetcherInit(PrefService* user_prefs,
   trial_->AppendGroup("_default_enabled_prefetch",
       FieldTrial::kAllRemainingProbability);
 
+  // We will register the incognito observer regardless of whether prefetching
+  // is enabled, as it is also used to clear the host cache.
+  Singleton<OffTheRecordObserver>::get()->Register();
+
   if (trial_->group() != disabled_prefetch) {
     // Initialize the DNS prefetch system.
 
-    size_t max_concurrent = kMaxConcurrentLookups;
+    size_t max_concurrent = kMaxPrefetchConcurrentLookups;
 
-    int max_queueing_delay_ms = kMaxQueueingDelayMs;
+    int max_queueing_delay_ms = kMaxPrefetchQueueingDelayMs;
 
     if (trial_->group() == max_250ms_prefetch)
       max_queueing_delay_ms = 250;
@@ -666,7 +674,7 @@ DnsPrefetcherInit::DnsPrefetcherInit(PrefService* user_prefs,
   }
 }
 
-DnsPrefetcherInit::~DnsPrefetcherInit() {
+DnsGlobalInit::~DnsGlobalInit() {
     if (dns_master)
       FreeDnsPrefetchResources();
   }

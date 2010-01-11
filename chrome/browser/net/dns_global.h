@@ -57,26 +57,26 @@ void DnsPrefetchGetHtmlInfo(std::string* output);
 //------------------------------------------------------------------------------
 void SaveDnsPrefetchStateForNextStartupAndTrim(PrefService* prefs);
 // Helper class to handle global init and shutdown.
-class DnsPrefetcherInit {
+class DnsGlobalInit {
  public:
   // Too many concurrent lookups negate benefits of prefetching by trashing
   // the OS cache before all resource loading is complete.
   // This is the default.
-  static const size_t kMaxConcurrentLookups;
+  static const size_t kMaxPrefetchConcurrentLookups;
 
   // When prefetch requests are queued beyond some period of time, then the
   // system is congested, and we need to clear all queued requests to get out
   // of that state.  The following is the suggested default time limit.
-  static const int kMaxQueueingDelayMs;
+  static const int kMaxPrefetchQueueingDelayMs;
 
-  DnsPrefetcherInit(PrefService* user_prefs, PrefService* local_state);
-  ~DnsPrefetcherInit();
+  DnsGlobalInit(PrefService* user_prefs, PrefService* local_state);
+  ~DnsGlobalInit();
 
  private:
   // Maintain a field trial instance when we do A/B testing.
   scoped_refptr<FieldTrial> trial_;
 
-  DISALLOW_COPY_AND_ASSIGN(DnsPrefetcherInit);
+  DISALLOW_COPY_AND_ASSIGN(DnsGlobalInit);
 };
 
 }  // namespace chrome_browser_net
