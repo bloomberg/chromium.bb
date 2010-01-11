@@ -448,6 +448,10 @@ BUG12310 WONTFIX SKIP : LayoutTests/fast/wcss = FAIL
 // because we can't emulate the cahcing behaviors it expects.
 WONTFIX : LayoutTests/fast/dom/HTMLScriptElement/nested-execution.html = FAIL
 
+// Touch events are not supported. 
+WONTFIX SKIP : LayoutTests/fast/events/touch-coords-in-zoom-and-scroll.html = FAIL TIMEOUT
+WONTFIX SKIP : LayoutTests/fast/events/basic-touch-events.html = FAIL
+
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
 // -----------------------------------------------------------------
@@ -3016,9 +3020,6 @@ BUG30174 : LayoutTests/media/video-source-type.html = CRASH PASS
 // Flaky.
 BUG30180 : LayoutTests/fast/text/international/hindi-whitespace.html = IMAGE PASS
 
-// New test with http://trac.webkit.org/changeset/51982
-LayoutTests/fast/events/basic-touch-events.html = TEXT
-
 // evan's fix rolled out in http://trac.webkit.org/changeset/52071 due to compat issues.
 BUG30343 LINUX : LayoutTests/fast/css/large-number-round-trip.html = TEXT
 
@@ -3139,3 +3140,6 @@ BUG31794 WIN MAC : LayoutTests/storage/domstorage/localstorage/enumerate-storage
 
 // Flaky
 BUG31803 LINUX : LayoutTests/editing/inserting/12882.html = IMAGE PASS
+
+
+
