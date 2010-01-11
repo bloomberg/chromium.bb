@@ -299,6 +299,12 @@ const wchar_t kDesktopNotificationDeniedOrigins[] =
 // be displayed at the default zoom level.
 const wchar_t kPerHostZoomLevels[] = L"profile.per_host_zoom_levels";
 
+// Boolean that is true if the autofill infobar has been shown to the user.
+const wchar_t kAutoFillInfoBarShown[] = L"autofill.infobar_shown";
+
+// Boolean that is true if autofill is enabled and allowed to save profile data.
+const wchar_t kAutoFillEnabled[] = L"autofill.enabled";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

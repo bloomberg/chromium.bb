@@ -17,6 +17,7 @@ class FormFieldValues;
 class AutoFillInfoBarDelegate;
 class FormStructure;
 class PersonalDataManager;
+class PrefService;
 class TabContents;
 
 // Manages saving and restoring the user's personal information entered into web
@@ -26,6 +27,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill {
   explicit AutoFillManager(TabContents* tab_contents);
   virtual ~AutoFillManager();
 
+  // Registers our Enable/Disable AutoFill pref.
+  static void RegisterUserPrefs(PrefService* prefs);
+
   // RenderViewHostDelegate::AutoFill implementation.
   virtual void FormFieldValuesSubmitted(
       const webkit_glue::FormFieldValues& form);
@@ -33,6 +37,12 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill {
   // Uses heuristics and existing personal data to determine the possible field
   // types.
   void DeterminePossibleFieldTypes(FormStructure* form_structure);
+
+  // Handles the form data submitted by the user.
+  void HandleSubmit();
+
+  // Called by the AutoFillInfoBarDelegate when the user accepts the infobar.
+  void OnInfoBarAccepted();
 
   // Saves the form data to the web database.
   void SaveFormData();

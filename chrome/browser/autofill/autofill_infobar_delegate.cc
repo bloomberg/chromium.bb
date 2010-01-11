@@ -7,7 +7,10 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -17,8 +20,11 @@ AutoFillInfoBarDelegate::AutoFillInfoBarDelegate(TabContents* tab_contents,
                                                  AutoFillManager* host)
     : ConfirmInfoBarDelegate(tab_contents),
       host_(host) {
-  if (tab_contents)
+  if (tab_contents) {
+    PrefService* prefs = tab_contents->profile()->GetPrefs();
+    prefs->SetBoolean(prefs::kAutoFillInfoBarShown, true);
     tab_contents->AddInfoBar(this);
+  }
 }
 
 AutoFillInfoBarDelegate::~AutoFillInfoBarDelegate() {
@@ -61,7 +67,7 @@ std::wstring AutoFillInfoBarDelegate::GetButtonLabel(
 
 bool AutoFillInfoBarDelegate::Accept() {
   if (host_) {
-    host_->SaveFormData();
+    host_->OnInfoBarAccepted();
     host_ = NULL;
   }
   return true;

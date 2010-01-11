@@ -119,6 +119,8 @@ extern const wchar_t kNTPPromoImageRemaining[];
 extern const wchar_t kDesktopNotificationAllowedOrigins[];
 extern const wchar_t kDesktopNotificationDeniedOrigins[];
 extern const wchar_t kPerHostZoomLevels[];
+extern const wchar_t kAutoFillInfoBarShown[];
+extern const wchar_t kAutoFillEnabled[];
 
 // Local state
 extern const wchar_t kMetricsClientID[];

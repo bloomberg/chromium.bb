@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_prefs.h"
 
+#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/browser.h"
@@ -83,6 +84,7 @@ void RegisterLocalState(PrefService* local_state) {
 
 void RegisterUserPrefs(PrefService* user_prefs) {
   // User prefs
+  AutoFillManager::RegisterUserPrefs(user_prefs);
   SessionStartupPref::RegisterUserPrefs(user_prefs);
   Browser::RegisterUserPrefs(user_prefs);
   PasswordManager::RegisterUserPrefs(user_prefs);

@@ -13,6 +13,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "webkit/glue/form_field_values.h"
 
 AutoFillManager::AutoFillManager(TabContents* tab_contents)
@@ -22,6 +24,12 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
 }
 
 AutoFillManager::~AutoFillManager() {
+}
+
+// static
+void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kAutoFillInfoBarShown, false);
+  prefs->RegisterBooleanPref(prefs::kAutoFillEnabled, false);
 }
 
 void AutoFillManager::FormFieldValuesSubmitted(
@@ -40,11 +48,15 @@ void AutoFillManager::FormFieldValuesSubmitted(
   // Determine the possible field types.
   DeterminePossibleFieldTypes(upload_form_structure_.get());
 
-  if (!personal_data_->ImportFormData(form_structures_, this))
-    return;
-
-  // Ask the user for permission to save form information.
-  infobar_.reset(new AutoFillInfoBarDelegate(tab_contents_, this));
+  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  bool autofill_enabled = prefs->GetBoolean(prefs::kAutoFillEnabled);
+  bool infobar_shown = prefs->GetBoolean(prefs::kAutoFillInfoBarShown);
+  if (!infobar_shown) {
+    // Ask the user for permission to save form information.
+    infobar_.reset(new AutoFillInfoBarDelegate(tab_contents_, this));
+  } else if (autofill_enabled) {
+    HandleSubmit();
+  }
 }
 
 void AutoFillManager::DeterminePossibleFieldTypes(
@@ -61,9 +73,25 @@ void AutoFillManager::DeterminePossibleFieldTypes(
   }
 }
 
-void AutoFillManager::SaveFormData() {
-  UploadFormData();
+void AutoFillManager::HandleSubmit() {
+  // If there wasn't enough data to import then we don't want to send an upload
+  // to the server.
+  if (!personal_data_->ImportFormData(form_structures_, this))
+    return;
 
+  UploadFormData();
+}
+
+void AutoFillManager::OnInfoBarAccepted() {
+  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kAutoFillEnabled, true);
+
+  // TODO(jhawkins): AutoFillDialog
+
+  HandleSubmit();
+}
+
+void AutoFillManager::SaveFormData() {
   // TODO(jhawkins): Save the form data to the web database.
 }
 
