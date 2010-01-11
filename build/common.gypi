@@ -159,7 +159,7 @@
         'msvs_configuration_platform': 'x64',
         'msvs_settings': {
           'VCLinkerTool': {
-            'TargetMachine': '1', # x86 - 32
+            'TargetMachine': '17', # x86 - 64
           },
         },
       },
