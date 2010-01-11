@@ -205,8 +205,7 @@ FlipSession::FlipSession(const std::string& host, HttpNetworkSession* session)
       streams_initiated_count_(0),
       streams_pushed_count_(0),
       streams_pushed_and_claimed_count_(0),
-      streams_abandoned_count_(0),
-      bytes_received_(0) {
+      streams_abandoned_count_(0) {
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
 
   flip_framer_.set_visitor(this);
@@ -538,8 +537,6 @@ void FlipSession::OnReadComplete(int bytes_read) {
     CloseSessionOnError(error);
     return;
   }
-
-  bytes_received_ += bytes_read;
 
   char *data = read_buffer_->data();
   while (bytes_read &&
