@@ -146,6 +146,8 @@ static void NcAddJumpToJumpSets(NcValidatorState* state,
                                 JumpSets* jump_sets,
                                 NcInstState* inst) {
   Bool is_good = TRUE;
+  DEBUG(printf("Add jump to jump sets: %"PRIxPcAddress" -> %"PRIxPcAddress"\n",
+               from_address, to_address));
   if (to_address < state->vlimit) {
     if (to_address < state->vbase) {
       /*
@@ -487,14 +489,18 @@ static void AddExprJumpTarget(NcValidatorState* state,
           }
           break;
         case ExprConstant:
-        case ExprConstant64:
-          /* Explicit jump value. */
-          NcAddJumpToJumpSets(state,
+        case ExprConstant64: {
+          /* Explicit jump value. Allow "call 0" as special case. */
+          uint64_t target = GetExprConstant(vector, i);
+          if (! (target == 0 && NcInstStateOpcode(inst)->name == InstCall)) {
+            NcAddJumpToJumpSets(state,
                               inst_pc,
-                              (PcAddress) GetExprConstant(vector, i),
+                              (PcAddress) target,
                               jump_sets,
                               inst);
+          }
           break;
+        }
         default:
           NcValidatorInstMessage(
               LOG_ERROR, state, inst,

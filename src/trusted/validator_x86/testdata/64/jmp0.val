@@ -1,0 +1,5 @@
+00000000000202db: e9 20 fd fd ff                               jmp 0x0
+ERROR: Instruction jumps to bad address
+Checking jump targets: 202c0 to 202e0
+Checking that basic blocks are aligned
+***MODULE IS UNSAFE***
