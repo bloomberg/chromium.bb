@@ -50,8 +50,10 @@ bool GetTestList(const CommandLine& command_line,
   for (std::vector<std::string>::const_iterator iter = lines.begin();
        iter != lines.end(); ++iter) {
     std::string line = *iter;
-    if (line.empty())
-      continue;  // Just ignore empty lines if any.
+
+    // Ignore empty and metadata lines (like "YOU HAVE x FLAKY TESTS").
+    if (line.empty() || line.find(' ') != std::string::npos)
+      continue;
 
     if (line[line.size() - 1] == '.') {
       // This is a new test case.
