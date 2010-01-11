@@ -37,6 +37,7 @@ MSVC_POP_WARNING();
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeCollection.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 // TODO(yaar) Eventually should not depend on api/src.
@@ -57,6 +58,7 @@ using WebKit::WebFrameImpl;
 using WebKit::WebInputElement;
 using WebKit::WebNode;
 using WebKit::WebNodeCollection;
+using WebKit::WebNodeList;
 using WebKit::WebVector;
 using WebKit::WebView;
 
@@ -271,31 +273,24 @@ static void FindFormElements(WebView* view,
   GURL::Replacements rep;
   rep.ClearQuery();
   rep.ClearRef();
-  WebFrameImpl* main_frame_impl = static_cast<WebFrameImpl*>(main_frame);
-  WebCore::Frame* frame = main_frame_impl->frame();
 
   // Loop through each frame.
-  for (WebCore::Frame* f = frame; f; f = f->tree()->traverseNext()) {
-    WebCore::Document* doc = f->document();
-    if (!doc->isHTMLDocument())
+  for (WebFrame* f = main_frame; f; f = f->traverseNext(false)) {
+    WebDocument doc = f->document();
+    if (!doc.isHTMLDocument())
       continue;
 
-    GURL full_origin(StringToStdString(doc->documentURI()));
+    GURL full_origin(f->url());
     if (data.origin != full_origin.ReplaceComponents(rep))
       continue;
 
-    WebCore::FrameLoader* loader = f->loader();
-    if (loader == NULL)
-      continue;
+    WebVector<WebFormElement> forms;
+    f->forms(forms);
 
-    PassRefPtr<WebCore::HTMLCollection> forms = doc->forms();
-    for (size_t i = 0; i < forms->length(); ++i) {
-      // FIXME: docs->forms should return an array of WebFormElements
-      WebFormElement fe = HTMLFormElementToWebFormElement(
-          static_cast<WebCore::HTMLFormElement*>(forms->item(i)));
+    for (size_t i = 0; i < forms.size(); ++i) {
+      WebFormElement fe = forms[i];
       // Action URL must match.
-      GURL full_action(
-          KURLToGURL(loader->completeURL(WebStringToString(fe.action()))));
+      GURL full_action(f->completeURL(fe.action()));
       if (data.action != full_action.ReplaceComponents(rep))
         continue;
 
@@ -504,24 +499,23 @@ bool ParseIconSizes(const string16& text,
   return (*is_any || !sizes->empty());
 }
 
-static void AddInstallIcon(WebCore::HTMLLinkElement* link,
+static void AddInstallIcon(const WebElement& link,
                            std::vector<WebApplicationInfo::IconInfo>* icons) {
-  String href = link->href();
-  if (href.isEmpty() || href.isNull())
+  WebString href = link.getAttribute("href");
+  if (href.isNull() || href.isEmpty())
     return;
 
-  GURL url(webkit_glue::StringToStdString(href));
+  GURL url(href);
   if (!url.is_valid())
     return;
 
-  const String sizes_attr = "sizes";
-  if (!link->hasAttribute(sizes_attr))
+  if (!link.hasAttribute("sizes"))
     return;
 
   bool is_any = false;
   std::vector<gfx::Size> icon_sizes;
-  if (!ParseIconSizes(webkit_glue::StringToString16(
-      link->getAttribute(sizes_attr)), &icon_sizes, &is_any) || is_any ||
+  if (!ParseIconSizes(link.getAttribute("sizes"), &icon_sizes, &is_any) ||
+      is_any ||
       icon_sizes.size() != 1) {
     return;
   }
@@ -536,37 +530,40 @@ void GetApplicationInfo(WebView* view, WebApplicationInfo* app_info) {
   WebFrame* main_frame = view->mainFrame();
   if (!main_frame)
     return;
-  WebFrameImpl* main_frame_impl = static_cast<WebFrameImpl*>(main_frame);
 
-  WebCore::HTMLHeadElement* head;
-  if (!main_frame_impl->frame() ||
-      !main_frame_impl->frame()->document() ||
-      !(head = main_frame_impl->frame()->document()->head())) {
+  WebDocument doc = main_frame->document();
+  if (doc.isNull())
     return;
-  }
-  WTF::PassRefPtr<WebCore::HTMLCollection> children = head->children();
-  for (unsigned i = 0; i < children->length(); ++i) {
-    WebCore::Node* child = children->item(i);
-    WebCore::HTMLLinkElement* link = WebKit::toHTMLLinkElement(child);
-    if (link) {
-      if (link->isIcon())
-        AddInstallIcon(link, &app_info->icons);
-    } else {
-      WebCore::HTMLMetaElement* meta = WebKit::toHTMLMetaElement(child);
-      if (meta) {
-        if (meta->name() == String("application-name")) {
-          app_info->title = webkit_glue::StringToString16(meta->content());
-        } else if (meta->name() == String("description")) {
-          app_info->description =
-              webkit_glue::StringToString16(meta->content());
-        } else if (meta->name() == String("application-url")) {
-          std::string url = webkit_glue::StringToStdString(meta->content());
-          GURL main_url = main_frame->url();
-          app_info->app_url = main_url.is_valid() ?
-              main_url.Resolve(url) : GURL(url);
-          if (!app_info->app_url.is_valid())
-            app_info->app_url = GURL();
-        }
+
+  WebElement head = main_frame->document().head();
+  if (head.isNull())
+    return;
+
+  WebNodeList children = head.childNodes();
+  for (unsigned i = 0; i < children.length(); ++i) {
+    WebNode child = children.item(i);
+    if (!child.isElementNode())
+      continue;
+    WebElement elem = child.toElement<WebElement>();
+
+    if (elem.hasTagName("link")) {
+      std::string rel = elem.getAttribute("rel").utf8();
+      if (rel == "SHORTCUT ICON")
+        AddInstallIcon(elem, &app_info->icons);
+    } else if (elem.hasTagName("meta") && elem.hasAttribute("name")) {
+      std::string name = elem.getAttribute("name").utf8();
+      WebString content = elem.getAttribute("content");
+      if (name == "application-name") {
+        app_info->title = content;
+      } else if (name == "description") {
+        app_info->description = content;
+      } else if (name == "application-url") {
+        std::string url = content.utf8();
+        GURL main_url = main_frame->url();
+        app_info->app_url = main_url.is_valid() ?
+            main_url.Resolve(url) : GURL(url);
+        if (!app_info->app_url.is_valid())
+          app_info->app_url = GURL();
       }
     }
   }
@@ -624,15 +621,13 @@ bool ElementDoesAutoCompleteForElementWithId(WebView* view,
   if (!web_frame)
     return false;
 
-  WebCore::Frame* frame = static_cast<WebFrameImpl*>(web_frame)->frame();
-  WebCore::Element* element =
-      frame->document()->getElementById(StdStringToString(element_id));
-  if (!element || !element->hasLocalName(WebCore::HTMLNames::inputTag))
+  WebElement element = web_frame->document().getElementById(
+      StdStringToWebString(element_id));
+  if (element.isNull() || !element.hasTagName("input"))
     return false;
 
-  WebCore::HTMLInputElement* input_element =
-      static_cast<WebCore::HTMLInputElement*>(element);
-  return input_element->autoComplete();
+  WebInputElement input_element = element.toElement<WebInputElement>();
+  return input_element.autoComplete();
 }
 
 int NumberOfActiveAnimations(WebView* view) {
@@ -647,6 +642,5 @@ int NumberOfActiveAnimations(WebView* view) {
 
   return controller->numberOfActiveAnimations();
 }
-
 
 } // webkit_glue
