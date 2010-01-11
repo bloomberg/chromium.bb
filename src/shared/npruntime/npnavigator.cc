@@ -411,7 +411,7 @@ NPCapability* NPNavigator::GetScriptableInstanceImpl(NPP npp) {
   if (NULL != object) {
     NPCapability* capability = new(std::nothrow) NPCapability;
     if (NULL != capability) {
-      CreateStub(npp, object, capability);
+      NPObjectStub::CreateStub(npp, object, capability);
     }
     return capability;
   }

@@ -45,8 +45,6 @@ class NPBridge {
   // The size of NPVariant in the remote peer.
   size_t peer_npvariant_size_;
 
-  // The map of NPObject to NPObjectStub
-  std::map<NPObject*, NPObjectStub*> stub_map_;
   // The map of NPCapability to NPObjectProxy
   std::map<const NPCapability, NPObjectProxy*> proxy_map_;
 
@@ -130,22 +128,6 @@ class NPBridge {
   void set_channel(NaClSrpcChannel* channel) {
     channel_ = channel;
   }
-
-  // Creates an NPObject stub for the specified object. On success,
-  // CreateStub() returns 1, and NPCapability for the stub is filled in.
-  // CreateStub() returns 0 on failure.
-  int CreateStub(NPP npp, NPObject* object, NPCapability* cap);
-
-  // Returns the NPObject stub that corresponds to the specified object.
-  // LookupStub() returns NULL if no correspoing stub is found.
-  NPObjectStub* LookupStub(NPObject* object);
-
-  // Returns the NPObject stub that corresponds to the specified capability.
-  // GetStub() returns NULL if no correspoing stub is found.
-  NPObjectStub* GetStub(const NPCapability& capability);
-
-  // Removes the specified NPObject stub.
-  void RemoveStub(NPObjectStub* stub);
 
   // Creates a proxy NPObject for the specified capability. CreateProxy()
   // returns pointer to the proxy NPObject on success, and NULL on failure.

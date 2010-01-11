@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPOBJECT_STUB_H_
 #define NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPOBJECT_STUB_H_
 
+#include <map>
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npcapability.h"
@@ -20,17 +21,7 @@ class RpcArg;
 // An NPObjectStub wraps an NPObject and converts IMC messages from
 // NPObjectProxy to calls to the object.
 class NPObjectStub {
-  // The NPP instance to which this stub belongs.
-  NPP npp_;
-  // The NPObject for which this stub instance is created.
-  NPObject* object_;
-
  public:
-  // Creates a new instance of NPObjectStub with the specified NPP for
-  // the specified local NPObject.
-  NPObjectStub(NPP npp, NPObject* object);
-  ~NPObjectStub();
-
   // Returns true if this stub instance is created for the local NPObject
   // represented by the specified capability.
   bool IsMatch(const NPCapability& capability) const {
@@ -45,9 +36,12 @@ class NPObjectStub {
     return object_;
   }
 
-  // Gets the NPObjectStub corresponding to a particular capability.
-  // Used by the SRPC methods to determine the object stub to dispatch to.
-  static NPObjectStub* Lookup(NaClSrpcChannel* channel, RpcArg* arg);
+  // An NPBridge (NPModule or NPNavigator) registers that it will be creating
+  // or using stubs.  When no NPBridges are live, the stubs can be released.
+  // TODO(sehr): there are still some lifetime and reentrancy issues that
+  // need to be worked on here.
+  static bool AddBridge();
+  static bool RemoveBridge(bool release_objects);
 
   // The SRPC methods for all of the NPObject interfaces.
   static NaClSrpcError Deallocate(NaClSrpcChannel* channel,
@@ -91,7 +85,25 @@ class NPObjectStub {
   // npn_gate.cc
   void SetExceptionImpl(const NPUTF8* message);
 
+  // Creates an NPObject stub for the specified object. On success,
+  // CreateStub() returns 1, and NPCapability for the stub is filled in.
+  // CreateStub() returns 0 on failure.
+  static int CreateStub(NPP npp, NPObject* object, NPCapability* cap);
+
+  // Returns the NPObject stub that corresponds to the specified object.
+  // GetByObject() returns NULL if no correspoing stub is found.
+  static NPObjectStub* GetByObject(NPObject* object);
+
+  // Returns the NPObject stub that corresponds to the specified capability.
+  // GetByCapability() returns NULL if no correspoing stub is found.
+  static NPObjectStub* GetByCapability(const NPCapability& capability);
+
  private:
+  // Creates a new instance of NPObjectStub with the specified NPP for
+  // the specified local NPObject.
+  NPObjectStub(NPP npp, NPObject* object);
+  ~NPObjectStub();
+
   // NPClass methods. NPObjectStub forwards these RPC requests received from
   // the remote NPObjectProxy object to object_;
   void DeallocateImpl();
@@ -113,6 +125,24 @@ class NPObjectStub {
   bool ConstructImpl(const NPVariant* args,
                      uint32_t arg_count,
                      NPVariant* result);
+
+  // Gets the NPObjectStub corresponding to a particular capability passed
+  // in an RpcArg.  Used by the SRPC methods to determine the object stub to
+  // dispatch to.
+  static NPObjectStub* GetByArg(RpcArg* arg);
+
+  // The mapping from NPObject to NPObjectStub.
+  // Thread safe because it is only accessed from the NPAPI main thread.
+  // TODO(sehr): this might be better as a hash_map.
+  static std::map<NPObject*, NPObjectStub*> *stub_map;
+  // Reference count of the number of NPBridges that have been created.
+  // Thread safe because it is only accessed from the NPAPI main thread.
+  static int32_t bridge_ref_count;
+
+  // The NPP instance to which this stub belongs.
+  NPP npp_;
+  // The NPObject for which this stub instance is created.
+  NPObject* object_;
 };
 
 }  // namespace nacl

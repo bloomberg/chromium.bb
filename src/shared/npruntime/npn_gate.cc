@@ -492,7 +492,7 @@ void NPN_SetException(NPObject* object,
   if (NULL == navigator) {
     return;
   }
-  nacl::NPObjectStub* stub = navigator->LookupStub(object);
+  nacl::NPObjectStub* stub = nacl::NPObjectStub::GetByObject(object);
   if (stub) {
     stub->SetExceptionImpl(message);
   }

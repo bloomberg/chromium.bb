@@ -10,6 +10,7 @@
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
+#include "native_client/src/shared/npruntime/npobject_stub.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 //
@@ -138,6 +139,7 @@ bool RpcArg::PutVariant(const NPVariant* variant) {
     if (0 == NPVARIANT_TO_STRING(*variant).UTF8Length ||
         NULL == NPVARIANT_TO_STRING(*variant).UTF8Characters) {
       // Something's wrong with this string.
+      printf("malformed string\n");
       return false;
     } else {
       size_t len = NPVARIANT_TO_STRING(*variant).UTF8Length;
@@ -145,6 +147,7 @@ bool RpcArg::PutVariant(const NPVariant* variant) {
       void* str = optional_.Request(len);
       if (NULL == str) {
         // There aren't enough bytes to store the string.
+        printf("not enough bytes for string %d\n", (int) len);
         return false;
       }
       optional_.Consume(len);
@@ -160,7 +163,7 @@ bool RpcArg::PutVariant(const NPVariant* variant) {
       return false;
     }
     optional_.Consume(sizeof(NPCapability));
-    bridge->CreateStub(npp_, object, capability);
+    NPObjectStub::CreateStub(npp_, object, capability);
   }
   return true;
 }
@@ -208,14 +211,13 @@ NPObject* RpcArg::GetObject() {
 }
 
 bool RpcArg::PutObject(NPObject* object) {
-  NPBridge* bridge = NPBridge::LookupBridge(npp_);
   NPCapability* capability =
       reinterpret_cast<NPCapability*>(fixed_.Request(sizeof(NPCapability)));
   if (NULL == capability) {
     return false;
   }
   fixed_.Consume(sizeof(NPCapability));
-  bridge->CreateStub(npp_, object, capability);
+  NPObjectStub::CreateStub(npp_, object, capability);
   return true;
 }
 
