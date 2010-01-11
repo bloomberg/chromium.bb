@@ -2,34 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include <set>
 
 #include "base/compiler_specific.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
-#include "AnimationController.h"
-#include "FrameLoader.h"
-#include "FrameTree.h"
-#include "Document.h"
-#include "Element.h"
-#include "EventListener.h"
-#include "EventNames.h"
-#include "HTMLAllCollection.h"
-#include "HTMLElement.h"
-#include "HTMLFormElement.h"
-#include "HTMLHeadElement.h"
-#include "HTMLInputElement.h"
-#include "HTMLLinkElement.h"
-#include "HTMLMetaElement.h"
-#include "HTMLOptionElement.h"
-#include "HTMLNames.h"
-#include "KURL.h"
-MSVC_POP_WARNING();
-#undef LOG
-
 #include "base/string_util.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAnimationController.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
@@ -40,21 +17,16 @@ MSVC_POP_WARNING();
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
-// TODO(yaar) Eventually should not depend on api/src.
-#include "third_party/WebKit/WebKit/chromium/src/DOMUtilitiesPrivate.h"
-#include "third_party/WebKit/WebKit/chromium/src/WebFrameImpl.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webpasswordautocompletelistener_impl.h"
 
-using WebCore::String;
-using WebKit::FrameLoaderClientImpl;
+using WebKit::WebAnimationController;
 using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
-using WebKit::WebFrameImpl;
 using WebKit::WebInputElement;
 using WebKit::WebNode;
 using WebKit::WebNodeCollection;
@@ -406,7 +378,6 @@ bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
   WebFrame* main_frame = view->mainFrame();
   if (!main_frame)
     return false;
-  WebFrameImpl* main_frame_impl = static_cast<WebFrameImpl*>(main_frame);
 
   std::set<GURL> resources_set;
   std::set<GURL> frames_set;
@@ -415,7 +386,7 @@ bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
                                            &frames_set,
                                            &frames);
 
-  GURL main_page_gurl(main_frame_impl->url());
+  GURL main_page_gurl(main_frame->url());
 
   // Make sure we are saving same page between embedder and webkit.
   // If page has being navigated, embedder will get three empty vector,
@@ -424,7 +395,7 @@ bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
     return true;
 
   // First, process main frame.
-  frames.push_back(main_frame_impl);
+  frames.push_back(main_frame);
 
   // Check all resource in this page, include sub-frame.
   for (int i = 0; i < static_cast<int>(frames.size()); ++i) {
@@ -577,18 +548,16 @@ bool PauseAnimationAtTimeOnElementWithId(WebView* view,
   if (!web_frame)
     return false;
 
-  WebCore::Frame* frame = static_cast<WebFrameImpl*>(web_frame)->frame();
-  WebCore::AnimationController* controller = frame->animation();
+  WebAnimationController* controller = web_frame->animationController();
   if (!controller)
     return false;
 
-  WebCore::Element* element =
-      frame->document()->getElementById(StdStringToString(element_id));
-  if (!element)
+  WebElement element =
+    web_frame->document().getElementById(WebString::fromUTF8(element_id));
+  if (element.isNull())
     return false;
-
-  return controller->pauseAnimationAtTime(element->renderer(),
-                                          StdStringToString(animation_name),
+  return controller->pauseAnimationAtTime(element,
+                                          WebString::fromUTF8(animation_name),
                                           time);
 }
 
@@ -600,18 +569,16 @@ bool PauseTransitionAtTimeOnElementWithId(WebView* view,
   if (!web_frame)
     return false;
 
-  WebCore::Frame* frame = static_cast<WebFrameImpl*>(web_frame)->frame();
-  WebCore::AnimationController* controller = frame->animation();
+  WebAnimationController* controller = web_frame->animationController();
   if (!controller)
     return false;
 
-  WebCore::Element* element =
-      frame->document()->getElementById(StdStringToString(element_id));
-  if (!element)
+  WebElement element =
+      web_frame->document().getElementById(WebString::fromUTF8(element_id));
+  if (element.isNull())
     return false;
-
-  return controller->pauseTransitionAtTime(element->renderer(),
-                                           StdStringToString(property_name),
+  return controller->pauseTransitionAtTime(element,
+                                           WebString::fromUTF8(property_name),
                                            time);
 }
 
@@ -622,7 +589,7 @@ bool ElementDoesAutoCompleteForElementWithId(WebView* view,
     return false;
 
   WebElement element = web_frame->document().getElementById(
-      StdStringToWebString(element_id));
+      WebString::fromUTF8(element_id));
   if (element.isNull() || !element.hasTagName("input"))
     return false;
 
@@ -635,8 +602,7 @@ int NumberOfActiveAnimations(WebView* view) {
   if (!web_frame)
     return -1;
 
-  WebCore::Frame* frame = static_cast<WebFrameImpl*>(web_frame)->frame();
-  WebCore::AnimationController* controller = frame->animation();
+  WebAnimationController* controller = web_frame->animationController();
   if (!controller)
     return -1;
 
