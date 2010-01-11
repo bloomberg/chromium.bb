@@ -193,7 +193,7 @@ bool UpdateManifest::Parse(const std::string& manifest_xml) {
   ScopedXmlDocument document(xmlParseDoc(
       reinterpret_cast<const xmlChar*>(manifest_xml.c_str())));
   if (!document.get()) {
-    ParseError(xml_errors.c_str());
+    ParseError("%s", xml_errors.c_str());
     return false;
   }
 
@@ -228,7 +228,7 @@ bool UpdateManifest::Parse(const std::string& manifest_xml) {
     Result current;
     std::string error;
     if (!ParseSingleAppTag(apps[i], gupdate_ns, &current, &error)) {
-      ParseError(error.c_str());
+      ParseError("%s", error.c_str());
       return false;
     }
     results_.push_back(current);
