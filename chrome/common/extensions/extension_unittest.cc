@@ -223,17 +223,29 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidPrivacyBlacklistsPath));
 
-  // Test invalid UI surface count (both page action and browser action).
+  // Multiple page actions are not allowed.
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
   DictionaryValue* action = new DictionaryValue;
   action->SetString(keys::kPageActionId, "MyExtensionActionId");
   action->SetString(keys::kName, "MyExtensionActionName");
   ListValue* action_list = new ListValue;
   action_list->Append(action->DeepCopy());
+  action_list->Append(action);
+  input_value->Set(keys::kPageActions, action_list);
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_STREQ(errors::kInvalidPageActionsListSize, error.c_str());
+
+  // Test invalid UI surface count (both page action and browser action).
+  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  action = new DictionaryValue;
+  action->SetString(keys::kPageActionId, "MyExtensionActionId");
+  action->SetString(keys::kName, "MyExtensionActionName");
+  action_list = new ListValue;
+  action_list->Append(action->DeepCopy());
   input_value->Set(keys::kPageActions, action_list);
   input_value->Set(keys::kBrowserAction, action);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_STREQ(error.c_str(), errors::kOneUISurfaceOnly);
+  EXPECT_STREQ(errors::kOneUISurfaceOnly, error.c_str());
 
   // Test invalid options page url.
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
@@ -294,6 +306,13 @@ TEST(ExtensionTest, InitFromValueValid) {
   EXPECT_EQ("", error);
   EXPECT_EQ("chrome-extension", extension.options_url().scheme());
   EXPECT_EQ("/options.html", extension.options_url().path());
+
+  // Test that an empty list of page actions does not stop a browser action
+  // from being loaded.
+  ListValue* empty_list = new ListValue;
+  input_value.Set(keys::kPageActions, empty_list);
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_EQ("", error);
 
 #if !defined(OS_MACOSX)
   // TODO(aa): The version isn't stamped into the unit test binary on mac.
