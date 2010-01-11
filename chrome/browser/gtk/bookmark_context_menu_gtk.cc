@@ -241,7 +241,6 @@ BookmarkContextMenuGtk::BookmarkContextMenuGtk(
   } else {
     AppendItem(IDS_BOOKMARK_BAR_EDIT);
   }
-  AppendItem(IDS_BOOKMARK_BAR_REMOVE);
 
   if (configuration == BOOKMARK_MANAGER_TABLE ||
       configuration == BOOKMARK_MANAGER_TABLE_OTHER ||
@@ -250,16 +249,10 @@ BookmarkContextMenuGtk::BookmarkContextMenuGtk(
     AppendItem(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER);
   }
 
-  if (configuration == BOOKMARK_MANAGER_TABLE ||
-      configuration == BOOKMARK_MANAGER_TABLE_OTHER ||
-      configuration == BOOKMARK_MANAGER_TREE ||
-      configuration == BOOKMARK_MANAGER_ORGANIZE_MENU ||
-      configuration == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
-    AppendSeparator();
-    AppendItem(IDS_CUT);
-    AppendItem(IDS_COPY);
-    AppendItem(IDS_PASTE);
-  }
+  AppendSeparator();
+  AppendItem(IDS_CUT);
+  AppendItem(IDS_COPY);
+  AppendItem(IDS_PASTE);
 
   if (configuration == BOOKMARK_MANAGER_ORGANIZE_MENU) {
     AppendSeparator();
@@ -418,16 +411,17 @@ void BookmarkContextMenuGtk::ExecuteCommandById(int id) {
       break;
 
     case IDS_PASTE: {
-      // Always paste to parent.
-      if (!parent_)
+      const BookmarkNode* paste_target = GetParentForNewNodes();
+      if (!paste_target)
         return;
 
-      int index = (selection_.size() == 1) ?
-          parent_->IndexOfChild(selection_[0]) : -1;
-      if (index != -1)
-        index++;
+      int index = -1;
+      if (selection_.size() == 1 && selection_[0]->is_url()) {
+        index = paste_target->IndexOfChild(selection_[0]) + 1;
+      }
+
       bookmark_utils::PasteFromClipboard(profile_->GetBookmarkModel(),
-                                         parent_, index);
+                                         paste_target, index);
       break;
     }
 
@@ -480,8 +474,11 @@ bool BookmarkContextMenuGtk::IsCommandEnabled(int id) const {
       return selection_.size() > 0 && !is_root_node;
 
     case IDS_PASTE:
-      // Always paste to parent.
-      return bookmark_utils::CanPasteFromClipboard(parent_);
+      // Paste to selection from the Bookmark Bar, to parent_ everywhere else
+      return (configuration_ == BOOKMARK_BAR &&
+              !selection_.empty() &&
+              bookmark_utils::CanPasteFromClipboard(selection_[0])) ||
+             bookmark_utils::CanPasteFromClipboard(parent_);
   }
   return true;
 }
