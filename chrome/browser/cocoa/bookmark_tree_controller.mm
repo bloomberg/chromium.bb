@@ -251,7 +251,7 @@
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
-  return [[self delegate] validateMenuItem:menuItem];
+  return [(BookmarkTreeController*)[self delegate] validateMenuItem:menuItem];
 }
 
 - (void)keyDown:(NSEvent*)event {

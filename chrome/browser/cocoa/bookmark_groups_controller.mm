@@ -14,6 +14,11 @@
 @interface BookmarkGroupsController ()
 - (void)syncSelection;
 - (void)reload;
+
+// Returns YES if the text in the identified cell is editable.
+- (BOOL)        tableView:(NSTableView*)tableView
+    shouldEditTableColumn:(NSTableColumn*)tableColumn
+                      row:(NSInteger)row;
 @end
 
 
@@ -75,10 +80,12 @@
   selectedGroup_ = [group retain];
 
   NSInteger row = group ? [groups_ indexOfObject:group] : NSNotFound;
-  if (row != NSNotFound)
-    [groupsTable_ selectRow:row byExtendingSelection:NO];
-  else
+  if (row != NSNotFound) {
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:row];
+    [groupsTable_ selectRowIndexes:indexSet byExtendingSelection:NO];
+  } else {
     [groupsTable_ deselectAll:self];
+  }
 }
 
 - (NSTableView*)groupsTable {
