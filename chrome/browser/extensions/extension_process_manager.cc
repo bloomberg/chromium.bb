@@ -194,6 +194,10 @@ SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(const GURL& url) {
   return browsing_instance_->GetSiteInstanceForURL(url);
 }
 
+bool ExtensionProcessManager::HasExtensionHost(ExtensionHost* host) const {
+  return all_hosts_.find(host) != all_hosts_.end();
+}
+
 void ExtensionProcessManager::Observe(NotificationType type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {

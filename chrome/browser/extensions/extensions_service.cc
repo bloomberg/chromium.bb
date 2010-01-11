@@ -529,6 +529,7 @@ void ExtensionsService::CheckForExternalUpdates() {
 }
 
 void ExtensionsService::UnloadExtension(const std::string& extension_id) {
+  // Make sure the extension gets deleted after we return from this function.
   scoped_ptr<Extension> extension(
       GetExtensionByIdInternal(extension_id, true, true));
 
@@ -879,10 +880,24 @@ void ExtensionsService::Observe(NotificationType type,
       DCHECK_EQ(profile_, Source<Profile>(source).ptr());
 
       ExtensionHost* host = Details<ExtensionHost>(details).ptr();
+      // TODO(phajdan.jr): Change to DCHECK after fixing http://crbug.com/30405.
+      CHECK(profile_->GetExtensionProcessManager()->HasExtensionHost(host));
+
+      // If we hit one of these assertions it means that the host's
+      // Extension pointer became invalid (http://crbug.com/30405).
+      // TODO(phajdan.jr): Remove excessive debugging after fixing bug 30405.
+      std::string extension_id(host->extension()->id());
+      CHECK(extension_id.length() == 32U);
+      Extension* extension = GetExtensionById(extension_id, true);
+      CHECK(extension == host->extension());
+      if (!extension) {
+        NOTREACHED();
+        return;
+      }
 
       // Unload the entire extension. We want it to be in a consistent state:
       // either fully working or not loaded at all, but never half-crashed.
-      UnloadExtension(host->extension()->id());
+      UnloadExtension(extension_id);
       break;
     }
 

@@ -73,6 +73,9 @@ class ExtensionProcessManager : public NotificationObserver {
   // Returns the process that the extension with the given ID is running in.
   RenderProcessHost* GetExtensionProcess(const std::string& extension_id);
 
+  // Returns true if |host| is managed by this process manager.
+  bool HasExtensionHost(ExtensionHost* host) const;
+
   // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
