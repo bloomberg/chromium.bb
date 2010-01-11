@@ -164,7 +164,11 @@ String DebuggerAgentImpl::ExecuteUtilityFunction(
   v8::TryCatch try_catch;
   v8::Handle<v8::Value> res_obj = function->Call(context->Global(), 3, args);
   if (try_catch.HasCaught()) {
-    *exception = WebCore::toWebCoreString(try_catch.Message()->Get());
+    v8::Local<v8::Message> message = try_catch.Message();
+    if (message.IsEmpty())
+      *exception = "Unknown exception";
+    else
+      *exception = WebCore::toWebCoreString(message->Get());
     return "";
   } else {
     return WebCore::toWebCoreStringWithNullCheck(res_obj);
