@@ -13,6 +13,7 @@
 #include "app/tree_node_model.h"
 #include "base/lock.h"
 #include "base/observer_list.h"
+#include "base/string16.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
@@ -217,8 +218,12 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // loaded it is loaded and the observer of the model notified when done.
   const SkBitmap& GetFavIcon(const BookmarkNode* node);
 
+  // TODO(munjal): Remove wstring overload once all code is moved to string16.
   // Sets the title of the specified node.
+#if !defined(WCHAR_T_IS_UTF16)
   void SetTitle(const BookmarkNode* node, const std::wstring& title);
+#endif
+  void SetTitle(const BookmarkNode* node, const string16& title);
 
   // Returns true if the model finished loading.
   bool IsLoaded() { return loaded_; }
@@ -245,21 +250,42 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // the specified id.
   const BookmarkNode* GetNodeByID(int64 id);
 
+  // TODO(munjal): Remove wstring overload once all code is moved to string16.
   // Adds a new group node at the specified position.
+#if !defined(WCHAR_T_IS_UTF16)
   const BookmarkNode* AddGroup(const BookmarkNode* parent,
                                int index,
                                const std::wstring& title);
+#endif
+  const BookmarkNode* AddGroup(const BookmarkNode* parent,
+                               int index,
+                               const string16& title);
 
+  // TODO(munjal): Remove wstring overload once all code is moved to string16.
   // Adds a url at the specified position.
+#if !defined(WCHAR_T_IS_UTF16)
   const BookmarkNode* AddURL(const BookmarkNode* parent,
                              int index,
                              const std::wstring& title,
                              const GURL& url);
+#endif
+  const BookmarkNode* AddURL(const BookmarkNode* parent,
+                             int index,
+                             const string16& title,
+                             const GURL& url);
 
+  // TODO(munjal): Remove wstring overload once all code is moved to string16.
   // Adds a url with a specific creation date.
+#if !defined(WCHAR_T_IS_UTF16)
   const BookmarkNode* AddURLWithCreationTime(const BookmarkNode* parent,
                                              int index,
                                              const std::wstring& title,
+                                             const GURL& url,
+                                             const base::Time& creation_time);
+#endif
+  const BookmarkNode* AddURLWithCreationTime(const BookmarkNode* parent,
+                                             int index,
+                                             const string16& title,
                                              const GURL& url,
                                              const base::Time& creation_time);
 
@@ -267,11 +293,17 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // BookmarkNodeChildrenReordered method.
   void SortChildren(const BookmarkNode* parent);
 
+  // TODO(munjal): Remove wstring overload once all code is moved to string16.
   // This is the convenience that makes sure the url is starred or not starred.
   // If is_starred is false, all bookmarks for URL are removed. If is_starred is
   // true and there are no bookmarks for url, a bookmark is created.
+#if !defined(WCHAR_T_IS_UTF16)
   void SetURLStarred(const GURL& url,
                      const std::wstring& title,
+                     bool is_starred);
+#endif
+  void SetURLStarred(const GURL& url,
+                     const string16& title,
                      bool is_starred);
 
   // Sets the date modified time of the specified node.
@@ -282,8 +314,15 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // combobox of most recently modified groups.
   void ResetDateGroupModified(const BookmarkNode* node);
 
+  // TODO(munjal): Remove wstring overload once all code is moved to string16.
+#if !defined(WCHAR_T_IS_UTF16)
   void GetBookmarksWithTitlesMatching(
       const std::wstring& text,
+      size_t max_count,
+      std::vector<bookmark_utils::TitleMatch>* matches);
+#endif
+  void GetBookmarksWithTitlesMatching(
+      const string16& text,
       size_t max_count,
       std::vector<bookmark_utils::TitleMatch>* matches);
 

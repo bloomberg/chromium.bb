@@ -20,7 +20,7 @@ class TreeModel;
 class TreeModelNode {
  public:
   // Returns the title for the node.
-  virtual const std::wstring& GetTitle() const = 0;
+  virtual std::wstring GetTitle() const = 0;
 
  protected:
   virtual ~TreeModelNode() {}

@@ -6,6 +6,7 @@
 #define APP_TREE_NODE_MODEL_H_
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "app/tree_model.h"
@@ -13,6 +14,8 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 
 // TreeNodeModel and TreeNodes provide an implementation of TreeModel around
 // TreeNodes. TreeNodes form a directed acyclic graph.
@@ -65,7 +68,12 @@ class TreeNode : public TreeModelNode {
  public:
   TreeNode() : parent_(NULL) { }
 
+  // TODO(munjal): Remove wstring overload once all code is moved to string16.
+#if !defined(WCHAR_T_IS_UTF16)
   explicit TreeNode(const std::wstring& title)
+      : title_(WideToUTF16(title)), parent_(NULL) {}
+#endif
+  explicit TreeNode(const string16& title)
       : title_(title), parent_(NULL) {}
 
   virtual ~TreeNode() {
@@ -144,12 +152,23 @@ class TreeNode : public TreeModelNode {
   }
 
   // Sets the title of the node.
+  // TODO(munjal): Remove wstring overload once all code is moved to string16.
+#if !defined(WCHAR_T_IS_UTF16)
   void SetTitle(const std::wstring& string) {
+    title_ = WideToUTF16(string);
+  }
+#endif
+  void SetTitle(const string16& string) {
     title_ = string;
   }
 
+  // TODO(munjal): Remove wstring version and rename GetTitleAsString16 to
+  // GetTitle once all code is moved to string16.
   // Returns the title of the node.
-  virtual const std::wstring& GetTitle() const {
+  virtual std::wstring GetTitle() const {
+    return UTF16ToWide(title_);
+  }
+  virtual const string16& GetTitleAsString16() const {
     return title_;
   }
 
@@ -171,7 +190,7 @@ class TreeNode : public TreeModelNode {
 
  private:
   // Title displayed in the tree.
-  std::wstring title_;
+  string16 title_;
 
   NodeType* parent_;
 

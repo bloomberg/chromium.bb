@@ -215,13 +215,18 @@ const SkBitmap& BookmarkModel::GetFavIcon(const BookmarkNode* node) {
   return node->favicon();
 }
 
+#if !defined(WCHAR_T_IS_UTF16)
 void BookmarkModel::SetTitle(const BookmarkNode* node,
                              const std::wstring& title) {
+  SetTitle(node, WideToUTF16(title));
+}
+#endif
+void BookmarkModel::SetTitle(const BookmarkNode* node, const string16& title) {
   if (!node) {
     NOTREACHED();
     return;
   }
-  if (node->GetTitle() == title)
+  if (node->GetTitleAsString16() == title)
     return;
 
   if (node == bookmark_bar_node_ || node == other_node_) {
@@ -287,9 +292,16 @@ const BookmarkNode* BookmarkModel::GetNodeByID(int64 id) {
   return GetNodeByID(&root_, id);
 }
 
+#if !defined(WCHAR_T_IS_UTF16)
 const BookmarkNode* BookmarkModel::AddGroup(const BookmarkNode* parent,
                                             int index,
                                             const std::wstring& title) {
+  return AddGroup(parent, index, WideToUTF16(title));
+}
+#endif
+const BookmarkNode* BookmarkModel::AddGroup(const BookmarkNode* parent,
+                                            int index,
+                                            const string16& title) {
   if (!loaded_ || parent == &root_ || !IsValidIndex(parent, index, true)) {
     // Can't add to the root.
     NOTREACHED();
@@ -305,17 +317,36 @@ const BookmarkNode* BookmarkModel::AddGroup(const BookmarkNode* parent,
   return AddNode(AsMutable(parent), index, new_node, false);
 }
 
+#if !defined(WCHAR_T_IS_UTF16)
 const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
                                           int index,
                                           const std::wstring& title,
                                           const GURL& url) {
+  return AddURL(parent, index, WideToUTF16(title), url);
+}
+#endif
+const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
+                                          int index,
+                                          const string16& title,
+                                          const GURL& url) {
   return AddURLWithCreationTime(parent, index, title, url, Time::Now());
 }
 
+#if !defined(WCHAR_T_IS_UTF16)
 const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
     const BookmarkNode* parent,
     int index,
     const std::wstring& title,
+    const GURL& url,
+    const Time& creation_time) {
+  return AddURLWithCreationTime(parent, index, WideToUTF16(title),
+                                url, creation_time);
+}
+#endif
+const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
+    const BookmarkNode* parent,
+    int index,
+    const string16& title,
     const GURL& url,
     const Time& creation_time) {
   if (!loaded_ || !url.is_valid() || is_root(parent) ||
@@ -367,8 +398,15 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
                     BookmarkNodeChildrenReordered(this, parent));
 }
 
+#if !defined(WCHAR_T_IS_UTF16)
 void BookmarkModel::SetURLStarred(const GURL& url,
                                   const std::wstring& title,
+                                  bool is_starred) {
+  SetURLStarred(url, WideToUTF16(title), is_starred);
+}
+#endif
+void BookmarkModel::SetURLStarred(const GURL& url,
+                                  const string16& title,
                                   bool is_starred) {
   std::vector<const BookmarkNode*> bookmarks;
   GetNodesByURL(url, &bookmarks);
@@ -402,14 +440,22 @@ void BookmarkModel::ResetDateGroupModified(const BookmarkNode* node) {
   SetDateGroupModified(node, Time());
 }
 
+#if !defined(WCHAR_T_IS_UTF16)
 void BookmarkModel::GetBookmarksWithTitlesMatching(
     const std::wstring& text,
+    size_t max_count,
+    std::vector<bookmark_utils::TitleMatch>* matches) {
+  GetBookmarksWithTitlesMatching(WideToUTF16(text), max_count, matches);
+}
+#endif
+void BookmarkModel::GetBookmarksWithTitlesMatching(
+    const string16& text,
     size_t max_count,
     std::vector<bookmark_utils::TitleMatch>* matches) {
   if (!loaded_)
     return;
 
-  index_->GetBookmarksWithTitlesMatching(text, max_count, matches);
+  index_->GetBookmarksWithTitlesMatching(UTF16ToWide(text), max_count, matches);
 }
 
 void BookmarkModel::ClearStore() {
