@@ -146,7 +146,7 @@
 }
 {
    # Filed with Apple as rdar://7255382
-   bug_20459
+   bug_20459a
    Memcheck:Leak
    fun:malloc_zone_malloc
    fun:_CFRuntimeCreateInstance
@@ -154,6 +154,16 @@
    fun:CFMachPortCreateRunLoopSource
    fun:_ZN8Security12MachPlusPlus10CFAutoPort6enableEv
    fun:_ZN8Security14SecurityServer14ThreadNotifierC2Ev
+}
+{
+   # Also filed with Apple as rdar://7255382
+   bug_20459b
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFArrayInit
+   fun:CFArrayCreateMutableCopy
+   fun:_ZN8Security12KeychainCore5Trust8evaluateEv
 }
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
