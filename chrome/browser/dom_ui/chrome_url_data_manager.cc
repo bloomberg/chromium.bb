@@ -12,6 +12,9 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/values.h"
+#if defined(OS_WIN)
+#include "base/win_util.h"
+#endif
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -296,8 +299,16 @@ void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
     DictionaryValue* localized_strings) {
   localized_strings->SetString(L"fontfamily",
       l10n_util::GetString(IDS_WEB_FONT_FAMILY));
+
+  int web_font_size_id = IDS_WEB_FONT_SIZE;
+#if defined(OS_WIN)
+  // Some fonts used for some languages changed a lot in terms of the font
+  // metric in Vista. So, we need to use different size before Vista.
+  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
+    web_font_size_id = IDS_WEB_FONT_SIZE_XP;
+#endif
   localized_strings->SetString(L"fontsize",
-      l10n_util::GetString(IDS_WEB_FONT_SIZE));
+      l10n_util::GetString(web_font_size_id));
 
   localized_strings->SetString(L"textdirection",
       (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) ?

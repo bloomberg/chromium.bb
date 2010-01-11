@@ -239,6 +239,13 @@
           84%
         </message>
       </if>
+      <if expr="os == 'win32'">
+        <!-- The relative font size in % used in web-style native pages
+        on Windows earlier than Vista (e.g. History).  -->
+        <message name="IDS_WEB_FONT_SIZE_XP" use_name_for_id="true">
+          84%
+        </message>
+      </if>
 
       <if expr="os == 'darwin'">
         <message name="IDS_WEB_FONT_FAMILY" desc="The font used in web-style native pages (e.g. History) (Mac)">

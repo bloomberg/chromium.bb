@@ -1,17 +1,15 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
-<if expr="os != 'darwin'">
-  <translation id="IDS_WEB_FONT_FAMILY">Vrinda</translation>
-</if>
-<if expr="os == 'darwin'">
-  <translation id="IDS_WEB_FONT_FAMILY">Helvetica</translation>
-</if>
-<translation id="IDS_WEB_FONT_SIZE">110%</translation>
 <translation id="IDS_ACCEPT_LANGUAGES">bn-IN,bn,en-US,en</translation>
 <translation id="IDS_DEFAULT_ENCODING">ISO-8859-1</translation>
 <translation id="IDS_STANDARD_FONT_IS_SERIF">true</translation>
+<translation id="IDS_WEB_FONT_SIZE">84%</translation>
+<if expr="os == 'win32'">
+  <translation id="IDS_WEB_FONT_SIZE_XP">110%</translation>
+</if>
 <if expr="os != 'darwin'">
+  <translation id="IDS_WEB_FONT_FAMILY">Vrinda</translation>
   <translation id="IDS_FIXED_FONT_FAMILY">Courier New</translation>
   <translation id="IDS_SERIF_FONT_FAMILY">Times New Roman</translation>
   <translation id="IDS_SANS_SERIF_FONT_FAMILY">Vrinda</translation>
@@ -19,6 +17,7 @@
   <translation id="IDS_FANTASY_FONT_FAMILY">Impact</translation>
 </if>
 <if expr="os == 'darwin'">
+  <translation id="IDS_WEB_FONT_FAMILY">Helvetica</translation>
   <translation id="IDS_FIXED_FONT_FAMILY">Courier</translation>
   <translation id="IDS_SERIF_FONT_FAMILY">Times</translation>
   <translation id="IDS_SANS_SERIF_FONT_FAMILY">Helvetica</translation>
