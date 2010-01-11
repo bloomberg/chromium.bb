@@ -5,6 +5,7 @@
 #import <AppKit/AppKit.h>
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_BOOKMARK_MENU
@@ -17,6 +18,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 
 BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile)
@@ -43,6 +45,11 @@ void BookmarkMenuBridge::Loaded(BookmarkModel* model) {
   NSMenu* bookmark_menu = BookmarkMenu();
   if (bookmark_menu == nil)
     return;
+
+  if (!folder_image_) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    folder_image_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
+  }
 
   ClearBookmarkMenu(bookmark_menu);
 
@@ -161,6 +168,7 @@ void BookmarkMenuBridge::AddNodeAsSubmenu(NSMenu* menu,
                                initWithTitle:title
                                       action:nil
                                keyEquivalent:@""] autorelease];
+  [items setImage:folder_image_];
   [menu addItem:items];
   NSMenu* other_submenu = [[[NSMenu alloc] initWithTitle:title]
                             autorelease];
@@ -179,6 +187,7 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
     [menu addItem:item];
     bookmark_nodes_[child] = item;
     if (child->is_folder()) {
+      [item setImage:folder_image_];
       NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
       [menu setSubmenu:submenu forItem:item];
       AddNodeToMenu(child, submenu);  // recursive call

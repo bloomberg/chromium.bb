@@ -21,10 +21,12 @@
 #define CHROME_BROWSER_COCOA_BOOKMARK_MENU_BRIDGE_H_
 
 #include <map>
+#include "base/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 class BookmarkNode;
 class Profile;
+@class NSImage;
 @class NSMenu;
 @class NSMenuItem;
 @class BookmarkMenuCocoaController;
@@ -98,6 +100,9 @@ class BookmarkMenuBridge : public BookmarkModelObserver {
 
   Profile* profile_;  // weak
   BookmarkMenuCocoaController* controller_;  // strong
+
+  // The folder image so we can use one copy for all.
+  scoped_nsobject<NSImage> folder_image_;
 
   // In order to appropriately update items in the bookmark menu, without
   // forcing a rebuild, map the model's nodes to menu items.
