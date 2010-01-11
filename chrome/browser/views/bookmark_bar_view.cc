@@ -715,6 +715,10 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
                                              index);
 }
 
+void BookmarkBarView::ShowContextMenu(int x, int y, bool is_mouse_gesture) {
+  ShowContextMenu(this, x, y, is_mouse_gesture);
+}
+
 bool BookmarkBarView::IsAccessibleViewTraversable(views::View* view) {
   return view != bookmarks_separator_view_ && view != instructions_;
 }
