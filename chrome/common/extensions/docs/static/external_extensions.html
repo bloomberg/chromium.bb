@@ -11,24 +11,24 @@ to install an extension whenever
 the user installs their software.
 Another use case includes network admins,
 who want to install the same extensions
-throughout their company. 
+throughout their company.
 
 <p>
 Google Chrome supports two ways of
 installing external extensions:
 using a preferences JSON file,
 or using the Windows registry
-(Windows only). 
+(Windows only).
 
 <p>
 <b>Important:</b> Before you begin,
-make sure you have <a href="packaging.html">packaged
+make sure you have a <a href="packaging.html">packaged
 crx file</a> that installs successfully,
 and make a note of both the version
 of the extension and its id (see chrome://extensions/).
-For the rest of this text, we'll assume you
+For the rest of this text, we'll assume
 the extension version is
-<code>1.0</code> and its id is <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>. 
+<code>1.0</code> and its id is <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>.
 
 <h2 id="preferences">Using the Preferences File</h2>
 
@@ -36,7 +36,7 @@ the extension version is
 <li>Make the .crx extension file available
 to the machine you want to install the extension
 on (copy it to a local directory
-or to a network share, ie. <code>\\server\share\extension.crx</code>). 
+or to a network share, ie. <code>\\server\share\extension.crx</code>).
 <li>Locate the external_extensions.json file under the Chrome
 installation directory and add the following key inside
 the curly brackets (note the extra escaping for the slashes,
@@ -72,7 +72,7 @@ path: <code>\\server\share\extension.crx</code><br>
 version: <code>1.0</code>
 <li>Launch the browser and go to
 chrome://extensions and you should
-see the extension listed. 
+see the extension listed.
 </ol>
 
 <h2 id="updating">Updating and Uninstalling</h2>
@@ -100,7 +100,7 @@ Chrome only supports absolute/relative local paths
 and UNC paths.
 Relative paths are relative
 to the Extensions directory
-(where the external_extensions.json file is located). 
+(where the external_extensions.json file is located).
 <br>
 <br>
 
@@ -115,6 +115,7 @@ leaving a trailing comma somewhere)
 <li>Extra curly brackets around the top level dictionary
 <li>JSON file entry points to the wrong path
 to the .crx (or path specified but no filename)
+<li>Backslashes in UNC path not escaped (eg <code>\\server\share\file</code> (incorrect), instead of <code>\\\\server\\share\\extension</code> (correct)
 <li>Permissions problems on a network share
 </ul>
 
@@ -125,7 +126,6 @@ to the .crx (or path specified but no filename)
 <li>Not specifying the same id/version as the one listed in the .crx
 <li>Key created in the wrong location in the registry
 <li>Registry entry points to the wrong path to the .crx (or path specified but no filename)
-<li>Backslashes in UNC path not escaped (eg <code>\\server\share\file</code> (incorrect), instead of <code>\\\\server\\share\\extension</code> (correct)
 <li>Permissions problems on a network share
 </ul>
 
@@ -145,4 +145,4 @@ decision. However, if you (the developer) accidentally uninstalled
 your extension through the UI,
 you can remove the blacklist tag
 by installing the extension normally
-through the UI, then uninstalling it.
+through the UI, and then uninstalling it.
