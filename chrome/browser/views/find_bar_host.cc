@@ -136,7 +136,7 @@ bool FindBarHost::GetFindBarWindowInfo(gfx::Point* position,
   if (position)
     *position = window_rect.origin();
   if (fully_visible)
-    *fully_visible = host()->IsVisible() && !IsAnimating();
+    *fully_visible = IsVisible() && !IsAnimating();
   return true;
 }
 

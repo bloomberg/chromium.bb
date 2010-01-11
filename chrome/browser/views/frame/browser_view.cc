@@ -445,6 +445,9 @@ BrowserView::~BrowserView() {
   // notifications will call back into deleted objects).
   download_shelf_.reset();
 
+  // Destory extender before destroying browser.
+  browser_extender_.reset();
+
   // Explicitly set browser_ to NULL.
   browser_.reset();
 }
