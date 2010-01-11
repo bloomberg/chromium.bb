@@ -863,78 +863,12 @@ void BrowserView::SetFullscreen(bool fullscreen) {
   if (IsFullscreen() == fullscreen)
     return;  // Nothing to do.
 
-  // Reduce jankiness during the following position changes by:
-  //   * Hiding the window until it's in the final position
-  //   * Ignoring all intervening Layout() calls, which resize the webpage and
-  //     thus are slow and look ugly
-  ignore_layout_ = true;
-  LocationBarView* location_bar = toolbar_->location_bar();
 #if defined(OS_WIN)
-  AutocompleteEditViewWin* edit_view =
-      static_cast<AutocompleteEditViewWin*>(location_bar->location_entry());
-#endif
-  if (IsFullscreen()) {
-    // Hide the fullscreen bubble as soon as possible, since the mode toggle can
-    // take enough time for the user to notice.
-    fullscreen_bubble_.reset();
-  } else {
-    // Move focus out of the location bar if necessary.
-    views::FocusManager* focus_manager = GetFocusManager();
-    DCHECK(focus_manager);
-    if (focus_manager->GetFocusedView() == location_bar)
-      focus_manager->ClearFocus();
-
-#if defined(OS_WIN)
-    // If we don't hide the edit and force it to not show until we come out of
-    // fullscreen, then if the user was on the New Tab Page, the edit contents
-    // will appear atop the web contents once we go into fullscreen mode.  This
-    // has something to do with how we move the main window while it's hidden;
-    // if we don't hide the main window below, we don't get this problem.
-    edit_view->set_force_hidden(true);
-    ShowWindow(edit_view->m_hWnd, SW_HIDE);
-#endif
-  }
-#if defined(OS_WIN)
-  frame_->GetWindow()->PushForceHidden();
-#endif
-
-  // Notify bookmark bar, so it can set itself to the appropriate drawing state.
-  if (bookmark_bar_view_.get())
-    bookmark_bar_view_->OnFullscreenToggled(fullscreen);
-
-  // Notify extension shelf, so it can set itself to the appropriate drawing
-  // state.
-  if (extension_shelf_)
-    extension_shelf_->OnFullscreenToggled(fullscreen);
-
-  // Toggle fullscreen mode.
-  frame_->GetWindow()->SetFullscreen(fullscreen);
-
-  if (fullscreen) {
-#if !defined(OS_MACOSX)
-    bool is_kiosk =
-        CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
+  ProcessFullscreen(fullscreen);
 #else
-    bool is_kiosk = false;
-#endif
-    if (!is_kiosk) {
-      fullscreen_bubble_.reset(new FullscreenExitBubble(GetWidget(),
-                                                        browser_.get()));
-    }
-  } else {
-#if defined(OS_WIN)
-    // Show the edit again since we're no longer in fullscreen mode.
-    edit_view->set_force_hidden(false);
-    ShowWindow(edit_view->m_hWnd, SW_SHOW);
-#endif
-  }
-
-  // Undo our anti-jankiness hacks and force the window to relayout now that
-  // it's in its final position.
-  ignore_layout_ = false;
-  Layout();
-#if defined(OS_WIN)
-  frame_->GetWindow()->PopForceHidden();
+  // On Linux changing fullscreen is async. Ask the window to change it's
+  // fullscreen state, and when done invoke ProcessFullscreen.
+  frame_->GetWindow()->SetFullscreen(fullscreen);
 #endif
 }
 
@@ -944,6 +878,10 @@ bool BrowserView::IsFullscreen() const {
 
 bool BrowserView::IsFullscreenBubbleVisible() const {
   return fullscreen_bubble_.get() ? true : false;
+}
+
+void BrowserView::FullScreenStateChanged() {
+  ProcessFullscreen(IsFullscreen());
 }
 
 LocationBar* BrowserView::GetLocationBar() const {
@@ -2212,6 +2150,83 @@ bool BrowserView::UpdateChildViewAndLayout(views::View* new_view,
   *old_view = new_view;
   return changed;
 }
+
+
+void BrowserView::ProcessFullscreen(bool fullscreen) {
+  // Reduce jankiness during the following position changes by:
+  //   * Hiding the window until it's in the final position
+  //   * Ignoring all intervening Layout() calls, which resize the webpage and
+  //     thus are slow and look ugly
+  ignore_layout_ = true;
+  LocationBarView* location_bar = toolbar_->location_bar();
+#if defined(OS_WIN)
+  AutocompleteEditViewWin* edit_view =
+      static_cast<AutocompleteEditViewWin*>(location_bar->location_entry());
+#endif
+  if (!fullscreen) {
+    // Hide the fullscreen bubble as soon as possible, since the mode toggle can
+    // take enough time for the user to notice.
+    fullscreen_bubble_.reset();
+  } else {
+    // Move focus out of the location bar if necessary.
+    views::FocusManager* focus_manager = GetFocusManager();
+    DCHECK(focus_manager);
+    if (focus_manager->GetFocusedView() == location_bar)
+      focus_manager->ClearFocus();
+
+#if defined(OS_WIN)
+    // If we don't hide the edit and force it to not show until we come out of
+    // fullscreen, then if the user was on the New Tab Page, the edit contents
+    // will appear atop the web contents once we go into fullscreen mode.  This
+    // has something to do with how we move the main window while it's hidden;
+    // if we don't hide the main window below, we don't get this problem.
+    edit_view->set_force_hidden(true);
+    ShowWindow(edit_view->m_hWnd, SW_HIDE);
+#endif
+  }
+#if defined(OS_WIN)
+  frame_->GetWindow()->PushForceHidden();
+#endif
+
+  // Notify bookmark bar, so it can set itself to the appropriate drawing state.
+  if (bookmark_bar_view_.get())
+    bookmark_bar_view_->OnFullscreenToggled(fullscreen);
+
+  // Notify extension shelf, so it can set itself to the appropriate drawing
+  // state.
+  if (extension_shelf_)
+    extension_shelf_->OnFullscreenToggled(fullscreen);
+
+  // Toggle fullscreen mode.
+#if defined(OS_WIN)
+  frame_->GetWindow()->SetFullscreen(fullscreen);
+#endif  // No need to invoke SetFullscreen for linux as this code is executed
+        // once we're already fullscreen on linux.
+
+  if (fullscreen) {
+    bool is_kiosk =
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
+    if (!is_kiosk) {
+      fullscreen_bubble_.reset(new FullscreenExitBubble(GetWidget(),
+                                                        browser_.get()));
+    }
+  } else {
+#if defined(OS_WIN)
+    // Show the edit again since we're no longer in fullscreen mode.
+    edit_view->set_force_hidden(false);
+    ShowWindow(edit_view->m_hWnd, SW_SHOW);
+#endif
+  }
+
+  // Undo our anti-jankiness hacks and force the window to relayout now that
+  // it's in its final position.
+  ignore_layout_ = false;
+  Layout();
+#if defined(OS_WIN)
+  frame_->GetWindow()->PopForceHidden();
+#endif
+}
+
 
 void BrowserView::LoadAccelerators() {
 #if defined(OS_WIN)

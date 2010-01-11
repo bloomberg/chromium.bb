@@ -159,6 +159,7 @@ bool BrowserFrameGtk::GetAccelerator(int cmd_id,
 
 gboolean BrowserFrameGtk::OnWindowStateEvent(GtkWidget* widget,
                                              GdkEventWindowState* event) {
+  bool was_full_screen = IsFullscreen();
   gboolean result = views::WindowGtk::OnWindowStateEvent(widget, event);
   if ((!IsVisible() || IsMinimized()) && browser_view_->GetStatusBubble()) {
     // The window is effectively hidden. We have to hide the status bubble as
@@ -166,6 +167,8 @@ gboolean BrowserFrameGtk::OnWindowStateEvent(GtkWidget* widget,
     // with the parent.
     browser_view_->GetStatusBubble()->Hide();
   }
+  if (was_full_screen != IsFullscreen())
+    browser_view_->FullScreenStateChanged();
   return result;
 }
 

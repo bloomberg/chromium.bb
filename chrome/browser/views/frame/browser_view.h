@@ -213,6 +213,10 @@ class BrowserView : public BrowserWindow,
   // Returns whether the fullscreen bubble is visible or not.
   bool IsFullscreenBubbleVisible() const;
 
+  // Invoked from the frame when the full screen state changes. This is only
+  // used on Linux.
+  void FullScreenStateChanged();
+
   // Overridden from BrowserWindow:
   virtual void Show();
   virtual void SetBounds(const gfx::Rect& bounds);
@@ -416,6 +420,13 @@ class BrowserView : public BrowserWindow,
   // child views that are referenced via a field.
   // Returns true if anything was changed, and a re-Layout is now required.
   bool UpdateChildViewAndLayout(views::View* new_view, views::View** old_view);
+
+  // Invoked to update the necessary things when our fullscreen state changes
+  // to |fullscreen|. On Windows this is invoked immediately when we toggle the
+  // full screen state. On Linux changing the fullscreen state is async, so we
+  // ask the window to change it's fullscreen state, then when we get
+  // notification that it succeeded this method is invoked.
+  void ProcessFullscreen(bool fullscreen);
 
   // Copy the accelerator table from the app resources into something we can
   // use.

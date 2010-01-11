@@ -1129,8 +1129,5 @@ void ExtensionShelf::OnFullscreenToggled(bool fullscreen) {
   fullscreen_ = fullscreen;
   if (!IsAlwaysShown() || IsOnTop())
     return;
-  if (fullscreen_)
-    size_animation_->Hide();
-  else
-    size_animation_->Show();
+  size_animation_->Reset(fullscreen ? 0 : 1);
 }
