@@ -485,7 +485,7 @@ class SVNWrapper(SCMWrapper, scm.SVN):
       try:
         if not os.path.exists(file_path):
           pass
-        elif os.path.isfile(file_path):
+        elif os.path.isfile(file_path) or os.path.islink(file_path):
           logging.info('os.remove(%s)' % file_path)
           os.remove(file_path)
         elif os.path.isdir(file_path):
