@@ -2654,13 +2654,6 @@ BUG_JEREMY MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
 BUG26042 DEBUG : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = PASS TEXT
 BUG26042 LINUX RELEASE : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = PASS TEXT
 
-// Webkit Roll 51681:51711 - regression
-BUG_AJWONG WIN : LayoutTests/http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html = TEXT PASS
-BUG_AJWONG WIN : LayoutTests/http/tests/appcache/404-manifest.html = TIMEOUT PASS
-BUG_AJWONG WIN : LayoutTests/http/tests/appcache/404-resource.html = TIMEOUT PASS
-BUG_AJWONG WIN : LayoutTests/http/tests/appcache/foreign-iframe-main.html = TIMEOUT PASS
-BUG_AJWONG WIN : LayoutTests/http/tests/appcache/non-html.xhtml = TIMEOUT PASS
-
 // WebKit Roll 49809:49830
 // New test flakiness is being observed.
 BUG26045 MAC RELEASE : LayoutTests/fast/frames/frame-set-same-src.html = CRASH PASS
@@ -2824,6 +2817,12 @@ BUG2844 SKIP : LayoutTests/http/tests/appcache/top-frame-2.html = FAIL
 
 // This test fails because there is no setAppCacheMaximumSize API yet.
 BUG2844 SKIP : LayoutTests/http/tests/appcache/max-size.html = FAIL
+
+// Flakiness documented around Webkit Roll 51681:51711
+BUG2844 SKIP : LayoutTests/http/tests/appcache/404-manifest.html = TIMEOUT PASS
+BUG2844 SKIP : LayoutTests/http/tests/appcache/404-resource.html = TIMEOUT PASS
+BUG2844 SKIP : LayoutTests/http/tests/appcache/foreign-iframe-main.html = TIMEOUT PASS
+BUG2844 SKIP : LayoutTests/http/tests/appcache/non-html.xhtml = TIMEOUT PASS
 
 // New tests. Failures from merge 51253:51310.
 // Needs to implement NPN_reloadPlugins and add reloadPluginNoPages & reloadPluginAndPages
