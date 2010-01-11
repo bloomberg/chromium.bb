@@ -480,16 +480,17 @@ static bool WebInputEventIsWebKeyboardEvent(const WebInputEvent& event) {
   }
 }
 
-static NSInteger CocoaModifiersFromWebEvent(const WebInputEvent& event) {
+#ifndef NP_NO_CARBON
+static NSInteger CarbonModifiersFromWebEvent(const WebInputEvent& event) {
   NSInteger modifiers = 0;
   if (event.modifiers & WebInputEvent::ControlKey)
-    modifiers |= NSControlKeyMask;
+    modifiers |= controlKey;
   if (event.modifiers & WebInputEvent::ShiftKey)
-    modifiers |= NSShiftKeyMask;
+    modifiers |= shiftKey;
   if (event.modifiers & WebInputEvent::AltKey)
-    modifiers |= NSAlternateKeyMask;
+    modifiers |= optionKey;
   if (event.modifiers & WebInputEvent::MetaKey)
-    modifiers |= NSCommandKeyMask;
+    modifiers |= cmdKey;
   return modifiers;
 }
 
@@ -498,10 +499,7 @@ static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
   np_event->where.h = event.globalX;
   np_event->where.v = event.globalY;
 
-  if (event.modifiers & WebInputEvent::ControlKey)
-    np_event->modifiers |= controlKey;
-  if (event.modifiers & WebInputEvent::ShiftKey)
-    np_event->modifiers |= shiftKey;
+  np_event->modifiers |= CarbonModifiersFromWebEvent(event);
 
   // default to "button up"; override this for mouse down events below.
   np_event->modifiers |= btnState;
@@ -546,14 +544,7 @@ static bool NPEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
   np_event->message = (event.nativeKeyCode << 8) & keyCodeMask;
   np_event->message |= event.text[0] & charCodeMask;
   np_event->modifiers |= btnState;
-  if (event.modifiers & WebInputEvent::ControlKey)
-    np_event->modifiers |= controlKey;
-  if (event.modifiers & WebInputEvent::ShiftKey)
-    np_event->modifiers |= shiftKey;
-  if (event.modifiers & WebInputEvent::AltKey)
-    np_event->modifiers |= cmdKey;
-  if (event.modifiers & WebInputEvent::MetaKey)
-    np_event->modifiers |= optionKey;
+  np_event->modifiers |= CarbonModifiersFromWebEvent(event);
 
   switch (event.type) {
     case WebInputEvent::KeyDown:
@@ -583,7 +574,20 @@ static bool NPEventFromWebInputEvent(const WebInputEvent& event,
   DLOG(WARNING) << "unknown event type" << event.type;
   return false;
 }
+#endif  // !NP_NO_CARBON
 
+static NSInteger CocoaModifiersFromWebEvent(const WebInputEvent& event) {
+  NSInteger modifiers = 0;
+  if (event.modifiers & WebInputEvent::ControlKey)
+    modifiers |= NSControlKeyMask;
+  if (event.modifiers & WebInputEvent::ShiftKey)
+    modifiers |= NSShiftKeyMask;
+  if (event.modifiers & WebInputEvent::AltKey)
+    modifiers |= NSAlternateKeyMask;
+  if (event.modifiers & WebInputEvent::MetaKey)
+    modifiers |= NSCommandKeyMask;
+  return modifiers;
+}
 
 static bool NPCocoaEventFromWebMouseEvent(const WebMouseEvent& event,
                                           NPCocoaEvent *np_cocoa_event) {
