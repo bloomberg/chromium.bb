@@ -132,14 +132,12 @@
                                              style:GTMThemeStyleWindow
                                              state:state];
   if (overlayImage) {
+    // Anchor to top-left and don't scale.
     NSSize overlaySize = [overlayImage size];
-    NSRect windowFrame = NSMakeRect(0,
-                                    NSHeight(windowRect) - overlaySize.height,
-                                    NSWidth(windowRect),
-                                    overlaySize.height);
     NSRect imageFrame = NSMakeRect(0, 0, overlaySize.width, overlaySize.height);
-    [overlayImage drawInRect:windowFrame
-                    fromRect:imageFrame
+    [overlayImage drawAtPoint:NSMakePoint(0, NSHeight(windowRect) -
+                                                 overlaySize.height)
+                     fromRect:imageFrame
                    operation:NSCompositeSourceOver
                     fraction:1.0];
   }
