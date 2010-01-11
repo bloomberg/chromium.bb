@@ -695,8 +695,8 @@ BUG4360 : LayoutTests/http/tests/loading/deleted-host-in-resource-load-delegate-
 BUG27697 SKIP : LayoutTests/storage/hash-change-with-xhr.html = PASS
 // We do not use Safari's private browsing
 WONTFIX SKIP : LayoutTests/storage/private-browsing-readonly.html = PASS
-// We have not designed the quota management system in Chromium yet
-BUG_DUMI SKIP : LayoutTests/storage/quota-tracking.html = PASS
+// Need to implement LayoutTestController::setDatabaseQuota
+BUG32016 SKIP : LayoutTests/storage/quota-tracking.html = PASS
 
 // Implement HTML5 Geolocation API.
 BUG11246 DEFER SKIP : LayoutTests/fast/dom/Geolocation = FAIL
@@ -2560,6 +2560,8 @@ BUG20341 SKIP : LayoutTests/loader/go-back-to-different-window-size.html = TIMEO
 
 // WebKit 47777:47790 - getOwnPropertyDescriptor
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
+// Failures from Webkit merger 51724 -> 51772
+BUG20345 : LayoutTests/http/tests/security/cross-frame-access-getOwnPropertyDescriptor.html = TEXT
 
 BUG10480 LINUX : LayoutTests/editing/selection/move-by-line-001.html = FAIL
 
@@ -2877,9 +2879,6 @@ BUG31998 LINUX : LayoutTests/svg/carto.net/selectionlist.svg = IMAGE PASS
 BUG31997 DEBUG WIN : LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE+TEXT PASS
 BUG29943 WIN : LayoutTests/websocket/tests/send.html = TEXT PASS
 
-// Failures from Webkit merger 51724 -> 51772
-BUG_AJWONG: LayoutTests/http/tests/security/cross-frame-access-getOwnPropertyDescriptor.html = TEXT
-
 // Regression from Webkit merge 51772 -> 51784
 BUG_AJWONG MAC LINUX : LayoutTests/storage/domstorage/quota.html = CRASH PASS
 BUG_AJWONG : LayoutTests/http/tests/appcache/resource-redirect-2.html = TIMEOUT PASS
@@ -3052,10 +3051,6 @@ BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/wrong-signature-2.html = TI
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/top-frame-4.html = TIMEOUT TEXT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/top-frame-3.html = TIMEOUT TEXT PASS
 
-// Another crash of unknown origin
-// First crash at http://src.chromium.org/viewvc/chrome?view=rev&revision=34558, which doesn't make much sense.
-BUG_DGLAZKOV WIN : LayoutTests/svg/webarchive/svg-script-subresouces.svg = FAIL CRASH
-
 // Flaky ASSERTION FAILED: currentThread() == m_openingThread
 // This test is flaky since this file is added.
 BUG30543 : LayoutTests/storage/domstorage/localstorage/enumerate-with-length-and-key.html = CRASH PASS
@@ -3113,7 +3108,7 @@ BUG31642 WIN MAC DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-30-t.svg = CRAS
 BUG31642 LINUX DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE+TEXT CRASH
 
 // WebKit roll 52852 -> 52867
-BUG_JAPHET : LayoutTests/websocket/tests/frame-lengths.html = PASS TIMEOUT
+BUG32018 : LayoutTests/websocket/tests/frame-lengths.html = PASS TIMEOUT
 
 // Flaky crash
 BUG31794 WIN MAC : LayoutTests/storage/domstorage/localstorage/enumerate-storage.html = CRASH PASS
