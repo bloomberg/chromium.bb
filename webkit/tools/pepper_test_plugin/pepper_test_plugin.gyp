@@ -5,8 +5,6 @@
       'target_name': 'pepper_test_plugin',
       'type': 'shared_library',
       'dependencies': [
-        '../../../base/base.gyp:base',
-        '../../../skia/skia.gyp:skia',
         '../../../third_party/npapi/npapi.gyp:npapi',
       ],
       'include_dirs': [
@@ -23,7 +21,17 @@
             'pepper_test_plugin.def',
             'pepper_test_plugin.rc',
           ],
-        }]
+        }],
+        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
+          # Shared libraries need -fPIC on x86-64
+          'cflags': ['-fPIC'],
+          'defines': ['INDEPENDENT_PLUGIN'],
+        }, {
+          'dependencies': [
+            '../../../base/base.gyp:base',
+            '../../../skia/skia.gyp:skia',
+          ],
+        }],
       ],
       'sources': [
         'command_buffer_pepper.cc',

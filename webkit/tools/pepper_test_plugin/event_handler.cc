@@ -26,11 +26,8 @@
 #include "webkit/tools/pepper_test_plugin/event_handler.h"
 
 #include <stdio.h>
-#include <string>
+#include <sstream>
 
-#include "base/basictypes.h"
-#include "base/logging.h"
-#include "base/string_util.h"
 #include "webkit/tools/pepper_test_plugin/plugin_object.h"
 
 EventHandler* event_handler = NULL;
@@ -58,7 +55,10 @@ void EventHandler::addText(const char* cstr) {
 }
 
 std::string EventHandler::EventName(double timestamp, int32 type) {
-  std::string str = DoubleToString(timestamp) + ": ";
+  std::stringstream strstr;
+  strstr.setf(std::ios::fixed, std::ios::floatfield);
+  strstr << timestamp << ": ";
+  std::string str(strstr.str());
   switch (type) {
     case NPEventType_MouseDown:
       return str + "MouseDown";
@@ -94,46 +94,43 @@ std::string EventHandler::EventName(double timestamp, int32 type) {
 
 int EventHandler::handle(void* event) {
   NPPepperEvent* npevent = reinterpret_cast<NPPepperEvent*>(event);
-  std::string str = EventName(npevent->timeStampSeconds, npevent->type);
+  std::stringstream str;
+  str << EventName(npevent->timeStampSeconds, npevent->type);
   switch (npevent->type) {
     case NPEventType_MouseDown:
     case NPEventType_MouseUp:
     case NPEventType_MouseMove:
     case NPEventType_MouseEnter:
     case NPEventType_MouseLeave:
-      str += StringPrintf(": mod %x, but: %x, x: %d, y: %d, click: %d",
-                          npevent->u.mouse.modifier,
-                          npevent->u.mouse.button,
-                          npevent->u.mouse.x,
-                          npevent->u.mouse.y,
-                          npevent->u.mouse.clickCount);
+      str << ": mod "  << npevent->u.mouse.modifier
+          << ", but: " << npevent->u.mouse.button
+          << ", x: "   << npevent->u.mouse.x
+          << ", y: "   << npevent->u.mouse.y
+          << ", click: " << npevent->u.mouse.clickCount;
         break;
     case NPEventType_MouseWheel:
-      str += StringPrintf(": mod %x, dx: %f, dy: %f, wtx: %f, wty: %d: sbp %d",
-                          npevent->u.wheel.modifier,
-                          npevent->u.wheel.deltaX,
-                          npevent->u.wheel.deltaY,
-                          npevent->u.wheel.wheelTicksX,
-                          npevent->u.wheel.wheelTicksY,
-                          npevent->u.wheel.scrollByPage);
+      str << ": mod "  << npevent->u.wheel.modifier
+          << ", dx: "  << npevent->u.wheel.deltaX
+          << ", dy: "  << npevent->u.wheel.deltaY
+          << ", wtx: " << npevent->u.wheel.wheelTicksX
+          << ", wty: " << npevent->u.wheel.wheelTicksY
+          << ", sbp:"  << npevent->u.wheel.scrollByPage;
       break;
     case NPEventType_RawKeyDown:
     case NPEventType_KeyDown:
     case NPEventType_KeyUp:
-      str += StringPrintf(": mod %x, key: %x",
-                          npevent->u.key.modifier,
-                          npevent->u.key.normalizedKeyCode);
+      str << ": mod " << npevent->u.key.modifier
+          << ", key: " << npevent->u.key.normalizedKeyCode;
       break;
     case NPEventType_Char:
-      str += StringPrintf(": mod %x, text: ",
-                          npevent->u.character.modifier);
+      str << ": mod " << npevent->u.character.modifier << ", text: ";
       size_t i;
       for (i = 0; i < arraysize(npevent->u.character.text); ++i) {
-        str += StringPrintf("%x ", npevent->u.character.text[i]);
+        str << npevent->u.character.text[i] << ' ';
       }
-      str += ", unmod: ";
+      str << ", unmod: ";
       for (i = 0; i < arraysize(npevent->u.character.unmodifiedText); ++i) {
-          str += StringPrintf("%x ", npevent->u.character.unmodifiedText[i]);
+          str << npevent->u.character.unmodifiedText[i] << ' ';
       }
       break;
     case NPEventType_Minimize:
@@ -144,7 +141,7 @@ int EventHandler::handle(void* event) {
     default:
       break;
   }
-  addText(str.c_str());
+  addText(str.str().c_str());
   return 0;
 }
 
