@@ -2881,10 +2881,6 @@ BUG29943 WIN : LayoutTests/websocket/tests/send.html = TEXT PASS
 // Failures from Webkit merger 51724 -> 51772
 BUG_AJWONG: LayoutTests/http/tests/security/cross-frame-access-getOwnPropertyDescriptor.html = TEXT
 
-// Regression from Webkit merge r51776
-BUG_AJWONG : LayoutTests/fast/repaint/block-selection-gap-stale-cache-2.html = IMAGE IMAGE+TEXT
-BUG_AJWONG : LayoutTests/fast/repaint/block-selection-gap-stale-cache.html = IMAGE IMAGE+TEXT TEXT
-
 // Regression from Webkit merge 51772 -> 51784
 BUG_AJWONG MAC LINUX : LayoutTests/storage/domstorage/quota.html = CRASH PASS
 BUG_AJWONG : LayoutTests/http/tests/appcache/resource-redirect-2.html = TIMEOUT PASS
