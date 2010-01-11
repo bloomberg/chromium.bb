@@ -412,7 +412,7 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
     if (name)
       LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
     BrowserList::GetLastActive()->
-        OpenURL(GURL(kLinuxCertificatesConfigUrl),
+        OpenURL(GURL(kLinuxProxyConfigUrl),
                 GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   }
 }
