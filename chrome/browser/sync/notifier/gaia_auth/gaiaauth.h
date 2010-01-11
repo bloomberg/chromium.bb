@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "base/scoped_ptr.h"
+#include "base/thread.h"
 #include "chrome/browser/sync/notifier/gaia_auth/gaiahelper.h"
 #include "talk/base/cryptstring.h"
 #include "talk/base/messagequeue.h"
@@ -19,7 +21,6 @@
 
 namespace talk_base {
 class FirewallManager;
-class SignalThread;
 }
 
 namespace buzz {
@@ -28,7 +29,7 @@ namespace buzz {
 // GaiaAuth
 ///////////////////////////////////////////////////////////////////////////////
 
-class GaiaAuth : public PreXmppAuth, public sigslot::has_slots<> {
+class GaiaAuth : public PreXmppAuth {
  public:
   GaiaAuth(const std::string& user_agent, const std::string& signature);
   virtual ~GaiaAuth();
@@ -94,8 +95,12 @@ class GaiaAuth : public PreXmppAuth, public sigslot::has_slots<> {
   sigslot::signal0<> SignalCertificateExpired;
   sigslot::signal1<const std::string&> SignalFreshAuthCookie;
 
+  // Needs to be public for the RunnableMethodTraits specialization in
+  // gaiaauth.cc.
+  class WorkerTask;
+
  private:
-  void OnAuthDone(talk_base::SignalThread* worker);
+  void OnAuthDone();
 
   void InternalStartGaiaAuth(const buzz::Jid& jid,
                              const talk_base::SocketAddress& server,
@@ -108,8 +113,8 @@ class GaiaAuth : public PreXmppAuth, public sigslot::has_slots<> {
   std::string signature_;
   talk_base::ProxyInfo proxy_;
   talk_base::FirewallManager* firewall_;
-  class WorkerThread;
-  WorkerThread* worker_;
+  base::Thread worker_thread_;
+  scoped_ptr<WorkerTask> worker_task_;
   bool done_;
 
   CaptchaAnswer captcha_answer_;

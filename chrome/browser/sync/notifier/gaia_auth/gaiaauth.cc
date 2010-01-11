@@ -5,13 +5,15 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/task.h"
+#include "base/thread.h"
 #include "chrome/browser/sync/notifier/base/ssl_adapter.h"
 #include "chrome/browser/sync/notifier/gaia_auth/gaiaauth.h"
 #include "talk/base/asynchttprequest.h"
 #include "talk/base/firewallsocketserver.h"
 #include "talk/base/httpclient.h"
 #include "talk/base/physicalsocketserver.h"
-#include "talk/base/signalthread.h"
 #include "talk/base/socketadapters.h"
 #include "talk/base/socketpool.h"
 #include "talk/base/stringutils.h"
@@ -27,7 +29,7 @@ static const int kGaiaAuthTimeoutMs = 30 * 1000;  // 30 sec
 GaiaServer g_gaia_server;
 
 ///////////////////////////////////////////////////////////////////////////////
-// GaiaAuth::WorkerThread
+// GaiaAuth::WorkerTask
 ///////////////////////////////////////////////////////////////////////////////
 
 // GaiaAuth is NOT invoked during SASL authentication, but it is invoked even
@@ -38,42 +40,42 @@ GaiaServer g_gaia_server;
 // It is used by XmppClient. It grabs a SaslAuthenticator which knows how to
 // play the cookie login.
 
-class GaiaAuth::WorkerThread : public talk_base::SignalThread {
+class GaiaAuth::WorkerTask {
  public:
-  WorkerThread(const std::string& username,
-               const talk_base::CryptString& pass,
-               const std::string& token,
-               const std::string& service,
-               const std::string& user_agent,
-               const std::string& signature,
-               bool obtain_auth,
-               const std::string& token_service) :
+  WorkerTask(const std::string& username,
+             const talk_base::CryptString& pass,
+             const std::string& service,
+             const talk_base::ProxyInfo& proxy,
+             talk_base::FirewallManager* firewall,
+             const std::string& token,
+             const CaptchaAnswer& captcha_answer,
+             bool obtain_auth,
+             const std::string& user_agent,
+             const std::string& signature,
+             const std::string& token_service) :
     username_(username),
     pass_(pass),
     service_(service),
-    firewall_(0),
-    done_(false),
+    proxy_(proxy),
+    firewall_(firewall),
     success_(false),
     error_(true),
     error_code_(0),
     proxy_auth_required_(false),
     certificate_expired_(false),
     auth_token_(token),
+    captcha_answer_(captcha_answer),
     fresh_auth_token_(false),
     obtain_auth_(obtain_auth),
     agent_(user_agent),
     signature_(signature),
     token_service_(token_service) {}
 
-  void set_proxy(const talk_base::ProxyInfo& proxy) { proxy_ = proxy; }
-  void set_firewall(talk_base::FirewallManager * firewall) {
-    firewall_ = firewall;
-  }
-  void set_captcha_answer(const CaptchaAnswer& captcha_answer) {
-    captcha_answer_ = captcha_answer;
-  }
+  ~WorkerTask() {}
 
-  virtual void DoWork() {
+  void DoWork(MessageLoop* parent_message_loop, Task* on_work_done_task) {
+    DCHECK(parent_message_loop);
+    DCHECK(on_work_done_task);
     LOG(INFO) << "GaiaAuth Begin";
     // Maybe we already have an auth token, then there is nothing to do.
     if (!auth_token_.empty()) {
@@ -122,6 +124,10 @@ class GaiaAuth::WorkerThread : public talk_base::SignalThread {
         GaiaRequestSid(&http, username_, pass_, signature_,
                        obtain_auth_ ? service_ : "", captcha_answer_,
                        g_gaia_server);
+        // TODO(akalin): handle timeouts better; this can cause jank,
+        // e.g. when we're waiting on this and the user stops syncing,
+        // which causes the GaiaAuth object to be destroyed, which
+        // waits on this. (bug: http://crbug.com/31981 )
         ss->Wait(kGaiaAuthTimeoutMs, true);
 
         error_code_ = monitor.error();   // Save off the error code.
@@ -201,10 +207,10 @@ class GaiaAuth::WorkerThread : public talk_base::SignalThread {
     // Done authenticating.
 
   Cleanup:
-    done_ = true;
+    LOG(INFO) << "GaiaAuth done";
+    parent_message_loop->PostTask(FROM_HERE, on_work_done_task);
   }
 
-  bool IsDone() const { return done_; }
   bool Succeeded() const { return success_; }
   bool HadError() const { return error_; }
   int GetError() const { return error_code_; }
@@ -247,20 +253,36 @@ class GaiaAuth::WorkerThread : public talk_base::SignalThread {
   std::string token_service_;
 };
 
+}  // namespace buzz
+
+// We outlive any runnable methods we create, so stub out
+// RunnableMethodTraits for GaiaAuth and WorkerTask.
+
+template <>
+struct RunnableMethodTraits<buzz::GaiaAuth> {
+  void RetainCallee(buzz::GaiaAuth* gaia_auth) {}
+  void ReleaseCallee(buzz::GaiaAuth* gaia_auth) {}
+};
+
+template <>
+struct RunnableMethodTraits<buzz::GaiaAuth::WorkerTask> {
+  void RetainCallee(buzz::GaiaAuth::WorkerTask* gaia_auth) {}
+  void ReleaseCallee(buzz::GaiaAuth::WorkerTask* gaia_auth) {}
+};
+
+namespace buzz {
+
 ///////////////////////////////////////////////////////////////////////////////
 // GaiaAuth
 ///////////////////////////////////////////////////////////////////////////////
 
 GaiaAuth::GaiaAuth(const std::string &user_agent, const std::string &sig)
-    : agent_(user_agent), signature_(sig), firewall_(0), worker_(NULL),
+    : agent_(user_agent), signature_(sig), firewall_(0),
+      worker_thread_("GaiaAuth worker thread"), worker_task_(NULL),
       done_(false) {
 }
 
 GaiaAuth::~GaiaAuth() {
-  if (worker_) {
-    worker_->Release();
-    worker_ = NULL;
-  }
 }
 
 void GaiaAuth::StartPreXmppAuth(const buzz::Jid& jid,
@@ -297,27 +319,34 @@ void GaiaAuth::InternalStartGaiaAuth(const buzz::Jid& jid,
                                      const std::string& token,
                                      const std::string& service,
                                      bool obtain_auth) {
-  worker_ = new WorkerThread(jid.Str(), pass, token, service, agent_,
-                             signature_, obtain_auth, token_service_);
-  worker_->set_proxy(proxy_);
-  worker_->set_firewall(firewall_);
-  worker_->set_captcha_answer(captcha_answer_);
-  worker_->SignalWorkDone.connect(this, &GaiaAuth::OnAuthDone);
-  worker_->Start();
+  worker_task_.reset(
+      new WorkerTask(jid.Str(), pass, service, proxy_, firewall_,
+                     token, captcha_answer_, obtain_auth, agent_,
+                     signature_, token_service_));
+  MessageLoop* current_message_loop = MessageLoop::current();
+  DCHECK(current_message_loop);
+  Task* on_work_done_task = NewRunnableMethod(this, &GaiaAuth::OnAuthDone);
+  LOG(INFO) << "GaiaAuth begin (async)";
+  worker_thread_.Start();
+  worker_thread_.message_loop()->PostTask(
+      FROM_HERE, NewRunnableMethod(worker_task_.get(),
+                                   &WorkerTask::DoWork,
+                                   current_message_loop,
+                                   on_work_done_task));
 }
 
-void GaiaAuth::OnAuthDone(talk_base::SignalThread* worker) {
-  if (!worker_->IsDone())
-    return;
+void GaiaAuth::OnAuthDone() {
+  LOG(INFO) << "GaiaAuth done (async)";
+  worker_thread_.Stop();
   done_ = true;
 
-  if (worker_->fresh_auth_token()) {
-    SignalFreshAuthCookie(worker_->GetToken());
+  if (worker_task_->fresh_auth_token()) {
+    SignalFreshAuthCookie(worker_task_->GetToken());
   }
-  if (worker_->ProxyAuthRequired()) {
+  if (worker_task_->ProxyAuthRequired()) {
     SignalAuthenticationError();
   }
-  if (worker_->CertificateExpired()) {
+  if (worker_task_->CertificateExpired()) {
     SignalCertificateExpired();
   }
   SignalAuthDone();
@@ -342,12 +371,12 @@ std::string GaiaAuth::ChooseBestSaslMechanism(
 
   // Never pass @google.com passwords without encryption!!
   if (!encrypted &&
-      buzz::Jid(worker_->GetUsername()).domain() == "google.com") {
+      buzz::Jid(worker_task_->GetUsername()).domain() == "google.com") {
     return "";
   }
 
   // As a last resort, use plain authentication.
-  if (buzz::Jid(worker_->GetUsername()).domain() != "google.com") {
+  if (buzz::Jid(worker_task_->GetUsername()).domain() != "google.com") {
     it = std::find(mechanisms.begin(), mechanisms.end(), "PLAIN");
     if (it != mechanisms.end())
       return "PLAIN";
@@ -366,22 +395,22 @@ buzz::SaslMechanism* GaiaAuth::CreateSaslMechanism(
   if (mechanism == "X-GOOGLE-TOKEN") {
     return new buzz::SaslCookieMechanism(
         mechanism,
-        worker_->GetUsername(),
-        worker_->GetToken(),
-        worker_->GetTokenService());
+        worker_task_->GetUsername(),
+        worker_task_->GetToken(),
+        worker_task_->GetTokenService());
   }
 
   if (mechanism == "X-GOOGLE-COOKIE") {
     return new buzz::SaslCookieMechanism(
         "X-GOOGLE-COOKIE",
-        worker_->GetUsername(),
-        worker_->GetSID(),
-        worker_->GetTokenService());
+        worker_task_->GetUsername(),
+        worker_task_->GetSID(),
+        worker_task_->GetTokenService());
   }
 
   if (mechanism == "PLAIN") {
-    return new buzz::SaslPlainMechanism(buzz::Jid(worker_->GetUsername()),
-                                        worker_->GetPassword());
+    return new buzz::SaslPlainMechanism(buzz::Jid(worker_task_->GetUsername()),
+                                        worker_task_->GetPassword());
   }
 
   // Oh well - none of the above.
@@ -390,14 +419,15 @@ buzz::SaslMechanism* GaiaAuth::CreateSaslMechanism(
 
 std::string GaiaAuth::CreateAuthenticatedUrl(
     const std::string & continue_url, const std::string & service) {
-  if (!done_ || worker_->GetToken().empty())
+  if (!done_ || worker_task_->GetToken().empty())
     return "";
 
   std::string url;
   // Note that http_prefix always ends with a "/".
   url += g_gaia_server.http_prefix()
          + "accounts/TokenAuth?auth="
-         + worker_->GetToken();  // Do not URL encode - GAIA doesn't like that.
+         // Do not URL encode - GAIA doesn't like that.
+         + worker_task_->GetToken();
   url += "&service=" + service;
   url += "&continue=" + UrlEncodeString(continue_url);
   url += "&source=" +  signature_;
@@ -406,26 +436,26 @@ std::string GaiaAuth::CreateAuthenticatedUrl(
 
 std::string GaiaAuth::GetAuthCookie() {
   assert(IsAuthDone() && IsAuthorized());
-  if (!done_ || !worker_->Succeeded()) {
+  if (!done_ || !worker_task_->Succeeded()) {
     return "";
   }
-  return worker_->GetToken();
+  return worker_task_->GetToken();
 }
 
 std::string GaiaAuth::GetAuth() {
   assert(IsAuthDone() && IsAuthorized());
-  if (!done_ || !worker_->Succeeded()) {
+  if (!done_ || !worker_task_->Succeeded()) {
     return "";
   }
-  return worker_->GetAuth();
+  return worker_task_->GetAuth();
 }
 
 std::string GaiaAuth::GetSID() {
   assert(IsAuthDone() && IsAuthorized());
-  if (!done_ || !worker_->Succeeded()) {
+  if (!done_ || !worker_task_->Succeeded()) {
     return "";
   }
-  return worker_->GetSID();
+  return worker_task_->GetSID();
 }
 
 bool GaiaAuth::IsAuthDone() {
@@ -433,25 +463,25 @@ bool GaiaAuth::IsAuthDone() {
 }
 
 bool GaiaAuth::IsAuthorized() {
-  return done_ && worker_ != NULL && worker_->Succeeded();
+  return done_ && worker_task_ != NULL && worker_task_->Succeeded();
 }
 
 bool GaiaAuth::HadError() {
-  return done_ && worker_ != NULL && worker_->HadError();
+  return done_ && worker_task_ != NULL && worker_task_->HadError();
 }
 
 int GaiaAuth::GetError() {
-  if (done_ && worker_ != NULL) {
-    return worker_->GetError();
+  if (done_ && worker_task_ != NULL) {
+    return worker_task_->GetError();
   }
   return 0;
 }
 
 buzz::CaptchaChallenge GaiaAuth::GetCaptchaChallenge() {
-  if (!done_ || worker_->Succeeded()) {
+  if (!done_ || worker_task_->Succeeded()) {
     return buzz::CaptchaChallenge();
   }
-  return worker_->GetCaptchaChallenge();
+  return worker_task_->GetCaptchaChallenge();
 }
 
 }  // namespace buzz
