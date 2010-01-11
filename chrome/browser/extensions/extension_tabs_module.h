@@ -11,9 +11,11 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_registrar.h"
 
+class BackingStore;
 class Browser;
 class DictionaryValue;
 class ListValue;
+class SkBitmap;
 class TabContents;
 class TabStripModel;
 
@@ -134,9 +136,19 @@ class DetectTabLanguageFunction : public AsyncExtensionFunction,
   NotificationRegistrar registrar_;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.detectLanguage")
 };
-class CaptureVisibleTabFunction : public SyncExtensionFunction {
+class CaptureVisibleTabFunction : public AsyncExtensionFunction,
+                                  public NotificationObserver {
+ private:
   ~CaptureVisibleTabFunction() {}
   virtual bool RunImpl();
+  virtual void CaptureSnapshotFromBackingStore(BackingStore* backing_store);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+  virtual void SendResultFromBitmap(const SkBitmap& screen_capture);
+
+  NotificationRegistrar registrar_;
+
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.captureVisibleTab")
 };
 

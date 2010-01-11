@@ -128,6 +128,10 @@ IPC_BEGIN_MESSAGES(View)
   // render view responds with a ViewHostMsg_Thumbnail.
   IPC_MESSAGE_ROUTED0(ViewMsg_CaptureThumbnail)
 
+  // Tells the render view to capture a thumbnail image of the page. The
+  // render view responds with a ViewHostMsg_Snapshot.
+  IPC_MESSAGE_ROUTED0(ViewMsg_CaptureSnapshot)
+
   // Tells the render view to switch the CSS to print media type, renders every
   // requested pages and switch back the CSS to display media type.
   IPC_MESSAGE_ROUTED0(ViewMsg_PrintPages)
@@ -1137,6 +1141,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED3(ViewHostMsg_Thumbnail,
                       GURL /* url */,
                       ThumbnailScore /* score */,
+                      SkBitmap /* bitmap */)
+
+  // Send a snapshot of the tab contents to the render host.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_Snapshot,
                       SkBitmap /* bitmap */)
 
   // Notification that the url for the favicon of a site has been determined.

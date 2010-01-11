@@ -729,25 +729,52 @@ bool CaptureVisibleTabFunction::RunImpl() {
     return false;
   }
 
-  SkBitmap screen_capture;
   TabContents* tab_contents = browser->GetSelectedTabContents();
   if (!tab_contents) {
     error_ = keys::kInternalVisibleTabCaptureError;
     return false;
   }
   RenderViewHost* render_view_host = tab_contents->render_view_host();
+
+  // If a backing store is cached for the tab we want to capture,
+  // then use it to generate the image.
   BackingStore* backing_store = render_view_host->GetBackingStore(false);
-  if (!backing_store) {
-    error_ = keys::kInternalVisibleTabCaptureError;
-    return false;
+  if (backing_store) {
+    CaptureSnapshotFromBackingStore(backing_store);
+    return true;
   }
+
+  // TODO: If a paint request is pending, wait for it to finish rather than
+  // asking the renderer to capture a snapshot.  It is possible for a paint
+  // request to be queued for a long time by the renderer.  For example, if
+  // a tab is hidden, the repaint is not done until the tab is un-hidden.
+  // To avoid waiting for a long time, there could be a timeout after which
+  // we ask for a snapshot, or the renderer could send a NACK to paint
+  // requests it defers.
+
+  // Explicitly ask for a snapshot of the tab.
+  render_view_host->CaptureSnapshot();
+  registrar_.Add(this,
+                 NotificationType::TAB_SNAPSHOT_TAKEN,
+                 NotificationService::AllSources());
+  AddRef();  // Balanced in CaptureVisibleTabFunction::Observe().
+
+  return true;
+}
+
+// Build the image of a tab's contents out of a backing store.
+void CaptureVisibleTabFunction::CaptureSnapshotFromBackingStore(
+    BackingStore* backing_store) {
+  SkBitmap screen_capture;
+
 #if defined(OS_WIN)
   skia::PlatformCanvas temp_canvas;
   if (!temp_canvas.initialize(backing_store->size().width(),
                               backing_store->size().height(), true)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kInternalVisibleTabCaptureError, "");
-    return false;
+    SendResponse(false);
+    return;
   }
   HDC temp_dc = temp_canvas.beginPlatformPaint();
   BitBlt(temp_dc,
@@ -762,7 +789,8 @@ bool CaptureVisibleTabFunction::RunImpl() {
                               backing_store->size().height(), true)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kInternalVisibleTabCaptureError, "");
-    return false;
+    SendResponse(false);
+    return;
   }
   CGContextRef temp_context = temp_canvas.beginPlatformPaint();
   CGContextSaveGState(temp_context);
@@ -781,8 +809,38 @@ bool CaptureVisibleTabFunction::RunImpl() {
 #else
   // TODO(port)
   error_ = keys::kNotImplementedError;
-  return false;
+  SendResponse(false);
+  return;
 #endif
+
+  SendResultFromBitmap(screen_capture);
+}
+
+// If a backing store was not available in CaptureVisibleTabFunction::RunImpl,
+// than the renderer was asked for a snapshot.  Listen for a notification
+// that the snapshot is available.
+void CaptureVisibleTabFunction::Observe(NotificationType type,
+                                        const NotificationSource& source,
+                                        const NotificationDetails& details) {
+  DCHECK(type == NotificationType::TAB_SNAPSHOT_TAKEN);
+
+  const SkBitmap *screen_capture = Details<const SkBitmap>(details).ptr();
+  const bool error = screen_capture->empty();
+
+  if (error) {
+    error_ = keys::kInternalVisibleTabCaptureError;
+    SendResponse(false);
+  } else {
+    SendResultFromBitmap(*screen_capture);
+  }
+
+  Release();  // Balanced in CaptureVisibleTabFunction::RunImpl().
+}
+
+// Turn a bitmap of the screen into an image, set that image as the result,
+// and call SendResponse().
+void CaptureVisibleTabFunction::SendResultFromBitmap(
+    const SkBitmap& screen_capture) {
   scoped_refptr<RefCountedBytes> jpeg_data(new RefCountedBytes);
   SkAutoLockPixels screen_capture_lock(screen_capture);
   bool encoded = gfx::JPEGCodec::Encode(
@@ -794,7 +852,8 @@ bool CaptureVisibleTabFunction::RunImpl() {
   if (!encoded) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kInternalVisibleTabCaptureError, "");
-    return false;
+    SendResponse(false);
+    return;
   }
 
   std::string base64_result;
@@ -807,7 +866,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
   base::Base64Encode(stream_as_string, &base64_result);
   base64_result.insert(0, "data:image/jpg;base64,");
   result_.reset(new StringValue(base64_result));
-  return true;
+  SendResponse(true);
 }
 
 bool DetectTabLanguageFunction::RunImpl() {

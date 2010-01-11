@@ -227,6 +227,9 @@ class NotificationType {
     // are Details<std::string> and the source is Source<RenderViewHost>.
     TAB_LANGUAGE_DETERMINED,
 
+    // Sent after the renderer returns a snapshot of tab contents.
+    TAB_SNAPSHOT_TAKEN,
+
     // Send after the code is run in specified tab.
     TAB_CODE_EXECUTED,
 

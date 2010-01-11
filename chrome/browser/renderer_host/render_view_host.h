@@ -294,6 +294,9 @@ class RenderViewHost : public RenderWidgetHost,
   // Captures a thumbnail representation of the page.
   void CaptureThumbnail();
 
+  // Captures a snapshot of the page.
+  void CaptureSnapshot();
+
   // Notifies the RenderView that the JavaScript message that was shown was
   // closed by the user.
   void JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
@@ -470,6 +473,7 @@ class RenderViewHost : public RenderWidgetHost,
   void OnMsgThumbnail(const GURL& url,
                       const ThumbnailScore& score,
                       const SkBitmap& bitmap);
+  void OnMsgScreenshot(const SkBitmap& bitmap);
   void OnMsgClose();
   void OnMsgRequestMove(const gfx::Rect& pos);
   void OnMsgDidRedirectProvisionalLoad(int32 page_id,

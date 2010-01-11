@@ -17,10 +17,12 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/field_trial.h"
+#include "base/histogram.h"
 #include "base/process_util.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/child_process_logging.h"
@@ -172,7 +174,6 @@ using WebKit::WebWorkerClient;
 
 // define to write the time necessary for thumbnail/DOM text retrieval,
 // respectively, into the system debug log
-// #define TIME_BITMAP_RETRIEVAL
 // #define TIME_TEXT_RETRIEVAL
 
 // maximum number of characters in the document to index, any text beyond this
@@ -228,6 +229,35 @@ static bool UrlMatchesPermissions(
   }
 
   return false;
+}
+
+static bool PaintViewIntoCanvas(WebView* view,
+                                skia::PlatformCanvas& canvas) {
+  view->layout();
+  const WebSize& size = view->size();
+
+  if (!canvas.initialize(size.width, size.height, true))
+    return false;
+
+  view->paint(webkit_glue::ToWebCanvas(&canvas),
+              WebRect(0, 0, size.width, size.height));
+  // TODO: Add a way to snapshot the whole page, not just the currently
+  // visible part.
+
+  return true;
+}
+
+// Calculates how "boring" a thumbnail is. The boring score is the
+// 0,1 ranged percentage of pixels that are the most common
+// luma. Higher boring scores indicate that a higher percentage of a
+// bitmap are all the same brightness.
+static double CalculateBoringScore(SkBitmap* bitmap) {
+  int histogram[256] = {0};
+  color_utils::BuildLumaHistogram(bitmap, histogram);
+
+  int color_count = *std::max_element(histogram, histogram + 256);
+  int pixel_count = bitmap->width() * bitmap->height();
+  return static_cast<double>(color_count) / pixel_count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -422,6 +452,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
 
   IPC_BEGIN_MESSAGE_MAP(RenderView, message)
     IPC_MESSAGE_HANDLER(ViewMsg_CaptureThumbnail, SendThumbnail)
+    IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, SendSnapshot)
     IPC_MESSAGE_HANDLER(ViewMsg_PrintPages, OnPrintPages)
     IPC_MESSAGE_HANDLER(ViewMsg_PrintingDone, OnPrintingDone)
     IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
@@ -551,6 +582,24 @@ void RenderView::SendThumbnail() {
   Send(new ViewHostMsg_Thumbnail(routing_id_, url, score, thumbnail));
 }
 
+void RenderView::SendSnapshot() {
+  SkBitmap snapshot;
+  bool error = false;
+
+  WebFrame* main_frame = webview()->mainFrame();
+  if (!main_frame)
+    error = true;
+
+  if (!error && !CaptureSnapshot(webview(), &snapshot))
+    error = true;
+
+  DCHECK(error == snapshot.empty()) <<
+      "Snapshot should be empty on error, non-empty otherwise.";
+
+  // Send the snapshot to the browser process.
+  Send(new ViewHostMsg_Snapshot(routing_id_, snapshot));
+}
+
 void RenderView::OnPrintPages() {
   DCHECK(webview());
   if (webview()) {
@@ -666,18 +715,13 @@ bool RenderView::CaptureThumbnail(WebView* view,
                                   int h,
                                   SkBitmap* thumbnail,
                                   ThumbnailScore* score) {
-#ifdef TIME_BITMAP_RETRIEVAL
-  double begin = time_util::GetHighResolutionTimeNow();
-#endif
-
-  view->layout();
-  const WebSize& size = view->size();
+  base::TimeTicks beginning_time = base::TimeTicks::Now();
 
   skia::PlatformCanvas canvas;
-  if (!canvas.initialize(size.width, size.height, true))
+
+  // Paint |view| into |canvas|.
+  if (!PaintViewIntoCanvas(view, canvas))
     return false;
-  view->paint(webkit_glue::ToWebCanvas(&canvas),
-              WebRect(0, 0, size.width, size.height));
 
   skia::BitmapPlatformDevice& device =
       static_cast<skia::BitmapPlatformDevice&>(canvas.getTopPlatformDevice());
@@ -725,22 +769,28 @@ bool RenderView::CaptureThumbnail(WebView* view,
 
   score->boring_score = CalculateBoringScore(thumbnail);
 
-#ifdef TIME_BITMAP_RETRIEVAL
-  double end = time_util::GetHighResolutionTimeNow();
-  char buf[128];
-  sprintf_s(buf, "thumbnail in %gms\n", (end - begin) * 1000);
-  OutputDebugStringA(buf);
-#endif
+  HISTOGRAM_TIMES("Renderer4.Thumbnail",
+                  base::TimeTicks::Now() - beginning_time);
   return true;
 }
 
-double RenderView::CalculateBoringScore(SkBitmap* bitmap) {
-  int histogram[256] = {0};
-  color_utils::BuildLumaHistogram(bitmap, histogram);
+bool RenderView::CaptureSnapshot(WebView* view, SkBitmap* snapshot) {
+  base::TimeTicks beginning_time = base::TimeTicks::Now();
 
-  int color_count = *std::max_element(histogram, histogram + 256);
-  int pixel_count = bitmap->width() * bitmap->height();
-  return static_cast<double>(color_count) / pixel_count;
+  skia::PlatformCanvas canvas;
+  if (!PaintViewIntoCanvas(view, canvas))
+    return false;
+
+  skia::BitmapPlatformDevice& device =
+      static_cast<skia::BitmapPlatformDevice&>(canvas.getTopPlatformDevice());
+
+  const SkBitmap& bitmap = device.accessBitmap(false);
+  if (!bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config))
+    return false;
+
+  HISTOGRAM_TIMES("Renderer4.Snapshot",
+                  base::TimeTicks::Now() - beginning_time);
+  return true;
 }
 
 void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
