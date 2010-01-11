@@ -14,7 +14,6 @@
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/renderer_host/backing_store.h"
 
 class TabContents;
 class TabRendererGtk;
@@ -53,10 +52,7 @@ class DraggedTabGtk : public AnimationDelegate {
   bool is_pinned() const;
 
   // Notifies the dragged tab that it has been detached from a tabstrip.
-  // |contents| is the widget that contains the dragged tab contents, while
-  // |backing_store| is the backing store that holds a server-side bitmap of the
-  // visual representation of |contents|.
-  void Detach(GtkWidget* contents, BackingStore* backing_store);
+  void Detach();
 
   // Notifies the dragged tab that it should update itself.
   void Update();
@@ -112,19 +108,15 @@ class DraggedTabGtk : public AnimationDelegate {
   static gboolean OnExposeEvent(GtkWidget* widget, GdkEventExpose* event,
                                 DraggedTabGtk* dragged_tab);
 
+  // The tab contents that the dragged tab contains.
+  TabContents* data_source_;
+
   // The window that contains the dragged tab or tab contents.
   GtkWidget* container_;
 
   // The fixed widget that we use to contain the tab renderer so that the
   // tab widget won't be resized.
   GtkWidget* fixed_;
-
-  // The native view of the tab contents.
-  GtkWidget* contents_;
-
-  // The backing store used to create a screenshot of the dragged contents.
-  // Owned by the RWH.
-  BackingStore* backing_store_;
 
   // The renderer that paints the dragged tab.
   scoped_ptr<TabRendererGtk> renderer_;

@@ -13,6 +13,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"
@@ -45,7 +46,7 @@ const double kDraggedTabBorderColor[] = { 103.0 / 0xff,
 DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
                              const gfx::Point& mouse_tab_offset,
                              const gfx::Size& contents_size)
-    : backing_store_(NULL),
+    : data_source_(datasource),
       renderer_(new TabRendererGtk(datasource->profile()->GetThemeProvider())),
       attached_(false),
       mouse_tab_offset_(mouse_tab_offset),
@@ -105,7 +106,7 @@ bool DraggedTabGtk::is_pinned() const {
   return renderer_->is_pinned();
 }
 
-void DraggedTabGtk::Detach(GtkWidget* contents, BackingStore* backing_store) {
+void DraggedTabGtk::Detach() {
   // Detached tabs are never pinned.
   renderer_->set_pinned(false);
 
@@ -115,8 +116,6 @@ void DraggedTabGtk::Detach(GtkWidget* contents, BackingStore* backing_store) {
   }
 
   attached_ = false;
-  contents_ = contents;
-  backing_store_ = backing_store;
   ResizeContainer();
 
   if (gtk_util::IsScreenComposited())
@@ -298,9 +297,11 @@ gboolean DraggedTabGtk::OnExposeEvent(GtkWidget* widget,
       dragged_tab->renderer_->height());
 
   // Draw the render area.
-  if (dragged_tab->backing_store_ && !dragged_tab->attached_) {
+  BackingStore* backing_store =
+      dragged_tab->data_source_->render_view_host()->GetBackingStore(false);
+  if (backing_store && !dragged_tab->attached_) {
     // This leaves room for the border.
-    dragged_tab->backing_store_->PaintToRect(
+    backing_store->PaintToRect(
         gfx::Rect(kDragFrameBorderSize, tab_height,
                   widget->allocation.width - kTwiceDragFrameBorderSize,
                   widget->allocation.height - tab_height -
