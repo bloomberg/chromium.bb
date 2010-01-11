@@ -448,7 +448,7 @@ BUG12310 WONTFIX SKIP : LayoutTests/fast/wcss = FAIL
 // because we can't emulate the cahcing behaviors it expects.
 WONTFIX : LayoutTests/fast/dom/HTMLScriptElement/nested-execution.html = FAIL
 
-// Touch events are not supported. 
+// Touch events are not supported.
 WONTFIX SKIP : LayoutTests/fast/events/touch-coords-in-zoom-and-scroll.html = FAIL TIMEOUT
 WONTFIX SKIP : LayoutTests/fast/events/basic-touch-events.html = FAIL
 
@@ -3113,16 +3113,7 @@ BUG30939 : LayoutTests/svg/filters/filter-clip.svg = IMAGE+TEXT
 BUG31108 WIN LINUX : LayoutTests/fast/text/international/bidi-layout-across-linebreak.html = TEXT
 BUG31252 : LayoutTests/http/tests/security/listener/xss-inactive-closure.html = TEXT
 
-// WebKit roll 52535->52554
-BUG31146 WIN LINUX : LayoutTests/editing/selection/select-text-overflow-ellipsis.html = IMAGE+TEXT
-BUG31146 MAC : LayoutTests/editing/selection/select-text-overflow-ellipsis.html = IMAGE
-BUG31146 WIN LINUX :  LayoutTests/svg/custom/grayscale-gradient-mask.svg = IMAGE
-
 // WebKit roll 52633 -> 52667
-
-// New test, needs chromium baseline.
-
-// New test, needs chromium baseline.
 // On Linux, sometimes the text dump matches. Not sure why.
 BUG_DIMICH LINUX : LayoutTests/svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE
 
@@ -3140,6 +3131,4 @@ BUG31794 WIN MAC : LayoutTests/storage/domstorage/localstorage/enumerate-storage
 
 // Flaky
 BUG31803 LINUX : LayoutTests/editing/inserting/12882.html = IMAGE PASS
-
-
 
