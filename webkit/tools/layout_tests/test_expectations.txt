@@ -3124,3 +3124,5 @@ BUG31803 LINUX : LayoutTests/editing/inserting/12882.html = IMAGE PASS
 // from http://trac.webkit.org/changeset/53078
 BUG_JOHNNYG LINUX : LayoutTests/fast/text/find-kana.html = CRASH
 
+// from http://trac.webkit.org/changeset/53086
+BUG_JOHNNYG : LayoutTests/svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = TEXT
