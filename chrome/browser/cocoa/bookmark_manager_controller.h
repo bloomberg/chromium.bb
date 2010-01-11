@@ -44,6 +44,10 @@ class Profile;
 // This will be the URL's favicon, a generic page icon, or a folder icon.
 - (NSImage*)iconForItem:(id)item;
 
+// Returns a context menu for use with either table view pane.
+// A new instance is created every time, so the caller can customize it.
+- (NSMenu*)contextMenu;
+
 // Opens a URL bookmark in a browser tab.
 - (void)openBookmarkItem:(id)item;
 

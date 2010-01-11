@@ -428,21 +428,4 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
   return YES;
 }
 
-
-// Selectively enables/disables menu commands.
-- (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
-  SEL action = [menuItem action];
-  if (action == @selector(cut:) || action == @selector(copy:) ||
-      action == @selector(delete:)) {
-    return [[outline_ selectedRowIndexes] count] > 0;
-  } else if (action == @selector(paste:)) {
-    return [[NSPasteboard generalPasteboard]
-        availableTypeFromArray:[outline_ registeredDraggedTypes]]
-        != nil;
-  } else {
-    return YES;
-  }
-}
-
-
 @end

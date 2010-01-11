@@ -22,7 +22,7 @@
 // Initialization after the nib is loaded.
 - (void)awakeFromNib {
   [outline_ setTarget:self];
-  [outline_ setDoubleAction:@selector(itemDoubleClicked:)];
+  [outline_ setDoubleAction:@selector(openItems:)];
   [self registerDragTypes];
 }
 
@@ -78,32 +78,47 @@
   [outline_ selectRowIndexes:newSelection byExtendingSelection:NO];
 }
 
+// Returns the selected/right-clicked item(s) for a command to act on.
+- (NSArray*)actionItems {
+  int row = [outline_ clickedRow];
+  if (row >= 0 && ![outline_ isRowSelected:row])
+    return [NSArray arrayWithObject:[outline_ itemAtRow:row]];
+
+  return [self selectedItems];
+}
+
 
 #pragma mark -
 #pragma mark COMMANDS:
 
 
 // Responds to a double-click by opening the selected URL(s).
-- (IBAction)itemDoubleClicked:(id)sender {
-  for (id item in [self selectedItems]) {
-    [manager_ openBookmarkItem:item];
+- (IBAction)openItems:(id)sender {
+  for (id item in [self actionItems]) {
+    if ([outline_ isExpandable:item]) {
+      if ([outline_ isItemExpanded:item])
+        [outline_ collapseItem:item];
+      else
+        [outline_ expandItem:item];
+    } else {
+      [manager_ openBookmarkItem:item];
+    }
   }
 }
 
 // The Delete command (also bound to the delete key.)
 - (IBAction)delete:(id)sender {
-  NSIndexSet* selectedRows = [outline_ selectedRowIndexes];
-  if (!selectedRows) {
+  NSArray* items = [self actionItems];
+  if ([items count] == 0) {
     NSBeep();
     return;
   }
   // Iterate backwards so that any selected children are deleted before
   // selected parents (opposite order would cause double-free!) and so each
   // deletion doesn't invalidate the remaining row numbers.
-  for (NSInteger row = [selectedRows lastIndex]; row != NSNotFound;
-       row = [selectedRows indexLessThanIndex:row]) {
+  for (NSInteger i = [items count] - 1; i >= 0; i--) {
     const BookmarkNode* node = [manager_ nodeFromItem:
-        [outline_ itemAtRow:row]];
+        [items objectAtIndex:i]];
     const BookmarkNode* parent = node->GetParent();
     [manager_ bookmarkModel]->Remove(parent, parent->IndexOfChild(node));
   }
@@ -112,15 +127,80 @@
   [outline_ deselectAll:self];
 }
 
-- (IBAction)editTitle:(id)sender {
-  if ([outline_ numberOfSelectedRows] != 1) {
-    NSBeep();
-    return;
-  }
+- (void)editTitleOfItem:(id)item {
+  int row = [outline_ rowForItem:item];
+  DCHECK(row >= 0);
   [outline_ editColumn:[outline_ columnWithIdentifier:@"title"]
-                   row:[outline_ selectedRow]
+                   row:row
              withEvent:[NSApp currentEvent]
                 select:YES];
+}
+
+- (IBAction)editTitle:(id)sender {
+  NSArray* items = [self actionItems];
+  if ([items count] == 1)
+    [self editTitleOfItem:[items objectAtIndex:0]];
+  else
+    NSBeep();
+}
+
+- (IBAction)newFolder:(id)sender {
+  const BookmarkNode* targetNode;
+  NSInteger childIndex;
+  NSArray* items = [self actionItems];
+  if ([items count] > 0) {
+    // Insert at selected/clicked row.
+    const BookmarkNode* selNode = [self nodeFromItem:
+                                   [items objectAtIndex:0]];
+    targetNode = selNode->GetParent();
+    childIndex = targetNode->IndexOfChild(selNode);
+  } else {
+    // ...or at very end if there's no selection:
+    targetNode = [self nodeFromItem:group_];
+    childIndex = targetNode->GetChildCount();
+  }
+
+  const BookmarkNode* folder = [manager_ bookmarkModel]->
+      AddGroup(targetNode, childIndex, L"");
+  id folderItem = [manager_ itemFromNode:folder];
+  [outline_ expandItem:folderItem];
+  [self setSelectedItems:[NSArray arrayWithObject:folderItem]];
+  [self editTitleOfItem:folderItem];
+}
+
+- (NSMenu*)menu {
+  NSMenu* menu = [manager_ contextMenu];
+  for (NSMenuItem* item in [menu itemArray])
+    [item setTarget:self];
+  return menu;
+}
+
+// Selectively enables/disables menu commands.
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
+  SEL action = [menuItem action];
+  if (action == @selector(cut:) || action == @selector(copy:) ||
+      action == @selector(delete:)) {
+    return [[self actionItems] count] > 0;
+  } else if (action == @selector(openItems:)) {
+    NSArray* items = [self actionItems];
+    if ([items count] == 0)
+      return NO;
+    // Disable if folder selected (if only because title says "Open In Tab".)
+    for (id item in items) {
+      const BookmarkNode* node = [manager_ nodeFromItem:item];
+      if (!node->is_url())
+        return NO;
+    }
+    return YES;
+  } else if (action == @selector(editTitle:)) {
+    return [[self actionItems] count] == 1;
+  } else if (action == @selector(paste:)) {
+    return [[NSPasteboard generalPasteboard]
+        availableTypeFromArray:[outline_ registeredDraggedTypes]]
+        != nil;
+  } else {
+    return YES;
+  }
 }
 
 
@@ -274,6 +354,10 @@
     }
   }
   [super keyDown:event];
+}
+
+- (NSMenu*)menu {
+  return [[self delegate] menu];
 }
 
 @end

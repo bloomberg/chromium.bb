@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/bookmark_manager_controller.h"
 
+#include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
@@ -16,6 +17,7 @@
 #import "chrome/browser/cocoa/bookmark_tree_controller.h"
 #include "chrome/browser/profile.h"
 #include "grit/app_resources.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 
@@ -133,6 +135,24 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
 
 - (BookmarkTreeController*)treeController {
   return treeController_;
+}
+
+static void addItem(NSMenu* menu, int command, SEL action) {
+  [menu addItemWithTitle:l10n_util::GetNSStringWithFixup(command)
+                  action:action
+           keyEquivalent:@""];
+}
+
+// Generates a context menu for use by the group/tree controllers.
+- (NSMenu*)contextMenu {
+  NSMenu* menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+  addItem(menu, IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB, @selector(openItems:));
+  [menu addItem:[NSMenuItem separatorItem]];
+  addItem(menu, IDS_BOOKMARK_BAR_EDIT, @selector(editTitle:));
+  addItem(menu, IDS_BOOKMARK_BAR_REMOVE, @selector(delete:));
+  [menu addItem:[NSMenuItem separatorItem]];
+  addItem(menu, IDS_BOOMARK_BAR_NEW_FOLDER, @selector(newFolder:));
+  return menu;
 }
 
 

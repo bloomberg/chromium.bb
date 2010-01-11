@@ -88,15 +88,6 @@
   }
 }
 
-- (NSTableView*)groupsTable {
-  return groupsTable_;
-}
-
-
-#pragma mark -
-#pragma mark COMMANDS:
-
-
 // Updates the |selectedGroup| property based on the table view's selection.
 - (void)syncSelection {
   id selGroup = nil;
@@ -110,6 +101,29 @@
       [self setSelectedGroup:selGroup];
 }
 
+- (NSTableView*)groupsTable {
+  return groupsTable_;
+}
+
+// Returns the selected/right-clicked row #, or -1 if none.
+- (int)actionRow {
+  int row = [groupsTable_ clickedRow];
+  if (row < 0)
+    row = [groupsTable_ selectedRow];
+  return row;
+}
+
+// Returns the selected/right-clicked item, or nil if none.
+- (id)actionItem {
+  int row = [self actionRow];
+  return row >= 0 ? [groups_ objectAtIndex:row] : nil;
+}
+
+
+#pragma mark -
+#pragma mark COMMANDS:
+
+
 // Called when a row is clicked; updates the |selectedGroup| property.
 - (IBAction)tableClicked:(id)sender {
   [self syncSelection];
@@ -117,21 +131,23 @@
 
 // The Delete command; also invoked by the delete key.
 - (IBAction)delete:(id)sender {
-  const BookmarkNode* sel = [self selectedNode];
-  if (!sel) {
+  id item = [self actionItem];
+  if (!item) {
     NSBeep();
     return;
   }
-  const BookmarkNode* parent = sel->GetParent();
-  [manager_ bookmarkModel]->Remove(parent, parent->IndexOfChild(sel));
+  const BookmarkNode* node = [manager_ nodeFromItem:item];
+  const BookmarkNode* parent = node->GetParent();
+  [manager_ bookmarkModel]->Remove(parent, parent->IndexOfChild(node));
 }
 
+// Makes the title of the selected row editable.
 - (IBAction)editTitle:(id)sender {
-  if ([groupsTable_ numberOfSelectedRows] != 1) {
+  int row = [self actionRow];
+  if (row < 0) {
     NSBeep();
     return;
   }
-  int row = [groupsTable_ selectedRow];
   if (![self tableView:groupsTable_
       shouldEditTableColumn:[[groupsTable_ tableColumns] objectAtIndex:0]
                    row:row]) {
@@ -142,6 +158,54 @@
                        row:row
                  withEvent:[NSApp currentEvent]
                     select:YES];
+}
+
+// Creates a new folder.
+- (IBAction)newFolder:(id)sender {
+  const BookmarkNode* targetNode;
+  NSInteger childIndex;
+  id item = [self actionItem];
+  if (item) {
+    // Insert at selected/clicked row.
+    const BookmarkNode* node = [manager_ nodeFromItem:item];
+    targetNode = node->GetParent();
+    childIndex = targetNode->IndexOfChild(node);
+  } else {
+    // ...or at very end if there's no selection:
+    targetNode = [manager_ bookmarkModel]->other_node();
+    childIndex = targetNode->GetChildCount();
+  }
+
+  const BookmarkNode* folder;
+  folder = [manager_ bookmarkModel]->AddGroup(targetNode, childIndex, L"");
+
+  // Edit the title:
+  id folderItem = [manager_ itemFromNode:folder];
+  [self setSelectedGroup:folderItem];
+  int row = [groups_ indexOfObject:folderItem];
+  DCHECK(row!=NSNotFound);
+  [groupsTable_ editColumn:0
+                       row:row
+                 withEvent:[NSApp currentEvent]
+                    select:YES];
+}
+
+// Selectively enables/disables menu commands.
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
+  SEL action = [menuItem action];
+  if (action == @selector(delete:) || action == @selector(editTitle:)) {
+    // Note ">", not ">=". Row 0 is Bookmarks Bar, which is immutable.
+    return [self actionRow] > 0;
+  } else {
+    return YES;
+  }
+}
+
+- (NSMenu*)menu {
+  NSMenu* menu = [manager_ contextMenu];
+  for (NSMenuItem* item in [menu itemArray])
+    [item setTarget:self];
+  return menu;
 }
 
 
@@ -199,6 +263,10 @@
   [(BookmarkGroupsController*)[self delegate] delete:sender];
 }
 
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
+  return [(BookmarkGroupsController*)[self delegate] validateMenuItem:menuItem];
+}
+
 - (void)keyDown:(NSEvent*)event {
   NSString* chars = [event charactersIgnoringModifiers];
   if ([chars length] == 1) {
@@ -219,6 +287,10 @@
     }
   }
   [super keyDown:event];
+}
+
+- (NSMenu*)menu {
+  return [[self delegate] menu];
 }
 
 @end
