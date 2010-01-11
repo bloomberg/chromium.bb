@@ -11,6 +11,11 @@
 #   CONFIG_SITE=`pwd`/global_config_cache
 #   GLOBAL_CONFIG_CACHE=/nacl_config_cache
 
+# Handle /dev/null by assuming a local config.
+if test "$cache_file" = /dev/null; then
+  cache_file=./config.cache
+fi
+
 # Find the absolute path to the default cache file, and its containing dir.
 cache_file_dir=$(dirname "$cache_file")
 cache_file_dir_abs=$(cd "$cache_file_dir" ; pwd)
