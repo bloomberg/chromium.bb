@@ -231,8 +231,23 @@ typedef struct _NPDeviceContext2DConfig {
 
 typedef struct _NPDeviceContext2D
 {
+  /* Internal value used by the browser to identify this device.
+   */
   void* reserved;
+
+  /* A pointer to the pixel data. This data is 8-bit values in BGRA order in
+   * memory. Each row will start |stride| bytes after the previous one.
+   *
+   * THIS DATA USES PREMULTIPLIED ALPHA. This means that each color channel has
+   * been multiplied with the corresponding alpha, which makes compositing
+   * easier. If any color channels have a value greater than the alpha value,
+   * you'll likely get crazy colors and weird artifacts.
+   */
   void* region;
+
+  /* Length of each row of pixels in bytes. This may be larger than width * 4
+   * if there is padding at the end of each row to help with alignment.
+   */
   int32 stride;
 
   /* The dirty region that the plugin has painted into the buffer. This
