@@ -452,6 +452,9 @@ WONTFIX : LayoutTests/fast/dom/HTMLScriptElement/nested-execution.html = FAIL
 WONTFIX SKIP : LayoutTests/fast/events/touch-coords-in-zoom-and-scroll.html = FAIL TIMEOUT
 WONTFIX SKIP : LayoutTests/fast/events/basic-touch-events.html = FAIL
 
+// Deletion UI is a Mail-ism. We don't need to worry about this.
+WONTFIX : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL IMAGE
+
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
 // -----------------------------------------------------------------
@@ -1252,9 +1255,6 @@ BUG10331 LINUX : LayoutTests/css2.1/t1008-c44-ln-box-02-d-ag.html = FAIL
 // Looks like we're failing the test -- there are red boogers in the box that should be all green.
 BUG10332 LINUX : LayoutTests/css2.1/t1605-c545-txttrans-00-b-ag.html = FAIL
 
-// Linux: color off by one.  Rounding error?
-BUG10333 LINUX WIN : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL IMAGE
-
 // Asks for "system" fonts, which we don't support at all.
 BUG10335 LINUX : LayoutTests/fast/css/css2-system-fonts.html = FAIL
 
@@ -1915,9 +1915,6 @@ BUG23492 MAC : LayoutTests/fast/frames/frame-src-attribute.html = IMAGE
 // Font glyph issues?
 BUG23491 MAC : LayoutTests/css2.1/t0905-c5525-flthw-00-c-g.html = IMAGE
 BUG23491 MAC : LayoutTests/css2.1/t0905-c5526-flthw-00-c-g.html = IMAGE
-
-// Missing special UI for "deletionUI"
-BUG23490 MAC : LayoutTests/editing/deleting/deletionUI-single-instance.html = IMAGE
 
 // Actual is just slightly off in color than expected
 BUG23488 MAC : LayoutTests/editing/deleting/type-delete-after-quote.html = IMAGE
@@ -3110,7 +3107,7 @@ BUG30938 WIN : LayoutTests/svg/custom/mask-excessive-malloc.svg = IMAGE
 BUG30939 : LayoutTests/svg/filters/filter-clip.svg = IMAGE+TEXT
 
 // WebKit roll 52468->52535
-BUG31108 WIN LINUX : LayoutTests/fast/text/international/bidi-layout-across-linebreak.html = TEXT
+BUG31991 WIN LINUX : LayoutTests/fast/text/international/bidi-layout-across-linebreak.html = TEXT
 BUG31252 : LayoutTests/http/tests/security/listener/xss-inactive-closure.html = TEXT
 
 // WebKit roll 52633 -> 52667
