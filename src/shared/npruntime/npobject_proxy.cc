@@ -26,6 +26,9 @@ static void DebugPrintf(const char *fmt, ...) {
 }
 
 namespace {
+// TODO(sehr): This should be moved when it no longer conflicts with
+// the Pepper changelist.
+static const int kNPVariantOptionalMax = 16 * 1024;
 
 // These methods populate the NPClass for an object proxy:
 // Alloc, Deallocate, Invalidate, HasMethod, Invoke, InvokeDefault, HasProperty,
@@ -320,7 +323,7 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
   int error_code;
   char ret_fixed[kNPVariantSizeMax];
   uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(ret_fixed));
-  char ret_optional[kNPVariantSizeMax];
+  char ret_optional[kNPVariantOptionalMax];
   uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(ret_optional));
   if (NACL_SRPC_RESULT_OK !=
       NaClSrpcInvokeByName(bridge->channel(),
@@ -391,7 +394,7 @@ bool NPObjectProxy::GetProperty(NPIdentifier name, NPVariant* variant) {
   int error_code;
   char ret_fixed[kNPVariantSizeMax];
   uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(ret_fixed));
-  char ret_optional[kNPVariantSizeMax];
+  char ret_optional[kNPVariantOptionalMax];
   uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(ret_optional));
   if (NACL_SRPC_RESULT_OK !=
       NaClSrpcInvokeByName(bridge->channel(),
@@ -432,7 +435,7 @@ bool NPObjectProxy::SetProperty(NPIdentifier name, const NPVariant* value) {
   }
   char      fixed[kNPVariantSizeMax];
   uint32_t  fixed_size = static_cast<uint32_t>(sizeof(fixed));
-  char      optional[kNPVariantSizeMax];
+  char      optional[kNPVariantOptionalMax];
   uint32_t  optional_size = static_cast<uint32_t>(sizeof(optional));
   RpcArg    vars(npp_, fixed, fixed_size, optional, optional_size);
   if (!vars.PutVariant(value)) {

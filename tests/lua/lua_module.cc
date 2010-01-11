@@ -39,8 +39,9 @@ extern "C" {
 #include "lua-5.1.4/src/lauxlib.h"
 #include "lua-5.1.4/src/lualib.h"
 }
-#include <string>
 #include <nacl/nacl_npapi.h>
+#include <nacl/npupp.h>
+#include <string>
 
 // Basic idea: we create a Lua state for each plug-in instance.
 // Native types (nil/null, bools, numbers, strings) are trivially mapped into
@@ -455,7 +456,7 @@ void PushVariant(lua_State *lua, const NPVariant &variant) {
     lua_pushinteger(lua, NPVARIANT_TO_INT32(variant));
   } else if (NPVARIANT_IS_STRING(variant)) {
     NPString string = NPVARIANT_TO_STRING(variant);
-    lua_pushlstring(lua, string.utf8characters, string.utf8length);
+    lua_pushlstring(lua, string.UTF8Characters, string.UTF8Length);
   } else {
     NPObject *object = NPVARIANT_TO_OBJECT(variant);
     // If we already have a mapping for this NPObject, use it (this can be
@@ -828,7 +829,7 @@ bool Plugin::Invoke(NPObject *header, NPIdentifier name,
   if (name == plugin->execute_id_ && argCount == 1 &&
       NPVARIANT_IS_STRING(args[0])) {
     NPString string = NPVARIANT_TO_STRING(args[0]);
-    std::string s(string.utf8characters, string.utf8length);
+    std::string s(string.UTF8Characters, string.UTF8Length);
     return plugin->Execute(s.c_str());
   } else {
     return false;
@@ -930,8 +931,25 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
   return NPERR_GENERIC_ERROR;
 }
 
-int main(int argc, char **argv) {
-  NaClNP_Init(&argc, argv);
-  NaClNP_MainLoop(0);
-  return 0;
+NPError NPP_GetValue(NPP instance, NPPVariable variable, void* ret_value) {
+  if (NPPVpluginScriptableNPObject == variable) {
+    *reinterpret_cast<NPObject**>(ret_value) =
+        NPP_GetScriptableInstance(instance);
+    return NPERR_NO_ERROR;
+  } else {
+    return NPERR_GENERIC_ERROR;
+  }
+}
+
+/*
+ * NP_Initialize
+ */
+
+extern "C" NPError NP_Initialize(NPNetscapeFuncs* browser_funcs,
+                                 NPPluginFuncs* plugin_funcs) {
+  plugin_funcs->newp = NPP_New;
+  plugin_funcs->destroy = NPP_Destroy;
+  plugin_funcs->setwindow = NPP_SetWindow;
+  plugin_funcs->getvalue = NPP_GetValue;
+  return NPERR_NO_ERROR;
 }
