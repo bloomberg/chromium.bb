@@ -12,6 +12,7 @@ namespace  {
 
 const NSString* kNormalImageString = @"close_bar.pdf";
 const NSString* kHoverImageString = @"close_bar_h.pdf";
+const NSString* kPressedImageString = @"close_bar_p.pdf";
 
 }
 
@@ -30,6 +31,8 @@ const NSString* kHoverImageString = @"close_bar_h.pdf";
 
 - (void)commonInit {
   [self setTrackingEnabled:YES];
+  NSImage* alternateImage = nsimage_cache::ImageNamed(kPressedImageString);
+  [self setAlternateImage:alternateImage];
   [self updateTrackingAreas];
 
   // Set accessibility description.
