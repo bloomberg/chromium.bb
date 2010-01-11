@@ -206,6 +206,9 @@ void Canvas::DrawStringInt(const std::wstring& text,
                            const SkColor& color,
                            int x, int y, int w, int h,
                            int flags) {
+  if (w <= 0 || h <= 0)
+    return;
+
   cairo_t* cr = beginPlatformPaint();
   PangoLayout* layout = pango_cairo_create_layout(cr);
 
