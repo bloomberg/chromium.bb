@@ -470,13 +470,28 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     return E_INVALIDARG;
 
   *bind_flags = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE | BINDF_PULLDATA;
+
+  bool upload_data = false;
+
   if (LowerCaseEqualsASCII(method(), "get")) {
     bind_info->dwBindVerb = BINDVERB_GET;
   } else if (LowerCaseEqualsASCII(method(), "post")) {
     bind_info->dwBindVerb = BINDVERB_POST;
+    upload_data = true;
+  } else if (LowerCaseEqualsASCII(method(), "put")) {
+    bind_info->dwBindVerb = BINDVERB_PUT;
+    upload_data = true;
+  } else {
+    NOTREACHED() << "Unknown HTTP method.";
+    status_.set_status(URLRequestStatus::FAILED);
+    status_.set_os_error(net::ERR_METHOD_NOT_SUPPORTED);
+    EndRequest();
+    return E_FAIL;
+  }
 
-    // Bypass caching proxies on POSTs and avoid writing responses to POST
-    // requests to the browser's cache.
+  if (upload_data) {
+    // Bypass caching proxies on POSTs and PUTs and avoid writing responses to
+    // these requests to the browser's cache
     *bind_flags |= BINDF_GETNEWESTVERSION | BINDF_NOWRITECACHE |
                    BINDF_PRAGMA_NO_CACHE;
 
@@ -487,18 +502,13 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
 
     if (get_upload_data(&bind_info->stgmedData.pstm) == S_OK) {
       bind_info->stgmedData.tymed = TYMED_ISTREAM;
-      DLOG(INFO) << " Obj: " << std::hex << this << " POST request with "
-          << Int64ToString(post_data_len()) << " bytes";
+      DLOG(INFO) << " Obj: " << std::hex << this << " " << method()
+                 << " request with " << Int64ToString(post_data_len())
+                 << " bytes";
     } else {
       DLOG(INFO) << " Obj: " << std::hex << this
           << "POST request with no data!";
     }
-  } else {
-    NOTREACHED() << "Unknown HTTP method.";
-    status_.set_status(URLRequestStatus::FAILED);
-    status_.set_os_error(net::ERR_INVALID_URL);
-    EndRequest();
-    return E_FAIL;
   }
 
   return S_OK;
