@@ -83,3 +83,31 @@
    fun:BookmarkStorage::BookmarkModelDeleted
    fun:BookmarkModel::~BookmarkModel
 }
+# IPCChannelTest.ChannelProxyTest leaks memory.
+{
+   bug_26920_a
+   Heapcheck:Leak
+   fun:IPC::ChannelProxy::ChannelProxy
+   fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
+}
+# TODO(glider): deal with asterisks in stack traces
+# (like "CancelableTask* NewRunnableMethod" here)
+{
+   bug_26920_b
+   Heapcheck:Leak
+   ...
+   fun:IPC::ChannelProxy::Context::OnChannelError
+   fun:IPC::Channel::ChannelImpl::OnFileCanReadWithoutBlocking
+   fun:base::MessagePumpLibevent::OnLibeventNotification
+   fun:event_process_active
+   fun:event_base_loop
+}
+{
+   bug_26920_c
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   ...
+   fun:std::basic_string::basic_string
+   fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
+}
