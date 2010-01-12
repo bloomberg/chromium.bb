@@ -361,7 +361,7 @@ from :3
     members = [
         'COMMAND', 'Capture', 'CaptureStatus', 'FetchUpstreamTuple',
         'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
-        'GetEmail', 'GetPatchName', 'GetSVNBranch',
+        'GetDifferentFiles', 'GetEmail', 'GetPatchName', 'GetSVNBranch',
         'GetUpstream', 'IsGitSvn', 'RunAndFilterOutput', 'ShortBranchName',
         'RunCommand', 'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
         'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',

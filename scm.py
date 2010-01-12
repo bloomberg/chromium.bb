@@ -230,16 +230,21 @@ class GIT(object):
     return upstream_branch
 
   @staticmethod
-  def GenerateDiff(cwd, branch=None, full_move=False):
+  def GenerateDiff(cwd, branch=None, branch_head='HEAD', full_move=False,
+                   files=None):
     """Diffs against the upstream branch or optionally another branch.
 
     full_move means that move or copy operations should completely recreate the
     files, usually in the prospect to apply the patch for a try job."""
     if not branch:
       branch = GIT.GetUpstream(cwd)
-    command = ['diff-tree', '-p', '--no-prefix', branch, 'HEAD']
+    command = ['diff-tree', '-p', '--no-prefix', branch, branch_head]
     if not full_move:
       command.append('-C')
+    # TODO(maruel): --binary support.
+    if files:
+      command.append('--')
+      command.extend(files)
     diff = GIT.Capture(command, cwd).splitlines(True)
     for i in range(len(diff)):
       # In the case of added files, replace /dev/null with the path to the
@@ -247,6 +252,14 @@ class GIT(object):
       if diff[i].startswith('--- /dev/null'):
         diff[i] = '--- %s' % diff[i+1][4:]
     return ''.join(diff)
+
+  @staticmethod
+  def GetDifferentFiles(cwd, branch=None, branch_head='HEAD'):
+    """Returns the list of modified files between two branches."""
+    if not branch:
+      branch = GIT.GetUpstream(cwd)
+    command = ['diff', '--name-only', branch, branch_head]
+    return GIT.Capture(command, cwd).splitlines(False)
 
   @staticmethod
   def GetPatchName(cwd):

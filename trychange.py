@@ -14,6 +14,7 @@ import logging
 import optparse
 import os
 import posixpath
+import re
 import shutil
 import sys
 import tempfile
@@ -174,11 +175,19 @@ class SVN(SCM):
     if not self.files:
       previous_cwd = os.getcwd()
       os.chdir(self.checkout_root)
+
       excluded = ['!', '?', 'X', ' ', '~']
-      self.files = [
-          f[1] for f in scm.SVN.CaptureStatus(self.checkout_root)
-          if f[0][0] not in excluded
-      ]
+      def Excluded(f):
+        if f[0][0] in excluded:
+          return True
+        for r in self.options.exclude:
+          if re.search(r, f[1]):
+            logging.info('Ignoring "%s"' % f[1])
+            return True
+        return False
+
+      self.files = [f[1] for f in scm.SVN.CaptureStatus(self.checkout_root)
+                    if not Excluded(f)]
       os.chdir(previous_cwd)
     return scm.SVN.GenerateDiff(self.files, self.checkout_root, full_move=True,
                                 revision=self.diff_against)
@@ -206,8 +215,20 @@ class GIT(SCM):
       return None
 
   def GenerateDiff(self):
-    # For now, ignores self.files
-    return scm.GIT.GenerateDiff(self.checkout_root, full_move=True,
+    if not self.files:
+      self.files = scm.GIT.GetDifferentFiles(self.checkout_root,
+                                             branch=self.diff_against)
+
+    def NotExcluded(f):
+      for r in self.options.exclude:
+        if re.search(r, f):
+          logging.info('Ignoring "%s"' % f)
+          return False
+      return True
+
+    self.files = filter(NotExcluded, self.files)
+    return scm.GIT.GenerateDiff(self.checkout_root, files=self.files,
+                                full_move=True,
                                 branch=self.diff_against)
 
 
@@ -489,13 +510,16 @@ def TryChange(argv,
   try:
     group.add_option("--webkit", action="append_const",
                      const="third_party/WebKit",
-                     dest="sub_rep",
+                     dest="PATH",
                      help="Shorthand for -s third_party/WebKit")
   except optparse.OptionError:
     # append_const is not supported on 2.4. Too bad.
     pass
   group.add_option("--no_gclient", action="store_true",
                    help="Disable automatic search for gclient checkout.")
+  group.add_option("-E", "--exclude", action="append",
+                   default=['ChangeLog'], metavar='REGEXP',
+                   help="Regexp patterns to exclude files. Default: %default")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Access the try server by HTTP")

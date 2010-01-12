@@ -33,6 +33,7 @@ class TryChangeTestsBase(SuperMoxTestBase):
     self.options.diff = None
     self.options.name = None
     self.options.email = None
+    self.options.exclude = []
 
 
 class TryChangeUnittest(TryChangeTestsBase):
@@ -43,7 +44,7 @@ class TryChangeUnittest(TryChangeTestsBase):
       'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PrintSuccess',
       'SCM', 'SVN', 'TryChange', 'USAGE',
       'breakpad', 'datetime', 'errno', 'gclient_utils', 'getpass', 'logging',
-      'optparse', 'os', 'posixpath', 'scm', 'shutil', 'sys', 'tempfile',
+      'optparse', 'os', 'posixpath', 're', 'scm', 'shutil', 'sys', 'tempfile',
       'urllib',
     ]
     # If this test fails, you should add the relevant test.
@@ -90,6 +91,7 @@ class GITUnittest(TryChangeTestsBase):
     trychange.scm.GIT.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.GIT.GenerateDiff(self.fake_root,
                                    full_move=True,
+                                   files=['foo.txt', 'bar.txt'],
                                    branch=None).AndReturn('A diff')
     trychange.scm.GIT.GetPatchName(self.fake_root).AndReturn('bleh-1233')
     trychange.scm.GIT.GetEmail(self.fake_root).AndReturn('georges@example.com')

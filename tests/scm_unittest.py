@@ -118,7 +118,7 @@ from :3
     members = [
         'COMMAND', 'Capture', 'CaptureStatus', 'FetchUpstreamTuple',
         'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
-        'GetEmail', 'GetPatchName', 'GetSVNBranch',
+        'GetDifferentFiles', 'GetEmail', 'GetPatchName', 'GetSVNBranch',
         'GetUpstream', 'IsGitSvn', 'RunAndFilterOutput', 'ShortBranchName',
     ]
     # If this test fails, you should add the relevant test.
