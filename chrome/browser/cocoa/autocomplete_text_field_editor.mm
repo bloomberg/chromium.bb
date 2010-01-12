@@ -99,8 +99,9 @@ class Extension;
   NSPoint location = [self convertPoint:[event locationInWindow] fromView:nil];
 
   // Was the right click within a Page Action? Show a different menu if so.
-  NSRect bounds([[self delegate] bounds]);
-  AutocompleteTextFieldCell* cell = [[self delegate] autocompleteTextFieldCell];
+  AutocompleteTextField* field = (AutocompleteTextField*)[self delegate];
+  NSRect bounds([field bounds]);
+  AutocompleteTextFieldCell* cell = [field autocompleteTextFieldCell];
   const size_t pageActionCount = [cell pageActionCount];
   BOOL flipped = [self isFlipped];
   Browser* browser = BrowserList::GetLastActive();

@@ -290,7 +290,7 @@
 }
 
 - (NSMenu*)menu {
-  return [[self delegate] menu];
+  return [(BookmarkGroupsController*)[self delegate] menu];
 }
 
 @end

@@ -357,7 +357,7 @@
 }
 
 - (NSMenu*)menu {
-  return [[self delegate] menu];
+  return [(BookmarkTreeController*)[self delegate] menu];
 }
 
 @end
