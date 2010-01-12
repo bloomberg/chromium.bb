@@ -415,6 +415,8 @@ void WebPluginDelegateImpl::SetFocus() {
 void WebPluginDelegateImpl::UpdateWindowLocation(const WebMouseEvent& event) {
   last_window_x_offset_ = event.globalX - event.windowX;
   last_window_y_offset_ = event.globalY - event.windowY;
+  last_mouse_x_ = event.globalX;
+  last_mouse_y_ = event.globalY;
 
   instance_->set_plugin_origin(gfx::Point(event.globalX - event.x,
                                           event.globalY - event.y));
@@ -564,6 +566,7 @@ static bool NPEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
 
 static bool NPEventFromWebInputEvent(const WebInputEvent& event,
                                      NPEvent* np_event) {
+  np_event->when = TickCount();
   if (WebInputEventIsWebMouseEvent(event)) {
     return NPEventFromWebMouseEvent(*static_cast<const WebMouseEvent*>(&event),
                                     np_event);
@@ -689,66 +692,61 @@ static bool NPCocoaEventFromWebInputEvent(const WebInputEvent& event,
 
 bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
                                              WebCursorInfo* cursor) {
-#ifndef NP_NO_CARBON
-  // If we somehow get an event before we've set up the plugin window, bail.
-  if (instance()->event_model() == NPEventModelCarbon &&
-      !cg_context_.context)
-    return false;
-#endif
   DCHECK(windowless_) << "events should only be received in windowless mode";
   DCHECK(cursor != NULL);
 
-#ifndef NP_NO_CARBON
-  NPEvent np_event = {0};
-  if (!NPEventFromWebInputEvent(event, &np_event)) {
-    LOG(WARNING) << "NPEventFromWebInputEvent failed";
-    return false;
-  }
-  np_event.when = TickCount();
-  if (WebInputEventIsWebMouseEvent(event)) {
-    // Make sure our dummy window has the correct location before we send the
-    // event to the plugin, so that any coordinate conversion the plugin does
-    // will work out.
-    const WebMouseEvent* mouse_event =
-        static_cast<const WebMouseEvent*>(&event);
-    UpdateWindowLocation(*mouse_event);
-  }
-  if (np_event.what == nullEvent) {
-    last_mouse_x_ = np_event.where.h;
-    last_mouse_y_ = np_event.where.v;
-    if (instance()->event_model() == NPEventModelCarbon)
-      return true;  // Let the recurring task actually send the event.
-  } else {
-    // if we do not currently have focus and this is a mouseDown, trigger a
-    // notification that we are taking the keyboard focus.  We can't just key
-    // off of incoming calls to SetFocus, since WebKit may already think we
-    // have it if we were the most recently focused element on our parent tab.
-    if (np_event.what == mouseDown && !have_focus_)
-      SetFocus();
-  }
-#endif
+  // if we do not currently have focus and this is a mouseDown, trigger a
+  // notification that we are taking the keyboard focus.  We can't just key
+  // off of incoming calls to SetFocus, since WebKit may already think we
+  // have it if we were the most recently focused element on our parent tab.
+  if (event.type == WebInputEvent::MouseDown && !have_focus_)
+    SetFocus();
 
-  bool ret = false;
-  switch (instance()->drawing_model()) {
+#ifndef NP_NO_CARBON
+  if (instance()->event_model() == NPEventModelCarbon) {
+    // If we somehow get an event before we've set up the plugin window, bail.
+    if (!cg_context_.context)
+      return false;
+
+    if (WebInputEventIsWebMouseEvent(event)) {
+      // Make sure our dummy window has the correct location before we send the
+      // event to the plugin, so that any coordinate conversion the plugin does
+      // will work out.
+      const WebMouseEvent* mouse_event =
+          static_cast<const WebMouseEvent*>(&event);
+      UpdateWindowLocation(*mouse_event);
+
+      if (event.type == WebInputEvent::MouseMove) {
+        return true;  // The recurring OnNull will send null events.
+      }
+    }
+
+    switch (instance()->drawing_model()) {
 #ifndef NP_NO_QUICKDRAW
-    case NPDrawingModelQuickDraw:
-      SetPort(qd_port_.port);
-      break;
+      case NPDrawingModelQuickDraw:
+        SetPort(qd_port_.port);
+        break;
 #endif
-    case NPDrawingModelCoreGraphics:
-#ifndef NP_NO_CARBON
-      if (instance()->event_model() == NPEventModelCarbon)
+      case NPDrawingModelCoreGraphics:
         CGContextSaveGState(cg_context_.context);
-#endif
-      break;
+        break;
+    }
   }
+#endif
 
+  // Create the plugin event structure, and send it to the plugin.
+  bool ret = false;
   switch (instance()->event_model()) {
 #ifndef NP_NO_CARBON
-    case NPEventModelCarbon:
-      // Send the event to the plugin.
+    case NPEventModelCarbon: {
+      NPEvent np_event = {0};
+      if (!NPEventFromWebInputEvent(event, &np_event)) {
+        LOG(WARNING) << "NPEventFromWebInputEvent failed";
+        return false;
+      }
       ret = instance()->NPP_HandleEvent(&np_event) != 0;
       break;
+    }
 #endif
     case NPEventModelCocoa: {
       NPCocoaEvent np_cocoa_event;
