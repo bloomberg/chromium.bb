@@ -291,7 +291,6 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
 }
 
 bool BrowserThemePack::WriteToDisk(FilePath path) const {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   // Add resources for each of the property arrays.
   RawDataForWriting resources;
   resources[kHeaderID] = base::StringPiece(
@@ -819,7 +818,6 @@ void BrowserThemePack::GenerateTabBackgroundImages(ImageCache* bitmaps) const {
 
 void BrowserThemePack::RepackImages(const ImageCache& images,
                                     RawImages* reencoded_images) const {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   for (ImageCache::const_iterator it = images.begin();
        it != images.end(); ++it) {
     std::vector<unsigned char> image_data;
@@ -847,7 +845,6 @@ void BrowserThemePack::MergeImageCaches(
 
 void BrowserThemePack::AddRawImagesTo(const RawImages& images,
                                       RawDataForWriting* out) const {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   for (RawImages::const_iterator it = images.begin(); it != images.end();
        ++it) {
     (*out)[it->first] = base::StringPiece(

@@ -273,7 +273,7 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   DCHECK(extension);
   DCHECK(extension->IsTheme());
 
-  BuildFromExtension(extension);
+  BuildFromExtension(extension, false);
   SaveThemeID(extension->id());
 
   NotifyThemeChanged();
@@ -522,9 +522,7 @@ void BrowserThemeProvider::LoadThemePrefs() {
       if (service) {
         Extension* extension = service->GetExtensionById(current_id, false);
         if (extension) {
-          DLOG(ERROR) << "Migrating theme";
-          BuildFromExtension(extension);
-          UserMetrics::RecordAction("Themes.Migrated", profile_);
+          MigrateTheme(extension, extension->name());
         } else {
           DLOG(ERROR) << "Theme is mysteriously gone.";
           ClearAllThemeData();
@@ -558,7 +556,19 @@ void BrowserThemeProvider::SaveThemeID(const std::string& id) {
   profile_->GetPrefs()->SetString(prefs::kCurrentThemeID, UTF8ToWide(id));
 }
 
-void BrowserThemeProvider::BuildFromExtension(Extension* extension) {
+void BrowserThemeProvider::MigrateTheme(Extension* extension,
+                                        const std::string& name) {
+  // TODO(erg): Remove this hack.
+  //
+  // This is a hack to force the name of the theme into the stack
+  // frame. Hopefully.
+  BuildFromExtension(extension, true);
+  UserMetrics::RecordAction("Themes.Migrated", profile_);
+  LOG(ERROR) << "Migrating theme: " << name;
+}
+
+void BrowserThemeProvider::BuildFromExtension(Extension* extension,
+                                              bool synchronously) {
   scoped_refptr<BrowserThemePack> pack =
       BrowserThemePack::BuildFromExtension(extension);
   if (!pack.get()) {
@@ -568,8 +578,16 @@ void BrowserThemeProvider::BuildFromExtension(Extension* extension) {
 
   // Write the packed file to disk.
   FilePath pack_path = extension->path().Append(chrome::kThemePackFilename);
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-                         new WritePackToDiskTask(pack, pack_path));
+  if (synchronously) {
+    // Write to disk sychronously because we don't have a message loop yet.
+    if (!pack->WriteToDisk(pack_path)) {
+      NOTREACHED() << "Could not write theme pack to disk";
+    }
+  } else {
+    // Post a task to write to disk since we have a message loop to post from.
+    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+                           new WritePackToDiskTask(pack, pack_path));
+  }
 
   SavePackName(pack_path);
   theme_pack_ = pack;

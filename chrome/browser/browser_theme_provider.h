@@ -197,9 +197,20 @@ class BrowserThemeProvider : public NonThreadSafe,
   // Save the id of the last theme installed.
   void SaveThemeID(const std::string& id);
 
+  // A temporary hack to force |name| onto the stack to see if a
+  // certain theme is causing all these crashes in case my speculative
+  // fix doesn't do it.
+  void MigrateTheme(Extension* extension, const std::string& name);
+
   // Implementation of SetTheme() (and the fallback from LoadThemePrefs() in
-  // case we don't have a theme pack).
-  void BuildFromExtension(Extension* extension);
+  // case we don't have a theme pack). We specify |synchronously| because of
+  // a potential data race. BuildFromExtension() is called during startup and
+  // will be called before we have a message loop instantiated on the main
+  // UI thread. Therefore, we can't post tasks FROM the UI thread. We'll work
+  // synchronously during theme upgrades and missing theme paks, and will shunt
+  // encoding and disk writing work onto the other thread when we can't post
+  // tasks.
+  void BuildFromExtension(Extension* extension, bool synchronously);
 
   // Remove preference values for themes that are no longer in use.
   void RemoveUnusedThemes();
