@@ -30,17 +30,111 @@
  */
 
 
+#include "config.h"
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <xf86drm.h>
+#include <string.h>
+#include <unistd.h>
+
 #include <sys/stat.h>
 
 #include "internal.h"
 
+#define PATH_SIZE 512
+
+static int
+linux_name_from_sysfs(int fd, char **out)
+{
+	char path[PATH_SIZE+1] = ""; /* initialize to please valgrind */
+	char link[PATH_SIZE+1] = "";
+	struct stat buffer;
+	unsigned maj, min;
+	char* slash_name;
+	int ret;
+
+	/* 
+	 * Inside the sysfs directory for the device there is a symlink
+	 * to the directory representing the driver module, that path
+	 * happens to hold the name of the driver.
+	 *
+	 * So lets get the symlink for the drm device. Then read the link
+	 * and filter out the last directory which happens to be the name
+	 * of the driver, which we can use to load the correct interface.
+	 *
+	 * Thanks to Ray Strode of Plymouth for the code.
+	 */
+
+	ret = fstat(fd, &buffer);
+	if (ret)
+		return ret;
+
+	if (!S_ISCHR(buffer.st_mode))
+		return -EINVAL;
+
+	maj = major(buffer.st_rdev);
+	min = minor(buffer.st_rdev);
+
+	snprintf(path, PATH_SIZE, "/sys/dev/char/%d:%d/device/driver", maj, min);
+
+	if (readlink(path, link, PATH_SIZE) < 0)
+		return -EINVAL;
+
+	/* link looks something like this: ../../../bus/pci/drivers/intel */
+	slash_name = strrchr(link, '/');
+	if (!slash_name)
+		return -EINVAL;
+
+	/* copy name and at the same time remove the slash */
+	*out = strdup(slash_name + 1);
+	return 0;
+}
+
+static int
+linux_from_sysfs(int fd, struct kms_driver **out)
+{
+	char *name;
+	int ret;
+
+	ret = linux_name_from_sysfs(fd, &name);
+	if (ret)
+		return ret;
+
+	if (!strcmp(name, "intel"))
+		ret = intel_create(fd, out);
+#ifdef HAVE_VMWGFX
+	else if (!strcmp(name, "vmwgfx"))
+		ret = vmwgfx_create(fd, out);
+#endif
+	else
+		ret = -ENOSYS;
+
+	free(name);
+	return ret;
+}
+
+#if 0
 #define LIBUDEV_I_KNOW_THE_API_IS_SUBJECT_TO_CHANGE
 #include <libudev.h>
 
-int linux_get_pciid_from_fd(int fd, unsigned *vendor_id, unsigned *chip_id)
+struct create_record
+{
+	unsigned vendor;
+	unsigned chip;
+	int (*func)(int fd, struct kms_driver **out);
+};
+
+static struct create_record table[] = {
+	{ 0x8086, 0x2a42, intel_create }, /* i965 */
+#ifdef HAVE_VMWGFX
+	{ 0x15ad, 0x0405, vmwgfx_create }, /* VMware vGPU */
+#endif
+	{ 0, 0, NULL },
+};
+
+static int
+linux_get_pciid_from_fd(int fd, unsigned *vendor_id, unsigned *chip_id)
 {
 	struct udev *udev;
 	struct udev_device *device;
@@ -85,4 +179,37 @@ err_free_device:
 err_free_udev:
 	udev_unref(udev);
 	return -EINVAL;
+}
+
+static int
+linux_from_udev(int fd, struct kms_driver **out)
+{
+	unsigned vendor_id, chip_id;
+	int ret, i;
+
+	ret = linux_get_pciid_from_fd(fd, &vendor_id, &chip_id);
+	if (ret)
+		return ret;
+
+	for (i = 0; table[i].func; i++)
+		if (table[i].vendor == vendor_id && table[i].chip == chip_id)
+			return table[i].func(fd, out);
+
+	return -ENOSYS;
+}
+#else
+static int
+linux_from_udev(int fd, struct kms_driver **out)
+{
+	return -ENOSYS;
+}
+#endif
+
+int
+linux_create(int fd, struct kms_driver **out)
+{
+	if (!linux_from_udev(fd, out))
+		return 0;
+
+	return linux_from_sysfs(fd, out);
 }

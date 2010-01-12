@@ -62,7 +62,7 @@ struct kms_bo
 	unsigned handle;
 };
 
-int linux_get_pciid_from_fd(int fd, unsigned *vendor_id, unsigned *chip_id);
+int linux_create(int fd, struct kms_driver **out);
 
 int vmwgfx_create(int fd, struct kms_driver **out);
 
