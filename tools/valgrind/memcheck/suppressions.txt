@@ -1860,3 +1860,105 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+{
+   bug_32085
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIN21NotificationRegistrar6RecordEE8allocateEjPKv
+   fun:_ZNSt12_Vector_baseIN21NotificationRegistrar6RecordESaIS1_EE11_M_allocateEj
+   fun:_ZNSt6vectorIN21NotificationRegistrar6RecordESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_
+   fun:_ZNSt6vectorIN21NotificationRegistrar6RecordESaIS1_EE9push_backERKS1_
+   fun:_ZN21NotificationRegistrar3AddEP20NotificationObserver16NotificationTypeRK18NotificationSource
+   ...
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_ZN16MessageLoopForUI3RunEPN4base16MessagePumpForUI10DispatcherE
+}
+{
+   bug_32084
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12browser_sync8sessions18SyncSessionContextC1EPNS_23ServerConnectionManagerEPN8syncable16DirectoryManagerEPNS_15ModelSafeWorkerE
+   fun:_ZN8sync_api11SyncManager12SyncInternal4InitERK8FilePathRKSsiPKcS8_bPNS_23HttpPostProviderFactoryESA_PNS_24ModelSafeWorkerInterfaceEbS8_S6_
+   fun:_ZN8sync_api11SyncManager4InitERK8FilePathPKciS5_S5_bPNS_23HttpPostProviderFactoryES7_PNS_24ModelSafeWorkerInterfaceEbS5_S5_
+   fun:_ZN12browser_sync15SyncBackendHost4Core12DoInitializeERK4GURLPNS_19BookmarkModelWorkerEbPN8sync_api23HttpPostProviderFactoryES9_RKSs
+   fun:_Z16DispatchToMethodIN12browser_sync15SyncBackendHost4CoreEMS2_FvRK4GURLPNS0_19BookmarkModelWorkerEbPN8sync_api23HttpPostProviderFactoryESA_RKSsES3_S7_bPNS0_17HttpBridgeFactoryESG_SsEvPT_T0_RK6Tuple6IT1_T2_T3_T4_T5_T6_E
+   fun:_ZN14RunnableMethodIN12browser_sync15SyncBackendHost4CoreEMS2_FvRK4GURLPNS0_19BookmarkModelWorkerEbPN8sync_api23HttpPostProviderFactoryESA_RKSsE6Tuple6IS3_S7_bPNS0_17HttpBridgeFactoryESH_SsEE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_32088
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:error_get_my_stack
+   fun:nss_ClearErrorStack
+   fun:NSSArena_Create
+   fun:NSSTrustDomain_Create
+   fun:STAN_LoadDefaultNSS3TrustDomain
+   fun:nss_Init
+   fun:NSS_InitReadWrite
+   ...
+   fun:_ZN4base13EnsureNSSInitEv
+   fun:_ZN9TestSuite10InitializeEv
+   fun:_ZN15ChromeTestSuite10InitializeEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
+{
+   bug_32088
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:error_get_my_stack
+   fun:nss_ClearErrorStack
+   fun:NSSArena_Create
+   fun:nssCKFWInstance_Create
+   fun:NSSCKFWC_Initialize
+   fun:builtinsC_Initialize
+   fun:secmod_ModuleInit
+   fun:SECMOD_LoadPKCS11Module
+   fun:SECMOD_LoadModule
+   fun:SECMOD_LoadModule
+   fun:nss_Init
+   fun:NSS_InitReadWrite
+   ...
+   fun:_ZN4base13EnsureNSSInitEv
+   fun:_ZN9TestSuite10InitializeEv
+   fun:_ZN15ChromeTestSuite10InitializeEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
+{
+   bug_32089
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
+   ...
+   fun:_ZN10WorkerPool8PostTaskERKN15tracked_objects8LocationEP4Taskb
+   fun:_ZN3net16HostResolverImpl3Job5StartEv
+   fun:_ZN3net16HostResolverImpl7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListEP14CallbackRunnerI6Tuple1IiEEPPvPNS_7LoadLogE
+   fun:_ZN3net20MockHostResolverBase7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListEP14CallbackRunnerI6Tuple1IiEEPPvPNS_7LoadLogE
+   fun:_ZN3net25SingleRequestHostResolver7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
+   fun:_ZN18chrome_browser_net9DnsMaster13LookupRequest5StartEv
+   fun:_ZN18chrome_browser_net9DnsMaster26StartSomeQueuedResolutionsEv
+   fun:_ZN18chrome_browser_net9DnsMaster23AppendToResolutionQueueERKSsNS_11DnsHostInfo20ResolutionMotivationE
+   fun:_ZN18chrome_browser_net9DnsMaster11ResolveListERKSt6vectorISsSaISsEENS_11DnsHostInfo20ResolutionMotivationE
+   fun:_ZN18chrome_browser_net36DnsMasterTest_BenefitLookupTest_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
