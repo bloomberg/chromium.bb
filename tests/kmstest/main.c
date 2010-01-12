@@ -32,7 +32,7 @@
 #include "libkms.h"
 
 #define CHECK_RET_RETURN(ret, str) \
-	if (ret) { \
+	if (ret < 0) { \
 		printf("%s: %s (%s)\n", __func__, str, strerror(-ret)); \
 		return ret; \
 	}
@@ -56,13 +56,21 @@ int test_bo(struct kms_driver *kms)
 	return 0;
 }
 
+char *drivers[] = {
+	"i915",
+	"radeon",
+	"vmwgfx",
+	NULL
+};
+
 int main(int argc, char** argv)
 {
 	struct kms_driver *kms;
-	int ret, fd;
+	int ret, fd, i;
 
-	fd = drmOpen("i915", NULL);
-	CHECK_RET_RETURN(ret, "Could not open device");
+	for (i = 0, fd = -1; fd < 0 && drivers[i]; i++)
+		fd = drmOpen(drivers[i], NULL);
+	CHECK_RET_RETURN(fd, "Could not open device");
 
 	ret = kms_create(fd, &kms);
 	CHECK_RET_RETURN(ret, "Failed to create kms driver");
