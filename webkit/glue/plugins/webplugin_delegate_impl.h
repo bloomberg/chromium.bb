@@ -318,7 +318,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 
   // Updates the internal information about where the plugin is located on
   // the screen.
-  void UpdateWindowLocation(const WebKit::WebMouseEvent& event);
+  void UpdatePluginLocation(const WebKit::WebMouseEvent& event);
 
   // Moves our dummy window to the given offset relative to the last known
   // location of the real renderer window's content view.

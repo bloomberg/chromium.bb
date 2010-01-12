@@ -412,17 +412,21 @@ void WebPluginDelegateImpl::SetFocus() {
     FocusNotify(this);
 }
 
-void WebPluginDelegateImpl::UpdateWindowLocation(const WebMouseEvent& event) {
-  last_window_x_offset_ = event.globalX - event.windowX;
-  last_window_y_offset_ = event.globalY - event.windowY;
-  last_mouse_x_ = event.globalX;
-  last_mouse_y_ = event.globalY;
+void WebPluginDelegateImpl::UpdatePluginLocation(const WebMouseEvent& event) {
+  instance()->set_plugin_origin(gfx::Point(event.globalX - event.x,
+                                           event.globalY - event.y));
 
-  instance_->set_plugin_origin(gfx::Point(event.globalX - event.x,
-                                          event.globalY - event.y));
+#ifndef NP_NO_CARBON
+  if (instance()->event_model() == NPEventModelCarbon) {
+    last_window_x_offset_ = event.globalX - event.windowX;
+    last_window_y_offset_ = event.globalY - event.windowY;
+    last_mouse_x_ = event.globalX;
+    last_mouse_y_ = event.globalY;
 
-  UpdateDummyWindowBoundsWithOffset(event.windowX - event.x,
-                                    event.windowY - event.y, 0, 0);
+    UpdateDummyWindowBoundsWithOffset(event.windowX - event.x,
+                                      event.windowY - event.y, 0, 0);
+  }
+#endif
 }
 
 void WebPluginDelegateImpl::UpdateDummyWindowBoundsWithOffset(
@@ -702,23 +706,23 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   if (event.type == WebInputEvent::MouseDown && !have_focus_)
     SetFocus();
 
+  if (WebInputEventIsWebMouseEvent(event)) {
+    // Make sure we update our plugin location tracking before we send the
+    // event to the plugin, so that any coordinate conversion the plugin does
+    // will work out.
+    const WebMouseEvent* mouse_event =
+        static_cast<const WebMouseEvent*>(&event);
+    UpdatePluginLocation(*mouse_event);
+  }
+
 #ifndef NP_NO_CARBON
   if (instance()->event_model() == NPEventModelCarbon) {
     // If we somehow get an event before we've set up the plugin window, bail.
     if (!cg_context_.context)
       return false;
 
-    if (WebInputEventIsWebMouseEvent(event)) {
-      // Make sure our dummy window has the correct location before we send the
-      // event to the plugin, so that any coordinate conversion the plugin does
-      // will work out.
-      const WebMouseEvent* mouse_event =
-          static_cast<const WebMouseEvent*>(&event);
-      UpdateWindowLocation(*mouse_event);
-
-      if (event.type == WebInputEvent::MouseMove) {
-        return true;  // The recurring OnNull will send null events.
-      }
+    if (event.type == WebInputEvent::MouseMove) {
+      return true;  // The recurring OnNull will send null events.
     }
 
     switch (instance()->drawing_model()) {
