@@ -2608,10 +2608,6 @@ BUG24126 : LayoutTests/fast/dom/HTMLInputElement/size-attribute.html = FAIL
 // Started happening somewhere around http://trac.webkit.org/changeset/48989.
 BUG23955 LINUX MAC : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL
 
-// Possibly busted as part of http://trac.webkit.org/changeset/49003
-BUG23901 LINUX WIN DEBUG : LayoutTests/fast/box-shadow/inset.html = FAIL
-BUG23901 LINUX RELEASE : LayoutTests/fast/box-shadow/inset.html = FAIL
-BUG23901 SLOW WIN RELEASE : LayoutTests/fast/box-shadow/inset.html = FAIL
 
 // Fails since WebKit merge 49321:49372
 BUG24331 LINUX : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL
