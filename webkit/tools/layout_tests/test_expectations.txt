@@ -862,9 +862,6 @@ BUG28183 WIN LINUX : LayoutTests/fast/repaint/list-marker.html = IMAGE
 
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
-//also BUG24863
-BUG9071 WIN : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL
-BUG9071 LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL
 
 // Flaky: fails about 5% of the time.
 BUG31342 WIN RELEASE : LayoutTests/security/block-test-no-port.html = TEXT PASS
