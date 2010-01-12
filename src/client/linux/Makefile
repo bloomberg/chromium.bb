@@ -27,8 +27,9 @@ LIB_CC_SRC=handler/exception_handler.cc \
 	   minidump_writer/linux_dumper.cc \
 	   minidump_writer/minidump_writer.cc \
 	   ../minidump_file_writer.cc \
-	   ../../common/string_conversion.cc \
-	   ../../common/linux/guid_creator.cc
+           ../../common/linux/file_id.cc \
+	   ../../common/linux/guid_creator.cc \
+	   ../../common/string_conversion.cc
 LIB_C_SRC = ../../common/convert_UTF.c
 LIB_CC_OBJ=$(patsubst %.cc, $(OBJ_DIR)/%.o,$(LIB_CC_SRC))
 LIB_C_OBJ=$(patsubst %.c, $(OBJ_DIR)/%.o, $(LIB_C_SRC))
@@ -39,7 +40,6 @@ TEST_CC_SRC=handler/exception_handler_unittest.cc \
 	    minidump_writer/line_reader_unittest.cc \
 	    minidump_writer/linux_dumper_unittest.cc \
 	    minidump_writer/minidump_writer_unittest.cc \
-	    ../../common/linux/file_id.cc \
 	    $(GOOGLETEST_CC_SRC)
 
 TEST_CC_OBJ=$(patsubst %.cc, $(OBJ_DIR)/%.o,$(TEST_CC_SRC))
