@@ -245,7 +245,7 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
 
     HttpNegotiatePatch::Initialize();
 
-    bool patch_protocol = GetConfigBool(false, kPatchProtocols);
+    bool patch_protocol = GetConfigBool(true, kPatchProtocols);
     if (patch_protocol) {
       ProtocolSinkWrap::PatchProtocolHandlers();
       state_ = PATCH_PROTOCOL;
