@@ -74,6 +74,7 @@ class PyWebSocket(http_server.Lighttpd):
     else:
       self._server_name = 'PyWebSocket'
     self._pidfile = pidfile
+    self._wsout = None
 
     # Webkit tests
     if self._root:
