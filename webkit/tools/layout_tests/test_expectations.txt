@@ -1196,10 +1196,6 @@ BUG3273 : LayoutTests/editing/selection/mixed-editability-10.html = FAIL
 // Regression from the 41362:41402 merge.
 BUG8402 MAC : LayoutTests/fast/forms/drag-out-of-textarea.html = FAIL
 
-// These tests are flaky as of 2009/06/09. Need to investigate.
-
-// <body><canvas height=100></canvas></body> is 1 px taller than upstream.
-BUG13809 WIN LINUX : LayoutTests/fast/canvas/canvas-empty-image-pattern.html = FAIL
 
 // GURL doesn't handle switching from standard URL to path URL correctly
 BUG27914 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
