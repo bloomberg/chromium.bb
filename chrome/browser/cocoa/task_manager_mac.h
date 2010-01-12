@@ -9,18 +9,21 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/task_manager.h"
 
+class TaskManagerMac;
+
 // This class is responsible for loading the task manager window and for
 // managing it.
 @interface TaskManagerWindowController : NSWindowController {
  @private
   IBOutlet NSTableView* tableView_;
   IBOutlet NSButton* endProcessButton_;
+  TaskManagerMac* taskManagerObserver_;  // weak
   TaskManager* taskManager_;  // weak
   TaskManagerModel* model_;  // weak
 }
 
 // Creates and shows the task manager's window.
-- (id)initWithTaskManager:(TaskManager*)taskManager;
+- (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver;
 
 // Refreshes all data in the task manager table.
 - (void)reloadData;
@@ -47,19 +50,27 @@ class TaskManagerMac : public TaskManagerModelObserver {
   virtual void OnItemsAdded(int start, int length);
   virtual void OnItemsRemoved(int start, int length);
 
+  // Called by the cocoa window controller when its window closes and the
+  // controller destroyed itself. Informs the model to stop updating.
+  void WindowWasClosed();
+
   // Creates the task manager if it doesn't exist; otherwise, it activates the
   // existing task manager window.
   static void Show();
 
+  // Returns the TaskManager observed by |this|.
+  TaskManager* task_manager() { return task_manager_; }
+
  private:
   // The task manager.
-  TaskManager* task_manager_;  // weak
+   TaskManager* const task_manager_;  // weak
 
   // Our model.
-  TaskManagerModel* model_;  // weak
+  TaskManagerModel* const model_;  // weak
 
-  // Controller of our window.
-  scoped_nsobject<TaskManagerWindowController> window_controller_;
+  // Controller of our window, destroys itself when the task manager window
+  // is closed.
+  TaskManagerWindowController* window_controller_;  // weak
 
   // An open task manager window. There can only be one open at a time. This
   // is reset to NULL when the window is closed.

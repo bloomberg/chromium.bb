@@ -15,10 +15,8 @@
 // TODO(thakis): Autoremember window size/pos (and selected columns?)
 // TODO(thakis): Column sort comparator
 // TODO(thakis): Clicking column header doesn't sort
-// TODO(thakis): On window close, stop updating
 // TODO(thakis): Favicons in rows
 // TODO(thakis): Default sort column
-// TODO(thakis): Metrics for all processes except browser process are missing.
 
 @interface TaskManagerWindowController (Private)
 - (void)addColumnWithId:(int)columnId visible:(BOOL)isVisible;
@@ -33,12 +31,13 @@
 
 @implementation TaskManagerWindowController
 
-- (id)initWithTaskManager:(TaskManager*)taskManager {
+- (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver {
   NSString* nibpath = [mac_util::MainAppBundle()
                         pathForResource:@"TaskManager"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
-    taskManager_ = taskManager;
+    taskManagerObserver_ = taskManagerObserver;
+    taskManager_ = taskManagerObserver_->task_manager();
     model_ = taskManager_->model();
     [[self window] makeKeyAndOrderFront:self];
   }
@@ -175,6 +174,17 @@
   [self adjustEndProcessButton];
 }
 
+// Called when the window is being closed. Send out a notification that the user
+// is done editing preferences. Make sure there are no pending field editors
+// by clearing the first responder.
+- (void)windowWillClose:(NSNotification*)notification {
+  if (taskManagerObserver_) {
+    taskManagerObserver_->WindowWasClosed();
+    taskManagerObserver_ = nil;
+  }
+  [self autorelease];
+}
+
 @end
 
 @implementation TaskManagerWindowController (NSTableDataSource)
@@ -259,8 +269,8 @@
 TaskManagerMac::TaskManagerMac()
   : task_manager_(TaskManager::GetInstance()),
     model_(TaskManager::GetInstance()->model()) {
-  window_controller_.reset(
-      [[TaskManagerWindowController alloc] initWithTaskManager:task_manager_]);
+  window_controller_ =
+      [[TaskManagerWindowController alloc] initWithTaskManagerObserver:this];
   model_->AddObserver(this);
 }
 
@@ -276,23 +286,28 @@ TaskManagerMac::~TaskManagerMac() {
 // TaskManagerMac, TaskManagerModelObserver implementation:
 
 void TaskManagerMac::OnModelChanged() {
-  [window_controller_.get() reloadData];
+  [window_controller_ reloadData];
 }
 
 void TaskManagerMac::OnItemsChanged(int start, int length) {
-  [window_controller_.get() reloadData];
+  [window_controller_ reloadData];
 }
 
 void TaskManagerMac::OnItemsAdded(int start, int length) {
-  [window_controller_.get() reloadData];
+  [window_controller_ reloadData];
 }
 
 void TaskManagerMac::OnItemsRemoved(int start, int length) {
-  [window_controller_.get() reloadData];
+  [window_controller_ reloadData];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerMac, public:
+
+void TaskManagerMac::WindowWasClosed() {
+  delete this;
+  instance_ = NULL;
+}
 
 // static
 void TaskManagerMac::Show() {
