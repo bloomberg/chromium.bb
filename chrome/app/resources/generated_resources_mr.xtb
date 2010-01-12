@@ -50,6 +50,7 @@
 <translation id="9154072353677278078"><ph name="REALM"/> वरील सर्व्हर <ph name="DOMAIN"/> साठी वापरकर्तानाव आणि संकेतशब्द आवश्यक आहेत.</translation>
 <translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; येथील वेबसाइट “फिशिंग” साइट म्हणून नोंदवली गेली आहे.  फिशिंग साइट युक्तीने वापरकर्त्यांची वैयक्तिक किंवा आर्थिक माहिती काढून घेण्यासाठी अनेकदा विश्वसनीय संस्था, जसे की बँक इ. चे प्रतिनिधी असल्याची बतावणी करतात.</translation>
 <translation id="8178665534778830238">सामग्री:</translation>
+<translation id="1379170046778889619">सुरक्षितता माहिती</translation>
 <translation id="4771019161370731727">अलीकडील क्रियाकलाप</translation>
 <translation id="8974161578568356045">स्वयं तपासणी</translation>
 <translation id="1818606096021558659">पृष्ठ</translation>
@@ -860,6 +861,7 @@
 <translation id="3127919023693423797">प्रमाणीकरण करीत आहे...</translation>
 <translation id="4195643157523330669">नवीन विंडोमध्ये उघडा</translation>
 <translation id="8030169304546394654">डिस्कनेक्ट केलेले</translation>
+<translation id="3683878911947678690">आपण आपले Google  खाते वापरून विविध संगणकांवर आपले बुकमार्क समक्रमित करू शकता</translation>
 <translation id="4178055285485194276">स्टार्टअप वर:</translation>
 <translation id="1154228249304313899">हे पृष्ठ उघडा:</translation>
 <translation id="9074348188580488499">आपली खात्री आहे की आपण सर्व संकेतशब्द काढू इच्छिता?</translation>
@@ -985,6 +987,7 @@
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="345693547134384690">नवीन विंडोमध्ये &amp;प्रतिमा उघडा</translation>
 <translation id="7422192691352527311">प्राधान्ये...</translation>
+<translation id="7220379225958650049">त्वरित प्रारंभ करा</translation>
 <translation id="1375198122581997741">आवृत्तीबद्दल</translation>
 <translation id="1474307029659222435">फ्रेम नवीन &amp;विंडोमध्ये उघडा</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/> वर समक्रमित\nअंतिम समक्रमण: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1335,6 +1338,7 @@
 की फाइल: <ph name="KEY_FILE"/>
 
 आपली की फाइल  एका सुरक्षित ठिकाणी ठेवा. आपल्या विस्ताराच्या नवीन आवृत्या तयार करण्यासाठी आपल्‍याला त्याची आवश्यकता असेल.</translation>
+<translation id="4477534650265381513">द्रुत प्रवेशासाठी, कृपया आपले बुकमार्क येथे बुकमार्क बारमध्ये ठेवा.</translation>
 <translation id="3036649622769666520">फायली उघडा</translation>
 <translation id="7909652923456235549">कुकीज पाठविल्या नाहीत</translation>
 <translation id="7685049629764448582">JavaScript मेमरी</translation>

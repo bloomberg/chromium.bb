@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">يتطلب الخادم <ph name="DOMAIN"/> في <ph name="REALM"/> اسم مستخدم وكلمة مرور.</translation>
 <translation id="2193841602817119749">لقد تمّ الإبلاغ عن موقع &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; بوصفه موقع &quot;تصيّد&quot;. ومواقع التصيّد هي مواقع تحاول تضليل المستخدمين عن طريق حثّهم على الكشف عن معلومات شخصية أو مالية مدّعيةً تمثيل مؤسسات موثوق بها، مثل المصارف.</translation>
 <translation id="8178665534778830238">المحتوى:</translation>
+<translation id="1379170046778889619">معلومات  الأمن</translation>
 <translation id="4771019161370731727">الأنشطة الحديثة</translation>
 <translation id="8974161578568356045">اكتشاف تلقائي</translation>
 <translation id="1818606096021558659">الصفحة</translation>
@@ -859,6 +860,7 @@
 <translation id="3127919023693423797">جارٍ المصادقة...</translation>
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="8030169304546394654">غير متصل</translation>
+<translation id="3683878911947678690">يمكنك مزامنة إشاراتك عبر أجهزة الكمبيوتر باستخدام حساب Google</translation>
 <translation id="4178055285485194276">عند بدء التشغيل:</translation>
 <translation id="1154228249304313899">فتح هذه الصفحة:</translation>
 <translation id="9074348188580488499">هل تريد بالتأكيد إزالة جميع كلمات المرور؟</translation>
@@ -984,6 +986,7 @@
 <translation id="8261506727792406068">حذف</translation>
 <translation id="345693547134384690">فتح &amp;الصورة في علامة تبويب جديدة</translation>
 <translation id="7422192691352527311">التفضيلات...</translation>
+<translation id="7220379225958650049">البدء الآن</translation>
 <translation id="1375198122581997741">معلومات عن الإصدار</translation>
 <translation id="1474307029659222435">&amp;فتح الإطار في نافذة جديدة</translation>
 <translation id="7133850061938542637">تمت مزامنة الحساب مع <ph name="USER_EMAIL_ADDRESS"/>\nتاريخ آخر مزامنة: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1335,6 +1338,7 @@
 ملف المفتاح: <ph name="KEY_FILE"/>
 
 احتفظ بملف المفتاح في مكان آمن، حيث ستحتاج إليه لإنشاء إصدارات جديدة من إضافتك.</translation>
+<translation id="4477534650265381513">ضع الإشارات هنا في شريط الإشارات لسرعة الوصول إليها.</translation>
 <translation id="3036649622769666520">فتح الملفات</translation>
 <translation id="7909652923456235549">لم يتم إرسال ملفات تعريف الارتباط</translation>
 <translation id="7685049629764448582">ذاكرة جافا سكريبت</translation>

@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Le serveur <ph name="DOMAIN"/> à l'adresse <ph name="REALM"/> requiert un nom d'utilisateur et un mot de passe.</translation>
 <translation id="2193841602817119749">Le site Web à l'adresse &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; a été signalé comme étant un site de &quot;phishing&quot;. Les sites de phishing incitent les internautes à divulguer leurs informations personnelles en se faisant passer pour des institutions de confiance, telles que des banques.</translation>
 <translation id="8178665534778830238">Contenu :</translation>
+<translation id="1379170046778889619">Informations sur la sécurité</translation>
 <translation id="4771019161370731727">Activités récentes</translation>
 <translation id="8974161578568356045">Détecter automatiquement</translation>
 <translation id="1818606096021558659">Page</translation>
@@ -849,6 +850,7 @@
 <translation id="3127919023693423797">Authentification en cours...</translation>
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
 <translation id="8030169304546394654">Déconnecté</translation>
+<translation id="3683878911947678690">Vous pouvez effectuer la synchronisation des favoris entre différents ordinateurs par le biais de votre compte Google.</translation>
 <translation id="4178055285485194276">Au démarrage :</translation>
 <translation id="1154228249304313899">Ouvrir cette page :</translation>
 <translation id="9074348188580488499">Voulez-vous vraiment supprimer tous les mots de passe ?</translation>
@@ -974,6 +976,7 @@
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="345693547134384690">Ouvrir l'&amp;image dans un nouvel onglet</translation>
 <translation id="7422192691352527311">Préférences...</translation>
+<translation id="7220379225958650049">Commencer maintenant</translation>
 <translation id="1375198122581997741">À propos de la version</translation>
 <translation id="1474307029659222435">Ouvrir le cadre dans une nouvelle &amp;fenêtre</translation>
 <translation id="7133850061938542637">Synchronisation avec <ph name="USER_EMAIL_ADDRESS"/> effectuée.\nDernière synchronisation : <ph name="LAST_SYNC_TIME"/></translation>
@@ -1325,6 +1328,7 @@ Extension : <ph name="EXTENSION_FILE"/>
 Fichier de clé : <ph name="KEY_FILE"/>
 
 Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la création de nouvelles versions de l'extension.</translation>
+<translation id="4477534650265381513">Mettez vos favoris dans la barre de favoris afin d'y accéder rapidement.</translation>
 <translation id="3036649622769666520">Ouvrir les fichiers</translation>
 <translation id="7909652923456235549">Les cookies n'ont pas été envoyés.</translation>
 <translation id="7685049629764448582">Mémoire JavaScript </translation>

@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Voor de server <ph name="DOMAIN"/> op <ph name="REALM"/> zijn een gebruikersnaam en wachtwoord nodig.</translation>
 <translation id="2193841602817119749">De website op &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; is volgens meldingen een phishingsite. Phishingsites proberen gebruikers persoonlijke of financiële gegevens te laten opgeven, vaak door zich voor te doen als betrouwbare instellingen, zoals banken.</translation>
 <translation id="8178665534778830238">Inhoud:</translation>
+<translation id="1379170046778889619">Beveiligingsgegevens</translation>
 <translation id="4771019161370731727">Recente activiteiten</translation>
 <translation id="8974161578568356045">Automatisch detecteren</translation>
 <translation id="1818606096021558659">Pagina</translation>
@@ -853,6 +854,7 @@
 <translation id="3127919023693423797">Verifiëren...</translation>
 <translation id="4195643157523330669">Openen op nieuw tabblad</translation>
 <translation id="8030169304546394654">Verbinding verbroken</translation>
+<translation id="3683878911947678690">Met uw Google-account kunt u bladwijzers synchroniseren tussen computers</translation>
 <translation id="4178055285485194276">Wanneer Google Chrome start:</translation>
 <translation id="1154228249304313899">Deze pagina openen:</translation>
 <translation id="9074348188580488499">Weet u zeker dat u alle wachtwoorden wilt verwijderen?</translation>
@@ -978,6 +980,7 @@
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="345693547134384690">&amp;Afbeelding openen in nieuw tabblad</translation>
 <translation id="7422192691352527311">Voorkeuren...</translation>
+<translation id="7220379225958650049">Nu starten</translation>
 <translation id="1375198122581997741">Over deze versie</translation>
 <translation id="1474307029659222435">&amp;Frame openen in nieuw venster</translation>
 <translation id="7133850061938542637">Gesynchroniseerd met <ph name="USER_EMAIL_ADDRESS"/>\nLaatste synchronisatie: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1329,6 +1332,7 @@ Extensie: <ph name="EXTENSION_FILE"/>
 Sleutelbestand: <ph name="KEY_FILE"/>
 
 Bewaar uw sleutelbestand op een veilige plaats. U heeft het bestand nodig om nieuwe versies van uw extensie te maken.</translation>
+<translation id="4477534650265381513">Plaats voor een snelle navigatie uw bladwijzers in deze bladwijzerbalk.</translation>
 <translation id="3036649622769666520">Bestanden openen</translation>
 <translation id="7909652923456235549">De cookies zijn niet verzonden</translation>
 <translation id="7685049629764448582">JavaScript-geheugen</translation>

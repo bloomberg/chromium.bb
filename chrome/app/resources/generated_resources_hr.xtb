@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Poslužitelj <ph name="DOMAIN"/> na području <ph name="REALM"/> zahtijeva korisničko ime i zaporku.</translation>
 <translation id="2193841602817119749">Web lokacija na domeni &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; prijavljena je kao lokacija &quot;za krađu identiteta&quot;.  Web lokacije za krađu identiteta prevarom navode korisnika na otkrivanje osobnih ili financijskih podataka, a često se predstavljaju kao pouzdane institucije, kao što su banke.</translation>
 <translation id="8178665534778830238">Sadržaj:</translation>
+<translation id="1379170046778889619">Sigurnosne informacije</translation>
 <translation id="4771019161370731727">Nedavne aktivnosti</translation>
 <translation id="8974161578568356045">Automatsko otkrivanje</translation>
 <translation id="1818606096021558659">Stranica</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Autentikacija...</translation>
 <translation id="4195643157523330669">Otvori u novoj kartici</translation>
 <translation id="8030169304546394654">Prekinuta veza</translation>
+<translation id="3683878911947678690">Svoje oznake možete sinkronizirati na više računala pomoću Google računa</translation>
 <translation id="4178055285485194276">Prilikom pokretanja:</translation>
 <translation id="1154228249304313899">Otvori ovu stranicu:</translation>
 <translation id="9074348188580488499">Doista želite ukloniti sve zaporke?</translation>
@@ -978,6 +980,7 @@ s
 <translation id="8261506727792406068">Obriši</translation>
 <translation id="345693547134384690">Otvori &amp;sliku u novoj &amp;kartici</translation>
 <translation id="7422192691352527311">Postavke...</translation>
+<translation id="7220379225958650049">Pokreni odmah</translation>
 <translation id="1375198122581997741">O verziji</translation>
 <translation id="1474307029659222435">Otvori okvir u novom &amp;prozoru</translation>
 <translation id="7133850061938542637">Sinkronizirano s adresom <ph name="USER_EMAIL_ADDRESS"/>\nPosljednja sinkronizacija: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1332,6 +1335,7 @@ Proširenje: <ph name="EXTENSION_FILE"/>
 Ključna datoteka: <ph name="KEY_FILE"/>
 
 Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih verzija proširenja.</translation>
+<translation id="4477534650265381513">Za brzi pristup stavite Vaše oznake ovdje u traku oznake.</translation>
 <translation id="3036649622769666520">Otvori datoteke</translation>
 <translation id="7909652923456235549">Kolačići nisu poslani</translation>
 <translation id="7685049629764448582">Memorija JavaScripta</translation>

@@ -47,6 +47,7 @@
 <translation id="911206726377975832">¿Quieres eliminar también los datos de navegación?</translation>
 <translation id="2044287590254833138">Barra de Google Chrome</translation>
 <translation id="5074344184765391290">Host del complemento de Chrome</translation>
+<translation id="1473088902761932034">Nos alegramos de verte de nuevo. Por cierto, Google Chrome no es tu navegador predeterminado.</translation>
 <translation id="6481075104394517441">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor ha presentado un certificado que aún no es válido. No hay datos disponibles que indiquen que se puede confiar en el certificado. Google Chrome no puede garantizar la autenticidad de &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Asegúrate de que el reloj y la zona horaria están configurados correctamente en tu equipo. Si no es así, corrige los errores y actualiza la página. Si los datos son correctos, no continúes.</translation>
 <translation id="8862326446509486874">No dispones de los derechos necesarios para la instalación en el sistema. Intenta ejecutar de nuevo el programa de instalación como administrador.</translation>
 <translation id="595871952790078940">Utilidades de Chrome</translation>

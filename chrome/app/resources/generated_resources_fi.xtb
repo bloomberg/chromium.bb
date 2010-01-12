@@ -50,6 +50,7 @@
 <translation id="9154072353677278078"><ph name="DOMAIN"/>-palvelin kohteessa <ph name="REALM"/> vaatii käyttäjänimen ja salasanan.</translation>
 <translation id="2193841602817119749">Osoitteessa &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; olevan sivuston on ilmoitettu olevan tietojenkalastelusivusto. Tietojenkalastelusivustot tekeytyvät usein luotettaviksi laitoksiksi kuten pankeiksi, ja huijaavat käyttäjiä paljastamaan henkilökohtaisia tai taloudellisia tietoja.</translation>
 <translation id="8178665534778830238">Sisältö:</translation>
+<translation id="1379170046778889619">Turvallisuustiedot</translation>
 <translation id="4771019161370731727">Uusimmat toiminnot</translation>
 <translation id="8974161578568356045">Automaattinen</translation>
 <translation id="1818606096021558659">Sivu</translation>
@@ -848,6 +849,7 @@
 <translation id="3127919023693423797">Varmennetaan...</translation>
 <translation id="4195643157523330669">Avaa uudessa välilehdessä</translation>
 <translation id="8030169304546394654">Yhteys katkaistu</translation>
+<translation id="3683878911947678690">Voit synkronoida kirjanmerkkisi useiden tietokoneiden kanssa Google-tilisi avulla.</translation>
 <translation id="4178055285485194276">Käynnistettäessä:</translation>
 <translation id="1154228249304313899">Avaa tämä sivu:</translation>
 <translation id="9074348188580488499">Haluatko varmasti poistaa kaikki salasanat?</translation>
@@ -971,6 +973,7 @@
 <translation id="8261506727792406068">Poista</translation>
 <translation id="345693547134384690">Avaa &amp;kuva uudessa välilehdessä</translation>
 <translation id="7422192691352527311">Asetukset...</translation>
+<translation id="7220379225958650049">Aloita nyt</translation>
 <translation id="1375198122581997741">Tietoja versiosta</translation>
 <translation id="1474307029659222435">Avaa kehys uudessa &amp;ikkunassa</translation>
 <translation id="7133850061938542637">Synkronoitu osoitteen <ph name="USER_EMAIL_ADDRESS"/> kanssa.\nSynkronoitu viimeksi: <ph name="LAST_SYNC_TIME"/>.</translation>
@@ -1322,6 +1325,7 @@ Laajennus: <ph name="EXTENSION_FILE"/>
 Avaintiedosto: <ph name="KEY_FILE"/>
 
 Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda uusia laajennusversioita.</translation>
+<translation id="4477534650265381513">Nopeuta käyttöä sijoittamalla kirjanmerkit tähän kirjanmerkkipalkkiin.</translation>
 <translation id="3036649622769666520">Avaa tiedostot</translation>
 <translation id="7909652923456235549">Evästeitä ei lähetetty</translation>
 <translation id="7685049629764448582">JavaScriptin käyttämä muisti</translation>

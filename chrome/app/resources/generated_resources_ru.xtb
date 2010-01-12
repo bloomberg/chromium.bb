@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Для доступа на сервер <ph name="DOMAIN"/> по адресу <ph name="REALM"/> требуется указать имя пользователя и пароль.</translation>
 <translation id="2193841602817119749">Веб-сайт по адресу &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt;, согласно полученной информации, используется для фишинга.  Мошеннические сайты, которые содаются с целью фишинга, используются для того, чтобы посетители указывали свою личную или финансовую информацию. На этих сайтах зачастую указываются ложная информация о принадлежности доверенным учреждениям, например, банкам.</translation>
 <translation id="8178665534778830238">Содержание:</translation>
+<translation id="1379170046778889619">Информация о безопасности</translation>
 <translation id="4771019161370731727">Последние действия</translation>
 <translation id="8974161578568356045">Определять автоматически</translation>
 <translation id="1818606096021558659">Страница</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Проверка подлинности...</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="8030169304546394654">Отключено</translation>
+<translation id="3683878911947678690">С помощью аккаунта Google можно синхронизировать закладки на разных компьютерах.</translation>
 <translation id="4178055285485194276">Начальная группа:</translation>
 <translation id="1154228249304313899">Открыть эту страницу:</translation>
 <translation id="9074348188580488499">Вы действительно хотите удалить все пароли?</translation>
@@ -975,6 +977,7 @@
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="345693547134384690">Открыть &amp;картинку в новой вкладке</translation>
 <translation id="7422192691352527311">Настройки...</translation>
+<translation id="7220379225958650049">Начать</translation>
 <translation id="1375198122581997741">Сведения о версии</translation>
 <translation id="1474307029659222435">Открыть фрейм в новом &amp;окне</translation>
 <translation id="7133850061938542637">Синхронизировано с <ph name="USER_EMAIL_ADDRESS"/>\nПоследняя синхронизация: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1327,6 +1330,7 @@
 Файл ключей: <ph name="KEY_FILE"/>
 
 Храните файл ключей в надежном месте. Он потребуется для создания новых версий расширения.</translation>
+<translation id="4477534650265381513">Для быстрого доступа поместите закладки сюда, в панель закладок.</translation>
 <translation id="3036649622769666520">Открытие файлов</translation>
 <translation id="7909652923456235549">Файлы cookie не отправлены</translation>
 <translation id="7685049629764448582">Память JavaScript</translation>

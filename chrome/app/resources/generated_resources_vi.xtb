@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Máy chủ <ph name="DOMAIN"/> tại <ph name="REALM"/> yêu cầu tên người dùng và mật khẩu.</translation>
 <translation id="2193841602817119749">Trang web tại &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; đã được báo cáo là trang web &quot;lừa đảo trực tuyến&quot;.  Trang web lừa đảo trực tuyến lừa người dùng khai báo thông tin cá nhân hay thông tin tài chính, thông thường bằng cách giả làm cơ quan đáng tin cậy, ví dụ như ngân hàng.</translation>
 <translation id="8178665534778830238">Nội dung:</translation>
+<translation id="1379170046778889619">Thông tin an toàn</translation>
 <translation id="4771019161370731727">Hoạt động gần đây</translation>
 <translation id="8974161578568356045">Tự động Phát hiện</translation>
 <translation id="1818606096021558659">Trang</translation>
@@ -854,6 +855,7 @@
 <translation id="3127919023693423797">Đang xác thực...</translation>
 <translation id="4195643157523330669">Mở bằng tab mới</translation>
 <translation id="8030169304546394654">Ngắt kết nối</translation>
+<translation id="3683878911947678690">Bạn có thể đồng bộ hoá các dấu trang của mình qua các máy tính bằng tài khoản Google của mình</translation>
 <translation id="4178055285485194276">Khi khởi động:</translation>
 <translation id="1154228249304313899">Mở trang này:</translation>
 <translation id="9074348188580488499">Bạn có chắc chắn muốn xoá tất cả mật khẩu không?</translation>
@@ -980,6 +982,7 @@
 <translation id="8261506727792406068">Xoá</translation>
 <translation id="345693547134384690">Mở &amp;hình ảnh trong tab mới</translation>
 <translation id="7422192691352527311">Tuỳ chọn...</translation>
+<translation id="7220379225958650049">Bắt đầu ngay bây giờ</translation>
 <translation id="1375198122581997741">Giới thiệu Phiên bản</translation>
 <translation id="1474307029659222435">Mở khung bằng cửa sổ &amp;mới</translation>
 <translation id="7133850061938542637">Đã đồng bộ hoá với <ph name="USER_EMAIL_ADDRESS"/>\nĐồng bộ hoá lần cuối: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1332,6 +1335,7 @@ Tiện ích mở rộng: <ph name="EXTENSION_FILE"/>
 Tệp Khoá: <ph name="KEY_FILE"/>
 
 Giữ tệp khoá của bạn ở nơi an toàn. Bạn sẽ cần tệp khoá để tạo phiên bản tiện ích mở rộng mới của mình.</translation>
+<translation id="4477534650265381513">Để truy cập nhanh, đặt dấu trang của bạn vào thanh dấu trang tại đây.</translation>
 <translation id="3036649622769666520">Mở Tệp</translation>
 <translation id="7909652923456235549">Không thể gửi cookie</translation>
 <translation id="7685049629764448582">Bộ nhớ cho Javascript</translation>

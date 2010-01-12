@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Serverul <ph name="DOMAIN"/> de la <ph name="REALM"/> necesită un nume de utilizator şi o parolă.</translation>
 <translation id="2193841602817119749">Site-ul Web de la &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; a fost raportat ca site de „phishing”.  Site-urile de phishing înşeală utilizatorii în a divulga informaţii personale sau financiare, deseori pretinzând a reprezenta instituţii de încredere, cum ar fi bănci.</translation>
 <translation id="8178665534778830238">Conţinut:</translation>
+<translation id="1379170046778889619">Informaţii de securitate</translation>
 <translation id="4771019161370731727">Activităţi recente</translation>
 <translation id="8974161578568356045">Detectare automată</translation>
 <translation id="1818606096021558659">Pagina</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Se autentifică...</translation>
 <translation id="4195643157523330669">Deschideţi într-o filă nouă</translation>
 <translation id="8030169304546394654">Deconectat</translation>
+<translation id="3683878911947678690">Puteţi sincroniza marcajele între computere cu ajutorul Contului Google</translation>
 <translation id="4178055285485194276">La pornire:</translation>
 <translation id="1154228249304313899">Deschideţi această pagină:</translation>
 <translation id="9074348188580488499">Sigur doriţi să eliminaţi toate parolele?</translation>
@@ -975,6 +977,7 @@
 <translation id="8261506727792406068">Ştergeţi</translation>
 <translation id="345693547134384690">Deschideţi &amp;imaginea într-o filă nouă</translation>
 <translation id="7422192691352527311">Preferinţe...</translation>
+<translation id="7220379225958650049">Începeţi acum</translation>
 <translation id="1375198122581997741">Despre versiune</translation>
 <translation id="1474307029659222435">Deschideţi cadrul într-o &amp;fereastră nouă</translation>
 <translation id="7133850061938542637">Sincronizat cu <ph name="USER_EMAIL_ADDRESS"/>\nUltima sincronizare: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1327,6 +1330,7 @@ Extensie: <ph name="EXTENSION_FILE"/>
 Fişier cheie: <ph name="KEY_FILE"/>
 
 Păstraţi fişierul cu cheia într-o locaţie sigură. Acesta va fi necesar la crearea noilor versiuni ale extensiei dvs.</translation>
+<translation id="4477534650265381513">Pentru acces rapid, plasaţi marcajele aici, în bara de marcaje.</translation>
 <translation id="3036649622769666520">Deschideţi fişierele</translation>
 <translation id="7909652923456235549">Modulele cookie nu au fost trimise</translation>
 <translation id="7685049629764448582">Memorie JavaScript</translation>

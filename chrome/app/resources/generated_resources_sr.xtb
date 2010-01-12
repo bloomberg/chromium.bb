@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Сервер <ph name="DOMAIN"/> на <ph name="REALM"/> захтева корисничко име и лозинку.</translation>
 <translation id="2193841602817119749">Веб сајт са именом хоста &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; пријављен је као „фишинг“ сајт.  Фишинг сајтови варају кориснике наводећи их да открију личне или финансијске информације, често тако што се претварају да представљају поуздане институције, као што су банке.</translation>
 <translation id="8178665534778830238">Садржај:</translation>
+<translation id="1379170046778889619">Безбедносне информације</translation>
 <translation id="4771019161370731727">Недавне активности</translation>
 <translation id="8974161578568356045">Аутоматски откриј</translation>
 <translation id="1818606096021558659">Страница</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Потврђивање идентитета...</translation>
 <translation id="4195643157523330669">Отвори у новој &amp;картици</translation>
 <translation id="8030169304546394654">Веза је прекинута</translation>
+<translation id="3683878911947678690">Обележиваче можете да синхронизујете на више рачунара помоћу Google налога</translation>
 <translation id="4178055285485194276">При покретању:</translation>
 <translation id="1154228249304313899">Отвори ову страницу:</translation>
 <translation id="9074348188580488499">Желите ли заиста да уклоните све лозинке?</translation>
@@ -977,6 +979,7 @@
 <translation id="8261506727792406068">Брисање</translation>
 <translation id="345693547134384690">Отвори &amp;слику у новој картици</translation>
 <translation id="7422192691352527311">Подешавања...</translation>
+<translation id="7220379225958650049">Започните одмах</translation>
 <translation id="1375198122581997741">О верзији</translation>
 <translation id="1474307029659222435">Отвори оквир у новом &amp;прозору</translation>
 <translation id="7133850061938542637">Синхронизовано са <ph name="USER_EMAIL_ADDRESS"/>\nПоследњи пут синхронизовано: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1330,6 +1333,7 @@
 Датотека кључа: <ph name="KEY_FILE"/>
 
 Чувајте датотеку кључа на сигурном месту. Биће вам потребна да направите нове верзије додатка.</translation>
+<translation id="4477534650265381513">Ради брзог приступа, поставите обележиваче овде на траку са обележивачима.</translation>
 <translation id="3036649622769666520">Отварање датотека</translation>
 <translation id="7909652923456235549">Колачићи нису послати</translation>
 <translation id="7685049629764448582">JavaScript меморија</translation>

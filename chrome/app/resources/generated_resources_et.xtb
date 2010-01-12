@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Server <ph name="DOMAIN"/> aadressil <ph name="REALM"/> nõuab kasutajanime ja parooli.</translation>
 <translation id="2193841602817119749">Veebisaidi kohta aadressil &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; on teada antud kui andmepüügiga tegelevast saidist. Andmepüügiga tegelevad saidid meelitavad kasutajad isikuandmete või rahaga seotud andmete edastamisele, teeseldes sageli usaldusväärsete asutuste, nagu näiteks pankade, esindamist.</translation>
 <translation id="8178665534778830238">Sisu:</translation>
+<translation id="1379170046778889619">Turvateave</translation>
 <translation id="4771019161370731727">Hiljutised toimingud</translation>
 <translation id="8974161578568356045">Automaatne tuvastamine</translation>
 <translation id="1818606096021558659">Lehekülg</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Autentimine...</translation>
 <translation id="4195643157523330669">Ava uuel &amp;vahelehel</translation>
 <translation id="8030169304546394654">Ühendus katkestatud</translation>
+<translation id="3683878911947678690">Nüüd saate oma järjehoidjad Google'i kontot kasutades kõigis arvutites sünkroonida</translation>
 <translation id="4178055285485194276">Algusleheküljel:</translation>
 <translation id="1154228249304313899">Avage see lehekülg:</translation>
 <translation id="9074348188580488499">Kas soovite kindlasti eemaldada kõik paroolid?</translation>
@@ -977,6 +979,7 @@
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="345693547134384690">Ava pilt uuel &amp;vahelehel</translation>
 <translation id="7422192691352527311">Eelistused...</translation>
+<translation id="7220379225958650049">Alustage nüüd</translation>
 <translation id="1375198122581997741">Teave versiooni kohta</translation>
 <translation id="1474307029659222435">Ava paneel uues &amp;aknas</translation>
 <translation id="7133850061938542637">Sünkroonitud: <ph name="USER_EMAIL_ADDRESS"/>\nViimati sünkroonitud: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1329,6 +1332,7 @@ Laiend: <ph name="EXTENSION_FILE"/>
 Võtmefail: <ph name="KEY_FILE"/>
 
 Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versioonide loomiseks vaja.</translation>
+<translation id="4477534650265381513">Kiire ligipääsu võimaldamiseks paigutage oma järjehoidjad siia järjehoidjaribale.</translation>
 <translation id="3036649622769666520">Failide avamine</translation>
 <translation id="7909652923456235549">Küpsiseid ei saadeta</translation>
 <translation id="7685049629764448582">JavaScripti mälu</translation>

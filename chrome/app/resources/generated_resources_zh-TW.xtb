@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">位於 <ph name="REALM"/> 的 <ph name="DOMAIN"/> 伺服器要求提供使用者名稱和密碼。</translation>
 <translation id="2193841602817119749">網址為 &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; 的網站已獲回報為「釣魚網站」。釣魚網站經常偽裝成銀行之類的可信賴機構，藉此騙取使用者的個人或財務資訊。</translation>
 <translation id="8178665534778830238">內容:</translation>
+<translation id="1379170046778889619">安全性資訊</translation>
 <translation id="4771019161370731727">近期活動</translation>
 <translation id="8974161578568356045">自動偵測</translation>
 <translation id="1818606096021558659">網頁</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">驗證中...</translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="8030169304546394654">已中斷連線</translation>
+<translation id="3683878911947678690">不論您有多少部電腦，只要這些電腦使用同一個 Google 帳戶，就能將書籤資料加以同步化</translation>
 <translation id="4178055285485194276">起始時：</translation>
 <translation id="1154228249304313899">開啟此頁：</translation>
 <translation id="9074348188580488499">確定要移除所有密碼嗎？</translation>
@@ -975,6 +977,7 @@
 <translation id="8261506727792406068">刪除</translation>
 <translation id="345693547134384690">在新分頁中開啟影像(&amp;I)</translation>
 <translation id="7422192691352527311">偏好設定...</translation>
+<translation id="7220379225958650049">立即開始</translation>
 <translation id="1375198122581997741">關於版本</translation>
 <translation id="1474307029659222435">在新視窗中開啟框(&amp;W)</translation>
 <translation id="7133850061938542637">已與 <ph name="USER_EMAIL_ADDRESS"/> 同步化\n上次同步處理時間：<ph name="LAST_SYNC_TIME"/></translation>
@@ -1327,6 +1330,7 @@
 金鑰檔案：<ph name="KEY_FILE"/>
 
 請妥善保管您的金鑰檔案；建立新版本的擴充功能時將需要使用該金鑰檔案。</translation>
+<translation id="4477534650265381513">如需快速存取，把您的書籤放在這個書籤列。</translation>
 <translation id="3036649622769666520">開啟檔案</translation>
 <translation id="7909652923456235549">未送出 Cookie</translation>
 <translation id="7685049629764448582">JavaScript 記憶體使用量</translation>

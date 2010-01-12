@@ -50,6 +50,7 @@
 <translation id="9154072353677278078"><ph name="REALM"/> sitesindeki <ph name="DOMAIN"/> sunucusu için kullanıcı adı ve şifre gerekiyor.</translation>
 <translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; adresindeki web sitesinin bir &quot;phishing” sitesi olduğu bildirildi. Phishing siteleri, çoğu zaman bankalar gibi güvenilen kurumları temsil ediyor gibi kullanıcıları kandırarak kişisel veya mali bilgilerini öğrenmeye çalışır.</translation>
 <translation id="8178665534778830238">İçerik:</translation>
+<translation id="1379170046778889619">Güvenlik bilgileri</translation>
 <translation id="4771019161370731727">En son etkinlikler</translation>
 <translation id="8974161578568356045">Otomatik Algıla</translation>
 <translation id="1818606096021558659">Sayfa</translation>
@@ -851,6 +852,7 @@
 <translation id="3127919023693423797">Kimlik doğrulanıyor...</translation>
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="8030169304546394654">Bağlı değil</translation>
+<translation id="3683878911947678690">Google hesabınızı kullanarak yer işaretlerinizi bilgisayarlar arasında senkronize edebilirsiniz.</translation>
 <translation id="4178055285485194276">Başlangıçta:</translation>
 <translation id="1154228249304313899">Şu sayfayı açın:</translation>
 <translation id="9074348188580488499">Tüm şifreleri kaldırmak istediğinizden emin misiniz?</translation>
@@ -976,6 +978,7 @@
 <translation id="8261506727792406068">Sil</translation>
 <translation id="345693547134384690">Resm&amp;i yeni sekmede aç</translation>
 <translation id="7422192691352527311">Tercihler...</translation>
+<translation id="7220379225958650049">Şimdi başlatın</translation>
 <translation id="1375198122581997741">Sürüm Hakkında</translation>
 <translation id="1474307029659222435">Çerçeveyi ye&amp;ni pencerede aç</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/> ile senkronize edildi\nSon senkronize edilen: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1327,6 +1330,7 @@ Uzantı: <ph name="EXTENSION_FILE"/>
 Anahtar Dosyası: <ph name="KEY_FILE"/>
 
 Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümlerini oluşturmak için bu dosyaya ihtiyacınız olacak.</translation>
+<translation id="4477534650265381513">Hızlı erişim için yer imlerinizi buraya, yer imleri çubuğuna yerleştirin.</translation>
 <translation id="3036649622769666520">Dosya Aç</translation>
 <translation id="7909652923456235549">Çerezler gönderilmedi</translation>
 <translation id="7685049629764448582">JavaScript belleği</translation>

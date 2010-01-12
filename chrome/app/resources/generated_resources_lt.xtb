@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Serveris <ph name="DOMAIN"/> adresu <ph name="REALM"/> reikalauja naudotojo vardo ir slaptažodžio.</translation>
 <translation id="2193841602817119749">Tinklalapyje adresu &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; užfiksuota sukčiavimo atvejų. Sukčiauvimo atvejais tinklalapiuose iš lankytojų viliojama jų finansinė informacija, dažnai apsimetama patikimomis insitucijomis, pvz., bankais.</translation>
 <translation id="8178665534778830238">Turinys:</translation>
+<translation id="1379170046778889619">Informacija apie saugumą</translation>
 <translation id="4771019161370731727">Naujausia veikla</translation>
 <translation id="8974161578568356045">Automatinis aptikimas</translation>
 <translation id="1818606096021558659">Puslapis</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Autentifikuojama...</translation>
 <translation id="4195643157523330669">Atidaryti naujame skirtuke</translation>
 <translation id="8030169304546394654">Atjungta</translation>
+<translation id="3683878911947678690">Galite sinchronizuoti savo žymes kompiuteriuose, naudodami savo „Google“ paskyrą</translation>
 <translation id="4178055285485194276">Paleidžiant:</translation>
 <translation id="1154228249304313899">Atidarykite šį puslapį:</translation>
 <translation id="9074348188580488499">Ar tikrai norite pašalinti visus slaptažodžius?</translation>
@@ -977,6 +979,7 @@
 <translation id="8261506727792406068">Pašalinti</translation>
 <translation id="345693547134384690">Atidaryti &amp;paveikslėlį naujame skirtuke</translation>
 <translation id="7422192691352527311">Nuostatos...</translation>
+<translation id="7220379225958650049">Pradėti dabar</translation>
 <translation id="1375198122581997741">Apie versiją</translation>
 <translation id="1474307029659222435">Atidaryti rėmelį naujame &amp;lange</translation>
 <translation id="7133850061938542637">Sinchronizuota su <ph name="USER_EMAIL_ADDRESS"/>\nPaskutinis sinchronizavimas: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1330,6 +1333,7 @@ Plėtinys: <ph name="EXTENSION_FILE"/>
 Rakto failas: ￼<ph name="KEY_FILE"/>
 
 Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti naujas plėtinio versijas.</translation>
+<translation id="4477534650265381513">Greitai prieigai patalpinkite savo žymas čia, žymų juostoje.</translation>
 <translation id="3036649622769666520">Atidaryti failus</translation>
 <translation id="7909652923456235549">Slapukai nenusiųsti</translation>
 <translation id="7685049629764448582">„JavaScript“ atmintis</translation>

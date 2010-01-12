@@ -48,6 +48,7 @@
 <translation id="9154072353677278078">เซิร์ฟเวอร์ <ph name="DOMAIN"/> ที่ <ph name="REALM"/> จำเป็นต้องมีชื่อผู้ใช้และรหัสผ่าน</translation>
 <translation id="2193841602817119749">เว็บไซต์ที่ &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; ถูกรายงานว่าเป็นเว็บไซต์ “ฟิชชิ่ง”  เว็บไซต์ฟิชชิ่งหลอกลวงผู้ใช้ให้เปิดเผยข้อมูลส่วนตัวหรือข้อมูลทางการเงิน ด้วยการแสร้งว่าเป็นตัวแทนของสถาบันที่น่าเชื่อถือ เช่น ธนาคาร</translation>
 <translation id="8178665534778830238">เนื้อหา:</translation>
+<translation id="1379170046778889619">ข้อมูลด้านความปลอดภัย</translation>
 <translation id="4771019161370731727">กิจกรรมล่าสุด</translation>
 <translation id="8974161578568356045">ตรวจพบอัตโนมัติ</translation>
 <translation id="1818606096021558659">หน้าเว็บ</translation>
@@ -847,6 +848,7 @@
 <translation id="3127919023693423797">กำลังตรวจสอบสิทธิ์...</translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="8030169304546394654">ยกเลิกการเชื่อมต่อแล้ว</translation>
+<translation id="3683878911947678690">คุณสามารถทำให้ข้อมูลบุ๊กมาร์กของคุณตรงกันในคอมพิวเตอร์หลายเครื่องโดยใช้บัญชี Google</translation>
 <translation id="4178055285485194276">เริ่มต้น:</translation>
 <translation id="1154228249304313899">เปิดหน้านี้:</translation>
 <translation id="9074348188580488499">คุณแน่ใจหรือไม่ว่าต้องการลบรหัสผ่านทั้งหมด</translation>
@@ -972,6 +974,7 @@
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="345693547134384690">เปิด&amp;รูปภาพในแท็บใหม่</translation>
 <translation id="7422192691352527311">ค่ากำหนด...</translation>
+<translation id="7220379225958650049">เริ่มต้นเดี๋ยวนี้</translation>
 <translation id="1375198122581997741">เกี่ยวกับรุ่น</translation>
 <translation id="1474307029659222435">เปิดเฟรมใน&amp;หน้าต่างใหม่</translation>
 <translation id="7133850061938542637">ทำให้ข้อมูลตรงกันที่ <ph name="USER_EMAIL_ADDRESS"/>\nทำให้ข้อมูลตรงกันครั้งล่าสุด:<ph name="LAST_SYNC_TIME"/></translation>
@@ -1323,6 +1326,7 @@
 ไฟล์กุญแจ: <ph name="KEY_FILE"/>
 
 รักษาไฟล์กุญแจของคุณไว้ในที่ปลอดภัย คุณจะต้องใช้ไฟล์นี้ในการสร้างส่วนขยายรุ่นใหม่</translation>
+<translation id="4477534650265381513">เพื่อการเข้าถึงอย่างรวดเร็ว ให้วางบุ๊คมาร์คของคุณที่นี่ในแถบบุ๊คมาร์ค</translation>
 <translation id="3036649622769666520">เปิดไฟล์</translation>
 <translation id="7909652923456235549">ไม่ได้ส่งคุกกี้</translation>
 <translation id="7685049629764448582">หน่วยความจำ JavaScript</translation>

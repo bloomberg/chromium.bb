@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">El servidor <ph name="DOMAIN"/> de <ph name="REALM"/> requiere un nombre de usuario y contraseña.</translation>
 <translation id="2193841602817119749">Se ha comunicado que el sitio web de &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; es un sitio de “phishing”. Este tipo de sitios engañan a los usuarios para que desvelen información personal o financiera, a menudo fingiendo ser instituciones de confianza, como bancos.</translation>
 <translation id="8178665534778830238">Contenido:</translation>
+<translation id="1379170046778889619">Información de seguridad</translation>
 <translation id="4771019161370731727">Actividades recientes</translation>
 <translation id="8974161578568356045">Detección automática</translation>
 <translation id="1818606096021558659">Página</translation>
@@ -853,6 +854,7 @@
 <translation id="3127919023693423797">Autenticando...</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="8030169304546394654">Desconectado</translation>
+<translation id="3683878911947678690">Puedes sincronizar tus marcadores entre equipos a través de tu cuenta de Google.</translation>
 <translation id="4178055285485194276">Al inicio:</translation>
 <translation id="1154228249304313899">Abrir esta página:</translation>
 <translation id="9074348188580488499">¿Estás seguro de que quieres eliminar todas las contraseñas?</translation>
@@ -978,6 +980,7 @@
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="345693547134384690">Abrir &amp;imagen en una pestaña nueva</translation>
 <translation id="7422192691352527311">Preferencias...</translation>
+<translation id="7220379225958650049">Iniciar ahora</translation>
 <translation id="1375198122581997741">Acerca de la versión</translation>
 <translation id="1474307029659222435">Abrir el marco en una &amp;ventana nueva</translation>
 <translation id="7133850061938542637">Sincronizado con <ph name="USER_EMAIL_ADDRESS"/>\nÚltima sincronización: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1331,6 +1334,7 @@ Extensión: <ph name="EXTENSION_FILE"/>
 Archivo de clave: <ph name="KEY_FILE"/>
 
 Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear nuevas versiones de tu extensión.</translation>
+<translation id="4477534650265381513">Coloca los marcadores aquí para acceder directamente.</translation>
 <translation id="3036649622769666520">Abrir archivos</translation>
 <translation id="7909652923456235549">Las cookies no se han enviado.</translation>
 <translation id="7685049629764448582">Memoria de JavaScript</translation>

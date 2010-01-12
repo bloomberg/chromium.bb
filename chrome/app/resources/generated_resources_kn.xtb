@@ -48,6 +48,7 @@
 <translation id="9154072353677278078"><ph name="REALM"/> ನಲ್ಲಿ ಸರ್ವರ್ <ph name="DOMAIN"/> ಗೆ ಬಳಕೆದಾರಹೆಸರು ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; ನಲ್ಲಿ ವೆಬ್‌ಸೈಟ್  “ಫಿಶಿಂಗ್” ಸೈಟ್‌ಎಂದು ವರದಿಯಾಗಿದೆ.  ಬಳಕೆದಾರರು ತಮ್ಮ ವೈಯಕ್ತಿಕ ಅಥವಾ ಹಣಕಾಸು ಮಾಹಿತಿಯನ್ನು ಬಹಿರಂಗಪಡಿಸುವಂತೆ, ಯಾವಾಗಲೂ ನಂಬಲರ್ಹ ಸಂಸ್ಥೆಗಳಂತೆ, ಅಂದರೆ ಬ್ಯಾಂಕ್‌ಗಳಂತೆ ಪ್ರತಿನಿಧಿಸುತ್ತಿರುವುದಾಗಿ ನಟನೆ ಮಾಡುವ ಮೂಲಕ ಫಿಶಿಂಗ್ ಸೈಟ್‌ಗಳು ವಂಚನೆ ಮಾಡುತ್ತವೆ.</translation>
 <translation id="8178665534778830238">ವಿಷಯ:</translation>
+<translation id="1379170046778889619">ಭದ್ರತಾ ಮಾಹಿತಿ</translation>
 <translation id="4771019161370731727">ಇತ್ತೀಚಿನ ಚಟುವಟಿಕೆಗಳು</translation>
 <translation id="8974161578568356045">ಸ್ವಯಂ ಪತ್ತೆ</translation>
 <translation id="1818606096021558659">ಪುಟ</translation>
@@ -862,6 +863,7 @@
 <translation id="3127919023693423797">ದೃಢೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4195643157523330669">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="8030169304546394654">ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಲಾಗಿದೆ</translation>
+<translation id="3683878911947678690">ನಿಮ್ಮ Google ಖಾತೆಯನ್ನು ಬಳಸಿಕೊಂಡು ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಕಂಪ್ಯೂಟರ್‌ಗಳಾದ್ಯಂತ ನೀವು ಸಿಂಕ್ ಮಾಡಬಹುದು</translation>
 <translation id="4178055285485194276">ಪ್ರಾರಂಭದಲ್ಲಿ:</translation>
 <translation id="1154228249304313899">ಈ ಪುಟವನ್ನು ತೆರೆಯಿರಿ:</translation>
 <translation id="9074348188580488499">ಎಲ್ಲ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕಲು ನೀವು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ?</translation>
@@ -986,6 +988,7 @@
 <translation id="8261506727792406068">ಅಳಿಸು</translation>
 <translation id="345693547134384690">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ &amp;ಇಮೇಜ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="7422192691352527311">ಆದ್ಯತೆಗಳು...</translation>
+<translation id="7220379225958650049">ಇದೀಗ ಪ್ರಾರಂಭಿಸು</translation>
 <translation id="1375198122581997741">ಆವೃತ್ತಿಯ ಬಗ್ಗೆ</translation>
 <translation id="1474307029659222435">ಹೊಸ &amp;ವಿಂಡೋದಲ್ಲಿ ಫ್ರೇಮ್ ತೆರೆಯಿರಿ</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/> ಗೆ ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ\nಕೊನೆಯದಾಗಿ ಸಿಂಕ್ ಮಾಡಿರುವುದು: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1334,6 +1337,7 @@
 <translation id="7999229196265990314">ಕೆಳಗಿನ ಫೈಲ್‌ಗಳನ್ನು ರಚಿಸಲಾಗಿದೆ:
 
 ವಿಸ್ತರಣೆ: <ph name="EXTENSION_FILE"/>             ಮುಖ್ಯ ಫೈಲ್: <ph name="KEY_FILE"/>             ನಿಮ್ಮ ಮುಖ್ಯ ಫೈಲ್ ಅನ್ನು ಸುರಕ್ಷಿತ ಸ್ಥಳದಲ್ಲಿಡಿ. ನಿಮ್ಮ ವಿಸ್ತರಣೆಯ ಹೊಸ ಆವೃತ್ತಿಗಳನ್ನು ರಚಿಸುವ ಅಗತ್ಯತೆ ಇದೆ.</translation>
+<translation id="4477534650265381513">ಶೀಘ್ರ ಪ್ರವೇಶಕ್ಕಾಗಿ, ಬುಕ್‌ಮಾರ್ಕ್‌ಬಾರ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ನೆಲೆಗೊಳಿಸಿ.</translation>
 <translation id="3036649622769666520">ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="7909652923456235549">ಕುಕೀಸ್ ಕಳುಹಿಸಲಾಗಿಲ್ಲ</translation>
 <translation id="7685049629764448582">JavaScript ಸ್ಮರಣೆ</translation>

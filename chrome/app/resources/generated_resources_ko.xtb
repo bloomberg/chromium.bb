@@ -50,6 +50,7 @@
 <translation id="9154072353677278078"><ph name="REALM"/>의 <ph name="DOMAIN"/> 서버에는 사용자 이름 및 비밀번호를 입력해야 합니다.</translation>
 <translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt;의 웹사이트는 '피싱' 사이트로 신고되었습니다.  피싱 사이트는 속임수를 통해 개인정보 및 금융정보를 몰래 빼내기 위해 만들어진 사이트로 종종 은행과 같은 공식기관을 사칭하기도 합니다.</translation>
 <translation id="8178665534778830238">콘텐츠:</translation>
+<translation id="1379170046778889619">보안 정보</translation>
 <translation id="4771019161370731727">최근 활동</translation>
 <translation id="8974161578568356045">자동 선택</translation>
 <translation id="1818606096021558659">페이지</translation>
@@ -847,6 +848,7 @@
 <translation id="3127919023693423797">인증하는 중...</translation>
 <translation id="4195643157523330669">새 탭에서 열기</translation>
 <translation id="8030169304546394654">연결 끊김</translation>
+<translation id="3683878911947678690">Google 계정을 사용하여 컴퓨터에서 북마크를 동기화할 수 있습니다.</translation>
 <translation id="4178055285485194276">시작 페이지:</translation>
 <translation id="1154228249304313899">페이지 목록:</translation>
 <translation id="9074348188580488499">모든 비밀번호를 삭제하시겠습니까?</translation>
@@ -968,6 +970,7 @@
 <translation id="8261506727792406068">삭제</translation>
 <translation id="345693547134384690">새 탭에서 이미지 열기(&amp;I)</translation>
 <translation id="7422192691352527311">환경설정...</translation>
+<translation id="7220379225958650049">시작하기</translation>
 <translation id="1375198122581997741">버전 정보</translation>
 <translation id="1474307029659222435">새 창에서 프레임 열기(&amp;W)</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/>에 동기화됨\n마지막 동기화: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1318,6 +1321,7 @@
 키 파일: <ph name="KEY_FILE"/>
 
 키 파일은 확장 프로그램의 새 버전을 만드는 데 필요하므로 안전한 장소에 보관하시기 바랍니다.</translation>
+<translation id="4477534650265381513">북마크바에 북마크를 추가하면 보다 빠르게 액세스할 수 있습니다.</translation>
 <translation id="3036649622769666520">파일 열기</translation>
 <translation id="7909652923456235549">쿠키가 전송되지 않음</translation>
 <translation id="7685049629764448582">자바스크립트 메모리</translation>

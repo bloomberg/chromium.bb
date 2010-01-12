@@ -48,6 +48,7 @@
 <translation id="9154072353677278078">Seva <ph name="DOMAIN"/> iliyo <ph name="REALM"/> inahitaji jina la mtumiaji na nenosiri.</translation>
 <translation id="2193841602817119749">Tovuti iliyo &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; imeripotiwa kuwa ya 'hadaa'. Tovuti za hadaa huwatapeli watumiaji kufichua maelezo ya kibinafsi au ya kifedha, mara nyingi kwa kujidai kuwa zinawakilisha taasisi zinazoaminika, kama vile benki.</translation>
 <translation id="8178665534778830238">Maudhui:</translation>
+<translation id="1379170046778889619">Maelezo ya usalama</translation>
 <translation id="4771019161370731727">Shughuli za hivi karibuni</translation>
 <translation id="8974161578568356045">Gundua Atomatiki</translation>
 <translation id="1818606096021558659">Ukurasa</translation>
@@ -847,6 +848,7 @@
 <translation id="3127919023693423797">Inathibitisha...</translation>
 <translation id="4195643157523330669">Fungua katika kichupo kipya</translation>
 <translation id="8030169304546394654">Hujaunganishwa</translation>
+<translation id="3683878911947678690">Unaweza kusawazisha alamisho zako kwenye kompyuta tofauti kwa kutumia akaunti yako ya Google.</translation>
 <translation id="4178055285485194276">Wakati wa kuanza:</translation>
 <translation id="1154228249304313899">Fungua ukurasa huu:</translation>
 <translation id="9074348188580488499">Je, una hakika kuwa ungependa kuondoa manenosiri yote?</translation>
@@ -969,6 +971,7 @@
 <translation id="8261506727792406068">Futa</translation>
 <translation id="345693547134384690">Fungua p&amp;icha katika kichupo kipya</translation>
 <translation id="7422192691352527311">Mapendeleo...</translation>
+<translation id="7220379225958650049">Anza sasa</translation>
 <translation id="1375198122581997741">Kuhusu Toleo</translation>
 <translation id="1474307029659222435">Fungua fremu katika &amp;dirisha jipya</translation>
 <translation id="7133850061938542637">Imesawazishwa kwa <ph name="USER_EMAIL_ADDRESS"/>\nIlisawazishwa mara ya mwisho: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1319,6 +1322,7 @@ Kiendelezi: <ph name="EXTENSION_FILE"/>
 Faili ya Funguo: <ph name="KEY_FILE"/>
 
 Weka faili yako ya funguo mahali salama. Utaihitaji kuunda matoleo mapya ya kiendelezi chako.</translation>
+<translation id="4477534650265381513">Kufikia alamisho zako kwa urahisi, ziweke hapa kwenye upau wa alamisho.</translation>
 <translation id="3036649622769666520">Fungua Mafaili</translation>
 <translation id="7909652923456235549">Vidakuzi havijatumwa</translation>
 <translation id="7685049629764448582">Kumbukumbu ya JavaScript</translation>

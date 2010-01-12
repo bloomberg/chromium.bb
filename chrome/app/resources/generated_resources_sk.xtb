@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Server <ph name="DOMAIN"/> pre <ph name="REALM"/> vyžaduje používateľské meno a heslo.</translation>
 <translation id="2193841602817119749">Webová stránka na adrese &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; bola nahlásená ako stránka s phishingom. Stránky s phishingom majú oklamať používateľov, aby zadali svoje osobné alebo finančné informácie. Takéto stránky sa často prezentujú ako stránky dôveryhodných inštitúcií, napríklad banky.</translation>
 <translation id="8178665534778830238">Obsah:</translation>
+<translation id="1379170046778889619">Informácie o zabezpečení</translation>
 <translation id="4771019161370731727">Posledné aktivity</translation>
 <translation id="8974161578568356045">Zistiť automaticky</translation>
 <translation id="1818606096021558659">Stránka</translation>
@@ -853,6 +854,7 @@
 <translation id="3127919023693423797">Overovanie...</translation>
 <translation id="4195643157523330669">Otvoriť na novej karte</translation>
 <translation id="8030169304546394654">Odpojené</translation>
+<translation id="3683878911947678690">Pomocou účtu Google môžete synchronizovať svoje záložky medzi počítačmi</translation>
 <translation id="4178055285485194276">Pri spustení:</translation>
 <translation id="1154228249304313899">Otvoriť túto stránku:</translation>
 <translation id="9074348188580488499">Naozaj chcete odstrániť všetky heslá?</translation>
@@ -978,6 +980,7 @@
 <translation id="8261506727792406068">Odstrániť</translation>
 <translation id="345693547134384690">Otvoriť &amp;obrázok na novej karte</translation>
 <translation id="7422192691352527311">Predvoľby...</translation>
+<translation id="7220379225958650049">Začať</translation>
 <translation id="1375198122581997741">Informácie o verzii</translation>
 <translation id="1474307029659222435">Otvoriť &amp;rám v novom okne</translation>
 <translation id="7133850061938542637">Synchronizované s účtom <ph name="USER_EMAIL_ADDRESS"/>\nPosledná synchronizácia: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1329,6 +1332,7 @@ Rozšírenie: <ph name="EXTENSION_FILE"/>
 Súbor kľúča: <ph name="KEY_FILE"/>
 
 Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvorenie nových verzií svojho rozšírenia.</translation>
+<translation id="4477534650265381513">Ak si záložky umiestnite na tento panel so záložkami, môžete k nim pristupovať rýchlejšie.</translation>
 <translation id="3036649622769666520">Otvoriť súbory</translation>
 <translation id="7909652923456235549">Súbory cookie neboli poslané</translation>
 <translation id="7685049629764448582">Pamäť jazyka JavaScript</translation>

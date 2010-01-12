@@ -47,6 +47,7 @@
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="2044287590254833138">Google Chrome ツールバー</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
+<translation id="1473088902761932034">Google Chrome はデフォルトのブラウザとして設定されていません。</translation>
 <translation id="6481075104394517441">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーの証明書が有効ではありません。この証明書の信頼性について有効な情報がないため、通信先が本当に <ph name="DOMAIN2"/> であるか Google Chrome で判断できず、なりすましの可能性を完全には否定できません。コンピュータの時刻とタイムゾーンが正しく設定されていることを確認してください。設定に問題がある場合は、設定を修正してからこのページを更新してください。正しく設定されているにも関わらずこの警告が表示される場合は、ここで操作を止めてください。</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
 <translation id="595871952790078940">Chrome Utility</translation>

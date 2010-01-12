@@ -54,6 +54,7 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="9154072353677278078">በ<ph name="REALM"/> ያለው አገልጋይ <ph name="DOMAIN"/> የተጠቃሚ ስም እና የይለፈ ቃል ይፈልጋል።</translation>
 <translation id="2193841602817119749">በ&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; ያለው ድር ጣቢያ እንደ ‹‹አስጋሪ›› ተዘግቧል። ‹‹አስጋሪ›› ጣቢያዎች የተጠቃሚዎችን የግል እና የፋይናንስ መረጃ በማጋለጥ ያታልላሉ፤ ብዙ ጊዜም የታመኑ ድርጅቶችን በማስመሰል ይወክላሉ፣ ለምሳሌ ባንኮችን።</translation>
 <translation id="8178665534778830238">ይዘት፡</translation>
+<translation id="1379170046778889619">የደህንነት ጥበቃ መረጃ</translation>
 <translation id="4771019161370731727">የቅርብ ጊዜ ክንውኖች</translation>
 <translation id="8974161578568356045">ራስ ፈልግ</translation>
 <translation id="1818606096021558659">ገጽ</translation>
@@ -868,6 +869,7 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="3127919023693423797">በማረጋገጥ ላይ...</translation>
 <translation id="4195643157523330669">በአዲስ ትር ክፈት</translation>
 <translation id="8030169304546394654">አልተያያዘም</translation>
+<translation id="3683878911947678690">ጉግል መለያዎን በመጠቀም ዕልባቶችዎን በኮምፒውተሮች ዙሪያ ማሳመር ይችላሉ</translation>
 <translation id="4178055285485194276">በማስነሳት ጊዜ:</translation>
 <translation id="1154228249304313899">ይህን ገጽ ክፈት፡-</translation>
 <translation id="9074348188580488499">እርግጠኛ ነዎት ሁሉንም የይለፍ ቃሎች መሰረዝ ይፈልጋሉ?</translation>
@@ -993,6 +995,7 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="8261506727792406068">ሰርዝ</translation>
 <translation id="345693547134384690">&amp;ምስል በአዲስ ትር ውስጥ ክፈት</translation>
 <translation id="7422192691352527311">ምርጫዎች…</translation>
+<translation id="7220379225958650049">አሁን ጀመር</translation>
 <translation id="1375198122581997741">ስለ ስሪት</translation>
 <translation id="1474307029659222435">አንጓ ስእሉን በአዲስ &amp;መስኮት ክፈት</translation>
 <translation id="7133850061938542637">ከ<ph name="USER_EMAIL_ADDRESS"/> ተመሳስሏል\n ለመጨረሻ ጊዜ የተመሳሰለው: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1336,6 +1339,7 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="5183088099396036950">ከአገልጋዩ ጋር መያያዝ አልቻለም</translation>
 <translation id="4469842253116033348">ማስታወቂያዎችን ከ<ph name="SITE"/> አሰናክል</translation>
 <translation id="7999229196265990314">የሚከተሉትን ፋይሎች ፈጥሯል፡ ቅጥያ፡ <ph name="EXTENSION_FILE"/> ቁልፍ ፋይል፡ <ph name="KEY_FILE"/> ቁልፍ ፋይልዎን ደህንነቱ በተጠበቀ ቦታ ያስቀምጡ። የቅጥያዎን አዲስ ስሪት ለመፍጠር ያስፈልግዎታልና።</translation>
+<translation id="4477534650265381513">በቶሎ ለማግኘት፣ ዕልባቶችዎን እዚህ በዕልባቶች አሞሌ ውስጥ ያኑሩ።</translation>
 <translation id="3036649622769666520">ፋይሎች ክፈት</translation>
 <translation id="7909652923456235549">ኩኪዎች አልተላኩም</translation>
 <translation id="7685049629764448582">ጃቫ ስክሪፕት ማህደረ ትውስታ</translation>

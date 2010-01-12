@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Изискват се потребителско име и парола за сървъра <ph name="DOMAIN"/> на адрес <ph name="REALM"/>.</translation>
 <translation id="2193841602817119749">Подаден е сигнал, че уебсайтът на адрес &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; се използва за практикуването на „фишинг“. „Фишинг“ сайтовете подлъгват потребителите да разкрият лични или финансови данни, като често се представят за надеждни институции, като например банки.</translation>
 <translation id="8178665534778830238">Съдържание:</translation>
+<translation id="1379170046778889619">Информация за сигурността</translation>
 <translation id="4771019161370731727">Скорошна дейност</translation>
 <translation id="8974161578568356045">Автоматично откриване</translation>
 <translation id="1818606096021558659">Страница</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Удостоверява се...</translation>
 <translation id="4195643157523330669">Отваряне в нов раздел</translation>
 <translation id="8030169304546394654">Няма връзка</translation>
+<translation id="3683878911947678690">Можете да синхронизирате отметките си между различни компютри посредством профила си в Google</translation>
 <translation id="4178055285485194276">При стартиране:</translation>
 <translation id="1154228249304313899">Отваряне на тази страница:</translation>
 <translation id="9074348188580488499">Наистина ли искате да премахнете всички пароли?</translation>
@@ -977,6 +979,7 @@
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="345693547134384690">Отваряне на &amp;изображението в нов раздел</translation>
 <translation id="7422192691352527311">Предпочитания...</translation>
+<translation id="7220379225958650049">Стартиране сега</translation>
 <translation id="1375198122581997741">Всичко за версията</translation>
 <translation id="1474307029659222435">Отваряне на рамката в нов прозоре&amp;ц</translation>
 <translation id="7133850061938542637">Синхронизиран с/ъс <ph name="USER_EMAIL_ADDRESS"/>\nПоследно синхронизиран на: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1328,6 +1331,7 @@
 Файл с ключ: <ph name="KEY_FILE"/>
 
 Пазете файла си с ключ на сигурно място. Той ви е необходим за създаване на нови версии на разширението.</translation>
+<translation id="4477534650265381513">За по-бърз достъп поставете отметките си тук в лентата на отметките.</translation>
 <translation id="3036649622769666520">Отваряне на файлове</translation>
 <translation id="7909652923456235549">Не са изпратени „бисквитки“</translation>
 <translation id="7685049629764448582">Памет за JavaScript</translation>

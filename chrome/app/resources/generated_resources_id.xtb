@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Server <ph name="DOMAIN"/> di <ph name="REALM"/> memerlukan nama pengguna dan sandi.</translation>
 <translation id="2193841602817119749">Situs Web di &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; dilaporkan sebagai situs “phishing”.  Situs phishing menipu pengguna untuk mengungkapkan informasi pribadi atau keuangan, biasanya dengan menyamar sebagai institusi terpercaya, misalnya bank.</translation>
 <translation id="8178665534778830238">Konten:</translation>
+<translation id="1379170046778889619">Informasi keamanan</translation>
 <translation id="4771019161370731727">Aktivitas terkini</translation>
 <translation id="8974161578568356045">Deteksi Otomatis</translation>
 <translation id="1818606096021558659">Laman</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Autentikasi...</translation>
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="8030169304546394654">Diputuskan</translation>
+<translation id="3683878911947678690">Anda dapat menyinkronisasi bookmark Anda melintasi komputer menggunakan akun Google</translation>
 <translation id="4178055285485194276">Saat memulai:</translation>
 <translation id="1154228249304313899">Buka halaman ini:</translation>
 <translation id="9074348188580488499">Anda yakin ingin menghapus semua sandi?</translation>
@@ -977,6 +979,7 @@
 <translation id="8261506727792406068">Hapus</translation>
 <translation id="345693547134384690">Buka gambar d&amp;i tab baru</translation>
 <translation id="7422192691352527311">Preferensi...</translation>
+<translation id="7220379225958650049">Mulai sekarang</translation>
 <translation id="1375198122581997741">Tentang Versi</translation>
 <translation id="1474307029659222435">Buka bingkai di &amp;jendela baru</translation>
 <translation id="7133850061938542637">Disinkronisasi ke <ph name="USER_EMAIL_ADDRESS"/>\nTerakhir disinkronisasi: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1330,6 +1333,7 @@ Ekstensi: <ph name="EXTENSION_FILE"/>
 Berkas Kunci: <ph name="KEY_FILE"/>
 
 Simpan berkas kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membuat versi baru ekstensi.</translation>
+<translation id="4477534650265381513">Untuk akses cepat, tempatkan bookmark Anda ke bilah bookmark.</translation>
 <translation id="3036649622769666520">Buka Berkas</translation>
 <translation id="7909652923456235549">Kuki tidak terkirim</translation>
 <translation id="7685049629764448582">Memori JavaScript</translation>

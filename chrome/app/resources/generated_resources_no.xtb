@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Tjeneren <ph name="DOMAIN"/> på <ph name="REALM"/> krever brukernavn og passord.</translation>
 <translation id="2193841602817119749">Nettstedet på &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; er rapportert som et nettfiskingssted. Slike nettsteder lurer brukerne til å gi fra seg personlig eller finansiell informasjon, ofte ved å late som de representerer pålitelige institusjoner, for eksempel banker.</translation>
 <translation id="8178665534778830238">Innhold:</translation>
+<translation id="1379170046778889619">Sikkerhetsinformasjon</translation>
 <translation id="4771019161370731727">Nylige handlinger</translation>
 <translation id="8974161578568356045">Automatisk sporing</translation>
 <translation id="1818606096021558659">Side</translation>
@@ -850,6 +851,7 @@
 <translation id="3127919023693423797">Autentiserer ...</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="8030169304546394654">Frakoblet</translation>
+<translation id="3683878911947678690">Du kan synkronisere bokmerkene på flere datamaskiner ved hjelp av Google-kontoen</translation>
 <translation id="4178055285485194276">Ved oppstart:</translation>
 <translation id="1154228249304313899">Åpne denne siden:</translation>
 <translation id="9074348188580488499">Er du sikker på at du vil fjerne alle passord?</translation>
@@ -975,6 +977,7 @@
 <translation id="8261506727792406068">Slett</translation>
 <translation id="345693547134384690">Åpne b&amp;ilde i ny fane</translation>
 <translation id="7422192691352527311">Innstillinger</translation>
+<translation id="7220379225958650049">Start nå</translation>
 <translation id="1375198122581997741">Om versjon</translation>
 <translation id="1474307029659222435">Åpne ramme i nytt &amp;vindu</translation>
 <translation id="7133850061938542637">Synkronisert med <ph name="USER_EMAIL_ADDRESS"/>\nSist synkronisert: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1330,6 +1333,7 @@ Utvidelse: <ph name="EXTENSION_FILE"/>
 Nøkkelfil: <ph name="KEY_FILE"/>
 
 Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal opprette nye versjoner av utvidelsen.</translation>
+<translation id="4477534650265381513">For rask tilgang plasserer du bokmerkene her på bokmerkeraden.</translation>
 <translation id="3036649622769666520">Åpne filer</translation>
 <translation id="7909652923456235549">Informasjonskapslene ble ikke sendt</translation>
 <translation id="7685049629764448582">JavaScript-minne</translation>

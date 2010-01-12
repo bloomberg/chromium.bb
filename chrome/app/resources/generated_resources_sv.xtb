@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Servern <ph name="DOMAIN"/> på <ph name="REALM"/> kräver användarnamn och lösenord.</translation>
 <translation id="2193841602817119749">Webbplatsen på &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; har rapporterats för &quot;lösenordsfiske&quot;.  Webbplatser för lösenordsfiske lurar användarna att avslöja personlig eller ekonomisk information, ofta genom att utge sig för att representera tillförlitliga myndigheter som exempelvis banker.</translation>
 <translation id="8178665534778830238">Innehåll:</translation>
+<translation id="1379170046778889619">Säkerhetsinformation</translation>
 <translation id="4771019161370731727">Senaste aktiviteterna</translation>
 <translation id="8974161578568356045">Upptäck automatiskt</translation>
 <translation id="1818606096021558659">Sida</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Autentiserar...</translation>
 <translation id="4195643157523330669">Öppna på ny flik</translation>
 <translation id="8030169304546394654">Frånkopplad</translation>
+<translation id="3683878911947678690">Du kan synkronisera bokmärken mellan datorer med ditt Google-konto</translation>
 <translation id="4178055285485194276">Vid start:</translation>
 <translation id="1154228249304313899">Öppna sidan:</translation>
 <translation id="9074348188580488499">Är du säker på att du vill radera alla lösenord?</translation>
@@ -977,6 +979,7 @@
 <translation id="8261506727792406068">Ta bort</translation>
 <translation id="345693547134384690">Öppna &amp;bild på ny flik</translation>
 <translation id="7422192691352527311">Inställningar...</translation>
+<translation id="7220379225958650049">Starta nu</translation>
 <translation id="1375198122581997741">Om version</translation>
 <translation id="1474307029659222435">Öppna ram i nytt fönster</translation>
 <translation id="7133850061938542637">Synkroniserad med <ph name="USER_EMAIL_ADDRESS"/>\nSenast synkroniserad: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1329,6 +1332,7 @@ Tillägg: <ph name="EXTENSION_FILE"/>
 Nyckelfil: <ph name="KEY_FILE"/>
 
 Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versioner av ditt tillägg.</translation>
+<translation id="4477534650265381513">Placera bokmärkena här i bokmärkesfältet så att de blir lättillgängliga.</translation>
 <translation id="3036649622769666520">Öppna filer</translation>
 <translation id="7909652923456235549">Cookies har inte skickats</translation>
 <translation id="7685049629764448582">JavaScript-minne</translation>

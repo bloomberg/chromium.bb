@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">השרת <ph name="DOMAIN"/> בכתובת <ph name="REALM"/> מצריך שם משתמש וסיסמה.</translation>
 <translation id="2193841602817119749">אתר האינטרנט בכתובת &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; דווח כאתר &quot;התחזות&quot;.  אתרי התחזות מערימים על המשתמשים וגורמים להם לחשוף מידע אישי או פיננסי, לעתים קרובות באמתלה שהם מייצגים מוסדות אמינים כגון בנקים.</translation>
 <translation id="8178665534778830238">תוכן:</translation>
+<translation id="1379170046778889619">פרטי אבטחה</translation>
 <translation id="4771019161370731727">פעילויות אחרונות</translation>
 <translation id="8974161578568356045">אתר באופן אוטומטי</translation>
 <translation id="1818606096021558659">דף</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">מאמת...</translation>
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
 <translation id="8030169304546394654">מנותק</translation>
+<translation id="3683878911947678690">תוכל לסנכרן את הסימניות שלך בין מחשבים באמצעות חשבון Google</translation>
 <translation id="4178055285485194276">בקבוצת ההפעלה:</translation>
 <translation id="1154228249304313899">פתח דף זה</translation>
 <translation id="9074348188580488499">האם אתה בטוח שברצונך להסיר את כל הסיסמאות?</translation>
@@ -977,6 +979,7 @@
 <translation id="8261506727792406068">מחק</translation>
 <translation id="345693547134384690">פתח &amp;תמונה בכרטיסייה חדשה</translation>
 <translation id="7422192691352527311">העדפות...</translation>
+<translation id="7220379225958650049">התחל כעת</translation>
 <translation id="1375198122581997741">אודות הגרסה</translation>
 <translation id="1474307029659222435">פתח מסגרת בחלון חדש</translation>
 <translation id="7133850061938542637">סונכרן ל-<ph name="USER_EMAIL_ADDRESS"/>\nסונכרן לאחרונה: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1336,6 +1339,7 @@ Del</translation>
 קובץ מפתח: <ph name="KEY_FILE"/>
 
 שמור על קובץ המפתח שלך במקום בטוח. תצטרך אותו כדי ליצור גרסאות חדשות של ההרחבה שלך.</translation>
+<translation id="4477534650265381513">לגישה מהירה מקם את הסימניות שלך כאן, בסרגל הסימניות</translation>
 <translation id="3036649622769666520">פתח קבצים</translation>
 <translation id="7909652923456235549">לא נשלחו קובצי Cookie</translation>
 <translation id="7685049629764448582">זיכרון JavaScript</translation>

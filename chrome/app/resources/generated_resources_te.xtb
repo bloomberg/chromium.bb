@@ -50,6 +50,7 @@
 <translation id="9154072353677278078"><ph name="REALM"/> వద్ద సర్వర్‌<ph name="DOMAIN"/>కు ఒక యూజర్‌పేరు మరియు పాస్‌వర్డ్ అవసరం.</translation>
 <translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; వద్ద వెబ్‌సైట్ని “ఫిషింగ్ ” సైట్‌గా నివేదించండి.   ఫిషింగ్ సైట్‌లు బ్యాంక్ వంటి నమ్మదగిన ఇన్‌స్టిట్యూట్  లాగ  కపటంగా వ్యక్తిగత లేదా ఆర్ధిక సమాచారాన్ని బహిర్గతం చేసే విధంగా యూజర్‌లను మోసం చెయ్యవచ్చు.</translation>
 <translation id="8178665534778830238">కంటెంట్:</translation>
+<translation id="1379170046778889619">భద్రతా సమాచారం</translation>
 <translation id="4771019161370731727">ఇటీవల కార్యాచరణలు</translation>
 <translation id="8974161578568356045">స్వయంగా కనుగొనడం</translation>
 <translation id="1818606096021558659">పేజి</translation>
@@ -865,6 +866,7 @@
 <translation id="3127919023693423797">ప్రమాణీకరిస్తోంది...</translation>
 <translation id="4195643157523330669">క్రొత్త టాబ్‌లో తెరువు</translation>
 <translation id="8030169304546394654">డిస్‌కనెక్ట్ చెయ్యబడింది</translation>
+<translation id="3683878911947678690">మీ Google ఖాతా ఉపయోగించి మీరు మీ బుక్‌మార్క్‌లను కంప్యూటర్లలో సమకాలీకరించవచ్చు</translation>
 <translation id="4178055285485194276">ప్రారంభించిన తరువాత:</translation>
 <translation id="1154228249304313899">ఈ పేజీని తెరువు:</translation>
 <translation id="9074348188580488499">అన్ని పాస్వర్డ్లను తొలగించాలని నిశ్చయించుకున్నారా?</translation>
@@ -991,6 +993,7 @@
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="345693547134384690">క్రొత్త టాబ్‌లో &amp;చిత్రాన్ని తెరువు</translation>
 <translation id="7422192691352527311">ప్రాధాన్యతలు...</translation>
+<translation id="7220379225958650049">ఇప్పుడు ప్రారంభించు</translation>
 <translation id="1375198122581997741">వెర్షన్ గురించి</translation>
 <translation id="1474307029659222435">ఫ్రేమ్‌ను క్రొత్త &amp;విండోలో తెరువు</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/>కు సమకాలీకరించింది\nచివరిగా సమకాలీకరించినది: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1340,6 +1343,7 @@
 <translation id="7999229196265990314">ఈ క్రింది ఫైళ్ళను సృష్టించింది:
 
 పొడిగింపు: <ph name="EXTENSION_FILE"/>కీ ఫైల్: <ph name="KEY_FILE"/>మీ కీ ఫైల్‌ను ఒక సురక్షితమైన స్థలంలో ఉంచండి. మీ పొడిగింపు యొక్క క్రొత్త సంస్కరణను సృష్టించడానికి మీకు ఇది అవసరం అవుతుంది.</translation>
+<translation id="4477534650265381513">శీఘ్ర ఆక్సెస్ కోసం, మీ బుక్‌మార్క్‌లను ఇక్కడ మీ బుక్‌మార్క్‌ల పట్టీలో ఉంచండి.</translation>
 <translation id="3036649622769666520">ఫైళ్ళను తెరువు</translation>
 <translation id="7909652923456235549">కుక్కీలు పంపలేదు</translation>
 <translation id="7685049629764448582">JavaScript మెమరీ</translation>

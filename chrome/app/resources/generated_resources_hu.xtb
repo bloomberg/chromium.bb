@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">A(z) <ph name="DOMAIN"/> szerveren található <ph name="REALM"/> felhasználónevet és jelszót kér.</translation>
 <translation id="2193841602817119749">A(z) &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; címen lévő webhelyről azt jelentették, hogy &quot;adathalász&quot; oldal.  Az adathalász oldalak trükkök segítségével kicsalják a felhasználók személyes vagy pénzügyi adatait, gyakran úgy, hogy hiteles intézmények, például bankok nevében írnak.</translation>
 <translation id="8178665534778830238">Tartalom:</translation>
+<translation id="1379170046778889619">Biztonsági információ</translation>
 <translation id="4771019161370731727">Legutóbbi tevékenységek</translation>
 <translation id="8974161578568356045">Automatikus felismerés</translation>
 <translation id="1818606096021558659">Oldal</translation>
@@ -853,6 +854,7 @@
 <translation id="3127919023693423797">Hitelesítés...</translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="8030169304546394654">Nincs kapcsolat</translation>
+<translation id="3683878911947678690">Google Fiókjának segítségével több számítógépen is szinkronizálhatja könyvjelzőit</translation>
 <translation id="4178055285485194276">Kezdő oldalak:</translation>
 <translation id="1154228249304313899">A következő oldal megnyitása:</translation>
 <translation id="9074348188580488499">Biztosan törölni szeretné az összes jelszót?</translation>
@@ -978,6 +980,7 @@
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="345693547134384690">Kép &amp;megnyitása új lapon</translation>
 <translation id="7422192691352527311">Beállítások...</translation>
+<translation id="7220379225958650049">Indítás most</translation>
 <translation id="1375198122581997741">A verzióról</translation>
 <translation id="1474307029659222435">Keret megnyitása új &amp;ablakban</translation>
 <translation id="7133850061938542637">Szinkronizálva a(z) <ph name="USER_EMAIL_ADDRESS"/> fiókkal\nUtolsó szinkronizálás: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1329,6 +1332,7 @@ Bővítmény: <ph name="EXTENSION_FILE"/>
 Kulcsfájl: <ph name="KEY_FILE"/>
 
 A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új verziókat készítsen bővítményéből.</translation>
+<translation id="4477534650265381513">A gyors elérés érdekében helyezze könyvjelzőit ide, a könyvjelzősávra.</translation>
 <translation id="3036649622769666520">Fájlok megnyitása</translation>
 <translation id="7909652923456235549">A cookie-k nem lettek elküldve</translation>
 <translation id="7685049629764448582">JavaScript memória</translation>

@@ -50,6 +50,7 @@
 <translation id="9154072353677278078"><ph name="REALM"/>上的 <ph name="DOMAIN"/> 服务器要求提供用户名和密码。</translation>
 <translation id="2193841602817119749">网址为 &lt;strong&gt;<ph name="HOST_NAME"/>&lt;strong&gt; 的网站已被举报为“网上诱骗”网站。网上诱骗网站通常会伪装成银行等受信任的机构，骗取用户的个人信息或财务信息。</translation>
 <translation id="8178665534778830238">内容：</translation>
+<translation id="1379170046778889619">安全信息</translation>
 <translation id="4771019161370731727">最近的活动</translation>
 <translation id="8974161578568356045">自动检测</translation>
 <translation id="1818606096021558659">网页</translation>
@@ -862,6 +863,7 @@
 <translation id="3127919023693423797">正在进行身份验证...</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="8030169304546394654">连接已断开</translation>
+<translation id="3683878911947678690">您可以通过 Google 帐户在不同的计算机上同步自己的书签。</translation>
 <translation id="4178055285485194276">在启动页上：</translation>
 <translation id="1154228249304313899">打开此页：</translation>
 <translation id="9074348188580488499">确定要删除所有密码吗？</translation>
@@ -985,6 +987,7 @@
 <translation id="8261506727792406068">删除</translation>
 <translation id="345693547134384690">在新标签页中打开图片(&amp;I)</translation>
 <translation id="7422192691352527311">偏好设置...</translation>
+<translation id="7220379225958650049">立即开始</translation>
 <translation id="1375198122581997741">关于版本</translation>
 <translation id="1474307029659222435">在新窗口中打开框架(&amp;W)</translation>
 <translation id="7133850061938542637">与 <ph name="USER_EMAIL_ADDRESS"/> 同步\n上次同步时间：<ph name="LAST_SYNC_TIME"/></translation>
@@ -1336,6 +1339,7 @@
 密钥文件：<ph name="KEY_FILE"/>
 
 请妥善保存您的密钥文件。您还需要使用该文件创建新版扩展程序。</translation>
+<translation id="4477534650265381513">要快速访问，请将书签放在这里的书签栏中。</translation>
 <translation id="3036649622769666520">打开文件</translation>
 <translation id="7909652923456235549">Cookie 未发送</translation>
 <translation id="7685049629764448582">JavaScript 使用的内存</translation>

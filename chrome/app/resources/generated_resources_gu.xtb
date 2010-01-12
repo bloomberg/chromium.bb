@@ -49,6 +49,7 @@
 <translation id="9154072353677278078"><ph name="REALM"/> પરનાં સર્વર <ph name="DOMAIN"/> ને વપરાશકર્તાનામ અને પાસવર્ડની જરૂર છે.</translation>
 <translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; પરની વેબસાઇટને “ફિશીંગ&quot; સાઈટ તરીકે જાણ કરવામાં આવી છે. ઘણીવાર બેન્ક્સ જેવી વિશ્વસનીય સંસ્થાઓનું પ્રતિનિધિત્વ કરતાં હોવાનો ઢોંગ કરીને ફિશીંગ સાઇટ્સ ઉપયોગકર્તાઓને વ્યક્તિગત અથવા નાણાંકીય માહિતી આપવા ફસાવે છે.</translation>
 <translation id="8178665534778830238">સામગ્રી:</translation>
+<translation id="1379170046778889619">સુરક્ષા માહિતી</translation>
 <translation id="4771019161370731727">તાજેતરની પ્રવૃત્તિઓ</translation>
 <translation id="8974161578568356045">સ્વતઃ શોધો</translation>
 <translation id="1818606096021558659">પૃષ્ઠ</translation>
@@ -864,6 +865,7 @@
 <translation id="3127919023693423797">પ્રમાણિત કરી રહ્યું છે...</translation>
 <translation id="4195643157523330669">નવા ટૅબમાં ખોલો</translation>
 <translation id="8030169304546394654">ડિસ્કનેક્ટેડ</translation>
+<translation id="3683878911947678690">તમે તમારા Google એકાઉન્ટનો ઉપયોગ કરીને તમારા બુકમાર્ક્સનો બધા કમ્પ્યુટર્સ વચ્ચે સમન્વય કરી શકો છો</translation>
 <translation id="4178055285485194276">સ્ટાર્ટઅપ પર:</translation>
 <translation id="1154228249304313899">આ પૃષ્ઠ ખોલો:</translation>
 <translation id="9074348188580488499">શું તમે ખરેખર બધાં પાસવર્ડ્સ દૂર કરવા માંગો છો?</translation>
@@ -988,6 +990,7 @@
 <translation id="8261506727792406068">કાઢી નાખો</translation>
 <translation id="345693547134384690">નવા ટૅબમાં &amp;છબી ખોલો</translation>
 <translation id="7422192691352527311">પસંદગીઓ...</translation>
+<translation id="7220379225958650049">હવે શરૂ કરો</translation>
 <translation id="1375198122581997741">વર્ઝન વિશે</translation>
 <translation id="1474307029659222435">નવી &amp;વિંડોમાં ફ્રેમ ખોલો</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/> પર સમન્વય કરો\nછેલ્લે સમન્વય કરેલું: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1334,6 +1337,7 @@
 <translation id="5183088099396036950">સર્વર સાથે કનેક્ટ કરી શકાયું નથી</translation>
 <translation id="4469842253116033348"><ph name="SITE"/> તરફની સૂચનાઓ અક્ષમ કરો  </translation>
 <translation id="7999229196265990314">નીચેની ફાઇલો બનાવાઈ: એક્સટેન્શન: <ph name="EXTENSION_FILE"/>કી ફાઇલ: <ph name="KEY_FILE"/>તમારી કી ફાઇલને સુરક્ષિત સ્થાન પર મૂકો. તમને તેની જરૂરિયાત તમારા એક્સટેન્શનના નવા સંસ્કરણ બનાવવા માટે પડશે.</translation>
+<translation id="4477534650265381513">ઝડપી ઍક્સેસ માટે, બુકમાર્ક્સ બારમાં અહીં તમારા બુકમાર્ક્સ મુકો.</translation>
 <translation id="3036649622769666520">ફાઇલો ખોલો</translation>
 <translation id="7909652923456235549">કૂકીઝ મોકલાઈ નથી</translation>
 <translation id="7685049629764448582">JavaScript મેમરી</translation>

@@ -50,6 +50,7 @@
 <translation id="9154072353677278078"><ph name="REALM"/> -এর <ph name="DOMAIN"/> সার্ভারটির একটি ব্যবহারকারী নাম এবং পাসওয়ার্ড প্রয়োজন৷</translation>
 <translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt;-এ ওয়েবসাইটটি একটি “ফিশিং” সাইট রূপে প্রতিবেদন করা হয়েছে৷  ফিশিং সাইট প্রায়ই কোনো বিশ্বস্ত প্রতিষ্ঠান যেমন ব্যাঙ্ক রূপে নিজেদের উপস্থাপন করার ভান করে ব্যবহারকারীদের ব্যক্তিগত অথবা আর্থিক তথ্য প্রকাশ করার জন্য প্ররোচিত করে৷</translation>
 <translation id="8178665534778830238">সামগ্রী:</translation>
+<translation id="1379170046778889619">নিরাপত্তা তথ্য</translation>
 <translation id="4771019161370731727">সাম্প্রতিক কার্যকলাপগুলি</translation>
 <translation id="8974161578568356045">স্বয়ং সনাক্ত</translation>
 <translation id="1818606096021558659">পৃষ্ঠা</translation>
@@ -865,6 +866,7 @@
 <translation id="3127919023693423797">প্রমাণ করা হচ্ছে...</translation>
 <translation id="4195643157523330669">নতুন ট্যাবে খুলুন</translation>
 <translation id="8030169304546394654">সংযোগ বিচ্ছিন্ন</translation>
+<translation id="3683878911947678690">আপনি নিজের Google অ্যাকাউন্ট ব্যবহার করে কম্পিউটারগুলি জুড়ে নিজের বুকমার্কগুলিকে সিঙ্ক করতে পারেন</translation>
 <translation id="4178055285485194276">প্রারম্ভে:</translation>
 <translation id="1154228249304313899">এই পৃষ্ঠাটি খুলুন:</translation>
 <translation id="9074348188580488499">আপনি কি সকল পাসওয়ার্ড সরানোর বিষয়ে নিশ্চিত?</translation>
@@ -991,6 +993,7 @@
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="345693547134384690">&amp;ছবি নতুন ট্যাবে খুলুন</translation>
 <translation id="7422192691352527311">অগ্রাধিকারগুলি...</translation>
+<translation id="7220379225958650049">এখন শুরু করুন</translation>
 <translation id="1375198122581997741">সংস্করণ সম্পর্কে</translation>
 <translation id="1474307029659222435">নতুন &amp;উইন্ডোতে ফ্রেম খুলুন</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/>-তে সিঙ্ক হয়েছে\nশেষ বার সিঙ্ক হয়েছে: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1342,6 +1345,7 @@
 কী ফাইল: <ph name="KEY_FILE"/>
 
 নিজের কী ফাইল কোন নিরাপদ স্থানে রাখুন৷ আপনাকে নিজের এক্সটেনশানের নতুন সংস্করণ তৈরি করতে হবে৷</translation>
+<translation id="4477534650265381513">দ্রুত অ্যাক্সেসের জন্য, আপনার বুকমার্কস এখানে বুকমার্কস দণ্ডে রাখুন৷</translation>
 <translation id="3036649622769666520">খোলা ফাইল</translation>
 <translation id="7909652923456235549">কুকিজ পাঠানো হয় নি</translation>
 <translation id="7685049629764448582">JavaScript স্মৃতি</translation>

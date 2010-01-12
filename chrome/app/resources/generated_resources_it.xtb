@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Il server <ph name="DOMAIN"/> su <ph name="REALM"/> richiede un nome utente e una password.</translation>
 <translation id="2193841602817119749">Sul sito web &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; è stata segnalata attività di “phishing”. I siti di phishing frodano gli utenti chiedendo loro di divulgare informazioni personali o finanziarie, spesso spacciandosi per enti affidabili, come istituti bancari.</translation>
 <translation id="8178665534778830238">Contenuto:</translation>
+<translation id="1379170046778889619">Informazioni di sicurezza</translation>
 <translation id="4771019161370731727">Attività recenti</translation>
 <translation id="8974161578568356045">Rileva automaticamente</translation>
 <translation id="1818606096021558659">Pagina</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Autenticazione in corso...</translation>
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
 <translation id="8030169304546394654">Disconnesso</translation>
+<translation id="3683878911947678690">Puoi sincronizzare i tuoi Preferiti tra computer utilizzando il tuo account Google</translation>
 <translation id="4178055285485194276">All'avvio:</translation>
 <translation id="1154228249304313899">Apri questa pagina:</translation>
 <translation id="9074348188580488499">Rimuovere tutte le password?</translation>
@@ -977,6 +979,7 @@
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="345693547134384690">Apri &amp;immagine in un'altra scheda</translation>
 <translation id="7422192691352527311">Preferenze...</translation>
+<translation id="7220379225958650049">Avvia ora</translation>
 <translation id="1375198122581997741">Informazioni sulla versione</translation>
 <translation id="1474307029659222435">Apri frame in un'altra &amp;finestra</translation>
 <translation id="7133850061938542637">Sincronizzazione con <ph name="USER_EMAIL_ADDRESS"/> eseguita\nUltima sincronizzazione: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1328,6 +1331,7 @@ Estensione: <ph name="EXTENSION_FILE"/>
 File di chiave: <ph name="KEY_FILE"/>
 
 Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove versioni dell'estensione.</translation>
+<translation id="4477534650265381513">Aggiungi le tue pagine preferite nella barra dei Preferiti per accedervi rapidamente.</translation>
 <translation id="3036649622769666520">Apri file</translation>
 <translation id="7909652923456235549">Cookie non inviati</translation>
 <translation id="7685049629764448582">Memoria JavaScript</translation>

@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Ang server na <ph name="DOMAIN"/> sa <ph name="REALM"/> ay nangangailangan ng isang username at password.</translation>
 <translation id="2193841602817119749">Ang website sa &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; ay naiulat na bilang isang site sa “phishing” .  Ang mga site sa Phishing na gumagamit ng mga taktika sa pagsara ng personal o pampinansyal na impormasyon, madalas na nagapanggap na nagpikita ng mga pinagkatiwalaang tagubilin, tulad ng mga bangko.</translation>
 <translation id="8178665534778830238">Nilalaman:</translation>
+<translation id="1379170046778889619">Impormasyon ng seguridad</translation>
 <translation id="4771019161370731727">Mga kamakailang aktibidad</translation>
 <translation id="8974161578568356045">Awtomatikong Hanapin</translation>
 <translation id="1818606096021558659">Pahina</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Pinapapatotohanan...</translation>
 <translation id="4195643157523330669">Buksan sa bagong tab</translation>
 <translation id="8030169304546394654">Naalis sa pagkakakonekta</translation>
+<translation id="3683878911947678690">Maaari mong mai-sync ang iyong mga bookmark sa mga computer gamit ang iyong Google account</translation>
 <translation id="4178055285485194276">Sa startup:</translation>
 <translation id="1154228249304313899">Buksan ang pahinang ito:</translation>
 <translation id="9074348188580488499">Sigurado ka bang nais mong alisin ang lahat ng mga password?</translation>
@@ -977,6 +979,7 @@
 <translation id="8261506727792406068">Tanggalin</translation>
 <translation id="345693547134384690">Buksan ang &amp;imahe sa bagong tab</translation>
 <translation id="7422192691352527311">Preferences...</translation>
+<translation id="7220379225958650049">Simulan na ngayon</translation>
 <translation id="1375198122581997741">Tungkol sa Bersyon</translation>
 <translation id="1474307029659222435">Buksan ang frame sa bagong &amp;window</translation>
 <translation id="7133850061938542637">Naka-sync sa <ph name="USER_EMAIL_ADDRESS"/>\nHuling na-sync: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1328,6 +1331,7 @@ Extension: <ph name="EXTENSION_FILE"/>
 Key File: <ph name="KEY_FILE"/>
 
 Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng mga bagong bersyon ng iyong extension.</translation>
+<translation id="4477534650265381513">Para sa mabilis na pag-access, ilagay ang iyong mga bookmark dito sa bar ng mga bookmark.</translation>
 <translation id="3036649622769666520">Buksan ang Mga File</translation>
 <translation id="7909652923456235549">Hindi naipadala ang cookies</translation>
 <translation id="7685049629764448582">Memorya sa JavaScript</translation>

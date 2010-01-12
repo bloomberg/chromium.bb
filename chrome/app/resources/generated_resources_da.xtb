@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Serveren <ph name="DOMAIN"/> på <ph name="REALM"/> kræver et brugernavn og en adgangskode.</translation>
 <translation id="2193841602817119749">Webstedet på &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; er blevet registreret som et “phishing”-websted. Phishing-websteder narrer brugere til at opgive personlige eller finansielle oplysninger. Det foregår gerne ved, at man udgiver sig for at repræsentere velkendte institutioner som banker.</translation>
 <translation id="8178665534778830238">Indhold:</translation>
+<translation id="1379170046778889619">Sikkerhedsoplysninger</translation>
 <translation id="4771019161370731727">Seneste aktiviteter</translation>
 <translation id="8974161578568356045">Find automatisk</translation>
 <translation id="1818606096021558659">Side</translation>
@@ -853,6 +854,7 @@
 <translation id="3127919023693423797">Godkender...</translation>
 <translation id="4195643157523330669">Åbn i ny fane</translation>
 <translation id="8030169304546394654">Afbrudt</translation>
+<translation id="3683878911947678690">Du kan synkronisere dine bogmærker på flere computere ved hjælp af din Google-konto</translation>
 <translation id="4178055285485194276">Ved opstart:</translation>
 <translation id="1154228249304313899">Åbn denne side:</translation>
 <translation id="9074348188580488499">Er du sikker på, at du ønsker at fjerne alle adgangskoder?</translation>
@@ -976,6 +978,7 @@
 <translation id="8261506727792406068">Slet</translation>
 <translation id="345693547134384690">Åbn &amp;billede i ny fane</translation>
 <translation id="7422192691352527311">Indstillinger...</translation>
+<translation id="7220379225958650049">Start nu</translation>
 <translation id="1375198122581997741">Om version</translation>
 <translation id="1474307029659222435">Åbn ramme i nyt vindue</translation>
 <translation id="7133850061938542637">Synkroniserede til <ph name="USER_EMAIL_ADDRESS"/>\nSidste synkronisering: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1327,6 +1330,7 @@ Udvidelse: <ph name="EXTENSION_FILE"/>
 Nøglefil: <ph name="KEY_FILE"/>
 
 Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye versioner af din udvidelse.</translation>
+<translation id="4477534650265381513">Placer dine bogmærker her i bogmærkelinjen for at få hurtig adgang til dem.</translation>
 <translation id="3036649622769666520">Åbn filer</translation>
 <translation id="7909652923456235549">Cookies blev ikke sendt</translation>
 <translation id="7685049629764448582">JavaScript-hukommelse</translation>

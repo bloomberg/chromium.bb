@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Für den Server <ph name="DOMAIN"/> unter <ph name="REALM"/> sind ein Nutzername und ein Passwort erforderlich.</translation>
 <translation id="2193841602817119749">Die Website unter &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; wurde als &quot;Phishing&quot;-Website gemeldet.Phishing-Websites täuschen Nutzer, damit diese ihre privaten oder finanziellen Daten freigeben, oft durch Vortäuschen, dass sie vertrauenswürdige Einrichtungen wie z. B. Banken seien.</translation>
 <translation id="8178665534778830238">Content:</translation>
+<translation id="1379170046778889619">Sicherheitsinformationen</translation>
 <translation id="4771019161370731727">Letzte Aktivitäten</translation>
 <translation id="8974161578568356045">Automatisch erkennen</translation>
 <translation id="1818606096021558659">Seite</translation>
@@ -851,6 +852,7 @@
 <translation id="3127919023693423797">Authentifizierung wird durchgeführt...</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="8030169304546394654">Verbindung getrennt</translation>
+<translation id="3683878911947678690">Sie können Ihre Lesezeichen mithilfe Ihres Google-Kontos auf mehreren Computern synchronisieren.</translation>
 <translation id="4178055285485194276">Beim Start:</translation>
 <translation id="1154228249304313899">Diese Seite öffnen:</translation>
 <translation id="9074348188580488499">Möchten Sie wirklich alle Passwörter entfernen?</translation>
@@ -975,6 +977,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="345693547134384690">B&amp;ild in neuem Tab öffnen</translation>
 <translation id="7422192691352527311">Einstellungen...</translation>
+<translation id="7220379225958650049">Jetzt starten</translation>
 <translation id="1375198122581997741">Informationen zur Version</translation>
 <translation id="1474307029659222435">Frame in neuem &amp;Fenster öffnen</translation>
 <translation id="7133850061938542637">Mit <ph name="USER_EMAIL_ADDRESS"/> synchronisiert\nLetzte Synchronisierung: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1328,6 +1331,7 @@ Erweiterung: <ph name="EXTENSION_FILE"/>
 Schlüsseldatei: <ph name="KEY_FILE"/>
 
 Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Datei, um neue Versionen Ihrer Erweiterung zu erstellen.</translation>
+<translation id="4477534650265381513">Platzieren Sie Ihre Lesezeichen hier in der Lesezeichenleiste, um schneller auf sie zugreifen zu können.</translation>
 <translation id="3036649622769666520">Dateien öffnen</translation>
 <translation id="7909652923456235549">Cookies nicht gesendet</translation>
 <translation id="7685049629764448582">JavaScript-Speicher</translation>

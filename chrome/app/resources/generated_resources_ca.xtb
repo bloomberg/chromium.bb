@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">El servidor <ph name="DOMAIN"/> de <ph name="REALM"/> necessita un nom d'usuari i una contrasenya.</translation>
 <translation id="2193841602817119749">El lloc web de &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; ha estat denunciat com a lloc de &quot;pesca&quot; (suplantació d'identitat).  Els llocs web de suplantació d'identitat enganyen els usuaris perquè donin informació personal o financera, sovint fingint que són institucions de confiança, com ara bancs.</translation>
 <translation id="8178665534778830238">Contingut:</translation>
+<translation id="1379170046778889619">Informació de seguretat</translation>
 <translation id="4771019161370731727">Activitats recents</translation>
 <translation id="8974161578568356045">Detecció automàtica</translation>
 <translation id="1818606096021558659">Pàgina</translation>
@@ -849,6 +850,7 @@
 <translation id="3127919023693423797">S'està autenticant...</translation>
 <translation id="4195643157523330669">Obre en una pestanya nova</translation>
 <translation id="8030169304546394654">Desconnectat</translation>
+<translation id="3683878911947678690">Podeu sincronitzar les adreces d'interès entre diversos equips mitjançant el vostre Compte de Google</translation>
 <translation id="4178055285485194276">A l'inici:</translation>
 <translation id="1154228249304313899">Obre aquesta pàgina:</translation>
 <translation id="9074348188580488499">Esteu segur que voleu eliminar totes les contrasenyes?</translation>
@@ -975,6 +977,7 @@
 <translation id="8261506727792406068">Suprimeix</translation>
 <translation id="345693547134384690">Obre la &amp;imatge en una pestanya nova</translation>
 <translation id="7422192691352527311">Preferències...</translation>
+<translation id="7220379225958650049">Inicia ara</translation>
 <translation id="1375198122581997741">Quan a la versió</translation>
 <translation id="1474307029659222435">Obre el marc en una &amp;finestra nova</translation>
 <translation id="7133850061938542637">S'ha sincronitzat amb <ph name="USER_EMAIL_ADDRESS"/>\nDarrera sincronització: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1328,6 +1331,7 @@ Extensió: <ph name="EXTENSION_FILE"/>
 Fitxer de clau: <ph name="KEY_FILE"/>
 
 Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versions noves de l'extensió.</translation>
+<translation id="4477534650265381513">Per a un accés ràpid, afegiu les adreces d'interès aquí a la barra d'adreces d'interès.</translation>
 <translation id="3036649622769666520">Obre fitxers</translation>
 <translation id="7909652923456235549">No s'han enviat les galetes</translation>
 <translation id="7685049629764448582">Memòria de JavaScript </translation>

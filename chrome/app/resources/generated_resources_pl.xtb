@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Serwer <ph name="DOMAIN"/> witryny <ph name="REALM"/> wymaga nazwy użytkownika i hasła.</translation>
 <translation id="2193841602817119749">Witryna &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; została zgłoszona jako witryna wyłudzająca dane (phishing).  Witryny tego typu wyłudzają od użytkowników dane osobowe lub informacje finansowe, często podszywając się pod zaufane instytucje takie jak banki.</translation>
 <translation id="8178665534778830238">Treść:</translation>
+<translation id="1379170046778889619">Informacje o bezpieczeństwie</translation>
 <translation id="4771019161370731727">Ostatnie czynności</translation>
 <translation id="8974161578568356045">Wykrywaj automatycznie</translation>
 <translation id="1818606096021558659">Strona</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Uwierzytelnianie...</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
 <translation id="8030169304546394654">Rozłączone</translation>
+<translation id="3683878911947678690">Zakładki możesz synchronizować między komputerami przy użyciu swojego konta Google</translation>
 <translation id="4178055285485194276">Po uruchomieniu:</translation>
 <translation id="1154228249304313899">Otwórz tę stronę:</translation>
 <translation id="9074348188580488499">Czy na pewno chcesz usunąć wszystkie hasła?</translation>
@@ -977,6 +979,7 @@
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="345693547134384690">Otwórz &amp;grafikę w nowej karcie</translation>
 <translation id="7422192691352527311">Ustawienia...</translation>
+<translation id="7220379225958650049">Uruchom teraz</translation>
 <translation id="1375198122581997741">Informacje o wersji</translation>
 <translation id="1474307029659222435">Otwórz ramkę w nowym &amp;oknie</translation>
 <translation id="7133850061938542637">Zsynchronizowano z <ph name="USER_EMAIL_ADDRESS"/>\nOstatnia synchronizacja: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1328,6 +1331,7 @@ Rozszerzenie: <ph name="EXTENSION_FILE"/>
 Plik klucza: <ph name="KEY_FILE"/>
 
 Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia nowych wersji rozszerzenia.</translation>
+<translation id="4477534650265381513">Umieść zakładki w tym miejscu paska zakładek, aby uzyskać szybki dostęp.</translation>
 <translation id="3036649622769666520">Otwórz pliki</translation>
 <translation id="7909652923456235549">Pliki cookie nie zostały wysłane</translation>
 <translation id="7685049629764448582">Pamięć JavaScript</translation>

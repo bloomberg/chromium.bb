@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">Strežnik <ph name="DOMAIN"/> za mesto <ph name="REALM"/> zahteva uporabniško ime in geslo.</translation>
 <translation id="2193841602817119749">Spletno mesto na &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; je bilo prijavljeno kot spletno mesto z lažno identiteto. Spletna mesta z lažno identiteto uporabnike zavedejo, da razkrijejo osebne ali finančne podatke, pogosto tako, da se izdajajo za zaupanja vredne institucije (npr. banke).</translation>
 <translation id="8178665534778830238">Vsebina:</translation>
+<translation id="1379170046778889619">Varnostne informacije</translation>
 <translation id="4771019161370731727">Nedavne dejavnosti</translation>
 <translation id="8974161578568356045">Samodejno zaznavanje</translation>
 <translation id="1818606096021558659">Stran</translation>
@@ -852,6 +853,7 @@
 <translation id="3127919023693423797">Preverjanje ...</translation>
 <translation id="4195643157523330669">Odpri v novem zavihku</translation>
 <translation id="8030169304546394654">Ni povezave</translation>
+<translation id="3683878911947678690">Z Google Računom lahko sinhronizirate zaznamke v več računalnikih</translation>
 <translation id="4178055285485194276">Ob zagonu:</translation>
 <translation id="1154228249304313899">Odpri to stran:</translation>
 <translation id="9074348188580488499">Ali ste prepričani, da želite odstraniti vsa gesla?</translation>
@@ -977,6 +979,7 @@
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="345693547134384690">Odpri &amp;sliko v novem zavihku</translation>
 <translation id="7422192691352527311">Nastavitve ...</translation>
+<translation id="7220379225958650049">Začni zdaj</translation>
 <translation id="1375198122581997741">O različici</translation>
 <translation id="1474307029659222435">Odpri okvir v novem &amp;oknu</translation>
 <translation id="7133850061938542637">Sinhronizirano z <ph name="USER_EMAIL_ADDRESS"/>\nZadnje sinhroniziranje: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1329,6 +1332,7 @@ Razširitev: <ph name="EXTENSION_FILE"/>
 Datoteka s ključem: <ph name="KEY_FILE"/>
 
 Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih različic razširitev.</translation>
+<translation id="4477534650265381513">Za hitri dostop svoje zaznamke postavite v vrstico z zaznamki.</translation>
 <translation id="3036649622769666520">Odpri datoteke</translation>
 <translation id="7909652923456235549">Piškotki niso bili poslani</translation>
 <translation id="7685049629764448582">Pomnilnik za JavaScript</translation>

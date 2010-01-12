@@ -7,7 +7,7 @@
 <translation id="2770231113462710648">將預設瀏覽器變更為：</translation>
 <translation id="698670068493841342">已安裝「Google 瀏覽器」供此使用者使用。如果軟體無法順利運作，請移除「Google 瀏覽器」，然後重新下載一次。</translation>
 <translation id="7400722733683201933">關於 Google 瀏覽器</translation>
-<translation id="7781002470561365167">目前有新版的「Google 瀏覽器」可供使用。</translation>
+<translation id="7781002470561365167">Google 瀏覽器已推出新版。</translation>
 <translation id="7101265395643981223">開啟 Google 瀏覽器</translation>
 <translation id="2370289711218562573">「Google 瀏覽器」現正匯入 [我的最愛/書籤]。</translation>
 <translation id="8970027151245482499">「Google 瀏覽器」並未安裝或找不到安裝目錄，請再次下載「Google 瀏覽器」。</translation>
@@ -47,6 +47,7 @@
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="2044287590254833138">Google 瀏覽器工具列</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
+<translation id="1473088902761932034">您回來真是太好了！但是 Google 還不是您的預設瀏覽器。</translation>
 <translation id="6481075104394517441">您嘗試到達 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器所提供的憑證尚未生效。沒有任何資訊顯示憑證是否可靠。Google 瀏覽器無法確切保證您聯絡的對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而非攻擊者。您必須確保您的電腦已正確設定時間和時區。如果設定不正確，請修改設定，然後重新整理本網頁。如果設定正確，您必須就此停住。</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
 <translation id="595871952790078940">瀏覽器公用程式</translation>

@@ -47,6 +47,7 @@
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="2044287590254833138">Verktygsfältet Google Chrome</translation>
 <translation id="5074344184765391290">Plugin-värd för Chrome</translation>
+<translation id="1473088902761932034">Hurra, du har kommit tillbaka! Men Google Chrome är inte din standardwebbläsare.</translation>
 <translation id="6481075104394517441">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men certifikatet som servern angav är inte giltigt ännu. Det finns ingen information om huruvida certifikatet är tillförlitligt. Google Chrome kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Kontrollera att klockan och tidszonen är korrekt angivna på datorn. I annat fall bör du korrigera dem och uppdatera den här sidan. Fortsätt inte om de är korrekta.</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>

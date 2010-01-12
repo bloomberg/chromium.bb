@@ -50,6 +50,7 @@
 <translation id="9154072353677278078"><ph name="REALM"/> पर मौजूद सर्वर <ph name="DOMAIN"/> के लिए उपयोगकर्ता नाम और पासवर्ड की आवश्यकता है.</translation>
 <translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; पर मौजूद वेबसाइट के बारे में एक ''फ़िशिंग'' साइट के रूप में जानकारी दी गई है.  फ़िशिंग साइटें, प्राय: विश्वस्नीय संस्थानों, जैसे बैंक, का प्रतिनिधित्व करने का ढोंग करते हुए, छल से उपयोगकर्ताओं को व्यक्तिगत या वित्तीय जानकारी प्रकट करने हेतु प्रेरित करती हैं.</translation>
 <translation id="8178665534778830238">सामग्री :</translation>
+<translation id="1379170046778889619">सुरक्षा जानकारी</translation>
 <translation id="4771019161370731727">हाल की गतिविधियां</translation>
 <translation id="8974161578568356045">स्वत: पता लगाएं</translation>
 <translation id="1818606096021558659">पृष्ठ</translation>
@@ -851,6 +852,7 @@
 <translation id="3127919023693423797">प्रमाणित कर रहा है...</translation>
 <translation id="4195643157523330669">नए टैब में खोलें</translation>
 <translation id="8030169304546394654">डिस्कनेक्ट किया गया</translation>
+<translation id="3683878911947678690">आप अपने Google खाते का उपयोग करके सभी कंप्यूटर पर अपने बुकमार्क सिंक कर सकते हैं</translation>
 <translation id="4178055285485194276">स्टार्टअप चालू करें:</translation>
 <translation id="1154228249304313899">यह पृष्ठ खोलें:</translation>
 <translation id="9074348188580488499">क्या आप निश्चित रूप से सभी पासवर्ड निकालना चाहते हैं?</translation>
@@ -975,6 +977,7 @@
 <translation id="8261506727792406068">हटाएँ</translation>
 <translation id="345693547134384690">नए टैब में &amp;चित्र खोलें</translation>
 <translation id="7422192691352527311">प्राथमिकताएं...</translation>
+<translation id="7220379225958650049">अभी प्रारंभ करें</translation>
 <translation id="1375198122581997741">संस्करण के बारे में</translation>
 <translation id="1474307029659222435">फ़्रेम नई &amp;विंडो में खोलें</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/> में सिंक किया गया\nअंतिम बार सिंक किया गया: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1325,6 +1328,7 @@
 मुख्य फ़ाइल: <ph name="KEY_FILE"/>
 
 अपनी मुख्य फ़ाइल को किसी सुरक्षित स्थान पर रखें. आपको अपने विस्तार के नए संस्करण बनाने के लिए इसकी आवश्यकता होगी.</translation>
+<translation id="4477534650265381513">त्वरित एक्सेस के लिए, अपने बुकमार्क यहाँ बुकमार्क बार में रखें.</translation>
 <translation id="3036649622769666520">फ़ाइलें खोलें</translation>
 <translation id="7909652923456235549">कुकी नहीं भेजी गई</translation>
 <translation id="7685049629764448582">JavaScript स्मृति</translation>

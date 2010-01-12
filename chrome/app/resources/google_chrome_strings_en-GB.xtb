@@ -47,6 +47,7 @@
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
+<translation id="1473088902761932034">Hooray, you're back! But Google Chrome isn't your default browser.</translation>
 <translation id="6481075104394517441">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate that is not yet valid. No information is available to indicate whether that certificate can be trusted. Google Chrome cannot reliably guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. You should ensure that your clock and time zone are set correctly on your computer. If they are not, you should correct any issues and refresh this page. If they are correct, you should not proceed.</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>

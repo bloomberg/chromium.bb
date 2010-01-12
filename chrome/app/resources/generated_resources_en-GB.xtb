@@ -50,6 +50,7 @@
 <translation id="9154072353677278078">The server <ph name="DOMAIN"/> at <ph name="REALM"/> requires a username and password.</translation>
 <translation id="2193841602817119749">The website at &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; has been reported as a “phishing” site.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.</translation>
 <translation id="8178665534778830238">Content:</translation>
+<translation id="1379170046778889619">Security information</translation>
 <translation id="4771019161370731727">Recent activities</translation>
 <translation id="8974161578568356045">Auto Detect</translation>
 <translation id="1818606096021558659">Page</translation>
@@ -853,6 +854,7 @@
 <translation id="3127919023693423797">Authenticating...</translation>
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="8030169304546394654">Disconnected</translation>
+<translation id="3683878911947678690">You can sync your bookmarks across computers using your Google account</translation>
 <translation id="4178055285485194276">On startup:</translation>
 <translation id="1154228249304313899">Open this page:</translation>
 <translation id="9074348188580488499">Are you sure that you want to remove all passwords?</translation>
@@ -978,6 +980,7 @@
 <translation id="8261506727792406068">Delete</translation>
 <translation id="345693547134384690">Open &amp;image in new tab</translation>
 <translation id="7422192691352527311">Preferences...</translation>
+<translation id="7220379225958650049">Start now</translation>
 <translation id="1375198122581997741">About Version</translation>
 <translation id="1474307029659222435">Open frame in new &amp;window</translation>
 <translation id="7133850061938542637">Synced to <ph name="USER_EMAIL_ADDRESS"/>\nLast synced: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1329,6 +1332,7 @@ Extension: <ph name="EXTENSION_FILE"/>
 Key File: <ph name="KEY_FILE"/>
 
 Keep your key file in a safe place. You will need it to create new versions of your extension.</translation>
+<translation id="4477534650265381513">For quick access, place your bookmarks here in the bookmarks bar.</translation>
 <translation id="3036649622769666520">Open Files</translation>
 <translation id="7909652923456235549">Cookies not sent</translation>
 <translation id="7685049629764448582">JavaScript memory</translation>

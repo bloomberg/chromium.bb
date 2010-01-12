@@ -50,6 +50,7 @@
 <translation id="9154072353677278078"><ph name="DOMAIN"/> サーバーの <ph name="REALM"/> では、ユーザー名とパスワードが必要です。</translation>
 <translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; のウェブサイトは「フィッシング」サイトとして報告されています。フィッシング サイトは、例えば銀行などの信用機関を装ってユーザーから個人情報や財務情報を不正に引き出します。</translation>
 <translation id="8178665534778830238">コンテンツ:</translation>
+<translation id="1379170046778889619">セキュリティ情報</translation>
 <translation id="4771019161370731727">最近のアクティビティ</translation>
 <translation id="8974161578568356045">自動検出</translation>
 <translation id="1818606096021558659">ページ</translation>
@@ -858,6 +859,7 @@
 <translation id="3127919023693423797">認証中...</translation>
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="8030169304546394654">切断済み</translation>
+<translation id="3683878911947678690">Google アカウントを使用してパソコン間でブックマークを同期させることができます</translation>
 <translation id="4178055285485194276">起動時:</translation>
 <translation id="1154228249304313899">アドレス:</translation>
 <translation id="9074348188580488499">すべてのパスワードを削除しますか？</translation>
@@ -979,6 +981,7 @@
 <translation id="8261506727792406068">削除</translation>
 <translation id="345693547134384690">新しいタブで画像を開く(&amp;I)</translation>
 <translation id="7422192691352527311">環境設定...</translation>
+<translation id="7220379225958650049">今すぐ開始</translation>
 <translation id="1375198122581997741">バージョン情報</translation>
 <translation id="1474307029659222435">新しいウィンドウでフレームを開く(&amp;W)</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/> に同期しました\n最終同期: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1331,6 +1334,7 @@
 鍵ファイル: <ph name="KEY_FILE"/>
 
 鍵ファイルは安全な場所に保管してください。拡張機能の新しいバージョンの作成時に必要となります。</translation>
+<translation id="4477534650265381513">こちらのブックマーク バーにブックマークを追加すると簡単にページにアクセスできます。</translation>
 <translation id="3036649622769666520">ファイルを開く</translation>
 <translation id="7909652923456235549">Cookie は送信されません</translation>
 <translation id="7685049629764448582">JavaScript メモリ</translation>
