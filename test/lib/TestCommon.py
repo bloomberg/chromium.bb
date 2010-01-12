@@ -44,9 +44,9 @@ provided by the TestCommon class:
 
     test.must_match('file', "expected contents\n")
 
-    test.must_not_contain('file', 'required text\n')
-
     test.must_not_be_writable('file1', ['file2', ...])
+
+    test.must_not_contain('file', 'banned text\n')
 
     test.must_not_contain_any_line(output, lines, ['title', find])
 
@@ -72,7 +72,7 @@ The TestCommon module also provides the following variables
 
 """
 
-# Copyright 2000, 2001, 2002, 2003, 2004 Steven Knight
+# Copyright 2000-2010 Steven Knight
 # This module is free software, and you may redistribute it and/or modify
 # it under the same terms as Python itself, so long as this copyright message
 # and disclaimer are retained in their original form.
@@ -89,8 +89,8 @@ The TestCommon module also provides the following variables
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
-__revision__ = "TestCommon.py 0.36.D001 2009/07/24 08:45:26 knight"
-__version__ = "0.36"
+__revision__ = "TestCommon.py 0.37.D001 2010/01/11 16:55:50 knight"
+__version__ = "0.37"
 
 import copy
 import os
@@ -346,7 +346,7 @@ class TestCommon(TestCmd):
             print banned
             print self.banner('%s contents ' % file)
             print file_contents
-            self.fail_test(not contains)
+            self.fail_test(contains)
 
     def must_not_contain_any_line(self, output, lines, title=None, find=None):
         """Ensures that the specified output string (first argument)
