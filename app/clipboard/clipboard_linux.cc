@@ -215,6 +215,10 @@ void Clipboard::WriteData(const char* format_name, size_t format_len,
   char* data = new char[data_len];
   memcpy(data, data_data, data_len);
   std::string format(format_name, format_len);
+  // We assume that certain mapping types are only written by trusted code.
+  // Therefore we must upkeep their integrity.
+  if (format == kMimeBmp || format == kMimeURI)
+    return;
   InsertMapping(format.c_str(), data, data_len);
 }
 
