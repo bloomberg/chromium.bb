@@ -52,7 +52,12 @@ IDENTIFIER(NaClSyscallSeg):
         xor     %eax, %eax
         mov     %gs, %ax
         shr     $3, %eax
+#ifdef __PIC__
+        mov     IDENTIFIER(nacl_user)@GOTPCREL(%rip), %edx
+        lea     0(%edx,%eax,4), %edx
+#else
         lea     IDENTIFIER(nacl_user)(,%eax,4), %edx
+#endif
 
         /* check NaClThreadContext in sel_rt.h for the offsets */
         movl    0(%edx), %edx
@@ -67,7 +72,12 @@ IDENTIFIER(NaClSyscallSeg):
          * any registers having particular values.  we will clear/discard
          * caller-saved registers at system call return.
          */
+#ifdef __PIC__
+        mov     IDENTIFIER(nacl_sys)@GOTPCREL(%rip), %edx
+        lea     0(%edx,%eax,4), %edx
+#else
         lea     IDENTIFIER(nacl_sys)(,%eax,4), %edx
+#endif
         mov     0(%edx), %edx
         /*
          * %cs and %ds already taken care of by NaCl_trampoline_seg_code
@@ -82,7 +92,11 @@ IDENTIFIER(NaClSyscallSeg):
         mov     %ecx, %ss  /* disable intr */
         mov     %rdx, %rsp
         push    %rax
+#ifdef __PIC__
+        call    IDENTIFIER(NaClSyscallCSegHook)@PLT
+#else
         call    IDENTIFIER(NaClSyscallCSegHook)
+#endif
         /*
          * If stack usage in the above code changes, modify initial %esp
          * computation -- see nacl_switch_to_app.c:NaClStartThreadInApp.

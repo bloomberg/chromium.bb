@@ -40,6 +40,13 @@
         'nacl_syscall.S',
         'sel_rt_64.c',
       ],
+      'conditions': [
+        [ 'library=="shared_library"', {
+            'asflags': [
+              '-fPIC',
+            ],
+        }],
+      ],
     },
   ],
 }
