@@ -451,8 +451,7 @@ BUG12310 WONTFIX SKIP : LayoutTests/fast/wcss = FAIL
 WONTFIX : LayoutTests/fast/dom/HTMLScriptElement/nested-execution.html = FAIL
 
 // Touch events are not supported.
-WONTFIX SKIP : LayoutTests/fast/events/touch-coords-in-zoom-and-scroll.html = FAIL TIMEOUT
-WONTFIX SKIP : LayoutTests/fast/events/basic-touch-events.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/touch = FAIL
 
 // Deletion UI is a Mail-ism. We don't need to worry about this.
 WONTFIX SKIP : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL IMAGE
@@ -3102,5 +3101,3 @@ BUG_JOHNNYG LINUX : LayoutTests/fast/text/find-kana.html = CRASH
 
 // from http://trac.webkit.org/changeset/53086
 BUG_JOHNNYG : LayoutTests/svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = TEXT
-
-
