@@ -80,9 +80,6 @@ StackFrame* StackwalkerARM::GetCallerFrame(
     return NULL;
   }
 
-  StackFrameARM *last_frame = static_cast<StackFrameARM*>(
-      stack->frames()->back());
-
   // TODO: Can't actually walk the stack on ARM without the CFI data.
   // Implement this when the CFI symbol dumper changes have landed.
   return NULL;

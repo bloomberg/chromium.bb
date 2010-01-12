@@ -1063,7 +1063,7 @@ void MinidumpContext::Print() {
       for (unsigned int fpe_index = 0;
            fpe_index < MD_FLOATINGSAVEAREA_ARM_FPEXTRA_COUNT;
            ++fpe_index) {
-        printf("  float_save.extra[%2d] = 0x%" PRIx64 "\n",
+        printf("  float_save.extra[%2d] = 0x%" PRIx32 "\n",
                fpe_index, context_arm->float_save.extra[fpe_index]);
       }
 

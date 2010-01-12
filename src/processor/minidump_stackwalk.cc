@@ -162,6 +162,7 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
       }
       const char *trust_name;
       switch (frame_x86->trust) {
+        default:
         case StackFrameX86::FRAME_TRUST_NONE:
           trust_name = "unknown";
           break;
