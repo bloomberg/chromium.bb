@@ -41,6 +41,15 @@ nouveau_resource_init(struct nouveau_resource **heap,
 	return 0;
 }
 
+void
+nouveau_resource_destroy(struct nouveau_resource **heap)
+{
+	if (!*heap)
+		return;
+	free(*heap);
+	*heap = NULL;
+}
+
 int
 nouveau_resource_alloc(struct nouveau_resource *heap, unsigned size, void *priv,
 		       struct nouveau_resource **res)
