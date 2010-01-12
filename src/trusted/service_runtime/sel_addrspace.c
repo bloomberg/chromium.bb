@@ -23,7 +23,7 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
   size_t      hole_size;
   uintptr_t   stack_start;
 
-  NaClLog(2, "NaClAllocAddrSpace: calling NaCl_page_alloc(*,0x%x)\n",
+  NaClLog(2, "NaClAllocAddrSpace: calling NaClAllocateSpace(*,0x%x)\n",
           (1U << nap->addr_bits));
 
   rv = NaClAllocateSpace(&mem, 1U << nap->addr_bits);
