@@ -2,49 +2,67 @@
 
 <!--
 [NOTEs for editors:
- * Try to be consistent about string vs. message
+ * Try to be consistent about string vs. message (it's probably not yet).
 -->
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-Use the <code>chrome.i18n</code> module to
-get localized messages for the current locale,
-from either the extension or its content script.
-You can also use this module to get the languages that the browser accepts.
+An <em>internationalized</em> extension
+can be easily
+<em>localized</em> &mdash;
+adapted to languages and regions
+that it didn't originally support.
 </p>
+
+<p>
+To internationalize your extension,
+you need to put all of its user-visible strings into a file
+named <code>messages.json</code>.
+Each time you localize your extension
+you add a messages file
+under a directory
+named <code>_locales/<em>localeCode</em></code>,
+where <em>localeCode</em> is a code such as
+<code>en</code> for English.
+</p>
+
+<p>
+Here's the file hierarchy
+for an internationalized extension that supports
+English (<code>en</code>),
+Spanish (<code>es</code>), and
+Korean (<code>ko</code>):
+</p>
+
+<img src="images/i18n-hierarchy.gif" alt=""
+ width="385" height="77" />
+
 
 <h2 id="l10">How to support multiple languages</h2>
 
 <p>
-To simplify translating your extension,
-<em>internationalize</em> it by
-putting all its user-visible strings
-in a file named <code>messages.json</code>.
-For example, let's say you have an extension
+Say you have an extension
 with the files shown in the following figure:
 </p>
 
 <img src="images/i18n-before.gif" alt=""
- width="" height="">
+ width="323" height="148">
 
 <p>
 To internationalize this extension,
-put each user-visible string into a messages file.
-For an extension that's in English,
-the messages file can be at
-<code>_locales/en/messages.json</code>.
-Each message has a name.
+you name each user-visible string
+and put it into a messages file.
 The extension's manifest and JavaScript code
-use this name to get the localized message.
+use each string's name to get its localized version.
 </p>
 
 <p>
-The next figure shows an internationalized extension
-that has only English strings.
+Here's what the extension looks like when it's internationalized
+(note that it still has only English strings):
 </p>
 
 <img src="images/i18n-after-1.gif" alt=""
- width="" height="">
+ width="782" height="228">
 
 <p class="note">
 <b>Important:</b>
@@ -52,21 +70,6 @@ If an extension has a <code>_locales</code> directory,
 the <a href="manifest.html">manifest</a>
 <b>must</b> define "default_locale".
 </p>
-
-<p>
-Once an extension is internationalized,
-translating it is simple.
-You just copy <code>messages.json</code>,
-translate it,
-and put the copy into a new directory under <code>_locales</code>.
-For example, to support Spanish,
-just put the translated copy of <code>messages.json</code>
-under <code>_locales/es</code>.
-The following figure shows the extension with a new Spanish translation.
-</p>
-
-<img src="images/i18n-after-2.gif" alt=""
- width="" height="">
 
 <p>
 Some notes about internationalizing extensions:
@@ -119,15 +122,31 @@ Some notes about internationalizing extensions:
   },
   ...
 }</pre>
-  </li>
-
-</ul>
 
 <!--
 For more information, see
 <a href="message.html">Formats: Message Files</a>.
 [PENDING: write this page!]
 -->
+  </li>
+</ul>
+
+<p>
+Once an extension is internationalized,
+translating it is simple.
+You copy <code>messages.json</code>,
+translate it,
+and put the copy into a new directory under <code>_locales</code>.
+For example, to support Spanish,
+just put a translated copy of <code>messages.json</code>
+under <code>_locales/es</code>.
+The following figure shows the previous extension
+with a new Spanish translation.
+</p>
+
+<img src="images/i18n-after-2.gif" alt=""
+ width="782" height="358">
+
 
 <h2 id="overview-locales">Locales</h2>
 
@@ -195,29 +214,109 @@ Here's how the extension system searches for a message:
 
 <p>
 In the following figure,
-the message named "color" is in all three locales
+the message named "colores" is in all three locales
 that the extension supports,
 but "extName" is in only two of the locales.
-Where a user running Google Chrome in US English sees the heading "Color",
-a user running it in British English sees "Colour".
+Wherever a user running Google Chrome in US English sees the label "Colors",
+a user of British English sees "Colours".
 Both US English and British English users
 see the extension name "Hello World".
 Because the default language is Spanish,
 users running Google Chrome in any non-English language
-see the heading "Color" and the extension name "Hola mundo".
+see the label "Colores" and the extension name "Hola mundo".
 </p>
 
 <img src="images/i18n-strings.gif" alt=""
- width="496" height="490" />
+ width="493" height="488" />
 
 <h3 id="locales-testing">How to set your browser's locale</h3>
 
 <p>
-When you test translations, you might want to set your browser's locale.
-Here's how.
+To test translations, you might want to set your browser's locale.
+This section tells you how to set the locale in
+<a href="#testing-win">Windows</a>,
+<a href="#testing-mac">Mac OS X</a>, and
+<a href="#testing-linux">Linux</a>.
 </p>
 
 <h4 id="testing-win">Windows</h4>
+
+<p>
+You can change the locale using either
+a locale-specific shortcut
+or the Google Chrome UI.
+The shortcut approach is quicker, once you've set it up,
+and it lets you use several languages at once.
+</p>
+
+<h5 id="win-shortcut">Using a locale-specific shortcut</h5>
+
+<p>
+To create and use a shortcut that launches Google Chrome
+with a particular locale:
+</p>
+
+<ol>
+  <li>
+    Make a copy of the Google Chrome shortcut
+    that's already on your desktop.
+  </li>
+  <li>
+    Rename the new shortcut to match the new locale.
+  </li>
+  <li>
+    Change the shortcut's properties
+    so that the Target field specifies the
+    <code>--lang</code> and
+    <code>--user-data-dir</code> flags.
+    The target should look something like this:
+
+<pre><em>path_to_chrome.exe</em> --lang=<em>locale</em> --user-data-dir=c:\<em>locale_profile_dir</em></pre>
+  </li>
+
+  <li>
+    Launch Google Chrome by double-clicking the shortcut.
+  </li>
+</ol>
+
+<p>
+For example, to create a shortcut
+that launches Google Chrome in Spanish (<code>es</code>),
+you might create a shortcut named <code>chrome-es</code>
+that has the following target:
+</p>
+
+<pre><em>path_to_chrome.exe</em> --lang=es --user-data-dir=c:\chrome-profile-es</pre>
+
+<p>
+You can create as many shortcuts as you like,
+making it easy to test your extension in multiple languages.
+For example:
+</p>
+
+<pre><em>path_to_chrome.exe</em> --lang=en --user-data-dir=c:\chrome-profile-en
+<em>path_to_chrome.exe</em> --lang=en_GB --user-data-dir=c:\chrome-profile-en_GB
+<em>path_to_chrome.exe</em> --lang=ko --user-data-dir=c:\chrome-profile-ko</pre>
+
+<p class="note">
+<b>Note:</b>
+Specifying <code>--user-data-dir</code> is optional but handy.
+Having one data directory per locale
+lets you run the browser
+in several languages at the same time.
+A disadvantage is that because the locales' data isn't shared,
+you have to install your extension multiple times &mdash; once per locale,
+which can be challenging when you don't speak the language.
+For more information, see
+<a href="http://www.chromium.org/developers/creating-and-using-profiles">Creating and Using Profiles</a>.
+</p>
+
+
+<h5 id="win-ui">Using the UI</h5>
+
+<p>
+Here's how to change the locale using the UI on Google Chrome for Windows:
+</p>
 
 <ol>
   <li> Tools menu (wrench) > <b>Options</b> </li>
@@ -229,7 +328,13 @@ Here's how.
   <li> Restart Chrome </li>
 </ol>
 
+
 <h4 id="testing-mac">Mac OS X</h4>
+
+<p>
+To change the locale on Mac,
+you use the system preferences.
+</p>
 
 <ol>
   <li> From the Apple menu, choose <b>System Preferences</b> </li>
@@ -238,10 +343,15 @@ Here's how.
   <li> Restart Chrome </li>
 </ol>
 
+
 <h4 id="testing-linux">Linux</h4>
 
 <p>
-Set the language environment variable, and then launch Google Chrome.
+To change the locale on Linux,
+first quit Google Chrome.
+Then, all in one line,
+set the LANGUAGE environment variable
+and launch Google Chrome.
 For example:
 </p>
 

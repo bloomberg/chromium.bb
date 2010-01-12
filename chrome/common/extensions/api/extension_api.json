@@ -100,7 +100,7 @@
         "name": "getURL",
         "type": "function",
         "unprivileged": true,
-        "description": "Convert a relative path within an extension install directory to a fully-qualified URL.",
+        "description": "Converts a relative path within an extension install directory to a fully-qualified URL.",
         "parameters": [
           {
             "type": "string",
@@ -277,7 +277,7 @@
       {
         "name": "getLastFocused",
         "type": "function",
-        "description": "Get the window that was most recently focused -- typically the window 'on top'.",
+        "description": "Gets the window that was most recently focused &mdash; typically the window 'on top'.",
         "parameters": [
           {
             "type": "function",
@@ -293,7 +293,7 @@
       {
         "name": "getAll",
         "type": "function",
-        "description": "Get all windows.",
+        "description": "Gets all windows.",
         "parameters": [
           {
             "type": "object",
@@ -318,7 +318,7 @@
       {
         "name": "create",
         "type": "function",
-        "description": "Create (open) a new browser with any optional sizing, position or default url provided.",
+        "description": "Creates (opens) a new browser with any optional sizing, position or default url provided.",
         "parameters": [
           {
             "type": "object",
@@ -347,7 +347,7 @@
       {
         "name": "update",
         "type": "function",
-        "description": "Update the properties of a window. Only specify the properties that you want to change, unspecified properties will be left unchanged.",
+        "description": "Updates the properties of a window. Specify only the properties that you want to change; unspecified properties will be left unchanged.",
         "parameters": [
           {"type": "integer", "name": "windowId", "minimum": 0},
           {
@@ -595,7 +595,7 @@
       {
         "name": "update",
         "type": "function",
-        "description": "Modify the properties of a tab. Properties that are not specified in <var>updateProperties</var> are not modified.",
+        "description": "Modifies the properties of a tab. Properties that are not specified in <var>updateProperties</var> are not modified.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
@@ -623,7 +623,7 @@
       {
         "name": "move",
         "type": "function",
-        "description": "Move a tab to a new position within its window, or to a new window.",
+        "description": "Moves a tab to a new position within its window, or to a new window.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
@@ -1235,7 +1235,7 @@
       {
         "name": "search",
         "type": "function",
-        "description": "Seaches for BookmarkTreeNodes matching the given query.",
+        "description": "Searches for BookmarkTreeNodes matching the given query.",
         "parameters": [
           {"type": "string", "name": "query"},
           {
@@ -1299,7 +1299,7 @@
       {
         "name": "update",
         "type": "function",
-        "description": "Updates the properties of a bookmark or folder. Only specify the properties that you want to change, unspecified properties will be left unchanged.  NOTE: currently, only 'title' is supported.",
+        "description": "Updates the properties of a bookmark or folder. Specify only the properties that you want to change; unspecified properties will be left unchanged.  <b>Note:</b> Currently, only 'title' is supported.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
@@ -1370,7 +1370,7 @@
       {
         "name": "onChanged",
         "type": "function",
-        "description": "Fired when a bookmark or folder changes.  NOTE: currently, only title changes trigger this.",
+        "description": "Fired when a bookmark or folder changes.  <b>Note:</b> Currently, only title changes trigger this.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
@@ -1620,7 +1620,7 @@
       {
         "name": "getAcceptLanguages",
         "type": "function",
-        "description": "Get accept languages of browser",
+        "description": "Gets the accept-languages of the browser. This is different from the locale used by the browser; to get the locale, use <code>window.navigator.language</code>.",
         "parameters": [
           {
             "type": "function",
@@ -1635,11 +1635,11 @@
         "name": "getMessage",
         "type": "function",
         "unprivileged": true,
-        "description": "Get a message from the extension language catalog, for a current locale.",
+        "description": "Gets the localized string for the specified message.",
         "parameters": [
           { "type": "string",
             "name": "messageName",
-            "description": "Message name from the extension catalog."
+            "description": "The name of the message, as specified in the <code>messages.json</code> file."
           },
           {
             "choices": [
