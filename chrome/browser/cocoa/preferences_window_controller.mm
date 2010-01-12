@@ -596,10 +596,15 @@ class PrefObserverBridge : public NotificationObserver,
   verticalShift += AutoSizeGroup(personalStuffGroupPasswords_,
                                  kAutoSizeGroupBehaviorVerticalToFit,
                                  verticalShift);
-  // We want to autosize the sync button but not the text field, so we use
-  // VerticalFirstToFit.
+  // TODO(akalin): Here we rely on the initial contents of the sync
+  // group's text field/link field to be large enough to hold all
+  // possible messages so that we don't have to re-layout when sync
+  // state changes.  This isn't perfect, since e.g. some sync messages
+  // use the user's e-mail address (which may be really long), and the
+  // link field is usually not shown (leaving a big empty space).
+  // Rethink sync preferences UI for Mac.
   verticalShift += AutoSizeGroup(personalStuffGroupSync_,
-                                 kAutoSizeGroupBehaviorVerticalFirstToFit,
+                                 kAutoSizeGroupBehaviorVerticalToFit,
                                  verticalShift);
   [GTMUILocalizerAndLayoutTweaker
       resizeViewWithoutAutoResizingSubViews:personalStuffView_
@@ -1225,6 +1230,11 @@ const int kDisabledIndex = 1;
   }
 }
 
+- (IBAction)doSyncReauthentication:(id)sender {
+  DCHECK(syncService_);
+  syncService_->ShowLoginDialog();
+}
+
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value {
   if (value == kEnabledIndex)
     [self recordUserAction:"Options_PasswordManager_Enable"];
@@ -1531,10 +1541,7 @@ const int kDisabledIndex = 1;
 //
 // TODO(akalin): Decomp this out since a lot of it is copied from the
 // Windows version.
-// TODO(akalin): Actually have a control for the link.
 // TODO(akalin): Change the background of the status label/link on error.
-// TODO(akalin): Make sure selecting the "Sync my bookmarks..." menu item
-// pops up this preference pane if syncing has already been set up.
 - (void)syncStateChanged {
   DCHECK(syncService_);
 
@@ -1555,6 +1562,8 @@ const int kDisabledIndex = 1;
   string16 statusLabel, linkLabel;
   sync_ui_util::GetStatusLabels(syncService_, &statusLabel, &linkLabel);
   [syncStatus_ setStringValue:base::SysUTF16ToNSString(statusLabel)];
+  [syncLink_ setHidden:linkLabel.empty()];
+  [syncLink_ setTitle:base::SysUTF16ToNSString(linkLabel)];
 }
 
 // Show the preferences window.

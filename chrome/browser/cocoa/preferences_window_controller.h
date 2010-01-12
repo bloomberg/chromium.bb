@@ -83,6 +83,7 @@ class ProfileSyncService;
   BooleanPrefMember formAutofill_;
   IBOutlet NSButton* syncButton_;
   IBOutlet NSTextField* syncStatus_;
+  IBOutlet NSButton* syncLink_;
 
   // Under the hood panel
   IBOutlet NSView* underTheHoodContentView_;
@@ -127,6 +128,7 @@ class ProfileSyncService;
 - (IBAction)resetThemeToDefault:(id)sender;
 - (IBAction)themesGallery:(id)sender;
 - (IBAction)doSyncAction:(id)sender;
+- (IBAction)doSyncReauthentication:(id)sender;
 
 // Under the hood
 - (IBAction)showCookies:(id)sender;
