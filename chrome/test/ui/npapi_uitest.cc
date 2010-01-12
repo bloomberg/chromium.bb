@@ -365,7 +365,8 @@ TEST_F(NPAPITester, EnsureScriptingWorksInDestroy) {
 
 // This test uses a Windows Event to signal to the plugin that it should crash
 // on NP_Initialize.
-TEST_F(NPAPITester, NoHangIfInitCrashes) {
+// This is flaky. http://crbug.com/32048
+TEST_F(NPAPITester, FLAKY_NoHangIfInitCrashes) {
   if (UITest::in_process_renderer())
     return;
 

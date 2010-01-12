@@ -104,6 +104,10 @@ class RendererCrashTest : public UITest {
   }
 };
 
+#if defined(OS_WIN)
+// http://crbug.com/32048
+#define Crash FLAKY_Crash
+#endif
 // Launch the app in renderer crash test mode, then close the app.
 TEST_F(RendererCrashTest, Crash) {
   if (UITest::in_process_renderer()) {

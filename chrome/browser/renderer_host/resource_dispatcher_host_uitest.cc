@@ -194,6 +194,10 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
 }
 
 #if !defined(OS_MACOSX)
+#if defined(OS_WIN)
+// http://crbug.com/32048
+#define CrossSiteAfterCrash FLAKY_CrossSiteAfterCrash
+#endif
 // Tests that the onbeforeunload and onunload logic is shortcutted if the old
 // renderer is gone.  In that case, we don't want to wait for the old renderer
 // to run the handlers.
