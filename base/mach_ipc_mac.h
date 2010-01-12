@@ -258,7 +258,7 @@ class MachReceiveMessage : public MachMessage {
 //==============================================================================
 class MachSendMessage : public MachMessage {
  public:
-  MachSendMessage(int32_t message_id);
+  explicit MachSendMessage(int32_t message_id);
   MachSendMessage(void *storage, size_t storage_length, int32_t message_id);
 
  private:
@@ -272,11 +272,11 @@ class MachSendMessage : public MachMessage {
 class ReceivePort {
  public:
   // Creates a new mach port for receiving messages and registers a name for it
-  ReceivePort(const char *receive_port_name);
+  explicit ReceivePort(const char *receive_port_name);
 
   // Given an already existing mach port, use it.  We take ownership of the
   // port and deallocate it in our destructor.
-  ReceivePort(mach_port_t receive_port);
+  explicit ReceivePort(mach_port_t receive_port);
 
   // Create a new mach port for receiving messages
   ReceivePort();
@@ -302,11 +302,12 @@ class ReceivePort {
 class MachPortSender {
  public:
   // get a port with send rights corresponding to a named registered service
-  MachPortSender(const char *receive_port_name);
+  explicit MachPortSender(const char *receive_port_name);
 
 
-  // Given an already existing mach port, use it.
-  MachPortSender(mach_port_t send_port);
+  // Given an already existing mach port, use it. Does not take ownership of
+  // |send_port|.
+  explicit MachPortSender(mach_port_t send_port);
 
   kern_return_t SendMessage(MachSendMessage &message,
                             mach_msg_timeout_t timeout);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/mach_ipc_mac.h"
+#include "base/mach_ipc_mac.h"
 
 #import <Foundation/Foundation.h>
 

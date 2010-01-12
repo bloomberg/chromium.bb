@@ -23,6 +23,10 @@
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/mach_broker_mac.h"
+#endif
+
 #if defined(OS_POSIX)
 #include "base/global_descriptors_posix.h"
 #endif
@@ -161,10 +165,24 @@ class ChildProcessLauncher::Context
 #endif  // defined(OS_LINUX)
 
       // Actually launch the app.
-      if (!base::LaunchApp(cmd_line->argv(), env, fds_to_map, false, &handle))
+      bool launched;
+#if defined(OS_MACOSX)
+      task_t child_task;
+      launched = base::LaunchAppAndGetTask(
+          cmd_line->argv(), env, fds_to_map, false, &child_task, &handle);
+      if (launched && child_task != MACH_PORT_NULL) {
+          MachBroker::instance()->RegisterPid(
+              handle,
+              MachBroker::MachInfo().SetTask(child_task));
+      }
+#else
+      launched = base::LaunchApp(cmd_line->argv(), env, fds_to_map,
+                                 /* wait= */false, &handle);
+#endif
+      if (!launched)
         handle = base::kNullProcessHandle;
     }
-#endif
+#endif  // else defined(OS_POSIX)
 
     ChromeThread::PostTask(
         client_thread_id_, FROM_HERE,
