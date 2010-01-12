@@ -1,4 +1,6 @@
-// Copyright (c) 2009, Google Inc.             -*- mode: c++ -*-
+// -*- mode: c++ -*-
+
+// Copyright (c) 2009, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
