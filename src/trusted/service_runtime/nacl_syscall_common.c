@@ -46,9 +46,10 @@
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_cond.h"
 #include "native_client/src/trusted/desc/nacl_desc_dir.h"
-#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
+#include "native_client/src/trusted/desc/nacl_desc_invalid.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_mutex.h"
 #include "native_client/src/trusted/desc/nacl_desc_semaphore.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
@@ -84,6 +85,8 @@ static const size_t kMaxUsableFileSize = (SIZE_T_MAX >> 1);
 static INLINE size_t  size_min(size_t a, size_t b) {
   return (a < b) ? a : b;
 }
+
+static int const kKnownInvalidDescNumber = -1;
 
 /*
  * natp should be thread_self(), called while holding no locks.
@@ -1598,7 +1601,11 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
      * exactly once.
      */
     for (i = 0; i < kern_nimh.desc_length; ++i) {
-      kern_desc[i] = NaClGetDesc(natp->nap, ((int *) sysaddr)[i]);
+      if (kKnownInvalidDescNumber == ((int *) sysaddr)[i]) {
+        kern_desc[i] = (struct NaClDesc *) NaClDescInvalidMake();
+      } else {
+        kern_desc[i] = NaClGetDesc(natp->nap, ((int *) sysaddr)[i]);
+      }
       if (NULL == kern_desc[i]) {
         retval = -NACL_ABI_EBADF;
         goto cleanup;
@@ -1664,6 +1671,7 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
   struct NaClImcTypedMsgHdr recv_hdr;
   struct NaClDesc           *new_desc[NACL_ABI_IMC_DESC_MAX];
   size_t                    num_user_desc;
+  struct NaClDesc           *invalid_desc = NULL;
 
   NaClLog(3,
           ("Entered NaClCommonSysImc_RecvMsg(0x%08"PRIxPTR", %d,"
@@ -1803,9 +1811,14 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
     num_user_desc = kern_nimh.desc_length;
   }
 
+  invalid_desc = (struct NaClDesc *) NaClDescInvalidMake();
   for (i = 0; i < num_user_desc; ++i) {
     /* write out to user space the descriptor numbers */
-    kern_descv[i] = NaClSetAvail(natp->nap, new_desc[i]);
+    if (invalid_desc == new_desc[i]) {
+      kern_descv[i] = kKnownInvalidDescNumber;
+    } else {
+      kern_descv[i] = NaClSetAvail(natp->nap, new_desc[i]);
+    }
     new_desc[i] = NULL;
   }
 
@@ -1822,6 +1835,7 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
     }
   }
   NaClDescUnref(ndp);
+  NaClDescSafeUnref(invalid_desc);
   NaClLog(3, "NaClCommonSysImc_RecvMsg: returning %d\n", retval);
 cleanup_leave:
   NaClSysCommonThreadSyscallLeave(natp);

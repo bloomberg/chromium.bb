@@ -25,6 +25,7 @@
 #else
 # include "native_client/src/shared/platform/nacl_host_desc.h"
 # include "native_client/src/trusted/desc/nacl_desc_base.h"
+# include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 # include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #endif  /* __native_client__ */
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -55,7 +56,7 @@ struct DescList {
 static DescList* descriptors = NULL;
 
 static int AddDescToList(NaClSrpcImcDescType new_desc, const char* print_name) {
-  static int next_desc = 0;
+  static int next_desc = -1;
   DescList* new_list_element;
   DescList** list_pointer;
 
@@ -63,7 +64,17 @@ static int AddDescToList(NaClSrpcImcDescType new_desc, const char* print_name) {
   if (kNaClSrpcInvalidImcDesc == new_desc) {
     return -1;
   }
-  /* Create a descriptor list node. */
+  /* Find the descriptor in the list (for the known invalid descriptor), or
+   * find the end of the list for insertion of a new node. */
+  for (list_pointer = &descriptors;
+       NULL != *list_pointer && (*list_pointer)->desc != new_desc;
+       list_pointer = &(*list_pointer)->next) {
+  }
+  if (NULL != *list_pointer) {
+    /* It was in the list. */
+    return (*list_pointer)->number;
+  }
+  /* Create a new descriptor list node. */
   new_list_element = (DescList*) malloc(sizeof(DescList));
   if (NULL == new_list_element) {
     return -1;
@@ -72,11 +83,6 @@ static int AddDescToList(NaClSrpcImcDescType new_desc, const char* print_name) {
   new_list_element->desc = new_desc;
   new_list_element->print_name = print_name;
   new_list_element->next = NULL;
-  /* Find the end of the list of descriptors*/
-  for (list_pointer = &descriptors;
-       NULL != *list_pointer;
-       list_pointer = &(*list_pointer)->next) {
-  }
   *list_pointer = new_list_element;
   return new_list_element->number;
 }
@@ -190,6 +196,9 @@ static void BuildDefaultDescList() {
 #else
   const int kRdOnly = NACL_ABI_O_RDONLY;
   const int kWrOnly = NACL_ABI_O_WRONLY;
+#endif  /* __native_client__ */
+#ifndef __native_client__
+  AddDescToList((struct NaClDesc*) NaClDescInvalidMake(), "invalid");
 #endif  /* __native_client__ */
   AddDescToList(DescFromPlatformDesc(0, kRdOnly), "stdin");
   AddDescToList(DescFromPlatformDesc(1, kWrOnly), "stdout");

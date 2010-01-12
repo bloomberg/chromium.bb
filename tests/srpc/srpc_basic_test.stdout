@@ -11,7 +11,9 @@ RPC Name                 Input args Output args
   9 stringret            i          s         
  10 handle               h                    
  11 handleret                       h         
- 12 __shutdown                                
+ 12 invalid_handle       h                    
+ 13 invalid_handle_ret              h         
+ 14 __shutdown                                
 bool RESULTS:   b(1)
 bool RESULTS:   b(0)
 double RESULTS:   d(-1.000000)
@@ -26,3 +28,5 @@ null_method RESULTS:
 stringret RESULTS:   s("Ich weiss nicht, was soll es bedeutenDass ich so traurig bin,Ein Maerchen aus uralten Zeiten,Das kommt mir nicht aus dem Sinn.Die Luft ist kuehl und es dunkelt,Und ruhig fliesst der Rhein;Der Gipfel des Berges funkelt,Im Abendsonnenschein.Die schoenste Jungfrau sitzetDort oben wunderbar,Ihr gold'nes Geschmeide blitzet,Sie kaemmt ihr goldenes Haar,Sie kaemmt es mit goldenem Kamme,Und singt ein Lied dabei;Das hat eine wundersame,Gewalt'ge Melodei.")
 handle RESULTS: 
 handleret RESULTS:   h(4)
+invalid_handle RESULTS: 
+invalid_handle_ret RESULTS:   h(-1)

@@ -147,6 +147,7 @@ void NaClDescSafeUnref(struct NaClDesc *ndp) {
 
 int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
                                                struct NaClDescXferState *) = {
+  NaClDescInvalidInternalize,
   NaClDescDirInternalize,
   NaClDescIoInternalize,
   NaClDescConnCapInternalize,
@@ -170,6 +171,7 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
   /* default functions for the vtable - return NOT_IMPLEMENTED */
   switch (type_tag) {
 #define MAP(E) case E: do { return #E; } while (0)
+    MAP(NACL_DESC_INVALID);
     MAP(NACL_DESC_DIR);
     MAP(NACL_DESC_HOST_IO);
     MAP(NACL_DESC_CONN_CAP);

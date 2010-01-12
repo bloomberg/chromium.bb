@@ -59,6 +59,8 @@
           'nacl_desc_imc_bound_desc.h',
           'nacl_desc_imc_shm.c',
           'nacl_desc_imc_shm.h',
+          'nacl_desc_invalid.c',
+          'nacl_desc_invalid.h',
           'nacl_desc_io.c',
           'nacl_desc_io.h',
           'nacl_desc_mutex.c',

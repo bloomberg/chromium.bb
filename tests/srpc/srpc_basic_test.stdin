@@ -13,3 +13,5 @@ rpc null_method *
 rpc stringret i(0) * s("")
 rpc handle h(3) *
 rpc handleret * h(0)
+rpc invalid_handle h(-1) *
+rpc invalid_handle_ret * h(0)

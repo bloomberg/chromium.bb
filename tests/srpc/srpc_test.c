@@ -52,6 +52,8 @@
  */
 static const int kSrpcSocketAddressDescriptorNumber = 4;
 
+static const int kInvalidDescriptorNumber = -1;
+
 /*
  *  First, tests for scalar argument passing and return.
  */
@@ -222,3 +224,30 @@ NaClSrpcError ReturnHandleMethod(NaClSrpcChannel *channel,
 }
 
 NACL_SRPC_METHOD("handleret::h", ReturnHandleMethod);
+
+/*
+ * A method to accept an invalid handle (descriptor).
+ */
+NaClSrpcError InvalidHandleMethod(NaClSrpcChannel *channel,
+                                  NaClSrpcArg **in_args,
+                                  NaClSrpcArg **out_args) {
+  if (kInvalidDescriptorNumber == in_args[0]->u.hval) {
+    return NACL_SRPC_RESULT_OK;
+  } else {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+}
+
+NACL_SRPC_METHOD("invalid_handle:h:", InvalidHandleMethod);
+
+/*
+ * A method to return an invalid handle (descriptor).
+ */
+NaClSrpcError ReturnInvalidHandleMethod(NaClSrpcChannel *channel,
+                                        NaClSrpcArg **in_args,
+                                        NaClSrpcArg **out_args) {
+  out_args[0]->u.hval = kInvalidDescriptorNumber;
+  return NACL_SRPC_RESULT_OK;
+}
+
+NACL_SRPC_METHOD("invalid_handle_ret::h", ReturnInvalidHandleMethod);

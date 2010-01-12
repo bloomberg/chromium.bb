@@ -71,6 +71,7 @@ struct NaClDescXferState {
 };
 
 enum NaClDescTypeTag {
+  NACL_DESC_INVALID,
   NACL_DESC_DIR,
   NACL_DESC_HOST_IO,
   NACL_DESC_CONN_CAP,
@@ -333,6 +334,16 @@ void NaClDescSafeUnref(struct NaClDesc *ndp);
 /*
  * subclasses
  */
+
+/*
+ * Invalid descriptor
+ * This class is a singleton used to enable passing a designated "invalid"
+ * descriptor via RPCs for error conditions.
+ */
+struct NaClDescInvalid;
+
+extern int NaClDescInvalidInternalize(struct NaClDesc          **baseptr,
+                                      struct NaClDescXferState *xfer) NACL_WUR;
 
 /*
  * Directory descriptors

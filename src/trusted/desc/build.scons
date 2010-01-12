@@ -61,6 +61,7 @@ nrd_lib_inputs = [
     'nacl_desc_imc.c',
     'nacl_desc_imc_bound_desc.c',
     'nacl_desc_imc_shm.c',
+    'nacl_desc_invalid.c',
     'nacl_desc_io.c',
     'nacl_desc_mutex.c',
     'nrd_all_modules.c',

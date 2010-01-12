@@ -88,7 +88,8 @@ var SharedMemoryFactory = function() {
 var SharedMemoryMaps = function() {
   // Test the map method of a handle object.
   // Get a handle to an invalid shared memory object from a NaCl module.
-  expectFail('map_invalid',
+  expectPass('map_invalid',
+             true,
              function() {
                return server.get_invalid_handle();
              });
