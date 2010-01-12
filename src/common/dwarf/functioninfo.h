@@ -146,6 +146,16 @@ class CUFunctionInfoHandler: public Dwarf2Handler {
                                         enum DwarfForm form,
                                         uint64 data);
 
+  // Called when we have an attribute with a DIE reference to give to
+  // our handler.  The attribute is for the DIE at OFFSET from the
+  // beginning of the .debug_info section, has a name of ATTR, a form of
+  // FORM, and the offset of the referenced DIE from the start of the
+  // .debug_info section is in DATA.
+  virtual void ProcessAttributeReference(uint64 offset,
+                                         enum DwarfAttribute attr,
+                                         enum DwarfForm form,
+                                         uint64 data);
+
   // Called when we have an attribute with string data to give to
   // our handler.  The attribute is for the DIE at OFFSET from the
   // beginning of the .debug_info section, has a name of ATTR, a form of

@@ -331,24 +331,20 @@ const char* CompilationUnit::ProcessAttribute(
 
     case DW_FORM_data1:
     case DW_FORM_flag:
-    case DW_FORM_ref1:
       handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
                                          reader_->ReadOneByte(start));
       return start + 1;
       break;
-    case DW_FORM_ref2:
     case DW_FORM_data2:
       handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
                                          reader_->ReadTwoBytes(start));
       return start + 2;
       break;
-    case DW_FORM_ref4:
     case DW_FORM_data4:
       handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
                                          reader_->ReadFourBytes(start));
       return start + 4;
       break;
-    case DW_FORM_ref8:
     case DW_FORM_data8:
       handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
                                          reader_->ReadEightBytes(start));
@@ -362,7 +358,6 @@ const char* CompilationUnit::ProcessAttribute(
     }
       break;
     case DW_FORM_udata:
-    case DW_FORM_ref_udata:
       handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
                                          reader_->ReadUnsignedLEB128(start,
                                                                      &len));
@@ -379,17 +374,49 @@ const char* CompilationUnit::ProcessAttribute(
                                          reader_->ReadAddress(start));
       return start + reader_->AddressSize();
       break;
+
+    case DW_FORM_ref1:
+      handler_->ProcessAttributeReference(dieoffset, attr, form,
+                                          reader_->ReadOneByte(start)
+                                          + offset_from_section_start_);
+      return start + 1;
+      break;
+    case DW_FORM_ref2:
+      handler_->ProcessAttributeReference(dieoffset, attr, form,
+                                          reader_->ReadTwoBytes(start)
+                                          + offset_from_section_start_);
+      return start + 2;
+      break;
+    case DW_FORM_ref4:
+      handler_->ProcessAttributeReference(dieoffset, attr, form,
+                                          reader_->ReadFourBytes(start)
+                                          + offset_from_section_start_);
+      return start + 4;
+      break;
+    case DW_FORM_ref8:
+      handler_->ProcessAttributeReference(dieoffset, attr, form,
+                                          reader_->ReadEightBytes(start)
+                                          + offset_from_section_start_);
+      return start + 8;
+      break;
+    case DW_FORM_ref_udata:
+      handler_->ProcessAttributeReference(dieoffset, attr, form,
+                                          reader_->ReadUnsignedLEB128(start,
+                                                                      &len)
+                                          + offset_from_section_start_);
+      return start + len;
+      break;
     case DW_FORM_ref_addr:
       // DWARF2 and 3 differ on whether ref_addr is address size or
       // offset size.
       assert(header_.version == 2 || header_.version == 3);
       if (header_.version == 2) {
-        handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
-                                           reader_->ReadAddress(start));
+        handler_->ProcessAttributeReference(dieoffset, attr, form,
+                                            reader_->ReadAddress(start));
         return start + reader_->AddressSize();
       } else if (header_.version == 3) {
-        handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
-                                           reader_->ReadOffset(start));
+        handler_->ProcessAttributeReference(dieoffset, attr, form,
+                                            reader_->ReadOffset(start));
         return start + reader_->OffsetSize();
       }
       break;

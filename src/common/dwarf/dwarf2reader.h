@@ -358,6 +358,16 @@ class Dwarf2Handler {
                                       enum DwarfForm form,
                                       int64 data) { }
 
+  // Called when we have an attribute whose value is a reference to
+  // another DIE. The attribute belongs to the DIE at OFFSET from the
+  // beginning of the .debug_info section. Its name is ATTR, its form
+  // is FORM, and the offset of the DIE being referred to from the
+  // beginning of the .debug_info section is DATA.
+  virtual void ProcessAttributeReference(uint64 offset,
+                                         enum DwarfAttribute attr,
+                                         enum DwarfForm form,
+                                         uint64 data) { }
+
   // Called when we have an attribute with a buffer of data to give to our
   // handler. The attribute is for the DIE at OFFSET from the beginning of the
   // .debug_info section. Its name is ATTR, its form is FORM, DATA points to
