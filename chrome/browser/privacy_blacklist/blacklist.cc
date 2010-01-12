@@ -141,24 +141,38 @@ void Blacklist::Entry::SwapTypes(std::vector<std::string>* types) {
 }
 
 bool Blacklist::Match::MatchType(const std::string& type) const {
-  for (std::vector<const Entry*>::const_iterator i = entries_.begin();
-      i != entries_.end(); ++i) {
+  // No match if any exception matches.
+  for (std::vector<const Entry*>::const_iterator i = exception_entries_.begin();
+      i != exception_entries_.end(); ++i) {
+    if ((*i)->MatchesType(type))
+      return false;
+  }
+
+  // Otherwise, match if any blacklist entry matches.
+  for (std::vector<const Entry*>::const_iterator i = matching_entries_.begin();
+      i != matching_entries_.end(); ++i) {
     if ((*i)->MatchesType(type))
       return true;
   }
+
   return false;
 }
 
 bool Blacklist::Match::IsBlocked(const GURL& url) const {
-  return (attributes_ & kBlockAll) ||
-    ((attributes_ & kBlockUnsecure) && !url.SchemeIsSecure());
+  return (attributes() & kBlockAll) ||
+    ((attributes() & kBlockUnsecure) && !url.SchemeIsSecure());
 }
 
-Blacklist::Match::Match() : attributes_(0) {}
+Blacklist::Match::Match() : matching_attributes_(0), exception_attributes_(0) {}
 
 void Blacklist::Match::AddEntry(const Entry* entry) {
-  attributes_ |= entry->attributes();
-  entries_.push_back(entry);
+  if (entry->is_exception()) {
+    exception_attributes_ |= entry->attributes();
+    exception_entries_.push_back(entry);
+  } else {
+    matching_attributes_ |= entry->attributes();
+    matching_entries_.push_back(entry);
+  }
 }
 
 Blacklist::Blacklist() {

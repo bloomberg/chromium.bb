@@ -23,3 +23,9 @@ www.site.com/bad/url => kBlockAll
 
 # Affect queries with a specific parameter
 @?badparam@ => kBlockAll
+
+# Whitelist a specific URL
+-www.site.com/bad/url/good => kBlockAll
+
+# Whitelist attributes
+-www.good.com => kBlockByType(application/x-shockwave-flash), kDontPersistCookies

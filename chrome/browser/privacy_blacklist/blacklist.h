@@ -84,6 +84,9 @@ class Blacklist {
     // Bitfield of filter-attributes matching the pattern.
     unsigned int attributes() const { return attributes_; }
 
+    // True if this entry is an exception to the blacklist.
+    bool is_exception() const { return is_exception_; }
+
     // Provider of this blacklist entry, used for assigning blame ;)
     const Provider* provider() const { return provider_; }
 
@@ -130,18 +133,27 @@ class Blacklist {
   class Match : public URLRequest::UserData {
    public:
     // Functions that return combined results from all entries.
-    unsigned int attributes() const { return attributes_; }
+    unsigned int attributes() const {
+      return (matching_attributes_ & (~exception_attributes_));
+    }
     bool MatchType(const std::string&) const;
     bool IsBlocked(const GURL&) const;
 
     // Access to individual entries, mostly for display/logging purposes.
-    const std::vector<const Entry*>& entries() const { return entries_; }
+    const std::vector<const Entry*>& entries() const {
+      return matching_entries_;
+    }
 
    private:
     Match();
     void AddEntry(const Entry* entry);
-    std::vector<const Entry*> entries_;
-    unsigned int attributes_;  // Precomputed ORed attributes of entries.
+
+    std::vector<const Entry*> matching_entries_;
+    std::vector<const Entry*> exception_entries_;
+
+    // Precomputed ORed attributes of matching/exception entries.
+    unsigned int matching_attributes_;
+    unsigned int exception_attributes_;
 
     friend class Blacklist;  // Only blacklist constructs and sets these.
   };
