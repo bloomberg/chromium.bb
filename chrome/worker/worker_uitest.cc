@@ -178,7 +178,7 @@ TEST_F(WorkerTest, IncognitoSharedWorkers) {
 #define WorkerFastLayoutTests0 DISABLED_WorkerFastLayoutTests0
 #define WorkerFastLayoutTests1 DISABLED_WorkerFastLayoutTests1
 #define WorkerFastLayoutTests2 DISABLED_WorkerFastLayoutTests2
-#elif defined(OS_MAC)
+#elif defined(OS_MACOSX)
 // Flaky on Mac - http://crbug.com/28445
 #define WorkerFastLayoutTests0 FLAKY_WorkerFastLayoutTests0
 #endif
