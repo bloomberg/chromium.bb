@@ -163,7 +163,11 @@
         # Windows-specific rules.
         ['OS=="win"', {
           'include_dirs': [
+            '../third_party/cld',
             'third_party/wtl/include',
+          ],
+          'dependencies': [
+            '../third_party/cld/cld.gyp:cld',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {

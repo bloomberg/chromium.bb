@@ -905,7 +905,7 @@ bool DetectTabLanguageFunction::RunImpl() {
   // object that the language has been received.
   contents->GetPageLanguage();
   registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
-      NotificationService::AllSources());
+                 Source<RenderViewHost>(contents->render_view_host()));
   AddRef();  // balanced in Observe()
   return true;
 }

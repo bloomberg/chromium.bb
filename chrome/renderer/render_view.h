@@ -430,6 +430,11 @@ class RenderView : public RenderWidget,
   // UserScript::DOCUMENT_IDLE.
   void OnUserScriptIdleTriggered(WebKit::WebFrame* frame);
 
+  // Returns the ISO 639_1 language code of the current page
+  // (ex: en, fr, zh...).  Returns 'unknown' if the language could not be
+  // determined.
+  std::string DetectLanguage();
+
  protected:
   // RenderWidget overrides:
   virtual void Close();
@@ -508,9 +513,11 @@ class RenderView : public RenderWidget,
                         SkBitmap* thumbnail,
                         ThumbnailScore* score);
 
-  // Capture a snapshot of a view.  This is used to allow an extension
-  // to get a snapshot of a tab using chrome.tabs.captureVisibleTab().
-  bool CaptureSnapshot(WebKit::WebView* view, SkBitmap* snapshot);
+  // Calculates how "boring" a thumbnail is. The boring score is the
+  // 0,1 ranged percentage of pixels that are the most common
+  // luma. Higher boring scores indicate that a higher percentage of a
+  // bitmap are all the same brightness.
+  double CalculateBoringScore(SkBitmap* bitmap);
 
   bool RunJavaScriptMessage(int type,
                             const std::wstring& message,
@@ -524,7 +531,6 @@ class RenderView : public RenderWidget,
 
   // RenderView IPC message handlers
   void SendThumbnail();
-  void SendSnapshot();
   void OnPrintPages();
   void OnPrintingDone(int document_cookie, bool success);
   void OnNavigate(const ViewMsg_Navigate_Params& params);
@@ -556,7 +562,7 @@ class RenderView : public RenderWidget,
   void OnSetupDevToolsClient();
   void OnCancelDownload(int32 download_id);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
-  void OnDeterminePageText();
+  void OnDeterminePageLanguage();
   void OnZoom(PageZoom::Function function);
   void OnSetZoomLevelForLoadingHost(std::string host, int zoom_level);
   void OnSetPageEncoding(const std::string& encoding_name);
@@ -748,6 +754,12 @@ class RenderView : public RenderWidget,
 
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();
+
+  // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
+  // if it failed.
+  // Note this only works on Windows at this time.  It always returns 'unknown'
+  // on other platforms.
+  static std::string DetermineTextLanguage(const std::wstring& text);
 
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.

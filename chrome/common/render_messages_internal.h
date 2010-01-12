@@ -257,13 +257,8 @@ IPC_BEGIN_MESSAGES(View)
                       string16 /* search_text */,
                       WebKit::WebFindOptions)
 
-  // Send from the browser to the rendered to get the text content of the page.
-  IPC_MESSAGE_ROUTED0(ViewMsg_DeterminePageText)
-
-  // Send from the renderer to the browser to return the text content of the
-  // page.
-  IPC_MESSAGE_ROUTED1(ViewMsg_DeterminePageText_Reply,
-                      std::wstring /* the language */)
+  // Asks the renderer for the language of the current page.
+  IPC_MESSAGE_ROUTED0(ViewMsg_DeterminePageLanguage)
 
   // Send from the renderer to the browser to return the script running result.
   IPC_MESSAGE_ROUTED2(ViewMsg_ExecuteCodeFinished,
@@ -1938,6 +1933,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseClosed,
                        string16 /* origin identifier */,
                        string16 /* database name */)
+
+  // Notifies the browser of the language (ISO 639_1 code language, such as fr,
+  // en, zh...) of the current page.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_PageLanguageDetermined,
+                      std::string /* the language */)
 
   //---------------------------------------------------------------------------
   // Socket Stream messages:

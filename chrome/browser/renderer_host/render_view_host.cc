@@ -47,8 +47,6 @@
 #if defined(OS_WIN)
 // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
 #include "chrome/browser/browser_accessibility_manager.h"
-// TODO(port): The compact language detection library works only for Windows.
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unicodetext.h"
 #endif
 
 using base::TimeDelta;
@@ -425,7 +423,7 @@ void RenderViewHost::StopFinding(bool clear_selection) {
 }
 
 void RenderViewHost::GetPageLanguage() {
-  Send(new ViewMsg_DeterminePageText(routing_id()));
+  Send(new ViewMsg_DeterminePageLanguage(routing_id()));
 }
 
 void RenderViewHost::Zoom(PageZoom::Function function) {
@@ -765,8 +763,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFailProvisionalLoadWithError,
                         OnMsgDidFailProvisionalLoadWithError)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnMsgFindReply)
-    IPC_MESSAGE_HANDLER(ViewMsg_DeterminePageText_Reply,
-                        OnDeterminePageTextReply)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PageLanguageDetermined,
+                        OnPageLanguageDetermined)
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteCodeFinished,
                         OnExecuteCodeFinished)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFavIconURL, OnMsgUpdateFavIconURL)
@@ -1163,20 +1161,12 @@ void RenderViewHost::OnMsgFindReply(int request_id,
   Send(new ViewMsg_FindReplyACK(routing_id()));
 }
 
-void RenderViewHost::OnDeterminePageTextReply(
-    const std::wstring& page_text) {
-#if defined(OS_WIN)  // Only for windows.
-    int num_languages = 0;
-    bool is_reliable = false;
-    const char* language_iso_code = LanguageCodeISO639_1(
-        DetectLanguageOfUnicodeText(NULL, page_text.c_str(), true, &is_reliable,
-                                    &num_languages, NULL));
-    std::string language(language_iso_code);
-    NotificationService::current()->Notify(
-        NotificationType::TAB_LANGUAGE_DETERMINED,
-        Source<RenderViewHost>(this),
-        Details<std::string>(&language));
-#endif
+void RenderViewHost::OnPageLanguageDetermined(const std::string& language) {
+  std::string lang(language);
+  NotificationService::current()->Notify(
+      NotificationType::TAB_LANGUAGE_DETERMINED,
+      Source<RenderViewHost>(this),
+      Details<std::string>(&lang));
 }
 
 void RenderViewHost::OnExecuteCodeFinished(int request_id, bool success) {

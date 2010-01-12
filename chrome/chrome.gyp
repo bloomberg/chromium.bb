@@ -1199,7 +1199,6 @@
             '../third_party/bsdiff/bsdiff.gyp:*',
             '../third_party/bspatch/bspatch.gyp:*',
             '../third_party/bzip2/bzip2.gyp:*',
-            '../third_party/cld/cld.gyp:cld',
             '../third_party/codesighs/codesighs.gyp:*',
             '../third_party/icu/icu.gyp:*',
             '../third_party/libjpeg/libjpeg.gyp:*',
