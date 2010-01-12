@@ -52,7 +52,6 @@ devtools.ToolsAgent = function() {
 devtools.ToolsAgent.prototype.reset = function() {
   InspectorFrontendHost.reset();
   this.debuggerAgent_.reset();
-  this.profilerAgent_.reset();
 };
 
 

@@ -63,16 +63,6 @@ devtools.ProfilerAgent.ProfilerModules = {
 
 
 /**
- * Resets profiler agent to its initial state.
- */
-devtools.ProfilerAgent.prototype.reset = function() {
-  this.logPosition_ = 0;
-  this.activeProfilerModules_ =
-      devtools.ProfilerAgent.ProfilerModules.PROFILER_MODULE_NONE;
-};
-
-
-/**
  * Sets up callbacks that deal with profiles processing.
  */
 devtools.ProfilerAgent.prototype.setupProfilerProcessorCallbacks = function() {
