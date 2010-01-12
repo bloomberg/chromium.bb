@@ -453,7 +453,9 @@ WONTFIX SKIP : LayoutTests/fast/events/touch-coords-in-zoom-and-scroll.html = FA
 WONTFIX SKIP : LayoutTests/fast/events/basic-touch-events.html = FAIL
 
 // Deletion UI is a Mail-ism. We don't need to worry about this.
-WONTFIX : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL IMAGE
+WONTFIX SKIP : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL IMAGE
+WONTFIX SKIP : LayoutTests/fast/dom/Element/id-in-deletebutton.html = TEXT
+
 
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
@@ -3071,7 +3073,6 @@ BUG30816 WIN LINUX : LayoutTests/editing/selection/doubleclick-beside-cr-span.ht
 BUG31253 : LayoutTests/http/tests/security/xss-DENIED-assign-location-href-javascript.html = TEXT
 
 // WebKit update 52323->52366
-BUG30825 WIN LINUX : LayoutTests/fast/dom/Element/id-in-deletebutton.html = TEXT
 BUG30826 WIN : LayoutTests/platform/win/fast/events/panScroll-imageMap-noHref-scroll.html = TEXT
 
 // Flaky
