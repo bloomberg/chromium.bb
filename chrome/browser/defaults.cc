@@ -22,6 +22,8 @@ const bool kShowExitMenuItem = false;
 const bool kShowAboutMenuItem = true;
 const bool kOSSupportsOtherBrowsers = false;
 const bool kDownloadPageHasShowInFolder = false;
+const bool kSizeTabButtonToTopOfTabStrip = true;
+
 #elif defined(OS_LINUX)
 
 // 13.4px = 10pt @ 96dpi.
@@ -58,6 +60,7 @@ const bool kShowExitMenuItem = true;
 const bool kShowAboutMenuItem = true;
 #endif
 const bool kOSSupportsOtherBrowsers = true;
+const bool kSizeTabButtonToTopOfTabStrip = false;
 
 #endif
 

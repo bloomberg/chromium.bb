@@ -57,6 +57,9 @@ extern const bool kOSSupportsOtherBrowsers;
 // Does the download page have the show in folder option?
 extern const bool kDownloadPageHasShowInFolder;
 
+// Should the tab strip be sized to the top of the tab strip?
+extern const bool kSizeTabButtonToTopOfTabStrip;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_

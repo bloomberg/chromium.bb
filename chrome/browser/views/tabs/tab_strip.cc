@@ -14,6 +14,7 @@
 #include "base/gfx/size.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -84,7 +85,10 @@ class NewTabButton : public views::ImageButton {
  protected:
   // Overridden from views::View:
   virtual bool HasHitTestMask() const {
-    return true;
+    // When the button is sized to the top of the tab strip we want the user to
+    // be able to click on complete bounds, and so don't return a custom hit
+    // mask.
+    return !browser_defaults::kSizeTabButtonToTopOfTabStrip;
   }
   virtual void GetHitTestMask(gfx::Path* path) const {
     DCHECK(path);
@@ -793,6 +797,10 @@ Tab* TabStrip::GetSelectedTab() const {
 
 void TabStrip::InitTabStripButtons() {
   newtab_button_ = new NewTabButton(this);
+  if (browser_defaults::kSizeTabButtonToTopOfTabStrip) {
+    newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                                      views::ImageButton::ALIGN_BOTTOM);
+  }
   LoadNewTabButtonImage();
   newtab_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_NEWTAB));
   AddChildView(newtab_button_);
@@ -1394,6 +1402,8 @@ void TabStrip::Init() {
   SetID(VIEW_ID_TAB_STRIP);
   model_->AddObserver(this);
   newtab_button_size_.SetSize(kNewTabButtonWidth, kNewTabButtonHeight);
+  if (browser_defaults::kSizeTabButtonToTopOfTabStrip)
+    newtab_button_size_.set_height(kNewTabButtonHeight + kNewTabButtonVOffset);
   if (drop_indicator_width == 0) {
     // Direction doesn't matter, both images are the same size.
     SkBitmap* drop_image = GetDropArrowImage(true);
@@ -1802,19 +1812,20 @@ void TabStrip::GenerateIdealBounds() {
 void TabStrip::LayoutNewTabButton(double last_tab_right,
                                   double unselected_width) {
   int delta = abs(Round(unselected_width) - Tab::GetStandardSize().width());
+  int v_offset = browser_defaults::kSizeTabButtonToTopOfTabStrip ?
+      0 : kNewTabButtonHOffset;
   if (delta > 1 && !needs_resize_layout_) {
     // We're shrinking tabs, so we need to anchor the New Tab button to the
     // right edge of the TabStrip's bounds, rather than the right edge of the
     // right-most Tab, otherwise it'll bounce when animating.
     newtab_button_->SetBounds(width() - newtab_button_size_.width(),
-                              kNewTabButtonVOffset,
+                              v_offset,
                               newtab_button_size_.width(),
                               newtab_button_size_.height());
   } else {
     newtab_button_->SetBounds(
         Round(last_tab_right - kTabHOffset) + kNewTabButtonHOffset,
-        kNewTabButtonVOffset, newtab_button_size_.width(),
-        newtab_button_size_.height());
+        v_offset, newtab_button_size_.width(), newtab_button_size_.height());
   }
 }
 
