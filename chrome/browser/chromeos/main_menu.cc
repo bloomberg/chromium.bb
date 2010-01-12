@@ -277,6 +277,14 @@ void MainMenu::ShowCreatedWindow(int route_id,
   }
 }
 
+void MainMenu::StartDragging(const WebDropData& drop_data,
+                             WebKit::WebDragOperationsMask allowed_ops) {
+  // We're not going to do any drag & drop, but we have to tell the renderer the
+  // drag & drop ended, othewise the renderer thinks the drag operation is
+  // underway and mouse events won't work.
+  menu_rvh_->DragSourceSystemDragEnded();
+}
+
 void MainMenu::TabContentsDelegateImpl::OpenURLFromTab(
     TabContents* source,
     const GURL& url,
