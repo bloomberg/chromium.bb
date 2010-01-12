@@ -173,6 +173,7 @@ class SVNWrapperTestCase(BaseTestCase):
     print(file_path)
     gclient_scm.os.path.exists(file_path).AndReturn(True)
     gclient_scm.os.path.isfile(file_path).AndReturn(False)
+    gclient_scm.os.path.islink(file_path).AndReturn(False)
     gclient_scm.os.path.isdir(file_path).AndReturn(True)
     gclient_scm.gclient_utils.RemoveDirectory(file_path)
     file_list1 = []
