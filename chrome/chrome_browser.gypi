@@ -436,6 +436,8 @@
         'browser/cocoa/extension_view_mac.mm',
         'browser/cocoa/extensions/browser_actions_controller.h',
         'browser/cocoa/extensions/browser_actions_controller.mm',
+        'browser/cocoa/extensions/extension_action_context_menu.h',
+        'browser/cocoa/extensions/extension_action_context_menu.mm',
         'browser/cocoa/extensions/extension_popup_controller.h',
         'browser/cocoa/extensions/extension_popup_controller.mm',
         'browser/cocoa/external_protocol_dialog.h',

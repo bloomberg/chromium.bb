@@ -9,6 +9,7 @@
 #include "app/gfx/canvas_paint.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #include "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/cocoa/toolbar_button_cell.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -21,7 +22,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "skia/ext/skia_utils_mac.h"
 
-static const CGFloat kBrowserActionBadgeOriginYOffset = -4;
+static const CGFloat kBrowserActionBadgeOriginYOffset = 5;
 
 // Since the container is the maximum height of the toolbar, we have to move the
 // buttons up by this amount in order to have them look vertically centered
@@ -37,12 +38,12 @@ extern const CGFloat kBrowserActionButtonPadding = 3;
 
 NSString* const kBrowserActionsChangedNotification = @"BrowserActionsChanged";
 
-@interface BrowserActionBadgeView : NSView {
+@interface BrowserActionCell : ToolbarButtonCell {
  @private
-  // The current tab ID used when drawing the badge.
+  // The current tab ID used when drawing the cell.
   int tabId_;
 
-  // The action we're drawing the badge for. Weak.
+  // The action we're drawing the cell for. Weak.
   ExtensionAction* extensionAction_;
 }
 
@@ -51,17 +52,18 @@ NSString* const kBrowserActionsChangedNotification = @"BrowserActionsChanged";
 
 @end
 
-@implementation BrowserActionBadgeView
+@implementation BrowserActionCell
 
-- (void)drawRect:(NSRect)dirtyRect {
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  [super drawWithFrame:cellFrame inView:controlView];
+
   // CanvasPaint draws its content to the current NSGraphicsContext in its
   // destructor. If anything needs to be drawn afterwards, then enclose this
   // in a nested block.
-  NSRect badgeBounds = [self bounds];
-  badgeBounds.origin.y += kBrowserActionBadgeOriginYOffset;
-  gfx::CanvasPaint canvas(badgeBounds, false);
+  cellFrame.origin.y += kBrowserActionBadgeOriginYOffset;
+  gfx::CanvasPaint canvas(cellFrame, false);
   canvas.set_composite_alpha(true);
-  gfx::Rect boundingRect(NSRectToCGRect(badgeBounds));
+  gfx::Rect boundingRect(NSRectToCGRect(cellFrame));
   extensionAction_->PaintBadge(&canvas, boundingRect, tabId_);
 }
 
@@ -79,8 +81,6 @@ class ExtensionImageTrackerBridge;
   scoped_nsobject<NSImage> defaultIcon_;
 
   scoped_nsobject<NSImage> tabSpecificIcon_;
-
-  scoped_nsobject<NSView> badgeView_;
 
   // The extension for this button. Weak.
   Extension* extension_;
@@ -162,6 +162,10 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 
 @implementation BrowserActionButton
 
++ (Class)cellClass {
+  return [BrowserActionCell class];
+}
+
 - (id)initWithExtension:(Extension*)extension
              controller:(BrowserActionsController*)controller
                 xOffset:(int)xOffset {
@@ -170,13 +174,16 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
                             kBrowserActionWidth,
                             kBrowserActionHeight);
   if ((self = [super initWithFrame:frame])) {
-    ToolbarButtonCell* cell = [[[ToolbarButtonCell alloc] init] autorelease];
+    BrowserActionCell* cell = [[[BrowserActionCell alloc] init] autorelease];
     // [NSButton setCell:] warns to NOT use setCell: other than in the
     // initializer of a control.  However, we are using a basic
     // NSButton whose initializer does not take an NSCell as an
     // object.  To honor the assumed semantics, we do nothing with
     // NSButton between alloc/init and setCell:.
     [self setCell:cell];
+    [cell setTabId:[controller currentTabId]];
+    [cell setExtensionAction:extension->browser_action()];
+
     [self setTitle:@""];
     [self setButtonType:NSMomentaryChangeButton];
     [self setShowsBorderOnlyWhileMouseInside:YES];
@@ -184,15 +191,12 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
     [self setTarget:controller];
     [self setAction:@selector(browserActionClicked:)];
 
+    [self setMenu:[[[ExtensionActionContextMenu alloc]
+        initWithExtension:extension] autorelease]];
+
     extension_ = extension;
     controller_ = controller;
     imageLoadingBridge_.reset(new ExtensionImageTrackerBridge(self, extension));
-
-    NSRect badgeFrame = [self bounds];
-    badgeView_.reset([[BrowserActionBadgeView alloc] initWithFrame:badgeFrame]);
-    [badgeView_ setTabId:[controller currentTabId]];
-    [badgeView_ setExtensionAction:extension->browser_action()];
-    [self addSubview:badgeView_];
 
     [self updateState];
   }
@@ -228,7 +232,7 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
     [self setImage:defaultIcon_];
   }
 
-  [badgeView_ setTabId:tabId];
+  [[self cell] setTabId:tabId];
 
   [self setNeedsDisplay:YES];
 }

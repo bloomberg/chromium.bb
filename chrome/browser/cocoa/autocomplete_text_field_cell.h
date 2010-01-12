@@ -9,6 +9,8 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/location_bar_view_mac.h"
 
+class ExtensionAction;
+
 // AutocompleteTextFieldCell extends StyledTextFieldCell to provide support for
 // certain decorations to be applied to the field.  These are the search hint
 // ("Type to search" on the right-hand side), the keyword hint ("Press [Tab] to
@@ -75,6 +77,10 @@
 // Returns the string to be shown on hover for the Page Action icon at the
 // given index.
 - (NSString*)pageActionToolTipForIndex:(size_t)index;
+
+// Returns a pointer to the ExtensionAction object that the view at the
+// specified index represents.
+- (ExtensionAction*)pageActionForIndex:(size_t)index;
 
 // Called when the Page Action at the given index, whose icon is drawn in the
 // iconFrame, is visible and clicked. Passed through to the list of views to

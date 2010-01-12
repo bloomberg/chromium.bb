@@ -70,15 +70,16 @@
 // a decoration area and get the expected selection behaviour,
 // likewise for multiple clicks in those areas.
 - (void)mouseDown:(NSEvent*)theEvent {
-  const NSPoint locationInWindow = [theEvent locationInWindow];
-  const NSPoint location = [self convertPoint:locationInWindow fromView:nil];
+  const NSPoint location =
+      [self convertPoint:[theEvent locationInWindow] fromView:nil];
+  const NSRect bounds([self bounds]);
 
   AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
-  const NSRect textFrame([cell textFrameForFrame:[self bounds]]);
+  const NSRect textFrame([cell textFrameForFrame:bounds]);
 
   // A version of the textFrame which extends across the field's
   // entire width.
-  const NSRect bounds([self bounds]);
+
   const NSRect fullFrame(NSMakeRect(bounds.origin.x, textFrame.origin.y,
                                     bounds.size.width, textFrame.size.height));
 
@@ -88,8 +89,9 @@
   // above/below test is needed because NSTextView treats mouse events
   // above/below as select-to-end-in-that-direction, which makes
   // things janky.
-  if (NSMouseInRect(location, textFrame, [self isFlipped]) ||
-      !NSMouseInRect(location, fullFrame, [self isFlipped])) {
+  BOOL flipped = [self isFlipped];
+  if (NSMouseInRect(location, textFrame, flipped) ||
+      !NSMouseInRect(location, fullFrame, flipped)) {
     [super mouseDown:theEvent];
 
     // After the event has been handled, if the current event is a
@@ -114,19 +116,18 @@
 
   // If the user clicked the security hint icon in the cell, display the page
   // info window.
-  const NSRect hintIconFrame = [cell securityImageFrameForFrame:[self bounds]];
-  if (NSMouseInRect(location, hintIconFrame, [self isFlipped])) {
+  const NSRect hintIconFrame = [cell securityImageFrameForFrame:bounds];
+  if (NSMouseInRect(location, hintIconFrame, flipped)) {
     [cell onSecurityIconMousePressed];
     return;
   }
 
-  // If the user clicked a Page Action icon, execute its action.
-  const NSRect iconFrame([self bounds]);
+  const BOOL ctrlKey = ([theEvent modifierFlags] & NSControlKeyMask) != 0;
+  // If the user left-clicked a Page Action icon, execute its action.
   const size_t pageActionCount = [cell pageActionCount];
   for (size_t i = 0; i < pageActionCount; ++i) {
-    NSRect pageActionFrame = [cell pageActionFrameForIndex:i inFrame:iconFrame];
-    if (NSMouseInRect(location, pageActionFrame, [self isFlipped])) {
-      // TODO(pamg): Do we need to send the event?
+    NSRect pageActionFrame = [cell pageActionFrameForIndex:i inFrame:bounds];
+    if (NSMouseInRect(location, pageActionFrame, flipped) && !ctrlKey) {
       [cell onPageActionMousePressedIn:pageActionFrame forIndex:i];
       return;
     }

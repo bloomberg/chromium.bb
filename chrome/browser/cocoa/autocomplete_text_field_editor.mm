@@ -9,9 +9,21 @@
 #include "grit/generated_resources.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_*
+#include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
+#import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/common/extensions/extension_action.h"
+
+class Extension;
+
+@interface AutocompleteTextFieldEditor(Private)
+// Returns the default context menu to be displayed on a right mouse click.
+- (NSMenu*)defaultMenuForEvent:(NSEvent*)event;
+@end
 
 @implementation AutocompleteTextFieldEditor
 
@@ -78,14 +90,42 @@
 // NSTextField and NSTextView synchronize their contents.  That is
 // probably unavoidable because in most cases having rich text in the
 // field you probably would expect it to update the font panel.
-- (void)updateFontPanel {
-}
+- (void)updateFontPanel {}
 
 // No ruler bar, so don't update any of that state, either.
-- (void)updateRuler {
-}
+- (void)updateRuler {}
 
 - (NSMenu*)menuForEvent:(NSEvent*)event {
+  NSPoint location = [self convertPoint:[event locationInWindow] fromView:nil];
+
+  // Was the right click within a Page Action? Show a different menu if so.
+  NSRect bounds([[self delegate] bounds]);
+  AutocompleteTextFieldCell* cell = [[self delegate] autocompleteTextFieldCell];
+  const size_t pageActionCount = [cell pageActionCount];
+  BOOL flipped = [self isFlipped];
+  Browser* browser = BrowserList::GetLastActive();
+  // GetLastActive() returns NULL during testing.
+  if (!browser)
+    return [self defaultMenuForEvent:event];
+  ExtensionsService* service = browser->profile()->GetExtensionsService();
+  for (size_t i = 0; i < pageActionCount; ++i) {
+    NSRect pageActionFrame = [cell pageActionFrameForIndex:i inFrame:bounds];
+    if (NSMouseInRect(location, pageActionFrame, flipped)) {
+      Extension* extension = service->GetExtensionById(
+          [cell pageActionForIndex:i]->extension_id(), false);
+      DCHECK(extension);
+      if (!extension)
+        break;
+      return [[[ExtensionActionContextMenu alloc] initWithExtension:extension]
+          autorelease];
+    }
+  }
+
+  // Otherwise, simply return the default menu for this instance.
+  return [self defaultMenuForEvent:event];
+}
+
+- (NSMenu*)defaultMenuForEvent:(NSEvent*)event {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@"TITLE"] autorelease];
   [menu addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CUT)
                   action:@selector(cut:)

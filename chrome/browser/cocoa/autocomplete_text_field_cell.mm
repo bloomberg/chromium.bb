@@ -342,6 +342,10 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   return page_action_views_->ViewAt(index)->GetToolTip();
 }
 
+- (ExtensionAction*)pageActionForIndex:(size_t)index {
+  return page_action_views_->ViewAt(index)->page_action();
+}
+
 - (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   DCHECK(hintString_);
 
