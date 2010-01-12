@@ -260,6 +260,19 @@ Time CookieMonster::ParseCookieTime(const std::string& time_string) {
   return Time();
 }
 
+// Returns the effective TLD+1 for a given host. This only makes sense for http
+// and https schemes. For other schemes, the host will be returned unchanged
+// (minus any leading .).
+static std::string GetEffectiveDomain(const std::string& scheme,
+                                      const std::string& host) {
+  if (scheme == "http" || scheme == "https")
+    return RegistryControlledDomainService::GetDomainAndRegistry(host);
+
+  if (!host.empty() && host[0] == '.')
+    return host.substr(1);
+  return host;
+}
+
 // Determine the cookie domain key to use for setting the specified cookie.
 // On success returns true, and sets cookie_domain_key to either a
 //   -host cookie key (ex: "google.com")
@@ -294,12 +307,13 @@ static bool GetCookieDomainKey(const GURL& url,
     cookie_domain = "." + cookie_domain;
 
   // Ensure |url| and |cookie_domain| have the same domain+registry.
+  const std::string url_scheme(url.scheme());
   const std::string url_domain_and_registry(
-      RegistryControlledDomainService::GetDomainAndRegistry(url));
+      GetEffectiveDomain(url_scheme, url_host));
   if (url_domain_and_registry.empty())
     return false;  // IP addresses/intranet hosts can't set domain cookies.
   const std::string cookie_domain_and_registry(
-      RegistryControlledDomainService::GetDomainAndRegistry(cookie_domain));
+      GetEffectiveDomain(url_scheme, cookie_domain));
   if (url_domain_and_registry != cookie_domain_and_registry)
     return false;  // Can't set a cookie on a different domain + registry.
 
@@ -311,7 +325,6 @@ static bool GetCookieDomainKey(const GURL& url,
       url_host.compare(url_host.length() - cookie_domain.length(),
                        cookie_domain.length(), cookie_domain))
     return false;
-
 
   *cookie_domain_key = cookie_domain;
   return true;
@@ -853,8 +866,7 @@ void CookieMonster::FindCookiesForHostAndDomain(
   FindCookiesForKey(key, url, options, current_time, cookies);
 
   // See if we can search for domain cookies, i.e. if the host has a TLD + 1.
-  const std::string domain(
-      RegistryControlledDomainService::GetDomainAndRegistry(key));
+  const std::string domain(GetEffectiveDomain(url.scheme(), key));
   if (domain.empty())
     return;
   DCHECK_LE(domain.length(), key.length());
