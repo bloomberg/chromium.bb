@@ -414,8 +414,9 @@ void TabStripModel::AddTabContents(TabContents* contents,
         contents, transition, foreground);
     inherit_group = true;
   } else {
-    // For all other types, respect what was passed to us, normalizing -1s.
-    if (index < 0)
+    // For all other types, respect what was passed to us, normalizing -1s and
+    // values that are too large.
+    if (index < 0 || index > count())
       index = count();
   }
 
