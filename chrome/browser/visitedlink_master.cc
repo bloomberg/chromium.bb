@@ -24,7 +24,6 @@
 #include "base/rand_util.h"
 #include "base/stack_container.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profile.h"
@@ -144,6 +143,24 @@ class AsyncCloseHandle : public Task {
   DISALLOW_COPY_AND_ASSIGN(AsyncCloseHandle);
 };
 
+// A helper class for clearing |profile_pointer_| then re-setting it when the
+// object goes out of scope.  This helps to make sure we don't accidentally
+// use the pointer when we're not supposed to.
+class ScopedNullProfile {
+ public:
+  ScopedNullProfile(Profile** profile)
+      : profile_(*profile),
+        profile_pointer_(profile) {
+    *profile_pointer_ = NULL;
+  }
+  ~ScopedNullProfile() {
+    *profile_pointer_ = profile_;
+  }
+ private:
+  Profile* profile_;
+  Profile** profile_pointer_;
+};
+
 }  // namespace
 
 // TableBuilder ---------------------------------------------------------------
@@ -248,6 +265,9 @@ void VisitedLinkMaster::InitMembers(Listener* listener, Profile* profile) {
   suppress_rebuild_ = false;
   profile_ = profile;
 
+  if (profile_)
+    profile_dir_ = profile_->GetPath();
+
 #ifndef NDEBUG
   posted_asynchronous_operation_ = false;
 #endif
@@ -255,8 +275,72 @@ void VisitedLinkMaster::InitMembers(Listener* listener, Profile* profile) {
 
 bool VisitedLinkMaster::Init() {
   if (!InitFromFile())
-    return InitFromScratch(suppress_rebuild_);
+    return InitFromScratch();
   return true;
+}
+
+bool VisitedLinkMaster::InitFromFile() {
+  // We allow running this method from background threads, so be careful not to
+  // access profile_ (which may already be deleted) from this method.
+  ScopedNullProfile scoped(&profile_);
+  DCHECK(file_ == NULL);
+  DCHECK(profile_ == NULL);
+
+  FilePath filename;
+  GetDatabaseFileName(&filename);
+  ScopedFILE file_closer(OpenFile(filename, "rb+"));
+  if (!file_closer.get())
+    return false;
+
+  int32 num_entries, used_count;
+  if (!ReadFileHeader(file_closer.get(), &num_entries, &used_count, salt_))
+    return false;  // Header isn't valid.
+
+  // Allocate and read the table.
+  if (!CreateURLTable(num_entries, false))
+    return false;
+  if (!ReadFromFile(file_closer.get(), kFileHeaderSize,
+                    hash_table_, num_entries * sizeof(Fingerprint))) {
+    FreeURLTable();
+    return false;
+  }
+  used_items_ = used_count;
+
+#ifndef NDEBUG
+  DebugValidate();
+#endif
+
+  file_ = file_closer.release();
+  return true;
+}
+
+bool VisitedLinkMaster::InitFromScratch() {
+  int32 table_size = kDefaultTableSize;
+  if (table_size_override_)
+    table_size = table_size_override_;
+
+  // The salt must be generated before the table so that it can be copied to
+  // the shared memory.
+  GenerateSalt(salt_);
+  if (!CreateURLTable(table_size, true))
+    return false;
+
+#ifndef NDEBUG
+  DebugValidate();
+#endif
+
+  if (suppress_rebuild_) {
+    // When we disallow rebuilds (normally just unit tests), just use the
+    // current empty table.
+    return WriteFullTable();
+  }
+
+  // This will build the table from history. On the first run, history will
+  // be empty, so this will be correct. This will also write the new table
+  // to disk. We don't want to save explicitly here, since the rebuild may
+  // not complete, leaving us with an empty but valid visited link database.
+  // In the future, we won't know we need to try rebuilding again.
+  return RebuildTableFromHistory();
 }
 
 VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
@@ -537,66 +621,6 @@ bool VisitedLinkMaster::WriteFullTable() {
   return true;
 }
 
-bool VisitedLinkMaster::InitFromFile() {
-  DCHECK(file_ == NULL);
-
-  FilePath filename;
-  GetDatabaseFileName(&filename);
-  ScopedFILE file_closer(OpenFile(filename, "rb+"));
-  if (!file_closer.get())
-    return false;
-
-  int32 num_entries, used_count;
-  if (!ReadFileHeader(file_closer.get(), &num_entries, &used_count, salt_))
-    return false;  // Header isn't valid.
-
-  // Allocate and read the table.
-  if (!CreateURLTable(num_entries, false))
-    return false;
-  if (!ReadFromFile(file_closer.get(), kFileHeaderSize,
-                    hash_table_, num_entries * sizeof(Fingerprint))) {
-    FreeURLTable();
-    return false;
-  }
-  used_items_ = used_count;
-
-#ifndef NDEBUG
-  DebugValidate();
-#endif
-
-  file_ = file_closer.release();
-  return true;
-}
-
-bool VisitedLinkMaster::InitFromScratch(bool suppress_rebuild) {
-  int32 table_size = kDefaultTableSize;
-  if (table_size_override_)
-    table_size = table_size_override_;
-
-  // The salt must be generated before the table so that it can be copied to
-  // the shared memory.
-  GenerateSalt(salt_);
-  if (!CreateURLTable(table_size, true))
-    return false;
-
-#ifndef NDEBUG
-  DebugValidate();
-#endif
-
-  if (suppress_rebuild) {
-    // When we disallow rebuilds (normally just unit tests), just use the
-    // current empty table.
-    return WriteFullTable();
-  }
-
-  // This will build the table from history. On the first run, history will
-  // be empty, so this will be correct. This will also write the new table
-  // to disk. We don't want to save explicitly here, since the rebuild may
-  // not complete, leaving us with an empty but valid visited link database.
-  // In the future, we won't know we need to try rebuilding again.
-  return RebuildTableFromHistory();
-}
-
 bool VisitedLinkMaster::ReadFileHeader(FILE* file,
                                        int32* num_entries,
                                        int32* used_count,
@@ -654,11 +678,10 @@ bool VisitedLinkMaster::GetDatabaseFileName(FilePath* filename) {
     return true;
   }
 
-  if (!profile_ || profile_->GetPath().empty())
+  if (profile_dir_.empty())
     return false;
 
-  FilePath profile_dir = profile_->GetPath();
-  *filename = profile_dir.Append(FILE_PATH_LITERAL("Visited Links"));
+  *filename = profile_dir_.Append(FILE_PATH_LITERAL("Visited Links"));
   return true;
 }
 

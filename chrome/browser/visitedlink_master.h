@@ -77,8 +77,17 @@ class VisitedLinkMaster : public VisitedLinkCommon {
 
   // Must be called immediately after object creation. Nothing else will work
   // until this is called. Returns true on success, false means that this
-  // object won't work.
+  // object won't work. You can also use InitFromFile() and InitFromScratch()
+  // if you need more control over loading the visited link information.
   bool Init();
+
+  // Try to load the table from the database file. If the file doesn't exist or
+  // is corrupt, this will return failure. This method may be called from a
+  // background thread, but it isn't thread safe.
+  bool InitFromFile();
+
+  // Creates a new empty table, call if InitFromFile() fails.
+  bool InitFromScratch();
 
   base::SharedMemory* shared_memory() { return shared_memory_; }
 
@@ -167,10 +176,6 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // the table file open and the handle to it in file_
   bool WriteFullTable();
 
-  // Try to load the table from the database file. If the file doesn't exist or
-  // is corrupt, this will return failure.
-  bool InitFromFile();
-
   // Reads the header of the link coloring database from disk. Assumes the
   // file pointer is at the beginning of the file and that there are no pending
   // asynchronous I/O operations.
@@ -221,13 +226,6 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // is set, the changes will also be written to disk. Returns true if the
   // fingerprint was deleted, false if it was not in the table to delete.
   bool DeleteFingerprint(Fingerprint fingerprint, bool update_file);
-
-  // Creates a new empty table, call if InitFromFile() fails. Normally, when
-  // |suppress_rebuild| is false, the table will be rebuilt from history,
-  // keeping us in sync. When |suppress_rebuild| is true, the new table will be
-  // empty and we will not consult history. This is used when clearing the
-  // database and for unit tests.
-  bool InitFromScratch(bool suppress_rebuild);
 
   // Allocates the Fingerprint structure and length. When init_to_empty is set,
   // the table will be filled with 0s and used_items_ will be set to 0 as well.
@@ -368,6 +366,9 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // history if we have an error opening the file. This is used for testing,
   // will be false in production.
   bool suppress_rebuild_;
+
+  // Keep a copy of the profile_dir in case we outlive the profile.
+  FilePath profile_dir_;
 
   DISALLOW_EVIL_CONSTRUCTORS(VisitedLinkMaster);
 };
