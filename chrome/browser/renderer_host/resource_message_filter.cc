@@ -150,7 +150,7 @@ Blacklist::Match* GetPrivacyBlacklistMatchForURL(
   if (!blacklist_manager)
     return NULL;
   const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
-  return blacklist->findMatch(url);
+  return blacklist->FindMatch(url);
 }
 
 }  // namespace

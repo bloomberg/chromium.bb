@@ -17,3 +17,9 @@ www.site.com/anonymous/folder/@ => kDontSendUserAgent, kDontSendReferrer
 
 # Affect a specific URL
 www.site.com/bad/url => kBlockAll
+
+# Affect queries to a specific script
+@/script?@ => kBlockAll
+
+# Affect queries with a specific parameter
+@?badparam@ => kBlockAll

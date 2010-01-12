@@ -20,11 +20,11 @@ TEST(BlacklistTest, Generic) {
 
   Blacklist blacklist;
   ASSERT_TRUE(BlacklistIO::ReadBinary(&blacklist, input));
-  
+
   Blacklist::EntryList entries(blacklist.entries_begin(),
                                blacklist.entries_end());
 
-  ASSERT_EQ(5U, entries.size());
+  ASSERT_EQ(7U, entries.size());
 
   EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
             entries[0]->attributes());
@@ -57,21 +57,33 @@ TEST(BlacklistTest, Generic) {
   EXPECT_FALSE(entries[4]->MatchesType("image/jpeg"));
   EXPECT_EQ("www.site.com/bad/url", entries[4]->pattern());
 
+  // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
+  EXPECT_EQ(Blacklist::kBlockAll|0, entries[5]->attributes());
+  EXPECT_FALSE(entries[5]->MatchesType("application/x-shockwave-flash"));
+  EXPECT_FALSE(entries[5]->MatchesType("image/jpeg"));
+  EXPECT_EQ("@/script?@", entries[5]->pattern());
+
+  // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
+  EXPECT_EQ(Blacklist::kBlockAll|0, entries[6]->attributes());
+  EXPECT_FALSE(entries[6]->MatchesType("application/x-shockwave-flash"));
+  EXPECT_FALSE(entries[6]->MatchesType("image/jpeg"));
+  EXPECT_EQ("@?badparam@", entries[6]->pattern());
+
   Blacklist::ProviderList providers(blacklist.providers_begin(),
                                     blacklist.providers_end());
-  
+
   ASSERT_EQ(1U, providers.size());
   EXPECT_EQ("Sample", providers[0]->name());
   EXPECT_EQ("http://www.google.com", providers[0]->url());
 
   // No match for chrome, about or empty URLs.
-  EXPECT_FALSE(blacklist.findMatch(GURL()));
-  EXPECT_FALSE(blacklist.findMatch(GURL("chrome://new-tab")));
-  EXPECT_FALSE(blacklist.findMatch(GURL("about:blank")));
+  EXPECT_FALSE(blacklist.FindMatch(GURL()));
+  EXPECT_FALSE(blacklist.FindMatch(GURL("chrome://new-tab")));
+  EXPECT_FALSE(blacklist.FindMatch(GURL("about:blank")));
 
   // Expected rule matches.
   Blacklist::Match* match;
-  match = blacklist.findMatch(GURL("http://www.google.com"));
+  match = blacklist.FindMatch(GURL("http://www.google.com"));
   EXPECT_TRUE(match);
   if (match) {
     EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
@@ -80,7 +92,7 @@ TEST(BlacklistTest, Generic) {
     delete match;
   }
 
-  match = blacklist.findMatch(GURL("http://www.site.com/bad/url"));
+  match = blacklist.FindMatch(GURL("http://www.site.com/bad/url"));
   EXPECT_TRUE(match);
   if (match) {
     EXPECT_EQ(Blacklist::kBlockAll|
@@ -90,7 +102,7 @@ TEST(BlacklistTest, Generic) {
     delete match;
   }
 
-  match = blacklist.findMatch(GURL("http://www.site.com/anonymous"));
+  match = blacklist.FindMatch(GURL("http://www.site.com/anonymous"));
   EXPECT_TRUE(match);
   if (match) {
     EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
@@ -99,7 +111,7 @@ TEST(BlacklistTest, Generic) {
     delete match;
   }
 
-  match = blacklist.findMatch(GURL("http://www.site.com/anonymous/folder"));
+  match = blacklist.FindMatch(GURL("http://www.site.com/anonymous/folder"));
   EXPECT_TRUE(match);
   if (match) {
     EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
@@ -108,7 +120,7 @@ TEST(BlacklistTest, Generic) {
     delete match;
   }
 
-  match = blacklist.findMatch(
+  match = blacklist.FindMatch(
       GURL("http://www.site.com/anonymous/folder/subfolder"));
   EXPECT_TRUE(match);
   if (match) {
@@ -116,6 +128,46 @@ TEST(BlacklistTest, Generic) {
               Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
               match->attributes());
     EXPECT_EQ(2U, match->entries().size());
+    delete match;
+  }
+
+  // No matches for URLs without query string
+  match = blacklist.FindMatch(GURL("http://badparam.com/"));
+  EXPECT_TRUE(match);
+  if (match) {
+    EXPECT_EQ(1U, match->entries().size());
+    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
+              match->attributes());
+    delete match;
+  }
+
+  match = blacklist.FindMatch(GURL("http://script.bad.org/"));
+  EXPECT_TRUE(match);
+  if (match) {
+    EXPECT_EQ(1U, match->entries().size());
+    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
+              match->attributes());
+    delete match;
+  }
+
+  // Expected rule matches.
+  match = blacklist.FindMatch(GURL("http://host.com/script?q=x"));
+  EXPECT_TRUE(match);
+  if (match) {
+    EXPECT_EQ(2U, match->entries().size());
+    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies|
+              Blacklist::kBlockAll,
+              match->attributes());
+    delete match;
+  }
+
+  match = blacklist.FindMatch(GURL("http://host.com/img?badparam=x"));
+  EXPECT_TRUE(match);
+  if (match) {
+    EXPECT_EQ(2U, match->entries().size());
+    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies|
+              Blacklist::kBlockAll,
+              match->attributes());
     delete match;
   }
 
@@ -167,6 +219,21 @@ TEST(BlacklistTest, Generic) {
   EXPECT_TRUE(header1 == Blacklist::StripCookies(header1));
   EXPECT_TRUE(header2 == Blacklist::StripCookies(header2));
   EXPECT_TRUE(header4 == Blacklist::StripCookies(header3));
+
+  // GetURLAsLookupString Test.
+  std::string url_spec1("example.com/some/path");
+  std::string url_spec2("example.com/script?param=1");
+
+  EXPECT_TRUE(url_spec1 == Blacklist::GetURLAsLookupString(
+              GURL("http://example.com/some/path")));
+  EXPECT_TRUE(url_spec1 == Blacklist::GetURLAsLookupString(
+              GURL("ftp://example.com/some/path")));
+  EXPECT_TRUE(url_spec1 == Blacklist::GetURLAsLookupString(
+              GURL("http://example.com:8080/some/path")));
+  EXPECT_TRUE(url_spec1 == Blacklist::GetURLAsLookupString(
+              GURL("http://user:login@example.com/some/path")));
+  EXPECT_TRUE(url_spec2 == Blacklist::GetURLAsLookupString(
+              GURL("http://example.com/script?param=1")));
 }
 
 TEST(BlacklistTest, PatternMatch) {

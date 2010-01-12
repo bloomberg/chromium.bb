@@ -177,7 +177,7 @@ class Blacklist {
   // Returns a pointer to a Match structure holding all matching entries.
   // If no matching Entry is found, returns null. Ownership belongs to the
   // caller.
-  Match* findMatch(const GURL&) const;
+  Match* FindMatch(const GURL&) const;
 
   // Helper to remove cookies from a header.
   static std::string StripCookies(const std::string&);
@@ -186,14 +186,17 @@ class Blacklist {
   static std::string StripCookieExpiry(const std::string&);
 
  private:
+  // Converts a GURL into the string to match against.
+  static std::string GetURLAsLookupString(const GURL& url);
+
   // Matches a pattern to a core URL which is host/path with all the other
-  // optional parts (scheme, user, password, port) stripped away. Used only
-  // internally but made static so that access can be given to tests.
+  // optional parts (scheme, user, password, port) stripped away.
   static bool Matches(const std::string& pattern, const std::string& url);
 
   EntryList blacklist_;
   ProviderList providers_;
 
+  FRIEND_TEST(BlacklistTest, Generic);
   FRIEND_TEST(BlacklistTest, PatternMatch);
   DISALLOW_COPY_AND_ASSIGN(Blacklist);
 };

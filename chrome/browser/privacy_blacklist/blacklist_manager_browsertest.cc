@@ -28,7 +28,7 @@ void GetBlacklistHasMatchOnIOThread(const BlacklistManager* manager,
                                     bool *has_match) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   const Blacklist* blacklist = manager->GetCompiledBlacklist();
-  scoped_ptr<Blacklist::Match> match(blacklist->findMatch(url));
+  scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(url));
   *has_match = (match.get() != NULL);
   ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
                          new MessageLoop::QuitTask());

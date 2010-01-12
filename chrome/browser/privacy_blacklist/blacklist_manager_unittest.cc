@@ -78,7 +78,7 @@ class BlacklistManagerTest : public testing::Test, public NotificationObserver {
 
 // Returns true if |blacklist| contains a match for |url|.
 bool BlacklistHasMatch(const Blacklist* blacklist, const char* url) {
-  Blacklist::Match* match = blacklist->findMatch(GURL(url));
+  Blacklist::Match* match = blacklist->FindMatch(GURL(url));
 
   if (!match)
     return false;

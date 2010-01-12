@@ -72,7 +72,7 @@ void BlacklistUI::OnNonvisualContentBlocked(const URLRequest* request) {
   const BlacklistManager* blacklist_manager =
       request_info->GetBlacklistManager();
   const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
-  scoped_ptr<Blacklist::Match> match(blacklist->findMatch(request->url()));
+  scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
   const ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
 

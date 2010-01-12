@@ -690,7 +690,7 @@ bool ChromeURLRequestContext::InterceptCookie(const URLRequest* request,
   if (!blacklist_manager)
     return NULL;
   const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
-  scoped_ptr<Blacklist::Match> match(blacklist->findMatch(request->url()));
+  scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
   if (!match.get())
     return true;
   if (match->attributes() & Blacklist::kDontStoreCookies) {
@@ -722,7 +722,7 @@ bool ChromeURLRequestContext::AllowSendingCookies(const URLRequest* request)
   if (!blacklist_manager)
     return NULL;
   const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
-  scoped_ptr<Blacklist::Match> match(blacklist->findMatch(request->url()));
+  scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
   if (!match.get())
     return true;
   if (match->attributes() & Blacklist::kDontSendCookies) {

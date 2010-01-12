@@ -60,6 +60,7 @@ unsigned int Blacklist::String2Attribute(const std::string& s) {
   return 0;
 }
 
+// static
 bool Blacklist::Matches(const std::string& pattern, const std::string& url) {
   if (pattern.size() > url.size())
     return false;
@@ -178,7 +179,7 @@ void Blacklist::AddProvider(Provider* provider) {
 
 // Returns a pointer to the Blacklist-owned entry which matches the given
 // URL. If no matching Entry is found, returns null.
-Blacklist::Match* Blacklist::findMatch(const GURL& url) const {
+Blacklist::Match* Blacklist::FindMatch(const GURL& url) const {
   // Never match something which is not http, https or ftp.
   // TODO(idanan): Investigate if this would be an inclusion test instead of an
   // exclusion test and if there are other schemes to test for.
@@ -186,16 +187,26 @@ Blacklist::Match* Blacklist::findMatch(const GURL& url) const {
       !url.SchemeIs(chrome::kHttpsScheme) &&
       !url.SchemeIs(chrome::kFtpScheme))
     return 0;
+  std::string url_spec = GetURLAsLookupString(url);
   Match* match = NULL;
   for (EntryList::const_iterator i = blacklist_.begin();
        i != blacklist_.end(); ++i) {
-    if (Matches((*i)->pattern(), url.host() + url.path())) {
+    if (Matches((*i)->pattern(), url_spec)) {
       if (!match)
         match = new Match;
       match->AddEntry(i->get());
     }
   }
   return match;
+}
+
+// static
+std::string Blacklist::GetURLAsLookupString(const GURL& url) {
+  std::string url_spec = url.host() + url.path();
+  if (!url.query().empty())
+    url_spec = url_spec + "?" + url.query();
+
+  return url_spec;
 }
 
 std::string Blacklist::StripCookies(const std::string& header) {

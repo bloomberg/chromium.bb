@@ -81,7 +81,7 @@ class URLRequestBlacklistJob : public URLRequestSimpleJob {
     const BlacklistManager* blacklist_manager =
         request_info_.GetBlacklistManager();
     const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
-    scoped_ptr<Blacklist::Match> match(blacklist->findMatch(request_->url()));
+    scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request_->url()));
     const Blacklist::Entry* entry = NULL;
     if (match->attributes() & Blacklist::kBlockAll) {
       for (std::vector<const Blacklist::Entry*>::const_iterator i =
@@ -123,7 +123,7 @@ URLRequestJob* BlacklistInterceptor::MaybeIntercept(URLRequest* request) {
   const BlacklistManager* blacklist_manager =
       request_info->GetBlacklistManager();
   const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
-  scoped_ptr<Blacklist::Match> match(blacklist->findMatch(request->url()));
+  scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
 
   if (!match.get()) {
     // Nothing is blacklisted for this request. Do not intercept.

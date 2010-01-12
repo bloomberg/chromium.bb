@@ -1101,7 +1101,7 @@ bool ResourceDispatcherHost::CompleteResponseStarted(URLRequest* request) {
     const BlacklistManager* blacklist_manager =
         request_info->GetBlacklistManager();
     const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
-    scoped_ptr<Blacklist::Match> match(blacklist->findMatch(request->url()));
+    scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
     if (match.get() && match->attributes() & Blacklist::kBlockByType) {
       if (match->MatchType(response->response_head.mime_type))
         return false;  // TODO(idanan): Generate a replacement response.
