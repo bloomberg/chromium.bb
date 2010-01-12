@@ -53,6 +53,18 @@ const wchar_t kChromeAttachExternalTabPrefix[] = L"attach_external_tab";
 // are handled by the chrome test crash server.
 const wchar_t kChromeFrameHeadlessMode[] = L"ChromeFrameHeadlessMode";
 
+// {1AF32B6C-A3BA-48B9-B24E-8AA9C41F6ECD}
+static const IID IID_IWebBrowserPriv2IE7 = { 0x1AF32B6C, 0xA3BA, 0x48B9,
+    { 0xB2, 0x4E, 0x8A, 0xA9, 0xC4, 0x1F, 0x6E, 0xCD } };
+
+// {3ED72303-6FFC-4214-BA90-FAF1862DEC8A}
+static const IID IID_IWebBrowserPriv2IE8 = { 0x3ED72303, 0x6FFC, 0x4214,
+    { 0xBA, 0x90, 0xFA, 0xF1, 0x86, 0x2D, 0xEC, 0x8A } };
+
+// {486F6159-9F3F-4827-82D4-283CEF397733}
+static const IID IID_IWebBrowserPriv2IE8XP = { 0x486F6159, 0x9F3F, 0x4827,
+    { 0x82, 0xD4, 0x28, 0x3C, 0xEF, 0x39, 0x77, 0x33 } };
+
 namespace {
 
 // A flag used to signal when an active browser instance on the current thread
@@ -657,24 +669,27 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
 
   if (uri_container) {
     // IE7 and IE8.
-    ScopedComPtr<IWebBrowserPriv2IE7> browser_priv2_ie7;
-    ScopedComPtr<IWebBrowserPriv2IE8> browser_priv2_ie8;
-    IWebBrowserPriv2IE7* common_browser_priv2 = NULL;
-    if (SUCCEEDED(hr = browser_priv2_ie7.QueryFrom(web_browser2))) {
-      common_browser_priv2 = browser_priv2_ie7;
-    } else if (SUCCEEDED(hr = browser_priv2_ie8.QueryFrom(web_browser2))) {
-      common_browser_priv2 =
-          reinterpret_cast<IWebBrowserPriv2IE7*>(browser_priv2_ie8.get());
+    const IID* interface_ids[] = {
+      &IID_IWebBrowserPriv2IE7,
+      &IID_IWebBrowserPriv2IE8,
+      &IID_IWebBrowserPriv2IE8XP,
+    };
+
+    ScopedComPtr<IWebBrowserPriv2Common, NULL> browser_priv2;
+    for (int i = 0; i < arraysize(interface_ids) && browser_priv2 == NULL;
+         ++i) {
+      hr = web_browser2.QueryInterface(*interface_ids[i],
+          reinterpret_cast<void**>(browser_priv2.Receive()));
     }
 
-    DCHECK(common_browser_priv2);
+    DCHECK(browser_priv2);
 
-    if (common_browser_priv2) {
+    if (browser_priv2) {
       ScopedComPtr<IUri> uri_obj;
       uri_container->GetIUri(uri_obj.Receive());
       DCHECK(uri_obj);
-      hr = common_browser_priv2->NavigateWithBindCtx2(uri_obj, NULL, NULL, NULL,
-                                                      NULL, bind_ctx, NULL);
+      hr = browser_priv2->NavigateWithBindCtx2(uri_obj, NULL, NULL, NULL, NULL,
+                                               bind_ctx, NULL);
       DLOG_IF(WARNING, FAILED(hr))
           << StringPrintf(L"NavigateWithBindCtx2 0x%08X", hr);
     }
