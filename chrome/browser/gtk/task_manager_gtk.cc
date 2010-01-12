@@ -45,6 +45,7 @@ enum TaskManagerColumn {
   kTaskManagerCPU,
   kTaskManagerNetwork,
   kTaskManagerProcessID,
+  kTaskManagerJavaScriptMemory,
   kTaskManagerWebCoreImageCache,
   kTaskManagerWebCoreScriptsCache,
   kTaskManagerWebCoreCssCache,
@@ -66,6 +67,8 @@ TaskManagerColumn TaskManagerResourceIDToColumnID(int id) {
       return kTaskManagerNetwork;
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
       return kTaskManagerProcessID;
+    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
+      return kTaskManagerJavaScriptMemory;
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
       return kTaskManagerWebCoreImageCache;
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
@@ -94,6 +97,8 @@ int TaskManagerColumnIDToResourceID(int id) {
       return IDS_TASK_MANAGER_NET_COLUMN;
     case kTaskManagerProcessID:
       return IDS_TASK_MANAGER_PROCESS_ID_COLUMN;
+    case kTaskManagerJavaScriptMemory:
+      return IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN;
     case kTaskManagerWebCoreImageCache:
       return IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN;
     case kTaskManagerWebCoreScriptsCache:
@@ -504,6 +509,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_CPU_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_NET_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_PROCESS_ID_COLUMN);
+  TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN);
   TreeViewInsertColumn(treeview_,
                        IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN);
@@ -513,6 +519,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   // Hide some columns by default.
   TreeViewColumnSetVisible(treeview_, kTaskManagerSharedMem, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerProcessID, false);
+  TreeViewColumnSetVisible(treeview_, kTaskManagerJavaScriptMemory, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreImageCache, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreScriptsCache, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreCssCache, false);
@@ -549,6 +556,11 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
       if (!model_->IsResourceFirstInGroup(row))
         return std::string();
       return WideToUTF8(model_->GetResourceProcessId(row));
+
+    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
+      if (!model_->IsResourceFirstInGroup(row))
+        return std::string();
+      return WideToUTF8(model_->GetResourceV8MemoryAllocatedSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
       if (!model_->IsResourceFirstInGroup(row))
@@ -595,8 +607,12 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
   std::string net = GetModelText(row, IDS_TASK_MANAGER_NET_COLUMN);
   std::string procid = GetModelText(row, IDS_TASK_MANAGER_PROCESS_ID_COLUMN);
 
-  // Querying the WebCore metrics is slow as it has to do IPC, so only do it
+  // Querying the renderer metrics is slow as it has to do IPC, so only do it
   // when the columns are visible.
+  std::string javascript_memory;
+  if (TreeViewColumnIsVisible(treeview_, kTaskManagerJavaScriptMemory))
+    javascript_memory = GetModelText(
+        row, IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
   std::string wk_img_cache;
   if (TreeViewColumnIsVisible(treeview_, kTaskManagerWebCoreImageCache))
     wk_img_cache = GetModelText(
@@ -620,6 +636,7 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
                      kTaskManagerCPU, cpu.c_str(),
                      kTaskManagerNetwork, net.c_str(),
                      kTaskManagerProcessID, procid.c_str(),
+                     kTaskManagerJavaScriptMemory, javascript_memory.c_str(),
                      kTaskManagerWebCoreImageCache, wk_img_cache.c_str(),
                      kTaskManagerWebCoreScriptsCache, wk_scripts_cache.c_str(),
                      kTaskManagerWebCoreCssCache, wk_css_cache.c_str(),
