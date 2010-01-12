@@ -87,6 +87,11 @@ class TabStripModelObserverBridge;
   // restrict the amount of shrinking by the amounts specified above. Reset to
   // NO on growth.
   BOOL isShrinkingFromZoomed_;
+
+  // The raw accumulated zoom value and the actual zoom increments made for an
+  // an in-progress pinch gesture.
+  CGFloat totalMagnifyGestureAmount_;
+  NSInteger currentZoomStepDelta_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.

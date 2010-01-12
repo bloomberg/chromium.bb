@@ -1451,9 +1451,8 @@ willPositionSheet:(NSWindow*)sheet
   [[[[self window] contentView] superview] addSubview:incognitoView.get()];
 }
 
-// Undocumented method for multi-touch gestures in 10.5. Future OS's will
-// likely add a public API, but the worst that will happen is that this will
-// turn into dead code and just won't get called.
+// Documented in 10.6+, but present starting in 10.5. Called when we get a
+// three-finger swipe.
 - (void)swipeWithEvent:(NSEvent*)event {
   // Map forwards and backwards to history; left is positive, right is negative.
   unsigned int command = 0;
@@ -1471,6 +1470,47 @@ willPositionSheet:(NSWindow*)sheet
   if (browser_->command_updater()->IsCommandEnabled(command))
     browser_->ExecuteCommandWithDisposition(command,
         event_utils::WindowOpenDispositionFromNSEvent(event));
+}
+
+// Documented in 10.6+, but present starting in 10.5. Called repeatedly during
+// a pinch gesture, with incremental change values.
+- (void)magnifyWithEvent:(NSEvent*)event {
+  // The deltaZ difference necessary to trigger a zoom action. Derived from
+  // experimentation to find a value that feels reasonable.
+  static const float kZoomStepValue = 150;
+
+  // Find the (absolute) thresholds on either side of the current zoom factor,
+  // then convert those to actual numbers to trigger a zoom in or out.
+  // This logic deliberately makes the range around the starting zoom value for
+  // the gesture twice as large as the other ranges (i.e., the notches are at
+  // ..., -3*step, -2*step, -step, step, 2*step, 3*step, ... but not at 0)
+  // so that it's easier to get back to your starting point than it is to
+  // overshoot.
+  float nextStep = (abs(currentZoomStepDelta_) + 1) * kZoomStepValue;
+  float backStep = abs(currentZoomStepDelta_) * kZoomStepValue;
+  float zoomInThreshold = (currentZoomStepDelta_ >= 0) ? nextStep : -backStep;
+  float zoomOutThreshold = (currentZoomStepDelta_ <= 0) ? -nextStep : backStep;
+
+  unsigned int command = 0;
+  totalMagnifyGestureAmount_ += [event deltaZ];
+  if (totalMagnifyGestureAmount_ > zoomInThreshold) {
+    command = IDC_ZOOM_PLUS;
+  } else if (totalMagnifyGestureAmount_ < zoomOutThreshold) {
+    command = IDC_ZOOM_MINUS;
+  }
+
+  if (command && browser_->command_updater()->IsCommandEnabled(command)) {
+    currentZoomStepDelta_ += (command == IDC_ZOOM_PLUS) ? 1 : -1;
+    browser_->ExecuteCommandWithDisposition(command,
+        event_utils::WindowOpenDispositionFromNSEvent(event));
+  }
+}
+
+// Documented in 10.6+, but present starting in 10.5. Called at the beginning
+// of a gesture.
+- (void)beginGestureWithEvent:(NSEvent*)event {
+  totalMagnifyGestureAmount_ = 0;
+  currentZoomStepDelta_ = 0;
 }
 
 // Delegate method called when window is resized.
