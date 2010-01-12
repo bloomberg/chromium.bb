@@ -3113,3 +3113,5 @@ BUG_JOHNNYG LINUX : LayoutTests/fast/text/find-kana.html = CRASH
 
 // from http://trac.webkit.org/changeset/53086
 BUG_JOHNNYG : LayoutTests/svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = TEXT
+
+
