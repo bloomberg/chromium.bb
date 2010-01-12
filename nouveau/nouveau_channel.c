@@ -107,6 +107,7 @@ nouveau_channel_free(struct nouveau_channel **chan)
 	if (!chan || !*chan)
 		return;
 	nvchan = nouveau_channel(*chan);
+	(*chan)->flush_notify = NULL;
 	*chan = NULL;
 	nvdev = nouveau_device(nvchan->base.device);
 
