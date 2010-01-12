@@ -1136,12 +1136,11 @@ BUG10322 DEFER SKIP : LayoutTests/platform/win/accessibility = PASS FAIL
 BUG24204 WIN LINUX : LayoutTests/tables/mozilla_expected_failures/bugs/bug178855.xml = IMAGE+TEXT
 
 // Fails on webkit windows as well.
-BUG24207 WIN LINUX : LayoutTests/fast/events/attempt-scroll-with-no-scrollbars.html = FAIL
+BUG24207 : LayoutTests/fast/events/attempt-scroll-with-no-scrollbars.html = FAIL
 
 // The test may require a proper version of Java 6 RC 10 plugin
 // installed to run.
 BUG10313 : LayoutTests/plugins/bindings-test.html = FAIL
-
 
 // No glyph for U+FFFD (Replacement Character : black diamond with
 // question mark) in them
@@ -1387,9 +1386,6 @@ BUG10364 MAC : LayoutTests/http/tests/navigation/reload-subframe-object.html = F
 
 // bad key event handling
 BUG10366 MAC : LayoutTests/fast/events/option-tab.html = FAIL
-
-// event failures
-BUG10367 MAC : LayoutTests/fast/events/attempt-scroll-with-no-scrollbars.html = FAIL
 
 // selection
 BUG10369 MAC : LayoutTests/editing/selection/5109817.html = FAIL
