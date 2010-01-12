@@ -863,6 +863,8 @@
         'browser/gtk/edit_search_engine_dialog.cc',
         'browser/gtk/edit_search_engine_dialog.h',
         'browser/gtk/extension_install_prompt_gtk.cc',
+        'browser/gtk/extension_installed_bubble_gtk.cc',
+        'browser/gtk/extension_installed_bubble_gtk.h',
         'browser/gtk/extension_view_gtk.cc',
         'browser/gtk/extension_view_gtk.h',
         'browser/gtk/extension_popup_gtk.cc',

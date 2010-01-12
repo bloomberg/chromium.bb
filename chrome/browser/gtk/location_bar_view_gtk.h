@@ -55,6 +55,18 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Returns the widget the caller should host.  You must call Init() first.
   GtkWidget* widget() { return hbox_.get(); }
 
+  // Sets |preview_enabled| for the PageActionViewGtk associated with this
+  // |page_action|. If |preview_enabled| is true, the view will display the
+  // page action's icon even though it has not been activated by the extension.
+  // This is used by the ExtensionInstalledBubbleGtk to preview what the icon
+  // will look like for the user upon installation of the extension.
+  void SetPreviewEnabledPageAction(ExtensionAction *page_action,
+                                   bool preview_enabled);
+
+  // Retrieves the GtkWidget which is associated with PageActionView
+  // corresponding to |page_action|.
+  GtkWidget* GetPageActionWidget(ExtensionAction* page_action);
+
   // Updates the location bar.  We also reset the bar's permanent text and
   // security style, and, if |tab_for_state_restoring| is non-NULL, also
   // restore saved state that the tab holds.
@@ -118,6 +130,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     ExtensionAction* page_action() { return page_action_; }
 
+    void set_preview_enabled(bool preview_enabled) {
+      preview_enabled_ = preview_enabled;
+    }
+
     bool IsVisible() { return GTK_WIDGET_VISIBLE(widget()); }
 
     // Called to notify the PageAction that it should determine whether to be
@@ -179,6 +195,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // The URL we are currently showing the icon for.
     GURL current_url_;
+
+    // This is used for post-install visual feedback. The page_action icon
+    // is briefly shown even if it hasn't been enabled by its extension.
+    bool preview_enabled_;
 
     // The context menu view and model for this extension action.
     scoped_ptr<MenuGtk> context_menu_;

@@ -73,6 +73,14 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   GoButtonGtk* GetGoButton() { return go_.get(); }
 
+  GtkWidget* GetAppMenuButton() { return app_menu_button_.get(); }
+
+  BrowserActionsToolbarGtk* GetBrowserActionsToolbar() {
+    return actions_toolbar_.get();
+  }
+
+  LocationBarViewGtk* GetLocationBarView() { return location_bar_.get(); }
+
   // We have to show padding on the bottom of the toolbar when the bookmark
   // is in floating mode. Otherwise the bookmark bar will paint it for us.
   void UpdateForBookmarkBarVisibility(bool show_bottom_padding);

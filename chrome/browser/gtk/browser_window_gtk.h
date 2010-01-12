@@ -196,6 +196,8 @@ class BrowserWindowGtk : public BrowserWindow,
 
   GtkWindow* window() const { return window_; }
 
+  BrowserToolbarGtk* GetToolbar() { return toolbar_.get(); }
+
   gfx::Rect bounds() const { return bounds_; }
 
   // Make changes necessary when the floating state of the bookmark bar changes.

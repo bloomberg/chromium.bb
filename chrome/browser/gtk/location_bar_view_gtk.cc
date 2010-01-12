@@ -339,6 +339,36 @@ void LocationBarViewGtk::SetProfile(Profile* profile) {
   profile_ = profile;
 }
 
+
+void LocationBarViewGtk::SetPreviewEnabledPageAction(
+    ExtensionAction *page_action,
+    bool preview_enabled) {
+  DCHECK(page_action);
+  UpdatePageActions();
+  for (ScopedVector<PageActionViewGtk>::iterator iter =
+       page_action_views_.begin(); iter != page_action_views_.end();
+       ++iter) {
+    if ((*iter)->page_action() == page_action) {
+      (*iter)->set_preview_enabled(preview_enabled);
+      UpdatePageActions();
+      return;
+    }
+  }
+}
+
+GtkWidget* LocationBarViewGtk::GetPageActionWidget(
+    ExtensionAction *page_action) {
+  DCHECK(page_action);
+  for (ScopedVector<PageActionViewGtk>::iterator iter =
+           page_action_views_.begin();
+       iter != page_action_views_.end();
+       ++iter) {
+    if ((*iter)->page_action() == page_action)
+      return (*iter)->widget();
+  }
+  return NULL;
+}
+
 void LocationBarViewGtk::Update(const TabContents* contents) {
   SetSecurityIcon(toolbar_model_->GetIcon());
   UpdatePageActions();
@@ -857,7 +887,8 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
     : owner_(owner),
       profile_(profile),
       page_action_(page_action),
-      last_icon_pixbuf_(NULL) {
+      last_icon_pixbuf_(NULL),
+      preview_enabled_(false) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(),
                               Extension::kPageActionIconMaxSize,
@@ -913,7 +944,8 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
   current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
   current_url_ = url;
 
-  bool visible = page_action_->GetIsVisible(current_tab_id_);
+  bool visible = preview_enabled_ ||
+                 page_action_->GetIsVisible(current_tab_id_);
   if (visible) {
     // Set the tooltip.
     gtk_widget_set_tooltip_text(
@@ -961,10 +993,7 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
     // The pixbuf might not be loaded yet.
     if (pixbuf)
       gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()), pixbuf);
-    else
-      visible = false;
   }
-
 
   bool old_visible = IsVisible();
   if (visible)

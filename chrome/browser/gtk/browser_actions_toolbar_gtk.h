@@ -30,6 +30,11 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
 
   GtkWidget* widget() { return hbox_.get(); }
 
+  // Returns the widget in use by the BrowserActionButton corresponding to
+  // |extension|. Used in positioning the ExtensionInstalledBubble for
+  // BrowserActions.
+  GtkWidget* GetBrowserActionWidget(Extension* extension);
+
   int button_count() { return extension_button_map_.size(); }
 
   Browser* browser() { return browser_; }

@@ -18,7 +18,9 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #if defined(TOOLKIT_VIEWS)  // TODO(port)
 #include "chrome/browser/views/extensions/extension_installed_bubble.h"
-#endif  // TOOLKIT_VIEWS
+#elif defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/extension_installed_bubble_gtk.h"
+#endif
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/platform_util.h"
@@ -185,18 +187,24 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
     return;
   }
 
-#if defined(TOOLKIT_VIEWS)
   // GetLastActiveWithProfile will fail on the build bots. This needs to
   // implemented differently if any test is created which depends on
   // ExtensionInstalledBubble showing.
+#if defined(TOOLKIT_VIEWS)
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   if (!browser)
     return;
 
   ExtensionInstalledBubble::Show(extension, browser, icon_);
+#elif defined(TOOLKIT_GTK)
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  if (!browser)
+    return;
+
+  ExtensionInstalledBubbleGtk::Show(extension, browser, icon_);
 #else
-// TODO(port) crbug.com/26973 (linux) crbug.com/26974 (mac)
-#endif  // TOOLKIT_VIEWS
+// TODO(port) crbug.com/26974 (mac)
+#endif
 }
 
 void ExtensionInstallUI::OnInstallFailure(const std::string& error) {

@@ -333,6 +333,16 @@ void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
   UpdateVisibility();
 }
 
+GtkWidget* BrowserActionsToolbarGtk::GetBrowserActionWidget(
+    Extension* extension) {
+  ExtensionButtonMap::iterator it = extension_button_map_.find(
+      extension->id());
+  if (it == extension_button_map_.end())
+    return NULL;
+
+  return it->second.get()->widget();
+}
+
 void BrowserActionsToolbarGtk::RemoveButtonForExtension(Extension* extension) {
   if (extension_button_map_.erase(extension->id()))
     UpdateVisibility();
