@@ -92,6 +92,8 @@ BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 BUG24182 WIN DEBUG SLOW: LayoutTests/inspector/console-dirxml.html = PASS
+BUG24182 DEBUG SLOW : LayoutTests/fast/dom/Window/window-function-frame-getter-precedence.html = PASS
+
 
 // Usually <1s in release, ~1s in debug, but occasionally >5s in release.
 BUG27335 WIN RELEASE : LayoutTests/plugins/embed-attributes-setting.html = PASS TIMEOUT
@@ -718,10 +720,6 @@ BUG20292 : LayoutTests/fast/forms/input-selectedoption.html = FAIL
 BUG26734 LINUX MAC SKIP : LayoutTests/inspector = PASS
 BUG26734 SKIP : LayoutTests/inspector/console-format-collections.html = TEXT
 BUG26734 SKIP : LayoutTests/inspector/console-format.html = TEXT
-
-// Fails due to storage APIs not implemented.  Might be worth re-baselining
-// temporarily so the rest of the conditions are still tested.
-BUG24205 : LayoutTests/fast/dom/Window/window-function-name-getter-precedence.html = FAIL
 
 // These tests are disabled until <audio> and <video> tags are supported.
 // Disable <video> and <audio> tests for mac and linux until there is
@@ -2360,11 +2358,6 @@ BUG9962 MAC : LayoutTests/fast/js/function-apply-aliased.html = FAIL
 
 // Regressions from WebKit merge 43264:42403, unknown cause(s)
 BUG10055 MAC : LayoutTests/fast/events/updateLayoutForHitTest.html = FAIL
-
-// This test was changed upstream in http://trac.webkit.org/changeset/42447
-// to include window.showModalDialog, which we give as undefined.
-BUG10530 RELEASE : LayoutTests/fast/dom/Window/window-function-frame-getter-precedence.html = TEXT
-BUG10530 DEBUG SLOW : LayoutTests/fast/dom/Window/window-function-frame-getter-precedence.html = FAIL
 
 // New tests from WebKit Merge 42609:42671
 BUG10760 LINUX : LayoutTests/fast/forms/input-text-scroll-left-on-blur.html = FAIL
