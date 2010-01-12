@@ -44,6 +44,7 @@ class BlacklistStoreOutput {
   bool StoreEntry(const std::string& pattern,
                   uint32 attributes,
                   const std::vector<std::string>& types,
+                  bool is_exception,
                   uint32 provider);
 
  private:
@@ -87,6 +88,7 @@ class BlacklistStoreInput {
   bool ReadEntry(std::string* pattern,
                  uint32* attributes,
                  std::vector<std::string>* types,
+                 bool* is_exception,
                  uint32* provider);
 
  private:

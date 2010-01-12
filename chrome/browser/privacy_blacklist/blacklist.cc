@@ -112,8 +112,12 @@ bool Blacklist::Entry::IsBlocked(const GURL& url) const {
     ((attributes_ & kBlockUnsecure) && !url.SchemeIsSecure());
 }
 
-Blacklist::Entry::Entry(const std::string& pattern, const Provider* provider)
-    : pattern_(pattern), attributes_(0), provider_(provider) {}
+Blacklist::Entry::Entry(const std::string& pattern, const Provider* provider,
+                        bool is_exception)
+    : attributes_(0),
+      is_exception_(is_exception),
+      pattern_(pattern),
+      provider_(provider) {}
 
 void Blacklist::Entry::AddAttributes(unsigned int attributes) {
   attributes_ |= attributes;

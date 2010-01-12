@@ -18,6 +18,7 @@ namespace {
 const char header[] = "[Chromium::PrivacyBlacklist]";
 const char name_tag[] = "Name:";
 const char url_tag[] = "URL:";
+const char whitelist_tag[] = "-";
 const char arrow_tag[] = "=>";
 const char eol[] = "\n\r";
 
@@ -106,6 +107,16 @@ bool BlacklistIO::ReadText(Blacklist* blacklist,
       continue;
     }
 
+    bool is_exception = false;
+    if (StartsWith(cur, end, whitelist_tag, arraysize(whitelist_tag))) {
+      is_exception = true;
+      cur++;
+      if (IsAsciiWhitespace(*cur)) {
+        *error_string = "Dash followed by white space.";
+        return false;
+      }
+    }
+
     const char* skip = std::find_if(cur, end, IsWhiteSpace());
     std::string pattern(cur, skip);
 
@@ -115,7 +126,8 @@ bool BlacklistIO::ReadText(Blacklist* blacklist,
       return false;
     }
 
-    linked_ptr<Blacklist::Entry> entry(new Blacklist::Entry(pattern, provider));
+    linked_ptr<Blacklist::Entry> entry(new Blacklist::Entry(pattern, provider,
+                                       is_exception));
 
     cur = std::find_if(cur + arraysize(arrow_tag), end, IsNotWhiteSpace());
     skip = std::find_first_of(cur, end, eol, eol + 2);
@@ -211,13 +223,15 @@ bool BlacklistIO::ReadBinary(Blacklist* blacklist, const FilePath& path) {
 
   std::string pattern;
   unsigned int attributes, provider;
+  bool is_exception;
   std::vector<std::string> types;
   for (size_t i = 0; i < num_entries; ++i) {
-    if (!input.ReadEntry(&pattern, &attributes, &types, &provider))
+    if (!input.ReadEntry(&pattern, &attributes, &types, &is_exception,
+                         &provider))
       return false;
 
     Blacklist::Entry* entry =
-        new Blacklist::Entry(pattern, provider_map[provider]);
+        new Blacklist::Entry(pattern, provider_map[provider], is_exception);
     entry->AddAttributes(attributes);
     entry->SwapTypes(&types);
     entries.push_back(linked_ptr<Blacklist::Entry>(entry));
@@ -269,6 +283,7 @@ bool BlacklistIO::WriteBinary(const Blacklist* blacklist,
     if (!output.StoreEntry((*i)->pattern_,
                            (*i)->attributes_,
                            (*i)->types_,
+                           (*i)->is_exception_,
                            index[(*i)->provider_])) {
       return false;
     }

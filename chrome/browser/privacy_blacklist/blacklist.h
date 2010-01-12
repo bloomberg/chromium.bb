@@ -75,7 +75,8 @@ class Blacklist {
   class Entry {
    public:
     // Construct with given pattern.
-    Entry(const std::string& pattern, const Provider* provider);
+    Entry(const std::string& pattern, const Provider* provider,
+          bool is_exception);
 
     // Returns the pattern which this entry matches.
     const std::string& pattern() const { return pattern_; }
@@ -108,8 +109,11 @@ class Blacklist {
     // Merge the attributes and types of the given entry with this one.
     void Merge(const Entry& entry);
 
-    std::string pattern_;
     unsigned int attributes_;
+
+    // True if this entry is an exception to the blacklist.
+    bool is_exception_;
+    std::string pattern_;
     std::vector<std::string> types_;
 
     // Points to the provider of this entry, the providers are all
