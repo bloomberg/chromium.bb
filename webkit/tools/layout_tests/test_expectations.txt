@@ -981,15 +981,6 @@ BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-14-b.svg = FAIL
 // No anti-aliasing on the text.
 BUG10298 LINUX : LayoutTests/svg/custom/use-on-disallowed-foreign-object-3.svg = FAIL
 
-// Marking this again as failed. This test failed even after rebaseline due to
-// the fact that the font is not specified in the test and it seems that the
-// test falls back on a different font locally than on the buildbot so the
-// baseline is invalid. This might indicate a failure in our font fallback code
-// or might be expected and that we should either go with the buildbot output
-// or change the test upstream to specify explicitly what font to use.
-// The mask part of this test is totally wrong.
-BUG3244 LINUX WIN : LayoutTests/fast/backgrounds/svg-as-background-6.html = FAIL
-
 // The failures listed below have never passed in Chromium and need to be
 // investigated, categorized, and (one hopes) fixed.
 
@@ -1052,6 +1043,18 @@ BUG3244 LINUX WIN : LayoutTests/fast/backgrounds/svg-as-mask.html = FAIL
 BUG3244 WIN DEBUG : LayoutTests/fast/backgrounds/animated-svg-as-mask.html = FAIL
 BUG3244 SLOW WIN RELEASE : LayoutTests/fast/backgrounds/animated-svg-as-mask.html = FAIL
 BUG3244 LINUX : LayoutTests/fast/backgrounds/animated-svg-as-mask.html = FAIL
+// More tests that fail because of masks not working properly.
+// New tests. We should fix these, but they don't need to block the current release
+BUG3244 WIN LINUX : LayoutTests/fast/backgrounds/mask-composite.html = FAIL
+BUG3244 WIN LINUX : LayoutTests/fast/backgrounds/repeat/mask-negative-offset-repeat.html = FAIL
+// Marking this again as failed. This test failed even after rebaseline due to
+// the fact that the font is not specified in the test and it seems that the
+// test falls back on a different font locally than on the buildbot so the
+// baseline is invalid. This might indicate a failure in our font fallback code
+// or might be expected and that we should either go with the buildbot output
+// or change the test upstream to specify explicitly what font to use.
+// The mask part of this test is totally wrong.
+BUG3244 LINUX WIN : LayoutTests/fast/backgrounds/svg-as-background-6.html = FAIL
 
 BUG10302 LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-10-b.svg = FAIL
 
@@ -1167,11 +1170,6 @@ BUG22700 LINUX WIN : LayoutTests/fast/canvas/canvas-getImageData.html = FAIL
 // We're much closer now. To fully pass this we need encoders for jpg
 // and gif, which is a low priority.
 BUG10318 WIN LINUX : LayoutTests/fast/canvas/toDataURL-supportedTypes.html = FAIL
-
-// More tests that fail because of masks not working properly.
-// New tests. We should fix these, but they don't need to block the current release
-BUG10319 WIN LINUX : LayoutTests/fast/backgrounds/mask-composite.html = FAIL
-BUG10319 WIN LINUX : LayoutTests/fast/backgrounds/repeat/mask-negative-offset-repeat.html = FAIL
 
 // This test finishes while in the middle of a CSS animation. This is
 // intentional, but it makes pixel results unreliable.
