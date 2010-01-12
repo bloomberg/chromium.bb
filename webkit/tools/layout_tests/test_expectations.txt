@@ -2245,7 +2245,7 @@ BUG10473 LINUX : LayoutTests/fast/replaced/width100percent-searchfield.html = FA
 BUG27569 MAC WIN DEBUG : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
 BUG27569 LINUX MAC WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
 
-BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = TEXT
+BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = IMAGE+TEXT
 
 // Merge WebKit 42133:42199 regressions
 BUG20570 LINUX : LayoutTests/fast/events/context-no-deselect.html = FAIL
