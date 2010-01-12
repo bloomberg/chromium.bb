@@ -8,6 +8,8 @@
 // Keys used in JSON representation of extensions.
 namespace extension_manifest_keys {
   extern const wchar_t* kAllFrames;
+  extern const wchar_t* kApp;
+  extern const wchar_t* kAppOrigins;
   extern const wchar_t* kBackground;
   extern const wchar_t* kBrowserAction;
   extern const wchar_t* kMinimumChromeVersion;
@@ -68,6 +70,10 @@ namespace extension_manifest_values {
 // Error messages returned from Extension::InitFromValue().
 namespace extension_manifest_errors {
   extern const char* kChromeVersionTooLow;
+  extern const char* kInvalidAllFrames;
+  extern const char* kInvalidApp;
+  extern const char* kInvalidAppOrigin;
+  extern const char* kInvalidBackground;
   extern const char* kInvalidBrowserAction;
   extern const char* kInvalidChromeURLOverrides;
   extern const char* kInvalidContentScript;
@@ -94,8 +100,6 @@ namespace extension_manifest_errors {
   extern const char* kInvalidPrivacyBlacklists;
   extern const char* kInvalidPrivacyBlacklistsPath;
 
-  extern const char* kInvalidAllFrames;
-  extern const char* kInvalidBackground;
   extern const char* kInvalidRunAt;
   extern const char* kInvalidSignature;
   extern const char* kInvalidToolstrip;

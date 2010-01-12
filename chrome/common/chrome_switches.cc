@@ -188,6 +188,9 @@ const char kEnableExperimentalExtensionApis[] =
 // Enable experimental WebGL support.
 const char kEnableExperimentalWebGL[]       = "enable-webgl";
 
+// Enable experimental extension apps.
+const char kEnableExtensionApps[]           = "enable-extension-apps";
+
 // Enable experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";
 

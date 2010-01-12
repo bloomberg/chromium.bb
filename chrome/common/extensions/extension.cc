@@ -493,6 +493,44 @@ bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) {
   return false;
 }
 
+// We're likely going to want to restrict apps away from certain APIs/features.
+// TODO(erikkay) - figure out what APIs to block.
+bool Extension::ContainsNonAppKeys(const DictionaryValue& source) {
+  return false;
+}
+
+bool Extension::LoadAppHelper(const DictionaryValue* app, std::string* error) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionApps)) {
+    *error = errors::kInvalidApp;
+    return false;
+  }
+
+  ListValue* origins;
+  if (!app->GetList(keys::kAppOrigins, &origins) || origins->GetSize() == 0) {
+    *error =
+        ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidAppOrigin, "");
+    return false;
+  }
+  for (ListValue::const_iterator iter = origins->begin();
+       iter != origins->end(); ++iter) {
+    std::string url_str;
+    if (!(*iter)->GetAsString(&url_str) || url_str.empty()) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidAppOrigin, url_str);
+      return false;
+    }
+    GURL url(url_str);
+    if (!url.is_valid() || url != url.GetOrigin()) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidAppOrigin, url_str);
+      return false;
+    }
+    app_origins_.push_back(url);
+  }
+  return true;
+}
+
 Extension::Extension(const FilePath& path)
     : converted_from_user_script_(false), is_theme_(false),
       background_page_ready_(false) {
@@ -1215,6 +1253,22 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       }
       // Replace the entry with a fully qualified chrome-extension:// URL.
       chrome_url_overrides_[page] = GetResourceURL(val);
+    }
+  }
+
+  // If it's an app, load the appropriate keys, etc.
+  if (source.HasKey(keys::kApp)) {
+    if (ContainsNonAppKeys(source)) {
+      *error = errors::kInvalidApp;
+      return false;
+    }
+    DictionaryValue* app;
+    if (!source.GetDictionary(keys::kApp, &app)) {
+      *error = errors::kInvalidApp;
+      return false;
+    }
+    if (!LoadAppHelper(app, error)) {
+      return false;
     }
   }
 

@@ -286,6 +286,10 @@ class Extension {
   bool GetBackgroundPageReady();
   void SetBackgroundPageReady();
 
+  // The origins that this app is registered to.
+  const std::vector<GURL>& app_origins() const { return app_origins_; }
+  bool IsApp() const { return !app_origins_.empty(); }
+
  private:
   // Helper method that loads a UserScript object from a
   // dictionary in the content_script list of the manifest.
@@ -311,6 +315,13 @@ class Extension {
   // Figures out if a source contains keys not associated with themes - we
   // don't want to allow scripts and such to be bundled with themes.
   bool ContainsNonThemeKeys(const DictionaryValue& source);
+
+  // Apps don't have access to all extension features.  This enforces those
+  // restrictions.
+  bool ContainsNonAppKeys(const DictionaryValue& source);
+
+  // Helper method to verify the app section of the manifest.
+  bool LoadAppHelper(const DictionaryValue* app, std::string* error);
 
   // The absolute path to the directory the extension is stored in.
   FilePath path_;
@@ -407,6 +418,10 @@ class Extension {
   // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
   // which override the handling of those URLs.
   URLOverrideMap chrome_url_overrides_;
+
+  // The vector of origin URLs associated with an app.
+  std::vector<GURL> app_origins_;
+
 
   // Runtime data:
 
