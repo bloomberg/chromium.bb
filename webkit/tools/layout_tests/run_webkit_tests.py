@@ -158,16 +158,6 @@ class TestRunner:
     else:
       self._http_server = http_server.Lighttpd(options.results_directory)
 
-    self._shardable_directories = ['LayoutTests', 'fast', 'svg', 'loader',
-        'editing']
-
-    # The http tests are very stable on mac/linux.
-    # TODO(ojan): Make the http server on Windows be apache so we can turn
-    # shard the http tests there as well. Switching to apache is what made them
-    # stable on linux/mac.
-    if sys.platform in ('darwin', 'linux2'):
-      self._shardable_directories.extend(['http', 'tests'])
-
     self._websocket_server = websocket_server.PyWebSocket(
         options.results_directory)
     # disable wss server. need to install pyOpenSSL on buildbots.
@@ -379,8 +369,12 @@ class TestRunner:
     directory = test_file_parts[0]
     test_file = test_file_parts[1]
 
+    # The http tests are very stable on mac/linux.
+    # TODO(ojan): Make the http server on Windows be apache so we can turn
+    # shard the http tests there as well. Switching to apache is what made them
+    # stable on linux/mac.
     return_value = directory
-    while (directory in self._shardable_directories and
+    while ((directory != 'http' or sys.platform in ('darwin', 'linux2')) and
            test_file.find(os.sep) >= 0):
       test_file_parts = test_file.split(os.sep, 1)
       directory = test_file_parts[0]
