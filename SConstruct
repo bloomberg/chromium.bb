@@ -363,6 +363,7 @@ def CommandSelLdrTestNacl(env, name, command,
                           loader='sel_ldr',
                           size='medium',
                           **extra):
+  # TODO(dpolukhin): remove this code when x86-64 has full sel_ldr.
   if env['BUILD_SUBARCH'] == '64':
     if ARGUMENTS.get('loader', 'none') != 'none':
       loader = ARGUMENTS.get('loader')
@@ -907,13 +908,15 @@ nacl_env = pre_base_env.Clone(
     EXTRA_LIBS = [],
 
     # always optimize binaries
+    # Command line option nacl_ccflags=... add additional option to nacl build
     CCFLAGS = ['-O2',
                '-fomit-frame-pointer',
                '-Wall',
                '-fdiagnostics-show-option',
                '-pedantic',
                '-Werror',
-               '${EXTRA_CCFLAGS}'],
+               '${EXTRA_CCFLAGS}',
+               ARGUMENTS.get('nacl_ccflags', '')],
     CPPPATH = ['$SOURCE_ROOT'],
     CFLAGS = ['${EXTRA_CFLAGS}'],
     CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
