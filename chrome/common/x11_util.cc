@@ -18,6 +18,7 @@
 #include <list>
 #include <set>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/gfx/size.h"
 #include "base/thread.h"
@@ -67,6 +68,11 @@ Display* GetXDisplay() {
 }
 
 static SharedMemorySupport DoQuerySharedMemorySupport(Display* dpy) {
+  // A temporary flag for tracking down shared memory problems.
+  // TODO(evanm): remove this.
+  if (CommandLine::ForCurrentProcess()->HasSwitch("disable-xshm"))
+    return SHARED_MEMORY_NONE;
+
   int dummy;
   Bool pixmaps_supported;
   // Query the server's support for XSHM.
