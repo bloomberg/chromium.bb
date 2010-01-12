@@ -7,8 +7,6 @@
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 
-extern void DrawHackSendVideo(media::VideoSurface& frame, const gfx::Rect& rect);
-
 namespace webkit_glue {
 
   VideoRendererImpl::VideoRendererImpl(WebMediaPlayerImpl::Proxy* proxy)
@@ -61,12 +59,6 @@ void VideoRendererImpl::SetRect(const gfx::Rect& rect) {
 // This method is always called on the renderer's thread.
 void VideoRendererImpl::Paint(skia::PlatformCanvas* canvas,
                               const gfx::Rect& dest_rect) {
-  base::TimeTicks now = base::TimeTicks::HighResNow();
-  if (!last_frame_.is_null()) {
-    HISTOGRAM_TIMES("Video.Decode", now - last_frame_);
-  }
-  last_frame_ = now;
-
   scoped_refptr<media::VideoFrame> video_frame;
   GetCurrentFrame(&video_frame);
   if (video_frame) {
@@ -137,10 +129,6 @@ void VideoRendererImpl::SlowPaint(media::VideoFrame* video_frame,
       DCHECK(frame_in.strides[media::VideoSurface::kUPlane] ==
              frame_in.strides[media::VideoSurface::kVPlane]);
       DCHECK(frame_in.planes == media::VideoSurface::kNumYUVPlanes);
-
-      DrawHackSendVideo(frame_in, dest_rect);
-
-#if 1
       bitmap_.lockPixels();
       media::YUVType yuv_type = (frame_in.format == media::VideoSurface::YV12) ?
                                 media::YV12 : media::YV16;
@@ -155,8 +143,6 @@ void VideoRendererImpl::SlowPaint(media::VideoFrame* video_frame,
                                bitmap_.rowBytes(),
                                yuv_type);
       bitmap_.unlockPixels();
-#endif
-      DrawHackSendVideo(frame_in, dest_rect);
       video_frame->Unlock();
     } else {
       NOTREACHED();
@@ -164,7 +150,6 @@ void VideoRendererImpl::SlowPaint(media::VideoFrame* video_frame,
   }
 
   // 2. Paint the bitmap to canvas.
-#if 1
   SkMatrix matrix;
   matrix.setTranslate(static_cast<SkScalar>(dest_rect.x()),
                       static_cast<SkScalar>(dest_rect.y()));
@@ -176,7 +161,6 @@ void VideoRendererImpl::SlowPaint(media::VideoFrame* video_frame,
                     SkIntToScalar(video_size_.height()));
   }
   canvas->drawBitmapMatrix(bitmap_, matrix, NULL);
-#endif
 }
 
 void VideoRendererImpl::FastPaint(media::VideoFrame* video_frame,

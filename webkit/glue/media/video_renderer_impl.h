@@ -16,7 +16,6 @@
 
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
-#include "base/time.h"
 #include "media/base/buffers.h"
 #include "media/base/factory.h"
 #include "media/base/filters.h"
@@ -104,8 +103,6 @@ class VideoRendererImpl : public media::VideoRendererBase {
 
   // The size of the video.
   gfx::Size video_size_;
-
-  base::TimeTicks last_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererImpl);
 };
