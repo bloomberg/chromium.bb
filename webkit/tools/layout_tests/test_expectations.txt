@@ -1145,7 +1145,7 @@ BUG10313 : LayoutTests/plugins/bindings-test.html = FAIL
 
 // No glyph for U+FFFD (Replacement Character : black diamond with
 // question mark) in them
-BUG10315 WIN LINUX : LayoutTests/fast/encoding/invalid-UTF-8.html = FAIL
+BUG10315 WIN : LayoutTests/fast/encoding/invalid-UTF-8.html = FAIL
 
 // V8 failures as a result of the WebKit merge.
 // http://code.google.com/p/v8/issues/detail?id=92
