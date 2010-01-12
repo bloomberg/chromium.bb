@@ -300,4 +300,89 @@ typedef struct _NPDeviceContext3D
   int32 putOffset;
 } NPDeviceContext3D;
 
+/* Audio --------------------------------------------------------------------*/
+
+#define NPPepperAudioDevice 3
+
+/* min & max sample frame count */
+typedef enum {
+  NPAudioMinSampleFrameCount = 64,
+  NPAudioMaxSampleFrameCount = 32768
+} NPAudioSampleFrameCounts;
+
+/* supported sample rates */
+typedef enum {
+  NPAudioSampleRate44100Hz = 44100,
+  NPAudioSampleRate48000Hz = 48000,
+  NPAudioSampleRate96000Hz = 96000
+} NPAudioSampleRates;
+
+/* supported sample formats */
+typedef enum {
+  NPAudioSampleTypeInt16   = 0,
+  NPAudioSampleTypeFloat32 = 1
+} NPAudioSampleTypes;
+
+/* supported channel layouts */
+/* there is code that depends on these being the actual number of channels */
+typedef enum {
+  NPAudioChannelNone     = 0,
+  NPAudioChannelMono     = 1,
+  NPAudioChannelStereo   = 2,
+  NPAudioChannelThree    = 3,
+  NPAudioChannelFour     = 4,
+  NPAudioChannelFive     = 5,
+  NPAudioChannelFiveOne  = 6,
+  NPAudioChannelSeven    = 7,
+  NPAudioChannelSevenOne = 8
+} NPAudioChannels;
+
+/* audio context states */
+typedef enum {
+  NPAudioContextStateCallback = 0,
+  NPAudioContextStateUnderrunCounter = 1
+} NPAudioContextStates;
+
+/* audio context state values */
+typedef enum {
+  NPAudioCallbackStop = 0,
+  NPAudioCallbackStart = 1
+} NPAudioContextStateValues;
+
+/* audio query capabilities */
+typedef enum {
+  NPAudioCapabilitySampleRate              = 0,
+  NPAudioCapabilitySampleType              = 1,
+  NPAudioCapabilitySampleFrameCount        = 2,
+  NPAudioCapabilitySampleFrameCount44100Hz = 3,
+  NPAudioCapabilitySampleFrameCount48000Hz = 4,
+  NPAudioCapabilitySampleFrameCount96000Hz = 5,
+  NPAudioCapabilityOutputChannelMap        = 6,
+  NPAudioCapabilityInputChannelMap         = 7
+} NPAudioCapabilities;
+
+typedef struct _NPDeviceContextAudio NPDeviceContextAudio;
+
+/* user supplied callback function */
+typedef void (*NPAudioCallback)(NPDeviceContextAudio *context);
+
+typedef struct _NPDeviceContextAudioConfig {
+  int32 sampleRate;
+  int32 sampleType;
+  int32 outputChannelMap;
+  int32 inputChannelMap;
+  int32 sampleFrameCount;
+  uint32 flags;
+  NPAudioCallback callback;
+  void *userData;
+} NPDeviceContextAudioConfig;
+
+struct _NPDeviceContextAudio {
+//  NPP npp;
+  NPDeviceContextAudioConfig config;
+  void *outBuffer;
+  void *inBuffer;
+  void *privatePtr;
+};
+
 #endif  /* _NP_EXTENSIONS_H_ */

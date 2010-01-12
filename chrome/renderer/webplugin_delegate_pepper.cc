@@ -564,6 +564,148 @@ NPError WebPluginDelegatePepper::Device3DMapBuffer(
   return NPERR_NO_ERROR;
 }
 
+NPError WebPluginDelegatePepper::DeviceAudioQueryCapability(int32 capability,
+                                                            int32* value) {
+  // TODO(neb,cpu) implement QueryCapability
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::DeviceAudioQueryConfig(
+    const NPDeviceContextAudioConfig* request,
+    NPDeviceContextAudioConfig* obtain) {
+  // TODO(neb,cpu) implement QueryConfig
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::DeviceAudioInitializeContext(
+    const NPDeviceContextAudioConfig* config,
+    NPDeviceContextAudio* context) {
+
+  if (!render_view_) {
+    return NPERR_GENERIC_ERROR;
+  }
+
+  scoped_refptr<AudioMessageFilter> filter =
+      render_view_->audio_message_filter();
+  ViewHostMsg_Audio_CreateStream params;
+
+  params.format = AudioManager::AUDIO_PCM_LINEAR;
+  params.channels = config->outputChannelMap;
+  params.sample_rate = config->sampleRate;
+  switch (config->sampleType) {
+    case NPAudioSampleTypeInt16:
+      params.bits_per_sample = 16;
+      break;
+    case NPAudioSampleTypeFloat32:
+      params.bits_per_sample = 32;
+      break;
+    default:
+      return NPERR_INVALID_PARAM;
+  }
+
+  context->config = *config;
+  params.packet_size = config->sampleFrameCount * config->outputChannelMap
+      * (params.bits_per_sample >> 3);
+  LOG(INFO) << "Initializing Pepper Audio Context (" <<
+      config->sampleFrameCount << "Hz, " << params.bits_per_sample <<
+      " bits, " << config->outputChannelMap << "channels";
+
+  // TODO(neb): figure out if this number is grounded in reality
+  params.buffer_capacity = params.packet_size * 3;
+
+  // TODO(neb): keep these guys tracked somewhere so we can delete them
+  // even if the plugin doesn't
+  AudioStream *audio = new AudioStream(this);
+  audio->Initialize(filter, params, context);
+  return NPERR_NO_ERROR;
+}
+
+NPError WebPluginDelegatePepper::DeviceAudioSetStateContext(
+    NPDeviceContextAudio* context,
+    int32 state,
+    int32 value) {
+  // TODO(neb,cpu) implement SetStateContext
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::DeviceAudioGetStateContext(
+    NPDeviceContextAudio* context,
+    int32 state,
+    int32* value) {
+  // TODO(neb,cpu) implement GetStateContext
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::DeviceAudioFlushContext(
+    NPP id,
+    NPDeviceContextAudio* context,
+    NPDeviceFlushContextCallbackPtr callback,
+    void* user_data) {
+  // TODO(neb,cpu) implement FlushContext
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::DeviceAudioDestroyContext(
+    NPDeviceContextAudio* context) {
+  if (!context || !context->privatePtr) {
+    return NPERR_INVALID_PARAM;
+  }
+  delete reinterpret_cast<AudioStream *>(context->privatePtr);
+  memset(context, 0, sizeof(NPDeviceContextAudio));
+  return NPERR_NO_ERROR;
+}
+
+WebPluginDelegatePepper::AudioStream::~AudioStream() {
+  if (stream_id_) {
+    OnDestroy();
+  }
+}
+
+void WebPluginDelegatePepper::AudioStream::Initialize(
+    AudioMessageFilter* filter, const ViewHostMsg_Audio_CreateStream& params,
+    NPDeviceContextAudio* context) {
+  filter_ = filter;
+  context_= context;
+  context_->privatePtr = this;
+  // Make sure we don't call init more than once.
+  DCHECK_EQ(0, stream_id_);
+  stream_id_ = filter_->AddDelegate(this);
+  filter->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params));
+}
+
+void WebPluginDelegatePepper::AudioStream::OnDestroy() {
+  // Make sure we don't call destroy more than once.
+  DCHECK_NE(0, stream_id_);
+  filter_->RemoveDelegate(stream_id_);
+  filter_->Send(new ViewHostMsg_CloseAudioStream(0, stream_id_));
+  stream_id_ = 0;
+}
+
+void WebPluginDelegatePepper::AudioStream::OnRequestPacket(
+    size_t bytes_in_buffer, const base::Time& message_timestamp) {
+  context_->config.callback(context_);
+  filter_->Send(new ViewHostMsg_NotifyAudioPacketReady(0, stream_id_,
+                                                        shared_memory_size_));
+}
+
+void WebPluginDelegatePepper::AudioStream::OnStateChanged(
+    ViewMsg_AudioStreamState state) {
+}
+
+void WebPluginDelegatePepper::AudioStream::OnCreated(
+    base::SharedMemoryHandle handle, size_t length) {
+  shared_memory_.reset(new base::SharedMemory(handle, false));
+  shared_memory_->Map(length);
+  shared_memory_size_ = length;
+
+  context_->outBuffer = shared_memory_->memory();
+  // TODO(neb): call play after prefilling
+  filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
+}
+
+void WebPluginDelegatePepper::AudioStream::OnVolume(double volume) {
+}
+
 WebPluginDelegatePepper::WebPluginDelegatePepper(
     const base::WeakPtr<RenderView>& render_view,
     gfx::PluginWindowHandle containing_view,

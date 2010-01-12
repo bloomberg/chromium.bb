@@ -19,7 +19,9 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/weak_ptr.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/transport_dib.h"
+#include "chrome/renderer/audio_message_filter.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "skia/ext/platform_canvas.h"
@@ -124,7 +126,59 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   virtual NPError Device3DMapBuffer(NPDeviceContext3D* context,
                                     int32 id,
                                     NPDeviceBuffer* buffer);
+
+  // WebPluginAudioDeviceDelegate implementation.
+  virtual NPError DeviceAudioQueryCapability(int32 capability, int32* value);
+  virtual NPError DeviceAudioQueryConfig(
+      const NPDeviceContextAudioConfig* request,
+      NPDeviceContextAudioConfig* obtain);
+  virtual NPError DeviceAudioInitializeContext(
+      const NPDeviceContextAudioConfig* config,
+      NPDeviceContextAudio* context);
+  virtual NPError DeviceAudioSetStateContext(NPDeviceContextAudio* context,
+                                             int32 state, int32 value);
+  virtual NPError DeviceAudioGetStateContext(NPDeviceContextAudio* context,
+                                             int32 state, int32* value);
+  virtual NPError DeviceAudioFlushContext(
+      NPP id, NPDeviceContextAudio* context,
+      NPDeviceFlushContextCallbackPtr callback, void* user_data);
+  virtual NPError DeviceAudioDestroyContext(NPDeviceContextAudio* context);
+
   // End of WebPluginDelegate implementation.
+
+  // Each instance of AudioStream corresponds to one host stream (and one
+  // audio context). NPDeviceContextAudio contains a pointer to the context's
+  // stream as privatePtr.
+  class AudioStream : public AudioMessageFilter::Delegate {
+  public:
+    // TODO(neb): if plugin_delegate parameter is indeed unused, remove it
+    explicit AudioStream(WebPluginDelegatePepper* plugin_delegate)
+        : plugin_delegate_(plugin_delegate), stream_id_(0) {
+    }
+    virtual ~AudioStream();
+
+    void Initialize(AudioMessageFilter *filter,
+                    const ViewHostMsg_Audio_CreateStream& params,
+                    NPDeviceContextAudio* context);
+
+    // AudioMessageFilter::Delegate implementation
+    virtual void OnRequestPacket(size_t bytes_in_buffer,
+                                 const base::Time& message_timestamp);
+    virtual void OnStateChanged(ViewMsg_AudioStreamState state);
+    virtual void OnCreated(base::SharedMemoryHandle handle, size_t length);
+    virtual void OnVolume(double volume);
+    // End of AudioMessageFilter::Delegate implementation
+
+  private:
+    void OnDestroy();
+
+    NPDeviceContextAudio *context_;
+    WebPluginDelegatePepper* plugin_delegate_;
+    scoped_refptr<AudioMessageFilter> filter_;
+    int32 stream_id_;
+    scoped_ptr<base::SharedMemory> shared_memory_;
+    size_t shared_memory_size_;
+  };
 
   gfx::Rect GetRect() const { return window_rect_; }
   gfx::Rect GetClipRect() const { return clip_rect_; }

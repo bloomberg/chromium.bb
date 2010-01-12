@@ -59,6 +59,9 @@ class PluginObject {
   int dimensions_;
 
   NPDevice* device2d_;
+  NPDevice* deviceaudio_;
+
+  NPDeviceContextAudio context_audio_;
 
 #if !defined(INDEPENDENT_PLUGIN)
   scoped_ptr<CommandBufferPepper> command_buffer_;

@@ -251,6 +251,80 @@ static NPError Device3DMapBuffer(NPP id,
   return NPERR_GENERIC_ERROR;
 }
 
+// Audio device API ------------------------------------------------------------
+
+static NPError DeviceAudioQueryCapability(NPP id, int32 capability,
+                                          int32* value) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    plugin->webplugin()->delegate()->DeviceAudioQueryCapability(capability,
+                                                                value);
+    return NPERR_NO_ERROR;
+  } else {
+    return NPERR_GENERIC_ERROR;
+  }
+}
+
+static NPError DeviceAudioQueryConfig(NPP id,
+                                      const NPDeviceConfig* request,
+                                      NPDeviceConfig* obtain) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->DeviceAudioQueryConfig(
+        static_cast<const NPDeviceContextAudioConfig*>(request),
+        static_cast<NPDeviceContextAudioConfig*>(obtain));
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError DeviceAudioInitializeContext(NPP id,
+                                            const NPDeviceConfig* config,
+                                            NPDeviceContext* context) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->DeviceAudioInitializeContext(
+        static_cast<const NPDeviceContextAudioConfig*>(config),
+        static_cast<NPDeviceContextAudio*>(context));
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError DeviceAudioSetStateContext(NPP id,
+                                          NPDeviceContext* context,
+                                          int32 state,
+                                          int32 value) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->DeviceAudioSetStateContext(
+        static_cast<NPDeviceContextAudio*>(context), state, value);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError DeviceAudioGetStateContext(NPP id,
+                                          NPDeviceContext* context,
+                                          int32 state,
+                                          int32* value) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  return plugin->webplugin()->delegate()->DeviceAudioGetStateContext(
+      static_cast<NPDeviceContextAudio*>(context), state, value);
+}
+
+static NPError DeviceAudioFlushContext(NPP id,
+                                       NPDeviceContext* context,
+                                       NPDeviceFlushContextCallbackPtr callback,
+                                       void* user_data) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  return plugin->webplugin()->delegate()->DeviceAudioFlushContext(
+      id, static_cast<NPDeviceContextAudio*>(context), callback, user_data);
+}
+
+static NPError DeviceAudioDestroyContext(NPP id,
+                                         NPDeviceContext* context) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  return plugin->webplugin()->delegate()->DeviceAudioDestroyContext(
+      static_cast<NPDeviceContextAudio*>(context));
+}
 // -----------------------------------------------------------------------------
 
 static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
@@ -278,12 +352,23 @@ static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
     Device3DDestroyBuffer,
     Device3DMapBuffer,
   };
+  static NPDevice device_audio = {
+      DeviceAudioQueryCapability,
+      DeviceAudioQueryConfig,
+      DeviceAudioInitializeContext,
+      DeviceAudioSetStateContext,
+      DeviceAudioGetStateContext,
+      DeviceAudioFlushContext,
+      DeviceAudioDestroyContext,
+  };
 
   switch (device_id) {
     case NPPepper2DDevice:
       return const_cast<NPDevice*>(&device_2d);
     case NPPepper3DDevice:
       return const_cast<NPDevice*>(&device_3d);
+    case NPPepperAudioDevice:
+      return const_cast<NPDevice*>(&device_audio);
     default:
       return NULL;
   }

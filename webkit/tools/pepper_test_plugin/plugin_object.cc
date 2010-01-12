@@ -25,6 +25,8 @@
 
 #include "webkit/tools/pepper_test_plugin/plugin_object.h"
 
+#include <cmath>
+#include <limits>
 #include <stdio.h>
 #include <string>
 
@@ -263,6 +265,28 @@ void FlushCallback(NPP instance, NPDeviceContext* context,
 
 NPExtensions* extensions = NULL;
 
+
+// Sine wave similar to one from simple_sources.cc
+// F is the desired frequency (e.g. 200), T is sample type (e.g. int16)
+template <int F, typename T> void SineWaveCallback(
+    NPDeviceContextAudio *context) {
+
+  const size_t n_samples  = context->config.sampleFrameCount;
+  const size_t n_channels = context->config.outputChannelMap;
+  const double th = 2 * 3.141592653589 * F / context->config.sampleRate;
+  // store time value to avoid clicks on buffer boundries
+  intptr_t t = (intptr_t)context->config.userData;
+
+  T* buf = reinterpret_cast<T*>(context->outBuffer);
+  for (size_t sample = 0; sample < n_samples; ++sample) {
+    T value = static_cast<T>(sin(th * t++) * std::numeric_limits<T>::max());
+    for (size_t channel = 0; channel < n_channels; ++channel) {
+      *buf++ = value;
+    }
+  }
+  context->config.userData = reinterpret_cast<void *>(t);
+}
+
 }  // namespace
 
 
@@ -272,9 +296,11 @@ PluginObject::PluginObject(NPP npp)
     : npp_(npp),
       test_object_(browser->createobject(npp, GetTestClass())),
       device2d_(NULL) {
+  memset(&context_audio_, 0, sizeof(context_audio_));
 }
 
 PluginObject::~PluginObject() {
+  deviceaudio_->destroyContext(npp_, &context_audio_);
   // FIXME(brettw) destroy the context.
   browser->releaseobject(test_object_);
 }
@@ -309,6 +335,9 @@ void PluginObject::New(NPMIMEType pluginType,
   }
   device2d_ = extensions->acquireDevice(npp_, NPPepper2DDevice);
   CHECK(device2d_);
+
+  deviceaudio_ =  extensions->acquireDevice(npp_, NPPepperAudioDevice);
+  CHECK(deviceaudio_);
 }
 
 void PluginObject::SetWindow(const NPWindow& window) {
@@ -339,6 +368,19 @@ void PluginObject::SetWindow(const NPWindow& window) {
     // Schedule the first call to Draw.
     browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
 #endif
+  }
+
+  // testing any field would do
+  if (!context_audio_.config.callback) {
+    NPDeviceContextAudioConfig cfg;
+    cfg.sampleRate       = 44100;
+    cfg.sampleType       = NPAudioSampleTypeInt16;
+    cfg.outputChannelMap = NPAudioChannelStereo;
+    cfg.inputChannelMap  = NPAudioChannelNone;
+    cfg.sampleFrameCount = 2048;
+    cfg.flags            = 0;
+    cfg.callback         = &SineWaveCallback<200, int16>;
+    deviceaudio_->initializeContext(npp_, &cfg, &context_audio_);
   }
 }
 
