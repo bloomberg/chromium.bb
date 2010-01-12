@@ -1847,6 +1847,8 @@
         'browser/views/uninstall_view.h',
         'browser/views/url_picker.cc',
         'browser/views/url_picker.h',
+        'browser/views/unhandled_keyboard_event_handler.cc',
+        'browser/views/unhandled_keyboard_event_handler.h',
         'browser/views/user_data_dir_dialog.cc',
         'browser/views/user_data_dir_dialog.h',
         'browser/visitedlink_master.cc',
@@ -2288,6 +2290,8 @@
                 ['include', '^browser/views/theme_background.h'],
                 ['include', '^browser/views/toolbar_view.cc'],
                 ['include', '^browser/views/toolbar_view.h'],
+                ['include', '^browser/views/unhandled_keyboard_event_handler.cc'],
+                ['include', '^browser/views/unhandled_keyboard_event_handler.h'],
                 ['include', '^browser/window_sizer.cc'],
                 ['include', '^browser/window_sizer.h'],
 

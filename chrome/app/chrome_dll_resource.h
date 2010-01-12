@@ -11,6 +11,7 @@
 //
 
 #define IDR_MAINFRAME                   101
+#define IDR_CHROMEFRAME                 200
 
 #define IDI_THROBBER_01                 102
 #define IDI_THROBBER_02                 103

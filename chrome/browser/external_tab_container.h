@@ -13,9 +13,11 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/views/unhandled_keyboard_event_handler.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "views/accelerator.h"
 #include "views/widget/widget_win.h"
 
 class AutomationProvider;
@@ -34,7 +36,8 @@ struct NavigationInfo;
 class ExternalTabContainer : public TabContentsDelegate,
                              public NotificationObserver,
                              public views::WidgetWin,
-                             public base::RefCounted<ExternalTabContainer> {
+                             public base::RefCounted<ExternalTabContainer>,
+                             public views::AcceleratorTarget {
  public:
   typedef std::map<intptr_t, scoped_refptr<ExternalTabContainer> > PendingTabs;
 
@@ -169,6 +172,9 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Overridden from views::WidgetWin:
   virtual views::Window* GetWindow();
 
+  // Handles the specified |accelerator| being pressed.
+  bool AcceleratorPressed(const views::Accelerator& accelerator);
+
  protected:
   // Overridden from views::WidgetWin:
   virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
@@ -192,6 +198,8 @@ class ExternalTabContainer : public TabContentsDelegate,
   // process.
   bool ProcessUnhandledKeyStroke(HWND window, UINT message, WPARAM wparam,
                                  LPARAM lparam);
+
+  void LoadAccelerators();
 
   TabContents* tab_contents_;
   scoped_refptr<AutomationProvider> automation_;
@@ -238,6 +246,11 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   // The URL request context to be used for this tab. Can be NULL.
   scoped_refptr<ChromeURLRequestContextGetter> request_context_;
+
+  UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
+
+  // A mapping between accelerators and commands.
+  std::map<views::Accelerator, int> accelerator_table_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };

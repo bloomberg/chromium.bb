@@ -137,6 +137,19 @@ BEGIN
     VK_ADD,         IDC_ZOOM_PLUS,              VIRTKEY, CONTROL
 END
 
+IDR_CHROMEFRAME ACCELERATORS
+BEGIN
+    "I",            IDC_DEV_TOOLS,              VIRTKEY, CONTROL, SHIFT
+    "J",            IDC_DEV_TOOLS_CONSOLE,      VIRTKEY, CONTROL, SHIFT
+    VK_OEM_MINUS,   IDC_ZOOM_MINUS,             VIRTKEY, CONTROL
+    VK_OEM_MINUS,   IDC_ZOOM_MINUS,             VIRTKEY, CONTROL, SHIFT
+    VK_SUBTRACT,    IDC_ZOOM_MINUS,             VIRTKEY, CONTROL
+    "0",            IDC_ZOOM_NORMAL,            VIRTKEY, CONTROL
+    VK_NUMPAD0,     IDC_ZOOM_NORMAL,            VIRTKEY, CONTROL
+    VK_OEM_PLUS,    IDC_ZOOM_PLUS,              VIRTKEY, CONTROL
+    VK_OEM_PLUS,    IDC_ZOOM_PLUS,              VIRTKEY, CONTROL, SHIFT
+    VK_ADD,         IDC_ZOOM_PLUS,              VIRTKEY, CONTROL
+END
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

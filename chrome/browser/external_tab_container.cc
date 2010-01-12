@@ -10,6 +10,7 @@
 #include "app/win_util.h"
 #include "base/logging.h"
 #include "base/win_util.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_extension_function.h"
 #include "chrome/browser/browser_window.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "grit/generated_resources.h"
@@ -149,6 +151,7 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   disabled_context_menu_ids_.push_back(
       IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+  LoadAccelerators();
   return true;
 }
 
@@ -171,6 +174,11 @@ void ExternalTabContainer::Uninitialize() {
 
     delete tab_contents_;
     tab_contents_ = NULL;
+  }
+
+  views::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager) {
+    focus_manager->UnregisterAccelerators(this);
   }
 
   request_context_ = NULL;
@@ -216,7 +224,10 @@ void ExternalTabContainer::SetTabHandle(int handle) {
 }
 
 void ExternalTabContainer::ProcessUnhandledAccelerator(const MSG& msg) {
-  DefWindowProc(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+  NativeWebKeyboardEvent keyboard_event(msg.hwnd, msg.message, msg.wParam,
+                                        msg.lParam);
+  unhandled_keyboard_event_handler_.HandleKeyboardEvent(keyboard_event,
+                                                        GetFocusManager());
 }
 
 void ExternalTabContainer::FocusThroughTabTraversal(bool reverse) {
@@ -713,6 +724,43 @@ views::Window* ExternalTabContainer::GetWindow() {
   return NULL;
 }
 
+bool ExternalTabContainer::AcceleratorPressed(
+    const views::Accelerator& accelerator) {
+  std::map<views::Accelerator, int>::const_iterator iter =
+      accelerator_table_.find(accelerator);
+  DCHECK(iter != accelerator_table_.end());
+
+  if (!tab_contents_ || !tab_contents_->render_view_host()) {
+    NOTREACHED();
+    return false;
+  }
+
+  int command_id = iter->second;
+  switch (command_id) {
+    case IDC_ZOOM_PLUS:
+      tab_contents_->render_view_host()->Zoom(PageZoom::ZOOM_IN);
+      break;
+    case IDC_ZOOM_NORMAL:
+      tab_contents_->render_view_host()->Zoom(PageZoom::RESET);
+      break;
+    case IDC_ZOOM_MINUS:
+      tab_contents_->render_view_host()->Zoom(PageZoom::ZOOM_OUT);
+      break;
+    case IDC_DEV_TOOLS:
+      DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+          tab_contents_->render_view_host(), false);
+      break;
+    case IDC_DEV_TOOLS_CONSOLE:
+      DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+          tab_contents_->render_view_host(), true);
+      break;
+    default:
+      NOTREACHED() << "Unsupported accelerator: " << command_id;
+      return false;
+  }
+  return true;
+}
+
 void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {
   if (!tab_contents_) {
     NOTREACHED();
@@ -742,4 +790,39 @@ void ExternalTabContainer::InitializeAutomationRequestContext(
 
   DCHECK(request_context_.get() != NULL);
   tab_contents_->set_request_context(request_context_.get());
+}
+
+void ExternalTabContainer::LoadAccelerators() {
+  HACCEL accelerator_table = AtlLoadAccelerators(IDR_CHROMEFRAME);
+  DCHECK(accelerator_table);
+
+  // We have to copy the table to access its contents.
+  int count = CopyAcceleratorTable(accelerator_table, 0, 0);
+  if (count == 0) {
+    // Nothing to do in that case.
+    return;
+  }
+
+  scoped_ptr<ACCEL> scoped_accelerators(new ACCEL[count]);
+  ACCEL* accelerators = scoped_accelerators.get();
+  DCHECK(accelerators != NULL);
+
+  CopyAcceleratorTable(accelerator_table, accelerators, count);
+
+  views::FocusManager* focus_manager = GetFocusManager();
+  DCHECK(focus_manager);
+
+  // Let's fill our own accelerator table.
+  for (int i = 0; i < count; ++i) {
+    bool alt_down = (accelerators[i].fVirt & FALT) == FALT;
+    bool ctrl_down = (accelerators[i].fVirt & FCONTROL) == FCONTROL;
+    bool shift_down = (accelerators[i].fVirt & FSHIFT) == FSHIFT;
+    views::Accelerator accelerator(
+        static_cast<base::KeyboardCode>(accelerators[i].key),
+        shift_down, ctrl_down, alt_down);
+    accelerator_table_[accelerator] = accelerators[i].cmd;
+
+    // Also register with the focus manager.
+    focus_manager->RegisterAccelerator(accelerator, this);
+  }
 }
