@@ -424,7 +424,6 @@
         '../webcore_unit_tests/GKURL_unittest.cpp',
         '../webcore_unit_tests/ICOImageDecoder_unittest.cpp',
         '../webcore_unit_tests/UniscribeHelper_unittest.cpp',
-        '../webcore_unit_tests/XBMImageDecoder_unittest.cpp',
         '../webcore_unit_tests/TransparencyWin_unittest.cpp',
         'image_decoder_unittest.cc',
         'image_decoder_unittest.h',
