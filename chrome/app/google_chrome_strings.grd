@@ -177,6 +177,9 @@ Chrome supports. -->
       <message name="IDS_PRODUCT_NAME" desc="The Chrome application name">
         Google Chrome
       </message>
+      <message name="IDS_PRODUCT_DESCRIPTION" desc="Browser description">
+        Google Chrome is a web browser that runs web pages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.
+      </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
           Google Chrome OS

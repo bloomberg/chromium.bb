@@ -94,7 +94,8 @@ class RegistryEntry {
     entries->push_front(new RegistryEntry(ShellUtil::kRegRegisteredApplications,
         app_name, capabilities));
     entries->push_front(new RegistryEntry(
-        capabilities, L"ApplicationDescription", dist->GetApplicationName()));
+        capabilities, L"ApplicationDescription",
+        dist->GetLongAppDescription()));
     entries->push_front(new RegistryEntry(
         capabilities, L"ApplicationIcon", icon_path));
     entries->push_front(new RegistryEntry(

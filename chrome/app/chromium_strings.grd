@@ -127,6 +127,9 @@ be available for now. -->
       <message name="IDS_PRODUCT_NAME" desc="The Chrome application name">
         Chromium
       </message>
+      <message name="IDS_PRODUCT_DESCRIPTION" desc="Browser description">
+        Chromium is a web browser that runs web pages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Chromium.
+      </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
           Chromium OS

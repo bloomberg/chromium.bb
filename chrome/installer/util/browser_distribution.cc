@@ -16,6 +16,9 @@
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/l10n_string_util.h"
+
+#include "installer_util_strings.h"
 
 BrowserDistribution* BrowserDistribution::GetDistribution() {
   return GetDistribution(InstallUtil::IsChromeFrameProcess());
@@ -66,6 +69,12 @@ std::wstring BrowserDistribution::GetPublisherName() {
 
 std::wstring BrowserDistribution::GetAppDescription() {
   return L"Browse the web";
+}
+
+std::wstring BrowserDistribution::GetLongAppDescription() {
+  const std::wstring& app_description =
+      installer_util::GetLocalizedString(IDS_PRODUCT_DESCRIPTION_BASE);
+  return app_description;
 }
 
 int BrowserDistribution::GetInstallReturnCode(

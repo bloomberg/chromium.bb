@@ -35,6 +35,8 @@ class BrowserDistribution {
 
   virtual std::wstring GetAppDescription();
 
+  virtual std::wstring GetLongAppDescription();
+
   virtual int GetInstallReturnCode(
       installer_util::InstallStatus install_status);
 

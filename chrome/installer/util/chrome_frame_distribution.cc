@@ -53,6 +53,10 @@ std::wstring ChromeFrameDistribution::GetAppDescription() {
   return L"Chrome in a Frame.";
 }
 
+std::wstring ChromeFrameDistribution::GetLongAppDescription() {
+  return L"Chrome in a Frame.";
+}
+
 std::string ChromeFrameDistribution::GetSafeBrowsingName() {
   return "googlechromeframe";
 }
