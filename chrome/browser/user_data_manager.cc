@@ -292,6 +292,10 @@ bool UserDataManager::CreateDesktopShortcutForProfile(
   shortcut_name.append(L".lnk");
   file_util::AppendToPath(&shortcut_path, shortcut_name);
 
+  // Profile path from user_data_dir.
+  FilePath profile_path = FilePath(user_data_dir).Append(
+      chrome::kNotSignedInProfile);
+
   return file_util::CreateShortcutLink(
       cmd.c_str(),
       shortcut_path.c_str(),
@@ -300,7 +304,7 @@ bool UserDataManager::CreateDesktopShortcutForProfile(
       NULL,
       exe_path.c_str(),
       0,
-      ShellIntegration::GetChromiumAppId(FilePath(user_data_dir)).c_str());
+      ShellIntegration::GetChromiumAppId(profile_path).c_str());
 #else
   // TODO(port): should probably use freedesktop.org standard for desktop files.
   NOTIMPLEMENTED();
