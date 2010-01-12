@@ -2725,8 +2725,6 @@ BUG27555 : LayoutTests/media/media-fullscreen-not-in-document.html = TIMEOUT
 
 BUG22700 WIN LINUX : LayoutTests/fast/canvas/canvas-shadow.html = TEXT
 
-// hbono's new test.
-BUG27679 WIN LINUX MAC : LayoutTests/fast/events/ime-composition-events-001.html = TEXT
 
 // Failures from merge 50972:51042
 // The test requires DRT/Test Shell to support error page handling.
