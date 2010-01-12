@@ -81,7 +81,7 @@ class ConflictTimeoutEvent
     : public base::RefCountedThreadSafe<ConflictTimeoutEvent> {
  public:
   explicit ConflictTimeoutEvent(ProfileSyncServiceTestHarness* caller)
-      : caller_(caller), did_run_(false) {
+      : did_run_(false), caller_(caller)  {
   }
 
   // The entry point to the class from PostDelayedTask.

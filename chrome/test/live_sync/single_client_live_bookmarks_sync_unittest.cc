@@ -49,13 +49,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
   const BookmarkNode* tier1_a = verifier->AddGroup(m, top, 0, L"tier1_a");
   const BookmarkNode* tier1_b = verifier->AddGroup(m, top, 1, L"tier1_b");
   const BookmarkNode* t1au0 = verifier->AddURL(m, tier1_a, 0, L"tier1_a_url0",
-                                               GURL(L"http://mail.google.com"));
+                                               GURL("http://mail.google.com"));
   const BookmarkNode* t1au1 = verifier->AddURL(m, tier1_a, 1, L"tier1_a_url1",
-                                               GURL(L"http://www.pandora.com"));
+                                               GURL("http://www.pandora.com"));
   const BookmarkNode* t1au2 = verifier->AddURL(
-      m, tier1_a, 2, L"tier1_a_url2", GURL(L"http://www.facebook.com"));
+      m, tier1_a, 2, L"tier1_a_url2", GURL("http://www.facebook.com"));
   const BookmarkNode* t1bu0 = verifier->AddURL(m, tier1_b, 0, L"tier1_b_url0",
-                                               GURL(L"http://www.nhl.com"));
+                                               GURL("http://www.nhl.com"));
 
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   // SetupSync returns after init, which means got_zero_updates, which means
@@ -88,13 +88,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
   //      -> tier1_a_url0
   const BookmarkNode* bar = m->GetBookmarkBarNode();
   const BookmarkNode* cnn =
-      verifier->AddURL(m, bar, 0, L"CNN", GURL(L"http://www.cnn.com"));
+      verifier->AddURL(m, bar, 0, L"CNN", GURL("http://www.cnn.com"));
+  ASSERT_TRUE(cnn != NULL);
   verifier->Move(m, tier1_a, bar, 1);  // 1 should be the end at this point.
   ASSERT_TRUE(client()->AwaitSyncCycleCompletion("Bookmark moved."));
   verifier->ExpectMatch(m);
 
   const BookmarkNode* porsche = verifier->AddURL(
-      m, bar, 2, L"Porsche", GURL(L"http://www.porsche.com"));
+      m, bar, 2, L"Porsche", GURL("http://www.porsche.com"));
   // Rearrange stuff in tier1_a.
   EXPECT_EQ(tier1_a, t1au2->GetParent());
   EXPECT_EQ(tier1_a, t1au1->GetParent());
@@ -106,12 +107,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
   EXPECT_EQ(1, t1au0->GetParent()->IndexOfChild(t1au0));
   verifier->Move(m, t1au0, bar, bar->GetChildCount());
   const BookmarkNode* boa = verifier->AddURL(m, bar, bar->GetChildCount(),
-      L"Bank of America", GURL(L"https://www.bankofamerica.com"));
+      L"Bank of America", GURL("https://www.bankofamerica.com"));
+  ASSERT_TRUE(boa != NULL);
   verifier->Move(m, t1au0, top, top->GetChildCount());
   const BookmarkNode* bubble = verifier->AddURL(m, bar, bar->GetChildCount(),
-      L"Seattle Bubble", GURL(L"http://seattlebubble.com"));
+      L"Seattle Bubble", GURL("http://seattlebubble.com"));
+  ASSERT_TRUE(bubble != NULL);
   const BookmarkNode* wired = verifier->AddURL(m, bar, 2, L"Wired News",
-                                         GURL(L"http://www.wired.com"));
+                                         GURL("http://www.wired.com"));
   const BookmarkNode* tier2_b = verifier->AddGroup(m, tier1_b, 0, L"tier2_b");
   verifier->Move(m, t1bu0, tier2_b, 0);
   verifier->Move(m, porsche, bar, 0);
@@ -127,9 +130,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
   const BookmarkNode* tier3_b = verifier->AddGroup(m, tier2_b, 1, L"tier3_b");
   const BookmarkNode* leafs = verifier->AddURL(
       m, tier1_a, 0, L"Toronto Maple Leafs",
-      GURL(L"http://mapleleafs.nhl.com"));
+      GURL("http://mapleleafs.nhl.com"));
   const BookmarkNode* wynn = verifier->AddURL(
-      m, bar, 1, L"Wynn", GURL(L"http://www.wynnlasvegas.com"));
+      m, bar, 1, L"Wynn", GURL("http://www.wynnlasvegas.com"));
 
   verifier->Move(m, wynn, tier3_b, 0);
   verifier->Move(m, leafs, tier3_b, 0);

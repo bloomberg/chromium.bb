@@ -75,7 +75,7 @@ const BookmarkNode* LiveBookmarksSyncTest::GetByUniqueURL(BookmarkModel* m,
                                                           const GURL& url) {
   std::vector<const BookmarkNode*> nodes;
   m->GetNodesByURL(url, &nodes);
-  EXPECT_EQ(1, nodes.size());
+  EXPECT_EQ(1U, nodes.size());
   return nodes[0];
 }
 
@@ -93,6 +93,11 @@ void LiveBookmarksSyncTest::SetUpInProcessBrowserTestFixture() {
   net::RuleBasedHostResolverProc* resolver =
       new net::RuleBasedHostResolverProc(host_resolver());
   resolver->AllowDirectLookup("*.google.com");
+  // Allow direct lookup of thawte.com.  On Linux, we use Chromium's nss
+  // implementation which uses ocsp.thawte.com for certificate verification.
+  // Without this, running the test case on Linux causes an error as we make an
+  // external DNS lookup of "ocsp.thawte.com".
+  resolver->AllowDirectLookup("*.thawte.com");
   mock_host_resolver_override_.reset(
       new net::ScopedDefaultHostResolverProc(resolver));
 }
