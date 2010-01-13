@@ -1312,16 +1312,16 @@ void DownloadManager::OpenFilesBasedOnExtension(
 
 bool DownloadManager::ShouldOpenFileBasedOnExtension(
     const FilePath& path) const {
-  // Special-case Chrome extensions as always-open.
   FilePath::StringType extension = path.Extension();
   if (extension.empty())
     return false;
   if (IsExecutableExtension(extension))
     return false;
+  if (Extension::IsExtension(path))
+    return false;
   DCHECK(extension[0] == FilePath::kExtensionSeparator);
   extension.erase(0, 1);
-  if (auto_open_.find(extension) != auto_open_.end() ||
-      Extension::IsExtension(path))
+  if (auto_open_.find(extension) != auto_open_.end())
     return true;
   return false;
 }

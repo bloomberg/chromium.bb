@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -53,7 +54,8 @@ bool CanOpenDownload(DownloadItem* download) {
   if (!download->original_name().value().empty())
     file_to_use = download->original_name();
 
-  return !download->manager()->IsExecutableFile(file_to_use);
+  return !Extension::IsExtension(file_to_use) &&
+         !download->manager()->IsExecutableFile(file_to_use);
 }
 
 void OpenDownload(DownloadItem* download) {
