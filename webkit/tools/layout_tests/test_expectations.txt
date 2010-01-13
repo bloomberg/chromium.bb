@@ -93,7 +93,7 @@ BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 BUG24182 WIN DEBUG SLOW: LayoutTests/inspector/console-dirxml.html = PASS
 BUG24182 DEBUG SLOW : LayoutTests/fast/dom/Window/window-function-frame-getter-precedence.html = PASS
-
+BUG24182 SLOW DEBUG : LayoutTests/fast/frames/frame-limit.html = PASS
 
 // Usually <1s in release, ~1s in debug, but occasionally >5s in release.
 BUG27335 WIN RELEASE : LayoutTests/plugins/embed-attributes-setting.html = PASS TIMEOUT
@@ -2269,9 +2269,6 @@ BUG10479 MAC : LayoutTests/svg/hixie/perf/002.xml = FAIL
 
 BUG9798 SLOW WIN DEBUG : LayoutTests/fast/dom/Window/slow_unload_handler.html = PASS
 BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
-BUG9798 RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
-BUG9798 SLOW LINUX WIN DEBUG : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
-BUG9798 SLOW MAC DEBUG : LayoutTests/fast/frames/frame-limit.html = PASS
 
 // Was flaky. Became a consistent failure.
 BUG9798 WIN DEBUG : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
