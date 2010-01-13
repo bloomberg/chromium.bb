@@ -3069,16 +3069,17 @@ BUG31794 WIN MAC : LayoutTests/storage/domstorage/localstorage/enumerate-storage
 BUG31803 LINUX : LayoutTests/editing/inserting/12882.html = IMAGE PASS
 
 // from http://trac.webkit.org/changeset/53078
-BUG_JOHNNYG LINUX : LayoutTests/fast/text/find-kana.html = CRASH
+BUG32154 LINUX : LayoutTests/fast/text/find-kana.html = CRASH
 
 // from http://trac.webkit.org/changeset/53086
-BUG_JOHNNYG : LayoutTests/svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = TEXT
+BUG32153 : LayoutTests/svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = TEXT
 
 // a bunch of tests broken before the flakiness fix, i will deal with these
 // after the major flakiness goes away
-BUG_JOHNNYG : LayoutTests/fast/js/Object-getOwnPropertyNames.html = TEXT
-BUG_JOHNNYG : LayoutTests/http/tests/security/cross-frame-access-enumeration.html = TIMEOUT
-BUG_JOHNNYG : LayoutTests/storage/multiple-databases-garbage-collection.html = CRASH PASS
+BUG32155 : LayoutTests/fast/js/Object-getOwnPropertyNames.html = TEXT
+BUG32155 : LayoutTests/http/tests/security/cross-frame-access-enumeration.html = TIMEOUT
+BUG32157 : LayoutTests/storage/multiple-databases-garbage-collection.html = CRASH PASS
+BUG_JOHNNYG WIN : LayoutTests/fast/backgrounds/repeat/negative-offset-repeat-transformed.html = IMAGE
 
 // New flakiness?
 BUG32144 WIN RELEASE : LayoutTests/svg/webarchive/svg-script-subresouces.svg = CRASH TEXT PASS
