@@ -187,6 +187,14 @@ class GitWrapper(SCMWrapper, scm.GIT):
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
       return
 
+    if not os.path.exists(os.path.join(self.checkout_path, '.git')):
+      raise gclient_utils.Error('\n____ %s%s\n'
+                                '\tPath is not a git repo. No .git dir.\n'
+                                '\tTo resolve:\n'
+                                '\t\trm -rf %s\n'
+                                '\tAnd run gclient sync again\n'
+                                % (self.relpath, rev_str, self.relpath))
+
     new_base = 'origin'
     if revision:
       new_base = revision

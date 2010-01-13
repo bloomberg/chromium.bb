@@ -16,6 +16,7 @@
 
 """Unit tests for gclient_scm.py."""
 
+import os
 import shutil
 # Import it before super_mox to keep a valid reference.
 from subprocess import Popen, PIPE, STDOUT
@@ -539,6 +540,22 @@ from :3
         '\tFix the conflict and run gclient again.\n' \
         '\tOr to abort run:\n\t\tgit-rebase --abort\n' \
         '\tSee man git-rebase for details.\n'
+    self.assertRaisesError(exception, scm.update, options, (), [])
+
+  def testUpdateNotGit(self):
+    if not self.enabled:
+      return
+    options = self.Options()
+    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
+                                relpath=self.relpath)
+    git_path = gclient_scm.os.path.join(self.base_path, '.git')
+    os.rename(git_path, git_path + 'foo')
+    exception = \
+        '\n____ .\n' \
+        '\tPath is not a git repo. No .git dir.\n' \
+        '\tTo resolve:\n' \
+        '\t\trm -rf .\n' \
+        '\tAnd run gclient sync again\n'
     self.assertRaisesError(exception, scm.update, options, (), [])
 
   def testRevinfo(self):
