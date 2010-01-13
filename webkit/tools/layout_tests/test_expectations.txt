@@ -2033,7 +2033,6 @@ BUG23473 MAC : LayoutTests/fast/repaint/inline-block-overflow.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/layer-child-outline.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/layer-outline.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/list-marker.html = PASS
-BUG23473 MAC WIN : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = IMAGE+TEXT PASS
 BUG23473 MAC : LayoutTests/fast/repaint/table-cell-vertical-overflow.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/text-shadow.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/fixed.html = PASS
@@ -3076,3 +3075,5 @@ BUG_JOHNNYG WIN : LayoutTests/fast/backgrounds/repeat/negative-offset-repeat-tra
 BUG32144 WIN RELEASE : LayoutTests/svg/webarchive/svg-script-subresouces.svg = CRASH TEXT PASS
 BUG32145 WIN RELEASE : LayoutTests/animations/3d/transform-origin-vs-functions.html = TEXT PASS
 BUG32149 WIN RELEASE : LayoutTests/fast/dom/Document/early-document-access.html = TIMEOUT PASS
+
+BUG32195 : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = IMAGE+TEXT PASS
