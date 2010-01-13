@@ -21,13 +21,20 @@ class URLRequestViewNetInternalsJob : public URLRequestSimpleJob {
                                 URLFormat* url_format)
       : URLRequestSimpleJob(request), url_format_(url_format) {}
 
-  // override from URLRequestSimpleJob
+  // URLRequestSimpleJob methods:
   virtual bool GetData(std::string* mime_type,
                        std::string* charset,
                        std::string* data) const;
 
+  // Overridden methods from URLRequestJob:
+  virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
+
  private:
   ~URLRequestViewNetInternalsJob() {}
+
+  // Returns true if the current request is for a "view-cache" URL.
+  // If it is, then |key| is assigned the particular cache URL of the request.
+  bool GetViewCacheKeyForRequest(std::string* key) const;
 
   URLFormat* url_format_;
 };

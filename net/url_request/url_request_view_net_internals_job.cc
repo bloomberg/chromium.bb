@@ -479,23 +479,6 @@ class AllSubSections : public SubSection {
   }
 };
 
-// Returns true if |path| is a subpath for "view-cache".
-// If it is, then |key| is assigned the subpath.
-bool GetViewCacheKeyFromPath(const std::string path,
-                             std::string* key) {
-  if (!StartsWithASCII(path, kViewHttpCacheSubPath, true))
-    return false;
-
-  if (path.size() > strlen(kViewHttpCacheSubPath) &&
-      path[strlen(kViewHttpCacheSubPath)] != '/')
-    return false;
-
-  if (path.size() > strlen(kViewHttpCacheSubPath) + 1)
-    *key = path.substr(strlen(kViewHttpCacheSubPath) + 1);
-
-  return true;
-}
-
 bool HandleCommand(const std::string& command, URLRequestContext* context) {
   if (StartsWithASCII(command, "full-logging-", true)) {
     bool enable_full_logging = (command == "full-logging-enable");
@@ -578,27 +561,26 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
   charset->assign("UTF-8");
 
   URLRequestContext* context = request_->context();
-  std::string details = url_format_->GetDetails(request_->url());
 
   data->clear();
 
   // Use a different handler for "view-cache/*" subpaths.
   std::string cache_key;
-  if (GetViewCacheKeyFromPath(details, &cache_key)) {
+  if (GetViewCacheKeyForRequest(&cache_key)) {
     GURL url = url_format_->MakeURL(kViewHttpCacheSubPath + std::string("/"));
     ViewCacheHelper::GetEntryInfoHTML(cache_key, context, url.spec(), data);
     return true;
   }
 
-  std::string query;
-
-  // Split out the query parameters.
-  std::string::size_type query_start = details.find('?');
-  if (query_start != std::string::npos) {
-    if (query_start + 1 < details.size())
-      query = details.substr(query_start + 1);
-    details = details.substr(0, query_start);
+  // Handle any query arguments as a command request, then redirect back to
+  // the same URL stripped of query parameters. The redirect happens as part
+  // of IsRedirectResponse().
+  if (request_->url().has_query()) {
+    ProcessQueryStringCommands(context, request_->url().query());
+    return true;
   }
+
+  std::string details = url_format_->GetDetails(request_->url());
 
   data->append("<!DOCTYPE HTML>"
                "<html><head><title>Network internals</title>"
@@ -629,11 +611,6 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
                "developers/design-documents/view-net-internals'>"
                "Help: how do I use this?</a></p>");
 
-  // TODO(eroman): do a redirect after processing the commands, to clear the
-  // URL of the command string (otherwise if you refresh the page you
-  // re-execute the command, which can be confusing when that command was to
-  // clear all the data!).
-  ProcessQueryStringCommands(context, query);
   DrawControlsHeader(context, data);
 
   SubSection* all = Singleton<AllSubSections>::get();
@@ -652,6 +629,35 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
   }
 
   data->append("</body></html>");
+
+  return true;
+}
+
+bool URLRequestViewNetInternalsJob::IsRedirectResponse(GURL* location,
+                                                       int* http_status_code) {
+  if (request_->url().has_query() && !GetViewCacheKeyForRequest(NULL)) {
+    // Strip the query parameters.
+    GURL::Replacements replacements;
+    replacements.ClearQuery();
+    *location = request_->url().ReplaceComponents(replacements);
+    *http_status_code = 307;
+    return true;
+  }
+  return false;
+}
+
+bool URLRequestViewNetInternalsJob::GetViewCacheKeyForRequest(
+    std::string* key) const {
+  std::string path = url_format_->GetDetails(request_->url());
+  if (!StartsWithASCII(path, kViewHttpCacheSubPath, true))
+    return false;
+
+  if (path.size() > strlen(kViewHttpCacheSubPath) &&
+      path[strlen(kViewHttpCacheSubPath)] != '/')
+    return false;
+
+  if (key && path.size() > strlen(kViewHttpCacheSubPath) + 1)
+    *key = path.substr(strlen(kViewHttpCacheSubPath) + 1);
 
   return true;
 }
