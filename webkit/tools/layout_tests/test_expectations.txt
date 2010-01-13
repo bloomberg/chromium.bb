@@ -3076,3 +3076,4 @@ BUG32145 WIN RELEASE : LayoutTests/animations/3d/transform-origin-vs-functions.h
 BUG32149 WIN RELEASE : LayoutTests/fast/dom/Document/early-document-access.html = TIMEOUT PASS
 
 BUG32195 : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = IMAGE+TEXT PASS
+BUG32301 LINUX DEBUG : LayoutTests/fast/text/atsui-spacing-features.html = IMAGE+TEXT
