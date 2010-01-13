@@ -52,7 +52,7 @@ TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack1) {
 }
 
 // Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2) {
+TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack2) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
@@ -76,7 +76,7 @@ TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2) {
 }
 
 // Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2AndForward) {
+TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack2AndForward) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
 
@@ -104,7 +104,7 @@ TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2AndForward) {
 }
 
 // Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2Forward2) {
+TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack2Forward2) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
 
