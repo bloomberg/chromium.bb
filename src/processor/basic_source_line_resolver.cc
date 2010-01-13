@@ -393,7 +393,7 @@ bool BasicSourceLineResolver::Module::LoadMap(const string &map_file) {
     return false;
   }
 
-  BPLOG(ERROR) << "Opening " << map_file;
+  BPLOG(INFO) << "Opening " << map_file;
 
   FILE *f = fopen(map_file.c_str(), "rt");
   if (!f) {
