@@ -2248,6 +2248,8 @@
                 ['include', '^browser/views/fullscreen_exit_bubble.h'],
                 ['include', '^browser/views/go_button.cc'],
                 ['include', '^browser/views/go_button.h'],
+                ['include', '^browser/views/theme_install_bubble_view.cc'],
+                ['include', '^browser/views/theme_install_bubble_view.h'],
                 ['include', '^browser/views/toolbar_star_toggle.h'],
                 ['include', '^browser/views/toolbar_star_toggle.cc'],
                 ['include', '^browser/views/frame/browser_extender.cc'],

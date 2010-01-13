@@ -46,6 +46,7 @@
 #include "chrome/browser/views/status_bubble_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
+#include "chrome/browser/views/theme_install_bubble_view.h"
 #include "chrome/browser/views/toolbar_star_toggle.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -79,7 +80,6 @@
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #include "chrome/browser/jumplist.h"
-#include "chrome/browser/views/theme_install_bubble_view.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
@@ -1099,18 +1099,10 @@ void BrowserView::ShowProfileErrorDialog(int message_id) {
 }
 
 void BrowserView::ShowThemeInstallBubble() {
-#if defined(OS_WIN)
   TabContents* tab_contents = browser_->GetSelectedTabContents();
   if (!tab_contents)
     return;
   ThemeInstallBubbleView::Show(tab_contents);
-#elif defined(OS_LINUX)
-  // Alas, the Views version of ThemeInstallBubbleView is Windows Views only.
-  // http://crbug.com/24360
-  NOTIMPLEMENTED();
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {

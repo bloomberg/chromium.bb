@@ -5,12 +5,18 @@
 #ifndef CHROME_BROWSER_VIEWS_THEME_INSTALL_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_THEME_INSTALL_BUBBLE_VIEW_H_
 
+#include <string>
+
 #include "app/gfx/canvas.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "views/controls/label.h"
-#include "views/widget/widget_win.h"
+
+class TabContents;
+
+namespace views {
+class Widget;
+}
 
 // ThemeInstallBubbleView is a view that provides a "Loading..." bubble in the
 // center of a browser window for use when an extension or theme is loaded.
@@ -41,18 +47,6 @@ class ThemeInstallBubbleView : public NotificationObserver,
  private:
   explicit ThemeInstallBubbleView(TabContents* tab_contents);
 
-  // The content area at the start of the animation.
-  gfx::Rect tab_contents_bounds_;
-
-  // We use a HWND for the popup so that it may float above any HWNDs in our UI.
-  views::WidgetWin* popup_;
-
-  // Text to show warning that theme is being installed.
-  std::wstring text_;
-
-  // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
-
   // Put the popup in the correct place on the tab.
   void Reposition();
 
@@ -63,6 +57,18 @@ class ThemeInstallBubbleView : public NotificationObserver,
   void Close();
 
   virtual void Paint(gfx::Canvas* canvas);
+
+  // The content area at the start of the animation.
+  gfx::Rect tab_contents_bounds_;
+
+  // Widget containing us.
+  views::Widget* popup_;
+
+  // Text to show warning that theme is being installed.
+  std::wstring text_;
+
+  // A scoped container for notification registries.
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeInstallBubbleView);
 };

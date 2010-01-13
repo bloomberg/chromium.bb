@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/views/theme_install_bubble_view.h"
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "chrome/browser/views/theme_install_bubble_view.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -27,7 +30,7 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
   if (!tab_contents)
     Close();
 
-  text_ = l10n_util::GetStringUTF16(IDS_THEME_LOADING_TITLE);
+  text_ = l10n_util::GetString(IDS_THEME_LOADING_TITLE);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Font font(rb.GetFont(ResourceBundle::LargeFont));
   SetFont(font);
@@ -65,10 +68,9 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
       NotificationService::AllSources());
 
   gfx::Rect rc(0, 0, 0, 0);
-  popup_ = new views::WidgetWin;
-  popup_->set_window_style(WS_POPUP);
-  popup_->set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW |
-                              WS_EX_TRANSPARENT);
+  popup_ = views::Widget::CreatePopupWidget(views::Widget::Transparent,
+                                            views::Widget::NotAcceptEvents,
+                                            views::Widget::DeleteOnDestroy);
   popup_->SetOpacity(0xCC);
   popup_->Init(tab_contents->GetNativeView(), rc);
   popup_->SetContentsView(this);
@@ -103,7 +105,7 @@ void ThemeInstallBubbleView::Reposition() {
       (tab_contents_bounds_.bottom() - tab_contents_bounds_.y()) / 2 -
       size.height() / 2);
 
-  popup_->MoveWindow(x, y, size.width(), size.height());
+  popup_->SetBounds(gfx::Rect(x, y, size.width(), size.height()));
 }
 
 void ThemeInstallBubbleView::Paint(gfx::Canvas* canvas) {
@@ -111,26 +113,21 @@ void ThemeInstallBubbleView::Paint(gfx::Canvas* canvas) {
   for (int i = 0; i < 8; ++i)
     rad[i] = SkIntToScalar(kBubbleCornerRadius);
 
-  gfx::Rect popup_bounds;
-  popup_->GetBounds(&popup_bounds, true);
-
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   paint.setColor(SK_ColorBLACK);
 
-  int width = popup_bounds.width();
-  int height = popup_bounds.height();
   SkRect rect;
   rect.set(0, 0,
-           SkIntToScalar(width),
-           SkIntToScalar(height));
+           SkIntToScalar(width()),
+           SkIntToScalar(height()));
   SkPath path;
   path.addRoundRect(rect, rad, SkPath::kCW_Direction);
   canvas->drawPath(path, paint);
 
   int text_width = views::Label::GetFont().GetStringWidth(text_);
-  gfx::Rect body_bounds(kTextHorizPadding / 2, 0, text_width, height);
+  gfx::Rect body_bounds(kTextHorizPadding / 2, 0, text_width, height());
   body_bounds.set_x(MirroredLeftPointForRect(body_bounds));
 
   SkColor text_color = SK_ColorWHITE;
