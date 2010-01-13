@@ -6,6 +6,7 @@
 
 #include "base/task.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -80,6 +81,11 @@ bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
 
 bool NotificationProvider::ShowHTML(const WebNotification& notification,
                                     int id) {
+  // Disallow HTML notifications from non-HTTP schemes.
+  GURL url = notification.url();
+  if (!url.SchemeIs(chrome::kHttpScheme) && !url.SchemeIs(chrome::kHttpsScheme))
+    return false;
+
   DCHECK(notification.isHTML());
   return Send(new ViewHostMsg_ShowDesktopNotification(view_->routing_id(),
               GURL(view_->webview()->mainFrame()->url()).GetOrigin(),
