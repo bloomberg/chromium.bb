@@ -1305,8 +1305,7 @@ BUG10667 MAC : LayoutTests/plugins/iframe-shims.html = FAIL
 
 // NEW FOR MERGE 36102:37604
 
-// New test. We should fix it, but it doesn't need to block the current release
-BUG24227 : LayoutTests/fast/js/arguments.html = FAIL
+BUG32184 : LayoutTests/fast/js/arguments.html = FAIL
 // New test. We should fix it, but it doesn't need to block the current release
 BUG24227 : LayoutTests/fast/js/primitive-method-this.html = FAIL
 // See bug http://code.google.com/p/chromium/issues/detail?id=7868,
@@ -2184,8 +2183,6 @@ BUG10441 MAC WIN RELEASE : LayoutTests/transitions/transition-end-event-transfor
 // merge).
 BUG10446 LINUX : LayoutTests/editing/execCommand/selectAll.html = FAIL
 
-// Newly added test from 41613:41660 -- relies on ScriptCallStack::state() -- dglazkov should fix.
-BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAIL
 
 // This test hits a stack-overflow exception earlier in debug mode than in
 // release mode on Windows.
