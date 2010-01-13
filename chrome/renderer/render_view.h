@@ -91,6 +91,7 @@ class WebDataSource;
 class WebDragData;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
+class WebStorageNamespace;
 class WebURLRequest;
 struct WebFindOptions;
 }
@@ -187,6 +188,7 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebWidget* createPopupMenu(bool activatable);
   virtual WebKit::WebWidget* createPopupMenu(
       const WebKit::WebPopupMenuInfo& info);
+  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name, unsigned source_line);

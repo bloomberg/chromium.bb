@@ -50,6 +50,7 @@
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
+#include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/visitedlink_slave.h"
@@ -86,6 +87,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSearchableFormData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
@@ -159,6 +161,7 @@ using WebKit::WebSecurityOrigin;
 using WebKit::WebSettings;
 using WebKit::WebSharedWorker;
 using WebKit::WebSize;
+using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
 using WebKit::WebTextDirection;
@@ -1397,6 +1400,12 @@ WebWidget* RenderView::createPopupMenu(const WebPopupMenuInfo& info) {
                                               true);
   widget->ConfigureAsExternalPopupMenu(info);
   return widget->webwidget();
+}
+
+WebStorageNamespace* RenderView::createSessionStorageNamespace() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
+    return WebStorageNamespace::createSessionStorageNamespace();
+  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION);
 }
 
 void RenderView::didAddMessageToConsole(
