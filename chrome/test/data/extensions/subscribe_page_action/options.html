@@ -1,0 +1,415 @@
+<!--
+ * Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<html>
+<head>
+<title>Edit feed readers</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+<style>
+body {
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+}
+
+body>* {
+  display:-webkit-box;
+}
+
+#dialogBackground {
+  background-color: rgba(0, 0, 0, .2);
+  display: none;
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+  -webkit-box-orient: vertical;
+  -webkit-user-select:none;
+}
+
+#dialogHBackground {
+  height: 100%;
+  -webkit-box-orient: horizontal;
+}
+
+#dialog {
+  background-color: #5296DE;
+  border: 1px solid #3A75BD;
+  border-radius: 6px 6px;
+  font-size: 12px;
+  width: 355px;
+  -webkit-box-orient: vertical;
+}
+
+#dialogHeader {
+  background-color: rgba(0,0,0,0);
+  color: white;
+  font-weight: bold;
+  margin: 4px;
+  width: 100%;
+}
+
+#dialogBody {
+  background-color: rgb(240, 240, 240);
+  border: 1px solid #3A75BD;
+  border-bottom-left-radius: 4px 4px;
+  border-bottom-right-radius: 4px 4px;
+  margin: 0px 2px 2px 2px;
+  padding-bottom: 10px;
+  padding-right: 10px;
+  padding-top: 10px;
+  -webkit-box-orient: vertical;
+  width: 340px;
+}
+
+#dialogBackground, #dialogBackground div {
+  display: -webkit-box;
+  -webkit-box-align: center;
+}
+
+#dialog input[type="button"] {
+  font-size: 12px;
+  height: 25px;
+  width: 100px;
+}
+
+#dialog input[type="text"] {
+  font-size: 12px;
+  font-family: Arial, Helvetica, sans-serif;
+  width: 220px;
+}
+
+.dialogRow {
+  margin-left: -24px;
+  width: 100%;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+}
+
+.dialogRow>* {
+  margin: 2px
+}
+
+#dialogContentFooter {
+  margin-bottom: 6px;
+  margin-left: -12px;
+  margin-top: 20px;
+  padding-right: 10px;
+}
+
+.status {
+  background-color: #FFF18A;
+}
+
+</style>
+<script type="text/javascript" src="common.js"></script>
+<script>
+
+  // Various text messages within the edit dialog.
+  var assistText = "Insert %s in the URL where the feed url should appear.";
+
+  // Specifies the index of the item we are editing or -1 if adding new.
+  var editingIndex = -1;
+  // Whether we are currently editing the default item.
+  var editingDefault = false;
+
+function main() {
+  // Make sure the dialog is not visible.
+  document.getElementById('dialogBackground').style.display = "none";
+
+  // Make sure the buttons are disabled to begin with.
+  document.getElementById('editReader').disabled = true;
+  document.getElementById('removeReader').disabled = true;
+  document.getElementById('setDefault').disabled = true;
+
+  if (!storageEnabled) {
+    document.getElementById('addReader').disabled = true;
+    document.getElementById('readerListbox').disabled = true;
+    document.getElementById('alwaysUseDefault').disabled = true;
+    document.getElementById('resetList').disabled = true;
+
+    alert("LocalStorage must be enabled for changing options.");
+    return;
+  }
+
+  var feedReaderList;
+  if (window.localStorage.readerList) {
+    feedReaderList = JSON.parse(window.localStorage.readerList);
+  } else {
+    feedReaderList = defaultReaderList();
+    window.localStorage.readerList = JSON.stringify(feedReaderList);
+  }
+
+  // If there is no default, set the first item as default.
+  if (isDefaultReader("") && feedReaderList.length > 0)
+    window.localStorage.defaultReader = feedReaderList[0].url;
+
+  // Populate the list of readers.
+  var readerListbox = document.getElementById('readerListbox');
+  while (readerListbox.options.length > 0)
+    readerListbox.remove(0);
+  for (i = 0; i < feedReaderList.length; ++i) {
+    var description = feedReaderList[i].description;
+    if (isDefaultReader(feedReaderList[i].url))
+      description += " (default)";
+    readerListbox.add(new Option(description, feedReaderList[i].url));
+  }
+
+  // Set up the 'show preview?' checkbox.
+  var skipPreview = document.getElementById('alwaysUseDefault');
+  skipPreview.checked = window.localStorage.showPreviewPage == "No";
+}
+
+function toggleFeedPreview() {
+  var alwaysUseDefault = document.getElementById('alwaysUseDefault');
+  if (alwaysUseDefault.checked)
+    window.localStorage.showPreviewPage = "No";
+  else
+    delete window.localStorage.showPreviewPage;
+}
+
+function setDefault() {
+  var readerListbox = document.getElementById('readerListbox');
+  var selection = readerListbox.options[readerListbox.selectedIndex];
+  window.localStorage.defaultReader = selection.value;
+
+  // Reinititalize the page.
+  main();
+}
+
+function resetList() {
+  if (!confirm("Are you sure you want to undo any changes " +
+               "you've made to this list?")) {
+    return;
+  }
+
+  delete window.localStorage.readerList;
+  delete window.localStorage.defaultReader;
+  delete window.localStorage.showPreviewPage;
+
+  // Reinititalize the page.
+  main();
+}
+
+function onSelectionChanged() {
+  var selected = readerListbox.selectedIndex > -1;
+  // To edit a reader something must be selected.
+  document.getElementById('editReader').disabled = !selected;
+  // To set default, the current selection cannot already be default.
+  document.getElementById('setDefault').disabled = !selected ||
+      isDefaultReader(readerListbox[readerListbox.selectedIndex].value);
+  // To remove the selected reader it must not be the last item.
+  document.getElementById('removeReader').disabled =
+      !selected || readerListbox.options.length < 2;
+}
+
+function editReader(index) {
+  var readerListbox = document.getElementById('readerListbox');
+
+  if (index == -1) {
+    // Adding a new item, make sure the text boxes are empty.
+    document.getElementById('urlText').value = "";
+    document.getElementById('descriptionText').value = "";
+    editingIndex = -1;  // New item.
+    editingDefault = true;  // New items become default items.
+  } else if (index == 0) {
+    // Editing some item, find the current item index and store it.
+    editingIndex = readerListbox.selectedIndex;
+    var oldOption = readerListbox.options[editingIndex];
+    document.getElementById('urlText').value = oldOption.value;
+    document.getElementById('descriptionText').value =
+        oldOption.text.replace(' (default)', '');
+    editingDefault = isDefaultReader(oldOption.value);
+  }
+
+  showDialog();
+}
+
+function removeReader() {
+  var index = readerListbox.selectedIndex;
+  var feedReaderList = JSON.parse(window.localStorage.readerList);
+  var reply = confirm("Are you sure you want to remove '" +
+                      feedReaderList[index].description + "'?");
+  if (reply) {
+    var wasDefault = isDefaultReader(feedReaderList[index].url);
+    // Remove the item from the list.
+    feedReaderList.splice(index, 1);
+    window.localStorage.readerList = JSON.stringify(feedReaderList);
+
+    if (wasDefault)
+      window.localStorage.defaultReader = feedReaderList[0].url;
+  }
+
+  main();
+}
+
+/**
+* Shows the Edit Feed Reader dialog.
+*/
+function showDialog() {
+  document.getElementById('urlAssist').innerText = assistText;
+  document.getElementById('save').disabled = true;
+
+  // Show the dialog box.
+  document.getElementById('dialogBackground').style.display = "-webkit-box";
+}
+
+/**
+* Hides the Edit Feed Reader dialog.
+*/
+function hideDialog() {
+  document.getElementById('dialogBackground').style.display = "none";
+}
+
+/**
+* Validates the input in the form (making sure something is entered in both
+* fields and that %s is not missing from the url field.
+*/
+function validateInput() {
+  document.getElementById('statusMsg').innerText = "";
+
+  var description = document.getElementById('descriptionText');
+  var url = document.getElementById('urlText');
+
+  var valid = description.value.length > 0 &&
+                url.value.length > 0 &&
+                url.value.indexOf("%s") > -1;
+
+  document.getElementById('save').disabled = !valid;
+}
+
+/**
+* Handler for saving the values.
+*/
+function save() {
+  // Get the old list.
+  var feedReaderList = JSON.parse(window.localStorage.readerList);
+
+  var url = document.getElementById('urlText').value;
+  var description = document.getElementById('descriptionText').value;
+
+  if (editingIndex == -1) {
+    // Construct a new list.
+    var newFeedList = [];
+
+    // Add the new item.
+    newFeedList.push({ 'url': url, 'description': description });
+
+    for (i = 0; i < feedReaderList.length; ++i)
+      newFeedList.push(feedReaderList[i]);
+
+    feedReaderList = newFeedList;
+  } else {
+    feedReaderList[editingIndex].url = url;
+    feedReaderList[editingIndex].description = description;
+  }
+
+  window.localStorage.readerList = JSON.stringify(feedReaderList);
+
+  // Retain item default status, in case the url changed while editing item.
+  if (editingDefault)
+    window.localStorage.defaultReader = url;
+
+  hideDialog();
+
+  // Reload the values from scratch.
+  main();
+}
+
+</script>
+</head>
+<body onload="main()">
+  <table border="0">
+  <tr>
+    <td valign="top" width="16">
+      <img src="feed-icon-16x16.png" />
+    </td>
+    <td valign="middle">
+      <strong>RSS Subscription options</strong>
+    </td>
+    <td>
+    </td>
+  </tr>
+  <tr>
+  <td colspan="2">
+    <select id="readerListbox" size="8" style="width:300;"
+            onchange="onSelectionChanged()"></select>
+  </td>
+  <td valign="top">
+    <button style="width:100%;" id="addReader"
+            onclick="editReader(-1)">Add</button><br />
+    <button style="width:100%;" id="editReader"
+            onclick="editReader(0)">Edit</button><br />
+    <button style="width:100%;" id="removeReader"
+            onclick="removeReader()">Remove</button><br />
+    <button style="width:100%;" id="setDefault"
+            onclick="setDefault()">Make default</button><br />
+    <button style="width:100%;" id="resetList"
+            onclick="resetList()">Reset list</button><br />
+  </td>
+  </tr>
+  <tr>
+  <td colspan="3">
+    <input type="checkbox" id="alwaysUseDefault"
+         value="alwaysUseDefault" onchange="toggleFeedPreview()"
+    >Always use my default reader when subscribing to feeds.
+  </td>
+  </tr>
+  </table>
+
+  <div id="dialogBackground">
+    <div id="dialogHBackground">
+      <div id="dialog">
+
+        <div id="dialogHeader">
+          Edit feed reader
+        </div>
+
+        <div id="dialogBody">
+
+          <div class="dialogRow">
+            &nbsp;<div class="status" id="statusMsg"></div>
+          </div>
+
+          <div class="dialogRow">
+            <div>
+              Description:
+            </div>
+            <div>
+              <input type="text" id="descriptionText" onkeyup="validateInput()">
+            </div>
+          </div>
+
+          <div class="dialogRow">
+            <div>
+              URL:
+            </div>
+            <div>
+              <input type="text" id="urlText" onkeyup="validateInput()">
+            </div>
+          </div>
+
+          <div class="dialogRow">
+            <div id="urlAssist"></div>
+          </div>
+
+          <div class="dialogRow" id="dialogContentFooter">
+            <div>
+              <input type="button" id="save" value="Save" onclick="save()">
+            </div>
+            <div>
+              <input type="button" value="Close" onclick="hideDialog()">
+            </div>
+          </div>
+
+        </div> <!-- /dialogBody -->
+
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

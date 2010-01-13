@@ -5,17 +5,11 @@ body {
   font-family: arial, sans-serif;
   font-size: 11px;
 }
-a {
+.item_title {
   color: #2244D2;
+  font-size: 20px;
   font-weight:bold;
   text-decoration: none;
-}
-a:hover {
-  font-weight:bold;
-  text-decoration: underline;
-}
-.item_title {
-  font-size: 12px;
 }
 .item_desc {
   font-size: 12px;
