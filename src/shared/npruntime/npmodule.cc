@@ -99,6 +99,10 @@ NACL_SRPC_METHOD_ARRAY(NPModule::srpc_methods) = {
   { "NPN_SetException:Cs:", NPObjectStub::SetException },
   { "Device2DInitialize:i:hiiiii", Device2DInitialize },
   { "Device2DFlush:i:iiiii", Device2DFlush },
+  { "Device2DDestroy:i:", Device2DDestroy },
+  { "Device3DInitialize:i:hiii", Device3DInitialize },
+  { "Device3DFlush:i:ii", Device3DFlush },
+  { "Device3DDestroy:i:", Device3DDestroy },
   { NULL, NULL }
 };
 
@@ -455,6 +459,124 @@ NaClSrpcError NPModule::Device2DDestroy(NaClSrpcChannel* channel,
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   retval = module->device2d_->destroyContext(npp, module->context2d_);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  return NACL_SRPC_RESULT_OK;
+}
+
+struct Device3DImpl {
+  ::TransportDIB* dib;
+};
+
+// inputs:
+// (int) npp
+// outputs:
+// (handle) shared memory
+// (int) commandBufferEntries
+// (int) getOffset
+// (int) putOffset
+NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
+                                           NaClSrpcArg** inputs,
+                                           NaClSrpcArg** outputs) {
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  UNREFERENCED_PARAMETER(channel);
+  // Initialize the return values in case of failure.
+  outputs[0]->u.hval = NULL;
+  outputs[1]->u.ival = -1;
+  outputs[2]->u.ival = -1;
+  outputs[3]->u.ival = -1;
+
+  if (NULL == module->extensions_) {
+    if (NPERR_NO_ERROR !=
+        NPN_GetValue(npp, NPNVPepperExtensions, &module->extensions_)) {
+      // Because this variable is not implemented in other browsers, this path
+      // should always be taken except in Pepper-enabled browsers.
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    if (NULL == module->extensions_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  if (NULL == module->device3d_) {
+    module->device3d_ =
+        module->extensions_->acquireDevice(npp, NPPepper3DDevice);
+    if (NULL == module->device3d_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  if (NULL == module->context3d_) {
+    module->context3d_ = new(std::nothrow) NPDeviceContext3D;
+    if (NULL == module->context3d_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    NPError retval =
+        module->device3d_->initializeContext(npp, NULL, &module->context3d_);
+    if (NPERR_NO_ERROR != retval) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  DescWrapperFactory factory;
+  Device3DImpl* impl =
+      reinterpret_cast<Device3DImpl*>(module->context3d_->reserved);
+  DescWrapper* wrapper = factory.ImportTransportDIB(impl->dib);
+  if (NULL == wrapper) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  // Increase reference count for SRPC return value, since wrapper Delete
+  // would cause Dtor to fire.
+  outputs[0]->u.hval = NaClDescRef(wrapper->desc());
+  // Free the wrapper.
+  wrapper->Delete();
+  outputs[1]->u.ival = module->context3d_->commandBufferEntries;
+  outputs[2]->u.ival = module->context3d_->getOffset;
+  outputs[3]->u.ival = module->context3d_->putOffset;
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (int) npp
+// outputs:
+// (int) getOffset
+// (int) putOffset
+NaClSrpcError NPModule::Device3DFlush(NaClSrpcChannel* channel,
+                                      NaClSrpcArg** inputs,
+                                      NaClSrpcArg** outputs) {
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPError retval;
+  UNREFERENCED_PARAMETER(channel);
+
+  if (NULL == module->extensions_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  retval = module->device3d_->flushContext(npp, module->context3d_, NULL, NULL);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  outputs[0]->u.ival = module->context3d_->getOffset;
+  outputs[1]->u.ival = module->context3d_->putOffset;
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (int) npp
+// outputs:
+// none
+NaClSrpcError NPModule::Device3DDestroy(NaClSrpcChannel* channel,
+                                        NaClSrpcArg** inputs,
+                                        NaClSrpcArg** outputs) {
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPError retval;
+  UNREFERENCED_PARAMETER(channel);
+  UNREFERENCED_PARAMETER(outputs);
+
+  if (NULL == module->extensions_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  retval = module->device3d_->destroyContext(npp, module->context3d_);
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }

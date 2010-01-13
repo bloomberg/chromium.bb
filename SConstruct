@@ -600,7 +600,7 @@ Common tasks:
 * cleaning:           scons -c
 * building:           scons
 * just the doc:       scons --mode=doc
-* build mandel:       scons --model=nacl mandel.nexe
+* build mandel:       scons --mode=nacl mandel.nexe
 * smoke test:         scons --mode=nacl,opt-linux -k pp=1 smoke_tests
 
 * sel_ldr:            scons --mode=opt-linux sel_ldr
@@ -1126,6 +1126,7 @@ if not ARGUMENTS.get('nocpp'):
   nacl_extra_sdk_env.Append(
       BUILD_SCONSCRIPTS = [
         ####  ALPHABETICALLY SORTED ####
+        'src/untrusted/gpu/nacl.scons',
         'src/shared/imc/nacl.scons',
         'src/shared/npruntime/nacl.scons',
         ####  ALPHABETICALLY SORTED ####

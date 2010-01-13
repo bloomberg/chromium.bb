@@ -1,0 +1,45 @@
+# Copyright (c) 2008 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# TODO(robertm,cbiffle): fix header conflicts to allow this to build.
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
+
+# Remove the pedantic flag to accept long long.
+env.FilterOut(CCFLAGS=['-pedantic'])
+
+# Add local path to find GLES2 and KHR directories.
+env.Append(CPPPATH=[
+    '$SOURCE_ROOT/native_client/src/untrusted/gpu/command_buffer/common',
+    '$SOURCE_ROOT/native_client/src/untrusted'])
+
+command_buffer_common_srcs = [
+    'command_buffer/common/cmd_buffer_common.cc',
+    'command_buffer/common/gles2_cmd_format.cc',
+    'command_buffer/common/gles2_cmd_utils.cc',
+    'command_buffer/common/resource.cc',
+    ]
+
+command_buffer_client_srcs = [
+    'command_buffer/client/cmd_buffer_helper.cc',
+    'command_buffer/client/fenced_allocator.cc',
+    'command_buffer/client/gles2_cmd_helper.cc',
+    'command_buffer/client/gles2_implementation.cc',
+    'command_buffer/client/gles2_lib.cc',
+    'command_buffer/client/id_allocator.cc',
+    ]
+
+command_buffer_srcs = command_buffer_common_srcs + command_buffer_client_srcs;
+
+env.ComponentLibrary('google_nacl_gpu', command_buffer_srcs)
+env.AddLibraryToSdk(['google_nacl_gpu'])
+
+env.AddHeaderToSdk(['command_buffer/common/GLES2/gl2platform.h',
+                    'command_buffer/common/GLES2/gl2types.h',
+                    'command_buffer/common/GLES2/gl2.h',
+                    'command_buffer/common/command_buffer.h',
+                    'command_buffer/common/buffer.h',
+                    ])

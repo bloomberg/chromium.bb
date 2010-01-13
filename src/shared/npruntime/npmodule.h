@@ -46,10 +46,16 @@ class NPModule : public NPBridge {
   // The SRPC methods exported visible to the NaCl module.
   static NACL_SRPC_METHOD_ARRAY(srpc_methods);
 
-  // 2D graphics device state.
+  // Extension state.
   NPExtensions* extensions_;
+
+  // 2D graphics device state.
   NPDevice* device2d_;
   NPDeviceContext2D* context2d_;
+
+  // 3D graphics device state.
+  NPDevice* device3d_;
+  NPDeviceContext3D* context3d_;
 
  public:
   // Creates a new instance of NPModule.
@@ -104,6 +110,15 @@ class NPModule : public NPBridge {
                                      NaClSrpcArg** inputs,
                                      NaClSrpcArg** outputs);
   static NaClSrpcError Device2DDestroy(NaClSrpcChannel* channel,
+                                       NaClSrpcArg** inputs,
+                                       NaClSrpcArg** outputs);
+  static NaClSrpcError Device3DInitialize(NaClSrpcChannel* channel,
+                                          NaClSrpcArg** inputs,
+                                          NaClSrpcArg** outputs);
+  static NaClSrpcError Device3DFlush(NaClSrpcChannel* channel,
+                                     NaClSrpcArg** inputs,
+                                     NaClSrpcArg** outputs);
+  static NaClSrpcError Device3DDestroy(NaClSrpcChannel* channel,
                                        NaClSrpcArg** inputs,
                                        NaClSrpcArg** outputs);
 

@@ -10,6 +10,7 @@ env.FilterOut(CCFLAGS=['-Wswitch-enum'])
 
 env.ComponentLibrary('google_nacl_npruntime',
                      ['device2d.cc',
+                      'device3d.cc',
                       'naclnp_util.cc',
                       'npbridge.cc',
                       'npextensions.cc',
