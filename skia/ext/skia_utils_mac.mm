@@ -181,4 +181,9 @@ NSImage* SkBitmapToNSImage(const SkBitmap& skiaBitmap) {
   return image;
 }
 
+SkBitmap AppplicationIconAtSize(int size) {
+  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
+  return NSImageToSkBitmap(image, NSMakeSize(size, size), /* is_opaque=*/true);
+}
+
 }  // namespace gfx

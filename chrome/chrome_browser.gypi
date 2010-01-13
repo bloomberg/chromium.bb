@@ -561,6 +561,8 @@
         'browser/cocoa/tab_view.mm',
         'browser/cocoa/tab_window_controller.h',
         'browser/cocoa/tab_window_controller.mm',
+        'browser/cocoa/table_row_nsimage_cache.h',
+        'browser/cocoa/table_row_nsimage_cache.mm',
         'browser/cocoa/task_manager_mac.h',
         'browser/cocoa/task_manager_mac.mm',
         'browser/cocoa/theme_install_bubble_view.h',

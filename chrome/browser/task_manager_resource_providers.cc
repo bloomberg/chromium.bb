@@ -40,6 +40,10 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
+#if defined(OS_MACOSX)
+#include "skia/ext/skia_utils_mac.h"
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerTabContentsResource class
 ////////////////////////////////////////////////////////////////////////////////
@@ -710,6 +714,12 @@ TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource()
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_icon_ = rb.GetBitmapNamed(IDR_PRODUCT_LOGO_16);
+  }
+#elif defined(OS_MACOSX)
+  if (!default_icon_) {
+    // IDR_PRODUCT_LOGO_16 doesn't quite look like chrome/mac's icns icon. Load
+    // the real app icon (requires a nsimage->skbitmap->nsimage conversion :-().
+    default_icon_ = new SkBitmap(gfx::AppplicationIconAtSize(16));
   }
 #else
   // TODO(port): Port icon code.

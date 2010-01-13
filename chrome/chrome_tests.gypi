@@ -653,6 +653,7 @@
         'browser/cocoa/tab_strip_controller_unittest.mm',
         'browser/cocoa/tab_strip_view_unittest.mm',
         'browser/cocoa/tab_view_unittest.mm',
+        'browser/cocoa/table_row_nsimage_cache_unittest.mm',
         'browser/cocoa/task_manager_mac_unittest.mm',
         'browser/cocoa/test_event_utils.h',
         'browser/cocoa/test_event_utils.mm',

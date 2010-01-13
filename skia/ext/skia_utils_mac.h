@@ -62,6 +62,9 @@ SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque);
 NSImage* SkBitmapToNSImage(const SkBitmap& icon);
 #endif
 
+// Returns |[NSImage imageNamed:@"NSApplicationIcon"]| as SkBitmap.
+SkBitmap AppplicationIconAtSize(int size);
+
 }  // namespace gfx
 
 #endif  // SKIA_EXT_SKIA_UTILS_MAC_H_

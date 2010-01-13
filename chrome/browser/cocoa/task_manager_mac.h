@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include "base/scoped_nsobject.h"
+#include "chrome/browser/cocoa/table_row_nsimage_cache.h"
 #include "chrome/browser/task_manager.h"
 
 class TaskManagerMac;
@@ -39,7 +40,8 @@ class TaskManagerMac;
 @end
 
 // This class listens to task changed events sent by chrome.
-class TaskManagerMac : public TaskManagerModelObserver {
+class TaskManagerMac : public TaskManagerModelObserver,
+                       public TableRowNSImageCache::Table {
  public:
   TaskManagerMac();
   virtual ~TaskManagerMac();
@@ -54,12 +56,19 @@ class TaskManagerMac : public TaskManagerModelObserver {
   // controller destroyed itself. Informs the model to stop updating.
   void WindowWasClosed();
 
+  // TableRowNSImageCache::Table
+  virtual int RowCount() const { return model_->ResourceCount(); }
+  virtual SkBitmap GetIcon(int r) const { return model_->GetResourceIcon(r); }
+
   // Creates the task manager if it doesn't exist; otherwise, it activates the
   // existing task manager window.
   static void Show();
 
   // Returns the TaskManager observed by |this|.
   TaskManager* task_manager() { return task_manager_; }
+
+  // Lazily converts the image at the given row and caches it in |icon_cache_|.
+  NSImage* GetImageForRow(int row);
 
  private:
   // The task manager.
@@ -71,6 +80,9 @@ class TaskManagerMac : public TaskManagerModelObserver {
   // Controller of our window, destroys itself when the task manager window
   // is closed.
   TaskManagerWindowController* window_controller_;  // weak
+
+  // Caches favicons for all rows. Needs to be initalized after |model_|.
+  TableRowNSImageCache icon_cache_;
 
   // An open task manager window. There can only be one open at a time. This
   // is reset to NULL when the window is closed.

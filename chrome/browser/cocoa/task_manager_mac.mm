@@ -13,13 +13,13 @@
 #include "grit/generated_resources.h"
 
 // TODO(thakis): Autoremember window size/pos (and selected columns?)
+// TODO(thakis): Better resizing behavior (and think about storing column sizes)
 // TODO(thakis): Column sort comparator
 // TODO(thakis): Clicking column header doesn't sort
-// TODO(thakis): Favicons in rows
 // TODO(thakis): Default sort column
 
 @interface TaskManagerWindowController (Private)
-- (void)addColumnWithId:(int)columnId visible:(BOOL)isVisible;
+- (NSTableColumn*)addColumnWithId:(int)columnId visible:(BOOL)isVisible;
 - (void)setUpTableColumns;
 - (void)setUpTableHeaderContextMenu;
 - (void)toggleColumn:(id)sender;
@@ -79,7 +79,7 @@
 
 // Adds a column which has the given string id as title. |isVisible| specifies
 // if the column is initially visible.
-- (void)addColumnWithId:(int)columnId visible:(BOOL)isVisible {
+- (NSTableColumn*)addColumnWithId:(int)columnId visible:(BOOL)isVisible {
   scoped_nsobject<NSTableColumn> column([[NSTableColumn alloc]
       initWithIdentifier:[NSNumber numberWithInt:columnId]]);
 
@@ -94,13 +94,23 @@
   [column.get() setHidden:!isVisible];
   [column.get() setEditable:NO];
   [tableView_ addTableColumn:column.get()];
+  return column.get();  // Now retained by |tableView_|.
 }
 
 // Adds all the task manager's columns to the table.
 - (void)setUpTableColumns {
   for (NSTableColumn* column in [tableView_ tableColumns])
     [tableView_ removeTableColumn:column];
-  [self addColumnWithId:IDS_TASK_MANAGER_PAGE_COLUMN visible:YES];
+  NSTableColumn* nameColumn = [self addColumnWithId:IDS_TASK_MANAGER_PAGE_COLUMN
+                                            visible:YES];
+  // |nameColumn| displays an icon for every row -- this is done by an
+  // NSButtonCell.
+  scoped_nsobject<NSButtonCell> nameCell(
+      [[NSButtonCell alloc] initTextCell:@""]);
+  [nameCell.get() setImagePosition:NSImageLeft];
+  [nameCell.get() setButtonType:NSSwitchButton];
+  [nameColumn setDataCell:nameCell.get()];
+
   [self addColumnWithId:IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN visible:YES];
   [self addColumnWithId:IDS_TASK_MANAGER_SHARED_MEM_COLUMN visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN visible:NO];
@@ -257,8 +267,34 @@
 - (id)tableView:(NSTableView*)tableView
     objectValueForTableColumn:(NSTableColumn*)tableColumn
                           row:(NSInteger)rowIndex {
+  // NSButtonCells expect an on/off state as objectValue. Their title is set
+  // in |tableView:dataCellForTableColumn:row:| below.
+  if ([[tableColumn identifier] intValue] == IDS_TASK_MANAGER_PAGE_COLUMN) {
+    return [NSNumber numberWithInt:NSOffState];
+  }
+
   return [self modelTextForRow:rowIndex
                         column:[[tableColumn identifier] intValue]];
+}
+
+- (NSCell*)tableView:(NSTableView*)tableView
+    dataCellForTableColumn:(NSTableColumn*)tableColumn
+                       row:(NSInteger)rowIndex {
+  NSCell* cell = [tableColumn dataCellForRow:rowIndex];
+
+  // Set the favicon and title for the search engine in the name column.
+  if ([[tableColumn identifier] intValue] == IDS_TASK_MANAGER_PAGE_COLUMN) {
+    DCHECK([cell isKindOfClass:[NSButtonCell class]]);
+    NSButtonCell* buttonCell = static_cast<NSButtonCell*>(cell);
+    NSString* title = [self modelTextForRow:rowIndex
+                                    column:[[tableColumn identifier] intValue]];
+    [buttonCell setTitle:title];
+    [buttonCell setImage:taskManagerObserver_->GetImageForRow(rowIndex)];
+    [buttonCell setRefusesFirstResponder:YES];  // Don't push in like a button.
+    [buttonCell setHighlightsBy:NSNoCellMask];
+  }
+
+  return cell;
 }
 
 @end
@@ -268,7 +304,8 @@
 
 TaskManagerMac::TaskManagerMac()
   : task_manager_(TaskManager::GetInstance()),
-    model_(TaskManager::GetInstance()->model()) {
+    model_(TaskManager::GetInstance()->model()),
+    icon_cache_(this) {
   window_controller_ =
       [[TaskManagerWindowController alloc] initWithTaskManagerObserver:this];
   model_->AddObserver(this);
@@ -286,19 +323,27 @@ TaskManagerMac::~TaskManagerMac() {
 // TaskManagerMac, TaskManagerModelObserver implementation:
 
 void TaskManagerMac::OnModelChanged() {
+  icon_cache_.OnModelChanged();
   [window_controller_ reloadData];
 }
 
 void TaskManagerMac::OnItemsChanged(int start, int length) {
+  icon_cache_.OnItemsChanged(start, length);
   [window_controller_ reloadData];
 }
 
 void TaskManagerMac::OnItemsAdded(int start, int length) {
+  icon_cache_.OnItemsAdded(start, length);
   [window_controller_ reloadData];
 }
 
 void TaskManagerMac::OnItemsRemoved(int start, int length) {
+  icon_cache_.OnItemsRemoved(start, length);
   [window_controller_ reloadData];
+}
+
+NSImage* TaskManagerMac::GetImageForRow(int row) {
+  return icon_cache_.GetImageForRow(row);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -7,6 +7,7 @@
 #include "app/table_model_observer.h"
 #import "base/cocoa_protocols_mac.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/cocoa/table_row_nsimage_cache.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -18,7 +19,8 @@ class Profile;
 // Very thin bridge that simply pushes notifications from C++ to ObjC.
 class KeywordEditorModelObserver : public TemplateURLModelObserver,
                                    public EditSearchEngineControllerDelegate,
-                                   public TableModelObserver {
+                                   public TableModelObserver,
+                                   public TableRowNSImageCache::Table {
  public:
   explicit KeywordEditorModelObserver(KeywordEditorCocoaController* controller);
   virtual ~KeywordEditorModelObserver();
@@ -42,15 +44,17 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
   virtual void OnItemsAdded(int start, int length);
   virtual void OnItemsRemoved(int start, int length);
 
-  // Lazily converts the image at the given row and caches it in |iconImages_|.
+  // TableRowNSImageCache::Table
+  virtual int RowCount() const;
+  virtual SkBitmap GetIcon(int row) const;
+
+  // Lazily converts the image at the given row and caches it in |icon_cache_|.
   NSImage* GetImageForRow(int row);
 
  private:
   KeywordEditorCocoaController* controller_;
 
-  // Stores strong NSImage refs for icons. If an entry is NULL, it will be
-  // created in GetImageForRow().
-  scoped_nsobject<NSPointerArray> iconImages_;
+  TableRowNSImageCache icon_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(KeywordEditorModelObserver);
 };
