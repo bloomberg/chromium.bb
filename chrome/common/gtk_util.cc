@@ -21,6 +21,9 @@
 
 namespace {
 
+// How large a font needs to be before we override the font family.
+const double kTooLargeFontSize = 17.5;
+
 // Callback used in RemoveAllChildren.
 void RemoveWidget(GtkWidget* widget, gpointer container) {
   gtk_container_remove(GTK_CONTAINER(container), widget);
@@ -239,11 +242,38 @@ void RemoveAllChildren(GtkWidget* container) {
 void ForceFontSizePixels(GtkWidget* widget, double size_pixels) {
   GtkStyle* style = widget->style;
   PangoFontDescription* font_desc = style->font_desc;
+
   // pango_font_description_set_absolute_size sets the font size in device
   // units, which for us is pixels.
   pango_font_description_set_absolute_size(font_desc,
                                            PANGO_SCALE * size_pixels);
   gtk_widget_modify_font(widget, font_desc);
+
+  // Check to make sure that the system font is sane.
+  PangoContext* context = gtk_widget_create_pango_context(widget);
+  PangoFontMetrics* metrics = pango_context_get_metrics(context,
+      widget->style->font_desc, pango_context_get_language(context));
+  double over_under = (pango_font_metrics_get_ascent(metrics) +
+                       pango_font_metrics_get_descent(metrics)) / PANGO_SCALE;
+  pango_font_metrics_unref(metrics);
+  g_object_unref(context);
+
+  // It would be awesome if we could override with better metrics, but I can't
+  // think of any other than the sum of the ascent/descent that make sense.
+  if (over_under > kTooLargeFontSize) {
+    // Override the system font. The user's font would lead to the "jumping up
+    // and down" text effect that happens because we're setting the font size
+    // with a font with ridiculously large ascent/descents. This is, in the
+    // end, our fault because of our abuse of gtk_widget_set_size_request(),
+    // but for now we'll just override the user's font since it'll take a while
+    // to fix the interface proper.
+    style = widget->style;
+    font_desc = style->font_desc;
+    pango_font_description_set_family_static(font_desc, "Sans");
+    pango_font_description_set_absolute_size(font_desc,
+                                             PANGO_SCALE * size_pixels);
+    gtk_widget_modify_font(widget, font_desc);
+  }
 }
 
 gfx::Point GetWidgetScreenPosition(GtkWidget* widget) {
