@@ -195,7 +195,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    * before switching back to user module, we need to make sure that the
    * user_ret is properly sandboxed.
    */
-  user_ret = NaClSandboxAddr(nap, user_ret);
+  user_ret = NaClSandboxCodeAddr(nap, user_ret);
 
   NaClSwitchToApp(natp, user_ret);
  /* NOTREACHED */

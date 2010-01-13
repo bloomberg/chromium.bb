@@ -440,22 +440,19 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
-static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
+static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
+                                            uintptr_t addr) {
   return addr & ~(((uintptr_t) nap->bundle_size) - 1);
 }
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
-  UNREFERENCED_PARAMETER(nap);
-
+static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
+                                            uintptr_t addr) {
   /*
-   * This function is used for sandboxing a user return address before calling
-   * into springboard.
-   *
-   * On ARM, we sandbox the user return address in springboard code, so there is
-   * no need to do it here.
+   * TODO(cbiffle): this hardcodes the size of code memory, and needs to become
+   * a parameter in NaClApp.  The simplest way to do this is with the change
+   * suggested in issue 244.  Then we could fold ARM and x86 impls together.
    */
-
-  return addr;
+  return (addr & ~(((uintptr_t) nap->bundle_size) - 1)) & ~0xF0000000;
 }
 #else
 #error Unknown platform!

@@ -50,8 +50,8 @@
 IDENTIFIER(NaCl_springboard):
   /*
    * r0 -- syscall return value
-   * r1 -- new pc
-   * == user srack ==
+   * r1 -- new pc (already sandboxed)
+   * == user stack ==
    * top
    * =====
    * arg 1
@@ -61,17 +61,12 @@ IDENTIFIER(NaCl_springboard):
    */
 
   /*
-   * This instruction guards springboard from unauthorized execution.
-   * Service runtime jumps to the instruction following the NACL_HALT one. If
-   * any other code tries to reach springboard without performing a jump it will
-   * be halted by the NACL_HALT
+   * This instruction prevents indirect jumps from untrusted code into the
+   * springboard.  The service runtime jumps past it.
    */
   NACL_HALT
 
   add sp, #16 /* popping four arguments placed by trampoline code */
-#if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
-  bic r1, r1, #NACL_CONTROL_FLOW_MASK
-#endif
   bx r1
 .globl  IDENTIFIER(NaCl_springboard_end)
   HIDDEN(NaCl_springboard_end)
