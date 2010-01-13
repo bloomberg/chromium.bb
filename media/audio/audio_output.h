@@ -72,9 +72,11 @@ class AudioOutputStream {
 
   // Open the stream. |packet_size| is the requested buffer allocation which
   // the audio source thinks it can usually fill without blocking. Internally
-  // two buffers of |packet_size| size are created, one will be locked for
-  // playback and one will be ready to be filled in the call to
+  // two or three buffers of |packet_size| size are created, one will be
+  // locked for playback and one will be ready to be filled in the call to
   // AudioSourceCallback::OnMoreData().
+  // The number of buffers is controlled by AUDIO_PCM_LOW_LATENCY. See more
+  // information below.
   //
   // TODO(ajwong): Streams are not reusable, so try to move packet_size into the
   // constructor.
@@ -111,11 +113,10 @@ class AudioOutputStream {
 class AudioManager {
  public:
   enum Format {
-    AUDIO_PCM_LINEAR = 0,  // Pulse code modulation means 'raw' amplitude
-                           // samples.
-    AUDIO_PCM_DELTA,       // Delta-encoded pulse code modulation.
-    AUDIO_MOCK,            // Creates a dummy AudioOutputStream object.
-    AUDIO_LAST_FORMAT      // Only used for validation of format.
+    AUDIO_PCM_LINEAR = 0,     // PCM is 'raw' amplitude samples.
+    AUDIO_PCM_LOW_LATENCY,    // Linear PCM, low latency requested.
+    AUDIO_MOCK,               // Creates a dummy AudioOutputStream object.
+    AUDIO_LAST_FORMAT         // Only used for validation of format.
   };
 
   // Telephone quality sample rate, mostly for speech-only audio.
@@ -129,12 +130,17 @@ class AudioManager {
   // guarantee that the existing devices support all formats and sample rates.
   virtual bool HasAudioDevices() = 0;
 
-  // Factory for all the supported stream formats. At this moment |channels|
-  // can be 1 (mono) or 2 (stereo). The |sample_rate| is in hertz and can be
-  // any value supported by the underlying platform. For some future formats
-  // the |sample_rate| and |bits_per_sample| can take special values.
+  // Factory for all the supported stream formats. The |channels| can be 1 to 5.
+  // The |sample_rate| is in hertz and can be any value supported by the
+  // platform. For some future formats the |sample_rate| and |bits_per_sample|
+  // can take special values.
   // Returns NULL if the combination of the parameters is not supported, or if
   // we have reached some other platform specific limit.
+  //
+  // AUDIO_PCM_LOW_LATENCY can be passed to this method and it has two effects:
+  // 1- Instead of triple buffered the audio will be double buffered.
+  // 2- A low latency driver or alternative audio subsystem will be used when
+  //    available.
   //
   // Do not free the returned AudioOutputStream. It is owned by AudioManager.
   virtual AudioOutputStream* MakeAudioStream(Format format, int channels,

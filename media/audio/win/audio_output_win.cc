@@ -54,7 +54,11 @@ AudioOutputStream* AudioManagerWin::MakeAudioStream(Format format, int channels,
   if (format == AUDIO_MOCK) {
     return FakeAudioOutputStream::MakeFakeStream();
   } else if (format == AUDIO_PCM_LINEAR) {
-    return new PCMWaveOutAudioOutputStream(this, channels, sample_rate,
+    return new PCMWaveOutAudioOutputStream(this, channels, sample_rate, 3,
+                                           bits_per_sample, WAVE_MAPPER);
+  } else if (format == AUDIO_PCM_LOW_LATENCY) {
+    // TODO(cpu): waveout cannot hit 20ms latency. Use other method.
+    return new PCMWaveOutAudioOutputStream(this, channels, sample_rate, 2,
                                            bits_per_sample, WAVE_MAPPER);
   }
   return NULL;

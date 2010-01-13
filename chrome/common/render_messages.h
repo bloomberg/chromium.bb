@@ -1744,8 +1744,8 @@ struct ParamTraits<AudioManager::Format> {
      case AudioManager::AUDIO_PCM_LINEAR:
        format = L"AUDIO_PCM_LINEAR";
        break;
-     case AudioManager::AUDIO_PCM_DELTA:
-       format = L"AUDIO_PCM_DELTA";
+     case AudioManager::AUDIO_PCM_LOW_LATENCY:
+       format = L"AUDIO_PCM_LOW_LATENCY";
        break;
      case AudioManager::AUDIO_MOCK:
        format = L"AUDIO_MOCK";
