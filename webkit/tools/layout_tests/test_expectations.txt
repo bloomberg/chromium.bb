@@ -3086,5 +3086,6 @@ BUG_JOHNNYG : LayoutTests/media/video-poster-scale.html = TEXT
 BUG_JOHNNYG : LayoutTests/storage/multiple-databases-garbage-collection.html = CRASH PASS
 
 // New flakiness?
-BUG32144 WIN RELEASE : LayoutTests/svg/webarchive/svg-script-subresouces.svg = CRASH PASS
+BUG32144 WIN RELEASE : LayoutTests/svg/webarchive/svg-script-subresouces.svg = CRASH TEXT PASS
 BUG32145 WIN RELEASE : LayoutTests/animations/3d/transform-origin-vs-functions.html = TEXT PASS
+BUG32149 WIN RELEASE : LayoutTests/fast/dom/Document/early-document-access.html = TIMEOUT PASS
