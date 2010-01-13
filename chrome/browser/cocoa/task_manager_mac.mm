@@ -287,7 +287,7 @@
                        row:(NSInteger)rowIndex {
   NSCell* cell = [tableColumn dataCellForRow:rowIndex];
 
-  // Set the favicon and title for the search engine in the name column.
+  // Set the favicon and title for the task in the name column.
   if ([[tableColumn identifier] intValue] == IDS_TASK_MANAGER_PAGE_COLUMN) {
     DCHECK([cell isKindOfClass:[NSButtonCell class]]);
     NSButtonCell* buttonCell = static_cast<NSButtonCell*>(cell);

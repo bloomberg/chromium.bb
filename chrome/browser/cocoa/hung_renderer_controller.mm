@@ -21,6 +21,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 namespace {
@@ -98,7 +99,23 @@ HungRendererController* g_instance = NULL;
 - (id)tableView:(NSTableView*)aTableView
       objectValueForTableColumn:(NSTableColumn*)column
             row:(NSInteger)rowIndex {
-  return [hungTitles_ objectAtIndex:rowIndex];
+  return [NSNumber numberWithInt:NSOffState];
+}
+
+- (NSCell*)tableView:(NSTableView*)tableView
+    dataCellForTableColumn:(NSTableColumn*)tableColumn
+                       row:(NSInteger)rowIndex {
+  NSCell* cell = [tableColumn dataCellForRow:rowIndex];
+
+  if ([[tableColumn identifier] isEqualToString:@"title"]) {
+    DCHECK([cell isKindOfClass:[NSButtonCell class]]);
+    NSButtonCell* buttonCell = static_cast<NSButtonCell*>(cell);
+    [buttonCell setTitle:[hungTitles_ objectAtIndex:rowIndex]];
+    [buttonCell setImage:[hungFavicons_ objectAtIndex:rowIndex]];
+    [buttonCell setRefusesFirstResponder:YES];  // Don't push in like a button.
+    [buttonCell setHighlightsBy:NSNoCellMask];
+  }
+  return cell;
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -115,9 +132,9 @@ HungRendererController* g_instance = NULL;
   DCHECK(contents);
   hungContents_ = contents;
   scoped_nsobject<NSMutableArray> titles([[NSMutableArray alloc] init]);
+  scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
   for (TabContentsIterator it; !it.done(); ++it) {
     if (it->process() == hungContents_->process()) {
-      // TODO(rohitrao): Add favicons.
       const string16 title = (*it)->GetTitle();
       if (title.empty()) {
         [titles addObject:
@@ -125,9 +142,12 @@ HungRendererController* g_instance = NULL;
       } else {
         [titles addObject:base::SysUTF16ToNSString(title)];
       }
+      [favicons addObject:gfx::SkBitmapToNSImage(it->GetFavIcon())];
+
     }
   }
   hungTitles_.reset([titles copy]);
+  hungFavicons_.reset([favicons copy]);
   [tableView_ reloadData];
 
   [[self window] center];

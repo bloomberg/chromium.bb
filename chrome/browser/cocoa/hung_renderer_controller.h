@@ -42,6 +42,10 @@ class TabContents;
   // Backing data for |tableView_|.  Titles of each TabContents that
   // shares a renderer process with |hungContents_|.
   scoped_nsobject<NSArray> hungTitles_;
+  
+  // Favicons of each TabContents that shares a renderer process with
+  // |hungContents_|.
+  scoped_nsobject<NSArray> hungFavicons_;
 }
 
 // Kills the hung renderers.
