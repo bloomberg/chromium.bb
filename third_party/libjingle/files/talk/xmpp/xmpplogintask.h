@@ -90,9 +90,9 @@ private:
   
   scoped_ptr<SaslMechanism> sasl_mech_;
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
   static const talk_base::ConstantLabel LOGINTASK_STATES[];
-#endif  // _DEBUG
+#endif  // !defined(NDEBUG)
 };
 
 }

@@ -36,9 +36,9 @@
 #include <pthread.h>
 #endif
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 #define CS_TRACK_OWNER 1
-#endif  // _DEBUG
+#endif  // !defined(NDEBUG)
 
 #if CS_TRACK_OWNER
 #define TRACK_OWNER(x) x

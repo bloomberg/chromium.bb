@@ -280,6 +280,14 @@ diff -r libjingle-0.4.0/talk/base/common.h libjingle/files/talk/base/common.h
 <   void operator=(const TypeName&)
 < 
 diff -r libjingle-0.4.0/talk/base/criticalsection.h libjingle/files/talk/base/criticalsection.h
+39c39
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+41c41
+< #endif  // _DEBUG
+---
+> #endif  // !defined(NDEBUG)
 83c83
 < public:
 ---
@@ -309,6 +317,27 @@ diff -r libjingle-0.4.0/talk/base/criticalsection.h libjingle/files/talk/base/cr
 diff -r libjingle-0.4.0/talk/base/cryptstring.h libjingle/files/talk/base/cryptstring.h
 30a31
 > #include <string.h>
+diff -r libjingle-0.4.0/talk/base/diskcache.cc libjingle/files/talk/base/diskcache.cc
+43c43
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+45c45
+< #else  // !_DEBUG
+---
+> #else  // defined(NDEBUG)
+47c47
+< #endif  // !_DEBUG
+---
+> #endif  // !defined(NDEBUG)
+231c231
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+238c238
+< #endif  // _DEBUG
+---
+> #endif  // !defined(NDEBUG)
 diff -r libjingle-0.4.0/talk/base/diskcache_win32.cc libjingle/files/talk/base/diskcache_win32.cc
 38c38
 <       entry->streams = max(entry->streams, index + 1);
@@ -408,6 +437,36 @@ diff -r libjingle-0.4.0/talk/base/natserver.cc libjingle/files/talk/base/natserv
 diff -r libjingle-0.4.0/talk/base/natsocketfactory.cc libjingle/files/talk/base/natsocketfactory.cc
 29a30
 > #include <cstring>
+diff -r libjingle-0.4.0/talk/base/openssladapter.cc libjingle/files/talk/base/openssladapter.cc
+619c619
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+707c707
+< #if _DEBUG
+---
+> #if !defined(NDEBUG)
+736c736
+< #endif  // _DEBUG
+---
+> #endif  // !defined(NDEBUG)
+740c740
+< #if _DEBUG
+---
+> #if !defined(NDEBUG)
+798c798
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+diff -r libjingle-0.4.0/talk/base/openssladapter.h libjingle/files/talk/base/openssladapter.h
+72c72
+< #if _DEBUG
+---
+> #if !defined(NDEBUG)
+74c74
+< #endif  // !_DEBUG
+---
+> #endif  // !defined(NDEBUG)
 diff -r libjingle-0.4.0/talk/base/physicalsocketserver.cc libjingle/files/talk/base/physicalsocketserver.cc
 61a62
 > #include "talk/base/winsock_initializer.h"
@@ -844,6 +903,43 @@ diff -r libjingle-0.4.0/talk/base/signalthread.h libjingle/files/talk/base/signa
 >     kComplete,        // Work is done
 >     kStopping,        // Work is being interrupted
 >   } state_;
+diff -r libjingle-0.4.0/talk/base/sigslot.h libjingle/files/talk/base/sigslot.h
+530c530
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+676c676
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+807c807
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+937c937
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+1067c1067
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+1199c1199
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+1331c1331
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+1463c1463
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+1596c1596
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
 diff -r libjingle-0.4.0/talk/base/socket.h libjingle/files/talk/base/socket.h
 77a78
 > #undef ETIMEDOUT // remove pthread.h's definition
@@ -851,6 +947,19 @@ diff -r libjingle-0.4.0/talk/base/socketadapters.cc libjingle/files/talk/base/so
 43a44,45
 > #include <cstring>
 > 
+diff -r libjingle-0.4.0/talk/base/socketaddress.cc libjingle/files/talk/base/socketaddress.cc
+52c52
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+54c54
+< #else // !_DEBUG
+---
+> #else // defined(NDEBUG)
+56c56
+< #endif // !_DEBUG
+---
+> #endif // !defined(NDEBUG)
 diff -r libjingle-0.4.0/talk/base/socketfactory.h libjingle/files/talk/base/socketfactory.h
 32a33
 > #include "talk/base/ssladapter.h"
@@ -883,6 +992,23 @@ diff -r libjingle-0.4.0/talk/base/stream.cc libjingle/files/talk/base/stream.cc
 diff -r libjingle-0.4.0/talk/base/stringencode.cc libjingle/files/talk/base/stringencode.cc
 34a35
 > #include <stdlib.h>
+525c526
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+575c576
+< #endif  // _DEBUG
+---
+> #endif  // !defined(NDEBUG)
+diff -r libjingle-0.4.0/talk/base/stringutils.cc libjingle/files/talk/base/stringutils.cc
+72c72
+< #if _DEBUG
+---
+> #if !defined(NDEBUG)
+76c76
+< #endif  // _DEBUG
+---
+> #endif  // !defined(NDEBUG)
 diff -r libjingle-0.4.0/talk/base/stringutils.h libjingle/files/talk/base/stringutils.h
 33a34
 > #include <string.h>
@@ -1277,6 +1403,14 @@ diff -r libjingle-0.4.0/talk/xmpp/xmppclient.cc libjingle/files/talk/xmpp/xmppcl
 < #include "talk/xmpp/constants.h"
 ---
 > #include "talk/xmpp/xmppconstants.h"
+347c347
+< //#ifdef _DEBUG
+---
+> //#if !defined(NDEBUG)
+375c375
+< //#ifdef _DEBUG
+---
+> //#if !defined(NDEBUG)
 diff -r libjingle-0.4.0/talk/xmpp/xmppclient.h libjingle/files/talk/xmpp/xmppclient.h
 141c141
 <   std::string XmppClient::GetStateName(int state) const {
@@ -1308,10 +1442,35 @@ diff -r libjingle-0.4.0/talk/xmpp/xmpplogintask.cc libjingle/files/talk/xmpp/xmp
 < #include "talk/xmpp/constants.h"
 ---
 > #include "talk/xmpp/xmppconstants.h"
+44c44
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+59c59
+< #endif  // _DEBUG
+---
+> #endif  // !defined(NDEBUG)
+103c103
+< #if _DEBUG
+---
+> #if !defined(NDEBUG)
+106c106
+< #endif  // _DEBUG
+---
+> #endif  // !defined(NDEBUG)
 218a219,221
 >         auth->SetAttr(QN_GOOGLE_ALLOW_NON_GOOGLE_ID_XMPP_LOGIN, "true");
 >         auth->SetAttr(QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT, "true");
 > 
+diff -r libjingle-0.4.0/talk/xmpp/xmpplogintask.h libjingle/files/talk/xmpp/xmpplogintask.h
+93c93
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+95c95
+< #endif  // _DEBUG
+---
+> #endif  // !defined(NDEBUG)
 diff -r libjingle-0.4.0/talk/xmpp/xmppstanzaparser.cc libjingle/files/talk/xmpp/xmppstanzaparser.cc
 32c32
 < #include "talk/xmpp/constants.h"
@@ -1322,3 +1481,25 @@ diff -r libjingle-0.4.0/talk/xmpp/xmpptask.cc libjingle/files/talk/xmpp/xmpptask
 < #include "talk/xmpp/constants.h"
 ---
 > #include "talk/xmpp/xmppconstants.h"
+40c40
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+88c88
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+174c174
+< }
+\ No newline at end of file
+---
+> }
+diff -r libjingle-0.4.0/talk/xmpp/xmpptask.h libjingle/files/talk/xmpp/xmpptask.h
+80c80
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)
+123c123
+< #ifdef _DEBUG
+---
+> #if !defined(NDEBUG)

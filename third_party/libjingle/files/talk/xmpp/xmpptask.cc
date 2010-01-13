@@ -37,7 +37,7 @@ RateLimitManager task_rate_manager;
 
 XmppTask::XmppTask(Task* parent, XmppEngine::HandlerLevel level)
     : Task(parent), client_(NULL) {
-#ifdef _DEBUG
+#if !defined(NDEBUG)
   debug_force_timeout_ = false;
 #endif
 
@@ -85,7 +85,7 @@ void XmppTask::OnDisconnect() {
 }
 
 void XmppTask::QueueStanza(const XmlElement* stanza) {
-#ifdef _DEBUG
+#if !defined(NDEBUG)
   if (debug_force_timeout_)
     return;
 #endif

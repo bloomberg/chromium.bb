@@ -69,9 +69,9 @@ private:
   void Cleanup();
 
   bool SSLPostConnectionCheck(SSL* ssl, const char* host);
-#if _DEBUG
+#if !defined(NDEBUG)
   static void SSLInfoCallback(const SSL* s, int where, int ret);
-#endif  // !_DEBUG
+#endif  // !defined(NDEBUG)
   static int SSLVerifyCallback(int ok, X509_STORE_CTX* store);
 
   static SSL_CTX* SetupSSLContext();

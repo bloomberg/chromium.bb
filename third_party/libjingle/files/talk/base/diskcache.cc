@@ -40,11 +40,11 @@
 #include "talk/base/stringencode.h"
 #include "talk/base/stringutils.h"
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 #define TRANSPARENT_CACHE_NAMES 1
-#else  // !_DEBUG
+#else  // defined(NDEBUG)
 #define TRANSPARENT_CACHE_NAMES 0
-#endif  // !_DEBUG
+#endif  // !defined(NDEBUG)
 
 namespace talk_base {
 
@@ -228,14 +228,14 @@ bool DiskCache::DeleteResource(const std::string& id) {
 }
 
 bool DiskCache::CheckLimit() {
-#ifdef _DEBUG
+#if !defined(NDEBUG)
   // Temporary check to make sure everything is working correctly.
   size_t cache_size = 0;
   for (EntryMap::iterator it = map_.begin(); it != map_.end(); ++it) {
     cache_size += it->second.size;
   }
   ASSERT(cache_size == total_size_);
-#endif  // _DEBUG
+#endif  // !defined(NDEBUG)
 
   // TODO: Replace this with a non-brain-dead algorithm for clearing out the
   // oldest resources... something that isn't O(n^2)

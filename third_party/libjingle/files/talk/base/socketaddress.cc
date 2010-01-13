@@ -49,11 +49,11 @@ int inet_aton(const char * cp, struct in_addr * inp) {
 }
 #endif // WIN32
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 #define DISABLE_DNS 0
-#else // !_DEBUG
+#else // defined(NDEBUG)
 #define DISABLE_DNS 0
-#endif // !_DEBUG
+#endif // !defined(NDEBUG)
 
 namespace talk_base {
 

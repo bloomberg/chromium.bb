@@ -616,7 +616,7 @@ OpenSSLAdapter::SSLPostConnectionCheck(SSL* ssl, const char* host) {
   if (!certificate)
     return false;
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
   {
     LOG(LS_INFO) << "Certificate from server:";
     BIO* mem = BIO_new(BIO_s_mem());
@@ -704,7 +704,7 @@ OpenSSLAdapter::SSLPostConnectionCheck(SSL* ssl, const char* host) {
   return ok;
 }
 
-#if _DEBUG
+#if !defined(NDEBUG)
 
 // We only use this for tracing and so it is only needed in debug mode
 
@@ -733,11 +733,11 @@ OpenSSLAdapter::SSLInfoCallback(const SSL* s, int where, int ret) {
   }
 }
 
-#endif  // _DEBUG
+#endif  // !defined(NDEBUG)
 
 int
 OpenSSLAdapter::SSLVerifyCallback(int ok, X509_STORE_CTX* store) {
-#if _DEBUG
+#if !defined(NDEBUG)
   if (!ok) {
     char data[256];
     X509* cert = X509_STORE_CTX_get_current_cert(store);
@@ -795,7 +795,7 @@ OpenSSLAdapter::SetupSSLContext() {
     return NULL;
   }
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
   SSL_CTX_set_info_callback(ctx, SSLInfoCallback);
 #endif
 

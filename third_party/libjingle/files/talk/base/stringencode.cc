@@ -523,7 +523,7 @@ void sprintf(std::string& value, size_t maxlen, const char * format, ...) {
 // Unit Tests
 /////////////////////////////////////////////////////////////////////////////
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 
 static int utf8_unittest() {
   const struct Utf8Test {
@@ -573,7 +573,7 @@ static int utf8_unittest() {
 
 int test = utf8_unittest();
 
-#endif  // _DEBUG
+#endif  // !defined(NDEBUG)
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -69,11 +69,11 @@ size_t asccpyn(wchar_t* buffer, size_t buflen,
   } else if (srclen >= buflen) {
     srclen = buflen - 1;
   }
-#if _DEBUG
+#if !defined(NDEBUG)
   // Double check that characters are not UTF-8
   for (size_t pos = 0; pos < srclen; ++pos)
     ASSERT(static_cast<unsigned char>(source[pos]) < 128);
-#endif  // _DEBUG
+#endif  // !defined(NDEBUG)
   std::copy(source, source + srclen, buffer);
   buffer[srclen] = 0;
   return srclen;

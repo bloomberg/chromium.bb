@@ -43,3 +43,5 @@ Local Modifications:
   * Added a CreateSSLAdapter() function to SocketFactory to allow SSL
     adapter creation behavior to be overridden.
   * Improved handling and error-checking of SSL adapters.
+  * Changed uses of Windows-only debug variable _DEBUG to use the
+    cross-platform NDEBUG variable instead.

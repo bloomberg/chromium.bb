@@ -527,7 +527,7 @@ namespace sigslot {
 			m_connected_slots.erase(m_connected_slots.begin(), m_connected_slots.end());
 		}
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 			bool connected(has_slots<mt_policy>* pclass)
 		{
 			lock_block<mt_policy> lock(this);
@@ -673,7 +673,7 @@ namespace sigslot {
 			m_connected_slots.erase(m_connected_slots.begin(), m_connected_slots.end());
 		}
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 			bool connected(has_slots<mt_policy>* pclass)
 		{
 			lock_block<mt_policy> lock(this);
@@ -804,7 +804,7 @@ namespace sigslot {
 			m_connected_slots.erase(m_connected_slots.begin(), m_connected_slots.end());
 		}
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 			bool connected(has_slots<mt_policy>* pclass)
 		{
 			lock_block<mt_policy> lock(this);
@@ -934,7 +934,7 @@ namespace sigslot {
 			m_connected_slots.erase(m_connected_slots.begin(), m_connected_slots.end());
 		}
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 			bool connected(has_slots<mt_policy>* pclass)
 		{
 			lock_block<mt_policy> lock(this);
@@ -1064,7 +1064,7 @@ namespace sigslot {
 			m_connected_slots.erase(m_connected_slots.begin(), m_connected_slots.end());
 		}
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 			bool connected(has_slots<mt_policy>* pclass)
 		{
 			lock_block<mt_policy> lock(this);
@@ -1196,7 +1196,7 @@ namespace sigslot {
 			m_connected_slots.erase(m_connected_slots.begin(), m_connected_slots.end());
 		}
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 			bool connected(has_slots<mt_policy>* pclass)
 		{
 			lock_block<mt_policy> lock(this);
@@ -1328,7 +1328,7 @@ namespace sigslot {
 			m_connected_slots.erase(m_connected_slots.begin(), m_connected_slots.end());
 		}
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 			bool connected(has_slots<mt_policy>* pclass)
 		{
 			lock_block<mt_policy> lock(this);
@@ -1460,7 +1460,7 @@ namespace sigslot {
 			m_connected_slots.erase(m_connected_slots.begin(), m_connected_slots.end());
 		}
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 			bool connected(has_slots<mt_policy>* pclass)
 		{
 			lock_block<mt_policy> lock(this);
@@ -1593,7 +1593,7 @@ namespace sigslot {
 			m_connected_slots.erase(m_connected_slots.begin(), m_connected_slots.end());
 		}
 
-#ifdef _DEBUG
+#if !defined(NDEBUG)
 			bool connected(has_slots<mt_policy>* pclass)
 		{
 			lock_block<mt_policy> lock(this);
