@@ -273,6 +273,7 @@ WONTFIX : LayoutTests/platform/mac-leopard = FAIL PASS
 WONTFIX : LayoutTests/platform/mac-tiger = FAIL PASS
 WONTFIX : LayoutTests/platform/qt = FAIL PASS
 WONTFIX SKIP : LayoutTests/plugins/qt-qwidget-plugin.html = FAIL
+WONTFIX SKIP : LayoutTests/platform/mac/fast/text/international/Geeza-Pro-vertical-metrics-adjustment.html = PASS
 
 WONTFIX LINUX MAC : LayoutTests/platform/win = FAIL PASS
 
@@ -2203,8 +2204,6 @@ BUG10458 MAC : LayoutTests/fast/dom/java-applet-calls.html = FAIL
 // Just need rebaseline
 BUG10458 LINUX : LayoutTests/fast/forms/textarea-width.html = FAIL
 
-// Missing expected results
-BUG10461 SKIP : LayoutTests/platform/mac/fast/text/international/Geeza-Pro-vertical-metrics-adjustment.html = PASS
 
 // New failures from merge
 BUG27486 WIN : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
