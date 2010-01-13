@@ -90,7 +90,6 @@ class DevToolsWindow
   TabContents* inspected_tab_;
   TabContents* tab_contents_;
   Browser* browser_;
-  BrowserWindow* inspected_window_;
   bool docked_;
   bool is_loaded_;
   bool open_console_on_load_;

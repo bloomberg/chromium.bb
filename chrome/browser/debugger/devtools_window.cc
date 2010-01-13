@@ -53,7 +53,6 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
                                bool docked)
     : profile_(profile),
       browser_(NULL),
-      inspected_window_(NULL),
       docked_(docked),
       is_loaded_(false),
       open_console_on_load_(false) {
@@ -96,7 +95,10 @@ void DevToolsWindow::SendMessageToClient(const IPC::Message& message) {
 void DevToolsWindow::InspectedTabClosing() {
   if (docked_) {
     // Update dev tools to reflect removed dev tools window.
-    inspected_window_->UpdateDevTools();
+
+    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+    if (inspected_window)
+      inspected_window->UpdateDevTools();
     // In case of docked tab_contents we own it, so delete here.
     delete tab_contents_;
 
@@ -114,10 +116,10 @@ void DevToolsWindow::InspectedTabClosing() {
 void DevToolsWindow::Show(bool open_console) {
   if (docked_) {
     // Just tell inspected browser to update splitter.
-    inspected_window_ = GetInspectedBrowserWindow();
-    if (inspected_window_) {
+    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+    if (inspected_window) {
       tab_contents_->set_delegate(this);
-      inspected_window_->UpdateDevTools();
+      inspected_window->UpdateDevTools();
       tab_contents_->view()->SetInitialFocus();
       return;
     } else {
@@ -146,7 +148,9 @@ void DevToolsWindow::Activate() {
       browser_->window()->Activate();
     }
   } else {
-    inspected_window_->FocusDevTools();
+    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+    if (inspected_window)
+      inspected_window->FocusDevTools();
   }
 }
 
@@ -165,8 +169,11 @@ void DevToolsWindow::SetDocked(bool docked) {
     browser_ = NULL;
   } else {
     // Update inspected window to hide split and reset it.
-    inspected_window_->UpdateDevTools();
-    inspected_window_ = NULL;
+    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+    if (inspected_window) {
+      inspected_window->UpdateDevTools();
+      inspected_window = NULL;
+    }
   }
   Show(false);
 }
@@ -250,14 +257,19 @@ void DevToolsWindow::OpenConsole() {
 
 bool DevToolsWindow::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
-  if (docked_ && inspected_window_) {
-    return inspected_window_->PreHandleKeyboardEvent(
-        event, is_keyboard_shortcut);
+  if (docked_) {
+    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+    if (inspected_window)
+      return inspected_window->PreHandleKeyboardEvent(
+          event, is_keyboard_shortcut);
   }
   return false;
 }
 
 void DevToolsWindow::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  if (docked_ && inspected_window_)
-    inspected_window_->HandleKeyboardEvent(event);
+  if (docked_) {
+    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+    if (inspected_window)
+      inspected_window->HandleKeyboardEvent(event);
+  }
 }
