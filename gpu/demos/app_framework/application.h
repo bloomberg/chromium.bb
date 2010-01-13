@@ -9,6 +9,7 @@
 
 #include "base/at_exit.h"
 #include "base/message_loop.h"
+#include "base/time.h"
 
 #include "gpu/demos/app_framework/platform.h"
 
@@ -36,7 +37,13 @@ class Application {
 
   bool InitRenderContext();
 
-  virtual void Draw() = 0;
+  // The framework calls this function for the derived classes to do custom
+  // rendering. There is no default implementation. It must be defined by the
+  // derived classes. The elapsed_sec param represents the time elapsed
+  // (in seconds) after Draw was called the last time. It can be used to
+  // make the application frame-rate independent. It is 0.0f for the
+  // first draw call.
+  virtual void Draw(float elapsed_sec) = 0;
 
  private:
   // Creates a native on-screen window.
@@ -45,6 +52,9 @@ class Application {
   int width_;
   int height_;
   NativeWindowHandle window_handle_;
+
+  // Time at which draw was called last.
+  base::Time last_draw_time_;
 
   // The following two variables are just needed to satisfy
   // the assumption that we are running inside a browser.

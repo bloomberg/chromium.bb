@@ -19,7 +19,7 @@ class HelloTriangle : public Application {
   bool Init();
 
  protected:
-  virtual void Draw();
+  virtual void Draw(float);
 
  private:
   ESContext context_;
@@ -49,7 +49,7 @@ bool HelloTriangle::Init() {
   return true;
 }
 
-void HelloTriangle::Draw() {
+void HelloTriangle::Draw(float) {
   htDraw(&context_);
 }
 }  // namespace gpu_demos

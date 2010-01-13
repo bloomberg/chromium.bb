@@ -74,7 +74,15 @@ void Application::MainLoop() {
 }
 
 void Application::OnPaint() {
-  Draw();
+  float elapsed_sec = 0.0f;
+  const base::Time current_time = base::Time::Now();
+  if (!last_draw_time_.is_null()) {
+    base::TimeDelta time_delta = current_time - last_draw_time_;
+    elapsed_sec = static_cast<float>(time_delta.InSecondsF());
+  }
+  last_draw_time_ = current_time;
+
+  Draw(elapsed_sec);
   gles2::GetGLContext()->SwapBuffers();
 }
 

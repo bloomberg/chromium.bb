@@ -19,7 +19,7 @@ class SimpleVertexShader : public Application {
   bool Init();
 
  protected:
-  virtual void Draw();
+  virtual void Draw(float elapsed_sec);
 
  private:
   ESContext context_;
@@ -45,12 +45,13 @@ bool SimpleVertexShader::Init() {
   context_.width = width();
   context_.height = height();
   if (!svsInit(&context_)) return false;
-  svsUpdate(&context_, 0.0f);
 
   return true;
 }
 
-void SimpleVertexShader::Draw() {
+void SimpleVertexShader::Draw(float elapsed_sec) {
+  svsUpdate(&context_, elapsed_sec);
+
   svsDraw(&context_);
 }
 }  // namespace gpu_demos
