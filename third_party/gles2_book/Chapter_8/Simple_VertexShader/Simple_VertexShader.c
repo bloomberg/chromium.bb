@@ -23,6 +23,10 @@
 int svsInit ( ESContext *esContext )
 {
    SVSUserData *userData = esContext->userData;
+   int numVertices = 24;
+   GLfloat *vertices = NULL;
+   GLushort *indices = NULL;
+
    GLbyte vShaderStr[] =  
       "uniform mat4 u_mvpMatrix;                   \n"
       "attribute vec4 a_position;                  \n"
@@ -41,6 +45,7 @@ int svsInit ( ESContext *esContext )
 
    // Load the shaders and get a linked program object
    userData->programObject = esLoadProgram ( vShaderStr, fShaderStr );
+   if ( userData->programObject == 0 ) return FALSE;
 
    // Get the attribute locations
    userData->positionLoc = glGetAttribLocation ( userData->programObject, "a_position" );
@@ -49,9 +54,17 @@ int svsInit ( ESContext *esContext )
    userData->mvpLoc = glGetUniformLocation( userData->programObject, "u_mvpMatrix" );
    
    // Generate the vertex data
-   userData->numIndices = esGenCube( 1.0, &userData->vertices,
-                                     NULL, NULL, &userData->indices );
-   
+   userData->numIndices = esGenCube( 1.0, &vertices, NULL, NULL, &indices );
+   glGenBuffers ( 2, userData->vboIds );
+   glBindBuffer ( GL_ARRAY_BUFFER, userData->vboIds[0] );
+   glBufferData ( GL_ARRAY_BUFFER, 3 * numVertices * sizeof(GLfloat),
+                  vertices, GL_STATIC_DRAW );
+   glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, userData->vboIds[1] );
+   glBufferData ( GL_ELEMENT_ARRAY_BUFFER, userData->numIndices * sizeof(GL_UNSIGNED_SHORT),
+                  indices, GL_STATIC_DRAW );
+   if ( vertices != NULL ) free ( vertices );
+   if ( indices != NULL ) free ( indices );
+
    // Starting rotation angle for the cube
    userData->angle = 45.0f;
 
@@ -105,7 +118,6 @@ void svsDraw ( ESContext *esContext )
    // Set the viewport
    glViewport ( 0, 0, esContext->width, esContext->height );
    
-   
    // Clear the color buffer
    glClear ( GL_COLOR_BUFFER_BIT );
 
@@ -113,17 +125,15 @@ void svsDraw ( ESContext *esContext )
    glUseProgram ( userData->programObject );
 
    // Load the vertex position
-   glVertexAttribPointer ( userData->positionLoc, 3, GL_FLOAT, 
-                           GL_FALSE, 3 * sizeof(GLfloat), userData->vertices );
-   
    glEnableVertexAttribArray ( userData->positionLoc );
-   
-   
+   glVertexAttribPointer ( userData->positionLoc, 3, GL_FLOAT, 
+                           GL_FALSE, 3 * sizeof(GLfloat), 0 );
+
    // Load the MVP matrix
    glUniformMatrix4fv( userData->mvpLoc, 1, GL_FALSE, (GLfloat*) &userData->mvpMatrix.m[0][0] );
    
    // Draw the cube
-   glDrawElements ( GL_TRIANGLES, userData->numIndices, GL_UNSIGNED_INT, userData->indices );
+   glDrawElements ( GL_TRIANGLES, userData->numIndices, GL_UNSIGNED_SHORT, 0 );
 
    // TODO(alokp): glFlush should not be necessary with SwapBuffers.
    glFlush();
@@ -136,15 +146,8 @@ void svsShutDown ( ESContext *esContext )
 {
    SVSUserData *userData = esContext->userData;
 
-   if ( userData->vertices != NULL )
-   {
-      free ( userData->vertices );
-   }
-
-   if ( userData->indices != NULL )
-   {
-      free ( userData->indices );
-   }
+   // Delete program object
+   glDeleteBuffers ( 2, userData->vboIds );
 
    // Delete program object
    glDeleteProgram ( userData->programObject );

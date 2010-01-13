@@ -34,6 +34,17 @@
         'hello_triangle/main.cc',
       ],
     },
+    {
+      'target_name': 'simple_vertex_shader',
+      'type': 'executable',
+      'dependencies': [
+        'app_framework',
+        '../../third_party/gles2_book/gles2_book.gyp:simple_vertex_shader',
+      ],
+      'sources': [
+        'simple_vertex_shader/main.cc',
+      ],
+    },
   ]
 }
 

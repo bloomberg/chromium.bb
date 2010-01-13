@@ -28,10 +28,9 @@ typedef struct
    // Uniform locations
    GLint  mvpLoc;
    
-   // Vertex daata
-   GLfloat  *vertices;
-   GLuint   *indices;
-   int       numIndices;
+   // Vertex data
+   int    numIndices;
+   GLuint vboIds[2];
 
    // Rotation angle
    GLfloat   angle;

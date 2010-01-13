@@ -52,7 +52,7 @@
 ///         if it is not NULL ) as a GL_TRIANGLE_STRIP
 //
 int esGenSphere ( int numSlices, float radius, GLfloat **vertices, GLfloat **normals, 
-                  GLfloat **texCoords, GLuint **indices )
+                  GLfloat **texCoords, GLushort **indices )
 {
    int i;
    int j;
@@ -72,7 +72,7 @@ int esGenSphere ( int numSlices, float radius, GLfloat **vertices, GLfloat **nor
       *texCoords = malloc ( sizeof(GLfloat) * 2 * numVertices );
 
    if ( indices != NULL )
-      *indices = malloc ( sizeof(GLuint) * numIndices );
+      *indices = malloc ( sizeof(GLushort) * numIndices );
 
    for ( i = 0; i < numParallels + 1; i++ )
    {
@@ -108,7 +108,7 @@ int esGenSphere ( int numSlices, float radius, GLfloat **vertices, GLfloat **nor
    // Generate the indices
    if ( indices != NULL )
    {
-      GLuint *indexBuf = (*indices);
+      GLushort *indexBuf = (*indices);
       for ( i = 0; i < numParallels ; i++ ) 
       {
          for ( j = 0; j < numSlices; j++ )
@@ -139,7 +139,7 @@ int esGenSphere ( int numSlices, float radius, GLfloat **vertices, GLfloat **nor
 ///         if it is not NULL ) as a GL_TRIANGLE_STRIP
 //
 int esGenCube ( float scale, GLfloat **vertices, GLfloat **normals, 
-                GLfloat **texCoords, GLuint **indices )
+                GLfloat **texCoords, GLushort **indices )
 {
    int i;
    int numVertices = 24;
@@ -256,7 +256,7 @@ int esGenCube ( float scale, GLfloat **vertices, GLfloat **normals,
    // Generate the indices
    if ( indices != NULL )
    {
-      GLuint cubeIndices[] =
+      GLushort cubeIndices[] =
       {
          0, 2, 1,
          0, 3, 2, 
@@ -272,7 +272,7 @@ int esGenCube ( float scale, GLfloat **vertices, GLfloat **normals,
          20, 22, 21
       };
 
-      *indices = malloc ( sizeof(GLuint) * numIndices );
+      *indices = malloc ( sizeof(GLushort) * numIndices );
       memcpy( *indices, cubeIndices, sizeof( cubeIndices ) );
    }
 

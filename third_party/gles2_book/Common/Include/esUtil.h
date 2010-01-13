@@ -95,7 +95,7 @@ extern GLuint esLoadProgram ( const char *vertShaderSrc, const char *fragShaderS
 ///         if it is not NULL ) as a GL_TRIANGLE_STRIP
 //
 extern int esGenSphere ( int numSlices, float radius, GLfloat **vertices, GLfloat **normals, 
-                         GLfloat **texCoords, GLuint **indices );
+                         GLfloat **texCoords, GLushort **indices );
 
 //
 /// \brief Generates geometry for a cube.  Allocates memory for the vertex data and stores 
@@ -109,7 +109,7 @@ extern int esGenSphere ( int numSlices, float radius, GLfloat **vertices, GLfloa
 ///         if it is not NULL ) as a GL_TRIANGLES
 //
 extern int esGenCube ( float scale, GLfloat **vertices, GLfloat **normals, 
-                       GLfloat **texCoords, GLuint **indices );
+                       GLfloat **texCoords, GLushort **indices );
 
 //
 /// \brief Loads a 24-bit TGA image from a file
