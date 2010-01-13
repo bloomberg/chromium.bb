@@ -40,7 +40,9 @@ enum InstallStatus {
   EULA_ACCEPTED,         // EULA dialog was accepted by user.
   EULA_ACCEPTED_OPT_IN,  // EULA accepted wtih the crash optin selected.
   INSTALL_DIR_IN_USE,    // Installation directory is in use by another process
-  UNINSTALL_REQUIRES_REBOOT // Uninstallation required a reboot.
+  UNINSTALL_REQUIRES_REBOOT, // Uninstallation required a reboot.
+  IN_USE_UPDATED,        // Chrome successfully updated but old version running
+  SAME_VERSION_REPAIR_FAILED // Chrome repair failed as Chrome was running
 };
 
 namespace switches {

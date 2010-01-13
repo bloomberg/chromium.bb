@@ -260,7 +260,9 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
 
         int install_msg_base = IDS_INSTALL_FAILED_BASE;
         std::wstring chrome_exe;
-        if (install_status != installer_util::INSTALL_FAILED) {
+        if (install_status == installer_util::SAME_VERSION_REPAIR_FAILED) {
+            install_msg_base = IDS_SAME_VERSION_REPAIR_FAILED_BASE;
+        } else if (install_status != installer_util::INSTALL_FAILED) {
           chrome_exe = installer::GetChromeInstallPath(system_level);
           if (chrome_exe.empty()) {
             // If we failed to construct install path, it means the OS call to
@@ -278,7 +280,8 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
         installer_util::GetDistroBooleanPreference(prefs,
             installer_util::master_preferences::kDoNotRegisterForUpdateLaunch,
             &value);
-        bool write_chrome_launch_string = !value;
+        bool write_chrome_launch_string = (!value) &&
+            (install_status != installer_util::IN_USE_UPDATED);
 
         InstallUtil::WriteInstallerResult(system_level, install_status,
             install_msg_base, write_chrome_launch_string ? &chrome_exe : NULL);
@@ -292,7 +295,8 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
               &do_not_launch_chrome);
           if (!system_level && !do_not_launch_chrome)
             installer::LaunchChrome(system_level);
-        } else if (install_status == installer_util::NEW_VERSION_UPDATED) {
+        } else if ((install_status == installer_util::NEW_VERSION_UPDATED) || 
+                   (install_status == installer_util::IN_USE_UPDATED)) {
           installer_setup::RemoveLegacyRegistryKeys();
         }
       }

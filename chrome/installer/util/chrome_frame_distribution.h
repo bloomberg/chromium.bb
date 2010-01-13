@@ -43,8 +43,6 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   virtual std::wstring GetVersionKey();
 
-  virtual int GetInstallReturnCode(installer_util::InstallStatus status);
-
   // This is the point at which the Google Chrome installer removes the Google
   // Update ap value. We implement this simply to have the same behaviour re.
   // the ap value.

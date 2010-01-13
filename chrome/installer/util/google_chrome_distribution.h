@@ -57,9 +57,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   virtual std::wstring GetAppDescription();
 
-  virtual int GetInstallReturnCode(
-      installer_util::InstallStatus install_status);
-
   virtual std::string GetSafeBrowsingName();
 
   virtual std::wstring GetStateKey();

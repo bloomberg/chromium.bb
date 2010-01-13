@@ -78,8 +78,16 @@ std::wstring BrowserDistribution::GetLongAppDescription() {
 }
 
 int BrowserDistribution::GetInstallReturnCode(
-    installer_util::InstallStatus install_status) {
-  return install_status;
+    installer_util::InstallStatus status) {
+  switch (status) {
+    case installer_util::FIRST_INSTALL_SUCCESS:
+    case installer_util::INSTALL_REPAIRED:
+    case installer_util::NEW_VERSION_UPDATED:
+    case installer_util::IN_USE_UPDATED:
+      return 0;
+    default:
+      return status;
+  }
 }
 
 std::string BrowserDistribution::GetSafeBrowsingName() {

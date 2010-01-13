@@ -444,7 +444,6 @@ void RegisterChromeOnMachine(const std::wstring& install_path,
 }
 
 // This function installs a new version of Chrome to the specified location.
-// It returns true if install was successful and false in case of an error.
 //
 // exe_path: Path to the executable (setup.exe) as it will be copied
 //           to Chrome install folder after install is complete
@@ -468,16 +467,17 @@ void RegisterChromeOnMachine(const std::wstring& install_path,
 // install_path. If install_path does not exist before calling the function
 // (typical new install), the function creates install_path during install
 // and removes the whole directory during rollback.
-bool InstallNewVersion(const std::wstring& exe_path,
-                       const std::wstring& archive_path,
-                       const std::wstring& src_path,
-                       const std::wstring& install_path,
-                       const std::wstring& temp_dir,
-                       const HKEY reg_root,
-                       const installer::Version& new_version,
-                       std::wstring* current_version) {
+installer_util::InstallStatus InstallNewVersion(
+    const std::wstring& exe_path,
+    const std::wstring& archive_path,
+    const std::wstring& src_path,
+    const std::wstring& install_path,
+    const std::wstring& temp_dir,
+    const HKEY reg_root,
+    const installer::Version& new_version,
+    std::wstring* current_version) {
   if (reg_root != HKEY_LOCAL_MACHINE && reg_root != HKEY_CURRENT_USER)
-    return false;
+    return installer_util::INSTALL_FAILED;
 
   if (InstallUtil::IsChromeFrameProcess()) {
     // Make sure that we don't end up deleting installed files on next reboot.
@@ -490,20 +490,6 @@ bool InstallNewVersion(const std::wstring& exe_path,
   // A temp directory that work items need and the actual install directory.
   install_list->AddCreateDirWorkItem(FilePath::FromWStringHack(temp_dir));
   install_list->AddCreateDirWorkItem(FilePath::FromWStringHack(install_path));
-
-  // If it is system level install copy the version folder (since we want to
-  // take the permissions of %ProgramFiles% folder) otherwise just move it.
-  if (reg_root == HKEY_LOCAL_MACHINE) {
-    install_list->AddCopyTreeWorkItem(
-        AppendPath(src_path, new_version.GetString()),
-        AppendPath(install_path, new_version.GetString()),
-        temp_dir, WorkItem::ALWAYS);
-  } else {
-    install_list->AddMoveTreeWorkItem(
-        AppendPath(src_path, new_version.GetString()),
-        AppendPath(install_path, new_version.GetString()),
-        temp_dir);
-  }
 
   // Delete any new_chrome.exe if present (we will end up creating a new one
   // if required) and then copy chrome.exe
@@ -529,6 +515,20 @@ bool InstallNewVersion(const std::wstring& exe_path,
         AppendPath(src_path, installer::kWowHelperExe),
         AppendPath(install_path, installer::kWowHelperExe),
         temp_dir, WorkItem::ALWAYS);
+  }
+
+  // If it is system level install copy the version folder (since we want to
+  // take the permissions of %ProgramFiles% folder) otherwise just move it.
+  if (reg_root == HKEY_LOCAL_MACHINE) {
+    install_list->AddCopyTreeWorkItem(
+        AppendPath(src_path, new_version.GetString()),
+        AppendPath(install_path, new_version.GetString()),
+        temp_dir, WorkItem::ALWAYS);
+  } else {
+    install_list->AddMoveTreeWorkItem(
+        AppendPath(src_path, new_version.GetString()),
+        AppendPath(install_path, new_version.GetString()),
+        temp_dir);
   }
 
   // Copy the default Dictionaries only if the folder doesnt exist already
@@ -563,16 +563,44 @@ bool InstallNewVersion(const std::wstring& exe_path,
                                        new_version.GetString(),
                                        true);    // overwrite version
 
+  installer_util::InstallStatus result = installer_util::INSTALL_FAILED;
   if (!install_list->Do() ||
       !DoPostInstallTasks(reg_root, exe_path, install_path,
                           new_chrome_exe, *current_version, new_version)) {
+    if (file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe)) &&
+        !current_version->empty() &&
+        (new_version.GetString() == *current_version))
+      result = installer_util::SAME_VERSION_REPAIR_FAILED;
     LOG(ERROR) << "Install failed, rolling back... ";
     install_list->Rollback();
     LOG(ERROR) << "Rollback complete. ";
-    return false;
+  } else {
+    scoped_ptr<installer::Version> installed_version;
+    if (!current_version->empty())
+      installed_version.reset(
+          installer::Version::GetVersionFromString(*current_version));
+    if (!installed_version.get()) {
+      LOG(INFO) << "First install of version " << new_version.GetString();
+      result = installer_util::FIRST_INSTALL_SUCCESS;
+    } else if (new_version.GetString() == installed_version->GetString()) {
+      LOG(INFO) << "Install repaired of version " << new_version.GetString();
+      result = installer_util::INSTALL_REPAIRED;
+    } else if (new_version.IsHigherThan(installed_version.get())) {
+      if (file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe))) {
+        LOG(INFO) << "Version updated to " << new_version.GetString()
+                  << " while running " << installed_version->GetString();
+        result = installer_util::IN_USE_UPDATED;
+      } else {
+        LOG(INFO) << "Version updated to " << new_version.GetString();
+        result = installer_util::NEW_VERSION_UPDATED;
+      }
+    } else {
+      LOG(ERROR) << "Not sure how we got here while updating"
+                 << ", new version: " << new_version.GetString()
+                 << ", old version: " << installed_version->GetString();
+    }
   }
-
-  return true;
+  return result;
 }
 
 }  // namespace
@@ -607,33 +635,14 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
 
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   std::wstring current_version;
-  bool install_success = InstallNewVersion(exe_path, archive_path, src_path,
-      install_path, install_temp_path, reg_root, new_version, &current_version);
+  installer_util::InstallStatus result = InstallNewVersion(exe_path,
+      archive_path, src_path, install_path, install_temp_path, reg_root,
+      new_version, &current_version);
 
-  installer_util::InstallStatus result;
-  if (!install_success) {
-    LOG(ERROR) << "Install failed.";
-    result = installer_util::INSTALL_FAILED;
-  } else {
-    if (!installed_version) {
-      LOG(INFO) << "First install of version " << new_version.GetString();
-      result = installer_util::FIRST_INSTALL_SUCCESS;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (!dist->GetInstallReturnCode(result)) {
+    if (result == installer_util::FIRST_INSTALL_SUCCESS)
       CopyPreferenceFileForFirstRun(system_install, prefs_path);
-    } else if (new_version.GetString() == installed_version->GetString()) {
-      LOG(INFO) << "Install repaired of version " << new_version.GetString();
-      result = installer_util::INSTALL_REPAIRED;
-    } else if (new_version.IsHigherThan(installed_version)) {
-      LOG(INFO) << "Version updated to " << new_version.GetString();
-      result = installer_util::NEW_VERSION_UPDATED;
-    } else {
-      LOG(ERROR) << "Not sure how we got here."
-                 << " New version: " << new_version.GetString()
-                 << ", installed version: " << installed_version->GetString();
-      // This should never happen but we are seeing some inconsistent exit
-      // code reports in Omaha logs. We will treat this case as update to
-      // see if the inconsistency goes away.
-      result = installer_util::NEW_VERSION_UPDATED;
-    }
 
     bool value = false;
     if (!installer_util::GetDistroBooleanPreference(prefs,

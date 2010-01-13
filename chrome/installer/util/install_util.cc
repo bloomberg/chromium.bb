@@ -110,7 +110,7 @@ void InstallUtil::WriteInstallerResult(bool system_install,
     install_list->AddSetRegValueWorkItem(root, key, L"InstallerResultUIString",
                                          msg, true);
   }
-  if (launch_cmd != NULL) {
+  if (launch_cmd != NULL && !launch_cmd->empty()) {
     install_list->AddSetRegValueWorkItem(root, key,
                                          L"InstallerSuccessLaunchCmdLine",
                                          *launch_cmd, true);
