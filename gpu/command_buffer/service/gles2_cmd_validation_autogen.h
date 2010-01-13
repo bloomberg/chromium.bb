@@ -30,6 +30,7 @@ bool ValidateGLenumHintTarget(GLenum value);
 bool ValidateGLenumHintMode(GLenum value);
 bool ValidateGLenumTextureFormat(GLenum value);
 bool ValidateGLenumStringType(GLenum value);
+bool ValidateGLintTextureBorder(GLenum value);
 bool ValidateGLenumFrameBufferTarget(GLenum value);
 bool ValidateGLbooleanFalse(GLenum value);
 bool ValidateGLintPixelStoreAlignment(GLenum value);

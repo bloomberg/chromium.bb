@@ -300,6 +300,15 @@ bool ValidateGLenumStringType(GLenum value) {
   }
 }
 
+bool ValidateGLintTextureBorder(GLenum value) {
+  switch (value) {
+    case 0:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool ValidateGLenumFrameBufferTarget(GLenum value) {
   switch (value) {
     case GL_FRAMEBUFFER:

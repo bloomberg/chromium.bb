@@ -100,11 +100,11 @@ const CommandInfo g_command_info[] = {
 namespace GLErrorBit {
 enum GLErrorBit {
   kNoError = 0,
-  kInvalidEnum,
-  kInvalidValue,
-  kInvalidOperation,
-  kOutOfMemory,
-  kInvalidFrameBufferOperation,
+  kInvalidEnum = (1 << 0),
+  kInvalidValue = (1 << 1),
+  kInvalidOperation = (1 << 2),
+  kOutOfMemory = (1 << 3),
+  kInvalidFrameBufferOperation = (1 << 4),
 };
 }
 
@@ -164,7 +164,10 @@ GLES2Decoder::GLES2Decoder()
 }
 
 // This class maps one set of ids to another.
-class IdMap {
+//
+// NOTE: To support shared resources an instance of this class will
+// need to be shared by multiple GLES2Decoders.
+class IdManager {
  public:
   // Maps a client_id to a service_id. Return false if the client_id or
   // service_id are already mapped to something else.
@@ -187,13 +190,13 @@ class IdMap {
   MapType id_map_;
 };
 
-bool IdMap::AddMapping(GLuint client_id, GLuint service_id) {
+bool IdManager::AddMapping(GLuint client_id, GLuint service_id) {
   std::pair<MapType::iterator, bool> result = id_map_.insert(
       std::make_pair(client_id, service_id));
   return result.second;
 }
 
-bool IdMap::RemoveMapping(GLuint client_id, GLuint service_id) {
+bool IdManager::RemoveMapping(GLuint client_id, GLuint service_id) {
   MapType::iterator iter = id_map_.find(client_id);
   if (iter != id_map_.end() && iter->second == service_id) {
     id_map_.erase(iter);
@@ -202,7 +205,7 @@ bool IdMap::RemoveMapping(GLuint client_id, GLuint service_id) {
   return false;
 }
 
-bool IdMap::GetServiceId(GLuint client_id, GLuint* service_id) {
+bool IdManager::GetServiceId(GLuint client_id, GLuint* service_id) {
   DCHECK(service_id);
   MapType::iterator iter = id_map_.find(client_id);
   if (iter != id_map_.end()) {
@@ -212,7 +215,7 @@ bool IdMap::GetServiceId(GLuint client_id, GLuint* service_id) {
   return false;
 }
 
-bool IdMap::GetClientId(GLuint service_id, GLuint* client_id) {
+bool IdManager::GetClientId(GLuint service_id, GLuint* client_id) {
   DCHECK(client_id);
   MapType::iterator end(id_map_.end());
   for (MapType::iterator iter(id_map_.begin());
@@ -224,6 +227,160 @@ bool IdMap::GetClientId(GLuint service_id, GLuint* client_id) {
     }
   }
   return false;
+}
+
+// This class keeps track of the buffers and their sizes so we can do
+// bounds checking.
+//
+// NOTE: To support shared resources an instance of this class will need to be
+// shared by multiple GLES2Decoders.
+class BufferManager {
+ public:
+  // Info about Buffers currently in the system.
+  class BufferInfo {
+   public:
+    BufferInfo()
+        : size_(0) {
+    }
+
+    explicit BufferInfo(GLsizeiptr size)
+        : size_(size) {
+    }
+
+    GLsizeiptr size() const {
+      return size_;
+    }
+
+    // Returns the maximum value in the buffer for the given range
+    // interpreted as the given type.
+    GLuint GetMaxValueForRange(GLuint offset, GLsizei count, GLenum type);
+
+   private:
+    GLsizeiptr size_;
+  };
+
+  // Removes any buffers in the VertexAtrribInfos and BufferInfos. This is used
+  // on glDeleteBuffers so we can make sure the user does not try to render
+  // with deleted buffers.
+  void RemoveBufferInfo(GLuint buffer_id);
+
+  // Gets the buffer info for the given buffer.
+  BufferInfo* GetBufferInfo(GLuint buffer);
+
+  // Sets the info for a buffer.
+  void SetBufferInfo(GLuint buffer, GLsizeiptr size);
+
+ private:
+  // Info for each buffer in the system.
+  // TODO(gman): Choose a faster container.
+  typedef std::map<GLuint, BufferInfo> BufferInfoMap;
+  BufferInfoMap buffer_infos_;
+};
+
+BufferManager::BufferInfo* BufferManager::GetBufferInfo(
+    GLuint buffer) {
+  BufferInfoMap::iterator it = buffer_infos_.find(buffer);
+  return it != buffer_infos_.end() ? &it->second : NULL;
+}
+
+void BufferManager::SetBufferInfo(GLuint buffer, GLsizeiptr size) {
+  buffer_infos_[buffer] = BufferInfo(size);
+}
+
+void BufferManager::RemoveBufferInfo(GLuint buffer_id) {
+  buffer_infos_.erase(buffer_id);
+}
+
+GLuint BufferManager::BufferInfo::GetMaxValueForRange(
+    GLuint offset, GLsizei count, GLenum type) {
+  // TODO(gman): Scan the values in the given range and cache their results.
+  return 0u;
+}
+
+// Tracks the Programs.
+//
+// NOTE: To support shared resources an instance of this class will
+// need to be shared by multiple GLES2Decoders.
+class ProgramManager {
+ public:
+  // This is used to track which attributes a particular program needs
+  // so we can verify at glDrawXXX time that every attribute is either disabled
+  // or if enabled that it points to a valid source.
+  class ProgramInfo {
+   public:
+    typedef std::vector<GLuint> AttribLocationVector;
+
+    ProgramInfo() {
+    }
+
+    void SetNumAttributes(int num_attribs) {
+      attrib_locations_.resize(num_attribs);
+    }
+
+    void SetAttributeLocation(GLuint index, int location) {
+      DCHECK(index < attrib_locations_.size());
+      attrib_locations_[index] = location;
+    }
+
+    const AttribLocationVector& GetAttribLocations() const {
+      return attrib_locations_;
+    }
+   private:
+    AttribLocationVector attrib_locations_;
+  };
+
+  ProgramInfo* GetProgramInfo(GLuint program);
+
+  // Updates the program info for the given program.
+  void UpdateProgramInfo(GLuint program);
+
+  // Deletes the program info for the given program.
+  void RemoveProgramInfo(GLuint program);
+
+ private:
+  // Info for each "successfully linked" program by service side program Id.
+  // TODO(gman): Choose a faster container.
+  typedef std::map<GLuint, ProgramInfo> ProgramInfoMap;
+  ProgramInfoMap program_infos_;
+};
+
+ProgramManager::ProgramInfo* ProgramManager::GetProgramInfo(GLuint program) {
+  ProgramInfoMap::iterator it = program_infos_.find(program);
+  return it != program_infos_.end() ? &it->second : NULL;
+}
+
+void ProgramManager::UpdateProgramInfo(GLuint program) {
+  ProgramInfo* info = GetProgramInfo(program);
+  if (!info) {
+    std::pair<ProgramInfoMap::iterator, bool> result =
+        program_infos_.insert(std::make_pair(program, ProgramInfo()));
+    DCHECK(result.second);
+    info = &result.first->second;
+  }
+  GLint num_attribs = 0;
+  GLint max_len = 0;
+  glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &num_attribs);
+  info->SetNumAttributes(num_attribs);
+  glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
+  // TODO(gman): Should we check for error?
+  scoped_array<char> name_buffer(new char[max_len + 1]);
+  for (GLint ii = 0; ii < num_attribs; ++ii) {
+    GLsizei length;
+    GLsizei size;
+    GLenum type;
+    glGetActiveAttrib(
+        program, ii, max_len + 1, &length, &size, &type, name_buffer.get());
+    // TODO(gman): Should we check for error?
+    GLint location = glGetAttribLocation(program, name_buffer.get());
+    info->SetAttributeLocation(ii, location);
+  }
+}
+
+void ProgramManager::RemoveProgramInfo(GLuint program) {
+  ProgramInfoMap::iterator it = program_infos_.find(program);
+  if (it != program_infos_.end()) {
+    program_infos_.erase(it);
+  }
 }
 
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
@@ -266,9 +423,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
       if (offset_ > buffer_size || real_stride_ == 0) {
         num_elements_ = 0;
       } else {
-        uint32 size = buffer_size - offset_;
-        num_elements_ = size / real_stride_ +
-            (size % real_stride_ >= GetGLTypeSize(type_) ? 1 : 0);
+        uint32 usable_size = buffer_size - offset_;
+        num_elements_ = usable_size / real_stride_ +
+            ((usable_size % real_stride_) >=
+             (GetGLTypeSize(type_) * size_) ? 1 : 0);
       }
     }
 
@@ -314,45 +472,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
     // The number of elements that can be accessed.
     GLuint num_elements_;
-  };
-
-  // Info about Buffers currently in the system.
-  struct BufferInfo {
-    BufferInfo()
-        : size(0) {
-    }
-
-    explicit BufferInfo(GLsizeiptr _size)
-        : size(_size) {
-    }
-
-    GLsizeiptr size;
-  };
-
-  // This is used to track which attributes a particular program needs
-  // so we can verify at glDrawXXX time that every attribute is either disabled
-  // or if enabled that it points to a valid source.
-  class ProgramInfo {
-   public:
-    typedef std::vector<GLuint> AttribLocationVector;
-
-    ProgramInfo() {
-    }
-
-    void SetNumAttributes(int num_attribs) {
-      attrib_locations_.resize(num_attribs);
-    }
-
-    void SetAttributeLocation(GLuint index, int location) {
-      DCHECK(index < attrib_locations_.size());
-      attrib_locations_[index] = location;
-    }
-
-    const AttribLocationVector& GetAttribLocations() const {
-      return attrib_locations_;
-    }
-   private:
-    AttribLocationVector attrib_locations_;
   };
 
   GLES2DecoderImpl();
@@ -421,16 +540,24 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Gets the program info for the given program. Returns NULL if none exists.
   // Programs that have no had glLinkProgram succesfully called on them will
   // not exist.
-  ProgramInfo* GetProgramInfo(GLuint program);
+  ProgramManager::ProgramInfo* GetProgramInfo(GLuint program) {
+    return program_manager_->GetProgramInfo(program);
+  }
 
   // Updates the program info for the given program.
-  void UpdateProgramInfo(GLuint program);
+  void UpdateProgramInfo(GLuint program) {
+    program_manager_->UpdateProgramInfo(program);
+  }
 
   // Deletes the program info for the given program.
-  void RemoveProgramInfo(GLuint program);
+  void RemoveProgramInfo(GLuint program) {
+    program_manager_->RemoveProgramInfo(program);
+  }
 
   // Gets the buffer info for the given buffer.
-  const BufferInfo* GetBufferInfo(GLuint buffer);
+  BufferManager::BufferInfo* GetBufferInfo(GLuint buffer) {
+    return buffer_manager_->GetBufferInfo(buffer);
+  }
 
   // Sets the info for a buffer.
   void SetBufferInfo(GLuint buffer, GLsizeiptr size);
@@ -499,7 +626,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   uint32 error_bits_;
 
   // Map of client ids to GL ids.
-  IdMap id_map_;
+  scoped_ptr<IdManager> id_manager_;
 
   // Util to help with GL.
   GLES2Util util_;
@@ -525,18 +652,12 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // if it is safe to draw.
   scoped_array<VertexAttribInfo> vertex_attrib_infos_;
 
-  // Info for each buffer in the system.
-  // TODO(gman): Choose a faster container.
-  typedef std::map<GLuint, BufferInfo> BufferInfoMap;
-  BufferInfoMap buffer_infos_;
+  scoped_ptr<BufferManager> buffer_manager_;
 
-  // Info for each "successfully linked" program by service side program Id.
-  // TODO(gman): Choose a faster container.
-  typedef std::map<GLuint, ProgramInfo> ProgramInfoMap;
-  ProgramInfoMap program_infos_;
+  scoped_ptr<ProgramManager> program_manager_;
 
-  // The program in current use through glUseProgram.
-  ProgramInfo* current_program_info_;
+  // The program in use by glUseProgram
+  GLuint current_program_;
 
 #if defined(UNIT_TEST)
 #elif defined(OS_WIN)
@@ -562,7 +683,7 @@ GLES2DecoderImpl::GLES2DecoderImpl()
       bound_array_buffer_(0),
       bound_element_array_buffer_(0),
       max_vertex_attribs_(0),
-      current_program_info_(NULL),
+      current_program_(0),
 #if defined(UNIT_TEST)
 #elif defined(OS_WIN)
       device_context_(NULL),
@@ -572,6 +693,10 @@ GLES2DecoderImpl::GLES2DecoderImpl()
 }
 
 bool GLES2DecoderImpl::Initialize() {
+  id_manager_.reset(new IdManager());
+  buffer_manager_.reset(new BufferManager());
+  program_manager_.reset(new ProgramManager());
+
   if (!InitPlatformSpecific())
     return false;
   if (!InitGlew())
@@ -815,7 +940,7 @@ void GLDeleteTexturesHelper(
 uint32 GLES2DecoderImpl::GetServiceIdForTesting(uint32 client_id) {
 #if defined(UNIT_TEST)
   GLuint service_id;
-  bool result = id_map_.GetServiceId(client_id, &service_id);
+  bool result = id_manager_->GetServiceId(client_id, &service_id);
   return result ? service_id : 0u;
 #else
   DCHECK(false);
@@ -827,7 +952,7 @@ bool GLES2DecoderImpl::ValidateIdsAreUnused(
     GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
     GLuint service_id;
-    if (id_map_.GetServiceId(client_ids[ii], &service_id)) {
+    if (id_manager_->GetServiceId(client_ids[ii], &service_id)) {
       return false;
     }
   }
@@ -837,7 +962,7 @@ bool GLES2DecoderImpl::ValidateIdsAreUnused(
 bool GLES2DecoderImpl::RegisterObjects(
     GLsizei n, const GLuint* client_ids, const GLuint* service_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    if (!id_map_.AddMapping(client_ids[ii], service_ids[ii])) {
+    if (!id_manager_->AddMapping(client_ids[ii], service_ids[ii])) {
       NOTREACHED();
       return false;
     }
@@ -848,21 +973,12 @@ bool GLES2DecoderImpl::RegisterObjects(
 void GLES2DecoderImpl::UnregisterObjects(
     GLsizei n, const GLuint* client_ids, GLuint* service_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    if (id_map_.GetServiceId(client_ids[ii], &service_ids[ii])) {
-      id_map_.RemoveMapping(client_ids[ii], service_ids[ii]);
+    if (id_manager_->GetServiceId(client_ids[ii], &service_ids[ii])) {
+      id_manager_->RemoveMapping(client_ids[ii], service_ids[ii]);
     } else {
       service_ids[ii] = 0;
     }
   }
-}
-
-void GLES2DecoderImpl::RemoveBufferInfo(GLuint buffer_id) {
-  for (GLuint ii = 0; ii < max_vertex_attribs_; ++ii) {
-    if (vertex_attrib_infos_[ii].buffer() == buffer_id) {
-      vertex_attrib_infos_[ii].Clear();
-    }
-  }
-  buffer_infos_.erase(buffer_id);
 }
 
 bool GLES2DecoderImpl::InitPlatformSpecific() {
@@ -1030,7 +1146,7 @@ void GLES2DecoderImpl::CreateProgramHelper(GLuint client_id) {
   // TODO(gman): verify client_id is unused.
   GLuint service_id = glCreateProgram();
   if (service_id) {
-    id_map_.AddMapping(client_id, service_id);
+    id_manager_->AddMapping(client_id, service_id);
   }
 }
 
@@ -1038,7 +1154,7 @@ void GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
   // TODO(gman): verify client_id is unused.
   GLuint service_id = glCreateShader(type);
   if (service_id) {
-    id_map_.AddMapping(client_id, service_id);
+    id_manager_->AddMapping(client_id, service_id);
   }
 }
 
@@ -1079,12 +1195,12 @@ parse_error::ParseError GLES2DecoderImpl::HandleDeleteShader(
     uint32 immediate_data_size, const gles2::DeleteShader& c) {
   GLuint shader = c.shader;
   GLuint service_id;
-  if (!id_map_.GetServiceId(shader, &service_id)) {
+  if (!id_manager_->GetServiceId(shader, &service_id)) {
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
   glDeleteShader(service_id);
-  id_map_.RemoveMapping(shader, service_id);
+  id_manager_->RemoveMapping(shader, service_id);
   return parse_error::kParseNoError;
 }
 
@@ -1092,13 +1208,13 @@ parse_error::ParseError GLES2DecoderImpl::HandleDeleteProgram(
     uint32 immediate_data_size, const gles2::DeleteProgram& c) {
   GLuint program = c.program;
   GLuint service_id;
-  if (!id_map_.GetServiceId(program, &service_id)) {
+  if (!id_manager_->GetServiceId(program, &service_id)) {
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
-  RemoveProgramInfo(program);
+  RemoveProgramInfo(service_id);
   glDeleteProgram(service_id);
-  id_map_.RemoveMapping(program, service_id);
+  id_manager_->RemoveMapping(program, service_id);
   return parse_error::kParseNoError;
 }
 
@@ -1134,12 +1250,12 @@ void GLES2DecoderImpl::DoSwapBuffers() {
 }
 
 void GLES2DecoderImpl::DoUseProgram(GLuint program) {
-  ProgramInfo* info = GetProgramInfo(program);
+  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
   if (!info) {
     // Program was not linked successfully. (ie, glLinkProgram)
     SetGLError(GL_INVALID_OPERATION);
   } else {
-    current_program_info_ = info;
+    current_program_ = program;
     glUseProgram(program);
   }
 }
@@ -1174,17 +1290,12 @@ void GLES2DecoderImpl::CopyRealGLErrorsToWrapper() {
   }
 }
 
-const GLES2DecoderImpl::BufferInfo* GLES2DecoderImpl::GetBufferInfo(
-    GLuint buffer) {
-  BufferInfoMap::iterator it = buffer_infos_.find(buffer);
-  return it != buffer_infos_.end() ? &it->second : NULL;
-}
-
 void GLES2DecoderImpl::SetBufferInfo(GLuint buffer, GLsizeiptr size) {
-  buffer_infos_[buffer] = BufferInfo(size);
+  buffer_manager_->SetBufferInfo(buffer, size);
 
   // Also go through VertexAttribInfo and update any info that references
   // the same buffer.
+  // TODO(gman): This code needs to change for shared resources.
   for (GLuint ii = 0; ii < max_vertex_attribs_; ++ii) {
     if (vertex_attrib_infos_[ii].buffer() == buffer) {
       vertex_attrib_infos_[ii].SetBufferSize(size);
@@ -1192,47 +1303,14 @@ void GLES2DecoderImpl::SetBufferInfo(GLuint buffer, GLsizeiptr size) {
   }
 }
 
-GLES2DecoderImpl::ProgramInfo* GLES2DecoderImpl::GetProgramInfo(
-    GLuint program) {
-  ProgramInfoMap::iterator it = program_infos_.find(program);
-  return it != program_infos_.end() ? &it->second : NULL;
-}
-
-void GLES2DecoderImpl::UpdateProgramInfo(GLuint program) {
-  ProgramInfo* info = GetProgramInfo(program);
-  if (!info) {
-    std::pair<ProgramInfoMap::iterator, bool> result =
-        program_infos_.insert(std::make_pair(program, ProgramInfo()));
-    DCHECK(result.second);
-    info = &result.first->second;
-  }
-  GLint num_attribs = 0;
-  GLint max_len = 0;
-  glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &num_attribs);
-  info->SetNumAttributes(num_attribs);
-  glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
-  // TODO(gman): Should we check for error?
-  scoped_array<char> name_buffer(new char[max_len + 1]);
-  for (GLint ii = 0; ii < num_attribs; ++ii) {
-    GLsizei length;
-    GLsizei size;
-    GLenum type;
-    glGetActiveAttrib(
-        program, ii, max_len + 1, &length, &size, &type, name_buffer.get());
-    // TODO(gman): Should we check for error?
-    GLint location = glGetAttribLocation(program, name_buffer.get());
-    info->SetAttributeLocation(ii, location);
-  }
-}
-
-void GLES2DecoderImpl::RemoveProgramInfo(GLuint program) {
-  ProgramInfoMap::iterator it = program_infos_.find(program);
-  if (it != program_infos_.end()) {
-    if (current_program_info_ == &it->second) {
-      current_program_info_ = NULL;
+void GLES2DecoderImpl::RemoveBufferInfo(GLuint buffer_id) {
+  // TODO(gman): This code needs to change for shared resources.
+  for (GLuint ii = 0; ii < max_vertex_attribs_; ++ii) {
+    if (vertex_attrib_infos_[ii].buffer() == buffer_id) {
+      vertex_attrib_infos_[ii].Clear();
     }
-    program_infos_.erase(it);
   }
+  buffer_manager_->RemoveBufferInfo(buffer_id);
 }
 
 bool GLES2DecoderImpl::VertexAttribInfo::CanAccess(GLuint index) {
@@ -1240,15 +1318,22 @@ bool GLES2DecoderImpl::VertexAttribInfo::CanAccess(GLuint index) {
 }
 
 bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
-  if (current_program_info_) {
+  if (current_program_) {
+    ProgramManager::ProgramInfo* info = GetProgramInfo(current_program_);
+    if (!info) {
+      // The program does not exist.
+      SetGLError(GL_INVALID_OPERATION);
+      return false;
+    }
     // Validate that all attribs current program needs are setup correctly.
-    const ProgramInfo::AttribLocationVector& locations =
-        current_program_info_->GetAttribLocations();
+    const ProgramManager::ProgramInfo::AttribLocationVector& locations =
+        info->GetAttribLocations();
     for (size_t ii = 0; ii < locations.size(); ++ii) {
       GLuint location = locations[ii];
       DCHECK_LT(location, max_vertex_attribs_);
       if (!vertex_attrib_infos_[location].CanAccess(max_vertex_accessed)) {
         SetGLError(GL_INVALID_OPERATION);
+        return false;
       }
     }
     return true;
@@ -1264,19 +1349,39 @@ parse_error::ParseError GLES2DecoderImpl::HandleDrawElements(
     GLenum mode = c.mode;
     GLsizei count = c.count;
     GLenum type = c.type;
+    int32 offset = c.index_offset;
     if (!ValidateGLenumDrawMode(mode) ||
         !ValidateGLenumIndexType(type)) {
-      SetGLError(GL_INVALID_VALUE);
+      SetGLError(GL_INVALID_ENUM);
     } else {
-      const GLvoid* indices = reinterpret_cast<const GLvoid*>(c.index_offset);
-      // TODO(gman): Validate indices. Get maximum index.
-      //
-      // This value should be computed by walking the index buffer from 0 to
-      // count and finding the maximum vertex accessed.
-      // For now we'll special case 0 to not check.
-      GLuint max_vertex_accessed = 0;
-      if (IsDrawValid(max_vertex_accessed)) {
-        glDrawElements(mode, count, type, indices);
+      // TODO(gman): We could cache this lookup in glBindBuffer.
+      BufferManager::BufferInfo* info =
+          GetBufferInfo(bound_element_array_buffer_);
+      if (!info) {
+        SetGLError(GL_INVALID_OPERATION);
+      } else {
+        GLsizeiptr buffer_size = info->size();
+        if (offset > buffer_size) {
+          SetGLError(GL_INVALID_OPERATION);
+        } else {
+          GLsizei usable_size = buffer_size - offset;
+          GLsizei num_elements = usable_size / GetGLTypeSize(type);
+          if (count > num_elements) {
+            SetGLError(GL_INVALID_OPERATION);
+          } else {
+            const GLvoid* indices = reinterpret_cast<const GLvoid*>(offset);
+            // TODO(gman): Validate indices. Get maximum index.
+            //
+            // This value should be computed by walking the index buffer from 0
+            // to count and finding the maximum vertex accessed. For now we'll
+            // pass 0 so it should always pass.
+            GLuint max_vertex_accessed = info->GetMaxValueForRange(
+                offset, count, type);
+            if (IsDrawValid(max_vertex_accessed)) {
+              glDrawElements(mode, count, type, indices);
+            }
+          }
+        }
       }
     }
   } else {
@@ -1319,7 +1424,7 @@ parse_error::ParseError ShaderSourceHelper(
 parse_error::ParseError GLES2DecoderImpl::HandleShaderSource(
     uint32 immediate_data_size, const gles2::ShaderSource& c) {
   GLuint shader;
-  if (!id_map_.GetServiceId(c.shader, &shader)) {
+  if (!id_manager_->GetServiceId(c.shader, &shader)) {
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
@@ -1337,7 +1442,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleShaderSource(
 parse_error::ParseError GLES2DecoderImpl::HandleShaderSourceImmediate(
   uint32 immediate_data_size, const gles2::ShaderSourceImmediate& c) {
   GLuint shader;
-  if (!id_map_.GetServiceId(c.shader, &shader)) {
+  if (!id_manager_->GetServiceId(c.shader, &shader)) {
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
@@ -1369,7 +1474,8 @@ parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
       SetGLError(GL_INVALID_VALUE);
       return parse_error::kParseNoError;
     }
-    const BufferInfo* buffer_info = GetBufferInfo(bound_array_buffer_);
+    const BufferManager::BufferInfo* buffer_info =
+        GetBufferInfo(bound_array_buffer_);
     GLsizei component_size = GetGLTypeSize(type);
     GLsizei real_stride = stride != 0 ? stride : component_size * size;
     if (offset % component_size > 0) {
@@ -1378,7 +1484,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
     }
     vertex_attrib_infos_[indx].SetInfo(
         bound_array_buffer_,
-        buffer_info ? buffer_info->size : 0,
+        buffer_info ? buffer_info->size() : 0,
         size,
         type,
         real_stride,
@@ -1442,7 +1548,7 @@ parse_error::ParseError GLES2DecoderImpl::HandlePixelStorei(
 parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocation(
     uint32 immediate_data_size, const gles2::GetAttribLocation& c) {
   GLuint program;
-  if (!id_map_.GetServiceId(c.program, &program)) {
+  if (!id_manager_->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
@@ -1462,7 +1568,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocation(
 parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocationImmediate(
     uint32 immediate_data_size, const gles2::GetAttribLocationImmediate& c) {
   GLuint program;
-  if (!id_map_.GetServiceId(c.program, &program)) {
+  if (!id_manager_->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
@@ -1482,7 +1588,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocationImmediate(
 parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocation(
     uint32 immediate_data_size, const gles2::GetUniformLocation& c) {
   GLuint program;
-  if (!id_map_.GetServiceId(c.program, &program)) {
+  if (!id_manager_->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }
@@ -1502,7 +1608,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocation(
 parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocationImmediate(
     uint32 immediate_data_size, const gles2::GetUniformLocationImmediate& c) {
   GLuint program;
-  if (!id_map_.GetServiceId(c.program, &program)) {
+  if (!id_manager_->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return parse_error::kParseNoError;
   }

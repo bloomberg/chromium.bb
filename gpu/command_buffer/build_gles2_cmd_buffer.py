@@ -137,7 +137,7 @@ GL_APICALL void         GL_APIENTRY glStencilMask (GLuint mask);
 GL_APICALL void         GL_APIENTRY glStencilMaskSeparate (GLenumFaceType face, GLuint mask);
 GL_APICALL void         GL_APIENTRY glStencilOp (GLenumStencilOp fail, GLenumStencilOp zfail, GLenumStencilOp zpass);
 GL_APICALL void         GL_APIENTRY glStencilOpSeparate (GLenumFaceType face, GLenumStencilOp fail, GLenumStencilOp zfail, GLenumStencilOp zpass);
-GL_APICALL void         GL_APIENTRY glTexImage2D (GLenumTextureTarget target, GLint level, GLintTextureFormat internalformat, GLsizei width, GLsizei height, GLint border, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
+GL_APICALL void         GL_APIENTRY glTexImage2D (GLenumTextureTarget target, GLint level, GLintTextureFormat internalformat, GLsizei width, GLsizei height, GLintTextureBorder border, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
 GL_APICALL void         GL_APIENTRY glTexParameterf (GLenumTextureBindTarget target, GLenumTextureParameter pname, GLfloat param);
 GL_APICALL void         GL_APIENTRY glTexParameterfv (GLenumTextureBindTarget target, GLenumTextureParameter pname, const GLfloat* params);
 GL_APICALL void         GL_APIENTRY glTexParameteri (GLenumTextureBindTarget target, GLenumTextureParameter pname, GLint param);
@@ -782,6 +782,15 @@ _ENUM_LISTS = {
     ],
     'invalid': [
       'GL_DOUBLE',
+    ],
+  },
+  'TextureBorder': {
+    'type': 'GLint',
+    'valid': [
+      '0',
+    ],
+    'invalid': [
+      '1',
     ],
   },
   'VertexAttribSize': {
@@ -3305,7 +3314,7 @@ class ResourceIdArgument(Argument):
   def WriteGetCode(self, file):
     """Overridden from Argument."""
     file.Write("  %s %s;\n" % (self.type, self.name))
-    file.Write("  if (!id_map_.GetServiceId(c.%s, &%s)) {\n" %
+    file.Write("  if (!id_manager_->GetServiceId(c.%s, &%s)) {\n" %
                (self.name, self.name))
     file.Write("    SetGLError(GL_INVALID_VALUE);\n")
     file.Write("    return parse_error::kParseNoError;\n")
