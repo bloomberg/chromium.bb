@@ -441,7 +441,7 @@ void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
-  return addr & ~(uintptr_t)((1 << nap->bundle_size) - 1);
+  return addr & ~(((uintptr_t) nap->bundle_size) - 1);
 }
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
