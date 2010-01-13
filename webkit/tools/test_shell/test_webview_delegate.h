@@ -45,6 +45,10 @@ class GURL;
 class TestShell;
 class WebWidgetHost;
 
+namespace WebKit {
+class WebStorageNamespace;
+}
+
 class TestWebViewDelegate : public WebKit::WebViewClient,
                             public WebKit::WebFrameClient,
                             public webkit_glue::WebPluginPageDelegate,
@@ -71,6 +75,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual WebKit::WebWidget* createPopupMenu(bool activatable);
   virtual WebKit::WebWidget* createPopupMenu(
       const WebKit::WebPopupMenuInfo& info);
+  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name, unsigned source_line);

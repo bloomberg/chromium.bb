@@ -31,6 +31,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
@@ -86,6 +87,7 @@ using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSize;
+using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
 using WebKit::WebTextDirection;
@@ -299,6 +301,10 @@ WebWidget* TestWebViewDelegate::createPopupMenu(
     bool activatable) {
   // TODO(darin): Should we honor activatable?
   return shell_->CreatePopupWidget();
+}
+
+WebStorageNamespace* TestWebViewDelegate::createSessionStorageNamespace() {
+  return WebKit::WebStorageNamespace::createSessionStorageNamespace();
 }
 
 void TestWebViewDelegate::didAddMessageToConsole(
