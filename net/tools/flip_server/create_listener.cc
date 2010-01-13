@@ -64,14 +64,14 @@ bool CloseSocket(int *fd, int tries) {
 ////////////////////////////////////////////////////////////////////////////////
 
 // see header for documentation of this function.
-void CreateListeningSocket(const string& host,
-                           const string& port,
+void CreateListeningSocket(const std::string& host,
+                           const std::string& port,
                            bool is_numeric_host_address,
                            int backlog,
                            int * listen_fd,
                            bool reuseaddr,
                            bool reuseport,
-                           ostream* error_stream) {
+                           std::ostream* error_stream) {
   // start out by assuming things will fail.
   *listen_fd = -1;
 

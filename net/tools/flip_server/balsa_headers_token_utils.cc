@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/tools/flip_server/balsa_headers_token_utils.h"
-
-#include "strings/stringpiece_utils.h"
+#include "net/tools/flip_server/string_piece_utils.h"
 
 namespace net {
 
@@ -26,7 +25,7 @@ inline void BalsaHeadersTokenUtils::TokenizeHeaderLine(
 }
 
 void BalsaHeadersTokenUtils::RemoveLastTokenFromHeaderValue(
-    const StringPiece& key, BalsaHeaders* headers) {
+    const base::StringPiece& key, BalsaHeaders* headers) {
   BalsaHeaders::HeaderLines::iterator it =
       headers->GetHeaderLinesIterator(key, headers->header_lines_.begin());
   if (it == headers->header_lines_.end()) {
@@ -55,7 +54,7 @@ void BalsaHeadersTokenUtils::RemoveLastTokenFromHeaderValue(
     header_line->skip = true;  // remove the whole line
   } else {
     // Shrink the line size and leave the extra data in the buffer.
-    const StringPiece& new_last_token = tokens[tokens.size() - 2];
+    const base::StringPiece& new_last_token = tokens[tokens.size() - 2];
     const char* last_char_address =
         new_last_token.data() + new_last_token.size() - 1;
     const char* stream_begin = headers->GetPtr(header_line->buffer_base_idx);
@@ -66,8 +65,8 @@ void BalsaHeadersTokenUtils::RemoveLastTokenFromHeaderValue(
 
 bool BalsaHeadersTokenUtils::CheckHeaderForLastToken(
     const BalsaHeaders& headers,
-    const StringPiece& key,
-    const StringPiece& token) {
+    const base::StringPiece& key,
+    const base::StringPiece& token) {
   BalsaHeaders::const_header_lines_key_iterator it =
       headers.GetIteratorForKey(key);
   if (it == headers.header_lines_key_end())
@@ -92,7 +91,7 @@ bool BalsaHeadersTokenUtils::CheckHeaderForLastToken(
 
 void BalsaHeadersTokenUtils::TokenizeHeaderValue(
     const BalsaHeaders& headers,
-    const StringPiece& key,
+    const base::StringPiece& key,
     BalsaHeaders::HeaderTokenList* tokens) {
   CHECK(tokens);
   tokens->clear();
@@ -130,12 +129,12 @@ void BalsaHeadersTokenUtils::ParseTokenList(
       ++start;
       if (start == end) {
         if (nws != start) {
-          tokens->push_back(StringPiece(nws, start - nws));
+          tokens->push_back(base::StringPiece(nws, start - nws));
         }
         return;
       }
     }
-    tokens->push_back(StringPiece(nws, start - nws));
+    tokens->push_back(base::StringPiece(nws, start - nws));
   }
 }
 

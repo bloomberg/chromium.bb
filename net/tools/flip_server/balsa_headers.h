@@ -5,6 +5,7 @@
 #ifndef NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_H_
 #define NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_H_
 
+#include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <string>
@@ -12,36 +13,10 @@
 #include <vector>
 
 #include "base/port.h"
-#include "net/tools/flip_server/balsa_enums.h"
-#ifdef CHROMIUM
+#include "base/logging.h"
 #include "base/string_piece.h"
-
-void SplitStringPieceToVector(StringPiece, char*, vector<StringPiece>*, bool) {
-  ...
-}
-
-struct StringPieceCaseHash {
-  size_t operator()(const StringPiece& sp) const {
-    // based on __stl_string_hash in http://www.sgi.com/tech/stl/string
-    unsigned long hash_val = 0;
-    for (StringPiece::const_iterator it = sp.begin();
-         it != sp.end(); ++it) {
-      hash_val = 5 * hash_val + ascii_tolower(*it);
-    }
-    return static_cast<size_t>(hash_val);
-  }
-};
-
-struct StringPieceCaseEqual {
-  bool operator()(const StringPiece& piece1, const StringPiece& piece2) const {
-    return StringPieceUtils::EqualIgnoreCase(piece1, piece2);
-  }
-};
-
-#else
-#include "strings/stringpiece.h"
-#include "strings/stringpiece_utils.h"
-#endif
+#include "net/tools/flip_server/balsa_enums.h"
+#include "net/tools/flip_server/string_piece_utils.h"
 
 namespace net {
 
@@ -118,7 +93,7 @@ class BalsaBuffer {
     // object.
   };
 
-  typedef vector<BufferBlock> Blocks;
+  typedef std::vector<BufferBlock> Blocks;
 
   ~BalsaBuffer() {
     CleanupBlocksStartingFrom(0);
@@ -168,12 +143,12 @@ class BalsaBuffer {
   // for reasons of efficiency, requires that the buffer from which it parses
   // the headers be contiguous.
   //
-  void WriteToContiguousBuffer(const StringPiece& sp) {
+  void WriteToContiguousBuffer(const base::StringPiece& sp) {
     if (sp.empty()) {
       return;
     }
     CHECK(can_write_to_contiguous_buffer_);
-    DCHECK_GE(blocks_.size(), 1);
+    DCHECK_GE(blocks_.size(), 1u);
     if (blocks_[0].buffer == NULL && sp.size() <= blocksize_) {
       blocks_[0] = AllocBlock();
       memcpy(blocks_[0].start_of_unused_bytes(), sp.data(), sp.size());
@@ -207,14 +182,14 @@ class BalsaBuffer {
   // Note that the 'permanent' storage in which it stores data may be in
   // the first block IFF the NoMoreWriteToContiguousBuffer function has
   // been called since the last Clear/Construction.
-  StringPiece Write(const StringPiece& sp,
+  base::StringPiece Write(const base::StringPiece& sp,
                     Blocks::size_type* block_buffer_idx) {
     if (sp.empty()) {
       return sp;
     }
     char* storage = Reserve(sp.size(), block_buffer_idx);
     memcpy(storage, sp.data(), sp.size());
-    return StringPiece(storage, sp.size());
+    return base::StringPiece(storage, sp.size());
   }
 
   // Reserves "permanent" storage of the size indicated. Returns a pointer to
@@ -226,7 +201,7 @@ class BalsaBuffer {
                 Blocks::size_type* block_buffer_idx) {
     // There should always be a 'first_block', even if it
     // contains nothing.
-    DCHECK_GE(blocks_.size(), 1);
+    DCHECK_GE(blocks_.size(), 1u);
     BufferBlock* block = NULL;
     Blocks::size_type block_idx = can_write_to_contiguous_buffer_ ? 1 : 0;
     for (; block_idx < blocks_.size(); ++block_idx) {
@@ -261,14 +236,15 @@ class BalsaBuffer {
       CleanupBlocksStartingFrom(0);
       blocks_.push_back(AllocBlock());
     }
-    DCHECK_GE(blocks_.size(), 1);
+    DCHECK_GE(blocks_.size(), 1u);
     can_write_to_contiguous_buffer_ = true;
   }
 
   void Swap(BalsaBuffer* b) {
     blocks_.swap(b->blocks_);
-    swap(can_write_to_contiguous_buffer_, b->can_write_to_contiguous_buffer_);
-    swap(blocksize_, b->blocksize_);
+    std::swap(can_write_to_contiguous_buffer_,
+              b->can_write_to_contiguous_buffer_);
+    std::swap(blocksize_, b->blocksize_);
   }
 
   void CopyFrom(const BalsaBuffer& b) {
@@ -414,7 +390,7 @@ class BalsaHeaders {
     bool skip;
   };
 
-  typedef vector<StringPiece> HeaderTokenList;
+  typedef std::vector<base::StringPiece> HeaderTokenList;
   friend bool net::ParseHTTPFirstLine(const char* begin,
                                        const char* end,
                                        bool is_request,
@@ -423,7 +399,7 @@ class BalsaHeaders {
                                        BalsaFrameEnums::ErrorCode* error_code);
 
  protected:
-  typedef vector<HeaderLineDescription> HeaderLines;
+  typedef std::vector<HeaderLineDescription> HeaderLines;
 
   // Why these base classes (iterator_base, reverse_iterator_base)?  Well, if
   // we do want to export both iterator and const_iterator types (currently we
@@ -439,7 +415,7 @@ class BalsaHeaders {
    public:
     friend class BalsaHeaders;
     friend class reverse_iterator_base;
-    typedef pair<StringPiece, StringPiece> StringPiecePair;
+    typedef std::pair<base::StringPiece, base::StringPiece> StringPiecePair;
     typedef StringPiecePair value_type;
     typedef value_type& reference;
     typedef value_type* pointer;
@@ -494,7 +470,7 @@ class BalsaHeaders {
     // operator<< work for the classes it sees.  It would be better if there
     // was an additional traits-like system for the gUnit output... but oh
     // well.
-    friend ostream& operator<<(ostream& os, const iterator_base& it) {
+    friend std::ostream& operator<<(std::ostream& os, const iterator_base& it) {
       os << "[" << it.headers_ << ", " << it.idx_ << "]";
       return os;
     }
@@ -547,9 +523,9 @@ class BalsaHeaders {
       const HeaderLineDescription& line = headers_->header_lines_[index];
       const char* stream_begin = headers_->GetPtr(line.buffer_base_idx);
       value_ = value_type(
-          StringPiece(stream_begin + line.first_char_idx,
+          base::StringPiece(stream_begin + line.first_char_idx,
                       line.key_end_idx - line.first_char_idx),
-          StringPiece(stream_begin + line.value_begin_idx,
+          base::StringPiece(stream_begin + line.value_begin_idx,
                       line.last_char_idx - line.value_begin_idx));
       DCHECK_GE(line.key_end_idx, line.first_char_idx);
       DCHECK_GE(line.last_char_idx, line.value_begin_idx);
@@ -703,7 +679,7 @@ class BalsaHeaders {
    private:
     const_header_lines_key_iterator(const BalsaHeaders* headers,
                                     HeaderLines::size_type index,
-                                    const StringPiece& key)
+                                    const base::StringPiece& key)
         : iterator_base(headers, index),
           key_(key) {
     }
@@ -718,7 +694,7 @@ class BalsaHeaders {
       return *this >= headers_->header_lines_end();
     }
 
-    StringPiece key_;
+    base::StringPiece key_;
   };
 
   // TODO(fenix): Revisit the amount of bytes initially allocated to the second
@@ -779,7 +755,7 @@ class BalsaHeaders {
   void erase(const const_header_lines_iterator& it) {
     DCHECK_EQ(it.headers_, this);
     DCHECK_LT(it.idx_, header_lines_.size());
-    DCHECK_GE(it.idx_, 0);
+    DCHECK_GE(it.idx_, 0u);
     header_lines_[it.idx_].skip = true;
   }
 
@@ -789,7 +765,7 @@ class BalsaHeaders {
 
   void CopyFrom(const BalsaHeaders& other);
 
-  void HackHeader(const StringPiece& key, const StringPiece& value);
+  void HackHeader(const base::StringPiece& key, const base::StringPiece& value);
 
   // Same as AppendToHeader, except that it will attempt to preserve
   // header ordering.
@@ -800,7 +776,8 @@ class BalsaHeaders {
   // TODO(fenix): remove this function and rename all occurances
   // of it in the code to AppendToHeader when the condition above
   // has been satisified.
-  void HackAppendToHeader(const StringPiece& key, const StringPiece& value);
+  void HackAppendToHeader(const base::StringPiece& key,
+                          const base::StringPiece& value);
 
   // Replaces header entries with key 'key' if they exist, or appends
   // a new header if none exist.  See 'AppendHeader' below for additional
@@ -808,7 +785,8 @@ class BalsaHeaders {
   // will allocate new storage every time that it is called.
   // TODO(fenix): modify this function to reuse existing storage
   // if it is available.
-  void ReplaceOrAppendHeader(const StringPiece& key, const StringPiece& value);
+  void ReplaceOrAppendHeader(const base::StringPiece& key,
+                             const base::StringPiece& value);
 
   // Append a new header entry to the header object. Clients who wish to append
   // Content-Length header should use SetContentLength() method instead of
@@ -818,21 +796,24 @@ class BalsaHeaders {
   // Similarly, clients who wish to add or remove the transfer encoding header
   // in order to apply or remove chunked encoding should use SetChunkEncoding()
   // instead.
-  void AppendHeader(const StringPiece& key, const StringPiece& value);
+  void AppendHeader(const base::StringPiece& key,
+                    const base::StringPiece& value);
 
   // Appends ',value' to an existing header named 'key'.  If no header with the
   // correct key exists, it will call AppendHeader(key, value).  Calling this
   // function on a key which exists several times in the headers will produce
   // unpredictable results.
-  void AppendToHeader(const StringPiece& key, const StringPiece& value);
+  void AppendToHeader(const base::StringPiece& key,
+                      const base::StringPiece& value);
 
   // Prepends 'value,' to an existing header named 'key'.  If no header with the
   // correct key exists, it will call AppendHeader(key, value).  Calling this
   // function on a key which exists several times in the headers will produce
   // unpredictable results.
-  void PrependToHeader(const StringPiece& key, const StringPiece& value);
+  void PrependToHeader(const base::StringPiece& key,
+                       const base::StringPiece& value);
 
-  const StringPiece GetHeader(const StringPiece& key) const;
+  const base::StringPiece GetHeader(const base::StringPiece& key) const;
 
   // Iterates over all currently valid header lines, appending their
   // values into the vector 'out', in top-to-bottom order.
@@ -857,27 +838,30 @@ class BalsaHeaders {
   //  vector out after GetAllOfHeader("key1", &out) is:
   // ["foo", "v1", "", "", "v2", "v1", "v2"]
 
-  void GetAllOfHeader(const StringPiece& key, vector<StringPiece>* out) const;
+  void GetAllOfHeader(const base::StringPiece& key,
+                      std::vector<base::StringPiece>* out) const;
 
   // Joins all values for key into a comma-separated string in out.
   // More efficient than calling JoinStrings on result of GetAllOfHeader if
   // you don't need the intermediate vector<StringPiece>.
-  void GetAllOfHeaderAsString(const StringPiece& key, string* out) const;
+  void GetAllOfHeaderAsString(const base::StringPiece& key,
+                              std::string* out) const;
 
   // Returns true if RFC 2616 Section 14 indicates that header can
   // have multiple values.
-  static bool IsMultivaluedHeader(const StringPiece& header);
+  static bool IsMultivaluedHeader(const base::StringPiece& header);
 
   // Determine if a given header is present.
-  inline bool HasHeader(const StringPiece& key) const {
+  inline bool HasHeader(const base::StringPiece& key) const {
     return (GetConstHeaderLinesIterator(key, header_lines_.begin()) !=
             header_lines_.end());
   }
 
   // Returns true iff any header 'key' exists with non-empty value.
-  bool HasNonEmptyHeader(const StringPiece& key) const;
+  bool HasNonEmptyHeader(const base::StringPiece& key) const;
 
-  const_header_lines_iterator GetHeaderPosition(const StringPiece& key) const;
+  const_header_lines_iterator GetHeaderPosition(
+      const base::StringPiece& key) const;
 
   // Returns a forward-only iterator that only stops at lines matching key.
   // String backing 'key' must remain valid for lifetime of iterator.
@@ -885,12 +869,12 @@ class BalsaHeaders {
   // Check returned iterator against header_lines_key_end() to determine when
   // iteration is finished.
   const_header_lines_key_iterator GetIteratorForKey(
-      const StringPiece& key) const;
+      const base::StringPiece& key) const;
 
-  void RemoveAllOfHeader(const StringPiece& key);
+  void RemoveAllOfHeader(const base::StringPiece& key);
 
   // Removes all headers starting with 'key' [case insensitive]
-  void RemoveAllHeadersWithPrefix(const StringPiece& key);
+  void RemoveAllHeadersWithPrefix(const base::StringPiece& key);
 
   // Returns the lower bound of memory  used by this header object, including
   // all internal buffers and data structure. Some of the memory used cannot be
@@ -950,9 +934,9 @@ class BalsaHeaders {
       const char* line_ptr = GetPtr(line.buffer_base_idx);
       WriteHeaderLineToBuffer(
           buffer,
-          StringPiece(line_ptr + line.first_char_idx,
+          base::StringPiece(line_ptr + line.first_char_idx,
                       line.key_end_idx - line.first_char_idx),
-          StringPiece(line_ptr + line.value_begin_idx,
+          base::StringPiece(line_ptr + line.value_begin_idx,
                       line.last_char_idx - line.value_begin_idx));
     }
   }
@@ -965,8 +949,8 @@ class BalsaHeaders {
   // header in the buffer. This method is a no-op if key is empty.
   template <typename Buffer>
   static void WriteHeaderLineToBuffer(Buffer* buffer,
-                                      const StringPiece& key,
-                                      const StringPiece& value) {
+                                      const base::StringPiece& key,
+                                      const base::StringPiece& value) {
     // if the key is empty, we don't want to write the rest because it
     // will not be a well-formed header line.
     if (key.size() > 0) {
@@ -984,11 +968,11 @@ class BalsaHeaders {
   // e.g., when there was an error in the middle of parsing.
   // The header content is appended to the string; the original content is not
   // cleared.
-  void DumpToString(string* str) const;
+  void DumpToString(std::string* str) const;
 
-  const StringPiece first_line() const {
+  const base::StringPiece first_line() const {
     DCHECK_GE(whitespace_4_idx_, non_whitespace_1_idx_);
-    return StringPiece(BeginningOfFirstLine() + non_whitespace_1_idx_,
+    return base::StringPiece(BeginningOfFirstLine() + non_whitespace_1_idx_,
                        whitespace_4_idx_ - non_whitespace_1_idx_);
   }
 
@@ -1000,13 +984,13 @@ class BalsaHeaders {
   // the response code is one which is interpretable.
   size_t parsed_response_code() const { return parsed_response_code_; }
 
-  const StringPiece request_method() const {
+  const base::StringPiece request_method() const {
     DCHECK_GE(whitespace_2_idx_, non_whitespace_1_idx_);
-    return StringPiece(BeginningOfFirstLine() + non_whitespace_1_idx_,
+    return base::StringPiece(BeginningOfFirstLine() + non_whitespace_1_idx_,
                        whitespace_2_idx_ - non_whitespace_1_idx_);
   }
 
-  const StringPiece response_version() const {
+  const base::StringPiece response_version() const {
     // Note: There is no difference between request_method() and
     // response_version(). They both could be called
     // GetFirstTokenFromFirstline()... but that wouldn't be anywhere near as
@@ -1014,26 +998,26 @@ class BalsaHeaders {
     return request_method();
   }
 
-  const StringPiece request_uri() const {
+  const base::StringPiece request_uri() const {
     DCHECK_GE(whitespace_3_idx_, non_whitespace_2_idx_);
-    return StringPiece(BeginningOfFirstLine() + non_whitespace_2_idx_,
+    return base::StringPiece(BeginningOfFirstLine() + non_whitespace_2_idx_,
                        whitespace_3_idx_ - non_whitespace_2_idx_);
   }
 
-  const StringPiece response_code() const {
+  const base::StringPiece response_code() const {
     // Note: There is no difference between request_uri() and response_code().
     // They both could be called GetSecondtTokenFromFirstline(), but, as noted
     // in an earlier comment, that wouldn't be as descriptive.
     return request_uri();
   }
 
-  const StringPiece request_version() const {
+  const base::StringPiece request_version() const {
     DCHECK_GE(whitespace_4_idx_, non_whitespace_3_idx_);
-    return StringPiece(BeginningOfFirstLine() + non_whitespace_3_idx_,
+    return base::StringPiece(BeginningOfFirstLine() + non_whitespace_3_idx_,
                        whitespace_4_idx_ - non_whitespace_3_idx_);
   }
 
-  const StringPiece response_reason_phrase() const {
+  const base::StringPiece response_reason_phrase() const {
     // Note: There is no difference between request_version() and
     // response_reason_phrase(). They both could be called
     // GetThirdTokenFromFirstline(), but, as noted in an earlier comment, that
@@ -1047,30 +1031,31 @@ class BalsaHeaders {
   // then you should use the Set* functions, or SetFirstlineFromStringPieces,
   // below, instead.
   //
-  void SetFirstlineFromStringPieces(const StringPiece& firstline_a,
-                                    const StringPiece& firstline_b,
-                                    const StringPiece& firstline_c);
+  void SetFirstlineFromStringPieces(const base::StringPiece& firstline_a,
+                                    const base::StringPiece& firstline_b,
+                                    const base::StringPiece& firstline_c);
 
-  void SetRequestFirstlineFromStringPieces(const StringPiece& method,
-                                           const StringPiece& uri,
-                                           const StringPiece& version) {
+  void SetRequestFirstlineFromStringPieces(const base::StringPiece& method,
+                                           const base::StringPiece& uri,
+                                           const base::StringPiece& version) {
     SetFirstlineFromStringPieces(method, uri, version);
   }
 
-  void SetResponseFirstlineFromStringPieces(const StringPiece& version,
-                                            const StringPiece& code,
-                                            const StringPiece& reason_phrase) {
+  void SetResponseFirstlineFromStringPieces(
+      const base::StringPiece& version,
+      const base::StringPiece& code,
+      const base::StringPiece& reason_phrase) {
     SetFirstlineFromStringPieces(version, code, reason_phrase);
   }
 
   // These functions are exactly the same, except that their names are
   // different. This is done so that the code using this class is more
   // expressive.
-  void SetRequestMethod(const StringPiece& method);
-  void SetResponseVersion(const StringPiece& version);
+  void SetRequestMethod(const base::StringPiece& method);
+  void SetResponseVersion(const base::StringPiece& version);
 
-  void SetRequestUri(const StringPiece& uri);
-  void SetResponseCode(const StringPiece& code);
+  void SetRequestUri(const base::StringPiece& uri);
+  void SetResponseCode(const base::StringPiece& code);
   void set_parsed_response_code(size_t parsed_response_code) {
     parsed_response_code_ = parsed_response_code;
   }
@@ -1079,8 +1064,8 @@ class BalsaHeaders {
   // These functions are exactly the same, except that their names are
   // different. This is done so that the code using this class is more
   // expressive.
-  void SetRequestVersion(const StringPiece& version);
-  void SetResponseReasonPhrase(const StringPiece& reason_phrase);
+  void SetRequestVersion(const base::StringPiece& version);
+  void SetResponseReasonPhrase(const base::StringPiece& reason_phrase);
 
   // The biggest problem with SetFirstLine is that we don't want to use a
   // separate buffer for it.  The second biggest problem with it is that the
@@ -1091,7 +1076,7 @@ class BalsaHeaders {
   // accessors to work, use the Set* functions above this one.
   // SetFirstLine is stuff useful, however, if all you care about is correct
   // serialization with the rest of the header object.
-  void SetFirstLine(const StringPiece& line);
+  void SetFirstLine(const base::StringPiece& line);
 
   // Simple accessors to some of the internal state
   bool transfer_encoding_is_chunked() const {
@@ -1149,7 +1134,7 @@ class BalsaHeaders {
   }
 
   void WriteFromFramer(const char* ptr, size_t size) {
-    balsa_buffer_.WriteToContiguousBuffer(StringPiece(ptr, size));
+    balsa_buffer_.WriteToContiguousBuffer(base::StringPiece(ptr, size));
   }
 
   void DoneWritingFromFramer() {
@@ -1173,40 +1158,40 @@ class BalsaHeaders {
     *s = GetReadableBytesFromHeaderStream();
   }
 
-  StringPiece GetValueFromHeaderLineDescription(
+  base::StringPiece GetValueFromHeaderLineDescription(
       const HeaderLineDescription& line) const;
 
-  void AddAndMakeDescription(const StringPiece& key,
-                             const StringPiece& value,
+  void AddAndMakeDescription(const base::StringPiece& key,
+                             const base::StringPiece& value,
                              HeaderLineDescription* d);
 
-  void AppendOrPrependAndMakeDescription(const StringPiece& key,
-                                         const StringPiece& value,
+  void AppendOrPrependAndMakeDescription(const base::StringPiece& key,
+                                         const base::StringPiece& value,
                                          bool append,
                                          HeaderLineDescription* d);
 
   // Removes all header lines with the given key starting at start.
-  void RemoveAllOfHeaderStartingAt(const StringPiece& key,
+  void RemoveAllOfHeaderStartingAt(const base::StringPiece& key,
                                    HeaderLines::iterator start);
 
   // If the 'key' does not exist in the headers, calls
   // AppendHeader(key, value).  Otherwise if append is true, appends ',value'
   // to the first existing header with key 'key'.  If append is false, prepends
   // 'value,' to the first existing header with key 'key'.
-  void AppendOrPrependToHeader(const StringPiece& key,
-                               const StringPiece& value,
+  void AppendOrPrependToHeader(const base::StringPiece& key,
+                               const base::StringPiece& value,
                                bool append);
 
   HeaderLines::const_iterator GetConstHeaderLinesIterator(
-      const StringPiece& key,
+      const base::StringPiece& key,
       HeaderLines::const_iterator start) const;
 
   HeaderLines::iterator GetHeaderLinesIteratorNoSkip(
-      const StringPiece& key,
+      const base::StringPiece& key,
       HeaderLines::iterator start);
 
   HeaderLines::iterator GetHeaderLinesIterator(
-      const StringPiece& key,
+      const base::StringPiece& key,
       HeaderLines::iterator start);
 
   template <typename IteratorType>
@@ -1245,8 +1230,8 @@ class BalsaHeaders {
   // For this reason, it is strongly suggested that use of this function is
   // only acceptable for the purpose of debugging parse errors seen by the
   // BalsaFrame class.
-  StringPiece OriginalHeadersForDebugging() const {
-    return StringPiece(OriginalHeaderStreamBegin(),
+  base::StringPiece OriginalHeadersForDebugging() const {
+    return base::StringPiece(OriginalHeaderStreamBegin(),
                        OriginalHeaderStreamEnd() - OriginalHeaderStreamBegin());
   }
 

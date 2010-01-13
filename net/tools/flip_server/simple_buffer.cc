@@ -45,8 +45,8 @@ int SimpleBuffer::ReadableBytes() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-string SimpleBuffer::str() const {
-  string s;
+std::string SimpleBuffer::str() const {
+  std::string s;
   char * readable_ptr;
   int readable_size;
   GetReadablePtr(&readable_ptr, &readable_size);

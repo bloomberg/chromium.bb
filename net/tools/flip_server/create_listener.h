@@ -30,14 +30,14 @@ namespace net {
 //               successfully created, else it will be assigned -1.
 //   error_stream - in the case of errors, output describing the error will
 //                  be written into error_stream.
-void CreateListeningSocket(const string& host,
-                           const string& port,
+void CreateListeningSocket(const std::string& host,
+                           const std::string& port,
                            bool is_numeric_host_address,
                            int backlog,
                            int * listen_fd,
                            bool reuseaddr,
                            bool reuseport,
-                           ostream* error_stream);
+                           std::ostream* error_stream);
 
 }  // namespace net
 

@@ -7,8 +7,8 @@
 
 #include <fcntl.h>
 #include <sys/queue.h>
-#include <hash_map>
-#include <hash_set>
+#include <ext/hash_map>  // it is annoying that gcc does this. oh well.
+#include <ext/hash_set>
 #include <map>
 #include <string>
 #include <utility>
@@ -34,14 +34,9 @@
 #include "base/logging.h"
 #endif
 
+#include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "util/hash/hash.h"
-
-#ifdef CHROMIUM
 #include <sys/epoll.h>
-#else
-#include "net/base/epollstubs.h"
-#endif
 
 namespace net {
 
@@ -123,16 +118,12 @@ class EpollCallbackInterface {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
 class EpollServer {
  public:
   typedef EpollAlarmCallbackInterface AlarmCB;
   typedef EpollCallbackInterface CB;
 
-  typedef multimap<int64, AlarmCB*> TimeToAlarmCBMap;
+  typedef std::multimap<int64, AlarmCB*> TimeToAlarmCBMap;
   typedef TimeToAlarmCBMap::iterator AlarmRegToken;
 
   // Summary:
@@ -456,7 +447,7 @@ class EpollServer {
     return this->NowInUsec();
   }
 
-  static string EventMaskToString(int event_mask);
+  static std::string EventMaskToString(int event_mask);
 
   // Summary:
   //   Logs the state of the epoll server with LOG(ERROR).
@@ -579,11 +570,11 @@ class EpollServer {
   // Custom hash function to be used by hash_set.
   struct CBAndEventMaskHash {
     size_t operator()(const CBAndEventMask& cb_and_eventmask) const {
-      return hash<int>()(cb_and_eventmask.fd);
+      return static_cast<size_t>(cb_and_eventmask.fd);
     }
   };
 
-  typedef hash_set<CBAndEventMask, CBAndEventMaskHash> FDToCBMap;
+  typedef __gnu_cxx::hash_set<CBAndEventMask, CBAndEventMaskHash> FDToCBMap;
 
   // the following four functions are OS-specific, and are likely
   // to be changed in a subclass if the poll/select method is changed
@@ -684,11 +675,20 @@ class EpollServer {
   // The mapping of file-descriptor to CBAndEventMasks
   FDToCBMap cb_map_;
 
+  // Custom hash function to be used by hash_set.
+  struct AlarmCBHash {
+    size_t operator()(AlarmCB*const& p) const {
+      return reinterpret_cast<size_t>(p);
+    }
+  };
+
+
   // TOOD(sushantj): Having this hash_set is avoidable. We currently have it
   // only so that we can enforce stringent checks that a caller can not register
   // the same alarm twice. One option is to have an implementation in which
   // this hash_set is used only in the debug mode.
-  hash_set<AlarmCB*> all_alarms_;
+  typedef __gnu_cxx::hash_set<AlarmCB*, AlarmCBHash> AlarmCBMap;
+  AlarmCBMap all_alarms_;
 
   TimeToAlarmCBMap alarm_map_;
 
@@ -713,7 +713,7 @@ class EpollServer {
   // that while calling CallAndReregisterAlarmEvents we do not call
   // OnAlarm on any alarm in this set. This ensures that we do not
   // go in an infinite loop.
-  hash_set<AlarmCB*> alarms_reregistered_and_should_be_skipped_;
+  AlarmCBMap alarms_reregistered_and_should_be_skipped_;
 
   LIST_HEAD(ReadyList, CBAndEventMask) ready_list_;
   LIST_HEAD(TmpList, CBAndEventMask) tmp_list_;
@@ -794,7 +794,7 @@ class EpollServer {
         os << "fd: " << er.unregistered_fds_[i] << "\n";
         os << er.unregistered_fds_[i];
       }
-      for (hash_map<int, Events>::const_iterator i = er.event_counts_.begin();
+      for (EventCountsMap::const_iterator i = er.event_counts_.begin();
            i != er.event_counts_.end();
            ++i) {
         os << "fd: " << i->first << "\n";
@@ -807,7 +807,7 @@ class EpollServer {
     }
 
     void RecordUnregistration(int fd) {
-      hash_map<int, Events>::iterator i = event_counts_.find(fd);
+      EventCountsMap::iterator i = event_counts_.find(fd);
       if (i != event_counts_.end()) {
         unregistered_fds_.push_back(i->second);
         event_counts_.erase(i);
@@ -941,9 +941,10 @@ class EpollServer {
       unsigned int epoll_et;
     };
 
-    vector<DebugOutput*> debug_events_;
-    vector<Events> unregistered_fds_;
-    hash_map<int, Events> event_counts_;
+    std::vector<DebugOutput*> debug_events_;
+    std::vector<Events> unregistered_fds_;
+    typedef __gnu_cxx::hash_map<int, Events> EventCountsMap;
+    EventCountsMap event_counts_;
     int64 num_records_;
     int64 record_threshold_;
   };

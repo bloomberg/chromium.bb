@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <openssl/ssl.h>
 
 #include <deque>
 #include <iostream>
@@ -14,13 +15,10 @@
 #include <vector>
 #include <list>
 
-#include "base/google.h"
 #include "base/logging.h"
-
-// Used to get time. Can be replaced.
+#include "base/simple_thread.h"
 #include "base/timer.h"
-
-// All "open-sourcable"
+#include "base/lock.h"
 #include "net/flip/flip_frame_builder.h"
 #include "net/flip/flip_framer.h"
 #include "net/flip/flip_protocol.h"
@@ -32,79 +30,32 @@
 #include "net/tools/flip_server/create_listener.h"
 #include "net/tools/flip_server/epoll_server.h"
 #include "net/tools/flip_server/loadtime_measurement.h"
+#include "net/tools/flip_server/other_defines.h"
 #include "net/tools/flip_server/ring_buffer.h"
 #include "net/tools/flip_server/simple_buffer.h"
+#include "net/tools/flip_server/split.h"
 #include "net/tools/flip_server/url_to_filename_encoder.h"
 #include "net/tools/flip_server/url_utilities.h"
-#include "strings/split.h"
-#include "thread/thread.h"
-#include "third_party/openssl/ssl.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
-DEFINE_bool(use_ssl, true,
-            "If set to true, then the server will act as an SSL server for both"
-            " HTTP and FLIP");
-DEFINE_string(ssl_cert_name, "cert.pem", "The name of the cert .pem file");
-DEFINE_string(ssl_key_name, "key.pem", "The name of the key .pem file");
-DEFINE_int32(response_count_until_close, 1000 * 1000,
-             "The number of responses given before the server closes the"
-             " connection");
-DEFINE_bool(no_nagle, true, "If true, then disables the nagle algorithm");
-DEFINE_int32(accepts_per_wake, 0,
-             "The number of times that accept() will be called when the "
-             " alarm goes off when the accept_using_alarm flag is set to true."
-             " If set to 0, accept() will be performed until the accept queue"
-             " is completely drained and the accept() call returns an error");
-DEFINE_int32(flip_port, 10040, "The port on which the flip server listens");
-DEFINE_int32(port, 16002, "The port on which the http server listens");
-DEFINE_int32(accept_backlog_size, 1024,
-             "The size of the TCP accept backlog");
-DEFINE_string(cache_base_dir, ".", "The directory where cache locates");
-DEFINE_bool(need_to_encode_url, true, "If true, then encode url to filename");
-DEFINE_bool(reuseport, false,
-            "If set to false a single socket will be used. If set to true"
-            " then a new socket will be created for each accept thread."
-            " Note that this only works with kernels that support"
-            " SO_REUSEPORT");
-
-DEFINE_double(server_think_time_in_s, 0,
-              " The amount of time the server delays before sending back the"
-              "reply");
-DEFINE_bool(use_xsub, false,
-              "Does the server send X-Subresource headers");
-DEFINE_bool(use_xac, false,
-              "Does the server send X-Associated-Content headers");
-DEFINE_bool(use_cwnd_opener, false,
-              "Does the server advance cwnd by sending no-op packets");
-DEFINE_bool(use_compression, false,
-              "Does the server compress data frames");
-
-DEFINE_string(urls_file, "experimental/users/fenix/flip/urls.txt",
-              "The path to the urls file which includes the urls for testing");
-DEFINE_string(pageload_html_file,
-              "experimental/users/fenix/flip/loadtime_measurement.html",
-              "The path to the html that does the pageload in iframe");
-DEFINE_bool(record_mode, false,
-            "If set to true, record requests in file named as fd used");
-DEFINE_string(record_path, ".", "The path to save the record files");
-
-
-////////////////////////////////////////////////////////////////////////////////
-
+using base::StringPiece;
+using base::SimpleThread;
+// using base::Lock;  // heh, this isn't in base namespace?!
+// using base::AutoLock;  // ditto!
 using flip::CONTROL_FLAG_NONE;
 using flip::DATA_FLAG_COMPRESSED;
 using flip::DATA_FLAG_FIN;
 using flip::FIN_STREAM;
 using flip::FlipControlFrame;
-using flip::FlipFrame;
 using flip::FlipDataFlags;
 using flip::FlipDataFrame;
+using flip::FlipFinStreamControlFrame;
+using flip::FlipFrame;
 using flip::FlipFrameBuilder;
 using flip::FlipFramer;
 using flip::FlipFramerVisitorInterface;
 using flip::FlipHeaderBlock;
-using flip::FlipFinStreamControlFrame;
 using flip::FlipStreamId;
 using flip::FlipSynReplyControlFrame;
 using flip::FlipSynStreamControlFrame;
@@ -121,7 +72,91 @@ using net::EpollEvent;
 using net::EpollServer;
 using net::RingBuffer;
 using net::SimpleBuffer;
+using net::SplitStringPieceToVector;
 using net::UrlUtilities;
+using std::deque;
+using std::map;
+using std::pair;
+using std::string;
+using std::vector;
+using std::list;
+using std::ostream;
+using std::cerr;
+
+////////////////////////////////////////////////////////////////////////////////
+
+//         If set to true, then the server will act as an SSL server for both
+//          HTTP and FLIP);
+bool FLAGS_use_ssl = true;
+
+// The name of the cert .pem file);
+string FLAGS_ssl_cert_name = "cert.pem";
+
+// The name of the key .pem file);
+string FLAGS_ssl_key_name = "key.pem";
+
+// The number of responses given before the server closes the
+//  connection);
+int32 FLAGS_response_count_until_close = 1000*1000;
+
+// If true, then disables the nagle algorithm);
+bool FLAGS_no_nagle = true;
+
+// The number of times that accept() will be called when the
+//  alarm goes off when the accept_using_alarm flag is set to true.
+//  If set to 0, accept() will be performed until the accept queue
+//  is completely drained and the accept() call returns an error);
+int32 FLAGS_accepts_per_wake = 0;
+
+// The port on which the flip server listens);
+int32 FLAGS_flip_port = 10040;
+
+// The port on which the http server listens);
+int32 FLAGS_port = 16002;
+
+// The size of the TCP accept backlog);
+int32 FLAGS_accept_backlog_size = 1024;
+
+// The directory where cache locates);
+string FLAGS_cache_base_dir = ".";
+
+// If true, then encode url to filename);
+bool FLAGS_need_to_encode_url = true;
+
+// If set to false a single socket will be used. If set to true
+//  then a new socket will be created for each accept thread.
+//  Note that this only works with kernels that support
+//  SO_REUSEPORT);
+bool FLAGS_reuseport = false;
+
+// The amount of time the server delays before sending back the
+//  reply);
+double FLAGS_server_think_time_in_s = 0;
+
+// Does the server send X-Subresource headers);
+bool FLAGS_use_xsub = false;
+
+// Does the server send X-Associated-Content headers);
+bool FLAGS_use_xac = false;
+
+// Does the server advance cwnd by sending no-op packets);
+bool FLAGS_use_cwnd_opener = false;
+
+// Does the server compress data frames);
+bool FLAGS_use_compression = false;
+
+// The path to the urls file which includes the urls for testing);
+string FLAGS_urls_file = "experimental/users/fenix/flip/urls.txt";
+
+// The path to the html that does the pageload in iframe);
+string FLAGS_pageload_html_file =
+  "experimental/users/fenix/flip/loadtime_measurement.html";
+
+// If set to true, record requests in file named as fd used);
+bool FLAGS_record_mode = false;
+
+// The path to save the record files);
+string FLAGS_record_path = ".";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -456,7 +491,8 @@ class MemoryCache {
 #endif
     BalsaHeaders* headers = new BalsaHeaders;
     headers->CopyFrom(visitor.headers);
-    string filename_stripped = string(filename).substr(cwd_.size() + 1);
+    string filename_stripped =
+      string(filename).substr(cwd_.size() + 1);
 //    LOG(INFO) << "Adding file (" << visitor.body.length() << " bytes): "
 //              << filename_stripped;
     files_[filename_stripped] = FileData();
@@ -465,17 +501,21 @@ class MemoryCache {
     fd.filename = string(filename_stripped,
                          filename_stripped.find_first_of('/'));
     if (headers->HasHeader("X-Associated-Content")) {
-      string content = headers->GetHeader("X-Associated-Content").ToString();
-      vector<string> urls_and_priorities;
-      SplitStringUsing(content, "||", &urls_and_priorities);
+      string content =
+        headers->GetHeader("X-Associated-Content").as_string();
+      vector<StringPiece> urls_and_priorities;
+      SplitStringPieceToVector(content, "||", &urls_and_priorities, true);
       VLOG(1) << "Examining X-Associated-Content header";
-      for (int i = 0; i < urls_and_priorities.size(); ++i) {
-        const string& url_and_priority_pair = urls_and_priorities[i];
-        vector<string> url_and_priority;
-        SplitStringUsing(url_and_priority_pair, "??", &url_and_priority);
+      for (unsigned int i = 0; i < urls_and_priorities.size(); ++i) {
+        const StringPiece& url_and_priority_pair = urls_and_priorities[i];
+        vector<StringPiece> url_and_priority;
+        SplitStringPieceToVector(url_and_priority_pair, "??",
+                                 &url_and_priority, true);
         if (url_and_priority.size() >= 2) {
-          string& priority_string = url_and_priority[0];
-          string& filename_string = url_and_priority[1];
+          string priority_string(url_and_priority[0].data(),
+                                 url_and_priority[0].size());
+          string filename_string(url_and_priority[1].data(),
+                                 url_and_priority[1].size());
           int priority;
           char* last_eaten_char;
           priority = strtol(priority_string.c_str(), &last_eaten_char, 0);
@@ -520,11 +560,11 @@ class MemoryCache {
     // This is a hacked algorithm for figuring out what priority
     // to use with pushed content.
     int priority = 4;
-    if (content_type.find("css") != std::string::npos)
+    if (content_type.find("css") != string::npos)
       priority = 1;
-    else if (content_type.find("cript") != std::string::npos)
+    else if (content_type.find("cript") != string::npos)
       priority = 1;
-    else if (content_type.find("html") != std::string::npos)
+    else if (content_type.find("html") != string::npos)
       priority = 2;
 
     LOG(ERROR) << "Attempting update for " << referrer_host_path;
@@ -757,8 +797,8 @@ class SMServerConnection: public EpollCallbackInterface,
     }
     if (FLAGS_record_mode) {
       char record_file_name[1024];
-      snprintf(record_file_name, 1024, "%s/%d_%lld",
-              FLAGS_record_path.c_str(), fd, GetCurrentTimeMillis());
+      snprintf(record_file_name, sizeof(record_file_name), "%s/%d_%ld",
+              FLAGS_record_path.c_str(), fd, epoll_server->NowInUsec()/1000);
       record_fd_ = open(record_file_name, O_CREAT|O_APPEND|O_WRONLY, S_IRWXU);
       if (record_fd_ < 0) {
         LOG(ERROR) << "Open record file for fd " << fd << " failed";
@@ -1247,7 +1287,7 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
         if (parsed_headers) {
           VLOG(2) << "# headers: " << headers.size();
         }
-        int j = 0;
+        unsigned int j = 0;
         for (FlipHeaderBlock::iterator i = headers.begin();
              i != headers.end();
              ++i) {
@@ -1377,7 +1417,7 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
       char* bytes = frame->data();
       size_t size = FlipFrame::size();
       ssize_t bytes_written = connection_->Send(bytes, size, MSG_DONTWAIT);
-      if (bytes_written != size) {
+      if (bytes_written > 0 && static_cast<size_t>(bytes_written) != size) {
         LOG(ERROR) << "Trouble sending Nop packet! (" << errno << ")";
         if (errno == EAGAIN)
           break;
@@ -1386,7 +1426,7 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
   }
 
   void AddAssociatedContent(FileData* file_data) {
-    for (int i = 0; i < file_data->related_files.size(); ++i) {
+    for (unsigned int i = 0; i < file_data->related_files.size(); ++i) {
       pair<int, string>& related_file = file_data->related_files[i];
       MemCacheIter mci;
       string filename  = "GET_";
@@ -1484,11 +1524,11 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
          headers.header_lines_begin();
          hi != headers.header_lines_end();
          ++hi) {
-      FlipHeaderBlock::iterator fhi = dest.find(hi->first.ToString());
+      FlipHeaderBlock::iterator fhi = dest.find(hi->first.as_string());
       if (fhi == dest.end()) {
-        dest[hi->first.ToString()] = hi->second.ToString();
+        dest[hi->first.as_string()] = hi->second.as_string();
       } else {
-        dest[hi->first.ToString()] = (
+        dest[hi->first.as_string()] = (
             string(fhi->second.data(), fhi->second.size()) + "," +
             string(hi->second.data(), hi->second.size()));
       }
@@ -1501,16 +1541,16 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
 
   size_t SendSynStreamImpl(uint32 stream_id, const BalsaHeaders& headers) {
     FlipHeaderBlock block;
-    block["method"] = headers.request_method().ToString();
+    block["method"] = headers.request_method().as_string();
     if (!headers.HasHeader("status"))
-      block["status"] = headers.response_code().ToString();
+      block["status"] = headers.response_code().as_string();
     if (!headers.HasHeader("version"))
-      block["version"] =headers.response_version().ToString();
+      block["version"] =headers.response_version().as_string();
     if (headers.HasHeader("X-Original-Url")) {
       string original_url = headers.GetHeader("X-Original-Url").as_string();
       block["path"] = UrlUtilities::GetUrlPath(original_url);
     } else {
-      block["path"] = headers.request_uri().ToString();
+      block["path"] = headers.request_uri().as_string();
     }
     CopyHeaders(block, headers);
 
@@ -1530,9 +1570,9 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
   size_t SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
     FlipHeaderBlock block;
     CopyHeaders(block, headers);
-    block["status"] = headers.response_code().ToString() + " " +
-                      headers.response_reason_phrase().ToString();
-    block["version"] = headers.response_version().ToString();
+    block["status"] = headers.response_code().as_string() + " " +
+                      headers.response_reason_phrase().as_string();
+    block["version"] = headers.response_version().as_string();
 
     FlipSynReplyControlFrame* fsrcf =
       framer_->CreateSynReply(stream_id, CONTROL_FLAG_NONE, true, &block);
@@ -1615,7 +1655,7 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
       if (!mci->file_data->headers->HasHeader("content-encoding")) {
         if (mci->file_data->headers->HasHeader("content-type")) {
           string content_type =
-              mci->file_data->headers->GetHeader("content-type").ToString();
+              mci->file_data->headers->GetHeader("content-type").as_string();
           if (content_type.find("image") == content_type.npos)
             should_compress = true;
         }
@@ -1672,22 +1712,22 @@ class HTTPSM : public BalsaVisitorInterface, public SMInterface {
       VLOG(2) << "Got new request!";
       // requests started with /testing are loadtime measurement related
       // urls, use LoadtimeMeasurement class to handle them.
-      if (headers.request_uri().ToString().find("/testing") == 0) {
+      if (headers.request_uri().as_string().find("/testing") == 0) {
         string output;
         global_loadtime_measurement.ProcessRequest(
-            headers.request_uri().ToString(), output);
+            headers.request_uri().as_string(), output);
         SendOKResponse(stream_id_, &output);
         stream_id_ += 2;
       } else {
         string filename;
         if (FLAGS_need_to_encode_url) {
           filename = net::UrlToFilenameEncoder::Encode(
-              headers.GetHeader("Host").ToString() +
-              headers.request_uri().ToString(),
-              headers.request_method().ToString() + "_/");
+              headers.GetHeader("Host").as_string() +
+              headers.request_uri().as_string(),
+              headers.request_method().as_string() + "_/");
         } else {
-         filename = headers.request_method().ToString() + "_" +
-                    headers.request_uri().ToString();
+         filename = headers.request_method().as_string() + "_" +
+                    headers.request_uri().as_string();
         }
         NewStream(stream_id_, 0, filename);
         stream_id_ += 2;
@@ -1922,7 +1962,25 @@ class HTTPSM : public BalsaVisitorInterface, public SMInterface {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class SMAcceptorThread : public Thread,
+class Notification {
+ public:
+  explicit Notification(bool value) : value_(value) {}
+
+  void Notify() {
+    AutoLock al(lock_);
+    value_ = true;
+  }
+  bool HasBeenNotified() {
+    AutoLock al(lock_);
+    return value_;
+  }
+  bool value_;
+  Lock lock_;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+class SMAcceptorThread : public SimpleThread,
                          public EpollCallbackInterface,
                          public SMServerConnectionPoolInterface {
   EpollServer epoll_server_;
@@ -1935,19 +1993,18 @@ class SMAcceptorThread : public Thread,
   Notification quitting_;
   SMInterfaceFactory* sm_interface_factory_;
   MemoryCache* memory_cache_;
-  Mutex m_;
  public:
 
   SMAcceptorThread(int listen_fd,
                    int accepts_per_wake,
                    SMInterfaceFactory* smif,
                    MemoryCache* memory_cache) :
+      SimpleThread("SMAcceptorThread"),
       listen_fd_(listen_fd),
       accepts_per_wake_(accepts_per_wake),
       quitting_(false),
       sm_interface_factory_(smif),
       memory_cache_(memory_cache) {
-    Thread::SetJoinable(true);
   }
 
   ~SMAcceptorThread() {
@@ -2130,8 +2187,6 @@ const char* BoolToStr(bool b) {
 ////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char**argv) {
-  InitGoogleExceptChangeRootAndUser(argv[0], &argc, &argv, true);
-
   bool use_ssl = FLAGS_use_ssl;
   int response_count_until_close = FLAGS_response_count_until_close;
   int flip_port = FLAGS_flip_port;
@@ -2233,10 +2288,10 @@ int main(int argc, char**argv) {
 
   while (true) {
     if (GotQuitFromStdin()) {
-      for (int i = 0; i < sm_worker_threads_.size(); ++i) {
+      for (unsigned int i = 0; i < sm_worker_threads_.size(); ++i) {
         sm_worker_threads_[i]->Quit();
       }
-      for (int i = 0; i < sm_worker_threads_.size(); ++i) {
+      for (unsigned int i = 0; i < sm_worker_threads_.size(); ++i) {
         sm_worker_threads_[i]->Join();
       }
       return 0;

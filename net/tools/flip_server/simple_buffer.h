@@ -8,6 +8,7 @@
 #include <string>
 
 #include "net/tools/flip_server/buffer_interface.h"
+#include "net/tools/flip_server/other_defines.h"
 
 namespace net {
 
@@ -19,7 +20,7 @@ class SimpleBuffer : public BufferInterface {
     delete[] storage_;
   }
 
-  string str() const;
+  std::string str() const;
 
   typedef char * iterator;
   typedef const char * const_iterator;

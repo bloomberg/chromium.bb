@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "base/timer.h"
+#include "net/tools/flip_server/other_defines.h"
 
 // Design notes: An efficient implementation of ready list has the following
 // desirable properties:
@@ -453,7 +454,7 @@ void EpollServer::RegisterAlarm(int64 timeout_time_in_us, AlarmCB* ac) {
   VLOG(4) << "RegisteringAlarm at : " << timeout_time_in_us;
 
   TimeToAlarmCBMap::iterator alarm_iter =
-      alarm_map_.insert(make_pair(timeout_time_in_us, ac));
+      alarm_map_.insert(std::make_pair(timeout_time_in_us, ac));
 
   all_alarms_.insert(ac);
   // Pass the iterator to the EpollAlarmCallbackInterface.
@@ -481,15 +482,11 @@ void EpollServer::Wake() {
 }
 
 int64 EpollServer::NowInUsec() const {
-#ifdef CHROMIUM
-  return Time::Now().ToInternalValue();
-#else
-  return WallTimer::NowInUsec();
-#endif
+  return base::Time::Now().ToInternalValue();
 }
 
-string EpollServer::EventMaskToString(int event_mask) {
-  string s;
+std::string EpollServer::EventMaskToString(int event_mask) {
+  std::string s;
   if (event_mask & EPOLLIN) s += "EPOLLIN ";
   if (event_mask & EPOLLPRI) s += "EPOLLPRI ";
   if (event_mask & EPOLLOUT) s += "EPOLLOUT ";
@@ -638,11 +635,6 @@ void EpollServer::WaitForEventsAndCallHandleEvents(int64 timeout_in_us,
                              events_size,
                              timeout_in_ms);
   VLOG(3) << "nfds=" << nfds;
-  if (nfds == events_size) {
-    LOG_EVERY_N(INFO, 1000)
-        << "nfds=" << nfds << " as we only handle " << events_size
-        << " events at a time, so events[] should be larger.";
-  }
 
 #ifdef EPOLL_SERVER_EVENT_TRACING
   event_recorder_.RecordEpollWaitEvent(timeout_in_ms, nfds);

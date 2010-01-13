@@ -15,7 +15,7 @@ class UrlToFilenameEncoder {
  public:
   // Given a |url| and a |base_path|, returns a string which represents this
   // |url|.
-  static string Encode(const std::string& url, std::string base_path) {
+  static std::string Encode(const std::string& url, std::string base_path) {
     std::string clean_url(url);
     if (clean_url.length() && clean_url[clean_url.length()-1] == '/')
       clean_url.append("index.html");
@@ -50,7 +50,7 @@ class UrlToFilenameEncoder {
   }
 
  private:
-  static const int kMaximumSubdirectoryLength = 128;
+  static const unsigned int kMaximumSubdirectoryLength = 128;
 
 
   // Escape the given input |path| and chop any individual components
@@ -63,7 +63,7 @@ class UrlToFilenameEncoder {
     //        This is due to the incompetence of the windows
     //        filesystem, which still hasn't figured out how
     //        to deal with long filenames.
-    int last_slash = 0;
+    unsigned int last_slash = 0;
     for (size_t index = 0; index < path.length(); index++) {
       char ch = path[index];
       if (ch == 0x5C)

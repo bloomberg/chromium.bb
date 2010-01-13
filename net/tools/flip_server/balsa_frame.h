@@ -7,7 +7,6 @@
 
 #include <strings.h>
 
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -28,7 +27,7 @@ namespace net {
 // It exists as a proof of concept headers framer.
 class BalsaFrame {
  public:
-  typedef vector<pair<size_t, size_t> > Lines;
+  typedef std::vector<std::pair<size_t, size_t> > Lines;
 
   typedef BalsaHeaders::HeaderLineDescription HeaderLineDescription;
   typedef BalsaHeaders::HeaderLines HeaderLines;
@@ -37,16 +36,16 @@ class BalsaFrame {
   // TODO(fenix): get rid of the 'kValidTerm*' stuff by using the 'since last
   // index' strategy.  Note that this implies getting rid of the HeaderFramed()
 
-  static const int32 kValidTerm1  = '\n' << 16 |
-                                    '\r' <<  8 |
-                                    '\n';
-  static const int32 kValidTerm1Mask = 0xFF << 16 |
-                                       0xFF <<  8 |
-                                       0xFF;
-  static const int32 kValidTerm2      = '\n' << 8 |
-                                        '\n';
-  static const int32 kValidTerm2Mask = 0xFF << 8 |
-                                       0xFF;
+  static const uint32 kValidTerm1  = '\n' << 16 |
+                                     '\r' <<  8 |
+                                     '\n';
+  static const uint32 kValidTerm1Mask = 0xFF << 16 |
+                                        0xFF <<  8 |
+                                        0xFF;
+  static const uint32 kValidTerm2      = '\n' << 8 |
+                                         '\n';
+  static const uint32 kValidTerm2Mask = 0xFF << 8 |
+                                        0xFF;
   BalsaFrame() :
       last_char_was_slash_r_(false),
       saw_non_newline_char_(false),
@@ -136,7 +135,7 @@ class BalsaFrame {
 
 
   bool Error() {
-    return parse_state_ == BalsaFrameEnums::ERROR;
+    return parse_state_ == BalsaFrameEnums::PARSE_ERROR;
   }
 
   BalsaFrameEnums::ErrorCode ErrorCode() const { return last_error_; }

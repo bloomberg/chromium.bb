@@ -9,7 +9,7 @@ namespace net {
 
 struct BalsaFrameEnums {
   enum ParseState {
-    ERROR,
+    PARSE_ERROR,
     READING_HEADER_AND_FIRSTLINE,
     READING_CHUNK_LENGTH,
     READING_CHUNK_EXTENSION,

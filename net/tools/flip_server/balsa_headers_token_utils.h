@@ -9,7 +9,7 @@
 #define NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_TOKEN_UTILS_H_
 
 #include "net/tools/flip_server/balsa_headers.h"
-#include "strings/stringpiece.h"
+#include "base/string_piece.h"
 
 namespace net {
 
@@ -22,20 +22,20 @@ class BalsaHeadersTokenUtils {
   // presence of multiple header lines with given key, the last token of the
   // last line is compared.
   static bool CheckHeaderForLastToken(const BalsaHeaders& headers,
-                                      const StringPiece& key,
-                                      const StringPiece& token);
+                                      const base::StringPiece& key,
+                                      const base::StringPiece& token);
 
   // Tokenizes header value for a given key. In the presence of multiple lines
   // with that key, all of them will be tokenized and tokens will be added to
   // the list in the order in which they are encountered.
   static void TokenizeHeaderValue(const BalsaHeaders& headers,
-                                  const StringPiece& key,
+                                  const base::StringPiece& key,
                                   BalsaHeaders::HeaderTokenList* tokens);
 
   // Removes the last token from the header value. In the presence of multiple
   // header lines with given key, will remove the last token of the last line.
   // Can be useful if the last encoding has to be removed.
-  static void RemoveLastTokenFromHeaderValue(const StringPiece& key,
+  static void RemoveLastTokenFromHeaderValue(const base::StringPiece& key,
                                              BalsaHeaders* headers);
 
   // Given a pointer to the beginning and the end of the header value

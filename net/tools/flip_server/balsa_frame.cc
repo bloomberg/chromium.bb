@@ -16,17 +16,14 @@
 
 #include "base/logging.h"
 #include "base/port.h"
+#include "base/string_piece.h"
 #include "net/tools/flip_server/balsa_enums.h"
 #include "net/tools/flip_server/balsa_headers.h"
 #include "net/tools/flip_server/balsa_visitor_interface.h"
 #include "net/tools/flip_server/buffer_interface.h"
 #include "net/tools/flip_server/simple_buffer.h"
-#ifdef CHROMIUM
-#else
-#include "strings/split.h"
-#include "strings/stringpiece.h"  // for StringPiece
-#include "strings/stringpiece_utils.h"
-#endif
+#include "net/tools/flip_server/split.h"
+#include "net/tools/flip_server/string_piece_utils.h"
 
 namespace net {
 
@@ -350,7 +347,7 @@ bool ParseHTTPFirstLine(const char* begin,
       const char* parsed_response_code_current =
         begin + headers->non_whitespace_2_idx_;
       const char* parsed_response_code_end = begin + headers->whitespace_3_idx_;
-      const size_t kMaxDiv10 = numeric_limits<size_t>::max() / 10;
+      const size_t kMaxDiv10 = std::numeric_limits<size_t>::max() / 10;
 
       // Convert a string of [0-9]* into an int.
       // Note that this allows for the conversion of response codes which
@@ -365,7 +362,7 @@ bool ParseHTTPFirstLine(const char* begin,
         size_t status_code_x_10 = headers->parsed_response_code_ * 10;
         uint8 c = *parsed_response_code_current - '0';
         if ((headers->parsed_response_code_ > kMaxDiv10) ||
-            (numeric_limits<size_t>::max() - status_code_x_10) < c) {
+            (std::numeric_limits<size_t>::max() - status_code_x_10) < c) {
           // overflow.
           *error_code = BalsaFrameEnums::FAILED_CONVERTING_STATUS_CODE_TO_INT;
           return false;
@@ -396,7 +393,7 @@ void BalsaFrame::ProcessFirstLine(const char* begin, const char* end) {
                           max_request_uri_length_,
                           headers_,
                           &last_error_)) {
-    parse_state_ = BalsaFrameEnums::ERROR;
+    parse_state_ = BalsaFrameEnums::PARSE_ERROR;
     visitor_->HandleHeaderError(this);
     return;
   }
@@ -446,7 +443,8 @@ void BalsaFrame::CleanUpKeyValueWhitespace(
   DCHECK_LT(colon_loc, line_end);
   DCHECK_EQ(':', *colon_loc);
   DCHECK_EQ(':', *current);
-  DCHECK_GE(' ', *line_end) << "\"" << string(line_begin, line_end) << "\"";
+  DCHECK_GE(' ', *line_end)
+    << "\"" << std::string(line_begin, line_end) << "\"";
 
   // TODO(fenix): Investigate whether or not the bounds tests in the
   // while loops here are redundant, and if so, remove them.
@@ -512,7 +510,8 @@ inline void BalsaFrame::FindColonsAndParseIntoKeyValue() {
     //
     // We're guaranteed to have *line_end > ' ' while line_end >= line_begin.
     --line_end;
-    DCHECK_EQ('\n', *line_end) << "\"" << string(line_begin, line_end) << "\"";
+    DCHECK_EQ('\n', *line_end)
+      << "\"" << std::string(line_begin, line_end) << "\"";
     while (*line_end <= ' ' && line_end > line_begin) {
       --line_end;
     }
@@ -623,11 +622,11 @@ void BalsaFrame::ProcessContentLengthLine(
 #endif  // DEBUGFRAMER
       return;
     }
-    const size_t kMaxDiv10 = numeric_limits<size_t>::max() / 10;
+    const size_t kMaxDiv10 = std::numeric_limits<size_t>::max() / 10;
     size_t length_x_10 = *length * 10;
-    const char c = *value_begin - '0';
+    const unsigned char c = *value_begin - '0';
     if (*length > kMaxDiv10 ||
-        (numeric_limits<size_t>::max() - length_x_10) < c) {
+        (std::numeric_limits<size_t>::max() - length_x_10) < c) {
       *status = BalsaHeadersEnums::CONTENT_LENGTH_OVERFLOW;
 #if DEBUGFRAMER
       LOG(INFO) << "content-length overflow";
@@ -658,15 +657,15 @@ void BalsaFrame::ProcessTransferEncodingLine(HeaderLines::size_type line_idx) {
     headers_->transfer_encoding_is_chunked_ = false;
   } else {
     last_error_ = BalsaFrameEnums::UNKNOWN_TRANSFER_ENCODING;
-    parse_state_ = BalsaFrameEnums::ERROR;
+    parse_state_ = BalsaFrameEnums::PARSE_ERROR;
     visitor_->HandleHeaderError(this);
     return;
   }
 }
 
 namespace {
-bool SplitStringPiece(StringPiece original, char delim,
-                      StringPiece* before, StringPiece* after) {
+bool SplitStringPiece(base::StringPiece original, char delim,
+                      base::StringPiece* before, base::StringPiece* after) {
   const char* p = original.data();
   const char* end = p + original.size();
 
@@ -678,11 +677,11 @@ bool SplitStringPiece(StringPiece original, char delim,
       while (++p != end && *p != delim) {
         // Skip to the next occurence of the delimiter.
       }
-      *before = StringPiece(start, p - start);
+      *before = base::StringPiece(start, p - start);
       if (p != end)
-        *after = StringPiece(p + 1, end - (p + 1));
+        *after = base::StringPiece(p + 1, end - (p + 1));
       else
-        *after = StringPiece("");
+        *after = base::StringPiece("");
       StringPieceUtils::RemoveWhitespaceContext(before);
       StringPieceUtils::RemoveWhitespaceContext(after);
       return true;
@@ -697,15 +696,15 @@ bool SplitStringPiece(StringPiece original, char delim,
 // TODO(phython): Fix this function to properly deal with quoted values.
 // E.g. ";;foo", "\";;\"", or \"aa;
 // The last example, the semi-colon is a separator between extensions.
-void ProcessChunkExtensionsManual(StringPiece all_extensions,
+void ProcessChunkExtensionsManual(base::StringPiece all_extensions,
                                   BalsaHeaders* extensions) {
-  StringPiece extension;
-  StringPiece remaining;
+  base::StringPiece extension;
+  base::StringPiece remaining;
   StringPieceUtils::RemoveWhitespaceContext(&all_extensions);
   SplitStringPiece(all_extensions, ';', &extension, &remaining);
   while (!extension.empty()) {
-    StringPiece key;
-    StringPiece value;
+    base::StringPiece key;
+    base::StringPiece value;
     SplitStringPiece(extension, '=', &key, &value);
     if (!value.empty()) {
       // Strip quotation marks if they exist.
@@ -727,11 +726,12 @@ void ProcessChunkExtensionsManual(StringPiece all_extensions,
 // The last example, the semi-colon is a separator between extensions.
 void ProcessChunkExtensionsGoogle3(const char* input, size_t size,
                                    BalsaHeaders* extensions) {
-  vector<StringPiece> key_values;
-  SplitStringPieceToVector(StringPiece(input, size), ";", &key_values, true);
-  for (int i = 0; i < key_values.size(); ++i) {
-    StringPiece key = key_values[i].substr(0, key_values[i].find('='));
-    StringPiece value;
+  std::vector<base::StringPiece> key_values;
+  SplitStringPieceToVector(base::StringPiece(input, size), ";",
+                           &key_values, true);
+  for (unsigned int i = 0; i < key_values.size(); ++i) {
+    base::StringPiece key = key_values[i].substr(0, key_values[i].find('='));
+    base::StringPiece value;
     if (key.length() < key_values[i].length()) {
       value = key_values[i].substr(key.length() + 1);
       // Remove any leading and trailing whitespace.
@@ -757,7 +757,7 @@ void BalsaFrame::ProcessChunkExtensions(const char* input, size_t size,
 #if 0
   ProcessChunkExtensionsGoogle3(input, size, extensions);
 #else
-  ProcessChunkExtensionsManual(StringPiece(input, size), extensions);
+  ProcessChunkExtensionsManual(base::StringPiece(input, size), extensions);
 #endif
 }
 
@@ -795,7 +795,7 @@ void BalsaFrame::ProcessHeaderLines() {
       const size_t key_len = key_end - key_begin;
       const char c = *key_begin;
 #if DEBUGFRAMER
-      LOG(INFO) << "[" << i << "]: " << string(key_begin, key_len)
+      LOG(INFO) << "[" << i << "]: " << std::string(key_begin, key_len)
                 << " c: '" << c << "' key_len: " << key_len;
 #endif  // DEBUGFRAMER
       // If a header begins with either lowercase or uppercase 'c' or 't', then
@@ -818,7 +818,7 @@ void BalsaFrame::ProcessHeaderLines() {
                   BalsaHeadersEnums::VALID_CONTENT_LENGTH) &&
                  length != headers_->content_length_)) {
               last_error_ = BalsaFrameEnums::MULTIPLE_CONTENT_LENGTH_KEYS;
-              parse_state_ = BalsaFrameEnums::ERROR;
+              parse_state_ = BalsaFrameEnums::PARSE_ERROR;
               visitor_->HandleHeaderError(this);
               return;
             }
@@ -837,7 +837,7 @@ void BalsaFrame::ProcessHeaderLines() {
                              kTransferEncodingSize)) {
           if (transfer_encoding_idx != 0) {
             last_error_ = BalsaFrameEnums::MULTIPLE_TRANSFER_ENCODING_KEYS;
-            parse_state_ = BalsaFrameEnums::ERROR;
+            parse_state_ = BalsaFrameEnums::PARSE_ERROR;
             visitor_->HandleHeaderError(this);
             return;
           }
@@ -845,7 +845,7 @@ void BalsaFrame::ProcessHeaderLines() {
         }
       } else if (i == 0 && (key_len == 0 || c == ' ')) {
         last_error_ = BalsaFrameEnums::INVALID_HEADER_FORMAT;
-        parse_state_ = BalsaFrameEnums::ERROR;
+        parse_state_ = BalsaFrameEnums::PARSE_ERROR;
         visitor_->HandleHeaderError(this);
         return;
       }
@@ -899,7 +899,7 @@ void BalsaFrame::AssignParseStateAfterHeadersHaveBeenParsed() {
         case BalsaHeadersEnums::INVALID_CONTENT_LENGTH:
           // If there were characters left-over after parsing the
           // content length, we should flag an error and stop.
-          parse_state_ = BalsaFrameEnums::ERROR;
+          parse_state_ = BalsaFrameEnums::PARSE_ERROR;
           last_error_ = BalsaFrameEnums::UNPARSABLE_CONTENT_LENGTH;
           visitor_->HandleHeaderError(this);
           break;
@@ -911,14 +911,14 @@ void BalsaFrame::AssignParseStateAfterHeadersHaveBeenParsed() {
           // everything until the connection is closed is body.
         case BalsaHeadersEnums::NO_CONTENT_LENGTH:
           if (is_request_) {
-            StringPiece method = headers_->request_method();
+            base::StringPiece method = headers_->request_method();
             // POSTs and PUTs should have a detectable body length.  If they
             // do not we consider it an error.
             if ((method.size() == 4 &&
                  strncmp(method.data(), "POST", 4) == 0) ||
                 (method.size() == 3 &&
                  strncmp(method.data(), "PUT", 3) == 0)) {
-              parse_state_ = BalsaFrameEnums::ERROR;
+              parse_state_ = BalsaFrameEnums::PARSE_ERROR;
               last_error_ =
                   BalsaFrameEnums::REQUIRED_BODY_BUT_NO_CONTENT_LENGTH;
               visitor_->HandleHeaderError(this);
@@ -966,7 +966,7 @@ size_t BalsaFrame::ProcessHeaders(const char* message_start,
         const char c = *message_current;
         if (c != '\r' && c != '\n') {
           if (c <= ' ') {
-            parse_state_ = BalsaFrameEnums::ERROR;
+            parse_state_ = BalsaFrameEnums::PARSE_ERROR;
             last_error_ = BalsaFrameEnums::NO_REQUEST_LINE_IN_REQUEST;
             visitor_->HandleHeaderError(this);
             goto bottom;
@@ -1012,20 +1012,21 @@ size_t BalsaFrame::ProcessHeaders(const char* message_start,
           message_current += (ffs(newline_msk) - 1);
           const size_t relative_idx = message_current - message_start;
           const size_t message_current_idx = 1 + base_idx + relative_idx;
-          lines_.push_back(make_pair(last_slash_n_idx_, message_current_idx));
+          lines_.push_back(std::make_pair(last_slash_n_idx_,
+                                          message_current_idx));
           if (lines_.size() == 1) {
             headers_->WriteFromFramer(checkpoint,
                                       1 + message_current - checkpoint);
             checkpoint = message_current + 1;
             const char* begin = headers_->OriginalHeaderStreamBegin();
 #if DEBUGFRAMER
-          LOG(INFO) << "First line " << string(begin, lines_[0].second);
+          LOG(INFO) << "First line " << std::string(begin, lines_[0].second);
           LOG(INFO) << "is_request_: " << is_request_;
 #endif
             ProcessFirstLine(begin, begin + lines_[0].second);
             if (parse_state_ == BalsaFrameEnums::MESSAGE_FULLY_READ)
               goto process_lines;
-            else if (parse_state_ == BalsaFrameEnums::ERROR)
+            else if (parse_state_ == BalsaFrameEnums::PARSE_ERROR)
               goto bottom;
           }
           const size_t chars_since_last_slash_n = (message_current_idx -
@@ -1055,20 +1056,21 @@ size_t BalsaFrame::ProcessHeaders(const char* message_start,
         }
         const size_t relative_idx = message_current - message_start;
         const size_t message_current_idx = 1 + base_idx + relative_idx;
-        lines_.push_back(make_pair(last_slash_n_idx_, message_current_idx));
+        lines_.push_back(std::make_pair(last_slash_n_idx_,
+                                        message_current_idx));
         if (lines_.size() == 1) {
           headers_->WriteFromFramer(checkpoint,
                                     1 + message_current - checkpoint);
           checkpoint = message_current + 1;
           const char* begin = headers_->OriginalHeaderStreamBegin();
 #if DEBUGFRAMER
-          LOG(INFO) << "First line " << string(begin, lines_[0].second);
+          LOG(INFO) << "First line " << std::string(begin, lines_[0].second);
           LOG(INFO) << "is_request_: " << is_request_;
 #endif
           ProcessFirstLine(begin, begin + lines_[0].second);
           if (parse_state_ == BalsaFrameEnums::MESSAGE_FULLY_READ)
             goto process_lines;
-          else if (parse_state_ == BalsaFrameEnums::ERROR)
+          else if (parse_state_ == BalsaFrameEnums::PARSE_ERROR)
             goto bottom;
         }
         const size_t chars_since_last_slash_n = (message_current_idx -
@@ -1102,7 +1104,7 @@ size_t BalsaFrame::ProcessHeaders(const char* message_start,
     // the max_header_length_ (for example after processing the first line)
     // we handle it gracefully.
     if (headers_->GetReadableBytesFromHeaderStream() > max_header_length_) {
-      parse_state_ = BalsaFrameEnums::ERROR;
+      parse_state_ = BalsaFrameEnums::PARSE_ERROR;
       last_error_ = BalsaFrameEnums::HEADERS_TOO_LONG;
       visitor_->HandleHeaderError(this);
       goto bottom;
@@ -1123,11 +1125,11 @@ size_t BalsaFrame::ProcessHeaders(const char* message_start,
     // time to process the header lines (extract proper values for headers
     // which are important for framing).
     ProcessHeaderLines();
-    if (parse_state_ == BalsaFrameEnums::ERROR) {
+    if (parse_state_ == BalsaFrameEnums::PARSE_ERROR) {
       goto bottom;
     }
     AssignParseStateAfterHeadersHaveBeenParsed();
-    if (parse_state_ == BalsaFrameEnums::ERROR) {
+    if (parse_state_ == BalsaFrameEnums::PARSE_ERROR) {
       goto bottom;
     }
     visitor_->ProcessHeaders(*headers_);
@@ -1156,7 +1158,7 @@ size_t BalsaFrame::BytesSafeToSplice() const {
     case BalsaFrameEnums::READING_CHUNK_DATA:
       return chunk_length_remaining_;
     case BalsaFrameEnums::READING_UNTIL_CLOSE:
-      return numeric_limits<size_t>::max();
+      return std::numeric_limits<size_t>::max();
     case BalsaFrameEnums::READING_CONTENT:
       return content_length_remaining_;
     default:
@@ -1202,7 +1204,7 @@ void BalsaFrame::BytesSpliced(size_t bytes_spliced) {
   }
 
  error_exit:
-  parse_state_ = BalsaFrameEnums::ERROR;
+  parse_state_ = BalsaFrameEnums::PARSE_ERROR;
   visitor_->HandleBodyError(this);
 };
 
@@ -1243,7 +1245,7 @@ size_t BalsaFrame::ProcessInput(const char* input, size_t size) {
     // READING_HEADER_AND_FIRSTLINE) in which case we directly declare an error.
     if (header_length > max_header_length_ ||
         (header_length == max_header_length_ && size > 0)) {
-      parse_state_ = BalsaFrameEnums::ERROR;
+      parse_state_ = BalsaFrameEnums::PARSE_ERROR;
       last_error_ = BalsaFrameEnums::HEADERS_TOO_LONG;
       visitor_->HandleHeaderError(this);
       goto bottom;
@@ -1263,14 +1265,14 @@ size_t BalsaFrame::ProcessInput(const char* input, size_t size) {
       const size_t header_length_after =
           headers_->GetReadableBytesFromHeaderStream();
       if (header_length_after >= max_header_length_) {
-        parse_state_ = BalsaFrameEnums::ERROR;
+        parse_state_ = BalsaFrameEnums::PARSE_ERROR;
         last_error_ = BalsaFrameEnums::HEADERS_TOO_LONG;
         visitor_->HandleHeaderError(this);
       }
     }
     goto bottom;
   } else if (parse_state_ == BalsaFrameEnums::MESSAGE_FULLY_READ ||
-             parse_state_ == BalsaFrameEnums::ERROR) {
+             parse_state_ == BalsaFrameEnums::PARSE_ERROR) {
     // Can do nothing more 'till we're reset.
     goto bottom;
   }
@@ -1324,15 +1326,16 @@ size_t BalsaFrame::ProcessInput(const char* input, size_t size) {
           while (current < end) {
             const char c = *current;
             ++current;
-            const signed char addition = buf[c];
+            const signed char addition = buf[static_cast<int>(c)];
             if (addition >= 0) {
               chunk_length_character_extracted_ = true;
               size_t length_x_16 = chunk_length_remaining_ * 16;
-              const size_t kMaxDiv16 = numeric_limits<size_t>::max() / 16;
+              const size_t kMaxDiv16 = std::numeric_limits<size_t>::max() / 16;
               if ((chunk_length_remaining_ > kMaxDiv16) ||
-                  (numeric_limits<size_t>::max() - length_x_16) < addition) {
+                  ((std::numeric_limits<size_t>::max() - length_x_16) <
+                   static_cast<size_t>(addition))) {
                 // overflow -- asked for a chunk-length greater than 2^64 - 1!!
-                parse_state_ = BalsaFrameEnums::ERROR;
+                parse_state_ = BalsaFrameEnums::PARSE_ERROR;
                 last_error_ = BalsaFrameEnums::CHUNK_LENGTH_OVERFLOW;
                 visitor_->ProcessBodyInput(on_entry, current - on_entry);
                 visitor_->HandleChunkingError(this);
@@ -1346,7 +1349,7 @@ size_t BalsaFrame::ProcessInput(const char* input, size_t size) {
               // ^[0-9;A-Fa-f][ \t\n] -- was not matched, either because no
               // characters were converted, or an unexpected character was
               // seen.
-              parse_state_ = BalsaFrameEnums::ERROR;
+              parse_state_ = BalsaFrameEnums::PARSE_ERROR;
               last_error_ = BalsaFrameEnums::INVALID_CHUNK_LENGTH;
               visitor_->ProcessBodyInput(on_entry, current - on_entry);
               visitor_->HandleChunkingError(this);
@@ -1550,7 +1553,7 @@ size_t BalsaFrame::ProcessInput(const char* input, size_t size) {
  bottom:
 #if DEBUGFRAMER
   LOG(INFO) << "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
-    << string(input, current)
+    << std::string(input, current)
     << "\n$$$$$$$$$$$$$$"
     << BalsaFrameEnums::ParseStateToString(parse_state_)
     << "$$$$$$$$$$$$$$$"
@@ -1562,10 +1565,10 @@ size_t BalsaFrame::ProcessInput(const char* input, size_t size) {
   return current - input;
 }
 
-const int32 BalsaFrame::kValidTerm1;
-const int32 BalsaFrame::kValidTerm1Mask;
-const int32 BalsaFrame::kValidTerm2;
-const int32 BalsaFrame::kValidTerm2Mask;
+const uint32 BalsaFrame::kValidTerm1;
+const uint32 BalsaFrame::kValidTerm1Mask;
+const uint32 BalsaFrame::kValidTerm2;
+const uint32 BalsaFrame::kValidTerm2Mask;
 
 }  // namespace net
 

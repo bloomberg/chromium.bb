@@ -7,18 +7,19 @@
 #include <emmintrin.h>
 
 #include <algorithm>
-#include <hash_set>
+#include <ext/hash_set>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/googleinit.h"
+#include "base/logging.h"
 #include "base/port.h"
+#include "base/string_piece.h"
+#include "base/string_util.h"
 #include "net/tools/flip_server/balsa_enums.h"
 #include "net/tools/flip_server/buffer_interface.h"
 #include "net/tools/flip_server/simple_buffer.h"
-#include "strings/stringpiece.h"
-#include "strings/strutil.h"
+#include "third_party/tcmalloc/chromium/src/base/googleinit.h"
 // #include "util/gtl/iterator_adaptors-inl.h"
 // #include "util/gtl/map-util.h"
 
@@ -28,8 +29,9 @@ const char kContentLength[] = "Content-Length";
 const char kTransferEncoding[] = "Transfer-Encoding";
 const char kSpaceChar = ' ';
 
-hash_set<StringPiece, StringPieceCaseHash, StringPieceCaseEqual>
-g_multivalued_headers;
+__gnu_cxx::hash_set<base::StringPiece,
+                    net::StringPieceCaseHash,
+                    net::StringPieceCaseEqual> g_multivalued_headers;
 
 void InitMultivaluedHeaders() {
   g_multivalued_headers.insert("accept");
@@ -60,6 +62,8 @@ void InitMultivaluedHeaders() {
 }
 
 REGISTER_MODULE_INITIALIZER(multivalued_headers, InitMultivaluedHeaders());
+
+const int kFastToBufferSize = 32;  // I think 22 is adequate, but anyway..
 
 }  // namespace
 
@@ -168,8 +172,8 @@ void BalsaHeaders::CopyFrom(const BalsaHeaders& other) {
   header_lines_ = other.header_lines_;
 }
 
-void BalsaHeaders::AddAndMakeDescription(const StringPiece& key,
-                                         const StringPiece& value,
+void BalsaHeaders::AddAndMakeDescription(const base::StringPiece& key,
+                                         const base::StringPiece& value,
                                          HeaderLineDescription* d) {
   CHECK(d != NULL);
   // + 2 to size for ": "
@@ -193,17 +197,18 @@ void BalsaHeaders::AddAndMakeDescription(const StringPiece& key,
                              block_buffer_idx);
 }
 
-void BalsaHeaders::AppendOrPrependAndMakeDescription(const StringPiece& key,
-                                                     const StringPiece& value,
-                                                     bool append,
-                                                     HeaderLineDescription* d) {
+void BalsaHeaders::AppendOrPrependAndMakeDescription(
+    const base::StringPiece& key,
+    const base::StringPiece& value,
+    bool append,
+    HeaderLineDescription* d) {
   // Figure out how much space we need to reserve for the new header size.
   size_t old_value_size = d->last_char_idx - d->value_begin_idx;
   if (old_value_size == 0) {
     AddAndMakeDescription(key, value, d);
     return;
   }
-  StringPiece old_value(GetPtr(d->buffer_base_idx) + d->value_begin_idx,
+  base::StringPiece old_value(GetPtr(d->buffer_base_idx) + d->value_begin_idx,
                         old_value_size);
 
   BalsaBuffer::Blocks::size_type block_buffer_idx = 0;
@@ -212,8 +217,8 @@ void BalsaHeaders::AppendOrPrependAndMakeDescription(const StringPiece& key,
   char* storage = balsa_buffer_.Reserve(new_size, &block_buffer_idx);
   size_t base_idx = storage - GetPtr(block_buffer_idx);
 
-  StringPiece first_value = old_value;
-  StringPiece second_value = value;
+  base::StringPiece first_value = old_value;
+  base::StringPiece second_value = value;
   if (!append) {  // !append == prepend
     first_value = value;
     second_value = old_value;
@@ -239,7 +244,7 @@ void BalsaHeaders::AppendOrPrependAndMakeDescription(const StringPiece& key,
 }
 
 // Removes all keys value pairs with key 'key' starting at 'start'.
-void BalsaHeaders::RemoveAllOfHeaderStartingAt(const StringPiece& key,
+void BalsaHeaders::RemoveAllOfHeaderStartingAt(const base::StringPiece& key,
                                                HeaderLines::iterator start) {
   while (start != header_lines_.end()) {
     start->skip = true;
@@ -248,8 +253,8 @@ void BalsaHeaders::RemoveAllOfHeaderStartingAt(const StringPiece& key,
   }
 }
 
-void BalsaHeaders::HackHeader(const StringPiece& key,
-                              const StringPiece& value) {
+void BalsaHeaders::HackHeader(const base::StringPiece& key,
+                              const base::StringPiece& value) {
   // See TODO in balsa_headers.h
   const HeaderLines::iterator end = header_lines_.end();
   const HeaderLines::iterator begin = header_lines_.begin();
@@ -266,8 +271,8 @@ void BalsaHeaders::HackHeader(const StringPiece& key,
   AppendHeader(key, value);
 }
 
-void BalsaHeaders::HackAppendToHeader(const StringPiece& key,
-                                      const StringPiece& append_value) {
+void BalsaHeaders::HackAppendToHeader(const base::StringPiece& key,
+                                      const base::StringPiece& append_value) {
   // See TODO in balsa_headers.h
   const HeaderLines::iterator end = header_lines_.end();
   const HeaderLines::iterator begin = header_lines_.begin();
@@ -281,8 +286,8 @@ void BalsaHeaders::HackAppendToHeader(const StringPiece& key,
   AppendOrPrependAndMakeDescription(key, append_value, true, &(*i));
 }
 
-void BalsaHeaders::ReplaceOrAppendHeader(const StringPiece& key,
-                                         const StringPiece& value) {
+void BalsaHeaders::ReplaceOrAppendHeader(const base::StringPiece& key,
+                                         const base::StringPiece& value) {
   const HeaderLines::iterator end = header_lines_.end();
   const HeaderLines::iterator begin = header_lines_.begin();
   HeaderLines::iterator i = GetHeaderLinesIterator(key, begin);
@@ -299,31 +304,32 @@ void BalsaHeaders::ReplaceOrAppendHeader(const StringPiece& key,
   AppendHeader(key, value);
 }
 
-void BalsaHeaders::AppendHeader(const StringPiece& key,
-                                const StringPiece& value) {
+void BalsaHeaders::AppendHeader(const base::StringPiece& key,
+                                const base::StringPiece& value) {
   HeaderLineDescription hld;
   AddAndMakeDescription(key, value, &hld);
   header_lines_.push_back(hld);
 }
 
-void BalsaHeaders::AppendToHeader(const StringPiece& key,
-                                  const StringPiece& value) {
+void BalsaHeaders::AppendToHeader(const base::StringPiece& key,
+                                  const base::StringPiece& value) {
   AppendOrPrependToHeader(key, value, true);
 }
 
-void BalsaHeaders::PrependToHeader(const StringPiece& key,
-                                   const StringPiece& value) {
+void BalsaHeaders::PrependToHeader(const base::StringPiece& key,
+                                   const base::StringPiece& value) {
   AppendOrPrependToHeader(key, value, false);
 }
 
-StringPiece BalsaHeaders::GetValueFromHeaderLineDescription(
+base::StringPiece BalsaHeaders::GetValueFromHeaderLineDescription(
     const HeaderLineDescription& line) const {
   DCHECK_GE(line.last_char_idx, line.value_begin_idx);
-  return StringPiece(GetPtr(line.buffer_base_idx) + line.value_begin_idx,
+  return base::StringPiece(GetPtr(line.buffer_base_idx) + line.value_begin_idx,
                      line.last_char_idx - line.value_begin_idx);
 }
 
-const StringPiece BalsaHeaders::GetHeader(const StringPiece& key) const {
+const base::StringPiece BalsaHeaders::GetHeader(
+    const base::StringPiece& key) const {
   DCHECK(!IsMultivaluedHeader(key))
       << "Header '" << key << "' may consist of multiple lines. Do not "
       << "use BalsaHeaders::GetHeader() or you may be missing some of its "
@@ -332,13 +338,13 @@ const StringPiece BalsaHeaders::GetHeader(const StringPiece& key) const {
   const HeaderLines::const_iterator begin = header_lines_.begin();
   HeaderLines::const_iterator i = GetConstHeaderLinesIterator(key, begin);
   if (i == end) {
-    return StringPiece(NULL, 0);
+    return base::StringPiece(NULL, 0);
   }
   return GetValueFromHeaderLineDescription(*i);
 }
 
 BalsaHeaders::const_header_lines_iterator BalsaHeaders::GetHeaderPosition(
-    const StringPiece& key) const {
+    const base::StringPiece& key) const {
   const HeaderLines::const_iterator end = header_lines_.end();
   const HeaderLines::const_iterator begin = header_lines_.begin();
   HeaderLines::const_iterator i = GetConstHeaderLinesIterator(key, begin);
@@ -350,7 +356,7 @@ BalsaHeaders::const_header_lines_iterator BalsaHeaders::GetHeaderPosition(
 }
 
 BalsaHeaders::const_header_lines_key_iterator BalsaHeaders::GetIteratorForKey(
-    const StringPiece& key) const {
+    const base::StringPiece& key) const {
   HeaderLines::const_iterator i =
       GetConstHeaderLinesIterator(key, header_lines_.begin());
   if (i == header_lines_.end()) {
@@ -361,8 +367,8 @@ BalsaHeaders::const_header_lines_key_iterator BalsaHeaders::GetIteratorForKey(
   return const_header_lines_key_iterator(this, (i - begin), key);
 }
 
-void BalsaHeaders::AppendOrPrependToHeader(const StringPiece& key,
-                                           const StringPiece& value,
+void BalsaHeaders::AppendOrPrependToHeader(const base::StringPiece& key,
+                                           const base::StringPiece& value,
                                            bool append) {
   HeaderLines::iterator i = GetHeaderLinesIterator(key, header_lines_.begin());
   if (i == header_lines_.end()) {
@@ -382,7 +388,7 @@ void BalsaHeaders::AppendOrPrependToHeader(const StringPiece& key,
 
 BalsaHeaders::HeaderLines::const_iterator
 BalsaHeaders::GetConstHeaderLinesIterator(
-    const StringPiece& key,
+    const base::StringPiece& key,
     BalsaHeaders::HeaderLines::const_iterator start) const {
   const HeaderLines::const_iterator end = header_lines_.end();
   for (HeaderLines::const_iterator i = start; i != end; ++i) {
@@ -405,7 +411,7 @@ BalsaHeaders::GetConstHeaderLinesIterator(
 }
 
 BalsaHeaders::HeaderLines::iterator BalsaHeaders::GetHeaderLinesIteratorNoSkip(
-    const StringPiece& key,
+    const base::StringPiece& key,
     BalsaHeaders::HeaderLines::iterator start) {
   const HeaderLines::iterator end = header_lines_.end();
   for (HeaderLines::iterator i = start; i != end; ++i) {
@@ -425,7 +431,7 @@ BalsaHeaders::HeaderLines::iterator BalsaHeaders::GetHeaderLinesIteratorNoSkip(
 }
 
 BalsaHeaders::HeaderLines::iterator BalsaHeaders::GetHeaderLinesIterator(
-    const StringPiece& key,
+    const base::StringPiece& key,
     BalsaHeaders::HeaderLines::iterator start) {
   const HeaderLines::iterator end = header_lines_.end();
   for (HeaderLines::iterator i = start; i != end; ++i) {
@@ -448,14 +454,14 @@ BalsaHeaders::HeaderLines::iterator BalsaHeaders::GetHeaderLinesIterator(
 }
 
 void BalsaHeaders::GetAllOfHeader(
-    const StringPiece& key, vector<StringPiece>* out) const {
+    const base::StringPiece& key, std::vector<base::StringPiece>* out) const {
   for (const_header_lines_key_iterator it = GetIteratorForKey(key);
        it != header_lines_end(); ++it) {
     out->push_back(it->second);
   }
 }
 
-bool BalsaHeaders::HasNonEmptyHeader(const StringPiece& key) const {
+bool BalsaHeaders::HasNonEmptyHeader(const base::StringPiece& key) const {
   for (const_header_lines_key_iterator it = GetIteratorForKey(key);
        it != header_lines_key_end(); ++it) {
     if (!it->second.empty())
@@ -464,8 +470,8 @@ bool BalsaHeaders::HasNonEmptyHeader(const StringPiece& key) const {
   return false;
 }
 
-void BalsaHeaders::GetAllOfHeaderAsString(const StringPiece& key,
-                                          string* out) const {
+void BalsaHeaders::GetAllOfHeaderAsString(const base::StringPiece& key,
+                                          std::string* out) const {
   const_header_lines_iterator it = header_lines_begin();
   const_header_lines_iterator end = header_lines_end();
 
@@ -474,22 +480,22 @@ void BalsaHeaders::GetAllOfHeaderAsString(const StringPiece& key,
       if (!out->empty()) {
         out->append(",");
       }
-      out->append(string(it->second.data(), it->second.size()));
+      out->append(std::string(it->second.data(), it->second.size()));
     }
   }
 }
 
 // static
-bool BalsaHeaders::IsMultivaluedHeader(const StringPiece& header) {
+bool BalsaHeaders::IsMultivaluedHeader(const base::StringPiece& header) {
   return g_multivalued_headers.find(header) != g_multivalued_headers.end();
 }
 
-void BalsaHeaders::RemoveAllOfHeader(const StringPiece& key) {
+void BalsaHeaders::RemoveAllOfHeader(const base::StringPiece& key) {
   HeaderLines::iterator it = GetHeaderLinesIterator(key, header_lines_.begin());
   RemoveAllOfHeaderStartingAt(key, it);
 }
 
-void BalsaHeaders::RemoveAllHeadersWithPrefix(const StringPiece& key) {
+void BalsaHeaders::RemoveAllHeadersWithPrefix(const base::StringPiece& key) {
   for (HeaderLines::size_type i = 0; i < header_lines_.size(); ++i) {
     if (header_lines_[i].skip) {
       continue;
@@ -531,8 +537,8 @@ size_t BalsaHeaders::GetSizeForWriteBuffer() const {
   return write_buf_size + 2;
 }
 
-void BalsaHeaders::DumpToString(string* str) const {
-  const StringPiece firstline = first_line();
+void BalsaHeaders::DumpToString(std::string* str) const {
+  const base::StringPiece firstline = first_line();
   const int buffer_length =
       OriginalHeaderStreamEnd() - OriginalHeaderStreamBegin();
   // First check whether the header object is empty.
@@ -552,17 +558,20 @@ void BalsaHeaders::DumpToString(string* str) const {
   // If the header is complete, then just dump them with the logical key value
   // pair.
   str->reserve(str->size() + GetSizeForWriteBuffer());
-  StringAppendF(str, "\n %.*s\n", firstline.size(), firstline.data());
+  StringAppendF(str, "\n %.*s\n",
+                static_cast<int>(firstline.size()),
+                firstline.data());
   BalsaHeaders::const_header_lines_iterator i = header_lines_begin();
   for (; i != header_lines_end(); ++i) {
     StringAppendF(str, " %.*s: %.*s\n",
-                  i->first.size(), i->first.data(),
-                  i->second.size(), i->second.data());
+                  static_cast<int>(i->first.size()), i->first.data(),
+                  static_cast<int>(i->second.size()), i->second.data());
   }
 }
 
-void BalsaHeaders::SetFirstLine(const StringPiece& line) {
-  StringPiece new_line = balsa_buffer_.Write(line, &firstline_buffer_base_idx_);
+void BalsaHeaders::SetFirstLine(const base::StringPiece& line) {
+  base::StringPiece new_line = balsa_buffer_.Write(line,
+                                                   &firstline_buffer_base_idx_);
   whitespace_1_idx_ = new_line.data() - GetPtr(firstline_buffer_base_idx_);
   non_whitespace_1_idx_ = whitespace_1_idx_;
   whitespace_4_idx_ = whitespace_1_idx_ + line.size();
@@ -579,7 +588,8 @@ void BalsaHeaders::SetContentLength(size_t length) {
       content_length_ == length) {
     return;
   }
-  const StringPiece content_length(kContentLength, sizeof(kContentLength) - 1);
+  const base::StringPiece content_length(kContentLength,
+                                         sizeof(kContentLength) - 1);
   // If header state indicates that there is either a content length or
   // transfer encoding header, remove them before adding the new content
   // length. There is always the possibility that client can manually add
@@ -591,7 +601,7 @@ void BalsaHeaders::SetContentLength(size_t length) {
   if (content_length_status_ != BalsaHeadersEnums::NO_CONTENT_LENGTH) {
     RemoveAllOfHeader(content_length);
   } else if (transfer_encoding_is_chunked_) {
-    const StringPiece transfer_encoding(kTransferEncoding,
+    const base::StringPiece transfer_encoding(kTransferEncoding,
                                         sizeof(kTransferEncoding) - 1);
     RemoveAllOfHeader(transfer_encoding);
     transfer_encoding_is_chunked_ = false;
@@ -600,8 +610,9 @@ void BalsaHeaders::SetContentLength(size_t length) {
   content_length_ = length;
   // FastUInt64ToBuffer is supposed to use a maximum of kFastToBufferSize bytes.
   char buffer[kFastToBufferSize];
-  const char* endp = FastUInt64ToBufferLeft(length, buffer);
-  const StringPiece length_str(buffer, endp - buffer);
+  int len_converted = snprintf(buffer, sizeof(buffer), "%ld", length);
+  CHECK_GT(len_converted, 0);
+  const base::StringPiece length_str(buffer, len_converted);
   AppendHeader(content_length, length_str);
 }
 
@@ -614,17 +625,17 @@ void BalsaHeaders::SetChunkEncoding(bool chunk_encode) {
     // Want to change to chunk encoding, but have content length. Arguably we
     // can leave this step out, since transfer-encoding overrides
     // content-length.
-    const StringPiece content_length(kContentLength,
+    const base::StringPiece content_length(kContentLength,
                                      sizeof(kContentLength) - 1);
     RemoveAllOfHeader(content_length);
     content_length_status_ = BalsaHeadersEnums::NO_CONTENT_LENGTH;
     content_length_ = 0;
   }
-  const StringPiece transfer_encoding(kTransferEncoding,
+  const base::StringPiece transfer_encoding(kTransferEncoding,
                                       sizeof(kTransferEncoding) - 1);
   if (chunk_encode) {
     const char kChunked[] = "chunked";
-    const StringPiece chunked(kChunked, sizeof(kChunked) - 1);
+    const base::StringPiece chunked(kChunked, sizeof(kChunked) - 1);
     AppendHeader(transfer_encoding, chunked);
   } else {
     RemoveAllOfHeader(transfer_encoding);
@@ -635,9 +646,9 @@ void BalsaHeaders::SetChunkEncoding(bool chunk_encode) {
 // See the comment about this function in the header file for a
 // warning about its usage.
 void BalsaHeaders::SetFirstlineFromStringPieces(
-    const StringPiece& firstline_a,
-    const StringPiece& firstline_b,
-    const StringPiece& firstline_c) {
+    const base::StringPiece& firstline_a,
+    const base::StringPiece& firstline_b,
+    const base::StringPiece& firstline_c) {
   size_t line_size = (firstline_a.size() +
                       firstline_b.size() +
                       firstline_c.size() +
@@ -669,7 +680,7 @@ void BalsaHeaders::SetFirstlineFromStringPieces(
   end_of_firstline_idx_ = whitespace_4_idx_;
 }
 
-void BalsaHeaders::SetRequestMethod(const StringPiece& method) {
+void BalsaHeaders::SetRequestMethod(const base::StringPiece& method) {
   // This is the first of the three parts of the firstline.
   if (method.size() <= (whitespace_2_idx_ - non_whitespace_1_idx_)) {
     non_whitespace_1_idx_ = whitespace_2_idx_ - method.size();
@@ -684,7 +695,7 @@ void BalsaHeaders::SetRequestMethod(const StringPiece& method) {
   }
 }
 
-void BalsaHeaders::SetResponseVersion(const StringPiece& version) {
+void BalsaHeaders::SetResponseVersion(const base::StringPiece& version) {
   // Note: There is no difference between request_method() and
   // response_Version(). Thus, a function to set one is equivalent to a
   // function to set the other. We maintain two functions for this as it is
@@ -692,11 +703,11 @@ void BalsaHeaders::SetResponseVersion(const StringPiece& version) {
   SetRequestMethod(version);
 }
 
-void BalsaHeaders::SetRequestUri(const StringPiece& uri) {
+void BalsaHeaders::SetRequestUri(const base::StringPiece& uri) {
   SetFirstlineFromStringPieces(request_method(), uri, request_version());
 }
 
-void BalsaHeaders::SetResponseCode(const StringPiece& code) {
+void BalsaHeaders::SetResponseCode(const base::StringPiece& code) {
   // Note: There is no difference between request_uri() and response_code().
   // Thus, a function to set one is equivalent to a function to set the other.
   // We maintain two functions for this as it is much more descriptive, and
@@ -707,13 +718,13 @@ void BalsaHeaders::SetResponseCode(const StringPiece& code) {
 void BalsaHeaders::SetParsedResponseCodeAndUpdateFirstline(
     size_t parsed_response_code) {
   char buffer[kFastToBufferSize];
-  const char* endp = FastUInt32ToBufferLeft(parsed_response_code, buffer);
-  parsed_response_code_ = parsed_response_code;
-
-  SetResponseCode(StringPiece(buffer, endp - buffer));
+  int len_converted = snprintf(buffer, sizeof(buffer),
+                               "%ld", parsed_response_code);
+  CHECK_GT(len_converted, 0);
+  SetResponseCode(base::StringPiece(buffer, len_converted));
 }
 
-void BalsaHeaders::SetRequestVersion(const StringPiece& version) {
+void BalsaHeaders::SetRequestVersion(const base::StringPiece& version) {
   // This is the last of the three parts of the firstline.
   // Since whitespace_3_idx and non_whitespace_3_idx may point to the same
   // place, we ensure below that any available space includes space for a
@@ -736,7 +747,7 @@ void BalsaHeaders::SetRequestVersion(const StringPiece& version) {
   }
 }
 
-void BalsaHeaders::SetResponseReasonPhrase(const StringPiece& reason) {
+void BalsaHeaders::SetResponseReasonPhrase(const base::StringPiece& reason) {
   // Note: There is no difference between request_version() and
   // response_reason_phrase(). Thus, a function to set one is equivalent to a
   // function to set the other. We maintain two functions for this as it is
