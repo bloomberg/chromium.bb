@@ -136,7 +136,7 @@ def KillAllProcess(process_name):
   #   $ killall -u $USER -TERM lighttpd
   #   killall: illegal option -- T
   # Use of the earlier -TERM placement is just fine on 10.5.
-  null = open("/dev/null");
+  null = open(os.devnull);
   subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), process_name],
                   stderr=null)
   null.close()

@@ -153,7 +153,7 @@ def KillProcess(pid):
   os.kill(pid, signal.SIGKILL)
 
 def KillAllProcess(process_name):
-  null = open("/dev/null");
+  null = open(os.devnull);
   subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), process_name],
                   stderr=null)
   null.close()
