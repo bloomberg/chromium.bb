@@ -1,0 +1,33 @@
+CONSOLE MESSAGE: line 24: Uncaught ReferenceError: testExpected is not defined
+layer at (0,0) size 785x622
+  RenderView at (0,0) size 785x600
+layer at (0,0) size 785x622
+  RenderBlock {HTML} at (0,0) size 785x622
+    RenderBody {BODY} at (8,8) size 769x606
+      RenderText {#text} at (326,141) size 4x19
+        text run at (326,141) width 4: " "
+      RenderBR {BR} at (0,0) size 0x0
+      RenderText {#text} at (82,255) size 4x19
+        text run at (82,255) width 4: " "
+      RenderText {#text} at (168,255) size 4x19
+        text run at (168,255) width 4: " "
+      RenderBR {BR} at (0,0) size 0x0
+      RenderText {#text} at (56,586) size 4x19
+        text run at (56,586) width 4: " "
+      RenderText {#text} at (386,586) size 4x19
+        text run at (386,586) width 4: " "
+      RenderText {#text} at (716,586) size 4x19
+        text run at (716,586) width 4: " "
+      RenderBR {BR} at (0,0) size 0x0
+layer at (8,8) size 326x156
+  RenderVideo {VIDEO} at (0,0) size 326x156 [bgcolor=#EE00EE] [border: (3px solid #FF0000)]
+layer at (8,169) size 82x109
+  RenderVideo {VIDEO} at (0,161) size 82x109 [bgcolor=#EE00EE] [border: (3px solid #FF0000)]
+layer at (94,169) size 82x109
+  RenderVideo {VIDEO} at (86,161) size 82x109 [bgcolor=#EE00EE] [border: (3px solid #FF0000)]
+layer at (8,283) size 56x326
+  RenderVideo {VIDEO} at (0,275) size 56x326 [bgcolor=#EE00EE] [border: (3px solid #FF0000)]
+layer at (68,363) size 326x246
+  RenderVideo {VIDEO} at (60,355) size 326x246 [bgcolor=#EE00EE] [border: (3px solid #FF0000)]
+layer at (398,553) size 326x56
+  RenderVideo {VIDEO} at (390,545) size 326x56 [bgcolor=#EE00EE] [border: (3px solid #FF0000)]
