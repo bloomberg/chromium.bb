@@ -273,6 +273,7 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
   params.page_url = page_url_;
   params.arg_names = arg_names;
   params.arg_values = arg_values;
+  params.host_render_view_routing_id = render_view_->routing_id();
   for (size_t i = 0; i < arg_names.size(); ++i) {
     if (LowerCaseEqualsASCII(arg_names[i], "wmode") &&
         LowerCaseEqualsASCII(arg_values[i], "transparent")) {
