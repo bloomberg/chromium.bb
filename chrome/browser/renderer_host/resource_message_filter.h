@@ -129,6 +129,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                        std::vector<webkit_glue::WebCookie>* raw_cookies);
   void OnDeleteCookie(const GURL& url,
                       const std::string& cookieName);
+  void OnGetCookiesEnabled(const GURL& url,
+                           const GURL& first_party_for_cookies,
+                           bool* enabled);
   void OnPluginFileDialog(const IPC::Message& msg,
                           bool multiple_files,
                           const std::wstring& title,

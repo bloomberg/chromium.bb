@@ -1064,6 +1064,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               GURL /* url */,
                               std::string /* cookie_name */)
 
+  // Used to get raw cookie information for the given URL
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_GetCookiesEnabled,
+                              GURL /* url */,
+                              GURL /* first_party_for_cookies */,
+                              bool /* enabled */)
+
   // Used to get the list of plugins
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,
                               bool /* refresh*/,

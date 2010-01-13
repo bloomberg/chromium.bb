@@ -158,6 +158,15 @@ void RendererWebKitClientImpl::deleteCookie(const WebURL& url,
       new ViewHostMsg_DeleteCookie(url, cookie_name_utf8));
 }
 
+bool RendererWebKitClientImpl::cookiesEnabled(
+    const WebKit::WebURL& url, const WebKit::WebURL& first_party_for_cookies) {
+  bool enabled;
+  RenderThread::current()->Send(
+      new ViewHostMsg_GetCookiesEnabled(
+            url, first_party_for_cookies, &enabled));
+  return enabled;
+}
+
 void RendererWebKitClientImpl::prefetchHostName(const WebString& hostname) {
   if (!hostname.isEmpty()) {
     std::string hostname_utf8;

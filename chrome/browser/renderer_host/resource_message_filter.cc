@@ -305,6 +305,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetCookies, OnGetCookies)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetRawCookies, OnGetRawCookies)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_GetCookiesEnabled, OnGetCookiesEnabled)
 #if defined(OS_WIN)  // This hack is Windows-specific.
       IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
@@ -539,6 +540,15 @@ void ResourceMessageFilter::OnDeleteCookie(const GURL& url,
                                            const std::string& cookie_name) {
   URLRequestContext* context = GetRequestContextForURL(url);
   context->cookie_store()->DeleteCookie(url, cookie_name);
+}
+
+void ResourceMessageFilter::OnGetCookiesEnabled(
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    bool* enabled) {
+  URLRequestContext* context = GetRequestContextForURL(url);
+  *enabled =
+      context->cookie_policy()->type() != net::CookiePolicy::BLOCK_ALL_COOKIES;
 }
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
