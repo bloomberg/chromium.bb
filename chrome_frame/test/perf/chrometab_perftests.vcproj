@@ -200,10 +200,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\chrome\test\chrome_process_util_win.cc"
-					>
-				</File>
-				<File
 					RelativePath="..\html_utils.cc"
 					>
 				</File>

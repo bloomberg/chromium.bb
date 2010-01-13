@@ -292,7 +292,6 @@
             '../chrome/installer/installer.gyp:installer_util',
           ],
           'sources': [
-            '../chrome/test/chrome_process_util_win.cc',
             '../base/test/test_file_util_win.cc',
           ]
         }],
@@ -379,10 +378,8 @@
         '../chrome/test/ui/ui_test.cc',
         '../chrome/test/ui/ui_test_suite.cc',
         '../chrome/test/ui/ui_test_suite.h',
-        '../chrome/test/chrome_process_util_win.cc',
         '../chrome/test/chrome_process_util.cc',
         '../chrome/test/chrome_process_util.h',
-        '../chrome/test/chrome_process_util_win.cc',
       ],
       'include_dirs': [
         # To allow including "chrome_tab.h"
