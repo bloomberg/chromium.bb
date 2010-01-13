@@ -13,7 +13,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/devtools/devtools_message_data.h"
-#include "webkit/glue/glue_util.h"
 
 using WebKit::WebDevToolsAgent;
 using WebKit::WebPoint;
@@ -125,11 +124,8 @@ void DevToolsAgent::OnInspectElement(int x, int y) {
 
 void DevToolsAgent::OnSetApuAgentEnabled(bool enabled) {
   WebDevToolsAgent* web_agent = GetWebAgent();
-  if (web_agent) {
-    web_agent->setRuntimeFeatureEnabled(
-        webkit_glue::StdStringToWebString("apu-agent"),
-        enabled);
-  }
+  if (web_agent)
+    web_agent->setRuntimeFeatureEnabled("apu-agent", enabled);
 }
 
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
@@ -142,5 +138,5 @@ WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
 // static
 void WebKit::WebDevToolsAgentClient::sendMessageToFrontendOnIOThread(
     const WebDevToolsMessageData& data) {
-    DevToolsAgentFilter::SendRpcMessage(DevToolsMessageData(data));
+  DevToolsAgentFilter::SendRpcMessage(DevToolsMessageData(data));
 }

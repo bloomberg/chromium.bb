@@ -11,7 +11,6 @@
 #include "webkit/tools/test_shell/test_shell_devtools_client.h"
 
 #include "base/message_loop.h"
-#include "webkit/glue/glue_util.h"
 
 using WebKit::WebDevToolsAgent;
 using WebKit::WebDevToolsMessageData;
@@ -113,8 +112,7 @@ bool TestShellDevToolsAgent::evaluateInWebInspector(
   WebDevToolsAgent* agent = GetWebAgent();
   if (!agent)
     return false;
-  agent->evaluateInWebInspector(call_id,
-                                webkit_glue::StdStringToWebString(script));
+  agent->evaluateInWebInspector(call_id, WebString::fromUTF8(script));
   return true;
 }
 

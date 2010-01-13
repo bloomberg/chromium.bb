@@ -39,7 +39,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/win/WebInputEventFactory.h"
 #endif
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/glue_util.h"
 #include "v8/include/v8.h"
 
 #include "webkit_version.h"  // Generated

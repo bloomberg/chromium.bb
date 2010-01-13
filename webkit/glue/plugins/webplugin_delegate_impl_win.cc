@@ -19,7 +19,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/default_plugin/plugin_impl.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"

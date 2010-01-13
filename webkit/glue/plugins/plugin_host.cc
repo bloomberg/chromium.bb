@@ -13,7 +13,6 @@
 #include "net/base/net_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webkit_glue.h"

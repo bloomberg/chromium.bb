@@ -25,7 +25,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugininfo.h"

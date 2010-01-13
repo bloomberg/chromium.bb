@@ -20,7 +20,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/gtk_plugin_container.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"

@@ -9,7 +9,6 @@
 #undef LOG
 
 #include "base/logging.h"
-#include "webkit/glue/glue_util.h"
 #include "base/thread.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"

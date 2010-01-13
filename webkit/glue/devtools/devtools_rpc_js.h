@@ -14,7 +14,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
-#include "webkit/glue/glue_util.h"
 
 ///////////////////////////////////////////////////////
 // JS RPC binds and stubs

@@ -21,7 +21,6 @@
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"

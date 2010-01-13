@@ -30,7 +30,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_LINUX)
@@ -83,14 +82,14 @@ bool RendererWebKitClientImpl::sandboxEnabled() {
 
 bool RendererWebKitClientImpl::getFileSize(const WebString& path,
                                            long long& result) {
-  if (RenderThread::current()->Send(new ViewHostMsg_GetFileSize(
-      FilePath(webkit_glue::WebStringToFilePathString(path)),
-      reinterpret_cast<int64*>(&result)))) {
+  if (RenderThread::current()->Send(
+          new ViewHostMsg_GetFileSize(webkit_glue::WebStringToFilePath(path),
+                                      reinterpret_cast<int64*>(&result)))) {
     return result >= 0;
-  } else {
-    result = -1;
-    return false;
   }
+
+  result = -1;
+  return false;
 }
 
 unsigned long long RendererWebKitClientImpl::visitedLinkHash(
@@ -387,8 +386,8 @@ WebKit::WebString RendererWebKitClientImpl::signedPublicKeyAndChallengeString(
   std::string signed_public_key;
   RenderThread::current()->Send(new ViewHostMsg_Keygen(
       static_cast<uint32>(key_size_index),
-      webkit_glue::WebStringToStdString(challenge),
+      challenge.utf8(),
       GURL(url),
       &signed_public_key));
-  return webkit_glue::StdStringToWebString(signed_public_key);
+  return WebString::fromUTF8(signed_public_key);
 }

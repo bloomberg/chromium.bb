@@ -19,7 +19,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/form_data.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webpasswordautocompletelistener_impl.h"
 
 using WebKit::WebAnimationController;

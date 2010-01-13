@@ -4,7 +4,6 @@
 
 #include "webkit/glue/plugins/plugin_stream_url.h"
 
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_instance.h"

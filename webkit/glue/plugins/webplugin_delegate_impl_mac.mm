@@ -18,7 +18,6 @@
 #include "base/string_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/default_plugin/plugin_impl.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/coregraphics_private_symbols_mac.h"
 #include "webkit/glue/plugins/fake_plugin_window_tracker_mac.h"

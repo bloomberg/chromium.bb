@@ -97,7 +97,6 @@
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/image_decoder.h"
 #include "webkit/glue/media/buffered_data_source.h"
@@ -2093,7 +2092,7 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
   WebSearchableFormData web_searchable_form_data(form);
   navigation_state->set_searchable_form_url(web_searchable_form_data.url());
   navigation_state->set_searchable_form_encoding(
-      webkit_glue::WebStringToStdString(web_searchable_form_data.encoding()));
+      web_searchable_form_data.encoding().utf8());
   navigation_state->set_password_form_data(
       PasswordFormDomManager::CreatePasswordForm(form));
 

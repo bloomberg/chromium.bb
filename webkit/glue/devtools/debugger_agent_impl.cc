@@ -21,7 +21,6 @@
 #include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webkit_glue.h"
 

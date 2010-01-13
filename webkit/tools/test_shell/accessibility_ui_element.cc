@@ -5,7 +5,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/tools/test_shell/accessibility_ui_element.h"
 
 using WebKit::WebCString;

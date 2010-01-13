@@ -39,7 +39,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
 #include "webkit/glue/media/simple_data_source.h"
@@ -98,8 +97,6 @@ using WebKit::WebWidget;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
 using WebKit::WebView;
-
-using webkit_glue::AccessibilityObjectToWebAccessibilityObject;
 
 namespace {
 
