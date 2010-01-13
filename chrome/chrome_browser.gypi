@@ -402,7 +402,7 @@
         'browser/cocoa/command_observer_bridge.mm',
         'browser/cocoa/constrained_window_mac.h',
         'browser/cocoa/constrained_window_mac.mm',
-        'browser/cooca/cookie_tree_node.h',
+        'browser/cocoa/cookie_tree_node.h',
         'browser/cocoa/cookie_tree_node.mm',
         'browser/cocoa/cookies_window_controller.h',
         'browser/cocoa/cookies_window_controller.mm',
