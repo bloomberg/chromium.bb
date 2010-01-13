@@ -22,7 +22,6 @@ class BrowserWindowGtk;
 class CustomDrawButton;
 class GtkThemeProvider;
 class TabContents;
-class TabStripGtk;
 
 class BrowserTitlebar : public MenuGtk::Delegate,
                         public NotificationObserver,
