@@ -59,6 +59,13 @@
       ],
     },
     {
+      'target_name': 'pull_in_webkit_unit_tests',
+      'type': 'none',
+      'dependencies': [
+        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit_unit_tests'
+      ],
+    },
+    {
       'target_name': 'webkit_resources',
       'type': 'none',
       'msvs_guid': '0B469837-3D46-484A-AFB3-C5A6C68730B9',
