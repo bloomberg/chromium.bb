@@ -2948,7 +2948,6 @@ BUG30048 BUG29737 : LayoutTests/svg/filters/shadow-on-rect-with-filter.svg = IMA
 BUG30048 : LayoutTests/svg/css/arrow-with-shadow.svg = IMAGE
 BUG30048 : LayoutTests/svg/css/circle-in-mask-with-shadow.svg = IMAGE
 BUG30048 : LayoutTests/svg/css/group-with-shadow.svg = IMAGE
-BUG30048 : LayoutTests/svg/css/path-with-shadow.svg = IMAGE
 BUG30048 WIN MAC : LayoutTests/svg/css/stars-with-shadow.html = IMAGE
 
 // New tests courtesy of: http://trac.webkit.org/changeset/51936:
