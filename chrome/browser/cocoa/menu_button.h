@@ -7,12 +7,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/scoped_nsobject.h"
+
 // This a button which displays a user-provided menu "attached" below it upon
 // being clicked or dragged (or clicked and held). It expects a
 // |ClickHoldButtonCell| as cell.
 @interface MenuButton : NSButton {
  @private
   IBOutlet NSMenu* attachedMenu_;
+  scoped_nsobject<NSPopUpButtonCell> popUpCell_;
 }
 
 // The menu to display. Note that it should have no (i.e., a blank) title and

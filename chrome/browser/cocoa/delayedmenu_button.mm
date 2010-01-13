@@ -118,16 +118,20 @@
   // However, using a pulldown has the benefit that Cocoa automatically places
   // the menu correctly even when we're at the edge of the screen (including
   // "dragging upwards" when the button is close to the bottom of the screen).
-  scoped_nsobject<NSPopUpButtonCell> popUpCell(
-      [[NSPopUpButtonCell alloc] initTextCell:@""
-                                    pullsDown:YES]);
-  DCHECK(popUpCell.get());
-  [popUpCell setMenu:attachedMenu_];
-  [popUpCell selectItem:nil];
-  [popUpCell attachPopUpWithFrame:frame
-                           inView:self];
-  [popUpCell performClickWithFrame:frame
+  // A |scoped_nsobject| local variable cannot be used here because
+  // Accessibility on 10.5 grabs the NSPopUpButtonCell without retaining it, and
+  // uses it later. (This is fixed in 10.6.)
+  if (!popUpCell_.get()) {
+    popUpCell_.reset([[NSPopUpButtonCell alloc] initTextCell:@""
+                                                   pullsDown:YES]);
+  }
+  DCHECK(popUpCell_.get());
+  [popUpCell_ setMenu:attachedMenu_];
+  [popUpCell_ selectItem:nil];
+  [popUpCell_ attachPopUpWithFrame:frame
                             inView:self];
+  [popUpCell_ performClickWithFrame:frame
+                             inView:self];
 }
 
 @end  // @implementation DelayedMenuButton (Private)

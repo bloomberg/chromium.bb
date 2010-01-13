@@ -12,6 +12,7 @@
 @interface DelayedMenuButton : NSButton {
   NSMenu* attachedMenu_;  // Strong (retained).
   BOOL attachedMenuEnabled_;
+  scoped_nsobject<NSPopUpButtonCell> popUpCell_;
 }
 
 // The menu to display. Note that it should have no (i.e., a blank) title and
