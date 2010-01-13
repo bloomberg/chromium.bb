@@ -3077,5 +3077,6 @@ BUG32195 : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelection-
 BUG32201 LINUX DEBUG : LayoutTests/fast/text/atsui-spacing-features.html = IMAGE+TEXT
 
 // Expectations from roll to 53171:53194
-BUG32206 SLOW : LayoutTests/storage/database-lock-after-reload.html = PASS
-
+BUG32206 SLOW WIN MAC : LayoutTests/storage/database-lock-after-reload.html = PASS
+BUG32206 SLOW LINUX RELEASE : LayoutTests/storage/database-lock-after-reload.html = PASS
+BUG32206 SLOW LINUX DEBUG : LayoutTests/storage/database-lock-after-reload.html = PASS CRASH
