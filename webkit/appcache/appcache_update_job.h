@@ -174,6 +174,7 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   void Cancel();
   void ClearPendingMasterEntries();
   void DiscardInprogressCache();
+  void DiscardDuplicateResponses();
 
   // Deletes this object after letting the stack unwind.
   void DeleteSoon();
@@ -239,6 +240,13 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   // Response ids stored by this update job, used to cleanup in
   // error conditions.
   std::vector<int64> stored_response_ids_;
+
+  // In some cases we fetch the same resource multiple times, and then
+  // have to delete the duplicates upon successful update. These ids
+  // are also in the stored_response_ids_ collection so we only schedule
+  // these for deletion on success.
+  // TODO(michaeln): Rework when we no longer fetches master entries directly.
+  std::vector<int64> duplicate_response_ids_;
 
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_info_write_callback_;
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_write_callback_;

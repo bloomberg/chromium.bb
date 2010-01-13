@@ -94,6 +94,11 @@ const struct {
     "(cache_id, url)",
     true },
 
+  { "EntriesResponseIdIndex",
+    kEntriesTable,
+    "(response_id)",
+    true },
+
   { "FallbackNameSpacesCacheIndex",
     kFallbackNameSpacesTable,
     "(cache_id)",
@@ -179,26 +184,33 @@ bool AppCacheDatabase::FindLastStorageIds(
 
   const char* kMaxGroupIdSql = "SELECT MAX(group_id) FROM Groups";
   const char* kMaxCacheIdSql = "SELECT MAX(cache_id) FROM Caches";
+  const char* kMaxResponseIdFromEntriesSql =
+      "SELECT MAX(response_id) FROM Entries";
+  const char* kMaxResponseIdFromDeletablesSql =
+      "SELECT MAX(response_id) FROM DeletableResponseIds";
   const char* kMaxDeletableResponseRowIdSql =
       "SELECT MAX(rowid) FROM DeletableResponseIds";
-  int64 group_id;
-  int64 cache_id;
-  int64 deletable_response_rowid;
-  if (!RunUniqueStatementWithInt64Result(kMaxGroupIdSql, &group_id) ||
-      !RunUniqueStatementWithInt64Result(kMaxCacheIdSql, &cache_id) ||
+  int64 max_group_id;
+  int64 max_cache_id;
+  int64 max_response_id_from_entries;
+  int64 max_response_id_from_deletables;
+  int64 max_deletable_response_rowid;
+  if (!RunUniqueStatementWithInt64Result(kMaxGroupIdSql, &max_group_id) ||
+      !RunUniqueStatementWithInt64Result(kMaxCacheIdSql, &max_cache_id) ||
+      !RunUniqueStatementWithInt64Result(kMaxResponseIdFromEntriesSql,
+                                         &max_response_id_from_entries) ||
+      !RunUniqueStatementWithInt64Result(kMaxResponseIdFromDeletablesSql,
+                                         &max_response_id_from_deletables) ||
       !RunUniqueStatementWithInt64Result(kMaxDeletableResponseRowIdSql,
-                                         &deletable_response_rowid)) {
+                                         &max_deletable_response_rowid)) {
     return false;
   }
 
-  // TODO(michaeln): SELECT MAX(responseId) FROM somewhere,
-  // or retrieve from the meta_table.
-  int64 response_id = 0;
-
-  *last_group_id = group_id;
-  *last_cache_id = cache_id;
-  *last_response_id = response_id;
-  *last_deletable_response_rowid = deletable_response_rowid;
+  *last_group_id = max_group_id;
+  *last_cache_id = max_cache_id;
+  *last_response_id = std::max(max_response_id_from_entries,
+                               max_response_id_from_deletables);
+  *last_deletable_response_rowid = max_deletable_response_rowid;
   return true;
 }
 
@@ -810,6 +822,33 @@ bool AppCacheDatabase::PrepareCachedStatement(
     return false;
   }
   return true;
+}
+
+bool AppCacheDatabase::FindResponseIdsForCacheHelper(
+    int64 cache_id, std::vector<int64>* ids_vector,
+    std::set<int64>* ids_set) {
+  DCHECK(ids_vector || ids_set);
+  DCHECK(!(ids_vector && ids_set));
+  if (!LazyOpen(false))
+    return false;
+
+  const char* kSql =
+      "SELECT response_id FROM Entries WHERE cache_id = ?";
+
+  sql::Statement statement;
+  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
+    return false;
+
+  statement.BindInt64(0, cache_id);
+  while (statement.Step()) {
+    int64 id = statement.ColumnInt64(0);
+    if (ids_set)
+      ids_set->insert(id);
+    else
+      ids_vector->push_back(id);
+  }
+
+  return statement.Succeeded();
 }
 
 void AppCacheDatabase::ReadGroupRecord(

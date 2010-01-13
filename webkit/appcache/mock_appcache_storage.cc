@@ -149,8 +149,13 @@ AppCacheResponseWriter* MockAppCacheStorage::CreateResponseWriter(
 
 void MockAppCacheStorage::DoomResponses(
     const GURL& manifest_url, const std::vector<int64>& response_ids) {
+  DeleteResponses(manifest_url, response_ids);
+}
+
+void MockAppCacheStorage::DeleteResponses(
+    const GURL& manifest_url, const std::vector<int64>& response_ids) {
   // We don't bother with actually removing responses from the disk-cache,
-  // just keep track of which ids have been doomed.
+  // just keep track of which ids have been doomed or deleted
   std::vector<int64>::const_iterator it = response_ids.begin();
   while (it != response_ids.end()) {
     doomed_response_ids_.insert(*it);

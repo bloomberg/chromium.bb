@@ -140,15 +140,18 @@ class AppCacheStorage {
   virtual AppCacheResponseWriter* CreateResponseWriter(
       const GURL& manifest_url) = 0;
 
-  // Schedules the imminent deletion of many responses.
+  // Schedules the lazy deletion of responses and saves the ids
+  // persistently such that the responses will be deleted upon restart
+  // if they aren't deleted prior to shutdown.
   virtual void DoomResponses(
       const GURL& manifest_url, const std::vector<int64>& response_ids) = 0;
 
-  // Schedules the imminent deletion of a single response.
-  void DoomResponse(const GURL& manifest_url, int64 response_id) {
-    std::vector<int64> response_ids(1, response_id);
-    DoomResponses(manifest_url, response_ids);
-  }
+  // Schedules the lazy deletion of responses without persistently saving
+  // the response ids.
+  virtual void DeleteResponses(
+      const GURL& manifest_url, const std::vector<int64>& response_ids) = 0;
+
+  virtual void PurgeMemory() = 0;
 
   // Generates unique storage ids for different object types.
   int64 NewCacheId() {

@@ -42,6 +42,9 @@ class AppCacheStorageImpl : public AppCacheStorage {
       const GURL& manifest_url);
   virtual void DoomResponses(
       const GURL& manifest_url, const std::vector<int64>& response_ids);
+  virtual void DeleteResponses(
+      const GURL& manifest_url, const std::vector<int64>& response_ids);
+  virtual void PurgeMemory();
 
  private:
   friend class AppCacheStorageImplTest;

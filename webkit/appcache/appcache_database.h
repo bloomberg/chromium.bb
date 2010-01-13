@@ -99,6 +99,14 @@ class AppCacheDatabase {
   bool DeleteEntriesForCache(int64 cache_id);
   bool AddEntryFlags(const GURL& entry_url, int64 cache_id,
                      int additional_flags);
+  bool FindResponseIdsForCacheAsVector(
+      int64 cache_id, std::vector<int64>* response_ids) {
+    return FindResponseIdsForCacheHelper(cache_id, response_ids, NULL);
+  }
+  bool FindResponseIdsForCacheAsSet(
+      int64 cache_id, std::set<int64>* response_ids) {
+    return FindResponseIdsForCacheHelper(cache_id, NULL, response_ids);
+  }
 
   bool FindFallbackNameSpacesForOrigin(
       const GURL& origin, std::vector<FallbackNameSpaceRecord>* records);
@@ -136,6 +144,10 @@ class AppCacheDatabase {
   bool PrepareUniqueStatement(const char* sql, sql::Statement* statement);
   bool PrepareCachedStatement(
       const sql::StatementID& id, const char* sql, sql::Statement* statement);
+
+  bool FindResponseIdsForCacheHelper(
+      int64 cache_id, std::vector<int64>* ids_vector,
+      std::set<int64>* ids_set);
 
   // Record retrieval helpers
   void ReadGroupRecord(const sql::Statement& statement, GroupRecord* record);

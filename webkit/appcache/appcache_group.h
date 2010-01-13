@@ -61,6 +61,8 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   void RemoveCache(AppCache* cache);
   bool HasCache() const { return newest_complete_cache_ != NULL; }
 
+  void AddNewlyDeletableResponseIds(std::vector<int64>* response_ids);
+
   UpdateStatus update_status() const { return update_status_; }
 
   // Starts an update via update() javascript API.
@@ -111,6 +113,7 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   const GURL manifest_url_;
   UpdateStatus update_status_;
   bool is_obsolete_;
+  std::vector<int64> newly_deletable_response_ids_;
 
   // Old complete app caches.
   Caches old_caches_;

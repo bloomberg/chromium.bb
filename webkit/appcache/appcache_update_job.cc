@@ -542,7 +542,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
     entry.set_response_size(info->response_writer_->amount_written());
 
     if (!inprogress_cache_->AddOrModifyEntry(url, entry))
-      service_->storage()->DoomResponse(manifest_url_, entry.response_id());
+      duplicate_response_ids_.push_back(entry.response_id());
 
     // Foreign entries will be detected during cache selection.
     // Note: 6.9.4, step 17.9 possible optimization: if resource is HTML or XML
@@ -612,10 +612,8 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLRequest* request) {
     AppCacheEntry master_entry(AppCacheEntry::MASTER,
                                info->response_writer_->response_id(),
                                info->response_writer_->amount_written());
-    if (!cache->AddOrModifyEntry(url, master_entry)) {
-      service_->storage()->DoomResponse(
-          manifest_url_, master_entry.response_id());
-    }
+    if (!cache->AddOrModifyEntry(url, master_entry))
+      duplicate_response_ids_.push_back(master_entry.response_id());
 
     // In no-update case, associate host with the newest cache.
     if (!inprogress_cache_) {
@@ -711,7 +709,7 @@ void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
         manifest_response_writer_->response_id(),
         manifest_response_writer_->amount_written());
     if (!inprogress_cache_->AddOrModifyEntry(manifest_url_, entry))
-      service_->storage()->DoomResponse(manifest_url_, entry.response_id());
+      duplicate_response_ids_.push_back(entry.response_id());
     CompleteInprogressCache();
   } else {
     // Treat storage failure as if refetch of manifest failed.
@@ -1145,6 +1143,7 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
     case NO_UPDATE:
       // 6.9.4 steps 7.3-7.7.
       NotifyAllAssociatedHosts(NO_UPDATE_EVENT);
+      DiscardDuplicateResponses();
       internal_state_ = COMPLETED;
       break;
     case DOWNLOADING:
@@ -1156,6 +1155,7 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
         NotifyAllAssociatedHosts(CACHED_EVENT);
       else
         NotifyAllAssociatedHosts(UPDATE_READY_EVENT);
+      DiscardDuplicateResponses();
       internal_state_ = COMPLETED;
       break;
     case CACHE_FAILURE:
@@ -1237,6 +1237,10 @@ void AppCacheUpdateJob::DiscardInprogressCache() {
     (*hosts.begin())->AssociateCache(NULL);
 
   inprogress_cache_ = NULL;
+}
+
+void AppCacheUpdateJob::DiscardDuplicateResponses() {
+  service_->storage()->DoomResponses(manifest_url_, duplicate_response_ids_);
 }
 
 void AppCacheUpdateJob::DeleteSoon() {

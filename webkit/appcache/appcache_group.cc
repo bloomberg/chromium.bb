@@ -60,6 +60,8 @@ AppCacheGroup::~AppCacheGroup() {
   DCHECK_EQ(IDLE, update_status_);
 
   service_->storage()->working_set()->RemoveGroup(this);
+  service_->storage()->DeleteResponses(
+      manifest_url_, newly_deletable_response_ids_);
 }
 
 void AppCacheGroup::AddUpdateObserver(UpdateObserver* observer) {
@@ -111,14 +113,42 @@ void AppCacheGroup::RemoveCache(AppCache* cache) {
     newest_complete_cache_ = NULL;
     tmp_cache->set_owning_group(NULL);  // may cause this group to be deleted
   } else {
+    scoped_refptr<AppCacheGroup> protect(this);
+
     Caches::iterator it =
         std::find(old_caches_.begin(), old_caches_.end(), cache);
     if (it != old_caches_.end()) {
       AppCache* tmp_cache = *it;
       old_caches_.erase(it);
-      tmp_cache->set_owning_group(NULL);  // may cause group to be deleted
+      tmp_cache->set_owning_group(NULL);  // may cause group to be released
+    }
+
+    if (!is_obsolete() && old_caches_.empty() &&
+        !newly_deletable_response_ids_.empty()) {
+      service_->storage()->DeleteResponses(
+          manifest_url_, newly_deletable_response_ids_);
+      newly_deletable_response_ids_.clear();
     }
   }
+}
+
+void AppCacheGroup::AddNewlyDeletableResponseIds(
+    std::vector<int64>* response_ids) {
+  if (!is_obsolete() && old_caches_.empty()) {
+    service_->storage()->DeleteResponses(
+        manifest_url_, *response_ids);
+    response_ids->clear();
+    return;
+  }
+
+  if (newly_deletable_response_ids_.empty()) {
+    newly_deletable_response_ids_.swap(*response_ids);
+    return;
+  }
+  newly_deletable_response_ids_.insert(
+      newly_deletable_response_ids_.end(),
+      response_ids->begin(), response_ids->end());
+  response_ids->clear();
 }
 
 void AppCacheGroup::StartUpdateWithNewMasterEntry(

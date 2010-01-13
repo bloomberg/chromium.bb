@@ -263,8 +263,15 @@ void AppCacheResponseWriter::OnIOComplete(int result) {
 }
 
 bool AppCacheResponseWriter::CreateEntryIfNeeded() {
-  if (!entry_)
-    disk_cache_->CreateEntry(response_key(response_id_), &entry_);
+  if (entry_)
+    return true;
+  std::string key(response_key(response_id_));
+  if (!disk_cache_->CreateEntry(key, &entry_)) {
+    // We may try to overrite existing entries.
+    DCHECK(!entry_);
+    disk_cache_->DoomEntry(key);
+    disk_cache_->CreateEntry(key, &entry_);
+  }
   return entry_ ? true : false;
 }
 

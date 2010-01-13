@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <vector>
 
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
@@ -43,6 +44,9 @@ class MockAppCacheStorage : public AppCacheStorage {
   virtual AppCacheResponseWriter* CreateResponseWriter(const GURL& origin);
   virtual void DoomResponses(
       const GURL& manifest_url, const std::vector<int64>& response_ids);
+  virtual void DeleteResponses(
+      const GURL& manifest_url, const std::vector<int64>& response_ids);
+  virtual void PurgeMemory() {}
 
  private:
   friend class AppCacheRequestHandlerTest;

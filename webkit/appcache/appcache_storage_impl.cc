@@ -299,6 +299,7 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> cache_;
   bool success_;
+  std::vector<int64> newly_deletable_response_ids_;
 };
 
 AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
@@ -335,12 +336,32 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
 
     AppCacheDatabase::CacheRecord cache;
     if (database_->FindCacheForGroup(group_record_.group_id, &cache)) {
+      // Get the set of response ids in the old cache.
+      std::set<int64> existing_response_ids;
+      database_->FindResponseIdsForCacheAsSet(cache.cache_id,
+                                              &existing_response_ids);
+
+      // Remove those that remain in the new cache.
+      std::vector<AppCacheDatabase::EntryRecord>::const_iterator entry_iter =
+          entry_records_.begin();
+      while (entry_iter != entry_records_.end()) {
+        existing_response_ids.erase(entry_iter->response_id);
+        ++entry_iter;
+      }
+
+      // The rest are deletable.
+      std::set<int64>::const_iterator id_iter = existing_response_ids.begin();
+      while (id_iter != existing_response_ids.end()) {
+        newly_deletable_response_ids_.push_back(*id_iter);
+        ++id_iter;
+      }
+
       success_ =
           database_->DeleteCache(cache.cache_id) &&
           database_->DeleteEntriesForCache(cache.cache_id) &&
           database_->DeleteFallbackNameSpacesForCache(cache.cache_id) &&
-          database_->DeleteOnlineWhiteListForCache(cache.cache_id);
-      // TODO(michaeln): schedule to purge unused responses from the disk cache
+          database_->DeleteOnlineWhiteListForCache(cache.cache_id) &&
+          database_->InsertDeletableResponseIds(newly_deletable_response_ids_);
     } else {
       NOTREACHED() << "A existing group without a cache is unexpected";
     }
@@ -360,6 +381,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
     storage_->origins_with_groups_.insert(group_->manifest_url().GetOrigin());
     if (cache_ != group_->newest_complete_cache())
       group_->AddCache(cache_);
+    group_->AddNewlyDeletableResponseIds(&newly_deletable_response_ids_);
   }
   FOR_EACH_DELEGATE(delegates_, OnGroupAndNewestCacheStored(group_, success_));
   group_ = NULL;
@@ -544,6 +566,7 @@ class AppCacheStorageImpl::MakeGroupObsoleteTask : public DatabaseTask {
   int64 group_id_;
   bool success_;
   std::set<GURL> origins_with_groups_;
+  std::vector<int64> newly_deletable_response_ids_;
 };
 
 AppCacheStorageImpl::MakeGroupObsoleteTask::MakeGroupObsoleteTask(
@@ -571,12 +594,15 @@ void AppCacheStorageImpl::MakeGroupObsoleteTask::Run() {
 
   AppCacheDatabase::CacheRecord cache_record;
   if (database_->FindCacheForGroup(group_id_, &cache_record)) {
+    database_->FindResponseIdsForCacheAsVector(cache_record.cache_id,
+                                               &newly_deletable_response_ids_);
     success_ =
         database_->DeleteGroup(group_id_) &&
         database_->DeleteCache(cache_record.cache_id) &&
         database_->DeleteEntriesForCache(cache_record.cache_id) &&
         database_->DeleteFallbackNameSpacesForCache(cache_record.cache_id) &&
-        database_->DeleteOnlineWhiteListForCache(cache_record.cache_id);
+        database_->DeleteOnlineWhiteListForCache(cache_record.cache_id) &&
+        database_->InsertDeletableResponseIds(newly_deletable_response_ids_);
   } else {
     NOTREACHED() << "A existing group without a cache is unexpected";
     success_ = database_->DeleteGroup(group_id_);
@@ -585,14 +611,13 @@ void AppCacheStorageImpl::MakeGroupObsoleteTask::Run() {
   success_ = success_ &&
              database_->FindOriginsWithGroups(&origins_with_groups_) &&
              transaction.Commit();
-
-  // TODO(michaeln): schedule to purge unused responses from the disk cache
 }
 
 void AppCacheStorageImpl::MakeGroupObsoleteTask::RunCompleted() {
   if (success_) {
     storage_->origins_with_groups_.swap(origins_with_groups_);
     group_->set_obsolete(true);
+    group_->AddNewlyDeletableResponseIds(&newly_deletable_response_ids_);
 
     // Also remove from the working set, caches for an 'obsolete' group
     // may linger in use, but the group itself cannot be looked up by
@@ -884,7 +909,7 @@ void AppCacheStorageImpl::DoomResponses(
   if (response_ids.empty())
     return;
 
-  // Start deleting them from the disk cache incrementally.
+  // Start deleting them from the disk cache lazily.
   StartDeletingResponses(response_ids);
 
   // Also schedule a database task to record these ids in the
@@ -895,6 +920,18 @@ void AppCacheStorageImpl::DoomResponses(
   scoped_refptr<InsertDeletableResponseIdsTask> task =
       new InsertDeletableResponseIdsTask(this);
   task->response_ids_ = response_ids;
+  task->Schedule();
+}
+
+void AppCacheStorageImpl::DeleteResponses(
+    const GURL& manifest_url, const std::vector<int64>& response_ids) {
+  if (response_ids.empty())
+    return;
+  StartDeletingResponses(response_ids);
+}
+
+void AppCacheStorageImpl::PurgeMemory() {
+  scoped_refptr<CloseConnectionTask> task = new CloseConnectionTask(this);
   task->Schedule();
 }
 
