@@ -16,7 +16,6 @@
       'browser/extensions/extension_startup_unittest.cc',
       'browser/extensions/extension_storage_apitest.cc',
       'browser/extensions/extension_tabs_apitest.cc',
-      'browser/extensions/extension_i18n_apitest.cc',
       'browser/extensions/extension_popup_apitest.cc',
       # TODO(jam): http://crbug.com/15101 These tests fail on Linux and Mac.
       'browser/child_process_security_policy_browser_test.cc',
@@ -1109,6 +1108,7 @@
         'browser/extensions/extension_browsertest.h',
         'browser/extensions/extension_browsertests_misc.cc',
         'browser/extensions/extension_history_apitest.cc',
+        'browser/extensions/extension_i18n_apitest.cc',
         'browser/extensions/extension_javascript_url_apitest.cc',
         'browser/extensions/extension_messages_apitest.cc',
         'browser/extensions/extension_override_apitest.cc',
