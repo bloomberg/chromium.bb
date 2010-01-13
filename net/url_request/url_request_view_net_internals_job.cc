@@ -161,7 +161,8 @@ class ProxyServiceCurrentConfigSubSection : public SubSection {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    // TODO(eroman): add a button to force reloading the proxy config.
+    DrawCommandButton("Force reload", "reload-proxy-config", out);
+
     net::ProxyService* proxy_service = context->proxy_service();
     if (proxy_service->config_has_been_initialized()) {
       // net::ProxyConfig defines an operator<<.
@@ -198,7 +199,39 @@ class ProxyServiceBadProxiesSubSection : public SubSection {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    out->append("TODO");
+    net::ProxyService* proxy_service = context->proxy_service();
+    const net::ProxyRetryInfoMap& bad_proxies_map =
+        proxy_service->proxy_retry_info();
+
+    DrawCommandButton("Clear", "clear-badproxies", out);
+
+    out->append("<table border=1>");
+    out->append("<tr><th>Bad proxy server</th>"
+                "<th>Remaining time until retry (ms)</th></tr>");
+
+    for (net::ProxyRetryInfoMap::const_iterator it = bad_proxies_map.begin();
+         it != bad_proxies_map.end(); ++it) {
+      const std::string& proxy_uri = it->first;
+      const net::ProxyRetryInfo& retry_info = it->second;
+
+      // Note that ttl_ms may be negative, for the cases where entries have
+      // expired but not been garbage collected yet.
+      int ttl_ms = static_cast<int>(
+          (retry_info.bad_until - base::TimeTicks::Now()).InMilliseconds());
+
+      // Color expired entries blue.
+      if (ttl_ms > 0)
+        out->append("<tr>");
+      else
+        out->append("<tr style='color:blue'>");
+
+      StringAppendF(out, "<td>%s</td><td>%d</td>",
+                    EscapeForHTML(proxy_uri).c_str(),
+                    ttl_ms);
+
+      out->append("</tr>");
+    }
+    out->append("</table>");
   }
 };
 
@@ -504,6 +537,16 @@ bool HandleCommand(const std::string& command, URLRequestContext* context) {
     return true;
   }
 
+  if (command == "clear-badproxies") {
+    context->proxy_service()->ClearBadProxiesCache();
+    return true;
+  }
+
+  if (command == "reload-proxy-config") {
+    context->proxy_service()->ForceReloadProxyConfig();
+    return true;
+  }
+
   return false;
 }
 
@@ -544,6 +587,7 @@ void DrawControlsHeader(URLRequestContext* context, std::string* data) {
 
   DrawCommandButton("Clear all data",
                     // Send a list of comma separated commands:
+                    "clear-badproxies,"
                     "clear-hostcache,"
                     "clear-urlrequest-graveyard,"
                     "clear-socketstream-graveyard",
