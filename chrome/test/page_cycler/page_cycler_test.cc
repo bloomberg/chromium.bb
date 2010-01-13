@@ -246,11 +246,8 @@ class PageCyclerTest : public UITest {
       return;
     size_t stop_size = base::GetSystemCommitCharge();
 
-    FilePath data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &data_dir);
-
-    PrintMemoryUsageInfo(suffix, data_dir);
-    PrintIOPerfInfo(suffix, data_dir);
+    PrintMemoryUsageInfo(suffix);
+    PrintIOPerfInfo(suffix);
     PrintSystemCommitCharge(suffix, stop_size - start_size,
                             false /* not important */);
 
@@ -297,11 +294,8 @@ class PageCyclerReferenceTest : public PageCyclerTest {
       return;
     size_t stop_size = base::GetSystemCommitCharge();
 
-    FilePath data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &data_dir);
-
-    PrintMemoryUsageInfo("_ref", data_dir);
-    PrintIOPerfInfo("_ref", data_dir);
+    PrintMemoryUsageInfo("_ref");
+    PrintIOPerfInfo("_ref");
     PrintSystemCommitCharge("_ref", stop_size - start_size,
                             false /* not important */);
 

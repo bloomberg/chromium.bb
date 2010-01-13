@@ -13,16 +13,13 @@
 
 typedef std::vector<base::ProcessId> ChromeProcessList;
 
-// Returns PID of browser process running with user data dir |data_dir|.
-// Returns -1 on error.
-base::ProcessId ChromeBrowserProcessId(const FilePath& data_dir);
+// Returns a vector of PIDs of all chrome processes (main and renderers etc)
+// based on |browser_pid|, the PID of the main browser process.
+ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid);
 
-// Returns a vector of PIDs of chrome processes (main and renderers etc)
-// associated with user data dir |data_dir|. On error returns empty vector.
-ChromeProcessList GetRunningChromeProcesses(const FilePath& data_dir);
-
-// Attempts to terminate all chrome processes associated with |data_dir|.
-void TerminateAllChromeProcesses(const FilePath& data_dir);
+// Attempts to terminate all chrome processes launched by (and including)
+// |browser_pid|.
+void TerminateAllChromeProcesses(base::ProcessId browser_pid);
 
 // A wrapper class for tests to use in fetching process metrics.
 // Delegates everything we need to base::ProcessMetrics, except

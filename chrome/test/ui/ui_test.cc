@@ -472,14 +472,14 @@ void UITest::QuitBrowser() {
   // Don't forget to close the handle
   base::CloseProcessHandle(process_);
   process_ = base::kNullProcessHandle;
+  process_id_ = -1;
 }
 
 void UITest::AssertAppNotRunning(const std::wstring& error_message) {
   std::wstring final_error_message(error_message);
 
-  int process_count = GetBrowserProcessCount();
-  if (process_count > 0) {
-    ChromeProcessList processes = GetRunningChromeProcesses(user_data_dir());
+  ChromeProcessList processes = GetRunningChromeProcesses(process_id_);
+  if (!processes.empty()) {
     final_error_message += L" Leftover PIDs: [";
     for (ChromeProcessList::const_iterator it = processes.begin();
          it != processes.end(); ++it) {
@@ -487,11 +487,11 @@ void UITest::AssertAppNotRunning(const std::wstring& error_message) {
     }
     final_error_message += L" ]";
   }
-  ASSERT_EQ(0, process_count) << final_error_message;
+  ASSERT_TRUE(processes.empty()) << final_error_message;
 }
 
 void UITest::CleanupAppProcesses() {
-  TerminateAllChromeProcesses(user_data_dir());
+  TerminateAllChromeProcesses(process_id_);
 }
 
 scoped_refptr<TabProxy> UITest::GetActiveTab(int window_index) {
@@ -657,11 +657,8 @@ bool UITest::CrashAwareSleep(int time_out_ms) {
   return base::CrashAwareSleep(process_, time_out_ms);
 }
 
-// static
 int UITest::GetBrowserProcessCount() {
-  FilePath data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &data_dir);
-  return GetRunningChromeProcesses(data_dir).size();
+  return GetRunningChromeProcesses(process_id_).size();
 }
 
 static DictionaryValue* LoadDictionaryValueFromPath(const FilePath& path) {
@@ -1219,9 +1216,8 @@ void UITest::UpdateHistoryDates() {
   file_util::EvictFileFromSystemCache(history);
 }
 
-void UITest::PrintIOPerfInfo(const char* test_name, FilePath data_dir) {
-  int browser_process_pid = ChromeBrowserProcessId(data_dir);
-  ChromeProcessList chrome_processes(GetRunningChromeProcesses(data_dir));
+void UITest::PrintIOPerfInfo(const char* test_name) {
+  ChromeProcessList chrome_processes(GetRunningChromeProcesses(process_id_));
 
   size_t read_op_b = 0;
   size_t read_op_r = 0;
@@ -1260,7 +1256,7 @@ void UITest::PrintIOPerfInfo(const char* test_name, FilePath data_dir) {
     if (process_metrics.get()->GetIOCounters(&io_counters)) {
       // Print out IO performance.  We assume that the values can be
       // converted to size_t (they're reported as ULONGLONG, 64-bit numbers).
-      std::string chrome_name = (*it == browser_process_pid) ? "_b" : "_r";
+      std::string chrome_name = (*it == browser_process_id()) ? "_b" : "_r";
 
       size_t read_op = static_cast<size_t>(io_counters.ReadOperationCount);
       size_t write_op = static_cast<size_t>(io_counters.WriteOperationCount);
@@ -1280,7 +1276,7 @@ void UITest::PrintIOPerfInfo(const char* test_name, FilePath data_dir) {
                                                io_counters.OtherTransferCount)
                                               / 1024);
 
-      if (*it == browser_process_pid) {
+      if (*it == browser_process_id()) {
         read_op_b = read_op;
         write_op_b = write_op;
         other_op_b = other_op;
@@ -1326,9 +1322,8 @@ void UITest::PrintIOPerfInfo(const char* test_name, FilePath data_dir) {
   PrintResult("total_byte_r", "", "IO_r" + t_name, total_byte_r, "kb", true);
 }
 
-void UITest::PrintMemoryUsageInfo(const char* test_name, FilePath data_dir) {
-  int browser_process_pid = ChromeBrowserProcessId(data_dir);
-  ChromeProcessList chrome_processes(GetRunningChromeProcesses(data_dir));
+void UITest::PrintMemoryUsageInfo(const char* test_name) {
+  ChromeProcessList chrome_processes(GetRunningChromeProcesses(process_id_));
 
   size_t browser_virtual_size = 0;
   size_t browser_working_set_size = 0;
@@ -1362,7 +1357,7 @@ void UITest::PrintMemoryUsageInfo(const char* test_name, FilePath data_dir) {
     size_t current_virtual_size = process_metrics->GetPagefileUsage();
     size_t current_working_set_size = process_metrics->GetWorkingSetSize();
 
-    if (*it == browser_process_pid) {
+    if (*it == browser_process_id()) {
       browser_virtual_size = current_virtual_size;
       browser_working_set_size = current_working_set_size;
     } else {
@@ -1375,7 +1370,7 @@ void UITest::PrintMemoryUsageInfo(const char* test_name, FilePath data_dir) {
 #if defined(OS_WIN)
     size_t peak_virtual_size = process_metrics->GetPeakPagefileUsage();
     size_t peak_working_set_size = process_metrics->GetPeakWorkingSetSize();
-    if (*it == browser_process_pid) {
+    if (*it == browser_process_id()) {
       browser_peak_virtual_size = peak_virtual_size;
       browser_peak_working_set_size = peak_working_set_size;
     } else {

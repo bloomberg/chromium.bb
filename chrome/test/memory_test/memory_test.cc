@@ -225,8 +225,8 @@ class MemoryTest : public UITest {
     }
 
     size_t stop_size = base::GetSystemCommitCharge();
-    PrintIOPerfInfo(test_name, user_data_dir_);
-    PrintMemoryUsageInfo(test_name, user_data_dir_);
+    PrintIOPerfInfo(test_name);
+    PrintMemoryUsageInfo(test_name);
     PrintSystemCommitCharge(test_name, stop_size - start_size,
                             true /* important */);
   }

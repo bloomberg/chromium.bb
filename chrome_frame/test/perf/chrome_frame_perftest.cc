@@ -530,9 +530,8 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
   typedef std::map<DWORD, ProcessMemoryInfo> ProcessMemoryConsumptionMap;
 
  public:
-  ChromeFrameMemoryTest()
-      : current_url_index_(0),
-        browser_pid_(0) {}
+  ChromeFrameMemoryTest() : current_url_index_(0) {
+  }
 
   virtual void SetUp() {
     // Register the Chrome Frame DLL in the build directory.
@@ -613,17 +612,6 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
   }
 
   void InitiateNextNavigation() {
-    if (browser_pid_ == 0) {
-      FilePath profile_directory;
-      if (chrome::GetChromeFrameUserDataDirectory(&user_data_dir_)) {
-        user_data_dir_ = user_data_dir_.Append(GetHostProcessName(false));
-      }
-
-      browser_pid_ = ChromeBrowserProcessId(user_data_dir_);
-    }
-
-    EXPECT_TRUE(static_cast<int>(browser_pid_) > 0);
-
     // Get the memory consumption information for the child processes
     // of the chrome browser.
     ChromeProcessList child_processes = GetBrowserChildren();
@@ -668,9 +656,9 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
   }
 
   ChromeProcessList GetBrowserChildren() {
-    ChromeProcessList list = GetRunningChromeProcesses(user_data_dir_);
+    ChromeProcessList list = GetRunningChromeProcesses(browser_process_id());
     ChromeProcessList::iterator browser =
-        std::find(list.begin(), list.end(), browser_pid_);
+        std::find(list.begin(), list.end(), browser_process_id());
     if (browser != list.end()) {
       list.erase(browser);
     }
@@ -678,8 +666,8 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
   }
 
   void AccountProcessMemoryUsage(DWORD process_id) {
-    ProcessMemoryInfo process_memory_info(process_id,
-                                          process_id == browser_pid_, this);
+    ProcessMemoryInfo process_memory_info(
+        process_id, process_id == browser_process_id(), this);
 
     ASSERT_TRUE(process_memory_info.GetMemoryConsumptionDetails());
 
@@ -735,9 +723,6 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
 
   // The index of the URL being tested.
   size_t current_url_index_;
-
-  // The chrome browser pid.
-  base::ProcessId browser_pid_;
 
   // Contains the list of urls against which the tests are run.
   std::vector<std::string> urls_;
@@ -834,10 +819,8 @@ class ChromeFrameActiveXMemoryTest : public MemoryTestBase {
     // This can get called multiple times if the last url results in a
     // redirect.
     if (!test_completed_) {
-      ASSERT_NE(browser_pid_, 0);
-
       // Measure memory usage for the browser process.
-      AccountProcessMemoryUsage(browser_pid_);
+      AccountProcessMemoryUsage(browser_process_id());
       // Measure memory usage for the current process.
       AccountProcessMemoryUsage(GetCurrentProcessId());
 

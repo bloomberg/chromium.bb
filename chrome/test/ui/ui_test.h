@@ -388,6 +388,9 @@ class UITest : public PlatformTest {
   // UITest::SetUp().
   FilePath user_data_dir() const { return user_data_dir_; }
 
+  // Return the process id of the browser process (-1 on error).
+  base::ProcessId browser_process_id() const { return process_id_; }
+
   // Timeout accessors.
   int command_execution_timeout_ms() const {
     return command_execution_timeout_ms_;
@@ -401,10 +404,9 @@ class UITest : public PlatformTest {
 
   std::wstring ui_test_name() const { return ui_test_name_; }
 
-  // Count the number of active browser processes.  This function only counts
-  // browser processes that share the same profile directory as the current
-  // process.  The count includes browser sub-processes.
-  static int GetBrowserProcessCount();
+  // Count the number of active browser processes launched by this test.
+  // The count includes browser sub-processes.
+  int GetBrowserProcessCount();
 
   // Returns a copy of local state preferences. The caller is responsible for
   // deleting the returned object. Returns NULL if there is an error.
@@ -458,10 +460,10 @@ class UITest : public PlatformTest {
   void StopWebSocketServer();
 
   // Prints IO performance data for use by perf graphs.
-  void PrintIOPerfInfo(const char* test_name, FilePath data_dir);
+  void PrintIOPerfInfo(const char* test_name);
 
   // Prints memory usage data for use by perf graphs.
-  void PrintMemoryUsageInfo(const char* test_name, FilePath data_dir);
+  void PrintMemoryUsageInfo(const char* test_name);
 
   // Prints memory commit charge stats for use by perf graphs.
   void PrintSystemCommitCharge(const char* test_name,

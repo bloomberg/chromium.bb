@@ -15,12 +15,12 @@
 using base::Time;
 using base::TimeDelta;
 
-void TerminateAllChromeProcesses(const FilePath& data_dir) {
+void TerminateAllChromeProcesses(base::ProcessId browser_pid) {
   // Total time the function will wait for chrome processes
   // to terminate after it told them to do so.
   const TimeDelta kExitTimeout = TimeDelta::FromSeconds(30);
 
-  ChromeProcessList process_pids(GetRunningChromeProcesses(data_dir));
+  ChromeProcessList process_pids(GetRunningChromeProcesses(browser_pid));
 
   std::vector<base::ProcessHandle> handles;
   {
@@ -68,11 +68,10 @@ class ChildProcessFilter : public base::ProcessFilter {
   DISALLOW_COPY_AND_ASSIGN(ChildProcessFilter);
 };
 
-ChromeProcessList GetRunningChromeProcesses(const FilePath& data_dir) {
+ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
   ChromeProcessList result;
-
-  base::ProcessId browser_pid = ChromeBrowserProcessId(data_dir);
-  if (browser_pid == (base::ProcessId) -1)
+  
+  if (browser_pid == static_cast<base::ProcessId>(-1))
     return result;
 
   ChildProcessFilter filter(browser_pid);

@@ -102,7 +102,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessSuccess) {
 
 // Test failure case of NotifyOtherProcess().
 TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessFailure) {
-  base::ProcessId pid = ChromeBrowserProcessId(user_data_dir());
+  base::ProcessId pid = browser_process_id();
 
   ASSERT_GE(pid, 1);
 
@@ -139,7 +139,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessHostChanged) {
 // Test that we fail when lock says process is on another host and we can't
 // notify it over the socket.
 TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessDifferingHost) {
-  base::ProcessId pid = ChromeBrowserProcessId(user_data_dir());
+  base::ProcessId pid = browser_process_id();
 
   ASSERT_GE(pid, 1);
 

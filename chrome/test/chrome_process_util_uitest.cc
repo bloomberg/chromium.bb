@@ -11,10 +11,11 @@ class ChromeProcessUtilTest : public UITest {
 
 TEST_F(ChromeProcessUtilTest, SanityTest) {
   EXPECT_TRUE(IsBrowserRunning());
-  EXPECT_NE(-1, ChromeBrowserProcessId(user_data_dir()));
-  EXPECT_GE(GetRunningChromeProcesses(user_data_dir()).size(), 1U);
+  ChromeProcessList processes = GetRunningChromeProcesses(browser_process_id());
+  EXPECT_FALSE(processes.empty());
   QuitBrowser();
   EXPECT_FALSE(IsBrowserRunning());
-  EXPECT_EQ(-1, ChromeBrowserProcessId(user_data_dir()));
-  EXPECT_EQ(0U, GetRunningChromeProcesses(user_data_dir()).size());
+  EXPECT_EQ(-1, browser_process_id());
+  processes = GetRunningChromeProcesses(browser_process_id());
+  EXPECT_TRUE(processes.empty());
 }
