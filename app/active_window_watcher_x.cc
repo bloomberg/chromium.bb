@@ -66,13 +66,10 @@ void ActiveWindowWatcherX::NotifyActiveWindowChanged() {
   if (format == 32 && num_items == 1) {
     int xid = *reinterpret_cast<int*>(property);
     GdkWindow* active_window = gdk_window_lookup(xid);
-
-    if (active_window) {
-      FOR_EACH_OBSERVER(
-          Observer,
-          observers_,
-          ActiveWindowChanged(active_window));
-    }
+    FOR_EACH_OBSERVER(
+        Observer,
+        observers_,
+        ActiveWindowChanged(active_window));
   }
   if (property)
     XFree(property);

@@ -18,6 +18,7 @@ class ActiveWindowWatcherX {
  public:
   class Observer {
    public:
+    // |active_window| will be NULL if the active window isn't one of Chrome's.
     virtual void ActiveWindowChanged(GdkWindow* active_window) = 0;
   };
 
