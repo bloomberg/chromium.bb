@@ -675,6 +675,11 @@
       <message name="IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         55
       </message>
+
+      <!-- The width for the AutoFill dialog in characters. -->
+      <message name="IDS_AUTOFILL_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+        80
+      </message>
     </messages>
   </release>
 </grit>

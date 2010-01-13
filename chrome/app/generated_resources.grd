@@ -4357,6 +4357,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_INFOBAR_DENY" desc="Text to show for the autofill request infobar deny button.">
         Nope
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="The title of the AutoFill dialog.">
+        AutoFill Profiles
+      </message>
+      <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the AutoFill dialog.">
+        Addresses
+      </message>
+      <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="The name of the Credit Cards group of the AutoFill dialog.">
+        Credit Cards
+      </message>
+      <message name="IDS_AUTOFILL_ADD_BUTTON" desc="The label of the button that adds a new AutoFill profile.">
+        Add...
+      </message> 
+      <message name="IDS_AUTOFILL_EDIT_BUTTON" desc="The label of the button that edits an AutoFill profile.">
+        Edit...
+      </message>
+      <message name="IDS_AUTOFILL_REMOVE_BUTTON" desc="The label of the button that removes an AutoFill profile.">
+        Remove
+      </message>
 
       <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
         Themes:

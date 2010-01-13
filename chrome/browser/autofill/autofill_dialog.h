@@ -13,7 +13,8 @@
 // |profiles| is a vector of autofill profiles that contains the current profile
 // information.  The dialog fills out the profile fields using this data.  Any
 // changes made to the profile information through the dialog should be
-// transferred back into |profiles|.
-void ShowAutoFillDialog(const std::vector<AutoFillProfile>& profiles);
+// transferred back into |profiles| and |credit_cards|.
+void ShowAutoFillDialog(std::vector<AutoFillProfile>* profiles,
+                        std::vector<FormGroup>* credit_cards);
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DIALOG_H_

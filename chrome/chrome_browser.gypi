@@ -84,6 +84,8 @@
         'browser/autofill/address_field.h',
         'browser/autofill/address.cc',
         'browser/autofill/address.h',
+        'browser/autofill/autofill_dialog_gtk.cc',
+        'browser/autofill/autofill_dialog.h',
         'browser/autofill/autofill_field.cc',
         'browser/autofill/autofill_field.h',
         'browser/autofill/autofill_infobar_delegate.cc',
