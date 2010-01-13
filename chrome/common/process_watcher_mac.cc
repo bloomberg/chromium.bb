@@ -42,7 +42,9 @@ void WaitForChildToDie(pid_t child, unsigned timeout) {
   int result = HANDLE_EINTR(kevent(kq, &event_to_add, 1, NULL, 0, NULL));
   if (result == -1 && errno == ESRCH) {
     // A "No Such Process" error is fine, the process may have died already
-    // and been reaped by someone else.
+    // and been reaped by someone else. But make sure that it was/is reaped.
+    // Don't report an error in case it was already reaped.
+    HANDLE_EINTR(waitpid(child, NULL, WNOHANG));
     return;
   }
 

@@ -39,9 +39,25 @@ TEST_F(ProcessWatcherTest, DelayedTermination) {
 }
 
 MULTIPROCESS_TEST_MAIN(process_watcher_test_never_die) {
-  while(1){
+  while (1) {
     sleep(500);
   }
+  return 0;
+}
+
+TEST_F(ProcessWatcherTest, ImmediateTermination) {
+  base::ProcessHandle child_process =
+      SpawnChild(L"process_watcher_test_die_immediately");
+  // Give it time to die.
+  sleep(2);
+  ProcessWatcher::EnsureProcessTerminated(child_process);
+
+  // Check that process was really killed.
+  EXPECT_TRUE(IsProcessDead(child_process));
+  base::CloseProcessHandle(child_process);
+}
+
+MULTIPROCESS_TEST_MAIN(process_watcher_test_die_immediately) {
   return 0;
 }
 
