@@ -1962,3 +1962,39 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+{
+   bug_32140
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF13FastAllocBasenwEj
+   fun:_ZN7WebCore10HTMLParser10createHeadEv
+   fun:_ZN7WebCore10HTMLParser11handleErrorEPNS_4NodeEbRKNS_12AtomicStringEi
+   fun:_ZN7WebCore10HTMLParser10insertNodeEPNS_4NodeEb
+   fun:_ZN7WebCore10HTMLParser11handleErrorEPNS_4NodeEbRKNS_12AtomicStringEi
+   fun:_ZN7WebCore10HTMLParser10insertNodeEPNS_4NodeEb
+   fun:_ZN7WebCore10HTMLParser30insertNodeAfterLimitBlockDepthEPNS_4NodeEb
+   fun:_ZN7WebCore10HTMLParser10parseTokenEPNS_5TokenE
+   fun:_ZN7WebCore13HTMLTokenizer12processTokenEv
+   fun:_ZN7WebCore13HTMLTokenizer5writeERKNS_15SegmentedStringEb
+   fun:_ZN7WebCore8Document5writeERKNS_15SegmentedStringEPS0_
+   fun:_ZN7WebCore8Document5writeERKNS_6StringEPS0_
+   fun:_ZN7WebCore14V8HTMLDocument13writeCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internal21Builtin_HandleApiCallENS0_9ArgumentsE
+}
+{
+   bug_32141
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF13FastAllocBasenwEj
+   fun:_ZN7WebCore4Text6createEPNS_8DocumentERKNS_6StringE
+   fun:_ZN7WebCore4Text21createWithLengthLimitEPNS_8DocumentERKNS_6StringERjj
+   fun:_ZN7WebCore10HTMLParser10parseTokenEPNS_5TokenE
+   fun:_ZN7WebCore13HTMLTokenizer12processTokenEv
+   fun:_ZN7WebCore13HTMLTokenizer5writeERKNS_15SegmentedStringEb
+   fun:_ZN7WebCore8Document5writeERKNS_15SegmentedStringEPS0_
+   fun:_ZN7WebCore8Document5writeERKNS_6StringEPS0_
+   fun:_ZN7WebCore14V8HTMLDocument13writeCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internal21Builtin_HandleApiCallENS0_9ArgumentsE
+}
