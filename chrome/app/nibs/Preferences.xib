@@ -10,6 +10,7 @@
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="74"/>
 			<integer value="482"/>
+			<integer value="481"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -723,7 +724,7 @@
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 			<object class="NSCustomView" id="930668015">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1698,6 +1699,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					</object>
 				</object>
 				<string key="NSFrameSize">{530, 468}</string>
+				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="393583039">
@@ -2036,7 +2038,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSTextField" id="90260648">
 						<reference key="NSNextResponder" ref="393583039"/>
 						<int key="NSvFlags">266</int>
-						<string key="NSFrame">{{149, 319}, {364, 28}}</string>
+						<string key="NSFrame">{{152, 319}, {361, 28}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="123936632">
@@ -2045,6 +2047,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string key="NSContents">^IDS_SYNC_NOT_SET_UP_INFO</string>
 							<reference key="NSSupport" ref="783256529"/>
 							<reference key="NSControlView" ref="90260648"/>
+							<bool key="NSDrawsBackground">YES</bool>
 							<reference key="NSBackgroundColor" ref="592613688"/>
 							<reference key="NSTextColor" ref="748094473"/>
 						</object>
@@ -4136,8 +4139,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<reference ref="987908490"/>
 							<reference ref="20640598"/>
 							<reference ref="203729106"/>
-							<reference ref="1022040155"/>
 							<reference ref="90260648"/>
+							<reference ref="1022040155"/>
 						</object>
 						<reference key="parent" ref="196155028"/>
 						<string key="objectName">Personal Stuff View</string>

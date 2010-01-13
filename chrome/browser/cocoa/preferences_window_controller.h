@@ -84,6 +84,9 @@ class ProfileSyncService;
   IBOutlet NSButton* syncButton_;
   IBOutlet NSTextField* syncStatus_;
   IBOutlet NSButton* syncLink_;
+  scoped_nsobject<NSColor> syncStatusNoErrorBackgroundColor_;
+  scoped_nsobject<NSColor> syncLinkNoErrorBackgroundColor_;
+  scoped_nsobject<NSColor> syncErrorBackgroundColor_;
 
   // Under the hood panel
   IBOutlet NSView* underTheHoodContentView_;

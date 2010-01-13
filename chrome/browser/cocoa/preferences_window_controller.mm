@@ -471,6 +471,16 @@ class PrefObserverBridge : public NotificationObserver,
     // (in chrome/browser/views/options/content_page_view.cc) just does what
     // we do below.
     syncService_ = profile_->GetProfileSyncService();
+
+    // TODO(akalin): This color is taken from kSyncLabelErrorBgColor in
+    // content_page_view.cc.  Either decomp that color out into a
+    // function/variable that is referenced by both this file and
+    // content_page_view.cc, or maybe pick a more suitable color.
+    syncErrorBackgroundColor_.reset(
+        [[NSColor colorWithDeviceRed:0xff/255.0
+                               green:0x9a/255.0
+                                blue:0x9a/255.0
+                               alpha:1.0] retain]);
   }
   return self;
 }
@@ -1560,10 +1570,29 @@ const int kDisabledIndex = 1;
   [syncButton_ setTitle:buttonLabel];
 
   string16 statusLabel, linkLabel;
-  sync_ui_util::GetStatusLabels(syncService_, &statusLabel, &linkLabel);
+  sync_ui_util::MessageType status =
+      sync_ui_util::GetStatusLabels(syncService_, &statusLabel, &linkLabel);
   [syncStatus_ setStringValue:base::SysUTF16ToNSString(statusLabel)];
   [syncLink_ setHidden:linkLabel.empty()];
   [syncLink_ setTitle:base::SysUTF16ToNSString(linkLabel)];
+
+  NSButtonCell* syncLinkCell = static_cast<NSButtonCell*>([syncLink_ cell]);
+  if (!syncStatusNoErrorBackgroundColor_) {
+    DCHECK(!syncLinkNoErrorBackgroundColor_);
+    // We assume that the sync controls start off in a non-error
+    // state.
+    syncStatusNoErrorBackgroundColor_.reset(
+        [[syncStatus_ backgroundColor] retain]);
+    syncLinkNoErrorBackgroundColor_.reset(
+        [[syncLinkCell backgroundColor] retain]);
+  }
+  if (status == sync_ui_util::SYNC_ERROR) {
+    [syncStatus_ setBackgroundColor:syncErrorBackgroundColor_];
+    [syncLinkCell setBackgroundColor:syncErrorBackgroundColor_];
+  } else {
+    [syncStatus_ setBackgroundColor:syncStatusNoErrorBackgroundColor_];
+    [syncLinkCell setBackgroundColor:syncLinkNoErrorBackgroundColor_];
+  }
 }
 
 // Show the preferences window.
