@@ -43,4 +43,4 @@ Windows only).
 To update this distribution manually, run bootstrap\update.bat on Windows,
 or bootstrap/update.sh on Linux or Mac.
 
-To disable automatic updating, set the environment variable DEPOT_TOOLS_UPDATE=1
+To disable automatic updating, set the environment variable DEPOT_TOOLS_UPDATE=0
