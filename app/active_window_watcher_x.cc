@@ -59,8 +59,11 @@ void ActiveWindowWatcherX::NotifyActiveWindowChanged() {
                      &remaining_bytes,
                      &property);
 
-  // Check that the property was set and contained a single 32-bit item.
-  if (format == 32 && num_items == 1 && remaining_bytes == 0) {
+  // Check that the property was set and contained a single 32-bit item (we
+  // don't check that remaining_bytes is 0, though, as XFCE's window manager
+  // seems to actually store two values in the property for some unknown
+  // reason.)
+  if (format == 32 && num_items == 1) {
     int xid = *reinterpret_cast<int*>(property);
     GdkWindow* active_window = gdk_window_lookup(xid);
 
