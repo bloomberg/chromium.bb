@@ -41,6 +41,7 @@ class ClearBrowsingDataDialogGtk {
   GtkWidget* del_history_checkbox_;
   GtkWidget* del_downloads_checkbox_;
   GtkWidget* del_cache_checkbox_;
+  GtkWidget* del_local_storage_checkbox_;
   GtkWidget* del_cookies_checkbox_;
   GtkWidget* del_passwords_checkbox_;
   GtkWidget* del_form_data_checkbox_;

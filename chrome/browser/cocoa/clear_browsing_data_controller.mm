@@ -38,6 +38,7 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
 @synthesize clearBrowsingHistory = clearBrowsingHistory_;
 @synthesize clearDownloadHistory = clearDownloadHistory_;
 @synthesize emptyCache = emptyCache_;
+@synthesize deleteLocalStorage = deleteLocalStorage_;
 @synthesize deleteCookies = deleteCookies_;
 @synthesize clearSavedPasswords = clearSavedPasswords_;
 @synthesize clearFormData = clearFormData_;
@@ -112,6 +113,8 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
     removeMask |= BrowsingDataRemover::REMOVE_DOWNLOADS;
   if (emptyCache_)
     removeMask |= BrowsingDataRemover::REMOVE_CACHE;
+  if (deleteLocalStorage_)
+    removeMask |= BrowsingDataRemover::REMOVE_LOCAL_STORAGE;
   if (deleteCookies_)
      removeMask |= BrowsingDataRemover::REMOVE_COOKIES;
   if (clearSavedPasswords_)
@@ -164,6 +167,7 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
   [self setClearDownloadHistory:
       prefs->GetBoolean(prefs::kDeleteDownloadHistory)];
   [self setEmptyCache:prefs->GetBoolean(prefs::kDeleteCache)];
+  [self setDeleteLocalStorage:prefs->GetBoolean(prefs::kDeleteLocalStorage)];
   [self setDeleteCookies:prefs->GetBoolean(prefs::kDeleteCookies)];
   [self setClearSavedPasswords:prefs->GetBoolean(prefs::kDeletePasswords)];
   [self setClearFormData:prefs->GetBoolean(prefs::kDeleteFormData)];
@@ -178,6 +182,7 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
   prefs->SetBoolean(prefs::kDeleteDownloadHistory,
                     [self clearDownloadHistory]);
   prefs->SetBoolean(prefs::kDeleteCache, [self emptyCache]);
+  prefs->SetBoolean(prefs::kDeleteLocalStorage, [self deleteLocalStorage]);
   prefs->SetBoolean(prefs::kDeleteCookies, [self deleteCookies]);
   prefs->SetBoolean(prefs::kDeletePasswords, [self clearSavedPasswords]);
   prefs->SetBoolean(prefs::kDeleteFormData, [self clearFormData]);

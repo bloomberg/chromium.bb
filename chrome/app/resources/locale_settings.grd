@@ -434,7 +434,7 @@
         63
       </message>
       <message name="IDS_CLEARDATA_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        16
+        18
       </message>
 
       <!-- The width and height of the Import dialog box in characters and lines (See -->

@@ -99,6 +99,7 @@ class ClearBrowsingDataView : public views::View,
   views::Checkbox* del_history_checkbox_;
   views::Checkbox* del_downloads_checkbox_;
   views::Checkbox* del_cache_checkbox_;
+  views::Checkbox* del_local_storage_checkbox_;
   views::Checkbox* del_cookies_checkbox_;
   views::Checkbox* del_passwords_checkbox_;
   views::Checkbox* del_form_data_checkbox_;

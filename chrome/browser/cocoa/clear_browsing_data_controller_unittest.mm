@@ -26,6 +26,7 @@ class ClearBrowsingDataControllerTest : public CocoaTest {
     prefs->SetBoolean(prefs::kDeleteBrowsingHistory, true);
     prefs->SetBoolean(prefs::kDeleteDownloadHistory, false);
     prefs->SetBoolean(prefs::kDeleteCache, true);
+    prefs->SetBoolean(prefs::kDeleteLocalStorage, true);
     prefs->SetBoolean(prefs::kDeleteCookies, false);
     prefs->SetBoolean(prefs::kDeletePasswords, true);
     prefs->SetBoolean(prefs::kDeleteFormData, false);
@@ -49,6 +50,7 @@ TEST_F(ClearBrowsingDataControllerTest, InitialState) {
   EXPECT_TRUE([controller_ clearBrowsingHistory]);
   EXPECT_FALSE([controller_ clearDownloadHistory]);
   EXPECT_TRUE([controller_ emptyCache]);
+  EXPECT_TRUE([controller_ deleteLocalStorage]);
   EXPECT_FALSE([controller_ deleteCookies]);
   EXPECT_TRUE([controller_ clearSavedPasswords]);
   EXPECT_FALSE([controller_ clearFormData]);
@@ -60,6 +62,7 @@ TEST_F(ClearBrowsingDataControllerTest, InitialRemoveMask) {
   // Check that the remove-mask matches the initial properties:
   EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY |
                 BrowsingDataRemover::REMOVE_CACHE |
+                BrowsingDataRemover::REMOVE_LOCAL_STORAGE |
                 BrowsingDataRemover::REMOVE_PASSWORDS,
             [controller_ removeMask]);
 }
@@ -69,6 +72,7 @@ TEST_F(ClearBrowsingDataControllerTest, ModifiedRemoveMask) {
   [controller_ setClearBrowsingHistory:false];
   [controller_ setClearDownloadHistory:true];
   [controller_ setEmptyCache:false];
+  [controller_ setDeleteLocalStorage:false];
   [controller_ setDeleteCookies:true];
   [controller_ setClearSavedPasswords:false];
   [controller_ setClearFormData:true];
@@ -84,6 +88,7 @@ TEST_F(ClearBrowsingDataControllerTest, EmptyRemoveMask) {
   [controller_ setClearBrowsingHistory:false];
   [controller_ setClearDownloadHistory:false];
   [controller_ setEmptyCache:false];
+  [controller_ setDeleteLocalStorage:false];
   [controller_ setDeleteCookies:false];
   [controller_ setClearSavedPasswords:false];
   [controller_ setClearFormData:false];
@@ -105,6 +110,7 @@ TEST_F(ClearBrowsingDataControllerTest, PersistToPrefs) {
 
   // Make sure the rest of the prefs didn't change:
   EXPECT_TRUE(prefs->GetBoolean(prefs::kDeleteCache));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kDeleteLocalStorage));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kDeleteCookies));
   EXPECT_TRUE(prefs->GetBoolean(prefs::kDeletePasswords));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kDeleteFormData));

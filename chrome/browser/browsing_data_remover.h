@@ -35,6 +35,7 @@ class BrowsingDataRemover : public NotificationObserver {
   static const int REMOVE_PASSWORDS = 1 << 3;
   static const int REMOVE_FORM_DATA = 1 << 4;
   static const int REMOVE_CACHE = 1 << 5;
+  static const int REMOVE_LOCAL_STORAGE = 1 << 6;
 
   // Observer is notified when the removal is done. Done means keywords have
   // been deleted, cache cleared and all other tasks scheduled.

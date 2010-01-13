@@ -77,6 +77,16 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
   g_signal_connect(del_cache_checkbox_, "toggled",
                    G_CALLBACK(HandleOnClickedWidget), this);
 
+  // Local Storage checkbox.
+  del_local_storage_checkbox_ = gtk_check_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_DEL_LOCAL_STORAGE_CHKBOX).c_str());
+  gtk_box_pack_start(GTK_BOX(vbox), del_local_storage_checkbox_,
+                     FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(del_local_storage_checkbox_),
+      profile_->GetPrefs()->GetBoolean(prefs::kDeleteLocalStorage));
+  g_signal_connect(del_local_storage_checkbox_, "toggled",
+                   G_CALLBACK(HandleOnClickedWidget), this);
+
   // Cookies checkbox.
   del_cookies_checkbox_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_DEL_COOKIES_CHKBOX).c_str());
@@ -160,6 +170,10 @@ void ClearBrowsingDataDialogGtk::OnDialogResponse(GtkWidget* widget,
     }
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(del_cache_checkbox_)))
       items |= BrowsingDataRemover::REMOVE_CACHE;
+    if (gtk_toggle_button_get_active(
+        GTK_TOGGLE_BUTTON(del_local_storage_checkbox_))) {
+      items |= BrowsingDataRemover::REMOVE_LOCAL_STORAGE;
+    }
 
     // BrowsingDataRemover deletes itself when done.
     remover_ = new BrowsingDataRemover(profile_,
@@ -183,6 +197,10 @@ void ClearBrowsingDataDialogGtk::OnDialogWidgetClicked(GtkWidget* widget) {
         true : false);
   } else if (widget == del_cache_checkbox_) {
     profile_->GetPrefs()->SetBoolean(prefs::kDeleteCache,
+        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ?
+        true : false);
+  } else if (widget == del_local_storage_checkbox_) {
+    profile_->GetPrefs()->SetBoolean(prefs::kDeleteLocalStorage,
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ?
         true : false);
   } else if (widget == del_cookies_checkbox_) {
