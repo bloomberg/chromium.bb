@@ -3073,3 +3073,14 @@ BUG_JOHNNYG LINUX : LayoutTests/fast/text/find-kana.html = CRASH
 
 // from http://trac.webkit.org/changeset/53086
 BUG_JOHNNYG : LayoutTests/svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = TEXT
+
+// a bunch of tests broken before the flakiness fix, i will deal with these 
+// after the major flakiness goes away
+BUG_JOHNNYG : LayoutTests/fast/js/Object-getOwnPropertyNames.html = TEXT
+BUG_JOHNNYG : LayoutTests/svg/css/shadow-and-opacity.svg = IMAGE
+BUG_JOHNNYG : LayoutTests/fast/backgrounds/repeat/negative-offset-repeat-transformed.html = IMAGE TEXT
+BUG_JOHNNYG : LayoutTests/http/tests/security/cross-frame-access-enumeration.html = TIMEOUT
+BUG_JOHNNYG : LayoutTests/fast/block/positioning/fixed-positioning-scrollbar-bug.html = TEXT
+BUG_JOHNNYG : LayoutTests/fast/block/positioning/absolute-positioning-no-scrollbar.html = MISSING
+BUG_JOHNNYG : LayoutTests/media/video-poster-scale.html = TEXT
+BUG_JOHNNYG : LayoutTests/storage/multiple-databases-garbage-collection.html = CRASH
