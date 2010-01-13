@@ -2162,7 +2162,6 @@ BUG10426 LINUX : LayoutTests/fast/lists/drag-into-marker.html = FAIL
 BUG10429 LINUX : LayoutTests/css2.1/t100801-c544-valgn-01-d-ag.html = FAIL
 
 // New failures from Merge 41078:41149
-BUG10430 LINUX WIN : LayoutTests/fast/text/atsui-spacing-features.html = FAIL
 BUG10430 LINUX : LayoutTests/svg/W3C-SVG-1.1/text-intro-05-t.svg = FAIL
 BUG10430 LINUX WIN : LayoutTests/svg/text/text-fonts-01-t.svg = FAIL
 BUG10430 LINUX WIN : LayoutTests/svg/text/text-intro-05-t.svg = FAIL
