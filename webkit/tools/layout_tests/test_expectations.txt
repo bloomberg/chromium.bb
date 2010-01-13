@@ -2192,10 +2192,6 @@ BUG10446 LINUX : LayoutTests/editing/execCommand/selectAll.html = FAIL
 // Newly added test from 41613:41660 -- relies on ScriptCallStack::state() -- dglazkov should fix.
 BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAIL
 
-// New failures from 41660:41709
-// Newly added tests.
-BUG9161 : LayoutTests/fast/forms/basic-textareas.html = FAIL
-
 // This test hits a stack-overflow exception earlier in debug mode than in
 // release mode on Windows.
 //
