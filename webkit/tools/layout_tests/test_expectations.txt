@@ -1195,7 +1195,7 @@ BUG27914 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-protocol.ht
 // ----------------------------------------------------------------------------
 
 // This test isn't hanging, it just takes 12-13 seconds to run.
-BUG10322 SLOW WIN LINUX : LayoutTests/http/tests/misc/acid3.html = FAIL
+BUG30536 SLOW WIN LINUX : LayoutTests/http/tests/misc/acid3.html = FAIL
 
 // Has failed for Chromium since it was first checked in.  (Lighttpd related?)
 BUG10323 WIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-no-content-length-onProgress.html = FAIL
