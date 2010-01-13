@@ -1306,8 +1306,7 @@ BUG10667 MAC : LayoutTests/plugins/iframe-shims.html = FAIL
 // NEW FOR MERGE 36102:37604
 
 BUG32184 : LayoutTests/fast/js/arguments.html = FAIL
-// New test. We should fix it, but it doesn't need to block the current release
-BUG24227 : LayoutTests/fast/js/primitive-method-this.html = FAIL
+BUG32191 : LayoutTests/fast/js/primitive-method-this.html = FAIL
 // See bug http://code.google.com/p/chromium/issues/detail?id=7868,
 // not urgent for current release.
 BUG24227 : LayoutTests/http/tests/plugins/local-geturl-from-remote.html = FAIL
