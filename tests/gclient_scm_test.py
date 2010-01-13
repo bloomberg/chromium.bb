@@ -66,8 +66,8 @@ class SVNWrapperTestCase(BaseTestCase):
     members = [
         'COMMAND', 'Capture', 'CaptureHeadRevision', 'CaptureInfo',
         'CaptureStatus', 'DiffItem', 'GenerateDiff', 'GetCheckoutRoot',
-        'GetEmail', 'GetFileProperty', 'IsMoved', 'ReadSimpleAuth', 'Run',
-        'RunAndFilterOutput', 'RunAndGetFileList',
+        'GetEmail', 'GetFileProperty', 'FullUrlForRelativeUrl', 'IsMoved',
+        'ReadSimpleAuth', 'Run', 'RunAndFilterOutput', 'RunAndGetFileList',
         'RunCommand', 'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
         'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',
     ]
@@ -80,6 +80,22 @@ class SVNWrapperTestCase(BaseTestCase):
     kwargs = {'scm_name' : 'foo'}
     exception_msg = 'Unsupported scm %(scm_name)s' % kwargs
     self.assertRaisesError(exception_msg, self._scm_wrapper, *args, **kwargs)
+
+  def testSVNFullUrlForRelativeUrl(self):
+    self.url = 'svn://a/b/c/d'
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    self.assertEqual(scm.FullUrlForRelativeUrl('/crap'), 'svn://a/b/crap')
+
+  def testGITFullUrlForRelativeUrl(self):
+    self.url = 'git://a/b/c/d'
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    self.assertEqual(scm.FullUrlForRelativeUrl('/crap'), 'git://a/b/c/crap')
 
   def testRunCommandException(self):
     options = self.Options(verbose=False)
@@ -361,10 +377,11 @@ from :3
   def testDir(self):
     members = [
         'COMMAND', 'Capture', 'CaptureStatus', 'FetchUpstreamTuple',
-        'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
-        'GetDifferentFiles', 'GetEmail', 'GetPatchName', 'GetSVNBranch',
-        'GetUpstream', 'IsGitSvn', 'RunAndFilterOutput', 'ShortBranchName',
-        'RunCommand', 'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
+        'FullUrlForRelativeUrl', 'GenerateDiff', 'GetBranch', 'GetBranchRef',
+        'GetCheckoutRoot', 'GetDifferentFiles', 'GetEmail', 'GetPatchName',
+        'GetSVNBranch', 'GetUpstream', 'IsGitSvn', 'RunAndFilterOutput',
+        'ShortBranchName', 'RunCommand',
+        'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
         'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',
     ]
 

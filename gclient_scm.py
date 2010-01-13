@@ -249,6 +249,12 @@ class GitWrapper(SCMWrapper, scm.GIT):
       files = self._Run(['diff', '--name-only', merge_base]).split()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
+  def FullUrlForRelativeUrl(self, url):
+    # Strip from last '/'
+    # Equivalent to unix basename
+    base_url = self.url
+    return base_url[:base_url.rfind('/')] + url
+
   def _CheckMinVersion(self, min_version):
     def only_int(val):
       if val.isdigit():
@@ -528,3 +534,7 @@ class SVNWrapper(SCMWrapper, scm.SVN):
       # There's no file list to retrieve.
     else:
       self.RunAndGetFileList(options, command, path, file_list)
+
+  def FullUrlForRelativeUrl(self, url):
+    # Find the forth '/' and strip from there. A bit hackish.
+    return '/'.join(self.url.split('/')[:4]) + url

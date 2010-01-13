@@ -15,8 +15,7 @@ class GclientUtilsUnittest(SuperMoxTestBase):
   def testMembersChanged(self):
     members = [
         'CheckCall', 'CheckCallError', 'Error', 'FileRead', 'FileWrite',
-        'FindGclientRoot',
-        'FullUrlFromRelative', 'FullUrlFromRelative2', 'GetNamedNodeText',
+        'FindGclientRoot', 'GetNamedNodeText',
         'GetNodeNamedAttributeText', 'IsUsingGit', 'PathDifference',
         'ParseXML', 'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',
         'SubprocessCall', 'SubprocessCallAndFilter', 'errno', 'logging', 'os',
@@ -136,18 +135,6 @@ class SplitUrlRevisionTestCase(SuperMoxTestBase):
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
     self.assertEquals(out_rev, rev)
     self.assertEquals(out_url, url)
-
-
-class FullUrlFromRelative(SuperMoxTestBase):
-  def testFullUrlFromRelative(self):
-    base_url = 'svn://a/b/c/d'
-    full_url = gclient_utils.FullUrlFromRelative(base_url, '/crap')
-    self.assertEqual(full_url, 'svn://a/b/crap')
-
-  def testFullUrlFromRelative2(self):
-    base_url = 'svn://a/b/c/d'
-    full_url = gclient_utils.FullUrlFromRelative2(base_url, '/crap')
-    self.assertEqual(full_url, 'svn://a/b/c/crap')
 
 
 if __name__ == '__main__':
