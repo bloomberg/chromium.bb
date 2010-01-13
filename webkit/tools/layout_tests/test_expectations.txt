@@ -674,11 +674,6 @@ BUG24208 WIN DEBUG : LayoutTests/http/tests/navigation/post-goback1.html = FAIL
 BUG24208 SLOW WIN RELEASE : LayoutTests/http/tests/navigation/post-goback1.html = FAIL
 BUG24208 LINUX MAC : LayoutTests/http/tests/navigation/post-goback1.html = FAIL
 
-// Since we don't have Aqua-themed controls, don't ignore the
-// box-shadow properties of controls that request Aqua theming.  But since Aqua
-// controls are rare on the web, defer this fix.
-BUG21118 WIN LINUX : LayoutTests/fast/forms/box-shadow-override.html = FAIL
-
 // These tests all depend on SessionStorage events which are not yet supported.
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/iframe-events.html = TIMEOUT
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/simple-events.html = FAIL
