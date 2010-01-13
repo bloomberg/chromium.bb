@@ -2923,8 +2923,6 @@ BUG29737 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = IMAGE
 BUG29737 MAC : LayoutTests/svg/filters/sourceAlpha.svg = IMAGE+TEXT
 
 // More Webkit Roll to r51875
-BUG29737 WIN LINUX : LayoutTests/fast/repaint/block-selection-gap-in-composited-layer.html = IMAGE+TEXT
-BUG29737 WIN LINUX : LayoutTests/fast/repaint/block-selection-gap-in-table-cell.html = IMAGE+TEXT
 BUG29737 : LayoutTests/svg/dom/operatorAttribute.html = TEXT
 
 BUG29737 WIN : LayoutTests/svg/filters/feComposite.svg = FAIL TIMEOUT CRASH
