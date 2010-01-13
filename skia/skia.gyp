@@ -589,11 +589,6 @@
           'sources!': [
             '../third_party/skia/src/opts/opts_check_SSE2.cpp'
           ],
-          'sources': [
-            '../third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp',
-            '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
-            '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
-          ],
         }],
         [ 'OS == "linux" or OS == "freebsd"', {
           'dependencies': [
@@ -649,7 +644,7 @@
         },],
       ],
       'dependencies': [
-        'skia_sse2'
+        'skia_opts'
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -681,8 +676,10 @@
     # else).  However, to keep the .gyp file simple and avoid platform-specific
     # build breakage, we do this on all platforms.
 
+    # For about the same reason, we need to compile the ARM opts files
+    # separately as well.
     {
-      'target_name': 'skia_sse2',
+      'target_name': 'skia_opts',
       'type': '<(library)',
       'include_dirs': [
         '..',
@@ -705,6 +702,26 @@
             '../third_party/skia/src/opts/SkBitmapProcState_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_SSE2.cpp',
+          ],
+        },
+        {  # arm
+          'conditions': [
+            ['armv7 == 1', {
+              'defines': [
+                '__ARM_HAVE_NEON',
+                '__ARM_ARCH__=7',
+              ],
+            }]
+          ],
+          # The assembly uses the frame pointer register (r7 in Thumb/r11 in
+          # ARM), the compiler doesn't like that.
+          'cflags': [
+            '-fomit-frame-pointer',
+          ],
+          'sources': [
+            '../third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp',
+            '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
+            '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
           ],
         }],
       ],
