@@ -83,7 +83,7 @@ void TraceLog::Stop() {
 }
 
 void TraceLog::Heartbeat() {
-  std::string cpu = StringPrintf("%d", process_metrics_->GetCPUUsage());
+  std::string cpu = StringPrintf("%.0f", process_metrics_->GetCPUUsage());
   TRACE_EVENT_INSTANT("heartbeat.cpu", 0, cpu);
 }
 

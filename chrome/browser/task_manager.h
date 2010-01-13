@@ -299,7 +299,7 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   typedef std::vector<TaskManager::ResourceProvider*> ResourceProviderList;
   typedef std::map<base::ProcessHandle, ResourceList*> GroupMap;
   typedef std::map<base::ProcessHandle, base::ProcessMetrics*> MetricsMap;
-  typedef std::map<base::ProcessHandle, int> CPUUsageMap;
+  typedef std::map<base::ProcessHandle, double> CPUUsageMap;
   typedef std::map<TaskManager::Resource*, int64> ResourceValueMap;
 
   // Updates the values for all rows.
@@ -326,17 +326,17 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
 
   // Returns the CPU usage (in %) that should be displayed for the passed
   // |resource|.
-  int GetCPUUsage(TaskManager::Resource* resource) const;
+  double GetCPUUsage(TaskManager::Resource* resource) const;
 
-  // Gets the private memory (in KB) that should be displayed for the passed
+  // Gets the private memory (in bytes) that should be displayed for the passed
   // resource index.
   bool GetPrivateMemory(int index, size_t* result) const;
 
-  // Gets the shared memory (in KB) that should be displayed for the passed
+  // Gets the shared memory (in bytes) that should be displayed for the passed
   // resource index.
   bool GetSharedMemory(int index, size_t* result) const;
 
-  // Gets the physical memory (in KB) that should be displayed for the passed
+  // Gets the physical memory (in bytes) that should be displayed for the passed
   // resource index.
   bool GetPhysicalMemory(int index, size_t* result) const;
 

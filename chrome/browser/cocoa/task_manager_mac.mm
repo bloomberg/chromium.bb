@@ -91,6 +91,9 @@
   [[column.get() headerCell] setAlignment:textAlignment];
   [[column.get() dataCell] setAlignment:textAlignment];
 
+  NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+  [[column.get() dataCell] setFont:font];
+  
   [column.get() setHidden:!isVisible];
   [column.get() setEditable:NO];
   [tableView_ addTableColumn:column.get()];
@@ -109,6 +112,8 @@
       [[NSButtonCell alloc] initTextCell:@""]);
   [nameCell.get() setImagePosition:NSImageLeft];
   [nameCell.get() setButtonType:NSSwitchButton];
+  [nameCell.get() setAlignment:[[nameColumn dataCell] alignment]];
+  [nameCell.get() setFont:[[nameColumn dataCell] font]];
   [nameColumn setDataCell:nameCell.get()];
 
   [self addColumnWithId:IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN visible:YES];

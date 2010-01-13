@@ -36,7 +36,12 @@
 namespace {
 
 // The delay between updates of the information (in ms).
+#if defined(OS_MACOSX)
+// Match Activity Monitor's default refresh rate.
+const int kUpdateTimeMs = 2000;
+#else
 const int kUpdateTimeMs = 1000;
+#endif
 
 template <class T>
 int ValueCompare(T value1, T value2) {
@@ -49,8 +54,8 @@ int ValueCompare(T value1, T value2) {
 
 std::wstring FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
   return l10n_util::GetStringF(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
-      FormatBytes(stat.size, DATA_UNITS_KILOBYTE, false),
-      FormatBytes(stat.liveSize, DATA_UNITS_KILOBYTE, false));
+      FormatBytes(stat.size, DATA_UNITS_KIBIBYTE, false),
+      FormatBytes(stat.liveSize, DATA_UNITS_KIBIBYTE, false));
 }
 
 }  // namespace
@@ -124,7 +129,15 @@ std::wstring TaskManagerModel::GetResourceNetworkUsage(int index) const {
 
 std::wstring TaskManagerModel::GetResourceCPUUsage(int index) const {
   DCHECK(index < ResourceCount());
-  return IntToWString(GetCPUUsage(resources_[index]));
+  return StringPrintf(
+#if defined(OS_MACOSX)
+      // Activity Monitor shows %cpu with one decimal digit -- be
+      // consistent with that.
+      L"%.1f",
+#else
+      L"%.0f",
+#endif
+      GetCPUUsage(resources_[index]));
 }
 
 std::wstring TaskManagerModel::GetResourcePrivateMemory(int index) const {
@@ -198,7 +211,7 @@ std::wstring TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
   DCHECK(index < ResourceCount());
   if (!resources_[index]->ReportsSqliteMemoryUsed())
     return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
-  return GetMemCellText(resources_[index]->SqliteMemoryUsedBytes() / 1024);
+  return GetMemCellText(resources_[index]->SqliteMemoryUsedBytes());
 }
 
 std::wstring TaskManagerModel::GetResourceV8MemoryAllocatedSize(
@@ -207,10 +220,10 @@ std::wstring TaskManagerModel::GetResourceV8MemoryAllocatedSize(
     return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
   return l10n_util::GetStringF(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
       FormatBytes(resources_[index]->GetV8MemoryAllocated(),
-                  DATA_UNITS_KILOBYTE,
+                  DATA_UNITS_KIBIBYTE,
                   false),
       FormatBytes(resources_[index]->GetV8MemoryUsed(),
-                  DATA_UNITS_KILOBYTE,
+                  DATA_UNITS_KIBIBYTE,
                   false));
 }
 
@@ -285,8 +298,8 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
                                  GetNetworkUsage(resources_[row2]));
 
     case IDS_TASK_MANAGER_CPU_COLUMN:
-      return ValueCompare<int>(GetCPUUsage(resources_[row1]),
-                               GetCPUUsage(resources_[row2]));
+      return ValueCompare<double>(GetCPUUsage(resources_[row1]),
+                                  GetCPUUsage(resources_[row2]));
 
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN: {
       size_t value1;
@@ -366,7 +379,7 @@ int64 TaskManagerModel::GetNetworkUsage(TaskManager::Resource* resource)
   return net_usage;
 }
 
-int TaskManagerModel::GetCPUUsage(TaskManager::Resource* resource) const {
+double TaskManagerModel::GetCPUUsage(TaskManager::Resource* resource) const {
   CPUUsageMap::const_iterator iter =
       cpu_usage_map_.find(resource->GetProcess());
   if (iter == cpu_usage_map_.end())
@@ -379,7 +392,7 @@ bool TaskManagerModel::GetPrivateMemory(int index, size_t* result) const {
   base::ProcessMetrics* process_metrics;
   if (!GetProcessMetricsForRow(index, &process_metrics))
     return false;
-  *result = process_metrics->GetPrivateBytes() / 1024;
+  *result = process_metrics->GetPrivateBytes();
   // On Linux (so far) and win XP, this is not supported and returns 0.
   // Remove with crbug.com/23258
   if (*result == 0)
@@ -395,7 +408,7 @@ bool TaskManagerModel::GetSharedMemory(int index, size_t* result) const {
   base::WorkingSetKBytes ws_usage;
   if (!process_metrics->GetWorkingSetKBytes(&ws_usage))
     return false;
-  *result = ws_usage.shared;
+  *result = ws_usage.shared * 1024;
   return true;
 }
 
@@ -410,9 +423,9 @@ bool TaskManagerModel::GetPhysicalMemory(int index, size_t* result) const {
 
   // Memory = working_set.private + working_set.shareable.
   // We exclude the shared memory.
-  size_t total_kbytes = process_metrics->GetWorkingSetSize() / 1024;
-  total_kbytes -= ws_usage.shared;
-  *result = total_kbytes;
+  size_t total_bytes = process_metrics->GetWorkingSetSize();
+  total_bytes -= ws_usage.shared * 1024;
+  *result = total_bytes;
   return true;
 }
 
@@ -432,11 +445,18 @@ int TaskManagerModel::GetStatsValue(const TaskManager::Resource* resource,
 }
 
 std::wstring TaskManagerModel::GetMemCellText(int64 number) const {
-  std::wstring str = UTF16ToWide(base::FormatNumber(number));
+#if !defined(OS_MACOSX)
+  std::wstring str = UTF16ToWide(base::FormatNumber(number / 1024));
 
   // Adjust number string if necessary.
   l10n_util::AdjustStringForLocaleDirection(str, &str);
   return l10n_util::GetStringF(IDS_TASK_MANAGER_MEM_CELL_TEXT, str);
+#else
+  // System expectation is to show "100 KB", "200 MB", etc.
+  // TODO(thakis): Switch to metric units (as opposed to powers of two).
+  return FormatBytes(
+      number, GetByteDisplayUnits(number), /* show_units=*/true);
+#endif
 }
 
 void TaskManagerModel::StartUpdating() {
