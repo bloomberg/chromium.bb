@@ -2808,8 +2808,6 @@ BUG28918 : LayoutTests/http/tests/cache/subresource-failover-to-network.html = P
 BUG29056 WIN LINUX : LayoutTests/svg/custom/mask-with-all-units.svg = FAIL
 
 // New failures from WebKit r51534:r51576
-BUG29157 WIN LINUX :  LayoutTests/fast/forms/input-maxlength-ime-completed.html = TEXT
-BUG29157 WIN LINUX :  LayoutTests/fast/forms/input-maxlength-ime-preedit.html = TEXT
 BUG29157 WIN LINUX MAC :  LayoutTests/svg/animations/animVal-basics.html = TIMEOUT
 
 // New failures from WebKit r51577
