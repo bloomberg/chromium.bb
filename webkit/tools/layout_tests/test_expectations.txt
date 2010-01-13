@@ -2997,7 +2997,7 @@ BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/online-whitelist.html = TIM
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/top-frame-1.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/whitelist-wildcard.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/resource-redirect.html = TIMEOUT PASS
-BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/xhr-foreign-resource.html = TIMEOUT PASS
+BUG25977 WIN : LayoutTests/http/tests/appcache/xhr-foreign-resource.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/simple.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/reload.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : LayoutTests/http/tests/appcache/wrong-signature-2.html = TIMEOUT PASS
@@ -3083,4 +3083,8 @@ BUG_JOHNNYG : LayoutTests/http/tests/security/cross-frame-access-enumeration.htm
 BUG_JOHNNYG WIN : LayoutTests/fast/block/positioning/fixed-positioning-scrollbar-bug.html = TEXT
 BUG_JOHNNYG : LayoutTests/fast/block/positioning/absolute-positioning-no-scrollbar.html = MISSING
 BUG_JOHNNYG : LayoutTests/media/video-poster-scale.html = TEXT
-BUG_JOHNNYG : LayoutTests/storage/multiple-databases-garbage-collection.html = CRASH
+BUG_JOHNNYG : LayoutTests/storage/multiple-databases-garbage-collection.html = CRASH PASS
+
+// New flakiness?
+BUG32144 WIN RELEASE : LayoutTests/svg/webarchive/svg-script-subresouces.svg = CRASH PASS
+BUG32145 WIN RELEASE : LayoutTests/animations/3d/transform-origin-vs-functions.html = TEXT PASS
