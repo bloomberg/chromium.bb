@@ -36,7 +36,7 @@ namespace o3d {
 %[
   A BoundingBox represents an Axis Aligned Bounding Box.
 %]
-[binding_model=by_value, marshaled, nocpp, include="core/cross/bounding_box.h"]
+[binding_model=by_value, marshaled, nocpp, include="core/cross/bounding_box.h", no_marshaled_docs]
 class BoundingBox {
   %[
     Creates BoundingBox from min_extent and max_extent
