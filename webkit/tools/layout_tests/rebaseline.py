@@ -115,7 +115,7 @@ def LogDashedString(text, platform, logging_level=logging.INFO):
     logging.info(msg)
 
 
-def SetupHtmlDirectory(html_directory, clean_html_directory):
+def SetupHtmlDirectory(html_directory):
   """Setup the directory to store html results.
 
      All html related files are stored in the "rebaseline_html" subdirectory.
@@ -123,8 +123,6 @@ def SetupHtmlDirectory(html_directory, clean_html_directory):
   Args:
     html_directory: parent directory that stores the rebaselining results.
                     If None, a temp directory is created.
-    clean_html_directory: if True, all existing files in the html directory
-                          are removed before rebaselining.
 
   Returns:
     the directory that stores the html related rebaselining results.
@@ -138,7 +136,7 @@ def SetupHtmlDirectory(html_directory, clean_html_directory):
   html_directory = os.path.join(html_directory, 'rebaseline_html')
   logging.info('Html directory: "%s"', html_directory)
 
-  if clean_html_directory and os.path.exists(html_directory):
+  if os.path.exists(html_directory):
     shutil.rmtree(html_directory, True)
     logging.info('Deleted file at html directory: "%s"', html_directory)
 
@@ -326,9 +324,8 @@ class Rebaseliner(object):
     if latest_revision is None or latest_revision <= 0:
       return None
 
-    archive_url = ('%s%s/%s.zip' % (url_base,
-                                    latest_revision,
-                                    self._options.archive_name))
+    archive_url = ('%s%s/layout-test-results.zip' % (url_base,
+                                                     latest_revision))
     logging.info('Archive url: "%s"', archive_url)
     return archive_url
 
@@ -378,9 +375,8 @@ class Rebaseliner(object):
       svn_error = False
       test_basename = os.path.splitext(test)[0]
       for suffix in BASELINE_SUFFIXES:
-        archive_test_name = '%s/%s-actual%s' % (self._options.archive_name,
-                                                test_basename,
-                                                suffix)
+        archive_test_name = 'layout-test-results/%s-actual%s' % (test_basename,
+                                                                 suffix)
         logging.debug('  Archive test file name: "%s"', archive_test_name)
         if not archive_test_name in zip_namelist:
           logging.info('  %s file not in archive.', suffix)
@@ -624,9 +620,6 @@ class Rebaseliner(object):
       baseline_fullpath: full path of the expected baseline file.
     """
 
-    if self._options.no_html_results:
-      return
-
     if not baseline_fullpath or not os.path.exists(baseline_fullpath):
       return
 
@@ -739,7 +732,6 @@ class HtmlGenerator(object):
 
   def __init__(self, options, platforms, rebaselining_tests):
     self._html_directory = options.html_directory
-    self._browser_path = options.browser_path
     self._platforms = platforms
     self._rebaselining_tests = rebaselining_tests
     self._html_file = os.path.join(options.html_directory, 'rebaseline.html')
@@ -777,10 +769,7 @@ class HtmlGenerator(object):
     logging.info('Launching html: "%s"', self._html_file)
 
     html_uri = path_utils.FilenameToUri(self._html_file)
-    if self._browser_path:
-      RunShell([self._browser_path, html_uri], False)
-    else:
-      webbrowser.open(html_uri, 1)
+    webbrowser.open(html_uri, 1)
 
     logging.info('Html launched.')
 
@@ -912,10 +901,6 @@ def main():
                            help=('Url to find the layout test result archive '
                                  'file.'))
 
-  option_parser.add_option('-t', '--archive_name',
-                           default='layout-test-results',
-                           help='Layout test result archive name.')
-
   option_parser.add_option('-w', '--webkit_canary',
                            action='store_true',
                            default=False,
@@ -928,28 +913,10 @@ def main():
                            help=('Whether or not to backup the original test '
                                  'expectations file after rebaseline.'))
 
-  option_parser.add_option('-o', '--no_html_results',
-                           action='store_true',
-                           default=False,
-                           help=('If specified, do not generate html that '
-                                  'compares the rebaselining results.'))
-
   option_parser.add_option('-d', '--html_directory',
                            default='',
                            help=('The directory that stores the results for '
                                  'rebaselining comparison.'))
-
-  option_parser.add_option('-c', '--clean_html_directory',
-                           action='store_true',
-                           default=False,
-                           help=('If specified, delete all existing files in '
-                                 'the html directory before rebaselining.'))
-
-  option_parser.add_option('-e', '--browser_path',
-                           default='',
-                           help=('The browser path that you would like to '
-                                 'use to launch the rebaselining result '
-                                 'comparison html'))
 
   options = option_parser.parse_args()[0]
 
@@ -982,9 +949,7 @@ def main():
     if platform in platforms:
       rebaseline_platforms.append(platform)
 
-  if not options.no_html_results:
-    options.html_directory = SetupHtmlDirectory(options.html_directory,
-                                                options.clean_html_directory)
+  options.html_directory = SetupHtmlDirectory(options.html_directory)
 
   rebaselining_tests = set()
   backup = options.backup
@@ -1002,15 +967,14 @@ def main():
 
     rebaselining_tests |= set(rebaseliner.GetRebaseliningTests())
 
-  if not options.no_html_results:
-    logging.info('')
-    LogDashedString('Rebaselining result comparison started', None)
-    html_generator = HtmlGenerator(options,
-                                   rebaseline_platforms,
-                                   rebaselining_tests)
-    html_generator.GenerateHtml()
-    html_generator.ShowHtml()
-    LogDashedString('Rebaselining result comparison done', None)
+  logging.info('')
+  LogDashedString('Rebaselining result comparison started', None)
+  html_generator = HtmlGenerator(options,
+                                 rebaseline_platforms,
+                                 rebaselining_tests)
+  html_generator.GenerateHtml()
+  html_generator.ShowHtml()
+  LogDashedString('Rebaselining result comparison done', None)
 
   sys.exit(0)
 
