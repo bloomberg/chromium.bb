@@ -1727,7 +1727,7 @@ BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug80762-2.html
 BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug85016.html = IMAGE
 BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug89315.html = IMAGE
 BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug91057.html = IMAGE
-BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/backgrounds.html = IMAGE
+BUG23498 BUG32193 MAC : LayoutTests/tables/mozilla_expected_failures/core/backgrounds.html = IMAGE IMAGE+TEXT
 // BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/captions1.html = IMAGE
 // BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/captions2.html = IMAGE
 BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/captions3.html = IMAGE
