@@ -93,7 +93,7 @@ class DOMStorageTest : public UILayoutTest {
   void RunTests(const char** files) {
     while (*files) {
       ClearDOMStorage();
-      RunLayoutTest(*files, false);
+      RunLayoutTest(*files, kNoHttpPort);
       ++files;
     }
   }
@@ -103,7 +103,7 @@ class DOMStorageTest : public UILayoutTest {
 
 
 TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
-  InitializeForLayoutTest(test_dir_, FilePath(), false);
+  InitializeForLayoutTest(test_dir_, FilePath(), kNoHttpPort);
   AddResources();
   RunTests(kTopLevelFiles);
 }
@@ -112,7 +112,7 @@ TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
 // http://crbug.com/27194
 TEST_F(DOMStorageTest, FLAKY_LocalStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage"),
-                          false);
+                          kNoHttpPort);
   AddResources();
   RunTests(kNoEventsFiles);
   RunTests(kEventsFiles);
@@ -121,7 +121,7 @@ TEST_F(DOMStorageTest, FLAKY_LocalStorageLayoutTests) {
 
 TEST_F(DOMStorageTest, SessionStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("sessionstorage"),
-                          false);
+                          kNoHttpPort);
   AddResources();
   RunTests(kNoEventsFiles);
   //RunTests(kEventsFiles);

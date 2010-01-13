@@ -280,6 +280,23 @@ static CommandLine* CreateHttpServerCommandLine() {
   return cmd_line;
 }
 
+static CommandLine* CreateWebSocketServerCommandLine() {
+  FilePath src_path;
+  // Get to 'src' dir.
+  PathService::Get(base::DIR_SOURCE_ROOT, &src_path);
+
+  FilePath script_path(src_path);
+  script_path = script_path.AppendASCII("webkit");
+  script_path = script_path.AppendASCII("tools");
+  script_path = script_path.AppendASCII("layout_tests");
+  script_path = script_path.AppendASCII("layout_package");
+  script_path = script_path.AppendASCII("websocket_server.py");
+
+  CommandLine* cmd_line = CreatePythonCommandLine();
+  cmd_line->AppendLooseValue(script_path.ToWStringHack());
+  return cmd_line;
+}
+
 static void RunCommand(const CommandLine& cmd_line) {
 #if defined(OS_WIN)
   // For Win32, use this 'version' of base::LaunchApp() with bInheritHandles
@@ -336,6 +353,28 @@ void UITest::StopHttpServer() {
   scoped_ptr<CommandLine> cmd_line(CreateHttpServerCommandLine());
   ASSERT_TRUE(cmd_line.get());
   cmd_line->AppendSwitchWithValue("server", "stop");
+  RunCommand(*cmd_line.get());
+}
+
+void UITest::StartWebSocketServer(const FilePath& root_directory) {
+  scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
+  ASSERT_TRUE(cmd_line.get());
+  cmd_line->AppendSwitchWithValue("server", "start");
+  cmd_line->AppendSwitch("register_cygwin");
+  cmd_line->AppendSwitchWithValue("root", root_directory.ToWStringHack());
+
+  websocket_pid_file_ = user_data_dir_.AppendASCII("websocket.pid");
+  cmd_line->AppendSwitchWithValue("pidfile",
+                                  websocket_pid_file_.ToWStringHack());
+  RunCommand(*cmd_line.get());
+}
+
+void UITest::StopWebSocketServer() {
+  scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
+  ASSERT_TRUE(cmd_line.get());
+  cmd_line->AppendSwitchWithValue("server", "stop");
+  cmd_line->AppendSwitchWithValue("pidfile",
+                                  websocket_pid_file_.ToWStringHack());
   RunCommand(*cmd_line.get());
 }
 

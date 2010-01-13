@@ -452,6 +452,11 @@ class UITest : public PlatformTest {
                                const std::wstring& port);
   void StopHttpServer();
 
+  // Synchronously launches local websocket server used to run LayoutTests.
+  void StartWebSocketServer(const FilePath& root_directory);
+
+  void StopWebSocketServer();
+
   // Prints IO performance data for use by perf graphs.
   void PrintIOPerfInfo(const char* test_name, FilePath data_dir);
 
@@ -538,6 +543,7 @@ class UITest : public PlatformTest {
   bool enable_file_cookies_;            // Enable file cookies, default is true.
   ProfileType profile_type_;            // Are we using a profile with a
                                         // complex theme?
+  FilePath websocket_pid_file_;         // PID file for websocket server.
 
  private:
   bool LaunchBrowserHelper(const CommandLine& arguments,

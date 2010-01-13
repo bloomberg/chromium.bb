@@ -64,7 +64,7 @@ void WorkerWebKitClientImpl::setCookies(const WebURL& url,
 
 WebString WorkerWebKitClientImpl::cookies(
     const WebURL& url, const WebURL& first_party_for_cookies) {
-  NOTREACHED();
+  // WebSocketHandshake may access cookies in worker process.
   return WebString();
 }
 

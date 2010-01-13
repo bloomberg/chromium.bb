@@ -42,7 +42,7 @@ UILayoutTest::~UILayoutTest() {
 
 void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
                                            const FilePath& test_case_dir,
-                                           bool is_http_test) {
+                                           int port) {
   FilePath src_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);
 
@@ -92,7 +92,7 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
   // dealing with location property, like worker-location.html, could fail.
   new_layout_test_dir_ = temp_test_dir_;
   new_layout_test_dir_ = new_layout_test_dir_.Append(test_parent_dir);
-  if (is_http_test) {
+  if (port == kHttpPort) {
     new_http_root_dir_ = new_layout_test_dir_;
     test_case_dir_ = test_case_dir;
   }
@@ -111,7 +111,7 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
 
   // Copies the parent resource subdirectory. This is needed in order to run
   // http layout tests.
-  if (is_http_test) {
+  if (port == kHttpPort) {
     FilePath parent_resource_path(layout_test_dir_.DirName());
     parent_resource_path = parent_resource_path.AppendASCII("resources");
     FilePath new_parent_resource_path(new_layout_test_dir_.DirName());
@@ -149,7 +149,7 @@ void UILayoutTest::AddResourceForLayoutTest(const FilePath& parent_dir,
 }
 
 void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
-                                 bool is_http_test) {
+                                 int port) {
   SCOPED_TRACE(test_case_file_name.c_str());
 
   ASSERT_TRUE(!layout_test_controller_.empty());
@@ -179,9 +179,9 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
                                    static_cast<int>(test_html.size())));
 
   scoped_ptr<GURL> new_test_url;
-  if (is_http_test)
+  if (port != kNoHttpPort)
     new_test_url.reset(new GURL(
-        std::string("http://localhost:8080/") +
+        StringPrintf("http://localhost:%d/", port) +
         WideToUTF8(test_case_dir_.ToWStringHack()) +
         "/" +
         test_case_file_name));

@@ -15,11 +15,11 @@ class UILayoutTest : public UITest {
 
   void InitializeForLayoutTest(const FilePath& test_parent_dir,
                                const FilePath& test_case_dir,
-                               bool is_http_test);
+                               int port);
   void AddResourceForLayoutTest(const FilePath& parent_dir,
                                 const FilePath& resource_dir);
   void RunLayoutTest(const std::string& test_case_file_name,
-                     bool is_http_test);
+                     int port);
 
   bool ReadExpectedResult(const FilePath& result_dir_path,
                           const std::string test_case_file_name,
@@ -38,6 +38,9 @@ class UILayoutTest : public UITest {
 
   static const int kTestIntervalMs = 250;
   static const int kTestWaitTimeoutMs = 60 * 1000;
+  static const int kNoHttpPort = -1;
+  static const int kHttpPort = 8080;
+  static const int kWebSocketPort = 8880;
 };
 
 #endif  // CHROME_TEST_UI_UI_LAYOUT_TEST_H_

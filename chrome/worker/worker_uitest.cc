@@ -115,7 +115,7 @@ class WorkerTest : public UILayoutTest {
 
     FilePath worker_test_dir;
     worker_test_dir = worker_test_dir.AppendASCII("workers");
-    InitializeForLayoutTest(fast_test_dir, worker_test_dir, false);
+    InitializeForLayoutTest(fast_test_dir, worker_test_dir, kNoHttpPort);
 
     // Worker tests also rely on common files in js/resources.
     FilePath js_dir = fast_test_dir.AppendASCII("js");
@@ -126,7 +126,7 @@ class WorkerTest : public UILayoutTest {
     for (size_t i = 0; i < arraysize(kWorkerFastLayoutTestFiles); ++i) {
       if ((i % kWorkerFastLayoutTestShards) == shard) {
         printf ("Test: %s\n", kWorkerFastLayoutTestFiles[i]);
-        RunLayoutTest(kWorkerFastLayoutTestFiles[i], false);
+        RunLayoutTest(kWorkerFastLayoutTestFiles[i], kNoHttpPort);
       }
     }
 
@@ -233,7 +233,7 @@ TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
 
   FilePath worker_test_dir;
   worker_test_dir = worker_test_dir.AppendASCII("workers");
-  InitializeForLayoutTest(fast_test_dir, worker_test_dir, false);
+  InitializeForLayoutTest(fast_test_dir, worker_test_dir, kNoHttpPort);
 
   // Worker tests also rely on common files in js/resources.
   FilePath js_dir = fast_test_dir.AppendASCII("js");
@@ -242,7 +242,7 @@ TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
   AddResourceForLayoutTest(js_dir, resource_dir);
 
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i) {
-    RunLayoutTest(kLayoutTestFiles[i], false);
+    RunLayoutTest(kLayoutTestFiles[i], kNoHttpPort);
     // Shared workers will error out if we ever have more than one tab open.
     int window_count = 0;
     ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
@@ -271,12 +271,35 @@ TEST_F(WorkerTest, WorkerHttpLayoutTests) {
 
   FilePath worker_test_dir;
   worker_test_dir = worker_test_dir.AppendASCII("workers");
-  InitializeForLayoutTest(http_test_dir, worker_test_dir, true);
+  InitializeForLayoutTest(http_test_dir, worker_test_dir, kHttpPort);
 
   StartHttpServer(new_http_root_dir_);
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
-    RunLayoutTest(kLayoutTestFiles[i], true);
+    RunLayoutTest(kLayoutTestFiles[i], kHttpPort);
   StopHttpServer();
+}
+
+TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
+  static const char* kLayoutTestFiles[] = {
+    "worker-simple.html",
+  };
+
+  FilePath websocket_test_dir;
+  websocket_test_dir = websocket_test_dir.AppendASCII("LayoutTests");
+  websocket_test_dir = websocket_test_dir.AppendASCII("websocket");
+  websocket_test_dir = websocket_test_dir.AppendASCII("tests");
+
+  FilePath worker_test_dir;
+  worker_test_dir = worker_test_dir.AppendASCII("workers");
+  InitializeForLayoutTest(websocket_test_dir, worker_test_dir, kWebSocketPort);
+  test_case_dir_ = test_case_dir_.AppendASCII("websocket");
+  test_case_dir_ = test_case_dir_.AppendASCII("tests");
+  test_case_dir_ = test_case_dir_.AppendASCII("workers");
+
+  StartWebSocketServer(temp_test_dir_.AppendASCII("LayoutTests"));
+  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
+    RunLayoutTest(kLayoutTestFiles[i], kWebSocketPort);
+  StopWebSocketServer();
 }
 
 TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
@@ -310,11 +333,11 @@ TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   FilePath worker_test_dir;
   worker_test_dir = worker_test_dir.AppendASCII("xmlhttprequest");
   worker_test_dir = worker_test_dir.AppendASCII("workers");
-  InitializeForLayoutTest(http_test_dir, worker_test_dir, true);
+  InitializeForLayoutTest(http_test_dir, worker_test_dir, kHttpPort);
 
   StartHttpServer(new_http_root_dir_);
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
-    RunLayoutTest(kLayoutTestFiles[i], true);
+    RunLayoutTest(kLayoutTestFiles[i], kHttpPort);
   StopHttpServer();
 }
 
@@ -342,7 +365,7 @@ TEST_F(WorkerTest, MessagePorts) {
 
   FilePath worker_test_dir;
   worker_test_dir = worker_test_dir.AppendASCII("events");
-  InitializeForLayoutTest(fast_test_dir, worker_test_dir, false);
+  InitializeForLayoutTest(fast_test_dir, worker_test_dir, kNoHttpPort);
 
   // MessagePort tests also rely on common files in js/resources.
   FilePath js_dir = fast_test_dir.AppendASCII("js");
@@ -351,7 +374,7 @@ TEST_F(WorkerTest, MessagePorts) {
   AddResourceForLayoutTest(js_dir, resource_dir);
 
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
-    RunLayoutTest(kLayoutTestFiles[i], false);
+    RunLayoutTest(kLayoutTestFiles[i], kNoHttpPort);
 }
 
 #if defined(OS_LINUX)
