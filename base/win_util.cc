@@ -21,6 +21,10 @@ namespace win_util {
 #define NONCLIENTMETRICS_SIZE_PRE_VISTA \
     SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(NONCLIENTMETRICS, lfMessageFont)
 
+const PROPERTYKEY kPKEYAppUserModelID =
+    { { 0x9F4C2855, 0x9F79, 0x4B39,
+    { 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3, } }, 5 };
+
 void GetNonClientMetrics(NONCLIENTMETRICS* metrics) {
   DCHECK(metrics);
 
@@ -393,10 +397,6 @@ bool SetAppIdForPropertyStore(IPropertyStore* property_store,
   // format is CompanyName.ProductName[.SubProduct.ProductNumber].
   // See http://msdn.microsoft.com/en-us/library/dd378459%28VS.85%29.aspx
   DCHECK(lstrlen(app_id) < 128 && wcschr(app_id, L' ') == NULL);
-
-  static const PROPERTYKEY kPKEYAppUserModelID =
-      { { 0x9F4C2855, 0x9F79, 0x4B39,
-      { 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3, } }, 5 };
 
   PROPVARIANT property_value;
   if (FAILED(InitPropVariantFromString(app_id, &property_value)))

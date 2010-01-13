@@ -485,6 +485,11 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
       base::EventRecorder::current()->StartPlayback(script_path);
   }
 
+#if defined(OS_WIN)
+  if (process_startup)
+    ShellIntegration::MigrateChromiumShortcuts();
+#endif  // defined(OS_WIN)
+
   return true;
 }
 

@@ -28,6 +28,11 @@ enum WinVersion {
   WINVERSION_WIN7 = 6,
 };
 
+// Property key for System.AppUserModel.ID.
+// <http://msdn.microsoft.com/en-us/library/dd391569(VS.85).aspx>
+// TODO(xiyuan): Remove this once we compile with Win7 SDK.
+extern const PROPERTYKEY kPKEYAppUserModelID;
+
 void GetNonClientMetrics(NONCLIENTMETRICS* metrics);
 
 // Returns the running version of Windows.

@@ -84,6 +84,10 @@ class ShellIntegration {
   // Generates Win7 app id for Chromium by calling GetAppId with
   // chrome::kBrowserAppID as app_name.
   static std::wstring GetChromiumAppId(const FilePath& profile_path);
+
+  // Migrates existing chrome shortcuts by tagging them with correct app id.
+  // see http://crbug.com/28104
+  static void MigrateChromiumShortcuts();
 #endif  // defined(OS_WIN)
 
   // The current default browser UI state
