@@ -1,11 +1,5 @@
-This directory contains layout tests.  It also contains platform-specific
-results until we can move them into LayoutTests/platform/.
-
-  chrome/
-    contains webkit tests and results for chrome specific issues
-
-  pending/
-    contains webkit tests that should be sent upstream to webkit.org
+This directory contains platform-specific results until we can move
+them into LayoutTests/platform/.
 
   platform/
     contains platform-specifc results, in platform directories exactly as we
