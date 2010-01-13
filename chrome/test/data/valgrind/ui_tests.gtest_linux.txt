@@ -10,3 +10,5 @@ WorkerTest.SharedWorkerFastLayoutTests
 WorkerTest.FLAKY_SharedWorkerFastLayoutTests
 WorkerTest.IncognitoSharedWorkers
 WorkerTest.WorkerHttpLayoutTests
+# See http://crbug.com/32192
+WorkerTest.WorkerWebSocketLayoutTests
