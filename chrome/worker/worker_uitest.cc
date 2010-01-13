@@ -400,11 +400,9 @@ TEST_F(WorkerTest, LimitPerPage) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-// Doesn't crash, but on Mac it sometimes fails for a few runs in a row,
+// Doesn't crash, but on all platforms, it sometimes fails.
 // http://crbug.com/28445
 #define LimitTotal FLAKY_LimitTotal
-#endif
 
 TEST_F(WorkerTest, LimitTotal) {
 #if !defined(OS_LINUX)
