@@ -72,6 +72,17 @@
    Heapcheck:Leak
    fun:PORT_ZAlloc_Util
 }
+# SSLClientSocketTest (net_unittests) leaks memory.
+{
+   bug_32170_a
+   Heapcheck:Leak
+   fun:PL_ArenaAllocate
+}
+{
+   bug_32170_b
+   Heapcheck:Leak
+   fun:nss_ZAlloc
+}
 {
    bug_30547
    Heapcheck:Leak
