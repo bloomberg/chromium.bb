@@ -26,6 +26,11 @@ class AppCacheService {
 
   void Initialize(const FilePath& cache_directory);
 
+  void PurgeMemory() {
+    if (storage_.get())
+      storage_->PurgeMemory();
+  }
+
   // Context for use during cache updates, should only be accessed
   // on the IO thread. We do NOT add a reference to the request context,
   // it is the callers responsibility to ensure that the pointer

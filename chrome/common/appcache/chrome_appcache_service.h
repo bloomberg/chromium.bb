@@ -6,6 +6,7 @@
 #define CHROME_COMMON_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 
 #include "base/ref_counted.h"
+#include "chrome/common/notification_registrar.h"
 #include "webkit/appcache/appcache_service.h"
 
 class FilePath;
@@ -20,13 +21,21 @@ class FilePath;
 // the IO thread.
 class ChromeAppCacheService
     : public base::RefCounted<ChromeAppCacheService>,
-      public appcache::AppCacheService {
+      public appcache::AppCacheService,
+      public NotificationObserver {
  public:
   ChromeAppCacheService(const FilePath& data_directory,
                         bool is_incognito);
  private:
   friend class base::RefCounted<ChromeAppCacheService>;
   virtual ~ChromeAppCacheService();
+
+  // NotificationObserver override
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_COMMON_APPCACHE_CHROME_APPCACHE_SERVICE_H_

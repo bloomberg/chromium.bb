@@ -794,6 +794,12 @@ class NotificationType {
     // key of the entry that was affected.
     AUTOFILL_ENTRIES_CHANGED,
 
+    // Purge Memory ------------------------------------------------------------
+
+    // Sent on the IO thread when the system should try to reduce the amount of
+    // memory in use, no source or details are passed. See memory_purger.h .cc.
+    PURGE_MEMORY,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

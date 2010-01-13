@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/notification_service.h"
 #include "webkit/appcache/appcache_thread.h"
 
 static bool has_initialized_thread_ids;
@@ -20,10 +21,20 @@ ChromeAppCacheService::ChromeAppCacheService(const FilePath& data_directory,
   }
   Initialize(is_incognito ? FilePath()
                           : data_directory.Append(chrome::kAppCacheDirname));
+
+  registrar_.Add(
+      this, NotificationType::PURGE_MEMORY, NotificationService::AllSources());
 }
 
 ChromeAppCacheService::~ChromeAppCacheService() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+}
+
+void ChromeAppCacheService::Observe(NotificationType type,
+                                    const NotificationSource& source,
+                                    const NotificationDetails& details) {
+  DCHECK(type == NotificationType::PURGE_MEMORY);
+  PurgeMemory();
 }
 
 static ChromeThread::ID ToChromeThreadID(int id) {
