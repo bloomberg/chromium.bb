@@ -386,9 +386,6 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   // Whether we are currently in the process of updating.
   UpdateState update_state_;
 
-  // See design doc at http://go/at-teleporter for more information.
-  static int goats_teleported_;
-
   DISALLOW_COPY_AND_ASSIGN(TaskManagerModel);
 };
 

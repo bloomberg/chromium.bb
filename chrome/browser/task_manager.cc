@@ -64,9 +64,6 @@ std::wstring FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
 // TaskManagerModel class
 ////////////////////////////////////////////////////////////////////////////////
 
-// static
-int TaskManagerModel::goats_teleported_ = 0;
-
 TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
     : update_state_(IDLE) {
 
@@ -172,9 +169,10 @@ std::wstring TaskManagerModel::GetResourceStatsValue(int index, int col_id)
 }
 
 std::wstring TaskManagerModel::GetResourceGoatsTeleported(int index) const {
+  // See design doc at http://go/at-teleporter for more information.
   DCHECK(index < ResourceCount());
-  goats_teleported_ += rand() & 4095;
-  return UTF16ToWide(base::FormatNumber(goats_teleported_));
+  int goats_teleported = rand() & 15;
+  return UTF16ToWide(base::FormatNumber(goats_teleported));
 }
 
 std::wstring TaskManagerModel::GetResourceWebCoreImageCacheSize(
