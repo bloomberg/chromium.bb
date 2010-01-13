@@ -82,6 +82,9 @@ class DevToolsWindow
   virtual void URLStarredChanged(TabContents* source, bool starred) {}
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   Profile* profile_;
   TabContents* inspected_tab_;

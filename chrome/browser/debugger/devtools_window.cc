@@ -247,3 +247,17 @@ void DevToolsWindow::OpenConsole() {
   tab_contents_->render_view_host()->
       ExecuteJavascriptInWebFrame(L"", L"WebInspector.showConsole();");
 }
+
+bool DevToolsWindow::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
+  if (docked_ && inspected_window_) {
+    return inspected_window_->PreHandleKeyboardEvent(
+        event, is_keyboard_shortcut);
+  }
+  return false;
+}
+
+void DevToolsWindow::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  if (docked_ && inspected_window_)
+    inspected_window_->HandleKeyboardEvent(event);
+}
