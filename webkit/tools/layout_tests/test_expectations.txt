@@ -2939,9 +2939,6 @@ BUG30048 : LayoutTests/svg/css/composite-shadow-with-opacity.html = IMAGE
 // Broke with http://trac.webkit.org/changeset/51939
 BUG30049 : LayoutTests/platform/win/editing/selection/doubleclick-should-not-expand-across-lines.html = TEXT MISSING
 
-// Flaky crash.
-BUG30174 : LayoutTests/media/video-source-type.html = CRASH PASS
-
 // Flaky.
 BUG30180 : LayoutTests/fast/text/international/hindi-whitespace.html = IMAGE PASS
 
