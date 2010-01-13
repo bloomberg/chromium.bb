@@ -35,6 +35,19 @@ void OutputTextInPre(const std::string& text, std::string* out) {
   out->append("</pre>");
 }
 
+// Appends an input button to |data| with text |title| that sends the command
+// string |command| back to the browser, and then refreshes the page.
+void DrawCommandButton(const std::string& title,
+                       const std::string& command,
+                       std::string* data) {
+  data->append(
+      StringPrintf("<input type=\"button\" value=\"%s\" "
+                   "onclick=\"DoCommand('%s')\" />",
+                   title.c_str(),
+                   command.c_str()));
+}
+
+
 //------------------------------------------------------------------------------
 // Subsection definitions.
 //------------------------------------------------------------------------------
@@ -148,6 +161,7 @@ class ProxyServiceCurrentConfigSubSection : public SubSection {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
+    // TODO(eroman): add a button to force reloading the proxy config.
     net::ProxyService* proxy_service = context->proxy_service();
     if (proxy_service->config_has_been_initialized()) {
       // net::ProxyConfig defines an operator<<.
@@ -212,6 +226,8 @@ class HostResolverCacheSubSection : public SubSection {
       return;
     }
 
+    DrawCommandButton("Clear", "clear-hostcache", out);
+
     out->append(StringPrintf(
           "<ul><li>Size: %" PRIuS "</li>"
           "<li>Capacity: %" PRIuS "</li>"
@@ -240,22 +256,27 @@ class HostResolverCacheSubSection : public SubSection {
       std::string address_family_str =
           AddressFamilyToString(key.address_family);
 
-      if (entry->error == net::OK) {
-        // Note that ttl_ms may be negative, for the cases where entries have
-        // expired but not been garbage collected yet.
-        int ttl_ms = static_cast<int>(
-            (entry->expiration - base::TimeTicks::Now()).InMilliseconds());
+      // Note that ttl_ms may be negative, for the cases where entries have
+      // expired but not been garbage collected yet.
+      int ttl_ms = static_cast<int>(
+          (entry->expiration - base::TimeTicks::Now()).InMilliseconds());
 
-        // Color expired entries blue.
-        if (ttl_ms > 0) {
-          out->append("<tr>");
-        } else {
-          out->append("<tr style='color:blue'>");
-        }
+      // Color expired entries blue.
+      if (ttl_ms > 0) {
+        out->append("<tr>");
+      } else {
+        out->append("<tr style='color:blue'>");
+      }
 
-        // Stringify all of the addresses in the address list, separated
-        // by newlines (br).
-        std::string address_list_html;
+      // Stringify all of the addresses in the address list, separated
+      // by newlines (br).
+      std::string address_list_html;
+
+      if (entry->error != net::OK) {
+        address_list_html = "<span style='font-weight: bold; color:red'>" +
+                            EscapeForHTML(net::ErrorToString(entry->error)) +
+                            "</span>";
+      } else {
         const struct addrinfo* current_address = entry->addrlist.head();
         while (current_address) {
           if (!address_list_html.empty())
@@ -264,23 +285,14 @@ class HostResolverCacheSubSection : public SubSection {
               net::NetAddressToString(current_address));
           current_address = current_address->ai_next;
         }
-
-        out->append(StringPrintf("<td>%s</td><td>%s</td><td>%s</td>"
-                                 "<td>%d</td></tr>",
-                                 EscapeForHTML(key.hostname).c_str(),
-                                 EscapeForHTML(address_family_str).c_str(),
-                                 address_list_html.c_str(),
-                                 ttl_ms));
-      } else {
-        // This was an entry that failed to be resolved.
-        // Color negative entries red.
-        out->append(StringPrintf(
-            "<tr style='color:red'><td>%s</td><td>%s</td>"
-            "<td colspan=2>%s</td></tr>",
-            EscapeForHTML(key.hostname).c_str(),
-            EscapeForHTML(address_family_str).c_str(),
-            EscapeForHTML(net::ErrorToString(entry->error)).c_str()));
       }
+
+      out->append(StringPrintf("<td>%s</td><td>%s</td><td>%s</td>"
+                               "<td>%d</td></tr>",
+                               EscapeForHTML(key.hostname).c_str(),
+                               EscapeForHTML(address_family_str).c_str(),
+                               address_list_html.c_str(),
+                               ttl_ms));
     }
 
     out->append("</table>");
@@ -353,6 +365,8 @@ class URLRequestRecentSubSection : public SubSection {
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
     RequestTracker<URLRequest>::RecentRequestInfoList recent =
         context->url_request_tracker()->GetRecentlyDeceased();
+
+    DrawCommandButton("Clear", "clear-urlrequest-graveyard", out);
 
     out->append("<ol>");
     for (size_t i = 0; i < recent.size(); ++i) {
@@ -432,6 +446,8 @@ class SocketStreamRecentSubSection : public SubSection {
     RequestTracker<net::SocketStream>::RecentRequestInfoList recent =
         context->socket_stream_tracker()->GetRecentlyDeceased();
 
+    DrawCommandButton("Clear", "clear-socketstream-graveyard", out);
+
     out->append("<ol>");
     for (size_t i = 0; i < recent.size(); ++i) {
       // Reverse the list order, so we dispay from most recent to oldest.
@@ -480,49 +496,77 @@ bool GetViewCacheKeyFromPath(const std::string path,
   return true;
 }
 
-// Process any query strings in the request (for actions like toggling
-// full logging. As a side-effect, also append some status text to the HTML
-// describing what we did.
-void ProcessQueryStringCommands(URLRequestContext* context,
-                                const std::string& query,
-                                std::string* data) {
-  if (StartsWithASCII(query, "logging=", true)) {
-    bool enable_unbounded = StartsWithASCII(query, "logging=E", true);
-    context->url_request_tracker()->SetUnbounded(enable_unbounded);
-    context->socket_stream_tracker()->SetUnbounded(enable_unbounded);
-
-    if (enable_unbounded)
-      data->append("<i>Enabled full logging for this session.</i>\n");
-    else
-      data->append("<i>Disabled full logging, and cleared the recent "
-                   "requests</i>\n");
-
-  } else if (StartsWithASCII(query, "data=Clear", true)) {
-    context->url_request_tracker()->ClearRecentlyDeceased();
-    context->socket_stream_tracker()->ClearRecentlyDeceased();
-
-    data->append("<i>Cleared the recent request logs</i>\n");
+bool HandleCommand(const std::string& command, URLRequestContext* context) {
+  if (StartsWithASCII(command, "full-logging-", true)) {
+    bool enable_full_logging = (command == "full-logging-enable");
+    context->url_request_tracker()->SetUnbounded(enable_full_logging);
+    context->socket_stream_tracker()->SetUnbounded(enable_full_logging);
+    return true;
   }
+
+  if (command == "clear-urlrequest-graveyard") {
+    context->url_request_tracker()->ClearRecentlyDeceased();
+    return true;
+  }
+
+  if (command == "clear-socketstream-graveyard") {
+    context->socket_stream_tracker()->ClearRecentlyDeceased();
+    return true;
+  }
+
+  if (command == "clear-hostcache") {
+    net::HostCache* host_cache = context->host_resolver()->GetHostCache();
+    if (host_cache)
+      host_cache->clear();
+    return true;
+  }
+
+  return false;
 }
 
-// Append some HTML controls to |data| that allow the user to enable full
+// Process any query strings in the request (for actions like toggling
+// full logging.
+void ProcessQueryStringCommands(URLRequestContext* context,
+                                const std::string& query) {
+  if (!StartsWithASCII(query, "commands=", true)) {
+    // Not a recognized format.
+    return;
+  }
+
+  std::string commands_str = query.substr(strlen("commands="));
+  commands_str = UnescapeURLComponent(commands_str, UnescapeRule::NORMAL);
+
+  // The command list is comma-separated.
+  std::vector<std::string> commands;
+  SplitString(commands_str, ',', &commands);
+
+  for (size_t i = 0; i < commands.size(); ++i)
+    HandleCommand(commands[i], context);
+}
+
+// Appends some HTML controls to |data| that allow the user to enable full
 // logging, and clear some of the already logged data.
 void DrawControlsHeader(URLRequestContext* context, std::string* data) {
   bool is_full_logging_enabled =
       context->url_request_tracker()->IsUnbounded() &&
       context->socket_stream_tracker()->IsUnbounded();
 
-  data->append("<form action='' method=GET style='margin-bottom: 10px'>\n");
+  data->append("<div style='margin-bottom: 10px'>");
+
   if (is_full_logging_enabled) {
-    data->append(
-        "<input type=submit name=logging value='Disable full logging' />");
+    DrawCommandButton("Disable full logging", "full-logging-disable", data);
   } else {
-    data->append(
-        "<input type=submit name=logging value='Enable full logging' />");
+    DrawCommandButton("Enable full logging", "full-logging-enable", data);
   }
 
-  data->append("<input type=submit name=data value='Clear recent requests' />");
-  data->append("</form>\n");
+  DrawCommandButton("Clear all data",
+                    // Send a list of comma separated commands:
+                    "clear-hostcache,"
+                    "clear-urlrequest-graveyard,"
+                    "clear-socketstream-graveyard",
+                    data);
+
+  data->append("</div>");
 }
 
 }  // namespace
@@ -564,12 +608,32 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
                ".subsection_body { margin: 10px 0 10px 2em; }\n"
                ".subsection_title { font-weight: bold; }\n"
                "</style>"
+               "<script>\n"
+
+               // Unfortunately we can't do XHR from chrome://net-internals
+               // because the chrome:// protocol restricts access.
+               //
+               // So instead, we will send commands by doing a form
+               // submission (which as a side effect will reload the page).
+               "function DoCommand(command) {\n"
+               "  document.getElementById('cmd').value = command;\n"
+               "  document.getElementById('cmdsender').submit();\n"
+               "}\n"
+
+               "</script>\n"
                "</head><body>"
+               "<form action='' method=GET id=cmdsender>"
+               "<input type='hidden' id=cmd name='commands'>"
+               "</form>"
                "<p><a href='http://dev.chromium.org/"
                "developers/design-documents/view-net-internals'>"
                "Help: how do I use this?</a></p>");
 
-  ProcessQueryStringCommands(context, query, data);
+  // TODO(eroman): do a redirect after processing the commands, to clear the
+  // URL of the command string (otherwise if you refresh the page you
+  // re-execute the command, which can be confusing when that command was to
+  // clear all the data!).
+  ProcessQueryStringCommands(context, query);
   DrawControlsHeader(context, data);
 
   SubSection* all = Singleton<AllSubSections>::get();
