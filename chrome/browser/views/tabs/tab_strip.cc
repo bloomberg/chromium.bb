@@ -1813,7 +1813,7 @@ void TabStrip::LayoutNewTabButton(double last_tab_right,
                                   double unselected_width) {
   int delta = abs(Round(unselected_width) - Tab::GetStandardSize().width());
   int v_offset = browser_defaults::kSizeTabButtonToTopOfTabStrip ?
-      0 : kNewTabButtonHOffset;
+      0 : kNewTabButtonVOffset;
   if (delta > 1 && !needs_resize_layout_) {
     // We're shrinking tabs, so we need to anchor the New Tab button to the
     // right edge of the TabStrip's bounds, rather than the right edge of the
