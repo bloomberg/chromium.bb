@@ -94,6 +94,7 @@ BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 BUG24182 WIN DEBUG SLOW: LayoutTests/inspector/console-dirxml.html = PASS
 BUG24182 DEBUG SLOW : LayoutTests/fast/dom/Window/window-function-frame-getter-precedence.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/fast/frames/frame-limit.html = PASS
+BUG24182 SLOW : LayoutTests/http/tests/cache/subresource-failover-to-network.html = PASS
 
 // Usually <1s in release, ~1s in debug, but occasionally >5s in release.
 BUG27335 WIN RELEASE : LayoutTests/plugins/embed-attributes-setting.html = PASS TIMEOUT
@@ -2786,9 +2787,6 @@ BUG28916 MAC : LayoutTests/editing/pasteboard/paste-xml.xhtml = IMAGE+TEXT
 
 // Flaky test from r51224:r51237 roll.
 BUG28918 DEBUG : LayoutTests/storage/domstorage/localstorage/iframe-events.html = CRASH PASS
-
-// Flaky test added by r51350.
-BUG28918 : LayoutTests/http/tests/cache/subresource-failover-to-network.html = PASS TEXT
 
 // New failures from webkit r51496
 BUG29056 WIN LINUX : LayoutTests/svg/custom/mask-with-all-units.svg = FAIL
