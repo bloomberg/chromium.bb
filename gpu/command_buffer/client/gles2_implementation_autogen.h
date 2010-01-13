@@ -199,9 +199,7 @@ void EnableVertexAttribArray(GLuint index) {
   helper_->EnableVertexAttribArray(index);
 }
 
-void Finish() {
-  helper_->Finish();
-}
+void Finish();
 
 void Flush() {
   helper_->Flush();
@@ -652,9 +650,7 @@ void Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   helper_->Viewport(x, y, width, height);
 }
 
-void SwapBuffers() {
-  helper_->SwapBuffers();
-}
+void SwapBuffers();
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

@@ -859,6 +859,7 @@ _FUNCTION_INFO = {
     'cmd_args': 'GLenum mode, GLsizei count, GLenum type, GLuint index_offset',
   },
   'EnableVertexAttribArray': {'DecoderFunc': 'DoEnableVertexAttribArray'},
+  'Finish': {'ImplFunc': False},
   'FramebufferRenderbuffer': {'DecoderFunc': 'glFramebufferRenderbufferEXT'},
   'FramebufferTexture2D': {'DecoderFunc': 'glFramebufferTexture2DEXT'},
   'GenerateMipmap': {'DecoderFunc': 'glGenerateMipmapEXT'},
@@ -954,7 +955,11 @@ _FUNCTION_INFO = {
       'cmd_args': 'GLuint indx, GLint size, GLenum type, GLboolean normalized, '
                   'GLsizei stride, GLuint offset',
   },
-  'SwapBuffers': {'DecoderFunc': 'DoSwapBuffers', 'unit_test': False},
+  'SwapBuffers': {
+    'ImplFunc': False,
+    'DecoderFunc': 'DoSwapBuffers',
+    'unit_test': False,
+  },
 }
 
 
@@ -1315,7 +1320,8 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Writes the GLES2 Implemention declaration."""
-    if func.can_auto_generate:
+    impl_func = func.GetInfo('ImplFunc')
+    if func.can_auto_generate and (impl_func == None or impl_func == True):
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))

@@ -66,6 +66,16 @@ void GLES2Implementation::DrawElements(
   helper_->DrawElements(mode, count, type, ToGLuint(indices));
 }
 
+void GLES2Implementation::Finish() {
+  helper_->Finish();
+  WaitForCmd();
+}
+
+void GLES2Implementation::SwapBuffers() {
+  helper_->SwapBuffers();
+  Finish();
+}
+
 GLint GLES2Implementation::GetAttribLocation(
     GLuint program, const char* name) {
   helper_->GetAttribLocationImmediate(
