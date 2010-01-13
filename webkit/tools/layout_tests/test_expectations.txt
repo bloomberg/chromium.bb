@@ -1267,7 +1267,6 @@ BUG10342 LINUX MAC : LayoutTests/fast/loader/file-URL-with-port-number.html = TI
 BUG10343 LINUX : LayoutTests/fast/text/atsui-kerning-and-ligatures.html = FAIL
 BUG10343 LINUX RELEASE : LayoutTests/fast/text/atsui-partial-selection.html = FAIL
 BUG10343 LINUX : LayoutTests/fast/text/atsui-small-caps-punctuation-size.html = FAIL
-BUG10343 LINUX WIN : LayoutTests/fast/text/cg-vs-atsui.html = FAIL
 
 // Started timing out with agl's complext text change.  Page is verrry slow.
 BUG10343 SKIP LINUX : LayoutTests/fast/text/large-text-composed-char.html = TIMEOUT FAIL
