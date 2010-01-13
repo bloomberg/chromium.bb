@@ -47,3 +47,11 @@ void FakePluginWindowTracker::RemoveFakeWindowForDelegate(
   if (window)  // Check just in case the initial window creation failed.
     DisposeWindow(window);
 }
+
+WindowRef FakePluginWindowTracker::get_active_plugin_window() {
+  return active_plugin_window_;
+}
+
+void FakePluginWindowTracker::set_active_plugin_window(WindowRef window) {
+  active_plugin_window_ = window;
+}

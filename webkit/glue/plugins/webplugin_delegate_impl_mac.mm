@@ -747,6 +747,9 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
         LOG(WARNING) << "NPEventFromWebInputEvent failed";
         return false;
       }
+      // Set this plugin's window as the active one, for global Carbon calls.
+      ScopedActivePluginWindow active_window_scope(
+          reinterpret_cast<WindowRef>(cg_context_.window));
       ret = instance()->NPP_HandleEvent(&np_event) != 0;
       break;
     }
@@ -813,6 +816,9 @@ void WebPluginDelegateImpl::OnNullEvent() {
       np_event.modifiers |= btnState;
     np_event.where.h = last_mouse_x_;
     np_event.where.v = last_mouse_y_;
+    // Set this plugin's window as the active one, for global Carbon calls.
+    ScopedActivePluginWindow active_window_scope(
+        reinterpret_cast<WindowRef>(cg_context_.window));
     instance()->NPP_HandleEvent(&np_event);
   }
 #endif

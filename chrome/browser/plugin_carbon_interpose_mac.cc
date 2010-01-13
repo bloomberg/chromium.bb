@@ -125,6 +125,25 @@ static void ChromePluginDisposeDialog(DialogRef dialog) {
   OnPluginWindowClosed(window_info);
 }
 
+static WindowPartCode ChromePluginFindWindow(Point point, WindowRef* window) {
+  FakePluginWindowTracker* tracker = FakePluginWindowTracker::SharedInstance();
+  WindowRef plugin_window = tracker->get_active_plugin_window();
+  if (plugin_window) {
+    // If plugin_window is non-NULL, then we are in the middle of routing an
+    // event to the plugin, so we know it's destined for this window already,
+    // so we don't have to worry that we'll be stealing an event meant for an
+    // overlapping window.
+    Rect window_bounds;
+    GetWindowBounds(plugin_window, kWindowContentRgn, &window_bounds);
+    if (PtInRect(point, &window_bounds)) {
+      if (window)
+        *window = plugin_window;
+      return inContent;
+    }
+  }
+  return FindWindow(point, window);
+}
+
 #pragma mark -
 
 struct interpose_substitution {
@@ -147,4 +166,5 @@ __attribute__((used)) static const interpose_substitution substitutions[]
   INTERPOSE_FUNCTION(HideWindow),
   INTERPOSE_FUNCTION(ReleaseWindow),
   INTERPOSE_FUNCTION(DisposeDialog),
+  INTERPOSE_FUNCTION(FindWindow),
 };
