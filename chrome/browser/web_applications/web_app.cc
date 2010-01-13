@@ -576,6 +576,15 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
 
   FilePath web_app_path = GetWebAppDataDirectory(
       web_app::GetDataDir(profile_path_), shortcut_info_.url);
+
+  // Ensure web_app_path exists. web_app_path could be missing for a legacy
+  // shortcut created by gears.
+  if (!file_util::PathExists(web_app_path) &&
+      !file_util::CreateDirectory(web_app_path)) {
+    NOTREACHED();
+    return;
+  }
+
   FilePath icon_file = web_app_path.Append(file_name_).ReplaceExtension(
       FILE_PATH_LITERAL(".ico"));
   CheckAndSaveIcon(icon_file, shortcut_info_.favicon);
