@@ -31,6 +31,12 @@ OMX_API OMX_ERRORTYPE OMX_GetHandle(OMX_HANDLETYPE*, OMX_STRING, OMX_PTR,
 OMX_API OMX_ERRORTYPE OMX_FreeHandle(OMX_HANDLETYPE) {
   NOTIMPLEMENTED();
   return OMX_ErrorNotImplemented;
-};
+}
+
+OMX_API OMX_ERRORTYPE OMX_GetComponentsOfRole(OMX_STRING, OMX_U32*,
+                                              OMX_U8**) {
+  NOTIMPLEMENTED();
+  return OMX_ErrorNotImplemented;
+}
 
 }  // extern "C"
