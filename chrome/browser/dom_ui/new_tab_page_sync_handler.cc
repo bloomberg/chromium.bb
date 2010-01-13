@@ -149,6 +149,13 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {
   DCHECK(!waiting_for_initial_page_load_);
   DCHECK(sync_service_);
   if (sync_service_->HasSyncSetupCompleted()) {
+    if (sync_service_->GetAuthError().state() ==
+        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
+        sync_service_->GetAuthError().state() ==
+        GoogleServiceAuthError::CAPTCHA_REQUIRED) {
+      sync_service_->ShowLoginDialog();
+      return;
+    }
     DictionaryValue value;
     value.SetString(L"syncEnabledMessage",
         l10n_util::GetStringF(IDS_SYNC_NTP_SYNCED_TO,
