@@ -1,18 +1,3 @@
-### Variables that can be overridden on the command line.
-CC = gcc
-CXX = g++
-CPPFLAGS = -DNDEBUG
-CXXFLAGS = -g3 -O2 -Wall -m32
-
-# To produce test coverage reports:
-# 1) Build all .o files and executables without optimization and with
-#    'COVERAGE=1' on the make command line.
-# 2) Run the tests.
-# 3) Do 'make coverage'.
-# All in one command:
-# $ make CFLAGS='-O0' CXXFLAGS='-O0' COVERAGE=1 clean check coverage
-COVERAGE=
-
 # Build all executables.
 all::
 
@@ -38,6 +23,33 @@ coverage-reset:
 
 .PHONY: all clean check coverage coverage-reset
 
+### Variables that are useful to override on the command line.
+CC = gcc
+CXX = g++
+CPPFLAGS = -DNDEBUG
+CXXFLAGS = -g3 -O2 -Wall -m32
+
+# To produce test coverage reports:
+# 1) Build all .o files and executables without optimization and with
+#    'COVERAGE=1' on the make command line.
+# 2) Run the tests.
+# 3) Do 'make coverage'.
+# All in one command:
+# $ make CFLAGS='-O0' CXXFLAGS='-O0' COVERAGE=1 clean check coverage
+COVERAGE=
+
+# A wrapper for running 'make check' targets. This is inserted before
+# the test executable name in the commands for 'check' targets. So if
+# 'make check' would normally execute some test program with the
+# command:
+#
+#    SOME_ENV_VAR=value ./some-test-executable test-args
+#
+# then setting TEST_WRAPPER to 'valgrind' (say) would have 'make
+# check' run the this command line:
+#
+#    SOME_ENV_VAR=value valgrind ./some-test-executable test-args
+TEST_WRAPPER=
 
 ### Variables used internally by this Makefile.
 
@@ -195,7 +207,7 @@ clean::
 ### appropriate for Google C++ Testing Framework test programs. But
 ### you can provide your own commands.
 check-%: %
-	srcdir=$(SRC) ./$< $(TEST_ARGS)
+	srcdir=$(SRC) $(TEST_WRAPPER) ./$< $(TEST_ARGS)
 
 
 ### Generic coverage reporting rules.
