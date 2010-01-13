@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,7 +205,7 @@ const char kEnableFastback[]                = "enable-fastback";
 const char kEnableFileCookies[]             = "enable-file-cookies";
 
 // Enable Geolocation support.
-const char kEnableGeolocation[]       = "enable-geolocation";
+const char kEnableGeolocation[]             = "enable-geolocation";
 
 // Enable the GPU plugin and Pepper 3D rendering.
 const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
@@ -298,6 +298,9 @@ const char kFirstRun[]                      = "first-run";
 // current details.
 const char kForceFieldTestNameAndValue[]    = "force-fieldtest";
 
+// Makes this process a GPU sub-process.
+const char kGpuProcess[]                    = "gpu-process";
+
 // Make Windows happy by allowing it to show "Enable access to this program"
 // checkbox in Add/Remove Programs->Set Program Access and Defaults. This
 // only shows an error box because the only way to hide Chrome is by
@@ -324,12 +327,6 @@ const char kInternalNaCl[]                  = "internal-nacl";
 
 // Runs a trusted Pepper plugin inside the renderer process.
 const char kInternalPepper[]                = "internal-pepper";
-
-#ifndef NDEBUG
-// Makes sure any sync login attempt will fail with an error.  (Only
-// used for testing.)
-const char kInvalidateSyncLogin[]           = "invalidate-sync-login";
-#endif
 
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
@@ -733,6 +730,10 @@ const char kKioskMode[]                     = "kiosk";
 #ifndef NDEBUG
 // Debug only switch to specify which gears plugin dll to load.
 const char kGearsPluginPathOverride[]       = "gears-plugin-path";
+
+// Makes sure any sync login attempt will fail with an error.  (Only
+// used for testing.)
+const char kInvalidateSyncLogin[]           = "invalidate-sync-login";
 #endif
 
 // -----------------------------------------------------------------------------

@@ -208,8 +208,10 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // Returns the process object associated with the child process.  In certain
   // tests or single-process mode, this will actually represent the current
   // process.
-  // NOTE: this is not valid after calling Init, as it starts the process
-  // asynchronously.  It's guaranteed to be valid after the first IPC arrives.
+  //
+  // NOTE: this is not necessarily valid immediately after calling Init, as
+  // Init starts the process asynchronously.  It's guaranteed to be valid after
+  // the first IPC arrives.
   virtual base::ProcessHandle GetHandle() = 0;
 
   // Transport DIB functions ---------------------------------------------------

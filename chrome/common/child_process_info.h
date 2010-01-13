@@ -24,7 +24,8 @@ class ChildProcessInfo {
     UTILITY_PROCESS,
     PROFILE_IMPORT_PROCESS,
     ZYGOTE_PROCESS,
-    SANDBOX_HELPER_PROCESS
+    SANDBOX_HELPER_PROCESS,
+    GPU_PROCESS
   };
 
   ChildProcessInfo(const ChildProcessInfo& original);

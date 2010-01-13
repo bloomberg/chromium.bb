@@ -86,6 +86,7 @@
 
 extern int BrowserMain(const MainFunctionParams&);
 extern int RendererMain(const MainFunctionParams&);
+extern int GpuMain(const MainFunctionParams&);
 extern int PluginMain(const MainFunctionParams&);
 extern int WorkerMain(const MainFunctionParams&);
 extern int NaClMain(const MainFunctionParams&);
@@ -671,6 +672,8 @@ int ChromeMain(int argc, char** argv) {
     rv = PluginMain(main_params);
   } else if (process_type == switches::kUtilityProcess) {
     rv = UtilityMain(main_params);
+  } else if (process_type == switches::kGpuProcess) {
+    rv = GpuMain(main_params);
   } else if (process_type == switches::kProfileImportProcess) {
 #if defined(OS_MACOSX)
     rv = ProfileImportMain(main_params);

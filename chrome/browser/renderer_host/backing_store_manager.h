@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,10 @@
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
 #include "base/process.h"
+#include "chrome/common/transport_dib.h"
 
 class BackingStore;
 class RenderWidgetHost;
-class TransportDIB;
 
 // This class manages backing stores in the browsr. Every RenderWidgetHost is
 // associated with a backing store which it requests from this class.  The
@@ -30,14 +30,11 @@ class BackingStoreManager {
   static BackingStore* GetBackingStore(RenderWidgetHost* host,
                                        const gfx::Size& desired_size);
 
-  // Returns a backing store which is fully ready for consumption, i.e. the
-  // bitmap from the renderer has been copied into the backing store dc, or the
-  // bitmap in the backing store dc references the renderer bitmap.
+  // Makes a backing store which is fully ready for consumption, i.e. the
+  // bitmap from the renderer has been copied into the backing store.
   //
   // backing_store_size
   //   The desired backing store dimensions.
-  // process_handle
-  //   The renderer process handle.
   // bitmap_section
   //   The bitmap section from the renderer.
   // bitmap_rect
@@ -45,14 +42,19 @@ class BackingStoreManager {
   // needs_full_paint
   //   Set if we need to send out a request to paint the view
   //   to the renderer.
-  static BackingStore* PrepareBackingStore(
+  // painted_synchronously
+  //   Will be set by the function if the request was processed synchronously,
+  //   and the bitmap is done being used. False means that the backing store
+  //   will paint the bitmap at a later time and that the TransportDIB can't be
+  //   freed (it will be the backing store's job to free it later).
+  static void PrepareBackingStore(
       RenderWidgetHost* host,
       const gfx::Size& backing_store_size,
-      base::ProcessHandle process_handle,
-      TransportDIB* bitmap,
+      TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
-      bool* needs_full_paint);
+      bool* needs_full_paint,
+      bool* painted_synchronously);
 
   // Returns a matching backing store for the host.
   // Returns NULL if we fail to find one.

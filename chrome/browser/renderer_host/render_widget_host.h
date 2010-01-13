@@ -16,6 +16,7 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/property_bag.h"
+#include "chrome/common/transport_dib.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
@@ -213,6 +214,11 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Allocate a new backing store of the given size. Returns NULL on failure
   // (for example, if we don't currently have a RenderWidgetHostView.)
   BackingStore* AllocBackingStore(const gfx::Size& size);
+
+  // When a backing store does asynchronous painting, it will call this function
+  // when it is done with the DIB. We will then forward a message to the
+  // renderer to send another paint.
+  void DonePaintingToBackingStore();
 
   // Checks to see if we can give up focus to this widget through a JS call.
   virtual bool CanBlur() const { return true; }
@@ -434,10 +440,15 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 #endif
 
   // Paints the given bitmap to the current backing store at the given location.
-  void PaintBackingStoreRect(TransportDIB* dib,
+  // |*painted_synchronously| will be true if the message was processed
+  // synchronously, and the bitmap is done being used. False means that the
+  // backing store will paint the bitmap at a later time and that the DIB can't
+  // be freed (it will be the backing store's job to free it later).
+  void PaintBackingStoreRect(TransportDIB::Id bitmap,
                              const gfx::Rect& bitmap_rect,
                              const std::vector<gfx::Rect>& copy_rects,
-                             const gfx::Size& view_size);
+                             const gfx::Size& view_size,
+                             bool* painted_synchronously);
 
   // Scrolls the given |clip_rect| in the backing by the given dx/dy amount. The
   // |dib| and its corresponding location |bitmap_rect| in the backing store

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include <atlmisc.h>
 
 #include "base/scoped_comptr_win.h"
+#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/ime_input.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -27,6 +28,7 @@ class Message;
 
 class BackingStore;
 class RenderWidgetHost;
+class GpuViewHostWin;
 
 typedef CWinTraits<WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0>
     RenderWidgetHostHWNDTraits;
@@ -58,6 +60,8 @@ class RenderWidgetHostViewWin
   // The view will associate itself with the given widget.
   explicit RenderWidgetHostViewWin(RenderWidgetHost* widget);
   virtual ~RenderWidgetHostViewWin();
+
+  void CreateWnd(HWND parent);
 
   DECLARE_WND_CLASS_EX(kRenderWidgetHostHWNDClass, CS_DBLCLKS, 0);
 
@@ -139,7 +143,7 @@ class RenderWidgetHostViewWin
   LRESULT OnCreate(CREATESTRUCT* create_struct);
   void OnActivate(UINT, BOOL, HWND);
   void OnDestroy();
-  void OnPaint(HDC dc);
+  void OnPaint(HDC unused_dc);
   void OnNCPaint(HRGN update_region);
   LRESULT OnEraseBkgnd(HDC dc);
   LRESULT OnSetCursor(HWND window, UINT hittest_code, UINT mouse_message_id);
@@ -223,6 +227,10 @@ class RenderWidgetHostViewWin
 
   // The associated Model.
   RenderWidgetHost* render_widget_host_;
+
+  // If we're doing out-of-process painting, this member will be non-NULL,
+  // indicating the gpu view we're using for the painting.
+  scoped_ptr<GpuViewHostWin> gpu_view_host_;
 
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;

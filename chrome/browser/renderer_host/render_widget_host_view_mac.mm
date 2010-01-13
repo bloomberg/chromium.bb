@@ -11,7 +11,7 @@
 #include "chrome/browser/browser_trial.h"
 #import "chrome/browser/cocoa/rwhvm_editcommand_helper.h"
 #include "chrome/browser/plugin_process_host.h"
-#include "chrome/browser/renderer_host/backing_store.h"
+#include "chrome/browser/renderer_host/backing_store_mac.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
@@ -383,7 +383,7 @@ void RenderWidgetHostViewMac::SetTooltipText(const std::wstring& tooltip_text) {
 
 BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
     const gfx::Size& size) {
-  return new BackingStore(render_widget_host_, size);
+  return new BackingStoreMac(render_widget_host_, size);
 }
 
 // Display a popup menu for WebKit using Cocoa widgets.
@@ -758,8 +758,8 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
 
   renderWidgetHostView_->invalid_rect_ = dirtyRect;
   renderWidgetHostView_->about_to_validate_and_paint_ = true;
-  BackingStore* backing_store =
-      renderWidgetHostView_->render_widget_host_->GetBackingStore(true);
+  BackingStoreMac* backing_store = static_cast<BackingStoreMac*>(
+      renderWidgetHostView_->render_widget_host_->GetBackingStore(true));
   renderWidgetHostView_->about_to_validate_and_paint_ = false;
   dirtyRect = renderWidgetHostView_->invalid_rect_;
 

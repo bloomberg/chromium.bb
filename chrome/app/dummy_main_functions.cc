@@ -42,3 +42,7 @@ int NaClBrokerMain(const MainFunctionParams& parameters) {
 int DiagnosticsMain(const CommandLine& command_line) {
   return 1;
 }
+
+int GpuMain(const MainFunctionParams&) {
+  return ResultCodes::BAD_PROCESS_TYPE;
+}

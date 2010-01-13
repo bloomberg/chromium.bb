@@ -765,55 +765,18 @@ bool CaptureVisibleTabFunction::RunImpl() {
 // Build the image of a tab's contents out of a backing store.
 void CaptureVisibleTabFunction::CaptureSnapshotFromBackingStore(
     BackingStore* backing_store) {
-  SkBitmap screen_capture;
 
-#if defined(OS_WIN)
   skia::PlatformCanvas temp_canvas;
-  if (!temp_canvas.initialize(backing_store->size().width(),
-                              backing_store->size().height(), true)) {
+  if (!backing_store->CopyFromBackingStore(gfx::Rect(gfx::Point(0, 0),
+                                                     backing_store->size()),
+                                           &temp_canvas)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kInternalVisibleTabCaptureError, "");
     SendResponse(false);
     return;
   }
-  HDC temp_dc = temp_canvas.beginPlatformPaint();
-  BitBlt(temp_dc,
-         0, 0, backing_store->size().width(), backing_store->size().height(),
-         backing_store->hdc(), 0, 0, SRCCOPY);
-  temp_canvas.endPlatformPaint();
-
-  screen_capture = temp_canvas.getTopPlatformDevice().accessBitmap(false);
-#elif defined(OS_MACOSX)
-  skia::PlatformCanvas temp_canvas;
-  if (!temp_canvas.initialize(backing_store->size().width(),
-                              backing_store->size().height(), true)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kInternalVisibleTabCaptureError, "");
-    SendResponse(false);
-    return;
-  }
-  CGContextRef temp_context = temp_canvas.beginPlatformPaint();
-  CGContextSaveGState(temp_context);
-  CGContextTranslateCTM(temp_context, 0.0, backing_store->size().height());
-  CGContextScaleCTM(temp_context, 1.0, -1.0);
-  CGContextDrawLayerAtPoint(temp_context, CGPointMake(0.0, 0.0),
-                            backing_store->cg_layer());
-  CGContextRestoreGState(temp_context);
-  temp_canvas.endPlatformPaint();
-
-  screen_capture = temp_canvas.getTopPlatformDevice().accessBitmap(false);
-#elif defined(OS_LINUX)
-  screen_capture = backing_store->PaintRectToBitmap(
-      gfx::Rect(0, 0, backing_store->size().width(),
-                backing_store->size().height()));
-#else
-  // TODO(port)
-  error_ = keys::kNotImplementedError;
-  SendResponse(false);
-  return;
-#endif
-
-  SendResultFromBitmap(screen_capture);
+  SendResultFromBitmap(
+      temp_canvas.getTopPlatformDevice().accessBitmap(false));
 }
 
 // If a backing store was not available in CaptureVisibleTabFunction::RunImpl,

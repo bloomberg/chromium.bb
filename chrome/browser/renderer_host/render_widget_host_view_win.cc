@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,8 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/renderer_host/backing_store.h"
+#include "chrome/browser/renderer_host/backing_store_win.h"
+#include "chrome/browser/renderer_host/gpu_view_host_win.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/chrome_constants.h"
@@ -257,6 +259,13 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
 
 RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
   ResetTooltip();
+}
+
+void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
+  Create(parent);  // ATL function to create the window.
+  // Uncommenting this will enable experimental out-of-process painting.
+  // Contact brettw for more,
+  // gpu_view_host_.reset(new GpuViewHostWin(this, m_hWnd));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -702,7 +711,9 @@ void RenderWidgetHostViewWin::SetTooltipText(const std::wstring& tooltip_text) {
 
 BackingStore* RenderWidgetHostViewWin::AllocBackingStore(
     const gfx::Size& size) {
-  return new BackingStore(render_widget_host_, size);
+  if (gpu_view_host_.get())
+    return gpu_view_host_->CreateBackingStore(render_widget_host_, size);
+  return new BackingStoreWin(render_widget_host_, size);
 }
 
 void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
@@ -758,11 +769,22 @@ void RenderWidgetHostViewWin::OnDestroy() {
   TrackMouseLeave(false);
 }
 
-void RenderWidgetHostViewWin::OnPaint(HDC dc) {
+void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
   DCHECK(render_widget_host_->process()->HasConnection());
 
+  if (gpu_view_host_.get()) {
+    // When we're proxying painting, we don't actually display the web page
+    // ourselves. We clear it white in case the proxy window isn't visible
+    // yet we won't show gibberish.
+    CPaintDC paint_dc(m_hWnd);
+    FillRect(paint_dc.m_hDC, &paint_dc.m_ps.rcPaint,
+             static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
+    return;
+  }
+
   about_to_validate_and_paint_ = true;
-  BackingStore* backing_store = render_widget_host_->GetBackingStore(true);
+  BackingStoreWin* backing_store = static_cast<BackingStoreWin*>(
+      render_widget_host_->GetBackingStore(true));
 
   // We initialize |paint_dc| (and thus call BeginPaint()) after calling
   // GetBackingStore(), so that if it updates the invalid rect we'll catch the
@@ -783,7 +805,7 @@ void RenderWidgetHostViewWin::OnPaint(HDC dc) {
   if (backing_store) {
     gfx::Rect bitmap_rect(gfx::Point(), backing_store->size());
 
-    bool manage_colors = BackingStore::ColorManagementEnabled();
+    bool manage_colors = BackingStoreWin::ColorManagementEnabled();
     if (manage_colors)
       SetICMMode(paint_dc.m_hDC, ICM_ON);
 

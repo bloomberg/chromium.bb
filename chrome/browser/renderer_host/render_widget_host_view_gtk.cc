@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/x11_util.h"
-#include "chrome/browser/renderer_host/backing_store.h"
+#include "chrome/browser/renderer_host/backing_store_x.h"
 #include "chrome/browser/renderer_host/gtk_im_context_wrapper.h"
 #include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
@@ -528,7 +528,8 @@ void RenderWidgetHostViewGtk::DidScrollBackingStoreRect(const gfx::Rect& rect,
     return;
 
   // TODO(darin): Implement the equivalent of Win32's ScrollWindowEX.  Can that
-  // be done using XCopyArea?  Perhaps similar to BackingStore::ScrollRect?
+  // be done using XCopyArea?  Perhaps similar to
+  // BackingStore::ScrollBackingStore?
   if (about_to_validate_and_paint_)
     invalid_rect_ = invalid_rect_.Union(rect);
   else
@@ -596,9 +597,9 @@ void RenderWidgetHostViewGtk::ShowingContextMenu(bool showing) {
 
 BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
     const gfx::Size& size) {
-  return new BackingStore(host_, size,
-                          x11_util::GetVisualFromGtkWidget(view_.get()),
-                          gtk_widget_get_visual(view_.get())->depth);
+  return new BackingStoreX(host_, size,
+                           x11_util::GetVisualFromGtkWidget(view_.get()),
+                           gtk_widget_get_visual(view_.get())->depth);
 }
 
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
@@ -611,7 +612,8 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
 
   invalid_rect_ = damage_rect;
   about_to_validate_and_paint_ = true;
-  BackingStore* backing_store = host_->GetBackingStore(true);
+  BackingStoreX* backing_store = static_cast<BackingStoreX*>(
+      host_->GetBackingStore(true));
   // Calling GetBackingStore maybe have changed |invalid_rect_|...
   about_to_validate_and_paint_ = false;
 

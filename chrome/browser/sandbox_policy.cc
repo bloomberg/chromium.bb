@@ -350,6 +350,8 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     type = ChildProcessInfo::NACL_PROCESS;
   } else if (type_str == switches::kUtilityProcess) {
     type = ChildProcessInfo::UTILITY_PROCESS;
+  } else if (type_str == switches::kGpuProcess) {
+    type = ChildProcessInfo::GPU_PROCESS;
   } else {
     NOTREACHED();
     return 0;

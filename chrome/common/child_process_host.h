@@ -69,6 +69,8 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   };
 
  protected:
+  // The resource_dispatcher_host may be NULL to indicate none is needed for
+  // this process type.
   ChildProcessHost(ProcessType type,
                    ResourceDispatcherHost* resource_dispatcher_host);
 
@@ -127,7 +129,10 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   };
 
   ListenerHook listener_;
+
+  // May be NULL if this current process has no resource dispatcher host.
   ResourceDispatcherHost* resource_dispatcher_host_;
+
   bool opening_channel_;  // True while we're waiting the channel to be opened.
   scoped_ptr<IPC::Channel> channel_;
   std::string channel_id_;

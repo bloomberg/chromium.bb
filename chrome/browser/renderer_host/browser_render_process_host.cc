@@ -735,7 +735,7 @@ bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
 void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   mark_child_process_activity_time();
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
-    // dispatch control messages
+    // Dispatch control messages.
     bool msg_is_ok = true;
     IPC_BEGIN_MESSAGE_MAP_EX(BrowserRenderProcessHost, msg, msg_is_ok)
       IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
@@ -762,7 +762,7 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
     return;
   }
 
-  // dispatch incoming messages to the appropriate TabContents
+  // Dispatch incoming messages to the appropriate RenderView/WidgetHost.
   IPC::Channel::Listener* listener = GetListenerByID(msg.routing_id());
   if (!listener) {
     if (msg.is_sync()) {

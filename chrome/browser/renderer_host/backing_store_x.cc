@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/backing_store.h"
+#include "chrome/browser/renderer_host/backing_store_x.h"
 
 #include <stdlib.h>
 #include <sys/ipc.h>
@@ -16,12 +16,15 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/gfx/rect.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/time.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/common/x11_util.h"
 #include "chrome/common/x11_util_internal.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // X Backing Stores:
@@ -45,12 +48,11 @@ static void DestroySharedImage(Display* display,
   shmdt(shminfo->shmaddr);
 }
 
-BackingStore::BackingStore(RenderWidgetHost* widget,
-                           const gfx::Size& size,
-                           void* visual,
-                           int depth)
-    : render_widget_host_(widget),
-      size_(size),
+BackingStoreX::BackingStoreX(RenderWidgetHost* widget,
+                            const gfx::Size& size,
+                            void* visual,
+                            int depth)
+    : BackingStore(widget, size),
       display_(x11_util::GetXDisplay()),
       shared_memory_support_(x11_util::QuerySharedMemorySupport(display_)),
       use_render_(x11_util::QueryRenderSupport(display_)),
@@ -76,9 +78,8 @@ BackingStore::BackingStore(RenderWidgetHost* widget,
   pixmap_gc_ = XCreateGC(display_, pixmap_, 0, NULL);
 }
 
-BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
-    : render_widget_host_(widget),
-      size_(size),
+BackingStoreX::BackingStoreX(RenderWidgetHost* widget, const gfx::Size& size)
+    : BackingStore(widget, size),
       display_(NULL),
       shared_memory_support_(x11_util::SHARED_MEMORY_NONE),
       use_render_(false),
@@ -87,7 +88,7 @@ BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
       root_window_(0) {
 }
 
-BackingStore::~BackingStore() {
+BackingStoreX::~BackingStoreX() {
   // In unit tests, display_ may be NULL.
   if (!display_)
     return;
@@ -97,16 +98,17 @@ BackingStore::~BackingStore() {
   XFreeGC(display_, static_cast<GC>(pixmap_gc_));
 }
 
-size_t BackingStore::MemorySize() {
+size_t BackingStoreX::MemorySize() {
   if (!use_render_)
-    return size_.GetArea() * (pixmap_bpp_ / 8);
+    return size().GetArea() * (pixmap_bpp_ / 8);
   else
-    return size_.GetArea() * 4;
+    return size().GetArea() * 4;
 }
 
-void BackingStore::PaintRectWithoutXrender(TransportDIB* bitmap,
-                                           const gfx::Rect& bitmap_rect,
-                                           const gfx::Rect& copy_rect) {
+void BackingStoreX::PaintRectWithoutXrender(
+    TransportDIB* bitmap,
+    const gfx::Rect& bitmap_rect,
+    const std::vector<gfx::Rect>& copy_rects) {
   const int width = bitmap_rect.width();
   const int height = bitmap_rect.height();
   Pixmap pixmap = XCreatePixmap(display_, root_window_, width, height,
@@ -203,28 +205,37 @@ void BackingStore::PaintRectWithoutXrender(TransportDIB* bitmap,
                  << " bpp:" << pixmap_bpp_ << ")";
   }
 
-  XCopyArea(display_,
-            pixmap,                           // src
-            pixmap_,                          // dest
-            static_cast<GC>(pixmap_gc_),      // gc
-            copy_rect.x() - bitmap_rect.x(),  // src_x
-            copy_rect.y() - bitmap_rect.y(),  // src_y
-            copy_rect.width(),                // width
-            copy_rect.height(),               // height
-            copy_rect.x(),                    // dest_x
-            copy_rect.y());                   // dest_y
+  for (size_t i = 0; i < copy_rects.size(); i++) {
+    const gfx::Rect& copy_rect = copy_rects[i];
+    XCopyArea(display_,
+              pixmap,                           // src
+              pixmap_,                          // dest
+              static_cast<GC>(pixmap_gc_),      // gc
+              copy_rect.x() - bitmap_rect.x(),  // src_x
+              copy_rect.y() - bitmap_rect.y(),  // src_y
+              copy_rect.width(),                // width
+              copy_rect.height(),               // height
+              copy_rect.x(),                    // dest_x
+              copy_rect.y());                   // dest_y
+  }
 
   XFreePixmap(display_, pixmap);
 }
 
-void BackingStore::PaintRect(base::ProcessHandle process,
-                             TransportDIB* bitmap,
-                             const gfx::Rect& bitmap_rect,
-                             const gfx::Rect& copy_rect) {
+void BackingStoreX::PaintToBackingStore(
+    RenderProcessHost* process,
+    TransportDIB::Id bitmap,
+    const gfx::Rect& bitmap_rect,
+    const std::vector<gfx::Rect>& copy_rects,
+    bool* painted_synchronously) {
+  // Our paints are always synchronous and the caller can free the TransportDIB
+  // when we're done, even on error.
+  *painted_synchronously = true;
+
   if (!display_)
     return;
 
-  if (bitmap_rect.IsEmpty() || copy_rect.IsEmpty())
+  if (bitmap_rect.IsEmpty())
     return;
 
   const int width = bitmap_rect.width();
@@ -235,15 +246,19 @@ void BackingStore::PaintRect(base::ProcessHandle process,
   if (width > 23170 || height > 23170)
     return;
 
+  TransportDIB* dib = process->GetTransportDIB(bitmap);
+  if (!dib)
+    return;
+
   if (!use_render_)
-    return PaintRectWithoutXrender(bitmap, bitmap_rect, copy_rect);
+    return PaintRectWithoutXrender(dib, bitmap_rect, copy_rects);
 
   Picture picture;
   Pixmap pixmap;
 
   if (shared_memory_support_ == x11_util::SHARED_MEMORY_PIXMAP) {
     XShmSegmentInfo shminfo = {0};
-    shminfo.shmseg = bitmap->MapToX(display_);
+    shminfo.shmseg = dib->MapToX(display_);
 
     // The NULL in the following is the |data| pointer: this is an artifact of
     // Xlib trying to be helpful, rather than just exposing the X protocol. It
@@ -261,12 +276,12 @@ void BackingStore::PaintRect(base::ProcessHandle process,
     GC gc = XCreateGC(display_, pixmap, 0, NULL);
 
     if (shared_memory_support_ == x11_util::SHARED_MEMORY_PUTIMAGE) {
-      const XID shmseg = bitmap->MapToX(display_);
+      const XID shmseg = dib->MapToX(display_);
 
       XShmSegmentInfo shminfo;
       memset(&shminfo, 0, sizeof(shminfo));
       shminfo.shmseg = shmseg;
-      shminfo.shmaddr = static_cast<char*>(bitmap->memory());
+      shminfo.shmaddr = static_cast<char*>(dib->memory());
 
       // TODO(evanm): verify that Xlib isn't doing any conversions here.
       XImage* image = XShmCreateImage(display_, static_cast<Visual*>(visual_),
@@ -298,7 +313,7 @@ void BackingStore::PaintRect(base::ProcessHandle process,
       image.red_mask = 0xff;
       image.green_mask = 0xff00;
       image.blue_mask = 0xff0000;
-      image.data = static_cast<char*>(bitmap->memory());
+      image.data = static_cast<char*>(dib->memory());
 
       XPutImage(display_, pixmap, gc, &image,
                 0, 0 /* source x, y */, 0, 0 /* dest x, y */,
@@ -308,19 +323,23 @@ void BackingStore::PaintRect(base::ProcessHandle process,
   }
 
   picture = x11_util::CreatePictureFromSkiaPixmap(display_, pixmap);
-  XRenderComposite(display_,
-                   PictOpSrc,                        // op
-                   picture,                          // src
-                   0,                                // mask
-                   picture_,                         // dest
-                   copy_rect.x() - bitmap_rect.x(),  // src_x
-                   copy_rect.y() - bitmap_rect.y(),  // src_y
-                   0,                                // mask_x
-                   0,                                // mask_y
-                   copy_rect.x(),                    // dest_x
-                   copy_rect.y(),                    // dest_y
-                   copy_rect.width(),                // width
-                   copy_rect.height());              // height
+
+  for (size_t i = 0; i < copy_rects.size(); i++) {
+    const gfx::Rect& copy_rect = copy_rects[i];
+    XRenderComposite(display_,
+                     PictOpSrc,                        // op
+                     picture,                          // src
+                     0,                                // mask
+                     picture_,                         // dest
+                     copy_rect.x() - bitmap_rect.x(),  // src_x
+                     copy_rect.y() - bitmap_rect.y(),  // src_y
+                     0,                                // mask_x
+                     0,                                // mask_y
+                     copy_rect.x(),                    // dest_x
+                     copy_rect.y(),                    // dest_y
+                     copy_rect.width(),                // width
+                     copy_rect.height());              // height
+  }
 
   // In the case of shared memory, we wait for the composite to complete so that
   // we are sure that the X server has finished reading from the shared memory
@@ -332,9 +351,83 @@ void BackingStore::PaintRect(base::ProcessHandle process,
   XFreePixmap(display_, pixmap);
 }
 
-void BackingStore::ScrollRect(int dx, int dy,
-                              const gfx::Rect& clip_rect,
-                              const gfx::Size& view_size) {
+bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
+                                         skia::PlatformCanvas* output) {
+  base::TimeTicks begin_time = base::TimeTicks::Now();
+  const int width = std::min(size().width(), rect.width());
+  const int height = std::min(size().height(), rect.height());
+
+  XImage* image;
+  XShmSegmentInfo shminfo;  // Used only when shared memory is enabled.
+  if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE) {
+    // Use shared memory for faster copies when it's available.
+    Visual* visual = static_cast<Visual*>(visual_);
+    memset(&shminfo, 0, sizeof(shminfo));
+    image = XShmCreateImage(display_, visual, 32,
+                            ZPixmap, NULL, &shminfo, width, height);
+
+    // Create the shared memory segment for the image and map it.
+    shminfo.shmid = shmget(IPC_PRIVATE, image->bytes_per_line * image->height,
+                           IPC_CREAT|0666);
+    if (shminfo.shmid == -1) {
+      XDestroyImage(image);
+      return false;
+    }
+
+    void* mapped_memory = shmat(shminfo.shmid, NULL, SHM_RDONLY);
+    shmctl(shminfo.shmid, IPC_RMID, 0);
+    if (mapped_memory == (void*)-1) {
+      XDestroyImage(image);
+      return false;
+    }
+    shminfo.shmaddr = image->data = static_cast<char*>(mapped_memory);
+
+    if (!XShmAttach(display_, &shminfo) ||
+        !XShmGetImage(display_, pixmap_, image, rect.x(), rect.y(),
+                      AllPlanes)) {
+      DestroySharedImage(display_, image, &shminfo);
+      return false;
+    }
+  } else {
+    // Non-shared memory case just copy the image from the server.
+    image = XGetImage(display_, pixmap_,
+                      rect.x(), rect.y(), width, height,
+                      AllPlanes, ZPixmap);
+  }
+
+  // TODO(jhawkins): Need to convert the image data if the image bits per pixel
+  // is not 32.
+  if (!output->initialize(width, height, true) ||
+      image->bits_per_pixel != 32) {
+    if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)
+      DestroySharedImage(display_, image, &shminfo);
+    else
+      XDestroyImage(image);
+    return false;
+  }
+
+  // The X image might have a different row stride, so iterate through it and
+  // copy each row out, only up to the pixels we're actually using.
+  SkBitmap bitmap = output->getTopPlatformDevice().accessBitmap(true);
+  for (int y = 0; y < height; y++) {
+    uint32* dest_row = bitmap.getAddr32(0, y);
+    const char* src_row = &image->data[image->bytes_per_line * y];
+    memcpy(dest_row, src_row, width * 4);
+  }
+
+  if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)
+    DestroySharedImage(display_, image, &shminfo);
+  else
+    XDestroyImage(image);
+
+  HISTOGRAM_TIMES("BackingStore.RetrievalFromX",
+                  base::TimeTicks::Now() - begin_time);
+  return true;
+}
+
+void BackingStoreX::ScrollBackingStore(int dx, int dy,
+                                       const gfx::Rect& clip_rect,
+                                       const gfx::Size& view_size) {
   if (!display_)
     return;
 
@@ -366,22 +459,22 @@ void BackingStore::ScrollRect(int dx, int dy,
   }
 }
 
-void BackingStore::ShowRect(const gfx::Rect& rect, XID target) {
+void BackingStoreX::ShowRect(const gfx::Rect& rect, XID target) {
   XCopyArea(display_, pixmap_, target, static_cast<GC>(pixmap_gc_),
             rect.x(), rect.y(), rect.width(), rect.height(),
             rect.x(), rect.y());
 }
 
 #if defined(TOOLKIT_GTK)
-void BackingStore::PaintToRect(const gfx::Rect& rect, GdkDrawable* target) {
+void BackingStoreX::PaintToRect(const gfx::Rect& rect, GdkDrawable* target) {
   cairo_surface_t* surface = cairo_xlib_surface_create(
       display_, pixmap_, static_cast<Visual*>(visual_),
-      size_.width(), size_.height());
+      size().width(), size().height());
   cairo_t* cr = gdk_cairo_create(target);
 
   cairo_translate(cr, rect.x(), rect.y());
-  double x_scale = static_cast<double>(rect.width()) / size_.width();
-  double y_scale = static_cast<double>(rect.height()) / size_.height();
+  double x_scale = static_cast<double>(rect.width()) / size().width();
+  double y_scale = static_cast<double>(rect.height()) / size().height();
   cairo_scale(cr, x_scale, y_scale);
 
   cairo_pattern_t* pattern = cairo_pattern_create_for_surface(surface);
@@ -396,76 +489,3 @@ void BackingStore::PaintToRect(const gfx::Rect& rect, GdkDrawable* target) {
   cairo_destroy(cr);
 }
 #endif
-
-SkBitmap BackingStore::PaintRectToBitmap(const gfx::Rect& rect) {
-  base::TimeTicks begin_time = base::TimeTicks::Now();
-  const int width = std::min(size_.width(), rect.width());
-  const int height = std::min(size_.height(), rect.height());
-
-  XImage* image;
-  XShmSegmentInfo shminfo;  // Used only when shared memory is enabled.
-  if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE) {
-    // Use shared memory for faster copies when it's available.
-    Visual* visual = static_cast<Visual*>(visual_);
-    memset(&shminfo, 0, sizeof(shminfo));
-    image = XShmCreateImage(display_, visual, 32,
-                            ZPixmap, NULL, &shminfo, width, height);
-
-    // Create the shared memory segment for the image and map it.
-    shminfo.shmid = shmget(IPC_PRIVATE, image->bytes_per_line * image->height,
-                           IPC_CREAT|0666);
-    if (shminfo.shmid == -1) {
-      XDestroyImage(image);
-      return SkBitmap();
-    }
-
-    void* mapped_memory = shmat(shminfo.shmid, NULL, SHM_RDONLY);
-    shmctl(shminfo.shmid, IPC_RMID, 0);
-    if (mapped_memory == (void*)-1) {
-      XDestroyImage(image);
-      return SkBitmap();
-    }
-    shminfo.shmaddr = image->data = static_cast<char*>(mapped_memory);
-
-    if (!XShmAttach(display_, &shminfo) ||
-        !XShmGetImage(display_, pixmap_, image, rect.x(), rect.y(),
-                      AllPlanes)) {
-      DestroySharedImage(display_, image, &shminfo);
-      return SkBitmap();
-    }
-  } else {
-    // Non-shared memory case just copy the image from the server.
-    image = XGetImage(display_, pixmap_,
-                      rect.x(), rect.y(), width, height,
-                      AllPlanes, ZPixmap);
-  }
-
-  // TODO(jhawkins): Need to convert the image data if the image bits per pixel
-  // is not 32.
-  if (image->bits_per_pixel != 32) {
-    if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)
-      DestroySharedImage(display_, image, &shminfo);
-    else
-      XDestroyImage(image);
-    return SkBitmap();
-  }
-
-  // Create a bitmap to put the results into, being careful to use the stride
-  // from the image rather than the width for the size.
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height,
-                   image->bytes_per_line);
-  bitmap.allocPixels();
-  unsigned char* bitmap_data =
-      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0));
-  memcpy(bitmap_data, image->data, image->bytes_per_line * height);
-
-  if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)
-    DestroySharedImage(display_, image, &shminfo);
-  else
-    XDestroyImage(image);
-
-  HISTOGRAM_TIMES("BackingStore.RetrievalFromX",
-                  base::TimeTicks::Now() - begin_time);
-  return bitmap;
-}

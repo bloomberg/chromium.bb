@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,6 +25,7 @@
       'common',
       'browser',
       'debugger',
+      'chrome_gpu',
       'renderer',
       'syncapi',
       'utility',
@@ -510,6 +511,38 @@
         'profile_import/profile_import_main.cc',
         'profile_import/profile_import_thread.cc',
         'profile_import/profile_import_thread.h',
+      ],
+    },
+    {
+      'target_name': 'chrome_gpu',
+      'type': '<(library)',
+      'msvs_guid': 'F10F1ECD-D84D-4C33-8468-9DDFE19F4D8A',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'common',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'include_dirs': [
+            'third_party/wtl/include',
+          ],
+          'sources': [
+            'gpu/gpu_backing_store.cc',
+            'gpu/gpu_backing_store.h',
+            'gpu/gpu_view_win.cc',
+            'gpu/gpu_view_win.h',
+          ],
+        }]
+      ],
+      'sources': [
+        'gpu/gpu_main.cc',
+        'gpu/gpu_process.cc',
+        'gpu/gpu_process.h',
+        'gpu/gpu_thread.cc',
+        'gpu/gpu_thread.h',
+      ],
+      'include_dirs': [
+        '..',
       ],
     },
     {

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/backing_store_win.h"
+#include "chrome/gpu/gpu_backing_store.h"
 
 #include "app/gfx/gdi_util.h"
-#include "base/command_line.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/renderer_host/render_widget_host.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/transport_dib.h"
-#include "skia/ext/platform_canvas.h"
+#include "app/win_util.h"
+#include "base/logging.h"
+#include "chrome/common/gpu_messages.h"
+#include "chrome/gpu/gpu_view_win.h"
+#include "chrome/gpu/gpu_thread.h"
 
 namespace {
 
@@ -32,10 +31,6 @@ HANDLE CreateDIB(HDC dc, int width, int height, int color_depth) {
   hdr.bV5ClrUsed = 0;
   hdr.bV5ClrImportant = 0;
 
-  if (BackingStoreWin::ColorManagementEnabled()) {
-    hdr.bV5CSType = LCS_sRGB;
-    hdr.bV5Intent = LCS_GM_IMAGES;
-  }
 
   void* data = NULL;
   HANDLE dib = CreateDIBSection(dc, reinterpret_cast<BITMAPINFO*>(&hdr),
@@ -69,10 +64,17 @@ void CallStretchDIBits(HDC hdc, int dest_x, int dest_y, int dest_w, int dest_h,
 
 }  // namespace
 
-BackingStoreWin::BackingStoreWin(RenderWidgetHost* widget, const gfx::Size& size)
-    : BackingStore(widget, size),
-      backing_store_dib_(NULL),
-      original_bitmap_(NULL) {
+
+GpuBackingStore::GpuBackingStore(GpuViewWin* view,
+                                 GpuThread* gpu_thread,
+                                 int32 routing_id,
+                                 const gfx::Size& size)
+    : view_(view),
+      gpu_thread_(gpu_thread),
+      routing_id_(routing_id),
+      size_(size) {
+  gpu_thread_->AddRoute(routing_id_, this);
+
   HDC screen_dc = ::GetDC(NULL);
   color_depth_ = ::GetDeviceCaps(screen_dc, BITSPIXEL);
   // Color depths less than 16 bpp require a palette to be specified. Instead,
@@ -84,7 +86,9 @@ BackingStoreWin::BackingStoreWin(RenderWidgetHost* widget, const gfx::Size& size
   ReleaseDC(NULL, screen_dc);
 }
 
-BackingStoreWin::~BackingStoreWin() {
+GpuBackingStore::~GpuBackingStore() {
+  gpu_thread_->RemoveRoute(routing_id_);
+
   DCHECK(hdc_);
   if (original_bitmap_) {
     SelectObject(hdc_, original_bitmap_);
@@ -96,50 +100,57 @@ BackingStoreWin::~BackingStoreWin() {
   DeleteDC(hdc_);
 }
 
-// static
-bool BackingStoreWin::ColorManagementEnabled() {
-  static bool enabled = false;
-  static bool checked = false;
-  if (!checked) {
-    checked = true;
-    const CommandLine& command = *CommandLine::ForCurrentProcess();
-    enabled = command.HasSwitch(switches::kEnableMonitorProfile);
-  }
-  return enabled;
+void GpuBackingStore::OnMessageReceived(const IPC::Message& msg) {
+  IPC_BEGIN_MESSAGE_MAP(GpuBackingStore, msg)
+    IPC_MESSAGE_HANDLER(GpuMsg_PaintToBackingStore, OnPaintToBackingStore)
+    IPC_MESSAGE_HANDLER(GpuMsg_ScrollBackingStore, OnScrollBackingStore)
+  IPC_END_MESSAGE_MAP_EX()
 }
 
-size_t BackingStoreWin::MemorySize() {
-  return size().GetArea() * (color_depth_ / 8);
+void GpuBackingStore::OnChannelConnected(int32 peer_pid) {
 }
 
-void BackingStoreWin::PaintToBackingStore(
-    RenderProcessHost* process,
-    TransportDIB::Id bitmap,
+void GpuBackingStore::OnChannelError() {
+  // FIXME(brettw) does this mean we aren't getting any more messages and we
+  // should delete outselves?
+}
+
+void GpuBackingStore::OnPaintToBackingStore(
+    base::ProcessId source_process_id,
+    TransportDIB::Id id,
     const gfx::Rect& bitmap_rect,
-    const std::vector<gfx::Rect>& copy_rects,
-    bool* painted_synchronously) {
-  // Our paints are always synchronous and the TransportDIB can be freed when
-  // we're done (even on error).
-  *painted_synchronously = true;
+    const std::vector<gfx::Rect>& copy_rects) {
+  HANDLE source_process_handle = OpenProcess(PROCESS_ALL_ACCESS,
+                                             FALSE, source_process_id);
+  CHECK(source_process_handle);
+
+  // On Windows we need to duplicate the handle from the remote process.
+  // See BrowserRenderProcessHost::MapTransportDIB for how to do this on other
+  // platforms.
+  HANDLE section = win_util::GetSectionFromProcess(
+      id.handle, source_process_handle, false /* read write */);
+  CHECK(section);
+  TransportDIB* dib = TransportDIB::Map(section);
+  CHECK(dib);
 
   if (!backing_store_dib_) {
-    backing_store_dib_ = CreateDIB(hdc_, size().width(),
-                                   size().height(), color_depth_);
+    backing_store_dib_ = CreateDIB(hdc_, size_.width(),
+                                   size_.height(), color_depth_);
     if (!backing_store_dib_) {
       NOTREACHED();
+
+      // TODO(brettw): do this in such a way that we can't forget to
+      // send the ACK.
+      gpu_thread_->Send(new GpuHostMsg_PaintToBackingStore_ACK(routing_id_));
       return;
     }
     original_bitmap_ = SelectObject(hdc_, backing_store_dib_);
   }
 
-  TransportDIB* dib = process->GetTransportDIB(bitmap);
-  if (!dib)
-    return;
-
   BITMAPINFOHEADER hdr;
   gfx::CreateBitmapHeader(bitmap_rect.width(), bitmap_rect.height(), &hdr);
   // Account for a bitmap_rect that exceeds the bounds of our view
-  gfx::Rect view_rect(0, 0, size().width(), size().height());
+  gfx::Rect view_rect(0, 0, size_.width(), size_.height());
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
     gfx::Rect paint_rect = view_rect.Intersect(copy_rects[i]);
@@ -154,27 +165,21 @@ void BackingStoreWin::PaintToBackingStore(
                       paint_rect.height(),
                       dib->memory(),
                       reinterpret_cast<BITMAPINFO*>(&hdr));
+    view_->InvalidateRect(&paint_rect.ToRECT());
   }
+
+  CloseHandle(source_process_handle);
+  gpu_thread_->Send(new GpuHostMsg_PaintToBackingStore_ACK(routing_id_));
 }
 
-bool BackingStoreWin::CopyFromBackingStore(const gfx::Rect& rect,
-                                           skia::PlatformCanvas* output) {
-  if (!output->initialize(rect.width(), rect.height(), true))
-    return false;
-
-  HDC temp_dc = output->beginPlatformPaint();
-  BitBlt(temp_dc, 0, 0, rect.width(), rect.height(),
-         hdc(), rect.x(), rect.y(), SRCCOPY);
-  output->endPlatformPaint();
-  return true;
-}
-
-void BackingStoreWin::ScrollBackingStore(int dx, int dy,
-                                         const gfx::Rect& clip_rect,
-                                         const gfx::Size& view_size) {
+void GpuBackingStore::OnScrollBackingStore(int dx, int dy,
+                                           const gfx::Rect& clip_rect,
+                                           const gfx::Size& view_size) {
   RECT damaged_rect, r = clip_rect.ToRECT();
   ScrollDC(hdc_, dx, dy, NULL, &r, NULL, &damaged_rect);
 
   // TODO(darin): this doesn't work if dx and dy are both non-zero!
   DCHECK(dx == 0 || dy == 0);
+
+  view_->DidScrollBackingStoreRect(dx, dy, clip_rect);
 }

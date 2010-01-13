@@ -53,6 +53,8 @@
           'common/debug_flags.h',
           'common/devtools_messages.h',
           'common/devtools_messages_internal.h',
+          'common/gpu_messages.h',
+          'common/gpu_messages_internal.h',
           'common/logging_chrome.cc',
           'common/logging_chrome.h',
           'common/main_function_params.h',

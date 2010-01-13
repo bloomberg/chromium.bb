@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -175,14 +175,17 @@ BackingStore* BackingStoreManager::GetBackingStore(
 }
 
 // static
-BackingStore* BackingStoreManager::PrepareBackingStore(
+void BackingStoreManager::PrepareBackingStore(
     RenderWidgetHost* host,
     const gfx::Size& backing_store_size,
-    base::ProcessHandle process_handle,
-    TransportDIB* bitmap,
+    TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
-    bool* needs_full_paint) {
+    bool* needs_full_paint,
+    bool* painted_synchronously) {
+  // Default to declaring we're done using the transport DIB so it can be freed.
+  *painted_synchronously = true;
+
   BackingStore* backing_store = GetBackingStore(host, backing_store_size);
   if (!backing_store) {
     // We need to get Webkit to generate a new paint here, as we
@@ -194,19 +197,14 @@ BackingStore* BackingStoreManager::PrepareBackingStore(
       *needs_full_paint = true;
       // Makes no sense to paint the transport dib if we are going
       // to request a full paint.
-      return NULL;
+      return;
     }
     backing_store = CreateBackingStore(host, backing_store_size);
   }
 
-  DCHECK(backing_store != NULL);
-
-  for (size_t i = 0; i < copy_rects.size(); ++i) {
-    backing_store->PaintRect(process_handle, bitmap, bitmap_rect,
-                             copy_rects[i]);
-  }
-
-  return backing_store;
+  backing_store->PaintToBackingStore(host->process(), bitmap,
+                                     bitmap_rect, copy_rects,
+                                     painted_synchronously);
 }
 
 // static

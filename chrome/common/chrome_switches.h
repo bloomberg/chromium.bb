@@ -96,6 +96,7 @@ extern const char kExtensionsUpdateFrequency[];
 extern const char kFileDescriptorLimit[];
 extern const char kFirstRun[];
 extern const char kForceFieldTestNameAndValue[];
+extern const char kGpuProcess[];
 extern const char kHideIcons[];
 extern const char kHomePage[];
 extern const char kImport[];
@@ -103,9 +104,6 @@ extern const char kInProcessPlugins[];
 extern const char kIncognito[];
 extern const char kInternalNaCl[];
 extern const char kInternalPepper[];
-#ifndef NDEBUG
-extern const char kInvalidateSyncLogin[];
-#endif
 extern const char kJavaScriptFlags[];
 extern const char kLoadExtension[];
 extern const char kLoadPlugin[];
@@ -221,6 +219,7 @@ extern const char kKioskMode[];
 
 #ifndef NDEBUG
 extern const char kGearsPluginPathOverride[];
+extern const char kInvalidateSyncLogin[];
 #endif
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

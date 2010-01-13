@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -312,6 +312,10 @@ BackingStore* RenderWidgetHost::AllocBackingStore(const gfx::Size& size) {
   if (!view_)
     return NULL;
   return view_->AllocBackingStore(size);
+}
+
+void RenderWidgetHost::DonePaintingToBackingStore() {
+  Send(new ViewMsg_UpdateRect_ACK(routing_id()));
 }
 
 void RenderWidgetHost::StartHangMonitorTimeout(TimeDelta delay) {
@@ -649,6 +653,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
   const size_t size = params.bitmap_rect.height() *
                       params.bitmap_rect.width() * 4;
   TransportDIB* dib = process_->GetTransportDIB(params.bitmap);
+  bool painted_synchronously = true;  // Default to sending a paint ACK below.
   if (dib) {
     if (dib->size() < size) {
       DLOG(WARNING) << "Transport DIB too small for given rectangle";
@@ -664,16 +669,19 @@ void RenderWidgetHost::OnMsgUpdateRect(
       // Paint the backing store. This will update it with the renderer-supplied
       // bits. The view will read out of the backing store later to actually
       // draw to the screen.
-      PaintBackingStoreRect(dib, params.bitmap_rect, params.copy_rects,
-                            params.view_size);
+      PaintBackingStoreRect(params.bitmap, params.bitmap_rect,
+                            params.copy_rects, params.view_size,
+                            &painted_synchronously);
     }
   }
 
   // ACK early so we can prefetch the next PaintRect if there is a next one.
   // This must be done AFTER we're done painting with the bitmap supplied by the
   // renderer. This ACK is a signal to the renderer that the backing store can
-  // be re-used, so the bitmap may be invalid after this call.
-  Send(new ViewMsg_UpdateRect_ACK(routing_id_));
+  // be re-used, so the bitmap may be invalid after this call. If the backing
+  // store is painting asynchronously, it will manage issuing this IPC.
+  if (painted_synchronously)
+    Send(new ViewMsg_UpdateRect_ACK(routing_id_));
 
   // We don't need to update the view if the view is hidden. We must do this
   // early return after the ACK is sent, however, or the renderer will not send
@@ -825,10 +833,15 @@ void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
 #endif
 
 void RenderWidgetHost::PaintBackingStoreRect(
-    TransportDIB* bitmap,
+    TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
-    const gfx::Size& view_size) {
+    const gfx::Size& view_size,
+    bool* painted_synchronously) {
+  // On failure, we need to be sure our caller knows we're done with the
+  // backing store.
+  *painted_synchronously = true;
+
   // The view may be destroyed already.
   if (!view_)
     return;
@@ -842,10 +855,9 @@ void RenderWidgetHost::PaintBackingStoreRect(
   }
 
   bool needs_full_paint = false;
-  BackingStoreManager::PrepareBackingStore(this, view_size,
-                                           process_->GetHandle(),
-                                           bitmap, bitmap_rect, copy_rects,
-                                           &needs_full_paint);
+  BackingStoreManager::PrepareBackingStore(this, view_size, bitmap, bitmap_rect,
+                                           copy_rects, &needs_full_paint,
+                                           painted_synchronously);
   if (needs_full_paint) {
     repaint_start_time_ = TimeTicks::Now();
     repaint_ack_pending_ = true;
@@ -870,7 +882,7 @@ void RenderWidgetHost::ScrollBackingStoreRect(int dx, int dy,
   BackingStore* backing_store = BackingStoreManager::Lookup(this);
   if (!backing_store || (backing_store->size() != view_size))
     return;
-  backing_store->ScrollRect(dx, dy, clip_rect, view_size);
+  backing_store->ScrollBackingStore(dx, dy, clip_rect, view_size);
 }
 
 void RenderWidgetHost::ToggleSpellPanel(bool is_currently_visible) {

@@ -1,15 +1,16 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/renderer_host/backing_store.h"
-#include "chrome/browser/renderer_host/render_widget_host.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/browser/renderer_host/backing_store_mac.h"
 
 #include "base/logging.h"
 #include "base/mac_util.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/transport_dib.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -22,9 +23,9 @@
 // allows acclerated drawing into the layer and lets scrolling and such happen
 // all or mostly on the GPU, which is good for performance.
 
-BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
-    : render_widget_host_(widget),
-      size_(size) {
+BackingStoreMac::BackingStoreMac(RenderWidgetHost* widget,
+                                 const gfx::Size& size)
+    : BackingStore(widget, size) {
   cg_layer_.reset(CreateCGLayer());
   if (!cg_layer_) {
     // The view isn't in a window yet.  Use a CGBitmapContext for now.
@@ -32,23 +33,27 @@ BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
   }
 }
 
-BackingStore::~BackingStore() {
+BackingStoreMac::~BackingStoreMac() {
 }
 
-size_t BackingStore::MemorySize() {
-  // Estimate memory usage as 4 bytes per pixel.
-  return size_.GetArea() * 4;
-}
+void BackingStoreMac::PaintToBackingStore(
+    RenderProcessHost* process,
+    TransportDIB::Id bitmap,
+    const gfx::Rect& bitmap_rect,
+    const std::vector<gfx::Rect>& copy_rects,
+    bool* painted_synchronously) {
+  // Our paints are always synchronous and the caller can free the TransportDIB,
+  // even on failure.
+  *painted_synchronously = true;
 
-// Paint the contents of a TransportDIB into a rectangle of our CGLayer
-void BackingStore::PaintRect(base::ProcessHandle process,
-                             TransportDIB* bitmap,
-                             const gfx::Rect& bitmap_rect,
-                             const gfx::Rect& copy_rect) {
   DCHECK_NE(static_cast<bool>(cg_layer()), static_cast<bool>(cg_bitmap()));
 
+  TransportDIB* dib = process->GetTransportDIB(bitmap);
+  if (!dib)
+    return;
+
   scoped_cftyperef<CGDataProviderRef> data_provider(
-      CGDataProviderCreateWithData(NULL, bitmap->memory(),
+      CGDataProviderCreateWithData(NULL, dib->memory(),
       bitmap_rect.width() * bitmap_rect.height() * 4, NULL));
 
   scoped_cftyperef<CGImageRef> bitmap_image(
@@ -57,51 +62,71 @@ void BackingStore::PaintRect(base::ProcessHandle process,
           kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
           data_provider, NULL, false, kCGRenderingIntentDefault));
 
-  // Only the subpixels given by copy_rect have pixels to copy.
-  scoped_cftyperef<CGImageRef> image(
-      CGImageCreateWithImageInRect(bitmap_image, CGRectMake(
-          copy_rect.x() - bitmap_rect.x(),
-          copy_rect.y() - bitmap_rect.y(),
-          copy_rect.width(),
-          copy_rect.height())));
+  for (size_t i = 0; i < copy_rects.size(); i++) {
+    const gfx::Rect& copy_rect = copy_rects[i];
 
-  if (!cg_layer()) {
-    // The view may have moved to a window.  Try to get a CGLayer.
-    cg_layer_.reset(CreateCGLayer());
-    if (cg_layer()) {
-      // now that we have a layer, copy the cached image into it
-      scoped_cftyperef<CGImageRef> bitmap_image(
-          CGBitmapContextCreateImage(cg_bitmap_));
-      CGContextDrawImage(CGLayerGetContext(cg_layer()),
-                         CGRectMake(0, 0, size().width(), size().height()),
-                         bitmap_image);
-      // Discard the cache bitmap, since we no longer need it.
-      cg_bitmap_.reset(NULL);
+    // Only the subpixels given by copy_rect have pixels to copy.
+    scoped_cftyperef<CGImageRef> image(
+        CGImageCreateWithImageInRect(bitmap_image, CGRectMake(
+            copy_rect.x() - bitmap_rect.x(),
+            copy_rect.y() - bitmap_rect.y(),
+            copy_rect.width(),
+            copy_rect.height())));
+
+    if (!cg_layer()) {
+      // The view may have moved to a window.  Try to get a CGLayer.
+      cg_layer_.reset(CreateCGLayer());
+      if (cg_layer()) {
+        // now that we have a layer, copy the cached image into it
+        scoped_cftyperef<CGImageRef> bitmap_image(
+            CGBitmapContextCreateImage(cg_bitmap_));
+        CGContextDrawImage(CGLayerGetContext(cg_layer()),
+                           CGRectMake(0, 0, size().width(), size().height()),
+                           bitmap_image);
+        // Discard the cache bitmap, since we no longer need it.
+        cg_bitmap_.reset(NULL);
+      }
     }
-  }
 
-  DCHECK_NE(static_cast<bool>(cg_layer()), static_cast<bool>(cg_bitmap()));
+    DCHECK_NE(static_cast<bool>(cg_layer()), static_cast<bool>(cg_bitmap()));
 
-  if (cg_layer()) {
-    // The CGLayer's origin is in the lower left, but flipping the CTM would
-    // cause the image to get drawn upside down.  So we move the rectangle
-    // to the right position before drawing the image.
-    CGContextRef layer = CGLayerGetContext(cg_layer());
-    gfx::Rect paint_rect = copy_rect;
-    paint_rect.set_y(size_.height() - copy_rect.bottom());
-    CGContextDrawImage(layer, paint_rect.ToCGRect(), image);
-  } else {
-    // The layer hasn't been created yet, so draw into the cache bitmap.
-    gfx::Rect paint_rect = copy_rect;
-    paint_rect.set_y(size_.height() - copy_rect.bottom());
-    CGContextDrawImage(cg_bitmap_, paint_rect.ToCGRect(), image);
+    if (cg_layer()) {
+      // The CGLayer's origin is in the lower left, but flipping the CTM would
+      // cause the image to get drawn upside down.  So we move the rectangle
+      // to the right position before drawing the image.
+      CGContextRef layer = CGLayerGetContext(cg_layer());
+      gfx::Rect paint_rect = copy_rect;
+      paint_rect.set_y(size().height() - copy_rect.bottom());
+      CGContextDrawImage(layer, paint_rect.ToCGRect(), image);
+    } else {
+      // The layer hasn't been created yet, so draw into the cache bitmap.
+      gfx::Rect paint_rect = copy_rect;
+      paint_rect.set_y(size().height() - copy_rect.bottom());
+      CGContextDrawImage(cg_bitmap_, paint_rect.ToCGRect(), image);
+    }
   }
 }
 
+bool BackingStoreMac::CopyFromBackingStore(const gfx::Rect& rect,
+                                           skia::PlatformCanvas* output) {
+  if (!output->initialize(rect.width(), rect.height(), true))
+    return false;
+
+  CGContextRef temp_context = output->beginPlatformPaint();
+  CGContextSaveGState(temp_context);
+  CGContextTranslateCTM(temp_context, 0.0, size().height());
+  CGContextScaleCTM(temp_context, 1.0, -1.0);
+  CGContextDrawLayerAtPoint(temp_context, CGPointMake(rect.x(), rect.y()),
+                            cg_layer());
+  CGContextRestoreGState(temp_context);
+  output->endPlatformPaint();
+  return true;
+}
+
 // Scroll the contents of our CGLayer
-void BackingStore::ScrollRect(int dx, int dy,
-                              const gfx::Rect& clip_rect,
-                              const gfx::Size& view_size) {
+void BackingStoreMac::ScrollBackingStore(int dx, int dy,
+                                         const gfx::Rect& clip_rect,
+                                         const gfx::Size& view_size) {
   DCHECK_NE(static_cast<bool>(cg_layer()), static_cast<bool>(cg_bitmap()));
 
   // "Scroll" the contents of the layer by creating a new CGLayer,
@@ -114,10 +139,10 @@ void BackingStore::ScrollRect(int dx, int dy,
   // translated by the scroll.)
 
   // We assume |clip_rect| is contained within the backing store.
-  DCHECK(clip_rect.bottom() <= size_.height());
-  DCHECK(clip_rect.right() <= size_.width());
+  DCHECK(clip_rect.bottom() <= size().height());
+  DCHECK(clip_rect.right() <= size().width());
 
-  if ((dx || dy) && abs(dx) < size_.width() && abs(dy) < size_.height()) {
+  if ((dx || dy) && abs(dx) < size().width() && abs(dy) < size().height()) {
     if (cg_layer()) {
       scoped_cftyperef<CGLayerRef> new_layer(CreateCGLayer());
 
@@ -127,10 +152,11 @@ void BackingStore::ScrollRect(int dx, int dy,
       CGContextRef layer = CGLayerGetContext(new_layer);
       CGContextDrawLayerAtPoint(layer, CGPointMake(0, 0), cg_layer());
       CGContextSaveGState(layer);
-      CGContextClipToRect(layer, CGRectMake(clip_rect.x(),
-                                            size_.height() - clip_rect.bottom(),
-                                            clip_rect.width(),
-                                            clip_rect.height()));
+      CGContextClipToRect(layer,
+                          CGRectMake(clip_rect.x(),
+                                     size().height() - clip_rect.bottom(),
+                                     clip_rect.width(),
+                                     clip_rect.height()));
       CGContextDrawLayerAtPoint(layer, CGPointMake(dx, -dy), cg_layer());
       CGContextRestoreGState(layer);
       cg_layer_.swap(new_layer);
@@ -140,16 +166,16 @@ void BackingStore::ScrollRect(int dx, int dy,
       scoped_cftyperef<CGImageRef> bitmap_image(
           CGBitmapContextCreateImage(cg_bitmap_));
       CGContextDrawImage(new_bitmap,
-                         CGRectMake(0, 0, size_.width(), size_.height()),
+                         CGRectMake(0, 0, size().width(), size().height()),
                          bitmap_image);
       CGContextSaveGState(new_bitmap);
       CGContextClipToRect(new_bitmap,
                           CGRectMake(clip_rect.x(),
-                                     size_.height() - clip_rect.bottom(),
+                                     size().height() - clip_rect.bottom(),
                                      clip_rect.width(),
                                      clip_rect.height()));
       CGContextDrawImage(new_bitmap,
-                         CGRectMake(dx, -dy, size_.width(), size_.height()),
+                         CGRectMake(dx, -dy, size().width(), size().height()),
                          bitmap_image);
       CGContextRestoreGState(new_bitmap);
       cg_bitmap_.swap(new_bitmap);
@@ -157,7 +183,7 @@ void BackingStore::ScrollRect(int dx, int dy,
   }
 }
 
-CGLayerRef BackingStore::CreateCGLayer() {
+CGLayerRef BackingStoreMac::CreateCGLayer() {
   // The CGLayer should be optimized for drawing into the containing window,
   // so extract a CGContext corresponding to the window to be passed to
   // CGLayerCreateWithContext.
@@ -176,19 +202,19 @@ CGLayerRef BackingStore::CreateCGLayer() {
   DCHECK(cg_context);
 
   CGLayerRef layer = CGLayerCreateWithContext(cg_context,
-                                              size_.ToCGSize(),
+                                              size().ToCGSize(),
                                               NULL);
   DCHECK(layer);
 
   return layer;
 }
 
-CGContextRef BackingStore::CreateCGBitmapContext() {
+CGContextRef BackingStoreMac::CreateCGBitmapContext() {
   // A CGBitmapContext serves as a stand-in for the layer before the view is
   // in a containing window.
   CGContextRef context = CGBitmapContextCreate(NULL,
-                                               size_.width(), size_.height(),
-                                               8, size_.width() * 4,
+                                               size().width(), size().height(),
+                                               8, size().width() * 4,
                                                mac_util::GetSystemColorSpace(),
                                                kCGImageAlphaPremultipliedFirst |
                                                    kCGBitmapByteOrder32Host);

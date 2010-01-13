@@ -73,6 +73,8 @@
         'browser/net/url_request_mock_net_error_job.h',
         'browser/renderer_host/mock_render_process_host.cc',
         'browser/renderer_host/mock_render_process_host.h',
+        'browser/renderer_host/test/test_backing_store.cc',
+        'browser/renderer_host/test/test_backing_store.h',
         'browser/renderer_host/test/test_render_view_host.cc',
         'browser/renderer_host/test/test_render_view_host.h',
         'browser/tab_contents/test_tab_contents.cc',

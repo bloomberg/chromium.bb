@@ -107,7 +107,7 @@ RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
 
   RenderWidgetHostViewWin* view =
       new RenderWidgetHostViewWin(render_widget_host);
-  view->Create(GetNativeView());
+  view->CreateWnd(GetNativeView());
   view->ShowWindow(SW_SHOW);
   return view;
 }

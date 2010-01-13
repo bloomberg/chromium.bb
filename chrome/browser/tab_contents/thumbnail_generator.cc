@@ -7,8 +7,10 @@
 #include <algorithm>
 
 #include "app/gfx/skbitmap_operations.h"
+#include "base/gfx/rect.h"
 #include "base/histogram.h"
 #include "base/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/notification_service.h"
@@ -87,22 +89,6 @@ WidgetThumbnail* GetDataForHost(RenderWidgetHost* host) {
   return GetThumbnailAccessor()->GetProperty(host->property_bag());
 }
 
-#if defined(OS_WIN)
-
-// PlatformDevices/Canvases can't be copied like a regular SkBitmap (at least
-// on Windows). So the second parameter is the canvas to draw into. It should
-// be sized to the size of the backing store.
-void GetBitmapForBackingStore(BackingStore* backing_store,
-                              skia::PlatformCanvas* canvas) {
-  HDC dc = canvas->beginPlatformPaint();
-  BitBlt(dc, 0, 0,
-         backing_store->size().width(), backing_store->size().height(),
-         backing_store->hdc(), 0, 0, SRCCOPY);
-  canvas->endPlatformPaint();
-}
-
-#endif
-
 // Creates a downsampled thumbnail for the given backing store. The returned
 // bitmap will be isNull if there was an error creating it.
 SkBitmap GetThumbnailForBackingStore(BackingStore* backing_store) {
@@ -110,48 +96,26 @@ SkBitmap GetThumbnailForBackingStore(BackingStore* backing_store) {
 
   SkBitmap result;
 
-  // TODO(brettw) write this for other platforms. If you enable this, be sure
-  // to also enable the unit tests for the same platform in
-  // thumbnail_generator_unittest.cc
-#if defined(OS_WIN)
   // Get the bitmap as a Skia object so we can resample it. This is a large
   // allocation and we can tolerate failure here, so give up if the allocation
   // fails.
   skia::PlatformCanvas temp_canvas;
-  if (!temp_canvas.initialize(backing_store->size().width(),
-                              backing_store->size().height(), true))
+  if (!backing_store->CopyFromBackingStore(gfx::Rect(gfx::Point(0, 0),
+                                                     backing_store->size()),
+                                           &temp_canvas))
     return result;
-  GetBitmapForBackingStore(backing_store, &temp_canvas);
-
-  // Get the bitmap out of the canvas and resample it. It would be nice if this
-  // whole Windows-specific block could be put into a function, but the memory
-  // management wouldn't work out because the bitmap is a PlatformDevice which
-  // can't actually be copied.
   const SkBitmap& bmp = temp_canvas.getTopPlatformDevice().accessBitmap(false);
-
-#elif defined(OS_LINUX)
-  SkBitmap bmp = backing_store->PaintRectToBitmap(
-      gfx::Rect(0, 0,
-                backing_store->size().width(), backing_store->size().height()));
-
-#elif defined(OS_MACOSX)
-  SkBitmap bmp;
-  NOTIMPLEMENTED();
-#endif
-
   result = SkBitmapOperations::DownsampleByTwoUntilSize(bmp, kThumbnailWidth,
                                                         kThumbnailHeight);
 
-#if defined(OS_WIN)
   // This is a bit subtle. SkBitmaps are refcounted, but the magic ones in
-  // PlatformCanvas on Windows can't be ssigned to SkBitmap with proper
+  // PlatformCanvas can't be ssigned to SkBitmap with proper
   // refcounting.  If the bitmap doesn't change, then the downsampler will
   // return the input bitmap, which will be the reference to the weird
   // PlatformCanvas one insetad of a regular one. To get a regular refcounted
   // bitmap, we need to copy it.
   if (bmp.width() == result.width() && bmp.height() == result.height())
     bmp.copyTo(&result, SkBitmap::kARGB_8888_Config);
-#endif
 
   HISTOGRAM_TIMES(kThumbnailHistogramName,
                   base::TimeTicks::Now() - begin_compute_thumbnail);

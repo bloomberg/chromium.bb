@@ -5,7 +5,7 @@
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
 #include "base/gfx/rect.h"
-#include "chrome/browser/renderer_host/backing_store.h"
+#include "chrome/browser/renderer_host/test/test_backing_store.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/render_messages.h"
 
@@ -74,7 +74,7 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
 
 BackingStore* TestRenderWidgetHostView::AllocBackingStore(
     const gfx::Size& size) {
-  return new BackingStore(rwh_, size);
+  return new TestBackingStore(rwh_, size);
 }
 
 #if defined(OS_MACOSX)
