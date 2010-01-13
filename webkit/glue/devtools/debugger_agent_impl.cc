@@ -95,7 +95,7 @@ void DebuggerAgentImpl::CreateUtilityContext(
   // We set number of internal fields to match that in V8DOMWindow wrapper.
   // See http://crbug.com/28961
   global_template->SetInternalFieldCount(
-      V8Custom::kDOMWindowInternalFieldCount);
+      V8DOMWindow::internalFieldCount);
 
   *context = v8::Context::New(
       NULL /* no extensions */,
