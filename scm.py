@@ -101,7 +101,7 @@ class GIT(object):
 
     Args:
       args: A sequence of command line parameters to be passed.
-      in_directory: The directory where svn is to be run.
+      in_directory: The directory where git is to be run.
       print_messages: Whether to print status messages to stdout about
         which commands are being run.
       print_stdout: Whether to forward program's output to stdout.

@@ -17,7 +17,7 @@ import gclient_utils
 class DiffFilterer(object):
   """Simple class which tracks which file is being diffed and
   replaces instances of its file name in the original and
-  working copy lines of the svn diff output."""
+  working copy lines of the svn/git diff output."""
   index_string = "Index: "
   original_prefix = "--- "
   working_prefix = "+++ "
@@ -55,7 +55,6 @@ class DiffFilterer(object):
 # Factory Method for SCM wrapper creation
 
 def CreateSCM(url=None, root_dir=None, relpath=None, scm_name='svn'):
-  # TODO(maruel): Deduce the SCM from the url.
   scm_map = {
     'svn' : SVNWrapper,
     'git' : GitWrapper,
@@ -78,9 +77,8 @@ def CreateSCM(url=None, root_dir=None, relpath=None, scm_name='svn'):
 class SCMWrapper(object):
   """Add necessary glue between all the supported SCM.
 
-  This is the abstraction layer to bind to different SCM. Since currently only
-  subversion is supported, a lot of subersionism remains. This can be sorted out
-  once another SCM is supported."""
+  This is the abstraction layer to bind to different SCM.
+  """
   def __init__(self, url=None, root_dir=None, relpath=None,
                scm_name='svn'):
     self.scm_name = scm_name
@@ -128,6 +126,11 @@ class GitWrapper(SCMWrapper, scm.GIT):
     self._Run(['diff', merge_base], redirect_stdout=False)
 
   def export(self, options, args, file_list):
+    """Export a clean directory tree into the given path.
+
+    Exports into the specified directory, creating the path if it does
+    already exist.
+    """
     __pychecker__ = 'unusednames=file_list,options'
     assert len(args) == 1
     export_path = os.path.abspath(os.path.join(args[0], self.relpath))
@@ -138,7 +141,11 @@ class GitWrapper(SCMWrapper, scm.GIT):
 
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
-    repository."""
+    repository.
+
+    The patch file is generated from a diff of the merge base of HEAD and
+    its upstream branch.
+    """
     __pychecker__ = 'unusednames=file_list,options'
     path = os.path.join(self._root_dir, self.relpath)
     merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
@@ -324,6 +331,7 @@ class SVNWrapper(SCMWrapper, scm.SVN):
     self.Run(command, os.path.join(self._root_dir, self.relpath))
 
   def export(self, options, args, file_list):
+    """Export a clean directory tree into the given path."""
     __pychecker__ = 'unusednames=file_list,options'
     assert len(args) == 1
     export_path = os.path.abspath(os.path.join(args[0], self.relpath))
@@ -348,7 +356,7 @@ class SVNWrapper(SCMWrapper, scm.SVN):
     self.RunAndFilterOutput(command, path, False, False, filterer.Filter)
 
   def update(self, options, args, file_list):
-    """Runs SCM to update or transparently checkout the working copy.
+    """Runs svn to update or transparently checkout the working copy.
 
     All updated files will be appended to file_list.
 

@@ -17,9 +17,10 @@
 """A wrapper script to manage a set of client modules in different SCM.
 
 This script is intended to be used to help basic management of client
-program sources residing in one or more Subversion modules, along with
-other modules it depends on, also in Subversion, but possibly on
-multiple respositories, making a wrapper system apparently necessary.
+program sources residing in one or more Subversion modules and Git
+repositories, along with other modules it depends on, also in Subversion or Git,
+but possibly on multiple respositories, making a wrapper system apparently
+necessary.
 
 Files
   .gclient      : Current client configuration, written by 'config' command.
@@ -85,8 +86,8 @@ import gclient_utils
 
 # default help text
 DEFAULT_USAGE_TEXT = (
-"""usage: %prog <subcommand> [options] [--] [svn options/args...]
-a wrapper for managing a set of client modules in svn.
+"""usage: %prog <subcommand> [options] [--] [SCM options/args...]
+a wrapper for managing a set of svn client modules and/or git repositories.
 Version """ + __version__ + """
 
 subcommands:
@@ -102,7 +103,7 @@ subcommands:
    runhooks
    revinfo
 
-Options and extra arguments can be passed to invoked svn commands by
+Options and extra arguments can be passed to invoked SCM commands by
 appending them to the command line.  Note that if the first such
 appended option starts with a dash (-) then the options must be
 preceded by -- to distinguish them from gclient options.
@@ -125,7 +126,7 @@ in the repository) are *not* modified. Unless --nohooks is provided,
 the hooks are run.
 This a synonym for 'gclient %(alias)s'
 
-usage: gclient %(cmd)s [options] [--] [svn update options/args]
+usage: gclient %(cmd)s [options] [--] [SCM update options/args]
 
 Valid options:
   --force                 : force update even for unchanged modules
@@ -137,10 +138,10 @@ Valid options:
 
 Examples:
   gclient %(cmd)s
-      update files from SVN according to current configuration,
+      update files from SCM according to current configuration,
       *for modules which have changed since last update or sync*
   gclient %(cmd)s --force
-      update files from SVN according to current configuration, for
+      update files from SCM according to current configuration, for
       all modules (useful for recovering files deleted from local copy)
   gclient %(cmd)s --revision src@31000
       update src directory to r31000
