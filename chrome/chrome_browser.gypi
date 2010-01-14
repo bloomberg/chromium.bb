@@ -856,6 +856,8 @@
         'browser/gtk/browser_window_gtk.h',
         'browser/gtk/cairo_cached_surface.cc',
         'browser/gtk/cairo_cached_surface.h',
+        'browser/gtk/certificate_viewer.cc',
+        'browser/gtk/certificate_viewer.h',
         'browser/gtk/clear_browsing_data_dialog_gtk.cc',
         'browser/gtk/clear_browsing_data_dialog_gtk.h',
         'browser/gtk/constrained_window_gtk.cc',

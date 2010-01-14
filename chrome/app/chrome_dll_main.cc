@@ -58,7 +58,7 @@
 #include "ipc/ipc_switches.h"
 
 #if defined(OS_LINUX)
-#include "base/nss_init.h"
+#include "base/nss_util.h"
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #include "chrome/browser/zygote_host_linux.h"
 #endif

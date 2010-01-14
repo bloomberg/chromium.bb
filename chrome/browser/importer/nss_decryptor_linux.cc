@@ -8,7 +8,7 @@
 #include <pk11sdr.h>
 
 #include "base/basictypes.h"
-#include "base/nss_init.h"
+#include "base/nss_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 

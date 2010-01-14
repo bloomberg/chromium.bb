@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
-#include "base/nss_init.h"
+#include "base/nss_util.h"
 
 namespace base {
 
@@ -111,4 +111,3 @@ void SignatureVerifier::Reset() {
 }
 
 }  // namespace base
-

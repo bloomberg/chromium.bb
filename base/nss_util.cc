@@ -1,14 +1,15 @@
-// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2008-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/nss_init.h"
+#include "base/nss_util.h"
 
 #include <dlfcn.h>
 #include <nss.h>
 #include <plarena.h>
 #include <prerror.h>
 #include <prinit.h>
+#include <prtime.h>
 #include <pk11pub.h>
 #include <secmod.h>
 #include <ssl.h>
@@ -175,6 +176,25 @@ void EnsureNSPRInit() {
 
 void EnsureNSSInit() {
   Singleton<NSSInitSingleton>::get();
+}
+
+// TODO(port): Implement this more simply.  We can convert by subtracting an
+// offset (the difference between NSPR's and base::Time's epochs).
+Time PRTimeToBaseTime(PRTime prtime) {
+  PRExplodedTime prxtime;
+  PR_ExplodeTime(prtime, PR_GMTParameters, &prxtime);
+
+  base::Time::Exploded exploded;
+  exploded.year         = prxtime.tm_year;
+  exploded.month        = prxtime.tm_month + 1;
+  exploded.day_of_week  = prxtime.tm_wday;
+  exploded.day_of_month = prxtime.tm_mday;
+  exploded.hour         = prxtime.tm_hour;
+  exploded.minute       = prxtime.tm_min;
+  exploded.second       = prxtime.tm_sec;
+  exploded.millisecond  = prxtime.tm_usec / 1000;
+
+  return Time::FromUTCExploded(exploded);
 }
 
 }  // namespace base

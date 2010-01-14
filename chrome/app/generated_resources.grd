@@ -2416,6 +2416,209 @@ each locale. -->
         Unknown server certificate error
       </message>
 
+      <!-- Certificate viewer dialog strings.  These are only used on platforms that don't have a native certificate info dialog, such as Linux. -->
+      <message name="IDS_CERT_INFO_DIALOG_TITLE" desc="Title of dialog displaying info about a certificate">
+        Certificate Viewer: <ph name="CERTIFICATE_NAME">$1<ex>www.google.com</ex></ph>
+      </message>
+      <message name="IDS_CERT_INFO_GENERAL_TAB_LABEL" desc="Title of the notebook page displaying the basic info about the certificate">
+        &amp;General
+      </message>
+      <message name="IDS_CERT_INFO_DETAILS_TAB_LABEL" desc="Title of the notebook page displaying the details about the certificate">
+        &amp;Details
+      </message>
+      <message name="IDS_CERT_INFO_VERIFIED_USAGES_GROUP" desc="The label of the group in the general page of the certificate info dialog which lists the usages that the certificate is verified for">
+        This certificate has been verified for the following usages:
+      </message>
+      <message name="IDS_CERT_USAGE_SSL_CLIENT" desc="The description of a certificate that is verified for use as an SSL client">
+        SSL Client Certificate
+      </message>
+      <message name="IDS_CERT_USAGE_SSL_SERVER" desc="The description of a certificate that is verified for use as an SSL server">
+        SSL Server Certificate
+      </message>
+      <message name="IDS_CERT_USAGE_SSL_SERVER_WITH_STEPUP" desc="The description of a certificate that is verified for use as an SSL server with step up">
+        SSL Server with Step-up
+      </message>
+      <message name="IDS_CERT_USAGE_EMAIL_SIGNER" desc="The description of a certificate that is verified for signing emails">
+        Email Signer Certificate
+      </message>
+      <message name="IDS_CERT_USAGE_EMAIL_RECEIVER" desc="The description of a
+        certificate that is verified for encrypting email">
+        Email Encryption Certificate
+      </message>
+      <message name="IDS_CERT_USAGE_OBJECT_SIGNER" desc="The description of a certificate that is verified for signing objects">
+        Object Signer
+      </message>
+      <message name="IDS_CERT_USAGE_SSL_CA" desc="The description of a certificate that is verified for use by an SSL certification authority">
+        SSL Certification Authority
+      </message>
+      <message name="IDS_CERT_USAGE_STATUS_RESPONDER" desc="The description of a certificate that is verified for use as a status responder">
+        Status Responder Certificate
+      </message>
+      <message name="IDS_CERT_INFO_SUBJECT_GROUP" desc="The label of the Issued To group in the general page of the certificate info dialog">
+        Issued To
+      </message>
+      <message name="IDS_CERT_INFO_ISSUER_GROUP" desc="The label of the Issued By group in the general page of the certificate info dialog">
+        Issued By
+      </message>
+      <message name="IDS_CERT_INFO_COMMON_NAME_LABEL" desc="The label of the Common Name field in the general page of the certificate info dialog.  (CN) is the name of this field in the standard">
+        Common Name (CN)
+      </message>
+      <message name="IDS_CERT_INFO_ORGANIZATION_LABEL" desc="The label of the Organization field in the general page of the certificate info dialog.  (O) is the name of this field in the standard">
+        Organization (O)
+      </message>
+      <message name="IDS_CERT_INFO_ORGANIZATIONAL_UNIT_LABEL" desc="The label of the Organizational Unit field in the general page of the certificate info dialog.  (OU) is the name of this field in the standard">
+        Organizational Unit (OU)
+      </message>
+      <message name="IDS_CERT_INFO_SERIAL_NUMBER_LABEL" desc="The label of the Serial Number field in the general page of the certificate info dialog.">
+        Serial Number
+      </message>
+      <message name="IDS_CERT_INFO_VALIDITY_GROUP" desc="The label of the group showing the validity (issued and expired dates) in the general page of the certificate info dialog">
+        Validity Period
+      </message>
+      <message name="IDS_CERT_INFO_ISSUED_ON_LABEL" desc="The label of the Issued On field in the general page of the certificate info dialog">
+        Issued On
+      </message>
+      <message name="IDS_CERT_INFO_EXPIRES_ON_LABEL" desc="The label of the Issued On field in the general page of the certificate info dialog">
+        Expires On
+      </message>
+      <message name="IDS_CERT_INFO_FINGERPRINTS_GROUP" desc="The label of the group showing the certificate fingerprints in the general page of the certificate info dialog">
+        Fingerprints
+      </message>
+      <message name="IDS_CERT_INFO_SHA1_FINGERPRINT_LABEL" desc="The label of the SHA1 Fingerprint field in the general page of the certificate info dialog">
+        SHA-1 Fingerprint
+      </message>
+      <message name="IDS_CERT_INFO_MD5_FINGERPRINT_LABEL" desc="The label of the MD5 Fingerprint field in the general page of the certificate info dialog">
+        MD5 Fingerprint
+      </message>
+      <message name="IDS_CERT_INFO_FIELD_NOT_PRESENT" desc="The text displayed in the certificate info dialog for a given field when the certificate does not contain that field">
+        &lt;Not Part Of Certificate&gt;
+      </message>
+
+      <message name="IDS_CERT_DETAILS_CERTIFICATE_HIERARCHY_LABEL" desc="The label of the Certificate Hierarchy tree in the details page of the certificate info dialog.">
+        Certificate Hierarchy
+      </message>
+      <message name="IDS_CERT_DETAILS_CERTIFICATE_FIELDS_LABEL" desc="The label of the Certificate Fields tree in the details page of the certificate info dialog.">
+        Certificate Fields
+      </message>
+      <message name="IDS_CERT_DETAILS_CERTIFICATE_FIELD_VALUE_LABEL" desc="The label of the Certificate Field Value text in the details page of the certificate info dialog.">
+        Field Value
+      </message>
+      <message name="IDS_CERT_DETAILS_CERTIFICATE" desc="The label of the Certificate element in the details page of the certificate info dialog.">
+        Certificate
+      </message>
+      <message name="IDS_CERT_DETAILS_VERSION" desc="The label of the Version element in the details page of the certificate info dialog.">
+        Version
+      </message>
+      <message name="IDS_CERT_DETAILS_VERSION_FORMAT" desc="The format of the Version field value in the details page of the certificate info dialog.">
+        Version <ph name="NUMBER">$1<ex>3</ex></ph>
+      </message>
+      <message name="IDS_CERT_DETAILS_SERIAL_NUMBER" desc="The label of the Serial Number element in the details page of the certificate info dialog.">
+        Serial Number
+      </message>
+      <message name="IDS_CERT_DETAILS_CERTIFICATE_SIG_ALG" desc="The label of the Certificate Signature Algorithm element in the details page of the certificate info dialog.">
+        Certificate Signature Algorithm
+      </message>
+      <message name="IDS_CERT_DETAILS_ISSUER" desc="The label of the Issuer element in the details page of the certificate info dialog.">
+        Issuer
+      </message>
+      <message name="IDS_CERT_DETAILS_VALIDITY" desc="The label of the Validity element in the details page of the certificate info dialog.">
+        Validity
+      </message>
+      <message name="IDS_CERT_DETAILS_NOT_BEFORE" desc="The label of the Validity->Not Before element in the details page of the certificate info dialog.">
+        Not Before
+      </message>
+      <message name="IDS_CERT_DETAILS_NOT_AFTER" desc="The label of the Validity->Not After element in the details page of the certificate info dialog.">
+        Not After
+      </message>
+      <message name="IDS_CERT_DETAILS_SUBJECT" desc="The label of the Subject element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
+        Subject
+      </message>
+      <message name="IDS_CERT_DETAILS_SUBJECT_KEY_INFO" desc="The label of the Subject Public Key Info element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
+        Subject Public Key Info
+      </message>
+      <message name="IDS_CERT_DETAILS_SUBJECT_KEY_ALG" desc="The label of the Subject Public Key Algorithm element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
+        Subject Public Key Algorithm
+      </message>
+      <message name="IDS_CERT_DETAILS_SUBJECT_KEY" desc="The label of the Subject's Public Key element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
+        Subject's Public Key
+      </message>
+      <message name="IDS_CERT_DETAILS_EXTENSIONS" desc="The label of the Extensions element in the details page of the certificate info dialog.">
+        Extensions
+      </message>
+      <message name="IDS_CERT_DETAILS_CERTIFICATE_SIG_VALUE" desc="The label of the Certificate Signature Value element in the details page of the certificate info dialog.">
+        Certificate Signature Value
+      </message>
+
+      <message translateable="false" name="IDS_CERT_OID_AVA_COMMON_NAME" desc="">
+        CN
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_AVA_STATE_OR_PROVINCE" desc="">
+        ST
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_AVA_ORGANIZATION_NAME" desc="">
+        O
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_AVA_ORGANIZATIONAL_UNIT_NAME" desc="">
+        OU
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_AVA_DN_QUALIFIER" desc="">
+        dnQualifier
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_AVA_COUNTRY_NAME" desc="">
+        C
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_AVA_SERIAL_NUMBER" desc="">
+        serialNumber
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_AVA_LOCALITY" desc="">
+        L
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_AVA_DC" desc="">
+        DC
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_RFC1274_MAIL" desc="">
+        MAIL
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_RFC1274_UID" desc="">
+        UID
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_PKCS9_EMAIL_ADDRESS" desc="">
+        E
+      </message>
+
+      <message name="IDS_CERT_OID_PKCS1_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_RSA_ENCRYPTION">
+        PKCS #1 RSA Encryption
+      </message>
+      <message name="IDS_CERT_OID_PKCS1_MD2_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_MD2_WITH_RSA_ENCRYPTION">
+        PKCS #1 MD2 With RSA Encryption
+      </message>
+      <message name="IDS_CERT_OID_PKCS1_MD4_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_MD4_WITH_RSA_ENCRYPTION">
+        PKCS #1 MD4 With RSA Encryption
+      </message>
+      <message name="IDS_CERT_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION">
+        PKCS #1 MD5 With RSA Encryption
+      </message>
+      <message name="IDS_CERT_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION">
+        PKCS #1 SHA-1 With RSA Encryption
+      </message>
+      <message name="IDS_CERT_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION">
+        PKCS #1 SHA-256 With RSA Encryption
+      </message>
+      <message name="IDS_CERT_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION">
+        PKCS #1 SHA-384 With RSA Encryption
+      </message>
+      <message name="IDS_CERT_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION">
+        PKCS #1 SHA-512 With RSA Encryption
+      </message>
+
+      <message name="IDS_CERT_EXTENSION_CRITICAL" desc="The text displayed in the certificate details dialog for a given extension which is critical">
+        Critical
+      </message>
+      <message name="IDS_CERT_EXTENSION_NON_CRITICAL" desc="The text displayed in the certificate details dialog for a given extension which is not critical">
+        Not Critical
+      </message>
+
+
       <!-- General wizard strings -->
       <message name="IDS_WIZARD_NEXT" desc="The wizard next button label">
         Next

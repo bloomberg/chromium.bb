@@ -20,7 +20,7 @@
 #include <ssl.h>
 #include <sslerr.h>
 #include <pk11pub.h>
-#include "base/nss_init.h"
+#include "base/nss_util.h"
 #elif defined(OS_MACOSX)
 #include <Security/Security.h>
 #include "base/scoped_cftyperef.h"

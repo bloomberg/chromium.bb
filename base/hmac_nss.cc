@@ -8,7 +8,7 @@
 #include <pk11pub.h>
 
 #include "base/logging.h"
-#include "base/nss_init.h"
+#include "base/nss_util.h"
 #include "base/scoped_ptr.h"
 
 namespace {

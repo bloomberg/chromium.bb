@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
+#include "chrome/browser/gtk/certificate_viewer.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/common/gtk_util.h"
@@ -18,6 +19,10 @@
 #include "grit/theme_resources.h"
 
 namespace {
+
+enum {
+  RESPONSE_SHOW_CERT_INFO = 0,
+};
 
 class PageInfoWindowGtk : public PageInfoModel::PageInfoModelObserver {
  public:
@@ -33,6 +38,9 @@ class PageInfoWindowGtk : public PageInfoModel::PageInfoModelObserver {
 
   // Shows the page info window.
   void Show();
+
+  // Shows the certificate info window.
+  void ShowCertDialog();
 
  private:
   // Layouts the different sections retrieved from the model.
@@ -50,13 +58,21 @@ class PageInfoWindowGtk : public PageInfoModel::PageInfoModelObserver {
   // The virtual box containing the sections.
   GtkWidget* contents_;
 
+  // The id of the certificate for this page.
+  int cert_id_;
+
   DISALLOW_COPY_AND_ASSIGN(PageInfoWindowGtk);
 };
 
-// Close button callback.
-void OnDialogResponse(GtkDialog* dialog, gpointer data) {
-  // "Close" was clicked.
-  gtk_widget_destroy(GTK_WIDGET(dialog));
+// Button callbacks.
+void OnDialogResponse(GtkDialog* dialog, gint response_id,
+                      PageInfoWindowGtk* page_info) {
+  if (response_id == RESPONSE_SHOW_CERT_INFO) {
+    page_info->ShowCertDialog();
+  } else {
+    // "Close" was clicked.
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+  }
 }
 
 void OnDestroy(GtkDialog* dialog, PageInfoWindowGtk* page_info) {
@@ -72,7 +88,8 @@ PageInfoWindowGtk::PageInfoWindowGtk(gfx::NativeWindow parent,
                                      bool show_history)
     : ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
                                             show_history, this)),
-      contents_(NULL) {
+      contents_(NULL),
+      cert_id_(ssl.cert_id()) {
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_PAGEINFO_WINDOW_TITLE).c_str(),
       parent,
@@ -81,9 +98,22 @@ PageInfoWindowGtk::PageInfoWindowGtk(gfx::NativeWindow parent,
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_CLOSE);
+
+  if (cert_id_) {
+    GtkWidget* cert_info_button = gtk_dialog_add_button(
+        GTK_DIALOG(dialog_),
+        l10n_util::GetStringUTF8(IDS_PAGEINFO_CERT_INFO_BUTTON).c_str(),
+        RESPONSE_SHOW_CERT_INFO);
+    gtk_button_box_set_child_secondary(
+        GTK_BUTTON_BOX(GTK_DIALOG(dialog_)->action_area),
+        cert_info_button,
+        TRUE);
+  }
+
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnDialogResponse), NULL);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnDialogResponse), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroy), this);
 
   InitContents();
@@ -150,6 +180,10 @@ void PageInfoWindowGtk::InitContents() {
 
 void PageInfoWindowGtk::Show() {
   gtk_widget_show(dialog_);
+}
+
+void PageInfoWindowGtk::ShowCertDialog() {
+  ShowCertificateViewer(GTK_WINDOW(dialog_), cert_id_);
 }
 
 } // namespace
