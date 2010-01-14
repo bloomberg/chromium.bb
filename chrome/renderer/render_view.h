@@ -40,6 +40,7 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebEventListener.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
@@ -115,6 +116,7 @@ typedef base::RefCountedData<int> SharedRenderViewCounter;
 // communication interface with an embedding application process
 //
 class RenderView : public RenderWidget,
+                   public WebKit::WebEventListener,
                    public WebKit::WebViewClient,
                    public WebKit::WebFrameClient,
                    public WebKit::WebPageSerializerClient,
@@ -182,6 +184,9 @@ class RenderView : public RenderWidget,
       int status);
   virtual void UserMetricsRecordAction(const std::string& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
+
+  // WebKit::WebEventListener
+  virtual void handleEvent(WebKit::WebEvent* event);
 
   // WebKit::WebViewClient
   virtual WebKit::WebView* createView(WebKit::WebFrame* creator);
@@ -515,11 +520,9 @@ class RenderView : public RenderWidget,
                         SkBitmap* thumbnail,
                         ThumbnailScore* score);
 
-  // Calculates how "boring" a thumbnail is. The boring score is the
-  // 0,1 ranged percentage of pixels that are the most common
-  // luma. Higher boring scores indicate that a higher percentage of a
-  // bitmap are all the same brightness.
-  double CalculateBoringScore(SkBitmap* bitmap);
+  // Capture a snapshot of a view.  This is used to allow an extension
+  // to get a snapshot of a tab using chrome.tabs.captureVisibleTab().
+  bool CaptureSnapshot(WebKit::WebView* view, SkBitmap* snapshot);
 
   bool RunJavaScriptMessage(int type,
                             const std::wstring& message,
@@ -533,6 +536,7 @@ class RenderView : public RenderWidget,
 
   // RenderView IPC message handlers
   void SendThumbnail();
+  void SendSnapshot();
   void OnPrintPages();
   void OnPrintingDone(int document_cookie, bool success);
   void OnNavigate(const ViewMsg_Navigate_Params& params);
