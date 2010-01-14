@@ -884,8 +884,8 @@ BUG8635 LINUX WIN DEBUG : svg/custom/pattern-cycle-detection.svg = FAIL
 BUG8763 LINUX WIN MAC : svg/custom/use-on-g-containing-foreignObject-and-image.svg = IMAGE
 
 // smiley.png should be shown with xml:base and xml:base on parent.
-BUG10281 MAC : svg/W3C-SVG-1.1/struct-image-07-t.svg = IMAGE
-BUG10281 WIN LINUX : svg/W3C-SVG-1.1/struct-image-07-t.svg = IMAGE+TEXT
+BUG23463 MAC : svg/W3C-SVG-1.1/struct-image-07-t.svg = IMAGE
+BUG23463 WIN LINUX : svg/W3C-SVG-1.1/struct-image-07-t.svg = IMAGE+TEXT
 
 // We show reduced version of the entire SVN image rather than an image
 BUG23463 MAC : svg/W3C-SVG-1.1/struct-symbol-01-b.svg = IMAGE
