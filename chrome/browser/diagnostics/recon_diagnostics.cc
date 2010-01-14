@@ -110,14 +110,18 @@ struct TestPathInfo {
   const char* test_name;
   int dir_id;
   bool test_writable;
+  int64 max_size;
 };
 
+const int64 kOneKilo = 1024;
+const int64 kOneMeg = 1024 * kOneKilo;
+
 const TestPathInfo kPathsToTest[] = {
-  {"User data Directory", chrome::DIR_USER_DATA, true},
-  {"Local state file", chrome::FILE_LOCAL_STATE, true},
-  {"Resources module", chrome::FILE_RESOURCE_MODULE, false},
-  {"Dictionaries Directory", chrome::DIR_APP_DICTIONARIES, false},
-  {"Inspector Directory", chrome::DIR_INSPECTOR, false}
+  {"User data Directory", chrome::DIR_USER_DATA, true, 250 * kOneMeg},
+  {"Local state file", chrome::FILE_LOCAL_STATE, true, 200 * kOneKilo},
+  {"Resources module", chrome::FILE_RESOURCE_MODULE, false, 0},
+  {"Dictionaries Directory", chrome::DIR_APP_DICTIONARIES, false, 0},
+  {"Inspector Directory", chrome::DIR_INSPECTOR, false, 0}
 };
 
 // Check that the user's data directory exists and the paths are writeable.
@@ -136,24 +140,40 @@ class PathTest : public DiagnosticTest {
       RecordStopFailure(ASCIIToUTF16("dependency failure"));
       return false;
     }
-    FilePath dir;
-    if (!PathService::Get(path_info_.dir_id, &dir)) {
+    FilePath dir_or_file;
+    if (!PathService::Get(path_info_.dir_id, &dir_or_file)) {
       RecordStopFailure(ASCIIToUTF16("Path provider failure"));
       return false;
     }
-    if (!file_util::PathExists(dir)) {
+    if (!file_util::PathExists(dir_or_file)) {
       RecordFailure(ASCIIToUTF16("Path not found"));
       return true;
+    }
+
+    int64 dir_or_file_size;
+    if (!file_util::GetFileSize(dir_or_file, &dir_or_file_size)) {
+      RecordFailure(ASCIIToUTF16("Cannot obtain size"));
+      return true;
+    }
+    DataUnits units = GetByteDisplayUnits(dir_or_file_size);
+    string16 printable_size =
+        WideToUTF16(FormatBytes(dir_or_file_size, units, true));
+
+    if (path_info_.max_size > 0) {
+      if (dir_or_file_size > path_info_.max_size) {
+        RecordFailure(ASCIIToUTF16("Path is too big: ") + printable_size);
+        return true;
+      }
     }
     if (g_install_type->system_level() && !path_info_.test_writable) {
       RecordSuccess(ASCIIToUTF16("Path exists"));
       return true;
     }
-    if (!file_util::PathIsWritable(dir)) {
+    if (!file_util::PathIsWritable(dir_or_file)) {
       RecordFailure(ASCIIToUTF16("Path is not writable"));
       return true;
     }
-    RecordSuccess(ASCIIToUTF16("Path exists and is writable"));
+    RecordSuccess(ASCIIToUTF16("Path exists and is writable: ") + printable_size);
     return true;
   }
 

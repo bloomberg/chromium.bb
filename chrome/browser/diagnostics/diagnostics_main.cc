@@ -7,7 +7,9 @@
 #include "app/app_paths.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/i18n/icu_util.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 #include "chrome/common/chrome_paths.h"
 
@@ -123,6 +125,14 @@ class TestWriter {
   DISALLOW_COPY_AND_ASSIGN(TestWriter);
 };
 
+std::wstring PrintableUSCurrentTime() {
+  base::Time::Exploded exploded = {0};
+  base::Time::Now().UTCExplode(&exploded);
+  return StringPrintf(L"%d:%d:%d.%d:%d:%d",
+      exploded.year, exploded.month, exploded.day_of_month,
+      exploded.hour, exploded.minute, exploded.second);
+}
+
 // This class is a basic test controller. In this design the view (TestWriter)
 // and the model (DiagnosticsModel) do not talk to each other directly but they
 // are mediated by the controller. This has a name: 'passive view'.
@@ -135,9 +145,15 @@ class TestController : public DiagnosticsModel::Observer {
   // Run all the diagnostics of |model| and invoke the view as the model
   // callbacks arrive.
   void Run(DiagnosticsModel* model) {
-    writer_->WriteInfoText(L"Chrome Diagnostics\n");
+    std::wstring title(L"Chrome Diagnostics Mode (");
+    writer_->WriteInfoText(title.append(PrintableUSCurrentTime()) + L")\n");
     if (!model) {
       writer_->WriteResult(false, L"Diagnostics start", L"model is null");
+      return;
+    }
+    bool icu_result = icu_util::Initialize();
+    if (!icu_result) {
+      writer_->WriteResult(false, L"Diagnostics start", L"ICU failure");
       return;
     }
     int count = model->GetTestAvailableCount();
