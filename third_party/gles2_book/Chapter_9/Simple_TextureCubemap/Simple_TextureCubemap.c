@@ -31,17 +31,14 @@ typedef struct
    GLuint textureId;
 
    // Vertex data
-   int      numIndices;
-   GLfloat *vertices;
-   GLfloat *normals;
-   GLuint  *indices;
-
+   int    numIndices;
+   GLuint vboIds[3];
 } UserData;
 
 ///
 // Create a simple cubemap with a 1x1 face with a different
 // color for each face
-GLuint CreateSimpleTextureCubemap( )
+static GLuint CreateSimpleTextureCubemap( )
 {
    GLuint textureId;
    // Six 1x1 RGB faces
@@ -106,6 +103,11 @@ GLuint CreateSimpleTextureCubemap( )
 int Init ( ESContext *esContext )
 {
    UserData *userData = esContext->userData;
+   int numSlices = 20;
+   int numVertices = ( (numSlices / 2) + 1 ) * ( numSlices + 1 );
+   GLfloat *vertices = NULL;
+   GLfloat *normals = NULL;
+   GLushort *indices = NULL;
    GLbyte vShaderStr[] =  
       "attribute vec4 a_position;   \n"
       "attribute vec3 a_normal;     \n"
@@ -139,9 +141,24 @@ int Init ( ESContext *esContext )
    userData->textureId = CreateSimpleTextureCubemap ();
 
    // Generate the vertex data
-   userData->numIndices = esGenSphere ( 20, 0.75f, &userData->vertices, &userData->normals, 
-                                        NULL, &userData->indices );
-
+   userData->numIndices = esGenSphere ( numSlices, 0.75f, &vertices, &normals, 
+                                        NULL, &indices );
+   glGenBuffers( 3, userData->vboIds );
+   // Load vertex positions
+   glBindBuffer ( GL_ARRAY_BUFFER, userData->vboIds[0] );
+   glBufferData ( GL_ARRAY_BUFFER, 3 * numVertices * sizeof(GLfloat),
+                  vertices, GL_STATIC_DRAW );
+   // Load vertex normals
+   glBindBuffer ( GL_ARRAY_BUFFER, userData->vboIds[1] );
+   glBufferData ( GL_ARRAY_BUFFER, 3 * numVertices * sizeof(GLfloat),
+                  normals, GL_STATIC_DRAW );
+   // Load vertex indices
+   glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, userData->vboIds[2] );
+   glBufferData ( GL_ELEMENT_ARRAY_BUFFER, userData->numIndices * sizeof(GLushort),
+                  indices, GL_STATIC_DRAW );
+   if ( vertices != NULL ) free ( vertices );
+   if ( normals != NULL ) free ( normals );
+   if ( indices != NULL ) free ( indices );
    
    glClearColor ( 0.0f, 0.0f, 0.0f, 0.0f );
    return TRUE;
@@ -169,10 +186,10 @@ void Draw ( ESContext *esContext )
 
    // Load the vertex position
    glVertexAttribPointer ( userData->positionLoc, 3, GL_FLOAT, 
-                           GL_FALSE, 0, userData->vertices );
+                           GL_FALSE, 0, 0 );
    // Load the normal
    glVertexAttribPointer ( userData->normalLoc, 3, GL_FLOAT,
-                           GL_FALSE, 0, userData->normals );
+                           GL_FALSE, 0, 0 );
 
    glEnableVertexAttribArray ( userData->positionLoc );
    glEnableVertexAttribArray ( userData->normalLoc );
@@ -185,7 +202,7 @@ void Draw ( ESContext *esContext )
    glUniform1i ( userData->samplerLoc, 0 );
 
    glDrawElements ( GL_TRIANGLES, userData->numIndices, 
-                    GL_UNSIGNED_INT, userData->indices );
+                    GL_UNSIGNED_SHORT, 0 );
 
    eglSwapBuffers ( esContext->eglDisplay, esContext->eglSurface );
 }
@@ -203,8 +220,8 @@ void ShutDown ( ESContext *esContext )
    // Delete program object
    glDeleteProgram ( userData->programObject );
 
-   free ( userData->vertices );
-   free ( userData->normals );
+   // Delete vertex buffer objects
+   glDeleteBuffers ( 3, userData->vboIds );
 }
 
 
