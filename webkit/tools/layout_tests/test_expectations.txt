@@ -2175,7 +2175,6 @@ BUG10435 MAC : editing/selection/designmode-no-caret.html = FAIL
 
 // Flakey. Not clear when it started, but it was before 3/9/09.
 // This test also started failing with the merge of March 25th 2009
-BUG10441 LINUX : fast/clip/outline-overflowClip.html = FAIL
 BUG10441 WIN DEBUG : transitions/transition-end-event-transform.html = FAIL PASS
 BUG10441 MAC WIN RELEASE : transitions/transition-end-event-transform.html = FAIL PASS
 
