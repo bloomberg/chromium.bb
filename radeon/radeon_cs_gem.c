@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright © 2008 Jérôme Glisse
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -9,14 +9,14 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS, AUTHORS
  * AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * The above copyright notice and this permission notice (including the
@@ -227,7 +227,7 @@ static int cs_gem_begin(struct radeon_cs_int *cs,
     if (cs->cdw + ndw > cs->ndw) {
         uint32_t tmp, *ptr;
 
-	/* round up the required size to a multiple of 1024 */
+        /* round up the required size to a multiple of 1024 */
         tmp = (cs->cdw + ndw + 0x3FF) & (~0x3FF);
         ptr = (uint32_t*)realloc(cs->packets, 4 * tmp);
         if (ptr == NULL) {
@@ -279,9 +279,9 @@ static int cs_gem_emit(struct radeon_cs_int *cs)
     r = drmCommandWriteRead(cs->csm->fd, DRM_RADEON_CS,
                             &csg->cs, sizeof(struct drm_radeon_cs));
     for (i = 0; i < csg->base.crelocs; i++) {
-	    csg->relocs_bo[i]->space_accounted = 0;
-	    radeon_bo_unref((struct radeon_bo *)csg->relocs_bo[i]);
-	    csg->relocs_bo[i] = NULL;
+        csg->relocs_bo[i]->space_accounted = 0;
+        radeon_bo_unref((struct radeon_bo *)csg->relocs_bo[i]);
+        csg->relocs_bo[i] = NULL;
     }
 
     cs->csm->read_used = 0;
@@ -309,7 +309,7 @@ static int cs_gem_erase(struct radeon_cs_int *cs)
     if (csg->relocs_bo) {
         for (i = 0; i < csg->base.crelocs; i++) {
             if (csg->relocs_bo[i]) {
-	        radeon_bo_unref((struct radeon_bo *)csg->relocs_bo[i]);
+                radeon_bo_unref((struct radeon_bo *)csg->relocs_bo[i]);
                 csg->relocs_bo[i] = NULL;
             }
         }
@@ -332,7 +332,7 @@ static int cs_gem_need_flush(struct radeon_cs_int *cs)
 #define PACKET_TYPE1 1
 #define PACKET_TYPE2 2
 #define PACKET_TYPE3 3
-  
+
 #define PACKET3_NOP 0x10
 #define PACKET3_SET_SCISSORS 0x1E
 #define PACKET3_3D_DRAW_VBUF 0x28
@@ -343,7 +343,7 @@ static int cs_gem_need_flush(struct radeon_cs_int *cs)
 #define PACKET3_3D_DRAW_VBUF_2 0x34
 #define PACKET3_3D_DRAW_IMMD_2 0x35
 #define PACKET3_3D_DRAW_INDX_2 0x36
- 
+
 #define CP_PACKET_GET_TYPE(h) (((h) >> 30) & 3)
 #define CP_PACKET_GET_COUNT(h) (((h) >> 16) & 0x3FFF)
 #define CP_PACKET0_GET_REG(h) (((h) & 0x1FFF) << 2)
