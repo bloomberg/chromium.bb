@@ -60,29 +60,6 @@
 # These should all be in chromium's bug tracking system (but a few aren't yet).
 # Periodically we should sweep this file and the bug tracker clean by
 # running overnight and removing outdated bugs/suppressions.
-
-# RSAPrivateKeyUnitTest (base_unittests) leaks memory.
-{
-   bug_28118_a
-   Heapcheck:Leak
-   fun:PR_NewLock
-}
-{
-   bug_28118_b
-   Heapcheck:Leak
-   fun:PORT_ZAlloc_Util
-}
-# SSLClientSocketTest (net_unittests) leaks memory.
-{
-   bug_32170_a
-   Heapcheck:Leak
-   fun:PL_ArenaAllocate
-}
-{
-   bug_32170_b
-   Heapcheck:Leak
-   fun:nss_ZAlloc
-}
 {
    bug_30547
    Heapcheck:Leak
