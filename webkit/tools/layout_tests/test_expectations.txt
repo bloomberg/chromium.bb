@@ -2429,7 +2429,7 @@ BUG15217 MAC : fast/js/switch-behaviour.html = FAIL
 // WebKit 45086:45111
 BUG15270 MAC LINUX RELEASE : fast/js/excessive-comma-usage.html = TEXT
 BUG15270 DEBUG SLOW : fast/js/excessive-comma-usage.html = FAIL
-BUG15270 WIN : fast/js/excessive-comma-usage.html = CRASH
+BUG15270 WIN RELEASE : fast/js/excessive-comma-usage.html = CRASH
 
 
 // Flaky for a while; also related to BUG17974
