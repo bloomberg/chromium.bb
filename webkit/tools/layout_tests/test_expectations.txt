@@ -912,8 +912,6 @@ BUG8635 LINUX : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
 
 BUG10288 WIN LINUX : svg/batik/text/verticalText.svg = FAIL
 
-BUG10289 WIN LINUX : svg/batik/masking/maskRegions.svg = FAIL
-
 // Bug in Skia, see https://bugs.webkit.org/show_bug.cgi?id=24534 .
 BUG8635 WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-06-b.svg = FAIL
 BUG8635 WIN LINUX : svg/batik/paints/patternRegionA.svg = FAIL
