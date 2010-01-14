@@ -215,12 +215,15 @@ void KeywordEditorView::InitLayoutManager() {
 }
 
 void KeywordEditorView::OnSelectionChanged() {
+  bool only_one_url_left =
+      controller_->url_model()->GetTemplateURLs().size() == 1;
   if (table_view_->SelectedRowCount() == 1) {
     edit_button_->SetEnabled(true);
     const TemplateURL* selected_url =
         controller_->GetTemplateURL(table_view_->FirstSelectedRow());
     make_default_button_->SetEnabled(controller_->CanMakeDefault(selected_url));
-    remove_button_->SetEnabled(controller_->CanRemove(selected_url));
+    remove_button_->SetEnabled(!only_one_url_left &&
+                               controller_->CanRemove(selected_url));
   } else {
     make_default_button_->SetEnabled(false);
     for (views::TableView::iterator i = table_view_->SelectionBegin();
@@ -231,7 +234,7 @@ void KeywordEditorView::OnSelectionChanged() {
         return;
       }
     }
-    remove_button_->SetEnabled(true);
+    remove_button_->SetEnabled(!only_one_url_left);
   }
 }
 

@@ -38,8 +38,14 @@ bool EditSearchEngineController::IsURLValid(
   if (!template_ref.IsValid())
     return false;
 
-  if (!template_ref.SupportsReplacement())
+  if (!template_ref.SupportsReplacement()) {
+    // If this is the default search engine, there must be a search term
+    // placeholder.
+    if (template_url_ ==
+        profile_->GetTemplateURLModel()->GetDefaultSearchProvider())
+      return false;
     return GURL(WideToUTF16Hack(url)).is_valid();
+  }
 
   // If the url has a search term, replace it with a random string and make
   // sure the resulting URL is valid. We don't check the validity of the url
