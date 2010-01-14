@@ -48,6 +48,7 @@ env.ComponentProgram('npapi_test.nexe', nacl_npplugin_test_inputs,
 
 # Note that the html is required to run this program.
 env.Publish('npapi_test.nexe', 'run', [
+    'npapi_examples.html',
     'npapi_test.html',
     'npapi_perf.html',
     'npapi_video.html',
