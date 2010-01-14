@@ -101,6 +101,14 @@ Object.className = function(obj) {
 };
 
 
+// TODO(pfeldman): Remove once Object.getOwnPropertyNames is implemented.
+InjectedScript._getPropertyNames = function(object, resultSet)
+{
+    for (var name in object)
+        resultSet[name] = true;
+}
+
+
 /**
  * A no-op function that is called by debugger agent just to trigger v8
  * execution.
