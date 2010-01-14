@@ -191,8 +191,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
       rb.GetPixbufNamed(IDR_LOCK));
   gtk_widget_set_name(security_lock_icon_image_, "chrome-security-lock-icon");
   gtk_widget_hide(GTK_WIDGET(security_lock_icon_image_));
-  security_warning_icon_image_ = gtk_image_new_from_pixbuf(
-      rb.GetPixbufNamed(IDR_WARNING));
+  security_warning_icon_image_ = gtk_image_new();
   gtk_widget_set_name(security_warning_icon_image_,
                       "chrome-security-warning-icon");
   gtk_widget_hide(GTK_WIDGET(security_warning_icon_image_));
@@ -609,6 +608,10 @@ void LocationBarViewGtk::Observe(NotificationType type,
     gtk_util::SetLabelColor(tab_to_search_hint_leading_label_, NULL);
     gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_, NULL);
     gtk_util::SetLabelColor(type_to_search_hint_, NULL);
+
+    gtk_image_set_from_stock(GTK_IMAGE(security_warning_icon_image_),
+                             GTK_STOCK_DIALOG_WARNING,
+                             GTK_ICON_SIZE_SMALL_TOOLBAR);
   } else {
     gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL,
                          &kKeywordBackgroundColor);
@@ -622,6 +625,10 @@ void LocationBarViewGtk::Observe(NotificationType type,
     gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_,
                             &kHintTextColor);
     gtk_util::SetLabelColor(type_to_search_hint_, &kHintTextColor);
+
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    gtk_image_set_from_pixbuf(GTK_IMAGE(security_warning_icon_image_),
+                              rb.GetPixbufNamed(IDR_WARNING));
   }
 }
 
