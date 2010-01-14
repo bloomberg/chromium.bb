@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<style>
+
+</style>
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
+<script src="cr.js"></script>
+<script src="cr/event.js"></script>
+<script src="cr/eventtarget.js"></script>
+<script>
+
+goog.require('goog.testing.jsunit');
+
+</script>
+
+</head>
+<body>
+
+<script>
+
+const EventTarget = cr.EventTarget;
+
+function testDefineProperty() {
+  var obj = new EventTarget;
+  cr.defineProperty(obj, 'test');
+
+  obj.test = 1;
+  assertEquals(1, obj.test);
+  assertEquals(1, obj.test_);
+}
+
+function testDefinePropertyOnClass() {
+  function C() {}
+  C.prototype = {
+    __proto__: EventTarget.prototype
+  };
+
+  cr.defineProperty(C, 'test');
+
+  var obj = new C;
+  obj.test = 1;
+  assertEquals(1, obj.test);
+  assertEquals(1, obj.test_);
+}
+
+function testDefinePropertyWithDefault() {
+  var obj = new EventTarget;
+
+  cr.defineProperty(obj, 'test', null, 1);
+
+  assertEquals(1, obj.test);
+  assertEquals(1, obj.test_);
+
+  obj.test = 2;
+  assertEquals(2, obj.test);
+  assertEquals(2, obj.test_);
+}
+
+function testDefinePropertyEvent() {
+  var obj = new EventTarget;
+  cr.defineProperty(obj, 'test');
+  obj.test = 1;
+
+  var count = 0;
+  function f(e) {
+    assertEquals('testChange', e.type);
+    assertEquals('test', e.propertyName);
+    assertEquals(1, e.oldValue);
+    assertEquals(2, e.newValue);
+    count++;
+  }
+
+  obj.addEventListener('testChange', f);
+  obj.test = 2;
+  assertEquals(2, obj.test);
+  assertEquals('Should have called the property change listener', 1, count);
+
+  obj.test = 2;
+  assertEquals(1, count);
+}
+
+function testDefinePropertyEventWithDefault() {
+  var obj = new EventTarget;
+  cr.defineProperty(obj, 'test', cr.PropertyKind.JS, 1);
+
+  var count = 0;
+  function f(e) {
+    assertEquals('testChange', e.type);
+    assertEquals('test', e.propertyName);
+    assertEquals(1, e.oldValue);
+    assertEquals(2, e.newValue);
+    count++;
+  }
+
+  obj.addEventListener('testChange', f);
+
+  obj.test = 1;
+  assertEquals('Should not have called the property change listener', 0, count);
+
+  obj.test = 2;
+  assertEquals(2, obj.test);
+  assertEquals('Should have called the property change listener', 1, count);
+
+  obj.test = 2;
+  assertEquals(1, count);
+}
+
+function testDefinePropertyAttr() {
+  var obj = document.createElement('div');
+  cr.defineProperty(obj, 'test', cr.PropertyKind.ATTR);
+
+  obj.test = 'a';
+  assertEquals('a', obj.test);
+  assertEquals('a', obj.getAttribute('test'));
+}
+
+function testDefinePropertyAttrOnClass() {
+  var obj = document.createElement('button');
+  cr.defineProperty(HTMLButtonElement, 'test', cr.PropertyKind.ATTR);
+
+  obj.test = 'a';
+  assertEquals('a', obj.test);
+  assertEquals('a', obj.getAttribute('test'));
+}
+
+function testDefinePropertyAttrWithDefault() {
+  var obj = document.createElement('div');
+  cr.defineProperty(obj, 'test', cr.PropertyKind.ATTR, 'a');
+
+  assertEquals('a', obj.test);
+  assertFalse(obj.hasAttribute('test'));
+
+  obj.test = 'b';
+  assertEquals('b', obj.test);
+  assertEquals('b', obj.getAttribute('test'));
+}
+
+function testDefinePropertyAttrEvent() {
+  var obj = document.createElement('div');
+  cr.defineProperty(obj, 'test', cr.PropertyKind.ATTR);
+  obj.test = 'a';
+
+  var count = 0;
+  function f(e) {
+    assertEquals('testChange', e.type);
+    assertEquals('test', e.propertyName);
+    assertEquals('a', e.oldValue);
+    assertEquals('b', e.newValue);
+    count++;
+  }
+
+  obj.addEventListener('testChange', f);
+  obj.test = 'b';
+  assertEquals('b', obj.test);
+  assertEquals('Should have called the property change listener', 1, count);
+
+  obj.test = 'b';
+  assertEquals(1, count);
+}
+
+function testDefinePropertyAttrEventWithDefault() {
+  var obj = document.createElement('div');
+  cr.defineProperty(obj, 'test', cr.PropertyKind.ATTR, 'a');
+
+  var count = 0;
+  function f(e) {
+    assertEquals('testChange', e.type);
+    assertEquals('test', e.propertyName);
+    assertEquals('a', e.oldValue);
+    assertEquals('b', e.newValue);
+    count++;
+  }
+
+  obj.addEventListener('testChange', f);
+
+  obj.test = 'a';
+  assertEquals('Should not have called the property change listener', 0, count);
+
+  obj.test = 'b';
+  assertEquals('b', obj.test);
+  assertEquals('Should have called the property change listener', 1, count);
+
+  obj.test = 'b';
+  assertEquals(1, count);
+}
+
+function testDefinePropertyBoolAttr() {
+  var obj = document.createElement('div');
+  cr.defineProperty(obj, 'test', cr.PropertyKind.BOOL_ATTR);
+
+  assertFalse(obj.test);
+  assertFalse(obj.hasAttribute('test'));
+
+  obj.test = true;
+  assertTrue(obj.test);
+  assertTrue(obj.hasAttribute('test'));
+
+  obj.test = false;
+  assertFalse(obj.test);
+  assertFalse(obj.hasAttribute('test'));
+}
+
+function testDefinePropertyBoolAttrEvent() {
+  var obj = document.createElement('div');
+  cr.defineProperty(obj, 'test', cr.PropertyKind.BOOL_ATTR);
+
+  var count = 0;
+  function f(e) {
+    assertEquals('testChange', e.type);
+    assertEquals('test', e.propertyName);
+    assertEquals(false, e.oldValue);
+    assertEquals(true, e.newValue);
+    count++;
+  }
+
+  obj.addEventListener('testChange', f);
+  obj.test = true;
+  assertTrue(obj.test);
+  assertEquals('Should have called the property change listener', 1, count);
+
+  obj.test = true;
+  assertEquals(1, count);
+}
+
+
+</script>
+
+</body>
+</html>

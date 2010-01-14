@@ -1,0 +1,61 @@
+
+list {
+  overflow: auto;
+  outline: none;
+}
+
+list > * {
+  font: 11px verdana;
+  -webkit-user-select: none;
+  border: 1px solid rgba(255,255,255,0); /* transparent white */
+  background-color: rgba(255,255,255,0);
+  -webkit-border-radius: 2px;
+  padding: 0px 3px;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: default;
+  -webkit-transition: all .12s;
+  position: relative; /* to allow overlap */
+  display: block;
+}
+
+list > [lead] {
+  border-color: transparent;
+}
+
+list:focus > [lead] {
+  border-color: hsl(214, 91%, 65%);
+  z-index: 2;
+}
+
+list > [anchor] {
+
+}
+
+list > :hover {
+  border-color: hsl(214, 91%, 85%);
+  z-index: 1;
+  background-color: hsl(214,91%,97%);
+}
+
+list > :hover,
+list > [selected] {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(255,255,255,0.8)), to(rgba(255,255,255,0)));
+}
+
+list > [selected] {
+  border-color: hsl(0,0%,85%);
+  background-color: hsl(0,0%,90%);
+  z-index: 2;
+}
+
+list:focus > [selected] {
+  background-color: hsl(214,91%,89%);
+  border-color: hsl(214, 91%, 65%);
+}
+
+list:focus > [lead][selected],
+list > [selected]:hover {
+  background-color: hsl(214,91%,87%);
+  border-color: hsl(214, 91%, 65%);
+}

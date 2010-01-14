@@ -1,0 +1,10 @@
+{
+  "name": "Bookmark Manager Prototype",
+  "version": "0.1",
+  "description": "Bookmark Manager",
+  "permissions": [
+    "bookmarks",
+    "experimental",
+    "tabs"
+  ]
+}

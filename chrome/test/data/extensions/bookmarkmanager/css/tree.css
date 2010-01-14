@@ -1,0 +1,143 @@
+tree {
+  outline: none;
+  overflow: auto;
+  display: block;
+}
+
+.tree-item > .tree-row {
+  color: black;
+  font: 11px verdana;
+  -webkit-user-select: none;
+  border: 1px solid rgba(255,255,255,0); /* transparent white */
+  background-color: rgba(255,255,255,0);
+  -webkit-border-radius: 2px;
+  padding: 0px 3px;
+  /*margin-bottom:-1px;*/
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: default;
+  /*-webkit-transition: all .12s;*/
+  position: relative;
+}
+
+.expand-icon {
+  width: 11px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+  top: 2px;
+  background-image: -webkit-canvas(triangle-empty);
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  -webkit-transition: all .15s, opacity 1.5s;
+  opacity: 0;
+}
+
+html[dir=rtl] .expand-icon {
+  -webkit-transform: scale(-1, 1);
+}
+
+tree:hover .expand-icon,
+tree:focus .expand-icon {
+  opacity: 1;
+  -webkit-transition: all .15s, opacity .5s;
+}
+
+.tree-item[expanded] > .tree-row > .expand-icon {
+  background-image: -webkit-canvas(triangle-filled);
+  -webkit-transform: translate(0, 3px) rotate(45deg);
+}
+
+html[dir=rtl] .tree-item[expanded] > .tree-row > .expand-icon {
+  -webkit-transform: scale(-1, 1) translate(0, 3px) rotate(45deg); /* flip */
+}
+
+.tree-item > .tree-row > .expand-icon:hover {
+  background-image: -webkit-canvas(triangle-hover);
+}
+
+.tree-row .expand-icon {
+  visibility: hidden;
+}
+
+.tree-row[may-have-children] .expand-icon {
+  visibility: visible;
+}
+
+.tree-row[has-children=false] .expand-icon {
+  visibility: hidden;
+}
+
+.tree-item > .tree-row:hover {
+  border-color: hsl(214, 91%, 85%);
+  z-index: 1;
+  background-color: hsl(214, 91%, 97%);
+}
+
+/*
+  WebKit has a bug with attribute selectors so we apply selected to the tree row
+  as well.
+
+  https://bugs.webkit.org/show_bug.cgi?id=12519
+
+*/
+.tree-row[selected]:hover,
+.tree-row[selected] {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(255,255,255,0.8)), to(rgba(255,255,255,0)));
+}
+
+.tree-row[selected] {
+  border-color: hsl(0,0%,85%);
+  background-color: hsl(0, 0%, 90%);
+  z-index: 2;
+}
+
+:focus .tree-row[selected] {
+  background-color: hsl(214, 91%, 89%);
+  border-color: #7da2ce;
+}
+
+.tree-children[expanded] {
+  display: block;
+}
+
+.tree-children {
+  display: none;
+}
+
+.tree-item > .tree-row > * {
+  display: inline-block;
+  -webkit-box-sizing: border-box;
+}
+
+.tree-label {
+  -webkit-padding-start: 20px;
+  background-repeat: no-repeat;
+  background-position: 0 50%;
+  background-image: url("../images/folder_closed.png");
+}
+
+.tree-rename > .tree-row > .tree-label {
+  -webkit-user-select: auto;
+  -webkit-user-modify: read-write-plaintext-only;
+  background: white;
+  color: black;
+  outline: 1px solid black;
+}
+
+html[dir=rtl] .tree-label {
+  background-position: 100% 50%;
+}
+
+.tree-row[selected] > .tree-label {
+  background-image: url("../images/folder_open.png");
+}
+
+html[dir='rtl'] .tree-label {
+  background-image: url("../images/folder_closed_rtl.png");
+}
+
+html[dir='rtl'] .tree-row[selected] > .tree-label {
+  background-image: url("../images/folder_open_rtl.png");
+}

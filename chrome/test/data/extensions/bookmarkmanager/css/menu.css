@@ -1,0 +1,48 @@
+
+menu {
+  display: none;
+  position: absolute;
+  border: 1px solid #999;
+  -webkit-box-shadow: 2px 2px 3px hsla(0, 0%, 0%, .3);
+  color: black;
+  background-color: hsla(213, 0%, 100%, .95);
+  left: 0;
+  white-space: nowrap;
+  z-index: 2;
+  padding: 1px;
+  margin: 0;
+  cursor: default;
+}
+
+menu > * {
+  display: block;
+  margin: 0;
+  width: 100%;
+  text-align: start;
+}
+
+menu > :not(hr) {
+  -webkit-appearance: none;
+  background: transparent;
+  font: inherit;
+  border: 0;
+
+  padding: 3px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+menu > hr {
+  border: 0;
+  border-top: 1px solid rgb(153, 153, 153);
+  margin: 2px 0;
+}
+
+menu > [hidden] {
+  display: none;
+}
+
+menu > [selected] {
+  background-color: hsl(213, 66%, 57%);
+  color: white;
+}
