@@ -1729,13 +1729,81 @@
     ]
   },
   {
+    "namespace": "experimental.bookmarkManager",
+    "nodoc": true,
+    "types": [],
+    "functions": [
+      {
+        "name": "copy",
+        "type": "function",
+        "description": "Copies the given bookmarks into the clipboard",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "name": "idList",
+            "description": "An array of string-valued ids",
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1
+          },
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      },
+      {
+        "name": "cut",
+        "type": "function",
+        "description": "Cuts the given bookmarks into the clipboard",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "name": "idList",
+            "description": "An array of string-valued ids",
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1
+          },
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      },
+      {
+        "name": "paste",
+        "type": "function",
+        "description": "Pastes bookmarks from the clipboard into the parent folder",
+        "nodoc": "true",
+        "parameters": [
+          {"type": "string", "name": "parentId"},
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      },
+      {
+        "name": "getStrings",
+        "type": "function",
+        "description": "Gets the i18n strings for the bookmark manager",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "type": "function",
+             "name": "callback",
+             "parameters": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": {"type": "string"}
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "devtools",
     "types": [],
     "functions": [
       {
         "name": "getTabEvents",
         "type": "function",
-        "description": "EXPERIMENTAL support for timeline API",
+        "description": "Experimental support for timeline API",
         "nodoc": "true",
         "parameters": [
           {

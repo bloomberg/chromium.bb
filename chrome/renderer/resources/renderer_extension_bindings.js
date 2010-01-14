@@ -241,9 +241,9 @@ var chrome = chrome || {};
     // that should prevent it from getting stale).
     var privileged = [
       // Entire namespaces.
-      "bookmarks", "browserAction", "devtools", "experimental.extension",
-      "experimental.history", "experimental.popup", "pageAction", "pageActions",
-      "tabs", "test", "toolstrip", "windows",
+      "bookmarks", "browserAction", "devtools", "experimental.bookmarkManager",
+      "experimental.extension", "experimental.history", "experimental.popup",
+      "pageAction", "pageActions", "tabs", "test", "toolstrip", "windows",
 
       // Functions/events/properties within the extension namespace.
       "extension.getBackgroundPage", "extension.getExtensionTabs",
