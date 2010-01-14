@@ -1640,6 +1640,7 @@
             '../webkit/webkit.gyp:glue',
           ],
           'sources': [
+            'browser/privacy_blacklist/blacklist_perftest.cc',
             'browser/safe_browsing/filter_false_positive_perftest.cc',
             'browser/visitedlink_perftest.cc',
             'common/json_value_serializer_perftest.cc',
