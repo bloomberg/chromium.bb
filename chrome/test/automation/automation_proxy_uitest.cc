@@ -859,6 +859,9 @@ TEST_F(ExternalTabUITest, IncognitoMode) {
   tab = mock_->CreateTabWithUrl(GURL());
   EXPECT_TRUE(tab->GetCookieByName(url, "robert", &value_result));
   EXPECT_EQ("", value_result);
+  mock_->DestroyHostWindow();
+  CloseBrowserAndServer();
+  tab = NULL;
 }
 
 TEST_F(ExternalTabUITest, TabPostMessage) {
@@ -889,8 +892,12 @@ TEST_F(ExternalTabUITest, TabPostMessage) {
   EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(testing::_,
           testing::StrEq("Hello from gtest"), testing::_, testing::_))
       .Times(1)
-      .WillOnce(QUIT_LOOP_SOON(&loop, 50));
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs(CreateFunctor(mock_,
+              &ExternalTabUITestMockClient::DestroyHostWindow)),
+          QUIT_LOOP_SOON(&loop, 50)));
 
+  EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
 
   tab = mock_->CreateTabWithUrl(GURL(content));
   loop.RunFor(2 * action_max_timeout_ms());
@@ -921,7 +928,12 @@ TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
                     testing::_,
                     testing::StrEq(GURL(kTestOrigin).GetOrigin().spec())))
       .Times(1)
-      .WillOnce(QUIT_LOOP_SOON(&loop, 50));
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs(CreateFunctor(mock_,
+              &ExternalTabUITestMockClient::DestroyHostWindow)),
+          QUIT_LOOP_SOON(&loop, 50)));
+
+  EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
 
   IPC::ExternalTabSettings s = ExternalTabUITestMockClient::default_settings;
   s.load_requests_via_automation = false;
@@ -984,9 +996,53 @@ TEST_F(ExternalTabUITest, HostNetworkStack) {
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(mock_,
               &ExternalTabUITestMockClient::Reply404, 1, 4)),
-          QUIT_LOOP_SOON(&loop, 300)));
+          testing::InvokeWithoutArgs(CreateFunctor(mock_,
+              &ExternalTabUITestMockClient::DestroyHostWindow))));
+
+  EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
+
   EXPECT_CALL(*mock_, OnRequestRead(1, 4, testing::Gt(0)))
-    .Times(1);
+    .Times(1)
+    .WillOnce(QUIT_LOOP_SOON(&loop, 300));
+
+  tab = mock_->CreateTabWithUrl(GURL(url));
+  loop.RunFor(2 * action_max_timeout_ms());
+}
+
+TEST_F(ExternalTabUITest, HostNetworkStackAbortRequest) {
+  scoped_refptr<TabProxy> tab;
+  TimedMessageLoopRunner loop(MessageLoop::current());
+  ASSERT_THAT(mock_, testing::NotNull());
+
+  std::string url = "http://placetogo.org";
+  const IPC::AutomationURLResponse http_200 = {"", "HTTP/0.9 200\r\n\r\n", };
+
+  testing::InSequence sequence;
+  EXPECT_CALL(*mock_, OnRequestStart(1, 2, testing::AllOf(
+          testing::Field(&IPC::AutomationURLRequest::url, StrEq(url + "/")),
+          testing::Field(&IPC::AutomationURLRequest::method, StrEq("GET")))))
+      .Times(1)
+      // We can simply do CreateFunctor(1, 2, &http_200) since we know the
+      // tab handle and request id, but using WithArgs<> is much more fancy :)
+      .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(mock_,
+          &ExternalTabUITestMockClient::ReplyStarted, &http_200))));
+
+  // Return some trivial page, that have a link to a "logo.gif" image
+  const std::string data = "<!DOCTYPE html><title>Hello";
+
+  EXPECT_CALL(*mock_, OnRequestRead(1, 2, testing::Gt(0)))
+      .Times(2)
+      .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(mock_,
+          &ExternalTabUITestMockClient::ReplyData, &data, 1, 2)))
+      .WillOnce(testing::WithArgs<0, 1>(
+          testing::InvokeWithoutArgs(CreateFunctor(mock_,
+              &ExternalTabUITestMockClient::DestroyHostWindow))));
+
+  EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
+
+  EXPECT_CALL(*mock_, OnRequestEnd(1, 2, testing::_))
+      .Times(1)
+      .WillOnce(QUIT_LOOP_SOON(&loop, 300));
 
   tab = mock_->CreateTabWithUrl(GURL(url));
   loop.RunFor(2 * action_max_timeout_ms());
