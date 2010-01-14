@@ -473,7 +473,7 @@ var chrome = chrome || {};
     }
 
     var canvas;
-    function setIconCommon(details, name, parameters) {
+    function setIconCommon(details, name, parameters, actionType) {
       var EXTENSION_ACTION_ICON_SIZE = 19;
 
       if ("iconIndex" in details) {
@@ -503,8 +503,8 @@ var chrome = chrome || {};
       } else if ("path" in details) {
         var img = new Image();
         img.onerror = function() {
-          console.error("Could not load browser action icon '" + details.path +
-                        "'.");
+          console.error("Could not load " + actionType + " icon '" +
+                        details.path + "'.");
         }
         img.onload = function() {
           var canvas = document.createElement("canvas");
@@ -529,11 +529,13 @@ var chrome = chrome || {};
     }
 
     apiFunctions["browserAction.setIcon"].handleRequest = function(details) {
-      setIconCommon(details, this.name, this.definition.parameters);
+      setIconCommon(
+          details, this.name, this.definition.parameters, "browser action");
     };
 
     apiFunctions["pageAction.setIcon"].handleRequest = function(details) {
-      setIconCommon(details, this.name, this.definition.parameters);
+      setIconCommon(
+          details, this.name, this.definition.parameters, "page action");
     };
 
     if (chrome.test) {
