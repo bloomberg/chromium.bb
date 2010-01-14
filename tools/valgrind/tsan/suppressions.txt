@@ -70,10 +70,17 @@
 }
 
 {
-  bug_28396 (libevent)
+  bug_28396 (libevent) (1)
   ThreadSanitizer:Race
   fun:detect_monotonic
   fun:event_base_new
+}
+
+{
+  bug_28396 (libevent) (2)
+  ThreadSanitizer:Race
+  fun:gettime
+  fun:event_base_loop
 }
 
 {
