@@ -3080,3 +3080,5 @@ BUG_ATWILSON WIN : storage/close-during-stress-test.html = CRASH PASS
 BUG_ATWILSON WIN LINUX : storage/transaction-error-callback.html = CRASH PASS
 BUG_ATWILSON MAC : storage/transaction-error-callback.html = TEXT PASS
 BUG_ATWILSON MAC : svg/custom/resource-invalidate-on-target-update.svg = IMAGE PASS
+
+BUG32308 : fast/frames/cached-frame-counter.html = TIMEOUT
