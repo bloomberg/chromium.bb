@@ -2427,8 +2427,10 @@ BUG15217 : fast/js/dictionary-no-cache.html = FAIL
 BUG15217 MAC : fast/js/switch-behaviour.html = FAIL
 
 // WebKit 45086:45111
-BUG15270 RELEASE : fast/js/excessive-comma-usage.html = TEXT
+BUG15270 MAC LINUX RELEASE : fast/js/excessive-comma-usage.html = TEXT
 BUG15270 DEBUG SLOW : fast/js/excessive-comma-usage.html = FAIL
+BUG15270 WIN RELEASE : fast/js/excessive-comma-usage.html = CRASH
+
 
 // Flaky for a while; also related to BUG17974
 BUG15267 WIN LINUX : transitions/cancel-transition.html = PASS FAIL
@@ -3080,5 +3082,8 @@ BUG_ATWILSON MAC WIN : svg/custom/js-repaint-rect-on-path-with-stroke.svg = IMAG
 BUG_ATWILSON  : svg/webarchive/svg-feimage-subresources.svg = IMAGE+TEXT
 BUG_ATWILSON MAC WIN : svg/W3C-SVG-1.1/filters-example-01-b.svg = IMAGE+TEXT
 
+// Errors from roll from 53207:53246
 BUG_ATWILSON WIN : storage/close-during-stress-test.html = CRASH PASS
 BUG_ATWILSON WIN : storage/transaction-error-callback.html = CRASH PASS
+BUG_ATWILSON MAC : storage/transaction-error-callback.html = TEXT PASS
+BUG_ATWILSON MAC : svg/custom/resource-invalidate-on-target-update.svg = IMAGE PASS
