@@ -43,6 +43,11 @@
 #include "xf86drm.h"
 #include "radeon_drm.h"
 
+struct radeon_cs_manager_gem {
+    struct radeon_cs_manager base;
+    uint32_t                 device_id;
+};
+
 #pragma pack(1)
 struct cs_reloc_gem {
     uint32_t    handle;
@@ -330,8 +335,11 @@ static int cs_gem_need_flush(struct radeon_cs_int *cs)
 
 static void cs_gem_print(struct radeon_cs_int *cs, FILE *file)
 {
+    struct radeon_cs_manager_gem *csm;
     unsigned int i;
 
+    csm = (struct radeon_cs_manager_gem *)cs->csm;
+    fprintf(file, "VENDORID:DEVICEID 0x%04X:0x%04X\n", 0x1002, csm->device_id);
     for (i = 0; i < cs->cdw; i++) {
         fprintf(file, "0x%08X\n", cs->packets[i]);
     }
@@ -349,18 +357,31 @@ static struct radeon_cs_funcs radeon_cs_gem_funcs = {
     cs_gem_print,
 };
 
+static int radeon_get_device_id(int fd, uint32_t *device_id)
+{
+    struct drm_radeon_info info;
+    int r;
+
+    *device_id = 0;
+    info.request = RADEON_INFO_DEVICE_ID;
+    info.value = device_id;
+    r = drmCommandWriteRead(fd, DRM_RADEON_INFO, &info,
+                            sizeof(struct drm_radeon_info));
+    return r;
+}
+
 struct radeon_cs_manager *radeon_cs_manager_gem_ctor(int fd)
 {
-    struct radeon_cs_manager *csm;
+    struct radeon_cs_manager_gem *csm;
 
-    csm = (struct radeon_cs_manager*)calloc(1,
-                                            sizeof(struct radeon_cs_manager));
+    csm = calloc(1, sizeof(struct radeon_cs_manager_gem));
     if (csm == NULL) {
         return NULL;
     }
-    csm->funcs = &radeon_cs_gem_funcs;
-    csm->fd = fd;
-    return csm;
+    csm->base.funcs = &radeon_cs_gem_funcs;
+    csm->base.fd = fd;
+    radeon_get_device_id(fd, &csm->device_id);
+    return &csm->base;
 }
 
 void radeon_cs_manager_gem_dtor(struct radeon_cs_manager *csm)
