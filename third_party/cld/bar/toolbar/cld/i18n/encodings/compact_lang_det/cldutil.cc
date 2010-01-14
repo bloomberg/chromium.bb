@@ -92,6 +92,9 @@ static const int kMaxGramCount = 16;
 // OVERSHOOTS up to 3 bytes
 // For runtime use of tables
 uint32 cld::BiHashV25(const char* word_ptr, int bytecount) {
+  if (bytecount == 0) {
+    return 0;
+  }
   const uint32* word_ptr32 = reinterpret_cast<const uint32*>(word_ptr);
   uint32 word0, word1;
   if (bytecount <= 4) {
@@ -179,6 +182,9 @@ uint32 QuadHashV25Mix(const char* word_ptr, int bytecount, uint32 prepost) {
 // UNDERSHOOTS 1 byte, OVERSHOOTS up to 3 bytes
 // For runtime use of tables
 uint32 cld::QuadHashV25(const char* word_ptr, int bytecount) {
+  if (bytecount == 0) {
+    return 0;
+  }
   uint32 prepost = 0;
   if (word_ptr[-1] == ' ') {prepost |= kPreSpaceIndicator;}
   if (word_ptr[bytecount] == ' ') {prepost |= kPostSpaceIndicator;}
@@ -190,6 +196,9 @@ uint32 cld::QuadHashV25(const char* word_ptr, int bytecount) {
 // OVERSHOOTS up to 3 bytes
 // For offline construction of tables
 uint32 cld::QuadHashV25Underscore(const char* word_ptr, int bytecount) {
+  if (bytecount == 0) {
+    return 0;
+  }
   const char* local_word_ptr = word_ptr;
   int local_bytecount = bytecount;
   uint32 prepost = 0;
@@ -328,6 +337,9 @@ uint64 OctaHash40Mix(const char* word_ptr, int bytecount, uint64 prepost) {
 // The high 8 bits are a simple sum of all bytes, shifted by 0/1/2/3 bits each
 // For runtime use of tables V3
 uint64 cld::OctaHash40(const char* word_ptr, int bytecount) {
+  if (bytecount == 0) {
+    return 0;
+  }
   uint64 prepost = 0;
   if (word_ptr[-1] == ' ') {prepost |= kPreSpaceIndicator;}
   if (word_ptr[bytecount] == ' ') {prepost |= kPostSpaceIndicator;}
@@ -343,6 +355,9 @@ uint64 cld::OctaHash40(const char* word_ptr, int bytecount) {
 // The high 8 bits are a simple sum of all bytes, shifted by 0/1/2/3 bits each
 // For offline construction of tables
 uint64 cld::OctaHash40underscore(const char* word_ptr, int bytecount) {
+  if (bytecount == 0) {
+    return 0;
+  }
   const char* local_word_ptr = word_ptr;
   int local_bytecount = bytecount;
   uint64 prepost = 0;
@@ -671,6 +686,8 @@ int cld::DoOctaScoreV3(const cld::CLDTableSummary* octagram_obj,
     // Terminate previous word or continue current word
     if (src[0] == ' ') {
       int bytecount = word_end - word_ptr;
+      if (bytecount == 0)
+        break;
       // Lookup and score this word
       uint64 wordhash40 = OctaHash40(word_ptr, bytecount);
       uint32 probs = OctaHashV3Lookup4(octagram_obj, wordhash40);
