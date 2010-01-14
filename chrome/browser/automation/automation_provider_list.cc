@@ -20,7 +20,6 @@ AutomationProviderList::~AutomationProviderList() {
   while (iter != automation_providers_.end()) {
     (*iter)->Release();
     iter = automation_providers_.erase(iter);
-    g_browser_process->ReleaseModule();
   }
   instance_ = NULL;
 }
@@ -28,7 +27,6 @@ AutomationProviderList::~AutomationProviderList() {
 bool AutomationProviderList::AddProvider(AutomationProvider* provider) {
   provider->AddRef();
   automation_providers_.push_back(provider);
-  g_browser_process->AddRefModule();
   return true;
 }
 
@@ -38,7 +36,6 @@ bool AutomationProviderList::RemoveProvider(AutomationProvider* provider) {
   if (remove_provider != automation_providers_.end()) {
     (*remove_provider)->Release();
     automation_providers_.erase(remove_provider);
-    g_browser_process->ReleaseModule();
     if (automation_providers_.empty())
       OnLastProviderRemoved();
     return true;

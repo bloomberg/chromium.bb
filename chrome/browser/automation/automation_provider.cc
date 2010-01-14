@@ -140,6 +140,7 @@ AutomationProvider::AutomationProvider(Profile* profile)
   new_tab_ui_load_observer_.reset(new NewTabUILoadObserver(this));
   dom_operation_observer_.reset(new DomOperationNotificationObserver(this));
   metric_event_duration_observer_.reset(new MetricEventDurationObserver());
+  g_browser_process->AddRefModule();
 }
 
 AutomationProvider::~AutomationProvider() {
@@ -152,6 +153,11 @@ AutomationProvider::~AutomationProvider() {
   NotificationObserver* observer;
   while ((observer = it.GetNext()) != NULL)
     delete observer;
+
+  if (channel_.get()) {
+    channel_->Close();
+  }
+  g_browser_process->ReleaseModule();
 }
 
 void AutomationProvider::ConnectToChannel(const std::string& channel_id) {
