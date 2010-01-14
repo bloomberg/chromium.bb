@@ -307,7 +307,6 @@ void TestShell::PlatformShutdown() {
     delete g_ahem_path;
     g_ahem_path = NULL;
   }
-  FcFini();
 }
 
 void TestShell::PlatformCleanUp() {
