@@ -4,12 +4,16 @@
 
 #import "chrome/browser/cocoa/bookmark_tree_controller.h"
 
-#include "base/nsimage_cache_mac.h"
-#include "base/sys_string_conversions.h"
+#include "app/l10n_util_mac.h"
+#include "base/logging.h"
+#import "chrome/browser/cocoa/bookmark_item.h"
 #import "chrome/browser/cocoa/bookmark_manager_controller.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "googleurl/src/gurl.h"
-#import "third_party/apple/ImageAndTextCell.h"
+#include "grit/generated_resources.h"
+
+// Outline-view column identifiers.
+static NSString* const kTitleColIdent = @"title";
+static NSString* const kURLColIdent = @"url";
+static NSString* const kFolderColIdent = @"folder";
 
 
 @implementation BookmarkTreeController
@@ -26,11 +30,11 @@
   [self registerDragTypes];
 }
 
-- (id)group {
+- (BookmarkItem*)group {
   return group_;
 }
 
-- (void)setGroup:(id)group {
+- (void)setGroup:(BookmarkItem*)group {
   if (group != group_) {
     group_ = group;
 
@@ -45,7 +49,7 @@
 }
 
 // Updates the tree after the data model has changed.
-- (void)itemChanged:(id)nodeItem childrenChanged:(BOOL)childrenChanged {
+- (void)itemChanged:(BookmarkItem*)nodeItem childrenChanged:(BOOL)childrenChanged {
   if (nodeItem == group_)
     nodeItem = nil;
   [outline_ reloadItem:nodeItem reloadChildren:childrenChanged];
@@ -94,14 +98,14 @@
 
 // Responds to a double-click by opening the selected URL(s).
 - (IBAction)openItems:(id)sender {
-  for (id item in [self actionItems]) {
+  for (BookmarkItem* item in [self actionItems]) {
     if ([outline_ isExpandable:item]) {
       if ([outline_ isItemExpanded:item])
         [outline_ collapseItem:item];
       else
         [outline_ expandItem:item];
     } else {
-      [manager_ openBookmarkItem:item];
+      [item open];
     }
   }
 }
@@ -109,25 +113,25 @@
 // The Delete command (also bound to the delete key.)
 - (IBAction)delete:(id)sender {
   NSArray* items = [self actionItems];
-  if ([items count] == 0) {
-    NSBeep();
-    return;
-  }
   // Iterate backwards so that any selected children are deleted before
-  // selected parents (opposite order would cause double-free!) and so each
-  // deletion doesn't invalidate the remaining row numbers.
-  for (NSInteger i = [items count] - 1; i >= 0; i--) {
-    const BookmarkNode* node = [manager_ nodeFromItem:
-        [items objectAtIndex:i]];
-    const BookmarkNode* parent = node->GetParent();
-    [manager_ bookmarkModel]->Remove(parent, parent->IndexOfChild(node));
+  // selected parents (opposite order could cause double-free!)
+  bool any = false;
+  if ([items count]) {
+    for (NSInteger i = [items count] - 1; i >= 0; i--) {
+      BookmarkItem* item = [items objectAtIndex:i];
+      if ([[item parent] removeChild:item])
+        any = true;
+    }
   }
-
-  [outline_ reloadData];
-  [outline_ deselectAll:self];
+  if (any) {
+    [outline_ reloadData];
+    [outline_ deselectAll:self];
+  } else {
+    NSBeep();
+  }
 }
 
-- (void)editTitleOfItem:(id)item {
+- (void)editTitleOfItem:(BookmarkItem*)item {
   int row = [outline_ rowForItem:item];
   DCHECK(row >= 0);
   [outline_ editColumn:[outline_ columnWithIdentifier:@"title"]
@@ -145,27 +149,29 @@
 }
 
 - (IBAction)newFolder:(id)sender {
-  const BookmarkNode* targetNode;
-  NSInteger childIndex;
-  NSArray* items = [self actionItems];
-  if ([items count] > 0) {
+  BookmarkItem* parent;
+  int index;
+  NSArray* selItems = [self actionItems];
+  if ([selItems count] > 0) {
     // Insert at selected/clicked row.
-    const BookmarkNode* selNode = [self nodeFromItem:
-                                   [items objectAtIndex:0]];
-    targetNode = selNode->GetParent();
-    childIndex = targetNode->IndexOfChild(selNode);
+    BookmarkItem* sel = [selItems objectAtIndex:0];
+    parent = [sel parent];
+    index = [parent indexOfChild:sel];
   } else {
     // ...or at very end if there's no selection:
-    targetNode = [self nodeFromItem:group_];
-    childIndex = targetNode->GetChildCount();
+    parent = group_;
+    index = [group_ numberOfChildren];
+  }
+  if (!parent) {
+      NSBeep();
+    return;
   }
 
-  const BookmarkNode* folder = [manager_ bookmarkModel]->
-      AddGroup(targetNode, childIndex, L"");
-  id folderItem = [manager_ itemFromNode:folder];
-  [outline_ expandItem:folderItem];
-  [self setSelectedItems:[NSArray arrayWithObject:folderItem]];
-  [self editTitleOfItem:folderItem];
+  // Create the folder, then select it and make the title editable:
+  BookmarkItem* folder = [parent addFolderWithTitle:@"" atIndex:index];
+  [outline_ expandItem:folder];
+  [self setSelectedItems:[NSArray arrayWithObject:folder]];
+  [self editTitleOfItem:folder];
 }
 
 - (NSMenu*)menu {
@@ -176,28 +182,39 @@
 }
 
 // Selectively enables/disables menu commands.
-- (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
-  SEL action = [menuItem action];
-  if (action == @selector(cut:) || action == @selector(copy:) ||
-      action == @selector(delete:)) {
-    return [[self actionItems] count] > 0;
-  } else if (action == @selector(openItems:)) {
-    NSArray* items = [self actionItems];
-    if ([items count] == 0)
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  SEL action = [item action];
+  NSArray* sel = [self actionItems];
+  NSUInteger selCount = [sel count];
+  if (action == @selector(copy:)) {
+    return selCount > 0;
+
+  } else if (action == @selector(cut:) || action == @selector(delete:)) {
+    if (selCount == 0)
       return NO;
-    // Disable if folder selected (if only because title says "Open In Tab".)
-    for (id item in items) {
-      const BookmarkNode* node = [manager_ nodeFromItem:item];
-      if (!node->is_url())
+    for(BookmarkItem* item in sel) {
+      if ([item isFixed])
         return NO;
     }
     return YES;
-  } else if (action == @selector(editTitle:)) {
-    return [[self actionItems] count] == 1;
+
   } else if (action == @selector(paste:)) {
-    return [[NSPasteboard generalPasteboard]
-        availableTypeFromArray:[outline_ registeredDraggedTypes]]
-        != nil;
+    return [[NSPasteboard generalPasteboard] availableTypeFromArray:
+            [outline_ registeredDraggedTypes]] != nil;
+
+  } else if (action == @selector(openItems:)) {
+    if (selCount == 0)
+      return NO;
+    // Disable if folder selected (if only because title says "Open In Tab".)
+    for (BookmarkItem* item in sel) {
+      if (![item URLString])
+        return NO;
+    }
+    return YES;
+
+  } else if (action == @selector(editTitle:)) {
+    return selCount == 1 && ![[sel lastObject] isFixed];
+
   } else {
     return YES;
   }
@@ -208,61 +225,38 @@
 #pragma mark DATA SOURCE:
 
 
-// The NSOutlineView data source methods are called with a nil item to
-// represent the root of the tree; this compensates for that.
-- (const BookmarkNode*)nodeFromItem:(id)item {
-  return [manager_ nodeFromItem:(item ? item : group_)];
-}
-
-- (id)itemFromNode:(const BookmarkNode*)node {
-  id item = [manager_ itemFromNode:node];
-  return item == group_ ? nil : item;
-}
-
-// Returns the children of an item (NSOutlineView data source)
-- (NSArray*)childrenOfItem:(id)item {
-  const BookmarkNode* node = [self nodeFromItem:item];
-  if (!node) {
-    return nil;
-  }
-  int nChildren = node->GetChildCount();
-  NSMutableArray* children = [NSMutableArray arrayWithCapacity:nChildren];
-  for (int i = 0; i < nChildren; i++) {
-    [children addObject:[self itemFromNode:node->GetChild(i)]];
-  }
-  return children;
-}
-
 // Returns the number of children of an item (NSOutlineView data source)
 - (NSInteger)  outlineView:(NSOutlineView*)outlineView
     numberOfChildrenOfItem:(id)item {
-  const BookmarkNode* node = [self nodeFromItem:item];
-  return node ? node->GetChildCount() : 0;
+  item = (item ? item : group_);
+  return [item numberOfChildren];
 }
 
 // Returns a child of an item (NSOutlineView data source)
 - (id)outlineView:(NSOutlineView*)outlineView
             child:(NSInteger)index
            ofItem:(id)item {
-  const BookmarkNode* node = [self nodeFromItem:item];
-  return [self itemFromNode:node->GetChild(index)];
+  item = (item ? item : group_);
+  return [item childAtIndex:index];
 }
 
-// Returns whether an item is a folder (NSOutlineView data source)
+// Returns whether an item is expandable (NSOutlineView data source)
 - (BOOL)outlineView:(NSOutlineView*)outlineView isItemExpandable:(id)item {
-  return [self nodeFromItem:item]->is_folder();
+  return [item isFolder];
 }
 
 // Returns the value to display in a cell (NSOutlineView data source)
 - (id)            outlineView:(NSOutlineView*)outlineView
     objectValueForTableColumn:(NSTableColumn*)tableColumn
                        byItem:(id)item {
-  const BookmarkNode* node = [self nodeFromItem:item];
+  item = (item ? item : group_);
   NSString* ident = [tableColumn identifier];
-  if ([ident isEqualToString:@"title"]) {
-    return base::SysWideToNSString(node->GetTitle());
-  } else if ([ident isEqualToString:@"url"]) {
-    return base::SysUTF8ToNSString(node->GetURL().possibly_invalid_spec());
+  if ([ident isEqualToString:kTitleColIdent]) {
+    return [item title];
+  } else if ([ident isEqualToString:kURLColIdent]) {
+    return [item URLString];
+  } else if ([ident isEqualToString:kFolderColIdent]) {
+    return [item folderPath];
   } else {
     NOTREACHED();
     return nil;
@@ -275,17 +269,12 @@
      forTableColumn:(NSTableColumn*)tableColumn
              byItem:(id)item
 {
-  const BookmarkNode* node = [self nodeFromItem:item];
+  item = (item ? item : group_);
   NSString* ident = [tableColumn identifier];
-  if ([ident isEqualToString:@"title"]) {
-    [manager_ bookmarkModel]->SetTitle(node, base::SysNSStringToWide(value));
-  } else if ([ident isEqualToString:@"url"]) {
-    GURL url(base::SysNSStringToUTF8(value));
-    if (url != node->GetURL()) {
-      //TODO(snej): Uncomment this once SetURL exists (bug 10603).
-      //  ...or work around it by removing node and adding new one.
-      //[manager_ bookmarkModel]->SetURL(node, url);
-    }
+  if ([ident isEqualToString:kTitleColIdent]) {
+    [item setTitle:value];
+  } else if ([ident isEqualToString:kURLColIdent]) {
+    [item setURLString:value];
   }
 }
 
@@ -295,7 +284,7 @@
                      item:(id)item {
   //TODO(snej): Make URL column editable once setter method exists (bug 10603).
   NSString* ident = [tableColumn identifier];
-  return [ident isEqualToString:@"title"];
+  return [ident isEqualToString:kTitleColIdent] && ![item isFixed];
 }
 
 // Sets a cell's icon before it's drawn (NSOutlineView data source)
@@ -304,9 +293,18 @@
      forTableColumn:(NSTableColumn*)tableColumn
                item:(id)item
 {
-  if ([[tableColumn identifier] isEqualToString:@"title"]) {
-      [(ImageAndTextCell*)cell setImage:[manager_ iconForItem:item]];
+  // Use the bookmark/folder's icon.
+  if ([[tableColumn identifier] isEqualToString:kTitleColIdent]) {
+    item = (item ? item : group_);
+    [cell setImage:[item icon]];
   }
+
+  // Show special folders (Bookmarks Bar, Others, Recents, Search) in bold.
+  static NSFont* sBoldFont = [[NSFont boldSystemFontOfSize:
+      [NSFont smallSystemFontSize]] retain];
+  static NSFont* sPlainFont = [[NSFont systemFontOfSize:
+      [NSFont smallSystemFontSize]] retain];
+  [cell setFont:[item isFixed] ? sBoldFont : sPlainFont];
 }
 
 @end
@@ -314,24 +312,28 @@
 
 @implementation BookmarksOutlineView
 
+- (BookmarkTreeController*)bookmarkController {
+  return (BookmarkTreeController*)[self delegate];
+}
+
 - (IBAction)cut:(id)sender {
-  [(BookmarkTreeController*)[self delegate] cut:sender];
+  [[self bookmarkController] cut:sender];
 }
 
 - (IBAction)copy:(id)sender {
-  [(BookmarkTreeController*)[self delegate] copy:sender];
+  [[self bookmarkController] copy:sender];
 }
 
 - (IBAction)paste:(id)sender {
-  [(BookmarkTreeController*)[self delegate] paste:sender];
+  [[self bookmarkController] paste:sender];
 }
 
 - (IBAction)delete:(id)sender {
-  [(BookmarkTreeController*)[self delegate] delete:sender];
+  [[self bookmarkController] delete:sender];
 }
 
-- (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
-  return [(BookmarkTreeController*)[self delegate] validateMenuItem:menuItem];
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  return [[self bookmarkController] validateUserInterfaceItem:item];
 }
 
 - (void)keyDown:(NSEvent*)event {
@@ -344,7 +346,7 @@
         return;
       case NSCarriageReturnCharacter:
       case NSEnterCharacter:
-        [(BookmarkTreeController*)[self delegate] editTitle:self];
+        [[self bookmarkController] editTitle:self];
         return;
       case NSTabCharacter:
         // For some reason NSTableView responds to the tab key by editing
@@ -357,7 +359,7 @@
 }
 
 - (NSMenu*)menu {
-  return [(BookmarkTreeController*)[self delegate] menu];
+  return [[self bookmarkController] menu];
 }
 
 @end

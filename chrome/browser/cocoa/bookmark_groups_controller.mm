@@ -4,8 +4,9 @@
 
 #import "chrome/browser/cocoa/bookmark_groups_controller.h"
 
+#include "base/logging.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#import "chrome/browser/cocoa/bookmark_item.h"
 #import "chrome/browser/cocoa/bookmark_manager_controller.h"
 #import "chrome/browser/cocoa/bookmark_tree_controller.h"
 #import "third_party/apple/ImageAndTextCell.h"
@@ -35,14 +36,12 @@
 // Completely reloads the contents of the table view.
 - (void)reload {
   NSMutableArray* groups = [NSMutableArray array];
-  BookmarkModel* bookmarkModel = [manager_ bookmarkModel];
-  const BookmarkNode* node = bookmarkModel->GetBookmarkBarNode();
-  [groups addObject:[manager_ itemFromNode:node]];
-  node = bookmarkModel->other_node();
-  for (int i = 0; i < node->GetChildCount(); i++) {
-    const BookmarkNode* child = node->GetChild(i);
-    if (child->is_folder()) {
-      [groups addObject:[manager_ itemFromNode:child]];
+  [groups addObject:[manager_ bookmarkBarItem]];
+  BookmarkItem* other = [manager_ otherBookmarksItem];
+  for (NSUInteger i = 0; i < [other numberOfChildren]; i++) {
+    BookmarkItem* child = [other childAtIndex:i];
+    if ([child isFolder]) {
+      [groups addObject:child];
     }
   }
   //TODO(snej): Append Recents and Search groups
@@ -55,27 +54,26 @@
 }
 
 // Responds to changes in the bookmark data model.
-- (void)nodeChanged:(const BookmarkNode*)node
+- (void)itemChanged:(BookmarkItem*)item
     childrenChanged:(BOOL)childrenChanged {
-  if (node == [manager_ bookmarkModel]->other_node()) {
+  if (item == [manager_ otherBookmarksItem]) {
     [self reload];
   }
 }
 
 // Returns the selected BookmarkNode.
-- (const BookmarkNode*)selectedNode {
+- (BookmarkItem*)selectedNode {
   NSInteger row = [groupsTable_ selectedRow];
   if (row < 0)
     return NULL;
-  id item = [groups_ objectAtIndex:row];
-  return [manager_ nodeFromItem:item];
+  return [groups_ objectAtIndex:row];
 }
 
-- (id)selectedGroup {
+- (BookmarkItem*)selectedGroup {
   return selectedGroup_;
 }
 
-- (void)setSelectedGroup:(id)group {
+- (void)setSelectedGroup:(BookmarkItem*)group {
   [selectedGroup_ autorelease];
   selectedGroup_ = [group retain];
 
@@ -90,12 +88,10 @@
 
 // Updates the |selectedGroup| property based on the table view's selection.
 - (void)syncSelection {
-  id selGroup = nil;
+  BookmarkItem* selGroup = nil;
   NSInteger row = [groupsTable_ selectedRow];
   if (row >= 0) {
     selGroup = [groups_ objectAtIndex:row];
-    if (![selGroup isKindOfClass:[NSValue class]])
-      selGroup = nil;
   }
   if (selGroup != [self selectedGroup])
       [self setSelectedGroup:selGroup];
@@ -114,7 +110,7 @@
 }
 
 // Returns the selected/right-clicked item, or nil if none.
-- (id)actionItem {
+- (BookmarkItem*)actionItem {
   int row = [self actionRow];
   return row >= 0 ? [groups_ objectAtIndex:row] : nil;
 }
@@ -131,14 +127,12 @@
 
 // The Delete command; also invoked by the delete key.
 - (IBAction)delete:(id)sender {
-  id item = [self actionItem];
+  BookmarkItem* item = [self actionItem];
   if (!item) {
     NSBeep();
     return;
   }
-  const BookmarkNode* node = [manager_ nodeFromItem:item];
-  const BookmarkNode* parent = node->GetParent();
-  [manager_ bookmarkModel]->Remove(parent, parent->IndexOfChild(node));
+  [[item parent] removeChild: item];
 }
 
 // Makes the title of the selected row editable.
@@ -162,27 +156,24 @@
 
 // Creates a new folder.
 - (IBAction)newFolder:(id)sender {
-  const BookmarkNode* targetNode;
+  BookmarkItem* targetNode;
   NSInteger childIndex;
-  id item = [self actionItem];
+  BookmarkItem* item = [self actionItem];
   if (item) {
     // Insert at selected/clicked row.
-    const BookmarkNode* node = [manager_ nodeFromItem:item];
-    targetNode = node->GetParent();
-    childIndex = targetNode->IndexOfChild(node);
+    targetNode = [item parent];
+    childIndex = [targetNode indexOfChild: item];
   } else {
     // ...or at very end if there's no selection:
-    targetNode = [manager_ bookmarkModel]->other_node();
-    childIndex = targetNode->GetChildCount();
+    targetNode = [manager_ otherBookmarksItem];
+    childIndex = [targetNode numberOfChildren];
   }
 
-  const BookmarkNode* folder;
-  folder = [manager_ bookmarkModel]->AddGroup(targetNode, childIndex, L"");
+  BookmarkItem* folder = [targetNode addFolderWithTitle: @"" atIndex: childIndex];
 
   // Edit the title:
-  id folderItem = [manager_ itemFromNode:folder];
-  [self setSelectedGroup:folderItem];
-  int row = [groups_ indexOfObject:folderItem];
+  [self setSelectedGroup:folder];
+  int row = [groups_ indexOfObject:folder];
   DCHECK(row!=NSNotFound);
   [groupsTable_ editColumn:0
                        row:row
@@ -222,8 +213,8 @@
 - (id)              tableView:(NSTableView*)tableView
     objectValueForTableColumn:(NSTableColumn*)tableColumn
                           row:(NSInteger)row {
-  id item = [groups_ objectAtIndex:row];
-  return base::SysWideToNSString([manager_ nodeFromItem:item]->GetTitle());
+  BookmarkItem* item = [groups_ objectAtIndex:row];
+  return [item title];
 }
 
 - (void)tableView:(NSTableView*)tableView
@@ -231,18 +222,15 @@
    forTableColumn:(NSTableColumn*)tableColumn
               row:(NSInteger)row {
 
-  id item = [groups_ objectAtIndex:row];
-  const BookmarkNode* node = [manager_ nodeFromItem:item];
-  [manager_ bookmarkModel]->SetTitle(node, base::SysNSStringToWide(value));
+  BookmarkItem* item = [groups_ objectAtIndex:row];
+  [item setTitle:value];
 }
 
 - (BOOL)        tableView:(NSTableView*)tableView
     shouldEditTableColumn:(NSTableColumn*)tableColumn
                       row:(NSInteger)row {
-  id item = [groups_ objectAtIndex:row];
-  const BookmarkNode* node = [manager_ nodeFromItem:item];
-  // Prevent rename of top-level nodes like 'bookmarks bar'.
-  return node->GetParent() && node->GetParent()->GetParent();
+  BookmarkItem* item = [groups_ objectAtIndex:row];
+  return ![item isFixed];
 }
 
 // Sets a table cell's icon before it's drawn (NSTableView delegate).
@@ -250,8 +238,8 @@
   willDisplayCell:(id)cell
    forTableColumn:(NSTableColumn*)tableColumn
               row:(NSInteger)row {
-  id item = [groups_ objectAtIndex:row];
-  [(ImageAndTextCell*)cell setImage:[manager_ iconForItem:item]];
+  BookmarkItem* item = [groups_ objectAtIndex:row];
+  [(ImageAndTextCell*)cell setImage:[item icon]];
 }
 
 @end

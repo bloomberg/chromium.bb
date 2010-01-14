@@ -366,6 +366,8 @@
         'browser/cocoa/bookmark_editor_controller.mm',
         'browser/cocoa/bookmark_groups_controller.mm',
         'browser/cocoa/bookmark_groups_controller.h',
+        'browser/cocoa/bookmark_item.h',
+        'browser/cocoa/bookmark_item.mm',
         'browser/cocoa/bookmark_manager_controller.h',
         'browser/cocoa/bookmark_manager_controller.mm',
         'browser/cocoa/bookmark_menu.h',

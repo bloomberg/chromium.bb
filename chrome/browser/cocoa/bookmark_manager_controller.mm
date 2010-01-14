@@ -10,16 +10,14 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_window.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #import "chrome/browser/cocoa/bookmark_groups_controller.h"
+#import "chrome/browser/cocoa/bookmark_item.h"
 #import "chrome/browser/cocoa/bookmark_tree_controller.h"
 #include "chrome/browser/profile.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/skia_utils_mac.h"
 
 
 // There's at most one BookmarkManagerController at a time. This points to it.
@@ -88,6 +86,8 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
 @implementation BookmarkManagerController
 
 
+@synthesize profile = profile_;
+
 // Private instance initialization method.
 - (id)initWithProfile:(Profile*)profile {
   // Use initWithWindowNibPath:: instead of initWithWindowNibName: so we
@@ -98,8 +98,8 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
   self = [super initWithWindowNibPath:nibPath owner:self];
   if (self != nil) {
     profile_ = profile;
-    bridge_ = new BookmarkManagerBridge(self);
-    profile_->GetBookmarkModel()->AddObserver(bridge_);
+    bridge_.reset(new BookmarkManagerBridge(self));
+    profile_->GetBookmarkModel()->AddObserver(bridge_.get());
 
     // Initialize some cached icons:
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -113,10 +113,8 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
   if (self == sInstance) {
     sInstance = nil;
   }
-  if (bridge_) {
-    profile_->GetBookmarkModel()->RemoveObserver(bridge_);
-    delete bridge_;
-  }
+  if (bridge_.get())
+    profile_->GetBookmarkModel()->RemoveObserver(bridge_.get());
   [super dealloc];
 }
 
@@ -166,12 +164,9 @@ static void addItem(NSMenu* menu, int command, SEL action) {
 }
 
 // Maps a BookmarkNode to a table/outline row item placeholder.
-- (const BookmarkNode*)nodeFromItem:(id)item {
-  return (const BookmarkNode*)[item pointerValue];
-}
-
-// Maps a table/outline row item placeholder back to a BookmarkNode.
-- (id)itemFromNode:(const BookmarkNode*)node {
+- (BookmarkItem*)itemFromNode:(const BookmarkNode*)node {
+  if (!node)
+    return nil;
   if (!nodeMap_) {
     nodeMap_.reset([[NSMapTable alloc]
         initWithKeyOptions:NSPointerFunctionsOpaqueMemory |
@@ -179,12 +174,21 @@ static void addItem(NSMenu* menu, int command, SEL action) {
               valueOptions:NSPointerFunctionsStrongMemory
                   capacity:500]);
   }
-  NSValue* item = (NSValue*)NSMapGet(nodeMap_, node);
+  BookmarkItem* item = (BookmarkItem*)NSMapGet(nodeMap_, node);
   if (!item) {
-    item = [NSValue valueWithPointer:node];
+    item = [[BookmarkItem alloc] initWithBookmarkNode:node manager:self];
     NSMapInsertKnownAbsent(nodeMap_, node, item);
+    [item release];
   }
   return item;
+}
+
+- (BookmarkItem*)bookmarkBarItem {
+  return [self itemFromNode:[self bookmarkModel]->GetBookmarkBarNode()];
+}
+
+- (BookmarkItem*)otherBookmarksItem {
+  return [self itemFromNode:[self bookmarkModel]->other_node()];
 }
 
 // Removes a BookmarkNode from the node<->item mapping table.
@@ -196,31 +200,21 @@ static void addItem(NSMenu* menu, int command, SEL action) {
 }
 
 // Called when the bookmark model changes; forwards to the sub-controllers.
-- (void)nodeChanged:(const BookmarkNode*)node
+- (void)itemChanged:(BookmarkItem*)item
     childrenChanged:(BOOL)childrenChanged {
-  [groupsController_ nodeChanged:node childrenChanged:childrenChanged];
-  // TreeController only cares about nodes we have items for, so don't bother
-  // creating a new item if the node's never been seen:
-  id item = (NSValue*)NSMapGet(nodeMap_, node);
   if (item) {
+    [groupsController_ itemChanged:item childrenChanged:childrenChanged];
     [treeController_ itemChanged:item childrenChanged:childrenChanged];
   }
 }
 
-
-// Returns the icon (fav- or folder) for a table/outline item.
-- (NSImage*)iconForItem:(id)item {
-    const BookmarkNode* node = [self nodeFromItem:item];
-  if (node->is_folder()) {
-    return folderIcon_;
-  } else if (node->is_url()) {
-    const BookmarkNode* node = [self nodeFromItem:item];
-    const SkBitmap& skIcon = [self bookmarkModel]->GetFavIcon(node);
-    if (!skIcon.isNull()) {
-      return gfx::SkBitmapToNSImage(skIcon);
-    }
+// Called when the bookmark model changes; forwards to the sub-controllers.
+- (void)nodeChanged:(const BookmarkNode*)node
+    childrenChanged:(BOOL)childrenChanged {
+  BookmarkItem* item = (BookmarkItem*)NSMapGet(nodeMap_, node);
+  if (item) {
+    [self itemChanged:item childrenChanged:childrenChanged];
   }
-  return defaultFavIcon_;
 }
 
 
@@ -257,25 +251,6 @@ static void addItem(NSMenu* menu, int command, SEL action) {
 // Called when the user types into the search field.
 - (IBAction)searchFieldChanged:(id)sender {
   //TODO(snej): Implement this
-}
-
-
-// Open a bookmark, by having Chrome open a tab on its URL.
-- (void)openBookmarkItem:(id)item {
-  const BookmarkNode* node = [self nodeFromItem:item];
-  DCHECK(node);
-  if (!node->is_url())
-    return;
-  GURL url = node->GetURL();
-
-  Browser* browser = BrowserList::GetLastActive();
-  // if no browser window exists then create one with no tabs to be filled in
-  if (!browser) {
-    browser = Browser::Create(profile_);
-    browser->window()->Show();
-  }
-  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB,
-                   PageTransition::AUTO_BOOKMARK);
 }
 
 @end

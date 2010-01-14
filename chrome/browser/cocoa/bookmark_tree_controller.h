@@ -5,9 +5,8 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
+@class BookmarkItem;
 @class BookmarkManagerController;
-class BookmarkModel;
-class BookmarkNode;
 
 
 // Controller for the bookmark tree view (the right pane).
@@ -15,29 +14,22 @@ class BookmarkNode;
  @private
   IBOutlet NSOutlineView* outline_;
   IBOutlet BookmarkManagerController* manager_;
-  id group_;
-  std::vector<const BookmarkNode*> draggedNodes_;
+  BookmarkItem* group_;
 }
 
 // The top-level bookmark folder used as the root of the outline's tree.
 // Observable, bindable.
-@property (assign) id group;
+@property (assign) BookmarkItem* group;
+// Controls whether leaf bookmarks or just folders are shown.
 // The currently selected item(s) in the outline. (Not observable.)
 @property (retain) NSArray* selectedItems;
 
 // Action for the Delete command; also invoked by the delete key.
 - (IBAction)delete:(id)sender;
 
-// Maps BookmarkNodes to NSOutlineView items. Equivalent to the method on
-// BookmarkManagerController except that it maps the root node to nil.
-- (id)itemFromNode:(const BookmarkNode*)node;
-
-// Maps NSOutlineView items back to BookmarkNodes. Equivalent to the method on
-// BookmarkManagerController except that it maps nil back to the root node.
-- (const BookmarkNode*)nodeFromItem:(id)item;
-
 // Called by the BookmarkManagerController to notify the data model's changed.
-- (void)itemChanged:(id)nodeItem childrenChanged:(BOOL)childrenChanged;
+- (void)itemChanged:(BookmarkItem*)nodeItem
+    childrenChanged:(BOOL)childrenChanged;
 
 @end
 
@@ -56,12 +48,13 @@ class BookmarkNode;
 // Exposed only for unit tests.
 @interface BookmarkTreeController (UnitTesting)
 @property (readonly) NSOutlineView* outline;
+- (NSArray*)readPropertyListFromPasteboard:(NSPasteboard*)pb;
 - (BOOL)copyToPasteboard:(NSPasteboard*)pb;
 - (BOOL)pasteFromPasteboard:(NSPasteboard*)pb;
-- (const BookmarkNode*)nodeForDropOnItem:(id)item
-                           proposedIndex:(NSInteger*)childIndex;
-- (void)moveNodes:(std::vector<const BookmarkNode*>)nodes
-         toFolder:(const BookmarkNode*)dstParent
+- (BookmarkItem*)itemForDropOnItem:(BookmarkItem*)item
+                     proposedIndex:(NSInteger*)childIndex;
+- (void)moveItems:(NSArray*)items
+         toFolder:(BookmarkItem*)dstParent
           atIndex:(int)dstIndex;
 @end
 

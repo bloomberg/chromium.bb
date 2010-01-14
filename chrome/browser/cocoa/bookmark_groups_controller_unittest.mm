@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_groups_controller.h"
+#import "chrome/browser/cocoa/bookmark_item.h"
 #import "chrome/browser/cocoa/bookmark_manager_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
@@ -18,8 +18,6 @@ class BookmarkGroupsControllerTest : public CocoaTest {
     CocoaTest::SetUp();
     manager_ = [BookmarkManagerController showBookmarkManager:
                    browser_test_helper_.profile()];
-    model_ = [manager_ bookmarkModel];
-    ASSERT_TRUE(model_);
     ASSERT_TRUE(manager_);
     controller_ = [manager_ groupsController];
     ASSERT_TRUE(controller_);
@@ -33,7 +31,6 @@ class BookmarkGroupsControllerTest : public CocoaTest {
   BrowserTestHelper browser_test_helper_;
   BookmarkManagerController* manager_;
   BookmarkGroupsController* controller_;
-  BookmarkModel* model_;
 };
 
 TEST_F(BookmarkGroupsControllerTest, Model) {
@@ -41,22 +38,21 @@ TEST_F(BookmarkGroupsControllerTest, Model) {
   ASSERT_TRUE(groups);
   // TODO(snej): Update this next assertion after I add Search and Recents.
   ASSERT_EQ(1U, [groups count]);
-  id barItem = [groups objectAtIndex:0];
-  const BookmarkNode* barNode = model_->GetBookmarkBarNode();
-  EXPECT_EQ(barNode, [manager_ nodeFromItem:barItem]);
+  BookmarkItem* barItem = [groups objectAtIndex:0];
+  EXPECT_EQ([manager_ bookmarkBarItem], barItem);
 
   // Now add an item to Others:
-  const BookmarkNode* otherNode = model_->other_node();
-  const BookmarkNode* wowbagger = model_->AddGroup(otherNode, 0, L"Wowbagger");
+  BookmarkItem* other = [manager_ otherBookmarksItem];
+  BookmarkItem* wowbagger = [other addFolderWithTitle:@"Wowbagger" atIndex:0];
+  ASSERT_TRUE(wowbagger);
 
   groups = [controller_ groups];
   ASSERT_TRUE(groups);
   ASSERT_EQ(2U, [groups count]);
-  id wowbaggerItem = [groups objectAtIndex:1];
-  EXPECT_EQ(wowbagger, [manager_ nodeFromItem:wowbaggerItem]);
+  EXPECT_EQ(wowbagger, [groups objectAtIndex:1]);
 
   // Now remove it:
-  model_->Remove(otherNode, 0);
+  EXPECT_TRUE([other removeChild:wowbagger]);
 
   groups = [controller_ groups];
   ASSERT_TRUE(groups);
@@ -66,21 +62,19 @@ TEST_F(BookmarkGroupsControllerTest, Model) {
 
 TEST_F(BookmarkGroupsControllerTest, Selection) {
   // Check bookmarks bar is selected by default:
-  id bookmarksBar = [[controller_ groups] objectAtIndex:0];
+  BookmarkItem* bookmarksBar = [[controller_ groups] objectAtIndex:0];
   ASSERT_TRUE([controller_ groupsTable]);
   EXPECT_EQ(0, [[controller_ groupsTable] selectedRow]);
   EXPECT_EQ(bookmarksBar, [controller_ selectedGroup]);
 
   // Now add an item to Others:
-  const BookmarkNode* otherNode = model_->other_node();
-  const BookmarkNode* wowbagger = model_->AddGroup(otherNode, 0, L"Wowbagger");
+  BookmarkItem* other = [manager_ otherBookmarksItem];
+  BookmarkItem* wowbagger = [other addFolderWithTitle:@"Wowbagger" atIndex:0];
   ASSERT_TRUE(wowbagger);
-  id wowbaggerItem = [manager_ itemFromNode:wowbagger];
-  ASSERT_TRUE(wowbaggerItem);
 
   // Select it:
-  [controller_ setSelectedGroup:wowbaggerItem];
-  EXPECT_EQ(wowbaggerItem, [controller_ selectedGroup]);
+  [controller_ setSelectedGroup:wowbagger];
+  EXPECT_EQ(wowbagger, [controller_ selectedGroup]);
   EXPECT_EQ(1, [[controller_ groupsTable] selectedRow]);
 
   // Select bookmarks bar:

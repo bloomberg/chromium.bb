@@ -4,6 +4,7 @@
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_groups_controller.h"
+#import "chrome/browser/cocoa/bookmark_item.h"
 #import "chrome/browser/cocoa/bookmark_manager_controller.h"
 #import "chrome/browser/cocoa/bookmark_tree_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
@@ -35,27 +36,24 @@ class BookmarkTreeControllerTest : public CocoaTest {
     CocoaTest::TearDown();
   }
 
-  id SelectBar() {
-    BookmarkModel* model = [manager_ bookmarkModel];
-    id barItem = [manager_ itemFromNode:model->GetBookmarkBarNode()];
-    [[manager_ groupsController] setSelectedGroup:barItem];
-    return barItem;
+  BookmarkItem* SelectBar() {
+    BookmarkItem* bar = [manager_ bookmarkBarItem];
+    EXPECT_TRUE(bar);
+    [[manager_ groupsController] setSelectedGroup:bar];
+    return bar;
   }
 
-  id AddToBar(const std::wstring& title, const std::string& urlStr) {
-    BookmarkModel* model = [manager_ bookmarkModel];
-    const BookmarkNode* bar = model->GetBookmarkBarNode();
-    const BookmarkNode* node;
-    node = model->AddURL(bar, bar->GetChildCount(), title, GURL(urlStr));
-    return [manager_ itemFromNode:node];
+  BookmarkItem* AddToBar(NSString*title, NSString* urlStr) {
+    BookmarkItem* bar = [manager_ bookmarkBarItem];
+    return [bar addBookmarkWithTitle:title
+                                 URL:urlStr
+                             atIndex:[bar numberOfChildren]];
   }
 
-  id AddFolderToBar(const std::wstring& title) {
-    BookmarkModel* model = [manager_ bookmarkModel];
-    const BookmarkNode* bar = model->GetBookmarkBarNode();
-    const BookmarkNode* node;
-    node = model->AddGroup(bar, bar->GetChildCount(), title);
-    return [manager_ itemFromNode:node];
+  BookmarkItem* AddFolderToBar(NSString* title) {
+    BookmarkItem* bar = [manager_ bookmarkBarItem];
+    return [bar addFolderWithTitle:title
+                           atIndex:[bar numberOfChildren]];
   }
 
   BrowserTestHelper browser_test_helper_;
@@ -71,20 +69,15 @@ TEST_F(BookmarkTreeControllerTest, Model) {
   EXPECT_EQ(nil, [treeController_ group]);
 
   // Select the bookmarks bar and check that it's shown in the tree:
-  id barItem = SelectBar();
-  EXPECT_EQ(barItem, [treeController_ group]);
-
-  // Check the outline-item mapping methods:
-  const BookmarkNode* barNode = [manager_ nodeFromItem:barItem];
-  EXPECT_EQ(nil, [treeController_ itemFromNode:barNode]);
-  EXPECT_EQ(barNode, [treeController_ nodeFromItem:nil]);
+  BookmarkItem* bar = SelectBar();
+  EXPECT_EQ(bar, [treeController_ group]);
 }
 
 TEST_F(BookmarkTreeControllerTest, Selection) {
   SelectBar();
-  id test1 = AddToBar(L"Test 1", "http://example.com/test1");
-  id test2 = AddToBar(L"Test 2", "http://example.com/test2");
-  id test3 = AddToBar(L"Test 3", "http://example.com/test3");
+  BookmarkItem* test1 = AddToBar(@"Test 1", @"http://example.com/test1");
+  BookmarkItem* test2 = AddToBar(@"Test 2", @"http://example.com/test2");
+  BookmarkItem* test3 = AddToBar(@"Test 3", @"http://example.com/test3");
   EXPECT_EQ(0U, [[treeController_ selectedItems] count]);
 
   NSArray* sel = [NSArray arrayWithObject:test2];
@@ -101,54 +94,48 @@ TEST_F(BookmarkTreeControllerTest, Selection) {
   EXPECT_TRUE([sel isEqual:[treeController_ selectedItems]]);
 }
 
-TEST_F(BookmarkTreeControllerTest, MoveNodes) {
+TEST_F(BookmarkTreeControllerTest, MoveItems) {
   // Add three bookmarks and a folder.
   NSOutlineView* outline = [treeController_ outline];
   SelectBar();
-  id test1 = AddToBar(L"Test 1", "http://example.com/test1");
-  id test2 = AddToBar(L"Test 2", "http://example.com/test2");
-  id folder = AddFolderToBar(L"Folder");
-  id test3 = AddToBar(L"Test 3", "http://example.com/test3");
+  BookmarkItem* group = [treeController_ group];
+  BookmarkItem* test1 = AddToBar(@"Test 1", @"http://example.com/test1");
+  BookmarkItem* test2 = AddToBar(@"Test 2", @"http://example.com/test2");
+  BookmarkItem* folder = AddFolderToBar(@"Folder");
+  BookmarkItem* test3 = AddToBar(@"Test 3", @"http://example.com/test3");
   [outline expandItem:folder];
-
-  const BookmarkNode* groupNode = [treeController_ nodeFromItem:nil];
-  const BookmarkNode* node1 = [manager_ nodeFromItem:test1];
-  const BookmarkNode* node2 = [manager_ nodeFromItem:test2];
-  const BookmarkNode* folderNode = [manager_ nodeFromItem:folder];
-  const BookmarkNode* node3 = [manager_ nodeFromItem:test3];
 
   // Check where dropped URLs would go:
   NSInteger dropIndex = NSOutlineViewDropOnItemIndex;
-  const BookmarkNode* target = [treeController_ nodeForDropOnItem:test1
-                                                    proposedIndex:&dropIndex];
-  EXPECT_EQ(NULL, target);
+  BookmarkItem* target = [treeController_ itemForDropOnItem:test1
+                                              proposedIndex:&dropIndex];
+  EXPECT_EQ(nil, target);
   dropIndex = 0;
-  target = [treeController_ nodeForDropOnItem:test1
+  target = [treeController_ itemForDropOnItem:test1
                                 proposedIndex:&dropIndex];
-  EXPECT_EQ(groupNode, target);
+  EXPECT_EQ(group, target);
   EXPECT_EQ(1, dropIndex);
   dropIndex = 0;
-  target = [treeController_ nodeForDropOnItem:folder
+  target = [treeController_ itemForDropOnItem:folder
                                 proposedIndex:&dropIndex];
-  EXPECT_EQ(folderNode, target);
+  EXPECT_EQ(folder, target);
   EXPECT_EQ(0, dropIndex);
   dropIndex = NSOutlineViewDropOnItemIndex;
-  target = [treeController_ nodeForDropOnItem:folder
+  target = [treeController_ itemForDropOnItem:folder
                                 proposedIndex:&dropIndex];
-  EXPECT_EQ(folderNode, target);
+  EXPECT_EQ(folder, target);
   EXPECT_EQ(0, dropIndex);
 
   // Move the first and third item into the folder.
-  std::vector<const BookmarkNode*> nodes;
-  nodes.push_back(node1);
-  nodes.push_back(node3);
-  [treeController_ moveNodes:nodes toFolder:folderNode atIndex:0];
+  [treeController_ moveItems:[NSArray arrayWithObjects:test1, test3, nil]
+                    toFolder:folder
+                     atIndex:0];
 
   // Verify bookmark model hierarchy.
-  EXPECT_EQ(folderNode, node1->GetParent());
-  EXPECT_EQ(folderNode, node3->GetParent());
-  EXPECT_EQ(groupNode, folderNode->GetParent());
-  EXPECT_EQ(groupNode, node2->GetParent());
+  EXPECT_EQ(folder, [test1 parent]);
+  EXPECT_EQ(folder, [test3 parent]);
+  EXPECT_EQ(group, [folder parent]);
+  EXPECT_EQ(group, [test2 parent]);
 
   // Verify NSOutlineView hierarchy.
   EXPECT_EQ(folder, [outline parentForItem:test1]);
@@ -156,7 +143,7 @@ TEST_F(BookmarkTreeControllerTest, MoveNodes) {
   EXPECT_EQ(nil, [outline parentForItem:test2]);
   EXPECT_EQ(nil, [outline parentForItem:folder]);
 
-  // Verify the moved nodes are selected.
+  // Verify the moved items are selected.
   EXPECT_TRUE([[outline selectedRowIndexes]
     isEqual:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(2, 2)]]);
   NSArray* sel = [treeController_ selectedItems];
@@ -165,9 +152,9 @@ TEST_F(BookmarkTreeControllerTest, MoveNodes) {
 
 TEST_F(BookmarkTreeControllerTest, CopyURLs) {
   SelectBar();
-  AddToBar(L"Test 1", "http://example.com/test1");
-  AddToBar(L"Test 2", "http://example.com/test2");
-  AddToBar(L"Test 3", "http://example.com/test3");
+  AddToBar(@"Test 1", @"http://example.com/test1");
+  AddToBar(@"Test 2", @"http://example.com/test2");
+  AddToBar(@"Test 3", @"http://example.com/test3");
   [[treeController_ outline] selectAll:treeController_];
 
   ASSERT_TRUE([treeController_ copyToPasteboard:pasteboard_]);
@@ -203,23 +190,22 @@ TEST_F(BookmarkTreeControllerTest, PasteSingleURL) {
   [pasteboard_ declareTypes:[NSArray arrayWithObjects:
                                    NSURLPboardType, @"public.url-name", nil]
                       owner:nil];
-  [[NSURL URLWithString:@"http://google.com"] writeToPasteboard:pasteboard_];
+  [[NSURL URLWithString:@"http://google.com/"] writeToPasteboard:pasteboard_];
   [pasteboard_ setString:@"Gooooogle" forType:@"public.url-name"];
 
   SelectBar();
-  AddToBar(L"Test 1", "http://example.com/test1");
-  AddToBar(L"Test 2", "http://example.com/test2");
-  AddToBar(L"Test 3", "http://example.com/test3");
+  AddToBar(@"Test 1", @"http://example.com/test1");
+  AddToBar(@"Test 2", @"http://example.com/test2");
+  AddToBar(@"Test 3", @"http://example.com/test3");
 
   ASSERT_TRUE([treeController_ pasteFromPasteboard:pasteboard_]);
   EXPECT_EQ(4, [[treeController_ outline] numberOfRows]);
   EXPECT_EQ(3, [[treeController_ outline] selectedRow]);
   NSArray* sel = [treeController_ selectedItems];
   ASSERT_EQ(1U, [sel count]);
-  const BookmarkNode* node = [manager_ nodeFromItem:[sel objectAtIndex:0]];
-  ASSERT_TRUE(node);
-  EXPECT_EQ(GURL("http://google.com"), node->GetURL());
-  EXPECT_EQ(L"Gooooogle", node->GetTitle());
+  BookmarkItem* item = [sel objectAtIndex:0];
+  EXPECT_TRUE([@"http://google.com/" isEqual:[item URLString]]);
+  EXPECT_TRUE([@"Gooooogle" isEqual:[item title]]);
 }
 
 TEST_F(BookmarkTreeControllerTest, PasteMultipleURLs) {
@@ -236,26 +222,24 @@ TEST_F(BookmarkTreeControllerTest, PasteMultipleURLs) {
   [[NSURL URLWithString:@"http://example.com"] writeToPasteboard:pasteboard_];
 
   SelectBar();
-  AddToBar(L"Test 1", "http://example.com/test1");
-  id test2 = AddToBar(L"Test 2", "http://example.com/test2");
-  AddToBar(L"Test 3", "http://example.com/test3");
+  AddToBar(@"Test 1", @"http://example.com/test1");
+  BookmarkItem* test2 = AddToBar(@"Test 2", @"http://example.com/test2");
+  AddToBar(@"Test 3", @"http://example.com/test3");
   [treeController_ setSelectedItems:[NSArray arrayWithObject:test2]];
 
   ASSERT_TRUE([treeController_ pasteFromPasteboard:pasteboard_]);
   EXPECT_EQ(5, [[treeController_ outline] numberOfRows]);
   EXPECT_TRUE([[[treeController_ outline] selectedRowIndexes]
-      isEqual:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(2, 2)]]);
+      isEqual:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 2)]]);
   NSArray* sel = [treeController_ selectedItems];
   ASSERT_EQ(2U, [sel count]);
 
-  const BookmarkNode* node = [manager_ nodeFromItem:[sel objectAtIndex:0]];
-  ASSERT_TRUE(node);
-  EXPECT_EQ(GURL("http://google.com"), node->GetURL());
-  EXPECT_EQ(L"Gooooogle", node->GetTitle());
-  node = [manager_ nodeFromItem:[sel objectAtIndex:1]];
-  ASSERT_TRUE(node);
-  EXPECT_EQ(GURL("http://chromium.org"), node->GetURL());
-  EXPECT_EQ(L"Chrooooomium", node->GetTitle());
+  BookmarkItem* item = [sel objectAtIndex:0];
+  EXPECT_TRUE([@"http://google.com/" isEqual:[item URLString]]);
+  EXPECT_TRUE([@"Gooooogle" isEqual:[item title]]);
+  item = [sel objectAtIndex:1];
+  EXPECT_TRUE([@"http://chromium.org/" isEqual:[item URLString]]);
+  EXPECT_TRUE([@"Chrooooomium" isEqual:[item title]]);
 }
 
 }  // namespace

@@ -4,8 +4,10 @@
 
 #import <Cocoa/Cocoa.h>
 #include "base/scoped_nsobject.h"
+#include "base/scoped_ptr.h"
 
 @class BookmarkGroupsController;
+@class BookmarkItem;
 @class BookmarkTreeController;
 class BookmarkManagerBridge;
 class BookmarkModel;
@@ -21,7 +23,7 @@ class Profile;
   IBOutlet BookmarkTreeController* treeController_;
 
   Profile* profile_;  // weak
-  BookmarkManagerBridge* bridge_;
+  scoped_ptr<BookmarkManagerBridge> bridge_;
   scoped_nsobject<NSMapTable> nodeMap_;
   scoped_nsobject<NSImage> folderIcon_;
   scoped_nsobject<NSImage> defaultFavIcon_;
@@ -30,26 +32,21 @@ class Profile;
 // Opens the bookmark manager window, or brings it to the front if it's open.
 + (BookmarkManagerController*)showBookmarkManager:(Profile*)profile;
 
+// The user Profile.
+@property (readonly) Profile* profile;
+
 // The BookmarkModel of the manager's Profile.
 @property (readonly) BookmarkModel* bookmarkModel;
 
-// Maps C++ BookmarkNode objects to opaque Objective-C objects.
-// This allows nodes to be stored in NSArrays or NSOutlineViews.
-- (id)itemFromNode:(const BookmarkNode*)node;
+// Maps C++ BookmarkNode objects to Objective-C BookmarkItems.
+- (BookmarkItem*)itemFromNode:(const BookmarkNode*)node;
 
-// Converse of -nodeFromItem: -- maps an opaque item back to a BookmarkNode.
-- (const BookmarkNode*)nodeFromItem:(id)item;
-
-// Returns the icon to be displayed for an item representing a BookmarkNode.
-// This will be the URL's favicon, a generic page icon, or a folder icon.
-- (NSImage*)iconForItem:(id)item;
+@property (readonly) BookmarkItem* bookmarkBarItem;
+@property (readonly) BookmarkItem* otherBookmarksItem;
 
 // Returns a context menu for use with either table view pane.
 // A new instance is created every time, so the caller can customize it.
 - (NSMenu*)contextMenu;
-
-// Opens a URL bookmark in a browser tab.
-- (void)openBookmarkItem:(id)item;
 
 // Called by the toolbar search field after the user changes its text.
 - (IBAction)searchFieldChanged:(id)sender;

@@ -3,11 +3,8 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/bookmark_tree_controller.h"
-
-#include "base/sys_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#import "chrome/browser/cocoa/bookmark_manager_controller.h"
-#include "googleurl/src/gurl.h"
+#import "base/logging.h"
+#import "chrome/browser/cocoa/bookmark_item.h"
 
 
 // Safari uses this type, though it's not declared in any header.
@@ -21,6 +18,10 @@ static NSString* const WebURLsWithTitlesPboardType =
 // Used internally to identify intra-outline drags.
 static NSString* const kCustomPboardType =
     @"ChromeBookmarkTreeControllerPlaceholderType";
+
+// Remembers which items are being dragged, during a drag. Static because
+// there's by definition only one drag at a time, but multiple controllers.
+static scoped_nsobject<NSArray> sDraggedItems;
 
 
 @implementation BookmarkTreeController (Pasteboard)
@@ -36,18 +37,17 @@ static NSString* const kCustomPboardType =
   [outline_ setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
 }
 
-// Selects a range of items in a parent node.
-- (void)selectNodesInFolder:(const BookmarkNode*)parent
+// Selects a range of items in a parent item.
+- (void)selectItemsInFolder:(BookmarkItem*)parent
                   atIndexes:(NSRange)childRange {
-  DCHECK(NSMaxRange(childRange) <= (NSUInteger)parent->GetChildCount());
-  id parentItem = [self itemFromNode:parent];
-  if (parentItem != nil) {
+  DCHECK(NSMaxRange(childRange) <= (NSUInteger)[parent numberOfChildren]);
+  if (parent != group_) {
     // If parent is not the root, need to offset range by parent's index:
-    int startRow = [outline_ rowForItem:parentItem];
+    int startRow = [outline_ rowForItem:parent];
     if (startRow < 0) {
       return;
     }
-    if ([outline_ isItemExpanded:parentItem]) {
+    if ([outline_ isItemExpanded:parent]) {
       childRange.location += startRow + 1;
     } else {
       childRange.location = startRow;
@@ -63,25 +63,28 @@ static NSString* const kCustomPboardType =
 #pragma mark DRAGGING OUT AND COPYING:
 
 
-// Generates parallel arrays of URLs and titles for contents of a node.
-static void flattenNode(const BookmarkNode* node,
+// Generates parallel arrays of URLs and titles for contents of an item.
+static void flattenItem(BookmarkItem* item,
                         NSMutableArray* urlStrings,
                         NSMutableArray* titles) {
-  if (node->is_folder()) {
-    for (int i = 0; i < node->GetChildCount(); i++) {
-      flattenNode(node->GetChild(i), urlStrings, titles);
+  if ([item isFolder]) {
+    NSUInteger n = [item numberOfChildren];
+    for (NSUInteger i = 0; i < n; i++) {
+      flattenItem([item childAtIndex:i], urlStrings, titles);
     }
-  } else if (node->is_url()) {
-    [urlStrings addObject:base::SysUTF8ToNSString(
-        node->GetURL().possibly_invalid_spec())];
-    [titles addObject:base::SysWideToNSString(node->GetTitle())];
+  } else {
+    NSString* urlStr = [item URLString];
+    if (urlStr) {
+      [urlStrings addObject:urlStr];
+      [titles addObject:[item title]];
+    }
   }
 }
 
 // Writes data to the pasteboard given a list of row items.
 - (BOOL)writeItems:(NSArray*)items
       toPasteboard:(NSPasteboard*)pb
-     includeCustom:(BOOL)includeCustom {
+           canMove:(BOOL)canMove {
   if ([items count] == 0) {
     return NO;
   }
@@ -94,8 +97,8 @@ static void flattenNode(const BookmarkNode* node,
   // Add URLs and titles:
   NSMutableArray* urls = [NSMutableArray array];
   NSMutableArray* titles = [NSMutableArray array];
-  for (id item in items) {
-    flattenNode([self nodeFromItem:item], urls, titles);
+  for (BookmarkItem* item in items) {
+    flattenItem(item, urls, titles);
   }
   [pb setPropertyList:[NSArray arrayWithObjects:urls, titles, nil]
               forType:WebURLsWithTitlesPboardType];
@@ -104,13 +107,9 @@ static void flattenNode(const BookmarkNode* node,
   [pb setString:[urls componentsJoinedByString:@"\n"]
         forType:NSStringPboardType];
 
-  // Add custom type. The actual data doesn't matter since kCustomPboardType
-  // drags aren't recognized by anyone but us.
-  if (includeCustom) {
-    draggedNodes_.clear();
-    for (id item in items) {
-      draggedNodes_.push_back([self nodeFromItem:item]);
-    }
+  // If moves are allowed, remember the actual BookmarkItems in sDraggedItems,
+  // and add a special pasteboard type to signal that they're there.
+  if (canMove) {
     [pb addTypes:[NSArray arrayWithObject:kCustomPboardType] owner:self];
     [pb setData:[NSData data] forType:kCustomPboardType];
   }
@@ -124,11 +123,27 @@ static void flattenNode(const BookmarkNode* node,
   return YES;
 }
 
+// Called after the pasteboard I've written to is no longer in use.
+- (void)pasteboardChangedOwner:(NSPasteboard*)sender {
+  sDraggedItems.reset(nil);
+}
+
 // Invoked when dragging outline-view rows.
 - (BOOL)outlineView:(NSOutlineView*)outlineView
          writeItems:(NSArray*)items
        toPasteboard:(NSPasteboard*)pb {
-  [self writeItems:items toPasteboard:pb includeCustom:YES];
+  // Special items (bookmark bar, Recents...) cannot be moved.
+  BOOL canMove = YES;
+  for (BookmarkItem* item in items) {
+    if ([item isFixed]) {
+      canMove = NO;
+      break;
+    }
+  }
+
+  sDraggedItems.reset(canMove ? [items copy] : nil);
+
+  [self writeItems:items toPasteboard:pb canMove:canMove];
   return YES;
 }
 
@@ -137,7 +152,7 @@ static void flattenNode(const BookmarkNode* node,
 - (IBAction)cut:(id)sender {
   if ([self writeItems:[self selectedItems]
           toPasteboard:[NSPasteboard generalPasteboard]
-         includeCustom:NO]) {
+               canMove:NO]) {
     [self delete:self];
   } else {
     NSBeep();
@@ -154,7 +169,7 @@ static void flattenNode(const BookmarkNode* node,
 - (BOOL)copyToPasteboard:(NSPasteboard*)pb {
   return [self writeItems:[self selectedItems]
              toPasteboard:pb
-            includeCustom:NO];
+                  canMove:NO];
 }
 
 
@@ -164,8 +179,8 @@ static void flattenNode(const BookmarkNode* node,
 
 // BookmarkDictionaryListPboardType represents bookmarks as dictionaries,
 // which have the following keys.
-// Strangely, folder nodes (whose WebBookmarkType is WebBookmarkTypeLeaf) have
-// their title under 'Title', while leaf nodes have it in 'URIDictionary.title'.
+// Strangely, folder items (whose WebBookmarkType is WebBookmarkTypeLeaf) have
+// their title under 'Title', while leaf items have it in 'URIDictionary.title'.
 static const NSString* kTitleKey = @"Title";
 static const NSString* kURIDictionaryKey = @"URIDictionary";
 static const NSString* kURIDictTitleKey = @"title";
@@ -231,35 +246,42 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
   }
 }
 
+- (BOOL)isDirectDrag:(id<NSDraggingInfo>)info {
+  if (!sDraggedItems)
+    return NO;
+  if (![[[info draggingPasteboard] types] containsObject:kCustomPboardType])
+    return NO;
+  id source = [info draggingSource];
+  return [source isKindOfClass:[BookmarksOutlineView class]];
+}
 
-// Moves BookmarkNodes into a parent folder, then selects them.
-- (void)moveNodes:(std::vector<const BookmarkNode*>)nodes
-         toFolder:(const BookmarkNode*)dstParent
+// Moves BookmarkItems into a parent folder, then selects them.
+- (void)moveItems:(NSArray*)items
+         toFolder:(BookmarkItem*)dstParent
           atIndex:(int)dstIndex {
-  for (std::vector<const BookmarkNode*>::iterator it = nodes.begin();
-      it != nodes.end(); ++it) {
+  for (BookmarkItem* srcItem in items) {
     // Use an autorelease pool to clean up after the various observers that
     // get called after each individual bookmark change.
     NSAutoreleasePool* pool = [NSAutoreleasePool new];
-    const BookmarkNode* srcNode = *it;
-    const BookmarkNode* srcParent = srcNode->GetParent();
-    int srcIndex = srcParent->IndexOfChild(srcNode);
-    [manager_ bookmarkModel]->Move(srcNode, dstParent, dstIndex);
+    BookmarkItem* srcParent = [srcItem parent];
+    int srcIndex = [srcParent indexOfChild:srcItem];
+    [dstParent moveItem:srcItem toIndex:dstIndex];
     if (srcParent != dstParent || srcIndex >= dstIndex) {
       dstIndex++;
     }
     [pool drain];
   }
 
-  [self selectNodesInFolder:dstParent
-                  atIndexes:NSMakeRange(dstIndex - nodes.size(), nodes.size())];
+  NSRange selRange = {dstIndex - [items count], [items count]};
+  [self selectItemsInFolder:dstParent atIndexes:selRange];
 }
 
-// Inserts bookmarks in BookmarkDictionaryListPboardType into a folder node.
-- (void)insertPropertyList:(NSArray*)plist
-                  inFolder:(const BookmarkNode*)dstParent
+// Inserts bookmarks in BookmarkDictionaryListPboardType into a folder item.
+- (BOOL)insertPropertyList:(NSArray*)plist
+                  inFolder:(BookmarkItem*)dstParent
                    atIndex:(NSInteger)dstIndex {
-  BookmarkModel* model = [manager_ bookmarkModel];
+  if (!plist || !dstParent || dstIndex < 0)
+    return NO;
   NSInteger i = 0;
   for (NSDictionary* plistItem in plist) {
     // Use an autorelease pool to clean up after the various observers that
@@ -270,20 +292,17 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
                          objectForKey:kURIDictTitleKey];
       NSString* urlStr = [plistItem objectForKey:kURLStringKey];
       if (title && urlStr) {
-        model->AddURL(dstParent,
-                      dstIndex + i,
-                      base::SysNSStringToWide(title),
-                      GURL(base::SysNSStringToUTF8(urlStr)));
+        [dstParent addBookmarkWithTitle:title
+                                    URL:urlStr
+                                atIndex:dstIndex + i];
         ++i;
       }
     } else {
       NSString* title = [plistItem objectForKey:kTitleKey];
       NSArray* children = [plistItem objectForKey:kChildrenKey];
       if (title && children) {
-        const BookmarkNode* newFolder;
-        newFolder = model->AddGroup(dstParent,
-                                    dstIndex + i,
-                                    base::SysNSStringToWide(title));
+        BookmarkItem* newFolder = [dstParent addFolderWithTitle:title
+                                                        atIndex:dstIndex + i];
         ++i;
         [self insertPropertyList:children
                         inFolder:newFolder
@@ -292,75 +311,60 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
     }
     [pool drain];
   }
-  [self selectNodesInFolder:dstParent
+  [self selectItemsInFolder:dstParent
                   atIndexes:NSMakeRange(dstIndex, [plist count])];
+  return YES;
 }
 
+// Determine the parent to insert into and the child index to insert at.
+- (BookmarkItem*)itemForDropOnItem:(BookmarkItem*)item
+                     proposedIndex:(NSInteger*)childIndex {
+  BookmarkItem* targetItem = item ? item : group_;
+  if ([targetItem isFolder]) {
+    if (*childIndex == NSOutlineViewDropOnItemIndex) {
+      // Insert it at the end, if we were dropping on it
+      *childIndex = [targetItem numberOfChildren];
+    }
+  } else {
+    if (*childIndex == NSOutlineViewDropOnItemIndex) {
+      // Can't drop directly on a leaf.
+      return nil;
+    } else {
+      // We will be dropping on the item's parent at the target index
+      // of this child, plus one.
+      BookmarkItem* oldTargetItem = targetItem;
+      targetItem = [targetItem parent];
+      *childIndex = [targetItem indexOfChild:oldTargetItem] + 1;
+    }
+  }
+  return targetItem;
+}
 
 // Validates whether or not the proposed drop is valid.
 - (NSDragOperation)outlineView:(NSOutlineView*)outlineView
                   validateDrop:(id <NSDraggingInfo>)info
                   proposedItem:(id)item
             proposedChildIndex:(NSInteger)childIndex {
-  NSPasteboard* pb = [info draggingPasteboard];
-
-  // Check to see what we are proposed to be dropping on
-  const BookmarkNode*targetNode = [self nodeFromItem:item];
-  if (!targetNode->is_folder()) {
-    // The target node is not a container, but a leaf.
-    // Refuse the drop (we may get called again with a between)
-    if (childIndex == NSOutlineViewDropOnItemIndex) {
-      return NSDragOperationNone;
-    }
-  }
+  // Determine the parent to insert into and the child index to insert at.
+  BookmarkItem* targetItem = [self itemForDropOnItem:item
+                                       proposedIndex:&childIndex];
+  if (!targetItem)
+    return NSDragOperationNone;
 
   // Dragging within the outline?
-  if ([info draggingSource] == outlineView &&
-      [[pb types] containsObject:kCustomPboardType]) {
-    // If we are allowing the drop, we see if we are dragging from ourselves
-    // and dropping into a descendent, which wouldn't be allowed...
-    // See if the appropriate drag information is available on the pasteboard.
-    //TODO(snej): Re-implement this
-    /*
-    if (targetNode != group_ &&
-        [[[info draggingPasteboard] types] containsObject:kCustomPboardType]) {
-      for (NSDictionary* draggedNode in draggedNodes_) {
-        if ([self treeNode:targetNode isDescendantOfNode:draggedNode]) {
-          // Yup, it is, refuse it.
-          return NSDragOperationNone;
-          break;
-        }
+  if ([self isDirectDrag:info]) {
+    // If dragging within the tree, we see if we are dragging from ourselves
+    // and dropping into a descendant, which wouldn't be allowed...
+    for (BookmarkItem* draggedItem in sDraggedItems.get()) {
+      if ([draggedItem hasDescendant:targetItem]) {
+        return NSDragOperationNone;
       }
-      */
+    }
     return NSDragOperationMove;
   }
 
   // Drag from elsewhere is a copy.
   return NSDragOperationCopy;
-}
-
-// Determine the parent to insert into and the child index to insert at.
-- (const BookmarkNode*)nodeForDropOnItem:(id)item
-                           proposedIndex:(NSInteger*)childIndex {
-  const BookmarkNode* targetNode = [self nodeFromItem:item];
-  if (!targetNode->is_folder()) {
-    // If our target is a leaf, and we are dropping on it.
-    if (*childIndex == NSOutlineViewDropOnItemIndex) {
-      return NULL;
-    } else {
-      // We will be dropping on the item's parent at the target index
-      // of this child, plus one.
-      const BookmarkNode* oldTargetNode = targetNode;
-      targetNode = targetNode->GetParent();
-      *childIndex = targetNode->IndexOfChild(oldTargetNode) + 1;
-    }
-  } else {
-    if (*childIndex == NSOutlineViewDropOnItemIndex) {
-      // Insert it at the end, if we were dropping on it
-      *childIndex = targetNode->GetChildCount();
-    }
-  }
-  return targetNode;
 }
 
 // Actually handles the drop.
@@ -369,30 +373,26 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
                item:(id)item
          childIndex:(NSInteger)childIndex
 {
-  NSPasteboard* pb = [info draggingPasteboard];
-
   // Determine the parent to insert into and the child index to insert at.
-  const BookmarkNode* targetNode = [self nodeForDropOnItem:item
-                                             proposedIndex:&childIndex];
-  if (!targetNode)
+  BookmarkItem* targetItem = [self itemForDropOnItem:item
+                                       proposedIndex:&childIndex];
+  if (!targetItem)
     return NO;
 
-  if ([info draggingSource] == outlineView &&
-      [[pb types] containsObject:kCustomPboardType]) {
-    // If the source was ourselves, move the selected nodes.
-    [self moveNodes:draggedNodes_
-           toFolder:targetNode
+  if ([self isDirectDrag:info]) {
+    // If the source was ourselves, move the selected items.
+    [self moveItems:sDraggedItems
+           toFolder:targetItem
             atIndex:childIndex];
+    return YES;
   } else {
-    NSArray* plist = [self readPropertyListFromPasteboard:pb];
-    if (!plist) {
-      return NO;
-    }
-    [self insertPropertyList:plist
-                    inFolder:targetNode
-                     atIndex:childIndex];
+    // Else copy.
+    NSArray* plist = [self readPropertyListFromPasteboard:
+        [info draggingPasteboard]];
+    return [self insertPropertyList:plist
+                           inFolder:targetItem
+                            atIndex:childIndex];
   }
-  return YES;
 }
 
 
@@ -407,25 +407,24 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
   if (!plist)
     return NO;
 
-  const BookmarkNode* targetNode;
+  BookmarkItem* parentItem;
   NSInteger childIndex;
   int selRow = [outline_ selectedRow];
   if (selRow >= 0) {
-    // Insert after selected row.
-    const BookmarkNode* selNode = [self nodeFromItem:
-        [outline_ itemAtRow:selRow]];
-    targetNode = selNode->GetParent();
-    childIndex = targetNode->IndexOfChild(selNode) + 1;
+    // Insert at selected row.
+    BookmarkItem* selItem = [outline_ itemAtRow:selRow];
+    parentItem = [outline_ parentForItem:selItem];
+    if (!parentItem)
+      parentItem = group_;
+    childIndex = [parentItem indexOfChild:selItem];
   } else {
     // ...or at very end if there's no selection:
-    targetNode = [self nodeFromItem:group_];
-    childIndex = targetNode->GetChildCount();
+    parentItem = group_;
+    childIndex = [parentItem numberOfChildren];
   }
-
-  [self insertPropertyList:plist
-                  inFolder:targetNode
+  return [self insertPropertyList:plist
+                  inFolder:parentItem
                    atIndex:childIndex];
-  return YES;
 }
 
 @end

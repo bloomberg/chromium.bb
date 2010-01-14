@@ -4,9 +4,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class BookmarkItem;
 @class BookmarkManagerController;
-class BookmarkModel;
-class BookmarkNode;
 
 
 // Controller for the bookmark group list (the left pane).
@@ -23,7 +22,7 @@ class BookmarkNode;
 // Each item is an 'id', as vended by BookmarkManagerController's -itemFromNode:
 @property (copy) NSArray* groups;
 // The item in -groups currently selected in the table view. Observable.
-@property (retain) id selectedGroup;
+@property (retain) BookmarkItem* selectedGroup;
 
 // Called by the table view when a row is clicked.
 - (IBAction)tableClicked:(id)sender;
@@ -32,7 +31,7 @@ class BookmarkNode;
 - (void)reload;
 
 // Called by BookmarkManagerController to notify that the data model's changed.
-- (void)nodeChanged:(const BookmarkNode*)node
+- (void)itemChanged:(BookmarkItem*)node
     childrenChanged:(BOOL)childrenChanged;
 
 @end
