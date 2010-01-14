@@ -2495,7 +2495,6 @@ BUG26737 : LayoutTests/fast/js/prototypes.html = FAIL
 BUG19248 : LayoutTests/fast/js/const.html = FAIL
 
 // WebKit roll r47417:47528
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug83786.html = FAIL
 BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
 
 // SVG empty trailing tspan causes text to not show up
