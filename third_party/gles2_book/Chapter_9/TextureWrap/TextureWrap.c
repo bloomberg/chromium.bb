@@ -34,12 +34,15 @@ typedef struct
    // Texture handle
    GLuint textureId;
 
+   // Vertex buffer object handle
+   GLuint vboIds[2];
+
 } UserData;
 
 ///
 //  Generate an RGB8 checkerboard image
 //
-GLubyte* GenCheckImage( int width, int height, int checkSize )
+static GLubyte* GenCheckImage( int width, int height, int checkSize )
 {
    int x,
        y;
@@ -76,7 +79,7 @@ GLubyte* GenCheckImage( int width, int height, int checkSize )
 ///
 // Create a mipmapped 2D texture image 
 //
-GLuint CreateTexture2D( )
+static GLuint CreateTexture2D( )
 {
    // Texture object handle
    GLuint textureId;
@@ -134,6 +137,17 @@ int Init ( ESContext *esContext )
       "  gl_FragColor = texture2D( s_texture, v_texCoord );\n"
       "}                                                   \n";
 
+   GLfloat vVertices[] = { -0.3f,  0.3f, 0.0f, 1.0f,  // Position 0
+                           -1.0f,  -1.0f,              // TexCoord 0 
+                           -0.3f, -0.3f, 0.0f, 1.0f, // Position 1
+                           -1.0f,  2.0f,              // TexCoord 1
+                            0.3f, -0.3f, 0.0f, 1.0f, // Position 2
+                            2.0f,  2.0f,              // TexCoord 2
+                            0.3f,  0.3f, 0.0f, 1.0f,  // Position 3
+                            2.0f,  -1.0f               // TexCoord 3
+                         };
+   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
+
    // Load the shaders and get a linked program object
    userData->programObject = esLoadProgram ( vShaderStr, fShaderStr );
 
@@ -150,6 +164,15 @@ int Init ( ESContext *esContext )
    // Load the texture
    userData->textureId = CreateTexture2D ();
 
+   // Load vertex data
+   glGenBuffers ( 2, userData->vboIds );
+   glBindBuffer ( GL_ARRAY_BUFFER, userData->vboIds[0] );
+   glBufferData ( GL_ARRAY_BUFFER, sizeof(vVertices),
+                  vVertices, GL_STATIC_DRAW );
+   glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, userData->vboIds[1] );
+   glBufferData ( GL_ELEMENT_ARRAY_BUFFER, sizeof(indices),
+                  indices, GL_STATIC_DRAW );
+
    glClearColor ( 0.0f, 0.0f, 0.0f, 0.0f );
    return TRUE;
 }
@@ -157,19 +180,13 @@ int Init ( ESContext *esContext )
 ///
 // Draw a triangle using the shader pair created in Init()
 //
+#define VTX_POS_SIZE 4
+#define VTX_TEX_SIZE 2
+#define VTX_STRIDE (6 * sizeof(GLfloat))
 void Draw ( ESContext *esContext )
 {
    UserData *userData = esContext->userData;
-   GLfloat vVertices[] = { -0.3f,  0.3f, 0.0f, 1.0f,  // Position 0
-                           -1.0f,  -1.0f,              // TexCoord 0 
-                           -0.3f, -0.3f, 0.0f, 1.0f, // Position 1
-                           -1.0f,  2.0f,              // TexCoord 1
-                            0.3f, -0.3f, 0.0f, 1.0f, // Position 2
-                            2.0f,  2.0f,              // TexCoord 2
-                            0.3f,  0.3f, 0.0f, 1.0f,  // Position 3
-                            2.0f,  -1.0f               // TexCoord 3
-                         };
-   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
+   GLuint offset = 0;
       
    // Set the viewport
    glViewport ( 0, 0, esContext->width, esContext->height );
@@ -181,11 +198,12 @@ void Draw ( ESContext *esContext )
    glUseProgram ( userData->programObject );
 
    // Load the vertex position
-   glVertexAttribPointer ( userData->positionLoc, 4, GL_FLOAT, 
-                           GL_FALSE, 6 * sizeof(GLfloat), vVertices );
+   glVertexAttribPointer ( userData->positionLoc, VTX_POS_SIZE, GL_FLOAT, 
+                           GL_FALSE, VTX_STRIDE, (GLvoid*) offset );
    // Load the texture coordinate
-   glVertexAttribPointer ( userData->texCoordLoc, 2, GL_FLOAT,
-                           GL_FALSE, 6 * sizeof(GLfloat), &vVertices[4] );
+   offset += VTX_POS_SIZE * sizeof(GLfloat);
+   glVertexAttribPointer ( userData->texCoordLoc, VTX_TEX_SIZE, GL_FLOAT,
+                           GL_FALSE, VTX_STRIDE, (GLvoid*) offset );
 
    glEnableVertexAttribArray ( userData->positionLoc );
    glEnableVertexAttribArray ( userData->texCoordLoc );
@@ -201,19 +219,19 @@ void Draw ( ESContext *esContext )
    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
    glUniform1f ( userData->offsetLoc, -0.7f );   
-   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
+   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0 );
 
    // Draw quad with clamp to edge wrap mode
    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
    glUniform1f ( userData->offsetLoc, 0.0f );
-   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
+   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0 );
 
    // Draw quad with mirrored repeat
    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT );
    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT );
    glUniform1f ( userData->offsetLoc, 0.7f );
-   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
+   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0 );
 
    eglSwapBuffers ( esContext->eglDisplay, esContext->eglSurface );
 }
@@ -230,6 +248,9 @@ void ShutDown ( ESContext *esContext )
 
    // Delete program object
    glDeleteProgram ( userData->programObject );
+
+   // Delete vertex buffer objects
+   glDeleteBuffers ( 2, userData->vboIds );
 }
 
 
