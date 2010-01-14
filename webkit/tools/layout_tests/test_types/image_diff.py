@@ -146,14 +146,15 @@ class ImageDiff(test_type_base.TestTypeBase):
       # Hash matched (no diff needed, okay to return).
       return failures
 
-    # Even though we only use result in one codepath below but we still need to
-    # call CreateImageDiff for other codepaths.
-    result = self._CreateImageDiff(filename, target)
 
     self.WriteOutputFiles(filename, '', '.checksum', test_args.hash,
                           expected_hash, diff=False, wdiff=False)
     self._CopyOutputPNG(filename, test_args.png_path, '-actual.png')
     self._CopyOutputPNG(filename, expected_png_file, '-expected.png')
+
+    # Even though we only use result in one codepath below but we still need to
+    # call CreateImageDiff for other codepaths.
+    result = self._CreateImageDiff(filename, target)
     if expected_hash == '':
       failures.append(test_failures.FailureMissingImageHash(self))
     elif test_args.hash != expected_hash:
