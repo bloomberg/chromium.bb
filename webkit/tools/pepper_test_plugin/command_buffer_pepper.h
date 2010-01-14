@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_PGL_COMMAND_BUFFER_PEPPER_H
-#define GPU_PGL_COMMAND_BUFFER_PEPPER_H
+#ifndef WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_COMMAND_BUFFER_PEPPER_H_
+#define WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_COMMAND_BUFFER_PEPPER_H_
 
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "third_party/npapi/bindings/npapi.h"
@@ -12,12 +12,12 @@
 
 // A CommandBuffer proxy implementation that uses the Pepper API to access
 // the command buffer.
+// TODO(apatrick): move this into a library that can be used by any pepper
+// plugin.
 
 class CommandBufferPepper : public gpu::CommandBuffer {
  public:
-  CommandBufferPepper(NPP npp,
-                      NPDevice* device,
-                      NPDeviceContext3D* device_context);
+  CommandBufferPepper(NPP npp, NPNetscapeFuncs* browser);
   virtual ~CommandBufferPepper();
 
   // CommandBuffer implementation.
@@ -40,10 +40,12 @@ class CommandBufferPepper : public gpu::CommandBuffer {
 
  private:
   NPP npp_;
+  NPNetscapeFuncs* browser_;
+  NPExtensions* extensions_;
   NPDevice* device_;
-  NPDeviceContext3D* context_;
+  NPDeviceContext3D context_;
 };
 
-#endif  // GPU_PGL_COMMAND_BUFFER_PEPPER_H
+#endif  // WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_COMMAND_BUFFER_PEPPER_H_
 
 
