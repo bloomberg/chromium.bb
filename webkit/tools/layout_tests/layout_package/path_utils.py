@@ -30,10 +30,10 @@ _baseline_search_path = None
 
 class PathNotFound(Exception): pass
 
-def LayoutTestsDir(path=None):
+def LayoutTestsDir():
   """Returns the fully-qualified path to the directory containing the input
   data for the specified layout test."""
-  return PathFromBase('third_party', 'WebKit');
+  return PathFromBase('third_party', 'WebKit', 'LayoutTests');
 
 def ChromiumBaselinePath(platform=None):
   """Returns the full path to the directory containing expected
@@ -96,11 +96,7 @@ def ExpectedBaseline(filename, suffix, platform=None, all_baselines=False):
   global _search_path_platform
   testname = os.path.splitext(RelativeTestFilename(filename))[0]
 
-  # While we still have tests in both LayoutTests/ and chrome/ we need
-  # to strip that outer directory.
-  # TODO(pamg): Once we upstream all of chrome/, clean this up.
-  platform_filename = testname + '-expected' + suffix
-  testdir, base_filename = platform_filename.split('/', 1)
+  baseline_filename = testname + '-expected' + suffix
 
   if (_baseline_search_path is None) or (_search_path_platform != platform):
     _baseline_search_path = BaselineSearchPath(platform)
@@ -116,27 +112,22 @@ def ExpectedBaseline(filename, suffix, platform=None, all_baselines=False):
       foundCurrentPlatform = True
 
     if foundCurrentPlatform:
-      # TODO(pamg): Clean this up once we upstream everything in chrome/.
-      if os.path.basename(platform_dir).startswith('chromium'):
-        if os.path.exists(os.path.join(platform_dir, platform_filename)):
-          baselines.append((platform_dir, platform_filename))
-      else:
-        if os.path.exists(os.path.join(platform_dir, base_filename)):
-          baselines.append((platform_dir, base_filename))
+      if os.path.exists(os.path.join(platform_dir, baseline_filename)):
+        baselines.append((platform_dir, baseline_filename))
 
       if not all_baselines and baselines:
         return baselines
 
   # If it wasn't found in a platform directory, return the expected result
   # in the test directory, even if no such file actually exists.
-  platform_dir = LayoutTestsDir(filename)
-  if os.path.exists(os.path.join(platform_dir, platform_filename)):
-    baselines.append((platform_dir, platform_filename))
+  platform_dir = LayoutTestsDir()
+  if os.path.exists(os.path.join(platform_dir, baseline_filename)):
+    baselines.append((platform_dir, baseline_filename))
 
   if baselines:
     return baselines
 
-  return [(None, platform_filename)]
+  return [(None, baseline_filename)]
 
 def ExpectedFilename(filename, suffix):
   """Given a test name, returns an absolute path to its expected results.
@@ -154,15 +145,15 @@ def ExpectedFilename(filename, suffix):
          search list of directories, e.g., 'chromium-win', or
          'chromium-mac-leopard' (we follow the WebKit format)
   """
-  platform_dir, platform_filename = ExpectedBaseline(filename, suffix)[0]
+  platform_dir, baseline_filename = ExpectedBaseline(filename, suffix)[0]
   if platform_dir:
-    return os.path.join(platform_dir, platform_filename)
-  return os.path.join(LayoutTestsDir(filename), platform_filename)
+    return os.path.join(platform_dir, baseline_filename)
+  return os.path.join(LayoutTestsDir(), baseline_filename)
 
 def RelativeTestFilename(filename):
-  """Provide the filename of the test relative to the layout data
+  """Provide the filename of the test relative to the layout tests
   directory as a unix style path (a/b/c)."""
-  return _WinPathToUnix(filename[len(LayoutTestsDir(filename)) + 1:])
+  return _WinPathToUnix(filename[len(LayoutTestsDir()) + 1:])
 
 def _WinPathToUnix(path):
   """Convert a windows path to use unix-style path separators (a/b/c)."""
@@ -174,25 +165,23 @@ def _WinPathToUnix(path):
 #
 def FilenameToUri(full_path):
   """Convert a test file to a URI."""
-  LAYOUTTESTS_DIR = "LayoutTests/"
-  LAYOUTTEST_HTTP_DIR = "LayoutTests/http/tests/"
-  LAYOUTTEST_WEBSOCKET_DIR = "LayoutTests/websocket/tests/"
+  LAYOUTTEST_HTTP_DIR = "http/tests/"
+  LAYOUTTEST_WEBSOCKET_DIR = "websocket/tests/"
 
   relative_path = _WinPathToUnix(RelativeTestFilename(full_path))
   port = None
   use_ssl = False
 
   if relative_path.startswith(LAYOUTTEST_HTTP_DIR):
-    # LayoutTests/http/tests/ run off port 8000 and ssl/ off 8443
+    # http/tests/ run off port 8000 and ssl/ off 8443
     relative_path = relative_path[len(LAYOUTTEST_HTTP_DIR):]
     port = 8000
   elif relative_path.startswith(LAYOUTTEST_WEBSOCKET_DIR):
-    # LayoutTests/websocket/tests/ run off port 8880 and 9323
-    # Note: the root is LayoutTests/, not LayoutTests/websocket/tests/
-    relative_path = relative_path[len(LAYOUTTESTS_DIR):]
+    # websocket/tests/ run off port 8880 and 9323
+    # Note: the root is /, not websocket/tests/
     port = 8880
 
-  # Make LayoutTests/http/tests/local run as local files. This is to mimic the
+  # Make http/tests/local run as local files. This is to mimic the
   # logic in run-webkit-tests.
   # TODO(jianli): Consider extending this to "media/".
   if port and not relative_path.startswith("local/"):

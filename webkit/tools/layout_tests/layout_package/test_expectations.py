@@ -174,7 +174,7 @@ class TestExpectationsFile:
                    'missing': MISSING }
 
   EXPECTATION_DESCRIPTIONS = { SKIP : ('skipped', 'skipped'),
-                               PASS : ('passes', 'passes'),
+                               PASS : ('pass', 'passes'),
                                FAIL : ('failure', 'failures'),
                                TEXT : ('text diff mismatch',
                                        'text diff mismatch'),
@@ -575,8 +575,7 @@ class TestExpectationsFile:
             'If it times out indefinitely, then it should be just timeout.',
             test_list_path)
 
-      full_path = os.path.join(path_utils.LayoutTestsDir(test_list_path),
-                               test_list_path)
+      full_path = os.path.join(path_utils.LayoutTestsDir(), test_list_path)
       full_path = os.path.normpath(full_path)
       # WebKit's way of skipping tests is to add a -disabled suffix.
       # So we should consider the path existing if the path or the -disabled
@@ -637,8 +636,7 @@ class TestExpectationsFile:
   def _ExpandTests(self, test_list_path):
     """Convert the test specification to an absolute, normalized
     path and make sure directories end with the OS path separator."""
-    path = os.path.join(path_utils.LayoutTestsDir(test_list_path),
-                        test_list_path)
+    path = os.path.join(path_utils.LayoutTestsDir(), test_list_path)
     path = os.path.normpath(path)
     path = self._FixDir(path)
 

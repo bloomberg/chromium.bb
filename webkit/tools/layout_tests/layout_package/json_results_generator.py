@@ -25,12 +25,11 @@ class JSONResultsGenerator:
   MIN_TIME = 1
   JSON_PREFIX = "ADD_RESULTS("
   JSON_SUFFIX = ");"
-  WEBKIT_PATH = "WebKit"
-  LAYOUT_TESTS_PATH = "layout_tests"
+  WEBKIT_PATH = "WebKit/LayoutTests"
   PASS_RESULT = "P"
   SKIP_RESULT = "X"
   NO_DATA_RESULT = "N"
-  VERSION = 1
+  VERSION = 2
   VERSION_KEY = "version"
   RESULTS = "results"
   TIMES = "times"
@@ -122,20 +121,14 @@ class JSONResultsGenerator:
 
   def _GetPathRelativeToLayoutTestRoot(self, test):
     """Returns the path of the test relative to the layout test root.
-    Example paths are
+    For example, for:
       src/third_party/WebKit/LayoutTests/fast/forms/foo.html
-      src/webkit/data/layout_tests/chrome/fast/forms/foo.html
-    We would return the following:
-      LayoutTests/fast/forms/foo.html
-      chrome/fast/forms/foo.html
+    We would return
+      fast/forms/foo.html
     """
     index = test.find(self.WEBKIT_PATH)
     if index is not -1:
       index += len(self.WEBKIT_PATH)
-    else:
-      index = test.find(self.LAYOUT_TESTS_PATH)
-      if index is not -1:
-        index += len(self.LAYOUT_TESTS_PATH)
 
     if index is -1:
       # Already a relative path.
@@ -357,6 +350,18 @@ class JSONResultsGenerator:
         results_json[self.VERSION_KEY] == self.VERSION):
       return
 
+    if (self.VERSION_KEY in results_json and
+        results_json[self.VERSION_KEY] == 1 and
+        self.TESTS in results_json):
+      # Convert all the test names from LayoutTests/X to X
+      LAYOUTTESTS_PREFIX = 'LayoutTests/'
+      test_results = results_json[self.TESTS]
+      for test in test_results.keys():
+        if test.startswith(LAYOUTTESTS_PREFIX):
+          new_test = test[len(LAYOUTTESTS_PREFIX):]
+          test_results[new_test] = test_results[test]
+          del test_results[test]
+
     results_json[self.VERSION_KEY] = self.VERSION
 
   def _CreateResultsAndTimesJSON(self):
@@ -412,7 +417,7 @@ class JSONResultsGenerator:
       del tests[test_path]
     else:
       # Remove tests that don't exist anymore.
-      full_path = os.path.join(path_utils.LayoutTestsDir(test_path), test_path)
+      full_path = os.path.join(path_utils.LayoutTestsDir(), test_path)
       full_path = os.path.normpath(full_path)
       if not os.path.exists(full_path):
         del tests[test_path]

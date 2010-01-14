@@ -46,7 +46,10 @@ def GetNumCores():
 def BaselineSearchPath(all_versions=False):
   """Returns the list of directories to search for baselines/results, in
   order of preference. Paths are relative to the top of the source tree."""
+  # TODO(dpranke): remove the 'LayoutTests' dirs once we move the baselines.
   return [path_utils.ChromiumBaselinePath(PlatformName()),
+          os.path.join(path_utils.ChromiumBaselinePath(PlatformName()),
+                       "LayoutTests"),
           path_utils.WebKitBaselinePath('mac' + PlatformVersion()),
           path_utils.WebKitBaselinePath('mac')]
 

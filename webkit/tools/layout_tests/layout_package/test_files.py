@@ -20,9 +20,6 @@ _supported_file_extensions = set(['.html', '.shtml', '.xml', '.xhtml', '.pl',
 # When collecting test cases, skip these directories
 _skipped_directories = set(['.svn', '_svn', 'resources', 'script-tests'])
 
-# Top-level directories to shard when running tests.
-ROOT_DIRECTORIES = set(['chrome', 'LayoutTests'])
-
 def GatherTestFiles(paths):
   """Generate a set of test files and return them.
 
@@ -32,16 +29,17 @@ def GatherTestFiles(paths):
   """
   paths_to_walk = set()
   # if paths is empty, provide a pre-defined list.
-  if not paths:
-    paths = ROOT_DIRECTORIES
-  for path in paths:
-    # If there's an * in the name, assume it's a glob pattern.
-    path = os.path.join(path_utils.LayoutTestsDir(path), path)
-    if path.find('*') > -1:
-      filenames = glob.glob(path)
-      paths_to_walk.update(filenames)
-    else:
-      paths_to_walk.add(path)
+  if paths:
+    for path in paths:
+      # If there's an * in the name, assume it's a glob pattern.
+      path = os.path.join(path_utils.LayoutTestsDir(), path)
+      if path.find('*') > -1:
+        filenames = glob.glob(path)
+        paths_to_walk.update(filenames)
+      else:
+        paths_to_walk.add(path)
+  else:
+    paths_to_walk.add(path_utils.LayoutTestsDir())
 
   # Now walk all the paths passed in on the command line and get filenames
   test_files = set()

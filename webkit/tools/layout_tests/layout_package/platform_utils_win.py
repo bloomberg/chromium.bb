@@ -49,13 +49,22 @@ def BaselineSearchPath(all_versions=False):
   """
 
   dirs = []
+  # TODO(dpranke): remove the 'LayoutTests' dirs once we move the baselines.
   if all_versions or PlatformVersion() == "-xp":
     dirs.append(path_utils.ChromiumBaselinePath('chromium-win-xp'))
+    dirs.append(os.path.join(
+        path_utils.ChromiumBaselinePath('chromium-win-xp'), 'LayoutTests'))
   if all_versions or PlatformVersion() in ("-vista", "-xp"):
     dirs.append(path_utils.ChromiumBaselinePath('chromium-win-vista'))
+    dirs.append(os.path.join(
+        path_utils.ChromiumBaselinePath('chromium-win-vista'), 'LayoutTests'))
   if all_versions or PlatformVersion() in ("-7", "-vista", "-xp"):
     dirs.append(path_utils.ChromiumBaselinePath('chromium-win-7'))
+    dirs.append(os.path.join(
+        path_utils.ChromiumBaselinePath('chromium-win-7'), 'LayoutTests'))
   dirs.append(path_utils.ChromiumBaselinePath('chromium-win'))
+  dirs.append(os.path.join(
+        path_utils.ChromiumBaselinePath('chromium-win'), 'LayoutTests'))
   dirs.append(path_utils.WebKitBaselinePath('win'))
   dirs.append(path_utils.WebKitBaselinePath('mac'))
   return dirs
