@@ -769,6 +769,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 // When re-opening the find bar with F3, the find bar should be re-populated
 // with the last search from the same tab rather than the last overall search.
 // http://crbug.com/30006
+#if defined(OS_CHROMEOS)
+#define PreferPreviousSearch FLAKY_PreferPreviousSearch
+#endif
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   HTTPTestServer* server = StartHTTPServer();
 
