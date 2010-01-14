@@ -149,6 +149,18 @@
    fun:views::NativeTextfieldWin::OnCopy
 }
 {
+   # mysterious leak in _calloc_crt. Bug in Wine perhaps?? Hard to reproduce.
+   ignore_calloc_crt
+   Memcheck:Leak
+   fun:RtlAllocateHeap
+   fun:win_heap_malloc
+   fun:malloc
+   fun:calloc
+   fun:_calloc_impl
+   fun:_calloc_crt
+   STOP
+}
+{
    wine_bug_20692_a
    Memcheck:Leak
    ...
