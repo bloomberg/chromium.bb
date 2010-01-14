@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
@@ -503,9 +504,15 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationURL(Profile* profile) {
 #endif
   GURL url(url_string);
 
+  // Restrict allowed URLs for --app switch.
   if (!url.is_empty() && url.is_valid()) {
-    Browser::OpenApplicationWindow(profile, url);
-    return true;
+    if (url.SchemeIs(chrome::kHttpsScheme) ||
+        url.SchemeIs(chrome::kHttpScheme) ||
+        url.SchemeIs(chrome::kFtpScheme) ||
+        url.SchemeIs(chrome::kFileScheme)) {
+      Browser::OpenApplicationWindow(profile, url);
+      return true;
+    }
   }
   return false;
 }
@@ -627,6 +634,9 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
     Profile* profile) {
   std::vector<GURL> urls;
   std::vector<std::wstring> params = command_line_.GetLooseValues();
+  ChildProcessSecurityPolicy *policy =
+      ChildProcessSecurityPolicy::GetInstance();
+
   for (size_t i = 0; i < params.size(); ++i) {
     std::wstring& value = params[i];
     // Handle Vista way of searching - "? <search-term>"
@@ -649,8 +659,14 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
       // This will create a file URL or a regular URL.
       GURL url = GURL(WideToUTF8(
           URLFixerUpper::FixupRelativeFile(cur_dir_, value)));
-      if (url.is_valid())
-        urls.push_back(url);
+      // Exclude dangerous schemes.
+      if (url.is_valid()) {
+        if (policy->IsWebSafeScheme(url.scheme()) ||
+            url.SchemeIs(chrome::kFileScheme) ||
+            !url.spec().compare(chrome::kAboutBlankURL)) {
+          urls.push_back(url);
+        }
+      }
     }
   }
   return urls;
