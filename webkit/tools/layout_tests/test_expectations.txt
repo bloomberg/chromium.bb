@@ -797,7 +797,7 @@ BUG13907 : LayoutTests/media/controls-styling.html = FAIL
 
 // These tests are flaky with subtle pixel differences.
 BUG9798 BUG13907 LINUX MAC : LayoutTests/media/video-transformed.html = IMAGE PASS
-BUG9798 BUG13907 MAC : LayoutTests/media/video-layer-crash.html = IMAGE PASS
+BUG9798 BUG13907 LINUX MAC : LayoutTests/media/video-layer-crash.html = IMAGE PASS
 
 // These tests are failing because they use position-dependent mouse clicks.
 BUG13907 BUG25375 : LayoutTests/media/video-controls-transformed.html = FAIL
@@ -3070,3 +3070,5 @@ BUG32201 LINUX DEBUG : LayoutTests/fast/text/atsui-spacing-features.html = IMAGE
 
 // Expectations from roll to 53171:53194
 BUG32206 LINUX MAC : LayoutTests/storage/database-lock-after-reload.html = PASS FAIL CRASH
+
+BUG32235 LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = PASS TEXT
