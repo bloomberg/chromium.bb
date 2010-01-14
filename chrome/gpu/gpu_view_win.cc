@@ -129,30 +129,3 @@ void GpuViewWin::OnPaint(HDC unused_dc) {
     DrawBackground(paint_dc.m_ps.rcPaint, &paint_dc);
   }
 }
-
-LRESULT GpuViewWin::OnMouseEvent(UINT message,
-                                 WPARAM wparam,
-                                 LPARAM lparam,
-                                 BOOL& handled) {
-  handled = true;
-  ::PostMessage(GetParent(), message, wparam, lparam);
-  return 0;
-}
-
-LRESULT GpuViewWin::OnKeyEvent(UINT message,
-                               WPARAM wparam,
-                               LPARAM lparam,
-                               BOOL& handled) {
-  handled = true;
-  ::PostMessage(GetParent(), message, wparam, lparam);
-  return 0;
-}
-
-LRESULT GpuViewWin::OnWheelEvent(UINT message,
-                                 WPARAM wparam,
-                                 LPARAM lparam,
-                                 BOOL& handled) {
-  handled = true;
-  ::PostMessage(GetParent(), message, wparam, lparam);
-  return 0;
-}

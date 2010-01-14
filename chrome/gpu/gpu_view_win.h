@@ -23,7 +23,10 @@ class Rect;
 class Size;
 }
 
-typedef CWinTraits<WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0>
+// WS_DISABLED means that input events will be delivered to the parent, which is
+// what we want for our overlay window.
+typedef CWinTraits<
+    WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_DISABLED, 0>
     GpuRenderWidgetHostViewWinTraits;
 
 class GpuViewWin
@@ -46,28 +49,6 @@ class GpuViewWin
 
   BEGIN_MSG_MAP(GpuViewWin)
     MSG_WM_PAINT(OnPaint)
-    MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseEvent)
-    MESSAGE_HANDLER(WM_MOUSELEAVE, OnMouseEvent)
-    MESSAGE_HANDLER(WM_LBUTTONDOWN, OnMouseEvent)
-    MESSAGE_HANDLER(WM_MBUTTONDOWN, OnMouseEvent)
-    MESSAGE_HANDLER(WM_RBUTTONDOWN, OnMouseEvent)
-    MESSAGE_HANDLER(WM_LBUTTONUP, OnMouseEvent)
-    MESSAGE_HANDLER(WM_MBUTTONUP, OnMouseEvent)
-    MESSAGE_HANDLER(WM_RBUTTONUP, OnMouseEvent)
-    MESSAGE_HANDLER(WM_LBUTTONDBLCLK, OnMouseEvent)
-    MESSAGE_HANDLER(WM_MBUTTONDBLCLK, OnMouseEvent)
-    MESSAGE_HANDLER(WM_RBUTTONDBLCLK, OnMouseEvent)
-    MESSAGE_HANDLER(WM_SYSKEYDOWN, OnKeyEvent)
-    MESSAGE_HANDLER(WM_SYSKEYUP, OnKeyEvent)
-    MESSAGE_HANDLER(WM_KEYDOWN, OnKeyEvent)
-    MESSAGE_HANDLER(WM_KEYUP, OnKeyEvent)
-    MESSAGE_HANDLER(WM_MOUSEWHEEL, OnWheelEvent)
-    MESSAGE_HANDLER(WM_MOUSEHWHEEL, OnWheelEvent)
-    MESSAGE_HANDLER(WM_HSCROLL, OnWheelEvent)
-    MESSAGE_HANDLER(WM_VSCROLL, OnWheelEvent)
-    MESSAGE_HANDLER(WM_CHAR, OnKeyEvent)
-    MESSAGE_HANDLER(WM_SYSCHAR, OnKeyEvent)
-    MESSAGE_HANDLER(WM_IME_CHAR, OnKeyEvent)
   END_MSG_MAP()
 
  private:
@@ -76,18 +57,6 @@ class GpuViewWin
 
   // Windows message handlers.
   void OnPaint(HDC unused_dc);
-  LRESULT OnMouseEvent(UINT message,
-                       WPARAM wparam,
-                       LPARAM lparam,
-                       BOOL& handled);
-  LRESULT OnKeyEvent(UINT message,
-                     WPARAM wparam,
-                     LPARAM lparam,
-                     BOOL& handled);
-  LRESULT OnWheelEvent(UINT message,
-                       WPARAM wparam,
-                       LPARAM lparam,
-                       BOOL& handled);
 
   GpuThread* gpu_thread_;
   int32 routing_id_;
