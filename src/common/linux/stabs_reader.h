@@ -96,6 +96,13 @@ class StabsReader {
 
   StabsHandler *handler_;
 
+  // The offset of the current compilation unit's strings within stabstr_.
+  size_t string_offset_;
+
+  // The value string_offset_ should have for the next compilation unit,
+  // as established by N_UNDF entries.
+  size_t next_cu_string_offset_;
+
   // The current symbol we're processing.
   const struct nlist *symbol_;
 
