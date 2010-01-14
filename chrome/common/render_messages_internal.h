@@ -1831,8 +1831,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       int /* accessibility object id */)
 
   // Message sent from the renderer to the browser to request that the browser
-  // close all idle sockets.  Used for debugging/testing.
-  IPC_MESSAGE_CONTROL0(ViewHostMsg_CloseIdleConnections)
+  // close all sockets.  Used for debugging/testing.
+  IPC_MESSAGE_CONTROL0(ViewHostMsg_CloseCurrentConnections)
 
   // Message sent from the renderer to the browser to request that the browser
   // close all idle sockets.  Used for debugging/testing.

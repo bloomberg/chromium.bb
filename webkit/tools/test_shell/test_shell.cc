@@ -753,7 +753,7 @@ std::wstring GetWebKitLocale() {
   return L"en-US";
 }
 
-void CloseIdleConnections() {
+void CloseCurrentConnections() {
   // Used in benchmarking,  Ignored for test_shell.
 }
 

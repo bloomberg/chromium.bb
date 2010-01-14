@@ -290,7 +290,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                           const std::string& extension_id,
                           const std::string& channel_name, int* port_id);
 
-  void OnCloseIdleConnections();
+  void OnCloseCurrentConnections();
   void OnSetCacheMode(bool enabled);
 
   void OnGetFileSize(const FilePath& path, IPC::Message* reply_msg);

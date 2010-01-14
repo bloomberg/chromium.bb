@@ -482,8 +482,8 @@ void RenderThread::InformHostOfCacheStatsLater() {
       kCacheStatsDelayMS);
 }
 
-void RenderThread::CloseIdleConnections() {
-  Send(new ViewHostMsg_CloseIdleConnections());
+void RenderThread::CloseCurrentConnections() {
+  Send(new ViewHostMsg_CloseCurrentConnections());
 }
 
 void RenderThread::SetCacheMode(bool enabled) {

@@ -238,8 +238,8 @@ void NotifyCacheStats() {
     RenderThread::current()->InformHostOfCacheStatsLater();
 }
 
-void CloseIdleConnections() {
-  RenderThread::current()->CloseIdleConnections();
+void CloseCurrentConnections() {
+  RenderThread::current()->CloseCurrentConnections();
 }
 
 void SetCacheMode(bool enabled) {

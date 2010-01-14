@@ -49,7 +49,7 @@ class BenchmarkingWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> CloseConnections(const v8::Arguments& args) {
-    webkit_glue::CloseIdleConnections();
+    webkit_glue::CloseCurrentConnections();
     return v8::Undefined();
   }
 

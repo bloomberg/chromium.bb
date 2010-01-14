@@ -398,8 +398,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToExtension,
                           OnOpenChannelToExtension)
       IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToTab, OnOpenChannelToTab)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_CloseIdleConnections,
-                          OnCloseIdleConnections)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_CloseCurrentConnections,
+                          OnCloseCurrentConnections)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
       IPC_MESSAGE_HANDLER(ViewHostMsg_Keygen, OnKeygen)
@@ -1124,13 +1124,13 @@ bool ResourceMessageFilter::CheckBenchmarkingEnabled() {
   return result;
 }
 
-void ResourceMessageFilter::OnCloseIdleConnections() {
+void ResourceMessageFilter::OnCloseCurrentConnections() {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
   if (!CheckBenchmarkingEnabled())
     return;
   request_context_->GetURLRequestContext()->
-      http_transaction_factory()->GetCache()->CloseIdleConnections();
+      http_transaction_factory()->GetCache()->CloseCurrentConnections();
 }
 
 void ResourceMessageFilter::OnSetCacheMode(bool enabled) {
