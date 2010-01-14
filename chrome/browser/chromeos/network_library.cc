@@ -113,12 +113,24 @@ void NetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
   }
 }
 
+void NetworkLibrary::ConnectToCellularNetwork(CellularNetwork network) {
+  if (CrosLibrary::EnsureLoaded()) {
+    // This call kicks off a request to connect to this network, the results of
+    // which we'll hear about through the monitoring we've set up in Init();
+    chromeos::ConnectToWifiNetwork(network.name.c_str(), NULL, NULL);
+  }
+}
+
 void NetworkLibrary::EnableEthernetNetworkDevice(bool enable) {
   EnableNetworkDevice(chromeos::TYPE_ETHERNET, enable);
 }
 
 void NetworkLibrary::EnableWifiNetworkDevice(bool enable) {
   EnableNetworkDevice(chromeos::TYPE_WIFI, enable);
+}
+
+void NetworkLibrary::EnableCellularNetworkDevice(bool enable) {
+  EnableNetworkDevice(chromeos::TYPE_CELLULAR, enable);
 }
 
 void NetworkLibrary::EnableOfflineMode(bool enable) {
@@ -144,38 +156,46 @@ void NetworkLibrary::EnableOfflineMode(bool enable) {
 void NetworkLibrary::NetworkStatusChangedHandler(void* object,
     const chromeos::ServiceStatus& service_status) {
   NetworkLibrary* network = static_cast<NetworkLibrary*>(object);
-  WifiNetworkVector networks;
   EthernetNetwork ethernet;
-  ParseNetworks(service_status, &networks, &ethernet);
-  network->UpdateNetworkStatus(networks, ethernet);
+  WifiNetworkVector wifi_networks;
+  CellularNetworkVector cellular_networks;
+  ParseNetworks(service_status, &ethernet, &wifi_networks, &cellular_networks);
+  network->UpdateNetworkStatus(ethernet, wifi_networks, cellular_networks);
 }
 
 // static
 void NetworkLibrary::ParseNetworks(
-    const chromeos::ServiceStatus& service_status, WifiNetworkVector* networks,
-    EthernetNetwork* ethernet) {
+    const chromeos::ServiceStatus& service_status, EthernetNetwork* ethernet,
+    WifiNetworkVector* wifi_networks,
+    CellularNetworkVector* cellular_networks) {
   DLOG(INFO) << "ParseNetworks:";
   for (int i = 0; i < service_status.size; i++) {
     const chromeos::ServiceInfo& service = service_status.services[i];
-    DLOG(INFO) << "  " << service.ssid <<
-                  " typ=" << service.type <<
+    DLOG(INFO) << "  (" << service.type <<
+                  ") " << service.ssid <<
                   " sta=" << service.state <<
                   " pas=" << service.needs_passphrase <<
                   " enc=" << service.encryption <<
                   " sig=" << service.signal_strength;
     bool connecting = service.state == chromeos::STATE_ASSOCIATION ||
-                      service.state == chromeos::STATE_CONFIGURATION;
+                      service.state == chromeos::STATE_CONFIGURATION ||
+                      service.state == chromeos::STATE_CARRIER;
     bool connected = service.state == chromeos::STATE_READY;
     if (service.type == chromeos::TYPE_ETHERNET) {
       ethernet->connecting = connecting;
       ethernet->connected = connected;
     } else if (service.type == chromeos::TYPE_WIFI) {
-      networks->push_back(WifiNetwork(service.ssid,
-                                      service.needs_passphrase,
-                                      service.encryption,
-                                      service.signal_strength,
-                                      connecting,
-                                      connected));
+      wifi_networks->push_back(WifiNetwork(service.ssid,
+                                           service.needs_passphrase,
+                                           service.encryption,
+                                           service.signal_strength,
+                                           connecting,
+                                           connected));
+    } else if (service.type == chromeos::TYPE_CELLULAR) {
+      cellular_networks->push_back(CellularNetwork(service.ssid,
+                                                   service.signal_strength,
+                                                   connecting,
+                                                   connected));
     }
   }
 }
@@ -186,10 +206,12 @@ void NetworkLibrary::Init() {
   chromeos::ServiceStatus* service_status = chromeos::GetAvailableNetworks();
   if (service_status) {
     LOG(INFO) << "Getting initial CrOS network info.";
-    WifiNetworkVector networks;
     EthernetNetwork ethernet;
-    ParseNetworks(*service_status, &networks, &ethernet);
-    UpdateNetworkStatus(networks, ethernet);
+    WifiNetworkVector wifi_networks;
+    CellularNetworkVector cellular_networks;
+    ParseNetworks(*service_status, &ethernet, &wifi_networks,
+        &cellular_networks);
+    UpdateNetworkStatus(ethernet, wifi_networks, cellular_networks);
     chromeos::FreeServiceStatus(service_status);
   }
   LOG(INFO) << "Registering for network status updates.";
@@ -231,19 +253,21 @@ void NetworkLibrary::EnableNetworkDevice(chromeos::ConnectionType device,
   }
 }
 
-void NetworkLibrary::UpdateNetworkStatus(
-    const WifiNetworkVector& networks, const EthernetNetwork& ethernet) {
+void NetworkLibrary::UpdateNetworkStatus(const EthernetNetwork& ethernet,
+    const WifiNetworkVector& wifi_networks,
+    const CellularNetworkVector& cellular_networks) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this,
-            &NetworkLibrary::UpdateNetworkStatus, networks, ethernet));
+            &NetworkLibrary::UpdateNetworkStatus, ethernet, wifi_networks,
+            cellular_networks));
     return;
   }
 
   ethernet_ = ethernet;
-  wifi_networks_ = networks;
+  wifi_networks_ = wifi_networks;
   // Sort the list of wifi networks by ssid.
   std::sort(wifi_networks_.begin(), wifi_networks_.end());
   wifi_ = WifiNetwork();
@@ -251,6 +275,15 @@ void NetworkLibrary::UpdateNetworkStatus(
     if (wifi_networks_[i].connecting || wifi_networks_[i].connected) {
       wifi_ = wifi_networks_[i];
       break;  // There is only one connected or connecting wifi network.
+    }
+  }
+  cellular_networks_ = cellular_networks;
+  std::sort(cellular_networks_.begin(), cellular_networks_.end());
+  cellular_ = CellularNetwork();
+  for (size_t i = 0; i < cellular_networks_.size(); i++) {
+    if (cellular_networks_[i].connecting || cellular_networks_[i].connected) {
+      cellular_ = cellular_networks_[i];
+      break;  // There is only one connected or connecting cellular network.
     }
   }
   FOR_EACH_OBSERVER(Observer, observers_, NetworkChanged(this));

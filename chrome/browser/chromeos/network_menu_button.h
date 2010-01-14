@@ -28,23 +28,29 @@ namespace chromeos {
 // The network menu button in the status area.
 // This class will handle getting the wifi networks and populating the menu.
 // It will also handle the status icon changing and connecting to another
-// wifi network.
+// wifi/cellular network.
 //
 // The network menu looks like this:
 //
-// <icon>  Wifi: <status> (disabled)
+// <icon>  Wifi: <status>
 //         Turn Wifi <action>
 // <icon>     Wifi Network A
 // <check>    Wifi Network B
 // <icon>     Wifi Network C
 // --------------------------------
-// <icon>  Ethernet: <status> (disabled)
+// <icon>  Cellular: <status>
+//         Turn Cellular <action>
+// <icon>     Cellular Network A
+// <check>    Cellular Network B
+// <icon>     Cellular Network C
+// --------------------------------
+// <icon>  Ethernet: <status>
 //         Turn Ethernet <action>
 //
 // <icon> will show the current state of the network device and the strength of
-//   the wifi networks.
+//   the wifi/cellular networks.
 // <check> will be a check mark icon for the currently connected wifi.
-// <status> will be one of: Connected, Connecting, Disconnected, or Disabled.
+// <status> will be one of: Connected, Connecting, Disconnected, or Off.
 // <action> will be either On or Off depending on the current state.
 class NetworkMenuButton : public StatusAreaButton,
                           public views::ViewMenuDelegate,
@@ -91,10 +97,13 @@ class NetworkMenuButton : public StatusAreaButton,
 
  private:
   enum MenuItemFlags {
-    FLAG_DISABLED        = 1 << 0,
-    FLAG_TOGGLE_ETHERNET = 1 << 1,
-    FLAG_TOGGLE_WIFI     = 1 << 2,
-    FLAG_TOGGLE_OFFLINE  = 1 << 3
+    FLAG_DISABLED          = 1 << 0,
+    FLAG_TOGGLE_ETHERNET   = 1 << 1,
+    FLAG_TOGGLE_WIFI       = 1 << 2,
+    FLAG_TOGGLE_CELLULAR   = 1 << 3,
+    FLAG_TOGGLE_OFFLINE    = 1 << 4,
+    FLAG_ACTIVATE_WIFI     = 1 << 5,
+    FLAG_ACTIVATE_CELLULAR = 1 << 6
   };
 
   struct MenuItem {
@@ -102,22 +111,27 @@ class NetworkMenuButton : public StatusAreaButton,
         : type(menus::MenuModel::TYPE_SEPARATOR),
           flags(0) {}
     MenuItem(menus::MenuModel::ItemType type, string16 label, SkBitmap icon,
-             WifiNetwork wifi_network, int flags)
+             WifiNetwork wifi_network, CellularNetwork cellular_network,
+             int flags)
         : type(type),
           label(label),
           icon(icon),
           wifi_network(wifi_network),
+          cellular_network(cellular_network),
           flags(flags) {}
 
     menus::MenuModel::ItemType type;
     string16 label;
     SkBitmap icon;
     WifiNetwork wifi_network;
+    CellularNetwork cellular_network;
     int flags;
   };
   typedef std::vector<MenuItem> MenuItemVector;
 
   static SkBitmap IconForWifiStrength(int strength);
+
+  static SkBitmap IconForCellularStrength(int strength);
 
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);

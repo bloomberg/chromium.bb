@@ -6175,6 +6175,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_WIFI" desc="The wifi network device.">
         Wifi
       </message>
+      <message name="IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR" desc="The cellular network device.">
+        Cellular
+      </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING" desc="The network device status connecting.">
         Connecting
       </message>
@@ -6185,7 +6188,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Disconnected
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISABLED" desc="The network device status disabled.">
-        Disabled
+        Off
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ENABLE" desc="Enable the network device.">
         Turn <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph> On

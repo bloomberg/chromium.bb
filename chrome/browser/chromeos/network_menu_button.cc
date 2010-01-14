@@ -115,9 +115,11 @@ void NetworkMenuButton::ActivatedAt(int index) {
     cros->EnableEthernetNetworkDevice(!cros->ethernet_enabled());
   } else if (menu_items_[index].flags & FLAG_TOGGLE_WIFI) {
     cros->EnableWifiNetworkDevice(!cros->wifi_enabled());
+  } else if (menu_items_[index].flags & FLAG_TOGGLE_CELLULAR) {
+    cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
   } else if (menu_items_[index].flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
-  } else {
+  } else if (menu_items_[index].flags & FLAG_ACTIVATE_WIFI) {
     activated_wifi_network_ = menu_items_[index].wifi_network;
 
     // If clicked on a network that we are already connected to or we are
@@ -142,6 +144,8 @@ void NetworkMenuButton::ActivatedAt(int index) {
       window->SetBounds(gfx::Rect(point, size), browser_window_);
       window->Show();
     }
+  } else if (menu_items_[index].flags & FLAG_ACTIVATE_CELLULAR) {
+      cros->ConnectToCellularNetwork(menu_items_[index].cellular_network);
   }
 }
 
@@ -318,6 +322,12 @@ SkBitmap NetworkMenuButton::IconForWifiStrength(int strength) {
   return menu_wifi_icons_[index];
 }
 
+// static
+SkBitmap NetworkMenuButton::IconForCellularStrength(int strength) {
+  // TODO(chocobo): need to switch to cellular icons when they are ready.
+  return IconForWifiStrength(strength);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, views::ViewMenuDelegate implementation:
 
@@ -352,7 +362,7 @@ void NetworkMenuButton::InitMenuItems() {
       IconForWifiStrength(cros->wifi_strength()) :
       *menu_disconnected_icon_;
   menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-      icon, WifiNetwork(), FLAG_DISABLED));
+      icon, WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
 
   // Turn Wifi Off.
   if (!offline_mode) {
@@ -362,7 +372,7 @@ void NetworkMenuButton::InitMenuItems() {
         l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
             l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-        SkBitmap(), WifiNetwork(), FLAG_TOGGLE_WIFI));
+        SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_WIFI));
 
     const WifiNetworkVector& networks = cros->wifi_networks();
     // Wifi networks ssids.
@@ -372,7 +382,7 @@ void NetworkMenuButton::InitMenuItems() {
           l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
               l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
       menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-          SkBitmap(), WifiNetwork(), FLAG_DISABLED));
+          SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
     } else {
       for (size_t i = 0; i < networks.size(); ++i) {
         label =
@@ -380,14 +390,66 @@ void NetworkMenuButton::InitMenuItems() {
                 ASCIIToUTF16(networks[i].ssid));
         if (networks[i].ssid == cros->wifi_ssid()) {
           menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_CHECK, label,
-              SkBitmap(), networks[i], 0));
+              SkBitmap(), networks[i], CellularNetwork(), FLAG_ACTIVATE_WIFI));
         } else {
           menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-              SkBitmap(), networks[i], 0));
-          // TODO(chocobo): Once we have better icons and more reliable strength
-          //   data, show icons for wifi ssids.
-//        menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-//            IconForWifiStrength(networks[i].strength), networks[i], 0));
+              SkBitmap(), networks[i], CellularNetwork(), FLAG_ACTIVATE_WIFI));
+        }
+      }
+    }
+
+    // Separator.
+    menu_items_.push_back(MenuItem());
+  }
+
+  // Cellular: Status.
+  status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
+  if (cros->cellular_connecting())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
+  else if (cros->cellular_connected())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
+  else if (cros->cellular_enabled())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
+  label =
+      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR),
+          l10n_util::GetStringUTF16(status));
+  icon = cros->cellular_connected() ?
+      IconForCellularStrength(cros->cellular_strength()) :
+      *menu_disconnected_icon_;
+  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+      icon, WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
+
+  // Turn Cellular Off.
+  if (!offline_mode) {
+    label = cros->cellular_enabled() ?
+        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
+            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)) :
+        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
+            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
+    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+        SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_CELLULAR));
+
+    const CellularNetworkVector& networks = cros->cellular_networks();
+    // Cellular networks ssids.
+    if (networks.empty()) {
+      // No networks available message.
+      label =
+          l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
+              l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
+      menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+          SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
+    } else {
+      for (size_t i = 0; i < networks.size(); ++i) {
+        label =
+            l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
+                ASCIIToUTF16(networks[i].name));
+        if (networks[i].name == cros->cellular_name()) {
+          menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_CHECK, label,
+              SkBitmap(), WifiNetwork(), networks[i], FLAG_ACTIVATE_CELLULAR));
+        } else {
+          menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+              SkBitmap(), WifiNetwork(), networks[i], FLAG_ACTIVATE_CELLULAR));
         }
       }
     }
@@ -410,7 +472,7 @@ void NetworkMenuButton::InitMenuItems() {
   icon = cros->ethernet_connected() ? *menu_wired_icon_ :
                                       *menu_disconnected_icon_;
   menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-      icon, WifiNetwork(), FLAG_DISABLED));
+      icon, WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
 
   // Turn Ethernet Off.
   if (!offline_mode) {
@@ -420,7 +482,7 @@ void NetworkMenuButton::InitMenuItems() {
         l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
             l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-        SkBitmap(), WifiNetwork(), FLAG_TOGGLE_ETHERNET));
+        SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_ETHERNET));
 
     // Separator.
     menu_items_.push_back(MenuItem());
@@ -430,7 +492,7 @@ void NetworkMenuButton::InitMenuItems() {
   menu_items_.push_back(MenuItem(offline_mode ?
       menus::MenuModel::TYPE_CHECK : menus::MenuModel::TYPE_COMMAND,
       l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OFFLINE_MODE),
-      SkBitmap(), WifiNetwork(), FLAG_TOGGLE_OFFLINE));
+      SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_OFFLINE));
 }
 
 }  // namespace chromeos

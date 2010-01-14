@@ -61,6 +61,30 @@ struct WifiNetwork {
 };
 typedef std::vector<WifiNetwork> WifiNetworkVector;
 
+struct CellularNetwork {
+  CellularNetwork()
+      : strength(strength),
+        connecting(false),
+        connected(false) {}
+  CellularNetwork(const std::string& name, int strength, bool connecting,
+                  bool connected)
+      : name(name),
+        strength(strength),
+        connecting(connecting),
+        connected(connected) {}
+
+  // CellularNetworks are sorted by name.
+  bool operator< (const CellularNetwork& other) const {
+    return name < other.name;
+  }
+
+  std::string name;
+  int strength;
+  bool connecting;
+  bool connected;
+};
+typedef std::vector<CellularNetwork> CellularNetworkVector;
+
 // This class handles the interaction with the ChromeOS network library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
 // library class like this: NetworkLibrary::Get()
@@ -106,15 +130,28 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   bool wifi_connecting() const { return wifi_.connecting; }
   bool wifi_connected() const { return wifi_.connected; }
   int wifi_strength() const { return wifi_.strength; }
+  const std::string& cellular_name() const { return cellular_.name; }
+  bool cellular_connecting() const { return cellular_.connecting; }
+  bool cellular_connected() const { return cellular_.connected; }
+  int cellular_strength() const { return cellular_.strength; }
 
   // Returns the current list of wifi networks.
   const WifiNetworkVector& wifi_networks() const { return wifi_networks_; }
 
+  // Returns the current list of cellular networks.
+  const CellularNetworkVector& cellular_networks() const {
+    return cellular_networks_;
+  }
+
   // Connect to the specified wireless network with password.
   void ConnectToWifiNetwork(WifiNetwork network, const string16& password);
 
+  // Connect to the specified cellular network.
+  void ConnectToCellularNetwork(CellularNetwork network);
+
   bool ethernet_enabled() const { return network_devices_ & TYPE_ETHERNET; }
   bool wifi_enabled() const { return network_devices_ & TYPE_WIFI; }
+  bool cellular_enabled() const { return network_devices_ & TYPE_CELLULAR; }
   bool offline_mode() const { return offline_mode_; }
 
   // Enables/disables the ethernet network device.
@@ -122,6 +159,9 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
 
   // Enables/disables the wifi network device.
   void EnableWifiNetworkDevice(bool enable);
+
+  // Enables/disables the cellular network device.
+  void EnableCellularNetworkDevice(bool enable);
 
   // Enables/disables offline mode.
   void EnableOfflineMode(bool enable);
@@ -137,11 +177,13 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   static void NetworkStatusChangedHandler(void* object,
       const chromeos::ServiceStatus& service_status);
 
-  // This parses ServiceStatus and creates a WifiNetworkVector of wifi networks.
+  // This parses ServiceStatus and creates a WifiNetworkVector of wifi networks
+  // and a CellularNetworkVector of cellular networks.
   // It also sets the ethernet connecting/connected status.
   static void ParseNetworks(const chromeos::ServiceStatus& service_status,
-                            WifiNetworkVector* networks,
-                            EthernetNetwork* ethernet);
+                            EthernetNetwork* ethernet,
+                            WifiNetworkVector* wifi_networks,
+                            CellularNetworkVector* ceullular_networks);
 
   // This methods loads the initial list of networks on startup and starts the
   // monitoring of network changes.
@@ -150,10 +192,12 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   // Enables/disables the specified network device.
   void EnableNetworkDevice(chromeos::ConnectionType device, bool enable);
 
-  // Update the network with the a list of wifi networks and ethernet status.
+  // Update the network with the ethernet status and a list of wifi and cellular
+  // networks.
   // This will notify all the Observers.
-  void UpdateNetworkStatus(const WifiNetworkVector& networks,
-                           const EthernetNetwork& ethernet);
+  void UpdateNetworkStatus(const EthernetNetwork& ethernet,
+                           const WifiNetworkVector& wifi_networks,
+                           const CellularNetworkVector& cellular_networks);
 
   // Checks network traffic to see if there is any uploading.
   // If there is download traffic, then true is passed in for download.
@@ -195,6 +239,12 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
 
   // The current connected (or connecting) wifi network.
   WifiNetwork wifi_;
+
+  // The list of available cellular networks.
+  CellularNetworkVector cellular_networks_;
+
+  // The current connected (or connecting) cellular network.
+  CellularNetwork cellular_;
 
   // The current enabled network devices. This is a bitwise flag of
   // ConnectionTypes.
