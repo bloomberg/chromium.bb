@@ -1,3 +1,4 @@
 include_rules = [
   "+gpu/command_buffer",
+  "+gpu/pgl",
 ]

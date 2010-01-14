@@ -30,8 +30,7 @@
 #include "base/scoped_ptr.h"
 #include "webkit/glue/plugins/nphostapi.h"
 #if !defined(INDEPENDENT_PLUGIN)
-#include "gpu/command_buffer/client/gles2_implementation.h"
-#include "webkit/tools/pepper_test_plugin/command_buffer_pepper.h"
+#include "gpu/pgl/pgl.h"
 #endif
 
 extern NPNetscapeFuncs* browser;
@@ -51,22 +50,21 @@ class PluginObject {
   void Draw3D();
 
  private:
-  bool InitializeCommandBuffer();
-
   NPObject header_;
   NPP npp_;
   NPObject* test_object_;
   int dimensions_;
 
   NPDevice* device2d_;
+  NPDevice* device3d_;
   NPDevice* deviceaudio_;
 
+  NPDeviceContext3D context3d_;
   NPDeviceContextAudio context_audio_;
 
+
 #if !defined(INDEPENDENT_PLUGIN)
-  scoped_ptr<CommandBufferPepper> command_buffer_;
-  scoped_ptr<gpu::gles2::GLES2CmdHelper> helper_;
-  scoped_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
+  PGLContext pgl_context_;
 #endif
 
   int width_;

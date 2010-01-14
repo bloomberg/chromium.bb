@@ -34,8 +34,8 @@
 #define CHECK(x)
 #else
 #include "base/logging.h"
-#include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/gles2_demo_cc.h"
+#include "gpu/command_buffer/common/gles2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -288,6 +288,8 @@ template <int F, typename T> void SineWaveCallback(
   context->config.userData = reinterpret_cast<void *>(t);
 }
 
+const int32 kCommandBufferSize = 1024 * 1024;
+
 }  // namespace
 
 
@@ -296,7 +298,10 @@ template <int F, typename T> void SineWaveCallback(
 PluginObject::PluginObject(NPP npp)
     : npp_(npp),
       test_object_(browser->createobject(npp, GetTestClass())),
-      device2d_(NULL) {
+      device2d_(NULL),
+      device3d_(NULL),
+      deviceaudio_(NULL),
+      pgl_context_(NULL) {
   memset(&context_audio_, 0, sizeof(context_audio_));
 }
 
@@ -337,6 +342,9 @@ void PluginObject::New(NPMIMEType pluginType,
   device2d_ = extensions->acquireDevice(npp_, NPPepper2DDevice);
   CHECK(device2d_);
 
+  device3d_ = extensions->acquireDevice(npp_, NPPepper3DDevice);
+  CHECK(device3d_);
+
   deviceaudio_ =  extensions->acquireDevice(npp_, NPPepperAudioDevice);
   CHECK(deviceaudio_);
 }
@@ -359,12 +367,20 @@ void PluginObject::SetWindow(const NPWindow& window) {
     device2d_->flushContext(npp_, &context, callback, NULL);
   } else {
 #if !defined(INDEPENDENT_PLUGIN)
-    if (!command_buffer_.get()) {
-      if (!InitializeCommandBuffer())
-        return;
+    if (!pgl_context_) {
+      // Initialize a 3D context.
+      NPDeviceContext3DConfig config;
+      config.commandBufferEntries = kCommandBufferSize;
+      device3d_->initializeContext(npp_, &config, &context3d_);
+
+      // Create a PGL context.
+      pgl_context_ = pglCreateContext(npp_, device3d_, &context3d_);
     }
 
-    gles2_implementation_->Viewport(0, 0, window.width, window.height);
+    // Reset the viewport to new window size.
+    pglMakeCurrent(pgl_context_);
+    glViewport(0, 0, window.width, window.height);
+    pglMakeCurrent(NULL);
 
     // Schedule the first call to Draw.
     browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
@@ -388,44 +404,12 @@ void PluginObject::SetWindow(const NPWindow& window) {
 void PluginObject::Draw3D() {
 #if !defined(INDEPENDENT_PLUGIN)
   // Render some stuff.
-  gles2::g_gl_impl = gles2_implementation_.get();
+  pglMakeCurrent(pgl_context_);
   GLFromCPPTestFunction();
-  gles2::GetGLContext()->SwapBuffers();
-  helper_->Flush();
-  gles2::g_gl_impl = NULL;
+  pglSwapBuffers();
+  pglMakeCurrent(NULL);
 
   // Schedule another call to Draw.
   browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
 #endif
-}
-
-bool PluginObject::InitializeCommandBuffer() {
-#if !defined(INDEPENDENT_PLUGIN)
-  static const int32 kCommandBufferSize = 512 * 1024;
-  command_buffer_.reset(new CommandBufferPepper(npp_, browser));
-  if (command_buffer_->Initialize(kCommandBufferSize)) {
-    helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
-    if (helper_->Initialize()) {
-      const int32 kTransferBufferSize = 512 * 1024;
-      int32 transfer_buffer_id =
-          command_buffer_->CreateTransferBuffer(kTransferBufferSize);
-      gpu::Buffer transfer_buffer =
-          command_buffer_->GetTransferBuffer(transfer_buffer_id);
-      if (transfer_buffer.ptr) {
-        gles2_implementation_.reset(new gpu::gles2::GLES2Implementation(
-            helper_.get(),
-            transfer_buffer.size,
-            transfer_buffer.ptr,
-            transfer_buffer_id));
-        return true;
-      }
-    }
-
-    helper_.reset();
-  }
-
-  command_buffer_.reset();
-#endif
-
-  return false;
 }

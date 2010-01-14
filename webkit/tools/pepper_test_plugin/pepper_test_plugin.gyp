@@ -8,6 +8,7 @@
     {
       'target_name': 'pepper_test_plugin',
       'dependencies': [
+        '../../../gpu/gpu.gyp:pgl',
         '../../../third_party/npapi/npapi.gyp:npapi',
       ],
       'include_dirs': [
@@ -17,8 +18,6 @@
         'INFOPLIST_FILE': 'Info.plist',
       },
       'sources': [
-        'command_buffer_pepper.cc',
-        'command_buffer_pepper.h',
         'main.cc',
         'plugin_object.cc',
         'plugin_object.h',
