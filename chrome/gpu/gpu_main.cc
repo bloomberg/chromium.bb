@@ -9,6 +9,10 @@
 #include "chrome/gpu/gpu_process.h"
 #include "chrome/gpu/gpu_thread.h"
 
+#if defined(USE_LINUX_BREAKPAD)
+#include "chrome/app/breakpad_linux.h"
+#endif
+
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #endif
