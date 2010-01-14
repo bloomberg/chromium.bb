@@ -134,9 +134,6 @@ void svsDraw ( ESContext *esContext )
    
    // Draw the cube
    glDrawElements ( GL_TRIANGLES, userData->numIndices, GL_UNSIGNED_SHORT, 0 );
-
-   // TODO(alokp): glFlush should not be necessary with SwapBuffers.
-   glFlush();
 }
 
 ///

@@ -82,10 +82,6 @@ void htDraw ( ESContext *esContext )
    glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
 
    glDrawArrays ( GL_TRIANGLES, 0, 3 );
-
-   // Nothing is drawn or application crashes without glFlush.
-   // TODO(alokp): glFlush should not be necessary with SwapBuffers().
-   glFlush();
 }
 
 ///
