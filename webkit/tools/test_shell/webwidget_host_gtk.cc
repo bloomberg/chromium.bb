@@ -212,7 +212,7 @@ class WebWidgetHostGtkWidget {
     // other's focus when running in parallel.
     if (!TestShell::layout_test_mode())
       host->webwidget()->setFocus(true);
-    return FALSE;
+    return TRUE;
   }
 
   // Keyboard focus left.
@@ -223,7 +223,7 @@ class WebWidgetHostGtkWidget {
     // other's focus when running in parallel.
     if (!TestShell::layout_test_mode())
       host->webwidget()->setFocus(false);
-    return FALSE;
+    return TRUE;
   }
 
   // Mouse button down.
