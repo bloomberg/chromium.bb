@@ -862,6 +862,11 @@ WebInspector.HeapSnapshotProfileType.prototype = {
         InspectorBackend.takeHeapSnapshot();
     },
 
+    get welcomeMessage()
+    {
+        return WebInspector.UIString("Get a heap snapshot by pressing<br>the %s button on the status bar.");
+    },
+
     createSidebarTreeElementForProfile: function(profile)
     {
         var element = new WebInspector.HeapSnapshotSidebarTreeElement(profile);
