@@ -787,6 +787,7 @@ BUG13907 SKIP : LayoutTests/media/video-zoom-controls.html = FAIL
 
 // The video appears as a white box on Windows.
 BUG13907 SKIP WIN : LayoutTests/media/video-zoom.html = FAIL
+BUG13907 MAC DEBUG : LayoutTests/media/video-zoom.html = IMAGE+TEXT PASS
 
 // Video has a green background, probably due to Mac repaint debugging code.
 BUG13907 BUG25376 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
@@ -2409,6 +2410,7 @@ BUG13174 WIN : LayoutTests/transitions/shorthand-border-transitions.html = PASS 
 BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-children.html = FAIL
 
 BUG14207 LINUX : LayoutTests/tables/mozilla/bugs/bug28341.html = FAIL
+BUG32231 MAC DEBUG : LayoutTests/tables/mozilla/bugs/bug28341.html = IMAGE
 
 // Newly added test http://trac.webkit.org/changeset/44816
 BUG18733 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
