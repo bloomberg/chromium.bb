@@ -84,7 +84,6 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   // Plugins that we know don't work at all.
   const char* blacklisted_plugin_mimes[] = {
     "application/x-googlegears",          // Safari-specific.
-    "application/x-id-quakelive",         // Crashes on load.
     "application/x-vnd.movenetworks.qm",  // Crashes on Snow Leopard.
     "application/vnd.o3d.auto",           // Doesn't render, and having it
                                           // detected can prevent fallbacks.
@@ -99,8 +98,10 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
 
   // Plugins that we know are working reasonably well.
   const char* whitelisted_plugin_mimes[] = {
+    "application/geplugin",
     "application/googletalk",
     "application/vnd.npapi-test",
+    "application/x-id-quakelive",
     "application/x-picasa-detect",
     "application/x-shockwave-flash",
     "application/x-silverlight",
