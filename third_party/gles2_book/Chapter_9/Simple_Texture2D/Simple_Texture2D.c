@@ -15,29 +15,12 @@
 //    the basics of 2D texturing
 //
 #include <stdlib.h>
-#include "esUtil.h"
-
-typedef struct
-{
-   // Handle to a program object
-   GLuint programObject;
-
-   // Attribute locations
-   GLint  positionLoc;
-   GLint  texCoordLoc;
-
-   // Sampler location
-   GLint samplerLoc;
-
-   // Texture handle
-   GLuint textureId;
-
-} UserData;
+#include "Simple_Texture2D.h"
 
 ///
 // Create a simple 2x2 texture image with four different colors
 //
-GLuint CreateSimpleTexture2D( )
+static GLuint CreateSimpleTexture2D( )
 {
    // Texture object handle
    GLuint textureId;
@@ -75,9 +58,9 @@ GLuint CreateSimpleTexture2D( )
 ///
 // Initialize the shader and program object
 //
-int Init ( ESContext *esContext )
+int stInit ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   STUserData *userData = esContext->userData;
    GLbyte vShaderStr[] =  
       "attribute vec4 a_position;   \n"
       "attribute vec2 a_texCoord;   \n"
@@ -97,6 +80,17 @@ int Init ( ESContext *esContext )
       "  gl_FragColor = texture2D( s_texture, v_texCoord );\n"
       "}                                                   \n";
 
+   GLfloat vVertices[] = { -0.5f,  0.5f, 0.0f,  // Position 0
+                            0.0f,  0.0f,        // TexCoord 0 
+                           -0.5f, -0.5f, 0.0f,  // Position 1
+                            0.0f,  1.0f,        // TexCoord 1
+                            0.5f, -0.5f, 0.0f,  // Position 2
+                            1.0f,  1.0f,        // TexCoord 2
+                            0.5f,  0.5f, 0.0f,  // Position 3
+                            1.0f,  0.0f         // TexCoord 3
+                         };
+   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
+
    // Load the shaders and get a linked program object
    userData->programObject = esLoadProgram ( vShaderStr, fShaderStr );
 
@@ -110,6 +104,15 @@ int Init ( ESContext *esContext )
    // Load the texture
    userData->textureId = CreateSimpleTexture2D ();
 
+   // Load vertex data
+   glGenBuffers ( 2, userData->vboIds );
+   glBindBuffer ( GL_ARRAY_BUFFER, userData->vboIds[0] );
+   glBufferData ( GL_ARRAY_BUFFER, sizeof(vVertices),
+                  vVertices, GL_STATIC_DRAW);
+   glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, userData->vboIds[1] );
+   glBufferData ( GL_ELEMENT_ARRAY_BUFFER, sizeof(indices),
+	                indices, GL_STATIC_DRAW );
+
    glClearColor ( 0.0f, 0.0f, 0.0f, 0.0f );
    return TRUE;
 }
@@ -117,19 +120,13 @@ int Init ( ESContext *esContext )
 ///
 // Draw a triangle using the shader pair created in Init()
 //
-void Draw ( ESContext *esContext )
+#define VTX_POS_SIZE 3
+#define VTX_TEX_SIZE 2
+#define VTX_STRIDE (5 * sizeof(GLfloat))
+void stDraw ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
-   GLfloat vVertices[] = { -0.5f,  0.5f, 0.0f,  // Position 0
-                            0.0f,  0.0f,        // TexCoord 0 
-                           -0.5f, -0.5f, 0.0f,  // Position 1
-                            0.0f,  1.0f,        // TexCoord 1
-                            0.5f, -0.5f, 0.0f,  // Position 2
-                            1.0f,  1.0f,        // TexCoord 2
-                            0.5f,  0.5f, 0.0f,  // Position 3
-                            1.0f,  0.0f         // TexCoord 3
-                         };
-   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
+   STUserData *userData = esContext->userData;
+   GLuint offset = 0;
       
    // Set the viewport
    glViewport ( 0, 0, esContext->width, esContext->height );
@@ -141,11 +138,12 @@ void Draw ( ESContext *esContext )
    glUseProgram ( userData->programObject );
 
    // Load the vertex position
-   glVertexAttribPointer ( userData->positionLoc, 3, GL_FLOAT, 
-                           GL_FALSE, 5 * sizeof(GLfloat), vVertices );
+   glVertexAttribPointer ( userData->positionLoc, VTX_POS_SIZE, GL_FLOAT, 
+                           GL_FALSE, VTX_STRIDE, (GLvoid*) offset );
    // Load the texture coordinate
-   glVertexAttribPointer ( userData->texCoordLoc, 2, GL_FLOAT,
-                           GL_FALSE, 5 * sizeof(GLfloat), &vVertices[3] );
+   offset += VTX_POS_SIZE * sizeof(GLfloat);
+   glVertexAttribPointer ( userData->texCoordLoc, VTX_TEX_SIZE, GL_FLOAT,
+                           GL_FALSE, VTX_STRIDE, (GLvoid*) offset );
 
    glEnableVertexAttribArray ( userData->positionLoc );
    glEnableVertexAttribArray ( userData->texCoordLoc );
@@ -157,42 +155,22 @@ void Draw ( ESContext *esContext )
    // Set the sampler texture unit to 0
    glUniform1i ( userData->samplerLoc, 0 );
 
-   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
-
-   eglSwapBuffers ( esContext->eglDisplay, esContext->eglSurface );
+   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0 );
 }
 
 ///
 // Cleanup
 //
-void ShutDown ( ESContext *esContext )
+void stShutDown ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   STUserData *userData = esContext->userData;
 
    // Delete texture object
    glDeleteTextures ( 1, &userData->textureId );
 
+   // Delete VBOs
+   glDeleteBuffers ( 2, userData->vboIds );
+
    // Delete program object
    glDeleteProgram ( userData->programObject );
-}
-
-
-int main ( int argc, char *argv[] )
-{
-   ESContext esContext;
-   UserData  userData;
-
-   esInitContext ( &esContext );
-   esContext.userData = &userData;
-
-   esCreateWindow ( &esContext, "Simple Texture 2D", 320, 240, ES_WINDOW_RGB );
-   
-   if ( !Init ( &esContext ) )
-      return 0;
-
-   esRegisterDrawFunc ( &esContext, Draw );
-   
-   esMainLoop ( &esContext );
-
-   ShutDown ( &esContext );
 }

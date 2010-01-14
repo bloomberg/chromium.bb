@@ -51,6 +51,17 @@
       ],
     },
     {
+      'target_name': 'simple_texture_2d',
+      'type': 'static_library',
+      'dependencies': [
+        'es_util',
+      ],
+      'sources': [
+        'Chapter_9/Simple_Texture2D/Simple_Texture2D.c',
+        'Chapter_9/Simple_Texture2D/Simple_Texture2D.h',
+      ],
+    },
+    {
       'target_name': 'simple_vertex_shader',
       'type': 'static_library',
       'dependencies': [

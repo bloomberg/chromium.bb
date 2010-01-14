@@ -46,6 +46,17 @@
       ],
     },
     {
+      'target_name': 'simple_texture_2d',
+      'type': 'executable',
+      'dependencies': [
+        'app_framework',
+        '../../third_party/gles2_book/gles2_book.gyp:simple_texture_2d',
+      ],
+      'sources': [
+        'simple_texture_2d/main.cc',
+      ],
+    },
+    {
       'target_name': 'simple_vertex_shader',
       'type': 'executable',
       'dependencies': [
