@@ -328,103 +328,14 @@ static int cs_gem_need_flush(struct radeon_cs_int *cs)
     return 0; //(cs->relocs_total_size > (32*1024*1024));
 }
 
-#define PACKET_TYPE0 0
-#define PACKET_TYPE1 1
-#define PACKET_TYPE2 2
-#define PACKET_TYPE3 3
-
-#define PACKET3_NOP 0x10
-#define PACKET3_SET_SCISSORS 0x1E
-#define PACKET3_3D_DRAW_VBUF 0x28
-#define PACKET3_3D_DRAW_IMMD 0x29
-#define PACKET3_3D_DRAW_INDX 0x2A
-#define PACKET3_3D_LOAD_VBPNTR 0x2F
-#define PACKET3_INDX_BUFFER 0x33
-#define PACKET3_3D_DRAW_VBUF_2 0x34
-#define PACKET3_3D_DRAW_IMMD_2 0x35
-#define PACKET3_3D_DRAW_INDX_2 0x36
-
-#define CP_PACKET_GET_TYPE(h) (((h) >> 30) & 3)
-#define CP_PACKET_GET_COUNT(h) (((h) >> 16) & 0x3FFF)
-#define CP_PACKET0_GET_REG(h) (((h) & 0x1FFF) << 2)
-#define CP_PACKET0_GET_ONE_REG_WR(h) (((h) >> 15) & 1)
-#define CP_PACKET3_GET_OPCODE(h) (((h) >> 8) & 0xFF)
-
 static void cs_gem_print(struct radeon_cs_int *cs, FILE *file)
 {
-    unsigned opcode;
-    unsigned reg;
-    unsigned cnt;
-    unsigned int i, j;
+    unsigned int i;
 
-    for (i = 0; i < cs->cdw;) {
-        cnt = CP_PACKET_GET_COUNT(cs->packets[i]) + 1;
-        switch (CP_PACKET_GET_TYPE(cs->packets[i])) {
-        case PACKET_TYPE0:
-            fprintf(file, "Pkt0 at %d (%d dwords):\n", i, cnt);
-            reg = CP_PACKET0_GET_REG(cs->packets[i]);
-            if (CP_PACKET0_GET_ONE_REG_WR(cs->packets[i++])) {
-                for (j = 0; j < cnt; j++) {
-                    fprintf(file, "    0x%08X -> 0x%04X\n",
-                            cs->packets[i++], reg);
-                }
-            } else {
-                for (j = 0; j < cnt; j++) {
-                    fprintf(file, "    0x%08X -> 0x%04X\n",
-                            cs->packets[i++], reg);
-                    reg += 4;
-                }
-            }
-            break;
-        case PACKET_TYPE3:
-            fprintf(file, "Pkt3 at %d :\n", i);
-            opcode = CP_PACKET3_GET_OPCODE(cs->packets[i++]);
-            switch (opcode) {
-            case PACKET3_NOP:
-                fprintf(file, "    PACKET3_NOP:\n");
-                break;
-            case PACKET3_3D_DRAW_VBUF:
-                fprintf(file, "    PACKET3_3D_DRAW_VBUF:\n");
-                break;
-            case PACKET3_3D_DRAW_IMMD:
-                fprintf(file, "    PACKET3_3D_DRAW_IMMD:\n");
-                break;
-            case PACKET3_3D_DRAW_INDX:
-                fprintf(file, "    PACKET3_3D_DRAW_INDX:\n");
-                break;
-            case PACKET3_3D_LOAD_VBPNTR:
-                fprintf(file, "    PACKET3_3D_LOAD_VBPNTR:\n");
-                break;
-            case PACKET3_INDX_BUFFER:
-                fprintf(file, "    PACKET3_INDX_BUFFER:\n");
-                break;
-            case PACKET3_3D_DRAW_VBUF_2:
-                fprintf(file, "    PACKET3_3D_DRAW_VBUF_2:\n");
-                break;
-            case PACKET3_3D_DRAW_IMMD_2:
-                fprintf(file, "    PACKET3_3D_DRAW_IMMD_2:\n");
-                break;
-            case PACKET3_3D_DRAW_INDX_2:
-                fprintf(file, "    PACKET3_3D_DRAW_INDX_2:\n");
-                break;
-            default:
-                fprintf(file, "Unknow opcode 0x%02X at %d\n", opcode, i);
-                return;
-            }
-            for (j = 0; j < cnt; j++) {
-                fprintf(file, "        0x%08X\n", cs->packets[i++]);
-            }
-            break;
-        case PACKET_TYPE1:
-        case PACKET_TYPE2:
-        default:
-            fprintf(file, "Unknow packet 0x%08X at %d\n", cs->packets[i], i);
-            return;
-        }
+    for (i = 0; i < cs->cdw; i++) {
+        fprintf(file, "0x%08X\n", cs->packets[i]);
     }
 }
-
-
 
 static struct radeon_cs_funcs radeon_cs_gem_funcs = {
     cs_gem_create,
