@@ -394,7 +394,7 @@ class Rebaseliner(object):
 
         expected_filename = '%s-expected%s' % (test_basename, suffix)
         expected_fullpath = os.path.join(
-            path_utils.ChromiumBaselinePath(platform), expected_filename)
+            path_utils.ChromiumBaselinePath(platform), "LayoutTests", expected_filename)
         expected_fullpath = os.path.normpath(expected_fullpath)
         logging.debug('  Expected file full path: "%s"', expected_fullpath)
 
