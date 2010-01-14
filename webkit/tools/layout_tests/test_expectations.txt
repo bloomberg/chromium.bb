@@ -3079,3 +3079,6 @@ BUG_ATWILSON MAC LINUX : svg/dom/SVGScriptElement/script-load-and-error-events.s
 BUG_ATWILSON MAC WIN : svg/custom/js-repaint-rect-on-path-with-stroke.svg = IMAGE
 BUG_ATWILSON  : svg/webarchive/svg-feimage-subresources.svg = IMAGE+TEXT
 BUG_ATWILSON MAC WIN : svg/W3C-SVG-1.1/filters-example-01-b.svg = IMAGE+TEXT
+
+BUG_ATWILSON WIN : storage/close-during-stress-test.html = CRASH PASS
+BUG_ATWILSON WIN : storage/transaction-error-callback.html = CRASH PASS
