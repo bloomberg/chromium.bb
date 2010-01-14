@@ -855,6 +855,17 @@ willPositionSheet:(NSWindow*)sheet
 // the command is supported and doesn't check, otherwise it would have been
 // disabled in the UI in validateUserInterfaceItem:.
 - (void)commandDispatch:(id)sender {
+  DCHECK(sender);
+  // Identify the actual BWC to which the command should be dispatched. It might
+  // belong to a background window, yet this controller gets it because it is
+  // the foreground window's controller and thus in the responder chain. Some
+  // senders don't have this problem (for example, menus only operate on the
+  // foreground window), so this is only an issue for senders that are part of
+  // windows.
+  BrowserWindowController* targetController = self;
+  if ([sender respondsToSelector:@selector(window)])
+    targetController = [[sender window] windowController];
+  DCHECK([targetController isKindOfClass:[BrowserWindowController class]]);
   NSInteger tag = [sender tag];
   switch (tag) {
     case IDC_RELOAD:
@@ -864,19 +875,35 @@ willPositionSheet:(NSWindow*)sheet
         // for Windows (ToolbarView::ButtonPressed()), this function handles
         // both reload button press event and Command+r press event. Thus the
         // 'isKindofClass' check is necessary.
-        [self locationBarBridge]->Revert();
+        [targetController locationBarBridge]->Revert();
       }
       break;
   }
-  browser_->ExecuteCommand(tag);
+  DCHECK(targetController->browser_.get());
+  targetController->browser_->ExecuteCommand(tag);
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition
-// determined by the key flags.
+// determined by the key flags. If the window is in the background and the
+// command key is down, ignore the command key, but process any other modifiers.
 - (void)commandDispatchUsingKeyModifiers:(id)sender {
+  DCHECK(sender);
+  // See comment above for why we do this.
+  BrowserWindowController* targetController = self;
+  if ([sender respondsToSelector:@selector(window)])
+    targetController = [[sender window] windowController];
+  DCHECK([targetController isKindOfClass:[BrowserWindowController class]]);
   NSInteger tag = [sender tag];
-  browser_->ExecuteCommandWithDisposition(tag,
-      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]));
+  DCHECK(targetController->browser_.get());
+  NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+  if (![[sender window] isMainWindow]) {
+    // Remove the command key from the flags, it means "keep the window in
+    // the background" in this case.
+    modifierFlags &= ~NSCommandKeyMask;
+  }
+  targetController->browser_->ExecuteCommandWithDisposition(tag,
+      event_utils::WindowOpenDispositionFromNSEventWithFlags(
+          [NSApp currentEvent], modifierFlags));
 }
 
 // Called when another part of the internal codebase needs to execute a

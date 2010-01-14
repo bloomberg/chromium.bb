@@ -16,6 +16,14 @@ namespace event_utils {
 // associated link in a background tab.
 WindowOpenDisposition WindowOpenDispositionFromNSEvent(NSEvent* event);
 
+// Retrieves the WindowOpenDisposition used to open a link from a user gesture
+// represented by |event|, but instead use the modifier flags given by |flags|,
+// which is the same format as |-NSEvent modifierFlags|. This allows
+// substitution of the modifiers without having to create a new event from
+// scratch.
+WindowOpenDisposition WindowOpenDispositionFromNSEventWithFlags(
+    NSEvent* event, NSUInteger flags);
+
 }  // namespace event_utils
 
 #endif  // CHROME_BROWSER_COCOA_EVENT_UTILS_H_

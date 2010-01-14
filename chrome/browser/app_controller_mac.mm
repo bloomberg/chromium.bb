@@ -523,12 +523,24 @@ static bool g_is_opening_new_window = false;
   return enable;
 }
 
-// Called when the user picks a menu item when there are no key windows. Calls
-// through to the browser object to execute the command. This assumes that the
-// command is supported and doesn't check, otherwise it would have been disabled
-// in the UI in validateUserInterfaceItem:.
+// Called when the user picks a menu item when there are no key windows, or when
+// there is no foreground browser window. Calls through to the browser object to
+// execute the command. This assumes that the command is supported and doesn't
+// check, otherwise it would have been disabled in the UI in
+// validateUserInterfaceItem:.
 - (void)commandDispatch:(id)sender {
   Profile* defaultProfile = [self defaultProfile];
+
+  // Handle the case where we're dispatching a command from a sender that's in a
+  // browser window. This means that the command came from a background window
+  // and is getting here because the foreground window is not a browser window.
+  if ([sender respondsToSelector:@selector(window)]) {
+    id delegate = [[sender window] windowController];
+    if ([delegate isKindOfClass:[BrowserWindowController class]]) {
+      [delegate commandDispatch:sender];
+      return;
+    }
+  }
 
   NSInteger tag = [sender tag];
   switch (tag) {
@@ -602,6 +614,21 @@ static bool g_is_opening_new_window = false;
           defaultProfile, ProfileSyncService::START_FROM_WRENCH);
       break;
   };
+}
+
+// Same as |-commandDispatch:|, but executes commands using a disposition
+// determined by the key flags. This will get called in the case where the
+// frontmost window is not a browser window, and the user has command-clicked
+// a button in a background browser window whose action is
+// |-commandDispatchUsingKeyModifiers:|
+- (void)commandDispatchUsingKeyModifiers:(id)sender {
+  DCHECK(sender);
+  if ([sender respondsToSelector:@selector(window)]) {
+    id delegate = [[sender window] windowController];
+    if ([delegate isKindOfClass:[BrowserWindowController class]]) {
+      [delegate commandDispatchUsingKeyModifiers:sender];
+    }
+  }
 }
 
 // NSApplication delegate method called when someone clicks on the
