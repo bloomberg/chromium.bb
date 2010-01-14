@@ -35,6 +35,17 @@
       ],
     },
     {
+      'target_name': 'mip_map_2d',
+      'type': 'executable',
+      'dependencies': [
+        'app_framework',
+        '../../third_party/gles2_book/gles2_book.gyp:mip_map_2d',
+      ],
+      'sources': [
+        'mip_map_2d/main.cc',
+      ],
+    },
+    {
       'target_name': 'simple_vertex_shader',
       'type': 'executable',
       'dependencies': [

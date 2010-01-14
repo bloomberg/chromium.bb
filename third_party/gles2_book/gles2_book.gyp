@@ -40,6 +40,17 @@
       ],
     },
     {
+      'target_name': 'mip_map_2d',
+      'type': 'static_library',
+      'dependencies': [
+        'es_util',
+      ],
+      'sources': [
+        'Chapter_9/MipMap2D/MipMap2D.c',
+        'Chapter_9/MipMap2D/MipMap2D.h',
+      ],
+    },
+    {
       'target_name': 'simple_vertex_shader',
       'type': 'static_library',
       'dependencies': [

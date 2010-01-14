@@ -14,33 +14,12 @@
 //    and rendering with it
 //
 #include <stdlib.h>
-#include "esUtil.h"
-
-typedef struct
-{
-   // Handle to a program object
-   GLuint programObject;
-
-   // Attribute locations
-   GLint  positionLoc;
-   GLint  texCoordLoc;
-
-   // Sampler location
-   GLint samplerLoc;
-
-   // Offset location
-   GLint offsetLoc;
-
-   // Texture handle
-   GLuint textureId;
-
-} UserData;
-
+#include "MipMap2D.h"
 
 ///
 //  From an RGB8 source image, generate the next level mipmap
 //
-GLboolean GenMipMap2D( GLubyte *src, GLubyte **dst, int srcWidth, int srcHeight, int *dstWidth, int *dstHeight )
+static GLboolean GenMipMap2D( GLubyte *src, GLubyte **dst, int srcWidth, int srcHeight, int *dstWidth, int *dstHeight )
 {
    int x,
        y;
@@ -105,7 +84,7 @@ GLboolean GenMipMap2D( GLubyte *src, GLubyte **dst, int srcWidth, int srcHeight,
 ///
 //  Generate an RGB8 checkerboard image
 //
-GLubyte* GenCheckImage( int width, int height, int checkSize )
+static GLubyte* GenCheckImage( int width, int height, int checkSize )
 {
    int x,
        y;
@@ -142,7 +121,7 @@ GLubyte* GenCheckImage( int width, int height, int checkSize )
 ///
 // Create a mipmapped 2D texture image 
 //
-GLuint CreateMipMappedTexture2D( )
+static GLuint CreateMipMappedTexture2D( )
 {
    // Texture object handle
    GLuint textureId;
@@ -210,9 +189,9 @@ GLuint CreateMipMappedTexture2D( )
 ///
 // Initialize the shader and program object
 //
-int Init ( ESContext *esContext )
+int mmInit ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   MMUserData *userData = esContext->userData;
    GLbyte vShaderStr[] =
       "uniform float u_offset;      \n"
       "attribute vec4 a_position;   \n"
@@ -225,8 +204,9 @@ int Init ( ESContext *esContext )
       "   v_texCoord = a_texCoord;  \n"
       "}                            \n";
    
+   // TODO(alokp): Shaders containing "precision" do not compile.
    GLbyte fShaderStr[] =  
-      "precision mediump float;                            \n"
+      "//precision mediump float;                            \n"
       "varying vec2 v_texCoord;                            \n"
       "uniform sampler2D s_texture;                        \n"
       "void main()                                         \n"
@@ -234,8 +214,20 @@ int Init ( ESContext *esContext )
       "  gl_FragColor = texture2D( s_texture, v_texCoord );\n"
       "}                                                   \n";
 
+   GLfloat vVertices[] = { -0.5f,  0.5f, 0.0f, 1.5f,  // Position 0
+                            0.0f,  0.0f,              // TexCoord 0 
+                           -0.5f, -0.5f, 0.0f, 0.75f, // Position 1
+                            0.0f,  1.0f,              // TexCoord 1
+                            0.5f, -0.5f, 0.0f, 0.75f, // Position 2
+                            1.0f,  1.0f,              // TexCoord 2
+                            0.5f,  0.5f, 0.0f, 1.5f,  // Position 3
+                            1.0f,  0.0f               // TexCoord 3
+                         };
+   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
+
    // Load the shaders and get a linked program object
    userData->programObject = esLoadProgram ( vShaderStr, fShaderStr );
+   if (userData->programObject == 0) return FALSE;
 
    // Get the attribute locations
    userData->positionLoc = glGetAttribLocation ( userData->programObject, "a_position" );
@@ -250,6 +242,15 @@ int Init ( ESContext *esContext )
    // Load the texture
    userData->textureId = CreateMipMappedTexture2D ();
 
+   // Load vertex data
+   glGenBuffers ( 2, userData->vboIds );
+   glBindBuffer ( GL_ARRAY_BUFFER, userData->vboIds[0] );
+   glBufferData ( GL_ARRAY_BUFFER, sizeof(vVertices),
+                  vVertices, GL_STATIC_DRAW);
+   glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, userData->vboIds[1] );
+   glBufferData ( GL_ELEMENT_ARRAY_BUFFER, sizeof(indices),
+	                indices, GL_STATIC_DRAW );
+
    glClearColor ( 0.0f, 0.0f, 0.0f, 0.0f );
    return TRUE;
 }
@@ -257,19 +258,13 @@ int Init ( ESContext *esContext )
 ///
 // Draw a triangle using the shader pair created in Init()
 //
-void Draw ( ESContext *esContext )
+#define VTX_POS_SIZE 4
+#define VTX_TEX_SIZE 2
+#define VTX_STRIDE (6 * sizeof(GLfloat))
+void mmDraw ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
-   GLfloat vVertices[] = { -0.5f,  0.5f, 0.0f, 1.5f,  // Position 0
-                            0.0f,  0.0f,              // TexCoord 0 
-                           -0.5f, -0.5f, 0.0f, 0.75f, // Position 1
-                            0.0f,  1.0f,              // TexCoord 1
-                            0.5f, -0.5f, 0.0f, 0.75f, // Position 2
-                            1.0f,  1.0f,              // TexCoord 2
-                            0.5f,  0.5f, 0.0f, 1.5f,  // Position 3
-                            1.0f,  0.0f               // TexCoord 3
-                         };
-   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
+   MMUserData *userData = esContext->userData;
+   GLuint offset = 0;
       
    // Set the viewport
    glViewport ( 0, 0, esContext->width, esContext->height );
@@ -281,11 +276,12 @@ void Draw ( ESContext *esContext )
    glUseProgram ( userData->programObject );
 
    // Load the vertex position
-   glVertexAttribPointer ( userData->positionLoc, 4, GL_FLOAT, 
-                           GL_FALSE, 6 * sizeof(GLfloat), vVertices );
+   glVertexAttribPointer ( userData->positionLoc, VTX_POS_SIZE, GL_FLOAT, 
+                           GL_FALSE, VTX_STRIDE, (GLvoid*) offset );
+   offset += VTX_POS_SIZE * sizeof(GLfloat);
    // Load the texture coordinate
-   glVertexAttribPointer ( userData->texCoordLoc, 2, GL_FLOAT,
-                           GL_FALSE, 6 * sizeof(GLfloat), &vVertices[4] );
+   glVertexAttribPointer ( userData->texCoordLoc, VTX_TEX_SIZE, GL_FLOAT,
+                           GL_FALSE, VTX_STRIDE, (GLvoid*) offset );
 
    glEnableVertexAttribArray ( userData->positionLoc );
    glEnableVertexAttribArray ( userData->texCoordLoc );
@@ -300,47 +296,27 @@ void Draw ( ESContext *esContext )
    // Draw quad with nearest sampling
    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
    glUniform1f ( userData->offsetLoc, -0.6f );   
-   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
+   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0 );
 
    // Draw quad with trilinear filtering
    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
    glUniform1f ( userData->offsetLoc, 0.6f );
-   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
-
-   eglSwapBuffers ( esContext->eglDisplay, esContext->eglSurface );
+   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0 );
 }
 
 ///
 // Cleanup
 //
-void ShutDown ( ESContext *esContext )
+void mmShutDown ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   MMUserData *userData = esContext->userData;
 
    // Delete texture object
    glDeleteTextures ( 1, &userData->textureId );
 
+   // Delete VBOs
+   glDeleteBuffers ( 2, userData->vboIds );
+
    // Delete program object
    glDeleteProgram ( userData->programObject );
-}
-
-
-int main ( int argc, char *argv[] )
-{
-   ESContext esContext;
-   UserData  userData;
-
-   esInitContext ( &esContext );
-   esContext.userData = &userData;
-
-   esCreateWindow ( &esContext, "MipMap 2D", 320, 240, ES_WINDOW_RGB );
-   
-   if ( !Init ( &esContext ) )
-      return 0;
-
-   esRegisterDrawFunc ( &esContext, Draw );
-   
-   esMainLoop ( &esContext );
-
-   ShutDown ( &esContext );
 }
