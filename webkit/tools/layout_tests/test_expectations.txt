@@ -1168,7 +1168,7 @@ BUG10318 WIN LINUX : LayoutTests/fast/canvas/toDataURL-supportedTypes.html = FAI
 // intentional, but it makes pixel results unreliable.
 // http://bugs.webkit.org/show_bug.cgi?id=21491
 // CSS animations should not block our next release.
-BUG10320 SKIP : LayoutTests/transitions/opacity-transition-zindex.html = PASS
+BUG10320 : LayoutTests/transitions/opacity-transition-zindex.html = PASS FAIL
 
 // Issue 3273: TextInputController::firstRectForCharacterRange not implemented.
 BUG3273 : LayoutTests/editing/selection/move-left-right.html = FAIL
