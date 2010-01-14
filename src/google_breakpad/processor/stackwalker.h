@@ -48,12 +48,10 @@ namespace google_breakpad {
 
 class CallStack;
 class CodeModules;
-template<typename T> class linked_ptr;
 class MemoryRegion;
 class MinidumpContext;
 class SourceLineResolverInterface;
 struct StackFrame;
-struct WindowsFrameInfo;
 class SymbolSupplier;
 class SystemInfo;
 
@@ -118,6 +116,10 @@ class Stackwalker {
   // This field is optional and may be NULL.
   const CodeModules *modules_;
 
+ protected:
+  // The SourceLineResolver implementation.
+  SourceLineResolverInterface *resolver_;
+
  private:
   // Obtains the context frame, the innermost called procedure in a stack
   // trace.  Returns NULL on failure.  GetContextFrame allocates a new
@@ -133,15 +135,10 @@ class Stackwalker {
   // the end of the stack has been reached).  GetCallerFrame allocates a new
   // StackFrame (or StackFrame subclass), ownership of which is taken by
   // the caller.
-  virtual StackFrame* GetCallerFrame(
-      const CallStack *stack,
-      const vector< linked_ptr<WindowsFrameInfo> > &stack_frame_info) = 0;
+  virtual StackFrame* GetCallerFrame(const CallStack *stack) = 0;
 
   // The optional SymbolSupplier for resolving source line info.
   SymbolSupplier *supplier_;
-
-  // The SourceLineResolver implementation
-  SourceLineResolverInterface *resolver_;
 };
 
 

@@ -64,9 +64,7 @@ class StackwalkerARM : public Stackwalker {
   // Implementation of Stackwalker, using arm context and stack conventions.
   // TODO: currently stubbed out, needs CFI symbol dumper support
   virtual StackFrame* GetContextFrame();
-  virtual StackFrame* GetCallerFrame(
-      const CallStack *stack,
-      const vector< linked_ptr<WindowsFrameInfo> > &stack_frame_info);
+  virtual StackFrame* GetCallerFrame(const CallStack *stack);
 
   // Stores the CPU context corresponding to the innermost stack frame to
   // be returned by GetContextFrame.

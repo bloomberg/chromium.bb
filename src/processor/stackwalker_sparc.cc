@@ -72,9 +72,7 @@ StackFrame* StackwalkerSPARC::GetContextFrame() {
 }
 
 
-StackFrame* StackwalkerSPARC::GetCallerFrame(
-    const CallStack *stack,
-    const vector< linked_ptr<WindowsFrameInfo> > &stack_frame_info) {
+StackFrame* StackwalkerSPARC::GetCallerFrame(const CallStack *stack) {
   if (!memory_ || !stack) {
     BPLOG(ERROR) << "Can't get caller frame without memory or stack";
     return NULL;

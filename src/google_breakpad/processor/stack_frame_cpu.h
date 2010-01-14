@@ -44,6 +44,8 @@
 
 namespace google_breakpad {
 
+struct WindowsFrameInfo;
+
 struct StackFrameX86 : public StackFrame {
   // ContextValidity has one entry for each relevant hardware pointer register
   // (%eip and %esp) and one entry for each nonvolatile (callee-save) register.
@@ -74,7 +76,9 @@ struct StackFrameX86 : public StackFrame {
  StackFrameX86()
      : context(),
        context_validity(CONTEXT_VALID_NONE),
-       trust(FRAME_TRUST_NONE) {}
+       trust(FRAME_TRUST_NONE),
+       windows_frame_info(NULL) {}
+  ~StackFrameX86();
 
   // Register state.  This is only fully valid for the topmost frame in a
   // stack.  In other frames, the values of nonvolatile registers may be
@@ -90,6 +94,11 @@ struct StackFrameX86 : public StackFrame {
   // Amount of trust the stack walker has in the instruction pointer
   // of this frame.
   FrameTrust trust;
+
+  // Any stack walking information we found describing
+  // this.instruction.  These may be NULL if we couldn't find the
+  // appropriate information.
+  WindowsFrameInfo *windows_frame_info;
 };
 
 struct StackFramePPC : public StackFrame {

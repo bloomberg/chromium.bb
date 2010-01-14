@@ -64,11 +64,10 @@ class StackwalkerX86 : public Stackwalker {
  private:
   // Implementation of Stackwalker, using x86 context (%ebp, %esp, %eip) and
   // stack conventions (saved %ebp at [%ebp], saved %eip at 4[%ebp], or
-  // alternate conventions as guided by stack_frame_info_).
+  // alternate conventions as guided by any WindowsFrameInfo available for the
+  // code in question.).
   virtual StackFrame* GetContextFrame();
-  virtual StackFrame* GetCallerFrame(
-      const CallStack *stack,
-      const vector< linked_ptr<WindowsFrameInfo> > &stack_frame_info);
+  virtual StackFrame* GetCallerFrame(const CallStack *stack);
 
   // Scan the stack starting at location_start, looking for an address
   // that looks like a valid instruction pointer. Addresses must

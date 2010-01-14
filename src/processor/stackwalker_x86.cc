@@ -41,7 +41,7 @@
 #include "google_breakpad/processor/code_modules.h"
 #include "google_breakpad/processor/memory_region.h"
 #include "google_breakpad/processor/stack_frame_cpu.h"
-#include "processor/linked_ptr.h"
+#include "google_breakpad/processor/source_line_resolver_interface.h"
 #include "processor/logging.h"
 #include "processor/windows_frame_info.h"
 
@@ -66,6 +66,11 @@ StackwalkerX86::StackwalkerX86(const SystemInfo *system_info,
   }
 }
 
+StackFrameX86::~StackFrameX86() {
+  if (windows_frame_info)
+    delete windows_frame_info;
+  windows_frame_info = NULL;
+}
 
 StackFrame* StackwalkerX86::GetContextFrame() {
   if (!context_ || !memory_) {
@@ -86,9 +91,7 @@ StackFrame* StackwalkerX86::GetContextFrame() {
 }
 
 
-StackFrame* StackwalkerX86::GetCallerFrame(
-    const CallStack *stack,
-    const vector< linked_ptr<WindowsFrameInfo> > &stack_frame_info) {
+StackFrame* StackwalkerX86::GetCallerFrame(const CallStack *stack) {
   if (!memory_ || !stack) {
     BPLOG(ERROR) << "Can't get caller frame without memory or stack";
     return NULL;
@@ -96,7 +99,9 @@ StackFrame* StackwalkerX86::GetCallerFrame(
   StackFrameX86::FrameTrust trust = StackFrameX86::FRAME_TRUST_NONE;
   StackFrameX86 *last_frame = static_cast<StackFrameX86*>(
       stack->frames()->back());
-  WindowsFrameInfo *last_frame_info = stack_frame_info.back().get();
+
+  WindowsFrameInfo *last_frame_info
+      = resolver_->FindWindowsFrameInfo(last_frame);
 
   // This stackwalker sets each frame's %esp to its value immediately prior
   // to the CALL into the callee.  This means that %esp points to the last
@@ -130,13 +135,17 @@ StackFrame* StackwalkerX86::GetCallerFrame(
   // are unknown, 0 is also used in that case.  When that happens, it should
   // be possible to walk to the next frame without reference to %esp.
 
-  int frames_already_walked = stack_frame_info.size();
+  int frames_already_walked = stack->frames()->size();
   u_int32_t last_frame_callee_parameter_size = 0;
   if (frames_already_walked >= 2) {
-    WindowsFrameInfo *last_frame_callee_info =
-        stack_frame_info[frames_already_walked - 2].get();
+    StackFrameX86 *last_frame_callee
+        = static_cast<StackFrameX86 *>((*stack->frames())
+                                       [frames_already_walked - 2]);
+    WindowsFrameInfo *last_frame_callee_info
+        = last_frame_callee->windows_frame_info;
     if (last_frame_callee_info &&
-        last_frame_callee_info->valid & WindowsFrameInfo::VALID_PARAMETER_SIZE) {
+        (last_frame_callee_info->valid
+         & WindowsFrameInfo::VALID_PARAMETER_SIZE)) {
       last_frame_callee_parameter_size =
           last_frame_callee_info->parameter_size;
     }
@@ -432,6 +441,9 @@ StackFrame* StackwalkerX86::GetCallerFrame(
   // exact return address value may access the context.eip field of
   // StackFrameX86.
   frame->instruction = frame->context.eip - 1;
+
+  // Save the stack walking info we found for the callee.
+  last_frame->windows_frame_info = last_frame_info;
 
   return frame;
 }

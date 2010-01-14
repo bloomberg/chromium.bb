@@ -65,9 +65,7 @@ class StackwalkerPPC : public Stackwalker {
   // saved program counter in %srr0) and stack conventions (saved stack
   // pointer at 0(%r1), return address at 8(0(%r1)).
   virtual StackFrame* GetContextFrame();
-  virtual StackFrame* GetCallerFrame(
-      const CallStack *stack,
-      const vector< linked_ptr<WindowsFrameInfo> > &stack_frame_info);
+  virtual StackFrame* GetCallerFrame(const CallStack *stack);
 
   // Stores the CPU context corresponding to the innermost stack frame to
   // be returned by GetContextFrame.
