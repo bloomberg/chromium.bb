@@ -906,9 +906,9 @@ BUG10285 LINUX WIN DEBUG : svg/custom/foreignObject-crash-on-hover.xml = FAIL
 // Merge 39744:39913? - regressions
 BUG10286 LINUX : svg/W3C-SVG-1.1/animate-elem-02-t.svg = FAIL
 
-BUG10287 WIN DEBUG : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
-BUG10287 SLOW WIN RELEASE : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
-BUG10287 LINUX : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
+BUG8635 WIN DEBUG : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
+BUG8635 SLOW WIN RELEASE : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
+BUG8635 LINUX : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
 
 BUG10288 WIN LINUX : svg/batik/text/verticalText.svg = FAIL
 
@@ -919,9 +919,9 @@ BUG29453 WIN MAC LINUX : svg/W3C-SVG-1.1/pservers-grad-13-b.svg = IMAGE IMAGE+TE
 BUG29453 WIN MAC LINUX : svg/custom/radial-gradient-with-outstanding-focalPoint.svg = IMAGE
 
 // Bug in Skia, see https://bugs.webkit.org/show_bug.cgi?id=24534 .
-BUG10291 WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-06-b.svg = FAIL
-BUG10291 WIN LINUX : svg/batik/paints/patternRegionA.svg = FAIL
-BUG10291 WIN LINUX : svg/W3C-SVG-1.1/pservers-pattern-01-b.svg = FAIL
+BUG8635 WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-06-b.svg = FAIL
+BUG8635 WIN LINUX : svg/batik/paints/patternRegionA.svg = FAIL
+BUG8635 WIN LINUX : svg/W3C-SVG-1.1/pservers-pattern-01-b.svg = FAIL
 
 BUG10415 WIN LINUX : svg/custom/pattern-with-transformation.svg = FAIL
 
