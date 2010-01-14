@@ -55,6 +55,12 @@
    ...
    fun:DiskCacheBackendTest::BackendInvalidEntryEnumeration
 }
+{
+   Intentional leak in ChromeThreadTest.NotReleasedIfTargetThreadNonExistent
+   Heapcheck:Leak
+   fun:ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
+   fun:testing::Test::Run
+}
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
@@ -98,4 +104,27 @@
    ...
    fun:std::basic_string::basic_string
    fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
+}
+{
+   bug_30547
+   Heapcheck:Leak
+   ...
+   fun:ImportantFileWriter::WriteNow
+   fun:BookmarkStorage::SaveNow
+   fun:BookmarkStorage::BookmarkModelDeleted
+}
+{
+   bug_31643
+   Heapcheck:Leak
+   fun:browser_sync::BookmarkModelWorker::CallDoWorkFromModelSafeThreadAndWait
+   fun:Syncer::SyncShare
+}
+{
+   bug_17540
+   Heapcheck:Leak
+   fun:base::MessagePumpLibevent::WatchFileDescriptor
+   fun:MessageLoopForIO::WatchFileDescriptor
+   fun:IPC::Channel::ChannelImpl::Connect
+   fun:IPC::Channel::Connect
+   fun:IPC::ChannelProxy::Context::OnChannelOpened
 }
