@@ -35,9 +35,9 @@ struct radeon_bo_funcs {
     int (*bo_wait)(struct radeon_bo_int *bo);
     int (*bo_is_static)(struct radeon_bo_int *bo);
     int (*bo_set_tiling)(struct radeon_bo_int *bo, uint32_t tiling_flags,
-			  uint32_t pitch);
+                         uint32_t pitch);
     int (*bo_get_tiling)(struct radeon_bo_int *bo, uint32_t *tiling_flags,
-			  uint32_t *pitch);
+                         uint32_t *pitch);
     int (*bo_is_busy)(struct radeon_bo_int *bo, uint32_t *domain);
     int (*bo_is_referenced_by_cs)(struct radeon_bo_int *bo, struct radeon_cs *cs);
 };

@@ -1,8 +1,8 @@
-/* 
+/*
  * Copyright © 2008 Dave Airlie
  * Copyright © 2008 Jérôme Glisse
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,14 +10,14 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS, AUTHORS
  * AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * The above copyright notice and this permission notice (including the
@@ -156,7 +156,7 @@ static int bo_map(struct radeon_bo_int *boi, int write)
         return 0;
     }
     if (bo_gem->priv_ptr) {
-	goto wait;
+        goto wait;
     }
 
     boi->ptr = NULL;
@@ -223,14 +223,14 @@ static int bo_is_busy(struct radeon_bo_int *boi, uint32_t *domain)
     args.domain = 0;
 
     ret = drmCommandWriteRead(boi->bom->fd, DRM_RADEON_GEM_BUSY,
-			      &args, sizeof(args));
+                              &args, sizeof(args));
 
     *domain = args.domain;
     return ret;
 }
 
 static int bo_set_tiling(struct radeon_bo_int *boi, uint32_t tiling_flags,
-			 uint32_t pitch)
+                         uint32_t pitch)
 {
     struct drm_radeon_gem_set_tiling args;
     int r;
@@ -240,14 +240,14 @@ static int bo_set_tiling(struct radeon_bo_int *boi, uint32_t tiling_flags,
     args.pitch = pitch;
 
     r = drmCommandWriteRead(boi->bom->fd,
-			    DRM_RADEON_GEM_SET_TILING,
-			    &args,
-			    sizeof(args));
+                            DRM_RADEON_GEM_SET_TILING,
+                            &args,
+                            sizeof(args));
     return r;
 }
 
 static int bo_get_tiling(struct radeon_bo_int *boi, uint32_t *tiling_flags,
-			 uint32_t *pitch)
+                         uint32_t *pitch)
 {
     struct drm_radeon_gem_set_tiling args;
     int r;
@@ -255,12 +255,12 @@ static int bo_get_tiling(struct radeon_bo_int *boi, uint32_t *tiling_flags,
     args.handle = boi->handle;
 
     r = drmCommandWriteRead(boi->bom->fd,
-			    DRM_RADEON_GEM_GET_TILING,
-			    &args,
-			    sizeof(args));
+                            DRM_RADEON_GEM_GET_TILING,
+                            &args,
+                            sizeof(args));
 
     if (r)
-	return r;
+        return r;
 
     *tiling_flags = args.tiling_flags;
     *pitch = args.pitch;
@@ -318,7 +318,7 @@ int radeon_gem_get_kernel_name(struct radeon_bo *bo, uint32_t *name)
     flink.handle = bo->handle;
     r = drmIoctl(boi->bom->fd, DRM_IOCTL_GEM_FLINK, &flink);
     if (r) {
-	return r;
+        return r;
     }
     *name = flink.name;
     return 0;
