@@ -288,7 +288,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
       case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
         ExtensionPopupController* popup = [owner_ popup];
         if (popup && Details<ExtensionHost>([popup host]) == details)
-          [owner_ hidePopup];
+          [[owner_ popup] close];
 
         break;
       }
@@ -327,15 +327,15 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
 - (void)update {
   for (BrowserActionButton* button in [buttons_ allValues]) {
     [button updateState];
   }
-}
-
-- (void)hidePopup {
-  [popupController_ close];
-  popupController_ = nil;
 }
 
 - (ExtensionPopupController*)popup {
@@ -429,7 +429,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
 
 - (void)browserActionClicked:(BrowserActionButton*)sender {
   ExtensionAction* action = [sender extension]->browser_action();
-  if (action->has_popup()) {
+  if (action->has_popup() && !popupController_) {
     NSString* extensionId = base::SysUTF8ToNSString([sender extension]->id());
     // If the extension ID is not valid UTF-8, then the NSString will be nil
     // and an exception will be thrown when calling objectForKey below, hosing
@@ -447,18 +447,29 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
     // Adjust the anchor point to be at the center of the browser action button.
     arrowPoint.x += kBrowserActionWidth / 2;
 
-    // Close any existing (or loading) popup owned by this controller.
-    if (popupController_)
-      [self hidePopup];
-
     popupController_ = [ExtensionPopupController showURL:action->popup_url()
                                                inBrowser:browser_
                                               anchoredAt:arrowPoint
                                            arrowLocation:kTopRight];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(popupWillClose:)
+               name:NSWindowWillCloseNotification
+             object:[popupController_ window]];
   } else {
     ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
        profile_, action->extension_id(), browser_);
   }
+}
+
+// Nil out the weak popup controller reference.
+- (void)popupWillClose:(NSNotification*)notification {
+  DCHECK([notification object] == [popupController_ window]);
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:NSWindowWillCloseNotification
+              object:[popupController_ window]];
+  popupController_ = nil;
 }
 
 - (int)currentTabId {

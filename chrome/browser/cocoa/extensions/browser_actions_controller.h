@@ -60,9 +60,6 @@ extern NSString* const kBrowserActionsChangedNotification;
 // Update the display of all buttons.
 - (void)update;
 
-// Hides the browser action's popup menu (if one is present and visible).
-- (void)hidePopup;
-
 // Returns the controller used to display the popup being shown. If no popup is
 // currently open, then nil is returned.
 - (ExtensionPopupController*)popup;

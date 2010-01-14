@@ -42,7 +42,7 @@ class BookmarkNode;
           topLeftForBubble:(NSPoint)topLeftForBubble
                      model:(BookmarkModel*)model
                       node:(const BookmarkNode*)node
-     alreadyBookmarked:(BOOL)alreadyBookmarked;
+         alreadyBookmarked:(BOOL)alreadyBookmarked;
 
 // Actions for buttons in the dialog.
 - (IBAction)ok:(id)sender;
@@ -65,8 +65,3 @@ class BookmarkNode;
 + (NSString*)chooseAnotherFolderString;
 - (NSPopUpButton*)folderPopUpButton;
 @end
-
-
-
-
-

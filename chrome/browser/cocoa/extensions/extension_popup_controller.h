@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/cocoa_protocols_mac.h"
 #import "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cocoa/info_bubble_view.h"
@@ -21,7 +22,7 @@ class ExtensionHost;
 // popup view showing the content and resizes the window to accomodate any size
 // changes as they occur.
 // There can only be one browser action popup open at a time.
-@interface ExtensionPopupController : NSWindowController {
+@interface ExtensionPopupController : NSWindowController<NSWindowDelegate> {
  @private
   // The native extension view retrieved from the extension host. Weak.
   NSView* extensionView_;

@@ -60,11 +60,17 @@ const NSTimeInterval kAnimationDuration = 0.2;
   host->view()->set_is_toolstrip(NO);
 
   extensionView_ = host->view()->native_view();
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(extensionViewFrameChanged)
-             name:NSViewFrameDidChangeNotification
-           object:extensionView_];
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center addObserver:self
+             selector:@selector(extensionViewFrameChanged)
+                 name:NSViewFrameDidChangeNotification
+               object:extensionView_];
+
+  // Watch to see if the parent window closes, and if so, close this one.
+  [center addObserver:self
+             selector:@selector(parentWindowWillClose:)
+                 name:NSWindowWillCloseNotification
+               object:parentWindow_];
 
   [view addSubview:extensionView_];
   scoped_nsobject<InfoBubbleWindow> window(
@@ -83,9 +89,16 @@ const NSTimeInterval kAnimationDuration = 0.2;
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+- (void)parentWindowWillClose:(NSNotification*)notification {
+  [self close];
+}
+
 - (void)windowWillClose:(NSNotification *)notification {
-  // The window is closing, but does so using CA. Remove the observers
-  // immediately instead of waiting for dealloc to be called.
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self autorelease];
 }
@@ -95,11 +108,13 @@ const NSTimeInterval kAnimationDuration = 0.2;
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
-  DCHECK_EQ([notification object], [self window]);
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-      Source<Profile>(host_->profile()),
-      Details<ExtensionHost>(host_.get()));
+  NSWindow* window = [self window];
+  DCHECK_EQ([notification object], window);
+  if ([window isVisible]) {
+    // If the window isn't visible, it is already closed, and this notification
+    // has been sent as part of the closing operation, so no need to close.
+    [self close];
+  }
 }
 
 - (void)close {

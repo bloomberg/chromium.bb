@@ -106,7 +106,7 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
     // Apply animations to hide self.
     [NSAnimationContext beginGrouping];
     [[NSAnimationContext currentContext]
-      gtm_setDuration:kOrderOutAnimationDuration];
+        gtm_setDuration:kOrderOutAnimationDuration];
     [[self animator] setAlphaValue:0.0];
     [NSAnimationContext endGrouping];
   }

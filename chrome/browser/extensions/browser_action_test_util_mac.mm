@@ -12,6 +12,7 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
+#import "chrome/browser/cocoa/info_bubble_window.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 
 namespace {
@@ -58,7 +59,10 @@ gfx::Rect BrowserActionTestUtil::GetPopupBounds() {
 }
 
 bool BrowserActionTestUtil::HidePopup() {
-  [GetController(browser_) hidePopup];
+  ExtensionPopupController* controller = [GetController(browser_) popup];
+  // The window must be gone or we'll fail a unit test with windows left open.
+  [static_cast<InfoBubbleWindow*>([controller window]) setDelayOnClose:NO];
+  [controller close];
   return !HasPopup();
 }
 
