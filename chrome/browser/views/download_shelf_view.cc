@@ -15,7 +15,6 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/download_item_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "grit/generated_resources.h"
@@ -75,7 +74,6 @@ int CenterPosition(int size, int target_size) {
 DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     : browser_(browser),
       parent_(parent) {
-  SetID(VIEW_ID_DOWNLOAD_SHELF);
   parent->AddChildView(this);
   Init();
 }

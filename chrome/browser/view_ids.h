@@ -61,15 +61,6 @@ enum ViewID {
   // Bottom extension shelf.
   VIEW_ID_DEV_EXTENSION_SHELF,
 
-  // The contents split.
-  VIEW_ID_CONTENTS_SPLIT,
-
-  // The Infobar container.
-  VIEW_ID_INFO_BAR_CONTAINER,
-
-  // The Download shelf.
-  VIEW_ID_DOWNLOAD_SHELF,
-
   VIEW_ID_PREDEFINED_COUNT
 };
 

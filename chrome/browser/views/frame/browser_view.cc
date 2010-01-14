@@ -27,6 +27,8 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/find_bar.h"
+#include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
@@ -39,7 +41,6 @@
 #include "chrome/browser/views/extensions/extension_shelf.h"
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame.h"
-#include "chrome/browser/views/frame/browser_layout_manager.h"
 #include "chrome/browser/views/fullscreen_exit_bubble.h"
 #include "chrome/browser/views/infobars/infobar_container.h"
 #include "chrome/browser/views/status_bubble_views.h"
@@ -91,11 +92,16 @@ using views::GridLayout;
 // static
 SkBitmap BrowserView::default_favicon_;
 SkBitmap BrowserView::otr_avatar_;
+// The vertical overlap between the TabStrip and the Toolbar.
+static const int kToolbarTabStripVerticalOverlap = 3;
 // The visible height of the shadow above the tabs. Clicks in this area are
 // treated as clicks to the frame, rather than clicks to the tab.
 static const int kTabShadowSize = 2;
 // The height of the status bubble.
 static const int kStatusBubbleHeight = 20;
+// An offset distance between certain toolbars and the toolbar that preceded
+// them in layout.
+static const int kSeparationLineHeight = 1;
 // The name of a key to store on the window handle so that other code can
 // locate this object using just the handle.
 #if defined(OS_WIN)
@@ -406,6 +412,7 @@ BrowserView::BrowserView(Browser* browser)
       tabstrip_(NULL),
       toolbar_(NULL),
       infobar_container_(NULL),
+      find_bar_y_(0),
       contents_container_(NULL),
       devtools_container_(NULL),
       contents_split_(NULL),
@@ -526,7 +533,35 @@ bool BrowserView::ShouldFindBarBlendWithBookmarksBar() const {
 }
 
 gfx::Rect BrowserView::GetFindBarBoundingBox() const {
-  return GetBrowserLayoutManager()->GetFindBarBoundingBox();
+  // This function returns the area the Find Bar can be laid out within. This
+  // basically implies the "user-perceived content area" of the browser window
+  // excluding the vertical scrollbar. This is not quite so straightforward as
+  // positioning based on the TabContentsContainer since the BookmarkBarView
+  // may be visible but not persistent (in the New Tab case) and we position
+  // the Find Bar over the top of it in that case since the BookmarkBarView is
+  // not _visually_ connected to the Toolbar.
+
+  // First determine the bounding box of the content area in Widget coordinates.
+  gfx::Rect bounding_box(contents_container_->bounds());
+
+  gfx::Point topleft;
+  views::View::ConvertPointToWidget(contents_container_, &topleft);
+  bounding_box.set_origin(topleft);
+
+  // Adjust the position and size of the bounding box by the find bar offset
+  // calculated during the last Layout.
+  int height_delta = find_bar_y_ - bounding_box.y();
+  bounding_box.set_y(find_bar_y_);
+  bounding_box.set_height(std::max(0, bounding_box.height() + height_delta));
+
+  // Finally decrease the width of the bounding box by the width of the vertical
+  // scroll bar.
+  int scrollbar_width = gfx::scrollbar_size();
+  bounding_box.set_width(std::max(0, bounding_box.width() - scrollbar_width));
+  if (UILayoutIsRightToLeft())
+    bounding_box.set_x(bounding_box.x() + scrollbar_width);
+
+  return bounding_box;
 }
 
 int BrowserView::GetTabStripHeight() const {
@@ -1589,7 +1624,32 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
 }
 
 gfx::Size BrowserView::GetMinimumSize() {
-  return GetBrowserLayoutManager()->GetMinimumSize();
+  // TODO(noname): In theory the tabstrip width should probably be
+  // (OTR + tabstrip + caption buttons) width.
+  gfx::Size tabstrip_size(
+      browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
+      tabstrip_->GetMinimumSize() : gfx::Size());
+  gfx::Size toolbar_size(
+      (browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
+       browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR)) ?
+      toolbar_->GetMinimumSize() : gfx::Size());
+  if (tabstrip_size.height() && toolbar_size.height())
+    toolbar_size.Enlarge(0, -kToolbarTabStripVerticalOverlap);
+  gfx::Size bookmark_bar_size;
+  if (active_bookmark_bar_ &&
+      browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
+    bookmark_bar_size = active_bookmark_bar_->GetMinimumSize();
+    bookmark_bar_size.Enlarge(0,
+        -kSeparationLineHeight - bookmark_bar_view_->GetToolbarOverlap(true));
+  }
+  gfx::Size contents_size(contents_split_->GetMinimumSize());
+
+  int min_height = tabstrip_size.height() + toolbar_size.height() +
+      bookmark_bar_size.height() + contents_size.height();
+  int widths[] = { tabstrip_size.width(), toolbar_size.width(),
+                   bookmark_bar_size.width(), contents_size.width() };
+  int min_width = *std::max_element(&widths[0], &widths[arraysize(widths)]);
+  return gfx::Size(min_width, min_height);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1602,10 +1662,23 @@ std::string BrowserView::GetClassName() const {
 void BrowserView::Layout() {
   if (ignore_layout_)
     return;
-  if (GetLayoutManager()) {
-    GetLayoutManager()->Layout(this);
-    SchedulePaint();
+
+  int top = LayoutTabStrip();
+  top = LayoutToolbar(top);
+  top = LayoutBookmarkAndInfoBars(top);
+  int bottom = LayoutExtensionAndDownloadShelves();
+  LayoutTabContents(top, bottom);
+  // This must be done _after_ we lay out the TabContents since this code calls
+  // back into us to find the bounding box the find bar must be laid out within,
+  // and that code depends on the TabContentsContainer's bounds being up to
+  // date.
+  if (browser_->HasFindBarController()) {
+    browser_->GetFindBarController()->find_bar()->MoveWindowIfNecessary(
+        gfx::Rect(), true);
   }
+  // Align status bubble with the bottom of the contents_container_.
+  LayoutStatusBubble(top + contents_container_->bounds().height());
+  SchedulePaint();
 }
 
 void BrowserView::ViewHierarchyChanged(bool is_add,
@@ -1646,7 +1719,6 @@ void BrowserView::SetAccessibleName(const std::wstring& name) {
 // BrowserView, private:
 
 void BrowserView::Init() {
-  SetLayoutManager(BrowserLayoutManager::CreateBrowserLayoutManager());
   // Stow a pointer to this object onto the window handle so that we can get
   // at it later when all we have is a native view.
 #if defined(OS_WIN)
@@ -1673,6 +1745,7 @@ void BrowserView::Init() {
 
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);
+  toolbar_->SetID(VIEW_ID_TOOLBAR);
   toolbar_->Init(browser_->profile());
   toolbar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TOOLBAR));
 
@@ -1687,7 +1760,6 @@ void BrowserView::Init() {
       contents_container_,
       devtools_container_,
       views::SingleSplitView::VERTICAL_SPLIT);
-  contents_split_->SetID(VIEW_ID_CONTENTS_SPLIT);
   SkColor bg_color = GetWidget()->GetThemeProvider()->
       GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
   contents_split_->set_background(
@@ -1738,8 +1810,147 @@ void BrowserView::InitSystemMenu() {
 }
 #endif
 
-BrowserLayoutManager* BrowserView::GetBrowserLayoutManager() const {
-  return static_cast<BrowserLayoutManager*>(GetLayoutManager());
+int BrowserView::LayoutTabStrip() {
+  gfx::Rect layout_bounds = frame_->GetBoundsForTabStrip(tabstrip_);
+  gfx::Rect toolbar_bounds = GetToolbarBounds();
+  tabstrip_->SetBackgroundOffset(
+      gfx::Point(layout_bounds.x() - toolbar_bounds.x(),
+                 layout_bounds.y()));
+
+  gfx::Point tabstrip_origin = layout_bounds.origin();
+  ConvertPointToView(GetParent(), this, &tabstrip_origin);
+  layout_bounds.set_origin(tabstrip_origin);
+
+  // Layout extra components.
+  int bottom = 0;
+  gfx::Rect tabstrip_bounds;
+  browser_extender_->Layout(layout_bounds, &tabstrip_bounds, &bottom);
+  tabstrip_->SetVisible(IsTabStripVisible());
+  tabstrip_->SetBounds(tabstrip_bounds);
+  return bottom;
+}
+
+int BrowserView::LayoutToolbar(int top) {
+  int browser_view_width = width();
+  bool visible = IsToolbarVisible();
+  toolbar_->location_bar()->SetFocusable(visible);
+  int y = top -
+      ((visible && IsTabStripVisible()) ? kToolbarTabStripVerticalOverlap : 0);
+  int height = visible ? toolbar_->GetPreferredSize().height() : 0;
+  toolbar_->SetVisible(visible);
+  toolbar_->SetBounds(0, y, browser_view_width, height);
+  return y + height;
+}
+
+int BrowserView::LayoutBookmarkAndInfoBars(int top) {
+  find_bar_y_ = top + y() - 1;
+  if (active_bookmark_bar_) {
+    // If we're showing the Bookmark bar in detached style, then we need to show
+    // any Info bar _above_ the Bookmark bar, since the Bookmark bar is styled
+    // to look like it's part of the page.
+    if (bookmark_bar_view_->IsDetached())
+      return LayoutTopBar(LayoutInfoBar(top));
+    // Otherwise, Bookmark bar first, Info bar second.
+    top = LayoutTopBar(top);
+  }
+  find_bar_y_ = top + y() - 1;
+  return LayoutInfoBar(top);
+}
+
+int BrowserView::LayoutTopBar(int top) {
+  // This method lays out the the bookmark bar, and, if required, the extension
+  // shelf by its side. The bookmark bar appears on the right of the extension
+  // shelf. If there are too many bookmark items and extension toolstrips to fit
+  // in the single bar, some compromises are made as follows:
+  // 1. The bookmark bar is shrunk till it reaches the minimum width.
+  // 2. After reaching the minimum width, the bookmark bar width is kept fixed -
+  //    the extension shelf bar width is reduced.
+  DCHECK(active_bookmark_bar_);
+  int y = top, x = 0;
+  if (!IsBookmarkBarVisible()) {
+    bookmark_bar_view_->SetVisible(false);
+    bookmark_bar_view_->SetBounds(0, y, width(), 0);
+    if (extension_shelf_->IsOnTop())
+      extension_shelf_->SetVisible(false);
+    return y;
+  }
+
+  int bookmark_bar_height = bookmark_bar_view_->GetPreferredSize().height();
+  y -= kSeparationLineHeight + (bookmark_bar_view_->IsDetached() ?
+      0 : bookmark_bar_view_->GetToolbarOverlap(false));
+
+  if (extension_shelf_->IsOnTop()) {
+    if (!bookmark_bar_view_->IsDetached()) {
+      int extension_shelf_width =
+          extension_shelf_->GetPreferredSize().width();
+      int bookmark_bar_given_width = width() - extension_shelf_width;
+      int minimum_allowed_bookmark_bar_width =
+          bookmark_bar_view_->GetMinimumSize().width();
+      if (bookmark_bar_given_width < minimum_allowed_bookmark_bar_width) {
+        // The bookmark bar cannot compromise on its width any more. The
+        // extension shelf needs to shrink now.
+        extension_shelf_width =
+            width() - minimum_allowed_bookmark_bar_width;
+      }
+      extension_shelf_->SetVisible(true);
+      extension_shelf_->SetBounds(x, y, extension_shelf_width,
+                                  bookmark_bar_height);
+      x += extension_shelf_width;
+    } else {
+      // TODO(sidchat): For detached style bookmark bar, set the extensions
+      // shelf in a better position. Issue = 20741.
+      extension_shelf_->SetVisible(false);
+    }
+  }
+
+  bookmark_bar_view_->SetVisible(true);
+  bookmark_bar_view_->SetBounds(x, y, width() - x, bookmark_bar_height);
+  return y + bookmark_bar_height;
+}
+
+int BrowserView::LayoutInfoBar(int top) {
+  bool visible = browser_->SupportsWindowFeature(Browser::FEATURE_INFOBAR);
+  int height = visible ? infobar_container_->GetPreferredSize().height() : 0;
+  infobar_container_->SetVisible(visible);
+  infobar_container_->SetBounds(0, top, width(), height);
+  return top + height;
+}
+
+void BrowserView::LayoutTabContents(int top, int bottom) {
+  contents_split_->SetBounds(0, top, width(), bottom - top);
+}
+
+int BrowserView::LayoutExtensionAndDownloadShelves() {
+  // If we're showing the Bookmark bar in detached style, then we need to show
+  // any Info bar _above_ the Bookmark bar, since the Bookmark bar is styled
+  // to look like it's part of the page.
+  int bottom = height();
+  if (extension_shelf_) {
+    if (extension_shelf_->IsDetached()) {
+      bottom = LayoutDownloadShelf(bottom);
+      return LayoutExtensionShelf(bottom);
+    }
+    // Otherwise, Extension shelf first, Download shelf second.
+    bottom = LayoutExtensionShelf(bottom);
+  }
+  return LayoutDownloadShelf(bottom);
+}
+
+int BrowserView::LayoutDownloadShelf(int bottom) {
+  // Re-layout the shelf either if it is visible or if it's close animation
+  // is currently running.
+  if (IsDownloadShelfVisible() ||
+      (download_shelf_.get() && download_shelf_->IsClosing())) {
+    bool visible = browser_->SupportsWindowFeature(
+        Browser::FEATURE_DOWNLOADSHELF);
+    DCHECK(download_shelf_.get());
+    int height = visible ? download_shelf_->GetPreferredSize().height() : 0;
+    download_shelf_->SetVisible(visible);
+    download_shelf_->SetBounds(0, bottom - height, width(), height);
+    download_shelf_->Layout();
+    bottom -= height;
+  }
+  return bottom;
 }
 
 void BrowserView::LayoutStatusBubble(int top) {
@@ -1753,6 +1964,22 @@ void BrowserView::LayoutStatusBubble(int top) {
   status_bubble_->SetBounds(origin.x(), origin.y(), width() / 3, height);
 }
 
+int BrowserView::LayoutExtensionShelf(int bottom) {
+  if (!extension_shelf_ || extension_shelf_->IsOnTop())
+    return bottom;
+
+  if (extension_shelf_) {
+    bool visible = browser_->SupportsWindowFeature(
+        Browser::FEATURE_EXTENSIONSHELF);
+    int height =
+        visible ? extension_shelf_->GetPreferredSize().height() : 0;
+    extension_shelf_->SetVisible(visible);
+    extension_shelf_->SetBounds(0, bottom - height, width(), height);
+    extension_shelf_->Layout();
+    bottom -= height;
+  }
+  return bottom;
+}
 
 bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
   views::View* new_bookmark_bar_view = NULL;
