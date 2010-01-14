@@ -1087,7 +1087,7 @@ BUG10304 LINUX : svg/W3C-SVG-1.1/fonts-elem-05-t.svg = FAIL
 BUG10304 LINUX : svg/W3C-SVG-1.1/fonts-elem-06-t.svg = FAIL
 BUG10304 LINUX : svg/W3C-SVG-1.1/fonts-elem-07-b.svg = FAIL
 // Our gradients are wrong here.
-BUG10304 WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-08-b.svg = FAIL
+BUG19559 WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-08-b.svg = FAIL
 BUG10304 LINUX : svg/carto.net/button.svg = FAIL
 
 // New tests. We should fix these, but they don't need to block the current release
