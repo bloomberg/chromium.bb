@@ -36,6 +36,8 @@
 #include "chrome/renderer/notification_provider.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/render_view_visitor.h"
+#include "chrome/renderer/translate/page_translator.h"
+#include "chrome/renderer/translate/text_translator_impl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
@@ -432,6 +434,8 @@ class RenderView : public RenderWidget,
   // UserScript::DOCUMENT_IDLE.
   void OnUserScriptIdleTriggered(WebKit::WebFrame* frame);
 
+  PageTranslator* page_translator() const { return page_translator_.get(); }
+
   // Returns the ISO 639_1 language code of the current page
   // (ex: en, fr, zh...).  Returns 'unknown' if the language could not be
   // determined.
@@ -678,6 +682,11 @@ class RenderView : public RenderWidget,
 
   // Execute custom context menu action.
   void OnCustomContextMenuAction(unsigned action);
+
+  // Message that provides the translated text for a request.
+  void OnTranslateTextResponse(int work_id,
+                               int error_id,
+                               const std::vector<string16>& text_chunks);
 
   // Exposes the DOMAutomationController object that allows JS to send
   // information to the browser process.
@@ -997,6 +1006,10 @@ class RenderView : public RenderWidget,
   typedef std::map<WebKit::WebView*, RenderView*> ViewMap;
 
   HostZoomLevels host_zoom_levels_;
+
+  // Page translation related objects.
+  TextTranslatorImpl text_translator_;
+  scoped_ptr<PageTranslator> page_translator_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };

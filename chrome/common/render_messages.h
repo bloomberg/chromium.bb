@@ -534,6 +534,31 @@ struct ViewMsg_ExecuteCode_Params {
   bool all_frames;
 };
 
+// Message to ask the browser to translate some text from one language to
+// another.
+struct ViewHostMsg_TranslateTextParam {
+  // The routing id.  Even though ViewHostMsg_TranslateText is a control message
+  // (sent to the browser, not to a specific RenderViewHost), the browser needs
+  // the routing id in order to send the response back to the right RenderView.
+  int routing_id;
+
+  // An id used to identify that specific translation.
+  int work_id;
+
+  // The text chunks that need to be translated.
+  std::vector<string16> text_chunks;
+
+  // The ISO code of the language the text to translate is in.
+  std::string from_language;
+
+  // The ISO code of the language the text should be translated to.
+  std::string to_language;
+
+  // Whether a secure connection should be used when transmitting the text for
+  // translation to an external server.
+  bool secure;
+};
+
 namespace IPC {
 
 template <>
@@ -2306,6 +2331,45 @@ struct ParamTraits<ViewMsg_ExecuteCode_Params> {
     l->append(L"<ViewMsg_ExecuteCode_Params>");
   }
 };
+
+template<>
+struct ParamTraits<ViewHostMsg_TranslateTextParam> {
+  typedef ViewHostMsg_TranslateTextParam param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.routing_id);
+    WriteParam(m, p.work_id);
+    WriteParam(m, p.text_chunks);
+    WriteParam(m, p.from_language);
+    WriteParam(m, p.to_language);
+    WriteParam(m, p.secure);
+  }
+
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->routing_id) &&
+      ReadParam(m, iter, &p->work_id) &&
+      ReadParam(m, iter, &p->text_chunks) &&
+      ReadParam(m, iter, &p->from_language) &&
+      ReadParam(m, iter, &p->to_language) &&
+      ReadParam(m, iter, &p->secure);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.routing_id, l);
+    l->append(L", ");
+    LogParam(p.work_id, l);
+    l->append(L", ");
+    LogParam(p.text_chunks, l);
+    l->append(L", ");
+    LogParam(p.from_language, l);
+    l->append(L", ");
+    LogParam(p.to_language, l);
+    l->append(L", ");
+    LogParam(p.secure, l);
+    l->append(L")");
+  }
+};
+
 
 }  // namespace IPC
 

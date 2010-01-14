@@ -189,7 +189,8 @@ ResourceMessageFilter::ResourceMessageFilter(
       host_zoom_map_(profile->GetHostZoomMap()),
       off_the_record_(profile->IsOffTheRecord()),
       next_route_id_callback_(NewCallbackWithReturnValue(
-          render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)) {
+          render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(translation_service_(this)) {
   DCHECK(request_context_);
   DCHECK(media_request_context_);
   DCHECK(audio_renderer_host_.get());
@@ -405,6 +406,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_Keygen, OnKeygen)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetExtensionMessageBundle,
                                       OnGetExtensionMessageBundle)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_TranslateText, OnTranslateText)
 #if defined(USE_TCMALLOC)
       IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
@@ -1187,6 +1189,13 @@ void ResourceMessageFilter::OnKeygen(uint32 key_size_index,
       new net::KeygenHandler(key_size_index,
                              challenge_string));
   *signed_public_key = keygen_handler->GenKeyAndSignChallenge();
+}
+
+void ResourceMessageFilter::OnTranslateText(
+    ViewHostMsg_TranslateTextParam param) {
+  translation_service_.Translate(param.routing_id, param.work_id,
+                                 param.text_chunks, param.from_language,
+                                 param.to_language, param.secure);
 }
 
 #if defined(USE_TCMALLOC)

@@ -834,6 +834,14 @@ IPC_BEGIN_MESSAGES(View)
   // Executes custom context menu action that was provided from WebKit.
   IPC_MESSAGE_ROUTED1(ViewMsg_CustomContextMenuAction,
                       unsigned /* action */)
+
+  // Reply to the ViewHostMsg_TranslateText message with the actual translated
+  // text chunks.
+  IPC_MESSAGE_ROUTED3(ViewMsg_TranslateTextReponse,
+                      int /* id of translation work */,
+                      int /* error id of translation work */,
+                      std::vector<string16> /* the translated text chunks */)
+
 IPC_END_MESSAGES(View)
 
 
@@ -2006,5 +2014,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
       ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
       string16 /* word */,
       std::vector<string16> /* suggestions */)
+
+  // Request for text translation.
+  // Used when translating a page from one language to another.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_TranslateText,
+                       ViewHostMsg_TranslateTextParam)
 
 IPC_END_MESSAGES(ViewHost)

@@ -1,0 +1,32 @@
+<html>
+
+<script>
+function buttonClicked() {
+  div = document.getElementById("lastDiv");
+  bold = document.getElementById("bold");
+
+  text_node = document.createTextNode("Hello!");
+  // div.childNodes[0].appendChild(text_node);
+  p_node = document.createElement("p");
+  p_node.appendChild(text_node);
+  bold.appendChild(p_node);
+}
+</script>
+
+<body>
+
+  <p>A simple paragraph. Nothing to see here, move along!</p>
+
+  <p>This is a paragraph with a <a href="">link</a> and some <b id="bold">bold text</b> in it!</p>
+  <p>This on uses a <SPAN>span</SPAN> &nbsp;</p>
+
+
+  <dIV>
+    <div>This is a first div <div>with an inner div</div> and that's it</div>
+    <div id="lastDiv">OK, last div 0.69%</div>
+  </div>
+
+  <button onclick="buttonClicked()">Click me&nbsp;</button>
+</body>
+
+</html>

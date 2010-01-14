@@ -24,8 +24,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/translation_service.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/transport_dib.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
@@ -304,6 +306,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
       const std::string& default_locale,
       IPC::Message* reply_msg);
 
+  void OnTranslateText(ViewHostMsg_TranslateTextParam param);
+
 #if defined(OS_LINUX)
   void SendDelayedReply(IPC::Message* reply_msg);
   void DoOnGetScreenInfo(gfx::NativeViewId view, IPC::Message* reply_msg);
@@ -390,6 +394,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // A callback to create a routing id for the associated renderer process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
+
+  // Used to translate page contents from one language to another.
+  TranslationService translation_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };

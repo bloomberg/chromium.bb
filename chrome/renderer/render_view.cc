@@ -74,11 +74,13 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
@@ -278,7 +280,9 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       has_document_tag_(false),
 #endif
       document_tag_(0),
-      webkit_preferences_(webkit_preferences) {
+      webkit_preferences_(webkit_preferences),
+      ALLOW_THIS_IN_INITIALIZER_LIST(text_translator_(this)) {
+  page_translator_.reset(new PageTranslator(&text_translator_));
 }
 
 RenderView::~RenderView() {
@@ -531,6 +535,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnExecuteCode)
     IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
+    IPC_MESSAGE_HANDLER(ViewMsg_TranslateTextReponse, OnTranslateTextResponse)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
@@ -3241,6 +3246,15 @@ void RenderView::OnCustomContextMenuAction(unsigned action) {
   webview()->performCustomContextMenuAction(action);
 }
 
+void RenderView::OnTranslateTextResponse(
+    int work_id, int error_id, const std::vector<string16>& text_chunks) {
+  if (error_id) {
+    page_translator_->TranslationError(work_id, error_id);
+    return;
+  }
+  page_translator_->TextTranslated(work_id, text_chunks);
+}
+
 void RenderView::OnInstallMissingPlugin() {
   // This could happen when the first default plugin is deleted.
   if (first_default_plugin_)
@@ -3978,3 +3992,4 @@ bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
 
   return rv;
 }
+
