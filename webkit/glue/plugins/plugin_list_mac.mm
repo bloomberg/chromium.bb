@@ -106,6 +106,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     "application/x-shockwave-flash",
     "application/x-silverlight",
     "application/x-webkit-test-netscape",
+    "pepper-application/x-pepper-test-plugin",
     "video/quicktime",
   };
 

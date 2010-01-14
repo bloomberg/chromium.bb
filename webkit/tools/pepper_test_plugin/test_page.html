@@ -11,8 +11,12 @@ var addLine = function(line) {
 var runScripts = function() {
   event_box = document.getElementById("event_text_box");;
   var plugin_obj = document.getElementById("plugin");
-  addLine('<b>Event log</b>');
-  plugin_obj.setTextBox(addLine);
+  if (plugin_obj.setTextBox) {
+    addLine('<b>Event log</b>');
+    plugin_obj.setTextBox(addLine);
+  } else {
+    alert('Plugin failed to load.');
+  }
 }
 </script>
 </head>

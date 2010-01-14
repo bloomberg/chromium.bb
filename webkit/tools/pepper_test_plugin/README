@@ -14,3 +14,29 @@ generated pepper_test_plugin project.
 
 Note that pepper_test_plugin is not dependent on the chrome project so you
 need to remember to build Chrome separately if necessary.
+
+- Mac Instructions -
+In the pepper_test_plugin.xcodeproj that gets generated in this dir by GYP:
+
+[There isn't a way to add an Xcode Custom Executable via GYP, so you have to do
+this by hand each time the .xcoeproj is generated.  Sorry.]
+
+Right (ctrl)-click 'Executables', then "Add -> New Custom Executable..."
+Call the Executable "Chromium"
+Set the Executable Path to ${BUILT_PRODUCTS_DIR}/Chromium.app/Contents/MacOS/Chromium
+When the Info panel comes up, add these arguments using the '+' button:
+	--no-sandbox
+	--internal-pepper
+	file://${SRCROOT}/test_page.html
+	# Add this if you want Chromium to pause before loading a render view.
+	--renderer-startup-dialog
+	# Add this to run Chromium as a single process.
+	--single-process
+
+Before you run the executable, copy the plugin into the Chromium.app bundle,
+into Chromium.app/Contents/PlugIns.  You might have to create the PlugIns
+directory first.
+
+Once all this is set up, you can use "Build and run" (or cmd-r) in Xcode to
+run the pepper plugin test.
+

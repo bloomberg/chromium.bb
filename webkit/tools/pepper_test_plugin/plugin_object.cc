@@ -25,9 +25,9 @@
 
 #include "webkit/tools/pepper_test_plugin/plugin_object.h"
 
+#include <stdio.h>
 #include <cmath>
 #include <limits>
-#include <stdio.h>
 #include <string>
 
 #if defined(INDEPENDENT_PLUGIN)
@@ -56,7 +56,8 @@ enum {
 };
 
 static NPIdentifier plugin_property_identifiers[NUM_PROPERTY_IDENTIFIERS];
-static const NPUTF8* plugin_property_identifier_names[NUM_PROPERTY_IDENTIFIERS] = {
+static const NPUTF8*
+    plugin_property_identifier_names[NUM_PROPERTY_IDENTIFIERS] = {
   "property",
   "testObject",
 };
@@ -400,12 +401,11 @@ void PluginObject::Draw3D() {
 
 bool PluginObject::InitializeCommandBuffer() {
 #if !defined(INDEPENDENT_PLUGIN)
-  const static int32 kCommandBufferSize = 512 * 1024;
+  static const int32 kCommandBufferSize = 512 * 1024;
   command_buffer_.reset(new CommandBufferPepper(npp_, browser));
   if (command_buffer_->Initialize(kCommandBufferSize)) {
     helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
     if (helper_->Initialize()) {
-
       const int32 kTransferBufferSize = 512 * 1024;
       int32 transfer_buffer_id =
           command_buffer_->CreateTransferBuffer(kTransferBufferSize);
