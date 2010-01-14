@@ -2463,10 +2463,6 @@ void RenderView::willSendRequest(
 
 void RenderView::didReceiveResponse(
     WebFrame* frame, unsigned identifier, const WebURLResponse& response) {
-  // Consider loading an alternate error page for 404 responses.
-  if (response.httpStatusCode() != 404)
-    return;
-
   // Only do this for responses that correspond to a provisional data source
   // of the top-most frame.  If we have a provisional data source, then we
   // can't have any sub-resources yet, so we know that this response must
@@ -2477,6 +2473,17 @@ void RenderView::didReceiveResponse(
   // If we are in view source mode, then just let the user see the source of
   // the server's 404 error page.
   if (frame->isViewSourceModeEnabled())
+    return;
+
+  // Record that this was a page loaded over SPDY.
+  if (response.wasFetchedViaSPDY()) {
+    NavigationState* navigation_state =
+        NavigationState::FromDataSource(frame->provisionalDataSource());
+    navigation_state->set_was_fetched_via_spdy(true);
+  }
+
+  // Consider loading an alternate error page for 404 responses.
+  if (response.httpStatusCode() != 404)
     return;
 
   // Can we even load an alternate error page for this URL?
