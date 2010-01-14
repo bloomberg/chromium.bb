@@ -22,6 +22,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/image_button.h"
+#include "views/controls/image_view.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 #include "views/window/window_resources.h"
@@ -113,6 +114,8 @@ const int kLogoCaptionSpacing = 7;
 OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
                                                BrowserView* browser_view)
     : BrowserNonClientFrameView(),
+      logo_icon_(new views::ImageView()),
+      otr_avatar_icon_(new views::ImageView()),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           minimize_button_(new views::ImageButton(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -193,6 +196,13 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   close_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
+  otr_avatar_icon_->SetImage(browser_view_->GetOTRAvatarIcon());
+  AddChildView(otr_avatar_icon_);
+  if (distributor_logo_) {
+    logo_icon_->SetImage(distributor_logo_);
+    AddChildView(logo_icon_);
+    // No need to add logo_icon when not visible.
+  }
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view_->ShouldShowWindowIcon()) {
     window_icon_ = new TabIconView(this);
@@ -200,10 +210,6 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
     AddChildView(window_icon_);
     window_icon_->Update();
   }
-  // Only load the title font if we're going to need to use it to paint.
-  // Loading fonts is expensive.
-  if (browser_view_->ShouldShowWindowTitle())
-    InitAppWindowResources();
 }
 
 OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {
@@ -216,7 +222,7 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     TabStrip* tabstrip) const {
   int x_offset = browser_view_->browser_extender()->GetMainMenuWidth();
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
-      (otr_avatar_bounds_.right() + kOTRSideSpacing) :
+      (otr_avatar_icon_->bounds().right() + kOTRSideSpacing) :
       NonClientBorderThickness() + x_offset;
   int tabstrip_width = minimize_button_->x() - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
@@ -370,10 +376,8 @@ void OpaqueBrowserFrameView::Paint(gfx::Canvas* canvas) {
     PaintMaximizedFrameBorder(canvas);
   else
     PaintRestoredFrameBorder(canvas);
-  PaintDistributorLogo(canvas);
   PaintTitleBar(canvas);
   PaintToolbarBackground(canvas);
-  PaintOTRAvatar(canvas);
   if (!window->IsMaximized())
     PaintRestoredClientEdge(canvas);
 }
@@ -533,6 +537,7 @@ int OpaqueBrowserFrameView::TitleCoordinates(int* title_top_spacing_ptr,
     title_top_spacing += title_adjust;
     title_bottom_spacing -= title_adjust;
   }
+  InitAppWindowResources();  // To make sure the title_font_ is loaded.
   int title_thickness = std::max(title_font_->height(),
       min_titlebar_height - title_top_spacing - title_bottom_spacing);
   if (title_top_spacing_ptr)
@@ -748,20 +753,11 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   }
 }
 
-void OpaqueBrowserFrameView::PaintDistributorLogo(gfx::Canvas* canvas) {
-  // The distributor logo is only painted when the frame is not maximized and
-  // when we actually have a logo.
-  if (!frame_->GetWindow()->IsMaximized() && distributor_logo_ &&
-      browser_view_->ShouldShowDistributorLogo()) {
-    canvas->DrawBitmapInt(*distributor_logo_,
-        MirroredLeftPointForRect(logo_bounds_), logo_bounds_.y());
-  }
-}
-
 void OpaqueBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by the TabIconView.
   views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
   if (d->ShouldShowWindowTitle()) {
+    InitAppWindowResources();  // To make sure the title_font_ is loaded.
     canvas->DrawStringInt(d->GetWindowTitle(), *title_font_, SK_ColorWHITE,
         MirroredLeftPointForRect(title_bounds_), title_bounds_.y(),
         title_bounds_.width(), title_bounds_.height());
@@ -840,18 +836,6 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   canvas->DrawLineInt(ResourceBundle::toolbar_separator_color,
       toolbar_bounds.x(), toolbar_bounds.bottom() - 1,
       toolbar_bounds.right() - 1, toolbar_bounds.bottom() - 1);
-}
-
-void OpaqueBrowserFrameView::PaintOTRAvatar(gfx::Canvas* canvas) {
-  if (!browser_view_->ShouldShowOffTheRecordAvatar())
-    return;
-
-  SkBitmap otr_avatar_icon = browser_view_->GetOTRAvatarIcon();
-  canvas->DrawBitmapInt(otr_avatar_icon, 0,
-      (otr_avatar_icon.height() - otr_avatar_bounds_.height()) / 2,
-      otr_avatar_bounds_.width(), otr_avatar_bounds_.height(),
-      MirroredLeftPointForRect(otr_avatar_bounds_), otr_avatar_bounds_.y(),
-      otr_avatar_bounds_.width(), otr_avatar_bounds_.height(), false);
 }
 
 void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
@@ -1005,12 +989,18 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
 void OpaqueBrowserFrameView::LayoutDistributorLogo() {
   // Always lay out the logo, even when it's not present, so we can lay out the
   // window title based on its position.
-  if (distributor_logo_ && browser_view_->ShouldShowDistributorLogo()) {
-    logo_bounds_.SetRect(minimize_button_->x() - distributor_logo_->width() -
-        kLogoCaptionSpacing, TopResizeHeight(), distributor_logo_->width(),
-        distributor_logo_->height());
+  if (distributor_logo_ &&
+      !frame_->GetWindow()->IsMaximized() &&
+      browser_view_->ShouldShowDistributorLogo()) {
+    logo_icon_->SetVisible(true);
+    gfx::Size preferred_size = logo_icon_->GetPreferredSize();
+    logo_icon_->SetBounds(
+        minimize_button_->x() - preferred_size.width() - kLogoCaptionSpacing,
+        TopResizeHeight(), preferred_size.width(),
+        preferred_size.height());
   } else {
-    logo_bounds_.SetRect(minimize_button_->x(), TopResizeHeight(), 0, 0);
+    logo_icon_->SetVisible(false);
+    logo_icon_->SetBounds(minimize_button_->x(), TopResizeHeight(), 0, 0);
   }
 }
 
@@ -1019,56 +1009,61 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
   // window title based on its position.
   int frame_thickness = FrameBorderThickness();
   int icon_x = frame_thickness + kIconLeftSpacing;
-
-  InitAppWindowResources();  // ! Should we do this?  Isn't this a perf hit?
   int title_top_spacing, title_thickness, available_height;
-  int icon_size =
-      IconSize(&title_top_spacing, &title_thickness, &available_height);
-  int icon_y = ((available_height - icon_size) / 2) + frame_thickness;
-
-  // Hack: Our frame border has a different "3D look" than Windows'.  Theirs has
-  // a more complex gradient on the top that they push their icon/title below;
-  // then the maximized window cuts this off and the icon/title are centered in
-  // the remaining space.  Because the apparent shape of our border is simpler,
-  // using the same positioning makes things look slightly uncentered with
-  // restored windows, so we come up to compensate.
-  if (!frame_->GetWindow()->IsMaximized())
-    icon_y -= kIconRestoredAdjust;
+  int icon_size = 0;
 
   views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
-  if (!d->ShouldShowWindowIcon())
-    icon_size = 0;
-  if (window_icon_)
+  if (d->ShouldShowWindowIcon()) {
+    icon_size =
+        IconSize(&title_top_spacing, &title_thickness, &available_height);
+    int icon_y = ((available_height - icon_size) / 2) + frame_thickness;
+
+    // Hack: Our frame border has a different "3D look" than Windows'.
+    // Theirs has a more complex gradient on the top that they push
+    // their icon/title below; then the maximized window cuts this off
+    // and the icon/title are centered in the remaining space.
+    // Because the apparent shape of our border is simpler, using the
+    // same positioning makes things look slightly uncentered with
+    // restored windows, so we come up to compensate.
+    if (!frame_->GetWindow()->IsMaximized())
+      icon_y -= kIconRestoredAdjust;
+
     window_icon_->SetBounds(icon_x, icon_y, icon_size, icon_size);
+  }
 
   // Size the title, if visible.
   if (d->ShouldShowWindowTitle()) {
+    InitAppWindowResources();  // To make sure the title_font_ is loaded.
     int title_x = icon_x + icon_size +
         (d->ShouldShowWindowIcon() ? kIconTitleSpacing : 0);
     title_bounds_.SetRect(title_x,
         title_top_spacing + ((title_thickness - title_font_->height()) / 2),
-        std::max(0, logo_bounds_.x() - kTitleLogoSpacing - title_x),
+        std::max(0, logo_icon_->x() - kTitleLogoSpacing - title_x),
         title_font_->height());
   }
 }
 
 void OpaqueBrowserFrameView::LayoutOTRAvatar() {
-  SkBitmap otr_avatar_icon = browser_view_->GetOTRAvatarIcon();
   int top_height = NonClientTopBorderHeight();
   int tabstrip_height, otr_height;
+  bool visible = browser_view_->ShouldShowOffTheRecordAvatar();
+  gfx::Size preferred_size = otr_avatar_icon_->GetPreferredSize();
   if (browser_view_->IsTabStripVisible()) {
     tabstrip_height = browser_view_->GetTabStripHeight() - kOTRBottomSpacing;
     otr_height = frame_->GetWindow()->IsMaximized() ?
         (tabstrip_height - kOTRMaximizedTopSpacing) :
-        otr_avatar_icon.height();
+        preferred_size.height();
+
   } else {
     tabstrip_height = otr_height = 0;
+    visible = false;
   }
+  otr_avatar_icon_->SetVisible(visible);
   int x_offset = browser_view_->browser_extender()->GetMainMenuWidth();
-  otr_avatar_bounds_.SetRect(NonClientBorderThickness() + kOTRSideSpacing +
-                             x_offset,
-                             top_height + tabstrip_height - otr_height,
-                             otr_avatar_icon.width(), otr_height);
+  otr_avatar_icon_->SetBounds(NonClientBorderThickness() + kOTRSideSpacing +
+                              x_offset,
+                              top_height + tabstrip_height - otr_height,
+                              preferred_size.width(), otr_height);
 }
 
 void OpaqueBrowserFrameView::LayoutClientView() {
@@ -1092,7 +1087,6 @@ void OpaqueBrowserFrameView::InitClass() {
     distributor_logo_ = ResourceBundle::GetSharedInstance().
         GetBitmapNamed(IDR_DISTRIBUTOR_LOGO_LIGHT);
 #endif
-
     initialized = true;
   }
 }

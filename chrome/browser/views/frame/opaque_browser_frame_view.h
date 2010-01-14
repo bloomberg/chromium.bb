@@ -19,6 +19,7 @@ class TabContents;
 class TabStrip;
 namespace views {
 class ImageButton;
+class ImageView;
 }
 
 class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
@@ -109,10 +110,8 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // and titlebar background are a contiguous component.
   void PaintRestoredFrameBorder(gfx::Canvas* canvas);
   void PaintMaximizedFrameBorder(gfx::Canvas* canvas);
-  void PaintDistributorLogo(gfx::Canvas* canvas);
   void PaintTitleBar(gfx::Canvas* canvas);
   void PaintToolbarBackground(gfx::Canvas* canvas);
-  void PaintOTRAvatar(gfx::Canvas* canvas);
   void PaintRestoredClientEdge(gfx::Canvas* canvas);
 
   // Layout various sub-components of this view.
@@ -128,11 +127,11 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // The layout rect of the title, if visible.
   gfx::Rect title_bounds_;
 
-  // The layout rect of the distributor logo, if visible.
-  gfx::Rect logo_bounds_;
+  // The distributor logo.
+  views::ImageView* logo_icon_;
 
-  // The layout rect of the OTR avatar icon, if visible.
-  gfx::Rect otr_avatar_bounds_;
+  // Off the record avatar icon.
+  views::ImageView* otr_avatar_icon_;
 
   // Window controls.
   views::ImageButton* minimize_button_;
