@@ -121,7 +121,7 @@ long ConvertState(const WebAccessibilityObject& o) {
   if (o.isAnchor())
     state |= static_cast<long>(1 << WebAccessibility::STATE_LINKED);
 
-  if (o.isMultiSelect())
+  if (o.isMultiSelectable())
     state |= static_cast<long>(1 << WebAccessibility::STATE_MULTISELECTABLE);
 
   if (o.isOffScreen())
