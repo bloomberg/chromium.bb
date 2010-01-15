@@ -43,6 +43,25 @@ int NaCl_page_alloc_intern(void   **p,
   void *addr;
   int map_flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
+#ifdef NACL_LINUX
+  /*
+   * Indicate to the kernel that we just want these pages allocated, not
+   * committed.  This is important for systems with relatively little RAM+swap.
+   * See bug 251.
+   */
+  map_flags |= MAP_NORESERVE;
+#elif NACL_OSX
+  /*
+   * TODO(cbiffle): Contrary to its name, this file is used by Mac OS X as well
+   * as Linux.  An equivalent fix may require this to stop, since we might have
+   * to drop to the xnu layer and use vm_allocate.
+   *
+   * Currently this code is not guaranteed to work for non-x86-32 Mac OS X.
+   */
+#else
+#error This file should be included only by Linux and (surprisingly) OS X.
+#endif
+
   if (NULL != *p) {
     map_flags |= MAP_FIXED;
   }
