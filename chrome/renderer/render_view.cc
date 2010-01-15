@@ -76,6 +76,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
@@ -1598,9 +1599,7 @@ void RenderView::updateSpellingUIWithMisspelledWord(const WebString& word) {
 }
 
 bool RenderView::runFileChooser(
-    bool multi_select,
-    const WebKit::WebString& title,
-    const WebKit::WebString& initial_value,
+    const WebKit::WebFileChooserParams& params,
     WebKit::WebFileChooserCompletion* chooser_completion) {
   if (file_chooser_completion_) {
     // TODO(brettw): bug 1235154: This should be a synchronous message to deal
@@ -1613,8 +1612,8 @@ bool RenderView::runFileChooser(
   }
   file_chooser_completion_ = chooser_completion;
   Send(new ViewHostMsg_RunFileChooser(
-    routing_id_, multi_select, title,
-    webkit_glue::WebStringToFilePath(initial_value)));
+    routing_id_, params.multiSelect, params.title,
+    webkit_glue::WebStringToFilePath(params.initialValue)));
   return true;
 }
 

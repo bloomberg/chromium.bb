@@ -95,6 +95,7 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebStorageNamespace;
 class WebURLRequest;
+struct WebFileChooserParams;
 struct WebFindOptions;
 }
 
@@ -215,9 +216,7 @@ class RenderView : public RenderWidget,
   virtual void updateSpellingUIWithMisspelledWord(
       const WebKit::WebString& word);
   virtual bool runFileChooser(
-      bool multi_select,
-      const WebKit::WebString& title,
-      const WebKit::WebString& initial_value,
+      const WebKit::WebFileChooserParams& params,
       WebKit::WebFileChooserCompletion* chooser_completion);
   virtual void runModalAlertDialog(
       WebKit::WebFrame* frame, const WebKit::WebString& message);
