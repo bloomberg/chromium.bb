@@ -2019,4 +2019,42 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
-
+{
+   bug_32299
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN7WebCore10StringImpl19createUninitializedEjRPt
+   fun:_ZN7WebCore10StringImpl6createEPKcj
+   fun:_ZN7WebCore10StringImpl6createEPKc
+   fun:_ZN7WebCore6StringC1EPKc
+   fun:_ZN18ToolsAgentDelegateC2Ev
+   fun:_ZN22ToolsAgentDelegateStubC1EPN11DevToolsRpc8DelegateE
+   fun:_ZN20WebDevToolsAgentImplC1EPN6WebKit11WebViewImplEPNS0_22WebDevToolsAgentClientE
+   fun:_ZN6WebKit16WebDevToolsAgent6createEPNS_7WebViewEPNS_22WebDevToolsAgentClientE
+   fun:_ZN10RenderView4InitEiiRK19RendererPreferencesPN4base14RefCountedDataIiEEi
+   fun:_ZN10RenderView6CreateEP16RenderThreadBaseiiRK19RendererPreferencesRK14WebPreferencesPN4base14RefCountedDataIiEEi
+   fun:_ZN12RenderThread15OnCreateNewViewEiRK19RendererPreferencesRK14WebPreferencesi
+   fun:_Z16DispatchToMethodI12RenderThreadMS0_FviRK19RendererPreferencesRK14WebPreferencesiEiS1_S4_iEvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
+   fun:_ZN3IPC16MessageWithTupleI6Tuple4Ii19RendererPreferences14WebPreferencesiEE8DispatchI12RenderThreadMS7_FviRKS2_RKS3_iEEEbPKNS_7MessageEPT_T0_
+   fun:_ZN12RenderThread24OnControlMessageReceivedERKN3IPC7MessageE
+   fun:_ZN11ChildThread17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+}
+{
+   bug_32349
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF13FastAllocBasenwEj
+   fun:_ZN7WebCore16StorageNamespace23sessionStorageNamespaceEPNS_4PageE
+   fun:_ZN7WebCore4Page14sessionStorageEb
+   fun:_ZNK7WebCore9DOMWindow14sessionStorageEv
+   fun:_ZN7WebCore17DOMWindowInternal24sessionStorageAttrGetterEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
+   fun:_ZN2v88internal6Object23GetPropertyWithCallbackEPS1_S2_PNS0_6StringES2_
+   obj:*
+}
