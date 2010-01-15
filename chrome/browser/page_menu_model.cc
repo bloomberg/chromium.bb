@@ -45,8 +45,13 @@ void PageMenuModel::Build() {
   devtools_menu_model_.reset(new DevToolsMenuModel(delegate()));
   AddSubMenuWithStringId(IDS_DEVELOPER_MENU, devtools_menu_model_.get());
 
+#if !defined(TOOLKIT_GTK)
+  // The Report Bug menu hasn't been implemented yet for Linux.
+  // Remove it until it is.
+  // http://code.google.com/p/chromium/issues/detail?id=11600
   AddSeparator();
   AddItemWithStringId(IDC_REPORT_BUG, IDS_REPORT_BUG);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
