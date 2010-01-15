@@ -43,13 +43,13 @@ def RenderPage(name, test_shell):
   result to .../docs/<name>.html
   """
   if not name:
-    raise Exception("RenderPage called with empty name");
+    raise Exception("RenderPage called with empty name")
 
   generator_url = "file:" + urllib.pathname2url(_generator_html) + "?" + name
   input_file = _base_dir + "/" + name + ".html"
 
   # Copy page_shell to destination output and move aside original, if it exists.
-  original = None;
+  original = None
   if (os.path.isfile(input_file)):
     original = open(input_file, 'rb').read()
     os.remove(input_file)
@@ -87,7 +87,7 @@ def RenderPage(name, test_shell):
   result = result.replace('\r', '')
 
   # Write output
-  open(input_file, 'wb').write(result);
+  open(input_file, 'wb').write(result)
   if (original and result == original):
     return None
   else:
@@ -149,15 +149,15 @@ def GetAPIModuleNames():
 
 def GetStaticFileNames():
   static_files = os.listdir(_static_dir)
-  return set(os.path.splitext(file)[0]
-             for file in static_files
-             if file.endswith(".html"))
+  return set(os.path.splitext(file_name)[0]
+             for file_name in static_files
+             if file_name.endswith(".html"))
 
 def main():
   # Prevent windows from using cygwin python.
   if (sys.platform == "cygwin"):
     raise Exception("Building docs not supported for cygwin python.\n"
-                    "Please run the build.bat script.");
+                    "Please run the build.bat script.")
 
   parser = OptionParser()
   parser.add_option("--test-shell-path", dest="test_shell_path")
@@ -191,16 +191,16 @@ def main():
            "into source control (ideally in the same changelist as the\n" +
            "underlying files that resulting in their changing).")
     for f in modified_files:
-      print f;
+      print f
 
   # Hack. Sleep here, otherwise windows doesn't properly close the debug.log
   # and the os.remove will fail with a "Permission denied".
-  time.sleep(1);
-  debug_log = os.path.normpath(_build_dir + "/" + "debug.log");
+  time.sleep(1)
+  debug_log = os.path.normpath(_build_dir + "/" + "debug.log")
   if (os.path.isfile(debug_log)):
     os.remove(debug_log)
 
-  return 0;
+  return os.EX_OK
 
 if __name__ == '__main__':
   sys.exit(main())
