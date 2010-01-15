@@ -89,7 +89,8 @@ BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/XMLHttpRequestException.ht
 BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/connection-error-sync.html = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/loading/onload-vs-immediate-refresh.pl = PASS
 BUG24182 SLOW DEBUG : editing/selection/extend-selection.html = PASS
-BUG24182 SLOW WIN : fast/backgrounds/svg-as-background-5.html = PASS
+//Will restore this once we've rebaselined - atwilson@chromium.org
+//BUG24182 SLOW WIN : fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : svg/css/getComputedStyle-basic.xhtml = PASS
 BUG24182 WIN DEBUG SLOW: inspector/console-dirxml.html = PASS
 BUG24182 DEBUG SLOW : fast/dom/Window/window-function-frame-getter-precedence.html = PASS
@@ -2917,7 +2918,7 @@ BUG30048 BUG29737 : svg/filters/shadow-on-rect-with-filter.svg = IMAGE+TEXT
 // http://trac.webkit.org/changeset/51936:
 BUG30048 : svg/css/arrow-with-shadow.svg = IMAGE
 BUG30048 : svg/css/circle-in-mask-with-shadow.svg = IMAGE
-BUG30048 : svg/css/group-with-shadow.svg = IMAGE+TEXT
+//BUG30048 : svg/css/group-with-shadow.svg = IMAGE+TEXT
 BUG30048 WIN MAC : svg/css/stars-with-shadow.html = IMAGE
 
 // New tests courtesy of: http://trac.webkit.org/changeset/51936:
@@ -3083,8 +3084,4 @@ BUG_JAPHET DEBUG : fast/events/drag-and-drop.html = CRASH
 
 // WebKit roll: 53290:53313
 BUG32339 LINUX : fast/dom/Window/window-lookup-precedence.html = TEXT PASS
-BUG_ATWILSON : fast/loader/onload-willSendRequest-null-for-script.html = TEXT
-BUG_ATWILSON MAC LINUX : fast/backgrounds/svg-as-background-5.html = IMAGE
-BUG_ATWILSON : fast/repaint/moving-shadow-on-path.html = IMAGE
-BUG_ATWILSON : svg/custom/container-opacity-clip-viewBox.svg = IMAGE
-// Need to rebaseline:  svg/css/group-with-shadow.svg = IMAGE+TEXT
+BUG32305 : fast/loader/onload-willSendRequest-null-for-script.html = TEXT
