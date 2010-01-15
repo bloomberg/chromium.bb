@@ -305,7 +305,7 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	if [ "x$(CROSSARCH)" = "xnacl64" ] ; then \
 	  cd BUILD/build-newlib-$(CROSSARCH) && \
 	    PATH=$(BUILDPATH) \
-		  CFLAGS="-march=x86-64" \
+		  CFLAGS="-march=x86-64 -D_I386MACH_ALLOW_HW_INTERRUPTS" \
 	      ../newlib-$(NEWLIB_VERSION)/configure \
 			  --enable-newlib-io-long-long \
 			  --enable-newlib-io-c99-formats \
@@ -314,8 +314,8 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	  cd ../.. ; \
 	  PATH=$(BUILDPATH) \
 	    $(MAKE) -C BUILD/build-newlib-$(CROSSARCH) \
-		    CFLAGS_FOR_TARGET="-march=x86-64 -O2" \
-	          CXXFLAGS_FOR_TARGET="-march=x86-64 -O2" \
+		    CFLAGS_FOR_TARGET="-march=x86-64 -O2 -D_I386MACH_ALLOW_HW_INTERRUPTS" \
+	          CXXFLAGS_FOR_TARGET="-march=x86-64 -O2 -D_I386MACH_ALLOW_HW_INTERRUPTS" \
 	      all ; \
 	else \
 	  cd BUILD/build-newlib-$(CROSSARCH) && \
