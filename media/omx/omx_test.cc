@@ -410,6 +410,8 @@ int main(int argc, char** argv) {
   DCHECK_GE(loop_count, 1);
 
   media::OmxCodec::OmxMediaFormat input, output;
+  memset(&input, 0, sizeof(input));
+  memset(&output, 0, sizeof(output));
   if (encoder) {
     input.codec = media::OmxCodec::kCodecRaw;
     // TODO(jiesun): make other format available.
