@@ -255,6 +255,9 @@ IPC_BEGIN_MESSAGES(View)
                       string16 /* search_text */,
                       WebKit::WebFindOptions)
 
+  // Asks the renderer for the language of the current page.
+  IPC_MESSAGE_ROUTED0(ViewMsg_DeterminePageLanguage)
+
   // Send from the renderer to the browser to return the script running result.
   IPC_MESSAGE_ROUTED2(ViewMsg_ExecuteCodeFinished,
                       int, /* request id */
@@ -1115,7 +1118,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
                       string16 /* the word to update the panel with */)
 
-  // Initiates a download based on user actions like 'ALT+click'.
+  // Initiate a download based on user actions like 'ALT+click'.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_DownloadUrl,
                       GURL /* url */,
                       GURL /* referrer */)
@@ -1133,12 +1136,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              bool         /* out - success */,
                              std::wstring /* out - prompt field */)
 
-  // Provides the contents for the given page that was loaded recently.
-  IPC_MESSAGE_ROUTED4(ViewHostMsg_PageContents,
-                      GURL         /* URL of the page */,
-                      int32        /* page id */,
-                      std::wstring /* page contents */,
-                      std::string  /* page ISO639_1 language code */)
+  // Sets the contents for the given page (URL and page ID are the first two
+  // arguments) given the contents that is the 3rd.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_PageContents, GURL, int32, std::wstring)
 
   // Used to get the extension message bundle.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetExtensionMessageBundle,
@@ -1167,13 +1167,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // user right clicked.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_ContextMenu, ContextMenuParams)
 
-  // Requests that the given URL be opened in the specified manner.
+  // Request that the given URL be opened in the specified manner.
   IPC_MESSAGE_ROUTED3(ViewHostMsg_OpenURL,
                       GURL /* url */,
                       GURL /* referrer */,
                       WindowOpenDisposition /* disposition */)
 
-  // Notifies that the preferred size of the content changed.
+  // Notify that the preferred size of the content changed.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
                       gfx::Size /* pref_size */)
 
