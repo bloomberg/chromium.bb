@@ -18,7 +18,7 @@ class SimpleTexture2D : public Application {
   bool Init();
 
  protected:
-  virtual void Draw(float);
+  virtual void Draw(float elapsed_sec);
 
  private:
   ESContext context_;
@@ -48,7 +48,7 @@ bool SimpleTexture2D::Init() {
   return true;
 }
 
-void SimpleTexture2D::Draw(float) {
+void SimpleTexture2D::Draw(float /*elapsed_sec*/) {
   stDraw(&context_);
 }
 }  // namespace gpu_demos

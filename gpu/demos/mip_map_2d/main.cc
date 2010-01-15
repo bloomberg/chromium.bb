@@ -17,7 +17,7 @@ class MipMap2D : public Application {
   bool Init();
 
  protected:
-  virtual void Draw(float);
+  virtual void Draw(float elapsed_sec);
 
  private:
   ESContext context_;
@@ -47,7 +47,7 @@ bool MipMap2D::Init() {
   return true;
 }
 
-void MipMap2D::Draw(float) {
+void MipMap2D::Draw(float /*elapsed_sec*/) {
   mmDraw(&context_);
 }
 }  // namespace gpu_demos
