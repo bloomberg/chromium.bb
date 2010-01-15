@@ -83,6 +83,17 @@
         'Chapter_8/Simple_VertexShader/Simple_VertexShader.h',
       ],
     },
+    {
+      'target_name': 'texture_wrap',
+      'type': 'static_library',
+      'dependencies': [
+        'es_util',
+      ],
+      'sources': [
+        'Chapter_9/TextureWrap/TextureWrap.c',
+        'Chapter_9/TextureWrap/TextureWrap.h',
+      ],
+    },
   ]
 }
 

@@ -14,30 +14,7 @@
 //    wrap modes available on 2D textures
 //
 #include <stdlib.h>
-#include "esUtil.h"
-
-typedef struct
-{
-   // Handle to a program object
-   GLuint programObject;
-
-   // Attribute locations
-   GLint  positionLoc;
-   GLint  texCoordLoc;
-
-   // Sampler location
-   GLint samplerLoc;
-
-   // Offset location
-   GLint offsetLoc;
-
-   // Texture handle
-   GLuint textureId;
-
-   // Vertex buffer object handle
-   GLuint vboIds[2];
-
-} UserData;
+#include "TextureWrap.h"
 
 ///
 //  Generate an RGB8 checkerboard image
@@ -113,9 +90,9 @@ static GLuint CreateTexture2D( )
 ///
 // Initialize the shader and program object
 //
-int Init ( ESContext *esContext )
+int twInit ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   TWUserData *userData = esContext->userData;
    GLbyte vShaderStr[] =
       "uniform float u_offset;      \n"
       "attribute vec4 a_position;   \n"
@@ -183,9 +160,9 @@ int Init ( ESContext *esContext )
 #define VTX_POS_SIZE 4
 #define VTX_TEX_SIZE 2
 #define VTX_STRIDE (6 * sizeof(GLfloat))
-void Draw ( ESContext *esContext )
+void twDraw ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   TWUserData *userData = esContext->userData;
    GLuint offset = 0;
       
    // Set the viewport
@@ -232,16 +209,14 @@ void Draw ( ESContext *esContext )
    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT );
    glUniform1f ( userData->offsetLoc, 0.7f );
    glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0 );
-
-   eglSwapBuffers ( esContext->eglDisplay, esContext->eglSurface );
 }
 
 ///
 // Cleanup
 //
-void ShutDown ( ESContext *esContext )
+void twShutDown ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   TWUserData *userData = esContext->userData;
 
    // Delete texture object
    glDeleteTextures ( 1, &userData->textureId );
@@ -251,25 +226,4 @@ void ShutDown ( ESContext *esContext )
 
    // Delete vertex buffer objects
    glDeleteBuffers ( 2, userData->vboIds );
-}
-
-
-int main ( int argc, char *argv[] )
-{
-   ESContext esContext;
-   UserData  userData;
-
-   esInitContext ( &esContext );
-   esContext.userData = &userData;
-
-   esCreateWindow ( &esContext, "MipMap 2D", 640, 480, ES_WINDOW_RGB );
-   
-   if ( !Init ( &esContext ) )
-      return 0;
-
-   esRegisterDrawFunc ( &esContext, Draw );
-   
-   esMainLoop ( &esContext );
-
-   ShutDown ( &esContext );
 }

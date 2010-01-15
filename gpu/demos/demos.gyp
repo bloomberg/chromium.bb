@@ -78,6 +78,17 @@
         'simple_vertex_shader/main.cc',
       ],
     },
+    {
+      'target_name': 'texture_wrap',
+      'type': 'executable',
+      'dependencies': [
+        'app_framework',
+        '../../third_party/gles2_book/gles2_book.gyp:texture_wrap',
+      ],
+      'sources': [
+        'texture_wrap/main.cc',
+      ],
+    },
   ]
 }
 
