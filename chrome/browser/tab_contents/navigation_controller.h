@@ -176,6 +176,9 @@ class NavigationController {
   // committed entries.
   NavigationEntry* GetLastCommittedEntry() const;
 
+  // Returns true if the source for the current entry can be viewed.
+  bool CanViewSource() const;
+
   // Returns the index of the last committed entry.
   int last_committed_entry_index() const {
     return last_committed_entry_index_;

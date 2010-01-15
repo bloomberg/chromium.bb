@@ -29,6 +29,7 @@
 #include "grit/app_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
+#include "net/base/mime_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
@@ -242,6 +243,14 @@ NavigationEntry* NavigationController::GetLastCommittedEntry() const {
   if (last_committed_entry_index_ == -1)
     return NULL;
   return entries_[last_committed_entry_index_].get();
+}
+
+bool NavigationController::CanViewSource() const {
+  bool is_supported_mime_type = net::IsSupportedNonImageMimeType(
+      tab_contents_->contents_mime_type().c_str());
+  NavigationEntry* active_entry = GetActiveEntry();
+  return active_entry && !active_entry->IsViewSourceMode() &&
+    is_supported_mime_type;
 }
 
 NavigationEntry* NavigationController::GetEntryAtOffset(int offset) const {

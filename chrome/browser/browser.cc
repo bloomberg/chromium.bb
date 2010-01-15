@@ -73,7 +73,6 @@
 #include "grit/locale_settings.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_policy.h"
-#include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request_context.h"
@@ -2630,9 +2629,6 @@ void Browser::UpdateCommandsForTabState() {
 
   // Current navigation entry, may be NULL.
   NavigationEntry* active_entry = current_tab->controller().GetActiveEntry();
-  bool is_source_viewable =
-      net::IsSupportedNonImageMimeType(
-          current_tab->contents_mime_type().c_str());
 
   // Page-related commands
   window_->SetStarredState(current_tab->is_starred());
@@ -2642,8 +2638,7 @@ void Browser::UpdateCommandsForTabState() {
   // View-source should not be enabled if already in view-source mode or
   // the source is not viewable.
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
-      active_entry && !active_entry->IsViewSourceMode() &&
-      is_source_viewable);
+      current_tab->controller().CanViewSource());
 
   // Instead of using GetURL here, we use url() (which is the "real" url of the
   // page) from the NavigationEntry because its reflects their origin rather

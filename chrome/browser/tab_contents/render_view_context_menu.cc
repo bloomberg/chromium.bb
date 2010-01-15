@@ -374,6 +374,8 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
 
     case IDS_CONTENT_CONTEXT_VIEWPAGESOURCE:
     case IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE:
+      return source_tab_contents_->controller().CanViewSource();
+
     case IDS_CONTENT_CONTEXT_INSPECTELEMENT:
     // Viewing page info is not a developer command but is meaningful for the
     // same set of pages which developer commands are meaningful for.
