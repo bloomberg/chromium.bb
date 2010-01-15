@@ -506,9 +506,9 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationURL(Profile* profile) {
 
   // Restrict allowed URLs for --app switch.
   if (!url.is_empty() && url.is_valid()) {
-    if (url.SchemeIs(chrome::kHttpsScheme) ||
-        url.SchemeIs(chrome::kHttpScheme) ||
-        url.SchemeIs(chrome::kFtpScheme) ||
+    ChildProcessSecurityPolicy *policy =
+        ChildProcessSecurityPolicy::GetInstance();
+    if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(chrome::kFileScheme)) {
       Browser::OpenApplicationWindow(profile, url);
       return true;
