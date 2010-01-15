@@ -58,6 +58,9 @@ namespace {
 
 class CookiesWindowControllerTest : public CocoaTest {
  public:
+  CookiesWindowControllerTest()
+      : io_thread_(ChromeThread::IO, &message_loop_) {}
+
   virtual void SetUp() {
     CocoaTest::SetUp();
     TestingProfile* profile = browser_helper_.profile();
@@ -81,7 +84,12 @@ class CookiesWindowControllerTest : public CocoaTest {
   }
 
  protected:
+  // Prevent leaks from TestingProfile::CreateRequestContext().
+  MessageLoop message_loop_;
+  ChromeThread io_thread_;
+
   BrowserTestHelper browser_helper_;
+
   scoped_nsobject<CookiesWindowController> controller_;
 };
 
