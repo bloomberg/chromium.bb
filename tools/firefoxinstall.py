@@ -73,7 +73,6 @@ which is the same as
 In this case scons will take care of the command line args.
 """ % (progname, progname, progname))
 
-USE_SANDBOX = 1
 
 def FatalError(msg):
   sys.stderr.write(msg)
@@ -249,14 +248,14 @@ def RunningOn64BitSystem():
   return False
 
 
-def Linux_install(files, args):
+def Linux_install(files, args, use_sandbox):
   plugin_dir = GetPluginDir(args)
   TryMakedir(plugin_dir)
   for f in files:
     CopyFile(f, plugin_dir)
 
   # bash hack to sneak in sandbox version of sel_ldr
-  if USE_SANDBOX:
+  if use_sandbox:
     RenameFile(os.path.join(plugin_dir, 'sel_ldr'),
                os.path.join(plugin_dir, 'sel_ldr_bin'))
 
@@ -388,6 +387,8 @@ def main(argv):
     FatalError('Error: MODE must be one of BACKUP, RESTORE, INSTALL')
     return -1
 
+  use_sandbox = int(args.get('USE_SANDBOX', '0'))
+
   # Tell the user what we're going to do
   print 'This script will install the following files:'
   for f in files:
@@ -398,7 +399,7 @@ def main(argv):
 
   pl = sys.platform
   if pl in ['linux', 'linux2']:
-    Linux_install(files, args)
+    Linux_install(files, args, use_sandbox)
   elif pl in ['win32', 'cygwin', 'win', 'windows']:
     Windows_install(files, args)
   elif pl in ['darwin', 'mac']:

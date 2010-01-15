@@ -95,86 +95,7 @@ def Banner(text):
 pre_base_env.AddMethod(Banner)
 
 # ----------------------------------------------------------
-# PLUGIN PREREQUISITES
-# ----------------------------------------------------------
-
-PREREQUISITES = pre_base_env.Alias('plugin_prerequisites', [])
-
-
-def GetPluginPrerequsites():
-  # the first source is the banner. drop it
-  return PREREQUISITES[0].sources[1:]
-
-# this is a horrible hack printing all the dependencies
-# dynamically accumulated for PREREQUISITES via AddPluginPrerequisite
-def PluginPrerequisiteInfo(target, source, env):
-  Banner("Pluging Prerequisites")
-  deps =  [dep.abspath for dep in GetPluginPrerequsites()]
-  print "abbreviated list: ", str([os.path.basename(d) for d in deps])
-  print "full list:"
-  for dep in deps:
-    print dep
-  return None
-
-banner = pre_base_env.Command('plugin_prerequisites_banner', [],
-                              PluginPrerequisiteInfo)
-
-pre_base_env.Alias('plugin_prerequisites', banner)
-
-def AddPluginPrerequisite(env, nodes):
-  env.Alias('plugin_prerequisites', nodes)
-  return n
-
-pre_base_env.AddMethod(AddPluginPrerequisite)
-
-
-# NOTE: PROGRAMFILES is only used for windows
-#       SILENT is used to turn of user ack
-INSTALL_COMMAND = ['${PYTHON}',
-                   '${SCONSTRUCT_DIR}/tools/firefoxinstall.py',
-                   'SILENT="%s"' % ARGUMENTS.get('SILENT', ''),
-                   '"PROGRAMFILES=%s"' % os.getenv('PROGRAMFILES', ''),
-                   ]
-
-n = pre_base_env.Alias(target='firefox_install_restore',
-                       source=[],
-                       action=' '.join(INSTALL_COMMAND + ['MODE=RESTORE']))
-AlwaysBuild(n)
-
-
-n = pre_base_env.Alias(target='firefox_install_backup',
-                       source=[],
-                       action=' '.join(INSTALL_COMMAND + ['MODE=BACKUP']))
-AlwaysBuild(n)
-
-
-def InstallPlugin(target, source, env):
-  Banner('Pluging Installation')
-  deps =  [dep.abspath for dep in GetPluginPrerequsites()]
-  command = env.subst(' '.join(INSTALL_COMMAND + ['MODE=INSTALL'] + deps))
-  return os.system(command)
-
-# In prebuild mode we ignore the dependencies so that stuff does
-# NOT get build again
-# Optionally ignore the build process.
-DeclareBit('prebuilt', 'Disable all build steps, only support install steps')
-pre_base_env.SetBitFromOption('prebuilt', False)
-
-
-if pre_base_env.Bit('prebuilt'):
-  n = pre_base_env.Command('firefox_install_command',
-                           [],
-                           InstallPlugin)
-else:
-  n = pre_base_env.Command('firefox_install_command',
-                           PREREQUISITES,
-                           InstallPlugin)
-
-n = pre_base_env.Alias('firefox_install', n)
-AlwaysBuild(n)
-
-
-
+# PLATFORM LOGIC
 # ----------------------------------------------------------
 # Define the build and target platforms, and use them to define the path
 # for the scons-out directory (aka TARGET_ROOT)
@@ -242,6 +163,95 @@ else:
                                                                 TARGET_NAME)
 pre_base_env.Replace(TARGET_ROOT = TARGET_ROOT)
 
+# ----------------------------------------------------------
+# PLUGIN PREREQUISITES
+# ----------------------------------------------------------
+
+PREREQUISITES = pre_base_env.Alias('plugin_prerequisites', [])
+
+
+def GetPluginPrerequsites():
+  # the first source is the banner. drop it
+  return PREREQUISITES[0].sources[1:]
+
+# this is a horrible hack printing all the dependencies
+# dynamically accumulated for PREREQUISITES via AddPluginPrerequisite
+def PluginPrerequisiteInfo(target, source, env):
+  Banner("Pluging Prerequisites")
+  deps =  [dep.abspath for dep in GetPluginPrerequsites()]
+  print "abbreviated list: ", str([os.path.basename(d) for d in deps])
+  print "full list:"
+  for dep in deps:
+    print dep
+  return None
+
+banner = pre_base_env.Command('plugin_prerequisites_banner', [],
+                              PluginPrerequisiteInfo)
+
+pre_base_env.Alias('plugin_prerequisites', banner)
+
+def AddPluginPrerequisite(env, nodes):
+  env.Alias('plugin_prerequisites', nodes)
+  return n
+
+pre_base_env.AddMethod(AddPluginPrerequisite)
+
+
+# NOTE: PROGRAMFILES is only used for windows
+#       SILENT is used to turn of user ack
+INSTALL_COMMAND = ['${PYTHON}',
+                   '${SCONSTRUCT_DIR}/tools/firefoxinstall.py',
+                   'SILENT="%s"' % ARGUMENTS.get('SILENT', ''),
+                   '"PROGRAMFILES=%s"' % os.getenv('PROGRAMFILES', ''),
+                   ]
+
+n = pre_base_env.Alias(target='firefox_install_restore',
+                       source=[],
+                       action=' '.join(INSTALL_COMMAND + ['MODE=RESTORE']))
+AlwaysBuild(n)
+
+
+n = pre_base_env.Alias(target='firefox_install_backup',
+                       source=[],
+                       action=' '.join(INSTALL_COMMAND + ['MODE=BACKUP']))
+AlwaysBuild(n)
+
+
+def InstallPlugin(target, source, env):
+  Banner('Pluging Installation')
+  sb = 'USE_SANDBOX=0'
+  # NOTE: sandbox settings are ignored for non-linux systems
+  # TODO: we may want to enable this for more linux platforms
+  if (pre_base_env['BUILD_SUBARCH'] == '32' and
+      pre_base_env['BUILD_ARCHITECTURE'] == 'x86'):
+    sb = 'USE_SANDBOX=1'
+
+  deps =  [dep.abspath for dep in GetPluginPrerequsites()]
+  command = env.subst(' '.join(INSTALL_COMMAND + ['MODE=INSTALL', sb] + deps))
+  return os.system(command)
+
+# In prebuild mode we ignore the dependencies so that stuff does
+# NOT get build again
+# Optionally ignore the build process.
+DeclareBit('prebuilt', 'Disable all build steps, only support install steps')
+pre_base_env.SetBitFromOption('prebuilt', False)
+
+
+if pre_base_env.Bit('prebuilt'):
+  n = pre_base_env.Command('firefox_install_command',
+                           [],
+                           InstallPlugin)
+else:
+  n = pre_base_env.Command('firefox_install_command',
+                           PREREQUISITES,
+                           InstallPlugin)
+
+n = pre_base_env.Alias('firefox_install', n)
+AlwaysBuild(n)
+
+
+# ----------------------------------------------------------
+# HELPERS FOR TEST INVOLVING TRUSTED AND UNTRUSTED ENV
 # ----------------------------------------------------------
 def CommandValidatorTestNacl(env, name, image,
                              validator_flags=None,
