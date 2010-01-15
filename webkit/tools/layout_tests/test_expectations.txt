@@ -920,9 +920,6 @@ BUG8635 WIN LINUX : svg/W3C-SVG-1.1/pservers-pattern-01-b.svg = FAIL
 
 BUG10415 WIN LINUX : svg/custom/pattern-with-transformation.svg = FAIL
 
-// New in WebKit r52559
-BUG31344 : svg/custom/global-constructors.html = TEXT
-
 // New in WebKit r52580.
 BUG31345 WIN LINUX : svg/custom/mask-on-multiple-objects.svg = IMAGE
 
@@ -2466,8 +2463,10 @@ BUG17015 MAC : fast/lists/drag-into-marker.html = FAIL
 
 
 // New tests with WebKit merge 46288:46363
-BUG18116 : fast/dom/constructed-objects-prototypes.html = FAIL
-BUG18116 : fast/dom/prototype-inheritance-2.html = FAIL
+BUG18116 : fast/dom/constructed-objects-prototypes.html = TEXT
+BUG18116 : fast/dom/prototype-inheritance-2.html = TEXT
+// New in WebKit r52559
+BUG18116 : svg/custom/global-constructors.html = TEXT
 
 // Flaky.  Timing?
 BUG18584 LINUX WIN : animations/change-one-anim.html = FAIL PASS
