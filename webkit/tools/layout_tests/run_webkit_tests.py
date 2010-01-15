@@ -359,12 +359,9 @@ class TestRunner:
   def _GetDirForTestFile(self, test_file):
     """Returns the highest-level directory by which to shard the given test
     file."""
-    # TODO(ojan): See if we can grab the lowest level directory. That will
-    # provide better parallelization. We should at least be able to do so
-    # for some directories (e.g. LayoutTests/dom).
     index = test_file.rfind(os.sep + 'LayoutTests' + os.sep)
 
-    test_file = test_file[index + 1:]
+    test_file = test_file[index + len('LayoutTests/'):]
     test_file_parts = test_file.split(os.sep, 1)
     directory = test_file_parts[0]
     test_file = test_file_parts[1]
@@ -1054,7 +1051,8 @@ class TestRunner:
       write("  %s took %s seconds" % (filename, test_run_time))
 
   def _PrintDirectoryTimings(self, write, directory_test_timings):
-    """Print timing info by directory
+    """Print timing info by directory for any directories that take > 10 seconds
+    to run.
 
     Args:
       write: A callback to write info to (e.g., a LoggingWriter) or
@@ -1067,10 +1065,12 @@ class TestRunner:
       timings.append((round(time_for_directory, 1), directory, num_tests))
     timings.sort()
 
-    write("Time to process each subdirectory:")
+    write("Time to process slowest subdirectories:")
+    min_seconds_to_print = 10
     for timing in timings:
-      write("  %s took %s seconds to run %s tests." % (timing[1], timing[0],
-            timing[2]))
+      if timing[0] > min_seconds_to_print:
+        write("  %s took %s seconds to run %s tests." % (timing[1], timing[0],
+              timing[2]))
     write("")
 
   def _PrintStatisticsForTestTimings(self, write, title, timings):
