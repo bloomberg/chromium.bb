@@ -953,7 +953,7 @@ BUG10296 LINUX : svg/W3C-SVG-1.1/pservers-grad-17-b.svg = FAIL
 BUG10296 LINUX : svg/custom/gradient-stroke-width.svg = FAIL
 BUG10296 LINUX : svg/custom/dominant-baseline-hanging.svg = FAIL
 BUG10296 LINUX : svg/batik/text/textLength.svg = FAIL
-BUG10296 LINUX MAC : svg/batik/text/textProperties.svg = FAIL
+BUG10296 LINUX : svg/batik/text/textProperties.svg = FAIL
 BUG10296 LINUX : svg/custom/gradient-stop-corner-cases.svg = FAIL
 BUG10296 LINUX : svg/custom/pattern-deep-referencing.svg = FAIL
 BUG10296 LINUX : svg/custom/text-dom-01-f.svg = FAIL
@@ -2021,7 +2021,11 @@ BUG23475 MAC : svg/custom/junk-data.svg = IMAGE
 
 // 116/136 of the repaint tests fail due to invalidation that doesn't match; further triage necessary
 BUG23473 MAC : fast/repaint = IMAGE
+BUG23473 MAC : fast/repaint/block-no-inflow-children.html = PASS
+BUG23473 MAC : fast/repaint/block-selection-gap-stale-cache-2.html = PASS
+BUG23473 MAC : fast/repaint/block-selection-gap-stale-cache.html = PASS
 BUG23473 MAC : fast/repaint/flexible-box-overflow.html = PASS
+BUG23473 MAC : fast/repaint/float-new-in-block.html = PASS
 BUG23473 MAC : fast/repaint/focus-layers.html = PASS
 BUG23473 MAC : fast/repaint/focus-ring.html = PASS
 BUG23473 MAC : fast/repaint/inline-block-overflow.html = PASS
@@ -2033,6 +2037,7 @@ BUG23473 MAC : fast/repaint/text-shadow.html = PASS
 BUG23473 MAC : fast/repaint/fixed.html = PASS
 BUG23473 MAC : fast/repaint/flexible-box-overflow-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/layer-outline-horizontal.html = PASS
+BUG23473 MAC : fast/repaint/moving-shadow-on-path.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-strict-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-strict-vertical.html = PASS
@@ -2047,10 +2052,6 @@ BUG23470 MAC : fast/transforms/shadows.html = IMAGE
 
 // SVG foreign object skew off by a lot
 BUG23466 MAC : svg/custom/foreign-object-skew.svg = IMAGE
-
-// Plugin drawing off
-BUG12030 MAC DEBUG : plugins/embed-attributes-style.html = IMAGE IMAGE+TEXT
-BUG12030 MAC RELEASE : plugins/embed-attributes-style.html = IMAGE
 
 // Missing baselines
 // BUG23557 MAC : fast/text/text-letter-spacing.html = IMAGE
@@ -2510,7 +2511,7 @@ BUG21141 LINUX RELEASE : fast/forms/select-script-onchange.html = FAIL
 BUG21141 LINUX DEBUG : fast/forms/select-script-onchange.html = FAIL
 
 // Flaky, not clear as of when.
-BUG21411 WIN RELEASE : svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
+BUG21411 WIN LINUX DEBUG : svg/dom/SVGScriptElement/script-load-and-error-events.svg = TEXT PASS
 
 // WebKit 48217:48239
 // Fails because we don't support layoutTestController.addUserStyleSheet().
@@ -2912,9 +2913,8 @@ BUG30048 BUG29737 : svg/filters/shadow-on-rect-with-filter.svg = IMAGE+TEXT
 
 // Broke due to changes to shadow compositing, courtesy of:
 // http://trac.webkit.org/changeset/51936:
-BUG30048 : svg/css/arrow-with-shadow.svg = IMAGE
+BUG30048 WIN LINUX : svg/css/arrow-with-shadow.svg = IMAGE
 BUG30048 : svg/css/circle-in-mask-with-shadow.svg = IMAGE
-BUG30048 : svg/css/group-with-shadow.svg = IMAGE
 BUG30048 WIN MAC : svg/css/stars-with-shadow.html = IMAGE
 
 // New tests courtesy of: http://trac.webkit.org/changeset/51936:
@@ -3032,7 +3032,7 @@ BUG31794 WIN MAC : storage/domstorage/localstorage/enumerate-storage.html = CRAS
 BUG31803 LINUX : editing/inserting/12882.html = IMAGE PASS
 
 // from http://trac.webkit.org/changeset/53078
-BUG32154 LINUX : fast/text/find-kana.html = CRASH
+BUG32154 LINUX DEBUG : fast/text/find-kana.html = CRASH
 
 // from http://trac.webkit.org/changeset/53086
 BUG32153 : svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = TEXT
@@ -3058,12 +3058,9 @@ BUG32206 LINUX MAC : storage/database-lock-after-reload.html = PASS FAIL CRASH
 BUG32235 LINUX DEBUG : svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = PASS TEXT
 
 // Errors from roll from 53203:53207
-BUG_ATWILSON  :  fast/backgrounds/quirks-mode-line-box-backgrounds.html = IMAGE+TEXT
-BUG_ATWILSON WIN DEBUG : svg/dom/SVGScriptElement/script-load-and-error-events.svg = TEXT
-BUG_ATWILSON MAC LINUX : svg/dom/SVGScriptElement/script-load-and-error-events.svg = TEXT
-BUG_ATWILSON MAC WIN : svg/custom/js-repaint-rect-on-path-with-stroke.svg = IMAGE
+BUG_ATWILSON WIN : svg/custom/js-repaint-rect-on-path-with-stroke.svg = IMAGE
 BUG_ATWILSON  : svg/webarchive/svg-feimage-subresources.svg = IMAGE+TEXT
-BUG_ATWILSON MAC WIN : svg/W3C-SVG-1.1/filters-example-01-b.svg = IMAGE+TEXT
+BUG_ATWILSON WIN : svg/W3C-SVG-1.1/filters-example-01-b.svg = IMAGE+TEXT
 
 // Errors from roll from 53207:53246
 BUG_ATWILSON WIN : storage/close-during-stress-test.html = CRASH PASS
@@ -3073,10 +3070,9 @@ BUG_ATWILSON MAC : svg/custom/resource-invalidate-on-target-update.svg = IMAGE P
 
 // Bugs from rolling from 53275:53289
 BUG32305 : fast/loader/onload-willSendRequest-null-for-frame.html = TEXT
-BUG32307 : fast/css/non-standard-checkbox-size.html = IMAGE+TEXT TEXT
+BUG32307 WIN LINUX : fast/css/non-standard-checkbox-size.html = IMAGE+TEXT TEXT
 
 BUG32308 DEBUG : fast/frames/cached-frame-counter.html = TIMEOUT
-BUG_JAPHET DEBUG : fast/events/drag-and-drop.html = CRASH
 
 // WebKit roll: 53290:53313
 BUG32339 LINUX : fast/dom/Window/window-lookup-precedence.html = TEXT PASS
