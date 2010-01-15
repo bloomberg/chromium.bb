@@ -259,6 +259,7 @@ BUG10395 WONTFIX SKIP : webarchive/loading = FAIL TIMEOUT
 BUG10395 WONTFIX : webarchive = PASS
 BUG10395 WONTFIX : svg/webarchive = FAIL PASS
 BUG10395 WONTFIX : svg/custom/image-with-prefix-in-webarchive.svg = FAIL
+BUG10395 WONTFIX : svg/webarchive/svg-feimage-subresources.svg = IMAGE+TEXT
 BUG10395 WONTFIX SKIP : http/tests/webarchive = FAIL PASS
 BUG10395 WONTFIX SKIP : svg/webarchive/svg-cursor-subresources.svg = FAIL
 BUG10395 WONTFIX SKIP : webarchive/test-css-url-resources-in-stylesheets.html = FAIL
@@ -3010,19 +3011,11 @@ BUG32201 LINUX DEBUG : fast/text/atsui-spacing-features.html = IMAGE+TEXT
 
 // Expectations from roll to 53171:53194
 BUG32206 LINUX MAC : storage/database-lock-after-reload.html = PASS FAIL CRASH
-
 BUG32235 LINUX DEBUG : svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = PASS TEXT
 
-// Errors from roll from 53203:53207
-BUG_ATWILSON WIN : svg/custom/js-repaint-rect-on-path-with-stroke.svg = IMAGE
-BUG_ATWILSON  : svg/webarchive/svg-feimage-subresources.svg = IMAGE+TEXT
-BUG_ATWILSON WIN : svg/W3C-SVG-1.1/filters-example-01-b.svg = IMAGE+TEXT
-
 // Errors from roll from 53207:53246
-BUG_ATWILSON WIN : storage/close-during-stress-test.html = CRASH PASS
-BUG_ATWILSON WIN LINUX : storage/transaction-error-callback.html = CRASH PASS
-BUG_ATWILSON MAC : storage/transaction-error-callback.html = TEXT PASS
-BUG_ATWILSON MAC : svg/custom/resource-invalidate-on-target-update.svg = IMAGE PASS
+BUG32396 LINUX : storage/transaction-error-callback.html = TEXT PASS
+BUG32398 MAC : svg/custom/resource-invalidate-on-target-update.svg = IMAGE PASS
 
 // Bugs from rolling from 53275:53289
 BUG32305 : fast/loader/onload-willSendRequest-null-for-frame.html = TEXT
@@ -3033,8 +3026,6 @@ BUG32308 DEBUG : fast/frames/cached-frame-counter.html = TIMEOUT
 // WebKit roll: 53290:53313
 BUG32339 LINUX : fast/dom/Window/window-lookup-precedence.html = TEXT PASS
 BUG32305 : fast/loader/onload-willSendRequest-null-for-script.html = TEXT
-BUG_ATWILSON MAC : svg/css/css-box-min-width.html = IMAGE
-BUG_ATWILSON MAC : svg/custom/js-update-bounce.svg = IMAGE
 
 // New flakyness ?
 BUG32306 MAC DEBUG: svg/hixie/error/004.xml = CRASH PASS
