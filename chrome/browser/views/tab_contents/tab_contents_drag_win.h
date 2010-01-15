@@ -62,9 +62,7 @@ class TabContentsDragWin
   void CloseThread();
 
   // For debug check only. Access only on drag-and-drop thread.
-#ifndef NDEBUG
   PlatformThreadId drag_drop_thread_id_;
-#endif
 
   // All the member variables below are accessed on UI thread.
 

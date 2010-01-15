@@ -89,12 +89,10 @@ class DragDropThread : public base::Thread {
 };
 
 TabContentsDragWin::TabContentsDragWin(TabContentsViewWin* view)
-    : view_(view),
+    : drag_drop_thread_id_(0),
+      view_(view),
       drag_ended_(false),
       old_drop_target_suspended_state_(false) {
-#ifndef NDEBUG
-  drag_drop_thread_id_ = 0;
-#endif
 }
 
 TabContentsDragWin::~TabContentsDragWin() {
@@ -160,9 +158,7 @@ void TabContentsDragWin::StartBackgroundDragging(
     WebDragOperationsMask ops,
     const GURL& page_url,
     const std::string& page_encoding) {
-#ifndef NDEBUG
   drag_drop_thread_id_ = PlatformThread::CurrentId();
-#endif
 
   DoDragging(drop_data, ops, page_url, page_encoding);
   ChromeThread::PostTask(
