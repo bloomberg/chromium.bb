@@ -2930,10 +2930,6 @@ BUG9798 RELEASE : fast/loading/subframe-removes-itself.html = TEXT PASS
 BUG9798 LINUX MAC : fast/loader/invalid-charset-on-script-crashes-loader.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : fast/borders/block-mask-overlay-image.html = TEXT PASS
 
-// Webkit roll 52198->52205
-// Newly added test in r52202
-BUG29737 : svg/filters/filter-source-position.svg = IMAGE+TEXT
-
 // Flaky since SVG filters turned on
 BUG29737 LINUX : svg/filters/feDisplacementMap.svg = TEXT PASS
 
@@ -2955,6 +2951,10 @@ BUG31026 MAC DEBUG : http/tests/appcache/crash-when-navigating-away-then-back.ht
 // WebKit update 52372->52454
 BUG30938 MAC : fast/backgrounds/svg-as-background-6.html = IMAGE
 BUG30939 : svg/filters/filter-clip.svg = IMAGE+TEXT
+// Webkit roll 52198->52205
+// Newly added test in r52202
+BUG30939 : svg/filters/filter-source-position.svg = IMAGE+TEXT
+
 
 // WebKit roll 52468->52535
 BUG31991 WIN LINUX : fast/text/international/bidi-layout-across-linebreak.html = TEXT
