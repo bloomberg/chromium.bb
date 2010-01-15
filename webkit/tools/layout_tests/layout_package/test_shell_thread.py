@@ -260,16 +260,16 @@ class TestShellThread(threading.Thread):
     self._start_time = time.time()
     self._num_tests = 0
     try:
-      logging.debug('thread %s starting' % (self.getName()))
+      logging.debug('%s starting' % (self.getName()))
       self._Run(test_runner=None, result_summary=None)
-      logging.debug('thread %s done (%d tests)' % (self.getName(),
+      logging.debug('%s done (%d tests)' % (self.getName(),
                     self.GetNumTests()))
     except:
       # Save the exception for our caller to see.
       self._exception_info = sys.exc_info()
       self._stop_time = time.time()
       # Re-raise it and die.
-      logging.error('thread %s dying: %s' % (self.getName(),
+      logging.error('%s dying: %s' % (self.getName(),
                     self._exception_info))
       raise
     self._stop_time = time.time()
@@ -345,10 +345,11 @@ class TestShellThread(threading.Thread):
           batch_count = 0
         # Print the error message(s).
         error_str = '\n'.join(['  ' + f.Message() for f in failures])
-        logging.debug("%s failed:\n%s" %
-              (path_utils.RelativeTestFilename(filename), error_str))
+        logging.debug("%s %s failed:\n%s" % (self.getName(),
+                      path_utils.RelativeTestFilename(filename), error_str))
       else:
-        logging.debug(path_utils.RelativeTestFilename(filename) + " passed")
+        logging.debug("%s %s passed" % (self.getName(),
+                      path_utils.RelativeTestFilename(filename)))
       self._result_queue.put((filename, failures))
 
       if batch_size > 0 and batch_count > batch_size:
