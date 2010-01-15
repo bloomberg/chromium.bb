@@ -401,7 +401,7 @@
 						type: "POST",
 						url: "store.php",
 						data: "data=" + encodeURIComponent(JSON.stringify(window.automation.GetResults()))
-					});  
+					});
 				}
 				else {
 					window.automation.SetDone();
