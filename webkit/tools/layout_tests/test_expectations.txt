@@ -985,8 +985,8 @@ BUG24198 LINUX WIN : svg/custom/path-textPath-simulation.svg = FAIL
 BUG24198 RELEASE : svg/custom/stroke-width-click.svg = TEXT
 BUG24198 DEBUG : svg/custom/stroke-width-click.svg = CRASH
 
-// The red marker is not drawing the same way as the mac.
-BUG24198 LINUX WIN : svg/custom/marker-changes.svg = FAIL
+// The test is flaky and maybe platform-dependent.
+BUG32401 LINUX WIN : svg/custom/marker-changes.svg = IMAGE+TEXT IMAGE
 
 BUG24198 LINUX WIN : svg/hixie/text/003.html = FAIL
 
@@ -1019,6 +1019,7 @@ BUG3244 WIN LINUX : fast/backgrounds/repeat/mask-negative-offset-repeat.html = F
 // or change the test upstream to specify explicitly what font to use.
 // The mask part of this test is totally wrong.
 BUG3244 LINUX WIN : fast/backgrounds/svg-as-background-6.html = FAIL
+BUG3244 LINUX WIN : svg/custom/mask-excessive-malloc.svg = IMAGE
 
 BUG10302 LINUX : svg/W3C-SVG-1.1/pservers-grad-10-b.svg = FAIL
 
@@ -2971,13 +2972,8 @@ BUG30930 LINUX : tables/mozilla/bugs/bug15933.html = IMAGE PASS
 
 BUG31026 MAC DEBUG : http/tests/appcache/crash-when-navigating-away-then-back.html = PASS CRASH
 
-// Release began crashing in the r52554->52633 WebKit merge.
-// Formerly, Release failed (IMAGE) and Debug crashed.
-BUG31146 BUG31338 LINUX : svg/custom/mask-excessive-malloc.svg = CRASH IMAGE
-
 // WebKit update 52372->52454
 BUG30938 MAC : fast/backgrounds/svg-as-background-6.html = IMAGE
-BUG30938 WIN : svg/custom/mask-excessive-malloc.svg = IMAGE
 BUG30939 : svg/filters/filter-clip.svg = IMAGE+TEXT
 
 // WebKit roll 52468->52535
