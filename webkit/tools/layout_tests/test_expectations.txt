@@ -3078,4 +3078,4 @@ BUG_ATWILSON MAC : svg/custom/resource-invalidate-on-target-update.svg = IMAGE P
 BUG32305 : fast/loader/onload-willSendRequest-null-for-frame.html = TEXT
 BUG32307 : fast/css/non-standard-checkbox-size.html = IMAGE+TEXT
 
-BUG32308 : fast/frames/cached-frame-counter.html = TIMEOUT
+BUG32308 DEBUG : fast/frames/cached-frame-counter.html = TIMEOUT
