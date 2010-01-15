@@ -35,6 +35,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -52,7 +53,21 @@ static int timed_rpc_count;
 static uint32_t timed_rpc_method = 1;
 static int timed_rpc_bytes = 4000;
 
-#if 0
+static const char* kUsage =
+  "Usage:\n"
+  "\n"
+  "sel_universal [option*] -f nacl_file [-- sel_ldr_arg*] [-- module_arg*]\n"
+  "\n"
+  "where option may be\n"
+  "-r count:method:bytes  (special benchmarking mode, requires recompile)\n"
+  "-v                    increase verbosity (can be repeated)\n"
+  "\n"
+  "After startup the user is prompted for interactive commands.\n"
+  "For sample commands have a look at: tests/srpc/srpc_basic_test.stdin\n"
+  ;
+
+/* #define BENCHMARKING_MODE */
+#if defined(BENCHMARKING_MODE)
 /*
  * This function works with the rpc services in tests/srpc to test the
  * interfaces.
@@ -247,7 +262,7 @@ static NaClSrpcError Interpreter(NaClSrpcService* service,
 }
 
 
-/* NOTE: this used to stack allocated inside main which cause
+/* NOTE: this used to be stack allocated inside main which cause
  * problems on ARM (probably a tool chain bug).
  * NaClSrpcChannel is pretty big (> 256kB)
  */
@@ -283,6 +298,9 @@ int main(int  argc, char *argv[]) {
         application_name = optarg;
         break;
       case 'r':
+#if !defined(BENCHMARKING_MODE)
+        assert(0);
+#endif
         timed_rpc_count = strtol(optarg, &nextp, 0);
         if (':' == *nextp) {
           timed_rpc_method = strtol(nextp + 1, &nextp, 0);
@@ -299,9 +317,7 @@ int main(int  argc, char *argv[]) {
         NaClLogIncrVerbosity();
         break;
       default:
-        fprintf(stderr,
-                "Usage: sel_universal -f nacl_file\n"
-                "                     [-r count:method:bytes]\n");
+       fputs(kUsage, stderr);
         return -1;
     }
   }
@@ -380,7 +396,9 @@ int main(int  argc, char *argv[]) {
                         Interpreter,
                         NaClSelLdrGetSockAddr(launcher));
   } else {
-    /* TestRandomRpcs(&channel); */
+#if defined(BENCHMARKING_MODE)
+    TestRandomRpcs(&channel);
+#endif
   }
 
   /*

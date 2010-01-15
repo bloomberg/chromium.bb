@@ -51,7 +51,8 @@
 
 namespace nacl {
 
-
+// This code tries to determine the plugin directory which contains
+// the sel_ldr and possibly other libraries
 const char* SelLdrLauncher::GetPluginDirname() {
   Dl_info     info;
   char*       pathname = NULL;

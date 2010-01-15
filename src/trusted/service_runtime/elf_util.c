@@ -77,10 +77,16 @@ static const struct NaClPhdrChecks nacl_phdr_check_data[] = {
 
 
 
-static void NaClDumpElfHeader(Elf32_Ehdr *elf_hdr) {
-#define DUMP(m,f)    do { NaClLog(2,                            \
+static void NaClDumpElfHeader(int loglevel, Elf32_Ehdr *elf_hdr) {
+
+#define DUMP(m,f)    do { NaClLog(loglevel,                     \
                                   #m " = %" f "\n",             \
                                   elf_hdr->m); } while (0)
+
+  NaClLog(loglevel, "=================================================\n");
+  NaClLog(loglevel, "Elf header\n");
+  NaClLog(loglevel, "==================================================\n");
+
   DUMP(e_ident+1, ".3s");
   DUMP(e_type, "#x");
   DUMP(e_machine, "#x");
@@ -96,13 +102,13 @@ static void NaClDumpElfHeader(Elf32_Ehdr *elf_hdr) {
   DUMP(e_shnum, "#x");
   DUMP(e_shstrndx, "#x");
 #undef DUMP
- NaClLog(2, "sizeof(Elf32_Ehdr) = %x\n", (int) sizeof *elf_hdr);
+ NaClLog(loglevel, "sizeof(Elf32_Ehdr) = 0x%x\n", (int) sizeof *elf_hdr);
 }
 
 
-static void NaClDumpElfProgramHeader(Elf32_Phdr *phdr) {
+static void NaClDumpElfProgramHeader(int loglevel, Elf32_Phdr *phdr) {
  #define DUMP(mem) do {                                         \
-     NaClLog(2, "%s: %x\n", #mem, phdr->mem);      \
+     NaClLog(loglevel, "%s: %x\n", #mem, phdr->mem);      \
    } while (0)
 
    DUMP(p_type);
@@ -112,13 +118,13 @@ static void NaClDumpElfProgramHeader(Elf32_Phdr *phdr) {
    DUMP(p_filesz);
    DUMP(p_memsz);
    DUMP(p_flags);
-   NaClLog(2, " (%s %s %s)\n",
+   NaClLog(loglevel, " (%s %s %s)\n",
            (phdr->p_flags & PF_R) ? "PF_R" : "",
            (phdr->p_flags & PF_W) ? "PF_W" : "",
            (phdr->p_flags & PF_X) ? "PF_X" : "");
    DUMP(p_align);
  #undef  DUMP
-   NaClLog(2, "\n");
+   NaClLog(loglevel, "\n");
  }
 
 
@@ -357,7 +363,7 @@ struct NaClElfImage *NaClElfImageNew(struct Gio  *gp) {
     return 0;
   }
 
-  NaClDumpElfHeader(&image.ehdr);
+  NaClDumpElfHeader(2, &image.ehdr);
 
   /* read program headers */
   if (image.ehdr.e_phnum > NACL_MAX_PROGRAM_HEADERS) {
@@ -386,8 +392,11 @@ struct NaClElfImage *NaClElfImageNew(struct Gio  *gp) {
     return 0;
   }
 
+  NaClLog(2, "=================================================\n");
+  NaClLog(2, "Elf Program headers\n");
+  NaClLog(2, "==================================================\n");
   for (cur_ph = 0; cur_ph <  image.ehdr.e_phnum; ++cur_ph) {
-    NaClDumpElfProgramHeader(&image.phdrs[cur_ph]);
+    NaClDumpElfProgramHeader(2, &image.phdrs[cur_ph]);
   }
 
   /* we delay allocating till the end to avoid cleanup code */
