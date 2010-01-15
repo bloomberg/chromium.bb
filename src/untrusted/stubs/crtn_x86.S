@@ -37,8 +37,8 @@
         .p2align NACLENTRYALIGN,0x90
 #if defined(__x86_64__)
         movq %rbp, %rsp
-        popq %rbp
-        movl %ebp,%ebp
+        popq %r11
+        movl %r11d,%ebp
         addq %r15,%rbp
         popq %r11
         nacljmp %r11d,%r15
@@ -56,8 +56,8 @@
         .p2align NACLENTRYALIGN,0x90
 #if defined(__x86_64__)
         movq %rbp, %rsp
-        popq %rbp
-        movl %ebp,%ebp
+        popq %r11
+        movl %r11d,%ebp
         addq %r15,%rbp
         popq %r11
         nacljmp %r11d,%r15
