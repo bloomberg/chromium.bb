@@ -316,9 +316,7 @@ def BrowserTester(env,
   node = env.Command(target, deps, ' '.join(command))
   return node
 
-if pre_base_env['TARGET_ARCHITECTURE'] == 'x86':
-  # arm support would likely require some emulation magic
-  pre_base_env.AddMethod(BrowserTester)
+pre_base_env.AddMethod(BrowserTester)
 
 # ----------------------------------------------------------
 def DemoSelLdrNacl(env,
