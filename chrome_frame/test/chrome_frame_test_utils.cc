@@ -51,7 +51,7 @@ BOOL CALLBACK CloseWindowsThreadCallback(HWND hwnd, LPARAM param) {
       DWORD results = 0;
       if (!::SendMessageTimeout(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0, SMTO_BLOCK,
                                 10000, &results)) {
-        DLOG(WARNING) << "Window hung: " << StringPrintf(L"%08X", hwnd);
+        LOG(WARNING) << "Window hung: " << StringPrintf(L"%08X", hwnd);
       }
       count++;
     } else {
@@ -196,7 +196,7 @@ bool EnsureProcessInForeground(base::ProcessId process_id) {
   }
 
   bool ret = ForceSetForegroundWindow(paw.hwnd);
-  DLOG_IF(ERROR, !ret) << "ForceSetForegroundWindow: " << ret;
+  LOG_IF(ERROR, !ret) << "ForceSetForegroundWindow: " << ret;
 
   return ret;
 }

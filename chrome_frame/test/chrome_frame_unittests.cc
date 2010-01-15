@@ -119,7 +119,7 @@ void ChromeFrameTestWithWebServer::CloseBrowser() {
     DWORD exit_code = 0;
     if (!::GetExitCodeProcess(browser_handle_, &exit_code) ||
         exit_code == STILL_ACTIVE) {
-      DLOG(ERROR) << L"Forcefully killing browser process. Exit:" << exit_code;
+      LOG(ERROR) << L"Forcefully killing browser process. Exit:" << exit_code;
       base::KillProcess(browser_handle_, 0, true);
     }
     browser_handle_.Close();
@@ -168,7 +168,7 @@ bool ChromeFrameTestWithWebServer::CheckResultFile(
     ret = (data == expected_result);
 
   if (!ret) {
-    DLOG(ERROR) << "Error text: " << (data.empty() ? "<empty>" : data.c_str());
+    LOG(ERROR) << "Error text: " << (data.empty() ? "<empty>" : data.c_str());
   }
 
   return ret;
@@ -184,7 +184,7 @@ void ChromeFrameTestWithWebServer::SimpleBrowserTest(BrowserKind browser,
 void ChromeFrameTestWithWebServer::OptionalBrowserTest(BrowserKind browser,
     const wchar_t* page, const wchar_t* result_file_to_check) {
   if (!LaunchBrowser(browser, page)) {
-    DLOG(ERROR) << "Failed to launch browser " << ToString(browser);
+    LOG(ERROR) << "Failed to launch browser " << ToString(browser);
   } else {
     ASSERT_TRUE(WaitForTestToComplete(kLongWaitTimeout));
     ASSERT_TRUE(CheckResultFile(result_file_to_check, "OK"));
@@ -304,7 +304,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_ObjectFocus) {
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_ObjectFocus) {
   if (!LaunchBrowser(OPERA, kNavigateSimpleObjectFocus)) {
-    DLOG(ERROR) << "Failed to launch browser " << ToString(OPERA);
+    LOG(ERROR) << "Failed to launch browser " << ToString(OPERA);
   } else {
     ASSERT_TRUE(WaitForOnLoad(kLongWaitTimeout));
     BringBrowserToTop();
@@ -1431,10 +1431,11 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
 
   // Navigate to url 2 after the previous navigation is complete
   EXPECT_CALL(mock,
-              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
-                                testing::StrCaseEq(kSubFrameUrl1)),
+      OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                          testing::StrCaseEq(kSubFrameUrl1)),
                                 _, _, _, _, _))
       .WillOnce(testing::Return(S_OK));
+
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
@@ -1445,10 +1446,11 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
 
   // Navigate to url 3 after the previous navigation is complete
   EXPECT_CALL(mock,
-              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
-                                testing::StrCaseEq(kSubFrameUrl2)),
+      OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                          testing::StrCaseEq(kSubFrameUrl2)),
                                 _, _, _, _, _))
       .WillOnce(testing::Return(S_OK));
+
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
@@ -1460,10 +1462,11 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   // We have reached url 3 and have two back entries for url 1 & 2
   // Go back to url 2 now
   EXPECT_CALL(mock,
-              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
-                                testing::StrCaseEq(kSubFrameUrl3)),
+      OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                          testing::StrCaseEq(kSubFrameUrl3)),
                                 _, _, _, _, _))
       .WillOnce(testing::Return(S_OK));
+
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl3)))
@@ -1474,10 +1477,11 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   // We have reached url 2 and have 1 back & 1 forward entries for url 1 & 3
   // Go back to url 1 now
   EXPECT_CALL(mock,
-              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
-                                testing::StrCaseEq(kSubFrameUrl2)),
+      OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                          testing::StrCaseEq(kSubFrameUrl2)),
                                 _, _, _, _, _))
       .WillOnce(testing::Return(S_OK));
+
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
@@ -1488,9 +1492,10 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   // We have reached url 1 and have 0 back & 2 forward entries for url 2 & 3
   // Go back to url 1 now
   EXPECT_CALL(mock,
-              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
-                                testing::StrCaseEq(kSubFrameUrl1)),
+      OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                          testing::StrCaseEq(kSubFrameUrl1)),
                                 _, _, _, _, _));
+
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
