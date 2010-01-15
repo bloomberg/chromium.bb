@@ -663,3 +663,26 @@
    fun:_ZN10URLRequest5StartEv
    fun:_ZN10URLFetcher4Core15StartURLRequestEv
 }
+{
+   bug_32393
+   Memcheck:Addr1
+   fun:__CFBinaryPlistGetTopLevelInfo
+   fun:__CFTryParseBinaryPlist
+   fun:_CFPropertyListCreateFromXMLData
+   fun:CFPropertyListCreateFromXMLData
+   fun:_DAUnserializeWithBytes
+   fun:_DASessionCallback
+   fun:__CFMachPortPerform
+   fun:CFRunLoopRunSpecific
+   fun:CFRunLoopRunInMode
+   fun:RunCurrentEventLoopInMode
+   fun:ReceiveNextEventCommon
+   fun:BlockUntilNextEventMatchingListInMode
+   fun:_DPSNextEvent
+   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
+   fun:-[NSApplication run]
+   fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
+   fun:_ZN4base24MessagePumpCFRunLoopBase3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
