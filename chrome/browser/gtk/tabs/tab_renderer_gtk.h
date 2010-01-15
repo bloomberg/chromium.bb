@@ -104,6 +104,10 @@ class TabRendererGtk : public AnimationDelegate {
   virtual void UpdateData(TabContents* contents, bool loading_only);
 
   // Sets the pinned state of the tab.
+  void SetBlocked(bool pinned);
+  bool is_blocked() const;
+
+  // Sets the pinned state of the tab.
   void set_pinned(bool pinned);
   bool is_pinned() const;
 
@@ -235,6 +239,7 @@ class TabRendererGtk : public AnimationDelegate {
     bool off_the_record;
     bool show_icon;
     bool pinned;
+    bool blocked;
     bool animating_pinned_change;
   };
 

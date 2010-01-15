@@ -1110,6 +1110,7 @@ void TabStrip::TabInsertedAt(TabContents* contents,
     tab->UpdateData(contents, false);
   }
   tab->set_pinned(model_->IsTabPinned(index));
+  tab->SetBlocked(model_->IsTabBlocked(index));
 
   // We only add the tab to the child list if it's not already - an invisible
   // tab maintained by the DraggedTabController will already be parented.
@@ -1160,6 +1161,7 @@ void TabStrip::TabMoved(TabContents* contents, int from_index, int to_index,
   tab_data_.erase(tab_data_.begin() + from_index);
   TabData data = {tab, gfx::Rect()};
   tab->set_pinned(model_->IsTabPinned(to_index));
+  tab->SetBlocked(model_->IsTabBlocked(to_index));
   tab_data_.insert(tab_data_.begin() + to_index, data);
   if (pinned_state_changed) {
     StartPinAndMoveTabAnimation(from_index, to_index, start_bounds);
@@ -1187,6 +1189,10 @@ void TabStrip::TabChangedAt(TabContents* contents, int index,
 void TabStrip::TabPinnedStateChanged(TabContents* contents, int index) {
   GetTabAt(index)->set_pinned(model_->IsTabPinned(index));
   StartPinnedTabAnimation(index);
+}
+
+void TabStrip::TabBlockedStateChanged(TabContents* contents, int index) {
+  GetTabAt(index)->SetBlocked(model_->IsTabBlocked(index));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

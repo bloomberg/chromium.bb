@@ -592,6 +592,16 @@ views::NonClientFrameView* ConstrainedWindowWin::CreateFrameViewForWindow() {
   return new ConstrainedWindowFrameView(this);
 }
 
+void ConstrainedWindowWin::FocusConstrainedWindow() {
+  focused_view_->RequestFocus();
+}
+
+void ConstrainedWindowWin::ShowConstrainedWindow() {
+  ActivateConstrainedWindow();
+  FocusConstrainedWindow();
+}
+
+
 void ConstrainedWindowWin::CloseConstrainedWindow() {
   // Broadcast to all observers of NOTIFY_CWINDOW_CLOSED.
   // One example of such an observer is AutomationCWindowTracker in the
@@ -632,7 +642,9 @@ ConstrainedWindowWin::ConstrainedWindowWin(
   set_focus_on_creation(false);
 
   WindowWin::Init(owner_->GetNativeView(), gfx::Rect());
-  ActivateConstrainedWindow();
+
+  focused_view_ = window_delegate->GetContentsView();
+  DCHECK(focused_view_);
 }
 
 void ConstrainedWindowWin::ActivateConstrainedWindow() {

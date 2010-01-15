@@ -331,8 +331,10 @@ TabContents::~TabContents() {
   int size = static_cast<int>(child_windows_.size());
   for (int i = size - 1; i >= 0; --i) {
     ConstrainedWindow* window = child_windows_[i];
-    if (window)
+    if (window) {
       window->CloseConstrainedWindow();
+      BlockTabContent(false);
+    }
   }
 
   if (blocked_popups_)
@@ -767,7 +769,19 @@ ConstrainedWindow* TabContents::CreateConstrainedDialog(
   ConstrainedWindow* window =
       ConstrainedWindow::CreateConstrainedDialog(this, delegate);
   child_windows_.push_back(window);
+
+  if (child_windows_.size() == 1) {
+    window->ShowConstrainedWindow();
+    BlockTabContent(true);
+  }
+
   return window;
+}
+
+void TabContents::BlockTabContent(bool blocked) {
+  render_view_host()->set_ignore_input_events(blocked);
+  if (delegate_)
+    delegate_->SetTabContentBlocked(this, blocked);
 }
 
 void TabContents::AddNewContents(TabContents* new_contents,
@@ -1003,8 +1017,15 @@ void TabContents::OnStartDownload(DownloadItem* download) {
 void TabContents::WillClose(ConstrainedWindow* window) {
   ConstrainedWindowList::iterator it =
       find(child_windows_.begin(), child_windows_.end(), window);
+  bool removed_topmost_window = it == child_windows_.begin();
   if (it != child_windows_.end())
     child_windows_.erase(it);
+  if (removed_topmost_window && child_windows_.size() > 0) {
+    child_windows_[0]->ShowConstrainedWindow();
+    BlockTabContent(true);
+  } else {
+    BlockTabContent(false);
+  }
 }
 
 void TabContents::WillCloseBlockedPopupContainer(
@@ -1404,8 +1425,11 @@ void TabContents::MaybeCloseChildWindows(const GURL& previous_url,
   int size = static_cast<int>(child_windows_.size());
   for (int i = size - 1; i >= 0; --i) {
     ConstrainedWindow* window = child_windows_[i];
-    if (window)
+    if (window) {
+      DCHECK(delegate_);
       window->CloseConstrainedWindow();
+      BlockTabContent(false);
+    }
   }
 
   // Close the popup container.
@@ -2404,6 +2428,13 @@ WebPreferences TabContents::GetWebkitPrefs() {
   PrefService* prefs = render_view_host()->process()->profile()->GetPrefs();
   bool is_dom_ui = false;
   return RenderViewHostDelegateHelper::GetWebkitPrefs(prefs, is_dom_ui);
+}
+
+void TabContents::OnIgnoredUIEvent() {
+  if (constrained_window_count()) {
+    ConstrainedWindow* window = *constrained_window_begin();
+    window->FocusConstrainedWindow();
+  }
 }
 
 void TabContents::OnJSOutOfMemory() {

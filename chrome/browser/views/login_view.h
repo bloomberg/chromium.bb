@@ -36,6 +36,8 @@ class LoginView : public views::View, public LoginModelObserver {
   // of the caller to inform this view if the model is deleted.
   void SetModel(LoginModel* model);
 
+  virtual void RequestFocus();
+
  protected:
   // views::View overrides:
   virtual void ViewHierarchyChanged(bool is_add, views::View *parent,

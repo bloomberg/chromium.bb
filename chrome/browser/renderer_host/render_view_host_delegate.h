@@ -537,6 +537,12 @@ class RenderViewHostDelegate {
   // associated with the owning render view host.
   virtual WebPreferences GetWebkitPrefs();
 
+  // Notification from the renderer host that blocked UI event occurred.
+  // This happens when there are tab-modal dialogs. In this case, the
+  // notification is needed to let us draw attention to the dialog (i.e.
+  // refocus on the modal dialog, flash title etc).
+  virtual void OnIgnoredUIEvent() {}
+
   // Notification from the renderer that JS runs out of memory.
   virtual void OnJSOutOfMemory() {}
 

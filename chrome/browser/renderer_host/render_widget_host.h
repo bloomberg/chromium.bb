@@ -248,7 +248,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // when it has received a message.
   virtual void ForwardMouseEvent(const WebKit::WebMouseEvent& mouse_event);
   void ForwardWheelEvent(const WebKit::WebMouseWheelEvent& wheel_event);
-  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event);
+  virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event);
   virtual void ForwardEditCommand(const std::string& name,
                                   const std::string& value);
   virtual void ForwardEditCommandsForNextKeyEvent(
@@ -347,6 +347,13 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   // Sets the active state (i.e., control tints).
   virtual void SetActive(bool active);
+
+  void set_ignore_input_events(bool ignore_input_events) {
+    ignore_input_events_ = ignore_input_events;
+  }
+  bool ignore_input_events() const {
+    return ignore_input_events_;
+  }
 
  protected:
   // Internal implementation of the public Forward*Event() methods.
@@ -550,6 +557,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // stuff key events into a queue and pop them out on ACK, feeding our copy
   // back to whatever unhandled handler instead of the returned version.
   KeyQueue key_queue_;
+
+  // Set to true if we shouldn't send input events from the render widget.
+  bool ignore_input_events_;
 
   // Set when we update the text direction of the selected input element.
   bool text_direction_updated_;

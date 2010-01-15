@@ -1664,11 +1664,26 @@ void RenderViewHost::ForwardMouseEvent(
       case WebInputEvent::MouseLeave:
         view->HandleMouseLeave();
         break;
+      case WebInputEvent::MouseDown:
+      case WebInputEvent::MouseWheel:
+        if (ignore_input_events() && delegate_)
+          delegate_->OnIgnoredUIEvent();
+        break;
       default:
         // For now, we don't care about the rest.
         break;
     }
   }
+}
+
+void RenderViewHost::ForwardKeyboardEvent(
+    const NativeWebKeyboardEvent& key_event) {
+  if (ignore_input_events()) {
+    if (key_event.type == WebInputEvent::RawKeyDown && delegate_)
+      delegate_->OnIgnoredUIEvent();
+    return;
+  }
+  RenderWidgetHost::ForwardKeyboardEvent(key_event);
 }
 
 void RenderViewHost::ForwardEditCommand(const std::string& name,

@@ -321,6 +321,17 @@ bool TabRendererGtk::is_pinned() const {
   return data_.pinned;
 }
 
+void TabRendererGtk::SetBlocked(bool blocked) {
+  if (data_.blocked == blocked)
+    return;
+  data_.blocked = blocked;
+  // TODO(zelidrag) bug 32399: Make tabs pulse on Linux as well.
+}
+
+bool TabRendererGtk::is_blocked() const {
+  return data_.blocked;
+}
+
 void TabRendererGtk::set_animating_pinned_change(bool value) {
   data_.animating_pinned_change = value;
 }

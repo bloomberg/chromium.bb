@@ -70,6 +70,7 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       is_unresponsive_(false),
       in_get_backing_store_(false),
       view_being_painted_(false),
+      ignore_input_events_(false),
       text_direction_updated_(false),
       text_direction_(WebKit::WebTextDirectionLeftToRight),
       text_direction_canceled_(false),
@@ -351,7 +352,7 @@ void RenderWidgetHost::SystemThemeChanged() {
 }
 
 void RenderWidgetHost::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
-  if (process_->ignore_input_events())
+  if (ignore_input_events_ || process_->ignore_input_events())
     return;
 
   // Avoid spamming the renderer with mouse move events.  It is important
@@ -373,7 +374,7 @@ void RenderWidgetHost::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
 
 void RenderWidgetHost::ForwardWheelEvent(
     const WebMouseWheelEvent& wheel_event) {
-  if (process_->ignore_input_events())
+  if (ignore_input_events_ || process_->ignore_input_events())
     return;
 
   ForwardInputEvent(wheel_event, sizeof(WebMouseWheelEvent), false);
@@ -381,7 +382,7 @@ void RenderWidgetHost::ForwardWheelEvent(
 
 void RenderWidgetHost::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
-  if (process_->ignore_input_events())
+  if (ignore_input_events_ || process_->ignore_input_events())
     return;
 
   if (key_event.type == WebKeyboardEvent::Char &&

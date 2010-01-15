@@ -183,6 +183,12 @@ class TabContentsDelegate {
     return false;
   }
 
+  // Changes the blocked state of the tab at |index|. TabContents are
+  // considered blocked while displaying a tab modal dialog. During that time
+  // renderer host will ignore any UI interaction within TabContent outside of
+  // the currently displaying dialog.
+  virtual void SetTabContentBlocked(TabContents* contents, bool blocked) { }
+
   // Notification that |tab_contents| has gained focus.
   virtual void TabContentsFocused(TabContents* tab_content) { }
 

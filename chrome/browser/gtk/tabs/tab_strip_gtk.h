@@ -107,6 +107,8 @@ class TabStripGtk : public TabStripModelObserver,
   virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type);
   virtual void TabPinnedStateChanged(TabContents* contents, int index);
+  virtual void TabBlockedStateChanged(TabContents* contents,
+                                      int index);
 
   // TabGtk::TabDelegate implementation:
   virtual bool IsTabSelected(const TabGtk* tab) const;

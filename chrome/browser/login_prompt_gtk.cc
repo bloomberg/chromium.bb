@@ -106,16 +106,19 @@ class LoginHandlerGtk : public LoginHandler,
     GtkWidget* hbox = gtk_hbox_new(FALSE, 12);
     gtk_box_pack_start(GTK_BOX(root_.get()), hbox, FALSE, FALSE, 0);
 
-    GtkWidget* ok = gtk_button_new_from_stock(GTK_STOCK_OK);
+    ok_ = gtk_button_new_from_stock(GTK_STOCK_OK);
     gtk_button_set_label(
-        GTK_BUTTON(ok),
+        GTK_BUTTON(ok_),
         l10n_util::GetStringUTF8(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL).c_str());
-    g_signal_connect(ok, "clicked", G_CALLBACK(OnOKClicked), this);
-    gtk_box_pack_end(GTK_BOX(hbox), ok, FALSE, FALSE, 0);
+    g_signal_connect(ok_, "clicked", G_CALLBACK(OnOKClicked), this);
+    gtk_box_pack_end(GTK_BOX(hbox), ok_, FALSE, FALSE, 0);
 
     GtkWidget* cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
     g_signal_connect(cancel, "clicked", G_CALLBACK(OnCancelClicked), this);
     gtk_box_pack_end(GTK_BOX(hbox), cancel, FALSE, FALSE, 0);
+
+    g_signal_connect(root_.get(), "hierarchy-changed",
+                     G_CALLBACK(OnPromptShown), this);
 
     SetModel(manager);
 
@@ -128,8 +131,8 @@ class LoginHandlerGtk : public LoginHandler,
 
     // Now that we have attached ourself to the window, we can make our OK
     // button the default action and mess with the focus.
-    GTK_WIDGET_SET_FLAGS(ok, GTK_CAN_DEFAULT);
-    gtk_widget_grab_default(ok);
+    GTK_WIDGET_SET_FLAGS(ok_, GTK_CAN_DEFAULT);
+    gtk_widget_grab_default(ok_);
     gtk_widget_grab_focus(username_entry_);
 
     SendNotifications();
@@ -305,6 +308,20 @@ class LoginHandlerGtk : public LoginHandler,
     handler->CancelAuth();
   }
 
+  static void OnPromptShown(GtkButton* root,
+                            GtkWidget* previous_toplevel,
+                            LoginHandlerGtk* handler) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    if (!GTK_WIDGET_TOPLEVEL(gtk_widget_get_toplevel(handler->ok_)))
+      return;
+
+    // Now that we have attached ourself to the window, we can make our OK
+    // button the default action and mess with the focus.
+    GTK_WIDGET_SET_FLAGS(handler->ok_, GTK_CAN_DEFAULT);
+    gtk_widget_grab_default(handler->ok_);
+    gtk_widget_grab_focus(handler->username_entry_);
+}
+
   // True if we've handled auth (SetAuth or CancelAuth has been called).
   bool handled_auth_;
   Lock handled_auth_lock_;
@@ -339,6 +356,7 @@ class LoginHandlerGtk : public LoginHandler,
   // GtkEntry widgets that the user types into.
   GtkWidget* username_entry_;
   GtkWidget* password_entry_;
+  GtkWidget* ok_;
 
   // If not null, points to a model we need to notify of our own destruction
   // so it doesn't try and access this when its too late.

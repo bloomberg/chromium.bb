@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 
+#include <deque>
 #include <map>
 #include <set>
 #include <string>
@@ -348,9 +349,8 @@ class TabContents : public PageNavigator,
 
   // Create a new window constrained to this TabContents' clip and visibility.
   // The window is initialized by using the supplied delegate to obtain basic
-  // window characteristics, and the supplied view for the content. The window
-  // is sized according to the preferred size of the content_view, and centered
-  // within the contents.
+  // window characteristics, and the supplied view for the content. Note that
+  // the returned ConstrainedWindow might not yet be visible.
   ConstrainedWindow* CreateConstrainedDialog(
       ConstrainedWindowDelegate* delegate);
 
@@ -379,7 +379,7 @@ class TabContents : public PageNavigator,
   // Returns the number of constrained windows in this tab.  Used by tests.
   size_t constrained_window_count() { return child_windows_.size(); }
 
-  typedef std::vector<ConstrainedWindow*> ConstrainedWindowList;
+  typedef std::deque<ConstrainedWindow*> ConstrainedWindowList;
 
   // Return an iterator for the first constrained window in this tab contents.
   ConstrainedWindowList::iterator constrained_window_begin()
@@ -912,6 +912,7 @@ class TabContents : public PageNavigator,
   virtual GURL GetAlternateErrorPageURL() const;
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
   virtual WebPreferences GetWebkitPrefs();
+  virtual void OnIgnoredUIEvent();
   virtual void OnJSOutOfMemory();
   virtual void OnCrossSiteResponse(int new_render_process_host_id,
                                    int new_request_id);
@@ -934,6 +935,9 @@ class TabContents : public PageNavigator,
   virtual void FileSelectionCanceled(void* params);
 
   // RenderViewHostManager::Delegate -------------------------------------------
+
+  // Blocks/unblocks interaction with renderer process.
+  void BlockTabContent(bool blocked);
 
   virtual void BeforeUnloadFiredFromRenderManager(
       bool proceed,

@@ -342,6 +342,16 @@ bool TabStripModel::ShouldResetGroupOnSelect(TabContents* contents) const {
   return contents_data_.at(index)->reset_group_on_select;
 }
 
+void TabStripModel::SetTabBlocked(int index, bool blocked) {
+  DCHECK(ContainsIndex(index));
+  if (contents_data_[index]->blocked == blocked)
+    return;
+  contents_data_[index]->blocked = blocked;
+  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+      TabBlockedStateChanged(contents_data_[index]->contents,
+      index));
+}
+
 void TabStripModel::SetTabPinned(int index, bool pinned) {
   DCHECK(ContainsIndex(index));
   if (contents_data_[index]->pinned == pinned)
@@ -371,6 +381,10 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
 
 bool TabStripModel::IsTabPinned(int index) const {
   return contents_data_[index]->pinned;
+}
+
+bool TabStripModel::IsTabBlocked(int index) const {
+  return contents_data_[index]->blocked;
 }
 
 int TabStripModel::IndexOfFirstNonPinnedTab() const {

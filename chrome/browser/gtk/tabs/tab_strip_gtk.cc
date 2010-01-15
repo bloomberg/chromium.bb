@@ -954,6 +954,7 @@ void TabStripGtk::TabInsertedAt(TabContents* contents,
     tab->UpdateData(contents, false);
   }
   tab->set_pinned(model_->IsTabPinned(index));
+  tab->SetBlocked(model_->IsTabBlocked(index));
 
   if (gtk_widget_get_parent(tab->widget()) != tabstrip_.get())
     gtk_fixed_put(GTK_FIXED(tabstrip_.get()), tab->widget(), 0, 0);
@@ -1009,6 +1010,7 @@ void TabStripGtk::TabMoved(TabContents* contents,
   tab_data_.erase(tab_data_.begin() + from_index);
   TabData data = {tab, gfx::Rect()};
   tab->set_pinned(model_->IsTabPinned(to_index));
+  tab->SetBlocked(model_->IsTabBlocked(to_index));
   tab_data_.insert(tab_data_.begin() + to_index, data);
   if (pinned_state_changed) {
     StartPinAndMoveTabAnimation(from_index, to_index, start_bounds);
@@ -1037,6 +1039,11 @@ void TabStripGtk::TabPinnedStateChanged(TabContents* contents, int index) {
   GetTabAt(index)->set_pinned(model_->IsTabPinned(index));
   StartPinnedTabAnimation(index);
 }
+
+void TabStripGtk::TabBlockedStateChanged(TabContents* contents, int index) {
+  GetTabAt(index)->SetBlocked(model_->IsTabBlocked(index));
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabStripGtk, TabGtk::TabDelegate implementation:

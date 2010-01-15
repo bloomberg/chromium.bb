@@ -105,6 +105,11 @@ class TabStripModelObserver {
   // notified by way of the TabMoved method with |pinned_state_changed| true.
   virtual void TabPinnedStateChanged(TabContents* contents, int index) { }
 
+  // Invoked when the blocked state of a tab changes.
+  // NOTE: This is invoked when a tab becomes blocked/unblocked by a tab modal
+  // window.
+  virtual void TabBlockedStateChanged(TabContents* contents, int index) { }
+
   // The TabStripModel now no longer has any "significant" (user created or
   // user manipulated) tabs. The implementer may use this as a trigger to try
   // and close the window containing the TabStripModel, for example...
@@ -419,12 +424,18 @@ class TabStripModel : public NotificationObserver {
   // should be reset when _any_ selection change occurs in the model.
   bool ShouldResetGroupOnSelect(TabContents* contents) const;
 
+  // Changes the blocked state of the tab at |index|.
+  void SetTabBlocked(int index, bool blocked);
+
   // Changes the pinned state of the tab at |index|. See description above
   // class for details on this.
   void SetTabPinned(int index, bool pinned);
 
   // Returns true if the tab at |index| is pinned.
   bool IsTabPinned(int index) const;
+
+  // Returns true if the tab at |index| is blocked by a tab modal dialog.
+  bool IsTabBlocked(int index) const;
 
   // Returns the index of the first tab that is not pinned. This returns
   // |count()| if all of the tabs are pinned, and 0 if no tabs are pinned.
@@ -568,7 +579,8 @@ class TabStripModel : public NotificationObserver {
     explicit TabContentsData(TabContents* a_contents)
         : contents(a_contents),
           reset_group_on_select(false),
-          pinned(false) {
+          pinned(false),
+          blocked(false) {
       SetGroup(NULL);
     }
 
@@ -612,6 +624,9 @@ class TabStripModel : public NotificationObserver {
 
     // Is the tab pinned?
     bool pinned;
+
+    // Is the tab interaction blocked by a modal dialog?
+    bool blocked;
   };
 
   // The TabContents data currently hosted within this TabStripModel.

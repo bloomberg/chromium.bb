@@ -697,7 +697,7 @@ void View::ViewHierarchyChangedImpl(bool register_accelerators,
       }
     } else {
       if (child == this)
-        UnregisterAccelerators(false);
+        UnregisterAccelerators(true);
     }
   }
 

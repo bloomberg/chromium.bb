@@ -415,6 +415,7 @@ class RenderViewHost : public RenderWidgetHost,
   virtual void GotFocus();
   virtual bool CanBlur() const;
   virtual void ForwardMouseEvent(const WebKit::WebMouseEvent& mouse_event);
+  virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event);
   virtual void ForwardEditCommand(const std::string& name,
                                   const std::string& value);
   virtual void ForwardEditCommandsForNextKeyEvent(

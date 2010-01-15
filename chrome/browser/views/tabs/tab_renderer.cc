@@ -893,3 +893,14 @@ void TabRenderer::LoadTabImages() {
   loading_animation_frames = rb.GetBitmapNamed(IDR_THROBBER);
   waiting_animation_frames = rb.GetBitmapNamed(IDR_THROBBER_WAITING);
 }
+
+void TabRenderer::SetBlocked(bool blocked) {
+  if (data_.blocked == blocked)
+    return;
+  data_.blocked = blocked;
+  if (blocked)
+    StartPulse();
+  else
+    StopPulse();
+}
+

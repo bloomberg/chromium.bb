@@ -97,6 +97,12 @@ void LoginView::SetModel(LoginModel* model) {
   if (login_model_)
     login_model_->SetObserver(this);
 }
+
+void LoginView::RequestFocus() {
+  MessageLoop::current()->PostTask(FROM_HERE,
+    focus_grabber_factory_.NewRunnableMethod(&LoginView::FocusFirstField));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // LoginView, views::View, views::LoginModelObserver overrides:
 

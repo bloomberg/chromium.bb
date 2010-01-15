@@ -136,6 +136,7 @@ class TabStrip : public views::View,
   virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type);
   virtual void TabPinnedStateChanged(TabContents* contents, int index);
+  virtual void TabBlockedStateChanged(TabContents* contents, int index);
 
   // Tab::Delegate implementation:
   virtual bool IsTabSelected(const Tab* tab) const;

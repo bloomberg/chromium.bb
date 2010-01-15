@@ -385,8 +385,8 @@ willPositionSheet:(NSWindow*)sheet
              afterDelay:0];
 }
 
-- (BOOL)attachConstrainedWindow:(ConstrainedWindowMac*)window {
-  return [tabStripController_ attachConstrainedWindow:window];
+- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window {
+  [tabStripController_ attachConstrainedWindow:window];
 }
 
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {

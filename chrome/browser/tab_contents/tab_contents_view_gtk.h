@@ -7,8 +7,6 @@
 
 #include <gtk/gtk.h>
 
-#include <vector>
-
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/focus_store_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -133,9 +131,9 @@ class TabContentsViewGtk : public TabContentsView,
   // opened). |popup_view_| is owned by the TabContents, not the view.
   BlockedPopupContainerViewGtk* popup_view_;
 
-  // Each individual UI for constrained dialogs currently displayed. The
-  // objects in this vector are owned by the TabContents, not the view.
-  std::vector<ConstrainedWindowGtk*> constrained_windows_;
+  // The UI for the constrained dialog currently displayed. This is owned by
+  // TabContents, not the view.
+  ConstrainedWindowGtk* constrained_window_;
 
   // The helper object that handles drag destination related interactions with
   // GTK.

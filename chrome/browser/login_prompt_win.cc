@@ -7,6 +7,8 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -61,6 +63,9 @@ class LoginHandlerWin : public LoginHandler,
   }
   virtual void WindowClosing() {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+    GetTabContentsForLogin()->
+        render_view_host()->set_ignore_input_events(false);
 
     // Reference is no longer valid.
     dialog_ = NULL;

@@ -48,6 +48,10 @@ class TabRenderer : public views::View,
   void UpdateData(TabContents* contents, bool loading_only);
 
   // Sets the pinned state of the tab.
+  void SetBlocked(bool blocked);
+  bool blocked() const { return data_.blocked; }
+
+  // Sets the pinned state of the tab.
   void set_pinned(bool pinned) { data_.pinned = pinned; }
   bool pinned() const { return data_.pinned; }
 
@@ -201,6 +205,7 @@ class TabRenderer : public views::View,
     bool off_the_record;
     bool show_icon;
     bool pinned;
+    bool blocked;
     bool animating_pinned_change;
   };
   TabData data_;

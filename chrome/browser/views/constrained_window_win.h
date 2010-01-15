@@ -35,7 +35,9 @@ class ConstrainedWindowWin : public ConstrainedWindow,
   virtual views::NonClientFrameView* CreateFrameViewForWindow();
 
   // Overridden from ConstrainedWindow:
+  virtual void ShowConstrainedWindow();
   virtual void CloseConstrainedWindow();
+  virtual void FocusConstrainedWindow();
   virtual std::wstring GetWindowTitle() const;
   virtual const gfx::Rect& GetCurrentBounds() const;
 
@@ -68,6 +70,7 @@ class ConstrainedWindowWin : public ConstrainedWindow,
   // Current display rectangle (relative to owner_'s visible area).
   gfx::Rect current_bounds_;
 
+  views::View* focused_view_;
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowWin);
 };
 
