@@ -154,7 +154,11 @@ typedef enum {
 typedef enum {
     HB_ShaperFlag_Default = 0,
     HB_ShaperFlag_NoKerning = 1,
-    HB_ShaperFlag_UseDesignMetrics = 2
+    HB_ShaperFlag_UseDesignMetrics = 1 << 1,
+    /* Arabic vowels in some fonts (Times New Roman, at least) have
+       non-zero advances, when they should be zero.  Setting this shaper
+       flag causes us to zero out the advances for mark glyphs. */
+    HB_ShaperFlag_ForceMarksToZeroWidth = 1 << 2
 } HB_ShaperFlag;
 
 /* 

@@ -1189,6 +1189,24 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
     return true;
 }
 
+/* See comments near the definition of HB_ShaperFlag_ForceMarksToZeroWidth for a description
+   of why this function exists. */
+void HB_FixupZeroWidth(HB_ShaperItem *item)
+{
+    HB_UShort property;
+
+    if (!item->face->gdef)
+        return;
+
+    for (unsigned int i = 0; i < item->num_glyphs; ++i) {
+        /* If the glyph is a mark, force its advance to zero. */
+        if (HB_GDEF_Get_Glyph_Property (item->face->gdef, item->glyphs[i], &property) == HB_Err_Ok &&
+            property == HB_GDEF_MARK) {
+            item->advances[i] = 0;
+        }
+    }
+}
+
 HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool doLogClusters)
 {
     HB_Face face = item->face;
@@ -1203,6 +1221,8 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
 
     if (!face->glyphs_substituted && !glyphs_positioned) {
         HB_GetGlyphAdvances(item);
+        if (item->face->current_flags & HB_ShaperFlag_ForceMarksToZeroWidth)
+            HB_FixupZeroWidth(item);
         return true; // nothing to do for us
     }
 
