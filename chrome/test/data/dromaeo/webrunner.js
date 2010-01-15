@@ -384,7 +384,7 @@
 				}
 	
 			} else if ( dataStore && dataStore.length ) {
-				if (!automated || post_json) {
+				if (!automated) {
 					$("body").addClass("alldone");
 					var div = jQuery("<div class='results'>Saving...</div>").insertBefore("#overview");
 					jQuery.ajax({
@@ -396,7 +396,14 @@
 							div.html("Results saved. You can access them at a later time at the following URL:<br/><strong><a href='" + url + "'>" + url + "</a></strong></div>");
 						}
 					});
-				} else {
+				} else if (post_json) {
+					jQuery.ajax({
+						type: "POST",
+						url: "store.php",
+						data: "data=" + encodeURIComponent(JSON.stringify(window.automation.GetResults()))
+					});  
+				}
+				else {
 					window.automation.SetDone();
 				}
 			}
