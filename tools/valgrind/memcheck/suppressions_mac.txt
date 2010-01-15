@@ -664,6 +664,8 @@
    fun:_ZN10URLFetcher4Core15StartURLRequestEv
 }
 {
+   # This may be category 1, but putting it here for now and
+   # someone who knows better can move it later, if necessary.
    bug_32393
    Memcheck:Addr1
    fun:__CFBinaryPlistGetTopLevelInfo
@@ -674,15 +676,4 @@
    fun:_DASessionCallback
    fun:__CFMachPortPerform
    fun:CFRunLoopRunSpecific
-   fun:CFRunLoopRunInMode
-   fun:RunCurrentEventLoopInMode
-   fun:ReceiveNextEventCommon
-   fun:BlockUntilNextEventMatchingListInMode
-   fun:_DPSNextEvent
-   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
-   fun:-[NSApplication run]
-   fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
-   fun:_ZN4base24MessagePumpCFRunLoopBase3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
 }
