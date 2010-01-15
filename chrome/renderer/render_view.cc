@@ -246,7 +246,8 @@ static bool UrlMatchesPermissions(
 int32 RenderView::next_page_id_ = 1;
 
 RenderView::RenderView(RenderThreadBase* render_thread,
-                       const WebPreferences& webkit_preferences)
+                       const WebPreferences& webkit_preferences,
+                       int64 session_storage_namespace_id)
     : RenderWidget(render_thread, true),
       enabled_bindings_(0),
       target_url_status_(TARGET_NONE),
@@ -281,6 +282,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 #endif
       document_tag_(0),
       webkit_preferences_(webkit_preferences),
+      session_storage_namespace_id_(session_storage_namespace_id),
       ALLOW_THIS_IN_INITIALIZER_LIST(text_translator_(this)) {
   page_translator_.reset(new PageTranslator(&text_translator_));
 }
@@ -339,9 +341,11 @@ RenderView* RenderView::Create(
     const RendererPreferences& renderer_prefs,
     const WebPreferences& webkit_prefs,
     SharedRenderViewCounter* counter,
-    int32 routing_id) {
+    int32 routing_id,
+    int64 session_storage_namespace_id) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
-  scoped_refptr<RenderView> view = new RenderView(render_thread, webkit_prefs);
+  scoped_refptr<RenderView> view = new RenderView(render_thread, webkit_prefs,
+                                                  session_storage_namespace_id);
   view->Init(parent_hwnd,
              opener_id,
              renderer_prefs,
@@ -1360,9 +1364,13 @@ WebView* RenderView::createView(WebFrame* creator) {
   int32 routing_id = MSG_ROUTING_NONE;
   bool user_gesture = creator->isProcessingUserGesture();
   bool opener_suppressed = creator->willSuppressOpenerInNewFrame();
+  int64 cloned_session_storage_namespace_id;
 
   render_thread_->Send(
-      new ViewHostMsg_CreateWindow(routing_id_, user_gesture, &routing_id));
+      new ViewHostMsg_CreateWindow(routing_id_, user_gesture,
+                                   session_storage_namespace_id_,
+                                   &routing_id,
+                                   &cloned_session_storage_namespace_id));
   if (routing_id == MSG_ROUTING_NONE)
     return NULL;
 
@@ -1372,7 +1380,8 @@ WebView* RenderView::createView(WebFrame* creator) {
                                         renderer_preferences_,
                                         webkit_preferences_,
                                         shared_popup_counter_,
-                                        routing_id);
+                                        routing_id,
+                                        cloned_session_storage_namespace_id);
   view->opened_by_user_gesture_ = user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.

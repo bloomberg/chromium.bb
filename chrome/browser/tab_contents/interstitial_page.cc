@@ -23,6 +23,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/bindings_policy.h"
+#include "chrome/common/dom_storage_common.h"
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
@@ -383,7 +384,7 @@ void InterstitialPage::DomOperationResponse(const std::string& json_string,
 RenderViewHost* InterstitialPage::CreateRenderViewHost() {
   RenderViewHost* render_view_host = new RenderViewHost(
       SiteInstance::CreateSiteInstance(tab()->profile()),
-      this, MSG_ROUTING_NONE);
+      this, MSG_ROUTING_NONE, kInvalidSessionStorageNamespaceId);
   return render_view_host;
 }
 

@@ -51,7 +51,6 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual void suddenTerminationChanged(bool enabled);
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
       const WebKit::WebString& path, unsigned quota);
-  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
   virtual void dispatchStorageEvent(
       const WebKit::WebString& key, const WebKit::WebString& old_value,
       const WebKit::WebString& new_value, const WebKit::WebString& origin,

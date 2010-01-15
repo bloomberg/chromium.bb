@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/css_colors.h"
-#include "chrome/common/dom_storage_type.h"
+#include "chrome/common/dom_storage_common.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "ipc/ipc_platform_file.h"
@@ -40,6 +40,7 @@ class URLPattern;
 
 struct RendererPreferences;
 struct ViewMsg_DOMStorageEvent_Params;
+struct ViewMsg_New_Params;
 struct WebPreferences;
 
 namespace WebKit {
@@ -171,10 +172,7 @@ class RenderThread : public RenderThreadBase,
       const std::vector<URLPattern>& permissions);
   void OnSetNextPageID(int32 next_page_id);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
-  void OnCreateNewView(gfx::NativeViewId parent_hwnd,
-                       const RendererPreferences& renderer_prefs,
-                       const WebPreferences& webkit_prefs,
-                       int32 view_id);
+  void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
   void OnSetCacheCapacities(size_t min_dead_capacity,
                             size_t max_dead_capacity,

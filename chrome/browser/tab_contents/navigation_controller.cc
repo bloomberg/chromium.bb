@@ -12,6 +12,8 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_url_handler.h"
+#include "chrome/browser/in_process_webkit/dom_storage_context.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -133,7 +135,9 @@ NavigationController::NavigationController(TabContents* contents,
       max_restored_page_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(ssl_manager_(this)),
       needs_reload_(false),
-      user_gesture_observed_(false) {
+      user_gesture_observed_(false),
+      session_storage_namespace_id_(profile->GetWebKitContext()->
+          dom_storage_context()->AllocateSessionStorageNamespaceId()) {
   DCHECK(profile_);
 }
 
@@ -855,6 +859,10 @@ void NavigationController::CopyStateFrom(const NavigationController& source) {
     entries_.push_back(linked_ptr<NavigationEntry>(
         new NavigationEntry(*source.entries_[i])));
   }
+
+  session_storage_namespace_id_ =
+      profile_->GetWebKitContext()->dom_storage_context()->CloneSessionStorage(
+          source.session_storage_namespace_id_);
 
   FinishRestore(source.last_committed_entry_index_, false);
 }

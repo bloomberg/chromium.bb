@@ -10,7 +10,7 @@
 #include "base/tracked.h"
 #include "chrome/browser/in_process_webkit/dom_storage_area.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
-#include "chrome/common/dom_storage_type.h"
+#include "chrome/common/dom_storage_common.h"
 #include "ipc/ipc_message.h"
 
 class DOMStorageContext;
@@ -38,6 +38,10 @@ class DOMStorageDispatcherHost
 
   // Only call from ResourceMessageFilter on the IO thread.
   bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
+
+  // Clones a session storage namespace and returns the cloned namespaces' id.
+  // Only call on the IO thread.
+  int64 CloneSessionStorage(int64 original_id);
 
   // Send a message to the renderer process associated with our
   // message_sender_ via the IO thread.  May be called from any thread.

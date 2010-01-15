@@ -19,7 +19,7 @@
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/css_colors.h"
-#include "chrome/common/dom_storage_type.h"
+#include "chrome/common/dom_storage_common.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/filter_policy.h"
@@ -532,6 +532,24 @@ struct ViewMsg_ExecuteCode_Params {
 
   // Whether to inject into all frames, or only the root frame.
   bool all_frames;
+};
+
+// Creates a new view via a control message since the view doesn't yet exist.
+struct ViewMsg_New_Params {
+  // The parent window's id.
+  gfx::NativeViewId parent_window;
+
+  // Renderer-wide preferences.
+  RendererPreferences renderer_preferences;
+
+  // Preferences for this view.
+  WebPreferences web_preferences;
+
+  // The ID of the view to be created.
+  int32 view_id;
+
+  // The session storage namespace ID this view should use.
+  int64 session_storage_namespace_id;
 };
 
 // Message to ask the browser to translate some text from one language to
@@ -2317,7 +2335,6 @@ struct ParamTraits<ViewMsg_ExecuteCode_Params> {
     WriteParam(m, p.code);
     WriteParam(m, p.all_frames);
   }
-
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
       ReadParam(m, iter, &p->request_id) &&
@@ -2329,6 +2346,40 @@ struct ParamTraits<ViewMsg_ExecuteCode_Params> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<ViewMsg_ExecuteCode_Params>");
+  }
+};
+
+template<>
+struct ParamTraits<ViewMsg_New_Params> {
+  typedef ViewMsg_New_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.parent_window);
+    WriteParam(m, p.renderer_preferences);
+    WriteParam(m, p.web_preferences);
+    WriteParam(m, p.view_id);
+    WriteParam(m, p.session_storage_namespace_id);
+  }
+
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->parent_window) &&
+      ReadParam(m, iter, &p->renderer_preferences) &&
+      ReadParam(m, iter, &p->web_preferences) &&
+      ReadParam(m, iter, &p->view_id) &&
+      ReadParam(m, iter, &p->session_storage_namespace_id);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.parent_window, l);
+    l->append(L", ");
+    LogParam(p.renderer_preferences, l);
+    l->append(L", ");
+    LogParam(p.web_preferences, l);
+    l->append(L", ");
+    LogParam(p.view_id, l);
+    l->append(L", ");
+    LogParam(p.session_storage_namespace_id, l);
+    l->append(L")");
   }
 };
 
@@ -2369,7 +2420,6 @@ struct ParamTraits<ViewHostMsg_TranslateTextParam> {
     l->append(L")");
   }
 };
-
 
 }  // namespace IPC
 

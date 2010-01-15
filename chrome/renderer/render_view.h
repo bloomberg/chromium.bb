@@ -143,7 +143,8 @@ class RenderView : public RenderWidget,
       const RendererPreferences& renderer_prefs,
       const WebPreferences& webkit_prefs,
       SharedRenderViewCounter* counter,
-      int32 routing_id);
+      int32 routing_id,
+      int64 session_storage_namespace_id);
 
   // Sets the "next page id" counter.
   static void SetNextPageID(int32 next_page_id);
@@ -469,7 +470,8 @@ class RenderView : public RenderWidget,
   typedef std::map<std::string, int> HostZoomLevels;
 
   explicit RenderView(RenderThreadBase* render_thread,
-                      const WebPreferences& webkit_preferences);
+                      const WebPreferences& webkit_preferences,
+                      int64 session_storage_namespace_id);
 
   // Initializes this view with the given parent and ID. The |routing_id| can be
   // set to 'MSG_ROUTING_NONE' if the true ID is not yet known. In this case,
@@ -1006,6 +1008,11 @@ class RenderView : public RenderWidget,
   typedef std::map<WebKit::WebView*, RenderView*> ViewMap;
 
   HostZoomLevels host_zoom_levels_;
+
+  // The SessionStorage namespace that we're assigned to has an ID, and that ID
+  // is passed to us upon creation.  WebKit asks for this ID upon first use and
+  // uses it whenever asking the browser process to allocate new storage areas.
+  int64 session_storage_namespace_id_;
 
   // Page translation related objects.
   TextTranslatorImpl text_translator_;

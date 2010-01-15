@@ -19,7 +19,7 @@ using WebKit::WebString;
 /* static */
 DOMStorageNamespace* DOMStorageNamespace::CreateLocalStorageNamespace(
     DOMStorageContext* dom_storage_context, const FilePath& data_dir_path) {
-  int64 id = dom_storage_context->kLocalStorageNamespaceId;
+  int64 id = kLocalStorageNamespaceId;
   DCHECK(!dom_storage_context->GetStorageNamespace(id));
   return new DOMStorageNamespace(dom_storage_context, id,
       webkit_glue::FilePathToWebString(data_dir_path), DOM_STORAGE_LOCAL);
@@ -28,7 +28,7 @@ DOMStorageNamespace* DOMStorageNamespace::CreateLocalStorageNamespace(
 /* static */
 DOMStorageNamespace* DOMStorageNamespace::CreateSessionStorageNamespace(
     DOMStorageContext* dom_storage_context) {
-  int64 id = dom_storage_context->AllocateStorageNamespaceId();
+  int64 id = dom_storage_context->AllocateSessionStorageNamespaceId();
   DCHECK(!dom_storage_context->GetStorageNamespace(id));
   return new DOMStorageNamespace(dom_storage_context, id, WebString(),
                                  DOM_STORAGE_SESSION);
@@ -71,9 +71,14 @@ DOMStorageArea* DOMStorageNamespace::GetStorageArea(const string16& origin) {
   return storage_area;
 }
 
+// TODO(jorlow): Remove in the next patch.
 DOMStorageNamespace* DOMStorageNamespace::Copy() {
+  int64 id = dom_storage_context_->AllocateSessionStorageNamespaceId();
+  return Copy(id);
+}
+
+DOMStorageNamespace* DOMStorageNamespace::Copy(int64 id) {
   DCHECK(dom_storage_type_ == DOM_STORAGE_SESSION);
-  int64 id = dom_storage_context_->AllocateStorageNamespaceId();
   DCHECK(!dom_storage_context_->GetStorageNamespace(id));
   DOMStorageNamespace* new_storage_namespace = new DOMStorageNamespace(
       dom_storage_context_, id, data_dir_path_, dom_storage_type_);

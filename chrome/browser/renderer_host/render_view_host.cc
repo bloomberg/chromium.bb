@@ -104,7 +104,8 @@ RenderViewHost* RenderViewHost::FromID(int render_process_id,
 
 RenderViewHost::RenderViewHost(SiteInstance* instance,
                                RenderViewHostDelegate* delegate,
-                               int routing_id)
+                               int routing_id,
+                               int64 session_storage_namespace_id)
     : RenderWidgetHost(instance->GetProcess(), routing_id),
       instance_(instance),
       delegate_(delegate),
@@ -118,7 +119,8 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       is_waiting_for_unload_ack_(false),
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
-      sudden_termination_allowed_(false) {
+      sudden_termination_allowed_(false),
+      session_storage_namespace_id_(session_storage_namespace_id) {
   DCHECK(instance_);
   DCHECK(delegate_);
 
@@ -205,10 +207,14 @@ bool RenderViewHost::CreateRenderView(
     webkit_prefs.databases_enabled = true;
   }
 
-  Send(new ViewMsg_New(GetNativeViewId(),
-                       delegate_->GetRendererPrefs(process()->profile()),
-                       webkit_prefs,
-                       routing_id()));
+  ViewMsg_New_Params params;
+  params.parent_window = GetNativeViewId();
+  params.renderer_preferences =
+      delegate_->GetRendererPrefs(process()->profile());
+  params.web_preferences = webkit_prefs;
+  params.view_id = routing_id();
+  params.session_storage_namespace_id = session_storage_namespace_id_;
+  Send(new ViewMsg_New(params));
 
   // Set the alternate error page, which is profile specific, in the renderer.
   GURL url = delegate_->GetAlternateErrorPageURL();

@@ -34,9 +34,15 @@ class DOMStorageContext {
   // Get a new session storage namespace (but it's still owned by this class).
   DOMStorageNamespace* NewSessionStorage();
 
-  // Allocate a new storage ___ id.
-  int64 AllocateStorageAreaId() { return ++last_storage_area_id_; }
-  int64 AllocateStorageNamespaceId() { return ++last_storage_namespace_id_; }
+  // Allocate a new storage area id.  Only call on the WebKit thread.
+  int64 AllocateStorageAreaId();
+
+  // Allocate a new session storage id.  Only call on the UI or IO thread.
+  int64 AllocateSessionStorageNamespaceId();
+
+  // Clones a session storage namespace and returns the cloned namespaces' id.
+  // Only call on the IO thread.
+  int64 CloneSessionStorage(int64 original_id);
 
   // Various storage area methods.  The storage area is owned by one of the
   // namespaces that's owned by this class.
@@ -65,15 +71,22 @@ class DOMStorageContext {
   // date that's supplied.
   void DeleteDataModifiedSince(const base::Time& cutoff);
 
-  // The special ID used for local storage.
-  static const int64 kLocalStorageNamespaceId = 0;
-
  private:
-  // The last used storage_area_id and storage_namespace_id's.
-  static const int64 kFirstStorageAreaId = 1;
+  // The WebKit thread half of CloneSessionStorage above.  Static because
+  // DOMStorageContext isn't ref counted thus we can't use a runnable method.
+  // That said, we know this is safe because this class is destroyed on the
+  // WebKit thread, so there's no way it could be destroyed before this is run.
+  static void CompleteCloningSessionStorage(DOMStorageContext* context,
+                                            int64 existing_id, int64 clone_id);
+
+  // The last used storage_area_id and storage_namespace_id's.  For the storage
+  // namespaces, IDs allocated on the UI thread are positive and count up while
+  // IDs allocated on the IO thread are negative and count down.  This allows us
+  // to allocate unique IDs on both without any locking.  All storage area ids
+  // are allocated on the WebKit thread.
   int64 last_storage_area_id_;
-  static const int64 kFirstStorageNamespaceId = 1;
-  int64 last_storage_namespace_id_;
+  int64 last_session_storage_namespace_id_on_ui_thread_;
+  int64 last_session_storage_namespace_id_on_io_thread_;
 
   // We're owned by this WebKit context.  Used while instantiating LocalStorage.
   WebKitContext* webkit_context_;

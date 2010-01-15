@@ -14,15 +14,16 @@ using WebKit::WebString;
 
 RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
     DOMStorageType storage_type)
-    : storage_type_(storage_type),
-      namespace_id_(kUninitializedNamespaceId) {
+    : storage_type_(storage_type) {
+  RenderThread::current()->Send(
+        new ViewHostMsg_DOMStorageNamespaceId(storage_type_,
+                                              &namespace_id_));
 }
 
 RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
     DOMStorageType storage_type, int64 namespace_id)
     : storage_type_(storage_type),
       namespace_id_(namespace_id) {
-  DCHECK(namespace_id_ != kUninitializedNamespaceId);
 }
 
 RendererWebStorageNamespaceImpl::~RendererWebStorageNamespaceImpl() {
@@ -30,15 +31,6 @@ RendererWebStorageNamespaceImpl::~RendererWebStorageNamespaceImpl() {
 
 WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
     const WebString& origin) {
-  // This could be done async in the background (started when this class is
-  // first instantiated) rather than lazily on first use, but it's unclear
-  // whether it's worth the complexity.
-  if (namespace_id_ == kUninitializedNamespaceId) {
-    RenderThread::current()->Send(
-        new ViewHostMsg_DOMStorageNamespaceId(storage_type_,
-                                              &namespace_id_));
-    DCHECK(namespace_id_ != kUninitializedNamespaceId);
-  }
   // Ideally, we'd keep a hash map of origin to these objects.  Unfortunately
   // this doesn't seem practical because there's no good way to ref-count these
   // objects, and it'd be unclear who owned them.  So, instead, we'll pay a
@@ -47,10 +39,6 @@ WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
 }
 
 WebStorageNamespace* RendererWebStorageNamespaceImpl::copy() {
-  // If we haven't been used yet, we might as well start out fresh (and lazy).
-  if (namespace_id_ == kUninitializedNamespaceId)
-    return new RendererWebStorageNamespaceImpl(storage_type_);
-
   // This cannot easily be deferred because we need a snapshot in time.
   int64 new_namespace_id;
   RenderThread::current()->Send(

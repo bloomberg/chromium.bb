@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -200,7 +201,11 @@ class TestingProfile : public Profile {
   virtual void ResetTabRestoreService() {}
   virtual SpellCheckHost* GetSpellCheckHost() { return NULL; }
   virtual void ReinitializeSpellCheckHost(bool force) { }
-  virtual WebKitContext* GetWebKitContext() { return NULL; }
+  virtual WebKitContext* GetWebKitContext() {
+    if (webkit_context_ == NULL)
+      webkit_context_ = new WebKitContext(GetPath(), false);
+    return webkit_context_;
+  }
   virtual WebKitContext* GetOffTheRecordWebKitContext() { return NULL; }
   virtual void MarkAsCleanShutdown() {}
   virtual void InitExtensions() {}
@@ -270,6 +275,9 @@ class TestingProfile : public Profile {
   // The main database tracker for this profile.
   // Should be used only on the file thread.
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
+
+  // WebKitContext, lazily initialized by GetWebKitContext().
+  scoped_refptr<WebKitContext> webkit_context_;
 };
 
 // A profile that derives from another profile.  This does not actually

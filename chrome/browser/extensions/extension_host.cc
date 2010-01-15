@@ -21,6 +21,8 @@
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/in_process_webkit/dom_storage_context.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/jsmessage_box_handler.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -123,7 +125,10 @@ ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
       document_element_available_(false),
       url_(url),
       extension_host_type_(host_type) {
-  render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE);
+  int64 session_storage_namespace_id = profile_->GetWebKitContext()->
+      dom_storage_context()->AllocateSessionStorageNamespaceId();
+  render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
+                                         session_storage_namespace_id);
   render_view_host_->AllowBindings(BindingsPolicy::EXTENSION);
   if (enable_dom_automation_)
     render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);

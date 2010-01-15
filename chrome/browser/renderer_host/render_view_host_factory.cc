@@ -14,11 +14,14 @@ RenderViewHostFactory* RenderViewHostFactory::factory_ = NULL;
 RenderViewHost* RenderViewHostFactory::Create(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
-    int routing_id) {
+    int routing_id,
+    int64 session_storage_namespace_id) {
   if (factory_) {
-    return factory_->CreateRenderViewHost(instance, delegate, routing_id);
+    return factory_->CreateRenderViewHost(instance, delegate, routing_id,
+                                          session_storage_namespace_id);
   }
-  return new RenderViewHost(instance, delegate, routing_id);
+  return new RenderViewHost(instance, delegate, routing_id,
+                            session_storage_namespace_id);
 }
 
 // static

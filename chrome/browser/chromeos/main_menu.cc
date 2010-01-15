@@ -14,6 +14,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/in_process_webkit/dom_storage_context.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
@@ -148,8 +150,11 @@ MainMenu::MainMenu()
   DCHECK(BrowserList::begin() != BrowserList::end());
   // TODO(sky): this shouldn't pick a random profile to use.
   Profile* profile = (*BrowserList::begin())->profile();
+  int64 session_storage_namespace_id = profile->GetWebKitContext()->
+      dom_storage_context()->AllocateSessionStorageNamespaceId();
   site_instance_ = SiteInstance::CreateSiteInstanceForURL(profile, menu_url);
-  menu_rvh_ = new RenderViewHost(site_instance_, this, MSG_ROUTING_NONE);
+  menu_rvh_ = new RenderViewHost(site_instance_, this, MSG_ROUTING_NONE,
+                                 session_storage_namespace_id);
 
   rwhv_ = new RenderWidgetHostViewGtk(menu_rvh_);
   rwhv_->InitAsChild();

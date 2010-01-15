@@ -197,10 +197,6 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
                                                                     quota);
   }
 
-  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace() {
-    return WebKit::WebStorageNamespace::createSessionStorageNamespace();
-  }
-
   void dispatchStorageEvent(const WebKit::WebString& key,
       const WebKit::WebString& old_value, const WebKit::WebString& new_value,
       const WebKit::WebString& origin, const WebKit::WebURL& url,

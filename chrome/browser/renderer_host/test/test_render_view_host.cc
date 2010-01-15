@@ -7,6 +7,7 @@
 #include "base/gfx/rect.h"
 #include "chrome/browser/renderer_host/test/test_backing_store.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
+#include "chrome/common/dom_storage_common.h"
 #include "chrome/common/render_messages.h"
 
 using webkit_glue::PasswordForm;
@@ -14,7 +15,8 @@ using webkit_glue::PasswordForm;
 TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
                                        RenderViewHostDelegate* delegate,
                                        int routing_id)
-    : RenderViewHost(instance, delegate, routing_id),
+    : RenderViewHost(instance, delegate, routing_id,
+                     kInvalidSessionStorageNamespaceId),
       render_view_created_(false),
       delete_counter_(NULL) {
   set_view(new TestRenderWidgetHostView(this));

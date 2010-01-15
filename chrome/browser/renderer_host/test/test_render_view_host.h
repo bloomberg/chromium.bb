@@ -173,7 +173,8 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
   virtual RenderViewHost* CreateRenderViewHost(
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
-      int routing_id) {
+      int routing_id,
+      int64 session_storage_namespace_id) {
     // See declaration of render_process_host_factory_ below.
     instance->set_render_process_host_factory(render_process_host_factory_);
     return new TestRenderViewHost(instance, delegate, routing_id);

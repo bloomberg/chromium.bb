@@ -205,12 +205,6 @@ WebStorageNamespace* RendererWebKitClientImpl::createLocalStorageNamespace(
   return new RendererWebStorageNamespaceImpl(DOM_STORAGE_LOCAL);
 }
 
-WebStorageNamespace* RendererWebKitClientImpl::createSessionStorageNamespace() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
-    return WebStorageNamespace::createSessionStorageNamespace();
-  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION);
-}
-
 void RendererWebKitClientImpl::dispatchStorageEvent(
     const WebString& key, const WebString& old_value,
     const WebString& new_value, const WebString& origin,

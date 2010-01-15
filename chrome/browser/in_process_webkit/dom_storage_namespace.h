@@ -8,7 +8,7 @@
 #include "base/string16.h"
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/dom_storage_type.h"
+#include "chrome/common/dom_storage_common.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 class DOMStorageArea;
@@ -31,7 +31,8 @@ class DOMStorageNamespace {
   ~DOMStorageNamespace();
 
   DOMStorageArea* GetStorageArea(const string16& origin);
-  DOMStorageNamespace* Copy();
+  DOMStorageNamespace* Copy();  // TODO(jorlow): Delete in next patch.
+  DOMStorageNamespace* Copy(int64 id);
   void PurgeMemory();
 
   const DOMStorageContext* dom_storage_context() const {

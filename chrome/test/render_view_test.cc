@@ -96,7 +96,8 @@ void RenderViewTest::SetUp() {
   // This needs to pass the mock render thread to the view.
   view_ = RenderView::Create(&render_thread_, 0, kOpenerId,
                              RendererPreferences(), WebPreferences(),
-                             new SharedRenderViewCounter(0), kRouteId);
+                             new SharedRenderViewCounter(0), kRouteId,
+                             kInvalidSessionStorageNamespaceId);
 
   // Attach a pseudo keyboard device to this object.
   mock_keyboard_.reset(new MockKeyboard());

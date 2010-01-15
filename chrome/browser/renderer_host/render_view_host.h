@@ -92,7 +92,8 @@ class RenderViewHost : public RenderWidgetHost,
   // which case RenderWidgetHost will create a new one.
   RenderViewHost(SiteInstance* instance,
                  RenderViewHostDelegate* delegate,
-                 int routing_id);
+                 int routing_id,
+                 int64 session_storage_namespace_id);
   virtual ~RenderViewHost();
 
   SiteInstance* site_instance() const { return instance_; }
@@ -670,6 +671,9 @@ class RenderViewHost : public RenderWidgetHost,
   bool sudden_termination_allowed_;
 
   NotificationRegistrar registrar_;
+
+  // The session storage namespace id to be used by the associated render view.
+  int64 session_storage_namespace_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHost);
 };

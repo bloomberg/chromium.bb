@@ -414,15 +414,13 @@ void RenderThread::OnSetCSSColors(
   WebKit::setNamedColors(color_names.get(), web_colors.get(), num_colors);
 }
 
-void RenderThread::OnCreateNewView(gfx::NativeViewId parent_hwnd,
-                                   const RendererPreferences& renderer_prefs,
-                                   const WebPreferences& webkit_prefs,
-                                   int32 view_id) {
+void RenderThread::OnCreateNewView(const ViewMsg_New_Params& params) {
   EnsureWebKitInitialized();
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
   RenderView::Create(
-      this, parent_hwnd, MSG_ROUTING_NONE, renderer_prefs,
-      webkit_prefs, new SharedRenderViewCounter(0), view_id);
+      this, params.parent_window, MSG_ROUTING_NONE, params.renderer_preferences,
+      params.web_preferences, new SharedRenderViewCounter(0), params.view_id,
+      params.session_storage_namespace_id);
 }
 
 void RenderThread::OnSetCacheCapacities(size_t min_dead_capacity,

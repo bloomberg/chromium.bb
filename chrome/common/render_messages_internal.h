@@ -70,13 +70,11 @@ IPC_BEGIN_MESSAGES(View)
                       std::vector<CSSColors::CSSColorMapping>)
 
   // Tells the renderer to create a new view.
-  // This message is slightly different, the view it takes is the view to
-  // create, the message itself is sent as a non-view control message.
-  IPC_MESSAGE_CONTROL4(ViewMsg_New,
-                       gfx::NativeViewId, /* parent window */
-                       RendererPreferences,
-                       WebPreferences,
-                       int32 /* view id */)
+  // This message is slightly different, the view it takes (via
+  // ViewMsg_New_Params) is the view to create, the message itself is sent as a
+  // non-view control message.
+  IPC_MESSAGE_CONTROL1(ViewMsg_New,
+                       ViewMsg_New_Params)
 
   // Tells the renderer to set its maximum cache size to the supplied value
   IPC_MESSAGE_CONTROL3(ViewMsg_SetCacheCapacities,
@@ -853,10 +851,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Sent by the renderer when it is creating a new window.  The browser creates
   // a tab for it and responds with a ViewMsg_CreatingNew_ACK.  If route_id is
   // MSG_ROUTING_NONE, the view couldn't be created.
-  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateWindow,
+  IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_CreateWindow,
                               int /* opener_id */,
                               bool /* user_gesture */,
-                              int /* route_id */)
+                              int64 /* session_storage_namespace_id */,
+                              int /* route_id */,
+                              int64 /* cloned_session_storage_namespace_id */)
 
   // Similar to ViewHostMsg_CreateWindow, except used for sub-widgets, like
   // <select> dropdowns.  This message is sent to the TabContents that

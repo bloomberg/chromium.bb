@@ -6,6 +6,8 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/in_process_webkit/dom_storage_context.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profile.h"
@@ -100,8 +102,11 @@ void BalloonViewHost::UpdatePreferredSize(const gfx::Size& new_size) {
 
 void BalloonViewHost::Init(gfx::NativeView parent_hwnd) {
   DCHECK(!render_view_host_) << "BalloonViewHost already initialized.";
+  int64 session_storage_namespace_id = balloon_->profile()->GetWebKitContext()->
+      dom_storage_context()->AllocateSessionStorageNamespaceId();
   RenderViewHost* rvh = new RenderViewHost(site_instance_.get(),
-                                           this, MSG_ROUTING_NONE);
+                                           this, MSG_ROUTING_NONE,
+                                           session_storage_namespace_id);
   render_view_host_ = rvh;
 
   // Pointer is owned by the RVH.

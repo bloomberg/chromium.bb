@@ -89,11 +89,6 @@ WebStorageNamespace* WorkerWebKitClientImpl::createLocalStorageNamespace(
   return 0;
 }
 
-WebStorageNamespace* WorkerWebKitClientImpl::createSessionStorageNamespace() {
-  NOTREACHED();
-  return 0;
-}
-
 void WorkerWebKitClientImpl::dispatchStorageEvent(
     const WebString& key, const WebString& old_value,
     const WebString& new_value, const WebString& origin,

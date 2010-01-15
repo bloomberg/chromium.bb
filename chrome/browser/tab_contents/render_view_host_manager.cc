@@ -55,7 +55,8 @@ void RenderViewHostManager::Init(Profile* profile,
   if (!site_instance)
     site_instance = SiteInstance::CreateSiteInstance(profile);
   render_view_host_ = RenderViewHostFactory::Create(
-      site_instance, render_view_delegate_, routing_id);
+      site_instance, render_view_delegate_, routing_id, delegate_->
+      GetControllerForRenderManager().session_storage_namespace_id());
   NotificationService::current()->Notify(
       NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
       Source<RenderViewHostManager>(this),
@@ -412,7 +413,8 @@ bool RenderViewHostManager::CreatePendingRenderView(SiteInstance* instance) {
   }
 
   pending_render_view_host_ = RenderViewHostFactory::Create(
-      instance, render_view_delegate_, MSG_ROUTING_NONE);
+      instance, render_view_delegate_, MSG_ROUTING_NONE, delegate_->
+      GetControllerForRenderManager().session_storage_namespace_id());
   NotificationService::current()->Notify(
       NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
       Source<RenderViewHostManager>(this),

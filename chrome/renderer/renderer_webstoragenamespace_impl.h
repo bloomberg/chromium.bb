@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_RENDERER_WEBSTORAGENAMESPACE_IMPL_H_
 
 #include "base/basictypes.h"
-#include "chrome/common/dom_storage_type.h"
+#include "chrome/common/dom_storage_common.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
 
 class RendererWebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
@@ -26,11 +26,8 @@ class RendererWebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
   // Used during lazy initialization of namespace_id_.
   const DOMStorageType storage_type_;
 
-  // Our namespace ID.  Lazily initialized.
+  // Our namespace ID.
   int64 namespace_id_;
-
-  // namespace_id_ should equal this iff its unitialized.
-  static const int64 kUninitializedNamespaceId = -1;
 };
 
 #endif  // CHROME_RENDERER_RENDERER_WEBSTORAGENAMESPACE_IMPL_H_

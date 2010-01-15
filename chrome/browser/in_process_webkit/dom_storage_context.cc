@@ -10,6 +10,7 @@
 #include "chrome/browser/in_process_webkit/dom_storage_area.h"
 #include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/common/dom_storage_common.h"
 
 static const char* kLocalStorageDirectory = "Local Storage";
 
@@ -24,8 +25,9 @@ static void MigrateLocalStorageDirectory(const FilePath& data_path) {
 }
 
 DOMStorageContext::DOMStorageContext(WebKitContext* webkit_context)
-    : last_storage_area_id_(kFirstStorageAreaId),
-      last_storage_namespace_id_(kFirstStorageNamespaceId),
+    : last_storage_area_id_(0),
+      last_session_storage_namespace_id_on_ui_thread_(kLocalStorageNamespaceId),
+      last_session_storage_namespace_id_on_io_thread_(kLocalStorageNamespaceId),
       webkit_context_(webkit_context) {
 }
 
@@ -65,6 +67,27 @@ DOMStorageNamespace* DOMStorageContext::LocalStorage() {
 DOMStorageNamespace* DOMStorageContext::NewSessionStorage() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   return DOMStorageNamespace::CreateSessionStorageNamespace(this);
+}
+
+int64 DOMStorageContext::AllocateStorageAreaId() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  return ++last_storage_area_id_;
+}
+
+int64 DOMStorageContext::AllocateSessionStorageNamespaceId() {
+  if (ChromeThread::CurrentlyOn(ChromeThread::UI))
+    return ++last_session_storage_namespace_id_on_ui_thread_;
+  return --last_session_storage_namespace_id_on_io_thread_;
+}
+
+int64 DOMStorageContext::CloneSessionStorage(int64 original_id) {
+  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  int64 clone_id = AllocateSessionStorageNamespaceId();
+  ChromeThread::PostTask(
+      ChromeThread::WEBKIT, FROM_HERE, NewRunnableFunction(
+          &DOMStorageContext::CompleteCloningSessionStorage,
+          this, original_id, clone_id));
+  return clone_id;
 }
 
 void DOMStorageContext::RegisterStorageArea(DOMStorageArea* storage_area) {
@@ -161,4 +184,14 @@ void DOMStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
     if (file_util::HasFileBeenModifiedSince(find_info, cutoff))
       file_util::Delete(path, false);
   }
+}
+
+void DOMStorageContext::CompleteCloningSessionStorage(
+    DOMStorageContext* context, int64 existing_id, int64 clone_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DOMStorageNamespace* existing_namespace =
+      context->GetStorageNamespace(existing_id);
+  // If nothing exists, then there's nothing to clone.
+  if (existing_namespace)
+    existing_namespace->Copy(clone_id);
 }

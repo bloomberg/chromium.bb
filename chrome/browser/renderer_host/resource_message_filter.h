@@ -118,7 +118,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   virtual ~ResourceMessageFilter();
 
-  void OnMsgCreateWindow(int opener_id, bool user_gesture, int* route_id);
+  void OnMsgCreateWindow(int opener_id, bool user_gesture,
+                         int64 session_storage_namespace_id, int* route_id,
+                         int64* cloned_session_storage_namespace_id);
   void OnMsgCreateWidget(int opener_id, bool activatable, int* route_id);
   void OnSetCookie(const GURL& url,
                    const GURL& first_party_for_cookies,

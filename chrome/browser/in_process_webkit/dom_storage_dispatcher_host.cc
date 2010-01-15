@@ -129,6 +129,10 @@ bool DOMStorageDispatcherHost::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
+int64 DOMStorageDispatcherHost::CloneSessionStorage(int64 original_id) {
+  return Context()->CloneSessionStorage(original_id);
+}
+
 void DOMStorageDispatcherHost::Send(IPC::Message* message) {
   if (!message_sender_) {
     delete message;
