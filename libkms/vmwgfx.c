@@ -160,16 +160,17 @@ vmwgfx_bo_map(struct kms_bo *_bo, void **out)
 	struct vmwgfx_bo *bo = (struct vmwgfx_bo *)_bo;
 	void *map;
 
-	if (!bo->map_count) {
-		map = mmap(NULL, bo->base.size, PROT_READ | PROT_WRITE,
-			   MAP_SHARED, bo->base.kms->fd, bo->map_handle);
-
-		if (!map)
-			return -ENOMEM;
-
-		bo->base.ptr = map;
+	if (bo->base.ptr) {
+		bo->map_count++;
+		*out = bo->base.ptr;
+		return 0;
 	}
 
+	map = mmap(NULL, bo->base.size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->base.kms->fd, bo->map_handle);
+	if (map == MAP_FAILED)
+		return -errno;
+
+	bo->base.ptr = map;
 	bo->map_count++;
 	*out = bo->base.ptr;
 
@@ -190,7 +191,8 @@ vmwgfx_bo_destroy(struct kms_bo *_bo)
 	struct vmwgfx_bo *bo = (struct vmwgfx_bo *)_bo;
 	struct drm_vmw_unref_dmabuf_arg arg;
 
-	if (bo->map_count) {
+	if (bo->base.ptr) {
+		/* XXX Sanity check map_count */
 		munmap(bo->base.ptr, bo->base.size);
 		bo->base.ptr = NULL;
 	}

@@ -220,8 +220,11 @@ intel_bo_destroy(struct kms_bo *_bo)
 	struct drm_gem_close arg;
 	int ret;
 
-	if (bo->base.ptr)
+	if (bo->base.ptr) {
+		/* XXX Sanity check map_count */
 		munmap(bo->base.ptr, bo->base.size);
+		bo->base.ptr = NULL;
+	}
 
 	memset(&arg, 0, sizeof(arg));
 	arg.handle = bo->base.handle;
