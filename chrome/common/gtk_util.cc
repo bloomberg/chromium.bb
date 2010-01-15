@@ -13,6 +13,7 @@
 #include "app/resource_bundle.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
+#include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/renderer_preferences.h"
 #include "grit/theme_resources.h"
@@ -586,6 +587,33 @@ void DrawTextEntryBackground(GtkWidget* offscreen_entry,
                      rec->height - 2 * yborder);
 
   g_object_unref(our_style);
+}
+
+void DrawThemedToolbarBackground(GtkWidget* widget,
+                                 cairo_t* cr,
+                                 GdkEventExpose* event,
+                                 const gfx::Point& tabstrip_origin,
+                                 GtkThemeProvider* theme_provider) {
+  // Fill the entire region with the toolbar color.
+  GdkColor color = theme_provider->GetGdkColor(
+      BrowserThemeProvider::COLOR_TOOLBAR);
+  gdk_cairo_set_source_color(cr, &color);
+  cairo_fill(cr);
+
+  // The toolbar is supposed to blend in with the active tab, so we have to pass
+  // coordinates for the IDR_THEME_TOOLBAR bitmap relative to the top of the
+  // tab strip.
+  CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
+      IDR_THEME_TOOLBAR, widget);
+  background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
+  // We tile the toolbar background in both directions.
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr,
+                  tabstrip_origin.x(),
+                  tabstrip_origin.y(),
+                  event->area.x + event->area.width - tabstrip_origin.x(),
+                  event->area.y + event->area.height - tabstrip_origin.y());
+  cairo_fill(cr);
 }
 
 GdkColor AverageColors(GdkColor color_one, GdkColor color_two) {

@@ -641,8 +641,7 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   if (!profile_ ||
       !GtkThemeProvider::GetFrom(profile_)->UseGtkTheme()) {
     cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(event->window));
-    cairo_rectangle(cr, event->area.x, event->area.y, event->area.width,
-                    event->area.height);
+    gdk_cairo_rectangle(cr, &event->area);
     cairo_clip(cr);
     CairoCachedSurface* background = theme_provider_->GetSurfaceNamed(
         popup_window_mode_ ? IDR_LOCATIONBG_POPUPMODE_CENTER : IDR_LOCATIONBG,
@@ -653,8 +652,7 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
     // bottom fade out.
     background->SetSource(cr, alloc_rect->x, alloc_rect->y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-    cairo_rectangle(cr, alloc_rect->x, alloc_rect->y,
-                    alloc_rect->width, alloc_rect->height);
+    gdk_cairo_rectangle(cr, alloc_rect);
     cairo_fill(cr);
 
     // But on top of that, we also need to draw the "inner" rect, which is all

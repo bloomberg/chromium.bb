@@ -1136,25 +1136,14 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
 
   if (!bar->floating_) {
     cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-    cairo_rectangle(cr, event->area.x, event->area.y,
-                    event->area.width, event->area.height);
+    gdk_cairo_rectangle(cr, &event->area);
     cairo_clip(cr);
 
     // Paint the background theme image.
     gfx::Point tabstrip_origin =
         bar->tabstrip_origin_provider_->GetTabStripOriginForWidget(widget);
-
-    CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
-        IDR_THEME_TOOLBAR, widget);
-    background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
-    // We tile the toolbar background in both directions.
-    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-    cairo_rectangle(cr,
-        tabstrip_origin.x(),
-        tabstrip_origin.y(),
-        event->area.x + event->area.width - tabstrip_origin.x(),
-        event->area.y + event->area.height - tabstrip_origin.y());
-    cairo_fill(cr);
+    gtk_util::DrawThemedToolbarBackground(widget, cr, event, tabstrip_origin,
+                                          theme_provider);
 
     cairo_destroy(cr);
   } else {
@@ -1197,8 +1186,7 @@ gboolean BookmarkBarGtk::OnSeparatorExpose(GtkWidget* widget,
     return FALSE;
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  cairo_rectangle(cr, event->area.x, event->area.y,
-                      event->area.width, event->area.height);
+  gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
   GdkColor bottom_color =

@@ -654,25 +654,14 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
     return FALSE;
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  cairo_rectangle(cr, e->area.x, e->area.y, e->area.width, e->area.height);
+  gdk_cairo_rectangle(cr, &e->area);
   cairo_clip(cr);
-  // The toolbar is supposed to blend in with the active tab, so we have to pass
-  // coordinates for the IDR_THEME_TOOLBAR bitmap relative to the top of the
-  // tab strip.
+
   gfx::Point tabstrip_origin =
       toolbar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
-  GtkThemeProvider* theme_provider = toolbar->theme_provider_;
-  CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
-      IDR_THEME_TOOLBAR, widget);
-  background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
-  // We tile the toolbar background in both directions.
-  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-  cairo_rectangle(cr,
-      tabstrip_origin.x(),
-      tabstrip_origin.y(),
-      e->area.x + e->area.width - tabstrip_origin.x(),
-      e->area.y + e->area.height - tabstrip_origin.y());
-  cairo_fill(cr);
+  gtk_util::DrawThemedToolbarBackground(widget, cr, e, tabstrip_origin,
+                                        toolbar->theme_provider_);
+
   cairo_destroy(cr);
 
   return FALSE;  // Allow subwidgets to paint.

@@ -38,8 +38,7 @@ static gboolean OnBackgroundExpose(GtkWidget* widget, GdkEventExpose* event,
   const int height = widget->allocation.height;
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  cairo_rectangle(cr, event->area.x, event->area.y,
-                  event->area.width, event->area.height);
+  gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
   cairo_pattern_t* pattern = cairo_pattern_create_linear(0, 0, 0, height);

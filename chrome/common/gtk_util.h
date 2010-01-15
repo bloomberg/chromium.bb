@@ -16,6 +16,7 @@
 
 typedef struct _GtkWidget GtkWidget;
 
+class GtkThemeProvider;
 struct RendererPreferences;  // from common/renderer_preferences.h
 
 namespace event_utils {
@@ -189,6 +190,14 @@ void DrawTextEntryBackground(GtkWidget* offscreen_entry,
                              GtkWidget* widget_to_draw_on,
                              GdkRectangle* dirty_rec,
                              GdkRectangle* rec);
+
+// Draws the background of the toolbar area subject to the expose rectangle
+// |event| and starting image tiling from |tabstrip_origin|.
+void DrawThemedToolbarBackground(GtkWidget* widget,
+                                 cairo_t* cr,
+                                 GdkEventExpose* event,
+                                 const gfx::Point& tabstrip_origin,
+                                 GtkThemeProvider* provider);
 
 // Returns the two colors averaged together.
 GdkColor AverageColors(GdkColor color_one, GdkColor color_two);

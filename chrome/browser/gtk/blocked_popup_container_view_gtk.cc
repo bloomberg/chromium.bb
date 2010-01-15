@@ -278,8 +278,7 @@ gboolean BlockedPopupContainerViewGtk::OnRoundedExposeCallback(
 
     // Clip to our damage rect.
     cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(event->window));
-    cairo_rectangle(cr, event->area.x, event->area.y,
-                    event->area.width, event->area.height);
+    gdk_cairo_rectangle(cr, &event->area);
     cairo_clip(cr);
 
     if (container->theme_provider_->GetThemeID() ==

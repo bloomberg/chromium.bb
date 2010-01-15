@@ -340,7 +340,7 @@ gboolean OnCompactNavSpacerExpose(GtkWidget* widget,
                                   GdkEventExpose* e,
                                   BrowserWindowGtk* window) {
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  cairo_rectangle(cr, e->area.x, e->area.y, e->area.width, e->area.height);
+  gdk_cairo_rectangle(cr, &e->area);
   cairo_clip(cr);
   // The toolbar is supposed to blend in with the active tab, so we have to pass
   // coordinates for the IDR_THEME_TOOLBAR bitmap relative to the top of the
@@ -578,8 +578,7 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
 
   // Draw the default background.
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  cairo_rectangle(cr, event->area.x, event->area.y, event->area.width,
-                  event->area.height);
+  gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
   int image_name;

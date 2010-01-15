@@ -749,20 +749,15 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
       bar->container_height_ = widget->allocation.height;
     }
 
-    // Draw the background theme image.
     cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-    cairo_rectangle(cr, e->area.x, e->area.y, e->area.width, e->area.height);
+    gdk_cairo_rectangle(cr, &e->area);
     cairo_clip(cr);
+
     gfx::Point tabstrip_origin =
         bar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
-    CairoCachedSurface* background = bar->theme_provider_->GetSurfaceNamed(
-        IDR_THEME_TOOLBAR, widget);
-    background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
-    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-    cairo_rectangle(cr, tabstrip_origin.x(), tabstrip_origin.y(),
-                        e->area.x + e->area.width - tabstrip_origin.x(),
-                        background->Height());
-    cairo_fill(cr);
+
+    gtk_util::DrawThemedToolbarBackground(widget, cr, e, tabstrip_origin,
+                                          bar->theme_provider_);
 
     // During chrome theme mode, we need to draw the border around content_hbox
     // now instead of when we render |border_bin_|. We don't use stacked event
@@ -782,7 +777,7 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     cairo_fill(cr);
 
     // Blit the center part of the background image in all the space between.
-    background = bar->theme_provider_->GetSurfaceNamed(
+    CairoCachedSurface* background = bar->theme_provider_->GetSurfaceNamed(
         IDR_FIND_BOX_BACKGROUND, widget);
     background->SetSource(cr,
                           border_allocation.x + background_left->Width(),
