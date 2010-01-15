@@ -24,6 +24,7 @@
 #include "V8CustomBinding.h"
 #include "V8DOMWrapper.h"
 #include "V8InspectorFrontendHost.h"
+#include "V8Node.h"
 #include "V8Proxy.h"
 #include "V8Utilities.h"
 #include <wtf/OwnPtr.h>
@@ -338,7 +339,7 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsAddSourceToFrame(
     return v8::Undefined();
   }
   v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(args[2]);
-  Node* node = V8DOMWrapper::convertDOMWrapperToNode<Node>(wrapper);
+  Node* node = V8Node::toNative(wrapper);
   if (!node || !node->attached()) {
     return v8::Undefined();
   }
@@ -358,7 +359,7 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsAddResourceSourceToFrame(
     return v8::Undefined();
   }
   v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(args[2]);
-  Node* node = V8DOMWrapper::convertDOMWrapperToNode<Node>(wrapper);
+  Node* node = V8Node::toNative(wrapper);
   WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
   frontend->AddResourceSourceToFrame(resource_id, mime_type, node);
@@ -506,7 +507,7 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsShowContextMenu(
   if (V8DOMWrapper::domWrapperType(event_wrapper) != V8ClassIndex::EVENT)
     return v8::Undefined();
 
-  Event* event = V8DOMWrapper::convertDOMWrapperToNative<Event>(event_wrapper);
+  Event* event = V8Event::toNative(event_wrapper);
   if (!args[1]->IsArray())
     return v8::Undefined();
 
