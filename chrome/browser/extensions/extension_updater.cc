@@ -472,7 +472,7 @@ void AppendExtensionInfo(std::string* str, const Extension& extension) {
     parts.push_back("v=" + version->GetString());
     parts.push_back("uc");
 
-    str->append("x=" + EscapeQueryParamValue(JoinString(parts, '&')));
+    str->append("x=" + EscapeQueryParamValue(JoinString(parts, '&'), true));
 }
 
 // Creates a blacklist update url.
@@ -480,7 +480,7 @@ GURL ExtensionUpdater::GetBlacklistUpdateUrl(const std::wstring& version) {
   std::string blklist_info = StringPrintf("id=%s&v=%s&uc", kBlacklistAppID,
       WideToASCII(version).c_str());
   return GURL(StringPrintf("%s?x=%s", kBlacklistUpdateUrl,
-                           EscapeQueryParamValue(blklist_info).c_str()));
+                           EscapeQueryParamValue(blklist_info, true).c_str()));
 }
 
 void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
@@ -575,7 +575,7 @@ void ExtensionUpdater::CheckNow() {
       std::string uid = uid_provider_->GetUidString();
       if (uid.length() > 0 && uid.length() <= UidProvider::maxUidLength) {
         full_url_string.append("&" + std::string(ExtensionUpdater::kUidKey) +
-                               "=" + EscapeQueryParamValue(uid));
+                               "=" + EscapeQueryParamValue(uid, true));
       }
     }
 

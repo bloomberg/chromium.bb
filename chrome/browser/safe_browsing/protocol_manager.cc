@@ -619,9 +619,9 @@ void SafeBrowsingProtocolManager::ReportMalware(const GURL& malware_url,
                                                 const GURL& referrer_url) {
   std::string report_str = StringPrintf(
       kSbMalwareReportUrl,
-      EscapeQueryParamValue(malware_url.spec()).c_str(),
-      EscapeQueryParamValue(page_url.spec()).c_str(),
-      EscapeQueryParamValue(referrer_url.spec()).c_str(),
+      EscapeQueryParamValue(malware_url.spec(), true).c_str(),
+      EscapeQueryParamValue(page_url.spec(), true).c_str(),
+      EscapeQueryParamValue(referrer_url.spec(), true).c_str(),
       client_name_.c_str(),
       version_.c_str());
   GURL report_url(report_str);

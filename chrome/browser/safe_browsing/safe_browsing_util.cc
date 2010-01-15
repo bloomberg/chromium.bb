@@ -596,8 +596,8 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
   if (!lang)
     lang = "en";  // fallback
   const std::string continue_esc =
-      EscapeQueryParamValue(StringPrintf(kContinueUrlFormat, lang));
-  const std::string current_esc = EscapeQueryParamValue(url_to_report);
+      EscapeQueryParamValue(StringPrintf(kContinueUrlFormat, lang), true);
+  const std::string current_esc = EscapeQueryParamValue(url_to_report, true);
 
 #if defined(OS_WIN)
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();

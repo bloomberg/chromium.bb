@@ -375,7 +375,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     // We're going to take the user to Google's SafeBrowsing diagnostic page.
     std::string diagnostic =
         StringPrintf(kSbDiagnosticUrl,
-                     EscapeQueryParamValue(bad_url_spec).c_str());
+                     EscapeQueryParamValue(bad_url_spec, true).c_str());
     GURL diagnostic_url(diagnostic);
     diagnostic_url = google_util::AppendGoogleLocaleParam(diagnostic_url);
     DCHECK(unsafe_resources_[element_index].threat_type ==

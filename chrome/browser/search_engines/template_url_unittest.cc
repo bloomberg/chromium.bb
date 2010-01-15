@@ -38,15 +38,29 @@ TEST_F(TemplateURLTest, TestValidWithComplete) {
 }
 
 TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
-  TemplateURL t_url;
-  TemplateURLRef ref(L"http://foo{searchTerms}", 0, 0);
-  ASSERT_TRUE(ref.IsValid());
+  struct SearchTermsCase {
+    const wchar_t* url;
+    const wchar_t* terms;
+    const char* output;
+  } search_term_cases[] = {
+    { L"http://foo{searchTerms}", L"sea rch", "http://foosea%20rch/" },
+    { L"http://foo{searchTerms}?boo=abc", L"sea rch",
+      "http://foosea%20rch/?boo=abc" },
+    { L"http://foo/?boo={searchTerms}", L"sea rch",
+      "http://foo/?boo=sea+rch" }
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_term_cases); ++i) {
+    const SearchTermsCase& value = search_term_cases[i];
+    TemplateURL t_url;
+    TemplateURLRef ref(value.url, 0, 0);
+    ASSERT_TRUE(ref.IsValid());
 
-  ASSERT_TRUE(ref.SupportsReplacement());
-  GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(t_url, L"search",
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
-  ASSERT_TRUE(result.is_valid());
-  ASSERT_EQ("http://foosearch/", result.spec());
+    ASSERT_TRUE(ref.SupportsReplacement());
+    GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(t_url, value.terms,
+        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+    ASSERT_TRUE(result.is_valid());
+    ASSERT_EQ(value.output, result.spec());
+  }
 }
 
 TEST_F(TemplateURLTest, URLRefTestCount) {

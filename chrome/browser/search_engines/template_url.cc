@@ -246,6 +246,19 @@ std::wstring TemplateURLRef::ReplaceSearchTerms(
   if (replacements_.empty())
     return parsed_url_;
 
+  // Determine if the search terms are in the query or before. We're escaping
+  // space as '+' in the former case and as '%20' in the latter case.
+  bool use_plus = true;
+  for (Replacements::iterator i = replacements_.begin();
+       i != replacements_.end(); ++i) {
+    if (i->type == SEARCH_TERMS) {
+      std::wstring::size_type query_start = parsed_url_.find(L'?');
+      use_plus = query_start != std::wstring::npos &&
+          (static_cast<std::wstring::size_type>(i->index) > query_start);
+      break;
+    }
+  }
+
   // Encode the search terms so that we know the encoding.
   const std::vector<std::string>& encodings = host.input_encodings();
   string16 encoded_terms;
@@ -253,21 +266,23 @@ std::wstring TemplateURLRef::ReplaceSearchTerms(
   std::wstring input_encoding;
   for (size_t i = 0; i < encodings.size(); ++i) {
     if (EscapeQueryParamValue(WideToUTF16Hack(terms),
-                              encodings[i].c_str(), &encoded_terms)) {
+                              encodings[i].c_str(), use_plus, &encoded_terms)) {
       if (!original_query_for_suggestion.empty()) {
         EscapeQueryParamValue(WideToUTF16Hack(original_query_for_suggestion),
-                              encodings[i].c_str(), &encoded_original_query);
+                              encodings[i].c_str(),
+                              true,
+                              &encoded_original_query);
       }
       input_encoding = ASCIIToWide(encodings[i]);
       break;
     }
   }
   if (input_encoding.empty()) {
-    encoded_terms = WideToUTF16Hack(EscapeQueryParamValueUTF8(terms));
+    encoded_terms = WideToUTF16Hack(EscapeQueryParamValueUTF8(terms, use_plus));
     if (!original_query_for_suggestion.empty()) {
       encoded_original_query =
           WideToUTF16Hack(
-              EscapeQueryParamValueUTF8(original_query_for_suggestion));
+              EscapeQueryParamValueUTF8(original_query_for_suggestion, true));
     }
     input_encoding = L"UTF-8";
   }

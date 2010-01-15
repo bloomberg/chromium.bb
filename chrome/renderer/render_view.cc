@@ -2935,7 +2935,7 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
   // Construct the query params to send to link doctor.
   std::string params(alternate_error_page_url_.query());
   params.append("&url=");
-  params.append(EscapeQueryParamValue(url_to_send.spec()));
+  params.append(EscapeQueryParamValue(url_to_send.spec(), true));
   params.append("&sourceid=chrome");
   params.append("&error=");
   switch (error_type) {
