@@ -83,6 +83,9 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     cmd_line->AppendSwitch(switches::kChromeFrame);
 
+  if (browser_command_line.HasSwitch(switches::kEnableExtensionApps))
+    cmd_line->AppendSwitch(switches::kEnableExtensionApps);
+
 #if defined(OS_POSIX)
   // TODO(port): Sandbox this on Linux.  Also, zygote this to work with
   // Linux updating.
