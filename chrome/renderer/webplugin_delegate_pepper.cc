@@ -431,6 +431,8 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
                                    std::vector<std::string>(),
                                    plugin_,
                                    false)) {
+    plugin_->SetAcceptsInputEvents(true);
+
     // Ask the GPU plugin to create a command buffer and return a proxy.
     command_buffer_.reset(nested_delegate_->CreateCommandBuffer());
     if (command_buffer_.get()) {

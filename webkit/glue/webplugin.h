@@ -32,6 +32,10 @@ class WebPluginResourceClient;
 
 // Describes the new location for a plugin window.
 struct WebPluginGeometry {
+  WebPluginGeometry();
+
+  bool Equals(const WebPluginGeometry& rhs) const;
+
   // On Windows, this is the plugin window in the plugin process.
   // On X11, this is the XID of the plugin-side GtkPlug containing the
   // GtkSocket hosting the actual plugin window.
@@ -56,6 +60,9 @@ class WebPlugin {
   // tells the WebPlugin to send mouse/keyboard events to the plugin delegate,
   // as well as the information about the HDC for paint operations.
   virtual void SetWindow(gfx::PluginWindowHandle window) = 0;
+
+  // Whether input events should be sent to the delegate.
+  virtual void SetAcceptsInputEvents(bool accepts) = 0;
 
   // Called by the plugin delegate to let it know that the window is being
   // destroyed.

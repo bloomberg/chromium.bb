@@ -87,6 +87,12 @@ class WebPluginImpl : public WebPlugin,
 
   // WebPlugin implementation:
   void SetWindow(gfx::PluginWindowHandle window);
+
+  // Whether input events should be sent to the delegate.
+  virtual void SetAcceptsInputEvents(bool accepts) {
+    accepts_input_events_ = accepts;
+  }
+
   void WillDestroyWindow(gfx::PluginWindowHandle window);
 #if defined(OS_WIN)
   void SetWindowlessPumpEvent(HANDLE pump_messages_event) { }
@@ -252,6 +258,7 @@ class WebPluginImpl : public WebPlugin,
 
   bool windowless_;
   gfx::PluginWindowHandle window_;
+  bool accepts_input_events_;
   base::WeakPtr<WebPluginPageDelegate> page_delegate_;
   WebKit::WebFrame* webframe_;
 
@@ -280,8 +287,7 @@ class WebPluginImpl : public WebPlugin,
   bool ignore_response_error_;
 
   // The current plugin geometry and clip rectangle.
-  gfx::Rect window_rect_;
-  gfx::Rect clip_rect_;
+  WebPluginGeometry geometry_;
 
   // The mime type of the plugin.
   std::string mime_type_;

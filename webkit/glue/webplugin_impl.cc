@@ -250,51 +250,53 @@ void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& paint_rect) {
 void WebPluginImpl::updateGeometry(
     const WebRect& window_rect, const WebRect& clip_rect,
     const WebVector<WebRect>& cutout_rects, bool is_visible) {
-  if (window_ && page_delegate_) {
-    // Notify the window hosting the plugin (the WebViewDelegate) that
-    // it needs to adjust the plugin, so that all the HWNDs can be moved
-    // at the same time.
-    WebPluginGeometry move;
-    move.window = window_;
-    move.window_rect = window_rect;
-    move.clip_rect = clip_rect;
-    for (size_t i = 0; i < cutout_rects.size(); ++i)
-      move.cutout_rects.push_back(cutout_rects[i]);
-    move.rects_valid = true;
-    move.visible = is_visible;
+  WebPluginGeometry new_geometry;
+  new_geometry.window = window_;
+  new_geometry.window_rect = window_rect;
+  new_geometry.clip_rect = clip_rect;
+  new_geometry.visible = is_visible;
+  new_geometry.rects_valid = true;
+  for (size_t i = 0; i < cutout_rects.size(); ++i)
+    new_geometry.cutout_rects.push_back(cutout_rects[i]);
 
-    page_delegate_->DidMovePlugin(move);
+  // Only send DidMovePlugin if the geometry changed in some way.
+  if (window_ &&
+      page_delegate_ &&
+      (first_geometry_update_ || !new_geometry.Equals(geometry_))) {
+    page_delegate_->DidMovePlugin(new_geometry);
   }
 
-  if (first_geometry_update_ || window_rect != window_rect_ ||
-      clip_rect != clip_rect_) {
-    window_rect_ = window_rect;
-    clip_rect_ = clip_rect;
+  // Only UpdateGeometry if either the window or clip rects have changed.
+  if (first_geometry_update_ ||
+      new_geometry.window_rect != geometry_.window_rect ||
+      new_geometry.clip_rect != geometry_.clip_rect) {
     // Notify the plugin that its parameters have changed.
-    delegate_->UpdateGeometry(window_rect_, clip_rect_);
+    delegate_->UpdateGeometry(new_geometry.window_rect, new_geometry.clip_rect);
+  }
 
-    // Initiate a download on the plugin url. This should be done for the
-    // first update geometry sequence. We need to ensure that the plugin
-    // receives the geometry update before it starts receiving data.
-    if (first_geometry_update_) {
-      first_geometry_update_ = false;
-      // An empty url corresponds to an EMBED tag with no src attribute.
-      if (!load_manually_ && plugin_url_.is_valid()) {
-        // The Flash plugin hangs for a while if it receives data before
-        // receiving valid plugin geometry. By valid geometry we mean the
-        // geometry received by a call to setFrameRect in the Webkit
-        // layout code path. To workaround this issue we download the
-        // plugin source url on a timer.
-        MessageLoop::current()->PostDelayedTask(
-            FROM_HERE, method_factory_.NewRunnableMethod(
-                &WebPluginImpl::OnDownloadPluginSrcUrl), 0);
-      }
+  // Initiate a download on the plugin url. This should be done for the
+  // first update geometry sequence. We need to ensure that the plugin
+  // receives the geometry update before it starts receiving data.
+  if (first_geometry_update_) {
+    // An empty url corresponds to an EMBED tag with no src attribute.
+    if (!load_manually_ && plugin_url_.is_valid()) {
+      // The Flash plugin hangs for a while if it receives data before
+      // receiving valid plugin geometry. By valid geometry we mean the
+      // geometry received by a call to setFrameRect in the Webkit
+      // layout code path. To workaround this issue we download the
+      // plugin source url on a timer.
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, method_factory_.NewRunnableMethod(
+              &WebPluginImpl::OnDownloadPluginSrcUrl), 0);
     }
   }
+
+  first_geometry_update_ = false;
+  geometry_ = new_geometry;
 }
 
 void WebPluginImpl::updateFocus(bool focused) {
-  if (focused && windowless_)
+  if (focused && accepts_input_events_)
     delegate_->SetFocus();
 }
 
@@ -313,7 +315,7 @@ void WebPluginImpl::updateVisibility(bool visible) {
 }
 
 bool WebPluginImpl::acceptsInputEvents() {
-  return windowless_;
+  return accepts_input_events_;
 }
 
 bool WebPluginImpl::handleInputEvent(
@@ -374,6 +376,7 @@ WebPluginImpl::WebPluginImpl(
     const base::WeakPtr<WebPluginPageDelegate>& page_delegate)
     : windowless_(false),
       window_(NULL),
+      accepts_input_events_(false),
       page_delegate_(page_delegate),
       webframe_(webframe),
       delegate_(NULL),
@@ -400,6 +403,7 @@ void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
   if (window) {
     DCHECK(!windowless_);
     window_ = window;
+    accepts_input_events_ = false;
     if (page_delegate_) {
       // Tell the view delegate that the plugin window was created, so that it
       // can create necessary container widgets.
@@ -408,6 +412,7 @@ void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
   } else {
     DCHECK(!window_);  // Make sure not called twice.
     windowless_ = true;
+    accepts_input_events_ = true;
   }
 }
 

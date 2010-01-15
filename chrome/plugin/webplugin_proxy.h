@@ -42,6 +42,12 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
 
   // WebPlugin overrides
   void SetWindow(gfx::PluginWindowHandle window);
+
+  // Whether input events should be sent to the delegate.
+  virtual void SetAcceptsInputEvents(bool accepts) {
+    NOTREACHED();
+  }
+
   void WillDestroyWindow(gfx::PluginWindowHandle window);
 #if defined(OS_WIN)
   void SetWindowlessPumpEvent(HANDLE pump_messages_event);

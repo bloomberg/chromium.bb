@@ -440,10 +440,16 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
   }
   DCHECK(window_class);
 
+  // TODO(apatrick): the parent window is disabled if the plugin window is
+  // disabled so that mouse messages from the plugin window are passed on to the
+  // browser window. This does not work for regular plugins because it prevents
+  // them from receiving mouse and keyboard input. WS_DISABLED is not
+  // needed when the GPU process stops using child windows for 3D rendering.
+  DWORD enabled_style = ::GetWindowLong(window, GWL_STYLE) & WS_DISABLED;
   HWND parent = CreateWindowEx(
       WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
       MAKEINTATOM(window_class), 0,
-      WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+      WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | enabled_style,
       0, 0, 0, 0, ::GetParent(window), 0, GetModuleHandle(NULL), 0);
   DCHECK(parent);
   ::SetParent(window, parent);

@@ -387,6 +387,7 @@
         'glue/webmenurunner_mac.mm',
         'glue/webpasswordautocompletelistener_impl.cc',
         'glue/webpasswordautocompletelistener_impl.h',
+        'glue/webplugin.cc',
         'glue/webplugin.h',
         'glue/webplugin_delegate.h',
         'glue/webplugin_impl.cc',
