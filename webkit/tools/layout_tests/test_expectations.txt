@@ -910,7 +910,6 @@ BUG8635 WIN DEBUG : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
 BUG8635 SLOW WIN RELEASE : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
 BUG8635 LINUX : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
 
-BUG10288 WIN LINUX : svg/batik/text/verticalText.svg = FAIL
 
 // Bug in Skia, see https://bugs.webkit.org/show_bug.cgi?id=24534 .
 BUG8635 WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-06-b.svg = FAIL
@@ -982,7 +981,6 @@ BUG10298 LINUX : svg/custom/use-on-disallowed-foreign-object-3.svg = FAIL
 BUG24198 SKIP : svg/batik/text/smallFonts.svg = FAIL
 
 // pixeltest failure: font baseline should be on the path, not the centerline
-BUG24198 LINUX WIN : svg/batik/text/verticalTextOnPath.svg = FAIL
 BUG24198 LINUX WIN : svg/custom/path-textPath-simulation.svg = FAIL
 
 // This test fails because of an oddity in stroke width calculation. A
@@ -2493,11 +2491,6 @@ BUG19248 : fast/js/const.html = FAIL
 
 // WebKit roll r47417:47528
 BUG19766 LINUX : fast/replaced/width100percent-menulist.html = FAIL
-
-// SVG empty trailing tspan causes text to not show up
-BUG23468 WIN : svg/batik/text/textPosition.svg = IMAGE
-BUG23468 LINUX : svg/batik/text/textPosition.svg = IMAGE+TEXT
-BUG23468 WIN LINUX : svg/batik/text/xmlSpace.svg = IMAGE
 
 // Fails due to textInputController.setInputMethod not implemented for Mac.
 BUG19665 MAC : platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
