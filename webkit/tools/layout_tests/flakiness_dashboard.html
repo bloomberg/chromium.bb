@@ -255,11 +255,10 @@
   var ALL = 'ALL';
   var FORWARD = 'forward';
   var BACKWARD = 'backward';
-  var LAYOUT_TESTS_PREFIX = 'LayoutTests/';
   var CHROME_TEST_BASE_URL = 'http://src.chromium.org/viewvc/chrome/trunk/' +
       'src/webkit/data/layout_tests/platform/';
   var TEST_URL_BASE_PATH =
-      'http://trac.webkit.org/projects/webkit/browser/trunk/';
+      'http://trac.webkit.org/projects/webkit/browser/trunk/LayoutTests/';
   var BUILDERS_BASE_PATH =
       'http://build.chromium.org/buildbot/waterfall/builders/';
   var TEST_RESULTS_BASE_PATH =
@@ -902,8 +901,8 @@
         } else if (!expectations.expectations.match(/^\s*PASS\s*$/)) {
           // Don't show tests expected to always pass. This is used in ways like
           // the following:
-          // LayoutTests/foo/bar = FAIL
-          // LayoutTests/foo/bar/baz.html = PASS
+          // foo/bar = FAIL
+          // foo/bar/baz.html = PASS
           noFailures.push({test: test, expectations: expectations.expectations,
               modifiers: expectations.modifiers});
         }
@@ -1675,7 +1674,7 @@
    *     container DIV.
    * @param {Element} parentContainer Container element for
    *     expectationsContainer divs.
-   * @param {string} platform Platform string. "LayoutTests/" for non-platform
+   * @param {string} platform Platform string. Empty string for non-platform
    *     specific expectations.
    * @param {string} path Relative path to the expectation.
    * @param {string} base Base path for the expectation URL.
@@ -1694,6 +1693,12 @@
     // tags? They spew a lot of errors to the console.
     var dummyNode = document.createElement(isImage ? 'img' : 'script');
     var platformPart = platform ? ensureTrailingSlash(platform) : '';
+
+    // TODO(ojan): Get rid of this once we upstream the chromium expected
+    // results or move their contents out of the LayoutTests directory.
+    if (startsWith(platformPart, 'chromium'))
+      platformPart += 'LayoutTests/';
+
     dummyNode.src = base + platformPart + path + suffix;
 
     var childContainer = document.createElement('span');
@@ -1753,7 +1758,7 @@
       for (var i = 0; i < titles.length; i++) {
         var title = titles[i];
 
-        if (!winner && title.platform == LAYOUT_TESTS_PREFIX) {
+        if (!winner && title.platform == "") {
           winner = title;
           continue;
         }
@@ -1787,7 +1792,7 @@
   function getTracImageBaseURL() {
     if (!TRAC_IMAGE_BASE_URL) {
       TRAC_IMAGE_BASE_URL = 'http://trac.webkit.org/export/' +
-          getLatestKnownRevision(false) + '/trunk/';
+          getLatestKnownRevision(false) + '/trunk/LayoutTests/';
     }
     return TRAC_IMAGE_BASE_URL;
   }
@@ -1831,7 +1836,7 @@
         resultsType = 'DIFF';
       }
       innerHTML = resultsType + ': ' + builder;
-    } else if (platform == LAYOUT_TESTS_PREFIX) {
+    } else if (platform === "") {
       var parts = path.split('/');
       innerHTML = parts[parts.length - 1];
     } else {
@@ -1855,24 +1860,13 @@
         test, TEST_URL_BASE_PATH, textSuffixWebKit);
 
     var testWithoutSuffix = test.substring(0, test.lastIndexOf('.'));
-
-    var isUpstreamTest = startsWith(test, LAYOUT_TESTS_PREFIX);
-    if (isUpstreamTest) {
-      var testWithoutPrefix = testWithoutSuffix.substring(
-          LAYOUT_TESTS_PREFIX.length);
-      var textWithoutPrefix = testWithoutPrefix + "-expected.txt";
-      var checksumWithoutPrefix = testWithoutPrefix + "-expected.checksum"
-      var pngWithoutPrefix = testWithoutPrefix + "-expected.png";
-
-      addExpectations(expectationsContainers, expectationsContainer,
-          TEST_URL_BASE_PATH, getTracImageBaseURL(), LAYOUT_TESTS_PREFIX,
-          textWithoutPrefix, checksumWithoutPrefix, pngWithoutPrefix,
-          textSuffixWebKit);
-    }
-
     var text = testWithoutSuffix + "-expected.txt";
     var checksum = testWithoutSuffix + "-expected.checksum"
     var png = testWithoutSuffix + "-expected.png";
+
+    addExpectations(expectationsContainers, expectationsContainer,
+        TEST_URL_BASE_PATH, getTracImageBaseURL(), '',
+        text, checksum, png, textSuffixWebKit);
 
     var textSuffixChrome = '?revision=' + getLatestKnownRevision(true);
 
@@ -1880,13 +1874,9 @@
     for (var i = 0; i < fallbacks.length; i++) {
       var fallback = fallbacks[i];
       if (startsWith(fallback, 'platform')) {
-        if (isUpstreamTest) {
-          addExpectations(expectationsContainers, expectationsContainer,
-              TEST_URL_BASE_PATH + LAYOUT_TESTS_PREFIX,
-              getTracImageBaseURL() + LAYOUT_TESTS_PREFIX,
-              fallback, textWithoutPrefix,
-              checksumWithoutPrefix, pngWithoutPrefix, textSuffixWebKit);
-        }
+        addExpectations(expectationsContainers, expectationsContainer,
+            TEST_URL_BASE_PATH, getTracImageBaseURL(),
+            fallback, text, checksum, png, textSuffixWebKit);
       } else {
         addExpectations(expectationsContainers, expectationsContainer,
             CHROME_TEST_BASE_URL, CHROME_TEST_BASE_URL, fallback, text,
@@ -2031,7 +2021,7 @@
         'SLOW</span> | Show tests on all platforms: </div><input name=tests ' +
         'placeholder="Comma or space-separated list of tests or partial ' +
         'paths to show test results across all builders, e.g., ' +
-        'LayoutTests/foo/bar.html,LayoutTests/foo/baz,forms" ' +
+        'foo/bar.html,foo/baz,domstorage" ' +
         'id=tests-input></form>' +
         '<form id=max-results-form ' +
         'onsubmit="setState(\'maxResults\', maxResults.value);return false;"' +
