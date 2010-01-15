@@ -25,11 +25,11 @@ class JSONResultsGenerator:
   MIN_TIME = 1
   JSON_PREFIX = "ADD_RESULTS("
   JSON_SUFFIX = ");"
-  WEBKIT_PATH = "WebKit/LayoutTests"
+  LAYOUT_TESTS_PATH = "LayoutTests"
   PASS_RESULT = "P"
   SKIP_RESULT = "X"
   NO_DATA_RESULT = "N"
-  VERSION = 2
+  VERSION = 3
   VERSION_KEY = "version"
   RESULTS = "results"
   TIMES = "times"
@@ -126,9 +126,9 @@ class JSONResultsGenerator:
     We would return
       fast/forms/foo.html
     """
-    index = test.find(self.WEBKIT_PATH)
+    index = test.find(self.LAYOUT_TESTS_PATH)
     if index is not -1:
-      index += len(self.WEBKIT_PATH)
+      index += len(self.LAYOUT_TESTS_PATH)
 
     if index is -1:
       # Already a relative path.
@@ -150,8 +150,6 @@ class JSONResultsGenerator:
       if not test in failures_for_json:
         failures_for_json[test] = ResultAndTime(test, self._all_tests)
       # Floor for now to get time in seconds.
-      # TODO(ojan): As we make tests faster, reduce to tenth of a second
-      # granularity.
       failures_for_json[test].time = int(self._test_timings[test])
 
     # If results file exists, read it out, put new info in it.
@@ -194,14 +192,15 @@ class JSONResultsGenerator:
       try:
         results_json = simplejson.loads(old_results)
       except:
-        logging.error("results.json was not valid JSON. Clobbering.")
+        logging.debug("results.json was not valid JSON. Clobbering.")
         # The JSON file is not valid JSON. Just clobber the results.
         results_json = {}
 
       if builder_name not in results_json:
-        logging.error("Builder name (%s) is not in the results.json file." %
+        logging.debug("Builder name (%s) is not in the results.json file." %
             builder_name);
     else:
+      logging.debug('Old JSON results do not exist. Starting fresh.');
       results_json = {}
 
     self._ConvertJSONToCurrentVersion(results_json)
@@ -350,17 +349,19 @@ class JSONResultsGenerator:
         results_json[self.VERSION_KEY] == self.VERSION):
       return
 
-    if (self.VERSION_KEY in results_json and
-        results_json[self.VERSION_KEY] == 1 and
-        self.TESTS in results_json):
-      # Convert all the test names from LayoutTests/X to X
-      LAYOUTTESTS_PREFIX = 'LayoutTests/'
-      test_results = results_json[self.TESTS]
-      for test in test_results.keys():
-        if test.startswith(LAYOUTTESTS_PREFIX):
-          new_test = test[len(LAYOUTTESTS_PREFIX):]
-          test_results[new_test] = test_results[test]
-          del test_results[test]
+    if results_json[self.VERSION_KEY] == 2:
+      for results_for_builder in results_json.itervalues():
+        try:
+          test_results = results_for_builder[self.TESTS]
+        except:
+          continue
+
+        for test in test_results:
+          # Make sure all paths are relative
+          test_path = self._GetPathRelativeToLayoutTestRoot(test)
+          if test_path != test:
+            test_results[test_path] = test_results[test]
+            del test_results[test]
 
     results_json[self.VERSION_KEY] = self.VERSION
 
