@@ -975,9 +975,8 @@ BUG10298 LINUX : svg/custom/use-on-disallowed-foreign-object-3.svg = FAIL
 // to differing implementations of SVG fonts. They may or may not represent
 // real bugs which need fixin'
 
-// pixeltest failure: font baseline should be on the path, not the centerline
 // There's no baseline at all for this!
-BUG24198 SKIP : svg/batik/text/smallFonts.svg = FAIL
+BUG32392 SKIP : svg/batik/text/smallFonts.svg = FAIL
 
 // pixeltest failure: font baseline should be on the path, not the centerline
 BUG24198 LINUX WIN : svg/custom/path-textPath-simulation.svg = FAIL
@@ -999,21 +998,6 @@ BUG24198 LINUX WIN : svg/hixie/text/003.html = FAIL
 
 // SVG combined with font metrics.
 BUG24198 LINUX : svg/hixie/text/001-broken.xml = FAIL
-
-// This is an interesting one.
-// The test has an error which causes it to output a message to the console.
-// Apple's expected results include this error. Actually, Apple's expected
-// results include the error twice, because (apparently unique among console
-// debugging messages) it's generated during rendering. The problem is that
-// we end up invoking the renderer twice when we're doing pixel tests, once
-// otherwise, so we get different results depending on whether pixel tests are
-// enabled. (Neither matches Apple's exactly... when we have pixel tests on,
-// the duplicate error message ends up at the end of the file, while Apple's
-// results have them both at the top.) But this test doesn't represent a real
-// failure in any way and nothing needs to be done to fix it. I'm leaving it
-// in tests_fixable in case we change the test shell's webview delegate to
-// ignore console messages while doing a pixel dump
-BUG24198 : svg/custom/clip-path-referencing-use2.svg = FAIL
 
 // These two tests have a highlight color that is different from the Mac,
 // which is normal because selection color is different between Mac and
