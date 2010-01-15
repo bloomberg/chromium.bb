@@ -61,6 +61,17 @@ enum ViewID {
   // Bottom extension shelf.
   VIEW_ID_DEV_EXTENSION_SHELF,
 
+  // The contents split.
+  VIEW_ID_CONTENTS_SPLIT,
+
+  // The Infobar container.
+  VIEW_ID_INFO_BAR_CONTAINER,
+
+  // The Download shelf.
+  VIEW_ID_DOWNLOAD_SHELF,
+
+  // Used in chrome/browser/gtk/view_id_util_browsertests.cc
+  // If you add new ids, make sure the above test passes.
   VIEW_ID_PREDEFINED_COUNT
 };
 

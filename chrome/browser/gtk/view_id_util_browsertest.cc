@@ -41,6 +41,13 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
     if (i == VIEW_ID_DEV_EXTENSION_SHELF)
       continue;
 
+    // The following ids are used only in views implementation.
+    if (i == VIEW_ID_CONTENTS_SPLIT ||
+        i == VIEW_ID_INFO_BAR_CONTAINER ||
+        i == VIEW_ID_DOWNLOAD_SHELF) {
+      continue;
+    }
+
     CheckViewID(static_cast<ViewID>(i), true);
   }
 

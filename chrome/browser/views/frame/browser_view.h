@@ -36,6 +36,7 @@ class BookmarkBarView;
 class Browser;
 class BrowserBubble;
 class BrowserExtender;
+class BrowserLayoutManager;
 class DownloadShelfView;
 class EncodingMenuModel;
 class ExtensionShelf;
@@ -355,6 +356,9 @@ class BrowserView : public BrowserWindow,
     return browser_extender_.get();
   }
 
+  // Layout the Status Bubble.
+  void LayoutStatusBubble(int top);
+
  protected:
   // Overridden from views::View:
   virtual void Layout();
@@ -371,28 +375,8 @@ class BrowserView : public BrowserWindow,
   // Creates the system menu.
   void InitSystemMenu();
 #endif
-
-  // Layout the TabStrip, returns the coordinate of the bottom of the TabStrip,
-  // for laying out subsequent controls.
-  int LayoutTabStrip();
-  // Layout the following controls, starting at |top|, returns the coordinate
-  // of the bottom of the control, for laying out the next control.
-  int LayoutToolbar(int top);
-  int LayoutBookmarkAndInfoBars(int top);
-  int LayoutTopBar(int top);
-  int LayoutInfoBar(int top);
-  // Layout the TabContents container, between the coordinates |top| and
-  // |bottom|.
-  void LayoutTabContents(int top, int bottom);
-  int LayoutExtensionAndDownloadShelves();
-  // Layout the Extension Shelf, returns the coordinate of the top of the
-  // control, for laying out the previous control.
-  int LayoutExtensionShelf(int bottom);
-  // Layout the Download Shelf, returns the coordinate of the top of the
-  // control, for laying out the previous control.
-  int LayoutDownloadShelf(int bottom);
-  // Layout the Status Bubble.
-  void LayoutStatusBubble(int top);
+  // Returns the BrowserLayoutManager.
+  BrowserLayoutManager* GetBrowserLayoutManager() const;
 
   // Prepare to show the Bookmark Bar for the specified TabContents. Returns
   // true if the Bookmark Bar can be shown (i.e. it's supported for this
@@ -476,9 +460,6 @@ class BrowserView : public BrowserWindow,
 
   // The InfoBarContainer that contains InfoBars for the current tab.
   InfoBarContainer* infobar_container_;
-
-  // The distance the FindBar is from the top of the window, in pixels.
-  int find_bar_y_;
 
   // The view that contains the selected TabContents.
   TabContentsContainer* contents_container_;

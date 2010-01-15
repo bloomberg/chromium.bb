@@ -6,6 +6,7 @@
 
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/infobars/infobars.h"
 #include "chrome/common/notification_service.h"
@@ -15,6 +16,7 @@
 InfoBarContainer::InfoBarContainer(BrowserView* browser_view)
     : browser_view_(browser_view),
       tab_contents_(NULL) {
+  SetID(VIEW_ID_INFO_BAR_CONTAINER);
 }
 
 InfoBarContainer::~InfoBarContainer() {

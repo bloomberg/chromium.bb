@@ -93,6 +93,7 @@ ToolbarView::ToolbarView(Browser* browser)
       profile_(NULL),
       browser_(browser),
       profiles_menu_contents_(NULL) {
+  SetID(VIEW_ID_TOOLBAR);
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
