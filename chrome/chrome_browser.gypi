@@ -1364,8 +1364,8 @@
         'browser/renderer_host/download_throttling_resource_handler.cc',
         'browser/renderer_host/download_throttling_resource_handler.h',
         'browser/renderer_host/global_request_id.h',
-        'browser/renderer_host/gpu_view_host_win.cc',
-        'browser/renderer_host/gpu_view_host_win.h',
+        'browser/renderer_host/gpu_view_host.cc',
+        'browser/renderer_host/gpu_view_host.h',
         'browser/renderer_host/gtk_im_context_wrapper.cc',
         'browser/renderer_host/gtk_im_context_wrapper.h',
         'browser/renderer_host/gtk_key_bindings_handler.cc',
@@ -1941,8 +1941,6 @@
              # Windows-specific files.
             'browser/password_manager/password_store_win.cc',
             'browser/password_manager/password_store_win.h',
-            'browser/renderer_host/backing_store_proxy.cc',
-            'browser/renderer_host/backing_store_proxy.h',
           ],
           'sources': [
             'browser/crash_handler_host_linux.h',

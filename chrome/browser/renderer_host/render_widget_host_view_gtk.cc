@@ -25,13 +25,14 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/common/gtk_util.h"
-#include "chrome/common/native_web_keyboard_event.h"
-#include "chrome/common/x11_util.h"
 #include "chrome/browser/renderer_host/backing_store_x.h"
+#include "chrome/browser/renderer_host/gpu_view_host.h"
 #include "chrome/browser/renderer_host/gtk_im_context_wrapper.h"
 #include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/common/gtk_util.h"
+#include "chrome/common/native_web_keyboard_event.h"
+#include "chrome/common/x11_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "webkit/glue/webcursor_gtk_data.h"
 
@@ -333,6 +334,9 @@ void RenderWidgetHostViewGtk::InitAsChild() {
   key_bindings_handler_.reset(new GtkKeyBindingsHandler(view_.get()));
   plugin_container_manager_.set_host_widget(view_.get());
   gtk_widget_show(view_.get());
+
+  // Uncomment this line to use out-of-process painting.
+  // gpu_view_host_.reset(new GpuViewHost(host_, GetNativeView()));
 }
 
 void RenderWidgetHostViewGtk::InitAsPopup(
@@ -389,6 +393,9 @@ void RenderWidgetHostViewGtk::InitAsPopup(
   gtk_window_set_resizable(GTK_WINDOW(popup), FALSE);
   gtk_window_move(GTK_WINDOW(popup), pos.x(), pos.y());
   gtk_widget_show_all(popup);
+
+  // TODO(brettw) possibly enable out-of-process painting here as well
+  // (see InitAsChild).
 }
 
 void RenderWidgetHostViewGtk::DidBecomeSelected() {
@@ -597,6 +604,8 @@ void RenderWidgetHostViewGtk::ShowingContextMenu(bool showing) {
 
 BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
     const gfx::Size& size) {
+  if (gpu_view_host_.get())
+    return gpu_view_host_->CreateBackingStore(size);
   return new BackingStoreX(host_, size,
                            x11_util::GetVisualFromGtkWidget(view_.get()),
                            gtk_widget_get_visual(view_.get())->depth);
@@ -608,6 +617,17 @@ void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
 }
 
 void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
+  GdkWindow* window = view_.get()->window;
+
+  if (gpu_view_host_.get()) {
+    // When we're proxying painting, we don't actually display the web page
+    // ourselves. We clear it white in case the proxy window isn't visible
+    // yet we won't show gibberish.
+    if (window)
+      gdk_window_clear(window);
+    return;
+  }
+
   DCHECK(!about_to_validate_and_paint_);
 
   invalid_rect_ = damage_rect;
@@ -620,7 +640,6 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
   gfx::Rect paint_rect = gfx::Rect(0, 0, kMaxWindowWidth, kMaxWindowHeight);
   paint_rect = paint_rect.Intersect(invalid_rect_);
 
-  GdkWindow* window = view_.get()->window;
   if (backing_store) {
     // Only render the widget if it is attached to a window; there's a short
     // period where this object isn't attached to a window but hasn't been

@@ -20,10 +20,8 @@
 #include "webkit/glue/webcursor.h"
 
 class RenderWidgetHost;
-// A conveience wrapper class for GtkIMContext;
+class GpuViewHost;
 class GtkIMContextWrapper;
-// A convenience class for handling editor key bindings defined in gtk keyboard
-// theme.
 class GtkKeyBindingsHandler;
 class NativeWebKeyboardEvent;
 
@@ -95,6 +93,9 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
 
   // The native UI widget.
   OwnedWidgetGtk view_;
+
+  // Non-NULL when we're doing out-of-process painting.
+  scoped_ptr<GpuViewHost> gpu_view_host_;
 
   // This is true when we are currently painting and thus should handle extra
   // paint requests by expanding the invalid rect rather than actually

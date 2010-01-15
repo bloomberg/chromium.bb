@@ -22,7 +22,7 @@
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/backing_store_win.h"
-#include "chrome/browser/renderer_host/gpu_view_host_win.h"
+#include "chrome/browser/renderer_host/gpu_view_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/chrome_constants.h"
@@ -265,7 +265,7 @@ void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
   Create(parent);  // ATL function to create the window.
   // Uncommenting this will enable experimental out-of-process painting.
   // Contact brettw for more,
-  // gpu_view_host_.reset(new GpuViewHostWin(this, m_hWnd));
+  // gpu_view_host_.reset(new GpuViewHost(render_widget_host_, m_hWnd));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -718,7 +718,7 @@ void RenderWidgetHostViewWin::SetTooltipText(const std::wstring& tooltip_text) {
 BackingStore* RenderWidgetHostViewWin::AllocBackingStore(
     const gfx::Size& size) {
   if (gpu_view_host_.get())
-    return gpu_view_host_->CreateBackingStore(render_widget_host_, size);
+    return gpu_view_host_->CreateBackingStore(size);
   return new BackingStoreWin(render_widget_host_, size);
 }
 

@@ -9,8 +9,6 @@
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "ipc/ipc_channel.h"
 
-#include <windows.h>
-
 class GpuProcessHost;
 
 class BackingStoreProxy : public BackingStore,

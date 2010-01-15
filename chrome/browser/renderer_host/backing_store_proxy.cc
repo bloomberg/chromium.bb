@@ -5,11 +5,16 @@
 #include "chrome/browser/renderer_host/backing_store_proxy.h"
 
 #include "base/gfx/rect.h"
+#include "build/build_config.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 BackingStoreProxy::BackingStoreProxy(RenderWidgetHost* widget,
                                      const gfx::Size& size,
@@ -34,9 +39,15 @@ void BackingStoreProxy::PaintToBackingStore(
     bool* painted_synchronously) {
   DCHECK(!waiting_for_paint_ack_);
 
+  base::ProcessId process_id;
+#if defined(OS_WIN)
+  process_id = ::GetProcessId(process->GetHandle());
+#elif defined(OS_POSIX)
+  process_id = process->GetHandle();
+#endif
+
   if (process_->Send(new GpuMsg_PaintToBackingStore(
-         routing_id_, ::GetProcessId(process->GetHandle()),
-         bitmap, bitmap_rect, copy_rects))) {
+          routing_id_, process_id, bitmap, bitmap_rect, copy_rects))) {
     // Message sent successfully, so the caller can not destroy the
     // TransportDIB. OnDonePaintingToBackingStore will free it later.
     *painted_synchronously = false;
