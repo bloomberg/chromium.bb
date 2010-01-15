@@ -1547,8 +1547,6 @@
         'browser/sync/sync_ui_util.h',
         'browser/sync/sync_ui_util_mac.mm',
         'browser/sync/sync_ui_util_mac.h',
-        'browser/state_tracker.cc',
-        'browser/state_tracker.h',
         'browser/tab_contents/constrained_window.h',
         'browser/tab_contents/infobar_delegate.cc',
         'browser/tab_contents/infobar_delegate.h',

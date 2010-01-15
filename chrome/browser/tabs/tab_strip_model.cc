@@ -59,7 +59,6 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
 }
 
 TabStripModel::~TabStripModel() {
-  LogEvent(DELETE_MODEL);
   STLDeleteContainerPointers(contents_data_.begin(), contents_data_.end());
   delete order_controller_;
 }
@@ -94,7 +93,6 @@ void TabStripModel::InsertTabContentsAt(int index,
                                         TabContents* contents,
                                         bool foreground,
                                         bool inherit_group) {
-  LogEvent(INSERT);
   // In tab dragging situations, if the last tab in the window was detached
   // then the user aborted the drag, we will have the |closing_all_| member
   // set (see DetachTabContentsAt) which will mess with our mojo here. We need
@@ -134,7 +132,6 @@ void TabStripModel::InsertTabContentsAt(int index,
 
 void TabStripModel::ReplaceNavigationControllerAt(
     int index, NavigationController* controller) {
-  LogEvent(REPLACE);
   // This appears to be OK with no flicker since no redraw event
   // occurs between the call to add an aditional tab and one to close
   // the previous tab.
@@ -149,15 +146,12 @@ TabContents* TabStripModel::DetachTabContentsAt(int index) {
     return NULL;
 
   DCHECK(ContainsIndex(index));
-  LogEvent(DETACH);
   TabContents* removed_contents = GetContentsAt(index);
   next_selected_index_ = order_controller_->DetermineNewSelectedIndex(index);
   delete contents_data_.at(index);
   contents_data_.erase(contents_data_.begin() + index);
-  if (contents_data_.empty()) {
-    LogEvent(DETACH_EMPTY);
+  if (contents_data_.empty())
     closing_all_ = true;
-  }
   TabStripModelObservers::Iterator iter(observers_);
   while (TabStripModelObserver* obs = iter.GetNext()) {
     obs->TabDetachedAt(removed_contents, index);
@@ -185,7 +179,6 @@ void TabStripModel::SelectTabContentsAt(int index, bool user_gesture) {
 
 void TabStripModel::MoveTabContentsAt(int index, int to_position,
                                       bool select_after_move) {
-  LogEvent(MOVE);
   MoveTabContentsAtImpl(index, to_position, select_after_move, true);
 }
 
@@ -229,7 +222,6 @@ void TabStripModel::UpdateTabContentsStateAt(int index,
 }
 
 void TabStripModel::CloseAllTabs() {
-  LogEvent(CLOSE_ALL);
   // Set state so that observers can adjust their behavior to suit this
   // specific condition when CloseTabContentsAt causes a flurry of
   // Close/Detach/Select notifications to be sent.
@@ -354,8 +346,6 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
   DCHECK(ContainsIndex(index));
   if (contents_data_[index]->pinned == pinned)
     return;
-
-  LogEvent(PIN);
 
   int first_non_pinned_tab = IndexOfFirstNonPinnedTab();
 
@@ -490,7 +480,6 @@ void TabStripModel::MoveTabPrevious() {
 Browser* TabStripModel::TearOffTabContents(TabContents* detached_contents,
                                            const gfx::Rect& window_bounds,
                                            const DockInfo& dock_info) {
-  LogEvent(TEAR);
   DCHECK(detached_contents);
   return delegate_->CreateNewStripWithContents(detached_contents, window_bounds,
                                                dock_info);
@@ -626,7 +615,6 @@ void TabStripModel::Observe(NotificationType type,
   // here so we don't crash later.
   int index = GetIndexOfTabContents(Source<TabContents>(source).ptr());
   if (index != TabStripModel::kNoTab) {
-    LogEvent(TAB_DESTROYED);
     // Note that we only detach the contents here, not close it - it's already
     // been closed. We just want to undo our bookkeeping.
     DetachTabContentsAt(index);
@@ -645,8 +633,6 @@ bool TabStripModel::IsNewTabAtEndOfTabStrip(TabContents* contents) const {
 
 bool TabStripModel::InternalCloseTabs(std::vector<int> indices,
                                       bool create_historical_tabs) {
-  LogEvent(CLOSE);
-
   bool retval = true;
 
   // We only try the fast shutdown path if the whole browser process is *not*
@@ -781,10 +767,4 @@ bool TabStripModel::OpenerMatches(const TabContentsData* data,
                                   const NavigationController* opener,
                                   bool use_group) {
   return data->opener == opener || (use_group && data->group == opener);
-}
-
-void TabStripModel::LogEvent(Event type) {
-  char c = 'a' + (int)type;
-  tracker_.Append(std::string(&c, 1));
-  tracker_.Append(IntToString(count()));
 }

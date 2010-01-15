@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "chrome/browser/state_tracker.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 
@@ -283,9 +282,6 @@ class TabStripModel : public NotificationObserver {
     return order_controller_;
   }
 
-  // Returns the StateTracker. This never returns null.
-  StateTracker* tracker() { return &tracker_; }
-
   // Returns true if |observer| is in the list of observers. This is intended
   // for debugging.
   bool HasObserver(TabStripModelObserver* observer);
@@ -553,24 +549,6 @@ class TabStripModel : public NotificationObserver {
   // be |opener|'s NavigationController.
   void SetOpenerForContents(TabContents* contents, TabContents* opener);
 
-  // In hopes of tracking a crash we're logging various events. These events
-  // are logged to tracker_ with the following characters.
-  enum Event {
-    INSERT = 0,      // a
-    REPLACE,         // b
-    DETACH,          // c
-    DETACH_EMPTY,    // d
-    MOVE,            // e
-    CLOSE_ALL,       // f
-    TEAR,            // g
-    DELETE_MODEL,    // h
-    CLOSE,           // i
-    PIN,             // j
-    TAB_DESTROYED    // k
-  };
-
-  void LogEvent(Event type);
-
   // Returns true if the tab represented by the specified data has an opener
   // that matches the specified one. If |use_group| is true, then this will
   // fall back to check the group relationship as well.
@@ -667,8 +645,6 @@ class TabStripModel : public NotificationObserver {
 
   // A scoped container for notification registries.
   NotificationRegistrar registrar_;
-
-  StateTracker tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripModel);
 };

@@ -1294,19 +1294,7 @@ void TabStrip::MaybeStartDrag(Tab* tab, const views::MouseEvent& event) {
     return;
   int index = GetIndexOfTab(tab);
   if (!model_->ContainsIndex(index)) {
-    // It appears to be possible for a drag to start with an invalid tab.
-    // This records some extra information in hopes of tracking down why.
-    std::string tmp;
-    StateTracker* tracker = model_->tracker();
-    tracker->Append("|");
-    if (model_->closing_all())
-      tracker->Append("A");
-    tracker->Append(" " + IntToString(index));
-    tracker->Append(" " + IntToString(GetTabCount()));
-    tracker->Append(" " + IntToString(model_->count()));
-    if (model_->HasObserver(this))
-      tracker->Append("Y");
-    tracker->Crash();
+    CHECK(false);
     return;
   }
   drag_controller_.reset(new DraggedTabController(tab, this));
