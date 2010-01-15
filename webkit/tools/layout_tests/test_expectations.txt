@@ -2827,7 +2827,6 @@ BUG29748 LINUX : http/tests/navigation/error404-frames.html = IMAGE
 BUG29748 LINUX : http/tests/navigation/post-frames.html = IMAGE
 BUG29748 LINUX : http/tests/navigation/postredirect-frames.html = IMAGE
 BUG29748 LINUX : media/video-controls-rendering.html = IMAGE
-BUG29748 LINUX : svg/css/stars-with-shadow.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug137388-2.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug2479-1.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug2479-4.html = IMAGE
@@ -2911,12 +2910,6 @@ BUG29930 : fast/loader/input-element-page-cache-crash.html = TIMEOUT PASS
 // roll r51875, and then after http://trac.webkit.org/changeset/51936 the
 // shadows broke so IMAGE failure was added to WIN/LINUX.
 BUG30048 BUG29737 : svg/filters/shadow-on-rect-with-filter.svg = IMAGE+TEXT
-
-// Broke due to changes to shadow compositing, courtesy of:
-// http://trac.webkit.org/changeset/51936:
-BUG30048 WIN LINUX : svg/css/arrow-with-shadow.svg = IMAGE
-BUG30048 : svg/css/circle-in-mask-with-shadow.svg = IMAGE
-BUG30048 WIN MAC : svg/css/stars-with-shadow.html = IMAGE
 
 // New tests courtesy of: http://trac.webkit.org/changeset/51936:
 BUG30048 : svg/css/composite-shadow-example.html = IMAGE
@@ -3006,7 +2999,6 @@ BUG31146 BUG31338 LINUX : svg/custom/mask-excessive-malloc.svg = CRASH IMAGE
 
 // WebKit update 52372->52454
 BUG30938 MAC : fast/backgrounds/svg-as-background-6.html = IMAGE
-BUG30938 : svg/css/mask-with-shadow.svg = IMAGE
 BUG30938 WIN : svg/custom/mask-excessive-malloc.svg = IMAGE
 BUG30939 : svg/filters/filter-clip.svg = IMAGE+TEXT
 
