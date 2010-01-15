@@ -58,8 +58,7 @@ uint32 WebPluginDelegatePepper::next_buffer_id = 0;
 WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
     const FilePath& filename,
     const std::string& mime_type,
-    const base::WeakPtr<RenderView>& render_view,
-    gfx::PluginWindowHandle containing_view) {
+    const base::WeakPtr<RenderView>& render_view) {
   scoped_refptr<NPAPI::PluginLib> plugin_lib =
       NPAPI::PluginLib::CreatePluginLib(filename);
   if (plugin_lib.get() == NULL)
@@ -72,7 +71,6 @@ WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
   scoped_refptr<NPAPI::PluginInstance> instance =
       plugin_lib->CreateInstance(mime_type);
   return new WebPluginDelegatePepper(render_view,
-                                     containing_view,
                                      instance.get());
 }
 
@@ -98,13 +96,6 @@ bool WebPluginDelegatePepper::Initialize(
       url, argn.get(), argv.get(), argc, load_manually);
   if (!start_result)
     return false;
-
-  // For windowless plugins we should set the containing window handle
-  // as the instance window handle. This is what Safari does. Not having
-  // a valid window handle causes subtle bugs with plugins which retreive
-  // the window handle and validate the same. The window handle can be
-  // retreived via NPN_GetValue of NPNVnetscapeWindow.
-  instance_->set_window_handle(parent_);
 
   plugin_url_ = url.spec();
 
@@ -709,12 +700,10 @@ void WebPluginDelegatePepper::AudioStream::OnVolume(double volume) {
 
 WebPluginDelegatePepper::WebPluginDelegatePepper(
     const base::WeakPtr<RenderView>& render_view,
-    gfx::PluginWindowHandle containing_view,
     NPAPI::PluginInstance *instance)
     : render_view_(render_view),
       plugin_(NULL),
       instance_(instance),
-      parent_(containing_view),
       buffer_size_(0),
       plugin_buffer_(0),
       nested_delegate_(NULL) {

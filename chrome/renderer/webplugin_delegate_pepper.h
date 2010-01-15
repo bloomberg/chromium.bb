@@ -40,8 +40,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   static WebPluginDelegatePepper* Create(
       const FilePath& filename,
       const std::string& mime_type,
-      const base::WeakPtr<RenderView>& render_view,
-      gfx::PluginWindowHandle containing_view);
+      const base::WeakPtr<RenderView>& render_view);
 
   // WebPluginDelegate implementation
   virtual bool Initialize(const GURL& url,
@@ -189,7 +188,6 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
  private:
   WebPluginDelegatePepper(
       const base::WeakPtr<RenderView>& render_view,
-      gfx::PluginWindowHandle containing_view,
       NPAPI::PluginInstance *instance);
   ~WebPluginDelegatePepper();
 
@@ -210,7 +208,6 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   webkit_glue::WebPlugin* plugin_;
   scoped_refptr<NPAPI::PluginInstance> instance_;
 
-  gfx::PluginWindowHandle parent_;
   NPWindow window_;
   gfx::Rect window_rect_;
   gfx::Rect clip_rect_;

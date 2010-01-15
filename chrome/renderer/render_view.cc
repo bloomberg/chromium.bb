@@ -2760,32 +2760,20 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
     }
   }
   if (in_process_plugin) {
-#if defined(OS_WIN)  // In-proc plugins aren't supported on Linux.
     if (use_pepper_host) {
       return WebPluginDelegatePepper::Create(
           path,
           *mime_type_to_use,
-          AsWeakPtr(),
-          gfx::NativeViewFromId(host_window_));
+          AsWeakPtr());
     } else {
+#if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
       return WebPluginDelegateImpl::Create(
           path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
-    }
-#elif defined(OS_MACOSX)
-    if (use_pepper_host) {
-      return WebPluginDelegatePepper::Create(
-          path,
-          *mime_type_to_use,
-          AsWeakPtr(),
-          host_window_);
-    } else {
+#else
       NOTIMPLEMENTED();
       return NULL;
-    }
-#else
-    NOTIMPLEMENTED();
-    return NULL;
 #endif
+    }
   }
 
   return new WebPluginDelegateProxy(*mime_type_to_use, AsWeakPtr());
@@ -4068,4 +4056,3 @@ bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
 
   return rv;
 }
-
