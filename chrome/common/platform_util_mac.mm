@@ -89,8 +89,15 @@ string16 GetVersionStringModifier() {
 #if defined(GOOGLE_CHROME_BUILD)
   NSBundle* bundle = mac_util::MainAppBundle();
   NSString* channel = [bundle objectForInfoDictionaryKey:@"KSChannelID"];
-  if (!channel)
-    channel = @"stable";
+  // Only ever return "", "unknown", "beta" or "dev" in a branded build.
+  if ([channel isEqual:@"stable"]) {
+    channel = @"";
+  } else if ([channel isEqual:@"beta"] || [channel isEqual:@"dev"]) {
+    // do nothing.
+  } else {
+    channel = @"unknown";
+  }
+
   return base::SysNSStringToUTF16(channel);
 #else
   return string16();

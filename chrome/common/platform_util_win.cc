@@ -177,7 +177,7 @@ std::wstring CurrentChromeChannel() {
     }
   }
 
-  std::wstring update_branch;
+  std::wstring update_branch(L"unknown"); // the default.
   if (registry_hive != 0) {
     // Now that we know which hive to use, read the 'ap' key from it.
     std::wstring key = google_update::kRegPathClientState +
@@ -186,8 +186,9 @@ std::wstring CurrentChromeChannel() {
     client_state.ReadValue(google_update::kRegApField, &update_branch);
     // If the parent folder exists (we have a valid install) but the
     // 'ap' key is empty, we necessarily are the stable channel.
+    // So we print nothing.
     if (update_branch.empty() && client_state.Valid()) {
-      update_branch = L"stable";
+      update_branch = L"";
     }
   }
 
@@ -195,14 +196,13 @@ std::wstring CurrentChromeChannel() {
   // what the ap string can contain, but generally it will contain a number
   // followed by a dash followed by the branch name (and then some random
   // suffix). We fall back on empty string in case we fail to parse.
+  // Only ever return "", "unknown", "dev" or "beta".
   if (update_branch.find(L"-beta") != std::wstring::npos)
     update_branch = L"beta";
   else if (update_branch.find(L"-dev") != std::wstring::npos)
     update_branch = L"dev";
-  else if (update_branch.find(L"stable") != std::wstring::npos)
-    update_branch = L"stable";
-  else
-    update_branch = L"";
+  else if (!update_branch.empty())
+    update_branch = L"unknown";
 
   return update_branch;
 }

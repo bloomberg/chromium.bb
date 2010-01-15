@@ -90,7 +90,25 @@ void SimpleErrorBox(gfx::NativeWindow parent,
 
 /* Warning: this may be either Linux or ChromeOS */
 string16 GetVersionStringModifier() {
-  return ASCIIToUTF16(getenv("CHROME_VERSION_EXTRA"));
+  char* env = getenv("CHROME_VERSION_EXTRA");
+  if (!env)
+    return string16();
+  std::string modifier(env);
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // Only ever return "", "unknown", "dev" or "beta" in a branded build.
+  if (modifier == "unstable")  // linux version of "dev"
+    modifier = "dev";
+  if (modifier == "stable") {
+    modifier = "";
+  } else if ((modifier == "dev") || (modifier == "beta")) {
+    // do nothing.
+  } else {
+    modifier = "unknown";
+  }
+#endif
+
+  return ASCIIToUTF16(modifier);
 }
 
 }  // namespace platform_util
