@@ -2884,7 +2884,7 @@ BUG30343 LINUX : fast/css/large-number-round-trip.html = TEXT
 // Likely, moving Windows to using Apache2 will fix this as the Linux/Mac builds
 // did not get flaky here and moving to Apache made the appcache tests less
 // flaky on those platforms.
-BUG25977 WIN DEBUG : http/tests/appcache/access-via-redirect.php = TIMEOUT PASS
+BUG25977 WIN DEBUG : http/tests/appcache/access-via-redirect.php = TIMEOUT PASS FAIL
 BUG25977 WIN DEBUG : http/tests/appcache/auth.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : http/tests/appcache/crash-when-navigating-away-then-back.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : http/tests/appcache/different-scheme.html = TIMEOUT PASS
@@ -3013,3 +3013,8 @@ BUG32305 : fast/loader/onload-willSendRequest-null-for-script.html = TEXT
 
 // New flakyness ?
 BUG32306 MAC DEBUG: svg/hixie/error/004.xml = CRASH PASS
+
+// WebKit roll: 53314:53340
+BUG53331 MAC : fast/gradients/simple-gradients.html = FAIL
+BUG53331 MAC : fast/gradients/border-image-gradient.html = FAIL
+BUG53331 : fast/gradients/border-image-gradient-sides-and-corners.html = FAIL
