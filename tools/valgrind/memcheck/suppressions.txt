@@ -2105,3 +2105,66 @@
    fun:_ZN7WebCore11RenderBlock6layoutEv
    fun:_ZN7WebCore11RenderBlock16layoutBlockChildEPNS_9RenderBoxERNS0_10MarginInfoERiS5_
 }
+{
+   bug_32356
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5media18FFmpegVideoDecoder13CreateFactoryEv
+   fun:_ZN11webkit_glue18WebMediaPlayerImplC1EPN6WebKit20WebMediaPlayerClientEPN5media23FilterFactoryCollectionE
+   fun:_ZN19TestWebViewDelegate17createMediaPlayerEPN6WebKit8WebFrameEPNS0_20WebMediaPlayerClientE
+   fun:_ZN6WebKit20createWebMediaPlayerEPNS_20WebMediaPlayerClientEPN7WebCore5FrameE
+   fun:_ZN6WebKit24WebMediaPlayerClientImpl4loadERKN7WebCore6StringE
+   fun:_ZN7WebCore11MediaPlayer4loadERKNS_6StringERKNS_11ContentTypeE
+   fun:_ZN7WebCore16HTMLMediaElement12loadResourceERKNS_4KURLERNS_11ContentTypeE
+   fun:_ZN7WebCore16HTMLMediaElement19selectMediaResourceEv
+   fun:_ZN7WebCore16HTMLMediaElement12loadInternalEv
+   fun:_ZN7WebCore16HTMLMediaElement14loadTimerFiredEPNS_5TimerIS0_EE
+   fun:_ZN7WebCore5TimerINS_16HTMLMediaElementEE5firedEv
+   fun:_ZN7WebCore12ThreadTimers24sharedTimerFiredInternalEv
+   fun:_ZN7WebCore12ThreadTimers16sharedTimerFiredEv
+   fun:_ZN11webkit_glue16WebKitClientImpl9DoTimeoutEv
+   fun:_Z16DispatchToMethodIN11webkit_glue16WebKitClientImplEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN4base9BaseTimerIN11webkit_glue16WebKitClientImplELb0EE9TimerTask3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
+   fun:_ZN4base16MessagePumpForUI3RunEPNS_11MessagePump8DelegateE
+}
+{
+   bug_32359
+   Memcheck:Leak
+   fun:malloc
+   fun:_Z14pluginAllocateP4_NPPP7NPClass
+   fun:_NPN_CreateObject
+   fun:_ZN6WebKit11WebBindings12createObjectEP4_NPPP7NPClass
+   fun:_Z12pluginInvokeP8NPObjectPvPK10_NPVariantjPS2_
+   fun:_Z18npObjectInvokeImplRKN2v89ArgumentsE18InvokeFunctionType
+   fun:_Z21npObjectMethodHandlerRKN2v89ArgumentsE
+   fun:_ZN2v88internal21Builtin_HandleApiCallENS0_9ArgumentsE
+   obj:*
+}
+{
+   bug_32360
+   Memcheck:Leak
+   fun:memalign
+   fun:posix_memalign
+   fun:av_malloc
+   fun:av_mallocz
+   fun:vorbis_header
+   fun:ogg_packet
+   fun:ogg_get_headers
+   fun:ogg_read_header
+   fun:av_open_input_stream
+   fun:av_open_input_file
+   fun:av_open_input_file
+   fun:_ZN5media13FFmpegDemuxer14InitializeTaskEPNS_10DataSourceEP14CallbackRunnerI6Tuple0E
+   fun:_Z16DispatchToMethodIN5media13FFmpegDemuxerEMS1_FvPNS0_10DataSourceEP14CallbackRunnerI6Tuple0EES3_S7_EvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN14RunnableMethodIN5media13FFmpegDemuxerEMS1_FvPNS0_10DataSourceEP14CallbackRunnerI6Tuple0EE6Tuple2IS3_S7_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
