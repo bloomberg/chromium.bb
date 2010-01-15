@@ -617,8 +617,8 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableApplicationCache(
       command_line.HasSwitch(switches::kEnableApplicationCache));
 
-#if defined(OS_WIN)
-  // We don't yet support notifications on non-Windows.
+#if defined(OS_WIN) || defined(OS_LINUX)
+  // Notifications are supported on Windows and Linux only.
   WebRuntimeFeatures::enableNotifications(
       !command_line.HasSwitch(switches::kDisableDesktopNotifications));
 #endif
