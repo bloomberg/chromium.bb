@@ -445,7 +445,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceZeroSize) {
 
 const wchar_t kCFIIfrPostPage[] = L"files/CFInstance_iframe_post_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceIfrPost) {
+// http://crbug.com/32321
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_CFInstanceIfrPost) {
   SimpleBrowserTest(IE, kCFIIfrPostPage, L"CFInstanceIfrPost");
 }
 
@@ -621,7 +622,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_EventListener) {
 
 const wchar_t kPrivilegedApisPage[] = L"files/privileged_apis_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_PrivilegedApis) {
+// http://crbug.com/32321
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_PrivilegedApis) {
   SimpleBrowserTest(IE, kPrivilegedApisPage, L"PrivilegedApis");
 }
 
