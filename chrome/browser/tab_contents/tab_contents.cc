@@ -2355,7 +2355,10 @@ void TabContents::PageHasOSDD(RenderViewHost* render_view_host,
     return;
   std::wstring keyword = TemplateURLModel::GenerateKeyword(keyword_url,
                                                            autodetected);
-  if (keyword.empty())
+
+  // For JS added OSDD empty keyword is OK because we will generate keyword
+  // later from OSDD content.
+  if (autodetected && keyword.empty())
     return;
   const TemplateURL* template_url =
       url_model->GetTemplateURLForKeyword(keyword);

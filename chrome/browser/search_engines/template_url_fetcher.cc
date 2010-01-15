@@ -70,7 +70,7 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
  private:
   URLFetcher url_fetcher_;
   TemplateURLFetcher* fetcher_;
-  const std::wstring keyword_;
+  std::wstring keyword_;
   const GURL osdd_url_;
   const GURL favicon_url_;
   bool autodetected_;
@@ -107,9 +107,21 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
                                                  NULL,
                                                  template_url.get()) &&
       template_url->url() && template_url->url()->SupportsReplacement()) {
+    if (!autodetected_ || keyword_.empty()) {
+      // Generate new keyword from URL in OSDD for none autodetected case.
+      // Previous keyword was generated from URL where OSDD was placed and
+      // it gives wrong result when OSDD is located on third party site that
+      // has nothing in common with search engine in OSDD.
+      GURL keyword_url(WideToUTF16Hack(template_url->url()->url()));
+      std::wstring new_keyword = TemplateURLModel::GenerateKeyword(
+          keyword_url, false);
+      if (!new_keyword.empty())
+        keyword_ = new_keyword;
+    }
     TemplateURLModel* model = fetcher_->profile()->GetTemplateURLModel();
     const TemplateURL* existing_url;
-    if (!model || !model->loaded() ||
+    if (keyword_.empty() ||
+        !model || !model->loaded() ||
         !model->CanReplaceKeyword(keyword_, template_url->url()->url(),
                                   &existing_url)) {
       // TODO(pamg): If we're coming from JS (not autodetected) and this URL
@@ -125,9 +137,8 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
     if (existing_url)
       model->Remove(existing_url);
 
-    // The short name is what is shown to the user. We reset it to make sure
-    // we don't display random text from the web.
-    template_url->set_short_name(keyword_);
+    // The short name is what is shown to the user. We preserve original names
+    // since it is better when generated keyword in many cases.
     template_url->set_keyword(keyword_);
     template_url->set_originating_url(osdd_url_);
 
