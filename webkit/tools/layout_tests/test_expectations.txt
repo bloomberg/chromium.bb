@@ -89,8 +89,7 @@ BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/XMLHttpRequestException.ht
 BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/connection-error-sync.html = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/loading/onload-vs-immediate-refresh.pl = PASS
 BUG24182 SLOW DEBUG : editing/selection/extend-selection.html = PASS
-//Will restore this once we've rebaselined - atwilson@chromium.org
-//BUG24182 SLOW WIN : fast/backgrounds/svg-as-background-5.html = PASS
+BUG24182 SLOW WIN : fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : svg/css/getComputedStyle-basic.xhtml = PASS
 BUG24182 WIN DEBUG SLOW: inspector/console-dirxml.html = PASS
 BUG24182 DEBUG SLOW : fast/dom/Window/window-function-frame-getter-precedence.html = PASS
@@ -1027,7 +1026,7 @@ BUG10300 LINUX : svg/text/text-text-08-b.svg = FAIL
 // SVG masks aren't quite working yet.
 // Might also be related to https://bugs.webkit.org/show_bug.cgi?id=21910
 // New tests. We should fix these, but they don't need to block the current release
-//BUG3244 LINUX WIN : fast/backgrounds/svg-as-mask.html = FAIL
+BUG3244 LINUX WIN : fast/backgrounds/svg-as-mask.html = FAIL
 BUG3244 WIN DEBUG : fast/backgrounds/animated-svg-as-mask.html = FAIL
 BUG3244 SLOW WIN RELEASE : fast/backgrounds/animated-svg-as-mask.html = FAIL
 BUG3244 LINUX : fast/backgrounds/animated-svg-as-mask.html = FAIL
@@ -2918,7 +2917,7 @@ BUG30048 BUG29737 : svg/filters/shadow-on-rect-with-filter.svg = IMAGE+TEXT
 // http://trac.webkit.org/changeset/51936:
 BUG30048 : svg/css/arrow-with-shadow.svg = IMAGE
 BUG30048 : svg/css/circle-in-mask-with-shadow.svg = IMAGE
-//BUG30048 : svg/css/group-with-shadow.svg = IMAGE+TEXT
+BUG30048 : svg/css/group-with-shadow.svg = IMAGE
 BUG30048 WIN MAC : svg/css/stars-with-shadow.html = IMAGE
 
 // New tests courtesy of: http://trac.webkit.org/changeset/51936:
