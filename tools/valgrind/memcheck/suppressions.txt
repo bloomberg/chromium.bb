@@ -2058,3 +2058,50 @@
    fun:_ZN2v88internal6Object23GetPropertyWithCallbackEPS1_S2_PNS0_6StringES2_
    obj:*
 }
+{
+   bug_32355
+   Memcheck:Addr1
+   fun:NPP_DestroyStream
+   fun:_ZN5NPAPI14PluginInstance17NPP_DestroyStreamEP9_NPStreams
+   fun:_ZN5NPAPI12PluginStream5CloseEs
+   fun:_ZN5NPAPI15PluginStreamUrl5CloseEs
+   fun:_ZN5NPAPI15PluginStreamUrl16DidFinishLoadingEv
+   fun:_ZN11webkit_glue13WebPluginImpl16didFinishLoadingEPN6WebKit12WebURLLoaderE
+   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnCompletedRequestERK16URLRequestStatusRKSs
+   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context13HandleDataURLEv
+   fun:_Z16DispatchToMethodIN11webkit_glue16WebURLLoaderImpl7ContextEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN11webkit_glue16WebURLLoaderImpl7ContextEMS2_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
+   fun:_ZN4base16MessagePumpForUI3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_32353
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore28createFontCustomPlatformDataEPNS_12SharedBufferE
+   fun:_ZN7WebCore10CachedFont20ensureCustomFontDataEv
+   fun:_ZN7WebCore17CSSFontFaceSource11getFontDataERKNS_15FontDescriptionEbbPNS_15CSSFontSelectorE
+   fun:_ZN7WebCore11CSSFontFace11getFontDataERKNS_15FontDescriptionEbb
+   fun:_ZN7WebCore20CSSSegmentedFontFace11getFontDataERKNS_15FontDescriptionE
+   fun:_ZN7WebCore15CSSFontSelector11getFontDataERKNS_15FontDescriptionERKNS_12AtomicStringE
+   fun:_ZN7WebCore9FontCache11getFontDataERKNS_4FontERiPNS_12FontSelectorE
+   fun:_ZNK7WebCore16FontFallbackList10fontDataAtEPKNS_4FontEj
+   fun:_ZNK7WebCore16FontFallbackList15primaryFontDataEPKNS_4FontE
+   fun:_ZNK7WebCore16FontFallbackList14determinePitchEPKNS_4FontE
+   fun:_ZNK7WebCore16FontFallbackList12isFixedPitchEPKNS_4FontE
+   fun:_ZNK7WebCore4Font12isFixedPitchEv
+   fun:_ZN7WebCore11RenderBlock17findNextLineBreakERNS_12BidiResolverINS_14InlineIteratorENS_7BidiRunEEEbRbS6_PNS_6EClearE
+   fun:_ZN7WebCore11RenderBlock20layoutInlineChildrenEbRiS1_
+   fun:_ZN7WebCore11RenderBlock11layoutBlockEb
+   fun:_ZN7WebCore11RenderBlock6layoutEv
+   fun:_ZN7WebCore11RenderBlock16layoutBlockChildEPNS_9RenderBoxERNS0_10MarginInfoERiS5_
+   fun:_ZN7WebCore11RenderBlock19layoutBlockChildrenEbRi
+   fun:_ZN7WebCore11RenderBlock11layoutBlockEb
+   fun:_ZN7WebCore11RenderBlock6layoutEv
+   fun:_ZN7WebCore11RenderBlock16layoutBlockChildEPNS_9RenderBoxERNS0_10MarginInfoERiS5_
+}
