@@ -2411,9 +2411,6 @@ BUG18733 LINUX DEBUG : http/tests/xmlhttprequest/cross-origin-no-authorization.h
 
 BUG14832 : editing/selection/user-drag-element-and-user-select-none.html = FAIL
 
-// WebKit 44928:44943
-BUG14946 : fast/js/date-toisostring.html = FAIL
-
 // WebKit 45017:45086
 BUG15217 : fast/js/dictionary-no-cache.html = FAIL
 BUG15217 MAC : fast/js/switch-behaviour.html = FAIL
@@ -2532,7 +2529,7 @@ BUG21958 MAC : svg/hixie/error/012.xml = FAIL
 BUG22526 : fast/js/Object-create.html = FAIL
 BUG22526 : fast/js/Object-defineProperties.html = FAIL
 BUG22526 : fast/js/Object-defineProperty.html = FAIL
-BUG22526 : http/tests/security/xss-DENIED-defineProperty.html = TIMEOUT
+BUG22526 : http/tests/security/xss-DENIED-defineProperty.html = FAIL
 
 // WebKit merge 48500:48585, due to newly added support for MathML.
 BUG22554 SKIP : mathml = FAIL
