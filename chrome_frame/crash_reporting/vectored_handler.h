@@ -77,6 +77,10 @@ class VEHTraitsBase {
     g_module_start = module_start;
     g_module_end = module_end;
   }
+
+  static bool ShouldIgnoreException(const EXCEPTION_POINTERS* exceptionInfo) {
+    return false;
+  }
 };
 
 DECLSPEC_SELECTANY const void* VEHTraitsBase::g_module_start;

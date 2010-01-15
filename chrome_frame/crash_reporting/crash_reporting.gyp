@@ -42,6 +42,7 @@
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../../testing/gtest.gyp:gtestmain',
+        '../../breakpad/breakpad.gyp:breakpad_handler',
       ],
     },
   ],

@@ -65,8 +65,11 @@ LONG WINAPI VectoredHandlerT<E>::VectoredHandler(
 
   ++VectoredHandlerT<E>::g_exceptions_seen;
 
-  // TODO(stoyan): Check whether exception address is inbetween
+  // Check whether exception address is inbetween
   // [IsBadReadPtr, IsBadReadPtr + 0xXX]
+  if (E::ShouldIgnoreException(exceptionInfo)) {
+    return ExceptionContinueSearch;
+  }
 
   const DWORD exceptionFlags = exceptionInfo->ExceptionRecord->ExceptionFlags;
   // I don't think VEH is called on unwind. Just to be safe.

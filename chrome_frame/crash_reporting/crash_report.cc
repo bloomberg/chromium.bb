@@ -7,56 +7,19 @@
 #include "chrome_frame/crash_reporting/crash_report.h"
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome_frame/crash_reporting/vectored_handler.h"
-#include "chrome_frame/crash_reporting/vectored_handler-impl.h"
 
-namespace {
 // TODO(joshia): factor out common code with chrome used for crash reporting
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
-
 google_breakpad::ExceptionHandler* g_breakpad = NULL;
 
-__declspec(naked)
-static EXCEPTION_REGISTRATION_RECORD* InternalRtlpGetExceptionList() {
-  __asm {
-    mov eax, fs:0
-    ret
-  }
-}
-}  // end of namespace
-
-// Class which methods simply forwards to Win32 API and uses breakpad to write
-// a minidump. Used as template (external interface) of VectoredHandlerT<E>.
-class Win32VEHTraits : public VEHTraitsBase {
- public:
-  static inline void* Register(PVECTORED_EXCEPTION_HANDLER func,
-      const void* module_start, const void* module_end) {
-    VEHTraitsBase::SetModule(module_start, module_end);
-    return ::AddVectoredExceptionHandler(1, func);
-  }
-
-  static inline ULONG Unregister(void* handle) {
-    return ::RemoveVectoredExceptionHandler(handle);
-  }
-
-  static inline bool WriteDump(EXCEPTION_POINTERS* p) {
-    return g_breakpad->WriteMinidumpForException(p);
-  }
-
-  static inline EXCEPTION_REGISTRATION_RECORD* RtlpGetExceptionList() {
-    return InternalRtlpGetExceptionList();
-  }
-
-  static inline WORD RtlCaptureStackBackTrace(DWORD FramesToSkip,
-      DWORD FramesToCapture, void** BackTrace, DWORD* BackTraceHash) {
-    return ::RtlCaptureStackBackTrace(FramesToSkip, FramesToCapture,
-                                      BackTrace, BackTraceHash);
-  }
+Win32VEHTraits::CodeBlock Win32VEHTraits::IgnoreExceptions[kIgnoreEntries] = {
+  { "kernel32.dll", "IsBadReadPtr", 0, 100, NULL },
+  { "kernel32.dll", "IsBadWritePtr", 0, 100, NULL },
+  { "kernel32.dll", "IsBadStringPtrA", 0, 100, NULL },
+  { "kernel32.dll", "IsBadStringPtrW", 0, 100, NULL },
 };
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 std::wstring GetCrashServerPipeName(const std::wstring& user_sid) {
   std::wstring pipe_name = kGoogleUpdatePipeName;

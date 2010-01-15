@@ -6,11 +6,12 @@
 
 #include "base/logging.h"
 #include "chrome_frame/crash_reporting/vectored_handler-impl.h"
+#include "chrome_frame/crash_reporting/crash_report.h"
 #include "gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Class that mocks external call from VectoredHandlerT for testing purposes.
-class EMock : public VEHTraitsBase {
+class EMock : public Win32VEHTraits {
  public:
   static inline bool WriteDump(EXCEPTION_POINTERS* p) {
     g_dump_made = true;
@@ -20,6 +21,7 @@ class EMock : public VEHTraitsBase {
   static inline void* Register(PVECTORED_EXCEPTION_HANDLER func,
                                const void* module_start,
                                const void* module_end) {
+    InitializeIgnoredBlocks();
     VEHTraitsBase::SetModule(module_start, module_end);
     // Return some arbitrary number, expecting to get the same on Unregister()
     return reinterpret_cast<void*>(4);
@@ -186,6 +188,26 @@ TEST(ChromeFrame, ExceptionReport) {
   EXPECT_EQ(ExceptionContinueSearch, VectoredHandlerMock::VectoredHandler(&ex));
   EXPECT_EQ(4, VectoredHandlerMock::g_exceptions_seen);
   EXPECT_TRUE(EMock::g_dump_made);
+  EMock::g_dump_made = false;
+
+  // Exception, in IsBadStringPtrA, we are on the stack.
+  char* ignore_address = reinterpret_cast<char*>(GetProcAddress(
+      GetModuleHandleA("kernel32.dll"), "IsBadStringPtrA")) + 10;
+  ex.Set(STATUS_ACCESS_VIOLATION, ignore_address + 10, 0);
+  EMock::SetNoSEHFilter();
+  EMock::SetOnStack();
+  EXPECT_EQ(ExceptionContinueSearch, VectoredHandlerMock::VectoredHandler(&ex));
+  EXPECT_EQ(5, VectoredHandlerMock::g_exceptions_seen);
+  EXPECT_FALSE(EMock::g_dump_made);
+  EMock::g_dump_made = false;
+
+  // Exception, in IsBadStringPtrA, we are not in stack.
+  ex.Set(STATUS_ACCESS_VIOLATION, ignore_address + 10, 0);
+  EMock::SetNoSEHFilter();
+  EMock::SetNotOnStack();
+  EXPECT_EQ(ExceptionContinueSearch, VectoredHandlerMock::VectoredHandler(&ex));
+  EXPECT_EQ(6, VectoredHandlerMock::g_exceptions_seen);
+  EXPECT_FALSE(EMock::g_dump_made);
   EMock::g_dump_made = false;
 
   VectoredHandlerMock::Unregister();
