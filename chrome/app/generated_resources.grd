@@ -4571,7 +4571,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_AUTOFILL_ADD_BUTTON" desc="The label of the button that adds a new AutoFill profile.">
         Add...
-      </message> 
+      </message>
       <message name="IDS_AUTOFILL_EDIT_BUTTON" desc="The label of the button that edits an AutoFill profile.">
         Edit...
       </message>
@@ -5397,7 +5397,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           The following application will be launched if you accept this request:\n\n <ph name="APPLICATION">$1<ex>C:\Program Files\Adobe\Reader 8.0\Reader\AcroRd32.exe /u "%1"</ex></ph>
         </message>
         <message name="IDS_EXTERNAL_PROTOCOL_WARNING" desc="Warn user about external protocols.">
-          If you did not initiate this request, it may represent an attempted attack on your system. Unless you took an explicit action to initiate this request, you should press Cancel.
+          If you did not initiate this request, it may represent an attempted attack on your system. Unless you took an explicit action to initiate this request, you should press Do Nothing.
         </message>
         <message name="IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT" desc="Checkbox to remember users decision.">
           Remember my choice for all links of this type.
