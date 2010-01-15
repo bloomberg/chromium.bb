@@ -991,7 +991,6 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
             'tests/life/nacl.scons',
             'tests/mandel_nav/nacl.scons',
             'tests/many/nacl.scons',
-            'tests/selenium_dummy/nacl.scons',
             'tests/tone/nacl.scons',
             'tests/voronoi/nacl.scons',
             ])
@@ -1017,9 +1016,10 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
 
   nacl_env.Prepend(
       LINKFLAGS_FIRST = ['${NACL_SDK_LIB}/crt1.o','${NACL_SDK_LIB}/crti.o',],
-      # NOTE: order is important
-      LIBS = ['srpc', 'c', 'nacl'],
-      LINKFLAGS_LAST = ['-lc', '-lgcc', '-lunimpl', '${NACL_SDK_LIB}/crtn.o',],
+      LIBS = [],
+      # NOTE: order and replication is/may be important
+      LINKFLAGS_LAST = ['-lsrpc', '-lc', '-lnacl', '-lc',
+                        '-lgcc', '-lunimpl', '${NACL_SDK_LIB}/crtn.o',],
       EMULATOR  = EMULATOR,
       )
 
@@ -1055,6 +1055,18 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
 
       'tests/arm_service_runtime/nacl.scons',
       ])
+
+  if ARGUMENTS.get('sdl', 'hermetic') != 'none':
+    nacl_env.Append(
+        BUILD_SCONSCRIPTS = [
+            ####  ALPHABETICALLY SORTED ####
+            'tests/mandel_nav/nacl.scons',
+            # enable this to expose a c++ runtime link problem
+            # c.f. http://code.google.com/p/nativeclient/issues/detail?id=236
+            # 'tests/earth/nacl.scons',
+            # enable this to expose another c++ runtime link problem
+            # 'tests/life/nacl.scons',
+            ])
 
 environment_list.append(nacl_env)
 
@@ -1114,6 +1126,11 @@ nacl_extra_sdk_env = pre_base_env.Clone(
       ['NACL_BLOCK_SHIFT', '5' ],
       ],
 )
+
+# TODO(robertm): remove this work-around for an llvm debug info bug
+# http://code.google.com/p/nativeclient/issues/detail?id=235
+if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
+  nacl_extra_sdk_env.FilterOut(CCFLAGS=['-g'])
 
 if nacl_extra_sdk_env.Bit('host_windows'):
   # NOTE: This is needed because Windows builds are case-insensitive.
