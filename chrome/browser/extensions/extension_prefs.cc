@@ -151,10 +151,6 @@ bool ExtensionPrefs::ReadBooleanFromPref(
 bool ExtensionPrefs::ReadExtensionPrefBoolean(
     const std::string& extension_id, const std::wstring& pref_key) {
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
-  DCHECK(extensions);
-
-  // We've seen crash reports (crbug.com/29317) which seem to indicate
-  // that extensions can be null here, although we don't expect it to be.
   if (!extensions)
     return false;
 
@@ -184,36 +180,38 @@ void ExtensionPrefs::UpdateBlacklist(
   std::vector<std::string> remove_pref_ids;
   std::set<std::string> used_id_set;
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
-  DCHECK(extensions);
-  for (DictionaryValue::key_iterator extension_id = extensions->begin_keys();
-       extension_id != extensions->end_keys(); ++extension_id) {
-    DictionaryValue* ext;
-    if (!extensions->GetDictionaryWithoutPathExpansion(*extension_id, &ext)) {
-      NOTREACHED() << "Invalid pref for extension " << *extension_id;
-      continue;
-    }
-    std::string id = WideToASCII(*extension_id);
-    if (blacklist_set.find(id) == blacklist_set.end()) {
-      if (!IsBlacklistBitSet(ext)) {
-        // This extension is not in blacklist. And it was not blacklisted
-        // before.
+
+  if (extensions) {
+    for (DictionaryValue::key_iterator extension_id = extensions->begin_keys();
+         extension_id != extensions->end_keys(); ++extension_id) {
+      DictionaryValue* ext;
+      if (!extensions->GetDictionaryWithoutPathExpansion(*extension_id, &ext)) {
+        NOTREACHED() << "Invalid pref for extension " << *extension_id;
         continue;
-      } else {
-        if (ext->size() == 1) {
-          // We should remove the entry if the only flag here is blacklist.
-          remove_pref_ids.push_back(id);
+      }
+      std::string id = WideToASCII(*extension_id);
+      if (blacklist_set.find(id) == blacklist_set.end()) {
+        if (!IsBlacklistBitSet(ext)) {
+          // This extension is not in blacklist. And it was not blacklisted
+          // before.
+          continue;
         } else {
-          // Remove the blacklist bit.
-          ext->Remove(kPrefBlacklist, NULL);
+          if (ext->size() == 1) {
+            // We should remove the entry if the only flag here is blacklist.
+            remove_pref_ids.push_back(id);
+          } else {
+            // Remove the blacklist bit.
+            ext->Remove(kPrefBlacklist, NULL);
+          }
         }
+      } else {
+        if (!IsBlacklistBitSet(ext)) {
+          // Only set the blacklist if it was not set.
+          ext->SetBoolean(kPrefBlacklist, true);
+        }
+        // Keep the record if this extension is already processed.
+        used_id_set.insert(id);
       }
-    } else {
-      if (!IsBlacklistBitSet(ext)) {
-        // Only set the blacklist if it was not set.
-        ext->SetBoolean(kPrefBlacklist, true);
-      }
-      // Keep the record if this extension is already processed.
-      used_id_set.insert(id);
     }
   }
 
@@ -439,6 +437,8 @@ DictionaryValue* ExtensionPrefs::GetOrCreateExtensionPref(
 DictionaryValue* ExtensionPrefs::GetExtensionPref(
     const std::string& extension_id) {
   const DictionaryValue* dict = prefs_->GetDictionary(kExtensionsPref);
+  if (!dict)
+    return NULL;
   DictionaryValue* extension = NULL;
   std::wstring id = ASCIIToWide(extension_id);
   dict->GetDictionary(id, &extension);
