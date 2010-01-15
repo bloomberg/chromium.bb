@@ -411,6 +411,10 @@ void WebPluginDelegateImpl::SetFocus() {
     FocusNotify(this);
 }
 
+void WebPluginDelegateImpl::SetThemeCursor(ThemeCursor cursor) {
+  current_windowless_cursor_.InitFromThemeCursor(cursor);
+}
+
 void WebPluginDelegateImpl::UpdatePluginLocation(const WebMouseEvent& event) {
   instance()->set_plugin_origin(gfx::Point(event.globalX - event.x,
                                            event.globalY - event.y));
@@ -712,6 +716,8 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
     const WebMouseEvent* mouse_event =
         static_cast<const WebMouseEvent*>(&event);
     UpdatePluginLocation(*mouse_event);
+
+    current_windowless_cursor_.GetCursorInfo(cursor);
   }
 
 #ifndef NP_NO_CARBON

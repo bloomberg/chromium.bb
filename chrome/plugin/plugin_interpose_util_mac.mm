@@ -9,6 +9,7 @@
 
 #include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/plugin_thread.h"
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 
 namespace mac_plugin_interposing {
 
@@ -62,6 +63,13 @@ void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds) {
         new PluginProcessHostMsg_PluginHideWindow(window_id, window_bounds));
   }
 }
+
+__attribute__((visibility("default")))
+void NotifyPluginOfSetThemeCursor(WebPluginDelegateImpl* delegate,
+                                  ThemeCursor cursor) {
+  delegate->SetThemeCursor(cursor);
+}
+
 
 }  // namespace mac_plugin_interposing
 

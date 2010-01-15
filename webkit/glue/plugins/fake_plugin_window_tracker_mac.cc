@@ -34,10 +34,11 @@ WindowRef FakePluginWindowTracker::GenerateFakeWindowForDelegate(
   return new_ref;
 }
 
-const WebPluginDelegateImpl* FakePluginWindowTracker::GetDelegateForFakeWindow(
+WebPluginDelegateImpl* FakePluginWindowTracker::GetDelegateForFakeWindow(
     WindowRef window) const {
-  return static_cast<const WebPluginDelegateImpl*>(
-      CFDictionaryGetValue(window_to_delegate_map_, window));
+  return const_cast<WebPluginDelegateImpl*>(
+      static_cast<const WebPluginDelegateImpl*>(
+        CFDictionaryGetValue(window_to_delegate_map_, window)));
 }
 
 void FakePluginWindowTracker::RemoveFakeWindowForDelegate(

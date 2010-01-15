@@ -131,6 +131,8 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void SetFocusNotifier(void (*notifier)(WebPluginDelegateImpl*)) {
     focus_notifier_ = notifier;
   }
+  // Informs the delegate that the plugin set a theme cursor.
+  void SetThemeCursor(ThemeCursor cursor);
 #endif
 
 #if !defined(OS_MACOSX)

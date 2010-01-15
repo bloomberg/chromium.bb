@@ -28,7 +28,7 @@ class __attribute__((visibility("default"))) FakePluginWindowTracker {
   WindowRef GenerateFakeWindowForDelegate(WebPluginDelegateImpl* delegate);
 
   // Returns the WebPluginDelegate associated with the given fake window ref.
-  const WebPluginDelegateImpl* GetDelegateForFakeWindow(WindowRef window) const;
+  WebPluginDelegateImpl* GetDelegateForFakeWindow(WindowRef window) const;
 
   // Removes the fake window ref entry for |delegate|.
   void RemoveFakeWindowForDelegate(WebPluginDelegateImpl* delegate,

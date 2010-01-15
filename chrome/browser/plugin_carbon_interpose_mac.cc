@@ -144,6 +144,17 @@ static WindowPartCode ChromePluginFindWindow(Point point, WindowRef* window) {
   return FindWindow(point, window);
 }
 
+static OSStatus ChromePluginSetThemeCursor(ThemeCursor cursor) {
+  FakePluginWindowTracker* tracker = FakePluginWindowTracker::SharedInstance();
+  WebPluginDelegateImpl* delegate =
+      tracker->GetDelegateForFakeWindow(tracker->get_active_plugin_window());
+  if (delegate) {
+    mac_plugin_interposing::NotifyPluginOfSetThemeCursor(delegate, cursor);
+    return noErr;
+  }
+  return SetThemeCursor(cursor);
+}
+
 #pragma mark -
 
 struct interpose_substitution {
@@ -167,4 +178,5 @@ __attribute__((used)) static const interpose_substitution substitutions[]
   INTERPOSE_FUNCTION(ReleaseWindow),
   INTERPOSE_FUNCTION(DisposeDialog),
   INTERPOSE_FUNCTION(FindWindow),
+  INTERPOSE_FUNCTION(SetThemeCursor),
 };

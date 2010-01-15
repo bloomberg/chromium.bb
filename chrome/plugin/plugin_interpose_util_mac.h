@@ -9,6 +9,8 @@
 
 #import "base/basictypes.h"
 
+class WebPluginDelegateImpl;
+
 namespace mac_plugin_interposing {
 
 // Swizzles methods we need to watch in order to manage process and window
@@ -32,6 +34,10 @@ void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds,
 // has been hidden, and switches focus back to the browser process if there are
 // no remaining plugin windows.
 void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds);
+
+// Sends a message to the plugin that a theme cursor was set.
+void NotifyPluginOfSetThemeCursor(WebPluginDelegateImpl* delegate,
+                                  ThemeCursor cursor);
 
 }  // namespace MacPluginInterpose
 

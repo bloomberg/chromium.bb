@@ -5,6 +5,7 @@
 #include "webkit/glue/webcursor.h"
 
 #import <AppKit/AppKit.h>
+#include <Carbon/Carbon.h>
 
 #include "base/logging.h"
 #include "base/nsimage_cache_mac.h"
@@ -156,6 +157,71 @@ NSCursor* WebCursor::GetCursor() const {
   }
   NOTREACHED();
   return nil;
+}
+
+void WebCursor::InitFromThemeCursor(ThemeCursor cursor) {
+  WebKit::WebCursorInfo cursor_info;
+
+  switch (cursor) {
+    case kThemeArrowCursor:
+      cursor_info.type = WebCursorInfo::TypePointer;
+      break;
+    case kThemeCopyArrowCursor:
+      cursor_info.type = WebCursorInfo::TypeCopy;
+      break;
+    case kThemeAliasArrowCursor:
+      cursor_info.type = WebCursorInfo::TypeAlias;
+      break;
+    case kThemeContextualMenuArrowCursor:
+      cursor_info.type = WebCursorInfo::TypeContextMenu;
+      break;
+    case kThemeIBeamCursor:
+      cursor_info.type = WebCursorInfo::TypeIBeam;
+      break;
+    case kThemeCrossCursor:
+    case kThemePlusCursor:
+      cursor_info.type = WebCursorInfo::TypeCross;
+      break;
+    case kThemeWatchCursor:
+    case kThemeSpinningCursor:
+      cursor_info.type = WebCursorInfo::TypeWait;
+      break;
+    case kThemeClosedHandCursor:
+    case kThemeOpenHandCursor:
+    case kThemePointingHandCursor:
+    case kThemeCountingUpHandCursor:
+    case kThemeCountingDownHandCursor:
+    case kThemeCountingUpAndDownHandCursor:
+      cursor_info.type = WebCursorInfo::TypeHand;
+      break;
+    case kThemeResizeLeftCursor:
+      cursor_info.type = WebCursorInfo::TypeWestResize;
+      break;
+    case kThemeResizeRightCursor:
+      cursor_info.type = WebCursorInfo::TypeEastResize;
+      break;
+    case kThemeResizeLeftRightCursor:
+      cursor_info.type = WebCursorInfo::TypeEastWestResize;
+      break;
+    case kThemeNotAllowedCursor:
+      cursor_info.type = WebCursorInfo::TypeNotAllowed;
+      break;
+    case kThemeResizeUpCursor:
+      cursor_info.type = WebCursorInfo::TypeNorthResize;
+      break;
+    case kThemeResizeDownCursor:
+      cursor_info.type = WebCursorInfo::TypeSouthResize;
+      break;
+    case kThemeResizeUpDownCursor:
+      cursor_info.type = WebCursorInfo::TypeNorthSouthResize;
+      break;
+    case kThemePoofCursor:  // *shrug*
+    default:
+      cursor_info.type = WebCursorInfo::TypePointer;
+      break;
+  }
+
+  InitFromCursorInfo(cursor_info);
 }
 
 void WebCursor::SetCustomData(const WebImage& image) {
