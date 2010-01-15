@@ -45,17 +45,10 @@
   },
   'targets': [
     {
-      # Currently, builders assume webkit.sln builds test_shell on windows.
-      # We should change this, but for now allows trybot runs.
-      # for now.
       'target_name': 'pull_in_test_shell',
       'type': 'none',
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            'tools/test_shell/test_shell.gyp:*',
-          ],
-        }],
+      'dependencies': [
+        'tools/test_shell/test_shell.gyp:*',
       ],
     },
     {
