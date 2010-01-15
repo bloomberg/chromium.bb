@@ -634,8 +634,6 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
     Profile* profile) {
   std::vector<GURL> urls;
   std::vector<std::wstring> params = command_line_.GetLooseValues();
-  ChildProcessSecurityPolicy *policy =
-      ChildProcessSecurityPolicy::GetInstance();
 
   for (size_t i = 0; i < params.size(); ++i) {
     std::wstring& value = params[i];
@@ -661,6 +659,8 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
           URLFixerUpper::FixupRelativeFile(cur_dir_, value)));
       // Exclude dangerous schemes.
       if (url.is_valid()) {
+        ChildProcessSecurityPolicy *policy =
+            ChildProcessSecurityPolicy::GetInstance();
         if (policy->IsWebSafeScheme(url.scheme()) ||
             url.SchemeIs(chrome::kFileScheme) ||
             !url.spec().compare(chrome::kAboutBlankURL)) {
