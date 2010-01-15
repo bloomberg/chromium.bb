@@ -31,6 +31,7 @@ class DownloadItemMac : DownloadItem::Observer {
 
   // DownloadItem::Observer implementation
   virtual void OnDownloadUpdated(DownloadItem* download);
+  virtual void OnDownloadFileCompleted(DownloadItem* download) { }
   virtual void OnDownloadOpened(DownloadItem* download) { }
 
   BaseDownloadItemModel* download_model() { return download_model_.get(); }

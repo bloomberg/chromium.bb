@@ -87,6 +87,8 @@ struct DownloadCreateInfo {
   // The charset of the referring page where the download request comes from.
   // It's used to construct a suggested filename.
   std::string referrer_charset;
+  // The file path to save to.
+  FilePath save_file_path;
 };
 
 #endif  // CHROME_BROWSER_HISTORY_DOWNLOAD_TYPES_H_

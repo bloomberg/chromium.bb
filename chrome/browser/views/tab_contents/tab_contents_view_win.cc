@@ -8,12 +8,10 @@
 
 #include "app/gfx/canvas_paint.h"
 #include "app/os_exchange_data.h"
-#include "app/os_exchange_data_provider_win.h"
 #include "base/file_path.h"
 #include "base/keyboard_codes.h"
 #include "base/time.h"
 #include "base/win_util.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/browser.h"  // TODO(beng): this dependency is awful.
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_request_manager.h"
@@ -24,16 +22,13 @@
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
-#include "chrome/browser/tab_contents/web_drag_source_win.h"
 #include "chrome/browser/tab_contents/web_drop_target_win.h"
 #include "chrome/browser/views/sad_tab_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_win.h"
-#include "chrome/common/url_constants.h"
-#include "net/base/net_util.h"
+#include "chrome/browser/views/tab_contents/tab_contents_drag_win.h"
 #include "views/focus/view_storage.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
-#include "webkit/glue/webdropdata.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
@@ -62,8 +57,6 @@ TabContentsViewWin::~TabContentsViewWin() {
   views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
     view_storage->RemoveView(last_focused_view_storage_id_);
-
-  DCHECK(!drag_source_.get());
 }
 
 void TabContentsViewWin::Unparent() {
@@ -132,70 +125,11 @@ void TabContentsViewWin::GetContainerBounds(gfx::Rect* out) const {
 
 void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
                                        WebDragOperationsMask ops) {
-  OSExchangeData data;
+  drag_handler_ = new TabContentsDragWin(this);
+  drag_handler_->StartDragging(drop_data, ops);
+}
 
-  // TODO(tc): Generate an appropriate drag image.
-
-  // We set the file contents before the URL because the URL also sets file
-  // contents (to a .URL shortcut).  We want to prefer file content data over a
-  // shortcut so we add it first.
-  if (!drop_data.file_contents.empty()) {
-    // Images without ALT text will only have a file extension so we need to
-    // synthesize one from the provided extension and URL.
-    FilePath file_name(drop_data.file_description_filename);
-    file_name = file_name.BaseName().RemoveExtension();
-    if (file_name.value().empty()) {
-      // Retrieve the name from the URL.
-      file_name = net::GetSuggestedFilename(drop_data.url, "", "", FilePath());
-      if (file_name.value().size() + drop_data.file_extension.size() + 1 >
-          MAX_PATH) {
-        file_name = FilePath(file_name.value().substr(
-            0, MAX_PATH - drop_data.file_extension.size() - 2));
-      }
-    }
-    file_name = file_name.ReplaceExtension(drop_data.file_extension);
-    data.SetFileContents(file_name.value(), drop_data.file_contents);
-  }
-  if (!drop_data.text_html.empty())
-    data.SetHtml(drop_data.text_html, drop_data.html_base_url);
-  if (drop_data.url.is_valid()) {
-    if (drop_data.url.SchemeIs(chrome::kJavaScriptScheme)) {
-      // We don't want to allow javascript URLs to be dragged to the desktop,
-      // but we do want to allow them to be added to the bookmarks bar
-      // (bookmarklets). So we create a fake bookmark entry (BookmarkDragData
-      // object) which explorer.exe cannot handle, and write the entry to data.
-      BookmarkDragData::Element bm_elt;
-      bm_elt.is_url = true;
-      bm_elt.url = drop_data.url;
-      bm_elt.title = drop_data.url_title;
-
-      BookmarkDragData bm_drag_data;
-      bm_drag_data.elements.push_back(bm_elt);
-
-      // Pass in NULL as the profile so that the bookmark always adds the url
-      // rather than trying to move an existing url.
-      bm_drag_data.Write(NULL, &data);
-    } else {
-      data.SetURL(drop_data.url, drop_data.url_title);
-    }
-  }
-  if (!drop_data.plain_text.empty())
-    data.SetString(drop_data.plain_text);
-
-  drag_source_ = new WebDragSource(GetNativeView(), tab_contents());
-
-  DWORD effects;
-
-  // We need to enable recursive tasks on the message loop so we can get
-  // updates while in the system DoDragDrop loop.
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
-  DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source_,
-             DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
-  // TODO(snej): Use 'ops' param instead of hardcoding dropeffects
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
-
-  drag_source_ = NULL;
+void TabContentsViewWin::EndDragging() {
   if (close_tab_after_drag_ends_) {
     close_tab_timer_.Start(base::TimeDelta::FromMilliseconds(0), this,
                            &TabContentsViewWin::CloseTab);
@@ -203,6 +137,8 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
 
   if (tab_contents()->render_view_host())
     tab_contents()->render_view_host()->DragSourceSystemDragEnded();
+
+  drag_handler_ = NULL;
 }
 
 void TabContentsViewWin::OnDestroy() {
@@ -328,15 +264,15 @@ void TabContentsViewWin::RestoreFocus() {
 }
 
 bool TabContentsViewWin::IsDoingDrag() const {
-  return drag_source_.get() != NULL;
+  return drag_handler_.get() != NULL;
 }
 
 void TabContentsViewWin::CancelDragAndCloseTab() {
   DCHECK(IsDoingDrag());
   // We can't close the tab while we're in the drag and
-  // |drag_source_->CancelDrag()| is async.  Instead, set a flag to cancel
+  // |drag_handler_->CancelDrag()| is async.  Instead, set a flag to cancel
   // the drag and when the drag nested message loop ends, close the tab.
-  drag_source_->CancelDrag();
+  drag_handler_->CancelDrag();
   close_tab_after_drag_ends_ = true;
 }
 

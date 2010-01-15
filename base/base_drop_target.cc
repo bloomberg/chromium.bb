@@ -15,7 +15,7 @@ int32 BaseDropTarget::drag_identity_ = 0;
 
 BaseDropTarget::BaseDropTarget(HWND hwnd)
     : hwnd_(hwnd),
-      suspend_(false),
+      suspended_(false),
       ref_count_(0) {
   DCHECK(hwnd);
   HRESULT result = RegisterDragDrop(hwnd, this);
@@ -50,7 +50,7 @@ HRESULT BaseDropTarget::DragEnter(IDataObject* data_object,
   }
 
   // You can't drag and drop within the same HWND.
-  if (suspend_) {
+  if (suspended_) {
     *effect = DROPEFFECT_NONE;
     return S_OK;
   }
@@ -73,7 +73,7 @@ HRESULT BaseDropTarget::DragOver(DWORD key_state,
   if (drop_helper)
     drop_helper->DragOver(reinterpret_cast<POINT*>(&cursor_position), *effect);
 
-  if (suspend_) {
+  if (suspended_) {
     *effect = DROPEFFECT_NONE;
     return S_OK;
   }
@@ -88,6 +88,9 @@ HRESULT BaseDropTarget::DragLeave() {
   IDropTargetHelper* drop_helper = DropHelper();
   if (drop_helper)
     drop_helper->DragLeave();
+
+  if (suspended_)
+    return S_OK;
 
   OnDragLeave(current_data_object_);
 
@@ -106,7 +109,7 @@ HRESULT BaseDropTarget::Drop(IDataObject* data_object,
                       reinterpret_cast<POINT*>(&cursor_position), *effect);
   }
 
-  if (suspend_) {
+  if (suspended_) {
     *effect = DROPEFFECT_NONE;
     return S_OK;
   }

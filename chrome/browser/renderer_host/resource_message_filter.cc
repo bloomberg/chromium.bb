@@ -684,8 +684,10 @@ void ResourceMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                           const GURL& url,
                                           const GURL& referrer) {
   URLRequestContext* context = request_context_->GetURLRequestContext();
+  FilePath save_file_path;
   resource_dispatcher_host_->BeginDownload(url,
                                            referrer,
+                                           save_file_path,
                                            id(),
                                            message.routing_id(),
                                            context);

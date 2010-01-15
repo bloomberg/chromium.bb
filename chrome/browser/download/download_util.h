@@ -131,8 +131,8 @@ void DragDownload(const DownloadItem* download,
 
 // Executable file support -----------------------------------------------------
 
-// Copy all executable file extensions.
-void InitializeExeTypes(std::set<std::string>* exe_extensions);
+// Determine if the specified extension is an executable extension.
+bool IsExecutableExtension(const std::string& extension);
 
 }  // namespace download_util
 

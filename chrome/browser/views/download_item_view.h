@@ -52,6 +52,7 @@ class DownloadItemView : public views::ButtonListener,
 
   // DownloadObserver method
   virtual void OnDownloadUpdated(DownloadItem* download);
+  virtual void OnDownloadFileCompleted(DownloadItem* download) { }
   virtual void OnDownloadOpened(DownloadItem* download);
 
   // View overrides

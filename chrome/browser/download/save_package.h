@@ -212,7 +212,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   void DoSavingProcess();
 
   // Create a file name based on the response from the server.
-  bool GenerateFilename(const std::string& disposition,
+  bool GenerateFileName(const std::string& disposition,
                         const GURL& url,
                         bool need_html_ext,
                         FilePath::StringType* generated_name);

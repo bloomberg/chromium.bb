@@ -8,6 +8,7 @@
 #include <objidl.h>
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -18,7 +19,8 @@
 //  system. This object tells Windows whether or not the drag should continue,
 //  and supplies the appropriate cursors.
 //
-class BaseDragSource : public IDropSource {
+class BaseDragSource : public IDropSource,
+                       public base::RefCountedThreadSafe<BaseDragSource> {
  public:
   BaseDragSource();
   virtual ~BaseDragSource() { }
@@ -45,8 +47,6 @@ class BaseDragSource : public IDropSource {
   virtual void OnDragSourceMove() { }
 
  private:
-  LONG ref_count_;
-
   // Set to true if we want to cancel the drag operation.
   bool cancel_drag_;
 

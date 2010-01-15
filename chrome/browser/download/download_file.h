@@ -192,6 +192,7 @@ class DownloadFileManager
   void DownloadUrl(const GURL& url,
                    const GURL& referrer,
                    const std::string& referrer_charset,
+                   const FilePath& save_file_path,
                    int render_process_host_id,
                    int render_view_id,
                    URLRequestContextGetter* request_context_getter);
@@ -200,6 +201,7 @@ class DownloadFileManager
   void OnDownloadUrl(const GURL& url,
                      const GURL& referrer,
                      const std::string& referrer_charset,
+                     const FilePath& save_file_path,
                      int render_process_host_id,
                      int render_view_id,
                      URLRequestContextGetter* request_context_getter);

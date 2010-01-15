@@ -108,6 +108,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // request from the renderer or another child process).
   void BeginDownload(const GURL& url,
                      const GURL& referrer,
+                     const FilePath& save_file_path,
                      int process_unique_id,
                      int route_id,
                      URLRequestContext* request_context);

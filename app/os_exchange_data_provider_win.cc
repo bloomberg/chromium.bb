@@ -29,6 +29,8 @@ static void GetInternetShortcutFileContents(const GURL& url, std::string* data);
 static void CreateValidFileNameFromTitle(const GURL& url,
                                          const std::wstring& title,
                                          std::wstring* validated);
+// Creates a new STGMEDIUM object to hold a file.
+static STGMEDIUM* GetStorageForFileName(const std::wstring& full_path);
 // Creates a File Descriptor for the creation of a file to the given URL and
 // returns a handle to it.
 static STGMEDIUM* GetStorageForFileDescriptor(
@@ -226,10 +228,24 @@ bool OSExchangeDataProviderWin::GetPlainTextURL(IDataObject* source,
 }
 
 // static
+DataObjectImpl* OSExchangeDataProviderWin::GetDataObjectImpl(
+    const OSExchangeData& data) {
+  return static_cast<const OSExchangeDataProviderWin*>(&data.provider())->
+      data_.get();
+}
+
+// static
 IDataObject* OSExchangeDataProviderWin::GetIDataObject(
     const OSExchangeData& data) {
-  return static_cast<const OSExchangeDataProviderWin&>(data.provider()).
+  return static_cast<const OSExchangeDataProviderWin*>(&data.provider())->
       data_object();
+}
+
+// static
+IAsyncOperation* OSExchangeDataProviderWin::GetIAsyncOperation(
+    const OSExchangeData& data) {
+  return static_cast<const OSExchangeDataProviderWin*>(&data.provider())->
+      async_operation();
 }
 
 OSExchangeDataProviderWin::OSExchangeDataProviderWin(IDataObject* source)
@@ -300,28 +316,7 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
 }
 
 void OSExchangeDataProviderWin::SetFilename(const std::wstring& full_path) {
-  const size_t drop_size = sizeof(DROPFILES);
-  const size_t bytes = drop_size + (full_path.length() + 2) * sizeof(wchar_t);
-  HANDLE hdata = ::GlobalAlloc(GMEM_MOVEABLE, bytes);
-  if (!hdata)
-    return;
-
-  ScopedHGlobal<DROPFILES> locked_mem(hdata);
-  DROPFILES* drop_files = locked_mem.get();
-  drop_files->pFiles = sizeof(DROPFILES);
-  drop_files->fWide = TRUE;
-  wchar_t* data = reinterpret_cast<wchar_t*>((BYTE*)(drop_files) + drop_size);
-  const size_t copy_size = (full_path.length() + 1) * sizeof(wchar_t);
-  memcpy(data, full_path.c_str(), copy_size);
-  data[full_path.length() + 1] = L'\0';  // Double NULL
-
-  // Set up the STGMEDIUM
-  STGMEDIUM* storage = new STGMEDIUM;
-  storage->tymed = TYMED_HGLOBAL;
-  storage->hGlobal = drop_files;
-  storage->pUnkForRelease = NULL;
-
-  // Set up the StoredDataInfo
+  STGMEDIUM* storage = GetStorageForFileName(full_path);
   DataObjectImpl::StoredDataInfo* info =
       new DataObjectImpl::StoredDataInfo(CF_HDROP, storage);
   data_->contents_.push_back(info);
@@ -347,7 +342,7 @@ void OSExchangeDataProviderWin::SetFileContents(
   // Add CFSTR_FILECONTENTS
   storage = GetStorageForBytes(file_contents.data(), file_contents.length());
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
-      ClipboardUtil::GetFileContentFormatZero()->cfFormat, storage));
+      ClipboardUtil::GetFileContentFormatZero(), storage));
 }
 
 void OSExchangeDataProviderWin::SetHtml(const std::wstring& html,
@@ -459,6 +454,21 @@ bool OSExchangeDataProviderWin::HasCustomFormat(CLIPFORMAT format) const {
   return (source_object_->QueryGetData(&format_etc) == S_OK);
 }
 
+void OSExchangeDataProviderWin::SetDownloadFileInfo(
+    OSExchangeData::DownloadFileInfo* download) {
+  // If the filename is not provided, set stoarge to NULL to indicate that
+  // the delay rendering will be used.
+  STGMEDIUM* storage = NULL;
+  if (!download->filename.empty())
+    storage = GetStorageForFileName(download->filename.value());
+
+  // Add CF_HDROP.
+  DataObjectImpl::StoredDataInfo* info = new DataObjectImpl::StoredDataInfo(
+      ClipboardUtil::GetCFHDropFormat()->cfFormat, storage);
+  info->downloads.push_back(download);
+  data_->contents_.push_back(info);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // DataObjectImpl, IDataObject implementation:
 
@@ -533,19 +543,131 @@ static void DuplicateMedium(CLIPFORMAT source_clipformat,
     destination->pUnkForRelease->AddRef();
 }
 
-DataObjectImpl::DataObjectImpl() : ref_count_(0) {
-  STLDeleteContainerPointers(contents_.begin(), contents_.end());
+DataObjectImpl::DataObjectImpl()
+    : is_aborting_(false),
+      in_async_mode_(false),
+      async_operation_started_(false),
+      observer_(NULL) {
 }
 
 DataObjectImpl::~DataObjectImpl() {
+  StopDownloads();
   STLDeleteContainerPointers(contents_.begin(), contents_.end());
+  if (observer_)
+    observer_->OnDataObjectDisposed();
+}
+
+void DataObjectImpl::StopDownloads() {
+  for (StoredData::iterator iter = contents_.begin();
+       iter != contents_.end(); ++iter) {
+    for (size_t i = 0; i < (*iter)->downloads.size(); ++i) {
+      if ((*iter)->downloads[i]->downloader) {
+        (*iter)->downloads[i]->downloader->Stop();
+        (*iter)->downloads[i]->downloader = 0;
+      }
+      delete (*iter)->downloads[i];
+    }
+    (*iter)->downloads.clear();
+  }
+}
+
+void DataObjectImpl::OnDataReady(
+    int format,
+    const std::vector<OSExchangeData::DownloadFileInfo*>& downloads) {
+  // Find and update the data corresponding to the format.
+  CLIPFORMAT clip_format = static_cast<CLIPFORMAT>(format);
+  DCHECK(clip_format == ClipboardUtil::GetCFHDropFormat()->cfFormat);
+  DataObjectImpl::StoredData::iterator iter = contents_.begin();
+  for (; iter != contents_.end(); ++iter) {
+    if ((*iter)->format_etc.cfFormat == clip_format) {
+      // Update the downloads.
+      DCHECK(downloads.size() == (*iter)->downloads.size());
+      for (size_t i = 0; i < (*iter)->downloads.size(); ++i) {
+        OSExchangeData::DownloadFileInfo* old_download = (*iter)->downloads[i];
+        (*iter)->downloads[i] = downloads[i];
+        (*iter)->downloads[i]->downloader = old_download->downloader;
+        delete old_download;
+      }
+
+      // Release the old storage.
+      if ((*iter)->owns_medium) {
+        ReleaseStgMedium((*iter)->medium);
+        delete (*iter)->medium;
+      }
+
+      // Update the storage.
+      (*iter)->owns_medium = true;
+      (*iter)->medium = GetStorageForFileName(downloads[0]->filename.value());
+
+      break;
+    }
+  }
+  DCHECK(iter != contents_.end());
 }
 
 HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
-  StoredData::const_iterator iter = contents_.begin();
+  if (is_aborting_)
+    return DV_E_FORMATETC;
+
+  StoredData::iterator iter = contents_.begin();
   while (iter != contents_.end()) {
-    if ((*iter)->format_etc.cfFormat == format_etc->cfFormat) {
-      DuplicateMedium((*iter)->format_etc.cfFormat, (*iter)->medium, medium);
+    if ((*iter)->format_etc.cfFormat == format_etc->cfFormat &&
+        (*iter)->format_etc.lindex == format_etc->lindex &&
+        ((*iter)->format_etc.tymed & format_etc->tymed)) {
+      // If medium is NULL, delay-rendering will be used.
+      if ((*iter)->medium) {
+        DuplicateMedium((*iter)->format_etc.cfFormat, (*iter)->medium, medium);
+      } else {
+        // Check if the left button is down.
+        bool is_left_button_down = (GetKeyState(VK_LBUTTON) & 0x8000) != 0;
+
+        bool wait_for_data = false;
+        if ((*iter)->in_delay_rendering) {
+          // Make sure the left button is up. Sometimes the drop target, like
+          // Shell, might be too aggresive in calling GetData when the left
+          // button is not released.
+          if (is_left_button_down)
+            return DV_E_FORMATETC;
+
+          wait_for_data = true;
+        } else {
+          // If the left button is up and the target has not requested the data
+          // yet, it probably means that the target does not support delay-
+          // rendering. So instead, we wait for the data.
+          if (is_left_button_down) {
+            (*iter)->in_delay_rendering = true;
+            memset(medium, 0, sizeof(STGMEDIUM));
+          } else {
+            wait_for_data = true;
+          }
+        }
+
+        if (wait_for_data) {
+          // Notify the observer we start waiting for the data. This gives
+          // an observer a chance to end the drag and drop.
+          if (observer_)
+            observer_->OnWaitForData();
+
+          // Now we can start the downloads. Each download will wait till the
+          // necessary data is ready and then return the control.
+          for (size_t i = 0; i < (*iter)->downloads.size(); ++i) {
+            if ((*iter)->downloads[i]->downloader) {
+              if (!(*iter)->downloads[i]->downloader->Start(
+                     this, format_etc->cfFormat)) {
+                // If any of the download fails to start, abort the whole
+                // process.
+                is_aborting_ = true;
+                StopDownloads();
+                return DV_E_FORMATETC;
+              }
+            }
+          }
+
+          // The stored data should have been updated with the final version.
+          // So we just need to call this function again to retrieve it.
+          return GetData(format_etc, medium);
+        }
+      }
       return S_OK;
     }
     ++iter;
@@ -619,13 +741,46 @@ HRESULT DataObjectImpl::EnumDAdvise(IEnumSTATDATA** enumerator) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// DataObjectImpl, IAsyncOperation implementation:
+
+HRESULT DataObjectImpl::EndOperation(
+    HRESULT result, IBindCtx* reserved, DWORD effects) {
+  async_operation_started_ = false;
+  return S_OK;
+}
+
+HRESULT DataObjectImpl::GetAsyncMode(BOOL* is_op_async) {
+  *is_op_async = in_async_mode_ ? TRUE : FALSE;
+  return S_OK;
+}
+
+HRESULT DataObjectImpl::InOperation(BOOL* in_async_op) {
+  *in_async_op = async_operation_started_ ? TRUE : FALSE;
+  return S_OK;
+}
+
+HRESULT DataObjectImpl::SetAsyncMode(BOOL do_op_async) {
+  in_async_mode_ = (do_op_async == TRUE);
+  return S_OK;
+}
+
+HRESULT DataObjectImpl::StartOperation(IBindCtx* reserved) {
+  async_operation_started_ = true;
+  return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // DataObjectImpl, IUnknown implementation:
 
 HRESULT DataObjectImpl::QueryInterface(const IID& iid, void** object) {
-  *object = NULL;
-  if (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDataObject)) {
-    *object = this;
+  if (!object)
+    return E_POINTER;
+  if (IsEqualIID(iid, IID_IDataObject) || IsEqualIID(iid, IID_IUnknown)) {
+    *object = static_cast<IDataObject*>(this);
+  } else if (in_async_mode_ && IsEqualIID(iid, IID_IAsyncOperation)) {
+    *object = static_cast<IAsyncOperation*>(this);
   } else {
+    *object = NULL;
     return E_NOINTERFACE;
   }
   AddRef();
@@ -633,16 +788,13 @@ HRESULT DataObjectImpl::QueryInterface(const IID& iid, void** object) {
 }
 
 ULONG DataObjectImpl::AddRef() {
-  return InterlockedIncrement(&ref_count_);
+  base::RefCounted<OSExchangeData::DownloadFileObserver>::AddRef();
+  return 0;
 }
 
 ULONG DataObjectImpl::Release() {
-  if (InterlockedDecrement(&ref_count_) == 0) {
-    ULONG copied_refcnt = ref_count_;
-    delete this;
-    return copied_refcnt;
-  }
-  return ref_count_;
+  base::RefCounted<OSExchangeData::DownloadFileObserver>::Release();
+  return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -719,6 +871,29 @@ static void CreateValidFileNameFromTitle(const GURL& url,
   if (validated->size() > max_length)
     validated->erase(max_length);
   *validated += extension;
+}
+
+static STGMEDIUM* GetStorageForFileName(const std::wstring& full_path) {
+  const size_t kDropSize = sizeof(DROPFILES);
+  const size_t kTotalBytes =
+      kDropSize + (full_path.length() + 2) * sizeof(wchar_t);
+  HANDLE hdata = GlobalAlloc(GMEM_MOVEABLE, kTotalBytes);
+
+  ScopedHGlobal<DROPFILES> locked_mem(hdata);
+  DROPFILES* drop_files = locked_mem.get();
+  drop_files->pFiles = sizeof(DROPFILES);
+  drop_files->fWide = TRUE;
+  wchar_t* data = reinterpret_cast<wchar_t*>(
+      reinterpret_cast<BYTE*>(drop_files) + kDropSize);
+  const size_t copy_size = (full_path.length() + 1) * sizeof(wchar_t);
+  memcpy(data, full_path.c_str(), copy_size);
+  data[full_path.length() + 1] = L'\0';  // Double NULL
+
+  STGMEDIUM* storage = new STGMEDIUM;
+  storage->tymed = TYMED_HGLOBAL;
+  storage->hGlobal = drop_files;
+  storage->pUnkForRelease = NULL;
+  return storage;
 }
 
 static STGMEDIUM* GetStorageForFileDescriptor(

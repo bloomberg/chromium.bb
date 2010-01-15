@@ -304,7 +304,7 @@ bool SavePackage::Init() {
 
   // Create the fake DownloadItem and display the view.
   download_ = new DownloadItem(1, saved_main_file_path_, 0, page_url_, GURL(),
-      "", FilePath(), Time::Now(), 0, -1, -1, false, false, false);
+      "", FilePath(), Time::Now(), 0, -1, -1, false, false, false, false);
   download_->set_manager(tab_contents_->profile()->GetDownloadManager());
   tab_contents_->OnStartDownload(download_);
 
@@ -335,7 +335,7 @@ bool SavePackage::Init() {
 }
 
 // Generate name for saving resource.
-bool SavePackage::GenerateFilename(const std::string& disposition,
+bool SavePackage::GenerateFileName(const std::string& disposition,
                                    const GURL& url,
                                    bool need_html_ext,
                                    FilePath::StringType* generated_name) {
@@ -448,7 +448,7 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
     // instead of opening it as HTML.
     bool need_html_ext =
         info->save_source == SaveFileCreateInfo::SAVE_FILE_FROM_DOM;
-    if (!GenerateFilename(info->content_disposition,
+    if (!GenerateFileName(info->content_disposition,
                           GURL(info->url),
                           need_html_ext,
                           &generated_name)) {
@@ -470,7 +470,7 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
     DCHECK(save_type_ == SAVE_AS_COMPLETE_HTML);
     DCHECK(!saved_main_directory_path_.empty());
 
-    // Now we get final name retrieved from GenerateFilename, we will use it
+    // Now we get final name retrieved from GenerateFileName, we will use it
     // rename the SaveItem.
     FilePath final_name = saved_main_directory_path_.Append(generated_name);
     save_item->Rename(final_name);
@@ -1172,7 +1172,7 @@ void SavePackage::ContinueSave(SavePackageParam* param,
   param->saved_main_file_path = final_name;
   DownloadManager* dlm = tab_contents_->profile()->GetDownloadManager();
   DCHECK(dlm);
-  dlm->GenerateSafeFilename(param->current_tab_mime_type,
+  dlm->GenerateSafeFileName(param->current_tab_mime_type,
                             &param->saved_main_file_path);
 
   // The option index is not zero-based.

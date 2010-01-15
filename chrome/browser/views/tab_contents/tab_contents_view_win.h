@@ -13,6 +13,7 @@
 
 class RenderViewContextMenuWin;
 class SadTabView;
+class TabContentsDragWin;
 struct WebDropData;
 class WebDragSource;
 class WebDropTarget;
@@ -61,6 +62,10 @@ class TabContentsViewWin : public TabContentsView,
 
   // WidgetWin overridde.
   virtual views::FocusManager* GetFocusManager();
+
+  void EndDragging();
+
+  WebDropTarget* drop_target() const { return drop_target_.get(); }
 
  private:
   // A helper method for closing the tab.
@@ -118,17 +123,15 @@ class TabContentsViewWin : public TabContentsView,
   // accessible when unparented.
   views::FocusManager* focus_manager_;
 
-  // |drag_source_| is our callback interface passed to the system when we
-  // want to initiate a drag and drop operation.  We use it to tell if a
-  // drag operation is happening.
-  scoped_refptr<WebDragSource> drag_source_;
-
   // Set to true if we want to close the tab after the system drag operation
   // has finished.
   bool close_tab_after_drag_ends_;
 
   // Used to close the tab after the stack has unwound.
   base::OneShotTimer<TabContentsViewWin> close_tab_timer_;
+
+  // Used to handle the drag-and-drop.
+  scoped_refptr<TabContentsDragWin> drag_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewWin);
 };

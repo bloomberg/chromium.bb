@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/file_path.h"
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
@@ -26,7 +27,8 @@ class DownloadResourceHandler : public ResourceHandler {
                           const GURL& url,
                           DownloadFileManager* manager,
                           URLRequest* request,
-                          bool save_as);
+                          bool save_as,
+                          const FilePath& save_file_path);
 
   // Not needed, as this event handler ought to be the final resource.
   bool OnRequestRedirected(int request_id, const GURL& url,
@@ -70,6 +72,7 @@ class DownloadResourceHandler : public ResourceHandler {
   DownloadFileManager* download_manager_;
   URLRequest* request_;
   bool save_as_;  // Request was initiated via "Save As" by the user.
+  FilePath save_file_path_;
   DownloadBuffer* buffer_;
   ResourceDispatcherHost* rdh_;
   bool is_paused_;

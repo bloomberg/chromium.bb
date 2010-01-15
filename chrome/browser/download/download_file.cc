@@ -429,6 +429,7 @@ void DownloadFileManager::DownloadUrl(
     const GURL& url,
     const GURL& referrer,
     const std::string& referrer_charset,
+    const FilePath& save_file_path,
     int render_process_host_id,
     int render_view_id,
     URLRequestContextGetter* request_context_getter) {
@@ -440,6 +441,7 @@ void DownloadFileManager::DownloadUrl(
                           url,
                           referrer,
                           referrer_charset,
+                          save_file_path,
                           render_process_host_id,
                           render_view_id,
                           request_context_getter));
@@ -524,6 +526,7 @@ void DownloadFileManager::OnDownloadUrl(
     const GURL& url,
     const GURL& referrer,
     const std::string& referrer_charset,
+    const FilePath& save_file_path,
     int render_process_host_id,
     int render_view_id,
     URLRequestContextGetter* request_context_getter) {
@@ -534,6 +537,7 @@ void DownloadFileManager::OnDownloadUrl(
 
   resource_dispatcher_host_->BeginDownload(url,
                                            referrer,
+                                           save_file_path,
                                            render_process_host_id,
                                            render_view_id,
                                            context);

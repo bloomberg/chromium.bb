@@ -162,6 +162,7 @@ class DownloadsCompleteObserver : public DownloadManager::Observer,
     }
   }
 
+  virtual void OnDownloadFileCompleted(DownloadItem* download) { }
   virtual void OnDownloadOpened(DownloadItem* download) {}
 
   // DownloadManager::Observer

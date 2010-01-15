@@ -135,7 +135,10 @@ DownloadItem::DownloadItem(const DownloadCreateInfo& info)
       auto_opened_(false),
       original_name_(info.original_name),
       render_process_id_(-1),
-      request_id_(-1) {
+      request_id_(-1),
+      save_as_(false),
+      name_finalized_(false),
+      is_temporary_(false) {
   if (state_ == IN_PROGRESS)
     state_ = CANCELLED;
   Init(false /* don't start progress timer */);
@@ -155,7 +158,8 @@ DownloadItem::DownloadItem(int32 download_id,
                            int request_id,
                            bool is_dangerous,
                            bool save_as,
-                           bool is_extension_install)
+                           bool is_extension_install,
+                           bool is_temporary)
     : id_(download_id),
       full_path_(path),
       path_uniquifier_(path_uniquifier),
@@ -177,7 +181,9 @@ DownloadItem::DownloadItem(int32 download_id,
       render_process_id_(render_process_id),
       request_id_(request_id),
       save_as_(save_as),
-      is_extension_install_(is_extension_install) {
+      is_extension_install_(is_extension_install),
+      name_finalized_(false),
+      is_temporary_(is_temporary) {
   Init(true /* start progress timer */);
 }
 
@@ -202,6 +208,10 @@ void DownloadItem::RemoveObserver(Observer* observer) {
 
 void DownloadItem::UpdateObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadUpdated(this));
+}
+
+void DownloadItem::NotifyObserversDownloadFileCompleted() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadFileCompleted(this));
 }
 
 void DownloadItem::NotifyObserversDownloadOpened() {
@@ -470,6 +480,22 @@ void DownloadManager::GetDownloads(Observer* observer,
   }
 }
 
+void DownloadManager::GetTemporaryDownloads(Observer* observer,
+                                            const FilePath& dir_path) {
+  DCHECK(observer);
+
+  std::vector<DownloadItem*> download_copy;
+
+  for (DownloadMap::iterator it = downloads_.begin();
+       it != downloads_.end(); ++it) {
+    if (it->second->is_temporary() &&
+        it->second->full_path().DirName() == dir_path)
+      download_copy.push_back(it->second);
+  }
+
+  observer->SetDownloads(download_copy);
+}
+
 // Query the history service for information about all persisted downloads.
 bool DownloadManager::Init(Profile* profile) {
   DCHECK(profile);
@@ -506,9 +532,6 @@ bool DownloadManager::Init(Profile* profile) {
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableFunction(&file_util::CreateDirectory, download_path()));
-
-  // We use this to determine possibly dangerous downloads.
-  download_util::InitializeExeTypes(&exe_types_);
 
   // We store any file extension that should be opened automatically at
   // download completion in this pref.
@@ -563,17 +586,21 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
       info->save_as = true;
   }
 
-  // Determine the proper path for a download, by choosing either the default
-  // download directory, or prompting the user.
+  // Determine the proper path for a download, by either one of the following:
+  // 1) using the provided save file path.
+  // 2) using the default download directory.
+  // 3) prompting the user.
   FilePath generated_name;
-  GenerateFilename(info, &generated_name);
-  if (info->save_as && !last_download_path_.empty())
+  GenerateFileNameFromInfo(info, &generated_name);
+  if (!info->save_file_path.empty())
+    info->suggested_path = info->save_file_path;
+  else if (info->save_as && !last_download_path_.empty())
     info->suggested_path = last_download_path_;
   else
     info->suggested_path = download_path();
   info->suggested_path = info->suggested_path.Append(generated_name);
 
-  if (!info->save_as) {
+  if (!info->save_as && info->save_file_path.empty()) {
     // Downloads can be marked as dangerous for two reasons:
     // a) They have a dangerous-looking filename
     // b) They are an extension that is not from the gallery
@@ -703,7 +730,8 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
                                 info->request_id,
                                 info->is_dangerous,
                                 info->save_as,
-                                info->is_extension_install);
+                                info->is_extension_install,
+                                !info->save_file_path.empty());
     download->set_manager(this);
     in_progress_[info->download_id] = download;
   } else {
@@ -731,11 +759,13 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
   // Do not store the download in the history database for a few special cases:
   // - incognito mode (that is the point of this mode)
   // - extensions (users don't think of extension installation as 'downloading')
+  // - temporary download, like in drag-and-drop
   // We have to make sure that these handles don't collide with normal db
   // handles, so we use a negative value. Eventually, they could overlap, but
   // you'd have to do enough downloading that your ISP would likely stab you in
   // the neck first. YMMV.
-  if (profile_->IsOffTheRecord() || download->is_extension_install()) {
+  if (profile_->IsOffTheRecord() || download->is_extension_install() ||
+      download->is_temporary()) {
     static int64 fake_db_handle = kUninitializedHandle - 1;
     OnCreateDownloadEntryComplete(*info, fake_db_handle--);
   } else {
@@ -848,6 +878,21 @@ void DownloadManager::DownloadFinished(int32 download_id, int64 size) {
 
 void DownloadManager::DownloadRenamedToFinalName(int download_id,
                                                  const FilePath& full_path) {
+  DownloadMap::iterator it = downloads_.begin();
+  while (it != downloads_.end()) {
+    DownloadItem* download = it->second;
+    if (download->id() == download_id) {
+      // The download file is meant to be completed if both the filename is
+      // finalized and the file data is downloaded. The ordering of these two
+      // actions is indeterministic. Thus, if we are still in downloading the
+      // file, delay the notification.
+      download->set_name_finalized(true);
+      if (download->state() == DownloadItem::COMPLETE)
+        download->NotifyObserversDownloadFileCompleted();
+      return;
+    }
+    it++;
+  }
 }
 
 void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
@@ -863,14 +908,26 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
                         download->referrer_url());
     download->set_auto_opened(true);
   } else if (download->open_when_complete() ||
-             ShouldOpenFileBasedOnExtension(download->full_path())) {
-    OpenDownloadInShell(download, NULL);
+             ShouldOpenFileBasedOnExtension(download->full_path()) ||
+             download->is_temporary()) {
+    // If the download is temporary, like in drag-and-drop, do not open it but
+    // we still need to set it auto-opened so that it can be removed from the
+    // download shelf.
+    if (!download->is_temporary())
+      OpenDownloadInShell(download, NULL);
     download->set_auto_opened(true);
   }
 
   // Notify our observers that we are complete (the call to Finished() set the
   // state to complete but did not notify).
   download->UpdateObservers();
+
+  // The download file is meant to be completed if both the filename is
+  // finalized and the file data is downloaded. The ordering of these two
+  // actions is indeterministic. Thus, if the filename is not finalized yet,
+  // delay the notification.
+  if (download->name_finalized())
+    download->NotifyObserversDownloadFileCompleted();
 }
 
 // Called on the file thread.  Renames the downloaded file to its original name.
@@ -1097,10 +1154,25 @@ void DownloadManager::DownloadUrl(const GURL& url,
                                   const GURL& referrer,
                                   const std::string& referrer_charset,
                                   TabContents* tab_contents) {
+  file_manager_->DownloadUrl(url,
+                             referrer,
+                             referrer_charset,
+                             FilePath(),
+                             tab_contents->process()->id(),
+                             tab_contents->render_view_host()->routing_id(),
+                             request_context_getter_);
+}
+
+void DownloadManager::DownloadUrlToFile(const GURL& url,
+                                        const GURL& referrer,
+                                        const std::string& referrer_charset,
+                                        const FilePath& save_file_path,
+                                        TabContents* tab_contents) {
   DCHECK(tab_contents);
   file_manager_->DownloadUrl(url,
                              referrer,
                              referrer_charset,
+                             save_file_path,
                              tab_contents->process()->id(),
                              tab_contents->render_view_host()->routing_id(),
                              request_context_getter_);
@@ -1189,7 +1261,19 @@ void DownloadManager::GenerateExtension(
   generated_extension->swap(extension);
 }
 
-void DownloadManager::GenerateFilename(DownloadCreateInfo* info,
+void DownloadManager::GenerateFileNameFromInfo(DownloadCreateInfo* info,
+                                               FilePath* generated_name) {
+  GenerateFileName(GURL(info->url),
+                   info->content_disposition,
+                   info->referrer_charset,
+                   info->mime_type,
+                   generated_name);
+}
+
+void DownloadManager::GenerateFileName(const GURL& url,
+                                       const std::string& content_disposition,
+                                       const std::string& referrer_charset,
+                                       const std::string& mime_type,
                                        FilePath* generated_name) {
   std::wstring default_name =
       l10n_util::GetString(IDS_DEFAULT_DOWNLOAD_FILENAME);
@@ -1199,14 +1283,14 @@ void DownloadManager::GenerateFilename(DownloadCreateInfo* info,
   FilePath default_file_path(base::SysWideToNativeMB(default_name));
 #endif
 
-  *generated_name = net::GetSuggestedFilename(GURL(info->url),
-                                              info->content_disposition,
-                                              info->referrer_charset,
+  *generated_name = net::GetSuggestedFilename(GURL(url),
+                                              content_disposition,
+                                              referrer_charset,
                                               default_file_path);
 
   DCHECK(!generated_name->empty());
 
-  GenerateSafeFilename(info->mime_type, generated_name);
+  GenerateSafeFileName(mime_type, generated_name);
 }
 
 void DownloadManager::AddObserver(Observer* observer) {
@@ -1363,7 +1447,7 @@ bool DownloadManager::IsExecutableFile(const FilePath& path) const {
 }
 
 bool DownloadManager::IsExecutableExtension(
-    const FilePath::StringType& extension) const {
+    const FilePath::StringType& extension) {
   if (extension.empty())
     return false;
   if (!IsStringASCII(extension))
@@ -1373,13 +1457,12 @@ bool DownloadManager::IsExecutableExtension(
 #elif defined(OS_POSIX)
   std::string ascii_extension = extension;
 #endif
-  StringToLowerASCII(&ascii_extension);
 
   // Strip out leading dot if it's still there
   if (ascii_extension[0] == FilePath::kExtensionSeparator)
     ascii_extension.erase(0, 1);
 
-  return exe_types_.find(ascii_extension) != exe_types_.end();
+  return download_util::IsExecutableExtension(ascii_extension);
 }
 
 void DownloadManager::ResetAutoOpenFiles() {
@@ -1455,7 +1538,7 @@ void DownloadManager::DangerousDownloadValidated(DownloadItem* download) {
           download->original_name()));
 }
 
-void DownloadManager::GenerateSafeFilename(const std::string& mime_type,
+void DownloadManager::GenerateSafeFileName(const std::string& mime_type,
                                            FilePath* file_name) {
   // Make sure we get the right file extension
   FilePath::StringType extension;

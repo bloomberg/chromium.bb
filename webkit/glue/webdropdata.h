@@ -38,6 +38,9 @@ struct WebDropData {
   GURL url;
   string16 url_title;  // The title associated with |url|.
 
+  // User is dragging a link out-of the webview.
+  GURL download_url;
+
   // File extension for dragging images from a webview to the desktop.
   string16 file_extension;
 

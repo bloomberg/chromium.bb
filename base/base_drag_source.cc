@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // BaseDragSource, public:
 
-BaseDragSource::BaseDragSource() : ref_count_(0), cancel_drag_(false) {
+BaseDragSource::BaseDragSource() : cancel_drag_(false) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,13 +51,11 @@ HRESULT BaseDragSource::QueryInterface(const IID& iid, void** object) {
 }
 
 ULONG BaseDragSource::AddRef() {
-  return ++ref_count_;
+  base::RefCountedThreadSafe<BaseDragSource>::AddRef();
+  return 0;
 }
 
 ULONG BaseDragSource::Release() {
-  if (--ref_count_ == 0) {
-    delete this;
-    return 0U;
-  }
-  return ref_count_;
+  base::RefCountedThreadSafe<BaseDragSource>::Release();
+  return 0;
 }

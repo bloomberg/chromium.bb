@@ -95,6 +95,9 @@ class DownloadItem {
    public:
     virtual void OnDownloadUpdated(DownloadItem* download) = 0;
 
+    // Called when a downloaded file has been completed.
+    virtual void OnDownloadFileCompleted(DownloadItem* download) = 0;
+
     // Called when a downloaded file has been opened.
     virtual void OnDownloadOpened(DownloadItem* download) = 0;
 
@@ -119,7 +122,8 @@ class DownloadItem {
                int request_id,
                bool is_dangerous,
                bool save_as,
-               bool is_extension_install);
+               bool is_extension_install,
+               bool is_temporary);
 
   ~DownloadItem();
 
@@ -132,6 +136,9 @@ class DownloadItem {
 
   // Notifies our observers periodically.
   void UpdateObservers();
+
+  // Notifies our observers the downloaded file has been completed.
+  void NotifyObserversDownloadFileCompleted();
 
   // Notifies our observers the downloaded file has been opened.
   void NotifyObserversDownloadOpened();
@@ -217,6 +224,12 @@ class DownloadItem {
   void set_original_name(const FilePath& name) { original_name_ = name; }
   bool save_as() const { return save_as_; }
   bool is_extension_install() const { return is_extension_install_; }
+  bool name_finalized() const { return name_finalized_; }
+  void set_name_finalized(bool name_finalized) {
+    name_finalized_ = name_finalized;
+  }
+  bool is_temporary() const { return is_temporary_; }
+  void set_is_temporary(bool is_temporary) { is_temporary_ = is_temporary; }
 
   // Returns the file-name that should be reported to the user, which is
   // file_name_ for safe downloads and original_name_ for dangerous ones with
@@ -305,6 +318,12 @@ class DownloadItem {
   // True if the item was downloaded for an extension installation.
   bool is_extension_install_;
 
+  // True if the filename is finalized.
+  bool name_finalized_;
+
+  // True if the item was downloaded temporarily.
+  bool is_temporary_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadItem);
 };
 
@@ -347,6 +366,10 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   void GetDownloads(Observer* observer,
                     const std::wstring& search_text);
 
+  // Return all temporary downloads that reside in the specified directory.
+  void GetTemporaryDownloads(Observer* observer,
+                             const FilePath& dir_path);
+
   // Returns true if initialized properly.
   bool Init(Profile* profile);
 
@@ -386,6 +409,15 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
                    const GURL& referrer,
                    const std::string& referrer_encoding,
                    TabContents* tab_contents);
+
+  // Download the object at the URL and save it to the specified path. The
+  // download is treated as the temporary download and thus will not appear
+  // in the download history. Used in cases such as drag and drop.
+  void DownloadUrlToFile(const GURL& url,
+                         const GURL& referrer,
+                         const std::string& referrer_encoding,
+                         const FilePath& save_file_path,
+                         TabContents* tab_contents);
 
   // Allow objects to observe the download creation process.
   void AddObserver(Observer* observer);
@@ -440,7 +472,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   bool IsExecutableFile(const FilePath& path) const;
 
   // Tests if a file type is considered executable.
-  bool IsExecutableExtension(const FilePath::StringType& extension) const;
+  static bool IsExecutableExtension(const FilePath::StringType& extension);
 
   // Resets the automatic open preference.
   void ResetAutoOpenFiles();
@@ -462,13 +494,20 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // Used to make sure we have a safe file extension and filename for a
   // download.  |file_name| can either be just the file name or it can be a
   // full path to a file.
-  void GenerateSafeFilename(const std::string& mime_type,
-                            FilePath* file_name);
+  static void GenerateSafeFileName(const std::string& mime_type,
+                                   FilePath* file_name);
 
   // Runs the network cancel.  Must be called on the IO thread.
   static void OnCancelDownloadRequest(ResourceDispatcherHost* rdh,
                                       int render_process_id,
                                       int request_id);
+
+  // Create a file name based on the response from the server.
+  static void GenerateFileName(const GURL& url,
+                               const std::string& content_disposition,
+                               const std::string& referrer_charset,
+                               const std::string& mime_type,
+                               FilePath* generated_name);
 
  private:
   friend class base::RefCountedThreadSafe<DownloadManager>;
@@ -508,12 +547,13 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
                                          const base::Time remove_before);
 
   // Create an extension based on the file name and mime type.
-  void GenerateExtension(const FilePath& file_name,
-                         const std::string& mime_type,
-                         FilePath::StringType* generated_extension);
+  static void GenerateExtension(const FilePath& file_name,
+                                const std::string& mime_type,
+                                FilePath::StringType* generated_extension);
 
   // Create a file name based on the response from the server.
-  void GenerateFilename(DownloadCreateInfo* info, FilePath* generated_name);
+  static void GenerateFileNameFromInfo(DownloadCreateInfo* info,
+                                       FilePath* generated_name);
 
   // Persist the automatic opening preference.
   void SaveAutoOpens();
@@ -618,9 +658,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   };
   typedef std::set<FilePath::StringType, AutoOpenCompareFunctor> AutoOpenSet;
   AutoOpenSet auto_open_;
-
-  // Set of file extensions that are executables and shouldn't be auto opened.
-  std::set<std::string> exe_types_;
 
   // Keep track of downloads that are completed before the user selects the
   // destination, so that observers are appropriately notified of completion

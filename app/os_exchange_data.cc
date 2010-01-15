@@ -128,4 +128,8 @@ bool OSExchangeData::GetFileContents(std::wstring* filename,
 bool OSExchangeData::GetHtml(std::wstring* html, GURL* base_url) const {
   return provider_->GetHtml(html, base_url);
 }
+
+void OSExchangeData::SetDownloadFileInfo(DownloadFileInfo* download) {
+  return provider_->SetDownloadFileInfo(download);
+}
 #endif

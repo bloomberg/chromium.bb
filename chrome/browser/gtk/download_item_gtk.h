@@ -39,6 +39,7 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // DownloadItem::Observer implementation.
   virtual void OnDownloadUpdated(DownloadItem* download);
+  virtual void OnDownloadFileCompleted(DownloadItem* download) { }
   virtual void OnDownloadOpened(DownloadItem* download) { }
 
   // AnimationDelegate implementation.

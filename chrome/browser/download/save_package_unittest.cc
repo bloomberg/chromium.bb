@@ -84,7 +84,7 @@ class SavePackageTest : public testing::Test {
       save_package = save_package_success_.get();
     else
       save_package = save_package_fail_.get();
-    return save_package->GenerateFilename(disposition, GURL(url), need_htm_ext,
+    return save_package->GenerateFileName(disposition, GURL(url), need_htm_ext,
                                           generated_name);
   }
 

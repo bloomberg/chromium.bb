@@ -4,6 +4,8 @@
 
 #include "chrome/browser/tab_contents/web_drag_source_win.h"
 
+#include "base/task.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_type.h"
@@ -24,6 +26,7 @@ static void GetCursorPositions(gfx::NativeWindow wnd, gfx::Point* client,
 }
 
 }  // namespace
+
 ///////////////////////////////////////////////////////////////////////////////
 // WebDragSource, public:
 
@@ -39,6 +42,14 @@ WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
 }
 
 void WebDragSource::OnDragSourceCancel() {
+  // Delegate to the UI thread if we do drag-and-drop in the background thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &WebDragSource::OnDragSourceCancel));
+    return;
+  }
+
   if (!render_view_host_)
     return;
 
@@ -51,6 +62,14 @@ void WebDragSource::OnDragSourceCancel() {
 }
 
 void WebDragSource::OnDragSourceDrop() {
+  // Delegate to the UI thread if we do drag-and-drop in the background thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &WebDragSource::OnDragSourceDrop));
+    return;
+  }
+
   if (!render_view_host_)
     return;
 
@@ -64,6 +83,14 @@ void WebDragSource::OnDragSourceDrop() {
 }
 
 void WebDragSource::OnDragSourceMove() {
+  // Delegate to the UI thread if we do drag-and-drop in the background thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &WebDragSource::OnDragSourceMove));
+    return;
+  }
+
   if (!render_view_host_)
     return;
 
@@ -82,6 +109,9 @@ void WebDragSource::Observe(NotificationType type,
     // our drag source.
     render_view_host_ = NULL;
   } else if (NotificationType::TAB_CONTENTS_DISCONNECTED == type) {
-    NOTREACHED();
+    // This could be possible when we close the tab and the source is still
+    // being used in DoDragDrop at the time that the virtual file is being
+    // downloaded.
+    render_view_host_ = NULL;
   }
 }

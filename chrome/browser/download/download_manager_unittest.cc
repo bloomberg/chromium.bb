@@ -7,7 +7,6 @@
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/download/download_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_LINUX)
@@ -35,7 +34,6 @@ class DownloadManagerTest : public testing::Test {
  public:
   DownloadManagerTest() {
     download_manager_ = new DownloadManager();
-    download_util::InitializeExeTypes(&download_manager_->exe_types_);
   }
 
   void GetGeneratedFilename(const std::string& content_disposition,
@@ -49,7 +47,7 @@ class DownloadManagerTest : public testing::Test {
     info.mime_type = mime_type;
     info.referrer_charset = referrer_charset;
     FilePath generated_name;
-    download_manager_->GenerateFilename(&info, &generated_name);
+    DownloadManager::GenerateFileNameFromInfo(&info, &generated_name);
     *generated_name_string = generated_name.ToWStringHack();
   }
 
@@ -579,7 +577,7 @@ const struct {
 TEST_F(DownloadManagerTest, GetSafeFilename) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSafeFilenameCases); ++i) {
     FilePath path(kSafeFilenameCases[i].path);
-    download_manager_->GenerateSafeFilename(kSafeFilenameCases[i].mime_type,
+    download_manager_->GenerateSafeFileName(kSafeFilenameCases[i].mime_type,
         &path);
     EXPECT_EQ(kSafeFilenameCases[i].expected_path, path.value());
   }

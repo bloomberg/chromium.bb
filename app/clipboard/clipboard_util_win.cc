@@ -143,7 +143,7 @@ FORMATETC* ClipboardUtil::GetFileContentFormatZero() {
 
 FORMATETC* ClipboardUtil::GetWebKitSmartPasteFormat() {
   static UINT cf = RegisterClipboardFormat(L"WebKit Smart Paste Format");
-  static FORMATETC format = {cf, 0, DVASPECT_CONTENT, 0, TYMED_HGLOBAL};
+  static FORMATETC format = {cf, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
   return &format;
 }
 

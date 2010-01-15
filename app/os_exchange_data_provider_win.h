@@ -6,15 +6,33 @@
 #define APP_OS_EXCHANGE_DATA_PROVIDER_WIN_H_
 
 #include <objidl.h>
+#include <shlobj.h>
 #include <string>
 
 #include "app/os_exchange_data.h"
 #include "base/scoped_comptr_win.h"
 
-class DataObjectImpl : public IDataObject {
+class DataObjectImpl : public OSExchangeData::DownloadFileObserver,
+                       public IDataObject,
+                       public IAsyncOperation {
  public:
+  class Observer {
+   public:
+    virtual void OnWaitForData() = 0;
+    virtual void OnDataObjectDisposed() = 0;
+   protected:
+    virtual ~Observer() { }
+  };
+
   DataObjectImpl();
-  ~DataObjectImpl();
+
+  // Accessors.
+  void set_observer(Observer* observer) { observer_ = observer; }
+
+  // DownloadFileObserver implementation:
+  virtual void OnDataReady(
+      int format,
+      const std::vector<OSExchangeData::DownloadFileInfo*>& downloads);
 
   // IDataObject implementation:
   HRESULT __stdcall GetData(FORMATETC* format_etc, STGMEDIUM* medium);
@@ -31,6 +49,14 @@ class DataObjectImpl : public IDataObject {
   HRESULT __stdcall DUnadvise(DWORD connection);
   HRESULT __stdcall EnumDAdvise(IEnumSTATDATA** enumerator);
 
+  // IAsyncOperation implementation:
+  HRESULT __stdcall EndOperation(
+      HRESULT result, IBindCtx* reserved, DWORD effects);
+  HRESULT __stdcall GetAsyncMode(BOOL* is_op_async);
+  HRESULT __stdcall InOperation(BOOL* in_async_op);
+  HRESULT __stdcall SetAsyncMode(BOOL do_op_async);
+  HRESULT __stdcall StartOperation(IBindCtx* reserved);
+
   // IUnknown implementation:
   HRESULT __stdcall QueryInterface(const IID& iid, void** object);
   ULONG __stdcall AddRef();
@@ -41,22 +67,34 @@ class DataObjectImpl : public IDataObject {
   friend class FormatEtcEnumerator;
   friend class OSExchangeDataProviderWin;
 
+  virtual ~DataObjectImpl();
+
+  void StopDownloads();
+
   // Our internal representation of stored data & type info.
   struct StoredDataInfo {
     FORMATETC format_etc;
     STGMEDIUM* medium;
     bool owns_medium;
+    bool in_delay_rendering;
+    std::vector<OSExchangeData::DownloadFileInfo*> downloads;
 
-    StoredDataInfo(CLIPFORMAT cf, STGMEDIUM* a_medium) {
+    StoredDataInfo(CLIPFORMAT cf, STGMEDIUM* medium)
+        : medium(medium),
+          owns_medium(true),
+          in_delay_rendering(false) {
       format_etc.cfFormat = cf;
       format_etc.dwAspect = DVASPECT_CONTENT;
       format_etc.lindex = -1;
       format_etc.ptd = NULL;
-      format_etc.tymed = a_medium->tymed;
+      format_etc.tymed = medium ? medium->tymed : TYMED_HGLOBAL;
+    }
 
-      owns_medium = true;
-
-      medium = a_medium;
+    StoredDataInfo(FORMATETC* format_etc, STGMEDIUM* medium)
+        : format_etc(*format_etc),
+          medium(medium),
+          owns_medium(true),
+          in_delay_rendering(false) {
     }
 
     ~StoredDataInfo() {
@@ -64,6 +102,11 @@ class DataObjectImpl : public IDataObject {
         ReleaseStgMedium(medium);
         delete medium;
       }
+      for (size_t i = 0; i < downloads.size(); ++i) {
+        if (downloads[i]->downloader)
+          downloads[i]->downloader->Stop();
+      }
+      downloads.clear();
     }
   };
 
@@ -72,7 +115,10 @@ class DataObjectImpl : public IDataObject {
 
   ScopedComPtr<IDataObject> source_object_;
 
-  LONG ref_count_;
+  bool is_aborting_;
+  bool in_async_mode_;
+  bool async_operation_started_;
+  Observer* observer_;
 };
 
 class OSExchangeDataProviderWin : public OSExchangeData::Provider {
@@ -84,7 +130,9 @@ class OSExchangeDataProviderWin : public OSExchangeData::Provider {
   // that url.
   static bool GetPlainTextURL(IDataObject* source, GURL* url);
 
+  static DataObjectImpl* GetDataObjectImpl(const OSExchangeData& data);
   static IDataObject* GetIDataObject(const OSExchangeData& data);
+  static IAsyncOperation* GetIAsyncOperation(const OSExchangeData& data);
 
   explicit OSExchangeDataProviderWin(IDataObject* source);
   OSExchangeDataProviderWin();
@@ -92,6 +140,7 @@ class OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual ~OSExchangeDataProviderWin();
 
   IDataObject* data_object() const { return data_.get(); }
+  IAsyncOperation* async_operation() const { return data_.get(); }
 
   // OSExchangeData::Provider methods.
   virtual void SetString(const std::wstring& data);
@@ -117,6 +166,8 @@ class OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual bool HasFileContents() const;
   virtual bool HasHtml() const;
   virtual bool HasCustomFormat(OSExchangeData::CustomFormat format) const;
+  virtual void SetDownloadFileInfo(
+      OSExchangeData::DownloadFileInfo* download_info);
 
  private:
   scoped_refptr<DataObjectImpl> data_;

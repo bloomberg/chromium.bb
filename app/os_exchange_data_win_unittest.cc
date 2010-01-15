@@ -270,7 +270,7 @@ TEST(OSExchangeDataTest, TestURLExchangeFormats) {
     CLIPFORMAT cfstr_file_contents =
         RegisterClipboardFormat(CFSTR_FILECONTENTS);
     FORMATETC format_etc =
-        { cfstr_file_contents, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+        { cfstr_file_contents, NULL, DVASPECT_CONTENT, 0, TYMED_HGLOBAL };
     EXPECT_EQ(S_OK, com_data->QueryGetData(&format_etc));
 
     STGMEDIUM medium;
