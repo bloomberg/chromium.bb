@@ -357,8 +357,7 @@
               "left": {"type": "integer", "optional": true, "description": "The offset from the left edge of the screen to move the window to in pixels."},
               "top": {"type": "integer", "optional": true, "description": "The offset from the top edge of the screen to move the window to in pixels."},
               "width": {"type": "integer", "minimum": 0, "optional": true, "description": "The width to resize the window to in pixels."},
-              "height": {"type": "integer", "minimum": 0, "optional": true, "description": "The height to resize the window to in pixels."},
-              "focused": {"type": "boolean", "optional": true, "description": "Set to true to focus the window. Setting to false has no effect on the window (it doesn't blur it)."}
+              "height": {"type": "integer", "minimum": 0, "optional": true, "description": "The height to resize the window to in pixels."}
             }
           },
           {
