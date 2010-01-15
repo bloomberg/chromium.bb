@@ -84,6 +84,17 @@
       ],
     },
     {
+      'target_name': 'stencil_test',
+      'type': 'static_library',
+      'dependencies': [
+        'es_util',
+      ],
+      'sources': [
+        'Chapter_11/Stencil_Test/Stencil_Test.c',
+        'Chapter_11/Stencil_Test/Stencil_Test.h',
+      ],
+    },
+    {
       'target_name': 'texture_wrap',
       'type': 'static_library',
       'dependencies': [

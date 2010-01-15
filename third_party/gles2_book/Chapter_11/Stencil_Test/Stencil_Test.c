@@ -14,30 +14,14 @@
 //    operations.
 //
 #include <stdlib.h>
-#include "esUtil.h"
-
-typedef struct
-{
-   // Handle to a program object
-   GLuint programObject;
-
-   // Attribute locations
-   GLint  positionLoc;
-
-   // Uniform locations
-   GLint  colorLoc;
-
-   // Vertex buffer object handles
-   GLuint vboIds[2];
-
-} UserData;
+#include "Stencil_Test.h"
 
 ///
 // Initialize the shader and program object
 //
-int Init ( ESContext *esContext )
+int stInit ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   STUserData *userData = esContext->userData;
    GLbyte vShaderStr[] =  
       "attribute vec4 a_position;   \n"
       "void main()                  \n"
@@ -122,12 +106,12 @@ int Init ( ESContext *esContext )
 // Initialize the stencil buffer values, and then use those
 //   values to control rendering
 //
-void Draw ( ESContext *esContext )
+void stDraw ( ESContext *esContext )
 {
    int  i;
    GLubyte *offset = NULL;
 
-   UserData *userData = esContext->userData;
+   STUserData *userData = esContext->userData;
 
 #define NumTests  4
    GLfloat  colors[NumTests][4] = { 
@@ -251,42 +235,18 @@ void Draw ( ESContext *esContext )
       glUniform4fv( userData->colorLoc, 1, colors[i] );
       glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, offset );
    }
-
-   eglSwapBuffers ( esContext->eglDisplay, esContext->eglSurface );
 }
 
 ///
 // Cleanup
 //
-void ShutDown ( ESContext *esContext )
+void stShutDown ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   STUserData *userData = esContext->userData;
 
    // Delete program object
    glDeleteProgram ( userData->programObject );
 
    // Delete vertex buffer objects
    glDeleteBuffers ( 2, userData->vboIds );
-}
-
-
-int main ( int argc, char *argv[] )
-{
-   ESContext esContext;
-   UserData  userData;
-
-   esInitContext ( &esContext );
-   esContext.userData = &userData;
-
-   esCreateWindow ( &esContext, "Stencil Test", 320, 240,
-                    ES_WINDOW_RGB | ES_WINDOW_DEPTH | ES_WINDOW_STENCIL );
-   
-   if ( !Init ( &esContext ) )
-      return 0;
-
-   esRegisterDrawFunc ( &esContext, Draw );
-   
-   esMainLoop ( &esContext );
-
-   ShutDown ( &esContext );
 }

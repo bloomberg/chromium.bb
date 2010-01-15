@@ -79,6 +79,17 @@
       ],
     },
     {
+      'target_name': 'stencil_test',
+      'type': 'executable',
+      'dependencies': [
+        'app_framework',
+        '../../third_party/gles2_book/gles2_book.gyp:stencil_test',
+      ],
+      'sources': [
+        'stencil_test/main.cc',
+      ],
+    },
+    {
       'target_name': 'texture_wrap',
       'type': 'executable',
       'dependencies': [
