@@ -63,6 +63,12 @@
 //      |    >>>>>>>>>>>>> Close >>>>>>>>>>>>>>        |
 //      v                                              v
 //
+// The above mode of operation uses relatively big buffers and has latencies
+// of 50 ms or more. There is a second mode of operation which is low latency.
+// For low latency audio, the picture above is modified by not having the
+// RequestAudioPacket and the AudioPacketReady messages, instead a SyncSocket
+// pair is used to signal buffer readiness without having to route messages
+// using the IO thread.
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_AUDIO_RENDERER_HOST_H_
 #define CHROME_BROWSER_RENDERER_HOST_AUDIO_RENDERER_HOST_H_
@@ -72,7 +78,9 @@
 #include "base/lock.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "base/sync_socket.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
 #include "ipc/ipc_message.h"
@@ -247,7 +255,11 @@ class AudioRendererHost
     size_t buffer_capacity_;
 
     State state_;
+
     base::SharedMemory shared_memory_;
+    scoped_ptr<base::SyncSocket> shared_socket_;
+
+    // PushSource role is to buffer and it's only used in regular latency mode.
     PushSource push_source_;
 
     // Flag that indicates there is an outstanding request.

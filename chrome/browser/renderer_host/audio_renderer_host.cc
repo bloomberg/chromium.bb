@@ -35,6 +35,10 @@ namespace {
 // choosen carefully and is platform specific.
 const int kSamplesPerHardwarePacket = 8192;
 
+// If the size of the buffer is less than this number, then the low latency
+// mode is to be used.
+const size_t kLowLatencyPacketThreshold = 1025;
+
 const size_t kMegabytes = 1024 * 1024;
 
 // The following parameters limit the request buffer and packet size from the
@@ -135,9 +139,12 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
     // If we can open the stream, proceed with sharing the shared memory.
     base::SharedMemoryHandle foreign_memory_handle;
 
-    // Try to create, map and share the memory for the renderer process.
-    // If they all succeeded then send a message to renderer to indicate
-    // success.
+    // Time to create the PCM transport. Either low latency or regular latency
+    // If things go well we send a message back to the renderer with the
+    // transport information.
+    // Note that the low latency mode is not yet ready and the if part of this
+    // method is never executed. TODO(cpu): Enable this mode.
+
     if (source->shared_memory_.Create(L"",
                                       false,
                                       false,
@@ -145,13 +152,39 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
         source->shared_memory_.Map(decoded_packet_size) &&
         source->shared_memory_.ShareToProcess(process_handle,
                                               &foreign_memory_handle)) {
-      host->Send(new ViewMsg_NotifyAudioStreamCreated(
-          route_id, stream_id, foreign_memory_handle, decoded_packet_size));
+      // TODO(cpu): better define what triggers the low latency mode.
+      if (decoded_packet_size > kLowLatencyPacketThreshold) {
+        // Regular latency mode.
+        host->Send(new ViewMsg_NotifyAudioStreamCreated(
+            route_id, stream_id, foreign_memory_handle, decoded_packet_size));
 
-      // Also request the first packet to kick start the pre-rolling.
-      source->StartBuffering();
-      return source;
+        // Also request the first packet to kick start the pre-rolling.
+        source->StartBuffering();
+        return source;
+      } else {
+        // Low latency mode. We use SyncSocket to signal.
+        base::SyncSocket* sockets[2] = {0};
+        if (base::SyncSocket::CreatePair(sockets)) {
+          source->shared_socket_.reset(sockets[0]);
+          base::SyncSocket::Handle foreign_socket_handle = 0;
+#if defined(OS_WIN)
+          ::DuplicateHandle(GetCurrentProcess(), sockets[1]->handle(),
+                            process_handle, &foreign_socket_handle,
+                            0, FALSE, DUPLICATE_SAME_ACCESS);
+#else
+          // TODO(cpu): Figure out what is the procedure for linux.
+          NOTIMPLEMENTED();
+#endif
+          if (foreign_socket_handle) {
+            host->Send(new ViewMsg_NotifyLowLatencyAudioStreamCreated(
+                route_id, stream_id, foreign_memory_handle,
+                foreign_socket_handle, decoded_packet_size));
+            return source;
+          }
+        }
+      }
     }
+    // Failure. Close and free acquired resources.
     source->Close();
     delete source;
   }
@@ -240,23 +273,35 @@ size_t AudioRendererHost::IPCAudioSource::OnMoreData(AudioOutputStream* stream,
   last_callback_time_ = base::Time::Now();
 
   if (state_ == kPaused) {
-    // Don't read anything from the push source and save the number of
-    // bytes in the hardware buffer.
+    // Don't read anything. Save the number of bytes in the hardware buffer.
     pending_bytes_  = pending_bytes;
     return 0;
   }
 
-  // Push source doesn't need to know the stream and number of pending bytes.
-  // So just pass in NULL and 0 for these two parameters.
-  size_t size = push_source_.OnMoreData(NULL, dest, max_size, 0);
-  pending_bytes_ = pending_bytes + size;
-  SubmitPacketRequest(&auto_lock);
+  size_t size;
+  if (!shared_socket_.get()) {
+    // Push source doesn't need to know the stream and number of pending bytes.
+    // So just pass in NULL and 0 for them.
+    size = push_source_.OnMoreData(NULL, dest, max_size, 0);
+    pending_bytes_ = pending_bytes + size;
+    SubmitPacketRequest(&auto_lock);
+  } else {
+    // Low latency mode.
+    size = std::min(shared_memory_.max_size(), max_size);
+    memcpy(dest, shared_memory_.memory(), size);
+    memset(shared_memory_.memory(), 0, shared_memory_.max_size());
+    shared_socket_->Send(&pending_bytes, sizeof(pending_bytes));
+  }
+
   return size;
 }
 
 void AudioRendererHost::IPCAudioSource::OnClose(AudioOutputStream* stream) {
   // Push source doesn't need to know the stream so just pass in NULL.
-  push_source_.OnClose(NULL);
+  if (!shared_socket_.get())
+    push_source_.OnClose(NULL);
+  else
+    shared_socket_->Close();
 }
 
 void AudioRendererHost::IPCAudioSource::OnError(AudioOutputStream* stream,
@@ -269,6 +314,10 @@ void AudioRendererHost::IPCAudioSource::OnError(AudioOutputStream* stream,
 
 void AudioRendererHost::IPCAudioSource::NotifyPacketReady(
     size_t decoded_packet_size) {
+  // Packet ready notifications do not happen in low latency mode. If they
+  // do something is horribly wrong.
+  DCHECK(!shared_socket_.get());
+
   AutoLock auto_lock(lock_);
   bool ok = true;
   outstanding_request_ = false;

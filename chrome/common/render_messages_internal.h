@@ -19,6 +19,7 @@
 #include "base/platform_file.h"
 #include "base/gfx/rect.h"
 #include "base/shared_memory.h"
+#include "base/sync_socket.h"
 #include "base/values.h"
 #include "chrome/common/css_colors.h"
 #include "chrome/common/extensions/update_manifest.h"
@@ -628,6 +629,15 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED3(ViewMsg_NotifyAudioStreamCreated,
                       int /* stream id */,
                       base::SharedMemoryHandle /* handle */,
+                      int /* length */)
+
+  // Tell the renderer process that a low latency audio stream has been created,
+  // renderer process would be given a SyncSocket that it should write to from
+  // then on.
+  IPC_MESSAGE_ROUTED4(ViewMsg_NotifyLowLatencyAudioStreamCreated,
+                      int /* stream id */,
+                      base::SharedMemoryHandle /* handle */,
+                      base::SyncSocket::Handle /* socket handle */,
                       int /* length */)
 
   // Notification message sent from AudioRendererHost to renderer for state
