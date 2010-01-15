@@ -27,6 +27,9 @@ typedef struct
    // Uniform locations
    GLint  colorLoc;
 
+   // Vertex buffer object handles
+   GLuint vboIds[2];
+
 } UserData;
 
 ///
@@ -50,6 +53,37 @@ int Init ( ESContext *esContext )
       "  gl_FragColor = u_color; \n"
       "}                         \n";
 
+   GLfloat vVertices[] = { 
+       -0.75f,  0.25f,  0.50f, // Quad #0
+       -0.25f,  0.25f,  0.50f,
+       -0.25f,  0.75f,  0.50f,
+       -0.75f,  0.75f,  0.50f,
+        0.25f,  0.25f,  0.90f, // Quad #1
+        0.75f,  0.25f,  0.90f,
+        0.75f,  0.75f,  0.90f,
+        0.25f,  0.75f,  0.90f,
+       -0.75f, -0.75f,  0.50f, // Quad #2
+       -0.25f, -0.75f,  0.50f,
+       -0.25f, -0.25f,  0.50f,
+       -0.75f, -0.25f,  0.50f,
+        0.25f, -0.75f,  0.50f, // Quad #3
+        0.75f, -0.75f,  0.50f,
+        0.75f, -0.25f,  0.50f,
+        0.25f, -0.25f,  0.50f,
+       -1.00f, -1.00f,  0.00f, // Big Quad
+        1.00f, -1.00f,  0.00f,
+        1.00f,  1.00f,  0.00f,
+       -1.00f,  1.00f,  0.00f
+   };
+
+   GLubyte indices[] = { 
+        0,  1,  2,  0,  2,  3, // Quad #0
+        4,  5,  6,  4,  6,  7, // Quad #1
+        8,  9, 10,  8, 10, 11, // Quad #2
+       12, 13, 14, 12, 14, 15, // Quad #3
+       16, 17, 18, 16, 18, 19  // Big Quad
+   };
+
    // Load the shaders and get a linked program object
    userData->programObject = esLoadProgram ( vShaderStr, fShaderStr );
 
@@ -58,6 +92,15 @@ int Init ( ESContext *esContext )
    
    // Get the sampler location
    userData->colorLoc = glGetUniformLocation ( userData->programObject, "u_color" );
+
+   // Load vertex data
+   glGenBuffers ( 2, userData->vboIds );
+   glBindBuffer ( GL_ARRAY_BUFFER, userData->vboIds[0] );
+   glBufferData ( GL_ARRAY_BUFFER, sizeof(vVertices),
+                  vVertices, GL_STATIC_DRAW );
+   glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, userData->vboIds[1] );
+   glBufferData ( GL_ELEMENT_ARRAY_BUFFER, sizeof(indices),
+                  indices, GL_STATIC_DRAW );
 
    // Set the clear color
    glClearColor ( 0.0f, 0.0f, 0.0f, 0.0f );
@@ -82,40 +125,10 @@ int Init ( ESContext *esContext )
 void Draw ( ESContext *esContext )
 {
    int  i;
+   GLubyte *offset = NULL;
 
    UserData *userData = esContext->userData;
 
-   GLfloat vVertices[] = { 
-       -0.75f,  0.25f,  0.50f, // Quad #0
-       -0.25f,  0.25f,  0.50f,
-       -0.25f,  0.75f,  0.50f,
-       -0.75f,  0.75f,  0.50f,
-	    0.25f,  0.25f,  0.90f, // Quad #1
-		0.75f,  0.25f,  0.90f,
-		0.75f,  0.75f,  0.90f,
-		0.25f,  0.75f,  0.90f,
-	   -0.75f, -0.75f,  0.50f, // Quad #2
-       -0.25f, -0.75f,  0.50f,
-       -0.25f, -0.25f,  0.50f,
-       -0.75f, -0.25f,  0.50f,
-        0.25f, -0.75f,  0.50f, // Quad #3
-        0.75f, -0.75f,  0.50f,
-        0.75f, -0.25f,  0.50f,
-        0.25f, -0.25f,  0.50f,
-       -1.00f, -1.00f,  0.00f, // Big Quad
-        1.00f, -1.00f,  0.00f,
-        1.00f,  1.00f,  0.00f,
-       -1.00f,  1.00f,  0.00f
-   };
-
-   GLubyte indices[][6] = { 
-       {  0,  1,  2,  0,  2,  3 }, // Quad #0
-       {  4,  5,  6,  4,  6,  7 }, // Quad #1
-       {  8,  9, 10,  8, 10, 11 }, // Quad #2
-       { 12, 13, 14, 12, 14, 15 }, // Quad #3
-       { 16, 17, 18, 16, 18, 19 }  // Big Quad
-   };
-   
 #define NumTests  4
    GLfloat  colors[NumTests][4] = { 
        { 1.0f, 0.0f, 0.0f, 1.0f },
@@ -145,7 +158,7 @@ void Draw ( ESContext *esContext )
 
    // Load the vertex position
    glVertexAttribPointer ( userData->positionLoc, 3, GL_FLOAT, 
-                           GL_FALSE, 0, vVertices );
+                           GL_FALSE, 0, 0 );
   
    glEnableVertexAttribArray ( userData->positionLoc );
 
@@ -164,7 +177,7 @@ void Draw ( ESContext *esContext )
    //
    glStencilFunc( GL_LESS, 0x7, 0x3 );
    glStencilOp( GL_REPLACE, GL_DECR, GL_DECR );
-   glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices[0] );
+   glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, offset );
  
    // Test 1:
    //
@@ -180,7 +193,8 @@ void Draw ( ESContext *esContext )
    //
    glStencilFunc( GL_GREATER, 0x3, 0x3 );
    glStencilOp( GL_KEEP, GL_DECR, GL_KEEP );
-   glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices[1] );
+   offset += 6;
+   glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, offset );
 
    // Test 2:
    //
@@ -196,7 +210,8 @@ void Draw ( ESContext *esContext )
    //
    glStencilFunc( GL_EQUAL, 0x1, 0x3 );
    glStencilOp( GL_KEEP, GL_INCR, GL_INCR );
-   glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices[2] );
+   offset += 6;
+   glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, offset );
 
    // Test 3:
    //
@@ -213,7 +228,8 @@ void Draw ( ESContext *esContext )
    //
    glStencilFunc( GL_EQUAL, 0x2, 0x1 );
    glStencilOp( GL_INVERT, GL_KEEP, GL_KEEP );
-   glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices[3] );
+   offset += 6;
+   glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, offset );
    
    // Since we don't know at compile time how many stecil bits are present,
    //   we'll query, and update the value correct value in the
@@ -228,12 +244,12 @@ void Draw ( ESContext *esContext )
    //   can test against them without modifying the values we
    //   generated.
    glStencilMask( 0x0 );
-   
+   offset += 6;
    for ( i = 0; i < NumTests; ++i )
    {
       glStencilFunc( GL_EQUAL, stencilValues[i], 0xff );
       glUniform4fv( userData->colorLoc, 1, colors[i] );
-      glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices[4] );
+      glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, offset );
    }
 
    eglSwapBuffers ( esContext->eglDisplay, esContext->eglSurface );
@@ -248,6 +264,9 @@ void ShutDown ( ESContext *esContext )
 
    // Delete program object
    glDeleteProgram ( userData->programObject );
+
+   // Delete vertex buffer objects
+   glDeleteBuffers ( 2, userData->vboIds );
 }
 
 
