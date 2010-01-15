@@ -518,6 +518,21 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // is true).
   scoped_ptr<WebKit::WebMouseEvent> next_mouse_move_;
 
+  // (Similar to |mouse_move_pending_|.) True if a mouse wheel event was sent
+  // and we are waiting for a corresponding ack.
+  bool mouse_wheel_pending_;
+
+  typedef std::deque<WebKit::WebMouseWheelEvent> WheelEventQueue;
+
+  // (Similar to |next_mouse_move_|.) The next mouse wheel events to send.
+  // Unlike mouse moves, mouse wheel events received while one is pending are
+  // coalesced (by accumulating deltas) if they match the previous event in
+  // modifiers. On the Mac, in particular, mouse wheel events are received at a
+  // high rate; not waiting for the ack results in jankiness, and using the same
+  // mechanism as for mouse moves (just dropping old events when multiple ones
+  // would be queued) results in very slow scrolling.
+  WheelEventQueue coalesced_mouse_wheel_events_;
+
   // The time when an input event was sent to the RenderWidget.
   base::TimeTicks input_event_start_time_;
 

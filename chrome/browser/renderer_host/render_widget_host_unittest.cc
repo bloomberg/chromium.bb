@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using WebKit::WebInputEvent;
+using WebKit::WebMouseWheelEvent;
 
 // RenderWidgetHostProcess -----------------------------------------------------
 
@@ -119,7 +120,7 @@ class TestView : public TestRenderWidgetHostView {
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };
 
-// MockRenderWidgetHostTest ----------------------------------------------------
+// MockRenderWidgetHost ----------------------------------------------------
 
 class MockRenderWidgetHost : public RenderWidgetHost {
  public:
@@ -218,6 +219,15 @@ class RenderWidgetHostTest : public testing::Test {
     key_event.type = type;
     key_event.windowsKeyCode = base::VKEY_L;  // non-null made up value.
     host_->ForwardKeyboardEvent(key_event);
+  }
+
+  void SimulateWheelEvent(float dX, float dY, int modifiers) {
+    WebMouseWheelEvent wheel_event;
+    wheel_event.type = WebInputEvent::MouseWheel;
+    wheel_event.deltaX = dX;
+    wheel_event.deltaY = dY;
+    wheel_event.modifiers = modifiers;
+    host_->ForwardWheelEvent(wheel_event);
   }
 
   MessageLoopForUI message_loop_;
@@ -555,4 +565,38 @@ TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
 
   EXPECT_TRUE(host_->unhandled_keyboard_event_called());
   EXPECT_EQ(WebInputEvent::KeyUp, host_->unhandled_keyboard_event_type());
+}
+
+TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
+  process_->sink().ClearMessages();
+
+  // Simulate wheel events.
+  SimulateWheelEvent(0, -5, 0);  // sent directly
+  SimulateWheelEvent(0, -10, 0);  // enqueued
+  SimulateWheelEvent(8, -6, 0);  // coalesced into previous event
+  SimulateWheelEvent(9, -7, 1);  // enqueued, different modifiers
+
+  // Check that only the first event was sent.
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+                  ViewMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // Check that the ACK sends the second message.
+  SendInputEventACK(WebInputEvent::MouseWheel, true);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+                  ViewMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // One more time.
+  SendInputEventACK(WebInputEvent::MouseWheel, true);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+                  ViewMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // After the final ack, the queue should be empty.
+  SendInputEventACK(WebInputEvent::MouseWheel, true);
+  EXPECT_EQ(0U, process_->sink().message_count());
 }

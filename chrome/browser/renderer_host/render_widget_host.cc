@@ -66,6 +66,7 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
       mouse_move_pending_(false),
+      mouse_wheel_pending_(false),
       needs_repainting_on_restore_(false),
       is_unresponsive_(false),
       in_get_backing_store_(false),
@@ -377,6 +378,31 @@ void RenderWidgetHost::ForwardWheelEvent(
   if (ignore_input_events_ || process_->ignore_input_events())
     return;
 
+  // If there's already a mouse wheel event waiting to be sent to the renderer,
+  // add the new deltas to that event. Not doing so (e.g., by dropping the old
+  // event, as for mouse moves) results in very slow scrolling on the Mac (on
+  // which many, very small wheel events are sent).
+  if (mouse_wheel_pending_) {
+    if (coalesced_mouse_wheel_events_.empty() ||
+        coalesced_mouse_wheel_events_.back().modifiers
+            != wheel_event.modifiers ||
+        coalesced_mouse_wheel_events_.back().scrollByPage
+            != wheel_event.scrollByPage) {
+      coalesced_mouse_wheel_events_.push_back(wheel_event);
+    } else {
+      coalesced_mouse_wheel_events_.back().deltaX += wheel_event.deltaX;
+      coalesced_mouse_wheel_events_.back().deltaY += wheel_event.deltaY;
+      DCHECK_GE(wheel_event.timeStampSeconds,
+                coalesced_mouse_wheel_events_.back().timeStampSeconds);
+      coalesced_mouse_wheel_events_.back().timeStampSeconds =
+          wheel_event.timeStampSeconds;
+    }
+    return;
+  }
+  mouse_wheel_pending_ = true;
+
+  HISTOGRAM_COUNTS_100("MPArch.RWH_WheelQueueSize",
+                       coalesced_mouse_wheel_events_.size());
   ForwardInputEvent(wheel_event, sizeof(WebMouseWheelEvent), false);
 }
 
@@ -457,6 +483,10 @@ void RenderWidgetHost::ForwardInputEvent(const WebInputEvent& input_event,
   // Any input event cancels a pending mouse move event.
   next_mouse_move_.reset();
 
+  // Any non-wheel input event cancels pending wheel events.
+  if (input_event.type != WebInputEvent::MouseWheel)
+    coalesced_mouse_wheel_events_.clear();
+
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kHungRendererDelayMs));
 }
 
@@ -478,9 +508,12 @@ void RenderWidgetHost::RendererExited() {
   // from a crashed renderer.
   renderer_initialized_ = false;
 
-  // Must reset these to ensure that mouse move events work with a new renderer.
+  // Must reset these to ensure that mouse move/wheel events work with a new
+  // renderer.
   mouse_move_pending_ = false;
   next_mouse_move_.reset();
+  mouse_wheel_pending_ = false;
+  coalesced_mouse_wheel_events_.clear();
 
   // Must reset these to ensure that keyboard events work with a new renderer.
   key_queue_.clear();
@@ -742,6 +775,16 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
     if (next_mouse_move_.get()) {
       DCHECK(next_mouse_move_->type == WebInputEvent::MouseMove);
       ForwardMouseEvent(*next_mouse_move_);
+    }
+  } else if (type == WebInputEvent::MouseWheel) {
+    mouse_wheel_pending_ = false;
+
+    // Now send the next (coalesced) mouse wheel event.
+    if (!coalesced_mouse_wheel_events_.empty()) {
+      WebMouseWheelEvent next_wheel_event =
+          coalesced_mouse_wheel_events_.front();
+      coalesced_mouse_wheel_events_.pop_front();
+      ForwardWheelEvent(next_wheel_event);
     }
   } else if (WebInputEvent::isKeyboardEventType(type)) {
     bool processed = false;
