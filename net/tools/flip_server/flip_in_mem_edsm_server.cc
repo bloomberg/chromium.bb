@@ -240,8 +240,8 @@ SSL* flip_new_ssl(SSL_CTX* ssl_ctx) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const int kInitialDataSendersThreshold = 128;
-const int kNormalSegmentSize = (4 * 1460) - FlipFrame::size();
+const int kInitialDataSendersThreshold =  (2 * 1460) - FlipFrame::size();
+const int kNormalSegmentSize = (2 * 1460) - FlipFrame::size();
 
 ////////////////////////////////////////////////////////////////////////////////
 
