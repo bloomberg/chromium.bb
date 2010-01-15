@@ -35,7 +35,7 @@
 #else
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_demo_cc.h"
-#include "gpu/command_buffer/common/gles2/gl2.h"
+#include "gpu/command_buffer/common/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
