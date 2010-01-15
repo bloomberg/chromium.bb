@@ -987,12 +987,6 @@ BUG24198 LINUX WIN : svg/hixie/text/003.html = FAIL
 
 // SVG combined with font metrics.
 BUG24198 LINUX : svg/hixie/text/001-broken.xml = FAIL
-
-// These two tests have a highlight color that is different from the Mac,
-// which is normal because selection color is different between Mac and
-// Windows, but even so it still doesn't look identical because there is still
-// some problem with the fill color for the text.
-BUG10300 WIN LINUX : svg/text/text-deco-01-b.svg = FAIL
 BUG10300 LINUX : svg/text/text-text-08-b.svg = FAIL
 
 // SVG masks aren't quite working yet.
@@ -2132,8 +2126,6 @@ BUG10429 LINUX : css2.1/t100801-c544-valgn-01-d-ag.html = FAIL
 
 // New failures from Merge 41078:41149
 BUG10430 LINUX : svg/W3C-SVG-1.1/text-intro-05-t.svg = FAIL
-BUG10430 LINUX WIN : svg/text/text-fonts-01-t.svg = FAIL
-BUG10430 LINUX WIN : svg/text/text-intro-05-t.svg = FAIL
 
 // Regression from merge 41268:41286
 // See above comment about this test on linux/win.
