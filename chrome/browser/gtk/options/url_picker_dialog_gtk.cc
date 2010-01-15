@@ -152,14 +152,13 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
 
   // Set the size of the dialog.
   gtk_widget_realize(dialog_);
-  int width = 1, height = 1;
-  gtk_util::GetWidgetSizeFromResources(
-      dialog_,
-      IDS_URLPICKER_DIALOG_WIDTH_CHARS,
-      IDS_URLPICKER_DIALOG_HEIGHT_LINES,
-      &width, &height);
-  gtk_window_set_default_size(GTK_WINDOW(dialog_), width, height);
+  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
+                                       IDS_URLPICKER_DIALOG_WIDTH_CHARS,
+                                       IDS_URLPICKER_DIALOG_HEIGHT_LINES,
+                                       true);
+
   // Set the width of the first column as well.
+  int width;
   gtk_util::GetWidgetSizeFromResources(
       dialog_,
       IDS_URLPICKER_DIALOG_LEFT_COLUMN_WIDTH_CHARS, 0,

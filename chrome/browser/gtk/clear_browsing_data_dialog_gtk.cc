@@ -31,9 +31,10 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
       GTK_RESPONSE_REJECT,
       NULL);
   gtk_widget_realize(dialog);
-  gtk_util::SetWindowWidthFromResources(GTK_WINDOW(dialog),
-                                        IDS_CLEARDATA_DIALOG_WIDTH_CHARS,
-                                        /* resizable */ false);
+  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog),
+                                       IDS_CLEARDATA_DIALOG_WIDTH_CHARS,
+                                       -1,  // height
+                                       false);  // resizable
   gtk_util::AddButtonToDialog(dialog,
       l10n_util::GetStringUTF8(IDS_CLEAR_BROWSING_DATA_COMMIT).c_str(),
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);

@@ -82,12 +82,14 @@ void GetWidgetSizeFromResources(GtkWidget* widget, int width_chars,
 void GetWidgetSizeFromCharacters(GtkWidget* widget, double width_chars,
                                  double height_lines, int* width, int* height);
 
-// As above, but a convenience method for configuring dialog width.
+// As above, but a convenience method for configuring dialog size.
+// |width_id| and |height_id| are resource IDs for the size.  If either of these
+// are set to -1, the respective size will be set to the widget default.
 // |resizable| also controls whether the dialog will be resizable
 // (this info is also necessary for getting the width-setting code
 // right).
-void SetWindowWidthFromResources(GtkWindow* window, int resource_id,
-                                 bool resizable);
+void SetWindowSizeFromResources(GtkWindow* window,
+                                int width_id, int height_id, bool resizable);
 
 // Remove all children from this container.
 void RemoveAllChildren(GtkWidget* container);

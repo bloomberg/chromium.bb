@@ -8,6 +8,7 @@
 #include <gdk/gdkx.h>
 
 #include <cstdarg>
+#include <map>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -223,15 +224,18 @@ void GetWidgetSizeFromCharacters(GtkWidget* widget, double width_chars,
   g_object_unref(context);
 }
 
-void SetWindowWidthFromResources(GtkWindow* window, int resource_id,
-                                 bool resizable) {
-  int width;
-  gtk_util::GetWidgetSizeFromResources(GTK_WIDGET(window), resource_id, 0,
-                                       &width, NULL);
+void SetWindowSizeFromResources(GtkWindow* window,
+                                int width_id, int height_id, bool resizable) {
+  int width = -1;
+  int height = -1;
+  gtk_util::GetWidgetSizeFromResources(GTK_WIDGET(window), width_id, height_id,
+                                       (width_id != -1) ? &width : NULL,
+                                       (height_id != -1) ? &height : NULL);
+
   if (resizable) {
-    gtk_window_set_default_size(window, width, -1);
+    gtk_window_set_default_size(window, width, height);
   } else {
-    gtk_widget_set_size_request(GTK_WIDGET(window), width, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(window), width, height);
   }
   gtk_window_set_resizable(window, resizable ? TRUE : FALSE);
 }

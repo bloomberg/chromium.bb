@@ -8,32 +8,54 @@
 
 #include <vector>
 
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
+#include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
-// Column IDs for |addresses_model_|.
-enum {
-  ADDRESSES_COL_LABEL,
-  ADDRESSES_COL_COUNT,
-};
+namespace {
 
-// Column IDs for |creditcards_model_|.
-enum {
-  CREDITCARDS_COL_LABEL,
-  CREDITCARDS_COL_COUNT,
-};
+// Style for dialog group titles.
+const char kDialogGroupTitleMarkup[] = "<span weight='bold'>%s</span>";
+
+// How far we indent dialog widgets, in pixels.
+const int kAutoFillDialogIndent = 5;
+
+// Adds an alignment around |widget| which indents the widget by
+// |kAutoFillDialogIndent|.
+GtkWidget* IndentWidget(GtkWidget* widget) {
+  GtkWidget* alignment = gtk_alignment_new(0, 0, 0, 0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0,
+                            kAutoFillDialogIndent, 0);
+  gtk_container_add(GTK_CONTAINER(alignment), widget);
+  return alignment;
+}
+
+// Makes sure we use the gtk theme colors by loading the base color of an entry
+// widget.
+void SetWhiteBackground(GtkWidget* widget) {
+  GtkWidget* entry = gtk_entry_new();
+  gtk_widget_ensure_style(entry);
+  GtkStyle* style = gtk_widget_get_style(entry);
+  gtk_widget_modify_bg(widget, GTK_STATE_NORMAL,
+                       &style->base[GTK_STATE_NORMAL]);
+  gtk_widget_destroy(entry);
+}
+
+}  // namespace
 
 // The contents of the AutoFill dialog.  This dialog allows users to add, edit
 // and remove AutoFill profiles.
 class AutoFillDialog {
  public:
-  explicit AutoFillDialog(std::vector<AutoFillProfile>* profiles,
-                          std::vector<FormGroup>* credit_cards);
+  AutoFillDialog(std::vector<AutoFillProfile>* profiles,
+                 std::vector<FormGroup>* credit_cards);
   ~AutoFillDialog() {}
 
   // Shows the AutoFill dialog.
@@ -44,33 +66,25 @@ class AutoFillDialog {
   // from here.
   static void OnDestroy(GtkWidget* widget, AutoFillDialog* autofill_dialog);
 
-  // 'changed' signal handler which notifies us when the user has selected a
-  // different Address profile.
-  static void OnAddressesSelectionChanged(GtkTreeSelection *selection,
-                                          AutoFillDialog* dialog);
-
-  // 'changed' signal handler which notifies us when the user has selected a
-  // different CreditCard profile.
-  static void OnCreditCardSelectionChanged(GtkTreeSelection *selection,
-                                           AutoFillDialog* dialog);
-
-  // 'clicked' signal handler which is sent when a user clicks on one of the
-  // Add/Edit/Remove Address buttons.
+  // 'clicked' signal handler.  We add a new address.
   static void OnAddAddressClicked(GtkButton* button, AutoFillDialog* dialog);
-  static void OnEditAddressClicked(GtkButton* button, AutoFillDialog* dialog);
-  static void OnRemoveAddressClicked(GtkButton* button, AutoFillDialog* dialog);
 
-  // 'clicked' signal handler which is sent when a user clicks on one of the
-  // Add/Edit/Remove Credit Card buttons.
+  // 'clicked' signal handler.  We add a new credit card.
   static void OnAddCreditCardClicked(GtkButton* button, AutoFillDialog* dialog);
-  static void OnEditCreditCardClicked(GtkButton* button,
-                                      AutoFillDialog* dialog);
-  static void OnRemoveCreditCardClicked(GtkButton* button,
-                                        AutoFillDialog* dialog);
 
-  // Initialize the group widgets, return their container.
-  GtkWidget* InitAddressesGroup();
-  GtkWidget* InitCreditCardsGroup();
+  // Initializes the group widgets and returns their container.  |name_id| is
+  // the resource ID of the group label.  |button_id| is the resource name of
+  // the button label.  |clicked_callback| is a callback that handles the
+  // 'clicked' signal emitted when the user presses the 'Add' button.
+  GtkWidget* InitGroup(int label_id,
+                       int button_id,
+                       GCallback clicked_callback);
+
+  // Returns a GtkExpander that is added to the appropriate vbox.  Each method
+  // adds the necessary widgets and layout required to fill out information
+  // for either an address or a credit card.
+  GtkWidget* AddNewAddress();
+  GtkWidget* AddNewCreditCard();
 
   // The list of current AutoFill profiles.  Owned by AutoFillManager.
   std::vector<AutoFillProfile>* profiles_;
@@ -81,27 +95,11 @@ class AutoFillDialog {
   // The AutoFill dialog.
   GtkWidget* dialog_;
 
-  // Widgets of the Addresses group.
-  GtkWidget* addresses_tree_;
-  GtkListStore* addresses_model_;
-  GtkTreeSelection* addresses_selection_;
-  // TODO(jhawkins): We might not need to store these widgets.  The add button
-  // should never need to be desensitized, but we should desensitize the edit
-  // and remove buttons if there is no current selection.
-  GtkWidget* addresses_add_button_;
-  GtkWidget* addresses_edit_button_;
-  GtkWidget* addresses_remove_button_;
+  // The addresses group.
+  GtkWidget* addresses_vbox_;
 
-  // Widgets of the Credit Cards group.
-  GtkWidget* creditcards_tree_;
-  GtkListStore* creditcards_model_;
-  GtkTreeSelection* creditcards_selection_;
-  // TODO(jhawkins): We might not need to store these widgets.  The add button
-  // should never need to be desensitized, but we should desensitize the edit
-  // and remove buttons if there is no current selection.
-  GtkWidget* creditcards_add_button_;
-  GtkWidget* creditcards_edit_button_;
-  GtkWidget* creditcards_remove_button_;
+  // The credit cards group.
+  GtkWidget* creditcards_vbox_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillDialog);
 };
@@ -119,14 +117,19 @@ AutoFillDialog::AutoFillDialog(std::vector<AutoFillProfile>* profiles,
       NULL,
       // Non-modal.
       GTK_DIALOG_NO_SEPARATOR,
-      GTK_STOCK_CLOSE,
-      GTK_RESPONSE_CLOSE,
+      GTK_STOCK_APPLY,
+      GTK_RESPONSE_APPLY,
+      GTK_STOCK_CANCEL,
+      GTK_RESPONSE_CANCEL,
+      GTK_STOCK_OK,
+      GTK_RESPONSE_OK,
       NULL);
 
   gtk_widget_realize(dialog_);
-  gtk_util::SetWindowWidthFromResources(GTK_WINDOW(dialog_),
-                                        IDS_AUTOFILL_DIALOG_WIDTH_CHARS,
-                                        true);
+  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
+                                       IDS_AUTOFILL_DIALOG_WIDTH_CHARS,
+                                       IDS_AUTOFILL_DIALOG_HEIGHT_LINES,
+                                       true);
 
   // Allow browser windows to go in front of the AutoFill dialog in Metacity.
   gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
@@ -135,16 +138,39 @@ AutoFillDialog::AutoFillDialog(std::vector<AutoFillProfile>* profiles,
   g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroy), this);
 
-  // TODO(jhawkins): Refactor OptionsLayoutBuilderGtk out of gtk/options.
-  OptionsLayoutBuilderGtk options_builder;
-  options_builder.AddOptionGroup(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ADDRESSES_GROUP_NAME),
-      InitAddressesGroup(), true);
-  options_builder.AddOptionGroup(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME),
-      InitCreditCardsGroup(), true);
-  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox),
-                    options_builder.get_page_widget());
+  // Allow the contents to be scrolled.
+  GtkWidget* scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
+                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), scrolled_window);
+
+  // We create an event box so that we can color the frame background white.
+  GtkWidget* frame_event_box = gtk_event_box_new();
+  SetWhiteBackground(frame_event_box);
+  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window),
+                                        frame_event_box);
+
+  // The frame outline of the content area.
+  GtkWidget* frame = gtk_frame_new(NULL);
+  gtk_container_add(GTK_CONTAINER(frame_event_box), frame);
+
+  // The content vbox.
+  GtkWidget* outer_vbox = gtk_vbox_new(true, 0);
+  gtk_container_add(GTK_CONTAINER(frame), outer_vbox);
+
+  addresses_vbox_ = InitGroup(IDS_AUTOFILL_ADDRESSES_GROUP_NAME,
+                              IDS_AUTOFILL_ADD_ADDRESS_BUTTON,
+                              G_CALLBACK(OnAddAddressClicked));
+  gtk_box_pack_start_defaults(GTK_BOX(outer_vbox), addresses_vbox_);
+
+  // TODO(jhawkins): Add addresses from |profiles|.
+
+  creditcards_vbox_ = InitGroup(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME,
+                                IDS_AUTOFILL_ADD_CREDITCARD_BUTTON,
+                                G_CALLBACK(OnAddCreditCardClicked));
+  gtk_box_pack_start_defaults(GTK_BOX(outer_vbox), creditcards_vbox_);
+
+  // TODO(jhawkins): Add credit cards from |credit_cards|.
 
   gtk_widget_show_all(dialog_);
 }
@@ -162,201 +188,67 @@ void AutoFillDialog::OnDestroy(GtkWidget* widget,
 }
 
 // static
-void AutoFillDialog::OnAddressesSelectionChanged(GtkTreeSelection *selection,
-                                                 AutoFillDialog* dialog) {
-}
-
-// static
-void AutoFillDialog::OnCreditCardSelectionChanged(GtkTreeSelection *selection,
-                                                  AutoFillDialog* dialog) {
-}
-
-// static
 void AutoFillDialog::OnAddAddressClicked(GtkButton* button,
                                          AutoFillDialog* dialog) {
-  // TODO(jhawkins): Open the EditAddress dialog with an empty profile.
-}
-
-// static
-void AutoFillDialog::OnEditAddressClicked(GtkButton* button,
-                                          AutoFillDialog* dialog) {
-  // TODO(jhawkins): Implement the EditAddress dialog.
-}
-
-// static
-void AutoFillDialog::OnRemoveAddressClicked(GtkButton* button,
-                                            AutoFillDialog* dialog) {
-  // TODO(jhawkins): Remove the selected profile from |profiles_|.
+  GtkWidget* new_address = dialog->AddNewAddress();
+  gtk_box_pack_start(GTK_BOX(dialog->addresses_vbox_), new_address,
+                     FALSE, FALSE, 0);
+  gtk_widget_show(new_address);
 }
 
 // static
 void AutoFillDialog::OnAddCreditCardClicked(GtkButton* button,
                                             AutoFillDialog* dialog) {
-  // TODO(jhawkins): Open the EditCreditCard dialog with an empty profile.
+  GtkWidget* new_creditcard = dialog->AddNewCreditCard();
+  gtk_box_pack_start(GTK_BOX(dialog->creditcards_vbox_), new_creditcard,
+                     FALSE, FALSE, 0);
+  gtk_widget_show(new_creditcard);
 }
 
-// static
-void AutoFillDialog::OnEditCreditCardClicked(GtkButton* button,
-                                             AutoFillDialog* dialog) {
-  // TODO(jhawkins): Implement the EditAddress dialog.
-}
+GtkWidget* AutoFillDialog::InitGroup(int name_id,
+                                     int button_id,
+                                     GCallback clicked_callback) {
+  GtkWidget* vbox = gtk_vbox_new(false, gtk_util::kControlSpacing);
 
-// static
-void AutoFillDialog::OnRemoveCreditCardClicked(GtkButton* button,
-                                               AutoFillDialog* dialog) {
-  // TODO(jhawkins): Remove the selected profile from |profiles_|.
-}
+  // Group label.
+  GtkWidget* label = gtk_label_new(NULL);
+  char* markup = g_markup_printf_escaped(
+      kDialogGroupTitleMarkup,
+      l10n_util::GetStringUTF8(name_id).c_str());
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+  gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), IndentWidget(label), FALSE, FALSE, 0);
 
-GtkWidget* AutoFillDialog::InitAddressesGroup() {
-  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  // Separator.
+  GtkWidget* separator = gtk_hseparator_new();
+  gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 0);
 
-  // Addresses container hbox.
-  GtkWidget* addresses_container = gtk_hbox_new(FALSE,
-                                                gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(vbox), addresses_container, TRUE, TRUE, 0);
-
-  // Addresses container scroll window.
-  GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_window),
-                                 GTK_POLICY_AUTOMATIC,
-                                 GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scroll_window),
-                                      GTK_SHADOW_ETCHED_IN);
-  gtk_container_add(GTK_CONTAINER(addresses_container), scroll_window);
-
-  addresses_model_ = gtk_list_store_new(ADDRESSES_COL_COUNT,
-                                        G_TYPE_STRING);
-  addresses_tree_ = gtk_tree_view_new_with_model(
-      GTK_TREE_MODEL(addresses_model_));
-
-  // Release |addresses_model_| so that |addresses_tree_| owns the model.
-  g_object_unref(addresses_model_);
-
-  gtk_container_add(GTK_CONTAINER(scroll_window), addresses_tree_);
-  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(addresses_tree_), FALSE);
-
-  // Addresses column.
-  GtkTreeViewColumn* column;
-  GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("label",
-                                                    renderer,
-                                                    "text", ADDRESSES_COL_LABEL,
-                                                    NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(addresses_tree_), column);
-
-  // Addresses selection.
-  addresses_selection_ = gtk_tree_view_get_selection(
-      GTK_TREE_VIEW(addresses_tree_));
-  gtk_tree_selection_set_mode(addresses_selection_, GTK_SELECTION_SINGLE);
-  g_signal_connect(G_OBJECT(addresses_selection_), "changed",
-                   G_CALLBACK(OnAddressesSelectionChanged), this);
-
-  GtkWidget* addresses_buttons = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_end(GTK_BOX(addresses_container), addresses_buttons,
-                   FALSE, FALSE, 0);
-
-  // Add Address button.
-  addresses_add_button_ = gtk_button_new_with_label(
-          l10n_util::GetStringUTF8(IDS_AUTOFILL_ADD_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(addresses_add_button_), "clicked",
-                   G_CALLBACK(OnAddAddressClicked), this);
-  gtk_box_pack_start(GTK_BOX(addresses_buttons), addresses_add_button_,
-                     FALSE, FALSE, 0);
-
-  // Edit Address button.
-  addresses_edit_button_ = gtk_button_new_with_label(
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_EDIT_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(addresses_edit_button_), "clicked",
-                   G_CALLBACK(OnEditAddressClicked), this);
-  gtk_box_pack_start(GTK_BOX(addresses_buttons), addresses_edit_button_,
-                     FALSE, FALSE, 0);
-
-  // Remove Address button.
-  addresses_remove_button_ = gtk_button_new_with_label(
-          l10n_util::GetStringUTF8(IDS_AUTOFILL_REMOVE_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(addresses_remove_button_), "clicked",
-                   G_CALLBACK(OnRemoveAddressClicked), this);
-  gtk_box_pack_start(GTK_BOX(addresses_buttons), addresses_remove_button_,
-                     FALSE, FALSE, 0);
+  // Add profile button.
+  GtkWidget* button = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(name_id).c_str());
+  g_signal_connect(button, "clicked", clicked_callback, this);
+  gtk_box_pack_end_defaults(GTK_BOX(vbox), IndentWidget(button));
 
   return vbox;
 }
 
-GtkWidget* AutoFillDialog::InitCreditCardsGroup() {
-  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+GtkWidget* AutoFillDialog::AddNewAddress() {
+  GtkWidget* address = gtk_expander_new(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_NEW_ADDRESS).c_str());
 
-  // Credit Cards container hbox.
-  GtkWidget* creditcards_container = gtk_hbox_new(FALSE,
-                                                gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(vbox), creditcards_container, TRUE, TRUE, 0);
+  // TODO(jhawkins): Implement the address form.
 
-  // Credit Cards container scroll window.
-  GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_window),
-                                 GTK_POLICY_AUTOMATIC,
-                                 GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scroll_window),
-                                      GTK_SHADOW_ETCHED_IN);
-  gtk_container_add(GTK_CONTAINER(creditcards_container), scroll_window);
+  return address;
+}
 
-  creditcards_model_ = gtk_list_store_new(CREDITCARDS_COL_COUNT,
-                                          G_TYPE_STRING);
-  creditcards_tree_ = gtk_tree_view_new_with_model(
-      GTK_TREE_MODEL(creditcards_model_));
+GtkWidget* AutoFillDialog::AddNewCreditCard() {
+  GtkWidget* credit_card = gtk_expander_new(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_NEW_CREDITCARD).c_str());
 
-  // Release |creditcards_model_| so that |creditcards_tree_| owns the model.
-  g_object_unref(creditcards_model_);
+  // TODO(jhawkins): Implement the credit card form.
 
-  gtk_container_add(GTK_CONTAINER(scroll_window), creditcards_tree_);
-  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(creditcards_tree_), FALSE);
-
-  // Credit Cards column.
-  GtkTreeViewColumn* column;
-  GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "label",
-      renderer,
-      "text", CREDITCARDS_COL_LABEL,
-      NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(creditcards_tree_), column);
-
-  // Credit Cards selection.
-  creditcards_selection_ = gtk_tree_view_get_selection(
-      GTK_TREE_VIEW(creditcards_tree_));
-  gtk_tree_selection_set_mode(creditcards_selection_, GTK_SELECTION_SINGLE);
-  g_signal_connect(G_OBJECT(creditcards_selection_), "changed",
-                   G_CALLBACK(OnCreditCardSelectionChanged), this);
-
-  GtkWidget* creditcards_buttons = gtk_vbox_new(FALSE,
-                                                gtk_util::kControlSpacing);
-  gtk_box_pack_end(GTK_BOX(creditcards_container), creditcards_buttons,
-                   FALSE, FALSE, 0);
-
-  // Address Add button.
-  creditcards_add_button_ = gtk_button_new_with_label(
-          l10n_util::GetStringUTF8(IDS_AUTOFILL_ADD_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(creditcards_add_button_), "clicked",
-                   G_CALLBACK(OnAddCreditCardClicked), this);
-  gtk_box_pack_start(GTK_BOX(creditcards_buttons), creditcards_add_button_,
-                     FALSE, FALSE, 0);
-
-  // Credit Cards Edit button.
-  creditcards_edit_button_ = gtk_button_new_with_label(
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_EDIT_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(creditcards_edit_button_), "clicked",
-                   G_CALLBACK(OnEditCreditCardClicked), this);
-  gtk_box_pack_start(GTK_BOX(creditcards_buttons), creditcards_edit_button_,
-                     FALSE, FALSE, 0);
-
-  // Address Remove button.
-  creditcards_remove_button_ = gtk_button_new_with_label(
-          l10n_util::GetStringUTF8(IDS_AUTOFILL_REMOVE_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(creditcards_remove_button_), "clicked",
-                   G_CALLBACK(OnRemoveCreditCardClicked), this);
-  gtk_box_pack_start(GTK_BOX(creditcards_buttons), creditcards_remove_button_,
-                     FALSE, FALSE, 0);
-
-  return vbox;
+  return credit_card;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

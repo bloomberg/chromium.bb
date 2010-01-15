@@ -607,13 +607,11 @@ void BookmarkManagerGtk::SetInitialWindowSize() {
   // Otherwise, just set a default size (GTK will override this if it's not
   // large enough to hold the window's contents).
   gtk_widget_realize(window_);
-  int width = 1, height = 1;
-  gtk_util::GetWidgetSizeFromResources(
-      window_,
+  gtk_util::SetWindowSizeFromResources(
+      GTK_WINDOW(window_),
       IDS_BOOKMARK_MANAGER_DIALOG_WIDTH_CHARS,
       IDS_BOOKMARK_MANAGER_DIALOG_HEIGHT_LINES,
-      &width, &height);
-  gtk_window_set_default_size(GTK_WINDOW(window_), width, height);
+      true);
 }
 
 void BookmarkManagerGtk::ResetOrganizeMenu(bool left) {

@@ -676,9 +676,14 @@
         55
       </message>
 
-      <!-- The width for the AutoFill dialog in characters. -->
+      <!-- The width of the AutoFill dialog in characters. -->
       <message name="IDS_AUTOFILL_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         80
+      </message>
+
+      <!-- The height of the AutoFill dialog in lines. -->
+      <message name="IDS_AUTOFILL_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+        30
       </message>
     </messages>
   </release>

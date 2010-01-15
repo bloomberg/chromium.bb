@@ -91,13 +91,10 @@ PasswordsExceptionsWindowGtk::PasswordsExceptionsWindowGtk(Profile* profile)
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
 
   gtk_widget_realize(dialog_);
-  int width = 1, height = 1;
-  gtk_util::GetWidgetSizeFromResources(
-      dialog_,
-      IDS_PASSWORDS_DIALOG_WIDTH_CHARS,
-      IDS_PASSWORDS_DIALOG_HEIGHT_LINES,
-      &width, &height);
-  gtk_window_set_default_size(GTK_WINDOW(dialog_), width, height);
+  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
+                                       IDS_PASSWORDS_DIALOG_WIDTH_CHARS,
+                                       IDS_PASSWORDS_DIALOG_HEIGHT_LINES,
+                                       true);
 
   // We only have one button and don't do any special handling, so just hook it
   // directly to gtk_widget_destroy.

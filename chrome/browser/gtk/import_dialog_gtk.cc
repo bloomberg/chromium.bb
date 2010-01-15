@@ -37,9 +37,10 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile)
       GTK_RESPONSE_REJECT,
       NULL);
   gtk_widget_realize(dialog_);
-  gtk_util::SetWindowWidthFromResources(GTK_WINDOW(dialog_),
-                                        IDS_IMPORT_DIALOG_WIDTH_CHARS,
-                                        /* resizable */ false);
+  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
+                                       IDS_IMPORT_DIALOG_WIDTH_CHARS,
+                                       -1,  // height
+                                       false);  // resizable
   importer_host_->set_parent_window(GTK_WINDOW(dialog_));
 
   // Add import button separately as we might need to disable it, if

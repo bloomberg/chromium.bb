@@ -63,12 +63,11 @@ FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
 
   gtk_widget_realize(dialog_);
-  int width, height;
-  gtk_util::GetWidgetSizeFromResources(dialog_,
+  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
                                        IDS_FIRSTRUN_DIALOG_WIDTH_CHARS,
                                        IDS_FIRSTRUN_DIALOG_HEIGHT_LINES,
-                                       &width, &height);
-  gtk_window_set_default_size(GTK_WINDOW(dialog_), width, height);
+                                       true);
+
   g_signal_connect(G_OBJECT(dialog_), "delete-event",
                    G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 

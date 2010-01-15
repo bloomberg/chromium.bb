@@ -4569,14 +4569,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="The name of the Credit Cards group of the AutoFill dialog.">
         Credit Cards
       </message>
-      <message name="IDS_AUTOFILL_ADD_BUTTON" desc="The label of the button that adds a new AutoFill profile.">
-        Add...
+      <message name="IDS_AUTOFILL_ADD_ADDRESS_BUTTON" desc="The label of the button that adds a new AutoFill address.">
+        Add an address
       </message>
-      <message name="IDS_AUTOFILL_EDIT_BUTTON" desc="The label of the button that edits an AutoFill profile.">
-        Edit...
+      <message name="IDS_AUTOFILL_ADD_CREDITCARD_BUTTON" desc="The label of the button that adds a new AutoFill credit card.">
+        Add a credit card
       </message>
-      <message name="IDS_AUTOFILL_REMOVE_BUTTON" desc="The label of the button that removes an AutoFill profile.">
-        Remove
+      <message name="IDS_AUTOFILL_DELETE_BUTTON" desc="The label of the button that deletes an AutoFill profile.">
+        Delete
+      </message>
+      <message name="IDS_AUTOFILL_NEW_ADDRESS" desc="The profile label of a new address.">
+        New address
+      </message>
+      <message name="IDS_AUTOFILL_NEW_CREDITCARD" desc="The profile label of a new credit card.">
+        New credit card
       </message>
 
       <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">

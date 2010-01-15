@@ -190,13 +190,10 @@ void KeywordEditorView::Init() {
 
   // Set the size of the dialog.
   gtk_widget_realize(dialog_);
-  int width = 1, height = 1;
-  gtk_util::GetWidgetSizeFromResources(
-      dialog_,
-      IDS_SEARCHENGINES_DIALOG_WIDTH_CHARS,
-      IDS_SEARCHENGINES_DIALOG_HEIGHT_LINES,
-      &width, &height);
-  gtk_window_set_default_size(GTK_WINDOW(dialog_), width, height);
+  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
+                                       IDS_SEARCHENGINES_DIALOG_WIDTH_CHARS,
+                                       IDS_SEARCHENGINES_DIALOG_HEIGHT_LINES,
+                                       true);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
