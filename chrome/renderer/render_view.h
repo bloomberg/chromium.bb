@@ -520,11 +520,9 @@ class RenderView : public RenderWidget,
                         SkBitmap* thumbnail,
                         ThumbnailScore* score);
 
-  // Calculates how "boring" a thumbnail is. The boring score is the
-  // 0,1 ranged percentage of pixels that are the most common
-  // luma. Higher boring scores indicate that a higher percentage of a
-  // bitmap are all the same brightness.
-  double CalculateBoringScore(SkBitmap* bitmap);
+  // Capture a snapshot of a view.  This is used to allow an extension
+  // to get a snapshot of a tab using chrome.tabs.captureVisibleTab().
+  bool CaptureSnapshot(WebKit::WebView* view, SkBitmap* snapshot);
 
   bool RunJavaScriptMessage(int type,
                             const std::wstring& message,
@@ -538,6 +536,7 @@ class RenderView : public RenderWidget,
 
   // RenderView IPC message handlers
   void SendThumbnail();
+  void SendSnapshot();
   void OnPrintPages();
   void OnPrintingDone(int document_cookie, bool success);
   void OnNavigate(const ViewMsg_Navigate_Params& params);
