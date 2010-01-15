@@ -618,10 +618,6 @@ BUG21888 : fast/history/subframe-is-visited.html = FAIL
 // Implement layoutTestController.display()
 BUG8630 WIN LINUX : fast/repaint/body-background-image.html = FAIL
 
-// TODO(michaeln): BUG29748 restore expectation to PASS after linux is rebaselined
-// BUG8630 WIN LINUX SLOW : fast/repaint/line-flow-with-floats-1.html = PASS
-BUG8630 WIN LINUX SLOW : fast/repaint/line-flow-with-floats-1.html = PASS IMAGE
-
 // Relies on text metrics to pass. Rework to be meaningful for ports other than platform/mac.
 BUG8630 WIN LINUX : fast/repaint/overflow-outline-repaint.html = FAIL
 BUG8630 WIN LINUX : fast/backgrounds/solid-color-context-restore.html = FAIL
@@ -2773,10 +2769,6 @@ BUG29748 LINUX : fast/forms/select-change-listbox-size.html = IMAGE
 BUG29748 LINUX : fast/frames/iframe-scrolling-attribute.html = IMAGE
 BUG29748 LINUX : fast/frames/onlyCommentInIFrame.html = IMAGE
 BUG29748 LINUX : fast/multicol/positioned-with-constrained-height.html = IMAGE
-BUG29748 LINUX : fast/repaint/line-flow-with-floats-10.html = IMAGE
-BUG29748 LINUX : fast/repaint/line-flow-with-floats-5.html = IMAGE
-BUG29748 LINUX : fast/repaint/line-flow-with-floats-6.html = IMAGE
-BUG29748 LINUX : fast/repaint/line-flow-with-floats-9.html = IMAGE
 BUG29748 LINUX : fast/repaint/overflow-scroll-delete.html = IMAGE
 BUG29748 LINUX : http/tests/navigation/error404-frames.html = IMAGE
 BUG29748 LINUX : http/tests/navigation/post-frames.html = IMAGE
