@@ -914,9 +914,6 @@ BUG8635 WIN LINUX : svg/W3C-SVG-1.1/pservers-pattern-01-b.svg = FAIL
 
 BUG10415 WIN LINUX : svg/custom/pattern-with-transformation.svg = FAIL
 
-// New in WebKit r52580.
-BUG31345 WIN LINUX : svg/custom/mask-on-multiple-objects.svg = IMAGE
-
 // Text fails very rarely, 1/200 runs or fewer.
 BUG29737 LINUX DEBUG : svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
 BUG29737 MAC RELEASE : svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
@@ -971,9 +968,6 @@ BUG10298 LINUX : svg/custom/use-on-disallowed-foreign-object-3.svg = FAIL
 
 // There's no baseline at all for this!
 BUG32392 SKIP : svg/batik/text/smallFonts.svg = FAIL
-
-// pixeltest failure: font baseline should be on the path, not the centerline
-BUG24198 LINUX WIN : svg/custom/path-textPath-simulation.svg = FAIL
 
 // This test fails because of an oddity in stroke width calculation. A
 // line is stroked horizontally from Y=100 with stroke width 100, we consider
@@ -2748,9 +2742,6 @@ BUG28916 MAC : editing/pasteboard/paste-xml.xhtml = IMAGE+TEXT
 
 // Flaky test from r51224:r51237 roll.
 BUG28918 DEBUG : storage/domstorage/localstorage/iframe-events.html = CRASH PASS
-
-// New failures from webkit r51496
-BUG29056 WIN LINUX : svg/custom/mask-with-all-units.svg = FAIL
 
 // New failures from WebKit r51534:r51576
 BUG29157 WIN LINUX MAC :  svg/animations/animVal-basics.html = TIMEOUT
