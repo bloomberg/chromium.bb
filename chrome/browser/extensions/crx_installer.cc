@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
@@ -13,9 +14,12 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/browser/extensions/extension_file_util.h"
+#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -153,10 +157,11 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
     return;
   }
 
-  if (client_.get()) {
+  if (client_.get() || extension_->IsApp()) {
     Extension::DecodeIcon(extension_.get(), Extension::EXTENSION_ICON_LARGE,
                           &install_icon_);
   }
+
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this, &CrxInstaller::ConfirmInstall));
@@ -230,6 +235,24 @@ void CrxInstaller::CompleteInstall() {
                                              version_dir, &error_msg)) {
     ReportFailureFromFileThread(error_msg);
     return;
+  }
+
+  if (extension_->IsApp()) {
+    SkBitmap icon = install_icon_.get() ? *install_icon_ :
+        *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+            IDR_EXTENSION_DEFAULT_ICON);
+
+    ShellIntegration::ShortcutInfo shortcut_info;
+    shortcut_info.url = extension_->app_launch_url();
+    shortcut_info.title = UTF8ToUTF16(extension_->name());
+    shortcut_info.description = UTF8ToUTF16(extension_->description());
+    shortcut_info.favicon = icon;
+    shortcut_info.create_on_desktop = true;
+
+    // TODO(aa): Seems nasty to be reusing the old webapps code this way. What
+    // baggage am I inheriting?
+    web_app::CreateShortcut(frontend_->profile()->GetPath(), shortcut_info,
+                            NULL);
   }
 
   // This is lame, but we must reload the extension because absolute paths

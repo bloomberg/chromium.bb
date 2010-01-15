@@ -9,6 +9,7 @@ namespace extension_manifest_keys {
 const wchar_t* kAllFrames = L"all_frames";
 const wchar_t* kApp = L"app";
 const wchar_t* kAppOrigins = L"origins";
+const wchar_t* kAppLaunchUrl = L"launch.url";
 const wchar_t* kBackground = L"background_page";
 const wchar_t* kBrowserAction = L"browser_action";
 const wchar_t* kChromeURLOverrides = L"chrome_url_overrides";
@@ -75,7 +76,9 @@ const char* kChromeVersionTooLow =
 const char* kInvalidAllFrames =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char* kInvalidApp = "Invalid app.";
-const char* kInvalidAppOrigin = "Invalid app origin[*]";
+const char* kInvalidAppOrigin = "Invalid app origin[*].";
+const char* kInvalidAppLaunchUrl =
+    "Required value 'app.launch.url' is missing or invalid.";
 const char* kInvalidBrowserAction =
     "Invalid value for 'browser_action'.";
 const char* kInvalidChromeURLOverrides =
