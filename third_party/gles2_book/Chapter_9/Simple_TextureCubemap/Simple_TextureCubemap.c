@@ -13,27 +13,7 @@
 //    This is a simple example that draws a sphere with a cubemap image applied.
 //
 #include <stdlib.h>
-#include "esUtil.h"
-
-typedef struct
-{
-   // Handle to a program object
-   GLuint programObject;
-
-   // Attribute locations
-   GLint  positionLoc;
-   GLint  normalLoc;
-
-   // Sampler location
-   GLint samplerLoc;
-
-   // Texture handle
-   GLuint textureId;
-
-   // Vertex data
-   int    numIndices;
-   GLuint vboIds[3];
-} UserData;
+#include "Simple_TextureCubemap.h"
 
 ///
 // Create a simple cubemap with a 1x1 face with a different
@@ -100,9 +80,9 @@ static GLuint CreateSimpleTextureCubemap( )
 ///
 // Initialize the shader and program object
 //
-int Init ( ESContext *esContext )
+int stcInit ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   STCUserData *userData = esContext->userData;
    int numSlices = 20;
    int numVertices = ( (numSlices / 2) + 1 ) * ( numSlices + 1 );
    GLfloat *vertices = NULL;
@@ -167,9 +147,9 @@ int Init ( ESContext *esContext )
 ///
 // Draw a triangle using the shader pair created in Init()
 //
-void Draw ( ESContext *esContext )
+void stcDraw ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   STCUserData *userData = esContext->userData;
       
    // Set the viewport
    glViewport ( 0, 0, esContext->width, esContext->height );
@@ -203,16 +183,14 @@ void Draw ( ESContext *esContext )
 
    glDrawElements ( GL_TRIANGLES, userData->numIndices, 
                     GL_UNSIGNED_SHORT, 0 );
-
-   eglSwapBuffers ( esContext->eglDisplay, esContext->eglSurface );
 }
 
 ///
 // Cleanup
 //
-void ShutDown ( ESContext *esContext )
+void stcShutDown ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+   STCUserData *userData = esContext->userData;
 
    // Delete texture object
    glDeleteTextures ( 1, &userData->textureId );
@@ -222,25 +200,4 @@ void ShutDown ( ESContext *esContext )
 
    // Delete vertex buffer objects
    glDeleteBuffers ( 3, userData->vboIds );
-}
-
-
-int main ( int argc, char *argv[] )
-{
-   ESContext esContext;
-   UserData  userData;
-
-   esInitContext ( &esContext );
-   esContext.userData = &userData;
-
-   esCreateWindow ( &esContext, "Simple Texture Cubemap", 320, 240, ES_WINDOW_RGB );
-   
-   if ( !Init ( &esContext ) )
-      return 0;
-
-   esRegisterDrawFunc ( &esContext, Draw );
-   
-   esMainLoop ( &esContext );
-
-   ShutDown ( &esContext );
 }

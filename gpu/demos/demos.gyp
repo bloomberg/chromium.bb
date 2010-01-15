@@ -57,6 +57,17 @@
       ],
     },
     {
+      'target_name': 'simple_texture_cubemap',
+      'type': 'executable',
+      'dependencies': [
+        'app_framework',
+        '../../third_party/gles2_book/gles2_book.gyp:simple_texture_cubemap',
+      ],
+      'sources': [
+        'simple_texture_cubemap/main.cc',
+      ],
+    },
+    {
       'target_name': 'simple_vertex_shader',
       'type': 'executable',
       'dependencies': [

@@ -62,6 +62,17 @@
       ],
     },
     {
+      'target_name': 'simple_texture_cubemap',
+      'type': 'static_library',
+      'dependencies': [
+        'es_util',
+      ],
+      'sources': [
+        'Chapter_9/Simple_TextureCubemap/Simple_TextureCubemap.c',
+        'Chapter_9/Simple_TextureCubemap/Simple_TextureCubemap.h',
+      ],
+    },
+    {
       'target_name': 'simple_vertex_shader',
       'type': 'static_library',
       'dependencies': [
