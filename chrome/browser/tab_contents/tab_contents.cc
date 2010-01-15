@@ -16,6 +16,7 @@
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -1969,7 +1970,11 @@ void TabContents::RenderViewGone(RenderViewHost* rvh) {
   SetIsCrashed(true);
 
   // Tell the view that we've crashed so it can prepare the sad tab page.
-  view_->OnTabCrashed();
+  // Only do this if we're not in browser shutdown, so that TabContents
+  // objects that are not in a browser (e.g., HTML dialogs) and thus are
+  // visible do not flash a sad tab page.
+  if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID)
+    view_->OnTabCrashed();
 
   // Hide any visible hung renderer warning for this web contents' process.
   hung_renderer_dialog::HideForTabContents(this);
