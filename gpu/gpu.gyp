@@ -361,6 +361,30 @@
         'command_buffer/client/gles2_demo_cc.cc',
       ],
     },
+    {
+      'target_name': 'pgl',
+      'type': 'static_library',
+      'dependencies': [
+        'command_buffer_client',
+        'gles2_c_lib',
+        '../third_party/npapi/npapi.gyp:npapi',
+      ],
+      'include_dirs': [
+        '..',
+        '../third_party/npapi/bindings',
+      ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          '../third_party/npapi/bindings',
+        ],
+      },
+      'sources': [
+        'pgl/command_buffer_pepper.cc',
+        'pgl/command_buffer_pepper.h',
+        'pgl/pgl.cc',
+        'pgl/pgl.h',
+      ],
+    },
   ],
   'conditions': [
     ['OS == "win"',

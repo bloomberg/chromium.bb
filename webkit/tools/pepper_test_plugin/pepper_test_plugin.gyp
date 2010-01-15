@@ -17,8 +17,6 @@
         'INFOPLIST_FILE': 'Info.plist',
       },
       'sources': [
-        'command_buffer_pepper.cc',
-        'command_buffer_pepper.h',
         'main.cc',
         'plugin_object.cc',
         'plugin_object.h',
@@ -34,6 +32,7 @@
           'msvs_guid': 'EE00E36E-9E8C-4DFB-925E-FBE32CEDB91A',
           'dependencies': [
             '../../../gpu/gpu.gyp:gles2_demo_lib',
+            '../../../gpu/gpu.gyp:pgl',
           ],
           'sources': [
             'pepper_test_plugin.def',
