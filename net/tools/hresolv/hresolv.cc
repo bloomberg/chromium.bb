@@ -68,10 +68,10 @@ std::string FormatAddrinfoFlags(int ai_flags) {
     }
   }
   if (ai_flags) {
-   if (!flag_names.empty()) {
-     flag_names += "|";
-   }
-   flag_names += StringPrintf("0x%x", ai_flags);
+    if (!flag_names.empty()) {
+      flag_names += "|";
+    }
+    StringAppendF(&flag_names, "0x%x", ai_flags);
   }
   return flag_names;
 }

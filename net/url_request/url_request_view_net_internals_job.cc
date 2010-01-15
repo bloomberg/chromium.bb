@@ -40,11 +40,10 @@ void OutputTextInPre(const std::string& text, std::string* out) {
 void DrawCommandButton(const std::string& title,
                        const std::string& command,
                        std::string* data) {
-  data->append(
-      StringPrintf("<input type=\"button\" value=\"%s\" "
-                   "onclick=\"DoCommand('%s')\" />",
-                   title.c_str(),
-                   command.c_str()));
+  StringAppendF(data, "<input type=\"button\" value=\"%s\" "
+               "onclick=\"DoCommand('%s')\" />",
+               title.c_str(),
+               command.c_str());
 }
 
 
@@ -79,13 +78,15 @@ class SubSection {
           url_format->MakeURL(GetFullyQualifiedName()).spec();
 
       // Print the heading.
-      out->append(StringPrintf("<div>"
+      StringAppendF(
+          out,
+          "<div>"
           "<span class=subsection_title>%s</span> "
           "<span class=subsection_name>(<a href='%s'>%s</a>)<span>"
           "</div>",
           EscapeForHTML(title_).c_str(),
           section_url.c_str(),
-          EscapeForHTML(section_url).c_str()));
+          EscapeForHTML(section_url).c_str());
 
       out->append("<div class=subsection_body>");
     }
@@ -261,15 +262,16 @@ class HostResolverCacheSubSection : public SubSection {
 
     DrawCommandButton("Clear", "clear-hostcache", out);
 
-    out->append(StringPrintf(
-          "<ul><li>Size: %" PRIuS "</li>"
-          "<li>Capacity: %" PRIuS "</li>"
-          "<li>Time to live (ms) for success entries: %" PRId64"</li>"
-          "<li>Time to live (ms) for failure entries: %" PRId64"</li></ul>",
-          host_cache->size(),
-          host_cache->max_entries(),
-          host_cache->success_entry_ttl().InMilliseconds(),
-          host_cache->failure_entry_ttl().InMilliseconds()));
+    StringAppendF(
+        out,
+        "<ul><li>Size: %" PRIuS "</li>"
+        "<li>Capacity: %" PRIuS "</li>"
+        "<li>Time to live (ms) for success entries: %" PRId64"</li>"
+        "<li>Time to live (ms) for failure entries: %" PRId64"</li></ul>",
+        host_cache->size(),
+        host_cache->max_entries(),
+        host_cache->success_entry_ttl().InMilliseconds(),
+        host_cache->failure_entry_ttl().InMilliseconds());
 
     out->append("<table border=1>"
                 "<tr>"
@@ -320,12 +322,13 @@ class HostResolverCacheSubSection : public SubSection {
         }
       }
 
-      out->append(StringPrintf("<td>%s</td><td>%s</td><td>%s</td>"
-                               "<td>%d</td></tr>",
-                               EscapeForHTML(key.hostname).c_str(),
-                               EscapeForHTML(address_family_str).c_str(),
-                               address_list_html.c_str(),
-                               ttl_ms));
+      StringAppendF(out,
+                    "<td>%s</td><td>%s</td><td>%s</td>"
+                    "<td>%d</td></tr>",
+                    EscapeForHTML(key.hostname).c_str(),
+                    EscapeForHTML(address_family_str).c_str(),
+                    address_list_html.c_str(),
+                    ttl_ms);
     }
 
     out->append("</table>");

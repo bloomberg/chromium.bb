@@ -33,8 +33,8 @@ class FormatHelper {
 
     for (size_t i = 0; i < entries_.size(); ++i) {
       if (log->num_entries_truncated() > 0 && i + 1 == entries_.size()) {
-        result += StringPrintf(" ... Truncated %" PRIuS " entries ...\n",
-                               log->num_entries_truncated());
+        StringAppendF(&result, " ... Truncated %" PRIuS " entries ...\n",
+                      log->num_entries_truncated());
       }
 
       if (entries_[i].block_index != -1 &&
@@ -48,18 +48,18 @@ class FormatHelper {
       int indentation_spaces = entries_[i].indentation * kSpacesPerIndentation;
       std::string entry_str = GetEntryString(i);
 
-      result += StringPrintf("t=%s: %s%s",
-          PadStringLeft(GetTimeString(i), max_time_width).c_str(),
-          PadStringLeft("", indentation_spaces).c_str(),
-          entry_str.c_str());
+      StringAppendF(&result, "t=%s: %s%s",
+                    PadStringLeft(GetTimeString(i), max_time_width).c_str(),
+                    PadStringLeft("", indentation_spaces).c_str(),
+                    entry_str.c_str());
 
       if (entries_[i].IsBeginEvent()) {
         // Summarize how long this block lasted.
         int padding = ((max_indentation - entries_[i].indentation) *
             kSpacesPerIndentation) + (max_type_width - entry_str.size());
-        result += StringPrintf("%s [dt=%s]",
-            PadStringLeft("", padding).c_str(),
-            PadStringLeft(GetBlockDtString(i), max_dt_width).c_str());
+        StringAppendF(&result, "%s [dt=%s]",
+                      PadStringLeft("", padding).c_str(),
+                      PadStringLeft(GetBlockDtString(i), max_dt_width).c_str());
       }
 
       if (i + 1 != entries_.size())
