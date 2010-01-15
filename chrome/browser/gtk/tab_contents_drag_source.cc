@@ -64,6 +64,7 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   if (drop_data.url.is_valid()) {
     targets_mask |= GtkDndUtil::TEXT_URI_LIST;
     targets_mask |= GtkDndUtil::CHROME_NAMED_URL;
+    targets_mask |= GtkDndUtil::NETSCAPE_URL;
   }
   if (!drop_data.text_html.empty())
     targets_mask |= GtkDndUtil::TEXT_HTML;
@@ -95,7 +96,8 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   // and holds and doesn't start dragging for a long time. I doubt it matters
   // much, but we should probably look into the possibility of getting the
   // initiating event from webkit.
-  gtk_drag_begin(drag_widget_, list, GDK_ACTION_COPY,
+  gtk_drag_begin(drag_widget_, list,
+                 static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_LINK),
                  1,  // Drags are always initiated by the left button.
                  reinterpret_cast<GdkEvent*>(last_mouse_down));
   MessageLoopForUI::current()->AddObserver(this);
@@ -152,6 +154,18 @@ void TabContentsDragSource::OnDragDataGet(
     case GtkDndUtil::CHROME_NAMED_URL: {
       GtkDndUtil::WriteURLWithName(selection_data, drop_data_->url,
                                    drop_data_->url_title, target_type);
+      break;
+    }
+
+    case GtkDndUtil::NETSCAPE_URL: {
+      // _NETSCAPE_URL format is URL + \n + title.
+      std::string utf8_text = drop_data_->url.spec() + "\n" + UTF16ToUTF8(
+          drop_data_->url_title);
+      gtk_selection_data_set(selection_data,
+                             selection_data->target,
+                             bits_per_byte,
+                             reinterpret_cast<const guchar*>(utf8_text.c_str()),
+                             utf8_text.length());
       break;
     }
 

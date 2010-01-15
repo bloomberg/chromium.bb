@@ -27,7 +27,11 @@ class GtkDndUtil {
     TEXT_URI_LIST = 1 << 5,
     TEXT_HTML = 1 << 6,
 
-    INVALID_TARGET = 1 << 7,
+    // Other types.  NETSCAPE_URL is provided for compatibility with other
+    // apps.
+    NETSCAPE_URL = 1 << 7,
+
+    INVALID_TARGET = 1 << 8,
   };
 
   // Get the atom for a given target (of the above enum type). Will return NULL

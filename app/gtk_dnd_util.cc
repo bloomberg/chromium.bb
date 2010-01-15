@@ -44,6 +44,11 @@ GdkAtom GtkDndUtil::GetAtomForTarget(int target) {
           const_cast<char*>("application/x-chrome-named-url"), false);
       return named_url;
 
+    case NETSCAPE_URL:
+      static GdkAtom netscape_url = gdk_atom_intern(
+          const_cast<char*>("_NETSCAPE_URL"), false);
+      return netscape_url;
+
     default:
       NOTREACHED();
   }
@@ -99,6 +104,11 @@ void GtkDndUtil::AddTargetToList(GtkTargetList* targets, int target_code) {
 
     case TEXT_HTML:
       gtk_target_list_add(targets, GetAtomForTarget(TEXT_PLAIN), 0, TEXT_HTML);
+      break;
+
+    case NETSCAPE_URL:
+      gtk_target_list_add(targets, GetAtomForTarget(NETSCAPE_URL), 0,
+                          NETSCAPE_URL);
       break;
 
     case CHROME_TAB:
