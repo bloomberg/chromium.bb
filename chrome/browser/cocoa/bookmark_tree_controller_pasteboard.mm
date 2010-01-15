@@ -33,8 +33,11 @@ static scoped_nsobject<NSArray> sDraggedItems;
                                      BookmarkDictionaryListPboardType,
                                      WebURLsWithTitlesPboardType,
                                      NSURLPboardType, nil]];
-  [outline_ setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
-  [outline_ setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
+  [outline_ setDraggingSourceOperationMask:NSDragOperationCopy |
+                                           NSDragOperationMove
+                                  forLocal:YES];
+  [outline_ setDraggingSourceOperationMask:NSDragOperationCopy
+                                  forLocal:NO];
 }
 
 // Selects a range of items in a parent item.
@@ -150,7 +153,7 @@ static void flattenItem(BookmarkItem* item,
 
 // The Cut command.
 - (IBAction)cut:(id)sender {
-  if ([self writeItems:[self selectedItems]
+  if ([self writeItems:[self actionItems]
           toPasteboard:[NSPasteboard generalPasteboard]
                canMove:NO]) {
     [self delete:self];
@@ -167,7 +170,7 @@ static void flattenItem(BookmarkItem* item,
 
 // Copy to any pasteboard.
 - (BOOL)copyToPasteboard:(NSPasteboard*)pb {
-  return [self writeItems:[self selectedItems]
+  return [self writeItems:[self actionItems]
              toPasteboard:pb
                   canMove:NO];
 }
@@ -336,6 +339,9 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
       targetItem = [targetItem parent];
       *childIndex = [targetItem indexOfChild:oldTargetItem] + 1;
     }
+  }
+  if ([targetItem isFake]) {
+    targetItem = nil;
   }
   return targetItem;
 }

@@ -4,21 +4,25 @@
 
 #import "chrome/browser/cocoa/bookmark_manager_controller.h"
 
-#include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#import "chrome/browser/cocoa/bookmark_groups_controller.h"
 #import "chrome/browser/cocoa/bookmark_item.h"
 #import "chrome/browser/cocoa/bookmark_tree_controller.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "grit/app_resources.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
+
+// Max number of recently-added bookmarks to show.
+static const int kMaxRecents = 200;
 
 // There's at most one BookmarkManagerController at a time. This points to it.
 static BookmarkManagerController* sInstance;
@@ -27,6 +31,7 @@ static BookmarkManagerController* sInstance;
 @interface BookmarkManagerController ()
 - (void)nodeChanged:(const BookmarkNode*)node
     childrenChanged:(BOOL)childrenChanged;
+- (void)updateRecents;
 @end
 
 
@@ -101,10 +106,16 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
     bridge_.reset(new BookmarkManagerBridge(self));
     profile_->GetBookmarkModel()->AddObserver(bridge_.get());
 
-    // Initialize some cached icons:
+    // Initialize the Recents and Search Results groups:
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    folderIcon_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
-    defaultFavIcon_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
+    NSImage* recentIcon = rb.GetNSImageNamed(IDR_BOOKMARK_MANAGER_RECENT_ICON);
+    recentGroup_.reset([[FakeBookmarkItem alloc] initWithTitle:@"Recently Added"
+                                                          icon:recentIcon
+                                                       manager:self]);
+    NSImage* searchIcon = rb.GetNSImageNamed(IDR_BOOKMARK_MANAGER_SEARCH_ICON);
+    searchGroup_.reset([[FakeBookmarkItem alloc] initWithTitle:@"Search Results"
+                                                          icon:searchIcon
+                                                       manager:self]);
   }
   return self;
 }
@@ -113,44 +124,101 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
   if (self == sInstance) {
     sInstance = nil;
   }
+  [groupsController_ removeObserver:self forKeyPath:@"selectedItem"];
   if (bridge_.get())
     profile_->GetBookmarkModel()->RemoveObserver(bridge_.get());
   [super dealloc];
 }
 
 - (void)awakeFromNib {
-  [groupsController_ reload];
-  [treeController_ bind:@"group"
-               toObject:groupsController_
-            withKeyPath:@"selectedGroup"
-                options:0];
+  // Synthesize the hierarchy of the left-hand outline view.
+  BookmarkModel* model = [self bookmarkModel];
+  BookmarkItem* bar = [self itemFromNode:model->GetBookmarkBarNode()];
+  BookmarkItem* other = [self itemFromNode:model->other_node()];
+  NSArray* rootItems = [NSArray arrayWithObjects:
+      bar,
+      other,
+      recentGroup_.get(),
+      nil];
+  FakeBookmarkItem* root = [[FakeBookmarkItem alloc] initWithTitle:@""
+                                                              icon:nil
+                                                           manager:self];
+  [root setChildren:rootItems];
+  [recentGroup_ setParent:root];
+  [searchGroup_ setParent:root];
+  [groupsController_ setGroup:root];
+
+  // Turning on autosave also loads and applies the settings, which we couldn't
+  // do until setting up the data model, above.
+  NSOutlineView* outline = [groupsController_ outline];
+  [outline setAutosaveExpandedItems:YES];
+  if (![outline isItemExpanded:bar] && ![outline isItemExpanded:other]) {
+    // By default, expand the Bookmarks Bar and Other:
+    [groupsController_ expandItem:bar];
+    [groupsController_ expandItem:other];
+  }
+
+  // The Source-List style on the group outline has less space between rows,
+  // so compensate for this by increasing the spacing:
+  NSSize spacing = [[groupsController_ outline] intercellSpacing];
+  spacing.height += 2;
+  [[groupsController_ outline] setIntercellSpacing:spacing];
+
+  [listController_ setShowsLeaves:YES];
+  [listController_ setFlat:YES];
+
+  // Observe selection changes in the groups outline.
+  [groupsController_ addObserver:self
+                      forKeyPath:@"selectedItem"
+                         options:NSKeyValueObservingOptionInitial
+                         context:NULL];
 }
 
+// Install the search field into the search toolbar item. (NSToolbar delegate)
+- (void)toolbarWillAddItem:(NSNotification*)notification {
+  NSToolbarItem* item = [[notification userInfo] objectForKey:@"item"];
+  if ([item tag] == 1) {
+    DCHECK(toolbarSearchView_);
+    [item setView:toolbarSearchView_];
+    NSSize size = [toolbarSearchView_ frame].size;
+    [item setMinSize:size];
+    [item setMaxSize:size];
+  }
+}
+
+// When window closes, get rid of myself too. (NSWindow delegate)
+- (void)windowWillClose:(NSNotification*)n {
+  [self autorelease];
+}
+
+
+#pragma mark -
+#pragma mark ACCESSORS:
+
+
 // can't synthesize category methods, unfortunately
-- (BookmarkGroupsController*)groupsController {
+- (BookmarkTreeController*)groupsController {
   return groupsController_;
 }
 
-- (BookmarkTreeController*)treeController {
-  return treeController_;
+- (BookmarkTreeController*)listController {
+  return listController_;
 }
 
-static void addItem(NSMenu* menu, int command, SEL action) {
-  [menu addItemWithTitle:l10n_util::GetNSStringWithFixup(command)
-                  action:action
-           keyEquivalent:@""];
+// Returns the groups or list controller, whichever one has focus.
+- (BookmarkTreeController*)focusedController {
+  id first = [[self window] firstResponder];
+  if ([first isKindOfClass:[BookmarksOutlineView class]])
+    return [(BookmarksOutlineView*)first bookmarkController];
+  return nil;
 }
 
-// Generates a context menu for use by the group/tree controllers.
-- (NSMenu*)contextMenu {
-  NSMenu* menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
-  addItem(menu, IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB, @selector(openItems:));
-  [menu addItem:[NSMenuItem separatorItem]];
-  addItem(menu, IDS_BOOKMARK_BAR_EDIT, @selector(editTitle:));
-  addItem(menu, IDS_BOOKMARK_BAR_REMOVE, @selector(delete:));
-  [menu addItem:[NSMenuItem separatorItem]];
-  addItem(menu, IDS_BOOMARK_BAR_NEW_FOLDER, @selector(newFolder:));
-  return menu;
+- (FakeBookmarkItem*)recentGroup {
+  return recentGroup_;
+}
+
+- (FakeBookmarkItem*)searchGroup {
+  return searchGroup_;
 }
 
 
@@ -203,9 +271,16 @@ static void addItem(NSMenu* menu, int command, SEL action) {
 - (void)itemChanged:(BookmarkItem*)item
     childrenChanged:(BOOL)childrenChanged {
   if (item) {
+    [item nodeChanged];
     [groupsController_ itemChanged:item childrenChanged:childrenChanged];
-    [treeController_ itemChanged:item childrenChanged:childrenChanged];
+    [listController_ itemChanged:item childrenChanged:childrenChanged];
   }
+
+  // Update the recents or search results if they're visible.
+  if ([groupsController_ selectedItem] == searchGroup_.get())
+    [self searchFieldChanged:self];
+  if ([groupsController_ selectedItem] == recentGroup_.get())
+    [self updateRecents];
 }
 
 // Called when the bookmark model changes; forwards to the sub-controllers.
@@ -217,9 +292,80 @@ static void addItem(NSMenu* menu, int command, SEL action) {
   }
 }
 
+- (void)updateRecents {
+  typedef std::vector<const BookmarkNode*> NodeVector;
+  NodeVector nodes;
+  bookmark_utils::GetMostRecentlyAddedEntries(
+      [self bookmarkModel], kMaxRecents, &nodes);
+
+  // Update recentGroup_:
+  NSMutableArray* result = [NSMutableArray arrayWithCapacity:nodes.size()];
+  for (NodeVector::iterator it = nodes.begin(); it != nodes.end(); ++it) {
+    [result addObject:[self itemFromNode:*it]];
+  }
+  if (![result isEqual:[recentGroup_ children]]) {
+    [recentGroup_ setChildren:result];
+    [self itemChanged:recentGroup_ childrenChanged:YES];
+  }
+}
+
+- (void)updateSearch {
+  typedef std::vector<const BookmarkNode*> MatchVector;
+  MatchVector matches;
+  NSString* searchString = [toolbarSearchView_ stringValue];
+  if ([searchString length] > 0) {
+    // Search in the BookmarkModel:
+    std::wstring text = base::SysNSStringToWide(searchString);
+    bookmark_utils::GetBookmarksContainingText(
+        [self bookmarkModel],
+        base::SysNSStringToWide(searchString),
+        std::numeric_limits<int>::max(),  // unlimited result count
+        profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+        &matches);
+  }
+
+  // Update contents of searchGroup_:
+  NSMutableArray* result = [NSMutableArray arrayWithCapacity:matches.size()];
+  for (MatchVector::iterator it = matches.begin(); it != matches.end(); ++it) {
+    [result addObject:[self itemFromNode:*it]];
+  }
+  if (![result isEqual:[searchGroup_ children]]) {
+    [searchGroup_ setChildren:result];
+    [self itemChanged:searchGroup_ childrenChanged:YES];
+  }
+
+  // Show searchGroup_ if it's not visible yet:
+  FakeBookmarkItem* root = (FakeBookmarkItem*)[groupsController_ group];
+  NSArray* rootItems = [root children];
+  if (![rootItems containsObject:searchGroup_]) {
+    [root setChildren:[rootItems arrayByAddingObject:searchGroup_]];
+    [self itemChanged:root childrenChanged:YES];
+  }
+}
+
+- (void)selectedGroupChanged {
+  BOOL showFolders = YES;
+  BookmarkItem* group = [groupsController_ selectedItem];
+  if (group == recentGroup_.get())
+    [self updateRecents];
+  else if (group == searchGroup_.get())
+    [self updateSearch];
+  else
+    showFolders = NO;
+  [listController_ setGroup:group];
+  [listController_ setShowsFolderColumn:showFolders];
+}
+
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  if (object == groupsController_)
+    [self selectedGroupChanged];
+}
 
 #pragma mark -
-#pragma mark WINDOW MANAGEMENT:
+#pragma mark ACTIONS:
 
 
 // Public entry point to open the bookmark manager.
@@ -232,25 +378,66 @@ static void addItem(NSMenu* menu, int command, SEL action) {
   return sInstance;
 }
 
-// When window closes, get rid of myself too. (NSWindow delegate)
-- (void)windowWillClose:(NSNotification*)n {
-  [self autorelease];
+- (void)showGroup:(BookmarkItem*)group {
+  [groupsController_ revealItem:group];
 }
 
-// Install the search field into the search toolbar item. (NSToolbar delegate)
-- (void)toolbarWillAddItem:(NSNotification*)notification {
-  NSToolbarItem* item = [[notification userInfo] objectForKey:@"item"];
-  if ([[item itemIdentifier] isEqualToString:@"search"]) {
-    [item setView:toolbarSearchView_];
-    NSSize size = [toolbarSearchView_ frame].size;
-    [item setMinSize:size];
-    [item setMaxSize:size];
-  }
+// Makes an item visible and selects it.
+- (BOOL)revealItem:(BookmarkItem*)item {
+  return [groupsController_ revealItem:[item parent]] &&
+      [listController_ revealItem:item];
 }
 
 // Called when the user types into the search field.
 - (IBAction)searchFieldChanged:(id)sender {
-  //TODO(snej): Implement this
+  [self updateSearch];
+  if ([[toolbarSearchView_ stringValue] length])
+    [self showGroup:searchGroup_];
+}
+
+- (void)setSearchString:(NSString*)string {
+  [toolbarSearchView_ setStringValue:string];
+  [self searchFieldChanged:self];
+}
+
+- (IBAction)newFolder:(id)sender {
+  [[self focusedController] newFolder:sender];
+}
+
+- (IBAction)delete:(id)sender {
+  [[self focusedController] delete:sender];
+}
+
+// Called when the user picks a menu or toolbar item when this window is key.
+- (void)commandDispatch:(id)sender {
+  // Copied from app_controller_mac.mm:
+  // Handle the case where we're dispatching a command from a sender that's in a
+  // browser window. This means that the command came from a background window
+  // and is getting here because the foreground window is not a browser window.
+  if ([sender respondsToSelector:@selector(window)]) {
+    id delegate = [[sender window] windowController];
+    if ([delegate isKindOfClass:[BrowserWindowController class]]) {
+      [delegate commandDispatch:sender];
+      return;
+    }
+  }
+
+  if ([sender tag] == IDC_FIND) {
+    [[[self window] toolbar] setVisible:YES];
+    [[self window] makeFirstResponder:toolbarSearchView_];
+  }
+}
+
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  SEL action = [item action];
+  if (action == @selector(commandDispatch:) ||
+      action == @selector(commandDispatchUsingKeyModifiers:)) {
+    NSInteger tag = [item tag];
+    return (tag == IDC_FIND);
+  } else if (action == @selector(newFolder:) || action == @selector(delete:)) {
+    return [[self focusedController] validateUserInterfaceItem:item];
+  }
+  return YES;
 }
 
 @end

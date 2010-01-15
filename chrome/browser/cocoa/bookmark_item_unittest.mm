@@ -65,6 +65,7 @@ TEST_F(BookmarkItemTest, RootItems) {
   EXPECT_EQ(bar_, [manager_ itemFromNode:barNode_]);
   EXPECT_EQ(bar_, [manager_ bookmarkBarItem]);
   EXPECT_TRUE([bar_ isFixed]);
+  EXPECT_FALSE([bar_ isFake]);
   EXPECT_FALSE([bar_ parent]);
   EXPECT_TRUE([bar_ isFolder]);
   EXPECT_EQ(0U, [bar_ numberOfChildren]);
@@ -79,12 +80,50 @@ TEST_F(BookmarkItemTest, RootItems) {
   EXPECT_EQ(other, [manager_ itemFromNode:otherNode]);
   EXPECT_EQ(other, [manager_ otherBookmarksItem]);
   EXPECT_TRUE([other isFixed]);
+  EXPECT_FALSE([other isFake]);
   EXPECT_FALSE([other parent]);
   EXPECT_TRUE([other isFolder]);
   EXPECT_EQ(0U, [other numberOfChildren]);
 
   EXPECT_NE(bar_, other);
   EXPECT_FALSE(isEqual(bar_, other));
+}
+
+TEST_F(BookmarkItemTest, FakeItems) {
+  NSImage* icon = [NSImage imageNamed:@"NSApplicationIcon"];
+  EXPECT_TRUE(icon);
+  FakeBookmarkItem* fake = [[FakeBookmarkItem alloc] initWithTitle:@"Fakir"
+                                                              icon:icon
+                                                           manager:manager_];
+  [fake setChildren:nil];
+  [fake autorelease];
+  EXPECT_TRUE(isEqual(@"Fakir", [fake title]));
+  EXPECT_EQ(icon, [fake icon]);
+  EXPECT_TRUE([fake isFake]);
+  EXPECT_TRUE([fake isFixed]);
+  EXPECT_FALSE([fake parent]);
+  EXPECT_FALSE([fake isFolder]);
+
+  NSArray* children = [NSArray arrayWithObject:bar_];
+  FakeBookmarkItem* bogus = [[FakeBookmarkItem alloc] initWithTitle:@"Bogus"
+                                                               icon:nil
+                                                            manager:manager_];
+  [bogus setChildren:children];
+  [bogus autorelease];
+  EXPECT_EQ([BookmarkItem folderIcon], [bogus icon]);
+  EXPECT_TRUE([bogus isFolder]);
+  EXPECT_TRUE(isEqual(children, [bogus children]));
+  ASSERT_EQ(1U, [bogus numberOfChildren]);
+  EXPECT_EQ(bar_, [bogus childAtIndex:0]);
+
+  BookmarkItem* otherItem = [manager_ itemFromNode:model_->other_node()];
+  children = [NSArray arrayWithObjects:bar_, otherItem, nil];
+  [bogus setChildren:children];
+  EXPECT_TRUE([bogus isFolder]);
+  EXPECT_TRUE(isEqual(children, [bogus children]));
+  EXPECT_EQ(2U, [bogus numberOfChildren]);
+  EXPECT_EQ(bar_, [bogus childAtIndex:0]);
+  EXPECT_EQ(otherItem, [bogus childAtIndex:1]);
 }
 
 TEST_F(BookmarkItemTest, AddItems) {
@@ -133,6 +172,7 @@ TEST_F(BookmarkItemTest, Hierarchy) {
   EXPECT_TRUE(isEqual(@"bookmark0", [item title]));
   EXPECT_TRUE(isEqual(@"http://example.com/0", [item URLString]));
   EXPECT_FALSE([item isFixed]);
+  EXPECT_FALSE([item isFake]);
   EXPECT_EQ(bar_, [item parent]);
   EXPECT_FALSE([item isFolder]);
   EXPECT_TRUE(isEqual(barTitle, [item folderPath]));
@@ -141,6 +181,7 @@ TEST_F(BookmarkItemTest, Hierarchy) {
   EXPECT_TRUE(isEqual(@"bookmark1", [item title]));
   EXPECT_TRUE(isEqual(@"http://example.com/1", [item URLString]));
   EXPECT_FALSE([item isFixed]);
+  EXPECT_FALSE([item isFake]);
   EXPECT_EQ(bar_, [item parent]);
   EXPECT_FALSE([item isFolder]);
 
@@ -148,6 +189,7 @@ TEST_F(BookmarkItemTest, Hierarchy) {
   EXPECT_TRUE(isEqual(@"bookmark3", [item title]));
   EXPECT_TRUE(isEqual(@"http://example.com/3", [item URLString]));
   EXPECT_FALSE([item isFixed]);
+  EXPECT_FALSE([item isFake]);
   EXPECT_EQ(bar_, [item parent]);
   EXPECT_FALSE([item isFolder]);
 
@@ -156,6 +198,7 @@ TEST_F(BookmarkItemTest, Hierarchy) {
   EXPECT_TRUE(isEqual(@"group", [folder title]));
   EXPECT_EQ(0U, [[folder URLString] length]);
   EXPECT_FALSE([item isFixed]);
+  EXPECT_FALSE([folder isFake]);
   EXPECT_EQ(bar_, [folder parent]);
   EXPECT_TRUE([folder isFolder]);
   ASSERT_EQ(2U, [folder numberOfChildren]);
@@ -166,6 +209,7 @@ TEST_F(BookmarkItemTest, Hierarchy) {
   EXPECT_TRUE(isEqual(@"nested0", [item title]));
   EXPECT_TRUE(isEqual(@"http://example.com/n0", [item URLString]));
   EXPECT_FALSE([item isFixed]);
+  EXPECT_FALSE([item isFake]);
   EXPECT_EQ(folder, [item parent]);
   EXPECT_FALSE([item isFolder]);
   EXPECT_TRUE(isEqual([barTitle stringByAppendingString:@"/group"],
@@ -175,6 +219,7 @@ TEST_F(BookmarkItemTest, Hierarchy) {
   EXPECT_TRUE(isEqual(@"nested1", [item title]));
   EXPECT_TRUE(isEqual(@"http://example.com/n1", [item URLString]));
   EXPECT_FALSE([item isFixed]);
+  EXPECT_FALSE([item isFake]);
   EXPECT_EQ(folder, [item parent]);
   EXPECT_FALSE([item isFolder]);
 }

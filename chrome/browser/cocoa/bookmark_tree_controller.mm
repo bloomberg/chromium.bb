@@ -18,10 +18,7 @@ static NSString* const kFolderColIdent = @"folder";
 
 @implementation BookmarkTreeController
 
-// Allow the |group| property to be bound (by BookmarkManagerController.)
-+ (void)initialize {
-  [self exposeBinding:@"group"];
-}
+@synthesize showsLeaves = showsLeaves_;
 
 // Initialization after the nib is loaded.
 - (void)awakeFromNib {
@@ -48,12 +45,32 @@ static NSString* const kFolderColIdent = @"folder";
   return outline_;
 }
 
-// Updates the tree after the data model has changed.
-- (void)itemChanged:(BookmarkItem*)nodeItem childrenChanged:(BOOL)childrenChanged {
-  if (nodeItem == group_)
-    nodeItem = nil;
-  [outline_ reloadItem:nodeItem reloadChildren:childrenChanged];
+- (BOOL)showsFolderColumn {
+  NSTableColumn* col = [outline_ tableColumnWithIdentifier:kFolderColIdent];
+  return ![col isHidden];
 }
+
+- (void)setShowsFolderColumn:(BOOL)show {
+  NSTableColumn* col = [outline_ tableColumnWithIdentifier:kFolderColIdent];
+  DCHECK(col);
+  if (show != ![col isHidden]) {
+    [col setHidden:!show];
+    [outline_ sizeToFit];
+  }
+}
+
+- (BOOL)flat {
+  return flat_;
+}
+
+- (void)setFlat:(BOOL)flat {
+  flat_ = flat;
+  [outline_ setIndentationPerLevel:flat ? 0.0 : 16.0];
+}
+
+
+#pragma mark -
+#pragma mark SELECTION:
 
 // Getter for the |selectedItems| property.
 - (NSArray*)selectedItems {
@@ -82,6 +99,30 @@ static NSString* const kFolderColIdent = @"folder";
   [outline_ selectRowIndexes:newSelection byExtendingSelection:NO];
 }
 
+- (BookmarkItem*)selectedItem {
+  BookmarkItem* selected = nil;
+  if ([outline_ numberOfSelectedRows] == 1)
+    selected = [outline_ itemAtRow:[outline_ selectedRow]];
+  return selected;
+}
+
+- (void)setSelectedItem:(BookmarkItem*)item {
+  [self setSelectedItems:item ? [NSArray arrayWithObject:item] : nil];
+}
+
++ (NSArray*)keyPathsForValuesAffectingSelectedItem {
+  return [NSArray arrayWithObject:@"selectedItems"];
+}
+
+- (BOOL)selectionShouldChangeInOutlineView:(NSOutlineView*)outlineView {
+  [self willChangeValueForKey:@"selectedItems"];
+  return YES;
+}
+
+- (void)outlineViewSelectionDidChange:(NSNotification*)notification {
+  [self didChangeValueForKey:@"selectedItems"];
+}
+
 // Returns the selected/right-clicked item(s) for a command to act on.
 - (NSArray*)actionItems {
   int row = [outline_ clickedRow];
@@ -89,6 +130,31 @@ static NSString* const kFolderColIdent = @"folder";
     return [NSArray arrayWithObject:[outline_ itemAtRow:row]];
 
   return [self selectedItems];
+}
+
+- (BOOL)expandItem:(BookmarkItem*)item {
+  if (!item)
+    return NO;
+  if (item == group_)
+    return YES;
+  if ([outline_ rowForItem:item] < 0) {
+    // If the item's not visible, expand its ancestors.
+    if (![self expandItem:[item parent]])
+      return NO;
+  }
+  if (![outline_ isExpandable:item])
+    return NO;
+  [outline_ expandItem:item];
+  DCHECK([outline_ isItemExpanded:item]);
+  return YES;
+}
+
+- (BOOL)revealItem:(BookmarkItem*)item {
+  if (![self expandItem:[item parent]])
+    return NO;
+  [outline_ scrollRowToVisible:[outline_ rowForItem:item]];
+  [self setSelectedItems:[NSArray arrayWithObject:item]];
+  return YES;
 }
 
 
@@ -99,13 +165,15 @@ static NSString* const kFolderColIdent = @"folder";
 // Responds to a double-click by opening the selected URL(s).
 - (IBAction)openItems:(id)sender {
   for (BookmarkItem* item in [self actionItems]) {
-    if ([outline_ isExpandable:item]) {
+    if (![item isFolder]) {
+      [item open];
+    } else if (flat_) {
+      [manager_ showGroup:item];
+    } else {
       if ([outline_ isItemExpanded:item])
         [outline_ collapseItem:item];
       else
         [outline_ expandItem:item];
-    } else {
-      [item open];
     }
   }
 }
@@ -134,6 +202,7 @@ static NSString* const kFolderColIdent = @"folder";
 - (void)editTitleOfItem:(BookmarkItem*)item {
   int row = [outline_ rowForItem:item];
   DCHECK(row >= 0);
+  [self setSelectedItem:item];
   [outline_ editColumn:[outline_ columnWithIdentifier:@"title"]
                    row:row
              withEvent:[NSApp currentEvent]
@@ -154,9 +223,9 @@ static NSString* const kFolderColIdent = @"folder";
   NSArray* selItems = [self actionItems];
   if ([selItems count] > 0) {
     // Insert at selected/clicked row.
-    BookmarkItem* sel = [selItems objectAtIndex:0];
-    parent = [sel parent];
-    index = [parent indexOfChild:sel];
+    BookmarkItem* selected = [selItems objectAtIndex:0];
+    parent = [selected parent];
+    index = [parent indexOfChild:selected];
   } else {
     // ...or at very end if there's no selection:
     parent = group_;
@@ -170,12 +239,38 @@ static NSString* const kFolderColIdent = @"folder";
   // Create the folder, then select it and make the title editable:
   BookmarkItem* folder = [parent addFolderWithTitle:@"" atIndex:index];
   [outline_ expandItem:folder];
-  [self setSelectedItems:[NSArray arrayWithObject:folder]];
   [self editTitleOfItem:folder];
 }
 
+- (IBAction)revealSelectedItem:(id)sender {
+  NSArray* selItems = [self actionItems];
+  if ([selItems count] != 1 ||
+      ![manager_ revealItem:[selItems objectAtIndex:0]])
+    NSBeep();
+  [[outline_ window] makeFirstResponder:outline_];
+}
+
+static void addItem(NSMenu* menu, int command, SEL action) {
+  [menu addItemWithTitle:l10n_util::GetNSStringWithFixup(command)
+                  action:action
+           keyEquivalent:@""];
+}
+
+// Generates a context menu for the outline view.
 - (NSMenu*)menu {
-  NSMenu* menu = [manager_ contextMenu];
+  NSMenu* menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+  addItem(menu, IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB, @selector(openItems:));
+  if (showsLeaves_) {
+    addItem(menu, IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER,
+        @selector(revealSelectedItem:));
+  }
+  [menu addItem:[NSMenuItem separatorItem]];
+  addItem(menu, IDS_BOOKMARK_BAR_EDIT, @selector(editTitle:));
+  addItem(menu, IDS_BOOKMARK_BAR_REMOVE, @selector(delete:));
+  [menu addItem:[NSMenuItem separatorItem]];
+  addItem(menu, IDS_BOOMARK_BAR_NEW_FOLDER, @selector(newFolder:));
+  [menu addItem:[NSMenuItem separatorItem]];
+  addItem(menu, IDS_BOOKMARK_MANAGER_SORT, @selector(sortByTitle:));
   for (NSMenuItem* item in [menu itemArray])
     [item setTarget:self];
   return menu;
@@ -184,36 +279,47 @@ static NSString* const kFolderColIdent = @"folder";
 // Selectively enables/disables menu commands.
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
   SEL action = [item action];
-  NSArray* sel = [self actionItems];
-  NSUInteger selCount = [sel count];
+  NSArray* selected = [self actionItems];
+  NSUInteger selCount = [selected count];
   if (action == @selector(copy:)) {
     return selCount > 0;
 
   } else if (action == @selector(cut:) || action == @selector(delete:)) {
     if (selCount == 0)
       return NO;
-    for(BookmarkItem* item in sel) {
+    for(BookmarkItem* item in selected) {
       if ([item isFixed])
         return NO;
     }
     return YES;
 
   } else if (action == @selector(paste:)) {
-    return [[NSPasteboard generalPasteboard] availableTypeFromArray:
+    return ![group_ isFake] &&
+        [[NSPasteboard generalPasteboard] availableTypeFromArray:
             [outline_ registeredDraggedTypes]] != nil;
 
   } else if (action == @selector(openItems:)) {
     if (selCount == 0)
       return NO;
     // Disable if folder selected (if only because title says "Open In Tab".)
-    for (BookmarkItem* item in sel) {
+    for (BookmarkItem* item in selected) {
       if (![item URLString])
         return NO;
     }
     return YES;
 
   } else if (action == @selector(editTitle:)) {
-    return selCount == 1 && ![[sel lastObject] isFixed];
+    return selCount == 1 && ![[selected lastObject] isFixed];
+
+  } else if (action == @selector(newFolder:)) {
+    // Disable New Folder in Recents/Search list.
+    return !(flat_ && [group_ isFake]);
+
+  } else if (action == @selector(revealSelectedItem:)) {
+    // Enable Show In Folder only in the flat list when
+    // showing Recents or Search, and a URL is selected.
+    return flat_ && [group_ isFake] &&
+        selCount == 1 && [[selected lastObject] URLString];
 
   } else {
     return YES;
@@ -229,7 +335,7 @@ static NSString* const kFolderColIdent = @"folder";
 - (NSInteger)  outlineView:(NSOutlineView*)outlineView
     numberOfChildrenOfItem:(id)item {
   item = (item ? item : group_);
-  return [item numberOfChildren];
+  return showsLeaves_ ? [item numberOfChildren] : [item numberOfChildFolders];
 }
 
 // Returns a child of an item (NSOutlineView data source)
@@ -237,13 +343,33 @@ static NSString* const kFolderColIdent = @"folder";
             child:(NSInteger)index
            ofItem:(id)item {
   item = (item ? item : group_);
-  return [item childAtIndex:index];
+  if (showsLeaves_)
+    return [item childAtIndex:index];
+  else
+    return [item childFolderAtIndex:index];
 }
 
 // Returns whether an item is expandable (NSOutlineView data source)
 - (BOOL)outlineView:(NSOutlineView*)outlineView isItemExpandable:(id)item {
-  return [item isFolder];
+  if (flat_ || ![(item ? item : group_) isFolder])
+    return NO;
+  // In leafless mode, a folder with no subfolders isn't expandable.
+  if (!showsLeaves_ && [item numberOfChildFolders] == 0)
+    return NO;
+  return YES;
 }
+
+- (id)          outlineView:(NSOutlineView*)outlineView
+    itemForPersistentObject:(id)persistentID {
+  return [group_ itemWithPersistentID:persistentID];
+}
+
+- (id)          outlineView:(NSOutlineView*)outlineView
+    persistentObjectForItem:(id)item {
+  item = (item ? item : group_);
+  return [item persistentID];
+}
+
 
 // Returns the value to display in a cell (NSOutlineView data source)
 - (id)            outlineView:(NSOutlineView*)outlineView
@@ -307,6 +433,13 @@ static NSString* const kFolderColIdent = @"folder";
   [cell setFont:[item isFixed] ? sBoldFont : sPlainFont];
 }
 
+// Updates the tree after the data model has changed.
+- (void)itemChanged:(id)nodeItem childrenChanged:(BOOL)childrenChanged {
+  if (nodeItem == group_)
+    nodeItem = nil;
+  [outline_ reloadItem:nodeItem reloadChildren:childrenChanged];
+}
+
 @end
 
 
@@ -314,6 +447,14 @@ static NSString* const kFolderColIdent = @"folder";
 
 - (BookmarkTreeController*)bookmarkController {
   return (BookmarkTreeController*)[self delegate];
+}
+
+- (NSRect)frameOfOutlineCellAtRow:(NSInteger)row {
+  // If the controller is in flat view, don't reserve space for the triangles.
+  BookmarkTreeController* controller = [self delegate];
+  if ([controller flat])
+    return NSZeroRect;
+  return [super frameOfOutlineCellAtRow:row];
 }
 
 - (IBAction)cut:(id)sender {

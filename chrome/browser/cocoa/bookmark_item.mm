@@ -186,6 +186,10 @@
   return nil;
 }
 
+- (BOOL)isFake {
+  return NO;
+}
+
 - (BOOL)isFixed {
   BookmarkModel* model = [manager_ bookmarkModel];
   return node_ == model->GetBookmarkBarNode() || node_ == model->other_node();
@@ -254,6 +258,71 @@
   if (index < 0)
     return NO;
   [manager_ bookmarkModel]->Remove(node_, index);
+  return YES;
+}
+
+- (void)nodeChanged {
+  icon_.reset(nil);
+}
+
+@end
+
+
+@implementation FakeBookmarkItem
+
+@synthesize title = title_, parent = parent_, children = children_;
+
+- (id)initWithTitle:(NSString*)title
+               icon:(NSImage*)icon
+            manager:(BookmarkManagerController*)manager  {
+  self = [super initWithBookmarkNode:nil manager:manager];
+  if (self) {
+    title_ = [title copy];
+    children_ = [[NSMutableArray alloc] init];
+    icon_.reset([icon retain]);
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [title_ release];
+  [children_ release];
+  [super dealloc];
+}
+
+- (BOOL)isFolder {
+  return children_ != nil;
+}
+
+- (NSUInteger)numberOfChildren {
+  return [children_ count];
+}
+
+- (BookmarkItem*)childAtIndex:(NSUInteger)index {
+  return [children_ objectAtIndex:index];
+}
+
+- (NSUInteger)indexOfChild:(BookmarkItem*)child {
+  return [children_ indexOfObjectIdenticalTo:child];
+}
+
+- (BOOL)childAtIndexIsFolder:(NSUInteger)index {
+  return [[children_ objectAtIndex:index] isFolder];
+}
+
+- (NSString*)URLString {
+  return nil;
+}
+
+- (void)setURLString:(NSString*)urlStr {
+  NOTREACHED();
+}
+
+- (BOOL)isFake {
+  return YES;
+}
+
+- (BOOL)isFixed {
   return YES;
 }
 

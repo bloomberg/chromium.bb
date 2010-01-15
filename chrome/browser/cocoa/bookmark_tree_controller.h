@@ -10,22 +10,48 @@
 
 
 // Controller for the bookmark tree view (the right pane).
-@interface BookmarkTreeController : NSObject {
+@interface BookmarkTreeController : NSObject <NSUserInterfaceValidations> {
  @private
   IBOutlet NSOutlineView* outline_;
   IBOutlet BookmarkManagerController* manager_;
   BookmarkItem* group_;
+  BOOL showsLeaves_;
+  BOOL flat_;
 }
+
+// If set, leaf (URL) bookmarks are shown; if not, they're hidden.
+@property BOOL showsLeaves;
+// If set, displays a flat list (no hierarchy).
+@property BOOL flat;
+// Controls the visibility of the "Folder" column (used with search/recents.)
+@property BOOL showsFolderColumn;
 
 // The top-level bookmark folder used as the root of the outline's tree.
 // Observable, bindable.
 @property (assign) BookmarkItem* group;
 // Controls whether leaf bookmarks or just folders are shown.
-// The currently selected item(s) in the outline. (Not observable.)
+// The currently selected item(s) in the outline. (Observable.)
 @property (retain) NSArray* selectedItems;
+// The currently selected single item; nil on multiple selection. (Observable.)
+@property (retain) BookmarkItem* selectedItem;
+// The currently selected or right-clicked items, for commands to act on.
+@property (readonly) NSArray* actionItems;
+
+// Expands a folder item (including any parent folders).
+// Returns YES on success, NO if it couldn't find the folder.
+- (BOOL)expandItem:(BookmarkItem*)item;
+// Expands parent folders, selects the item, and scrolls it into view:
+// Returns YES on success, NO if it couldn't find the item.
+- (BOOL)revealItem:(BookmarkItem*)item;
+
+// Action for the New Folder command.
+- (IBAction)newFolder:(id)sender;
 
 // Action for the Delete command; also invoked by the delete key.
 - (IBAction)delete:(id)sender;
+
+// Reveals the selected search/recent item in its real folder.
+- (IBAction)revealSelectedItem:(id)sender;
 
 // Called by the BookmarkManagerController to notify the data model's changed.
 - (void)itemChanged:(BookmarkItem*)nodeItem
@@ -61,4 +87,6 @@
 
 // Outline view for bookmark tree; handles Cut/Copy/Paste and Delete key.
 @interface BookmarksOutlineView : NSOutlineView
+// The owning BookmarkTreeController (same as the delegate).
+@property (readonly) BookmarkTreeController* bookmarkController;
 @end

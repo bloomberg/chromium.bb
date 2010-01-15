@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/bookmark_groups_controller.h"
 #import "chrome/browser/cocoa/bookmark_item.h"
 #import "chrome/browser/cocoa/bookmark_manager_controller.h"
 #import "chrome/browser/cocoa/bookmark_tree_controller.h"
@@ -26,8 +25,10 @@ class BookmarkTreeControllerTest : public CocoaTest {
     manager_ = [BookmarkManagerController showBookmarkManager:
                 browser_test_helper_.profile()];
     ASSERT_TRUE(manager_);
-    treeController_ = [manager_ treeController];
-    ASSERT_TRUE(treeController_);
+    listController_ = [manager_ listController];
+    ASSERT_TRUE(listController_);
+    groupsController_ = [manager_ groupsController];
+    ASSERT_TRUE(groupsController_);
   }
 
   void TearDown() {
@@ -39,7 +40,7 @@ class BookmarkTreeControllerTest : public CocoaTest {
   BookmarkItem* SelectBar() {
     BookmarkItem* bar = [manager_ bookmarkBarItem];
     EXPECT_TRUE(bar);
-    [[manager_ groupsController] setSelectedGroup:bar];
+    [[manager_ groupsController] setSelectedItem:bar];
     return bar;
   }
 
@@ -58,19 +59,20 @@ class BookmarkTreeControllerTest : public CocoaTest {
 
   BrowserTestHelper browser_test_helper_;
   BookmarkManagerController* manager_;
-  BookmarkTreeController* treeController_;
+  BookmarkTreeController* listController_;
+  BookmarkTreeController* groupsController_;
   NSPasteboard* pasteboard_;
 };
 
 TEST_F(BookmarkTreeControllerTest, Model) {
   // Select nothing in the group list and check tree is empty:
-  BookmarkGroupsController* groupsController = [manager_ groupsController];
-  [groupsController setSelectedGroup:nil];
-  EXPECT_EQ(nil, [treeController_ group]);
+  BookmarkTreeController* groupsController = [manager_ groupsController];
+  [groupsController setSelectedItem:nil];
+  EXPECT_EQ(nil, [listController_ group]);
 
   // Select the bookmarks bar and check that it's shown in the tree:
   BookmarkItem* bar = SelectBar();
-  EXPECT_EQ(bar, [treeController_ group]);
+  EXPECT_EQ(bar, [listController_ group]);
 }
 
 TEST_F(BookmarkTreeControllerTest, Selection) {
@@ -78,56 +80,118 @@ TEST_F(BookmarkTreeControllerTest, Selection) {
   BookmarkItem* test1 = AddToBar(@"Test 1", @"http://example.com/test1");
   BookmarkItem* test2 = AddToBar(@"Test 2", @"http://example.com/test2");
   BookmarkItem* test3 = AddToBar(@"Test 3", @"http://example.com/test3");
-  EXPECT_EQ(0U, [[treeController_ selectedItems] count]);
+  EXPECT_EQ(0U, [[listController_ selectedItems] count]);
 
   NSArray* sel = [NSArray arrayWithObject:test2];
-  [treeController_ setSelectedItems:sel];
-  EXPECT_TRUE([sel isEqual:[treeController_ selectedItems]]);
+  [listController_ setSelectedItems:sel];
+  EXPECT_TRUE([sel isEqual:[listController_ selectedItems]]);
   sel = [NSArray arrayWithObjects:test1, test3, nil];
-  [treeController_ setSelectedItems:sel];
-  EXPECT_TRUE([sel isEqual:[treeController_ selectedItems]]);
+  [listController_ setSelectedItems:sel];
+  EXPECT_TRUE([sel isEqual:[listController_ selectedItems]]);
   sel = [NSArray arrayWithObjects:test1, test2, test3, nil];
-  [treeController_ setSelectedItems:sel];
-  EXPECT_TRUE([sel isEqual:[treeController_ selectedItems]]);
+  [listController_ setSelectedItems:sel];
+  EXPECT_TRUE([sel isEqual:[listController_ selectedItems]]);
   sel = [NSArray array];
-  [treeController_ setSelectedItems:sel];
-  EXPECT_TRUE([sel isEqual:[treeController_ selectedItems]]);
+  [listController_ setSelectedItems:sel];
+  EXPECT_TRUE([sel isEqual:[listController_ selectedItems]]);
 }
 
 TEST_F(BookmarkTreeControllerTest, MoveItems) {
+  NSOutlineView* outline = [groupsController_ outline];
+  ASSERT_TRUE(outline);
+
+  // Add three folders and another one we'll drop some into:
+  BookmarkItem* bookmarkBar = SelectBar();
+  BookmarkItem* test1 = AddFolderToBar(@"Test 1");
+  BookmarkItem* test2 = AddFolderToBar(@"Test 2");
+  BookmarkItem* folder = AddFolderToBar(@"Folder");
+  BookmarkItem* test3 = AddFolderToBar(@"Test 3");
+  EXPECT_TRUE([groupsController_ expandItem:bookmarkBar]);
+
+  // Verify NSOutlineView hierarchy.
+  EXPECT_EQ(0, [outline rowForItem:bookmarkBar]);
+  EXPECT_EQ(1, [outline rowForItem:test1]);
+  EXPECT_EQ(2, [outline rowForItem:test2]);
+  EXPECT_EQ(3, [outline rowForItem:folder]);
+  EXPECT_EQ(4, [outline rowForItem:test3]);
+  EXPECT_EQ(bookmarkBar, [outline parentForItem:test1]);
+  EXPECT_EQ(bookmarkBar, [outline parentForItem:test2]);
+  EXPECT_EQ(bookmarkBar, [outline parentForItem:folder]);
+  EXPECT_EQ(bookmarkBar, [outline parentForItem:test3]);
+
+  // Check where dropped URLs would go:
+  NSInteger dropIndex = 0;
+  BookmarkItem* target = [groupsController_ itemForDropOnItem:folder
+                                                proposedIndex:&dropIndex];
+  EXPECT_EQ(folder, target);
+  EXPECT_EQ(0, dropIndex);
+
+  dropIndex = NSOutlineViewDropOnItemIndex;
+  target = [groupsController_ itemForDropOnItem:folder
+                                  proposedIndex:&dropIndex];
+  EXPECT_EQ(folder, target);
+  EXPECT_EQ(0, dropIndex);
+
+  // Move the first and third item into the folder.
+  [groupsController_ moveItems:[NSMutableArray arrayWithObjects:test1, test3, nil]
+                      toFolder:folder
+                       atIndex:0];
+
+  // Verify bookmark model hierarchy.
+  EXPECT_EQ(folder, [test1 parent]);
+  EXPECT_EQ(folder, [test3 parent]);
+  EXPECT_EQ(bookmarkBar, [folder parent]);
+  EXPECT_EQ(bookmarkBar, [test2 parent]);
+
+  // Verify NSOutlineView hierarchy. test1 and test3 should be in the folder.
+  EXPECT_TRUE([groupsController_ expandItem:folder]);
+  EXPECT_TRUE([outline isItemExpanded:folder]);
+  EXPECT_EQ(bookmarkBar, [outline parentForItem:test2]);
+  EXPECT_EQ(bookmarkBar, [outline parentForItem:folder]);
+  EXPECT_EQ(folder, [outline parentForItem:test1]);
+  EXPECT_EQ(folder, [outline parentForItem:test3]);
+
+  // Verify the folder is selected.
+  EXPECT_TRUE([[outline selectedRowIndexes]
+    isEqual:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(2, 1)]]);
+  NSArray* sel = [groupsController_ selectedItems];
+  EXPECT_TRUE([sel isEqual:([NSArray arrayWithObject:folder])]);
+}
+
+TEST_F(BookmarkTreeControllerTest, MoveItemsFlat) {
   // Add three bookmarks and a folder.
-  NSOutlineView* outline = [treeController_ outline];
+  NSOutlineView* outline = [listController_ outline];
   SelectBar();
-  BookmarkItem* group = [treeController_ group];
   BookmarkItem* test1 = AddToBar(@"Test 1", @"http://example.com/test1");
   BookmarkItem* test2 = AddToBar(@"Test 2", @"http://example.com/test2");
   BookmarkItem* folder = AddFolderToBar(@"Folder");
   BookmarkItem* test3 = AddToBar(@"Test 3", @"http://example.com/test3");
-  [outline expandItem:folder];
+
+  BookmarkItem* group = [listController_ group];
 
   // Check where dropped URLs would go:
   NSInteger dropIndex = NSOutlineViewDropOnItemIndex;
-  BookmarkItem* target = [treeController_ itemForDropOnItem:test1
+  BookmarkItem* target = [listController_ itemForDropOnItem:test1
                                               proposedIndex:&dropIndex];
   EXPECT_EQ(nil, target);
   dropIndex = 0;
-  target = [treeController_ itemForDropOnItem:test1
+  target = [listController_ itemForDropOnItem:test1
                                 proposedIndex:&dropIndex];
   EXPECT_EQ(group, target);
   EXPECT_EQ(1, dropIndex);
   dropIndex = 0;
-  target = [treeController_ itemForDropOnItem:folder
+  target = [listController_ itemForDropOnItem:folder
                                 proposedIndex:&dropIndex];
   EXPECT_EQ(folder, target);
   EXPECT_EQ(0, dropIndex);
   dropIndex = NSOutlineViewDropOnItemIndex;
-  target = [treeController_ itemForDropOnItem:folder
+  target = [listController_ itemForDropOnItem:folder
                                 proposedIndex:&dropIndex];
   EXPECT_EQ(folder, target);
   EXPECT_EQ(0, dropIndex);
 
   // Move the first and third item into the folder.
-  [treeController_ moveItems:[NSArray arrayWithObjects:test1, test3, nil]
+  [listController_ moveItems:[NSArray arrayWithObjects:test1, test3, nil]
                     toFolder:folder
                      atIndex:0];
 
@@ -137,17 +201,11 @@ TEST_F(BookmarkTreeControllerTest, MoveItems) {
   EXPECT_EQ(group, [folder parent]);
   EXPECT_EQ(group, [test2 parent]);
 
-  // Verify NSOutlineView hierarchy.
-  EXPECT_EQ(folder, [outline parentForItem:test1]);
-  EXPECT_EQ(folder, [outline parentForItem:test3]);
+  // Verify NSOutlineView hierarchy. test1 and test3 should be gone now.
+  EXPECT_EQ(-1, [outline rowForItem:test1]);
+  EXPECT_EQ(-1, [outline rowForItem:test3]);
   EXPECT_EQ(nil, [outline parentForItem:test2]);
   EXPECT_EQ(nil, [outline parentForItem:folder]);
-
-  // Verify the moved items are selected.
-  EXPECT_TRUE([[outline selectedRowIndexes]
-    isEqual:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(2, 2)]]);
-  NSArray* sel = [treeController_ selectedItems];
-  EXPECT_TRUE([sel isEqual:([NSArray arrayWithObjects:test1, test3, nil])]);
 }
 
 TEST_F(BookmarkTreeControllerTest, CopyURLs) {
@@ -155,9 +213,9 @@ TEST_F(BookmarkTreeControllerTest, CopyURLs) {
   AddToBar(@"Test 1", @"http://example.com/test1");
   AddToBar(@"Test 2", @"http://example.com/test2");
   AddToBar(@"Test 3", @"http://example.com/test3");
-  [[treeController_ outline] selectAll:treeController_];
+  [[listController_ outline] selectAll:listController_];
 
-  ASSERT_TRUE([treeController_ copyToPasteboard:pasteboard_]);
+  ASSERT_TRUE([listController_ copyToPasteboard:pasteboard_]);
 
   NSArray* contents = [pasteboard_ propertyListForType:
                             WebURLsWithTitlesPboardType];
@@ -198,10 +256,10 @@ TEST_F(BookmarkTreeControllerTest, PasteSingleURL) {
   AddToBar(@"Test 2", @"http://example.com/test2");
   AddToBar(@"Test 3", @"http://example.com/test3");
 
-  ASSERT_TRUE([treeController_ pasteFromPasteboard:pasteboard_]);
-  EXPECT_EQ(4, [[treeController_ outline] numberOfRows]);
-  EXPECT_EQ(3, [[treeController_ outline] selectedRow]);
-  NSArray* sel = [treeController_ selectedItems];
+  ASSERT_TRUE([listController_ pasteFromPasteboard:pasteboard_]);
+  EXPECT_EQ(4, [[listController_ outline] numberOfRows]);
+  EXPECT_EQ(3, [[listController_ outline] selectedRow]);
+  NSArray* sel = [listController_ selectedItems];
   ASSERT_EQ(1U, [sel count]);
   BookmarkItem* item = [sel objectAtIndex:0];
   EXPECT_TRUE([@"http://google.com/" isEqual:[item URLString]]);
@@ -214,7 +272,7 @@ TEST_F(BookmarkTreeControllerTest, PasteMultipleURLs) {
                                   NSURLPboardType, nil]
                       owner:nil];
   NSMutableArray* urls = [NSArray arrayWithObjects:
-      @"http://google.com", @"http://chromium.org", nil];
+      @"http://google.com/", @"http://chromium.org/", nil];
   NSMutableArray* titles = [NSArray arrayWithObjects:
       @"Gooooogle", @"Chrooooomium", nil];
   [pasteboard_ setPropertyList:[NSArray arrayWithObjects:urls, titles, nil]
@@ -225,13 +283,14 @@ TEST_F(BookmarkTreeControllerTest, PasteMultipleURLs) {
   AddToBar(@"Test 1", @"http://example.com/test1");
   BookmarkItem* test2 = AddToBar(@"Test 2", @"http://example.com/test2");
   AddToBar(@"Test 3", @"http://example.com/test3");
-  [treeController_ setSelectedItems:[NSArray arrayWithObject:test2]];
+  [listController_ setSelectedItems:[NSArray arrayWithObject:test2]];
 
-  ASSERT_TRUE([treeController_ pasteFromPasteboard:pasteboard_]);
-  EXPECT_EQ(5, [[treeController_ outline] numberOfRows]);
-  EXPECT_TRUE([[[treeController_ outline] selectedRowIndexes]
+  EXPECT_TRUE([listController_ readPropertyListFromPasteboard:pasteboard_]);
+  ASSERT_TRUE([listController_ pasteFromPasteboard:pasteboard_]);
+  EXPECT_EQ(5, [[listController_ outline] numberOfRows]);
+  EXPECT_TRUE([[[listController_ outline] selectedRowIndexes]
       isEqual:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 2)]]);
-  NSArray* sel = [treeController_ selectedItems];
+  NSArray* sel = [listController_ selectedItems];
   ASSERT_EQ(2U, [sel count]);
 
   BookmarkItem* item = [sel objectAtIndex:0];

@@ -5,6 +5,7 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_item.h"
 #import "chrome/browser/cocoa/bookmark_manager_controller.h"
+#import "chrome/browser/cocoa/bookmark_tree_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,6 +27,21 @@ class BookmarkManagerControllerTest : public CocoaTest {
     CocoaTest::TearDown();
   }
 
+  BookmarkItem* AddToBar(NSString*title, NSString* urlStr) {
+    BookmarkItem* bar = [controller_ bookmarkBarItem];
+    return [bar addBookmarkWithTitle:title
+                                 URL:urlStr
+                             atIndex:[bar numberOfChildren]];
+  }
+
+  NSSet* AddFixtureItems() {
+    return [NSSet setWithObjects:
+        AddToBar(@"Google", @"http://google.com"),
+        AddToBar(@"GMail", @"http://gmail.com"),
+        AddToBar(@"Google Sites", @"http://sites.google.com"),
+        nil];
+  }
+
   BrowserTestHelper browser_test_helper_;
   BookmarkManagerController* controller_;
 };
@@ -36,7 +52,7 @@ TEST_F(BookmarkManagerControllerTest, IsThisThingTurnedOn) {
   EXPECT_TRUE([w isVisible]);
 
   ASSERT_TRUE([controller_ groupsController]);
-  ASSERT_TRUE([controller_ treeController]);
+  ASSERT_TRUE([controller_ listController]);
 }
 
 TEST_F(BookmarkManagerControllerTest, Model) {
@@ -72,6 +88,36 @@ TEST_F(BookmarkManagerControllerTest, Model) {
   BookmarkItem* otherItem2 = [controller_ itemFromNode:other];
   EXPECT_TRUE(otherItem2);
   EXPECT_NE(otherItem, otherItem2);
+}
+
+TEST_F(BookmarkManagerControllerTest, Recents) {
+  NSSet* fixtures = AddFixtureItems();
+  // Show the Recent Items group, so its contents will be updated.
+  FakeBookmarkItem* recents = [controller_ recentGroup];
+  [controller_ showGroup:recents];
+  NSSet* shown = [NSSet setWithArray:[recents children]];
+  EXPECT_TRUE([fixtures isEqual:shown]);
+}
+
+TEST_F(BookmarkManagerControllerTest, Search) {
+  AddFixtureItems();
+  // Search for 'gmail':
+  [controller_ setSearchString:@"gmail"];
+  FakeBookmarkItem* search = [controller_ searchGroup];
+  EXPECT_EQ(search, [[controller_ groupsController] selectedItem]);
+  NSArray* shown = [search children];
+  EXPECT_EQ(1U, [shown count]);
+  EXPECT_TRUE([@"GMail" isEqualToString:[[shown lastObject] title]]);
+
+  // Search for 'google':
+  [controller_ setSearchString:@"google"];
+  shown = [search children];
+  EXPECT_EQ(2U, [shown count]);
+
+  // Search for 'fnord':
+  [controller_ setSearchString:@"fnord"];
+  shown = [search children];
+  EXPECT_EQ(0U, [shown count]);
 }
 
 }  // namespace

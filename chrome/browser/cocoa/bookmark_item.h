@@ -13,6 +13,7 @@ class BookmarkNode;
  @private
   const BookmarkNode* node_;  // weak
   BookmarkManagerController* manager_;  // weak
+ @protected
   scoped_nsobject<NSImage> icon_;
 }
 
@@ -29,7 +30,9 @@ class BookmarkNode;
 @property (readonly) BookmarkItem* parent;
 // The user-visible path to the item (slash-delimited).
 @property (readonly) NSString* folderPath;
-// Fixed items (Bookmarks Bar, Other) cannot be renamed, moved or deleted.
+// Is this a FakeBookmarkItem?
+@property (readonly) BOOL isFake;
+// Fixed items (Bookmarks Bar, Other, fake) cannot be renamed, moved or deleted.
 @property (readonly) BOOL isFixed;
 // The bookmark's favicon (a folder icon for folders.)
 @property (readonly) NSImage* icon;
@@ -73,8 +76,29 @@ class BookmarkNode;
 // Open a bookmark in a tab.
 - (BOOL)open;
 
+// Called to tell the object that its underlying BookmarkNode has changed.
+- (void)nodeChanged;
+
 // The default bookmark favicon.
 + (NSImage*)defaultIcon;
 // The default folder favicon.
 + (NSImage*)folderIcon;
+@end
+
+
+// A subclass of BookmarkItem for folders that don't actually exist in the tree.
+@interface FakeBookmarkItem : BookmarkItem {
+  NSString* title_;
+  BookmarkItem* parent_;
+  NSArray* children_;
+}
+
+- (id)initWithTitle:(NSString*)title
+               icon:(NSImage*)icon
+            manager:(BookmarkManagerController*)manager;
+
+// Parent is settable.
+@property (readwrite, assign) BookmarkItem* parent;
+// Children are settable.
+@property (readwrite, copy) NSArray* children;
 @end
