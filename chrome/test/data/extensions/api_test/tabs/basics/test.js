@@ -35,7 +35,6 @@ chrome.test.runTests([
       assertTrue(tab.index > firstTabIndex);
       assertEq(firstWindowId, tab.windowId);
       assertEq(false, tab.selected);
-      assertEq("chrome://newtab/", tab.url);
     }));
   },
 
@@ -239,6 +238,14 @@ chrome.test.runTests([
         assertEq("chrome://newtab/", tabs[1].url);
       }));
     }));
+  },
+
+  function focus() {
+    chrome.test.listenOnce(chrome.windows.onFocusChanged, function(winId) {
+      assertEq(firstWindowId, winId);
+    });
+
+    chrome.windows.update(firstWindowId, {focused: true}, pass());
   },
 
   /*
