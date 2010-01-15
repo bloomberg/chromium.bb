@@ -82,16 +82,6 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_gtk.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/compact_navigation_bar.h"
-#include "chrome/browser/chromeos/main_menu.h"
-#include "chrome/browser/chromeos/panel_controller.h"
-#include "chrome/browser/chromeos/status_area_view.h"
-#include "chrome/browser/views/browser_dialogs.h"
-#include "chrome/browser/views/tabs/tab_overview_types.h"
-#include "views/widget/widget_gtk.h"
-#endif
-
 namespace {
 
 // The number of milliseconds between loading animation frames.
@@ -318,60 +308,8 @@ const struct AcceleratorMapping {
   { GDK_h, IDC_SHOW_HISTORY, GDK_CONTROL_MASK },
   { GDK_j, IDC_SHOW_DOWNLOADS, GDK_CONTROL_MASK },
   { GDK_F1, IDC_HELP_PAGE, GdkModifierType(0) },
-
-#if defined(OS_CHROMEOS)
-  { GDK_f, IDC_FULLSCREEN,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_MOD1_MASK) },
-  { GDK_Delete, IDC_TASK_MANAGER,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_MOD1_MASK) },
-  { GDK_comma, IDC_CONTROL_PANEL, GDK_CONTROL_MASK },
-#else
   { GDK_q, IDC_EXIT, GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-#endif
 };
-
-#if defined(OS_CHROMEOS)
-
-// This draws the spacer below the tab strip when we're using the compact
-// location bar (i.e. no location bar). This basically duplicates the painting
-// that the tab strip would have done for this region so that it blends
-// nicely in with the bottom of the tabs.
-gboolean OnCompactNavSpacerExpose(GtkWidget* widget,
-                                  GdkEventExpose* e,
-                                  BrowserWindowGtk* window) {
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  gdk_cairo_rectangle(cr, &e->area);
-  cairo_clip(cr);
-  // The toolbar is supposed to blend in with the active tab, so we have to pass
-  // coordinates for the IDR_THEME_TOOLBAR bitmap relative to the top of the
-  // tab strip.
-  gfx::Point tabstrip_origin =
-      window->tabstrip()->GetTabStripOriginForWidget(widget);
-  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
-      window->browser()->profile());
-  CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
-      IDR_THEME_TOOLBAR, widget);
-  background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
-  // We tile the toolbar background in both directions.
-  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-  cairo_rectangle(cr,
-      tabstrip_origin.x(),
-      tabstrip_origin.y(),
-      e->area.x + e->area.width - tabstrip_origin.x(),
-      e->area.y + e->area.height - tabstrip_origin.y());
-  cairo_fill(cr);
-  cairo_destroy(cr);
-
-  return FALSE;
-}
-
-// Callback from GTK when the user clicks the main menu button.
-static void OnMainMenuButtonClicked(GtkWidget* widget,
-                                    BrowserWindowGtk* browser) {
-  chromeos::MainMenu::Show(browser->browser());
-}
-
-#endif  // OS_CHROMEOS
 
 // Get the command ids of the key combinations that are not valid gtk
 // accelerators.
@@ -501,22 +439,9 @@ bool ShouldExecuteReservedCommandImmediately(
 
 std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
 
-#if defined(OS_CHROMEOS)
-// Default to using the regular window style.
-bool BrowserWindowGtk::next_window_should_use_compact_nav_ = false;
-#endif
-
 BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
     :  browser_(browser),
        state_(GDK_WINDOW_STATE_WITHDRAWN),
-#if defined(OS_CHROMEOS)
-       drag_active_(false),
-       panel_controller_(NULL),
-       compact_navigation_bar_(NULL),
-       status_area_(NULL),
-       main_menu_button_(NULL),
-       compact_navbar_hbox_(NULL),
-#endif
        frame_cursor_(NULL),
        is_active_(true),
        last_click_time_(0),
@@ -759,17 +684,6 @@ void BrowserWindowGtk::Show() {
   // the previous browser instead if we don't explicitly set it here.
   BrowserList::SetLastActive(browser());
 
-#if defined(OS_CHROMEOS)
-  if (browser_->type() == Browser::TYPE_POPUP) {
-    panel_controller_ = new chromeos::PanelController(this);
-  } else {
-    TabOverviewTypes::instance()->SetWindowType(
-        GTK_WIDGET(window_),
-        TabOverviewTypes::WINDOW_TYPE_CHROME_TOPLEVEL,
-        NULL);
-  }
-#endif
-
   gtk_window_present(window_);
   if (maximize_after_show_) {
     gtk_window_maximize(window_);
@@ -790,18 +704,12 @@ void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds, bool exterior) {
 
   gtk_window_move(window_, x, y);
 
-#if defined(OS_CHROMEOS)
-  // In Chrome OS we need to get the popup size set here for the panel
-  // to be displayed with its initial size correctly.
-  SetWindowSize(window_, width, height);
-#else
   if (exterior) {
     SetWindowSize(window_, width, height);
   } else {
     gtk_widget_set_size_request(contents_container_->widget(),
                                 width, height);
   }
-#endif
 }
 
 void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
@@ -844,12 +752,6 @@ void BrowserWindowGtk::Close() {
   window_ = NULL;
   titlebar_->set_window(NULL);
   gtk_widget_destroy(window);
-
-#if defined(OS_CHROMEOS)
-  if (panel_controller_) {
-    panel_controller_->Close();
-  }
-#endif
 }
 
 void BrowserWindowGtk::Activate() {
@@ -888,11 +790,6 @@ void BrowserWindowGtk::SelectedTabExtensionShelfSizeChanged() {
 }
 
 void BrowserWindowGtk::UpdateTitleBar() {
-#if defined(OS_CHROMEOS)
-  if (panel_controller_)
-    panel_controller_->UpdateTitleBar();
-#endif
-
   string16 title = browser_->GetWindowTitleForCurrentTab();
   gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
   if (ShouldShowWindowIcon())
@@ -983,15 +880,7 @@ LocationBar* BrowserWindowGtk::GetLocationBar() const {
 
 void BrowserWindowGtk::SetFocusToLocationBar() {
   if (!IsFullscreen()) {
-#if defined(OS_CHROMEOS)
-    if (compact_navigation_bar_) {
-      compact_navigation_bar_->FocusLocation();
-    } else {
-      GetLocationBar()->FocusLocation();
-    }
-#else
     GetLocationBar()->FocusLocation();
-#endif
   }
 }
 
@@ -1036,11 +925,7 @@ void BrowserWindowGtk::ToggleExtensionShelf() {
 }
 
 void BrowserWindowGtk::ShowAboutChromeDialog() {
-#if defined(OS_CHROMEOS)
-  browser::ShowAboutChromeView(window_, browser_->profile());
-#else
   ShowAboutDialogForProfile(window_, browser_->profile());
-#endif
 }
 
 void BrowserWindowGtk::ShowTaskManager() {
@@ -1479,14 +1364,6 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
             GTK_FLOATING_CONTAINER(render_area_floating_container_)));
       }
       gtk_widget_hide(toolbar_border_);
-#if defined(OS_CHROMEOS)
-      if (main_menu_button_)
-        gtk_widget_hide(main_menu_button_->widget());
-      if (compact_navbar_hbox_)
-        gtk_widget_hide(compact_navbar_hbox_);
-      if (status_area_)
-        status_area_->GetWidget()->Hide();
-#endif
     } else {
       fullscreen_exit_bubble_.reset();
       UpdateCustomFrame();
@@ -1513,11 +1390,6 @@ void BrowserWindowGtk::UnMaximize() {
 }
 
 bool BrowserWindowGtk::CanClose() const {
-#if defined(OS_CHROMEOS)
-  if (drag_active_)
-    return false;
-#endif
-
   // You cannot close a frame for which there is an active originating drag
   // session.
   if (tabstrip_->IsDragSessionActive())
@@ -1681,72 +1553,14 @@ void BrowserWindowGtk::InitWidgets() {
   // Build the titlebar (tabstrip + header space + min/max/close buttons).
   titlebar_.reset(new BrowserTitlebar(this, window_));
 
-#if defined(OS_CHROMEOS)
-  GtkWidget* titlebar_hbox = NULL;
-  GtkWidget* status_container = NULL;
-  bool has_compact_nav_bar = next_window_should_use_compact_nav_;
-  if (browser_->type() == Browser::TYPE_NORMAL) {
-    // Make a box that we'll later insert the compact navigation bar into. The
-    // tabstrip must go into an hbox with our box so that they can get arranged
-    // horizontally.
-    titlebar_hbox = gtk_hbox_new(FALSE, 0);
-    gtk_widget_show(titlebar_hbox);
-
-    // Main menu button.
-    main_menu_button_ =
-        new CustomDrawButton(IDR_MAIN_MENU_BUTTON, IDR_MAIN_MENU_BUTTON,
-                             IDR_MAIN_MENU_BUTTON, 0);
-    gtk_widget_show(main_menu_button_->widget());
-    g_signal_connect(G_OBJECT(main_menu_button_->widget()), "clicked",
-                     G_CALLBACK(OnMainMenuButtonClicked), this);
-    GTK_WIDGET_UNSET_FLAGS(main_menu_button_->widget(), GTK_CAN_FOCUS);
-    gtk_box_pack_start(GTK_BOX(titlebar_hbox), main_menu_button_->widget(),
-                       FALSE, FALSE, 0);
-
-    chromeos::MainMenu::ScheduleCreation();
-
-    if (has_compact_nav_bar) {
-      compact_navbar_hbox_ = gtk_hbox_new(FALSE, 0);
-      gtk_widget_show(compact_navbar_hbox_);
-      gtk_box_pack_start(GTK_BOX(titlebar_hbox), compact_navbar_hbox_,
-                         FALSE, FALSE, 0);
-
-      // Reset the compact nav bit now that we're creating the next toplevel
-      // window. Code below will use our local has_compact_nav_bar variable.
-      next_window_should_use_compact_nav_ = false;
-    }
-    status_container = gtk_fixed_new();
-    gtk_widget_show(status_container);
-    gtk_box_pack_start(GTK_BOX(titlebar_hbox), titlebar_->widget(), TRUE, TRUE,
-                       0);
-    gtk_box_pack_start(GTK_BOX(titlebar_hbox), status_container, FALSE, FALSE,
-                       0);
-    gtk_box_pack_start(GTK_BOX(window_vbox_), titlebar_hbox, FALSE, FALSE, 0);
-  }
-
-#else
   // Insert the tabstrip into the window.
   gtk_box_pack_start(GTK_BOX(window_vbox_), titlebar_->widget(), FALSE, FALSE,
                      0);
-#endif  // OS_CHROMEOS
 
   toolbar_.reset(new BrowserToolbarGtk(browser_.get(), this));
   toolbar_->Init(browser_->profile(), window_);
   gtk_box_pack_start(GTK_BOX(window_vbox_), toolbar_->widget(),
                      FALSE, FALSE, 0);
-#if defined(OS_CHROMEOS)
-  if (browser_->type() == Browser::TYPE_NORMAL && has_compact_nav_bar) {
-    gtk_widget_hide(toolbar_->widget());
-
-    GtkWidget* spacer = gtk_vbox_new(FALSE, 0);
-    gtk_widget_set_size_request(spacer, -1, 3);
-    gtk_widget_show(spacer);
-    gtk_box_pack_start(GTK_BOX(window_vbox_), spacer, FALSE, FALSE, 0);
-    g_signal_connect(spacer, "expose-event",
-                     G_CALLBACK(&OnCompactNavSpacerExpose), this);
-  }
-#endif
-
   // This vbox surrounds the render area: find bar, info bars and render view.
   // The reason is that this area as a whole needs to be grouped in its own
   // GdkWindow hierarchy so that animations originating inside it (infobar,
@@ -1811,19 +1625,6 @@ void BrowserWindowGtk::InitWidgets() {
     gtk_widget_show(bookmark_bar_->widget());
   }
 
-#if defined(OS_CHROMEOS)
-  if (browser_->type() & Browser::TYPE_POPUP) {
-    toolbar_->Hide();
-    // The window manager needs the min size for popups.
-    gtk_widget_set_size_request(
-        GTK_WIDGET(window_), bounds_.width(), bounds_.height());
-    // If we don't explicitly resize here there is a race condition between
-    // the X Server and the window manager. Windows will appear with a default
-    // size of 200x200 if this happens.
-    gtk_window_resize(window_, bounds_.width(), bounds_.height());
-  }
-#endif
-
   // We have to realize the window before we try to apply a window shape mask.
   gtk_widget_realize(GTK_WIDGET(window_));
   state_ = gdk_window_get_state(GTK_WIDGET(window_)->window);
@@ -1834,52 +1635,6 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_container_add(GTK_CONTAINER(window_), window_container_);
   gtk_widget_show(window_container_);
   browser_->tabstrip_model()->AddObserver(this);
-
-#if defined(OS_CHROMEOS)
-  if (browser_->type() == Browser::TYPE_NORMAL) {
-    if (has_compact_nav_bar) {
-      // Create the compact navigation bar. This must be done after adding
-      // everything to the window since it's done in Views, which expects to
-      // call realize (requiring a window) in the Init function.
-      views::WidgetGtk* clb_widget =
-          new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
-      clb_widget->set_delete_on_destroy(true);
-      // Must initialize with a NULL parent since the widget will assume the
-      // parent is also a WidgetGtk. Then we can parent the native widget
-      // afterwards.
-      clb_widget->Init(NULL, gfx::Rect(0, 0, 100, 30));
-      gtk_widget_reparent(clb_widget->GetNativeView(), compact_navbar_hbox_);
-
-      compact_navigation_bar_ =
-          new chromeos::CompactNavigationBar(browser_.get());
-
-      clb_widget->SetContentsView(compact_navigation_bar_);
-      compact_navigation_bar_->Init();
-
-      // Must be after Init.
-      gtk_widget_set_size_request(clb_widget->GetNativeView(),
-          compact_navigation_bar_->GetPreferredSize().width(), 20);
-      clb_widget->Show();
-    }
-
-    // Create the status area.
-    views::WidgetGtk* status_widget =
-        new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
-    status_widget->set_delete_on_destroy(true);
-    status_widget->Init(NULL, gfx::Rect(0, 0, 100, 30));
-    gtk_widget_reparent(status_widget->GetNativeView(), status_container);
-    status_area_ = new chromeos::StatusAreaView(browser(), GetNativeHandle());
-    status_widget->SetContentsView(status_area_);
-    status_area_->Init();
-
-    // Must be after Init.
-    gfx::Size status_area_size = status_area_->GetPreferredSize();
-    gtk_widget_set_size_request(status_widget->GetNativeView(),
-                                status_area_size.width(),
-                                status_area_size.height());
-    status_widget->Show();
-  }
-#endif  // OS_CHROMEOS
 }
 
 void BrowserWindowGtk::SetBackgroundColor() {
@@ -2235,11 +1990,6 @@ gboolean BrowserWindowGtk::OnFocusIn(GtkWidget* widget,
                                      GdkEventFocus* event,
                                      BrowserWindowGtk* window) {
   BrowserList::SetLastActive(window->browser_.get());
-#if defined(OS_CHROMEOS)
-  if (window->panel_controller_) {
-    window->panel_controller_->OnFocusIn();
-  }
-#endif
   return FALSE;
 }
 
@@ -2247,11 +1997,6 @@ gboolean BrowserWindowGtk::OnFocusIn(GtkWidget* widget,
 gboolean BrowserWindowGtk::OnFocusOut(GtkWidget* widget,
                                       GdkEventFocus* event,
                                       BrowserWindowGtk* window) {
-#if defined(OS_CHROMEOS)
-  if (window->panel_controller_) {
-    window->panel_controller_->OnFocusOut();
-  }
-#endif
   return FALSE;
 }
 
@@ -2272,17 +2017,6 @@ void BrowserWindowGtk::ShowSupportedWindowFeatures() {
 
   if (IsBookmarkBarSupported())
     MaybeShowBookmarkBar(browser_->GetSelectedTabContents(), false);
-
-#if defined(OS_CHROMEOS)
-  if (main_menu_button_)
-    gtk_widget_show(main_menu_button_->widget());
-
-  if (compact_navbar_hbox_)
-    gtk_widget_show(compact_navbar_hbox_);
-
-  if (status_area_)
-    status_area_->GetWidget()->Show();
-#endif
 }
 
 void BrowserWindowGtk::HideUnsupportedWindowFeatures() {

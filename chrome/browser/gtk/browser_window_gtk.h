@@ -20,14 +20,6 @@
 #include "chrome/common/pref_member.h"
 #include "chrome/common/x11_util.h"
 
-#ifdef OS_CHROMEOS
-namespace chromeos {
-class CompactNavigationBar;
-class PanelController;
-class StatusAreaView;
-}
-#endif
-
 class BookmarkBarGtk;
 class Browser;
 class BrowserTitlebar;
@@ -162,23 +154,6 @@ class BrowserWindowGtk : public BrowserWindow,
 
   // Add the find bar widget to the window hierarchy.
   void AddFindBar(FindBarGtk* findbar);
-
-#if defined(OS_CHROMEOS)
-  // Sets whether a drag is active. If a drag is active the window will not
-  // close.
-  void set_drag_active(bool drag_active) { drag_active_ = drag_active; }
-
-  // Sets the flag that the next toplevel browser window being created will
-  // use the compact nav bar. This is used to implement the "new compact nav
-  // window" menu option. This flag will be cleared after the next window is
-  // opened, which will revert to the old behavior.
-  //
-  // TODO(brettw) remove this when we figure out how this is actually going
-  // to work long-term. This is a hack so the feature can be tested.
-  static void set_next_window_should_use_compact_nav() {
-    next_window_should_use_compact_nav_ = true;
-  }
-#endif
 
   // Reset the mouse cursor to the default cursor if it was set to something
   // else for the custom frame.
@@ -398,24 +373,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // UseCustomFrame() above to determine whether to use the custom frame or
   // not.
   BooleanPrefMember use_custom_frame_pref_;
-
-#if defined(OS_CHROMEOS)
-  // True if a drag is active. See description above setter for details.
-  bool drag_active_;
-  // Controls interactions with the window manager for popup panels.
-  chromeos::PanelController* panel_controller_;
-
-  chromeos::CompactNavigationBar* compact_navigation_bar_;
-  chromeos::StatusAreaView* status_area_;
-
-  // The MainMenu button.
-  CustomDrawButton* main_menu_button_;
-
-  // A hbox container for the compact navigation bar.
-  GtkWidget* compact_navbar_hbox_;
-
-  static bool next_window_should_use_compact_nav_;
-#endif
 
   // A map which translates an X Window ID into its respective GtkWindow.
   static std::map<XID, GtkWindow*> xid_map_;
