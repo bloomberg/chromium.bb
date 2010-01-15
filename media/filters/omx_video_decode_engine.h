@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,8 @@
 #include "base/lock.h"
 #include "base/task.h"
 #include "media/filters/video_decode_engine.h"
+#include "media/omx/input_buffer.h"
+#include "media/omx/omx_codec.h"
 
 class MessageLoop;
 
@@ -19,9 +21,6 @@ struct AVRational;
 struct AVStream;
 
 namespace media {
-
-class InputBuffer;
-class OmxCodec;
 
 class OmxVideoDecodeEngine : public VideoDecodeEngine {
  public:
@@ -67,6 +66,8 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   virtual void OnFeedDone(InputBuffer* buffer);
   virtual void OnHardwareError();
   virtual void OnReadComplete(uint8* buffer, int size);
+  virtual void OnFormatChange(OmxCodec::OmxMediaFormat* input_format,
+                              OmxCodec::OmxMediaFormat* output_format);
 
   virtual bool DecodedFrameAvailable();
   virtual void MergeBytesFrameQueue(uint8* buffer, int size);

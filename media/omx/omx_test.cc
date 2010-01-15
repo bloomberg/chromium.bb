@@ -26,21 +26,28 @@ class TestApp {
  public:
   TestApp(const char* input_filename,
           const char* output_filename,
-          const char* component,
+          const std::string& component_name,
           media::OmxCodec::OmxMediaFormat& input_format,
           media::OmxCodec::OmxMediaFormat& output_format,
-          bool simulate_copy)
+          bool simulate_copy,
+          bool measure_fps,
+          bool enable_csc,
+          int loop_count)
       : input_filename_(input_filename),
         output_filename_(output_filename),
-        component_(component),
+        component_name_(component_name),
         input_format_(input_format),
         output_format_(output_format),
         simulate_copy_(simulate_copy),
+        measure_fps_(measure_fps),
+        enable_csc_(enable_csc),
         copy_buf_size_(0),
+        csc_buf_size_(0),
         input_file_(NULL),
         output_file_(NULL),
         stopped_(false),
-        error_(false) {
+        error_(false),
+        loop_count_(loop_count) {
   }
 
   void StopCallback() {
@@ -61,6 +68,28 @@ class TestApp {
     message_loop_.Quit();
   }
 
+  void FormatCallback(
+      media::OmxCodec::OmxMediaFormat* input_format,
+      media::OmxCodec::OmxMediaFormat* output_format) {
+    // This callback will be called when port reconfiguration is done.
+    // Input format and output format will be used in the codec.
+
+    // Make a copy of the changed format.
+    input_format_ = *input_format;
+    output_format_ = *output_format;
+
+    DCHECK_EQ(input_format->video_header.width,
+              output_format->video_header.width);
+    DCHECK_EQ(input_format->video_header.height,
+              output_format->video_header.height);
+    int size = input_format_.video_header.width *
+               input_format_.video_header.height * 3 / 2;
+    if (enable_csc_ && size > csc_buf_size_) {
+      csc_buf_.reset(new uint8[size]);
+      csc_buf_size_ = size;
+    }
+  }
+
   void FeedCallback(media::InputBuffer* buffer) {
     // We receive this callback when the decoder has consumed an input buffer.
     // In this case, delete the previous buffer and enqueue a new one.
@@ -70,7 +99,7 @@ class TestApp {
     bool eos = buffer->IsEndOfStream();
     delete buffer;
     if (!eos && !stopped_ && !error_)
-      FeedDecoder();
+      FeedInputBuffer();
   }
 
   void ReadCompleteCallback(uint8* buffer, int size) {
@@ -79,14 +108,17 @@ class TestApp {
     if (stopped_ || error_)
       return;
 
+    if (measure_fps_ && !frame_count_)
+      first_sample_delivered_time_ = base::TimeTicks::HighResNow();
+
     // If we are readding to the end, then stop.
     if (!size) {
-      decoder_->Stop(NewCallback(this, &TestApp::StopCallback));
+      codec_->Stop(NewCallback(this, &TestApp::StopCallback));
       return;
     }
 
     // Read one more from the decoder.
-    decoder_->Read(NewCallback(this, &TestApp::ReadCompleteCallback));
+    codec_->Read(NewCallback(this, &TestApp::ReadCompleteCallback));
 
     // Copy the output of the decoder to user memory.
     if (simulate_copy_ || output_file_) {  // |output_file_| implies a copy.
@@ -96,7 +128,7 @@ class TestApp {
       }
       memcpy(copy_buf_.get(), buffer, size);
       if (output_file_)
-        fwrite(copy_buf_.get(), sizeof(uint8), size, output_file_);
+        DumpOutputFile(copy_buf_.get(), size);
     }
 
     // could OMX IL return patial sample for decoder?
@@ -104,13 +136,54 @@ class TestApp {
     bit_count_ += size << 3;
   }
 
-  void FeedDecoder() {
-    // This method feeds the decoder with 32KB of input data.
-    const int kSize = 32768;
-    uint8* data = new uint8[kSize];
-    int read = fread(data, 1, kSize, input_file_);
-    decoder_->Feed(new media::InputBuffer(data, read),
-                   NewCallback(this, &TestApp::FeedCallback));
+  void FeedInputBuffer() {
+    bool encoder = input_format_.codec == media::OmxCodec::kCodecRaw;
+    while (true) {
+      uint8* data = NULL;
+      int read = 0;
+      if (!encoder) {
+        // This method feeds the decoder with 32KB of input data.
+        const int kSize = 32768;
+        data = new uint8[kSize];
+        read = fread(data, 1, kSize, input_file_);
+      } else {
+        // OMX require encoder input are delivered in frames (or planes).
+        // Assume the input file is I420 YUV file.
+        int width = input_format_.video_header.width;
+        int height = input_format_.video_header.height;
+        int size = width * height * 3 / 2;
+        data = new uint8[size];
+        if (enable_csc_) {
+          CHECK(csc_buf_size_ >= size);
+          read = fread(csc_buf_.get(), 1, size, input_file_);
+          // We do not convert partial frames.
+          if (read == size)
+            IYUVtoNV21(csc_buf_.get(), data, width, height);
+          else
+            read = 0;  // force cleanup or loop around.
+        } else {
+          read = fread(data, 1, size, input_file_);
+        }
+      }
+
+      if (read) {
+        codec_->Feed(new media::InputBuffer(data, read),
+                     NewCallback(this, &TestApp::FeedCallback));
+        break;
+      } else {
+        // Encounter the end of file.
+        if (loop_count_ == 1) {
+          // Signal end of stream.
+          codec_->Feed(new media::InputBuffer(data, 0),
+                       NewCallback(this, &TestApp::FeedCallback));
+          break;
+        } else {
+          --loop_count_;
+          delete [] data;
+          fseek(input_file_, 0, SEEK_SET);
+        }
+      }
+    }
   }
 
   void Run() {
@@ -131,21 +204,28 @@ class TestApp {
       }
     }
 
-    // Setup the decoder with the message loop of the current thread. Also
-    // setup component name, codec and callbacks.
-    decoder_ = new media::OmxCodec(&message_loop_);
-    decoder_->Setup(component_, input_format_, output_format_);
-    decoder_->SetErrorCallback(NewCallback(this, &TestApp::ErrorCallback));
+    if (measure_fps_)
+      StartProfiler();
 
-    // Start the decoder.
-    decoder_->Start();
+    // Setup the |codec_| with the message loop of the current thread. Also
+    // setup component name, codec format and callbacks.
+    codec_ = new media::OmxCodec(&message_loop_);
+    codec_->Setup(component_name_, input_format_, output_format_);
+    codec_->SetErrorCallback(NewCallback(this, &TestApp::ErrorCallback));
+    codec_->SetFormatCallback(NewCallback(this, &TestApp::FormatCallback));
+
+    // Start the |codec_|.
+    codec_->Start();
     for (int i = 0; i < 20; ++i)
-      FeedDecoder();
-    decoder_->Read(NewCallback(this, &TestApp::ReadCompleteCallback));
+      FeedInputBuffer();
+    codec_->Read(NewCallback(this, &TestApp::ReadCompleteCallback));
 
     // Execute the message loop so that we can run tasks on it. This call
     // will return when we call message_loop_.Quit().
     message_loop_.Run();
+
+    if (measure_fps_)
+      StopProfiler();
 
     fclose(input_file_);
     if (output_file_)
@@ -153,92 +233,124 @@ class TestApp {
   }
 
   void StartProfiler() {
-    start_time_ = base::Time::Now();
+    start_time_ = base::TimeTicks::HighResNow();
     frame_count_ = 0;
     bit_count_ = 0;
   }
 
   void StopProfiler() {
-    base::Time stop_time = base::Time::Now();
-    base::TimeDelta duration = stop_time - start_time_;
-    int micro_sec = static_cast<int>(duration.InMicroseconds());
     printf("\n<<< frame delivered : %d >>>", frame_count_);
-    printf("\n<<< time used(us) : %d >>>", micro_sec);
-    printf("\n<<< fps : %d >>>", frame_count_ * 1000000 / micro_sec);
+    stop_time_ = base::TimeTicks::HighResNow();
+    base::TimeDelta duration = stop_time_ - start_time_;
+    int64 micro_sec = duration.InMicroseconds();
+    int64 fps = (static_cast<int64>(frame_count_) *
+                base::Time::kMicrosecondsPerSecond) / micro_sec;
+    printf("\n<<< time used(us) : %d >>>", static_cast<int>(micro_sec));
+    printf("\n<<< fps : %d >>>", static_cast<int>(fps));
+    duration = first_sample_delivered_time_ - start_time_;
+    micro_sec = duration.InMicroseconds();
+    printf("\n<<< initial delay used(us): %d >>>", static_cast<int>(micro_sec));
     // printf("\n<<< bitrate>>> : %I64d\n", bit_count_ * 1000000 / micro_sec);
     printf("\n");
   }
 
-  scoped_refptr<media::OmxCodec> decoder_;
+  // Not intended to be used in production.
+  static void NV21toIYUV(uint8* nv21, uint8* i420, int width, int height) {
+    memcpy(i420, nv21, width * height * sizeof(uint8));
+    i420 += width * height;
+    nv21 += width * height;
+    uint8* u = i420;
+    uint8* v = i420 + width * height / 4;
+
+    for (int i = 0; i < width * height / 4; ++i) {
+      *v++ = *nv21++;
+      *u++ = *nv21++;
+    }
+  }
+
+  static void NV21toYV12(uint8* nv21, uint8* yv12, int width, int height) {
+    memcpy(yv12, nv21, width * height * sizeof(uint8));
+    yv12 += width * height;
+    nv21 += width * height;
+    uint8* v = yv12;
+    uint8* u = yv12 + width * height / 4;
+
+    for (int i = 0; i < width * height / 4; ++i) {
+      *v++ = *nv21++;
+      *u++ = *nv21++;
+    }
+  }
+
+  static void IYUVtoNV21(uint8* i420, uint8* nv21, int width, int height) {
+    memcpy(nv21, i420, width * height * sizeof(uint8));
+    i420 += width * height;
+    nv21 += width * height;
+    uint8* u = i420;
+    uint8* v = i420 + width * height / 4;
+
+    for (int i = 0; i < width * height / 4; ++i) {
+      *nv21++ = *v++;
+      *nv21++ = *u++;
+    }
+  }
+
+  static void YV12toNV21(uint8* yv12, uint8* nv21, int width, int height) {
+    memcpy(nv21, yv12, width * height * sizeof(uint8));
+    yv12 += width * height;
+    nv21 += width * height;
+    uint8* v = yv12;
+    uint8* u = yv12 + width * height / 4;
+
+    for (int i = 0; i < width * height / 4; ++i) {
+      *nv21++ = *v++;
+      *nv21++ = *u++;
+    }
+  }
+
+  void DumpOutputFile(uint8* in_buffer, int size) {
+    // Assume chroma format 4:2:0.
+    int width = input_format_.video_header.width;
+    int height = input_format_.video_header.height;
+    DCHECK_GT(width, 0);
+    DCHECK_GT(height, 0);
+
+    uint8* out_buffer = in_buffer;
+    // Color space conversion.
+    bool encoder = input_format_.codec == media::OmxCodec::kCodecRaw;
+    if (enable_csc_ && !encoder) {
+      DCHECK_EQ(size, width * height * 3 / 2);
+      DCHECK_GE(csc_buf_size_, size);
+      out_buffer = csc_buf_.get();
+      // Now assume the raw output is NV21.
+      NV21toIYUV(in_buffer, out_buffer, width, height);
+    }
+    fwrite(out_buffer, sizeof(uint8), size, output_file_);
+  }
+
+  scoped_refptr<media::OmxCodec> codec_;
   MessageLoop message_loop_;
   const char* input_filename_;
   const char* output_filename_;
-  const char* component_;
+  std::string component_name_;
   media::OmxCodec::OmxMediaFormat input_format_;
   media::OmxCodec::OmxMediaFormat output_format_;
   bool simulate_copy_;
+  bool measure_fps_;
+  bool enable_csc_;
   scoped_array<uint8> copy_buf_;
   int copy_buf_size_;
+  scoped_array<uint8> csc_buf_;
+  int csc_buf_size_;
   FILE *input_file_, *output_file_;
   bool stopped_;
   bool error_;
-  base::Time start_time_;
+  base::TimeTicks start_time_;
+  base::TimeTicks stop_time_;
+  base::TimeTicks first_sample_delivered_time_;
   int frame_count_;
   int bit_count_;
+  int loop_count_;
 };
-
-// Not intended to be used in production.
-void NV21toI420(uint8* nv21, uint8* i420, int width, int height) {
-  memcpy(i420, nv21, width * height * sizeof(uint8));
-  i420 += width * height;
-  nv21 += width * height;
-  uint8* u = i420;
-  uint8* v = i420 + width * height / 4;
-
-  for (int i = 0; i < width * height / 4; ++i) {
-    *v++ = *nv21++;
-    *u++ = *nv21++;
-  }
-}
-
-void NV21toYV12(uint8* nv21, uint8* yv12, int width, int height) {
-  memcpy(yv12, nv21, width * height * sizeof(uint8));
-  yv12 += width * height;
-  nv21 += width * height;
-  uint8* v = yv12;
-  uint8* u = yv12 + width * height / 4;
-
-  for (int i = 0; i < width * height / 4; ++i) {
-    *v++ = *nv21++;
-    *u++ = *nv21++;
-  }
-}
-
-void I420toNV21(uint8* i420, uint8* nv21, int width, int height) {
-  memcpy(nv21, i420, width * height * sizeof(uint8));
-  i420 += width * height;
-  nv21 += width * height;
-  uint8* u = i420;
-  uint8* v = i420 + width * height / 4;
-
-  for (int i = 0; i < width * height / 4; ++i) {
-    *nv21++ = *v++;
-    *nv21++ = *u++;
-  }
-}
-
-void YV12toNV21(uint8* yv12, uint8* nv21, int width, int height) {
-  memcpy(nv21, yv12, width * height * sizeof(uint8));
-  yv12 += width * height;
-  nv21 += width * height;
-  uint8* v = yv12;
-  uint8* u = yv12 + width * height / 4;
-
-  for (int i = 0; i < width * height / 4; ++i) {
-    *nv21++ = *v++;
-    *nv21++ = *u++;
-  }
-}
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit_manager;
@@ -246,99 +358,105 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
-  if (argc < 2) {
-    printf("Usage: omx_test --input-file=FILE"
-           " --component=COMPONENT --codec=CODEC"
-           " [--output-file=FILE] [--enable-csc=FILE]"
-           " [--copy] [--measure-fps]\n");
-    printf("    COMPONENT: OpenMAX component name\n");
-    printf("    CODEC: h264/mpeg4/h263/vc1\n");
-    printf("\n");
-    printf("Optional Arguments\n");
-    printf("    --output-file Dump raw OMX output to file.\n");
-    printf("    --enable-csc  Dump the CSCed output to file.\n");
-    printf("    --copy        Simulate a memcpy from the output of decoder.\n");
-    printf("    --measure-fps Measuring performance in fps\n");
-    return 1;
+  bool encoder = cmd_line->HasSwitch("encoder");
+  if (!encoder) {
+    if (argc < 3) {
+      printf("Usage: omx_test --input-file=FILE"
+             " --component=COMPONENT --codec=CODEC"
+             " [--output-file=FILE] [--enable-csc]"
+             " [--copy] [--measure-fps]\n");
+      printf("    COMPONENT: OpenMAX component name\n");
+      printf("    CODEC: h264/mpeg4/h263/vc1\n");
+      printf("\n");
+      printf("Optional Arguments\n");
+      printf("    --output-file Dump raw OMX output to file.\n");
+      printf("    --enable-csc  Dump the CSCed output to file.\n");
+      printf("    --copy        Simulate a memcpy from the output.\n");
+      printf("    --measure-fps Measuring performance in fps\n");
+      printf("    --loop=COUNT  loop input stream\n");
+      return 1;
+    }
+  } else {
+    if (argc < 7) {
+      printf("Usage: omx_test --input-file=FILE"
+             " --component=COMPONENT --codec=CODEC"
+             " --width=PIXEL_WIDTH --height=PIXEL_HEIGHT"
+             " --bitrate=BIT_PER_SECOND --framerate=FRAME_PER_SECOND"
+             " [--output-file=FILE] [--enable-csc]"
+             " [--copy] [--measure-fps]\n");
+      printf("    COMPONENT: OpenMAX component name\n");
+      printf("    CODEC: h264/mpeg4/h263/vc1\n");
+      printf("\n");
+      printf("Optional Arguments\n");
+      printf("    --output-file Dump raw OMX output to file.\n");
+      printf("    --enable-csc  Dump the CSCed input from file.\n");
+      printf("    --copy        Simulate a memcpy from the output.\n");
+      printf("    --measure-fps Measuring performance in fps\n");
+      printf("    --loop=COUNT  loop input streams\n");
+      return 1;
+    }
   }
 
   std::string input_filename = cmd_line->GetSwitchValueASCII("input-file");
   std::string output_filename = cmd_line->GetSwitchValueASCII("output-file");
-  std::string component = cmd_line->GetSwitchValueASCII("component");
+  std::string component_name = cmd_line->GetSwitchValueASCII("component");
   std::string codec = cmd_line->GetSwitchValueASCII("codec");
   bool copy = cmd_line->HasSwitch("copy");
   bool measure_fps = cmd_line->HasSwitch("measure-fps");
-
+  bool enable_csc = cmd_line->HasSwitch("enable-csc");
+  int loop_count = 1;
+  if (cmd_line->HasSwitch("loop"))
+    loop_count = StringToInt(cmd_line->GetSwitchValueASCII("loop"));
+  DCHECK_GE(loop_count, 1);
 
   media::OmxCodec::OmxMediaFormat input, output;
-  input.codec = media::OmxCodec::kCodecNone;
-  if (codec == "h264")
-    input.codec = media::OmxCodec::kCodecH264;
-  else if (codec == "mpeg4")
-    input.codec = media::OmxCodec::kCodecMpeg4;
-  else if (codec == "h263")
-    input.codec = media::OmxCodec::kCodecH263;
-  else if (codec == "vc1")
-    input.codec = media::OmxCodec::kCodecVc1;
-  else {
-    printf("Unknown codec.\n");
-    return 1;
+  if (encoder) {
+    input.codec = media::OmxCodec::kCodecRaw;
+    // TODO(jiesun): make other format available.
+    output.codec = media::OmxCodec::kCodecMpeg4;
+    output.video_header.width = input.video_header.width =
+        StringToInt(cmd_line->GetSwitchValueASCII("width"));
+    output.video_header.height = input.video_header.height =
+        StringToInt(cmd_line->GetSwitchValueASCII("height"));
+    output.video_header.frame_rate = input.video_header.frame_rate =
+        StringToInt(cmd_line->GetSwitchValueASCII("framerate"));
+    // TODO(jiesun): assume constant bitrate now.
+    output.video_header.bit_rate =
+        StringToInt(cmd_line->GetSwitchValueASCII("bitrate"));
+    // TODO(jiesun): one I frame per second now. make it configurable.
+    output.video_header.i_dist = output.video_header.frame_rate;
+    // TODO(jiesun): disable B frame now. does they support it?
+    output.video_header.p_dist = 0;
+  } else {
+    input.codec = media::OmxCodec::kCodecNone;
+    if (codec == "h264")
+      input.codec = media::OmxCodec::kCodecH264;
+    else if (codec == "mpeg4")
+      input.codec = media::OmxCodec::kCodecMpeg4;
+    else if (codec == "h263")
+      input.codec = media::OmxCodec::kCodecH263;
+    else if (codec == "vc1")
+      input.codec = media::OmxCodec::kCodecVc1;
+    else {
+      printf("Unknown codec.\n");
+      return 1;
+    }
+    output.codec = media::OmxCodec::kCodecRaw;
   }
-  output.codec = media::OmxCodec::kCodecRaw;
 
   // Create a TestApp object and run the decoder.
   TestApp test(input_filename.c_str(),
                output_filename.c_str(),
-               component.c_str(),
+               component_name,
                input,
                output,
-               copy);
-
-
-  if (measure_fps)
-    test.StartProfiler();
+               copy,
+               measure_fps,
+               enable_csc,
+               loop_count);
 
   // This call will run the decoder until EOS is reached or an error
   // is encountered.
   test.Run();
-
-  if (measure_fps)
-    test.StopProfiler();
-
-  // Color space conversion.
-  if (!output_filename.empty()) {
-    std::string dumpyuv_name = cmd_line->GetSwitchValueASCII("enable-csc");
-    if (!dumpyuv_name.empty()) {
-      // now assume the raw output is NV21;
-      // now assume decoder.
-      FILE* dump_raw = file_util::OpenFile(output_filename.c_str(), "rb");
-      FILE* dump_yuv = file_util::OpenFile(dumpyuv_name.c_str(), "wb");
-      if (!dump_raw || !dump_yuv) {
-        printf("Error - can't open file for color conversion %s\n",
-               dumpyuv_name.c_str());
-      } else {
-        // TODO(jiesun): get rid of hard coded value when Startup()
-        // call back function is ready.
-        int width = 352;
-        int height = 288;
-        int frame_size = width * height * 3 / 2;  // assume 4:2:0 chroma format.
-        scoped_array<uint8> in_buffer(new uint8[frame_size]);
-        scoped_array<uint8> out_buffer(new uint8[frame_size]);
-        while (true) {
-          int read;
-          read = fread(in_buffer.get(), sizeof(uint8), frame_size, dump_raw);
-          if (read != frame_size)
-            break;
-          NV21toI420(in_buffer.get(), out_buffer.get(), width, height);
-          fwrite(out_buffer.get(), sizeof(uint8), frame_size, dump_yuv);
-        }
-      }
-      if (dump_raw)
-        fclose(dump_raw);
-      if (dump_yuv)
-        fclose(dump_yuv);
-    }
-  }
-
   return 0;
 }

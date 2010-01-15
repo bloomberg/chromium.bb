@@ -20,6 +20,7 @@
 // output_format.codec = OmxCodec::kCodecRaw;
 // decoder->Setup(component_name, input_format, output_format);
 // decoder->SetErrorCallback(NewCallback(this, &Client::ErrorCallback));
+// decoder->SetFormatCallback(NewCallback(this, &Client::FormatCallback));
 //
 // // Start is asynchronous. But we don't need to wait for it to proceed.
 // decoder->Start();
@@ -91,6 +92,7 @@
 #include "base/task.h"
 #include "third_party/openmax/il/OMX_Component.h"
 #include "third_party/openmax/il/OMX_Core.h"
+#include "third_party/openmax/il/OMX_Video.h"
 
 class InputBuffer;
 class MessageLoop;
@@ -99,6 +101,9 @@ namespace media {
 
 class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
  public:
+  struct OmxMediaFormat;  // forward declaration.
+  // TODO(jiesun): remove callback parameters.
+  typedef Callback2<OmxMediaFormat*, OmxMediaFormat*>::Type FormatCallback;
   typedef Callback1<InputBuffer*>::Type FeedCallback;
   typedef Callback2<uint8*, int>::Type ReadCallback;
   typedef Callback0::Type Callback;
@@ -132,12 +137,10 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   };
 
   struct OmxMediaFormatVideoRaw {
-    OmxMediaFormatVideoHeader h;
     OmxSurfaceFormat color_space;
   };
 
   struct OmxMediaFormatVideoH264 {
-    OmxMediaFormatVideoHeader h;
     int slice_enable;
     int max_ref_frames;
     int num_ref_l0, num_ref_l1;
@@ -150,7 +153,6 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   };
 
   struct OmxMediaFormatVideoMPEG4 {
-    OmxMediaFormatVideoHeader h;
     int ac_pred_enable;
     int time_inc_res;
     int slice_enable;
@@ -159,6 +161,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   struct OmxMediaFormat {
     // TODO(jiesun): instead of codec type, we should have media format.
     Codec codec;
+    OmxMediaFormatVideoHeader video_header;
     union {
       OmxMediaFormatVideoRaw raw;
       OmxMediaFormatVideoH264 h264;
@@ -166,17 +169,20 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
     };
   };
 
-  OmxCodec(MessageLoop* message_loop);
+  explicit OmxCodec(MessageLoop* message_loop);
   virtual ~OmxCodec();
 
   // Set the component name and input/output media format.
   // TODO(hclam): Remove |component|.
-  void Setup(const char* component_name,
+  void Setup(const std::string& component_name,
              const OmxMediaFormat& input_format,
              const OmxMediaFormat& output_format);
 
   // Set the error callback. In case of error the callback will be called.
   void SetErrorCallback(Callback* callback);
+
+  // Set the format change callback. In case of input stream changes.
+  void SetFormatCallback(FormatCallback* callback);
 
   // Start the decoder, this will start the initialization asynchronously.
   // Client can start feeding to and reading from the decoder.
@@ -201,13 +207,16 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   OMX_COMPONENTTYPE* component_handle() { return component_handle_; }
   int input_port() { return input_port_; }
   int output_port() { return output_port_; }
+  bool encoder() const { return input_format_.codec == kCodecRaw; }
 
   // Subclass can provide a different value.
   virtual int current_omx_spec_version() const { return 0x00000101; }
 
  protected:
   // Returns the component name given the codec.
-  virtual const char* GetComponentName(Codec codec) { return component_name_; }
+  virtual const char* GetComponentName(Codec codec) {
+    return component_name_.c_str();
+  }
 
   // Inherit from subclass to allow device specific configurations.
   virtual bool DeviceSpecificConfig() { return true; }
@@ -242,6 +251,18 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   // Helper method to call |error_callback_| after transition to error
   // state is done.
   void ReportError();
+
+  // Helper method to call |start_callback_| after a foramt change.
+  // used when decoder output port had done with port reconfigure and
+  // return to enabled state.
+  void ReportFormatChange();
+
+  // Helper method to configure port format at LOADED state.
+  bool ConfigureIOPorts();
+  bool ConfigureAsDecoder(OMX_PARAM_PORTDEFINITIONTYPE* input_port_def,
+                          OMX_PARAM_PORTDEFINITIONTYPE* output_port_def);
+  bool ConfigureAsEncoder(OMX_PARAM_PORTDEFINITIONTYPE* input_port_def,
+                          OMX_PARAM_PORTDEFINITIONTYPE* output_port_def);
 
   // Methods and free input and output buffers.
   bool AllocateInputBuffers();
@@ -354,13 +375,15 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   State next_state_;
 
   // TODO(hclam): We should keep a list of component names.
-  const char* component_name_;
+  std::string component_name_;
   OMX_COMPONENTTYPE* component_handle_;
   bool encoder_;
+  int64 next_sample_timestamp_;
   OmxMediaFormat input_format_;
   OmxMediaFormat output_format_;
   MessageLoop* message_loop_;
 
+  scoped_ptr<FormatCallback> format_callback_;
   scoped_ptr<Callback> stop_callback_;
   scoped_ptr<Callback> error_callback_;
 

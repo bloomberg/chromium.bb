@@ -6,8 +6,6 @@
 
 #include "media/base/callback.h"
 #include "media/filters/ffmpeg_common.h"
-#include "media/omx/input_buffer.h"
-#include "media/omx/omx_codec.h"
 
 namespace media {
 
@@ -40,9 +38,19 @@ void OmxVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   omx_codec_->Setup("OMX.st.video_decoder.avc", input_format, output_format);
   omx_codec_->SetErrorCallback(
       NewCallback(this, &OmxVideoDecodeEngine::OnHardwareError));
+  omx_codec_->SetFormatCallback(
+      NewCallback(this, &OmxVideoDecodeEngine::OnFormatChange));
   omx_codec_->Start();
   state_ = kNormal;
 }
+
+void OmxVideoDecodeEngine::OnFormatChange(
+    OmxCodec::OmxMediaFormat* input_format,
+    OmxCodec::OmxMediaFormat* output_format) {
+  // TODO(jiesun): We should not need this for here, because width and height
+  // are already known from upper layer of the stack.
+}
+
 
 void OmxVideoDecodeEngine::OnHardwareError() {
   // TODO(ajwong): Threading?
