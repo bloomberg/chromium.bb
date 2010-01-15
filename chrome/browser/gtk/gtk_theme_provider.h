@@ -100,6 +100,9 @@ class GtkThemeProvider : public BrowserThemeProvider,
   typedef std::map<int, color_utils::HSL> TintMap;
   typedef std::map<int, SkBitmap*> ImageCache;
 
+  // Clears all the GTK color overrides.
+  virtual void ClearAllThemeData();
+
   // Load theme data from preferences, possibly picking colors from GTK.
   virtual void LoadThemePrefs();
 
@@ -122,10 +125,10 @@ class GtkThemeProvider : public BrowserThemeProvider,
   void LoadDefaultValues();
 
   // Sets the underlying theme colors/tints from a GTK color.
-  void SetThemeColorFromGtk(int id, GdkColor* color);
-  void SetThemeTintFromGtk(int id, GdkColor* color);
+  void SetThemeColorFromGtk(int id, const GdkColor* color);
+  void SetThemeTintFromGtk(int id, const GdkColor* color);
   void BuildTintedFrameColor(int color_id, int tint_id);
-  void SetTintToExactColor(int id, GdkColor* color);
+  void SetTintToExactColor(int id, const GdkColor* color);
 
   // Split out from FreePlatformCaches so it can be called in our destructor;
   // FreePlatformCaches() is called from the BrowserThemeProvider's destructor,
@@ -155,6 +158,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // their colors).
   GtkWidget* fake_window_;
   OwnedWidgetGtk fake_label_;
+  OwnedWidgetGtk fake_entry_;
 
   // A list of all GtkChromeButton instances. We hold on to these to notify
   // them of theme changes.
