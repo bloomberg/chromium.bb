@@ -53,20 +53,22 @@
     .align NACL_ARM_BUNDLE_SIZE_LOG
 
     .global _start
+
 _start:
+    mov r11, #0 /* clear frame pointer */
+    mov r14, #0 /* clear link register */
+    ldr r0, .L_fini
+    bl atexit
 
-    /* clear frame pointer and link register */
-    mov r11, #0
-    mov r14, #0
-
-    /* TODO: add the real code here */
-    /* register _fini as atexit */
-
+    nop
+    nop
     nop
     bl __pthread_initialize
 
-    /* TODO: add the real code here */
-    /* register __pthread_shutdown   as atexit */
+    ldr r0, .L__pthread_shutdown
+    nop
+    nop
+    bl atexit
 
     nop
     nop
@@ -78,25 +80,34 @@ _start:
     nop
     bl __srpc_init
 
-    /* NOTE: we do not have SDL support on arm yet */
-    /* call    __av_wait */
+    nop
+    nop
+    nop
+    bl __av_wait
 
     pop {r0}    /* get argc */
     mov r1, sp  /* get argv */
-
     nop
     bl main
 
-    /* TODO: add the real code here */
-    /* push {r0} */
-    /* bl __srpc_wait */
-    /* pop {r0} */
-
+    push {r0} /* save return value from main() */
     nop
+    nop
+    bl __srpc_wait
+
+    pop {r0}  /* restore return value */
     nop
     nop
     bl exit    /* from newlib */
 
+    /* some data referenced above */
+    .align NACL_ARM_BUNDLE_SIZE_LOG
+    bkpt    0x7777
+.L_fini:
+    .long _fini
+.L__pthread_shutdown:
+    .long __pthread_shutdown
+    .long 0
 /* ====================================================================== */
 /* Some runtime code for ARM */
 /* NOTE: this code can only clobber r0 and hence is hand coded */

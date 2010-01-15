@@ -5,7 +5,10 @@
  */
 
 /*
- * NaCl simple rpc service main loop
+ * NaCl simple rpc service main loop which starts an interpreter loop
+ * for manual rpc invocation.
+ * Note: this is a weak symbol and users are free to provide their
+ *       own main().
  */
 
 #include <stdlib.h>
@@ -24,9 +27,11 @@ static NaClSrpcError Interpreter(NaClSrpcService* service,
 }
 
 int __attribute__ ((weak)) main(int argc, char* argv[]) {
-  const int is_embedded = (-1 != srpc_get_fd());
-
-  if (!is_embedded) {
+  const int stand_alone = (-1 == srpc_get_fd());
+  /* NOTE: stand_alone mode happens when a nacl_module is run directly
+   * via sel_ldr not using sel_universal or a plugin
+   */
+  if (stand_alone) {
     /* Build the service */
     NaClSrpcService* service = (NaClSrpcService*) malloc(sizeof(*service));
     if (NULL == service) {
@@ -40,6 +45,12 @@ int __attribute__ ((weak)) main(int argc, char* argv[]) {
     /* Message processing loop. */
     NaClSrpcCommandLoop(service, NULL, Interpreter, kNaClSrpcInvalidImcDesc);
   }
+  /* NOTE: in the "else case" we implicitly call the sequence
+   *  __srpc_init();
+   *  __srpc_wait();
+   *  via the startup code
+   * TODO: make this code more straight forward
+   */
 
   return 0;
 }
