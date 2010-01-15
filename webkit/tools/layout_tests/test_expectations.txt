@@ -2367,9 +2367,6 @@ BUG12361 LINUX MAC DEBUG : http/tests/cookies/double-quoted-value-with-semi-colo
 BUG12361 LINUX RELEASE : http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 BUG12361 SLOW MAC RELEASE : http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 
-// WebKit 44286:44342
-BUG13174 WIN : transitions/shorthand-border-transitions.html = PASS FAIL
-
 // WebKit 44438:44544
 BUG13721 LINUX : fast/dynamic/positioned-movement-with-positioned-children.html = FAIL
 
@@ -2627,7 +2624,6 @@ BUG27418 MAC DEBUG : plugins/netscape-throw-exception.html = PASS TEXT
 BUG27418 MAC DEBUG : plugins/get-url-that-the-resource-load-delegate-will-disallow.html = PASS TEXT
 BUG27418 MAC DEBUG : plugins/netscape-identifier-conversion.html = PASS TEXT
 BUG27418 MAC DEBUG : plugins/open-and-close-window-with-plugin.html = PASS TEXT
-BUG27418 MAC DEBUG : transitions/shorthand-border-transitions.html = PASS TEXT
 
 // The following upstream patches add -Webkit-color-correction support:
 // http://trac.webkit.org/changeset/50760
