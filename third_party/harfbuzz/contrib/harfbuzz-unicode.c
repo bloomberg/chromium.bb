@@ -120,7 +120,6 @@ hb_utf16_script_run_next(unsigned *num_code_points, HB_ScriptItem *output,
         current_script = script;
         continue;
       } else if (script == HB_Script_Inherited) {
-        current_script = script;
         continue;
       } else {
         *iter = prev_iter;
