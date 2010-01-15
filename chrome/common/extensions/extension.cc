@@ -506,24 +506,10 @@ bool Extension::LoadAppHelper(const DictionaryValue* app, std::string* error) {
     return false;
   }
 
-  // launch URL
-  std::string launch_url_spec;
-  if (!app->GetString(keys::kAppLaunchUrl, &launch_url_spec)) {
-    *error = errors::kInvalidAppLaunchUrl;
-    return false;
-  }
-  app_launch_url_ = GURL(launch_url_spec);
-  if (!app_launch_url_.is_valid()) {
-    *error = errors::kInvalidAppLaunchUrl;
-    return false;
-  }
-  // The launch URL is automatically an allowed origin.
-  app_origins_.push_back(url.GetOrigin());
-
-  // origins
   ListValue* origins;
   if (!app->GetList(keys::kAppOrigins, &origins) || origins->GetSize() == 0) {
-    *error = errors::kInvalidAppOrigin;
+    *error =
+        ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidAppOrigin, "");
     return false;
   }
   for (ListValue::const_iterator iter = origins->begin();

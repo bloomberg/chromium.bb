@@ -386,15 +386,7 @@ bool UpdateWindowFunction::RunImpl() {
   }
 
   browser->window()->SetBounds(bounds);
-
-  if (update_props->HasKey(keys::kFocusedKey)) {
-    bool focused = false;
-    EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(keys::kFocusedKey,
-                                                         &focused));
-    if (focused)
-      browser->window()->Activate();
-  }
-
+  // TODO(rafaelw): Support |focused|.
   result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
 
   return true;

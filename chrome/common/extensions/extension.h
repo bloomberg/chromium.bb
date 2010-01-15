@@ -286,10 +286,9 @@ class Extension {
   bool GetBackgroundPageReady();
   void SetBackgroundPageReady();
 
-  // App stuff.
+  // The origins that this app is registered to.
   const std::vector<GURL>& app_origins() const { return app_origins_; }
-  const GURL& app_launch_url() const { return app_launch_url_; }
-  bool IsApp() const { return !app_launch_url_.is_empty(); }
+  bool IsApp() const { return !app_origins_.empty(); }
 
  private:
   // Helper method that loads a UserScript object from a
@@ -422,9 +421,6 @@ class Extension {
 
   // The vector of origin URLs associated with an app.
   std::vector<GURL> app_origins_;
-
-  // The URL an app should launch to.
-  GURL app_launch_url_;
 
 
   // Runtime data:
