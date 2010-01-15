@@ -35,7 +35,7 @@ if env.Bit('linux'):
 
   env.Append(
     # TODO(cbiffle): give everyone else these warnings too.
-    CXXFLAGS="-Weffc++ -Woverloaded-virtual -fno-rtti -fomit-frame-pointer"
+    CXXFLAGS='-Weffc++ -Woverloaded-virtual -fno-rtti -fomit-frame-pointer',
   )
 
   # NOTE: we cannot use TARGET_ROOT here because we want to share this file
@@ -63,10 +63,12 @@ if env.Bit('linux'):
                        ['ncvalidate.cc'],
                        LIBS=['arm_validator_core'])
 
-  ncval = env.ComponentProgram('arm-ncval-core',
-                       ['ncval.cc'],
-                       LIBS=['arm_validator_core',
-                             'nchelper'])
+  env_static = env.Clone()
+  env_static.Append(LINKFLAGS='-static')
+  ncval = env_static.ComponentProgram('arm-ncval-core',
+                                      ['ncval.cc'],
+                                      LIBS=['arm_validator_core',
+                                            'nchelper'])
 
   env.ComponentProgram('address_set_test_binary',
                        ['address_set_test.cc'],
@@ -85,20 +87,13 @@ if env.Bit('linux'):
     'test_stores': 1,
   }
 
-  arm_cc = os.getenv('ARM_CC', 'NO-ARM-CC-SPECIFIED')
   for test, exit_status in validator_tests.iteritems():
-    cmd = env.Command(target = test,
-                source = [ 'testdata/' + test + '.S' ],
-                action = [
-                  arm_cc + ' -static -nodefaultlibs -nostdlib '
-                      '-o ${TARGET.abspath} ${SOURCES[0].abspath}']
-               )
-    test_node = env.CommandTestAgainstGoldenOutput(
+    node = env.CommandTestAgainstGoldenOutput(
         test + '_actual.out',
-        [ncval[0], cmd[0]],
+        [ncval, env.File('testdata/' + test + '.nexe')],
         exit_status = str(exit_status),
         stdout_golden = env.File('testdata/' + test + '.out'),
         stderr_filter = '^ncval',
         stderr_golden = env.File('testdata/' + test + '.err'))
 
-    env.AddNodeToTestSuite(test_node, ['small_tests'], test)
+    env.AddNodeToTestSuite(node, ['small_tests'], "run_arm_" + test)
