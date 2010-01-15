@@ -976,8 +976,8 @@ BUG32392 SKIP : svg/batik/text/smallFonts.svg = FAIL
 // well. The specification isn't very specific on which behavior is correct,
 // but I feel like ours makes more sense.
 // The crash started occuring after the WebKit merge 43242:43321
-BUG24198 RELEASE : svg/custom/stroke-width-click.svg = TEXT
-BUG24198 DEBUG : svg/custom/stroke-width-click.svg = CRASH
+BUG32408 RELEASE : svg/custom/stroke-width-click.svg = TEXT
+BUG32408 DEBUG : svg/custom/stroke-width-click.svg = CRASH
 
 // The test is flaky and maybe platform-dependent.
 BUG32401 LINUX WIN : svg/custom/marker-changes.svg = IMAGE+TEXT IMAGE
