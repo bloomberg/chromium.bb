@@ -21,9 +21,9 @@ import zipfile
 from failure import Failure
 
 WEBKIT_TRAC_HOSTNAME = "trac.webkit.org"
-WEBKIT_LAYOUT_TEST_BASE_URL = "http://svn.webkit.org/repository/webkit/trunk/"
+WEBKIT_LAYOUT_TEST_BASE_URL = "http://svn.webkit.org/repository/webkit/trunk/LayoutTests/"
 WEBKIT_PLATFORM_BASELINE_URL = (WEBKIT_LAYOUT_TEST_BASE_URL +
-                                "LayoutTests/platform/%s/")
+                                "platform/%s/")
 
 BUILDBOT_BASE = "http://build.chromium.org/buildbot/"
 WEBKIT_BUILDER_BASE = BUILDBOT_BASE + "waterfall/builders/%s"
@@ -100,7 +100,7 @@ LOCAL_BASELINE_REGEXES = [
   ".*/webkit/data/layout_tests/platform/.*?/LayoutTests(/.*)",
   ".*/webkit/data/layout_tests/platform/.*?(/.*)",
   ".*/webkit/data/layout_tests(/.*)",
-  "LayoutTests(/.*)"
+  "(/.*)"
 ]
 
 UPSTREAM_IMAGE_FILE_ENDING = "-upstream.png"
@@ -684,13 +684,12 @@ class FailureFinder(object):
     possible_chromium_files = []
     possible_webkit_files = []
 
-    reduced_filename = filename.replace("LayoutTests/", "")
     chromium_platform_url = LAYOUT_TEST_REPO_BASE_URL
     if not filename.startswith("chrome"):
       chromium_platform_url += "platform/%s/"
     chromium_platform_url += filename
 
-    webkit_platform_url = WEBKIT_PLATFORM_BASELINE_URL + reduced_filename
+    webkit_platform_url = WEBKIT_PLATFORM_BASELINE_URL + filename
 
     if IsMacPlatform(self.platform):
       self._AddBaselineURLs(possible_chromium_files, chromium_platform_url,

@@ -20,11 +20,11 @@ DIFF_TEXT_FILE_ENDING = "-diff.txt"
 
 CHROMIUM_SRC_HOME = "http://src.chromium.org/viewvc/chrome/trunk/src/webkit/"
 CHROMIUM_TRAC_HOME = CHROMIUM_SRC_HOME + "data/layout_tests/"
-WEBKIT_TRAC_HOME = "http://trac.webkit.org/browser/trunk/"
+WEBKIT_TRAC_HOME = "http://trac.webkit.org/browser/trunk/LayoutTests/"
 WEBKIT_SVN_HOSTNAME = "svn.webkit.org"
 THIRD_PARTY = "third_party"
 
-WEBKIT_PLATFORM_URL_BASE = WEBKIT_TRAC_HOME + "LayoutTests/platform"
+WEBKIT_PLATFORM_URL_BASE = WEBKIT_TRAC_HOME + "platform"
 WEBKIT_LAYOUT_TEST_BASE_URL = "http://svn.webkit.org/repository/webkit/trunk/"
 WEBKIT_IMAGE_BASELINE_BASE_URL_WIN = (WEBKIT_LAYOUT_TEST_BASE_URL +
                                       "LayoutTests/platform/win/")
