@@ -153,11 +153,15 @@ const NSTimeInterval kAnimationDuration = 0.2;
 }
 
 - (void)extensionViewFrameChanged {
+  // If there are no changes in the width or height of the frame, then ignore.
+  if (NSEqualSizes([extensionView_ frame].size, extensionFrame_.size))
+    return;
+
+  extensionFrame_ = [extensionView_ frame];
   // Constrain the size of the view.
   [extensionView_ setFrameSize:NSMakeSize(
-      std::max(kMinWidth, std::min(kMaxWidth, NSWidth([extensionView_ frame]))),
-      std::max(kMinHeight,
-          std::min(kMaxHeight, NSHeight([extensionView_ frame]))))];
+      std::max(kMinWidth, std::min(kMaxWidth, NSWidth(extensionFrame_))),
+      std::max(kMinHeight, std::min(kMaxHeight, NSHeight(extensionFrame_))))];
 
   // Pad the window by half of the rounded corner radius to prevent the
   // extension's view from bleeding out over the corners.
@@ -180,8 +184,7 @@ const NSTimeInterval kAnimationDuration = 0.2;
   // animation will continue after this frame is set, reverting the frame to
   // what it was when the animation started.
   NSWindow* window = [self window];
-  if ([[window animator] alphaValue] > 0.0 &&
-      [[window animator] alphaValue] < 1.0) {
+  if ([window isVisible] && [[window animator] alphaValue] < 1.0) {
     [NSAnimationContext beginGrouping];
     [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
     [[window animator] setAlphaValue:1.0];

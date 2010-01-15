@@ -55,6 +55,14 @@ void ExtensionViewMac::UpdatePreferredSize(const gfx::Size& new_size) {
   frame.size.width = new_size.width();
   frame.size.height = new_size.height();
 
+  // On first display of some extensions, this function is called with zero
+  // width after the correct size has been set. Bail if zero is seen, assuming
+  // that an extension popup view doesn't want any dimensions to ever be zero.
+  // TODO(andybons): Verify this assumption and look into WebCore's
+  // |contentesPreferredWidth| to see why this is occurring.
+  if (NSIsEmptyRect(frame))
+    return;
+
   // RenderWidgetHostViewCocoa overrides setFrame but not setFrameSize.
   [view setFrame:frame];
   [view setNeedsDisplay:YES];

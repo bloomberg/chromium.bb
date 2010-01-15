@@ -34,6 +34,10 @@ class ExtensionHost;
   // browser action button.
   NSPoint anchor_;
 
+  // The current frame of the extension view. Cached to prevent setting the
+  // frame if the size hasn't changed.
+  NSRect extensionFrame_;
+
   // The extension host object.
   scoped_ptr<ExtensionHost> host_;
 }
