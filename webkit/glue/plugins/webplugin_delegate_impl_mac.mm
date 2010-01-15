@@ -767,6 +767,14 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
     }
   }
 
+  if (WebInputEventIsWebMouseEvent(event)) {
+    // Plugins are not good about giving accurate information about whether or
+    // not they handled events, and other browsers on the Mac generally ignore
+    // the return value. We may need to expand this to other input types, but
+    // we'll need to be careful about things like Command-keys.
+    ret = true;
+  }
+
 #ifndef NP_NO_CARBON
   if (instance()->event_model() == NPEventModelCarbon &&
       instance()->drawing_model() == NPDrawingModelCoreGraphics)
