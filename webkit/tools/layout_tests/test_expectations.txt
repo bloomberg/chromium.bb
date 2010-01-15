@@ -3084,3 +3084,5 @@ BUG_JAPHET DEBUG : fast/events/drag-and-drop.html = CRASH
 // WebKit roll: 53290:53313
 BUG32339 LINUX : fast/dom/Window/window-lookup-precedence.html = TEXT PASS
 BUG32305 : fast/loader/onload-willSendRequest-null-for-script.html = TEXT
+BUG_ATWILSON MAC : svg/css/css-box-min-width.html = IMAGE
+BUG_ATWILSON MAC : svg/custom/js-update-bounce.svg = IMAGE
