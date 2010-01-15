@@ -83,12 +83,14 @@ BUG24182 SLOW WIN MAC DEBUG : tables/mozilla/bugs/45621.html = PASS
 //BUG24852 started failing since webkit 49583
 //BUG24182 SLOW WIN : css1/font_properties/font.html = PASS
 BUG24182 SLOW WIN : http/tests/security/xssAuditor/meta-tag-http-refresh-javascript-url.html = PASS
+BUG24182 SLOW WIN RELEASE : http/tests/security/cross-origin-css.html = PASS
 BUG24182 SLOW WIN RELEASE : fast/loader/local-CSS-from-local.html = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/incremental/split-hex-entities.pl = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/XMLHttpRequestException.html = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/connection-error-sync.html = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/loading/onload-vs-immediate-refresh.pl = PASS
 BUG24182 SLOW DEBUG : editing/selection/extend-selection.html = PASS
+BUG24182 SLOW WIN : fast/images/svg-as-background.html = PASS
 BUG24182 SLOW WIN : fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : svg/css/getComputedStyle-basic.xhtml = PASS
 BUG24182 WIN DEBUG SLOW: inspector/console-dirxml.html = PASS
@@ -868,7 +870,7 @@ BUG31342 WIN RELEASE : security/block-test.html = TEXT PASS
 
 // Fails in debug. Windows used to be only flaky, but now fails consistently
 // starting with the 52554->52633 merge.
-BUG31363 DEBUG WIN LINUX : platform/chromium/fast/dom/interval.html = TEXT PASS
+BUG31363 DEBUG WIN LINUX MAC : platform/chromium/fast/dom/interval.html = TEXT PASS
 
 // -----------------------------------------------------------------
 // SVG TESTS
@@ -2729,7 +2731,7 @@ BUG9798 LINUX : http/tests/security/clipboard/clipboard-file-access.html = TEXT 
 
 // These tests time out *and* are slow. The test should be fixed to not timeout,
 // then should be marked as SLOW/PASS.
-BUG2844 : http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS
+BUG2844 : http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS CRASH
 BUG2844 : http/tests/appcache/fail-on-update.html = TIMEOUT PASS TEXT
 BUG2844 : http/tests/appcache/offline-access.html = TIMEOUT PASS CRASH
 BUG2844 : http/tests/appcache/update-cache.html = TIMEOUT PASS
@@ -2883,7 +2885,7 @@ BUG29737 MAC : svg/batik/filters/feTile.svg = IMAGE+TEXT
 BUG29737 MAC : svg/custom/empty-merge.svg = IMAGE+TEXT
 BUG29737 MAC : svg/custom/feComponentTransfer-Discrete.svg = IMAGE+TEXT
 BUG29737 MAC : svg/custom/feComponentTransfer-Gamma.svg = IMAGE+TEXT
-BUG29737 MAC : svg/custom/feComponentTransfer-Linear.svg = IMAGE+TEXT
+BUG29737 MAC : svg/custom/feComponentTransfer-Linear.svg = IMAGE+TEXT IMAGE
 BUG29737 MAC : svg/custom/feComponentTransfer-Table.svg = IMAGE+TEXT
 BUG29737 MAC : svg/custom/text-filter.svg = IMAGE+TEXT
 BUG29737 MAC : svg/filters/feComposite.svg = IMAGE+TEXT
@@ -2992,6 +2994,7 @@ BUG31253 : http/tests/security/xss-DENIED-assign-location-href-javascript.html =
 
 // WebKit update 52323->52366
 BUG30826 WIN : platform/win/fast/events/panScroll-imageMap-noHref-scroll.html = TEXT
+BUG30826 WIN DEBUG : platform/win/fast/events/panScroll-event-fired.html = PASS TEXT TIMEOUT
 
 // Flaky
 BUG30930 LINUX : tables/mozilla/bugs/bug15933.html = IMAGE PASS
@@ -3024,6 +3027,7 @@ BUG31642 LINUX DEBUG: svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE+TEXT CRASH
 
 // WebKit roll 52852 -> 52867
 BUG32018 : websocket/tests/frame-lengths.html = PASS TIMEOUT
+BUG32018 DEBUG : websocket/tests/simple-stress.html = PASS TEXT
 
 // Flaky crash
 BUG31794 WIN MAC : storage/domstorage/localstorage/enumerate-storage.html = CRASH PASS
