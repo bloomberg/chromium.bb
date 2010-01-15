@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
@@ -41,6 +40,12 @@
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
 
+// static
+bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
+  return url.SchemeIs(chrome::kChromeUIScheme) &&
+      url.host() == chrome::kChromeUIDevToolsHost;
+}
+
 RenderViewContextMenu::RenderViewContextMenu(
     TabContents* tab_contents,
     const ContextMenuParams& params)
@@ -64,21 +69,27 @@ void RenderViewContextMenu::InitMenu() {
   bool has_selection = !params_.selection_text.empty();
 
   if (AppendCustomItems()) {
+    AppendSeparator();
     AppendDeveloperItems();
     return;
   }
 
   // When no special node or text is selected and selection has no link,
   // show page items.
+  bool is_devtools = false;
   if (params_.media_type == WebContextMenuData::MediaTypeNone &&
       !has_link &&
       !params_.is_editable &&
       !has_selection) {
     // If context is in subframe, show subframe options instead.
     if (!params_.frame_url.is_empty()) {
-      AppendFrameItems();
+      is_devtools = IsDevToolsURL(params_.frame_url);
+      if (!is_devtools)
+        AppendFrameItems();
     } else if (!params_.page_url.is_empty()) {
-      AppendPageItems();
+      is_devtools = IsDevToolsURL(params_.page_url);
+      if (!is_devtools)
+        AppendPageItems();
     }
   }
 
@@ -110,6 +121,10 @@ void RenderViewContextMenu::InitMenu() {
   if (has_selection)
     AppendSearchProvider();
 
+  // In the DevTools popup menu, "developer items" is normally the only section,
+  // so omit the separator there.
+  if (!is_devtools)
+    AppendSeparator();
   AppendDeveloperItems();
 }
 
@@ -125,10 +140,8 @@ bool RenderViewContextMenu::AppendCustomItems() {
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {
-  if (g_browser_process->have_inspector_files()) {
-    AppendSeparator();
+  if (g_browser_process->have_inspector_files())
     AppendMenuItem(IDS_CONTENT_CONTEXT_INSPECTELEMENT);
-  }
 }
 
 void RenderViewContextMenu::AppendLinkItems() {
@@ -834,8 +847,7 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
       return false;
     // Don't enable the web inspector on web inspector if there is no process
     // per tab flag set.
-    if (active_entry->url().SchemeIs(chrome::kChromeUIScheme) &&
-        active_entry->url().host() == chrome::kChromeUIDevToolsHost &&
+    if (IsDevToolsURL(active_entry->url()) &&
         !command_line.HasSwitch(switches::kProcessPerTab))
       return false;
   }

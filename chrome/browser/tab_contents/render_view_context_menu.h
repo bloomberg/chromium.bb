@@ -76,6 +76,7 @@ class RenderViewContextMenu {
   Profile* profile_;
 
  private:
+  static bool IsDevToolsURL(const GURL& url);
   bool AppendCustomItems();
   void AppendDeveloperItems();
   void AppendLinkItems();
