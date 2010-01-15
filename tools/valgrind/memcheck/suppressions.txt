@@ -2168,3 +2168,18 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+{
+   bug_32366
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackIN5media12PipelineImplEEP14CallbackRunnerI6Tuple0EPT_MS6_FvvE
+   fun:_ZN5media12PipelineImpl25FilterStateTransitionTaskEv
+   fun:_Z16DispatchToMethodIN5media12PipelineImplEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN5media12PipelineImplEMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
