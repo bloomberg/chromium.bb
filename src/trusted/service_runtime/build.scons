@@ -297,7 +297,7 @@ if sdl_mode != 'none' and sdl_mode != 'armlocal':
     sdl_dll += sdl_env.Replicate('$OBJ_ROOT/src/trusted/Frameworks',
                                  '$SDL_DIR/SDL.framework')
     sdl_env.AddPluginPrerequisite(['$SDL_DIR/SDL.framework'])
-  elif env.Bit('linux'):
+  elif env.Bit('linux') env['BUILD_ARCHITECTURE'] == 'x86':
     if env['BUILD_SUBARCH'] == '32':
       sdl_dll += sdl_env.Replicate('$STAGING_DIR',
                                    '$SDL_DIR/lib/libSDL-1.2.so.0')
