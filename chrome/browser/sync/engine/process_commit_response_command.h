@@ -29,7 +29,7 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
   virtual void ModelChangingExecuteImpl(sessions::SyncSession* session);
 
  private:
-  CommitResponse::RESPONSE_TYPE ProcessSingleCommitResponse(
+  CommitResponse::ResponseType ProcessSingleCommitResponse(
       syncable::WriteTransaction* trans,
       const sync_pb::CommitResponse_EntryResponse& pb_server_entry,
       const syncable::Id& pre_commit_id, std::set<syncable::Id>*

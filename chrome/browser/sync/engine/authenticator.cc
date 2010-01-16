@@ -46,7 +46,7 @@ Authenticator::AuthenticationResult Authenticator::Authenticate(
   return AuthenticateToken(auth_service.auth_token());
 }
 
-COMPILE_ASSERT(sync_pb::ClientToServerResponse::ERROR_TYPE_MAX == 6,
+COMPILE_ASSERT(sync_pb::ClientToServerResponse::ErrorType_MAX == 6,
                client_to_server_response_errors_changed);
 
 Authenticator::AuthenticationResult Authenticator::HandleSuccessfulTokenRequest(

@@ -116,7 +116,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   { // Scope for WriteTransaction.
     WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
     for (int i = 0; i < cr.entryresponse_size(); i++) {
-      CommitResponse::RESPONSE_TYPE response_type =
+      CommitResponse::ResponseType response_type =
           ProcessSingleCommitResponse(&trans, cr.entryresponse(i),
                                       commit_ids[i],
                                       &conflicting_new_folder_ids,
@@ -179,7 +179,7 @@ void LogServerError(const CommitResponse_EntryResponse& res) {
     LOG(ERROR) << "  No detailed error message returned from server";
 }
 
-CommitResponse::RESPONSE_TYPE
+CommitResponse::ResponseType
 ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     syncable::WriteTransaction* trans,
     const sync_pb::CommitResponse_EntryResponse& pb_server_entry,
@@ -194,9 +194,9 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
   bool syncing_was_set = local_entry.Get(SYNCING);
   local_entry.Put(SYNCING, false);
 
-  CommitResponse::RESPONSE_TYPE response = (CommitResponse::RESPONSE_TYPE)
+  CommitResponse::ResponseType response = (CommitResponse::ResponseType)
       server_entry.response_type();
-  if (!CommitResponse::RESPONSE_TYPE_IsValid(response)) {
+  if (!CommitResponse::ResponseType_IsValid(response)) {
     LOG(ERROR) << "Commit response has unknown response type! Possibly out "
                "of date client?";
     return CommitResponse::INVALID_MESSAGE;

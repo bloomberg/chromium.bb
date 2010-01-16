@@ -46,7 +46,8 @@ class SyncEntity : public IdWrapper<sync_pb::SyncEntity> {
   // directly, because the addition of bookmarks to the protobuf schema
   // makes the check slightly more tricky.
   bool IsFolder() const {
-    return (!has_bookmarkdata() || bookmarkdata().bookmark_folder());
+    return ((has_folder() && folder()) ||
+            (has_bookmarkdata() && bookmarkdata().bookmark_folder()));
   }
 };
 

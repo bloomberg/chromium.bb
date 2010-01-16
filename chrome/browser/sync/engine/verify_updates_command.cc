@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
@@ -58,7 +59,8 @@ VerifyResult VerifyUpdatesCommand::VerifyUpdate(
 
   const bool deleted = entry.has_deleted() && entry.deleted();
   const bool is_directory = entry.IsFolder();
-  const bool is_bookmark = entry.has_bookmarkdata();
+  const bool is_bookmark =
+      SyncerUtil::GetSyncDataType(entry) == SYNC_TYPE_BOOKMARK;
 
   if (!id.ServerKnows()) {
     LOG(ERROR) << "Illegal negative id in received updates";

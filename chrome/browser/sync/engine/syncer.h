@@ -110,15 +110,15 @@ class Syncer {
   // Volatile reader for the source member of the syncer session object.  The
   // value is set to the SYNC_CYCLE_CONTINUATION value to signal that it has
   // been read.
-  sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE TestAndSetUpdatesSource() {
-    sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE old_source =
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource TestAndSetUpdatesSource() {
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource old_source =
         updates_source_;
     set_updates_source(sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION);
     return old_source;
   }
 
   void set_updates_source(
-      sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE source) {
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
     updates_source_ = source;
   }
 
@@ -150,7 +150,7 @@ class Syncer {
   scoped_ptr<ShutdownChannel> shutdown_channel_;
 
   // The source of the last nudge.
-  sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE updates_source_;
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source_;
 
   // A callback hook used in unittests to simulate changes between conflict set
   // building and conflict resolution.

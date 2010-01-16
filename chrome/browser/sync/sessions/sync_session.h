@@ -94,8 +94,8 @@ class SyncSession {
   // Volatile reader for the source member of the sync session object.  The
   // value is set to the SYNC_CYCLE_CONTINUATION value to signal that it has
   // been read.
-  sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE TestAndSetSource();
-  void set_source(sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE source) {
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource TestAndSetSource();
+  void set_source(sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
     source_ = source;
   }
 
@@ -109,7 +109,7 @@ class SyncSession {
   SyncSessionContext* const context_;
 
   // The source for initiating this sync session.
-  sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE source_;
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source_;
 
   // Information about extensions activity since the last successful commit.
   ExtensionsActivityMonitor::Records extensions_activity_;

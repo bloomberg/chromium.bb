@@ -30,6 +30,32 @@ message ProfilingData {
   optional int64 total_request_time = 6;
 }
 
+message EntitySpecifics {
+  // To add new datatype-specific fields to the protocol, extend
+  // EntitySpecifics.  First, pick a non-colliding tag number by
+  // picking a revision number of one of your past commits
+  // to src.chromium.org.  Then, in a different protocol buffer
+  // definition that includes this, do the following:
+  //
+  //   extend EntitySpecifics {
+  //     MyDatatypeSpecifics my_datatype = 32222;
+  //   }
+  //
+  // where:
+  //   - 32222 is the non-colliding tag number you picked earlier.
+  //   - MyDatatypeSpecifics is the type (probably a message type defined
+  //     in your new .proto file) that you want to associate with each
+  //     object of the new datatype.
+  //   - my_datatype is the field identifier you'll use to access the
+  //     datatype specifics from the code.
+  //
+  // Server implementations are obligated to preserve the contents of
+  // EntitySpecifics when it contains unrecognized extensions.  In this
+  // way, it is possible to add new datatype fields without having
+  // to update the server.
+  extensions 30000 to max;
+}
+
 message SyncEntity {
   // This item's identifier.  In a commit of a new item, this will be a
   // client-generated ID.  If the commit succeeds, the server will generate
@@ -164,6 +190,13 @@ message SyncEntity {
   // committed this entity. Typically a negative integer.
   // Present only in GetUpdatesResponse.
   optional string originator_client_item_id = 20;
+
+  // Extensible container for datatype-specific data.
+  // This became available in version 23 of the protocol.
+  optional EntitySpecifics specifics = 21;
+
+  // Indicate whether this is a folder or not. Available in version 23+.
+  optional bool folder = 22 [default = false];
 };
 
 message CommitMessage {
@@ -181,7 +214,7 @@ message CommitMessage {
     // The human-readable ID identifying the extension responsible
     // for the traffic reported in this ChromiumExtensionsActivity.
     optional string extension_id = 1;
-    
+
     // How many times the extension successfully invoked a write
     // operation through the bookmarks API since the last CommitMessage.
     optional uint32 bookmark_writes_since_last_commit = 2;
@@ -191,7 +224,7 @@ message CommitMessage {
 };
 
 message GetUpdatesCallerInfo {
-  enum GET_UPDATES_SOURCE {
+  enum GetUpdatesSource {
     UNKNOWN = 0;  // The source was not set by the caller.
     FIRST_UPDATE = 1;  // First update from an instance of Chrome.
     LOCAL = 2;  // The source of the update was a local change.
@@ -200,7 +233,7 @@ message GetUpdatesCallerInfo {
     SYNC_CYCLE_CONTINUATION = 5;  // The source of the update was a
   }                               // continuation of a previous update.
 
-  required GET_UPDATES_SOURCE source = 1;
+  required GetUpdatesSource source = 1;
 
   // True only if notifications were enabled for this GetUpdateMessage.
   optional bool notifications_enabled = 2;
@@ -219,14 +252,14 @@ message AuthenticateMessage {
 
 message ClientToServerMessage {
   required string share = 1;
-  optional int32 protocol_version = 2 [default = 22];
-  enum CONTENTS {
+  optional int32 protocol_version = 2 [default = 23];
+  enum Contents {
     COMMIT = 1;
     GET_UPDATES = 2;
     AUTHENTICATE = 3;
   }
 
-  required CONTENTS message_contents = 3;
+  required Contents message_contents = 3;
   optional CommitMessage commit = 4;
   optional GetUpdatesMessage get_updates = 5;
   optional AuthenticateMessage authenticate = 6;
@@ -238,7 +271,7 @@ message ClientToServerMessage {
 };
 
 message CommitResponse {
-  enum RESPONSE_TYPE {
+  enum ResponseType {
     SUCCESS = 1;
     CONFLICT = 2; // You're out of date; update and check your data
     // TODO(ncarter): What's the difference between RETRY and TRANSIENT_ERROR?
@@ -249,7 +282,7 @@ message CommitResponse {
     TRANSIENT_ERROR = 6; // Something went wrong; try again in a bit
   }
   repeated group EntryResponse = 1 {
-    required RESPONSE_TYPE response_type = 2;
+    required ResponseType response_type = 2;
 
     // Sync servers may also return a new ID for an existing item, indicating
     // a new entry's been created to hold the data the client's sending up.
@@ -330,7 +363,7 @@ message ClientToServerResponse {
   optional GetUpdatesResponse get_updates = 2;
   optional AuthenticateResponse authenticate = 3;
 
-  enum ERROR_TYPE {
+  enum ErrorType {
     SUCCESS            = 0;
     ACCESS_DENIED      = 1; // Returned when the user doesn't have access to
                             // store (instead of HTTP 401).
@@ -343,7 +376,7 @@ message ClientToServerResponse {
                             // Google Account.
     AUTH_INVALID       = 6; // Auth token or cookie is otherwise invalid.
   }
-  optional ERROR_TYPE error_code = 4 [default = SUCCESS];
+  optional ErrorType error_code = 4 [default = SUCCESS];
   optional string error_message = 5;
 
   // Opaque store ID; if it changes, the contents of the client's cache

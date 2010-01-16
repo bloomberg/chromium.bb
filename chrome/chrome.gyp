@@ -608,23 +608,34 @@
       # Protobuf compiler / generate rule for sync.proto
       'target_name': 'sync_proto',
       'type': 'none',
-      'actions': [
+      'sources': [
+        'browser/sync/protocol/sync.proto',
+        'browser/sync/protocol/bookmark_specifics.proto',
+      ],
+      'rules': [
         {
-          'action_name': 'compiling sync.proto',
+          'rule_name': 'genproto',
+          'extension': 'proto',
           'inputs': [
             '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            'browser/sync/protocol/sync.proto',
           ],
+          'variables': {
+            # The protoc compiler requires a proto_path argument with the
+            # directory containing the .proto file.
+            # There's no generator variable that corresponds to this, so fake it.
+            'rule_input_relpath': 'browser/sync/protocol',
+          },
           'outputs': [
-            '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.cc',
-            '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.h',
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
           ],
           'action': [
             '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            '--proto_path=browser/sync/protocol',
-            'browser/sync/protocol/sync.proto',
-            '--cpp_out=<(protoc_out_dir)/chrome/browser/sync/protocol',
+            '--proto_path=./<(rule_input_relpath)',
+            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
+            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
           ],
+          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
         },
       ],
       'dependencies': [
@@ -747,6 +758,8 @@
       'sources': [
         '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.h',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.h',
         'browser/sync/engine/all_status.cc',
         'browser/sync/engine/all_status.h',
         'browser/sync/engine/apply_updates_command.cc',

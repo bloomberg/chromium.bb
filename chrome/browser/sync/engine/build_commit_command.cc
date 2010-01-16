@@ -10,6 +10,7 @@
 
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
@@ -42,6 +43,46 @@ void BuildCommitCommand::AddExtensionsActivityToMessage(
         it->second.bookmark_write_count);
   }
 }
+
+namespace {
+void SetNewStyleBookmarkData(MutableEntry* meta_entry, SyncEntity* sync_entry) {
+
+  // Add the new style extension. Needed for folders as well as bookmarks.
+  // It'll identify the folder type on the server.
+  sync_pb::BookmarkSpecifics* bookmark_specifics = sync_entry->
+      mutable_specifics()->MutableExtension(sync_pb::bookmark);
+
+  if (!meta_entry->Get(syncable::IS_DIR)) {
+    // Set new-style extended bookmark data.
+    string bookmark_url = meta_entry->Get(syncable::BOOKMARK_URL);
+    bookmark_specifics->set_url(bookmark_url);
+    SyncerProtoUtil::CopyBlobIntoProtoBytes(
+        meta_entry->Get(syncable::BOOKMARK_FAVICON),
+        bookmark_specifics->mutable_favicon());
+  } else {
+    sync_entry->set_folder(true);
+  }
+}
+
+void SetOldStyleBookmarkData(MutableEntry* meta_entry, SyncEntity* sync_entry) {
+
+  // Old-style inlined bookmark data.
+  sync_pb::SyncEntity_BookmarkData* bookmark =
+      sync_entry->mutable_bookmarkdata();
+
+  if (!meta_entry->Get(syncable::IS_DIR)) {
+    string bookmark_url = meta_entry->Get(syncable::BOOKMARK_URL);
+    bookmark->set_bookmark_url(bookmark_url);
+    SyncerProtoUtil::CopyBlobIntoProtoBytes(
+        meta_entry->Get(syncable::BOOKMARK_FAVICON),
+        bookmark->mutable_bookmark_favicon());
+
+    bookmark->set_bookmark_folder(false);
+  } else {
+    bookmark->set_bookmark_folder(true);
+  }
+}
+}  // namespace
 
 void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   ClientToServerMessage message;
@@ -132,20 +173,17 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
     if (meta_entry.Get(syncable::IS_DEL)) {
       sync_entry->set_deleted(true);
     } else if (meta_entry.Get(syncable::IS_BOOKMARK_OBJECT)) {
-      sync_pb::SyncEntity_BookmarkData* bookmark =
-          sync_entry->mutable_bookmarkdata();
-      bookmark->set_bookmark_folder(meta_entry.Get(syncable::IS_DIR));
+
+      // Common data in both new and old protocol.
       const Id& prev_id = meta_entry.Get(syncable::PREV_ID);
       string prev_string = prev_id.IsRoot() ? string() : prev_id.GetServerId();
       sync_entry->set_insert_after_item_id(prev_string);
 
-      if (!meta_entry.Get(syncable::IS_DIR)) {
-        string bookmark_url = meta_entry.Get(syncable::BOOKMARK_URL);
-        bookmark->set_bookmark_url(bookmark_url);
-        SyncerProtoUtil::CopyBlobIntoProtoBytes(
-            meta_entry.Get(syncable::BOOKMARK_FAVICON),
-            bookmark->mutable_bookmark_favicon());
-      }
+      // TODO(ncarter): In practice we won't want to send this data twice
+      // over the wire; instead, when deployed servers are able to accept
+      // the new-style scheme, we should abandon the old way.
+      SetOldStyleBookmarkData(&meta_entry, sync_entry);
+      SetNewStyleBookmarkData(&meta_entry, sync_entry);
     }
   }
   session->status_controller()->mutable_commit_message()->CopyFrom(message);

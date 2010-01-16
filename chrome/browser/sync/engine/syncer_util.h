@@ -146,6 +146,8 @@ class SyncerUtil {
   // if they match.  For an up-to-date item, this should be the case.
   static bool ServerAndLocalOrdersMatch(syncable::Entry* entry);
 
+  static browser_sync::SyncDataType GetSyncDataType(const SyncEntity& entry);
+
  private:
   // Private ctor/dtor since this class shouldn't be instantiated.
   SyncerUtil() {}

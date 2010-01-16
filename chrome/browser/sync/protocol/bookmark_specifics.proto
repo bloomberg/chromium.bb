@@ -1,0 +1,23 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for bookmarks.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package sync_pb;
+
+import "sync.proto";
+
+// Properties of bookmark sync objects.
+message BookmarkSpecifics {
+  optional string url = 1;
+  optional bytes favicon = 2;
+}
+
+extend EntitySpecifics {
+  optional BookmarkSpecifics bookmark = 32904;
+}

@@ -35,9 +35,9 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       status_controller_.did_commit_items());
 }
 
-sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE
+sync_pb::GetUpdatesCallerInfo::GetUpdatesSource
     SyncSession::TestAndSetSource() {
-  sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE old_source = source_;
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource old_source = source_;
   set_source(sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION);
   return old_source;
 }

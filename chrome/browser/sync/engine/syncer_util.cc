@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
@@ -235,6 +236,19 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
   return SUCCESS;
 }
 
+namespace {
+void UpdateLocalBookmarkSpecifics(const string& url,
+                                  const string& favicon_bytes,
+                                  MutableEntry* local_entry) {
+  local_entry->Put(SERVER_BOOKMARK_URL, url);
+  Blob favicon_blob;
+  SyncerProtoUtil::CopyProtoBytesIntoBlob(favicon_bytes,
+                                          &favicon_blob);
+  local_entry->Put(SERVER_BOOKMARK_FAVICON, favicon_blob);
+}
+
+}  // namespace
+
 // Pass in name and checksum because of UTF8 conversion.
 // static
 void SyncerUtil::UpdateServerFieldsFromUpdate(
@@ -261,23 +275,26 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
       ServerTimeToClientTime(server_entry.ctime()));
   local_entry->Put(SERVER_MTIME,
       ServerTimeToClientTime(server_entry.mtime()));
-  local_entry->Put(SERVER_IS_BOOKMARK_OBJECT, server_entry.has_bookmarkdata());
+  local_entry->Put(SERVER_IS_BOOKMARK_OBJECT,
+      GetSyncDataType(server_entry) == SYNC_TYPE_BOOKMARK);
   local_entry->Put(SERVER_IS_DIR, server_entry.IsFolder());
   if (server_entry.has_singleton_tag()) {
     const string& tag = server_entry.singleton_tag();
     local_entry->Put(SINGLETON_TAG, tag);
   }
-  if (server_entry.has_bookmarkdata() && !server_entry.deleted()) {
-    const SyncEntity::BookmarkData& bookmark = server_entry.bookmarkdata();
-    if (bookmark.has_bookmark_url()) {
-      const string& url = bookmark.bookmark_url();
-      local_entry->Put(SERVER_BOOKMARK_URL, url);
-    }
-    if (bookmark.has_bookmark_favicon()) {
-      Blob favicon_blob;
-      SyncerProtoUtil::CopyProtoBytesIntoBlob(bookmark.bookmark_favicon(),
-                                              &favicon_blob);
-      local_entry->Put(SERVER_BOOKMARK_FAVICON, favicon_blob);
+  if (!server_entry.deleted()) {
+    if (server_entry.specifics().HasExtension(sync_pb::bookmark)) {
+      // New style bookmark data.
+      const sync_pb::BookmarkSpecifics& bookmark =
+          server_entry.specifics().GetExtension(sync_pb::bookmark);
+      UpdateLocalBookmarkSpecifics(bookmark.url(),
+          bookmark.favicon(), local_entry);
+    } else if (server_entry.has_bookmarkdata()) {
+      // Old style bookmark data.
+      const SyncEntity::BookmarkData& bookmark = server_entry.bookmarkdata();
+      UpdateLocalBookmarkSpecifics(bookmark.bookmark_url(),
+                                   bookmark.bookmark_favicon(),
+                                   local_entry);
     }
   }
   if (server_entry.has_position_in_parent()) {
@@ -610,7 +627,8 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
   if (same_id->Get(SERVER_VERSION) > 0) {
     // Then we've had an update for this entry before.
     if (is_directory != same_id->Get(SERVER_IS_DIR) ||
-        has_bookmark_data != same_id->Get(SERVER_IS_BOOKMARK_OBJECT)) {
+        (!is_directory &&
+         has_bookmark_data != same_id->Get(SERVER_IS_BOOKMARK_OBJECT))) {
       if (same_id->Get(IS_DEL)) {  // If we've deleted the item, we don't care.
         return VERIFY_SKIP;
       } else {
@@ -639,7 +657,8 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
   if (same_id->Get(BASE_VERSION) > 0) {
     // We've committed this entry in the past.
     if (is_directory != same_id->Get(IS_DIR) ||
-        has_bookmark_data != same_id->Get(IS_BOOKMARK_OBJECT)) {
+        (!is_directory &&
+         has_bookmark_data != same_id->Get(IS_BOOKMARK_OBJECT))) {
       LOG(ERROR) << "Server update doesn't agree with committed item. ";
       LOG(ERROR) << " Entry: " << *same_id;
       LOG(ERROR) << " Update: " << SyncEntityDebugString(entry);
@@ -746,6 +765,21 @@ syncable::Id SyncerUtil::ComputePrevIdFromServerPosition(
   }
 
   return closest_sibling;
+}
+
+browser_sync::SyncDataType SyncerUtil::GetSyncDataType(
+    const SyncEntity& entry) {
+
+  const bool is_bookmark =
+      (entry.has_specifics() &&
+       entry.specifics().HasExtension(sync_pb::bookmark)) ||
+       entry.has_bookmarkdata();
+
+  if (is_bookmark) {
+    return SYNC_TYPE_BOOKMARK;
+  }
+
+  return SYNC_TYPE_UNKNOWN;
 }
 
 }  // namespace browser_sync

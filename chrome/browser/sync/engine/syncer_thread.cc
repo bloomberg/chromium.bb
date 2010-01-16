@@ -463,7 +463,7 @@ bool SyncerThread::UpdateNudgeSource(bool was_throttled,
 
 void SyncerThread::SetUpdatesSource(bool nudged, NudgeSource nudge_source,
                                     bool* initial_sync) {
-  sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE updates_source =
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source =
       sync_pb::GetUpdatesCallerInfo::UNKNOWN;
   if (*initial_sync) {
     updates_source = sync_pb::GetUpdatesCallerInfo::FIRST_UPDATE;

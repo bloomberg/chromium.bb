@@ -121,7 +121,8 @@ bool ReverifyEntry(syncable::WriteTransaction* trans, const SyncEntity& entry,
 
   const bool deleted = entry.has_deleted() && entry.deleted();
   const bool is_directory = entry.IsFolder();
-  const bool is_bookmark = entry.has_bookmarkdata();
+  const bool is_bookmark =
+      SyncerUtil::GetSyncDataType(entry) == SYNC_TYPE_BOOKMARK;
 
   return VERIFY_SUCCESS == SyncerUtil::VerifyUpdateConsistency(trans,
                                                                entry,
