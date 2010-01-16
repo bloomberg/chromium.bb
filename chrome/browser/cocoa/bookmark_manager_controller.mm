@@ -140,13 +140,13 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
       other,
       recentGroup_.get(),
       nil];
-  FakeBookmarkItem* root = [[FakeBookmarkItem alloc] initWithTitle:@""
-                                                              icon:nil
-                                                           manager:self];
-  [root setChildren:rootItems];
-  [recentGroup_ setParent:root];
-  [searchGroup_ setParent:root];
-  [groupsController_ setGroup:root];
+  root_.reset([[FakeBookmarkItem alloc] initWithTitle:@""
+                                                 icon:nil
+                                              manager:self]);
+  [root_ setChildren:rootItems];
+  [recentGroup_ setParent:root_];
+  [searchGroup_ setParent:root_];
+  [groupsController_ setGroup:root_];
 
   // Turning on autosave also loads and applies the settings, which we couldn't
   // do until setting up the data model, above.
@@ -335,11 +335,10 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
   }
 
   // Show searchGroup_ if it's not visible yet:
-  FakeBookmarkItem* root = (FakeBookmarkItem*)[groupsController_ group];
-  NSArray* rootItems = [root children];
+  NSArray* rootItems = [root_ children];
   if (![rootItems containsObject:searchGroup_]) {
-    [root setChildren:[rootItems arrayByAddingObject:searchGroup_]];
-    [self itemChanged:root childrenChanged:YES];
+    [root_ setChildren:[rootItems arrayByAddingObject:searchGroup_]];
+    [self itemChanged:root_ childrenChanged:YES];
   }
 }
 

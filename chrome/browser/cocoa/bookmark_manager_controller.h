@@ -24,6 +24,7 @@ class Profile;
   Profile* profile_;  // weak
   scoped_ptr<BookmarkManagerBridge> bridge_;
   scoped_nsobject<NSMapTable> nodeMap_;
+  scoped_nsobject<FakeBookmarkItem> root_;  // Root of tree
   scoped_nsobject<FakeBookmarkItem> searchGroup_;  // Search Results group item
   scoped_nsobject<FakeBookmarkItem> recentGroup_;  // Recently-Added group item
 }
