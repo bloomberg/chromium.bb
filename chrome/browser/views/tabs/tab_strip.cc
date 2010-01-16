@@ -1052,6 +1052,10 @@ void TabStrip::ThemeChanged() {
   LoadNewTabButtonImage();
 }
 
+Tab* TabStrip::CreateTab() {
+  return new Tab(this);
+}
+
 void TabStrip::ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child) {
@@ -1101,7 +1105,7 @@ void TabStrip::TabInsertedAt(TabContents* contents,
 
   // Otherwise we need to make a new Tab.
   if (!tab)
-    tab = new Tab(this);
+    tab = CreateTab();
 
   // Only insert if we're not already in the list.
   if (!contains_tab) {

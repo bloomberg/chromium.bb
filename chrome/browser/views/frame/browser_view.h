@@ -36,7 +36,7 @@ class BookmarkBarView;
 class Browser;
 class BrowserBubble;
 class BrowserExtender;
-class BrowserLayoutManager;
+class BrowserViewLayoutManager;
 class DownloadShelfView;
 class EncodingMenuModel;
 class ExtensionShelf;
@@ -367,16 +367,25 @@ class BrowserView : public BrowserWindow,
                                     views::View* child);
   virtual void ChildPreferredSizeChanged(View* child);
 
+  // Factory Methods.
+  // Returns a new LayoutManager for this browser view. A subclass may
+  // override to implemnet different layout pocily.
+  virtual views::LayoutManager* CreateLayoutManager() const;
+
+  // Returns a new TabStrip for the browser view. A subclass may
+  // override to return a different TabStrip implementation.
+  virtual TabStrip* CreateTabStrip(TabStripModel* tab_strip_model) const;
+
  private:
   // Browser window related initializations.
-  void Init();
+  virtual void Init();
 
 #if defined(OS_WIN)
   // Creates the system menu.
   void InitSystemMenu();
 #endif
-  // Returns the BrowserLayoutManager.
-  BrowserLayoutManager* GetBrowserLayoutManager() const;
+  // Returns the BrowserViewLayoutManager.
+  BrowserViewLayoutManager* GetBrowserViewLayoutManager() const;
 
   // Prepare to show the Bookmark Bar for the specified TabContents. Returns
   // true if the Bookmark Bar can be shown (i.e. it's supported for this
