@@ -184,11 +184,19 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
 }
 
 - (IBAction)deleteCookie:(id)sender {
-  scoped_nsobject<NSArray> selection(
-      [[treeController_ selectedObjects] retain]);
-  for (CocoaCookieTreeNode* node in selection.get()) {
+  NSIndexPath* selectionPath = [treeController_ selectionIndexPath];
+  // N.B.: I suspect that |-selectedObjects| does not retain/autorelease the
+  // return value, which may result in the pointer going to garbage before it
+  // even goes out of scope. Retaining it immediately will fix this.
+  NSArray* selection = [treeController_ selectedObjects];
+  if (selectionPath) {
+    DCHECK_EQ([selection count], 1U);
+    CocoaCookieTreeNode* node = [selection lastObject];
     CookieTreeNode* cookie = static_cast<CookieTreeNode*>([node treeNode]);
     treeModel_->DeleteCookieNode(cookie);
+    // If there is a next cookie, this will select it because items will slide
+    // up. If there is no next cookie, this is a no-op.
+    [treeController_ setSelectionIndexPath:selectionPath];
   }
 }
 
@@ -227,6 +235,24 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
   else
     icon = [icons_ lastObject];
   [(ImageAndTextCell*)cell setImage:icon];
+}
+
+- (void)outlineViewItemDidExpand:(NSNotification*)notif {
+  NSTreeNode* item = [[notif userInfo] objectForKey:@"NSObject"];
+  CocoaCookieTreeNode* node = [item representedObject];
+  NSArray* children = [node children];
+  if ([children count] == 1U) {
+    // The node that will expand has one child. Do the user a favor and expand
+    // that node (saving her a click) if it is non-leaf.
+    CocoaCookieTreeNode* child = [children lastObject];
+    if (![child isLeaf]) {
+      NSOutlineView* outlineView = [notif object];
+      // Tell the OutlineView to expand the NSTreeNode, not the model object.
+      children = [item childNodes];
+      DCHECK_EQ([children count], 1U);
+      [outlineView expandItem:[children lastObject]];
+    }
+  }
 }
 
 #pragma mark Unit Testing

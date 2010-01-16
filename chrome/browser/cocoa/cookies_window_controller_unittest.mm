@@ -17,6 +17,7 @@
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 // Used to test FindCocoaNode. This only sets the title and node, without
 // initializing any other members.
@@ -333,6 +334,77 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
   [controller_ modelObserver]->TreeNodeChanged(model, node);
 
   EXPECT_TRUE([@"Silly Change" isEqualToString:[cocoa_node title]]);
+}
+
+TEST_F(CookiesWindowControllerTest, TestDeleteCookie) {
+  const GURL url = GURL("http://foo.com");
+  TestingProfile* profile = browser_helper_.profile();
+  net::CookieMonster* cm = profile->GetCookieMonster();
+  cm->SetCookie(url, "A=B");
+  cm->SetCookie(url, "C=D");
+
+  // This will clean itself up when we call |-closeSheet:|. If we reset the
+  // scoper, we'd get a double-free.
+  CookiesWindowController* controller =
+      [[CookiesWindowController alloc] initWithProfile:profile];
+  [controller attachSheetTo:test_window()];
+  NSTreeController* treeController = [controller treeController];
+
+  // Pretend to select cookie A.
+  NSUInteger path[3] = {0, 0, 0};
+  NSIndexPath* indexPath = [NSIndexPath indexPathWithIndexes:path length:3];
+  [treeController setSelectionIndexPath:indexPath];
+
+  // Press the "Delete" button.
+  [controller deleteCookie:nil];
+
+  // Root --> foo.com --> Cookies.
+  NSArray* cookies = [[[[[[controller cocoaTreeModel] childs] objectAtIndex:0]
+      childs] objectAtIndex:0] childs];
+  EXPECT_EQ(1U, [cookies count]);
+  EXPECT_TRUE([@"C" isEqualToString:[[cookies lastObject] title]]);
+  EXPECT_TRUE([indexPath isEqual:[treeController selectionIndexPath]]);
+
+  [controller closeSheet:nil];
+}
+
+TEST_F(CookiesWindowControllerTest, TestDidExpandItem) {
+  const GURL url = GURL("http://foo.com");
+  TestingProfile* profile = browser_helper_.profile();
+  net::CookieMonster* cm = profile->GetCookieMonster();
+  cm->SetCookie(url, "A=B");
+  cm->SetCookie(url, "C=D");
+
+  controller_.reset(
+      [[CookiesWindowController alloc] initWithProfile:profile]);
+
+  // Root --> foo.com.
+  CocoaCookieTreeNode* foo =
+      [[[controller_ cocoaTreeModel] childs] objectAtIndex:0];
+
+  // Create the objects we are going to be testing with.
+  id outlineView = [OCMockObject mockForClass:[NSOutlineView class]];
+  id treeNode = [OCMockObject mockForClass:[NSTreeNode class]];
+  NSTreeNode* childTreeNode =
+      [NSTreeNode treeNodeWithRepresentedObject:[[foo childs] lastObject]];
+  NSArray* fakeChildren = [NSArray arrayWithObject:childTreeNode];
+
+  // Set up the mock object.
+  [[[treeNode stub] andReturn:foo] representedObject];
+  [[[treeNode stub] andReturn:fakeChildren] childNodes];
+
+  // Create a fake "ItemDidExpand" notification.
+  NSDictionary* userInfo = [NSDictionary dictionaryWithObject:treeNode
+                                                       forKey:@"NSObject"];
+  NSNotification* notif =
+      [NSNotification notificationWithName:@"ItemDidExpandNotification"
+                                    object:outlineView
+                                  userInfo:userInfo];
+
+  // Make sure we work correctly.
+  [[outlineView expect] expandItem:childTreeNode];
+  [controller_ outlineViewItemDidExpand:notif];
+  [outlineView verify];
 }
 
 }  // namespace
