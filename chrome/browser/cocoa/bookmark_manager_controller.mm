@@ -422,9 +422,15 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
     }
   }
 
-  if ([sender tag] == IDC_FIND) {
-    [[[self window] toolbar] setVisible:YES];
-    [[self window] makeFirstResponder:toolbarSearchView_];
+  switch ([sender tag]) {
+    case IDC_FIND:
+      [[[self window] toolbar] setVisible:YES];
+      [[self window] makeFirstResponder:toolbarSearchView_];
+      break;
+    case IDC_SHOW_BOOKMARK_MANAGER:
+      // The Bookmark Manager menu command _closes_ the window if it's frontmost.
+      [self close];
+      break;
   }
 }
 
@@ -433,7 +439,7 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
   if (action == @selector(commandDispatch:) ||
       action == @selector(commandDispatchUsingKeyModifiers:)) {
     NSInteger tag = [item tag];
-    return (tag == IDC_FIND);
+    return (tag == IDC_FIND || tag == IDC_SHOW_BOOKMARK_MANAGER);
   } else if (action == @selector(newFolder:) || action == @selector(delete:)) {
     return [[self focusedController] validateUserInterfaceItem:item];
   }
