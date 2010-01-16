@@ -174,8 +174,9 @@ void AppModalDialog::CreateAndShowDialog() {
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_OK);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnDialogResponse), this);
 
+  gtk_widget_show_all(GTK_WIDGET(GTK_DIALOG(dialog_)));
+
   // Suggest a minimum size.
-  gtk_widget_realize(dialog_);
   gint width;
   GtkRequisition req;
   gtk_widget_size_request(dialog_, &req);
@@ -183,8 +184,6 @@ void AppModalDialog::CreateAndShowDialog() {
                                        &width, NULL);
   if (width > req.width)
     gtk_widget_set_size_request(dialog_, width, -1);
-
-  gtk_widget_show_all(GTK_WIDGET(GTK_DIALOG(dialog_)));
 }
 
 void AppModalDialog::ActivateModalDialog() {
