@@ -237,7 +237,7 @@ DeclareBit('prebuilt', 'Disable all build steps, only support install steps')
 pre_base_env.SetBitFromOption('prebuilt', False)
 
 
-if pre_base_env.Bit('prebuilt'):
+if pre_base_env.Bit('prebuilt') or ARGUMENTS.get('built_elsewhere'):
   n = pre_base_env.Command('firefox_install_command',
                            [],
                            InstallPlugin)
