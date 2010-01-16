@@ -979,7 +979,7 @@ BUG32408 DEBUG : svg/custom/stroke-width-click.svg = CRASH
 // The test is flaky and maybe platform-dependent.
 BUG32401 LINUX WIN : svg/custom/marker-changes.svg = IMAGE+TEXT IMAGE
 
-BUG24198 LINUX WIN : svg/hixie/text/003.html = FAIL
+BUG32444 LINUX WIN : svg/hixie/text/003.html = FAIL
 
 // SVG combined with font metrics.
 BUG24198 LINUX : svg/hixie/text/001-broken.xml = FAIL
