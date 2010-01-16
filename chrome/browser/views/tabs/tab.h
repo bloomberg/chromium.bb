@@ -12,6 +12,7 @@ namespace gfx {
 class Path;
 class Point;
 }
+class BrowserExtender;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -94,6 +95,9 @@ class Tab : public TabRenderer,
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event,
                                bool canceled);
+  virtual void OnMouseEntered(const views::MouseEvent& event);
+  virtual void OnMouseMoved(const views::MouseEvent& event);
+  virtual void OnMouseExited(const views::MouseEvent& event);
   virtual bool GetTooltipText(int x, int y, std::wstring* tooltip);
   virtual bool GetTooltipTextOrigin(int x, int y, gfx::Point* origin);
   virtual std::string GetClassName() const { return kTabClassName; }
@@ -108,6 +112,9 @@ class Tab : public TabRenderer,
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // Returns the BrowserExtender of the window that this tab belongs to.
+  BrowserExtender* GetBrowserExtender();
 
   // Creates a path that contains the clickable region of the tab's visual
   // representation. Used by GetViewForPoint for hit-testing.

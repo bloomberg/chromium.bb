@@ -37,9 +37,9 @@
 #include "chrome/browser/views/chrome_views_delegate.h"
 #include "chrome/browser/views/download_shelf_view.h"
 #include "chrome/browser/views/extensions/extension_shelf.h"
-#include "chrome/browser/views/frame/chrome_browser_view_layout_manager.h"
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame.h"
+#include "chrome/browser/views/frame/browser_layout_manager.h"
 #include "chrome/browser/views/fullscreen_exit_bubble.h"
 #include "chrome/browser/views/infobars/infobar_container.h"
 #include "chrome/browser/views/status_bubble_views.h"
@@ -526,7 +526,7 @@ bool BrowserView::ShouldFindBarBlendWithBookmarksBar() const {
 }
 
 gfx::Rect BrowserView::GetFindBarBoundingBox() const {
-  return GetBrowserViewLayoutManager()->GetFindBarBoundingBox();
+  return GetBrowserLayoutManager()->GetFindBarBoundingBox();
 }
 
 int BrowserView::GetTabStripHeight() const {
@@ -780,6 +780,7 @@ void BrowserView::UpdateTitleBar() {
   frame_->GetWindow()->UpdateWindowTitle();
   if (ShouldShowWindowIcon() && !loading_animation_timer_.IsRunning())
     frame_->GetWindow()->UpdateWindowIcon();
+  browser_extender_->UpdateTitleBar();
 }
 
 void BrowserView::ShelfVisibilityChanged() {
@@ -856,7 +857,9 @@ LocationBar* BrowserView::GetLocationBar() const {
 
 void BrowserView::SetFocusToLocationBar() {
   LocationBarView* location_bar = toolbar_->location_bar();
-  if (location_bar->IsFocusable()) {
+  if (browser_extender_->SetFocusToCompactNavigationBar()) {
+    // Compact navigation bar got focus.
+  } else if (location_bar->IsFocusable()) {
     // Location bar got focus.
     location_bar->FocusLocation();
   } else {
@@ -907,6 +910,8 @@ bool BrowserView::IsBookmarkBarVisible() const {
 }
 
 bool BrowserView::IsToolbarVisible() const {
+  if (browser_extender_->ShouldForceHideToolbar())
+    return false;
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
@@ -1584,7 +1589,7 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
 }
 
 gfx::Size BrowserView::GetMinimumSize() {
-  return GetBrowserViewLayoutManager()->GetMinimumSize();
+  return GetBrowserLayoutManager()->GetMinimumSize();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1637,19 +1642,11 @@ void BrowserView::SetAccessibleName(const std::wstring& name) {
   accessible_name_ = name;
 }
 
-views::LayoutManager* BrowserView::CreateLayoutManager() const {
-  return new ChromeBrowserViewLayoutManager();
-}
-
-TabStrip* BrowserView::CreateTabStrip(TabStripModel* model) const {
-  return new TabStrip(model);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, private:
 
 void BrowserView::Init() {
-  SetLayoutManager(CreateLayoutManager());
+  SetLayoutManager(BrowserLayoutManager::CreateBrowserLayoutManager());
   // Stow a pointer to this object onto the window handle so that we can get
   // at it later when all we have is a native view.
 #if defined(OS_WIN)
@@ -1669,7 +1666,7 @@ void BrowserView::Init() {
   LoadAccelerators();
   SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
 
-  tabstrip_ = CreateTabStrip(browser_->tabstrip_model());
+  tabstrip_ = new TabStrip(browser_->tabstrip_model());
   tabstrip_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
   AddChildView(tabstrip_);
   frame_->TabStripCreated(tabstrip_);
@@ -1741,8 +1738,8 @@ void BrowserView::InitSystemMenu() {
 }
 #endif
 
-BrowserViewLayoutManager* BrowserView::GetBrowserViewLayoutManager() const {
-  return static_cast<BrowserViewLayoutManager*>(GetLayoutManager());
+BrowserLayoutManager* BrowserView::GetBrowserLayoutManager() const {
+  return static_cast<BrowserLayoutManager*>(GetLayoutManager());
 }
 
 void BrowserView::LayoutStatusBubble(int top) {
@@ -2135,7 +2132,6 @@ void BrowserView::InitClass() {
   }
 }
 
-#if !defined(OS_CHROMEOS)
 // static
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   // Create the view and the frame. The frame will attach itself via the view
@@ -2144,7 +2140,6 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   BrowserFrame::Create(view, browser->profile());
   return view;
 }
-#endif
 
 // static
 FindBar* BrowserWindow::CreateFindBar(Browser* browser) {
