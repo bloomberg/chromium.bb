@@ -248,6 +248,7 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
   InitResources();
 
   data_.pinned = false;
+  data_.blocked = false;
   data_.animating_pinned_change = false;
 
   tab_.Own(gtk_fixed_new());
