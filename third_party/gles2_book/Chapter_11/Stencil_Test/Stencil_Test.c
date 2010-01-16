@@ -29,8 +29,9 @@ int stInit ( ESContext *esContext )
       "   gl_Position = a_position; \n"
       "}                            \n";
    
+   // TODO(alokp): Shaders containing "precision" do not compile.
    GLbyte fShaderStr[] =  
-      "precision mediump float;  \n"
+      "//precision mediump float;  \n"
       "uniform vec4  u_color;    \n"
       "void main()               \n"
       "{                         \n"

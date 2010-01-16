@@ -97,9 +97,10 @@ int stcInit ( ESContext *esContext )
       "   gl_Position = a_position; \n"
       "   v_normal = a_normal;      \n"
       "}                            \n";
-   
+
+   // TODO(alokp): Shaders containing "precision" do not compile.
    GLbyte fShaderStr[] =  
-      "precision mediump float;                            \n"
+      "//precision mediump float;                            \n"
       "varying vec3 v_normal;                              \n"
       "uniform samplerCube s_texture;                      \n"
       "void main()                                         \n"
