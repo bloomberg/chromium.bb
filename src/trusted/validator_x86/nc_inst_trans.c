@@ -169,6 +169,34 @@ static const OperandKind RegisterTable8NoRex[REGISTER_TABLE_SIZE] = {
 #endif
 };
 
+/* Define a mapping from RegisterTable8Rex indicies, to the corresponding
+ * register index in RegisterTable64, for which each register in
+ * RegisterTable8Rex is a subregister in RegisterTable64, assuming the
+ * REX prefix isn't defined for the instruction.
+ * Note: this index will only be used if the corresponding index in
+ * RegisterTable8NoRex is not RegUnknown.
+ */
+static const int RegisterTable8NoRexTo64[REGISTER_TABLE_SIZE] = {
+  0,
+  1,
+  2,
+  3,
+  0,
+  1,
+  2,
+  3,
+#if NACL_TARGET_SUBARCH == 64
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+#endif
+};
+
 /* Define the available 8-bit registers, for the given subarchitecture,
  * assuming the rex prefix is present.
  * Note: The order is important, and is based on the indexing values used
@@ -197,6 +225,39 @@ static const OperandKind RegisterTable8Rex[REGISTER_TABLE_SIZE] = {
   RegCH,
   RegDH,
   RegBH
+#endif
+};
+
+/* Define a mapping from RegisterTable8Rex indicies, to the corresponding
+ * register index in RegisterTable64, for which each register in
+ * RegisterTable8Rex is a subregister in RegisterTable64, assuming the
+ * REX prefix is defined for the instruction.
+ * Note: this index will only be used if the corresponding index in
+ * RegisterTable8Rex is not RegUnknown.
+ */
+static const int RegisterTable8RexTo64[REGISTER_TABLE_SIZE] = {
+  0,
+  1,
+  2,
+  3,
+#if NACL_TARGET_SUBARCH == 64
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15
+#else
+  0,
+  1,
+  2,
+  3
 #endif
 };
 
@@ -364,21 +425,122 @@ OperandKind NcGet32For64BitRegister(OperandKind reg64) {
   return RegUnknown;
 }
 
-Bool NcIs64Subregister(NcInstState* state,
-                       OperandKind subreg, OperandKind reg64) {
-#if NACL_TARGET_SUBARCH == 64
+/* Once initialized, contains mapping from registers of size <= 64 to the
+ * corresponding 64 bit register (or RegUnknown if no such register), when
+ * there is a rex prefix in the instruction.
+ *
+ * Note: Initialized by function BuildSubreg64Reg.
+ */
+static OperandKind* Subreg64RegRex = NULL;
+
+/* Once initialized, contains mapping from registers of size <= 64 to the
+ * corresponding 64 bit register (or RegUnknown if no such register), when
+ * there isn't a rex prefix in the instruction.
+ *
+ * Note: Initialized by function BuildSubreg64Reg.
+ */
+static OperandKind* Subreg64RegNoRex = NULL;
+
+/* Add the mapping from subregisters (in subtable) to the corresponding
+ * registers (in table).
+ *
+ * Parameters:
+ *    subreg_table - The subregister table to update.
+ *    subtable - The subregister table
+ *    table - The register table the subregister is being checked
+ *            against.
+ *    index_fold - Any index remapping (i.e. fold) to be applied.
+ */
+static void AddSubRegistersFold(
+    OperandKind subreg_table[OperandKindEnumSize],
+    const OperandKind subtable[REGISTER_TABLE_SIZE],
+    const OperandKind table[REGISTER_TABLE_SIZE],
+    const int index_fold[REGISTER_TABLE_SIZE]) {
   int i;
   for (i = 0; i < REGISTER_TABLE_SIZE; ++i) {
-    if (reg64 == RegisterTable64[i]) {
-      return (state->rexprefix
-              ? subreg == RegisterTable8Rex[i]
-              : subreg == RegisterTable8NoRex[i]) ||
-          subreg == RegisterTable16[i] ||
-          subreg == RegisterTable32[i];
+    OperandKind subreg = subtable[i];
+    if (subreg != RegUnknown) {
+      subreg_table[subreg] = table[index_fold[i]];
     }
   }
+}
+
+/* Add the mapping from subregisters (in subtable) to the corresponding
+ * registers (in table).
+ *
+ * Parameters:
+ *    subreg_table - The subregister table to update.
+ *    subtable - The subregister table
+ *    table - The register table the subregister is being checked
+ *            against.
+ */
+static void AddSubRegisters(OperandKind subreg_table[OperandKindEnumSize],
+                            const OperandKind subtable[REGISTER_TABLE_SIZE],
+                            const OperandKind table[REGISTER_TABLE_SIZE]) {
+  static const int kIdentityFold[REGISTER_TABLE_SIZE] = {
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+#if NACL_TARGET_SUBARCH == 64
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
 #endif
-  return FALSE;
+  };
+  AddSubRegistersFold(subreg_table, subtable, table, kIdentityFold);
+}
+
+/* Build Subreg64RegRex and Subreg64RegNoRex using encoded register tables. */
+static void BuildSubreg64Regs() {
+  if (Subreg64RegRex == NULL) {
+    int i;
+    /* Create lookup vectors, and initialize to unknown. */
+    Subreg64RegRex = (OperandKind*)
+        calloc(sizeof(OperandKind), OperandKindEnumSize);
+    Subreg64RegNoRex = (OperandKind*)
+        calloc(sizeof(OperandKind), OperandKindEnumSize);
+    for (i = 0; i < OperandKindEnumSize; ++i) {
+      Subreg64RegRex[i] =  RegUnknown;
+      Subreg64RegNoRex[i] = RegUnknown;
+    }
+
+    /* Add register tables. */
+    AddSubRegistersFold(Subreg64RegNoRex,
+                        RegisterTable8NoRex,
+                        RegisterTable64,
+                        RegisterTable8NoRexTo64);
+    AddSubRegistersFold(Subreg64RegRex,
+                        RegisterTable8Rex,
+                        RegisterTable64,
+                        RegisterTable8RexTo64);
+
+    AddSubRegisters(Subreg64RegNoRex, RegisterTable16, RegisterTable64);
+    AddSubRegisters(Subreg64RegRex, RegisterTable16, RegisterTable64);
+
+    AddSubRegisters(Subreg64RegNoRex, RegisterTable32, RegisterTable64);
+    AddSubRegisters(Subreg64RegRex, RegisterTable32, RegisterTable64);
+
+    AddSubRegisters(Subreg64RegNoRex, RegisterTable64, RegisterTable64);
+    AddSubRegisters(Subreg64RegRex, RegisterTable64, RegisterTable64);
+  }
+}
+
+Bool NcIs64Subregister(NcInstState* state,
+                       OperandKind subreg, OperandKind reg64) {
+  BuildSubreg64Regs();
+  return (state->rexprefix
+          ? Subreg64RegRex[subreg]
+          : Subreg64RegNoRex[subreg]) == RegisterTable64[reg64];
 }
 
 Bool Is32To64RegisterPair(OperandKind reg32, OperandKind reg64) {
