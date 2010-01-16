@@ -17,11 +17,8 @@ namespace sync_ui_util {
 void UpdateSyncItem(id syncItem, BOOL syncEnabled, Profile* profile) {
   ProfileSyncService* syncService =
     profile->GetOriginalProfile()->GetProfileSyncService();
-  // TODO(akalin): use sync_ui_util::GetStatus instead.
-  string16 label, link;
-  sync_ui_util::MessageType status =
-      sync_ui_util::GetStatusLabels(syncService, &label, &link);
-  UpdateSyncItemForStatus(syncItem, syncEnabled, status);
+  UpdateSyncItemForStatus(syncItem, syncEnabled,
+                          sync_ui_util::GetStatus(syncService));
 }
 
 void UpdateSyncItemForStatus(id syncItem, BOOL syncEnabled,
