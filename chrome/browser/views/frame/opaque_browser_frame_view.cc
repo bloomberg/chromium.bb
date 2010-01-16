@@ -200,9 +200,10 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   AddChildView(otr_avatar_icon_);
   if (distributor_logo_) {
     logo_icon_->SetImage(distributor_logo_);
-    AddChildView(logo_icon_);
-    // No need to add logo_icon when not visible.
+  } else {
+    logo_icon_->SetVisible(false);
   }
+  AddChildView(logo_icon_);
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view_->ShouldShowWindowIcon()) {
     window_icon_ = new TabIconView(this);

@@ -255,6 +255,7 @@ TabRenderer::TabRenderer()
       theme_provider_(NULL) {
   InitResources();
 
+  data_.blocked = false;
   data_.pinned = false;
   data_.animating_pinned_change = false;
 
@@ -903,4 +904,3 @@ void TabRenderer::SetBlocked(bool blocked) {
   else
     StopPulse();
 }
-
