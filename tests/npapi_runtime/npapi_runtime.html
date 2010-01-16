@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html>
+<!-- Copyright (c) 2010 The Native Client Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<head>
+  <title>NPAPI Runtime Feature Test</title>
+<style type="text/css">
+  td.notrun { background-color: skyblue }
+  td.pass { background-color: lime }
+  td.fail { background-color: red }
+</style>
+</head>
+<body>
+
+<script type="text/javascript">
+//<![CDATA[
+var SetTestResult = function(element_id, result) {
+  var element = document.getElementById(element_id);
+  element.className = result;
+}
+
+// The NaCl module.
+var plugin;
+
+var kSampleInt = 1;
+var kSampleString = 'hello, world';
+var kSampleObject = new Array(10);
+
+// The queue of small tests.
+var testQueue = [ ];
+var appendTest = function(test_descr) {
+  testQueue[testQueue.length] = test_descr;
+}
+
+var expectPass = function(element, has_return, fp) {
+  appendTest(new Array('pass', element, has_return, fp));
+}
+
+var expectFail = function(element, fp) {
+  appendTest(new Array('fail', element, fp));
+}
+
+// A scriptable object for testing from NaCl modules.
+var JSObject = function(arg) { return arg; }
+JSObject.getEmbedTagArgs = function() { return 'argn/argv string'; }
+JSObject.propertySet = '1';
+JSObject.intMethod = function(arg) { return arg; };
+JSObject.stringMethod = function(arg) { return arg; };
+JSObject.objectMethod = function(arg) { return arg; };
+
+var BrowserToNacl = function() {
+  // Test access to NaCl npruntime objects from the browser.
+  // Get the argn/argv string.
+  expectPass('browser_nacl_argn_argv',
+             true,
+             function() {
+               return plugin.getEmbedTagArgs();
+             });
+  // Read a property that is not set.
+  expectPass('browser_nacl_read_notset',
+             true,
+             function() {
+               return plugin.propertyUnset == undefined;
+             });
+  // Read a property that is set.
+  expectPass('browser_nacl_read_set',
+             true,
+             function() {
+               return plugin.propertySet;
+             });
+  // Write an integer property.
+  expectPass('browser_nacl_int_write',
+             false,
+             function() {
+               plugin.intProperty = kSampleInt;
+             });
+  // Read back the property.
+  expectPass('browser_nacl_int_readback',
+             true,
+             function() {
+               return plugin.intProperty == kSampleInt;
+             });
+  // Remove the property.
+  expectPass('browser_nacl_int_remove',
+             false,
+             function() {
+               delete plugin.intProperty;
+               return plugin.intProperty;
+             });
+  // Write a string property.
+  expectPass('browser_nacl_string_write',
+             false,
+             function() {
+               plugin.stringProperty = kSampleString;
+             });
+  // Read back the property.
+  expectPass('browser_nacl_string_readback',
+             true,
+             function() {
+               return plugin.stringProperty == kSampleString;
+             });
+  // Remove the property.
+  expectPass('browser_nacl_string_remove',
+             false,
+             function() {
+               delete plugin.stringProperty;
+               return plugin.stringProperty;
+             });
+  // Write an object property.
+  expectPass('browser_nacl_object_write',
+             false,
+             function() {
+               plugin.objectProperty = kSampleObject;
+             });
+  // Read back the property.
+  expectPass('browser_nacl_object_readback',
+             true,
+             function() {
+               return plugin.objectProperty === kSampleObject;
+             });
+  // Remove the property.
+  expectPass('browser_nacl_object_remove',
+             false,
+             function() {
+               delete plugin.objectProperty;
+               return plugin.objectProperty;
+             });
+  // Argument passing and return.
+  expectPass('browser_nacl_int_argret',
+             true,
+             function() {
+               return plugin.intMethod(kSampleInt) == kSampleInt;
+             });
+  expectPass('browser_nacl_string_argret',
+             true,
+             function() {
+               return plugin.stringMethod(kSampleString) == kSampleString;
+             });
+  expectPass('browser_nacl_object_argret',
+             true,
+             function() {
+               return plugin.objectMethod(kSampleObject) === kSampleObject;
+             });
+  // Invoking the default method.
+  expectPass('browser_nacl_invoke_default',
+             true,
+             function() {
+               return plugin(kSampleInt) == kSampleInt;
+             });
+}
+
+var NaclToAny = function(remote, prefix) {
+  // Test access to NaCl npruntime objects from the browser.
+  // Get the argn/argv string.
+  expectPass(prefix + '_argn_argv',
+             true,
+             function() {
+               return plugin.invokeArgret(remote, 'getEmbedTagArgs', 0);
+             });
+  // Read a property that is not set.
+  expectPass(prefix + '_read_notset',
+             true,
+             function() {
+               return plugin.invokeGetProperty(remote, 'propertyUnset') ==
+                      undefined;
+             });
+  // Read a property that is set.
+  expectPass(prefix + '_read_set',
+             true,
+             function() {
+               return plugin.invokeGetProperty(remote, 'propertySet');
+             });
+  // Write an integer property.
+  expectPass(prefix + '_int_write',
+             false,
+             function() {
+               plugin.invokeSetProperty(remote, 'intProperty', kSampleInt);
+             });
+  // Read back the property.
+  expectPass(prefix + '_int_readback',
+             true,
+             function() {
+               return plugin.invokeGetProperty(remote, 'intProperty') ==
+                      kSampleInt;
+             });
+  // Remove the property.
+  expectPass(prefix + '_int_remove',
+             false,
+             function() {
+               plugin.invokeRemoveProperty(remote, 'intProperty');
+               return plugin.invokeGetProperty(remote, 'intProperty');
+             });
+  // Write a string property.
+  expectPass(prefix + '_string_write',
+             false,
+             function() {
+               plugin.invokeSetProperty(remote,
+                                        'stringProperty',
+                                         kSampleString);
+             });
+  // Read back the property.
+  expectPass(prefix + '_string_readback',
+             true,
+             function() {
+               return plugin.invokeGetProperty(remote, 'stringProperty') ==
+                      kSampleString;
+             });
+  // Remove the property.
+  expectPass(prefix + '_string_remove',
+             false,
+             function() {
+               plugin.invokeRemoveProperty(remote, 'stringProperty');
+               return plugin.invokeGetProperty(remote, 'stringProperty');
+             });
+  // Write an object property.
+  expectPass(prefix + '_object_write',
+             false,
+             function() {
+               plugin.invokeSetProperty(remote,
+                                        'objectProperty',
+                                        kSampleObject);
+             });
+  // Read back the property.
+  expectPass(prefix + '_object_readback',
+             true,
+             function() {
+               return plugin.invokeGetProperty(remote, 'objectProperty') ===
+                      kSampleObject;
+             });
+  // Remove the property.
+  expectPass(prefix + '_object_remove',
+             false,
+             function() {
+               plugin.invokeRemoveProperty(remote, 'objectProperty');
+               return plugin.invokeGetProperty(remote, 'objectProperty');
+             });
+  // Argument passing and return.
+  expectPass(prefix + '_int_argret',
+             true,
+             function() {
+               return plugin.invokeArgret(remote, 'intMethod', kSampleInt)
+                      == kSampleInt;
+             });
+  expectPass(prefix + '_string_argret',
+             true,
+             function() {
+               return plugin.invokeArgret(remote, 'stringMethod', kSampleString)
+                      == kSampleString;
+             });
+  expectPass(prefix + '_object_argret',
+             true,
+             function() {
+               return plugin.invokeArgret(remote, 'objectMethod', kSampleObject)
+                      === kSampleObject;
+             });
+  // Invoking the default method.
+  expectPass(prefix + '_invoke_default',
+             true,
+             function() {
+               return plugin.invokeDefault(remote, kSampleInt) == kSampleInt;
+             });
+}
+
+// The test run functions.
+var testExpectedPass = function(element, has_return, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    if (has_return && (undefined == result)) {
+      SetTestResult(element, 'fail');
+    } else {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    }
+  } catch (string) {
+    SetTestResult(element, 'fail');
+  }
+}
+
+var testExpectedFail = function(element, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    SetTestResult(element, 'fail');
+  } catch (string) {
+    if (undefined == result) {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    } else {
+      SetTestResult(element, 'fail');
+    }
+  }
+}
+
+var RunAllTests = function() {
+  var i;
+  var len = testQueue.length;
+  // All tests are considered failure until they have run successfully.
+  // This catches runs that end prematurely.
+  failing_count = len;
+  for (i = 0; i < len; ++i) {
+    var test_descr = testQueue[i];
+    if ('pass' == test_descr[0]) {
+      testExpectedPass(test_descr[1], test_descr[2], test_descr[3]);
+    } else {
+      testExpectedFail(test_descr[1], test_descr[2]);
+    }
+  }
+  if (0 == failing_count) {
+    // All tests passed -- set the selenium magic to success here.
+  }
+}
+
+var EnqueueAndRunTests = function() {
+  // Setup -- abort entire test if this fails.
+  try {
+    plugin = document.getElementById('nacl_module');
+  } catch (string) {
+    window.alert('Npruntime test setup failed.');
+    return;
+  }
+  // Enqueue the tests.
+  BrowserToNacl();
+  NaclToAny(JSObject, 'nacl_browser');
+  NaclToAny(plugin, 'nacl_nacl');
+  // Run them all.
+  RunAllTests();
+}
+
+var plugin;
+//]]>
+</script>
+
+<h1>Native Client NPAPI NPRuntime Feature Test</h1>
+<table cellspacing=5 cellpadding=5 border=5>
+  <tr>
+    <td>
+    </td>
+    <td>
+      <b> Browser to NaCl </b>
+    </td>
+    <td>
+      <b> NaCl to browser </b>
+    </td>
+    <td>
+      <b> NaCl to NaCl </b>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <b> Argn/argv string </b>
+    </td>
+    <td valign=top>
+      <table>
+        <tr>
+          <td id="browser_nacl_argn_argv" class="notrun">
+            returned value
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td valign=top>
+      <table>
+        <tr>
+          <td id="nacl_browser_argn_argv" class="notrun">
+            returned value
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td valign=top>
+      <table>
+        <tr>
+          <td id="nacl_nacl_argn_argv" class="notrun">
+            returned value
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <b> Property read </b>
+    </b>
+    <td valign=top>
+      <table>
+        <tr>
+          <td id="browser_nacl_read_notset" class="notrun">
+            property not set
+          </td>
+        </tr>
+        <tr>
+          <td id="browser_nacl_read_set" class="notrun">
+            property set
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td>
+      <table>
+        <tr>
+          <td id="nacl_browser_read_notset" class="notrun">
+            property not set
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_browser_read_set" class="notrun">
+            property set
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td>
+      <table>
+        <tr>
+          <td id="nacl_nacl_read_notset" class="notrun">
+            property not set
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_nacl_read_set" class="notrun">
+            property set
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <b> Property write </b>
+    </b>
+    <td valign=top>
+      <table>
+        <tr>
+          <td id="browser_nacl_int_write" class="notrun">
+            write integer
+          </td>
+        </tr>
+        <tr>
+          <td id="browser_nacl_int_readback" class="notrun">
+            read back integer
+          </td>
+        </tr>
+        <tr>
+          <td id="browser_nacl_int_remove" class="notrun">
+            remove integer
+          </td>
+        </tr>
+        <tr>
+          <td id="browser_nacl_string_write" class="notrun">
+            write string
+          </td>
+        </tr>
+        <tr>
+          <td id="browser_nacl_string_readback" class="notrun">
+            read back string
+          </td>
+        </tr>
+        <tr>
+          <td id="browser_nacl_string_remove" class="notrun">
+            remove string
+          </td>
+        </tr>
+        <tr>
+          <td id="browser_nacl_object_write" class="notrun">
+            write object
+          </td>
+        </tr>
+        <tr>
+          <td id="browser_nacl_object_readback" class="notrun">
+            read back object
+          </td>
+        </tr>
+        <tr>
+          <td id="browser_nacl_object_remove" class="notrun">
+            remove object
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td>
+      <table>
+        <tr>
+          <td id="nacl_browser_int_write" class="notrun">
+            write integer
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_browser_int_readback" class="notrun">
+            read back integer
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_browser_int_remove" class="notrun">
+            remove integer
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_browser_string_write" class="notrun">
+            write string
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_browser_string_readback" class="notrun">
+            read back string
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_browser_string_remove" class="notrun">
+            remove string
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_browser_object_write" class="notrun">
+            write object
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_browser_object_readback" class="notrun">
+            read back object
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_browser_object_remove" class="notrun">
+            remove object
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td>
+      <table>
+        <tr>
+          <td id="nacl_nacl_int_write" class="notrun">
+            write integer
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_nacl_int_readback" class="notrun">
+            read back integer
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_nacl_int_remove" class="notrun">
+            remove integer
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_nacl_string_write" class="notrun">
+            write string
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_nacl_string_readback" class="notrun">
+            read back string
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_nacl_string_remove" class="notrun">
+            remove string
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_nacl_object_write" class="notrun">
+            write object
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_nacl_object_readback" class="notrun">
+            read back object
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_nacl_object_remove" class="notrun">
+            remove object
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <b> Argument/return </b>
+    </b>
+    <td valign=top>
+      <table>
+        <tr>
+          <td id="browser_nacl_int_argret" class="notrun">
+            integer
+          </td>
+        </tr>
+        <tr>
+          <td id="browser_nacl_string_argret" class="notrun">
+            string
+          </td>
+        </tr>
+        <tr>
+          <td id="browser_nacl_object_argret" class="notrun">
+            object
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td>
+      <table>
+        <tr>
+          <td id="nacl_browser_int_argret" class="notrun">
+            integer
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_browser_string_argret" class="notrun">
+            string
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_browser_object_argret" class="notrun">
+            object
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td>
+      <table>
+        <tr>
+          <td id="nacl_nacl_int_argret" class="notrun">
+            integer
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_nacl_string_argret" class="notrun">
+            string
+          </td>
+        </tr>
+        <tr>
+          <td id="nacl_nacl_object_argret" class="notrun">
+            object
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <b> Invoke default </b>
+    </b>
+    <td valign=top>
+      <table>
+        <tr>
+          <td id="browser_nacl_invoke_default" class="notrun">
+            invoke
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td>
+      <table>
+        <tr>
+          <td id="nacl_browser_invoke_default" class="notrun">
+            invoke
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td>
+      <table>
+        <tr>
+          <td id="nacl_nacl_invoke_default" class="notrun">
+            invoke
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<table summary="The color codes used for identifying test outcomes">
+  <tr> <td align="center"> <em> Legend </em> </td> </tr>
+  <tr> <td align="center" class="notrun"> Test not run </td> </tr>
+  <tr> <td align="center" class="pass"> Test passed </td> </tr>
+  <tr> <td align="center" class="fail"> Test failed </td> </tr>
+</table>
+<p>
+<p>
+  <embed id="nacl_module"
+         width=0
+         height=0
+         onload="EnqueueAndRunTests();"
+         src="npapi_runtime.nexe"
+         type="application/x-nacl-srpc" />
+</p>
+
+</body>
+</html>

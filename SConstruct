@@ -971,6 +971,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
           'tests/npapi_bridge/nacl.scons',
           'tests/npapi_hw/nacl.scons',
           'tests/npapi_pi/nacl.scons',
+          'tests/npapi_runtime/nacl.scons',
           'tests/nrd_xfer/nacl.scons',
           'tests/nthread_nice/nacl.scons',
           'tests/null/nacl.scons',

@@ -1,0 +1,22 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+npapi_runtime_inputs = [
+  'main.cc',
+  'plugin.cc',
+]
+
+env.ComponentProgram('npapi_runtime.nexe', npapi_runtime_inputs,
+                     EXTRA_LIBS=['google_nacl_imc',
+                                 'google_nacl_npruntime',
+                                 'pthread',
+                                 'srpc'])
+
+# Note that the html is required to run this program.
+env.Publish('npapi_runtime.nexe', 'run',
+            ['npapi_runtime.html'])

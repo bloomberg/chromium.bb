@@ -288,6 +288,7 @@ class ScriptableHandle: public ScriptableHandleBase {
 
     PortablePluginInterface* intf = unknown_handle->plugin_interface_;
     if (NULL == intf->nacl_instance()) {
+      // TODO(sehr): Need to proxy this across to NPAPI modules.
       return false;
     } else {
       NPObject* proxy = intf->nacl_instance();
