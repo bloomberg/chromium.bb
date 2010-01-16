@@ -131,7 +131,7 @@ HRESULT HttpNegotiatePatch::PatchHttpNegotiate(IUnknown* to_patch) {
 HRESULT HttpNegotiatePatch::BeginningTransaction(
     IHttpNegotiate_BeginningTransaction_Fn original, IHttpNegotiate* me,
     LPCWSTR url, LPCWSTR headers, DWORD reserved, LPWSTR* additional_headers) {
-  DLOG(INFO) << __FUNCTION__ << " " << url;
+  DLOG(INFO) << __FUNCTION__ << " " << url << " headers:\n" << headers;
 
   HRESULT hr = original(me, url, headers, reserved, additional_headers);
 
@@ -145,8 +145,10 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
   using net::HttpUtil;
 
   std::string ascii_headers;
-  if (*additional_headers)
+  if (*additional_headers) {
     ascii_headers = WideToASCII(*additional_headers);
+    DLOG(INFO) << __FUNCTION__ << " additional headers: " << ascii_headers;
+  }
 
   HttpUtil::HeadersIterator headers_iterator(ascii_headers.begin(),
                                              ascii_headers.end(), "\r\n");

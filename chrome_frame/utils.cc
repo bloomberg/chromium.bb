@@ -636,7 +636,7 @@ bool IsOptInUrl(const wchar_t* url) {
 }
 
 HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
-                                 IBindCtx* bind_ctx) {
+                                 const wchar_t* headers, IBindCtx* bind_ctx) {
   DCHECK(browser);
   DCHECK(moniker);
   DCHECK(bind_ctx);
@@ -667,6 +667,10 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
   ScopedComPtr<IUriContainer> uri_container;
   hr = uri_container.QueryFrom(moniker);
 
+  ScopedVariant headers_var;
+  if (headers && headers[0])
+    headers_var.Set(headers);
+
   if (uri_container) {
     // IE7 and IE8.
     const IID* interface_ids[] = {
@@ -688,8 +692,10 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
       ScopedComPtr<IUri> uri_obj;
       uri_container->GetIUri(uri_obj.Receive());
       DCHECK(uri_obj);
-      hr = browser_priv2->NavigateWithBindCtx2(uri_obj, NULL, NULL, NULL, NULL,
-                                               bind_ctx, NULL);
+
+      hr = browser_priv2->NavigateWithBindCtx2(uri_obj, NULL, NULL, NULL,
+                                               headers_var.AsInput(), bind_ctx,
+                                               NULL);
       DLOG_IF(WARNING, FAILED(hr))
           << StringPrintf(L"NavigateWithBindCtx2 0x%08X", hr);
     }
@@ -702,7 +708,8 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
       if (SUCCEEDED(hr = browser_priv.QueryFrom(web_browser2))) {
         ScopedVariant var_url(url);
         hr = browser_priv->NavigateWithBindCtx(var_url.AsInput(), NULL, NULL,
-                                               NULL, NULL, bind_ctx, NULL);
+                                               NULL, headers_var.AsInput(),
+                                               bind_ctx, NULL);
         DLOG_IF(WARNING, FAILED(hr))
             << StringPrintf(L"NavigateWithBindCtx 0x%08X", hr);
       } else {

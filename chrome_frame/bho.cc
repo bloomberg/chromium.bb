@@ -146,6 +146,7 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
       }
     }
   }
+
   return S_OK;
 }
 
@@ -156,12 +157,56 @@ HRESULT Bho::FinalConstruct() {
 void Bho::FinalRelease() {
 }
 
+namespace {
+
+// See comments in Bho::OnHttpEquiv for details.
+void ClearDocumentContents(IUnknown* browser) {
+  ScopedComPtr<IWebBrowser2> web_browser2;
+  if (SUCCEEDED(DoQueryService(SID_SWebBrowserApp, browser,
+                               web_browser2.Receive()))) {
+    ScopedComPtr<IDispatch> doc_disp;
+    web_browser2->get_Document(doc_disp.Receive());
+    ScopedComPtr<IHTMLDocument2> doc;
+    if (doc_disp && SUCCEEDED(doc.QueryFrom(doc_disp))) {
+      SAFEARRAY* sa = ::SafeArrayCreateVector(VT_UI1, 0, 0);
+      doc->write(sa);
+      ::SafeArrayDestroy(sa);
+    }
+  }
+}
+
+// Returns true if the currently loaded document in the browser has
+// any embedded items such as a frame or an iframe.
+bool DocumentHasEmbeddedItems(IUnknown* browser) {
+  bool has_embedded_items = false;
+
+  ScopedComPtr<IWebBrowser2> web_browser2;
+  ScopedComPtr<IDispatch> document;
+  if (SUCCEEDED(DoQueryService(SID_SWebBrowserApp, browser,
+                               web_browser2.Receive())) &&
+      SUCCEEDED(web_browser2->get_Document(document.Receive()))) {
+    ScopedComPtr<IOleContainer> container;
+    if (SUCCEEDED(container.QueryFrom(document))) {
+      ScopedComPtr<IEnumUnknown> enumerator;
+      container->EnumObjects(OLECONTF_EMBEDDINGS, enumerator.Receive());
+      if (enumerator) {
+        ScopedComPtr<IUnknown> unk;
+        DWORD fetched = 0;
+        enumerator->Next(1, unk.Receive(), &fetched);
+        has_embedded_items = (fetched != 0);
+      }
+    }
+  }
+
+  return has_embedded_items;
+}
+
+}  // end namespace
+
 HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
     IBrowserService* browser, IShellView* shell_view, BOOL done,
     VARIANT* in_arg, VARIANT* out_arg) {
-  // OnHttpEquiv is invoked for meta tags within sub frames as well.
-  // We want to switch renderers only for the top level frame.
-  bool is_top_level = (browser->GetBrowserIndex() == -1);
+  DLOG(INFO) << __FUNCTION__ << " done:" << done;
 
   // OnHttpEquiv with 'done' set to TRUE is called for all pages.
   // 0 or more calls with done set to FALSE are made.
@@ -171,6 +216,16 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
 
   if (done) {
     if (CheckForCFNavigation(browser, false)) {
+      // TODO(tommi): See if we can't figure out a cleaner way to avoid this.
+      // For small documents we can hit a problem here.  When we attempt to
+      // navigate the document again in CF, mshtml can "complete" the current
+      // navigation (if all data is available) and fire off script events such
+      // as onload and even render the page.  This will happen inside
+      // NavigateBrowserToMoniker below.
+      // To work around this, we clear the contents of the document before
+      // opening it up in CF.
+      ClearDocumentContents(browser);
+
       ScopedComPtr<IOleObject> mshtml_ole_object;
       HRESULT hr = shell_view->GetItemObject(SVGIO_BACKGROUND, IID_IOleObject,
           reinterpret_cast<void**>(mshtml_ole_object.Receive()));
@@ -186,8 +241,19 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
           // This bind context will be discarded by IE and a new one
           // constructed, so it's OK to create a sync bind context.
           ::CreateBindCtx(0, bind_context.Receive());
+
           DCHECK(bind_context);
-          hr = NavigateBrowserToMoniker(browser, moniker, bind_context);
+
+          // If there's a referrer, preserve it.
+          std::wstring headers;
+          Bho* chrome_frame_bho = Bho::GetCurrentThreadBhoInstance();
+          if (chrome_frame_bho && !chrome_frame_bho->referrer().empty()) {
+            headers = StringPrintf(L"Referer: %ls\r\n\r\n",
+                ASCIIToWide(chrome_frame_bho->referrer()).c_str());
+          }
+
+          hr = NavigateBrowserToMoniker(browser, moniker, headers.c_str(),
+                                        bind_context);
         } else {
           DLOG(ERROR) << "Couldn't get the current moniker";
         }
@@ -202,9 +268,17 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
         // HttpNegotiatePatch::ReportProgress when the mime type is reported.
       }
     }
-  } else if (is_top_level && in_arg && VT_BSTR == V_VT(in_arg)) {
+  } else if (in_arg && VT_BSTR == V_VT(in_arg)) {
     if (StrStrI(V_BSTR(in_arg), kChromeContentPrefix)) {
-      MarkBrowserOnThreadForCFNavigation(browser);
+      // OnHttpEquiv is invoked for meta tags within sub frames as well.
+      // We want to switch renderers only for the top level frame.
+      // The theory here is that if there are any existing embedded items
+      // (frames or iframes) in the current document, then the http-equiv
+      // notification is coming from those and not the top level document.
+      // The embedded items should only be created once the top level
+      // doc has been created.
+      if (!DocumentHasEmbeddedItems(browser))
+        MarkBrowserOnThreadForCFNavigation(browser);
     }
   }
 

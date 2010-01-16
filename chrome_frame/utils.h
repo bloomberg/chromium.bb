@@ -223,8 +223,9 @@ HRESULT GetUrlFromMoniker(IMoniker* moniker, IBindCtx* bind_context,
                           std::wstring* url);
 
 // Navigates an IWebBrowser2 object to a moniker.
+// |headers| can be NULL.
 HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
-                                 IBindCtx* bind_ctx);
+                                 const wchar_t* headers, IBindCtx* bind_ctx);
 
 // Raises a flag on the current thread (using TLS) to indicate that an
 // in-progress navigation should be rendered in chrome frame.

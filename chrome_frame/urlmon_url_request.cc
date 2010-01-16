@@ -150,7 +150,8 @@ class WrappedBindContext : public IBindCtx,
   }
 
   STDMETHOD(RegisterObjectParam)(LPOLESTR key, IUnknown* object) {
-    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this << " key: "
+        << key;
 
     ScopedComPtr<IBindCtx> bind_context;
     HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
@@ -161,7 +162,8 @@ class WrappedBindContext : public IBindCtx,
   }
 
   STDMETHOD(GetObjectParam)(LPOLESTR key, IUnknown** object) {
-    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this;
+    DLOG(INFO) << "In " << __FUNCTION__ << " for object: " << this << " key: "
+        << key;
 
     ScopedComPtr<IBindCtx> bind_context;
     HRESULT hr = GetMarshalledBindContext(bind_context.Receive());
@@ -339,7 +341,7 @@ void UrlmonUrlRequest::TransferToHost(IUnknown* host) {
     ScopedComPtr<IBindCtx> bind_context;
     CreateBindCtx(0, bind_context.Receive());
     DCHECK(bind_context);
-    NavigateBrowserToMoniker(host, moniker_, bind_context);
+    NavigateBrowserToMoniker(host, moniker_, NULL, bind_context);
     moniker_.Release();
   }
 }
