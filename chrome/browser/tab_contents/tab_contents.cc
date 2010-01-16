@@ -1098,10 +1098,6 @@ void TabContents::StopFinding(bool clear_selection) {
   render_view_host()->StopFinding(clear_selection);
 }
 
-void TabContents::GetPageLanguage() {
-  render_view_host()->GetPageLanguage();
-}
-
 void TabContents::OnSavePage() {
   // If we can not save the page, try to download it.
   if (!SavePackage::IsSavableContents(contents_mime_type())) {
@@ -1758,6 +1754,39 @@ void TabContents::OnDidGetApplicationInfo(
 
   if (delegate())
     delegate()->OnDidGetApplicationInfo(this, page_id);
+}
+
+void TabContents::OnPageContents(const GURL& url,
+                                 int renderer_process_id,
+                                 int32 page_id,
+                                 const std::wstring& contents,
+                                 const std::string& language) {
+  // Don't index any https pages. People generally don't want their bank
+  // accounts, etc. indexed on their computer, especially since some of these
+  // things are not marked cachable.
+  // TODO(brettw) we may want to consider more elaborate heuristics such as
+  // the cachability of the page. We may also want to consider subframes (this
+  // test will still index subframes if the subframe is SSL).
+  if (!url.SchemeIsSecure()) {
+    Profile* p = profile();
+    if (p && !p->IsOffTheRecord()) {
+      HistoryService* hs = p->GetHistoryService(Profile::IMPLICIT_ACCESS);
+      if (hs)
+        hs->SetPageContents(url, contents);
+    }
+  }
+
+  NavigationEntry* entry = controller_.GetActiveEntry();
+  if (process()->id() == renderer_process_id &&
+      entry && entry->page_id() == page_id) {
+    entry->set_language(language);
+  }
+
+  std::string lang = language;
+  NotificationService::current()->Notify(
+      NotificationType::TAB_LANGUAGE_DETERMINED,
+      Source<RenderViewHost>(render_view_host()),
+      Details<std::string>(&lang));
 }
 
 void TabContents::DidStartProvisionalLoadForFrame(

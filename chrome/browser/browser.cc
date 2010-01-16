@@ -1209,8 +1209,8 @@ void Browser::OpenCreateShortcutsDialog() {
   DCHECK(pending_web_app_action_ == NONE);
   pending_web_app_action_ = CREATE_SHORTCUT;
 
-  // Start fetching web app info for CreateApplicatoinShortcut dialog and
-  // show the dialog when the data is available in OnDidGetApplicationInfo.
+  // Start fetching web app info for CreateApplicationShortcut dialog and show
+  // the dialog when the data is available in OnDidGetApplicationInfo.
   current_tab->render_view_host()->GetApplicationInfo(entry->page_id());
 #else
   NOTIMPLEMENTED();

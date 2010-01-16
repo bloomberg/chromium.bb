@@ -860,26 +860,49 @@ bool DetectTabLanguageFunction::RunImpl() {
       return false;
   }
 
-  // Figure out what language |contents| contains. This sends an async call via
-  // the browser to the renderer to determine the language of the tab the
-  // renderer has. The renderer sends back the language of the tab after the
-  // tab loads (it may be delayed) to the browser, which in turn notifies this
-  // object that the language has been received.
-  contents->GetPageLanguage();
+  AddRef();  // Balanced in GotLanguage()
+
+  NavigationEntry* entry = contents->controller().GetActiveEntry();
+  if (entry) {
+    std::string language = entry->language();
+    if (!language.empty()) {
+      // Delay the callback invocation until after the current JS call has
+      // returned.
+      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+          this, &DetectTabLanguageFunction::GotLanguage, language));
+      return true;
+    }
+  }
+  // The tab contents does not know its language yet.  Let's  wait until it
+  // receives it, or until the tab is closed/navigates to some other page.
   registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
                  Source<RenderViewHost>(contents->render_view_host()));
-  AddRef();  // balanced in Observe()
+  registrar_.Add(this, NotificationType::TAB_CLOSING,
+                 Source<NavigationController>(&(contents->controller())));
+  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                 Source<NavigationController>(&(contents->controller())));
   return true;
 }
 
 void DetectTabLanguageFunction::Observe(NotificationType type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TAB_LANGUAGE_DETERMINED);
-  std::string language(*Details<std::string>(details).ptr());
+  std::string language;
+  if (type == NotificationType::TAB_LANGUAGE_DETERMINED)
+    language = *Details<std::string>(details).ptr();
+
+  registrar_.RemoveAll();
+
+  // Call GotLanguage in all cases as we want to guarantee the callback is
+  // called for every API call the extension made.
+  GotLanguage(language);
+}
+
+void DetectTabLanguageFunction::GotLanguage(const std::string& language) {
   result_.reset(Value::CreateStringValue(language.c_str()));
   SendResponse(true);
-  Release();  // balanced in Run()
+
+  Release();  // Balanced in Run()
 }
 
 // static helpers
