@@ -33,14 +33,7 @@ ExtensionActionContextMenuModel::ExtensionActionContextMenuModel(
   AddItemWithStringId(UNINSTALL, IDS_EXTENSIONS_UNINSTALL);
   AddSeparator();
 
-  // TODO(finnur): It is too late in the process to do another round of
-  // translations, so we'll switch fully to IDS_MANAGE_EXTENSIONS after merging
-  // this to the beta branch. :/
-  std::string locale = g_browser_process->GetApplicationLocale();
-  if (locale.find_first_of("en-") == 0)
-    AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSIONS);
-  else
-    AddItemWithStringId(MANAGE, IDS_SHOW_EXTENSIONS);
+  AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSIONS);
 }
 
 ExtensionActionContextMenuModel::~ExtensionActionContextMenuModel() {
@@ -76,7 +69,7 @@ void ExtensionActionContextMenuModel::ExecuteCommand(int command_id) {
     case CONFIGURE:
       DCHECK(!extension_->options_url().is_empty());
       browser->OpenURL(extension_->options_url(), GURL(),
-                       NEW_FOREGROUND_TAB, PageTransition::LINK);
+                       SINGLETON_TAB, PageTransition::LINK);
       break;
     case DISABLE: {
       ExtensionsService* extension_service = profile->GetExtensionsService();
@@ -94,7 +87,7 @@ void ExtensionActionContextMenuModel::ExecuteCommand(int command_id) {
     }
     case MANAGE: {
       browser->OpenURL(GURL(chrome::kChromeUIExtensionsURL), GURL(),
-                       NEW_FOREGROUND_TAB, PageTransition::LINK);
+                       SINGLETON_TAB, PageTransition::LINK);
       break;
     }
     default:
