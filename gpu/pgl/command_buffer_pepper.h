@@ -8,7 +8,12 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
+#include "third_party/npapi/bindings/npapi_extensions.h"
+#ifdef __native_client__
+#include "native_client/src/third_party/npapi/files/include/npupp.h"
+#else
 #include "webkit/glue/plugins/nphostapi.h"
+#endif  // __native_client__
 
 // A CommandBuffer proxy implementation that uses the Pepper API to access
 // the command buffer.
@@ -45,5 +50,3 @@ class CommandBufferPepper : public gpu::CommandBuffer {
 };
 
 #endif  // GPU_PGL_COMMAND_BUFFER_PEPPER_H
-
-

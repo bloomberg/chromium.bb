@@ -3,7 +3,12 @@
 // found in the LICENSE file.
 
 #include "gpu/pgl/command_buffer_pepper.h"
+#ifdef __native_client__
+#include <assert.h>
+#define NOTREACHED() assert(0)
+#else
 #include "base/logging.h"
+#endif  // __native_client__
 
 using base::SharedMemory;
 using gpu::Buffer;
