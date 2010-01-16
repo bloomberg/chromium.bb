@@ -223,9 +223,8 @@ class NotificationType {
     // is the InfoBubble.
     INFO_BUBBLE_CREATED,
 
-    // Sent when the language (English, French...) for a page has been detected.
-    // The details Details<std::string> contain the ISO 639-1 language code and
-    // the source is Source<RenderViewHost>.
+    // Sent after a call to RenderViewHost::DeterminePageLanguage. The details
+    // are Details<std::string> and the source is Source<RenderViewHost>.
     TAB_LANGUAGE_DETERMINED,
 
     // Sent after the renderer returns a snapshot of tab contents.

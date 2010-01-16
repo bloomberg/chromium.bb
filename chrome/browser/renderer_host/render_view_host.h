@@ -213,6 +213,12 @@ class RenderViewHost : public RenderWidgetHost,
   // clear the selection on the focused frame.
   void StopFinding(bool clear_selection);
 
+  // Gets the most probable language of the text content in the tab. (This sends
+  // a message to the render view.)  The caller gets the language via the
+  // NotificationService by registering to the
+  // NotificationType TAB_LANGUAGE_DETERMINED.
+  void GetPageLanguage();
+
   // Change the zoom level of a page.
   void Zoom(PageZoom::Function function);
 
@@ -422,22 +428,22 @@ class RenderViewHost : public RenderWidgetHost,
   // Creates a new RenderWidget with the given route id.
   void CreateNewWidget(int route_id, bool activatable);
 
-  // Sends the response to an extension api call.
+  // Send the response to an extension api call.
   void SendExtensionResponse(int request_id, bool success,
                              const std::string& response,
                              const std::string& error);
 
-  // Sends a response to an extension api call that it was blocked for lack of
+  // Send a response to an extension api call that it was blocked for lack of
   // permission.
   void BlockExtensionRequest(int request_id);
 
-  // Notifies the renderer that its view type has changed.
+  // Notify the renderer that its view type has changed.
   void ViewTypeChanged(ViewType::Type type);
 
-  // Tells the renderer which browser window it is being attached to.
+  // Tell renderer which browser window it is being attached to.
   void UpdateBrowserWindowId(int window_id);
 
-  // Tells the render view that a custom context action has been selected.
+  // Tell render view that custom context action has been selected.
   void PerformCustomContextMenuAction(unsigned action);
 
  protected:
@@ -495,6 +501,7 @@ class RenderViewHost : public RenderWidgetHost,
                       const gfx::Rect& selection_rect,
                       int active_match_ordinal,
                       bool final_update);
+  void OnPageLanguageDetermined(const std::string& language);
   void OnExecuteCodeFinished(int request_id, bool success);
   void OnMsgUpdateFavIconURL(int32 page_id, const GURL& icon_url);
   void OnMsgDidDownloadFavIcon(int id,
@@ -592,10 +599,6 @@ class RenderViewHost : public RenderWidgetHost,
   void OnExtensionPostMessage(int port_id, const std::string& message);
   void OnAccessibilityFocusChange(int acc_obj_id);
   void OnCSSInserted();
-  void OnPageContents(const GURL& url,
-                      int32 page_id,
-                      const std::wstring& contents,
-                      const std::string& language);
 
  private:
   friend class TestRenderViewHost;

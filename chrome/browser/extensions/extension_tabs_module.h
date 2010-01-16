@@ -133,7 +133,6 @@ class DetectTabLanguageFunction : public AsyncExtensionFunction,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
-  void GotLanguage(const std::string& language);
   NotificationRegistrar registrar_;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.detectLanguage")
 };
