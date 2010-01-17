@@ -389,6 +389,8 @@ bool PolicyBase::Ping(IPCInfo* ipc, void* arg1) {
   uint32 tag = ipc->ipc_tag;
 
   switch (tag) {
+#ifndef _WIN64  // TODO(gregoryd): To build this code for 64-bits Windows we
+                // need to make sure IPC is fully ported to Win64.
     case IPC_PING1_TAG: {
       uint32 cookie = bit_cast<uint32>(arg1);
       COMPILE_ASSERT(sizeof(cookie) == sizeof(arg1), breaks_with_64_bit);
@@ -398,6 +400,7 @@ bool PolicyBase::Ping(IPCInfo* ipc, void* arg1) {
       ipc->return_info.extended[1].unsigned_int = 2 * cookie;
       return true;
     }
+#endif
     case IPC_PING2_TAG: {
       CountedBuffer* io_buffer = reinterpret_cast<CountedBuffer*>(arg1);
       if (sizeof(uint32) != io_buffer->Size())

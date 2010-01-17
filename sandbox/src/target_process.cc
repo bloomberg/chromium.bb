@@ -184,13 +184,16 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
   sandbox_thread_ = process_info.hThread;
   sandbox_process_id_ = process_info.dwProcessId;
 
+#ifndef _WIN64  // TODO(gregoryd): This code does not build for Win64.
+                // It is safe to disable it since base_address_ is used for
+                // interception that is not supported on Win64 yet.
 #pragma warning(push)
 #pragma warning(disable: 4312)
   // This cast generates a warning because it is 32 bit specific.
   void* entry_point = reinterpret_cast<void*>(context.Eax);
 #pragma warning(pop)
   base_address_ = GetBaseAddress(exe_path, entry_point);
-
+#endif  // _WIN64
   *target_info = process_info;
   return win_result;
 }
