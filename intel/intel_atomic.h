@@ -71,6 +71,21 @@ typedef struct {
 
 #endif
 
+#if defined(__sun) && !defined(HAS_ATOMIC_OPS)  /* Solaris & OpenSolaris */
+
+#include <sys/atomic.h>
+#define HAS_ATOMIC_OPS 1
+
+typedef struct { uint_t atomic; } atomic_t;
+
+# define atomic_read(x) (int) ((x)->atomic)
+# define atomic_set(x, val) ((x)->atomic = (uint_t)(val))
+# define atomic_inc(x) (atomic_inc_uint (&(x)->atomic))
+# define atomic_dec_and_test(x) (atomic_dec_uint_nv(&(x)->atomic) == 1)
+# define atomic_cmpxchg(x, oldv, newv) atomic_cas_uint (&(x)->atomic, oldv, newv)
+
+#endif
+
 #if ! HAS_ATOMIC_OPS
 #error libdrm-intel requires atomic operations, please define them for your CPU/compiler.
 #endif

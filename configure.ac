@@ -186,6 +186,12 @@ if test "x$INTEL" != "xno"; then
 		    AC_CHECK_HEADER([atomic_ops.h], drm_cv_atomic_primitives="libatomic-ops")
 	    fi
 
+	    # atomic functions defined in <atomic.h> & libc on Solaris
+	    if test "x$drm_cv_atomic_primitives" = "xnone"; then
+		    AC_CHECK_FUNC([atomic_cas_uint],
+				  drm_cv_atomic_primitives="Solaris")
+	    fi
+
     ])
     if test "x$drm_cv_atomic_primitives" = xIntel; then
 	    AC_DEFINE(HAVE_INTEL_ATOMIC_PRIMITIVES, 1,
