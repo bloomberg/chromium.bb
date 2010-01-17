@@ -51,6 +51,11 @@
 #include "mm.h"
 #include "libdrm_lists.h"
 
+/* Support gcc's __FUNCTION__ for people using other compilers */
+#if !defined(__GNUC__) && !defined(__FUNCTION__)
+# define __FUNCTION__ __func__ /* C99 */
+#endif
+
 #define DBG(...) do {					\
 	if (bufmgr_fake->bufmgr.debug)			\
 		drmMsg(__VA_ARGS__);			\
