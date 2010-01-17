@@ -1450,8 +1450,6 @@
         'browser/safe_browsing/safe_browsing_service.h',
         'browser/safe_browsing/safe_browsing_util.cc',
         'browser/safe_browsing/safe_browsing_util.h',
-        'browser/sandbox_policy.cc',
-        'browser/sandbox_policy.h',
         'browser/search_versus_navigate_classifier.cc',
         'browser/search_versus_navigate_classifier.h',
         'browser/search_engines/edit_search_engine_controller.cc',
@@ -2513,7 +2511,6 @@
             'browser/ime_input.cc',
             'browser/importer/ie_importer.cc',
             'browser/jumplist.cc',
-            'browser/sandbox_policy.cc',
           ],
         }],
         # views depends on webkit headers.

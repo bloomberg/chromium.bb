@@ -15,7 +15,7 @@
 #include "chrome/common/result_codes.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/sandbox_policy.h"
+#include "chrome/common/sandbox_policy.h"
 #elif defined(OS_LINUX)
 #include "base/singleton.h"
 #include "chrome/browser/crash_handler_host_linux.h"

@@ -84,6 +84,8 @@
           'common/sandbox_init_wrapper_win.cc',
           'common/sandbox_mac.h',
           'common/sandbox_mac.mm',
+          'common/sandbox_policy.cc',
+          'common/sandbox_policy.h',
           'common/task_queue.cc',
           'common/task_queue.h',
           'common/time_format.cc',
@@ -308,6 +310,11 @@
         ['OS=="mac"', {
           'sources!': [
             'common/process_watcher_posix.cc',
+          ],
+        }],
+        ['OS!="win"', {
+          'sources!': [
+            'common/sandbox_policy.cc',
           ],
         }],
       ],

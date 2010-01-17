@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SANDBOX_POLICY_H_
-#define CHROME_BROWSER_SANDBOX_POLICY_H_
+#ifndef CHROME_COMMON_SANDBOX_POLICY_H_
+#define CHROME_COMMON_SANDBOX_POLICY_H_
 
 #include "base/process.h"
 #include "base/file_path.h"
@@ -22,4 +22,4 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
 }  // namespace sandbox
 
-#endif  // CHROME_BROWSER_SANDBOX_POLICY_H_
+#endif  // CHROME_COMMON_SANDBOX_POLICY_H_
