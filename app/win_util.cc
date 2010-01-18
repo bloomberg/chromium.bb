@@ -132,19 +132,6 @@ std::wstring FormatSystemDate(const SYSTEMTIME& date,
   return output;
 }
 
-bool ConvertToLongPath(const std::wstring& short_path,
-                       std::wstring* long_path) {
-  wchar_t long_path_buf[MAX_PATH];
-  DWORD return_value = GetLongPathName(short_path.c_str(), long_path_buf,
-                                       MAX_PATH);
-  if (return_value != 0 && return_value < MAX_PATH) {
-    *long_path = long_path_buf;
-    return true;
-  }
-
-  return false;
-}
-
 bool IsDoubleClick(const POINT& origin,
                    const POINT& current,
                    DWORD elapsed_time) {

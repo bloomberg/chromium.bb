@@ -40,6 +40,7 @@
             'sources': [
               'win_util.cc',
               'win_util.h',
+              'win_util_path.cc',
             ],
           }],
           ['OS!="linux"', {
