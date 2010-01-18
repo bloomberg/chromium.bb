@@ -45,7 +45,7 @@ static void DnsPrefetchMotivatedList(
 const size_t DnsGlobalInit::kMaxPrefetchConcurrentLookups = 8;
 
 // static
-const int DnsGlobalInit::kMaxPrefetchQueueingDelayMs = 1000;
+const int DnsGlobalInit::kMaxPrefetchQueueingDelayMs = 500;
 
 // Host resolver shared by DNS prefetcher, and the main URLRequestContext.
 static net::HostResolver* global_host_resolver = NULL;
@@ -621,7 +621,7 @@ DnsGlobalInit::DnsGlobalInit(PrefService* user_prefs,
   // latency of page loads.
   FieldTrial::Probability kDivisor = 100;
   // For each option (i.e., non-default), we have a fixed probability.
-  FieldTrial::Probability kProbabilityPerGroup = 10;  // 10% probability.
+  FieldTrial::Probability kProbabilityPerGroup = 3;  // 3% probability.
 
   trial_ = new FieldTrial("DnsImpact", kDivisor);
 
