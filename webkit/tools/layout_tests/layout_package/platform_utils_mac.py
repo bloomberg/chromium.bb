@@ -41,21 +41,15 @@ def GetNumCores():
   this will be double the number of actual processors."""
   return int(os.popen2("sysctl -n hw.ncpu")[1].read())
 
-def BaselinePath(platform=None):
-  """Returns the path relative to the top of the source tree for the
-  baselines for the specified platform version. If |platform| is None,
-  then the version currently in use is used."""
-  if platform is None:
-    platform = PlatformName()
-  return path_utils.PathFromBase('webkit', 'data', 'layout_tests',
-                                 'platform', platform, 'LayoutTests')
-
 # TODO: We should add leopard and snowleopard to the list of paths to check
 # once we start running the tests from snowleopard.
-def BaselineSearchPath(platform=None):
+def BaselineSearchPath(all_versions=False):
   """Returns the list of directories to search for baselines/results, in
   order of preference. Paths are relative to the top of the source tree."""
-  return [BaselinePath(platform),
+  # TODO(dpranke): remove the 'LayoutTests' dirs once we move the baselines.
+  return [path_utils.ChromiumBaselinePath(PlatformName()),
+          os.path.join(path_utils.ChromiumBaselinePath(PlatformName()),
+                       "LayoutTests"),
           path_utils.WebKitBaselinePath('mac' + PlatformVersion()),
           path_utils.WebKitBaselinePath('mac')]
 
