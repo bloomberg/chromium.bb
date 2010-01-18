@@ -716,7 +716,7 @@ void MetricsLog::RecordHistogramDelta(const Histogram& histogram,
 
 static int64 GetBuildTime() {
   Time parsed_time;
-  const char* kDateTime = __DATE__ " " __TIME__;
+  const char* kDateTime = __DATE__ " " __TIME__ " GMT";
   bool result = Time::FromString(ASCIIToWide(kDateTime).c_str(), &parsed_time);
   DCHECK(result);
   return static_cast<int64>(parsed_time.ToTimeT());
