@@ -1,3 +1,9 @@
 # These tests hang under ThreadSanitizer on x64 bot,
 # see http://crbug.com/28115
 TabRestoreUITest.*
+
+# These tests fail due to timeouts under TSan, http://crbug.com/32529
+ChromeMainTest.SecondLaunch
+ChromeMainTest.ReuseBrowserInstanceWhenOpeningFile
+ResourceDispatcherTest.CrossSiteOnunloadCookie
+ResourceDispatcherTest.CrossSiteNavigationErrorPage
