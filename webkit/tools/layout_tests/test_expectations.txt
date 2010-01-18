@@ -3005,6 +3005,7 @@ BUG32305 : fast/loader/onload-willSendRequest-null-for-script.html = TEXT
 
 // New flakyness ?
 BUG32306 MAC DEBUG: svg/hixie/error/004.xml = CRASH PASS
+BUG32516 WIN : tables/mozilla_expected_failures/core/backgrounds.html = CRASH PASS
 
 // WebKit roll: 53314:53340
 BUG53331 MAC : fast/gradients/simple-gradients.html = FAIL
