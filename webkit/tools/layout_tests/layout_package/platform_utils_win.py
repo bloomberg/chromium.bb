@@ -34,37 +34,27 @@ def GetNumCores():
   this will be double the number of actual processors."""
   return int(os.environ.get('NUMBER_OF_PROCESSORS', 1))
 
-def BaselineSearchPath(all_versions=False):
+def BaselinePath(platform=None):
+  """Returns the path relative to the top of the source tree for the
+  baselines for the specified platform version. If |platform| is None,
+  then the version currently in use is used."""
+  if platform is None:
+    platform = PlatformName()
+  return path_utils.PathFromBase('webkit', 'data', 'layout_tests',
+                                 'platform', platform, 'LayoutTests')
+
+def BaselineSearchPath(platform=None):
   """Returns the list of directories to search for baselines/results, in
-  order of preference. Paths are relative to the top of the source tree.
-
-  If all_versions is True, returns the full list of search directories
-  for all versions instead of the current version that the script
-  is running on. This is for case that the platform or version of
-  the search paths is different from the platform or version that the
-  script is running on. For example, the rebaseline tool may run on Mac,
-  Linux or Windows Vista to rebaseline for Windows XP, in which case,
-  it gets a full list, finds the rebaselining dir (XP) and compares
-  the XP baseline with fallback baselines.
-  """
-
+  order of preference. Paths are relative to the top of the source tree."""
   dirs = []
-  # TODO(dpranke): remove the 'LayoutTests' dirs once we move the baselines.
-  if all_versions or PlatformVersion() == "-xp":
-    dirs.append(path_utils.ChromiumBaselinePath('chromium-win-xp'))
-    dirs.append(os.path.join(
-        path_utils.ChromiumBaselinePath('chromium-win-xp'), 'LayoutTests'))
-  if all_versions or PlatformVersion() in ("-vista", "-xp"):
-    dirs.append(path_utils.ChromiumBaselinePath('chromium-win-vista'))
-    dirs.append(os.path.join(
-        path_utils.ChromiumBaselinePath('chromium-win-vista'), 'LayoutTests'))
-  if all_versions or PlatformVersion() in ("-7", "-vista", "-xp"):
-    dirs.append(path_utils.ChromiumBaselinePath('chromium-win-7'))
-    dirs.append(os.path.join(
-        path_utils.ChromiumBaselinePath('chromium-win-7'), 'LayoutTests'))
-  dirs.append(path_utils.ChromiumBaselinePath('chromium-win'))
-  dirs.append(os.path.join(
-        path_utils.ChromiumBaselinePath('chromium-win'), 'LayoutTests'))
+  if platform is None:
+    platform = PlatformName()
+
+  if platform == 'chromium-win-xp':
+    dirs.append(BaselinePath(platform))
+  if platform in ('chromium-win-xp', 'chromium-win-vista'):
+    dirs.append(BaselinePath('chromium-win-vista'))
+  dirs.append(BaselinePath('chromium-win'))
   dirs.append(path_utils.WebKitBaselinePath('win'))
   dirs.append(path_utils.WebKitBaselinePath('mac'))
   return dirs

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!usr/bin/env python
 # Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -394,7 +394,7 @@ class Rebaseliner(object):
 
         expected_filename = '%s-expected%s' % (test_basename, suffix)
         expected_fullpath = os.path.join(
-            path_utils.ChromiumBaselinePath(platform), "LayoutTests", expected_filename)
+            path_utils.ChromiumBaselinePath(platform), expected_filename)
         expected_fullpath = os.path.normpath(expected_fullpath)
         logging.debug('  Expected file full path: "%s"', expected_fullpath)
 
@@ -455,10 +455,10 @@ class Rebaseliner(object):
       False otherwise.
     """
     test_filepath = os.path.join(path_utils.LayoutTestsDir(), test)
-    all_baselines = path_utils.ExpectedBaseline(test_filepath,
-                                                suffix,
-                                                platform,
-                                                True)
+    all_baselines = path_utils.ExpectedBaselines(test_filepath,
+                                                 suffix,
+                                                 platform,
+                                                 True)
     for (fallback_dir, fallback_file) in all_baselines:
       if fallback_dir and fallback_file:
         fallback_fullpath = os.path.normpath(
