@@ -676,7 +676,7 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
   CaptureText(main_frame, &contents);
   if (contents.size()) {
     // Send the text to the browser for indexing.
-    Send(new ViewHostMsg_PageContents(url, load_id, contents));
+    Send(new ViewHostMsg_PageContents(routing_id_, url, load_id, contents));
   }
 
   // Now that we have the contents, we can determine the language if necessary.

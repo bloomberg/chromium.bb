@@ -1760,6 +1760,26 @@ void TabContents::OnDidGetApplicationInfo(
     delegate()->OnDidGetApplicationInfo(this, page_id);
 }
 
+void TabContents::OnPageContents(const GURL& url,
+                                 int renderer_process_id,
+                                 int32 page_id,
+                                 const std::wstring& contents) {
+  // Don't index any https pages. People generally don't want their bank
+  // accounts, etc. indexed on their computer, especially since some of these
+  // things are not marked cachable.
+  // TODO(brettw) we may want to consider more elaborate heuristics such as
+  // the cachability of the page. We may also want to consider subframes (this
+  // test will still index subframes if the subframe is SSL).
+  if (!url.SchemeIsSecure()) {
+    Profile* p = profile();
+    if (p && !p->IsOffTheRecord()) {
+      HistoryService* hs = p->GetHistoryService(Profile::IMPLICIT_ACCESS);
+      if (hs)
+        hs->SetPageContents(url, contents);
+    }
+  }
+}
+
 void TabContents::DidStartProvisionalLoadForFrame(
     RenderViewHost* render_view_host,
     bool is_main_frame,

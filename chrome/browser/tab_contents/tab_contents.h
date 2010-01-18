@@ -814,6 +814,10 @@ class TabContents : public PageNavigator,
   virtual void OnDidGetApplicationInfo(
       int32 page_id,
       const webkit_glue::WebApplicationInfo& info);
+  virtual void OnPageContents(const GURL& url,
+                              int renderer_process_id,
+                              int32 page_id,
+                              const std::wstring& contents);
 
   // RenderViewHostDelegate::Resource implementation.
   virtual void DidStartProvisionalLoadForFrame(RenderViewHost* render_view_host,

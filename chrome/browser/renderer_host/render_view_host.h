@@ -428,22 +428,22 @@ class RenderViewHost : public RenderWidgetHost,
   // Creates a new RenderWidget with the given route id.
   void CreateNewWidget(int route_id, bool activatable);
 
-  // Send the response to an extension api call.
+  // Sends the response to an extension api call.
   void SendExtensionResponse(int request_id, bool success,
                              const std::string& response,
                              const std::string& error);
 
-  // Send a response to an extension api call that it was blocked for lack of
+  // Sends a response to an extension api call that it was blocked for lack of
   // permission.
   void BlockExtensionRequest(int request_id);
 
-  // Notify the renderer that its view type has changed.
+  // Notifies the renderer that its view type has changed.
   void ViewTypeChanged(ViewType::Type type);
 
-  // Tell renderer which browser window it is being attached to.
+  // Tells the renderer which browser window it is being attached to.
   void UpdateBrowserWindowId(int window_id);
 
-  // Tell render view that custom context action has been selected.
+  // Tells the render view that a custom context action has been selected.
   void PerformCustomContextMenuAction(unsigned action);
 
  protected:
@@ -599,7 +599,9 @@ class RenderViewHost : public RenderWidgetHost,
   void OnExtensionPostMessage(int port_id, const std::string& message);
   void OnAccessibilityFocusChange(int acc_obj_id);
   void OnCSSInserted();
-
+  void OnPageContents(const GURL& url,
+                      int32 page_id,
+                      const std::wstring& contents);
  private:
   friend class TestRenderViewHost;
 

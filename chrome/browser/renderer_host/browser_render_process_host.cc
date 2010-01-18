@@ -738,7 +738,6 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
     // Dispatch control messages.
     bool msg_is_ok = true;
     IPC_BEGIN_MESSAGE_MAP_EX(BrowserRenderProcessHost, msg, msg_is_ok)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UpdatedCacheStats,
                           OnUpdatedCacheStats)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SuddenTerminationChanged,
@@ -834,18 +833,6 @@ void BrowserRenderProcessHost::OnChannelError() {
 
   // this object is not deleted at this point and may be reused later.
   // TODO(darin): clean this up
-}
-
-void BrowserRenderProcessHost::OnPageContents(const GURL& url,
-                                              int32 page_id,
-                                              const std::wstring& contents) {
-  Profile* p = profile();
-  if (!p || p->IsOffTheRecord())
-    return;
-
-  HistoryService* hs = p->GetHistoryService(Profile::IMPLICIT_ACCESS);
-  if (hs)
-    hs->SetPageContents(url, contents);
 }
 
 void BrowserRenderProcessHost::OnUpdatedCacheStats(

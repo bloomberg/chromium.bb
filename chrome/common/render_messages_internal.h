@@ -1128,7 +1128,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
                       string16 /* the word to update the panel with */)
 
-  // Initiate a download based on user actions like 'ALT+click'.
+  // Initiates a download based on user actions like 'ALT+click'.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_DownloadUrl,
                       GURL /* url */,
                       GURL /* referrer */)
@@ -1146,9 +1146,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              bool         /* out - success */,
                              std::wstring /* out - prompt field */)
 
-  // Sets the contents for the given page (URL and page ID are the first two
-  // arguments) given the contents that is the 3rd.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_PageContents, GURL, int32, std::wstring)
+  // Provides the contents for the given page that was loaded recently.
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_PageContents,
+                      GURL         /* URL of the page */,
+                      int32        /* page id */,
+                      std::wstring /* page contents */)
 
   // Used to get the extension message bundle.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetExtensionMessageBundle,
@@ -1177,13 +1179,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // user right clicked.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_ContextMenu, ContextMenuParams)
 
-  // Request that the given URL be opened in the specified manner.
+  // Requests that the given URL be opened in the specified manner.
   IPC_MESSAGE_ROUTED3(ViewHostMsg_OpenURL,
                       GURL /* url */,
                       GURL /* referrer */,
                       WindowOpenDisposition /* disposition */)
 
-  // Notify that the preferred size of the content changed.
+  // Notifies that the preferred size of the content changed.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
                       gfx::Size /* pref_size */)
 

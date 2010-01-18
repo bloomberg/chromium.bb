@@ -854,6 +854,7 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityFocusChange,
                         OnAccessibilityFocusChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OnCSSInserted, OnCSSInserted)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -1809,4 +1810,14 @@ void RenderViewHost::OnAccessibilityFocusChange(int acc_obj_id) {
 
 void RenderViewHost::OnCSSInserted() {
   delegate_->DidInsertCSS();
+}
+
+void RenderViewHost::OnPageContents(const GURL& url,
+                                    int32 page_id,
+                                    const std::wstring& contents) {
+  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
+      delegate_->GetBrowserIntegrationDelegate();
+  if (!integration_delegate)
+    return;
+  integration_delegate->OnPageContents(url, process()->id(), page_id, contents);
 }
