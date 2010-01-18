@@ -112,6 +112,8 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
 @end
 
 @interface CookiesWindowController (UnitTesting)
+- (void)clearBrowsingDataNotification:(NSNotification*)notif;
 - (CookiesTreeModelObserverBridge*)modelObserver;
 - (NSArray*)icons;
+- (void)loadTreeModelFromProfile;
 @end

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/browser/profile.h"
+
+NSString* const kClearBrowsingDataControllerDidDelete =
+    @"kClearBrowsingDataControllerDidDelete";
+NSString* const kClearBrowsingDataControllerRemoveMask =
+    @"kClearBrowsingDataControllerRemoveMask";
 
 @interface ClearBrowsingDataController(Private)
 - (void)initFromPrefs;
@@ -65,10 +70,12 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
   if (it == map->end()) {
     // Since we don't currently support multiple profiles, this class
     // has not been tested against this case.
-    DCHECK_EQ(map->size(), 0U);
+    if (map->size() != 0) {
+      return nil;
+    }
 
     ClearBrowsingDataController* controller =
-      [[self alloc] initWithProfile:profile];
+        [[self alloc] initWithProfile:profile];
     it = map->insert(std::make_pair(profile, controller)).first;
   }
   return it->second;
@@ -192,6 +199,15 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
 // Called when the data remover object is done with its work. Close the window.
 // The remover will delete itself. End the modal session at this point.
 - (void)dataRemoverDidFinish {
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  int removeMask = [self removeMask];
+  NSDictionary* userInfo =
+      [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:removeMask]
+                                forKey:kClearBrowsingDataControllerRemoveMask];
+  [center postNotificationName:kClearBrowsingDataControllerDidDelete
+                        object:self
+                      userInfo:userInfo];
+
   [self closeDialog];
   [[self window] orderOut:self];
   [self setIsClearing:NO];

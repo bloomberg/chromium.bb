@@ -11,6 +11,8 @@
 #import "base/i18n/time_formatting.h"
 #import "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -28,9 +30,9 @@ CookiesTreeModelObserverBridge::CookiesTreeModelObserverBridge(
 
 // Notification that nodes were added to the specified parent.
 void CookiesTreeModelObserverBridge::TreeNodesAdded(TreeModel* model,
-                                                   TreeModelNode* parent,
-                                                   int start,
-                                                   int count) {
+                                                    TreeModelNode* parent,
+                                                    int start,
+                                                    int count) {
   CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
   NSMutableArray* cocoa_children = [cocoa_parent children];
 
@@ -46,9 +48,9 @@ void CookiesTreeModelObserverBridge::TreeNodesAdded(TreeModel* model,
 
 // Notification that nodes were removed from the specified parent.
 void CookiesTreeModelObserverBridge::TreeNodesRemoved(TreeModel* model,
-                                                     TreeModelNode* parent,
-                                                     int start,
-                                                     int count) {
+                                                      TreeModelNode* parent,
+                                                      int start,
+                                                      int count) {
   CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
   [window_controller_ willChangeValueForKey:kCocoaTreeModel];
   NSMutableArray* cocoa_children = [cocoa_parent children];
@@ -85,7 +87,7 @@ void CookiesTreeModelObserverBridge::TreeNodeChildrenReordered(TreeModel* model,
 
 // Notification that the contents of a node has changed.
 void CookiesTreeModelObserverBridge::TreeNodeChanged(TreeModel* model,
-                                                    TreeModelNode* node) {
+                                                     TreeModelNode* node) {
   [window_controller_ willChangeValueForKey:kCocoaTreeModel];
   CocoaCookieTreeNode* changed_node = FindCocoaNode(node, nil);
   [changed_node rebuild];
@@ -134,29 +136,26 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
                                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     profile_ = profile;
-    treeModel_.reset(new CookiesTreeModel(profile_));
-    modelObserver_.reset(new CookiesTreeModelObserverBridge(self));
-    treeModel_->SetObserver(modelObserver_.get());
 
-    // Convert the model's icons from Skia to Cocoa.
-    std::vector<SkBitmap> skiaIcons;
-    treeModel_->GetIcons(&skiaIcons);
-    icons_.reset([[NSMutableArray alloc] init]);
-    for (std::vector<SkBitmap>::iterator it = skiaIcons.begin();
-         it != skiaIcons.end(); ++it) {
-      [icons_ addObject:gfx::SkBitmapToNSImage(*it)];
+    [self loadTreeModelFromProfile];
+
+    // Register for Clear Browsing Data controller so we update appropriately.
+    ClearBrowsingDataController* clearingController =
+        [ClearBrowsingDataController controllerForProfile:profile_];
+    if (clearingController) {
+      NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+      [center addObserver:self
+                 selector:@selector(clearBrowsingDataNotification:)
+                     name:kClearBrowsingDataControllerDidDelete
+                   object:clearingController];
     }
-
-    // Default icon will be the last item in the array.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    // TODO(rsesek): Rename this resource now that it's in multiple places.
-    [icons_ addObject:rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER)];
-
-    // Create the Cocoa model.
-    CookieTreeNode* root = static_cast<CookieTreeNode*>(treeModel_->GetRoot());
-    cocoaTreeModel_.reset([[CocoaCookieTreeNode alloc] initWithNode:root]);
   }
   return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
 }
 
 - (void)awakeFromNib {
@@ -206,6 +205,14 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
 
 - (IBAction)closeSheet:(id)sender {
   [NSApp endSheet:[self window]];
+}
+
+- (void)clearBrowsingDataNotification:(NSNotification*)notif {
+  NSNumber* removeMask =
+      [[notif userInfo] objectForKey:kClearBrowsingDataControllerRemoveMask];
+  if ([removeMask intValue] & BrowsingDataRemover::REMOVE_COOKIES) {
+    [self loadTreeModelFromProfile];
+  }
 }
 
 #pragma mark Getters and Setters
@@ -263,6 +270,34 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
 
 - (NSArray*)icons {
   return icons_.get();
+}
+
+// Re-initializes the |treeModel_|, creates a new observer for it, and re-
+// builds the |cocoaTreeModel_|. We use this to initialize the controller and
+// to rebuild after the user clears browsing data. Because the models get
+// clobbered, we rebuild the icon cache for safety (though they do not change).
+- (void)loadTreeModelFromProfile {
+  treeModel_.reset(new CookiesTreeModel(profile_));
+  modelObserver_.reset(new CookiesTreeModelObserverBridge(self));
+  treeModel_->SetObserver(modelObserver_.get());
+
+  // Convert the model's icons from Skia to Cocoa.
+  std::vector<SkBitmap> skiaIcons;
+  treeModel_->GetIcons(&skiaIcons);
+  icons_.reset([[NSMutableArray alloc] init]);
+  for (std::vector<SkBitmap>::iterator it = skiaIcons.begin();
+       it != skiaIcons.end(); ++it) {
+    [icons_ addObject:gfx::SkBitmapToNSImage(*it)];
+  }
+
+  // Default icon will be the last item in the array.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  // TODO(rsesek): Rename this resource now that it's in multiple places.
+  [icons_ addObject:rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER)];
+
+  // Create the Cocoa model.
+  CookieTreeNode* root = static_cast<CookieTreeNode*>(treeModel_->GetRoot());
+  [self setCocoaTreeModel:[[CocoaCookieTreeNode alloc] initWithNode:root]];
 }
 
 @end

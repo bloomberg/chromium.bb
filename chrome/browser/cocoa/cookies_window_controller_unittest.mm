@@ -8,6 +8,8 @@
 #import "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
+#include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/cookies_window_controller.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/net/url_request_context_getter.h"
@@ -405,6 +407,31 @@ TEST_F(CookiesWindowControllerTest, TestDidExpandItem) {
   [[outlineView expect] expandItem:childTreeNode];
   [controller_ outlineViewItemDidExpand:notif];
   [outlineView verify];
+}
+
+TEST_F(CookiesWindowControllerTest, ClearBrowsingData) {
+  const GURL url = GURL("http://foo.com");
+  TestingProfile* profile = browser_helper_.profile();
+  net::CookieMonster* cm = profile->GetCookieMonster();
+  cm->SetCookie(url, "A=B");
+  cm->SetCookie(url, "C=D");
+  cm->SetCookie(url, "E=F");
+
+  id mock = [OCMockObject partialMockForObject:controller_.get()];
+  [[mock expect] loadTreeModelFromProfile];
+
+  NSNumber* mask =
+      [NSNumber numberWithInt:BrowsingDataRemover::REMOVE_COOKIES];
+  NSDictionary* userInfo =
+      [NSDictionary dictionaryWithObject:mask
+                                forKey:kClearBrowsingDataControllerRemoveMask];
+  NSNotification* notif =
+    [NSNotification notificationWithName:kClearBrowsingDataControllerDidDelete
+                                  object:nil
+                                userInfo:userInfo];
+  [controller_ clearBrowsingDataNotification:notif];
+
+  [mock verify];
 }
 
 }  // namespace
