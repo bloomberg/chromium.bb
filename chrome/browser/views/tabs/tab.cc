@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/gfx/size.h"
 #include "chrome/browser/tab_menu_model.h"
-#include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "grit/generated_resources.h"
@@ -142,11 +141,6 @@ bool Tab::OnMousePressed(const views::MouseEvent& event) {
     bool just_selected = !IsSelected();
     if (just_selected) {
       delegate_->SelectTab(this);
-      // This is a hack to update the compact location bar when the tab
-      // is selected. This is just an experiement and will be modified later.
-      // TODO(oshima): Improve the BrowserExtender interface if we
-      // decided to keep this UI, or remove this otherwise.
-      GetBrowserExtender()->OnMouseEnteredToTab(this);
     }
     delegate_->MaybeStartDrag(this, event);
   }
@@ -172,20 +166,6 @@ void Tab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
   // releases happen off the element).
   if (event.IsMiddleMouseButton() && HitTest(event.location()))
     delegate_->CloseTab(this);
-}
-
-void Tab::OnMouseEntered(const views::MouseEvent& event) {
-  TabRenderer::OnMouseEntered(event);
-  GetBrowserExtender()->OnMouseEnteredToTab(this);
-}
-
-void Tab::OnMouseMoved(const views::MouseEvent& event) {
-  GetBrowserExtender()->OnMouseMovedOnTab(this);
-}
-
-void Tab::OnMouseExited(const views::MouseEvent& event) {
-  TabRenderer::OnMouseExited(event);
-  GetBrowserExtender()->OnMouseExitedFromTab(this);
 }
 
 bool Tab::GetTooltipText(int x, int y, std::wstring* tooltip) {
@@ -240,17 +220,6 @@ void Tab::ButtonPressed(views::Button* sender, const views::Event& event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Tab, private:
-
-BrowserExtender* Tab::GetBrowserExtender() {
-  // This is a hack to BrowserExtender from a Tab.
-  // TODO(oshima): Fix when the decision on compact location bar is made.
-  // Potential candidates are:
-  // * Use View ID with a cached reference to BrowserView.
-  // * Pass the BrowserView reference to Tabs.
-  // * Add GetBrowserView method to Delegate.
-  TabStrip* tab_strip = static_cast<TabStrip*>(delegate_);
-  return static_cast<BrowserView*>(tab_strip->GetParent())->browser_extender();
-}
 
 void Tab::MakePathForTab(gfx::Path* path) const {
   DCHECK(path);

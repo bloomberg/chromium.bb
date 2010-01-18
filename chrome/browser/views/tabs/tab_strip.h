@@ -12,7 +12,6 @@
 #include "views/controls/button/image_button.h"
 #include "views/view.h"
 
-class BrowserExtender;
 class DraggedTabController;
 class ScopedMouseCloseWidthCalculator;
 class TabStripModel;
@@ -117,7 +116,12 @@ class TabStrip : public views::View,
   virtual void SetAccessibleName(const std::wstring& name);
   virtual views::View* GetViewForPoint(const gfx::Point& point);
   virtual void ThemeChanged();
+
  protected:
+  // Creates a new tab.
+  virtual Tab* CreateTab();
+
+  // views::View implementation:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);
