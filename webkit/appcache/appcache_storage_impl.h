@@ -23,6 +23,8 @@ class AppCacheStorageImpl : public AppCacheStorage {
   virtual ~AppCacheStorageImpl();
 
   void Initialize(const FilePath& cache_directory);
+  void Disable();
+  bool is_disabled() const { return is_disabled_; }
 
   // AppCacheStorage methods
   virtual void LoadCache(int64 id, Delegate* delegate);
@@ -55,6 +57,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   class DatabaseTask;
   class InitTask;
   class CloseConnectionTask;
+  class DisableDatabaseTask;
   class StoreOrLoadTask;
   class CacheLoadTask;
   class GroupLoadTask;
@@ -115,6 +118,10 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   // Created on the IO thread, but only used on the DB thread.
   AppCacheDatabase* database_;
+
+  // Set if we discover a fatal error like a corrupt sql database or
+  // disk cache and cannot continue.
+  bool is_disabled_;
 
   // TODO(michaeln): use a disk_cache per group (manifest or group_id).
   scoped_ptr<disk_cache::Backend> disk_cache_;

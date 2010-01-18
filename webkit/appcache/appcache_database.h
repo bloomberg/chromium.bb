@@ -70,6 +70,9 @@ class AppCacheDatabase {
   ~AppCacheDatabase();
 
   void CloseConnection();
+  void Disable();
+  bool is_disabled() const { return is_disabled_; }
+
   bool FindOriginsWithGroups(std::set<GURL>* origins);
   bool FindLastStorageIds(
       int64* last_group_id, int64* last_cache_id, int64* last_response_id,
@@ -172,7 +175,7 @@ class AppCacheDatabase {
   FilePath db_file_path_;
   scoped_ptr<sql::Connection> db_;
   scoped_ptr<sql::MetaTable> meta_table_;
-  bool has_open_error_;
+  bool is_disabled_;
   bool is_recreating_;
 
   FRIEND_TEST(AppCacheDatabaseTest, CacheRecords);

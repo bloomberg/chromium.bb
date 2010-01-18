@@ -6,10 +6,12 @@
 
 #include "app/sql/connection.h"
 #include "app/sql/transaction.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "net/base/cache_type.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_entry.h"
@@ -21,7 +23,8 @@ namespace appcache {
 
 static const char kAppCacheDatabaseName[] = "Index";
 static const char kDiskCacheDirectoryName[] = "Cache";
-static const int kMaxDiskCacheSize = 10 * 1024 * 1024;
+static const int kMaxDiskCacheSize = 250 * 1024 * 1024;
+static const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
 
 // DatabaseTask -----------------------------------------
 
@@ -65,6 +68,7 @@ class AppCacheStorageImpl::DatabaseTask
  private:
   void CallRun();
   void CallRunCompleted();
+  void CallDisableStorage();
 };
 
 void AppCacheStorageImpl::DatabaseTask::Schedule() {
@@ -86,7 +90,13 @@ void AppCacheStorageImpl::DatabaseTask::CancelCompletion() {
 
 void AppCacheStorageImpl::DatabaseTask::CallRun() {
   DCHECK(AppCacheThread::CurrentlyOn(AppCacheThread::db()));
-  Run();
+  if (!database_->is_disabled()) {
+    Run();
+    if (database_->is_disabled()) {
+      AppCacheThread::PostTask(AppCacheThread::io(), FROM_HERE,
+          NewRunnableMethod(this, &DatabaseTask::CallDisableStorage));
+    }
+  }
   AppCacheThread::PostTask(AppCacheThread::io(), FROM_HERE,
       NewRunnableMethod(this, &DatabaseTask::CallRunCompleted));
 }
@@ -97,6 +107,13 @@ void AppCacheStorageImpl::DatabaseTask::CallRunCompleted() {
     DCHECK(storage_->scheduled_database_tasks_.front() == this);
     storage_->scheduled_database_tasks_.pop_front();
     RunCompleted();
+  }
+}
+
+void AppCacheStorageImpl::DatabaseTask::CallDisableStorage() {
+  if (storage_) {
+    DCHECK(AppCacheThread::CurrentlyOn(AppCacheThread::io()));
+    storage_->Disable();
   }
 }
 
@@ -131,13 +148,16 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
   storage_->last_cache_id_ = last_cache_id_;
   storage_->last_response_id_ = last_response_id_;
   storage_->last_deletable_response_rowid_ = last_deletable_response_rowid_;
-  storage_->origins_with_groups_.swap(origins_with_groups_);
 
-  const int kDelayMillis = 5 * 60 * 1000;  // Five minutes.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-    storage_->method_factory_.NewRunnableMethod(
-        &AppCacheStorageImpl::DelayedStartDeletingUnusedResponses),
-    kDelayMillis);
+  if (!storage_->is_disabled()) {
+    storage_->origins_with_groups_.swap(origins_with_groups_);
+
+    const int kDelayMillis = 5 * 60 * 1000;  // Five minutes.
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      storage_->method_factory_.NewRunnableMethod(
+          &AppCacheStorageImpl::DelayedStartDeletingUnusedResponses),
+      kDelayMillis);
+  }
 }
 
 // CloseConnectionTask -------
@@ -148,6 +168,16 @@ class AppCacheStorageImpl::CloseConnectionTask : public DatabaseTask {
       : DatabaseTask(storage) {}
 
   virtual void Run() { database_->CloseConnection(); }
+};
+
+// DisableDatabaseTask -------
+
+class AppCacheStorageImpl::DisableDatabaseTask : public DatabaseTask {
+ public:
+  explicit DisableDatabaseTask(AppCacheStorageImpl* storage)
+      : DatabaseTask(storage) {}
+
+  virtual void Run() { database_->Disable(); }
 };
 
 // StoreOrLoadTask -------
@@ -210,6 +240,9 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
     DCHECK(cache->get()->GetEntry(*iter));
     cache->get()->GetEntry(*iter)->add_types(AppCacheEntry::FOREIGN);
   }
+
+  // TODO(michaeln): Maybe verify that the responses we expect to exist
+  // do actually exist in the disk_cache (and if not then what?)
 }
 
 // CacheLoadTask -------
@@ -238,7 +271,7 @@ void AppCacheStorageImpl::CacheLoadTask::RunCompleted() {
   storage_->pending_cache_loads_.erase(cache_id_);
   scoped_refptr<AppCache> cache;
   scoped_refptr<AppCacheGroup> group;
-  if (success_) {
+  if (success_ && !storage_->is_disabled()) {
     DCHECK(cache_record_.cache_id == cache_id_);
     DCHECK(!storage_->working_set_.GetCache(cache_record_.cache_id));
     CreateCacheAndGroupFromRecords(&cache, &group);
@@ -272,15 +305,17 @@ void AppCacheStorageImpl::GroupLoadTask::RunCompleted() {
   storage_->pending_group_loads_.erase(manifest_url_);
   scoped_refptr<AppCacheGroup> group;
   scoped_refptr<AppCache> cache;
-  if (success_) {
-    DCHECK(group_record_.manifest_url == manifest_url_);
-    DCHECK(!storage_->working_set_.GetGroup(manifest_url_));
-    DCHECK(!storage_->working_set_.GetCache(cache_record_.cache_id));
-    CreateCacheAndGroupFromRecords(&cache, &group);
-  } else {
-    group = new AppCacheGroup(
-        storage_->service_, manifest_url_,
-        storage_->NewGroupId());
+  if (!storage_->is_disabled()) {
+    if (success_) {
+      DCHECK(group_record_.manifest_url == manifest_url_);
+      DCHECK(!storage_->working_set_.GetGroup(manifest_url_));
+      DCHECK(!storage_->working_set_.GetCache(cache_record_.cache_id));
+      CreateCacheAndGroupFromRecords(&cache, &group);
+    } else {
+      group = new AppCacheGroup(
+          storage_->service_, manifest_url_,
+          storage_->NewGroupId());
+    }
   }
   FOR_EACH_DELEGATE(delegates_, OnGroupLoaded(group, manifest_url_));
 }
@@ -615,14 +650,16 @@ void AppCacheStorageImpl::MakeGroupObsoleteTask::Run() {
 
 void AppCacheStorageImpl::MakeGroupObsoleteTask::RunCompleted() {
   if (success_) {
-    storage_->origins_with_groups_.swap(origins_with_groups_);
     group_->set_obsolete(true);
-    group_->AddNewlyDeletableResponseIds(&newly_deletable_response_ids_);
+    if (!storage_->is_disabled()) {
+      storage_->origins_with_groups_.swap(origins_with_groups_);
+      group_->AddNewlyDeletableResponseIds(&newly_deletable_response_ids_);
 
-    // Also remove from the working set, caches for an 'obsolete' group
-    // may linger in use, but the group itself cannot be looked up by
-    // 'manifest_url' in the working set any longer.
-    storage_->working_set()->RemoveGroup(group_);
+      // Also remove from the working set, caches for an 'obsolete' group
+      // may linger in use, but the group itself cannot be looked up by
+      // 'manifest_url' in the working set any longer.
+      storage_->working_set()->RemoveGroup(group_);
+    }
   }
   FOR_EACH_DELEGATE(delegates_, OnGroupMadeObsolete(group_, success_));
   group_ = NULL;
@@ -695,6 +732,7 @@ AppCacheStorageImpl::AppCacheStorageImpl(AppCacheService* service)
       is_response_deletion_scheduled_(false),
       did_start_deleting_responses_(false),
       last_deletable_response_rowid_(0), database_(NULL),
+      is_disabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
@@ -710,25 +748,33 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
 }
 
 void AppCacheStorageImpl::Initialize(const FilePath& cache_directory) {
-  // TODO(michaeln): until purging of responses is addressed in some way,
-  // always use incognito mode which doesn't put anything to disk.
-  // Uncomment the following line when responses are dealt with.
-  // cache_directory_ = cache_directory;
+  cache_directory_ = cache_directory;
   is_incognito_ = cache_directory_.empty();
 
   FilePath db_file_path;
   if (!is_incognito_)
-    db_file_path = cache_directory.AppendASCII(kAppCacheDatabaseName);
+    db_file_path = cache_directory_.AppendASCII(kAppCacheDatabaseName);
   database_ = new AppCacheDatabase(db_file_path);
 
   scoped_refptr<InitTask> task = new InitTask(this);
   task->Schedule();
 }
 
+void AppCacheStorageImpl::Disable() {
+  if (is_disabled_)
+    return;
+  LOG(INFO) << "Disabling appcache storage.";
+  is_disabled_ = true;
+  origins_with_groups_.clear();
+  working_set()->Disable();
+  scoped_refptr<DisableDatabaseTask> task = new DisableDatabaseTask(this);
+  task->Schedule();
+}
+
 void AppCacheStorageImpl::LoadCache(int64 id, Delegate* delegate) {
   DCHECK(delegate);
   AppCache* cache = working_set_.GetCache(id);
-  if (cache) {
+  if (cache || is_disabled_) {
     delegate->OnCacheLoaded(cache, id);
     return;
   }
@@ -747,7 +793,7 @@ void AppCacheStorageImpl::LoadOrCreateGroup(
     const GURL& manifest_url, Delegate* delegate) {
   DCHECK(delegate);
   AppCacheGroup* group = working_set_.GetGroup(manifest_url);
-  if (group) {
+  if (group || is_disabled_) {
     delegate->OnGroupLoaded(group, manifest_url);
     return;
   }
@@ -760,7 +806,7 @@ void AppCacheStorageImpl::LoadOrCreateGroup(
 
   if (origins_with_groups_.find(manifest_url.GetOrigin()) ==
       origins_with_groups_.end()) {
-    // No need to query the database, return NULL immediately.
+    // No need to query the database, return a new group immediately.
     scoped_refptr<AppCacheGroup> group = new AppCacheGroup(
         service_, manifest_url, NewGroupId());
     delegate->OnGroupLoaded(group, manifest_url);
@@ -971,9 +1017,16 @@ void AppCacheStorageImpl::DeleteOneResponse() {
 
   is_response_deletion_scheduled_ = false;
 
+  if (!disk_cache()) {
+    DCHECK(is_disabled_);
+    deletable_response_ids_.clear();
+    deleted_response_ids_.clear();
+    return;
+  }
+
   int64 id = deletable_response_ids_.front();
   deletable_response_ids_.pop_front();
-  disk_cache()->DoomEntry(Int64ToString(id));
+  disk_cache_->DoomEntry(Int64ToString(id));
   deleted_response_ids_.push_back(id);
 
   const size_t kBatchSize = 50U;
@@ -1037,15 +1090,21 @@ void AppCacheStorageImpl::RunOnePendingSimpleTask() {
 }
 
 disk_cache::Backend* AppCacheStorageImpl::disk_cache() {
+  if (is_disabled_)
+    return NULL;
+
   if (!disk_cache_.get()) {
     if (is_incognito_) {
       disk_cache_.reset(
-          disk_cache::CreateInMemoryCacheBackend(kMaxDiskCacheSize));
+          disk_cache::CreateInMemoryCacheBackend(kMaxMemDiskCacheSize));
     } else {
-      // TODO(michaeln): create a disk backed backend
-      disk_cache_.reset(
-          disk_cache::CreateInMemoryCacheBackend(kMaxDiskCacheSize));
+      disk_cache_.reset(disk_cache::CreateCacheBackend(
+          cache_directory_.AppendASCII(kDiskCacheDirectoryName),
+          false, kMaxDiskCacheSize, net::DISK_CACHE));
     }
+
+    if (!disk_cache_.get())
+      Disable();
   }
   return disk_cache_.get();
 }

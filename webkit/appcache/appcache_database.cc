@@ -135,7 +135,7 @@ const int kIndexCount = ARRAYSIZE_UNSAFE(kIndexes);
 namespace appcache {
 
 AppCacheDatabase::AppCacheDatabase(const FilePath& path)
-    : db_file_path_(path), has_open_error_(false), is_recreating_(false) {
+    : db_file_path_(path), is_disabled_(false), is_recreating_(false) {
 }
 
 AppCacheDatabase::~AppCacheDatabase() {
@@ -148,6 +148,13 @@ void AppCacheDatabase::CloseConnection() {
     meta_table_.reset();
     db_.reset();
   }
+}
+
+void AppCacheDatabase::Disable() {
+  LOG(INFO) << "Disabling appcache database.";
+  is_disabled_ = true;
+  meta_table_.reset();
+  db_.reset();
 }
 
 bool AppCacheDatabase::FindOriginsWithGroups(std::set<GURL>* origins) {
@@ -902,7 +909,7 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
 
   // If we tried and failed once, don't try again in the same session
   // to avoid creating an incoherent mess on disk.
-  if (has_open_error_)
+  if (is_disabled_)
     return false;
 
   // Avoid creating a database at all if we can.
@@ -915,14 +922,19 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
   db_.reset(new sql::Connection);
   meta_table_.reset(new sql::MetaTable);
 
-  bool opened = use_in_memory_db ? db_->OpenInMemory()
-                                 : db_->Open(db_file_path_);
-  if (opened)
-    db_->Preload();
+  bool opened = false;
+  if (use_in_memory_db) {
+    opened = db_->OpenInMemory();
+  } else if (!file_util::CreateDirectory(db_file_path_.DirName())) {
+    LOG(ERROR) << "Failed to create appcache directory.";
+  } else {
+    opened = db_->Open(db_file_path_);
+    if (opened)
+      db_->Preload();
+  }
+
   if (!opened || !EnsureDatabaseVersion()) {
-    has_open_error_ = true;
-    meta_table_.reset();
-    db_.reset();
+    Disable();
     return false;
   }
 

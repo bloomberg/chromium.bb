@@ -22,7 +22,11 @@ class AppCacheWorkingSet {
  public:
   typedef std::map<GURL, AppCacheGroup*> GroupMap;
 
+  AppCacheWorkingSet() : is_disabled_(false) {}
   ~AppCacheWorkingSet();
+
+  void Disable();
+  bool is_disabled() const { return is_disabled_; }
 
   void AddCache(AppCache* cache);
   void RemoveCache(AppCache* cache);
@@ -63,6 +67,7 @@ class AppCacheWorkingSet {
   GroupMap groups_;
   GroupsByOriginMap groups_by_origin_;  // origin -> (manifest -> group)
   ResponseInfoMap response_infos_;
+  bool is_disabled_;
 };
 
 }  // namespace appcache
