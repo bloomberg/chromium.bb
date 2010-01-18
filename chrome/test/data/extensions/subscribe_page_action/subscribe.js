@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,6 +107,10 @@ function main() {
   feedUrl = decodeURIComponent(feedUrl);
   req.onload = handleResponse;
   req.onerror = handleError;
+  // Not everyone sets the mime type correctly, which causes handleResponse
+  // to fail to XML parse the response text from the server. By forcing
+  // it to text/xml we avoid this.
+  req.overrideMimeType('text/xml');
   req.open("GET", feedUrl, !synchronousRequest);
   req.send(null);
 

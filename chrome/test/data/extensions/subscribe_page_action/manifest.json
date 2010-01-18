@@ -1,7 +1,7 @@
 {
   "name": "RSS Subscription Extension (by Google)",
   "description": "Adds one-click subscription to your toolbar.",
-  "version": "1.9",
+  "version": "1.9.1",
   "permissions": [
     "tabs",
     "http://*/*",
