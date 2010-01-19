@@ -175,9 +175,6 @@ void WebDevToolsAgentImpl::attach() {
                             this));
   ResetInspectorFrontendProxy();
   UnhideResourcesPanelIfNecessary();
-  // Allow controller to send messages to the frontend.
-  InspectorController* ic = web_view_impl_->page()->inspectorController();
-  ic->setWindowVisible(true, false);
   attached_ = true;
 }
 
@@ -244,6 +241,7 @@ void WebDevToolsAgentImpl::DispatchOnInspectorController(
 
 void WebDevToolsAgentImpl::DispatchOnInjectedScript(
       int call_id,
+      int,
       const String& function_name,
       const String& json_args,
       bool async) {
@@ -283,6 +281,18 @@ void WebDevToolsAgentImpl::dispatchMessageFromFrontend(
   }
 
   if (!attached_) {
+    return;
+  }
+
+  if (webkit_glue::WebStringToStdString(data.className) ==
+          "WebDevToolsAgentImpl" &&
+      webkit_glue::WebStringToStdString(data.methodName) ==
+           "didLoadFrontend") {
+    // Allow controller to send messages to the frontend. We need to wait until
+    // front-end is loaded because it pushes injected script source
+    // to the backend and the injected script is used for console message
+    // serialization.
+    GetInspectorController()->setWindowVisible(true, false);
     return;
   }
 
@@ -422,8 +432,34 @@ void WebDevToolsAgentImpl::ResetInspectorFrontendProxy() {
   inspector_frontend_script_state_.set(new ScriptState(
       web_view_impl_->page()->mainFrame(),
       utility_context_));
-  v8::Handle<v8::Object> injected_script = v8::Local<v8::Object>::Cast(
+  v8::Local<v8::Object> injected_script = v8::Local<v8::Object>::Cast(
       utility_context_->Global()->Get(v8::String::New("InjectedScript")));
+  // TODO(yurys): get rid of the 'if' once WebKit is rolled.
+  if (injected_script->IsUndefined()) {
+    v8::Local<v8::Object> global = utility_context_->Global();
+    v8::Handle<v8::Function> injected_script_constructor =
+        v8::Local<v8::Function>::Cast(global->Get(v8::String::New(
+            "injectedScriptConstructor")));
+    v8::Local<v8::Value> injected_script_host =
+        global->Get(v8::String::New("InjectedScriptHost"));
+    ASSERT(!injected_script_host->IsUndefined());
+    v8::Local<v8::Value> inspected_window =
+        global->Get(v8::String::New("contentWindow"));
+    ASSERT(!inspected_window->IsUndefined());
+    v8::Local<v8::Number> id = v8::Number::New(0);
+
+    v8::Handle<v8::Value> args[] = {
+      injected_script_host,
+      inspected_window,
+      id
+    };
+    v8::Local<v8::Value> injected_script_value =
+        injected_script_constructor->Call(global, 3, args);
+    injected_script = v8::Local<v8::Object>::Cast(injected_script_value);
+    utility_context_->Global()->Set(v8::String::New("InjectedScript"),
+                                    injected_script);
+  }
+
   ScriptState* state = inspector_frontend_script_state_.get();
   InspectorController* ic = web_view_impl_->page()->inspectorController();
   ic->setFrontendProxyObject(

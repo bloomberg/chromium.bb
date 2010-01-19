@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
 
 // Tests console eval.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleEval) {
-  RunTest("testConsoleEval", kConsoleTestPage);
+  RunTest("testConsoleEval", kEvalTestPage);
 }
 
 // Tests console log.

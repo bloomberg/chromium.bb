@@ -33,6 +33,7 @@ devtools.InspectorBackendImpl = function() {
   this.installInspectorControllerDelegate_('saveFrontendSettings');
   this.installInspectorControllerDelegate_('setAttribute');
   this.installInspectorControllerDelegate_('setDOMStorageItem');
+  this.installInspectorControllerDelegate_('setInjectedScriptSource');
   this.installInspectorControllerDelegate_('setTextNodeValue');
   this.installInspectorControllerDelegate_('startTimelineProfiler');
   this.installInspectorControllerDelegate_('stopTimelineProfiler');
@@ -190,12 +191,43 @@ devtools.InspectorBackendImpl.prototype.takeHeapSnapshot = function() {
 };
 
 
+// TODO(yurys): remove the if once WebKit change is rolled.
+if (InjectedScriptAccess.getDefault) {
+
 /**
  * @override
  */
-devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript =
-    RemoteToolsAgent.DispatchOnInjectedScript.bind(RemoteToolsAgent);
+devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript = function(
+    callId, injectedScriptId, methodName, argsString, async) {
+  // Encode injectedScriptId into callId
+  if (typeof injectedScriptId != 'number') {
+    injectedScriptId = 0;
+  }
+  RemoteToolsAgent.DispatchOnInjectedScript(
+      callId,
+      injectedScriptId,
+      methodName,
+      argsString,
+      async);
+};
 
+} else {
+
+/**
+ * @override
+ */
+devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript = function(
+    callId, methodName, argsString, async) {
+  var injectedScriptId = 0;
+  RemoteToolsAgent.DispatchOnInjectedScript(
+      callId,
+      injectedScriptId,
+      methodName,
+      argsString,
+      async);
+};
+
+}
 
 /**
  * Installs delegating handler into the inspector controller.

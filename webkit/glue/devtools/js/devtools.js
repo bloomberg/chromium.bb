@@ -400,8 +400,15 @@ WebInspector.UIString = function(string) {
 
 
 (function () {
-var orig = InjectedScriptAccess.getProperties;
-InjectedScriptAccess.getProperties = function(
+// TODO(yurys): get rid of the if once WebKit change is rolled.
+var accessor;
+if (InjectedScriptAccess.getDefault)
+  accessor = InjectedScriptAccess.prototype;
+else
+  accessor = InjectedScriptAccess;
+
+var orig = accessor.getProperties;
+accessor.getProperties = function(
     objectProxy, ignoreHasOwnProperty, abbreviate, callback) {
   if (objectProxy.isScope) {
     devtools.tools.getDebuggerAgent().resolveScope(objectProxy.objectId,
@@ -416,8 +423,16 @@ InjectedScriptAccess.getProperties = function(
 })();
 
 
-InjectedScriptAccess.evaluateInCallFrame = function(callFrameId, code,
-                                                    objectGroup, callback)
+(function() {
+// TODO(yurys): get rid of the if once WebKit change is rolled.
+var accessor;
+if (InjectedScriptAccess.getDefault)
+  accessor = InjectedScriptAccess.prototype;
+else
+  accessor = InjectedScriptAccess;
+
+accessor.evaluateInCallFrame = function(callFrameId, code,
+                                        objectGroup, callback)
 {
   //TODO(pfeldman): remove once 49084 is rolled.
   if (!callback) {
@@ -426,6 +441,7 @@ InjectedScriptAccess.evaluateInCallFrame = function(callFrameId, code,
   devtools.tools.getDebuggerAgent().evaluateInCallFrame(
       callFrameId, code, callback);
 };
+})();
 
 
 WebInspector.resourceTrackingWasEnabled = function()
@@ -454,8 +470,15 @@ WebInspector.ConsoleMessage.prototype.setMessageBody = function(args) {
 
 
 (function() {
-var orig = InjectedScriptAccess.getCompletions;
-InjectedScriptAccess.getCompletions = function(expressionString,
+// TODO(yurys): get rid of the if once WebKit change is rolled.
+var accessor;
+if (InjectedScriptAccess.getDefault)
+  accessor = InjectedScriptAccess.prototype;
+else
+  accessor = InjectedScriptAccess;
+
+var orig = accessor.getCompletions;
+accessor.getCompletions = function(expressionString,
     includeInspectorCommandLineAPI, callFrameId, reportCompletions) {
   if (goog.isDef(callFrameId)) {
     devtools.tools.getDebuggerAgent().resolveCompletionsOnFrame(

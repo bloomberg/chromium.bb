@@ -1593,10 +1593,17 @@ TestSuite.prototype._findChildProperty = function(
  * @param {Function} code A code snippet to be executed.
  */
 TestSuite.prototype._hookGetPropertiesCallback = function(hook, code) {
-  var orig = InjectedScriptAccess.getProperties;
-  InjectedScriptAccess.getProperties = function(objectProxy,
+  // TODO(yurys): get rid of the if once WebKit change is rolled.
+  var accessor;
+  if (InjectedScriptAccess.getDefault)
+    accessor = InjectedScriptAccess.prototype;
+  else
+    accessor = InjectedScriptAccess;
+
+  var orig = accessor.getProperties;
+  accessor.getProperties = function(objectProxy,
       ignoreHasOwnProperty, abbreviate, callback) {
-    orig.call(InjectedScriptAccess, objectProxy, ignoreHasOwnProperty, abbreviate,
+    orig.call(this, objectProxy, ignoreHasOwnProperty, abbreviate,
         function() {
           callback.apply(this, arguments);
           hook();
@@ -1605,7 +1612,7 @@ TestSuite.prototype._hookGetPropertiesCallback = function(hook, code) {
   try {
     code();
   } finally {
-    InjectedScriptAccess.getProperties = orig;
+    accessor.getProperties = orig;
   }
 };
 

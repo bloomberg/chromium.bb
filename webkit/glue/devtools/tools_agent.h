@@ -19,8 +19,9 @@
       String /* function_name */, String /* json_args */) \
   \
   /* Dispatches given function on the InjectedScript object */ \
-  METHOD4(DispatchOnInjectedScript, int /* call_id */, \
-      String /* function_name */, String /* json_args */, bool /* async */) \
+  METHOD5(DispatchOnInjectedScript, int /* call_id */, \
+      int /* injected_script_id */, String /* function_name */, \
+      String /* json_args */, bool /* async */) \
   \
   /* Requests that the agent sends content of the resource with given id to the
      delegate. */ \

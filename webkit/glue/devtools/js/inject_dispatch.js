@@ -83,6 +83,9 @@ function dispatch(method, var_args) {
 };
 
 
+// TODO(yurys): remove once injected script lives in the inspected context
+if (this.InjectedScript) {
+
 // Plugging into upstreamed support.
 InjectedScript._window = function() {
   return contentWindow;
@@ -95,18 +98,19 @@ InjectedScript.evaluateOnSelf = function(funcBody) {
 };
 
 
-// Plugging into upstreamed support.
-Object.className = function(obj) {
-  return (obj == null) ? "null" : obj.constructor.name;
-};
-
-
 // TODO(pfeldman): Remove once Object.getOwnPropertyNames is implemented.
 InjectedScript._getPropertyNames = function(object, resultSet)
 {
     for (var name in object)
         resultSet[name] = true;
 }
+
+}
+
+// Plugging into upstreamed support.
+Object.className = function(obj) {
+  return (obj == null) ? "null" : obj.constructor.name;
+};
 
 
 /**

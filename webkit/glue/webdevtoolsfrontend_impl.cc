@@ -385,6 +385,13 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsLoaded(
     frontend->ExecuteScript(*it);
   }
   frontend->pending_incoming_messages_.clear();
+
+  // Notify the agent that front-end is loaded.
+  WebKit::WebDevToolsMessageData data;
+  data.className = "WebDevToolsAgentImpl";
+  data.methodName = "didLoadFrontend";
+  frontend->SendRpcMessage(data);
+
   return v8::Undefined();
 }
 
