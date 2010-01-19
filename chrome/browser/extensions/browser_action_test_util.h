@@ -30,8 +30,6 @@ class BrowserActionTestUtil {
   // Returns the current tooltip for the browser action button.
   std::string GetTooltip(int index);
 
-// TODO(estade): http://crbug.com/29710 port to Linux
-#if !defined(TOOLKIT_GTK)
   // Returns whether a browser action popup is being shown currently.
   bool HasPopup();
 
@@ -46,7 +44,6 @@ class BrowserActionTestUtil {
 
   // Returns the maximum allowed size of an extension popup.
   static gfx::Size GetMaxPopupSize();
-#endif
 
  private:
   Browser* browser_;  // weak

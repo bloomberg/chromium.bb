@@ -41,8 +41,9 @@ class ExtensionPopupGtk : public NotificationObserver,
   void ShowPopup();
 
   // Destroys the popup widget. This will in turn destroy us since we delete
-  // ourselves when the info bubble closes.
-  void DestroyPopup();
+  // ourselves when the info bubble closes. Returns true if we successfully
+  // closed the bubble.
+  bool DestroyPopup();
 
   Browser* browser_;
 
@@ -56,6 +57,16 @@ class ExtensionPopupGtk : public NotificationObserver,
   gfx::Rect relative_to_;
 
   NotificationRegistrar registrar_;
+
+  // Used for testing. ---------------------------------------------------------
+  static ExtensionPopupGtk* get_current_extension_popup() {
+    return current_extension_popup_;
+  }
+  static ExtensionPopupGtk* current_extension_popup_;
+
+  gfx::Rect GetViewBounds();
+
+  friend class BrowserActionTestUtil;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopupGtk);
 };

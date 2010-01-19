@@ -23,12 +23,10 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/test/ui_test_utils.h"
 
-namespace {
 // Amount of time to wait to load an extension. This is purposely obscenely
 // long because it will only get used in the case of failure and we want to
 // minimize false positives.
 static const int kTimeoutMs = 60 * 1000;  // 1 minute
-};
 
 // Base class for extension browser tests. Provides utilities for loading,
 // unloading, and installing extensions.

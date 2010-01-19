@@ -37,6 +37,12 @@ class ExtensionViewGtk {
 
   RenderViewHost* render_view_host() const;
 
+  // Declared here for testing.
+  static const int kMinWidth;
+  static const int kMinHeight;
+  static const int kMaxWidth;
+  static const int kMaxHeight;
+
  private:
   void CreateWidgetHostView();
 

@@ -16,6 +16,8 @@
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 
+ExtensionPopupGtk* ExtensionPopupGtk::current_extension_popup_ = NULL;
+
 ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
                                      ExtensionHost* host,
                                      const gfx::Rect& relative_to)
@@ -61,6 +63,10 @@ void ExtensionPopupGtk::ShowPopup() {
     return;
   }
 
+  // Only one instance should be showing at a time.
+  DCHECK(!current_extension_popup_);
+  current_extension_popup_ = this;
+
   // We'll be in the upper-right corner of the window for LTR languages, so we
   // want to put the arrow at the upper-right corner of the bubble to match the
   // page and app menus.
@@ -77,17 +83,19 @@ void ExtensionPopupGtk::ShowPopup() {
                                 this);
 }
 
-void ExtensionPopupGtk::DestroyPopup() {
+bool ExtensionPopupGtk::DestroyPopup() {
   if (!bubble_) {
     NOTREACHED();
-    return;
+    return false;
   }
 
   bubble_->Close();
+  return true;
 }
 
 void ExtensionPopupGtk::InfoBubbleClosing(InfoBubbleGtk* bubble,
                                           bool closed_by_escape) {
+  current_extension_popup_ = NULL;
   delete this;
 }
 
@@ -103,4 +111,8 @@ void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
   ExtensionHost* host = manager->CreatePopup(url, browser);
   // This object will delete itself when the info bubble is closed.
   new ExtensionPopupGtk(browser, host, relative_to);
+}
+
+gfx::Rect ExtensionPopupGtk::GetViewBounds() {
+  return gfx::Rect(host_->view()->native_view()->allocation);
 }

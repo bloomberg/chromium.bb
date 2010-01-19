@@ -8,6 +8,8 @@
 
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/gtk/extension_popup_gtk.h"
+#include "chrome/browser/gtk/extension_view_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 
 namespace {
@@ -56,4 +58,33 @@ std::string BrowserActionTestUtil::GetTooltip(int index) {
   std::string tooltip(text);
   g_free(text);
   return tooltip;
+}
+
+bool BrowserActionTestUtil::HasPopup() {
+  return ExtensionPopupGtk::get_current_extension_popup() != NULL;
+}
+
+gfx::Rect BrowserActionTestUtil::GetPopupBounds() {
+  ExtensionPopupGtk* popup = ExtensionPopupGtk::get_current_extension_popup();
+  if (popup)
+    return popup->GetViewBounds();
+  return gfx::Rect();
+}
+
+bool BrowserActionTestUtil::HidePopup() {
+  ExtensionPopupGtk* popup = ExtensionPopupGtk::get_current_extension_popup();
+  if (popup)
+    return popup->DestroyPopup();
+  return false;
+}
+
+// static
+gfx::Size BrowserActionTestUtil::GetMinPopupSize() {
+  // On Linux we actually just limit the size of the extension view.
+  return gfx::Size(ExtensionViewGtk::kMinWidth, ExtensionViewGtk::kMinHeight);
+}
+
+// static
+gfx::Size BrowserActionTestUtil::GetMaxPopupSize() {
+  return gfx::Size(ExtensionViewGtk::kMaxWidth, ExtensionViewGtk::kMaxHeight);
 }

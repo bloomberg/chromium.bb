@@ -22,6 +22,8 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/ui_test_utils.h"
 
+static const int kTimeoutMs = 60 * 1000;  // 1 minute
+
 class BrowserActionApiTest : public ExtensionApiTest {
  public:
   BrowserActionApiTest() {}
@@ -32,16 +34,23 @@ class BrowserActionApiTest : public ExtensionApiTest {
     return BrowserActionTestUtil(browser());
   }
 
-// TODO(estade): http://crbug.com/29710 port to Linux
-#if !defined(TOOLKIT_GTK)
   gfx::Rect OpenPopup(int index) {
-    ResultCatcher catcher;
-    GetBrowserActionsBar().Press(index);
+    {
+      NotificationRegistrar registrar;
+      registrar.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+                    NotificationService::AllSources());
+      GetBrowserActionsBar().Press(index);
+      // If the popup is already showing then we needn't wait for the
+      // notification before proceeding.
+      if (!GetBrowserActionsBar().HasPopup()) {
+        MessageLoop::current()->PostDelayedTask(
+            FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
+      }
+      ui_test_utils::RunMessageLoop();
+    }
     EXPECT_TRUE(GetBrowserActionsBar().HasPopup());
-    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
     return GetBrowserActionsBar().GetPopupBounds();
   }
-#endif  // !defined(TOOLKIT_GTK)
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
@@ -141,13 +150,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
   EXPECT_EQ("hi!", GetBrowserActionsBar().GetTooltip(0));
 }
 
-// TODO(estade): http://crbug.com/29710 port to Linux
-#if !defined(TOOLKIT_GTK)
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "browser_action/popup")));
-
-  ResultCatcher catcher;
 
   // The extension's popup's size grows by |growFactor| each click.
   const int growFactor = 500;
@@ -173,4 +178,3 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
   EXPECT_EQ(maxSize, bounds.size());
   EXPECT_TRUE(GetBrowserActionsBar().HidePopup());
 }
-#endif  // !defined(TOOLKIT_GTK)

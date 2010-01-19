@@ -8,17 +8,13 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 
-namespace {
-
 // The minimum/maximum dimensions of the extension view.
 // The minimum is just a little larger than the size of a browser action button.
 // The maximum is an arbitrary number that should be smaller than most screens.
-const int kMinWidth = 25;
-const int kMinHeight = 25;
-const int kMaxWidth = 800;
-const int kMaxHeight = 600;
-
-}  // namespace
+const int ExtensionViewGtk::kMinWidth = 25;
+const int ExtensionViewGtk::kMinHeight = 25;
+const int ExtensionViewGtk::kMaxWidth = 800;
+const int ExtensionViewGtk::kMaxHeight = 600;
 
 ExtensionViewGtk::ExtensionViewGtk(ExtensionHost* extension_host,
                                    Browser* browser)
