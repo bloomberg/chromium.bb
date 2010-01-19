@@ -349,7 +349,7 @@ class JSONResultsGenerator:
         results_json[self.VERSION_KEY] == self.VERSION):
       return
 
-    if results_json[self.VERSION_KEY] == 2:
+    if self.VERSION_KEY in results_json and results_json[self.VERSION_KEY] == 2:
       for results_for_builder in results_json.itervalues():
         try:
           test_results = results_for_builder[self.TESTS]
