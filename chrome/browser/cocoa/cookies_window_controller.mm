@@ -297,7 +297,9 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
 
   // Create the Cocoa model.
   CookieTreeNode* root = static_cast<CookieTreeNode*>(treeModel_->GetRoot());
-  [self setCocoaTreeModel:[[CocoaCookieTreeNode alloc] initWithNode:root]];
+  scoped_nsobject<CocoaCookieTreeNode> model(
+      [[CocoaCookieTreeNode alloc] initWithNode:root]);
+  [self setCocoaTreeModel:model.get()];  // Takes ownership.
 }
 
 @end
