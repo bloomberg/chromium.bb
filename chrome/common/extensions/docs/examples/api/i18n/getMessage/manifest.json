@@ -1,10 +1,10 @@
 {
-  "name": "AcceptLanguage",
-  "description": "Returns accept languages of the browser",
+  "name": "__MSG_chrome_extension_name__",
+  "description": "__MSG_chrome_extension_description__",
   "version": "0.1",
   "default_locale": "en_US",
   "browser_action": {
-      "default_title": "Click Me",
+      "default_title": "__MSG_browser_action_title__",
       "default_icon": "icon.png",
       "popup": "popup.html"
   }
