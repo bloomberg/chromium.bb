@@ -7,7 +7,8 @@
 Import('env')
 
 env.ComponentProgram('nanosleep_test.nexe',
-                     'nanosleep_test.c')
+                     'nanosleep_test.c',
+                     EXTRA_LIBS=['pthread'])
 
 node = env.CommandSelLdrTestNacl(
     'nanosleep_test.out',

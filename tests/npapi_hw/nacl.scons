@@ -30,6 +30,10 @@
 
 Import('env')
 
+# TODO(robertm): fix this (might be just a C++ issue)
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
+
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 # TODO(robertm): those should not be necessary once we go -std=c99

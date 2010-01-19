@@ -30,6 +30,11 @@
 
 Import('env')
 
+# NOTE: the arm emulator does not handle atomic ops properly
+TEST_SUITES = ['small_tests']
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  TEST_SUITES = ['small_tests_arm_hw_only']
+
 env.ComponentProgram('thread_test.nexe',
                      'thread_test.c',
                      EXTRA_LIBS=['pthread'],
@@ -40,7 +45,7 @@ node = env.CommandSelLdrTestNacl('thread_test.out',
                                  #       on old linux system
                                  size='huge',
                                  )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_test')
+env.AddNodeToTestSuite(node, TEST_SUITES, 'run_thread_test')
 
 
 env.ComponentProgram('simple_thread_test.nexe',
@@ -51,4 +56,4 @@ node = env.CommandSelLdrTestNacl('simple_thread_test.out',
                                  command=[env.File('simple_thread_test.nexe')],
                                  size='small',
                                  )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_thread_test')
+env.AddNodeToTestSuite(node, TEST_SUITES, 'run_simple_thread_test')

@@ -6,7 +6,8 @@
 Import('env')
 
 env.ComponentProgram('bundle_size.nexe',
-                     'bundle_size.c')
+                     'bundle_size.c',
+                     EXTRA_LIBS=['pthread'])
 node = env.CommandSelLdrTestNacl(
     'bundle_size.out',
     command=[env.File('bundle_size.nexe')])

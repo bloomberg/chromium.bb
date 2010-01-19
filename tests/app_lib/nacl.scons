@@ -31,6 +31,9 @@
 
 Import('env')
 
+# TODO(robertm): fix this
+if env['TARGET_ARCHITECTURE'] == 'arm':
+   Return()
 
 ######################################################################
 # Smoke Test

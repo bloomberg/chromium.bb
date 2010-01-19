@@ -952,44 +952,6 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
                  ]
       )
 
-  nacl_env.Append(
-      BUILD_SCONSCRIPTS = [
-          ####  ALPHABETICALLY SORTED ####
-          'tests/app_lib/nacl.scons',
-          'tests/autoloader/nacl.scons',
-          'tests/bundle_size/nacl.scons',
-          'tests/contest_issues/nacl.scons',
-          'tests/fib/nacl.scons',
-          'tests/file/nacl.scons',
-          'tests/hello_world/nacl.scons',
-          'tests/imc_shm_mmap/nacl.scons',
-          'tests/mandel/nacl.scons',
-          'tests/mmap/nacl.scons',
-          'tests/nanosleep/nacl.scons',
-          'tests/native_worker/nacl.scons',
-          'tests/noop/nacl.scons',
-          'tests/npapi_bridge/nacl.scons',
-          'tests/npapi_hw/nacl.scons',
-          'tests/npapi_pi/nacl.scons',
-          'tests/npapi_runtime/nacl.scons',
-          'tests/nrd_xfer/nacl.scons',
-          'tests/nthread_nice/nacl.scons',
-          'tests/null/nacl.scons',
-          'tests/nullptr/nacl.scons',
-          'tests/pepper_plugin/nacl.scons',
-          'tests/srpc/nacl.scons',
-          'tests/srpc_hw/nacl.scons',
-          'tests/srpc_without_pthread/nacl.scons',
-          'tests/sysbasic/nacl.scons',
-          'tests/syscalls/nacl.scons',
-          'tests/threads/nacl.scons',
-          'tests/time/nacl.scons',
-          'tests/toolchain/nacl.scons',
-          'tests/vim/nacl.scons',
-          ####  ALPHABETICALLY SORTED ####
-          ],
-      )
-
   if ARGUMENTS.get('sdl', 'hermetic') != 'none':
     nacl_env.Append(
         BUILD_SCONSCRIPTS = [
@@ -1032,39 +994,6 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
       EMULATOR  = EMULATOR,
       )
 
-  # TODO(robertm): merge this with list above as soon as they are similar
-  #                enough
-  nacl_env.Append(
-      BUILD_SCONSCRIPTS = [
-#      NOTE: The commented out case are earmarked to be tried next
-#      'tests/app_lib/nacl.scons',
-      'tests/autoloader/nacl.scons',
-#      'tests/contest_issues/nacl.scons',
-      'tests/fib/nacl.scons',
-#      'tests/file/nacl.scons',
-      'tests/hello_world/nacl.scons',
-      'tests/imc_shm_mmap/nacl.scons',
-      'tests/mandel/nacl.scons',
-      'tests/mmap/nacl.scons',
-      'tests/native_worker/nacl.scons',
-      'tests/noop/nacl.scons',
-      'tests/nrd_xfer/nacl.scons',
-#      'tests/nthread_nice/nacl.scons',
-      'tests/null/nacl.scons',
-      'tests/nullptr/nacl.scons',
-      # NOTE: does not run sel_univesal test which invokes sel_ldr
-      'tests/srpc/nacl.scons',
-      'tests/srpc_hw/nacl.scons',
-      'tests/srpc_without_pthread/nacl.scons',
-      'tests/sysbasic/nacl.scons',
-#      'tests/syscalls/nacl.scons',
-      'tests/toolchain/nacl.scons',
-#      'tests/threads/nacl.scons',
-      'tests/vim/nacl.scons',
-
-      'tests/arm_service_runtime/nacl.scons',
-      ])
-
   if ARGUMENTS.get('sdl', 'hermetic') != 'none':
     nacl_env.Append(
         BUILD_SCONSCRIPTS = [
@@ -1078,6 +1007,45 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
             ])
 
 environment_list.append(nacl_env)
+
+nacl_env.Append(
+    BUILD_SCONSCRIPTS = [
+    ####  ALPHABETICALLY SORTED ####
+    'tests/app_lib/nacl.scons',
+    'tests/arm_service_runtime/nacl.scons',
+    'tests/autoloader/nacl.scons',
+    'tests/bundle_size/nacl.scons',
+    'tests/contest_issues/nacl.scons',
+    'tests/fib/nacl.scons',
+    'tests/file/nacl.scons',
+    'tests/hello_world/nacl.scons',
+    'tests/imc_shm_mmap/nacl.scons',
+    'tests/mandel/nacl.scons',
+    'tests/mmap/nacl.scons',
+    'tests/nanosleep/nacl.scons',
+    'tests/native_worker/nacl.scons',
+    'tests/noop/nacl.scons',
+    'tests/npapi_bridge/nacl.scons',
+    'tests/npapi_hw/nacl.scons',
+    'tests/npapi_pi/nacl.scons',
+    'tests/npapi_runtime/nacl.scons',
+    'tests/nrd_xfer/nacl.scons',
+    'tests/nthread_nice/nacl.scons',
+    'tests/null/nacl.scons',
+    'tests/nullptr/nacl.scons',
+    'tests/pepper_plugin/nacl.scons',
+    'tests/srpc/nacl.scons',
+    'tests/srpc_hw/nacl.scons',
+    'tests/srpc_without_pthread/nacl.scons',
+    'tests/sysbasic/nacl.scons',
+    'tests/syscalls/nacl.scons',
+    'tests/threads/nacl.scons',
+    'tests/time/nacl.scons',
+    'tests/toolchain/nacl.scons',
+    'tests/vim/nacl.scons',
+    ####  ALPHABETICALLY SORTED ####
+    ],
+    )
 
 
 # ----------------------------------------------------------

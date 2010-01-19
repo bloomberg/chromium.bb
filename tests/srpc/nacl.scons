@@ -80,31 +80,35 @@ env.Publish('srpc_bad_service.nexe', 'run', [])
 
 # NOTE: sel_universal launches sel_ldr internally and we do not have a
 # good hook to sneak in an emulator yet
-if env['TARGET_ARCHITECTURE'] == 'x86':
-  node = env.CommandSelLdrTestNacl(
-      'srpc_basic_test.out',
-      loader='sel_universal',
-      command=[env.File('srpc_test.nexe')],
-      stdin=env.File('srpc_basic_test.stdin'),
-      stdout_golden=env.File('srpc_basic_test.stdout'),
-      )
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_basic_test')
+TEST_SUITES = ['small_tests']
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  TEST_SUITES = ['small_tests_arm_hw_only']
 
-  trusted = env.get('TRUSTED_ENV', None)
-  if trusted and trusted.Bit('linux'):
-    node = env.CommandSelLdrTestNacl(
-        'srpc_sysv_shm_test.out',
-        loader='sel_universal',
-        command=[env.File('srpc_shm.nexe')],
-        stdin=env.File('srpc_sysv_shm_test.stdin'),
-        stdout_golden=env.File('srpc_sysv_shm_test.stdout'),
-        )
-    env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_sysv_shm_test')
+node = env.CommandSelLdrTestNacl(
+    'srpc_basic_test.out',
+    loader='sel_universal',
+    command=[env.File('srpc_test.nexe')],
+    stdin=env.File('srpc_basic_test.stdin'),
+    stdout_golden=env.File('srpc_basic_test.stdout'),
+    )
+env.AddNodeToTestSuite(node, TEST_SUITES, 'run_srpc_basic_test')
 
+trusted = env.get('TRUSTED_ENV', None)
+# TODO: add comment explaining the if
+if trusted and trusted.Bit('linux'):
   node = env.CommandSelLdrTestNacl(
-      'srpc_bad_service.out',
+      'srpc_sysv_shm_test.out',
       loader='sel_universal',
-      command=[env.File('srpc_bad_service.nexe')],
-      exit_status='1'
+      command=[env.File('srpc_shm.nexe')],
+      stdin=env.File('srpc_sysv_shm_test.stdin'),
+      stdout_golden=env.File('srpc_sysv_shm_test.stdout'),
       )
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_bad_service_test')
+  env.AddNodeToTestSuite(node, TEST_SUITES, 'run_srpc_sysv_shm_test')
+
+node = env.CommandSelLdrTestNacl(
+    'srpc_bad_service.out',
+    loader='sel_universal',
+    command=[env.File('srpc_bad_service.nexe')],
+    exit_status='1'
+    )
+env.AddNodeToTestSuite(node, TEST_SUITES, 'run_srpc_bad_service_test')

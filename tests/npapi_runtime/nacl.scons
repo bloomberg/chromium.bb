@@ -4,6 +4,10 @@
 
 Import('env')
 
+# TODO(robertm): fix this (might be just a C++ issue)
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
+
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 npapi_runtime_inputs = [

@@ -31,7 +31,8 @@
 Import('env')
 
 
-env.ComponentProgram('file.nexe', 'file.cc')
+env.ComponentProgram('file.nexe', 'file.cc',
+                     EXTRA_LIBS=['pthread'])
 
 
 # TODO: add tests back in

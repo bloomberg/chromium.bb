@@ -7,7 +7,8 @@
 Import('env')
 
 env.ComponentProgram('gettimeofday_test.nexe',
-                     'gettimeofday_test.c')
+                     'gettimeofday_test.c',
+                     EXTRA_LIBS=['pthread'])
 
 node = env.CommandSelLdrTestNacl(
     'gettimeofday_test.out',

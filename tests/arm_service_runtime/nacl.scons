@@ -30,6 +30,10 @@
 
 Import('env')
 
+# NOTE: .s files below
+if env['TARGET_ARCHITECTURE'] != 'arm':
+  Return()
+
 # make sure we are in bare bones mode: no startup code no libs
 env.Replace(LINKFLAGS_FIRST = [],
             LIBS = [],
