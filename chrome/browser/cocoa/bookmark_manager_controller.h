@@ -58,6 +58,8 @@ class Profile;
 // Called by the toolbar item; forwards to the focused tree controller.
 - (IBAction)newFolder:(id)sender;
 
+// Updates the node->item mapping; called only by BookmarkItem itself!
+- (void)remapItem:(BookmarkItem*)item forNode:(const BookmarkNode*)node;
 @end
 
 

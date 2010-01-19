@@ -400,7 +400,8 @@ static void addItem(NSMenu* menu, int command, SEL action) {
   if ([ident isEqualToString:kTitleColIdent]) {
     [item setTitle:value];
   } else if ([ident isEqualToString:kURLColIdent]) {
-    [item setURLString:value];
+    if ([value length])
+      [item setURLString:value];
   }
 }
 
@@ -408,9 +409,12 @@ static void addItem(NSMenu* menu, int command, SEL action) {
 - (BOOL)      outlineView:(NSOutlineView*)outlineView
     shouldEditTableColumn:(NSTableColumn*)tableColumn
                      item:(id)item {
-  //TODO(snej): Make URL column editable once setter method exists (bug 10603).
   NSString* ident = [tableColumn identifier];
-  return [ident isEqualToString:kTitleColIdent] && ![item isFixed];
+  if ([item isFixed])
+    return NO;
+  if ([ident isEqualToString:kURLColIdent] && [item isFolder])
+    return NO;
+  return YES;
 }
 
 // Sets a cell's icon before it's drawn (NSOutlineView data source)

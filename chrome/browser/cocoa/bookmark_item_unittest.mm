@@ -162,6 +162,29 @@ TEST_F(BookmarkItemTest, AddItems) {
   EXPECT_EQ(0U, [folder indexOfChild:item2]);
 }
 
+TEST_F(BookmarkItemTest, URLEditing) {
+  BookmarkItem* item = [bar_ addBookmarkWithTitle:@"URL"
+                                              URL:@"http://www.google.com/"
+                                          atIndex:0];
+  EXPECT_TRUE(item);
+  EXPECT_TRUE([@"http://www.google.com/" isEqual:[item URLString]]);
+  [item setURLString: @"http://www.google.com/chrome"];
+  EXPECT_TRUE([@"http://www.google.com/chrome" isEqual:[item URLString]]);
+}
+
+TEST_F(BookmarkItemTest, URLConversion) {
+  BookmarkItem* item = [bar_ addBookmarkWithTitle:@"fixable URL"
+                                              URL:@"www.google.com"
+                                          atIndex:0];
+  EXPECT_TRUE(item);
+  EXPECT_TRUE([@"http://www.google.com/" isEqual:[item URLString]]);
+
+  item = [bar_ addBookmarkWithTitle:@"bad URL"
+                                URL:@"!$%@djd ^%QQQ"
+                            atIndex:0];
+  EXPECT_FALSE(item);
+}
+
 TEST_F(BookmarkItemTest, Hierarchy) {
   AddTestBookmarks();
   ASSERT_EQ(4U, [bar_ numberOfChildren]);

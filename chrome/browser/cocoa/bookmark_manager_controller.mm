@@ -259,6 +259,11 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
   return [self itemFromNode:[self bookmarkModel]->other_node()];
 }
 
+// Updates the mapping; called by a BookmarkItem if it changes its node.
+- (void)remapItem:(BookmarkItem*)item forNode:(const BookmarkNode*)node {
+  NSMapInsert(nodeMap_, node, item);
+}
+
 // Removes a BookmarkNode from the node<->item mapping table.
 - (void)forgetNode:(const BookmarkNode*)node {
   NSMapRemove(nodeMap_, node);

@@ -295,10 +295,12 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
                          objectForKey:kURIDictTitleKey];
       NSString* urlStr = [plistItem objectForKey:kURLStringKey];
       if (title && urlStr) {
-        [dstParent addBookmarkWithTitle:title
-                                    URL:urlStr
-                                atIndex:dstIndex + i];
-        ++i;
+        BookmarkItem* newItem = [dstParent addBookmarkWithTitle:title
+                                                            URL:urlStr
+                                                        atIndex:dstIndex + i];
+        // It is possible for that call to fail if urlStr isn't a valid URL.
+        if (newItem)
+          ++i;
       }
     } else {
       NSString* title = [plistItem objectForKey:kTitleKey];
@@ -315,7 +317,7 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
     [pool drain];
   }
   [self selectItemsInFolder:dstParent
-                  atIndexes:NSMakeRange(dstIndex, [plist count])];
+                  atIndexes:NSMakeRange(dstIndex, i)];
   return YES;
 }
 

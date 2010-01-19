@@ -17,6 +17,20 @@
 #include "skia/ext/skia_utils_mac.h"
 
 
+static GURL ConvertToGURL(NSString* urlStr) {
+  DCHECK(urlStr);
+  GURL url(base::SysNSStringToUTF8(urlStr));
+  if (!url.is_valid()) {
+    // Mimic observed friendliness from Windows
+    urlStr = [@"http://" stringByAppendingString:urlStr];
+    GURL fixedURL(base::SysNSStringToUTF8(urlStr));
+    if (fixedURL.is_valid())
+      url = fixedURL;
+  }
+  return url;
+}
+
+
 @implementation BookmarkItem
 
 @synthesize node = node_;
@@ -53,10 +67,23 @@
 }
 
 - (void)setURLString:(NSString*)urlStr {
-  //TODO(snej): Uncomment this once SetURL exists (bug 10603).
-  //  ...or work around it by removing node and adding new one.
-  //[manager_ bookmarkModel]->SetURL(node_, GURL([urlStr UTF8String]));
+  DCHECK(![self isFolder]);
+  DCHECK(![self isFixed]);
+  GURL url = ConvertToGURL(urlStr);
+  if (url == node_->GetURL() || !url.is_valid())
+    return;
+
   icon_.reset(nil);
+  // Create a new node with the updated URL.
+  BookmarkModel* model = [manager_ bookmarkModel];
+  const BookmarkNode* parent = node_->GetParent();
+  int index = parent->IndexOfChild(node_);
+  node_ = model->AddURLWithCreationTime(parent, index, node_->GetTitle(),
+                                        url, node_->date_added());
+  // Tell the manager that the new node maps to me.
+  [manager_ remapItem:self forNode:node_];
+  // Remove my old node.
+  model->Remove(parent, index + 1);
 }
 
 - (BookmarkItem*)parent {
@@ -200,6 +227,8 @@
   if (!node_ || !node_->is_url())
     return NO;
   GURL url = node_->GetURL();
+  if (url.is_empty())
+    return NO;
 
   Browser* browser = BrowserList::GetLastActive();
   // if no browser window exists then create one with no tabs to be filled in
@@ -227,11 +256,14 @@
   DCHECK_GT([urlString length], 0U);
   DCHECK([self isFolder]);
   DCHECK(node_);
+  GURL url = ConvertToGURL(urlString);
+  if (!url.is_valid())
+    return nil;
   BookmarkModel* model = [manager_ bookmarkModel];
   const BookmarkNode* node = model->AddURL([self node],
                                            index,
                                            base::SysNSStringToWide(title),
-                                           GURL([urlString UTF8String]));
+                                           url);
   return [manager_ itemFromNode:node];
 }
 
