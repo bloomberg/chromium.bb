@@ -3007,6 +3007,7 @@ BUG32305 : fast/loader/onload-willSendRequest-null-for-script.html = TEXT
 BUG32306 MAC DEBUG: svg/hixie/error/004.xml = CRASH PASS
 BUG32516 WIN : tables/mozilla_expected_failures/core/backgrounds.html = CRASH PASS
 BUG32518 WIN : editing/unsupported-content/list-delete-001.html = CRASH PASS
+BUG32572 WIN : svg/hixie/mixed/003.xml = CRASH PASS
 
 // WebKit roll: 53314:53340
 BUG53331 MAC : fast/gradients/simple-gradients.html = FAIL
