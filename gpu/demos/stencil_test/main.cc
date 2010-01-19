@@ -4,60 +4,25 @@
 
 // This example shows various stencil buffer operations.
 
-#include "gpu/demos/app_framework/application.h"
+#include "gpu/demos/gles2_book/example.h"
 #include "third_party/gles2_book/Chapter_11/Stencil_Test/Stencil_Test.h"
 
-namespace gpu_demos {
-class StencilTest : public Application {
- public:
-  StencilTest();
-  ~StencilTest();
-
-  bool Init();
-
- protected:
-  virtual void Draw(float elapsed_sec);
-
- private:
-  ESContext context_;
-  STUserData user_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(StencilTest);
-};
-
-StencilTest::StencilTest() {
-  esInitContext(&context_);
-
-  memset(&user_data_, 0, sizeof(STUserData));
-  context_.userData = &user_data_;
-}
-
-StencilTest::~StencilTest() {
-  stShutDown(&context_);
-}
-
-bool StencilTest::Init() {
-  if (!Application::InitRenderContext()) return false;
-
-  context_.width = width();
-  context_.height = height();
-  if (!stInit(&context_)) return false;
-
-  return true;
-}
-
-void StencilTest::Draw(float /*elapsed_sec*/) {
-  stDraw(&context_);
-}
-}  // namespace gpu_demos
+namespace gpu {
+namespace demos {
+namespace gles2_book {
+typedef Example<STUserData,
+                stInit,
+                NoOpUpdateFunc,
+                stDraw,
+                stShutDown> StencilTest;
+}  // namespace gles2_book
+}  // namespace demos
+}  // namespace gpu
 
 int main(int argc, char *argv[]) {
-  gpu_demos::StencilTest app;
-  if (!app.Init()) {
-    printf("Could not init.\n");
-    return EXIT_FAILURE;
-  }
+  gpu::demos::gles2_book::StencilTest demo;
+  CHECK(demo.Init());
 
-  app.MainLoop();
+  demo.MainLoop();
   return EXIT_SUCCESS;
 }
