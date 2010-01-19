@@ -3022,17 +3022,6 @@ BUG32574 WIN LINUX MAC : fast/dom/Window/timer-null-script-execution-context.htm
 BUG32574 WIN LINUX : fast/dynamic/float-in-trailing-whitespace-after-last-line-break-2.html = TEXT
 BUG32574 WIN LINUX RELEASE: fast/forms/textarea-scrollbar-height.html = TEXT
 BUG32574 WIN LINUX MAC : http/tests/security/setDomainRelaxationForbiddenForURLScheme.html = TEXT
-BUG32574 WIN : svg/W3C-SVG-1.1/animate-elem-40-t.svg = TEXT
-BUG32574 WIN LINUX : svg/custom/use-events-crash.svg = TEXT
-BUG32574 WIN LINUX : svg/custom/use-on-disallowed-foreign-object-1.svg = TEXT
-BUG32574 WIN : svg/custom/use-on-disallowed-foreign-object-3.svg = TEXT
-BUG32574 WIN LINUX : svg/custom/use-on-disallowed-foreign-object-4.svg = TEXT
-BUG32574 WIN LINUX : svg/custom/use-on-non-svg-namespaced-element.svg = TEXT
-BUG32574 WIN LINUX : svg/custom/use-recursion-1.svg = TEXT
-BUG32574 WIN LINUX : svg/custom/use-recursion-2.svg = TEXT
-BUG32574 WIN LINUX : svg/custom/use-recursion-3.svg = TEXT
-BUG32574 WIN LINUX : svg/custom/use-recursion-4.svg = TEXT
-BUG32574 WIN LINUX : svg/hixie/error/017.xml = TEXT
 BUG32574 LINUX : fast/repaint/trailing-floats-root-line-box-overflow.html = IMAGE
 BUG32574 WIN LINUX MAC : http/tests/appcache/destroyed-frame.html = CRASH
 BUG32574 WIN LINUX MAC RELEASE : css2.1/t090501-c414-flt-ln-00-d.html = IMAGE+TEXT
@@ -3045,9 +3034,20 @@ BUG32574 LINUX : svg/custom/scrolling-embedded-svg-file-image-repaint-problem.ht
 BUG32574 WIN RELEASE : svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE+TEXT
 BUG32574 LINUX : svg/custom/svg-fonts-in-html.html = IMAGE+TEXT PASS
 BUG32574 WIN MAC RELEASE : svg/custom/svg-fonts-in-html.html = IMAGE+TEXT
-// Not checked if the RELEASE expectation is correct or not.
-BUG32574 LINUX DEBUG : svg/custom/transformedMaskFails.svg = TEXT
-// Flaky tests found in the roll.
+// http://trac.webkit.org/changeset/53446
+BUG32577 WIN : svg/W3C-SVG-1.1/animate-elem-40-t.svg = TEXT
+BUG32577 WIN LINUX : svg/custom/use-events-crash.svg = TEXT
+BUG32577 WIN LINUX : svg/custom/use-on-disallowed-foreign-object-1.svg = TEXT
+BUG32577 WIN : svg/custom/use-on-disallowed-foreign-object-3.svg = TEXT
+BUG32577 WIN LINUX : svg/custom/use-on-disallowed-foreign-object-4.svg = TEXT
+BUG32577 WIN LINUX : svg/custom/use-on-non-svg-namespaced-element.svg = TEXT
+BUG32577 WIN LINUX : svg/custom/use-recursion-1.svg = TEXT
+BUG32577 WIN LINUX : svg/custom/use-recursion-2.svg = TEXT
+BUG32577 WIN LINUX : svg/custom/use-recursion-3.svg = TEXT
+BUG32577 WIN LINUX : svg/custom/use-recursion-4.svg = TEXT
+BUG32577 WIN LINUX : svg/hixie/error/017.xml = TEXT
+
+// Flaky tests found during the roll.
 BUG32574 LINUX DEBUG : http/tests/navigation/lockedhistory-iframe.html = TEXT PASS
 BUG32574 LINUX DEBUG : svg/filters/big-sized-filter.svg = IMAGE+TEXT TIMEOUT PASS
 BUG32574 LINUX DEBUG : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
