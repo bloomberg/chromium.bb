@@ -19,6 +19,7 @@
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/encoding_menu_controller_delegate_mac.h"
+#import "chrome/browser/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/location_bar_view_mac.h"

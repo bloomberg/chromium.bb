@@ -437,6 +437,8 @@
         'browser/cocoa/extension_install_prompt.mm',
         'browser/cocoa/extension_view_mac.h',
         'browser/cocoa/extension_view_mac.mm',
+        'browser/cocoa/extensions/browser_action_button.h',
+        'browser/cocoa/extensions/browser_action_button.mm',
         'browser/cocoa/extensions/browser_actions_controller.h',
         'browser/cocoa/extensions/browser_actions_controller.mm',
         'browser/cocoa/extensions/extension_action_context_menu.h',

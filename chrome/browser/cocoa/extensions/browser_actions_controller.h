@@ -18,7 +18,6 @@ class ExtensionsServiceObserverBridge;
 class Profile;
 
 extern const CGFloat kBrowserActionButtonPadding;
-extern const CGFloat kBrowserActionWidth;
 
 extern NSString* const kBrowserActionsChangedNotification;
 
@@ -74,10 +73,6 @@ extern NSString* const kBrowserActionsChangedNotification;
 
 // Executes the action designated by the extension.
 - (void)browserActionClicked:(BrowserActionButton*)sender;
-
-// Returns the current ID of the active tab, -1 in the case where the user is in
-// incognito mode.
-- (int)currentTabId;
 
 @end  // @interface BrowserActionsController
 
