@@ -106,6 +106,12 @@ class MetricsLog {
   // Get the current version of the application as a string.
   static std::string GetVersionString();
 
+  // Get the GMT buildtime for the current binary, expressed in seconds since
+  // Januray 1, 1970 GMT.
+  // The value is used to identify when a new build is run, so that previous
+  // reliability stats, from other builds, can be abandoned.
+  static int64 GetBuildTime();
+
   // Use |extension| in all uploaded appversions in addition to the standard
   // version string.
   static void set_version_extension(const std::string& extension) {

@@ -38,8 +38,6 @@ inline const unsigned char* UnsignedChar(const char* input) {
   return reinterpret_cast<const unsigned char*>(input);
 }
 
-static int64 GetBuildTime();
-
 // static
 void MetricsLog::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterListPref(prefs::kStabilityPluginStats);
@@ -314,6 +312,19 @@ std::string MetricsLog::GetVersionString() {
   }
 
   return std::string();
+}
+
+// static
+int64 MetricsLog::GetBuildTime() {
+  static int64 integral_build_time = 0;
+  if (!integral_build_time) {
+    Time time;
+    const char* kDateTime = __DATE__ " " __TIME__ " GMT";
+    bool result = Time::FromString(ASCIIToWide(kDateTime).c_str(), &time);
+    DCHECK(result);
+    integral_build_time = static_cast<int64>(time.ToTimeT());
+  }
+  return integral_build_time;
 }
 
 std::string MetricsLog::GetInstallDate() const {
@@ -712,12 +723,4 @@ void MetricsLog::RecordHistogramDelta(const Histogram& histogram,
       WriteIntAttribute("count", snapshot.counts(i));
     }
   }
-}
-
-static int64 GetBuildTime() {
-  Time parsed_time;
-  const char* kDateTime = __DATE__ " " __TIME__ " GMT";
-  bool result = Time::FromString(ASCIIToWide(kDateTime).c_str(), &parsed_time);
-  DCHECK(result);
-  return static_cast<int64>(parsed_time.ToTimeT());
 }

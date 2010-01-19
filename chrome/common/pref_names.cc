@@ -353,6 +353,11 @@ const wchar_t kStabilityExitedCleanly[] =
 const wchar_t kStabilityStatsVersion[] =
     L"user_experience_metrics.stability.stats_version";
 
+// Build time, in seconds since an epoch, which is used to assure that stability
+// metrics reported reflect stability of the same build.
+extern const wchar_t kStabilityStatsBuildTime[] =
+    L"user_experience_metrics.stability.stats_buildtime";
+
 // False if we received a session end and either we crashed during processing
 // the session end or ran out of time and windows terminated us.
 const wchar_t kStabilitySessionEndCompleted[] =
