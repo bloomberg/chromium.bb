@@ -102,7 +102,7 @@ function messageHandler(event) {
 </script>
 <script>
 // Feed URL.
-var feedUrl = chrome.i18n.getMessage('newsUrl') + '/?output=rss';
+var feedUrl = 'http://news.google.com/?output=rss';
 
 // The XMLHttpRequest object that tries to load and parse the feed.
 var req;
@@ -280,7 +280,7 @@ function iframeMessageHandler(e) {
           iframes[i].style.height = msg.size + "px";
         } else if (msg.type == "show") {
           var url = msg.url;
-          if (url.indexOf(chrome.i18n.getMessage('newsUrl')) == 0) {
+          if (url.indexOf("http://news.google.com") == 0) {
             // If the URL is a redirect URL, strip of the destination and go to
             // that directly.  This is necessary because the Google news
             // redirector blocks use of the redirects in this case.

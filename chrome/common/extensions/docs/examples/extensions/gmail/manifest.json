@@ -1,6 +1,6 @@
 {
-  "name": "__MSG_name__",
-  "description": "__MSG_description__",
+  "name": "Google Mail Checker",
+  "description": "Displays the number of unread messages in your Google Mail inbox. You can also click the button to open your inbox.",
   "version": "3",
   "background_page": "background.html",
   "options_page": "options.html",
@@ -8,10 +8,9 @@
     "tabs", "http://*.google.com/", "https://*.google.com/"
    ],
   "browser_action": {
-    "default_title": ""
+      "default_title": ""
   },
   "icons": {
     "128": "icon_128.png"
-  },
-  "default_locale": "en"
+  }
 }

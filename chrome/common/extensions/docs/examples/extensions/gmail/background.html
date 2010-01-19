@@ -163,7 +163,8 @@ function getInboxCount(onSuccess, onError) {
           handleSuccess(fullCountNode.textContent);
           return;
         } else {
-          console.error(chrome.i18n.getMessage("node_error"));
+          console.error("Error: feed retrieved, but no <fullcount> node " +
+                        "found");
         }
       }
 
@@ -177,7 +178,7 @@ function getInboxCount(onSuccess, onError) {
     xhr.open("GET", getFeedUrl(), true);
     xhr.send(null);
   } catch(e) {
-    console.error(chrome.i18n.getMessage("exception", e));
+    console.error("exception: " + e);
     handleError();
   }
 }

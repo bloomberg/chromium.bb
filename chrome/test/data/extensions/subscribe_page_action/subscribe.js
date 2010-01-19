@@ -28,7 +28,7 @@ var styleSheet = "";
 var frameScript = "";
 
 // What to show when we cannot parse the feed name.
-var unknownName = chrome.i18n.getMessage("unknown_feed_name");
+var unknownName = "Unknown feed name";
 
 // A list of feed readers, populated by localStorage if available, otherwise
 // hard coded.
@@ -76,8 +76,7 @@ function main() {
   if (storageEnabled) {
     // Add the "Manage..." entry to the dropdown and show the checkbox asking
     // if we always want to use this reader in the future (skip the preview).
-    var manageText = chrome.i18n.getMessage("manage_option");
-    readerDropdown.options[i] = new Option(manageText, "");
+    readerDropdown.options[i] = new Option("Manage...", "");
     document.getElementById('alwaysUseSpan').style.display = "block";
   }
 
@@ -121,12 +120,12 @@ function main() {
 // Sets the title for the feed.
 function setFeedTitle(title) {
   var titleTag = document.getElementById('title');
-  titleTag.textContent = chrome.i18n.getMessage("feed_for", title);
+  titleTag.textContent = "Feed for '" + title + "'";
 }
 
 // Handles errors during the XMLHttpRequest.
 function handleError() {
-  handleFeedParsingFailed(chrome.i18n.getMessage("error_fetching"));
+  handleFeedParsingFailed("Error fetching feed");
 }
 
 // Handles feed parsing errors.
@@ -174,7 +173,7 @@ function handleResponse() {
 
   var doc = req.responseXML;
   if (!doc) {
-    handleFeedParsingFailed(chrome.i18n.getMessage("not_valid_feed"));
+    handleFeedParsingFailed("Not a valid feed.");
     return;
   }
 
@@ -183,7 +182,7 @@ function handleResponse() {
   if (entries.length == 0)
     entries = doc.getElementsByTagName('item');
   if (entries.length == 0) {
-    handleFeedParsingFailed(chrome.i18n.getMessage("no_entries"));
+    handleFeedParsingFailed("This feed contains no entries.")
     return;
   }
 
