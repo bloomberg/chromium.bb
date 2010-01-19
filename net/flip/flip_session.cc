@@ -547,9 +547,7 @@ void FlipSession::OnReadComplete(int bytes_read) {
     if (flip_framer_.state() == flip::FlipFramer::FLIP_DONE)
       flip_framer_.Reset();
   }
-  // NOTE(mbelshe): Could cause circular callbacks. (when ReadSocket
-  //    completes synchronously, calling OnReadComplete, etc).  Should
-  //    probably return to the message loop.
+
   ReadSocket();
 }
 
@@ -624,8 +622,11 @@ void FlipSession::ReadSocket() {
       return;
     default:
       // Data was read, process it.
-      // TODO(mbelshe): check that we can't get a recursive stack?
-      OnReadComplete(bytes_read);
+      // Schedule the work through the message loop to avoid recursive
+      // callbacks.
+      read_pending_ = true;
+      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+          this, &FlipSession::OnReadComplete, bytes_read));
       break;
   }
 }
