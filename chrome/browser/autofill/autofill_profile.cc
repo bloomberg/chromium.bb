@@ -27,6 +27,15 @@ AutoFillProfile::AutoFillProfile(const string16& label, int unique_id)
   personal_info_[AutoFillType::ADDRESS_BILLING] = new BillingAddress();
 }
 
+AutoFillProfile::AutoFillProfile()
+    : unique_id_(0),
+      use_billing_address_(true) {
+}
+
+AutoFillProfile::AutoFillProfile(const AutoFillProfile& source) {
+  operator=(source);
+}
+
 AutoFillProfile::~AutoFillProfile() {
   STLDeleteContainerPairSecondPointers(personal_info_.begin(),
                                        personal_info_.end());
@@ -97,6 +106,23 @@ FormGroup* AutoFillProfile::Clone() const {
   }
 
   return profile;
+}
+
+void AutoFillProfile::operator=(const AutoFillProfile& source) {
+  label_ = source.label_;
+  unique_id_ = source.unique_id_;
+  use_billing_address_ = source.use_billing_address_;
+
+  STLDeleteContainerPairSecondPointers(personal_info_.begin(),
+                                       personal_info_.end());
+  personal_info_.clear();
+
+  FormGroupMap::const_iterator iter;
+  for (iter = source.personal_info_.begin();
+       iter != source.personal_info_.end();
+       ++iter) {
+    personal_info_[iter->first] = iter->second->Clone();
+  }
 }
 
 void AutoFillProfile::set_use_billing_address(bool use) {
