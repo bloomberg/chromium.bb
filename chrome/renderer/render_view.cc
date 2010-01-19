@@ -67,10 +67,7 @@
 #include "net/base/net_errors.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
-#if defined(OS_WIN)
-// TODO(port): The compact language detection library works only for Windows.
 #include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unicodetext.h"
-#endif
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
@@ -223,7 +220,7 @@ static const char* const kUnreachableWebDataURL =
 static const char* const kBackForwardNavigationScheme = "history";
 
 // The string returned in DetectLanguage if we failed to detect the language.
-static const char* const kUnknownLanguageCode = "unknown";
+static const char* const kUnknownLanguageCode = "und";
 
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   WebVector<WebURL> urls;
@@ -3082,31 +3079,29 @@ std::string RenderView::DetectLanguage() {
   if (!webview() || is_loading_)
     return kUnknownLanguageCode;
 
-  std::string language = kUnknownLanguageCode;
-#if defined(OS_WIN)  // CLD is only available on Windows at this time.
   WebFrame* main_frame = webview()->mainFrame();
   std::wstring contents;
   CaptureText(main_frame, &contents);
-  language = DetermineTextLanguage(contents);
-#endif
-
-  return language;
+  return DetermineTextLanguage(contents);
 }
 
 // static
 std::string RenderView::DetermineTextLanguage(const std::wstring& text) {
   std::string language = kUnknownLanguageCode;
-#if defined(OS_WIN)  // CLD is only available on Windows at this time.
   int num_languages = 0;
   bool is_reliable = false;
+  string16 input = WideToUTF16(text);
   Language cld_language =
-      DetectLanguageOfUnicodeText(NULL, text.c_str(), true, &is_reliable,
+      DetectLanguageOfUnicodeText(NULL, input.c_str(), true, &is_reliable,
                                   &num_languages, NULL);
   if (cld_language != NUM_LANGUAGES && cld_language != UNKNOWN_LANGUAGE &&
       cld_language != TG_UNKNOWN_LANGUAGE) {
-    language = LanguageCodeISO639_1(cld_language);
+    // We should not use LanguageCode_ISO_639_1 because it does not cover all the
+    // languages CLD can detect. As a result, it'll return the invalid language
+    // code for tradtional Chinese among others. |LanguageCode| will go through
+    // ISO 639-1, ISO-639-2 and 'other' tables to do the 'right' thing.
+    language = LanguageCode(cld_language);
   }
-#endif
   return language;
 }
 

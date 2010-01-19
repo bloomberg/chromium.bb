@@ -492,6 +492,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/bzip2/bzip2.gyp:bzip2',
+        '../third_party/cld/cld.gyp:cld',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
@@ -896,8 +897,6 @@
           ],
           'sources!': [
             'browser/views/bookmark_context_menu_test.cc',
-            # Compact Language Detection (cld) is not supported in linux yet.
-            '../third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
           ],
         }],
         ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
@@ -947,9 +946,6 @@
             'browser/tab_contents/navigation_controller_unittest.cc',
             'browser/task_manager_unittest.cc',
             '../third_party/hunspell/google/hunspell_tests.cc',
-
-            # Compact Language Detection (cld) is not supported in mac yet.
-            '../third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
           ],
           # TODO(mark): We really want this for all non-static library targets,
           # but when we tried to pull it up to the common.gypi level, it broke

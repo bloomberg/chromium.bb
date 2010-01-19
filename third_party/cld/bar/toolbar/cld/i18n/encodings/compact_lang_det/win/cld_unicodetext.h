@@ -5,9 +5,8 @@
 #ifndef BAR_TOOLBAR_CLD_I18N_ENCODINGS_COMPACT_LANG_DET_WIN_CLD_UNICODETEXT_H_
 #define BAR_TOOLBAR_CLD_I18N_ENCODINGS_COMPACT_LANG_DET_WIN_CLD_UNICODETEXT_H_
 
-#include <windows.h>
-
 #include "bar/toolbar/cld/i18n/languages/public/languages.h"
+#include "unicode/utypes.h"
 
 namespace CompactLangDet {
   struct DetectionTables;
@@ -33,9 +32,9 @@ namespace CompactLangDet {
 //     for details.
 Language DetectLanguageOfUnicodeText(
     const CompactLangDet::DetectionTables* detection_tables,
-    const WCHAR* text, bool is_plain_text,
+    const UChar* text, bool is_plain_text,
     bool* is_reliable, int* num_languages,
-    DWORD* error_code);
+    int* error_code);
 
 
 #endif  // BAR_TOOLBAR_CLD_I18N_ENCODINGS_COMPACT_LANG_DET_WIN_CLD_UNICODETEXT_H_
