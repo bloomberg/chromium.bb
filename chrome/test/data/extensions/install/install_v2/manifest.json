@@ -1,0 +1,5 @@
+{
+  "name": "Extension v2",
+  "version": "2.0",
+  "background_page": "bg.html"
+}
