@@ -28,6 +28,15 @@ void XDGOpen(const std::string& path) {
   // bring up a new terminal if necessary.  See "man mailcap".
   env.push_back(std::make_pair("MM_NOTTTY", "1"));
 
+  // In Google Chrome, we do not let GNOME's bug-buddy intercept our crashes.
+  // However, we do not want this environment variable to propagate to external
+  // applications. See http://crbug.com/24120
+  char* disable_gnome_bug_buddy = getenv("GNOME_DISABLE_CRASH_DIALOG");
+  if (disable_gnome_bug_buddy &&
+      disable_gnome_bug_buddy == std::string("SET_BY_GOOGLE_CHROME")) {
+    env.push_back(std::make_pair("GNOME_DISABLE_CRASH_DIALOG", ""));
+  }
+
   base::file_handle_mapping_vector no_files;
   base::ProcessHandle handle;
   if (base::LaunchApp(argv, env, no_files, false, &handle))
