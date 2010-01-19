@@ -16,7 +16,6 @@
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/hunspell/hunspell.gyp:hunspell',
-        '../third_party/cld/cld.gyp:cld',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
@@ -28,7 +27,6 @@
       ],
       'include_dirs': [
         '..',
-        '../third_party/cld',
       ],
       'defines': [
         '<@(nacl_defines)',
@@ -170,7 +168,11 @@
         # Windows-specific rules.
         ['OS=="win"', {
           'include_dirs': [
+            '../third_party/cld',
             'third_party/wtl/include',
+          ],
+          'dependencies': [
+            '../third_party/cld/cld.gyp:cld',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {

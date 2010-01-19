@@ -832,6 +832,11 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
 }
 
 bool DetectTabLanguageFunction::RunImpl() {
+  #if !defined(OS_WIN)
+    error_ = keys::kSupportedInWindowsOnlyError;
+    return false;
+  #endif
+
   int tab_id = 0;
   Browser* browser = NULL;
   TabContents* contents = NULL;

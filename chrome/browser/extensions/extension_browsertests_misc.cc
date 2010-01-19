@@ -89,17 +89,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
       host->render_view_host(), L"", L"testTabsAPI()", &result);
   EXPECT_TRUE(result);
 
+#if defined(OS_WIN)
+  // http://crbug.com/29896 - tabs.detectLanguage is Windows only
+
   // Test for compact language detection API. First navigate to a (static) html
   // file with a French sentence. Then, run the test API in toolstrip1.html to
   // actually call the language detection API through the existing extension,
   // and verify that the language returned is indeed French.
   FilePath language_url = extension_test_data_dir.AppendASCII(
       "french_sentence.html");
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(language_url));
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL(language_url.ToWStringHack()));
 
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testTabsLanguageAPI()", &result);
   EXPECT_TRUE(result);
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionViews) {

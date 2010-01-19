@@ -290,6 +290,7 @@ TEST_F(ExtensionAPIClientTest, GetTab) {
                "tabs.get", "2");
 }
 
+#if defined(OS_WIN)
 TEST_F(ExtensionAPIClientTest, DetectTabLanguage) {
   ExpectJsFail("chrome.tabs.detectLanguage(32, function(){}, 20);",
                "Uncaught Error: Too many arguments.");
@@ -305,6 +306,7 @@ TEST_F(ExtensionAPIClientTest, DetectTabLanguage) {
   ExpectJsPass("chrome.tabs.detectLanguage(null, function(){})",
                "tabs.detectLanguage", "null");
 }
+#endif
 
 TEST_F(ExtensionAPIClientTest, GetSelectedTab) {
   ExpectJsFail("chrome.tabs.getSelected(32, function(){}, 20);",

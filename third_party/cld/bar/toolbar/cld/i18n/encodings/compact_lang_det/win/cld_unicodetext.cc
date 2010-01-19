@@ -4,46 +4,94 @@
 
 #include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unicodetext.h"
 
-#include <string>
+#include <tchar.h>
+#include <windows.h>
+
 #include <vector>  // to compile bar/common/component.h
 
 #include "bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det.h"
-#include "base/string_util.h"
-#include "unicode/normlzr.h"
-#include "unicode/unistr.h"
-#include "unicode/ustring.h"
-
-std::string NormalizeText(const UChar* text) {
-  // To avoid a copy, use the read-only aliasing ctor.
-  icu::UnicodeString source(1, text, -1);
-  icu::UnicodeString normalized;
-  UErrorCode status = U_ZERO_ERROR;
-  icu::Normalizer::normalize(source, UNORM_NFC, 0, normalized, status);
-  if (U_FAILURE(status))
-    return std::string();
-  normalized.toLower();
-  std::string utf8;
-  // Internally, toUTF8String uses a 1kB stack buffer (which is not large enough
-  // for most web pages) and does pre-flighting followed by malloc for larger
-  // strings. We have to switch to obtaining the buffer with the maximum size
-  // (UTF-16 length * 3) without pre-flighting if necessary.
-  return normalized.toUTF8String(utf8);
-}
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_scopedptr.h"
+#include "bar/toolbar/cld/i18n/encodings/compact_lang_det/win/normalizedunicodetext.h"
 
 
 // Detects a language of the UTF-16 encoded zero-terminated text.
 // Returns: Language enum.
 Language DetectLanguageOfUnicodeText(
     const CompactLangDet::DetectionTables* detection_tables,
-    const UChar* text, bool is_plain_text,
+    const WCHAR* text, bool is_plain_text,
     bool* is_reliable, int* num_languages,
-    int* error_code) {
-  if (!text || !num_languages)
+    DWORD* error_code) {
+  if (!text || !num_languages) {
+    if (error_code)
+      *error_code = ERROR_INVALID_PARAMETER;
     return NUM_LANGUAGES;
-  // Normalize text to NFC, lowercase and convert to UTF-8.
-  std::string utf8_encoded = NormalizeText(text);
-  if (utf8_encoded.empty())
+  }
+
+  // Normalize text first.  We do not check the return value here since there
+  // is no meaningful recovery we can do in case of failure anyway.
+  // Since the vast majority of texts on the Internet is already normalized
+  // and languages which require normalization are easy to recognize by CLD
+  // anyway, we'll benefit more from trying to detect language in non-normalized
+  // text (and, with some probability, fail to recognize it) than to give up
+  // right away and return the unknown language here.
+  NormalizedUnicodeText nomalized_text;
+  nomalized_text.Normalize(NormalizationC, text);
+
+  // Determine the size of the buffer required to store a lowercased text.
+  int lowercase_text_size =
+      ::LCMapString(NULL, LCMAP_LOWERCASE | LCMAP_LINGUISTIC_CASING,
+                    nomalized_text.get(), -1,
+                    NULL, 0);
+  if (!lowercase_text_size) {
+    if (error_code)
+      *error_code = ::GetLastError();
     return NUM_LANGUAGES;
+  }
+
+  scoped_array<WCHAR> lowercase_text(new WCHAR[lowercase_text_size]);
+  if (!lowercase_text.get())
+    return NUM_LANGUAGES;
+
+  // Covert text to lowercase.
+  int lowercasing_result =
+      ::LCMapString(NULL, LCMAP_LOWERCASE | LCMAP_LINGUISTIC_CASING,
+                    nomalized_text.get(), -1,
+                    lowercase_text.get(), lowercase_text_size);
+  if (!lowercasing_result) {
+    if (error_code)
+      *error_code = ::GetLastError();
+    return NUM_LANGUAGES;
+  }
+
+  // Determine the size of the buffer required to covert text to UTF-8.
+  int utf8_encoded_buffer_size =
+      ::WideCharToMultiByte(CP_UTF8, 0,
+                            lowercase_text.get(), -1,
+                            NULL, 0,
+                            NULL, NULL);
+  if (!utf8_encoded_buffer_size) {
+    if (error_code)
+      *error_code = ::GetLastError();
+    return NUM_LANGUAGES;
+  }
+
+  scoped_array<char> utf8_encoded_buffer(
+      new char[utf8_encoded_buffer_size]);
+
+  // Convert text to UTF-8.
+  int utf8_encoding_result =
+      ::WideCharToMultiByte(CP_UTF8, 0,
+                            lowercase_text.get(), -1,
+                            utf8_encoded_buffer.get(), utf8_encoded_buffer_size,
+                            NULL, NULL);
+  if (!utf8_encoding_result) {
+    if (error_code)
+      *error_code = ::GetLastError();
+    return NUM_LANGUAGES;
+  }
+
+  if (error_code)
+    *error_code = 0;
 
   // Engage core CLD library language detection.
   Language language3[3] = {
@@ -59,8 +107,8 @@ Language DetectLanguageOfUnicodeText(
   // language3 array is always set according to the detection results and
   // is not affected by this heuristic.
   CompactLangDet::DetectLanguageSummary(detection_tables,
-                                        utf8_encoded.c_str(),
-                                        utf8_encoded.length(),
+                                        utf8_encoded_buffer.get(),
+                                        utf8_encoded_buffer_size,
                                         is_plain_text, language3, percent3,
                                         &text_bytes, is_reliable);
 

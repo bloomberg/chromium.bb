@@ -2124,10 +2124,12 @@
           ],
           'include_dirs': [
             'third_party/wtl/include',
+            '../third_party/cld',
           ],
           'dependencies': [
             '../gears/gears.gyp:gears',
             '../google_update/google_update.gyp:google_update',
+            '../third_party/cld/cld.gyp:cld',
             '../views/views.gyp:views',
             'installer/installer.gyp:installer_util',
             '<(allocator_target)',
