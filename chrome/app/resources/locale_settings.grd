@@ -678,12 +678,12 @@
 
       <!-- The width of the AutoFill dialog in characters. -->
       <message name="IDS_AUTOFILL_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        80
+        98
       </message>
 
       <!-- The height of the AutoFill dialog in lines. -->
       <message name="IDS_AUTOFILL_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        30
+        35
       </message>
     </messages>
   </release>

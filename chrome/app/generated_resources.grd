@@ -4587,6 +4587,75 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_NEW_CREDITCARD" desc="The profile label of a new credit card.">
         New credit card
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_LABEL" desc="The label of the Label entry.">
+        Label
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_FIRST_NAME" desc="The label of the First name entry.">
+        First name
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_MIDDLE_NAME" desc="The label of the Middle name entry.">
+        Middle name
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_LAST_NAME" desc="The label of the Last name entry.">
+        Last name
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_EMAIL" desc="The label of the Email entry.">
+        Email
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_COMPANY_NAME" desc="The label of the Company name entry.">
+        Company name
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1" desc="The label of the Address Line 2 entry.">
+        Address line 1
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2" desc="The label of the Address Line 2 entry.">
+        Address line 2
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_CITY" desc="The label of the City entry.">
+        City/Town
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_STATE" desc="The label of the State entry.">
+        State/Province/District
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ZIP_CODE" desc="The label of the Zip code entry.">
+        Zip code
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_COUNTRY" desc="The label of the Country entry.">
+        Country
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PHONE" desc="The label of the Phone entry.">
+        Phone
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_FAX" desc="The label of the Fax entry.">
+        Fax
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_NAME_ON_CARD" desc="The label of the Name on card entry.">
+        Name on card
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER" desc="The label of the Credit card number entry.">
+        Credit card number
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_CVC" desc="The label of the CVC entry.">
+        CVC
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
+        Expiration date
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_BILLING_ADDRESS" desc="The label of the Billing address entry.">
+        Billing address
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_SHIPPING_ADDRESS" desc="The label of the Shipping address entry.">
+        Shippping
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_CHOOSE_EXISTING_ADDRESS" desc="The label of the Choose existing address entry.">
+        Choose existing address
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_SAME_AS_BILLING" desc="The label of the same as billing entry.">
+        same as billing
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_MAKE_DEFAULT" desc="The label of the Make this my default profile entry.">
+        Make this my default profile
+      </message>
 
       <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
         Themes:

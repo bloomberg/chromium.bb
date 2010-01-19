@@ -42,11 +42,14 @@ const int kLabelSpacing = 12;
 // Indent of the controls within each group.
 const int kGroupIndent = 12;
 
-// Space around the outsides of a dialog's contents.
+// Space around the outside of a dialog's contents.
 const int kContentAreaBorder = 12;
 
 // Spacing between groups of controls.
 const int kContentAreaSpacing = 18;
+
+// Horizontal Spacing between controls in a form.
+const int kFormControlSpacing = 10;
 
 // Create a table of labeled controls, using proper spacing and alignment.
 // Arguments should be pairs of const char*, GtkWidget*, concluding with a
