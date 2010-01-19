@@ -1349,7 +1349,10 @@ const wchar_t kChromeFrameAboutVersion[] =
 // that the operation succeeded.
 // Marking this test FLAKY as it fails at times on the buildbot.
 // http://code.google.com/p/chromium/issues/detail?id=26549
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
+// TODO(tommi): DISABLED due to
+// http://code.google.com/p/chromium/issues/detail?id=32550
+// NOTE - before being disabled, the test was marked FLAKY.
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_AboutChromeFrame) {
   chrome_frame_test::TimedMsgLoop loop;
   CComObjectStackEx<MockWebBrowserEventSink> mock;
 
@@ -1424,7 +1427,9 @@ template <typename T> T** ReceivePointer(scoped_refptr<T>& p) {  // NOLINT
 
 // Full tab mode back/forward test
 // Launch and navigate chrome frame to a set of URLs and test back forward
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
+// TODO(tommi): DISABLED due to
+// http://code.google.com/p/chromium/issues/detail?id=32550
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_BackForward) {
   chrome_frame_test::TimedMsgLoop loop;
   CComObjectStackEx<MockWebBrowserEventSink> mock;
   ::testing::InSequence sequence;   // Everything in sequence
@@ -1553,7 +1558,10 @@ const wchar_t kAnchor3Url[] = L"http://localhost:1337/files/anchor.html#a3";
 // Launch and navigate chrome frame to a set of URLs and test back forward
 // Marking this test FLAKY as it fails at times on the buildbot.
 // http://code.google.com/p/chromium/issues/detail?id=26549
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
+// TODO(tommi): DISABLED due to
+// http://code.google.com/p/chromium/issues/detail?id=32550
+// NOTE - before being disabled, the test was marked FLAKY.
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_BackForwardAnchor) {
   const char tab_enter_keystrokes[] = { VK_TAB, VK_RETURN, 0 };
   static const std::string tab_enter(tab_enter_keystrokes);
   chrome_frame_test::TimedMsgLoop loop;
@@ -1769,8 +1777,10 @@ TEST_F(ChromeFrameTestWithWebServer,
 const wchar_t kChromeFrameFullTabModeDeleteCookieTest[] =
     L"files/fulltab_delete_cookie_test.html";
 
+// TODO(ananta): DISABLED due to:
+// http://code.google.com/p/chromium/issues/detail?id=32546
 TEST_F(ChromeFrameTestWithWebServer,
-       FullTabModeIE_ChromeFrameDeleteCookieTest) {
+       DISABLED_FullTabModeIE_ChromeFrameDeleteCookieTest) {
   chrome_frame_test::TimedMsgLoop loop;
 
   ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeDeleteCookieTest));
