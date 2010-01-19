@@ -172,16 +172,6 @@
    fun:_cache_free_block
    fun:_cache_collect_free
    fun:_cache_fill
-   fun:_cache_addForwardEntry
-   fun:class_respondsToSelector
-   fun:-[NSNibOutletConnector establishConnection]
-   fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
-   fun:loadNib
-   fun:+[NSBundle(NSNibLoading) _loadNibFile:nameTable:withZone:ownerBundle:]
-   fun:+[NSBundle(NSNibLoading) loadNibFile:externalNameTable:withZone:]
-   fun:-[NSWindowController loadWindow]
-   fun:-[NSWindowController window]
-   fun:_ZN12_GLOBAL__N_155EditSearchEngineControllerTest_ValidImageOriginals_Test8TestBodyEv
 }
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
