@@ -11,6 +11,13 @@
 #include <iphlpapi.h>
 #endif
 
+#if defined(OS_LINUX)
+#include <sys/socket.h>
+#include <asm/types.h>
+#include <linux/netlink.h>
+#include <linux/rtnetlink.h>
+#endif
+
 #include <iomanip>
 #include <list>
 #include <string>
@@ -78,6 +85,8 @@ struct AddressWatchTaskParams {
   browser_sync::ServerConnectionManager* conn_mgr;
 #if defined(OS_WIN)
   HANDLE exit_flag;
+#elif defined(OS_LINUX)
+  int exit_pipe[2];
 #endif
 };
 
@@ -120,8 +129,52 @@ class AddressWatchTask : public Task {
       params_->conn_mgr->CheckServerReachable();
     }
     CloseHandle(overlapped.hEvent);
-#else
-  // TODO(zork): Add this functionality to Linux.
+#elif defined(OS_LINUX)
+    struct sockaddr_nl socket_address;
+
+    memset(&socket_address, 0, sizeof(socket_address));
+    socket_address.nl_family = AF_NETLINK;
+    socket_address.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
+
+    // NETLINK_ROUTE is the protocol used to update the kernel routing table.
+    int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+    bind(fd, (struct sockaddr *) &socket_address, sizeof(socket_address));
+
+    while (true) {
+      fd_set rdfs;
+      FD_ZERO(&rdfs);
+      FD_SET(fd, &rdfs);
+      FD_SET(params_->exit_pipe[0], &rdfs);
+
+      int max_fd = fd > params_->exit_pipe[0] ? fd : params_->exit_pipe[0];
+
+      int result = select(max_fd + 1, &rdfs, NULL, NULL, NULL);
+
+      if (result < 0) {
+        LOG(ERROR) << "select() returned unexpected result " << result;
+        break;
+      }
+
+      // If exit_pipe was written to, we're done.
+      if (FD_ISSET(params_->exit_pipe[0], &rdfs)) {
+        break;
+      }
+
+      // If result is 0, select timed out.
+      if (FD_ISSET(fd, &rdfs)) {
+        char buf[4096];
+        struct iovec iov = { buf, sizeof(buf) };
+        struct sockaddr_nl sa;
+
+        struct msghdr msg = { (void *)&sa, sizeof(sa), &iov, 1, NULL, 0, 0 };
+        recvmsg(fd, &msg, 0);
+
+        params_->conn_mgr->CheckServerReachable();
+      } else {
+        break;
+      }
+    }
+    close(params_->exit_pipe[0]);
 #endif
     LOG(INFO) << "The address watch thread has stopped";
   }
@@ -960,6 +1013,11 @@ bool SyncManager::SyncInternal::Init(
 #if defined(OS_WIN)
   HANDLE exit_flag = CreateEvent(NULL, TRUE /*manual reset*/, FALSE, NULL);
   address_watch_params_.exit_flag = exit_flag;
+#elif defined(OS_LINUX)
+  if (pipe(address_watch_params_.exit_pipe) == -1) {
+    LOG(ERROR) << "Could not create pipe for exit signal.";
+    return false;
+  }
 #endif
   address_watch_params_.conn_mgr = connection_manager();
 
@@ -1171,6 +1229,10 @@ void SyncManager::SyncInternal::Shutdown() {
   // Stop the address watch thread by signaling the exit flag.
   // TODO(timsteele): Same as todo in Init().
   SetEvent(address_watch_params_.exit_flag);
+#elif defined(OS_LINUX)
+  char data = 0;
+  write(address_watch_params_.exit_pipe[1], &data, 1);
+  close(address_watch_params_.exit_pipe[1]);
 #endif
 
   address_watch_thread_.Stop();
