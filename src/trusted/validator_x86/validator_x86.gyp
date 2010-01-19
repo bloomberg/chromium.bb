@@ -202,7 +202,8 @@
                   'ncdecode_onebyte.c',
                   'ncdecode_OF.c',
                   'ncdecode_DC.c',
-                  'ncdecode_sse.c'
+                  'ncdecode_sse.c',
+                  'ncdecodeX87.c',
       ],
       'cflags!': [
         '-Wextra',

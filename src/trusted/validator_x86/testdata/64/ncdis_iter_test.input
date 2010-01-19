@@ -218,3 +218,5 @@
 -i=480FC307                              #0000000000000000: 48 0f c3 07                                  movnti [%rdi], %rax
 -i=0FAEF8                                #0000000000000000: 0f ae f8                                     sfence
 -i=410FA3C0                              #0000000000000000: 41 0f a3 c0                                  bt %r8d, %eax; *NACL Disallows!*
+-i=41db2c07                              #0000000000000000: 41 db 2c 07                                  fld [%r15+%rax*1]
+-i=dd0424                                #0000000000000000: dd 04 24                                     fld [%rsp]
