@@ -90,11 +90,14 @@ const struct AcceleratorMapping {
   { GDK_F4, IDC_CLOSE_WINDOW, GDK_MOD1_MASK },
 
   // Zoom level.
+  { GDK_KP_Add, IDC_ZOOM_PLUS, GDK_CONTROL_MASK },
   { GDK_plus, IDC_ZOOM_PLUS,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_equal, IDC_ZOOM_PLUS, GDK_CONTROL_MASK },
   { XF86XK_ZoomIn, IDC_ZOOM_PLUS, GdkModifierType(0) },
+  { GDK_KP_0, IDC_ZOOM_NORMAL, GDK_CONTROL_MASK },
   { GDK_0, IDC_ZOOM_NORMAL, GDK_CONTROL_MASK },
+  { GDK_KP_Subtract, IDC_ZOOM_MINUS, GDK_CONTROL_MASK },
   { GDK_minus, IDC_ZOOM_MINUS, GDK_CONTROL_MASK },
   { GDK_underscore, IDC_ZOOM_MINUS,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
