@@ -91,6 +91,9 @@ class WebCursor {
 
   // Initialize this from the given Carbon ThemeCursor.
   void InitFromThemeCursor(ThemeCursor cursor);
+
+  // Initialize this from the given Cocoa NSCursor.
+  void InitFromNSCursor(NSCursor* cursor);
 #endif
 
  private:

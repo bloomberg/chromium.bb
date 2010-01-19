@@ -20,7 +20,7 @@ using WebKit::WebSize;
 
 namespace {
 
-// TODO: This image fech can (and probably should) be serviced by the resource
+// TODO: This image fetch can (and probably should) be serviced by the resource
 // resource bundle instead of going through nsimage_cache.
 NSCursor* LoadCursor(const char* name, int x, int y) {
   NSString* file_name = [NSString stringWithUTF8String:name];
@@ -34,9 +34,9 @@ NSCursor* LoadCursor(const char* name, int x, int y) {
 CGImageRef CreateCGImageFromCustomData(const std::vector<char>& custom_data,
                                        const gfx::Size& custom_size) {
   scoped_cftyperef<CGColorSpaceRef> cg_color(CGColorSpaceCreateDeviceRGB());
-  // this is safe since we're not going to draw into the context we're creating
+  // This is safe since we're not going to draw into the context we're creating.
   void* data = const_cast<char*>(&custom_data[0]);
-  // settings here match SetCustomData() below; keep in sync
+  // The settings here match SetCustomData() below; keep in sync.
   scoped_cftyperef<CGContextRef> context(
       CGBitmapContextCreate(data,
                             custom_size.width(),
@@ -219,6 +219,55 @@ void WebCursor::InitFromThemeCursor(ThemeCursor cursor) {
     default:
       cursor_info.type = WebCursorInfo::TypePointer;
       break;
+  }
+
+  InitFromCursorInfo(cursor_info);
+}
+
+void WebCursor::InitFromNSCursor(NSCursor* cursor) {
+  WebKit::WebCursorInfo cursor_info;
+
+  if ([cursor isEqual:[NSCursor arrowCursor]]) {
+    cursor_info.type = WebCursorInfo::TypePointer;
+  } else if ([cursor isEqual:[NSCursor IBeamCursor]]) {
+    cursor_info.type = WebCursorInfo::TypeIBeam;
+  } else if ([cursor isEqual:[NSCursor crosshairCursor]]) {
+    cursor_info.type = WebCursorInfo::TypeCross;
+  } else if ([cursor isEqual:[NSCursor pointingHandCursor]]) {
+    cursor_info.type = WebCursorInfo::TypeHand;
+  } else if ([cursor isEqual:[NSCursor resizeLeftCursor]]) {
+    cursor_info.type = WebCursorInfo::TypeWestResize;
+  } else if ([cursor isEqual:[NSCursor resizeRightCursor]]) {
+    cursor_info.type = WebCursorInfo::TypeEastResize;
+  } else if ([cursor isEqual:[NSCursor resizeLeftRightCursor]]) {
+    cursor_info.type = WebCursorInfo::TypeEastWestResize;
+  } else if ([cursor isEqual:[NSCursor resizeUpCursor]]) {
+    cursor_info.type = WebCursorInfo::TypeNorthResize;
+  } else if ([cursor isEqual:[NSCursor resizeDownCursor]]) {
+    cursor_info.type = WebCursorInfo::TypeSouthResize;
+  } else if ([cursor isEqual:[NSCursor resizeUpDownCursor]]) {
+    cursor_info.type = WebCursorInfo::TypeNorthSouthResize;
+  } else {
+    // Also handles the [NSCursor closedHandCursor], [NSCursor openHandCursor],
+    // and [NSCursor disappearingItemCursor] cases. Quick-and-dirty image
+    // conversion; TODO(avi): do better.
+    CGImageRef cg_image = nil;
+    NSImage* image = [cursor image];
+    for (id rep in [image representations]) {
+      if ([rep isKindOfClass:[NSBitmapImageRep class]]) {
+        cg_image = [rep CGImage];
+        break;
+      }
+    }
+
+    if (cg_image) {
+      cursor_info.type = WebCursorInfo::TypeCustom;
+      NSPoint hot_spot = [cursor hotSpot];
+      cursor_info.hotSpot = WebKit::WebPoint(hot_spot.x, hot_spot.y);
+      cursor_info.customImage = cg_image;
+    } else {
+      cursor_info.type = WebCursorInfo::TypePointer;
+    }
   }
 
   InitFromCursorInfo(cursor_info);

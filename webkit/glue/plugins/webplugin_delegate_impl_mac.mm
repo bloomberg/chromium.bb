@@ -440,6 +440,10 @@ void WebPluginDelegateImpl::SetThemeCursor(ThemeCursor cursor) {
   current_windowless_cursor_.InitFromThemeCursor(cursor);
 }
 
+void WebPluginDelegateImpl::SetNSCursor(NSCursor* cursor) {
+  current_windowless_cursor_.InitFromNSCursor(cursor);
+}
+
 void WebPluginDelegateImpl::UpdatePluginLocation(const WebMouseEvent& event) {
   instance()->set_plugin_origin(gfx::Point(event.globalX - event.x,
                                            event.globalY - event.y));

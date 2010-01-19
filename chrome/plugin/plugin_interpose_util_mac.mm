@@ -75,7 +75,6 @@ void NotifyPluginOfSetThemeCursor(WebPluginDelegateImpl* delegate,
   delegate->SetThemeCursor(cursor);
 }
 
-
 }  // namespace mac_plugin_interposing
 
 #pragma mark -
@@ -169,6 +168,23 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 
 @end
 
+@interface NSCursor (ChromePluginInterposing)
+- (void)chromePlugin_set;
+@end
+
+@implementation NSCursor (ChromePluginInterposing)
+
+- (void)chromePlugin_set {
+  WebPluginDelegateImpl* delegate = mac_plugin_interposing::GetActiveDelegate();
+  if (delegate) {
+    delegate->SetNSCursor(self);
+    return;
+  }
+  [self chromePlugin_set];
+}
+
+@end
+
 #pragma mark -
 
 static void ExchangeMethods(Class target_class, SEL original, SEL replacement) {
@@ -195,6 +211,9 @@ void SetUpCocoaInterposing() {
 
   ExchangeMethods([NSApplication class], @selector(runModalForWindow:),
                   @selector(chromePlugin_runModalForWindow:));
+
+  ExchangeMethods([NSCursor class], @selector(set),
+                  @selector(chromePlugin_set));
 }
 
 }  // namespace mac_plugin_interposing
