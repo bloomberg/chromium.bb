@@ -28,6 +28,7 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
       menu_(gtk_menu_new()),
       factory_(this) {
   DCHECK(menu_data);
+  g_object_ref_sink(menu_);
   ConnectSignalHandlers();
   BuildMenuIn(menu_, menu_data);
 }
@@ -38,6 +39,7 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate)
       dummy_accel_group_(gtk_accel_group_new()),
       menu_(gtk_menu_new()),
       factory_(this) {
+  g_object_ref_sink(menu_);
   ConnectSignalHandlers();
 }
 
@@ -48,6 +50,7 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
       dummy_accel_group_(gtk_accel_group_new()),
       menu_(gtk_menu_new()),
       factory_(this) {
+  g_object_ref_sink(menu_);
   DCHECK(model);
   ConnectSignalHandlers();
   if (model)
@@ -55,6 +58,9 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
 }
 
 MenuGtk::~MenuGtk() {
+  Cancel();
+  g_object_unref(menu_);
+
   STLDeleteContainerPointers(submenus_we_own_.begin(), submenus_we_own_.end());
   g_object_unref(dummy_accel_group_);
 }
