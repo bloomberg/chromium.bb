@@ -48,14 +48,6 @@
 #include "native_client/src/untrusted/av/nacl_av_priv.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-/*
- * NOTE: On x86 the sched_yield function gets picked up from
- * src/third_party/nacl_sdk/linux/sdk/nacl-sdk/nacl/include/sys/sched.h
- * not sure whether this is intentional. On ARM we do not have this header.
- * TODO(sehr): look into the sched_yield issue
- */
-extern int sched_yield(void);
-
 static const float NACL_BRIDGE_TIMEOUT = 2.0f;
 
 struct NaClMultimedia {
@@ -79,6 +71,7 @@ static volatile __thread int nacl_multimedia_thread_id;
 static struct NaClMultimedia nacl_multimedia = {0, 0, 0, 0, 0,
                                                 -1, -1, NULL,
                                                 NULL, NULL, 0};
+
 
 /*
  * The audio-visual system must wait until a video initialization RPC is
@@ -237,7 +230,9 @@ static int nacl_video_bridge_poll_event(union NaClMultimediaEvent *event) {
       break;
     case NACL_EVENT_MOUSE_BUTTON_UP:
     case NACL_EVENT_MOUSE_BUTTON_DOWN:
-      printf("mouse button: %d %d\n", event->button.button, event->button.state);
+      printf("mouse button: %d %d\n",
+             event->button.button,
+             event->button.state);
       break;
     default:
       printf("another event\n");

@@ -330,6 +330,14 @@ extern int imc_mem_obj_create(size_t nbytes);
  *  and is itself transferable.
  */
 extern int imc_socketpair(int pair[2]);
+
+/**
+ *  @nacl
+ *  Relinquish the processor voluntarily.
+ */
+extern int sched_yield(void);
+
+
 #ifdef __cplusplus
 }
 #endif
