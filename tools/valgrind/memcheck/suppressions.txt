@@ -1661,14 +1661,13 @@
    fun:_ZN5views9WidgetGtk16CallQueryTooltipEP10_GtkWidgetiiiP11_GtkTooltipPS0_
    fun:_gtk_marshal_BOOLEAN__INT_INT_BOOLEAN_OBJECT
    fun:g_closure_invoke
-   fun:signal_emit_unlocked_R
+   ...
    fun:g_signal_emit_valist
    fun:g_signal_emit_by_name
    fun:gtk_tooltip_run_requery
    fun:gtk_tooltip_show_tooltip
    fun:tooltip_popup_timeout
    fun:gdk_threads_dispatch
-   fun:g_timeout_dispatch
 }
 # This task is created quite frequently and may leak on shutdown depending on
 # ordering.
@@ -1953,7 +1952,7 @@
    fun:_ZN18chrome_browser_net9DnsMaster26StartSomeQueuedResolutionsEv
    fun:_ZN18chrome_browser_net9DnsMaster23AppendToResolutionQueueERKSsNS_11DnsHostInfo20ResolutionMotivationE
    fun:_ZN18chrome_browser_net9DnsMaster11ResolveListERKSt6vectorISsSaISsEENS_11DnsHostInfo20ResolutionMotivationE
-   fun:_ZN18chrome_browser_net36DnsMasterTest_BenefitLookupTest_Test8TestBodyEv
+   ...
    fun:_ZN7testing4Test3RunEv
    fun:_ZN7testing8internal12TestInfoImpl3RunEv
    fun:_ZN7testing8TestCase3RunEv
