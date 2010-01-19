@@ -286,7 +286,7 @@ that it didn't originally support.
 <p>
 To internationalize your extension,
 you need to put all of its user-visible strings into a file
-named <code>messages.json</code>.
+named <a href="i18n-messages.html"><code>messages.json</code></a>.
 Each time you localize your extension
 you add a messages file
 under a directory
@@ -303,7 +303,7 @@ Spanish (<code>es</code>), and
 Korean (<code>ko</code>):
 </p>
 
-<img src="images/i18n-hierarchy.gif" alt="" width="385" height="77">
+<img src="images/i18n-hierarchy.gif" alt="In the extension directory: manifest.json, *.html, *.js, _locales directory. In the _locales directory: en, es, and ko directories, each with a messages.json file." width="385" height="77">
 
 
 <h2 id="l10">How to support multiple languages</h2>
@@ -313,7 +313,7 @@ Say you have an extension
 with the files shown in the following figure:
 </p>
 
-<img src="images/i18n-before.gif" alt="" width="323" height="148">
+<img src="images/i18n-before.gif" alt="A manifest.json file and a file with JavaScript. The .json file has &quot;name&quot;: &quot;Hello World&quot;. The JavaScript file has title = &quot;Hello World&quot;;" width="323" height="148">
 
 <p>
 To internationalize this extension,
@@ -328,7 +328,7 @@ Here's what the extension looks like when it's internationalized
 (note that it still has only English strings):
 </p>
 
-<img src="images/i18n-after-1.gif" alt="" width="782" height="228">
+<img src="images/i18n-after-1.gif" alt="In the manifest.json file, &quot;Hello World&quot; has been changed to &quot;__MSG_extName__&quot;, and a new &quot;default_locale&quot; item has the value &quot;en&quot;. In the JavaScript file, &quot;Hello World&quot; has been changed to chrome.i18n.getMessage(&quot;extName&quot;). A new file named _locales/en/messages.json defines &quot;extName&quot;." width="782" height="228">
 
 <p class="note">
 <b>Important:</b>
@@ -388,11 +388,10 @@ Some notes about internationalizing extensions:
   ...
 }</pre>
 
-<!--
+<p>
 For more information, see
-<a href="message.html">Formats: Message Files</a>.
-[PENDING: write this page!]
--->
+<a href="i18n-messages.html">Formats: Locale-Specific Messages</a>.
+</p>
   </li>
 </ul>
 
@@ -409,7 +408,7 @@ The following figure shows the previous extension
 with a new Spanish translation.
 </p>
 
-<img src="images/i18n-after-2.gif" alt="" width="782" height="358">
+<img src="images/i18n-after-2.gif" alt="This looks the same as the previous figure, but with a new file at _locales/es/messages.json that contains a Spanish translation of the messages." width="782" height="358">
 
 
 <h2 id="overview-locales">Locales</h2>
@@ -490,7 +489,9 @@ users running Google Chrome in any non-English language
 see the label "Colores" and the extension name "Hola mundo".
 </p>
 
-<img src="images/i18n-strings.gif" alt="" width="493" height="488">
+<img src="images/i18n-strings.gif" alt="Four files: manifest.json, and messages.json files for es, en, and en_GB.
+ The es and en files show entries for messages named &quot;extName&quot; and &quot;colores&quot;;
+ the en_GB file has just one entry (for &quot;colores&quot;)." width="493" height="488">
 
 <h3 id="locales-testing">How to set your browser's locale</h3>
 
@@ -678,8 +679,10 @@ status.innerText = chrome.i18n.getMessage("error", errorDetails);
 </pre>
 
 <p>
-For more information about placeholders,
-see the <a href="http://dev.chromium.org/developers/design-documents/extensions/i18n#TOC-Replacement-policy">internationalization design doc</a>.
+For more information about placeholders, see the
+<a href="i18n-messages.html">Locale-Specific Messages</a> page.
+For details on calling <code>getMessage()</code>, see the
+<a href="#method-getMessage">API reference</a>.
 </p>
 
 <h3 id="example-accept-languages">Example: getAcceptLanguages</h3>
@@ -695,6 +698,11 @@ string by separating each accept-language with ','.
   })
 }
 </pre>
+
+<p>
+For details on calling <code>getAcceptLanguages()</code>, see the
+<a href="#method-getAcceptLanguages">API reference</a>.
+</p>
 
 <!-- END AUTHORED CONTENT -->
 </div>
@@ -885,7 +893,7 @@ string by separating each accept-language with ','.
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Gets the localized string for the specified message.</p>
+                <p>Gets the localized string for the specified message. If the message is missing, this method returns an empty string (''). If the format of the <code>getMessage()</code> call is wrong — for example, <em>messageName</em> is not a string or the <em>substitutions</em> array is empty or has more than 9 elements — this method returns <code>undefined</code>.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -919,7 +927,7 @@ string by separating each accept-language with ','.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The name of the message, as specified in the <code>messages.json</code> file.</dd>
+          <dd>The name of the message, as specified in the <a href="i18n-messages.html"><code>messages.json</code></a> file.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -960,7 +968,7 @@ string by separating each accept-language with ','.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>1 - 9 substitution parameters, if the message requires any.</dd>
+          <dd>1 - 9 substitution strings, if the message requires any.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">

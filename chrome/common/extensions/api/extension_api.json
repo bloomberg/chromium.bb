@@ -1635,11 +1635,11 @@
         "name": "getMessage",
         "type": "function",
         "unprivileged": true,
-        "description": "Gets the localized string for the specified message.",
+        "description": "Gets the localized string for the specified message. If the message is missing, this method returns an empty string (''). If the format of the <code>getMessage()</code> call is wrong &mdash; for example, <em>messageName</em> is not a string or the <em>substitutions</em> array is empty or has more than 9 elements &mdash; this method returns <code>undefined</code>.",
         "parameters": [
           { "type": "string",
             "name": "messageName",
-            "description": "The name of the message, as specified in the <code>messages.json</code> file."
+            "description": "The name of the message, as specified in the <a href='i18n-messages.html'><code>messages.json</code></a> file."
           },
           {
             "choices": [
@@ -1653,7 +1653,7 @@
             ],
             "name": "substitutions",
             "optional": true,
-            "description": "1 - 9 substitution parameters, if the message requires any."
+            "description": "1 - 9 substitution strings, if the message requires any."
           }
         ],
         "returns": {
