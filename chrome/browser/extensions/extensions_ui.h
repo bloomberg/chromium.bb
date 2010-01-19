@@ -124,7 +124,7 @@ class ExtensionsDOMHandler
 
   // ExtensionInstallUI::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.
-  virtual void InstallUIProceed();
+  virtual void InstallUIProceed(bool create_app_shortcut);
   virtual void InstallUIAbort();
 
  private:

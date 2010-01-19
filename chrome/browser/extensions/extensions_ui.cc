@@ -422,7 +422,10 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
   client.ConfirmUninstall(this, extension, uninstall_icon.get());
 }
 
-void ExtensionsDOMHandler::InstallUIProceed() {
+void ExtensionsDOMHandler::InstallUIProceed(bool create_app_shortcut) {
+  // We only ever use ExtensionInstallUI for uninstalling, which should never
+  // result in it telling us to create a shortcut.
+  DCHECK(!create_app_shortcut);
   extensions_service_->UninstallExtension(extension_id_uninstalling_, false);
   extension_id_uninstalling_ = "";
 }

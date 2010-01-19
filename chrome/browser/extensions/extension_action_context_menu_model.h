@@ -28,7 +28,7 @@ class ExtensionActionContextMenuModel
   virtual void ExecuteCommand(int command_id);
 
   // ExtensionInstallUI::Delegate overrides.
-  virtual void InstallUIProceed();
+  virtual void InstallUIProceed(bool create_app);
   virtual void InstallUIAbort() {}
 
  private:

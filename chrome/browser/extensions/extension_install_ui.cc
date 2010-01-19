@@ -147,7 +147,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
         GtkThemeProvider::GetFrom(profile_)->UseGtkTheme();
 #endif
 
-    delegate->InstallUIProceed();
+    delegate->InstallUIProceed(false);
     return;
   }
 

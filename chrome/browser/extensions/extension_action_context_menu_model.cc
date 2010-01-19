@@ -96,7 +96,9 @@ void ExtensionActionContextMenuModel::ExecuteCommand(int command_id) {
   }
 }
 
-void ExtensionActionContextMenuModel::InstallUIProceed() {
+void ExtensionActionContextMenuModel::InstallUIProceed(bool create_app) {
+  DCHECK(!create_app);
+
   // TODO(finnur): GetLastActive returns NULL in unit tests.
   Browser* browser = BrowserList::GetLastActive();
   std::string id = extension_->id();

@@ -37,7 +37,8 @@ class AsyncUninstaller : public base::RefCountedThreadSafe<AsyncUninstaller>,
   }
 
   // Overridden by ExtensionInstallUI::Delegate.
-  virtual void InstallUIProceed() {
+  virtual void InstallUIProceed(bool create_shortcut) {
+    DCHECK(!create_shortcut);
     Browser* browser = BrowserList::GetLastActive();
     // GetLastActive() returns NULL during testing.
     if (!browser)

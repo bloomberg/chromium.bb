@@ -40,7 +40,7 @@ GtkWidget* MakeMarkupLabel(const char* format, const std::string& str) {
 void OnDialogResponse(GtkDialog* dialog, int response_id,
                       ExtensionInstallUI::Delegate* delegate) {
   if (response_id == GTK_RESPONSE_ACCEPT) {
-    delegate->InstallUIProceed();
+    delegate->InstallUIProceed(false);
   } else {
     delegate->InstallUIAbort();
   }

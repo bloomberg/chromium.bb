@@ -87,6 +87,7 @@ CrxInstaller::CrxInstaller(const FilePath& source_file,
       install_source_(Extension::INTERNAL),
       delete_source_(delete_source),
       allow_privilege_increase_(false),
+      create_app_shortcut_(false),
       frontend_(frontend),
       client_(client) {
   extensions_enabled_ = frontend_->extensions_enabled();
@@ -190,7 +191,12 @@ void CrxInstaller::ConfirmInstall() {
   return;
 }
 
-void CrxInstaller::InstallUIProceed() {
+void CrxInstaller::InstallUIProceed(bool create_app_shortcut) {
+  if (create_app_shortcut) {
+    DCHECK(extension_->IsApp());
+    create_app_shortcut_ = true;
+  }
+
   ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &CrxInstaller::CompleteInstall));
@@ -237,7 +243,7 @@ void CrxInstaller::CompleteInstall() {
     return;
   }
 
-  if (extension_->IsApp()) {
+  if (create_app_shortcut_) {
     SkBitmap icon = install_icon_.get() ? *install_icon_ :
         *ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_EXTENSION_DEFAULT_ICON);

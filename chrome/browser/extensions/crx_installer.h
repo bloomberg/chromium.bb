@@ -72,7 +72,7 @@ class CrxInstaller
                                 ExtensionInstallUI* client);
 
   // ExtensionInstallUI::Delegate
-  virtual void InstallUIProceed();
+  virtual void InstallUIProceed(bool create_app_shortcut);
   virtual void InstallUIAbort();
 
  private:
@@ -137,6 +137,11 @@ class CrxInstaller
   // Whether privileges should be allowed to silently increaes from any
   // previously installed version of the extension.
   bool allow_privilege_increase_;
+
+  // Whether to create an app shortcut after successful installation. This is
+  // set based on the user's selection in the UI and can only ever be true for
+  // apps.
+  bool create_app_shortcut_;
 
   // The extension we're installing. We own this and either pass it off to
   // ExtensionsService on success, or delete it on failure.
