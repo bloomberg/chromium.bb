@@ -279,15 +279,10 @@ TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-#if !defined(NDEBUG)
-// Debug binary failed at assertion in WorkerThread.
-// See https://bugs.webkit.org/show_bug.cgi?id=33581
-#define WorkerWebSocketLayoutTests      DISABLED_WorkerWebSocketLayoutTests
-#endif
-
 TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "worker-simple.html",
+    "shared-worker-simple.html",
   };
 
   FilePath websocket_test_dir;
