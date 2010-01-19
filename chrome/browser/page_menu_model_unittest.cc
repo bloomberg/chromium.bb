@@ -27,8 +27,9 @@ TEST_F(PageMenuModelTest, Basics) {
   // delegate is internal, it doesn't use the one we pass in.
   model.ActivatedAt(0);
   EXPECT_TRUE(model.IsEnabledAt(0));
-  model.ActivatedAt(3);
-  EXPECT_TRUE(model.IsEnabledAt(3));
+  // Make sure to use the index that is not separator in all configurations.
+  model.ActivatedAt(2);
+  EXPECT_TRUE(model.IsEnabledAt(2));
   EXPECT_EQ(delegate_.execute_count_, 2);
   EXPECT_EQ(delegate_.enable_count_, 2);
 
