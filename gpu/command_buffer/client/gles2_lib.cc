@@ -6,12 +6,7 @@
 
 namespace gles2 {
 
-::gpu::gles2::GLES2Implementation* g_gl_impl;
-
-bool InitGLES2Lib() {
-  // TODO(gman): Encapulate initalizing the GLES2 library for client apps.
-  return false;
-}
+THREAD_LOCAL ::gpu::gles2::GLES2Implementation* g_gl_impl;
 
 }  // namespace gles2
 

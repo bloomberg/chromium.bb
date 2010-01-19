@@ -8,12 +8,6 @@
 #include "gpu/pgl/command_buffer_pepper.h"
 #include "gpu/pgl/pgl.h"
 
-#if defined(_MSC_VER)
-#define THREAD_LOCAL __declspec(thread)
-#else
-#define THREAD_LOCAL __thread
-#endif
-
 namespace {
 const int32 kTransferBufferSize = 512 * 1024;
 
@@ -111,9 +105,9 @@ void PGLContextImpl::Destroy() {
 bool PGLContextImpl::MakeCurrent(PGLContextImpl* pgl_context) {
   g_current_pgl_context = pgl_context;
   if (pgl_context)
-    gles2::g_gl_impl = pgl_context->gles2_implementation_;
+    gles2::SetGLContext(pgl_context->gles2_implementation_);
   else
-    gles2::g_gl_impl = NULL;
+    gles2::SetGLContext(NULL);
 
   return true;
 }
@@ -143,7 +137,11 @@ PGLBoolean pglMakeCurrent(PGLContext pgl_context) {
   return PGLContextImpl::MakeCurrent(static_cast<PGLContextImpl*>(pgl_context));
 }
 
-PGLBoolean pglSwapBuffers() {
+PGLContext pglGetCurrentContext(void) {
+  return g_current_pgl_context;
+}
+
+PGLBoolean pglSwapBuffers(void) {
   if (!g_current_pgl_context)
     return false;
 
