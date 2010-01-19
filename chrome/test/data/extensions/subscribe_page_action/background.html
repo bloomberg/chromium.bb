@@ -17,7 +17,7 @@
         // Enable the page action icon.
         feedData[sender.tab.id] = request.feeds;
         chrome.pageAction.setTitle({ tabId: sender.tab.id,
-          title: "Click to subscribe..."
+          title: chrome.i18n.getMessage("action_title")
         });
         chrome.pageAction.show(sender.tab.id);
       }

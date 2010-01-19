@@ -1,6 +1,7 @@
 {
-  "name": "RSS Subscription Extension (by Google)",
-  "description": "Adds one-click subscription to your toolbar.",
+  "name": "__MSG_name__",
+  "description": "__MSG_description__",
+  "default_locale": "en",
   "version": "1.9.1",
   "permissions": [
     "tabs",
@@ -17,7 +18,7 @@
   ],
   "icons": { "128": "feed-icon-128x128.png" },
   "page_action": {
-    "default_title": "Subscribe to this feed",
+    "default_title": "__MSG_default_title__",
     "default_icon": "feed-icon-16x16.png",
     "popup": "popup.html"
   }

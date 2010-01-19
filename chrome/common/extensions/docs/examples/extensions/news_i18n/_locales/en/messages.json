@@ -54,6 +54,10 @@
         "example": "Google"
       }
     }
+  },
+  "newsUrl": {
+    "message": "http://news.google.com",
+    "description": "Url to Google News."
   }
 }
 

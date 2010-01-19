@@ -1,0 +1,62 @@
+{
+  "name": {
+    "message": "RSS Subscription Extension (by Google)",
+    "description": "Extension name in manifest."
+  },
+  "description": {
+    "message": "Adds one-click subscription to your toolbar.",
+    "description": "Extension description in manifest."
+  },
+  "default_title": {
+    "message": "Subscribe to this feed",
+    "description": "Extension browser action tooltip text in manifest."
+  },
+  "action_title": {
+    "message": "Click to subscribe...",
+    "description": "Extension browser action tooltip text."
+  },
+  "unknown_feed_name": {
+    "message": "Unknown feed name",
+    "description": "Error message for unknown name."
+  },
+  "manage_option": {
+    "message": "Manage...",
+    "description": "The Manage label in the feed reader drop down."
+  },
+  "feed_for": {
+    "message": "Feed for $feed$",
+    "description": "The label showing the feed name.",
+    "placeholders": {
+      "feed": {
+        "content": "$1",
+        "example": "cnn.com"
+      }
+    }
+  },
+  "error_fetching": {
+    "message": "Error fetching feed",
+    "description": "The error shown when feed fetching fails."
+  },
+  "not_valid_feed": {
+    "message": "Not a valid feed.",
+    "description": "The error shown when validation of the feed fails."
+  },
+  "no_entries": {
+    "message": "This feed contains no entries.",
+    "description": "The error shown when the feed is empty."
+  },
+  "one_entry_required": {
+    "message": "There must be at least one entry in this list",
+    "description": "The error shown when trying to remove the last item in the list."
+  },
+  "remove_confirmation": {
+    "message": "Are you sure you want to remove $feed$",
+    "description": "Confirmation message before removing a feed reader from the list.",
+    "placeholders": {
+      "feed": {
+        "content": "$1",
+        "example": "Google Reader."
+      }
+    }
+  }
+}
