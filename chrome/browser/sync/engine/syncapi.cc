@@ -1231,7 +1231,12 @@ void SyncManager::SyncInternal::Shutdown() {
   SetEvent(address_watch_params_.exit_flag);
 #elif defined(OS_LINUX)
   char data = 0;
-  write(address_watch_params_.exit_pipe[1], &data, 1);
+  // We can't ignore the return value on write(), since that generates a compile
+  // warning.  However, since we're exiting, there's nothing we can do if this
+  // fails except to log it.
+  if (write(address_watch_params_.exit_pipe[1], &data, 1) == -1) {
+    LOG(WARNING) << "Error sending error signal to AddressWatchTask";
+  }
   close(address_watch_params_.exit_pipe[1]);
 #endif
 
