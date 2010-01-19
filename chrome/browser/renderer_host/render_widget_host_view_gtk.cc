@@ -159,7 +159,7 @@ class RenderWidgetHostViewGtkWidget {
     // handler.
     host_view->im_context_->OnFocusIn();
 
-    return FALSE;
+    return TRUE;
   }
 
   // WARNING: OnGrabNotify relies on the fact this function doesn't try to
@@ -177,7 +177,7 @@ class RenderWidgetHostViewGtkWidget {
     // Disable the GtkIMContext object.
     host_view->im_context_->OnFocusOut();
 
-    return FALSE;
+    return TRUE;
   }
 
   // Called when we are shadowed or unshadowed by a keyboard grab (which will
