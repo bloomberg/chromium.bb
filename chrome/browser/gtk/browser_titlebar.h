@@ -13,19 +13,21 @@
 #include <gtk/gtk.h>
 
 #include "app/active_window_watcher_x.h"
+#include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 class BrowserWindowGtk;
 class CustomDrawButton;
 class GtkThemeProvider;
+class MenuGtk;
+class PopupPageMenuModel;
 class TabContents;
 
-class BrowserTitlebar : public MenuGtk::Delegate,
-                        public NotificationObserver,
-                        public ActiveWindowWatcherX::Observer {
+class BrowserTitlebar : public NotificationObserver,
+                        public ActiveWindowWatcherX::Observer,
+                        public menus::SimpleMenuModel::Delegate {
  public:
   BrowserTitlebar(BrowserWindowGtk* browser_window, GtkWindow* window);
   virtual ~BrowserTitlebar();
@@ -76,6 +78,11 @@ class BrowserTitlebar : public MenuGtk::Delegate,
     int current_waiting_frame_;
   };
 
+  class ContextMenuModel : public menus::SimpleMenuModel {
+   public:
+    explicit ContextMenuModel(menus::SimpleMenuModel::Delegate* delegate);
+  };
+
   // Build the titlebar, the space above the tab
   // strip, and (maybe) the min, max, close buttons.  |container| is the gtk
   // continer that we put the widget into.
@@ -120,10 +127,12 @@ class BrowserTitlebar : public MenuGtk::Delegate,
 
   // -- Context Menu -----------------------------------------------------------
 
-  // MenuGtk::Delegate implementation:
-  virtual bool IsCommandEnabled(int command_id) const;
-  virtual bool IsItemChecked(int command_id) const;
-  virtual void ExecuteCommandById(int command_id);
+  // SimpleMenuModel::Delegate implementation:
+  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual void ExecuteCommand(int command_id);
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          menus::Accelerator* accelerator);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -173,11 +182,13 @@ class BrowserTitlebar : public MenuGtk::Delegate,
   scoped_ptr<CustomDrawButton> restore_button_;
   scoped_ptr<CustomDrawButton> close_button_;
 
-  // The context menu.
+  // The context menu view and model.
   scoped_ptr<MenuGtk> context_menu_;
+  scoped_ptr<ContextMenuModel> context_menu_model_;
 
-  // The favicon menu.
+  // The favicon menu view and model.
   scoped_ptr<MenuGtk> favicon_menu_;
+  scoped_ptr<PopupPageMenuModel> favicon_menu_model_;
 
   // The throbber used when the window is in app mode or popup window mode.
   Throbber throbber_;

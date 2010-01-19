@@ -17,10 +17,12 @@
 #include "base/keyboard_codes_posix.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/singleton.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/encoding_menu_controller.h"
+#include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/back_forward_button_gtk.h"
 #include "chrome/browser/gtk/browser_actions_toolbar_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
@@ -367,107 +369,11 @@ void BrowserToolbarGtk::ExecuteCommand(int id) {
 bool BrowserToolbarGtk::GetAcceleratorForCommandId(
     int id,
     menus::Accelerator* accelerator) {
-  switch (id) {
-    case IDC_ZOOM_PLUS:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_ADD, false, true, false);
-      break;
-
-    case IDC_ZOOM_NORMAL:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_NUMPAD0,
-                                           false, true, false);
-      break;
-
-    case IDC_ZOOM_MINUS:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_SUBTRACT,
-                                           false, true, false);
-      break;
-
-    case IDC_VIEW_SOURCE:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_U, false, true, false);
-      break;
-
-    case IDC_DEV_TOOLS:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_I, true, true, false);
-      break;
-
-    case IDC_DEV_TOOLS_CONSOLE:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_J, true, true, false);
-      break;
-
-    case IDC_TASK_MANAGER:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_ESCAPE,
-                                           true, false, false);
-      break;
-
-    case IDC_CUT:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_X, false, true, false);
-      break;
-
-    case IDC_COPY:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_C, false, true, false);
-      break;
-
-    case IDC_PASTE:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_V, false, true, false);
-      break;
-
-    case IDC_FIND:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_F, false, true, false);
-      break;
-
-    case IDC_SAVE_PAGE:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_S, false, true, false);
-      break;
-
-    case IDC_PRINT:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_P, false, true, false);
-      break;
-
-    case IDC_NEW_TAB:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_T, false, true, false);
-      break;
-
-    case IDC_NEW_WINDOW:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_N, false, true, false);
-      break;
-
-    case IDC_NEW_INCOGNITO_WINDOW:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_N, true, true, false);
-      break;
-
-    case IDC_SHOW_BOOKMARK_BAR:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_B, false, true, false);
-      break;
-
-    case IDC_FULLSCREEN:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_F11, false, false, false);
-      break;
-
-    case IDC_SHOW_HISTORY:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_H, false, true, false);
-      break;
-
-    case IDC_SHOW_BOOKMARK_MANAGER:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_B, true, true, false);
-      break;
-
-    case IDC_SHOW_DOWNLOADS:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_J, false, true, false);
-      break;
-
-    case IDC_HELP_PAGE:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_F1, false, false, false);
-      break;
-
-    case IDC_EXIT:
-      *accelerator = menus::AcceleratorGtk(base::VKEY_Q, true, true, false);
-      break;
-
-    default:
-      return false;
-  }
-
-  return true;
+  const menus::AcceleratorGtk* accelerator_gtk =
+      Singleton<AcceleratorsGtk>()->GetPrimaryAcceleratorForCommand(id);
+  if (accelerator_gtk)
+    *accelerator = *accelerator_gtk;
+  return !!accelerator_gtk;
 }
 
 // NotificationObserver --------------------------------------------------------

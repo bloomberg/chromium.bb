@@ -5,7 +5,6 @@
 #include "chrome/browser/gtk/browser_window_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
-#include <X11/XF86keysym.h>
 
 #include <string>
 
@@ -22,6 +21,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -37,6 +37,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/gtk/about_chrome_dialog.h"
+#include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/bookmark_bar_gtk.h"
 #include "chrome/browser/gtk/bookmark_manager_gtk.h"
 #include "chrome/browser/gtk/browser_titlebar.h"
@@ -170,146 +171,6 @@ gfx::Rect GetInitialWindowBounds(GtkWindow* window) {
   gtk_window_get_size(window, &width, &height);
   return gfx::Rect(x, y, width, height);
 }
-
-// Keep this in sync with various context menus which display the accelerators.
-const struct AcceleratorMapping {
-  guint keyval;
-  int command_id;
-  GdkModifierType modifier_type;
-} kAcceleratorMap[] = {
-  // Focus.
-  { GDK_k, IDC_FOCUS_SEARCH, GDK_CONTROL_MASK },
-  { GDK_e, IDC_FOCUS_SEARCH, GDK_CONTROL_MASK },
-  { XF86XK_Search, IDC_FOCUS_SEARCH, GdkModifierType(0) },
-  { GDK_l, IDC_FOCUS_LOCATION, GDK_CONTROL_MASK },
-  { GDK_d, IDC_FOCUS_LOCATION, GDK_MOD1_MASK },
-  { GDK_F6, IDC_FOCUS_LOCATION, GdkModifierType(0) },
-  { XF86XK_OpenURL, IDC_FOCUS_LOCATION, GdkModifierType(0) },
-  { XF86XK_Go, IDC_FOCUS_LOCATION, GdkModifierType(0) },
-
-  // Tab/window controls.
-  { GDK_Page_Down, IDC_SELECT_NEXT_TAB, GDK_CONTROL_MASK },
-  { GDK_Page_Up, IDC_SELECT_PREVIOUS_TAB, GDK_CONTROL_MASK },
-  { GDK_Page_Down, IDC_MOVE_TAB_NEXT,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-  { GDK_Page_Up, IDC_MOVE_TAB_PREVIOUS,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-  { GDK_Page_Up, IDC_SELECT_PREVIOUS_TAB, GDK_CONTROL_MASK },
-  { GDK_w, IDC_CLOSE_TAB, GDK_CONTROL_MASK },
-  { GDK_t, IDC_RESTORE_TAB,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-  { GDK_t, IDC_NEW_TAB, GDK_CONTROL_MASK },
-  { GDK_n, IDC_NEW_WINDOW, GDK_CONTROL_MASK },
-  { GDK_n, IDC_NEW_INCOGNITO_WINDOW,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-
-  { GDK_1, IDC_SELECT_TAB_0, GDK_CONTROL_MASK },
-  { GDK_2, IDC_SELECT_TAB_1, GDK_CONTROL_MASK },
-  { GDK_3, IDC_SELECT_TAB_2, GDK_CONTROL_MASK },
-  { GDK_4, IDC_SELECT_TAB_3, GDK_CONTROL_MASK },
-  { GDK_5, IDC_SELECT_TAB_4, GDK_CONTROL_MASK },
-  { GDK_6, IDC_SELECT_TAB_5, GDK_CONTROL_MASK },
-  { GDK_7, IDC_SELECT_TAB_6, GDK_CONTROL_MASK },
-  { GDK_8, IDC_SELECT_TAB_7, GDK_CONTROL_MASK },
-  { GDK_9, IDC_SELECT_LAST_TAB, GDK_CONTROL_MASK },
-
-  { GDK_1, IDC_SELECT_TAB_0, GDK_MOD1_MASK },
-  { GDK_2, IDC_SELECT_TAB_1, GDK_MOD1_MASK },
-  { GDK_3, IDC_SELECT_TAB_2, GDK_MOD1_MASK },
-  { GDK_4, IDC_SELECT_TAB_3, GDK_MOD1_MASK },
-  { GDK_5, IDC_SELECT_TAB_4, GDK_MOD1_MASK },
-  { GDK_6, IDC_SELECT_TAB_5, GDK_MOD1_MASK },
-  { GDK_7, IDC_SELECT_TAB_6, GDK_MOD1_MASK },
-  { GDK_8, IDC_SELECT_TAB_7, GDK_MOD1_MASK },
-  { GDK_9, IDC_SELECT_LAST_TAB, GDK_MOD1_MASK },
-
-  { GDK_KP_1, IDC_SELECT_TAB_0, GDK_CONTROL_MASK },
-  { GDK_KP_2, IDC_SELECT_TAB_1, GDK_CONTROL_MASK },
-  { GDK_KP_3, IDC_SELECT_TAB_2, GDK_CONTROL_MASK },
-  { GDK_KP_4, IDC_SELECT_TAB_3, GDK_CONTROL_MASK },
-  { GDK_KP_5, IDC_SELECT_TAB_4, GDK_CONTROL_MASK },
-  { GDK_KP_6, IDC_SELECT_TAB_5, GDK_CONTROL_MASK },
-  { GDK_KP_7, IDC_SELECT_TAB_6, GDK_CONTROL_MASK },
-  { GDK_KP_8, IDC_SELECT_TAB_7, GDK_CONTROL_MASK },
-  { GDK_KP_9, IDC_SELECT_LAST_TAB, GDK_CONTROL_MASK },
-
-  { GDK_KP_1, IDC_SELECT_TAB_0, GDK_MOD1_MASK },
-  { GDK_KP_2, IDC_SELECT_TAB_1, GDK_MOD1_MASK },
-  { GDK_KP_3, IDC_SELECT_TAB_2, GDK_MOD1_MASK },
-  { GDK_KP_4, IDC_SELECT_TAB_3, GDK_MOD1_MASK },
-  { GDK_KP_5, IDC_SELECT_TAB_4, GDK_MOD1_MASK },
-  { GDK_KP_6, IDC_SELECT_TAB_5, GDK_MOD1_MASK },
-  { GDK_KP_7, IDC_SELECT_TAB_6, GDK_MOD1_MASK },
-  { GDK_KP_8, IDC_SELECT_TAB_7, GDK_MOD1_MASK },
-  { GDK_KP_9, IDC_SELECT_LAST_TAB, GDK_MOD1_MASK },
-
-  { GDK_F4, IDC_CLOSE_TAB, GDK_CONTROL_MASK },
-  { GDK_F4, IDC_CLOSE_WINDOW, GDK_MOD1_MASK },
-
-  // Zoom level.
-  { GDK_plus, IDC_ZOOM_PLUS,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-  { GDK_equal, IDC_ZOOM_PLUS, GDK_CONTROL_MASK },
-  { XF86XK_ZoomIn, IDC_ZOOM_PLUS, GdkModifierType(0) },
-  { GDK_0, IDC_ZOOM_NORMAL, GDK_CONTROL_MASK },
-  { GDK_minus, IDC_ZOOM_MINUS, GDK_CONTROL_MASK },
-  { GDK_underscore, IDC_ZOOM_MINUS,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-  { XF86XK_ZoomOut, IDC_ZOOM_MINUS, GdkModifierType(0) },
-
-  // Find in page.
-  { GDK_g, IDC_FIND_NEXT, GDK_CONTROL_MASK },
-  { GDK_F3, IDC_FIND_NEXT, GdkModifierType(0) },
-  { GDK_g, IDC_FIND_PREVIOUS,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-  { GDK_F3, IDC_FIND_PREVIOUS, GDK_SHIFT_MASK },
-
-  // Navigation / toolbar buttons.
-  { GDK_Home, IDC_HOME, GDK_MOD1_MASK },
-  { XF86XK_HomePage, IDC_HOME, GdkModifierType(0) },
-  { GDK_Escape, IDC_STOP, GdkModifierType(0) },
-  { XF86XK_Stop, IDC_STOP, GdkModifierType(0) },
-  { GDK_Left, IDC_BACK, GDK_MOD1_MASK },
-  { GDK_BackSpace, IDC_BACK, GdkModifierType(0) },
-  { XF86XK_Back, IDC_BACK, GdkModifierType(0) },
-  { GDK_Right, IDC_FORWARD, GDK_MOD1_MASK },
-  { GDK_BackSpace, IDC_FORWARD, GDK_SHIFT_MASK },
-  { XF86XK_Forward, IDC_FORWARD, GdkModifierType(0) },
-  { GDK_r, IDC_RELOAD, GDK_CONTROL_MASK },
-  { GDK_F5, IDC_RELOAD, GdkModifierType(0) },
-  { GDK_F5, IDC_RELOAD, GDK_CONTROL_MASK },
-  { GDK_F5, IDC_RELOAD, GDK_SHIFT_MASK },
-  { XF86XK_Reload, IDC_RELOAD, GdkModifierType(0) },
-  { XF86XK_Refresh, IDC_RELOAD, GdkModifierType(0) },
-
-  // Dev tools.
-  { GDK_u, IDC_VIEW_SOURCE, GDK_CONTROL_MASK },
-  { GDK_i, IDC_DEV_TOOLS, GDK_CONTROL_MASK },
-  { GDK_j, IDC_DEV_TOOLS_CONSOLE,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-  { GDK_Escape, IDC_TASK_MANAGER, GDK_SHIFT_MASK },
-
-  // Miscellany.
-  { GDK_d, IDC_BOOKMARK_ALL_TABS,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-  { GDK_d, IDC_BOOKMARK_PAGE, GDK_CONTROL_MASK },
-  { XF86XK_AddFavorite, IDC_BOOKMARK_PAGE, GdkModifierType(0) },
-  { XF86XK_Favorites, IDC_SHOW_BOOKMARK_BAR, GdkModifierType(0) },
-  { XF86XK_History, IDC_SHOW_HISTORY, GdkModifierType(0) },
-  { GDK_o, IDC_OPEN_FILE, GDK_CONTROL_MASK },
-  { GDK_f, IDC_FIND, GDK_CONTROL_MASK },
-  { GDK_p, IDC_PRINT, GDK_CONTROL_MASK },
-  { GDK_b, IDC_SHOW_BOOKMARK_BAR, GDK_CONTROL_MASK },
-  { GDK_b, IDC_SHOW_BOOKMARK_MANAGER,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-  { GDK_F11, IDC_FULLSCREEN, GdkModifierType(0) },
-  { GDK_Delete, IDC_CLEAR_BROWSING_DATA,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-  { GDK_h, IDC_SHOW_HISTORY, GDK_CONTROL_MASK },
-  { GDK_j, IDC_SHOW_DOWNLOADS, GDK_CONTROL_MASK },
-  { GDK_F1, IDC_HELP_PAGE, GdkModifierType(0) },
-  { GDK_q, IDC_EXIT, GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-};
 
 // Get the command ids of the key combinations that are not valid gtk
 // accelerators.
@@ -733,10 +594,12 @@ void BrowserWindowGtk::Close() {
   if (accel_group_) {
     // Disconnecting the keys we connected to our accelerator group frees the
     // closures allocated in ConnectAccelerators.
-    for (size_t i = 0; i < arraysize(kAcceleratorMap); ++i) {
+    AcceleratorsGtk* accelerators = Singleton<AcceleratorsGtk>().get();
+    for (AcceleratorsGtk::const_iterator iter = accelerators->begin();
+         iter != accelerators->end(); ++iter) {
       gtk_accel_group_disconnect_key(accel_group_,
-                                     kAcceleratorMap[i].keyval,
-                                     kAcceleratorMap[i].modifier_type);
+          iter->second.GetGdkKeyCode(),
+          static_cast<GdkModifierType>(iter->second.modifiers()));
     }
     gtk_window_remove_accel_group(window_, accel_group_);
     g_object_unref(accel_group_);
@@ -1077,9 +940,7 @@ bool BrowserWindowGtk::PreHandleKeyboardEvent(
     // |browser_| object.
     //
     // Pros of this approach:
-    // 1. We can handle accelerators defined not only in above
-    //    |kAcceleratorMap| table, but also those in standard_menus.cc.
-    // 2. We don't need to care about keyboard layout problem, as
+    // 1. We don't need to care about keyboard layout problem, as
     //    gtk_window_activate_key() method handles it for us.
     //
     // Cons:
@@ -1712,14 +1573,16 @@ void BrowserWindowGtk::ConnectAccelerators() {
   accel_group_ = gtk_accel_group_new();
   gtk_window_add_accel_group(window_, accel_group_);
 
-  for (size_t i = 0; i < arraysize(kAcceleratorMap); ++i) {
+  AcceleratorsGtk* accelerators = Singleton<AcceleratorsGtk>().get();
+  for (AcceleratorsGtk::const_iterator iter = accelerators->begin();
+       iter != accelerators->end(); ++iter) {
     gtk_accel_group_connect(
         accel_group_,
-        kAcceleratorMap[i].keyval,
-        kAcceleratorMap[i].modifier_type,
+        iter->second.GetGdkKeyCode(),
+        static_cast<GdkModifierType>(iter->second.modifiers()),
         GtkAccelFlags(0),
         g_cclosure_new(G_CALLBACK(OnGtkAccelerator),
-                       GINT_TO_POINTER(kAcceleratorMap[i].command_id), NULL));
+                       GINT_TO_POINTER(iter->first), NULL));
   }
 }
 

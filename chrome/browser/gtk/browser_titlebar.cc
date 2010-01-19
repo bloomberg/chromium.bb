@@ -15,9 +15,11 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
+#include "base/singleton.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/encoding_menu_controller.h"
+#include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -25,6 +27,7 @@
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
+#include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
@@ -121,59 +124,6 @@ GdkColor PickLuminosityContrastingColor(const GdkColor* base,
     return *two;
   else
     return *one;
-}
-
-MenuCreateMaterial g_favicon_menu[] = {
-  { MENU_NORMAL, IDC_BACK, IDS_CONTENT_CONTEXT_BACK, 0, NULL,
-    GDK_Left, GDK_MOD1_MASK },
-  { MENU_NORMAL, IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD, 0, NULL,
-    GDK_Right, GDK_MOD1_MASK },
-  { MENU_NORMAL, IDC_RELOAD, IDS_APP_MENU_RELOAD, 0, NULL,
-    GDK_R, GDK_CONTROL_MASK },
-  { MENU_SEPARATOR },
-  { MENU_NORMAL, IDC_RESTORE_TAB, IDS_RESTORE_TAB, 0, NULL,
-    GDK_T, GDK_CONTROL_MASK | GDK_SHIFT_MASK },
-  { MENU_NORMAL, IDC_DUPLICATE_TAB, IDS_APP_MENU_DUPLICATE_APP_WINDOW },
-  { MENU_NORMAL, IDC_COPY_URL, IDS_APP_MENU_COPY_URL },
-  { MENU_NORMAL, IDC_SHOW_AS_TAB, IDS_SHOW_AS_TAB },
-  { MENU_NORMAL, IDC_NEW_TAB, IDS_APP_MENU_NEW_WEB_PAGE, 0, NULL,
-    GDK_T, GDK_CONTROL_MASK },
-};
-
-const MenuCreateMaterial* GetFaviconMenu(Profile* profile,
-                                         MenuGtk::Delegate* delegate) {
-  static bool favicon_menu_built = false;
-  static MenuCreateMaterial* favicon_menu;
-  if (!favicon_menu_built) {
-    const MenuCreateMaterial* standard_page =
-        GetStandardPageMenu(profile, delegate);
-    int standard_page_menu_length = 1;
-    // Don't include the Create App Shortcut menu item.
-    int start_offset = 0;
-    for (int i = 0; standard_page[i].type != MENU_END; ++i) {
-      if (standard_page[i].id == IDC_CREATE_SHORTCUTS) {
-        // Pass the separator as well.
-        start_offset = i + 2;
-        ++i;
-        continue;
-      } else if (start_offset == 0) {
-        // The Create App Shortcut menu item is the first menu item, and if that
-        // ever changes we'll probably have to re-evaluate this code.
-        NOTREACHED();
-        continue;
-      }
-
-      standard_page_menu_length++;
-    }
-    favicon_menu = new MenuCreateMaterial[arraysize(g_favicon_menu) +
-                                          standard_page_menu_length];
-    memcpy(favicon_menu, g_favicon_menu,
-           arraysize(g_favicon_menu) * sizeof(MenuCreateMaterial));
-    memcpy(favicon_menu + arraysize(g_favicon_menu),
-           standard_page + start_offset,
-           (standard_page_menu_length) * sizeof(MenuCreateMaterial));
-  }
-  return favicon_menu;
 }
 
 }  // namespace
@@ -499,9 +449,11 @@ void BrowserTitlebar::UpdateTextColor() {
 }
 
 void BrowserTitlebar::ShowFaviconMenu(GdkEventButton* event) {
-  if (!favicon_menu_.get()) {
-    favicon_menu_.reset(new MenuGtk(this,
-        GetFaviconMenu(browser_window_->browser()->profile(), this)));
+  if (!favicon_menu_model_.get()) {
+    favicon_menu_model_.reset(
+        new PopupPageMenuModel(this, browser_window_->browser()));
+
+    favicon_menu_.reset(new MenuGtk(NULL, favicon_menu_model_.get()));
   }
 
   favicon_menu_->Popup(app_mode_favicon_, reinterpret_cast<GdkEvent*>(event));
@@ -594,27 +546,14 @@ gboolean BrowserTitlebar::OnButtonPressed(GtkWidget* widget,
 
 void BrowserTitlebar::ShowContextMenu() {
   if (!context_menu_.get()) {
-    static const MenuCreateMaterial context_menu_blueprint[] = {
-        { MENU_NORMAL, IDC_NEW_TAB, IDS_TAB_CXMENU_NEWTAB, 0, NULL,
-            GDK_t, GDK_CONTROL_MASK },
-        { MENU_NORMAL, IDC_RESTORE_TAB, IDS_RESTORE_TAB, 0, NULL,
-            GDK_t, GDK_CONTROL_MASK | GDK_SHIFT_MASK },
-        { MENU_SEPARATOR },
-        { MENU_NORMAL, IDC_TASK_MANAGER, IDS_TASK_MANAGER, 0, NULL,
-            GDK_Escape, GDK_SHIFT_MASK },
-        { MENU_SEPARATOR },
-        { MENU_CHECKBOX, kShowWindowDecorationsCommand,
-            IDS_SHOW_WINDOW_DECORATIONS_MENU },
-        { MENU_END },
-    };
-
-    context_menu_.reset(new MenuGtk(this, context_menu_blueprint));
+    context_menu_model_.reset(new ContextMenuModel(this));
+    context_menu_.reset(new MenuGtk(NULL, context_menu_model_.get()));
   }
 
   context_menu_->PopupAsContext(gtk_get_current_event_time());
 }
 
-bool BrowserTitlebar::IsCommandEnabled(int command_id) const {
+bool BrowserTitlebar::IsCommandIdEnabled(int command_id) const {
   if (command_id == kShowWindowDecorationsCommand)
     return true;
 
@@ -622,7 +561,7 @@ bool BrowserTitlebar::IsCommandEnabled(int command_id) const {
       IsCommandEnabled(command_id);
 }
 
-bool BrowserTitlebar::IsItemChecked(int command_id) const {
+bool BrowserTitlebar::IsCommandIdChecked(int command_id) const {
   if (command_id == kShowWindowDecorationsCommand) {
     PrefService* prefs = browser_window_->browser()->profile()->GetPrefs();
     return !prefs->GetBoolean(prefs::kUseCustomChromeFrame);
@@ -644,7 +583,7 @@ bool BrowserTitlebar::IsItemChecked(int command_id) const {
   return false;
 }
 
-void BrowserTitlebar::ExecuteCommandById(int command_id) {
+void BrowserTitlebar::ExecuteCommand(int command_id) {
   if (command_id == kShowWindowDecorationsCommand) {
     PrefService* prefs = browser_window_->browser()->profile()->GetPrefs();
     prefs->SetBoolean(prefs::kUseCustomChromeFrame,
@@ -653,6 +592,16 @@ void BrowserTitlebar::ExecuteCommandById(int command_id) {
   }
 
   browser_window_->browser()->ExecuteCommand(command_id);
+}
+
+bool BrowserTitlebar::GetAcceleratorForCommandId(
+    int command_id, menus::Accelerator* accelerator) {
+  const menus::AcceleratorGtk* accelerator_gtk =
+      Singleton<AcceleratorsGtk>()->GetPrimaryAcceleratorForCommand(
+          command_id);
+  if (accelerator_gtk)
+    *accelerator = *accelerator_gtk;
+  return accelerator_gtk;
 }
 
 void BrowserTitlebar::Observe(NotificationType type,
@@ -732,4 +681,16 @@ void BrowserTitlebar::Throbber::InitFrames() {
 
   g_throbber_waiting_frames = new std::vector<GdkPixbuf*>;
   MakeThrobberFrames(IDR_THROBBER_WAITING_LIGHT, g_throbber_waiting_frames);
+}
+
+BrowserTitlebar::ContextMenuModel::ContextMenuModel(
+    menus::SimpleMenuModel::Delegate* delegate)
+    : SimpleMenuModel(delegate) {
+  AddItemWithStringId(IDC_NEW_TAB, IDS_TAB_CXMENU_NEWTAB);
+  AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
+  AddSeparator();
+  AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
+  AddSeparator();
+  AddCheckItemWithStringId(kShowWindowDecorationsCommand,
+                           IDS_SHOW_WINDOW_DECORATIONS_MENU);
 }

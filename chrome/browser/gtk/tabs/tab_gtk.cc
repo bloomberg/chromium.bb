@@ -12,6 +12,9 @@
 #include "app/menus/accelerator_gtk.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes_posix.h"
+#include "base/singleton.h"
+#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/tab_menu_model.h"
@@ -65,26 +68,33 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate {
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       menus::Accelerator* accelerator) {
+    int browser_command = 0;
     switch (command_id) {
       case TabStripModel::CommandNewTab:
-        *accelerator = menus::AcceleratorGtk(base::VKEY_T, false, true, false);
+        browser_command = IDC_NEW_TAB;
         break;
       case TabStripModel::CommandReload:
-        *accelerator = menus::AcceleratorGtk(base::VKEY_R, false, true, false);
+        browser_command = IDC_RELOAD;
         break;
       case TabStripModel::CommandCloseTab:
-        *accelerator = menus::AcceleratorGtk(base::VKEY_W, false, true, false);
+        browser_command = IDC_CLOSE_TAB;
         break;
       case TabStripModel::CommandRestoreTab:
-        *accelerator = menus::AcceleratorGtk(base::VKEY_T, true, true, false);
+        browser_command = IDC_RESTORE_TAB;
         break;
       case TabStripModel::CommandBookmarkAllTabs:
-        *accelerator = menus::AcceleratorGtk(base::VKEY_D, true, true, false);
+        browser_command = IDC_BOOKMARK_ALL_TABS;
         break;
       default:
         return false;
     }
-    return true;
+
+    const menus::AcceleratorGtk* accelerator_gtk =
+        Singleton<AcceleratorsGtk>()->GetPrimaryAcceleratorForCommand(
+            browser_command);
+    if (accelerator_gtk)
+      *accelerator = *accelerator_gtk;
+    return !!accelerator_gtk;
   }
   virtual void ExecuteCommand(int command_id) {
     if (!tab_)

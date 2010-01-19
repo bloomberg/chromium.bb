@@ -141,3 +141,33 @@ void DevToolsMenuModel::Build() {
   }
   AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// PopupPageMenuModel
+
+PopupPageMenuModel::PopupPageMenuModel(
+    menus::SimpleMenuModel::Delegate* delegate,
+    Browser* browser)
+    : menus::SimpleMenuModel(delegate), browser_(browser) {
+  Build();
+}
+
+void PopupPageMenuModel::Build() {
+  AddItemWithStringId(IDC_BACK, IDS_CONTENT_CONTEXT_BACK);
+  AddItemWithStringId(IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD);
+  AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
+  AddSeparator();
+  AddItemWithStringId(IDC_CUT, IDS_CUT);
+  AddItemWithStringId(IDC_COPY, IDS_COPY);
+  AddItemWithStringId(IDC_PASTE, IDS_PASTE);
+  AddSeparator();
+  AddItemWithStringId(IDC_FIND, IDS_FIND);
+#if !defined(OS_CHROMEOS)
+  AddItemWithStringId(IDC_PRINT, IDS_PRINT);
+#endif
+  zoom_menu_model_.reset(new ZoomMenuModel(delegate()));
+  AddSubMenuWithStringId(IDS_ZOOM_MENU, zoom_menu_model_.get());
+
+  encoding_menu_model_.reset(new EncodingMenuModel(browser_));
+  AddSubMenuWithStringId(IDS_ENCODING_MENU, encoding_menu_model_.get());
+}

@@ -78,4 +78,25 @@ class PageMenuModel : public menus::SimpleMenuModel {
   DISALLOW_COPY_AND_ASSIGN(PageMenuModel);
 };
 
+// A menu model that builds the contents of the menu shown for popups (when the
+// user clicks on the favicon) and all of its submenus.
+class PopupPageMenuModel : public menus::SimpleMenuModel {
+ public:
+  explicit PopupPageMenuModel(menus::SimpleMenuModel::Delegate* delegate,
+                              Browser* browser);
+  virtual ~PopupPageMenuModel() { }
+
+ private:
+  void Build();
+
+  // Models for submenus referenced by this model. SimpleMenuModel only uses
+  // weak references so these must be kept for the lifetime of the top-level
+  // model.
+  scoped_ptr<ZoomMenuModel> zoom_menu_model_;
+  scoped_ptr<EncodingMenuModel> encoding_menu_model_;
+  Browser* browser_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(PopupPageMenuModel);
+};
+
 #endif  // CHROME_BROWSER_PAGE_MENU_MODEL_H_
