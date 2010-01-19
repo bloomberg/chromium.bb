@@ -20,6 +20,9 @@ void SetUpCocoaInterposing();
 // Brings the plugin process to the front so that the user can see its windows.
 void SwitchToPluginProcess();
 
+// Returns the delegate currently processing events.
+WebPluginDelegateImpl* GetActiveDelegate();
+
 // Sends a message to the browser process to inform it that the given window
 // has been brought forward.
 void NotifyBrowserOfPluginSelectWindow(uint32 window_id, CGRect bounds,

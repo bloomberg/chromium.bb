@@ -65,6 +65,23 @@ const int kPluginIdleThrottleDelayMs = 20;  // 20ms (50Hz)
 base::LazyInstance<std::set<WebPluginDelegateImpl*> > g_active_delegates(
     base::LINKER_INITIALIZED);
 
+WebPluginDelegateImpl* g_active_delegate;
+
+// Helper to simplify correct usage of g_active_delegate.  Instantiating will
+// set the active delegate to |delegate| for the lifetime of the object, then
+// NULL when it goes out of scope.
+class ScopedActiveDelegate {
+public:
+  explicit ScopedActiveDelegate(WebPluginDelegateImpl* delegate) {
+    g_active_delegate = delegate;
+  }
+  ~ScopedActiveDelegate() {
+    g_active_delegate = NULL;
+  }
+private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedActiveDelegate);
+};
+
 }  // namespace
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
@@ -278,6 +295,8 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
   static StatsRate plugin_paint("Plugin.Paint");
   StatsScope<StatsRate> scope(plugin_paint);
 
+  ScopedActiveDelegate active_delegate(this);
+
   switch (instance()->drawing_model()) {
 #ifndef NP_NO_QUICKDRAW
     case NPDrawingModelQuickDraw: {
@@ -371,6 +390,10 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   DCHECK(err == NPERR_NO_ERROR);
 }
 
+WebPluginDelegateImpl* WebPluginDelegateImpl::GetActiveDelegate() {
+  return g_active_delegate;
+}
+
 std::set<WebPluginDelegateImpl*> WebPluginDelegateImpl::GetActiveDelegates() {
   std::set<WebPluginDelegateImpl*>* delegates = g_active_delegates.Pointer();
   return *delegates;
@@ -381,6 +404,8 @@ void WebPluginDelegateImpl::FocusNotify(WebPluginDelegateImpl* delegate) {
     return;
 
   have_focus_ = (delegate == this);
+
+  ScopedActiveDelegate active_delegate(this);
 
   switch (instance()->event_model()) {
     case NPEventModelCarbon: {
@@ -743,6 +768,8 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   }
 #endif
 
+  ScopedActiveDelegate active_delegate(this);
+
   // Create the plugin event structure, and send it to the plugin.
   bool ret = false;
   switch (instance()->event_model()) {
@@ -753,9 +780,6 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
         LOG(WARNING) << "NPEventFromWebInputEvent failed";
         return false;
       }
-      // Set this plugin's window as the active one, for global Carbon calls.
-      ScopedActivePluginWindow active_window_scope(
-          reinterpret_cast<WindowRef>(cg_context_.window));
       ret = instance()->NPP_HandleEvent(&np_event) != 0;
       break;
     }
@@ -798,9 +822,13 @@ void WebPluginDelegateImpl::OnNullEvent() {
     delete this;
     return;
   }
+
   // Avoid a race condition between IO and UI threads during plugin shutdown
   if (!instance_)
     return;
+
+  ScopedActiveDelegate active_delegate(this);
+
 #ifndef NP_NO_CARBON
   if (!webkit_glue::IsPluginRunningInRendererProcess()) {
     switch (instance()->event_model()) {
@@ -830,9 +858,6 @@ void WebPluginDelegateImpl::OnNullEvent() {
       np_event.modifiers |= btnState;
     np_event.where.h = last_mouse_x_;
     np_event.where.v = last_mouse_y_;
-    // Set this plugin's window as the active one, for global Carbon calls.
-    ScopedActivePluginWindow active_window_scope(
-        reinterpret_cast<WindowRef>(cg_context_.window));
     instance()->NPP_HandleEvent(&np_event);
   }
 #endif

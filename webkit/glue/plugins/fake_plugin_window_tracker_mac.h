@@ -6,9 +6,9 @@
 #define WEBKIT_GLUE_PLUGINS_FAKE_PLUGIN_WINDOW_TRACKER_MAC_H_
 
 #include <Carbon/Carbon.h>
+#include <map>
 
 #include "base/basictypes.h"
-#include "base/scoped_cftyperef.h"
 
 class ScopedActivePluginWindow;
 class WebPluginDelegateImpl;
@@ -30,43 +30,20 @@ class __attribute__((visibility("default"))) FakePluginWindowTracker {
   // Returns the WebPluginDelegate associated with the given fake window ref.
   WebPluginDelegateImpl* GetDelegateForFakeWindow(WindowRef window) const;
 
+  // Returns the fake window ref associated with |delegate|.
+  WindowRef GetFakeWindowForDelegate(WebPluginDelegateImpl* delegate) const;
+
   // Removes the fake window ref entry for |delegate|.
   void RemoveFakeWindowForDelegate(WebPluginDelegateImpl* delegate,
                                    WindowRef window);
 
-  // Gets the window for the plugin that is currently handling an input event.
-  // To set the value, use ScopedActivePluginWindow.
-  WindowRef get_active_plugin_window();
-
  private:
-  friend class ScopedActivePluginWindow;
-  // Sets the window corresponding to the plugin that is currently handling an
-  // input event.
-  void set_active_plugin_window(WindowRef window);
-
-  scoped_cftyperef<CFMutableDictionaryRef> window_to_delegate_map_;
-
-  WindowRef active_plugin_window_;  // weak reference
+  typedef std::map<WindowRef, WebPluginDelegateImpl*> WindowToDelegateMap;
+  typedef std::map<WebPluginDelegateImpl*, WindowRef> DelegateToWindowMap;
+  WindowToDelegateMap window_to_delegate_map_;
+  DelegateToWindowMap delegate_to_window_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePluginWindowTracker);
-};
-
-// Helper to simplify correct usage of set_active_plugin_window.
-// Instantiating will set the shared plugin window tracker's active window to
-// |window| for the lifetime of the object, then NULL when it goes out of scope.
-class ScopedActivePluginWindow {
- public:
-  explicit ScopedActivePluginWindow(WindowRef window) : window_(window) {
-    FakePluginWindowTracker::SharedInstance()->set_active_plugin_window(
-        window_);
-  }
-  ~ScopedActivePluginWindow() {
-    FakePluginWindowTracker::SharedInstance()->set_active_plugin_window(
-        NULL);
-  }
-private:
-  WindowRef window_;  // weak ref
-  DISALLOW_COPY_AND_ASSIGN(ScopedActivePluginWindow);
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_FAKE_PLUGIN_WINDOW_TRACKER_MAC_H_

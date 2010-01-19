@@ -126,8 +126,9 @@ static void ChromePluginDisposeDialog(DialogRef dialog) {
 }
 
 static WindowPartCode ChromePluginFindWindow(Point point, WindowRef* window) {
+  WebPluginDelegateImpl* delegate = mac_plugin_interposing::GetActiveDelegate();
   FakePluginWindowTracker* tracker = FakePluginWindowTracker::SharedInstance();
-  WindowRef plugin_window = tracker->get_active_plugin_window();
+  WindowRef plugin_window = tracker->GetFakeWindowForDelegate(delegate);
   if (plugin_window) {
     // If plugin_window is non-NULL, then we are in the middle of routing an
     // event to the plugin, so we know it's destined for this window already,
@@ -145,9 +146,7 @@ static WindowPartCode ChromePluginFindWindow(Point point, WindowRef* window) {
 }
 
 static OSStatus ChromePluginSetThemeCursor(ThemeCursor cursor) {
-  FakePluginWindowTracker* tracker = FakePluginWindowTracker::SharedInstance();
-  WebPluginDelegateImpl* delegate =
-      tracker->GetDelegateForFakeWindow(tracker->get_active_plugin_window());
+  WebPluginDelegateImpl* delegate = mac_plugin_interposing::GetActiveDelegate();
   if (delegate) {
     mac_plugin_interposing::NotifyPluginOfSetThemeCursor(delegate, cursor);
     return noErr;

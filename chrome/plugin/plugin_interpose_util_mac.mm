@@ -31,6 +31,11 @@ void SwitchToPluginProcess() {
 }
 
 __attribute__((visibility("default")))
+WebPluginDelegateImpl* GetActiveDelegate() {
+  return WebPluginDelegateImpl::GetActiveDelegate();
+}
+
+__attribute__((visibility("default")))
 void NotifyBrowserOfPluginSelectWindow(uint32 window_id, CGRect bounds,
                                        bool modal) {
   PluginThread* plugin_thread = PluginThread::current();

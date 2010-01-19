@@ -5,9 +5,7 @@
 #include "base/logging.h"
 #include "webkit/glue/plugins/fake_plugin_window_tracker_mac.h"
 
-FakePluginWindowTracker::FakePluginWindowTracker()
-    : window_to_delegate_map_(CFDictionaryCreateMutable(kCFAllocatorDefault,
-                                                        0, NULL, NULL)) {
+FakePluginWindowTracker::FakePluginWindowTracker() {
 }
 
 FakePluginWindowTracker* FakePluginWindowTracker::SharedInstance() {
@@ -29,30 +27,34 @@ WindowRef FakePluginWindowTracker::GenerateFakeWindowForDelegate(
                       kWindowNoTitleBarAttribute,
                       &window_bounds,
                       &new_ref) == noErr) {
-    CFDictionaryAddValue(window_to_delegate_map_, new_ref, delegate);
+    window_to_delegate_map_[new_ref] = delegate;
+    delegate_to_window_map_[delegate] = new_ref;
   }
   return new_ref;
 }
 
 WebPluginDelegateImpl* FakePluginWindowTracker::GetDelegateForFakeWindow(
     WindowRef window) const {
-  return const_cast<WebPluginDelegateImpl*>(
-      static_cast<const WebPluginDelegateImpl*>(
-        CFDictionaryGetValue(window_to_delegate_map_, window)));
+  WindowToDelegateMap::const_iterator i = window_to_delegate_map_.find(window);
+  if (i != window_to_delegate_map_.end())
+    return i->second;
+  return NULL;
+}
+
+WindowRef FakePluginWindowTracker::GetFakeWindowForDelegate(
+    WebPluginDelegateImpl* delegate) const {
+  DelegateToWindowMap::const_iterator i =
+      delegate_to_window_map_.find(delegate);
+  if (i != delegate_to_window_map_.end())
+    return i->second;
+  return NULL;
 }
 
 void FakePluginWindowTracker::RemoveFakeWindowForDelegate(
     WebPluginDelegateImpl* delegate, WindowRef window) {
   DCHECK(GetDelegateForFakeWindow(window) == delegate);
-  CFDictionaryRemoveValue(window_to_delegate_map_, delegate);
+  window_to_delegate_map_.erase(window);
+  delegate_to_window_map_.erase(delegate);
   if (window)  // Check just in case the initial window creation failed.
     DisposeWindow(window);
-}
-
-WindowRef FakePluginWindowTracker::get_active_plugin_window() {
-  return active_plugin_window_;
-}
-
-void FakePluginWindowTracker::set_active_plugin_window(WindowRef window) {
-  active_plugin_window_ = window;
 }

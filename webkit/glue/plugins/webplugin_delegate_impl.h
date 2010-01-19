@@ -117,7 +117,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Informs the delegate that the context used for painting windowless plugins
   // has changed.
   void UpdateContext(gfx::NativeDrawingContext context);
-  // returns a vector of currently active delegates in this process.
+  // Returns the delegate currently processing events.
+  static WebPluginDelegateImpl* GetActiveDelegate();
+  // Returns a vector of currently active delegates in this process.
   static std::set<WebPluginDelegateImpl*> GetActiveDelegates();
   // Informs the delegate which plugin instance has just received keyboard focus
   // so that it can notify the plugin as appropriate.  If |process_id| and
