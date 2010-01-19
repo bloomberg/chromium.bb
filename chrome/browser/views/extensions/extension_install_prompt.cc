@@ -160,7 +160,7 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     const string16& warning_text, bool is_uninstall) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
-    delegate->InstallUIProceed();
+    delegate->InstallUIAbort();
     return;
   }
 
