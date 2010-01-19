@@ -1049,8 +1049,15 @@ devtools.DebuggerAgent.prototype.formatCallFrame_ = function(stackFrame) {
   for (var i = 0; i < stackFrame.scopes.length; i++) {
     var scope = stackFrame.scopes[i];
     scope.frameNumber = stackFrame.index;
+    // TODO(yurys): remove when webkit.org/b/32554 is landed.
+    if (InjectedScriptAccess.getDefault) {
     var scopeObjectProxy = new WebInspector.ObjectProxy(0, scope, [], 0, '',
                                                         true);
+    } else {
+    var scopeObjectProxy = new WebInspector.ObjectProxy(scope, [], 0, '',
+                                                        true);
+    }
+
     scopeObjectProxy.isScope = true;
     switch(scope.type) {
       case ScopeType.Global:
@@ -1151,8 +1158,15 @@ devtools.DebuggerAgent.formatObjectProxy_ = function(v) {
   } else {
     description = '<unresolved ref: ' + v.ref + ', type: ' + v.type + '>';
   }
+
+  // TODO(yurys): remove when webkit.org/b/32554 is landed.
+  if (InjectedScriptAccess.getDefault) {
   var proxy = new WebInspector.ObjectProxy(0, v, [], 0, description,
                                            hasChildren);
+  } else {
+  var proxy = new WebInspector.ObjectProxy(v, [], 0, description,
+                                           hasChildren);
+  }
   proxy.type = v.type;
   proxy.isV8Ref = true;
   return proxy;
