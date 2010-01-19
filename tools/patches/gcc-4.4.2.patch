@@ -1675,6 +1675,82 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "both")
+@@ -19294,7 +19738,17 @@
+ 	(plus:DI (match_dup 1)
+ 		 (const_int 8)))]
+   "TARGET_64BIT"
+-  "stosq"
++{
++ if (flag_control_integrity)
++  {
++    return "stosq %%rax,%%nacl:(%%rdi),%%r15"
++	   "\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "stosq";
++  }
++}
+   [(set_attr "type" "str")
+    (set_attr "memory" "store")
+    (set_attr "mode" "DI")])
+@@ -19318,7 +19772,17 @@
+ 	(plus:DI (match_dup 1)
+ 		 (const_int 4)))]
+   "TARGET_64BIT"
+-  "stos{l|d}"
++{
++ if (flag_control_integrity)
++  {
++    return "stos{l|d} %%eax,%%nacl:(%%rdi),%%r15"
++	   "\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "stos{l|d}";
++  }
++}
+   [(set_attr "type" "str")
+    (set_attr "memory" "store")
+    (set_attr "mode" "SI")])
+@@ -19342,7 +19806,17 @@
+ 	(plus:DI (match_dup 1)
+ 		 (const_int 2)))]
+   "TARGET_64BIT"
+-  "stosw"
++{
++ if (flag_control_integrity)
++  {
++    return "stosw %%ax,%%nacl:(%%rdi),%%r15"
++	   "\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "stosw";
++  }
++}
+   [(set_attr "type" "str")
+    (set_attr "memory" "store")
+    (set_attr "mode" "HI")])
+@@ -19366,7 +19840,17 @@
+ 	(plus:DI (match_dup 1)
+ 		 (const_int 1)))]
+   "TARGET_64BIT"
+-  "stosb"
++{
++ if (flag_control_integrity)
++  {
++    return "stosb %%al,%%nacl:(%%rdi),%%r15"
++	   "\nmovl\t%%edi, %%edi";
++  }
++ else
++  {
++    return "stosb";
++  }
++}
+   [(set_attr "type" "str")
+    (set_attr "memory" "store")
+    (set_attr "mode" "QI")])
 @@ -19392,7 +19836,17 @@
     (use (match_operand:DI 2 "register_operand" "a"))
     (use (match_dup 4))]
