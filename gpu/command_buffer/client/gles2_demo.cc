@@ -31,6 +31,10 @@ using gpu::CommandBufferService;
 using gpu::gles2::GLES2CmdHelper;
 using gpu::gles2::GLES2Implementation;
 
+#if defined(OS_WIN)
+HINSTANCE g_instance;
+#endif
+
 class GLES2Demo {
  public:
   GLES2Demo();
@@ -104,11 +108,6 @@ LRESULT CALLBACK WindowProc(
   return 0;
 }
 
-HINSTANCE GetInstance(void) {
-  HWND hwnd = GetConsoleWindow();
-  return reinterpret_cast<HINSTANCE>(GetWindowLong(hwnd, GWL_HINSTANCE));
-}
-
 void ProcessMessages(void* in_hwnd) {
   HWND hwnd = reinterpret_cast<HWND>(in_hwnd);
   MSG msg;
@@ -133,7 +132,6 @@ void ProcessMessages(void* in_hwnd) {
 
 void* SetupWindow() {
 #if defined(OS_WIN)
-  HINSTANCE instance = GetInstance();
   WNDCLASSEX wc = {0};
   wc.lpszClassName = L"MY_WINDOWS_CLASS";
   wc.cbSize = sizeof(WNDCLASSEX);
@@ -141,10 +139,10 @@ void* SetupWindow() {
   wc.lpfnWndProc = ::WindowProc;
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
-  wc.hInstance = instance;
-  wc.hIcon = ::LoadIcon(instance, IDI_APPLICATION);
+  wc.hInstance = g_instance;
+  wc.hIcon = ::LoadIcon(g_instance, IDI_APPLICATION);
   wc.hIconSm = NULL;
-  wc.hCursor = ::LoadCursor(instance, IDC_ARROW);
+  wc.hCursor = ::LoadCursor(g_instance, IDC_ARROW);
   wc.hbrBackground = static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
   wc.lpszMenuName = NULL;
 
@@ -165,7 +163,7 @@ void* SetupWindow() {
       512,
       0,
       0,
-      instance,
+      g_instance,
       0);
 
   if (hwnd == NULL) {
@@ -181,7 +179,16 @@ void* SetupWindow() {
 #endif
 }
 
-int main(int argc, const char** argv) {
+#if defined(OS_WIN)
+int WINAPI WinMain(HINSTANCE instance,
+                   HINSTANCE prev_instance,
+                   LPSTR command_line,
+                   int command_show) {
+  g_instance = instance;
+#else
+int main(int argc, char** argv) {
+#endif
+
   const int32 kCommandBufferSize = 1024 * 1024;
 
   base::AtExitManager at_exit_manager;

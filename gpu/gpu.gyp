@@ -400,6 +400,14 @@
             'sources': [
               'command_buffer/client/gles2_demo.cc',
             ],
+            'msvs_settings': {
+              'VCLinkerTool': {
+                # 0 == not set
+                # 1 == /SUBSYSTEM:CONSOLE
+                # 2 == /SUBSYSTEM:WINDOWS
+               'SubSystem': '2',
+              },
+            },
           },
         ],
       },
