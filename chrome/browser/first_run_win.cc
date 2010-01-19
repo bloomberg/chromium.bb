@@ -776,7 +776,12 @@ class TryChromeDialog : public views::ButtonListener,
     // First row views.
     layout->StartRow(0, 0);
     layout->AddView(icon);
-    const std::wstring heading = l10n_util::GetString(IDS_TRY_TOAST_HEADING);
+    // The heading has two flavors of text, the alt one features extensions but
+    // we only use it in the US until some international issues are fixed.
+    const std::string app_locale = g_browser_process->GetApplicationLocale();
+    const std::wstring heading = (app_locale == "en-US") ?
+        l10n_util::GetString(IDS_TRY_TOAST_ALT_HEADING) :
+        l10n_util::GetString(IDS_TRY_TOAST_HEADING);
     views::Label* label =
         new views::Label(heading);
     label->SetFont(rb.GetFont(ResourceBundle::MediumBoldFont));
@@ -784,6 +789,7 @@ class TryChromeDialog : public views::ButtonListener,
     label->SizeToFit(200);
     label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(label);
+    // The close button is custom.
     views::ImageButton* close_button = new views::ImageButton(this);
     close_button->SetImage(views::CustomButton::BS_NORMAL,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR));
