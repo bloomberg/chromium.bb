@@ -563,7 +563,7 @@ BUG8941 WIN : http/tests/xmlhttprequest/web-apps/012.html = FAIL
 
 // Incrorect results, in incorrect international font metrics.
 BUG20521 LINUX WIN : fast/text/atsui-multiple-renderers.html = FAIL
-BUG20521 LINUX WIN : fast/text/atsui-pointtooffset-calls-cg.html = FAIL
+BUG20521 LINUX WIN : fast/text/atsui-pointtooffset-calls-cg.html = FAIL TIMEOUT
 BUG20521 LINUX WIN : fast/text/atsui-rtl-override-selection.html = FAIL
 
 // This test checks that we hack around a bug in helvetica.  We fail to.
@@ -2821,10 +2821,10 @@ BUG29737 MAC : svg/W3C-SVG-1.1/filters-blend-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : svg/W3C-SVG-1.1/filters-color-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : svg/W3C-SVG-1.1/filters-comptran-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : svg/W3C-SVG-1.1/filters-gauss-01-b.svg = IMAGE+TEXT
-BUG29737 MAC : svg/W3C-SVG-1.1/filters-morph-01-f.svg = IMAGE+TEXT
+BUG29737 MAC : svg/W3C-SVG-1.1/filters-morph-01-f.svg = IMAGE+TEXT CRASH
 BUG29737 MAC : svg/W3C-SVG-1.1/filters-offset-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : svg/batik/filters/feTile.svg = IMAGE+TEXT
-BUG29737 MAC : svg/custom/empty-merge.svg = IMAGE+TEXT
+BUG29737 MAC : svg/custom/empty-merge.svg = IMAGE+TEXT IMAGE
 BUG29737 MAC : svg/custom/feComponentTransfer-Discrete.svg = IMAGE+TEXT
 BUG29737 MAC : svg/custom/feComponentTransfer-Gamma.svg = IMAGE+TEXT
 BUG29737 MAC : svg/custom/feComponentTransfer-Linear.svg = IMAGE+TEXT IMAGE
@@ -2876,7 +2876,7 @@ BUG30343 LINUX : fast/css/large-number-round-trip.html = TEXT
 // Likely, moving Windows to using Apache2 will fix this as the Linux/Mac builds
 // did not get flaky here and moving to Apache made the appcache tests less
 // flaky on those platforms.
-BUG25977 WIN DEBUG : http/tests/appcache/access-via-redirect.php = TIMEOUT PASS FAIL
+BUG25977 WIN MAC DEBUG : http/tests/appcache/access-via-redirect.php = TIMEOUT PASS FAIL
 BUG25977 WIN DEBUG : http/tests/appcache/auth.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : http/tests/appcache/crash-when-navigating-away-then-back.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : http/tests/appcache/different-scheme.html = TIMEOUT PASS
@@ -2978,7 +2978,7 @@ BUG32157 : storage/multiple-databases-garbage-collection.html = CRASH PASS
 
 // New flakiness?
 BUG32144 WIN RELEASE : svg/webarchive/svg-script-subresouces.svg = CRASH TEXT PASS
-BUG32145 WIN RELEASE : animations/3d/transform-origin-vs-functions.html = TEXT PASS
+BUG32145 WIN : animations/3d/transform-origin-vs-functions.html = TEXT PASS
 BUG32149 WIN RELEASE : fast/dom/Document/early-document-access.html = TIMEOUT PASS
 
 BUG32195 : fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = IMAGE+TEXT PASS
@@ -3013,3 +3013,52 @@ BUG32572 WIN : svg/hixie/mixed/003.xml = CRASH PASS
 BUG53331 MAC : fast/gradients/simple-gradients.html = FAIL
 BUG53331 MAC : fast/gradients/border-image-gradient.html = FAIL
 BUG53331 : fast/gradients/border-image-gradient-sides-and-corners.html = FAIL
+
+// WebKit roll 53341:53451
+BUG32574 WIN LINUX RELEASE : css1/font_properties/font.html = TEXT
+BUG32574 WIN LINUX MAC : editing/pasteboard/paste-noscript.html = TEXT
+BUG32574 LINUX : fast/css/zoom-body-scroll.html = TEXT
+BUG32574 WIN LINUX MAC : fast/dom/Window/timer-null-script-execution-context.html = TEXT
+BUG32574 WIN LINUX : fast/dynamic/float-in-trailing-whitespace-after-last-line-break-2.html = TEXT
+BUG32574 WIN LINUX RELEASE: fast/forms/textarea-scrollbar-height.html = TEXT
+BUG32574 WIN LINUX MAC : http/tests/security/setDomainRelaxationForbiddenForURLScheme.html = TEXT
+BUG32574 WIN : svg/W3C-SVG-1.1/animate-elem-40-t.svg = TEXT
+BUG32574 WIN LINUX : svg/custom/use-events-crash.svg = TEXT
+BUG32574 WIN LINUX : svg/custom/use-on-disallowed-foreign-object-1.svg = TEXT
+BUG32574 WIN : svg/custom/use-on-disallowed-foreign-object-3.svg = TEXT
+BUG32574 WIN LINUX : svg/custom/use-on-disallowed-foreign-object-4.svg = TEXT
+BUG32574 WIN LINUX : svg/custom/use-on-non-svg-namespaced-element.svg = TEXT
+BUG32574 WIN LINUX : svg/custom/use-recursion-1.svg = TEXT
+BUG32574 WIN LINUX : svg/custom/use-recursion-2.svg = TEXT
+BUG32574 WIN LINUX : svg/custom/use-recursion-3.svg = TEXT
+BUG32574 WIN LINUX : svg/custom/use-recursion-4.svg = TEXT
+BUG32574 WIN LINUX : svg/hixie/error/017.xml = TEXT
+BUG32574 LINUX : fast/repaint/trailing-floats-root-line-box-overflow.html = IMAGE
+BUG32574 WIN LINUX MAC : http/tests/appcache/destroyed-frame.html = CRASH
+BUG32574 WIN LINUX MAC RELEASE : css2.1/t090501-c414-flt-ln-00-d.html = IMAGE+TEXT
+BUG32574 WIN LINUX MAC RELEASE : css2.1/t090501-c414-flt-ln-01-d-g.html = IMAGE+TEXT
+BUG32574 WIN LINUX MAC RELEASE : css2.1/t090501-c414-flt-ln-02-d.html = IMAGE+TEXT
+BUG32574 WIN LINUX MAC RELEASE : css2.1/t090501-c414-flt-ln-03-d.html = IMAGE+TEXT
+BUG32574 WIN LINUX : svg/custom/relative-sized-deep-shadow-tree-content.xhtml = IMAGE+TEXT
+BUG32574 WIN LINUX : svg/custom/relative-sized-shadow-tree-content.xhtml = IMAGE+TEXT
+BUG32574 LINUX : svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE+TEXT PASS
+BUG32574 WIN RELEASE : svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE+TEXT
+BUG32574 LINUX : svg/custom/svg-fonts-in-html.html = IMAGE+TEXT PASS
+BUG32574 WIN MAC RELEASE : svg/custom/svg-fonts-in-html.html = IMAGE+TEXT
+// Not checked if the RELEASE expectation is correct or not.
+BUG32574 LINUX DEBUG : svg/custom/transformedMaskFails.svg = TEXT
+// Flaky tests found in the roll.
+BUG32574 LINUX DEBUG : http/tests/navigation/lockedhistory-iframe.html = TEXT PASS
+BUG32574 LINUX DEBUG : svg/filters/big-sized-filter.svg = IMAGE+TEXT TIMEOUT PASS
+BUG32574 LINUX DEBUG : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
+BUG32574 LINUX DEBUG : svg/css/glyph-orientation-rounding-test.xhtml = TEXT PASS
+BUG32574 WIN DEBUG : inspector/timeline-layout.html = TEXT PASS
+BUG32574 WIN DEBUG : storage/statement-error-callback.html = TEXT PASS
+BUG32574 WIN DEBUG : fast/block/margin-collapse/block-inside-inline/006.html = CRASH PASS
+BUG32574 WIN DEBUG : storage/close-during-stress-test.html = CRASH PASS
+BUG32574 MAC DEBUG : fast/lists/inlineBoxWrapperNullCheck.html = TEXT PASS
+BUG32574 MAC DEBUG : http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html = TEXT PASS
+BUG32574 MAC DEBUG : plugins/plugin-remove-subframe.html = TEXT PASS
+BUG32574 MAC DEBUG : svg/batik/text/textEffect.svg = TEXT PASS
+BUG32574 MAC DEBUG : svg/custom/visibility-override-filter.svg = TEXT PASS
+BUG32574 MAC DEBUG : svg/dom/SVGRectElement/rect-modify-rx.svg = TEXT PASS
