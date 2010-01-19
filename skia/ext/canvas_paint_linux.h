@@ -41,10 +41,13 @@ class CanvasPaintT : public T {
       T::restoreToCount(1);
 
       // Blit the dirty rect to the window.
+      CHECK(window_);
       cairo_t* cr = gdk_cairo_create(window_);
+      CHECK(cr);
       if (composite_alpha_)
         cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
       cairo_surface_t* source_surface = cairo_get_target(context_);
+      CHECK(source_surface);
       GdkRectangle bounds = rectangle();
       cairo_set_source_surface(cr, source_surface, bounds.x, bounds.y);
       gdk_cairo_region(cr, region_);
