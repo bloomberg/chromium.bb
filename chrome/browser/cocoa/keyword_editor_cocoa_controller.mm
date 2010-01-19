@@ -9,8 +9,8 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/edit_search_engine_cocoa_controller.h"
-#import "chrome/browser/cocoa/nswindow_local_state.h"
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
+#import "chrome/browser/cocoa/window_size_autosaver.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
 #include "chrome/common/pref_names.h"
@@ -144,6 +144,14 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
     controller_->table_model()->SetObserver(observer_.get());
     controller_->url_model()->AddObserver(observer_.get());
     groupCell_.reset([[NSTextFieldCell alloc] init]);
+
+    if (g_browser_process && g_browser_process->local_state()) {
+      sizeSaver_.reset([[WindowSizeAutosaver alloc]
+          initWithWindow:[self window]
+             prefService:g_browser_process->local_state()
+                    path:prefs::kKeywordEditorWindowPlacement
+                   state:kSaveWindowRect]);
+    }
   }
   return self;
 }
@@ -164,14 +172,6 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
   size.height = NSHeight([addButton_ frame]);
   [makeDefaultButton_ setFrameSize:size];
 
-  // Restore the window position.
-  if (g_browser_process && g_browser_process->local_state()) {
-    PrefService* prefs = g_browser_process->local_state();
-    NSWindow* window = [self window];
-    [window restoreWindowPositionFromPrefs:prefs
-                                withPath:prefs::kKeywordEditorWindowPlacement];
-  }
-
   [self adjustEditingButtons];
   [tableView_ setDoubleAction:@selector(editKeyword:)];
   [tableView_ setTarget:self];
@@ -189,15 +189,6 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
   //DCHECK(it != map->end());
   if (it != map->end()) {
     map->erase(it);
-  }
-}
-
-// Remeber the position of the keyword editor.
-- (void)windowDidMove:(NSNotification*)notif {
-  if (g_browser_process && g_browser_process->local_state()) {
-    NSWindow* window = [self window];
-    [window saveWindowPositionToPrefs:g_browser_process->local_state()
-                             withPath:prefs::kKeywordEditorWindowPlacement];
   }
 }
 

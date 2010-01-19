@@ -10,6 +10,7 @@
 #include "chrome/browser/cocoa/table_row_nsimage_cache.h"
 #include "chrome/browser/task_manager.h"
 
+@class WindowSizeAutosaver;
 class TaskManagerMac;
 
 // This class is responsible for loading the task manager window and for
@@ -21,6 +22,8 @@ class TaskManagerMac;
   TaskManagerMac* taskManagerObserver_;  // weak
   TaskManager* taskManager_;  // weak
   TaskManagerModel* model_;  // weak
+
+  scoped_nsobject<WindowSizeAutosaver> size_saver_;
 }
 
 // Creates and shows the task manager's window.

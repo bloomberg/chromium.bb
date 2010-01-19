@@ -10,9 +10,11 @@
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#import "chrome/browser/cocoa/window_size_autosaver.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 
-// TODO(thakis): Autoremember window size/pos (and selected columns?)
 // TODO(thakis): Better resizing behavior (and think about storing column sizes)
 // TODO(thakis): Column sort comparator
 // TODO(thakis): Clicking column header doesn't sort
@@ -39,6 +41,14 @@
     taskManagerObserver_ = taskManagerObserver;
     taskManager_ = taskManagerObserver_->task_manager();
     model_ = taskManager_->model();
+
+    if (g_browser_process && g_browser_process->local_state()) {
+      size_saver_.reset([[WindowSizeAutosaver alloc]
+          initWithWindow:[self window]
+             prefService:g_browser_process->local_state()
+                    path:prefs::kTaskManagerWindowPlacement
+                   state:kSaveWindowRect]);
+    }
     [[self window] makeKeyAndOrderFront:self];
   }
   return self;
@@ -187,17 +197,6 @@
 // Table view delegate method.
 - (void)tableViewSelectionDidChange:(NSNotification*)aNotification {
   [self adjustEndProcessButton];
-}
-
-// Called when the window is being closed. Send out a notification that the user
-// is done editing preferences. Make sure there are no pending field editors
-// by clearing the first responder.
-- (void)windowWillClose:(NSNotification*)notification {
-  if (taskManagerObserver_) {
-    taskManagerObserver_->WindowWasClosed();
-    taskManagerObserver_ = nil;
-  }
-  [self autorelease];
 }
 
 @end

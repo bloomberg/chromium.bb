@@ -31,17 +31,10 @@
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/ssl/ssl_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/task_manager.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/views/frame/browser_view.h"
-#endif
-
-#if defined(OS_WIN) || defined(OS_LINUX)
-#include "chrome/browser/task_manager.h"
-#endif
-
-#if defined(OS_WIN)
-#include "chrome/browser/views/keyword_editor_view.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -77,9 +70,7 @@ void RegisterLocalState(PrefService* local_state) {
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
   BrowserView::RegisterBrowserViewPrefs(local_state);
 #endif
-#if defined(OS_WIN) || defined(OS_LINUX)
   TaskManager::RegisterPrefs(local_state);
-#endif
 }
 
 void RegisterUserPrefs(PrefService* user_prefs) {

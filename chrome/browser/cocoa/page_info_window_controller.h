@@ -9,6 +9,7 @@
 
 class PageInfoWindowMac;
 class PrefService;
+@class WindowSizeAutosaver;
 
 // This NSWindowController subclass implements the Cocoa window for
 // PageInfoWindow. This creates and owns the PageInfoWindowMac subclass.
@@ -34,6 +35,8 @@ class PrefService;
 
   // Bridge to Chromium that we own.
   scoped_ptr<PageInfoWindowMac> pageInfo_;
+
+  scoped_nsobject<WindowSizeAutosaver> sizeSaver_;
 }
 
 @property(readwrite, retain) NSImage* identityImg;

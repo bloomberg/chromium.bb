@@ -8,16 +8,11 @@
 #include "base/mac_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#import "chrome/browser/cocoa/nswindow_local_state.h"
 #include "chrome/browser/cocoa/page_info_window_mac.h"
+#include "chrome/browser/cocoa/window_size_autosaver.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/theme_resources.h"
-
-@interface PageInfoWindowController (Private)
-// Saves the window preference to the local state.
-- (void)saveWindowPositionToLocalState;
-@end
 
 @implementation PageInfoWindowController
 @synthesize identityImg = identityImg_;
@@ -36,18 +31,24 @@
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     goodImg_.reset([rb.GetNSImageNamed(IDR_PAGEINFO_GOOD) retain]);
     badImg_.reset([rb.GetNSImageNamed(IDR_PAGEINFO_BAD) retain]);
+
+    if (g_browser_process && g_browser_process->local_state()) {
+      sizeSaver_.reset([[WindowSizeAutosaver alloc]
+          initWithWindow:[self window]
+             prefService:g_browser_process->local_state()
+                    path:prefs::kPageInfoWindowPlacement
+                   state:kSaveWindowPos]);
+      // Cascade again to get the offset when opening new windows.
+      NSRect frame = [[self window] frame];
+      NSPoint cascadePoint = [[self window]
+          cascadeTopLeftFromPoint:NSMakePoint(NSMinX(frame), NSMaxY(frame))];
+      [[self window] cascadeTopLeftFromPoint:cascadePoint];
+    }
   }
   return self;
 }
 
 - (void)awakeFromNib {
-  if (g_browser_process && g_browser_process->local_state()) {
-    // Get the positioning information.
-    PrefService* prefs = g_browser_process->local_state();
-    [[self window] restoreWindowPositionFromPrefs:prefs
-                                   withPath:prefs::kPageInfoWindowPlacement];
-  }
-
   // By default, assume we have no history information.
   [self setShowHistoryBox:NO];
 }
@@ -101,14 +102,6 @@
 // can clean ourselves up.
 - (void)windowWillClose:(NSNotification*)notif {
   [self autorelease];
-}
-
-// The last page info window that was moved will determine the location of the
-// next new one.
-- (void)windowDidMove:(NSNotification*)notif {
-  if (g_browser_process && g_browser_process->local_state())
-    [[self window] saveWindowPositionToPrefs:g_browser_process->local_state()
-                                    withPath:prefs::kPageInfoWindowPlacement];
 }
 
 @end

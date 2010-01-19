@@ -15,6 +15,7 @@
 class EditSearchEngineControllerDelegate;
 @class KeywordEditorCocoaController;
 class Profile;
+@class WindowSizeAutosaver;
 
 // Very thin bridge that simply pushes notifications from C++ to ObjC.
 class KeywordEditorModelObserver : public TemplateURLModelObserver,
@@ -77,6 +78,8 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
   Profile* profile_;  // weak
   scoped_ptr<KeywordEditorController> controller_;
   scoped_ptr<KeywordEditorModelObserver> observer_;
+
+  scoped_nsobject<WindowSizeAutosaver> sizeSaver_;
 }
 @property (readonly) KeywordEditorController* controller;
 
