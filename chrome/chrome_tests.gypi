@@ -1786,7 +1786,6 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
-    # TODO(jrg): add in Windows code coverage targets.
     ['coverage!=0',
       { 'targets': [
         {
@@ -1795,21 +1794,49 @@
           # In gyp, booleans are 0/1 not True/False.
           'suppress_wildcard': 1,
           'type': 'none',
-          # If you add new tests here you may need to update the croc configs.
-          # E.g. build/{linux|mac}/chrome_linux.croc
+          # Cross platform test bundles.  If you add new tests you may
+          # need to update the croc configs.  For example, see the
+          # first regexp in build/(linux|mac|win)/chrome_*.croc.
           'dependencies': [
             'automated_ui_tests',
             '../app/app.gyp:app_unittests',
             '../base/base.gyp:base_unittests',
+            'browser_tests',
             '../ipc/ipc.gyp:ipc_tests',
             '../media/media.gyp:media_unittests',
             '../net/net.gyp:net_unittests',
             '../printing/printing.gyp:printing_unittests',
-            # Mac coverage bot having trouble launching a profiled
-            # Chromium from within ui_tests; disabling for now.
+            # ui_tests seem unhappy on both Mac and Win when run under
+            # coverage (all tests fail, often with a
+            # "server_->WaitForInitialLoads()").  TODO(jrg):
+            # investigate why.
             # 'ui_tests',
             'unit_tests',
           ],
+          # Platform specific unit test bundles.  Unless staging
+          # a checkin, please add a comment describing why your test is
+          # in here and is not cross-platform.
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                # Courgette has not been ported from Windows.
+                # Note build/win/chrome_win.croc uniquely has the
+                # courgette source directory in an include path.
+                '../courgette/courgette.gyp:courgette_unittests',
+              ],
+            }],
+            ['OS=="linux"', {
+              'dependencies': [
+                # Placeholder; empty for now.
+              ],
+            }],
+            ['OS=="mac"', {
+              'dependencies': [
+                # Placeholder; empty for now.
+              ],
+            }],
+          ],
+
           'actions': [
             {
               # 'message' for Linux/scons in particular.  Scons
