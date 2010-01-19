@@ -23,7 +23,7 @@ import platform_utils_linux
 # Cache some values so we don't have to recalculate them. _basedir is
 # used by PathFromBase() and caches the full (native) path to the top
 # of the source tree (/src). _baseline_search_path is used by
-# ExpectedBaseline() and caches the list of native paths to search
+# ExpectedBaselines() and caches the list of native paths to search
 # for baseline results.
 _basedir = None
 _baseline_search_path = None
@@ -38,10 +38,22 @@ def LayoutTestsDir():
 def ChromiumBaselinePath(platform=None):
   """Returns the full path to the directory containing expected
   baseline results from chromium ports. If |platform| is None, the
-  currently executing platform is used."""
-  if platform is None:
-    platform = platform_utils.PlatformName()
-  return PathFromBase('webkit', 'data', 'layout_tests', 'platform', platform)
+  currently executing platform is used.
+
+  Note: although directly referencing individual platform_utils_* files is
+  usually discouraged, we allow it here so that the rebaselining tool can
+  pull baselines for platforms other than the host platform."""
+
+  # Normalize the platform string.
+  platform = PlatformName(platform)
+  if platform.startswith('chromium-mac'):
+    return platform_utils_mac.BaselinePath(platform)
+  elif platform.startswith('chromium-win'):
+    return platform_utils_win.BaselinePath(platform)
+  elif platform.startswith('chromium-linux'):
+    return platform_utils_linux.BaselinePath(platform)
+
+  return platform_utils.BaselinePath()
 
 def WebKitBaselinePath(platform):
   """Returns the full path to the directory containing expected
@@ -53,28 +65,24 @@ def BaselineSearchPath(platform=None):
   """Returns the list of directories to search for baselines/results for a
   given platform, in order of preference. Paths are relative to the top of the
   source tree. If parameter platform is None, returns the list for the current
-  platform that the script is running on."""
-  if platform is None:
-    return platform_utils.BaselineSearchPath(False)
-  elif platform.startswith('mac'):
-    return platform_utils_mac.BaselineSearchPath(True)
-  elif platform.startswith('win'):
-    return platform_utils_win.BaselineSearchPath(True)
-  elif platform.startswith('linux'):
-    return platform_utils_linux.BaselineSearchPath(True)
-  else:
-    return platform_utils.BaselineSearchPath(False)
+  platform that the script is running on.
 
-def ExpectedBaseline(filename, suffix, platform=None, all_baselines=False):
-  """Given a test name, finds where the baseline result is located. The
-  result is returned as a pair of values, the absolute path to top of the test
-  results directory, and the relative path from there to the results file.
+  Note: although directly referencing individual platform_utils_* files is
+  usually discouraged, we allow it here so that the rebaselining tool can
+  pull baselines for platforms other than the host platform."""
 
-  Both return values will be in the format appropriate for the
-  current platform (e.g., "\\" for path separators on Windows).
+  # Normalize the platform name.
+  platform = PlatformName(platform)
+  if platform.startswith('chromium-mac'):
+    return platform_utils_mac.BaselineSearchPath(platform)
+  elif platform.startswith('chromium-win'):
+    return platform_utils_win.BaselineSearchPath(platform)
+  elif platform.startswith('chromium-linux'):
+    return platform_utils_linux.BaselineSearchPath(platform)
+  return platform_utils.BaselineSearchPath()
 
-  If the results file is not found, then None will be returned for the
-  directory, but the expected relative pathname will still be returned.
+def ExpectedBaselines(filename, suffix, platform=None, all_baselines=False):
+  """Given a test name, finds where the baseline results are located.
 
   Args:
      filename: absolute filename to test file
@@ -91,6 +99,10 @@ def ExpectedBaseline(filename, suffix, platform=None, all_baselines=False):
        results_filename - relative path from top of tree to the results file
          (os.path.join of the two gives you the full path to the file, unless
           None was returned.)
+    Return values will be in the format appropriate for the current platform
+    (e.g., "\\" for path separators on Windows). If the results file is not
+    found, then None will be returned for the directory, but the expected
+    relative pathname will still be returned.
   """
   global _baseline_search_path
   global _search_path_platform
@@ -102,21 +114,13 @@ def ExpectedBaseline(filename, suffix, platform=None, all_baselines=False):
     _baseline_search_path = BaselineSearchPath(platform)
     _search_path_platform = platform
 
-  current_platform_dir = ChromiumBaselinePath(PlatformName(platform))
-
   baselines = []
-  foundCurrentPlatform = False
   for platform_dir in _baseline_search_path:
-    # Find current platform from baseline search paths and start from there.
-    if platform_dir == current_platform_dir:
-      foundCurrentPlatform = True
+    if os.path.exists(os.path.join(platform_dir, baseline_filename)):
+      baselines.append((platform_dir, baseline_filename))
 
-    if foundCurrentPlatform:
-      if os.path.exists(os.path.join(platform_dir, baseline_filename)):
-        baselines.append((platform_dir, baseline_filename))
-
-      if not all_baselines and baselines:
-        return baselines
+    if not all_baselines and baselines:
+      return baselines
 
   # If it wasn't found in a platform directory, return the expected result
   # in the test directory, even if no such file actually exists.
@@ -145,7 +149,7 @@ def ExpectedFilename(filename, suffix):
          search list of directories, e.g., 'chromium-win', or
          'chromium-mac-leopard' (we follow the WebKit format)
   """
-  platform_dir, baseline_filename = ExpectedBaseline(filename, suffix)[0]
+  platform_dir, baseline_filename = ExpectedBaselines(filename, suffix)[0]
   if platform_dir:
     return os.path.join(platform_dir, baseline_filename)
   return os.path.join(LayoutTestsDir(), baseline_filename)
