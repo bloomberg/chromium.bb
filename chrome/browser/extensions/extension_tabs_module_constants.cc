@@ -6,7 +6,10 @@
 
 namespace extension_tabs_module_constants {
 
+const wchar_t kAllFramesKey[] = L"allFrames";
+const wchar_t kCodeKey[] = L"code";
 const wchar_t kFavIconUrlKey[] = L"favIconUrl";
+const wchar_t kFileKey[] = L"file";
 const wchar_t kFocusedKey[] = L"focused";
 const wchar_t kFromIndexKey[] = L"fromIndex";
 const wchar_t kHeightKey[] = L"height";

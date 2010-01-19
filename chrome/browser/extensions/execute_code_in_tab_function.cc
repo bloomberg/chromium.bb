@@ -16,10 +16,6 @@
 
 namespace keys = extension_tabs_module_constants;
 
-const wchar_t* kCodeKey = L"code";
-const wchar_t* kFileKey = L"file";
-const wchar_t* kAllFramesKey = L"allFrames";
-
 bool ExecuteCodeInTabFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
   const ListValue* args = args_as_list();
@@ -31,8 +27,8 @@ bool ExecuteCodeInTabFunction::RunImpl() {
     error_ = keys::kNoCodeOrFileToExecuteError;
     return false;
   } else {
-    bool has_code = script_info->HasKey(kCodeKey);
-    bool has_file = script_info->HasKey(kFileKey);
+    bool has_code = script_info->HasKey(keys::kCodeKey);
+    bool has_file = script_info->HasKey(keys::kFileKey);
     if (has_code && has_file) {
       error_ = keys::kMoreThanOneValuesError;
       return false;
@@ -87,14 +83,14 @@ bool ExecuteCodeInTabFunction::RunImpl() {
     return false;
   }
 
-  if (script_info->HasKey(kAllFramesKey)) {
-    if (!script_info->GetBoolean(kAllFramesKey, &all_frames_))
+  if (script_info->HasKey(keys::kAllFramesKey)) {
+    if (!script_info->GetBoolean(keys::kAllFramesKey, &all_frames_))
       return false;
   }
 
   std::string code_string;
-  if (script_info->HasKey(kCodeKey)) {
-    if (!script_info->GetString(kCodeKey, &code_string))
+  if (script_info->HasKey(keys::kCodeKey)) {
+    if (!script_info->GetString(keys::kCodeKey, &code_string))
       return false;
   }
 
@@ -104,8 +100,8 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   }
 
   std::string relative_path;
-  if (script_info->HasKey(kFileKey)) {
-    if (!script_info->GetString(kFileKey, &relative_path))
+  if (script_info->HasKey(keys::kFileKey)) {
+    if (!script_info->GetString(keys::kFileKey, &relative_path))
       return false;
     resource_ = GetExtension()->GetResource(relative_path);
   }
