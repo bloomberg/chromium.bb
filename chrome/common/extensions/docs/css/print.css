@@ -1,8 +1,8 @@
 /* Chrome extensions developer guide - styles for printing */
 
-div#searchbox {display: none;}
-#leftNav {display: none;}
-#mainColumn {
+div#gsc-search-box {display: none;}
+#gc-toc {display: none;}
+#gc-pagecontent {
   margin: 0;
   padding: 0;
   border: 0;
