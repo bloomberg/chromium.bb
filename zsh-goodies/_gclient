@@ -1,0 +1,15 @@
+#compdef gclient
+
+_values commands \
+    cleanup \
+    config  \
+    diff    \
+    export  \
+    help    \
+    pack    \
+    status  \
+    sync    \
+    update  \
+    revert  \
+    runhooks\
+    revinfo
