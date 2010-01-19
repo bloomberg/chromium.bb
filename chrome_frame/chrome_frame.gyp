@@ -304,7 +304,6 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../chrome/chrome.gyp:browser',
-        '../chrome/chrome.gyp:chrome_dll_version',
         '../chrome/chrome.gyp:chrome_resources',
         '../chrome/chrome.gyp:debugger',
         '../chrome/chrome.gyp:renderer',
@@ -343,11 +342,11 @@
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
-            '../chrome/chrome.gyp:automation',
             '../breakpad/breakpad.gyp:breakpad_handler',
+            '../chrome/chrome.gyp:automation',
+            '../chrome/chrome.gyp:chrome_dll_version',
             '../chrome/installer/installer.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
-            '../chrome/installer/installer.gyp:installer_util',
           ]
         }],
       ],

@@ -1233,6 +1233,7 @@
             'installer/installer.gyp:*',
             '../app/app.gyp:*',
             '../base/base.gyp:*',
+            '../chrome_frame/chrome_frame.gyp:*',
             '../ipc/ipc.gyp:*',
             '../media/media.gyp:*',
             '../net/net.gyp:*',
@@ -1273,11 +1274,6 @@
             ['win_use_allocator_shim==1', {
               'dependencies': [
                 '../base/allocator/allocator.gyp:*',
-              ],
-            }],
-            ['chrome_frame_define==1', {
-              'dependencies': [
-                '../chrome_frame/chrome_frame.gyp:*',
               ],
             }],
           ],

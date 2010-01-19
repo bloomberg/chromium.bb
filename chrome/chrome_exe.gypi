@@ -130,13 +130,6 @@
         'chrome_exe_target': 1,
       },
       'conditions': [
-        ['chrome_frame_define==1 and OS=="win"', {
-          # TODO(gregoryd): This could be shared with the 64-bit target, but
-          # it does not work due to a gyp issue.
-          'dependencies': [
-            '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-          ],
-        }],
         ['OS=="linux" or OS=="freebsd"', {
           'actions': [
             {
@@ -509,6 +502,7 @@
             '../breakpad/breakpad.gyp:breakpad_handler_win64',
             '../breakpad/breakpad.gyp:breakpad_sender_win64',
             '../base/base.gyp:base_nacl_win64',
+            '../chrome_frame/chrome_frame.gyp:npchrome_frame',
             # TODO(gregoryd): build sandbox for 64 bit
             # '../sandbox/sandbox.gyp:sandbox',
           ],
@@ -524,15 +518,6 @@
               'ProgramDatabaseFile': '$(OutDir)\\nacl_exe.pdb',
             },
           },
-          'conditions': [
-            ['chrome_frame_define==1 and OS=="win"', {
-              # TODO(gregoryd): This could be shared with the 32-bit target, but
-              # it does not work due to a gyp issue.
-              'dependencies': [
-                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-              ],
-            }],
-          ],
           'configurations': {
             'Common_Base': {
               'msvs_target_platform': 'x64',

@@ -32,11 +32,9 @@
 #include <Shellapi.h>
 #include <shlwapi.h>
 
+#include "chrome/installer/mini_installer/appid.h"
 #include "chrome/installer/mini_installer/mini_installer.h"
 #include "chrome/installer/mini_installer/pe_resource.h"
-
-// Generated header that includes the Google Update id.
-#include "appid.h"
 
 // Required linker symbol. See remarks above.
 extern "C" unsigned int __sse2_available = 0;
@@ -155,7 +153,7 @@ void SetFullInstallerFlag(HKEY root_key) {
   if (!SafeStrCopy(ap_registry_key, _countof(ap_registry_key),
                    kApRegistryKeyBase) ||
       !SafeStrCat(ap_registry_key, _countof(ap_registry_key),
-                  google_update::kChromeGuid)) {
+                  google_update::kAppGuid)) {
     return;
   }
   if (::RegOpenKeyEx(root_key, ap_registry_key, NULL,

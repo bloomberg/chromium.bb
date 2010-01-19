@@ -163,56 +163,6 @@
         }],
       ],
     },
-    {
-      'target_name': 'app_id',
-      'type': 'none',
-      'msvs_guid': '83100055-172B-49EA-B422-B1A92B627D37',
-      'conditions': [
-        ['OS=="win"',
-          {
-            'direct_dependent_settings': {
-              'include_dirs': [
-                '<(SHARED_INTERMEDIATE_DIR)/chrome/app_id',
-              ],
-            },
-            'actions': [
-              {
-                'action_name': 'appid',
-                'variables': {
-                  'appid_py': '../chrome/tools/build/appid.py',
-                },
-                'conditions': [
-                  [ 'branding=="Chrome"', {
-                    'variables': {
-                      'appid_value': '<(google_update_appid)',
-                    },
-                  }, { # else
-                    'variables': {
-                      'appid_value': '',
-                    },
-                  }],
-                ],
-                'inputs': [
-                  '<(appid_py)',
-                ],
-                'outputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/chrome/app_id/appid.h',
-                  'tools/build/_always_run_appid_py.marker',
-                ],
-                'action': [
-                  'python',
-                  '<(appid_py)',
-                  '-a', '<(appid_value)',
-                  '-o', '<(SHARED_INTERMEDIATE_DIR)/chrome/app_id/appid.h',
-                ],
-                'process_outputs_as_sources': 1,
-                'message': 'Generating appid information in <(SHARED_INTERMEDIATE_DIR)/chrome/appid.h'
-              },
-            ],
-          },
-        ],
-      ],
-    },
   ],
 }
 

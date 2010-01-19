@@ -68,7 +68,6 @@
           },
           'dependencies': [
             'installer_util_strings',
-            '../../app/app.gyp:app_id',
             '../chrome.gyp:common_constants',
             '../chrome.gyp:chrome_resources',
             '../chrome.gyp:chrome_strings',

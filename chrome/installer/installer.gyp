@@ -176,6 +176,7 @@
             '../../build/util/build_util.gyp:lastchange',
             '../../build/util/support/support.gyp:*',
             '../../build/win/system.gyp:cygwin',
+            '../../chrome_frame/chrome_frame.gyp:npchrome_frame',
           ],
           'include_dirs': [
             '../..',
@@ -188,7 +189,7 @@
             ],
           },
           'sources': [
-            'mini_installer/chrome.release',
+            'mini_installer/chrome_frame.release',
             'setup/install.cc',
             'setup/install.h',
             'setup/setup_main.cc',
@@ -244,9 +245,11 @@
               'extension': 'release',
               'variables': {
                 'scan_server_dlls_py' : '../tools/build/win/scan_server_dlls.py',
+                'template_file': 'mini_installer/chrome_frame.release',
               },
               'inputs': [
-                '<scan_server_dlls_py)',
+                '<(scan_server_dlls_py)',
+                '<(template_file)'
               ],
               'outputs': [
                 '<(INTERMEDIATE_DIR)/registered_dlls.h',
@@ -264,11 +267,6 @@
             },
           ],
           'conditions': [
-            ['chrome_frame_define==1', {
-              'dependencies': [
-                '../../chrome_frame/chrome_frame.gyp:npchrome_frame',
-              ],
-            }],
             # TODO(mark):  <(branding_dir) should be defined by the
             # global condition block at the bottom of the file, but
             # this doesn't work due to the following issue:

@@ -147,12 +147,14 @@ def MakeStagingDirectories(output_dir):
   """Creates a staging path for installer archive. If directory exists already,
   deletes the existing directory.
   """
-  file_path = os.path.join(output_dir, ARCHIVE_DIR)
+  prefixed_archive_dir = (options.archive_prefix or "") + ARCHIVE_DIR
+  file_path = os.path.join(output_dir, prefixed_archive_dir)
   if os.path.exists(file_path):
     shutil.rmtree(file_path)
   os.makedirs(file_path)
 
-  temp_file_path = os.path.join(output_dir, TEMP_ARCHIVE_DIR)
+  prefixed_temp_archive_dir = (options.archive_prefix or "") + TEMP_ARCHIVE_DIR
+  temp_file_path = os.path.join(output_dir, prefixed_temp_archive_dir)
   if os.path.exists(temp_file_path):
     shutil.rmtree(temp_file_path)
   os.makedirs(temp_file_path)
@@ -313,6 +315,9 @@ if '__main__' == __name__:
            'specifies the directory that contains base versions of ' +
            'setup.exe, courgette.exe (if --diff_algorithm is COURGETTE) ' +
            '& chrome.7z.')
+  option_parser.add_option('-p', '--archive_prefix',
+      help='Specifies a prefix to the archive path. Useful if building ' +
+           'multiple installer archives.')
   option_parser.add_option('-f', '--setup_exe_format', default='COMPRESSED',
       help='How setup.exe should be included {COMPRESSED|DIFF|FULL}.')
   option_parser.add_option('-a', '--diff_algorithm', default='BSDIFF',

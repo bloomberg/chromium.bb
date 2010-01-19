@@ -30,11 +30,6 @@
 #include "installer_util_strings.h"
 #include "registered_dlls.h"
 
-#if defined(CHROME_FRAME_BUILD)
-COMPILE_ASSERT(kNumDllsToRegister > 0,
-               Chrome_Frame_DLL_must_be_built_before_setup);
-#endif
-
 namespace {
 
 std::wstring AppendPath(const std::wstring& parent_path,
@@ -372,30 +367,39 @@ bool DoPostInstallTasks(HKEY reg_root,
     }
   }
 
-  // Now we need to register any self registering components and unregister
-  // any that were left from the old version that is being upgraded:
-  if (!current_version.empty()) {
-    std::wstring old_dll_path(install_path);
-    file_util::AppendToPath(&old_dll_path, current_version);
-    scoped_ptr<WorkItemList> old_dll_list(WorkItem::CreateWorkItemList());
-    if (InstallUtil::BuildDLLRegistrationList(old_dll_path, kDllsToRegister,
-                                              kNumDllsToRegister, false,
-                                              old_dll_list.get())) {
-      // Don't abort the install as a result of a failure to unregister old
-      // DLLs.
-      old_dll_list->Do();
-    }
-  }
-
-  std::wstring dll_path(install_path);
-  file_util::AppendToPath(&dll_path, new_version.GetString());
-  scoped_ptr<WorkItemList> dll_list(WorkItem::CreateWorkItemList());
-  if (InstallUtil::BuildDLLRegistrationList(dll_path, kDllsToRegister,
-                                            kNumDllsToRegister, true,
-                                            dll_list.get())) {
-    if (!dll_list->Do()) {
-      dll_list->Rollback();
+  if (InstallUtil::IsChromeFrameProcess()) {
+    // Chrome Frame instances of setup.exe should always have at least
+    // one DLL to register. Enforce that this is so.
+    if (kNumDllsToRegister <= 0) {
+      NOTREACHED();
       return false;
+    }
+
+    // Now we need to register any self registering components and unregister
+    // any that were left from the old version that is being upgraded:
+    if (!current_version.empty()) {
+      std::wstring old_dll_path(install_path);
+      file_util::AppendToPath(&old_dll_path, current_version);
+      scoped_ptr<WorkItemList> old_dll_list(WorkItem::CreateWorkItemList());
+      if (InstallUtil::BuildDLLRegistrationList(old_dll_path, kDllsToRegister,
+                                                kNumDllsToRegister, false,
+                                                old_dll_list.get())) {
+        // Don't abort the install as a result of a failure to unregister old
+        // DLLs.
+        old_dll_list->Do();
+      }
+    }
+
+    std::wstring dll_path(install_path);
+    file_util::AppendToPath(&dll_path, new_version.GetString());
+    scoped_ptr<WorkItemList> dll_list(WorkItem::CreateWorkItemList());
+    if (InstallUtil::BuildDLLRegistrationList(dll_path, kDllsToRegister,
+                                              kNumDllsToRegister, true,
+                                              dll_list.get())) {
+      if (!dll_list->Do()) {
+        dll_list->Rollback();
+        return false;
+      }
     }
   }
 
