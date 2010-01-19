@@ -2440,9 +2440,6 @@ BUG18896 LINUX WIN DEBUG : svg/batik/paints/gradientLimit.svg = TIMEOUT FAIL
 // Test failures from WebKit merge 46894 to 46977
 BUG26737 : fast/js/prototypes.html = FAIL
 
-// Fallout from webkit 47041:47189
-BUG19248 : fast/js/const.html = FAIL
-
 // WebKit roll r47417:47528
 BUG19766 LINUX : fast/replaced/width100percent-menulist.html = FAIL
 
