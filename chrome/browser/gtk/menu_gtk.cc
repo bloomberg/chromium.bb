@@ -77,7 +77,8 @@ void MenuGtk::AppendMenuItemWithLabel(int command_id,
 void MenuGtk::AppendMenuItemWithIcon(int command_id,
                                      const std::string& label,
                                      const SkBitmap& icon) {
-  GtkWidget* menu_item = BuildMenuItemWithImage(label, icon);
+  std::string converted_label = ConvertAcceleratorsFromWindowsStyle(label);
+  GtkWidget* menu_item = BuildMenuItemWithImage(converted_label, icon);
   AppendMenuItem(command_id, menu_item);
 }
 
@@ -225,9 +226,8 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
 
 GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
                                            const SkBitmap& icon) {
-  std::string converted_label = ConvertAcceleratorsFromWindowsStyle(label);
   GtkWidget* menu_item =
-      gtk_image_menu_item_new_with_mnemonic(converted_label.c_str());
+      gtk_image_menu_item_new_with_mnemonic(label.c_str());
 
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),

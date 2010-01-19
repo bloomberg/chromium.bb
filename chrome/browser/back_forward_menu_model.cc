@@ -70,8 +70,15 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
   if (IsSeparator(index))
     return string16();
 
+  // Return the entry title, escaping any '&' characters.
   NavigationEntry* entry = GetNavigationEntry(index);
-  return entry->GetTitleForDisplay(&GetTabContents()->controller());
+  string16 menu_text(entry->GetTitleForDisplay(
+      &GetTabContents()->controller()));
+  for (size_t i = menu_text.find('&'); i != string16::npos;
+       i = menu_text.find('&', i + 2)) {
+    menu_text.insert(i, 1, '&');
+  }
+  return menu_text;
 }
 
 bool BackForwardMenuModel::IsLabelDynamicAt(int index) const {
