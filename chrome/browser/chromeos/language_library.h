@@ -35,10 +35,17 @@ class LanguageLibrary {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Returns the list of IMEs and keyboard layouts we can select. If the cros
-  // library is not found or IBus/DBus daemon is not alive, this function
-  // returns a fallback language list (and never returns NULL).
+  // Returns the list of IMEs and keyboard layouts we can select
+  // (i.e. active). If the cros library is not found or IBus/DBus daemon
+  // is not alive, this function returns a fallback language list (and
+  // never returns NULL).
   InputLanguageList* GetLanguages();
+
+  // Returns the list of IMEs and keyboard layouts we support, including
+  // ones not active. If the cros library is not found or IBus/DBus
+  // daemon is not alive, this function returns a fallback language list
+  // (and never returns NULL).
+  InputLanguageList* GetSupportedLanguages();
 
   // Changes the current IME engine to |id| and enable IME (when |category|
   // is LANGUAGE_CATEGORY_IME). Changes the current XKB layout to |id| and
@@ -46,6 +53,14 @@ class LanguageLibrary {
   // identifier of a IME engine or XKB layout. Please check chromeos_language.h
   // in src third_party/cros/ for details.
   void ChangeLanguage(LanguageCategory category, const std::string& id);
+
+  // Activates the language specified by |category| and |id|. Returns true
+  // on success.
+  bool ActivateLanguage(LanguageCategory category, const std::string& id);
+
+  // Dectivates the language specified by |category| and |id|. Returns
+  // true on success.
+  bool DeactivateLanguage(LanguageCategory category, const std::string& id);
 
   const InputLanguage& current_language() const {
     return current_language_;

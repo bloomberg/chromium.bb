@@ -60,11 +60,39 @@ chromeos::InputLanguageList* LanguageLibrary::GetLanguages() {
   return result ? result : CreateFallbackInputLanguageList();
 }
 
+chromeos::InputLanguageList* LanguageLibrary::GetSupportedLanguages() {
+  chromeos::InputLanguageList* result = NULL;
+  if (EnsureLoaded()) {
+    result = chromeos::GetSupportedLanguages(language_status_connection_);
+  }
+  return result ? result : CreateFallbackInputLanguageList();
+}
+
 void LanguageLibrary::ChangeLanguage(
     LanguageCategory category, const std::string& id) {
   if (EnsureLoaded()) {
     chromeos::ChangeLanguage(language_status_connection_, category, id.c_str());
   }
+}
+
+bool LanguageLibrary::ActivateLanguage(
+    LanguageCategory category, const std::string& id) {
+  bool success = false;
+  if (EnsureLoaded()) {
+    success = chromeos::ActivateLanguage(language_status_connection_,
+                                         category, id.c_str());
+  }
+  return success;
+}
+
+bool LanguageLibrary::DeactivateLanguage(
+    LanguageCategory category, const std::string& id) {
+  bool success = false;
+  if (EnsureLoaded()) {
+    success = chromeos::DeactivateLanguage(language_status_connection_,
+                                           category, id.c_str());
+  }
+  return success;
 }
 
 // static
