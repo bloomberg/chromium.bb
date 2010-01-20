@@ -28,14 +28,19 @@ class ExtensionBrowserTest
   // 1 means you expect a new install, 0 means you expect an upgrade, -1 means
   // you expect a failed upgrade.
   bool InstallExtension(const FilePath& path, int expected_change) {
-    return InstallOrUpdateExtension("", path, expected_change);
+    return InstallOrUpdateExtension("", path, false, expected_change);
   }
 
-  // Same as above but calls ExtensionsService::UpdateExtension instead of
-  // InstallExtension().
+  // Same as above but passes an id to CrxInstaller::Start and does not allow
+  // a privilege increase.
   bool UpdateExtension(const std::string& id, const FilePath& path,
                        int expected_change) {
-    return InstallOrUpdateExtension(id, path, expected_change);
+    return InstallOrUpdateExtension(id, path, false, expected_change);
+  }
+
+  // Begins install process but simulates a user cancel.
+  bool StartInstallButCancel(const FilePath& path) {
+    return InstallOrUpdateExtension("", path, true, 0);
   }
 
   void ReloadExtension(const std::string& extension_id);
@@ -71,6 +76,7 @@ class ExtensionBrowserTest
 
  private:
   bool InstallOrUpdateExtension(const std::string& id, const FilePath& path,
+                                bool should_cancel,
                                 int expected_change);
 
   bool WaitForExtensionHostsToLoad();

@@ -12,7 +12,9 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/location_bar.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -65,8 +67,32 @@ bool ExtensionBrowserTest::LoadExtension(const FilePath& path) {
   return WaitForExtensionHostsToLoad();
 }
 
-bool ExtensionBrowserTest::InstallOrUpdateExtension(
-    const std::string& id, const FilePath& path, int expected_change) {
+// This class is used to simulate an installation abort by the user.
+class MockAbortExtensionInstallUI : public ExtensionInstallUI {
+ public:
+  MockAbortExtensionInstallUI() : ExtensionInstallUI(NULL) {}
+
+  // Simulate a user abort on an extension installation.
+  void ConfirmInstall(Delegate* delegate, Extension* extension, SkBitmap* icon)
+  {
+    delegate->InstallUIAbort();
+    MessageLoopForUI::current()->Quit();
+  }
+
+  void ConfirmUninstall(Delegate* delegate, Extension* extension,
+                        SkBitmap* icon) {}
+
+  void OnInstallSuccess(Extension* extension) {}
+
+  void OnInstallFailure(const std::string& error) {}
+
+  void OnOverinstallAttempted(Extension* extension) {}
+};
+
+bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
+                                                    const FilePath& path,
+                                                    bool should_cancel,
+                                                    int expected_change) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->set_show_extensions_prompts(false);
   size_t num_before = service->extensions()->size();
@@ -77,18 +103,19 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(
                   NotificationService::AllSources());
     registrar.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
                   NotificationService::AllSources());
-
-    if (!id.empty()) {
-      // We need to copy this to a temporary location because Update() will
-      // delete it.
-      FilePath temp_dir;
-      PathService::Get(base::DIR_TEMP, &temp_dir);
-      FilePath copy = temp_dir.Append(path.BaseName());
-      file_util::CopyFile(path, copy);
-      service->UpdateExtension(id, copy);
-    } else {
-      service->InstallExtension(path);
-    }
+    registrar.Add(this, NotificationType::EXTENSION_OVERINSTALL_ERROR,
+                  NotificationService::AllSources());
+    registrar.Add(this, NotificationType::EXTENSION_INSTALL_ERROR,
+                  NotificationService::AllSources());
+    CrxInstaller::Start(
+        path,
+        service->install_directory(),
+        Extension::INTERNAL,
+        id,
+        false,  // do not delete after install
+        id == "" ? true : false,  // only allow privilege increase for installs
+        service,
+        should_cancel ? new MockAbortExtensionInstallUI() : NULL);
 
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);

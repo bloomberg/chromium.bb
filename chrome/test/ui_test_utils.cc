@@ -12,8 +12,10 @@
 #include "base/process_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -368,6 +370,13 @@ void WaitForNewTab(Browser* browser) {
 void WaitForLoadStop(NavigationController* controller) {
   SimpleNotificationObserver<NavigationController>
       new_tab_observer(NotificationType::LOAD_STOP, controller);
+}
+
+void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
+  Browser::OpenURLOffTheRecord(profile, url);
+  Browser* browser = BrowserList::FindBrowserWithType(
+      profile->GetOffTheRecordProfile(), Browser::TYPE_NORMAL);
+  WaitForNavigations(&browser->GetSelectedTabContents()->controller(), 1);
 }
 
 void NavigateToURL(Browser* browser, const GURL& url) {

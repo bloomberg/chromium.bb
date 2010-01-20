@@ -19,6 +19,7 @@ class DownloadManager;
 class GURL;
 class MessageLoop;
 class NavigationController;
+class Profile;
 class RenderViewHost;
 class TabContents;
 class Value;
@@ -58,6 +59,11 @@ void WaitForNewTab(Browser* browser);
 // Waits for a load stop for the specified |controller|.
 void WaitForLoadStop(NavigationController* controller);
 
+// Opens |url| in an incognito browser window with the off the record profile of
+// |profile|, blocking until the navigation finishes. This will create a new
+// browser if a browser with the off the record profile does not exist.
+void OpenURLOffTheRecord(Profile* profile, const GURL& url);
+
 // Navigates the selected tab of |browser| to |url|, blocking until the
 // navigation finishes.
 void NavigateToURL(Browser* browser, const GURL& url);
@@ -67,7 +73,6 @@ void NavigateToURL(Browser* browser, const GURL& url);
 void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
                                                 const GURL& url,
                                                 int number_of_navigations);
-
 
 // Executes the passed |script| in the frame pointed to by |frame_xpath| (use
 // empty string for main frame) and returns the value the evaluation of the

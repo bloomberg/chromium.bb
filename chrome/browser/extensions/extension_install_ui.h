@@ -48,31 +48,33 @@ class ExtensionInstallUI {
 
   explicit ExtensionInstallUI(Profile* profile);
 
+  virtual ~ExtensionInstallUI() {}
+
   // This is called by the installer to verify whether the installation should
-  // proceed.
+  // proceed. This is declared virtual for testing.
   //
   // We *MUST* eventually call either Proceed() or Abort()
   // on |delegate|.
-  void ConfirmInstall(Delegate* delegate, Extension* extension,
-                      SkBitmap* icon);
+  virtual void ConfirmInstall(Delegate* delegate, Extension* extension,
+                              SkBitmap* icon);
 
   // This is called by the extensions management page to verify whether the
-  // uninstallation should proceed.
+  // uninstallation should proceed. This is declared virtual for testing.
   //
   // We *MUST* eventually call either Proceed() or Abort()
   // on |delegate|.
-  void ConfirmUninstall(Delegate* delegate, Extension* extension,
-                        SkBitmap* icon);
+  virtual void ConfirmUninstall(Delegate* delegate, Extension* extension,
+                                SkBitmap* icon);
 
-  // Installation was successful.
-  void OnInstallSuccess(Extension* extension);
+  // Installation was successful. This is declared virtual for testing.
+  virtual void OnInstallSuccess(Extension* extension);
 
-  // Installation failed.
-  void OnInstallFailure(const std::string& error);
+  // Installation failed. This is declared virtual for testing.
+  virtual void OnInstallFailure(const std::string& error);
 
   // The install was rejected because the same extension/version is already
-  // installed.
-  void OnOverinstallAttempted(Extension* extension);
+  // installed. This is declared virtual for testing.
+  virtual void OnOverinstallAttempted(Extension* extension);
 
  private:
   // When a Theme is downloaded it is applied and an info bar is shown to give
