@@ -214,10 +214,6 @@ class ServerConnectionManager {
   // Updates status and broadcasts events on change.
   bool CheckServerReachable();
 
-  // Updates server status to "unreachable" and broadcasts events if
-  // necessary.
-  void SetServerUnreachable();
-
   // Signal the shutdown event to notify listeners.
   virtual void kill();
 
@@ -254,8 +250,6 @@ class ServerConnectionManager {
   void GetServerParameters(std::string* server_url,
                            int* port,
                            bool* use_ssl) const;
-
-  std::string GetServerHost() const;
 
   bool terminate_all_io() const {
     AutoLock lock(terminate_all_io_mutex_);
