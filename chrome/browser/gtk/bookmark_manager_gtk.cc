@@ -551,11 +551,12 @@ GtkWidget* BookmarkManagerGtk::MakeRightPane() {
   g_signal_connect(right_tree_view_, "key-press-event",
                    G_CALLBACK(OnTreeViewKeyPress), this);
 
-  // We don't advertise GDK_ACTION_COPY, but since we don't explicitly do
-  // any deleting following a succesful move, this should work.
-  gtk_drag_source_set(right_tree_view_,
-                      GDK_BUTTON1_MASK,
-                      NULL, 0, GDK_ACTION_MOVE);
+  // GDK_ACTION_MOVE is necessary to reorder bookmarks within the
+  // right tree.  COPY and LINK are necessary for drags to the
+  // Gnome desktop (nautilus).
+  gtk_drag_source_set(right_tree_view_, GDK_BUTTON1_MASK, NULL, 0,
+      static_cast<GdkDragAction>(GDK_ACTION_MOVE | GDK_ACTION_COPY |
+                                 GDK_ACTION_LINK));
   GtkDndUtil::SetSourceTargetListFromCodeMask(
       right_tree_view_, kSourceTargetMask);
 
