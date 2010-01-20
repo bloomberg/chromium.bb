@@ -35,6 +35,12 @@ void GPUProcessor::ProcessCommands() {
   if (command_buffer_->GetErrorStatus())
     return;
 
+  if (decoder_.get()) {
+    // TODO(apatrick): need to do more than this on failure.
+    if (!decoder_->MakeCurrent())
+      return;
+  }
+
   parser_->set_put(command_buffer_->GetPutOffset());
 
   int commands_processed = 0;

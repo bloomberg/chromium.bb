@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -43,7 +44,7 @@ class GPUProcessorTest : public testing::Test {
 
     async_api_.reset(new StrictMock<AsyncAPIMock>);
 
-    decoder_ = gles2::GLES2Decoder::Create();
+    decoder_ = new gles2::MockGLES2Decoder();
 
     parser_ = new CommandParser(buffer_,
                                 kRingBufferEntries,
@@ -70,7 +71,7 @@ class GPUProcessorTest : public testing::Test {
   scoped_ptr<::base::SharedMemory> shared_memory_;
   Buffer shared_memory_buffer_;
   int32* buffer_;
-  gles2::GLES2Decoder* decoder_;
+  gles2::MockGLES2Decoder* decoder_;
   CommandParser* parser_;
   scoped_ptr<AsyncAPIMock> async_api_;
   scoped_refptr<GPUProcessor> processor_;
@@ -125,6 +126,16 @@ TEST_F(GPUProcessorTest, ProcessesTwoCommands) {
 
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
     .WillOnce(Return(parse_error::kParseNoError));
+
+  processor_->ProcessCommands();
+}
+
+TEST_F(GPUProcessorTest, ProcessorSetsAndResetsTheGLContext) {
+  EXPECT_CALL(*decoder_, MakeCurrent())
+    .WillOnce(Return(true));
+  EXPECT_CALL(*command_buffer_, GetPutOffset())
+    .WillOnce(Return(0));
+  EXPECT_CALL(*command_buffer_, SetGetOffset(0));
 
   processor_->ProcessCommands();
 }

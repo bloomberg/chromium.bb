@@ -486,11 +486,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   // Overridden from GLES2Decoder.
   virtual bool Initialize();
-
-  // Overridden from GLES2Decoder.
   virtual void Destroy();
-
-  // Overridden from GLES2Decoder.
+  virtual bool MakeCurrent();
   virtual uint32 GetServiceIdForTesting(uint32 client_id);
 
   // Removes any buffers in the VertexAtrribInfos and BufferInfos. This is used
@@ -693,29 +690,35 @@ GLES2DecoderImpl::GLES2DecoderImpl()
 }
 
 bool GLES2DecoderImpl::Initialize() {
+  bool success = false;
+
   id_manager_.reset(new IdManager());
   buffer_manager_.reset(new BufferManager());
   program_manager_.reset(new ProgramManager());
 
-  if (!InitPlatformSpecific())
-    return false;
-  if (!InitGlew())
-    return false;
-  CHECK_GL_ERROR();
+  if (InitPlatformSpecific()) {
+    if (MakeCurrent()) {
+      if (InitGlew()) {
+        CHECK_GL_ERROR();
 
-  // Lookup GL things we need to know.
-  GLint value;
-  glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &value);
-  max_vertex_attribs_ = value;
+        // Lookup GL things we need to know.
+        GLint value;
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &value);
+        max_vertex_attribs_ = value;
 
-  DCHECK_GE(max_vertex_attribs_, 8u);
+        DCHECK_GE(max_vertex_attribs_, 8u);
 
-  vertex_attrib_infos_.reset(new VertexAttribInfo[max_vertex_attribs_]);
-  memset(vertex_attrib_infos_.get(), 0,
-         sizeof(vertex_attrib_infos_[0]) * max_vertex_attribs_);
+        vertex_attrib_infos_.reset(new VertexAttribInfo[max_vertex_attribs_]);
+        memset(vertex_attrib_infos_.get(), 0,
+               sizeof(vertex_attrib_infos_[0]) * max_vertex_attribs_);
 
-  // glBindFramebuffer(0, 0);
-  return true;
+        // glBindFramebuffer(0, 0);
+        success = true;
+      }
+    }
+  }
+
+  return success;
 }
 
 namespace {
@@ -937,6 +940,27 @@ void GLDeleteTexturesHelper(
 
 }  // anonymous namespace
 
+bool GLES2DecoderImpl::MakeCurrent() {
+#if defined(UNIT_TEST)
+  return true;
+#elif defined(OS_WIN)
+  if (::wglGetCurrentDC() == device_context_ &&
+      ::wglGetCurrentContext() == gl_context_) {
+    return true;
+  }
+  if (!::wglMakeCurrent(device_context_, gl_context_)) {
+    DLOG(ERROR) << "Unable to make gl context current.";
+    return false;
+  }
+  return true;
+#elif defined(OS_LINUX)
+  return window()->MakeCurrent();
+#else
+  NOTREACHED();
+  return false;
+#endif
+}
+
 uint32 GLES2DecoderImpl::GetServiceIdForTesting(uint32 client_id) {
 #if defined(UNIT_TEST)
   GLuint service_id;
@@ -1006,16 +1030,9 @@ bool GLES2DecoderImpl::InitPlatformSpecific() {
     DLOG(ERROR) << "Failed to create GL context.";
     return false;
   }
-
-  if (!::wglMakeCurrent(device_context_, gl_context_)) {
-    DLOG(ERROR) << "Unable to make gl context current.";
-    return false;
-  }
 #elif defined(OS_LINUX)
   DCHECK(window());
   if (!window()->Initialize())
-    return false;
-  if (!window()->MakeCurrent())
     return false;
 #endif
 

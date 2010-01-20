@@ -74,6 +74,10 @@ bool XWindowWrapper::Initialize() {
 }
 
 bool XWindowWrapper::MakeCurrent() {
+  if (glXGetCurrentDrawable() == window_ &&
+      glXGetCurrentContext() == context_) {
+    return true;
+  }
   if (glXMakeCurrent(display_, window_, context_) != True) {
     glXDestroyContext(display_, context_);
     context_ = 0;
