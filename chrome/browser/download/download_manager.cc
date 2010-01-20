@@ -137,6 +137,7 @@ DownloadItem::DownloadItem(const DownloadCreateInfo& info)
       render_process_id_(-1),
       request_id_(-1),
       save_as_(false),
+      is_extension_install_(info.is_extension_install),
       name_finalized_(false),
       is_temporary_(false) {
   if (state_ == IN_PROGRESS)
