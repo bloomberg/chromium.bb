@@ -1466,7 +1466,9 @@ WebWidget* RenderView::createPopupMenu(const WebPopupMenuInfo& info) {
 WebStorageNamespace* RenderView::createSessionStorageNamespace() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return WebStorageNamespace::createSessionStorageNamespace();
-  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION);
+  CHECK(session_storage_namespace_id_ != kInvalidSessionStorageNamespaceId);
+  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION,
+                                             session_storage_namespace_id_);
 }
 
 void RenderView::didAddMessageToConsole(

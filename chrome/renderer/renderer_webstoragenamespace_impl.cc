@@ -14,16 +14,16 @@ using WebKit::WebString;
 
 RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
     DOMStorageType storage_type)
-    : storage_type_(storage_type) {
-  RenderThread::current()->Send(
-        new ViewHostMsg_DOMStorageNamespaceId(storage_type_,
-                                              &namespace_id_));
+    : storage_type_(storage_type),
+      namespace_id_(kLocalStorageNamespaceId) {
+  DCHECK(storage_type == DOM_STORAGE_LOCAL);
 }
 
 RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
     DOMStorageType storage_type, int64 namespace_id)
     : storage_type_(storage_type),
       namespace_id_(namespace_id) {
+  DCHECK(storage_type == DOM_STORAGE_SESSION);
 }
 
 RendererWebStorageNamespaceImpl::~RendererWebStorageNamespaceImpl() {
@@ -33,19 +33,14 @@ WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
     const WebString& origin) {
   // Ideally, we'd keep a hash map of origin to these objects.  Unfortunately
   // this doesn't seem practical because there's no good way to ref-count these
-  // objects, and it'd be unclear who owned them.  So, instead, we'll pay a
-  // price for an allocaiton and IPC for each.
+  // objects, and it'd be unclear who owned them.  So, instead, we'll pay the
+  // price in terms of wasted memory.
   return new RendererWebStorageAreaImpl(namespace_id_, origin);
 }
 
 WebStorageNamespace* RendererWebStorageNamespaceImpl::copy() {
-  // This cannot easily be deferred because we need a snapshot in time.
-  int64 new_namespace_id;
-  RenderThread::current()->Send(
-      new ViewHostMsg_DOMStorageCloneNamespaceId(namespace_id_,
-                                                 &new_namespace_id));
-  return new RendererWebStorageNamespaceImpl(storage_type_,
-                                             new_namespace_id);
+  NOTREACHED();  // We shouldn't ever reach this code in Chromium.
+  return NULL;
 }
 
 void RendererWebStorageNamespaceImpl::close() {

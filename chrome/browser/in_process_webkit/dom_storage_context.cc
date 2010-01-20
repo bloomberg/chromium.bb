@@ -36,37 +36,10 @@ DOMStorageContext::~DOMStorageContext() {
   // away.  And they remove themselves from this list.
   DCHECK(dispatcher_host_set_.empty());
 
-  // If we don't have any work to do on the WebKit thread, bail.
-  if (storage_namespace_map_.empty())
-    return;
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-
-  // The storage namespace destructor unregisters the storage namespace, so
-  // our iterator becomes invalid.  Thus we just keep deleting the first item
-  // until there are none left.
-  while (!storage_namespace_map_.empty())
-    delete storage_namespace_map_.begin()->second;
-}
-
-DOMStorageNamespace* DOMStorageContext::LocalStorage() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  DOMStorageNamespace* storage_namespace = GetStorageNamespace(
-      kLocalStorageNamespaceId);
-  if (storage_namespace)
-    return storage_namespace;
-
-  FilePath data_path = webkit_context_->data_path();
-  FilePath dir_path;
-  if (!data_path.empty()) {
-    MigrateLocalStorageDirectory(data_path);
-    dir_path = data_path.AppendASCII(kLocalStorageDirectory);
+  for (StorageNamespaceMap::iterator iter(storage_namespace_map_.begin());
+       iter != storage_namespace_map_.end(); ++iter) {
+    delete iter->second;
   }
-  return DOMStorageNamespace::CreateLocalStorageNamespace(this, dir_path);
-}
-
-DOMStorageNamespace* DOMStorageContext::NewSessionStorage() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  return DOMStorageNamespace::CreateSessionStorageNamespace(this);
 }
 
 int64 DOMStorageContext::AllocateStorageAreaId() {
@@ -112,28 +85,28 @@ DOMStorageArea* DOMStorageContext::GetStorageArea(int64 id) {
   return iter->second;
 }
 
-void DOMStorageContext::RegisterStorageNamespace(
-    DOMStorageNamespace* storage_namespace) {
+void DOMStorageContext::DeleteSessionStorageNamespace(int64 namespace_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  int64 id = storage_namespace->id();
-  DCHECK(!GetStorageNamespace(id));
-  storage_namespace_map_[id] = storage_namespace;
+  StorageNamespaceMap::iterator iter =
+      storage_namespace_map_.find(namespace_id);
+  if (iter == storage_namespace_map_.end())
+    return;
+  DCHECK(iter->second->dom_storage_type() == DOM_STORAGE_SESSION);
+  delete iter->second;
+  storage_namespace_map_.erase(iter);
 }
 
-void DOMStorageContext::UnregisterStorageNamespace(
-    DOMStorageNamespace* storage_namespace) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  int64 id = storage_namespace->id();
-  DCHECK(GetStorageNamespace(id));
-  storage_namespace_map_.erase(id);
-}
-
-DOMStorageNamespace* DOMStorageContext::GetStorageNamespace(int64 id) {
+DOMStorageNamespace* DOMStorageContext::GetStorageNamespace(
+    int64 id, bool allocation_allowed) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   StorageNamespaceMap::iterator iter = storage_namespace_map_.find(id);
-  if (iter == storage_namespace_map_.end())
+  if (iter != storage_namespace_map_.end())
+    return iter->second;
+  if (!allocation_allowed)
     return NULL;
-  return iter->second;
+  if (id == kLocalStorageNamespaceId)
+    return CreateLocalStorage();
+  return CreateSessionStorage(id);
 }
 
 void DOMStorageContext::RegisterDispatcherHost(
@@ -164,7 +137,7 @@ void DOMStorageContext::PurgeMemory() {
   // SessionStorage namespace, its data will be gone forever, because it isn't
   // currently backed by disk.
   DOMStorageNamespace* local_storage =
-      GetStorageNamespace(kLocalStorageNamespaceId);
+      GetStorageNamespace(kLocalStorageNamespaceId, false);
   if (local_storage)
     local_storage->PurgeMemory();
 }
@@ -186,12 +159,42 @@ void DOMStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
   }
 }
 
+DOMStorageNamespace* DOMStorageContext::CreateLocalStorage() {
+  FilePath data_path = webkit_context_->data_path();
+  FilePath dir_path;
+  if (!data_path.empty()) {
+    MigrateLocalStorageDirectory(data_path);
+    dir_path = data_path.AppendASCII(kLocalStorageDirectory);
+  }
+  DOMStorageNamespace* new_namespace =
+      DOMStorageNamespace::CreateLocalStorageNamespace(this, dir_path);
+  RegisterStorageNamespace(new_namespace);
+  return new_namespace;
+}
+
+DOMStorageNamespace* DOMStorageContext::CreateSessionStorage(
+    int64 namespace_id) {
+  DOMStorageNamespace* new_namespace =
+      DOMStorageNamespace::CreateSessionStorageNamespace(this, namespace_id);
+  RegisterStorageNamespace(new_namespace);
+  return new_namespace;
+}
+
+void DOMStorageContext::RegisterStorageNamespace(
+    DOMStorageNamespace* storage_namespace) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  int64 id = storage_namespace->id();
+  DCHECK(!GetStorageNamespace(id, false));
+  storage_namespace_map_[id] = storage_namespace;
+}
+
+/* static */
 void DOMStorageContext::CompleteCloningSessionStorage(
     DOMStorageContext* context, int64 existing_id, int64 clone_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   DOMStorageNamespace* existing_namespace =
-      context->GetStorageNamespace(existing_id);
+      context->GetStorageNamespace(existing_id, false);
   // If nothing exists, then there's nothing to clone.
   if (existing_namespace)
-    existing_namespace->Copy(clone_id);
+    context->RegisterStorageNamespace(existing_namespace->Copy(clone_id));
 }

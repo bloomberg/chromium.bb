@@ -1859,17 +1859,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_SetCacheMode,
                        bool /* enabled */)
 
-  // There's one LocalStorage namespace per profile and one SessionStorage
-  // namespace per tab.  This will find or create the proper namespace.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DOMStorageNamespaceId,
-                              DOMStorageType /* storage_type */,
-                              int64 /* new_namespace_id */)
-
-  // Used by SessionStorage to clone a namespace per the spec.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DOMStorageCloneNamespaceId,
-                              int64 /* namespace_id to clone */,
-                              int64 /* new_namespace_id */)
-
   // Get the storage area id for a particular origin within a namespace.
   IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DOMStorageStorageAreaId,
                               int64 /* namespace_id */,

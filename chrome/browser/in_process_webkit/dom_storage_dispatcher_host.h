@@ -57,8 +57,6 @@ class DOMStorageDispatcherHost
   ~DOMStorageDispatcherHost();
 
   // Message Handlers.
-  void OnNamespaceId(DOMStorageType storage_type, IPC::Message* reply_msg);
-  void OnCloneNamespaceId(int64 namespace_id, IPC::Message* reply_msg);
   void OnStorageAreaId(int64 namespace_id, const string16& origin,
                        IPC::Message* reply_msg);
   void OnLength(int64 storage_area_id, IPC::Message* reply_msg);

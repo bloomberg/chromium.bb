@@ -26,13 +26,13 @@ class DOMStorageNamespace {
   static DOMStorageNamespace* CreateLocalStorageNamespace(
       DOMStorageContext* dom_storage_context, const FilePath& data_dir_path);
   static DOMStorageNamespace* CreateSessionStorageNamespace(
-      DOMStorageContext* dom_storage_context);
+      DOMStorageContext* dom_storage_context, int64 namespace_id);
 
   ~DOMStorageNamespace();
 
   DOMStorageArea* GetStorageArea(const string16& origin);
-  DOMStorageNamespace* Copy();  // TODO(jorlow): Delete in next patch.
-  DOMStorageNamespace* Copy(int64 id);
+  DOMStorageNamespace* Copy(int64 clone_namespace_id);
+
   void PurgeMemory();
 
   const DOMStorageContext* dom_storage_context() const {

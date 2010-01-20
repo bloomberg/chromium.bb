@@ -112,10 +112,6 @@ bool DOMStorageDispatcherHost::OnMessageReceived(const IPC::Message& message,
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(DOMStorageDispatcherHost, message, *msg_is_ok)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageNamespaceId,
-                                    OnNamespaceId)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageCloneNamespaceId,
-                                    OnCloneNamespaceId)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageStorageAreaId,
                                     OnStorageAreaId)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageLength, OnLength)
@@ -151,50 +147,6 @@ void DOMStorageDispatcherHost::Send(IPC::Message* message) {
       NewRunnableMethod(this, &DOMStorageDispatcherHost::Send, message));
 }
 
-void DOMStorageDispatcherHost::OnNamespaceId(DOMStorageType storage_type,
-                                             IPC::Message* reply_msg) {
-  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnNamespaceId, storage_type,
-        reply_msg));
-    return;
-  }
-
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  DOMStorageNamespace* new_namespace;
-  if (storage_type == DOM_STORAGE_LOCAL)
-    new_namespace = Context()->LocalStorage();
-  else
-    new_namespace = Context()->NewSessionStorage();
-  ViewHostMsg_DOMStorageNamespaceId::WriteReplyParams(reply_msg,
-                                                      new_namespace->id());
-  Send(reply_msg);
-}
-
-void DOMStorageDispatcherHost::OnCloneNamespaceId(int64 namespace_id,
-                                                  IPC::Message* reply_msg) {
-  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnCloneNamespaceId, namespace_id,
-        reply_msg));
-    return;
-  }
-
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  DOMStorageNamespace* existing_namespace =
-      Context()->GetStorageNamespace(namespace_id);
-  if (!existing_namespace) {
-    BrowserRenderProcessHost::BadMessageTerminateProcess(
-        ViewHostMsg_DOMStorageCloneNamespaceId::ID, process_handle_);
-    delete reply_msg;
-    return;
-  }
-  DOMStorageNamespace* new_namespace = existing_namespace->Copy();
-  ViewHostMsg_DOMStorageCloneNamespaceId::WriteReplyParams(reply_msg,
-                                                           new_namespace->id());
-  Send(reply_msg);
-}
-
 void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
                                                const string16& origin,
                                                IPC::Message* reply_msg) {
@@ -207,7 +159,7 @@ void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   DOMStorageNamespace* storage_namespace =
-      Context()->GetStorageNamespace(namespace_id);
+      Context()->GetStorageNamespace(namespace_id, true);
   if (!storage_namespace) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(
         ViewHostMsg_DOMStorageStorageAreaId::ID, process_handle_);
@@ -215,8 +167,8 @@ void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
     return;
   }
   DOMStorageArea* storage_area = storage_namespace->GetStorageArea(origin);
-  ViewHostMsg_DOMStorageCloneNamespaceId::WriteReplyParams(reply_msg,
-                                                           storage_area->id());
+  ViewHostMsg_DOMStorageStorageAreaId::WriteReplyParams(reply_msg,
+                                                        storage_area->id());
   Send(reply_msg);
 }
 

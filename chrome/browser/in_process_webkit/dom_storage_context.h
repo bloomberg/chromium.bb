@@ -28,12 +28,6 @@ class DOMStorageContext {
   explicit DOMStorageContext(WebKitContext* webkit_context);
   virtual ~DOMStorageContext();
 
-  // Get the local storage instance.  The pointer is owned by this class.
-  DOMStorageNamespace* LocalStorage();
-
-  // Get a new session storage namespace (but it's still owned by this class).
-  DOMStorageNamespace* NewSessionStorage();
-
   // Allocate a new storage area id.  Only call on the WebKit thread.
   int64 AllocateStorageAreaId();
 
@@ -50,12 +44,13 @@ class DOMStorageContext {
   void UnregisterStorageArea(DOMStorageArea* storage_area);
   DOMStorageArea* GetStorageArea(int64 id);
 
-  // Get a namespace from an id.  What's returned is owned by this class.  The
-  // caller of GetStorageNamespace must immediately register itself with the
-  // returned StorageNamespace.
-  void RegisterStorageNamespace(DOMStorageNamespace* storage_namespace);
-  void UnregisterStorageNamespace(DOMStorageNamespace* storage_namespace);
-  DOMStorageNamespace* GetStorageNamespace(int64 id);
+  // Called on WebKit thread when a session storage namespace can be deleted.
+  void DeleteSessionStorageNamespace(int64 namespace_id);
+
+  // Get a namespace from an id.  What's returned is owned by this class.  If
+  // allocation_allowed is true, then this function will create the storage
+  // namespace if it hasn't been already.
+  DOMStorageNamespace* GetStorageNamespace(int64 id, bool allocation_allowed);
 
   // Sometimes an event from one DOM storage dispatcher host requires
   // communication to all of them.
@@ -72,6 +67,15 @@ class DOMStorageContext {
   void DeleteDataModifiedSince(const base::Time& cutoff);
 
  private:
+  // Get the local storage instance.  The object is owned by this class.
+  DOMStorageNamespace* CreateLocalStorage();
+
+  // Get a new session storage namespace.  The object is owned by this class.
+  DOMStorageNamespace* CreateSessionStorage(int64 namespace_id);
+
+  // Used internally to register storage namespaces we create.
+  void RegisterStorageNamespace(DOMStorageNamespace* storage_namespace);
+
   // The WebKit thread half of CloneSessionStorage above.  Static because
   // DOMStorageContext isn't ref counted thus we can't use a runnable method.
   // That said, we know this is safe because this class is destroyed on the

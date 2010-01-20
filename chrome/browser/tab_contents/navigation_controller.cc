@@ -149,6 +149,10 @@ NavigationController::~NavigationController() {
       NotificationType::TAB_CLOSED,
       Source<NavigationController>(this),
       NotificationService::NoDetails());
+
+  // When we go away, the session storage namespace will no longer be reachable.
+  profile_->GetWebKitContext()->DeleteSessionStorageNamespace(
+      session_storage_namespace_id_);
 }
 
 void NavigationController::RestoreFromState(

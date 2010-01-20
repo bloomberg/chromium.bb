@@ -105,15 +105,6 @@ BrowserWebKitClientImpl::createLocalStorageNamespace(
   return 0;
 }
 
-WebKit::WebStorageNamespace*
-BrowserWebKitClientImpl::createSessionStorageNamespace() {
-  // The "WebStorage" interface is used for renderer WebKit -> browser WebKit
-  // communication only.  "WebStorageClient" will be used for browser WebKit ->
-  // renderer WebKit.  So this will never be implemented.
-  NOTREACHED();
-  return 0;
-}
-
 void BrowserWebKitClientImpl::dispatchStorageEvent(
     const WebKit::WebString& key, const WebKit::WebString& old_value,
     const WebKit::WebString& new_value, const WebKit::WebString& origin,
