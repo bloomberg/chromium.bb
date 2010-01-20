@@ -163,6 +163,14 @@ TabGtk::TabGtk(TabDelegate* delegate)
 }
 
 TabGtk::~TabGtk() {
+  if (drag_widget_) {
+    // Shadow the drag grab so the grab terminates. We could do this using any
+    // widget, |drag_widget_| is just convenient.
+    gtk_grab_add(drag_widget_);
+    gtk_grab_remove(drag_widget_);
+    DestroyDragWidget();
+  }
+
   if (menu_controller_.get()) {
     // The menu is showing. Close the menu.
     menu_controller_->Cancel();
