@@ -55,10 +55,14 @@ void EventHandler::addText(const char* cstr) {
 }
 
 std::string EventHandler::EventName(double timestamp, int32 type) {
+#if !defined(OS_LINUX)
   std::stringstream strstr;
   strstr.setf(std::ios::fixed, std::ios::floatfield);
   strstr << timestamp << ": ";
   std::string str(strstr.str());
+#else
+  std::string str;
+#endif
   switch (type) {
     case NPEventType_MouseDown:
       return str + "MouseDown";
