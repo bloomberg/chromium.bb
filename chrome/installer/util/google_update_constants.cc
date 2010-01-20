@@ -30,4 +30,5 @@ const wchar_t kRegVersionField[] = L"pv";
 const wchar_t kRegReferralField[] = L"referral";
 const wchar_t kRegEULAAceptedField[] = L"eulaaccepted";
 const wchar_t kEnvProductVersionKey[] = L"CHROME_VERSION";
+const wchar_t kRegLastRunTimeField[] = L"lastrun";
 }  // namespace installer

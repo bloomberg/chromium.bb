@@ -689,7 +689,7 @@
         'browser/find_backend_unittest.cc',
         'browser/global_keyboard_shortcuts_mac_unittest.mm',
         'browser/google_url_tracker_unittest.cc',
-        'browser/google_update_settings_posix_unittest.cc',
+        'browser/google_update_settings_unittest.cc',
         'browser/gtk/bookmark_bar_gtk_unittest.cc',
         'browser/gtk/bookmark_editor_gtk_unittest.cc',
         'browser/gtk/gtk_expanded_container_unittest.cc',

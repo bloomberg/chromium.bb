@@ -5,6 +5,8 @@
 #include "chrome/installer/util/google_update_settings.h"
 
 #include "base/registry.h"
+#include "base/string_util.h"
+#include "base/time.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 
@@ -37,6 +39,15 @@ bool ClearGoogleUpdateStrKey(const wchar_t* const name) {
   if (!key.ReadValue(name, &value))
     return false;
   return key.WriteValue(name, L"");
+}
+
+bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  std::wstring reg_path = dist->GetStateKey();
+  RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WRITE);
+  if (!key.ValueExists(name))
+    return true;
+  return key.DeleteValue(name);
 }
 
 }  // namespace.
@@ -80,6 +91,28 @@ bool GoogleUpdateSettings::SetEULAConsent(bool consented) {
   std::wstring reg_path = dist->GetStateMediumKey();
   RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ | KEY_SET_VALUE);
   return key.WriteValue(google_update::kRegEULAAceptedField, consented? 1 : 0);
+}
+
+int GoogleUpdateSettings::GetLastRunTime() {
+ std::wstring time_s;
+ if (!ReadGoogleUpdateStrKey(google_update::kRegLastRunTimeField, &time_s))
+   return -1;
+ int64 time_i;
+ if (!StringToInt64(time_s, &time_i))
+   return -1;
+ base::TimeDelta td =
+    base::Time::NowFromSystemTime() - base::Time::FromInternalValue(time_i);
+ return td.InDays();
+}
+
+bool GoogleUpdateSettings::SetLastRunTime() {
+  int64 time = base::Time::NowFromSystemTime().ToInternalValue();
+  return WriteGoogleUpdateStrKey(google_update::kRegLastRunTimeField,
+                                 Int64ToWString(time));
+}
+
+bool GoogleUpdateSettings::RemoveLastRunTime() {
+  return RemoveGoogleUpdateStrKey(google_update::kRegLastRunTimeField);
 }
 
 bool GoogleUpdateSettings::GetBrowser(std::wstring* browser) {
