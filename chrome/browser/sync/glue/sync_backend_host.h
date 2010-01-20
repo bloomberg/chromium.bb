@@ -189,8 +189,7 @@ class SyncBackendHost {
                              const std::wstring& test_user,
                              sync_api::HttpPostProviderFactory* factory,
                              sync_api::HttpPostProviderFactory* auth_factory) {
-        DoInitialize(GURL("http://www.example.com/example/path"),
-                     bookmark_model_worker, false, factory,
+        DoInitialize(GURL(), bookmark_model_worker, false, factory,
                      auth_factory, std::string());
         syncapi_->SetupForTestMode(test_user);
     }
