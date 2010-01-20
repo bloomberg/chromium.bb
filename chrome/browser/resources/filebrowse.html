@@ -6,12 +6,14 @@
 <style type="text/css">
 div.header {
   border-bottom: 1px solid #006;
+  border-left: 1px solid #006;
+  border-right: 1px solid #006;
   padding: 8px;
   margin: 0;
   width: 100%;
   left: 0;
   top: 0;
-  min-height: 26px;
+  height: 30px;
   position: absolute;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -22,7 +24,16 @@ div.header {
                                      to(rgba(201, 212, 245, 1)));
   border-bottom-color: #999;
   border-bottom-width: 1px;
+  border-left-color: #999;
+  border-left-width: 1px;
+  border-right-color: #999;
+  border-right-width: 1px;
   color: black;
+}
+
+.rowlink {
+  height: 100%;
+  width: 90%;
 }
 
 a.iconlink {
@@ -43,6 +54,47 @@ ul.filebrowselist {
   margin: 0;
   padding: 0;
   position: relative;
+}
+
+.playbackelement {
+  width: 600px;
+  height: 600px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index:99999;
+  background:black;
+}
+
+.fullscreenplayback {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index:99999;
+  background:black;
+}
+
+.imagepreview {
+  width: 600px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index:99999;
+  background:black;
+}
+
+.fullscreentoggle {
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 50px;
+  z-index: 999999;
+  cursor: pointer;
+  background:  url('../../app/theme/filebrowse_fullscreen.png');
+  position:absolute;
+  background-repeat: no-repeat;
 }
 
 li.filebrowserow div.icon {
@@ -113,6 +165,7 @@ li.filebrowserow span.name {
   margin-top: 10px;
   margin-left: -22px;
   position: relative;
+  text-decoration:underline;
 }
 
 div.title {
@@ -120,21 +173,37 @@ div.title {
   position: relative;
   font-size: .8em;
   font-weight: bold;
-  padding-top: 10px;
+  padding-top: 2px;
 }
 
 div.controlbutton {
   width: 20px;
   display:inline;
   position: absolute;
-  z-index:9999;
+  z-index:999;
   border:1px solid #abb6ce;
   background-color: #f5f7fc;
   padding-left: 7px;
-  padding-top: 4px;
+  padding-top: 2px;
   padding-bottom: 4px;
   padding-right: 7px;
-  height: 20px;
+  height: 15px;
+}
+
+div.column {
+  width:250px;
+  height: 100%;
+  float:left;
+  position: relative;
+}
+
+div.columnlist {
+  width: 100%;
+  bottom: 0;
+  top:30px;
+  position:absolute;
+  overflow-y:scroll;
+  overflow-x:hidden;
 }
 
 div.iconmedia {
@@ -161,14 +230,14 @@ div.backbutton {
   -webkit-border-top-left-radius: 5px;
   -webkit-border-bottom-left-radius: 5px;
   left: 10px;
-  top: 10px
+  top: 5px
 }
 
 div.fwdbutton {
   -webkit-border-top-right-radius: 5px;
   -webkit-border-bottom-right-radius: 5px;
   left: 45px;
-  top: 10px;
+  top: 5px;
 }
 
 div.playbackcontainer {
@@ -189,9 +258,37 @@ div.scanningcontainer {
 }
 
 div.container {
-  top: 50px;
+  top: 0;
   position: absolute;
-  width: 95%;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+}
+
+div.fullcontainer {
+  top: 0px;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 600px;
+  overflow-y: hidden;
+  overflow-x: scroll;
+}
+
+.popout {
+  right: 10px;
+  top: 10px;
+  width: 15px;
+  text-align: center;
+  height: 10px;
+  font-size: .4em;
+  background: rgb(239, 242, 249);
+  cursor: pointer;
+  z-index:99999;
+  padding-top: 1px;
+  border: 1px solid #999;
+  position: absolute;
+  -webkit-border-radius: 5px;
 }
 
 .mediacontainer {
@@ -253,11 +350,27 @@ var pathArray = [];
 var currentNode = -1;
 var foundImages = [];
 var currentImageMenu = '';
+var inFullMode = false;
+var videoPlaybackElement = null;
+var photoPreviewElement = null;
+var numColumns = 0;
+var divArray = [];
+var rootsDiv = null;
 
 function goBackInList() {
   if (currentNode > 0) {
     currentNode--;
     getDataForPath(pathArray[currentNode]);
+  }
+};
+
+function toggleFullscreen() {
+  if (videoPlaybackElement != null) {
+    if (videoPlaybackElement.className == 'fullscreenplayback') {
+      videoPlaybackElement.className = 'playbackelement';
+    } else {
+      videoPlaybackElement.className = 'fullscreenplayback';
+    }
   }
 };
 
@@ -267,14 +380,72 @@ function goForwardInList() {
     getDataForPath(pathArray[currentNode]);
   }
 };
+var lastScrollLeft = 0;
+function animateScrollRight() {
+
+  var main = $('main');
+  main.scrollLeft += 20;
+  // since if its larger than a size, we know we reached the leftmost part when
+  // it stops growing, so clear it out and no more timeouts.
+  if (lastScrollLeft != main.scrollLeft) {
+    lastScrollLeft = main.scrollLeft;
+    setTimeout("animateScrollRight()", 15);
+  } else {
+    lastScrollLeft = 0;
+  }
+
+};
+
+function getCurrentContainer() {
+  if (inFullMode) {
+    var newContainer = document.createElement('div');
+    var main = $('inner');
+    numColumns++;
+    main.style.width = (numColumns * 250) + 'px';
+    newContainer.className = 'column';
+    main.appendChild(newContainer);
+    animateScrollRight();
+    return newContainer;
+  } else {
+    return $('main');
+  }
+};
+
+function clearList(list) {
+  if (list.hasChildNodes()) {
+    while (list.childNodes.length >=1) {
+      list.removeChild(list.firstChild);
+    }
+  }
+};
+
+function rootsChanged() {
+  if (inFullMode) {
+    chrome.send('getRoots', []);
+  }
+};
 
 function browseFileResult(info, results) {
-   if (info.functionCall == 'getRoots' ||
-       info.functionCall == 'getChildren') {
-     currentNode++;
-     createNewList('Removeable Media', results);
+   var lastDirArray = info.path.split('/');
+   var lastDir = lastDirArray[lastDirArray.length - 1];
+   if (info.functionCall == 'getRoots') {
+     if (rootsDiv) {
+       clearList(rootsDiv);
+       createNewList(lastDir, results, rootsDiv, info.path);
+     } else {
+       var main = getCurrentContainer();
+       rootsDiv = main;
+       divArray.push(main);
+
+       createNewList(lastDir, results, main, info.path);
+     }
+   } else if (info.functionCall == 'getChildren') {
+     var main = getCurrentContainer();
+     divArray.push(main);
+
+     createNewList(lastDir, results, main, info.path);
    }
-}
+};
 
 function pathIsVideoFile(path) {
   return /\.(mp4|ogg|mpg|avi)$/i.test(path);
@@ -288,6 +459,10 @@ function pathIsImageFile(path) {
   return /\.(jpg|png|gif)$/i.test(path);
 };
 
+function moveScrollLeft() {
+  var main = $('main');
+  main.scrollLeft += 10;
+}
 
 function setUpForPlayback(path) {
    var mediapath = 'file://' + path;
@@ -347,6 +522,20 @@ function setUpForScanning() {
  * Window onload handler, sets up the page.
  */
 function load() {
+  if(document.documentElement.clientWidth <= 400) {
+    inFullMode = false;
+  } else {
+    var main = $('main');
+    main.className = 'fullcontainer';
+    var innerContainer = document.createElement('div');
+    innerContainer.className = 'container';
+    innerContainer.id = 'inner';
+    main.appendChild(innerContainer);
+    inFullMode = true;
+    $('back').style.display = 'none';
+    $('fwd').style.display = 'none';
+  }
+
   if (document.location.href.indexOf('#') != -1) {
     var currentpathArray = document.location.href.split('#');
     var path = currentpathArray[1];
@@ -355,30 +544,90 @@ function load() {
     } else if (pathIsVideoFile(path) || pathIsAudioFile(path)) {
       setUpForPlayback(path);
     } else {
+      currentNode++;
       pathArray.push(path);
       getDataForPath(path);
     }
   } else {
+    currentNode++;
     pathArray.push('roots');
     getDataForPath('roots');
   }
 };
 
-function descend(path) {
+function jumpToNode(nodeNumber) {
+  if (currentNode == nodeNumber) {
+    return;
+  }
+  if (inFullMode) {
+    var main = $('inner');
+    for (var x = (nodeNumber+1); x < divArray.length ; x++ ) {
+      main.removeChild(divArray[x]);
+      numColumns--;
+    }
+    divArray = divArray.slice(0,nodeNumber+1);
+  }
+  currentNode = nodeNumber;
+}
+
+function descend(path, nodeNumber) {
   if (pathArray.length <currentNode) {
     pathArray = pathArray.slice(0, currentNode);
   }
+  jumpToNode(nodeNumber);
+  currentNode++;
   pathArray.push(path);
   getDataForPath(path);
 };
 
+function clearPreviewPane() {
+  if (videoPlaybackElement != null) {
+    document.body.removeChild($('fullscreentoggle'));
+    document.body.removeChild(videoPlaybackElement);
+    videoPlaybackElement = null;
+  }
+  if (photoPreviewElement != null) {
+    document.body.removeChild(photoPreviewElement);
+    photoPreviewElement = null;
+  }
+};
+
 function playMediaFile(path) {
-  var newPath = 'chrome://filebrowse#' + path;
-  chrome.send('openNewPopupWindow', [newPath]);
+  if (inFullMode) {
+    if (videoPlaybackElement == null) {
+      videoPlaybackElement = document.createElement('video');
+      videoPlaybackElement.className = 'playbackelement';
+      videoPlaybackElement.autoplay = true;
+      videoPlaybackElement.controls = true;
+      videoPlaybackElement.src = 'file://' + path;
+      var toggleButton = document.createElement('div');
+      toggleButton.className = 'fullscreentoggle';
+      toggleButton.id = 'fullscreentoggle';
+      toggleButton.onclick = toggleFullscreen;
+      document.body.appendChild(toggleButton);
+      document.body.appendChild(videoPlaybackElement);
+    } else {
+      videoPlaybackElement.src = 'file://' + path;
+    }
+  } else {
+    var newPath = 'chrome://filebrowse#' + path;
+    chrome.send('openNewPopupWindow', [newPath]);
+  }
 };
 
 function showImage(path) {
-  chrome.send('openNewFullWindow', ['file://' + path]);
+  if (inFullMode) {
+    if (photoPreviewElement == null) {
+      photoPreviewElement = document.createElement('img');
+      photoPreviewElement.className = 'imagepreview';
+      photoPreviewElement.src = 'file://' + path;
+      document.body.appendChild(photoPreviewElement);
+    } else {
+      photoPreviewElement.src = 'file://' + path;
+    }
+  } else {
+    chrome.send('openNewFullWindow', ['file://' + path]);
+  }
 };
 
 function clearImageMenus() {
@@ -423,7 +672,7 @@ function uploadComplete(result) {
 // TODO(dhg): Do not use javascript: href, use onclick instead
 function createHrefForItem(path, isDirectory) {
   if (isDirectory) {
-    return 'javascript:descend("' + path + '");';
+    return 'javascript:descend("' + path + '", ' + currentNode + ');';
   } if (pathIsAudioFile(path)) {
     return 'javascript:playMediaFile("' + path + '");';
   } if (pathIsVideoFile(path)) {
@@ -492,32 +741,56 @@ function clearChildren(element) {
   element.innerHTML = '';
 };
 
-function createNewList(title, results) {
+function popout(path) {
+ var newPath = 'chrome://filebrowse#' + path;
+ chrome.send('openNewPopupWindow', [newPath]);
+};
+
+function createNewList(title, results, main, path) {
+  clearChildren(main);
+
+  var mainList = document.createElement('div');
+  mainList.className = 'columnlist';
   var list = document.createElement('ul');
   list.className = 'filebrowselist';
-  var header = $('currenttitle');
-  header.innerHTML = title;
+
+  var header = document.createElement('div');
+  header.className = 'header';
+  var divTitle = document.createElement('div');
+  divTitle.className = 'title';
+  if (inFullMode) {
+    divTitle.style['text-align'] = 'center';
+  }
+  divTitle.innerHTML = title;
+  if (inFullMode && (path.length != 0)) {
+    var popOutButton = document.createElement('div');
+    popOutButton.innerHTML = '&prod;';
+    popOutButton.className = 'popout';
+    popOutButton.onclick = new Function('popout("' + path + '");');
+    header.appendChild(popOutButton);
+  }
+  header.appendChild(divTitle);
+  main.appendChild(header);
+  main.appendChild(mainList);
   for (var x=0; x < results.length; x++) {
     var element = createNewItem(results[x].title,
                                 results[x].path,
                                 results[x].isDirectory);
     list.appendChild(element);
   }
-  var main = $('main');
-  clearChildren(main);
-  main.appendChild(list);
+  mainList.appendChild(list);
 };
 
 </script>
 <body onload="load();" onclick='clearImageMenus()'>
-<div id='header' class='header'>
+<div id='header' class=''>
   <div id='back' class='backbutton controlbutton' onclick='goBackInList();return false;'>
     <img src="../../app/theme/filebrowse_back.png" width='100%' height='100%'>
   </div>
   <div id='fwd' class='fwdbutton controlbutton' onclick='goForwardInList();return false;'>
     <img src="../../app/theme/filebrowse_forward.png" width='100%' height='100%'>
   </div>
-  <div id='currenttitle' class='title'></div>
+  <div id='currenttitle' class=''></div>
 </div><br>
 <div id='main' class='container'></div>
 </body>

@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
@@ -33,6 +35,10 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/mount_library.h"
+#endif
 
 // Maximum number of search results to return in a given search. We should
 // eventually remove this.
@@ -70,6 +76,9 @@ class TaskProxy;
 // The handler for Javascript messages related to the "filebrowse" view.
 class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
                           public DOMMessageHandler,
+#if defined(OS_CHROMEOS)
+                          public chromeos::MountLibrary::Observer,
+#endif
                           public base::SupportsWeakPtr<FilebrowseHandler>,
                           public URLFetcher::Delegate {
  public:
@@ -83,6 +92,12 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   // DOMMessageHandler implementation.
   virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
+
+#if defined(OS_CHROMEOS)
+  void MountChanged(chromeos::MountLibrary* obj,
+                    chromeos::MountEventType evt,
+                    const std::string& path);
+#endif
 
   // Callback for the "getRoots" message.
   void HandleGetRoots(const Value* value);
@@ -128,7 +143,7 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
 
 class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
  public:
-  TaskProxy(const base::WeakPtr<FilebrowseHandler>& handler)
+  explicit TaskProxy(const base::WeakPtr<FilebrowseHandler>& handler)
       : handler_(handler) {}
   void ReadInFileProxy() {
     if (handler_) {
@@ -187,11 +202,18 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
 FilebrowseHandler::FilebrowseHandler()
     : profile_(NULL) {
   // TODO(dhg): Check to see if this is really necessary
+#if defined(OS_CHROMEOS)
+  chromeos::MountLibrary* lib = chromeos::MountLibrary::Get();
+  lib->AddObserver(this);
+#endif
   lister_ = NULL;
 }
 
 FilebrowseHandler::~FilebrowseHandler() {
-  // TODO(dhg): Cancel any pending listings that are currently in flight.
+#if defined(OS_CHROMEOS)
+  chromeos::MountLibrary* lib = chromeos::MountLibrary::Get();
+  lib->RemoveObserver(this);
+#endif
   if (lister_.get()) {
     lister_->Cancel();
     lister_->set_delegate(NULL);
@@ -251,6 +273,17 @@ void FilebrowseHandler::FireUploadComplete() {
   dom_ui_->CallJavascriptFunction(L"uploadComplete", info_value);
 }
 
+#if defined(OS_CHROMEOS)
+void FilebrowseHandler::MountChanged(chromeos::MountLibrary* obj,
+                                     chromeos::MountEventType evt,
+                                     const std::string& path) {
+  if (evt == chromeos::DISK_REMOVED ||
+      evt == chromeos::DISK_CHANGED) {
+    dom_ui_->CallJavascriptFunction(L"rootsChanged");
+  }
+}
+#endif
+
 void FilebrowseHandler::OnURLFetchComplete(const URLFetcher* source,
                                            const GURL& url,
                                            const URLRequestStatus& status,
@@ -267,16 +300,47 @@ void FilebrowseHandler::OnURLFetchComplete(const URLFetcher* source,
 void FilebrowseHandler::HandleGetRoots(const Value* value) {
   ListValue results_value;
   DictionaryValue info_value;
-  DictionaryValue* page_value = new DictionaryValue();
   // TODO(dhg): add other entries, make this more general
-  page_value->SetString(kPropertyPath, "/home/chronos");
-  page_value->SetString(kPropertyTitle, "home");
+#if defined(OS_CHROMEOS)
+  chromeos::MountLibrary* lib = chromeos::MountLibrary::Get();
+  const chromeos::MountLibrary::DiskVector& disks = lib->disks();
+
+  for (size_t i = 0; i < disks.size(); ++i) {
+    if (!disks[i].mount_path.empty()) {
+      DictionaryValue* page_value = new DictionaryValue();
+      page_value->SetString(kPropertyPath, disks[i].mount_path);
+      FilePath currentpath;
+      currentpath = FilePath(disks[i].mount_path);
+      std::string filename;
+      filename = currentpath.BaseName().value();
+      page_value->SetString(kPropertyTitle, filename);
+      page_value->SetBoolean(kPropertyDirectory, true);
+      results_value.Append(page_value);
+    }
+  }
+#else
+  DictionaryValue* page_value = new DictionaryValue();
+  page_value->SetString(kPropertyPath, "/media");
+  page_value->SetString(kPropertyTitle, "Removeable");
   page_value->SetBoolean(kPropertyDirectory, true);
 
   results_value.Append(page_value);
+#endif
+  FilePath default_download_path;
+  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
+                        &default_download_path)) {
+    NOTREACHED();
+  }
+
+  DictionaryValue* download_value = new DictionaryValue();
+  download_value->SetString(kPropertyPath, default_download_path.value());
+  download_value->SetString(kPropertyTitle, "File Shelf");
+  download_value->SetBoolean(kPropertyDirectory, true);
+
+  results_value.Append(download_value);
 
   info_value.SetString(L"functionCall", "getRoots");
-
+  info_value.SetString(kPropertyPath, "");
   dom_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, results_value);
 }
@@ -443,6 +507,16 @@ void FilebrowseHandler::HandleGetChildren(const Value* value) {
 
 void FilebrowseHandler::OnListFile(
     const file_util::FileEnumerator::FindInfo& data) {
+#if defined(OS_WIN)
+  if (data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) {
+    return;
+  }
+#elif defined(OS_POSIX)
+  if (data.filename[0] == '.') {
+    return;
+  }
+#endif
+
   DictionaryValue* file_value = new DictionaryValue();
 
 #if defined(OS_WIN)
