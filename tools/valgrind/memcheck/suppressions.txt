@@ -2221,4 +2221,51 @@
    fun:start_thread
    fun:clone
 }
-
+{
+   bug_32641
+   Memcheck:Addr4
+   fun:NSSRWLock_LockRead_Util
+   fun:SECMOD_GetReadLock
+   fun:PK11_GetAllTokens
+   fun:PK11_GetBestSlotMultiple
+   fun:PK11_GetBestSlot
+   fun:PK11_CreateDigestContext
+   fun:PK11_HashBuf
+   fun:ocsp_DigestValue
+   fun:cert_GetSubjectNameDigest
+   fun:ocsp_CreateCertID
+   fun:CERT_CreateOCSPCertID
+   fun:PKIX_PL_OcspCertID_Create
+   fun:pkix_OcspChecker_CheckExternal
+   fun:PKIX_RevocationChecker_Check
+   fun:pkix_CheckChain
+   fun:pkix_Build_ValidateEntireChain
+   fun:pkix_BuildForwardDepthFirstSearch
+   fun:pkix_Build_InitiateBuildChain
+   fun:PKIX_BuildChain
+   fun:CERT_PKIXVerifyCert
+}
+{
+   bug_32641
+   Memcheck:Addr4
+   ...
+   fun:nssSession_ExitMonitor
+   fun:find_objects
+   fun:find_objects_by_template
+   fun:nssToken_FindCertificatesBySubject
+   fun:nssTrustDomain_FindCertificatesBySubject
+   fun:nssCertificate_BuildChain
+   fun:NSSCertificate_BuildChain
+   fun:CERT_FindCertIssuer
+   fun:ocsp_CreateCertID
+   fun:CERT_CreateOCSPCertID
+   fun:PKIX_PL_OcspCertID_Create
+   fun:pkix_OcspChecker_CheckExternal
+   fun:PKIX_RevocationChecker_Check
+   fun:pkix_CheckChain
+   fun:pkix_Build_ValidateEntireChain
+   fun:pkix_BuildForwardDepthFirstSearch
+   fun:pkix_Build_InitiateBuildChain
+   fun:PKIX_BuildChain
+   fun:CERT_PKIXVerifyCert
+}
