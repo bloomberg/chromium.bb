@@ -35,19 +35,9 @@ class BrowserActionApiTest : public ExtensionApiTest {
   }
 
   gfx::Rect OpenPopup(int index) {
-    {
-      NotificationRegistrar registrar;
-      registrar.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
-                    NotificationService::AllSources());
-      GetBrowserActionsBar().Press(index);
-      // If the popup is already showing then we needn't wait for the
-      // notification before proceeding.
-      if (!GetBrowserActionsBar().HasPopup()) {
-        MessageLoop::current()->PostDelayedTask(
-            FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
-      }
-      ui_test_utils::RunMessageLoop();
-    }
+    ResultCatcher catcher;
+    GetBrowserActionsBar().Press(index);
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
     EXPECT_TRUE(GetBrowserActionsBar().HasPopup());
     return GetBrowserActionsBar().GetPopupBounds();
   }
@@ -150,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
   EXPECT_EQ("hi!", GetBrowserActionsBar().GetTooltip(0));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, FLAKY_BrowserActionPopup) {
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "browser_action/popup")));
 

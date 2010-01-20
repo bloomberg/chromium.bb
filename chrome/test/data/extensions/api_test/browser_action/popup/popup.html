@@ -14,18 +14,17 @@ function run_tests() {
   // Set the div's size.
   var test = document.getElementById("test");
   test.style.width = width + "px";
-  test.style.height = height + "px";  
+  test.style.height = height + "px";
   chrome.test.log("height: " + test.offsetHeight);
   chrome.test.log("width: " + test.offsetWidth);
-  
-  // We should be done.  Let the test harness know.
-  //window.setTimeout(chrome.test.notifyPass, 0);
-  chrome.test.notifyPass();
 
   height += 500;
   width += 500;
   localStorage.height = JSON.stringify(height);
   localStorage.width = JSON.stringify(width);
+
+  // We should be done.  Let the test harness know.
+  chrome.test.notifyPass();
 }
 </script>
 <style>
