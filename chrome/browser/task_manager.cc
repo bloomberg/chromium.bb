@@ -13,9 +13,11 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_request_tracking.h"
+#include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -905,17 +907,30 @@ TaskManager* TaskManager::GetInstance() {
 
 void TaskManager::OpenAboutMemory() {
   Browser* browser = BrowserList::GetLastActive();
-  DCHECK(browser);
-  browser->OpenURL(GURL(chrome::kAboutMemoryURL), GURL(), NEW_FOREGROUND_TAB,
-                   PageTransition::LINK);
-  // In case the browser window is minimzed, show it. If this is an application
-  // or popup, we can only have one tab, hence we need to process this in a
-  // tabbed browser window. Currently, |browser| is pointing to the application,
-  // popup window. Therefore, we have to retrieve the last active tab again,
-  // since a new window has been used.
-  if (browser->type() & Browser::TYPE_APP_POPUP) {
-    browser = BrowserList::GetLastActive();
-    DCHECK(browser);
+
+  if (!browser) {
+    // On OS X, the task manager can be open without any open browser windows.
+    if (!g_browser_process ||
+        !g_browser_process->profile_manager() ||
+        g_browser_process->profile_manager()->begin() ==
+            g_browser_process->profile_manager()->end())
+      return;
+    browser = Browser::Create(*g_browser_process->profile_manager()->begin());
+    browser->OpenURL(GURL(chrome::kAboutMemoryURL), GURL(), NEW_WINDOW,
+                     PageTransition::LINK);
+  } else {
+    browser->OpenURL(GURL(chrome::kAboutMemoryURL), GURL(), NEW_FOREGROUND_TAB,
+                     PageTransition::LINK);
+
+    // In case the browser window is minimzed, show it. If this is an
+    // application or popup, we can only have one tab, hence we need to process
+    // this in a tabbed browser window. Currently, |browser| is pointing to the
+    // application, popup window. Therefore, we have to retrieve the last
+    // active tab again, since a new window has been used.
+    if (browser->type() & Browser::TYPE_APP_POPUP) {
+      browser = BrowserList::GetLastActive();
+      DCHECK(browser);
+    }
+    browser->window()->Show();
   }
-  browser->window()->Show();
 }

@@ -675,7 +675,7 @@ static bool g_is_opening_new_window = false;
 - (Profile*)defaultProfile {
   // TODO(jrg): Find a better way to get the "default" profile.
   if (g_browser_process->profile_manager())
-    return* g_browser_process->profile_manager()->begin();
+    return *g_browser_process->profile_manager()->begin();
 
   return NULL;
 }
