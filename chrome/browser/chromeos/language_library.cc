@@ -74,10 +74,10 @@ void LanguageLibrary::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-chromeos::InputLanguageList* LanguageLibrary::GetLanguages() {
+chromeos::InputLanguageList* LanguageLibrary::GetActiveLanguages() {
   chromeos::InputLanguageList* result = NULL;
   if (EnsureLoaded()) {
-    result = chromeos::GetLanguages(language_status_connection_);
+    result = chromeos::GetActiveLanguages(language_status_connection_);
   }
   return result ? result : CreateFallbackInputLanguageList();
 }

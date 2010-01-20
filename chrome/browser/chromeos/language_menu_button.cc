@@ -105,7 +105,7 @@ namespace chromeos {
 
 LanguageMenuButton::LanguageMenuButton(Browser* browser)
     : MenuButton(NULL, std::wstring(), this, false),
-      language_list_(LanguageLibrary::Get()->GetLanguages()),
+      language_list_(LanguageLibrary::Get()->GetActiveLanguages()),
       model_(NULL),
       // Be aware that the constructor of |language_menu_| calls GetItemCount()
       // in this class. Therefore, GetItemCount() have to return 0 when
@@ -311,7 +311,7 @@ void LanguageMenuButton::ActivatedAt(int index) {
 // LanguageMenuButton, views::ViewMenuDelegate implementation:
 
 void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
-  language_list_.reset(LanguageLibrary::Get()->GetLanguages());
+  language_list_.reset(LanguageLibrary::Get()->GetActiveLanguages());
   RebuildModel();
   language_menu_.Rebuild();
   language_menu_.UpdateStates();

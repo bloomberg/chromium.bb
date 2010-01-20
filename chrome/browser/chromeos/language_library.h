@@ -40,7 +40,7 @@ class LanguageLibrary {
   // (i.e. active). If the cros library is not found or IBus/DBus daemon
   // is not alive, this function returns a fallback language list (and
   // never returns NULL).
-  InputLanguageList* GetLanguages();
+  InputLanguageList* GetActiveLanguages();
 
   // Returns the list of IMEs and keyboard layouts we support, including
   // ones not active. If the cros library is not found or IBus/DBus
