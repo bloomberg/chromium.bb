@@ -1901,41 +1901,6 @@
    fun:PR_Calloc
    fun:error_get_my_stack
    fun:nss_ClearErrorStack
-   fun:NSSArena_Create
-   fun:NSSTrustDomain_Create
-   fun:STAN_LoadDefaultNSS3TrustDomain
-   fun:nss_Init
-   fun:NSS_InitReadWrite
-   ...
-   fun:_ZN4base13EnsureNSSInitEv
-   fun:_ZN9TestSuite10InitializeEv
-   fun:_ZN15ChromeTestSuite10InitializeEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
-}
-{
-   bug_32088
-   Memcheck:Leak
-   fun:calloc
-   fun:PR_Calloc
-   fun:error_get_my_stack
-   fun:nss_ClearErrorStack
-   fun:NSSArena_Create
-   fun:nssCKFWInstance_Create
-   fun:NSSCKFWC_Initialize
-   fun:builtinsC_Initialize
-   fun:secmod_ModuleInit
-   fun:SECMOD_LoadPKCS11Module
-   fun:SECMOD_LoadModule
-   fun:SECMOD_LoadModule
-   fun:nss_Init
-   fun:NSS_InitReadWrite
-   ...
-   fun:_ZN4base13EnsureNSSInitEv
-   fun:_ZN9TestSuite10InitializeEv
-   fun:_ZN15ChromeTestSuite10InitializeEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    bug_32089
@@ -2255,4 +2220,20 @@
    fun:pkix_OcspChecker_CheckExternal
    fun:PKIX_RevocationChecker_Check
    fun:pkix_CheckChain
+}
+{
+   bug_32641_c
+   Memcheck:Addr4
+   ...
+   fun:secoid_FindDynamicByTag
+   fun:CERT_PKIXOIDFromNSSOid
+   fun:cert_PKIXMakeOIDList
+   fun:cert_pkixSetParam
+   fun:CERT_PKIXVerifyCert
+   ...
+   fun:_ZNK3net15X509Certificate8VerifyEVEv
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+   fun:_ZN3net12CertVerifier7Request8DoVerifyEv
+   fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
 }
