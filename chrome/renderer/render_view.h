@@ -962,6 +962,9 @@ class RenderView : public RenderWidget,
   // Hopds a reference to the service which provides desktop notifications.
   scoped_ptr<NotificationProvider> notification_provider_;
 
+  // Set to true if request for capturing page text has been made.
+  bool determine_page_text_after_loading_stops_;
+
   // Holds state pertaining to a navigation that we initiated.  This is held by
   // the WebDataSource::ExtraData attribute.  We use pending_navigation_state_
   // as a temporary holder for the state until the WebDataSource corresponding

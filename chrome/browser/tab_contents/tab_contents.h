@@ -538,6 +538,9 @@ class TabContents : public PageNavigator,
     return last_search_result_;
   }
 
+  // Get the most probable language of the text content in the tab.
+  void GetPageLanguage();
+
   // Misc state & callbacks ----------------------------------------------------
 
   // Set whether the contents should block javascript message boxes or not.
@@ -814,8 +817,7 @@ class TabContents : public PageNavigator,
   virtual void OnPageContents(const GURL& url,
                               int renderer_process_id,
                               int32 page_id,
-                              const std::wstring& contents,
-                              const std::string& language);
+                              const std::wstring& contents);
 
   // RenderViewHostDelegate::Resource implementation.
   virtual void DidStartProvisionalLoadForFrame(RenderViewHost* render_view_host,

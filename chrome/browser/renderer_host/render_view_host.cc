@@ -428,6 +428,10 @@ void RenderViewHost::StopFinding(bool clear_selection) {
   Send(new ViewMsg_StopFinding(routing_id(), clear_selection));
 }
 
+void RenderViewHost::GetPageLanguage() {
+  Send(new ViewMsg_DeterminePageLanguage(routing_id()));
+}
+
 void RenderViewHost::Zoom(PageZoom::Function function) {
   Send(new ViewMsg_Zoom(routing_id(), function));
 }
@@ -765,6 +769,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFailProvisionalLoadWithError,
                         OnMsgDidFailProvisionalLoadWithError)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnMsgFindReply)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PageLanguageDetermined,
+                        OnPageLanguageDetermined)
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteCodeFinished,
                         OnExecuteCodeFinished)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFavIconURL, OnMsgUpdateFavIconURL)
@@ -1160,6 +1166,14 @@ void RenderViewHost::OnMsgFindReply(int request_id,
   // browser send an ACK for each FindReply message and have the renderer
   // queue up the latest status message while waiting for this ACK.
   Send(new ViewMsg_FindReplyACK(routing_id()));
+}
+
+void RenderViewHost::OnPageLanguageDetermined(const std::string& language) {
+  std::string lang(language);
+  NotificationService::current()->Notify(
+      NotificationType::TAB_LANGUAGE_DETERMINED,
+      Source<RenderViewHost>(this),
+      Details<std::string>(&lang));
 }
 
 void RenderViewHost::OnExecuteCodeFinished(int request_id, bool success) {
@@ -1800,12 +1814,10 @@ void RenderViewHost::OnCSSInserted() {
 
 void RenderViewHost::OnPageContents(const GURL& url,
                                     int32 page_id,
-                                    const std::wstring& contents,
-                                    const std::string& language) {
+                                    const std::wstring& contents) {
   RenderViewHostDelegate::BrowserIntegration* integration_delegate =
       delegate_->GetBrowserIntegrationDelegate();
   if (!integration_delegate)
     return;
-  integration_delegate->OnPageContents(url, process()->id(), page_id, contents,
-                                       language);
+  integration_delegate->OnPageContents(url, process()->id(), page_id, contents);
 }
