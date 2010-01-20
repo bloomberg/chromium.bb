@@ -164,9 +164,9 @@ bool BlacklistIO::ReadText(Blacklist* blacklist,
       }
 
       if (in_attribute) {
-        // The only attribute to support sub_tokens is kBlockByType, for now.
-        if (last_attribute == Blacklist::kBlockByType)
-          entry->AddType(tokenizer.token());
+        // TODO(jochen): implement support for parsing arguments to attributes.
+        *error_string = "Unexpected argument to attribute.";
+        return false;
       } else {
         // Filter attribute. Unrecognized attributes are ignored.
         last_attribute = Blacklist::String2Attribute(tokenizer.token());
@@ -224,16 +224,13 @@ bool BlacklistIO::ReadBinary(Blacklist* blacklist, const FilePath& path) {
   std::string pattern;
   unsigned int attributes, provider;
   bool is_exception;
-  std::vector<std::string> types;
   for (size_t i = 0; i < num_entries; ++i) {
-    if (!input.ReadEntry(&pattern, &attributes, &types, &is_exception,
-                         &provider))
+    if (!input.ReadEntry(&pattern, &attributes, &is_exception, &provider))
       return false;
 
     Blacklist::Entry* entry =
         new Blacklist::Entry(pattern, provider_map[provider], is_exception);
     entry->AddAttributes(attributes);
-    entry->SwapTypes(&types);
     entries.push_back(linked_ptr<Blacklist::Entry>(entry));
   }
 
@@ -282,7 +279,6 @@ bool BlacklistIO::WriteBinary(const Blacklist* blacklist,
        i != entries.end(); ++i) {
     if (!output.StoreEntry((*i)->pattern_,
                            (*i)->attributes_,
-                           (*i)->types_,
                            (*i)->is_exception_,
                            index[(*i)->provider_])) {
       return false;

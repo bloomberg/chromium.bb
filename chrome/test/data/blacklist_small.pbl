@@ -3,14 +3,11 @@
 |URL: http://www.google.com Text here is ignored
 |Icon: Unsupported feature !!!!!
 
-# Default match attributes (matches everything)
-@ => kBlockByType(application/x-shockwave-flash), kDontPersistCookies
-
 # Affect an entire site
 @poor-security-site.com => kBlockUnsecure
 
 # Affect subdomains of an entire site
-@.ad-serving-place.com => kDontSendCookies, kDontStoreCookies
+@.ad-serving-place.com => kBlockCookies
 
 # Affect site files under a subfolder
 www.site.com/anonymous/folder/@ => kDontSendUserAgent, kDontSendReferrer
@@ -26,6 +23,3 @@ www.site.com/bad/url => kBlockAll
 
 # Whitelist a specific URL
 -www.site.com/bad/url/good => kBlockAll
-
-# Whitelist attributes
--www.good.com => kBlockByType(application/x-shockwave-flash), kDontPersistCookies

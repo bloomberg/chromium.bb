@@ -484,15 +484,8 @@ void ResourceMessageFilter::OnSetCookie(const GURL& url,
     return;
   scoped_ptr<Blacklist::Match> match(
       GetPrivacyBlacklistMatchForURL(url, context));
-  if (match.get()) {
-    if (match->attributes() & Blacklist::kDontPersistCookies) {
-      context->cookie_store()->SetCookie(url,
-          Blacklist::StripCookieExpiry(cookie));
-    } else if (!(match->attributes() & Blacklist::kDontStoreCookies)) {
-      context->cookie_store()->SetCookie(url, cookie);
-    }
+  if (match.get() && (match->attributes() & Blacklist::kBlockCookies))
     return;
-  }
   context->cookie_store()->SetCookie(url, cookie);
 }
 

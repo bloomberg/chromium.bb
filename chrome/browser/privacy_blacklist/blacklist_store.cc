@@ -13,7 +13,7 @@
 
 namespace {
 
-const char cookie[] = "GCPBL200";
+const char cookie[] = "GCPBL250";
 
 const size_t kMaxBlockedTypes = 256;
 const size_t kMaxStringSize = 8192;
@@ -54,20 +54,12 @@ bool BlacklistStoreOutput::ReserveEntries(uint32 num) {
 
 bool BlacklistStoreOutput::StoreEntry(const std::string& pattern,
                                       uint32 attributes,
-                                      const std::vector<std::string>& types,
                                       bool is_exception,
                                       uint32 provider) {
-  if (WriteString(pattern) &&
-      WriteUInt(attributes) &&
-      WriteUInt(is_exception ? 1 : 0) &&
-      WriteUInt(types.size())) {
-    for (uint32 i = 0; i < types.size(); ++i) {
-      if (!WriteString(types[i]))
-        return false;
-    }
-    return WriteUInt(provider);
-  }
-  return false;
+  return (WriteString(pattern) &&
+          WriteUInt(attributes) &&
+          WriteUInt(is_exception ? 1 : 0) &&
+          WriteUInt(provider));
 }
 
 uint32 BlacklistStoreInput::ReadUInt() {
@@ -118,7 +110,6 @@ uint32 BlacklistStoreInput::ReadNumEntries() {
 
 bool BlacklistStoreInput::ReadEntry(std::string* pattern,
                                     uint32* attributes,
-                                    std::vector<std::string>* types,
                                     bool* is_exception,
                                     uint32* provider) {
   *pattern = ReadString();
@@ -134,16 +125,6 @@ bool BlacklistStoreInput::ReadEntry(std::string* pattern,
     return false;
   *is_exception = (exception == 1);
 
-  if (uint32 n = ReadUInt()) {
-    if (n >= kMaxBlockedTypes)
-      return false;
-    while (n--) {
-      std::string type = ReadString();
-      if (type.empty())
-        return false;
-      types->push_back(type);
-    }
-  }
   *provider = ReadUInt();
   return *provider != std::numeric_limits<uint32>::max();
 }

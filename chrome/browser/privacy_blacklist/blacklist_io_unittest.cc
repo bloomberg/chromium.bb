@@ -28,17 +28,15 @@ TEST(BlacklistIOTest, Generic) {
 
   const Blacklist::EntryList entries(blacklist.entries_begin(),
                                      blacklist.entries_end());
-  ASSERT_EQ(9U, entries.size());
+  ASSERT_EQ(7U, entries.size());
 
-  EXPECT_EQ("@", entries[0]->pattern());
-  EXPECT_EQ("@poor-security-site.com", entries[1]->pattern());
-  EXPECT_EQ("@.ad-serving-place.com", entries[2]->pattern());
-  EXPECT_EQ("www.site.com/anonymous/folder/@", entries[3]->pattern());
-  EXPECT_EQ("www.site.com/bad/url", entries[4]->pattern());
-  EXPECT_EQ("@/script?@", entries[5]->pattern());
-  EXPECT_EQ("@?badparam@", entries[6]->pattern());
-  EXPECT_EQ("www.site.com/bad/url/good", entries[7]->pattern());
-  EXPECT_EQ("www.good.com", entries[8]->pattern());
+  EXPECT_EQ("@poor-security-site.com", entries[0]->pattern());
+  EXPECT_EQ("@.ad-serving-place.com", entries[1]->pattern());
+  EXPECT_EQ("www.site.com/anonymous/folder/@", entries[2]->pattern());
+  EXPECT_EQ("www.site.com/bad/url", entries[3]->pattern());
+  EXPECT_EQ("@/script?@", entries[4]->pattern());
+  EXPECT_EQ("@?badparam@", entries[5]->pattern());
+  EXPECT_EQ("www.site.com/bad/url/good", entries[6]->pattern());
 
   const Blacklist::ProviderList providers(blacklist.providers_begin(),
                                           blacklist.providers_end());

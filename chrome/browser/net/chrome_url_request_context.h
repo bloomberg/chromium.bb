@@ -185,9 +185,13 @@ class ChromeURLRequestContext : public URLRequestContext {
 
   virtual const std::string& GetUserAgent(const GURL& url) const;
 
-  virtual bool InterceptCookie(const URLRequest* request, std::string* cookie);
+  // Returns true if cookies can be added to request.
+  virtual bool InterceptRequestCookies(const URLRequest* request,
+                                       const std::string& cookie) const;
 
-  virtual bool AllowSendingCookies(const URLRequest* request) const;
+  // Returns true if response cookies should be stored.
+  virtual bool InterceptResponseCookie(const URLRequest* request,
+                                       const std::string& cookie) const;
 
   const HostZoomMap* host_zoom_map() const { return host_zoom_map_; }
 
@@ -300,6 +304,12 @@ class ChromeURLRequestContext : public URLRequestContext {
   bool is_off_the_record_;
 
  private:
+  // Blacklist implementation of InterceptRequestCookie and
+  // InterceptResponseCookie. Returns true if cookies are allowed and false
+  // if the request matches a Blacklist rule and cookies should be blocked.
+  bool InterceptCookie(const URLRequest* request,
+                       const std::string& cookie) const;
+
   // Filter for url_request_tracker(), that prevents "chrome://" requests from
   // being tracked by "about:net-internals".
   static bool ShouldTrackRequest(const GURL& url);

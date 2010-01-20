@@ -676,38 +676,18 @@ const std::string& ChromeURLRequestContext::GetUserAgent(
   return webkit_glue::GetUserAgent(url);
 }
 
-bool ChromeURLRequestContext::InterceptCookie(const URLRequest* request,
-                                              std::string* cookie) {
-  BlacklistRequestInfo* request_info =
-      BlacklistRequestInfo::FromURLRequest(request);
-  // Requests which don't go through ResourceDispatcherHost don't have privacy
-  // blacklist request data.
-  if (!request_info)
-    return true;
-  const Blacklist* blacklist = request_info->GetBlacklist();
-  // TODO(phajdan.jr): remove the NULL check when blacklists are stable.
-  if (!blacklist)
-    return true;
-  scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
-  if (!match.get())
-    return true;
-  if (match->attributes() & Blacklist::kDontStoreCookies) {
-    NotificationService::current()->Notify(
-        NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
-        Source<const ChromeURLRequestContext>(this),
-        Details<const URLRequest>(request));
-
-    cookie->clear();
-    return false;
-  }
-  if (match->attributes() & Blacklist::kDontPersistCookies) {
-    *cookie = Blacklist::StripCookieExpiry(*cookie);
-  }
-  return true;
+bool ChromeURLRequestContext::InterceptRequestCookies(
+    const URLRequest* request, const std::string& cookies) const {
+  return InterceptCookie(request, cookies);
 }
 
-bool ChromeURLRequestContext::AllowSendingCookies(const URLRequest* request)
-    const {
+bool ChromeURLRequestContext::InterceptResponseCookie(
+    const URLRequest* request, const std::string& cookie) const {
+  return InterceptCookie(request, cookie);
+}
+
+bool ChromeURLRequestContext::InterceptCookie(
+    const URLRequest* request, const std::string& cookie) const {
   BlacklistRequestInfo* request_info =
       BlacklistRequestInfo::FromURLRequest(request);
   // Requests which don't go through ResourceDispatcherHost don't have privacy
@@ -719,16 +699,14 @@ bool ChromeURLRequestContext::AllowSendingCookies(const URLRequest* request)
   if (!blacklist)
     return true;
   scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
-  if (!match.get())
-    return true;
-  if (match->attributes() & Blacklist::kDontSendCookies) {
+  if (match.get() && (match->attributes() & Blacklist::kBlockCookies)) {
     NotificationService::current()->Notify(
         NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
         Source<const ChromeURLRequestContext>(this),
         Details<const URLRequest>(request));
-
     return false;
   }
+
   return true;
 }
 

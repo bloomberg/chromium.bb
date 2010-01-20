@@ -6382,7 +6382,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       The following Privacy Blacklists prevented this content from showing:
     </message>
     <message name="IDS_BLACKLIST_BLOCKED_COOKIES" desc="Cookies was blacklisted.">
-      Cookies not sent
+      Cookies blocked
     </message>
     <message name="IDS_BLACKLIST_BLOCKED_REFERRER" desc="Referrer sending was blacklisted.">
       Referrer not sent

@@ -26,11 +26,8 @@ class DisplayBlockedContentNoticeTask : public Task {
       : url_(url),
         child_id_(info->child_id()),
         route_id_(info->route_id()) {
-    if (match->attributes() & Blacklist::kDontStoreCookies) {
-      // No cookies stored.
-      details_ = l10n_util::GetStringUTF16(IDS_BLACKLIST_BLOCKED_COOKIES);
-    } else if (match->attributes() & Blacklist::kDontSendCookies) {
-      // No cookies sent.
+    if (match->attributes() & Blacklist::kBlockCookies) {
+      // No cookies sent or stored.
       details_ = l10n_util::GetStringUTF16(IDS_BLACKLIST_BLOCKED_COOKIES);
     } else if (match->attributes() & Blacklist::kDontSendReferrer) {
       // No referrer sent.

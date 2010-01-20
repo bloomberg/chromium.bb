@@ -1090,17 +1090,6 @@ bool ResourceDispatcherHost::CompleteResponseStarted(URLRequest* request) {
   scoped_refptr<ResourceResponse> response = new ResourceResponse;
   PopulateResourceResponse(request, info->filter_policy(), response);
 
-  BlacklistRequestInfo* request_info =
-      BlacklistRequestInfo::FromURLRequest(request);
-  if (request_info) {
-    const Blacklist* blacklist = request_info->GetBlacklist();
-    scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
-    if (match.get() && match->attributes() & Blacklist::kBlockByType) {
-      if (match->MatchType(response->response_head.mime_type))
-        return false;  // TODO(idanan): Generate a replacement response.
-    }
-  }
-
   if (request->ssl_info().cert) {
     int cert_id =
         CertStore::GetSharedInstance()->StoreCert(request->ssl_info().cert,

@@ -24,37 +24,24 @@ const char* const cookie_headers[2] = { "cookie", "set-cookie" };
 } // namespace
 
 const unsigned int Blacklist::kBlockAll = 1;
-const unsigned int Blacklist::kDontSendCookies = 1 << 1;
-const unsigned int Blacklist::kDontStoreCookies = 1 << 2;
-const unsigned int Blacklist::kDontPersistCookies = 1 << 3;
-const unsigned int Blacklist::kDontSendReferrer = 1 << 4;
-const unsigned int Blacklist::kDontSendUserAgent = 1 << 5;
-const unsigned int Blacklist::kBlockByType = 1 << 6;
-const unsigned int Blacklist::kBlockUnsecure = 1 << 7;
+const unsigned int Blacklist::kBlockCookies = 1 << 1;
+const unsigned int Blacklist::kDontSendReferrer = 1 << 2;
+const unsigned int Blacklist::kDontSendUserAgent = 1 << 3;
+const unsigned int Blacklist::kBlockUnsecure = 1 << 4;
 const unsigned int Blacklist::kBlockRequest = kBlockAll | kBlockUnsecure;
-const unsigned int Blacklist::kBlockResponse = kBlockByType;
 const unsigned int Blacklist::kModifySentHeaders =
-    kDontSendCookies | kDontSendUserAgent | kDontSendReferrer;
-const unsigned int Blacklist::kModifyReceivedHeaders =
-    kDontPersistCookies | kDontStoreCookies;
-const unsigned int Blacklist::kFilterByHeaders =
-    kModifyReceivedHeaders | kBlockByType;
+    kBlockCookies | kDontSendUserAgent | kDontSendReferrer;
+const unsigned int Blacklist::kModifyReceivedHeaders = kBlockCookies;
 
 unsigned int Blacklist::String2Attribute(const std::string& s) {
   if (s == STRINGIZE(kBlockAll))
     return kBlockAll;
-  else if (s == STRINGIZE(kDontSendCookies))
-    return kDontSendCookies;
-  else if (s == STRINGIZE(kDontStoreCookies))
-    return kDontStoreCookies;
-  else if (s == STRINGIZE(kDontPersistCookies))
-    return kDontPersistCookies;
+  else if (s == STRINGIZE(kBlockCookies))
+    return kBlockCookies;
   else if (s == STRINGIZE(kDontSendReferrer))
     return kDontSendReferrer;
   else if (s == STRINGIZE(kDontSendUserAgent))
     return kDontSendUserAgent;
-  else if (s == STRINGIZE(kBlockByType))
-    return kBlockByType;
   else if (s == STRINGIZE(kBlockUnsecure))
     return kBlockUnsecure;
   return 0;
@@ -104,10 +91,6 @@ bool Blacklist::Matches(const std::string& pattern, const std::string& url) {
   return pattern[p] == '\0';
 }
 
-bool Blacklist::Entry::MatchesType(const std::string& type) const {
-  return std::find(types_.begin(), types_.end(), type) != types_.end();
-}
-
 bool Blacklist::Entry::IsBlocked(const GURL& url) const {
   return (attributes_ & kBlockAll) ||
     ((attributes_ & kBlockUnsecure) && !url.SchemeIsSecure());
@@ -124,38 +107,8 @@ void Blacklist::Entry::AddAttributes(unsigned int attributes) {
   attributes_ |= attributes;
 }
 
-void Blacklist::Entry::AddType(const std::string& type) {
-  types_.push_back(type);
-}
-
 void Blacklist::Entry::Merge(const Entry& entry) {
   attributes_ |= entry.attributes_;
-
-  std::copy(entry.types_.begin(), entry.types_.end(),
-            std::back_inserter(types_));
-}
-
-void Blacklist::Entry::SwapTypes(std::vector<std::string>* types) {
-  DCHECK(types);
-  types->swap(types_);
-}
-
-bool Blacklist::Match::MatchType(const std::string& type) const {
-  // No match if any exception matches.
-  for (std::vector<const Entry*>::const_iterator i = exception_entries_.begin();
-      i != exception_entries_.end(); ++i) {
-    if ((*i)->MatchesType(type))
-      return false;
-  }
-
-  // Otherwise, match if any blacklist entry matches.
-  for (std::vector<const Entry*>::const_iterator i = matching_entries_.begin();
-      i != matching_entries_.end(); ++i) {
-    if ((*i)->MatchesType(type))
-      return true;
-  }
-
-  return false;
 }
 
 bool Blacklist::Match::IsBlocked(const GURL& url) const {
@@ -225,23 +178,4 @@ std::string Blacklist::GetURLAsLookupString(const GURL& url) {
 
 std::string Blacklist::StripCookies(const std::string& header) {
   return net::HttpUtil::StripHeaders(header, cookie_headers, 2);
-}
-
-std::string Blacklist::StripCookieExpiry(const std::string& cookie) {
-  std::string::size_type delim = cookie.find(';');
-  std::string::size_type start = cookie.find("expires=", delim + 1);
-  if (start != std::string::npos) {
-    std::string::size_type i = start;
-    // Make sure only whitespace precedes the expiry until a delimiter.
-    while (cookie[--i] != ';')
-      if (!IsAsciiWhitespace(cookie[i]))
-        return cookie;
-
-    std::string session_cookie(cookie, 0, i);
-    std::string::size_type end = cookie.find(';', start + 1);
-    if (end != std::string::npos)
-      session_cookie.append(cookie.substr(end));
-    return session_cookie;
-  }
-  return cookie;
 }

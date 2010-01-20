@@ -43,7 +43,6 @@ class BlacklistStoreOutput {
   // Stores an entry. Returns true if successful.
   bool StoreEntry(const std::string& pattern,
                   uint32 attributes,
-                  const std::vector<std::string>& types,
                   bool is_exception,
                   uint32 provider);
 
@@ -87,7 +86,6 @@ class BlacklistStoreInput {
   // Reads an entry.
   bool ReadEntry(std::string* pattern,
                  uint32* attributes,
-                 std::vector<std::string>* types,
                  bool* is_exception,
                  uint32* provider);
 

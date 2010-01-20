@@ -24,72 +24,43 @@ TEST(BlacklistTest, Generic) {
   Blacklist::EntryList entries(blacklist.entries_begin(),
                                blacklist.entries_end());
 
-  ASSERT_EQ(9U, entries.size());
-
-  EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
-            entries[0]->attributes());
-  EXPECT_TRUE(entries[0]->MatchesType("application/x-shockwave-flash"));
-  EXPECT_FALSE(entries[0]->MatchesType("image/jpeg"));
-  EXPECT_FALSE(entries[0]->is_exception());
-  EXPECT_EQ("@", entries[0]->pattern());
+  ASSERT_EQ(7U, entries.size());
 
   // All entries include global attributes.
   // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
-  EXPECT_EQ(Blacklist::kBlockUnsecure|0, entries[1]->attributes());
-  EXPECT_FALSE(entries[1]->MatchesType("application/x-shockwave-flash"));
-  EXPECT_FALSE(entries[1]->MatchesType("image/jpeg"));
-  EXPECT_FALSE(entries[1]->is_exception());
-  EXPECT_EQ("@poor-security-site.com", entries[1]->pattern());
+  EXPECT_EQ(Blacklist::kBlockUnsecure|0, entries[0]->attributes());
+  EXPECT_FALSE(entries[0]->is_exception());
+  EXPECT_EQ("@poor-security-site.com", entries[0]->pattern());
 
-  EXPECT_EQ(Blacklist::kDontSendCookies|Blacklist::kDontStoreCookies,
-            entries[2]->attributes());
-  EXPECT_FALSE(entries[2]->MatchesType("application/x-shockwave-flash"));
-  EXPECT_FALSE(entries[2]->MatchesType("image/jpeg"));
-  EXPECT_FALSE(entries[2]->is_exception());
-  EXPECT_EQ("@.ad-serving-place.com", entries[2]->pattern());
+  // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
+  EXPECT_EQ(Blacklist::kBlockCookies|0, entries[1]->attributes());
+  EXPECT_FALSE(entries[1]->is_exception());
+  EXPECT_EQ("@.ad-serving-place.com", entries[1]->pattern());
 
   EXPECT_EQ(Blacklist::kDontSendUserAgent|Blacklist::kDontSendReferrer,
-            entries[3]->attributes());
-  EXPECT_FALSE(entries[3]->MatchesType("application/x-shockwave-flash"));
-  EXPECT_FALSE(entries[3]->MatchesType("image/jpeg"));
+            entries[2]->attributes());
+  EXPECT_FALSE(entries[2]->is_exception());
+  EXPECT_EQ("www.site.com/anonymous/folder/@", entries[2]->pattern());
+
+  // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
+  EXPECT_EQ(Blacklist::kBlockAll|0, entries[3]->attributes());
   EXPECT_FALSE(entries[3]->is_exception());
-  EXPECT_EQ("www.site.com/anonymous/folder/@", entries[3]->pattern());
+  EXPECT_EQ("www.site.com/bad/url", entries[3]->pattern());
 
   // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
   EXPECT_EQ(Blacklist::kBlockAll|0, entries[4]->attributes());
-  EXPECT_FALSE(entries[4]->MatchesType("application/x-shockwave-flash"));
-  EXPECT_FALSE(entries[4]->MatchesType("image/jpeg"));
   EXPECT_FALSE(entries[4]->is_exception());
-  EXPECT_EQ("www.site.com/bad/url", entries[4]->pattern());
+  EXPECT_EQ("@/script?@", entries[4]->pattern());
 
   // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
   EXPECT_EQ(Blacklist::kBlockAll|0, entries[5]->attributes());
-  EXPECT_FALSE(entries[5]->MatchesType("application/x-shockwave-flash"));
-  EXPECT_FALSE(entries[5]->MatchesType("image/jpeg"));
   EXPECT_FALSE(entries[5]->is_exception());
-  EXPECT_EQ("@/script?@", entries[5]->pattern());
+  EXPECT_EQ("@?badparam@", entries[5]->pattern());
 
   // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
   EXPECT_EQ(Blacklist::kBlockAll|0, entries[6]->attributes());
-  EXPECT_FALSE(entries[6]->MatchesType("application/x-shockwave-flash"));
-  EXPECT_FALSE(entries[6]->MatchesType("image/jpeg"));
-  EXPECT_FALSE(entries[6]->is_exception());
-  EXPECT_EQ("@?badparam@", entries[6]->pattern());
-
-  // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
-  EXPECT_EQ(Blacklist::kBlockAll|0, entries[7]->attributes());
-  EXPECT_FALSE(entries[7]->MatchesType("application/x-shockwave-flash"));
-  EXPECT_FALSE(entries[7]->MatchesType("image/jpeg"));
-  EXPECT_TRUE(entries[7]->is_exception());
-  EXPECT_EQ("www.site.com/bad/url/good", entries[7]->pattern());
-
-  // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
-  EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
-            entries[8]->attributes());
-  EXPECT_TRUE(entries[8]->MatchesType("application/x-shockwave-flash"));
-  EXPECT_FALSE(entries[8]->MatchesType("image/jpeg"));
-  EXPECT_TRUE(entries[8]->is_exception());
-  EXPECT_EQ("www.good.com", entries[8]->pattern());
+  EXPECT_TRUE(entries[6]->is_exception());
+  EXPECT_EQ("www.site.com/bad/url/good", entries[6]->pattern());
 
   Blacklist::ProviderList providers(blacklist.providers_begin(),
                                     blacklist.providers_end());
@@ -104,93 +75,59 @@ TEST(BlacklistTest, Generic) {
   EXPECT_FALSE(blacklist.FindMatch(GURL("about:blank")));
 
   // Expected rule matches.
-  Blacklist::Match* match;
-  match = blacklist.FindMatch(GURL("http://www.google.com"));
+  Blacklist::Match* match = blacklist.FindMatch(GURL("http://www.site.com/bad/url"));
   EXPECT_TRUE(match);
   if (match) {
-    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
-              match->attributes());
+    EXPECT_EQ(Blacklist::kBlockAll|0, match->attributes());
     EXPECT_EQ(1U, match->entries().size());
-    EXPECT_TRUE(match->MatchType("application/x-shockwave-flash"));
-    delete match;
-  }
-
-  match = blacklist.FindMatch(GURL("http://www.site.com/bad/url"));
-  EXPECT_TRUE(match);
-  if (match) {
-    EXPECT_EQ(Blacklist::kBlockAll|
-              Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
-              match->attributes());
-    EXPECT_EQ(2U, match->entries().size());
     delete match;
   }
 
   match = blacklist.FindMatch(GURL("http://www.site.com/anonymous"));
-  EXPECT_TRUE(match);
-  if (match) {
-    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
-              match->attributes());
-    EXPECT_EQ(1U, match->entries().size());
+  EXPECT_FALSE(match);
+  if (match)
     delete match;
-  }
 
   match = blacklist.FindMatch(GURL("http://www.site.com/anonymous/folder"));
-  EXPECT_TRUE(match);
-  if (match) {
-    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
-      match->attributes());
-    EXPECT_EQ(1U, match->entries().size());
+  EXPECT_FALSE(match);
+  if (match)
     delete match;
-  }
 
   match = blacklist.FindMatch(
       GURL("http://www.site.com/anonymous/folder/subfolder"));
   EXPECT_TRUE(match);
   if (match) {
-    EXPECT_EQ(Blacklist::kDontSendUserAgent|Blacklist::kDontSendReferrer|
-              Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
+    EXPECT_EQ(Blacklist::kDontSendUserAgent|Blacklist::kDontSendReferrer,
               match->attributes());
-    EXPECT_EQ(2U, match->entries().size());
+    EXPECT_EQ(1U, match->entries().size());
     delete match;
   }
 
   // No matches for URLs without query string
   match = blacklist.FindMatch(GURL("http://badparam.com/"));
-  EXPECT_TRUE(match);
-  if (match) {
-    EXPECT_EQ(1U, match->entries().size());
-    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
-              match->attributes());
+  EXPECT_FALSE(match);
+  if (match)
     delete match;
-  }
 
   match = blacklist.FindMatch(GURL("http://script.bad.org/"));
-  EXPECT_TRUE(match);
-  if (match) {
-    EXPECT_EQ(1U, match->entries().size());
-    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
-              match->attributes());
+  EXPECT_FALSE(match);
+  if (match)
     delete match;
-  }
 
   // Expected rule matches.
   match = blacklist.FindMatch(GURL("http://host.com/script?q=x"));
   EXPECT_TRUE(match);
   if (match) {
-    EXPECT_EQ(2U, match->entries().size());
-    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies|
-              Blacklist::kBlockAll,
-              match->attributes());
+    EXPECT_EQ(Blacklist::kBlockAll, match->attributes());
+    EXPECT_EQ(1U, match->entries().size());
     delete match;
   }
 
   match = blacklist.FindMatch(GURL("http://host.com/img?badparam=x"));
   EXPECT_TRUE(match);
   if (match) {
-    EXPECT_EQ(2U, match->entries().size());
-    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies|
-              Blacklist::kBlockAll,
-              match->attributes());
+    EXPECT_EQ(Blacklist::kBlockAll, match->attributes());
+    EXPECT_EQ(1U, match->entries().size());
     delete match;
   }
 
@@ -198,50 +135,10 @@ TEST(BlacklistTest, Generic) {
   match = blacklist.FindMatch(GURL("http://www.site.com/bad/url/good"));
   EXPECT_TRUE(match);
   if (match) {
-    EXPECT_EQ(2U, match->entries().size());
-    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
-              match->attributes());
-    delete match;
-  }
-
-  match = blacklist.FindMatch(GURL("http://www.good.com"));
-  EXPECT_TRUE(match);
-  if (match) {
-    EXPECT_EQ(1U, match->entries().size());
     EXPECT_EQ(0U, match->attributes());
-    EXPECT_FALSE(match->MatchType("application/x-shockwave-flash"));
+    EXPECT_EQ(1U, match->entries().size());
     delete match;
   }
-
-  // StripCookieExpiry Tests
-  std::string cookie1(
-      "PREF=ID=14a549990453e42a:TM=1245183232:LM=1245183232:S=Occ7khRVIEE36Ao5;"
-      " expires=Thu, 16-Jun-2011 20:13:52 GMT; path=/; domain=.google.com");
-  std::string cookie2(
-      "PREF=ID=14a549990453e42a:TM=1245183232:LM=1245183232:S=Occ7khRVIEE36Ao5;"
-      " path=/; domain=.google.com");
-  std::string cookie3(
-    "PREF=ID=14a549990453e42a:TM=1245183232:LM=1245183232:S=Occ7khRVIEE36Ao5;"
-    " expires=Thu, 17-Jun-2011 02:13:52 GMT; path=/; domain=.google.com");
-  std::string cookie4("E=MC^2; path=relative;  expires=never;");
-  std::string cookie5("E=MC^2; path=relative;");
-
-  // No expiry, should be equal to itself after stripping.
-  EXPECT_EQ(cookie2, Blacklist::StripCookieExpiry(cookie2));
-  EXPECT_EQ(cookie5, Blacklist::StripCookieExpiry(cookie5));
-
-  // Expiry, should be equal to non-expiry version after stripping.
-  EXPECT_EQ(cookie2, Blacklist::StripCookieExpiry(cookie1));
-  EXPECT_EQ(cookie5, Blacklist::StripCookieExpiry(cookie4));
-
-  // Same cookie other than expiry should be same after stripping.
-  EXPECT_EQ(Blacklist::StripCookieExpiry(cookie2),
-            Blacklist::StripCookieExpiry(cookie3));
-
-  // Edge cases.
-  std::string invalid("#$%^&*()_+");
-  EXPECT_EQ(invalid, Blacklist::StripCookieExpiry(invalid));
-  EXPECT_EQ(std::string(), Blacklist::StripCookieExpiry(std::string()));
 
   // StripCookies Test. Note that "\r\n" line terminators are used
   // because the underlying net util uniformizes those when stripping

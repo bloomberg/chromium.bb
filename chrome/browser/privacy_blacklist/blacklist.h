@@ -34,12 +34,9 @@ class Blacklist {
 
   // Filter attributes (more to come):
   static const unsigned int kBlockAll;
-  static const unsigned int kDontSendCookies;
-  static const unsigned int kDontStoreCookies;
-  static const unsigned int kDontPersistCookies;
+  static const unsigned int kBlockCookies;
   static const unsigned int kDontSendReferrer;
   static const unsigned int kDontSendUserAgent;
-  static const unsigned int kBlockByType;
   static const unsigned int kBlockUnsecure;
 
   // Aggregate filter types:
@@ -47,7 +44,6 @@ class Blacklist {
   static const unsigned int kBlockResponse;
   static const unsigned int kModifySentHeaders;
   static const unsigned int kModifyReceivedHeaders;
-  static const unsigned int kFilterByHeaders;
 
   // Converts a stringized filter attribute (see above) back to its integer
   // value. Returns 0 on error.
@@ -90,21 +86,11 @@ class Blacklist {
     // Provider of this blacklist entry, used for assigning blame ;)
     const Provider* provider() const { return provider_; }
 
-    // Returns true if the given type matches one of the types for which
-    // the filter-attributes of this pattern apply. This needs only to be
-    // checked for content-type specific rules, as determined by calling
-    // attributes().
-    bool MatchesType(const std::string&) const;
-
     // Returns true of the given URL is blocked, assumes it matches the
     // pattern of this entry.
     bool IsBlocked(const GURL&) const;
 
     void AddAttributes(unsigned int attributes);
-    void AddType(const std::string& type);
-
-    // Swap the contents of the internal types vector with the given vector.
-    void SwapTypes(std::vector<std::string>* types);
 
    private:
     friend class BlacklistIO;
@@ -117,7 +103,6 @@ class Blacklist {
     // True if this entry is an exception to the blacklist.
     bool is_exception_;
     std::string pattern_;
-    std::vector<std::string> types_;
 
     // Points to the provider of this entry, the providers are all
     // owned by the blacklist.
@@ -136,7 +121,6 @@ class Blacklist {
     unsigned int attributes() const {
       return (matching_attributes_ & (~exception_attributes_));
     }
-    bool MatchType(const std::string&) const;
     bool IsBlocked(const GURL&) const;
 
     // Access to individual entries, mostly for display/logging purposes.
@@ -193,9 +177,6 @@ class Blacklist {
 
   // Helper to remove cookies from a header.
   static std::string StripCookies(const std::string&);
-
-  // Helper to remove cookie expiration from a header.
-  static std::string StripCookieExpiry(const std::string&);
 
  private:
   // Converts a GURL into the string to match against.

@@ -269,7 +269,7 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
 
     void* iter = NULL;
     while (headers_->EnumerateHeader(&iter, name, &value)) {
-      if (request_->context()->InterceptCookie(request_, &value))
+      if (request_->context()->InterceptResponseCookie(request_, value))
         response_cookies.push_back(value);
     }
 
