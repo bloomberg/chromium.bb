@@ -16,6 +16,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
@@ -297,7 +298,11 @@ class DelayedInitTask : public Task {
                                  L"GGLA" };
     const wchar_t** end = &kBrands[arraysize(kBrands)];
     const wchar_t** found = std::find(&kBrands[0], end, brand);
-    return (found != end);
+    if (found != end)
+      return true;
+    if (StartsWith(brand, L"EUB", true) || StartsWith(brand, L"EUC", true))
+      return true;
+    return false;
   }
 
   int directory_key_;
