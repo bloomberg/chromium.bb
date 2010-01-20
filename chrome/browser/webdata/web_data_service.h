@@ -18,6 +18,7 @@
 #include "webkit/glue/form_field.h"
 
 class AutofillChange;
+class AutoFillProfile;
 #if defined(OS_WIN)
 struct IE7PasswordInfo;
 #endif
@@ -53,16 +54,17 @@ struct PasswordForm;
 // Result types
 //
 typedef enum {
-  BOOL_RESULT = 1,        // WDResult<bool>
-  KEYWORDS_RESULT,        // WDResult<WDKeywordsResult>
-  INT64_RESULT,           // WDResult<int64>
-  PASSWORD_RESULT,        // WDResult<std::vector<PasswordForm*>>
+  BOOL_RESULT = 1,         // WDResult<bool>
+  KEYWORDS_RESULT,         // WDResult<WDKeywordsResult>
+  INT64_RESULT,            // WDResult<int64>
+  PASSWORD_RESULT,         // WDResult<std::vector<PasswordForm*>>
 #if defined(OS_WIN)
-  PASSWORD_IE7_RESULT,    // WDResult<IE7PasswordInfo>
+  PASSWORD_IE7_RESULT,     // WDResult<IE7PasswordInfo>
 #endif
-  WEB_APP_IMAGES,         // WDResult<WDAppImagesResult>
-  AUTOFILL_VALUE_RESULT,  // WDResult<std::vector<string16>>
-  AUTOFILL_CHANGES,       // WDResult<std::vector<AutofillChange>>
+  WEB_APP_IMAGES,          // WDResult<WDAppImagesResult>
+  AUTOFILL_VALUE_RESULT,   // WDResult<std::vector<string16>>
+  AUTOFILL_CHANGES,        // WDResult<std::vector<AutofillChange>>
+  AUTOFILL_PROFILE_RESULT  // WDResult<AutoFillProfile>
 } WDResultType;
 
 typedef std::vector<AutofillChange> AutofillChangeList;
@@ -405,6 +407,21 @@ class WebDataService
   void RemoveFormValueForElementName(const string16& name,
                                      const string16& value);
 
+  // Schedules a task to add an AutoFill profile to the web database.
+  void AddAutoFillProfile(const AutoFillProfile& profile);
+
+  // Schedules a task to update an AutoFill profile in the web database.
+  void UpdateAutoFillProfile(const AutoFillProfile& profile);
+
+  // Schedules a task to remove an AutoFill profile from the web database.
+  void RemoveAutoFillProfile(const AutoFillProfile& profile);
+
+  // Initiates the request for an AutoFill profile with label |label.  The
+  // method OnWebDataServiceRequestDone of |consumer| gets called back when the
+  // request is finished, with the profile included in the argument |result|.
+  Handle GetAutoFillProfileForLabel(const string16& label,
+                                    WebDataServiceConsumer* consumer);
+
   // Testing
 #ifdef UNIT_TEST
   void set_failed_init(bool value) { failed_init_ = value; }
@@ -497,6 +514,11 @@ class WebDataService
       GenericRequest2<base::Time, base::Time>* request);
   void RemoveFormValueForElementNameImpl(
       GenericRequest2<string16, string16>* request);
+  void AddAutoFillProfileImpl(GenericRequest<AutoFillProfile>* request);
+  void UpdateAutoFillProfileImpl(GenericRequest<AutoFillProfile>* request);
+  void RemoveAutoFillProfileImpl(GenericRequest<AutoFillProfile>* request);
+  void GetAutoFillProfileForLabelImpl(WebDataRequest* request,
+                                      const string16& label);
 
   //////////////////////////////////////////////////////////////////////////////
   //

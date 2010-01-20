@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/thread.h"
+#include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -137,6 +138,49 @@ void WebDataService::RemoveFormValueForElementName(
       NewRunnableMethod(this,
                         &WebDataService::RemoveFormValueForElementNameImpl,
                         request));
+}
+
+void WebDataService::AddAutoFillProfile(const AutoFillProfile& profile) {
+  GenericRequest<AutoFillProfile>* request =
+      new GenericRequest<AutoFillProfile>(
+          this, GetNextRequestHandle(), NULL, profile);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::AddAutoFillProfileImpl,
+                                 request));
+}
+
+void WebDataService::UpdateAutoFillProfile(const AutoFillProfile& profile) {
+  GenericRequest<AutoFillProfile>* request =
+      new GenericRequest<AutoFillProfile>(
+          this, GetNextRequestHandle(), NULL, profile);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::UpdateAutoFillProfileImpl,
+                                 request));
+}
+
+void WebDataService::RemoveAutoFillProfile(const AutoFillProfile& profile) {
+  GenericRequest<AutoFillProfile>* request =
+      new GenericRequest<AutoFillProfile>(
+          this, GetNextRequestHandle(), NULL, profile);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::RemoveAutoFillProfileImpl,
+                                 request));
+}
+
+WebDataService::Handle WebDataService::GetAutoFillProfileForLabel(
+    const string16& label, WebDataServiceConsumer* consumer) {
+  WebDataRequest* request =
+      new WebDataRequest(this, GetNextRequestHandle(), consumer);
+  RegisterRequest(request);
+  ScheduleTask(
+      NewRunnableMethod(this,
+                        &WebDataService::GetAutoFillProfileForLabelImpl,
+                        request,
+                        label));
+  return request->GetHandle();
 }
 
 void WebDataService::RequestCompleted(Handle h) {
@@ -661,6 +705,55 @@ void WebDataService::RemoveFormValueForElementNameImpl(
           new WDResult<AutofillChangeList>(AUTOFILL_CHANGES, changes));
       ScheduleCommit();
     }
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::AddAutoFillProfileImpl(
+    GenericRequest<AutoFillProfile>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    const AutoFillProfile& profile = request->GetArgument();
+    if (!db_->AddAutoFillProfile(profile))
+      NOTREACHED();
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::UpdateAutoFillProfileImpl(
+    GenericRequest<AutoFillProfile>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    const AutoFillProfile& profile = request->GetArgument();
+    if (!db_->UpdateAutoFillProfile(profile))
+      NOTREACHED();
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::RemoveAutoFillProfileImpl(
+    GenericRequest<AutoFillProfile>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    const AutoFillProfile& profile = request->GetArgument();
+    if (!db_->RemoveAutoFillProfile(profile))
+      NOTREACHED();
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::GetAutoFillProfileForLabelImpl(WebDataRequest* request,
+                                                    const string16& label) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    AutoFillProfile* profile;
+    db_->GetAutoFillProfileForLabel(label, &profile);
+    request->SetResult(
+        new WDResult<AutoFillProfile>(AUTOFILL_PROFILE_RESULT, *profile));
+    delete profile;
   }
   request->RequestComplete();
 }
