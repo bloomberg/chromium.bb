@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "chrome/browser/chromeos/image_background.h"
-#include "chrome/browser/chromeos/ipc_message.h"
+#include "chrome/browser/chromeos/login_library.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/theme_resources.h"
 #include "views/controls/label.h"
@@ -72,10 +72,9 @@ class LoginManagerNonClientFrameView : public views::NonClientFrameView {
 // Subclass of WindowGtk, for use as the top level login window.
 class LoginManagerWindow : public views::WindowGtk {
  public:
-  static LoginManagerWindow* CreateLoginManagerWindow(
-      const FilePath& pipe_name) {
+  static LoginManagerWindow* CreateLoginManagerWindow() {
     LoginManagerWindow* login_manager_window =
-        new LoginManagerWindow(pipe_name);
+        new LoginManagerWindow;
     login_manager_window->GetNonClientView()->SetFrameView(
         new LoginManagerNonClientFrameView());
     login_manager_window->Init(NULL, gfx::Rect());
@@ -83,18 +82,18 @@ class LoginManagerWindow : public views::WindowGtk {
   }
 
  private:
-  explicit LoginManagerWindow(const FilePath& pipe_name)
-      : views::WindowGtk(new LoginManagerView(pipe_name)) {
-  }
+  LoginManagerWindow() : views::WindowGtk(new LoginManagerView) { }
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerWindow);
 };
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
-void ShowLoginManager(const FilePath& pipe_name) {
+void ShowLoginManager() {
+  chromeos::LoginLibrary::EnsureLoaded();
   views::WindowGtk* window =
-      LoginManagerWindow::CreateLoginManagerWindow(pipe_name);
+      LoginManagerWindow::CreateLoginManagerWindow();
   window->Show();
+  chromeos::LoginLibrary::Get()->EmitLoginPromptReady();
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);
   MessageLoop::current()->Run();
@@ -102,14 +101,11 @@ void ShowLoginManager(const FilePath& pipe_name) {
 }
 }  // namespace browser
 
-LoginManagerView::LoginManagerView(const FilePath& pipe_name)
-      : pipe_(fopen(pipe_name.value().c_str(), "w")) {
+LoginManagerView::LoginManagerView() {
   Init();
 }
 
 LoginManagerView::~LoginManagerView() {
-  if (pipe_)
-    fclose(pipe_);
   MessageLoop::current()->Quit();
 }
 
@@ -192,7 +188,6 @@ void LoginManagerView::BuildWindow() {
   }
 
   layout->AddPaddingRow(1, 0);
-  EmitLoginPromptReady();
 }
 
 views::View* LoginManagerView::GetContentsView() {
@@ -216,25 +211,6 @@ bool LoginManagerView::Authenticate(const std::string& username,
          child_exit_code == 0;
 }
 
-bool LoginManagerView::Send(IpcMessage outgoing) {
-  if (pipe_) {
-    if (fwrite(&outgoing, sizeof(IpcMessage), 1, pipe_) == 1) {
-      // since we're only writing 1 "member", fwrite will return 1 on success
-      // and 0 on failure.  On success, we want to flush the buffer.
-      return fflush(pipe_) != EOF;
-    }
-  }
-  return false;
-}
-
-bool LoginManagerView::EmitLoginPromptReady() {
-  return Send(EMIT_LOGIN);
-}
-
-bool LoginManagerView::RunWindowManager(const std::string& username) {
-  return Send(START_SESSION);
-}
-
 void LoginManagerView::SetupSession(const std::string& username) {
   if (window()) {
     window()->Close();
@@ -246,7 +222,7 @@ void LoginManagerView::SetupSession(const std::string& username) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAutoSSLClientAuth);
   }
-  RunWindowManager(username);
+  chromeos::LoginLibrary::Get()->StartSession(username, "");
 }
 
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,

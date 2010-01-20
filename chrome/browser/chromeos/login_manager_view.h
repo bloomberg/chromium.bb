@@ -19,7 +19,7 @@ class LoginManagerView : public views::View,
                          public views::WindowDelegate,
                          public views::Textfield::Controller {
  public:
-  LoginManagerView(const FilePath& pipe_name);
+  LoginManagerView();
   virtual ~LoginManagerView();
 
   // Initialize the controls on the dialog.
@@ -42,8 +42,6 @@ class LoginManagerView : public views::View,
 
   // Creates all examples and start UI event loop.
  private:
-  FILE* pipe_;
-
   views::Textfield* username_field_;
   views::Textfield* password_field_;
 
@@ -61,11 +59,6 @@ class LoginManagerView : public views::View,
   // Returns true upon success and false on failure.
   bool Authenticate(const std::string& username,
                     const std::string& password);
-
-  bool Send(IpcMessage outgoing);
-
-  // Asynchronously emits the login-prompt-ready upstart signal.
-  bool EmitLoginPromptReady();
 
   // Asynchronously launches the Chrome OS window manager.
   bool RunWindowManager(const std::string& username);

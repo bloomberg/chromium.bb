@@ -577,8 +577,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_CHROMEOS)
   if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
-    browser::ShowLoginManager(
-        parsed_command_line.GetSwitchValuePath(switches::kSessionManagerPipe));
+    browser::ShowLoginManager();
   }
 #endif  // OS_CHROMEOS
 
