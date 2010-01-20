@@ -53,6 +53,15 @@
 // Reveals the selected search/recent item in its real folder.
 - (IBAction)revealSelectedItem:(id)sender;
 
+// Opens the selected bookmark(s) in new tabs.
+- (IBAction)openItems:(id)sender;
+
+// Makes the selected bookmark's title editable.
+- (IBAction)editTitle:(id)sender;
+
+// Returns YES if an action should be enabled.
+- (BOOL)validateAction:(SEL)action;
+
 // Called by the BookmarkManagerController to notify the data model's changed.
 - (void)itemChanged:(BookmarkItem*)nodeItem
     childrenChanged:(BOOL)childrenChanged;

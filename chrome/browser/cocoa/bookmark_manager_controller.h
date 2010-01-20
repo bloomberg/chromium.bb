@@ -17,7 +17,9 @@ class Profile;
 // Controller for the bookmark manager window. There is at most one instance.
 @interface BookmarkManagerController : NSWindowController {
  @private
-  IBOutlet NSSearchField* toolbarSearchView_;
+  IBOutlet NSSearchField* searchField_;
+  IBOutlet NSSegmentedControl* _addRemoveButton;
+  IBOutlet NSPopUpButton* actionButton_;
   IBOutlet BookmarkTreeController* groupsController_;
   IBOutlet BookmarkTreeController* listController_;
 
@@ -55,8 +57,8 @@ class Profile;
 - (IBAction)searchFieldChanged:(id)sender;
 // Called by the toolbar item; forwards to the focused tree controller.
 - (IBAction)delete:(id)sender;
-// Called by the toolbar item; forwards to the focused tree controller.
-- (IBAction)newFolder:(id)sender;
+// Called by add/remove button.
+- (IBAction)segmentedControlClicked:(id)sender;
 
 // Updates the node->item mapping; called only by BookmarkItem itself!
 - (void)remapItem:(BookmarkItem*)item forNode:(const BookmarkNode*)node;

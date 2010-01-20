@@ -4,7 +4,9 @@
 
 #import "chrome/browser/cocoa/bookmark_manager_controller.h"
 
+#include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
+#include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -18,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/app_resources.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
 
@@ -32,6 +35,7 @@ static BookmarkManagerController* sInstance;
 - (void)nodeChanged:(const BookmarkNode*)node
     childrenChanged:(BOOL)childrenChanged;
 - (void)updateRecents;
+- (void)setupActionMenu;
 @end
 
 
@@ -125,12 +129,16 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
     sInstance = nil;
   }
   [groupsController_ removeObserver:self forKeyPath:@"selectedItem"];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   if (bridge_.get())
     profile_->GetBookmarkModel()->RemoveObserver(bridge_.get());
   [super dealloc];
 }
 
 - (void)awakeFromNib {
+  // Set up the action button's menu.
+  [self setupActionMenu];
+
   // Synthesize the hierarchy of the left-hand outline view.
   BookmarkModel* model = [self bookmarkModel];
   BookmarkItem* bar = [self itemFromNode:model->GetBookmarkBarNode()];
@@ -172,18 +180,12 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
                       forKeyPath:@"selectedItem"
                          options:NSKeyValueObservingOptionInitial
                          context:NULL];
-}
 
-// Install the search field into the search toolbar item. (NSToolbar delegate)
-- (void)toolbarWillAddItem:(NSNotification*)notification {
-  NSToolbarItem* item = [[notification userInfo] objectForKey:@"item"];
-  if ([item tag] == 1) {
-    DCHECK(toolbarSearchView_);
-    [item setView:toolbarSearchView_];
-    NSSize size = [toolbarSearchView_ frame].size;
-    [item setMinSize:size];
-    [item setMaxSize:size];
-  }
+  // Register windowDidUpdate: to be called after every user event.
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(windowDidUpdate:)
+                                              name:NSWindowDidUpdateNotification
+                                             object:[self window]];
 }
 
 // When window closes, get rid of myself too. (NSWindow delegate)
@@ -219,6 +221,11 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
 
 - (FakeBookmarkItem*)searchGroup {
   return searchGroup_;
+}
+
+- (void)setSearchString:(NSString*)string {
+  [searchField_ setStringValue:string];
+  [self searchFieldChanged:self];
 }
 
 
@@ -317,7 +324,7 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
 - (void)updateSearch {
   typedef std::vector<const BookmarkNode*> MatchVector;
   MatchVector matches;
-  NSString* searchString = [toolbarSearchView_ stringValue];
+  NSString* searchString = [searchField_ stringValue];
   if ([searchString length] > 0) {
     // Search in the BookmarkModel:
     std::wstring text = base::SysNSStringToWide(searchString);
@@ -368,6 +375,7 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
     [self selectedGroupChanged];
 }
 
+
 #pragma mark -
 #pragma mark ACTIONS:
 
@@ -395,21 +403,40 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
 // Called when the user types into the search field.
 - (IBAction)searchFieldChanged:(id)sender {
   [self updateSearch];
-  if ([[toolbarSearchView_ stringValue] length])
+  if ([[searchField_ stringValue] length])
     [self showGroup:searchGroup_];
 }
 
-- (void)setSearchString:(NSString*)string {
-  [toolbarSearchView_ setStringValue:string];
-  [self searchFieldChanged:self];
-}
-
-- (IBAction)newFolder:(id)sender {
-  [[self focusedController] newFolder:sender];
+- (IBAction)segmentedControlClicked:(id)sender {
+  BookmarkTreeController* controller = [self focusedController];
+  DCHECK(controller);
+  NSSegmentedCell* cell = [sender cell];
+  switch ([cell tagForSegment:[cell selectedSegment]]) {
+    case 0:
+      [controller newFolder:sender];
+      break;
+    case 1:
+      [controller delete:sender];
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 - (IBAction)delete:(id)sender {
   [[self focusedController] delete:sender];
+}
+
+- (IBAction)openItems:(id)sender {
+  [[self focusedController] openItems:sender];
+}
+
+- (IBAction)revealSelectedItem:(id)sender {
+  [[self focusedController] revealSelectedItem:sender];
+}
+
+- (IBAction)editTitle:(id)sender {
+  [[self focusedController] editTitle:sender];
 }
 
 // Called when the user picks a menu or toolbar item when this window is key.
@@ -428,8 +455,7 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
 
   switch ([sender tag]) {
     case IDC_FIND:
-      [[[self window] toolbar] setVisible:YES];
-      [[self window] makeFirstResponder:toolbarSearchView_];
+      [[self window] makeFirstResponder:searchField_];
       break;
     case IDC_SHOW_BOOKMARK_MANAGER:
       // The Bookmark Manager menu command _closes_ the window if it's frontmost.
@@ -444,10 +470,48 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
       action == @selector(commandDispatchUsingKeyModifiers:)) {
     NSInteger tag = [item tag];
     return (tag == IDC_FIND || tag == IDC_SHOW_BOOKMARK_MANAGER);
-  } else if (action == @selector(newFolder:) || action == @selector(delete:)) {
+  } else if (action == @selector(newFolder:) ||
+        action == @selector(delete:) ||
+        action == @selector(openItems:) ||
+        action == @selector(revealSelectedItem:) ||
+        action == @selector(editTitle:)) {
     return [[self focusedController] validateUserInterfaceItem:item];
   }
   return YES;
+}
+
+- (void)windowDidUpdate:(NSNotification*)n {
+  // After any event, enable/disable the buttons:
+  BookmarkTreeController* tree = [self focusedController];
+  [_addRemoveButton setEnabled:[tree validateAction:@selector(newFolder:)]
+                    forSegment:0];
+  [_addRemoveButton setEnabled:[tree validateAction:@selector(delete:)]
+                    forSegment:1];
+}
+
+
+// Generates the pull-down menu for the "action" (gear) button.
+- (void)setupActionMenu {
+  static const int kMenuActionsCount = 3;
+  const struct {int title; SEL action;} kMenuActions[kMenuActionsCount] = {
+    {IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB, @selector(openItems:)},
+    {IDS_BOOKMARK_BAR_EDIT, @selector(editTitle:)},
+    {IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER, @selector(revealSelectedItem:)},
+  };
+
+  [actionButton_ setTarget:self];
+  NSMenu* menu = [actionButton_ menu];
+  for (int i = 0; i < kMenuActionsCount; i++) {
+    if (kMenuActions[i].action) {
+      NSString* title = l10n_util::GetNSStringWithFixup(kMenuActions[i].title);
+      [menu addItemWithTitle:title
+                      action:kMenuActions[i].action
+               keyEquivalent:@""];
+      [[[menu itemArray] lastObject] setTarget:self];
+    } else {
+      [menu addItem:[NSMenuItem separatorItem]];
+    }
+  }
 }
 
 @end

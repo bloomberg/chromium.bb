@@ -269,8 +269,6 @@ static void addItem(NSMenu* menu, int command, SEL action) {
   addItem(menu, IDS_BOOKMARK_BAR_REMOVE, @selector(delete:));
   [menu addItem:[NSMenuItem separatorItem]];
   addItem(menu, IDS_BOOMARK_BAR_NEW_FOLDER, @selector(newFolder:));
-  [menu addItem:[NSMenuItem separatorItem]];
-  addItem(menu, IDS_BOOKMARK_MANAGER_SORT, @selector(sortByTitle:));
   for (NSMenuItem* item in [menu itemArray])
     [item setTarget:self];
   return menu;
@@ -278,7 +276,10 @@ static void addItem(NSMenu* menu, int command, SEL action) {
 
 // Selectively enables/disables menu commands.
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
-  SEL action = [item action];
+  return [self validateAction:[item action]];
+}
+
+- (BOOL)validateAction:(SEL)action {
   NSArray* selected = [self actionItems];
   NSUInteger selCount = [selected count];
   if (action == @selector(copy:)) {
