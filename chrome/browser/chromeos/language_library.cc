@@ -17,6 +17,28 @@ struct RunnableMethodTraits<chromeos::LanguageLibrary> {
   void ReleaseCallee(chromeos::LanguageLibrary* obj) {}
 };
 
+namespace {
+
+// Finds a property which has |new_prop.key| from |prop_list|, and replaces the
+// property with |new_prop|. Returns true if such a property is found.
+bool FindAndUpdateProperty(const chromeos::ImeProperty& new_prop,
+                           chromeos::ImePropertyList* prop_list) {
+  for (size_t i = 0; i < prop_list->size(); ++i) {
+    chromeos::ImeProperty& prop = prop_list->at(i);
+    if (prop.key == new_prop.key) {
+      const int saved_id = prop.selection_item_id;
+      // Update the list except the radio id. As written in chromeos_language.h,
+      // |prop.selection_item_id| is dummy.
+      prop = new_prop;
+      prop.selection_item_id = saved_id;
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
 namespace chromeos {
 
 LanguageLibrary::LanguageLibrary() : language_status_connection_(NULL) {
@@ -75,6 +97,22 @@ void LanguageLibrary::ChangeLanguage(
   }
 }
 
+void LanguageLibrary::ActivateImeProperty(const std::string& key) {
+  DCHECK(!key.empty());
+  if (EnsureLoaded()) {
+    chromeos::ActivateImeProperty(
+        language_status_connection_, key.c_str());
+  }
+}
+
+void LanguageLibrary::DeactivateImeProperty(const std::string& key) {
+  DCHECK(!key.empty());
+  if (EnsureLoaded()) {
+    chromeos::DeactivateImeProperty(
+        language_status_connection_, key.c_str());
+  }
+}
+
 bool LanguageLibrary::ActivateLanguage(
     LanguageCategory category, const std::string& id) {
   bool success = false;
@@ -102,9 +140,27 @@ void LanguageLibrary::LanguageChangedHandler(
   language_library->UpdateCurrentLanguage(current_language);
 }
 
+// static
+void LanguageLibrary::RegisterPropertiesHandler(
+    void* object, const ImePropertyList& prop_list) {
+  LanguageLibrary* language_library = static_cast<LanguageLibrary*>(object);
+  language_library->RegisterProperties(prop_list);
+}
+
+// static
+void LanguageLibrary::UpdatePropertyHandler(
+    void* object, const ImePropertyList& prop_list) {
+  LanguageLibrary* language_library = static_cast<LanguageLibrary*>(object);
+  language_library->UpdateProperty(prop_list);
+}
+
 void LanguageLibrary::Init() {
-  language_status_connection_ = chromeos::MonitorLanguageStatus(
-      &LanguageChangedHandler, this);
+  chromeos::LanguageStatusMonitorFunctions monitor_functions;
+  monitor_functions.current_language = &LanguageChangedHandler;
+  monitor_functions.register_ime_properties = &RegisterPropertiesHandler;
+  monitor_functions.update_ime_property = &UpdatePropertyHandler;
+  language_status_connection_
+      = chromeos::MonitorLanguageStatus(monitor_functions, this);
 }
 
 void LanguageLibrary::UpdateCurrentLanguage(
@@ -123,6 +179,35 @@ void LanguageLibrary::UpdateCurrentLanguage(
   DLOG(INFO) << "UpdateCurrentLanguage (UI thread)";
   current_language_ = current_language;
   FOR_EACH_OBSERVER(Observer, observers_, LanguageChanged(this));
+}
+
+void LanguageLibrary::RegisterProperties(const ImePropertyList& prop_list) {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            this, &LanguageLibrary::RegisterProperties, prop_list));
+    return;
+  }
+
+  // |prop_list| might be empty. This means "clear all properties."
+  current_ime_properties_ = prop_list;
+  FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
+}
+
+void LanguageLibrary::UpdateProperty(const ImePropertyList& prop_list) {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            this, &LanguageLibrary::UpdateProperty, prop_list));
+    return;
+  }
+
+  for (size_t i = 0; i < prop_list.size(); ++i) {
+    FindAndUpdateProperty(prop_list[i], &current_ime_properties_);
+  }
+  FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
 }
 
 }  // namespace chromeos

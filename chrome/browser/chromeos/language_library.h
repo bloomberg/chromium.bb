@@ -23,6 +23,7 @@ class LanguageLibrary {
    public:
     virtual ~Observer() = 0;
     virtual void LanguageChanged(LanguageLibrary* obj) = 0;
+    virtual void ImePropertiesChanged(LanguageLibrary* obj) = 0;
   };
 
   // This gets the singleton LanguageLibrary
@@ -54,6 +55,14 @@ class LanguageLibrary {
   // in src third_party/cros/ for details.
   void ChangeLanguage(LanguageCategory category, const std::string& id);
 
+  // Activates an IME property identified by |key|. Examples of keys are:
+  // "InputMode.Katakana", "InputMode.HalfWidthKatakana", "TypingMode.Romaji",
+  // and "TypingMode.Kana."
+  void ActivateImeProperty(const std::string& key);
+
+  // Deactivates an IME property identified by |key|.
+  void DeactivateImeProperty(const std::string& key);
+
   // Activates the language specified by |category| and |id|. Returns true
   // on success.
   bool ActivateLanguage(LanguageCategory category, const std::string& id);
@@ -66,6 +75,10 @@ class LanguageLibrary {
     return current_language_;
   }
 
+  const ImePropertyList& current_ime_properties() const {
+    return current_ime_properties_;
+  }
+
  private:
   friend struct DefaultSingletonTraits<LanguageLibrary>;
 
@@ -73,9 +86,16 @@ class LanguageLibrary {
   ~LanguageLibrary();
 
   // This method is called when there's a change in language status.
-  // This method is called on a background thread.
   static void LanguageChangedHandler(
       void* object, const InputLanguage& current_language);
+
+  // This method is called when an IME engine sends "RegisterProperties" signal.
+  static void RegisterPropertiesHandler(
+      void* object, const ImePropertyList& prop_list);
+
+  // This method is called when an IME engine sends "UpdateProperty" signal.
+  static void UpdatePropertyHandler(
+      void* object, const ImePropertyList& prop_list);
 
   // This methods starts the monitoring of language changes.
   void Init();
@@ -84,6 +104,12 @@ class LanguageLibrary {
   // This will notify all the Observers.
   void UpdateCurrentLanguage(const InputLanguage& current_language);
 
+  // Called by the handler to register IME properties.
+  void RegisterProperties(const ImePropertyList& prop_list);
+
+  // Called by the handler to update IME properties.
+  void UpdateProperty(const ImePropertyList& prop_list);
+
   // A reference to the language api, to allow callbacks when the language
   // status changes.
   LanguageStatusConnection* language_status_connection_;
@@ -91,6 +117,10 @@ class LanguageLibrary {
 
   // The language (IME or XKB layout) which currently selected.
   InputLanguage current_language_;
+
+  // The IME properties which the current IME engine uses. The list might be
+  // empty when no IME is used.
+  ImePropertyList current_ime_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageLibrary);
 };

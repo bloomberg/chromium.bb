@@ -13,25 +13,58 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
+// The language menu consists of 3 parts (in this order):
+//
+//   (1) XKB layout names and IME languages names. The size of the list is
+//       always >= 1.
+//   (2) IME properties. This list might be empty.
+//   (3) "Configure IME..." button.
+//
+// Example of the menu (Japanese):
+//
+// ============================== (border of the popup window)
+// [ ] US                         (|index| in the following functions is 0)
+// [*] Anthy
+// [ ] PinYin
+// ------------------------------ (separator)
+// [*] Hiragana                   (index = 5, The property has 2 radio groups)
+// [ ] Katakana
+// [ ] HalfWidthKatakana
+// [*] Roman
+// [ ] Kana
+// ------------------------------ (separator)
+// Configure IME...               (index = 11)
+// ============================== (border of the popup window)
+//
+// Example of the menu (Simplified Chinese):
+//
+// ============================== (border of the popup window)
+// [ ] US
+// [ ] Anthy
+// [*] PinYin
+// ------------------------------ (separator)
+// Switch to full letter mode     (The property has 2 command buttons)
+// Switch to half punctuation mode
+// ------------------------------ (separator)
+// Configure IME...
+// ============================== (border of the popup window)
+//
+
 namespace {
 
-const int kRadioGroupNone = 0;
-const int kRadioGroupLanguage = 1;
+// Constants to specify the type of items in |model_|.
+enum {
+  COMMAND_ID_LANGUAGES = 0,  // US, Anthy, PinYin, ...
+  COMMAND_ID_IME_PROPERTIES,  // Hiragana, Katakana, ...
+  COMMAND_ID_CONFIGURE_IME,  // The "Configure IME..." button.
+};
+
+// A group ID for IME properties starts from 0. We use the huge value for the
+// XKB/IME language list to avoid conflict.
+const int kRadioGroupLanguage = 1 << 16;
+const int kRadioGroupNone = -1;
 const size_t kMaxLanguageNameLen = 7;
 const wchar_t kSpacer[] = L"MMMMMMM";
-
-// Returns true if the |index| points to the "Configure IME" menu item.
-bool IsIndexShowControlPanel(
-    int index, chromeos::InputLanguageList* language_list) {
-  DCHECK_GE(index, 0);
-  if (language_list->empty()) {
-    // If language_list is empty, then there's no separator. So "Configure IME"
-    // should be at index 0.
-    DCHECK_EQ(index, 0);
-    return index == 0;
-  }
-  return static_cast<size_t>(index) == (language_list->size() + 1);
-}
 
 // Converts chromeos::InputLanguage object into human readable string. Returns
 // a string for the drop-down menu if |for_menu| is true. Otherwise, returns a
@@ -73,11 +106,15 @@ namespace chromeos {
 LanguageMenuButton::LanguageMenuButton(Browser* browser)
     : MenuButton(NULL, std::wstring(), this, false),
       language_list_(LanguageLibrary::Get()->GetLanguages()),
-      // Since the constructor of |language_menu_| calls this->GetItemCount(),
-      // we have to initialize |language_list_| before hand.
+      model_(NULL),
+      // Be aware that the constructor of |language_menu_| calls GetItemCount()
+      // in this class. Therefore, GetItemCount() have to return 0 when
+      // |model_| is NULL.
       ALLOW_THIS_IN_INITIALIZER_LIST(language_menu_(this)),
       browser_(browser) {
   DCHECK(language_list_.get() && !language_list_->empty());
+  // Update the model
+  RebuildModel();
   // Grab the real estate.
   UpdateIcon(kSpacer);
   // Display the default XKB name (usually "US").
@@ -94,7 +131,7 @@ LanguageMenuButton::~LanguageMenuButton() {
 // LanguageMenuButton, menus::MenuModel implementation:
 
 int LanguageMenuButton::GetCommandIdAt(int index) const {
-  return index;  // dummy
+  return 0;  // dummy
 }
 
 bool LanguageMenuButton::IsLabelDynamicAt(int index) const {
@@ -111,19 +148,35 @@ bool LanguageMenuButton::GetAcceleratorAt(
 bool LanguageMenuButton::IsItemCheckedAt(int index) const {
   DCHECK_GE(index, 0);
   DCHECK(language_list_.get());
-  if (static_cast<size_t>(index) < language_list_->size()) {
+
+  if (IndexIsInLanguageList(index)) {
     const InputLanguage& language = language_list_->at(index);
     return language == LanguageLibrary::Get()->current_language();
   }
+
+  if (GetPropertyIndex(index, &index)) {
+    const ImePropertyList& property_list
+        = LanguageLibrary::Get()->current_ime_properties();
+    return property_list.at(index).is_selection_item_checked;
+  }
+
+  // Separator(s) or the "Configure IME" button.
   return false;
 }
 
 int LanguageMenuButton::GetGroupIdAt(int index) const {
   DCHECK_GE(index, 0);
-  DCHECK(language_list_.get());
-  if (static_cast<size_t>(index) < language_list_->size()) {
+
+  if (IndexIsInLanguageList(index)) {
     return kRadioGroupLanguage;
   }
+
+  if (GetPropertyIndex(index, &index)) {
+    const ImePropertyList& property_list
+        = LanguageLibrary::Get()->current_ime_properties();
+    return property_list.at(index).selection_item_id;
+  }
+
   return kRadioGroupNone;
 }
 
@@ -133,15 +186,18 @@ bool LanguageMenuButton::HasIcons() const  {
 }
 
 bool LanguageMenuButton::GetIconAt(int index, SkBitmap* icon) const {
+  // TODO(yusukes): Display IME icons.
   return false;
 }
 
 bool LanguageMenuButton::IsEnabledAt(int index) const {
-  // Just return true so all IMEs and XLB layouts listed could be clicked.
+  // Just return true so all IMEs, XKB layouts, and IME properties could be
+  // clicked.
   return true;
 }
 
 menus::MenuModel* LanguageMenuButton::GetSubmenuModelAt(int index) const {
+  // We don't use nested menus.
   return NULL;
 }
 
@@ -154,54 +210,100 @@ void LanguageMenuButton::MenuWillShow() {
 }
 
 int LanguageMenuButton::GetItemCount() const {
-  DCHECK(language_list_.get());
-  if (language_list_->empty()) {
-    return 1;  // no separator; "Configure IME" only
+  if (!model_.get()) {
+    // Model is not constructed yet. This means that LanguageMenuButton is
+    // being constructed. Return zero.
+    return 0;
   }
-  return language_list_->size() + 2;  // separator + "Configure IME"
+  return model_->GetItemCount();
 }
 
 menus::MenuModel::ItemType LanguageMenuButton::GetTypeAt(int index) const {
   DCHECK_GE(index, 0);
-  DCHECK(language_list_.get());
-  if (IsIndexShowControlPanel(index, language_list_.get())) {
+
+  if (IndexPointsToConfigureImeMenuItem(index)) {
     return menus::MenuModel::TYPE_COMMAND;  // "Configure IME"
   }
-  if (static_cast<size_t>(index) < language_list_->size()) {
+
+  if (IndexIsInLanguageList(index)) {
     return menus::MenuModel::TYPE_RADIO;
   }
 
-  DCHECK_EQ(static_cast<size_t>(index), language_list_->size());
+  if (GetPropertyIndex(index, &index)) {
+    const ImePropertyList& property_list
+        = LanguageLibrary::Get()->current_ime_properties();
+    if (property_list.at(index).is_selection_item) {
+      return menus::MenuModel::TYPE_RADIO;
+    }
+    return menus::MenuModel::TYPE_COMMAND;
+  }
+
   return menus::MenuModel::TYPE_SEPARATOR;
 }
 
 string16 LanguageMenuButton::GetLabelAt(int index) const {
   DCHECK_GE(index, 0);
   DCHECK(language_list_.get());
-  if (IsIndexShowControlPanel(index, language_list_.get())) {
+
+  if (IndexPointsToConfigureImeMenuItem(index)) {
     // TODO(yusukes): Use message catalog.
     return WideToUTF16(L"Configure IME...");
   }
-  if (static_cast<size_t>(index) < language_list_->size()) {
-    std::string name = FormatInputLanguage(language_list_->at(index), true);
-    return UTF8ToUTF16(name);
+
+  std::string name;
+  if (IndexIsInLanguageList(index)) {
+    name = FormatInputLanguage(language_list_->at(index), true);
+  } else if (GetPropertyIndex(index, &index)) {
+    const ImePropertyList& property_list
+        = LanguageLibrary::Get()->current_ime_properties();
+    name = property_list.at(index).label;
   }
-  NOTREACHED();
-  return WideToUTF16(L"");
+
+  return UTF8ToUTF16(name);
 }
 
 void LanguageMenuButton::ActivatedAt(int index) {
   DCHECK_GE(index, 0);
   DCHECK(language_list_.get());
-  if (IsIndexShowControlPanel(index, language_list_.get())) {
+
+  if (IndexPointsToConfigureImeMenuItem(index)) {
     browser_->ShowControlPanel();
     return;
   }
-  if (static_cast<size_t>(index) < language_list_->size()) {
+
+  if (IndexIsInLanguageList(index)) {
+    // Inter-IME switching or IME-XKB switching.
     const InputLanguage& language = language_list_->at(index);
     LanguageLibrary::Get()->ChangeLanguage(language.category, language.id);
     return;
   }
+
+  if (GetPropertyIndex(index, &index)) {
+    // Intra-IME switching (e.g. Japanese-Hiragana to Japanese-Katakana).
+    const ImePropertyList& property_list
+        = LanguageLibrary::Get()->current_ime_properties();
+    const std::string key = property_list.at(index).key;
+    if (property_list.at(index).is_selection_item) {
+      // Radio button is clicked.
+      const int id = property_list.at(index).selection_item_id;
+      // First, deactivate all other properties in the same radio group.
+      for (int i = 0; i < static_cast<int>(property_list.size()); ++i) {
+        if (i != index && id == property_list.at(i).selection_item_id) {
+          LanguageLibrary::Get()->DeactivateImeProperty(
+              property_list.at(i).key);
+        }
+      }
+      // Then, activate the property clicked.
+      LanguageLibrary::Get()->ActivateImeProperty(key);
+    } else {
+      // Command button like "Switch to half punctuation mode" is clicked.
+      // We can always use "Deactivate" for command buttons.
+      LanguageLibrary::Get()->DeactivateImeProperty(key);
+    }
+    return;
+  }
+
+  // Separators are not clickable.
   NOTREACHED();
 }
 
@@ -210,17 +312,22 @@ void LanguageMenuButton::ActivatedAt(int index) {
 
 void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   language_list_.reset(LanguageLibrary::Get()->GetLanguages());
+  RebuildModel();
   language_menu_.Rebuild();
   language_menu_.UpdateStates();
   language_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LanguageMenuButton, PowerLibrary::Observer implementation:
+// LanguageLibrary::Observer implementation:
 
 void LanguageMenuButton::LanguageChanged(LanguageLibrary* obj) {
   const std::string name = FormatInputLanguage(obj->current_language(), false);
   UpdateIcon(UTF8ToWide(name));
+}
+
+void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
+  RebuildModel();
 }
 
 void LanguageMenuButton::UpdateIcon(const std::wstring& name) {
@@ -235,7 +342,62 @@ void LanguageMenuButton::UpdateIcon(const std::wstring& name) {
   SchedulePaint();
 }
 
+void LanguageMenuButton::RebuildModel() {
+  model_.reset(new menus::SimpleMenuModel(NULL));
+  string16 dummy_label = UTF8ToUTF16("");
+
+  // We "abuse" the command_id and group_id arguments of AddRadioItem method.
+  // A COMMAND_ID_XXX enum value is passed as command_id, and array index of
+  // |language_list_| or |property_list| is passed as group_id.
+  for (size_t i = 0; i < language_list_->size(); ++i) {
+    model_->AddRadioItem(COMMAND_ID_LANGUAGES, dummy_label, i);
+  }
+  model_->AddSeparator();
+
+  const ImePropertyList& property_list
+      = LanguageLibrary::Get()->current_ime_properties();
+  for (size_t i = 0; i < property_list.size(); ++i) {
+    model_->AddRadioItem(COMMAND_ID_IME_PROPERTIES, dummy_label, i);
+  }
+  if (!property_list.empty()) {
+    model_->AddSeparator();
+  }
+
+  // Note: We use AddSeparator() for separators, and AddRadioItem() for all
+  // other items even if an item is not actually a radio item.
+  model_->AddRadioItem(COMMAND_ID_CONFIGURE_IME, dummy_label, 0 /* dummy */);
+}
+
+bool LanguageMenuButton::IndexIsInLanguageList(int index) const {
+  DCHECK_GE(index, 0);
+  DCHECK(model_.get());
+
+  return ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
+          (model_->GetCommandIdAt(index) == COMMAND_ID_LANGUAGES));
+}
+
+bool LanguageMenuButton::GetPropertyIndex(
+    int index, int* property_index) const {
+  DCHECK_GE(index, 0);
+  DCHECK(property_index);
+  DCHECK(model_.get());
+
+  if ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
+      (model_->GetCommandIdAt(index) == COMMAND_ID_IME_PROPERTIES)) {
+    *property_index = model_->GetGroupIdAt(index);
+    return true;
+  }
+  return false;
+}
+
+bool LanguageMenuButton::IndexPointsToConfigureImeMenuItem(int index) const {
+  DCHECK_GE(index, 0);
+  DCHECK(model_.get());
+
+  return ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
+          (model_->GetCommandIdAt(index) == COMMAND_ID_CONFIGURE_IME));
+}
+
 // TODO(yusukes): Register and handle hotkeys for IME and XKB switching?
 
 }  // namespace chromeos
-

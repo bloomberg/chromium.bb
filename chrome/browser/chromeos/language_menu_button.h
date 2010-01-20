@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LANGUAGE_MENU_BUTTON_H_
 #define CHROME_BROWSER_CHROMEOS_LANGUAGE_MENU_BUTTON_H_
 
+#include "app/menus/simple_menu_model.h"
 #include "chrome/browser/chromeos/language_library.h"
 #include "chrome/browser/chromeos/status_area_button.h"
 #include "views/controls/menu/menu_2.h"
@@ -25,7 +26,7 @@ class LanguageMenuButton : public views::MenuButton,
   explicit LanguageMenuButton(Browser* browser);
   virtual ~LanguageMenuButton();
 
-  // views::Menu2Model implementation.
+  // menus::MenuModel implementation.
   virtual bool HasIcons() const;
   virtual int GetItemCount() const;
   virtual menus::MenuModel::ItemType GetTypeAt(int index) const;
@@ -45,6 +46,7 @@ class LanguageMenuButton : public views::MenuButton,
 
   // LanguageLibrary::Observer implementation.
   virtual void LanguageChanged(LanguageLibrary* obj);
+  virtual void ImePropertiesChanged(LanguageLibrary* obj);
 
  private:
   // views::ViewMenuDelegate implementation.
@@ -53,10 +55,32 @@ class LanguageMenuButton : public views::MenuButton,
   // Update the status area with |name|.
   void UpdateIcon(const std::wstring& name);
 
+  // Rebuilds |model_|. This function should be called whenever |language_list_|
+  // is updated, or ImePropertiesChanged() is called.
+  void RebuildModel();
+
+  // Returns true if the zero-origin |index| points to one of the input
+  // languages.
+  bool IndexIsInLanguageList(int index) const;
+
+  // Returns true if the zero-origin |index| points to one of the IME
+  // properties. When returning true, |property_index| is updated so that
+  // property_list.at(property_index) points to the menu item.
+  bool GetPropertyIndex(int index, int* property_index) const;
+
+  // Returns true if the zero-origin |index| points to the "Configure IME" menu
+  // item.
+  bool IndexPointsToConfigureImeMenuItem(int index) const;
+
   // The current language list.
   scoped_ptr<InputLanguageList> language_list_;
 
-  // The language menu.
+  // We borrow menus::SimpleMenuModel implementation to maintain the current
+  // content of the pop-up menu. The menus::MenuModel is implemented using this
+  // |model_|.
+  scoped_ptr<menus::SimpleMenuModel> model_;
+
+  // The language menu which pops up when the button in status area is clicked.
   views::Menu2 language_menu_;
   // The browser window that owns us.
   Browser* browser_;
