@@ -124,13 +124,12 @@
               ],
               'action': ['python',
                          'util/prebuild/create_string_rc.py',
-                         '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings',
-                         '<(branding)',],
+                         '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings'],
               'message': 'Generating resources from <(RULE_INPUT_PATH)',
             },
           ],
           'sources': [
-            '../app/chromium_strings.grd',
+            '../app/generated_resources.grd',
           ],
           'direct_dependent_settings': {
             'include_dirs': [
