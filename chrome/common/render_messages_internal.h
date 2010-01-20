@@ -256,9 +256,6 @@ IPC_BEGIN_MESSAGES(View)
                       string16 /* search_text */,
                       WebKit::WebFindOptions)
 
-  // Asks the renderer for the language of the current page.
-  IPC_MESSAGE_ROUTED0(ViewMsg_DeterminePageLanguage)
-
   // Send from the renderer to the browser to return the script running result.
   IPC_MESSAGE_ROUTED2(ViewMsg_ExecuteCodeFinished,
                       int, /* request id */
@@ -1147,10 +1144,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              std::wstring /* out - prompt field */)
 
   // Provides the contents for the given page that was loaded recently.
-  IPC_MESSAGE_ROUTED3(ViewHostMsg_PageContents,
+  IPC_MESSAGE_ROUTED4(ViewHostMsg_PageContents,
                       GURL         /* URL of the page */,
                       int32        /* page id */,
-                      std::wstring /* page contents */)
+                      std::wstring /* page contents */,
+                      std::string  /* page ISO639_1 language code */)
 
   // Used to get the extension message bundle.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetExtensionMessageBundle,

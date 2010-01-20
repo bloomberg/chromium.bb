@@ -389,6 +389,15 @@ class NavigationEntry {
     return restore_type_;
   }
 
+  // The ISO 639-1 language code (ex: en, fr, zh...) for the page.
+  // Can be empty if the language was not detected yet or is unknown.
+  void set_language(const std::string& language) {
+    language_ = language;
+  }
+  std::string language() const {
+    return language_;
+  }
+
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -413,6 +422,7 @@ class NavigationEntry {
   GURL user_typed_url_;
   bool has_post_data_;
   RestoreType restore_type_;
+  std::string language_;  // ISO 639-1 language code.
 
   // This is a cached version of the result of GetTitleForDisplay. It prevents
   // us from having to do URL formatting on the URL evey time the title is
