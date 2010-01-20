@@ -38,7 +38,7 @@ import traceback
 from layout_package import apache_http_server
 from layout_package import test_expectations
 from layout_package import http_server
-from layout_package import json_results_generator
+from layout_package import json_layout_results_generator
 from layout_package import metered_stream
 from layout_package import path_utils
 from layout_package import platform_utils
@@ -60,6 +60,9 @@ LOG_DETAILED_PROGRESS = 'detailed-progress'
 
 # Log any unexpected results while running (instead of just at the end).
 LOG_UNEXPECTED = 'unexpected'
+
+# Builder base URL where we have the archived test results.
+BUILDER_BASE_URL = "http://build.chromium.org/buildbot/layout_test_results/"
 
 TestExpectationsFile = test_expectations.TestExpectationsFile
 
@@ -129,7 +132,7 @@ class ResultSummary(object):
 
 
 class TestRunner:
-  """A class for managing running a series of tests on a series of test
+  """A class for managing running a series of tests on a series of layout test
   files."""
 
   HTTP_SUBDIR = os.sep.join(['', 'http', ''])
@@ -884,9 +887,11 @@ class TestRunner:
     expectations_file.write(("ADD_EXPECTATIONS(" + expectations_json + ");"))
     expectations_file.close()
 
-    json_results_generator.JSONResultsGenerator(self._options,
-        self._expectations, result_summary, individual_test_timings,
-        self._options.results_directory, self._test_files_list)
+    json_layout_results_generator.JSONLayoutResultsGenerator(
+        self._options.builder_name, self._options.build_name,
+        self._options.build_number, self._options.results_directory,
+        BUILDER_BASE_URL, individual_test_timings,
+        self._expectations, result_summary, self._test_files_list)
 
     logging.debug("Finished writing JSON files.")
 
