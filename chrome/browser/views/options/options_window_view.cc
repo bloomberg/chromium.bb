@@ -6,11 +6,14 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/options/advanced_page_view.h"
 #include "chrome/browser/views/options/content_page_view.h"
 #include "chrome/browser/views/options/general_page_view.h"
+#include "chrome/browser/window_sizer.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -99,6 +102,22 @@ OptionsWindowView::~OptionsWindowView() {
 
 void OptionsWindowView::ShowOptionsPage(OptionsPage page,
                                         OptionsGroup highlight_group) {
+  if (Browser* b = BrowserList::GetLastActive()) {
+    // Move dialog to user expected position.
+    gfx::Rect frame_bounds = b->window()->GetRestoredBounds();
+    if (b->window()->IsMaximized()) {
+      // For maximized window get monitor size as a bounding box.
+      WindowSizer::MonitorInfoProvider* provider =
+          WindowSizer::CreateDefaultMonitorInfoProvider();
+      frame_bounds = provider->GetMonitorWorkAreaMatching(frame_bounds);
+    }
+    gfx::Point origin = frame_bounds.origin();
+    origin.Offset(
+        (frame_bounds.width() - window()->GetBounds().width()) / 2,
+        (frame_bounds.height() - window()->GetBounds().height()) / 2);
+    window()->SetBounds(gfx::Rect(origin, window()->GetBounds().size()), NULL);
+  }
+
   // If the window is not yet visible, we need to show it (it will become
   // active), otherwise just bring it to the front.
   if (!window()->IsVisible()) {
