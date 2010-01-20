@@ -627,6 +627,9 @@ void RenderThread::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisableLocalStorage));
   WebRuntimeFeatures::enableSessionStorage(
       command_line.HasSwitch(switches::kEnableSessionStorage));
+
+  WebRuntimeFeatures::enableGeolocation(
+      command_line.HasSwitch(switches::kEnableGeolocation));
 }
 
 void RenderThread::IdleHandler() {
