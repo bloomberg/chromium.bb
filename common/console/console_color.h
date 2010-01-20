@@ -41,12 +41,12 @@
 typedef uint32_t ColorT;
 
 /* Package and unpackage RGBA values */
-#define COLOR_RGBA(r, g, b, a) ((a << 24) | (r << 16) | (g << 8) | b)
-#define COLOR_RGB(r, g, b) COLOR_RGBA(r, g, b, 255)
-#define COLOR_A(col) ((col >> 24) & 0xff)
-#define COLOR_R(col) ((col >> 16) & 0xff)
-#define COLOR_G(col) ((col >> 8) & 0xff)
-#define COLOR_B(col) (col & 0xff)
+#define COLOR_RGBA(r, g, b, a) (((a) << 24) | ((r) << 16) | ((g) << 8) | (b))
+#define COLOR_RGB(r, g, b) COLOR_RGBA((r), (g), (b), 255)
+#define COLOR_A(col) (((col) >> 24) & 0xff)
+#define COLOR_R(col) (((col) >> 16) & 0xff)
+#define COLOR_G(col) (((col) >> 8) & 0xff)
+#define COLOR_B(col) ((col) & 0xff)
 
 /* Common colors */
 #define COLOR_RED COLOR_RGB(255, 0, 0)
@@ -61,4 +61,3 @@ typedef uint32_t ColorT;
 
 
 #endif  /* NATIVE_CLIENT_COMMON_CONSOLE_CONSOLE_COLOR_H_ */
-

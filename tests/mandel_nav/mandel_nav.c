@@ -299,7 +299,7 @@ NaClSrpcError ShutdownSharedMemory(NaClSrpcChannel *channel,
 
 void do_ShutdownSharedMemory(struct work_item *p) {
   /* Free the pixmap. */
-  free(pixmap);
+  /* free(pixmap); TODO(sehr): is this vestigial code? */
   /* Return success. */
 }
 
