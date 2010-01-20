@@ -189,66 +189,14 @@
    # for no reason other than pleasing valgrind, but a patch might be accepted
    # under a macro like SQLITE_SECURE_DELETE which could be construed to apply
    # to cases like this. (Note that we compile with SQLITE_SECURE_DELETE.)
-   bug_20653a
+   bug_20653
    Memcheck:Param
    write(buf)
    ...
    fun:sqlite3OsWrite
    fun:pager_write_pagelist
 }
-{
-   bug_20653b
-   Memcheck:Param
-   write(buf)
-   ...
-   fun:unixWrite
-   fun:sqlite3OsWrite
-   ...
-   fun:pager_write
-}
-{
-   # There is a fix in mainline, http://www.sqlite.org/cvstrac/chngview?cn=5968
-   # See also http://article.gmane.org/gmane.comp.db.sqlite.general/43177
-   SQLite write
-   Memcheck:Param
-   write(buf)
-   ...
-   fun:writeJournalHdr
-}
 
-# Fixed in newer SQLite
-# http://www.sqlite.org/cvstrac/tktview?tn=3326
-# http://www.sqlite.org/cvstrac/tktview?tn=3575
-# (Caller of sqlite3VdbeExec is either sqlite3Step or its wrapper sqlite3_step)
-{
-   SQLite_bug_3326
-   Memcheck:Cond
-   fun:sqlite3VdbeMemShallowCopy
-   fun:sqlite3VdbeExec
-   fun:sqlite3*tep
-}
-# SQLite intentionally leaks a little memory in findLockInfo() in sqlite3_open
-# Newer versions don't do this.
-# See http://www.mail-archive.com/sqlite-users@sqlite.org/msg02334.html
-# and http://www.mail-archive.com/sqlite-users@sqlite.org/msg30449.html
-{
-   sqlite_open_leak
-   Memcheck:Leak
-   ...
-   fun:findLockInfo
-   ...
-   fun:sqlite3OsOpen
-}
-{
-   bug_17576
-   Memcheck:Leak
-   ...
-   fun:findLockInfo
-   ...
-   fun:unixOpen
-   ...
-   fun:openDatabase
-}
 {
    # array of weak references freed but not processed?
    bug_16576
