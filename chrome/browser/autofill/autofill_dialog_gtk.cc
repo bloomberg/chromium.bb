@@ -138,6 +138,22 @@ void FormTableAddSizedEntry(
   gtk_entry_set_width_chars(GTK_ENTRY(entry), char_len);
 }
 
+// Like FormTableAddEntry, but connects to the 'changed' signal.  |changed| is a
+// callback to handle the 'changed' signal that is emitted when the user edits
+// the entry.  |expander| is the expander widget that will be sent to the
+// callback as the user data.
+GtkWidget* FormTableAddLabelEntry(
+    GtkWidget* table, int row, int col, int len, int label_id,
+    GtkWidget* expander, GCallback changed) {
+  FormTableSetLabel(table, row, col, len, label_id);
+
+  GtkWidget* entry = gtk_entry_new();
+  g_signal_connect(entry, "changed", changed, expander);
+  FormTableSetWidget(table, entry, row, col, len, false);
+
+  return entry;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,6 +180,10 @@ class AutoFillDialog {
 
   // 'clicked' signal handler.  We add a new credit card.
   static void OnAddCreditCardClicked(GtkButton* button, AutoFillDialog* dialog);
+
+  // 'changed' signal handler.  We update the title of the expander widget with
+  // the contents of the label entry widget.
+  static void OnLabelChanged(GtkEntry* label, GtkWidget* expander);
 
   // Initializes the group widgets and returns their container.  |name_id| is
   // the resource ID of the group label.  |button_id| is the resource name of
@@ -305,6 +325,11 @@ void AutoFillDialog::OnAddCreditCardClicked(GtkButton* button,
   gtk_widget_show_all(new_creditcard);
 }
 
+// static
+void AutoFillDialog::OnLabelChanged(GtkEntry* label, GtkWidget* expander) {
+  gtk_expander_set_label(GTK_EXPANDER(expander), gtk_entry_get_text(label));
+}
+
 GtkWidget* AutoFillDialog::InitGroup(int name_id,
                                      int button_id,
                                      GCallback clicked_callback) {
@@ -369,7 +394,8 @@ GtkWidget* AutoFillDialog::AddNewAddress() {
   GtkWidget* table = InitFormTable(5, 3);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), table);
 
-  FormTableAddEntry(table, 0, 0, 1, IDS_AUTOFILL_DIALOG_LABEL);
+  FormTableAddLabelEntry(table, 0, 0, 1, IDS_AUTOFILL_DIALOG_LABEL,
+                         address, G_CALLBACK(OnLabelChanged));
   FormTableAddEntry(table, 1, 0, 1, IDS_AUTOFILL_DIALOG_FIRST_NAME);
   FormTableAddEntry(table, 1, 1, 1, IDS_AUTOFILL_DIALOG_MIDDLE_NAME);
   FormTableAddEntry(table, 1, 2, 1, IDS_AUTOFILL_DIALOG_LAST_NAME);
@@ -419,7 +445,8 @@ GtkWidget* AutoFillDialog::AddNewCreditCard() {
   GtkWidget* label_table = InitFormTable(1, 2);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), label_table);
 
-  FormTableAddEntry(label_table, 0, 0, 1, IDS_AUTOFILL_DIALOG_LABEL);
+  FormTableAddLabelEntry(label_table, 0, 0, 1, IDS_AUTOFILL_DIALOG_LABEL,
+                         credit_card, G_CALLBACK(OnLabelChanged));
 
   // TODO(jhawkins): If there's not a default profile, automatically check this
   // check button.
