@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
   EXPECT_EQ("hi!", GetBrowserActionsBar().GetTooltip(0));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, FLAKY_BrowserActionPopup) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "browser_action/popup")));
 
