@@ -219,6 +219,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
 
 // Test IDC_CREATE_SHORTCUTS command is enabled for url scheme file, ftp, http
 // and https and disabled for chrome://, about:// etc.
+// TODO(pinkerton): Disable app-mode in the model until we implement it
+// on the Mac. http://crbug.com/13148
+#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcut) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
 
@@ -271,6 +274,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcut) {
   ui_test_utils::NavigateToURL(browser(), blank_url);
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 }
+#endif
 
 // Test RenderView correctly send back favicon url for web page that redirects
 // to an anchor in javascript body.onload handler.

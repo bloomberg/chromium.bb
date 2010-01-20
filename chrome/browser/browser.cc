@@ -2674,8 +2674,12 @@ void Browser::UpdateCommandsForTabState() {
                                         enabled_for_non_devtools);
 
   // Show various bits of UI
+  // TODO(pinkerton): Disable app-mode in the model until we implement it
+  // on the Mac. Be sure to remove both ifdefs. http://crbug.com/13148
+#if !defined(OS_MACOSX)
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
       web_app::IsValidUrl(current_tab->GetURL()));
+#endif
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
       current_tab->ShouldDisplayURL() && current_tab->GetURL().is_valid());
 }
@@ -2790,8 +2794,12 @@ void Browser::ProcessPendingUIUpdates() {
 
       if (flags & (TabContents::INVALIDATE_TAB |
                    TabContents::INVALIDATE_TITLE)) {
+// TODO(pinkerton): Disable app-mode in the model until we implement it
+// on the Mac. Be sure to remove both ifdefs. http://crbug.com/13148
+#if !defined(OS_MACOSX)
         command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
             web_app::IsValidUrl(contents->GetURL()));
+#endif
         window_->UpdateTitleBar();
       }
     }
