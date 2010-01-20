@@ -250,7 +250,7 @@ void MenuGtk::BuildMenuFromModel() {
 }
 
 void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
-  GtkWidget* last_menu_item = NULL;
+  std::map<int, GtkWidget*> radio_groups;
   GtkWidget* menu_item = NULL;
   for (int i = 0; i < model->GetItemCount(); ++i) {
     SkBitmap icon;
@@ -266,16 +266,20 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
         menu_item = gtk_check_menu_item_new_with_mnemonic(label.c_str());
         break;
 
-      case menus::MenuModel::TYPE_RADIO:
-        if (last_menu_item && GTK_IS_RADIO_MENU_ITEM(last_menu_item)) {
-          menu_item = gtk_radio_menu_item_new_with_mnemonic_from_widget(
-              GTK_RADIO_MENU_ITEM(last_menu_item), label.c_str());
-        } else {
+      case menus::MenuModel::TYPE_RADIO: {
+        std::map<int, GtkWidget*>::iterator iter =
+            radio_groups.find(model->GetGroupIdAt(i));
+
+        if (iter == radio_groups.end()) {
           menu_item = gtk_radio_menu_item_new_with_mnemonic(
               NULL, label.c_str());
+          radio_groups[model->GetGroupIdAt(i)] = menu_item;
+        } else {
+          menu_item = gtk_radio_menu_item_new_with_mnemonic_from_widget(
+              GTK_RADIO_MENU_ITEM(iter->second), label.c_str());
         }
         break;
-
+      }
       case menus::MenuModel::TYPE_SUBMENU:
       case menus::MenuModel::TYPE_COMMAND:
         if (model->GetIconAt(i, &icon))
@@ -308,7 +312,6 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
                       reinterpret_cast<void*>(model));
     AppendMenuItemToMenu(i, menu_item, menu);
 
-    last_menu_item = menu_item;
     menu_item = NULL;
   }
 }
