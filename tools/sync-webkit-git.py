@@ -51,6 +51,8 @@ def FindSVNRev(target_rev):
   log = subprocess.Popen(['git', 'log', '--no-color', '--first-parent',
                           '--pretty=medium', 'origin'],
                          stdout=subprocess.PIPE)
+  # Track whether we saw a revision *later* than the one we're seeking.
+  saw_later = False
   for line in log.stdout:
     match = commit_re.match(line)
     if match:
@@ -61,10 +63,14 @@ def FindSVNRev(target_rev):
       rev = int(match.group(1))
       if rev <= target_rev:
         log.stdout.close()  # Break pipe.
-        if rev == target_rev:
-          return commit
-        else:
-          return None
+        if rev < target_rev:
+          if not saw_later:
+            return None  # Can't be sure whether this rev is ok.
+          print ("WARNING: r%d not found, so using next nearest earlier r%d" %
+                 (target_rev, rev))
+        return commit
+      else:
+        saw_later = True
 
   print "Error: reached end of log without finding commit info."
   print "Something has likely gone horribly wrong."
