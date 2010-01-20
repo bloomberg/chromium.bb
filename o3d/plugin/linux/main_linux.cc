@@ -718,6 +718,8 @@ NPError NPP_Destroy(NPP instance, NPSavedData **save) {
   HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
   if (obj) {
+    obj->TearDown();
+
     if (obj->xt_widget_) {
       // NOTE: This crashes. Not sure why, possibly the widget has
       // already been destroyed, but we haven't received a SetWindow(NULL).
@@ -735,24 +737,24 @@ NPError NPP_Destroy(NPP instance, NPSavedData **save) {
     }
     if (obj->gtk_container_) {
       gtk_widget_destroy(obj->gtk_container_);
-      gtk_widget_unref(obj->gtk_container_);
       obj->gtk_container_ = NULL;
     }
     if (obj->gtk_fullscreen_container_) {
       gtk_widget_destroy(obj->gtk_fullscreen_container_);
-      gtk_widget_unref(obj->gtk_fullscreen_container_);
-      obj->gtk_container_ = NULL;
+      obj->gtk_fullscreen_container_ = NULL;
+    }
+    if (obj->gdk_display_) {
+      gdk_display_close(obj->gdk_display_);
+      obj->gdk_display_ = NULL;
     }
     obj->gtk_event_source_ = NULL;
     obj->event_handler_id_ = 0;
     obj->window_ = 0;
     obj->drawable_ = 0;
 
-    obj->TearDown();
     NPN_ReleaseObject(obj);
     instance->pdata = NULL;
   }
-
   return NPERR_NO_ERROR;
 }
 
@@ -769,7 +771,17 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
     if (g_xembed_support) {
       // We asked for a XEmbed plugin, the xwindow is a GtkSocket, we create
       // a GtkPlug to go into it.
-      obj->gtk_container_ = gtk_plug_new(xwindow);
+      obj->gdk_display_ = gdk_display_open(XDisplayString(display));
+      LOG_ASSERT(obj->gdk_display_) << "Unable to open X11 display";
+      display = GDK_DISPLAY_XDISPLAY(obj->gdk_display_);
+      obj->gtk_container_ =
+          gtk_plug_new_for_display(obj->gdk_display_, xwindow);
+      // Firefox has a bug where it sometimes destroys our parent widget before
+      // calling NPP_Destroy. We handle this by hiding our X window instead of
+      // destroying it. Without this, future OpenGL calls can raise a
+      // GLXBadDrawable error and kill the browser process.
+      g_signal_connect(G_OBJECT(obj->gtk_container_), "delete-event",
+                       G_CALLBACK(gtk_widget_hide_on_delete), NULL);
       gtk_widget_set_double_buffered(obj->gtk_container_, FALSE);
       if (!obj->fullscreen()) {
         obj->SetGtkEventSource(obj->gtk_container_);
@@ -921,6 +933,7 @@ bool PluginObject::RequestFullscreenDisplay() {
   // Stops Gtk from writing an off-screen buffer to the display, which conflicts
   // with our GL rendering.
   gtk_widget_set_double_buffered(widget, FALSE);
+  gtk_window_set_keep_above(window, TRUE);
   GdkScreen *screen = gtk_window_get_screen(window);
   // In the case of Xinerama or TwinView, these will be the dimensions of the
   // whole desktop, which is wrong, but the window manager is smart enough to
@@ -961,7 +974,6 @@ void PluginObject::CancelFullscreenDisplay() {
                             false);
   SetGtkEventSource(gtk_container_);
   gtk_widget_destroy(gtk_fullscreen_container_);
-  gtk_widget_unref(gtk_fullscreen_container_);
   gtk_fullscreen_container_ = NULL;
   fullscreen_window_ = 0;
   fullscreen_ = false;

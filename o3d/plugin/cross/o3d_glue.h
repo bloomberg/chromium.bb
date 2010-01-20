@@ -291,6 +291,7 @@ class PluginObject: public NPObject {
 
   // XEmbed mode
   Window drawable_;
+  GdkDisplay *gdk_display_;
   GtkWidget *gtk_container_;
   GtkWidget *gtk_fullscreen_container_;
   GtkWidget *gtk_event_source_;
