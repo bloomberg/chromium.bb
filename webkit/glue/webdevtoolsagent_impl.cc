@@ -28,6 +28,7 @@
 #include <wtf/OwnPtr.h>
 #undef LOG
 
+#include "grit/webkit_resources.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
@@ -45,6 +46,7 @@
 #include "webkit/glue/devtools/profiler_agent_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
+#include "webkit/glue/webkit_glue.h"
 
 using WebCore::Document;
 using WebCore::DocumentLoader;
@@ -175,6 +177,15 @@ void WebDevToolsAgentImpl::attach() {
                             this));
   ResetInspectorFrontendProxy();
   UnhideResourcesPanelIfNecessary();
+  // Allow controller to send messages to the frontend.
+  InspectorController* ic = web_view_impl_->page()->inspectorController();
+
+  // TODO(yurys): the source should have already been pushed by the frontend.
+  base::StringPiece injectjs_webkit =
+      webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_WEBKIT_JS);
+  ic->injectedScriptHost()->setInjectedScriptSource(
+      injectjs_webkit.as_string().c_str());
+  ic->setWindowVisible(true, false);
   attached_ = true;
 }
 
@@ -281,18 +292,6 @@ void WebDevToolsAgentImpl::dispatchMessageFromFrontend(
   }
 
   if (!attached_) {
-    return;
-  }
-
-  if (webkit_glue::WebStringToStdString(data.className) ==
-          "WebDevToolsAgentImpl" &&
-      webkit_glue::WebStringToStdString(data.methodName) ==
-           "didLoadFrontend") {
-    // Allow controller to send messages to the frontend. We need to wait until
-    // front-end is loaded because it pushes injected script source
-    // to the backend and the injected script is used for console message
-    // serialization.
-    GetInspectorController()->setWindowVisible(true, false);
     return;
   }
 
