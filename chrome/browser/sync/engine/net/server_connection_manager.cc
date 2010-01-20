@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
+#include "googleurl/src/gurl.h"
 
 namespace browser_sync {
 
@@ -273,6 +274,13 @@ bool ServerConnectionManager::CheckServerReachable() {
   return server_is_reachable;
 }
 
+void ServerConnectionManager::SetServerUnreachable() {
+  if (server_reachable_) {
+    server_reachable_ = false;
+    NotifyStatusChanged();
+  }
+}
+
 void ServerConnectionManager::kill() {
   {
     AutoLock lock(terminate_all_io_mutex_);
@@ -341,6 +349,18 @@ void ServerConnectionManager::GetServerParameters(string* server_url,
     *port = sync_server_port_;
   if (use_ssl != NULL)
     *use_ssl = use_ssl_;
+}
+
+std::string ServerConnectionManager::GetServerHost() const {
+  string server_url;
+  int port;
+  bool use_ssl;
+  GetServerParameters(&server_url, &port, &use_ssl);
+  // We just want the hostname, so we don't need to switch on use_ssl.
+  server_url = "http://" + server_url;
+  GURL gurl(server_url);
+  DCHECK(gurl.is_valid()) << gurl;
+  return gurl.host();
 }
 
 bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
