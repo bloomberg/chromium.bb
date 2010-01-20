@@ -135,6 +135,11 @@ const struct AcceleratorMapping {
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_Escape, IDC_TASK_MANAGER, GDK_SHIFT_MASK },
 
+  // Editing.
+  { GDK_c, IDC_COPY, GDK_CONTROL_MASK },
+  { GDK_x, IDC_CUT, GDK_CONTROL_MASK },
+  { GDK_v, IDC_PASTE, GDK_CONTROL_MASK },
+
   // Miscellany.
   { GDK_d, IDC_BOOKMARK_ALL_TABS,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
@@ -155,6 +160,7 @@ const struct AcceleratorMapping {
   { XF86XK_Favorites, IDC_SHOW_BOOKMARK_BAR, GdkModifierType(0) },
   { XF86XK_History, IDC_SHOW_HISTORY, GdkModifierType(0) },
   { GDK_q, IDC_EXIT, GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+  { GDK_s, IDC_SAVE_PAGE, GDK_CONTROL_MASK },
 };
 
 }  // namespace
