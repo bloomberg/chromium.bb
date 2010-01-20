@@ -28,6 +28,7 @@
 #import "chrome/browser/cocoa/preferences_window_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
+#include "chrome/browser/cocoa/task_manager_mac.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -613,6 +614,10 @@ static bool g_is_opening_new_window = false;
       sync_ui_util::OpenSyncMyBookmarksDialog(
           defaultProfile, ProfileSyncService::START_FROM_WRENCH);
       break;
+    case IDC_TASK_MANAGER:
+      UserMetrics::RecordAction("TaskManager", defaultProfile);
+      TaskManagerMac::Show();
+      break;
   };
 }
 
@@ -669,6 +674,7 @@ static bool g_is_opening_new_window = false;
   menuState_->UpdateCommandEnabled(IDC_REPORT_BUG, true);
   menuState_->UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
                                    ProfileSyncService::IsSyncEnabled());
+  menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
   // TODO(pinkerton): ...more to come...
 }
 
