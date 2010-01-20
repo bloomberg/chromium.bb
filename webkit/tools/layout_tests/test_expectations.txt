@@ -3054,6 +3054,8 @@ BUG32663 MAC : fast/fast-mobile-scrolling/fixed-position-element.html = IMAGE
 BUG32663 MAC : fast/fast-mobile-scrolling/no-fixed-position-elements.html = IMAGE
 BUG32664 WIN DEBUG : http/tests/security/view-source-no-refresh.html = TIMEOUT
 BUG32665 WIN DEBUG : media/video-source-error-no-candidate.html = TIMEOUT
+BUG32695 WIN : transitions/shorthand-border-transitions.html = TEXT
+BUG32696 WIN : fast/lists/w3-css3-list-styles-alphabetic.html = IMAGE+TEXT
 
 // Flaky tests found during the roll.
 BUG32679 LINUX DEBUG : http/tests/navigation/lockedhistory-iframe.html = TEXT PASS
