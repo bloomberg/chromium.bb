@@ -301,7 +301,7 @@ void FindBarGtk::InitWidgets() {
 void FindBarGtk::Show(bool animate) {
   if (animate) {
     slide_widget_->Open();
-    selection_rect = gfx::Rect();
+    selection_rect_ = gfx::Rect();
     Reposition();
     if (container_->window)
       gdk_window_raise(container_->window);
@@ -350,7 +350,7 @@ void FindBarGtk::SetFindText(const string16& find_text) {
 void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
                                        const string16& find_text) {
   if (!result.selection_rect().IsEmpty()) {
-    selection_rect = result.selection_rect();
+    selection_rect_ = result.selection_rect();
     int xposition = GetDialogPosition(result.selection_rect()).x();
     if (xposition != widget()->allocation.x)
       Reposition();
@@ -624,7 +624,7 @@ void FindBarGtk::OnSetFloatingPosition(
     FindBarGtk* find_bar) {
   GtkWidget* findbar = find_bar->widget();
 
-  int xposition = find_bar->GetDialogPosition(find_bar->selection_rect).x();
+  int xposition = find_bar->GetDialogPosition(find_bar->selection_rect_).x();
 
   GValue value = { 0, };
   g_value_init(&value, G_TYPE_INT);

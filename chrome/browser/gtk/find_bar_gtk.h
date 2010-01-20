@@ -197,7 +197,7 @@ class FindBarGtk : public FindBar,
 
   // The selection rect we are currently showing. We cache it to avoid covering
   // it up.
-  gfx::Rect selection_rect;
+  gfx::Rect selection_rect_;
 
   NotificationRegistrar registrar_;
 
