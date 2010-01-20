@@ -9,6 +9,11 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <iphlpapi.h>
+#elif defined(OS_MACOSX)
+#include <SystemConfiguration/SCNetworkReachability.h>
+#include "base/condition_variable.h"
+#include "base/scoped_cftyperef.h"
+#include "base/sys_string_conversions.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -25,6 +30,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/lock.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -77,7 +83,9 @@ using syncable::DirectoryManager;
 
 typedef GoogleServiceAuthError AuthError;
 
+#if defined(OS_WIN)
 static const int kServerReachablePollingIntervalMsec = 60000 * 60;
+#endif
 static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
 
@@ -85,10 +93,90 @@ struct AddressWatchTaskParams {
   browser_sync::ServerConnectionManager* conn_mgr;
 #if defined(OS_WIN)
   HANDLE exit_flag;
+
+  AddressWatchTaskParams() : conn_mgr(NULL), exit_flag() {}
 #elif defined(OS_LINUX)
   int exit_pipe[2];
+
+  AddressWatchTaskParams() : conn_mgr(NULL) {}
+#elif defined(OS_MACOSX)
+  // Protects run_loop and run_loop_initialized.
+  Lock run_loop_lock;
+  // May be NULL if an error was encountered by the AddressWatchTask.
+  CFRunLoopRef run_loop;
+  bool run_loop_initialized;
+  // Signalled when run_loop and run_loop_initialized are set.
+  ConditionVariable params_set;
+
+  AddressWatchTaskParams()
+      : conn_mgr(NULL),
+        run_loop(NULL),
+        run_loop_initialized(false),
+        params_set(&run_loop_lock) {}
 #endif
+
+ private:
+    DISALLOW_COPY_AND_ASSIGN(AddressWatchTaskParams);
 };
+
+#if defined(OS_MACOSX)
+CFStringRef NetworkReachabilityCopyDescription(const void *info) {
+  return base::SysUTF8ToCFStringRef(
+      StringPrintf("AddressWatchTask(0x%p)", info));
+}
+
+void NetworkReachabilityChangedCallback(SCNetworkReachabilityRef target,
+                                        SCNetworkConnectionFlags flags,
+                                        void* info) {
+  bool network_active = ((flags & (kSCNetworkFlagsReachable |
+                                   kSCNetworkFlagsConnectionRequired |
+                                   kSCNetworkFlagsConnectionAutomatic |
+                                   kSCNetworkFlagsInterventionRequired)) ==
+                         kSCNetworkFlagsReachable);
+  LOG(INFO) << "Network reachability changed: it is now "
+            << (network_active ? "active" : "inactive");
+  AddressWatchTaskParams* params =
+      static_cast<AddressWatchTaskParams*>(info);
+  if (network_active) {
+    params->conn_mgr->CheckServerReachable();
+  } else {
+    params->conn_mgr->SetServerUnreachable();
+  }
+  LOG(INFO) << "Network reachability callback finished";
+}
+
+SCNetworkReachabilityRef CreateAndScheduleNetworkReachability(
+    SCNetworkReachabilityContext* network_reachability_context,
+    const char* nodename) {
+  scoped_cftyperef<SCNetworkReachabilityRef> network_reachability(
+      SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, nodename));
+  if (!network_reachability.get()) {
+    LOG(WARNING) << "Could not create network reachability object";
+    return NULL;
+  }
+
+  if (!SCNetworkReachabilitySetCallback(network_reachability.get(),
+                                        &NetworkReachabilityChangedCallback,
+                                        network_reachability_context)) {
+    LOG(WARNING) << "Could not set network reachability callback";
+    return NULL;
+  }
+
+  if (!SCNetworkReachabilityScheduleWithRunLoop(network_reachability.get(),
+                                                CFRunLoopGetCurrent(),
+                                                kCFRunLoopDefaultMode)) {
+    LOG(WARNING) << "Could not schedule network reachability with run loop";
+    return NULL;
+  }
+
+  return network_reachability.release();
+}
+#endif
+
+// TODO(akalin): This code needs some serious refactoring.  At the
+// very least, all the gross platform-specific code should be put in
+// one place; ideally, the code shared between this and the network
+// status detector (in sync/notifier) will be put in one place.
 
 // This thread calls CheckServerReachable() whenever a change occurs in the
 // table that maps IP addresses to interfaces, for example when the user
@@ -175,6 +263,40 @@ class AddressWatchTask : public Task {
       }
     }
     close(params_->exit_pipe[0]);
+#elif defined(OS_MACOSX)
+    SCNetworkReachabilityContext network_reachability_context;
+    network_reachability_context.version = 0;
+    network_reachability_context.info = static_cast<void *>(params_);
+    network_reachability_context.retain = NULL;
+    network_reachability_context.release = NULL;
+    network_reachability_context.copyDescription =
+        &NetworkReachabilityCopyDescription;
+
+    std::string hostname = params_->conn_mgr->GetServerHost();
+    LOG(INFO) << "Monitoring connection to " << hostname;
+    scoped_cftyperef<SCNetworkReachabilityRef> network_reachability(
+        CreateAndScheduleNetworkReachability(
+            &network_reachability_context, hostname.c_str()));
+    if (!network_reachability.get()) {
+      {
+        AutoLock auto_lock(params_->run_loop_lock);
+        params_->run_loop = NULL;
+        params_->run_loop_initialized = true;
+      }
+      params_->params_set.Signal();
+      LOG(INFO) << "The address watch thread has stopped due to an error";
+      return;
+    }
+
+    CFRunLoopRef run_loop = CFRunLoopGetCurrent();
+    {
+      AutoLock auto_lock(params_->run_loop_lock);
+      params_->run_loop = run_loop;
+      params_->run_loop_initialized = true;
+    }
+    params_->params_set.Signal();
+
+    CFRunLoopRun();
 #endif
     LOG(INFO) << "The address watch thread has stopped";
   }
@@ -1026,6 +1148,15 @@ bool SyncManager::SyncInternal::Init(
   address_watch_thread_.message_loop()->PostTask(FROM_HERE,
       new AddressWatchTask(&address_watch_params_));
 
+#if defined(OS_MACOSX)
+  {
+    AutoLock auto_lock(address_watch_params_.run_loop_lock);
+    while (!address_watch_params_.run_loop_initialized) {
+      address_watch_params_.params_set.Wait();
+    }
+  }
+#endif
+
   // Hand over the bridged POST factory to be owned by the connection
   // dir_manager.
   connection_manager()->SetHttpPostProviderFactory(post_factory);
@@ -1238,6 +1369,13 @@ void SyncManager::SyncInternal::Shutdown() {
     LOG(WARNING) << "Error sending error signal to AddressWatchTask";
   }
   close(address_watch_params_.exit_pipe[1]);
+#elif defined(OS_MACOSX)
+  {
+    AutoLock auto_lock(address_watch_params_.run_loop_lock);
+    if (address_watch_params_.run_loop) {
+      CFRunLoopStop(address_watch_params_.run_loop);
+    }
+  }
 #endif
 
   address_watch_thread_.Stop();
