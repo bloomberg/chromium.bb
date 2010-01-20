@@ -1,13 +1,18 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include <string>
 
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/string16.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
@@ -45,6 +50,40 @@ std::ostream& operator<<(std::ostream& os, const AutofillChange& change) {
     }
   }
   return os << " " << change.key();
+}
+
+// So we can compare AutoFillProfiles with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const AutoFillProfile& profile) {
+  return os
+      << UTF16ToASCII(profile.Label())
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_FIRST)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_MIDDLE)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_LAST)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(EMAIL_ADDRESS)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(COMPANY_NAME)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(
+             PHONE_HOME_WHOLE_NUMBER)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(
+             PHONE_FAX_WHOLE_NUMBER)));
 }
 
 class WebDatabaseTest : public testing::Test {
@@ -862,4 +901,69 @@ TEST_F(WebDatabaseTest, WebAppImages) {
     ASSERT_EQ(16, images[1].width());
     ASSERT_EQ(16, images[1].height());
   }
+}
+
+TEST_F(WebDatabaseTest, AutoFillProfile) {
+  WebDatabase db;
+
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  // Add a 'Home' profile.
+  AutoFillProfile home_profile(ASCIIToUTF16("Home"), 17);
+  home_profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("John"));
+  home_profile.SetInfo(AutoFillType(NAME_MIDDLE), ASCIIToUTF16("Q."));
+  home_profile.SetInfo(AutoFillType(NAME_LAST), ASCIIToUTF16("Smith"));
+  home_profile.SetInfo(AutoFillType(EMAIL_ADDRESS),
+                       ASCIIToUTF16("js@smith.xyz"));
+  home_profile.SetInfo(AutoFillType(COMPANY_NAME), ASCIIToUTF16("Google"));
+  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+                       ASCIIToUTF16("1234 Apple Way"));
+  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
+                       ASCIIToUTF16("unit 5"));
+  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_CITY),
+                       ASCIIToUTF16("Los Angeles"));
+  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), ASCIIToUTF16("CA"));
+  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), ASCIIToUTF16("90025"));
+  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("US"));
+  home_profile.SetInfo(AutoFillType(PHONE_HOME_NUMBER),
+                       ASCIIToUTF16("18181234567"));
+  home_profile.SetInfo(AutoFillType(PHONE_FAX_NUMBER),
+                       ASCIIToUTF16("1915243678"));
+
+  EXPECT_TRUE(db.AddAutoFillProfile(home_profile));
+
+  // Get the 'Home' profile.
+  AutoFillProfile* db_profile;
+  EXPECT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Home"),
+                                            &db_profile));
+  EXPECT_EQ(home_profile, *db_profile);
+  delete db_profile;
+
+  // Add a 'Billing' profile.
+  AutoFillProfile billing_profile = home_profile;
+  billing_profile.set_label(ASCIIToUTF16("Billing"));
+  billing_profile.set_unique_id(13);
+  billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+                          ASCIIToUTF16("5678 Bottom Street"));
+  billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
+                          ASCIIToUTF16("suite 3"));
+
+  EXPECT_TRUE(db.AddAutoFillProfile(billing_profile));
+  EXPECT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
+                                            &db_profile));
+  EXPECT_EQ(billing_profile, *db_profile);
+  delete db_profile;
+
+  // Update the 'Billing' profile.
+  billing_profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Jane"));
+  EXPECT_TRUE(db.UpdateAutoFillProfile(billing_profile));
+  EXPECT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
+                                            &db_profile));
+  EXPECT_EQ(billing_profile, *db_profile);
+  delete db_profile;
+
+  // Remove the 'Billing' profile.
+  EXPECT_TRUE(db.RemoveAutoFillProfile(billing_profile));
+  EXPECT_FALSE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
+                                             &db_profile));
 }

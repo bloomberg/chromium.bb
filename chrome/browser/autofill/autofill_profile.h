@@ -21,7 +21,7 @@ typedef std::map<FieldTypeGroup, FormGroup*> FormGroupMap;
 class AutoFillProfile : public FormGroup {
  public:
   AutoFillProfile(const string16& label, int unique_id);
-  // for use in std containers
+  // For use in std containers.
   AutoFillProfile();
   AutoFillProfile(const AutoFillProfile&);
   virtual ~AutoFillProfile();
@@ -42,9 +42,6 @@ class AutoFillProfile : public FormGroup {
   virtual FormGroup* Clone() const;
   virtual string16 Label() const { return label_; }
 
-  // for use in std containers
-  void operator=(const AutoFillProfile&);
-
   // NOTE: callers must write the profile to the WebDB after changing the value
   // of use_billing_address.
   void set_use_billing_address(bool use);
@@ -52,7 +49,13 @@ class AutoFillProfile : public FormGroup {
 
   int unique_id() const { return unique_id_; }
 
-  // TODO(jhawkins): Implement RemoveProfile.
+  // For use in std containers.
+  void operator=(const AutoFillProfile&);
+
+  // Used by tests.
+  bool operator==(const AutoFillProfile& profile) const;
+  void set_label(const string16& label) { label_ = label; }
+  void set_unique_id(int id) { unique_id_ = id; }
 
  private:
   Address* GetBillingAddress();

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "webkit/glue/form_field.h"
 
 class AutofillChange;
+class AutoFillProfile;
 class FilePath;
 
 namespace base {
@@ -136,9 +137,9 @@ class WebDatabase {
   bool AddFormFieldValues(const std::vector<webkit_glue::FormField>& elements,
                           std::vector<AutofillChange>* changes);
 
-  // Records a single form element in in the database in the autofill
-  // table. A list of all added and updated autofill entries is
-  // returned in the changes out parameter.
+  // Records a single form element in the database in the autofill table. A list
+  // of all added and updated autofill entries is returned in the changes out
+  // parameter.
   bool AddFormFieldValue(const webkit_glue::FormField& element,
                          std::vector<AutofillChange>* changes);
 
@@ -197,6 +198,19 @@ class WebDatabase {
   // Removes row from the autofill tables for the given |name| |value| pair.
   bool RemoveFormElement(const string16& name, const string16& value);
 
+  // Records a single AutoFill profile in the autofill_profiles table.
+  bool AddAutoFillProfile(const AutoFillProfile& profile);
+
+  // Updates the database values for the specified profile.
+  bool UpdateAutoFillProfile(const AutoFillProfile& profile);
+
+  // Removes a row from the autofill_profiles table.
+  bool RemoveAutoFillProfile(const AutoFillProfile& profile);
+
+  // Retrieves a profile with label |label|.  The caller owns |profile|.
+  bool GetAutoFillProfileForLabel(const string16& label,
+                                  AutoFillProfile** profile);
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Web Apps
@@ -236,6 +250,7 @@ class WebDatabase {
   bool InitLoginsTable();
   bool InitAutofillTable();
   bool InitAutofillDatesTable();
+  bool InitAutoFillProfilesTable();
   bool InitWebAppIconsTable();
   bool InitWebAppsTable();
 

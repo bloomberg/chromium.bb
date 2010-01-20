@@ -1,10 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/webdata/web_database.h"
 
+#include <algorithm>
 #include <limits>
+#include <set>
+#include <string>
 
 #include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
@@ -12,6 +15,8 @@
 #include "app/sql/transaction.h"
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/webdata/autofill_change.h"
@@ -84,6 +89,27 @@ using webkit_glue::PasswordForm;
 //                       in the appropriate row of the autofill table.
 //   pair_id
 //   date_created
+//
+// autofill_profiles    This table contains AutoFill profile data added by the
+//                      user with the AutoFill dialog.  Most of the columns are
+//                      standard entries in a contact information form.
+//
+//   label              The label of the profile.  Presented to the user when
+//                      selecting profiles.
+//   unique_id          The unique ID of this profile.
+//   first_name
+//   middle_name
+//   last_name
+//   email
+//   company_name
+//   address_line_1
+//   address_line_2
+//   city
+//   state
+//   zipcode
+//   country
+//   phone
+//   fax
 //
 // web_app_icons
 //   url         URL of the web app.
@@ -172,7 +198,7 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
   // Initialize the tables.
   if (!InitKeywordsTable() || !InitLoginsTable() || !InitWebAppIconsTable() ||
       !InitWebAppsTable() || !InitAutofillTable() ||
-      !InitAutofillDatesTable()) {
+      !InitAutofillDatesTable() || !InitAutoFillProfilesTable()) {
     LOG(WARNING) << "Unable to initialize the web database.";
     return sql::INIT_FAILURE;
   }
@@ -382,6 +408,36 @@ bool WebDatabase::InitAutofillDatesTable() {
     }
     if (!db_.Execute("CREATE INDEX autofill_dates_pair_id ON "
                      "autofill_dates (pair_id)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool WebDatabase::InitAutoFillProfilesTable() {
+  if (!db_.DoesTableExist("autofill_profiles")) {
+    if (!db_.Execute("CREATE TABLE autofill_profiles ( "
+                     "label VARCHAR, "
+                     "unique_id INTEGER PRIMARY KEY, "
+                     "first_name VARCHAR, "
+                     "middle_name VARCHAR, "
+                     "last_name VARCHAR, "
+                     "email VARCHAR, "
+                     "company_name VARCHAR, "
+                     "address_line_1 VARCHAR, "
+                     "address_line_2 VARCHAR, "
+                     "city VARCHAR, "
+                     "state VARCHAR, "
+                     "zipcode VARCHAR, "
+                     "country VARCHAR, "
+                     "phone VARCHAR, "
+                     "fax VARCHAR)")) {
+      NOTREACHED();
+      return false;
+    }
+    if (!db_.Execute("CREATE INDEX autofill_profiles_label_index "
+                     "ON autofill_profiles (label)")) {
       NOTREACHED();
       return false;
     }
@@ -1117,6 +1173,138 @@ bool WebDatabase::RemoveFormElement(const string16& name,
   if (s.Step())
     return RemoveFormElementForID(s.ColumnInt64(0));
   return false;
+}
+
+static void BindAutoFillProfileToStatement(const AutoFillProfile& profile,
+                                           sql::Statement* s) {
+  s->BindString(0, UTF16ToUTF8(profile.Label()));
+  s->BindInt(1, profile.unique_id());
+
+  string16 text = profile.GetFieldText(AutoFillType(NAME_FIRST));
+  s->BindString(2, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(NAME_MIDDLE));
+  s->BindString(3, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(NAME_LAST));
+  s->BindString(4, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(EMAIL_ADDRESS));
+  s->BindString(5, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(COMPANY_NAME));
+  s->BindString(6, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1));
+  s->BindString(7, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2));
+  s->BindString(8, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY));
+  s->BindString(9, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE));
+  s->BindString(10, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP));
+  s->BindString(11, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
+  s->BindString(12, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER));
+  s->BindString(13, UTF16ToUTF8(text));
+  text = profile.GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER));
+  s->BindString(14, UTF16ToUTF8(text));
+}
+
+bool WebDatabase::AddAutoFillProfile(const AutoFillProfile& profile) {
+  sql::Statement s(db_.GetUniqueStatement(
+      "INSERT INTO autofill_profiles"
+      "(label, unique_id, first_name, middle_name, last_name, email,"
+      " company_name, address_line_1, address_line_2, city, state, zipcode,"
+      " country, phone, fax)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  BindAutoFillProfileToStatement(profile, &s);
+
+  if (!s.Run()) {
+    NOTREACHED();
+    return false;
+  }
+
+  return true;
+}
+
+bool WebDatabase::GetAutoFillProfileForLabel(const string16& label,
+                                             AutoFillProfile** profile) {
+  sql::Statement s(db_.GetUniqueStatement(
+      "SELECT * FROM autofill_profiles "
+      "WHERE label = ?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  s.BindString(0, UTF16ToUTF8(label));
+  if (!s.Step())
+    return false;
+
+  *profile = new AutoFillProfile(label, s.ColumnInt(1));
+  AutoFillProfile* profile_ptr = *profile;
+  profile_ptr->SetInfo(AutoFillType(NAME_FIRST),
+                       ASCIIToUTF16(s.ColumnString(2)));
+  profile_ptr->SetInfo(AutoFillType(NAME_MIDDLE),
+                       ASCIIToUTF16(s.ColumnString(3)));
+  profile_ptr->SetInfo(AutoFillType(NAME_LAST),
+                       ASCIIToUTF16(s.ColumnString(4)));
+  profile_ptr->SetInfo(AutoFillType(EMAIL_ADDRESS),
+                       ASCIIToUTF16(s.ColumnString(5)));
+  profile_ptr->SetInfo(AutoFillType(COMPANY_NAME),
+                       ASCIIToUTF16(s.ColumnString(6)));
+  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+                       ASCIIToUTF16(s.ColumnString(7)));
+  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
+                       ASCIIToUTF16(s.ColumnString(8)));
+  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
+                       ASCIIToUTF16(s.ColumnString(9)));
+  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
+                       ASCIIToUTF16(s.ColumnString(10)));
+  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
+                       ASCIIToUTF16(s.ColumnString(11)));
+  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
+                       ASCIIToUTF16(s.ColumnString(12)));
+  profile_ptr->SetInfo(AutoFillType(PHONE_HOME_NUMBER),
+                       ASCIIToUTF16(s.ColumnString(13)));
+  profile_ptr->SetInfo(AutoFillType(PHONE_FAX_NUMBER),
+                       ASCIIToUTF16(s.ColumnString(14)));
+
+  return true;
+}
+
+bool WebDatabase::UpdateAutoFillProfile(const AutoFillProfile& profile) {
+  DCHECK(profile.unique_id());
+  sql::Statement s(db_.GetUniqueStatement(
+      "UPDATE autofill_profiles "
+      "SET label=?, unique_id=?, first_name=?, middle_name=?, last_name=?, "
+      "    email=?, company_name=?, address_line_1=?, address_line_2=?, "
+      "    city=?, state=?, zipcode=?, country=?, phone=?, fax=? "
+      "WHERE unique_id=?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  BindAutoFillProfileToStatement(profile, &s);
+  s.BindInt(15, profile.unique_id());
+  return s.Run();
+}
+
+bool WebDatabase::RemoveAutoFillProfile(const AutoFillProfile& profile) {
+  DCHECK(profile.unique_id());
+  sql::Statement s(db_.GetUniqueStatement(
+      "DELETE FROM autofill_profiles WHERE unique_id = ?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  s.BindInt(0, profile.unique_id());
+  return s.Run();
 }
 
 bool WebDatabase::AddToCountOfFormElement(int64 pair_id,
