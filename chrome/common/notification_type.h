@@ -736,7 +736,7 @@ class NotificationType {
     EXTENSION_POPUP_VIEW_READY,
 
     // Sent when a browser action's state has changed. The source is the
-    // ExtensionAction* that changed. The details are an ExtensionActionState*.
+    // ExtensionAction* that changed.  There are no details.
     EXTENSION_BROWSER_ACTION_UPDATED,
 
     // Sent when a page action's visibility has changed. The source is the

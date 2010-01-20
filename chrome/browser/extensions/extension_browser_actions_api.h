@@ -9,7 +9,6 @@
 #include "chrome/common/extensions/extension_action.h"
 
 class ExtensionAction;
-class ExtensionActionState;
 
 class BrowserActionFunction : public SyncExtensionFunction {
  protected:

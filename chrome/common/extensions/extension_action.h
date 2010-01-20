@@ -24,8 +24,6 @@ class Rect;
 // ExtensionAction encapsulates the state of a browser or page action.
 // Instances can have both global and per-tab state. If a property does not have
 // a per-tab value, the global value is used instead.
-//
-// TODO(aa): This should replace ExtensionAction and ExtensionActionState.
 class ExtensionAction {
  public:
   // Use this ID to indicate the default state for properties that take a tab_id
