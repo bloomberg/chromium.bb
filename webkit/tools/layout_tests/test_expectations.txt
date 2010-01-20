@@ -2914,9 +2914,6 @@ BUG9798 MAC RELEASE : fast/borders/block-mask-overlay-image.html = TEXT PASS
 // Flaky since SVG filters turned on
 BUG29737 LINUX : svg/filters/feDisplacementMap.svg = TEXT PASS
 
-// Newly added test in r52235
-BUG30816 WIN LINUX : editing/selection/doubleclick-beside-cr-span.html = TEXT
-
 // WebKit update 52293->52323
 BUG31253 : http/tests/security/xss-DENIED-assign-location-href-javascript.html = TEXT
 
