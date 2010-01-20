@@ -44,18 +44,6 @@ class BrowserExtender {
   // hits any of controls.
   virtual bool NonClientHitTest(const gfx::Point& browser_view_point) = 0;
 
-  // Updates the title bar (if any).
-  virtual void UpdateTitleBar() = 0;
-
-  // Called when the BrowserView is shown.
-  virtual void Show() = 0;
-
-  // Called when the BrowserView is closed.
-  virtual void Close() = 0;
-
-  // Called when the browser window is either activated or deactivated.
-  virtual void ActivationChanged() = 0;
-
   // Returns true to hide the toolbar for the window, or false
   // to use the regular logic to decide.
   virtual bool ShouldForceHideToolbar() = 0;

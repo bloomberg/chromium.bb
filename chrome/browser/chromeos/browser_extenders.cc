@@ -13,11 +13,9 @@
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/status_area_view.h"
-#include "chrome/browser/chromeos/panel_controller.h"
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -27,7 +25,6 @@
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/window/window.h"
 
 namespace {
 
@@ -142,6 +139,7 @@ class NormalExtender : public BrowserExtender,
       compact_navigation_bar_->SetVisible(compact_navigation_bar_enabled_);
       status_area_->SetVisible(true);
     }
+
     /* TODO(oshima):
      * Disabling the ability to update location bar on re-layout bacause
      * tabstrip state may not be in sync with the browser's state when
@@ -220,19 +218,6 @@ class NormalExtender : public BrowserExtender,
     }
     return false;
   }
-
-  virtual void UpdateTitleBar() {}
-
-  virtual void Show() {
-    TabOverviewTypes::instance()->SetWindowType(
-        GTK_WIDGET(GetBrowserWindow()->GetNativeWindow()),
-        TabOverviewTypes::WINDOW_TYPE_CHROME_TOPLEVEL,
-        NULL);
-  }
-
-  virtual void Close() {}
-
-  virtual void ActivationChanged() {}
 
   virtual bool ShouldForceHideToolbar() {
     return compact_navigation_bar_enabled_;
@@ -351,53 +336,16 @@ class PopupExtender : public BrowserExtender {
  private:
   // BrowserExtender overrides.
   virtual void Init() {
-    // The visibility of toolbar is controlled in
-    // the BrowserView::IsToolbarVisible method.
-
-    views::Window* window = GetBrowserWindow();
-    gfx::NativeWindow native_window = window->GetNativeWindow();
-    // The window manager needs the min size for popups.
-    gfx::Rect bounds = window->GetBounds();
-    gtk_widget_set_size_request(
-        GTK_WIDGET(native_window), bounds.width(), bounds.height());
-    // If we don't explicitly resize here there is a race condition between
-    // the X Server and the window manager. Windows will appear with a default
-    // size of 200x200 if this happens.
-    gtk_window_resize(native_window, bounds.width(), bounds.height());
   }
 
   virtual void Layout(const gfx::Rect& bounds,
                       gfx::Rect* tabstrip_bounds,
                       int* bottom) {
-    *bottom = 0;
-    tabstrip_bounds->SetRect(0, 0, 0, 0);
+    NOTREACHED();
   }
 
   virtual bool NonClientHitTest(const gfx::Point& point) {
     return false;
-  }
-
-  virtual void Show() {
-    panel_controller_.reset(new chromeos::PanelController(browser_view()));
-  }
-
-  virtual void Close() {
-    if (panel_controller_.get())
-      panel_controller_->Close();
-  }
-
-  virtual void UpdateTitleBar() {
-    if (panel_controller_.get())
-      panel_controller_->UpdateTitleBar();
-  }
-
-  virtual void ActivationChanged() {
-    if (panel_controller_.get()) {
-      if (GetBrowserWindow()->IsActive())
-        panel_controller_->OnFocusIn();
-      else
-        panel_controller_->OnFocusOut();
-    }
   }
 
   virtual bool ShouldForceHideToolbar() {
@@ -424,9 +372,6 @@ class PopupExtender : public BrowserExtender {
   virtual int GetMainMenuWidth() const {
     return 0;
   }
-
-  // Controls interactions with the window manager for popup panels.
-  scoped_ptr<chromeos::PanelController> panel_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupExtender);
 };

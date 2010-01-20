@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/chromeos_browser_view.h"
+
+#include "chrome/browser/chromeos/panel_browser_view.h"
 #include "chrome/browser/views/frame/browser_extender.h"
-#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/chrome_browser_view_layout_manager.h"
 #include "chrome/browser/views/tabs/tab.h"
+#include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
+#include "views/window/window.h"
 
 namespace {
 
@@ -69,76 +73,88 @@ class ChromeosBrowserViewLayoutManager : public ChromeBrowserViewLayoutManager {
 
   // Overriden from ChromeBrowserViewLayoutManager.
   virtual int LayoutTabStrip() {
-    gfx::Rect layout_bounds =
-        browser_view_->frame()->GetBoundsForTabStrip(tabstrip_);
-    gfx::Rect toolbar_bounds = browser_view_->GetToolbarBounds();
-    tabstrip_->SetBackgroundOffset(
-        gfx::Point(layout_bounds.x() - toolbar_bounds.x(), layout_bounds.y()));
+    if (!browser_view_->IsTabStripVisible()) {
+      tabstrip_->SetVisible(false);
+      tabstrip_->SetBounds(0, 0, 0, 0);
+      return 0;
+    } else {
+      gfx::Rect layout_bounds =
+          browser_view_->frame()->GetBoundsForTabStrip(tabstrip_);
+      gfx::Rect toolbar_bounds = browser_view_->GetToolbarBounds();
+      tabstrip_->SetBackgroundOffset(
+          gfx::Point(layout_bounds.x() - toolbar_bounds.x(),
+                     layout_bounds.y()));
+      gfx::Point tabstrip_origin = layout_bounds.origin();
+      views::View::ConvertPointToView(browser_view_->GetParent(), browser_view_,
+                                      &tabstrip_origin);
+      layout_bounds.set_origin(tabstrip_origin);
+      tabstrip_->SetVisible(true);
+      tabstrip_->SetBounds(layout_bounds);
 
-    gfx::Point tabstrip_origin = layout_bounds.origin();
-    views::View::ConvertPointToView(browser_view_->GetParent(), browser_view_,
-                                    &tabstrip_origin);
-    layout_bounds.set_origin(tabstrip_origin);
-
-    // Layout extra components.
-    int bottom = 0;
-    gfx::Rect tabstrip_bounds;
-    browser_view_->browser_extender()->Layout(
-        layout_bounds, &tabstrip_bounds, &bottom);
-    tabstrip_->SetVisible(browser_view_->IsTabStripVisible());
-    tabstrip_->SetBounds(tabstrip_bounds);
-    return bottom;
+      int bottom = 0;
+      gfx::Rect tabstrip_bounds;
+      browser_view_->browser_extender()->Layout(
+          layout_bounds, &tabstrip_bounds, &bottom);
+      tabstrip_->SetVisible(true);
+      tabstrip_->SetBounds(tabstrip_bounds);
+      return bottom;
+    }
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeosBrowserViewLayoutManager);
 };
 
-// ChromeosBrowserView implements Chromeos specific behavior of
-// BrowserView.
-class ChromeosBrowserView : public BrowserView {
- public:
-  explicit ChromeosBrowserView(Browser* browser)
-      : BrowserView(browser) {
-  }
-  virtual ~ChromeosBrowserView() {}
-
-  // Overriden from BrowserView.
-  virtual bool IsToolbarVisible() const {
-    if (browser_extender()->ShouldForceHideToolbar())
-      return false;
-    return BrowserView::IsToolbarVisible();
-  }
-
-  virtual void SetFocusToLocationBar() {
-    if (!browser_extender()->SetFocusToCompactNavigationBar()) {
-      BrowserView::SetFocusToLocationBar();
-    }
-  }
-
-  virtual void UpdateTitleBar() {
-    BrowserView::UpdateTitleBar();
-    browser_extender()->UpdateTitleBar();
-  }
-
-  virtual BrowserViewLayoutManager* CreateLayoutManager() const {
-    return new ChromeosBrowserViewLayoutManager();
-  }
-
-  virtual TabStrip* CreateTabStrip(TabStripModel* tab_strip_model) const {
-    return new ChromeosTabStrip(tab_strip_model, this);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeosBrowserView);
-};
-
 }  // namespace
+
+namespace chromeos {
+
+ChromeosBrowserView::ChromeosBrowserView(Browser* browser)
+    : BrowserView(browser) {
+}
+
+void ChromeosBrowserView::Show() {
+  bool was_visible = frame()->GetWindow()->IsVisible();
+  BrowserView::Show();
+  if (!was_visible) {
+    TabOverviewTypes::instance()->SetWindowType(
+        GTK_WIDGET(frame()->GetWindow()->GetNativeWindow()),
+        TabOverviewTypes::WINDOW_TYPE_CHROME_TOPLEVEL,
+        NULL);
+  }
+}
+
+bool ChromeosBrowserView::IsToolbarVisible() const {
+  if (browser_extender()->ShouldForceHideToolbar())
+    return false;
+  return BrowserView::IsToolbarVisible();
+}
+
+void ChromeosBrowserView::SetFocusToLocationBar() {
+  if (!browser_extender()->SetFocusToCompactNavigationBar()) {
+    BrowserView::SetFocusToLocationBar();
+  }
+}
+
+views::LayoutManager* ChromeosBrowserView::CreateLayoutManager() const {
+  return new ChromeosBrowserViewLayoutManager();
+}
+
+TabStrip* ChromeosBrowserView::CreateTabStrip(
+    TabStripModel* tab_strip_model) const {
+  return new ChromeosTabStrip(tab_strip_model, this);
+}
+
+}  // namespace chromeos
 
 // static
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   // Create a browser view for chromeos.
-  BrowserView* view = new ChromeosBrowserView(browser);
+  BrowserView* view;
+  if (browser->type() & Browser::TYPE_POPUP)
+    view = new chromeos::PanelBrowserView(browser);
+  else
+    view = new chromeos::ChromeosBrowserView(browser);
   BrowserFrame::Create(view, browser->profile());
   return view;
 }

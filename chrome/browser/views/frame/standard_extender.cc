@@ -26,20 +26,9 @@ class StandardExtender : public BrowserExtender {
   virtual void Layout(const gfx::Rect& bounds,
                       gfx::Rect* tabstrip_bounds,
                       int* bottom) {
-    if (browser_view()->IsTabStripVisible()) {
-      *bottom = bounds.bottom();
-      tabstrip_bounds->SetRect(
-          bounds.x(), bounds.y(), bounds.width(), bounds.height());
-    } else {
-      *bottom = 0;
-      tabstrip_bounds->SetRect(0, 0, 0, 0);
-    }
+    NOTREACHED();
   }
   virtual bool NonClientHitTest(const gfx::Point& point) { return false; }
-  virtual void Show() {}
-  virtual void Close() {}
-  virtual void UpdateTitleBar() {}
-  virtual void ActivationChanged() {}
   virtual bool ShouldForceHideToolbar() { return false; }
   virtual bool ShouldForceMaximizedWindow() { return false; }
   virtual bool SetFocusToCompactNavigationBar() { return false; }
@@ -47,7 +36,7 @@ class StandardExtender : public BrowserExtender {
   virtual void OnMouseEnteredToTab(Tab* tab) {}
   virtual void OnMouseMovedOnTab(Tab* tab) {}
   virtual void OnMouseExitedFromTab(Tab* tab) {}
-  virtual int GetMainMenuWidth() const { return 0; };
+  virtual int GetMainMenuWidth() const { return 0; }
 
   DISALLOW_COPY_AND_ASSIGN(StandardExtender);
 };

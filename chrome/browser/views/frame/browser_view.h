@@ -165,9 +165,6 @@ class BrowserView : public BrowserWindow,
   // activated, false if none was shown.
   bool ActivateAppModalDialog() const;
 
-  // Called when the activation of the frame changes.
-  void ActivationChanged(bool activated);
-
   // Returns the selected TabContents. Used by our NonClientView's
   // TabIconView::TabContentsProvider implementations.
   // TODO(beng): exposing this here is a bit bogus, since it's only used to
@@ -218,6 +215,9 @@ class BrowserView : public BrowserWindow,
   // Invoked from the frame when the full screen state changes. This is only
   // used on Linux.
   void FullScreenStateChanged();
+
+  // Called when the activation of the frame changes.
+  virtual void ActivationChanged(bool activated);
 
   // Overridden from BrowserWindow:
   virtual void Show();
@@ -376,9 +376,10 @@ class BrowserView : public BrowserWindow,
   // override to return a different TabStrip implementation.
   virtual TabStrip* CreateTabStrip(TabStripModel* tab_strip_model) const;
 
- private:
   // Browser window related initializations.
   virtual void Init();
+
+ private:
 
 #if defined(OS_WIN)
   // Creates the system menu.

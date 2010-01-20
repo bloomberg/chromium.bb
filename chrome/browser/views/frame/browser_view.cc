@@ -610,7 +610,6 @@ bool BrowserView::ActivateAppModalDialog() const {
 void BrowserView::ActivationChanged(bool activated) {
   if (activated)
     BrowserList::SetLastActive(browser_.get());
-  browser_extender_->ActivationChanged();
 }
 
 TabContents* BrowserView::GetSelectedTabContents() const {
@@ -704,8 +703,6 @@ void BrowserView::Show() {
                           std::max(min_split_size, split_offset));
   contents_split_->set_divider_offset(split_offset);
 
-  browser_extender_->Show();
-
   frame_->GetWindow()->Show();
 }
 
@@ -723,8 +720,6 @@ void BrowserView::Close() {
   }
 
   frame_->GetWindow()->Close();
-
-  browser_extender_->Close();
 }
 
 void BrowserView::Activate() {
