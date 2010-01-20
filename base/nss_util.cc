@@ -73,6 +73,16 @@ class NSSInitSingleton {
   NSSInitSingleton() {
     base::EnsureNSPRInit();
 
+    // We *must* have NSS >= 3.12.3.  See bug 26448.
+    COMPILE_ASSERT(
+        (NSS_VMAJOR == 3 && NSS_VMINOR == 12 && NSS_VPATCH >= 3) ||
+        (NSS_VMAJOR == 3 && NSS_VMINOR > 12) ||
+        (NSS_VMAJOR > 3),
+        nss_version_check_failed);
+    // Also check the run-time NSS version.
+    // NSS_VersionCheck is a >= check, not strict equality.
+    CHECK(NSS_VersionCheck("3.12.3")) << "We depend on NSS >= 3.12.3";
+
     SECStatus status = SECFailure;
     std::string database_dir = GetDefaultConfigDirectory();
     if (!database_dir.empty()) {
