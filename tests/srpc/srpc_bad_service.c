@@ -63,6 +63,8 @@ static void ReceiveRequest(int d) {
   struct NaClImcMsgHdr header;
   struct NaClImcMsgIoVec iovec[1];
   int retval;
+
+  printf("ReceiveRequest %d.\n", d);
   /* Construct the IO vector to have one data payload. */
   iovec[0].base = recvbuf;
   iovec[0].length = sizeof(recvbuf);
@@ -95,6 +97,8 @@ static const uint8_t kRequestHeader[] = {
 static void SendBadResponse(int d) {
   struct NaClImcMsgHdr header;
   struct NaClImcMsgIoVec iovec[1];
+
+  printf("SendBadResponse %d.\n", d);
   /* Construct the IO vector to have one data payload. */
   iovec[0].base = (char*) kRequestHeader;
   iovec[0].length = sizeof(kRequestHeader);
@@ -112,7 +116,8 @@ static void SendBadResponse(int d) {
  */
 static void *worker(void *arg) {
   struct worker_state *state = (struct worker_state *) arg;
-  /* Receive message, send request back. */
+
+  printf("Entering worker loop.\n");
   while (1) {
     /* Get the message. */
     ReceiveRequest(state->d);
@@ -134,6 +139,8 @@ static void *acceptor(void *arg) {
   while (-1 != (d = imc_accept(BOUND_SOCKET))) {
     struct worker_state *state = malloc(sizeof *state);
     pthread_t           worker_tid;
+
+    printf("Acceptor loop iteration.\n");
 
     if (NULL == state) {
       fprintf(stderr, "No memory for accept\n");
@@ -192,9 +199,13 @@ int main() {
 
   is_embedded = (srpc_get_fd() != -1);
   if (is_embedded) {
-    /* Start the acceptor thread.  */
+    printf("Start the acceptor thread.\n");
     pthread_create(&acceptor_tid, NULL, acceptor, (void *) 1);
     pthread_detach(acceptor_tid);
+  } else {
+    printf("ERROR: "
+           "this module is meant to be inside a plugin or sel_universal\n");
+    return -1;
   }
   /* Wait forever so that acceptor and clients can run. */
   while (1) {

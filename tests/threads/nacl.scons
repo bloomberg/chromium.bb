@@ -30,10 +30,12 @@
 
 Import('env')
 
+# TODO: this may not be an emulator problem after all
 # NOTE: the arm emulator does not handle atomic ops properly
 TEST_SUITES = ['small_tests']
 if env['TARGET_ARCHITECTURE'] == 'arm':
-  TEST_SUITES = ['small_tests_arm_hw_only']
+#  TEST_SUITES = ['small_tests_arm_hw_only']
+  TEST_SUITES = ['small_tests_arm_broken']
 
 env.ComponentProgram('thread_test.nexe',
                      'thread_test.c',

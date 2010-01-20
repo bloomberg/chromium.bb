@@ -73,6 +73,8 @@ env.ComponentProgram('srpc_bidir.nexe', 'srpc_bidir.c',
 env.Publish('srpc_bidir.nexe', 'run', ['srpc_bidir.html'])
 
 
+# NOTE: at least for ARM the EXTRA_LIBS list should include 'srpc'
+#       but this somehow make the x86 version fragile
 env.ComponentProgram('srpc_bad_service.nexe', 'srpc_bad_service.c',
                      EXTRA_LIBS=['m', 'pthread'])
 env.Publish('srpc_bad_service.nexe', 'run', [])
@@ -104,6 +106,11 @@ if trusted and trusted.Bit('linux'):
       stdout_golden=env.File('srpc_sysv_shm_test.stdout'),
       )
   env.AddNodeToTestSuite(node, TEST_SUITES, 'run_srpc_sysv_shm_test')
+
+# TODO: this may be a threading issue
+TEST_SUITES = ['small_tests']
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  TEST_SUITES = ['small_tests_arm_broken']
 
 node = env.CommandSelLdrTestNacl(
     'srpc_bad_service.out',
