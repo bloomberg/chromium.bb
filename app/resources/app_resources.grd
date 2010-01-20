@@ -74,6 +74,9 @@
       <include name="IDR_CONTENT_LEFT_SIDE" file="content_left_side.png" type="BINDATA" />
       <include name="IDR_CONTENT_RIGHT_SIDE" file="content_right_side.png" type="BINDATA" />
 
+      <!-- Gripper resizer -->
+      <include name="IDR_RESIZE_GRIPPER" file="resize_gripper.png" type="BINDATA" />
+
       <!-- Throbber -->
       <include name="IDR_THROBBER" file="throbber.png" type="BINDATA" />
 
