@@ -220,40 +220,6 @@ TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnBadManifest) {
                "Line: 2, column: 16, Syntax error.", error.c_str());
 }
 
-TEST(ExtensionFileUtil, MissingPrivacyBlacklist) {
-  FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
-  install_dir = install_dir.AppendASCII("extensions")
-      .AppendASCII("privacy_blacklists")
-      .AppendASCII("missing_blacklist");
-
-  std::string error;
-  scoped_ptr<Extension> extension(
-      extension_file_util::LoadExtension(install_dir, false, &error));
-  ASSERT_TRUE(extension == NULL);
-  ASSERT_FALSE(error.empty());
-  EXPECT_TRUE(MatchPatternASCII(error,
-      "Could not load '*privacy_blacklist.pbl' for privacy blacklist: "
-      "file does not exist.")) << error;
-}
-
-TEST(ExtensionFileUtil, InvalidPrivacyBlacklist) {
-  FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
-  install_dir = install_dir.AppendASCII("extensions")
-      .AppendASCII("privacy_blacklists")
-      .AppendASCII("invalid_blacklist");
-
-  std::string error;
-  scoped_ptr<Extension> extension(
-      extension_file_util::LoadExtension(install_dir, false, &error));
-  ASSERT_TRUE(extension == NULL);
-  ASSERT_FALSE(error.empty());
-  EXPECT_TRUE(MatchPatternASCII(error,
-      "Could not load '*privacy_blacklist.pbl' for privacy blacklist: "
-      "Incorrect header.")) << error;
-}
-
 #define URL_PREFIX "chrome-extension://extension-id/"
 
 TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {

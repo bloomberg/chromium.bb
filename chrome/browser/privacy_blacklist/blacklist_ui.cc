@@ -10,7 +10,6 @@
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
-#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 #include "chrome/browser/privacy_blacklist/blacklist_request_info.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -69,9 +68,7 @@ void BlacklistUI::OnNonvisualContentBlocked(const URLRequest* request) {
 
   BlacklistRequestInfo* request_info =
       BlacklistRequestInfo::FromURLRequest(request);
-  const BlacklistManager* blacklist_manager =
-      request_info->GetBlacklistManager();
-  const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
+  const Blacklist* blacklist = request_info->GetBlacklist();
   scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
   const ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);

@@ -35,7 +35,7 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
-#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
+#include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/search_versus_navigate_classifier.h"
@@ -413,8 +413,8 @@ class OffTheRecordProfileImpl : public Profile,
     return host_zoom_map_.get();
   }
 
-  virtual BlacklistManager* GetBlacklistManager() {
-    return GetOriginalProfile()->GetBlacklistManager();
+  virtual Blacklist* GetPrivacyBlacklist() {
+    return GetOriginalProfile()->GetPrivacyBlacklist();
   }
 
   virtual SessionService* GetSessionService() {
@@ -573,8 +573,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       media_request_context_(NULL),
       extensions_request_context_(NULL),
       host_zoom_map_(NULL),
-      blacklist_manager_(NULL),
-      blacklist_manager_created_(false),
+      privacy_blacklist_(NULL),
+      privacy_blacklist_created_(false),
       history_service_created_(false),
       favicon_service_created_(false),
       created_web_data_service_(false),
@@ -969,17 +969,16 @@ HostZoomMap* ProfileImpl::GetHostZoomMap() {
   return host_zoom_map_.get();
 }
 
-BlacklistManager* ProfileImpl::GetBlacklistManager() {
+Blacklist* ProfileImpl::GetPrivacyBlacklist() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePrivacyBlacklists)) {
     return NULL;
   }
-  if (!blacklist_manager_created_) {
-    blacklist_manager_created_ = true;
-    blacklist_manager_ = new BlacklistManager(this, GetExtensionsService());
-    blacklist_manager_->Initialize();
+  if (!privacy_blacklist_created_) {
+    privacy_blacklist_created_ = true;
+    privacy_blacklist_.reset(new Blacklist());
   }
-  return blacklist_manager_.get();
+  return privacy_blacklist_.get();
 }
 
 HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {

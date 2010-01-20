@@ -4,17 +4,15 @@
 
 #include "chrome/browser/privacy_blacklist/blacklist_request_info.h"
 
-#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
-
 // static
 const void* const BlacklistRequestInfo::kURLRequestDataKey = 0;
 
 BlacklistRequestInfo::BlacklistRequestInfo(const GURL& url,
                                            ResourceType::Type resource_type,
-                                           BlacklistManager* blacklist_manager)
+                                           const Blacklist* blacklist)
     : url_(url),
       resource_type_(resource_type),
-      blacklist_manager_(blacklist_manager) {
+      blacklist_(blacklist) {
 }
 
 BlacklistRequestInfo::~BlacklistRequestInfo() {

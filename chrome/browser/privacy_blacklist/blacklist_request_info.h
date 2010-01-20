@@ -19,12 +19,12 @@ class BlacklistRequestInfo : public URLRequest::UserData {
   static const void* const kURLRequestDataKey;
 
   BlacklistRequestInfo(const GURL& url, ResourceType::Type resource_type,
-                       BlacklistManager* blacklist_manager);
+                       const Blacklist* blacklist);
   ~BlacklistRequestInfo();
 
   ResourceType::Type resource_type() const { return resource_type_; }
-  const BlacklistManager* GetBlacklistManager() const {
-    return blacklist_manager_.get();
+  const Blacklist* GetBlacklist() const {
+    return blacklist_;
   }
 
   // Get the blacklist request info stored in |request|, or NULL if there is no
@@ -38,8 +38,8 @@ class BlacklistRequestInfo : public URLRequest::UserData {
   // Type of the requested resource (main frame, image, etc).
   const ResourceType::Type resource_type_;
 
-  // BlacklistManager used for the request.
-  scoped_refptr<BlacklistManager> blacklist_manager_;
+  // Blacklist used for the request.
+  const Blacklist* blacklist_;
 
   DISALLOW_COPY_AND_ASSIGN(BlacklistRequestInfo);
 };

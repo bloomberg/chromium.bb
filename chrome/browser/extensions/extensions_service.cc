@@ -815,50 +815,6 @@ void ExtensionsService::ReportExtensionLoadError(
   ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);
 }
 
-bool ExtensionsService::AreBlacklistPathsReady() const {
-  return ready_;
-}
-
-std::vector<FilePath> ExtensionsService::GetPersistentBlacklistPaths() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  std::vector<FilePath> result;
-  for (ExtensionList::const_iterator extension_iter = extensions()->begin();
-       extension_iter != extensions()->end(); ++extension_iter) {
-    if ((*extension_iter)->location() == Extension::LOAD)
-      continue;
-
-    std::vector<Extension::PrivacyBlacklistInfo> blacklists(
-        (*extension_iter)->privacy_blacklists());
-    std::vector<Extension::PrivacyBlacklistInfo>::const_iterator blacklist_iter;
-    for (blacklist_iter = blacklists.begin();
-         blacklist_iter != blacklists.end(); ++blacklist_iter) {
-      result.push_back(blacklist_iter->path);
-    }
-  }
-  return result;
-}
-
-std::vector<FilePath> ExtensionsService::GetTransientBlacklistPaths() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  std::vector<FilePath> result;
-  for (ExtensionList::const_iterator extension_iter = extensions()->begin();
-       extension_iter != extensions()->end(); ++extension_iter) {
-    if ((*extension_iter)->location() != Extension::LOAD)
-      continue;
-
-    std::vector<Extension::PrivacyBlacklistInfo> blacklists(
-        (*extension_iter)->privacy_blacklists());
-    std::vector<Extension::PrivacyBlacklistInfo>::const_iterator blacklist_iter;
-    for (blacklist_iter = blacklists.begin();
-         blacklist_iter != blacklists.end(); ++blacklist_iter) {
-      result.push_back(blacklist_iter->path);
-    }
-  }
-  return result;
-}
-
 void ExtensionsService::Observe(NotificationType type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {

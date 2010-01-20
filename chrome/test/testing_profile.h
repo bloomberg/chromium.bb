@@ -168,7 +168,7 @@ class TestingProfile : public Profile {
   }
 
   virtual net::SSLConfigService* GetSSLConfigService() { return NULL; }
-  virtual BlacklistManager* GetBlacklistManager() { return NULL; }
+  virtual Blacklist* GetPrivacyBlacklist() { return NULL; }
   virtual HostZoomMap* GetHostZoomMap() { return NULL; }
   void set_session_service(SessionService* session_service) {
     session_service_ = session_service;

@@ -13,7 +13,7 @@
 #include "chrome/common/pref_service.h"
 #include "net/url_request/url_request_context.h"
 
-class BlacklistManager;
+class Blacklist;
 class CommandLine;
 class Profile;
 
@@ -191,8 +191,8 @@ class ChromeURLRequestContext : public URLRequestContext {
 
   const HostZoomMap* host_zoom_map() const { return host_zoom_map_; }
 
-  // Gets the Privacy Blacklist Manager, if any for this context.
-  BlacklistManager* GetBlacklistManager() const;
+  // Gets the Privacy Blacklist, if any for this context.
+  const Blacklist* GetPrivacyBlacklist() const;
 
   // Callback for when new extensions are loaded.
   void OnNewExtensions(const std::string& id,
@@ -264,7 +264,7 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_host_zoom_map(HostZoomMap* host_zoom_map) {
     host_zoom_map_ = host_zoom_map;
   }
-  void set_blacklist_manager(BlacklistManager* blacklist_manager);
+  void set_privacy_blacklist(const Blacklist* privacy_blacklist);
   void set_appcache_service(ChromeAppCacheService* service) {
     appcache_service_ = service;
   }
@@ -293,7 +293,8 @@ class ChromeURLRequestContext : public URLRequestContext {
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
-  scoped_refptr<BlacklistManager> blacklist_manager_;
+
+  const Blacklist* privacy_blacklist_;
 
   bool is_media_;
   bool is_off_the_record_;
@@ -341,7 +342,7 @@ class ChromeURLRequestContextFactory {
   ChromeURLRequestContext::ExtensionDefaultLocales extension_default_locales_;
   FilePath user_script_dir_path_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
-  scoped_refptr<BlacklistManager> blacklist_manager_;
+  const Blacklist* privacy_blacklist_;
   net::TransportSecurityState* transport_security_state_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
 

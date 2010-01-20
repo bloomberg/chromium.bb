@@ -28,7 +28,6 @@
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
 
-class BlacklistListener;
 class CrossSiteResourceHandler;
 class DownloadFileManager;
 class DownloadRequestManager;
@@ -413,10 +412,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   // Handles requests blocked by privacy blacklists.
   BlacklistInterceptor blacklist_interceptor_;
-
-  // Makes sure that each request is reliably checked against the privacy
-  // blacklist.
-  scoped_refptr<BlacklistListener> blacklist_listener_;
 
   scoped_refptr<UserScriptListener> user_script_listener_;
 

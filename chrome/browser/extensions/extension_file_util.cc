@@ -11,8 +11,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/privacy_blacklist/blacklist.h"
-#include "chrome/browser/privacy_blacklist/blacklist_io.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -223,27 +221,6 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     if (!file_util::PathExists(plugin.path)) {
       *error = StringPrintf("Could not load '%s' for plugin.",
                             WideToUTF8(plugin.path.ToWStringHack()).c_str());
-      return false;
-    }
-  }
-
-  // Validate claimed privacy blacklists.
-  for (size_t i = 0; i < extension->privacy_blacklists().size(); ++i) {
-    const Extension::PrivacyBlacklistInfo& blacklist_info =
-        extension->privacy_blacklists()[i];
-    std::string path_utf8(WideToUTF8(blacklist_info.path.ToWStringHack()));
-    if (!file_util::PathExists(blacklist_info.path)) {
-      *error = StringPrintf("Could not load '%s' for privacy blacklist: "
-                            "file does not exist.",
-                            path_utf8.c_str());
-      return false;
-    }
-    Blacklist blacklist;
-    std::string parsing_error;
-    if (!BlacklistIO::ReadText(&blacklist, blacklist_info.path,
-                               &parsing_error)) {
-      *error = StringPrintf("Could not load '%s' for privacy blacklist: %s",
-                            path_utf8.c_str(), parsing_error.c_str());
       return false;
     }
   }

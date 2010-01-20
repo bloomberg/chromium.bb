@@ -1,8 +1,0 @@
-{
-  "description": "Extension which has a privacy blacklist",
-  "name": "privacy_blacklist",
-  "privacy_blacklists": [
-    "privacy_blacklist.pbl"
-  ],
-  "version": "0.1"
-}

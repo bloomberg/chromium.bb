@@ -78,10 +78,6 @@ class Extension {
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;
 
-  struct PrivacyBlacklistInfo {
-    FilePath path;  // Path to the plain-text blacklist.
-  };
-
   // An NPAPI plugin included in the extension.
   struct PluginInfo {
     FilePath path;  // Path to the plugin.
@@ -208,9 +204,6 @@ class Extension {
   const UserScriptList& content_scripts() const { return content_scripts_; }
   ExtensionAction* page_action() const { return page_action_.get(); }
   ExtensionAction* browser_action() const { return browser_action_.get(); }
-  const std::vector<PrivacyBlacklistInfo>& privacy_blacklists() const {
-    return privacy_blacklists_;
-  }
   const std::vector<PluginInfo>& plugins() const { return plugins_; }
   const GURL& background_url() const { return background_url_; }
   const GURL& options_url() const { return options_url_; }
@@ -362,9 +355,6 @@ class Extension {
 
   // The extension's browser action, if any.
   scoped_ptr<ExtensionAction> browser_action_;
-
-  // Optional list of privacy blacklistrom.
-  std::vector<PrivacyBlacklistInfo> privacy_blacklists_;
 
   // Optional list of NPAPI plugins and associated properties.
   std::vector<PluginInfo> plugins_;

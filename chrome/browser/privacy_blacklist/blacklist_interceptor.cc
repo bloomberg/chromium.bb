@@ -9,7 +9,6 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
-#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 #include "chrome/browser/privacy_blacklist/blacklist_request_info.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "net/url_request/url_request_simple_job.h"
@@ -78,9 +77,7 @@ class URLRequestBlacklistJob : public URLRequestSimpleJob {
   const Blacklist::Provider* GetBestMatchingEntryProvider() const {
     // If kBlockAll is specified, assign blame to such an entry.
     // Otherwise pick the first one.
-    const BlacklistManager* blacklist_manager =
-        request_info_.GetBlacklistManager();
-    const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
+    const Blacklist* blacklist = request_info_.GetBlacklist();
     scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request_->url()));
     const Blacklist::Entry* entry = NULL;
     if (match->attributes() & Blacklist::kBlockAll) {
@@ -120,9 +117,7 @@ URLRequestJob* BlacklistInterceptor::MaybeIntercept(URLRequest* request) {
     return NULL;
   }
 
-  const BlacklistManager* blacklist_manager =
-      request_info->GetBlacklistManager();
-  const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
+  const Blacklist* blacklist = request_info->GetBlacklist();
   scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
 
   if (!match.get()) {

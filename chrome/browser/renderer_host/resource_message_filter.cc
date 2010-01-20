@@ -26,7 +26,6 @@
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
-#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 #include "chrome/browser/privacy_blacklist/blacklist_ui.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
@@ -145,11 +144,10 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
 
 Blacklist::Match* GetPrivacyBlacklistMatchForURL(
     const GURL& url, ChromeURLRequestContext* context) {
-  BlacklistManager* blacklist_manager = context->GetBlacklistManager();
+  const Blacklist* blacklist = context->GetPrivacyBlacklist();
   // TODO(phajdan.jr): DCHECK(blacklist_manager) when blacklists are stable.
-  if (!blacklist_manager)
+  if (!blacklist)
     return NULL;
-  const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
   return blacklist->FindMatch(url);
 }
 

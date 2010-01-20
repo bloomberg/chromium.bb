@@ -969,26 +969,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     return true;
   }
 
-  // Initialize privacy blacklists (optional).
-  if (source.HasKey(keys::kPrivacyBlacklists)) {
-    ListValue* blacklists;
-    if (!source.GetList(keys::kPrivacyBlacklists, &blacklists)) {
-      *error = errors::kInvalidPrivacyBlacklists;
-      return false;
-    }
-
-    for (size_t i = 0; i < blacklists->GetSize(); ++i) {
-      std::string path;
-      if (!blacklists->GetString(i, &path)) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(
-            errors::kInvalidPrivacyBlacklistsPath, IntToString(i));
-        return false;
-      }
-      privacy_blacklists_.push_back(PrivacyBlacklistInfo());
-      privacy_blacklists_.back().path = path_.AppendASCII(path);
-    }
-  }
-
   // Initialize plugins (optional).
   if (source.HasKey(keys::kPlugins)) {
     ListValue* list_value;

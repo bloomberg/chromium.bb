@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
-#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/extensions/extension.h"
@@ -58,7 +57,6 @@ class ExtensionUpdateService {
 class ExtensionsService
     : public base::RefCountedThreadSafe<ExtensionsService,
                                         ChromeThread::DeleteOnUIThread>,
-      public BlacklistPathProvider,
       public ExtensionUpdateService,
       public NotificationObserver {
  public:
@@ -240,11 +238,6 @@ class ExtensionsService
                                 const std::string& error,
                                 NotificationType type,
                                 bool be_noisy);
-
-  // BlacklistPathProvider:
-  virtual bool AreBlacklistPathsReady() const;
-  virtual std::vector<FilePath> GetPersistentBlacklistPaths();
-  virtual std::vector<FilePath> GetTransientBlacklistPaths();
 
   // NotificationObserver
   virtual void Observe(NotificationType type,

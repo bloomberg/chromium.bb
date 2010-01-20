@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/net/dns_global.h"
-#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
+#include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/privacy_blacklist/blacklist_request_info.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -684,12 +684,10 @@ bool ChromeURLRequestContext::InterceptCookie(const URLRequest* request,
   // blacklist request data.
   if (!request_info)
     return true;
-  const BlacklistManager* blacklist_manager =
-      request_info->GetBlacklistManager();
+  const Blacklist* blacklist = request_info->GetBlacklist();
   // TODO(phajdan.jr): remove the NULL check when blacklists are stable.
-  if (!blacklist_manager)
-    return NULL;
-  const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
+  if (!blacklist)
+    return true;
   scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
   if (!match.get())
     return true;
@@ -716,12 +714,10 @@ bool ChromeURLRequestContext::AllowSendingCookies(const URLRequest* request)
   // blacklist request data.
   if (!request_info)
     return true;
-  const BlacklistManager* blacklist_manager =
-      request_info->GetBlacklistManager();
+  const Blacklist* blacklist = request_info->GetBlacklist();
   // TODO(phajdan.jr): remove the NULL check when blacklists are stable.
-  if (!blacklist_manager)
-    return NULL;
-  const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
+  if (!blacklist)
+    return true;
   scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
   if (!match.get())
     return true;
@@ -736,8 +732,8 @@ bool ChromeURLRequestContext::AllowSendingCookies(const URLRequest* request)
   return true;
 }
 
-BlacklistManager* ChromeURLRequestContext::GetBlacklistManager() const {
-  return blacklist_manager_.get();
+const Blacklist* ChromeURLRequestContext::GetPrivacyBlacklist() const {
+  return privacy_blacklist_;
 }
 
 void ChromeURLRequestContext::OnNewExtensions(
@@ -784,14 +780,14 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   user_script_dir_path_ = other->user_script_dir_path_;
   appcache_service_ = other->appcache_service_;
   host_zoom_map_ = other->host_zoom_map_;
-  blacklist_manager_ = other->blacklist_manager_;
+  privacy_blacklist_ = other->privacy_blacklist_;
   is_media_ = other->is_media_;
   is_off_the_record_ = other->is_off_the_record_;
 }
 
-void ChromeURLRequestContext::set_blacklist_manager(
-    BlacklistManager* blacklist_manager) {
-  blacklist_manager_ = blacklist_manager;
+void ChromeURLRequestContext::set_privacy_blacklist(
+    const Blacklist* privacy_blacklist) {
+  privacy_blacklist_ = privacy_blacklist;
 }
 
 void ChromeURLRequestContext::OnAcceptLanguageChange(
@@ -862,7 +858,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
 
   host_zoom_map_ = profile->GetHostZoomMap();
 
-  blacklist_manager_ = profile->GetBlacklistManager();
+  privacy_blacklist_ = profile->GetPrivacyBlacklist();
 
   // TODO(eroman): this doesn't look safe; sharing between IO and UI threads!
   transport_security_state_ = profile->GetTransportSecurityState();
@@ -904,7 +900,7 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_extension_default_locales(extension_default_locales_);
   context->set_user_script_dir_path(user_script_dir_path_);
   context->set_host_zoom_map(host_zoom_map_);
-  context->set_blacklist_manager(blacklist_manager_.get());
+  context->set_privacy_blacklist(privacy_blacklist_);
   context->set_transport_security_state(
       transport_security_state_);
   context->set_ssl_config_service(ssl_config_service_);

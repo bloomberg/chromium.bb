@@ -208,21 +208,6 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidPermissionScheme));
 
-  // Test invalid privacy blacklists list.
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
-  input_value->SetInteger(keys::kPrivacyBlacklists, 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_EQ(errors::kInvalidPrivacyBlacklists, error);
-
-  // Test invalid privacy blacklists list item.
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
-  ListValue* privacy_blacklists = NULL;
-  input_value->GetList(keys::kPrivacyBlacklists, &privacy_blacklists);
-  ASSERT_FALSE(NULL == privacy_blacklists);
-  privacy_blacklists->Set(0, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidPrivacyBlacklistsPath));
-
   // Multiple page actions are not allowed.
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
   DictionaryValue* action = new DictionaryValue;

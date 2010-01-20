@@ -29,8 +29,6 @@
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
-#include "chrome/browser/privacy_blacklist/blacklist_listener.h"
-#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 #include "chrome/browser/privacy_blacklist/blacklist_request_info.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/async_resource_handler.h"
@@ -265,11 +263,6 @@ ResourceDispatcherHost::ResourceDispatcherHost()
           kMaxOutstandingRequestsCostPerProcess),
       receiver_(NULL) {
   ResourceQueue::DelegateSet resource_queue_delegates;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePrivacyBlacklists)) {
-    blacklist_listener_ = new BlacklistListener(&resource_queue_);
-    resource_queue_delegates.insert(blacklist_listener_.get());
-  }
   resource_queue_delegates.insert(user_script_listener_.get());
   resource_queue_.Initialize(resource_queue_delegates);
 }
@@ -563,7 +556,7 @@ void ResourceDispatcherHost::BeginRequest(
           switches::kEnablePrivacyBlacklists)) {
     request->SetUserData(&BlacklistRequestInfo::kURLRequestDataKey,
         new BlacklistRequestInfo(request_data.url, request_data.resource_type,
-            context ? context->GetBlacklistManager() : NULL));
+            context ? context->GetPrivacyBlacklist() : NULL));
   }
 
   BeginRequestInternal(request);
@@ -1100,9 +1093,7 @@ bool ResourceDispatcherHost::CompleteResponseStarted(URLRequest* request) {
   BlacklistRequestInfo* request_info =
       BlacklistRequestInfo::FromURLRequest(request);
   if (request_info) {
-    const BlacklistManager* blacklist_manager =
-        request_info->GetBlacklistManager();
-    const Blacklist* blacklist = blacklist_manager->GetCompiledBlacklist();
+    const Blacklist* blacklist = request_info->GetBlacklist();
     scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
     if (match.get() && match->attributes() & Blacklist::kBlockByType) {
       if (match->MatchType(response->response_head.mime_type))
