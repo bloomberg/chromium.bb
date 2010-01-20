@@ -3009,7 +3009,6 @@ BUG53331 MAC : fast/gradients/border-image-gradient.html = FAIL
 BUG53331 : fast/gradients/border-image-gradient-sides-and-corners.html = FAIL
 
 // WebKit roll 53341:53451
-BUG32668 WIN LINUX : css1/font_properties/font.html = TEXT
 BUG32669 WIN LINUX MAC : editing/pasteboard/paste-noscript.html = TEXT
 BUG32670 LINUX : fast/css/zoom-body-scroll.html = TEXT
 BUG32671 WIN LINUX MAC : fast/dom/Window/timer-null-script-execution-context.html = TEXT
@@ -3018,19 +3017,8 @@ BUG32673 WIN LINUX : fast/forms/textarea-scrollbar-height.html = TEXT
 BUG32674 WIN LINUX MAC : http/tests/security/setDomainRelaxationForbiddenForURLScheme.html = TEXT
 BUG32675 LINUX : fast/repaint/trailing-floats-root-line-box-overflow.html = IMAGE
 BUG32676 WIN LINUX MAC : http/tests/appcache/destroyed-frame.html = CRASH
-BUG32677 WIN LINUX : css2.1/t090501-c414-flt-ln-00-d.html = IMAGE+TEXT
-BUG32677 WIN LINUX : css2.1/t090501-c414-flt-ln-01-d-g.html = IMAGE+TEXT
-BUG32677 WIN LINUX : css2.1/t090501-c414-flt-ln-02-d.html = IMAGE+TEXT
-BUG32677 WIN LINUX : css2.1/t090501-c414-flt-ln-03-d.html = IMAGE+TEXT
-BUG32677 MAC : css2.1/t090501-c414-flt-ln-00-d.html = IMAGE
-BUG32677 MAC : css2.1/t090501-c414-flt-ln-01-d-g.html = IMAGE
-BUG32677 MAC : css2.1/t090501-c414-flt-ln-02-d.html = IMAGE
-BUG32677 MAC : css2.1/t090501-c414-flt-ln-03-d.html = IMAGE
 BUG32678 WIN LINUX : svg/custom/relative-sized-deep-shadow-tree-content.xhtml = IMAGE+TEXT
 BUG32678 WIN LINUX : svg/custom/relative-sized-shadow-tree-content.xhtml = IMAGE+TEXT
-BUG32678 WIN LINUX : svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE+TEXT PASS
-BUG32678 WIN LINUX : svg/custom/svg-fonts-in-html.html = IMAGE+TEXT PASS
-BUG32678 MAC : svg/custom/svg-fonts-in-html.html = IMAGE
 
 // WebKit roll 53452:53511
 BUG32663 WIN LINUX : fast/fast-mobile-scrolling/fixed-position-element.html = IMAGE+TEXT
