@@ -85,8 +85,13 @@ namespace nacl_srpc {
 
   bool DescBasedHandle::Map(void* obj, SrpcParams* params) {
     DescBasedHandle *ptr = reinterpret_cast<DescBasedHandle*>(obj);
+    // Create a copy of the wrapper to go on the SharedMemory object.
+    nacl::DescWrapper* shm_wrapper =
+        ptr->plugin_->wrapper_factory()->MakeGeneric(ptr->wrapper_->desc());
+    // Increment the ref count of the contained object.
+    NaClDescRef(shm_wrapper->desc());
     struct SharedMemoryInitializer init_info(ptr->GetPortablePluginInterface(),
-        ptr->wrapper_, ptr->plugin_);
+        shm_wrapper, ptr->plugin_);
 
     ScriptableHandle<SharedMemory>* shared_memory =
       ScriptableHandle<SharedMemory>::New(
