@@ -38,6 +38,7 @@ class ExampleMenuContents : public menus::SimpleMenuModel,
   ExampleMenuContents() :
       ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
       current_encoding_command_id_(kCommandSelectAscii) {
+
     AddItem(kCommandDoSomething, WideToUTF16(L"Do Something"));
     AddSeparator();
     AddRadioItem(kCommandSelectAscii,
@@ -52,6 +53,10 @@ class ExampleMenuContents : public menus::SimpleMenuModel,
     AddCheckItem(kCommandCheckKiwi, WideToUTF16(L"Kiwi"));
     AddSeparator();
     AddItem(kCommandGoHome, WideToUTF16(L"Go Home"));
+
+    submenu_.reset(new menus::SimpleMenuModel(this));
+    submenu_->AddItem(kCommandDoSomething, WideToUTF16(L"Do Something 2"));
+    AddSubMenu(ASCIIToUTF16("Submenu"), submenu_.get());
     menu_.reset(new views::Menu2(this));
   }
 
@@ -138,6 +143,7 @@ class ExampleMenuContents : public menus::SimpleMenuModel,
 
  private:
   scoped_ptr<views::Menu2> menu_;
+  scoped_ptr<menus::SimpleMenuModel> submenu_;
   std::set<int> checked_fruits_;
   int current_encoding_command_id_;
 
@@ -196,4 +202,3 @@ class MenuExample : public ExampleBase {
 }  // namespace examples
 
 #endif  // VIEWS_EXAMPLES_MENU_EXAMPLE_H_
-
