@@ -30,6 +30,21 @@ class ExtensionMessageBundle {
   static const char* kMessageBegin;
   static const char* kMessageEnd;
 
+  // Reserved message names in the dictionary.
+  // Update i18n documentation when adding new reserved value.
+  static const char* kUILocaleKey;
+  // See http://code.google.com/apis/gadgets/docs/i18n.html#BIDI for
+  // description.
+  // TODO(cira): point to chrome docs once they are out.
+  static const char* kBidiDirectionKey;
+  static const char* kBidiReversedDirectionKey;
+  static const char* kBidiStartEdgeKey;
+  static const char* kBidiEndEdgeKey;
+
+  // Values for some of the reserved messages.
+  static const char* kBidiLeftEdgeValue;
+  static const char* kBidiRightEdgeValue;
+
   // Creates ExtensionMessageBundle or returns NULL if there was an error.
   // Expects locale_catalogs to be sorted from more specific to less specific,
   // with default catalog at the end.
@@ -68,16 +83,13 @@ class ExtensionMessageBundle {
                                std::string* message,
                                std::string* error);
 
-  // Allow only ascii 0-9, a-z, A-Z, and _ in the variable name.
-  // Returns false if the input is empty or if it has illegal characters.
-  // Public for easier unittesting.
-  template<typename str>
-  static bool IsValidName(const str& name);
-
   // Getter for dictionary_.
   const SubstitutionMap* dictionary() const { return &dictionary_; }
 
  private:
+  // Testing friend.
+  friend class ExtensionMessageBundleTest;
+
   // Use Create to create ExtensionMessageBundle instance.
   ExtensionMessageBundle();
 
@@ -86,6 +98,11 @@ class ExtensionMessageBundle {
   // (less specific).
   // Returns false on error.
   bool Init(const CatalogVector& locale_catalogs, std::string* error);
+
+  // Appends locale specific reserved messages to the dictionary.
+  // Returns false if there was a conflict with user defined messages.
+  bool AppendReservedMessagesForLocale(const std::string& application_locale,
+                                       std::string* error);
 
   // Helper methods that navigate JSON tree and return simplified message.
   // They replace all $PLACEHOLDERS$ with their value, and return just key/value
@@ -106,6 +123,11 @@ class ExtensionMessageBundle {
   bool ReplacePlaceholders(const SubstitutionMap& placeholders,
                            std::string* message,
                            std::string* error) const;
+
+  // Allow only ascii 0-9, a-z, A-Z, and _ in the variable name.
+  // Returns false if the input is empty or if it has illegal characters.
+  template<typename str>
+  static bool IsValidName(const str& name);
 
   // Holds all messages for application locale.
   SubstitutionMap dictionary_;
