@@ -66,18 +66,6 @@ class DOMStorageContext {
   // date that's supplied.
   void DeleteDataModifiedSince(const base::Time& cutoff);
 
-  // Deletes a single local storage file.
-  void DeleteLocalStorageFile(const FilePath& file_path);
-
-  // Deletes all local storage files.
-  void DeleteAllLocalStorageFiles();
-
-  // The local storage directory.
-  static const FilePath::CharType kLocalStorageDirectory[];
-
-  // The local storage file extension.
-  static const FilePath::CharType kLocalStorageExtension[];
-
  private:
   // Get the local storage instance.  The object is owned by this class.
   DOMStorageNamespace* CreateLocalStorage();

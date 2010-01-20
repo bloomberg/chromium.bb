@@ -31,6 +31,7 @@ static const int kCookieInfoViewBorderSize = 1;
 static const int kCookieInfoViewInsetSize = 3;
 static const int kSearchFilterDelayMs = 500;
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookiesTreeView
 //  Overridden to handle Delete key presses
@@ -48,18 +49,19 @@ class CookiesTreeView : public views::TreeView {
 };
 
 CookiesTreeView::CookiesTreeView(CookiesTreeModel* cookies_model) {
-  SetModel(cookies_model);
-  SetRootShown(false);
-  SetEditable(false);
+      SetModel(cookies_model);
+      SetRootShown(false);
+      SetEditable(false);
 }
 
 void CookiesTreeView::RemoveSelectedItems() {
   TreeModelNode* selected_node = GetSelectedNode();
   if (selected_node) {
     static_cast<CookiesTreeModel*>(model())->DeleteCookieNode(
-        static_cast<CookieTreeNode*>(GetSelectedNode()));
+        static_cast<CookieTreeCookieNode*>(GetSelectedNode()));
   }
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieInfoView, public:
@@ -251,123 +253,6 @@ void CookieInfoView::Init() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// LocalStorageInfoView, public:
-
-LocalStorageInfoView::LocalStorageInfoView()
-    : origin_label_(NULL),
-      origin_value_field_(NULL),
-      size_label_(NULL),
-      size_value_field_(NULL),
-      last_modified_label_(NULL),
-      last_modified_value_field_(NULL) {
-}
-
-LocalStorageInfoView::~LocalStorageInfoView() {
-}
-
-void LocalStorageInfoView::SetLocalStorageInfo(
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo&
-    local_storage_info) {
-  origin_value_field_->SetText(UTF8ToWide(local_storage_info.origin));
-  size_value_field_->SetText(
-      FormatBytes(local_storage_info.size,
-                  GetByteDisplayUnits(local_storage_info.size),
-                  true));
-  last_modified_value_field_->SetText(
-      base::TimeFormatFriendlyDateAndTime(local_storage_info.last_modified));
-  EnableLocalStorageDisplay(true);
-}
-
-void LocalStorageInfoView::EnableLocalStorageDisplay(bool enabled) {
-  origin_value_field_->SetEnabled(enabled);
-  size_value_field_->SetEnabled(enabled);
-  last_modified_value_field_->SetEnabled(enabled);
-}
-
-void LocalStorageInfoView::ClearLocalStorageDisplay() {
-  std::wstring no_cookie_string =
-      l10n_util::GetString(IDS_COOKIES_COOKIE_NONESELECTED);
-  origin_value_field_->SetText(no_cookie_string);
-  size_value_field_->SetText(no_cookie_string);
-  last_modified_value_field_->SetText(no_cookie_string);
-  EnableLocalStorageDisplay(false);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// LocalStorageInfoView, views::View overrides:
-
-void LocalStorageInfoView::ViewHierarchyChanged(bool is_add,
-                                                views::View* parent,
-                                                views::View* child) {
-  if (is_add && child == this)
-    Init();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// LocalStorageInfoView, private:
-
-void LocalStorageInfoView::Init() {
-  SkColor border_color = color_utils::GetSysSkColor(COLOR_3DSHADOW);
-  views::Border* border = views::Border::CreateSolidBorder(
-      kCookieInfoViewBorderSize, border_color);
-  set_border(border);
-
-  origin_label_ = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL));
-  origin_value_field_ = new views::Textfield;
-  size_label_ = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL));
-  size_value_field_ = new views::Textfield;
-  last_modified_label_ = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL));
-  last_modified_value_field_ = new views::Textfield;
-
-  using views::GridLayout;
-  using views::ColumnSet;
-
-  GridLayout* layout = new GridLayout(this);
-  layout->SetInsets(kCookieInfoViewInsetSize,
-                    kCookieInfoViewInsetSize,
-                    kCookieInfoViewInsetSize,
-                    kCookieInfoViewInsetSize);
-  SetLayoutManager(layout);
-
-  int three_column_layout_id = 0;
-  ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);
-  column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, three_column_layout_id);
-  layout->AddView(origin_label_);
-  layout->AddView(origin_value_field_);
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
-  layout->StartRow(0, three_column_layout_id);
-  layout->AddView(size_label_);
-  layout->AddView(size_value_field_);
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
-  layout->StartRow(0, three_column_layout_id);
-  layout->AddView(last_modified_label_);
-  layout->AddView(last_modified_value_field_);
-
-  // Color these borderless text areas the same as the containing dialog.
-  SkColor text_area_background = color_utils::GetSysSkColor(COLOR_3DFACE);
-  // Now that the Textfields are in the view hierarchy, we can initialize them.
-  origin_value_field_->SetReadOnly(true);
-  origin_value_field_->RemoveBorder();
-  origin_value_field_->SetBackgroundColor(text_area_background);
-  size_value_field_->SetReadOnly(true);
-  size_value_field_->RemoveBorder();
-  size_value_field_->SetBackgroundColor(text_area_background);
-  last_modified_value_field_->SetReadOnly(true);
-  last_modified_value_field_->RemoveBorder();
-  last_modified_value_field_->SetBackgroundColor(text_area_background);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 // CookiesView, public:
 
 // static
@@ -486,17 +371,10 @@ void CookiesView::OnTreeViewSelectionChanged(views::TreeView* tree_view) {
       static_cast<CookieTreeNode*>(tree_view->GetSelectedNode())->
       GetDetailedInfo();
   if (detailed_info.node_type == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
-    UpdateVisibleDetailedInfo(cookie_info_view_);
-    cookie_info_view_->SetCookie(detailed_info.cookie->first,
-                                 detailed_info.cookie->second);
-  } else if (detailed_info.node_type ==
-             CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE) {
-    UpdateVisibleDetailedInfo(local_storage_info_view_);
-    local_storage_info_view_->SetLocalStorageInfo(
-        *detailed_info.local_storage_info);
+    info_view_->SetCookie(detailed_info.cookie->first,
+                          detailed_info.cookie->second);
   } else {
-    UpdateVisibleDetailedInfo(cookie_info_view_);
-    cookie_info_view_->ClearCookieDisplay();
+    info_view_->ClearCookieDisplay();
   }
 }
 
@@ -515,8 +393,7 @@ CookiesView::CookiesView(Profile* profile)
       clear_search_button_(NULL),
       description_label_(NULL),
       cookies_tree_(NULL),
-      cookie_info_view_(NULL),
-      local_storage_info_view_(NULL),
+      info_view_(NULL),
       remove_button_(NULL),
       remove_all_button_(NULL),
       profile_(profile),
@@ -544,8 +421,7 @@ void CookiesView::Init() {
       l10n_util::GetString(IDS_COOKIES_INFO_LABEL));
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   cookies_tree_model_.reset(new CookiesTreeModel(profile_));
-  cookie_info_view_ = new CookieInfoView;
-  local_storage_info_view_ = new LocalStorageInfoView;
+  info_view_ = new CookieInfoView;
   cookies_tree_ = new CookiesTreeView(cookies_tree_model_.get());
   remove_button_ = new views::NativeButton(
       this, l10n_util::GetString(IDS_COOKIES_REMOVE_LABEL));
@@ -593,10 +469,7 @@ void CookiesView::Init() {
 
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_layout_id);
-  layout->AddView(cookie_info_view_, 1, 2);
-
-  layout->StartRow(0, single_column_layout_id);
-  layout->AddView(local_storage_info_view_);
+  layout->AddView(info_view_);
 
   // Add the Remove/Remove All buttons to the ClientView
   View* parent = GetParent();
@@ -604,8 +477,6 @@ void CookiesView::Init() {
   parent->AddChildView(remove_all_button_);
   if (!cookies_tree_model_.get()->GetRoot()->GetChildCount())
     UpdateForEmptyState();
-  else
-    UpdateVisibleDetailedInfo(cookie_info_view_);
 }
 
 void CookiesView::ResetSearchQuery() {
@@ -615,15 +486,7 @@ void CookiesView::ResetSearchQuery() {
 }
 
 void CookiesView::UpdateForEmptyState() {
-  cookie_info_view_->ClearCookieDisplay();
+  info_view_->ClearCookieDisplay();
   remove_button_->SetEnabled(false);
   remove_all_button_->SetEnabled(false);
-  UpdateVisibleDetailedInfo(cookie_info_view_);
-}
-
-void CookiesView::UpdateVisibleDetailedInfo(views::View* view) {
-  view->SetVisible(true);
-  views::View* other = local_storage_info_view_;
-  if (view == local_storage_info_view_) other = cookie_info_view_;
-  other->SetVisible(false);
 }
