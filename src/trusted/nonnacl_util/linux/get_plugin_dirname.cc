@@ -56,6 +56,7 @@ namespace nacl {
 const char* SelLdrLauncher::GetPluginDirname() {
   Dl_info     info;
   char*       pathname = NULL;
+  // NOTE: this static makes the functions NOT thread safe!
   static char bin_dir[2 * PATH_MAX + 1];
   // C++ really does not like to convert function pointer to regular pointers.
   // This is apparently the only way to do it without compiler warnings
@@ -63,12 +64,11 @@ const char* SelLdrLauncher::GetPluginDirname() {
     reinterpret_cast<uintptr_t>(GetPluginDirname));
 
   // First, try looking a symbol up in the dynamic loader's records.
-  if (0 == dladdr(sym_addr, &info)) {
-    printf("dladdr failed\n");
-  } else {
+  if (0 != dladdr(sym_addr, &info)) {
     strncpy(bin_dir, info.dli_fname, sizeof(bin_dir));
     pathname = bin_dir;
   }
+
   // What follows is probably major overkill if the dladdr scheme works.
   if (NULL == pathname) {
     // Identify the path the plugin was loaded from.  For Linux we look through
@@ -109,6 +109,7 @@ const char* SelLdrLauncher::GetPluginDirname() {
     // Close /proc/self/maps.
     fclose(fp);
   }
+
   // If we didn't find a matching pathname, try the path of the current
   // executable.
   if (NULL == pathname) {
