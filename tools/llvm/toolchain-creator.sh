@@ -117,6 +117,7 @@ PruneDirs() {
 DownloadOrCopyCodeSourceryTarball() {
   local tarball="${TMP}/${CS_URL##*/}"
   DownloadOrCopy ${CS_URL} ${tarball}
+  mkdir -p ${CODE_SOURCERY_PKG_PATH}
   ln -s ${tarball} ${CODE_SOURCERY_PKG_PATH}
 }
 
@@ -166,7 +167,11 @@ UntarPatchConfigureAndBuildSfiLlc() {
   SubBanner "Patching"
   patch -p0 < ${patch}
   SubBanner "Configure"
-   ./configure --disable-jit --enable-optimized --target=arm-none-linux-gnueabi
+  ./configure\
+      --disable-jit\
+      --enable-optimized\
+      --enable-targets=arm\
+      --target=arm-none-linux-gnueabi
   SubBanner "Make"
   nice make ${MAKE_OPTS} tools-only
   SubBanner "Install"
@@ -272,7 +277,6 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   ExtractLlvmBuildScript
   ConfigureAndBuildLlvm
   UntarPatchConfigureAndBuildSfiLlc
-  InstallNewlibAndNaClRuntime
   InstallUntrustedLinkerScript
   InstallDriver
   # TODO(cbiffle): sandboxed libgcc build
@@ -338,7 +342,7 @@ fi
 #@
 #@ driver
 #@
-#@   install misc tools
+#@   install driver
 if [ ${MODE} = 'driver' ] ; then
   InstallDriver
   exit 0
