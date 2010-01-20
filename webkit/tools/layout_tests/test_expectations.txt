@@ -913,7 +913,7 @@ BUG10415 WIN LINUX : svg/custom/pattern-with-transformation.svg = FAIL
 
 // Text fails very rarely, 1/200 runs or fewer.
 BUG29737 LINUX DEBUG : svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
-BUG29737 MAC RELEASE : svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
+BUG29737 MAC : svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
 
 // -----------------------------------------------------------------
 // End SVG Regressions
@@ -2426,7 +2426,7 @@ BUG18116 : svg/custom/global-constructors.html = TEXT
 // Flaky.  Timing?
 BUG18584 LINUX WIN : animations/change-one-anim.html = FAIL PASS
 BUG18584 WIN DEBUG : animations/play-state.html = FAIL PASS
-BUG18584 LINUX DEBUG : transitions/shorthand-transitions.html = FAIL PASS
+BUG18584 WIN LINUX DEBUG : transitions/shorthand-transitions.html = FAIL PASS
 BUG18584 WIN DEBUG : animations/combo-transform-translate+scale.html = FAIL PASS
 BUG18584 LINUX : animations/combo-transform-translate+scale.html = FAIL PASS
 
@@ -2822,13 +2822,13 @@ BUG29737 MAC : svg/W3C-SVG-1.1/filters-morph-01-f.svg = IMAGE+TEXT CRASH
 BUG29737 MAC : svg/W3C-SVG-1.1/filters-offset-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : svg/batik/filters/feTile.svg = IMAGE+TEXT
 BUG29737 MAC : svg/custom/empty-merge.svg = IMAGE+TEXT IMAGE
-BUG29737 MAC : svg/custom/feComponentTransfer-Discrete.svg = IMAGE+TEXT
+BUG29737 MAC : svg/custom/feComponentTransfer-Discrete.svg = IMAGE+TEXT IMAGE
 BUG29737 MAC : svg/custom/feComponentTransfer-Gamma.svg = IMAGE+TEXT
 BUG29737 MAC : svg/custom/feComponentTransfer-Linear.svg = IMAGE+TEXT IMAGE
 BUG29737 MAC : svg/custom/feComponentTransfer-Table.svg = IMAGE+TEXT
 BUG29737 MAC : svg/custom/text-filter.svg = IMAGE+TEXT
 BUG29737 MAC : svg/filters/feComposite.svg = IMAGE+TEXT
-BUG29737 MAC : svg/filters/feDisplacementMap.svg = IMAGE+TEXT
+BUG29737 MAC : svg/filters/feDisplacementMap.svg = IMAGE+TEXT TEXT PASS
 BUG29737 MAC : svg/filters/feGaussianBlur.svg = IMAGE+TEXT
 BUG29737 MAC : svg/filters/feTile.svg = IMAGE+TEXT
 BUG29737 MAC : svg/filters/shadow-on-filter.svg = IMAGE+TEXT
@@ -3012,25 +3012,28 @@ BUG53331 MAC : fast/gradients/border-image-gradient.html = FAIL
 BUG53331 : fast/gradients/border-image-gradient-sides-and-corners.html = FAIL
 
 // WebKit roll 53341:53451
-BUG32574 WIN LINUX RELEASE : css1/font_properties/font.html = TEXT
+BUG32574 WIN LINUX : css1/font_properties/font.html = TEXT
 BUG32574 WIN LINUX MAC : editing/pasteboard/paste-noscript.html = TEXT
 BUG32574 LINUX : fast/css/zoom-body-scroll.html = TEXT
 BUG32574 WIN LINUX MAC : fast/dom/Window/timer-null-script-execution-context.html = TEXT
 BUG32574 WIN LINUX : fast/dynamic/float-in-trailing-whitespace-after-last-line-break-2.html = TEXT
-BUG32574 WIN LINUX RELEASE: fast/forms/textarea-scrollbar-height.html = TEXT
+BUG32574 WIN LINUX : fast/forms/textarea-scrollbar-height.html = TEXT
 BUG32574 WIN LINUX MAC : http/tests/security/setDomainRelaxationForbiddenForURLScheme.html = TEXT
 BUG32574 LINUX : fast/repaint/trailing-floats-root-line-box-overflow.html = IMAGE
 BUG32574 WIN LINUX MAC : http/tests/appcache/destroyed-frame.html = CRASH
-BUG32574 WIN LINUX MAC RELEASE : css2.1/t090501-c414-flt-ln-00-d.html = IMAGE+TEXT
-BUG32574 WIN LINUX MAC RELEASE : css2.1/t090501-c414-flt-ln-01-d-g.html = IMAGE+TEXT
-BUG32574 WIN LINUX MAC RELEASE : css2.1/t090501-c414-flt-ln-02-d.html = IMAGE+TEXT
-BUG32574 WIN LINUX MAC RELEASE : css2.1/t090501-c414-flt-ln-03-d.html = IMAGE+TEXT
+BUG32574 WIN LINUX : css2.1/t090501-c414-flt-ln-00-d.html = IMAGE+TEXT
+BUG32574 WIN LINUX : css2.1/t090501-c414-flt-ln-01-d-g.html = IMAGE+TEXT
+BUG32574 WIN LINUX : css2.1/t090501-c414-flt-ln-02-d.html = IMAGE+TEXT
+BUG32574 WIN LINUX : css2.1/t090501-c414-flt-ln-03-d.html = IMAGE+TEXT
+BUG32574 MAC : css2.1/t090501-c414-flt-ln-00-d.html = IMAGE
+BUG32574 MAC : css2.1/t090501-c414-flt-ln-01-d-g.html = IMAGE
+BUG32574 MAC : css2.1/t090501-c414-flt-ln-02-d.html = IMAGE
+BUG32574 MAC : css2.1/t090501-c414-flt-ln-03-d.html = IMAGE
 BUG32574 WIN LINUX : svg/custom/relative-sized-deep-shadow-tree-content.xhtml = IMAGE+TEXT
 BUG32574 WIN LINUX : svg/custom/relative-sized-shadow-tree-content.xhtml = IMAGE+TEXT
-BUG32574 LINUX : svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE+TEXT PASS
-BUG32574 WIN RELEASE : svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE+TEXT
-BUG32574 LINUX : svg/custom/svg-fonts-in-html.html = IMAGE+TEXT PASS
-BUG32574 WIN MAC RELEASE : svg/custom/svg-fonts-in-html.html = IMAGE+TEXT
+BUG32574 WIN LINUX : svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE+TEXT PASS
+BUG32574 WIN LINUX : svg/custom/svg-fonts-in-html.html = IMAGE+TEXT PASS
+BUG32574 MAC : svg/custom/svg-fonts-in-html.html = IMAGE
 // http://trac.webkit.org/changeset/53446
 BUG32577 WIN : svg/W3C-SVG-1.1/animate-elem-40-t.svg = TEXT
 BUG32577 WIN LINUX : svg/custom/use-events-crash.svg = TEXT
@@ -3043,6 +3046,14 @@ BUG32577 WIN LINUX : svg/custom/use-recursion-2.svg = TEXT
 BUG32577 WIN LINUX : svg/custom/use-recursion-3.svg = TEXT
 BUG32577 WIN LINUX : svg/custom/use-recursion-4.svg = TEXT
 BUG32577 WIN LINUX : svg/hixie/error/017.xml = TEXT
+
+// WebKit roll 53452:53511
+BUG32663 WIN LINUX : fast/fast-mobile-scrolling/fixed-position-element.html = IMAGE+TEXT
+BUG32663 WIN LINUX : fast/fast-mobile-scrolling/no-fixed-position-elements.html = IMAGE+TEXT
+BUG32663 MAC : fast/fast-mobile-scrolling/fixed-position-element.html = IMAGE
+BUG32663 MAC : fast/fast-mobile-scrolling/no-fixed-position-elements.html = IMAGE
+BUG32664 WIN DEBUG : http/tests/security/view-source-no-refresh.html = TIMEOUT
+BUG32665 WIN DEBUG : media/video-source-error-no-candidate.html = TIMEOUT
 
 // Flaky tests found during the roll.
 BUG32574 LINUX DEBUG : http/tests/navigation/lockedhistory-iframe.html = TEXT PASS
@@ -3059,3 +3070,4 @@ BUG32574 MAC DEBUG : plugins/plugin-remove-subframe.html = TEXT PASS
 BUG32574 MAC DEBUG : svg/batik/text/textEffect.svg = TEXT PASS
 BUG32574 MAC DEBUG : svg/custom/visibility-override-filter.svg = TEXT PASS
 BUG32574 MAC DEBUG : svg/dom/SVGRectElement/rect-modify-rx.svg = TEXT PASS
+BUG32666 MAC DEBUG : svg/custom/use-detach.svg = IMAGE PASS
