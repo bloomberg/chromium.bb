@@ -60,13 +60,17 @@ FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
       l10n_util::GetStringUTF8(IDS_FIRSTRUN_DLG_OK).c_str(),
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
 
+  // Normally we would do the following:
+  //   gtk_widget_realize(dialog_);
+  //   gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
+  //                                        IDS_FIRSTRUN_DIALOG_WIDTH_CHARS,
+  //                                        -1,
+  //                                        false);  // resizable
+  // But because the first run dialog has extra widgets in Windows, the
+  // resources specify a dialog that is way too big.  So instead in just this
+  // one case we let GTK size the dialog itself and just mark it non-resizable
+  // manually:
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
-
-  gtk_widget_realize(dialog_);
-  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
-                                       IDS_FIRSTRUN_DIALOG_WIDTH_CHARS,
-                                       IDS_FIRSTRUN_DIALOG_HEIGHT_LINES,
-                                       true);
 
   g_signal_connect(G_OBJECT(dialog_), "delete-event",
                    G_CALLBACK(gtk_widget_hide_on_delete), NULL);
