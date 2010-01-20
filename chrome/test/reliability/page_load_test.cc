@@ -445,9 +445,11 @@ class PageLoadTest : public UITest {
  protected:
   // Call the base class's SetUp method and initialize our own class members.
   virtual void SetUp() {
+    // Set UI Test members before setting up browser.
+    clear_profile_ = g_clear_profile;
+
     UITest::SetUp();
     g_browser_existing = true;
-    clear_profile_ = g_clear_profile;
 
     // Initialize crash_dumps_dir_path_.
     PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dumps_dir_path_);
