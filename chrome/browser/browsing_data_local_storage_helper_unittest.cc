@@ -32,7 +32,7 @@ class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
     const FilePath::CharType* kFilesToCreate[] = {
         kTestFile0, kTestFile1, kTestFileInvalid,
     };
-    for (int i = 0; i < arraysize(kFilesToCreate); ++i) {
+    for (size_t i = 0; i < arraysize(kFilesToCreate); ++i) {
       FilePath file_path = storage_path.Append(kFilesToCreate[i]);
       file_util::WriteFile(file_path, NULL, 0);
     }
