@@ -205,7 +205,9 @@
 - (void)fillInFolderList {
   [nameTextField_ setStringValue:base::SysWideToNSString(node_->GetTitle())];
   DCHECK([folderPopUpButton_ numberOfItems] == 0);
-  [self addFolderNodes:model_->root_node() toPopUpButton:folderPopUpButton_];
+  [self addFolderNodes:model_->root_node()
+         toPopUpButton:folderPopUpButton_
+           indentation:0];
   NSMenu* menu = [folderPopUpButton_ menu];
   NSString* title = [[self class] chooseAnotherFolderString];
   NSMenuItem *item = [menu addItemWithTitle:title
@@ -232,7 +234,8 @@
 // For the given folder node, walk the tree and add folder names to
 // the given pop up button.
 - (void)addFolderNodes:(const BookmarkNode*)parent
-         toPopUpButton:(NSPopUpButton*)button {
+         toPopUpButton:(NSPopUpButton*)button
+           indentation:(int)indentation {
   if (!model_->is_root(parent))  {
     NSString* title = base::SysWideToNSString(parent->GetTitle());
     NSMenu* menu = [button menu];
@@ -240,11 +243,15 @@
                                        action:NULL
                                 keyEquivalent:@""];
     [item setRepresentedObject:[NSValue valueWithPointer:parent]];
+    [item setIndentationLevel:indentation];
+    ++indentation;
   }
   for (int i = 0; i < parent->GetChildCount(); i++) {
     const BookmarkNode* child = parent->GetChild(i);
     if (child->is_folder())
-      [self addFolderNodes:child toPopUpButton:button];
+      [self addFolderNodes:child
+             toPopUpButton:button
+               indentation:indentation];
   }
 }
 

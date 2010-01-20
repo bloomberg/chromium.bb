@@ -59,7 +59,8 @@ class BookmarkNode;
 // Exposed only for unit testing.
 @interface BookmarkBubbleController(ExposedForUnitTesting)
 - (void)addFolderNodes:(const BookmarkNode*)parent
-         toPopUpButton:(NSPopUpButton*)button;
+         toPopUpButton:(NSPopUpButton*)button
+           indentation:(int)indentation;
 - (void)setTitle:(NSString*)title parentFolder:(const BookmarkNode*)parent;
 - (void)setParentFolderSelection:(const BookmarkNode*)parent;
 + (NSString*)chooseAnotherFolderString;
