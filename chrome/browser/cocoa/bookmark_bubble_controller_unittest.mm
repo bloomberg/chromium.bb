@@ -359,6 +359,36 @@ TEST_F(BookmarkBubbleControllerTest, EscapeDoesntTouchExistingBookmark) {
   EXPECT_TRUE(model->IsBookmarked(gurl));
 }
 
+// Confirm indentation of items in pop-up menu
+TEST_F(BookmarkBubbleControllerTest, TestMenuIndentation) {
+  // Create some folders, including a nested folder
+  BookmarkModel* model = GetBookmarkModel();
+  EXPECT_TRUE(model);
+  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  EXPECT_TRUE(bookmarkBarNode);
+  const BookmarkNode* node1 = model->AddGroup(bookmarkBarNode, 0, L"one");
+  EXPECT_TRUE(node1);
+  const BookmarkNode* node2 = model->AddGroup(bookmarkBarNode, 1, L"two");
+  EXPECT_TRUE(node2);
+  const BookmarkNode* node2_1 = model->AddGroup(node2, 0, L"two dot one");
+  EXPECT_TRUE(node2_1);
+  const BookmarkNode* node3 = model->AddGroup(bookmarkBarNode, 2, L"three");
+  EXPECT_TRUE(node3);
+
+  BookmarkBubbleController* controller = ControllerForNode(node1);
+  EXPECT_TRUE(controller);
+
+  // Compare the menu item indents against expectations.
+  static const int kExpectedIndent[] = {0, 1, 1, 2, 1, 0};
+  NSArray* items = [[controller folderPopUpButton] itemArray];
+  ASSERT_GE([items count], 6U);
+  for(int itemNo = 0; itemNo < 6; itemNo++) {
+    NSMenuItem* item = [items objectAtIndex:itemNo];
+    EXPECT_EQ(kExpectedIndent[itemNo], [item indentationLevel])
+        << "Unexpected indent for menu item #" << itemNo;
+  }
+}
+
 }  // namespace
 
 @implementation NSApplication (BookmarkBubbleUnitTest)
