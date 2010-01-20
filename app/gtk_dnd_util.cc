@@ -154,6 +154,17 @@ void GtkDndUtil::WriteURLWithName(GtkSelectionData* selection_data,
           pickle.size());
       break;
     }
+    case NETSCAPE_URL: {
+      // _NETSCAPE_URL format is URL + \n + title.
+      std::string utf8_text = url.spec() + "\n" + UTF16ToUTF8(title);
+      gtk_selection_data_set(selection_data,
+                             selection_data->target,
+                             kBitsPerByte,
+                             reinterpret_cast<const guchar*>(utf8_text.c_str()),
+                             utf8_text.length());
+      break;
+    }
+
     default: {
       NOTREACHED();
       break;

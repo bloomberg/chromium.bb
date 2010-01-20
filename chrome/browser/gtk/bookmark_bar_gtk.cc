@@ -757,11 +757,14 @@ GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {
   bookmark_utils::ConfigureButtonForNode(node, model_, button, theme_provider_);
 
   // The tool item is also a source for dragging
-  gtk_drag_source_set(button, GDK_BUTTON1_MASK,
-                      NULL, 0, GDK_ACTION_MOVE);
+  gtk_drag_source_set(button, GDK_BUTTON1_MASK, NULL, 0,
+      static_cast<GdkDragAction>(GDK_ACTION_MOVE | GDK_ACTION_COPY));
   int target_mask = GtkDndUtil::CHROME_BOOKMARK_ITEM;
-  if (node->is_url())
-    target_mask |= GtkDndUtil::TEXT_URI_LIST | GtkDndUtil::TEXT_PLAIN;
+  if (node->is_url()) {
+    target_mask |= GtkDndUtil::TEXT_URI_LIST |
+                   GtkDndUtil::TEXT_PLAIN |
+                   GtkDndUtil::NETSCAPE_URL;
+  }
   GtkDndUtil::SetSourceTargetListFromCodeMask(button, target_mask);
   g_signal_connect(G_OBJECT(button), "drag-begin",
                    G_CALLBACK(&OnButtonDragBegin), this);

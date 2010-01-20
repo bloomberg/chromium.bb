@@ -38,12 +38,13 @@ ToolbarStarToggleGtk::ToolbarStarToggleGtk(BrowserToolbarGtk* host)
                    G_CALLBACK(OnExpose), this);
   GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
 
-  gtk_drag_source_set(widget(), GDK_BUTTON1_MASK,
-                      NULL, 0, GDK_ACTION_COPY);
+  gtk_drag_source_set(widget(), GDK_BUTTON1_MASK, NULL, 0,
+      static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_LINK));
   GtkDndUtil::SetSourceTargetListFromCodeMask(widget(),
                                               GtkDndUtil::TEXT_PLAIN |
                                               GtkDndUtil::TEXT_URI_LIST |
-                                              GtkDndUtil::CHROME_NAMED_URL);
+                                              GtkDndUtil::CHROME_NAMED_URL |
+                                              GtkDndUtil::NETSCAPE_URL);
   g_signal_connect(widget(), "drag-data-get", G_CALLBACK(OnDragDataGet), this);
 
   theme_provider_->InitThemesFor(this);

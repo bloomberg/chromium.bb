@@ -224,6 +224,17 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
                              pickle.size());
       break;
     }
+    case GtkDndUtil::NETSCAPE_URL: {
+      // _NETSCAPE_URL format is URL + \n + title.
+      std::string utf8_text = nodes[0]->GetURL().spec() + "\n" + UTF16ToUTF8(
+          nodes[0]->GetTitleAsString16());
+      gtk_selection_data_set(selection_data,
+                             selection_data->target,
+                             kBitsInAByte,
+                             reinterpret_cast<const guchar*>(utf8_text.c_str()),
+                             utf8_text.length());
+      break;
+    }
     case GtkDndUtil::TEXT_URI_LIST: {
       gchar** uris = reinterpret_cast<gchar**>(malloc(sizeof(gchar*) *
                                                (nodes.size() + 1)));

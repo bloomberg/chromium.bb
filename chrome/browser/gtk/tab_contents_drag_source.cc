@@ -127,7 +127,7 @@ void TabContentsDragSource::DidProcessEvent(GdkEvent* event) {
 void TabContentsDragSource::OnDragDataGet(
     GdkDragContext* context, GtkSelectionData* selection_data,
     guint target_type, guint time) {
-  const int bits_per_byte = 8;
+  const int kBitsPerByte = 8;
 
   switch (target_type) {
     case GtkDndUtil::TEXT_PLAIN: {
@@ -144,35 +144,24 @@ void TabContentsDragSource::OnDragDataGet(
       gtk_selection_data_set(selection_data,
                              GtkDndUtil::GetAtomForTarget(
                                  GtkDndUtil::TEXT_HTML),
-                             bits_per_byte,
+                             kBitsPerByte,
                              reinterpret_cast<const guchar*>(utf8_text.c_str()),
                              utf8_text.length());
       break;
     }
 
     case GtkDndUtil::TEXT_URI_LIST:
-    case GtkDndUtil::CHROME_NAMED_URL: {
+    case GtkDndUtil::CHROME_NAMED_URL:
+    case GtkDndUtil::NETSCAPE_URL: {
       GtkDndUtil::WriteURLWithName(selection_data, drop_data_->url,
                                    drop_data_->url_title, target_type);
-      break;
-    }
-
-    case GtkDndUtil::NETSCAPE_URL: {
-      // _NETSCAPE_URL format is URL + \n + title.
-      std::string utf8_text = drop_data_->url.spec() + "\n" + UTF16ToUTF8(
-          drop_data_->url_title);
-      gtk_selection_data_set(selection_data,
-                             selection_data->target,
-                             bits_per_byte,
-                             reinterpret_cast<const guchar*>(utf8_text.c_str()),
-                             utf8_text.length());
       break;
     }
 
     case GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS: {
       gtk_selection_data_set(
           selection_data,
-          drag_file_mime_type_, bits_per_byte,
+          drag_file_mime_type_, kBitsPerByte,
           reinterpret_cast<const guchar*>(drop_data_->file_contents.data()),
           drop_data_->file_contents.length());
       break;

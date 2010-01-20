@@ -62,7 +62,8 @@ const int kDestTargetList[] = { GtkDndUtil::CHROME_BOOKMARK_ITEM, -1 };
 // The source targets that the right tree view supports for dragging.
 const int kSourceTargetMask = GtkDndUtil::CHROME_BOOKMARK_ITEM |
                               GtkDndUtil::TEXT_URI_LIST |
-                              GtkDndUtil::TEXT_PLAIN;
+                              GtkDndUtil::TEXT_PLAIN |
+                              GtkDndUtil::NETSCAPE_URL;
 
 // We only have one manager open at a time.
 BookmarkManagerGtk* manager = NULL;
