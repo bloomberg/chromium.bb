@@ -58,7 +58,7 @@ class ClientSocket : public Socket {
 
   // Identical to BSD socket call getpeername().
   // Needed by ssl_client_socket_nss and ssl_client_socket_mac.
-  virtual int GetPeerName(struct sockaddr* name, socklen_t* namelen);
+  virtual int GetPeerName(struct sockaddr* name, socklen_t* namelen) = 0;
 };
 
 }  // namespace net
