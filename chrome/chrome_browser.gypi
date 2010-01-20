@@ -222,6 +222,8 @@
         'browser/browser_url_handler.cc',
         'browser/browser_url_handler.h',
         'browser/browser_window.h',
+        'browser/browsing_data_local_storage_helper.cc',
+        'browser/browsing_data_local_storage_helper.h',
         'browser/browsing_data_remover.cc',
         'browser/browsing_data_remover.h',
         'browser/browsing_instance.cc',

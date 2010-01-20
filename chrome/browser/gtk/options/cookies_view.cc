@@ -35,8 +35,8 @@ enum {
 // The currently open cookie manager, if any.
 CookiesView* instance_ = NULL;
 
-void InitCookieDetailStyle(GtkWidget* entry, GtkStyle* label_style,
-                           GtkStyle* dialog_style) {
+void InitBrowserDetailStyle(GtkWidget* entry, GtkStyle* label_style,
+                            GtkStyle* dialog_style) {
   gtk_widget_modify_fg(entry, GTK_STATE_NORMAL,
                        &label_style->fg[GTK_STATE_NORMAL]);
   gtk_widget_modify_fg(entry, GTK_STATE_INSENSITIVE,
@@ -193,31 +193,54 @@ void CookiesView::Init() {
                    G_CALLBACK(OnSelectionChanged), this);
 
   // Cookie details.
-  GtkWidget* details_frame = gtk_frame_new(NULL);
-  gtk_frame_set_shadow_type(GTK_FRAME(details_frame), GTK_SHADOW_ETCHED_IN);
-  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), details_frame,
+  GtkWidget* cookie_details_frame = gtk_frame_new(NULL);
+  gtk_frame_set_shadow_type(GTK_FRAME(cookie_details_frame),
+                            GTK_SHADOW_ETCHED_IN);
+  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), cookie_details_frame,
                      FALSE, FALSE, 0);
   cookie_details_table_ = gtk_table_new(7, 2, FALSE);
-  gtk_container_add(GTK_CONTAINER(details_frame), cookie_details_table_);
+  gtk_container_add(GTK_CONTAINER(cookie_details_frame), cookie_details_table_);
   gtk_table_set_col_spacing(GTK_TABLE(cookie_details_table_), 0,
                             gtk_util::kLabelSpacing);
 
   int row = 0;
-  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
-                      &cookie_name_entry_);
-  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_CONTENT_LABEL,
-                      &cookie_content_entry_);
-  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_DOMAIN_LABEL,
-                      &cookie_domain_entry_);
-  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_PATH_LABEL,
-                      &cookie_path_entry_);
-  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_SENDFOR_LABEL,
-                      &cookie_send_for_entry_);
-  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_CREATED_LABEL,
-                      &cookie_created_entry_);
-  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_EXPIRES_LABEL,
-                      &cookie_expires_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
+                cookie_details_table_, &cookie_name_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_CONTENT_LABEL,
+                cookie_details_table_, &cookie_content_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_DOMAIN_LABEL,
+                cookie_details_table_, &cookie_domain_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_PATH_LABEL,
+                cookie_details_table_, &cookie_path_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_SENDFOR_LABEL,
+                cookie_details_table_, &cookie_send_for_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_CREATED_LABEL,
+                cookie_details_table_, &cookie_created_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_EXPIRES_LABEL,
+                cookie_details_table_, &cookie_expires_entry_);
 
+  // Local storage details.
+  GtkWidget* local_storage_details_frame = gtk_frame_new(NULL);
+  gtk_frame_set_shadow_type(GTK_FRAME(local_storage_details_frame),
+                            GTK_SHADOW_ETCHED_IN);
+  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), local_storage_details_frame,
+                     FALSE, FALSE, 0);
+  local_storage_details_table_ = gtk_table_new(3, 2, FALSE);
+  gtk_container_add(GTK_CONTAINER(local_storage_details_frame),
+                    local_storage_details_table_);
+  gtk_table_set_col_spacing(GTK_TABLE(local_storage_details_table_), 0,
+                            gtk_util::kLabelSpacing);
+
+  row = 0;
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL,
+                local_storage_details_table_, &local_storage_origin_entry_);
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL,
+                local_storage_details_table_, &local_storage_size_entry_);
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL,
+                local_storage_details_table_,
+                &local_storage_last_modified_entry_);
+
+  UpdateVisibleDetailedInfo(cookie_details_table_);
   // Populate the view.
   cookies_tree_adapter_->Init();
   SetInitialTreeState();
@@ -231,30 +254,38 @@ void CookiesView::InitStylesAndShow() {
   GtkStyle* label_style = gtk_widget_get_style(description_label_);
   GtkStyle* dialog_style = gtk_widget_get_style(dialog_);
 
-  InitCookieDetailStyle(cookie_name_entry_, label_style, dialog_style);
-  InitCookieDetailStyle(cookie_content_entry_, label_style, dialog_style);
-  InitCookieDetailStyle(cookie_domain_entry_, label_style, dialog_style);
-  InitCookieDetailStyle(cookie_path_entry_, label_style, dialog_style);
-  InitCookieDetailStyle(cookie_send_for_entry_, label_style, dialog_style);
-  InitCookieDetailStyle(cookie_created_entry_, label_style, dialog_style);
-  InitCookieDetailStyle(cookie_expires_entry_, label_style, dialog_style);
+  // Cookie details.
+  InitBrowserDetailStyle(cookie_name_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(cookie_content_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(cookie_domain_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(cookie_path_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(cookie_send_for_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(cookie_created_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(cookie_expires_entry_, label_style, dialog_style);
+
+  // Local storage details.
+  InitBrowserDetailStyle(local_storage_origin_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(local_storage_size_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(local_storage_last_modified_entry_, label_style,
+                         dialog_style);
 
   gtk_widget_show_all(dialog_);
 }
 
-void CookiesView::InitCookieDetailRow(int row, int label_id,
-                                      GtkWidget** entry) {
+void CookiesView::InitDetailRow(int row, int label_id,
+                                GtkWidget* details_table, GtkWidget** entry) {
   GtkWidget* name_label = gtk_label_new(
       l10n_util::GetStringUTF8(label_id).c_str());
   gtk_misc_set_alignment(GTK_MISC(name_label), 1, 0.5);
-  gtk_table_attach(GTK_TABLE(cookie_details_table_), name_label,
+  gtk_table_attach(GTK_TABLE(details_table), name_label,
                    0, 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
   *entry = gtk_entry_new();
 
   gtk_entry_set_editable(GTK_ENTRY(*entry), FALSE);
   gtk_entry_set_has_frame(GTK_ENTRY(*entry), FALSE);
-  gtk_table_attach_defaults(GTK_TABLE(cookie_details_table_), *entry,
+  gtk_table_attach_defaults(GTK_TABLE(details_table), *entry,
                             1, 2, row, row + 1);
 }
 
@@ -279,9 +310,15 @@ void CookiesView::EnableControls() {
         static_cast<CookieTreeNode*>(
             cookies_tree_adapter_->GetNode(&iter))->GetDetailedInfo();
     if (detailed_info.node_type == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
+      UpdateVisibleDetailedInfo(cookie_details_table_);
       PopulateCookieDetails(detailed_info.cookie->first,
                             detailed_info.cookie->second);
+    } else if (detailed_info.node_type ==
+               CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE) {
+      UpdateVisibleDetailedInfo(local_storage_details_table_);
+      PopulateLocalStorageDetails(*detailed_info.local_storage_info);
     } else {
+      UpdateVisibleDetailedInfo(cookie_details_table_);
       ClearCookieDetails();
     }
   } else {
@@ -297,6 +334,12 @@ void CookiesView::SetCookieDetailsSensitivity(gboolean enabled) {
   gtk_widget_set_sensitive(cookie_send_for_entry_, enabled);
   gtk_widget_set_sensitive(cookie_created_entry_, enabled);
   gtk_widget_set_sensitive(cookie_expires_entry_, enabled);
+}
+
+void CookiesView::SetLocalStorageDetailsSensitivity(gboolean enabled) {
+  gtk_widget_set_sensitive(local_storage_origin_entry_, enabled);
+  gtk_widget_set_sensitive(local_storage_size_entry_, enabled);
+  gtk_widget_set_sensitive(local_storage_last_modified_entry_, enabled);
 }
 
 void CookiesView::PopulateCookieDetails(
@@ -324,6 +367,22 @@ void CookiesView::PopulateCookieDetails(
                                IDS_COOKIES_COOKIE_SENDFOR_SECURE :
                                IDS_COOKIES_COOKIE_SENDFOR_ANY).c_str());
   SetCookieDetailsSensitivity(TRUE);
+}
+
+void CookiesView::PopulateLocalStorageDetails(
+    const BrowsingDataLocalStorageHelper::LocalStorageInfo&
+    local_storage_info) {
+  gtk_entry_set_text(GTK_ENTRY(local_storage_origin_entry_),
+                     local_storage_info.origin.c_str());
+  gtk_entry_set_text(GTK_ENTRY(local_storage_size_entry_),
+                     WideToUTF8(FormatBytes(
+                         local_storage_info.size,
+                         GetByteDisplayUnits(local_storage_info.size),
+                         true)).c_str());
+  gtk_entry_set_text(GTK_ENTRY(local_storage_last_modified_entry_),
+                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                         local_storage_info.last_modified)).c_str());
+  SetLocalStorageDetailsSensitivity(TRUE);
 }
 
 void CookiesView::ClearCookieDetails() {
@@ -435,6 +494,15 @@ void CookiesView::UpdateFilterResults() {
     cookies_tree_model_->UpdateSearchResults(UTF8ToWide(text));
     SetInitialTreeState();
   }
+}
+
+void CookiesView::UpdateVisibleDetailedInfo(GtkWidget* table) {
+  // Toggle the parent (the table frame) visibility.
+  gtk_widget_show(gtk_widget_get_parent(table));
+  GtkWidget* other = local_storage_details_table_;
+  if (table == local_storage_details_table_)
+      other = cookie_details_table_;
+  gtk_widget_hide(gtk_widget_get_parent(other));
 }
 
 // static

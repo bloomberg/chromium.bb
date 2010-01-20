@@ -11,13 +11,22 @@
 #include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/common/dom_storage_common.h"
+#include "webkit/glue/glue_util.h"
 
-static const char* kLocalStorageDirectory = "Local Storage";
+const FilePath::CharType DOMStorageContext::kLocalStorageDirectory[] =
+    FILE_PATH_LITERAL("Local Storage");
+
+const FilePath::CharType DOMStorageContext::kLocalStorageExtension[] =
+    FILE_PATH_LITERAL(".localstorage");
+
+static const FilePath::CharType kLocalStorageOldPath[] =
+    FILE_PATH_LITERAL("localStorage");
 
 // TODO(jorlow): Remove after Chrome 4 ships.
 static void MigrateLocalStorageDirectory(const FilePath& data_path) {
-  FilePath new_path = data_path.AppendASCII(kLocalStorageDirectory);
-  FilePath old_path = data_path.AppendASCII("localStorage");
+  FilePath new_path = data_path.Append(
+      DOMStorageContext::kLocalStorageDirectory);
+  FilePath old_path = data_path.Append(kLocalStorageOldPath);
   if (!file_util::DirectoryExists(new_path) &&
       file_util::DirectoryExists(old_path)) {
     file_util::Move(old_path, new_path);
@@ -148,7 +157,7 @@ void DOMStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
   PurgeMemory();
 
   file_util::FileEnumerator file_enumerator(
-      webkit_context_->data_path().AppendASCII(kLocalStorageDirectory), false,
+      webkit_context_->data_path().Append(kLocalStorageDirectory), false,
       file_util::FileEnumerator::FILES);
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
@@ -159,12 +168,41 @@ void DOMStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
   }
 }
 
+void DOMStorageContext::DeleteLocalStorageFile(const FilePath& file_path) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+
+  // Make sure that we don't delete a database that's currently being accessed
+  // by unloading all of the databases temporarily.
+  // TODO(bulach): both this method and DeleteDataModifiedSince could purge
+  // only the memory used by the specific file instead of all memory at once.
+  // See http://code.google.com/p/chromium/issues/detail?id=32000
+  PurgeMemory();
+  file_util::Delete(file_path, false);
+}
+
+void DOMStorageContext::DeleteAllLocalStorageFiles() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+
+  // Make sure that we don't delete a database that's currently being accessed
+  // by unloading all of the databases temporarily.
+  PurgeMemory();
+
+  file_util::FileEnumerator file_enumerator(
+      webkit_context_->data_path().Append(kLocalStorageDirectory), false,
+      file_util::FileEnumerator::FILES);
+  for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
+       file_path = file_enumerator.Next()) {
+    if (file_path.Extension() == kLocalStorageExtension)
+      file_util::Delete(file_path, false);
+  }
+}
+
 DOMStorageNamespace* DOMStorageContext::CreateLocalStorage() {
   FilePath data_path = webkit_context_->data_path();
   FilePath dir_path;
   if (!data_path.empty()) {
     MigrateLocalStorageDirectory(data_path);
-    dir_path = data_path.AppendASCII(kLocalStorageDirectory);
+    dir_path = data_path.Append(kLocalStorageDirectory);
   }
   DOMStorageNamespace* new_namespace =
       DOMStorageNamespace::CreateLocalStorageNamespace(this, dir_path);
