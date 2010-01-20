@@ -136,46 +136,39 @@ class TestApp {
     bit_count_ += size << 3;
   }
 
-  void FeedInputBuffer() {
-    bool encoder = input_format_.codec == media::OmxCodec::kCodecRaw;
+  void ReadInputFileYuv(uint8** output, int* size) {
     while (true) {
       uint8* data = NULL;
-      int read = 0;
-      if (!encoder) {
-        // This method feeds the decoder with 32KB of input data.
-        const int kSize = 32768;
-        data = new uint8[kSize];
-        read = fread(data, 1, kSize, input_file_);
+      int bytes_read = 0;
+      // OMX require encoder input are delivered in frames (or planes).
+      // Assume the input file is I420 YUV file.
+      int width = input_format_.video_header.width;
+      int height = input_format_.video_header.height;
+      int frame_size = width * height * 3 / 2;
+      data = new uint8[frame_size];
+      if (enable_csc_) {
+        CHECK(csc_buf_size_ >= frame_size);
+        bytes_read = fread(csc_buf_.get(), 1,
+                           frame_size, input_file_);
+        // We do not convert partial frames.
+        if (bytes_read == frame_size)
+          IYUVtoNV21(csc_buf_.get(), data, width, height);
+        else
+          bytes_read = 0;  // force cleanup or loop around.
       } else {
-        // OMX require encoder input are delivered in frames (or planes).
-        // Assume the input file is I420 YUV file.
-        int width = input_format_.video_header.width;
-        int height = input_format_.video_header.height;
-        int size = width * height * 3 / 2;
-        data = new uint8[size];
-        if (enable_csc_) {
-          CHECK(csc_buf_size_ >= size);
-          read = fread(csc_buf_.get(), 1, size, input_file_);
-          // We do not convert partial frames.
-          if (read == size)
-            IYUVtoNV21(csc_buf_.get(), data, width, height);
-          else
-            read = 0;  // force cleanup or loop around.
-        } else {
-          read = fread(data, 1, size, input_file_);
-        }
+        bytes_read = fread(data, 1, frame_size, input_file_);
       }
 
-      if (read) {
-        codec_->Feed(new media::InputBuffer(data, read),
-                     NewCallback(this, &TestApp::FeedCallback));
+      if (bytes_read) {
+        *size = bytes_read;
+        *output = data;
         break;
       } else {
         // Encounter the end of file.
         if (loop_count_ == 1) {
           // Signal end of stream.
-          codec_->Feed(new media::InputBuffer(data, 0),
-                       NewCallback(this, &TestApp::FeedCallback));
+          *size = 0;
+          *output = data;
           break;
         } else {
           --loop_count_;
@@ -184,6 +177,85 @@ class TestApp {
         }
       }
     }
+  }
+
+  void ReadInputFileArbitrary(uint8** data, int* size) {
+      // Feeds the decoder with 32KB of input data.
+      const int kSize = 32768;
+      *data = new uint8[kSize];
+      *size = fread(*data, 1, kSize, input_file_);
+  }
+
+  void ReadInputFileH264(uint8** data, int* size) {
+    const int kSize = 1024 * 1024;
+    static int current = 0;
+    static int used = 0;
+
+    // Allocate read buffer.
+    if (!read_buf_.get())
+      read_buf_.reset(new uint8[kSize]);
+
+    // Fill the buffer when it's less than half full.
+    int read = 0;
+    if (used < kSize / 2) {
+      read = fread(read_buf_.get(), 1, kSize - used, input_file_);
+      CHECK(read >= 0);
+      used += read;
+    }
+
+    // If we failed to read.
+    if (current == read) {
+      *data = new uint8[1];
+      *size = 0;
+      return;
+    } else {
+      // Try to find start code of 0x00, 0x00, 0x01.
+      bool found = false;
+      int pos = current + 3;
+      for (; pos < used - 2; ++pos) {
+        if (read_buf_[pos] == 0 &&
+            read_buf_[pos+1] == 0 &&
+            read_buf_[pos+2] == 1) {
+          found = true;
+          break;
+        }
+      }
+      if (found) {
+        CHECK(pos > current);
+        *size = pos - current;
+        *data = new uint8[*size];
+        memcpy(*data, read_buf_.get() + current, *size);
+        current = pos;
+      } else {
+        CHECK(used > current);
+        *size = used - current;
+        *data = new uint8[*size];
+        memcpy(*data, read_buf_.get() + current, *size);
+        current = used;
+      }
+      if (used - current < current) {
+        CHECK(used > current);
+        memcpy(read_buf_.get(),
+               read_buf_.get() + current,
+               used - current);
+        used = used - current;
+        current = 0;
+      }
+      return;
+    }
+  }
+
+  void FeedInputBuffer() {
+    uint8* data;
+    int read;
+    if (input_format_.codec == media::OmxCodec::kCodecRaw)
+      ReadInputFileYuv(&data, &read);
+    else if (input_format_.codec == media::OmxCodec::kCodecH264)
+      ReadInputFileH264(&data, &read);
+    else
+      ReadInputFileArbitrary(&data, &read);
+    codec_->Feed(new media::InputBuffer(data, read),
+                 NewCallback(this, &TestApp::FeedCallback));
   }
 
   void Run() {
@@ -342,6 +414,7 @@ class TestApp {
   scoped_array<uint8> csc_buf_;
   int csc_buf_size_;
   FILE *input_file_, *output_file_;
+  scoped_array<uint8> read_buf_;
   bool stopped_;
   bool error_;
   base::TimeTicks start_time_;
