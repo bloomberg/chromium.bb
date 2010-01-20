@@ -1,7 +1,10 @@
 vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
+
   "native_client_trunk": "http://nativeclient.googlecode.com/svn/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
+  "chrome_rev": "36563",
+  "nacl_sdk_rev": "1351",
   "gyp_rev": "770",
   "gtest_rev": "267",
   "tools_rev": "1108",
@@ -13,13 +16,14 @@ deps = {
   "tools/gyp":
     "http://gyp.googlecode.com/svn/trunk@" + Var("gyp_rev"),
   "build":
-    Var("chromium_trunk") + "/src/build",
+    Var("chromium_trunk") + "/src/build@" + Var("chrome_rev"),
   "site_scons":
-    Var("chromium_trunk") + "/src/site_scons",
+    Var("chromium_trunk") + "/src/site_scons@" + Var("chrome_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
   "third_party/binutils":
-    Var("native_client_trunk") + "/src/third_party/binutils@" + Var("tools_rev"),
+    (Var("native_client_trunk") + "/src/third_party/binutils@" +
+     Var("tools_rev")),
   "third_party/gcc":
     Var("native_client_trunk") + "/src/third_party/gcc@" + Var("tools_rev"),
   "third_party/gdb":
@@ -37,31 +41,36 @@ deps = {
   "third_party/sdl":
     Var("native_client_trunk") + "/src/third_party/sdl@" + Var("tools_rev"),
   "third_party/selenium":
-    Var("native_client_trunk") + "/src/third_party/selenium@" + Var("tools_rev"),
+    (Var("native_client_trunk") + "/src/third_party/selenium@" +
+     Var("tools_rev")),
   "third_party/zlib":
     Var("native_client_trunk") + "/src/third_party/zlib@" + Var("tools_rev"),
   "native_client_sdk":
-    Var("native_client_trunk") + "/src/native_client_sdk",
+    (Var("native_client_trunk") + "/src/native_client_sdk@" +
+     Var("nacl_sdk_rev")),
   # Includes needed for using Chromium NPAPI
   "third_party/npapi/bindings":
-    Var("chromium_trunk") + "/src/third_party/npapi/bindings",
+    (Var("chromium_trunk") + "/src/third_party/npapi/bindings@" +
+     Var("chrome_rev")),
   "base":
-    Var("chromium_trunk") + "/src/base",
+    Var("chromium_trunk") + "/src/base@" + Var("chrome_rev"),
   "chrome/common":
-    Var("chromium_trunk") + "/src/chrome/common",
+    Var("chromium_trunk") + "/src/chrome/common@" + Var("chrome_rev"),
   "native_client/src/untrusted/gpu/command_buffer":
-    Var("chromium_trunk") + "/src/gpu/command_buffer",
+    Var("chromium_trunk") + "/src/gpu/command_buffer@" + Var("chrome_rev"),
 }
 
 deps_os = {
   "win": {
     "third_party/python_24":
-      Var("chromium_trunk") + "/deps/third_party/python_24@" + Var("python_rev"),
+      (Var("chromium_trunk") + "/deps/third_party/python_24@" +
+       Var("python_rev")),
     "third_party/wix_2_0_4221":
-      Var("o3d_trunk") + "/googleclient/third_party/wix_2_0_4221@" + Var("wix_rev"),
-# To be enabled after mingw-w64 is uploaded
-#    "third_party/mingw-w64/mingw/bin":
-#      Var("o3d_trunk") + "/googleclient/third_party/mingw-w64/mingw/bin",
+      (Var("o3d_trunk") + "/googleclient/third_party/wix_2_0_4221@" +
+       Var("wix_rev")),
+    "third_party/mingw-w64/mingw/bin":
+      (Var("native_client_trunk") + "/src/third_party/mingw-w64/mingw/bin@" +
+       Var("tools_rev")),
   },
 }
 
