@@ -11,6 +11,7 @@
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/common/jstemplate_builder.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/net_resources.h"
 
@@ -34,6 +35,9 @@ struct LazyDirectoryListerCacher {
                     l10n_util::GetString(IDS_DIRECTORY_LISTING_SIZE));
     value.SetString(L"headerDateModified",
                     l10n_util::GetString(IDS_DIRECTORY_LISTING_DATE_MODIFIED));
+    value.SetString(L"listingParsingErrorBoxText",
+        l10n_util::GetStringF(IDS_DIRECTORY_LISTING_PARSING_ERROR_BOX_TEXT,
+                              l10n_util::GetString(IDS_PRODUCT_NAME)));
     html_data = jstemplate_builder::GetI18nTemplateHtml(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_DIR_HEADER_HTML),

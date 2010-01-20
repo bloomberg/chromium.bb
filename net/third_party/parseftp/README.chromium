@@ -1,9 +1,0 @@
-This directory contains Mozilla FTP LIST response parsing routines.
-
-The original code location was mozilla/netwerk/streamconv/converters/ParseFTPList.{cpp,h}
-
-List of changes made to original code:
-  - wrapped the routines in net namespace
-  - eliminated dependency on NSPR
-
-All the changes are in chromium.patch.

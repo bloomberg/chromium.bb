@@ -11,7 +11,6 @@
 #include <string>
 
 #include "net/ftp/ftp_directory_listing_buffer.h"
-#include "net/third_party/parseftp/ParseFTPList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 
 namespace WebKit {
@@ -34,12 +33,9 @@ class FtpDirectoryListingResponseDelegate {
  private:
   void Init();
 
-  // Use the old parser to process received listing data.
-  void FeedFallbackParser();
+  void ProcessReceivedEntries();
 
-  void AppendEntryToResponseBuffer(const net::FtpDirectoryListingEntry& entry);
-
-  void SendResponseBufferToClient();
+  void SendDataToClient(const std::string& data);
 
   // Pointers to the client and associated loader so we can make callbacks as
   // we parse pieces of data.
@@ -50,25 +46,14 @@ class FtpDirectoryListingResponseDelegate {
   // starting point for each parts response.
   WebKit::WebURLResponse original_response_;
 
-  // Data buffer also responsible for parsing the listing data (the new parser).
-  // TODO(phajdan.jr): Use only the new parser, when it is more compatible.
+  // Data buffer also responsible for parsing the listing data.
   net::FtpDirectoryListingBuffer buffer_;
 
-  // True if the new parser couldn't recognize the received listing format
-  // and we switched to the old parser.
-  bool parser_fallback_;
+  // True if we updated histogram data (we only want to do it once).
+  bool updated_histograms_;
 
-  // State kept between parsing each line of the response.
-  struct net::list_state parse_state_;
-
-  // Detected encoding of the response.
-  std::string encoding_;
-
-  // Buffer to hold not-yet-parsed input.
-  std::string input_buffer_;
-
-  // Buffer to hold response not-yet-sent to the caller.
-  std::string response_buffer_;
+  // True if we got an error when parsing the response.
+  bool had_parsing_error_;
 };
 
 }  // namespace webkit_glue

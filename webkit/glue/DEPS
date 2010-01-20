@@ -1,7 +1,6 @@
 include_rules = [
   "+app",
   "+media",
-  "+net/third_party/parseftp",
   "+skia/ext",
   "+skia/include",
   "+webkit/tools/test_shell",  # Needed for test shell tests.
