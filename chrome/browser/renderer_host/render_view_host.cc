@@ -123,12 +123,6 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       session_storage_namespace_id_(session_storage_namespace_id) {
   DCHECK(instance_);
   DCHECK(delegate_);
-
-  // TODO(mpcomplete): remove this notification (and registrar) when we figure
-  // out why we're crashing on process()->Init().
-  // http://code.google.com/p/chromium/issues/detail?id=15607
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllSources());
 }
 
 RenderViewHost::~RenderViewHost() {
@@ -148,31 +142,9 @@ RenderViewHost::~RenderViewHost() {
       NotificationService::NoDetails());
 }
 
-void RenderViewHost::Observe(NotificationType type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
-  DCHECK(type == NotificationType::RENDERER_PROCESS_TERMINATED);
-  RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
-  if (rph == process()) {
-    // Try to get some debugging information on the stack.
-    bool no_listeners = rph->ListenersIterator().IsAtEnd();
-    bool live_instance = site_instance() != NULL;
-    CHECK(live_instance);
-    bool live_process = site_instance()->GetProcess() != NULL;
-    bool same_process = site_instance()->GetProcess() == rph;
-    CHECK(no_listeners);
-    CHECK(live_process);
-    CHECK(same_process);
-    CHECK(false) << "RenderViewHost should outlive its RenderProcessHost.";
-  }
-}
-
 bool RenderViewHost::CreateRenderView(
     URLRequestContextGetter* request_context) {
   DCHECK(!IsRenderViewLive()) << "Creating view twice";
-  CHECK(process());
-  CHECK(!process()->ListenersIterator().IsAtEnd()) <<
-      "Our process should have us as a listener.";
 
   // The process may (if we're sharing a process with another host that already
   // initialized it) or may not (we have our own process or the old process

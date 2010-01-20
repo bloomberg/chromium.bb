@@ -10,7 +10,6 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/view_types.h"
 #include "net/base/load_states.h"
@@ -81,8 +80,7 @@ class URLRequestContextGetter;
 //  if we want to bring that and other functionality down into this object so
 //  it can be shared by others.
 //
-class RenderViewHost : public RenderWidgetHost,
-                       public NotificationObserver {
+class RenderViewHost : public RenderWidgetHost {
  public:
   // Returns the RenderViewHost given its ID and the ID of its render process.
   // Returns NULL if the IDs do not correspond to a live RenderViewHost.
@@ -607,11 +605,6 @@ class RenderViewHost : public RenderWidgetHost,
 
   void UpdateBackForwardListCount();
 
-  // NotificationObserver implementation.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
-
   // The SiteInstance associated with this RenderViewHost.  All pages drawn
   // in this RenderViewHost are part of this SiteInstance.  Should not change
   // over time.
@@ -672,8 +665,6 @@ class RenderViewHost : public RenderWidgetHost,
 
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_;
-
-  NotificationRegistrar registrar_;
 
   // The session storage namespace id to be used by the associated render view.
   int64 session_storage_namespace_id_;
