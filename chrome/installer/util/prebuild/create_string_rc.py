@@ -79,16 +79,21 @@ class TranslationStruct:
     return cmp(self.resource_id_str, other.resource_id_str)
 
 
-def CollectTranslatedStrings():
+def CollectTranslatedStrings(branding):
   """Collects all the translations for all the strings specified by kStringIds.
   Returns a list of tuples of (string_id, language, translated string). The
   list is sorted by language codes."""
+  strings_file = 'app/chromium_strings.grd'
+  translation_files = 'chromium_strings*.xtb'
+  if branding == 'Chrome':
+    strings_file = 'app/google_chrome_strings.grd'
+    translation_files = 'google_chrome_strings*.xtb'
   kGeneratedResourcesPath = os.path.join(path_utils.ScriptDir(), '..', '..',
-                                         '..', 'app/google_chrome_strings.grd')
+                                         '..', strings_file)
   kTranslationDirectory = os.path.join(path_utils.ScriptDir(), '..', '..',
                                        '..', 'app', 'resources')
   kTranslationFiles = glob.glob(os.path.join(kTranslationDirectory,
-                                             'google_chrome_strings*.xtb'))
+                                             translation_files))
 
   # Get the strings out of generated_resources.grd.
   dom = minidom.parse(kGeneratedResourcesPath)
@@ -193,13 +198,17 @@ def WriteHeaderFile(translated_strings, out_filename):
   outfile.close()
 
 def main(argv):
-  translated_strings = CollectTranslatedStrings()
+  branding = ''
+  if (argv > 2):
+    branding = argv[2]
+  translated_strings = CollectTranslatedStrings(branding)
   kFilebase = os.path.join(argv[1], 'installer_util_strings')
   WriteRCFile(translated_strings, kFilebase)
   WriteHeaderFile(translated_strings, kFilebase)
 
 if '__main__' == __name__:
   if len(sys.argv) < 2:
-    print 'Usage:\n  %s <output_directory>' % sys.argv[0]
+    print 'Usage:\n  %s <output_directory> [branding]' % sys.argv[0]
     sys.exit(1)
+  # Use optparse to parse command line flags.
   main(sys.argv)
