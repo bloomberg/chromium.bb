@@ -9,6 +9,7 @@
 #include "chrome/plugin/plugin_channel_base.h"
 
 class IsListeningFilter;
+class NPObjectBase;
 
 // Encapsulates an IPC channel between the renderer and one plugin process.
 // On the plugin side there's a corresponding PluginChannel.
@@ -21,7 +22,8 @@ class PluginChannelHost : public PluginChannelBase {
 
   int GenerateRouteID();
 
-  void AddRoute(int route_id, IPC::Channel::Listener* listener, bool npobject);
+  void AddRoute(int route_id, IPC::Channel::Listener* listener,
+                NPObjectBase* npobject);
   void RemoveRoute(int route_id);
 
   // IPC::Channel::Listener override

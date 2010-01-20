@@ -5,6 +5,7 @@
 #include "chrome/renderer/plugin_channel_host.h"
 
 #include "chrome/common/plugin_messages.h"
+#include "chrome/plugin/npobject_base.h"
 
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 
@@ -97,7 +98,7 @@ int PluginChannelHost::GenerateRouteID() {
 
 void PluginChannelHost::AddRoute(int route_id,
                                  IPC::Channel::Listener* listener,
-                                 bool npobject) {
+                                 NPObjectBase* npobject) {
   PluginChannelBase::AddRoute(route_id, listener, npobject);
 
   if (!npobject)

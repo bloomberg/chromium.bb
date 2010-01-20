@@ -14,6 +14,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/message_router.h"
+#include "chrome/plugin/npobject_base.h"
 #include "ipc/ipc_sync_channel.h"
 
 // Encapsulates an IPC channel between a renderer and a plugin process.
@@ -28,7 +29,8 @@ class PluginChannelBase : public IPC::Channel::Listener,
   // lifetime of this object (by passing true for npobject) because we don't
   // want a leak of an NPObject in a plugin to keep the channel around longer
   // than necessary.
-  void AddRoute(int route_id, IPC::Channel::Listener* listener, bool npobject);
+  void AddRoute(int route_id, IPC::Channel::Listener* listener,
+                NPObjectBase* npobject);
   void RemoveRoute(int route_id);
 
   // IPC::Message::Sender implementation:
@@ -54,6 +56,10 @@ class PluginChannelBase : public IPC::Channel::Listener,
   static PluginChannelBase* GetCurrentChannel();
 
   static void CleanupChannels();
+
+  // Returns the NPObjectBase object for the route id passed in.
+  // Returns NULL on failure.
+  NPObjectBase* GetNPObjectListenerForRoute(int route_id);
 
  protected:
   typedef PluginChannelBase* (*PluginChannelFactory)();
@@ -107,7 +113,7 @@ class PluginChannelBase : public IPC::Channel::Listener,
 
   // Keep track of all the registered NPObjects proxies/stubs so that when the
   // channel is closed we can inform them.
-  typedef base::hash_map<int, IPC::Channel::Listener*> ListenerMap;
+  typedef base::hash_map<int, NPObjectBase*> ListenerMap;
   ListenerMap npobject_listeners_;
 
   // Used to implement message routing functionality to WebPlugin[Delegate]

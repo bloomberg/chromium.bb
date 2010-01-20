@@ -53,7 +53,8 @@ void CreateNPVariantParam(const NPVariant& variant,
                           const GURL& page_url);
 
 // Creates an NPVariant from the marshalled object.
-void CreateNPVariant(const NPVariant_Param& param,
+// Returns true on success.
+bool CreateNPVariant(const NPVariant_Param& param,
                      PluginChannelBase* channel,
                      NPVariant* result,
                      gfx::NativeViewId containing_window,

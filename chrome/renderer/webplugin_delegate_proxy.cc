@@ -830,7 +830,7 @@ NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
     return NULL;
 
   npobject_ = NPObjectProxy::Create(
-      channel_host_.get(), route_id, npobject_ptr, 0, page_url_);
+      channel_host_.get(), route_id, 0, page_url_);
 
   return WebBindings::retainObject(npobject_);
 }
@@ -1018,7 +1018,19 @@ void WebPluginDelegateProxy::OnGetDragData(const NPVariant_Param& object,
 
   int event_id;
   WebDragData data;
-  NPObject* event = reinterpret_cast<NPObject*>(object.npobject_pointer);
+
+  DCHECK(object.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID);
+  NPObjectBase* npobject_base =
+      channel_host_->GetNPObjectListenerForRoute(object.npobject_routing_id);
+  if (!npobject_base) {
+    DLOG(WARNING) << "Invalid routing id passed in"
+                  << object.npobject_routing_id;
+    return;
+  }
+
+  NPObject* event = npobject_base->GetUnderlyingNPObject();
+  DCHECK(event != NULL);
+
   const int32 drag_id = webview->dragIdentity();
   if (!drag_id || !WebBindings::getDragData(event, &event_id, &data))
     return;
@@ -1049,7 +1061,18 @@ void WebPluginDelegateProxy::OnSetDropEffect(const NPVariant_Param& object,
   if (!webview)
     return;
 
-  NPObject* event = reinterpret_cast<NPObject*>(object.npobject_pointer);
+  DCHECK(object.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID);
+  NPObjectBase* npobject_base =
+      channel_host_->GetNPObjectListenerForRoute(object.npobject_routing_id);
+  if (!npobject_base) {
+    DLOG(WARNING) << "Invalid routing id passed in"
+                  << object.npobject_routing_id;
+    return;
+  }
+
+  NPObject* event = npobject_base->GetUnderlyingNPObject();
+  DCHECK(event != NULL);
+
   const int32 drag_id = webview->dragIdentity();
   if (!drag_id || !WebBindings::isDragEvent(event))
     return;

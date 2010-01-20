@@ -83,11 +83,11 @@ enum NPVariant_ParamEnum {
   NPVARIANT_PARAM_STRING,
   // Used when when the NPObject is running in the caller's process, so we
   // create an NPObjectProxy in the other process.
-  NPVARIANT_PARAM_OBJECT_ROUTING_ID,
+  NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID,
   // Used when the NPObject we're sending is running in the callee's process
   // (i.e. we have an NPObjectProxy for it).  In that case we want the callee
   // to just use the raw pointer.
-  NPVARIANT_PARAM_OBJECT_POINTER,
+  NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID,
 };
 
 struct NPVariant_Param {
@@ -97,7 +97,6 @@ struct NPVariant_Param {
   double double_value;
   std::string string_value;
   int npobject_routing_id;
-  intptr_t npobject_pointer;
 };
 
 struct PluginMsg_UpdateGeometry_Param {
@@ -353,15 +352,12 @@ struct ParamTraits<NPVariant_Param> {
       WriteParam(m, p.double_value);
     } else if (p.type == NPVARIANT_PARAM_STRING) {
       WriteParam(m, p.string_value);
-    } else if (p.type == NPVARIANT_PARAM_OBJECT_ROUTING_ID) {
+    } else if (p.type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
+               p.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
       // This is the routing id used to connect NPObjectProxy in the other
-      // process with NPObjectStub in this process.
+      // process with NPObjectStub in this process or to identify the raw
+      // npobject pointer to be used in the callee process.
       WriteParam(m, p.npobject_routing_id);
-      // The actual NPObject pointer, in case it's passed back to this process.
-      WriteParam(m, p.npobject_pointer);
-    } else if (p.type == NPVARIANT_PARAM_OBJECT_POINTER) {
-      // The NPObject resides in the other process, so just send its pointer.
-      WriteParam(m, p.npobject_pointer);
     } else {
       DCHECK(p.type == NPVARIANT_PARAM_VOID || p.type == NPVARIANT_PARAM_NULL);
     }
@@ -381,12 +377,9 @@ struct ParamTraits<NPVariant_Param> {
       result = ReadParam(m, iter, &r->double_value);
     } else if (r->type == NPVARIANT_PARAM_STRING) {
       result = ReadParam(m, iter, &r->string_value);
-    } else if (r->type == NPVARIANT_PARAM_OBJECT_ROUTING_ID) {
-      result =
-          ReadParam(m, iter, &r->npobject_routing_id) &&
-          ReadParam(m, iter, &r->npobject_pointer);
-    } else if (r->type == NPVARIANT_PARAM_OBJECT_POINTER) {
-      result = ReadParam(m, iter, &r->npobject_pointer);
+    } else if (r->type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
+               r->type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
+      result = ReadParam(m, iter, &r->npobject_routing_id);
     } else if ((r->type == NPVARIANT_PARAM_VOID) ||
                (r->type == NPVARIANT_PARAM_NULL)) {
       result = true;
@@ -405,11 +398,9 @@ struct ParamTraits<NPVariant_Param> {
       LogParam(p.double_value, l);
     } else if (p.type == NPVARIANT_PARAM_STRING) {
       LogParam(p.string_value, l);
-    } else if (p.type == NPVARIANT_PARAM_OBJECT_ROUTING_ID) {
+    } else if (p.type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
+               p.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
       LogParam(p.npobject_routing_id, l);
-      LogParam(p.npobject_pointer, l);
-    } else if (p.type == NPVARIANT_PARAM_OBJECT_POINTER) {
-      LogParam(p.npobject_pointer, l);
     }
   }
 };

@@ -95,6 +95,15 @@ void PluginChannelBase::CleanupChannels() {
   g_plugin_channels_.clear();
 }
 
+NPObjectBase* PluginChannelBase::GetNPObjectListenerForRoute(int route_id) {
+  ListenerMap::iterator iter = npobject_listeners_.find(route_id);
+  if (iter == npobject_listeners_.end()) {
+    DLOG(WARNING) << "Invalid route id passed in:" << route_id;
+    return NULL;
+  }
+  return iter->second;
+}
+
 bool PluginChannelBase::Init(MessageLoop* ipc_message_loop,
                              bool create_pipe_now) {
   channel_.reset(new IPC::SyncChannel(
@@ -154,9 +163,9 @@ void PluginChannelBase::OnChannelConnected(int32 peer_pid) {
 
 void PluginChannelBase::AddRoute(int route_id,
                                  IPC::Channel::Listener* listener,
-                                 bool npobject) {
+                                 NPObjectBase* npobject) {
   if (npobject) {
-    npobject_listeners_[route_id] = listener;
+    npobject_listeners_[route_id] = npobject;
   } else {
     plugin_count_++;
   }
@@ -190,8 +199,12 @@ void PluginChannelBase::RemoveRoute(int route_id) {
     AutoReset auto_reset_in_remove_route(&in_remove_route_, true);
     for (ListenerMap::iterator npobj_iter = npobject_listeners_.begin();
          npobj_iter != npobject_listeners_.end(); ++npobj_iter) {
-      if (npobj_iter->second)
-        npobj_iter->second->OnChannelError();
+      if (npobj_iter->second) {
+        IPC::Channel::Listener* channel_listener =
+            npobj_iter->second->GetChannelListener();
+        DCHECK(channel_listener != NULL);
+        channel_listener->OnChannelError();
+      }
     }
 
     for (PluginChannelMap::iterator iter = g_plugin_channels_.begin();

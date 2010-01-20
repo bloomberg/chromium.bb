@@ -49,15 +49,13 @@ NPObjectProxy* NPObjectProxy::GetProxy(NPObject* object) {
 NPObjectProxy::NPObjectProxy(
     PluginChannelBase* channel,
     int route_id,
-    intptr_t npobject_ptr,
     gfx::NativeViewId containing_window,
     const GURL& page_url)
     : channel_(channel),
       route_id_(route_id),
-      npobject_ptr_(npobject_ptr),
       containing_window_(containing_window),
       page_url_(page_url) {
-  channel_->AddRoute(route_id, this, true);
+  channel_->AddRoute(route_id, this, this);
 }
 
 NPObjectProxy::~NPObjectProxy() {
@@ -70,13 +68,12 @@ NPObjectProxy::~NPObjectProxy() {
 
 NPObject* NPObjectProxy::Create(PluginChannelBase* channel,
                                 int route_id,
-                                intptr_t npobject_ptr,
                                 gfx::NativeViewId containing_window,
                                 const GURL& page_url) {
   NPObjectWrapper* obj = reinterpret_cast<NPObjectWrapper*>(
       WebBindings::createObject(0, &npclass_proxy_));
   obj->proxy = new NPObjectProxy(
-      channel, route_id, npobject_ptr, containing_window, page_url);
+      channel, route_id, containing_window, page_url);
 
   return reinterpret_cast<NPObject*>(obj);
 }

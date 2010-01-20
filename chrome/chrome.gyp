@@ -426,6 +426,7 @@
         # mocks.
         'plugin/chrome_plugin_host.cc',
         'plugin/chrome_plugin_host.h',
+        'plugin/npobject_base.h',
         'plugin/npobject_proxy.cc',
         'plugin/npobject_proxy.h',
         'plugin/npobject_stub.cc',

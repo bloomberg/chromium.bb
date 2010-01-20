@@ -151,14 +151,14 @@ NPObject* WebPluginProxy::GetWindowScriptNPObject() {
 
   int npobject_route_id = channel_->GenerateRouteID();
   bool success = false;
-  intptr_t npobject_ptr;
+  intptr_t npobject_ptr = NULL;
   Send(new PluginHostMsg_GetWindowScriptNPObject(
       route_id_, npobject_route_id, &success, &npobject_ptr));
   if (!success)
     return NULL;
 
   window_npobject_ = NPObjectProxy::Create(
-      channel_, npobject_route_id, npobject_ptr, containing_window_, page_url_);
+      channel_, npobject_route_id, containing_window_, page_url_);
 
   return window_npobject_;
 }
@@ -169,14 +169,14 @@ NPObject* WebPluginProxy::GetPluginElement() {
 
   int npobject_route_id = channel_->GenerateRouteID();
   bool success = false;
-  intptr_t npobject_ptr;
+  intptr_t npobject_ptr = NULL;
   Send(new PluginHostMsg_GetPluginElement(
       route_id_, npobject_route_id, &success, &npobject_ptr));
   if (!success)
     return NULL;
 
   plugin_element_ = NPObjectProxy::Create(
-      channel_, npobject_route_id, npobject_ptr, containing_window_, page_url_);
+      channel_, npobject_route_id, containing_window_, page_url_);
 
   return plugin_element_;
 }
@@ -321,10 +321,8 @@ bool WebPluginProxy::GetDragData(struct NPObject* event, bool add_data,
     return false;
 
   NPVariant_Param event_param;
-  event_param.type = NPVARIANT_PARAM_OBJECT_POINTER;
-  event_param.npobject_pointer = proxy->npobject_ptr();
-  if (!event_param.npobject_pointer)
-    return false;
+  event_param.type = NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID;
+  event_param.npobject_routing_id = proxy->route_id();
 
   std::vector<NPVariant_Param> values;
   bool success = false;
@@ -353,10 +351,8 @@ bool WebPluginProxy::SetDropEffect(struct NPObject* event, int effect) {
     return false;
 
   NPVariant_Param event_param;
-  event_param.type = NPVARIANT_PARAM_OBJECT_POINTER;
-  event_param.npobject_pointer = proxy->npobject_ptr();
-  if (!event_param.npobject_pointer)
-    return false;
+  event_param.type = NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID;
+  event_param.npobject_routing_id = proxy->route_id();
 
   bool success = false;
   Send(new PluginHostMsg_SetDropEffect(route_id_, event_param, effect,

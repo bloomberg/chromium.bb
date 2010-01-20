@@ -27,7 +27,7 @@ NPObjectStub::NPObjectStub(
       route_id_(route_id),
       containing_window_(containing_window),
       page_url_(page_url) {
-  channel_->AddRoute(route_id, this, true);
+  channel_->AddRoute(route_id, this, this);
 
   // We retain the object just as PluginHost does if everything was in-process.
   WebBindings::retainObject(npobject_);
@@ -124,13 +124,19 @@ void NPObjectStub::OnInvoke(bool is_default,
   NPVariant result_var;
 
   VOID_TO_NPVARIANT(result_var);
+  result_param.type = NPVARIANT_PARAM_VOID;
 
   int arg_count = static_cast<int>(args.size());
   NPVariant* args_var = new NPVariant[arg_count];
   for (int i = 0; i < arg_count; ++i) {
-    CreateNPVariant(
-        args[i], local_channel, &(args_var[i]), containing_window_,
-        page_url_);
+    if (!CreateNPVariant(
+            args[i], local_channel, &(args_var[i]), containing_window_,
+            page_url_)) {
+      NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param,
+                                           return_value);
+      local_channel->Send(reply_msg);
+      return;
+    }
   }
 
   if (is_default) {
@@ -210,13 +216,17 @@ void NPObjectStub::OnGetProperty(const NPIdentifier_Param& name,
 void NPObjectStub::OnSetProperty(const NPIdentifier_Param& name,
                                  const NPVariant_Param& property,
                                  IPC::Message* reply_msg) {
-  bool result;
+  bool result = false;
   NPVariant result_var;
   VOID_TO_NPVARIANT(result_var);
   NPIdentifier id = CreateNPIdentifier(name);
   NPVariant property_var;
-  CreateNPVariant(
-      property, channel_, &property_var, containing_window_, page_url_);
+  if (!CreateNPVariant(
+          property, channel_, &property_var, containing_window_, page_url_)) {
+    NPObjectMsg_SetProperty::WriteReplyParams(reply_msg, result);
+    channel_->Send(reply_msg);
+    return;
+  }
 
   if (IsPluginProcess()) {
     if (npobject_->_class->setProperty) {
@@ -314,8 +324,14 @@ void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,
   int arg_count = static_cast<int>(args.size());
   NPVariant* args_var = new NPVariant[arg_count];
   for (int i = 0; i < arg_count; ++i) {
-    CreateNPVariant(
-        args[i], local_channel, &(args_var[i]), containing_window_, page_url_);
+    if (!CreateNPVariant(
+           args[i], local_channel, &(args_var[i]), containing_window_,
+           page_url_)) {
+      NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param,
+                                           return_value);
+      local_channel->Send(reply_msg);
+      return;
+    }
   }
 
   if (IsPluginProcess()) {
