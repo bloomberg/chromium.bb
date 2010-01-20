@@ -1349,21 +1349,18 @@ const wchar_t kChromeFrameAboutVersion[] =
 // that the operation succeeded.
 // Marking this test FLAKY as it fails at times on the buildbot.
 // http://code.google.com/p/chromium/issues/detail?id=26549
-// TODO(tommi): DISABLED due to
-// http://code.google.com/p/chromium/issues/detail?id=32550
-// NOTE - before being disabled, the test was marked FLAKY.
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_AboutChromeFrame) {
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
   chrome_frame_test::TimedMsgLoop loop;
   CComObjectStackEx<MockWebBrowserEventSink> mock;
 
   EXPECT_CALL(mock,
-              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
-                                testing::StrCaseEq(kSubFrameUrl1)),
+      OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                          testing::StrCaseEq(kSubFrameUrl1)),
                                 _, _, _, _, _))
-      .Times(1)
-      .WillOnce(testing::Return(S_OK));
+      .Times(2).WillRepeatedly(testing::Return(S_OK));
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .WillOnce(testing::Return());
+      .Times(2).WillRepeatedly(testing::Return());
+
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
       .WillOnce(testing::InvokeWithoutArgs(
           &chrome_frame_test::ShowChromeFrameContextMenu));
@@ -1371,7 +1368,6 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_AboutChromeFrame) {
   EXPECT_CALL(mock,
               OnNewWindow3(_, _, _, _,
                            testing::StrCaseEq(kChromeFrameAboutVersion)))
-      .Times(1)
       .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kSubFrameUrl1);
@@ -1427,14 +1423,16 @@ template <typename T> T** ReceivePointer(scoped_refptr<T>& p) {  // NOLINT
 
 // Full tab mode back/forward test
 // Launch and navigate chrome frame to a set of URLs and test back forward
-// TODO(tommi): DISABLED due to
-// http://code.google.com/p/chromium/issues/detail?id=32550
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_BackForward) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   chrome_frame_test::TimedMsgLoop loop;
   CComObjectStackEx<MockWebBrowserEventSink> mock;
   ::testing::InSequence sequence;   // Everything in sequence
 
-  // Navigate to url 2 after the previous navigation is complete
+  // We will get two BeforeNavigate2/OnNavigateComplete2 notifications due to
+  // switching from IE to CF.
+  // Note that when going backwards, we don't expect that since the extra
+  // navigational entries in the travel log should have been removed.
+
   EXPECT_CALL(mock,
       OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                           testing::StrCaseEq(kSubFrameUrl1)),
@@ -1443,13 +1441,24 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_BackForward) {
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
+
+  EXPECT_CALL(mock,
+      OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                          testing::StrCaseEq(kSubFrameUrl1)),
+                                _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
+
+  // Navigate to url 2 after the previous navigation is complete.
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
-    .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
+      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(
               &mock, &chrome_frame_test::WebBrowserEventSink::Navigate,
               std::wstring(kSubFrameUrl2)))));
 
-  // Navigate to url 3 after the previous navigation is complete
+  // Expect BeforeNavigate/NavigateComplete twice here as well.
   EXPECT_CALL(mock,
       OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                           testing::StrCaseEq(kSubFrameUrl2)),
@@ -1458,6 +1467,17 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_BackForward) {
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
+
+  EXPECT_CALL(mock,
+      OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                          testing::StrCaseEq(kSubFrameUrl2)),
+                                _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
+
+  // Navigate to url 3 after the previous navigation is complete
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(
@@ -1474,6 +1494,17 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_BackForward) {
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
+
+  EXPECT_CALL(mock,
+      OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                          testing::StrCaseEq(kSubFrameUrl3)),
+                                _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
+
+  // Go back.
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl3)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(ReceivePointer(mock.web_browser2_),
@@ -1489,6 +1520,7 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_BackForward) {
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
+
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(ReceivePointer(mock.web_browser2_),
@@ -1503,6 +1535,7 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_BackForward) {
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
+
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(&mock,
@@ -1558,19 +1591,28 @@ const wchar_t kAnchor3Url[] = L"http://localhost:1337/files/anchor.html#a3";
 // Launch and navigate chrome frame to a set of URLs and test back forward
 // Marking this test FLAKY as it fails at times on the buildbot.
 // http://code.google.com/p/chromium/issues/detail?id=26549
-// TODO(tommi): DISABLED due to
-// http://code.google.com/p/chromium/issues/detail?id=32550
-// NOTE - before being disabled, the test was marked FLAKY.
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_BackForwardAnchor) {
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   const char tab_enter_keystrokes[] = { VK_TAB, VK_RETURN, 0 };
   static const std::string tab_enter(tab_enter_keystrokes);
   chrome_frame_test::TimedMsgLoop loop;
   CComObjectStackEx<MockWebBrowserEventSink> mock;
   ::testing::InSequence sequence;   // Everything in sequence
 
+  // We will get two BeforeNavigate2/OnNavigateComplete2 notifications due to
+  // switching from IE to CF.
+  // Note that when going backwards, we don't expect that since the extra
+  // navigational entries in the travel log should have been removed.
+  // Same for navigating to anchors within a page that's already loaded.
+
   // Back/Forward state at this point:
   // Back: 0
   // Forward: 0
+  EXPECT_CALL(mock, OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                      testing::StrCaseEq(kAnchorUrl)),
+                                      _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
   EXPECT_CALL(mock, OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                       testing::StrCaseEq(kAnchorUrl)),
                                       _, _, _, _, _))

@@ -9,6 +9,7 @@
 #define CHROME_FRAME_EXTRA_SYSTEM_APIS_H_
 
 #include <mshtml.h>
+#include <shdeprecated.h>
 
 // This is an interface provided by the WebBrowser object. It allows us to
 // notify the browser of navigation events. MSDN documents this interface
@@ -82,5 +83,38 @@ IDocObjectService : public IUnknown {
   STDMETHOD(GetUrlSearchComponent)(BSTR* search) = 0;
   STDMETHOD(IsErrorUrl)(LPCTSTR url, BOOL* is_error) = 0;
 };
+
+// Travel log interface that supports deleting entries from the travel log.
+// See for more details:
+// http://msdn.microsoft.com/en-us/library/aa511272.aspx
+// http://www.geoffchappell.com/viewer.htm?doc=studies/windows/ie/shdocvw/interfaces/tlog/itravellogex/createenumentry.htm
+// It seems that in IE8 the interface name was changed to IIEITravelLogEx.
+interface __declspec(uuid("3050F679-98B5-11CF-BB82-00AA00BDCE0B"))
+ITravelLogEx : public IUnknown {
+  STDMETHOD(FindTravelEntryWithUrl)(IUnknown* unk, UINT code_page,
+                                    const wchar_t* url,
+                                    ITravelEntry** entry) = 0;
+  STDMETHOD(TravelToUrl)(IUnknown* unk, UINT code_page, const wchar_t* url) = 0;
+  STDMETHOD(DeleteIndexEntry)(IUnknown* unk, int offset) = 0;
+  STDMETHOD(DeleteUrlEntry)(IUnknown* unk, UINT code_page,
+                            const wchar_t* url) = 0;
+  STDMETHOD(CountEntryNodes)(IUnknown* unk, DWORD flags, DWORD* count) = 0;
+  STDMETHOD(CreateEnumEntry)(IUnknown* unk, IEnumTravelLogEntry** entry_enum,
+                             DWORD flags) = 0;
+  STDMETHOD(DeleteEntry)(IUnknown* unk, ITravelLogEntry* entry) = 0;
+  STDMETHOD(InsertEntry)(IUnknown* unk_relative_to,
+                         ITravelLogEntry* entry_relative_to, BOOL prepend,
+                         IUnknown* unk, ITravelLogEntry** entry) = 0;
+  STDMETHOD(TravelToEntry)(IUnknown* unk, ITravelLogEntry* entry) = 0;
+};
+
+interface __declspec(uuid("DD9E2B32-4D78-44F1-B59B-8CA4C9392140"))
+IIEITravelLogEx : public ITravelLogEx {
+};
+
+// Flags for ITravelLogEx::CountEntryNodes, CreateEnumEntry.
+#define TLEF_RELATIVE_INCLUDE_CURRENT (0x01)  // count the current entry
+#define TLEF_RELATIVE_BACK (0x10)             // count backward entries
+#define TLEF_RELATIVE_FORE (0x20)             // count forward entries
 
 #endif  // CHROME_FRAME_EXTRA_SYSTEM_APIS_H_

@@ -16,6 +16,7 @@
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "chrome_tab.h" // NOLINT
+#include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/protocol_sink_wrap.h"
 #include "chrome_frame/utils.h"
@@ -201,6 +202,26 @@ bool DocumentHasEmbeddedItems(IUnknown* browser) {
   return has_embedded_items;
 }
 
+HRESULT DeletePreviousNavigationEntry(IBrowserService* browser) {
+  DCHECK(browser);
+
+  ScopedComPtr<ITravelLog> travel_log;
+  HRESULT hr = browser->GetTravelLog(travel_log.Receive());
+  DCHECK(travel_log);
+  if (travel_log) {
+    ScopedComPtr<ITravelLogEx> travel_log_ex;
+    if (SUCCEEDED(hr = travel_log_ex.QueryFrom(travel_log)) ||
+        SUCCEEDED(hr = travel_log.QueryInterface(__uuidof(IIEITravelLogEx),
+            reinterpret_cast<void**>(travel_log_ex.Receive())))) {
+      hr = travel_log_ex->DeleteIndexEntry(browser, -1);
+    } else {
+      NOTREACHED() << "ITravelLogEx";
+    }
+  }
+
+  return hr;
+}
+
 }  // end namespace
 
 HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
@@ -237,6 +258,7 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
         DCHECK(FAILED(hr) || moniker != NULL);
         if (moniker) {
           DLOG(INFO) << "Navigating in CF";
+
           ScopedComPtr<IBindCtx> bind_context;
           // This bind context will be discarded by IE and a new one
           // constructed, so it's OK to create a sync bind context.
@@ -254,6 +276,12 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
 
           hr = NavigateBrowserToMoniker(browser, moniker, headers.c_str(),
                                         bind_context);
+
+          if (SUCCEEDED(hr)) {
+            // Now that we've reissued the request, we need to remove the
+            // original one from the travel log.
+            DeletePreviousNavigationEntry(browser);
+          }
         } else {
           DLOG(ERROR) << "Couldn't get the current moniker";
         }
