@@ -162,8 +162,6 @@ TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 }
 #endif
 
-#if !defined(OS_LINUX)
-// TODO(port): This passes on linux locally, but fails on the try bot.
 // Tests that non-Gmail-like script redirects (i.e., non-null window.opener) or
 // a same-page-redirect) will not fork a new process.
 TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
@@ -211,10 +209,7 @@ TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   PlatformThread::Sleep(action_timeout_ms());
   ASSERT_EQ(orig_process_count, GetBrowserProcessCount());
 }
-#endif
 
-#if defined(OS_WIN)
-// TODO(estade): need to port GetActiveTabTitle().
 TEST_F(VisibleBrowserTest, WindowOpenClose) {
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("window.close.html");
@@ -234,7 +229,6 @@ TEST_F(VisibleBrowserTest, WindowOpenClose) {
   if (i == 10)
     FAIL() << "failed to get error page title";
 }
-#endif
 
 class ShowModalDialogTest : public UITest {
  public:
