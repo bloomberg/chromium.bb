@@ -685,7 +685,6 @@
    fun:__CFMachPortPerform
    fun:CFRunLoopRunSpecific
 }
-Suppression:
 {
    bug_32644
    Memcheck:Leak
