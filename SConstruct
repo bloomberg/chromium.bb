@@ -952,27 +952,6 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
                  ]
       )
 
-  if ARGUMENTS.get('sdl', 'hermetic') != 'none':
-    nacl_env.Append(
-        BUILD_SCONSCRIPTS = [
-            ####  ALPHABETICALLY SORTED ####
-            'common/console/nacl.scons',
-
-            'tests/earth/nacl.scons',
-            'tests/life/nacl.scons',
-            'tests/mandel_nav/nacl.scons',
-            'tests/many/nacl.scons',
-            'tests/tone/nacl.scons',
-            'tests/voronoi/nacl.scons',
-            ])
-    if nacl_env['BUILD_SUBARCH'] == '32':
-      nacl_env.Append(
-          BUILD_SCONSCRIPTS = [
-              # This test assumes we have a compiler, which is not yet fully
-              # true for 64-bit.
-              'tools/tests/nacl.scons',
-          ])
-
 if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
     nacl_env['TARGET_ARCHITECTURE'] == 'arm'):
   # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
@@ -993,18 +972,6 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
                         '-lgcc', '-lunimpl', '${NACL_SDK_LIB}/crtn.o',],
       EMULATOR  = EMULATOR,
       )
-
-  if ARGUMENTS.get('sdl', 'hermetic') != 'none':
-    nacl_env.Append(
-        BUILD_SCONSCRIPTS = [
-            ####  ALPHABETICALLY SORTED ####
-            'tests/mandel_nav/nacl.scons',
-            # enable this to expose a c++ runtime link problem
-            # c.f. http://code.google.com/p/nativeclient/issues/detail?id=236
-            # 'tests/earth/nacl.scons',
-            # enable this to expose another c++ runtime link problem
-            # 'tests/life/nacl.scons',
-            ])
 
 environment_list.append(nacl_env)
 
@@ -1044,9 +1011,30 @@ nacl_env.Append(
     'tests/toolchain/nacl.scons',
     'tests/vim/nacl.scons',
     ####  ALPHABETICALLY SORTED ####
-    ],
-    )
+    ])
 
+if ARGUMENTS.get('sdl', 'hermetic') != 'none':
+  nacl_env.Append(
+      BUILD_SCONSCRIPTS = [
+      ####  ALPHABETICALLY SORTED ####
+      'common/console/nacl.scons',
+
+      'tests/earth/nacl.scons',
+      'tests/life/nacl.scons',
+      'tests/mandel_nav/nacl.scons',
+      'tests/many/nacl.scons',
+      'tests/tone/nacl.scons',
+      'tests/voronoi/nacl.scons',
+      ])
+
+if (nacl_env['BUILD_SUBARCH'] == '32' and
+    nacl_env['BUILD_ARCHITECTURE'] == 'x86'):
+  nacl_env.Append(
+      BUILD_SCONSCRIPTS = [
+      # This test assumes we have a compiler, which is not yet fully
+      # true for 64-bit.
+      'tools/tests/nacl.scons',
+      ])
 
 # ----------------------------------------------------------
 # Possibly install an sdk by downloading it

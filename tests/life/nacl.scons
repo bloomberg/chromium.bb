@@ -30,6 +30,10 @@
 
 Import('env')
 
+# TODO: fix this,  http://code.google.com/p/nativeclient/issues/detail?id=236
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
+
 nexe = env.ComponentProgram('life.nexe', 'life.cc',
                             EXTRA_LIBS=['m', 'av', 'srpc', 'pthread'])
 
