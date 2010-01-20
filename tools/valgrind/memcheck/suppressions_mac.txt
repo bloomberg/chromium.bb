@@ -711,4 +711,30 @@
    fun:_ZN7WebCore28V8WorkerContextEventListener20callListenerFunctionEPNS_22ScriptExecutionContextEN2v86HandleINS3_5ValueEEEPNS_5EventE
    fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEPNS_22ScriptExecutionContextEPNS_5EventEN2v86HandleINS5_5ValueEEE
 }
+{
+   bug_32644
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF13FastAllocBasenwEm
+   fun:_ZN7WebCore32WorkerThreadableWebSocketChannelC2EPNS_13WorkerContextEPNS_22WebSocketChannelClientERKNS_6StringERKNS_4KURLES7_
+   fun:_ZN7WebCore32WorkerThreadableWebSocketChannelC1EPNS_13WorkerContextEPNS_22WebSocketChannelClientERKNS_6StringERKNS_4KURLES7_
+   fun:_ZN7WebCore32WorkerThreadableWebSocketChannel6createEPNS_13WorkerContextEPNS_22WebSocketChannelClientERKNS_6StringERKNS_4KURLES7_
+   fun:_ZN7WebCore26ThreadableWebSocketChannel6createEPNS_22ScriptExecutionContextEPNS_22WebSocketChannelClientERKNS_4KURLERKNS_6StringE
+   fun:_ZN7WebCore9WebSocket7connectERKNS_4KURLERKNS_6StringERi
+   fun:_ZN7WebCore9WebSocket7connectERKNS_4KURLERi
+   fun:_ZN7WebCore8V8Custom30v8WebSocketConstructorCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
+   fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEiPPPS5_Pb
+   fun:_ZN2v86Script3RunEv
+   fun:_ZN7WebCore27WorkerContextExecutionProxy9runScriptEN2v86HandleINS1_6ScriptEEE
+   fun:_ZN7WebCore27WorkerContextExecutionProxy8evaluateERKNS_6StringES3_iPNS_27WorkerContextExecutionStateE
+}
 
