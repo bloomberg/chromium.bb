@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, Incognito) {
 
 // Tests the process of updating an extension to one that requires higher
 // permissions.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissions) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DISABLED_UpdatePermissions) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   ASSERT_TRUE(InstallAndUpdateIncreasingPermissionsExtension());
 
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissions) {
 }
 
 // Tests that we can uninstall a disabled extension.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UninstallDisabled) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DISABLED_UninstallDisabled) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   ASSERT_TRUE(InstallAndUpdateIncreasingPermissionsExtension());
 
