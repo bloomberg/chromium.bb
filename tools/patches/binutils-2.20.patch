@@ -1222,7 +1222,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	return 0;
      }
    return 1;
-@@ -5048,7 +5136,7 @@
+@@ -5048,7 +5140,7 @@
  	      && !i.types[1].bitfield.control)
  	    abort ();
  	  i.rex &= ~(REX_R | REX_B);
@@ -1231,7 +1231,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	}
      }
    else
-@@ -5560,19 +5652,265 @@
+@@ -5560,19 +5652,261 @@
  }
  
  static void
