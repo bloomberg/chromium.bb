@@ -1336,8 +1336,10 @@ void SyncManager::SyncInternal::Shutdown() {
   // it terminates gracefully before we shutdown and close other components.
   // Otherwise the attempt can complete after we've closed the directory, for
   // example, and cause initialization to continue, which is bad.
-  auth_watcher_->Shutdown();
-  auth_watcher_ = NULL;
+  if (auth_watcher_) {
+    auth_watcher_->Shutdown();
+    auth_watcher_ = NULL;
+  }
 
   if (syncer_thread()) {
     if (!syncer_thread()->Stop(kThreadExitTimeoutMsec))
