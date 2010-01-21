@@ -857,6 +857,14 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
 
   ScopedActiveDelegate active_delegate(this);
 
+#ifndef NP_NO_CARBON
+  // cgcontext_.context can change during event handling (because of a geometry
+  // change triggered by the event); we need to know if that happens so we
+  // don't keep trying to use the context. It is not an owning ref, so shouldn't
+  // be used for anything but pointer comparison.
+  CGContextRef old_context_weak = cg_context_.context;
+#endif
+
   // Create the plugin event structure, and send it to the plugin.
   bool ret = false;
   switch (instance()->event_model()) {
@@ -894,7 +902,8 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
 
 #ifndef NP_NO_CARBON
   if (instance()->event_model() == NPEventModelCarbon &&
-      instance()->drawing_model() == NPDrawingModelCoreGraphics)
+      instance()->drawing_model() == NPDrawingModelCoreGraphics &&
+      cg_context_.context == old_context_weak)
     CGContextRestoreGState(cg_context_.context);
 #endif
 
