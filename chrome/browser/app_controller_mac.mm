@@ -273,17 +273,19 @@ static bool g_is_opening_new_window = false;
 
 // Fix up the "close tab/close window" command-key equivalents. We do this
 // after a delay to ensure that window layer state has been set by the time
-// we do the enabling.
+// we do the enabling. This should only be called on the main thread, code that
+// calls this (even as a side-effect) from other threads needs to be fixed.
 - (void)delayedFixCloseMenuItemKeyEquivalents {
+  DCHECK([NSThread isMainThread]);
   if (!fileMenuUpdatePending_) {
     // The OS prefers keypresses to timers, so it's possible that a cmd-w
     // can sneak in before this timer fires. In order to prevent that from
     // having any bad consequences, just clear the keys combos altogether. They
     // will be reset when the timer eventually fires.
     [self clearCloseMenuItemKeyEquivalents];
-    [self performSelector:@selector(fixCloseMenuItemKeyEquivalents)
-               withObject:nil
-               afterDelay:0];
+    [self performSelectorOnMainThread:@selector(fixCloseMenuItemKeyEquivalents)
+                           withObject:nil
+                        waitUntilDone:NO];
     fileMenuUpdatePending_ = YES;
   }
 }
@@ -675,7 +677,6 @@ static bool g_is_opening_new_window = false;
   menuState_->UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
                                    ProfileSyncService::IsSyncEnabled());
   menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
-  // TODO(pinkerton): ...more to come...
 }
 
 - (Profile*)defaultProfile {
