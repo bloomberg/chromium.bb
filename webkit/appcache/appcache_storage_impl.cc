@@ -408,14 +408,18 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
       database_->InsertEntryRecords(entry_records_) &&
       database_->InsertFallbackNameSpaceRecords(fallback_namespace_records_)&&
       database_->InsertOnlineWhiteListRecords(online_whitelist_records_) &&
+      (database_->GetOriginUsage(group_record_.origin) <=
+       database_->GetOriginQuota(group_record_.origin)) &&
       transaction.Commit();
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
   if (success_) {
     storage_->origins_with_groups_.insert(group_->manifest_url().GetOrigin());
-    if (cache_ != group_->newest_complete_cache())
+    if (cache_ != group_->newest_complete_cache()) {
+      cache_->set_complete(true);
       group_->AddCache(cache_);
+    }
     group_->AddNewlyDeletableResponseIds(&newly_deletable_response_ids_);
   }
   FOR_EACH_DELEGATE(delegates_, OnGroupAndNewestCacheStored(group_, success_));
@@ -826,8 +830,7 @@ void AppCacheStorageImpl::StoreGroupAndNewestCache(
   // whole new cache. The StoreGroupAndCacheTask as written will handle
   // the simple update case in a very heavy weight way (delete all and
   // the reinsert all over again).
-  DCHECK(group && delegate);
-  DCHECK(newest_cache && newest_cache->is_complete());
+  DCHECK(group && delegate && newest_cache);
   scoped_refptr<StoreGroupAndCacheTask> task =
       new StoreGroupAndCacheTask(this, group, newest_cache);
   task->AddDelegate(GetOrCreateDelegateReference(delegate));

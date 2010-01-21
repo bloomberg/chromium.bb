@@ -11,12 +11,14 @@
 #include "base/auto_reset.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "webkit/appcache/appcache_entry.h"
+#include "webkit/database/quota_table.h"
 
 // Schema -------------------------------------------------------------------
 namespace {
 
-const int kCurrentVersion = 0;
+const int kCurrentVersion = 1;
 const int kCompatibleVersion = 0;
 
 const char* kGroupsTable = "Groups";
@@ -144,17 +146,36 @@ AppCacheDatabase::~AppCacheDatabase() {
 void AppCacheDatabase::CloseConnection() {
   // We can't close the connection for an in-memory database w/o
   // losing all of the data, so we don't do that.
-  if (!db_file_path_.empty()) {
-    meta_table_.reset();
-    db_.reset();
-  }
+  if (!db_file_path_.empty())
+    ResetConnectionAndTables();
 }
 
 void AppCacheDatabase::Disable() {
   LOG(INFO) << "Disabling appcache database.";
   is_disabled_ = true;
-  meta_table_.reset();
-  db_.reset();
+  ResetConnectionAndTables();
+}
+
+int64 AppCacheDatabase::GetOriginUsage(const GURL& origin) {
+  std::vector<CacheRecord> records;
+  if (!FindCachesForOrigin(origin, &records))
+    return 0;
+
+  int64 origin_usage = 0;
+  std::vector<CacheRecord>::const_iterator iter = records.begin();
+  while (iter != records.end()) {
+    origin_usage += iter->cache_size;
+    ++iter;
+  }
+  return origin_usage;
+}
+
+int64 AppCacheDatabase::GetOriginQuota(const GURL& origin) {
+  if (!LazyOpen(false))
+    return GetDefaultOriginQuota();
+  int64 quota = quota_table_->GetOriginQuota(
+      UTF8ToUTF16(origin.spec().c_str()));
+  return (quota >= 0) ? quota : GetDefaultOriginQuota();
 }
 
 bool AppCacheDatabase::FindOriginsWithGroups(std::set<GURL>* origins) {
@@ -381,6 +402,23 @@ bool AppCacheDatabase::FindCacheForGroup(int64 group_id, CacheRecord* record) {
     return false;
 
   ReadCacheRecord(statement, record);
+  return true;
+}
+
+bool AppCacheDatabase::FindCachesForOrigin(
+    const GURL& origin, std::vector<CacheRecord>* records) {
+  DCHECK(records);
+  std::vector<GroupRecord> group_records;
+  if (!FindGroupsForOrigin(origin, &group_records))
+    return false;
+
+  CacheRecord cache_record;
+  std::vector<GroupRecord>::const_iterator iter = group_records.begin();
+  while (iter != group_records.end()) {
+    if (FindCacheForGroup(iter->group_id, &cache_record))
+      records->push_back(cache_record);
+    ++iter;
+  }
   return true;
 }
 
@@ -921,6 +959,7 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
 
   db_.reset(new sql::Connection);
   meta_table_.reset(new sql::MetaTable);
+  quota_table_.reset(new webkit_database::QuotaTable(db_.get()));
 
   bool opened = false;
   if (use_in_memory_db) {
@@ -971,8 +1010,10 @@ bool AppCacheDatabase::CreateSchema() {
   if (!transaction.Begin())
     return false;
 
-  if (!meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion))
+  if (!meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion) ||
+      !quota_table_->Init()) {
     return false;
+  }
 
   for (int i = 0; i < kTableCount; ++i) {
     std::string sql("CREATE TABLE ");
@@ -1000,8 +1041,6 @@ bool AppCacheDatabase::CreateSchema() {
 }
 
 bool AppCacheDatabase::UpgradeSchema() {
-  DCHECK(false);  // We don't have any upgrades yet since we're at version 0
-
   // Upgrade logic goes here
 
   // If there is no upgrade path for the version on disk to the current
@@ -1009,12 +1048,17 @@ bool AppCacheDatabase::UpgradeSchema() {
   return DeleteExistingAndCreateNewDatabase();
 }
 
+void AppCacheDatabase::ResetConnectionAndTables() {
+  quota_table_.reset();
+  meta_table_.reset();
+  db_.reset();
+}
+
 bool AppCacheDatabase::DeleteExistingAndCreateNewDatabase() {
   DCHECK(!db_file_path_.empty());
   DCHECK(file_util::PathExists(db_file_path_));
 
-  meta_table_.reset();
-  db_.reset();
+  ResetConnectionAndTables();
 
   FilePath directory = db_file_path_.DirName();
   if (!file_util::Delete(directory, true) ||

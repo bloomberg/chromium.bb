@@ -517,4 +517,72 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
     EXPECT_EQ(i + 5, ids[i]);
 }
 
+TEST(AppCacheDatabaseTest, Quotas) {
+  const GURL kManifestUrl("http://blah/manifest");
+  const GURL kManifestUrl2("http://blah/manifest2");
+  const GURL kOrigin(kManifestUrl.GetOrigin());
+  const GURL kOtherOriginManifestUrl("http://other/manifest");
+  const GURL kOtherOrigin(kOtherOriginManifestUrl.GetOrigin());
+
+  const FilePath kEmptyPath;
+  AppCacheDatabase db(kEmptyPath);
+  EXPECT_TRUE(db.LazyOpen(true));
+
+  scoped_refptr<TestErrorDelegate> error_delegate(new TestErrorDelegate);
+  db.db_->set_error_delegate(error_delegate);
+
+  std::vector<AppCacheDatabase::CacheRecord> cache_records;
+  EXPECT_EQ(db.GetDefaultOriginQuota(), db.GetOriginQuota(kOrigin));
+  EXPECT_EQ(0, db.GetOriginUsage(kOrigin));
+  EXPECT_TRUE(db.FindCachesForOrigin(kOrigin, &cache_records));
+  EXPECT_TRUE(cache_records.empty());
+
+  AppCacheDatabase::GroupRecord group_record;
+  group_record.group_id = 1;
+  group_record.manifest_url = kManifestUrl;
+  group_record.origin = kOrigin;
+  EXPECT_TRUE(db.InsertGroup(&group_record));
+  AppCacheDatabase::CacheRecord cache_record;
+  cache_record.cache_id = 1;
+  cache_record.group_id = 1;
+  cache_record.online_wildcard = true;
+  cache_record.update_time = kZeroTimeTicks;
+  cache_record.cache_size = 100;
+  EXPECT_TRUE(db.InsertCache(&cache_record));
+
+  EXPECT_EQ(100, db.GetOriginUsage(kOrigin));
+
+  group_record.group_id = 2;
+  group_record.manifest_url = kManifestUrl2;
+  group_record.origin = kOrigin;
+  EXPECT_TRUE(db.InsertGroup(&group_record));
+  cache_record.cache_id = 2;
+  cache_record.group_id = 2;
+  cache_record.online_wildcard = true;
+  cache_record.update_time = kZeroTimeTicks;
+  cache_record.cache_size = 1000;
+  EXPECT_TRUE(db.InsertCache(&cache_record));
+
+  EXPECT_EQ(1100, db.GetOriginUsage(kOrigin));
+
+  group_record.group_id = 3;
+  group_record.manifest_url = kOtherOriginManifestUrl;
+  group_record.origin = kOtherOrigin;
+  EXPECT_TRUE(db.InsertGroup(&group_record));
+  cache_record.cache_id = 3;
+  cache_record.group_id = 3;
+  cache_record.online_wildcard = true;
+  cache_record.update_time = kZeroTimeTicks;
+  cache_record.cache_size = 5000;
+  EXPECT_TRUE(db.InsertCache(&cache_record));
+
+  EXPECT_EQ(5000, db.GetOriginUsage(kOtherOrigin));
+
+  EXPECT_TRUE(db.FindCachesForOrigin(kOrigin, &cache_records));
+  EXPECT_EQ(2U, cache_records.size());
+  cache_records.clear();
+  EXPECT_TRUE(db.FindCachesForOrigin(kOtherOrigin, &cache_records));
+  EXPECT_EQ(1U, cache_records.size());
+}
+
 }  // namespace appcache

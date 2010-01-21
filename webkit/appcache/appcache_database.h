@@ -22,6 +22,10 @@ class Statement;
 class StatementID;
 }
 
+namespace webkit_database {
+class QuotaTable;
+}
+
 namespace appcache {
 
 class AppCacheDatabase {
@@ -73,6 +77,10 @@ class AppCacheDatabase {
   void Disable();
   bool is_disabled() const { return is_disabled_; }
 
+  int64 GetDefaultOriginQuota() { return 5 * 1024 * 1024; }
+  int64 GetOriginUsage(const GURL& origin);
+  int64 GetOriginQuota(const GURL& origin);
+
   bool FindOriginsWithGroups(std::set<GURL>* origins);
   bool FindLastStorageIds(
       int64* last_group_id, int64* last_cache_id, int64* last_response_id,
@@ -88,6 +96,8 @@ class AppCacheDatabase {
 
   bool FindCache(int64 cache_id, CacheRecord* record);
   bool FindCacheForGroup(int64 group_id, CacheRecord* record);
+  bool FindCachesForOrigin(
+      const GURL& origin, std::vector<CacheRecord>* records);
   bool InsertCache(const CacheRecord* record);
   bool DeleteCache(int64 cache_id);
 
@@ -167,6 +177,8 @@ class AppCacheDatabase {
   bool CreateSchema();
   bool UpgradeSchema();
 
+  void ResetConnectionAndTables();
+
   // Deletes the existing database file and the entire directory containing
   // the database file including the disk cache in which response headers
   // and bodies are stored, and then creates a new database file.
@@ -175,6 +187,7 @@ class AppCacheDatabase {
   FilePath db_file_path_;
   scoped_ptr<sql::Connection> db_;
   scoped_ptr<sql::MetaTable> meta_table_;
+  scoped_ptr<webkit_database::QuotaTable> quota_table_;
   bool is_disabled_;
   bool is_recreating_;
 
@@ -186,6 +199,7 @@ class AppCacheDatabase {
   FRIEND_TEST(AppCacheDatabaseTest, OnlineWhiteListRecords);
   FRIEND_TEST(AppCacheDatabaseTest, ReCreate);
   FRIEND_TEST(AppCacheDatabaseTest, DeletableResponseIds);
+  FRIEND_TEST(AppCacheDatabaseTest, Quotas);
   DISALLOW_COPY_AND_ASSIGN(AppCacheDatabase);
 };
 

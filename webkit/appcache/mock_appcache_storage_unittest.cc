@@ -209,7 +209,6 @@ TEST_F(MockAppCacheStorageTest, StoreNewGroup) {
       new AppCacheGroup(&service, manifest_url, 111);
   int64 cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> cache = new AppCache(&service, cache_id);
-  cache->set_complete(true);
   // Hold a ref to the cache simulate the UpdateJob holding that ref,
   // and hold a ref to the group to simulate the CacheHost holding that ref.
 
@@ -226,6 +225,7 @@ TEST_F(MockAppCacheStorageTest, StoreNewGroup) {
   EXPECT_FALSE(storage->stored_caches_.empty());
   EXPECT_FALSE(storage->stored_groups_.empty());
   EXPECT_EQ(cache, group->newest_complete_cache());
+  EXPECT_TRUE(cache->is_complete());
 }
 
 TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
@@ -247,7 +247,6 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
   storage->AddStoredCache(old_cache);
   int64 new_cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> new_cache = new AppCache(&service, new_cache_id);
-  new_cache->set_complete(true);
   // Hold our refs to simulate the UpdateJob holding these refs.
 
   // Conduct the test.
@@ -269,6 +268,7 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
   EXPECT_FALSE(storage->IsCacheStored(old_cache));
   EXPECT_TRUE(storage->IsCacheStored(new_cache));
   EXPECT_EQ(new_cache.get(), group->newest_complete_cache());
+  EXPECT_TRUE(new_cache->is_complete());
 }
 
 TEST_F(MockAppCacheStorageTest, StoreExistingGroupExistingCache) {

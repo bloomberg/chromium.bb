@@ -553,10 +553,6 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
     LOG(INFO) << "Request status: " << request->status().status()
         << " os_error: " << request->status().os_error()
         << " response code: " << response_code;
-
-    // TODO(jennb): Discard any stored data for this entry? May be unnecessary
-    // if handled automatically by storage layer.
-
     if (entry.IsExplicit() || entry.IsFallback()) {
       internal_state_ = CACHE_FAILURE;
       CancelAllUrlFetches();
@@ -719,7 +715,6 @@ void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
 
 void AppCacheUpdateJob::CompleteInprogressCache() {
   inprogress_cache_->set_update_time(base::TimeTicks::Now());
-  inprogress_cache_->set_complete(true);
   service_->storage()->StoreGroupAndNewestCache(group_, inprogress_cache_,
                                                 this);  // async
   protect_new_cache_.swap(inprogress_cache_);

@@ -387,7 +387,6 @@ class AppCacheStorageImplTest : public testing::Test {
     group_ = new AppCacheGroup(
         service(), kManifestUrl, storage()->NewGroupId());
     cache_ = new AppCache(service(), storage()->NewCacheId());
-    cache_->set_complete(true);
     // Hold a ref to the cache simulate the UpdateJob holding that ref,
     // and hold a ref to the group to simulate the CacheHost holding that ref.
 
@@ -400,6 +399,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(delegate()->stored_group_success_);
     EXPECT_EQ(group_.get(), delegate()->stored_group_.get());
     EXPECT_EQ(cache_.get(), group_->newest_complete_cache());
+    EXPECT_TRUE(cache_->is_complete());
 
     // Should have been stored in the database.
     AppCacheDatabase::GroupRecord group_record;
@@ -422,7 +422,6 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // And a newest unstored complete cache.
     cache2_ = new AppCache(service(), 2);
-    cache2_->set_complete(true);
 
     // Conduct the test.
     storage()->StoreGroupAndNewestCache(group_, cache2_, delegate());
@@ -433,6 +432,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(delegate()->stored_group_success_);
     EXPECT_EQ(group_.get(), delegate()->stored_group_.get());
     EXPECT_EQ(cache2_.get(), group_->newest_complete_cache());
+    EXPECT_TRUE(cache2_->is_complete());
 
     // The new cache should have been stored in the database.
     AppCacheDatabase::GroupRecord group_record;
