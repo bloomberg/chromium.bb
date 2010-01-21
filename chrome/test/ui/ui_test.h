@@ -40,14 +40,21 @@ class FilePath;
 class GURL;
 class TabProxy;
 
-class UITest : public PlatformTest {
+// Base class for UI Tests. This implements the core of the functions.
+// This base class decouples all automation functionality from testing
+// infrastructure, for use without gtest.
+// If using gtest, you probably want to inherit from UITest (declared below)
+// rather than UITestBase.
+class UITestBase {
  protected:
   // String to display when a test fails because the crash service isn't
   // running.
   static const wchar_t kFailedNoCrashService[];
 
   // Constructor
-  UITest();
+  UITestBase();
+
+  virtual ~UITestBase();
 
   // Starts the browser using the arguments in launch_arguments_, and
   // sets up member variables.
@@ -404,6 +411,10 @@ class UITest : public PlatformTest {
 
   std::wstring ui_test_name() const { return ui_test_name_; }
 
+  void set_ui_test_name(const std::wstring& name) {
+    ui_test_name_ = name;
+  }
+
   // Count the number of active browser processes launched by this test.
   // The count includes browser sub-processes.
   int GetBrowserProcessCount();
@@ -589,6 +600,12 @@ class UITest : public PlatformTest {
   int terminate_timeout_ms_;
 
   std::wstring ui_test_name_;
+};
+
+class UITest : public UITestBase, public PlatformTest {
+ protected:
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 // These exist only to support the gTest assertion macros, and

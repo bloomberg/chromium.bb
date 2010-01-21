@@ -1778,6 +1778,91 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
+    ['OS=="mac"', {
+      'targets': [
+        # TODO(nirnimesh): enable for linux,win - crbug.com/32285
+        {
+          # Documentation: http://dev.chromium.org/developers/pyauto
+          'target_name': 'pyautolib',
+          'type': 'shared_library',
+          'dependencies': [
+            'chrome',
+            'test_support_common',
+            'chrome_resources',
+            'chrome_strings',
+            'theme_resources',
+            '../skia/skia.gyp:skia',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'export_dependent_settings': [
+            'test_support_common',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'test/pyautolib/pyautolib.cc',
+            'test/pyautolib/pyautolib.h',
+            '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
+            'test/ui/ui_test.cc',
+            'test/ui/ui_test.h',
+            'test/ui/ui_test_suite.cc',
+            'test/ui/ui_test_suite.h',
+          ],
+          # Need a shared object named _pyautolib.so (not libpyautolib.dylib
+          # that xcode would generate)
+          # Change when gyp can support a platform-neutral way for this
+          # (http://code.google.com/p/gyp/issues/detail?id=135)
+          'xcode_settings': {
+            'EXECUTABLE_PREFIX': '_',
+            'EXECUTABLE_EXTENSION': 'so',
+          },
+          'conditions': [
+            ['OS=="linux"', {
+              'include_dirs': [
+                '..',
+                '/usr/include/python2.5',
+              ],
+              'dependencies': [
+                '../build/linux/system.gyp:gtk',
+              ],
+            }],
+            ['OS=="mac"', {
+              'include_dirs': [
+                '..',
+                '$(SDKROOT)/usr/include/python2.5',
+              ],
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/usr/lib/libpython2.5.dylib',
+                ],
+              }
+            }],
+          ],
+          'actions': [
+            {
+              'action_name': 'pyautolib_swig',
+              'inputs': [
+                'test/pyautolib/pyautolib.i',
+              ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
+                '<(PRODUCT_DIR)/pyautolib.py',
+              ],
+              'action': [ 'swig',
+                          '-python',
+                          '-c++',
+                          '-outdir',
+                          '<(PRODUCT_DIR)',
+                          '-o',
+                          '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
+                          '<(_inputs)',
+              ]
+            },
+          ],  # actions
+        },  # target 'pyautolib'
+      ]  # targets
+    }],  # OS=='mac'
     ['coverage!=0',
       { 'targets': [
         {
