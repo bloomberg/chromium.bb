@@ -56,6 +56,12 @@ const NSString* kPressedImageString = @"close_bar_p.pdf";
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
+  // The hover button needs to hold onto itself here for a bit.  Otherwise,
+  // it can be freed while |super mouseDown:| is in it's loop, and the
+  // |checkImageState| call will crash.
+  // http://crbug.com/28220
+  scoped_nsobject<HoverCloseButton> myself([self retain]);
+
   [super mouseDown:theEvent];
   // We need to check the image state after the mouseDown event loop finishes.
   // It's possible that we won't get a mouseExited event if the button was
