@@ -10,12 +10,19 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
+namespace WebKit {
+class WebFrame;
+}
+
 namespace appcache {
 
 class WebApplicationCacheHostImpl : public WebKit::WebApplicationCacheHost {
  public:
   // Returns the host having given id or NULL if there is no such host.
   static WebApplicationCacheHostImpl* FromId(int id);
+
+  // Returns the host associated with the current document in frame.
+  static WebApplicationCacheHostImpl* FromFrame(WebKit::WebFrame* frame);
 
   WebApplicationCacheHostImpl(WebKit::WebApplicationCacheHostClient* client,
                               AppCacheBackend* backend);

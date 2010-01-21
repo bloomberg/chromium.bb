@@ -7,12 +7,16 @@
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/string_util.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
+using WebKit::WebDataSource;
+using WebKit::WebFrame;
 using WebKit::WebURLRequest;
 using WebKit::WebURL;
 using WebKit::WebURLResponse;
@@ -23,6 +27,20 @@ static IDMap<WebApplicationCacheHostImpl> all_hosts;
 
 WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
   return all_hosts.Lookup(id);
+}
+
+WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromFrame(
+    WebFrame* frame) {
+  if (!frame)
+    return NULL;
+  WebDataSource* data_source = frame->dataSource();
+  if (!data_source)
+    return NULL;
+  return NULL;
+  // TODO(michaeln): Uncomment after the new webkit api is available,
+  // (see https://bugs.webkit.org/show_bug.cgi?id=33880)
+  // return static_cast<WebApplicationCacheHostImpl*>
+  //    (data_source->applicationCacheHost());
 }
 
 WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(

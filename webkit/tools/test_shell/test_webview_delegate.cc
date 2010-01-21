@@ -38,7 +38,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
-#include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
@@ -62,6 +62,7 @@
 #include "webkit/tools/test_shell/drop_delegate.h"
 #endif
 
+using appcache::WebApplicationCacheHostImpl;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebConsoleMessage;
 using WebKit::WebContextMenuData;
@@ -610,6 +611,9 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
   scoped_refptr<media::FilterFactoryCollection> factory =
       new media::FilterFactoryCollection();
 
+  WebApplicationCacheHostImpl* appcache_host =
+      WebApplicationCacheHostImpl::FromFrame(frame);
+
   // TODO(hclam): this is the same piece of code as in RenderView, maybe they
   // should be grouped together.
   webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
@@ -618,7 +622,7 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
           "null",  // frame origin
           "null",  // main_frame_origin
           base::GetCurrentProcId(),
-          appcache::kNoHostId,
+          appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
           0);
   // A simple data source that keeps all data in memory.
   media::FilterFactory* simple_data_source_factory =

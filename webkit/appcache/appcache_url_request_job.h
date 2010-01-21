@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_response.h"
@@ -91,9 +92,9 @@ class AppCacheURLRequestJob : public URLRequestJob,
   virtual void OnResponseInfoLoaded(
       AppCacheResponseInfo* response_info, int64 response_id);
 
-  const net::HttpResponseInfo* http_info() const {
-    return info_.get() ? info_->http_response_info() : NULL;
-  }
+  const net::HttpResponseInfo* http_info() const;
+  bool is_range_request() const { return range_requested_.IsValid(); }
+  void SetupRangeResponse();
 
   // AppCacheResponseReader completion callback
   void OnReadComplete(int result);
@@ -106,8 +107,8 @@ class AppCacheURLRequestJob : public URLRequestJob,
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read);
 
   // Sets extra request headers for Job types that support request headers.
-  // TODO(michaeln): support for range-requests
-  virtual void SetExtraRequestHeaders(const std::string& headers) {}
+  // This is how we get informed of range-requests.
+  virtual void SetExtraRequestHeaders(const std::string& headers);
 
   // TODO(michaeln): does this apply to our cached responses?
   // The payload we store should have been fully decoded prior to
@@ -131,6 +132,8 @@ class AppCacheURLRequestJob : public URLRequestJob,
   int64 cache_id_;
   AppCacheEntry entry_;
   scoped_refptr<AppCacheResponseInfo> info_;
+  net::HttpByteRange range_requested_;
+  scoped_ptr<net::HttpResponseInfo> range_response_info_;
   scoped_ptr<AppCacheResponseReader> reader_;
   net::CompletionCallbackImpl<AppCacheURLRequestJob> read_callback_;
 };

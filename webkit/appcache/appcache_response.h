@@ -131,6 +131,10 @@ class AppCacheResponseReader : public AppCacheResponseIO {
   // Returns true if there is a read operation, for data or info, pending.
   bool IsReadPending() { return IsIOPending(); }
 
+  // Returns the size of the resource in the disk cache or a negative value
+  // if there  is no disk cache entry.
+  int GetResourceSize();
+
   // Used to support range requests. If not called, the reader will
   // read the entire response body. If called, this must be called prior
   // to the first call to the ReadData method.

@@ -179,6 +179,12 @@ void AppCacheResponseReader::ReadData(net::IOBuffer* buf, int buf_len,
           buf, buf_len);
 }
 
+int AppCacheResponseReader::GetResourceSize() {
+  if (!OpenEntryIfNeeded())
+    return -1;
+  return entry_->GetDataSize(kResponseContentIndex);
+}
+
 void AppCacheResponseReader::SetReadRange(int offset, int length) {
   DCHECK(!IsReadPending() && !read_position_);
   range_offset_ = offset;

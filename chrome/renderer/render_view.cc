@@ -96,7 +96,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
-#include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/dom_operations.h"
@@ -117,6 +117,7 @@
 #include "app/gfx/native_theme_win.h"
 #endif
 
+using appcache::WebApplicationCacheHostImpl;
 using base::Time;
 using base::TimeDelta;
 using webkit_glue::AltErrorPageResourceFetcher;
@@ -1934,6 +1935,9 @@ WebMediaPlayer* RenderView::createMediaPlayer(
         AudioRendererImpl::CreateFactory(audio_message_filter()));
   }
 
+  WebApplicationCacheHostImpl* appcache_host =
+      WebApplicationCacheHostImpl::FromFrame(frame);
+
   // TODO(hclam): obtain the following parameters from |client|.
   webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
       new webkit_glue::MediaResourceLoaderBridgeFactory(
@@ -1941,7 +1945,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
           "null",  // frame origin
           "null",  // main_frame_origin
           base::GetCurrentProcId(),
-          appcache::kNoHostId,
+          appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
           routing_id());
 
   // A simple data source that keeps all data in memory.
