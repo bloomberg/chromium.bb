@@ -26,24 +26,24 @@ hashes = collections.defaultdict(set)
 # Fill in the map.
 cmd = ['git', 'ls-tree', '-r', 'HEAD', 'webkit/data/layout_tests/']
 try:
-  git = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    git = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 except OSError, e:
-  if e.errno == 2:  # No such file or directory.
-    print >>sys.stderr, "Error: 'No such file' when running git."
-    print >>sys.stderr, "This script requires git."
-    sys.exit(1)
-  raise e
+    if e.errno == 2:  # No such file or directory.
+        print >> sys.stderr, "Error: 'No such file' when running git."
+        print >> sys.stderr, "This script requires git."
+        sys.exit(1)
+    raise e
 
 for line in git.stdout:
-  attrs, file = line.strip().split('\t')
-  _, _, hash = attrs.split(' ')
-  hashes[hash].add(file)
+    attrs, file = line.strip().split('\t')
+    _, _, hash = attrs.split(' ')
+    hashes[hash].add(file)
 
 # Dump out duplicated files.
 for cluster in hashes.values():
-  if len(cluster) < 2:
-    continue
-  for file in cluster:
-    if '/chromium-linux/' in file:
-      if file.replace('/chromium-linux/', '/chromium-win/') in cluster:
-        print file
+    if len(cluster) < 2:
+        continue
+    for file in cluster:
+        if '/chromium-linux/' in file:
+            if file.replace('/chromium-linux/', '/chromium-win/') in cluster:
+                print file
