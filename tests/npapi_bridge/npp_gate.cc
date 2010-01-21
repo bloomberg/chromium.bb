@@ -38,25 +38,34 @@
 
 // Please refer to the Gecko Plugin API Reference for the description of
 // NPP_New.
-NPError NPP_New(NPMIMEType mime_type, NPP instance, uint16_t mode,
-                int16_t argc, char* argn[], char* argv[],
+NPError NPP_New(NPMIMEType mime_type,
+                NPP instance,
+                uint16_t mode,
+                int16_t argc,
+                char* argn[],
+                char* argv[],
                 NPSavedData* saved) {
-  printf("NPP_New\n");
+  printf("NPP_New: instance %p\n", reinterpret_cast<void*>(instance));
 
   if (instance == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
 
-  const char* canvas = "tutorial";
+  bool cycle = false;
+  const char* canvas = "unknown";
   for (uint16_t i = 0; i < argc; ++i) {
     printf("%u: '%s' '%s'\n", i, argn[i], argv[i]);
     if (strcmp(argn[i], "canvas") == 0) {
       canvas = argv[i];
       printf("CANVAS: %s\n", canvas);
+    } else if ((strcmp(argn[i], "cycle") == 0) &&
+               (strcmp(argv[i], "auto") == 0)) {
+      cycle = true;
+      printf("CYCLE: %s\n", cycle ? "true" : "false");
     }
   }
 
-  Plugin* plugin = new(std::nothrow) Plugin(instance, canvas);
+  Plugin* plugin = new(std::nothrow) Plugin(instance, canvas, cycle);
   if (plugin == NULL) {
     return NPERR_OUT_OF_MEMORY_ERROR;
   }
@@ -67,7 +76,6 @@ NPError NPP_New(NPMIMEType mime_type, NPP instance, uint16_t mode,
 
 // Please refer to the Gecko Plugin API Reference for the description of
 // NPP_Destroy.
-// In the NaCl module, NPP_Destroy is called from NaClNP_MainLoop().
 NPError NPP_Destroy(NPP instance, NPSavedData** save) {
   printf("NPP_Destroy\n");
 

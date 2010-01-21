@@ -63,7 +63,8 @@ struct ConnectedSocketInitializer: DescHandleInitializer {
                              ServiceRuntimeInterface* serv_rtm_info):
       DescHandleInitializer(plugin_interface, desc, plugin),
       is_srpc_client_(is_srpc_client),
-      serv_rtm_info_(serv_rtm_info) {}
+      serv_rtm_info_(serv_rtm_info),
+      is_command_channel_(NULL == serv_rtm_info) {}
 };
 
 

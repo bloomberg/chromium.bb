@@ -120,6 +120,10 @@ class NPNavigator : public NPBridge {
   static NaClSrpcError New(NaClSrpcChannel* channel,
                            NaClSrpcArg** inputs,
                            NaClSrpcArg** outputs);
+  // Processes NPP_SetWindow() request from the plugin.
+  static NaClSrpcError SetWindow(NaClSrpcChannel* channel,
+                                 NaClSrpcArg** inputs,
+                                 NaClSrpcArg** outputs);
   // Processes NPP_Destroy() request from the plugin.
   static NaClSrpcError Destroy(NaClSrpcChannel* channel,
                                NaClSrpcArg** inputs,
@@ -147,8 +151,11 @@ class NPNavigator : public NPBridge {
                   NPP npp,
                   uint32_t argc,
                   char* argn[],
-                  char* argv[],
-                  NaClSrpcArg* result_object);
+                  char* argv[]);
+  // Implements NPP_SetWindow() request from the plugin.
+  NPError SetWindowImpl(NPP npp,
+                        int height,
+                        int width);
   // Implements NPP_Destroy() request from the plugin.
   NPError DestroyImpl(NPP npp);
   // Implements NPP_URLNotify() request from the plugin.

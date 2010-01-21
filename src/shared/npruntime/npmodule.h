@@ -121,6 +121,18 @@ class NPModule : public NPBridge {
   static NaClSrpcError Device3DDestroy(NaClSrpcChannel* channel,
                                        NaClSrpcArg** inputs,
                                        NaClSrpcArg** outputs);
+  static NaClSrpcError Device3DGetState(NaClSrpcChannel* channel,
+                                        NaClSrpcArg** inputs,
+                                        NaClSrpcArg** outputs);
+  static NaClSrpcError Device3DSetState(NaClSrpcChannel* channel,
+                                        NaClSrpcArg** inputs,
+                                        NaClSrpcArg** outputs);
+  static NaClSrpcError Device3DCreateBuffer(NaClSrpcChannel* channel,
+                                            NaClSrpcArg** inputs,
+                                            NaClSrpcArg** outputs);
+  static NaClSrpcError Device3DDestroyBuffer(NaClSrpcChannel* channel,
+                                             NaClSrpcArg** inputs,
+                                             NaClSrpcArg** outputs);
 
   // Invokes NPP_Initialize() in the child process.
   NPError Initialize();

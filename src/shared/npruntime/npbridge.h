@@ -137,7 +137,7 @@ class NPBridge {
   // LookupProxy() returns NULL if no correspoing stub is found.
   NPObjectProxy* LookupProxy(const NPCapability& capability);
 
-  // Removes the specified proxy to the map of NPCapability to NPObjectProxy
+  // Removes the specified proxy from the map of NPCapability to NPObjectProxy
   void RemoveProxy(NPObjectProxy* proxy);
 };
 

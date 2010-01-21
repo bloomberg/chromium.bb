@@ -28,6 +28,9 @@
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#include <nacl/gl2.h>
+#include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/gles2_demo_cc.h"
 #include <string>
 
 #include "native_client/tests/pepper_plugin/event_handler.h"
@@ -151,7 +154,7 @@ bool PluginHasMethod(NPObject* obj, NPIdentifier name) {
 
 bool PluginInvoke(NPObject* header,
                   NPIdentifier name,
-                  const NPVariant* args, uint32 arg_count,
+                  const NPVariant* args, uint32_t arg_count,
                   NPVariant* result) {
   PluginObject* plugin = reinterpret_cast<PluginObject*>(header);
   if (name == plugin_method_identifiers[ID_TEST_GET_PROPERTY]) {
@@ -169,7 +172,7 @@ bool PluginInvoke(NPObject* header,
 }
 
 bool PluginInvokeDefault(NPObject* obj,
-                         const NPVariant* args, uint32 arg_count,
+                         const NPVariant* args, uint32_t arg_count,
                          NPVariant* result) {
   INT32_TO_NPVARIANT(1, *result);
   return true;
@@ -243,6 +246,30 @@ void FlushCallback(NPP instance, NPDeviceContext* context,
 
 NPExtensions* extensions = NULL;
 
+
+// Sine wave similar to one from simple_sources.cc
+// F is the desired frequency (e.g. 200), T is sample type (e.g. int16)
+template <int F, typename T> void SineWaveCallback(
+    NPDeviceContextAudio *context) {
+
+  const size_t n_samples  = context->config.sampleFrameCount;
+  const size_t n_channels = context->config.outputChannelMap;
+  const double th = 2 * 3.141592653589 * F / context->config.sampleRate;
+  // store time value to avoid clicks on buffer boundries
+  intptr_t t = (intptr_t)context->config.userData;
+
+  T* buf = reinterpret_cast<T*>(context->outBuffer);
+  for (size_t sample = 0; sample < n_samples; ++sample) {
+    T value = static_cast<T>(sin(th * t++) * std::numeric_limits<T>::max());
+    for (size_t channel = 0; channel < n_channels; ++channel) {
+      *buf++ = value;
+    }
+  }
+  context->config.userData = reinterpret_cast<void *>(t);
+}
+
+const int32 kCommandBufferSize = 1024 * 1024;
+
 }  // namespace
 
 
@@ -251,26 +278,11 @@ NPExtensions* extensions = NULL;
 PluginObject::PluginObject(NPP npp)
     : npp_(npp),
       test_object_(browser->createobject(npp, GetTestClass())),
-      device2d_(NULL) {
-  if (!extensions) {
-    browser->getvalue(npp_, NPNVPepperExtensions,
-                      reinterpret_cast<void*>(&extensions));
-    assert(NULL != extensions);
-  }
-  device2d_ = extensions->acquireDevice(npp, NPPepper2DDevice);
-  assert(NULL != device2d_);
-
-  NPDeviceContext2DConfig config;
-  NPDeviceContext2D context;
-  device2d_->initializeContext(npp_, &config, &context);
-
-  DrawSampleBitmap(&context, 400, 400);
-
-  // TODO(brettw) figure out why this cast is necessary, the functions seem to
-  // match. Could be a calling convention mismatch?
-  NPDeviceFlushContextCallbackPtr callback =
-      reinterpret_cast<NPDeviceFlushContextCallbackPtr>(&FlushCallback);
-  device2d_->flushContext(npp_, &context, callback, NULL);
+      device2d_(NULL),
+      device3d_(NULL),
+      pgl_context_(NULL),
+      deviceaudio_(NULL) {
+  memset(&context_audio_, 0, sizeof(context_audio_));
 }
 
 PluginObject::~PluginObject() {
@@ -282,16 +294,96 @@ NPClass* PluginObject::GetPluginClass() {
   return &plugin_class;
 }
 
+namespace {
+void Draw3DCallback(void* data) {
+    static_cast<PluginObject*>(data)->Draw3D();
+}
+}
+
+void PluginObject::New(NPMIMEType pluginType,
+                       int16 argc,
+                       char* argn[],
+                       char* argv[]) {
+  // Default to 2D rendering.
+  dimensions_ = 2;
+
+  for (int i = 0; i < argc; ++i) {
+    if (strcmp(argn[i], "dimensions") == 0)
+      dimensions_ = atoi(argv[i]);
+  }
+
+  if (!extensions) {
+    browser->getvalue(npp_, NPNVPepperExtensions,
+                      reinterpret_cast<void*>(&extensions));
+    CHECK(extensions);
+  }
+  device2d_ = extensions->acquireDevice(npp_, NPPepper2DDevice);
+  CHECK(device2d_);
+
+  device3d_ = extensions->acquireDevice(npp_, NPPepper3DDevice);
+  CHECK(device3d_);
+
+  deviceaudio_ = extensions->acquireDevice(npp_, NPPepperAudioDevice);
+  CHECK(deviceaudio_);
+}
+
 void PluginObject::SetWindow(const NPWindow& window) {
-  NPDeviceContext2DConfig config;
-  NPDeviceContext2D context;
-  device2d_->initializeContext(npp_, &config, &context);
+  if (dimensions_ == 2) {
+    width_ = window.width;
+    height_ = window.height;
 
-  DrawSampleBitmap(&context, window.width, window.height);
+    NPDeviceContext2DConfig config;
+    NPDeviceContext2D context;
+    device2d_->initializeContext(npp_, &config, &context);
 
-  // TODO(brettw) figure out why this cast is necessary, the functions seem to
-  // match. Could be a calling convention mismatch?
-  NPDeviceFlushContextCallbackPtr callback =
-      reinterpret_cast<NPDeviceFlushContextCallbackPtr>(&FlushCallback);
-  device2d_->flushContext(npp_, &context, callback, NULL);
+    DrawSampleBitmap(&context, window.width, window.height);
+
+    // TODO(brettw) figure out why this cast is necessary, the functions seem
+    // to match. Could be a calling convention mismatch?
+    NPDeviceFlushContextCallbackPtr callback =
+        reinterpret_cast<NPDeviceFlushContextCallbackPtr>(&FlushCallback);
+    device2d_->flushContext(npp_, &context, callback, NULL);
+  } else {
+    if (!pgl_context_) {
+      // Initialize a 3D context.
+      NPDeviceContext3DConfig config;
+      config.commandBufferEntries = kCommandBufferSize;
+      device3d_->initializeContext(npp_, &config, &context3d_);
+
+      // Create a PGL context.
+      pgl_context_ = pglCreateContext(npp_, device3d_, &context3d_);
+    }
+
+    // Reset the viewport to new window size.
+    pglMakeCurrent(pgl_context_);
+    glViewport(0, 0, window.width, window.height);
+    pglMakeCurrent(NULL);
+
+    // Schedule the first call to Draw.
+    browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
+  }
+
+  // testing any field would do
+  if (!context_audio_.config.callback) {
+    NPDeviceContextAudioConfig cfg;
+    cfg.sampleRate       = 44100;
+    cfg.sampleType       = NPAudioSampleTypeInt16;
+    cfg.outputChannelMap = NPAudioChannelStereo;
+    cfg.inputChannelMap  = NPAudioChannelNone;
+    cfg.sampleFrameCount = 2048;
+    cfg.flags            = 0;
+    cfg.callback         = &SineWaveCallback<200, int16>;
+    deviceaudio_->initializeContext(npp_, &cfg, &context_audio_);
+  }
+}
+
+void PluginObject::Draw3D() {
+  // Render some stuff.
+  pglMakeCurrent(pgl_context_);
+  GLFromCPPTestFunction();
+  pglSwapBuffers();
+  pglMakeCurrent(NULL);
+
+  // Schedule another call to Draw.
+  browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
 }

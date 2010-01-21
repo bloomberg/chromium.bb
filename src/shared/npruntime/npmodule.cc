@@ -7,12 +7,14 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
 
+#include "gpu/command_buffer/common/command_buffer.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
+#include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/origin.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
@@ -103,6 +105,10 @@ NACL_SRPC_METHOD_ARRAY(NPModule::srpc_methods) = {
   { "Device3DInitialize:i:hiii", Device3DInitialize },
   { "Device3DFlush:i:ii", Device3DFlush },
   { "Device3DDestroy:i:", Device3DDestroy },
+  { "Device3DGetState:ii:i", Device3DGetState },
+  { "Device3DSetState:iii:", Device3DSetState },
+  { "Device3DCreateBuffer:ii:hi", Device3DCreateBuffer },
+  { "Device3DDestroyBuffer:ii:", Device3DDestroyBuffer },
   { NULL, NULL }
 };
 
@@ -157,7 +163,7 @@ NaClSrpcError NPModule::InvalidateRect(NaClSrpcChannel* channel,
   UNREFERENCED_PARAMETER(outputs);
   DebugPrintf("InvalidateRect\n");
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
   RpcArg arg1(npp, inputs[1]);
   const NPRect* nprect = arg1.GetRect();
 
@@ -178,7 +184,7 @@ NaClSrpcError NPModule::ForceRedraw(NaClSrpcChannel* channel,
   UNREFERENCED_PARAMETER(outputs);
   DebugPrintf("ForceRedraw\n");
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
 
   if (module->window_ && module->window_->window) {
     NPN_ForceRedraw(npp);
@@ -351,7 +357,7 @@ NaClSrpcError NPModule::Device2DInitialize(NaClSrpcChannel* channel,
                                            NaClSrpcArg** inputs,
                                            NaClSrpcArg** outputs) {
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
   UNREFERENCED_PARAMETER(channel);
   // Initialize the return values in case of failure.
   outputs[0]->u.hval = NULL;
@@ -423,7 +429,7 @@ NaClSrpcError NPModule::Device2DFlush(NaClSrpcChannel* channel,
                                       NaClSrpcArg** inputs,
                                       NaClSrpcArg** outputs) {
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
   NPError retval;
   UNREFERENCED_PARAMETER(channel);
 
@@ -450,7 +456,7 @@ NaClSrpcError NPModule::Device2DDestroy(NaClSrpcChannel* channel,
                                         NaClSrpcArg** inputs,
                                         NaClSrpcArg** outputs) {
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
   NPError retval;
   UNREFERENCED_PARAMETER(channel);
   UNREFERENCED_PARAMETER(outputs);
@@ -465,8 +471,12 @@ NaClSrpcError NPModule::Device2DDestroy(NaClSrpcChannel* channel,
   return NACL_SRPC_RESULT_OK;
 }
 
+namespace base {
+class SharedMemory;
+}  // namespace base
+
 struct Device3DImpl {
-  ::TransportDIB* dib;
+  gpu::CommandBuffer* command_buffer;
 };
 
 // inputs:
@@ -479,14 +489,22 @@ struct Device3DImpl {
 NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
                                            NaClSrpcArg** inputs,
                                            NaClSrpcArg** outputs) {
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
   UNREFERENCED_PARAMETER(channel);
+
   // Initialize the return values in case of failure.
-  outputs[0]->u.hval = NULL;
+  outputs[0]->u.hval =
+      const_cast<NaClDesc*>(
+          reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
   outputs[1]->u.ival = -1;
   outputs[2]->u.ival = -1;
   outputs[3]->u.ival = -1;
+
+#if defined(NACL_STANDALONE)
+  UNREFERENCED_PARAMETER(inputs);
+  return NACL_SRPC_RESULT_APP_ERROR;
+#else
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
 
   if (NULL == module->extensions_) {
     if (NPERR_NO_ERROR !=
@@ -517,10 +535,16 @@ NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
       return NACL_SRPC_RESULT_APP_ERROR;
     }
   }
-  DescWrapperFactory factory;
   Device3DImpl* impl =
       reinterpret_cast<Device3DImpl*>(module->context3d_->reserved);
-  DescWrapper* wrapper = factory.ImportTransportDIB(impl->dib);
+  ::base::SharedMemory* shm =
+      impl->command_buffer->GetRingBuffer().shared_memory;
+  if (NULL == shm) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  DescWrapperFactory factory;
+  DescWrapper* wrapper =
+      factory.ImportSharedMemory(shm);
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
@@ -533,6 +557,7 @@ NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
   outputs[2]->u.ival = module->context3d_->getOffset;
   outputs[3]->u.ival = module->context3d_->putOffset;
   return NACL_SRPC_RESULT_OK;
+#endif  // defined(NACL_STANDALONE)
 }
 
 // inputs:
@@ -543,15 +568,15 @@ NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::Device3DFlush(NaClSrpcChannel* channel,
                                       NaClSrpcArg** inputs,
                                       NaClSrpcArg** outputs) {
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
-  NPError retval;
   UNREFERENCED_PARAMETER(channel);
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
 
   if (NULL == module->extensions_) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  retval = module->device3d_->flushContext(npp, module->context3d_, NULL, NULL);
+  NPError retval =
+      module->device3d_->flushContext(npp, module->context3d_, NULL, NULL);
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
@@ -567,16 +592,15 @@ NaClSrpcError NPModule::Device3DFlush(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::Device3DDestroy(NaClSrpcChannel* channel,
                                         NaClSrpcArg** inputs,
                                         NaClSrpcArg** outputs) {
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
-  NPError retval;
   UNREFERENCED_PARAMETER(channel);
   UNREFERENCED_PARAMETER(outputs);
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
 
   if (NULL == module->extensions_) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  retval = module->device3d_->destroyContext(npp, module->context3d_);
+  NPError retval = module->device3d_->destroyContext(npp, module->context3d_);
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
@@ -597,28 +621,162 @@ class NppClosure {
 };
 
 // The thunk enqueued on the browser's foreground thread.
-// static void doNppAsyncCall(void* arg) {
-//   NppClosure* closure = reinterpret_cast<NppClosure*>(arg);
-//   NaClSrpcInvokeByName(closure->module()->channel(),
-//                        "NPP_PluginThreadAsyncCall",
-//                        closure->number());
-// }
+static void doNppAsyncCall(void* arg) {
+  NppClosure* closure = reinterpret_cast<NppClosure*>(arg);
+  if (NULL != closure) {
+    NaClSrpcInvokeByName(closure->module()->channel(),
+                         "NPP_PluginThreadAsyncCall",
+                         closure->number());
+  }
+  delete closure;
+}
 
+// inputs:
+// (int) npp
+// (int) state
+// outputs:
+// (int) value
+// none
+NaClSrpcError NPModule::Device3DGetState(NaClSrpcChannel* channel,
+                                         NaClSrpcArg** inputs,
+                                         NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPError retval = module->device3d_->getStateContext(npp,
+                                                      module->context3d_,
+                                                      inputs[1]->u.ival,
+                                                      &(outputs[0]->u.ival));
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (int) npp
+// (int) state
+// (int) value
+// outputs:
+// none
+NaClSrpcError NPModule::Device3DSetState(NaClSrpcChannel* channel,
+                                         NaClSrpcArg** inputs,
+                                         NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
+  UNREFERENCED_PARAMETER(outputs);
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPError retval = module->device3d_->setStateContext(npp,
+                                                      module->context3d_,
+                                                      inputs[1]->u.ival,
+                                                      inputs[2]->u.ival);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (int) npp
+// (int) size
+// outputs:
+// (handle) buffer
+// (int) id
+// none
+NaClSrpcError NPModule::Device3DCreateBuffer(NaClSrpcChannel* channel,
+                                             NaClSrpcArg** inputs,
+                                             NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
+
+  // Initialize buffer id and returned handle to allow error returns.
+  int buffer_id = -1;
+  outputs[1]->u.ival = buffer_id;
+  outputs[0]->u.hval =
+      const_cast<NaClDesc*>(
+          reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
+
+#if defined(NACL_STANDALONE)
+  UNREFERENCED_PARAMETER(inputs);
+  return NACL_SRPC_RESULT_APP_ERROR;
+#else
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
+
+  // Call the Pepper API.
+  NPError retval = module->device3d_->createBuffer(npp,
+                                                   module->context3d_,
+                                                   inputs[1]->u.ival,
+                                                   &buffer_id);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  // Look up the base::SharedMemory for the returned id.
+  Device3DImpl* impl =
+      reinterpret_cast<Device3DImpl*>(module->context3d_->reserved);
+  ::base::SharedMemory* shm =
+      impl->command_buffer->GetTransferBuffer(buffer_id).shared_memory;
+  if (NULL == shm) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  // Create a NaCl descriptor to return.
+  DescWrapperFactory factory;
+  DescWrapper* wrapper = factory.ImportSharedMemory(shm);
+  if (NULL == wrapper) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  // Increase reference count for SRPC return value, since wrapper Delete
+  // would cause Dtor to fire.
+  outputs[0]->u.hval = NaClDescRef(wrapper->desc());
+  // Clean up.
+  wrapper->Delete();
+  return NACL_SRPC_RESULT_OK;
+#endif  // defined(NACL_STANDALONE)
+}
+
+// inputs:
+// (int) npp
+// (int) id
+// outputs:
+// none
+NaClSrpcError NPModule::Device3DDestroyBuffer(NaClSrpcChannel* channel,
+                                              NaClSrpcArg** inputs,
+                                              NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
+  UNREFERENCED_PARAMETER(outputs);
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  NPError retval = module->device3d_->destroyBuffer(npp,
+                                                    module->context3d_,
+                                                    inputs[1]->u.ival);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (int) npp
+// (int) plugin closure number to be invoked by callback.
+// outputs:
+// none
 static NaClSrpcError handleAsyncCall(NaClSrpcChannel* channel,
                                      NaClSrpcArg** inputs,
                                      NaClSrpcArg** outputs) {
-  // uint32_t number = static_cast<uint32_t>(inputs[0]->u.ival);
-  // NPModule* module =
-  //     reinterpret_cast<NPModule*>(channel->server_instance_data);
-  // Place a closure on the browser's NPAPI thread.
-  // NppClosure* closure = new(std::nothrow) NppClosure(number, module);
-  // TODO(sehr): add the correct NPP here.
-  // NPN_PluginThreadAsyncCall(NULL,
-  //                           doNppAsyncCall,
-  //                           static_cast<void*>(closure));
   UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(inputs);
   UNREFERENCED_PARAMETER(outputs);
+  DebugPrintf("handleAsyncCall\n");
+  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
+  uint32_t number = static_cast<uint32_t>(inputs[1]->u.ival);
+
+  // Place a closure on the browser's javascript foreground thread.
+  NppClosure* closure = new(std::nothrow) NppClosure(number, module);
+  if (NULL == closure) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  NPN_PluginThreadAsyncCall(npp,
+                            doNppAsyncCall,
+                            static_cast<void*>(closure));
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -642,7 +800,7 @@ struct UpcallInfo {
 static void WINAPI UpcallThread(void* arg) {
   UpcallInfo* info = reinterpret_cast<UpcallInfo*>(arg);
   NaClSrpcHandlerDesc handlers[] = {
-    { "NPN_PluginThreadAsyncCall:i:", handleAsyncCall },
+    { "NPN_PluginThreadAsyncCall:ii:", handleAsyncCall },
     { NULL, NULL }
   };
   DebugPrintf("UpcallThread(%p)\n", arg);
@@ -792,10 +950,20 @@ NPError NPModule::Destroy(NPP npp, NPSavedData** save) {
 }
 
 NPError NPModule::SetWindow(NPP npp, NPWindow* window) {
-  UNREFERENCED_PARAMETER(npp);
-  UNREFERENCED_PARAMETER(window);
-  // TODO(sehr): RPC to module.
-  return NPERR_NO_ERROR;
+  if (NULL == window) {
+    return NPERR_NO_ERROR;
+  }
+  int nperr;
+  NaClSrpcError retval = NaClSrpcInvokeByName(channel(),
+                                              "NPP_SetWindow",
+                                              NPBridge::NppToInt(npp),
+                                              window->height,
+                                              window->width,
+                                              &nperr);
+  if (NACL_SRPC_RESULT_OK != retval) {
+    return NPERR_GENERIC_ERROR;
+  }
+  return static_cast<NPError>(nperr);
 }
 
 NPError NPModule::GetValue(NPP npp, NPPVariable variable, void *value) {

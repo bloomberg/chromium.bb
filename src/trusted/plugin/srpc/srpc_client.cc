@@ -48,10 +48,13 @@ namespace nacl_srpc {
 
 int SrpcClient::number_alive_counter = 0;
 
-SrpcClient::SrpcClient()
-    : portable_plugin_(NULL) {
-  dprintf(("SrpcClient::SrpcClient(%p, %d)\n",
-           static_cast<void *>(this), ++number_alive_counter));
+SrpcClient::SrpcClient(bool can_use_proxied_npapi)
+    : portable_plugin_(NULL),
+      can_use_proxied_npapi_(can_use_proxied_npapi) {
+  dprintf(("SrpcClient::SrpcClient(%p, %d, %d)\n",
+           static_cast<void *>(this),
+           can_use_proxied_npapi,
+           ++number_alive_counter));
 }
 
 bool SrpcClient::Init(PortablePluginInterface *portable_plugin,
@@ -70,17 +73,19 @@ bool SrpcClient::Init(PortablePluginInterface *portable_plugin,
   dprintf(("SrpcClient::SrpcClient: Ctor worked\n"));
   // Record the method names in a convenient way for later dispatches.
   GetMethods();
-  // TODO(sehr): this needs to be revisited when we allow groups of instances
-  // in one NaCl module.
-  int npapi_ident =
-      PortablePluginInterface::GetStrIdentifierCallback("NP_Initialize");
-  if (methods_.find(npapi_ident) != methods_.end()) {
-    dprintf(("SrpcClient::SrpcClient: Is an NPAPI plugin\n"));
-    // Start up NPAPI interaction.
-    portable_plugin->set_module(
-        new(std::nothrow) nacl::NPModule(&srpc_channel_));
-  }
   dprintf(("SrpcClient::SrpcClient: GetMethods worked\n"));
+  if (can_use_proxied_npapi_) {
+    // TODO(sehr): this needs to be revisited when we allow groups of instances
+    // in one NaCl module.
+    int npapi_ident =
+        PortablePluginInterface::GetStrIdentifierCallback("NP_Initialize");
+    if (methods_.find(npapi_ident) != methods_.end()) {
+      dprintf(("SrpcClient::SrpcClient: Is an NPAPI plugin\n"));
+      // Start up NPAPI interaction.
+      portable_plugin->set_module(
+          new(std::nothrow) nacl::NPModule(&srpc_channel_));
+    }
+  }
   return true;
 }
 

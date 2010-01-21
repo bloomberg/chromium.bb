@@ -30,6 +30,7 @@ nacllib.numModulesReady = function(modules) {
 
 var embed1 = null;
 var embed2 = null;
+var embed3 = null;
 
 nacllib.test = function() {
   // Enable control buttons
@@ -41,19 +42,28 @@ nacllib.test = function() {
   document.getElementById('button_embed2_fillRect').disabled = null;
   document.getElementById('button_embed2_setProxy').disabled = null;
   document.getElementById('button_embed2_useProxy').disabled = null;
+  // These two remain disabled until tested.
+  // document.getElementById('button_embed3_cyclingOff').disabled = null;
+  // document.getElementById('button_embed3_cyclingOn').disabled = null;
   // Color the first canvas.
-  var canvas1 = document.getElementById("tutorial");
+  var canvas1 = document.getElementById("canvas1");
   var context1 = canvas1.getContext("2d");
   context1.fillStyle = "rgb(255, 255, 127)";
   context1.fillRect(0, 0, canvas1.width, canvas1.height);
   // Color the second canvas.
-  var canvas2 = document.getElementById("tutorial2");
+  var canvas2 = document.getElementById("canvas2");
   var context2 = canvas2.getContext("2d");
   context2.fillStyle = "rgb(127, 255, 255)";
   context2.fillRect(0, 0, canvas2.width, canvas2.height);
+  // Color the third canvas.
+  var canvas3 = document.getElementById("canvas3");
+  var context3 = canvas3.getContext("2d");
+  context3.fillStyle = "rgb(255, 127, 255)";
+  context3.fillRect(0, 0, canvas3.width, canvas3.height);
   // Remember the objects for use by the buttons.
   embed1 = document.getElementById("embed1");
   embed2 = document.getElementById("embed2");
+  embed3 = document.getElementById("embed3");
   // Return no errors.
   return "";
 }
@@ -62,56 +72,92 @@ nacllib.test = function() {
 
   <h1>Native Client NPAPI Objects and Proxies Test</h1>
 
-  <!-- `embed` element test -->
-  <embed id="embed1" src="npapi_test.nexe" type="application/x-nacl-srpc"
-         name="nacl_module"
-         width="0" height="0"
-         canvas="tutorial"
-         param1="with space"
-         param2=""
-         param3="with'quote"
-         param4='with"doublequote' />
-  <!-- `embed` element test -->
-  <embed id="embed2" src="npapi_test.nexe" type="application/x-nacl-srpc"
-         name="nacl_module"
-         width=0 height=0
-         canvas='tutorial2'
-         param1="with space"
-         param2=""
-         param3="with'quote"
-         param4='with"doublequote' />
+  <table cellspacing="5" cellpadding="5" border="5"
+         summary="three columns of canvases and controls">
+    <tr>
+      <td align="center">
+        <b>  canvas1 </b> <br/>
+        <canvas id="canvas1" width="150" height="150"></canvas>
+      </td>
+      <td align="center">
+        <b>  canvas2 </b> <br/>
+        <canvas id="canvas2" width="150" height="150"></canvas>
+      </td>
+      <td align="center">
+        <b>  canvas3 </b> <br/>
+        <canvas id="canvas3" width="150" height="150"></canvas>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <b>  embed1 </b> <p>
+        <!-- `embed` element test -->
+        <embed id="embed1" src="npapi_test.nexe" type="application/x-nacl-srpc"
+               name="nacl_module"
+               width="0" height="0"
+               canvas="canvas1"
+               cycle="no" />
+        <input type=button value="pop up alert" disabled="true"
+               id='button_embed1_alert' onclick='alert(embed1.bar)' /> <br/>
+        <input type=button value="change canvas1 color" disabled="true"
+               id='button_embed1_fillRect' onclick='embed1.fillRect()' /> <br/>
+        <input type=button value="set proxy to canvas1" disabled="true"
+               id='button_embed1_setProxy' onclick='embed1.setProxy()' /> <br/>
+        <input type=button value="change proxied canvas color" disabled="true"
+               id='button_embed1_useProxy' onclick='embed1.useProxy()' />
+      </td>
+      <td align="center">
+        <b>  embed2 </b> <p>
+        <!-- `embed` element test -->
+        <embed id="embed2" src="npapi_test.nexe" type="application/x-nacl-srpc"
+               name="nacl_module"
+               width="0" height="0"
+               canvas="canvas2"
+               cycle="no" />
+        <input type=button value="pop up alert" disabled="true"
+               id='button_embed2_alert' onclick='alert(embed2.bar)' /> <br/>
+        <input type=button value="change canvas2 color" disabled="true"
+               id='button_embed2_fillRect' onclick='embed2.fillRect()' /> <br/>
+        <input type=button value="set proxy to canvas2" disabled="true"
+               id='button_embed2_setProxy' onclick='embed2.setProxy()' /> <br/>
+        <input type=button value="change proxied canvas color" disabled="true"
+               id='button_embed2_useProxy' onclick='embed2.useProxy()' />
+      </td>
+      <td align="center">
+        <b>  embed3 </b> <p>
+        <!-- `embed` element test -->
+        <embed id="embed3" src="npapi_test.nexe" type="application/x-nacl-srpc"
+               name="nacl_module"
+               width="0" height="0"
+               canvas="canvas3"
+               cycle="auto" />
+        <input type=button value="stop color cyling on canvas3"
+               disabled="true"
+               id='button_embed3_cyclingOff' onclick='embed3.cycling(0)' />
+        <br/>
+        <input type=button value="start color cyling on canvas3"
+               disabled="true"
+               id='button_embed3_cyclingOn' onclick='embed3.cycling(1)' />
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3" align="center">
+        <b> Canvas proxied:
+            <span id="proxy_canvas_name"> NOT SET </span> </b> <p>
+        <input type=button value="change proxied canvas color"
+              onclick='proxy.fillRect()' />
+      </td>
+    </tr>
+  </table>
 
-  <br />
-
-  <hr />
-    <form name="formname">
-      <input type=button value="proxy.fillRect()"
-            onclick='proxy.fillRect()' />
-      <hr />
-      <input type=button value="alert(embed1.bar)" disabled="true"
-            id='button_embed1_alert' onclick='alert(embed1.bar)' />
-      <input type=button value="embed1.fillRect()" disabled="true"
-            id='button_embed1_fillRect' onclick='embed1.fillRect()' />
-      <input type=button value="embed1.setProxy()" disabled="true"
-            id='button_embed1_setProxy' onclick='embed1.setProxy()' />
-      <input type=button value="embed1.useProxy()" disabled="true"
-            id='button_embed1_useProxy' onclick='embed1.useProxy()' />
-      <hr />
-      <input type=button value="alert(embed2.bar)" disabled="true"
-            id='button_embed2_alert' onclick='alert(embed2.bar)' />
-      <input type=button value="embed2.fillRect()" disabled="true"
-            id='button_embed2_fillRect' onclick='embed2.fillRect()' />
-      <input type=button value="embed2.setProxy()" disabled="true"
-            id='button_embed2_setProxy' onclick='embed2.setProxy()' />
-      <input type=button value="embed2.useProxy()" disabled="true"
-            id='button_embed2_useProxy' onclick='embed2.useProxy()' />
-    </form>
-  <hr />
-
-  <canvas id="tutorial" width="150" height="150"></canvas>
-  <canvas id="tutorial2" width="150" height="150"></canvas>
-  <p>
+  <br/>
   <div id="status">NO-STATUS</div>
+  <div>
+    <em>
+      Note: Display canvas3 should change color about once every second,
+      as embed3 demonstrates NPN_PluginThreadAsyncCall.
+    </em>
+  </div>
 
   </body>
 </html>

@@ -56,8 +56,10 @@ deps = {
     Var("chromium_trunk") + "/src/base@" + Var("chrome_rev"),
   "chrome/common":
     Var("chromium_trunk") + "/src/chrome/common@" + Var("chrome_rev"),
-  "native_client/src/untrusted/gpu/command_buffer":
+  "gpu/command_buffer":
     Var("chromium_trunk") + "/src/gpu/command_buffer@" + Var("chrome_rev"),
+  "gpu/pgl":
+    Var("chromium_trunk") + "/src/gpu/pgl",
 }
 
 deps_os = {

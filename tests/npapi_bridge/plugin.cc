@@ -34,26 +34,31 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 #include <cstring>
-#include <nacl/nacl_srpc.h>
 
+NPIdentifier ScriptablePluginObject::id_append_child;
 NPIdentifier ScriptablePluginObject::id_bar;
-NPIdentifier ScriptablePluginObject::id_document;
 NPIdentifier ScriptablePluginObject::id_body;
 NPIdentifier ScriptablePluginObject::id_create_element;
 NPIdentifier ScriptablePluginObject::id_create_text_node;
-NPIdentifier ScriptablePluginObject::id_append_child;
-NPIdentifier ScriptablePluginObject::id_get_element_by_id;
-NPIdentifier ScriptablePluginObject::id_get_context;
-NPIdentifier ScriptablePluginObject::id_fill_style;
+NPIdentifier ScriptablePluginObject::id_cycling;
+NPIdentifier ScriptablePluginObject::id_document;
 NPIdentifier ScriptablePluginObject::id_fill_rect;
-NPIdentifier ScriptablePluginObject::id_proxy;
-NPIdentifier ScriptablePluginObject::id_set_proxy;
-NPIdentifier ScriptablePluginObject::id_use_proxy;
+NPIdentifier ScriptablePluginObject::id_fill_style;
+NPIdentifier ScriptablePluginObject::id_get_context;
+NPIdentifier ScriptablePluginObject::id_get_element_by_id;
+NPIdentifier ScriptablePluginObject::id_inner_text;
 NPIdentifier ScriptablePluginObject::id_null_method;
 NPIdentifier ScriptablePluginObject::id_paint;
+NPIdentifier ScriptablePluginObject::id_proxy;
+NPIdentifier ScriptablePluginObject::id_set_proxy;
+NPIdentifier ScriptablePluginObject::id_text_content;
+NPIdentifier ScriptablePluginObject::id_use_proxy;
+
 NPObject* ScriptablePluginObject::window_object;
 NPVariant ScriptablePluginObject::canvas_name;
+NPVariant ScriptablePluginObject::proxy_canvas_name;
 
 std::map<NPIdentifier, ScriptablePluginObject::Method>*
     ScriptablePluginObject::method_table;
@@ -61,33 +66,81 @@ std::map<NPIdentifier, ScriptablePluginObject::Method>*
 std::map<NPIdentifier, ScriptablePluginObject::Property>*
     ScriptablePluginObject::property_table;
 
+namespace {
+
+static pthread_mutex_t cycling_mu;
+static bool cycling_on = false;
+static pthread_t cycling_thread;
+
+static void ChangeColor(void* arg) {
+  ScriptablePluginObject* obj = reinterpret_cast<ScriptablePluginObject*>(arg);
+  NPVariant ret;
+  NULL_TO_NPVARIANT(ret);
+  if (obj->Invoke(ScriptablePluginObject::id_fill_rect, NULL, 0, &ret)) {
+    NPN_ReleaseVariantValue(&ret);
+  }
+}
+
+static void* ColorCycler(void* arg) {
+  ScriptablePluginObject* obj = reinterpret_cast<ScriptablePluginObject*>(arg);
+  if (NULL == obj) {
+    return NULL;
+  }
+  NPP instance = obj->npp();
+
+  while (true) {
+    bool cycling;
+
+    // Wait
+    sleep(1);
+    // Check if we are cycling the colors.
+    pthread_mutex_lock(&cycling_mu);
+    cycling = cycling_on;
+    pthread_mutex_unlock(&cycling_mu);
+    // Post the callback via NPN_PluginThreadAsyncCall.
+    if (cycling) {
+      NPN_PluginThreadAsyncCall(instance, ChangeColor, obj);
+    }
+  }
+}
+
+}  // namespace
+
+
 bool ScriptablePluginObject::InitializeIdentifiers(NPObject* object,
                                                    const char* canvas) {
   window_object = object;
 
+  id_append_child = NPN_GetStringIdentifier("appendChild");
   id_bar = NPN_GetStringIdentifier("bar");
-  id_document = NPN_GetStringIdentifier("document");
   id_body = NPN_GetStringIdentifier("body");
   id_create_element = NPN_GetStringIdentifier("createElement");
   id_create_text_node = NPN_GetStringIdentifier("createTextNode");
-  id_append_child = NPN_GetStringIdentifier("appendChild");
-  id_get_element_by_id = NPN_GetStringIdentifier("getElementById");
-  id_get_context = NPN_GetStringIdentifier("getContext");
-  id_fill_style = NPN_GetStringIdentifier("fillStyle");
+  id_cycling = NPN_GetStringIdentifier("cycling");
+  id_document = NPN_GetStringIdentifier("document");
   id_fill_rect = NPN_GetStringIdentifier("fillRect");
-  id_proxy = NPN_GetStringIdentifier("proxy");
-  id_set_proxy = NPN_GetStringIdentifier("setProxy");
-  id_use_proxy = NPN_GetStringIdentifier("useProxy");
+  id_fill_style = NPN_GetStringIdentifier("fillStyle");
+  id_get_context = NPN_GetStringIdentifier("getContext");
+  id_get_element_by_id = NPN_GetStringIdentifier("getElementById");
+  id_inner_text = NPN_GetStringIdentifier("innerText");
   id_null_method = NPN_GetStringIdentifier("nullMethod");
   id_paint = NPN_GetStringIdentifier("paint");
+  id_proxy = NPN_GetStringIdentifier("proxy");
+  id_set_proxy = NPN_GetStringIdentifier("setProxy");
+  id_text_content = NPN_GetStringIdentifier("textContent");
+  id_use_proxy = NPN_GetStringIdentifier("useProxy");
 
   STRINGZ_TO_NPVARIANT(canvas, canvas_name);
+  STRINGZ_TO_NPVARIANT("proxy_canvas_name", proxy_canvas_name);
 
   method_table =
     new(std::nothrow) std::map<NPIdentifier, Method>;
   if (method_table == NULL) {
     return false;
   }
+  method_table->insert(
+    std::pair<NPIdentifier, Method>(id_cycling,
+                                    &ScriptablePluginObject::Cycling));
   method_table->insert(
     std::pair<NPIdentifier, Method>(id_fill_rect,
                                     &ScriptablePluginObject::FillRect));
@@ -229,6 +282,19 @@ void ScriptablePluginObject::Notify(const char* url,
   nacl::Close(handle);
 }
 
+bool ScriptablePluginObject::Cycling(const NPVariant* args,
+                                     uint32_t arg_count,
+                                     NPVariant* result) {
+  if (!NPVARIANT_IS_INT32(args[0])) {
+    return false;
+  }
+  bool cycle = (NPVARIANT_TO_INT32(args[0]) != 0);
+  pthread_mutex_lock(&cycling_mu);
+  cycling_on = cycle;
+  pthread_mutex_unlock(&cycling_mu);
+  return true;
+}
+
 bool ScriptablePluginObject::GetBar(NPVariant* result) {
   NPObject* object = NaClNPN_CreateArray(npp_);
   if (object) {
@@ -251,8 +317,6 @@ bool ScriptablePluginObject::GetBar(NPVariant* result) {
 bool ScriptablePluginObject::FillRect(const NPVariant* args,
                                       uint32_t arg_count,
                                       NPVariant* result) {
-  printf("fillRect called!\n");
-
   NPVariant document;
   VOID_TO_NPVARIANT(document);
   if (!NPN_GetProperty(npp_, window_object, id_document, &document) ||
@@ -336,7 +400,42 @@ bool ScriptablePluginObject::FillRect(const NPVariant* args,
 bool ScriptablePluginObject::SetProxy(const NPVariant* args,
                                       uint32_t arg_count,
                                       NPVariant* result) {
-  printf("setProxy called!\n");
+  // Update the span that shows the canvas setting for the proxy.
+  NPVariant document;
+  VOID_TO_NPVARIANT(document);
+  if (!NPN_GetProperty(npp_, window_object, id_document, &document) ||
+      !NPVARIANT_IS_OBJECT(document)) {
+    NPN_ReleaseVariantValue(&document);
+    return false;
+  }
+  NPVariant span;
+  VOID_TO_NPVARIANT(span);
+  if (!NPN_Invoke(npp_,
+                  NPVARIANT_TO_OBJECT(document),
+                  id_get_element_by_id,
+                  &proxy_canvas_name,
+                  1,
+                  &span) ||
+      !NPVARIANT_IS_OBJECT(span)) {
+    NPN_ReleaseVariantValue(&span);
+    NPN_ReleaseVariantValue(&document);
+    return false;
+  }
+  if (NPN_HasProperty(npp_, NPVARIANT_TO_OBJECT(span), id_text_content)) {
+    NPN_SetProperty(npp_,
+                    NPVARIANT_TO_OBJECT(span),
+                    id_text_content,
+                    &canvas_name);
+  } else if (NPN_HasProperty(npp_, NPVARIANT_TO_OBJECT(span), id_inner_text)) {
+    NPN_SetProperty(npp_,
+                    NPVARIANT_TO_OBJECT(span),
+                    id_inner_text,
+                    &canvas_name);
+  }
+  NPN_ReleaseVariantValue(&span);
+  NPN_ReleaseVariantValue(&document);
+
+  // set the proxy object.
   NPVariant var;
   OBJECT_TO_NPVARIANT(this, var);
   VOID_TO_NPVARIANT(*result);
@@ -346,7 +445,6 @@ bool ScriptablePluginObject::SetProxy(const NPVariant* args,
 bool ScriptablePluginObject::UseProxy(const NPVariant* args,
                                       uint32_t arg_count,
                                       NPVariant* result) {
-  printf("useProxy called!\n");
   NPVariant proxy;
   VOID_TO_NPVARIANT(proxy);
   if (NPN_GetProperty(npp_, window_object, id_proxy, &proxy) &&
@@ -386,14 +484,12 @@ bool ScriptablePluginObject::NullMethod(const NPVariant* args,
   return true;
 }
 
-Plugin::Plugin(NPP npp, const char* canvas)
+Plugin::Plugin(NPP npp, const char* canvas, bool start_cycle_thread)
     : npp_(npp),
       scriptable_object_(NULL),
       window_object_(NULL),
       bitmap_data_(nacl::kMapFailed),
       bitmap_size_(0) {
-  printf("Plugin::Plugin()\n");
-
   NPError error = NPN_GetValue(npp_, NPNVWindowNPObject, &window_object_);
   if (error != NPERR_NO_ERROR) {
     return;
@@ -416,7 +512,7 @@ Plugin::Plugin(NPP npp, const char* canvas)
     return;
   }
 
-  // Print the documet title.
+  // Print the document title.
   NPIdentifier id_document = NPN_GetStringIdentifier("document");
   NPVariant document;
   VOID_TO_NPVARIANT(document);
@@ -435,10 +531,22 @@ Plugin::Plugin(NPP npp, const char* canvas)
     NPN_ReleaseVariantValue(&title);
   }
   NPN_ReleaseVariantValue(&document);
+
+  // Color cycling
+  // start_cycle_thread = false;
+  pthread_mutex_init(&cycling_mu, NULL);
+  cycling_on = false;
+  if (start_cycle_thread) {
+    // IMPORTANT: static_cast actually changes the this pointer here, because
+    // ScriptablePluginObject is derived from NPObject but has a vtbl.
+    // Hence, a reinterpret_cast here is incorrect.
+    ScriptablePluginObject* obj =
+        static_cast<ScriptablePluginObject*>(GetScriptableObject());
+    pthread_create(&cycling_thread, NULL, ColorCycler, obj);
+  }
 }
 
 Plugin::~Plugin() {
-  printf("Plugin::~Plugin()\n");
   if (scriptable_object_) {
     NPN_ReleaseObject(scriptable_object_);
   }
@@ -448,16 +556,16 @@ Plugin::~Plugin() {
   if (window_object_) {
     NPN_ReleaseObject(window_object_);
   }
+  pthread_mutex_destroy(&cycling_mu);
 }
 
 NPObject* Plugin::GetScriptableObject() {
-  printf("Plugin::GetScriptableObject\n");
-  if (scriptable_object_ == NULL) {
+  if (NULL == scriptable_object_) {
     scriptable_object_ =
       NPN_CreateObject(npp_, &ScriptablePluginObject::np_class);
   }
 
-  if (scriptable_object_) {
+  if (NULL != scriptable_object_) {
     NPN_RetainObject(scriptable_object_);
   }
 

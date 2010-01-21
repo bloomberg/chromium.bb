@@ -128,18 +128,21 @@ bool ConnectedSocket::Init(
   ConnectedSocketInitializer *socket_init_info =
       static_cast<ConnectedSocketInitializer*>(init_info);
 
-  dprintf(("ConnectedSocket::Init(%p, %p, %d, %p)\n",
+  dprintf(("ConnectedSocket::Init(%p, %p, %d, %d, %p)\n",
            static_cast<void *>(socket_init_info->plugin_),
            static_cast<void *>(socket_init_info->wrapper_),
            socket_init_info->is_srpc_client_,
+           socket_init_info->is_command_channel_,
            static_cast<void *>(socket_init_info->serv_rtm_info_)));
 
   service_runtime_info_ = socket_init_info->serv_rtm_info_;
 
 
   if (socket_init_info->is_srpc_client_) {
-    // Get SRPC client interface going over socket.
-    srpc_client_ = new(std::nothrow) SrpcClient();
+    // Get SRPC client interface going over socket.  Only the JavaScript main
+    // channel may use proxied NPAPI (not the command channels).
+    srpc_client_
+        = new(std::nothrow) SrpcClient(!socket_init_info->is_command_channel_);
     if (NULL == srpc_client_) {
       // Return an error.
       // TODO(sehr): make sure that clients check for this as well.

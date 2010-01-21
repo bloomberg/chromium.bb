@@ -186,7 +186,11 @@ NP_Initialize(NPNetscapeFuncs* pFuncs
   NPNFuncs.hasmethod               = pFuncs->hasmethod;
   NPNFuncs.releasevariantvalue     = pFuncs->releasevariantvalue;
   NPNFuncs.setexception            = pFuncs->setexception;
-  // NPNFuncs.pluginthreadasynccall   = pFuncs->pluginthreadasynccall;
+  NPNFuncs.pushpopupsenabledstate  = pFuncs->pushpopupsenabledstate;
+  NPNFuncs.poppopupsenabledstate   = pFuncs->poppopupsenabledstate;
+  NPNFuncs.enumerate               = pFuncs->enumerate;
+  NPNFuncs.pluginthreadasynccall   = pFuncs->pluginthreadasynccall;
+  NPNFuncs.construct               = pFuncs->construct;
 
 #if defined(XP_UNIX) && !defined(XP_MACOSX)
   /*
@@ -206,12 +210,13 @@ NP_Initialize(NPNetscapeFuncs* pFuncs
   pluginFuncs->writeready = NewNPP_WriteReadyProc(NPP_WriteReady);
   pluginFuncs->write      = NewNPP_WriteProc(NPP_Write);
   pluginFuncs->print      = NewNPP_PrintProc(NPP_Print);
-  pluginFuncs->urlnotify  = NewNPP_URLNotifyProc(NPP_URLNotify);
   pluginFuncs->event      = NewNPP_HandleEventProc(NPP_HandleEvent);
-  pluginFuncs->getvalue   = NewNPP_GetValueProc(NPP_GetValue);
+  pluginFuncs->urlnotify  = NewNPP_URLNotifyProc(NPP_URLNotify);
 #ifdef OJI
   pluginFuncs->javaClass  = NPP_GetJavaClass();
 #endif  // OJI
+  pluginFuncs->getvalue   = NewNPP_GetValueProc(NPP_GetValue);
+  pluginFuncs->setvalue   = NewNPP_SetValueProc(NPP_SetValue);
 #endif  // defined(XP_UNIX) && !defined(XP_MACOSX)
 
   return NPP_Initialize();

@@ -26,10 +26,12 @@
 #ifndef NATIVE_CLIENT_TESTS_PEPPER_PLUGIN_PLUGIN_OBJECT_H_
 #define NATIVE_CLIENT_TESTS_PEPPER_PLUGIN_PLUGIN_OBJECT_H_
 
+#include "base/basictypes.h"
 #include <nacl/npapi.h>
 #include <nacl/npruntime.h>
 #include <nacl/npapi_extensions.h>
 #include <nacl/npupp.h>
+#include <nacl/pgl.h>
 
 extern NPNetscapeFuncs* browser;
 
@@ -43,14 +45,32 @@ class PluginObject {
   NPObject* header() { return &header_; }
   NPP npp() const { return npp_; }
 
+  void New(NPMIMEType pluginType, int16 argc, char* argn[], char* argv[]);
   void SetWindow(const NPWindow& window);
+  void Draw3D();
 
  private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PluginObject);
+
+  bool InitializeCommandBuffer();
+
   NPObject header_;
   NPP npp_;
   NPObject* test_object_;
+  int dimensions_;
 
   NPDevice* device2d_;
+  NPDevice* device3d_;
+
+  PGLContext pgl_context_;
+
+  NPDevice* deviceaudio_;
+
+  NPDeviceContext3D context3d_;
+  NPDeviceContextAudio context_audio_;
+
+  int width_;
+  int height_;
 };
 
 

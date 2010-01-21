@@ -76,7 +76,7 @@ bool RemoveProperty(NPObject* object, NPIdentifier name) {
 }
 
 NPObject* AllocateScriptablePluginObject(NPP npp, NPClass* npclass) {
-  return new ScriptablePluginObject(npp);
+  return static_cast<NPObject*>(new ScriptablePluginObject(npp));
 }
 
 }  // namespace

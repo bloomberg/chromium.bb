@@ -38,6 +38,7 @@ static const int kNPVariantOptionalMax = 16 * 1024;
 NPObject* Alloc(NPP npp, NPClass* aClass) {
   UNREFERENCED_PARAMETER(npp);
   UNREFERENCED_PARAMETER(aClass);
+
   return nacl::NPObjectProxy::GetLastAllocated();
 }
 
@@ -157,6 +158,7 @@ NPObjectProxy::NPObjectProxy(NPP npp, const NPCapability& capability)
   capability_.CopyFrom(capability);
   last_allocated = this;
   NPN_CreateObject(npp_, &np_class);
+  last_allocated = NULL;
 }
 
 NPObjectProxy::~NPObjectProxy() {

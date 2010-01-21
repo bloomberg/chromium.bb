@@ -53,7 +53,7 @@ class MethodInfo;
 //  SrpcClient represents an SRPC connection to a client.
 class SrpcClient {
  public:
-  SrpcClient();
+  explicit SrpcClient(bool can_use_proxied_npapi);
   //  Init is passed a ConnectedSocket.  It performs service
   //  discovery and provides the interface for future rpcs.
   bool Init(PortablePluginInterface* portable_plugin, ConnectedSocket* socket);
@@ -71,13 +71,17 @@ class SrpcClient {
   NaClSrpcArg* GetSignatureObject();
 
  private:
+  // TODO(sehr): We need a DISALLOW_COPY_AND_ASSIGN macro.
+  SrpcClient(const SrpcClient&);
+  void operator=(const SrpcClient&);
+
   static void SignalHandler(int value);
   void GetMethods();
 
- private:
   std::map<int, MethodInfo*> methods_;
   NaClSrpcChannel srpc_channel_;
   PortablePluginInterface* portable_plugin_;
+  bool can_use_proxied_npapi_;
 
   static int number_alive_counter;
   static PLUGIN_JMPBUF srpc_env;

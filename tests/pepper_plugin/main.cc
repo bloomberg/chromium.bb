@@ -102,9 +102,11 @@ NPError NPP_New(NPMIMEType pluginType,
                 int16 argc, char* argn[], char* argv[],
                 NPSavedData* saved) {
   if (browser->version >= 14) {
-    NPObject* obj = NPP_GetScriptableInstance(instance);
+    PluginObject* obj = reinterpret_cast<PluginObject*>(
+        browser->createobject(instance, PluginObject::GetPluginClass()));
     instance->pdata = obj;
     event_handler = new EventHandler(instance);
+    obj->New(pluginType, argc, argn, argv);
   }
 
   return NPERR_NO_ERROR;

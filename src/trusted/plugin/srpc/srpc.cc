@@ -248,10 +248,15 @@ NPError SRPC_Plugin::SetWindow(NPWindow* window) {
   NPError ret = NPERR_GENERIC_ERROR;
   dprintf(("SRPC_Plugin::SetWindow(%p, %p)\n", static_cast<void* >(this),
            static_cast<void*>(window)));
-  if (video_ && video_->SetWindow(window)) {
-      ret = NPERR_NO_ERROR;
+  if (NULL == module_) {
+    if (video_ && video_->SetWindow(window)) {
+        ret = NPERR_NO_ERROR;
+    }
+    return ret;
+  } else {
+    // Send NPP_SetWindow to NPModule.
+    return module_->SetWindow(npp_, window);
   }
-  return ret;
 }
 
 NPError SRPC_Plugin::GetValue(NPPVariable variable, void* value) {

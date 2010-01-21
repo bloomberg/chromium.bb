@@ -124,17 +124,18 @@ NACL_SRPC_METHOD_ARRAY(NPNavigator::srpc_methods) = {
   { "NP_SetUpcallServices:s:", SetUpcallServices },
   { "NP_Initialize:iih:", Initialize },
   { "NPP_New:siiCC:i", New },
+  { "NPP_SetWindow:iii:i", SetWindow },
   { "NPP_Destroy:i:i", Destroy },
   { "NPP_GetScriptableInstance:i:C", GetScriptableInstance },
   { "NPP_HandleEvent:iC:i", HandleEvent },
   { "NPP_URLNotify:ihi:", URLNotify },
-  { "NPN_DoAsyncCall:i:", DoAsyncCall },
+  { "NPP_DoAsyncCall:i:", DoAsyncCall },
   // Exported from NPObjectStub
   { "NPN_Deallocate:C:", NPObjectStub::Deallocate },
   { "NPN_Invalidate:C:", NPObjectStub::Invalidate },
   { "NPN_HasMethod:Ci:i", NPObjectStub::HasMethod },
   { "NPN_Invoke:CiCCi:iCC", NPObjectStub::Invoke },
-  { "NPN_InvokeDefault:CiCi:iCC", NPObjectStub::InvokeDefault },
+  { "NPN_InvokeDefault:CCCi:iCC", NPObjectStub::InvokeDefault },
   { "NPN_HasProperty:Ci:i", NPObjectStub::HasProperty },
   { "NPN_GetProperty:Ci:iCC", NPObjectStub::GetProperty },
   { "NPN_SetProperty:CiCC:i", NPObjectStub::SetProperty },
@@ -266,8 +267,8 @@ NaClSrpcError NPNavigator::New(NaClSrpcChannel* channel,
   char* mimetype = inputs[0]->u.sval;
   NPP npp = GetNaClNPP(NPBridge::IntToNpp(inputs[1]->u.ival), true);
   uint32_t argc = static_cast<uint32_t>(inputs[2]->u.ival);
-  DebugPrintf("NPP_New: npp=%d, mime=%s, argc=%"PRIu32"\n",
-              npp, mimetype, argc);
+  DebugPrintf("NPP_New: npp=%p, mime=%s, argc=%"PRIu32"\n",
+              reinterpret_cast<void*>(npp), mimetype, argc);
 
   NPNavigator* nav = static_cast<NPNavigator*>(channel->server_instance_data);
   // Build the argv and argn strutures.
@@ -288,12 +289,27 @@ NaClSrpcError NPNavigator::New(NaClSrpcChannel* channel,
     DebugPrintf("  %"PRIu32": argn=%s argv=%s\n", i, argn[i], argv[i]);
   }
   // Invoke the implementation
-  outputs[0]->u.ival = nav->NewImpl(mimetype,
-                                    npp,
-                                    argc,
-                                    argn,
-                                    argv,
-                                    outputs[1]);
+  outputs[0]->u.ival = nav->NewImpl(mimetype, npp, argc, argn, argv);
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (int) npp
+// (int) height
+// (int) width
+// outputs:
+// (int) NPERR
+NaClSrpcError NPNavigator::SetWindow(NaClSrpcChannel* channel,
+                                     NaClSrpcArg** inputs,
+                                     NaClSrpcArg** outputs) {
+  NPP npp = GetNaClNPP(NPBridge::IntToNpp(inputs[0]->u.ival), true);
+  int height = inputs[1]->u.ival;
+  int width = inputs[2]->u.ival;
+  DebugPrintf("NPP_SetWindow: npp=%d, height=%s, width=%d\n",
+              npp, height, width);
+  // Invoke the implementation.
+  NPNavigator* nav = static_cast<NPNavigator*>(channel->server_instance_data);
+  outputs[0]->u.ival = nav->SetWindowImpl(npp, height, width);
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -382,8 +398,7 @@ NPError NPNavigator::NewImpl(NPMIMEType mimetype,
                              NPP npp,
                              uint32_t argc,
                              char* argn[],
-                             char* argv[],
-                             NaClSrpcArg* result_object) {
+                             char* argv[]) {
   if (NULL == plugin_funcs.newp) {
     return NPERR_GENERIC_ERROR;
   }
@@ -395,6 +410,20 @@ NPError NPNavigator::NewImpl(NPMIMEType mimetype,
                                      argv,
                                      NULL);
   return retval;
+}
+
+NPError NPNavigator::SetWindowImpl(NPP npp,
+                                   int height,
+                                   int width) {
+  if (NULL == plugin_funcs.setwindow) {
+    return NPERR_GENERIC_ERROR;
+  }
+  // Populate an NPWindow object to pass to the instance.
+  static NPWindow window;
+  window.height = height;
+  window.width = width;
+  // Invoke the plugin's setwindow method.
+  return plugin_funcs.setwindow(npp, &window);
 }
 
 NPError NPNavigator::DestroyImpl(NPP npp) {
@@ -710,6 +739,7 @@ void NPNavigator::PluginThreadAsyncCall(NPP instance,
                                         AsyncCallFunc func,
                                         void* user_data) {
   uint32_t next_call;
+  DebugPrintf("PluginThreadAsyncCall %p %p %p\n", instance, func, user_data);
   // The map of pending calls.
   NPPendingCallClosure* closure =
       new(std::nothrow) NPPendingCallClosure(func, user_data);
@@ -723,6 +753,7 @@ void NPNavigator::PluginThreadAsyncCall(NPP instance,
   // Send an RPC to the NPAPI upcall thread in the browser plugin.
   NaClSrpcInvokeByName(upcall_channel_,
                        "NPN_PluginThreadAsyncCall",
+                       GetPluginNPP(instance),
                        static_cast<int>(next_call));
 }
 

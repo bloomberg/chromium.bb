@@ -34,19 +34,26 @@ Import('env')
 if env['TARGET_ARCHITECTURE'] == 'arm':
   Return()
 
+env.FilterOut(CCFLAGS = ['-pedantic'])
+
 env.Prepend(CPPDEFINES = ['XP_UNIX'])
+env.Prepend(CPPPATH = ['$SOURCE_ROOT/gpu/command_buffer/common',
+                       ])
 
 nacl_npplugin_test_inputs = [
   'event_handler.cc',
   'main.cc',
   'plugin_object.cc',
   'test_object.cc',
+  '$SOURCE_ROOT/gpu/command_buffer/client/gles2_demo_cc.cc'
 ]
 
 # TODO: should this link against the sdk version of google_nacl_npruntime?
 env.ComponentProgram('pepper_plugin.nexe', nacl_npplugin_test_inputs,
                      EXTRA_LIBS=['google_nacl_imc',
                                  'google_nacl_npruntime',
+                                 'google_nacl_pgl',
+                                 'google_nacl_gpu',
                                  'pthread',
                                  'srpc'])
 
