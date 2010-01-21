@@ -90,7 +90,11 @@ nouveau_channel_alloc(struct nouveau_device *dev, uint32_t fb_ctxdma,
 		return ret;
 	}
 
-	nouveau_pushbuf_init(&nvchan->base);
+	ret = nouveau_pushbuf_init(&nvchan->base);
+	if (ret) {
+		nouveau_channel_free((void *)&nvchan);
+		return ret;
+	}
 
 	*chan = &nvchan->base;
 	return 0;
