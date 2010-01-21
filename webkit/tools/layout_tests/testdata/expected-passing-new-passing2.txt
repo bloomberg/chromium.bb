@@ -1,3 +1,0 @@
-fast/bar/fail2.html
-fast/foo/pass2.html
-fast/pass1.html
