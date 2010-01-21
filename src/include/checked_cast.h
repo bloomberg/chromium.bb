@@ -40,7 +40,7 @@ namespace nacl {
     typename target_t,
     typename source_t,
     template<typename, typename> class trunc_policy>
-  INLINE target_t checked_cast(const source_t& input);
+  target_t checked_cast(const source_t& input);
 
   //
   // Convenience wrappers for specializations of checked_cast with
@@ -48,24 +48,16 @@ namespace nacl {
   //
 
   template<typename T, typename S>
-  INLINE T checked_cast_fatal(const S& input);
+  T assert_cast(const S& input);
 
   template<typename T, typename S>
-  INLINE T saturate_cast(const S& input);
+  T saturate_cast(const S& input);
 
   //
   // Helper function prototypes
   //
   //
-  namespace CheckedCastDetail {
-
-    template <typename target_t, typename source_t>
-    INLINE bool IsTrivialCast();
-
-    template <typename target_t, typename source_t>
-    INLINE bool ValidCastRange(source_t* rangeMin,
-                               source_t* rangeMax);
-
+  namespace CheckedCast {
     //
     // OnTruncate* functions: policy functions that define
     // what to do if a checked cast can't be made without
@@ -81,8 +73,215 @@ namespace nacl {
       static target_t OnTruncate(const source_t& input);
     };
 
-  }  // namespace CheckedCastDetail
+    namespace detail {
+//-----------------------------------------------------------------------------
+// RuntimeHelpers
+//
+// Ugly nested templates--necessary because GCC is ever vigilant about type
+// safety, and has no way to temporarily disable certain warnings
+//
+//-----------------------------------------------------------------------------
 
+      //
+      // TrivialityChecker template
+      // Makes decisions about whether a cast is trivial (does not require
+      // the value of the input to be checked).
+      //
+      // The specializations are necessary to avoid running comparisons that
+      // are either invalid or always true, since these comparisons trigger
+      // warnings.
+      //
+      template<typename tlimits, typename slimits, bool IsCompileTimeTrivial>
+      struct TrivialityChecker {
+        static bool IsRuntimeTrivial() { return false; }
+      };
+
+      template<typename tlimits, typename slimits>
+      struct TrivialityChecker<tlimits, slimits, true> {
+        static bool IsRuntimeTrivial() {
+          return (tlimits::min() <= slimits::min())
+                  && (tlimits::max() >= slimits::max());
+        }
+      };
+
+      //
+      // Casting versions of std::min and std::max.
+      // These should only be called from code that has checked to make
+      // sure the cast is valid, otherwise compiler warnings will be
+      // triggered.
+      //
+      template<typename A, typename B>
+      static B cast_min(const A& a, const B& b) {
+        return (static_cast<B>(a) < b) ? static_cast<B>(a) : b;
+      }
+
+      template<typename A, typename B>
+      static B cast_max(const A& a, const B& b) {
+        return (static_cast<B>(a) > b) ? static_cast<B>(a) : b;
+      }
+
+      //
+      // Template specializations for determining valid ranges for
+      // any given typecast. Specialized for different combinations
+      // of signed/unsigned types.
+      //
+      template<typename target_t,
+               typename source_t,
+               bool SignednessDiffers,
+               bool TargetIsSigned>
+      struct RangeDetail {
+        typedef std::numeric_limits<target_t> tlimits;
+        typedef std::numeric_limits<source_t> slimits;
+
+        static source_t OverlapMin() {
+          return cast_max(tlimits::min(), slimits::min());
+        }
+        static source_t OverlapMax() {
+          return cast_min(tlimits::max(), slimits::max());
+        }
+      };
+
+      // signed target / unsigned source
+      template<typename target_t, typename source_t>
+      struct RangeDetail<target_t, source_t, true, true> {
+        typedef std::numeric_limits<target_t> tlimits;
+        typedef std::numeric_limits<source_t> slimits;
+
+        static source_t OverlapMin() {
+          if (tlimits::min() >= 0) {
+            return cast_max(tlimits::min(), slimits::min());
+          } else {
+            return slimits::min();
+          }
+        }
+        static source_t OverlapMax() {
+          if (tlimits::max() >= 0) {
+            return cast_min(tlimits::max(), slimits::max());
+          } else {
+            return slimits::min();
+          }
+        }
+      };
+
+      // unsigned target / signed source
+      template<typename target_t, typename source_t>
+      struct RangeDetail<target_t, source_t, true, false> {
+        typedef std::numeric_limits<target_t> tlimits;
+        typedef std::numeric_limits<source_t> slimits;
+
+        static source_t OverlapMin() {
+          if (slimits::min() >= 0) {
+            return cast_max(tlimits::min(), slimits::min());
+          } else if (slimits::max() >= 0) {
+            return cast_min(tlimits::min(), slimits::max());
+          } else {
+            return slimits::min();
+          }
+        }
+        static source_t OverlapMax() {
+          if (slimits::max() >= 0) {
+            return cast_min(tlimits::max(), slimits::max());
+          } else {
+            return slimits::min();
+          }
+        }
+      };
+
+      //
+      // Wrapper for RangeDetail. Prevents RangeDetail objects
+      // from being instantiated for unsupported types.
+      //
+      template<typename target_t, typename source_t, bool IsSupported>
+      struct RangeHelper {
+        typedef std::numeric_limits<target_t> tlimits;
+        typedef std::numeric_limits<source_t> slimits;
+
+        static bool OverlapExists() { return false; }
+
+        // The return values from OverlapMin() and OverlapMax() are
+        // arbitrary if OverlapExists() returns false, so we'll
+        // just return the minimum source value for both.
+        static source_t OverlapMin() { return slimits::min(); }
+        static source_t OverlapMax() { return slimits::min(); }
+      };
+
+      template<typename target_t, typename source_t>
+      struct RangeHelper<target_t, source_t, true> {
+        typedef std::numeric_limits<target_t> tlimits;
+        typedef std::numeric_limits<source_t> slimits;
+
+        typedef RangeDetail<target_t,
+          source_t,
+          (tlimits::is_signed != slimits::is_signed),
+          tlimits::is_signed> detail_t;
+
+        static bool OverlapExists() {
+          return detail_t::OverlapMin() < detail_t::OverlapMax();
+        }
+        static source_t OverlapMin() { return detail_t::OverlapMin(); }
+        static source_t OverlapMax() { return detail_t::OverlapMax(); }
+      };
+
+      //
+      // CastInfo
+      //
+      // Maintains information about how to cast between
+      // two types.
+      //
+      template<typename target_t, typename source_t>
+      struct CastInfo {
+        typedef std::numeric_limits<target_t> tlimits;
+        typedef std::numeric_limits<source_t> slimits;
+
+        static const bool kSupported = tlimits::is_specialized
+          && slimits::is_specialized
+          && tlimits::is_integer
+          && slimits::is_integer
+          && tlimits::is_bounded
+          && slimits::is_bounded;
+
+        static const bool kIdenticalSignedness =
+          (tlimits::is_signed == slimits::is_signed);
+
+        // "digits" in numeric_limits refers to binary
+        // digits. (Decimal digits are stored in a field
+        // called digits10.)
+        static const bool kSufficientBits =
+          (tlimits::digits >= slimits::digits);
+
+        static const bool kCompileTimeTrivial = kSupported
+          && kIdenticalSignedness
+          && kSufficientBits;
+
+        typedef TrivialityChecker<tlimits,
+                                  slimits,
+                                  kCompileTimeTrivial> trivial_t;
+        typedef RangeHelper<target_t, source_t, kSupported> range_t;
+
+        // Can the cast be done without runtime checks--i.e. are
+        // all possible input values also valid output values?
+        static bool RuntimeTrivial() {
+          return trivial_t::IsRuntimeTrivial();
+        }
+
+        // Are there any valid input values for which a cast would succeed?
+        static bool RuntimePossible() {
+          return range_t::OverlapExists();
+        }
+
+        // Is the given source value a valid target value?
+        static bool RuntimeRangeCheck( const source_t& src ) {
+          return (range_t::OverlapExists()
+                  && src <= range_t::OverlapMax()
+                  && src >= range_t::OverlapMin());
+        }
+
+        // Range of source values which are also valid target values.
+        static source_t RuntimeRangeMin() { return range_t::OverlapMin(); }
+        static source_t RuntimeRangeMax() { return range_t::OverlapMax(); }
+      };
+    } // namespace detail
+  }  // namespace CheckedCast
 }  // namespace nacl
 
 
@@ -92,159 +291,6 @@ namespace nacl {
 //
 //-----------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------------
-// bool IsTrivialCast()
-//
-// Determine whether a cast between two numeric types can
-// be done trivially, i.e. with no loss of precision when
-// casting a value of type src_t to a value of type target_t.
-//
-// Requires:
-//    A specialization of std::numeric_limits<> must exist for both types.
-//
-// Returns:
-//    true:   types can be converted trivially.
-//    false:  types cannot be converted trivially, or unknown.
-//
-//-----------------------------------------------------------------------------
-template <typename target_t, typename source_t>
-INLINE bool nacl::CheckedCastDetail::IsTrivialCast() {
-  typedef std::numeric_limits<target_t> target_limits;
-  typedef std::numeric_limits<source_t> source_limits;
-  // This code relies somewhat on the optimizer to be
-  // smart--it should be able to run these checks at
-  // compile time, not runtime. The alternative is to
-  // do the same thing with template metaprogramming.
-  // I don't like that alternative, so let's trust
-  // the optimizer unless and until it's proven
-  // untrustworthy.
-  bool result = true;
-
-  // Precondition check: types must have specializations in
-  // std::numeric_limits--otherwise there's not enough info
-  // to make this decision
-  result = result && target_limits::is_specialized;
-  result = result && source_limits::is_specialized;
-
-  // Initial trivial check: assume that target size must
-  // be greater or equal to source size if we're going to
-  // hold all possible source values.
-  result = result && (sizeof(target_t) >= sizeof(source_t));
-
-  // Check for float/int mismatch
-  result = result && (target_limits::is_integer
-    == source_limits::is_integer);
-
-  // Make sure the signedness of the two types is identical
-  result = result &&
-          (target_limits::is_signed == source_limits::is_signed);
-
-  // Range check--this will catch issues with UDTs that define
-  // weird values for min and max.
-  if (result) {
-    // we checked for signedness mismatches earlier, so it's
-    // safe to disable signed/unsigned comparison warnings.
-    // TODO(ilewis): port to gcc
-#pragma warning(push)
-#pragma warning(disable:4018)
-    result = result && (target_limits::max() >= source_limits::max());
-    result = result && (target_limits::min() <= source_limits::min());
-#pragma warning(pop)
-  }
-
-  return result;
-}
-
-//-----------------------------------------------------------------------------
-// bool ValidCastRange(source_& out_rangeMin, source_t& out_rangeMax)
-//
-// Finds the minimum and maximum values of source_t that can be represented
-// using type target_t.
-// For instance:
-//    ValidCastRange<int8,uint64>() => 0, 127
-// In this example, the range's upper bound is determined by the maximum value
-// of an int8. But the lower bound is not -128, which is int8's minimum value.
-// Although -128 is a valid value for int8, there is no way to represent the
-// value -128 using a uint64. Therefore the smallest value of uint64 that can
-// be safely cast to an int8 is 0, and the largest such value is 127.
-//
-// In the event that the two types have no overlap, or the function lacks the
-// information to determine whether the types overlap, the return value is
-// false.
-//
-// Parameters:
-//    out_rangeMin: out parameter which will be filled with the lower bound
-//                  of the valid range if the function is successful.
-//    out_rangeMax: out parameter which will be filled with the upper bound
-//                  of the valid range if the function is successful.
-//
-// Returns:
-//    true:   if the function could determine the valid range for a cast from
-//            source_t to target_t
-//    false:  if no such range exists or if the range cannot be determined.
-//-----------------------------------------------------------------------------
-template <typename target_t, typename source_t>
-INLINE bool nacl::CheckedCastDetail::ValidCastRange(
-    source_t* rangeMin,
-    source_t* rangeMax) {
-  typedef std::numeric_limits<target_t> target_limits;
-  typedef std::numeric_limits<source_t> source_limits;
-
-  // save off these values so we don't have to keep calling numeric_limits.
-  source_t sourceMin = source_limits::min();
-  source_t sourceMax = source_limits::max();
-  target_t targetMin = target_limits::min();
-  target_t targetMax = target_limits::max();
-
-  bool valid = true;
-
-  //
-  // There are two major cases we need to handle:
-  //  1. The types are either both signed, or both unsigned
-  //  2. One type is signed while the other is unsigned.
-  //
-  // It turns out that we don't even need to know which type
-  // (source or target) is signed and which is unsigned; it's
-  // enough just knowing whether the signedness matches or
-  // doesn't match.
-  //
-#pragma warning(push)          // disable signed/unsigned comparison warnings,
-#pragma warning(disable:4018)  // since we're checking explicitly for
-                               // mismatched signedness.
-
-  if (source_limits::is_signed != target_limits::is_signed) {
-    // If we get here, then the signedness differs. This means that the
-    // ranges may be overlapping or disjoint, and the range of the smaller type
-    // is no longer guaranteed to be a proper subset of the larger type's
-    // range.
-    //
-    if (sourceMax < 0 || targetMax < 0) {
-      // if either maximum is negative, there's no chance the cast is valid.
-      valid = false;
-    } else {
-      // clamp negative minima to zero.
-      sourceMin = std::max(sourceMin, static_cast<source_t>(0));
-      targetMin = std::max(targetMin, static_cast<target_t>(0));
-    }
-  }
-  // the casts here are safe because we've already determined that
-  // (1) source_t is wider than target_t and (2) if the signedness differs,
-  // the minima have been clamped to zero
-  *rangeMin = std::max(sourceMin, static_cast<source_t>(targetMin));
-  *rangeMax = std::min(sourceMax, static_cast<source_t>(targetMax));
-
-  // Weird corner case: it's conceivable that two UDTs could define
-  // ranges that don't actually overlap. In that case there is no valid
-  // range of values for the cast. We can decide if this has happened by
-  // comparing rangeMin against rangeMax--if rangeMin is greater than
-  // rangeMax then we know something's screwy.
-  if (*rangeMin > *rangeMax) {
-    valid = false;
-  }
-#pragma warning(pop)  // re-enable signed/unsigned comparison warnings
-
-  return valid;
-}
 
 //-----------------------------------------------------------------------------
 // checked_cast(const source_t& input, trunc_fn& OnTrunc)
@@ -294,61 +340,23 @@ template <
     typename target_t,
     typename source_t,
     template<typename, typename> class trunc_policy>
-INLINE target_t nacl::checked_cast(const source_t& input) {
-  typedef std::numeric_limits<target_t> target_limits;
-  typedef std::numeric_limits<source_t> source_limits;
+target_t nacl::checked_cast(const source_t& input) {
+  typedef CheckedCast::detail::CastInfo<target_t, source_t> info;
 
   target_t output;
 
   //
-  // Sanity checks: early failure for types we can't recognize
-  // TODO(ilewis): replace COMPILE_ASSERT with code that doesn't
-  // come from Chromium(?)
+  // Runtime checks--these should compile out for all basic types
   //
-
-  // need a specialization of std::numeric_limits in order to
-  // make informed decisions about the type
-  COMPILE_ASSERT((source_limits::is_specialized == true),
-                  checked_cast_unsupported_type_on_right_hand_side);
-  COMPILE_ASSERT((target_limits::is_specialized == true),
-                  checked_cast_unsupported_type_on_left_hand_side);
-
-  // Only integers are supported; non-integral types have very
-  // different issues.
-  COMPILE_ASSERT((source_limits::is_integer == true),
-                  checked_cast_nonintegral_type_on_right_hand_side);
-  COMPILE_ASSERT((target_limits::is_integer == true),
-                  checked_cast_nonintegral_type_on_left_hand_side);
-
-  //
-  // Check to see if the cast is trivial enough to leave entirely
-  // to the compiler
-  //
-  if (CheckedCastDetail::IsTrivialCast<target_t, source_t>()) {
-    // always works
-    return static_cast<target_t>(input);
-  }
-
-  //
-  // There is no trivial conversion, so we need to check the actual
-  // value of the input against the range that the target type supports.
-  //
-  source_t rangeMin, rangeMax;
-
-  bool valid = CheckedCastDetail::ValidCastRange<target_t, source_t>(
-                                      &rangeMin, &rangeMax);
-
-  if (valid
-      && input <= rangeMax
-      && input >= rangeMin) {
-    // safe to do this conversion
+  if (info::RuntimeTrivial()
+     || (info::RuntimePossible()
+        && info::RuntimeRangeCheck(input))
+    ) {
     output = static_cast<target_t>(input);
   } else {
-    // unsafe to do a conversion; hand off to the truncation policy
     output = trunc_policy<target_t, source_t>::OnTruncate(input);
   }
 
-  // Done!
   return output;
 }
 
@@ -361,8 +369,8 @@ INLINE target_t nacl::checked_cast(const source_t& input) {
 // Calls checked_cast; on truncation, log error and abort
 //-----------------------------------------------------------------------------
 template<typename T, typename S>
-INLINE T nacl::checked_cast_fatal(const S& input) {
-  return checked_cast<T, S, CheckedCastDetail::TruncationPolicyAbort>(input);
+T nacl::assert_cast(const S& input) {
+  return checked_cast<T, S, CheckedCast::TruncationPolicyAbort>(input);
 }
 //-----------------------------------------------------------------------------
 // saturate_cast(const S& input)
@@ -370,9 +378,9 @@ INLINE T nacl::checked_cast_fatal(const S& input) {
 // or maximum of the output.
 //-----------------------------------------------------------------------------
 template<typename T, typename S>
-INLINE T nacl::saturate_cast(const S& input) {
+T nacl::saturate_cast(const S& input) {
   return
-    checked_cast<T, S, CheckedCastDetail::TruncationPolicySaturate>(input);
+    checked_cast<T, S, CheckedCast::TruncationPolicySaturate>(input);
 }
 
 //-----------------------------------------------------------------------------
@@ -380,21 +388,22 @@ INLINE T nacl::saturate_cast(const S& input) {
 // Implements the Saturate truncation policy.
 //-----------------------------------------------------------------------------
 template <typename target_t, typename source_t>
-INLINE target_t nacl
-    ::CheckedCastDetail
+target_t nacl
+    ::CheckedCast
     ::TruncationPolicySaturate<target_t, source_t>
     ::OnTruncate(const source_t& input) {
+  typedef detail::CastInfo<target_t, source_t> info;
 
   source_t clamped = input;
-  source_t min, max;
-  bool valid = ValidCastRange<target_t, source_t>(&min, &max);
+  bool valid = info::RuntimePossible();
 
   if (!valid) {
     NaClLog(LOG_FATAL, "Checked cast: type ranges do not overlap");
   }
 
-  clamped = std::min(clamped, max);
-  clamped = std::max(clamped, min);
+  clamped = std::max(clamped, info::RuntimeRangeMin());
+  clamped = std::min(clamped, info::RuntimeRangeMax());
+
   target_t output = static_cast<target_t>(clamped);
 
   return output;
@@ -407,8 +416,8 @@ INLINE target_t nacl
 // Implements the Abort truncation policy.
 //-----------------------------------------------------------------------------
 template <typename target_t, typename source_t>
-INLINE target_t nacl
-    ::CheckedCastDetail
+target_t nacl
+    ::CheckedCast
     ::TruncationPolicyAbort<target_t, source_t>
     ::OnTruncate(const source_t&) {
   NaClLog(LOG_FATAL, "Arithmetic overflow");
@@ -416,6 +425,7 @@ INLINE target_t nacl
   // Unreachable, assuming that LOG_FATAL really is fatal
   return 0;
 }
+
 
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_CHECKED_CAST_H_ */
 

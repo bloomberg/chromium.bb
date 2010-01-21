@@ -30,7 +30,7 @@ namespace nacl {
   template<typename T, typename S>
   INLINE T checked_cast_log_fatal(const S& input);
 
-  namespace CheckedCastDetail {
+  namespace CheckedCast {
 
     template <typename target_t, typename source_t>
     struct TruncationPolicyLogFatal {
@@ -45,8 +45,8 @@ namespace nacl {
 // wrapper for checked_cast using the LogFatal trunctation policy.
 //-----------------------------------------------------------------------------
 template<typename T, typename S>
-INLINE T nacl::checked_cast_fatal(const S& input) {
-  return checked_cast<T, S, CheckedCastDetail::TruncationPolicyLogFatal>(input);
+INLINE T nacl::assert_cast(const S& input) {
+  return checked_cast<T, S, CheckedCast::TruncationPolicyLogFatal>(input);
 }
 
 //-----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ INLINE T nacl::checked_cast_fatal(const S& input) {
 //-----------------------------------------------------------------------------
 template <typename target_t, typename source_t>
 INLINE target_t nacl
-::CheckedCastDetail
+::CheckedCast
 ::TruncationPolicyLogFatal<target_t, source_t>
 ::OnTruncate(const source_t& input) {
   typedef std::numeric_limits<target_t> target_limits;

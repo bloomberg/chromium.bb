@@ -17,8 +17,23 @@ extern "C" {
 #endif
 
 using nacl::saturate_cast;
-using nacl::checked_cast_fatal;
+using nacl::assert_cast;
 
+
+#ifdef DEBUG
+#define CHECK(current,expected)if((current) != (expected)) {                \
+                                ++errors;                                   \
+                                printf("ERROR: expected %d got %d\n",       \
+                                       static_cast<int>(expected),          \
+                                       static_cast<int>(current));          \
+                                } else { printf("SUCCESS: expected %d"      \
+                                                " got %d\n",                \
+                                                static_cast<int>(expected), \
+                                                static_cast<int>(current)); \
+                                }
+#else
+#define CHECK(current,expected)if((current) != (expected)) { ++errors; }
+#endif
 int TestCheckedCastSaturate() {
   int errors = 0;
 
@@ -29,16 +44,17 @@ int TestCheckedCastSaturate() {
   int8_t  i8;
 
   u8 = saturate_cast<uint8_t>(u32);
-  if (u8 != 255) { ++errors; }
+  CHECK(u8, 255);
+
 
   u8 = saturate_cast<uint8_t>(i32);
-  if (u8 != 0) { ++errors; }
+  CHECK(u8, 0);
 
   i8 = saturate_cast<int8_t>(u32);
-  if (i8 != 127) { ++errors; }
+  CHECK(i8, 127);
 
   i8 = saturate_cast<int8_t>(i32);
-  if (i8 != -128) { ++errors; }
+  CHECK(i8, -128);
 
   return errors;
 }
@@ -52,17 +68,17 @@ int TestCheckedCastFatal() {
   uint8_t u8;
   int8_t  i8;
 
-  u8 = checked_cast_fatal<uint8_t>(u32);
-  if (u8 != 255) { ++errors; }
+  u8 = assert_cast<uint8_t>(u32);
+  CHECK(u8, 255);
 
-  u8 = checked_cast_fatal<uint8_t>(i32);
-  if (u8 != 0) { ++errors; }
+  u8 = assert_cast<uint8_t>(i32);
+  CHECK(u8, 0);
 
-  i8 = checked_cast_fatal<int8_t>(u32);
-  if (u8 != 127) { ++errors; }
+  i8 = assert_cast<int8_t>(u32);
+  CHECK(i8, 127);
 
-  i8 = checked_cast_fatal<int8_t>(i32);
-  if (u8 != -128) { ++errors; }
+  i8 = assert_cast<int8_t>(i32);
+  CHECK(i8, -128);
 
   return errors;
 }
@@ -74,15 +90,15 @@ class intN_t {
   static const int max = ((1 << (bits - 1)) - 1);
   static const int min = -max - 1;
 
-  intN_t() : storage_(0), overflow_(0) {}
+  intN_t() : overflow_(0), storage_(0) {}
 
   explicit intN_t(int32_t v) {
+    storage_ = v;
     if (v > max || v < min) {
       overflow_ = 1;
     } else {
       overflow_ = 0;
     }
-    storage_ = v;
   }
 
   operator int() const { return storage_; }
@@ -90,7 +106,7 @@ class intN_t {
   bool Overflow() const { return !!overflow_; }
 
  private:
-  int32_t overflow_  : 1;
+  int32_t overflow_  : 2;  // Mac compiler complains if this is 1 instead of 2
   int32_t storage_   : bits;
 };
 
@@ -102,45 +118,54 @@ namespace std {
     static const bool is_specialized = true;
     static int28_t max() {return int28_t(int28_t::max);}
     static int28_t min() {return int28_t(int28_t::min);}
+//    static const int digits = 28;
   };
 }  // namespace std
 
 int TestCheckedCastUDT() {
+
   int32_t i32 = 0xf0000000;
   uint32_t u32 = 0xffffffff;
 
+
   int errors = 0;
 
+
   int28_t i28 = int28_t(0xffffffff);
-  if (i28.Overflow()) { ++errors; }
+  CHECK(i28.Overflow(), false);
 
   i28 = int28_t(0x80000000);
-  if (!i28.Overflow()) { ++errors; }
+  CHECK(i28.Overflow(), true);
 
   i28 = saturate_cast<int28_t>(i32);
-  if (i28.Overflow() || i28 != 0xf8000000) { ++errors; }
+  CHECK(i28.Overflow(), false);
+  CHECK(i28, static_cast<int>(0xf8000000));
 
   i28 = saturate_cast<int28_t>(u32);
-  if (i28.Overflow() || i28 != 0x07ffffff) { ++errors; }
+  CHECK(i28.Overflow(), false);
+  CHECK(i28, static_cast<int>(0x07ffffff));
+
 
   return errors;
-};
+}
 
 /******************************************************************************
  * main
  *****************************************************************************/
-int main(int ac,
-         char **av) {
+int main(int ,
+         char **) {
   int errors = 0;
 
   errors += TestCheckedCastSaturate();
+  printf("---------- After TestCheckedSaturate errors = %d\n", errors);
   errors += TestCheckedCastUDT();
+  printf("---------- After TestCheckedCastUDT errors = %d\n", errors);
 
 #if NACL_WINDOWS
   // this test ensures the validity of the assembly version of ffs()
   errors += TestFFS();
 #endif
 
+  printf("---------- Final error count = %d\n", errors);
   return errors;
 }
-
