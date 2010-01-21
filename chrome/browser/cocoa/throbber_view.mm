@@ -41,9 +41,6 @@ static const float kAnimationIntervalSeconds = 0.03;  // 30ms, same as windows
 
 @implementation ThrobberFilmstripDelegate
 
-// Stores the internal representation of the image from |image|. We use
-// CoreImage for speed (though this doesn't seem to help perf issues). We
-// validate that the image is of the appropriate ratio.
 - (id)initWithImage:(NSImage*)image {
   if ((self = [super init])) {
     // Reset the animation counter so there's no chance we are off the end.
