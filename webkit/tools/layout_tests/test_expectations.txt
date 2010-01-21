@@ -463,6 +463,12 @@ WONTFIX SKIP : fast/events/touch = FAIL
 WONTFIX SKIP : editing/deleting/deletionUI-single-instance.html = FAIL IMAGE
 WONTFIX SKIP : fast/dom/Element/id-in-deletebutton.html = TEXT
 
+// Tests for FAST_MOBILE_SCROLLING. We don't use it.
+WONTFIX BUG32663 WIN LINUX : fast/fast-mobile-scrolling/fixed-position-element.html = IMAGE+TEXT
+WONTFIX BUG32663 WIN LINUX : fast/fast-mobile-scrolling/no-fixed-position-elements.html = IMAGE+TEXT
+WONTFIX BUG32663 MAC : fast/fast-mobile-scrolling/fixed-position-element.html = IMAGE
+WONTFIX BUG32663 MAC : fast/fast-mobile-scrolling/no-fixed-position-elements.html = IMAGE
+
 
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
@@ -3021,10 +3027,6 @@ BUG32678 WIN LINUX : svg/custom/relative-sized-deep-shadow-tree-content.xhtml = 
 BUG32678 WIN LINUX : svg/custom/relative-sized-shadow-tree-content.xhtml = IMAGE+TEXT
 
 // WebKit roll 53452:53511
-BUG32663 WIN LINUX : fast/fast-mobile-scrolling/fixed-position-element.html = IMAGE+TEXT
-BUG32663 WIN LINUX : fast/fast-mobile-scrolling/no-fixed-position-elements.html = IMAGE+TEXT
-BUG32663 MAC : fast/fast-mobile-scrolling/fixed-position-element.html = IMAGE
-BUG32663 MAC : fast/fast-mobile-scrolling/no-fixed-position-elements.html = IMAGE
 BUG32664 WIN DEBUG : http/tests/security/view-source-no-refresh.html = TIMEOUT
 BUG32665 WIN DEBUG : media/video-source-error-no-candidate.html = TIMEOUT
 BUG32695 WIN : transitions/shorthand-border-transitions.html = TEXT
