@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/port.h"
-#include "base/string_util.h"
+#include "base/string_split.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/net/http_return.h"
 #include "chrome/browser/sync/engine/net/url_translator.h"
@@ -20,63 +20,6 @@
 using std::pair;
 using std::string;
 using std::vector;
-
-// TODO(timsteele): Integrate the following two functions to string_util.h or
-// somewhere that makes them unit-testable.
-bool SplitStringIntoKeyValues(const string& line,
-                              char key_value_delimiter,
-                              string* key, vector<string>* values) {
-  key->clear();
-  values->clear();
-
-  // find the key string
-  size_t end_key_pos = line.find_first_of(key_value_delimiter);
-  if (end_key_pos == string::npos) {
-    DLOG(INFO) << "cannot parse key from line: " << line;
-    return false;    // no key
-  }
-  key->assign(line, 0, end_key_pos);
-
-  // find the values string
-  string remains(line, end_key_pos, line.size() - end_key_pos);
-  size_t begin_values_pos = remains.find_first_not_of(key_value_delimiter);
-  if (begin_values_pos == string::npos) {
-    DLOG(INFO) << "cannot parse value from line: " << line;
-    return false;   // no value
-  }
-  string values_string(remains, begin_values_pos,
-                       remains.size() - begin_values_pos);
-
-  // construct the values vector
-  values->push_back(values_string);
-  return true;
-}
-
-bool SplitStringIntoKeyValuePairs(const string& line,
-                                  char key_value_delimiter,
-                                  char key_value_pair_delimiter,
-                                  vector<pair<string, string> >* kv_pairs) {
-  kv_pairs->clear();
-
-  vector<string> pairs;
-  SplitString(line, key_value_pair_delimiter, &pairs);
-
-  bool success = true;
-  for (size_t i = 0; i < pairs.size(); ++i) {
-    string key;
-    vector<string> value;
-    if (!SplitStringIntoKeyValues(pairs[i],
-                                  key_value_delimiter,
-                                  &key, &value)) {
-      // Don't return here, to allow for keys without associated
-      // values; just record that our split failed.
-      success = false;
-    }
-    DCHECK_LE(value.size(), 1U);
-    kv_pairs->push_back(make_pair(key, value.empty()? "" : value[0]));
-  }
-  return success;
-}
 
 namespace browser_sync {
 
@@ -288,7 +231,7 @@ bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
   } else if (RC_REQUEST_OK == server_response_code) {
     typedef vector<pair<string, string> > Tokens;
     Tokens tokens;
-    SplitStringIntoKeyValuePairs(message_text, '=', '\n', &tokens);
+    base::SplitStringIntoKeyValuePairs(message_text, '=', '\n', &tokens);
     for (Tokens::iterator i = tokens.begin(); i != tokens.end(); ++i) {
       if ("accountType" == i->first) {
         // We never authenticate an email as a hosted account.
@@ -356,7 +299,7 @@ bool GaiaAuthenticator::IssueAuthToken(AuthResults* results,
 void GaiaAuthenticator::ExtractTokensFrom(const string& response,
                                           AuthResults* results) {
   vector<pair<string, string> > tokens;
-  SplitStringIntoKeyValuePairs(response, '=', '\n', &tokens);
+  base::SplitStringIntoKeyValuePairs(response, '=', '\n', &tokens);
   for (vector<pair<string, string> >::iterator i = tokens.begin();
       i != tokens.end(); ++i) {
     if (i->first == "SID") {
@@ -374,7 +317,7 @@ void GaiaAuthenticator::ExtractTokensFrom(const string& response,
 void GaiaAuthenticator::ExtractAuthErrorFrom(const string& response,
                                              AuthResults* results) {
   vector<pair<string, string> > tokens;
-  SplitStringIntoKeyValuePairs(response, '=', '\n', &tokens);
+  base::SplitStringIntoKeyValuePairs(response, '=', '\n', &tokens);
   for (vector<pair<string, string> >::iterator i = tokens.begin();
       i != tokens.end(); ++i) {
     if (i->first == "Error") {
