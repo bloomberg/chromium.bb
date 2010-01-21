@@ -37,6 +37,8 @@ const bool kFwd = true;
 const bool kIgnoreCase = false;
 const bool kCaseSensitive = true;
 
+const int kMoveIterations = 30;
+
 class FindInPageControllerTest : public InProcessBrowserTest {
  public:
   FindInPageControllerTest() {
@@ -572,46 +574,35 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_TRUE(GetFindBarWindowInfo(&start_position, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
-  // Search for 'dream' which the Find box is obscuring.
+  // Search for 'Chromium' which the Find box is obscuring.
   int ordinal = 0;
   TabContents* tab = browser()->GetSelectedTabContents();
-  EXPECT_EQ(1, FindInPageWchar(tab, L"dream",
-                               kFwd, kIgnoreCase, &ordinal));
-  EXPECT_EQ(1, ordinal);
+  int index = 0;
+  for (; index < kMoveIterations; ++index) {
+    EXPECT_EQ(kMoveIterations, FindInPageWchar(tab, L"Chromium",
+                                               kFwd, kIgnoreCase, &ordinal));
 
-  // Make sure Find box has moved.
+    // Check the position.
+    EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
+    EXPECT_TRUE(fully_visible);
+
+    // If the Find box has moved then we are done.
+    if (position.x() != start_position.x())
+      break;
+  }
+
+  // We should not have reached the end.
+  ASSERT_GT(kMoveIterations, index);
+
+  // Search backwards once to get the Find box to move back.
+  EXPECT_EQ(kMoveIterations, FindInPageWchar(tab, L"Chromium",
+                                             kBack, kIgnoreCase, &ordinal));
+  // Check the position.
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
-  EXPECT_EQ(start_position.y(), position.y());
-  if (start_position.x() == position.x()) {
-    // Failure case. Try to gather more data.
-    std::string debug_msg = "Position check failed once. ";
-
-    // First see if flushing the message loop has any effect.
-    MessageLoop::current()->RunAllPending();
-
-    if (!GetFindBarWindowInfo(&position, &fully_visible)) {
-      debug_msg += "Get failed. ";
-    } else {
-      if (start_position.x() == position.x())
-        debug_msg += "Position check failed again. ";
-      else
-        debug_msg += "They now differ. ";
-    }
-    // Force the failure.
-    EXPECT_STREQ("", debug_msg.c_str());
-  }
-  EXPECT_NE(start_position.x(), position.x());
-
-  // Search for 'Too much' which the Find box is not obscuring.
-  EXPECT_EQ(1, FindInPageWchar(tab, L"Too much",
-                               kFwd, kIgnoreCase, &ordinal));
-  EXPECT_EQ(1, ordinal);
 
   // Make sure Find box has moved back to its original location.
-  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
-  EXPECT_TRUE(fully_visible);
-  EXPECT_EQ(start_position, position);
+  EXPECT_EQ(position.x(), start_position.x());
 }
 
 // Make sure F3 in a new tab works if Find has previous string to search for.
