@@ -34,9 +34,8 @@ import subprocess
 import re
 import os
 
-third_party = '/native_client/src/third_party'
-as32 = third_party + '/gnu_binutils/files/as.exe'
-as64 = third_party + '/mingw-w64/mingw/bin/x86_64-w64-mingw32-as.exe'
+as32 = '/native_client/src/third_party/gnu_binutils/files/as.exe'
+as64 = '/third_party/mingw-w64/mingw/bin/x86_64-w64-mingw32-as.exe'
 
 def main(argv):
   try:
