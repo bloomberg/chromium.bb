@@ -317,8 +317,7 @@ def BrowserTester(env,
     if val is None:
       if os.getenv(tag) is not None:
         env['ENV'][tag] = os.getenv(tag)
-      else:
-        env['ENV'][tag] =  env.subst(val)
+
 
   # TODO(robertm): explain why this is necessary
   env['ENV']['NACL_DISABLE_SECURITY_FOR_SELENIUM_TEST'] = '1'

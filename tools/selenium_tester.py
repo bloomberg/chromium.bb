@@ -480,7 +480,9 @@ def RunTest(session, url, max_wait):
 
 def main(options):
   logging.info('browser list is %s:', options.browser)
-
+  logging.info('env is:')
+  for t in os.environ.items():
+    logging.info('%s=%s' % t)
   # install a cleanup handler if possible
   try:
     import signal
