@@ -830,35 +830,9 @@ LRESULT CALLBACK VideoMap::WindowProcedure(HWND hwnd,
     case WM_PAINT: {
       PAINTSTRUCT ps;
       HDC hdc = BeginPaint(hwnd, &ps);
-      if (NULL != video->untrusted_video_share_) {
-        uint32_t* pixel_bits = reinterpret_cast<uint32_t*>
-            (&video->untrusted_video_share_->video_pixels[0]);
-        BITMAPINFO bmp_info;
-        bmp_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-        bmp_info.bmiHeader.biWidth = video->window_->width;
-        bmp_info.bmiHeader.biHeight =
-            -static_cast<LONG>(video->window_->height);  // top-down
-        bmp_info.bmiHeader.biPlanes = 1;
-        bmp_info.bmiHeader.biBitCount = 32;
-        bmp_info.bmiHeader.biCompression = BI_RGB;
-        bmp_info.bmiHeader.biSizeImage = 0;
-        bmp_info.bmiHeader.biXPelsPerMeter = 0;
-        bmp_info.bmiHeader.biYPelsPerMeter = 0;
-        bmp_info.bmiHeader.biClrUsed = 0;
-        bmp_info.bmiHeader.biClrImportant = 0;
-        SetDIBitsToDevice(hdc,
-                          0,
-                          0,
-                          video->window_->width,
-                          video->window_->height,
-                          0,
-                          0,
-                          0,
-                          video->window_->height,
-                          pixel_bits,
-                          &bmp_info,
-                          DIB_RGB_COLORS);
-      }
+
+      video->RedrawAsync(NULL);
+
       EndPaint(hwnd, &ps);
       break;
     }
@@ -968,39 +942,62 @@ void VideoMap::RedrawAsync(void *platform_parm) {
   dprintf(("VideoMap::RedrawAsync()\n"));
   HWND hwnd = static_cast<HWND>(window_->window);
   HDC hdc = GetDC(hwnd);
-  VideoMap *video = reinterpret_cast<VideoMap*>(
-      GetWindowLong(hwnd, GWL_USERDATA));
-  if ((NULL == video) || (NULL == video->untrusted_video_share_)) {
-    return;
-  }
 
-  uint32_t* pixel_bits = reinterpret_cast<uint32_t*>
-      (&video->untrusted_video_share_->video_pixels[0]);
-  BITMAPINFO bmp_info;
-  bmp_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-  bmp_info.bmiHeader.biWidth = video->window_->width;
-  bmp_info.bmiHeader.biHeight =
-      -static_cast<LONG>(video->window_->height);  // top-down
-  bmp_info.bmiHeader.biPlanes = 1;
-  bmp_info.bmiHeader.biBitCount = 32;
-  bmp_info.bmiHeader.biCompression = BI_RGB;
-  bmp_info.bmiHeader.biSizeImage = 0;
-  bmp_info.bmiHeader.biXPelsPerMeter = 0;
-  bmp_info.bmiHeader.biYPelsPerMeter = 0;
-  bmp_info.bmiHeader.biClrUsed = 0;
-  bmp_info.bmiHeader.biClrImportant = 0;
-  SetDIBitsToDevice(hdc,
-                    0,
-                    0,
-                    video->window_->width,
-                    video->window_->height,
-                    0,
-                    0,
-                    0,
-                    video->window_->height,
-                    pixel_bits,
-                    &bmp_info,
-                    DIB_RGB_COLORS);
+  if (NULL != untrusted_video_share_) {
+    uint32_t* untrusted_pixel_bits = reinterpret_cast<uint32_t*>
+      (&untrusted_video_share_->video_pixels[0]);
+
+    size_t dibSize = window_->width * window_->height * 4;
+
+    // TODO(ilewis): Find some other way to make this work!
+    // SetDIBitsToDevice() has an undocumented issue--it is
+    // finicky about the kinds of memory it's willing to consume.
+    // I have been unable to learn the details, but folk wisdom on
+    // the 'net seems to agree that it needs the entire bitmap to
+    // have been allocated with a single VirtualAlloc.
+    // The most expedient workaround, and the only one to work
+    // consistently so far, is to temporarily copy the bitmap into
+    // a new virtual allocation. This is so very wrong for performance,
+    // but at least it gets bits on the screen.
+    uint32_t* pixel_bits = static_cast<uint32_t*>(VirtualAlloc(0,
+                                                   dibSize,
+                                                   MEM_COMMIT,
+                                                   PAGE_READWRITE));
+    memcpy(pixel_bits, untrusted_pixel_bits, dibSize);
+
+
+    BITMAPINFO bmp_info = {};
+    bmp_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmp_info.bmiHeader.biWidth = window_->width;
+    bmp_info.bmiHeader.biHeight =
+      -static_cast<LONG>(window_->height);  // top-down
+    bmp_info.bmiHeader.biPlanes = 1;
+    bmp_info.bmiHeader.biBitCount = 32;
+    bmp_info.bmiHeader.biCompression = BI_RGB;
+    bmp_info.bmiHeader.biSizeImage = dibSize;
+    bmp_info.bmiHeader.biXPelsPerMeter = 0;
+    bmp_info.bmiHeader.biYPelsPerMeter = 0;
+    bmp_info.bmiHeader.biClrUsed = 0;
+    bmp_info.bmiHeader.biClrImportant = 0;
+    int err = SetDIBitsToDevice(hdc,
+                                0,
+                                0,
+                                window_->width,
+                                window_->height,
+                                0,
+                                0,
+                                0,
+                                window_->height,
+                                pixel_bits,
+                                &bmp_info,
+                                DIB_RGB_COLORS);
+    if (!err) {
+      err = GetLastError();
+    }
+
+    // TODO(ilewis): see comments on VirtualAlloc() call above.
+    VirtualFree(pixel_bits, 0, MEM_RELEASE);
+  }
   ReleaseDC(hwnd, hdc);
 }
 
