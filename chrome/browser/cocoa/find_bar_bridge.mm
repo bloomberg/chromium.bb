@@ -42,7 +42,8 @@ void FindBarBridge::UpdateUIForFindResult(const FindNotificationDetails& result,
 }
 
 void FindBarBridge::AudibleAlert() {
-  // TODO(rohitrao): Beep beep, beep beep, Yeah!
+  // Beep beep, beep beep, Yeah!
+  NSBeep();
 }
 
 bool FindBarBridge::IsFindBarVisible() {
