@@ -106,7 +106,11 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
                                                      ofType:@"nib"];
   self = [super initWithWindowNibPath:nibPath owner:self];
   if (self != nil) {
-    profile_ = profile;
+    // Never use an incognito Profile, which can be deleted at any moment when
+    // the user closes its browser window. Use the default one instead.
+    DCHECK(profile);
+    profile_ = profile->GetOriginalProfile();
+
     bridge_.reset(new BookmarkManagerBridge(self));
     profile_->GetBookmarkModel()->AddObserver(bridge_.get());
 
