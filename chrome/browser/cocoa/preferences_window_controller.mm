@@ -541,21 +541,8 @@ class PrefObserverBridge : public NotificationObserver,
       [personalStuffGroupThemes_ objectAtIndex:kThemeResetButtonIndex],
       [personalStuffGroupThemes_ objectAtIndex:kThemeThemesButtonIndex]);
 
-  // Size the import buttons row.
-  const NSUInteger kBrowserDataGroupCount = 4;
-  const NSUInteger kBrowserDataImportButtonIndex = 1;
-  const NSUInteger kBrowserDataClearButtonIndex = 2;
-  DCHECK_EQ([personalStuffGroupBrowserData_ count], kBrowserDataGroupCount)
-      << "Expected only two items in Browser Data group";
-  CGFloat browserDataRowChange = SizeToFitButtonPair(
-      [personalStuffGroupBrowserData_
-          objectAtIndex:kBrowserDataImportButtonIndex],
-      [personalStuffGroupBrowserData_
-          objectAtIndex:kBrowserDataClearButtonIndex]);
-
   // Find the most any row changed in size.
   CGFloat maxWidthChange = std::max(defaultBrowserChange.width, themeRowChange);
-  maxWidthChange = std::max(maxWidthChange, browserDataRowChange);
 
   // If any grew wider, make the views wider. If they all shrank, they fit the
   // existing view widths, so no change is needed//.
