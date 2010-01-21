@@ -20,4 +20,4 @@ else
   export PYTHONPATH
 fi
 
-"$PYTHON_PROG" "$exec_dir/webkitpy/test_output_formatter.py" "-v" "$@"
+"$PYTHON_PROG" "$exec_dir/test_output_formatter.py" "-v" "$@"

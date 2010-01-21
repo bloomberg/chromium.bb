@@ -20,4 +20,4 @@ else
   export PYTHONPATH
 fi
 
-"$PYTHON_PROG" "$exec_dir/webkitpy/run_chromium_webkit_tests.py" "$@"
+"$PYTHON_PROG" "$exec_dir/run_webkit_tests.py" "$@"

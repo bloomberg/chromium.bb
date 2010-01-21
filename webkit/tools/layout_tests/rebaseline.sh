@@ -13,4 +13,4 @@ PYTHON_PROG=python
 PYTHONPATH="${exec_dir}/../../../tools/python:$PYTHONPATH"
 export PYTHONPATH
 
-"$PYTHON_PROG" "$exec_dir/webkitpy/rebaseline.py" "$@"
+"$PYTHON_PROG" "$exec_dir/rebaseline.py" "$@"
