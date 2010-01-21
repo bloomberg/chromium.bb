@@ -15,3 +15,10 @@ TestRenderViewHost* TestTabContents::pending_rvh() {
   return static_cast<TestRenderViewHost*>(
       render_manager_.pending_render_view_host_);
 }
+
+TabContents* TestTabContents::Clone() {
+  TabContents* tc = new TestTabContents(
+      profile(), SiteInstance::CreateSiteInstance(profile()));
+  tc->controller().CopyStateFrom(controller_);
+  return tc;
+}

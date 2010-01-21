@@ -941,6 +941,8 @@ void NavigationController::SetWindowID(const SessionID& id) {
 }
 
 void NavigationController::NavigateToPendingEntry(bool reload) {
+  needs_reload_ = false;
+
   // For session history navigations only the pending_entry_index_ is set.
   if (!pending_entry_) {
     DCHECK(pending_entry_index_ != -1);
@@ -989,7 +991,6 @@ void NavigationController::LoadIfNecessary() {
   if (!needs_reload_)
     return;
 
-  needs_reload_ = false;
   // Calling Reload() results in ignoring state, and not loading.
   // Explicitly use NavigateToPendingEntry so that the renderer uses the
   // cached state.

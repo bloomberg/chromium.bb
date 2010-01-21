@@ -48,6 +48,10 @@ class TestTabContents : public TabContents {
   }
   void UpdateRenderViewSizeForRenderManager() {}
 
+  // Returns a clone of this TestTabContents. The returned object is also a
+  // TestTabContents. The caller owns the returned object.
+  virtual TabContents* Clone();
+
   // Set by individual tests.
   bool transition_cross_site;
 };

@@ -4,6 +4,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/profile_manager.h"
@@ -1517,6 +1518,23 @@ TEST_F(NavigationControllerTest, ViewSourceRedirect) {
 
   EXPECT_EQ(ASCIIToUTF16(kExpected), contents()->GetTitle());
   EXPECT_EQ(true, contents()->ShouldDisplayURL());
+}
+
+// Make sure that on cloning a tabcontents and going back needs_reload is false.
+TEST_F(NavigationControllerTest, CloneAndGoBack) {
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+
+  scoped_ptr<TabContents> clone(controller().tab_contents()->Clone());
+
+  ASSERT_EQ(2, clone->controller().entry_count());
+  EXPECT_TRUE(clone->controller().needs_reload());
+  clone->controller().GoBack();
+  // Navigating back should have triggered needs_reload_ to go false.
+  EXPECT_FALSE(clone->controller().needs_reload());
 }
 
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
