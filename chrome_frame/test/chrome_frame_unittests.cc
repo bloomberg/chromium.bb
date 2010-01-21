@@ -1841,8 +1841,10 @@ TEST_F(ChromeFrameTestWithWebServer,
 const wchar_t kChromeFrameFullTabModeDeleteCookieTest[] =
     L"files/fulltab_delete_cookie_test.html";
 
+// TODO(tommi): Temporarily disabled while figuring out what's going on
+// on the builder.
 TEST_F(ChromeFrameTestWithWebServer,
-       FullTabModeIE_ChromeFrameDeleteCookieTest) {
+       DISABLED_FullTabModeIE_ChromeFrameDeleteCookieTest) {
   chrome_frame_test::TimedMsgLoop loop;
 
   ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeDeleteCookieTest));
