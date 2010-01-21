@@ -22,11 +22,7 @@
 AppMenuModel::AppMenuModel(menus::SimpleMenuModel::Delegate* delegate,
                            Browser* browser)
     : menus::SimpleMenuModel(delegate),
-      browser_(browser),
-      // For now, we assume that sync cannot be enabled/disabled after
-      // launch.
-      sync_item_enabled_(ProfileSyncService::IsSyncEnabled()),
-      sync_item_index_(-1) {
+      browser_(browser) {
   Build();
 }
 
@@ -73,11 +69,11 @@ void AppMenuModel::Build() {
   AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
 
   AddSeparator();
-  if (sync_item_enabled_) {
+
+  // We assume that IsSyncEnabled() is constant for the lifetime of the
+  // program (it just checks command-line flags).
+  if (ProfileSyncService::IsSyncEnabled()) {
     AddItem(IDC_SYNC_BOOKMARKS, GetSyncMenuLabel());
-    // TODO(akalin): Make it possible to get the index in a less
-    // hackish way.
-    sync_item_index_ = GetItemCount() - 1;
     AddSeparator();
   }
 #if defined(OS_MACOSX)
@@ -85,6 +81,7 @@ void AppMenuModel::Build() {
 #else
   AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
+
   if (browser_defaults::kShowAboutMenuItem) {
     AddItem(IDC_ABOUT,
             l10n_util::GetStringFUTF16(
@@ -129,12 +126,10 @@ void AppMenuModel::BuildProfileSubMenu() {
 }
 
 string16 AppMenuModel::GetSyncMenuLabel() const {
-  DCHECK(sync_item_enabled_);
   return sync_ui_util::GetSyncMenuLabel(
       browser_->profile()->GetOriginalProfile()->GetProfileSyncService());
 }
 
 bool AppMenuModel::IsSyncItem(int index) const {
-  return sync_item_enabled_ && (index == sync_item_index_);
+  return GetCommandIdAt(index) == IDC_SYNC_BOOKMARKS;
 }
-

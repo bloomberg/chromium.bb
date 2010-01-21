@@ -12,8 +12,7 @@
 
 class Browser;
 
-// A menu model that builds the contents of the app menu. This menu has only
-// one level (no submenus).
+// A menu model that builds the contents of the app menu.
 class AppMenuModel : public menus::SimpleMenuModel {
  public:
   explicit AppMenuModel(menus::SimpleMenuModel::Delegate* delegate,
@@ -36,9 +35,6 @@ class AppMenuModel : public menus::SimpleMenuModel {
   scoped_ptr<menus::SimpleMenuModel> profiles_menu_contents_;
 
   Browser* browser_;  // weak
-
-  bool sync_item_enabled_;
-  int sync_item_index_;  // -1 if sync_item_enabled_ is false.
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuModel);
 };
