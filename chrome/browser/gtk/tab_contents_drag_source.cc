@@ -96,13 +96,24 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   // and holds and doesn't start dragging for a long time. I doubt it matters
   // much, but we should probably look into the possibility of getting the
   // initiating event from webkit.
-  gtk_drag_begin(drag_widget_, list,
-                 static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_LINK),
-                 1,  // Drags are always initiated by the left button.
-                 reinterpret_cast<GdkEvent*>(last_mouse_down));
-  MessageLoopForUI::current()->AddObserver(this);
+  GdkDragContext* context = gtk_drag_begin(
+      drag_widget_, list,
+      static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_LINK),
+      1,  // Drags are always initiated by the left button.
+      reinterpret_cast<GdkEvent*>(last_mouse_down));
   // The drag adds a ref; let it own the list.
   gtk_target_list_unref(list);
+
+  // Sometimes the drag fails to start; |context| will be NULL and we won't
+  // get a drag-end signal.
+  if (!context) {
+    drop_data_.reset();
+    if (tab_contents()->render_view_host())
+      tab_contents()->render_view_host()->DragSourceSystemDragEnded();
+    return;
+  }
+
+  MessageLoopForUI::current()->AddObserver(this);
 }
 
 void TabContentsDragSource::WillProcessEvent(GdkEvent* event) {
