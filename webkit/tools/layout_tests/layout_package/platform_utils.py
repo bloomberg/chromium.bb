@@ -18,8 +18,8 @@ import sys
 # especially has had problems), but we'll allow the platform utils to be
 # included in any case so we don't get an import error.
 if sys.platform in ('cygwin', 'win32'):
-  from platform_utils_win import *
+    from platform_utils_win import *
 elif sys.platform == 'darwin':
-  from platform_utils_mac import *
+    from platform_utils_mac import *
 elif sys.platform in ('linux', 'linux2', 'freebsd7', 'openbsd4'):
-  from platform_utils_linux import *
+    from platform_utils_linux import *

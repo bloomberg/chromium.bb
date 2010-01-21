@@ -41,155 +41,160 @@ CRASH = "CRASH"
 PASS = "PASS"
 WONTFIX = "WONTFIX"
 
+
 class Failure(object):
-  """
-  This class represents a failure in the test output, and is
-  intended as a data model object.
-  """
-  def __init__(self):
-    self.platform = ""
-    self.test_path = ""
-    self.text_diff_mismatch = False
-    self.image_mismatch = False
-    self.timeout = False
-    self.crashed = False
-    self.text_baseline_url = ""
-    self.image_baseline_url = ""
-    self.text_baseline_age = ""
-    self.image_baseline_age = ""
-    self.test_age = ""
-    self.text_baseline_local = ""
-    self.image_baseline_local = ""
-    self.text_actual_local = ""
-    self.image_actual_local = ""
-    self.image_baseline_upstream_url = ""
-    self.image_baseline_upstream_local = ""
-    self.test_expectations_line = ""
-    self.flakiness = 0
+    """
+    This class represents a failure in the test output, and is
+    intended as a data model object.
+    """
 
-  def GetExpectedImageFilename(self):
-    return self._RenameEndOfTestPath(EXPECTED_IMAGE_FILE_ENDING)
+    def __init__(self):
+        self.platform = ""
+        self.test_path = ""
+        self.text_diff_mismatch = False
+        self.image_mismatch = False
+        self.timeout = False
+        self.crashed = False
+        self.text_baseline_url = ""
+        self.image_baseline_url = ""
+        self.text_baseline_age = ""
+        self.image_baseline_age = ""
+        self.test_age = ""
+        self.text_baseline_local = ""
+        self.image_baseline_local = ""
+        self.text_actual_local = ""
+        self.image_actual_local = ""
+        self.image_baseline_upstream_url = ""
+        self.image_baseline_upstream_local = ""
+        self.test_expectations_line = ""
+        self.flakiness = 0
 
-  def GetActualImageFilename(self):
-    return self._RenameEndOfTestPath(ACTUAL_IMAGE_FILE_ENDING)
+    def GetExpectedImageFilename(self):
+        return self._RenameEndOfTestPath(EXPECTED_IMAGE_FILE_ENDING)
 
-  def GetExpectedTextFilename(self):
-    return self._RenameEndOfTestPath(EXPECTED_TEXT_FILE_ENDING)
+    def GetActualImageFilename(self):
+        return self._RenameEndOfTestPath(ACTUAL_IMAGE_FILE_ENDING)
 
-  def GetActualTextFilename(self):
-    return self._RenameEndOfTestPath(ACTUAL_TEXT_FILE_ENDING)
+    def GetExpectedTextFilename(self):
+        return self._RenameEndOfTestPath(EXPECTED_TEXT_FILE_ENDING)
 
-  def GetImageDiffFilename(self):
-    return self._RenameEndOfTestPath(DIFF_IMAGE_FILE_ENDING)
+    def GetActualTextFilename(self):
+        return self._RenameEndOfTestPath(ACTUAL_TEXT_FILE_ENDING)
 
-  def GetTextDiffFilename(self):
-    return self._RenameEndOfTestPath(DIFF_TEXT_FILE_ENDING)
+    def GetImageDiffFilename(self):
+        return self._RenameEndOfTestPath(DIFF_IMAGE_FILE_ENDING)
 
-  def GetImageUpstreamFilename(self):
-    return self._RenameEndOfTestPath(UPSTREAM_IMAGE_FILE_ENDING)
+    def GetTextDiffFilename(self):
+        return self._RenameEndOfTestPath(DIFF_TEXT_FILE_ENDING)
 
-  def _RenameEndOfTestPath(self, suffix):
-    last_index = self.test_path.rfind(".")
-    if last_index == -1:
-      return self.test_path
-    return self.test_path[0:last_index] + suffix
+    def GetImageUpstreamFilename(self):
+        return self._RenameEndOfTestPath(UPSTREAM_IMAGE_FILE_ENDING)
 
-  def GetTestHome(self):
-    if self.test_path.startswith("chrome"):
-      return CHROMIUM_TRAC_HOME + self.test_path
-    return WEBKIT_TRAC_HOME + self.test_path
+    def _RenameEndOfTestPath(self, suffix):
+        last_index = self.test_path.rfind(".")
+        if last_index == -1:
+            return self.test_path
+        return self.test_path[0:last_index] + suffix
 
-  def GetImageBaselineTracHome(self):
-    if self.IsImageBaselineInWebkit():
-      return self._GetTracHome(self.image_baseline_url)
-    return self.image_baseline_url
+    def GetTestHome(self):
+        if self.test_path.startswith("chrome"):
+            return CHROMIUM_TRAC_HOME + self.test_path
+        return WEBKIT_TRAC_HOME + self.test_path
 
-  def GetTextBaselineTracHome(self):
-    if self.text_baseline_url and self.IsTextBaselineInWebkit():
-      return self._GetTracHome(self.text_baseline_url)
-    return self.text_baseline_url
+    def GetImageBaselineTracHome(self):
+        if self.IsImageBaselineInWebkit():
+            return self._GetTracHome(self.image_baseline_url)
+        return self.image_baseline_url
 
-  def _GetTracHome(self, file):
-    return WEBKIT_TRAC_HOME + file[file.find("LayoutTests"):]
+    def GetTextBaselineTracHome(self):
+        if self.text_baseline_url and self.IsTextBaselineInWebkit():
+            return self._GetTracHome(self.text_baseline_url)
+        return self.text_baseline_url
 
-  def GetTextBaselineLocation(self):
-    return self._GetFileLocation(self.text_baseline_url)
+    def _GetTracHome(self, file):
+        return WEBKIT_TRAC_HOME + file[file.find("LayoutTests"):]
 
-  def GetImageBaselineLocation(self):
-    return self._GetFileLocation(self.image_baseline_url)
+    def GetTextBaselineLocation(self):
+        return self._GetFileLocation(self.text_baseline_url)
 
-  # TODO(gwilson): Refactor this logic so it can be used by multiple scripts.
-  # TODO(gwilson): Change this so that it respects the fallback order of
-  # different platforms. (If platform is mac, the fallback should be different.)
-  def _GetFileLocation(self, file):
-    if not file:
-      return None
-    if file.find(CHROMIUM_WIN) > -1:
-      return CHROMIUM_WIN
-    if file.find(CHROMIUM_MAC) > -1:
-      return CHROMIUM_MAC
-    if file.find(CHROMIUM_LINUX) > -1:
-      return CHROMIUM_LINUX
-    if file.startswith(WEBKIT_IMAGE_BASELINE_BASE_URL_WIN):
-      return WEBKIT_WIN_TITLE
-    if file.startswith(WEBKIT_IMAGE_BASELINE_BASE_URL_MAC):
-      return WEBKIT_MAC_TITLE
-    # TODO(gwilson): Add mac-snowleopard, mac-leopard, mac-tiger here.
-    if file.startswith(WEBKIT_LAYOUT_TEST_BASE_URL):
-      return WEBKIT_TITLE
-    return UNKNOWN
+    def GetImageBaselineLocation(self):
+        return self._GetFileLocation(self.image_baseline_url)
 
-  def _IsFileInWebKit(self, file):
-    return file != None and (file.find(WEBKIT_SVN_HOSTNAME) > -1 or
-                             file.find(THIRD_PARTY) > -1)
+    # TODO(gwilson): Refactor this logic so it can be used by multiple scripts.
+    # TODO(gwilson): Change this so that it respects the fallback order of
+    # different platforms. (If platform is mac, the fallback should be
+    # different.)
 
-  def IsImageBaselineInChromium(self):
-    return not self.IsImageBaselineInWebkit()
+    def _GetFileLocation(self, file):
+        if not file:
+            return None
+        if file.find(CHROMIUM_WIN) > -1:
+            return CHROMIUM_WIN
+        if file.find(CHROMIUM_MAC) > -1:
+            return CHROMIUM_MAC
+        if file.find(CHROMIUM_LINUX) > -1:
+            return CHROMIUM_LINUX
+        if file.startswith(WEBKIT_IMAGE_BASELINE_BASE_URL_WIN):
+            return WEBKIT_WIN_TITLE
+        if file.startswith(WEBKIT_IMAGE_BASELINE_BASE_URL_MAC):
+            return WEBKIT_MAC_TITLE
+        # TODO(gwilson): Add mac-snowleopard, mac-leopard, mac-tiger here.
+        if file.startswith(WEBKIT_LAYOUT_TEST_BASE_URL):
+            return WEBKIT_TITLE
+        return UNKNOWN
 
-  def IsImageBaselineInWebkit(self):
-    return self._IsFileInWebKit(self.image_baseline_url)
+    def _IsFileInWebKit(self, file):
+        return file != None and (file.find(WEBKIT_SVN_HOSTNAME) > -1 or
+                                 file.find(THIRD_PARTY) > -1)
 
-  def IsTextBaselineInChromium(self):
-    return not self.IsTextBaselineInWebkit()
+    def IsImageBaselineInChromium(self):
+        return not self.IsImageBaselineInWebkit()
 
-  def IsTextBaselineInWebkit(self):
-    return self._IsFileInWebKit(self.text_baseline_url)
+    def IsImageBaselineInWebkit(self):
+        return self._IsFileInWebKit(self.image_baseline_url)
 
-  def GetTextResultLocationInZipFile(self):
-    return self._GetFileLocationInZipFile(self.GetActualTextFilename())
+    def IsTextBaselineInChromium(self):
+        return not self.IsTextBaselineInWebkit()
 
-  def GetImageResultLocationInZipFile(self):
-    return self._GetFileLocationInZipFile(self.GetActualImageFilename())
+    def IsTextBaselineInWebkit(self):
+        return self._IsFileInWebKit(self.text_baseline_url)
 
-  def _GetFileLocationInZipFile(self, file):
-    return "%s/%s" % (LAYOUT_TEST_RESULTS_DIR, file)
+    def GetTextResultLocationInZipFile(self):
+        return self._GetFileLocationInZipFile(self.GetActualTextFilename())
 
-  # TODO(gwilson): implement this method.
-  def GetAllBaselineLocations(self):
-    return None
+    def GetImageResultLocationInZipFile(self):
+        return self._GetFileLocationInZipFile(self.GetActualImageFilename())
 
-  # This method determines whether the test is actually expected to fail,
-  # in order to know whether to retrieve expected test results for it.
-  # (test results dont exist for tests expected to fail/crash.)
-  def IsExpectedToFail(self):
-    return self._FindKeywordInExpectations(FAIL)
+    def _GetFileLocationInZipFile(self, file):
+        return "%s/%s" % (LAYOUT_TEST_RESULTS_DIR, file)
 
-  def IsExpectedToTimeout(self):
-    return self._FindKeywordInExpectations(TIMEOUT)
+    # TODO(gwilson): implement this method.
+    def GetAllBaselineLocations(self):
+        return None
 
-  def IsExpectedToCrash(self):
-    return self._FindKeywordInExpectations(CRASH)
+    # This method determines whether the test is actually expected to fail,
+    # in order to know whether to retrieve expected test results for it.
+    # (test results dont exist for tests expected to fail/crash.)
 
-  def IsExpectedToPass(self):
-    return self._FindKeywordInExpectations(PASS)
+    def IsExpectedToFail(self):
+        return self._FindKeywordInExpectations(FAIL)
 
-  def IsWontFix(self):
-    return self._FindKeywordInExpectations(WONTFIX)
+    def IsExpectedToTimeout(self):
+        return self._FindKeywordInExpectations(TIMEOUT)
 
-  def _FindKeywordInExpectations(self, keyword):
-    if (not self.test_expectations_line or
-        len(self.test_expectations_line) == 0):
-      return False
-    if self.test_expectations_line.find(keyword) > -1:
-      return True
-    return False
+    def IsExpectedToCrash(self):
+        return self._FindKeywordInExpectations(CRASH)
+
+    def IsExpectedToPass(self):
+        return self._FindKeywordInExpectations(PASS)
+
+    def IsWontFix(self):
+        return self._FindKeywordInExpectations(WONTFIX)
+
+    def _FindKeywordInExpectations(self, keyword):
+        if (not self.test_expectations_line or
+            len(self.test_expectations_line) == 0):
+            return False
+        if self.test_expectations_line.find(keyword) > -1:
+            return True
+        return False

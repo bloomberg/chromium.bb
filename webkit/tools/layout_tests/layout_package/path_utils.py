@@ -28,313 +28,345 @@ import platform_utils_linux
 _basedir = None
 _baseline_search_path = None
 
-class PathNotFound(Exception): pass
+
+class PathNotFound(Exception):
+    pass
+
 
 def LayoutTestsDir():
-  """Returns the fully-qualified path to the directory containing the input
-  data for the specified layout test."""
-  return PathFromBase('third_party', 'WebKit', 'LayoutTests');
+    """Returns the fully-qualified path to the directory containing the input
+    data for the specified layout test."""
+    return PathFromBase('third_party', 'WebKit', 'LayoutTests')
+
 
 def ChromiumBaselinePath(platform=None):
-  """Returns the full path to the directory containing expected
-  baseline results from chromium ports. If |platform| is None, the
-  currently executing platform is used.
+    """Returns the full path to the directory containing expected
+    baseline results from chromium ports. If |platform| is None, the
+    currently executing platform is used.
 
-  Note: although directly referencing individual platform_utils_* files is
-  usually discouraged, we allow it here so that the rebaselining tool can
-  pull baselines for platforms other than the host platform."""
+    Note: although directly referencing individual platform_utils_* files is
+    usually discouraged, we allow it here so that the rebaselining tool can
+    pull baselines for platforms other than the host platform."""
 
-  # Normalize the platform string.
-  platform = PlatformName(platform)
-  if platform.startswith('chromium-mac'):
-    return platform_utils_mac.BaselinePath(platform)
-  elif platform.startswith('chromium-win'):
-    return platform_utils_win.BaselinePath(platform)
-  elif platform.startswith('chromium-linux'):
-    return platform_utils_linux.BaselinePath(platform)
+    # Normalize the platform string.
+    platform = PlatformName(platform)
+    if platform.startswith('chromium-mac'):
+        return platform_utils_mac.BaselinePath(platform)
+    elif platform.startswith('chromium-win'):
+        return platform_utils_win.BaselinePath(platform)
+    elif platform.startswith('chromium-linux'):
+        return platform_utils_linux.BaselinePath(platform)
 
-  return platform_utils.BaselinePath()
+    return platform_utils.BaselinePath()
+
 
 def WebKitBaselinePath(platform):
-  """Returns the full path to the directory containing expected
-  baseline results from WebKit ports."""
-  return PathFromBase('third_party', 'WebKit', 'LayoutTests',
-                      'platform', platform)
+    """Returns the full path to the directory containing expected
+    baseline results from WebKit ports."""
+    return PathFromBase('third_party', 'WebKit', 'LayoutTests',
+                        'platform', platform)
+
 
 def BaselineSearchPath(platform=None):
-  """Returns the list of directories to search for baselines/results for a
-  given platform, in order of preference. Paths are relative to the top of the
-  source tree. If parameter platform is None, returns the list for the current
-  platform that the script is running on.
+    """Returns the list of directories to search for baselines/results for a
+    given platform, in order of preference. Paths are relative to the top of
+    the source tree. If parameter platform is None, returns the list for the
+    current platform that the script is running on.
 
-  Note: although directly referencing individual platform_utils_* files is
-  usually discouraged, we allow it here so that the rebaselining tool can
-  pull baselines for platforms other than the host platform."""
+    Note: although directly referencing individual platform_utils_* files is
+    usually discouraged, we allow it here so that the rebaselining tool can
+    pull baselines for platforms other than the host platform."""
 
-  # Normalize the platform name.
-  platform = PlatformName(platform)
-  if platform.startswith('chromium-mac'):
-    return platform_utils_mac.BaselineSearchPath(platform)
-  elif platform.startswith('chromium-win'):
-    return platform_utils_win.BaselineSearchPath(platform)
-  elif platform.startswith('chromium-linux'):
-    return platform_utils_linux.BaselineSearchPath(platform)
-  return platform_utils.BaselineSearchPath()
+    # Normalize the platform name.
+    platform = PlatformName(platform)
+    if platform.startswith('chromium-mac'):
+        return platform_utils_mac.BaselineSearchPath(platform)
+    elif platform.startswith('chromium-win'):
+        return platform_utils_win.BaselineSearchPath(platform)
+    elif platform.startswith('chromium-linux'):
+        return platform_utils_linux.BaselineSearchPath(platform)
+    return platform_utils.BaselineSearchPath()
+
 
 def ExpectedBaselines(filename, suffix, platform=None, all_baselines=False):
-  """Given a test name, finds where the baseline results are located.
+    """Given a test name, finds where the baseline results are located.
 
-  Args:
-     filename: absolute filename to test file
-     suffix: file suffix of the expected results, including dot; e.g. '.txt'
-         or '.png'.  This should not be None, but may be an empty string.
-     platform: layout test platform: 'win', 'linux' or 'mac'. Defaults to the
-               current platform.
-     all_baselines: If True, return an ordered list of all baseline paths
-                    for the given platform. If False, return only the first
-                    one.
-  Returns
-     a list of ( platform_dir, results_filename ), where
-       platform_dir - abs path to the top of the results tree (or test tree)
-       results_filename - relative path from top of tree to the results file
-         (os.path.join of the two gives you the full path to the file, unless
-          None was returned.)
-    Return values will be in the format appropriate for the current platform
-    (e.g., "\\" for path separators on Windows). If the results file is not
-    found, then None will be returned for the directory, but the expected
-    relative pathname will still be returned.
-  """
-  global _baseline_search_path
-  global _search_path_platform
-  testname = os.path.splitext(RelativeTestFilename(filename))[0]
+    Args:
+       filename: absolute filename to test file
+       suffix: file suffix of the expected results, including dot; e.g. '.txt'
+           or '.png'.  This should not be None, but may be an empty string.
+       platform: layout test platform: 'win', 'linux' or 'mac'. Defaults to
+                 the current platform.
+       all_baselines: If True, return an ordered list of all baseline paths
+                      for the given platform. If False, return only the first
+                      one.
+    Returns
+       a list of ( platform_dir, results_filename ), where
+         platform_dir - abs path to the top of the results tree (or test tree)
+         results_filename - relative path from top of tree to the results file
+           (os.path.join of the two gives you the full path to the file,
+            unless None was returned.)
+      Return values will be in the format appropriate for the current platform
+      (e.g., "\\" for path separators on Windows). If the results file is not
+      found, then None will be returned for the directory, but the expected
+      relative pathname will still be returned.
+    """
+    global _baseline_search_path
+    global _search_path_platform
+    testname = os.path.splitext(RelativeTestFilename(filename))[0]
 
-  baseline_filename = testname + '-expected' + suffix
+    baseline_filename = testname + '-expected' + suffix
 
-  if (_baseline_search_path is None) or (_search_path_platform != platform):
-    _baseline_search_path = BaselineSearchPath(platform)
-    _search_path_platform = platform
+    if (_baseline_search_path is None) or (_search_path_platform != platform):
+        _baseline_search_path = BaselineSearchPath(platform)
+        _search_path_platform = platform
 
-  baselines = []
-  for platform_dir in _baseline_search_path:
+    baselines = []
+    for platform_dir in _baseline_search_path:
+        if os.path.exists(os.path.join(platform_dir, baseline_filename)):
+            baselines.append((platform_dir, baseline_filename))
+
+        if not all_baselines and baselines:
+            return baselines
+
+    # If it wasn't found in a platform directory, return the expected result
+    # in the test directory, even if no such file actually exists.
+    platform_dir = LayoutTestsDir()
     if os.path.exists(os.path.join(platform_dir, baseline_filename)):
-      baselines.append((platform_dir, baseline_filename))
+        baselines.append((platform_dir, baseline_filename))
 
-    if not all_baselines and baselines:
-      return baselines
+    if baselines:
+        return baselines
 
-  # If it wasn't found in a platform directory, return the expected result
-  # in the test directory, even if no such file actually exists.
-  platform_dir = LayoutTestsDir()
-  if os.path.exists(os.path.join(platform_dir, baseline_filename)):
-    baselines.append((platform_dir, baseline_filename))
+    return [(None, baseline_filename)]
 
-  if baselines:
-    return baselines
-
-  return [(None, baseline_filename)]
 
 def ExpectedFilename(filename, suffix):
-  """Given a test name, returns an absolute path to its expected results.
+    """Given a test name, returns an absolute path to its expected results.
 
-  If no expected results are found in any of the searched directories, the
-  directory in which the test itself is located will be returned. The return
-  value is in the format appropriate for the platform (e.g., "\\" for
-  path separators on windows).
+    If no expected results are found in any of the searched directories, the
+    directory in which the test itself is located will be returned. The return
+    value is in the format appropriate for the platform (e.g., "\\" for
+    path separators on windows).
 
-  Args:
-     filename: absolute filename to test file
-     suffix: file suffix of the expected results, including dot; e.g. '.txt'
-         or '.png'.  This should not be None, but may be an empty string.
-     platform: the most-specific directory name to use to build the
-         search list of directories, e.g., 'chromium-win', or
-         'chromium-mac-leopard' (we follow the WebKit format)
-  """
-  platform_dir, baseline_filename = ExpectedBaselines(filename, suffix)[0]
-  if platform_dir:
-    return os.path.join(platform_dir, baseline_filename)
-  return os.path.join(LayoutTestsDir(), baseline_filename)
+    Args:
+       filename: absolute filename to test file
+       suffix: file suffix of the expected results, including dot; e.g. '.txt'
+           or '.png'.  This should not be None, but may be an empty string.
+       platform: the most-specific directory name to use to build the
+           search list of directories, e.g., 'chromium-win', or
+           'chromium-mac-leopard' (we follow the WebKit format)
+    """
+    platform_dir, baseline_filename = ExpectedBaselines(filename, suffix)[0]
+    if platform_dir:
+        return os.path.join(platform_dir, baseline_filename)
+    return os.path.join(LayoutTestsDir(), baseline_filename)
+
 
 def RelativeTestFilename(filename):
-  """Provide the filename of the test relative to the layout tests
-  directory as a unix style path (a/b/c)."""
-  return _WinPathToUnix(filename[len(LayoutTestsDir()) + 1:])
+    """Provide the filename of the test relative to the layout tests
+    directory as a unix style path (a/b/c)."""
+    return _WinPathToUnix(filename[len(LayoutTestsDir()) + 1:])
+
 
 def _WinPathToUnix(path):
-  """Convert a windows path to use unix-style path separators (a/b/c)."""
-  return path.replace('\\', '/')
+    """Convert a windows path to use unix-style path separators (a/b/c)."""
+    return path.replace('\\', '/')
 
 #
 # Routines that are arguably platform-specific but have been made
 # generic for now (they used to be in platform_utils_*)
 #
+
+
 def FilenameToUri(full_path):
-  """Convert a test file to a URI."""
-  LAYOUTTEST_HTTP_DIR = "http/tests/"
-  LAYOUTTEST_WEBSOCKET_DIR = "websocket/tests/"
+    """Convert a test file to a URI."""
+    LAYOUTTEST_HTTP_DIR = "http/tests/"
+    LAYOUTTEST_WEBSOCKET_DIR = "websocket/tests/"
 
-  relative_path = _WinPathToUnix(RelativeTestFilename(full_path))
-  port = None
-  use_ssl = False
+    relative_path = _WinPathToUnix(RelativeTestFilename(full_path))
+    port = None
+    use_ssl = False
 
-  if relative_path.startswith(LAYOUTTEST_HTTP_DIR):
-    # http/tests/ run off port 8000 and ssl/ off 8443
-    relative_path = relative_path[len(LAYOUTTEST_HTTP_DIR):]
-    port = 8000
-  elif relative_path.startswith(LAYOUTTEST_WEBSOCKET_DIR):
-    # websocket/tests/ run off port 8880 and 9323
-    # Note: the root is /, not websocket/tests/
-    port = 8880
+    if relative_path.startswith(LAYOUTTEST_HTTP_DIR):
+        # http/tests/ run off port 8000 and ssl/ off 8443
+        relative_path = relative_path[len(LAYOUTTEST_HTTP_DIR):]
+        port = 8000
+    elif relative_path.startswith(LAYOUTTEST_WEBSOCKET_DIR):
+        # websocket/tests/ run off port 8880 and 9323
+        # Note: the root is /, not websocket/tests/
+        port = 8880
 
-  # Make http/tests/local run as local files. This is to mimic the
-  # logic in run-webkit-tests.
-  # TODO(jianli): Consider extending this to "media/".
-  if port and not relative_path.startswith("local/"):
-    if relative_path.startswith("ssl/"):
-      port += 443
-      protocol = "https"
-    else:
-      protocol = "http"
-    return "%s://127.0.0.1:%u/%s" % (protocol, port, relative_path)
+    # Make http/tests/local run as local files. This is to mimic the
+    # logic in run-webkit-tests.
+    # TODO(jianli): Consider extending this to "media/".
+    if port and not relative_path.startswith("local/"):
+        if relative_path.startswith("ssl/"):
+            port += 443
+            protocol = "https"
+        else:
+            protocol = "http"
+        return "%s://127.0.0.1:%u/%s" % (protocol, port, relative_path)
 
-  if sys.platform in ('cygwin', 'win32'):
-    return "file:///" + GetAbsolutePath(full_path)
-  return "file://" + GetAbsolutePath(full_path)
+    if sys.platform in ('cygwin', 'win32'):
+        return "file:///" + GetAbsolutePath(full_path)
+    return "file://" + GetAbsolutePath(full_path)
+
 
 def GetAbsolutePath(path):
-  """Returns an absolute UNIX path."""
-  return _WinPathToUnix(os.path.abspath(path))
+    """Returns an absolute UNIX path."""
+    return _WinPathToUnix(os.path.abspath(path))
+
 
 def MaybeMakeDirectory(*path):
-  """Creates the specified directory if it doesn't already exist."""
-  # This is a reimplementation of google.path_utils.MaybeMakeDirectory().
-  try:
-    os.makedirs(os.path.join(*path))
-  except OSError, e:
-    if e.errno != errno.EEXIST:
-      raise
+    """Creates the specified directory if it doesn't already exist."""
+    # This is a reimplementation of google.path_utils.MaybeMakeDirectory().
+    try:
+        os.makedirs(os.path.join(*path))
+    except OSError, e:
+        if e.errno != errno.EEXIST:
+            raise
+
 
 def PathFromBase(*comps):
-  """Returns an absolute filename from a set of components specified
-  relative to the top of the source tree. If the path does not exist,
-  the exception PathNotFound is raised."""
-  # This is a reimplementation of google.path_utils.PathFromBase().
-  global _basedir
-  if _basedir == None:
-    # We compute the top of the source tree by finding the absolute
-    # path of this source file, and then climbing up three directories
-    # as given in subpath. If we move this file, subpath needs to be updated.
-    path = os.path.abspath(__file__)
-    subpath = os.path.join('webkit','tools','layout_tests')
-    _basedir = path[:path.index(subpath)]
-  path = os.path.join(_basedir, *comps)
-  if not os.path.exists(path):
-    raise PathNotFound('could not find %s' % (path))
-  return path
+    """Returns an absolute filename from a set of components specified
+    relative to the top of the source tree. If the path does not exist,
+    the exception PathNotFound is raised."""
+    # This is a reimplementation of google.path_utils.PathFromBase().
+    global _basedir
+    if _basedir == None:
+        # We compute the top of the source tree by finding the absolute
+        # path of this source file, and then climbing up three directories
+        # as given in subpath. If we move this file, subpath needs to be
+        # updated.
+        path = os.path.abspath(__file__)
+        subpath = os.path.join('webkit', 'tools', 'layout_tests')
+        _basedir = path[:path.index(subpath)]
+    path = os.path.join(_basedir, *comps)
+    if not os.path.exists(path):
+        raise PathNotFound('could not find %s' % (path))
+    return path
+
 
 def RemoveDirectory(*path):
-  """Recursively removes a directory, even if it's marked read-only.
+    """Recursively removes a directory, even if it's marked read-only.
 
-  Remove the directory located at *path, if it exists.
+    Remove the directory located at *path, if it exists.
 
-  shutil.rmtree() doesn't work on Windows if any of the files or directories
-  are read-only, which svn repositories and some .svn files are.  We need to
-  be able to force the files to be writable (i.e., deletable) as we traverse
-  the tree.
+    shutil.rmtree() doesn't work on Windows if any of the files or directories
+    are read-only, which svn repositories and some .svn files are.  We need to
+    be able to force the files to be writable (i.e., deletable) as we traverse
+    the tree.
 
-  Even with all this, Windows still sometimes fails to delete a file, citing
-  a permission error (maybe something to do with antivirus scans or disk
-  indexing).  The best suggestion any of the user forums had was to wait a
-  bit and try again, so we do that too.  It's hand-waving, but sometimes it
-  works. :/
-  """
-  file_path = os.path.join(*path)
-  if not os.path.exists(file_path):
-    return
+    Even with all this, Windows still sometimes fails to delete a file, citing
+    a permission error (maybe something to do with antivirus scans or disk
+    indexing).  The best suggestion any of the user forums had was to wait a
+    bit and try again, so we do that too.  It's hand-waving, but sometimes it
+    works. :/
+    """
+    file_path = os.path.join(*path)
+    if not os.path.exists(file_path):
+        return
 
-  win32 = False
-  if sys.platform == 'win32':
-    win32 = True
-    # Some people don't have the APIs installed. In that case we'll do without.
-    try:
-      win32api = __import__('win32api')
-      win32con = __import__('win32con')
-    except ImportError:
-      win32 = False
+    win32 = False
+    if sys.platform == 'win32':
+        win32 = True
+        # Some people don't have the APIs installed. In that case we'll do
+        # without.
+        try:
+            win32api = __import__('win32api')
+            win32con = __import__('win32con')
+        except ImportError:
+            win32 = False
 
-    def remove_with_retry(rmfunc, path):
-      os.chmod(path, stat.S_IWRITE)
-      if win32:
-        win32api.SetFileAttributes(path, win32con.FILE_ATTRIBUTE_NORMAL)
-      try:
-        return rmfunc(path)
-      except EnvironmentError, e:
-        if e.errno != errno.EACCES:
-          raise
-        print 'Failed to delete %s: trying again' % repr(path)
-        time.sleep(0.1)
-        return rmfunc(path)
-  else:
-    def remove_with_retry(rmfunc, path):
-      if os.path.islink(path):
-        return os.remove(path)
-      else:
-        return rmfunc(path)
+        def remove_with_retry(rmfunc, path):
+            os.chmod(path, stat.S_IWRITE)
+            if win32:
+                win32api.SetFileAttributes(path,
+                                           win32con.FILE_ATTRIBUTE_NORMAL)
+            try:
+                return rmfunc(path)
+            except EnvironmentError, e:
+                if e.errno != errno.EACCES:
+                    raise
+                print 'Failed to delete %s: trying again' % repr(path)
+                time.sleep(0.1)
+                return rmfunc(path)
+    else:
 
-  for root, dirs, files in os.walk(file_path, topdown=False):
-    # For POSIX:  making the directory writable guarantees removability.
-    # Windows will ignore the non-read-only bits in the chmod value.
-    os.chmod(root, 0770)
-    for name in files:
-      remove_with_retry(os.remove, os.path.join(root, name))
-    for name in dirs:
-      remove_with_retry(os.rmdir, os.path.join(root, name))
+        def remove_with_retry(rmfunc, path):
+            if os.path.islink(path):
+                return os.remove(path)
+            else:
+                return rmfunc(path)
 
-  remove_with_retry(os.rmdir, file_path)
+    for root, dirs, files in os.walk(file_path, topdown=False):
+        # For POSIX:  making the directory writable guarantees removability.
+        # Windows will ignore the non-read-only bits in the chmod value.
+        os.chmod(root, 0770)
+        for name in files:
+            remove_with_retry(os.remove, os.path.join(root, name))
+        for name in dirs:
+            remove_with_retry(os.rmdir, os.path.join(root, name))
+
+    remove_with_retry(os.rmdir, file_path)
 
 #
 # Wrappers around platform_utils
 #
 
+
 def PlatformName(platform=None):
-  """Returns the appropriate chromium platform name for |platform|. If
-     |platform| is None, returns the name of the chromium platform on the
-     currently running system. If |platform| is of the form 'chromium-*',
-     it is returned unchanged, otherwise 'chromium-' is prepended."""
-  if platform == None:
-    return platform_utils.PlatformName()
-  if not platform.startswith('chromium-'):
-    platform = "chromium-" + platform
-  return platform
+    """Returns the appropriate chromium platform name for |platform|. If
+       |platform| is None, returns the name of the chromium platform on the
+       currently running system. If |platform| is of the form 'chromium-*',
+       it is returned unchanged, otherwise 'chromium-' is prepended."""
+    if platform == None:
+        return platform_utils.PlatformName()
+    if not platform.startswith('chromium-'):
+        platform = "chromium-" + platform
+    return platform
+
 
 def PlatformVersion():
-  return platform_utils.PlatformVersion()
+    return platform_utils.PlatformVersion()
+
 
 def LigHTTPdExecutablePath():
-  return platform_utils.LigHTTPdExecutablePath()
+    return platform_utils.LigHTTPdExecutablePath()
+
 
 def LigHTTPdModulePath():
-  return platform_utils.LigHTTPdModulePath()
+    return platform_utils.LigHTTPdModulePath()
+
 
 def LigHTTPdPHPPath():
-  return platform_utils.LigHTTPdPHPPath()
+    return platform_utils.LigHTTPdPHPPath()
+
 
 def WDiffPath():
-  return platform_utils.WDiffPath()
+    return platform_utils.WDiffPath()
+
 
 def TestShellPath(target):
-  return platform_utils.TestShellPath(target)
+    return platform_utils.TestShellPath(target)
+
 
 def ImageDiffPath(target):
-  return platform_utils.ImageDiffPath(target)
+    return platform_utils.ImageDiffPath(target)
+
 
 def LayoutTestHelperPath(target):
-  return platform_utils.LayoutTestHelperPath(target)
+    return platform_utils.LayoutTestHelperPath(target)
+
 
 def FuzzyMatchPath():
-  return platform_utils.FuzzyMatchPath()
+    return platform_utils.FuzzyMatchPath()
+
 
 def ShutDownHTTPServer(server_pid):
-  return platform_utils.ShutDownHTTPServer(server_pid)
+    return platform_utils.ShutDownHTTPServer(server_pid)
+
 
 def KillAllTestShells():
-  platform_utils.KillAllTestShells()
+    platform_utils.KillAllTestShells()
