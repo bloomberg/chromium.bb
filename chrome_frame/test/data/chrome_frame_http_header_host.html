@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <script type="text/javascript"
+            src="chrome_frame_tester_helpers.js"></script>
+    <script type="text/javascript">
+      var testName = 'FullTabHttpHeaderIFrame';
+
+      // Called by the child document to report success.
+      function reportNotRunningInCF() {
+        onSuccess(testName, 1);
+      }
+    </script>
+  </head>
+   <body>
+    <div id="statusPanel" style="border: 1px solid red; width: 100%">
+      Test running....
+    </div>
+    <iframe src="chrome_frame_http_header_child_with_header.html"
+            width="200" height="200"></iframe>
+
+    <p>Tests that Chrome Frame does not load in full tab mode when an iframe
+       page is served with the X-UA-Compatible http header.</p>
+    <p>This file loads chrome_frame_http_header_child_with_header.html
+       in an iframe</p>
+
+    <script type="text/javascript">
+      try {
+        if (isRunningInChrome()) {
+          onFailure(testName, 1);
+        }
+      } catch (e) {
+        onFailure(testName, 1,
+                  testName + ' failed with error: ' + e);
+      }
+    </script>
+  </body>
+</html>

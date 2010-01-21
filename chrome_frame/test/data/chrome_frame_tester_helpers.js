@@ -2,10 +2,12 @@
 // This script provides some mechanics for testing ChromeFrame
 //
 function onSuccess(name, id) {
+  appendStatus("Success reported!");
   onFinished(name, id, "OK");
 }
 
 function onFailure(name, id, status) {
+  appendStatus("Failure reported: " + status);
   onFinished(name, id, status);
 }
 
@@ -84,8 +86,6 @@ function postResult(name, result) {
 // Finish running a test by setting the status
 // and the cookie.
 function onFinished(name, id, result) {
-  appendStatus(result);
-
   // set a cookie to report the results...
   var cookie = name + "." + id + ".status=" + result + "; path=/";
   document.cookie = cookie;

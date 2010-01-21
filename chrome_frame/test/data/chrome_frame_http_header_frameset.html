@@ -1,0 +1,33 @@
+<html>
+  <head>
+    <script type="text/javascript"
+            src="chrome_frame_tester_helpers.js"></script>
+    <script type="text/javascript">
+      var testName = 'FullTabHttpHeaderFrameset';
+
+      // Called by the child document to report success.
+      function reportNotRunningInCF() {
+        onSuccess(testName, 1);
+      }
+    </script>
+  </head>
+  <frameset rows="10%, *">
+    <frame src="about:blank" name="dummy">
+    <frame src="chrome_frame_http_header_frameset_child.html" name="blank">
+  </frameset>
+
+    <script type="text/javascript">
+      var testName = 'FullTabHttpHeaderFrameset';
+      (function(){
+        try {
+          if (isRunningInChrome()) {
+            onFailure(testName, 1);
+          }
+        } catch (e) {
+          onFailure(testName, 1,
+                    testName + ' failed with error: ' + e);
+        }
+      })();
+    </script>
+
+</html>

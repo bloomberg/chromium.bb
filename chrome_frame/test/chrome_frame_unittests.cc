@@ -578,6 +578,28 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_InitializeHidden) {
   SimpleBrowserTest(IE, kInitializeHiddenPage, L"InitializeHidden");
 }
 
+const wchar_t kFullTabHttpHeaderPage[] = L"files/chrome_frame_http_header.html";
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFHttpHeaderBasic) {
+  SimpleBrowserTest(IE, kFullTabHttpHeaderPage, L"FullTabHttpHeader");
+}
+
+const wchar_t kFullTabHttpHeaderPageIFrame[] =
+    L"files/chrome_frame_http_header_host.html";
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFHttpHeaderIFrame) {
+  SimpleBrowserTest(IE, kFullTabHttpHeaderPageIFrame,
+                    L"FullTabHttpHeaderIFrame");
+}
+
+const wchar_t kFullTabHttpHeaderPageFrameset[] =
+    L"files/chrome_frame_http_header_frameset.html";
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFHttpHeaderFrameSet) {
+  SimpleBrowserTest(IE, kFullTabHttpHeaderPageFrameset,
+                    L"FullTabHttpHeaderFrameset");
+}
+
 // Flaky on the build bots. See http://crbug.com/30622
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_InitializeHidden) {
   SimpleBrowserTest(FIREFOX, kInitializeHiddenPage, L"InitializeHidden");
