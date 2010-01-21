@@ -16,31 +16,32 @@ from layout_package import path_utils
 from layout_package import test_failures
 from test_types import test_type_base
 
+
 class FuzzyImageDiff(test_type_base.TestTypeBase):
-  def CompareOutput(self, filename, proc, output, test_args, target):
-    """Implementation of CompareOutput that checks the output image and
-    checksum against the expected files from the LayoutTest directory.
-    """
-    failures = []
 
-    # If we didn't produce a hash file, this test must be text-only.
-    if test_args.hash is None:
-      return failures
+    def CompareOutput(self, filename, proc, output, test_args, target):
+        """Implementation of CompareOutput that checks the output image and
+        checksum against the expected files from the LayoutTest directory.
+        """
+        failures = []
 
-    expected_png_file = path_utils.ExpectedFilename(filename, '.png')
+        # If we didn't produce a hash file, this test must be text-only.
+        if test_args.hash is None:
+            return failures
 
-    if test_args.show_sources:
-      logging.debug('Using %s' % expected_png_file)
+        expected_png_file = path_utils.ExpectedFilename(filename, '.png')
 
-    # Also report a missing expected PNG file.
-    if not os.path.isfile(expected_png_file):
-      failures.append(test_failures.FailureMissingImage(self))
+        if test_args.show_sources:
+            logging.debug('Using %s' % expected_png_file)
 
-    # Run the fuzzymatcher
-    r = subprocess.call([path_utils.FuzzyMatchPath(),
-                        test_args.png_path, expected_png_file])
-    if r != 0:
-      failures.append(test_failures.FailureFuzzyFailure(self))
+        # Also report a missing expected PNG file.
+        if not os.path.isfile(expected_png_file):
+            failures.append(test_failures.FailureMissingImage(self))
 
-    return failures
+        # Run the fuzzymatcher
+        r = subprocess.call([path_utils.FuzzyMatchPath(),
+                            test_args.png_path, expected_png_file])
+        if r != 0:
+            failures.append(test_failures.FailureFuzzyFailure(self))
 
+        return failures
