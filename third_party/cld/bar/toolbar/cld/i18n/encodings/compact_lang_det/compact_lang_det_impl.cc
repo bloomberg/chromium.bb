@@ -857,7 +857,6 @@ int CountSpaces4(const char* src, int src_len) {
   return s_count;
 }
 
-
 // Remove words of text that have more than half their letters predicted
 // correctly by our cheap predictor, moving the remaining words in-place
 // to the front of the input buffer.
@@ -866,6 +865,10 @@ int CountSpaces4(const char* src, int src_len) {
 // 12-bit hash value and int[4096] prediction table. Caller inits these to 0.
 //
 // Return the new, possibly-shorter length
+//
+// Result Buffer ALWAYS has leading space and trailing space space space NUL,
+// if input does
+//
 int CheapRepWordsInplace(char* isrc, int srclen, int* hash, int* tbl) {
   const uint8* src = reinterpret_cast<const uint8*>(isrc);
   const uint8* srclimit = src + srclen;
@@ -936,7 +939,13 @@ int CheapRepWordsInplace(char* isrc, int srclen, int* hash, int* tbl) {
 
   *hash = local_hash;
 
-  if ((dst - isrc) < srclen) {
+  if ((dst - isrc) < (srclen - 3)) {
+    // Pad and make last char clean UTF-8 by putting following spaces
+    dst[0] = ' ';
+    dst[1] = ' ';
+    dst[2] = ' ';
+    dst[3] = '\0';
+  } else   if ((dst - isrc) < srclen) {
     // Make last char clean UTF-8 by putting following space off the end
     dst[0] = ' ';
   }
@@ -953,6 +962,10 @@ int CheapRepWordsInplace(char* isrc, int srclen, int* hash, int* tbl) {
 // specified by chunksize. A chunksize <= 0 uses the default size of 48 bytes.
 //
 // Return the new, possibly-shorter length
+//
+// Result Buffer ALWAYS has leading space and trailing space space space NUL,
+// if input does
+//
 int CompactLangDetImpl::CheapSqueezeInplace(char* isrc,
                                             int srclen,
                                             int ichunksize) {
@@ -990,6 +1003,10 @@ int CompactLangDetImpl::CheapSqueezeInplace(char* isrc,
           *dst++ = 0xa0;
           *dst++ = ' ';
         }
+        if (dst == isrc) {
+          // Force a leading space if the first chunk is deleted
+          *dst++ = ' ';
+        }
       }
     } else {
       // Keep the text
@@ -1010,7 +1027,13 @@ int CompactLangDetImpl::CheapSqueezeInplace(char* isrc,
     src += len;
   }
 
-  if ((dst - isrc) < srclen) {
+  if ((dst - isrc) < (srclen - 3)) {
+    // Pad and make last char clean UTF-8 by putting following spaces
+    dst[0] = ' ';
+    dst[1] = ' ';
+    dst[2] = ' ';
+    dst[3] = '\0';
+  } else   if ((dst - isrc) < srclen) {
     // Make last char clean UTF-8 by putting following space off the end
     dst[0] = ' ';
   }
