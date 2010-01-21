@@ -162,9 +162,17 @@ TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 }
 #endif
 
+// This test fails on ChromeOS (it has never been known to work on it).
+// http://crbug.com/32799
+#if defined(OS_CHROMEOS)
+#define MAYBE_OtherRedirectsDontForkProcess DISABLED_OtherRedirectsDontForkProcess
+#else
+#define MAYBE_OtherRedirectsDontForkProcess OtherRedirectsDontForkProcess
+#endif
+
 // Tests that non-Gmail-like script redirects (i.e., non-null window.opener) or
 // a same-page-redirect) will not fork a new process.
-TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
+TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
   // This test only works in multi-process mode
   if (in_process_renderer())
     return;
