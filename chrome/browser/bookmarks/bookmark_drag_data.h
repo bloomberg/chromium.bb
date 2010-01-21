@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
 // TODO(port): Port this file.
@@ -55,7 +56,7 @@ struct BookmarkDragData {
     GURL url;
 
     // Title of the entry, used for both urls and groups/folders.
-    std::wstring title;
+    string16 title;
 
     // Children, only used for non-URL nodes.
     std::vector<Element> children;

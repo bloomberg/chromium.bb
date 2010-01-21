@@ -20,7 +20,7 @@ const char* BookmarkDragData::kClipboardFormatString =
 BookmarkDragData::Element::Element(const BookmarkNode* node)
     : is_url(node->is_url()),
       url(node->GetURL()),
-      title(node->GetTitle()),
+      title(node->GetTitleAsString16()),
       id_(node->id()) {
   for (int i = 0; i < node->GetChildCount(); ++i)
     children.push_back(Element(node->GetChild(i)));
@@ -29,7 +29,7 @@ BookmarkDragData::Element::Element(const BookmarkNode* node)
 void BookmarkDragData::Element::WriteToPickle(Pickle* pickle) const {
   pickle->WriteBool(is_url);
   pickle->WriteString(url.spec());
-  pickle->WriteWString(title);
+  pickle->WriteString16(title);
   pickle->WriteInt64(id_);
   if (!is_url) {
     pickle->WriteSize(children.size());
@@ -45,7 +45,7 @@ bool BookmarkDragData::Element::ReadFromPickle(Pickle* pickle,
   std::string url_spec;
   if (!pickle->ReadBool(iterator, &is_url) ||
       !pickle->ReadString(iterator, &url_spec) ||
-      !pickle->ReadWString(iterator, &title) ||
+      !pickle->ReadString16(iterator, &title) ||
       !pickle->ReadInt64(iterator, &id_)) {
     return false;
   }
@@ -97,7 +97,7 @@ void BookmarkDragData::WriteToClipboard(Profile* profile) const {
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.
   if (elements.size() == 1 && elements[0].is_url) {
-    string16 title = WideToUTF16Hack(elements[0].title);
+    const string16& title = elements[0].title;
     std::string url = elements[0].url.spec();
 
     scw.WriteBookmark(title, url);
@@ -131,7 +131,7 @@ bool BookmarkDragData::ReadFromClipboard() {
     Element element;
     element.is_url = true;
     element.url = GURL(url);
-    element.title = UTF16ToWideHack(title);
+    element.title = title;
 
     elements.clear();
     elements.push_back(element);
@@ -152,7 +152,7 @@ void BookmarkDragData::Write(Profile* profile, OSExchangeData* data) const {
     if (elements[0].url.SchemeIs(chrome::kJavaScriptScheme)) {
       data->SetString(ASCIIToWide(elements[0].url.spec()));
     } else {
-      data->SetURL(elements[0].url, elements[0].title);
+      data->SetURL(elements[0].url, UTF16ToWide(elements[0].title));
     }
   }
 
@@ -176,8 +176,10 @@ bool BookmarkDragData::Read(const OSExchangeData& data) {
   } else {
     // See if there is a URL on the clipboard.
     Element element;
-    if (data.GetURLAndTitle(&element.url, &element.title) &&
+    std::wstring title;
+    if (data.GetURLAndTitle(&element.url, &title) &&
         element.url.is_valid()) {
+      element.title = WideToUTF16(title);
       element.is_url = true;
       elements.push_back(element);
     }

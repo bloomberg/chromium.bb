@@ -78,7 +78,7 @@ class EditFolderController : public InputWindowDialog::Delegate,
         l10n_util::GetString(IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL);
     std::wstring contents = is_new_ ?
         l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME) :
-        node_->GetTitle();
+        UTF16ToWide(node_->GetTitleAsString16());
 
     dialog_ = InputWindowDialog::Create(wnd, title, label, contents, this);
     model_->AddObserver(this);

@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/string_util.h"
+#include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -251,12 +252,12 @@ int PerformBookmarkDrop(Profile* profile,
     return DragDropTypes::DRAG_MOVE;
   } else if (data.has_single_url()) {
     // New URL, add it at the specified location.
-    std::wstring title = data.elements[0].title;
+    string16 title = data.elements[0].title;
     if (title.empty()) {
       // No title, use the host.
-      title = UTF8ToWide(data.elements[0].url.host());
+      title = UTF8ToUTF16(data.elements[0].url.host());
       if (title.empty())
-        title = l10n_util::GetString(IDS_BOOMARK_BAR_UNKNOWN_DRAG_TITLE);
+        title = l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_UNKNOWN_DRAG_TITLE);
     }
     model->AddURL(parent_node, index, title, data.elements[0].url);
     return DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK;

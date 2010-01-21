@@ -27,8 +27,8 @@ const wchar_t* BookmarkCodec::kDateAddedKey = L"date_added";
 const wchar_t* BookmarkCodec::kURLKey = L"url";
 const wchar_t* BookmarkCodec::kDateModifiedKey = L"date_modified";
 const wchar_t* BookmarkCodec::kChildrenKey = L"children";
-const wchar_t* BookmarkCodec::kTypeURL = L"url";
-const wchar_t* BookmarkCodec::kTypeFolder = L"folder";
+const char* BookmarkCodec::kTypeURL = "url";
+const char* BookmarkCodec::kTypeFolder = "folder";
 
 // Current version of the file.
 static const int kCurrentVersion = 1;
@@ -84,23 +84,22 @@ bool BookmarkCodec::Decode(BookmarkNode* bb_node,
 
 Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
   DictionaryValue* value = new DictionaryValue();
-  std::string id;
-  id = Int64ToString(node->id());
+  std::string id = Int64ToString(node->id());
   value->SetString(kIdKey, id);
-  const std::wstring& title = node->GetTitle();
-  value->SetString(kNameKey, title);
+  const string16& title = node->GetTitleAsString16();
+  value->SetStringFromUTF16(kNameKey, title);
   value->SetString(kDateAddedKey,
-                   Int64ToWString(node->date_added().ToInternalValue()));
+                   Int64ToString(node->date_added().ToInternalValue()));
   if (node->type() == BookmarkNode::URL) {
     value->SetString(kTypeKey, kTypeURL);
-    std::wstring url = UTF8ToWide(node->GetURL().possibly_invalid_spec());
+    std::string url = node->GetURL().possibly_invalid_spec();
     value->SetString(kURLKey, url);
     UpdateChecksumWithUrlNode(id, title, url);
   } else {
     value->SetString(kTypeKey, kTypeFolder);
     value->SetString(kDateModifiedKey,
-                     Int64ToWString(node->date_group_modified().
-                                    ToInternalValue()));
+                     Int64ToString(node->date_group_modified().
+                                   ToInternalValue()));
     UpdateChecksumWithFolderNode(id, title);
 
     ListValue* child_values = new ListValue();
@@ -203,14 +202,14 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
 
   maximum_id_ = std::max(maximum_id_, id);
 
-  std::wstring title;
-  value.GetString(kNameKey, &title);
+  string16 title;
+  value.GetStringAsUTF16(kNameKey, &title);
 
-  std::wstring date_added_string;
+  std::string date_added_string;
   if (!value.GetString(kDateAddedKey, &date_added_string))
-    date_added_string = Int64ToWString(Time::Now().ToInternalValue());
+    date_added_string = Int64ToString(Time::Now().ToInternalValue());
   base::Time date_added = base::Time::FromInternalValue(
-      StringToInt64(WideToUTF16Hack(date_added_string)));
+      StringToInt64(date_added_string));
 #if !defined(OS_WIN)
   // We changed the epoch for dates on Mac & Linux from 1970 to the Windows
   // one of 1601. We assume any number we encounter from before 1970 is using
@@ -225,7 +224,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
   }
 #endif
 
-  std::wstring type_string;
+  std::string type_string;
   if (!value.GetString(kTypeKey, &type_string))
     return false;
 
@@ -233,11 +232,11 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
     return false;  // Unknown type.
 
   if (type_string == kTypeURL) {
-    std::wstring url_string;
+    std::string url_string;
     if (!value.GetString(kURLKey, &url_string))
       return false;
 
-    GURL url = GURL(WideToUTF8(url_string));
+    GURL url = GURL(url_string);
     if (!node && url.is_valid())
       node = new BookmarkNode(id, url);
     else
@@ -248,9 +247,9 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
     node->set_type(BookmarkNode::URL);
     UpdateChecksumWithUrlNode(id_string, title, url_string);
   } else {
-    std::wstring last_modified_date;
+    std::string last_modified_date;
     if (!value.GetString(kDateModifiedKey, &last_modified_date))
-      last_modified_date = Int64ToWString(Time::Now().ToInternalValue());
+      last_modified_date = Int64ToString(Time::Now().ToInternalValue());
 
     Value* child_values;
     if (!value.Get(kChildrenKey, &child_values))
@@ -268,7 +267,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
 
     node->set_type(BookmarkNode::FOLDER);
     node->set_date_group_modified(Time::FromInternalValue(
-        StringToInt64(WideToUTF16Hack(last_modified_date))));
+        StringToInt64(last_modified_date)));
 
     if (parent)
       parent->Add(parent->GetChildCount(), node);
@@ -303,13 +302,14 @@ void BookmarkCodec::UpdateChecksum(const std::string& str) {
   MD5Update(&md5_context_, str.data(), str.length() * sizeof(char));
 }
 
-void BookmarkCodec::UpdateChecksum(const std::wstring& str) {
-  MD5Update(&md5_context_, str.data(), str.length() * sizeof(wchar_t));
+void BookmarkCodec::UpdateChecksum(const string16& str) {
+  MD5Update(&md5_context_, str.data(), str.length() * sizeof(char16));
 }
 
 void BookmarkCodec::UpdateChecksumWithUrlNode(const std::string& id,
-                                              const std::wstring& title,
-                                              const std::wstring& url) {
+                                              const string16& title,
+                                              const std::string& url) {
+  DCHECK(IsStringUTF8(url));
   UpdateChecksum(id);
   UpdateChecksum(title);
   UpdateChecksum(kTypeURL);
@@ -317,7 +317,7 @@ void BookmarkCodec::UpdateChecksumWithUrlNode(const std::string& id,
 }
 
 void BookmarkCodec::UpdateChecksumWithFolderNode(const std::string& id,
-                                                 const std::wstring& title) {
+                                                 const string16& title) {
   UpdateChecksum(id);
   UpdateChecksum(title);
   UpdateChecksum(kTypeFolder);

@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/md5.h"
+#include "base/string16.h"
 
 class BookmarkModel;
 class BookmarkNode;
@@ -85,8 +86,8 @@ class BookmarkCodec {
   static const wchar_t* kChildrenKey;
 
   // Possible values for kTypeKey.
-  static const wchar_t* kTypeURL;
-  static const wchar_t* kTypeFolder;
+  static const char* kTypeURL;
+  static const char* kTypeFolder;
 
  private:
   // Encodes node and all its children into a Value object and returns it.
@@ -118,18 +119,19 @@ class BookmarkCodec {
 
   // Updates the check-sum with the given string.
   void UpdateChecksum(const std::string& str);
-  void UpdateChecksum(const std::wstring& str);
+  void UpdateChecksum(const string16& str);
 
   // Updates the check-sum with the given contents of URL/folder bookmark node.
   // NOTE: These functions take in individual properties of a bookmark node
   // instead of taking in a BookmarkNode for efficiency so that we don't convert
-  // varous data-types to wide strings multiple times - once for serializing
+  // various data-types to UTF16 strings multiple times - once for serializing
   // and once for computing the check-sum.
+  // The url parameter should be a valid UTF8 string.
   void UpdateChecksumWithUrlNode(const std::string& id,
-                                 const std::wstring& title,
-                                 const std::wstring& url);
+                                 const string16& title,
+                                 const std::string& url);
   void UpdateChecksumWithFolderNode(const std::string& id,
-                                    const std::wstring& title);
+                                    const string16& title);
 
   // Initializes/Finalizes the checksum.
   void InitializeChecksum();

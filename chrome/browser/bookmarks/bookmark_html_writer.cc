@@ -161,25 +161,19 @@ class Writer : public Task {
 
   // Writes out the text string (as UTF8). The text is escaped based on
   // type.
-  bool Write(const std::wstring& text, TextType type) {
+  bool Write(const std::string& text, TextType type) {
+    DCHECK(IsStringUTF8(text));
     std::string utf8_string;
 
     switch (type) {
       case ATTRIBUTE_VALUE:
         // Convert " to &quot;
-        if (text.find(L"\"") != std::wstring::npos) {
-          string16 replaced_string = WideToUTF16Hack(text);
-          ReplaceSubstringsAfterOffset(&replaced_string, 0,
-                                       ASCIIToUTF16("\""),
-                                       ASCIIToUTF16("&quot;"));
-          utf8_string = UTF16ToUTF8(replaced_string);
-        } else {
-          utf8_string = WideToUTF8(text);
-        }
+        utf8_string = text;
+        ReplaceSubstringsAfterOffset(&utf8_string, 0, "\"", "&quot;");
         break;
 
       case CONTENT:
-        utf8_string = UTF16ToUTF8(EscapeForHTML(WideToUTF16Hack(text)));
+        utf8_string = EscapeForHTML(text);
         break;
 
       default:
@@ -196,16 +190,16 @@ class Writer : public Task {
 
   // Converts a time string written to the JSON codec into a time_t string
   // (used by bookmarks.html) and writes it.
-  bool WriteTime(const std::wstring& time_string) {
+  bool WriteTime(const std::string& time_string) {
     base::Time time = base::Time::FromInternalValue(
-        StringToInt64(WideToUTF16Hack(time_string)));
+        StringToInt64(time_string));
     return Write(Int64ToString(time.ToTimeT()));
   }
 
   // Writes the node and all its children, returning true on success.
   bool WriteNode(const DictionaryValue& value,
                 BookmarkNode::Type folder_type) {
-    std::wstring title, date_added_string, type_string;
+    std::string title, date_added_string, type_string;
     if (!value.GetString(BookmarkCodec::kNameKey, &title) ||
         !value.GetString(BookmarkCodec::kDateAddedKey, &date_added_string) ||
         !value.GetString(BookmarkCodec::kTypeKey, &type_string) ||
@@ -216,7 +210,7 @@ class Writer : public Task {
     }
 
     if (type_string == BookmarkCodec::kTypeURL) {
-      std::wstring url_string;
+      std::string url_string;
       if (!value.GetString(BookmarkCodec::kURLKey, &url_string)) {
         NOTREACHED();
         return false;
@@ -236,7 +230,7 @@ class Writer : public Task {
     }
 
     // Folder.
-    std::wstring last_modified_date;
+    std::string last_modified_date;
     Value* child_values;
     if (!value.GetString(BookmarkCodec::kDateModifiedKey,
                          &last_modified_date) ||
@@ -259,7 +253,7 @@ class Writer : public Task {
       if (folder_type == BookmarkNode::BOOKMARK_BAR) {
         if (!Write(kBookmarkBar))
           return false;
-        title = l10n_util::GetString(IDS_BOOMARK_BAR_FOLDER_NAME);
+        title = l10n_util::GetStringUTF8(IDS_BOOMARK_BAR_FOLDER_NAME);
       } else if (!Write(kFolderAttributeEnd)) {
         return false;
       }
