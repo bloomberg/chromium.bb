@@ -434,4 +434,59 @@ TEST_F(CookiesWindowControllerTest, ClearBrowsingData) {
   [mock verify];
 }
 
+TEST_F(CookiesWindowControllerTest, RemoveButtonEnabled) {
+  const GURL url = GURL("http://foo.com");
+  TestingProfile* profile = browser_helper_.profile();
+  net::CookieMonster* cm = profile->GetCookieMonster();
+  cm->SetCookie(url, "A=B");
+  cm->SetCookie(url, "C=D");
+
+  // This will clean itself up when we call |-closeSheet:|. If we reset the
+  // scoper, we'd get a double-free.
+  CookiesWindowController* controller =
+      [[CookiesWindowController alloc] initWithProfile:profile];
+  [controller attachSheetTo:test_window()];
+
+  // Nothing should be selected right now.
+  EXPECT_FALSE([controller removeButtonEnabled]);
+
+  {
+    // Pretend to select cookie A.
+    NSUInteger path[3] = {0, 0, 0};
+    NSIndexPath* indexPath = [NSIndexPath indexPathWithIndexes:path length:3];
+    [[controller treeController] setSelectionIndexPath:indexPath];
+    [controller outlineViewSelectionDidChange:nil];
+    EXPECT_TRUE([controller removeButtonEnabled]);
+  }
+
+  {
+    // Pretend to select cookie C.
+    NSUInteger path[3] = {0, 0, 1};
+    NSIndexPath* indexPath = [NSIndexPath indexPathWithIndexes:path length:3];
+    [[controller treeController] setSelectionIndexPath:indexPath];
+    [controller outlineViewSelectionDidChange:nil];
+    EXPECT_TRUE([controller removeButtonEnabled]);
+  }
+
+  {
+    // Pretend to select something that isn't there!
+    NSUInteger path[3] = {0, 0, 2};
+    NSIndexPath* indexPath = [NSIndexPath indexPathWithIndexes:path length:3];
+    [[controller treeController] setSelectionIndexPath:indexPath];
+    [controller outlineViewSelectionDidChange:nil];
+    EXPECT_FALSE([controller removeButtonEnabled]);
+  }
+
+  {
+    // Try selecting something that doesn't exist again.
+    NSUInteger path[3] = {3, 1, 4};
+    NSIndexPath* indexPath = [NSIndexPath indexPathWithIndexes:path length:3];
+    [[controller treeController] setSelectionIndexPath:indexPath];
+    [controller outlineViewSelectionDidChange:nil];
+    EXPECT_FALSE([controller removeButtonEnabled]);
+  }
+
+  [controller closeSheet:nil];
+}
+
 }  // namespace

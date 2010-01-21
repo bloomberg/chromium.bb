@@ -81,10 +81,14 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
   // Our Cocoa copy of the model.
   scoped_nsobject<CocoaCookieTreeNode> cocoaTreeModel_;
 
+  // A flag indicating whether or not the "Remove" button should be enabled.
+  BOOL removeButtonEnabled_;
+
   IBOutlet NSTreeController* treeController_;
 
   Profile* profile_;  // weak
 }
+@property (assign, nonatomic) BOOL removeButtonEnabled;
 @property (readonly, nonatomic) NSTreeController* treeController;
 
 // Designated initializer. Profile cannot be NULL.

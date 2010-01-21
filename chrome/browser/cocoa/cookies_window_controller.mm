@@ -128,6 +128,7 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
 
 @implementation CookiesWindowController
 
+@synthesize removeButtonEnabled = removeButtonEnabled_;
 @synthesize treeController = treeController_;
 
 - (id)initWithProfile:(Profile*)profile {
@@ -260,6 +261,33 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
       [outlineView expandItem:[children lastObject]];
     }
   }
+}
+
+- (void)outlineViewSelectionDidChange:(NSNotification*)notif {
+  // Multi-selection should be disabled in the UI, but for sanity, double-check
+  // that they can't do it here.
+  NSUInteger count = [[treeController_ selectedObjects] count];
+  if (count != 1U) {
+    DCHECK_LT(count, 1U) << "User was able to select more than 1 cookie node!";
+    [self setRemoveButtonEnabled:NO];
+    return;
+  }
+
+  // Go through the selection's indexPath and make sure that the node that is
+  // being referenced actually exists in the Cocoa model.
+  NSIndexPath* selection = [treeController_ selectionIndexPath];
+  NSUInteger length = [selection length];
+  CocoaCookieTreeNode* node = [self cocoaTreeModel];
+  for (NSUInteger i = 0; i < length; ++i) {
+    NSUInteger childIndex = [selection indexAtPosition:i];
+    if (childIndex >= [[node children] count]) {
+      [self setRemoveButtonEnabled:NO];
+      return;
+    }
+    node = [[node children] objectAtIndex:childIndex];
+  }
+
+  [self setRemoveButtonEnabled:YES];
 }
 
 #pragma mark Unit Testing
