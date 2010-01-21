@@ -16,6 +16,7 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "base/timer.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -29,8 +30,8 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -51,10 +52,6 @@
 #include "app/win_util.h"
 #include "base/registry.h"
 #include "base/win_util.h"
-#endif
-
-#if defined(OS_LINUX)
-#include <gtk/gtk.h>
 #endif
 
 // Periodically update our observers.
@@ -361,7 +358,8 @@ void DownloadManager::RegisterUserPrefs(PrefService* prefs) {
 DownloadManager::DownloadManager()
     : shutdown_needed_(false),
       profile_(NULL),
-      file_manager_(NULL) {
+      file_manager_(NULL),
+      fake_db_handle_(kUninitializedHandle - 1) {
 }
 
 DownloadManager::~DownloadManager() {
@@ -767,8 +765,7 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
   // the neck first. YMMV.
   if (profile_->IsOffTheRecord() || download->is_extension_install() ||
       download->is_temporary()) {
-    static int64 fake_db_handle = kUninitializedHandle - 1;
-    OnCreateDownloadEntryComplete(*info, fake_db_handle--);
+    OnCreateDownloadEntryComplete(*info, fake_db_handle_.GetNext());
   } else {
     // Update the history system with the new download.
     // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
@@ -1586,6 +1583,15 @@ void DownloadManager::OnCreateDownloadEntryComplete(DownloadCreateInfo info,
   DCHECK(it != in_progress_.end());
 
   DownloadItem* download = it->second;
+
+  // It's not immediately obvious, but HistoryBackend::CreateDownload() can
+  // call this function with an invalid |db_handle|. For instance, this can
+  // happen when the history database is offline. We cannot have multiple
+  // DownloadItems with the same invalid db_handle, so we need to assign a
+  // unique |db_handle| here.
+  if (db_handle == kUninitializedHandle)
+    db_handle = fake_db_handle_.GetNext();
+
   DCHECK(download->db_handle() == kUninitializedHandle);
   download->set_db_handle(db_handle);
 
@@ -1655,4 +1661,3 @@ void DownloadManager::ShowDownloadInBrowser(const DownloadCreateInfo& info,
 void DownloadManager::ClearLastDownloadPath() {
   last_download_path_ = FilePath();
 }
-

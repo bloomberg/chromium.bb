@@ -35,11 +35,9 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
 
-#include "build/build_config.h"
-
-#include <string>
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -381,7 +379,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   void UpdateDownload(int32 download_id, int64 size);
   void DownloadFinished(int32 download_id, int64 size);
 
- // Called from a view when a user clicks a UI button or link.
+  // Called from a view when a user clicks a UI button or link.
   void DownloadCancelled(int32 download_id);
   void PauseDownload(int32 download_id, bool pause);
   void RemoveDownload(int64 download_handle);
@@ -510,6 +508,16 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
                                FilePath* generated_name);
 
  private:
+
+  class FakeDbHandleGenerator {
+   public:
+    explicit FakeDbHandleGenerator(int64 start_value) : value_(start_value) {}
+
+    int64 GetNext() { return value_--; }
+   private:
+    int64 value_;
+  };
+
   friend class base::RefCountedThreadSafe<DownloadManager>;
 
   ~DownloadManager();
@@ -670,6 +678,12 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // The "Save As" dialog box used to ask the user where a file should be
   // saved.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
+
+  // In case we don't have a valid db_handle, we use |fake_db_handle_| instead.
+  // This is useful for incognito mode or when the history database is offline.
+  // Downloads are expected to have unique handles, so FakeDbHandleGenerator
+  // automatically decrement the handle value on every use.
+  FakeDbHandleGenerator fake_db_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManager);
 };
