@@ -20,51 +20,52 @@ _supported_file_extensions = set(['.html', '.shtml', '.xml', '.xhtml', '.pl',
 # When collecting test cases, skip these directories
 _skipped_directories = set(['.svn', '_svn', 'resources', 'script-tests'])
 
+
 def GatherTestFiles(paths):
-  """Generate a set of test files and return them.
+    """Generate a set of test files and return them.
 
-  Args:
-    paths: a list of command line paths relative to the webkit/tests
-        directory. glob patterns are ok.
-  """
-  paths_to_walk = set()
-  # if paths is empty, provide a pre-defined list.
-  if paths:
-    for path in paths:
-      # If there's an * in the name, assume it's a glob pattern.
-      path = os.path.join(path_utils.LayoutTestsDir(), path)
-      if path.find('*') > -1:
-        filenames = glob.glob(path)
-        paths_to_walk.update(filenames)
-      else:
-        paths_to_walk.add(path)
-  else:
-    paths_to_walk.add(path_utils.LayoutTestsDir())
+    Args:
+      paths: a list of command line paths relative to the webkit/tests
+          directory. glob patterns are ok.
+    """
+    paths_to_walk = set()
+    # if paths is empty, provide a pre-defined list.
+    if paths:
+        for path in paths:
+            # If there's an * in the name, assume it's a glob pattern.
+            path = os.path.join(path_utils.LayoutTestsDir(), path)
+            if path.find('*') > -1:
+                filenames = glob.glob(path)
+                paths_to_walk.update(filenames)
+            else:
+                paths_to_walk.add(path)
+    else:
+        paths_to_walk.add(path_utils.LayoutTestsDir())
 
-  # Now walk all the paths passed in on the command line and get filenames
-  test_files = set()
-  for path in paths_to_walk:
-    if os.path.isfile(path) and _HasSupportedExtension(path):
-      test_files.add(os.path.normpath(path))
-      continue
+    # Now walk all the paths passed in on the command line and get filenames
+    test_files = set()
+    for path in paths_to_walk:
+        if os.path.isfile(path) and _HasSupportedExtension(path):
+            test_files.add(os.path.normpath(path))
+            continue
 
-    for root, dirs, files in os.walk(path):
-      # don't walk skipped directories and sub directories
-      if os.path.basename(root) in _skipped_directories:
-        del dirs[:]
-        continue
+        for root, dirs, files in os.walk(path):
+            # don't walk skipped directories and sub directories
+            if os.path.basename(root) in _skipped_directories:
+                del dirs[:]
+                continue
 
-      for filename in files:
-        if _HasSupportedExtension(filename):
-          filename = os.path.join(root, filename)
-          filename = os.path.normpath(filename)
-          test_files.add(filename)
+            for filename in files:
+                if _HasSupportedExtension(filename):
+                    filename = os.path.join(root, filename)
+                    filename = os.path.normpath(filename)
+                    test_files.add(filename)
 
-  return test_files
+    return test_files
+
 
 def _HasSupportedExtension(filename):
-  """Return true if filename is one of the file extensions we want to run a
-  test on."""
-  extension = os.path.splitext(filename)[1]
-  return extension in _supported_file_extensions
-
+    """Return true if filename is one of the file extensions we want to run a
+    test on."""
+    extension = os.path.splitext(filename)[1]
+    return extension in _supported_file_extensions

@@ -16,372 +16,375 @@ from layout_package import test_expectations
 sys.path.append(path_utils.PathFromBase('third_party'))
 import simplejson
 
+
 class JSONResultsGenerator(object):
 
-  MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG = 750
-  # Min time (seconds) that will be added to the JSON.
-  MIN_TIME = 1
-  JSON_PREFIX = "ADD_RESULTS("
-  JSON_SUFFIX = ");"
-  PASS_RESULT = "P"
-  SKIP_RESULT = "X"
-  NO_DATA_RESULT = "N"
-  VERSION = 3
-  VERSION_KEY = "version"
-  RESULTS = "results"
-  TIMES = "times"
-  BUILD_NUMBERS = "buildNumbers"
-  WEBKIT_SVN = "webkitRevision"
-  CHROME_SVN = "chromeRevision"
-  TIME = "secondsSinceEpoch"
-  TESTS = "tests"
+    MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG = 750
+    # Min time (seconds) that will be added to the JSON.
+    MIN_TIME = 1
+    JSON_PREFIX = "ADD_RESULTS("
+    JSON_SUFFIX = ");"
+    PASS_RESULT = "P"
+    SKIP_RESULT = "X"
+    NO_DATA_RESULT = "N"
+    VERSION = 3
+    VERSION_KEY = "version"
+    RESULTS = "results"
+    TIMES = "times"
+    BUILD_NUMBERS = "buildNumbers"
+    WEBKIT_SVN = "webkitRevision"
+    CHROME_SVN = "chromeRevision"
+    TIME = "secondsSinceEpoch"
+    TESTS = "tests"
 
-  FIXABLE_COUNT = "fixableCount"
-  FIXABLE = "fixableCounts"
-  ALL_FIXABLE_COUNT = "allFixableCount"
+    FIXABLE_COUNT = "fixableCount"
+    FIXABLE = "fixableCounts"
+    ALL_FIXABLE_COUNT = "allFixableCount"
 
-  # Note that we omit test_expectations.FAIL from this list because
-  # it should never show up (it's a legacy input expectation, never
-  # an output expectation).
-  FAILURE_TO_CHAR = {
-    test_expectations.CRASH : "C",
-    test_expectations.TIMEOUT : "T",
-    test_expectations.IMAGE : "I",
-    test_expectations.TEXT : "F",
-    test_expectations.MISSING : "O",
-    test_expectations.IMAGE_PLUS_TEXT : "Z"
-  }
-  FAILURE_CHARS = FAILURE_TO_CHAR.values()
+    # Note that we omit test_expectations.FAIL from this list because
+    # it should never show up (it's a legacy input expectation, never
+    # an output expectation).
+    FAILURE_TO_CHAR = {test_expectations.CRASH: "C",
+                       test_expectations.TIMEOUT: "T",
+                       test_expectations.IMAGE: "I",
+                       test_expectations.TEXT: "F",
+                       test_expectations.MISSING: "O",
+                       test_expectations.IMAGE_PLUS_TEXT: "Z"}
+    FAILURE_CHARS = FAILURE_TO_CHAR.values()
 
-  RESULTS_FILENAME = "results.json"
+    RESULTS_FILENAME = "results.json"
 
-  def __init__(self, builder_name, build_name, build_number,
-      results_file_base_path, builder_base_url,
-      test_timings, failures, passed_tests, skipped_tests, all_tests):
-    """Modifies the results.json file. Grabs it off the archive directory if it
-    is not found locally.
+    def __init__(self, builder_name, build_name, build_number,
+        results_file_base_path, builder_base_url,
+        test_timings, failures, passed_tests, skipped_tests, all_tests):
+        """Modifies the results.json file. Grabs it off the archive directory
+        if it is not found locally.
 
-    Args
-      builder_name: the builder name (e.g. Webkit).
-      build_name: the build name (e.g. webkit-rel).
-      build_number: the build number.
-      results_file_base_path: Absolute path to the directory containing the
-          results json file.
-      builder_base_url: the URL where we have the archived test results.
-      test_timings: Map of test name to a test_run-time.
-      failures: Map of test name to a failure type (of test_expectations).
-      passed_tests: A set containing all the passed tests.
-      skipped_tests: A set containing all the skipped tests.
-      all_tests: List of all the tests that were run.  This should not include
-          skipped tests.
-    """
-    self._builder_name = builder_name
-    self._build_name = build_name
-    self._build_number = build_number
-    self._builder_base_url = builder_base_url
-    self._results_file_path = os.path.join(results_file_base_path,
-        self.RESULTS_FILENAME)
-    self._test_timings = test_timings
-    self._failures = failures
-    self._passed_tests = passed_tests
-    self._skipped_tests = skipped_tests
-    self._all_tests = all_tests
+        Args
+          builder_name: the builder name (e.g. Webkit).
+          build_name: the build name (e.g. webkit-rel).
+          build_number: the build number.
+          results_file_base_path: Absolute path to the directory containing the
+              results json file.
+          builder_base_url: the URL where we have the archived test results.
+          test_timings: Map of test name to a test_run-time.
+          failures: Map of test name to a failure type (of test_expectations).
+          passed_tests: A set containing all the passed tests.
+          skipped_tests: A set containing all the skipped tests.
+          all_tests: List of all the tests that were run.  This should not
+              include skipped tests.
+        """
+        self._builder_name = builder_name
+        self._build_name = build_name
+        self._build_number = build_number
+        self._builder_base_url = builder_base_url
+        self._results_file_path = os.path.join(results_file_base_path,
+            self.RESULTS_FILENAME)
+        self._test_timings = test_timings
+        self._failures = failures
+        self._passed_tests = passed_tests
+        self._skipped_tests = skipped_tests
+        self._all_tests = all_tests
 
-    self._GenerateJSONOutput()
+        self._GenerateJSONOutput()
 
-  def _GenerateJSONOutput(self):
-    """Generates the JSON output file."""
-    json = self._GetJSON()
-    if json:
-      results_file = open(self._results_file_path, "w")
-      results_file.write(json)
-      results_file.close()
+    def _GenerateJSONOutput(self):
+        """Generates the JSON output file."""
+        json = self._GetJSON()
+        if json:
+            results_file = open(self._results_file_path, "w")
+            results_file.write(json)
+            results_file.close()
 
-  def _GetSVNRevision(self, in_directory=None):
-    """Returns the svn revision for the given directory.
+    def _GetSVNRevision(self, in_directory=None):
+        """Returns the svn revision for the given directory.
 
-    Args:
-      in_directory: The directory where svn is to be run.
-    """
-    output = subprocess.Popen(["svn", "info", "--xml"],
-                              cwd=in_directory,
-                              shell=(sys.platform == 'win32'),
-                              stdout=subprocess.PIPE).communicate()[0]
-    try :
-      dom = xml.dom.minidom.parseString(output)
-      return dom.getElementsByTagName('entry')[0].getAttribute('revision');
-    except xml.parsers.expat.ExpatError:
-      return ""
+        Args:
+          in_directory: The directory where svn is to be run.
+        """
+        output = subprocess.Popen(["svn", "info", "--xml"],
+                                  cwd=in_directory,
+                                  shell=(sys.platform == 'win32'),
+                                  stdout=subprocess.PIPE).communicate()[0]
+        try:
+            dom = xml.dom.minidom.parseString(output)
+            return dom.getElementsByTagName('entry')[0].getAttribute(
+                'revision')
+        except xml.parsers.expat.ExpatError:
+            return ""
 
-  def _GetArchivedJSONResults(self):
-    """Reads old results JSON file if it exists.
-    Returns (archived_results, error) tuple where error is None if results
-    were successfully read.
-    """
-    results_json = {}
-    old_results = None
-    error = None
-
-    if os.path.exists(self._results_file_path):
-      old_results_file = open(self._results_file_path, "r")
-      old_results = old_results_file.read()
-    elif self._builder_base_url:
-      # Check if we have the archived JSON file on the buildbot server.
-      results_file_url = (self._builder_base_url +
-          self._build_name + "/" + self.RESULTS_FILENAME)
-      logging.error("Local results.json file does not exist. Grabbing it off "
-          "the archive at " + results_file_url)
-
-      try:
-        results_file = urllib2.urlopen(results_file_url)
-        info = results_file.info()
-        old_results = results_file.read()
-      except urllib2.HTTPError, http_error:
-        # A non-4xx status code means the bot is hosed for some reason and we
-        # can't grab the results.json file off of it.
-        if (http_error.code < 400 and http_error.code >= 500):
-          error = http_error
-      except urllib2.URLError, url_error:
-        error = url_error
-
-    if old_results:
-      # Strip the prefix and suffix so we can get the actual JSON object.
-      old_results = old_results[
-          len(self.JSON_PREFIX) : len(old_results) - len(self.JSON_SUFFIX)]
-
-      try:
-        results_json = simplejson.loads(old_results)
-      except:
-        logging.debug("results.json was not valid JSON. Clobbering.")
-        # The JSON file is not valid JSON. Just clobber the results.
+    def _GetArchivedJSONResults(self):
+        """Reads old results JSON file if it exists.
+        Returns (archived_results, error) tuple where error is None if results
+        were successfully read.
+        """
         results_json = {}
-    else:
-      logging.debug('Old JSON results do not exist. Starting fresh.');
-      results_json = {}
+        old_results = None
+        error = None
 
-    return results_json, error
+        if os.path.exists(self._results_file_path):
+            old_results_file = open(self._results_file_path, "r")
+            old_results = old_results_file.read()
+        elif self._builder_base_url:
+            # Check if we have the archived JSON file on the buildbot server.
+            results_file_url = (self._builder_base_url +
+                self._build_name + "/" + self.RESULTS_FILENAME)
+            logging.error("Local results.json file does not exist. Grabbing "
+                "it off the archive at " + results_file_url)
 
-  def _GetJSON(self):
-    """Gets the results for the results.json file."""
-    results_json, error = self._GetArchivedJSONResults()
-    if error:
-      # If there was an error don't write a results.json
-      # file at all as it would lose all the information on the bot.
-      logging.error("Archive directory is inaccessible. Not modifying or "
-          "clobbering the results.json file: " + str(error))
-      return None
+            try:
+                results_file = urllib2.urlopen(results_file_url)
+                info = results_file.info()
+                old_results = results_file.read()
+            except urllib2.HTTPError, http_error:
+                # A non-4xx status code means the bot is hosed for some reason
+                # and we can't grab the results.json file off of it.
+                if (http_error.code < 400 and http_error.code >= 500):
+                    error = http_error
+            except urllib2.URLError, url_error:
+                error = url_error
 
-    builder_name = self._builder_name
-    if results_json and builder_name not in results_json:
-      logging.debug("Builder name (%s) is not in the results.json file." %
-          builder_name);
+        if old_results:
+            # Strip the prefix and suffix so we can get the actual JSON object.
+            old_results = old_results[len(self.JSON_PREFIX):
+                                      len(old_results) - len(self.JSON_SUFFIX)]
 
-    self._ConvertJSONToCurrentVersion(results_json)
+            try:
+                results_json = simplejson.loads(old_results)
+            except:
+                logging.debug("results.json was not valid JSON. Clobbering.")
+                # The JSON file is not valid JSON. Just clobber the results.
+                results_json = {}
+        else:
+            logging.debug('Old JSON results do not exist. Starting fresh.')
+            results_json = {}
 
-    if builder_name not in results_json:
-      results_json[builder_name] = self._CreateResultsForBuilderJSON()
+        return results_json, error
 
-    results_for_builder = results_json[builder_name]
+    def _GetJSON(self):
+        """Gets the results for the results.json file."""
+        results_json, error = self._GetArchivedJSONResults()
+        if error:
+            # If there was an error don't write a results.json
+            # file at all as it would lose all the information on the bot.
+            logging.error("Archive directory is inaccessible. Not modifying "
+                "or clobbering the results.json file: " + str(error))
+            return None
 
-    self._InsertGenericMetadata(results_for_builder)
+        builder_name = self._builder_name
+        if results_json and builder_name not in results_json:
+            logging.debug("Builder name (%s) is not in the results.json file."
+                          % builder_name)
 
-    self._InsertFailureSummaries(results_for_builder)
+        self._ConvertJSONToCurrentVersion(results_json)
 
-    # Update the all failing tests with result type and time.
-    tests = results_for_builder[self.TESTS]
-    all_failing_tests = set(self._failures.iterkeys())
-    all_failing_tests.update(tests.iterkeys())
-    for test in all_failing_tests:
-      self._InsertTestTimeAndResult(test, tests)
+        if builder_name not in results_json:
+            results_json[builder_name] = self._CreateResultsForBuilderJSON()
 
-    # Specify separators in order to get compact encoding.
-    results_str = simplejson.dumps(results_json, separators=(',', ':'))
-    return self.JSON_PREFIX + results_str + self.JSON_SUFFIX
+        results_for_builder = results_json[builder_name]
 
-  def _InsertFailureSummaries(self, results_for_builder):
-    """Inserts aggregate pass/failure statistics into the JSON.
-    This method reads self._skipped_tests, self._passed_tests and
-    self._failures and inserts FIXABLE, FIXABLE_COUNT and ALL_FIXABLE_COUNT
-    entries.
+        self._InsertGenericMetadata(results_for_builder)
 
-    Args:
-      results_for_builder: Dictionary containing the test results for a single
-          builder.
-    """
-    # Insert the number of tests that failed.
-    self._InsertItemIntoRawList(results_for_builder,
-        len(set(self._failures.keys()) | self._skipped_tests),
-        self.FIXABLE_COUNT)
+        self._InsertFailureSummaries(results_for_builder)
 
-    # Create a pass/skip/failure summary dictionary.
-    entry = {}
-    entry[self.SKIP_RESULT] = len(self._skipped_tests)
-    entry[self.PASS_RESULT] = len(self._passed_tests)
-    get = entry.get
-    for failure_type in self._failures.values():
-      failure_char = self.FAILURE_TO_CHAR[failure_type]
-      entry[failure_char] = get(failure_char, 0) + 1
+        # Update the all failing tests with result type and time.
+        tests = results_for_builder[self.TESTS]
+        all_failing_tests = set(self._failures.iterkeys())
+        all_failing_tests.update(tests.iterkeys())
+        for test in all_failing_tests:
+            self._InsertTestTimeAndResult(test, tests)
 
-    # Insert the pass/skip/failure summary dictionary.
-    self._InsertItemIntoRawList(results_for_builder, entry, self.FIXABLE)
+        # Specify separators in order to get compact encoding.
+        results_str = simplejson.dumps(results_json, separators=(',', ':'))
+        return self.JSON_PREFIX + results_str + self.JSON_SUFFIX
 
-    # Insert the number of all the tests that are supposed to pass.
-    self._InsertItemIntoRawList(results_for_builder,
-        len(self._skipped_tests | self._all_tests),
-        self.ALL_FIXABLE_COUNT)
+    def _InsertFailureSummaries(self, results_for_builder):
+        """Inserts aggregate pass/failure statistics into the JSON.
+        This method reads self._skipped_tests, self._passed_tests and
+        self._failures and inserts FIXABLE, FIXABLE_COUNT and ALL_FIXABLE_COUNT
+        entries.
 
-  def _InsertItemIntoRawList(self, results_for_builder, item, key):
-    """Inserts the item into the list with the given key in the results for
-    this builder. Creates the list if no such list exists.
+        Args:
+          results_for_builder: Dictionary containing the test results for a
+              single builder.
+        """
+        # Insert the number of tests that failed.
+        self._InsertItemIntoRawList(results_for_builder,
+            len(set(self._failures.keys()) | self._skipped_tests),
+            self.FIXABLE_COUNT)
 
-    Args:
-      results_for_builder: Dictionary containing the test results for a single
-          builder.
-      item: Number or string to insert into the list.
-      key: Key in results_for_builder for the list to insert into.
-    """
-    if key in results_for_builder:
-      raw_list = results_for_builder[key]
-    else:
-      raw_list = []
+        # Create a pass/skip/failure summary dictionary.
+        entry = {}
+        entry[self.SKIP_RESULT] = len(self._skipped_tests)
+        entry[self.PASS_RESULT] = len(self._passed_tests)
+        get = entry.get
+        for failure_type in self._failures.values():
+            failure_char = self.FAILURE_TO_CHAR[failure_type]
+            entry[failure_char] = get(failure_char, 0) + 1
 
-    raw_list.insert(0, item)
-    raw_list = raw_list[:self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG]
-    results_for_builder[key] = raw_list
+        # Insert the pass/skip/failure summary dictionary.
+        self._InsertItemIntoRawList(results_for_builder, entry, self.FIXABLE)
 
-  def _InsertItemRunLengthEncoded(self, item, encoded_results):
-    """Inserts the item into the run-length encoded results.
+        # Insert the number of all the tests that are supposed to pass.
+        self._InsertItemIntoRawList(results_for_builder,
+            len(self._skipped_tests | self._all_tests),
+            self.ALL_FIXABLE_COUNT)
 
-    Args:
-      item: String or number to insert.
-      encoded_results: run-length encoded results. An array of arrays, e.g.
-          [[3,'A'],[1,'Q']] encodes AAAQ.
-    """
-    if len(encoded_results) and item == encoded_results[0][1]:
-      num_results = encoded_results[0][0]
-      if num_results <= self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG:
-        encoded_results[0][0] = num_results + 1
-    else:
-      # Use a list instead of a class for the run-length encoding since we
-      # want the serialized form to be concise.
-      encoded_results.insert(0, [1, item])
+    def _InsertItemIntoRawList(self, results_for_builder, item, key):
+        """Inserts the item into the list with the given key in the results for
+        this builder. Creates the list if no such list exists.
 
-  def _InsertGenericMetadata(self, results_for_builder):
-    """ Inserts generic metadata (such as version number, current time etc)
-    into the JSON.
+        Args:
+          results_for_builder: Dictionary containing the test results for a
+              single builder.
+          item: Number or string to insert into the list.
+          key: Key in results_for_builder for the list to insert into.
+        """
+        if key in results_for_builder:
+            raw_list = results_for_builder[key]
+        else:
+            raw_list = []
 
-    Args:
-      results_for_builder: Dictionary containing the test results for a single
-          builder.
-    """
-    self._InsertItemIntoRawList(results_for_builder,
-        self._build_number, self.BUILD_NUMBERS)
+        raw_list.insert(0, item)
+        raw_list = raw_list[:self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG]
+        results_for_builder[key] = raw_list
 
-    path_to_webkit = path_utils.PathFromBase('third_party', 'WebKit', 'WebCore')
-    self._InsertItemIntoRawList(results_for_builder,
-        self._GetSVNRevision(path_to_webkit),
-        self.WEBKIT_SVN)
+    def _InsertItemRunLengthEncoded(self, item, encoded_results):
+        """Inserts the item into the run-length encoded results.
 
-    path_to_chrome_base = path_utils.PathFromBase()
-    self._InsertItemIntoRawList(results_for_builder,
-        self._GetSVNRevision(path_to_chrome_base),
-        self.CHROME_SVN)
+        Args:
+          item: String or number to insert.
+          encoded_results: run-length encoded results. An array of arrays, e.g.
+              [[3,'A'],[1,'Q']] encodes AAAQ.
+        """
+        if len(encoded_results) and item == encoded_results[0][1]:
+            num_results = encoded_results[0][0]
+            if num_results <= self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG:
+                encoded_results[0][0] = num_results + 1
+        else:
+            # Use a list instead of a class for the run-length encoding since
+            # we want the serialized form to be concise.
+            encoded_results.insert(0, [1, item])
 
-    self._InsertItemIntoRawList(results_for_builder,
-        int(time.time()),
-        self.TIME)
+    def _InsertGenericMetadata(self, results_for_builder):
+        """ Inserts generic metadata (such as version number, current time etc)
+        into the JSON.
 
-  def _InsertTestTimeAndResult(self, test_name, tests):
-    """ Insert a test item with its results to the given tests dictionary.
+        Args:
+          results_for_builder: Dictionary containing the test results for
+              a single builder.
+        """
+        self._InsertItemIntoRawList(results_for_builder,
+            self._build_number, self.BUILD_NUMBERS)
 
-    Args:
-      tests: Dictionary containing test result entries.
-    """
+        path_to_webkit = path_utils.PathFromBase('third_party', 'WebKit',
+                                                 'WebCore')
+        self._InsertItemIntoRawList(results_for_builder,
+            self._GetSVNRevision(path_to_webkit),
+            self.WEBKIT_SVN)
 
-    result = JSONResultsGenerator.PASS_RESULT
-    time = 0
+        path_to_chrome_base = path_utils.PathFromBase()
+        self._InsertItemIntoRawList(results_for_builder,
+            self._GetSVNRevision(path_to_chrome_base),
+            self.CHROME_SVN)
 
-    if test_name not in self._all_tests:
-      result = JSONResultsGenerator.NO_DATA_RESULT
+        self._InsertItemIntoRawList(results_for_builder,
+            int(time.time()),
+            self.TIME)
 
-    if test_name in self._failures:
-      result = self.FAILURE_TO_CHAR[self._failures[test_name]]
+    def _InsertTestTimeAndResult(self, test_name, tests):
+        """ Insert a test item with its results to the given tests dictionary.
 
-    if test_name in self._test_timings:
-      # Floor for now to get time in seconds.
-      time = int(self._test_timings[test_name])
+        Args:
+          tests: Dictionary containing test result entries.
+        """
 
-    if test_name not in tests:
-      tests[test_name] = self._CreateResultsAndTimesJSON()
+        result = JSONResultsGenerator.PASS_RESULT
+        time = 0
 
-    thisTest = tests[test_name]
-    self._InsertItemRunLengthEncoded(result, thisTest[self.RESULTS])
-    self._InsertItemRunLengthEncoded(time, thisTest[self.TIMES])
-    self._NormalizeResultsJSON(thisTest, test_name, tests)
+        if test_name not in self._all_tests:
+            result = JSONResultsGenerator.NO_DATA_RESULT
 
-  def _ConvertJSONToCurrentVersion(self, results_json):
-    """If the JSON does not match the current version, converts it to the
-    current version and adds in the new version number.
-    """
-    if (self.VERSION_KEY in results_json and
-        results_json[self.VERSION_KEY] == self.VERSION):
-      return
+        if test_name in self._failures:
+            result = self.FAILURE_TO_CHAR[self._failures[test_name]]
 
-    results_json[self.VERSION_KEY] = self.VERSION
+        if test_name in self._test_timings:
+            # Floor for now to get time in seconds.
+            time = int(self._test_timings[test_name])
 
-  def _CreateResultsAndTimesJSON(self):
-    results_and_times = {}
-    results_and_times[self.RESULTS] = []
-    results_and_times[self.TIMES] = []
-    return results_and_times
+        if test_name not in tests:
+            tests[test_name] = self._CreateResultsAndTimesJSON()
 
-  def _CreateResultsForBuilderJSON(self):
-    results_for_builder = {}
-    results_for_builder[self.TESTS] = {}
-    return results_for_builder
+        thisTest = tests[test_name]
+        self._InsertItemRunLengthEncoded(result, thisTest[self.RESULTS])
+        self._InsertItemRunLengthEncoded(time, thisTest[self.TIMES])
+        self._NormalizeResultsJSON(thisTest, test_name, tests)
 
-  def _RemoveItemsOverMaxNumberOfBuilds(self, encoded_list):
-    """Removes items from the run-length encoded list after the final item that
-    exceeds the max number of builds to track.
+    def _ConvertJSONToCurrentVersion(self, results_json):
+        """If the JSON does not match the current version, converts it to the
+        current version and adds in the new version number.
+        """
+        if (self.VERSION_KEY in results_json and
+            results_json[self.VERSION_KEY] == self.VERSION):
+            return
 
-    Args:
-      encoded_results: run-length encoded results. An array of arrays, e.g.
-          [[3,'A'],[1,'Q']] encodes AAAQ.
-    """
-    num_builds = 0
-    index = 0
-    for result in encoded_list:
-      num_builds = num_builds + result[0]
-      index = index + 1
-      if num_builds > self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG:
-        return encoded_list[:index]
-    return encoded_list
+        results_json[self.VERSION_KEY] = self.VERSION
 
-  def _NormalizeResultsJSON(self, test, test_name, tests):
-    """ Prune tests where all runs pass or tests that no longer exist and
-    truncate all results to maxNumberOfBuilds.
+    def _CreateResultsAndTimesJSON(self):
+        results_and_times = {}
+        results_and_times[self.RESULTS] = []
+        results_and_times[self.TIMES] = []
+        return results_and_times
 
-    Args:
-      test: ResultsAndTimes object for this test.
-      test_name: Name of the test.
-      tests: The JSON object with all the test results for this builder.
-    """
-    test[self.RESULTS] = self._RemoveItemsOverMaxNumberOfBuilds(
-        test[self.RESULTS])
-    test[self.TIMES] = self._RemoveItemsOverMaxNumberOfBuilds(test[self.TIMES])
+    def _CreateResultsForBuilderJSON(self):
+        results_for_builder = {}
+        results_for_builder[self.TESTS] = {}
+        return results_for_builder
 
-    is_all_pass = self._IsResultsAllOfType(test[self.RESULTS], self.PASS_RESULT)
-    is_all_no_data = self._IsResultsAllOfType(test[self.RESULTS],
-        self.NO_DATA_RESULT)
-    max_time = max([time[1] for time in test[self.TIMES]])
+    def _RemoveItemsOverMaxNumberOfBuilds(self, encoded_list):
+        """Removes items from the run-length encoded list after the final
+        item that exceeds the max number of builds to track.
 
-    # Remove all passes/no-data from the results to reduce noise and filesize.
-    # If a test passes every run, but takes > MIN_TIME to run, don't throw away
-    # the data.
-    if is_all_no_data or (is_all_pass and max_time <= self.MIN_TIME):
-      del tests[test_name]
+        Args:
+          encoded_results: run-length encoded results. An array of arrays, e.g.
+              [[3,'A'],[1,'Q']] encodes AAAQ.
+        """
+        num_builds = 0
+        index = 0
+        for result in encoded_list:
+            num_builds = num_builds + result[0]
+            index = index + 1
+            if num_builds > self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG:
+                return encoded_list[:index]
+        return encoded_list
 
-  def _IsResultsAllOfType(self, results, type):
-    """Returns whether all teh results are of the given type (e.g. all passes).
-    """
-    return len(results) == 1 and results[0][1] == type
+    def _NormalizeResultsJSON(self, test, test_name, tests):
+        """ Prune tests where all runs pass or tests that no longer exist and
+        truncate all results to maxNumberOfBuilds.
+
+        Args:
+          test: ResultsAndTimes object for this test.
+          test_name: Name of the test.
+          tests: The JSON object with all the test results for this builder.
+        """
+        test[self.RESULTS] = self._RemoveItemsOverMaxNumberOfBuilds(
+            test[self.RESULTS])
+        test[self.TIMES] = self._RemoveItemsOverMaxNumberOfBuilds(
+            test[self.TIMES])
+
+        is_all_pass = self._IsResultsAllOfType(test[self.RESULTS],
+                                               self.PASS_RESULT)
+        is_all_no_data = self._IsResultsAllOfType(test[self.RESULTS],
+            self.NO_DATA_RESULT)
+        max_time = max([time[1] for time in test[self.TIMES]])
+
+        # Remove all passes/no-data from the results to reduce noise and
+        # filesize. If a test passes every run, but takes > MIN_TIME to run,
+        # don't throw away the data.
+        if is_all_no_data or (is_all_pass and max_time <= self.MIN_TIME):
+            del tests[test_name]
+
+    def _IsResultsAllOfType(self, results, type):
+        """Returns whether all the results are of the given type
+        (e.g. all passes)."""
+        return len(results) == 1 and results[0][1] == type
