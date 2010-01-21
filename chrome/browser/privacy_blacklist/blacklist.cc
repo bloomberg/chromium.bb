@@ -21,7 +21,7 @@ namespace {
 
 const char* const cookie_headers[2] = { "cookie", "set-cookie" };
 
-} // namespace
+}  // namespace
 
 const unsigned int Blacklist::kBlockAll = 1;
 const unsigned int Blacklist::kBlockCookies = 1 << 1;
