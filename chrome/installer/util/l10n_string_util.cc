@@ -79,6 +79,7 @@ std::wstring GetSystemLanguage() {
 int GetLanguageOffset(const std::wstring& language) {
   static std::map<std::wstring, int> offset_map;
   if (offset_map.empty()) {
+#if defined(GOOGLE_CHROME_BUILD)
     offset_map[L"ar"] = IDS_L10N_OFFSET_AR;
     offset_map[L"bg"] = IDS_L10N_OFFSET_BG;
     offset_map[L"bn"] = IDS_L10N_OFFSET_BN;
@@ -136,6 +137,9 @@ int GetLanguageOffset(const std::wstring& language) {
     offset_map[L"vi"] = IDS_L10N_OFFSET_VI;
     offset_map[L"zh-cn"] = IDS_L10N_OFFSET_ZH_CN;
     offset_map[L"zh-tw"] = IDS_L10N_OFFSET_ZH_TW;
+#else  // GOOGLE_CHROME_BUILD not defined
+    offset_map[L"en-us"] = IDS_L10N_OFFSET_EN_US;
+#endif  // if defined(GOOGLE_CHROME_BUILD)
   }
 
   std::map<std::wstring, int>::iterator it = offset_map.find(
@@ -143,7 +147,9 @@ int GetLanguageOffset(const std::wstring& language) {
   if (it != offset_map.end())
     return it->second;
 
+#if defined(GOOGLE_CHROME_BUILD)
   NOTREACHED() << "unknown system language-country";
+#endif  // if defined(GOOGLE_CHROME_BUILD)
 
   // Fallback on the en-US offset just in case.
   return IDS_L10N_OFFSET_EN_US;
@@ -181,6 +187,7 @@ std::wstring GetLocalizedEulaResource() {
 
   static std::map<int, wchar_t*> html_map;
   if (html_map.empty()) {
+#if defined(GOOGLE_CHROME_BUILD)
     html_map[IDS_L10N_OFFSET_AR] = L"IDR_OEMPG_AR.HTML";
     html_map[IDS_L10N_OFFSET_BG] = L"IDR_OEMPG_BG.HTML";
     html_map[IDS_L10N_OFFSET_CA] = L"IDR_OEMPG_CA.HTML";
@@ -222,6 +229,9 @@ std::wstring GetLocalizedEulaResource() {
     html_map[IDS_L10N_OFFSET_VI] = L"IDR_OEMPG_VI.HTML";
     html_map[IDS_L10N_OFFSET_ZH_CN] = L"IDR_OEMPG_ZH_CN.HTML";
     html_map[IDS_L10N_OFFSET_ZH_TW] = L"IDR_OEMPG_ZH_TW.HTML";
+#else  // GOOGLE_CHROME_BUILD not defined
+    html_map[IDS_L10N_OFFSET_EN_US] = L"IDR_OEMPG_EN.HTML";
+#endif  // if defined(GOOGLE_CHROME_BUILD)
   }
 
   std::map<int, wchar_t*>::iterator it = html_map.find(
