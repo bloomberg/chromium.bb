@@ -63,11 +63,12 @@ namespace views {
 // NativeMenuGtk, public:
 
 NativeMenuGtk::NativeMenuGtk(menus::MenuModel* model)
-    : model_(model),
+    : parent_(NULL),
+      model_(model),
       menu_(NULL),
       menu_shown_(false),
       suppress_activate_signal_(false),
-      menu_activated_(false),
+      activated_menu_(NULL),
       activated_index_(-1) {
 }
 
@@ -79,7 +80,8 @@ NativeMenuGtk::~NativeMenuGtk() {
 // NativeMenuGtk, MenuWrapper implementation:
 
 void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
-  menu_activated_ = false;
+  activated_menu_ = NULL;
+  activated_index_ = -1;
 
   UpdateStates();
   Position position = { point, static_cast<Menu2::Alignment>(alignment) };
@@ -103,10 +105,8 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   // Call into the model after the nested message loop quits. This way if the
   // model ends up deleting us, or MessageLoop::Quit takes a while, there aren't
   // any problems.
-  if (menu_activated_ && model_->IsEnabledAt(activated_index_) &&
-      MenuTypeCanExecute(model_->GetTypeAt(activated_index_))) {
-    model_->ActivatedAt(activated_index_);
-  }
+  if (activated_menu_)
+    activated_menu_->Activate();
 }
 
 void NativeMenuGtk::CancelMenu() {
@@ -210,6 +210,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
     // TODO(beng): we're leaking these objects right now... consider some other
     //             arrangement.
     Menu2* submenu = new Menu2(model_->GetSubmenuModelAt(index));
+    static_cast<NativeMenuGtk*>(submenu->wrapper_.get())->set_parent(this);
     g_object_set_data(G_OBJECT(menu_item), "submenu", submenu);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item),
                               submenu->GetNativeMenu());
@@ -305,14 +306,33 @@ void NativeMenuGtk::OnActivate(GtkMenuItem* menu_item) {
     return;
   }
 
-  menu_activated_ = true;
-  activated_index_ = position;
+  // NOTE: we get activate messages for submenus when first shown.
+  if (model_->IsEnabledAt(position) &&
+      MenuTypeCanExecute(model_->GetTypeAt(position))) {
+    NativeMenuGtk* ancestor = GetAncestor();
+    ancestor->activated_menu_ = this;
+    activated_index_ = position;
+  }
 }
 
 // static
 void NativeMenuGtk::CallActivate(GtkMenuItem* menu_item,
                                  NativeMenuGtk* native_menu) {
   native_menu->OnActivate(menu_item);
+}
+
+NativeMenuGtk* NativeMenuGtk::GetAncestor() {
+  NativeMenuGtk* ancestor = this;
+  while (ancestor->parent_)
+    ancestor = ancestor->parent_;
+  return ancestor;
+}
+
+void NativeMenuGtk::Activate() {
+  if (model_->IsEnabledAt(activated_index_) &&
+      MenuTypeCanExecute(model_->GetTypeAt(activated_index_))) {
+    model_->ActivatedAt(activated_index_);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

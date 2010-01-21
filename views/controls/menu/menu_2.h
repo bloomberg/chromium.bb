@@ -15,6 +15,8 @@ class Point;
 
 namespace views {
 
+class NativeMenuGtk;
+
 // A menu. Populated from a model, and relies on a delegate to execute commands.
 class Menu2 {
  public:
@@ -51,6 +53,8 @@ class Menu2 {
   menus::MenuModel* model() const { return model_; }
 
  private:
+  friend class NativeMenuGtk;
+
   menus::MenuModel* model_;
 
   // The object that actually implements the menu.

@@ -52,6 +52,18 @@ class NativeMenuGtk : public MenuWrapper {
   // Gtk signal handlers.
   static void CallActivate(GtkMenuItem* menu_item, NativeMenuGtk* native_menu);
 
+  // Sets the parent of this menu.
+  void set_parent(NativeMenuGtk* parent) { parent_ = parent; }
+
+  // Returns the root of the menu tree.
+  NativeMenuGtk* GetAncestor();
+
+  // Notifies the model the user selected an item.
+  void Activate();
+
+  // If we're a submenu, this is the parent.
+  NativeMenuGtk* parent_;
+
   menus::MenuModel* model_;
 
   GtkWidget* menu_;
@@ -63,10 +75,14 @@ class NativeMenuGtk : public MenuWrapper {
   // state is changed by |UpdateStates()| API.
   bool suppress_activate_signal_;
 
-  // Did the user select something from the menu?
-  bool menu_activated_;
+  // If the user selects something from the menu this is the menu they selected
+  // it from. When an item is selected menu_activated_ on the root ancestor is
+  // set to the menu the user selected and after the nested message loop exits
+  // Activate is invoked on this menu.
+  NativeMenuGtk* activated_menu_;
 
-  // If menu_activated_ is true, this is the index of the item.
+  // The index of the item the user selected. This is set on the actual menu the
+  // user selects and not the root.
   int activated_index_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuGtk);
