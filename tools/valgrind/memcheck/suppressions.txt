@@ -1958,19 +1958,6 @@
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
 }
 {
-   bug_32349
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF13FastAllocBasenwEj
-   fun:_ZN7WebCore16StorageNamespace23sessionStorageNamespaceEPNS_4PageE
-   fun:_ZN7WebCore4Page14sessionStorageEb
-   fun:_ZNK7WebCore9DOMWindow14sessionStorageEv
-   fun:_ZN7WebCore17DOMWindowInternal24sessionStorageAttrGetterEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
-   fun:_ZN2v88internal6Object23GetPropertyWithCallbackEPS1_S2_PNS0_6StringES2_
-   obj:*
-}
-{
    bug_32355
    Memcheck:Addr1
    fun:NPP_DestroyStream
