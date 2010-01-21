@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profile.h"
@@ -66,10 +67,9 @@ void ProfileSyncService::Initialize() {
 
   if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
     DisableForUser();  // Clean up in case of previous crash / setup abort.
-#if defined(OS_CHROMEOS)
-    if (profile()->GetRequestContext())
+    if (browser_defaults::kBootstrapSyncAuthentication &&
+        profile()->GetRequestContext())
       StartUp();  // We always start sync for Chrome OS.
-#endif
   } else {
     StartUp();
   }
@@ -111,29 +111,27 @@ void ProfileSyncService::ClearPreferences() {
   pref_service->ScheduleSavePersistentPrefs();
 }
 
-#if defined(OS_CHROMEOS)
 // The domain and name of the LSID cookie which we use to bootstrap the sync
 // authentication in Chrome OS.
 const char kLsidCookieDomain[] = "www.google.com";
 const char kLsidCookieName[]   = "LSID";
-#endif
 
 std::string ProfileSyncService::GetLsidForAuthBootstraping() {
-#if defined(OS_CHROMEOS)
-  // If we're running inside Chrome OS, bootstrap the sync authentication by
-  // using the LSID cookie provided by the Chrome OS login manager.
-  net::CookieMonster::CookieList cookies = profile()->GetRequestContext()->
-      GetCookieStore()->GetCookieMonster()->GetAllCookies();
-  for (net::CookieMonster::CookieList::const_iterator it = cookies.begin();
-       it != cookies.end(); ++it) {
-    if (kLsidCookieDomain == it->first) {
-      const net::CookieMonster::CanonicalCookie& cookie = it->second;
-      if (kLsidCookieName == cookie.Name()) {
-        return cookie.Value();
+  if (browser_defaults::kBootstrapSyncAuthentication) {
+    // If we're running inside Chrome OS, bootstrap the sync authentication by
+    // using the LSID cookie provided by the Chrome OS login manager.
+    net::CookieMonster::CookieList cookies = profile()->GetRequestContext()->
+        GetCookieStore()->GetCookieMonster()->GetAllCookies();
+    for (net::CookieMonster::CookieList::const_iterator it = cookies.begin();
+         it != cookies.end(); ++it) {
+      if (kLsidCookieDomain == it->first) {
+        const net::CookieMonster::CanonicalCookie& cookie = it->second;
+        if (kLsidCookieName == cookie.Name()) {
+          return cookie.Value();
+        }
       }
     }
   }
-#endif
   return std::string();
 }
 
@@ -429,11 +427,17 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
   if (!backend_initialized_)
     return;
 
-  // Show the sync merge warning dialog if needed.
-  if (MergeAndSyncAcceptanceNeeded()) {
-    ProfileSyncService::SyncEvent(MERGE_AND_SYNC_NEEDED);
-    wizard_.Step(SyncSetupWizard::MERGE_AND_SYNC);
-    return;
+  if (browser_defaults::kBootstrapSyncAuthentication) {
+    // If we're running inside Chrome OS, skip the merge warning and consider
+    // the sync setup complete.
+    SetSyncSetupCompleted();
+  } else {
+    // Show the sync merge warning dialog if needed.
+    if (MergeAndSyncAcceptanceNeeded()) {
+      ProfileSyncService::SyncEvent(MERGE_AND_SYNC_NEEDED);
+      wizard_.Step(SyncSetupWizard::MERGE_AND_SYNC);
+      return;
+    }
   }
 
   // We're ready to merge the models.
