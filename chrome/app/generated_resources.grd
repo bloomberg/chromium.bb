@@ -3520,9 +3520,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_DEL_CACHE_CHKBOX" desc="Checkbox for deleting Cache">
         Empty the cache
       </message>
-      <message name="IDS_DEL_LOCAL_STORAGE_CHKBOX" desc="Checkbox for deleting Local Storage">
-        Delete local storage
-      </message>
       <message name="IDS_DEL_COOKIES_CHKBOX" desc="Checkbox for deleting Cookies">
         Delete cookies
       </message>

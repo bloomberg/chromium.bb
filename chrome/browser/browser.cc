@@ -1393,7 +1393,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDeleteBrowsingHistory, true);
   prefs->RegisterBooleanPref(prefs::kDeleteDownloadHistory, true);
   prefs->RegisterBooleanPref(prefs::kDeleteCache, true);
-  prefs->RegisterBooleanPref(prefs::kDeleteLocalStorage, true);
   prefs->RegisterBooleanPref(prefs::kDeleteCookies, true);
   prefs->RegisterBooleanPref(prefs::kDeletePasswords, false);
   prefs->RegisterBooleanPref(prefs::kDeleteFormData, true);

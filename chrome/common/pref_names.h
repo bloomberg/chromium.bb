@@ -79,7 +79,6 @@ extern const wchar_t kRecentlySelectedEncoding[];
 extern const wchar_t kDeleteBrowsingHistory[];
 extern const wchar_t kDeleteDownloadHistory[];
 extern const wchar_t kDeleteCache[];
-extern const wchar_t kDeleteLocalStorage[];
 extern const wchar_t kDeleteCookies[];
 extern const wchar_t kDeletePasswords[];
 extern const wchar_t kDeleteFormData[];

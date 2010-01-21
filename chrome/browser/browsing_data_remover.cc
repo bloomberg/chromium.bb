@@ -112,10 +112,6 @@ void BrowsingDataRemover::Remove(int remove_mask) {
         profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster();
     if (cookie_monster)
       cookie_monster->DeleteAllCreatedBetween(delete_begin_, delete_end_, true);
-  }
-
-  if (remove_mask & REMOVE_LOCAL_STORAGE) {
-    UserMetrics::RecordAction("ClearBrowsingData_LocalStorage", profile_);
     profile_->GetWebKitContext()->DeleteDataModifiedSince(delete_begin_);
   }
 

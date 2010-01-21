@@ -44,7 +44,6 @@ ClearBrowsingDataView::ClearBrowsingDataView(Profile* profile)
     : del_history_checkbox_(NULL),
       del_downloads_checkbox_(NULL),
       del_cache_checkbox_(NULL),
-      del_local_storage_checkbox_(NULL),
       del_cookies_checkbox_(NULL),
       del_passwords_checkbox_(NULL),
       del_form_data_checkbox_(NULL),
@@ -94,10 +93,6 @@ void ClearBrowsingDataView::Init() {
   del_cache_checkbox_ =
       AddCheckbox(l10n_util::GetString(IDS_DEL_CACHE_CHKBOX),
       profile_->GetPrefs()->GetBoolean(prefs::kDeleteCache));
-
-  del_local_storage_checkbox_ =
-      AddCheckbox(l10n_util::GetString(IDS_DEL_LOCAL_STORAGE_CHKBOX),
-      profile_->GetPrefs()->GetBoolean(prefs::kDeleteLocalStorage));
 
   del_cookies_checkbox_ =
       AddCheckbox(l10n_util::GetString(IDS_DEL_COOKIES_CHKBOX),
@@ -163,17 +158,10 @@ void ClearBrowsingDataView::Layout() {
                                      kRelatedControlVerticalSpacing,
                                  sz.width(), sz.height());
 
-  sz = del_local_storage_checkbox_->GetPreferredSize();
-  del_local_storage_checkbox_->SetBounds(2 * kPanelHorizMargin,
-                                         del_cache_checkbox_->y() +
-                                             del_cache_checkbox_->height() +
-                                             kRelatedControlVerticalSpacing,
-                                         sz.width(), sz.height());
-
   sz = del_cookies_checkbox_->GetPreferredSize();
   del_cookies_checkbox_->SetBounds(2 * kPanelHorizMargin,
-                                   del_local_storage_checkbox_->y() +
-                                       del_local_storage_checkbox_->height() +
+                                   del_cache_checkbox_->y() +
+                                       del_cache_checkbox_->height() +
                                        kRelatedControlVerticalSpacing,
                                    sz.width(), sz.height());
 
@@ -280,7 +268,6 @@ bool ClearBrowsingDataView::IsDialogButtonEnabled(
     return del_history_checkbox_->checked() ||
            del_downloads_checkbox_->checked() ||
            del_cache_checkbox_->checked() ||
-           del_local_storage_checkbox_->checked() ||
            del_cookies_checkbox_->checked() ||
            del_passwords_checkbox_->checked() ||
            del_form_data_checkbox_->checked();
@@ -367,9 +354,6 @@ void ClearBrowsingDataView::ButtonPressed(
   else if (sender == del_cache_checkbox_)
     profile_->GetPrefs()->SetBoolean(prefs::kDeleteCache,
         del_cache_checkbox_->checked() ? true : false);
-  else if (sender == del_local_storage_checkbox_)
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteLocalStorage,
-        del_local_storage_checkbox_->checked() ? true : false);
   else if (sender == del_cookies_checkbox_)
     profile_->GetPrefs()->SetBoolean(prefs::kDeleteCookies,
         del_cookies_checkbox_->checked() ? true : false);
@@ -403,7 +387,6 @@ void ClearBrowsingDataView::UpdateControlEnabledState() {
   del_history_checkbox_->SetEnabled(!delete_in_progress_);
   del_downloads_checkbox_->SetEnabled(!delete_in_progress_);
   del_cache_checkbox_->SetEnabled(!delete_in_progress_);
-  del_local_storage_checkbox_->SetEnabled(!delete_in_progress_);
   del_cookies_checkbox_->SetEnabled(!delete_in_progress_);
   del_passwords_checkbox_->SetEnabled(!delete_in_progress_);
   del_form_data_checkbox_->SetEnabled(!delete_in_progress_);
@@ -442,8 +425,6 @@ void ClearBrowsingDataView::OnDelete() {
     remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
   if (IsCheckBoxEnabledAndSelected(del_cache_checkbox_))
     remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
-  if (IsCheckBoxEnabledAndSelected(del_local_storage_checkbox_))
-    remove_mask |= BrowsingDataRemover::REMOVE_LOCAL_STORAGE;
 
   delete_in_progress_ = true;
   UpdateControlEnabledState();

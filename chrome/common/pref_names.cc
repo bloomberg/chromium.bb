@@ -212,7 +212,6 @@ const wchar_t kDeleteBrowsingHistory[] = L"browser.clear_data.browsing_history";
 const wchar_t kDeleteDownloadHistory[] =
     L"browser.clear_data.download_history";
 const wchar_t kDeleteCache[] = L"browser.clear_data.cache";
-const wchar_t kDeleteLocalStorage[] = L"browser.clear_data.local_storage";
 const wchar_t kDeleteCookies[] = L"browser.clear_data.cookies";
 const wchar_t kDeletePasswords[] = L"browser.clear_data.passwords";
 const wchar_t kDeleteFormData[] = L"browser.clear_data.form_data";
