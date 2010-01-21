@@ -294,7 +294,8 @@ static GURL ConvertToGURL(NSString* urlStr) {
 }
 
 - (void)nodeChanged {
-  icon_.reset(nil);
+  if (node_)
+    icon_.reset(nil);
 }
 
 @end
