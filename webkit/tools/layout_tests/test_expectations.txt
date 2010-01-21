@@ -17,6 +17,7 @@
 //            WONTFIX should have a BUG annotation.
 // SKIP: Doesn't run the test.
 // SLOW: The test takes a long time to run, but does not timeout indefinitely.
+// DEFER: For tests we'll fix in the future.
 // WONTFIX: For tests that we never intend to pass on a given platform.
 // DEBUG: Expectations apply only to the debug build.
 // RELEASE: Expectations apply only to release build.
@@ -712,11 +713,12 @@ BUG11246 DEFER SKIP : fast/dom/Geolocation = FAIL
 BUG19625 SKIP : fast/eventsource = TIMEOUT
 BUG19625 SKIP : http/tests/eventsource = TIMEOUT
 
-// Implement HTML5 datalist element.
-BUG20226 : fast/forms/datalist-nonoption-child.html = TEXT
-BUG20226 : fast/forms/datalist.html = TEXT
-BUG20292 : fast/forms/input-list.html = FAIL
-BUG20292 : fast/forms/input-selectedoption.html = FAIL
+// HTML5 datalist element. We don't enable it because WebKit implementation
+// is incomplete.
+BUG20226 DEFER : fast/forms/datalist-nonoption-child.html = TEXT
+BUG20226 DEFER : fast/forms/datalist.html = TEXT
+BUG20226 DEFER : fast/forms/input-list.html = FAIL
+BUG20226 DEFER : fast/forms/input-selectedoption.html = FAIL
 
 // Add support for inspector layout tests.
 BUG26734 LINUX MAC SKIP : inspector = PASS
