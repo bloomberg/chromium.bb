@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class TemplateURL;
 
@@ -111,6 +113,13 @@ class TemplateURLRef {
   friend class TemplateURL;
   friend class TemplateURLModelTest;
   friend class TemplateURLTest;
+  FRIEND_TEST(TemplateURLTest, ParseParameterKnown);
+  FRIEND_TEST(TemplateURLTest, ParseParameterUnknown);
+  FRIEND_TEST(TemplateURLTest, ParseURLEmpty);
+  FRIEND_TEST(TemplateURLTest, ParseURLNoTemplateEnd);
+  FRIEND_TEST(TemplateURLTest, ParseURLNoKnownParameters);
+  FRIEND_TEST(TemplateURLTest, ParseURLTwoParameters);
+  FRIEND_TEST(TemplateURLTest, ParseURLNestedParameter);
 
   // Enumeration of the known types.
   enum ReplacementType {
@@ -146,9 +155,11 @@ class TemplateURLRef {
   // range of the parameter in the url, including the braces. If the parameter
   // is valid, url is updated to reflect the appropriate parameter. If
   // the parameter is one of the known parameters an element is added to
-  // replacements indicating the type and range of the element.
+  // replacements indicating the type and range of the element. The original
+  // parameter is erased from the url.
   //
-  // If the parameter is not a known parameter, false is returned.
+  // If the parameter is not a known parameter, it's not erased and false is
+  // returned.
   bool ParseParameter(size_t start,
                       size_t end,
                       std::wstring* url,
@@ -157,8 +168,8 @@ class TemplateURLRef {
   // Parses the specified url, replacing parameters as necessary. If
   // successful, valid is set to true, and the parsed url is returned. For all
   // known parameters that are encountered an entry is added to replacements.
-  // If there is an error parsing (unknown parameter, or bogus url), valid is
-  // set to false, and an empty string is returned.
+  // If there is an error parsing the url, valid is set to false, and an empty
+  // string is returned.
   std::wstring ParseURL(const std::wstring& url,
                         Replacements* replacements,
                         bool* valid) const;

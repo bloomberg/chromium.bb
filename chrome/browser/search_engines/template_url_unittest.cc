@@ -369,7 +369,6 @@ TEST_F(TemplateURLTest, HostAndSearchTermKey) {
 
     // Single term with extra chars in value should match.
     { L"http://blah/?q=stock:{searchTerms}", "blah", "/", "q"},
-
   };
 
   TemplateURL t_url;
@@ -410,4 +409,74 @@ TEST_F(TemplateURLTest, Keyword) {
   t_url.set_keyword(L"foo");
   EXPECT_FALSE(t_url.autogenerate_keyword());
   EXPECT_EQ(L"foo", t_url.keyword());
+}
+
+TEST_F(TemplateURLTest, ParseParameterKnown) {
+  std::wstring parsed_url(L"{searchTerms}");
+  TemplateURLRef url_ref(parsed_url, 0, 0);
+  TemplateURLRef::Replacements replacements;
+  EXPECT_TRUE(url_ref.ParseParameter(0, 12, &parsed_url, &replacements));
+  EXPECT_EQ(std::wstring(), parsed_url);
+  ASSERT_EQ(1U, replacements.size());
+  EXPECT_EQ(0, replacements[0].index);
+  EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);
+}
+
+TEST_F(TemplateURLTest, ParseParameterUnknown) {
+  std::wstring parsed_url(L"{}");
+  TemplateURLRef url_ref(parsed_url, 0, 0);
+  TemplateURLRef::Replacements replacements;
+  EXPECT_FALSE(url_ref.ParseParameter(0, 1, &parsed_url, &replacements));
+  EXPECT_EQ(L"{}", parsed_url);
+  EXPECT_TRUE(replacements.empty());
+}
+
+TEST_F(TemplateURLTest, ParseURLEmpty) {
+  TemplateURLRef url_ref(L"", 0, 0);
+  TemplateURLRef::Replacements replacements;
+  bool valid = false;
+  EXPECT_EQ(std::wstring(), url_ref.ParseURL(L"", &replacements, &valid));
+  EXPECT_TRUE(replacements.empty());
+  EXPECT_TRUE(valid);
+}
+
+TEST_F(TemplateURLTest, ParseURLNoTemplateEnd) {
+  TemplateURLRef url_ref(L"{", 0, 0);
+  TemplateURLRef::Replacements replacements;
+  bool valid = false;
+  EXPECT_EQ(std::wstring(), url_ref.ParseURL(L"{", &replacements, &valid));
+  EXPECT_TRUE(replacements.empty());
+  EXPECT_FALSE(valid);
+}
+
+TEST_F(TemplateURLTest, ParseURLNoKnownParameters) {
+  TemplateURLRef url_ref(L"{}", 0, 0);
+  TemplateURLRef::Replacements replacements;
+  bool valid = false;
+  EXPECT_EQ(L"{}", url_ref.ParseURL(L"{}", &replacements, &valid));
+  EXPECT_TRUE(replacements.empty());
+  EXPECT_TRUE(valid);
+}
+
+TEST_F(TemplateURLTest, ParseURLTwoParameters) {
+  TemplateURLRef url_ref(L"{}{{%s}}", 0, 0);
+  TemplateURLRef::Replacements replacements;
+  bool valid = false;
+  EXPECT_EQ(L"{}{}",
+            url_ref.ParseURL(L"{}{{searchTerms}}", &replacements, &valid));
+  ASSERT_EQ(1U, replacements.size());
+  EXPECT_EQ(3, replacements[0].index);
+  EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);
+  EXPECT_TRUE(valid);
+}
+
+TEST_F(TemplateURLTest, ParseURLNestedParameter) {
+  TemplateURLRef url_ref(L"{%s", 0, 0);
+  TemplateURLRef::Replacements replacements;
+  bool valid = false;
+  EXPECT_EQ(L"{", url_ref.ParseURL(L"{{searchTerms}", &replacements, &valid));
+  ASSERT_EQ(1U, replacements.size());
+  EXPECT_EQ(1, replacements[0].index);
+  EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);
+  EXPECT_TRUE(valid);
 }

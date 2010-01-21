@@ -97,6 +97,7 @@ bool TemplateURLRef::ParseParameter(size_t start,
     length--;
   }
   std::wstring parameter(url->substr(start + 1, length));
+  std::wstring full_parameter(url->substr(start, end - start + 1));
   // Remove the parameter from the string.
   url->erase(start, end - start + 1);
   if (parameter == kSearchTermsParameter) {
@@ -137,9 +138,9 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS,
                                         static_cast<int>(start)));
-  } else if (!optional) {
-    // Unknown required parameter. No idea what to replace this with,
-    // so fail.
+  } else {
+    // It can be some garbage but can also be a javascript block. Put it back.
+    url->insert(start, full_parameter);
     return false;
   }
   return true;
@@ -153,14 +154,22 @@ std::wstring TemplateURLRef::ParseURL(const std::wstring& url,
   for (size_t last = 0; last != std::string::npos; ) {
     last = parsed_url.find(kStartParameter, last);
     if (last != std::string::npos) {
-      size_t endTemplate = parsed_url.find(kEndParameter, last);
-      if (endTemplate != std::string::npos) {
-        if (!ParseParameter(last, endTemplate, &parsed_url, replacements)) {
-          // Not a valid parameter, return.
-          return std::wstring();
+      size_t template_end = parsed_url.find(kEndParameter, last);
+      if (template_end != std::string::npos) {
+        // Since we allow Javascript in the URL, {} pairs could be nested. Match
+        // only leaf pairs with supported parameters.
+        size_t next_template_start = parsed_url.find(kStartParameter, last + 1);
+        if (next_template_start == std::string::npos ||
+            next_template_start > template_end) {
+          // If successful, ParseParameter erases from the string as such no
+          // need to update |last|. If failed, move |last| to the end of pair.
+          if (!ParseParameter(last, template_end, &parsed_url, replacements)) {
+            // |template_end| + 1 may be beyond the end of the string.
+            last = template_end;
+          }
+        } else {
+          last = next_template_start;
         }
-        // ParseParamter erases from the string, as such we don't need
-        // to update last.
       } else {
         // Open brace without a closing brace, return.
         return std::wstring();
