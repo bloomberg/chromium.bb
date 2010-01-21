@@ -3017,7 +3017,6 @@ BUG53331 MAC : fast/gradients/border-image-gradient.html = FAIL
 BUG53331 : fast/gradients/border-image-gradient-sides-and-corners.html = FAIL
 
 // WebKit roll 53341:53451
-BUG32669 WIN LINUX MAC : editing/pasteboard/paste-noscript.html = TEXT
 BUG32670 LINUX : fast/css/zoom-body-scroll.html = TEXT
 BUG32671 WIN LINUX MAC : fast/dom/Window/timer-null-script-execution-context.html = TEXT
 BUG32672 WIN LINUX : fast/dynamic/float-in-trailing-whitespace-after-last-line-break-2.html = TEXT
