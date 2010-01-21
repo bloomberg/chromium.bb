@@ -88,11 +88,10 @@ class LocationBarView::PageActionWithBadgeView : public views::View {
  private:
   virtual void Layout();
 
-  // Override PaintChildren so that we can paint the badge on top of children.
-  virtual void PaintChildren(gfx::Canvas* canvas);
-
   // The button this view contains.
   PageActionImageView* image_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageActionWithBadgeView);
 };
 
 LocationBarView::PageActionWithBadgeView::PageActionWithBadgeView(
@@ -109,18 +108,6 @@ void LocationBarView::PageActionWithBadgeView::Layout() {
   const SkBitmap& image = image_view()->GetImage();
   int y = (image.height() + 1) % 2;  // Even numbers: 1px padding. Odd: 0px.
   image_view_->SetBounds(0, y, width(), height());
-}
-
-void LocationBarView::PageActionWithBadgeView::PaintChildren(
-    gfx::Canvas* canvas) {
-  View::PaintChildren(canvas);
-
-  ExtensionAction* action = image_view_->page_action();
-  int tab_id = image_view_->current_tab_id();
-  if (tab_id < 0)
-    return;
-
-  action->PaintBadge(canvas, gfx::Rect(width(), height()), tab_id);
 }
 
 void LocationBarView::PageActionWithBadgeView::UpdateVisibility(
