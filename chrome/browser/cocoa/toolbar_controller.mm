@@ -4,6 +4,8 @@
 
 #import "chrome/browser/cocoa/toolbar_controller.h"
 
+#include <algorithm>
+
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"
@@ -57,12 +59,20 @@ NSString* const kWrenchButtonImageName = @"menu_chrome_Template.pdf";
 // Height of the toolbar in pixels when the bookmark bar is closed.
 const CGFloat kBaseToolbarHeight = 36.0;
 
+// The threshold width in pixels between the reload button (the home button is
+// optional) and the right side of the window for use in determining whether to
+// show or hide Browser Action buttons depending on window size.
+const CGFloat kHideBrowserActionThresholdWidth = 300.0;
+
 }  // namespace
 
 @interface ToolbarController(Private)
+- (void)addAccessibilityDescriptions;
+- (void)windowResized;
 - (void)initCommandStatus:(CommandUpdater*)commands;
 - (void)prefChanged:(std::wstring*)prefName;
 - (BackgroundGradientView*)backgroundGradientView;
+- (void)showOrHideBrowserActionButtons;
 - (void)browserActionsChanged;
 - (void)adjustLocationAndGoPositionsBy:(CGFloat)dX;
 @end
@@ -206,7 +216,11 @@ class PrefObserverBridge : public NotificationObserver {
                                                 commands_, toolbarModel_,
                                                 profile_));
   [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
-
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(windowResized)
+             name:NSWindowDidResizeNotification
+           object:[[self view] window]];
   // Register pref observers for the optional home and page/options buttons
   // and then add them to the toolbar them based on those prefs.
   prefObserver_.reset(new ToolbarControllerInternal::PrefObserverBridge(self));
@@ -237,7 +251,6 @@ class PrefObserverBridge : public NotificationObserver {
          selector:@selector(browserActionsChanged)
              name:kBrowserActionsChangedNotification
            object:browserActionsController_];
-  [browserActionsController_ createButtons];
   // For a popup window, the toolbar is really just a location bar
   // (see override for [ToolbarController view], below).  When going
   // fullscreen, we remove the toolbar controller's view from the view
@@ -258,9 +271,11 @@ class PrefObserverBridge : public NotificationObserver {
   [[self view] addTrackingArea:trackingArea_.get()];
 
   // We want a dynamic tooltip on the go button, so tell the go button to ask
-  // use for the tooltip
+  // us for the tooltip.
   [goButton_ addToolTipRect:[goButton_ bounds] owner:self userData:nil];
+}
 
+- (void)addAccessibilityDescriptions {
   // Set accessibility descriptions. http://openradar.appspot.com/7496255
   NSString* description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_BACK);
   [[backButton_ cell]
@@ -298,6 +313,12 @@ class PrefObserverBridge : public NotificationObserver {
   [[wrenchButton_ cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
+}
+
+- (void)windowResized {
+  // Some Browser Action buttons may have to be hidden or shown depending on the
+  // window's size.
+  [self showOrHideBrowserActionButtons];
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {
@@ -560,7 +581,7 @@ class PrefObserverBridge : public NotificationObserver {
 
   // Adjust for the extra unit of inter-button spacing added when the page and
   // wrench buttons are hidden.
-  if ([browserActionsController_ buttonCount] > 0)
+  if ([browserActionsController_ visibleButtonCount] > 0)
     moveX -= [self interButtonSpacing];
 
   if (!hide)
@@ -583,9 +604,62 @@ class PrefObserverBridge : public NotificationObserver {
   }
 }
 
+- (void)createBrowserActionButtons {
+  [browserActionsController_ createButtons];
+  [self showOrHideBrowserActionButtons];
+}
+
+- (void)showOrHideBrowserActionButtons {
+  // TODO(andybons): This is ugly as sin and hard to follow. Fix it up.
+
+  int buttonCount = [browserActionsController_ buttonCount];
+  if (buttonCount == 0 || !hasToolbar_)
+    return;
+
+  CGFloat curWidth = NSWidth([[[self view] window] frame]);
+  NSRect reloadFrame = [reloadButton_ frame];
+  // Calculate the width between the reload button and the end of the frame and
+  // subtract the threshold width, which represents the space that the
+  // (optional) home button, omnibar, go button and page/wrench buttons take up
+  // when no Browser Actions are displayed. This is to prevent the Browser
+  // Action buttons from pushing the elements to the left of them too much to
+  // the left.
+  CGFloat availableWidth = std::max(0.0f,
+      curWidth - reloadFrame.origin.x + NSWidth(reloadFrame) -
+          kHideBrowserActionThresholdWidth);
+  // How many Browser Action buttons can we safely display without overflow?
+  int numAvailableSlots = availableWidth /
+      (kBrowserActionWidth + kBrowserActionButtonPadding);
+  int visibleCount = [browserActionsController_ visibleButtonCount];
+
+  // |delta| is the number of buttons that should be shown or hidden based on
+  // the number of available slots and the number of visible buttons.
+  int delta = numAvailableSlots - visibleCount;
+  BOOL hide = delta < 0;
+  if (hide) {
+    delta *= -1;
+  } else if (visibleCount == buttonCount) {
+    // The number of available slots is greater than the number of displayed
+    // buttons and all buttons are already displayed.
+    return;
+  }
+  int arrayOffset = hide ? -1 : 0;
+
+  while (delta > 0) {
+    visibleCount = [browserActionsController_ visibleButtonCount];
+    if (visibleCount == buttonCount && !hide)
+      return;
+    BrowserActionButton* button = [[browserActionContainerView_ subviews]
+        objectAtIndex:visibleCount + arrayOffset];
+    [button setHidden:hide];
+    [self browserActionsChanged];
+    --delta;
+  }
+}
+
 - (void)browserActionsChanged {
   // Calculate the new width.
-  int buttonCount = [browserActionsController_ buttonCount];
+  int buttonCount = [browserActionsController_ visibleButtonCount];
 
   CGFloat width = 0.0;
   if (buttonCount > 0) {
@@ -735,7 +809,7 @@ class PrefObserverBridge : public NotificationObserver {
     return;
   }
 
-  //TODO(viettrungluu): dropping multiple URLs?
+  // TODO(viettrungluu): dropping multiple URLs?
   if ([urls count] > 1)
     NOTIMPLEMENTED();
 

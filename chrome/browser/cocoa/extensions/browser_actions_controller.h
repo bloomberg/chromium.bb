@@ -67,9 +67,13 @@ extern NSString* const kBrowserActionsChangedNotification;
 // notification bridge.
 - (void)browserActionVisibilityHasChanged;
 
+// Returns the current number of browser action buttons within the container,
+// whether or not they are displayed.
+- (int)buttonCount;
+
 // Returns the current number of browser action buttons displayed in the
 // container.
-- (int)buttonCount;
+- (int)visibleButtonCount;
 
 // Executes the action designated by the extension.
 - (void)browserActionClicked:(BrowserActionButton*)sender;

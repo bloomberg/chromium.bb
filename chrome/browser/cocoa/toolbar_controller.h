@@ -156,6 +156,9 @@ class ToolbarModel;
 // |ToolbarView| (0 means don't show it); no-op otherwise.
 - (void)setDividerOpacity:(CGFloat)opacity;
 
+// Create and add the Browser Action buttons to the toolbar view.
+- (void)createBrowserActionButtons;
+
 @end
 
 // A set of private methods used by tests, in the absence of "friends" in ObjC.

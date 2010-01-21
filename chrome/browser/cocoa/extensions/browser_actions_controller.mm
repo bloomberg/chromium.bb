@@ -210,6 +210,15 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
   return [buttons_ count];
 }
 
+- (int)visibleButtonCount {
+  int count = 0;
+  for (BrowserActionButton* button in [buttons_ allValues]) {
+    if (![button isHidden])
+      ++count;
+  }
+  return count;
+}
+
 - (void)browserActionClicked:(BrowserActionButton*)sender {
   ExtensionAction* action = [sender extension]->browser_action();
   if (action->has_popup() && !popupController_) {
