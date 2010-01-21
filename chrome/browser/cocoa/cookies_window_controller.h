@@ -67,8 +67,6 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
 // instead of std::strings and SkBitmaps). Doing this allows us to use bindings
 // for the interface. Changes are pushed to this internal model via a very thin
 // bridge (see above).
-//
-// TODO(rsesek): Localize this nib.
 @interface CookiesWindowController : NSWindowController
                                      <NSOutlineViewDelegate,
                                      NSWindowDelegate> {

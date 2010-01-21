@@ -2055,6 +2055,7 @@
             '../third_party/GTM',
             '../third_party/GTM/AppKit',
             '../third_party/GTM/Foundation',
+            '../third_party/GTM/DebugUtils',
           ],
           'link_settings': {
             'libraries': [
@@ -2083,6 +2084,7 @@
                   'app/nibs/BookmarkManager.xib',
                   'app/nibs/BookmarkNameFolder.xib',
                   'app/nibs/ClearBrowsingData.xib',
+                  'app/nibs/Cookies.xib',
                   'app/nibs/DownloadItem.xib',
                   'app/nibs/DownloadShelf.xib',
                   'app/nibs/EditSearchEngine.xib',
