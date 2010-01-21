@@ -115,6 +115,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   void set_parent_view(BaseView* parent_view) { parent_view_ = parent_view; }
 
+  // Used only to diagnose the crash in http://crbug.com/31716
+  // TODO(pamg): Remove when no longer needed.
+  void clear_cocoa_view() { cocoa_view_ = nil; }
+
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
 

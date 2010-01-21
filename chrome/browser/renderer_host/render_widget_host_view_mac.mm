@@ -419,8 +419,12 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
                                        [menu_runner indexOfSelectedItem],
                                        position, view_rect);
 
+  // CHECK()s inserted to diagnose the crash in http://crbug.com/31716
+  // TODO(pamg): Remove when no longer needed.
+  CHECK(render_widget_host_);
   if ([menu_runner menuItemWasChosen]) {
     // Simulate a menu selection event.
+    CHECK(cocoa_view_);
     const WebMouseEvent& mouse_event =
         WebInputEventFactory::mouseEvent(event, cocoa_view_);
     render_widget_host_->ForwardMouseEvent(mouse_event);
@@ -575,6 +579,13 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
     closeOnDeactivate_ = NO;
   }
   return self;
+}
+
+// Used only to diagnose the crash in http://crbug.com/31716
+// TODO(pamg): Remove when no longer needed.
+- (void)dealloc {
+  renderWidgetHostView_->clear_cocoa_view();
+  [super dealloc];
 }
 
 - (void)setCanBeKeyView:(BOOL)can {
