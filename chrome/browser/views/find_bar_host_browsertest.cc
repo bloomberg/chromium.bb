@@ -155,9 +155,10 @@ std::string FocusedOnPage(TabContents* tab_contents) {
   return result;
 }
 
-// This tests the FindInPage end-state, in other words: what is focused when you
-// close the Find box (ie. if you find within a link the link should be
-// focused).
+// This tests the FindInPage end-state, in other words: what is focused and
+// selected after you close the Find box. For example, if you find within a link
+// the link should be focused, but not selection highlighted. If you find simple
+// text, it should be highlighted when closing the Find box.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
   HTTPTestServer* server = StartHTTPServer();
 
@@ -183,13 +184,22 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
   // Verify that the link is focused.
   EXPECT_STREQ("link1", FocusedOnPage(tab_contents).c_str());
 
-  // Search for a text that exists within a link on the page.
+  // Make sure nothing is highlighted (don't want both focus highlighting and
+  // selection highlighting at the same time).
+  std::string result;
+  ui_test_utils::ExecuteJavaScriptAndExtractString(
+      tab_contents->render_view_host(),
+      L"",
+      L"window.domAutomationController.send(window.getSelection().toString());",
+      &result);
+  EXPECT_STREQ("", result.c_str());
+
+  // Search for a text that exists within link2 on the page.
   EXPECT_EQ(1, FindInPageWchar(tab_contents, L"Google",
                                kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(1, ordinal);
 
   // Move the selection to link 1, after searching.
-  std::string result;
   ui_test_utils::ExecuteJavaScriptAndExtractString(
       tab_contents->render_view_host(),
       L"",
@@ -201,6 +211,45 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
 
   // Verify that link2 is not focused.
   EXPECT_STREQ("", FocusedOnPage(tab_contents).c_str());
+
+  // Make sure link1 is still highlighted.
+  ui_test_utils::ExecuteJavaScriptAndExtractString(
+      tab_contents->render_view_host(),
+      L"",
+      L"window.domAutomationController.send(window.getSelection().toString());",
+      &result);
+  EXPECT_STREQ("link", result.c_str());
+
+  // Search for 'This'. Should have 1 match.
+  TabContents* tab = browser()->GetSelectedTabContents();
+  EXPECT_EQ(1, FindInPageWchar(tab, L"This", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(1, ordinal);
+
+  // End the Find session, thereby making the word 'This' highlighted.
+  browser()->GetFindBarController()->EndFindSession();
+
+  // Make sure 'This' is now highlighted.
+  ui_test_utils::ExecuteJavaScriptAndExtractString(
+      tab->render_view_host(),
+      L"",
+      L"window.domAutomationController.send(window.getSelection().toString());",
+      &result);
+  EXPECT_STREQ("This", result.c_str());
+
+  // Search for something that doesn't exist (or at least not on that page).
+  EXPECT_EQ(0, FindInPageWchar(tab, L"aliens", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(0, ordinal);
+
+  // End the Find session.
+  browser()->GetFindBarController()->EndFindSession();
+
+  // Make sure nothing is highlighted.
+  ui_test_utils::ExecuteJavaScriptAndExtractString(
+      tab->render_view_host(),
+      L"",
+      L"window.domAutomationController.send(window.getSelection().toString());",
+      &result);
+  EXPECT_STREQ("", result.c_str());
 }
 
 // This test loads a single-frame page and makes sure the ordinal returned makes
