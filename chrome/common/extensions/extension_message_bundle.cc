@@ -7,11 +7,18 @@
 #include <string>
 #include <vector>
 
+#include "app/l10n_util.h"
 #include "base/hash_tables.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
+
+namespace errors = extension_manifest_errors;
 
 const wchar_t* ExtensionMessageBundle::kContentKey = L"content";
 const wchar_t* ExtensionMessageBundle::kMessageKey = L"message";
@@ -21,6 +28,18 @@ const char* ExtensionMessageBundle::kPlaceholderBegin = "$";
 const char* ExtensionMessageBundle::kPlaceholderEnd = "$";
 const char* ExtensionMessageBundle::kMessageBegin = "__MSG_";
 const char* ExtensionMessageBundle::kMessageEnd = "__";
+
+// Reserved messages names.
+const char* ExtensionMessageBundle::kUILocaleKey = "@@ui_locale";
+const char* ExtensionMessageBundle::kBidiDirectionKey = "@@bidi_dir";
+const char* ExtensionMessageBundle::kBidiReversedDirectionKey =
+    "@@bidi_reversed_dir";
+const char* ExtensionMessageBundle::kBidiStartEdgeKey = "@@bidi_start_edge";
+const char* ExtensionMessageBundle::kBidiEndEdgeKey = "@@bidi_end_edge";
+
+// Reserved messages values.
+const char* ExtensionMessageBundle::kBidiLeftEdgeValue = "left";
+const char* ExtensionMessageBundle::kBidiRightEdgeValue = "right";
 
 // Formats message in case we encounter a bad formed key in the JSON object.
 // Returns false and sets |error| to actual error message.
@@ -59,6 +78,45 @@ bool ExtensionMessageBundle::Init(const CatalogVector& locale_catalogs,
         return false;
       // Keys are not case-sensitive.
       dictionary_[key] = value;
+    }
+  }
+
+  if (!AppendReservedMessagesForLocale(
+      extension_l10n_util::CurrentLocaleOrDefault(), error))
+    return false;
+
+  return true;
+}
+
+bool ExtensionMessageBundle::AppendReservedMessagesForLocale(
+    const std::string& app_locale, std::string* error) {
+  SubstitutionMap append_messages;
+  append_messages[kUILocaleKey] = app_locale;
+
+  // Calling l10n_util::GetTextDirection on non-UI threads doesn't seems safe,
+  // so we use GetTextDirectionForLocale instead.
+  if (l10n_util::GetTextDirectionForLocale(app_locale.c_str()) ==
+      l10n_util::RIGHT_TO_LEFT) {
+    append_messages[kBidiDirectionKey] = "rtl";
+    append_messages[kBidiReversedDirectionKey] = "ltr";
+    append_messages[kBidiStartEdgeKey] = kBidiRightEdgeValue;
+    append_messages[kBidiEndEdgeKey] = kBidiLeftEdgeValue;
+  } else {
+    append_messages[kBidiDirectionKey] = "ltr";
+    append_messages[kBidiReversedDirectionKey] = "rtl";
+    append_messages[kBidiStartEdgeKey] = kBidiLeftEdgeValue;
+    append_messages[kBidiEndEdgeKey] = kBidiRightEdgeValue;
+  }
+
+  // Add all reserved messages to the dictionary, but check for collisions.
+  SubstitutionMap::iterator it = append_messages.begin();
+  for (; it != append_messages.end(); ++it) {
+    if (ContainsKey(dictionary_, it->first)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kReservedMessageFound, it->first);
+      return false;
+    } else {
+      dictionary_[it->first] = it->second;
     }
   }
 
@@ -215,7 +273,7 @@ bool ExtensionMessageBundle::IsValidName(const str& name) {
 
   for (typename str::const_iterator it = name.begin(); it != name.end(); ++it) {
     // Allow only ascii 0-9, a-z, A-Z, and _ in the name.
-    if (!IsAsciiAlpha(*it) && !IsAsciiDigit(*it) && *it != '_')
+    if (!IsAsciiAlpha(*it) && !IsAsciiDigit(*it) && *it != '_' && *it != '@')
       return false;
   }
 
