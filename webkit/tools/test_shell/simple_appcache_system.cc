@@ -280,16 +280,28 @@ SimpleAppCacheSystem::SimpleAppCacheSystem()
   instance_ = this;
 }
 
+static void SignalEvent(base::WaitableEvent* event) {
+  event->Signal();
+}
+
 SimpleAppCacheSystem::~SimpleAppCacheSystem() {
   DCHECK(!io_message_loop_ && !backend_impl_ && !service_);
   frontend_proxy_->clear_appcache_system();  // in case a task is in transit
   instance_ = NULL;
+
+  if (db_thread_.IsRunning()) {
+    // We pump a task thru the db thread to ensure any tasks previously
+    // scheduled on that thread have been performed prior to return.
+    base::WaitableEvent event(false, false);
+    db_thread_.message_loop()->PostTask(FROM_HERE,
+        NewRunnableFunction(&SignalEvent, &event));
+    event.Wait();
+  }
 }
 
 void SimpleAppCacheSystem::InitOnUIThread(
     const FilePath& cache_directory) {
   DCHECK(!ui_message_loop_);
-  DCHECK(!cache_directory.empty());
   AppCacheThread::InitIDs(DB_THREAD_ID, IO_THREAD_ID);
   ui_message_loop_ = MessageLoop::current();
   cache_directory_ = cache_directory;

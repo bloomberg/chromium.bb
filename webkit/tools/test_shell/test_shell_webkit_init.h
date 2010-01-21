@@ -70,8 +70,13 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     // Construct and initialize an appcache system for this scope.
     // A new empty temp directory is created to house any cached
     // content during the run. Upon exit that directory is deleted.
-    if (appcache_dir_.CreateUniqueTempDir())
-      SimpleAppCacheSystem::InitializeOnUIThread(appcache_dir_.path());
+    // If we can't create a tempdir, we'll use in-memory storage.
+    if (!appcache_dir_.CreateUniqueTempDir()) {
+      LOG(WARNING) << "Failed to create a temp dir for the appcache, "
+                      "using in-memory storage.";
+      DCHECK(appcache_dir_.path().empty());
+    }
+    SimpleAppCacheSystem::InitializeOnUIThread(appcache_dir_.path());
 
     WebKit::WebDatabase::setObserver(&database_system_);
 
