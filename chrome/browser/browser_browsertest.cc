@@ -292,3 +292,33 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
       controller().GetActiveEntry();
   EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
 }
+
+// Tests that the CLD (Compact Language Detection) works properly.
+IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
+  static const wchar_t kDocRoot[] = L"chrome/test/data";
+  scoped_refptr<HTTPTestServer> server(
+        HTTPTestServer::CreateServer(kDocRoot, NULL));
+  ASSERT_TRUE(NULL != server.get());
+
+  TabContents* current_tab = browser()->GetSelectedTabContents();
+
+  // Navigate to a page in English.
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(server->TestServerPage("files/english_page.html")));
+  NavigationEntry* entry = current_tab->controller().GetActiveEntry();
+  ASSERT_TRUE(NULL != entry);
+  EXPECT_TRUE(entry->language().empty());
+  std::string lang = ui_test_utils::WaitForLanguageDetection(current_tab);
+  EXPECT_EQ("en", lang);
+  EXPECT_EQ("en", entry->language());
+
+  // Now navigate to a page in French.
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(server->TestServerPage("files/french_page.html")));
+  entry = current_tab->controller().GetActiveEntry();
+  ASSERT_TRUE(NULL != entry);
+  EXPECT_TRUE(entry->language().empty());
+  lang = ui_test_utils::WaitForLanguageDetection(current_tab);
+  EXPECT_EQ("fr", lang);
+  EXPECT_EQ("fr", entry->language());
+}

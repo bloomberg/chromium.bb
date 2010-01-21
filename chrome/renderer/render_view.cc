@@ -301,7 +301,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       send_preferred_size_changes_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           notification_provider_(new NotificationProvider(this))),
-      determine_page_text_after_loading_stops_(false),
       view_type_(ViewType::INVALID),
       browser_window_id_(-1),
       last_top_level_navigation_page_id_(-1),
@@ -492,7 +491,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteEditCommand, OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
-    IPC_MESSAGE_HANDLER(ViewMsg_DeterminePageLanguage, OnDeterminePageLanguage)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingHost,
                         OnSetZoomLevelForLoadingHost)
@@ -663,24 +661,24 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
   if (!preliminary_capture)
     last_indexed_page_id_ = load_id;
 
-  // get the URL for this page
+  // Get the URL for this page.
   GURL url(main_frame->url());
   if (url.is_empty())
     return;
 
-  // full text
+  // Retrieve the frame's full text.
   std::wstring contents;
   CaptureText(main_frame, &contents);
   if (contents.size()) {
-    // Send the text to the browser for indexing.
-    Send(new ViewHostMsg_PageContents(routing_id_, url, load_id, contents));
-  }
+    base::TimeTicks begin_time = base::TimeTicks::Now();
+    std::string language = DetermineTextLanguage(contents);
+    UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
+                               base::TimeTicks::Now() - begin_time);
 
-  // Now that we have the contents, we can determine the language if necessary.
-  if (determine_page_text_after_loading_stops_) {
-    determine_page_text_after_loading_stops_ = false;
-    Send(new ViewHostMsg_PageLanguageDetermined(
-        routing_id_, DetermineTextLanguage(contents)));
+    // Send the text to the browser for indexing (the browser might decide not
+    // to index, if the URL is HTTPS for instance) and language discovery.
+    Send(new ViewHostMsg_PageContents(routing_id_, url, load_id, contents,
+                                      language));
   }
 
   // thumbnail
@@ -690,15 +688,6 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
 void RenderView::CaptureText(WebFrame* frame, std::wstring* contents) {
   contents->clear();
   if (!frame)
-    return;
-
-  // Don't index any https pages. People generally don't want their bank
-  // accounts, etc. indexed on their computer, especially since some of these
-  // things are not marked cachable.
-  // TODO(brettw) we may want to consider more elaborate heuristics such as
-  // the cachability of the page. We may also want to consider subframes (this
-  // test will still index subframes if the subframe is SSL).
-  if (GURL(frame->url()).SchemeIsSecure())
     return;
 
 #ifdef TIME_TEXT_RETRIEVAL
@@ -3064,17 +3053,6 @@ void RenderView::OnFind(int request_id, const string16& search_text,
       search_frame = search_frame->traverseNext(true);
     } while (search_frame != main_frame);
   }
-}
-
-void RenderView::OnDeterminePageLanguage() {
-  if (is_loading_) {
-    // Wait for the page to finish loading before trying to determine the
-    // language.
-    determine_page_text_after_loading_stops_ = true;
-    return;
-  }
-
-  Send(new ViewHostMsg_PageLanguageDetermined(routing_id_, DetectLanguage()));
 }
 
 std::string RenderView::DetectLanguage() {

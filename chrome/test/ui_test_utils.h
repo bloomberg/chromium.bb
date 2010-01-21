@@ -120,6 +120,10 @@ void WaitForFocusChange(RenderViewHost* rvh);
 // traversal).
 void WaitForFocusInBrowser(Browser* browser);
 
+// Waits for the language of the page to have been detected and returns it.
+// This should be called right after a navigation notification was received.
+std::string WaitForLanguageDetection(TabContents* tab_contents);
+
 // Performs a find in the page of the specified tab. Returns the number of
 // matches found.  |ordinal| is an optional parameter which is set to the index
 // of the current match.

@@ -211,12 +211,6 @@ class RenderViewHost : public RenderWidgetHost {
   // clear the selection on the focused frame.
   void StopFinding(bool clear_selection);
 
-  // Gets the most probable language of the text content in the tab. (This sends
-  // a message to the render view.)  The caller gets the language via the
-  // NotificationService by registering to the
-  // NotificationType TAB_LANGUAGE_DETERMINED.
-  void GetPageLanguage();
-
   // Change the zoom level of a page.
   void Zoom(PageZoom::Function function);
 
@@ -499,7 +493,6 @@ class RenderViewHost : public RenderWidgetHost {
                       const gfx::Rect& selection_rect,
                       int active_match_ordinal,
                       bool final_update);
-  void OnPageLanguageDetermined(const std::string& language);
   void OnExecuteCodeFinished(int request_id, bool success);
   void OnMsgUpdateFavIconURL(int32 page_id, const GURL& icon_url);
   void OnMsgDidDownloadFavIcon(int id,
@@ -599,7 +592,9 @@ class RenderViewHost : public RenderWidgetHost {
   void OnCSSInserted();
   void OnPageContents(const GURL& url,
                       int32 page_id,
-                      const std::wstring& contents);
+                      const std::wstring& contents,
+                      const std::string& language);
+
  private:
   friend class TestRenderViewHost;
 
