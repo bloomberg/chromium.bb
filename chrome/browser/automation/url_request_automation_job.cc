@@ -49,6 +49,24 @@ URLRequest::ProtocolFactory* URLRequestAutomationJob::old_http_factory_
 URLRequest::ProtocolFactory* URLRequestAutomationJob::old_https_factory_
     = NULL;
 
+namespace {
+
+// Returns true if the cookie passed in exists in the list of cookies
+// parsed from the HTTP response header.
+bool IsParsedCookiePresentInCookieHeader(
+    const net::CookieMonster::ParsedCookie& parsed_cookie,
+    const std::vector<std::string>& header_cookies) {
+  for (size_t i = 0; i < header_cookies.size(); ++i) {
+    net::CookieMonster::ParsedCookie parsed_header_cookie(header_cookies[i]);
+    if (parsed_header_cookie.Name() == parsed_cookie.Name())
+      return true;
+  }
+
+  return false;
+}
+
+}  // end namespace
+
 URLRequestAutomationJob::URLRequestAutomationJob(URLRequest* request, int tab,
     int request_id, AutomationResourceMessageFilter* filter)
     : URLRequestJob(request),
@@ -291,6 +309,13 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
           url_for_cookies, request_->first_party_for_cookies())) {
     StringTokenizer cookie_parser(response.persistent_cookies, ";");
 
+    std::vector<net::CookieMonster::CanonicalCookie> existing_cookies;
+    net::CookieMonster* monster = ctx->cookie_store()->GetCookieMonster();
+    DCHECK(monster);
+    if (monster) {
+      monster->GetRawCookies(url_for_cookies, &existing_cookies);
+    }
+
     while (cookie_parser.GetNext()) {
       std::string cookie_string = cookie_parser.token();
       // Only allow cookies with valid name value pairs.
@@ -298,12 +323,20 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
         TrimWhitespace(cookie_string, TRIM_ALL, &cookie_string);
         // Ignore duplicate cookies, i.e. cookies passed in from the host
         // browser which also exist in the response header.
-        if (!IsCookiePresentInCookieHeader(cookie_string,
-                                           response_cookies)) {
-            net::CookieOptions options;
-            ctx->cookie_store()->SetCookieWithOptions(url_for_cookies,
-                                                      cookie_string,
-                                                      options);
+        net::CookieMonster::ParsedCookie parsed_cookie(cookie_string);
+        std::vector<net::CookieMonster::CanonicalCookie>::const_iterator i;
+        for (i = existing_cookies.begin(); i != existing_cookies.end(); ++i) {
+          if ((*i).Name() == parsed_cookie.Name())
+            break;
+        }
+
+        if (i == existing_cookies.end() &&
+            !IsParsedCookiePresentInCookieHeader(parsed_cookie,
+                                                 response_cookies)) {
+          net::CookieOptions options;
+          ctx->cookie_store()->SetCookieWithOptions(url_for_cookies,
+                                                    cookie_string,
+                                                    options);
         }
       }
     }
@@ -449,17 +482,8 @@ void URLRequestAutomationJob::DisconnectFromMessageFilter() {
 }
 
 bool URLRequestAutomationJob::IsCookiePresentInCookieHeader(
-    const std::string& cookie_line,
+    const std::string& cookie_name,
     const std::vector<std::string>& header_cookies) {
-  net::CookieMonster::ParsedCookie parsed_current_cookie(cookie_line);
-  for (size_t index = 0; index < header_cookies.size(); index++) {
-    net::CookieMonster::ParsedCookie parsed_header_cookie(
-        header_cookies[index]);
-
-    if (parsed_header_cookie.Name() == parsed_current_cookie.Name())
-      return true;
-  }
-
-  return false;
+  net::CookieMonster::ParsedCookie parsed_cookie(cookie_name);
+  return IsParsedCookiePresentInCookieHeader(parsed_cookie, header_cookies);
 }
-

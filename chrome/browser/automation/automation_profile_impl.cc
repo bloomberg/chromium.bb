@@ -110,6 +110,10 @@ class AutomationCookieStore : public net::CookieStore {
     return original_cookie_store_->DeleteCookie(url, cookie_name);
   }
 
+  virtual net::CookieMonster* GetCookieMonster() {
+    return original_cookie_store_->GetCookieMonster();
+  }
+
  protected:
   void SendIPCMessageOnIOThread(IPC::Message* m) {
     if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {

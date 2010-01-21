@@ -199,6 +199,8 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
 HRESULT HttpNegotiatePatch::OnResponse(IHttpNegotiate_OnResponse_Fn original,
     IHttpNegotiate* me, DWORD response_code, LPCWSTR response_header,
     LPCWSTR request_header, LPWSTR* additional_request_headers) {
+  DLOG(INFO) << __FUNCTION__ << " headers: " << std::endl << response_header;
+
   HRESULT hr = original(me, response_code, response_header, request_header,
                         additional_request_headers);
   return hr;

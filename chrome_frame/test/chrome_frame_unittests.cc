@@ -1819,10 +1819,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 const wchar_t kChromeFrameFullTabModeDeleteCookieTest[] =
     L"files/fulltab_delete_cookie_test.html";
 
-// TODO(ananta): DISABLED due to:
-// http://code.google.com/p/chromium/issues/detail?id=32546
 TEST_F(ChromeFrameTestWithWebServer,
-       DISABLED_FullTabModeIE_ChromeFrameDeleteCookieTest) {
+       FullTabModeIE_ChromeFrameDeleteCookieTest) {
   chrome_frame_test::TimedMsgLoop loop;
 
   ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeDeleteCookieTest));

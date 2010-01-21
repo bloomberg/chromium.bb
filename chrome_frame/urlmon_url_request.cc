@@ -650,6 +650,8 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
     const wchar_t* response_headers, const wchar_t* request_headers,
     wchar_t** additional_headers) {
   DCHECK(worker_thread_ != NULL);
+  DLOG(INFO) << __FUNCTION__ << " " << url() << std::endl << " headers: " <<
+      std::endl << response_headers;
   DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
 
   if (!binding_) {
@@ -693,6 +695,9 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
   std::string persistent_cookies;
 
   DWORD cookie_size = 0;  // NOLINT
+  // Note that there's really no way for us here to distinguish session cookies
+  // from persistent cookies here.  Session cookies should get filtered
+  // out on the chrome side as to not be added again.
   InternetGetCookie(url_for_persistent_cookies.c_str(), NULL, NULL,
                     &cookie_size);
   if (cookie_size) {
