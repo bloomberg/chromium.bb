@@ -299,7 +299,6 @@ void ServerConnectionManager::ResetConnection() {
 }
 
 bool ServerConnectionManager::IncrementErrorCount() {
-#if defined(OS_WIN)
   error_count_mutex_.Acquire();
   error_count_++;
 
@@ -322,8 +321,6 @@ bool ServerConnectionManager::IncrementErrorCount() {
   }
 
   error_count_mutex_.Release();
-  return true;
-#endif  // defined(OS_WIN)
   return true;
 }
 
