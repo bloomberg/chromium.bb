@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
+#include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
 namespace webkit_glue {
@@ -15,6 +16,8 @@ class FormFieldValues;
 }
 
 class AutoFillInfoBarDelegate;
+class AutoFillProfile;
+class CreditCard;
 class FormStructure;
 class PersonalDataManager;
 class PrefService;
@@ -22,7 +25,8 @@ class TabContents;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.
-class AutoFillManager : public RenderViewHostDelegate::AutoFill {
+class AutoFillManager : public RenderViewHostDelegate::AutoFill,
+                               AutoFillDialogObserver {
  public:
   explicit AutoFillManager(TabContents* tab_contents);
   virtual ~AutoFillManager();
@@ -30,9 +34,14 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill {
   // Registers our Enable/Disable AutoFill pref.
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // RenderViewHostDelegate::AutoFill implementation.
+  // RenderViewHostDelegate::AutoFill implementation:
   virtual void FormFieldValuesSubmitted(
       const webkit_glue::FormFieldValues& form);
+
+  // AutoFillDialogObserver implementation:
+  virtual void OnAutoFillDialogApply(
+      const std::vector<AutoFillProfile>& profiles,
+      const std::vector<CreditCard>& credit_cards);
 
   // Uses heuristics and existing personal data to determine the possible field
   // types.

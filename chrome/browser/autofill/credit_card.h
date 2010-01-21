@@ -14,6 +14,8 @@
 class CreditCard : public FormGroup {
  public:
   explicit CreditCard(const string16& label);
+  // Used for STL.
+  explicit CreditCard(const CreditCard& card);
 
   // FormGroup implementation:
   FormGroup* Clone() const;
@@ -66,7 +68,6 @@ class CreditCard : public FormGroup {
   void set_expiration_year(int expiration_year);
 
  private:
-  explicit CreditCard(const CreditCard& card);
   void operator=(const CreditCard& card);
 
   // A helper function for FindInfoMatches that only handles matching the info

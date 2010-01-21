@@ -8,13 +8,29 @@
 #include <vector>
 
 #include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/credit_card.h"
+
+// An interface the AutoFill dialog uses to notify its clients (observers) when
+// the user has applied changes to the AutoFill profile data.
+class AutoFillDialogObserver {
+ public:
+  // The user has confirmed changes by clicking "Apply" or "OK".
+  virtual void OnAutoFillDialogApply(
+      const std::vector<AutoFillProfile>& profiles,
+      const std::vector<CreditCard>& credit_cards) = 0;
+
+ protected:
+  virtual ~AutoFillDialogObserver() {}
+};
 
 // Shows the AutoFill dialog, which allows the user to edit profile information.
 // |profiles| is a vector of autofill profiles that contains the current profile
 // information.  The dialog fills out the profile fields using this data.  Any
 // changes made to the profile information through the dialog should be
-// transferred back into |profiles| and |credit_cards|.
-void ShowAutoFillDialog(std::vector<AutoFillProfile>* profiles,
-                        std::vector<FormGroup>* credit_cards);
+// transferred back into |profiles| and |credit_cards|. |observer| will be
+// notified by OnAutoFillDialogAccept when the user has applied changes.
+void ShowAutoFillDialog(AutoFillDialogObserver* observer,
+                        const std::vector<AutoFillProfile>& profiles,
+                        const std::vector<CreditCard>& credit_cards);
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DIALOG_H_

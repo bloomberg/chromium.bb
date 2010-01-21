@@ -29,6 +29,17 @@ CreditCard::CreditCard(const string16& label)
       label_(label) {
 }
 
+CreditCard::CreditCard(const CreditCard& card)
+    : number_(card.number_),
+      name_on_card_(card.name_on_card_),
+      type_(card.type_),
+      verification_code_(card.verification_code_),
+      last_four_digits_(card.last_four_digits_),
+      expiration_month_(card.expiration_month_),
+      expiration_year_(card.expiration_year_),
+      label_(card.label_) {
+}
+
 FormGroup* CreditCard::Clone() const {
   return new CreditCard(*this);
 }
@@ -241,17 +252,6 @@ void CreditCard::set_expiration_year(int expiration_year) {
   }
 
   expiration_year_ = expiration_year;
-}
-
-CreditCard::CreditCard(const CreditCard& card)
-    : number_(card.number_),
-      name_on_card_(card.name_on_card_),
-      type_(card.type_),
-      verification_code_(card.verification_code_),
-      last_four_digits_(card.last_four_digits_),
-      expiration_month_(card.expiration_month_),
-      expiration_year_(card.expiration_year_),
-      label_(card.label_) {
 }
 
 bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,

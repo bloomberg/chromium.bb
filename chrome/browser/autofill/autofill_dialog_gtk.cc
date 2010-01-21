@@ -10,8 +10,10 @@
 
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/common/gtk_util.h"
@@ -26,6 +28,30 @@ const char kDialogGroupTitleMarkup[] = "<span weight='bold'>%s</span>";
 
 // How far we indent dialog widgets, in pixels.
 const int kAutoFillDialogIndent = 5;
+
+// All of these widgets are GtkEntrys except for default_profile, which is a
+// GtkCheckButton.
+typedef struct _AddressWidgets {
+  GtkWidget* label;
+  GtkWidget* default_profile;
+  GtkWidget* first_name;
+  GtkWidget* middle_name;
+  GtkWidget* last_name;
+  GtkWidget* email;
+  GtkWidget* company_name;
+  GtkWidget* address_line1;
+  GtkWidget* address_line2;
+  GtkWidget* city;
+  GtkWidget* state;
+  GtkWidget* zipcode;
+  GtkWidget* country;
+  GtkWidget* phone1;
+  GtkWidget* phone2;
+  GtkWidget* phone3;
+  GtkWidget* fax1;
+  GtkWidget* fax2;
+  GtkWidget* fax3;
+} AddressWidgets;
 
 // Adds an alignment around |widget| which indents the widget by |offset|.
 GtkWidget* IndentWidget(GtkWidget* widget, int offset) {
@@ -132,10 +158,11 @@ GtkWidget* FormTableAddExpandedEntry(
 
 // Adds a sized entry box to the form table.  The entry widget width is set to
 // |char_len|.
-void FormTableAddSizedEntry(
+GtkWidget* FormTableAddSizedEntry(
     GtkWidget* table, int row, int col, int char_len, int label_id) {
   GtkWidget* entry = FormTableAddEntry(table, row, col, 1, label_id);
   gtk_entry_set_width_chars(GTK_ENTRY(entry), char_len);
+  return entry;
 }
 
 // Like FormTableAddEntry, but connects to the 'changed' signal.  |changed| is a
@@ -163,8 +190,9 @@ GtkWidget* FormTableAddLabelEntry(
 // and remove AutoFill profiles.
 class AutoFillDialog {
  public:
-  AutoFillDialog(std::vector<AutoFillProfile>* profiles,
-                 std::vector<FormGroup>* credit_cards);
+  AutoFillDialog(AutoFillDialogObserver* observer,
+                 const std::vector<AutoFillProfile>& profiles,
+                 const std::vector<CreditCard>& credit_cards);
   ~AutoFillDialog() {}
 
   // Shows the AutoFill dialog.
@@ -174,6 +202,13 @@ class AutoFillDialog {
   // 'destroy' signal handler.  We DeleteSoon the global singleton dialog object
   // from here.
   static void OnDestroy(GtkWidget* widget, AutoFillDialog* autofill_dialog);
+
+  // 'response' signal handler.  We notify the AutoFillDialogObserver that new
+  // data is available if the response is GTK_RESPONSE_APPLY or GTK_RESPONSE_OK.
+  // We close the dialog if the response is GTK_RESPONSE_OK or
+  // GTK_RESPONSE_CANCEL.
+  static void OnResponse(GtkDialog* dialog, gint response_id,
+                         AutoFillDialog* autofill_dialog);
 
   // 'clicked' signal handler.  We add a new address.
   static void OnAddAddressClicked(GtkButton* button, AutoFillDialog* dialog);
@@ -205,11 +240,14 @@ class AutoFillDialog {
   GtkWidget* AddNewAddress();
   GtkWidget* AddNewCreditCard();
 
-  // The list of current AutoFill profiles.  Owned by AutoFillManager.
-  std::vector<AutoFillProfile>* profiles_;
+  // The list of current AutoFill profiles.
+  std::vector<AutoFillProfile> profiles_;
 
-  // The list of current AutoFill credit cards.  Owned by AutoFillManager.
-  std::vector<FormGroup>* credit_cards_;
+  // The list of current AutoFill credit cards.
+  std::vector<CreditCard> credit_cards_;
+
+  // The list of address widgets, used to modify the AutoFill profiles.
+  std::vector<AddressWidgets> address_widgets_;
 
   // The AutoFill dialog.
   GtkWidget* dialog_;
@@ -220,16 +258,23 @@ class AutoFillDialog {
   // The credit cards group.
   GtkWidget* creditcards_vbox_;
 
+  // Our observer.
+  AutoFillDialogObserver* observer_;
+
   DISALLOW_COPY_AND_ASSIGN(AutoFillDialog);
 };
 
 // The singleton AutoFill dialog object.
 static AutoFillDialog* dialog = NULL;
 
-AutoFillDialog::AutoFillDialog(std::vector<AutoFillProfile>* profiles,
-                               std::vector<FormGroup>* credit_cards)
+AutoFillDialog::AutoFillDialog(AutoFillDialogObserver* observer,
+                               const std::vector<AutoFillProfile>& profiles,
+                               const std::vector<CreditCard>& credit_cards)
     : profiles_(profiles),
-      credit_cards_(credit_cards) {
+      credit_cards_(credit_cards),
+      observer_(observer) {
+  DCHECK(observer);
+
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_DIALOG_TITLE).c_str(),
       // AutoFill dialog is shared between all browser windows.
@@ -254,7 +299,7 @@ AutoFillDialog::AutoFillDialog(std::vector<AutoFillProfile>* profiles,
   gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
-  g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroy), this);
 
   // Allow the contents to be scrolled.
@@ -305,6 +350,73 @@ void AutoFillDialog::OnDestroy(GtkWidget* widget,
                                AutoFillDialog* autofill_dialog) {
   dialog = NULL;
   MessageLoop::current()->DeleteSoon(FROM_HERE, autofill_dialog);
+}
+
+static string16 GetEntryText(GtkWidget* entry) {
+  return UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(entry)));
+}
+
+static AutoFillProfile AutoFillProfileFromWidgetValues(
+    const AddressWidgets& widgets) {
+  // TODO(jhawkins): unique id?
+  AutoFillProfile profile(GetEntryText(widgets.label), 0);
+  profile.SetInfo(AutoFillType(NAME_FIRST),
+                  GetEntryText(widgets.first_name));
+  profile.SetInfo(AutoFillType(NAME_MIDDLE),
+      GetEntryText(widgets.middle_name));
+  profile.SetInfo(AutoFillType(NAME_LAST),
+      GetEntryText(widgets.last_name));
+  profile.SetInfo(AutoFillType(EMAIL_ADDRESS),
+      GetEntryText(widgets.email));
+  profile.SetInfo(AutoFillType(COMPANY_NAME),
+      GetEntryText(widgets.company_name));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+      GetEntryText(widgets.address_line1));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
+      GetEntryText(widgets.address_line2));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_CITY),
+      GetEntryText(widgets.city));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE),
+      GetEntryText(widgets.state));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
+      GetEntryText(widgets.zipcode));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
+      GetEntryText(widgets.country));
+  profile.SetInfo(AutoFillType(PHONE_HOME_COUNTRY_CODE),
+      GetEntryText(widgets.phone1));
+  profile.SetInfo(AutoFillType(PHONE_HOME_CITY_CODE),
+      GetEntryText(widgets.phone2));
+  profile.SetInfo(AutoFillType(PHONE_HOME_NUMBER),
+      GetEntryText(widgets.phone3));
+  profile.SetInfo(AutoFillType(PHONE_FAX_COUNTRY_CODE),
+      GetEntryText(widgets.fax1));
+  profile.SetInfo(AutoFillType(PHONE_FAX_CITY_CODE),
+      GetEntryText(widgets.fax2));
+  profile.SetInfo(AutoFillType(PHONE_FAX_NUMBER),
+      GetEntryText(widgets.fax3));
+  return profile;
+}
+
+// static
+void AutoFillDialog::OnResponse(GtkDialog* dialog, gint response_id,
+                                AutoFillDialog* autofill_dialog) {
+  if (response_id == GTK_RESPONSE_APPLY || response_id == GTK_RESPONSE_OK) {
+    autofill_dialog->profiles_.clear();
+    std::vector<AddressWidgets>::const_iterator iter;
+    for (iter = autofill_dialog->address_widgets_.begin();
+         iter != autofill_dialog->address_widgets_.end();
+         ++iter) {
+      autofill_dialog->profiles_.push_back(
+          AutoFillProfileFromWidgetValues(*iter));
+    }
+
+    autofill_dialog->observer_->OnAutoFillDialogApply(
+        autofill_dialog->profiles_, autofill_dialog->credit_cards_);
+  }
+
+  if (response_id == GTK_RESPONSE_OK || response_id == GTK_RESPONSE_CANCEL) {
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+  }
 }
 
 // static
@@ -388,45 +500,61 @@ GtkWidget* AutoFillDialog::InitGroupContentArea(int name_id,
 }
 
 GtkWidget* AutoFillDialog::AddNewAddress() {
+  AddressWidgets widgets = {0};
   GtkWidget* vbox;
   GtkWidget* address = InitGroupContentArea(IDS_AUTOFILL_NEW_ADDRESS, &vbox);
 
   GtkWidget* table = InitFormTable(5, 3);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), table);
 
-  FormTableAddLabelEntry(table, 0, 0, 1, IDS_AUTOFILL_DIALOG_LABEL,
-                         address, G_CALLBACK(OnLabelChanged));
-  FormTableAddEntry(table, 1, 0, 1, IDS_AUTOFILL_DIALOG_FIRST_NAME);
-  FormTableAddEntry(table, 1, 1, 1, IDS_AUTOFILL_DIALOG_MIDDLE_NAME);
-  FormTableAddEntry(table, 1, 2, 1, IDS_AUTOFILL_DIALOG_LAST_NAME);
-  FormTableAddEntry(table, 2, 0, 1, IDS_AUTOFILL_DIALOG_EMAIL);
-  FormTableAddEntry(table, 2, 1, 1, IDS_AUTOFILL_DIALOG_COMPANY_NAME);
-  FormTableAddEntry(table, 3, 0, 2, IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1);
-  FormTableAddEntry(table, 4, 0, 2, IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2);
+  widgets.label = FormTableAddLabelEntry(table, 0, 0, 1,
+                                         IDS_AUTOFILL_DIALOG_LABEL,
+                                         address, G_CALLBACK(OnLabelChanged));
+  widgets.first_name = FormTableAddEntry(table, 1, 0, 1,
+                                         IDS_AUTOFILL_DIALOG_FIRST_NAME);
+  widgets.middle_name = FormTableAddEntry(table, 1, 1, 1,
+                                          IDS_AUTOFILL_DIALOG_MIDDLE_NAME);
+  widgets.last_name = FormTableAddEntry(table, 1, 2, 1,
+                                        IDS_AUTOFILL_DIALOG_LAST_NAME);
+  widgets.email = FormTableAddEntry(table, 2, 0, 1,
+                                    IDS_AUTOFILL_DIALOG_EMAIL);
+  widgets.company_name = FormTableAddEntry(table, 2, 1, 1,
+                                           IDS_AUTOFILL_DIALOG_COMPANY_NAME);
+  widgets.address_line1 = FormTableAddEntry(table, 3, 0, 2,
+                                            IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1);
+  widgets.address_line2 = FormTableAddEntry(table, 4, 0, 2,
+                                            IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2);
 
   // TODO(jhawkins): If there's not a default profile, automatically check this
   // check button.
   GtkWidget* default_check = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_DIALOG_MAKE_DEFAULT).c_str());
+  widgets.default_profile = default_check;
   FormTableSetWidget(table, default_check, 0, 1, 1, false);
 
   GtkWidget* address_table = InitFormTable(1, 4);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), address_table);
 
-  FormTableAddEntry(address_table, 0, 0, 1, IDS_AUTOFILL_DIALOG_CITY);
-  FormTableAddEntry(address_table, 0, 1, 1, IDS_AUTOFILL_DIALOG_STATE);
-  FormTableAddSizedEntry(address_table, 0, 2, 7, IDS_AUTOFILL_DIALOG_ZIP_CODE);
-  FormTableAddSizedEntry(address_table, 0, 3, 10, IDS_AUTOFILL_DIALOG_COUNTRY);
+  widgets.city = FormTableAddEntry(address_table, 0, 0, 1,
+                                   IDS_AUTOFILL_DIALOG_CITY);
+  widgets.state = FormTableAddEntry(address_table, 0, 1, 1,
+                                    IDS_AUTOFILL_DIALOG_STATE);
+  widgets.zipcode = FormTableAddSizedEntry(address_table, 0, 2, 7,
+                                           IDS_AUTOFILL_DIALOG_ZIP_CODE);
+  widgets.country = FormTableAddSizedEntry(address_table, 0, 3, 10,
+                                           IDS_AUTOFILL_DIALOG_COUNTRY);
 
   GtkWidget* phone_table = InitFormTable(1, 8);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), phone_table);
 
-  FormTableAddSizedEntry(phone_table, 0, 0, 4, IDS_AUTOFILL_DIALOG_PHONE);
-  FormTableAddSizedEntry(phone_table, 0, 1, 4, 0);
-  FormTableAddEntry(phone_table, 0, 2, 2, 0);
-  FormTableAddSizedEntry(phone_table, 0, 4, 4, IDS_AUTOFILL_DIALOG_FAX);
-  FormTableAddSizedEntry(phone_table, 0, 5, 4, 0);
-  FormTableAddEntry(phone_table, 0, 6, 2, 0);
+  widgets.phone1 = FormTableAddSizedEntry(phone_table, 0, 0, 4,
+                                          IDS_AUTOFILL_DIALOG_PHONE);
+  widgets.phone2 = FormTableAddSizedEntry(phone_table, 0, 1, 4, 0);
+  widgets.phone3 = FormTableAddEntry(phone_table, 0, 2, 2, 0);
+  widgets.fax1 = FormTableAddSizedEntry(phone_table, 0, 4, 4,
+                                        IDS_AUTOFILL_DIALOG_FAX);
+  widgets.fax2 = FormTableAddSizedEntry(phone_table, 0, 5, 4, 0);
+  widgets.fax3 = FormTableAddEntry(phone_table, 0, 6, 2, 0);
 
   GtkWidget* button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_DELETE_BUTTON).c_str());
@@ -434,6 +562,7 @@ GtkWidget* AutoFillDialog::AddNewAddress() {
   gtk_container_add(GTK_CONTAINER(alignment), button);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), alignment);
 
+  address_widgets_.push_back(widgets);
   return address;
 }
 
@@ -511,10 +640,11 @@ GtkWidget* AutoFillDialog::AddNewCreditCard() {
 ///////////////////////////////////////////////////////////////////////////////
 // Factory/finder method:
 
-void ShowAutoFillDialog(std::vector<AutoFillProfile>* profiles,
-                        std::vector<FormGroup>* credit_cards) {
+void ShowAutoFillDialog(AutoFillDialogObserver* observer,
+                        const std::vector<AutoFillProfile>& profiles,
+                        const std::vector<CreditCard>& credit_cards) {
   if (!dialog) {
-    dialog = new AutoFillDialog(profiles, credit_cards);
+    dialog = new AutoFillDialog(observer, profiles, credit_cards);
   }
   dialog->Show();
 }

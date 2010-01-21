@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_infobar_delegate.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -59,6 +60,12 @@ void AutoFillManager::FormFieldValuesSubmitted(
   }
 }
 
+void AutoFillManager::OnAutoFillDialogApply(
+    const std::vector<AutoFillProfile>& profiles,
+    const std::vector<CreditCard>& credit_cards) {
+  // TODO(jhawkins): Pass the profile data onto the PersonalDataManager.
+}
+
 void AutoFillManager::DeterminePossibleFieldTypes(
     FormStructure* form_structure) {
   // TODO(jhawkins): Update field text.
@@ -86,7 +93,11 @@ void AutoFillManager::OnInfoBarAccepted() {
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kAutoFillEnabled, true);
 
-  // TODO(jhawkins): AutoFillDialog
+  // TODO(jhawkins): Actually send in the real profiles and credit cards from
+  // the personal data manager.
+  std::vector<AutoFillProfile> profiles;
+  std::vector<CreditCard> credit_cards;
+  ShowAutoFillDialog(this, profiles, credit_cards);
 
   HandleSubmit();
 }
