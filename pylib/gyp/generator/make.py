@@ -653,8 +653,16 @@ class MakefileWriter:
           cd_action = 'cd %s; ' % Sourceify(self.path)
         else:
           cd_action = ''
+        # Set LD_LIBRARY_PATH in case the rule runs an executable from this
+        # build which links to shared libs from this build.
+        # rules run on the host, so they should in theory only use host
+        # libraries, but until everything is made cross-compile safe, also use
+        # target libraries.
+        # TODO(piman): when everything is cross-compile safe, remove lib.target
         self.WriteLn(
-            "cmd_%(name)s_%(count)d = %(cd_action)s%(mkdirs)s%(action)s" % {
+            "cmd_%(name)s_%(count)d = export LD_LIBRARY_PATH="
+              "$(builddir)/lib.host:$(builddir)/lib.target:$$LD_LIBRARY_PATH; "
+              "%(cd_action)s%(mkdirs)s%(action)s" % {
           'action': gyp.common.EncodePOSIXShellList(action),
           'cd_action': cd_action,
           'count': count,
