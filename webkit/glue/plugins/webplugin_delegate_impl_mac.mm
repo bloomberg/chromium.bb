@@ -8,7 +8,7 @@
 
 #include <string>
 #include <unistd.h>
-#include <vector>
+#include <set>
 
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
@@ -16,6 +16,7 @@
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
+#include "base/timer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/webplugin.h"
@@ -82,6 +83,52 @@ private:
   DISALLOW_COPY_AND_ASSIGN(ScopedActiveDelegate);
 };
 
+#ifndef NP_NO_CARBON
+class CarbonIdleEventSource {
+ public:
+  // Returns the shared Carbon idle event source.
+  static CarbonIdleEventSource* SharedInstance() {
+    DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+    static CarbonIdleEventSource* event_source = new CarbonIdleEventSource();
+    return event_source;
+  }
+
+  // Registers the plugin delegate as interested in receiving idle events.
+  void RegisterDelegate(WebPluginDelegateImpl* delegate) {
+    if (delegates_.empty()) {
+      timer_.Start(
+          base::TimeDelta::FromMilliseconds(kPluginIdleThrottleDelayMs), this,
+          &CarbonIdleEventSource::SendPluginEvents);
+    }
+    delegates_.insert(delegate);
+  }
+
+  // Removes the plugin delegate from the list of plugins receiving idle events.
+  void UnregisterDelegate(WebPluginDelegateImpl* delegate) {
+    delegates_.erase(delegate);
+    if (delegates_.empty()) {
+      timer_.Stop();
+    }
+  }
+
+ private:
+  CarbonIdleEventSource() {}
+
+  void SendPluginEvents() {
+    // TODO(stuartmorgan): Plugins that aren't visible (background tab,
+    // minimized window, etc.) should instead get events from a second, slower
+    // timer (8 times per second, rather than 50).
+    for (std::set<WebPluginDelegateImpl*>::iterator i = delegates_.begin();
+         i != delegates_.end(); ++i) {
+      (*i)->FireIdleEvent();
+    }
+  }
+
+  base::RepeatingTimer<CarbonIdleEventSource> timer_;
+  std::set<WebPluginDelegateImpl*> delegates_;
+};
+#endif  // NP_NO_CARBON
+
 }  // namespace
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
@@ -95,7 +142,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       parent_(containing_view),
       quirks_(0),
       null_event_factory_(this),
-      waiting_to_die_(false),
       last_window_x_offset_(0),
       last_window_y_offset_(0),
       last_mouse_x_(0),
@@ -146,16 +192,9 @@ void WebPluginDelegateImpl::PluginDestroyed() {
       instance()->NPP_SetWindow(&window_);
       QDFlushPortBuffer(qd_port_.port, NULL);
     }
-    DestroyInstance();
-    // We have an idle event queued up to call us back in a few ms, so don't
-    // actually delete this until it arrives.  Set |waiting_to_die_| so that
-    // OnNullEvent knows to delete this rather than call into the now-destroyed
-    // plugin.
-    waiting_to_die_ = true;
-  } else {
-    DestroyInstance();
-    delete this;
   }
+  DestroyInstance();
+  delete this;
 }
 
 void WebPluginDelegateImpl::PlatformInitialize() {
@@ -201,18 +240,17 @@ void WebPluginDelegateImpl::PlatformInitialize() {
   }
 
 #ifndef NP_NO_CARBON
-  // If the plugin wants Carbon events, fire up a source of idle events.
-  if (instance()->event_model() == NPEventModelCarbon) {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        null_event_factory_.NewRunnableMethod(
-            &WebPluginDelegateImpl::OnNullEvent), kPluginIdleThrottleDelayMs);
-  }
+  // If the plugin wants Carbon events, hook up to the source of idle events.
+  if (instance()->event_model() == NPEventModelCarbon)
+    CarbonIdleEventSource::SharedInstance()->RegisterDelegate(this);
 #endif
   plugin_->SetWindow(NULL);
+
 }
 
 void WebPluginDelegateImpl::PlatformDestroyInstance() {
-  // TODO(port): implement these after unforking.
+  if (instance()->event_model() == NPEventModelCarbon)
+    CarbonIdleEventSource::SharedInstance()->UnregisterDelegate(this);
 }
 
 void WebPluginDelegateImpl::UpdateContext(CGContextRef context) {
@@ -406,9 +444,6 @@ std::set<WebPluginDelegateImpl*> WebPluginDelegateImpl::GetActiveDelegates() {
 }
 
 void WebPluginDelegateImpl::FocusNotify(WebPluginDelegateImpl* delegate) {
-  if (waiting_to_die_)
-    return;
-
   have_focus_ = (delegate == this);
 
   ScopedActiveDelegate active_delegate(this);
@@ -837,15 +872,7 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   return ret;
 }
 
-void WebPluginDelegateImpl::OnNullEvent() {
-  if (waiting_to_die_) {
-    // if |waiting_to_die_| is set, it means that the plugin has been destroyed,
-    // and the WebPluginDelegateImpl object was just waiting for this callback
-    // to arrive.  Delete this and return to the message loop.
-    delete this;
-    return;
-  }
-
+void WebPluginDelegateImpl::FireIdleEvent() {
   // Avoid a race condition between IO and UI threads during plugin shutdown
   if (!instance_)
     return;
@@ -892,14 +919,5 @@ void WebPluginDelegateImpl::OnNullEvent() {
   // so as not to spam the renderer with an unchanging image.
   if (instance()->drawing_model() == NPDrawingModelQuickDraw)
     instance()->webplugin()->Invalidate();
-#endif
-
-#ifndef NP_NO_CARBON
-  if (instance()->event_model() == NPEventModelCarbon) {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        null_event_factory_.NewRunnableMethod(
-            &WebPluginDelegateImpl::OnNullEvent),
-        kPluginIdleThrottleDelayMs);
-  }
 #endif
 }

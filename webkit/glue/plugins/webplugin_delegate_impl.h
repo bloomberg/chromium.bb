@@ -141,6 +141,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void SetThemeCursor(ThemeCursor cursor);
   // Informs the delegate that the plugin set a Cocoa NSCursor.
   void SetNSCursor(NSCursor* cursor);
+
+  // Indicates that it's time to send the plugin a null event.
+  void FireIdleEvent();
 #endif
 
 #if !defined(OS_MACOSX)
@@ -323,9 +326,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 
 #elif defined(OS_MACOSX)
 
-  // Indicates that it's time to send the plugin a null event.
-  void OnNullEvent();
-
   // Updates the internal information about where the plugin is located on
   // the screen.
   void UpdatePluginLocation(const WebKit::WebMouseEvent& event);
@@ -340,10 +340,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 
   // Runnable Method Factory used to drip null events into the plugin.
   ScopedRunnableMethodFactory<WebPluginDelegateImpl> null_event_factory_;
-
-  // we've shut down the plugin, but can't delete ourselves until the last
-  // idle event comes in.
-  bool waiting_to_die_;
 
   // The most recently seen offset between global and browser-window-local
   // coordinates. We use this to keep the placeholder Carbon WindowRef's origin
