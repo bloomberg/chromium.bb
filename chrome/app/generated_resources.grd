@@ -3520,8 +3520,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_DEL_CACHE_CHKBOX" desc="Checkbox for deleting Cache">
         Empty the cache
       </message>
-      <message name="IDS_DEL_COOKIES_CHKBOX" desc="Checkbox for deleting Cookies">
-        Delete cookies
+      <message name="IDS_DEL_COOKIES_CHKBOX" desc="Checkbox for deleting Cookies and other site data">
+        Delete cookies and other site data
       </message>
       <message name="IDS_DEL_PASSWORDS_CHKBOX" desc="Checkbox for deleting Passwords">
         Clear saved passwords
@@ -3530,7 +3530,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Clear saved form data
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Text for OK button on dialog">
-        Clear Browsing Data
+        Clear browsing data
+      </message>
+      <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash storage settings">
+        Adobe Flash storage settings...
+      </message>
+      <message name="IDS_FLASH_STORAGE_URL" desc="URL for opening Adobe Flash storage settings - please replace en in the original URL with code matching the target language and make sure url does actually exist.">
+        http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager07.html
       </message>
       <message name="IDS_CLEAR_DATA_DAY" desc="deletion period combo box: day">
         Last day
@@ -3546,6 +3552,159 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_CLEAR_DATA_DELETING" desc="The progress message">
         Clearing...
+      </message>
+
+      <!-- Content Settings dialog data -->
+      <message name="IDS_CONTENT_SETTINGS_TITLE" desc="Title for content settings dialog">
+        Content Settings
+      </message>
+      <message name="IDS_COOKIES_TAB_LABEL" desc="Label for Cookies tab on Content Settings dialog">
+        Cookies
+      </message>
+      <message name="IDS_MODIFY_COOKIE_STORING_LABEL" desc="Label at the top of Cookies tab of Content Settings dialog">
+        Modify how cookies and other site data are saved on your computer
+      </message>
+      <message name="IDS_COOKIES_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing cookies and other site data to be stored on your computer.">
+        Allow local data to be set (recommended)
+      </message>
+      <message name="IDS_COOKIES_ASK_EVERY_TIME_RADIO" desc="A radio button in the Content Settings dialog for asking to store cookies and other site data on your computer every time.">
+        Ask me when a site tries to set data
+      </message>
+      <message name="IDS_COOKIES_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking cookies and other site data from being stored on your computer.">
+        Block sites from setting any data
+      </message>
+      <message name="IDS_COOKIES_EXCEPTIONS_BUTTON" desc="A button in the Content Settings dialog for opening cookie storing exception rules dialog.">
+        Exceptions...
+      </message>
+      <message name="IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX" desc="A checkbox in the Content Settings dialog for blocking all 3rd party cookies.">
+        Block all third-party cookies without exception
+      </message>
+      <message name="IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
+        Clear cookies and other site data when I close my browser
+      </message>
+      <message name="IDS_COOKIES_SHOW_COOKIES_BUTTON" desc="A button in the Content Settings dialog for showing cookies and other stored site data.">
+        Show cookies and other site data...
+      </message>
+      <message name="IDS_IMAGES_TAB_LABEL" desc="Label for Images tab on Content Settings dialog">
+        Images
+      </message>
+      <message name="IDS_IMAGES_SETTING_LABEL" desc="A label on top of images tab on Content Settings dialog">
+        Image Settings:
+      </message>
+      <message name="IDS_IMAGES_LOAD_RADIO" desc="A radio button in the Content Settings dialog for allowing all images to be loaded.">
+        Show all images (recommended)
+      </message>
+      <message name="IDS_IMAGES_NOLOAD_RADIO" desc="A radio button in the Content Settings dialog for preventing loading any image.">
+        Do not show any images
+      </message>
+      <message name="IDS_POPUP_TAB_LABEL" desc="Label for Pop-up Windows tab on Content Settings dialog">
+        Pop-ups
+      </message>
+      <message name="IDS_POPUP_SETTING_LABEL" desc="A label on top of Pop-up Windows tab on Content Settings dialog">
+        Pop-up Settings:
+      </message>
+      <message name="IDS_POPUP_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing pop-up windows in the browser.">
+        Allow all sites to show pop-ups
+      </message>
+      <message name="IDS_POPUP_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for preventing showing pop-up windows on any sites.">
+        Do not allow any site to show pop-ups (recommended)
+      </message>
+      <message name="IDS_PLUGIN_TAB_LABEL" desc="Label for Plug-ins tab on Content Settings dialog">
+        Plug-ins
+      </message>
+      <message name="IDS_PLUGIN_SETTING_LABEL" desc="A label on top of Plug-Ins tab on Content Settings dialog">
+        Plug-in Settings:
+      </message>
+      <message name="IDS_PLUGIN_LOAD_RADIO" desc="A radio button in the Content Settings dialog for allowing plug-ins use on any site.">
+        Allow all sites to use plug-ins (recommended)
+      </message>
+      <message name="IDS_PLUGIN_NOLOAD_RADIO" desc="A radio button in the Content Settings dialog for preventing plug-ins use on any site.">
+        Do not allow any site to use plug-ins
+      </message>
+      <message name="IDS_JAVASCRIPT_TAB_LABEL" desc="Label for JavaScript tab on Content Settings dialog">
+        JavaScript
+      </message>
+      <message name="IDS_JS_SETTING_LABEL" desc="A label on top of JavaScript tab on Content Settings dialog">
+        JavaScript Settings:
+      </message>
+      <message name="IDS_JS_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing JavaScript use on any site.">
+        Allow all sites to run JavaScript (recommended)
+      </message>
+      <message name="IDS_JS_DONOTALLOW_RADIO" desc="A radio button in the Content Settings dialog for preventing JavaScript use on any site.">
+        Do not allow any site to run JavaScript
+      </message>
+
+      <!-- Cookie/Images/JavaScript/Plugins exception dialogs -->
+      <message name="IDS_COOKIE_EXCEPTION_TITLE" desc="Title for cookie exceptions dialog">
+        Cookie Exceptions
+      </message>
+      <message name="IDS_IMAGES_EXCEPTION_TITLE" desc="Title for images exceptions dialog">
+        Image Exceptions
+      </message>
+      <message name="IDS_PLUGINS_EXCEPTION_TITLE" desc="Title for plugin exceptions dialog">
+        Plug-in Exceptions
+      </message>
+      <message name="IDS_JS_EXCEPTION_TITLE" desc="Title for JavaScript exceptions dialog">
+        JavaScript Exceptions
+      </message>
+      <message name="IDS_POPUP_EXCEPTION_TITLE" desc="Title for pop-up exceptions dialog">
+        Pop-up Exceptions
+      </message>
+      <message name="IDS_EXCEPTIONS_ADD_BUTTON" desc="A button in the cookie/image/javascript/plugins exceptions dialog for adding new exception rules.">
+        Add...
+      </message>
+      <message name="IDS_EXCEPTIONS_REMOVE_BUTTON" desc="A button in exception dialogs for removing individual exception rules.">
+        Remove
+      </message>
+      <message name="IDS_EXCEPTIONS_REMOVEALL_BUTTON" desc="A button in exception dialogs for removing all exception rules.">
+        Remove All
+      </message>
+      <message name="IDS_EXCEPTIONS_ALLOW_BUTTON" desc="A button in exception dialogs for allowing an exception rule for a given domain.">
+        Allow
+      </message>
+      <message name="IDS_EXCEPTIONS_ASK_BUTTON" desc="A button in exception dialogs for prompting for exception permission for a given domain.">
+        Ask
+      </message>
+      <message name="IDS_EXCEPTIONS_BLOCK_BUTTON" desc="A button in the cookie/image/javascript/plugins exceptions dialog for blocking cookie/image/javascript/plugins for given domain name.">
+        Block
+      </message>
+
+      <!-- Cookie alert dialog -->
+      <message name="IDS_COOKIE_ALERT_TITLE" desc="Format string for cookie alert dialog title">
+        Cookie from <ph name="HOST">%s<ex>www.google.com</ex></ph>
+      </message>
+      <message name="IDS_DATA_ALERT_TITLE" desc="Format string for data storing alert dialog title">
+        Data from <ph name="HOST">%s<ex>www.google.com</ex></ph>
+      </message>
+      <message name="IDS_COOKIE_ALERT_LABEL" desc="Format string for a label on top of cookie alert dialog">
+        <ph name="HOST">%s<ex>www.google.com</ex></ph> wants to create a cookie on your computer.
+      </message>
+      <message name="IDS_DATA_ALERT_LABEL" desc="Format string for a label on top of data storing alert dialog">
+        <ph name="HOST">%s<ex>www.google.com</ex></ph> wants to set data on your computer.
+      </message>
+      <message name="IDS_COOKIE_ALERT_REMEMBER_RADIO" desc="Format string for a radio button for accepting all cookies on cookie alert dialog">
+        Remember my choice for all cookies and site data from <ph name="HOST">%s<ex>www.google.com</ex></ph>
+      </message>
+      <message name="IDS_COOKIE_ALERT_ASK_RADIO" desc="A radio button label for asking for cookie storing permission every time.">
+        Ask me every time
+      </message>
+      <message name="IDS_COOKIE_ALERT_ALLOW_BUTTON" desc="A button in cookie alert dialog for allowing a cookie to be stored on your computer.">
+        Allow
+      </message>
+      <message name="IDS_COOKIE_ALERT_BLOCK_BUTTON" desc="A button in cookie alert dialog for blocking a cookie from being stored on your computer.">
+        Block
+      </message>
+      <message name="IDS_COOKIE_SHOW_DETAILS_LABEL" desc="A link title for showing cookie details">
+        Show details
+      </message>
+      <message name="IDS_COOKIE_HIDE_DETAILS_LABEL" desc="A link title for hidding cookie details">
+        Hide details
+      </message>
+      <message name="IDS_COOKIE_MANAGE_ALERTS_LABEL" desc="A link title for managing alerts and exceptions">
+        Manage these alerts and exceptions
+      </message>
+      <message name="IDS_COOKIE_EXPIRES_PULLDOWN_OPTION" desc="An option for expiration date in cookie details dialog to force a cookie to be deleted at the end of the session">
+        When I close my browser
       </message>
 
       <!-- Automatic updates -->
@@ -4788,7 +4947,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Import:
       </message>
       <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="Label for the import data button.">
-        Import data...
+        Import data from another browser...
       </message>
       <message name="IDS_OPTIONS_CLEAR_DATA_GROUP_NAME" desc="The title of the 'Clear data' group.">
         Clear Data:
@@ -4823,7 +4982,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Cookies
       </message>
       <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
-        Cookies and Website Permissions
+        Cookies and Other Data
       </message>
       <message name="IDS_COOKIES_SEARCH_LABEL" desc="The label of the 'Search:' label in the Cookies window">
         Search:
@@ -5583,6 +5742,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SAVE_PAGE_PROGRESS" desc="Text string for saving page progress, the number of saved files and total files">
         <ph name="SAVED_FILES">$1<ex>5</ex></ph> / <ph name="TOTAL_FILES">$2<ex>13</ex></ph> files
+      </message>
+
+      <message name="IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON" desc="Text for content settings button in Privacy options">
+        Content settings...
+      </message>
+      <message name="IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON" desc="Text for clear browsing data dialog in Privacy options">
+        Clear browsing data...
       </message>
 
       <message name="IDS_OPTIONS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference">
