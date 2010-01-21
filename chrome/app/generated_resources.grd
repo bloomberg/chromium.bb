@@ -6441,6 +6441,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_PASSWORD">
         Network Password
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TEXT_INPUT">
+        Text Input
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
         Timezone:
       </message>

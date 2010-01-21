@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/language_library.h"
 #include "chrome/browser/chromeos/network_library.h"
 #include "chrome/browser/chromeos/password_dialog_view.h"
 #include "chrome/browser/profile.h"
@@ -581,6 +582,101 @@ void TouchpadSection::NotifyPrefChanged(const std::wstring* pref_name) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TextInputSection
+
+// This is a checkbox associated with input language information.
+class LanguageCheckbox : public views::Checkbox {
+ public:
+  explicit LanguageCheckbox(const InputLanguage& language)
+      : views::Checkbox(UTF8ToWide(language.display_name)),
+        language_(language) {
+  }
+
+  const InputLanguage& language() const {
+    return language_;
+  }
+
+ private:
+  InputLanguage language_;
+  DISALLOW_COPY_AND_ASSIGN(LanguageCheckbox);
+};
+
+// TextInput section for text input settings.
+class TextInputSection : public SettingsContentsSection,
+                         public views::ButtonListener {
+ public:
+  explicit TextInputSection(Profile* profile);
+  virtual ~TextInputSection() {}
+
+ private:
+  // Overridden from SettingsContentsSection:
+  virtual void InitContents(GridLayout* layout);
+
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event);
+  DISALLOW_COPY_AND_ASSIGN(TextInputSection);
+};
+
+TextInputSection::TextInputSection(Profile* profile)
+    : SettingsContentsSection(profile,
+                              IDS_OPTIONS_SETTINGS_SECTION_TITLE_TEXT_INPUT) {
+}
+
+void TextInputSection::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
+  LanguageCheckbox* checkbox = static_cast<LanguageCheckbox*>(sender);
+  const InputLanguage& language = checkbox->language();
+  // Check if the checkbox is now being checked.
+  if (checkbox->checked()) {
+    // Try to activate the language.
+    if (!LanguageLibrary::Get()->ActivateLanguage(language.category,
+                                                  language.id)) {
+      // Activation should never fail (failure means something is broken),
+      // but if it fails we just revert the checkbox and ignore the error.
+      // TODO(satorux): Implement a better error handling if it becomes
+      // necessary.
+      checkbox->SetChecked(false);
+      LOG(ERROR) << "Failed to activate language: " << language.display_name;
+    }
+  } else {
+    // Try to deactivate the language.
+    if (!LanguageLibrary::Get()->DeactivateLanguage(language.category,
+                                                    language.id)) {
+      // See a comment above about the activation failure.
+      checkbox->SetChecked(true);
+      LOG(ERROR) << "Failed to deactivate language: " << language.display_name;
+    }
+  }
+}
+
+void TextInputSection::InitContents(GridLayout* layout) {
+  // GetActiveLanguages() and GetSupportedLanguages() never return NULL.
+  scoped_ptr<InputLanguageList> active_language_list(
+      LanguageLibrary::Get()->GetActiveLanguages());
+  scoped_ptr<InputLanguageList> supported_language_list(
+      LanguageLibrary::Get()->GetSupportedLanguages());
+
+  for (size_t i = 0; i < supported_language_list->size(); ++i) {
+    const InputLanguage& language = supported_language_list->at(i);
+    // Check if |language| is active. Note that active_language_list is
+    // small (usually a couple), so scanning here is fine.
+    const bool language_is_active =
+        (std::find(active_language_list->begin(),
+                   active_language_list->end(),
+                   language) != active_language_list->end());
+    // Create a checkbox.
+    LanguageCheckbox* checkbox = new LanguageCheckbox(language);
+    checkbox->SetChecked(language_is_active);
+    checkbox->set_listener(this);
+
+    // Add the checkbox to the layout manager.
+    layout->StartRow(0, single_column_view_set_id());
+    layout->AddView(checkbox);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // SettingsContentsView
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -604,6 +700,9 @@ void SettingsContentsView::InitControlLayout() {
 //  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new TouchpadSection(profile()));
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(new TextInputSection(profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 }
 
