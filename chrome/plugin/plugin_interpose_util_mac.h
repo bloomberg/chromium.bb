@@ -42,6 +42,9 @@ void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds);
 void NotifyPluginOfSetThemeCursor(WebPluginDelegateImpl* delegate,
                                   ThemeCursor cursor);
 
+// Returns true if the window containing the given plugin delegate is focused.
+bool GetPluginWindowHasFocus(const WebPluginDelegateImpl* delegate);
+
 }  // namespace MacPluginInterpose
 
 #endif  // CHROME_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_

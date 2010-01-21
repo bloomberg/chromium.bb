@@ -102,6 +102,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       last_mouse_y_(0),
       have_focus_(false),
       focus_notifier_(NULL),
+      containing_window_has_focus_(false),
       handle_event_depth_(0),
       user_gesture_message_posted_(this),
       user_gesture_msg_factory_(this) {
@@ -387,6 +388,11 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
 
   NPError err = instance()->NPP_SetWindow(&window_);
 
+  // TODO(stuartmorgan): Once we are getting window information via IPC, use
+  // that to set the right value. For now, just pretend plugins are always in
+  // active windows so they don't throw away events.
+  SetWindowHasFocus(true);
+
   DCHECK(err == NPERR_NO_ERROR);
 }
 
@@ -434,6 +440,19 @@ void WebPluginDelegateImpl::SetFocus() {
     focus_notifier_(this);
   else
     FocusNotify(this);
+}
+
+void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
+  containing_window_has_focus_ = has_focus;
+
+  if (instance()->event_model() == NPEventModelCocoa) {
+    ScopedActiveDelegate active_delegate(this);
+    NPCocoaEvent focus_event;
+    memset(&focus_event, 0, sizeof(focus_event));
+    focus_event.type = NPCocoaEventWindowFocusChanged;
+    focus_event.data.focus.hasFocus = has_focus;
+    instance()->NPP_HandleEvent(reinterpret_cast<NPEvent*>(&focus_event));
+  }
 }
 
 void WebPluginDelegateImpl::SetThemeCursor(ThemeCursor cursor) {

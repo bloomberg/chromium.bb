@@ -75,6 +75,11 @@ void NotifyPluginOfSetThemeCursor(WebPluginDelegateImpl* delegate,
   delegate->SetThemeCursor(cursor);
 }
 
+__attribute__((visibility("default")))
+bool GetPluginWindowHasFocus(const WebPluginDelegateImpl* delegate) {
+  return delegate->GetWindowHasFocus();
+}
+
 }  // namespace mac_plugin_interposing
 
 #pragma mark -

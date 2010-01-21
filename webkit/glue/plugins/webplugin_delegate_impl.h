@@ -133,6 +133,10 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void SetFocusNotifier(void (*notifier)(WebPluginDelegateImpl*)) {
     focus_notifier_ = notifier;
   }
+  // Informs the plugin that the window it is in has gained or lost focus.
+  void SetWindowHasFocus(bool has_focus);
+  // Returns whether or not the window the plugin is in has focus.
+  bool GetWindowHasFocus() const { return containing_window_has_focus_; }
   // Informs the delegate that the plugin set a Carbon ThemeCursor.
   void SetThemeCursor(ThemeCursor cursor);
   // Informs the delegate that the plugin set a Cocoa NSCursor.
@@ -355,6 +359,8 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   bool have_focus_;
   // A function to call when we want to accept keyboard focus
   void (*focus_notifier_)(WebPluginDelegateImpl* notifier);
+
+  bool containing_window_has_focus_;
 #endif
 
   // Called by the message filter hook when the plugin enters a modal loop.

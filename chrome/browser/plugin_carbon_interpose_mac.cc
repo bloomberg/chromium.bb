@@ -19,10 +19,7 @@ static bool IsModalWindow(WindowRef window) {
 }
 
 static bool IsContainingWindowActive(const WebPluginDelegateImpl* delegate) {
-  // TODO(stuartmorgan): We need a way to find out if the delegate is in the
-  // active window; for now we just lie and always say yes so plugins don't
-  // throw events away.
-  return true;
+  return mac_plugin_interposing::GetPluginWindowHasFocus(delegate);
 }
 
 static CGRect CGRectForWindow(WindowRef window) {
