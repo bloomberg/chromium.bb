@@ -168,7 +168,13 @@ public:
     SocketAddress addr2(addr);
     if (addr2.IsUnresolved()) {
       LOG(INFO) << "Resolving addr in PhysicalSocket::Connect";
-      addr2.Resolve(); // TODO: Do this async later?
+      // TODO: Do this async later?
+      if (!addr2.Resolve()) {
+        LOG(LS_ERROR) << "Resolving addr failed";
+        UpdateLastError();
+        Close();
+        return SOCKET_ERROR;
+      }
     }
     sockaddr_in saddr;
     addr2.ToSockAddr(&saddr);

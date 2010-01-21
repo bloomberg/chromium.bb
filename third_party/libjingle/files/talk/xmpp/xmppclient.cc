@@ -259,6 +259,8 @@ int
 XmppClient::ProcessStartXmppLogin() {
   // Done with pre-connect tasks - connect!
   if (!d_->socket_->Connect(d_->server_)) {
+    d_->pre_engine_error_ = XmppEngine::ERROR_SOCKET;
+    d_->pre_engine_subcode_ = d_->socket_->GetError();
     EnsureClosed();
     return STATE_ERROR;
   }
