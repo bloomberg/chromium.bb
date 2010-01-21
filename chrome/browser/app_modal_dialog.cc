@@ -131,10 +131,15 @@ void AppModalDialog::Cleanup() {
     // destroying it.
     if (tab_contents_)
       tab_contents_->OnMessageBoxClosed(reply_msg_, false, L"");
+// The extension_host_ will always be a dirty pointer on OS X because the alert
+// window will cause the extension popup to close since it is resigning its key
+// state, destroying the host. http://crbug.com/29355
+#if !defined(OS_MACOSX)
     else if (extension_host_)
       extension_host_->OnMessageBoxClosed(reply_msg_, false, L"");
     else
       NOTREACHED();
+#endif
   }
   NotificationService::current()->Notify(
     NotificationType::APP_MODAL_DIALOG_CLOSED,
