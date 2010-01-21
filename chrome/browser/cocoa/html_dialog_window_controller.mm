@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/html_dialog_window_controller.h"
 
 #include "base/gfx/size.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
@@ -176,6 +177,25 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char)
     return;
+
+  // Close ourselves if the user hits Esc or Command-. .  The normal
+  // way to do this is to implement (void)cancel:(int)sender, but
+  // since we handle keyboard events ourselves we can't do that.
+  //
+  // According to experiments, hitting Esc works regardless of the
+  // presence of other modifiers (as long as it's not an app-level
+  // shortcut, e.g. Commmand-Esc for Front Row) but no other modifiers
+  // can be present for Command-. to work.
+  //
+  // TODO(thakis): It would be nice to get cancel: to work somehow.
+  // Bug: http://code.google.com/p/chromium/issues/detail?id=32828 .
+  if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
+      ((event.windowsKeyCode == base::VKEY_ESCAPE) ||
+       (event.windowsKeyCode == base::VKEY_OEM_PERIOD &&
+        event.modifiers == NativeWebKeyboardEvent::MetaKey))) {
+    [controller_ close];
+    return;
+  }
 
   ChromeEventProcessingWindow* event_window =
       static_cast<ChromeEventProcessingWindow*>([controller_ window]);
