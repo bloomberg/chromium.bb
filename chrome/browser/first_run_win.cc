@@ -835,7 +835,9 @@ class TryChromeDialog : public views::ButtonListener,
     // account the differences between XP and Vista fonts and buttons.
     layout->Layout(root_view);
     gfx::Size preferred = layout->GetPreferredSize(root_view);
-    pos = ComputeWindowPosition(preferred.width(), preferred.height());
+    pos = ComputeWindowPosition(preferred.width(),
+                                preferred.height(),
+                                root_view->UILayoutIsRightToLeft());
     popup->SetBounds(pos);
 
     // Carve the toast shape into the window.
@@ -884,8 +886,10 @@ class TryChromeDialog : public views::ButtonListener,
 
   // Returns a screen rectangle that is fit to show the window. In particular
   // it has the following properties: a) is visible and b) is attached to
-  // the bottom of the working area.
-  gfx::Rect ComputeWindowPosition(int width, int height) {
+  // the bottom of the working area. For LTR machines it returns a left side
+  // rectangle and for RTL it returns a right side rectangle so that the
+  // dialog does not compete with the standar place of the start menu.
+  gfx::Rect ComputeWindowPosition(int width, int height, bool is_RTL) {
     // The 'Shell_TrayWnd' is the taskbar. We like to show our window in that
     // monitor if we can. This code works even if such window is not found.
     HWND taskbar = ::FindWindowW(L"Shell_TrayWnd", NULL);
@@ -898,7 +902,7 @@ class TryChromeDialog : public views::ButtonListener,
     }
     // The |rcWork| is the work area. It should account for the taskbars that
     // are in the screen when we called the function.
-    int left = info.rcWork.right - width;
+    int left = is_RTL ? info.rcWork.left : info.rcWork.right - width;
     int top = info.rcWork.bottom - height;
     return gfx::Rect(left, top, width, height);
   }
