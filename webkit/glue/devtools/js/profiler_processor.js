@@ -147,42 +147,58 @@ devtools.profiler.JsProfile.prototype.skipThisFunction = function(name) {
  * @constructor
  */
 devtools.profiler.Processor = function() {
-  devtools.profiler.LogReader.call(this, {
-      'code-creation': {
-          parsers: [null, this.createAddressParser('code'), parseInt, null],
-          processor: this.processCodeCreation_, backrefs: true,
-          needsProfile: true },
-      'code-move': { parsers: [this.createAddressParser('code'),
-          this.createAddressParser('code-move-to')],
-          processor: this.processCodeMove_, backrefs: true,
-          needsProfile: true },
-      'code-delete': { parsers: [this.createAddressParser('code')],
-          processor: this.processCodeDelete_, backrefs: true,
-          needsProfile: true },
-      'tick': { parsers: [this.createAddressParser('code'),
-          this.createAddressParser('stack'), parseInt, 'var-args'],
-          processor: this.processTick_, backrefs: true, needProfile: true },
-      'profiler': { parsers: [null, 'var-args'],
-          processor: this.processProfiler_, needsProfile: false },
-      'heap-sample-begin': { parsers: [null, null, parseInt],
-          processor: this.processHeapSampleBegin_ },
-      'heap-sample-stats': { parsers: [null, null, parseInt, parseInt],
-          processor: this.processHeapSampleStats_ },
-      'heap-sample-item': { parsers: [null, parseInt, parseInt],
-          processor: this.processHeapSampleItem_ },
-      'heap-js-cons-item': { parsers: [null, parseInt, parseInt],
-          processor: this.processHeapJsConsItem_ },
-      'heap-js-ret-item': { parsers: [null, 'var-args'],
-          processor: this.processHeapJsRetItem_ },
-      'heap-sample-end': { parsers: [null, null],
-          processor: this.processHeapSampleEnd_ },
-      // Not used in DevTools Profiler.
-      'shared-library': null,
-      // Obsolete row types.
-      'code-allocate': null,
-      'begin-code-region': null,
-      'end-code-region': null});
+  var dispatches = {
+    'code-creation': {
+        parsers: [null, this.createAddressParser('code'), parseInt, null],
+        processor: this.processCodeCreation_, backrefs: true,
+        needsProfile: true },
+    'code-move': { parsers: [this.createAddressParser('code'),
+        this.createAddressParser('code-move-to')],
+        processor: this.processCodeMove_, backrefs: true,
+        needsProfile: true },
+    'code-delete': { parsers: [this.createAddressParser('code')],
+        processor: this.processCodeDelete_, backrefs: true,
+        needsProfile: true },
+    'function-creation': { parsers: [this.createAddressParser('code'),
+        this.createAddressParser('function-obj')],
+        processor: this.processFunctionCreation_, backrefs: true },
+    'function-move': { parsers: [this.createAddressParser('code'),
+        this.createAddressParser('code-move-to')],
+        processor: this.processFunctionMove_, backrefs: true },
+    'function-delete': { parsers: [this.createAddressParser('code')],
+        processor: this.processFunctionDelete_, backrefs: true },
+    'tick': { parsers: [this.createAddressParser('code'),
+        this.createAddressParser('stack'), parseInt, 'var-args'],
+        processor: this.processTick_, backrefs: true, needProfile: true },
+    'profiler': { parsers: [null, 'var-args'],
+        processor: this.processProfiler_, needsProfile: false },
+    'heap-sample-begin': { parsers: [null, null, parseInt],
+        processor: this.processHeapSampleBegin_ },
+    'heap-sample-stats': { parsers: [null, null, parseInt, parseInt],
+        processor: this.processHeapSampleStats_ },
+    'heap-sample-item': { parsers: [null, parseInt, parseInt],
+        processor: this.processHeapSampleItem_ },
+    'heap-js-cons-item': { parsers: [null, parseInt, parseInt],
+        processor: this.processHeapJsConsItem_ },
+    'heap-js-ret-item': { parsers: [null, 'var-args'],
+        processor: this.processHeapJsRetItem_ },
+    'heap-sample-end': { parsers: [null, null],
+        processor: this.processHeapSampleEnd_ },
+    // Not used in DevTools Profiler.
+    'shared-library': null,
+    // Obsolete row types.
+    'code-allocate': null,
+    'begin-code-region': null,
+    'end-code-region': null};
 
+  if (devtools.profiler.Profile.VERSION == 2) {
+    dispatches['tick'] =  { parsers: [this.createAddressParser('code'),
+        this.createAddressParser('stack'),
+        this.createAddressParser('func'), parseInt, 'var-args'],
+        processor: this.processTickV2_, backrefs: true };
+  }
+
+  devtools.profiler.LogReader.call(this, dispatches);
 
   /**
    * Callback that is called when a new profile is encountered in the log.
@@ -373,11 +389,52 @@ devtools.profiler.Processor.prototype.processCodeDelete_ = function(start) {
 };
 
 
+devtools.profiler.Processor.prototype.processFunctionCreation_ = function(
+    functionAddr, codeAddr) {
+  this.currentProfile_.addCodeAlias(functionAddr, codeAddr);
+};
+
+
+devtools.profiler.Processor.prototype.processFunctionMove_ =
+    function(from, to) {
+  this.currentProfile_.safeMoveDynamicCode(from, to);
+};
+
+
+devtools.profiler.Processor.prototype.processFunctionDelete_ = function(start) {
+  this.currentProfile_.safeDeleteDynamicCode(start);
+};
+
+
+// TODO(mnaganov): Remove after next V8 roll.
 devtools.profiler.Processor.prototype.processTick_ = function(
     pc, sp, vmState, stack) {
   // see the comment for devtools.profiler.Processor.PROGRAM_ENTRY
   stack.push(devtools.profiler.Processor.PROGRAM_ENTRY_STR);
   this.currentProfile_.recordTick(this.processStack(pc, stack));
+  this.ticksCount_++;
+};
+
+
+devtools.profiler.Processor.prototype.processTickV2_ = function(
+    pc, sp, func, vmState, stack) {
+  // see the comment for devtools.profiler.Processor.PROGRAM_ENTRY
+  stack.push(devtools.profiler.Processor.PROGRAM_ENTRY_STR);
+
+
+  if (func) {
+    var funcEntry = this.currentProfile_.findEntry(func);
+    if (!funcEntry || !funcEntry.isJSFunction || !funcEntry.isJSFunction()) {
+      func = 0;
+    } else {
+      var currEntry = this.currentProfile_.findEntry(pc);
+      if (!currEntry || !currEntry.isJSFunction || currEntry.isJSFunction()) {
+        func = 0;
+      }
+    }
+  }
+
+  this.currentProfile_.recordTick(this.processStack(pc, func, stack));
   this.ticksCount_++;
 };
 
