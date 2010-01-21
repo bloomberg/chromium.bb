@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMockObjectTests.m 54 2009-08-18 06:27:36Z erik $
+//  $Id: OCMockObjectTests.m 55 2009-10-16 06:42:18Z erik $
 //  Copyright (c) 2004-2008 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -214,6 +214,36 @@ static NSString *TestNotification = @"TestNotification";
     NSRange otherRange = NSMakeRange(0,10);
 	[[mock stub] substringWithRange:range];
 	STAssertThrows([mock substringWithRange:otherRange], @"Should have raised an exception.");	
+}
+
+
+- (void)testCanPassMocksAsArguments
+{
+	id mockArg = [OCMockObject mockForClass:[NSString class]];
+	[[mock stub] stringByAppendingString:[OCMArg any]];
+	[mock stringByAppendingString:mockArg];
+}
+
+- (void)testCanStubWithMockArguments
+{
+	id mockArg = [OCMockObject mockForClass:[NSString class]];
+	[[mock stub] stringByAppendingString:mockArg];
+	[mock stringByAppendingString:mockArg];
+}
+
+- (void)testRaisesExceptionWhenStubbedMockArgIsNotUsed
+{
+	id mockArg = [OCMockObject mockForClass:[NSString class]];
+	[[mock stub] stringByAppendingString:mockArg];
+	STAssertThrows([mock stringByAppendingString:@"foo"], @"Should have raised an exception.");
+}
+
+- (void)testRaisesExceptionWhenDifferentMockArgumentIsPassed
+{
+	id expectedArg = [OCMockObject mockForClass:[NSString class]];
+	id otherArg = [OCMockObject mockForClass:[NSString class]];
+	[[mock stub] stringByAppendingString:otherArg];
+	STAssertThrows([mock stringByAppendingString:expectedArg], @"Should have raised an exception.");	
 }
 
 

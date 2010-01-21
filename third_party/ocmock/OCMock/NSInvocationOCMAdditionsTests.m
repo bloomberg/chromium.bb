@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: NSInvocationOCMAdditionsTests.m 26 2008-05-08 17:06:47Z erik $
+//  $Id: NSInvocationOCMAdditionsTests.m 55 2009-10-16 06:42:18Z erik $
 //  Copyright (c) 2006-2008 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -68,7 +68,7 @@
 - (void)testInvocationDescriptionWithArrayArgument
 {
 	SEL selector = @selector(addObjectsFromArray:);
-	NSMethodSignature *signature = [[NSArray array] methodSignatureForSelector:selector];
+	NSMethodSignature *signature = [[NSMutableArray array] methodSignatureForSelector:selector];
 	NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
 	[invocation setSelector:selector];
 	// Give it one argument (starts at index 2)

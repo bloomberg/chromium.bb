@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: NSInvocation+OCMAdditions.h 50 2009-07-16 06:48:19Z erik $
+//  $Id: NSInvocation+OCMAdditions.h 55 2009-10-16 06:42:18Z erik $
 //  Copyright (c) 2006-2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -7,11 +7,11 @@
 
 @interface NSInvocation(OCMAdditions)
 
-- (id)getArgumentAtIndexAsObject:(int)index;
+- (id)getArgumentAtIndexAsObject:(int)argIndex;
 
 - (NSString *)invocationDescription;
 
-- (NSString *)argumentDescriptionAtIndex:(int)index;
+- (NSString *)argumentDescriptionAtIndex:(int)argIndex;
 
 - (NSString *)objectDescriptionAtIndex:(int)anInt;
 - (NSString *)charDescriptionAtIndex:(int)anInt;
