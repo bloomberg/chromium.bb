@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "net/base/load_log.h"
 #include "net/base/net_errors.h"
@@ -189,6 +190,15 @@ int TCPClientSocketPool::RequestSocket(
     LoadLog* load_log) {
   const HostResolver::RequestInfo* casted_resolve_info =
       static_cast<const HostResolver::RequestInfo*>(resolve_info);
+
+  if (LoadLog::IsUnbounded(load_log)) {
+    LoadLog::AddString(
+        load_log,
+        StringPrintf("Requested TCP socket to: %s [port %d]",
+                     casted_resolve_info->hostname().c_str(),
+                     casted_resolve_info->port()));
+  }
+
   return base_.RequestSocket(
       group_name, *casted_resolve_info, priority, handle, callback, load_log);
 }
