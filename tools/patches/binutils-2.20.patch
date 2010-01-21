@@ -1222,7 +1222,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	return 0;
      }
    return 1;
-@@ -5048,7 +5140,7 @@
+@@ -5048,7 +5136,7 @@
  	      && !i.types[1].bitfield.control)
  	    abort ();
  	  i.rex &= ~(REX_R | REX_B);
@@ -1231,7 +1231,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	}
      }
    else
-@@ -5560,19 +5652,217 @@
+@@ -5560,19 +5652,265 @@
  }
  
  static void
@@ -1361,34 +1361,78 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
 +static void
 +insert_add_sp_sandbox_code (offsetT insn_start_off)
 +{
-+  char *p = frag_more(2);
-+  if (imm_size (0) == 1)
-+    p[0] = 0x83; // ADD imm8, %esp
++  char *p;
++  if (i.reg_operands == 2)
++    {
++      if (i.rex & REX_B)
++	{
++	  p = frag_more (3);
++	  p[0] = 0x40 | (i.rex & REX_R);
++	  p[1] = 0x01;
++	  p[2] = 0xc4 + (i.rm.regmem << 3); // ADD %rXX, %esp
++	  i.rex &= ~REX_B;
++	  i.prefix[REX_PREFIX] &= ~REX_B;
++	}
++      else
++	{
++	  p = frag_more (2);
++	  p[0] = 0x01;
++	  p[1] = 0xc4 + (i.rm.regmem << 3); // ADD %rXX, %esp
++	}
++    }
 +  else
-+    p[0] = 0x81; // ADD imm32, %esp
-+  p[1] = 0xc4;
-+  output_imm (frag_now, insn_start_off);
++    {
++      p = frag_more(2);
++      if (imm_size (0) == 1)
++	p[0] = 0x83; // ADD imm8, %esp
++      else
++	p[0] = 0x81; // ADD imm32, %esp
++      p[1] = 0xc4;
++      output_imm (frag_now, insn_start_off);
++      // Immediate was already used
++      i.imm_operands = 0;
++    }
 +  // Second operand is SP
 +  i.rm.regmem = 4;
-+  // Immediate was already used
-+  i.imm_operands = 0;
 +}
 +
 +
 +static void
 +insert_sub_sp_sandbox_code (offsetT insn_start_off)
 +{
-+  char *p = frag_more(2);
-+  if (imm_size (0) == 1)
-+    p[0] = 0x83; // ADD imm8, %esp
++  char *p;
++  if (i.reg_operands == 2)
++    {
++      if (i.rex & REX_B)
++	{
++	  p = frag_more (3);
++	  p[0] = 0x40 | (i.rex & REX_R);
++	  p[1] = 0x29;
++	  p[2] = 0xc4 + (i.rm.regmem << 3); // ADD %rXX, %esp
++	  i.rex &= ~REX_B;
++	  i.prefix[REX_PREFIX] &= ~REX_B;
++	}
++      else
++	{
++	  p = frag_more (2);
++	  p[0] = 0x29;
++	  p[1] = 0xc4 + (i.rm.regmem << 3); // ADD %rXX, %esp
++	}
++    }
 +  else
-+    p[0] = 0x81; // ADD imm32, %esp
-+  p[1] = 0xec;
-+  output_imm (frag_now, insn_start_off);
++    {
++      p = frag_more(2);
++      if (imm_size (0) == 1)
++	p[0] = 0x83; // SUB imm8, %esp
++      else
++	p[0] = 0x81; // SUB imm32, %esp
++      p[1] = 0xec;
++      output_imm (frag_now, insn_start_off);
++      // Immediate was already used
++      i.imm_operands = 0;
++    }
 +  // Second operand is SP
 +  i.rm.regmem = 4;
-+  // Immediate was already used
-+  i.imm_operands = 0;
 +}
 +
 +
@@ -1450,7 +1494,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
    /* Output jumps.  */
    if (i.tm.opcode_modifier.jump)
      output_branch ();
-@@ -5612,10 +5902,10 @@
+@@ -5612,10 +5950,10 @@
  		      if (prefix != REPE_PREFIX_OPCODE
  			  || (i.prefix[LOCKREP_PREFIX]
  			      != REPE_PREFIX_OPCODE))
@@ -1463,7 +1507,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  		}
  	      break;
  	    case 1:
-@@ -5624,6 +5914,10 @@
+@@ -5624,6 +5962,10 @@
  	      abort ();
  	    }
  
@@ -1474,7 +1518,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	  /* The prefix bytes.  */
  	  for (j = ARRAY_SIZE (i.prefix), q = i.prefix; j > 0; j--, q++)
  	    if (*q)
-@@ -5700,10 +5994,18 @@
+@@ -5700,10 +6042,18 @@
  	}
  
        if (i.disp_operands)
@@ -1493,7 +1537,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      }
  
  #ifdef DEBUG386
-@@ -5712,6 +6014,74 @@
+@@ -5712,6 +6062,74 @@
        pi ("" /*line*/, &i);
      }
  #endif /* DEBUG386  */
@@ -1568,7 +1612,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  }
  
  /* Return the size of the displacement operand N.  */
-@@ -6858,8 +7228,44 @@
+@@ -6858,8 +7276,44 @@
      }
    else if (*op_string == REGISTER_PREFIX)
      {
@@ -1615,7 +1659,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      }
    else if (*op_string == IMMEDIATE_PREFIX)
      {
-@@ -7725,6 +8131,8 @@
+@@ -7725,6 +8179,8 @@
  #define OPTION_MOLD_GCC (OPTION_MD_BASE + 9)
  #define OPTION_MSSE2AVX (OPTION_MD_BASE + 10)
  #define OPTION_MSSE_CHECK (OPTION_MD_BASE + 11)
@@ -1624,7 +1668,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
  struct option md_longopts[] =
  {
-@@ -7743,6 +8151,8 @@
+@@ -7743,6 +8199,8 @@
    {"mold-gcc", no_argument, NULL, OPTION_MOLD_GCC},
    {"msse2avx", no_argument, NULL, OPTION_MSSE2AVX},
    {"msse-check", required_argument, NULL, OPTION_MSSE_CHECK},
@@ -1633,7 +1677,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
    {NULL, no_argument, NULL, 0}
  };
  size_t md_longopts_size = sizeof (md_longopts);
-@@ -7953,6 +8363,20 @@
+@@ -7953,6 +8411,20 @@
  	as_fatal (_("Invalid -msse-check= option: `%s'"), arg);
        break;
  
@@ -1654,7 +1698,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      default:
        return 0;
      }
-@@ -8597,4 +9021,25 @@
+@@ -8597,4 +9069,25 @@
        bss_section = saved_bss_section;
      }
  }
@@ -2833,7 +2877,7 @@ diff -uNr binutils-2.20.orig/opcodes/Makefile.in binutils-2.20/opcodes/Makefile.
 diff -Naur ../PRISTINE/binutils-2.20/opcodes/i386-opc.tbl binutils-2.20/opcodes/i386-opc.tbl
 --- ../PRISTINE/binutils-2.20/opcodes/i386-opc.tbl	2009-07-24 08:41:20.000000000 -0700
 +++ binutils-2.20/opcodes/i386-opc.tbl	2010-01-05 13:21:03.861105000 -0800
-@@ -209,6 +209,30 @@
+@@ -209,6 +209,32 @@
  or, 2, 0xc, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
  or, 2, 0x80, 0x1, 1, 0, W|Modrm|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  
@@ -2842,8 +2886,10 @@ diff -Naur ../PRISTINE/binutils-2.20/opcodes/i386-opc.tbl binutils-2.20/opcodes/
 +nacljmp, 1, 0xff, 0x4, 1, CpuNo64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32 }
 +naclcall, 2, 0xff, 0x2, 1, Cpu64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32, Reg64 }
 +nacljmp, 2, 0xff, 0x4, 1, Cpu64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32, Reg64 }
++naclasp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Reg32, Reg64 }
 +naclasp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm8S, Reg64 }
 +naclasp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm32S, Reg64 }
++naclssp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Reg32, Reg64 }
 +naclssp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm8S, Reg64 }
 +naclssp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm32S, Reg64 }
 +
