@@ -53,16 +53,6 @@ using WebKit::WebMouseWheelEvent;
 
 namespace {
 
-// The fastest we are willing to process idle events for plugins.
-// Some can easily exceed the limits of our CPU if we don't throttle them.
-// The throttle has been chosen by using the same value as Apple's WebKit port.
-//
-// We'd like to make the throttle delay variable, based on the amount of
-// time currently required to paint plugins.  There isn't a good
-// way to count the time spent in aggregate plugin painting, however, so
-// this seems to work well enough.
-const int kPluginIdleThrottleDelayMs = 20;  // 20ms (50Hz)
-
 base::LazyInstance<std::set<WebPluginDelegateImpl*> > g_active_delegates(
     base::LINKER_INITIALIZED);
 
@@ -84,6 +74,13 @@ private:
 };
 
 #ifndef NP_NO_CARBON
+// Timer periods for sending idle events to Carbon plugins. The visible value
+// (50Hz) matches both Safari and Firefox. The hidden value (8Hz) matches
+// Firefox; according to https://bugzilla.mozilla.org/show_bug.cgi?id=525533
+// going lower than that causes issues.
+const int kVisibleIdlePeriodMs = 20;     // (50Hz)
+const int kHiddenIdlePeriodMs = 125;  // (8Hz)
+
 class CarbonIdleEventSource {
  public:
   // Returns the shared Carbon idle event source.
@@ -93,41 +90,69 @@ class CarbonIdleEventSource {
     return event_source;
   }
 
-  // Registers the plugin delegate as interested in receiving idle events.
-  void RegisterDelegate(WebPluginDelegateImpl* delegate) {
-    if (delegates_.empty()) {
-      timer_.Start(
-          base::TimeDelta::FromMilliseconds(kPluginIdleThrottleDelayMs), this,
-          &CarbonIdleEventSource::SendPluginEvents);
+  // Registers the plugin delegate as interested in receiving idle events
+  // suitable for a visible plugin.
+  // Registering a delegate as visible automatically unregisters it from the
+  // hidden event source.
+  void RegisterVisibleDelegate(WebPluginDelegateImpl* delegate) {
+    UnregisterDelegate(delegate);
+    if (visible_delegates_.empty()) {
+      visible_timer_.Start(
+          base::TimeDelta::FromMilliseconds(kVisibleIdlePeriodMs), this,
+          &CarbonIdleEventSource::SendVisiblePluginEvents);
     }
-    delegates_.insert(delegate);
+    visible_delegates_.insert(delegate);
+  }
+
+  // Registers the plugin delegate as interested in receiving idle events
+  // suitable for a plugin that isn't visible.
+  // Registering a delegate as hidden automatically unregisters it from the
+  // visible event source.
+  void RegisterHiddenDelegate(WebPluginDelegateImpl* delegate) {
+    UnregisterDelegate(delegate);
+    if (hidden_delegates_.empty()) {
+      hidden_timer_.Start(
+          base::TimeDelta::FromMilliseconds(kHiddenIdlePeriodMs), this,
+          &CarbonIdleEventSource::SendHiddenPluginEvents);
+    }
+    hidden_delegates_.insert(delegate);
   }
 
   // Removes the plugin delegate from the list of plugins receiving idle events.
   void UnregisterDelegate(WebPluginDelegateImpl* delegate) {
-    delegates_.erase(delegate);
-    if (delegates_.empty()) {
-      timer_.Stop();
-    }
+    size_t removed = visible_delegates_.erase(delegate);
+    if (removed > 0 && visible_delegates_.empty())
+      visible_timer_.Stop();
+    removed = hidden_delegates_.erase(delegate);
+    if (removed > 0 && hidden_delegates_.empty())
+      hidden_timer_.Stop();
   }
 
  private:
   CarbonIdleEventSource() {}
 
-  void SendPluginEvents() {
-    // TODO(stuartmorgan): Plugins that aren't visible (background tab,
-    // minimized window, etc.) should instead get events from a second, slower
-    // timer (8 times per second, rather than 50).
-    for (std::set<WebPluginDelegateImpl*>::iterator i = delegates_.begin();
-         i != delegates_.end(); ++i) {
+  void SendVisiblePluginEvents() {
+    SendIdleEventsToDelegates(visible_delegates_);
+  }
+
+  void SendHiddenPluginEvents() {
+    SendIdleEventsToDelegates(hidden_delegates_);
+  }
+
+  void SendIdleEventsToDelegates(
+      const std::set<WebPluginDelegateImpl*>& delegates) const {
+    for (std::set<WebPluginDelegateImpl*>::iterator i = delegates.begin();
+         i != delegates.end(); ++i) {
       (*i)->FireIdleEvent();
     }
   }
 
-  base::RepeatingTimer<CarbonIdleEventSource> timer_;
-  std::set<WebPluginDelegateImpl*> delegates_;
+  base::RepeatingTimer<CarbonIdleEventSource> visible_timer_;
+  base::RepeatingTimer<CarbonIdleEventSource> hidden_timer_;
+  std::set<WebPluginDelegateImpl*> visible_delegates_;
+  std::set<WebPluginDelegateImpl*> hidden_delegates_;
 };
-#endif  // NP_NO_CARBON
+#endif  // !NP_NO_CARBON
 
 }  // namespace
 
@@ -141,7 +166,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       instance_(instance),
       parent_(containing_view),
       quirks_(0),
-      null_event_factory_(this),
       last_window_x_offset_(0),
       last_window_y_offset_(0),
       last_mouse_x_(0),
@@ -242,7 +266,7 @@ void WebPluginDelegateImpl::PlatformInitialize() {
 #ifndef NP_NO_CARBON
   // If the plugin wants Carbon events, hook up to the source of idle events.
   if (instance()->event_model() == NPEventModelCarbon)
-    CarbonIdleEventSource::SharedInstance()->RegisterDelegate(this);
+    UpdateIdleEventRate();
 #endif
   plugin_->SetWindow(NULL);
 
@@ -306,18 +330,26 @@ void WebPluginDelegateImpl::WindowedSetWindow() {
 void WebPluginDelegateImpl::WindowlessUpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect) {
-  // Only resend to the instance if the geometry has changed.
-  if (window_rect == window_rect_ && clip_rect == clip_rect_)
-    return;
-
-  // We will inform the instance of this change when we call NPP_SetWindow.
+  bool old_clip_was_empty = clip_rect_.IsEmpty();
+  bool new_clip_is_empty = clip_rect.IsEmpty();
   clip_rect_ = clip_rect;
 
-  if (window_rect_ != window_rect) {
-    window_rect_ = window_rect;
+  // Only resend to the instance if the geometry has changed (see note in
+  // WindowlesSetWindow for why we only care about the clip rect switching
+  // empty state).
+  if (window_rect == window_rect_ && old_clip_was_empty == new_clip_is_empty)
+    return;
 
-    WindowlessSetWindow(true);
+#ifndef NP_NO_CARBON
+  // If visibility has changed, switch our idle event rate.
+  if (instance()->event_model() == NPEventModelCarbon &&
+      old_clip_was_empty != new_clip_is_empty) {
+    UpdateIdleEventRate();
   }
+#endif
+
+  window_rect_ = window_rect;
+  WindowlessSetWindow(true);
 }
 
 void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
@@ -392,33 +424,21 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   if (!instance())
     return;
 
-  int y_offset = 0;
-#ifndef NP_NO_CARBON
-  if (instance()->event_model() == NPEventModelCarbon &&
-      instance()->drawing_model() == NPDrawingModelCoreGraphics) {
-    // Get the dummy window structure height; we're pretenting the plugin takes
-    // up the whole (dummy) window, but the clip rect and x/y are relative to
-    // the full window region, not just the content region.
-    Rect titlebar_bounds;
-    WindowRef window = reinterpret_cast<WindowRef>(cg_context_.window);
-    GetWindowBounds(window, kWindowTitleBarRgn, &titlebar_bounds);
-    y_offset = titlebar_bounds.bottom - titlebar_bounds.top;
-  }
-#endif
-  // It's not clear what we should do in the QD case; Safari always seems to use
-  // 0, whereas Firefox uses the offset in the window and passes -offset as
-  // port_y in the NP_Port structure. Since the port we are using corresponds
-  // directly to the context, not the window, we need to use 0 for now, but
-  // that may not work once we get events working.
-
   window_.x = 0;
-  window_.y = y_offset;
+  window_.y = 0;
   window_.height = window_rect_.height();
   window_.width = window_rect_.width();
   window_.clipRect.left = window_.x;
   window_.clipRect.top = window_.y;
-  window_.clipRect.right = window_.clipRect.left + window_.width;
-  window_.clipRect.bottom = window_.clipRect.top + window_.height;
+  window_.clipRect.right = window_.clipRect.left;
+  window_.clipRect.bottom = window_.clipRect.top;
+  if (!clip_rect_.IsEmpty()) {
+    // We never tell plugins that they are only partially visible; because the
+    // drawing target doesn't change size, the positioning of what plugins drew
+    // would be wrong, as would any transforms they did on the context.
+    window_.clipRect.right += window_.width;
+    window_.clipRect.bottom += window_.height;
+  }
 
   UpdateDummyWindowBoundsWithOffset(window_rect_.x(), window_rect_.y(),
                                     window_rect_.width(),
@@ -502,19 +522,20 @@ void WebPluginDelegateImpl::UpdatePluginLocation(const WebMouseEvent& event) {
   instance()->set_plugin_origin(gfx::Point(event.globalX - event.x,
                                            event.globalY - event.y));
 
-#ifndef NP_NO_CARBON
   if (instance()->event_model() == NPEventModelCarbon) {
     last_window_x_offset_ = event.globalX - event.windowX;
     last_window_y_offset_ = event.globalY - event.windowY;
     last_mouse_x_ = event.globalX;
     last_mouse_y_ = event.globalY;
 
+#ifndef NP_NO_CARBON
     UpdateDummyWindowBoundsWithOffset(event.windowX - event.x,
                                       event.windowY - event.y, 0, 0);
   }
 #endif
 }
 
+#ifndef NP_NO_CARBON
 void WebPluginDelegateImpl::UpdateDummyWindowBoundsWithOffset(
     int x_offset, int y_offset, int new_width, int new_height) {
   if (instance()->event_model() == NPEventModelCocoa)
@@ -540,6 +561,14 @@ void WebPluginDelegateImpl::UpdateDummyWindowBoundsWithOffset(
     SetWindowBounds(window, kWindowContentRgn, &window_bounds);
   }
 }
+
+void WebPluginDelegateImpl::UpdateIdleEventRate() {
+  if (clip_rect_.IsEmpty())
+    CarbonIdleEventSource::SharedInstance()->RegisterHiddenDelegate(this);
+  else
+    CarbonIdleEventSource::SharedInstance()->RegisterVisibleDelegate(this);
+}
+#endif  // !NP_NO_CARBON
 
 static bool WebInputEventIsWebMouseEvent(const WebInputEvent& event) {
   switch (event.type) {
@@ -872,6 +901,7 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   return ret;
 }
 
+#ifndef NP_NO_CARBON
 void WebPluginDelegateImpl::FireIdleEvent() {
   // Avoid a race condition between IO and UI threads during plugin shutdown
   if (!instance_)
@@ -879,7 +909,6 @@ void WebPluginDelegateImpl::FireIdleEvent() {
 
   ScopedActiveDelegate active_delegate(this);
 
-#ifndef NP_NO_CARBON
   if (!webkit_glue::IsPluginRunningInRendererProcess()) {
     switch (instance()->event_model()) {
       case NPEventModelCarbon:
@@ -910,7 +939,6 @@ void WebPluginDelegateImpl::FireIdleEvent() {
     np_event.where.v = last_mouse_y_;
     instance()->NPP_HandleEvent(&np_event);
   }
-#endif
 
 #ifndef NP_NO_QUICKDRAW
   // Quickdraw-based plugins can draw at any time, so tell the renderer to
@@ -921,3 +949,4 @@ void WebPluginDelegateImpl::FireIdleEvent() {
     instance()->webplugin()->Invalidate();
 #endif
 }
+#endif  // !NP_NO_CARBON

@@ -142,9 +142,11 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Informs the delegate that the plugin set a Cocoa NSCursor.
   void SetNSCursor(NSCursor* cursor);
 
+#ifndef NP_NO_CARBON
   // Indicates that it's time to send the plugin a null event.
   void FireIdleEvent();
 #endif
+#endif  // OS_MACOSX
 
 #if !defined(OS_MACOSX)
   gfx::PluginWindowHandle windowed_handle() const {
@@ -330,6 +332,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // the screen.
   void UpdatePluginLocation(const WebKit::WebMouseEvent& event);
 
+#ifndef NP_NO_CARBON
   // Moves our dummy window to the given offset relative to the last known
   // location of the real renderer window's content view.
   // If new_width or new_height is non-zero, the window size (content region)
@@ -338,8 +341,10 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void UpdateDummyWindowBoundsWithOffset(int x_offset, int y_offset,
                                          int new_width, int new_height);
 
-  // Runnable Method Factory used to drip null events into the plugin.
-  ScopedRunnableMethodFactory<WebPluginDelegateImpl> null_event_factory_;
+  // Adjusts the idle event rate for a Carbon plugin based on its current
+  // visibility.
+  void UpdateIdleEventRate();
+#endif  // !NP_NO_CARBON
 
   // The most recently seen offset between global and browser-window-local
   // coordinates. We use this to keep the placeholder Carbon WindowRef's origin
