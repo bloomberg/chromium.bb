@@ -18,7 +18,7 @@
 // OmxCodec::OmxMediaFormat input_format, output_format;
 // input_format.codec = OmxCodec::kCodecH264;
 // output_format.codec = OmxCodec::kCodecRaw;
-// decoder->Setup(component_name, input_format, output_format);
+// decoder->Setup(input_format, output_format);
 // decoder->SetErrorCallback(NewCallback(this, &Client::ErrorCallback));
 // decoder->SetFormatCallback(NewCallback(this, &Client::FormatCallback));
 //
@@ -174,8 +174,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
 
   // Set the component name and input/output media format.
   // TODO(hclam): Remove |component|.
-  void Setup(const std::string& component_name,
-             const OmxMediaFormat& input_format,
+  void Setup(const OmxMediaFormat& input_format,
              const OmxMediaFormat& output_format);
 
   // Set the error callback. In case of error the callback will be called.
@@ -263,6 +262,9 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
                           OMX_PARAM_PORTDEFINITIONTYPE* output_port_def);
   bool ConfigureAsEncoder(OMX_PARAM_PORTDEFINITIONTYPE* input_port_def,
                           OMX_PARAM_PORTDEFINITIONTYPE* output_port_def);
+
+  // Helper to return predefined OpenMAX role name for specific codec type.
+  static std::string SelectRole(Codec codec, bool encoder);
 
   // Methods and free input and output buffers.
   bool AllocateInputBuffers();
@@ -375,6 +377,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   State next_state_;
 
   // TODO(hclam): We should keep a list of component names.
+  std::string role_name_;
   std::string component_name_;
   OMX_COMPONENTTYPE* component_handle_;
   bool encoder_;

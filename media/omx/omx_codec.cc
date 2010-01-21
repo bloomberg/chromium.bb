@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
+#include "base/string_util.h"
 #include "media/omx/input_buffer.h"
 #include "media/omx/omx_codec.h"
 
@@ -45,14 +46,14 @@ OmxCodec::~OmxCodec() {
 }
 
 void OmxCodec::Setup(
-    const std::string& component_name,
     const OmxCodec::OmxMediaFormat& input_format,
     const OmxCodec::OmxMediaFormat& output_format) {
   DCHECK_EQ(kEmpty, state_);
   DCHECK_NE(input_format.codec, kCodecNone);
-  component_name_ = component_name;
   input_format_ = input_format;
   output_format_ = output_format;
+  Codec codec = encoder() ? output_format_.codec : input_format_.codec;
+  role_name_ = SelectRole(codec, encoder());
 }
 
 void OmxCodec::SetErrorCallback(Callback* callback) {
@@ -273,21 +274,23 @@ void OmxCodec::FreeOutputQueue() {
 // Sequence of actions in this transition:
 //
 // 1. Initialize OMX (To be removed.)
-// 2. Get handle of the OMX component
-// 3. Get parameters about I/O ports.
-// 4. Device specific configurations.
-// 5. General configuration of input port.
-// 6. General configuration of output port.
-// 7. Get Parameters about input port.
-// 8. Get Parameters about output port.
-// 9. Codec specific configurations.
+// 2. Map role name to component name.
+// 3. Get handle of the OMX component
+// 4. Get the port information.
+// 5. Set role for the component.
+// 6. Device specific configurations.
+// 7. Input/output ports media format configuration.
+// 8. Obtain the information about the input port.
+// 9. Obtain the information about the output port.
 void OmxCodec::Transition_EmptyToLoaded() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kEmpty, GetState());
 
-  OMX_CALLBACKTYPE callback = { &EventHandler,
-                                &EmptyBufferCallback,
-                                &FillBufferCallback };
+  static OMX_CALLBACKTYPE callback = {
+    &EventHandler,
+    &EmptyBufferCallback,
+    &FillBufferCallback
+  };
 
   // 1. Initialize the OpenMAX Core.
   // TODO(hclam): move this out.
@@ -298,9 +301,45 @@ void OmxCodec::Transition_EmptyToLoaded() {
     return;
   }
 
-  // 2. Get the handle to the component. After OMX_GetHandle(),
+  // 2. Map role name to component name.
+  OMX_U32 roles = 0;
+  omxresult = OMX_GetComponentsOfRole(
+                  const_cast<OMX_STRING>(role_name_.c_str()),
+                  &roles, 0);
+  if (omxresult != OMX_ErrorNone || roles == 0) {
+    LOG(ERROR) << "Unsupported Role: " << role_name_.c_str();
+    StateTransitionTask(kError);
+    return;
+  }
+  const OMX_U32 kMaxRolePerComponent = 20;
+  CHECK(roles < kMaxRolePerComponent);
+
+  OMX_U8** component_names = new OMX_U8*[roles];
+  const int kMaxComponentNameLength = 256;
+  for (size_t i = 0; i < roles; ++i)
+    component_names[i] = new OMX_U8[kMaxComponentNameLength];
+
+  omxresult = OMX_GetComponentsOfRole(
+                  const_cast<OMX_STRING>(role_name_.c_str()),
+                  &roles, component_names);
+
+  // Use first component only. Copy the name of the first component
+  // so that we could free the memory.
+  if (omxresult == OMX_ErrorNone)
+    component_name_ = reinterpret_cast<char*>(component_names[0]);
+
+  for (size_t i = 0; i < roles; ++i)
+    delete [] component_names[i];
+  delete [] component_names;
+
+  if (omxresult != OMX_ErrorNone || roles == 0) {
+    LOG(ERROR) << "Unsupported Role: " << role_name_.c_str();
+    StateTransitionTask(kError);
+    return;
+  }
+
+  // 3. Get the handle to the component. After OMX_GetHandle(),
   //    the component is in loaded state.
-  // TODO(hclam): We should have a list of componant names instead.
   OMX_STRING component = const_cast<OMX_STRING>(component_name_.c_str());
   OMX_HANDLETYPE handle = reinterpret_cast<OMX_HANDLETYPE>(component_handle_);
   omxresult = OMX_GetHandle(&handle, component, this, &callback);
@@ -311,7 +350,7 @@ void OmxCodec::Transition_EmptyToLoaded() {
     return;
   }
 
-  // 3. Get the port information. This will obtain information about the
+  // 4. Get the port information. This will obtain information about the
   //    number of ports and index of the first port.
   OMX_PORT_PARAM_TYPE port_param;
   ResetPortHeader(*this, &port_param);
@@ -325,21 +364,38 @@ void OmxCodec::Transition_EmptyToLoaded() {
   input_port_ = port_param.nStartPortNumber;
   output_port_ = input_port_ + 1;
 
-  // 4. Device specific configurations.
+  // 5. Set role for the component because our component could
+  //    have multiple roles.
+  OMX_PARAM_COMPONENTROLETYPE role_type;
+  ResetPortHeader(*this, &role_type);
+  base::strlcpy(reinterpret_cast<char*>(role_type.cRole),
+                role_name_.c_str(),
+                OMX_MAX_STRINGNAME_SIZE);
+  role_type.cRole[OMX_MAX_STRINGNAME_SIZE - 1] = '\0';
+  omxresult = OMX_SetParameter(component_handle_,
+                               OMX_IndexParamStandardComponentRole,
+                               &role_type);
+  if (omxresult != OMX_ErrorNone) {
+    LOG(ERROR) << "Failed to Set Role";
+    StateTransitionTask(kError);
+    return;
+  }
+
+  // 6. Device specific configurations.
   if (!DeviceSpecificConfig()) {
     LOG(ERROR) << "Device specific configurations failed";
     StateTransitionTask(kError);
     return;
   }
 
-  // 5. Input/output ports media format configuration.
+  // 7. Input/output ports media format configuration.
   if (!ConfigureIOPorts()) {
     LOG(ERROR) << "Media format configurations failed";
     StateTransitionTask(kError);
     return;
   }
 
-  // 6. Obtain the information about the input port.
+  // 8. Obtain the information about the input port.
   // This will have the new mini buffer count in |port_format.nBufferCountMin|.
   // Save this value to input_buf_count.
   OMX_PARAM_PORTDEFINITIONTYPE port_format;
@@ -361,7 +417,7 @@ void OmxCodec::Transition_EmptyToLoaded() {
   input_buffer_count_ = port_format.nBufferCountMin;
   input_buffer_size_ = port_format.nBufferSize;
 
-  // 7. Obtain the information about the output port.
+  // 9. Obtain the information about the output port.
   ResetPortHeader(*this, &port_format);
   port_format.nPortIndex = output_port_;
   omxresult = OMX_GetParameter(component_handle_,
@@ -824,6 +880,24 @@ void OmxCodec::ReportFormatChange() {
   if (!format_callback_.get())
     return;
   format_callback_->Run(&input_format_, &output_format_);
+}
+
+std::string OmxCodec::SelectRole(Codec codec, bool encoder) {
+  std::string role_name = encoder ? "video_encoder." : "video_decoder.";
+  switch (codec) {
+    case kCodecH264:
+      return role_name + "avc";
+    case kCodecH263:
+      return role_name + "h263";
+    case kCodecMpeg4:
+      return role_name + "mpeg4";
+    case kCodecVc1:
+      return role_name + "vc1";
+    default:
+      break;
+  }
+  NOTREACHED();
+  return "";
 }
 
 bool OmxCodec::ConfigureIOPorts() {

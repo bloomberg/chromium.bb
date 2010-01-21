@@ -26,7 +26,6 @@ class TestApp {
  public:
   TestApp(const char* input_filename,
           const char* output_filename,
-          const std::string& component_name,
           media::OmxCodec::OmxMediaFormat& input_format,
           media::OmxCodec::OmxMediaFormat& output_format,
           bool simulate_copy,
@@ -35,7 +34,6 @@ class TestApp {
           int loop_count)
       : input_filename_(input_filename),
         output_filename_(output_filename),
-        component_name_(component_name),
         input_format_(input_format),
         output_format_(output_format),
         simulate_copy_(simulate_copy),
@@ -282,7 +280,7 @@ class TestApp {
     // Setup the |codec_| with the message loop of the current thread. Also
     // setup component name, codec format and callbacks.
     codec_ = new media::OmxCodec(&message_loop_);
-    codec_->Setup(component_name_, input_format_, output_format_);
+    codec_->Setup(input_format_, output_format_);
     codec_->SetErrorCallback(NewCallback(this, &TestApp::ErrorCallback));
     codec_->SetFormatCallback(NewCallback(this, &TestApp::FormatCallback));
 
@@ -403,7 +401,6 @@ class TestApp {
   MessageLoop message_loop_;
   const char* input_filename_;
   const char* output_filename_;
-  std::string component_name_;
   media::OmxCodec::OmxMediaFormat input_format_;
   media::OmxCodec::OmxMediaFormat output_format_;
   bool simulate_copy_;
@@ -434,11 +431,9 @@ int main(int argc, char** argv) {
   bool encoder = cmd_line->HasSwitch("encoder");
   if (!encoder) {
     if (argc < 3) {
-      printf("Usage: omx_test --input-file=FILE"
-             " --component=COMPONENT --codec=CODEC"
+      printf("Usage: omx_test --input-file=FILE --codec=CODEC"
              " [--output-file=FILE] [--enable-csc]"
              " [--copy] [--measure-fps]\n");
-      printf("    COMPONENT: OpenMAX component name\n");
       printf("    CODEC: h264/mpeg4/h263/vc1\n");
       printf("\n");
       printf("Optional Arguments\n");
@@ -451,13 +446,11 @@ int main(int argc, char** argv) {
     }
   } else {
     if (argc < 7) {
-      printf("Usage: omx_test --input-file=FILE"
-             " --component=COMPONENT --codec=CODEC"
+      printf("Usage: omx_test --input-file=FILE --codec=CODEC"
              " --width=PIXEL_WIDTH --height=PIXEL_HEIGHT"
              " --bitrate=BIT_PER_SECOND --framerate=FRAME_PER_SECOND"
              " [--output-file=FILE] [--enable-csc]"
              " [--copy] [--measure-fps]\n");
-      printf("    COMPONENT: OpenMAX component name\n");
       printf("    CODEC: h264/mpeg4/h263/vc1\n");
       printf("\n");
       printf("Optional Arguments\n");
@@ -472,7 +465,6 @@ int main(int argc, char** argv) {
 
   std::string input_filename = cmd_line->GetSwitchValueASCII("input-file");
   std::string output_filename = cmd_line->GetSwitchValueASCII("output-file");
-  std::string component_name = cmd_line->GetSwitchValueASCII("component");
   std::string codec = cmd_line->GetSwitchValueASCII("codec");
   bool copy = cmd_line->HasSwitch("copy");
   bool measure_fps = cmd_line->HasSwitch("measure-fps");
@@ -522,7 +514,6 @@ int main(int argc, char** argv) {
   // Create a TestApp object and run the decoder.
   TestApp test(input_filename.c_str(),
                output_filename.c_str(),
-               component_name,
                input,
                output,
                copy,
