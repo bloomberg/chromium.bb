@@ -111,27 +111,36 @@ uintptr_t PortablePluginInterface::GetStrIdentifierCallback(
   return reinterpret_cast<uintptr_t>(NPN_GetStringIdentifier(method_name));
 }
 
+// TODO(robertm): this is a quick hack to address immediate shortcomings
+static void CleanString(std::string* text) {
+  for (size_t i = 0; i < text->size(); ++i) {
+    if ((*text)[i] == '\'') {
+      (*text)[i] = '\"';
+    }
+  }
+}
+
 
 bool PortablePluginInterface::Alert(
     nacl_srpc::PluginIdentifier plugin_identifier,
-    const char *text,
-    int length) {
+    std::string text) {
   NPObject* window;
   NPP npp = plugin_identifier;
   NPN_GetValue(npp, NPNVWindowNPObject, &window);
+
+  // usually these messages are important enough to call attention to them
+  puts(text.c_str());
+
+  CleanString(&text);
+  std::string command = "alert('" + text + "');";
+  char* buffer = reinterpret_cast<char*>(NPN_MemAlloc(command.size()));
+  memcpy(buffer, command.c_str(), command.size());
+
+  // TODO(sehr): write a stand-alone function that converts
+  //             between std::string and NPString, and put it in utility.cc.
   NPString script;
-  const char *command_prefix = "alert('";
-  const char *command_postfix = "');";
-  script.UTF8Length = strlen(command_prefix) + strlen(command_postfix) + length;
-  char* buffer = reinterpret_cast<char*>(NPN_MemAlloc(script.UTF8Length));
-  SNPRINTF(buffer,
-           script.UTF8Length,
-           "%s%s%s",
-           command_prefix,
-           text,
-           command_postfix);
+  script.UTF8Length = command.size();
   script.UTF8Characters = buffer;
-  script.UTF8Length = strlen(script.UTF8Characters);  // similar to -=2 ?
   NPVariant result;
   bool success = NPN_Evaluate(npp, window, &script, &result);
   NPN_ReleaseVariantValue(&result);
@@ -270,19 +279,18 @@ bool PortablePluginInterface::CheckExecutableVersionCommon(
   if ((NULL != version) && (EF_NACL_ABIVERSION == *version)) {
     return true;
   }
-  char alert[256];
+
   if (NULL == version) {
-    SNPRINTF(alert,
-      sizeof alert,
-      "alert('Load failed: Unknown error\\n');");
+    Alert(instance, "Load failed: Unknown error");
   } else {
+    char alert[256];
     SNPRINTF(alert,
       sizeof alert,
-      "alert('Load failed: ABI version mismatch: expected %d, got %d\\n');",
+      "Load failed: ABI version mismatch: expected %d, got %d",
       EF_NACL_ABIVERSION,
       *version);
+    Alert(instance, alert);
   }
-  Alert(instance, alert, sizeof(alert));
   return false;
 }
 
@@ -308,11 +316,7 @@ bool PortablePluginInterface::CheckExecutableVersion(
       instance,
       reinterpret_cast<char*>(&nacl_abi_version));
   } else {
-    char alert[256];
-    SNPRINTF(alert,
-        sizeof alert,
-        "alert('Load failed: Generic file error\\n');");
-    Alert(instance, alert, sizeof(alert));
+    Alert(instance, "Load failed: Generic file error");
     return false;
   }
 }

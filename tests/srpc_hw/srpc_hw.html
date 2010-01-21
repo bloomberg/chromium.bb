@@ -8,19 +8,23 @@
 <script type="text/javascript">
 //<![CDATA[
 function fortytwo() {
+  var result = "";
   try {
-    alert(document.getElementById('pluginobj').fortytwo());
+    result = document.getElementById('pluginobj').fortytwo();
   } catch(e) {
-    alert(e);
+    result = "ERROR: " + e;
   }
+  alert("" + result);
 }
 
 function helloworld() {
+  var result = "";
   try {
-    alert(document.getElementById('pluginobj').helloworld());
+    result = document.getElementById('pluginobj').helloworld();
   } catch(e) {
-    alert(e);
+    result = "ERROR: " + e;
   }
+  alert("" + result);
 }
 //]]>
 </script>
@@ -51,7 +55,7 @@ function helloworld() {
 //<![CDATA[
 var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
                           document.getElementById("status"),
-                          50);
+                          100);
 
 nacllib.test = function() {
   var plugin = document.getElementById("pluginobj");

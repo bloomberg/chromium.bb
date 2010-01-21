@@ -430,15 +430,12 @@ bool Plugin::Load(std::string remote_url,
   // the whitelist, refuse to load.  If the NaCl module's origin is
   // not in the whitelist, also refuse to load.
   if (!origin_valid_ || !nacl::OriginIsInWhitelist(nacl_module_origin())) {
-    printf("Load failed: NaCl module did not come from a whitelisted"
-           " source.\nSee nacl_plugin/origin.cc for the list.");
     const char *message = "Load failed: NaCl module did not"
-                          " come from a whitelisted source.\\n"
-                          "See nacl_plugin/origin.cc for the list');";
+                          " come from a whitelisted source."
+                          "See nacl_plugin/origin.cc for the list.";
     PortablePluginInterface::Alert(
       GetPortablePluginInterface()->GetPluginIdentifier(),
-      message,
-      strlen(message));
+      message);
     return false;
   }
   // Catch any bad accesses, etc., while loading.

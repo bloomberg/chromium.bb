@@ -74,8 +74,8 @@ class PortablePluginInterface {
   // browser-specific class, such as SRPC_Plugin
   static uintptr_t GetStrIdentifierCallback(const char *method_name);
   static bool Alert(nacl_srpc::PluginIdentifier plugin_identifier,
-                    const char *text,
-                    int length);
+                    std::string text);
+
   static bool GetOrigin(nacl_srpc::PluginIdentifier plugin_identifier,
                         std::string **origin);
   // To indicate successful loading of a module, invoke the onload handler.
