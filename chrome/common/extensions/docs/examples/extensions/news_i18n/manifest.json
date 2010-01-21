@@ -10,7 +10,8 @@
   },
   "permissions": [
     "tabs",
-    "http://news.google.com/*"
+    "http://news.google.com/*",
+    "http://news.google.es/*"
   ],
   "default_locale": "en"
 }

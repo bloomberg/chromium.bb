@@ -1,0 +1,36 @@
+{
+  "name": {
+    "message": "$Google$ Mail Checker",
+    "description": "Extension name in manifest.",
+    "placeholders": {
+      "google": {
+        "content": "Google",
+        "example": "Google"
+      }
+    }
+  },
+  "description": {
+    "message": "Displays the number of unread messages in your $Google$ Mail inbox. You can also click the button to open your inbox.",
+    "description": "Extension description in manifest.",
+    "placeholders": {
+      "google": {
+        "content": "Google",
+        "example": "Google"
+      }
+    }
+  },
+  "node_error": {
+    "message": "Error: feed retrieved, but no &lt;fullcount&gt; node found",
+    "description": "Missing node error."
+  },
+  "exception": {
+    "message": "exception: $exception$",
+    "description": "Exception message.",
+    "placeholders": {
+      "exception": {
+        "content": "$1",
+        "example": "xhr object error."
+      }
+    }
+  }
+}
