@@ -2099,7 +2099,7 @@
    fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
 }
 {
-   bug_32624
+   bug_32624_a
    Memcheck:Leak
    fun:malloc
    fun:PR_Malloc
@@ -2120,6 +2120,32 @@
    fun:_Z10ThreadFuncPv
    fun:start_thread
    fun:clone
+}
+{
+   bug_32624_b
+   Memcheck:Leak
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:secmod_ModuleInit
 }
 {
    bug_32641_a
@@ -2171,4 +2197,22 @@
    fun:_ZN3net12CertVerifier7Request8DoVerifyEv
    fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
+}
+{
+   bug_32641_d
+   Memcheck:Jump
+   obj:*
+   ...
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:find_objects
+   fun:find_objects_by_template
+   fun:nssToken_FindCertificatesBySubject
 }
