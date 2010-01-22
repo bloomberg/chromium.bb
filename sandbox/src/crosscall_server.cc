@@ -21,9 +21,9 @@ namespace {
 
 namespace sandbox {
 
-// Returns the actual size for the parameters in an IPC buffer.
-void GetActualBufferSize(size_t param_count, void* buffer_base,
-                         size_t* actual_size) {
+// Returns the actual size for the parameters in an IPC buffer. Returns
+// zero if the |param_count| is zero or too big.
+size_t GetActualBufferSize(size_t param_count, void* buffer_base) {
   // The template types are used to calculate the maximum expected size.
   typedef ActualCallParams<1, kMaxBufferSize> ActualCP1;
   typedef ActualCallParams<2, kMaxBufferSize> ActualCP2;
@@ -37,36 +37,29 @@ void GetActualBufferSize(size_t param_count, void* buffer_base,
 
   // Retrieve the actual size and the maximum size of the params buffer.
   switch (param_count) {
+    case 0:
+      return 0;
     case 1:
-      *actual_size = reinterpret_cast<ActualCP1*>(buffer_base)->GetSize();
-      break;
+      return reinterpret_cast<ActualCP1*>(buffer_base)->GetSize();
     case 2:
-      *actual_size = reinterpret_cast<ActualCP2*>(buffer_base)->GetSize();
-      break;
+      return reinterpret_cast<ActualCP2*>(buffer_base)->GetSize();
     case 3:
-      *actual_size = reinterpret_cast<ActualCP3*>(buffer_base)->GetSize();
-      break;
+      return reinterpret_cast<ActualCP3*>(buffer_base)->GetSize();
     case 4:
-      *actual_size = reinterpret_cast<ActualCP4*>(buffer_base)->GetSize();
-      break;
+      return reinterpret_cast<ActualCP4*>(buffer_base)->GetSize();
     case 5:
-      *actual_size = reinterpret_cast<ActualCP5*>(buffer_base)->GetSize();
-      break;
+      return reinterpret_cast<ActualCP5*>(buffer_base)->GetSize();
     case 6:
-      *actual_size = reinterpret_cast<ActualCP6*>(buffer_base)->GetSize();
-      break;
+      return reinterpret_cast<ActualCP6*>(buffer_base)->GetSize();
     case 7:
-      *actual_size = reinterpret_cast<ActualCP7*>(buffer_base)->GetSize();
-      break;
+      return reinterpret_cast<ActualCP7*>(buffer_base)->GetSize();
     case 8:
-      *actual_size = reinterpret_cast<ActualCP8*>(buffer_base)->GetSize();
-      break;
+      return reinterpret_cast<ActualCP8*>(buffer_base)->GetSize();
     case 9:
-      *actual_size = reinterpret_cast<ActualCP9*>(buffer_base)->GetSize();
-      break;
+      return reinterpret_cast<ActualCP9*>(buffer_base)->GetSize();
     default:
       NOTREACHED();
-      *actual_size = 0;
+      return 0;
   }
 }
 
@@ -104,8 +97,7 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
   char* backing_mem = NULL;
   size_t param_count = 0;
   CrossCallParamsEx* copied_params = NULL;
-
-  size_t actual_size = 0;
+  size_t actual_size;
 
   // Touching the untrusted buffer is done under a SEH try block. This
   // will catch memory access violations so we don't crash.
@@ -117,16 +109,16 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     param_count = call_params->GetParamsCount();
     if ((buffer_size - sizeof(CrossCallParams)) <
         (sizeof(ptrdiff_t) * (param_count + 1))) {
-      // Too small.
+      // This test is subject to integer overflow but the next is not.
       return NULL;
     }
 
-    GetActualBufferSize(param_count, buffer_base, &actual_size);
-
-    if (actual_size > buffer_size) {
-      // It is too big.
+    actual_size = GetActualBufferSize(param_count, buffer_base);
+    if ((actual_size > buffer_size) || (0 == actual_size)) {
+      // It is too big or too many declared parameters.
       return NULL;
     }
+
     // Now we copy the actual amount of the message.
     actual_size += sizeof(ParamInfo);  // To get the last offset.
     *output_size = actual_size;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
 #include "sandbox/src/crosscall_client.h"
 #include "sandbox/src/crosscall_server.h"
 #include "sandbox/src/sharedmem_ipc_client.h"
@@ -212,6 +213,44 @@ TEST(IPCTest, CrossCallStrPacking) {
     ::CloseHandle(channel.pong_event);
   }
   delete [] reinterpret_cast<char*>(client_control);
+}
+
+TEST(IPCTest, CrossCallValidation) {
+  // First a sanity test with a well formed parameter object.
+  unsigned long value = 124816;
+  const uint32 kTag = 33;
+  ActualCallParams<1, 128> params_1(kTag);
+  params_1.CopyParamIn(0, &value, sizeof(value), false, ULONG_TYPE);
+  void* buffer = const_cast<void*>(params_1.GetBuffer());
+
+  size_t out_size = 0;
+  CrossCallParamsEx* ccp = 0;
+  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, params_1.GetSize(),
+                                            &out_size);
+  ASSERT_TRUE(NULL != ccp);
+  EXPECT_TRUE(ccp->GetBuffer() != buffer);
+  EXPECT_EQ(kTag, ccp->GetTag());
+  EXPECT_EQ(1, ccp->GetParamsCount());
+  delete[] (reinterpret_cast<char*>(ccp));
+
+#if defined(NDEBUG)
+  // Test hat we handle integer overflow on the number of params
+  // correctly. We use a test-only ctor for ActualCallParams that
+  // allows to create malformed cross-call buffers.
+  const int32 kPtrDiffSz = sizeof(ptrdiff_t);
+  for (int32 ix = -1; ix != 3; ++ix) {
+    uint32 fake_num_params = (kuint32max / kPtrDiffSz) + ix;
+    ActualCallParams<1, 128> params_2(kTag, fake_num_params);
+    params_2.CopyParamIn(0, &value, sizeof(value), false, ULONG_TYPE);
+    buffer = const_cast<void*>(params_2.GetBuffer());
+
+    EXPECT_TRUE(NULL != buffer);
+    ccp = CrossCallParamsEx::CreateFromBuffer(buffer, params_2.GetSize(),
+                                              &out_size);
+    // If the buffer is malformed the return is NULL.
+    EXPECT_TRUE(NULL == ccp);
+  }
+#endif  // defined(NDEBUG)
 }
 
 // This structure is passed to the mock server threads to simulate

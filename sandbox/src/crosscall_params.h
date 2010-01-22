@@ -202,6 +202,13 @@ class ActualCallParams : public CrossCallParams {
     param_info_[0].offset_ = parameters_ - reinterpret_cast<char*>(this);
   }
 
+  // Testing-only constructor. Allows setting the |number_params| to a
+  // wrong value.
+  ActualCallParams(uint32 tag, uint32 number_params)
+      : CrossCallParams(tag, number_params) {
+    param_info_[0].offset_ = parameters_ - reinterpret_cast<char*>(this);
+  }
+
   // Copies each paramter into the internal buffer. For each you must supply:
   // index: 0 for the first param, 1 for the next an so on
   bool CopyParamIn(size_t index, const void* parameter_address, size_t size,
