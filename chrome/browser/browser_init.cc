@@ -57,6 +57,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/browser_notification_observers.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/mount_library.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
@@ -311,6 +312,14 @@ bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
                    int* return_code, BrowserInit* browser_init) {
   in_startup = process_startup;
   DCHECK(profile);
+
+  // This forces the creation of the initial tavb notification observer
+  // singleton.  It must be created before browser launch to catch first tab
+  // load.
+#if defined(OS_CHROMEOS)
+  if (process_startup)
+    chromeos::InitialTabNotificationObserver::Get();
+#endif
 
   // Continue with the off-the-record profile from here on if --incognito
   if (command_line.HasSwitch(switches::kIncognito))

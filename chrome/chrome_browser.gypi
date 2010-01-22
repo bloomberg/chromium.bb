@@ -251,6 +251,7 @@
         'browser/chrome_plugin_host.h',
         'browser/chrome_thread.cc',
         'browser/chrome_thread.h',
+	'browser/chromeos/browser_notification_observers.cc',
         'browser/chromeos/browser_extenders.cc',
         'browser/chromeos/chromeos_browser_view.cc',
         'browser/chromeos/chromeos_browser_view.h',
