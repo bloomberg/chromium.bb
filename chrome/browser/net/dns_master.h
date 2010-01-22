@@ -29,7 +29,7 @@ using base::TimeDelta;
 
 namespace net {
 class HostResolver;
-}
+}  // namespace net
 
 namespace chrome_browser_net {
 

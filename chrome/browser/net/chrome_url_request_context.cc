@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
@@ -139,7 +140,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   ApplyProfileParametersToContext(context);
 
   // Global host resolver for the context.
-  context->set_host_resolver(chrome_browser_net::GetGlobalHostResolver());
+  context->set_host_resolver(io_thread()->host_resolver());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -805,7 +806,8 @@ bool ChromeURLRequestContext::ShouldTrackRequest(const GURL& url) {
 // ApplyProfileParametersToContext() which reverses this).
 ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
     : is_media_(false),
-      is_off_the_record_(profile->IsOffTheRecord()) {
+      is_off_the_record_(profile->IsOffTheRecord()),
+      io_thread_(g_browser_process->io_thread()) {
   CheckCurrentlyOnMainThread();
   PrefService* prefs = profile->GetPrefs();
 

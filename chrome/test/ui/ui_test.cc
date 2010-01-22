@@ -1493,4 +1493,3 @@ void UITest::TearDown() {
   UITestBase::TearDown();
   PlatformTest::TearDown();
 }
-

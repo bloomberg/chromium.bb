@@ -12,6 +12,7 @@
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/browser_main.h"
+#include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/debugger_wrapper.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
@@ -53,88 +55,6 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #endif
-
-namespace {
-
-// ----------------------------------------------------------------------------
-// BrowserProcessSubThread
-//
-// This simple thread object is used for the specialized threads that the
-// BrowserProcess spins up.
-//
-// Applications must initialize the COM library before they can call
-// COM library functions other than CoGetMalloc and memory allocation
-// functions, so this class initializes COM for those users.
-class BrowserProcessSubThread : public ChromeThread {
- public:
-  explicit BrowserProcessSubThread(ChromeThread::ID identifier)
-      : ChromeThread(identifier) {
-  }
-
-  virtual ~BrowserProcessSubThread() {
-    // We cannot rely on our base class to stop the thread since we want our
-    // CleanUp function to run.
-    Stop();
-  }
-
- protected:
-  virtual void Init() {
-#if defined(OS_WIN)
-    // Initializes the COM library on the current thread.
-    CoInitialize(NULL);
-#endif
-
-    notification_service_ = new NotificationService;
-  }
-
-  virtual void CleanUp() {
-    delete notification_service_;
-    notification_service_ = NULL;
-
-#if defined(OS_WIN)
-    // Closes the COM library on the current thread. CoInitialize must
-    // be balanced by a corresponding call to CoUninitialize.
-    CoUninitialize();
-#endif
-  }
-
- private:
-  // Each specialized thread has its own notification service.
-  // Note: We don't use scoped_ptr because the destructor runs on the wrong
-  // thread.
-  NotificationService* notification_service_;
-};
-
-class IOThread : public BrowserProcessSubThread {
- public:
-  IOThread() : BrowserProcessSubThread(ChromeThread::IO) {}
-
-  virtual ~IOThread() {
-    // We cannot rely on our base class to stop the thread since we want our
-    // CleanUp function to run.
-    Stop();
-  }
-
- protected:
-  virtual void CleanUp() {
-    // URLFetcher and URLRequest instances must NOT outlive the IO thread.
-    //
-    // Strictly speaking, URLFetcher's CheckForLeaks() should be done on the
-    // UI thread. However, since there _shouldn't_ be any instances left
-    // at this point, it shouldn't be a race.
-    //
-    // We check URLFetcher first, since if it has leaked then an associated
-    // URLRequest will also have leaked. However it is more useful to
-    // crash showing the callstack of URLFetcher's allocation than its
-    // URLRequest member.
-    base::LeakTracker<URLFetcher>::CheckForLeaks();
-    base::LeakTracker<URLRequest>::CheckForLeaks();
-
-    BrowserProcessSubThread::CleanUp();
-  }
-};
-
-}  // namespace
 
 BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
     : created_resource_dispatcher_host_(false),
@@ -216,7 +136,7 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // Need to stop io_thread_ before resource_dispatcher_host_, since
   // io_thread_ may still deref ResourceDispatcherHost and handle resource
   // request before going away.
-  ResetIOThread();
+  io_thread_.reset();
 
   // Stop the process launcher thread after the IO thread, in case the IO thread
   // posted a task to terminate a process on the process launcher thread.
@@ -348,28 +268,12 @@ void BrowserProcessImpl::CreateIOThread() {
   background_x11_thread_.swap(background_x11_thread);
 #endif
 
-  scoped_ptr<base::Thread> thread(new IOThread);
+  scoped_ptr<IOThread> thread(new IOThread);
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   if (!thread->StartWithOptions(options))
     return;
   io_thread_.swap(thread);
-}
-
-void BrowserProcessImpl::ResetIOThread() {
-  if (io_thread_.get()) {
-    io_thread_->message_loop()->PostTask(FROM_HERE,
-        NewRunnableFunction(CleanupOnIOThread));
-  }
-  io_thread_.reset();
-}
-
-// static
-void BrowserProcessImpl::CleanupOnIOThread() {
-  // Shutdown DNS prefetching now to ensure that network stack objects
-  // living on the IO thread get destroyed before the IO thread goes away.
-  chrome_browser_net::EnsureDnsPrefetchShutdown();
-  // TODO(eroman): can this be merged into IOThread::CleanUp() ?
 }
 
 void BrowserProcessImpl::CreateFileThread() {

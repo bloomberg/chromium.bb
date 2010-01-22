@@ -9,6 +9,7 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/child_process_launcher.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_switches.h"

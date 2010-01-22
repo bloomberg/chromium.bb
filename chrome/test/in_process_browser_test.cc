@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/intranet_redirect_detector.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"

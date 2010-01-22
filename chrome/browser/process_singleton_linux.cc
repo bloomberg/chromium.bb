@@ -64,6 +64,7 @@
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/process_singleton_dialog.h"
 #endif
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_constants.h"

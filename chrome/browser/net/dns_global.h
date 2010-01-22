@@ -17,31 +17,25 @@
 #include "base/field_trial.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/net/dns_master.h"
+#include "net/base/host_resolver.h"
 
 class PrefService;
 
-namespace net {
-class HostResolver;
-}
-
 namespace chrome_browser_net {
 
-// Initialize dns prefetching subsystem. Must be called before any other
-// functions.
-void InitDnsPrefetch(TimeDelta max_queue_delay, size_t max_concurrent,
-                     PrefService* user_prefs);
+// Deletes |referral_list| when done.
+void FinalizeDnsPrefetchInitialization(
+    DnsMaster* global_dns_master,
+    net::HostResolver::Observer* global_prefetch_observer,
+    const NameList& hostnames_to_prefetch,
+    ListValue* referral_list);
 
-// Cancel pending lookup requests and don't make new ones. Does nothing
-// if dns prefetching has not been initialized (to simplify its usage).
-void EnsureDnsPrefetchShutdown();
-
-// Free all resources allocated by InitDnsPrefetch. After that you must not call
-// any function from this file.
+// Free all resources allocated by FinalizeDnsPrefetchInitialization. After that
+// you must not call any function from this file.
 void FreeDnsPrefetchResources();
 
-// Lazily allocates a HostResolver to be used by the DNS prefetch system, on
-// the IO thread.
-net::HostResolver* GetGlobalHostResolver();
+// Creates the HostResolver observer for the prefetching system.
+net::HostResolver::Observer* CreatePrefetchObserver();
 
 //------------------------------------------------------------------------------
 // Global APIs relating to Prefetching in browser
@@ -70,7 +64,6 @@ class DnsGlobalInit {
   static const int kMaxPrefetchQueueingDelayMs;
 
   DnsGlobalInit(PrefService* user_prefs, PrefService* local_state);
-  ~DnsGlobalInit();
 
  private:
   // Maintain a field trial instance when we do A/B testing.

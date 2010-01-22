@@ -5,6 +5,7 @@
 #include "base/message_loop.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"

@@ -23,6 +23,7 @@ class ProxyConfig;
 
 class ChromeURLRequestContext;
 class ChromeURLRequestContextFactory;
+class IOThread;
 
 // TODO(eroman): Cleanup the declaration order in this file -- it is all
 //               wonky to try and minimize awkward deltas.
@@ -335,6 +336,8 @@ class ChromeURLRequestContextFactory {
   virtual ChromeURLRequestContext* Create() = 0;
 
  protected:
+  IOThread* io_thread() { return io_thread_; }
+
   // Assigns this factory's properties to |context|.
   void ApplyProfileParametersToContext(ChromeURLRequestContext* context);
 
@@ -357,6 +360,9 @@ class ChromeURLRequestContextFactory {
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
 
   FilePath profile_dir_path_;
+
+ private:
+  IOThread* const io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContextFactory);
 };

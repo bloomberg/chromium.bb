@@ -50,7 +50,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return metrics_service_.get();
   }
 
-  virtual base::Thread* io_thread() {
+  virtual IOThread* io_thread() {
     DCHECK(CalledOnValidThread());
     if (!created_io_thread_)
       CreateIOThread();
@@ -217,7 +217,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateMetricsService();
 
   void CreateIOThread();
-  void ResetIOThread();
   static void CleanupOnIOThread();
 
   void CreateFileThread();
@@ -246,7 +245,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   scoped_ptr<MetricsService> metrics_service_;
 
   bool created_io_thread_;
-  scoped_ptr<base::Thread> io_thread_;
+  scoped_ptr<IOThread> io_thread_;
 #if defined(OS_LINUX)
   // This shares a created flag with the IO thread.
   scoped_ptr<base::Thread> background_x11_thread_;

@@ -20,6 +20,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/notification_service.h"
 
+class IOThread;
+
 class TestingBrowserProcess : public BrowserProcess {
  public:
   TestingBrowserProcess()
@@ -40,7 +42,7 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
-  virtual base::Thread* io_thread() {
+  virtual IOThread* io_thread() {
     return NULL;
   }
 

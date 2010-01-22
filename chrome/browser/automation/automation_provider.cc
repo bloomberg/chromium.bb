@@ -40,6 +40,7 @@
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/net/url_request_context_getter.h"

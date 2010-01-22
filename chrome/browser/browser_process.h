@@ -48,6 +48,8 @@ namespace printing {
 class PrintJobManager;
 }
 
+class IOThread;
+
 // NOT THREAD SAFE, call only from the main thread.
 // These functions shouldn't return NULL unless otherwise noted.
 class BrowserProcess {
@@ -81,7 +83,7 @@ class BrowserProcess {
   // ChromeThread::PostTask (or other variants) as they take care of checking
   // that a thread is still alive, race conditions, lifetime differences etc.
   // If you still must use this, need to check the return value for NULL.
-  virtual base::Thread* io_thread() = 0;
+  virtual IOThread* io_thread() = 0;
 
   // Returns the thread that we perform random file operations on. For code
   // that wants to do I/O operations (not network requests or even file: URL
