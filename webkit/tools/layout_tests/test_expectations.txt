@@ -2727,7 +2727,7 @@ BUG28646 : editing/selection/transformed-selection-rects.html = FAIL
 BUG28916 MAC : editing/pasteboard/paste-xml.xhtml = IMAGE+TEXT
 
 // Flaky test from r51224:r51237 roll.
-BUG28918 DEBUG : storage/domstorage/localstorage/iframe-events.html = CRASH PASS
+// BUG28918 DEBUG : storage/domstorage/localstorage/iframe-events.html = CRASH PASS
 
 // New failures from WebKit r51534:r51576
 BUG29157 WIN LINUX MAC :  svg/animations/animVal-basics.html = TIMEOUT
