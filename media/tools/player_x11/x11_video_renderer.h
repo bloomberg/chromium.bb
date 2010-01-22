@@ -1,10 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
 #ifndef MEDIA_TOOLS_PLAYER_X11_X11_VIDEO_RENDERER_H_
 #define MEDIA_TOOLS_PLAYER_X11_X11_VIDEO_RENDERER_H_
 
+#include <GL/glew.h>
+#include <GL/glxew.h>
 #include <X11/Xlib.h>
 
 #include "base/lock.h"
@@ -61,6 +63,19 @@ class X11VideoRenderer : public media::VideoRendererBase {
   unsigned long picture_;
 
   bool use_render_;
+
+  bool use_gl_;
+
+  // GL context.
+  GLXContext gl_context_;
+
+  // 3 textures, one for each plane.
+  GLuint textures_[3];
+
+  // Shaders and program for YUV->RGB conversion.
+  GLuint vertex_shader_;
+  GLuint fragment_shader_;
+  GLuint program_;
 
   static X11VideoRenderer* instance_;
 
