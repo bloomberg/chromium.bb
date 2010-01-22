@@ -82,4 +82,4 @@ export VALGRIND_LIB_INNER="$CHROME_VALGRIND/lib/valgrind"
 echo "Using valgrind binaries from ${CHROME_VALGRIND}"
 PATH="${CHROME_VALGRIND}/bin:$PATH"
 
-PYTHONPATH=$THISDIR/../../webkit/tools/layout_tests/:$THISDIR/../python "$THISDIR/chrome_tests.py" "$@"
+PYTHONPATH=$THISDIR/../../webkit/tools/layout_tests/webkitpy/layout_tests:$THISDIR/../python "$THISDIR/chrome_tests.py" "$@"
