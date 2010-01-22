@@ -121,6 +121,11 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // BrowserThemeProvider interface and the colors we send to webkit.
   void LoadGtkValues();
 
+  // Returns a GtkStyle* from which we get the colors for our frame. Checks for
+  // the optional "MetaFrames" widget class before returning the default
+  // GtkWindow one.
+  GtkStyle* GetFrameStyle();
+
   // Sets the values that we send to webkit to safe defaults.
   void LoadDefaultValues();
 

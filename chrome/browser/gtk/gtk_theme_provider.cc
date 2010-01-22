@@ -439,7 +439,7 @@ void GtkThemeProvider::LoadGtkValues() {
       profile()->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeImages);
   pref_images->Clear();
 
-  GtkStyle* window_style = gtk_rc_get_style(fake_window_);
+  GtkStyle* window_style = GetFrameStyle();
   GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
 
   GdkColor frame_color = window_style->bg[GTK_STATE_SELECTED];
@@ -601,6 +601,20 @@ void GtkThemeProvider::LoadGtkValues() {
                        link_color);
   SetThemeColorFromGtk(BrowserThemeProvider::COLOR_NTP_SECTION_LINK_UNDERLINE,
                        link_color);
+}
+
+GtkStyle* GtkThemeProvider::GetFrameStyle() {
+  GtkStyle* window_style =
+      gtk_rc_get_style_by_paths(gtk_widget_get_settings(fake_window_),
+                                NULL, "MetaFrames",
+                                G_TYPE_NONE);
+  if (!window_style) {
+    // Some themes don't specify the MetaFrames class, so do a normal lookup on
+    // our main window.
+    window_style = gtk_rc_get_style(fake_window_);
+  }
+
+  return window_style;
 }
 
 void GtkThemeProvider::LoadDefaultValues() {
