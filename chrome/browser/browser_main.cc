@@ -920,6 +920,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(OS_WIN)
     if (InstallUtil::IsChromeFrameProcess())
       MetricsLog::set_version_extension("-F");
+#elif defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
+    MetricsLog::set_version_extension("-64");
 #endif  // defined(OS_WIN)
 
     bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
