@@ -47,14 +47,25 @@ int NaClThreadCtor(struct NaClThread  *ntp,
                    void               *state,
                    size_t             stack_size) {
   HANDLE handle;
+  DWORD actual_stack_size;
 
-  if (0 == (handle = (HANDLE) _beginthreadex(NULL,      /* default security */
-                                   stack_size,
+  if (stack_size > MAXDWORD) {
+    NaClLog(LOG_ERROR,
+      "nacl_thread: _beginthreadex failed, stack request out of range",
+      errno);
+    return 0;
+  } else {
+    actual_stack_size = (DWORD)stack_size;
+  }
+
+  handle = (HANDLE) _beginthreadex(NULL,      /* default security */
+                                   actual_stack_size,
                                    (unsigned (WINAPI *)(void *))  start_fn,
                                    /* the argument for the thread function */
                                    state,
-                                   0,          /*start running */
-                                   NULL))) {   /* we don't need the thread id */
+                                   0,         /*start running */
+                                   NULL);
+  if (0 == handle){  /* we don't need the thread id */
     NaClLog(LOG_ERROR,
             "nacl_thread: _beginthreadex failed, errno %d",
             errno);

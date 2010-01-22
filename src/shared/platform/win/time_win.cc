@@ -41,6 +41,7 @@
 
 #include "native_client/src/shared/platform/time.h"
 #include "native_client/src/shared/platform/win/lock.h"
+#include "native_client/src/include/checked_cast.h"
 
 namespace {
 
@@ -98,14 +99,14 @@ NaCl::Time NaCl::Time::FromExploded(bool is_local, const Exploded& exploded) {
   // Create the system struct representing our exploded time. It will either be
   // in local time or UTC.
   SYSTEMTIME st;
-  st.wYear = exploded.year;
-  st.wMonth = exploded.month;
-  st.wDayOfWeek = exploded.day_of_week;
-  st.wDay = exploded.day_of_month;
-  st.wHour = exploded.hour;
-  st.wMinute = exploded.minute;
-  st.wSecond = exploded.second;
-  st.wMilliseconds = exploded.millisecond;
+  st.wYear = nacl::assert_cast<WORD>(exploded.year);
+  st.wMonth = nacl::assert_cast<WORD>(exploded.month);
+  st.wDayOfWeek = nacl::assert_cast<WORD>(exploded.day_of_week);
+  st.wDay = nacl::assert_cast<WORD>(exploded.day_of_month);
+  st.wHour = nacl::assert_cast<WORD>(exploded.hour);
+  st.wMinute = nacl::assert_cast<WORD>(exploded.minute);
+  st.wSecond = nacl::assert_cast<WORD>(exploded.second);
+  st.wMilliseconds = nacl::assert_cast<WORD>(exploded.millisecond);
 
   // Convert to FILETIME.
   FILETIME ft;
@@ -187,7 +188,7 @@ NaCl::TimeTicks NaCl::TimeTicks::Now() {
   // InterlockedCompareExchange64, but that doesn't work on XP.
   DWORD tick_count;
   int64 rollover_count;
-  {
+  /* lint complains about this, ignore */{
     AutoLock lock(*tick_lock);
     tick_count = tick_function_();
     if (tick_count < last_tick_count)

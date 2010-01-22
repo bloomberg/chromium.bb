@@ -68,7 +68,9 @@ if env.Bit('windows'):
   ]
   # Needed for rand_s().
   env.Append(
-        CCFLAGS = ['/D_CRT_RAND_S',],
+        CCFLAGS = ['/D_CRT_RAND_S',
+                   '/D_UNICODE',
+                   '/DUNICODE'],
   )
 elif env.Bit('linux'):
   platform_inputs += [
@@ -119,8 +121,10 @@ env.ComponentLibrary('platform', platform_inputs)
 
 if env.Bit('windows'):
   port_win_test_exe = env.ComponentProgram('port_win_test',
-                                           ['win/port_win_test.c'],
-                                           EXTRA_LIBS=['platform'])
+                                           ['platform_tests.cc',
+                                            'win/port_win_test.c'],
+                                           EXTRA_LIBS=['platform',
+                                                       'gio'])
 
   node = env.CommandTestAgainstGoldenOutput(
       'port_win_test.out',

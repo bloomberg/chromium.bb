@@ -214,7 +214,7 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
                 addr + chunk_offset, flProtect);
       }
     }
-    NaClLog(3, "NaClHostDescMap: returning 0x%08x\n", (int) start_addr);
+    NaClLog(3, "NaClHostDescMap: returning 0x%08"PRIxPTR"\n", start_addr);
     return (uintptr_t) start_addr;
   }
 
@@ -448,10 +448,20 @@ ssize_t NaClHostDescRead(struct NaClHostDesc  *d,
                          size_t               len) {
   ssize_t actual;
 
+  /* Windows _read only supports uint, so we need
+   * to clamp the length. */
+  unsigned int actual_len;
+
+  if (len < UINT_MAX) {
+    actual_len = (unsigned int) len;
+  } else {
+    actual_len = UINT_MAX;
+  }
+
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDescRead: 'this' is NULL\n");
   }
-  if (-1 == (actual =_read(d->d, buf, len))) {
+  if (-1 == (actual =_read(d->d, buf, actual_len))) {
     return -GetErrno();
   }
   return actual;
@@ -462,10 +472,21 @@ ssize_t NaClHostDescWrite(struct NaClHostDesc *d,
                           size_t              len) {
   ssize_t actual;
 
+  /* Windows _write only supports uint, so we need
+   * to clamp the length.
+   */
+  unsigned int actual_len;
+
+  if (len < UINT_MAX) {
+    actual_len = (unsigned int) len;
+  } else {
+    actual_len = UINT_MAX;
+  }
+
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDescWrite: 'this' is NULL\n");
   }
-  if (-1 == (actual = _write(d->d, buf, len))) {
+  if (-1 == (actual = _write(d->d, buf, actual_len))) {
     return -GetErrno();
   }
   return actual;

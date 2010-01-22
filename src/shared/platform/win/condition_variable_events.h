@@ -60,6 +60,8 @@
 
 #include "native_client/src/shared/platform/time.h"
 #include "native_client/src/shared/platform/win/lock.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 
 namespace NaCl {
 
@@ -92,8 +94,10 @@ class ConditionVariableEvent {
   ~ConditionVariableEvent() {
     // DCHECK(IsSingleton());
     if (0 != handle_) {
-      int ret_val = CloseHandle(handle_);
-      // DCHECK(0 != ret_val);
+      if (0 == CloseHandle(handle_)) {
+        NaClLog(LOG_ERROR, "CloseHandle returned 0"
+                "in ~ConditionVariableEvent()");
+      }
     }
   }
 

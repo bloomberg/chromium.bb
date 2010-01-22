@@ -40,6 +40,8 @@
 // in a production build.
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/win/lock.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 
 NaCl::Lock::Lock()
     : lock_()
@@ -58,10 +60,11 @@ NaCl::Lock::~Lock() {
   lock_.Lock();
   int final_recursion_count = recursion_count_shadow_;
   lock_.Unlock();
-#endif
 
   // Allow unit test exception only at end of method.
-  // DCHECK(0 == final_recursion_count);
+  DCHECK(0 == final_recursion_count);
+#endif
+
 }
 
 void NaCl::Lock::Acquire() {
@@ -124,22 +127,25 @@ bool NaCl::Lock::Try() {
 // debug mode it slowly and carefully validates the requirement (and fires a
 // a DCHECK if it was called incorrectly).
 int32 NaCl::Lock::GetCurrentThreadRecursionCount() {
+  // We hold lock, so this *is* correct value.
+  int32 temp = recursion_count_shadow_;
+
 #ifndef NDEBUG
+  lock_.Lock();
+  temp = recursion_count_shadow_;
+  lock_.Unlock();
+  // Unit tests catch an exception, so we need to be careful to test
+  // outside the critical section, since the Leave would be skipped!?!
+
   // If this DCHECK fails, then the most probable cause is:
   // This method was called by class AutoUnlock during processing of a
   // Wait() call made into the ConditonVariable class. That call to
   // Wait() was made (incorrectly) without first Aquiring this Lock
   // instance.
-  lock_.Lock();
-  int temp = recursion_count_shadow_;
-  lock_.Unlock();
-  // Unit tests catch an exception, so we need to be careful to test
-  // outside the critical section, since the Leave would be skipped!?!
-  // DCHECK(temp >= 1);  // Allow unit test exception only at end of method.
+  DCHECK(temp >= 1);  // Allow unit test exception only at end of method.
 #endif  // DEBUG
 
-  // We hold lock, so this *is* correct value.
-  return recursion_count_shadow_;
+  return temp;
 }
 
 

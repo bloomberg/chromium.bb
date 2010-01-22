@@ -245,11 +245,13 @@ int NaClGetTimeOfDay(struct nacl_abi_timeval *tv) {
   return NaClGetTimeOfDayIntern(tv, &gNaClTimeState);
 }
 
-int NaClNanosleep(struct nacl_abi_timespec const  *req,
-                  struct nacl_abi_timespec        *rem) {
+int NaClNanosleep(struct nacl_abi_timespec const *req,
+                  struct nacl_abi_timespec       *rem) {
   DWORD                     sleep_ms;
   uint64_t                  resolution;
   DWORD                     resolution_gap = 0;
+
+  UNREFERENCED_PARAMETER(rem);
 
   /* round up from ns resolution to ms resolution */
   sleep_ms = (req->tv_sec * NACL_MILLIS_PER_UNIT +

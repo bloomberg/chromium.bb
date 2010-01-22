@@ -52,8 +52,7 @@ int loop_ffs(int v) {
  * This exhaustively tests all 32-bit numbers, so will take a while
  * (about a minute on current machines).
  */
-int main(int ac,
-         char **av) {
+int TestFFS() {
   unsigned int errors = 0;
   uint32_t x;
 

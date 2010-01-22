@@ -66,6 +66,8 @@ int NaClSecureRngCtor(struct NaClSecureRng *self) {
 int NaClSecureRngTestingCtor(struct NaClSecureRng *self,
                              uint8_t              *seed_material,
                              size_t               seed_bytes) {
+  UNREFERENCED_PARAMETER(seed_material);
+  UNREFERENCED_PARAMETER(seed_bytes);
   self->base.vtbl = NULL;
   self->nvalid = 0;
   return 0;

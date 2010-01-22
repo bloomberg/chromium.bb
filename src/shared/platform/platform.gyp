@@ -111,49 +111,113 @@
     '../../../build/common.gypi',
   ],
   'target_defaults': {
+    'variables': {
+      'target_base': 'none',
+    },
+    'conditions': [
+      ['OS=="linux"', {
+        'link_settings': {
+          'libraries': [
+            '-lssl',
+            '-lcrypto',
+            '-lstdc++',
+          ],
+        },
+      }],
+      ['OS=="mac"', {
+        'link_settings': {
+          'libraries': [
+            '$(SDKROOT)/usr/lib/libcrypto.dylib',
+            '$(SDKROOT)/usr/lib/libssl.dylib',
+            '$(SDKROOT)/usr/lib/libstdc++.dylib',
+          ],
+        },
+      }],
+    ],
+    'target_conditions': [
+      ['OS=="linux" or OS=="mac"', {
+        'cflags': [
+          '-Wno-long-long',
+        ],
+      }],
+      ['target_base=="platform_lib"', {
+        'sources': [
+          '<@(common_sources)',
+          '<@(platform_sources)',
+        ],
+      }
+    ],
+    ['target_base=="platform_tests"', {
+        'sources': [
+          'platform_tests.cc',
+        ],
+        'conditions': [[
+          'OS=="win"', {
+            'sources': [
+              'win/port_win_test.c',
+            ],
+          }
+        ]]
+      }
+    ]
+    ],
   },
   'targets': [
+    # ----------------------------------------------------------------------
     {
       'target_name': 'platform',
       'type': 'static_library',
-      'conditions': [
-        ['OS=="linux" or OS=="mac"', {
-          'cflags': [
-            '-Wno-long-long',
-          ],
-        }],
-        ['OS=="linux" and nacl_standalone==1', {
-          'link_settings': {
-            'libraries': [
-              '-lssl',
-              '-lcrypto',
-              '-lstdc++',
-            ],
-          },
-        }],
-        ['OS=="mac" and nacl_standalone==1', {
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/usr/lib/libcrypto.dylib',
-              '$(SDKROOT)/usr/lib/libssl.dylib',
-              '$(SDKROOT)/usr/lib/libstdc++.dylib',
-            ],
-          },
-        }],
+      'variables': {
+        'target_base': 'platform_lib',
+      },
+    },
+    # ----------------------------------------------------------------------
+    {
+      'target_name': 'platform64',
+      'type': 'static_library',
+      'variables': {
+        'target_base': 'platform_lib',
+      },
+      'configurations': {
+        'Common_Base': {
+          'msvs_target_platform': 'x64',
+        },
+      },
+    },
+    # ----------------------------------------------------------------------
+    {
+      'target_name': 'platform_tests',
+      'type': 'executable',
+      'variables': {
+        'target_base': 'platform_tests',
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
       ],
-      'sources': [
-        '<@(common_sources)',
-        '<@(platform_sources)',
+    },
+    # ----------------------------------------------------------------------
+    {
+      'target_name': 'platform_tests64',
+      'type': 'executable',
+      'variables': {
+        'target_base': 'platform_tests',
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+        '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio64',
       ],
-      # TODO(sehr,gregoryd): win/nacl_host_dir.c has wide-char warnings
-      # and some unicode related compilation option is missing here?
-      'msvs_disabled_warnings': [4133],
+      'configurations': {
+        'Common_Base': {
+          'msvs_target_platform': 'x64',
+        },
+      },
     },
   ],
 }
 
-# TODO:
-# if env.Bit('linux'): or env.Bit('mac'):
+## TODO:
+## if env.Bit('linux'): or env.Bit('mac'):
 #    env.FilterOut(CCFLAGS=['-pedantic'])
 #if env.Bit('windows'):
 #  port_win_test_exe = env.ComponentProgram('port_win_test',
