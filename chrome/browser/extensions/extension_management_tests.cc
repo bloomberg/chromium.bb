@@ -120,6 +120,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, Incognito) {
   UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
 }
 
+#if defined(OS_LINUX)
+// See http://crbug.com/32906.
+#define UpdatePermissions DISABLED_UpdatePermissions
+#endif
+
 // Tests the process of updating an extension to one that requires higher
 // permissions.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissions) {
