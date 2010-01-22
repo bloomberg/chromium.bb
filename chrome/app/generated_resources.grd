@@ -3535,9 +3535,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash storage settings">
         Adobe Flash storage settings...
       </message>
-      <message name="IDS_FLASH_STORAGE_URL" desc="URL for opening Adobe Flash storage settings - please replace en in the original URL with code matching the target language and make sure url does actually exist.">
-        http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager07.html
-      </message>
       <message name="IDS_CLEAR_DATA_DAY" desc="deletion period combo box: day">
         Last day
       </message>
@@ -3671,19 +3668,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Cookie alert dialog -->
       <message name="IDS_COOKIE_ALERT_TITLE" desc="Format string for cookie alert dialog title">
-        Cookie from <ph name="HOST">%s<ex>www.google.com</ex></ph>
+        Cookie from <ph name="HOST">$1<ex>www.google.com</ex></ph>
       </message>
       <message name="IDS_DATA_ALERT_TITLE" desc="Format string for data storing alert dialog title">
-        Data from <ph name="HOST">%s<ex>www.google.com</ex></ph>
+        Data from <ph name="HOST">$1<ex>www.google.com</ex></ph>
       </message>
       <message name="IDS_COOKIE_ALERT_LABEL" desc="Format string for a label on top of cookie alert dialog">
-        <ph name="HOST">%s<ex>www.google.com</ex></ph> wants to create a cookie on your computer.
+        <ph name="HOST">$1<ex>www.google.com</ex></ph> wants to create a cookie on your computer.
       </message>
       <message name="IDS_DATA_ALERT_LABEL" desc="Format string for a label on top of data storing alert dialog">
-        <ph name="HOST">%s<ex>www.google.com</ex></ph> wants to set data on your computer.
+        <ph name="HOST">$1<ex>www.google.com</ex></ph> wants to set data on your computer.
       </message>
       <message name="IDS_COOKIE_ALERT_REMEMBER_RADIO" desc="Format string for a radio button for accepting all cookies on cookie alert dialog">
-        Remember my choice for all cookies and site data from <ph name="HOST">%s<ex>www.google.com</ex></ph>
+        Remember my choice for all cookies and site data from <ph name="HOST">$1<ex>www.google.com</ex></ph>
       </message>
       <message name="IDS_COOKIE_ALERT_ASK_RADIO" desc="A radio button label for asking for cookie storing permission every time.">
         Ask me every time

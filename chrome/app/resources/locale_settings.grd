@@ -631,7 +631,12 @@
       <message name="IDS_CHROME_WELCOME_URL" translateable="false">
         http://www.google.com/chrome/intl/[GRITLANGCODE]/welcome.html
       </message>
-      
+
+      <!-- The URL for Adobe Flash storage settings -->
+      <message name="IDS_FLASH_STORAGE_URL" desc="URL for opening Adobe Flash storage settings - please replace en in the original URL with code matching the target language and make sure url does actually exist.">
+        http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager07.html
+      </message>
+
       <!-- The width of the sync setup wizard / login dialog in characters. -->
       <message name="IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS" use_name_for_id="true">
         46
