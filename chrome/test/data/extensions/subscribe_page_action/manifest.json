@@ -1,7 +1,7 @@
 {
   "name": "RSS Subscription Extension (by Google)",
   "description": "Adds one-click subscription to your toolbar.",
-  "version": "1.9.1",
+  "version": "2.0",
   "permissions": [
     "tabs",
     "http://*/*",
@@ -12,7 +12,12 @@
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
-      "js": ["feed_finder.js"]
+      "js": ["sniff_common.js", "doc_start.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["sniff_common.js", "feed_finder.js"]
     }
   ],
   "icons": { "128": "feed-icon-128x128.png" },
