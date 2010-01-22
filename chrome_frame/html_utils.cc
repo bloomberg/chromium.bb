@@ -294,10 +294,12 @@ const char* GetChromeFrameUserAgent() {
   if (!cf_user_agent[0]) {
     _pAtlModule->m_csStaticDataInitAndTypeInfo.Lock();
     if (!cf_user_agent[0]) {
-      uint32 version = 0;
-      GetModuleVersion(reinterpret_cast<HMODULE>(&__ImageBase), &version, NULL);
-      wsprintfA(cf_user_agent, "%s/%i.%i", kChromeFrameUserAgent,
-                HIWORD(version), LOWORD(version));
+      uint32 high_version = 0, low_version = 0;
+      GetModuleVersion(reinterpret_cast<HMODULE>(&__ImageBase), &high_version,
+                       &low_version);
+      wsprintfA(cf_user_agent, "%s/%i.%i.%i.%i", kChromeFrameUserAgent,
+                HIWORD(high_version), LOWORD(high_version),
+                HIWORD(low_version), LOWORD(low_version));
     }
     _pAtlModule->m_csStaticDataInitAndTypeInfo.Unlock();
   }
