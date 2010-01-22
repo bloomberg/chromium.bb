@@ -176,7 +176,7 @@ class Rebaseliner(object):
 
     def __init__(self, platform, options):
         self._file_dir = path_utils.PathFromBase('webkit', 'tools',
-            'layout_test')
+            'layout_tests')
         self._platform = platform
         self._options = options
         self._rebaselining_tests = []
