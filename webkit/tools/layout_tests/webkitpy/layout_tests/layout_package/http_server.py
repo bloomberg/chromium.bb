@@ -82,7 +82,8 @@ class Lighttpd(http_server_base.HttpServerBase):
             raise 'Lighttpd already running'
 
         base_conf_file = path_utils.PathFromBase('webkit',
-            'tools', 'layout_tests', 'layout_package', 'lighttpd.conf')
+            'tools', 'layout_tests', 'webkitpy', 'layout_tests',
+            'layout_package', 'lighttpd.conf')
         out_conf_file = os.path.join(self._output_dir, 'lighttpd.conf')
         time_str = time.strftime("%d%b%Y-%H%M%S")
         access_file_name = "access.log-" + time_str + ".txt"
