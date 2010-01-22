@@ -129,12 +129,6 @@ class LoginHandlerGtk : public LoginHandler,
     // to happen after this is called (since this was InvokeLater'd first).
     dialog_ = GetTabContentsForLogin()->CreateConstrainedDialog(this);
 
-    // Now that we have attached ourself to the window, we can make our OK
-    // button the default action and mess with the focus.
-    GTK_WIDGET_SET_FLAGS(ok_, GTK_CAN_DEFAULT);
-    gtk_widget_grab_default(ok_);
-    gtk_widget_grab_focus(username_entry_);
-
     SendNotifications();
   }
 
