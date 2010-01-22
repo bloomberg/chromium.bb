@@ -27,6 +27,8 @@ class ChromeBrowserViewLayoutManager : public BrowserViewLayoutManager {
   // Overridden from BrowserLayoutManager.
   virtual gfx::Size GetMinimumSize();
   virtual gfx::Rect GetFindBarBoundingBox() const;
+  virtual bool IsPositionInWindowCaption(const gfx::Point& point);
+  virtual int NonClientHitTest(const gfx::Point& point);
 
  protected:
   Browser* browser() {

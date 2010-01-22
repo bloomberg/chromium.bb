@@ -91,9 +91,6 @@ using views::GridLayout;
 // static
 SkBitmap BrowserView::default_favicon_;
 SkBitmap BrowserView::otr_avatar_;
-// The visible height of the shadow above the tabs. Clicks in this area are
-// treated as clicks to the frame, rather than clicks to the tab.
-static const int kTabShadowSize = 2;
 // The height of the status bubble.
 static const int kStatusBubbleHeight = 20;
 // The name of a key to store on the window handle so that other code can
@@ -660,10 +657,7 @@ void BrowserView::DetachBrowserBubble(BrowserBubble* bubble) {
 }
 
 bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
-  gfx::Point tabstrip_point(point);
-  View::ConvertPointToView(this, tabstrip(), &tabstrip_point);
-  return tabstrip()->IsPositionInWindowCaption(tabstrip_point)
-      && !browser_extender_->NonClientHitTest(point);
+  return GetBrowserViewLayoutManager()->IsPositionInWindowCaption(point);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1493,14 +1487,13 @@ bool BrowserView::CanClose() const {
 }
 
 int BrowserView::NonClientHitTest(const gfx::Point& point) {
-  // Since the TabStrip only renders in some parts of the top of the window,
-  // the un-obscured area is considered to be part of the non-client caption
-  // area of the window. So we need to treat hit-tests in these regions as
-  // hit-tests of the titlebar.
 
+#if defined(OS_WIN)
+  // The following code is not in the LayoutManager because it's
+  // independent of layout and also depends on the ResizeCorner which
+  // is private.
   if (!frame_->GetWindow()->IsMaximized() &&
       !frame_->GetWindow()->IsFullscreen()) {
-#if defined(OS_WIN)
     CRect client_rect;
     ::GetClientRect(frame_->GetWindow()->GetNativeWindow(), &client_rect);
     gfx::Size resize_corner_size = ResizeCorner::GetSize();
@@ -1515,67 +1508,10 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
         return HTBOTTOMLEFT;
       return HTBOTTOMRIGHT;
     }
+  }
 #endif
-  }
 
-  gfx::Point point_in_browser_view_coords(point);
-  View::ConvertPointToView(GetParent(), this, &point_in_browser_view_coords);
-
-  // Determine if the TabStrip exists and is capable of being clicked on. We
-  // might be a popup window without a TabStrip.
-  if (IsTabStripVisible()) {
-
-    // See if the mouse pointer is within the bounds of the TabStrip.
-    gfx::Point point_in_tabstrip_coords(point);
-    View::ConvertPointToView(GetParent(), tabstrip_, &point_in_tabstrip_coords);
-    if (tabstrip_->HitTest(point_in_tabstrip_coords)) {
-      if (tabstrip_->IsPositionInWindowCaption(point_in_tabstrip_coords))
-        return HTCAPTION;
-      return HTCLIENT;
-    }
-
-    // The top few pixels of the TabStrip are a drop-shadow - as we're pretty
-    // starved of dragable area, let's give it to window dragging (this also
-    // makes sense visually).
-    if (!IsMaximized() &&
-        (point_in_browser_view_coords.y() <
-         (tabstrip_->y() + kTabShadowSize))) {
-      // We return HTNOWHERE as this is a signal to our containing
-      // NonClientView that it should figure out what the correct hit-test
-      // code is given the mouse position...
-      return HTNOWHERE;
-    }
-  }
-
-  if (browser_extender_->NonClientHitTest(point_in_browser_view_coords))
-    return HTCLIENT;
-
-  // If the point's y coordinate is below the top of the toolbar and otherwise
-  // within the bounds of this view, the point is considered to be within the
-  // client area.
-  gfx::Rect bv_bounds = bounds();
-  bv_bounds.Offset(0, toolbar_->y());
-  bv_bounds.set_height(bv_bounds.height() - toolbar_->y());
-  if (bv_bounds.Contains(point))
-    return HTCLIENT;
-
-  // If the point's y coordinate is above the top of the toolbar, but not in
-  // the tabstrip (per previous checking in this function), then we consider it
-  // in the window caption (e.g. the area to the right of the tabstrip
-  // underneath the window controls). However, note that we DO NOT return
-  // HTCAPTION here, because when the window is maximized the window controls
-  // will fall into this space (since the BrowserView is sized to entire size
-  // of the window at that point), and the HTCAPTION value will cause the
-  // window controls not to work. So we return HTNOWHERE so that the caller
-  // will hit-test the window controls before finally falling back to
-  // HTCAPTION.
-  bv_bounds = bounds();
-  bv_bounds.set_height(toolbar_->y());
-  if (bv_bounds.Contains(point))
-    return HTNOWHERE;
-
-  // If the point is somewhere else, delegate to the default implementation.
-  return views::ClientView::NonClientHitTest(point);
+  return GetBrowserViewLayoutManager()->NonClientHitTest(point);
 }
 
 gfx::Size BrowserView::GetMinimumSize() {
