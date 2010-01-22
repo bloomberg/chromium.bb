@@ -94,7 +94,7 @@ if [ $? = 0 ]; then
         if [ -e "$dir/libbz2.so.1" ]; then
             LIB_ARCH=$(check_executable "$dir/libbz2.so.1")
             if [ "$CHROME_ARCH" = "$LIB_ARCH" ]; then
-                ln -s "$dir/libbz2.so.1" "$HERE/libbz2.so.1.0"
+                ln -snf "$dir/libbz2.so.1" "$HERE/libbz2.so.1.0"
                 break;
             fi
         fi
@@ -111,7 +111,7 @@ do
             if [ -e "$dir/$reallib" ]; then
                 LIB_ARCH=$(check_executable "$dir/$reallib")
                 if [ "$CHROME_ARCH" = "$LIB_ARCH" ]; then
-                    ln -s "$dir/$reallib" "$HERE/$lib"
+                    ln -snf "$dir/$reallib" "$HERE/$lib"
                     break;
                 fi
             fi
