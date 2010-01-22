@@ -70,6 +70,13 @@
       bridge->OnCancel();
       break;
     }
+    case NSRunStoppedResponse: {  // Window was closed underneath us
+      // Need to call OnCancel() because there is some cleanup that needs
+      // to be done.  It won't call back to the javascript since the
+      // AppModalDialog knows that the TabContents was destroyed.
+      bridge->OnCancel();
+      break;
+    }
     default:  {
       NOTREACHED();
     }
@@ -117,6 +124,7 @@ void AppModalDialog::CreateAndShowDialog() {
 
   // Show the modal dialog.
   NSAlert* alert = [helper alert];
+  dialog_ = alert;
   NSTextField* field = nil;
   if (text_field) {
     field = [helper textField];
@@ -149,7 +157,10 @@ void AppModalDialog::ActivateModalDialog() {
 }
 
 void AppModalDialog::CloseModalDialog() {
-  NOTIMPLEMENTED();
+  NSAlert* alert = dialog_;
+  DCHECK([alert isKindOfClass:[NSAlert class]]);
+  [NSApp endSheet:[alert window]];
+  dialog_ = nil;
 }
 
 int AppModalDialog::GetDialogButtons() {

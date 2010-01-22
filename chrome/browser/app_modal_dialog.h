@@ -18,7 +18,12 @@ typedef JavascriptMessageBoxDialog* NativeDialog;
 typedef struct _GtkWidget GtkWidget;
 typedef GtkWidget* NativeDialog;
 #elif defined(OS_MACOSX)
-typedef void* NativeDialog;
+#if __OBJC__
+@class NSAlert;
+#else
+class NSAlert;
+#endif
+typedef NSAlert* NativeDialog;
 #endif
 
 class ExtensionHost;
