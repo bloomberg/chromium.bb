@@ -23,6 +23,10 @@ Valid parameters:
 --merge <revision> --branch <branch_num>
 Example: %(app)s --merge 12345 --branch 187
 
+[Merge from branch to branch]
+--merge <revision> --sbranch <branch_num> --branch <branch_num> 
+Example: %(app)s --merge 12345 --sbranch 248 --branch 249
+
 [Revert from trunk]
 --revert <revision>
 Example: %(app)s --revert 12345
@@ -429,7 +433,9 @@ def main(options, args):
       file_pattern_ = FILE_PATTERN   
 
   if options.revert and options.branch:
-    url = BRANCH_URL.replace("$branch", options.branch) 
+    url = BRANCH_URL.replace("$branch", options.branch)
+  elif options.merge and options.sbranch:
+    url = BRANCH_URL.replace("$branch", options.sbranch)
   else:
     url = TRUNK_URL
 
@@ -520,6 +526,8 @@ if __name__ == "__main__":
                            help='Revision to merge from trunk to branch')
   option_parser.add_option('-b', '--branch',
                            help='Branch to revert or merge from')
+  option_parser.add_option('-s', '--sbranch',
+                           help='Source branch for merge')
   option_parser.add_option('-r', '--revert', type="int",
                            help='Revision to revert')
   option_parser.add_option('-w', '--workdir',
