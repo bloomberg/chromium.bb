@@ -15,6 +15,7 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_SYNC_SESSION_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -29,6 +30,8 @@ class WriteTransaction;
 }
 
 namespace browser_sync {
+class ModelSafeWorker;
+
 namespace sessions {
 
 class SyncSession {
@@ -99,11 +102,14 @@ class SyncSession {
     source_ = source;
   }
 
+  const std::vector<ModelSafeWorker*>& workers() const { return workers_; }
+
  private:
   // Extend the encapsulation boundary to utilities for internal member
   // assignments. This way, the scope of these actions is explicit, they can't
   // be overridden, and assigning is always accompanied by unassigning.
   friend class ScopedSetSessionWriteTransaction;
+  friend class ScopedModelSafeGroupRestriction;
 
   // The context for this session, guaranteed to outlive |this|.
   SyncSessionContext* const context_;
@@ -126,6 +132,14 @@ class SyncSession {
   // Used to determine if an auth error notification should be sent out.
   bool auth_failure_occurred_;
 
+  // The set of active ModelSafeWorkers for the duration of this session.
+  const std::vector<ModelSafeWorker*> workers_;
+
+  // Used to fail read/write operations on this SyncSession that don't obey the
+  // currently active ModelSafeWorker contract.
+  bool group_restriction_in_effect_;
+  ModelSafeGroup group_restriction_;
+
   DISALLOW_COPY_AND_ASSIGN(SyncSession);
 };
 
@@ -145,6 +159,26 @@ class ScopedSetSessionWriteTransaction {
  private:
   SyncSession* session_;
   DISALLOW_COPY_AND_ASSIGN(ScopedSetSessionWriteTransaction);
+};
+
+// A utility to restrict access to only those parts of the given SyncSession
+// that pertain to the specified ModelSafeGroup.  See
+// SyncSession::ModelSafetyRestriction.
+class ScopedModelSafeGroupRestriction {
+ public:
+  ScopedModelSafeGroupRestriction(SyncSession* to_restrict,
+                               ModelSafeGroup restriction)
+      : session_(to_restrict) {
+    DCHECK(!session_->group_restriction_in_effect_);
+    session_->group_restriction_in_effect_ = true;
+    session_->group_restriction_ = restriction;
+  }
+  ~ScopedModelSafeGroupRestriction() {
+    session_->group_restriction_in_effect_ = true;
+  }
+ private:
+  SyncSession* session_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedModelSafeGroupRestriction);
 };
 
 }  // namespace sessions

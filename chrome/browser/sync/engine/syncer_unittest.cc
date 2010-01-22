@@ -96,7 +96,9 @@ const int kTestDataLen = 12;
 const int64 kTestLogRequestTimestamp = 123456;
 }  // namespace
 
-class SyncerTest : public testing::Test, public SyncSession::Delegate {
+class SyncerTest : public testing::Test,
+                   public SyncSession::Delegate,
+                   public ModelSafeWorkerRegistrar {
  protected:
   SyncerTest() : syncer_(NULL) {}
 
@@ -114,6 +116,17 @@ class SyncerTest : public testing::Test, public SyncSession::Delegate {
   virtual void OnReceivedShortPollIntervalUpdate(
       const base::TimeDelta& new_interval) {
     last_short_poll_interval_received_ = new_interval;
+  }
+
+  // ModelSafeWorkerRegistrar implementation.
+  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {
+    out->push_back(worker_.get());
+  }
+
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
+    // We're just testing the sync engine here, so we shunt everything to
+    // the SyncerThread.
+    (*out)[syncable::BOOKMARKS] = GROUP_PASSIVE;
   }
 
   void HandleSyncerEvent(SyncerEvent event) {
@@ -151,9 +164,9 @@ class SyncerTest : public testing::Test, public SyncSession::Delegate {
 
     mock_server_.reset(
         new MockConnectionManager(syncdb_.manager(), syncdb_.name()));
-
+    worker_.reset(new ModelSafeWorker());
     context_.reset(new SyncSessionContext(mock_server_.get(), syncdb_.manager(),
-        new ModelSafeWorker()));
+       this));
     context_->set_account_name(syncdb_.name());
     ASSERT_FALSE(context_->syncer_event_channel());
     ASSERT_FALSE(context_->resolver());
@@ -364,6 +377,7 @@ class SyncerTest : public testing::Test, public SyncSession::Delegate {
   std::set<SyncerEvent> syncer_events_;
   base::TimeDelta last_short_poll_interval_received_;
   base::TimeDelta last_long_poll_interval_received_;
+  scoped_ptr<ModelSafeWorker> worker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
 };

@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/lock.h"
@@ -17,7 +18,9 @@
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/bookmark_model_worker.h"
+#include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/glue/ui_model_worker.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "googleurl/src/gurl.h"
 
 namespace browser_sync {
@@ -56,7 +59,7 @@ class SyncFrontend {
 // syncapi element, the SyncManager, on its own thread. This class handles
 // dispatch of potentially blocking calls to appropriate threads and ensures
 // that the SyncFrontend is only accessed on the UI loop.
-class SyncBackendHost {
+class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
  public:
   typedef sync_api::UserShare* UserShareHandle;
   typedef sync_api::SyncManager::Status::Summary StatusSummary;
@@ -105,6 +108,10 @@ class SyncBackendHost {
   // GAIA) has confirmed the username is authentic.
   string16 GetAuthenticatedUsername() const;
 
+  // ModelSafeWorkerRegistrar implementation.
+  virtual void GetWorkers(std::vector<browser_sync::ModelSafeWorker*>* out);
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out);
+
 #if defined(UNIT_TEST)
   // Called from unit test to bypass authentication and initialize the syncapi
   // to a state suitable for testing but not production.
@@ -113,12 +120,12 @@ class SyncBackendHost {
                              sync_api::HttpPostProviderFactory* auth_factory) {
     if (!core_thread_.Start())
       return;
-    bookmark_model_worker_ = new BookmarkModelWorker(frontend_loop_);
+    registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
+    registrar_.routing_info[syncable::BOOKMARKS] = GROUP_UI;
 
     core_thread_.message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(core_.get(),
         &SyncBackendHost::Core::DoInitializeForTest,
-        bookmark_model_worker_,
         test_user,
         factory,
         auth_factory));
@@ -152,7 +159,6 @@ class SyncBackendHost {
     // Called on the SyncBackendHost core_thread_ to perform initialization
     // of the syncapi on behalf of SyncBackendHost::Initialize.
     void DoInitialize(const GURL& service_url,
-        BookmarkModelWorker* bookmark_model_worker,
         bool attempt_last_user_authentication,
         sync_api::HttpPostProviderFactory* http_bridge_factory,
         sync_api::HttpPostProviderFactory* auth_http_bridge_factory,
@@ -185,12 +191,10 @@ class SyncBackendHost {
     // Special form of initialization that does not try and authenticate the
     // last known user (since it will fail in test mode) and does some extra
     // setup to nudge the syncapi into a useable state.
-    void DoInitializeForTest(BookmarkModelWorker* bookmark_model_worker,
-                             const std::wstring& test_user,
+    void DoInitializeForTest(const std::wstring& test_user,
                              sync_api::HttpPostProviderFactory* factory,
                              sync_api::HttpPostProviderFactory* auth_factory) {
-        DoInitialize(GURL(), bookmark_model_worker, false, factory,
-                     auth_factory, std::string());
+        DoInitialize(GURL(), false, factory, auth_factory, std::string());
         syncapi_->SetupForTestMode(test_user);
     }
 #endif
@@ -248,6 +252,8 @@ class SyncBackendHost {
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
+  UIModelWorker* ui_worker();
+
   // A thread we dedicate for use by our Core to perform initialization,
   // authentication, handle messages from the syncapi, and periodically tell
   // the syncapi to persist itself.
@@ -260,12 +266,32 @@ class SyncBackendHost {
   // to safely talk back to the SyncFrontend.
   MessageLoop* const frontend_loop_;
 
-  // We hold on to the BookmarkModelWorker created for the syncapi to ensure
-  // shutdown occurs in the sequence we expect by calling Stop() at the
-  // appropriate time. It is guaranteed to be valid because the worker is
-  // only destroyed when the SyncManager is destroyed, which happens when
-  // our Core is destroyed, which happens in Shutdown().
-  BookmarkModelWorker* bookmark_model_worker_;
+  // This is state required to implement ModelSafeWorkerRegistrar.
+  struct {
+    // We maintain ownership of all workers.  In some cases, we need to ensure
+    // shutdown occurs in an expected sequence by Stop()ing certain workers.
+    // They are guaranteed to be valid because we only destroy elements of
+    // |workers_| after the syncapi has been destroyed.  Unless a worker is no
+    // longer needed because all types that get routed to it have been disabled
+    // (from syncing). In that case, we'll destroy on demand *after* routing
+    // any dependent types to GROUP_PASSIVE, so that the syncapi doesn't call
+    // into garbage.  If an index is non-NULL, it means at least one ModelType
+    // that routes to that model safe group is being synced.
+    browser_sync::ModelSafeWorker*
+        workers[browser_sync::MODEL_SAFE_GROUP_COUNT];
+    browser_sync::ModelSafeRoutingInfo routing_info;
+  } registrar_;
+
+  // The user can incur changes to registrar_ at any time from the UI thread.
+  // The syncapi needs to periodically get a consistent snapshot of the state,
+  // and it does so from a different thread.  Therefore, we protect creation,
+  // destruction, and re-routing events by acquiring this lock.  Note that the
+  // SyncBackendHost may read (on the UI thread or core thread) from registrar_
+  // without acquiring the lock (which is typically "read ModelSafeWorker
+  // pointer value", and then invoke methods), because lifetimes are managed on
+  // the UI thread.  Of course, this comment only applies to ModelSafeWorker
+  // impls that are themselves thread-safe, such as UIModelWorker.
+  Lock registrar_lock_;
 
   // The frontend which we serve (and are owned by).
   SyncFrontend* frontend_;

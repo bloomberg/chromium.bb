@@ -122,7 +122,7 @@ bool ReverifyEntry(syncable::WriteTransaction* trans, const SyncEntity& entry,
   const bool deleted = entry.has_deleted() && entry.deleted();
   const bool is_directory = entry.IsFolder();
   const bool is_bookmark =
-      SyncerUtil::GetSyncDataType(entry) == SYNC_TYPE_BOOKMARK;
+      SyncerUtil::GetModelType(entry) == syncable::BOOKMARKS;
 
   return VERIFY_SUCCESS == SyncerUtil::VerifyUpdateConsistency(trans,
                                                                entry,
@@ -141,8 +141,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   const SyncEntity& entry = *static_cast<const SyncEntity*>(&pb_entry);
   using namespace syncable;
   syncable::Id id = entry.id();
-  const std::string name =
-      SyncerProtoUtil::NameFromSyncEntity(entry);
+  const std::string name = SyncerProtoUtil::NameFromSyncEntity(entry);
 
   WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
 

@@ -31,6 +31,7 @@ class DirectoryManager;
 namespace browser_sync {
 
 class ConflictResolver;
+class ModelSafeWorkerRegistrar;
 class ServerConnectionManager;
 
 namespace sessions {
@@ -41,12 +42,12 @@ class SyncSessionContext {
  public:
   SyncSessionContext(ServerConnectionManager* connection_manager,
                      syncable::DirectoryManager* directory_manager,
-                     ModelSafeWorker* model_safe_worker)
+                     ModelSafeWorkerRegistrar* model_safe_worker_registrar)
       : resolver_(NULL),
         syncer_event_channel_(NULL),
         connection_manager_(connection_manager),
         directory_manager_(directory_manager),
-        model_safe_worker_(model_safe_worker),
+        registrar_(model_safe_worker_registrar),
         extensions_activity_monitor_(new ExtensionsActivityMonitor()),
         notifications_enabled_(false) {
   }
@@ -69,8 +70,8 @@ class SyncSessionContext {
   SyncerEventChannel* syncer_event_channel() {
     return syncer_event_channel_;
   }
-  ModelSafeWorker* model_safe_worker() {
-    return model_safe_worker_.get();
+  ModelSafeWorkerRegistrar* registrar() {
+    return registrar_;
   }
   ExtensionsActivityMonitor* extensions_monitor() {
     return extensions_activity_monitor_;
@@ -103,9 +104,9 @@ class SyncSessionContext {
   ServerConnectionManager* const connection_manager_;
   syncable::DirectoryManager* const directory_manager_;
 
-  // A worker capable of processing work closures on a thread that is
-  // guaranteed to be safe for model modifications.
-  scoped_ptr<ModelSafeWorker> model_safe_worker_;
+  // A registrar of workers capable of processing work closures on a thread
+  // that is guaranteed to be safe for model modifications.
+  ModelSafeWorkerRegistrar* registrar_;
 
   // We use this to stuff extensions activity into CommitMessages so the server
   // can correlate commit traffic with extension-related bookmark mutations.

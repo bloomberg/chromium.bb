@@ -10,7 +10,6 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
-#include "chrome/browser/sync/glue/bookmark_model_worker.h"
 #include "webkit/glue/webkit_glue.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
@@ -28,16 +27,28 @@ SyncBackendHost::SyncBackendHost(SyncFrontend* frontend,
                                  std::set<ChangeProcessor*> processors)
     : core_thread_("Chrome_SyncCoreThread"),
       frontend_loop_(MessageLoop::current()),
-      bookmark_model_worker_(NULL),
       frontend_(frontend),
       processors_(processors),
       sync_data_folder_path_(profile_path.Append(kSyncDataFolderName)),
       last_auth_error_(AuthError::None()) {
+
+  // Init our registrar state.
+  for (int i = 0; i < MODEL_SAFE_GROUP_COUNT; i++)
+    registrar_.workers[i] = NULL;
+
+  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; i++) {
+    syncable::ModelType t(syncable::ModelTypeFromInt(i));
+    registrar_.routing_info[t] = GROUP_PASSIVE;  // Init to syncing 0 types.
+  }
+
   core_ = new Core(this);
 }
 
 SyncBackendHost::~SyncBackendHost() {
   DCHECK(!core_ && !frontend_) << "Must call Shutdown before destructor.";
+
+  for (int i = 0; i < MODEL_SAFE_GROUP_COUNT; ++i)
+    DCHECK(registrar_.workers[i] == NULL);
 }
 
 void SyncBackendHost::Initialize(
@@ -46,11 +57,19 @@ void SyncBackendHost::Initialize(
     const std::string& lsid) {
   if (!core_thread_.Start())
     return;
-  bookmark_model_worker_ = new BookmarkModelWorker(frontend_loop_);
+
+  // Create a worker for the UI thread and route bookmark changes to it.
+  // TODO(tim): Pull this into a method to reuse.  For now we don't even
+  // need to lock because we init before the syncapi exists and we tear down
+  // after the syncapi is destroyed.  Make sure to NULL-check workers_ indices
+  // when a new type is synced as the worker may already exist and you just
+  // need to update routing_info_.
+  registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
+  registrar_.routing_info[syncable::BOOKMARKS] = GROUP_UI;
 
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
-                        sync_service_url, bookmark_model_worker_, true,
+                        sync_service_url, true,
                         new HttpBridgeFactory(baseline_context_getter),
                         new HttpBridgeFactory(baseline_context_getter),
                         lsid));
@@ -74,11 +93,12 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
                         &SyncBackendHost::Core::DoShutdown,
                         sync_disabled));
 
-  // Before joining the core_thread_, we wait for the BookmarkModelWorker to
+  // Before joining the core_thread_, we wait for the UIModelWorker to
   // give us the green light that it is not depending on the frontend_loop_ to
   // process any more tasks. Stop() blocks until this termination condition
   // is true.
-  bookmark_model_worker_->Stop();
+  if (ui_worker())
+    ui_worker()->Stop();
 
   // Stop will return once the thread exits, which will be after DoShutdown
   // runs. DoShutdown needs to run from core_thread_ because the sync backend
@@ -92,7 +112,9 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   // DoShutdown.
   core_thread_.Stop();
 
-  bookmark_model_worker_ = NULL;
+  registrar_.routing_info.clear();
+  delete registrar_.workers[GROUP_UI];
+  registrar_.workers[GROUP_UI] = NULL;
   frontend_ = NULL;
   core_ = NULL;  // Releases reference to core_.
 }
@@ -133,6 +155,22 @@ const GoogleServiceAuthError& SyncBackendHost::GetAuthError() const {
   return last_auth_error_;
 }
 
+void SyncBackendHost::GetWorkers(std::vector<ModelSafeWorker*>* out) {
+  AutoLock lock(registrar_lock_);
+  out->clear();
+  for (int i = 0; i < MODEL_SAFE_GROUP_COUNT; i++) {
+    if (registrar_.workers[i] == NULL)
+      continue;
+    out->push_back(registrar_.workers[i]);
+  }
+}
+
+void SyncBackendHost::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
+  AutoLock lock(registrar_lock_);
+  ModelSafeRoutingInfo copy(registrar_.routing_info);
+  out->swap(copy);
+}
+
 SyncBackendHost::Core::Core(SyncBackendHost* backend)
     : host_(backend),
       syncapi_(new sync_api::SyncManager()) {
@@ -167,7 +205,6 @@ std::string MakeUserAgentForSyncapi() {
 
 void SyncBackendHost::Core::DoInitialize(
     const GURL& service_url,
-    BookmarkModelWorker* bookmark_model_worker,
     bool attempt_last_user_authentication,
     sync_api::HttpPostProviderFactory* http_provider_factory,
     sync_api::HttpPostProviderFactory* auth_http_provider_factory,
@@ -189,7 +226,7 @@ void SyncBackendHost::Core::DoInitialize(
       service_url.SchemeIsSecure(),
       http_provider_factory,
       auth_http_provider_factory,
-      bookmark_model_worker,
+      host_,  // ModelSafeWorkerRegistrar.
       attempt_last_user_authentication,
       MakeUserAgentForSyncapi().c_str(),
       lsid.c_str());
@@ -203,13 +240,22 @@ void SyncBackendHost::Core::DoAuthenticate(const std::string& username,
   syncapi_->Authenticate(username.c_str(), password.c_str(), captcha.c_str());
 }
 
+UIModelWorker* SyncBackendHost::ui_worker() {
+  ModelSafeWorker* w = registrar_.workers[GROUP_UI];
+  if (w == NULL)
+    return NULL;
+  if (w->GetModelSafeGroup() != GROUP_UI)
+    NOTREACHED();
+  return static_cast<UIModelWorker*>(w);
+}
+
 void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
 
   save_changes_timer_.Stop();
   syncapi_->Shutdown();  // Stops the SyncerThread.
   syncapi_->RemoveObserver();
-  host_->bookmark_model_worker_->OnSyncerShutdownComplete();
+  host_->ui_worker()->OnSyncerShutdownComplete();
 
   if (sync_disabled &&
       file_util::DirectoryExists(host_->sync_data_folder_path())) {
@@ -231,7 +277,7 @@ void SyncBackendHost::Core::OnChangesApplied(
   }
 
   // ChangesApplied is the one exception that should come over from the sync
-  // backend already on the service_loop_ thanks to our BookmarkModelWorker.
+  // backend already on the service_loop_ thanks to our UIModelWorker.
   // SyncFrontend changes exclusively on the UI loop, because it updates
   // the bookmark model.  As such, we don't need to worry about changes that
   // have been made to the bookmark model but not yet applied to the sync

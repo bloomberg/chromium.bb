@@ -19,11 +19,12 @@ namespace sessions {
 namespace {
 
 class SyncSessionTest : public testing::Test,
-                        public SyncSession::Delegate {
+                        public SyncSession::Delegate,
+                        public ModelSafeWorkerRegistrar {
  public:
   SyncSessionTest() : controller_invocations_allowed_(false) {}
   virtual void SetUp() {
-    context_.reset(new SyncSessionContext(NULL, NULL, NULL));
+    context_.reset(new SyncSessionContext(NULL, NULL, this));
     session_.reset(new SyncSession(context_.get(), this));
   }
   virtual void TearDown() {
@@ -46,6 +47,10 @@ class SyncSessionTest : public testing::Test,
       const base::TimeDelta& new_interval) {
     FailControllerInvocationIfDisabled("OnReceivedShortPollIntervalUpdate");
   }
+
+  // ModelSafeWorkerRegistrar implementation.
+  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {}
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {}
 
   StatusController* status() { return session_->status_controller(); }
  protected:
@@ -78,7 +83,7 @@ TEST_F(SyncSessionTest, SetWriteTransaction) {
   TestDirectorySetterUpper db;
   db.SetUp();
   session_.reset(NULL);
-  context_.reset(new SyncSessionContext(NULL, db.manager(), NULL));
+  context_.reset(new SyncSessionContext(NULL, db.manager(), this));
   session_.reset(new SyncSession(context_.get(), this));
   context_->set_account_name(db.name());
   syncable::ScopedDirLookup dir(context_->directory_manager(),

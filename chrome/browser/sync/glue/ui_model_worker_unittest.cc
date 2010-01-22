@@ -4,22 +4,22 @@
 
 #include "base/thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/bookmark_model_worker.h"
+#include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::BookmarkModelWorker;
+using browser_sync::UIModelWorker;
 using namespace sync_api;
 
 // Various boilerplate, primarily for the StopWithPendingWork test.
 
-class BookmarkModelWorkerVisitor : public ModelSafeWorkerInterface::Visitor {
+class UIModelWorkerVisitor {
  public:
-  BookmarkModelWorkerVisitor(MessageLoop* faux_ui_loop,
-                             base::WaitableEvent* was_run,
-                             bool quit_loop)
+  UIModelWorkerVisitor(MessageLoop* faux_ui_loop,
+                       base::WaitableEvent* was_run,
+                       bool quit_loop)
      : faux_ui_loop_(faux_ui_loop), quit_loop_when_run_(quit_loop),
        was_run_(was_run) { }
-  virtual ~BookmarkModelWorkerVisitor() { }
+  virtual ~UIModelWorkerVisitor() { }
 
   virtual void DoWork() {
     EXPECT_EQ(MessageLoop::current(), faux_ui_loop_);
@@ -32,20 +32,21 @@ class BookmarkModelWorkerVisitor : public ModelSafeWorkerInterface::Visitor {
   MessageLoop* faux_ui_loop_;
   bool quit_loop_when_run_;
   base::WaitableEvent* was_run_;
-  DISALLOW_COPY_AND_ASSIGN(BookmarkModelWorkerVisitor);
+  DISALLOW_COPY_AND_ASSIGN(UIModelWorkerVisitor);
 };
 
 // A faux-syncer that only interacts with its model safe worker.
 class Syncer {
  public:
-  explicit Syncer(BookmarkModelWorker* worker) : worker_(worker) {}
+  explicit Syncer(UIModelWorker* worker) : worker_(worker) {}
   ~Syncer() {}
 
-  void SyncShare(BookmarkModelWorkerVisitor* visitor) {
-    worker_->CallDoWorkFromModelSafeThreadAndWait(visitor);
+  void SyncShare(UIModelWorkerVisitor* visitor) {
+    worker_->DoWorkAndWaitUntilDone(NewCallback(visitor,
+                                    &UIModelWorkerVisitor::DoWork));
   }
  private:
-  BookmarkModelWorker* worker_;
+  UIModelWorker* worker_;
   DISALLOW_COPY_AND_ASSIGN(Syncer);
 };
 
@@ -53,7 +54,7 @@ class Syncer {
 // ask it's ModelSafeWorker to do something.
 class FakeSyncShareTask : public Task {
  public:
-  FakeSyncShareTask(Syncer* syncer, BookmarkModelWorkerVisitor* visitor)
+  FakeSyncShareTask(Syncer* syncer, UIModelWorkerVisitor* visitor)
       : syncer_(syncer), visitor_(visitor) {
   }
   virtual void Run() {
@@ -61,7 +62,7 @@ class FakeSyncShareTask : public Task {
   }
  private:
   Syncer* syncer_;
-  BookmarkModelWorkerVisitor* visitor_;
+  UIModelWorkerVisitor* visitor_;
   DISALLOW_COPY_AND_ASSIGN(FakeSyncShareTask);
 };
 
@@ -69,7 +70,7 @@ class FakeSyncShareTask : public Task {
 class FakeSyncapiShutdownTask : public Task {
  public:
   FakeSyncapiShutdownTask(base::Thread* syncer_thread,
-                          BookmarkModelWorker* worker,
+                          UIModelWorker* worker,
                           base::WaitableEvent** jobs,
                           size_t job_count)
       : syncer_thread_(syncer_thread), worker_(worker), jobs_(jobs),
@@ -90,26 +91,26 @@ class FakeSyncapiShutdownTask : public Task {
   }
  private:
   base::Thread* syncer_thread_;
-  BookmarkModelWorker* worker_;
+  UIModelWorker* worker_;
   base::WaitableEvent** jobs_;
   size_t job_count_;
   base::WaitableEvent all_jobs_done_;
   DISALLOW_COPY_AND_ASSIGN(FakeSyncapiShutdownTask);
 };
 
-class BookmarkModelWorkerTest : public testing::Test {
+class UIModelWorkerTest : public testing::Test {
  public:
-  BookmarkModelWorkerTest() : faux_syncer_thread_("FauxSyncerThread"),
-                              faux_core_thread_("FauxCoreThread") { }
+  UIModelWorkerTest() : faux_syncer_thread_("FauxSyncerThread"),
+                        faux_core_thread_("FauxCoreThread") { }
 
   virtual void SetUp() {
     faux_syncer_thread_.Start();
-    bmw_.reset(new BookmarkModelWorker(&faux_ui_loop_));
+    bmw_.reset(new UIModelWorker(&faux_ui_loop_));
     syncer_.reset(new Syncer(bmw_.get()));
   }
 
   Syncer* syncer() { return syncer_.get(); }
-  BookmarkModelWorker* bmw() { return bmw_.get(); }
+  UIModelWorker* bmw() { return bmw_.get(); }
   base::Thread* core_thread() { return &faux_core_thread_; }
   base::Thread* syncer_thread() { return &faux_syncer_thread_; }
   MessageLoop* ui_loop() { return &faux_ui_loop_; }
@@ -117,14 +118,14 @@ class BookmarkModelWorkerTest : public testing::Test {
   MessageLoop faux_ui_loop_;
   base::Thread faux_syncer_thread_;
   base::Thread faux_core_thread_;
-  scoped_ptr<BookmarkModelWorker> bmw_;
+  scoped_ptr<UIModelWorker> bmw_;
   scoped_ptr<Syncer> syncer_;
 };
 
-TEST_F(BookmarkModelWorkerTest, ScheduledWorkRunsOnUILoop) {
+TEST_F(UIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
   base::WaitableEvent v_was_run(false, false);
-  scoped_ptr<BookmarkModelWorkerVisitor> v(
-      new BookmarkModelWorkerVisitor(ui_loop(), &v_was_run, true));
+  scoped_ptr<UIModelWorkerVisitor> v(
+      new UIModelWorkerVisitor(ui_loop(), &v_was_run, true));
 
   syncer_thread()->message_loop()->PostTask(FROM_HERE,
       new FakeSyncShareTask(syncer(), v.get()));
@@ -138,16 +139,16 @@ TEST_F(BookmarkModelWorkerTest, ScheduledWorkRunsOnUILoop) {
   syncer_thread()->Stop();
 }
 
-TEST_F(BookmarkModelWorkerTest, StopWithPendingWork) {
+TEST_F(UIModelWorkerTest, StopWithPendingWork) {
   // What we want to set up is the following:
   // ("ui_thread" is the thread we are currently executing on)
   // 1 - simulate the user shutting down the browser, and the ui thread needing
   //     to terminate the core thread.
   // 2 - the core thread is where the syncapi is accessed from, and so it needs
   //     to shut down the SyncerThread.
-  // 3 - the syncer is waiting on the BookmarkModelWorker to
+  // 3 - the syncer is waiting on the UIModelWorker to
   //     perform a task for it.
-  // The BookmarkModelWorker's manual shutdown pump will save the day, as the
+  // The UIModelWorker's manual shutdown pump will save the day, as the
   // UI thread is not actually trying to join() the core thread, it is merely
   // waiting for the SyncerThread to give it work or to finish. After that, it
   // will join the core thread which should succeed as the SyncerThread has left
@@ -156,12 +157,12 @@ TEST_F(BookmarkModelWorkerTest, StopWithPendingWork) {
   // the task scheduled by the Syncer is _never_ run).
   core_thread()->Start();
   base::WaitableEvent v_ran(false, false);
-  scoped_ptr<BookmarkModelWorkerVisitor> v(new BookmarkModelWorkerVisitor(
+  scoped_ptr<UIModelWorkerVisitor> v(new UIModelWorkerVisitor(
        ui_loop(), &v_ran, false));
   base::WaitableEvent* jobs[] = { &v_ran };
 
   // The current message loop is not running, so queue a task to cause
-  // BookmarkModelWorker::Stop() to play a crucial role. See comment below.
+  // UIModelWorker::Stop() to play a crucial role. See comment below.
   syncer_thread()->message_loop()->PostTask(FROM_HERE,
       new FakeSyncShareTask(syncer(), v.get()));
 
@@ -177,10 +178,10 @@ TEST_F(BookmarkModelWorkerTest, StopWithPendingWork) {
   core_thread()->Stop();
 }
 
-TEST_F(BookmarkModelWorkerTest, HypotheticalManualPumpFlooding) {
+TEST_F(UIModelWorkerTest, HypotheticalManualPumpFlooding) {
   // This situation should not happen in real life because the Syncer should
   // never send more than one CallDoWork notification after early_exit_requested
-  // has been set, but our BookmarkModelWorker is built to handle this case
+  // has been set, but our UIModelWorker is built to handle this case
   // nonetheless. It may be needed in the future, and since we support it and
   // it is not actually exercised in the wild this test is essential.
   // It is identical to above except we schedule more than one visitor.
@@ -188,18 +189,18 @@ TEST_F(BookmarkModelWorkerTest, HypotheticalManualPumpFlooding) {
 
   // Our ammunition.
   base::WaitableEvent fox1_ran(false, false);
-  scoped_ptr<BookmarkModelWorkerVisitor> fox1(new BookmarkModelWorkerVisitor(
+  scoped_ptr<UIModelWorkerVisitor> fox1(new UIModelWorkerVisitor(
       ui_loop(), &fox1_ran, false));
   base::WaitableEvent fox2_ran(false, false);
-  scoped_ptr<BookmarkModelWorkerVisitor> fox2(new BookmarkModelWorkerVisitor(
+  scoped_ptr<UIModelWorkerVisitor> fox2(new UIModelWorkerVisitor(
       ui_loop(), &fox2_ran, false));
   base::WaitableEvent fox3_ran(false, false);
-  scoped_ptr<BookmarkModelWorkerVisitor> fox3(new BookmarkModelWorkerVisitor(
+  scoped_ptr<UIModelWorkerVisitor> fox3(new UIModelWorkerVisitor(
       ui_loop(), &fox3_ran, false));
   base::WaitableEvent* jobs[] = { &fox1_ran, &fox2_ran, &fox3_ran };
 
   // The current message loop is not running, so queue a task to cause
-  // BookmarkModelWorker::Stop() to play a crucial role. See comment below.
+  // UIModelWorker::Stop() to play a crucial role. See comment below.
   syncer_thread()->message_loop()->PostTask(FROM_HERE,
       new FakeSyncShareTask(syncer(), fox1.get()));
   syncer_thread()->message_loop()->PostTask(FROM_HERE,

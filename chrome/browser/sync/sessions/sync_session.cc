@@ -14,6 +14,23 @@ SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate)
       write_transaction_(NULL),
       delegate_(delegate),
       auth_failure_occurred_(false) {
+
+  std::vector<ModelSafeWorker*>* s =
+      const_cast<std::vector<ModelSafeWorker*>* >(&workers_);
+  context_->registrar()->GetWorkers(s);
+
+  // TODO(tim): Use ModelSafeRoutingInfo to silo parts of the session status by
+  // ModelSafeGroup;
+  // e.g. have a map<class, commit_ids>, map<class, ConflictProgress> etc.
+  // The routing will be used to map multiple model types into the right silo.
+  // The routing info can't change throughout a session, so we're assured that
+  // (for example) commit_ids for syncable::AUTOFILL items that were being
+  // processed as part of the GROUP_PASSIVE run (because they weren't being
+  // synced) *continue* to be for this whole session, even though the
+  // ModelSafeWorkerRegistrar may be configured to route syncable::AUTOFILL to
+  // GROUP_DB now.
+  group_restriction_in_effect_ = false;
+  group_restriction_ = GROUP_PASSIVE;
 }
 
 SyncSessionSnapshot SyncSession::TakeSnapshot() const {

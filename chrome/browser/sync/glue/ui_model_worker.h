@@ -2,46 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
-#define CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
+#ifndef CHROME_BROWSER_SYNC_GLUE_UI_MODEL_WORKER_H_
+#define CHROME_BROWSER_SYNC_GLUE_UI_MODEL_WORKER_H_
 
 #include "base/condition_variable.h"
 #include "base/lock.h"
 #include "base/task.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/util/closure.h"
 
 class MessageLoop;
 
 namespace browser_sync {
 
-// A ModelSafeWorker for bookmarks that accepts work requests from the syncapi
-// that need to be fulfilled from the MessageLoop home to the BookmarkModel
-// (this is typically the "main" UI thread).
+// A ModelSafeWorker for UI models (e.g. bookmarks) that accepts work requests
+// from the syncapi that need to be fulfilled from the MessageLoop home to the
+// native model.
 //
 // Lifetime note: Instances of this class will generally be owned by the
 // SyncerThread. When the SyncerThread _object_ is destroyed, the
-// BookmarkModelWorker will be destroyed. The SyncerThread object is destroyed
+// UIModelWorker will be destroyed. The SyncerThread object is destroyed
 // after the actual syncer pthread has exited.
-class BookmarkModelWorker
-    : public sync_api::ModelSafeWorkerInterface {
+class UIModelWorker : public browser_sync::ModelSafeWorker {
  public:
-  explicit BookmarkModelWorker(MessageLoop* bookmark_model_loop)
+  explicit UIModelWorker(MessageLoop* ui_loop)
       : state_(WORKING),
         pending_work_(NULL),
         syncapi_has_shutdown_(false),
-        bookmark_model_loop_(bookmark_model_loop),
+        ui_loop_(ui_loop),
         syncapi_event_(&lock_) {
   }
-  virtual ~BookmarkModelWorker();
+  virtual ~UIModelWorker();
 
-  // A simple task to signal a waitable event after calling DoWork on a visitor.
+  // A simple task to signal a waitable event after Run()ning a Closure.
   class CallDoWorkAndSignalTask : public Task {
    public:
-    CallDoWorkAndSignalTask(ModelSafeWorkerInterface::Visitor* visitor,
+    CallDoWorkAndSignalTask(Closure* work,
                             base::WaitableEvent* work_done,
-                            BookmarkModelWorker* scheduler)
-        : visitor_(visitor), work_done_(work_done), scheduler_(scheduler) {
+                            UIModelWorker* scheduler)
+        : work_(work), work_done_(work_done), scheduler_(scheduler) {
     }
     virtual ~CallDoWorkAndSignalTask() { }
 
@@ -49,39 +50,39 @@ class BookmarkModelWorker
     virtual void Run();
 
    private:
-    // Task data - a visitor that knows how to DoWork, and a waitable event
-    // to signal after the work has been done.
-    ModelSafeWorkerInterface::Visitor* visitor_;
+    // Task data - a closure and a waitable event to signal after the work has
+    // been done.
+    Closure* work_;
     base::WaitableEvent* work_done_;
 
-    // The BookmarkModelWorker responsible for scheduling us.
-    BookmarkModelWorker* const scheduler_;
+    // The UIModelWorker responsible for scheduling us.
+    UIModelWorker* const scheduler_;
 
     DISALLOW_COPY_AND_ASSIGN(CallDoWorkAndSignalTask);
   };
 
   // Called by the UI thread on shutdown of the sync service. Blocks until
-  // the BookmarkModelWorker has safely met termination conditions, namely that
+  // the UIModelWorker has safely met termination conditions, namely that
   // no task scheduled by CallDoWorkFromModelSafeThreadAndWait remains un-
   // processed and that syncapi will not schedule any further work for us to do.
   void Stop();
 
-  // ModelSafeWorkerInterface implementation. Called on syncapi SyncerThread.
-  virtual void CallDoWorkFromModelSafeThreadAndWait(
-      ModelSafeWorkerInterface::Visitor* visitor);
+  // ModelSafeWorker implementation. Called on syncapi SyncerThread.
+  virtual void DoWorkAndWaitUntilDone(Closure* work);
+  virtual ModelSafeGroup GetModelSafeGroup() { return GROUP_UI; }
 
-  // Upon receiving this idempotent call, the ModelSafeWorkerInterface can
+  // Upon receiving this idempotent call, the ModelSafeWorker can
   // assume no work will ever be scheduled again from now on. If it has any work
   // that it has not yet completed, it must make sure to run it as soon as
   // possible as the Syncer is trying to shut down. Called from the CoreThread.
   void OnSyncerShutdownComplete();
 
   // Callback from |pending_work_| to notify us that it has been run.
-  // Called on |bookmark_model_loop_|.
+  // Called on |ui_loop_|.
   void OnTaskCompleted() { pending_work_ = NULL; }
 
  private:
-  // The life-cycle of a BookmarkModelWorker in three states.
+  // The life-cycle of a UIModelWorker in three states.
   enum State {
     // We hit the ground running in this state and remain until
     // the UI loop calls Stop().
@@ -112,8 +113,8 @@ class BookmarkModelWorker
   // the UI thread in Stop().
   bool syncapi_has_shutdown_;
 
-  // The BookmarkModel's home-sweet-home MessageLoop.
-  MessageLoop* const bookmark_model_loop_;
+  // The UI model home-sweet-home MessageLoop.
+  MessageLoop* const ui_loop_;
 
   // We use a Lock for all data members and a ConditionVariable to synchronize.
   // We do this instead of using a WaitableEvent and a bool condition in order
@@ -130,9 +131,9 @@ class BookmarkModelWorker
   // because we have to manually Run() the task.
   ConditionVariable syncapi_event_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkModelWorker);
+  DISALLOW_COPY_AND_ASSIGN(UIModelWorker);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
+#endif  // CHROME_BROWSER_SYNC_GLUE_UI_MODEL_WORKER_H_

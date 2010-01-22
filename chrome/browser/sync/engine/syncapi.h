@@ -52,6 +52,10 @@
 // on all platforms.
 #define SYNC_EXPORT
 
+namespace browser_sync {
+class ModelSafeWorkerRegistrar;
+}
+
 // Forward declarations of internal class types so that sync API objects
 // may have opaque pointers to these types.
 namespace syncable {
@@ -69,7 +73,6 @@ namespace sync_api {
 // Forward declarations of classes to be defined later in this file.
 class BaseTransaction;
 class HttpPostProviderFactory;
-class ModelSafeWorkerInterface;
 class SyncManager;
 class WriteTransaction;
 struct UserShare;
@@ -509,7 +512,7 @@ class SYNC_EXPORT SyncManager {
             bool use_ssl,
             HttpPostProviderFactory* post_factory,
             HttpPostProviderFactory* auth_post_factory,
-            ModelSafeWorkerInterface* model_safe_worker,
+            browser_sync::ModelSafeWorkerRegistrar* registrar,
             bool attempt_last_user_authentication,
             const char* user_agent,
             const char* lsid);
@@ -637,33 +640,6 @@ class HttpPostProviderFactory {
   // multiple threads to serve network requests.
   virtual void Destroy(HttpPostProviderInterface* http) = 0;
   virtual ~HttpPostProviderFactory() { }
-};
-
-// A class syncapi clients should use whenever the underlying model is bound to
-// a particular thread in the embedding application. This exposes an interface
-// by which any model-modifying invocations will be forwarded to the
-// appropriate thread in the embedding application.
-// "model safe" refers to not allowing an embedding application model to fall
-// out of sync with the syncable::Directory due to race conditions.
-class ModelSafeWorkerInterface {
- public:
-  virtual ~ModelSafeWorkerInterface() { }
-  // A Visitor is passed to CallDoWorkFromModelSafeThreadAndWait invocations,
-  // and it's sole purpose is to provide a way for the ModelSafeWorkerInterface
-  // implementation to actually _do_ the work required, by calling the only
-  // method on this class, DoWork().
-  class Visitor {
-   public:
-    virtual ~Visitor() { }
-    // When on a model safe thread, this should be called to have the syncapi
-    // actually perform the work needing to be done.
-    virtual void DoWork() = 0;
-  };
-  // Subclasses should implement to invoke DoWork on |visitor| once on a thread
-  // appropriate for data model modifications.
-  // While it doesn't hurt, the impl does not need to be re-entrant (for now).
-  // Note: |visitor| is owned by caller.
-  virtual void CallDoWorkFromModelSafeThreadAndWait(Visitor* visitor) = 0;
 };
 
 }  // namespace sync_api

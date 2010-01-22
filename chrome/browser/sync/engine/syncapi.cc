@@ -67,6 +67,8 @@ using browser_sync::AllStatus;
 using browser_sync::AllStatusEvent;
 using browser_sync::AuthWatcher;
 using browser_sync::AuthWatcherEvent;
+using browser_sync::ModelSafeWorker;
+using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::Syncer;
 using browser_sync::SyncerEvent;
 using browser_sync::SyncerThread;
@@ -317,7 +319,6 @@ class AddressWatchTask : public Task {
 };
 
 namespace sync_api {
-class ModelSafeWorkerBridge;
 
 static const FilePath::CharType kBookmarkSyncUserSettingsDatabase[] =
     FILE_PATH_LITERAL("BookmarkSyncSettings.sqlite3");
@@ -732,57 +733,6 @@ syncable::BaseTransaction* WriteTransaction::GetWrappedTrans() const {
   return transaction_;
 }
 
-// An implementation of Visitor that we use to "visit" the
-// ModelSafeWorkerInterface provided by a client of this API. The object we
-// visit is responsible for calling DoWork, which will invoke Run() on it's
-// cached work closure.
-class ModelSafeWorkerVisitor : public ModelSafeWorkerInterface::Visitor {
- public:
-  explicit ModelSafeWorkerVisitor(Closure* work) : work_(work) { }
-  virtual ~ModelSafeWorkerVisitor() { }
-
-  // ModelSafeWorkerInterface::Visitor implementation.
-  virtual void DoWork() {
-    work_->Run();
-  }
-
- private:
-  // The work to be done. We run this on DoWork and it cleans itself up
-  // after it is run.
-  Closure* work_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModelSafeWorkerVisitor);
-};
-
-// This class is declared in the cc file to allow inheritance from sync types.
-// The ModelSafeWorkerBridge is a liason between a syncapi-client defined
-// ModelSafeWorkerInterface and the actual ModelSafeWorker used by the Syncer
-// for the current SyncManager.
-class ModelSafeWorkerBridge : public browser_sync::ModelSafeWorker {
- public:
-  // Takes ownership of |worker|.
-  explicit ModelSafeWorkerBridge(ModelSafeWorkerInterface* worker)
-      : worker_(worker) {
-  }
-  virtual ~ModelSafeWorkerBridge() { }
-
-  // Overriding ModelSafeWorker.
-  virtual void DoWorkAndWaitUntilDone(Closure* work) {
-    // When the syncer has work to be done, we forward it to our worker who
-    // will invoke DoWork on |visitor| when appropriate (from model safe
-    // thread).
-    ModelSafeWorkerVisitor visitor(work);
-    worker_->CallDoWorkFromModelSafeThreadAndWait(&visitor);
-  }
-
- private:
-  // The worker that we can forward work requests to, to ensure the work
-  // is performed on an appropriate model safe thread.
-  scoped_ptr<ModelSafeWorkerInterface> worker_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModelSafeWorkerBridge);
-};
-
 // A GaiaAuthenticator that uses HttpPostProviders instead of CURL.
 class BridgedGaiaAuthenticator : public browser_sync::GaiaAuthenticator {
  public:
@@ -849,7 +799,7 @@ class SyncManager::SyncInternal {
             bool use_ssl,
             HttpPostProviderFactory* post_factory,
             HttpPostProviderFactory* auth_post_factory,
-            ModelSafeWorkerInterface* model_safe_worker,
+            ModelSafeWorkerRegistrar* model_safe_worker_registrar,
             bool attempt_last_user_authentication,
             const char* user_agent,
             const std::string& lsid);
@@ -1079,7 +1029,7 @@ bool SyncManager::Init(const FilePath& database_location,
                        bool use_ssl,
                        HttpPostProviderFactory* post_factory,
                        HttpPostProviderFactory* auth_post_factory,
-                       ModelSafeWorkerInterface* model_safe_worker,
+                       ModelSafeWorkerRegistrar* registrar,
                        bool attempt_last_user_authentication,
                        const char* user_agent,
                        const char* lsid) {
@@ -1094,7 +1044,7 @@ bool SyncManager::Init(const FilePath& database_location,
                      use_ssl,
                      post_factory,
                      auth_post_factory,
-                     model_safe_worker,
+                     registrar,
                      attempt_last_user_authentication,
                      user_agent,
                      lsid);
@@ -1119,7 +1069,7 @@ bool SyncManager::SyncInternal::Init(
     const char* gaia_source,
     bool use_ssl, HttpPostProviderFactory* post_factory,
     HttpPostProviderFactory* auth_post_factory,
-    ModelSafeWorkerInterface* model_safe_worker,
+    ModelSafeWorkerRegistrar* model_safe_worker_registrar,
     bool attempt_last_user_authentication,
     const char* user_agent,
     const std::string& lsid) {
@@ -1200,11 +1150,8 @@ bool SyncManager::SyncInternal::Init(
       this, &SyncInternal::HandleAuthWatcherEvent));
 
   // Build a SyncSessionContext and store the worker in it.
-  // We set up both sides of the "bridge" here, with the ModelSafeWorkerBridge
-  // on the Syncer side, and |model_safe_worker| on the API client side.
-  ModelSafeWorkerBridge* worker = new ModelSafeWorkerBridge(model_safe_worker);
   SyncSessionContext* context = new SyncSessionContext(
-      connection_manager_.get(), dir_manager(), worker);
+      connection_manager_.get(), dir_manager(), model_safe_worker_registrar);
 
   // The SyncerThread takes ownership of |context|.
   syncer_thread_ = new SyncerThread(context, &allstatus_);

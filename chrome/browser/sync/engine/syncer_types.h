@@ -69,11 +69,6 @@ enum VerifyCommitResult {
   VERIFY_OK,
 };
 
-enum SyncDataType {
-  SYNC_TYPE_BOOKMARK,
-  SYNC_TYPE_UNKNOWN,
-};
-
 struct SyncerEvent {
   typedef SyncerEvent EventType;
 

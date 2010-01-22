@@ -25,7 +25,8 @@ using sessions::SyncSession;
 
 // A test fixture for tests exercising ApplyUpdatesCommand.
 class ApplyUpdatesCommandTest : public testing::Test,
-                                public SyncSession::Delegate {
+                                public SyncSession::Delegate,
+                                public ModelSafeWorkerRegistrar {
  public:
   // SyncSession::Delegate implementation.
   virtual void OnSilencedUntil(const base::TimeTicks& silenced_until) {
@@ -44,12 +45,16 @@ class ApplyUpdatesCommandTest : public testing::Test,
    FAIL() << "Should not get poll interval update.";
   }
 
+  // ModelSafeWorkerRegistrar implementation.
+  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {}
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {}
+
  protected:
   ApplyUpdatesCommandTest() : next_revision_(1) {}
   virtual ~ApplyUpdatesCommandTest() {}
   virtual void SetUp() {
     syncdb_.SetUp();
-    context_.reset(new SyncSessionContext(NULL, syncdb_.manager(), NULL));
+    context_.reset(new SyncSessionContext(NULL, syncdb_.manager(), this));
     context_->set_account_name(syncdb_.name());
   }
   virtual void TearDown() {

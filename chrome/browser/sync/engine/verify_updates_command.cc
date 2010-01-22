@@ -60,7 +60,7 @@ VerifyResult VerifyUpdatesCommand::VerifyUpdate(
   const bool deleted = entry.has_deleted() && entry.deleted();
   const bool is_directory = entry.IsFolder();
   const bool is_bookmark =
-      SyncerUtil::GetSyncDataType(entry) == SYNC_TYPE_BOOKMARK;
+      SyncerUtil::GetModelType(entry) == syncable::BOOKMARKS;
 
   if (!id.ServerKnows()) {
     LOG(ERROR) << "Illegal negative id in received updates";

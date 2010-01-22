@@ -26,7 +26,8 @@ using sessions::SyncSessionContext;
 typedef testing::Test SyncerThreadTest;
 typedef SyncerThread::WaitInterval WaitInterval;
 
-class SyncerThreadWithSyncerTest : public testing::Test {
+class SyncerThreadWithSyncerTest : public testing::Test,
+                                   public ModelSafeWorkerRegistrar {
  public:
   SyncerThreadWithSyncerTest() : sync_cycle_ended_event_(false, false) {}
   virtual void SetUp() {
@@ -34,8 +35,9 @@ class SyncerThreadWithSyncerTest : public testing::Test {
     connection_.reset(new MockConnectionManager(metadb_.manager(),
                                                 metadb_.name()));
     allstatus_.reset(new AllStatus());
+    worker_.reset(new ModelSafeWorker());
     SyncSessionContext* context = new SyncSessionContext(connection_.get(),
-        metadb_.manager(), new ModelSafeWorker());
+        metadb_.manager(), this);
     syncer_thread_ = new SyncerThread(context, allstatus_.get());
     syncer_event_hookup_.reset(
         NewEventListenerHookup(syncer_thread_->relay_channel(), this,
@@ -48,6 +50,17 @@ class SyncerThreadWithSyncerTest : public testing::Test {
     allstatus_.reset();
     connection_.reset();
     metadb_.TearDown();
+  }
+
+  // ModelSafeWorkerRegistrar implementation.
+  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {
+    out->push_back(worker_.get());
+  }
+
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
+    // We're just testing the sync engine here, so we shunt everything to
+    // the SyncerThread.
+    (*out)[syncable::BOOKMARKS] = GROUP_PASSIVE;
   }
 
   ManuallyOpenedTestDirectorySetterUpper* metadb() { return &metadb_; }
@@ -72,6 +85,7 @@ class SyncerThreadWithSyncerTest : public testing::Test {
   scoped_ptr<MockConnectionManager> connection_;
   scoped_ptr<AllStatus> allstatus_;
   scoped_refptr<SyncerThread> syncer_thread_;
+  scoped_ptr<ModelSafeWorker> worker_;
   scoped_ptr<EventListenerHookup> syncer_event_hookup_;
   base::WaitableEvent sync_cycle_ended_event_;
   DISALLOW_COPY_AND_ASSIGN(SyncerThreadWithSyncerTest);

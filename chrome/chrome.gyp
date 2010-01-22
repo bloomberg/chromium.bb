@@ -835,6 +835,7 @@
         'browser/sync/syncable/directory_event.h',
         'browser/sync/syncable/directory_manager.cc',
         'browser/sync/syncable/directory_manager.h',
+        'browser/sync/syncable/model_type.h',
         'browser/sync/syncable/path_name_cmp.h',
         'browser/sync/syncable/syncable-inl.h',
         'browser/sync/syncable/syncable.cc',

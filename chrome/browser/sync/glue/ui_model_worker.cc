@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/bookmark_model_worker.h"
+#include "chrome/browser/sync/glue/ui_model_worker.h"
 
 #include "base/message_loop.h"
 #include "base/waitable_event.h"
 
 namespace browser_sync {
 
-void BookmarkModelWorker::CallDoWorkFromModelSafeThreadAndWait(
-    ModelSafeWorkerInterface::Visitor* visitor) {
+void UIModelWorker::DoWorkAndWaitUntilDone(Closure* work) {
   // It is possible this gets called when we are in the STOPPING state, because
   // the UI loop has initiated shutdown but the syncer hasn't got the memo yet.
   // This is fine, the work will get scheduled and run normally or run by our
@@ -18,10 +17,10 @@ void BookmarkModelWorker::CallDoWorkFromModelSafeThreadAndWait(
   DCHECK_NE(state_, STOPPED);
   if (state_ == STOPPED)
     return;
-  if (MessageLoop::current() == bookmark_model_loop_) {
-    DLOG(WARNING) << "CallDoWorkFromModelSafeThreadAndWait called from "
-      << "bookmark_model_loop_. Probably a nested invocation?";
-    visitor->DoWork();
+  if (MessageLoop::current() == ui_loop_) {
+    DLOG(WARNING) << "DoWorkAndWaitUntilDone called from "
+      << "ui_loop_. Probably a nested invocation?";
+    work->Run();
     return;
   }
 
@@ -33,18 +32,18 @@ void BookmarkModelWorker::CallDoWorkFromModelSafeThreadAndWait(
     // The task is owned by the message loop as per usual.
     AutoLock lock(lock_);
     DCHECK(!pending_work_);
-    pending_work_ = new CallDoWorkAndSignalTask(visitor, &work_done, this);
-    bookmark_model_loop_->PostTask(FROM_HERE, pending_work_);
+    pending_work_ = new CallDoWorkAndSignalTask(work, &work_done, this);
+    ui_loop_->PostTask(FROM_HERE, pending_work_);
   }
   syncapi_event_.Signal();  // Notify that the syncapi produced work for us.
   work_done.Wait();
 }
 
-BookmarkModelWorker::~BookmarkModelWorker() {
+UIModelWorker::~UIModelWorker() {
   DCHECK_EQ(state_, STOPPED);
 }
 
-void BookmarkModelWorker::OnSyncerShutdownComplete() {
+void UIModelWorker::OnSyncerShutdownComplete() {
   AutoLock lock(lock_);
   // The SyncerThread has terminated and we are no longer needed by syncapi.
   // The UI loop initiated shutdown and is (or will be) waiting in Stop().
@@ -57,8 +56,8 @@ void BookmarkModelWorker::OnSyncerShutdownComplete() {
   syncapi_event_.Signal();
 }
 
-void BookmarkModelWorker::Stop() {
-  DCHECK_EQ(MessageLoop::current(), bookmark_model_loop_);
+void UIModelWorker::Stop() {
+  DCHECK_EQ(MessageLoop::current(), ui_loop_);
 
   AutoLock lock(lock_);
   DCHECK_EQ(state_, WORKING);
@@ -80,10 +79,10 @@ void BookmarkModelWorker::Stop() {
   state_ = STOPPED;
 }
 
-void BookmarkModelWorker::CallDoWorkAndSignalTask::Run() {
-  if (!visitor_) {
+void UIModelWorker::CallDoWorkAndSignalTask::Run() {
+  if (!work_) {
     // This can happen during tests or cases where there are more than just the
-    // default BookmarkModelWorker in existence and it gets destroyed before
+    // default UIModelWorker in existence and it gets destroyed before
     // the main UI loop has terminated.  There is no easy way to assert the
     // loop is running / not running at the moment, so we just provide cancel
     // semantics here and short-circuit.
@@ -92,13 +91,13 @@ void BookmarkModelWorker::CallDoWorkAndSignalTask::Run() {
     // actually gets destroyed.
     return;
   }
-  visitor_->DoWork();
+  work_->Run();
 
-  // Sever ties with visitor_ to allow the sanity-checking above that we don't
+  // Sever ties with work_ to allow the sanity-checking above that we don't
   // get run twice.
-  visitor_ = NULL;
+  work_ = NULL;
 
-  // Notify the BookmarkModelWorker that scheduled us that we have run
+  // Notify the UIModelWorker that scheduled us that we have run
   // successfully.
   scheduler_->OnTaskCompleted();
   work_done_->Signal();  // Unblock the syncer thread that scheduled us.

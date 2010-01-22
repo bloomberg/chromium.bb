@@ -12,8 +12,14 @@ namespace browser_sync {
 
 void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
   work_session_ = session;
-  session->context()->model_safe_worker()->DoWorkAndWaitUntilDone(
-      NewCallback(this, &ModelChangingSyncerCommand::StartChangingModel));
+  for (size_t i = 0; i < session->workers().size(); ++i) {
+    ModelSafeWorker* worker = session->workers()[i];
+    ModelSafeGroup group = worker->GetModelSafeGroup();
+
+    sessions::ScopedModelSafeGroupRestriction r(work_session_, group);
+    worker->DoWorkAndWaitUntilDone(NewCallback(this,
+        &ModelChangingSyncerCommand::StartChangingModel));
+  }
 }
 
 }  // namespace browser_sync

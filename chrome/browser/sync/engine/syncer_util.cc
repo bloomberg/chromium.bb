@@ -276,7 +276,7 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
   local_entry->Put(SERVER_MTIME,
       ServerTimeToClientTime(server_entry.mtime()));
   local_entry->Put(SERVER_IS_BOOKMARK_OBJECT,
-      GetSyncDataType(server_entry) == SYNC_TYPE_BOOKMARK);
+      GetModelType(server_entry) == syncable::BOOKMARKS);
   local_entry->Put(SERVER_IS_DIR, server_entry.IsFolder());
   if (server_entry.has_singleton_tag()) {
     const string& tag = server_entry.singleton_tag();
@@ -767,7 +767,7 @@ syncable::Id SyncerUtil::ComputePrevIdFromServerPosition(
   return closest_sibling;
 }
 
-browser_sync::SyncDataType SyncerUtil::GetSyncDataType(
+syncable::ModelType SyncerUtil::GetModelType(
     const SyncEntity& entry) {
 
   const bool is_bookmark =
@@ -776,10 +776,10 @@ browser_sync::SyncDataType SyncerUtil::GetSyncDataType(
        entry.has_bookmarkdata();
 
   if (is_bookmark) {
-    return SYNC_TYPE_BOOKMARK;
+    return syncable::BOOKMARKS;
   }
 
-  return SYNC_TYPE_UNKNOWN;
+  return syncable::UNSPECIFIED;
 }
 
 }  // namespace browser_sync
