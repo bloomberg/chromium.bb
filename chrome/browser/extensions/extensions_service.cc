@@ -840,16 +840,20 @@ void ExtensionsService::Observe(NotificationType type,
       CHECK(profile_->GetExtensionProcessManager()->HasExtensionHost(host));
 
       // If we hit one of these assertions it means that the host's
-      // Extension pointer became invalid (http://crbug.com/30405).
+      // Extension pointer became invalid. http://crbug.com/30405
       // TODO(phajdan.jr): Remove excessive debugging after fixing bug 30405.
       std::string extension_id(host->extension()->id());
       CHECK(extension_id.length() == 32U);
       Extension* extension = GetExtensionById(extension_id, true);
-      CHECK(extension == host->extension());
-      if (!extension) {
-        NOTREACHED();
+      // It is possible that the extension is already unloaded. If it is not
+      // found, then bail. This seems to be Mac-specific caused by the race
+      // conditions introduced by Core Animation and Browser Action popups.
+      // TODO(andybons): Find out why this is fired twice. http://crbug/32653
+      if (!extension)
         return;
-      }
+
+      // http://crbug.com/30405
+      CHECK(extension == host->extension());
 
       // Unload the entire extension. We want it to be in a consistent state:
       // either fully working or not loaded at all, but never half-crashed.
