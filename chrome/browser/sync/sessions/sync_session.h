@@ -174,7 +174,7 @@ class ScopedModelSafeGroupRestriction {
     session_->group_restriction_ = restriction;
   }
   ~ScopedModelSafeGroupRestriction() {
-    session_->group_restriction_in_effect_ = true;
+    session_->group_restriction_in_effect_ = false;
   }
  private:
   SyncSession* session_;
