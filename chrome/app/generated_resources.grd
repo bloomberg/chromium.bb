@@ -2340,13 +2340,13 @@ each locale. -->
       <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to display plug-ins.">
         Plug-ins were blocked on this page.
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is allowed to display plug-ins, but the global default is to block.">
+      <message name="IDS_UNBLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is allowed to display plug-ins, but the global default is to block.">
         This page was allowed to use plugins.
       </message>
       <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from showing plug-ins, displayed in bubble when a page tries to display plug-ins.">
         Always allow plug-ins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from showing plug-ins, displayed in bubble when a page tries to display plug-ins.">
+      <message name="IDS_UNBLOCKED_PLUGINS_BLOCK" desc="Radio button choice to unblock a site from showing plug-ins, displayed in bubble when a page tries to display plug-ins.">
         Block <ph name="HOST">$1<ex>mail.google.com</ex></ph> from using plug-ins
       </message>
       <message name="IDS_BLOCKED_PLUGINS_NO_ACTION" desc="Radio button choice to continue blocking a site from showing plug-ins, displayed in bubble when a page tries to display plug-ins.">
