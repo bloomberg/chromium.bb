@@ -6589,6 +6589,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_LOGIN_DISABLED_NO_LIBCROS" desc="On the login screen, the text we put on the screen in the event that we cannot load the Chromium OS shared library and must therefore disable login.">
+	libcros.so cannot be loaded. Login disabled.
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
         Date and Time
       </message>

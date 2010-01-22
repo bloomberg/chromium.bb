@@ -17,6 +17,10 @@ namespace chromeos {
 //   LoginLibrary::Get()
 class LoginLibrary {
  public:
+  // If the libray fails to load the first time we check, we don't want to
+  // keep trying to load the library.  If it fails the first time, it fails.
+  static bool tried_and_failed;
+
   // This gets the singleton LoginLibrary.
   static LoginLibrary* Get();
 

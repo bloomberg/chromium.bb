@@ -7,6 +7,7 @@
 #include <signal.h>
 #include <sys/types.h>
 
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_path.h"
 #include "base/keyboard_codes.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/chromeos/image_background.h"
 #include "chrome/browser/chromeos/login_library.h"
 #include "chrome/common/chrome_switches.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/label.h"
 #include "views/focus/accelerator_handler.h"
@@ -74,7 +76,7 @@ class LoginManagerWindow : public views::WindowGtk {
  public:
   static LoginManagerWindow* CreateLoginManagerWindow() {
     LoginManagerWindow* login_manager_window =
-        new LoginManagerWindow;
+        new LoginManagerWindow();
     login_manager_window->GetNonClientView()->SetFrameView(
         new LoginManagerNonClientFrameView());
     login_manager_window->Init(NULL, gfx::Rect());
@@ -82,18 +84,20 @@ class LoginManagerWindow : public views::WindowGtk {
   }
 
  private:
-  LoginManagerWindow() : views::WindowGtk(new LoginManagerView) { }
+  LoginManagerWindow() : views::WindowGtk(new LoginManagerView) {
+  }
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerWindow);
 };
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
 void ShowLoginManager() {
-  chromeos::LoginLibrary::EnsureLoaded();
+  // if we can't load the library, we'll tell the user in LoginManagerView.
   views::WindowGtk* window =
       LoginManagerWindow::CreateLoginManagerWindow();
   window->Show();
-  chromeos::LoginLibrary::Get()->EmitLoginPromptReady();
+  if (chromeos::LoginLibrary::EnsureLoaded())
+    chromeos::LoginLibrary::Get()->EmitLoginPromptReady();
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);
   MessageLoop::current()->Run();
@@ -183,6 +187,12 @@ void LoginManagerView::BuildWindow() {
     prompt_layout->AddView(password_field_);
     prompt_layout->AddPaddingRow(0, kBottomPadding);
 
+    if (!chromeos::LoginLibrary::EnsureLoaded()) {
+      username_field_->SetText(
+          l10n_util::GetStringUTF16(IDS_LOGIN_DISABLED_NO_LIBCROS));
+      username_field_->SetReadOnly(true);
+      password_field_->SetReadOnly(true);
+    }
     layout->AddView(login_prompt, 1, 1, GridLayout::CENTER, GridLayout::CENTER,
                     panel_width, panel_height);
   }
@@ -222,11 +232,14 @@ void LoginManagerView::SetupSession(const std::string& username) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAutoSSLClientAuth);
   }
-  chromeos::LoginLibrary::Get()->StartSession(username, "");
+  if (chromeos::LoginLibrary::EnsureLoaded())
+    chromeos::LoginLibrary::Get()->StartSession(username, "");
 }
 
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     const views::Textfield::Keystroke& keystroke) {
+  if (!chromeos::LoginLibrary::EnsureLoaded())
+    return false;
   if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
     // Disallow 0 size username | passwords
     if (username_field_->text().length() == 0 ||
