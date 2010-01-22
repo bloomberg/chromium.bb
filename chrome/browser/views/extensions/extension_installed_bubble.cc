@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,12 @@ const int kCloseButtonPadding = 3;
 // We want to shift the right column (which contains the header and text) up
 // 4px to align with icon.
 const int kRightcolumnVerticalShift = -4;
+
+// How long to wait for browser action animations to complete before retrying.
+const int kAnimationWaitTime = 50;
+
+// How often we retry when waiting for browser action animation to end.
+const int kAnimationWaitMaxRetry = 10;
 
 // InstalledBubbleContent is the content view which is placed in the
 // ExtensionInstalledBubble. It displays the install icon and explanatory
@@ -188,7 +194,8 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(Extension *extension,
                                                    SkBitmap icon)
     : extension_(extension),
       browser_(browser),
-      icon_(icon) {
+      icon_(icon),
+      animation_wait_retries_(0) {
   AddRef();  // Balanced in InfoBubbleClosing.
 
   if (extension_->browser_action()) {
@@ -215,6 +222,7 @@ void ExtensionInstalledBubble::Observe(NotificationType type,
   if (type == NotificationType::EXTENSION_LOADED) {
     Extension* extension = Details<Extension>(details).ptr();
     if (extension == extension_) {
+      animation_wait_retries_ = 0;
       // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
       MessageLoopForUI::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
           &ExtensionInstalledBubble::ShowInternal));
@@ -228,10 +236,24 @@ void ExtensionInstalledBubble::ShowInternal() {
   BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
       browser_->window()->GetNativeHandle());
 
-  views::View* reference_view = NULL;
+  const views::View* reference_view = NULL;
   if (type_ == BROWSER_ACTION) {
-    reference_view = browser_view->GetToolbarView()->browser_actions()
-        ->GetBrowserActionView(extension_);
+    BrowserActionsContainer* container =
+        browser_view->GetToolbarView()->browser_actions();
+    if (container->animating() &&
+        animation_wait_retries_++ < kAnimationWaitMaxRetry) {
+      // We don't know where the view will be until the container has stopped
+      // animating, so check back in a little while.
+      MessageLoopForUI::current()->PostDelayedTask(
+          FROM_HERE, NewRunnableMethod(this,
+          &ExtensionInstalledBubble::ShowInternal), kAnimationWaitTime);
+      return;
+    }
+    reference_view = container->GetBrowserActionView(extension_);
+    // If the view is not visible then it is in the chevron, so point the
+    // install bubble to the chevron instead.
+    if (!reference_view->IsVisible())
+      reference_view = container->chevron();
     DCHECK(reference_view);
   } else if (type_ == PAGE_ACTION) {
     LocationBarView* location_bar_view = browser_view->GetLocationBarView();

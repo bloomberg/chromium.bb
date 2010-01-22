@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -403,7 +403,7 @@ class LocationBarView : public LocationBar,
     // is the current page URL.
     void UpdateVisibility(TabContents* contents, const GURL& url);
 
-    // Either notify listners or show a popup depending on the page action.
+    // Either notify listeners or show a popup depending on the page action.
     void ExecuteAction(int button);
 
    private:

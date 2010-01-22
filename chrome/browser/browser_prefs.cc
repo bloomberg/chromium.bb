@@ -34,6 +34,7 @@
 #include "chrome/browser/task_manager.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
+#include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #endif
 
@@ -92,6 +93,9 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   BlockedPopupContainer::RegisterUserPrefs(user_prefs);
   HostZoomMap::RegisterUserPrefs(user_prefs);
   DevToolsManager::RegisterUserPrefs(user_prefs);
+#if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port.
+  BrowserActionsContainer::RegisterUserPrefs(user_prefs);
+#endif
 #if defined(TOOLKIT_GTK)
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);
 #endif

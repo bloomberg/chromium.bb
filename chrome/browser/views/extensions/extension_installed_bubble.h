@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,9 @@ class ExtensionInstalledBubble
   SkBitmap icon_;
   NotificationRegistrar registrar_;
   BubbleType type_;
+
+  // How many times we've deferred due to animations being in progress.
+  int animation_wait_retries_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubble);
 };

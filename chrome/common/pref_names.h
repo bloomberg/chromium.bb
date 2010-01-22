@@ -214,6 +214,7 @@ extern const wchar_t kNumKeywords[];
 
 extern const wchar_t kDisableExtensions[];
 extern const wchar_t kShowExtensionShelf[];
+extern const wchar_t kBrowserActionContainerWidth[];
 
 extern const wchar_t kLastExtensionsUpdateCheck[];
 extern const wchar_t kNextExtensionsUpdateCheck[];

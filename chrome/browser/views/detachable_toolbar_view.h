@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,9 +66,13 @@ class DetachableToolbarView : public AccessibleToolbarView {
                                      const SkRect& rect,
                                      double roundness);
 
-  // Paint a themed gradient divider at location |x|. The color of the divider
-  // is a gradient starting with |top_color| at the top, and changing into
-  // |middle_color| and then over to |bottom_color| as you go further down.
+  // Paint a themed gradient divider at location |x|. |height| is the full
+  // height of the view you want to paint the divider into, not the height of
+  // the divider. The height of the divider will become:
+  //   |height| - 2 * |vertical_padding|.
+  // The color of the divider is a gradient starting with |top_color| at the
+  // top, and changing into |middle_color| and then over to |bottom_color| as
+  // you go further down.
   static void PaintVerticalDivider(gfx::Canvas* canvas,
                                    int x,
                                    int height,

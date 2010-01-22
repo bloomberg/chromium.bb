@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -354,6 +354,7 @@ views::View* LocationBarView::GetPageActionView(
   }
   return NULL;
 }
+
 gfx::Size LocationBarView::GetPreferredSize() {
   return gfx::Size(0,
       (popup_window_mode_ ? kPopupBackground : kBackground)->height());
@@ -1372,7 +1373,7 @@ bool LocationBarView::PageActionImageView::OnMousePressed(
     button = 2;
   } else if (event.IsRightMouseButton()) {
     // Get the top left point of this button in screen coordinates.
-    gfx::Point point = gfx::Point(0,0);
+    gfx::Point point = gfx::Point(0, 0);
     ConvertPointToScreen(this, &point);
 
     // Make the menu appear below the button.

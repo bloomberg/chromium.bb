@@ -218,7 +218,7 @@ const wchar_t kDeleteFormData[] = L"browser.clear_data.form_data";
 const wchar_t kDeleteTimePeriod[] = L"browser.clear_data.time_period";
 
 // Integer prefs giving the widths of the columns in the bookmark table. Two
-// configs are saved, one with the path column and one without.
+// configurations are saved, one with the path column and one without.
 const wchar_t kBookmarkTableNameWidth1[] = L"bookmark_table.name_width_1";
 const wchar_t kBookmarkTableURLWidth1[] = L"bookmark_table.url_width_1";
 const wchar_t kBookmarkTableNameWidth2[] = L"bookmark_table.name_width_2";
@@ -570,6 +570,11 @@ const wchar_t kDisableExtensions[] = L"extensions.disabled";
 // Boolean which specifies whether the Extension Shelf is visible on all tabs.
 const wchar_t kShowExtensionShelf[] = L"extensions.shelf.show_on_all_tabs";
 
+// Integer boolean representing the width (in pixels) of the container for
+// browser actions.
+const wchar_t kBrowserActionContainerWidth[] =
+    L"extensions.browseractions.container.width";
+
 // Time of the last, and next scheduled, extensions auto-update checks.
 const wchar_t kLastExtensionsUpdateCheck[] =
     L"extensions.autoupdate.last_check";
@@ -613,7 +618,7 @@ const wchar_t kDevToolsOpenDocked[] = L"devtools.open_docked";
 // Integer location of the split bar in the browser view.
 const wchar_t kDevToolsSplitLocation[] = L"devtools.split_location";
 
-// 64-bit integer serialization of the base::Time when the last sync occured.
+// 64-bit integer serialization of the base::Time when the last sync occurred.
 const wchar_t kSyncLastSyncedTime[] = L"sync.last_synced_time";
 
 // Boolean specifying whether the user finished setting up sync.
