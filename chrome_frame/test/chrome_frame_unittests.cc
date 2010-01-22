@@ -1855,3 +1855,17 @@ TEST_F(ChromeFrameTestWithWebServer,
   ASSERT_TRUE(CheckResultFile(L"FullTab_DeleteCookieTest", "OK"));
 }
 
+const wchar_t kChromeFrameFullTabModeAnchorUrlNavigate[] =
+    L"files/fulltab_anchor_url_navigate.html#chrome_frame";
+
+TEST_F(ChromeFrameTestWithWebServer,
+       FullTabModeIE_ChromeFrameAnchorUrlNavigateTest) {
+  chrome_frame_test::TimedMsgLoop loop;
+
+  ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeAnchorUrlNavigate));
+
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  chrome_frame_test::CloseAllIEWindows();
+  ASSERT_TRUE(CheckResultFile(L"FullTab_AnchorURLNavigateTest", "OK"));
+}

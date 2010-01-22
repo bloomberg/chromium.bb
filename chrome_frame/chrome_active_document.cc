@@ -204,9 +204,14 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     SetClientSite(client_site);
   }
 
-  CComHeapPtr<WCHAR> display_name;
-  moniker_name->GetDisplayName(bind_context, NULL, &display_name);
-  std::wstring url = display_name;
+  Bho* chrome_frame_bho = Bho::GetCurrentThreadBhoInstance();
+
+  // If the original URL contains an anchor, then the URL queried
+  // from the moniker does not contain the anchor. To workaround
+  // this we retrieve the URL from our BHO.
+  std::wstring url = GetActualUrlFromMoniker(
+      moniker_name, bind_context,
+      chrome_frame_bho ? chrome_frame_bho->url() : std::wstring());
 
   // The is_new_navigation variable indicates if this a navigation initiated
   // by typing in a URL for e.g. in the IE address bar, or from Chrome by

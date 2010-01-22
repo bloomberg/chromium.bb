@@ -147,7 +147,7 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
       }
     }
   }
-
+  url_ = url->bstrVal;
   return S_OK;
 }
 
@@ -268,14 +268,29 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
 
           // If there's a referrer, preserve it.
           std::wstring headers;
+          // Pass in URL fragments if applicable.
+          std::wstring fragment;
+
           Bho* chrome_frame_bho = Bho::GetCurrentThreadBhoInstance();
-          if (chrome_frame_bho && !chrome_frame_bho->referrer().empty()) {
-            headers = StringPrintf(L"Referer: %ls\r\n\r\n",
+          if (chrome_frame_bho) {
+            if (!chrome_frame_bho->referrer().empty()) {
+              headers = StringPrintf(L"Referer: %ls\r\n\r\n",
                 ASCIIToWide(chrome_frame_bho->referrer()).c_str());
+            }
+            // If the original URL contains an anchor, then the URL queried
+            // from the moniker does not contain the anchor. To workaround
+            // this we retrieve the URL from our BHO.
+            std::wstring moniker_url = GetActualUrlFromMoniker(
+                moniker, NULL, chrome_frame_bho->url());
+
+            GURL parsed_moniker_url(moniker_url);
+            if (parsed_moniker_url.has_ref()) {
+              fragment = UTF8ToWide(parsed_moniker_url.ref());
+            }
           }
 
           hr = NavigateBrowserToMoniker(browser, moniker, headers.c_str(),
-                                        bind_context);
+                                        bind_context, fragment.c_str());
 
           if (SUCCEEDED(hr)) {
             // Now that we've reissued the request, we need to remove the

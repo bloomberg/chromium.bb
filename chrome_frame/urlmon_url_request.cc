@@ -341,7 +341,7 @@ void UrlmonUrlRequest::TransferToHost(IUnknown* host) {
     ScopedComPtr<IBindCtx> bind_context;
     CreateBindCtx(0, bind_context.Receive());
     DCHECK(bind_context);
-    NavigateBrowserToMoniker(host, moniker_, NULL, bind_context);
+    NavigateBrowserToMoniker(host, moniker_, NULL, bind_context, NULL);
     moniker_.Release();
   }
 }

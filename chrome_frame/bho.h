@@ -90,8 +90,12 @@ END_SINK_MAP()
       IBrowserService* browser, IShellView* shell_view, BOOL done,
       VARIANT* in_arg, VARIANT* out_arg);
 
-  std::string referrer() const {
+  const std::string& referrer() const {
     return referrer_;
+  }
+
+  const std::wstring& url() const {
+    return url_;
   }
 
   // Returns the Bho instance for the current thread. This is returned from
@@ -102,6 +106,7 @@ END_SINK_MAP()
   bool PatchProtocolHandler(const CLSID& handler_clsid);
 
   std::string referrer_;
+  std::wstring url_;
 
   static base::LazyInstance<base::ThreadLocalPointer<Bho> >
       bho_current_thread_instance_;

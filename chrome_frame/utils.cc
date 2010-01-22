@@ -636,7 +636,8 @@ bool IsOptInUrl(const wchar_t* url) {
 }
 
 HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
-                                 const wchar_t* headers, IBindCtx* bind_ctx) {
+                                 const wchar_t* headers, IBindCtx* bind_ctx,
+                                 const wchar_t* fragment) {
   DCHECK(browser);
   DCHECK(moniker);
   DCHECK(bind_ctx);
@@ -695,7 +696,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
 
       hr = browser_priv2->NavigateWithBindCtx2(uri_obj, NULL, NULL, NULL,
                                                headers_var.AsInput(), bind_ctx,
-                                               NULL);
+                                               const_cast<wchar_t*>(fragment));
       DLOG_IF(WARNING, FAILED(hr))
           << StringPrintf(L"NavigateWithBindCtx2 0x%08X", hr);
     }
@@ -709,7 +710,8 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
         ScopedVariant var_url(url);
         hr = browser_priv->NavigateWithBindCtx(var_url.AsInput(), NULL, NULL,
                                                NULL, headers_var.AsInput(),
-                                               bind_ctx, NULL);
+                                               bind_ctx,
+                                               const_cast<wchar_t*>(fragment));
         DLOG_IF(WARNING, FAILED(hr))
             << StringPrintf(L"NavigateWithBindCtx 0x%08X", hr);
       } else {
@@ -828,5 +830,23 @@ bool IsSubFrameRequest(IUnknown* service_provider) {
 bool IsHeadlessMode() {
   bool headless = GetConfigBool(false, kChromeFrameHeadlessMode);
   return headless;
+}
+
+std::wstring GetActualUrlFromMoniker(IMoniker* moniker,
+                                     IBindCtx* bind_context,
+                                     const std::wstring& bho_url) {
+  CComHeapPtr<WCHAR> display_name;
+  moniker->GetDisplayName(bind_context, NULL, &display_name);
+  std::wstring moniker_url = display_name;
+
+  GURL parsed_url(WideToUTF8(bho_url));
+  if (!parsed_url.has_ref())
+    return moniker_url;
+
+  if (StartsWith(bho_url, moniker_url, false) &&
+      bho_url[moniker_url.length()] == L'#')
+    return bho_url;
+
+  return moniker_url;
 }
 

@@ -225,7 +225,8 @@ HRESULT GetUrlFromMoniker(IMoniker* moniker, IBindCtx* bind_context,
 // Navigates an IWebBrowser2 object to a moniker.
 // |headers| can be NULL.
 HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
-                                 const wchar_t* headers, IBindCtx* bind_ctx);
+                                 const wchar_t* headers, IBindCtx* bind_ctx,
+                                 const wchar_t* fragment);
 
 // Raises a flag on the current thread (using TLS) to indicate that an
 // in-progress navigation should be rendered in chrome frame.
@@ -313,5 +314,14 @@ STDMETHODIMP QueryInterfaceIfDelegateSupports(void* obj, REFIID iid,
     COM_INTERFACE_ENTRY_FUNC_BLIND(0, CheckOutgoingInterface<_ComMapClass>)
 
 extern const wchar_t kChromeFrameHeadlessMode[];
+
+// The urls retrieved from the IMoniker interface don't contain the anchor
+// portion of the actual url navigated to. This function checks whether the
+// url passed in the bho_url parameter contains an anchor and if yes checks
+// whether it matches the url retrieved from the moniker. If yes it returns
+// the bho url, if not the moniker url.
+std::wstring GetActualUrlFromMoniker(IMoniker* moniker,
+                                     IBindCtx* bind_context,
+                                     const std::wstring& bho_url);
 
 #endif  // CHROME_FRAME_UTILS_H_
