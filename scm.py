@@ -611,10 +611,7 @@ class SVN(object):
       command = ["diff", "--config-dir", bogus_dir, filename]
       if revision:
         command.extend(['--revision', revision])
-      data = SVN.Capture(command, None)
-      if data:
-        pass
-      elif SVN.IsMoved(filename):
+      if SVN.IsMoved(filename):
         if full_move:
           file_content = gclient_utils.FileRead(filename, 'rb')
           # Prepend '+' to every lines.
@@ -629,12 +626,13 @@ class SVN(object):
           data += "@@ -0,0 +1,%d @@\n" % nb_lines
           data += ''.join(file_content)
         else:
-          #  svn diff on a mv/cp'd file outputs nothing.
-          # We put in an empty Index entry so upload.py knows about them.
-          data = "Index: %s\n" % filename
+          # svn diff on a mv/cp'd file outputs nothing if there was no change.
+          data = SVN.Capture(command, None)
+          if not data:
+            # We put in an empty Index entry so upload.py knows about them.
+            data = "Index: %s\n" % filename
       else:
-        # The file is not modified anymore. It should be removed from the set.
-        pass
+        data = SVN.Capture(command, None)
     finally:
       shutil.rmtree(bogus_dir)
     return data
