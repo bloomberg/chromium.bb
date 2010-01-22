@@ -22,7 +22,7 @@
 
 class PatchHelper {
  public:
-  enum State { UNKNOWN, PATCH_IBROWSER, PATCH_IBROWSER_OK, PATCH_PROTOCOL };
+  enum State { UNKNOWN, PATCH_IBROWSER, PATCH_PROTOCOL };
   PatchHelper() : state_(UNKNOWN) {
   }
 

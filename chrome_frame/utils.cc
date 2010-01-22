@@ -728,7 +728,8 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
 
 void MarkBrowserOnThreadForCFNavigation(IBrowserService* browser) {
   DCHECK(browser != NULL);
-  DCHECK(g_tls_browser_for_cf_navigation.Pointer()->Get() == NULL);
+  DCHECK(g_tls_browser_for_cf_navigation.Pointer()->Get() == NULL ||
+         g_tls_browser_for_cf_navigation.Pointer()->Get() == browser);
   g_tls_browser_for_cf_navigation.Pointer()->Set(browser);
 }
 

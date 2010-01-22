@@ -64,7 +64,7 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
       ScopedComPtr<IBrowserService> browser_service;
       hr = DoQueryService(SID_SShellBrowser, site, browser_service.Receive());
       DCHECK(browser_service) << "DoQueryService - SID_SShellBrowser failed."
-        << " Site: " << site << " Error: " << hr;
+          << " Site: " << site << " Error: " << hr;
       if (browser_service) {
         g_patch_helper.PatchBrowserService(browser_service);
         DCHECK(SUCCEEDED(hr)) << "vtable_patch::PatchInterfaceMethods failed."
@@ -110,21 +110,12 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
                                       false);
 
       if (!is_chrome_protocol && IsOptInUrl(current_url.c_str())) {
-        DLOG(INFO) << "Canceling navigation and switching to cf";
-        // Cancel original navigation
-        *cancel = VARIANT_TRUE;
-
-        // Issue new request with 'cf:'
-        current_url.insert(0, kChromeProtocolPrefix);
-        ScopedVariant new_url(current_url.c_str());
-        HRESULT hr = web_browser2->Navigate2(new_url.AsInput(), flags,
-                                             target_frame_name, post_data,
-                                             headers);
-        DCHECK(SUCCEEDED(hr)) << "web_browser2->Navigate2 failed. Error: " << hr
-            << std::endl << "Url: " << current_url
-            << std::endl << "flags: " << flags
-            << std::endl << "post data: " << post_data
-            << std::endl << "headers: " << headers;
+        DLOG(INFO) << "Opt-in URL. Switching to cf.";
+        ScopedComPtr<IBrowserService> browser_service;
+        DoQueryService(SID_SShellBrowser, web_browser2,
+                       browser_service.Receive());
+        DCHECK(browser_service) << "DoQueryService - SID_SShellBrowser failed.";
+        MarkBrowserOnThreadForCFNavigation(browser_service);
       }
     }
   }
@@ -379,7 +370,6 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
 
 void PatchHelper::PatchBrowserService(IBrowserService* browser_service) {
   DCHECK(state_ == PATCH_IBROWSER);
-  state_ = PATCH_IBROWSER_OK;
   vtable_patch::PatchInterfaceMethods(browser_service,
                                       IBrowserService_PatchInfo);
 }
@@ -387,7 +377,7 @@ void PatchHelper::PatchBrowserService(IBrowserService* browser_service) {
 void PatchHelper::UnpatchIfNeeded() {
   if (state_ == PATCH_PROTOCOL) {
     ProtocolSinkWrap::UnpatchProtocolHandlers();
-  } else if (state_ == PATCH_IBROWSER_OK) {
+  } else if (state_ == PATCH_IBROWSER) {
     vtable_patch::UnpatchInterfaceMethods(IBrowserService_PatchInfo);
   }
 
