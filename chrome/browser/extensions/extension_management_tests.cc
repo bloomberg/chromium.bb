@@ -11,8 +11,6 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 
@@ -51,15 +49,13 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
   // the operation was completed successfully.
   bool InstallAndUpdateIncreasingPermissionsExtension() {
     ExtensionsService* service = browser()->profile()->GetExtensionsService();
-    TabContents* contents = browser()->GetSelectedTabContents();
-    if (service->HasInstalledExtensions() || !contents)
+    if (service->HasInstalledExtensions())
       return false;
 
     // Install the initial version, which should happen just fine.
     if (!InstallExtension(
         test_data_dir_.AppendASCII("permissions-low-v1.crx"), 1))
       return false;
-    EXPECT_EQ(0, contents->infobar_delegate_count());
 
     // Upgrade to a version that wants more permissions. We should disable the
     // extension and prompt the user to reenable.
@@ -69,7 +65,6 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
         service->extensions()->at(0)->id(),
         test_data_dir_.AppendASCII("permissions-high-v2.crx"), -1))
       return false;
-    EXPECT_EQ(1, contents->infobar_delegate_count());
     EXPECT_EQ(0u, service->extensions()->size());
     if (service->disabled_extensions()->size() != 1u)
       return false;
@@ -127,21 +122,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, Incognito) {
 
 // Tests the process of updating an extension to one that requires higher
 // permissions.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DISABLED_UpdatePermissions) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissions) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   ASSERT_TRUE(InstallAndUpdateIncreasingPermissionsExtension());
 
-  // Now try reenabling it, which should also dismiss the infobar.
+  // Now try reenabling it.
   service->EnableExtension(service->disabled_extensions()->at(0)->id());
-  TabContents* contents = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(contents);
-  EXPECT_EQ(0, contents->infobar_delegate_count());
   EXPECT_EQ(1u, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
 }
 
 // Tests that we can uninstall a disabled extension.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DISABLED_UninstallDisabled) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UninstallDisabled) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   ASSERT_TRUE(InstallAndUpdateIncreasingPermissionsExtension());
 
