@@ -360,6 +360,9 @@ typedef NTSTATUS (WINAPI *NtOpenKeyExFunction)(
   IN POBJECT_ATTRIBUTES ObjectAttributes,
   IN DWORD open_options);
 
+typedef NTSTATUS (WINAPI *NtDeleteKeyFunction)(
+  IN HANDLE KeyHandle);
+
 // -----------------------------------------------------------------------
 // Memory
 

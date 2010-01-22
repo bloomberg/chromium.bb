@@ -185,6 +185,12 @@ bool RegistryPolicy::CreateKeyAction(EvalResult eval_result,
     return false;
   }
 
+  // We don't support creating link keys, volatile keys or backup/restore.
+  if (create_options) {
+    *nt_status = STATUS_ACCESS_DENIED;
+    return false;
+  }
+
   UNICODE_STRING uni_name = {0};
   OBJECT_ATTRIBUTES obj_attributes = {0};
   InitObjectAttribs(key, attributes, root_directory, &obj_attributes,

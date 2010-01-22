@@ -40,6 +40,10 @@ NTSTATUS WINAPI TargetNtCreateKey(NtCreateKeyFunction orig_CreateKey,
     if (class_name && class_name->Buffer && class_name->Length)
       break;
 
+    // We don't support creating link keys, volatile keys and backup/restore.
+    if (create_options)
+      break;
+
     void* memory = GetGlobalIPCMemory();
     if (NULL == memory)
       break;
