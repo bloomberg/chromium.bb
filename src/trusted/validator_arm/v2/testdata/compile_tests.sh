@@ -11,5 +11,6 @@
 readonly ARM_CROSS_COMPILER="${ARM_CC}"
 for t in *.S ; do
   echo "compiling $t -> ${t%.*}.nexe"
-  ${ARM_CROSS_COMPILER} -static -nodefaultlibs -nostdlib -o ${t%.*}.nexe $t
+  ${ARM_CROSS_COMPILER} -static -nodefaultlibs -nostdlib \
+      -march=armv7-a -mcpu=cortex-a8 -mfpu=neon -o ${t%.*}.nexe $t
 done

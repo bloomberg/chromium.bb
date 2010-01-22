@@ -79,7 +79,13 @@ inline bool Instruction::bit(int index) const {
 }
 
 inline Instruction::Condition Instruction::condition() const {
-  return Instruction::Condition(bits(31, 28));
+  Instruction::Condition cc = Instruction::Condition(bits(31, 28));
+
+  if (cc == Instruction::UNCONDITIONAL) {
+    return Instruction::AL;
+  }
+
+  return cc;
 }
 
 inline uint32_t Instruction::operator&(uint32_t mask) const {

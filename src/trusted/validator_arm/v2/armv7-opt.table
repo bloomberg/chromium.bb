@@ -317,24 +317,24 @@ xxxxxxxxxxxxxxxxxxxxxxxxxx1xxxxx  xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx  =Undefined
 
 -- simd_load_store (See Section A7.7)
 pat0(31:0)                        
-xxxxxxxxxxxxxxxxxxxxxxxxxx1xxxxx  ->simd_load_store_l1
-xxxxxxxxxxxxxxxxxxxxxxxxxx0xxxxx  ->simd_load_store_l0
+xxxxxxxxxx1xxxxxxxxxxxxxxxxxxxxx  ->simd_load_store_l1
+xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx  ->simd_load_store_l0
 
 -- simd_load_store_l0 (See Section A7.7, Table A7-20)
 pat0(31:0)                        pat1(31:0)                        
-xxxxxxxxxxxxxxxxxxxxxxxx0xxxxxxx  xxxxxxxxxxxxxxxxxxxx0011xxxxxxxx  =VectorStore
-xxxxxxxxxxxxxxxxxxxxxxxx0xxxxxxx  xxxxxxxxxxxxxxxxxxxxx010xxxxxxxx  =VectorStore
-xxxxxxxxxxxxxxxxxxxxxxxx0xxxxxxx  xxxxxxxxxxxxxxxxxxxx01xxxxxxxxxx  =VectorStore
-xxxxxxxxxxxxxxxxxxxxxxxx0xxxxxxx  xxxxxxxxxxxxxxxxxxxxx00xxxxxxxxx  =VectorStore
-xxxxxxxxxxxxxxxxxxxxxxxx1xxxxxxx  xxxxxxxxxxxxxxxxxxxx0xxxxxxxxxxx  =VectorStore
-xxxxxxxxxxxxxxxxxxxxxxxx1xxxxxxx  xxxxxxxxxxxxxxxxxxxx10xxxxxxxxxx  =VectorStore
+xxxxxxxx0xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxx0011xxxxxxxx  =VectorStore
+xxxxxxxx0xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxx010xxxxxxxx  =VectorStore
+xxxxxxxx0xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxx01xxxxxxxxxx  =VectorStore
+xxxxxxxx0xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxx00xxxxxxxxx  =VectorStore
+xxxxxxxx1xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxx0xxxxxxxxxxx  =VectorStore
+xxxxxxxx1xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxx10xxxxxxxxxx  =VectorStore
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Undefined
 
 -- simd_load_store_l1 (See Section A7.7, Table A7-21)
 pat0(31:0)                        pat1(31:0)                        
-xxxxxxxxxxxxxxxxxxxxxxxx0xxxxxxx  xxxxxxxxxxxxxxxxxxxx0011xxxxxxxx  =VectorLoad
-xxxxxxxxxxxxxxxxxxxxxxxx0xxxxxxx  xxxxxxxxxxxxxxxxxxxxx010xxxxxxxx  =VectorLoad
-xxxxxxxxxxxxxxxxxxxxxxxx0xxxxxxx  xxxxxxxxxxxxxxxxxxxx01xxxxxxxxxx  =VectorLoad
-xxxxxxxxxxxxxxxxxxxxxxxx0xxxxxxx  xxxxxxxxxxxxxxxxxxxxx00xxxxxxxxx  =VectorLoad
-xxxxxxxxxxxxxxxxxxxxxxxx1xxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =VectorLoad
+xxxxxxxx0xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxx0011xxxxxxxx  =VectorLoad
+xxxxxxxx0xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxx010xxxxxxxx  =VectorLoad
+xxxxxxxx0xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxx01xxxxxxxxxx  =VectorLoad
+xxxxxxxx0xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxx00xxxxxxxxx  =VectorLoad
+xxxxxxxx1xxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =VectorLoad
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Undefined
