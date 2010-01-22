@@ -116,6 +116,24 @@ devtools.InspectorBackendImpl.prototype.stepOverStatementInDebugger =
   devtools.tools.getDebuggerAgent().stepOverStatement();
 };
 
+/**
+ * @override
+ */
+devtools.InspectorBackendImpl.prototype.setPauseOnExceptionsState = function(state) {
+  this._setPauseOnExceptionsState = state;
+  // TODO(yurys): support all three states. See http://crbug.com/32877
+  var enabled = (state !=
+      WebInspector.ScriptsPanel.PauseOnExceptionsState.DontPauseOnExceptions);
+  return devtools.tools.getDebuggerAgent().setPauseOnExceptions(enabled);
+};
+
+/**
+ * @override
+ */
+devtools.InspectorBackendImpl.prototype.pauseOnExceptionsState = function() {
+  return (this._setPauseOnExceptionsState ||
+      WebInspector.ScriptsPanel.PauseOnExceptionsState.DontPauseOnExceptions);
+};
 
 /**
  * @override

@@ -639,9 +639,18 @@ TestSuite.prototype.testPauseOnException = function() {
   this.showPanel('scripts');
   var test = this;
 
-  // Make sure pause on exceptions is on.
-  if (!WebInspector.currentPanel.pauseOnExceptionButton.toggled) {
-    WebInspector.currentPanel.pauseOnExceptionButton.element.click();
+  // TODO(yurys): remove else branch once the states are supported.
+  if (WebInspector.ScriptsPanel.PauseOnExceptionsState) {
+     while (WebInspector.currentPanel.pauseOnExceptionButton.state !=
+            WebInspector.ScriptsPanel.PauseOnExceptionsState.
+                PauseOnUncaughtExceptions) {
+       WebInspector.currentPanel.pauseOnExceptionButton.element.click();
+     }
+  } else {
+    // Make sure pause on exceptions is on.
+    if (!WebInspector.currentPanel.pauseOnExceptionButton.toggled) {
+      WebInspector.currentPanel.pauseOnExceptionButton.element.click();
+    }
   }
 
   this._executeCodeWhenScriptsAreParsed(
