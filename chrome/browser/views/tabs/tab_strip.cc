@@ -1167,6 +1167,8 @@ void TabStrip::TabMoved(TabContents* contents, int from_index, int to_index,
   tab->set_pinned(model_->IsTabPinned(to_index));
   tab->SetBlocked(model_->IsTabBlocked(to_index));
   tab_data_.insert(tab_data_.begin() + to_index, data);
+  if (tab->phantom() != model_->IsPhantomTab(to_index))
+    tab->set_phantom(!tab->phantom());
   if (pinned_state_changed) {
     StartPinAndMoveTabAnimation(from_index, to_index, start_bounds);
   } else {

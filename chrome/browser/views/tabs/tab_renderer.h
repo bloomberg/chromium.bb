@@ -55,6 +55,10 @@ class TabRenderer : public views::View,
   void set_pinned(bool pinned) { data_.pinned = pinned; }
   bool pinned() const { return data_.pinned; }
 
+  // Sets the phantom state of the tab.
+  void set_phantom(bool phantom) { data_.phantom = phantom; }
+  bool phantom() const { return data_.phantom; }
+
   // Are we in the process of animating a pinned state change on this tab?
   void set_animating_pinned_change(bool value);
 
