@@ -40,18 +40,20 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   void OnBrowserWindowReady(const Browser* browser);
 
   // TabStripModelObserver
-  void TabInsertedAt(TabContents* contents, int index, bool foreground);
-  void TabClosingAt(TabContents* contents, int index);
-  void TabDetachedAt(TabContents* contents, int index);
-  void TabSelectedAt(TabContents* old_contents,
-                     TabContents* new_contents,
-                     int index,
-                     bool user_gesture);
-  void TabMoved(TabContents* contents, int from_index, int to_index,
-                bool pinned_state_changed);
-  void TabChangedAt(TabContents* contents, int index,
-                    TabChangeType change_type);
-  void TabStripEmpty();
+  virtual void TabInsertedAt(TabContents* contents, int index, bool foreground);
+  virtual void TabClosingAt(TabContents* contents, int index);
+  virtual void TabDetachedAt(TabContents* contents, int index);
+  virtual void TabSelectedAt(TabContents* old_contents,
+                             TabContents* new_contents,
+                             int index,
+                             bool user_gesture);
+  virtual void TabMoved(TabContents* contents, int from_index, int to_index,
+                        bool pinned_state_changed);
+  virtual void TabChangedAt(TabContents* contents, int index,
+                            TabChangeType change_type);
+  virtual void TabReplacedAt(TabContents* old_contents,
+                             TabContents* new_contents, int index);
+  virtual void TabStripEmpty();
 
   // Page Action execute event.
   void PageActionExecuted(Profile* profile,

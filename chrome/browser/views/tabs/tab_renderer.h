@@ -45,7 +45,7 @@ class TabRenderer : public views::View,
   // TabContents.
   //
   // See TabStripModel::TabChangedAt documentation for what loading_only means.
-  void UpdateData(TabContents* contents, bool loading_only);
+  void UpdateData(TabContents* contents, bool phantom, bool loading_only);
 
   // Sets the pinned state of the tab.
   void SetBlocked(bool blocked);
@@ -207,6 +207,7 @@ class TabRenderer : public views::View,
     bool pinned;
     bool blocked;
     bool animating_pinned_change;
+    bool phantom;
   };
   TabData data_;
 

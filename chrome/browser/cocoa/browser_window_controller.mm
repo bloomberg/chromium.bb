@@ -420,7 +420,7 @@ willPositionSheet:(NSWindow*)sheet
   // have to save the window position before we call orderOut:.
   [self saveWindowPositionIfNeeded];
 
-  if (!browser_->tabstrip_model()->empty()) {
+  if (browser_->tabstrip_model()->HasNonPhantomTabs()) {
     // Tab strip isn't empty.  Hide the frame (so it appears to have closed
     // immediately) and close all the tabs, allowing the renderers to shut
     // down. When the tab strip is empty we'll be called back again.

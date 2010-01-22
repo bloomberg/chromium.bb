@@ -1111,7 +1111,7 @@ void TabStrip::TabInsertedAt(TabContents* contents,
   if (!contains_tab) {
     TabData d = { tab, gfx::Rect() };
     tab_data_.insert(tab_data_.begin() + index, d);
-    tab->UpdateData(contents, false);
+    tab->UpdateData(contents, model_->IsPhantomTab(index), false);
   }
   tab->set_pinned(model_->IsTabPinned(index));
   tab->SetBlocked(model_->IsTabBlocked(index));
@@ -1186,8 +1186,15 @@ void TabStrip::TabChangedAt(TabContents* contents, int index,
     // We'll receive another notification of the change asynchronously.
     return;
   }
-  tab->UpdateData(contents, change_type == LOADING_ONLY);
+  tab->UpdateData(contents, model_->IsPhantomTab(index),
+                  change_type == LOADING_ONLY);
   tab->UpdateFromModel();
+}
+
+void TabStrip::TabReplacedAt(TabContents* old_contents,
+                             TabContents* new_contents,
+                             int index) {
+  TabChangedAt(new_contents, index, ALL);
 }
 
 void TabStrip::TabPinnedStateChanged(TabContents* contents, int index) {

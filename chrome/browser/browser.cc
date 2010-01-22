@@ -178,8 +178,8 @@ Browser::Browser(Type type, Profile* profile)
 }
 
 Browser::~Browser() {
-  // The tab strip should be empty at this point.
-  DCHECK(tabstrip_model_.empty());
+  // The tab strip should not have any significant tabs at this point.
+  DCHECK(!tabstrip_model_.HasNonPhantomTabs());
   tabstrip_model_.RemoveObserver(this);
 
   BrowserList::RemoveBrowser(this);
@@ -1854,7 +1854,7 @@ void Browser::TabInsertedAt(TabContents* contents,
   contents->set_delegate(this);
   contents->controller().SetWindowID(session_id());
 
-  SyncHistoryWithTabs(tabstrip_model_.GetIndexOfTabContents(contents));
+  SyncHistoryWithTabs(index);
 
   // Make sure the loading state is updated correctly, otherwise the throbber
   // won't start if the page is loading.
@@ -1877,20 +1877,7 @@ void Browser::TabClosingAt(TabContents* contents, int index) {
 }
 
 void Browser::TabDetachedAt(TabContents* contents, int index) {
-  // Save what the user's currently typing.
-  window_->GetLocationBar()->SaveStateToContents(contents);
-
-  contents->set_delegate(NULL);
-  if (!tabstrip_model_.closing_all())
-    SyncHistoryWithTabs(0);
-
-  RemoveScheduledUpdatesFor(contents);
-
-  if (find_bar_controller_.get() && index == tabstrip_model_.selected_index())
-    find_bar_controller_->ChangeTabContents(NULL);
-
-  registrar_.Remove(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
-                    Source<TabContents>(contents));
+  TabDetachedAtImpl(contents, index, DETACH_TYPE_DETACH);
 }
 
 void Browser::TabDeselectedAt(TabContents* contents, int index) {
@@ -1950,6 +1937,21 @@ void Browser::TabMoved(TabContents* contents,
   DCHECK(from_index >= 0 && to_index >= 0);
   // Notify the history service.
   SyncHistoryWithTabs(std::min(from_index, to_index));
+}
+
+void Browser::TabReplacedAt(TabContents* old_contents,
+                            TabContents* new_contents, int index) {
+  TabDetachedAtImpl(old_contents, index, DETACH_TYPE_REPLACE);
+  TabInsertedAt(new_contents, index,
+                (index == tabstrip_model_.selected_index()));
+
+  int entry_count = new_contents->controller().entry_count();
+  if (entry_count > 0) {
+    // Send out notification so that observers are updated appropriately.
+    new_contents->controller().NotifyEntryChanged(
+        new_contents->controller().GetEntryAtIndex(entry_count - 1),
+        entry_count - 1);
+  }
 }
 
 void Browser::TabPinnedStateChanged(TabContents* contents, int index) {
@@ -3176,6 +3178,26 @@ void Browser::FindInPage(bool find_next, bool forward_direction) {
 
 void Browser::CloseFrame() {
   window_->Close();
+}
+
+void Browser::TabDetachedAtImpl(TabContents* contents, int index,
+                                DetachType type) {
+  if (type == DETACH_TYPE_DETACH) {
+    // Save what the user's currently typed.
+    window_->GetLocationBar()->SaveStateToContents(contents);
+
+    if (!tabstrip_model_.closing_all())
+      SyncHistoryWithTabs(0);
+  }
+
+  contents->set_delegate(NULL);
+  RemoveScheduledUpdatesFor(contents);
+
+  if (find_bar_controller_.get() && index == tabstrip_model_.selected_index())
+    find_bar_controller_->ChangeTabContents(NULL);
+
+  registrar_.Remove(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
+                    Source<TabContents>(contents));
 }
 
 // static

@@ -47,6 +47,7 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -1191,6 +1192,27 @@ void TabContents::LogNewTabTime(const std::string& event_name) {
 void TabContents::OnCloseStarted() {
   if (tab_close_start_time_.is_null())
     tab_close_start_time_ = base::TimeTicks::Now();
+}
+
+TabContents* TabContents::CloneAndMakePhantom() {
+  // TODO: the initial URL, title and what not should come from the app.
+  NavigationEntry* entry = controller().GetActiveEntry();
+
+  TabNavigation tab_nav;
+  if (entry)
+    tab_nav.SetFromNavigationEntry(*entry);
+  std::vector<TabNavigation> navigations;
+  navigations.push_back(tab_nav);
+
+  TabContents* new_contents =
+      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL);
+  new_contents->controller().RestoreFromState(navigations, 0, false);
+  if (entry) {
+    // TODO: this should come from the app.
+    new_contents->controller().GetActiveEntry()->favicon() = entry->favicon();
+  }
+
+  return new_contents;
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

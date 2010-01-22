@@ -639,6 +639,13 @@ class TabContents : public PageNavigator,
     return request_context_;
   }
 
+  // Creates a duplicate of this TabContents. The returned TabContents is
+  // configured such that the renderer has not been loaded (it'll load the first
+  // time it is selected).
+  // This is intended for use with apps.
+  // The caller owns the returned object.
+  TabContents* CloneAndMakePhantom();
+
   // JavaScriptMessageBoxClient ------------------------------------------------
   virtual std::wstring GetMessageBoxTitle(const GURL& frame_url,
                                           bool is_alert);

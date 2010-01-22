@@ -500,6 +500,21 @@ class Browser : public TabStripModelDelegate,
   virtual void ExecuteCommand(int id);
 
  private:
+  FRIEND_TEST(BrowserTest, NoTabsInPopups);
+
+  // Used to describe why a tab is being detached. This is used by
+  // TabDetachedAtImpl.
+  enum DetachType {
+    // Result of TabDetachedAt.
+    DETACH_TYPE_DETACH,
+
+    // Result of TabReplacedAt.
+    DETACH_TYPE_REPLACE,
+
+    // Result of the tab strip not having any significant tabs.
+    DETACH_TYPE_EMPTY
+  };
+
   // Overridden from TabStripModelDelegate:
   virtual TabContents* AddBlankTab(bool foreground);
   virtual TabContents* AddBlankTabAt(int index, bool foreground);
@@ -542,6 +557,9 @@ class Browser : public TabStripModelDelegate,
                         int from_index,
                         int to_index,
                         bool pinned_state_changed);
+  virtual void TabReplacedAt(TabContents* old_contents,
+                             TabContents* new_contents,
+                             int index);
   virtual void TabPinnedStateChanged(TabContents* contents, int index);
   virtual void TabStripEmpty();
 
@@ -730,7 +748,7 @@ class Browser : public TabStripModelDelegate,
   //             after a return to the message loop.
   void CloseFrame();
 
-  FRIEND_TEST(BrowserTest, NoTabsInPopups);
+  void TabDetachedAtImpl(TabContents* contents, int index, DetachType type);
 
   // Create a preference dictionary for the provided application name. This is
   // done only once per application name / per session.

@@ -139,6 +139,9 @@ class TabStrip : public views::View,
                         bool pinned_state_changed);
   virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type);
+  virtual void TabReplacedAt(TabContents* old_contents,
+                             TabContents* new_contents,
+                             int index);
   virtual void TabPinnedStateChanged(TabContents* contents, int index);
   virtual void TabBlockedStateChanged(TabContents* contents, int index);
 

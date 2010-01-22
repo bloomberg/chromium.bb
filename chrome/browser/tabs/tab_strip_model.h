@@ -99,6 +99,12 @@ class TabStripModelObserver {
   virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type) {}
 
+  // The tab contents was replaced at the specified index. This is invoked when
+  // a tab becomes phantom. See description of phantom tabs in class description
+  // of TabStripModel for details.
+  virtual void TabReplacedAt(TabContents* old_contents,
+                             TabContents* new_contents, int index) {}
+
   // Invoked when the pinned state of a tab changes.
   // NOTE: this is only invoked if the tab doesn't move as a result of its
   // pinned state changing. If the tab moves as a result, the observer is
@@ -110,10 +116,10 @@ class TabStripModelObserver {
   // window.
   virtual void TabBlockedStateChanged(TabContents* contents, int index) { }
 
-  // The TabStripModel now no longer has any "significant" (user created or
-  // user manipulated) tabs. The implementer may use this as a trigger to try
-  // and close the window containing the TabStripModel, for example...
-  virtual void TabStripEmpty() { }
+  // The TabStripModel now no longer has any phantom tabs. The implementer may
+  // use this as a trigger to try and close the window containing the
+  // TabStripModel, for example...
+  virtual void TabStripEmpty() {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -227,15 +233,26 @@ class TabStripModelDelegate {
 //  them, as well as a higher level API for doing specific Browser-related
 //  tasks like adding new Tabs from just a URL, etc.
 //
-//  Each tab may additionally be pinned. The view typically renders pinned tabs
-//  differently. The model makes sure all pinned tabs are organized at the
-//  beginning of the tabstrip. Inserting a tab between pinned tabs
-//  implicitly makes the inserted tab pinned. Similarly moving a tab may pin or
-//  unpin the tab, again enforcing that all pinned tabs occur at the beginning
-//  of the tabstrip. Lastly, changing the pinned state of a tab moves the
-//  tab to be grouped with the pinned or unpinned tabs. For example, if the
-//  first two tabs are pinned, and the tenth tab is pinned, it is moved to
-//  become the third tab.
+// Each tab may be any one of the following states:
+// . Pinned. The view typically renders pinned tabs differently. The model makes
+//   sure all pinned tabs are organized at the beginning of the tabstrip.
+//   Inserting a tab between pinned tabs implicitly makes the inserted tab
+//   pinned. Similarly moving a tab may pin or unpin the tab, again enforcing
+//   that all pinned tabs occur at the beginning of the tabstrip. Lastly,
+//   changing the pinned state of a tab moves the tab to be grouped with the
+//   pinned or unpinned tabs. For example, if the first two tabs are pinned, and
+//   the tenth tab is pinned, it is moved to become the third tab.
+// . App. An app tab corresponds to an app extension.
+// . Phantom. Only pinned app tabs may be made phantom (or if
+//   browser_defaults::kPinnedTabsActLikeApps is true then any pinned tab may be
+//   made phantom). When a tab that can be made phantom is closed the renderer
+//   is shutdown, a new TabContents/NavigationController is created that has
+//   not yet loaded the renderer and observers are notified via the
+//   TabReplacedAt method. When a phantom tab is selected the renderer is
+//   loaded and the tab is no longer phantom.
+//   Phantom tabs do not prevent the tabstrip from closing, for example if the
+//   tabstrip has one phantom and one non-phantom tab and the non-phantom tab is
+//   closed, then the tabstrip/browser are closed.
 //
 //  A TabStripModel has one delegate that it relies on to perform certain tasks
 //  like creating new TabStripModels (probably hosted in Browser windows) when
@@ -266,6 +283,11 @@ class TabStripModel : public NotificationObserver {
   // Retrieve the number of TabContentses/emptiness of the TabStripModel.
   int count() const { return static_cast<int>(contents_data_.size()); }
   bool empty() const { return contents_data_.empty(); }
+
+  // Returns true if there are any non-phantom tabs. When there are no
+  // non-phantom tabs the delegate is notified by way of TabStripEmpty and the
+  // browser closes.
+  bool HasNonPhantomTabs() const;
 
   // Retrieve the Profile associated with this TabStripModel.
   Profile* profile() const { return profile_; }
@@ -391,12 +413,14 @@ class TabStripModel : public NotificationObserver {
   // If |use_group| is true, the group property of the tab is used instead of
   // the opener to find the next tab. Under some circumstances the group
   // relationship may exist but the opener may not.
+  // NOTE: this skips phantom tabs.
   int GetIndexOfNextTabContentsOpenedBy(const NavigationController* opener,
                                         int start_index,
                                         bool use_group) const;
 
   // Returns the index of the last TabContents in the model opened by the
   // specified opener, starting at |start_index|.
+  // NOTE: this skips phantom tabs.
   int GetIndexOfLastTabContentsOpenedBy(const NavigationController* opener,
                                         int start_index) const;
 
@@ -433,6 +457,17 @@ class TabStripModel : public NotificationObserver {
 
   // Returns true if the tab at |index| is pinned.
   bool IsTabPinned(int index) const;
+
+  // Is the tab at |index| an app?
+  // See description above class for details on this.
+  // This is currently only true if browser_defaults::kPinnedTabsActLikeApps is
+  // true and the tab is pinned.
+  bool IsAppTab(int index) const;
+
+  // Returns true if the tab is a phantom tab. A phantom tab is one where the
+  // renderer has not been loaded.
+  // See description above class for details on this.
+  bool IsPhantomTab(int index) const;
 
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
   bool IsTabBlocked(int index) const;
@@ -559,6 +594,17 @@ class TabStripModel : public NotificationObserver {
   // Convenience for setting the opener pointer for the specified |contents| to
   // be |opener|'s NavigationController.
   void SetOpenerForContents(TabContents* contents, TabContents* opener);
+
+  // Selects either the next tab (|foward| is true), or the previous tab
+  // (|forward| is false).
+  void SelectRelativeTab(bool forward);
+
+  // Returns the first non-phantom tab starting at |index|, skipping the tab at
+  // |ignore_index|.
+  int IndexOfNextNonPhantomTab(int index, int ignore_index);
+
+  // Makes the tab a phantom tab.
+  void MakePhantom(int index);
 
   // Returns true if the tab represented by the specified data has an opener
   // that matches the specified one. If |use_group| is true, then this will

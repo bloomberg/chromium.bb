@@ -396,6 +396,12 @@ void ExtensionBrowserEventRouter::TabChangedAt(TabContents* contents,
   TabUpdated(contents, false);
 }
 
+void ExtensionBrowserEventRouter::TabReplacedAt(TabContents* old_contents,
+                                                TabContents* new_contents,
+                                                int index) {
+  // TODO: figure out the right notification to send.
+}
+
 void ExtensionBrowserEventRouter::TabStripEmpty() { }
 
 void ExtensionBrowserEventRouter::DispatchOldPageActionEvent(

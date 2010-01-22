@@ -10,6 +10,7 @@
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
@@ -58,6 +59,35 @@ int CountRenderProcessHosts() {
 }  // namespace
 
 class BrowserTest : public InProcessBrowserTest {
+ public:
+  // Used by phantom tab tests. Creates two tabs, pins the first and makes it
+  // a phantom tab (by closing it).
+  void PhantomTabTest() {
+    static const wchar_t kDocRoot[] = L"chrome/test/data";
+    scoped_refptr<HTTPTestServer> server(
+        HTTPTestServer::CreateServer(kDocRoot, NULL));
+    ASSERT_TRUE(NULL != server.get());
+    GURL url(server->TestServerPage("empty.html"));
+    TabStripModel* model = browser()->tabstrip_model();
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    model->SetTabPinned(0, true);
+
+    browser()->AddTabWithURL(GURL("about:blank"), GURL(), PageTransition::TYPED,
+                             true, 1, false, NULL);
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    // Close the first, which should make it a phantom.
+    TabContents* initial_contents = model->GetTabContentsAt(0);
+    model->CloseTabContentsAt(0);
+    // There should still be two tabs.
+    ASSERT_EQ(2, browser()->tab_count());
+    // The first tab should be a phantom.
+    EXPECT_TRUE(model->IsPhantomTab(0));
+    // And the tab contents of the first tab should have changed.
+    EXPECT_TRUE(model->GetTabContentsAt(0) != initial_contents);
+  }
+
  protected:
   // In RTL locales wrap the page title with RTL embedding characters so that it
   // matches the value returned by GetWindowTitle().
@@ -292,6 +322,36 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
       controller().GetActiveEntry();
   EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
 }
+
+// TODO(sky): enable these once phantom tabs aren't behind a flag.
+/*
+IN_PROC_BROWSER_TEST_F(BrowserTest, PhantomTab) {
+  if (!browser_defaults::kPinnedTabsActLikeApps)
+    return;
+
+  PhantomTabTest();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, RevivePhantomTab) {
+  if (!browser_defaults::kPinnedTabsActLikeApps)
+    return;
+
+  PhantomTabTest();
+
+  if (HasFatalFailure())
+    return;
+
+  TabStripModel* model = browser()->tabstrip_model();
+
+  // Revive the phantom tab by selecting it.
+  browser()->SelectTabContentsAt(0, true);
+
+  // There should still be two tabs.
+  ASSERT_EQ(2, browser()->tab_count());
+  // The first tab should no longer be a phantom.
+  EXPECT_FALSE(model->IsPhantomTab(0));
+}
+*/
 
 // Tests that the CLD (Compact Language Detection) works properly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {

@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -69,6 +70,14 @@ void TabStripModel::AddObserver(TabStripModelObserver* observer) {
 
 void TabStripModel::RemoveObserver(TabStripModelObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool TabStripModel::HasNonPhantomTabs() const {
+  for (int i = 0; i < count(); i++) {
+    if (!IsPhantomTab(i))
+      return true;
+  }
+  return false;
 }
 
 bool TabStripModel::HasObserver(TabStripModelObserver* observer) {
@@ -147,18 +156,20 @@ TabContents* TabStripModel::DetachTabContentsAt(int index) {
 
   DCHECK(ContainsIndex(index));
   TabContents* removed_contents = GetContentsAt(index);
-  next_selected_index_ = order_controller_->DetermineNewSelectedIndex(index);
+  next_selected_index_ =
+      order_controller_->DetermineNewSelectedIndex(index, true);
+  next_selected_index_ = IndexOfNextNonPhantomTab(next_selected_index_, -1);
   delete contents_data_.at(index);
   contents_data_.erase(contents_data_.begin() + index);
-  if (contents_data_.empty())
+  if (!HasNonPhantomTabs())
     closing_all_ = true;
   TabStripModelObservers::Iterator iter(observers_);
   while (TabStripModelObserver* obs = iter.GetNext()) {
     obs->TabDetachedAt(removed_contents, index);
-    if (empty())
+    if (!HasNonPhantomTabs())
       obs->TabStripEmpty();
   }
-  if (!contents_data_.empty()) {
+  if (HasNonPhantomTabs()) {
     if (index == selected_index_) {
       ChangeSelectedContentsFrom(removed_contents, next_selected_index_,
                                  false);
@@ -257,20 +268,21 @@ int TabStripModel::GetIndexOfNextTabContentsOpenedBy(
   DCHECK(opener);
   DCHECK(ContainsIndex(start_index));
 
-  TabContentsData* start_data = contents_data_.at(start_index);
   TabContentsDataVector::const_iterator iter =
-      find(contents_data_.begin(), contents_data_.end(), start_data);
+      contents_data_.begin() + start_index;
   TabContentsDataVector::const_iterator next;
   for (; iter != contents_data_.end(); ++iter) {
     next = iter + 1;
     if (next == contents_data_.end())
       break;
-    if (OpenerMatches(*next, opener, use_group))
+    if (OpenerMatches(*next, opener, use_group) &&
+        !IsPhantomTab(static_cast<int>(next - contents_data_.begin()))) {
       return static_cast<int>(next - contents_data_.begin());
+    }
   }
-  iter = find(contents_data_.begin(), contents_data_.end(), start_data);
+  iter = contents_data_.begin() + start_index;
   if (iter != contents_data_.begin()) {
-    for (--iter; iter > contents_data_.begin(); --iter) {
+    for (--iter; iter != contents_data_.begin(); --iter) {
       if (OpenerMatches(*iter, opener, use_group))
         return static_cast<int>(iter - contents_data_.begin());
     }
@@ -283,18 +295,18 @@ int TabStripModel::GetIndexOfLastTabContentsOpenedBy(
   DCHECK(opener);
   DCHECK(ContainsIndex(start_index));
 
-  TabContentsData* start_data = contents_data_.at(start_index);
   TabContentsDataVector::const_iterator end =
-      find(contents_data_.begin(), contents_data_.end(), start_data);
-  TabContentsDataVector::const_iterator iter =
-      contents_data_.end();
+      contents_data_.begin() + start_index;
+  TabContentsDataVector::const_iterator iter = contents_data_.end();
   TabContentsDataVector::const_iterator next;
   for (; iter != end; --iter) {
     next = iter - 1;
     if (next == end)
       break;
-    if ((*next)->opener == opener)
+    if ((*next)->opener == opener &&
+        !IsPhantomTab(static_cast<int>(next - contents_data_.begin()))) {
       return static_cast<int>(next - contents_data_.begin());
+    }
   }
   return kNoTab;
 }
@@ -383,6 +395,19 @@ bool TabStripModel::IsTabPinned(int index) const {
   return contents_data_[index]->pinned;
 }
 
+bool TabStripModel::IsAppTab(int index) const {
+  // TODO (sky): this is temporary and should be integrated with real apps.
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePhantomTabs) &&
+      browser_defaults::kPinnedTabsActLikeApps &&
+      IsTabPinned(index);
+}
+
+bool TabStripModel::IsPhantomTab(int index) const {
+  return IsTabPinned(index) && IsAppTab(index) &&
+         GetTabContentsAt(index)->controller().needs_reload();
+}
+
 bool TabStripModel::IsTabBlocked(int index) const {
   return contents_data_[index]->blocked;
 }
@@ -461,20 +486,11 @@ void TabStripModel::CloseSelectedTab() {
 }
 
 void TabStripModel::SelectNextTab() {
-  // This may happen during automated testing or if a user somehow buffers
-  // many key accelerators.
-  if (empty())
-    return;
-
-  int next_index = (selected_index_ + 1) % count();
-  SelectTabContentsAt(next_index, true);
+  SelectRelativeTab(true);
 }
 
 void TabStripModel::SelectPreviousTab() {
-  int prev_index = selected_index_ - 1;
-  if (prev_index < 0)
-    prev_index = count() + prev_index;
-  SelectTabContentsAt(prev_index, true);
+  SelectRelativeTab(false);
 }
 
 void TabStripModel::SelectLastTab() {
@@ -562,7 +578,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       TabContents* contents = GetTabContentsAt(context_index);
       std::vector<int> closing_tabs;
       for (int i = count() - 1; i >= 0; --i) {
-        if (GetTabContentsAt(i) != contents)
+        if (GetTabContentsAt(i) != contents && !IsTabPinned(i))
           closing_tabs.push_back(i);
       }
       InternalCloseTabs(closing_tabs, true);
@@ -572,7 +588,8 @@ void TabStripModel::ExecuteContextMenuCommand(
       UserMetrics::RecordAction("TabContextMenu_CloseTabsToRight", profile_);
       std::vector<int> closing_tabs;
       for (int i = count() - 1; i > context_index; --i) {
-        closing_tabs.push_back(i);
+        if (!IsTabPinned(i))
+          closing_tabs.push_back(i);
       }
       InternalCloseTabs(closing_tabs, true);
       break;
@@ -580,6 +597,13 @@ void TabStripModel::ExecuteContextMenuCommand(
     case CommandCloseTabsOpenedBy: {
       UserMetrics::RecordAction("TabContextMenu_CloseTabsOpenedBy", profile_);
       std::vector<int> closing_tabs = GetIndexesOpenedBy(context_index);
+      for (std::vector<int>::iterator i = closing_tabs.begin();
+           i != closing_tabs.end();) {
+        if (IsTabPinned(*i))
+          i = closing_tabs.erase(i);
+        else
+          ++i;
+      }
       InternalCloseTabs(closing_tabs, true);
       break;
     }
@@ -631,7 +655,14 @@ void TabStripModel::Observe(NotificationType type,
   if (index != TabStripModel::kNoTab) {
     // Note that we only detach the contents here, not close it - it's already
     // been closed. We just want to undo our bookkeeping.
-    DetachTabContentsAt(index);
+    if (IsAppTab(index) && IsTabPinned(index) && !IsPhantomTab(index) &&
+        !closing_all_) {
+      // We don't actually allow pinned tabs to close. Instead they become
+      // phantom.
+      MakePhantom(index);
+    } else {
+      DetachTabContentsAt(index);
+    }
   }
 }
 
@@ -774,6 +805,65 @@ void TabStripModel::SetOpenerForContents(TabContents* contents,
                                     TabContents* opener) {
   int index = GetIndexOfTabContents(contents);
   contents_data_.at(index)->opener = &opener->controller();
+}
+
+void TabStripModel::SelectRelativeTab(bool next) {
+  // This may happen during automated testing or if a user somehow buffers
+  // many key accelerators.
+  if (contents_data_.empty())
+    return;
+
+  // Skip pinned-app-phantom tabs when iterating.
+  int index = selected_index_;
+  int delta = next ? 1 : -1;
+  do {
+    index = (index + count() + delta) % count();
+  } while (index != selected_index_ && IsTabPinned(index) && IsAppTab(index) &&
+           IsPhantomTab(index));
+  SelectTabContentsAt(index, true);
+}
+
+int TabStripModel::IndexOfNextNonPhantomTab(int index,
+                                            int ignore_index) {
+  if (index == kNoTab)
+    return kNoTab;
+
+  if (empty())
+    return index;
+
+  index = std::min(count() - 1, std::max(0, index));
+  int start = index;
+  do {
+    if (index != ignore_index && !IsPhantomTab(index))
+      return index;
+    index = (index + 1) % count();
+  } while (index != start);
+
+  // All phantom tabs.
+  return start;
+}
+
+void TabStripModel::MakePhantom(int index) {
+  if (selected_index_ == index) {
+    // Change the selection, otherwise we're going to force the phantom tab
+    // to become selected.
+    // NOTE: we must do this before switching the TabContents, otherwise
+    // observers are notified with the wrong tab contents.
+    int new_selected_index =
+        order_controller_->DetermineNewSelectedIndex(index, false);
+    new_selected_index = IndexOfNextNonPhantomTab(new_selected_index,
+                                                  index);
+    SelectTabContentsAt(new_selected_index, true);
+  }
+
+  TabContents* old_contents = GetContentsAt(index);
+  TabContents* new_contents = old_contents->CloneAndMakePhantom();
+
+  contents_data_[index]->contents = new_contents;
+
+  // And notify observers.
+  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+                    TabReplacedAt(old_contents, new_contents, index));
 }
 
 // static

@@ -258,6 +258,7 @@ TabRenderer::TabRenderer()
   data_.blocked = false;
   data_.pinned = false;
   data_.animating_pinned_change = false;
+  data_.phantom = false;
 
   // Add the Close Button.
   close_button_ = new TabCloseButton(this);
@@ -293,13 +294,16 @@ ThemeProvider* TabRenderer::GetThemeProvider() {
   return NULL;
 }
 
-void TabRenderer::UpdateData(TabContents* contents, bool loading_only) {
+void TabRenderer::UpdateData(TabContents* contents,
+                             bool phantom,
+                             bool loading_only) {
   DCHECK(contents);
-  if (!loading_only) {
+  if (data_.phantom != phantom || !loading_only) {
     data_.title = contents->GetTitle();
     data_.off_the_record = contents->profile()->IsOffTheRecord();
     data_.crashed = contents->is_crashed();
     data_.favicon = contents->GetFavIcon();
+    data_.phantom = phantom;
   }
 
   // TODO(glen): Temporary hax.
@@ -457,7 +461,8 @@ void TabRenderer::Paint(gfx::Canvas* canvas) {
       show_close_button != showing_close_button_)
     Layout();
 
-  PaintTabBackground(canvas);
+  if (!data_.phantom)
+    PaintTabBackground(canvas);
 
   SkColor title_color = GetThemeProvider()->
       GetColor(IsSelected() ?

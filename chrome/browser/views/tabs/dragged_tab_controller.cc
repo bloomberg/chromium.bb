@@ -959,7 +959,7 @@ void DraggedTabController::Detach() {
   }
 
   // If we've removed the last Tab from the TabStrip, hide the frame now.
-  if (attached_model->empty())
+  if (!attached_model->HasNonPhantomTabs())
     HideFrame();
 
   // Set up the photo booth to start capturing the contents of the dragged
@@ -1343,7 +1343,7 @@ void DraggedTabController::HideFrame() {
 void DraggedTabController::CleanUpHiddenFrame() {
   // If the model we started dragging from is now empty, we must ask the
   // delegate to close the frame.
-  if (source_tabstrip_->model()->empty())
+  if (!source_tabstrip_->model()->HasNonPhantomTabs())
     source_tabstrip_->model()->delegate()->CloseFrameAfterDragSession();
 }
 

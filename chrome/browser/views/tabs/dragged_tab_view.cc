@@ -42,7 +42,7 @@ DraggedTabView::DraggedTabView(TabContents* datasource,
       tab_width_(0) {
   set_parent_owned(false);
 
-  renderer_->UpdateData(datasource, false);
+  renderer_->UpdateData(datasource, false, false);
 
 #if defined(OS_WIN)
   container_.reset(new views::WidgetWin);
