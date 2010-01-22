@@ -9,13 +9,10 @@
 #include "base/gfx/rect.h"
 
 class BrowserView;
-class Tab;
 
-namespace views {
-class Window;
-}  // namespace views
-
-
+// Note: This class is deprecated (but still in use)
+// and will be removed in the near future.
+//
 // BrowserExtender adds chromeos specific features to BrowserView.
 // The factory method |Create(BrowserView*)| creates different types
 // of extender depending on the type of BrowserView and target platform.
@@ -29,43 +26,8 @@ class BrowserExtender {
 
   virtual ~BrowserExtender() {}
 
-  // Initializes the extender.
-  virtual void Init() = 0;
-
-  // Layouts controls within the given bounds. The |tabstrip_bounds| will be
-  // filled with the remaining bounds for tabstip to be layed out and
-  // the |bottom| will be filled with the y location where toolbar should be
-  // layed out, in BrowserView cooridnates.
-  virtual void Layout(const gfx::Rect& bounds,
-                      gfx::Rect* tabstrip_bounds,
-                      int* bottom) = 0;
-
-  // Tests if the given |point|, which is given in BrowserView coordinates,
-  // hits any of controls.
-  virtual bool NonClientHitTest(const gfx::Point& browser_view_point) = 0;
-
-  // Returns true to hide the toolbar for the window, or false
-  // to use the regular logic to decide.
-  virtual bool ShouldForceHideToolbar() = 0;
-
   // Returns true if the window should be in the maximized state.
   virtual bool ShouldForceMaximizedWindow() = 0;
-
-  // Returns true if the compact navigation bar is focusable and got
-  // focus, false otherwise.
-  virtual bool SetFocusToCompactNavigationBar() = 0;
-
-  // Toggles the visibility of CompactNavigationBar.
-  virtual void ToggleCompactNavigationBar() = 0;
-
-  // Called when a mouse entered into the |tab|.
-  virtual void OnMouseEnteredToTab(Tab* tab) = 0;
-
-  // Called when a mouse moved (hovered) on the |tab|.
-  virtual void OnMouseMovedOnTab(Tab* tab) = 0;
-
-  // Called when a mouse exited from the |tab|.
-  virtual void OnMouseExitedFromTab(Tab* tab) = 0;
 
   // Returns the main menu's width.  This is used in the opaque frame
   // to layout otr icons and tabstrips.
@@ -83,19 +45,9 @@ class BrowserExtender {
   }
 
  protected:
-  explicit BrowserExtender(BrowserView* browser_view);
-
-  // Returns the view Window object that contains the BrowserView.
-  views::Window* GetBrowserWindow();
-
-  BrowserView* browser_view() {
-    return browser_view_;
-  }
+  BrowserExtender();
 
  private:
-  // BrowserView to be extended.
-  BrowserView* browser_view_;
-
   // True if the browser can be closed. See set_can_close method for setails.
   bool can_close_;
 

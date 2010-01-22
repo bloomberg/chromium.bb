@@ -282,10 +282,10 @@ class BrowserWindow {
   // Shows the create web app shortcut dialog box.
   virtual void ShowCreateShortcutsDialog(TabContents* tab_contents) = 0;
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_CHROMEOS)
   // Toggles compact navigation bar.
   virtual void ToggleCompactNavigationBar() = 0;
-#endif  // defined(TOOLKIT_VIEWS)
+#endif
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);

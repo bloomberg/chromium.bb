@@ -4,10 +4,7 @@
 
 #include "chrome/browser/views/frame/browser_extender.h"
 
-#include "base/gfx/rect.h"
 #include "chrome/browser/views/frame/browser_view.h"
-
-class Tab;
 
 namespace {
 
@@ -15,27 +12,14 @@ namespace {
 // TODO(oshima): Add MainMenu support with a command line flag.
 class StandardExtender : public BrowserExtender {
  public:
-  explicit StandardExtender(BrowserView* browser_view)
-      : BrowserExtender(browser_view) {
+  StandardExtender() : BrowserExtender() {
   }
   virtual ~StandardExtender() {}
 
  private:
   // BrowserExtender overrides.
-  virtual void Init() {}
-  virtual void Layout(const gfx::Rect& bounds,
-                      gfx::Rect* tabstrip_bounds,
-                      int* bottom) {
-    NOTREACHED();
-  }
   virtual bool NonClientHitTest(const gfx::Point& point) { return false; }
-  virtual bool ShouldForceHideToolbar() { return false; }
   virtual bool ShouldForceMaximizedWindow() { return false; }
-  virtual bool SetFocusToCompactNavigationBar() { return false; }
-  virtual void ToggleCompactNavigationBar() {}
-  virtual void OnMouseEnteredToTab(Tab* tab) {}
-  virtual void OnMouseMovedOnTab(Tab* tab) {}
-  virtual void OnMouseExitedFromTab(Tab* tab) {}
   virtual int GetMainMenuWidth() const { return 0; }
 
   DISALLOW_COPY_AND_ASSIGN(StandardExtender);
@@ -48,5 +32,5 @@ class StandardExtender : public BrowserExtender {
 
 // static
 BrowserExtender* BrowserExtender::Create(BrowserView* browser_view) {
-  return new StandardExtender(browser_view);
+  return new StandardExtender();
 }

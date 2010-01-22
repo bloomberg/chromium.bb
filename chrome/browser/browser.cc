@@ -988,7 +988,7 @@ void Browser::ToggleFullscreenMode() {
 #endif
 }
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_CHROMEOS)
 void Browser::ToggleCompactNavigationBar() {
   UserMetrics::RecordAction("ToggleCompactNavigationBar", profile_);
   window_->ToggleCompactNavigationBar();
@@ -1496,7 +1496,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SHOW_AS_TAB:           ConvertPopupToTabbedBrowser(); break;
     case IDC_FULLSCREEN:            ToggleFullscreenMode();        break;
     case IDC_EXIT:                  Exit();                        break;
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_CHROMEOS)
     case IDC_COMPACT_NAVBAR:        ToggleCompactNavigationBar();  break;
 #endif
 
@@ -2496,7 +2496,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, true);
 #endif
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, true);
 #endif
 

@@ -289,9 +289,9 @@ class BrowserView : public BrowserWindow,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void ShowCreateShortcutsDialog(TabContents* tab_contents);
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_CHROMEOS)
   virtual void ToggleCompactNavigationBar();
-#endif  // defined(TOOLKIT_VIEWS)
+#endif  // defined(OS_CHROMEOS)
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const;
@@ -374,7 +374,7 @@ class BrowserView : public BrowserWindow,
 
   // Returns a new TabStrip for the browser view. A subclass may
   // override to return a different TabStrip implementation.
-  virtual TabStrip* CreateTabStrip(TabStripModel* tab_strip_model) const;
+  virtual TabStrip* CreateTabStrip(TabStripModel* tab_strip_model);
 
   // Browser window related initializations.
   virtual void Init();

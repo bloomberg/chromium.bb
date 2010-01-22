@@ -1178,10 +1178,8 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
                                                         GetFocusManager());
 }
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_CHROMEOS)
 void BrowserView::ToggleCompactNavigationBar() {
-  browser_extender_->ToggleCompactNavigationBar();
-  Layout();
 }
 #endif
 
@@ -1572,7 +1570,7 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
   return new ChromeBrowserViewLayoutManager();
 }
 
-TabStrip* BrowserView::CreateTabStrip(TabStripModel* model) const {
+TabStrip* BrowserView::CreateTabStrip(TabStripModel* model) {
   return new TabStrip(model);
 }
 
@@ -1653,7 +1651,6 @@ void BrowserView::Init() {
 #endif
 
   browser_extender_.reset(BrowserExtender::Create(this));
-  browser_extender_->Init();
 }
 
 #if defined(OS_WIN)

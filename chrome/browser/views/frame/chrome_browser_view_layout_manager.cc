@@ -196,8 +196,7 @@ bool ChromeBrowserViewLayoutManager::IsPositionInWindowCaption(
     const gfx::Point& point) {
   gfx::Point tabstrip_point(point);
   views::View::ConvertPointToView(browser_view_, tabstrip_, &tabstrip_point);
-  return tabstrip_->IsPositionInWindowCaption(tabstrip_point)
-      && !browser_view_->browser_extender()->NonClientHitTest(point);
+  return tabstrip_->IsPositionInWindowCaption(tabstrip_point);
 }
 
 int ChromeBrowserViewLayoutManager::NonClientHitTest(
@@ -239,10 +238,6 @@ int ChromeBrowserViewLayoutManager::NonClientHitTest(
       return HTNOWHERE;
     }
   }
-
-  if (browser_view_->browser_extender()->NonClientHitTest(
-          point_in_browser_view_coords))
-    return HTCLIENT;
 
   // If the point's y coordinate is below the top of the toolbar and otherwise
   // within the bounds of this view, the point is considered to be within the

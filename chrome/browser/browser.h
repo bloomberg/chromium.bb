@@ -360,7 +360,7 @@ class Browser : public TabStripModelDelegate,
   // In kiosk mode, the first toggle is valid, the rest is discarded.
   void ToggleFullscreenMode();
   void Exit();
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_CHROMEOS)
   void ToggleCompactNavigationBar();
 #endif
 
