@@ -1,4 +1,4 @@
-// Copyright 2006 Google Inc. All Rights Reserved.
+// Copyright 2010 Google Inc. All Rights Reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -844,18 +844,39 @@ void LineInfo::ReadLines() {
     lengthstart += 4;
 
   const char* lineptr = after_header_;
+  lsm.Reset(header_.default_is_stmt);
+
+  // The LineInfoHandler interface expects each line's length along
+  // with its address, but DWARF only provides addresses (sans
+  // length), and an end-of-sequence address; one infers the length
+  // from the next address. So we report a line only when we get the
+  // next line's address, or the end-of-sequence address.
+  bool have_pending_line = false;
+  uint64 pending_address = 0;
+  uint32 pending_file_num = 0, pending_line_num = 0, pending_column_num = 0;
+
   while (lineptr < lengthstart + header_.total_length) {
-    lsm.Reset(header_.default_is_stmt);
-    while (!lsm.end_sequence) {
-      size_t oplength;
-      bool add_line = ProcessOneOpcode(reader_, handler_, header_,
-                                       lineptr, &lsm, &oplength, (uintptr)-1,
-                                       NULL);
-      if (add_line)
-        handler_->AddLine(lsm.address, lsm.file_num, lsm.line_num,
-                          lsm.column_num);
-      lineptr += oplength;
+    size_t oplength;
+    bool add_row = ProcessOneOpcode(reader_, handler_, header_,
+                                    lineptr, &lsm, &oplength, (uintptr)-1,
+                                    NULL);
+    if (add_row) {
+      if (have_pending_line)
+        handler_->AddLine(pending_address, lsm.address - pending_address,
+                          pending_file_num, pending_line_num,
+                          pending_column_num);
+      if (lsm.end_sequence) {
+        lsm.Reset(header_.default_is_stmt);      
+        have_pending_line = false;
+      } else {
+        pending_address = lsm.address;
+        pending_file_num = lsm.file_num;
+        pending_line_num = lsm.line_num;
+        pending_column_num = lsm.column_num;
+        have_pending_line = true;
+      }
     }
+    lineptr += oplength;
   }
 
   after_header_ = lengthstart + header_.total_length;

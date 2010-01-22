@@ -1,4 +1,4 @@
-// Copyright 2006 Google Inc. All Rights Reserved.
+// Copyright 2010 Google Inc. All Rights Reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -89,7 +89,7 @@ void CULineInfoHandler::DefineFile(const string& name,
   }
 }
 
-void CULineInfoHandler::AddLine(uint64 address, uint32 file_num,
+void CULineInfoHandler::AddLine(uint64 address, uint64 length, uint32 file_num,
                                 uint32 line_num, uint32 column_num) {
   if (file_num < files_->size()) {
     linemap_->insert(make_pair(address, make_pair(files_->at(file_num).name.c_str(),
