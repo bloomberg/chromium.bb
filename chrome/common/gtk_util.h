@@ -97,12 +97,7 @@ void SetWindowSizeFromResources(GtkWindow* window,
 // Remove all children from this container.
 void RemoveAllChildren(GtkWidget* container);
 
-// Force the font size of the widget to |size_pixels| and the font to "Sans" if
-// we can't get |size_pixels| with the current font. We have to do this because
-// GTK gets seriously confused as GTK's text layout system doesn't like our
-// constant gtk_widget_set_size_requests() calls.
-//
-// This function should not be used for new code.
+// Force the font size of the widget to |size_pixels|.
 void ForceFontSizePixels(GtkWidget* widget, double size_pixels);
 
 // Gets the position of a gtk widget in screen coordinates.
