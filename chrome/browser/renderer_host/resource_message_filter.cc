@@ -634,26 +634,24 @@ void ResourceMessageFilter::OnLaunchNaCl(
   host->Launch(this, channel_descriptor, reply_msg);
 }
 
-void ResourceMessageFilter::OnCreateWorker(const GURL& url,
-                                           bool is_shared,
-                                           const string16& name,
-                                           int render_view_route_id,
-                                           int* route_id) {
+void ResourceMessageFilter::OnCreateWorker(
+    const ViewHostMsg_CreateWorker_Params& params, int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();
   WorkerService::GetInstance()->CreateWorker(
-      url, is_shared, off_the_record(), name, id(), render_view_route_id, this,
-      *route_id);
+      params.url, params.is_shared, off_the_record(), params.name,
+      params.document_id, id(), params.render_view_route_id, this, *route_id);
 }
 
 void ResourceMessageFilter::OnLookupSharedWorker(const GURL& url,
                                                  const string16& name,
                                                  unsigned long long document_id,
+                                                 int render_view_route_id,
                                                  int* route_id,
                                                  bool* url_mismatch) {
   int new_route_id = render_widget_helper_->GetNextRoutingID();
   bool worker_found = WorkerService::GetInstance()->LookupSharedWorker(
-      url, name, off_the_record(), document_id, this, new_route_id,
-      url_mismatch);
+      url, name, off_the_record(), document_id, id(), render_view_route_id,
+      this, new_route_id, url_mismatch);
   *route_id = worker_found ? new_route_id : MSG_ROUTING_NONE;
 }
 

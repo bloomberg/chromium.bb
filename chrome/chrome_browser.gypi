@@ -1921,6 +1921,8 @@
         'browser/window_sizer_win.cc',
         'browser/worker_host/message_port_dispatcher.cc',
         'browser/worker_host/message_port_dispatcher.h',
+        'browser/worker_host/worker_document_set.cc',
+        'browser/worker_host/worker_document_set.h',
         'browser/worker_host/worker_process_host.cc',
         'browser/worker_host/worker_process_host.h',
         'browser/worker_host/worker_service.cc',

@@ -65,11 +65,17 @@ WorkerProcessHost::~WorkerProcessHost() {
       Source<WorkerProcessHost>(this),
       NotificationService::NoDetails());
 
-  // If we crashed, tell the RenderViewHost.
+  // If we crashed, tell the RenderViewHosts.
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        new WorkerCrashTask(i->renderer_id(), i->render_view_route_id()));
+    const WorkerDocumentSet::DocumentInfoSet& parents =
+        i->worker_document_set()->documents();
+    for (WorkerDocumentSet::DocumentInfoSet::const_iterator parent_iter =
+             parents.begin(); parent_iter != parents.end(); ++parent_iter) {
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          new WorkerCrashTask(parent_iter->renderer_id(),
+                              parent_iter->render_view_route_id()));
+    }
   }
 
   ChildProcessSecurityPolicy::GetInstance()->Remove(id());
@@ -330,8 +336,8 @@ void WorkerProcessHost::SenderShutdown(IPC::Message::Sender* sender) {
     bool shutdown = false;
     i->RemoveSenders(sender);
     if (i->shared()) {
-      i->RemoveAllAssociatedDocuments(sender);
-      if (i->IsDocumentSetEmpty()) {
+      i->worker_document_set()->RemoveAll(sender);
+      if (i->worker_document_set()->IsEmpty()) {
         shutdown = true;
       }
     } else if (i->NumSenders() == 0) {
@@ -374,28 +380,37 @@ void WorkerProcessHost::UpdateTitle() {
 void WorkerProcessHost::OnLookupSharedWorker(const GURL& url,
                                              const string16& name,
                                              unsigned long long document_id,
+                                             int render_view_route_id,
                                              int* route_id,
                                              bool* url_mismatch) {
   int new_route_id = WorkerService::GetInstance()->next_worker_route_id();
-  // TODO(atwilson): Add code to merge document sets for nested shared workers.
+  // TODO(atwilson): Add code to pass in the current worker's document set for
+  // these nested workers. Code below will not work for SharedWorkers as it
+  // only looks at a single parent.
+  DCHECK(instances_.front().worker_document_set()->documents().size() == 1);
+  WorkerDocumentSet::DocumentInfoSet::const_iterator first_parent =
+      instances_.front().worker_document_set()->documents().begin();
   bool worker_found = WorkerService::GetInstance()->LookupSharedWorker(
-      url, name, instances_.front().off_the_record(), document_id, this,
+      url, name, instances_.front().off_the_record(), document_id,
+      first_parent->renderer_id(), first_parent->render_view_route_id(), this,
       new_route_id, url_mismatch);
   *route_id = worker_found ? new_route_id : MSG_ROUTING_NONE;
 }
 
-void WorkerProcessHost::OnCreateWorker(const GURL& url,
-                                       bool shared,
-                                       const string16& name,
-                                       int render_view_route_id,
-                                       int* route_id) {
+void WorkerProcessHost::OnCreateWorker(
+    const ViewHostMsg_CreateWorker_Params& params, int* route_id) {
   DCHECK(instances_.size() == 1);  // Only called when one process per worker.
+  // TODO(atwilson): Add code to pass in the current worker's document set for
+  // these nested workers. Code below will not work for SharedWorkers as it
+  // only looks at a single parent.
+  DCHECK(instances_.front().worker_document_set()->documents().size() == 1);
+  WorkerDocumentSet::DocumentInfoSet::const_iterator first_parent =
+      instances_.front().worker_document_set()->documents().begin();
   *route_id = WorkerService::GetInstance()->next_worker_route_id();
   WorkerService::GetInstance()->CreateWorker(
-      url, shared, instances_.front().off_the_record(), name,
-      instances_.front().renderer_id(),
-      instances_.front().render_view_route_id(), this, *route_id);
-  // TODO(atwilson): Add code to merge document sets for nested shared workers.
+      params.url, params.is_shared, instances_.front().off_the_record(),
+      params.name, params.document_id, first_parent->renderer_id(),
+      first_parent->render_view_route_id(), this, *route_id);
 }
 
 void WorkerProcessHost::OnCancelCreateDedicatedWorker(int route_id) {
@@ -414,8 +429,8 @@ void WorkerProcessHost::DocumentDetached(IPC::Message::Sender* parent,
     if (!i->shared()) {
       ++i;
     } else {
-      i->RemoveFromDocumentSet(parent, document_id);
-      if (i->IsDocumentSetEmpty()) {
+      i->worker_document_set()->Remove(parent, document_id);
+      if (i->worker_document_set()->IsEmpty()) {
         // This worker has no more associated documents - shut it down.
         Send(new WorkerMsg_TerminateWorkerContext(i->worker_route_id()));
         i = instances_.erase(i);
@@ -430,17 +445,14 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(const GURL& url,
                                                   bool shared,
                                                   bool off_the_record,
                                                   const string16& name,
-                                                  int renderer_id,
-                                                  int render_view_route_id,
                                                   int worker_route_id)
     : url_(url),
       shared_(shared),
       off_the_record_(off_the_record),
       closed_(false),
       name_(name),
-      renderer_id_(renderer_id),
-      render_view_route_id_(render_view_route_id),
-      worker_route_id_(worker_route_id) {
+      worker_route_id_(worker_route_id),
+      worker_document_set_(new WorkerDocumentSet()) {
 }
 
 // Compares an instance based on the algorithm in the WebWorkers spec - an
@@ -466,48 +478,6 @@ bool WorkerProcessHost::WorkerInstance::Matches(
     return url_ == match_url;
 
   return name_ == match_name;
-}
-
-void WorkerProcessHost::WorkerInstance::AddToDocumentSet(
-    IPC::Message::Sender* parent, unsigned long long document_id) {
-  if (!IsInDocumentSet(parent, document_id)) {
-    DocumentInfo info(parent, document_id);
-    document_set_.push_back(info);
-  }
-}
-
-bool WorkerProcessHost::WorkerInstance::IsInDocumentSet(
-    IPC::Message::Sender* parent, unsigned long long document_id) const {
-  for (DocumentSet::const_iterator i = document_set_.begin();
-       i != document_set_.end(); ++i) {
-    if (i->first == parent && i->second == document_id)
-      return true;
-  }
-  return false;
-}
-
-void WorkerProcessHost::WorkerInstance::RemoveFromDocumentSet(
-    IPC::Message::Sender* parent, unsigned long long document_id) {
-  for (DocumentSet::iterator i = document_set_.begin();
-       i != document_set_.end(); i++) {
-    if (i->first == parent && i->second == document_id) {
-      document_set_.erase(i);
-      break;
-    }
-  }
-  // Should not be duplicate copies in the document set.
-  DCHECK(!IsInDocumentSet(parent, document_id));
-}
-
-void WorkerProcessHost::WorkerInstance::RemoveAllAssociatedDocuments(
-    IPC::Message::Sender* parent) {
-  for (DocumentSet::iterator i = document_set_.begin();
-       i != document_set_.end();) {
-    if (i->first == parent)
-      i = document_set_.erase(i);
-    else
-      ++i;
-  }
 }
 
 void WorkerProcessHost::WorkerInstance::AddSender(IPC::Message::Sender* sender,
@@ -548,6 +518,21 @@ bool WorkerProcessHost::WorkerInstance::HasSender(
        ++i) {
     if (i->first == sender && i->second == sender_route_id)
       return true;
+  }
+  return false;
+}
+
+bool WorkerProcessHost::WorkerInstance::RendererIsParent(
+    int renderer_id, int render_view_route_id) const {
+  const WorkerDocumentSet::DocumentInfoSet& parents =
+      worker_document_set()->documents();
+  for (WorkerDocumentSet::DocumentInfoSet::const_iterator parent_iter =
+           parents.begin();
+       parent_iter != parents.end(); ++parent_iter) {
+    if (parent_iter->renderer_id() == renderer_id &&
+        parent_iter->render_view_route_id() == render_view_route_id) {
+      return true;
+    }
   }
   return false;
 }

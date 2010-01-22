@@ -12,6 +12,8 @@ if (!self.postMessage) {
 onmessage = function(evt) {
   if (evt.data == "ping")
     postMessage("pong");
+  else if (evt.data == "auth")
+    importScripts("/auth-basic");
   else if (/eval.+/.test(evt.data)) {
     try {
       postMessage(eval(evt.data.substr(5)));

@@ -534,6 +534,24 @@ struct ViewMsg_ExecuteCode_Params {
   bool all_frames;
 };
 
+// Parameters for the message that creates a worker thread.
+struct ViewHostMsg_CreateWorker_Params {
+  // URL for the worker script.
+  GURL url;
+
+  // True if this is a SharedWorker, false if it is a dedicated Worker.
+  bool is_shared;
+
+  // Name for a SharedWorker, otherwise empty string.
+  string16 name;
+
+  // The ID of the parent document (unique within parent renderer).
+  unsigned long long document_id;
+
+  // RenderView routing id used to send messages back to the parent.
+  int render_view_route_id;
+};
+
 // Creates a new view via a control message since the view doesn't yet exist.
 struct ViewMsg_New_Params {
   // The parent window's id.
@@ -2292,6 +2310,40 @@ struct ParamTraits<ViewMsg_DOMStorageEvent_Params> {
     LogParam(p.url_, l);
     l->append(L", ");
     LogParam(p.storage_type_, l);
+    l->append(L")");
+  }
+};
+
+// Traits for ViewHostMsg_CreateWorker_Params
+template <>
+struct ParamTraits<ViewHostMsg_CreateWorker_Params> {
+  typedef ViewHostMsg_CreateWorker_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.url);
+    WriteParam(m, p.is_shared);
+    WriteParam(m, p.name);
+    WriteParam(m, p.document_id);
+    WriteParam(m, p.render_view_route_id);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+        ReadParam(m, iter, &p->url) &&
+        ReadParam(m, iter, &p->is_shared) &&
+        ReadParam(m, iter, &p->name) &&
+        ReadParam(m, iter, &p->document_id) &&
+        ReadParam(m, iter, &p->render_view_route_id);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.url, l);
+    l->append(L", ");
+    LogParam(p.is_shared, l);
+    l->append(L", ");
+    LogParam(p.name, l);
+    l->append(L", ");
+    LogParam(p.document_id, l);
+    l->append(L", ");
+    LogParam(p.render_view_route_id, l);
     l->append(L")");
   }
 };

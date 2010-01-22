@@ -1451,8 +1451,13 @@ bool ResourceDispatcherHost::RenderViewForRequest(const URLRequest* request,
         *render_view_host_id = -1;
         return false;
       }
-      *render_process_host_id = worker_instance->renderer_id();
-      *render_view_host_id = worker_instance->render_view_route_id();
+      DCHECK(!worker_instance->worker_document_set()->IsEmpty());
+      const WorkerDocumentSet::DocumentInfoSet& parents =
+          worker_instance->worker_document_set()->documents();
+      // Need to display some related UI for this network request - pick an
+      // arbitrary parent to do so.
+      *render_process_host_id = parents.begin()->renderer_id();
+      *render_view_host_id = parents.begin()->render_view_route_id();
   } else {
     *render_process_host_id = info->child_id();
     *render_view_host_id = info->route_id();
