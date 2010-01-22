@@ -662,9 +662,12 @@ void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel) {
          GTK_WIDGET_REALIZED(toplevel));
 
   // Stack the |popup| window directly above the |toplevel| window.
-  // The |popup| window is a direct child of the root window, so we need to
+  // The popup window is a direct child of the root window, so we need to
   // find a similar ancestor for the toplevel window (which might have been
-  // reparented by a window manager).
+  // reparented by a window manager).  We grab the server while we're doing
+  // this -- otherwise, we'll get an error if the window manager reparents the
+  // toplevel window right after we call GetHighestAncestorWindow().
+  gdk_x11_display_grab(gtk_widget_get_display(toplevel));
   XID toplevel_window_base = x11_util::GetHighestAncestorWindow(
       x11_util::GetX11WindowFromGtkWidget(toplevel),
       x11_util::GetX11RootWindow());
@@ -681,6 +684,7 @@ void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel) {
                   << x11_util::GetX11RootWindow();
     }
   }
+  gdk_x11_display_ungrab(gtk_widget_get_display(toplevel));
 }
 
 gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget) {
