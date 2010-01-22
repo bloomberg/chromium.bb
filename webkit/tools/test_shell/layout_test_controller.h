@@ -32,13 +32,20 @@ class LayoutTestController : public CppBoundClass {
   // It takes no arguments, and ignores any that may be present.
   void dumpAsText(const CppArgumentList& args, CppVariant* result);
 
+  // This function should set a flag that tells the test_shell to print a line
+  // of descriptive text for each database command.  It should take no
+  // arguments, and ignore any that may be present. However, at the moment, we
+  // don't have any DB function that prints messages, so for now this function
+  // doesn't do anything.
+  void dumpDatabaseCallbacks(const CppArgumentList& args, CppVariant* result);
+
   // This function sets a flag that tells the test_shell to print a line of
-  // descriptive test for each editing command.  It takes no arguments, and
+  // descriptive text for each editing command.  It takes no arguments, and
   // ignores any that may be present.
   void dumpEditingCallbacks(const CppArgumentList& args, CppVariant* result);
 
   // This function sets a flag that tells the test_shell to print a line of
-  // descriptive test for each frame load callback.  It takes no arguments, and
+  // descriptive text for each frame load callback.  It takes no arguments, and
   // ignores any that may be present.
   void dumpFrameLoadCallbacks(const CppArgumentList& args, CppVariant* result);
 
@@ -205,6 +212,8 @@ class LayoutTestController : public CppBoundClass {
 
   // Clears all databases.
   void clearAllDatabases(const CppArgumentList& args, CppVariant* result);
+  // Sets the default quota for all origins
+  void setDatabaseQuota(const CppArgumentList& args, CppVariant* result);
 
   // Calls setlocale(LC_ALL, ...) for a specified locale.
   // Resets between tests.

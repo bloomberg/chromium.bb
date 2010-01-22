@@ -15,8 +15,13 @@ DatabaseConnections::~DatabaseConnections() {
   DCHECK(connections_.empty());
 }
 
-bool DatabaseConnections::IsDatabaseOpened(const string16& origin_identifier,
-                                           const string16& database_name) {
+bool DatabaseConnections::IsEmpty() const {
+  return connections_.empty();
+}
+
+bool DatabaseConnections::IsDatabaseOpened(
+    const string16& origin_identifier,
+    const string16& database_name) const {
   OriginConnections::const_iterator origin_it =
       connections_.find(origin_identifier);
   if (origin_it == connections_.end())
@@ -25,7 +30,8 @@ bool DatabaseConnections::IsDatabaseOpened(const string16& origin_identifier,
   return (origin_connections.find(database_name) != origin_connections.end());
 }
 
-bool DatabaseConnections::IsOriginUsed(const string16& origin_identifier) {
+bool DatabaseConnections::IsOriginUsed(
+    const string16& origin_identifier) const {
   return (connections_.find(origin_identifier) != connections_.end());
 }
 

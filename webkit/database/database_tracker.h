@@ -86,6 +86,9 @@ class DatabaseTracker
 
   explicit DatabaseTracker(const FilePath& profile_path);
 
+  // Sets the default quota for all origins. Should be used in tests only.
+  void SetDefaultQuota(int64 quota);
+
   void DatabaseOpened(const string16& origin_identifier,
                       const string16& database_name,
                       const string16& database_details,
@@ -159,6 +162,9 @@ class DatabaseTracker
   ObserverList<Observer> observers_;
   std::map<string16, CachedOriginInfo> origins_info_map_;
   DatabaseConnections database_connections_;
+
+  // Default quota for all origins; changed only by tests
+  int64 default_quota_;
 
   FRIEND_TEST(DatabaseTrackerTest, TestIt);
 };

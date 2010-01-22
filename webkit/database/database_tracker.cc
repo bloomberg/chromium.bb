@@ -25,7 +25,6 @@ const FilePath::CharType kTrackerDatabaseFileName[] =
     FILE_PATH_LITERAL("Databases.db");
 const int kCurrentVersion = 2;
 const int kCompatibleVersion = 1;
-const int64 kDefaultQuota = 5 * 1024 * 1024;
 const int64 kDefaultExtensionQuota = 50 * 1024 * 1024;
 const char* kExtensionOriginIdentifierPrefix = "chrome-extension_";
 
@@ -34,11 +33,17 @@ DatabaseTracker::DatabaseTracker(const FilePath& profile_path)
       db_dir_(profile_path.Append(FilePath(kDatabaseDirectoryName))),
       db_(new sql::Connection()),
       databases_table_(NULL),
-      meta_table_(NULL) {
+      meta_table_(NULL),
+      default_quota_(5 * 1024 * 1024) {
 }
 
 DatabaseTracker::~DatabaseTracker() {
   DCHECK(observers_.size() == 0);
+}
+
+void DatabaseTracker::SetDefaultQuota(int64 quota) {
+  default_quota_ = quota;
+  ClearAllCachedOriginInfo();
 }
 
 void DatabaseTracker::DatabaseOpened(const string16& origin_identifier,
@@ -291,7 +296,7 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::GetCachedOriginInfo(
                           true)) {
       origin_info.SetQuota(kDefaultExtensionQuota);
     } else {
-      origin_info.SetQuota(kDefaultQuota);
+      origin_info.SetQuota(default_quota_);
     }
   }
 

@@ -78,6 +78,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("dumpAsText", &LayoutTestController::dumpAsText);
   BindMethod("dumpChildFrameScrollPositions", &LayoutTestController::dumpChildFrameScrollPositions);
   BindMethod("dumpChildFramesAsText", &LayoutTestController::dumpChildFramesAsText);
+  BindMethod("dumpDatabaseCallbacks", &LayoutTestController::dumpDatabaseCallbacks);
   BindMethod("dumpEditingCallbacks", &LayoutTestController::dumpEditingCallbacks);
   BindMethod("dumpBackForwardList", &LayoutTestController::dumpBackForwardList);
   BindMethod("dumpFrameLoadCallbacks", &LayoutTestController::dumpFrameLoadCallbacks);
@@ -122,6 +123,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setWillSendRequestReturnsNull", &LayoutTestController::setWillSendRequestReturnsNull);
   BindMethod("whiteListAccessFromOrigin", &LayoutTestController::whiteListAccessFromOrigin);
   BindMethod("clearAllDatabases", &LayoutTestController::clearAllDatabases);
+  BindMethod("setDatabaseQuota", &LayoutTestController::setDatabaseQuota);
   BindMethod("setPOSIXLocale", &LayoutTestController::setPOSIXLocale);
   BindMethod("counterValueForElementById", &LayoutTestController::counterValueForElementById);
 
@@ -210,6 +212,12 @@ void LayoutTestController::WorkQueue::AddWork(WorkItem* work) {
 void LayoutTestController::dumpAsText(const CppArgumentList& args,
                                                    CppVariant* result) {
   dump_as_text_ = true;
+  result->SetNull();
+}
+
+void LayoutTestController::dumpDatabaseCallbacks(
+    const CppArgumentList& args, CppVariant* result) {
+  // Do nothing; we don't use this flag anywhere for now
   result->SetNull();
 }
 
@@ -454,6 +462,9 @@ void LayoutTestController::Reset() {
 
   SimpleResourceLoaderBridge::SetAcceptAllCookies(false);
   WebSecurityPolicy::resetOriginAccessWhiteLists();
+
+  // Reset the default quota for each origin to 5MB
+  SimpleDatabaseSystem::GetInstance()->SetDatabaseQuota(5 * 1024 * 1024);
 
   setlocale(LC_ALL, "");
 
@@ -1016,6 +1027,13 @@ void LayoutTestController::clearAllDatabases(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
   SimpleDatabaseSystem::GetInstance()->ClearAllDatabases();
+}
+
+void LayoutTestController::setDatabaseQuota(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  if ((args.size() >= 1) && args[0].isInt32())
+    SimpleDatabaseSystem::GetInstance()->SetDatabaseQuota(args[0].ToInt32());
 }
 
 void LayoutTestController::setPOSIXLocale(const CppArgumentList& args,

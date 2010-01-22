@@ -16,9 +16,10 @@ class DatabaseConnections {
   DatabaseConnections();
   ~DatabaseConnections();
 
+  bool IsEmpty() const;
   bool IsDatabaseOpened(const string16& origin_identifier,
-                        const string16& database_name);
-  bool IsOriginUsed(const string16& origin_identifier);
+                        const string16& database_name) const;
+  bool IsOriginUsed(const string16& origin_identifier) const;
   void AddConnection(const string16& origin_identifier,
                      const string16& database_name);
   void RemoveConnection(const string16& origin_identifier,
