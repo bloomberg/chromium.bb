@@ -8,26 +8,26 @@ layer at (0,0) size 800x600
         text run at (0,20) width 277: "and one with a ruby text longer than the base. "
       RenderBR {BR} at (277,35) size 0x0
       RenderBR {BR} at (0,40) size 0x19
-      RenderText {#text} at (0,72) size 222x19
-        text run at (0,72) width 222: "\x{FF23}\x{FF33}\x{FF33}\x{FF13}\x{FF0F}\x{FF28}\x{FF34}\x{FF2D}\x{FF2C}\x{FF15}\x{306E}\x{30EB}\x{30D3}\x{306F}"
-      RenderRuby (inline) {RUBY} at (0,0) size 75x19
-        RenderRubyRun (anonymous) at (222,60) size 75x32
-          RenderRubyText {RT} at (0,0) size 75x12
-            RenderText {#text} at (0,0) size 75x12
-              text run at (0,0) width 75: "Japanese Langauge"
-          RenderRubyBase (anonymous) at (0,12) size 75x20
-            RenderText {#text} at (13,0) size 48x19
-              text run at (13,0) width 48: "\x{65E5}\x{672C}\x{8A9E}"
-      RenderText {#text} at (297,72) size 38x19
-        text run at (297,72) width 38: "\x{306B}\x{3088}\x{304F}"
-      RenderRuby (inline) {RUBY} at (0,0) size 62x19
-        RenderRubyRun (anonymous) at (335,60) size 62x32
-          RenderRubyText {RT} at (0,0) size 62x12
-            RenderText {#text} at (22,0) size 18x12
-              text run at (22,0) width 18: "used"
-          RenderRubyBase (anonymous) at (0,12) size 62x20
-            RenderText {#text} at (0,0) size 62x19
-              text run at (0,0) width 62: "\x{4F7F}\x{308F}\x{308C}\x{3066}"
-      RenderText {#text} at (397,72) size 60x19
-        text run at (397,72) width 60: "\x{3044}\x{307E}\x{3059}\x{3002}"
+      RenderText {#text} at (0,72) size 146x19
+        text run at (0,72) width 146: "<ruby> is defined in the "
+      RenderRuby (inline) {RUBY} at (0,0) size 175x19
+        RenderRubyRun (anonymous) at (146,60) size 175x32
+          RenderRubyText {RT} at (0,0) size 175x12
+            RenderText {#text} at (70,0) size 34x12
+              text run at (70,0) width 34: "HTML5"
+          RenderRubyBase (anonymous) at (0,12) size 175x20
+            RenderText {#text} at (0,0) size 175x19
+              text run at (0,0) width 175: "Hypertext Markup Language"
+      RenderText {#text} at (321,72) size 30x19
+        text run at (321,72) width 30: " and "
+      RenderRuby (inline) {RUBY} at (0,0) size 94x19
+        RenderRubyRun (anonymous) at (351,60) size 94x32
+          RenderRubyText {RT} at (0,0) size 94x12
+            RenderText {#text} at (0,0) size 94x12
+              text run at (0,0) width 94: "Cascading Style Sheets"
+          RenderRubyBase (anonymous) at (0,12) size 94x20
+            RenderText {#text} at (28,0) size 37x19
+              text run at (28,0) width 37: "CSS3"
+      RenderText {#text} at (445,72) size 42x19
+        text run at (445,72) width 42: " specs."
       RenderText {#text} at (0,0) size 0x0

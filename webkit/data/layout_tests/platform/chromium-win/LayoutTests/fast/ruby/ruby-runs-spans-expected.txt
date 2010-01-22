@@ -7,29 +7,30 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 464x19
           text run at (0,0) width 464: "The following is a test for having non-text inline elements as base in a <ruby>."
       RenderBlock {P} at (0,36) size 784x32
-        RenderText {#text} at (0,12) size 64x19
-          text run at (0,12) width 64: "\x{6E96}\x{592A}\x{90CE}\x{306F}"
-        RenderRuby (inline) {RUBY} at (0,0) size 109x19
-          RenderRubyRun (anonymous) at (64,0) size 37x32
-            RenderRubyText {RT} at (0,0) size 37x12
-              RenderText {#text} at (0,0) size 37x12
-                text run at (0,0) width 37: "\x{3068}\x{3046}\x{304D}\x{3087}\x{3046}"
-            RenderRubyBase (anonymous) at (0,12) size 37x20
-              RenderInline {SPAN} at (0,0) size 32x19
-                RenderText {#text} at (2,0) size 32x19
-                  text run at (2,0) width 32: "\x{6771}\x{4EAC}"
-          RenderRubyRun (anonymous) at (101,0) size 72x32
-            RenderRubyText {RT} at (0,0) size 72x12
-              RenderText {#text} at (0,0) size 72x12
-                text run at (0,0) width 72: "\x{3053}\x{3046}\x{304E}\x{3087}\x{3046}\x{3060}\x{3044}\x{304C}\x{304F}"
-            RenderRubyBase (anonymous) at (0,12) size 72x20
-              RenderInline {SPAN} at (0,0) size 32x19
-                RenderText {#text} at (4,0) size 32x19
-                  text run at (4,0) width 32: "\x{5DE5}\x{696D}"
-              RenderInline {SPAN} at (0,0) size 32x19
-                RenderText {#text} at (36,0) size 32x19
-                  text run at (36,0) width 32: "\x{5927}\x{5B66}"
-        RenderText {#text} at (173,12) size 130x19
-          text run at (173,12) width 130: "\x{304B}\x{3089}\x{5352}\x{696D}\x{3057}\x{307E}\x{3057}\x{305F}\x{3002}"
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,12) size 146x19
+          text run at (0,12) width 146: "<ruby> is defined in the "
+        RenderRuby (inline) {RUBY} at (0,0) size 142x19
+          RenderRubyRun (anonymous) at (146,0) size 42x32
+            RenderRubyText {RT} at (0,0) size 42x12
+              RenderText {#text} at (0,0) size 42x12
+                text run at (0,0) width 42: "Hyper-text"
+            RenderRubyBase (anonymous) at (0,12) size 42x20
+              RenderInline {SPAN} at (0,0) size 20x19
+                RenderText {#text} at (11,0) size 20x19
+                  text run at (11,0) width 20: "HT"
+          RenderRubyRun (anonymous) at (188,0) size 100x32
+            RenderRubyText {RT} at (0,0) size 100x12
+              RenderText {#text} at (0,0) size 100x12
+                text run at (0,0) width 100: "Markup Language Lvl. 5"
+            RenderRubyBase (anonymous) at (0,12) size 100x20
+              RenderInline {SPAN} at (0,0) size 14x19
+                RenderText {#text} at (34,0) size 14x19
+                  text run at (34,0) width 14: "M"
+              RenderInline {SPAN} at (0,0) size 9x19
+                RenderText {#text} at (48,0) size 9x19
+                  text run at (48,0) width 9: "L"
+              RenderInline {SPAN} at (0,0) size 8x19
+                RenderText {#text} at (57,0) size 8x19
+                  text run at (57,0) width 8: "5"
+        RenderText {#text} at (288,12) size 36x19
+          text run at (288,12) width 36: " spec."
