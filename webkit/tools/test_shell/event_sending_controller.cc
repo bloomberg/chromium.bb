@@ -40,7 +40,6 @@ using WebKit::WebInputEventFactory;
 #endif
 
 // TODO(mpcomplete): layout before each event?
-// TODO(mpcomplete): do we need modifiers for mouse events?
 
 using base::Time;
 using base::TimeTicks;
@@ -138,11 +137,18 @@ void InitMouseEvent(WebInputEvent::Type t, WebMouseEvent::Button b,
   e->clickCount = click_count;
 }
 
-void ApplyKeyModifier(const std::wstring& arg, WebKeyboardEvent* event) {
+// Returns true if the specified key is the system key.
+bool ApplyKeyModifier(const std::wstring& arg, WebInputEvent* event) {
+  bool system_key = false;
   const wchar_t* arg_string = arg.c_str();
-  if (!wcscmp(arg_string, L"ctrlKey")) {
+  if (!wcscmp(arg_string, L"ctrlKey")
+#if !defined(OS_MACOSX)
+      || !wcscmp(arg_string, L"addSelectionKey")
+#endif
+      ) {
     event->modifiers |= WebInputEvent::ControlKey;
-  } else if (!wcscmp(arg_string, L"shiftKey")) {
+  } else if (!wcscmp(arg_string, L"shiftKey")
+      || !wcscmp(arg_string, L"rangeSelectionKey")) {
     event->modifiers |= WebInputEvent::ShiftKey;
   } else if (!wcscmp(arg_string, L"altKey")) {
     event->modifiers |= WebInputEvent::AltKey;
@@ -152,30 +158,37 @@ void ApplyKeyModifier(const std::wstring& arg, WebKeyboardEvent* event) {
     // third_party/WebKit/WebKit/chromium/src/gtk/WebInputEventFactory.cpp
     // If we want to change this behavior on Linux, this piece of code must be
     // kept in sync with the related code in above file.
-    event->isSystemKey = true;
+    system_key = true;
 #endif
-  } else if (!wcscmp(arg_string, L"metaKey")) {
-    event->modifiers |= WebInputEvent::MetaKey;
 #if defined(OS_MACOSX)
+  } else if (!wcscmp(arg_string, L"metaKey")
+      || !wcscmp(arg_string, L"addSelectionKey")) {
+    event->modifiers |= WebInputEvent::MetaKey;
     // On Mac only command key presses are marked as system key.
     // See the related code in:
     // third_party/WebKit/WebKit/chromium/src/mac/WebInputEventFactory.cpp
     // It must be kept in sync with the related code in above file.
-    event->isSystemKey = true;
+    system_key = true;
+#else
+  } else if (!wcscmp(arg_string, L"metaKey")) {
+    event->modifiers |= WebInputEvent::MetaKey;
 #endif
   }
+  return system_key;
 }
 
-void ApplyKeyModifiers(const CppVariant* arg, WebKeyboardEvent* event) {
+bool ApplyKeyModifiers(const CppVariant* arg, WebInputEvent* event) {
+  bool system_key = false;
   if (arg->isObject()) {
     std::vector<std::wstring> args = arg->ToStringVector();
     for (std::vector<std::wstring>::const_iterator i = args.begin();
          i != args.end(); ++i) {
-      ApplyKeyModifier(*i, event);
+      system_key |= ApplyKeyModifier(*i, event);
     }
   } else if (arg->isString()) {
-    ApplyKeyModifier(UTF8ToWide(arg->ToString()), event);
+    system_key = ApplyKeyModifier(UTF8ToWide(arg->ToString()), event);
   }
+  return system_key;
 }
 
 // Get the edit command corresponding to a keyboard event.
@@ -384,6 +397,8 @@ void EventSendingController::mouseDown(
   pressed_button_ = button_type;
   InitMouseEvent(WebInputEvent::MouseDown, button_type,
                  last_mouse_pos_, &event);
+  if (args.size() >= 2 && (args[1].isObject() || args[1].isString()))
+    ApplyKeyModifiers(&(args[1]), &event);
   webview()->handleInputEvent(event);
 }
 
@@ -410,6 +425,8 @@ void EventSendingController::mouseUp(
     WebMouseEvent event;
     InitMouseEvent(WebInputEvent::MouseUp, button_type,
                    last_mouse_pos_, &event);
+    if (args.size() >= 2 && (args[1].isObject() || args[1].isString()))
+      ApplyKeyModifiers(&(args[1]), &event);
     DoMouseUp(event);
   }
 }
@@ -583,7 +600,7 @@ void EventSendingController::keyDown(
     event_down.setKeyIdentifierFromWindowsKeyCode();
 
     if (args.size() >= 2 && (args[1].isObject() || args[1].isString()))
-      ApplyKeyModifiers(&(args[1]), &event_down);
+      event_down.isSystemKey = ApplyKeyModifiers(&(args[1]), &event_down);
 
     if (needs_shift_key_modifier)
       event_down.modifiers |= WebInputEvent::ShiftKey;
