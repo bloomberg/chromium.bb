@@ -58,6 +58,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
+#include "media/base/media_switches.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
@@ -530,6 +531,7 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kEnableApplicationCache,
     switches::kEnableGeolocation,
     switches::kShowPaintRects,
+    switches::kEnableOpenMax,
     // We propagate the Chrome Frame command line here as well in case the
     // renderer is not run in the sandbox.
     switches::kChromeFrame,

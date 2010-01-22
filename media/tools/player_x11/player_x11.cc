@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "media/base/media.h"
+#include "media/base/media_switches.h"
 #include "media/base/pipeline_impl.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -65,7 +66,8 @@ bool InitPipeline(MessageLoop* message_loop,
   factories->AddFactory(media::FileDataSource::CreateFactory());
   factories->AddFactory(media::FFmpegAudioDecoder::CreateFactory());
   factories->AddFactory(media::FFmpegDemuxer::CreateFilterFactory());
-  if (CommandLine::ForCurrentProcess()->HasSwitch("use-omx")) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOpenMax)) {
     factories->AddFactory(media::OmxVideoDecoder::CreateFactory());
   }
   factories->AddFactory(media::FFmpegVideoDecoder::CreateFactory());
