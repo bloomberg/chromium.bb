@@ -3046,5 +3046,5 @@ BUG32692 MAC DEBUG : svg/custom/visibility-override-filter.svg = TEXT PASS
 BUG32693 MAC DEBUG : svg/dom/SVGRectElement/rect-modify-rx.svg = TEXT PASS
 BUG32666 MAC DEBUG : svg/custom/use-detach.svg = IMAGE PASS
 
-BUG_DPRANKE WIN SLOW : fast/media/lifetime.html = PASS
+BUG_DPRANKE WIN : fast/media/lifetime.html = PASS TIMEOUT
 BUG_DPRANKE WIN : storage/domstorage/sessionstorage/delete-removal.html = PASS CRASH
