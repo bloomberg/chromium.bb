@@ -263,6 +263,8 @@ static CommandLine* CreateHttpServerCommandLine() {
   script_path = script_path.AppendASCII("webkit");
   script_path = script_path.AppendASCII("tools");
   script_path = script_path.AppendASCII("layout_tests");
+  script_path = script_path.AppendASCII("webkitpy");
+  script_path = script_path.AppendASCII("layout_tests");
   script_path = script_path.AppendASCII("layout_package");
   script_path = script_path.AppendASCII("http_server.py");
 
@@ -279,6 +281,8 @@ static CommandLine* CreateWebSocketServerCommandLine() {
   FilePath script_path(src_path);
   script_path = script_path.AppendASCII("webkit");
   script_path = script_path.AppendASCII("tools");
+  script_path = script_path.AppendASCII("layout_tests");
+  script_path = script_path.AppendASCII("webkitpy");
   script_path = script_path.AppendASCII("layout_tests");
   script_path = script_path.AppendASCII("layout_package");
   script_path = script_path.AppendASCII("websocket_server.py");
