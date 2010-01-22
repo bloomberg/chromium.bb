@@ -31,9 +31,12 @@ class OmxTest : public testing::Test {
  public:
   OmxTest()
       : handle_(NULL),
-        event_(&lock_),
-        empty_buffer_(&lock_),
-        fill_buffer_(&lock_) {
+        event_(false, false),
+        empty_buffer_(false, false),
+        fill_buffer_(false, false),
+        last_event_type_(OMX_EventMax),
+        last_event_data1_(0),
+        last_event_data2_(0) {
     memset(input_buffers_, 0, sizeof(input_buffers_));
     memset(output_buffers_, 0, sizeof(output_buffers_));
   }
@@ -49,9 +52,10 @@ class OmxTest : public testing::Test {
   }
 
   void InitComponent(std::string component_name) {
-    OMX_CALLBACKTYPE callback = { &EventHandler,
-                                  &EmptyBufferCallback,
-                                  &FillBufferCallback };
+    // TODO(hclam): Remove static when bug in driver is fixed.
+    static OMX_CALLBACKTYPE callback = { &EventHandler,
+                                         &EmptyBufferCallback,
+                                         &FillBufferCallback };
 
     OMX_ERRORTYPE omxresult = OMX_GetHandle(
         (void**)&handle_,
@@ -82,7 +86,6 @@ class OmxTest : public testing::Test {
       NOTREACHED() << "Not a valid port";
     }
     for (int i = 0; i < count; ++i) {
-      CHECK(!buffers[i]);
       EXPECT_EQ(OMX_ErrorNone,
                 OMX_AllocateBuffer(handle_, buffers + i,
                                    port, NULL, size));
@@ -109,24 +112,48 @@ class OmxTest : public testing::Test {
     }
   }
 
-  void TransitionToIdle() {
+  void TransitionLoadedToIdle() {
     EXPECT_EQ(OMX_ErrorNone,
               OMX_SendCommand(handle_, OMX_CommandStateSet,
                               OMX_StateIdle, 0));
     AllocateBuffers(input_port_);
     AllocateBuffers(output_port_);
-    AutoLock auto_lock(lock_);
     event_.Wait();
+    EXPECT_EQ(OMX_EventCmdComplete, last_event_type_);
+    EXPECT_EQ(OMX_CommandStateSet, last_event_data1_);
+    EXPECT_EQ(OMX_StateIdle, last_event_data2_);
   }
 
-  void TransitionToLoaded() {
+  void TransitionIdleToLoaded() {
     EXPECT_EQ(OMX_ErrorNone,
               OMX_SendCommand(handle_, OMX_CommandStateSet,
                               OMX_StateLoaded, 0));
     ReleaseBuffers(input_port_);
     ReleaseBuffers(output_port_);
-    AutoLock auto_lock(lock_);
     event_.Wait();
+    EXPECT_EQ(OMX_EventCmdComplete, last_event_type_);
+    EXPECT_EQ(OMX_CommandStateSet, last_event_data1_);
+    EXPECT_EQ(OMX_StateLoaded, last_event_data2_);
+  }
+
+  void TransitionIdleToExecuting() {
+    EXPECT_EQ(OMX_ErrorNone,
+              OMX_SendCommand(handle_, OMX_CommandStateSet,
+                              OMX_StateExecuting, 0));
+    event_.Wait();
+    EXPECT_EQ(OMX_EventCmdComplete, last_event_type_);
+    EXPECT_EQ(OMX_CommandStateSet, last_event_data1_);
+    EXPECT_EQ(OMX_StateExecuting, last_event_data2_);
+  }
+
+  void TransitionExecutingToIdle() {
+    EXPECT_EQ(OMX_ErrorNone,
+              OMX_SendCommand(handle_, OMX_CommandStateSet,
+                              OMX_StateIdle, 0));
+    event_.Wait();
+    EXPECT_EQ(OMX_EventCmdComplete, last_event_type_);
+    EXPECT_EQ(OMX_CommandStateSet, last_event_data1_);
+    EXPECT_EQ(OMX_StateIdle, last_event_data2_);
   }
 
   void GetComponentsOfRole(std::string role) {
@@ -164,8 +191,10 @@ class OmxTest : public testing::Test {
   OMX_ERRORTYPE EventHandlerInternal(
       OMX_HANDLETYPE component, OMX_EVENTTYPE event,
       OMX_U32 data1, OMX_U32 data2, OMX_PTR event_data) {
-    AutoLock auto_lock(lock_);
-    // TODO(hclam): Save the parameters.
+    last_event_type_ = event;
+    last_event_data1_ = static_cast<int>(data1);
+    last_event_data2_ = static_cast<int>(data2);
+    // TODO(hclam): Save |event_data|.
     event_.Signal();
     return OMX_ErrorNone;
   }
@@ -173,7 +202,6 @@ class OmxTest : public testing::Test {
   OMX_ERRORTYPE EmptyBufferCallbackInternal(
       OMX_HANDLETYPE component, OMX_BUFFERHEADERTYPE* buffer) {
     // TODO(hclam): Add code here.
-    AutoLock auto_lock(lock_);
     empty_buffer_.Signal();
     return OMX_ErrorNone;
   }
@@ -181,7 +209,6 @@ class OmxTest : public testing::Test {
   OMX_ERRORTYPE FillBufferCallbackInternal(
       OMX_HANDLETYPE component, OMX_BUFFERHEADERTYPE* buffer) {
     // TODO(hclam): Add code here.
-    AutoLock auto_lock(lock_);
     fill_buffer_.Signal();
     return OMX_ErrorNone;
   }
@@ -220,10 +247,13 @@ class OmxTest : public testing::Test {
   OMX_BUFFERHEADERTYPE* input_buffers_[kMaxBufferNum];
   OMX_BUFFERHEADERTYPE* output_buffers_[kMaxBufferNum];
 
-  Lock lock_;
-  ConditionVariable event_;
-  ConditionVariable empty_buffer_;
-  ConditionVariable fill_buffer_;
+  base::WaitableEvent event_;
+  base::WaitableEvent empty_buffer_;
+  base::WaitableEvent fill_buffer_;
+
+  OMX_EVENTTYPE last_event_type_;
+  int last_event_data1_;
+  int last_event_data2_;
 };
 
 class OmxVideoDecoderTest : public OmxTest {
@@ -338,15 +368,58 @@ TEST_F(OmxVideoDecoderTest, Configuration) {
 TEST_F(OmxVideoDecoderTest, TransitionToIdle) {
   InitComponent(component());
   Configure(codec(), 1024, 768);
-  TransitionToIdle();
-  TransitionToLoaded();
+  TransitionLoadedToIdle();
+  TransitionIdleToLoaded();
   DeinitComponent();
 }
 
 TEST_F(OmxVideoDecoderTest, FreeHandleWhenIdle) {
   InitComponent(component());
   Configure(codec(), 1024, 768);
-  TransitionToIdle();
+  TransitionLoadedToIdle();
+  DeinitComponent();
+}
+
+TEST_F(OmxVideoDecoderTest, TransitionToExecuting) {
+  InitComponent(component());
+  Configure(codec(), 1024, 768);
+  TransitionLoadedToIdle();
+  TransitionIdleToExecuting();
+  TransitionExecutingToIdle();
+  TransitionIdleToLoaded();
+  DeinitComponent();
+}
+
+TEST_F(OmxVideoDecoderTest, FreeHandleWhenExecuting) {
+  InitComponent(component());
+  Configure(codec(), 1024, 768);
+  TransitionLoadedToIdle();
+  TransitionIdleToExecuting();
+  DeinitComponent();
+}
+
+TEST_F(OmxVideoDecoderTest, CallbacksAreCopied) {
+  // Allocate a callback struct on stack and clear it with zero.
+  // This make sure OpenMAX library will copy the content of the
+  // struct.
+  OMX_CALLBACKTYPE callback = { &EventHandler,
+                                &EmptyBufferCallback,
+                                &FillBufferCallback };
+
+  OMX_ERRORTYPE omxresult = OMX_GetHandle(
+      (void**)&handle_,
+      const_cast<OMX_STRING>(component().c_str()),
+      this, &callback);
+  EXPECT_EQ(OMX_ErrorNone, omxresult);
+  CHECK(handle_);
+  memset(&callback, 0, sizeof(callback));
+
+  // Then configure the component as usual.
+  Configure(codec(), 1024, 768);
+  TransitionLoadedToIdle();
+  TransitionIdleToExecuting();
+  TransitionExecutingToIdle();
+  TransitionIdleToLoaded();
   DeinitComponent();
 }
 
