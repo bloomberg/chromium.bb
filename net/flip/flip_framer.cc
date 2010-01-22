@@ -123,9 +123,9 @@ size_t FlipFramer::BytesSafeToRead() const {
 }
 
 void FlipFramer::set_error(FlipError error) {
-  DCHECK(false);
   DCHECK(visitor_);
   error_code_ = error;
+  CHANGE_STATE(FLIP_ERROR);
   visitor_->OnError(this);
 }
 
@@ -233,7 +233,13 @@ size_t FlipFramer::ProcessCommonHeader(const char* data, size_t len) {
       break;
     }
     remaining_payload_ = current_frame.length();
-    DCHECK_LE(remaining_payload_, 1000000u);  // Sanity!
+
+    // This is just a sanity check for help debugging early frame errors.
+    if (remaining_payload_ > 1000000u) {
+      LOG(ERROR) <<
+          "Unexpectedly large frame.  Flip session is likely corrupt.";
+    }
+
     // if we're here, then we have the common header all received.
     if (!current_frame.is_control_frame())
       CHANGE_STATE(FLIP_FORWARD_STREAM_FRAME);
@@ -278,17 +284,13 @@ void FlipFramer::ProcessControlFrameHeader() {
   if (current_control_frame.version() != kFlipProtocolVersion)
     set_error(FLIP_UNSUPPORTED_VERSION);
 
-  if (error_code_) {
-    CHANGE_STATE(FLIP_ERROR);
-    return;
-  }
-
   remaining_control_payload_ = current_control_frame.length();
-  if (remaining_control_payload_ > kControlFrameBufferMaxSize) {
+  if (remaining_control_payload_ > kControlFrameBufferMaxSize)
     set_error(FLIP_CONTROL_PAYLOAD_TOO_LARGE);
-    CHANGE_STATE(FLIP_ERROR);
+
+  if (error_code_)
     return;
-  }
+
   ExpandControlFrameBuffer(remaining_control_payload_);
   CHANGE_STATE(FLIP_CONTROL_FRAME_PAYLOAD);
 }

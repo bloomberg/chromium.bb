@@ -538,6 +538,12 @@ void FlipSession::OnReadComplete(int bytes_read) {
     return;
   }
 
+  // The FlipFramer will use callbacks onto |this| as it parses frames.
+  // When errors occur, those callbacks can lead to teardown of all references
+  // to |this|, so maintain a reference to self during this call for safe
+  // cleanup.
+  scoped_refptr<FlipSession> self(this);
+
   char *data = read_buffer_->data();
   while (bytes_read &&
          flip_framer_.error_code() == flip::FlipFramer::FLIP_NO_ERROR) {
@@ -548,7 +554,8 @@ void FlipSession::OnReadComplete(int bytes_read) {
       flip_framer_.Reset();
   }
 
-  ReadSocket();
+  if (state_ != CLOSED)
+    ReadSocket();
 }
 
 void FlipSession::OnWriteComplete(int result) {
@@ -607,9 +614,16 @@ void FlipSession::ReadSocket() {
   if (read_pending_)
     return;
 
+  if (state_ == CLOSED) {
+    NOTREACHED();
+    return;
+  }
+
+  CHECK(connection_.get());
+  CHECK(connection_->socket());
   int bytes_read = connection_->socket()->Read(read_buffer_.get(),
-                                              kReadBufferSize,
-                                              &read_callback_);
+                                               kReadBufferSize,
+                                               &read_callback_);
   switch (bytes_read) {
     case 0:
       // Socket is closed!
@@ -819,7 +833,7 @@ void FlipSession::GetSSLInfo(SSLInfo* ssl_info) {
 
 void FlipSession::OnError(flip::FlipFramer* framer) {
   LOG(ERROR) << "FlipSession error: " << framer->error_code();
-  CloseSessionOnError(net::ERR_UNEXPECTED);
+  CloseSessionOnError(net::ERR_FLIP_PROTOCOL_ERROR);
 }
 
 void FlipSession::OnStreamFrameData(flip::FlipStreamId stream_id,

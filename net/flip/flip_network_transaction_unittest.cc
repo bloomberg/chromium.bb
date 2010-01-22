@@ -112,6 +112,19 @@ static const unsigned char kGetSyn[] = {
   0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
 };
 
+static const unsigned char kGetSynCompressed[] = {
+  0x80, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0x43,
+  0x00, 0x00, 0x00, 0x01, 0xc0, 0x00, 0x78, 0xbb,
+  0xdf, 0xa2, 0x51, 0xb2, 0x62, 0x60, 0x66, 0x60,
+  0xcb, 0x05, 0xe6, 0xc3, 0xfc, 0x14, 0x06, 0x66,
+  0x77, 0xd7, 0x10, 0x06, 0x66, 0x90, 0xa0, 0x58,
+  0x46, 0x49, 0x49, 0x81, 0x95, 0xbe, 0x3e, 0x30,
+  0xe2, 0xf5, 0xd2, 0xf3, 0xf3, 0xd3, 0x73, 0x52,
+  0xf5, 0x92, 0xf3, 0x73, 0xf5, 0x19, 0xd8, 0xa1,
+  0x1a, 0x19, 0x38, 0x60, 0xe6, 0x01, 0x00, 0x00,
+  0x00, 0xff, 0xff
+};
+
 static const unsigned char kGetSynReply[] = {
   0x80, 0x01, 0x00, 0x02,                                        // header
   0x00, 0x00, 0x00, 0x45,
@@ -249,8 +262,8 @@ class DelayedSocketData : public StaticSocketDataProvider,
 class FlipNetworkTransactionTest : public PlatformTest {
  protected:
   virtual void SetUp() {
-    // Disable compression on this test.
-    flip::FlipFramer::set_enable_compression_default(false);
+    // By default, all tests turn off compression.
+    EnableCompression(false);
   }
 
   virtual void TearDown() {
@@ -267,6 +280,10 @@ class FlipNetworkTransactionTest : public PlatformTest {
     std::string response_data;
     HttpResponseInfo response_info;
   };
+
+  void EnableCompression(bool enabled) {
+    flip::FlipFramer::set_enable_compression_default(enabled);
+  }
 
   TransactionHelperResult TransactionHelper(const HttpRequestInfo& request,
                                             DelayedSocketData* data,
@@ -674,6 +691,52 @@ TEST_F(FlipNetworkTransactionTest, InvalidSynReply) {
   }
 }
 
+// Verify that we don't crash on some corrupt frames.
+TEST_F(FlipNetworkTransactionTest, CorruptFrameSessionError) {
+  static const unsigned char kSynReplyMassiveLength[] = {
+    0x80, 0x01, 0x00, 0x02,
+    0x0f, 0x11, 0x11, 0x26,   // This is the length field with a big number
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x04,
+    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',
+    0x00, 0x03, '2', '0', '0',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
+  };
+
+  struct SynReplyTests {
+    const unsigned char* syn_reply;
+    int syn_reply_length;
+  } test_cases[] = {
+    { kSynReplyMassiveLength, arraysize(kSynReplyMassiveLength) }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    MockWrite writes[] = {
+      MockWrite(true, reinterpret_cast<const char*>(kGetSyn),
+                arraysize(kGetSyn)),
+      MockWrite(true, 0, 0)  // EOF
+    };
+
+    MockRead reads[] = {
+      MockRead(true, reinterpret_cast<const char*>(test_cases[i].syn_reply),
+               test_cases[i].syn_reply_length),
+      MockRead(true, reinterpret_cast<const char*>(kGetBodyFrame),
+               arraysize(kGetBodyFrame)),
+      MockRead(true, 0, 0)  // EOF
+    };
+
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL("http://www.google.com/");
+    request.load_flags = 0;
+    scoped_refptr<DelayedSocketData> data(
+        new DelayedSocketData(reads, 1, writes));
+    TransactionHelperResult out = TransactionHelper(request, data.get(), NULL);
+    EXPECT_EQ(ERR_FLIP_PROTOCOL_ERROR, out.rv);
+  }
+}
+
 TEST_F(FlipNetworkTransactionTest, DISABLED_ServerPush) {
   // Reply with the X-Associated-Content header.
   static const unsigned char syn_reply[] = {
@@ -919,6 +982,39 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_ConnectFailure) {
     TransactionHelperResult out = TransactionHelper(request, data.get(), NULL);
     EXPECT_EQ(connects[index].result, out.rv);
   }
+}
+
+// In this test, we enable compression, but get a uncompressed SynReply from
+// the server.  Verify that teardown is all clean.
+TEST_F(FlipNetworkTransactionTest, DecompressFailureOnSynReply) {
+  MockWrite writes[] = {
+    MockWrite(true, reinterpret_cast<const char*>(kGetSynCompressed),
+              arraysize(kGetSynCompressed)),
+    MockWrite(true, 0, 0)  // EOF
+  };
+
+  MockRead reads[] = {
+    MockRead(true, reinterpret_cast<const char*>(kGetSynReply),
+             arraysize(kGetSynReply)),
+    MockRead(true, reinterpret_cast<const char*>(kGetBodyFrame),
+             arraysize(kGetBodyFrame)),
+    MockRead(true, 0, 0)  // EOF
+  };
+
+  // For this test, we turn on the normal compression.
+  EnableCompression(true);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+  scoped_refptr<DelayedSocketData> data(
+      new DelayedSocketData(reads, 1, writes));
+  TransactionHelperResult out = TransactionHelper(request, data.get(), NULL);
+  EXPECT_EQ(ERR_SYN_REPLY_NOT_RECEIVED, out.rv);
+  data->Reset();
+
+  EnableCompression(false);
 }
 
 // Test that the LoadLog contains good data for a simple GET request.
