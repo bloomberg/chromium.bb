@@ -323,6 +323,10 @@ def BrowserTester(env,
   env['ENV']['NACL_DISABLE_SECURITY_FOR_SELENIUM_TEST'] = '1'
 
   node = env.Command(target, deps, ' '.join(command))
+  # If we are testing build output captured from elsewhere,
+  # ignore build dependencies.
+  if ARGUMENTS.get('built_elsewhere'):
+    env.Ignore(node, deps)
   return node
 
 pre_base_env.AddMethod(BrowserTester)
