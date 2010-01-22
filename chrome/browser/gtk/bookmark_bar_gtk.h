@@ -266,9 +266,6 @@ class BookmarkBarGtk : public AnimationDelegate,
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 
-  // Creates the sync error button and adds it as a child view.
-  GtkWidget* CreateSyncErrorButton();
-
   Profile* profile_;
 
   // Used for opening urls.
