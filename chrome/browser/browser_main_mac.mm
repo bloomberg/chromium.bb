@@ -50,6 +50,11 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
   // This is a no-op if the KeystoneRegistration framework is not present.
   // The framework is only distributed with branded Google Chrome builds.
   [[KeystoneGlue defaultKeystoneGlue] registerWithKeystone];
+
+  // Prevent Cocoa from turning command-line arguments into
+  // |-application:openFiles:|, since we already handle them directly.
+  [[NSUserDefaults standardUserDefaults]
+      setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
 }
 
 void DidEndMainMessageLoop() {
