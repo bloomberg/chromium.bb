@@ -58,6 +58,10 @@ class URLRequestAutomationJob : public URLRequestJob {
       const std::string& cookie_name,
       const std::vector<std::string>& header_cookies);
 
+  // Parses a cookie string and if there's no path specified for the cookie
+  // it appends "; path=/" to the cookie string.
+  static void SetCookiePathToRootIfNotPresent(std::string* cookie_string);
+
  protected:
   // Protected URLRequestJob override.
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);

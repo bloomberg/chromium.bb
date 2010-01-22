@@ -385,3 +385,23 @@ TEST(HttpCookieTest, IdentifyDuplicateCookieTest) {
                   "BLAH", header_cookies));
 }
 
+TEST(HttpCookieTest, SetCookiePathToRootIfNotPresentTest) {
+  struct TestCase {
+    std::string input;
+    std::string expected;
+  } test_cases[] = {
+    { "", "" },
+    { "Cookie=value", "Cookie=value; path=/" },
+    { "Cookie=value;", "Cookie=value; path=/" },
+    { "Cookie=value; ", "Cookie=value; path=/" },
+    { " Cookie=value; ", "Cookie=value; path=/" },
+    { "Cookie=", "Cookie=; path=/" },
+    { "Cookie=foo; path=/bar", "Cookie=foo; path=/bar" },
+  };
+
+  for (int i = 0; i < arraysize(test_cases); ++i) {
+    std::string& cookie(test_cases[i].input);
+    URLRequestAutomationJob::SetCookiePathToRootIfNotPresent(&cookie);
+    EXPECT_EQ(cookie, test_cases[i].expected);
+  }
+}

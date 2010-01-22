@@ -320,7 +320,12 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
       std::string cookie_string = cookie_parser.token();
       // Only allow cookies with valid name value pairs.
       if (cookie_string.find('=') != std::string::npos) {
-        TrimWhitespace(cookie_string, TRIM_ALL, &cookie_string);
+        // Workaround for not having path information with the persistent
+        // cookies.  When the path information is missing we assume path=/.
+        // If we don't do this the path of the cookie will be assumed to be
+        // the directory of url_for_cookies.
+        SetCookiePathToRootIfNotPresent(&cookie_string);
+
         // Ignore duplicate cookies, i.e. cookies passed in from the host
         // browser which also exist in the response header.
         net::CookieMonster::ParsedCookie parsed_cookie(cookie_string);
@@ -481,9 +486,28 @@ void URLRequestAutomationJob::DisconnectFromMessageFilter() {
   }
 }
 
+// static
 bool URLRequestAutomationJob::IsCookiePresentInCookieHeader(
     const std::string& cookie_name,
     const std::vector<std::string>& header_cookies) {
   net::CookieMonster::ParsedCookie parsed_cookie(cookie_name);
   return IsParsedCookiePresentInCookieHeader(parsed_cookie, header_cookies);
+}
+
+// static
+void URLRequestAutomationJob::SetCookiePathToRootIfNotPresent(
+    std::string* cookie_string) {
+  DCHECK(cookie_string);
+  TrimWhitespace(*cookie_string, TRIM_ALL, cookie_string);
+
+  // First check if path is already specified.
+  net::CookieMonster::ParsedCookie parsed(*cookie_string);
+  if (parsed.IsValid() && !parsed.HasPath()) {
+    DCHECK(cookie_string->length() > 0);
+
+    // The path is not specified, add it at the end.
+    if ((*cookie_string)[cookie_string->length() - 1] != ';')
+      *cookie_string += ';';
+    cookie_string->append(" path=/");
+  }
 }
