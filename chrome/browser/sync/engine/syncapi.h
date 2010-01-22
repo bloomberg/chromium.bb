@@ -46,12 +46,6 @@
 #include "chrome/browser/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
 
-// The MSVC compiler for Windows requires that any classes exported by, or
-// imported from, a dynamic library be marked with an appropriate
-// __declspec() decoration. However, we currently use static linkage
-// on all platforms.
-#define SYNC_EXPORT
-
 namespace browser_sync {
 class ModelSafeWorkerRegistrar;
 }
@@ -85,7 +79,7 @@ static const int64 kInvalidId = 0;
 // transaction is necessary to create a BaseNode or any of its children.
 // Unlike syncable::Entry, a sync API BaseNode is identified primarily by its
 // int64 metahandle, which we call an ID here.
-class SYNC_EXPORT BaseNode {
+class BaseNode {
  public:
   // All subclasses of BaseNode must provide a way to initialize themselves by
   // doing an ID lookup.  Returns false on failure.  An invalid or deleted
@@ -167,7 +161,7 @@ class SYNC_EXPORT BaseNode {
 
 // WriteNode extends BaseNode to add mutation, and wraps
 // syncable::MutableEntry. A WriteTransaction is needed to create a WriteNode.
-class SYNC_EXPORT WriteNode : public BaseNode {
+class WriteNode : public BaseNode {
  public:
   // Create a WriteNode using the given transaction.
   explicit WriteNode(WriteTransaction* transaction);
@@ -228,7 +222,7 @@ class SYNC_EXPORT WriteNode : public BaseNode {
 
 // ReadNode wraps a syncable::Entry to provide the functionality of a
 // read-only BaseNode.
-class SYNC_EXPORT ReadNode : public BaseNode {
+class ReadNode : public BaseNode {
  public:
   // Create an unpopulated ReadNode on the given transaction.  Call some flavor
   // of Init to populate the ReadNode with a database entry.
@@ -274,7 +268,7 @@ class SYNC_EXPORT ReadNode : public BaseNode {
 // syncable, and are used in a similar way. Unlike syncable::BaseTransaction,
 // whose construction requires an explicit syncable::ScopedDirLookup, a sync
 // API BaseTransaction creates its own ScopedDirLookup implicitly.
-class SYNC_EXPORT BaseTransaction {
+class BaseTransaction {
  public:
   // Provide access to the underlying syncable.h objects from BaseNode.
   virtual syncable::BaseTransaction* GetWrappedTrans() const = 0;
@@ -296,7 +290,7 @@ class SYNC_EXPORT BaseTransaction {
 
 // Sync API's ReadTransaction is a read-only BaseTransaction.  It wraps
 // a syncable::ReadTransaction.
-class SYNC_EXPORT ReadTransaction : public BaseTransaction {
+class ReadTransaction : public BaseTransaction {
  public:
   // Start a new read-only transaction on the specified repository.
   explicit ReadTransaction(UserShare* share);
@@ -315,7 +309,7 @@ class SYNC_EXPORT ReadTransaction : public BaseTransaction {
 
 // Sync API's WriteTransaction is a read/write BaseTransaction.  It wraps
 // a syncable::WriteTransaction.
-class SYNC_EXPORT WriteTransaction : public BaseTransaction {
+class WriteTransaction : public BaseTransaction {
  public:
   // Start a new read/write transaction.
   explicit WriteTransaction(UserShare* share);
@@ -340,7 +334,7 @@ class SYNC_EXPORT WriteTransaction : public BaseTransaction {
 // same sqlite database), they should share a single SyncManager instance.  The
 // caller should typically create one SyncManager for the lifetime of a user
 // session.
-class SYNC_EXPORT SyncManager {
+class SyncManager {
  public:
   // SyncInternal contains the implementation of SyncManager, while abstracting
   // internal types from clients of the interface.
