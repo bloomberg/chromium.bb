@@ -417,7 +417,7 @@ class PrefObserverBridge : public NotificationObserver,
                         pathForResource:@"Preferences"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
-    profile_ = profile;
+    profile_ = profile->GetOriginalProfile();
     initialPage_ = initialPage;
     prefs_ = profile->GetPrefs();
     DCHECK(prefs_);
