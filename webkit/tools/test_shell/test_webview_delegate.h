@@ -261,6 +261,13 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
     return block_redirects_;
   }
 
+  void set_request_return_null(bool request_return_null) {
+    request_return_null_ = request_return_null;
+  }
+  bool request_return_null() const {
+    return request_return_null_;
+  }
+
   void SetEditCommand(const std::string& name, const std::string& value) {
     edit_command_name_ = name;
     edit_command_value_ = value;
@@ -377,6 +384,9 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   // true if we should block any redirects
   bool block_redirects_;
+
+  // true if we should block (set an empty request for) any requests
+  bool request_return_null_;
 
   // Edit command associated to the current keyboard event.
   std::string edit_command_name_;

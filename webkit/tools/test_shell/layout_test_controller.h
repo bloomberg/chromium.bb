@@ -121,6 +121,10 @@ class LayoutTestController : public CppBoundClass {
   void setWillSendRequestReturnsNullOnRedirect(const CppArgumentList& args,
                                                CppVariant* result);
 
+  // Causes WillSendRequest to return an empty request.
+  void setWillSendRequestReturnsNull(const CppArgumentList& args,
+                                     CppVariant* result);
+
   // Converts a URL starting with file:///tmp/ to the local mapping.
   void pathToLocalResource(const CppArgumentList& args, CppVariant* result);
 

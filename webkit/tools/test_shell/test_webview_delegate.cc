@@ -907,6 +907,12 @@ void TestWebViewDelegate::willSendRequest(
     return;
   }
 
+  if (request_return_null_) {
+    // To block the request, we set its URL to an empty one.
+    request.setURL(WebURL());
+    return;
+  }
+
   std::string host = url.host();
   if (TestShell::layout_test_mode() && !host.empty() &&
       (url.SchemeIs("http") || url.SchemeIs("https")) &&
@@ -991,7 +997,8 @@ TestWebViewDelegate::TestWebViewDelegate(TestShell* shell)
 #else
       select_trailing_whitespace_enabled_(false),
 #endif
-      block_redirects_(false) {
+      block_redirects_(false),
+      request_return_null_(false) {
 }
 
 TestWebViewDelegate::~TestWebViewDelegate() {

@@ -2996,14 +2996,12 @@ BUG32396 LINUX : storage/transaction-error-callback.html = TEXT PASS
 BUG32398 MAC : svg/custom/resource-invalidate-on-target-update.svg = IMAGE PASS
 
 // Bugs from rolling from 53275:53289
-BUG32305 : fast/loader/onload-willSendRequest-null-for-frame.html = TEXT
 BUG32307 WIN : fast/css/non-standard-checkbox-size.html = IMAGE+TEXT
 
 BUG32308 DEBUG : fast/frames/cached-frame-counter.html = TIMEOUT
 
 // WebKit roll: 53290:53313
 BUG32339 LINUX : fast/dom/Window/window-lookup-precedence.html = TEXT PASS
-BUG32305 : fast/loader/onload-willSendRequest-null-for-script.html = TEXT
 
 // New flakyness ?
 BUG32306 MAC DEBUG: svg/hixie/error/004.xml = CRASH PASS

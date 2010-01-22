@@ -119,6 +119,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setCustomPolicyDelegate", &LayoutTestController::setCustomPolicyDelegate);
   BindMethod("waitForPolicyDelegate", &LayoutTestController::waitForPolicyDelegate);
   BindMethod("setWillSendRequestReturnsNullOnRedirect", &LayoutTestController::setWillSendRequestReturnsNullOnRedirect);
+  BindMethod("setWillSendRequestReturnsNull", &LayoutTestController::setWillSendRequestReturnsNull);
   BindMethod("whiteListAccessFromOrigin", &LayoutTestController::whiteListAccessFromOrigin);
   BindMethod("clearAllDatabases", &LayoutTestController::clearAllDatabases);
   BindMethod("setPOSIXLocale", &LayoutTestController::setPOSIXLocale);
@@ -636,6 +637,14 @@ void LayoutTestController::setWillSendRequestReturnsNullOnRedirect(
   result->SetNull();
 }
 
+void LayoutTestController::setWillSendRequestReturnsNull(
+    const CppArgumentList& args, CppVariant* result) {
+  if (args.size() > 0 && args[0].isBool())
+    shell_->delegate()->set_request_return_null(args[0].value.boolValue);
+
+  result->SetNull();
+}
+
 void LayoutTestController::pathToLocalResource(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
@@ -1054,4 +1063,3 @@ void LayoutTestController::evaluateInWebInspector(const CppArgumentList& args,
   shell_->dev_tools_agent()->evaluateInWebInspector(args[0].ToInt32(),
                                                     args[1].ToString());
 }
-
