@@ -31,7 +31,7 @@
 
 Import('env')
 
-# TODO(robertm): fix this
+# TODO(robertm): this triggers a compiler bug on ARM (constant pool trouble)
 if env['TARGET_ARCHITECTURE'] == 'arm':
    Return()
 
@@ -56,4 +56,4 @@ node = env.CommandSelLdrTestNacl(
      sel_ldr_flags=['-d'],
      )
 
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_app_list_test')
