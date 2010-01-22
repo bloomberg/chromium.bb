@@ -157,6 +157,38 @@ static NSString* const kFolderColIdent = @"folder";
   return YES;
 }
 
+- (BOOL)getInsertionParent:(BookmarkItem**)outParent
+                     index:(NSUInteger*)outIndex {
+  NSArray* selItems = [self actionItems];
+  NSUInteger numSelected = [selItems count];
+  if (numSelected > 1) {
+    return NO;
+  } else if (numSelected == 1) {
+    // Insert at selected/clicked row.
+    BookmarkItem* selected = [selItems objectAtIndex:0];
+    *outParent = [selected parent];
+    if (*outParent && ![*outParent isFake])
+      *outIndex = [*outParent indexOfChild:selected];
+    else if ([selected isFolder]) {
+      // If root item like Bookmarks Bar selected, insert _into_ it.
+      *outParent = selected;
+      *outIndex = 0;
+    }
+  } else {
+    // Insert at very end if there's no selection:
+    *outParent = group_;
+    *outIndex = [group_ numberOfChildren];
+  }
+  // Can't add to a fake group.
+  return *outParent && ![*outParent isFake];
+}
+
+- (BOOL)canInsert {
+  BookmarkItem* parent;
+  NSUInteger index;
+  return [self getInsertionParent:&parent index:&index];
+}
+
 
 #pragma mark -
 #pragma mark COMMANDS:
@@ -219,26 +251,14 @@ static NSString* const kFolderColIdent = @"folder";
 
 - (IBAction)newFolder:(id)sender {
   BookmarkItem* parent;
-  int index;
-  NSArray* selItems = [self actionItems];
-  if ([selItems count] > 0) {
-    // Insert at selected/clicked row.
-    BookmarkItem* selected = [selItems objectAtIndex:0];
-    parent = [selected parent];
-    index = [parent indexOfChild:selected];
-  } else {
-    // ...or at very end if there's no selection:
-    parent = group_;
-    index = [group_ numberOfChildren];
-  }
-  if (!parent) {
-      NSBeep();
+  NSUInteger index;
+  if (![self getInsertionParent:&parent index:&index]) {
+    NSBeep();
     return;
   }
-
   // Create the folder, then select it and make the title editable:
   BookmarkItem* folder = [parent addFolderWithTitle:@"" atIndex:index];
-  [outline_ expandItem:folder];
+  [self expandItem:folder];
   [self editTitleOfItem:folder];
 }
 
@@ -295,7 +315,7 @@ static void addItem(NSMenu* menu, int command, SEL action) {
     return YES;
 
   } else if (action == @selector(paste:)) {
-    return ![group_ isFake] &&
+    return [self canInsert] &&
         [[NSPasteboard generalPasteboard] availableTypeFromArray:
             [outline_ registeredDraggedTypes]] != nil;
 
@@ -313,8 +333,7 @@ static void addItem(NSMenu* menu, int command, SEL action) {
     return selCount == 1 && ![[selected lastObject] isFixed];
 
   } else if (action == @selector(newFolder:)) {
-    // Disable New Folder in Recents/Search list.
-    return !(flat_ && [group_ isFake]);
+    return [self canInsert];
 
   } else if (action == @selector(revealSelectedItem:)) {
     // Enable Show In Folder only in the flat list when

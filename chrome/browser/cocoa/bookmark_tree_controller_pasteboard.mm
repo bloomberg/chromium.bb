@@ -416,23 +416,11 @@ static NSDictionary* makeBookmarkPlistEntry(NSString* name, NSString* urlStr) {
     return NO;
 
   BookmarkItem* parentItem;
-  NSInteger childIndex;
-  int selRow = [outline_ selectedRow];
-  if (selRow >= 0) {
-    // Insert at selected row.
-    BookmarkItem* selItem = [outline_ itemAtRow:selRow];
-    parentItem = [outline_ parentForItem:selItem];
-    if (!parentItem)
-      parentItem = group_;
-    childIndex = [parentItem indexOfChild:selItem];
-  } else {
-    // ...or at very end if there's no selection:
-    parentItem = group_;
-    childIndex = [parentItem numberOfChildren];
-  }
-  return [self insertPropertyList:plist
-                  inFolder:parentItem
-                   atIndex:childIndex];
+  NSUInteger childIndex;
+  return [self getInsertionParent:&parentItem index:&childIndex] &&
+      [self insertPropertyList:plist
+                      inFolder:parentItem
+                       atIndex:childIndex];
 }
 
 @end

@@ -96,6 +96,47 @@ TEST_F(BookmarkTreeControllerTest, Selection) {
   EXPECT_TRUE([sel isEqual:[listController_ selectedItems]]);
 }
 
+TEST_F(BookmarkTreeControllerTest, NewFolder) {
+  // Select Bookmark Bar in tree and create a new folder:
+  BookmarkItem* bar = SelectBar();
+  EXPECT_EQ(0U, [bar numberOfChildren]);
+  BookmarkItem* parent = nil;
+  NSUInteger index = 0;
+  EXPECT_TRUE([groupsController_ getInsertionParent:&parent index:&index]);
+  EXPECT_EQ(bar, parent);
+  EXPECT_EQ(0U, index);
+  [groupsController_ newFolder:nil];
+
+  // Verify the new folder exists and is selected:
+  ASSERT_EQ(1U, [bar numberOfChildren]);
+  BookmarkItem *newFolder = [bar childAtIndex:0];
+  EXPECT_EQ(newFolder, [groupsController_ selectedItem]);
+
+  // Do New Folder again:
+  EXPECT_TRUE([groupsController_ getInsertionParent:&parent index:&index]);
+  EXPECT_EQ(bar, parent);
+  EXPECT_EQ(0U, index);
+  EXPECT_TRUE([listController_ getInsertionParent:&parent index:&index]);
+  EXPECT_EQ(newFolder, parent);
+  EXPECT_EQ(0U, index);
+  [groupsController_ newFolder:nil];
+
+  // Verify the new folder exists and is selected:
+  ASSERT_EQ(2U, [bar numberOfChildren]);
+  newFolder = [bar childAtIndex:0];
+  EXPECT_EQ(newFolder, [groupsController_ selectedItem]);
+
+  // Verify it's possible to add to Other Bookmarks:
+  [groupsController_ setSelectedItem:[manager_ otherBookmarksItem]];
+  EXPECT_TRUE([groupsController_ canInsert]);
+  EXPECT_TRUE([listController_ canInsert]);
+
+  // Verify it's not possible to add to Recents:
+  [groupsController_ setSelectedItem:[manager_ recentGroup]];
+  EXPECT_FALSE([groupsController_ canInsert]);
+  EXPECT_FALSE([listController_ canInsert]);
+}
+
 TEST_F(BookmarkTreeControllerTest, MoveItems) {
   NSOutlineView* outline = [groupsController_ outline];
   ASSERT_TRUE(outline);

@@ -37,6 +37,13 @@
 // The currently selected or right-clicked items, for commands to act on.
 @property (readonly) NSArray* actionItems;
 
+// The parent folder and index at which items should be inserted/pasted.
+// Returns NO if insertion is not allowed.
+- (BOOL)getInsertionParent:(BookmarkItem**)outParent
+                     index:(NSUInteger*)outIndex;
+// Just returns whether insertion is allowed.
+- (BOOL)canInsert;
+
 // Expands a folder item (including any parent folders).
 // Returns YES on success, NO if it couldn't find the folder.
 - (BOOL)expandItem:(BookmarkItem*)item;
