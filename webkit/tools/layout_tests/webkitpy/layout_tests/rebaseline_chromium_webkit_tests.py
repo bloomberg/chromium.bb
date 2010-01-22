@@ -175,8 +175,8 @@ class Rebaseliner(object):
     REVISION_REGEX = r'<a href=\"(\d+)/\">'
 
     def __init__(self, platform, options):
-        self._file_dir = path_utils.GetAbsolutePath(
-            os.path.dirname(sys.argv[0]))
+        self._file_dir = path_utils.PathFromBase('webkit', 'tools',
+            'layout_test')
         self._platform = platform
         self._options = options
         self._rebaselining_tests = []
