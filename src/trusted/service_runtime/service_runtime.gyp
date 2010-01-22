@@ -202,6 +202,17 @@
         'expiration.c',
       ],
     }, {
+      'target_name': 'expiration64',
+      'type': 'static_library',
+      'sources': [
+        'expiration.c',
+      ],
+      'configurations': {
+        'Common_Base': {
+          'msvs_target_platform': 'x64',
+        },
+      },
+    }, {
       'target_name': 'nacl_xdr',
       'type': 'static_library',
       'sources': [
