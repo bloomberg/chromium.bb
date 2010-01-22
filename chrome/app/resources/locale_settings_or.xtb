@@ -1,34 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="or">
-<if expr="os != 'darwin'">
-  <translation id="IDS_WEB_FONT_FAMILY">Arial</translation>
-</if>
-<if expr="os == 'darwin'">
-  <translation id="IDS_WEB_FONT_FAMILY">Helvetica</translation>
-</if>
-<translation id="IDS_WEB_FONT_SIZE">84%</translation>
 <translation id="IDS_ACCEPT_LANGUAGES">or-IN,or,en-US,en</translation>
 <translation id="IDS_DEFAULT_ENCODING">ISO-8859-1</translation>
-<translation id="IDS_STANDARD_FONT_IS_SERIF">true</translation>
-<if expr="os != 'darwin'">
-  <translation id="IDS_FIXED_FONT_FAMILY">Courier New</translation>
-  <translation id="IDS_SERIF_FONT_FAMILY">Times New Roman</translation>
-  <translation id="IDS_SANS_SERIF_FONT_FAMILY">Arial</translation>
-  <translation id="IDS_CURSIVE_FONT_FAMILY">Comic Sans MS</translation>
-  <translation id="IDS_FANTASY_FONT_FAMILY">Impact</translation>
-</if>
-<if expr="os == 'darwin'">
-  <translation id="IDS_FIXED_FONT_FAMILY">Courier</translation>
-  <translation id="IDS_SERIF_FONT_FAMILY">Times</translation>
-  <translation id="IDS_SANS_SERIF_FONT_FAMILY">Helvetica</translation>
-  <translation id="IDS_CURSIVE_FONT_FAMILY">Apple Chancery</translation>
-  <translation id="IDS_FANTASY_FONT_FAMILY">Papyrus</translation>
-</if>
-<translation id="IDS_DEFAULT_FONT_SIZE">16</translation>
-<translation id="IDS_DEFAULT_FIXED_FONT_SIZE">13</translation>
-<translation id="IDS_MINIMUM_FONT_SIZE">1</translation>
-<translation id="IDS_MINIMUM_LOGICAL_FONT_SIZE">6</translation>
 <translation id="IDS_USES_UNIVERSAL_DETECTOR">false</translation>
 <translation id="IDS_SPELLCHECK_DICTIONARY">en-US</translation>
 <translation id="IDS_OPTIONS_DIALOG_WIDTH_CHARS">98</translation>

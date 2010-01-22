@@ -12,6 +12,7 @@
         'common',
         'chrome_resources',
         'chrome_strings',
+        'platform_locale_settings',
         'theme_resources',
         '../app/app.gyp:app_resources',
         '../app/app.gyp:app_strings',

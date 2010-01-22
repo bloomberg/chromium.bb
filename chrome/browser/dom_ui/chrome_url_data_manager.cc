@@ -22,14 +22,13 @@
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
+#include "grit/platform_locale_settings.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_view_net_internals_job.h"
-
-#include "grit/locale_settings.h"
 
 // The URL scheme used for internal chrome resources.
 // TODO(glen): Choose a better location for this.

@@ -65,6 +65,8 @@
           'NACL_LINUX=0',
           'NACL_OSX=0',
         ],
+        'platform_locale_settings_grd':
+            'app/resources/locale_settings_win.grd',
       },],
       ['OS=="linux"', {
         'nacl_defines': [
@@ -72,6 +74,8 @@
           'NACL_LINUX=1',
           'NACL_OSX=0',
         ],
+        'platform_locale_settings_grd':
+            'app/resources/locale_settings_linux.grd',
       },],
       ['OS=="mac"', {
         'tweak_info_plist_path': 'tools/build/mac/tweak_info_plist',
@@ -80,6 +84,8 @@
           'NACL_LINUX=0',
           'NACL_OSX=1',
         ],
+        'platform_locale_settings_grd':
+            'app/resources/locale_settings_mac.grd',
         'conditions': [
           ['branding=="Chrome"', {
             'mac_bundle_id': 'com.google.Chrome',
@@ -292,6 +298,64 @@
           'action_name': 'theme_resources',
           'variables': {
             'input_path': 'app/theme/theme_resources.grd',
+            'conditions': [
+              ['branding=="Chrome"', {
+                # TODO(mmoss) The .grd files look for _google_chrome, but for
+                # consistency they should look for GOOGLE_CHROME_BUILD like C++.
+                # Clean this up when Windows moves to gyp.
+                'chrome_build': '_google_chrome',
+              }, {  # else: branding!="Chrome"
+                'chrome_build': '_chromium',
+              }],
+            ],
+          },
+          'inputs': [
+            '<!@(<(grit_info_cmd) --inputs <(input_path))',
+          ],
+          'outputs': [
+            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
+          ],
+          'action': [
+            'python', '<(grit_path)',
+            '-i', '<(input_path)', 'build',
+            '-o', '<(grit_out_dir)',
+            '-D', '<(chrome_build)'
+          ],
+          'conditions': [
+            ['chromeos==1', {
+              'action': ['-D', 'chromeos'],
+            }],
+            ['use_titlecase_in_grd_files==1', {
+              'action': ['-D', 'use_titlecase'],
+            }],
+          ],
+          'message': 'Generating resources from <(input_path)',
+        },
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(grit_out_dir)',
+        ],
+      },
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': ['../build/win/system.gyp:cygwin'],
+        }],
+      ],
+    },
+    {
+      # locale_settings_<platform>.grd have slightly different outputs, so it
+      # can't use chrome_strings rules above.
+      'target_name': 'platform_locale_settings',
+      'type': 'none',
+      'variables': {
+        'grit_path': '../tools/grit/grit.py',
+      },
+      'actions': [
+        {
+          'action_name': 'platform_locale_settings',
+          'variables': {
+            'input_path': '<(platform_locale_settings_grd)',
             'conditions': [
               ['branding=="Chrome"', {
                 # TODO(mmoss) The .grd files look for _google_chrome, but for

@@ -227,36 +227,6 @@
     </includes>
     <messages fallback_to_english="true">
 
-      <if expr="os != 'darwin'">
-        <!-- The font used in web-style native pages (e.g. History). -->
-        <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
-          Arial
-        </message>
-
-        <!-- The relative font size in % used in web-style native pages
-        (e.g. History).  -->
-        <message name="IDS_WEB_FONT_SIZE" use_name_for_id="true">
-          84%
-        </message>
-      </if>
-      <if expr="os == 'win32'">
-        <!-- The relative font size in % used in web-style native pages
-        on Windows earlier than Vista (e.g. History).  -->
-        <message name="IDS_WEB_FONT_SIZE_XP" use_name_for_id="true">
-          84%
-        </message>
-      </if>
-
-      <if expr="os == 'darwin'">
-        <message name="IDS_WEB_FONT_FAMILY" desc="The font used in web-style native pages (e.g. History) (Mac)">
-          Helvetica
-        </message>
-
-        <message name="IDS_WEB_FONT_SIZE" desc="The relative font size in % used in web-style native pages (e.g. History) (Mac)">
-          84%
-        </message>
-      </if>
-
       <!-- The default value for HTTP Accept-Language header. -->
       <message name="IDS_ACCEPT_LANGUAGES" use_name_for_id="true">
         en-US,en
@@ -266,101 +236,6 @@
       <message name="IDS_DEFAULT_ENCODING" use_name_for_id="true">
         ISO-8859-1
       </message>
-
-      <if expr="os != 'darwin'">
-        <!-- The default value to determine whether
-             |WebPreference::standard_font_family| is serif or sans-serif. -->
-        <message name="IDS_STANDARD_FONT_IS_SERIF" use_name_for_id="true">
-          true
-        </message>
-
-        <!-- The default value for |WebPreference::fixed_font_family| -->
-        <message name="IDS_FIXED_FONT_FAMILY" use_name_for_id="true">
-          Courier New
-        </message>
-
-        <!-- The default value for |WebPreference::serif_font_family| -->
-        <message name="IDS_SERIF_FONT_FAMILY" use_name_for_id="true">
-          Times New Roman
-        </message>
-
-        <!-- The default value for |WebPreference::sans_serif_font_family| -->
-        <message name="IDS_SANS_SERIF_FONT_FAMILY" use_name_for_id="true">
-          Arial
-        </message>
-
-        <!-- The default value for |WebPreference::cursive_font_family| -->
-        <message name="IDS_CURSIVE_FONT_FAMILY" use_name_for_id="true">
-          Comic Sans MS
-        </message>
-
-        <!-- The default value for |WebPreference::fantasy_font_family| -->
-        <message name="IDS_FANTASY_FONT_FAMILY" use_name_for_id="true">
-          Impact
-        </message>
-
-        <!-- The default value for |WebPreference::default_font_size| -->
-        <message name="IDS_DEFAULT_FONT_SIZE" use_name_for_id="true">
-          16
-        </message>
-
-        <!-- The default value for |WebPreference::default_fixed_font_size| -->
-        <message name="IDS_DEFAULT_FIXED_FONT_SIZE" use_name_for_id="true">
-          13
-        </message>
-
-        <!-- The default value for |WebPreference::minimum_font_size| -->
-        <message name="IDS_MINIMUM_FONT_SIZE" use_name_for_id="true">
-          1
-        </message>
-
-        <!-- The default value for |WebPreference::minimum_logical_font_size|. -->
-        <message name="IDS_MINIMUM_LOGICAL_FONT_SIZE" use_name_for_id="true">
-          6
-        </message>
-      </if>
-
-      <if expr="os == 'darwin'">
-        <message name="IDS_STANDARD_FONT_IS_SERIF" desc="The default value to determine whether |WebPreference::standard_font_family| is serif or sans-serif (Mac)">
-          true
-        </message>
-
-        <message name="IDS_FIXED_FONT_FAMILY" desc="The default value for |WebPreference::fixed_font_family| (Mac)">
-          Courier
-        </message>
-
-        <message name="IDS_SERIF_FONT_FAMILY" desc="The default value for |WebPreference::serif_font_family| (Mac)">
-          Times
-        </message>
-
-        <message name="IDS_SANS_SERIF_FONT_FAMILY" desc="The default value for |WebPreference::sans_serif_font_family| (Mac)">
-          Helvetica
-        </message>
-
-        <message name="IDS_CURSIVE_FONT_FAMILY" desc="The default value for |WebPreference::cursive_font_family| (Mac)">
-          Apple Chancery
-        </message>
-
-        <message name="IDS_FANTASY_FONT_FAMILY" desc="The default value for |WebPreference::fantasy_font_family| (Mac)">
-          Papyrus
-        </message>
-
-        <message name="IDS_DEFAULT_FONT_SIZE" desc="The default value for |WebPreference::default_font_size| (Mac)">
-          16
-        </message>
-
-        <message name="IDS_DEFAULT_FIXED_FONT_SIZE" desc="The default value for |WebPreference::default_fixed_font_size| (Mac)">
-          13
-        </message>
-
-        <message name="IDS_MINIMUM_FONT_SIZE" desc="The default value for |WebPreference::minimum_font_size| (Mac)">
-          1
-        </message>
-
-        <message name="IDS_MINIMUM_LOGICAL_FONT_SIZE" desc="The default value for |WebPreference::minimum_logical_font_size| (Mac)">
-          9
-        </message>
-      </if>
 
       <!-- The default value for |WebPreference::uses_universal_detector|. -->
       <message name="IDS_USES_UNIVERSAL_DETECTOR" use_name_for_id="true">
