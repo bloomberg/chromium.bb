@@ -17,8 +17,9 @@ void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
     ModelSafeGroup group = worker->GetModelSafeGroup();
 
     sessions::ScopedModelSafeGroupRestriction r(work_session_, group);
-    worker->DoWorkAndWaitUntilDone(NewCallback(this,
+    scoped_ptr<Closure> c(NewCallback(this,
         &ModelChangingSyncerCommand::StartChangingModel));
+    worker->DoWorkAndWaitUntilDone(c.get());
   }
 }
 
