@@ -18,17 +18,11 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
 class CancelableTask;
-class CommandLine;
 class TabContents;
 struct ViewHostMsg_DidPrintPage_Params;
 
 namespace gfx {
 class Rect;
-class Widget;
-}
-
-namespace IPC {
-class Message;
 }
 
 //---------------------------------------------------------------------------
