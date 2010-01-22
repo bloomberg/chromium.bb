@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "net/base/auth.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 
 using webkit_glue::PasswordForm;
@@ -66,8 +67,10 @@ std::string GetSignonRealm(const GURL& url,
 // which then routes it to the URLRequest on the I/O thread.
 class LoginDialogTask : public Task {
  public:
-  LoginDialogTask(net::AuthChallengeInfo* auth_info, LoginHandler* handler)
-      : auth_info_(auth_info), handler_(handler) {
+  LoginDialogTask(const GURL& request_url,
+                  net::AuthChallengeInfo* auth_info,
+                  LoginHandler* handler)
+      : request_url_(request_url), auth_info_(auth_info), handler_(handler) {
   }
   virtual ~LoginDialogTask() {
   }
@@ -83,7 +86,7 @@ class LoginDialogTask : public Task {
     PasswordManager* password_manager =
         parent_contents->GetPasswordManager();
     std::vector<PasswordForm> v;
-    MakeInputForPasswordManager(parent_contents->GetURL(), &v);
+    MakeInputForPasswordManager(&v);
     password_manager->PasswordFormsSeen(v);
     handler_->SetPasswordManager(password_manager);
 
@@ -101,7 +104,6 @@ class LoginDialogTask : public Task {
   // Helper to create a PasswordForm and stuff it into a vector as input
   // for PasswordManager::PasswordFormsSeen, the hook into PasswordManager.
   void MakeInputForPasswordManager(
-      const GURL& origin_url,
       std::vector<PasswordForm>* password_manager_input) {
     PasswordForm dialog_form;
     if (LowerCaseEqualsASCII(auth_info_->scheme, "basic")) {
@@ -111,20 +113,27 @@ class LoginDialogTask : public Task {
     } else {
       dialog_form.scheme = PasswordForm::SCHEME_OTHER;
     }
-    if (auth_info_->is_proxy) {
-      std::string origin = WideToASCII(auth_info_->host_and_port);
+    std::string host_and_port(WideToASCII(auth_info_->host_and_port));
+    if (net::GetHostAndPort(request_url_) != host_and_port) {
+      dialog_form.origin = GURL();
+      NOTREACHED();
+    } else if (auth_info_->is_proxy) {
+      std::string origin = host_and_port;
       // We don't expect this to already start with http:// or https://.
       DCHECK(origin.find("http://") != 0 && origin.find("https://") != 0);
       origin = std::string("http://") + origin;
       dialog_form.origin = GURL(origin);
     } else {
-      dialog_form.origin = origin_url;
+      dialog_form.origin = GURL(request_url_.scheme() + "://" + host_and_port);
     }
     dialog_form.signon_realm = GetSignonRealm(dialog_form.origin, *auth_info_);
     password_manager_input->push_back(dialog_form);
     // Set the password form for the handler (by copy).
     handler_->SetPasswordForm(dialog_form);
   }
+
+  // The url from the URLRequest initiating the auth challenge.
+  GURL request_url_;
 
   // Info about who/where/what is asking for authentication.
   scoped_refptr<net::AuthChallengeInfo> auth_info_;
@@ -143,6 +152,7 @@ LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
                                 URLRequest* request) {
   LoginHandler* handler = LoginHandler::Create(request);
   ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE, new LoginDialogTask(auth_info, handler));
+      ChromeThread::UI, FROM_HERE, new LoginDialogTask(
+          request->url(), auth_info, handler));
   return handler;
 }
