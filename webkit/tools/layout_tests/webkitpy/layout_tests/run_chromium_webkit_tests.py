@@ -332,7 +332,7 @@ class TestRunner:
             self._test_files = set(self._test_files_list)
 
             self._expectations = self.ParseExpectations(
-                path_utils.PlatformName(), options.target == 'Debug')
+                path_utils.PlatformName(), self._options.target == 'Debug')
 
             self._test_files = set(files)
             self._test_files_list = files
