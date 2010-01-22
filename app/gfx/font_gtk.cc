@@ -56,7 +56,21 @@ Font Font::CreateFont(PangoFontDescription* desc) {
   // TODO(agl): remove this.
   std::wstring font_family = FindBestMatchFontFamilyName(family_name);
 
-  return Font(CreateFont(font_family, size / PANGO_SCALE));
+  Font font = CreateFont(font_family, size / PANGO_SCALE);
+  int style = 0;
+  if (pango_font_description_get_weight(desc) == PANGO_WEIGHT_BOLD) {
+    // TODO(davemoore) What should we do about other weights? We currently
+    // only support BOLD.
+    style |= BOLD;
+  }
+  if (pango_font_description_get_style(desc) == PANGO_STYLE_ITALIC) {
+    // TODO(davemoore) What about PANGO_STYLE_OBLIQUE?
+    style |= ITALIC;
+  }
+  if (style != 0) {
+    font = font.DeriveFont(0, style);
+  }
+  return Font(font);
 }
 
 // Get the default gtk system font (name and size).
