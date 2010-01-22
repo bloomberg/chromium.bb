@@ -292,7 +292,8 @@ void NPObjectStub::OnEnumeration(std::vector<NPIdentifier_Param>* value,
   if (!IsPluginProcess()) {
     *result = WebBindings::enumerate(0, npobject_, &value_np, &count);
   } else {
-    if (!npobject_->_class->enumerate) {
+    if (npobject_->_class->structVersion < NP_CLASS_STRUCT_VERSION_ENUM ||
+        !npobject_->_class->enumerate) {
       *result = false;
       return;
     }
@@ -335,7 +336,8 @@ void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,
   }
 
   if (IsPluginProcess()) {
-    if (npobject_->_class->construct) {
+    if (npobject_->_class->structVersion >= NP_CLASS_STRUCT_VERSION_CTOR &&
+        npobject_->_class->construct) {
       return_value = npobject_->_class->construct(
           npobject_, args_var, arg_count, &result_var);
     } else {

@@ -355,7 +355,11 @@ bool NPObjectProxy::NPNEnumerate(NPObject *obj,
   bool result = false;
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
-    return obj->_class->enumerate(obj, value, count);
+    if (obj->_class->structVersion >= NP_CLASS_STRUCT_VERSION_ENUM) {
+      return obj->_class->enumerate(obj, value, count);
+    } else {
+      return false;
+    }
   }
 
   std::vector<NPIdentifier_Param> value_param;
@@ -385,7 +389,11 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
 
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
-    return obj->_class->construct(obj, args, arg_count, np_result);
+    if (obj->_class->structVersion >= NP_CLASS_STRUCT_VERSION_CTOR) {
+      return obj->_class->construct(obj, args, arg_count, np_result);
+    } else {
+      return false;
+    }
   }
 
   bool result = false;
