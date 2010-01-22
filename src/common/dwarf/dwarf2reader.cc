@@ -79,8 +79,12 @@ void CompilationUnit::ReadAbbrevs() {
   if (abbrevs_)
     return;
 
-  // First get the debug_abbrev section
-  SectionMap::const_iterator iter = sections_.find("__debug_abbrev");
+  // First get the debug_abbrev section.  ".debug_abbrev" is the name
+  // recommended in the DWARF spec, and used on Linux;
+  // "__debug_abbrev" is the name used in Mac OS X Mach-O files.
+  SectionMap::const_iterator iter = sections_.find(".debug_abbrev");
+  if (iter == sections_.end())
+    iter = sections_.find("__debug_abbrev");
   assert(iter != sections_.end());
 
   abbrevs_ = new vector<Abbrev>;
@@ -267,8 +271,12 @@ void CompilationUnit::ReadHeader() {
 }
 
 uint64 CompilationUnit::Start() {
-  // First get the debug_info section
-  SectionMap::const_iterator iter = sections_.find("__debug_info");
+  // First get the debug_info section.  ".debug_info" is the name
+  // recommended in the DWARF spec, and used on Linux; "__debug_info"
+  // is the name used in Mac OS X Mach-O files.
+  SectionMap::const_iterator iter = sections_.find(".debug_info");
+  if (iter == sections_.end())
+    iter = sections_.find("__debug_info");
   assert(iter != sections_.end());
 
   // Set up our buffer
@@ -298,8 +306,12 @@ uint64 CompilationUnit::Start() {
   // Otherwise, continue by reading our abbreviation entries.
   ReadAbbrevs();
 
-  // Set the string section if we have one.
-  iter = sections_.find("__debug_str");
+  // Set the string section if we have one.  ".debug_str" is the name
+  // recommended in the DWARF spec, and used on Linux; "__debug_str"
+  // is the name used in Mac OS X Mach-O files.
+  iter = sections_.find(".debug_str");
+  if (iter == sections_.end())
+    iter = sections_.find("__debug_str");
   if (iter != sections_.end()) {
     string_buffer_ = iter->second.first;
     string_buffer_length_ = iter->second.second;
