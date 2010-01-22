@@ -391,7 +391,7 @@ NaClSrpcError NPModule::Device2DInitialize(NaClSrpcChannel* channel,
       return NACL_SRPC_RESULT_APP_ERROR;
     }
     NPError retval =
-        module->device2d_->initializeContext(npp, NULL, &module->context2d_);
+        module->device2d_->initializeContext(npp, NULL, module->context2d_);
     if (NPERR_NO_ERROR != retval) {
       return NACL_SRPC_RESULT_APP_ERROR;
     }
@@ -530,7 +530,7 @@ NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
       return NACL_SRPC_RESULT_APP_ERROR;
     }
     NPError retval =
-        module->device3d_->initializeContext(npp, NULL, &module->context3d_);
+        module->device3d_->initializeContext(npp, NULL, module->context3d_);
     if (NPERR_NO_ERROR != retval) {
       return NACL_SRPC_RESULT_APP_ERROR;
     }

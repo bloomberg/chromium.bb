@@ -323,8 +323,8 @@ void PluginObject::New(NPMIMEType pluginType,
   device3d_ = extensions->acquireDevice(npp_, NPPepper3DDevice);
   CHECK(device3d_);
 
-  deviceaudio_ = extensions->acquireDevice(npp_, NPPepperAudioDevice);
-  CHECK(deviceaudio_);
+  // deviceaudio_ = extensions->acquireDevice(npp_, NPPepperAudioDevice);
+  // CHECK(deviceaudio_);
 }
 
 void PluginObject::SetWindow(const NPWindow& window) {
@@ -363,6 +363,7 @@ void PluginObject::SetWindow(const NPWindow& window) {
     browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
   }
 
+#if 0
   // testing any field would do
   if (!context_audio_.config.callback) {
     NPDeviceContextAudioConfig cfg;
@@ -375,6 +376,7 @@ void PluginObject::SetWindow(const NPWindow& window) {
     cfg.callback         = &SineWaveCallback<200, int16>;
     deviceaudio_->initializeContext(npp_, &cfg, &context_audio_);
   }
+#endif
 }
 
 void PluginObject::Draw3D() {

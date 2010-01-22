@@ -179,7 +179,6 @@ class ScriptableHandle: public ScriptableHandleBase {
     } else {
       NPObject* proxy = intf->nacl_instance();
       bool retval = proxy->_class->invoke(proxy, name, args, arg_count, result);
-      printf("scriptable handle returned %d\n", retval);
       return retval;
     }
   }

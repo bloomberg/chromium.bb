@@ -190,6 +190,13 @@ void SRPC_Plugin::set_module(nacl::NPModule* module) {
     dprintf(("New result %x\n", err));
     // Remember the scriptable version of the NaCl instance.
     nacl_instance_ = module_->GetScriptableInstance(npp_);
+    // Send an initial NPP_SetWindow to the plugin.
+    nacl_srpc::Plugin* plugin =
+        static_cast<nacl_srpc::Plugin*>(plugin_->get_handle());
+    NPWindow window;
+    window.height = plugin->height();
+    window.width = plugin->width();
+    module->SetWindow(npp_, &window);
   }
 }
 
@@ -371,7 +378,7 @@ int32_t SRPC_Plugin::Write(NPStream* stream,
       // Stream downloaded - go ahead
       dprintf(("default run\n"));
       nacl_srpc::Plugin* real_plugin =
-        static_cast<nacl_srpc::Plugin*>(plugin_->get_handle());
+        static_cast<nacl_srpc::Plugin*>(plugin()->get_handle());
       real_plugin->Load(stream->url,
                         stream->url,
                         stream_buffer->get_buffer(),
