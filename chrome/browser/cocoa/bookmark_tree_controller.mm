@@ -475,7 +475,7 @@ static void addItem(NSMenu* menu, int command, SEL action) {
 
 - (NSRect)frameOfOutlineCellAtRow:(NSInteger)row {
   // If the controller is in flat view, don't reserve space for the triangles.
-  BookmarkTreeController* controller = [self delegate];
+  BookmarkTreeController* controller = [self bookmarkController];
   if ([controller flat])
     return NSZeroRect;
   return [super frameOfOutlineCellAtRow:row];
