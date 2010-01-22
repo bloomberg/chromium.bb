@@ -126,7 +126,6 @@ class PyWebSocket(http_server.Lighttpd):
             '-p', str(self._port),
             '-d', self._layout_tests,
             '-s', self._web_socket_tests,
-            '-m', os.path.join(self._web_socket_tests, 'handler_map.txt'),
             '-l', error_log,
         ]
         if self._use_tls:

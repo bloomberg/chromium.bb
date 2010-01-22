@@ -3048,4 +3048,5 @@ BUG_DPRANKE WIN : fast/media/lifetime.html = PASS TIMEOUT
 BUG_DPRANKE WIN : storage/domstorage/sessionstorage/delete-removal.html = PASS CRASH
 
 // WebKit roll 53585 -> 53655
+BUG32863 WIN LINUX MAC : websocket/tests/url-no-trailing-slash.html = TEXT
 BUG32864 WIN LINUX MAC : plugins/mouse-events-fixedpos.html = TEXT
