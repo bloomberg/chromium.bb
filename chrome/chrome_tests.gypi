@@ -1809,13 +1809,17 @@
             'test/ui/ui_test_suite.cc',
             'test/ui/ui_test_suite.h',
           ],
-          # Need a shared object named _pyautolib.so (not libpyautolib.dylib
-          # that xcode would generate)
-          # Change when gyp can support a platform-neutral way for this
-          # (http://code.google.com/p/gyp/issues/detail?id=135)
           'xcode_settings': {
+            # Need a shared object named _pyautolib.so (not libpyautolib.dylib
+            # that xcode would generate)
+            # Change when gyp can support a platform-neutral way for this
+            # (http://code.google.com/p/gyp/issues/detail?id=135)
             'EXECUTABLE_PREFIX': '_',
             'EXECUTABLE_EXTENSION': 'so',
+            # When generated, pyautolib_wrap.cc includes some swig support
+            # files which, as of swig 1.3.31 that comes with 10.5 and 10.6,
+            # may not compile cleanly at -Wall.
+            'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',  # -Wno-error
           },
           'conditions': [
             ['OS=="linux"', {
