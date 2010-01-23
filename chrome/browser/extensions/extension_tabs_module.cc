@@ -19,6 +19,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -559,6 +560,12 @@ bool UpdateTabFunction::RunImpl() {
       &error_))
     return false;
 
+  if (tab_strip->IsTabPinned(tab_index)) {
+    // Don't allow changing the url of pinned tabs.
+    error_ = keys::kCannotUpdatePinnedTab;
+    return false;
+  }
+
   NavigationController& controller = contents->controller();
 
   // TODO(rafaelw): handle setting remaining tab properties:
@@ -707,6 +714,13 @@ bool RemoveTabFunction::RunImpl() {
   if (!GetTabById(tab_id, profile(), &browser, NULL, &contents, NULL, &error_))
     return false;
 
+  int tab_index = browser->GetIndexOfController(&contents->controller());
+  if (browser->tabstrip_model()->IsPhantomTab(tab_index)) {
+    // Don't allow closing phantom tabs.
+    error_ = keys::kCannotRemovePhantomTab;
+    return false;
+  }
+
   browser->CloseTabContents(contents);
   return true;
 }
@@ -853,6 +867,13 @@ bool DetectTabLanguageFunction::RunImpl() {
     contents = browser->tabstrip_model()->GetSelectedTabContents();
     if (!contents)
       return false;
+  }
+
+  if (contents->controller().needs_reload()) {
+    // If the tab hasn't been loaded, such as happens with phantom tabs, don't
+    // wait for the tab to load, instead return.
+    error_ = keys::kCannotDetermineLanguageOfUnloadedTab;
+    return false;
   }
 
   AddRef();  // Balanced in GotLanguage()

@@ -367,8 +367,9 @@ class TabContents : public PageNavigator,
   // of unwanted popups.
   void CloseAllSuppressedPopups();
 
-  // Execute code in this tab.
-  void ExecuteCode(int request_id, const std::string& extension_id,
+  // Execute code in this tab. Returns true if the message was successfully
+  // sent.
+  bool ExecuteCode(int request_id, const std::string& extension_id,
                    const std::vector<URLPattern>& host_permissions,
                    bool is_js_code, const std::string& code_string,
                    bool all_frames);

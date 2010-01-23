@@ -95,7 +95,8 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   }
 
   if (!code_string.empty()) {
-    Execute(code_string);
+    if (!Execute(code_string))
+      return false;
     return true;
   }
 
@@ -135,19 +136,19 @@ void ExecuteCodeInTabFunction::DidLoadFile(bool success,
   Release();  // Balance the AddRef taken in RunImpl
 }
 
-void ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
+bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   TabContents* contents = NULL;
   Browser* browser = NULL;
   if (!ExtensionTabUtil::GetTabById(execute_tab_id_, profile(), &browser, NULL,
                                     &contents, NULL) && contents && browser) {
     SendResponse(false);
-    return;
+    return false;
   }
 
   Extension* extension = GetExtension();
   if (!extension) {
     SendResponse(false);
-    return;
+    return false;
   }
 
   bool is_js_code = true;
@@ -157,12 +158,16 @@ void ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   } else if (function_name != TabsExecuteScriptFunction::function_name()) {
     DCHECK(false);
   }
+  if (!contents->ExecuteCode(request_id(), extension->id(),
+                             extension->host_permissions(), is_js_code,
+                             code_string, all_frames_)) {
+    SendResponse(false);
+    return false;
+  }
   registrar_.Add(this, NotificationType::TAB_CODE_EXECUTED,
                  NotificationService::AllSources());
   AddRef();  // balanced in Observe()
-  contents->ExecuteCode(request_id(), extension->id(),
-                        extension->host_permissions(), is_js_code, code_string,
-                        all_frames_);
+  return true;
 }
 
 void ExecuteCodeInTabFunction::Observe(NotificationType type,

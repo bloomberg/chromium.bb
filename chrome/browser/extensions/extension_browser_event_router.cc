@@ -399,10 +399,11 @@ void ExtensionBrowserEventRouter::TabChangedAt(TabContents* contents,
 void ExtensionBrowserEventRouter::TabReplacedAt(TabContents* old_contents,
                                                 TabContents* new_contents,
                                                 int index) {
-  // TODO: figure out the right notification to send.
+  // TODO: 32913, consider adding better notification for this event.
+  TabInsertedAt(new_contents, index, false);
 }
 
-void ExtensionBrowserEventRouter::TabStripEmpty() { }
+void ExtensionBrowserEventRouter::TabStripEmpty() {}
 
 void ExtensionBrowserEventRouter::DispatchOldPageActionEvent(
     Profile* profile,

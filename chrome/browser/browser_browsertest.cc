@@ -323,8 +323,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
   EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
 }
 
-// TODO(sky): enable these once phantom tabs aren't behind a flag.
-/*
 IN_PROC_BROWSER_TEST_F(BrowserTest, PhantomTab) {
   if (!browser_defaults::kPinnedTabsActLikeApps)
     return;
@@ -351,7 +349,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RevivePhantomTab) {
   // The first tab should no longer be a phantom.
   EXPECT_FALSE(model->IsPhantomTab(0));
 }
-*/
 
 // Tests that the CLD (Compact Language Detection) works properly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {

@@ -228,9 +228,6 @@ const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 // Enable AutoFill++.
 const char kEnableNewAutoFill[]             = "enable-new-autofill";
 
-// Are phantom tabs enabled?
-const char kEnablePhantomTabs[]             = "enable-phantom-tabs";
-
 // Enable Privacy Blacklists.
 const char kEnablePrivacyBlacklists[]       = "enable-privacy-blacklists";
 

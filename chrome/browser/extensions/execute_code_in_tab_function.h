@@ -34,8 +34,9 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
   // arguments has been loaded.
   void DidLoadFile(bool success, const std::string& data);
 
-  // Run in UI thread.  Code string contains the code to be executed.
-  void Execute(const std::string& code_string);
+  // Run in UI thread.  Code string contains the code to be executed. Returns
+  // true on success. If true is returned, this does an AddRef.
+  bool Execute(const std::string& code_string);
 
   NotificationRegistrar registrar_;
 

@@ -397,10 +397,7 @@ bool TabStripModel::IsTabPinned(int index) const {
 
 bool TabStripModel::IsAppTab(int index) const {
   // TODO (sky): this is temporary and should be integrated with real apps.
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePhantomTabs) &&
-      browser_defaults::kPinnedTabsActLikeApps &&
-      IsTabPinned(index);
+  return browser_defaults::kPinnedTabsActLikeApps && IsTabPinned(index);
 }
 
 bool TabStripModel::IsPhantomTab(int index) const {

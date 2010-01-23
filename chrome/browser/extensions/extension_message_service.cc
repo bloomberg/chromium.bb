@@ -280,7 +280,7 @@ void ExtensionMessageService::OpenChannelToTabOnUIThread(
   if (!source)
     return;
 
-  TabContents* contents;
+  TabContents* contents = NULL;
   MessagePort receiver;
   receiver.debug_info = 2;
   if (ExtensionTabUtil::GetTabById(tab_id, source->profile(),
@@ -289,6 +289,15 @@ void ExtensionMessageService::OpenChannelToTabOnUIThread(
     receiver.routing_id = contents->render_view_host()->routing_id();
     receiver.debug_info = 3;
   }
+
+  if (contents && contents->controller().needs_reload()) {
+    // The tab isn't loaded yet (it may be phantom). Don't attempt to connect.
+    // Treat this as a disconnect.
+    DispatchOnDisconnect(MessagePort(source, MSG_ROUTING_CONTROL),
+                         GET_OPPOSITE_PORT_ID(receiver_port_id));
+    return;
+  }
+
   TabContents* source_contents = tab_util::GetTabContentsByID(
       source_process_id, source_routing_id);
 
@@ -377,6 +386,11 @@ int ExtensionMessageService::OpenSpecialChannelToTab(
     TabContents* target_tab_contents, IPC::Message::Sender* source) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
   DCHECK(target_tab_contents);
+
+  if (target_tab_contents->controller().needs_reload()) {
+    // The tab isn't loaded yet (it may be phantom). Don't attempt to connect.
+    return -1;
+  }
 
   int port1_id = -1;
   int port2_id = -1;
