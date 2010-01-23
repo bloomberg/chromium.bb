@@ -44,6 +44,10 @@ WorkerTest.LimitPerPage
 WorkerTest.WorkerXhrHttpLayoutTests
 WorkerTest.FLAKY_SharedWorkerFastLayoutTests
 
+# Appears to time out on valgrind.
+# http://crbug.com/32818
+VisibleBrowserTest.WindowOpenClose
+
 # See http://crbug.com/30661.
 NPAPITester.GetURL
 NPAPITester.SelfDeletePluginGetUrl
