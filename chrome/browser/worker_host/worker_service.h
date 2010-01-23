@@ -30,7 +30,6 @@ class WorkerService : public NotificationObserver {
                     bool is_shared,
                     bool is_off_the_record,
                     const string16& name,
-                    unsigned long long document_id,
                     int renderer_pid,
                     int render_view_route_id,
                     IPC::Message::Sender* sender,
@@ -44,8 +43,6 @@ class WorkerService : public NotificationObserver {
                           const string16& name,
                           bool off_the_record,
                           unsigned long long document_id,
-                          int renderer_pid,
-                          int render_view_route_id,
                           IPC::Message::Sender* sender,
                           int sender_route_id,
                           bool* url_mismatch);
@@ -103,12 +100,6 @@ class WorkerService : public NotificationObserver {
   // we're using a strategy of one process per core.
   bool CanCreateWorkerProcess(
       const WorkerProcessHost::WorkerInstance& instance);
-
-  // Checks if the tab associated with the passed RenderView can create a
-  // worker process based on the process limit when we're using a strategy of
-  // one worker per process.
-  bool TabCanCreateWorkerProcess(
-      int renderer_id, int render_view_route_id, bool* hit_total_worker_limit);
 
   // NotificationObserver interface.
   void Observe(NotificationType type,

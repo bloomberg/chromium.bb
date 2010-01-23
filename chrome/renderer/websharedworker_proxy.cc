@@ -10,10 +10,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
 WebSharedWorkerProxy::WebSharedWorkerProxy(ChildThread* child_thread,
-                                           unsigned long long document_id,
                                            int route_id,
                                            int render_view_route_id)
-    : WebWorkerBase(child_thread, document_id, route_id, render_view_route_id),
+    : WebWorkerBase(child_thread, route_id, render_view_route_id),
       connect_listener_(NULL) {
 }
 

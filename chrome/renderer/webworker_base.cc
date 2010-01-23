@@ -19,13 +19,11 @@ using WebKit::WebWorkerClient;
 
 WebWorkerBase::WebWorkerBase(
     ChildThread* child_thread,
-    unsigned long long document_id,
     int route_id,
     int render_view_route_id)
     : route_id_(route_id),
       render_view_route_id_(render_view_route_id),
-      child_thread_(child_thread),
-      document_id_(document_id) {
+      child_thread_(child_thread) {
   if (route_id_ != MSG_ROUTING_NONE)
     child_thread_->AddRoute(route_id_, this);
 }
@@ -56,14 +54,8 @@ void WebWorkerBase::CreateWorkerContext(const GURL& script_url,
                                         const string16& user_agent,
                                         const string16& source_code) {
   DCHECK(route_id_ == MSG_ROUTING_NONE);
-  ViewHostMsg_CreateWorker_Params params;
-  params.url = script_url;
-  params.is_shared = is_shared;
-  params.name = name;
-  params.document_id = document_id_;
-  params.render_view_route_id = render_view_route_id_;
   IPC::Message* create_message = new ViewHostMsg_CreateWorker(
-      params, &route_id_);
+      script_url, is_shared, name, render_view_route_id_, &route_id_);
   child_thread_->Send(create_message);
   if (route_id_ == MSG_ROUTING_NONE)
     return;

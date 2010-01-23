@@ -9,7 +9,6 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
-#include "net/url_request/url_request_unittest.h"
 
 static const char kTestCompleteCookie[] = "status";
 static const char kTestCompleteSuccess[] = "OK";
@@ -137,15 +136,6 @@ class WorkerTest : public UILayoutTest {
     GURL about_url(std::string("file://localhost/"));
     EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
   }
-
-  bool NavigateAndWaitForAuth(TabProxy* tab, const GURL& url) {
-    // Pass a large number of navigations to tell the tab to block until an auth
-    // dialog pops up.
-    bool timeout = false;
-    tab->NavigateToURLWithTimeout(url, 100, kTestWaitTimeoutMs, &timeout);
-    EXPECT_FALSE(timeout);
-    return tab->NeedsAuth();
-  }
 };
 
 
@@ -181,32 +171,6 @@ TEST_F(WorkerTest, IncognitoSharedWorkers) {
   RunTest(L"incognito_worker.html");
   // Incognito worker should not share with non-incognito
   RunIncognitoTest(L"incognito_worker.html");
-}
-
-const wchar_t kDocRoot[] = L"chrome/test/data/workers";
-
-// Make sure that auth dialog is displayed from worker context.
-TEST_F(WorkerTest, WorkerHttpAuth) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
-
-  ASSERT_TRUE(NULL != server.get());
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  GURL url = server->TestServerPage("files/worker_auth.html");
-  EXPECT_TRUE(NavigateAndWaitForAuth(tab, url));
-}
-
-// Make sure that auth dialog is displayed from shared worker context.
-TEST_F(WorkerTest, SharedWorkerHttpAuth) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
-  ASSERT_TRUE(NULL != server.get());
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  EXPECT_EQ(1, GetTabCount());
-  GURL url = server->TestServerPage("files/shared_worker_auth.html");
-  EXPECT_TRUE(NavigateAndWaitForAuth(tab, url));
-  // TODO(atwilson): Add support to automation framework to test for auth
-  // dialogs displayed by non-navigating tabs.
 }
 
 #if defined(OS_LINUX)

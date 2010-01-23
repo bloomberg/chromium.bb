@@ -22,7 +22,6 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
  public:
   // If the worker not loaded yet, route_id == MSG_ROUTING_NONE
   WebSharedWorkerProxy(ChildThread* child_thread,
-                       unsigned long long document_id,
                        int route_id,
                        int render_view_route_id);
 

@@ -44,7 +44,6 @@ class Profile;
 class RenderWidgetHelper;
 class URLRequestContextGetter;
 struct ViewHostMsg_Audio_CreateStream;
-struct ViewHostMsg_CreateWorker_Params;
 struct WebPluginInfo;
 
 namespace printing {
@@ -167,12 +166,14 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnLaunchNaCl(const std::wstring& url,
                     int channel_descriptor,
                     IPC::Message* reply_msg);
-  void OnCreateWorker(const ViewHostMsg_CreateWorker_Params& params,
+  void OnCreateWorker(const GURL& url,
+                      bool is_shared,
+                      const string16& name,
+                      int render_view_route_id,
                       int* route_id);
   void OnLookupSharedWorker(const GURL& url,
                             const string16& name,
                             unsigned long long document_id,
-                            int render_view_route_id,
                             int* route_id,
                             bool* url_error);
   void OnDocumentDetached(unsigned long long document_id);

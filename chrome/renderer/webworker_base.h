@@ -20,7 +20,6 @@ class GURL;
 class WebWorkerBase : public IPC::Channel::Listener {
  public:
   WebWorkerBase(ChildThread* child_thread,
-                unsigned long long document_id,
                 int route_id,
                 int render_view_route_id);
 
@@ -62,10 +61,6 @@ class WebWorkerBase : public IPC::Channel::Listener {
   ChildThread* child_thread_;
 
  private:
-  // ID of our parent document (used to shutdown workers when the parent
-  // document is detached).
-  unsigned long long document_id_;
-
   // Stores messages that were sent before the StartWorkerContext message.
   std::vector<IPC::Message*> queued_messages_;
 };

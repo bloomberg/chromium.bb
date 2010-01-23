@@ -49,7 +49,6 @@ bool WorkerService::CreateWorker(const GURL &url,
                                  bool is_shared,
                                  bool off_the_record,
                                  const string16& name,
-                                 unsigned long long document_id,
                                  int renderer_id,
                                  int render_view_route_id,
                                  IPC::Message::Sender* sender,
@@ -62,10 +61,10 @@ bool WorkerService::CreateWorker(const GURL &url,
                                              is_shared,
                                              off_the_record,
                                              name,
+                                             renderer_id,
+                                             render_view_route_id,
                                              next_worker_route_id());
   instance.AddSender(sender, sender_route_id);
-  instance.worker_document_set()->Add(
-      sender, document_id, renderer_id, render_view_route_id);
 
   WorkerProcessHost* worker = NULL;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -90,7 +89,6 @@ bool WorkerService::CreateWorker(const GURL &url,
     // If this worker is already running, no need to create a new copy. Just
     // inform the caller that the worker has been created.
     if (existing_instance) {
-      // TODO(atwilson): Change this to scan the sender list (crbug.com/29243).
       existing_instance->AddSender(sender, sender_route_id);
       sender->Send(new ViewMsg_WorkerCreated(sender_route_id));
       return true;
@@ -110,8 +108,8 @@ bool WorkerService::CreateWorker(const GURL &url,
 
     // Assign the accumulated document set and sender list for this pending
     // worker to the new instance.
-    DCHECK(!pending->worker_document_set()->IsEmpty());
-    instance.ShareDocumentSet(*pending);
+    DCHECK(!pending->IsDocumentSetEmpty());
+    instance.CopyDocumentSet(*pending);
     RemovePendingInstance(url, name, off_the_record);
   }
 
@@ -131,8 +129,6 @@ bool WorkerService::LookupSharedWorker(const GURL &url,
                                        const string16& name,
                                        bool off_the_record,
                                        unsigned long long document_id,
-                                       int renderer_id,
-                                       int render_view_route_id,
                                        IPC::Message::Sender* sender,
                                        int sender_route_id,
                                        bool* url_mismatch) {
@@ -164,8 +160,7 @@ bool WorkerService::LookupSharedWorker(const GURL &url,
     instance->AddSender(sender, sender_route_id);
 
   // Add the passed sender/document_id to the worker instance.
-  instance->worker_document_set()->Add(
-      sender, document_id, renderer_id, render_view_route_id);
+  instance->AddToDocumentSet(sender, document_id);
   return found_instance;
 }
 
@@ -181,8 +176,8 @@ void WorkerService::DocumentDetached(IPC::Message::Sender* sender,
   for (WorkerProcessHost::Instances::iterator iter = queued_workers_.begin();
        iter != queued_workers_.end();) {
     if (iter->shared()) {
-      iter->worker_document_set()->Remove(sender, document_id);
-      if (iter->worker_document_set()->IsEmpty()) {
+      iter->RemoveFromDocumentSet(sender, document_id);
+      if (iter->IsDocumentSetEmpty()) {
         iter = queued_workers_.erase(iter);
         continue;
       }
@@ -194,8 +189,8 @@ void WorkerService::DocumentDetached(IPC::Message::Sender* sender,
   for (WorkerProcessHost::Instances::iterator iter =
            pending_shared_workers_.begin();
        iter != pending_shared_workers_.end(); ) {
-    iter->worker_document_set()->Remove(sender, document_id);
-    if (iter->worker_document_set()->IsEmpty()) {
+    iter->RemoveFromDocumentSet(sender, document_id);
+    if (iter->IsDocumentSetEmpty()) {
       iter = pending_shared_workers_.erase(iter);
     } else {
       ++iter;
@@ -299,35 +294,8 @@ WorkerProcessHost* WorkerService::GetLeastLoadedWorker() {
 
 bool WorkerService::CanCreateWorkerProcess(
     const WorkerProcessHost::WorkerInstance& instance) {
-  // Worker can be fired off if *any* parent has room.
-  const WorkerDocumentSet::DocumentInfoSet& parents =
-        instance.worker_document_set()->documents();
-
-  for (WorkerDocumentSet::DocumentInfoSet::const_iterator parent_iter =
-           parents.begin();
-       parent_iter != parents.end(); ++parent_iter) {
-    bool hit_total_worker_limit = false;
-    if (TabCanCreateWorkerProcess(parent_iter->renderer_id(),
-                                  parent_iter->render_view_route_id(),
-                                  &hit_total_worker_limit)) {
-      return true;
-    }
-    // Return false if already at the global worker limit (no need to continue
-    // checking parent tabs).
-    if (hit_total_worker_limit)
-      return false;
-  }
-  // If we've reached here, none of the parent tabs is allowed to create an
-  // instance.
-  return false;
-}
-
-bool WorkerService::TabCanCreateWorkerProcess(int renderer_id,
-                                              int render_view_route_id,
-                                              bool* hit_total_worker_limit) {
   int total_workers = 0;
   int workers_per_tab = 0;
-  *hit_total_worker_limit = false;
   for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
@@ -335,11 +303,11 @@ bool WorkerService::TabCanCreateWorkerProcess(int renderer_id,
              worker->instances().begin();
          cur_instance != worker->instances().end(); ++cur_instance) {
       total_workers++;
-      if (total_workers >= kMaxWorkersWhenSeparate) {
-        *hit_total_worker_limit = true;
+      if (total_workers >= kMaxWorkersWhenSeparate)
         return false;
-      }
-      if (cur_instance->RendererIsParent(renderer_id, render_view_route_id)) {
+      if (cur_instance->renderer_id() == instance.renderer_id() &&
+          cur_instance->render_view_route_id() ==
+            instance.render_view_route_id()) {
         workers_per_tab++;
         if (workers_per_tab >= kMaxWorkersPerTabWhenSeparate)
           return false;
@@ -387,8 +355,8 @@ void WorkerService::SenderShutdown(IPC::Message::Sender* sender) {
   for (WorkerProcessHost::Instances::iterator iter =
            pending_shared_workers_.begin();
        iter != pending_shared_workers_.end(); ) {
-    iter->worker_document_set()->RemoveAll(sender);
-    if (iter->worker_document_set()->IsEmpty()) {
+    iter->RemoveAllAssociatedDocuments(sender);
+    if (iter->IsDocumentSetEmpty()) {
       iter = pending_shared_workers_.erase(iter);
     } else {
       ++iter;
@@ -493,7 +461,7 @@ WorkerService::CreatePendingInstance(const GURL& url,
 
   // No existing pending worker - create a new one.
   WorkerProcessHost::WorkerInstance pending(
-      url, true, off_the_record, name, MSG_ROUTING_NONE);
+      url, true, off_the_record, name, 0, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   pending_shared_workers_.push_back(pending);
   return &pending_shared_workers_.back();
 }
