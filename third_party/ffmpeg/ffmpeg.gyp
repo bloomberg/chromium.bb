@@ -256,6 +256,9 @@
             }],  # target_arch=="arm" 
             ['target_arch=="arm" and (ffmpeg_branding=="Chrome" or ffmpeg_branding=="ChromeOS")', {
               'sources': [
+	        # TODO(fbarchard): dsputil_neon code should be used by chromium
+		# for ogg, but with h264 references only if CONFIG_H264_DECODER
+		# is enabled.
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon_s.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/h264dsp_neon.S',
