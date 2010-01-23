@@ -205,8 +205,6 @@ const char* kLocalesMessagesFileMissing =
     "Messages file is missing for locale.";
 const char* kInvalidOptionsPage =
     "Invalid value for 'options_page'.";
-const char* kReservedMessageFound =
-    "Reserved key * found in message catalog.";
 }  // namespace extension_manifest_errors
 
 namespace extension_urls {
