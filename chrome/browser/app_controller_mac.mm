@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/about_window_controller.h"
+#import "chrome/browser/cocoa/bookmark_manager_controller.h"
 #import "chrome/browser/cocoa/bookmark_menu_bridge.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
@@ -585,6 +586,10 @@ static bool g_is_opening_new_window = false;
           initWithProfile:defaultProfile parentWindow:nil] runModalDialog];
       break;
     }
+    case IDC_SHOW_BOOKMARK_MANAGER:
+      UserMetrics::RecordAction("ShowBookmarkManager", defaultProfile);
+      [BookmarkManagerController showBookmarkManager:defaultProfile];
+      break;
     case IDC_SHOW_HISTORY:
       Browser::OpenHistoryWindow(defaultProfile);
       break;
@@ -666,6 +671,7 @@ static bool g_is_opening_new_window = false;
   menuState_->UpdateCommandEnabled(IDC_RESTORE_TAB, false);
   menuState_->UpdateCommandEnabled(IDC_FOCUS_LOCATION, true);
   menuState_->UpdateCommandEnabled(IDC_FOCUS_SEARCH, true);
+  menuState_->UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER, true);
   menuState_->UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   menuState_->UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   menuState_->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS, true);

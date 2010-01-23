@@ -465,6 +465,11 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
       // The Bookmark Manager menu command _closes_ the window if it's frontmost.
       [self close];
       break;
+    default: {
+      // Forward other commands to the AppController -- New Window etc.
+      [[NSApp delegate] commandDispatch:sender];
+      break;
+    }
   }
 }
 
@@ -473,7 +478,10 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
   if (action == @selector(commandDispatch:) ||
       action == @selector(commandDispatchUsingKeyModifiers:)) {
     NSInteger tag = [item tag];
-    return (tag == IDC_FIND || tag == IDC_SHOW_BOOKMARK_MANAGER);
+    if (tag == IDC_FIND || tag == IDC_SHOW_BOOKMARK_MANAGER)
+      return YES;
+    // Let the AppController validate other commands -- New Window etc.
+    return [[NSApp delegate] validateUserInterfaceItem:item];
   } else if (action == @selector(newFolder:) ||
         action == @selector(delete:) ||
         action == @selector(openItems:) ||
