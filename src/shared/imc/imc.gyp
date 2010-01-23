@@ -37,13 +37,6 @@
       'nacl_htp.cc',
       'nacl_htp.h',
     ],
-    'c_sources': [
-        '<@(common_sources)',
-        'nacl_htp_c.cc',
-        'nacl_htp_c.h',
-        'nacl_imc_c.cc',
-        'nacl_imc_c.h',
-    ],
     'conditions': [
       ['OS=="linux"', {
         'common_sources': [
@@ -88,37 +81,15 @@
     },
     # ----------------------------------------------------------------------
     {
-      'target_name': 'google_nacl_imc64',
-      'type': 'static_library',
-      'sources': [
-        '<@(common_sources)',
-      ],
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
-        },
-      },
-    },
-    # ----------------------------------------------------------------------
-    {
       'target_name': 'libgoogle_nacl_imc_c',
       'type': 'static_library',
       'sources': [
-        '<@(c_sources)',
+        '<@(common_sources)',
+        'nacl_htp_c.cc',
+        'nacl_htp_c.h',
+        'nacl_imc_c.cc',
+        'nacl_imc_c.h',
       ],
-    },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'libgoogle_nacl_imc_c64',
-      'type': 'static_library',
-      'sources': [
-        '<@(c_sources)',
-      ],
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
-        },
-      },
     },
     # ----------------------------------------------------------------------
     {
@@ -131,24 +102,6 @@
         '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
-      ],
-    },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'sigpipe_test64',
-      'type': 'executable',
-      'sources': [
-        'sigpipe_test.cc',
-      ],
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
-        },
-      },
-      'dependencies': [
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc64',
-        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
-        '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio64',
       ],
     },
     # ----------------------------------------------------------------------
@@ -174,41 +127,6 @@
             '<@(python_exe)',
             '<(COMMAND_TESTER)',
             '<(PRODUCT_DIR)/sigpipe_test',
-            '>',
-            '<@(_outputs)',
-           ],
-        },
-      ]
-
-    },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'run_sigpipe_test64',
-      'message': 'running test run_imc_tests64',
-      'type': 'none',
-      'dependencies': [
-        'sigpipe_test64',
-      ],
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
-        },
-      },
-      'actions': [
-        {
-          'action_name': 'run_sigpipe_test64',
-          'msvs_cygwin_shell': 0,
-          'inputs': [
-            '<(COMMAND_TESTER)',
-            '<(PRODUCT_DIR)/sigpipe_test64',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/test-output/sigpipe_test64.out',
-          ],
-          'action': [
-            '<@(python_exe)',
-            '<(COMMAND_TESTER)',
-            '<(PRODUCT_DIR)/sigpipe_test64',
             '>',
             '<@(_outputs)',
            ],

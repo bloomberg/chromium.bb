@@ -6,43 +6,22 @@
   'includes': [
     '../../../build/common.gypi',
   ],
-  'target_defaults': {
-    'target_conditions': [
-      ['target_base=="srpc"', {
-        'sources': [
-          'imc_buffer.c',
-          'invoke.c',
-          'nacl_srpc.c',
-          'nacl_srpc.h',
-          'nacl_srpc_internal.h',
-          'rpc_serialize.c',
-          'rpc_service.c',
-          'rpc_server_loop.c',
-          'rpc_universal.c',
-          'utility.c',
-        ],
-      }],
-    ],
-  },
   'targets': [
     {
       'target_name': 'nonnacl_srpc',
       'type': 'static_library',
-      'variables': {
-        'target_base': 'srpc',
-      },
-    },
-    {
-      'target_name': 'nonnacl_srpc64',
-      'type': 'static_library',
-      'variables': {
-        'target_base': 'srpc',
-      },
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
-        },
-      },
+      'sources': [
+        'imc_buffer.c',
+        'invoke.c',
+        'nacl_srpc.c',
+        'nacl_srpc.h',
+        'nacl_srpc_internal.h',
+        'rpc_serialize.c',
+        'rpc_service.c',
+        'rpc_server_loop.c',
+        'rpc_universal.c',
+        'utility.c',
+      ],
     }
   ]
 }

@@ -9,29 +9,6 @@
     '../../../build/common.gypi',
   ],
   'target_defaults': {
-    'variables': {
-      'target_base': 'none',
-    },
-    'target_conditions': [
-      ['target_base=="npruntime"', {
-        'sources': [
-        'nacl_npapi.h',
-        'naclnp_util.cc',
-        'npbridge.cc',
-        'npbridge.h',
-        'npcapability.h',
-        'npmodule.cc',
-        'npmodule.h',
-        'npobject_proxy.cc',
-        'npobject_proxy.h',
-        'npobject_stub.cc',
-        'npobject_stub.h',
-        # TODO env_no_strict_aliasing.ComponentObject('nprpc.cc')
-        'nprpc.cc',
-        'nprpc.h',
-        ],
-      }],
-    ],
     'conditions': [
       ['OS=="linux"', {
         'defines': [
@@ -65,21 +42,22 @@
     {
       'target_name': 'google_nacl_npruntime',
       'type': 'static_library',
-      'variables': {
-        'target_base': 'npruntime',
-      },
-    },
-    {
-      'target_name': 'google_nacl_npruntime64',
-      'type': 'static_library',
-      'variables': {
-        'target_base': 'npruntime',
-      },
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
-        },
-      },
+      'sources': [
+        'nacl_npapi.h',
+        'naclnp_util.cc',
+        'npbridge.cc',
+        'npbridge.h',
+        'npcapability.h',
+        'npmodule.cc',
+        'npmodule.h',
+        'npobject_proxy.cc',
+        'npobject_proxy.h',
+        'npobject_stub.cc',
+        'npobject_stub.h',
+        # TODO env_no_strict_aliasing.ComponentObject('nprpc.cc')
+        'nprpc.cc',
+        'nprpc.h',
+      ],
     }
   ]
 }

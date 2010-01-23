@@ -5,7 +5,6 @@
 #include <limits>
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
 
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -213,7 +212,7 @@ NaClSrpcError NPModule::CreateArray(NaClSrpcChannel* channel,
   NPString script;
   const char scriptText[] = "new Array();";
   script.UTF8Characters = scriptText;
-  script.UTF8Length = nacl::assert_cast<uint32>(strlen(scriptText));
+  script.UTF8Length = strlen(scriptText);
   NPVariant result;
   int success = NPN_Evaluate(npp, window, &script, &result) &&
                 NPVARIANT_IS_OBJECT(result);
