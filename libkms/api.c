@@ -40,14 +40,7 @@ int kms_create(int fd, struct kms_driver **out)
 int kms_get_prop(struct kms_driver *kms, unsigned key, unsigned *out)
 {
 	switch (key) {
-	case KMS_MAX_SCANOUT_WIDTH:
-	case KMS_MAX_SCANOUT_HEIGHT:
-	case KMS_MIN_SCANOUT_WIDTH:
-	case KMS_MIN_SCANOUT_HEIGHT:
-	case KMS_MAX_CURSOR_WIDTH:
-	case KMS_MAX_CURSOR_HEIGHT:
-	case KMS_MIN_CURSOR_WIDTH:
-	case KMS_MIN_CURSOR_HEIGHT:
+	case KMS_BO_TYPE:
 		break;
 	default:
 		return -EINVAL;
@@ -69,7 +62,7 @@ int kms_bo_create(struct kms_driver *kms, const unsigned *attr, struct kms_bo **
 {
 	unsigned width = 0;
 	unsigned height = 0;
-	enum kms_bo_type type = KMS_BO_TYPE_SCANOUT;
+	enum kms_bo_type type = KMS_BO_TYPE_SCANOUT_X8R8G8B8;
 	int i;
 
 	for (i = 0; attr[i];) {
@@ -92,6 +85,12 @@ int kms_bo_create(struct kms_driver *kms, const unsigned *attr, struct kms_bo **
 	}
 
 	if (width == 0 || height == 0)
+		return -EINVAL;
+
+	/* XXX sanity check type */
+
+	if (type == KMS_BO_TYPE_CURSOR_64X64_A8R8G8B8 &&
+	    (width != 64 || height != 64))
 		return -EINVAL;
 
 	return kms->bo_create(kms, width, height, type, attr, out);

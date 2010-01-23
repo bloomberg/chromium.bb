@@ -53,29 +53,8 @@ static int
 intel_get_prop(struct kms_driver *kms, unsigned key, unsigned *out)
 {
 	switch (key) {
-	case KMS_MAX_SCANOUT_WIDTH:
-		*out = 4096;
-		break;
-	case KMS_MAX_SCANOUT_HEIGHT:
-		*out = 4096;
-		break;
-	case KMS_MIN_SCANOUT_WIDTH:
-		*out = 1;
-		break;
-	case KMS_MIN_SCANOUT_HEIGHT:
-		*out = 1;
-		break;
-	case KMS_MAX_CURSOR_WIDTH:
-		*out = 64;
-		break;
-	case KMS_MAX_CURSOR_HEIGHT:
-		*out = 64;
-		break;
-	case KMS_MIN_CURSOR_WIDTH:
-		*out = 64;
-		break;
-	case KMS_MIN_CURSOR_HEIGHT:
-		*out = 64;
+	case KMS_BO_TYPE:
+		*out = KMS_BO_TYPE_SCANOUT_X8R8G8B8 | KMS_BO_TYPE_CURSOR_64X64_A8R8G8B8;
 		break;
 	default:
 		return -EINVAL;
@@ -116,10 +95,10 @@ intel_bo_create(struct kms_driver *kms,
 	if (!bo)
 		return -ENOMEM;
 
-	if (type == KMS_BO_TYPE_CURSOR) {
+	if (type == KMS_BO_TYPE_CURSOR_64X64_A8R8G8B8) {
 		pitch = 64 * 4;
 		size = 64 * 64 * 4;
-	} else if (type == KMS_BO_TYPE_SCANOUT) {
+	} else if (type == KMS_BO_TYPE_SCANOUT_X8R8G8B8) {
 		pitch = width * 4;
 		pitch = (pitch + 512 - 1) & ~(512 - 1);
 		size = pitch * ((height + 4 - 1) & ~(4 - 1));
@@ -140,7 +119,7 @@ intel_bo_create(struct kms_driver *kms,
 	bo->base.pitch = pitch;
 
 	*out = &bo->base;
-	if (type == KMS_BO_TYPE_SCANOUT && pitch > 512) {
+	if (type == KMS_BO_TYPE_SCANOUT_X8R8G8B8 && pitch > 512) {
 		struct drm_i915_gem_set_tiling tile;
 
 		memset(&tile, 0, sizeof(tile));

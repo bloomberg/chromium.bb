@@ -44,7 +44,7 @@ int test_bo(struct kms_driver *kms)
 	unsigned attrs[7] = {
 		KMS_WIDTH, 1024,
 		KMS_HEIGHT, 768,
-		KMS_BO_TYPE, KMS_BO_TYPE_SCANOUT,
+		KMS_BO_TYPE, KMS_BO_TYPE_SCANOUT_X8R8G8B8,
 		KMS_TERMINATE_PROP_LIST,
 	};
 

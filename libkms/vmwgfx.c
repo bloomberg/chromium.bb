@@ -49,29 +49,8 @@ static int
 vmwgfx_get_prop(struct kms_driver *kms, unsigned key, unsigned *out)
 {
 	switch (key) {
-	case KMS_MAX_SCANOUT_WIDTH:
-		*out = 2048;
-		break;
-	case KMS_MAX_SCANOUT_HEIGHT:
-		*out = 2048;
-		break;
-	case KMS_MIN_SCANOUT_WIDTH:
-		*out = 1;
-		break;
-	case KMS_MIN_SCANOUT_HEIGHT:
-		*out = 1;
-		break;
-	case KMS_MAX_CURSOR_WIDTH:
-		*out = 64;
-		break;
-	case KMS_MAX_CURSOR_HEIGHT:
-		*out = 64;
-		break;
-	case KMS_MIN_CURSOR_WIDTH:
-		*out = 64;
-		break;
-	case KMS_MIN_CURSOR_HEIGHT:
-		*out = 64;
+	case KMS_BO_TYPE:
+		*out = KMS_BO_TYPE_SCANOUT_X8R8G8B8 | KMS_BO_TYPE_CURSOR_64X64_A8R8G8B8;
 		break;
 	default:
 		return -EINVAL;
