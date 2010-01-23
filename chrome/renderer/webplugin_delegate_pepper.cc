@@ -53,6 +53,10 @@ struct Device2DImpl {
   TransportDIB* dib;
 };
 
+struct Device3DImpl {
+  gpu::CommandBuffer* command_buffer;
+};
+
 uint32 WebPluginDelegatePepper::next_buffer_id = 0;
 
 WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
@@ -439,6 +443,10 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
 
         // Ensure the service knows the window size before rendering anything.
         nested_delegate_->UpdateGeometry(window_rect_, clip_rect_);
+        // Save the implementation information (the CommandBuffer).
+        Device3DImpl* impl = new Device3DImpl;
+        impl->command_buffer = command_buffer_.get();
+        context->reserved = impl;
 
         return NPERR_NO_ERROR;
       }
