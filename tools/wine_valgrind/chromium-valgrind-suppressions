@@ -287,7 +287,7 @@
    Memcheck:Leak
    ...
    fun:operator new
-   fun:browser_sync::BookmarkModelWorker::CallDoWorkFromModelSafeThreadAndWait
+   fun:browser_sync::UIModelWorker::DoWorkAndWaitUntilDone
    fun:Syncer::SyncShare
 }
 {
