@@ -83,7 +83,9 @@ bool NotificationProvider::ShowHTML(const WebNotification& notification,
                                     int id) {
   // Disallow HTML notifications from non-HTTP schemes.
   GURL url = notification.url();
-  if (!url.SchemeIs(chrome::kHttpScheme) && !url.SchemeIs(chrome::kHttpsScheme))
+  if (!url.SchemeIs(chrome::kHttpScheme) &&
+      !url.SchemeIs(chrome::kHttpsScheme) &&
+      !url.SchemeIs(chrome::kExtensionScheme))
     return false;
 
   DCHECK(notification.isHTML());
