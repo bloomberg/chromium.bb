@@ -67,12 +67,12 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       WriteBitmap(&(params[0].front()), &(params[1].front()));
       break;
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if !defined(OS_MACOSX)
     case CBF_DATA:
       WriteData(&(params[0].front()), params[0].size(),
                 &(params[1].front()), params[1].size());
       break;
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // !defined(OS_MACOSX)
 
     default:
       NOTREACHED();

@@ -31,8 +31,8 @@
         <include name="IDR_MINIMIZE_P" file="minimize_p.png" type="BINDATA" />
       </if>
 
-      <if expr="os == 'linux2'">
-        <!-- Window controls for Linux, in the style of Metacity -->
+      <if expr="os == 'linux2' or os == 'freebsd7' or os == 'openbsd4'">
+        <!-- Window controls for Linux/BSD, in the style of Metacity -->
         <include name="IDR_CLOSE" file="linux_close.png" type="BINDATA" />
         <include name="IDR_CLOSE_H" file="linux_close_h.png" type="BINDATA" />
         <include name="IDR_CLOSE_P" file="linux_close_p.png" type="BINDATA" />

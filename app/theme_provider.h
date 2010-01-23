@@ -10,10 +10,7 @@
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-#if defined(OS_LINUX)
-typedef struct _GdkColor GdkColor;
-typedef struct _GdkPixbuf GdkPixbuf;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #ifdef __OBJC__
 @class NSColor;
 @class NSImage;
@@ -21,6 +18,9 @@ typedef struct _GdkPixbuf GdkPixbuf;
 class NSColor;
 class NSImage;
 #endif  // __OBJC__
+#elif !defined(OS_WIN)
+typedef struct _GdkColor GdkColor;
+typedef struct _GdkPixbuf GdkPixbuf;
 #endif  // OS_*
 
 class Profile;
@@ -67,20 +67,7 @@ class ThemeProvider {
   // implementations of ThemeProvider. Returns NULL on error.
   virtual RefCountedMemory* GetRawData(int id) const = 0;
 
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-  // Gets the GdkPixbuf with the specified |id|.  Returns a pointer to a shared
-  // instance of the GdkPixbuf.  This shared GdkPixbuf is owned by the theme
-  // provider and should not be freed.
-  //
-  // The bitmap is assumed to exist. This function will log in release, and
-  // assert in debug mode if it does not. On failure, this will return a
-  // pointer to a shared empty placeholder bitmap so it will be visible what
-  // is missing.
-  virtual GdkPixbuf* GetPixbufNamed(int id) const = 0;
-
-  // As above, but flips it in RTL locales.
-  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const = 0;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   // Gets the NSImage with the specified |id|.
   //
   // The bitmap is not assumed to exist. If a theme does not provide an image,
@@ -98,6 +85,19 @@ class ThemeProvider {
   // The tint is not assumed to exist. If a theme does not provide a tint with
   // that id, this function will return nil.
   virtual NSColor* GetNSColorTint(int id) const = 0;
+#elif defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
+  // Gets the GdkPixbuf with the specified |id|.  Returns a pointer to a shared
+  // instance of the GdkPixbuf.  This shared GdkPixbuf is owned by the theme
+  // provider and should not be freed.
+  //
+  // The bitmap is assumed to exist. This function will log in release, and
+  // assert in debug mode if it does not. On failure, this will return a
+  // pointer to a shared empty placeholder bitmap so it will be visible what
+  // is missing.
+  virtual GdkPixbuf* GetPixbufNamed(int id) const = 0;
+
+  // As above, but flips it in RTL locales.
+  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const = 0;
 #endif
 };
 

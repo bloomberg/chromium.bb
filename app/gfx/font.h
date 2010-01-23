@@ -11,7 +11,7 @@
 
 #if defined(OS_WIN)
 typedef struct HFONT__* HFONT;
-#elif defined(OS_LINUX)
+#elif !defined(OS_MACOSX)
 #include "third_party/skia/include/core/SkRefCnt.h"
 class SkPaint;
 class SkTypeface;
@@ -26,12 +26,10 @@ typedef struct HFONT__* NativeFont;
 class NSFont;
 #endif
 typedef NSFont* NativeFont;
-#elif defined(OS_LINUX)
+#else
 typedef struct _PangoFontDescription PangoFontDescription;
 class SkTypeface;
 typedef SkTypeface* NativeFont;
-#else  // null port.
-#error No known OS defined
 #endif
 
 #include "base/basictypes.h"
@@ -127,7 +125,7 @@ class Font {
   int vertical_dlus_to_pixels(int dlus) {
     return dlus * font_ref_->height() / 8;
   }
-#elif defined(OS_LINUX)
+#elif !defined(OS_MACOSX)
   static Font CreateFont(PangoFontDescription* desc);
   // We need a copy constructor and assignment operator to deal with
   // the Skia reference counting.
@@ -210,7 +208,7 @@ class Font {
 
   // Indirect reference to the HFontRef, which references the underlying HFONT.
   scoped_refptr<HFontRef> font_ref_;
-#elif defined(OS_LINUX)
+#elif !defined(OS_MACOSX)
   explicit Font(SkTypeface* typeface, const std::wstring& name,
                 int size, int style);
   // Calculate and cache the font metrics.
@@ -249,7 +247,7 @@ class Font {
   double avg_width_;
   double underline_position_;
   double underline_thickness_;
-#elif defined(OS_MACOSX)
+#else  // OS_MACOSX
   explicit Font(const std::wstring& font_name, int font_size, int style);
 
   // Calculate and cache the font metrics.

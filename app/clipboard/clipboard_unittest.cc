@@ -130,7 +130,7 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
 }
 
 // TODO(estade): Port the following test (decide what target we use for urls)
-#if !defined(OS_LINUX)
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
 TEST_F(ClipboardTest, BookmarkTest) {
   Clipboard clipboard;
 
@@ -213,7 +213,7 @@ TEST_F(ClipboardTest, URLTest) {
 #endif  // defined(OS_LINUX)
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
 TEST_F(ClipboardTest, DataTest) {
   Clipboard clipboard;
   const char* format = "chromium/x-test-format";

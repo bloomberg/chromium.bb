@@ -13,7 +13,7 @@
 
 #if defined(OS_WIN)
 #include <objidl.h>
-#elif defined(OS_LINUX)
+#elif !defined(OS_MACOSX)
 #include <gtk/gtk.h>
 #endif
 
@@ -45,7 +45,7 @@ class OSExchangeData {
   // nodes are written using a CustomFormat.
 #if defined(OS_WIN)
   typedef CLIPFORMAT CustomFormat;
-#elif defined(OS_LINUX)
+#elif !defined(OS_MACOSX)
   typedef GdkAtom CustomFormat;
 #endif
 

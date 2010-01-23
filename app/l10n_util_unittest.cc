@@ -4,7 +4,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <cstdlib>
 #endif
 
@@ -95,7 +95,7 @@ void SetICUDefaultLocale(const std::string& locale_string) {
   EXPECT_TRUE(U_SUCCESS(error_code));
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if !defined(OS_MACOSX)
 // We are disabling this test on MacOS because GetApplicationLocale() as an
 // API isn't something that we'll easily be able to unit test in this manner.
 // The meaning of that API, on the Mac, is "the locale used by Cocoa's main
@@ -140,7 +140,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   // Keep a copy of ICU's default locale before we overwrite it.
   icu::Locale locale = icu::Locale::getDefault();
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX)
   // Test the support of LANGUAGE environment variable.
   SetICUDefaultLocale("en-US");
   ::setenv("LANGUAGE", "xx:fr_CA", 1);
@@ -246,7 +246,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   UErrorCode error_code = U_ZERO_ERROR;
   icu::Locale::setDefault(locale, error_code);
 }
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(L10nUtilTest, SortStringsUsingFunction) {
   std::vector<StringWrapper*> strings;

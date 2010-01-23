@@ -76,7 +76,7 @@ class Clipboard {
   // functions accept a buffer parameter.
   enum Buffer {
     BUFFER_STANDARD,
-#if defined(OS_LINUX)
+#if defined(USE_X11)
     BUFFER_SELECTION,
 #endif
   };
@@ -85,7 +85,7 @@ class Clipboard {
     switch (buffer) {
       case BUFFER_STANDARD:
         return true;
-#if defined(OS_LINUX)
+#if defined(USE_X11)
       case BUFFER_SELECTION:
         return true;
 #endif
@@ -112,11 +112,11 @@ class Clipboard {
   // can use.
   void WriteObjects(const ObjectMap& objects, base::ProcessHandle process);
 
-  // On Linux, we need to know when the clipboard is set to a URL.  Most
+  // On Linux/BSD, we need to know when the clipboard is set to a URL.  Most
   // platforms don't care.
-#if !defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   void DidWriteURL(const std::string& utf8_text) {}
-#else  // !defined(OS_LINUX)
+#else  // !defined(OS_WIN) && !defined(OS_MACOSX)
   void DidWriteURL(const std::string& utf8_text);
 #endif
 
@@ -193,7 +193,7 @@ class Clipboard {
 
   void WriteBitmap(const char* pixel_data, const char* size_data);
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD)
+#if !defined(OS_MACOSX)
   // |format_name| is an ASCII string and should be NULL-terminated.
   // TODO(estade): port to mac.
   void WriteData(const char* format_name, size_t format_len,
@@ -226,7 +226,7 @@ class Clipboard {
 
   // True if we can create a window.
   bool create_window_;
-#elif defined(USE_X11)
+#elif !defined(OS_MACOSX)
   // The public API is via WriteObjects() which dispatches to multiple
   // Write*() calls, but on GTK we must write all the clipboard types
   // in a single GTK call.  To support this we store the current set

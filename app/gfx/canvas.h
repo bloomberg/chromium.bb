@@ -14,7 +14,7 @@
 #include "base/basictypes.h"
 #include "skia/ext/platform_canvas.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 typedef struct _cairo cairo_t;
 typedef struct _GdkPixbuf GdkPixbuf;
 #endif
@@ -192,7 +192,7 @@ class Canvas : public skia::PlatformCanvas {
   // Extracts a bitmap from the contents of this canvas.
   SkBitmap ExtractBitmap() const;
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Applies current matrix on the canvas to the cairo context. This should be
   // invoked anytime you plan on drawing directly to the cairo context. Be
   // sure and set the matrix back to the identity when done.

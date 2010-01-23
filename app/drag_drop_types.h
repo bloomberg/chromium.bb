@@ -21,7 +21,7 @@ class DragDropTypes {
 #if defined(OS_WIN)
   static uint32 DragOperationToDropEffect(int drag_operation);
   static int DropEffectToDragOperation(uint32 effect);
-#elif defined(OS_LINUX)
+#elif !defined(OS_MACOSX)
   static int DragOperationToGdkDragAction(int drag_operation);
   static int GdkDragActionToDragOperation(int gdk_drag_action);
 #endif
