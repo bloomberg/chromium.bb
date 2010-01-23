@@ -77,6 +77,7 @@ dump_syms:					\
 	dump_stabs.o				\
 	dump_syms.o				\
 	dump_symbols.o				\
+	dwarf2diehandler.o			\
 	file_id.o				\
 	module.o				\
 	stabs_reader.o				\
@@ -96,6 +97,10 @@ module.o: module.cc
 COVERAGE_SOURCES += module.cc
 stabs_reader.o: stabs_reader.cc
 COVERAGE_SOURCES += stabs_reader.cc
+
+VPATH += $(SRC)/common/dwarf
+dwarf2diehandler.o: dwarf2diehandler.cc
+COVERAGE_SOURCES += dwarf2diehandler.cc
 
 
 
@@ -178,6 +183,23 @@ dump_stabs_unittest.o: dump_stabs_unittest.cc
 dump_stabs_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) $(GMOCK_CPPFLAGS)
 clean::
 	rm -f dump_stabs_unittest
+
+
+### Unit tests for dwarf2reader::DwarfDIEDispatcher.
+check: check-dwarf2diehandler_unittest
+check-dwarf2diehandler_unittest: dwarf2diehandler_unittest
+dwarf2diehandler_unittest:			\
+	gmock-all.o				\
+	gtest-all.o				\
+	gtest_main.o				\
+	dwarf2diehandler.o			\
+	$(empty)
+CPP_EXECUTABLES += dwarf2diehandler_unittest
+dwarf2diehandler_unittest.o: dwarf2diehandler_unittest.cc
+dwarf2diehandler_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
+						  $(GMOCK_CPPFLAGS)
+clean::
+	rm -f dwarf2diehandler_unittest
 
 
 ### Generic compilation rules.
