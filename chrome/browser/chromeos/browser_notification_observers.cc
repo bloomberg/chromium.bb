@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/browser_notification_observers.h"
 
+#include <string>
+
+#include "base/file_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/notification_service.h"
 
@@ -11,7 +14,12 @@ namespace {
 
 // Static function that records uptime in /proc/uptime to tmp for metrics use.
 void RecordUptime() {
-  system("cat /proc/uptime > /tmp/uptime-chrome-first-render &");
+  std::string uptime;
+  const FilePath proc_uptime = FilePath("/proc/uptime");
+  const FilePath uptime_output = FilePath("/tmp/uptime-chrome-first-render");
+
+  if (file_util::ReadFileToString(proc_uptime, &uptime))
+    file_util::WriteFile(uptime_output, uptime.data(), uptime.size());
 }
 
 }  // namespace
