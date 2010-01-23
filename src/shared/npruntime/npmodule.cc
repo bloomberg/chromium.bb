@@ -552,7 +552,7 @@ NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
   }
   DescWrapperFactory factory;
   DescWrapper* wrapper =
-      factory.ImportShmHandle(shm->handle(),
+      factory.ImportShmHandle(static_cast<NaClHandle>(shm->handle()),
                               inputs[1]->u.ival * sizeof(int32_t));
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
@@ -705,8 +705,9 @@ NaClSrpcError NPModule::Device3DCreateBuffer(NaClSrpcChannel* channel,
   }
   // Create a NaCl descriptor to return.
   DescWrapperFactory factory;
-  DescWrapper* wrapper = factory.ImportShmHandle(shm->handle(),
-                                                 inputs[1]->u.ival);
+  DescWrapper* wrapper =
+      factory.ImportShmHandle(static_cast<NaClHandle>(shm->handle()),
+                              inputs[1]->u.ival);
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
