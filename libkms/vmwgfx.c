@@ -102,7 +102,7 @@ vmwgfx_bo_create(struct kms_driver *kms,
 		case KMS_BO_TYPE:
 			break;
 		default:
-			return EINVAL;
+			return -EINVAL;
 		}
 	}
 
