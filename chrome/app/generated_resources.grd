@@ -2280,16 +2280,28 @@ each locale. -->
       <message name="IDS_UNBLOCKED_IMAGES_TITLE" desc="Bubble info header text when a page is allowed to display images, but the global default is to block.">
         This page was allowed to show images.
       </message>
-      <message name="IDS_BLOCKED_IMAGES_UNBLOCK" desc="Radio button choice to unblock a site from showing images, displayed in bubble when a page tries to display images.">
+      <message name="IDS_BLOCKED_IMAGES_MULTIHOST_TITLE" desc="Text when multiple frames within a page are not allowed to display images.  This appears above a list of the frames' hostnames.">
+        Images were blocked for the following hosts:
+      </message>
+      <message name="IDS_UNBLOCKED_IMAGES_MULTIHOST_TITLE" desc="Text when multiple frames within a page are allowed to display images, when the global default is to block.  This appears above a list of the frames' hostnames.">
+        The following hosts were allowed to show images:
+      </message>
+      <message name="IDS_BLOCKED_IMAGES_UNBLOCK" desc="Radio button choice to unblock a host from showing images, displayed in bubble when a page tries to display images.">
         Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to show images
       </message>
-      <message name="IDS_UNBLOCKED_IMAGES_BLOCK" desc="Radio button choice to prevent a site from showing images, displayed in bubble when a page tries to display images.">
+      <message name="IDS_UNBLOCKED_IMAGES_BLOCK" desc="Radio button choice to prevent a host from showing images, displayed in bubble when a page tries to display images.">
         Block <ph name="HOST">$1<ex>mail.google.com</ex></ph> from showing images
       </message>
-      <message name="IDS_BLOCKED_IMAGES_NO_ACTION" desc="Radio button choice to continue blocking a site from showing images, displayed in bubble when a page tries to display images.">
+      <message name="IDS_BLOCKED_IMAGES_MULTIHOST_UNBLOCK" desc="Radio button choice to unblock multiple hosts from showing images, displayed in bubble when a page tries to display images.">
+        Allow all to show images
+      </message>
+      <message name="IDS_UNBLOCKED_IMAGES_MULTIHOST_BLOCK" desc="Radio button choice to prevent multiple hosts from showing images, displayed in bubble when a page tries to display images.">
+        Block all from showing images
+      </message>
+      <message name="IDS_BLOCKED_IMAGES_NO_ACTION" desc="Radio button choice to continue blocking one or more hosts from showing images, displayed in bubble when a page tries to display images.">
         Continue blocking images
       </message>
-      <message name="IDS_UNBLOCKED_IMAGES_NO_ACTION" desc="Radio button choice to leave a site allowed to show images, displayed in bubble when a page tries to display images.">
+      <message name="IDS_UNBLOCKED_IMAGES_NO_ACTION" desc="Radio button choice to leave one or more hosts allowed to show images, displayed in bubble when a page tries to display images.">
         Continue allowing images
       </message>
       <message name="IDS_IMAGES_BUBBLE_LINK" desc="Link to images section of content blocking management dialog, displayed in bubble when a page tries to display images.">
@@ -2301,11 +2313,23 @@ each locale. -->
       <message name="IDS_UNBLOCKED_POPUPS_TITLE" desc="Bubble info header text when a page is allowed to display popups.">
         This page was allowed to show pop-ups.
       </message>
+      <message name="IDS_BLOCKED_POPUPS_MULTIHOST_TITLE" desc="Text when multiple frames within a page are not allowed to display popups.  This appears above a list of the frames' hostnames.">
+        Pop-ups were blocked for the following hosts:
+      </message>
+      <message name="IDS_UNBLOCKED_POPUPS_MULTIHOST_TITLE" desc="Text when multiple frames within a page are allowed to display popups, when the global default is to block.  This appears above a list of the frames' hostnames.">
+        The following hosts were allowed to show pop-ups:
+      </message>
       <message name="IDS_BLOCKED_POPUPS_UNBLOCK" desc="Radio button choice to unblock a site from showing popups, displayed in bubble when a page tries to display popups.">
         Always allow pop-ups from <ph name="HOST">$1<ex>mail.google.com</ex></ph>
       </message>
       <message name="IDS_UNBLOCKED_POPUPS_BLOCK" desc="Radio button choice to block a site from showing popups, displayed in bubble when a page tries to display popups.">
         Block pop-ups from <ph name="HOST">$1<ex>mail.google.com</ex></ph>
+      </message>
+      <message name="IDS_BLOCKED_POPUPS_MULTIHOST_UNBLOCK" desc="Radio button choice to unblock multiple hosts from showing popups, displayed in bubble when a page tries to display images.">
+        Allow all to show pop-ups
+      </message>
+      <message name="IDS_UNBLOCKED_POPUPS_MULTIHOST_BLOCK" desc="Radio button choice to prevent multiple hosts from showing popups, displayed in bubble when a page tries to display popups.">
+        Block all from showing pop-ups
       </message>
       <message name="IDS_BLOCKED_POPUPS_NO_ACTION" desc="Radio button choice to continue blocking a site from showing popups, displayed in bubble when a page tries to display popups.">
         Continue blocking pop-ups
@@ -2322,16 +2346,28 @@ each locale. -->
       <message name="IDS_UNBLOCKED_JAVASCRIPT_TITLE" desc="Bubble info header text when a page is allowed to run JavaScript, but the global default is to block.">
         This page was allowed to run JavaScript.
       </message>
+      <message name="IDS_BLOCKED_JAVASCRIPT_MULTIHOST_TITLE" desc="Text when multiple frames within a page are not allowed to run JavaScript.  This appears above a list of the frames' hostnames.">
+        JavaScript was blocked for the following hosts:
+      </message>
+      <message name="IDS_UNBLOCKED_JAVASCRIPT_MULTIHOST_TITLE" desc="Text when multiple frames within a page are allowed to run JavaScript, when the global default is to block.  This appears above a list of the frames' hostnames.">
+        The following hosts were allowed to run JavaScript:
+      </message>
       <message name="IDS_BLOCKED_JAVASCRIPT_UNBLOCK" desc="Radio button choice to unblock a site from running JavaScript, displayed in bubble when a page tries to run JavaScript.">
         Always allow JavaScript on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
       </message>
       <message name="IDS_UNBLOCKED_JAVASCRIPT_BLOCK" desc="Radio button choice to prevent a site from running JavaScript, displayed in bubble when a page tries to run JavaScript.">
         Block <ph name="HOST">$1<ex>mail.google.com</ex></ph> from running JavaScript
       </message>
-      <message name="IDS_BLOCKED_JAVASCRIPT_NO_ACTION" desc="Radio button choice to continue blocking a site from running JavaScript, displayed in bubble when a page tries to run JavaScript.">
+      <message name="IDS_BLOCKED_JAVASCRIPT_MULTIHOST_UNBLOCK" desc="Radio button choice to unblock multiple hosts from running JavaScript, displayed in bubble when a page tries to run JavaScript.">
+        Allow all to run JavaScript
+      </message>
+      <message name="IDS_UNBLOCKED_JAVASCRIPT_MULTIHOST_BLOCK" desc="Radio button choice to prevent multiple hosts from running JavaScript, displayed in bubble when a page tries to run JavaScript.">
+        Block all from running JavaScript
+      </message>
+      <message name="IDS_BLOCKED_JAVASCRIPT_NO_ACTION" desc="Radio button choice to continue blocking one or more hosts from running JavaScript, displayed in bubble when a page tries to run JavaScript.">
         Continue blocking JavaScript
       </message>
-      <message name="IDS_UNBLOCKED_JAVASCRIPT_NO_ACTION" desc="Radio button choice to leave a site allowed to run JavaScript, displayed in bubble when a page tries to run JavaScript.">
+      <message name="IDS_UNBLOCKED_JAVASCRIPT_NO_ACTION" desc="Radio button choice to leave one or more hosts allowed to run JavaScript, displayed in bubble when a page tries to run JavaScript.">
         Continue allowing JavaScript
       </message>
       <message name="IDS_BLOCKED_JAVASCRIPT_LINK" desc="Link to JavaScript section of content blocking management dialog, displayed in bubble when a page tries to run JavaScript.">
@@ -2343,20 +2379,35 @@ each locale. -->
       <message name="IDS_UNBLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is allowed to display plug-ins, but the global default is to block.">
         This page was allowed to use plugins.
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from showing plug-ins, displayed in bubble when a page tries to display plug-ins.">
+      <message name="IDS_BLOCKED_PLUGINS_MULTIHOST_TITLE" desc="Text when multiple frames within a page are not allowed to use plug-ins.  This appears above a list of the frames' hostnames.">
+        Plug-ins was blocked for the following hosts:
+      </message>
+      <message name="IDS_UNBLOCKED_PLUGINS_MULTIHOST_TITLE" desc="Text when multiple frames within a page are allowed to use plug-ins, when the global default is to block.  This appears above a list of the frames' hostnames.">
+        The following hosts were allowed to use plug-ins:
+      </message>
+      <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
         Always allow plug-ins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
       </message>
-      <message name="IDS_UNBLOCKED_PLUGINS_BLOCK" desc="Radio button choice to unblock a site from showing plug-ins, displayed in bubble when a page tries to display plug-ins.">
+      <message name="IDS_UNBLOCKED_PLUGINS_BLOCK" desc="Radio button choice to unblock a site from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
         Block <ph name="HOST">$1<ex>mail.google.com</ex></ph> from using plug-ins
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_NO_ACTION" desc="Radio button choice to continue blocking a site from showing plug-ins, displayed in bubble when a page tries to display plug-ins.">
+      <message name="IDS_BLOCKED_PLUGINS_MULTIHOST_UNBLOCK" desc="Radio button choice to unblock multiple hosts from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
+        Allow all to use plug-ins
+      </message>
+      <message name="IDS_UNBLOCKED_PLUGINS_MULTIHOST_BLOCK" desc="Radio button choice to prevent multiple hosts from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
+        Block all from using plug-ins
+      </message>
+      <message name="IDS_BLOCKED_PLUGINS_NO_ACTION" desc="Radio button choice to continue blocking one or more hosts from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
         Continue blocking plug-ins
       </message>
-      <message name="IDS_UNBLOCKED_PLUGINS_NO_ACTION" desc="Radio button choice to leave a site allowed to show plug-ins, displayed in bubble when a page tries to display plug-ins.">
+      <message name="IDS_UNBLOCKED_PLUGINS_NO_ACTION" desc="Radio button choice to leave one or more hosts allowed to use plug-ins, displayed in bubble when a page tries to use plug-ins.">
         Continue allowing plug-ins
       </message>
       <message name="IDS_BLOCKED_PLUGINS_LINK" desc="Link to plug-ins section of content blocking management dialog, displayed in bubble when a page tries to display plug-ins.">
         Manage plug-in blocking...
+      </message>
+      <message name="IDS_BLOCKED_RESOURCE_TOO_MANY_HOSTS" desc="Message displayed as the last entry of a list of hostnames when there are too many to show.  Displayed in a bubble when multiple hostnames are blocked or allowed to access resources, after the first few hosts on the list.">
+        ...and more
       </message>
 
       <!-- SSL error strings -->
@@ -3744,6 +3795,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_POPUP_EXCEPTION_TITLE" desc="Title for pop-up exceptions dialog">
         Pop-up Exceptions
+      </message>
+      <message name="IDS_EXCEPTIONS_HOSTNAME_HEADER" desc="A column header for the hostname column of the cookie/image/javascript/plugins exceptions dialog">
+        Hostname
+      </message>
+      <message name="IDS_EXCEPTIONS_ACTION_HEADER" desc="A column header for the action column of the cookie/image/javascript/plugins exceptions dialog">
+        Action
       </message>
       <message name="IDS_EXCEPTIONS_ADD_BUTTON" desc="A button in the cookie/image/javascript/plugins exceptions dialog for adding new exception rules.">
         Add...
