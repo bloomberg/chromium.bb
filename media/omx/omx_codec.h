@@ -169,6 +169,8 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
     };
   };
 
+  // Initialize an OmxCodec object that runs on |message_loop|. It is
+  // guaranteed that callbacks are executed on this message loop.
   explicit OmxCodec(MessageLoop* message_loop);
   virtual ~OmxCodec();
 

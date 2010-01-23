@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include <iostream>
 #include <signal.h>
@@ -106,8 +106,13 @@ void TerminateHandler(int signal) {
 int main(int argc, char** argv) {
   // Read arguments.
   if (argc == 1) {
-    std::cout << "Usage: " << argv[0] << " --file=FILE [--audio]"
-                 " [--alsa-device=DEVICE]" << std::endl;
+    std::cout << "Usage: " << argv[0] << " --file=FILE" << std::endl
+              << std::endl
+              << "Optional arguments:" << std::endl
+              << "  [--enable-openmax]"
+              << "  [--enable-h264-annexb-filter]"
+              << "  [--audio]"
+              << "  [--alsa-device=DEVICE]" << std::endl;
     return 1;
   }
 

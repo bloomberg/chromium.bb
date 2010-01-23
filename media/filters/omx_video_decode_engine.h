@@ -63,6 +63,20 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
     unsigned char* data;
   };
 
+  // A struct to hold parameters of a decode request. Objects pointed by
+  // these parameters are owned by the caller.
+  struct DecodeRequest {
+    DecodeRequest(AVFrame* f, bool* b, Task* cb)
+        : frame(f),
+          got_result(b),
+          done_cb(cb) {
+    }
+
+    AVFrame* frame;
+    bool* got_result;
+    Task* done_cb;
+  };
+
   virtual void OnFeedDone(InputBuffer* buffer);
   virtual void OnHardwareError();
   virtual void OnReadComplete(uint8* buffer, int size);
@@ -72,18 +86,21 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   virtual bool DecodedFrameAvailable();
   virtual void MergeBytesFrameQueue(uint8* buffer, int size);
   virtual bool IsFrameComplete(const YuvFrame* frame);
-  virtual YuvFrame* GetFrame();
 
-  Lock lock_;  // Locks the |state_| variable and the |yuv_frame_queue_|.
   State state_;
   size_t frame_bytes_;
   size_t width_;
   size_t height_;
+  scoped_array<uint8> y_buffer_;
+  scoped_array<uint8> u_buffer_;
+  scoped_array<uint8> v_buffer_;
 
+  // TODO(hclam): We should let OmxCodec handle this case.
   bool has_fed_on_eos_;  // Used to avoid sending an end of stream to
                          // OpenMax twice since OpenMax does not always
                          // handle this nicely.
   std::list<YuvFrame*> yuv_frame_queue_;
+  std::list<DecodeRequest> decode_request_queue_;
 
   scoped_refptr<media::OmxCodec> omx_codec_;
   MessageLoop* message_loop_;

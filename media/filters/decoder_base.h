@@ -245,7 +245,9 @@ class DecoderBase : public Decoder {
     // Note that it's possible for us to decode but not produce a frame, in
     // which case |pending_reads_| will remain less than |read_queue_| so we
     // need to schedule an additional read.
-    DCHECK_LE(pending_reads_, read_queue_.size());
+    // TODO(hclam): Enable this line again to make sure we don't break the
+    // flow control. (BUG=32947)
+    // DCHECK_LE(pending_reads_, read_queue_.size());
     while (pending_reads_ < read_queue_.size()) {
       demuxer_stream_->Read(NewCallback(this, &DecoderBase::OnReadComplete));
       ++pending_reads_;
