@@ -61,7 +61,7 @@ static bool on_the_record_switch = true;
 
 // Enable/disable Dns prefetch activity (either via command line, or via pref).
 void EnableDnsPrefetch(bool enable) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  // NOTE: this is invoked on the UI thread.
   dns_prefetch_enabled = enable;
 }
 
@@ -429,7 +429,7 @@ void FinalizeDnsPrefetchInitialization(
 
   DLOG(INFO) << "DNS Prefetch service started";
 
-  // Prefetch these hostnames on startup. 
+  // Prefetch these hostnames on startup.
   DnsPrefetchMotivatedList(hostnames_to_prefetch,
                            DnsHostInfo::STARTUP_LIST_MOTIVATED);
   dns_master->DeserializeReferrersThenDelete(referral_list);
