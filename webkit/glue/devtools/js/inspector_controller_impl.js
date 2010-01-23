@@ -236,7 +236,7 @@ devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript = function(
  */
 devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript = function(
     callId, methodName, argsString, async) {
-  var injectedScriptId = 0;
+  var injectedScriptId = 1000000;
   RemoteToolsAgent.DispatchOnInjectedScript(
       callId,
       injectedScriptId,

@@ -252,10 +252,20 @@ void WebDevToolsAgentImpl::DispatchOnInspectorController(
 
 void WebDevToolsAgentImpl::DispatchOnInjectedScript(
       int call_id,
-      int,
+      int injected_script_id,
       const String& function_name,
       const String& json_args,
       bool async) {
+  // TODO(yurys): get rid of this code once WebKit change is rolled.
+  if (injected_script_id != 1000000) {
+    GetInspectorController()->inspectorBackend()->dispatchOnInjectedScript(
+        call_id,
+        injected_script_id,
+        function_name,
+        json_args,
+        async);
+    return;
+  }
   String result;
   String exception;
   result = debugger_agent_impl_->ExecuteUtilityFunction(utility_context_,

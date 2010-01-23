@@ -526,3 +526,8 @@ InspectorFrontendHost.addResourceSourceToFrame = function(identifier, element) {
   originalAddToFrame.call(this, identifier, resource.mimeType, element);
 };
 })();
+
+WebInspector.pausedScript = function(callFrames)
+{
+    this.panels.scripts.debuggerPaused(callFrames);
+};
