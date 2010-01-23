@@ -167,8 +167,8 @@ static NPError FlushContext(NPP instance,
       NaClSrpcInvokeByName(channel,
                            "Device3DFlush",
                            nacl::NPNavigator::GetPluginNPP(instance),
-                           &context3d->getOffset,
-                           &context3d->putOffset);
+                           context3d->putOffset,
+                           &context3d->getOffset);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }

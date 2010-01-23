@@ -305,7 +305,7 @@ NaClSrpcError NPNavigator::SetWindow(NaClSrpcChannel* channel,
   NPP npp = GetNaClNPP(NPBridge::IntToNpp(inputs[0]->u.ival), true);
   int height = inputs[1]->u.ival;
   int width = inputs[2]->u.ival;
-  DebugPrintf("NPP_SetWindow: npp=%d, height=%s, width=%d\n",
+  DebugPrintf("NPP_SetWindow: npp=%d, height=%d, width=%d\n",
               npp, height, width);
   // Invoke the implementation.
   NPNavigator* nav = static_cast<NPNavigator*>(channel->server_instance_data);

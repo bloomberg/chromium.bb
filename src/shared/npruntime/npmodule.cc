@@ -18,6 +18,9 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/origin.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
+#ifndef NACL_STANDALONE
+#include "base/shared_memory.h"
+#endif  // NACL_STANDALONE
 
 namespace nacl {
 
@@ -39,7 +42,9 @@ NPModule::NPModule(NaClSrpcChannel* channel)
       window_(NULL),
       extensions_(NULL),
       device2d_(NULL),
-      context2d_(NULL) {
+      context2d_(NULL),
+      device3d_(NULL),
+      context3d_(NULL) {
   // Remember the channel we will be communicating over.
   channel_ = channel;
   // Remember the bridge for this channel.
@@ -102,8 +107,8 @@ NACL_SRPC_METHOD_ARRAY(NPModule::srpc_methods) = {
   { "Device2DInitialize:i:hiiiii", Device2DInitialize },
   { "Device2DFlush:i:iiiii", Device2DFlush },
   { "Device2DDestroy:i:", Device2DDestroy },
-  { "Device3DInitialize:i:hiii", Device3DInitialize },
-  { "Device3DFlush:i:ii", Device3DFlush },
+  { "Device3DInitialize:ii:hiii", Device3DInitialize },
+  { "Device3DFlush:ii:i", Device3DFlush },
   { "Device3DDestroy:i:", Device3DDestroy },
   { "Device3DGetState:ii:i", Device3DGetState },
   { "Device3DSetState:iii:", Device3DSetState },
@@ -481,6 +486,7 @@ struct Device3DImpl {
 
 // inputs:
 // (int) npp
+// (int) commandBufferEntries
 // outputs:
 // (handle) shared memory
 // (int) commandBufferEntries
@@ -529,8 +535,10 @@ NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
     if (NULL == module->context3d_) {
       return NACL_SRPC_RESULT_APP_ERROR;
     }
+    static NPDeviceContext3DConfig config;
+    config.commandBufferEntries = inputs[1]->u.ival;
     NPError retval =
-        module->device3d_->initializeContext(npp, NULL, module->context3d_);
+        module->device3d_->initializeContext(npp, &config, module->context3d_);
     if (NPERR_NO_ERROR != retval) {
       return NACL_SRPC_RESULT_APP_ERROR;
     }
@@ -544,7 +552,8 @@ NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
   }
   DescWrapperFactory factory;
   DescWrapper* wrapper =
-      factory.ImportSharedMemory(shm);
+      factory.ImportShmHandle(shm->handle(),
+                              inputs[1]->u.ival * sizeof(int32_t));
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
@@ -562,9 +571,9 @@ NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
 
 // inputs:
 // (int) npp
+// (int) putOffset
 // outputs:
 // (int) getOffset
-// (int) putOffset
 NaClSrpcError NPModule::Device3DFlush(NaClSrpcChannel* channel,
                                       NaClSrpcArg** inputs,
                                       NaClSrpcArg** outputs) {
@@ -575,13 +584,13 @@ NaClSrpcError NPModule::Device3DFlush(NaClSrpcChannel* channel,
   if (NULL == module->extensions_) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
+  module->context3d_->putOffset = inputs[1]->u.ival;
   NPError retval =
       module->device3d_->flushContext(npp, module->context3d_, NULL, NULL);
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   outputs[0]->u.ival = module->context3d_->getOffset;
-  outputs[1]->u.ival = module->context3d_->putOffset;
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -605,30 +614,6 @@ NaClSrpcError NPModule::Device3DDestroy(NaClSrpcChannel* channel,
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   return NACL_SRPC_RESULT_OK;
-}
-
-class NppClosure {
- public:
-  NppClosure(uint32_t number, NPModule* module) {
-    number_ = number;
-    module_ = module;
-  }
-  uint32_t number() const { return number_; }
-  NPModule* module() const { return module_; }
- private:
-  uint32_t number_;
-  NPModule* module_;
-};
-
-// The thunk enqueued on the browser's foreground thread.
-static void doNppAsyncCall(void* arg) {
-  NppClosure* closure = reinterpret_cast<NppClosure*>(arg);
-  if (NULL != closure) {
-    NaClSrpcInvokeByName(closure->module()->channel(),
-                         "NPP_PluginThreadAsyncCall",
-                         closure->number());
-  }
-  delete closure;
 }
 
 // inputs:
@@ -690,10 +675,10 @@ NaClSrpcError NPModule::Device3DCreateBuffer(NaClSrpcChannel* channel,
 
   // Initialize buffer id and returned handle to allow error returns.
   int buffer_id = -1;
-  outputs[1]->u.ival = buffer_id;
   outputs[0]->u.hval =
       const_cast<NaClDesc*>(
           reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
+  outputs[1]->u.ival = buffer_id;
 
 #if defined(NACL_STANDALONE)
   UNREFERENCED_PARAMETER(inputs);
@@ -720,13 +705,15 @@ NaClSrpcError NPModule::Device3DCreateBuffer(NaClSrpcChannel* channel,
   }
   // Create a NaCl descriptor to return.
   DescWrapperFactory factory;
-  DescWrapper* wrapper = factory.ImportSharedMemory(shm);
+  DescWrapper* wrapper = factory.ImportShmHandle(shm->handle(),
+                                                 inputs[1]->u.ival);
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   // Increase reference count for SRPC return value, since wrapper Delete
   // would cause Dtor to fire.
   outputs[0]->u.hval = NaClDescRef(wrapper->desc());
+  outputs[1]->u.ival = buffer_id;
   // Clean up.
   wrapper->Delete();
   return NACL_SRPC_RESULT_OK;
@@ -752,6 +739,30 @@ NaClSrpcError NPModule::Device3DDestroyBuffer(NaClSrpcChannel* channel,
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   return NACL_SRPC_RESULT_OK;
+}
+
+class NppClosure {
+ public:
+  NppClosure(uint32_t number, NPModule* module) {
+    number_ = number;
+    module_ = module;
+  }
+  uint32_t number() const { return number_; }
+  NPModule* module() const { return module_; }
+ private:
+  uint32_t number_;
+  NPModule* module_;
+};
+
+// The thunk enqueued on the browser's foreground thread.
+static void doNppAsyncCall(void* arg) {
+  NppClosure* closure = reinterpret_cast<NppClosure*>(arg);
+  if (NULL != closure) {
+    NaClSrpcInvokeByName(closure->module()->channel(),
+                         "NPP_DoAsyncCall",
+                         closure->number());
+  }
+  delete closure;
 }
 
 // inputs:
