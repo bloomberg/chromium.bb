@@ -33,7 +33,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "webkit/glue/plugins/plugin_list.h"
 
 static const char kUploadURL[] =
     "https://clients2.google.com/cr/report";
@@ -207,11 +206,6 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   //   BOUNDARY \r\n (7, 8)
   //
   //   zero or more:
-  //   Content-Disposition: form-data; name="plugin-chunk-1" \r\n \r\n (0..5)
-  //   abcdef \r\n (6, 7)
-  //   BOUNDARY \r\n (8, 9)
-  //
-  //   zero or more:
   //   Content-Disposition: form-data; name="url-chunk-1" \r\n \r\n (0..5)
   //   abcdef \r\n (6, 7)
   //   BOUNDARY \r\n (8, 9)
@@ -236,7 +230,6 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   static const char dump_msg[] = "upload_file_minidump\"; filename=\"dump\"";
   static const char content_type_msg[] =
       "Content-Type: application/octet-stream";
-  static const char plugin_chunk_msg[] = "plugin-chunk-";
   static const char url_chunk_msg[] = "url-chunk-";
   static const char process_time_msg[] = "ptime";
   static const char process_type_msg[] = "ptype";
@@ -394,50 +387,6 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
     iov[8].iov_len = sizeof(rn);
 
     sys_writev(fd, iov, 9);
-  }
-
-  // For browser process.
-  if (info.plugin_list_length) {
-    unsigned i = 0, done = 0, plugin_length = info.plugin_list_length;
-    static const unsigned kMaxPluginChunkSize = 64;
-    static const unsigned kMaxPluginLength = 8 * kMaxPluginChunkSize;
-    if (plugin_length > kMaxPluginLength)
-      plugin_length = kMaxPluginLength;
-
-    while (plugin_length) {
-      char num[16];
-      const unsigned num_len = my_int_len(++i);
-      my_itos(num, i, num_len);
-
-      iov[0].iov_base = const_cast<char*>(form_data_msg);
-      iov[0].iov_len = sizeof(form_data_msg) - 1;
-      iov[1].iov_base = const_cast<char*>(plugin_chunk_msg);
-      iov[1].iov_len = sizeof(plugin_chunk_msg) - 1;
-      iov[2].iov_base = num;
-      iov[2].iov_len = num_len;
-      iov[3].iov_base = const_cast<char*>(quote_msg);
-      iov[3].iov_len = sizeof(quote_msg);
-      iov[4].iov_base = const_cast<char*>(rn);
-      iov[4].iov_len = sizeof(rn);
-      iov[5].iov_base = const_cast<char*>(rn);
-      iov[5].iov_len = sizeof(rn);
-
-      const unsigned len = plugin_length > kMaxPluginChunkSize ?
-                           kMaxPluginChunkSize : plugin_length;
-      iov[6].iov_base = const_cast<char*>(info.plugin_list + done);
-      iov[6].iov_len = len;
-      iov[7].iov_base = const_cast<char*>(rn);
-      iov[7].iov_len = sizeof(rn);
-      iov[8].iov_base = mime_boundary;
-      iov[8].iov_len = sizeof(mime_boundary) - 1;
-      iov[9].iov_base = const_cast<char*>(rn);
-      iov[9].iov_len = sizeof(rn);
-
-      sys_writev(fd, iov, 10);
-
-      done += len;
-      plugin_length -= len;
-    }
   }
 
   // For rendererers and plugins.
@@ -647,7 +596,6 @@ static bool CrashDone(const char* dump_path,
   memcpy(path + dump_path_len + 1 + minidump_id_len, ".dmp", 4);
   path[dump_path_len + 1 + minidump_id_len + 4] = 0;
 
-  std::string* plugin_list = NPAPI::PluginList::GetLoadedPlugins();
   BreakpadInfo info;
   info.filename = path;
   info.process_type = "browser";
@@ -658,8 +606,6 @@ static bool CrashDone(const char* dump_path,
   info.guid_length = google_update::posix_guid.length();
   info.distro = base::linux_distro.data();
   info.distro_length = base::linux_distro.length();
-  info.plugin_list = plugin_list->data();
-  info.plugin_list_length = plugin_list->length();
   info.upload = upload;
   HandleCrashDump(info);
 

@@ -24,8 +24,6 @@ struct BreakpadInfo {
   unsigned guid_length;
   const char* distro;
   unsigned distro_length;
-  const char* plugin_list;
-  unsigned plugin_list_length;
   bool upload;
 };
 

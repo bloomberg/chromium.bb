@@ -15,13 +15,6 @@
 #include "webkit/glue/webkit_glue.h"
 #include "googleurl/src/gurl.h"
 
-#if defined(USE_LINUX_BREAKPAD)
-namespace {
-// Comma-separated list of loaded plugin filenames.
-std::string loaded_plugin_list;
-}  // anonymous namespace
-#endif
-
 namespace NPAPI {
 
 base::LazyInstance<PluginList> g_singleton(base::LINKER_INITIALIZED);
@@ -81,14 +74,7 @@ bool PluginList::ReadPluginInfo(const FilePath &filename,
   // Not an internal plugin.
   *entry_points = NULL;
 
-  bool ret = PluginLib::ReadWebPluginInfo(filename, info);
-
-#if defined(USE_LINUX_BREAKPAD)
-  if (ret)
-    loaded_plugin_list.append(filename.BaseName().value() + ",");
-#endif
-
-  return ret;
+  return PluginLib::ReadWebPluginInfo(filename, info);
 }
 
 bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
@@ -174,10 +160,6 @@ void PluginList::LoadPlugins(bool refresh) {
     extra_plugin_dirs = extra_plugin_dirs_;
     internal_plugins = internal_plugins_;
   }
-
-#if defined(USE_LINUX_BREAKPAD)
-  loaded_plugin_list.clear();
-#endif
 
   base::TimeTicks start_time = base::TimeTicks::Now();
 
@@ -365,14 +347,5 @@ bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,
 void PluginList::Shutdown() {
   // TODO
 }
-
-#if defined(USE_LINUX_BREAKPAD)
-// static
-// WARNING: This is called when we are in the middle of a browser crash.
-// This function may not call into libc nor allocate memory.
-std::string* PluginList::GetLoadedPlugins() {
-  return &loaded_plugin_list;
-}
-#endif
 
 }  // namespace NPAPI

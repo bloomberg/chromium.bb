@@ -233,8 +233,6 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   info.guid_length = strlen(guid);
   info.distro = distro;
   info.distro_length = strlen(distro);
-  info.plugin_list = "";
-  info.plugin_list_length = 0;
   info.upload = upload;
   HandleCrashDump(info);
 }

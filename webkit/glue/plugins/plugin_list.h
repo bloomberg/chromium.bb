@@ -130,11 +130,6 @@ class PluginList {
   void LoadPlugin(const FilePath& filename,
                   std::vector<WebPluginInfo>* plugins);
 
-#if defined(USE_LINUX_BREAKPAD)
-  // Get a comma separated string with the list of successfully loaded plugins.
-  static std::string* GetLoadedPlugins();
-#endif
-
  private:
   // Constructors are private for singletons
   PluginList();
