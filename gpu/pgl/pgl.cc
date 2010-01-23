@@ -152,7 +152,7 @@ PGLBoolean pglDestroyContext(PGLContext pgl_context) {
   if (!pgl_context)
     return false;
 
-  delete static_cast<PGLContextImpl*>(pgl_context);
+  delete pgl_context;
   return true;
 }
 
