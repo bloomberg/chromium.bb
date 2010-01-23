@@ -794,6 +794,7 @@ BUG13907 SKIP : media/video-zoom-controls.html = FAIL
 
 // The video appears as a white box on Windows.
 BUG13907 SKIP WIN : media/video-zoom.html = FAIL
+BUG13907 MAC DEBUG : media/video-zoom.html = IMAGE+TEXT PASS
 
 // Video has a green background, probably due to Mac repaint debugging code.
 BUG13907 BUG25376 MAC DEBUG : media/video-empty-source.html = FAIL
@@ -1992,6 +1993,7 @@ BUG23475 MAC : svg/custom/junk-data.svg = IMAGE
 // 116/136 of the repaint tests fail due to invalidation that doesn't match; further triage necessary
 BUG23473 MAC : fast/repaint = IMAGE
 BUG23473 MAC : fast/repaint/block-no-inflow-children.html = PASS
+BUG23473 MAC : fast/repaint/block-selection-gap-stale-cache-2.html = PASS
 BUG23473 MAC : fast/repaint/block-selection-gap-stale-cache.html = PASS
 BUG23473 MAC : fast/repaint/flexible-box-overflow.html = PASS
 BUG23473 MAC : fast/repaint/float-new-in-block.html = PASS
@@ -2003,8 +2005,10 @@ BUG23473 MAC : fast/repaint/layer-outline.html = PASS
 BUG23473 MAC : fast/repaint/list-marker.html = PASS
 BUG23473 MAC : fast/repaint/table-cell-vertical-overflow.html = PASS
 BUG23473 MAC : fast/repaint/text-shadow.html = PASS
+BUG23473 MAC : fast/repaint/fixed.html = PASS
 BUG23473 MAC : fast/repaint/flexible-box-overflow-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/layer-outline-horizontal.html = PASS
+BUG23473 MAC : fast/repaint/moving-shadow-on-path.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-strict-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-strict-vertical.html = PASS
@@ -3050,20 +3054,3 @@ BUG32864 WIN LINUX MAC : plugins/mouse-events-fixedpos.html = TEXT
 // WebKit roll 53655 -> 53704
 BUG32898 WIN LINUX MAC : fast/loader/history-forward-in-head.html = TEXT
 BUG32900 WIN LINUX : http/tests/misc/slow-loading-mask.html = IMAGE+TEXT
-
-// WebKit roll 53704 -> 53747
-BUG32929 WIN LINUX MAC : fast/dom/Window/window-property-descriptors.html = TEXT
-BUG32949 WIN LINUX MAC : fast/dom/Window/invalid-protocol.html = TEXT
-BUG32950 WIN LINUX MAC : fast/dom/Window/window-properties-geolocation.html = TEXT
-BUG32951 WIN LINUX MAC : fast/dom/prototype-inheritance.html = TEXT
-BUG32953 WIN LINUX MAC : svg/custom/relative-sized-shadow-tree-content-with-symbol.xhtml = IMAGE+TEXT
-
-// Storage issues jorlow is going to handle.
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/iframe-events.html = TEXT
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/index-get-and-set.html = TEXT
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/onstorage-attribute-markup.html = TEXT
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/onstorage-attribute-setattribute.html = TEXT
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/onstorage-attribute-setwindow.html = TEXT
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/simple-events.html = TEXT
-BUGJORLOW WIN LINUX MAC : storage/domstorage/window-attributes-exist.html = TEXT
-
