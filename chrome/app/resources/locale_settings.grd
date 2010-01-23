@@ -508,7 +508,7 @@
       </message>
 
       <!-- The URL for Adobe Flash storage settings -->
-      <message name="IDS_FLASH_STORAGE_URL" desc="URL for opening Adobe Flash storage settings - please replace en in the original URL with code matching the target language and make sure url does actually exist.">
+      <message name="IDS_FLASH_STORAGE_URL">
         http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager07.html
       </message>
 
