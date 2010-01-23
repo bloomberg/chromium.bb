@@ -115,7 +115,8 @@ class BlacklistPerfTest : public testing::Test {
 
     // Generate random benchmark blacklist.
     Blacklist::Provider* provider = new Blacklist::Provider("test",
-                                                            "http://test.com");
+                                                            "http://test.com",
+                                                            L"test");
     blacklist_.AddProvider(provider);
 
     // Create host.tld/ patterns.

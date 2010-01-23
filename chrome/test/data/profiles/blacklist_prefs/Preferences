@@ -1,0 +1,41 @@
+{
+   "profile": {
+      "privacy_filter_rules": {
+         "provider1": {
+            "name": "Sample",
+            "url": "http://www.example.com",
+            "entries": [
+               {
+                 "pattern": "@poor-security-site.com",
+                 "attributes": 16,
+                 "exception": false
+               }, {
+                 "pattern": "@.ad-serving-place.com",
+                 "attributes": 2,
+                 "exception": false
+               }, {
+                 "pattern": "www.site.com/anonymous/folder/@",
+                 "attributes": 12,
+                 "exception": false
+               }, {
+                 "pattern": "www.site.com/bad/url",
+                 "attributes": 1,
+                 "exception": false
+               }, {
+                 "pattern": "@/script?@",
+                 "attributes": 1,
+                 "exception": false
+               }, {
+                 "pattern": "@?badparam@",
+                 "attributes": 1,
+                 "exception": false
+               }, {
+                 "pattern": "www.site.com/bad/url/good",
+                 "attributes": 1,
+                 "exception": true
+               }
+            ]
+         }
+      }
+   }
+}

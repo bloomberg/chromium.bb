@@ -1,6 +1,0 @@
-[Chromium::PrivacyBlacklist]
-|Name: SessionCookies
-|URL: http://www.google.com
-
-# Block all Flash media everywhere.
-@ =>  kDontPersistCookies

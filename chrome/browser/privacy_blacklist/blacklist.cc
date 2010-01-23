@@ -11,11 +11,11 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/privacy_blacklist/blacklist_store.h"
+#include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
 #include "net/http/http_util.h"
-
-#define STRINGIZE(s) #s
 
 namespace {
 
@@ -32,20 +32,6 @@ const unsigned int Blacklist::kBlockRequest = kBlockAll | kBlockUnsecure;
 const unsigned int Blacklist::kModifySentHeaders =
     kBlockCookies | kDontSendUserAgent | kDontSendReferrer;
 const unsigned int Blacklist::kModifyReceivedHeaders = kBlockCookies;
-
-unsigned int Blacklist::String2Attribute(const std::string& s) {
-  if (s == STRINGIZE(kBlockAll))
-    return kBlockAll;
-  else if (s == STRINGIZE(kBlockCookies))
-    return kBlockCookies;
-  else if (s == STRINGIZE(kDontSendReferrer))
-    return kDontSendReferrer;
-  else if (s == STRINGIZE(kDontSendUserAgent))
-    return kDontSendUserAgent;
-  else if (s == STRINGIZE(kBlockUnsecure))
-    return kBlockUnsecure;
-  return 0;
-}
 
 // static
 bool Blacklist::Matches(const std::string& pattern, const std::string& url) {
@@ -107,10 +93,6 @@ void Blacklist::Entry::AddAttributes(unsigned int attributes) {
   attributes_ |= attributes;
 }
 
-void Blacklist::Entry::Merge(const Entry& entry) {
-  attributes_ |= entry.attributes_;
-}
-
 bool Blacklist::Match::IsBlocked(const GURL& url) const {
   return (attributes() & kBlockAll) ||
     ((attributes() & kBlockUnsecure) && !url.SchemeIsSecure());
@@ -128,7 +110,8 @@ void Blacklist::Match::AddEntry(const Entry* entry) {
   }
 }
 
-Blacklist::Blacklist() {
+Blacklist::Blacklist(PrefService* prefs) : prefs_(prefs) {
+  LoadPreferences();
 }
 
 Blacklist::~Blacklist() {
@@ -167,6 +150,59 @@ Blacklist::Match* Blacklist::FindMatch(const GURL& url) const {
   return match;
 }
 
+bool Blacklist::LoadEntryPreference(const ListValue& pref,
+                                    const Provider* provider) {
+  EntryList entries;
+  for (ListValue::const_iterator i = pref.begin(); i != pref.end(); ++i) {
+    if (!(*i)->IsType(Value::TYPE_DICTIONARY))
+      return false;
+    const DictionaryValue* entry_pref = static_cast<DictionaryValue*>(*i);
+    std::string pattern;
+    int attributes;
+    bool is_exception;
+    if (!(entry_pref->GetString(L"pattern", &pattern) &&
+          entry_pref->GetInteger(L"attributes", &attributes) &&
+          entry_pref->GetBoolean(L"exception", &is_exception)))
+      return false;
+    Entry* entry = new Entry(pattern, provider, is_exception);
+    entry->AddAttributes(static_cast<unsigned int>(attributes));
+    entries.push_back(linked_ptr<Entry>(entry));
+  }
+  blacklist_.insert(blacklist_.end(), entries.begin(), entries.end());
+  return true;
+}
+
+bool Blacklist::LoadProviderPreference(const DictionaryValue& pref,
+                                       const std::wstring& path) {
+  std::string name, url;
+  ListValue* entries;
+  if (!(pref.GetString(L"name", &name) && pref.GetString(L"url", &url) &&
+        pref.GetList(L"entries", &entries)))
+    return false;
+  linked_ptr<Provider> provider(new Provider(name, url, path));
+  if (LoadEntryPreference(*entries, provider.get()))
+    providers_.push_back(provider);
+    return true;
+  return false;
+}
+
+bool Blacklist::LoadPreferences() {
+  DCHECK(prefs_);
+  const DictionaryValue* blacklist_rules = prefs_->GetDictionary(
+      prefs::kPrivacyFilterRules);
+  if (!blacklist_rules)
+    return false;
+  bool result = true;
+  for (DictionaryValue::key_iterator key = blacklist_rules->begin_keys();
+       key != blacklist_rules->end_keys(); ++key) {
+    DictionaryValue* provider;
+    if (!(blacklist_rules->GetDictionaryWithoutPathExpansion(*key, &provider) &&
+         LoadProviderPreference(*provider, *key)))
+      result = false;
+  }
+  return result;
+}
+
 // static
 std::string Blacklist::GetURLAsLookupString(const GURL& url) {
   std::string url_spec = url.host() + url.path();
@@ -176,6 +212,12 @@ std::string Blacklist::GetURLAsLookupString(const GURL& url) {
   return url_spec;
 }
 
+// static
+void Blacklist::RegisterUserPrefs(PrefService* user_prefs) {
+  user_prefs->RegisterDictionaryPref(prefs::kPrivacyFilterRules);
+}
+
+// static
 std::string Blacklist::StripCookies(const std::string& header) {
   return net::HttpUtil::StripHeaders(header, cookie_headers, 2);
 }

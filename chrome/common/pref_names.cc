@@ -305,6 +305,9 @@ const wchar_t kAutoFillInfoBarShown[] = L"autofill.infobar_shown";
 // Boolean that is true if autofill is enabled and allowed to save profile data.
 const wchar_t kAutoFillEnabled[] = L"autofill.enabled";
 
+// Dictionary that maps providers to lists of filter rules.
+const wchar_t kPrivacyFilterRules[] = L"profile.privacy_filter_rules";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

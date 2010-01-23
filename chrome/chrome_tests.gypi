@@ -751,7 +751,6 @@
         'browser/password_manager/password_store_mac_unittest.cc',
         'browser/printing/print_job_unittest.cc',
         'browser/privacy_blacklist/blacklist_interceptor_unittest.cc',
-        'browser/privacy_blacklist/blacklist_io_unittest.cc',
         'browser/privacy_blacklist/blacklist_unittest.cc',
         'browser/process_info_snapshot_mac_unittest.cc',
         'browser/profile_manager_unittest.cc',

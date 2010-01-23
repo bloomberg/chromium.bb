@@ -13,7 +13,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 
+class DictionaryValue;
 class FilePath;
+class ListValue;
+class PrefService;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -45,24 +48,30 @@ class Blacklist {
   static const unsigned int kModifySentHeaders;
   static const unsigned int kModifyReceivedHeaders;
 
-  // Converts a stringized filter attribute (see above) back to its integer
-  // value. Returns 0 on error.
-  static unsigned int String2Attribute(const std::string&);
-
   // Blacklist entries come from a provider, defined by a name and source URL.
   class Provider {
    public:
     Provider() {}
-    Provider(const char* name, const char* url) : name_(name), url_(url) {}
+    Provider(const std::string& name, const std::string& url,
+             const std::wstring& pref_path)
+        : name_(name),
+          pref_path_(pref_path),
+          url_(url) {}
 
     const std::string& name() const { return name_; }
     void set_name(const std::string& name) { name_ = name; }
+
+    const std::wstring& pref_path() const { return pref_path_; }
+    void set_pref_path(const std::wstring& pref_path) {
+      pref_path_ = pref_path;
+    }
 
     const std::string& url() const { return url_; }
     void set_url(const std::string& url) { url_ = url; }
 
    private:
     std::string name_;
+    std::wstring pref_path_;
     std::string url_;
   };
 
@@ -93,11 +102,6 @@ class Blacklist {
     void AddAttributes(unsigned int attributes);
 
    private:
-    friend class BlacklistIO;
-
-    // Merge the attributes and types of the given entry with this one.
-    void Merge(const Entry& entry);
-
     unsigned int attributes_;
 
     // True if this entry is an exception to the blacklist.
@@ -142,8 +146,14 @@ class Blacklist {
     friend class Blacklist;  // Only blacklist constructs and sets these.
   };
 
+  // Constructs a blacklist and populates it from the preferences associated
+  // with this profile.
+  explicit Blacklist(PrefService* prefs);
+
+#ifdef UNIT_TEST
   // Constructs an empty blacklist.
-  Blacklist();
+  Blacklist() : prefs_(NULL) {}
+#endif
 
   // Destructor.
   ~Blacklist();
@@ -175,6 +185,8 @@ class Blacklist {
   // caller.
   Match* FindMatch(const GURL&) const;
 
+  static void RegisterUserPrefs(PrefService* user_prefs);
+
   // Helper to remove cookies from a header.
   static std::string StripCookies(const std::string&);
 
@@ -182,12 +194,27 @@ class Blacklist {
   // Converts a GURL into the string to match against.
   static std::string GetURLAsLookupString(const GURL& url);
 
+  // Loads the list of entries for a given provider. Returns true on success.
+  bool LoadEntryPreference(const ListValue& pref, const Provider* provider);
+
+  // Loads patterns from preferences. Returns true on success.
+  bool LoadPreferences();
+
+  // Loads a provider and subsequently all of its entries. Returns true on
+  // success. If an error occurs reading a provider or one of its entries,
+  // the complete provider is dropped.
+  bool LoadProviderPreference(const DictionaryValue& pref,
+                              const std::wstring& path);
+
   // Matches a pattern to a core URL which is host/path with all the other
   // optional parts (scheme, user, password, port) stripped away.
   static bool Matches(const std::string& pattern, const std::string& url);
 
   EntryList blacklist_;
   ProviderList providers_;
+
+  // Preferences where blacklist entries are stored.
+  PrefService* prefs_;
 
   FRIEND_TEST(BlacklistTest, Generic);
   FRIEND_TEST(BlacklistTest, PatternMatch);

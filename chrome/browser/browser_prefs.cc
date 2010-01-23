@@ -23,6 +23,7 @@
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -93,6 +94,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   BlockedPopupContainer::RegisterUserPrefs(user_prefs);
   HostZoomMap::RegisterUserPrefs(user_prefs);
   DevToolsManager::RegisterUserPrefs(user_prefs);
+  Blacklist::RegisterUserPrefs(user_prefs);
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port.
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
 #endif

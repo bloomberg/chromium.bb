@@ -1,6 +1,0 @@
-[Chromium::PrivacyBlacklist]
-|Name: Host
-|URL: http://www.example.com
-
-# Block entire host.
-host/@ => kBlockAll

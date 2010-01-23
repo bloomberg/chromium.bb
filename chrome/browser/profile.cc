@@ -573,8 +573,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       media_request_context_(NULL),
       extensions_request_context_(NULL),
       host_zoom_map_(NULL),
-      privacy_blacklist_(NULL),
-      privacy_blacklist_created_(false),
       history_service_created_(false),
       favicon_service_created_(false),
       created_web_data_service_(false),
@@ -971,13 +969,10 @@ HostZoomMap* ProfileImpl::GetHostZoomMap() {
 
 Blacklist* ProfileImpl::GetPrivacyBlacklist() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePrivacyBlacklists)) {
+          switches::kEnablePrivacyBlacklists))
     return NULL;
-  }
-  if (!privacy_blacklist_created_) {
-    privacy_blacklist_created_ = true;
-    privacy_blacklist_.reset(new Blacklist());
-  }
+  if (!privacy_blacklist_.get())
+    privacy_blacklist_.reset(new Blacklist(GetPrefs()));
   return privacy_blacklist_.get();
 }
 

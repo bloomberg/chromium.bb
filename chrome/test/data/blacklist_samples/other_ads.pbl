@@ -1,6 +1,0 @@
-[Chromium::PrivacyBlacklist]
-|Name: OtherAds
-|URL: http://www.ads.tv
-
-# Block Ads by path
-@/other_ads/@ => kBlockAll

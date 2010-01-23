@@ -1,5 +1,0 @@
-[Chromium::PrivacyBlacklist]
-|Name: BlockFlash
-|URL: http://www.google.com
-
-@ => kBlockByType(application/x-shockwave-flash)

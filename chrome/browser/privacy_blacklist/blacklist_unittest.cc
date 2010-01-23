@@ -8,19 +8,30 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "chrome/browser/privacy_blacklist/blacklist_io.h"
+#include "chrome/browser/browser_prefs.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(BlacklistTest, Generic) {
-  // Get path relative to test data dir.
-  FilePath input;
-  PathService::Get(chrome::DIR_TEST_DATA, &input);
-  input = input.AppendASCII("blacklist_small.pbr");
+class BlacklistTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    FilePath source_path;
+    PathService::Get(chrome::DIR_TEST_DATA, &source_path);
+    source_path = source_path.AppendASCII("profiles")
+        .AppendASCII("blacklist_prefs").AppendASCII("Preferences");
 
-  Blacklist blacklist;
-  ASSERT_TRUE(BlacklistIO::ReadBinary(&blacklist, input));
+    prefs_.reset(new PrefService(source_path));
+    Profile::RegisterUserPrefs(prefs_.get());
+    browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
+  }
 
+  scoped_ptr<PrefService> prefs_;
+};
+
+TEST_F(BlacklistTest, Generic) {
+  Blacklist blacklist(prefs_.get());
   Blacklist::EntryList entries(blacklist.entries_begin(),
                                blacklist.entries_end());
 
@@ -67,7 +78,7 @@ TEST(BlacklistTest, Generic) {
 
   ASSERT_EQ(1U, providers.size());
   EXPECT_EQ("Sample", providers[0]->name());
-  EXPECT_EQ("http://www.google.com", providers[0]->url());
+  EXPECT_EQ("http://www.example.com", providers[0]->url());
 
   // No match for chrome, about or empty URLs.
   EXPECT_FALSE(blacklist.FindMatch(GURL()));
@@ -175,7 +186,7 @@ TEST(BlacklistTest, Generic) {
               GURL("http://example.com/script?param=1")));
 }
 
-TEST(BlacklistTest, PatternMatch) {
+TEST_F(BlacklistTest, PatternMatch) {
   // @ matches all but empty strings.
   EXPECT_TRUE(Blacklist::Matches("@", "foo.com"));
   EXPECT_TRUE(Blacklist::Matches("@", "path"));
