@@ -40,8 +40,11 @@
 #include <cstring>
 #include <string>
 
+#include "common/dwarf/dwarf2diehandler.h"
 #include "common/linux/dump_stabs.h"
 #include "common/linux/dump_symbols.h"
+#include "common/linux/dwarf_cu_to_module.h"
+#include "common/linux/dwarf_line_to_module.h"
 #include "common/linux/file_id.h"
 #include "common/linux/module.h"
 #include "common/linux/stabs_reader.h"
@@ -49,11 +52,10 @@
 // This namespace contains helper functions.
 namespace {
 
-using google_breakpad::Module;
 using google_breakpad::DumpStabsHandler;
-
-// Stab section name.
-static const char *kStabName = ".stab";
+using google_breakpad::DwarfCUToModule;
+using google_breakpad::DwarfLineToModule;
+using google_breakpad::Module;
 
 // Fix offset into virtual address by adding the mapped base into offsets.
 // Make life easier when want to find something by offset.
@@ -87,7 +89,7 @@ static bool IsValidElf(const ElfW(Ehdr) *elf_header) {
 
 static const ElfW(Shdr) *FindSectionByName(const char *name,
                                            const ElfW(Shdr) *sections,
-                                           const ElfW(Shdr) *strtab,
+                                           const ElfW(Shdr) *section_names,
                                            int nsection) {
   assert(name != NULL);
   assert(sections != NULL);
@@ -99,19 +101,16 @@ static const ElfW(Shdr) *FindSectionByName(const char *name,
 
   for (int i = 0; i < nsection; ++i) {
     const char *section_name =
-      reinterpret_cast<char*>(strtab->sh_offset + sections[i].sh_name);
+      reinterpret_cast<char*>(section_names->sh_offset + sections[i].sh_name);
     if (!strncmp(name, section_name, name_len))
       return sections + i;
   }
   return NULL;
 }
 
-static bool LoadSymbols(const ElfW(Shdr) *stab_section,
-                        const ElfW(Shdr) *stabstr_section,
-                        Module *module) {
-  if (stab_section == NULL || stabstr_section == NULL)
-    return false;
-
+static bool LoadStabs(const ElfW(Shdr) *stab_section,
+                      const ElfW(Shdr) *stabstr_section,
+                      Module *module) {
   // A callback object to handle data from the STABS reader.
   DumpStabsHandler handler(module);
   // Find the addresses of the STABS data, and create a STABS reader object.
@@ -121,13 +120,91 @@ static bool LoadSymbols(const ElfW(Shdr) *stab_section,
                                       stabstr, stabstr_section->sh_size,
                                       &handler);
   // Read the STABS data, and do post-processing.
-  if (! reader.Process())
+  if (!reader.Process())
     return false;
   handler.Finalize();
   return true;
 }
 
-static bool LoadSymbols(ElfW(Ehdr) *elf_header, Module *module) {
+// A line-to-module loader that accepts line number info parsed by
+// dwarf2reader::LineInfo and populates a Module and a line vector
+// with the results.
+class DumperLineToModule: public DwarfCUToModule::LineToModuleFunctor {
+ public:
+  // Create a line-to-module converter using BYTE_READER.
+  DumperLineToModule(dwarf2reader::ByteReader *byte_reader)
+      : byte_reader_(byte_reader) { }
+  void operator()(const char *program, uint64 length,
+                  Module *module, vector<Module::Line> *lines) {
+    DwarfLineToModule handler(module, lines);
+    dwarf2reader::LineInfo parser(program, length, byte_reader_, &handler);
+    parser.Start();
+  }
+ private:
+  dwarf2reader::ByteReader *byte_reader_;
+};
+
+static bool LoadDwarf(const string &dwarf_filename,
+                      const ElfW(Ehdr) *elf_header,
+                      Module *module) {
+  // Figure out what endianness this file is.
+  dwarf2reader::Endianness endianness;
+  if (elf_header->e_ident[EI_DATA] == ELFDATA2LSB)
+    endianness = dwarf2reader::ENDIANNESS_LITTLE;
+  else if (elf_header->e_ident[EI_DATA] == ELFDATA2MSB)
+    endianness = dwarf2reader::ENDIANNESS_BIG;
+  else {
+    fprintf(stderr, "bad data encoding in ELF header: %d\n",
+            elf_header->e_ident[EI_DATA]);
+    return false;
+  }
+  dwarf2reader::ByteReader byte_reader(endianness);
+
+  // Construct a context for this file.
+  DwarfCUToModule::FileContext file_context(dwarf_filename, module);
+
+  // Build a map of the ELF file's sections.
+  const ElfW(Shdr) *sections
+      = reinterpret_cast<ElfW(Shdr) *>(elf_header->e_shoff);
+  int num_sections = elf_header->e_shnum;
+  const ElfW(Shdr) *section_names = sections + elf_header->e_shstrndx;
+  for (int i = 0; i < num_sections; i++) {
+    const ElfW(Shdr) *section = &sections[i];
+    string name = reinterpret_cast<const char *>(section_names->sh_offset
+                                                 + section->sh_name);
+    const char *contents = reinterpret_cast<const char *>(section->sh_offset);
+    uint64 length = section->sh_size;
+    file_context.section_map[name] = std::make_pair(contents, length);
+  }
+
+  // Parse all the compilation units in the .debug_info section.
+  DumperLineToModule line_to_module(&byte_reader);
+  std::pair<const char *, uint64> debug_info_section
+      = file_context.section_map[".debug_info"];
+  // We should never have been called if the file doesn't have a
+  // .debug_info section.
+  assert(debug_info_section.first);
+  uint64 debug_info_length = debug_info_section.second;
+  for (uint64 offset = 0; offset < debug_info_length;) {
+    // Make a handler for the root DIE that populates MODULE with the
+    // data we find.
+    DwarfCUToModule::WarningReporter reporter(dwarf_filename, offset);
+    DwarfCUToModule root_handler(&file_context, &line_to_module, &reporter);
+    // Make a Dwarf2Handler that drives our DIEHandler.
+    dwarf2reader::DIEDispatcher die_dispatcher(&root_handler);
+    // Make a DWARF parser for the compilation unit at OFFSET.
+    dwarf2reader::CompilationUnit reader(file_context.section_map,
+                                         offset,
+                                         &byte_reader,
+                                         &die_dispatcher);
+    // Process the entire compilation unit; get the offset of the next.
+    offset += reader.Start();
+  }
+  return true;
+}
+
+static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
+                        Module *module) {
   // Translate all offsets in section headers into address.
   FixAddress(elf_header);
   ElfW(Addr) loading_addr = GetLoadingAddress(
@@ -136,18 +213,36 @@ static bool LoadSymbols(ElfW(Ehdr) *elf_header, Module *module) {
   module->SetLoadAddress(loading_addr);
 
   const ElfW(Shdr) *sections =
-    reinterpret_cast<ElfW(Shdr) *>(elf_header->e_shoff);
-  const ElfW(Shdr) *strtab = sections + elf_header->e_shstrndx;
-  const ElfW(Shdr) *stab_section =
-    FindSectionByName(kStabName, sections, strtab, elf_header->e_shnum);
-  if (stab_section == NULL) {
-    fprintf(stderr, "Stab section not found.\n");
+      reinterpret_cast<ElfW(Shdr) *>(elf_header->e_shoff);
+  const ElfW(Shdr) *section_names = sections + elf_header->e_shstrndx;
+  bool found_debug_info_section = false;
+  const ElfW(Shdr) *stab_section
+      = FindSectionByName(".stab", sections, section_names,
+                          elf_header->e_shnum);
+  if (stab_section) {
+    const ElfW(Shdr) *stabstr_section = stab_section->sh_link + sections;
+    if (stabstr_section) {
+      found_debug_info_section = true;
+      if (!LoadStabs(stab_section, stabstr_section, module))
+        fprintf(stderr, "\".stab\" section found, but failed to load STABS"
+                " debugging information\n");
+    }
+  }
+  const ElfW(Shdr) *dwarf_section
+      = FindSectionByName(".debug_info", sections, section_names,
+                          elf_header->e_shnum);
+  if (dwarf_section) {
+    found_debug_info_section = true;
+    if (!LoadDwarf(obj_file, elf_header, module))
+      fprintf(stderr, "\".debug_info\" section found, but failed to load "
+              "DWARF debugging information\n");
+  }
+  if (!found_debug_info_section) {
+    fprintf(stderr, "file contains no debugging information"
+            " (no \".stab\" or \".debug_info\" sections)\n");
     return false;
   }
-  const ElfW(Shdr) *stabstr_section = stab_section->sh_link + sections;
-
-  // Load symbols.
-  return LoadSymbols(stab_section, stabstr_section, module);
+  return true;
 }
 
 //
@@ -268,11 +363,11 @@ bool DumpSymbols::WriteSymbolFile(const std::string &obj_file,
 
   unsigned char identifier[16];
   google_breakpad::FileID file_id(obj_file.c_str());
-  if (! file_id.ElfFileIdentifier(identifier))
+  if (!file_id.ElfFileIdentifier(identifier))
     return false;
 
   const char *architecture = ElfArchitecture(elf_header);
-  if (! architecture)
+  if (!architecture)
     return false;
 
   std::string name = BaseFileName(obj_file);
@@ -280,7 +375,7 @@ bool DumpSymbols::WriteSymbolFile(const std::string &obj_file,
   std::string id = FormatIdentifier(identifier);
 
   Module module(name, os, architecture, id);
-  if (!LoadSymbols(elf_header, &module))
+  if (!LoadSymbols(obj_file, elf_header, &module))
     return false;
   if (!module.Write(sym_file))
     return false;

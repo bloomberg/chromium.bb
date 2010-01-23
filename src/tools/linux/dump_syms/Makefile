@@ -74,11 +74,16 @@ COVERAGE_SOURCES =
 ### debugging information in Linux executables.
 all:: dump_syms
 dump_syms:					\
+	bytereader.o				\
+	dwarf_cu_to_module.o			\
+	dwarf_line_to_module.o			\
 	dump_stabs.o				\
-	dump_syms.o				\
 	dump_symbols.o				\
+	dump_syms.o				\
 	dwarf2diehandler.o			\
+	dwarf2reader.o				\
 	file_id.o				\
+	language.o				\
 	module.o				\
 	stabs_reader.o				\
 	$(empty)
@@ -89,18 +94,25 @@ clean::
 dump_syms.o: dump_syms.cc
 
 VPATH += $(SRC)/common/linux
+dwarf_cu_to_module.o: dwarf_cu_to_module.cc
+COVERAGE_SOURCES += dwarf_cu_to_module.cc
+dwarf_line_to_module.o: dwarf_line_to_module.cc
+COVERAGE_SOURCES += dwarf_line_to_module.cc
 dump_stabs.o: dump_stabs.cc
 COVERAGE_SOURCES += dump_stabs.cc
 dump_symbols.o: dump_symbols.cc
 file_id.o: file_id.cc
+language.o: language.cc
 module.o: module.cc
 COVERAGE_SOURCES += module.cc
 stabs_reader.o: stabs_reader.cc
 COVERAGE_SOURCES += stabs_reader.cc
 
 VPATH += $(SRC)/common/dwarf
+bytereader.o: bytereader.cc
 dwarf2diehandler.o: dwarf2diehandler.cc
 COVERAGE_SOURCES += dwarf2diehandler.cc
+dwarf2reader.o: dwarf2reader.cc
 
 
 
@@ -200,6 +212,48 @@ dwarf2diehandler_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
 						  $(GMOCK_CPPFLAGS)
 clean::
 	rm -f dwarf2diehandler_unittest
+
+
+
+### Unit tests for google_breakpad::DwarfLineToModule.
+check: check-dwarf_line_to_module_unittest
+check-dwarf_line_to_module_unittest: dwarf_line_to_module_unittest
+dwarf_line_to_module_unittest:			\
+	gtest-all.o				\
+	gtest_main.o				\
+	module.o				\
+	dwarf_line_to_module.o			\
+	$(empty)
+CPP_EXECUTABLES += dwarf_line_to_module_unittest
+dwarf_line_to_module_unittest.o: dwarf_line_to_module_unittest.cc
+dwarf_line_to_module_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
+						      $(GMOCK_CPPFLAGS)
+clean::
+	rm -f dwarf_line_to_module_unittest
+
+
+
+### Unit tests for google_breakpad::DwarfCUToModule.
+check: check-dwarf_cu_to_module_unittest
+check-dwarf_cu_to_module_unittest: dwarf_cu_to_module_unittest
+dwarf_cu_to_module_unittest:      		\
+	bytereader.o				\
+	dwarf2reader.o				\
+	dwarf_cu_to_module.o			\
+	dwarf_line_to_module.o			\
+	gmock-all.o				\
+	gtest-all.o				\
+	gtest_main.o				\
+	language.o				\
+	module.o				\
+	$(empty)
+CPP_EXECUTABLES += dwarf_cu_to_module_unittest
+dwarf_cu_to_module_unittest.o: dwarf_cu_to_module_unittest.cc
+dwarf_cu_to_module_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
+						    $(GMOCK_CPPFLAGS)
+clean::
+	rm -f dwarf_cu_to_module_unittest
+
 
 
 ### Generic compilation rules.
