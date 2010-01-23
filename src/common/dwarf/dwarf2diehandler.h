@@ -162,7 +162,7 @@
 
 namespace dwarf2reader {
 
-// An base class for handlers for specific DIE types.  The series of
+// A base class for handlers for specific DIE types.  The series of
 // calls made on a DIE handler is as follows:
 //
 // - for each attribute of the DIE:
