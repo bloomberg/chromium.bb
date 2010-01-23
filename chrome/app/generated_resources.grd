@@ -2268,7 +2268,7 @@ each locale. -->
       <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Bubble info header text when a page is not allowed to write cookies or other site data.">
         This page was prevented from setting cookies.
       </message>
-      <message name="IDS_UNBLOCKED_COOKIES_TITLE" desc="Bubble info header text when a page is allowed to write cookies or other site data, but the global default is to block.">
+      <message name="IDS_UNBLOCKED_COOKIES_TITLE" desc="Bubble info header text when a page is allowed to write cookies or other site data, when the global default is to block.">
         This page was allowed to set cookies.
       </message>
       <message name="IDS_COOKIES_BUBBLE_LINK" desc="Link to cookie section of content blocking management dialog, displayed in bubble when a page tries to write cookies or other site data.">
@@ -2277,14 +2277,14 @@ each locale. -->
       <message name="IDS_BLOCKED_IMAGES_TITLE" desc="Bubble info header text when a page is not allowed to display images.">
         Images were blocked on this page.
       </message>
-      <message name="IDS_UNBLOCKED_IMAGES_TITLE" desc="Bubble info header text when a page is allowed to display images, but the global default is to block.">
+      <message name="IDS_UNBLOCKED_IMAGES_TITLE" desc="Bubble info header text when a page is allowed to display images, when the global default is to block.">
         This page was allowed to show images.
       </message>
       <message name="IDS_BLOCKED_IMAGES_MULTIHOST_TITLE" desc="Text when multiple frames within a page are not allowed to display images.  This appears above a list of the frames' hostnames.">
-        Images were blocked for the following hosts:
+        Images were blocked for the following domains:
       </message>
       <message name="IDS_UNBLOCKED_IMAGES_MULTIHOST_TITLE" desc="Text when multiple frames within a page are allowed to display images, when the global default is to block.  This appears above a list of the frames' hostnames.">
-        The following hosts were allowed to show images:
+        The following domains were allowed to show images:
       </message>
       <message name="IDS_BLOCKED_IMAGES_UNBLOCK" desc="Radio button choice to unblock a host from showing images, displayed in bubble when a page tries to display images.">
         Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to show images
@@ -2314,10 +2314,10 @@ each locale. -->
         This page was allowed to show pop-ups.
       </message>
       <message name="IDS_BLOCKED_POPUPS_MULTIHOST_TITLE" desc="Text when multiple frames within a page are not allowed to display popups.  This appears above a list of the frames' hostnames.">
-        Pop-ups were blocked for the following hosts:
+        Pop-ups were blocked for the following domains:
       </message>
       <message name="IDS_UNBLOCKED_POPUPS_MULTIHOST_TITLE" desc="Text when multiple frames within a page are allowed to display popups, when the global default is to block.  This appears above a list of the frames' hostnames.">
-        The following hosts were allowed to show pop-ups:
+        The following domains were allowed to show pop-ups:
       </message>
       <message name="IDS_BLOCKED_POPUPS_UNBLOCK" desc="Radio button choice to unblock a site from showing popups, displayed in bubble when a page tries to display popups.">
         Always allow pop-ups from <ph name="HOST">$1<ex>mail.google.com</ex></ph>
@@ -2347,10 +2347,10 @@ each locale. -->
         This page was allowed to run JavaScript.
       </message>
       <message name="IDS_BLOCKED_JAVASCRIPT_MULTIHOST_TITLE" desc="Text when multiple frames within a page are not allowed to run JavaScript.  This appears above a list of the frames' hostnames.">
-        JavaScript was blocked for the following hosts:
+        JavaScript was blocked for the following domains:
       </message>
       <message name="IDS_UNBLOCKED_JAVASCRIPT_MULTIHOST_TITLE" desc="Text when multiple frames within a page are allowed to run JavaScript, when the global default is to block.  This appears above a list of the frames' hostnames.">
-        The following hosts were allowed to run JavaScript:
+        The following domains were allowed to run JavaScript:
       </message>
       <message name="IDS_BLOCKED_JAVASCRIPT_UNBLOCK" desc="Radio button choice to unblock a site from running JavaScript, displayed in bubble when a page tries to run JavaScript.">
         Always allow JavaScript on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
@@ -2380,10 +2380,10 @@ each locale. -->
         This page was allowed to use plugins.
       </message>
       <message name="IDS_BLOCKED_PLUGINS_MULTIHOST_TITLE" desc="Text when multiple frames within a page are not allowed to use plug-ins.  This appears above a list of the frames' hostnames.">
-        Plug-ins was blocked for the following hosts:
+        Plug-ins was blocked for the following domains:
       </message>
       <message name="IDS_UNBLOCKED_PLUGINS_MULTIHOST_TITLE" desc="Text when multiple frames within a page are allowed to use plug-ins, when the global default is to block.  This appears above a list of the frames' hostnames.">
-        The following hosts were allowed to use plug-ins:
+        The following domains were allowed to use plug-ins:
       </message>
       <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
         Always allow plug-ins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
@@ -3797,7 +3797,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Pop-up Exceptions
       </message>
       <message name="IDS_EXCEPTIONS_HOSTNAME_HEADER" desc="A column header for the hostname column of the cookie/image/javascript/plugins exceptions dialog">
-        Hostname
+        Site
       </message>
       <message name="IDS_EXCEPTIONS_ACTION_HEADER" desc="A column header for the action column of the cookie/image/javascript/plugins exceptions dialog">
         Action
