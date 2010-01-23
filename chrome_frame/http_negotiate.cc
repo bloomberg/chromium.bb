@@ -239,19 +239,21 @@ HRESULT HttpNegotiatePatch::ReportProgress(
       status_code == BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE ||
       status_code == LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE) {
     bool render_in_chrome_frame = false;
+    bool is_top_level_request = !IsSubFrameRequest(me);
 
-    // Check if this is a top level browser request that should be
-    // rendered in CF.
-    ScopedComPtr<IBrowserService> browser;
-    DoQueryService(IID_IShellBrowser, me, browser.Receive());
-    if (browser) {
-      render_in_chrome_frame = CheckForCFNavigation(browser, true);
-    }
+    // NOTE: After switching over to using the onhttpequiv notification from
+    // mshtml we can expect to see sub frames being created even before the
+    // owning document has completed loading.  In particular frames whose
+    // source is about:blank.
 
-    if (!render_in_chrome_frame) {
-      bool is_top_level_request = !IsSubFrameRequest(me);
+    if (is_top_level_request) {
+      ScopedComPtr<IBrowserService> browser;
+      DoQueryService(IID_IShellBrowser, me, browser.Receive());
+      if (browser) {
+        render_in_chrome_frame = CheckForCFNavigation(browser, true);
+      }
 
-      if (is_top_level_request) {
+      if (!render_in_chrome_frame) {
         // Check to see if we need to alter the mime type that gets reported
         // by inspecting the raw header information:
         ScopedComPtr<IWinInetHttpInfo> win_inet_http_info;
