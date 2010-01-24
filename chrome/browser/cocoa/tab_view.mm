@@ -648,50 +648,50 @@ const CGFloat kRapidCloseDist = 2.5;
 
   GTMTheme* theme = [self gtm_theme];
 
-  // Setting the pattern phase
+  // Set the pattern phase.
   NSPoint phase = [self gtm_themePatternPhase];
   [context setPatternPhase:phase];
 
+  // Don't draw the window/tab bar background when selected, since the tab
+  // background overlay drawn over it (see below) will be fully opaque.
   if (!selected) {
     NSColor* windowColor =
         [theme backgroundPatternColorForStyle:GTMThemeStyleWindow
                                         state:GTMThemeStateActiveWindow];
-    if (windowColor) {
-      [windowColor set];
-    } else {
-      [[NSColor windowBackgroundColor] set];
-    }
-
+    if (!windowColor)
+      windowColor = [NSColor windowBackgroundColor];
+    [windowColor set];
     [path fill];
 
     NSColor* tabColor =
         [theme backgroundPatternColorForStyle:GTMThemeStyleTabBarDeselected
                                         state:GTMThemeStateActiveWindow];
-    if (tabColor) {
-      [tabColor set];
-    } else {
-      [[NSColor colorWithCalibratedWhite:1.0 alpha:0.3] set];
-    }
+    if (!tabColor)
+      tabColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.3];
+    [tabColor set];
     [path fill];
   }
 
   [context saveGraphicsState];
   [path addClip];
 
-  // Use the same overlay for both hover and alert glows by combining their
-  // opacities. Note that h + a - h*a = h + a*(1-h) = a + h*(1-a).
+  // Use the same overlay for the selected state and for hover and alert glows;
+  // for the selected state, it's fully opaque.
   CGFloat hoverAlpha = [self hoverAlpha];
   CGFloat alertAlpha = [self alertAlpha];
-  CGFloat glowAlpha = hoverAlpha + alertAlpha - hoverAlpha * alertAlpha;
-  if (selected || glowAlpha > 0) {
-    // Draw the background.
-    CGFloat backgroundAlpha = glowAlpha * 0.5;
+  if (selected || hoverAlpha > 0 || alertAlpha > 0) {
+    // Draw the selected background / glow overlay.
     [context saveGraphicsState];
     CGContextRef cgContext =
         (CGContextRef)([context graphicsPort]);
     CGContextBeginTransparencyLayer(cgContext, 0);
-    if (!selected)
+    if (!selected) {
+      // The alert glow overlay is like the selected state but at most at most
+      // 80% opaque. The hover glow brings up the overlay's opacity at most 50%.
+      CGFloat backgroundAlpha = 0.8 * alertAlpha;
+      backgroundAlpha += (1 - backgroundAlpha) * 0.5 * hoverAlpha;
       CGContextSetAlpha(cgContext, backgroundAlpha);
+    }
     [path addClip];
     [context saveGraphicsState];
     [super drawBackground];
@@ -728,7 +728,7 @@ const CGFloat kRapidCloseDist = 2.5;
   [highlightTransform translateXBy:1 yBy:-1];
   scoped_nsobject<NSBezierPath> highlightPath([path copy]);
   [highlightPath transformUsingAffineTransform:highlightTransform];
-  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2 + 0.3 * glowAlpha]
+  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2 + 0.3 * hoverAlpha]
       setStroke];
   [highlightPath stroke];
 
