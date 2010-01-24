@@ -186,9 +186,10 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
     scoped_refptr<AppCacheGroup> group,
     scoped_refptr<AppCache> newest_cache,
     scoped_refptr<DelegateReference> delegate_ref) {
+  Delegate* delegate = delegate_ref->delegate;
   if (simulate_store_group_and_newest_cache_failure_) {
-    if (delegate_ref->delegate)
-      delegate_ref->delegate->OnGroupAndNewestCacheStored(group, false);
+    if (delegate)
+      delegate->OnGroupAndNewestCacheStored(group, newest_cache, false);
     return;
   }
 
@@ -204,8 +205,8 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
     RemoveStoredCaches(copy);
   }
 
-  if (delegate_ref->delegate)
-    delegate_ref->delegate->OnGroupAndNewestCacheStored(group, true);
+  if (delegate)
+    delegate->OnGroupAndNewestCacheStored(group, newest_cache, true);
 }
 
 namespace {

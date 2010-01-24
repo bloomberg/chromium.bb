@@ -69,9 +69,8 @@ class AppCache : public base::RefCounted<AppCache> {
     return false;
   }
 
-  void set_update_time(base::TimeTicks ticks) {
-    update_time_ = ticks;
-  }
+  base::TimeTicks update_time() const { return update_time_; }
+  void set_update_time(base::TimeTicks ticks) { update_time_ = ticks; }
 
   // Initializes the cache with information in the manifest.
   // Do not use the manifest after this call.

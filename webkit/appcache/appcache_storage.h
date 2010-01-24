@@ -41,7 +41,7 @@ class AppCacheStorage {
 
     // If successfully stored 'success' will be true.
     virtual void OnGroupAndNewestCacheStored(
-        AppCacheGroup* group, bool success) {}
+        AppCacheGroup* group, AppCache* newest_cache, bool success) {}
 
     // If the operation fails, success will be false.
     virtual void OnGroupMadeObsolete(AppCacheGroup* group, bool success) {}

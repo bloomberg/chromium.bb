@@ -422,7 +422,8 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
     }
     group_->AddNewlyDeletableResponseIds(&newly_deletable_response_ids_);
   }
-  FOR_EACH_DELEGATE(delegates_, OnGroupAndNewestCacheStored(group_, success_));
+  FOR_EACH_DELEGATE(delegates_,
+                    OnGroupAndNewestCacheStored(group_, cache_, success_));
   group_ = NULL;
   cache_ = NULL;
 }

@@ -282,6 +282,7 @@ class AppCacheUpdateJobTest : public testing::Test,
         expect_group_has_cache_(false),
         expect_old_cache_(NULL),
         expect_newest_cache_(NULL),
+        expect_non_null_update_time_(false),
         tested_manifest_(NONE),
         registered_factory_(false),
         old_factory_(NULL) {
@@ -1864,6 +1865,10 @@ class AppCacheUpdateJobTest : public testing::Test,
     cache->AddEntry(http_server_->TestServerPage("files/explicit2"),
                     AppCacheEntry(AppCacheEntry::EXPLICIT, 222));
 
+    // Reset the update time to null so we can verify it gets
+    // modified in this test case by the UpdateJob.
+    cache->set_update_time(base::TimeTicks());
+
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host2 = MakeHost(2, frontend2);
     host2->new_master_entry_url_ =
@@ -1880,6 +1885,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache still the same cache
+    expect_non_null_update_time_ = true;
     tested_manifest_ = PENDING_MASTER_NO_UPDATE;
     MockFrontend::HostIds ids1(1, host1->host_id());
     frontend1->AddExpectedEvent(ids1, CHECKING_EVENT);
@@ -2510,6 +2516,10 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     if (expect_group_has_cache_) {
       EXPECT_TRUE(group_->newest_complete_cache() != NULL);
+
+      if (expect_non_null_update_time_)
+        EXPECT_TRUE(!group_->newest_complete_cache()->update_time().is_null());
+
       if (expect_old_cache_) {
         EXPECT_NE(expect_old_cache_, group_->newest_complete_cache());
         EXPECT_TRUE(group_->old_caches().end() !=
@@ -2776,6 +2786,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   bool expect_group_has_cache_;
   AppCache* expect_old_cache_;
   AppCache* expect_newest_cache_;
+  bool expect_non_null_update_time_;
   std::vector<MockFrontend*> frontends_;  // to check expected events
   TestedManifest tested_manifest_;
   AppCache::EntryMap expect_extra_entries_;

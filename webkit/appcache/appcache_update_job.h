@@ -44,7 +44,6 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
 
   // Master entries have multiple hosts, for example, the same page is opened
   // in different tabs.
-  // TODO(jennb): detect when hosts are deleted
   typedef std::vector<AppCacheHost*> PendingHosts;
   typedef std::map<GURL, PendingHosts> PendingMasters;
   typedef std::map<GURL, URLRequest*> PendingUrlFetches;
@@ -52,6 +51,10 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   typedef std::map<int64, GURL> LoadingResponses;
 
   static const int kRerunDelayMs = 1000;
+
+  // TODO(michaeln): Rework the set of states vs update types vs stored states.
+  // The NO_UPDATE state is really more of an update type. For all update types
+  // storing the results is relevant.
 
   enum UpdateType {
     UNKNOWN_TYPE,
@@ -71,6 +74,12 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
     COMPLETED,
   };
 
+  enum StoredState {
+    UNSTORED,
+    STORING,
+    STORED,
+  };
+
   // Methods for URLRequest::Delegate.
   void OnResponseStarted(URLRequest* request);
   void OnReadCompleted(URLRequest* request, int bytes_read);
@@ -82,7 +91,8 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   // Methods for AppCacheStorage::Delegate.
   void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
                             int64 response_id);
-  void OnGroupAndNewestCacheStored(AppCacheGroup* group, bool success);
+  void OnGroupAndNewestCacheStored(AppCacheGroup* group, AppCache* newest_cache,
+                                   bool success);
   void OnGroupMadeObsolete(AppCacheGroup* group, bool success);
 
   // Methods for AppCacheHost::Observer.
@@ -122,8 +132,8 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   void HandleManifestRefetchCompleted(URLRequest* request);
   void OnManifestInfoWriteComplete(int result);
   void OnManifestDataWriteComplete(int result);
-  void CompleteInprogressCache();
-  void HandleManifestRefetchFailure();
+
+  void StoreGroupAndCache();
 
   void NotifySingleHost(AppCacheHost* host, EventID event_id);
   void NotifyAllPendingMasterHosts(EventID event_id);
@@ -179,7 +189,8 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   // Deletes this object after letting the stack unwind.
   void DeleteSoon();
 
-  bool IsTerminating() { return internal_state_ >= REFETCH_MANIFEST; }
+  bool IsTerminating() { return internal_state_ >= REFETCH_MANIFEST ||
+                                stored_state_ != UNSTORED; }
 
   // This factory will be used to schedule invocations of various methods.
   ScopedRunnableMethodFactory<AppCacheUpdateJob> method_factory_;
@@ -188,12 +199,6 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   AppCacheService* service_;
 
   scoped_refptr<AppCache> inprogress_cache_;
-
-  // Hold a reference to the newly created cache until this update is
-  // destroyed. The host that started the update will add a reference to the
-  // new cache when notified that the update is complete. AppCacheGroup sends
-  // the notification when its status is set to IDLE in ~AppCacheUpdateJob.
-  scoped_refptr<AppCache> protect_new_cache_;
 
   AppCacheGroup* group_;
 
@@ -247,6 +252,9 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   // these for deletion on success.
   // TODO(michaeln): Rework when we no longer fetches master entries directly.
   std::vector<int64> duplicate_response_ids_;
+
+  // Whether we've stored the resulting group/cache yet.
+  StoredState stored_state_;
 
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_info_write_callback_;
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_write_callback_;

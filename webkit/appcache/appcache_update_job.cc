@@ -106,6 +106,7 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
       master_entries_completed_(0),
       url_fetches_completed_(0),
       manifest_url_request_(NULL),
+      stored_state_(UNSTORED),
       ALLOW_THIS_IN_INITIALIZER_LIST(manifest_info_write_callback_(
           this, &AppCacheUpdateJob::OnManifestInfoWriteComplete)),
       ALLOW_THIS_IN_INITIALIZER_LIST(manifest_data_write_callback_(
@@ -613,6 +614,7 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLRequest* request) {
 
     // In no-update case, associate host with the newest cache.
     if (!inprogress_cache_) {
+      // TODO(michaeln): defer until the updated cache has been stored
       DCHECK(cache == group_->newest_complete_cache());
       for (PendingHosts::iterator host_it = hosts.begin();
            host_it != hosts.end(); ++host_it) {
@@ -627,9 +629,8 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLRequest* request) {
       host_notifier.AddHost(host);
 
       // In downloading case, disassociate host from inprogress cache.
-      if (inprogress_cache_) {
+      if (inprogress_cache_)
         host->AssociateCache(NULL);
-      }
 
       host->RemoveObserver(this);
     }
@@ -669,7 +670,7 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
     AppCacheEntry* entry = inprogress_cache_->GetEntry(manifest_url_);
     if (entry) {
       entry->add_types(AppCacheEntry::MANIFEST);
-      CompleteInprogressCache();
+      StoreGroupAndCache();
     } else {
       manifest_response_writer_.reset(
           service_->storage()->CreateResponseWriter(manifest_url_));
@@ -683,7 +684,9 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
     LOG(INFO) << "Request status: " << request->status().status()
         << " os_error: " << request->status().os_error()
         << " response code: " << response_code;
-    HandleManifestRefetchFailure();
+    ScheduleUpdateRetry(kRerunDelayMs);
+    internal_state_ = CACHE_FAILURE;
+    MaybeCompleteUpdate();  // will definitely complete
   }
 }
 
@@ -694,8 +697,8 @@ void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {
     manifest_response_writer_->WriteData(io_buffer, manifest_data_.length(),
                                          &manifest_data_write_callback_);
   } else {
-    // Treat storage failure as if refetch of manifest failed.
-    HandleManifestRefetchFailure();
+    internal_state_ = CACHE_FAILURE;
+    MaybeCompleteUpdate();  // will definitely complete
   }
 }
 
@@ -706,36 +709,34 @@ void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
         manifest_response_writer_->amount_written());
     if (!inprogress_cache_->AddOrModifyEntry(manifest_url_, entry))
       duplicate_response_ids_.push_back(entry.response_id());
-    CompleteInprogressCache();
+    StoreGroupAndCache();
   } else {
-    // Treat storage failure as if refetch of manifest failed.
-    HandleManifestRefetchFailure();
+    internal_state_ = CACHE_FAILURE;
+    MaybeCompleteUpdate();  // will definitely complete
   }
 }
 
-void AppCacheUpdateJob::CompleteInprogressCache() {
-  inprogress_cache_->set_update_time(base::TimeTicks::Now());
-  service_->storage()->StoreGroupAndNewestCache(group_, inprogress_cache_,
+void AppCacheUpdateJob::StoreGroupAndCache() {
+  DCHECK(stored_state_ == UNSTORED);
+  stored_state_ = STORING;
+  scoped_refptr<AppCache> newest_cache;
+  if (inprogress_cache_)
+    newest_cache.swap(inprogress_cache_);
+  else
+    newest_cache = group_->newest_complete_cache();
+  newest_cache->set_update_time(base::TimeTicks::Now());
+  service_->storage()->StoreGroupAndNewestCache(group_, newest_cache,
                                                 this);  // async
-  protect_new_cache_.swap(inprogress_cache_);
 }
 
 void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
+                                                    AppCache* newest_cache,
                                                     bool success) {
-  if (success) {
-    DCHECK_EQ(protect_new_cache_, group->newest_complete_cache());
-    MaybeCompleteUpdate();  // will definitely complete
-  } else {
-    protect_new_cache_ = NULL;
-
-    // Treat storage failure as if manifest refetch failed.
-    HandleManifestRefetchFailure();
-  }
-}
-
-void AppCacheUpdateJob::HandleManifestRefetchFailure() {
-  ScheduleUpdateRetry(kRerunDelayMs);
-  internal_state_ = CACHE_FAILURE;
+  DCHECK(stored_state_ == STORING);
+  if (success)
+    stored_state_ = STORED;
+  else
+    internal_state_ = CACHE_FAILURE;
   MaybeCompleteUpdate();  // will definitely complete
 }
 
@@ -985,6 +986,7 @@ void AppCacheUpdateJob::FetchMasterEntries() {
       // In no update case, associate hosts to newest cache in group
       // now that master entry has been "successfully downloaded".
       if (internal_state_ == NO_UPDATE) {
+        // TODO(michaeln): defer until the updated cache has been stored.
         DCHECK(!inprogress_cache_.get());
         AppCache* cache = group_->newest_complete_cache();
         PendingMasters::iterator found = pending_master_entries_.find(url);
@@ -1136,6 +1138,17 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
 
   switch (internal_state_) {
     case NO_UPDATE:
+      if (master_entries_completed_ > 0) {
+        switch (stored_state_) {
+          case UNSTORED:
+            StoreGroupAndCache();
+            return;
+          case STORING:
+            return;
+          case STORED:
+            break;
+        }
+      }
       // 6.9.4 steps 7.3-7.7.
       NotifyAllAssociatedHosts(NO_UPDATE_EVENT);
       DiscardDuplicateResponses();
@@ -1146,6 +1159,7 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
       FetchManifest(false);
       break;
     case REFETCH_MANIFEST:
+      DCHECK(stored_state_ == STORED);
       if (update_type_ == CACHE_ATTEMPT)
         NotifyAllAssociatedHosts(CACHED_EVENT);
       else
@@ -1246,7 +1260,6 @@ void AppCacheUpdateJob::DeleteSoon() {
   // Break the connection with the group so the group cannot call delete
   // on this object after we've posted a task to delete ourselves.
   group_->SetUpdateStatus(AppCacheGroup::IDLE);
-  protect_new_cache_ = NULL;
   group_ = NULL;
 
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);

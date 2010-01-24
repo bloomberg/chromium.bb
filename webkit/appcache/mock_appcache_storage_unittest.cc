@@ -31,7 +31,8 @@ class MockAppCacheStorageTest : public testing::Test {
       loaded_manifest_url_ = manifest_url;
     }
 
-    void OnGroupAndNewestCacheStored(AppCacheGroup* group, bool success) {
+    void OnGroupAndNewestCacheStored(
+        AppCacheGroup* group, AppCache* newest_cache, bool success) {
       stored_group_ = group;
       stored_group_success_ = success;
     }
