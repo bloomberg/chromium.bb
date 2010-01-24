@@ -184,7 +184,7 @@ image_draw(struct image *image)
 			    &rectangle,
 			    image->surface);
 
-	wl_compositor_commit(image->compositor, image->key);
+	window_commit(image->window, image->key);
 }
 
 static gboolean
@@ -210,6 +210,15 @@ image_schedule_redraw(struct image *image)
 
 static void
 resize_handler(struct window *window, void *data)
+{
+	struct image *image = data;
+
+	image_schedule_redraw(image);
+}
+
+static void
+keyboard_focus_handler(struct window *window,
+		       struct wl_input_device *device, void *data)
 {
 	struct image *image = data;
 
@@ -274,6 +283,7 @@ image_create(struct display *display, uint32_t key, const char *filename)
 
 	image->compositor = display_get_compositor(display);
 	window_set_resize_handler(image->window, resize_handler, image);
+	window_set_keyboard_focus_handler(image->window, keyboard_focus_handler, image);
 
 	wl_compositor_add_listener(image->compositor, &compositor_listener, image);
 

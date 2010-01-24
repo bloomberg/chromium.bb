@@ -32,6 +32,7 @@
 #include <glib.h>
 #include <cairo-drm.h>
 
+#define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <eagle.h>
 
@@ -52,14 +53,13 @@ struct gears {
 	struct rectangle rectangle;
 
 	EGLDisplay display;
-	EGLConfig config;
-	EGLSurface surface;
 	EGLContext context;
 	int resized;
 	GLfloat angle;
 	cairo_surface_t *cairo_surface;
 
 	GLint gear_list[3];
+	GLuint fbo, color_rbo, depth_rbo;
 };
 
 struct gear_template {
@@ -258,19 +258,20 @@ resize_window(struct gears *gears)
 
 	window_draw(gears->window);
 
-	if (gears->surface != NULL)
-		eglDestroySurface(gears->display, gears->surface);
+	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->color_rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER_EXT,
+			      GL_RGBA,
+			      gears->rectangle.width,
+			      gears->rectangle.height);
 
-	gears->surface = eglCreateSurface(gears->display,
-					  gears->config,
-					  gears->rectangle.width,
-					  gears->rectangle.height,
-					  1, NULL);
-
-	eglMakeCurrent(gears->display,
-		       gears->surface, gears->surface, gears->context);
+	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->depth_rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER_EXT,
+			      GL_DEPTH_COMPONENT,
+			      gears->rectangle.width,
+			      gears->rectangle.height);
 
 	glViewport(0, 0, gears->rectangle.width, gears->rectangle.height);
+
 	gears->resized = 0;
 }
 
@@ -308,13 +309,12 @@ handle_acknowledge(void *data,
 {
 	struct gears *gears = data;
 
-	if (key != 0)
-		return;
+	if (key == 10) {
+		if (gears->resized)
+			resize_window(gears);
 
-	if (gears->resized)
-		resize_window(gears);
-
-	draw_gears(gears);
+		draw_gears(gears);
+	}
 }
 
 static void
@@ -322,14 +322,20 @@ handle_frame(void *data,
 	     struct wl_compositor *compositor,
 	     uint32_t frame, uint32_t timestamp)
 {
-	struct gears *gears = data;
-	uint32_t name, handle, stride;
+  	struct gears *gears = data;
+	GLint name, stride;
 
-	eglGetColorBuffer(gears->surface, 0, &name, &handle, &stride);
+	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->color_rbo);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT,
+				     GL_RENDERBUFFER_STRIDE_INTEL,
+				     &stride);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT,
+				     GL_RENDERBUFFER_NAME_INTEL,
+				     &name);
 	
 	window_copy(gears->window, &gears->rectangle, name, stride);
 
-	wl_compositor_commit(gears->compositor, 0);
+	window_commit(gears->window, 10);
 
 	gears->angle = (GLfloat) (timestamp % 8192) * 360 / 8192.0;
 }
@@ -339,19 +345,11 @@ static const struct wl_compositor_listener compositor_listener = {
 	handle_frame,
 };
 
-static const EGLint config_attribs[] = {
-	EGL_DEPTH_SIZE, 24,
-	EGL_CONFIG_CAVEAT, EGL_NONE,
-	EGL_RED_SIZE, 8,
-	EGL_NONE		
-};
-
 static struct gears *
 gears_create(struct display *display)
 {
 	const int x = 200, y = 200, width = 450, height = 500;
-	EGLint major, minor, count;
-	EGLConfig configs[64];
+	EGLint major, minor;
 	struct udev *udev;
 	struct udev_device *device;
 	struct gears *gears;
@@ -373,18 +371,29 @@ gears_create(struct display *display)
 	if (!eglInitialize(gears->display, &major, &minor))
 		die("failed to initialize display\n");
 
-	if (!eglGetConfigs(gears->display, configs, 64, &count))
-		die("failed to get configs\n");
-
-	if (!eglChooseConfig(gears->display, config_attribs, &gears->config, 1, NULL))
-		die("failed to pick a config\n");
-
-	gears->context = eglCreateContext(gears->display, gears->config, NULL, NULL);
+	gears->context = eglCreateContext(gears->display, NULL, NULL, NULL);
 	if (gears->context == NULL)
 		die("failed to create context\n");
 
-	resize_window(gears);
+	if (!eglMakeCurrent(gears->display, NULL, NULL, gears->context))
+		die("faile to make context current\n");
 
+	glGenFramebuffers(1, &gears->fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER_EXT, gears->fbo);
+
+	glGenRenderbuffers(1, &gears->color_rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->color_rbo);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
+				  GL_COLOR_ATTACHMENT0_EXT,
+				  GL_RENDERBUFFER_EXT,
+				  gears->color_rbo);
+
+	glGenRenderbuffers(1, &gears->depth_rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->depth_rbo);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
+				  GL_DEPTH_ATTACHMENT_EXT,
+				  GL_RENDERBUFFER_EXT,
+				  gears->depth_rbo);
 	for (i = 0; i < 3; i++) {
 		gears->gear_list[i] = glGenLists(1);
 		glNewList(gears->gear_list[i], GL_COMPILE);
@@ -406,10 +415,13 @@ gears_create(struct display *display)
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0, 0, 0, 0.92);
 
+	if (glCheckFramebufferStatus (GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE)
+		fprintf(stderr, "framebuffer incomplete\n");
+
 	gears->compositor = display_get_compositor(display);
 
+	resize_window(gears);
 	draw_gears(gears);
-
 	handle_frame(gears, gears->compositor, 0, 0);
 
 	window_set_resize_handler(gears->window, resize_handler, gears);

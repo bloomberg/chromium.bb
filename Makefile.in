@@ -8,8 +8,9 @@ libs = libwayland-server.so libwayland.so
 egl_clients = gears
 cairo_clients = flower screenshot terminal image view
 compositors = wayland-system-compositor
+clients = $(egl_clients) $(cairo_clients)
 
-all : $(libs) $(compositors) $(egl_clients) $(cairo_clients)
+all : $(libs) $(compositors) $(clients)
 
 libwayland-server.so :				\
 	wayland.o				\
@@ -36,7 +37,7 @@ wayland-system-compositor :			\
 	wayland-util.o
 
 wayland-system-compositor : CFLAGS += @EGL_COMPOSITOR_CFLAGS@
-wayland-system-compositor : LDLIBS += -L. -lwayland-server @EGL_COMPOSITOR_LIBS@ -rdynamic -lrt
+wayland-system-compositor : LDLIBS += ./libwayland-server.so @EGL_COMPOSITOR_LIBS@ -rdynamic -lrt
 
 flower : flower.o wayland-glib.o
 gears : gears.o window.o wayland-glib.o cairo-util.o
@@ -54,7 +55,7 @@ view : LDLIBS += @POPPLER_LIBS@
 $(egl_clients) : CFLAGS += @EGL_CLIENT_CFLAGS@
 $(egl_clients) : LDLIBS += -L. -lwayland @EGL_CLIENT_LIBS@ -lrt
 $(cairo_clients) : CFLAGS += @CAIRO_CLIENT_CFLAGS@
-$(cairo_clients) : LDLIBS += -L. -lwayland @CAIRO_CLIENT_LIBS@ -lrt
+$(cairo_clients) : LDLIBS += ./libwayland.so @CAIRO_CLIENT_LIBS@ -lrt
 
 install : $(libs) $(compositors)
 	install -d @libdir@ @libdir@/pkgconfig ${udev_rules_dir}

@@ -227,7 +227,7 @@ terminal_draw(struct terminal *terminal)
 
 	window_draw(terminal->window);
 	terminal_draw_contents(terminal);
-	wl_compositor_commit(terminal->compositor, 0);
+	window_commit(terminal->window, 0);
 }
 
 static gboolean

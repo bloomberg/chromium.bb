@@ -60,6 +60,8 @@ window_create(struct display *display, const char *title,
 void
 window_draw(struct window *window);
 void
+window_commit(struct window *window, uint32_t key);
+void
 window_get_child_rectangle(struct window *window,
 			   struct rectangle *rectangle);
 void

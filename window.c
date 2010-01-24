@@ -66,6 +66,7 @@ struct window {
 	uint32_t modifiers;
 
 	cairo_surface_t *cairo_surface, *pending_surface;
+	int new_surface;
 
 	window_resize_handler_t resize_handler;
 	window_key_handler_t key_handler;
@@ -111,6 +112,17 @@ window_attach_surface(struct window *window)
 		       window->allocation.y - window->margin,
 		       window->allocation.width,
 		       window->allocation.height);
+}
+
+void
+window_commit(struct window *window, uint32_t key)
+{
+	if (window->new_surface) {
+		window_attach_surface(window);
+		window->new_surface = 0;
+	}
+
+	wl_compositor_commit(window->display->compositor, key);
 }
 
 static void
@@ -210,8 +222,6 @@ window_draw_decorations(struct window *window)
 		cairo_fill(cr);
 	}
 	cairo_destroy(cr);
-
-	window_attach_surface(window);
 }
 
 static void
@@ -222,8 +232,6 @@ window_draw_fullscreen(struct window *window)
 					 CAIRO_CONTENT_COLOR_ALPHA,
 					 window->allocation.width,
 					 window->allocation.height);
-
-	window_attach_surface(window);
 }
 
 void
@@ -236,6 +244,8 @@ window_draw(struct window *window)
 		window_draw_fullscreen(window);
 	else
 		window_draw_decorations(window);
+
+	window->new_surface = 1;
 }
 
 static void
@@ -251,13 +261,11 @@ window_handle_acknowledge(void *data,
 	 * safely free the old window buffer if we resized and
 	 * render the next frame into our back buffer.. */
 
-	if (key == 0) {
-		pending = window->pending_surface;
-		window->pending_surface = NULL;
-		if (pending != window->cairo_surface)
-			window_attach_surface(window);
-		cairo_surface_destroy(pending);
-	}
+	pending = window->pending_surface;
+	window->pending_surface = NULL;
+	if (pending != window->cairo_surface)
+		window_attach_surface(window);
+	cairo_surface_destroy(pending);
 }
 
 static void
@@ -585,7 +593,7 @@ window_copy(struct window *window,
 	cairo_t *cr;
 
 	surface = cairo_drm_surface_create_for_name (window->display->device,
-						     name, CAIRO_CONTENT_COLOR_ALPHA,
+						     name, CAIRO_FORMAT_ARGB32,
 						     rectangle->width, rectangle->height,
 						     stride);
 

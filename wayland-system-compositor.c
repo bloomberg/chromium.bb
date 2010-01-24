@@ -69,13 +69,13 @@ struct wlsc_output {
 	struct wl_list link;
 	struct wlsc_compositor *compositor;
 	struct wlsc_surface *background;
-	EGLSurface surface;
 	int32_t x, y, width, height;
 
 	drmModeModeInfo mode;
 	uint32_t crtc_id;
 	uint32_t connector_id;
 
+	GLuint rbo[2];
 	uint32_t fb_id[2];
 	uint32_t current;	
 };
@@ -102,7 +102,7 @@ struct wlsc_compositor {
 
 	EGLDisplay display;
 	EGLContext context;
-	EGLConfig config;
+	GLuint fbo;
 	struct wl_display *wl_display;
 
 	struct wl_list output_list;
@@ -610,16 +610,11 @@ repaint_output(struct wlsc_output *output)
 	double s = 3000;
 	int fd;
 
-	if (!eglMakeCurrent(ec->display, output->surface, output->surface, ec->context)) {
-		fprintf(stderr, "failed to make context current\n");
-		return;
-	}
-
 	glViewport(0, 0, output->width, output->height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glFrustum(-output->width / s, output->width / s,
-		  output->height / s, -output->height / s, 1, 2 * s);
+		  -output->height / s, output->height / s, 1, 2 * s);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glClearColor(0, 0, 0, 1);
@@ -650,7 +645,11 @@ repaint_output(struct wlsc_output *output)
 
 	fd = eglGetDisplayFD(ec->display);
 	output->current ^= 1;
-	eglBindColorBuffer(ec->display, output->surface, output->current);
+
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
+				  GL_COLOR_ATTACHMENT0_EXT,
+				  GL_RENDERBUFFER_EXT,
+				  output->rbo[output->current]);
 	drmModePageFlip(fd, output->crtc_id,
 			output->fb_id[output->current ^ 1],
 			DRM_MODE_PAGE_FLIP_EVENT, output);
@@ -737,8 +736,8 @@ surface_attach(struct wl_client *client,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureExternalMESA(GL_TEXTURE_2D, GL_RGBA, 4,
-			      width, height, stride / 4, name);
+	glTextureExternalINTEL(GL_TEXTURE_2D, GL_RGBA, 4,
+			       width, height, stride / 4, name);
 	
 }
 
@@ -762,36 +761,6 @@ surface_copy(struct wl_client *client,
 	     uint32_t name, uint32_t stride,
 	     int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-	GLuint fbo[2], rb;
-
-	glGenFramebuffers(2, fbo);
-
-	glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, fbo[1]);
-	glGenRenderbuffers(1, &rb);
-	glBindRenderbuffer(GL_RENDERBUFFER_EXT, rb);
-	glRenderbufferExternalMESA(GL_RENDERBUFFER_EXT,
-				   GL_RGBA,
-				   es->width, es->height,
-				   stride / 4, name);
-	glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER_EXT,
-				  GL_COLOR_ATTACHMENT0_EXT,
-				  GL_RENDERBUFFER_EXT,
-				  rb);
-
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, fbo[0]);
-	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER_EXT,
-			       GL_COLOR_ATTACHMENT0_EXT,
-			       GL_TEXTURE_2D, es->texture, 0);
-	
-	glBlitFramebuffer(x, y, x + width, y + height,
-			  dst_x, dst_y, dst_x+ width, dst_y + height,
-			  GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-	glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
-	glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
-	glDeleteRenderbuffers(1, &rb);
-	glDeleteFramebuffers(2, fbo);
 }
 
 static void
@@ -1138,14 +1107,6 @@ on_drm_input(int fd, uint32_t mask, void *data)
 static int
 init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 {
-	static const EGLint config_attribs[] = {
-		EGL_DEPTH_SIZE,		0,
-		EGL_STENCIL_SIZE,	0,
-		EGL_CONFIG_CAVEAT,	EGL_NONE,
-		EGL_RED_SIZE,		8,
-		EGL_NONE		
-	};
-
 	struct wl_event_loop *loop;
 	EGLint major, minor;
 	int fd;
@@ -1161,14 +1122,19 @@ init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	if (!eglChooseConfig(ec->display, config_attribs, &ec->config, 1, NULL))
-		return -1;
-
-	ec->context = eglCreateContext(ec->display, ec->config, NULL, NULL);
+	ec->context = eglCreateContext(ec->display, NULL, NULL, NULL);
 	if (ec->context == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;
 	}
+
+	if (!eglMakeCurrent(ec->display, EGL_NO_SURFACE, EGL_NO_SURFACE, ec->context)) {
+		fprintf(stderr, "failed to make context current\n");
+		return -1;
+	}
+
+	glGenFramebuffers(1, &ec->fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER_EXT, ec->fbo);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	fd = eglGetDisplayFD(ec->display);
@@ -1197,7 +1163,7 @@ create_output_for_connector(struct wlsc_compositor *ec,
 	struct wlsc_output *output;
 	drmModeEncoder *encoder;
 	drmModeModeInfo *mode;
-	uint32_t name, handle, stride;
+	GLint handle, stride;
 	int i, ret, fd;
 
 	fd = eglGetDisplayFD(ec->display);
@@ -1243,21 +1209,21 @@ create_output_for_connector(struct wlsc_compositor *ec,
 
 	drmModeFreeEncoder(encoder);
 
-	output->surface = eglCreateSurface(ec->display,
-					   ec->config,
-					   output->width,
-					   output->height,
-					   2, NULL);
-	if (output->surface == NULL) {
-		fprintf(stderr, "failed to create surface\n");
-		return -1;
-	}
-
+	glGenRenderbuffers(2, output->rbo);
 	for (i = 0; i < 2; i++) {
-		eglGetColorBuffer(output->surface,
-				  i, &name, &handle, &stride);
+		glBindRenderbuffer(GL_RENDERBUFFER_EXT, output->rbo[i]);
+		glRenderbufferStorage(GL_RENDERBUFFER_EXT,
+				      GL_RGBA,
+				      output->width,
+				      output->height);
+		glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT,
+					     GL_RENDERBUFFER_STRIDE_INTEL,
+					     &stride);
+		glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT,
+					     GL_RENDERBUFFER_HANDLE_INTEL,
+					     &handle);
 
-		ret = drmModeAddFB(fd, mode->hdisplay, mode->vdisplay,
+		ret = drmModeAddFB(fd, output->width, output->height,
 				   32, 32, stride, handle, &output->fb_id[i]);
 		if (ret) {
 			fprintf(stderr, "failed to add fb %d: %m\n", i);
@@ -1266,6 +1232,10 @@ create_output_for_connector(struct wlsc_compositor *ec,
 	}
 
 	output->current = 0;
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
+				  GL_COLOR_ATTACHMENT0_EXT,
+				  GL_RENDERBUFFER_EXT,
+				  output->rbo[output->current]);
 	ret = drmModeSetCrtc(fd, output->crtc_id,
 			     output->fb_id[output->current ^ 1], 0, 0,
 			     &output->connector_id, 1, &output->mode);
@@ -1278,11 +1248,6 @@ create_output_for_connector(struct wlsc_compositor *ec,
 	wl_display_add_object(ec->wl_display, &output->base);
 	wl_display_add_global(ec->wl_display, &output->base, post_output_geometry);
 	wl_list_insert(ec->output_list.prev, &output->link);
-
-	if (!eglMakeCurrent(ec->display, output->surface, output->surface, ec->context)) {
-		fprintf(stderr, "failed to make context current\n");
-		return -1;
-	}
 
 	output->background = background_create(output, option_background);
 
