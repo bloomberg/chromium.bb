@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@ class RenderWidgetHost;
 class GpuViewHost;
 class GtkIMContextWrapper;
 class GtkKeyBindingsHandler;
+class MenuGtk;
 class NativeWebKeyboardEvent;
 
 typedef struct _GtkClipboard GtkClipboard;
@@ -81,6 +82,10 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // edit commands to renderer by calling
   // RenderWidgetHost::ForwardEditCommandsForNextKeyEvent().
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
+
+  // Appends the input methods context menu to the specified |menu| object as a
+  // submenu.
+  void AppendInputMethodsContextMenu(MenuGtk* menu);
 
  private:
   friend class RenderWidgetHostViewGtkWidget;

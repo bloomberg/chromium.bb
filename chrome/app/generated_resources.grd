@@ -495,6 +495,9 @@ each locale. -->
         <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="The name of the Add as Search Engine command in the content area context menu">
           Add as search en&amp;gine...
         </message>
+        <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="The name of the input method submenu in the content area context menu">
+          Input &amp;methods
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_CONTENT_CONTEXT_BACK" desc="In Title Case: The name of the Back command in the content area context menu">
@@ -670,6 +673,9 @@ each locale. -->
         </message>
         <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="In Title Case: The name of the Add as Search Engine command in the content area context menu">
           Add As Search En&amp;gine...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="In Title Case: The name of the input method submenu in the content area context menu">
+          Input &amp;Methods
         </message>
       </if>
 

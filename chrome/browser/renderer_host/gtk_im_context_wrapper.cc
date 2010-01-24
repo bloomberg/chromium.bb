@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,18 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+#include "app/l10n_util.h"
 #include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/common/gtk_util.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "grit/generated_resources.h"
 
 GtkIMContextWrapper::GtkIMContextWrapper(RenderWidgetHostViewGtk* host_view)
     : host_view_(host_view),
@@ -245,6 +250,18 @@ void GtkIMContextWrapper::OnFocusOut() {
 
   // Disable RenderWidget's IME related events to save bandwidth.
   host_view_->GetRenderWidgetHost()->ImeSetInputMode(false);
+}
+
+void GtkIMContextWrapper::AppendInputMethodsContextMenu(MenuGtk* menu) {
+  std::string label = gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      l10n_util::GetStringUTF8(IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU));
+  GtkWidget* menuitem = gtk_menu_item_new_with_mnemonic(label.c_str());
+  GtkWidget* submenu = gtk_menu_new();
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
+  gtk_im_multicontext_append_menuitems(GTK_IM_MULTICONTEXT(context_),
+                                       GTK_MENU_SHELL(submenu));
+  menu->AppendSeparator();
+  menu->AppendMenuItem(IDC_INPUT_METHODS_MENU, menuitem);
 }
 
 bool GtkIMContextWrapper::NeedCommitByForwardingCharEvent() {

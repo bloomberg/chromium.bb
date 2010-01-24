@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -250,6 +250,7 @@
 #define IDC_HISTORY_MENU                46000     // OSX only
 #define IDC_HISTORY_MENU_VISITED        46100     // OSX only
 #define IDC_HISTORY_MENU_CLOSED         46200     // OSX only
+#define IDC_INPUT_METHODS_MENU          46300     // Linux only
 
 // Custom context menu entries
 #define IDC_CONTENT_CONTEXT_CUSTOM_FIRST 47000

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/string_util.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "webkit/glue/context_menu.h"
 
@@ -26,6 +26,11 @@ RenderViewContextMenuGtk::~RenderViewContextMenuGtk() {
 void RenderViewContextMenuGtk::DoInit() {
   DoneMakingMenu(&menu_);
   gtk_menu_.reset(new MenuGtk(this, menu_.data()));
+
+  RenderWidgetHostViewGtk* rwhv = static_cast<RenderWidgetHostViewGtk*>(
+      source_tab_contents_->render_widget_host_view());
+  if (rwhv)
+    rwhv->AppendInputMethodsContextMenu(gtk_menu_.get());
 }
 
 void RenderViewContextMenuGtk::Popup(const gfx::Point& point) {

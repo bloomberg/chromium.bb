@@ -602,6 +602,10 @@ void RenderWidgetHostViewGtk::ShowingContextMenu(bool showing) {
   is_showing_context_menu_ = showing;
 }
 
+void RenderWidgetHostViewGtk::AppendInputMethodsContextMenu(MenuGtk* menu) {
+  im_context_->AppendInputMethodsContextMenu(menu);
+}
+
 BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
     const gfx::Size& size) {
   if (gpu_view_host_.get())

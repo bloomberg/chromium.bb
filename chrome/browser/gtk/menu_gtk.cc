@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,40 @@
 using gtk_util::ConvertAcceleratorsFromWindowsStyle;
 
 bool MenuGtk::block_activation_ = false;
+
+namespace {
+
+// Sets the ID of a menu item.
+void SetMenuItemID(GtkWidget* menu_item, int menu_id) {
+  DCHECK(menu_id >= 0);
+
+  // Add 1 to the menu_id to avoid setting zero (null) to "menu-id".
+  g_object_set_data(G_OBJECT(menu_item), "menu-id",
+                    GINT_TO_POINTER(menu_id + 1));
+}
+
+// Gets the ID of a menu item.
+// Returns true if the menu item has an ID.
+bool GetMenuItemID(GtkWidget* menu_item, int* menu_id) {
+  const MenuCreateMaterial* data =
+      reinterpret_cast<const MenuCreateMaterial*>(
+          g_object_get_data(G_OBJECT(menu_item), "menu-data"));
+
+  if (data) {
+    *menu_id = data->id;
+    return true;
+  }
+
+  gpointer id_ptr = g_object_get_data(G_OBJECT(menu_item), "menu-id");
+  if (id_ptr != NULL) {
+    *menu_id = GPOINTER_TO_INT(id_ptr) - 1;
+    return true;
+  }
+
+  return false;
+}
+
+}  // namespace
 
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
                  const MenuCreateMaterial* menu_data)
@@ -109,9 +143,7 @@ void MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
 void MenuGtk::AppendMenuItemToMenu(int command_id,
                                    GtkWidget* menu_item,
                                    GtkWidget* menu) {
-  g_object_set_data(G_OBJECT(menu_item), "menu-id",
-                    reinterpret_cast<void*>(command_id));
-
+  SetMenuItemID(menu_item, command_id);
   g_signal_connect(G_OBJECT(menu_item), "activate",
                    G_CALLBACK(OnMenuItemActivated), this);
 
@@ -333,17 +365,9 @@ void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
     return;
   }
 
-  const MenuCreateMaterial* data =
-      reinterpret_cast<const MenuCreateMaterial*>(
-          g_object_get_data(G_OBJECT(menuitem), "menu-data"));
-
   int id;
-  if (data) {
-    id = data->id;
-  } else {
-    id = reinterpret_cast<intptr_t>(g_object_get_data(G_OBJECT(menuitem),
-                                                      "menu-id"));
-  }
+  if (!GetMenuItemID(GTK_WIDGET(menuitem), &id))
+    return;
 
   menus::MenuModel* model =
       reinterpret_cast<menus::MenuModel*>(
@@ -462,18 +486,11 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
     return;
   }
 
-  MenuGtk* menu = reinterpret_cast<MenuGtk*>(userdata);
   int id;
-  const MenuCreateMaterial* data =
-      reinterpret_cast<const MenuCreateMaterial*>(
-          g_object_get_data(G_OBJECT(widget), "menu-data"));
-  if (data) {
-    id = data->id;
-  } else {
-    id = reinterpret_cast<intptr_t>(g_object_get_data(G_OBJECT(widget),
-                                    "menu-id"));
-  }
+  if (!GetMenuItemID(widget, &id))
+    return;
 
+  MenuGtk* menu = reinterpret_cast<MenuGtk*>(userdata);
   menus::MenuModel* model =
       reinterpret_cast<menus::MenuModel*>(
           g_object_get_data(G_OBJECT(widget), "model"));

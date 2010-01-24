@@ -509,6 +509,14 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDC_CHECK_SPELLING_OF_THIS_FIELD:
       return profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
 
+#if defined(OS_LINUX)
+    // Enable the input methods context menu if the content is editable.
+    // TODO(suzhe): It should not be enabled in password boxes. Anyway,
+    // it's not a big issue.
+    case IDC_INPUT_METHODS_MENU:
+      return params_.is_editable;
+#endif
+
     case IDS_CONTENT_CONTEXT_SAVEFRAMEAS:
     case IDS_CONTENT_CONTEXT_PRINTFRAME:
     case IDS_CONTENT_CONTEXT_ADDSEARCHENGINE:  // Not implemented.
