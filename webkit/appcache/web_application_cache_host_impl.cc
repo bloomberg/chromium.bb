@@ -36,11 +36,8 @@ WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromFrame(
   WebDataSource* data_source = frame->dataSource();
   if (!data_source)
     return NULL;
-  return NULL;
-  // TODO(michaeln): Uncomment after the new webkit api is available,
-  // (see https://bugs.webkit.org/show_bug.cgi?id=33880)
-  // return static_cast<WebApplicationCacheHostImpl*>
-  //    (data_source->applicationCacheHost());
+  return static_cast<WebApplicationCacheHostImpl*>
+      (data_source->applicationCacheHost());
 }
 
 WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
