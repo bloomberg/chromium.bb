@@ -52,40 +52,6 @@ std::ostream& operator<<(std::ostream& os, const AutofillChange& change) {
   return os << " " << change.key();
 }
 
-// So we can compare AutoFillProfiles with EXPECT_EQ().
-std::ostream& operator<<(std::ostream& os, const AutoFillProfile& profile) {
-  return os
-      << UTF16ToASCII(profile.Label())
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_FIRST)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_MIDDLE)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_LAST)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(EMAIL_ADDRESS)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(COMPANY_NAME)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(
-             PHONE_HOME_WHOLE_NUMBER)))
-      << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(
-             PHONE_FAX_WHOLE_NUMBER)));
-}
-
 class WebDatabaseTest : public testing::Test {
  protected:
   typedef std::vector<AutofillChange> AutofillChangeList;
@@ -963,7 +929,7 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   delete db_profile;
 
   // Remove the 'Billing' profile.
-  EXPECT_TRUE(db.RemoveAutoFillProfile(billing_profile));
+  EXPECT_TRUE(db.RemoveAutoFillProfile(billing_profile.unique_id()));
   EXPECT_FALSE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
                                              &db_profile));
 }

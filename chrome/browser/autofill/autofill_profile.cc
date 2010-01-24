@@ -144,8 +144,9 @@ bool AutoFillProfile::operator==(const AutoFillProfile& profile) const {
 
   if (label_ != profile.label_ ||
       unique_id_ != profile.unique_id_ ||
-      use_billing_address_ != profile.use_billing_address_)
+      use_billing_address_ != profile.use_billing_address_) {
     return false;
+  }
 
   for (size_t index = 0; index < arraysize(types); ++index) {
     if (GetFieldText(AutoFillType(types[index])) !=
@@ -182,4 +183,40 @@ Address* AutoFillProfile::GetBillingAddress() {
 
 Address* AutoFillProfile::GetHomeAddress() {
   return static_cast<Address*>(personal_info_[AutoFillType::ADDRESS_HOME]);
+}
+
+// So we can compare AutoFillProfiles with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const AutoFillProfile& profile) {
+  return os
+      << UTF16ToASCII(profile.Label())
+      << " "
+      << profile.unique_id()
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_FIRST)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_MIDDLE)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_LAST)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(EMAIL_ADDRESS)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(COMPANY_NAME)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(
+             PHONE_HOME_WHOLE_NUMBER)))
+      << " "
+      << UTF16ToUTF8(profile.GetFieldText(AutoFillType(
+             PHONE_FAX_WHOLE_NUMBER)));
 }

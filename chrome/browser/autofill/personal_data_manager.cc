@@ -1,12 +1,18 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/autofill/personal_data_manager.h"
 
+#include <algorithm>
+#include <iterator>
+
+#include "base/logging.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/webdata/web_data_service.h"
 
 // The minimum number of fields that must contain user data and have known types
 // before autofill will attempt to import the data into a profile.
@@ -19,6 +25,45 @@ static const int kPhoneNumberLength = 7;
 static const int kPhoneCityCodeLength = 3;
 
 PersonalDataManager::~PersonalDataManager() {
+  CancelPendingQuery();
+}
+
+void PersonalDataManager::OnWebDataServiceRequestDone(
+    WebDataService::Handle h,
+    const WDTypedResult* result) {
+  // Error from the web database.
+  if (!result)
+    return;
+
+  DCHECK(pending_query_handle_);
+  DCHECK(result->GetType() == AUTOFILL_PROFILES_RESULT);
+  pending_query_handle_ = 0;
+
+  unique_ids_.clear();
+  profiles_.reset();
+  const WDResult<std::vector<AutoFillProfile*> >* r =
+      static_cast<const WDResult<std::vector<AutoFillProfile*> >*>(result);
+  std::vector<AutoFillProfile*> profiles = r->GetValue();
+  for (std::vector<AutoFillProfile*>::iterator iter = profiles.begin();
+       iter != profiles.end(); ++iter) {
+    unique_ids_.insert((*iter)->unique_id());
+    profiles_.push_back(*iter);
+  }
+
+  is_data_loaded_ = true;
+  if (observer_)
+    observer_->OnPersonalDataLoaded();
+}
+
+void PersonalDataManager::SetObserver(PersonalDataManager::Observer* observer) {
+  DCHECK(observer_ == NULL);
+  observer_ = observer;
+}
+
+void PersonalDataManager::RemoveObserver(
+    PersonalDataManager::Observer* observer) {
+  if (observer_ == observer)
+    observer_ = NULL;
 }
 
 bool PersonalDataManager::ImportFormData(
@@ -31,7 +76,7 @@ bool PersonalDataManager::ImportFormData(
   int importable_fields = 0;
   int importable_credit_card_fields = 0;
   imported_profile_.reset(new AutoFillProfile(string16(),
-                                              CreateNextUniqueId()));
+                                              CreateNextUniqueID()));
   imported_credit_card_.reset(new CreditCard(string16()));
 
   bool billing_address_info = false;
@@ -104,6 +149,63 @@ bool PersonalDataManager::ImportFormData(
   return true;
 }
 
+void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
+  if (profile_->IsOffTheRecord())
+    return;
+
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
+    return;
+
+  // Remove the unique IDs of the new set of profiles from the unique ID set.
+  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
+       iter != profiles->end(); ++iter) {
+    if (iter->unique_id() != 0)
+      unique_ids_.erase(iter->unique_id());
+  }
+
+  // Any remaining IDs are not in the new profile list and should be removed
+  // from the web database.
+  for (std::set<int>::iterator iter = unique_ids_.begin();
+       iter != unique_ids_.end(); ++iter) {
+    wds->RemoveAutoFillProfile(*iter);
+  }
+
+  // Clear the unique IDs.  The set of unique IDs is updated for each profile
+  // added to |profile_| below.
+  unique_ids_.clear();
+
+  // Update the web database with the existing profiles.  We need to handle
+  // these first so that |unique_ids_| is reset with the IDs of the existing
+  // profiles; otherwise, new profiles added before older profiles can take
+  // their unique ID.
+  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
+       iter != profiles->end(); ++iter) {
+    if (iter->unique_id() != 0) {
+      unique_ids_.insert(iter->unique_id());
+      wds->UpdateAutoFillProfile(*iter);
+    }
+  }
+
+  // Add the new profiles to the web database.
+  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
+       iter != profiles->end(); ++iter) {
+    // Profile was added by the AutoFill dialog, so we need to set the unique
+    // ID.  This also means we need to add this profile to the web DB.
+    if (iter->unique_id() == 0) {
+      iter->set_unique_id(CreateNextUniqueID());
+      wds->AddAutoFillProfile(*iter);
+    }
+  }
+
+  profiles_.reset();
+  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
+       iter != profiles->end(); ++iter) {
+    profiles_.push_back(new AutoFillProfile(*iter));
+  }
+}
+
+
 void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
                                                 FieldTypeSet* possible_types) {
   InitializeIfNeeded();
@@ -115,8 +217,8 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
     return;
   }
 
-  ScopedVector<FormGroup>::const_iterator iter;
-  for (iter = profiles_.begin(); iter != profiles_.end(); ++iter) {
+  for (ScopedVector<AutoFillProfile>::iterator iter = profiles_.begin();
+       iter != profiles_.end(); ++iter) {
     const FormGroup* profile = *iter;
     if (!profile) {
       DLOG(ERROR) << "NULL information in profiles list";
@@ -125,7 +227,8 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
     profile->GetPossibleFieldTypes(clean_info, possible_types);
   }
 
-  for (iter = credit_cards_.begin(); iter != credit_cards_.end(); ++iter) {
+  for (ScopedVector<FormGroup>::iterator iter = credit_cards_.begin();
+       iter != credit_cards_.end(); ++iter) {
     const FormGroup* credit_card = *iter;
     if (!credit_card) {
       DLOG(ERROR) << "NULL information in credit cards list";
@@ -143,8 +246,13 @@ bool PersonalDataManager::HasPassword() {
   return !password_hash_.empty();
 }
 
-PersonalDataManager::PersonalDataManager()
-    : is_initialized_(false) {
+PersonalDataManager::PersonalDataManager(Profile* profile)
+    : profile_(profile),
+      is_initialized_(false),
+      is_data_loaded_(false),
+      pending_query_handle_(0),
+      observer_(NULL) {
+  LoadProfiles();
 }
 
 void PersonalDataManager::InitializeIfNeeded() {
@@ -155,7 +263,7 @@ void PersonalDataManager::InitializeIfNeeded() {
   // TODO(jhawkins): Load data.
 }
 
-int PersonalDataManager::CreateNextUniqueId() {
+int PersonalDataManager::CreateNextUniqueID() {
   // Profile IDs MUST start at 1 to allow 0 as an error value when reading
   // the ID from the WebDB (see LoadData()).
   int id = 1;
@@ -189,4 +297,30 @@ void PersonalDataManager::ParsePhoneNumber(
 
   // Treat any remaining digits as the country code.
   profile->SetInfo(AutoFillType(country_code), *value);
+}
+
+void PersonalDataManager::LoadProfiles() {
+  WebDataService* web_data_service =
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service) {
+    NOTREACHED();
+    return;
+  }
+
+  CancelPendingQuery();
+
+  pending_query_handle_ = web_data_service->GetAutoFillProfiles(this);
+}
+
+void PersonalDataManager::CancelPendingQuery() {
+  if (pending_query_handle_) {
+    WebDataService* web_data_service =
+        profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+    if (!web_data_service) {
+      NOTREACHED();
+      return;
+    }
+    web_data_service->CancelRequest(pending_query_handle_);
+  }
+  pending_query_handle_ = 0;
 }

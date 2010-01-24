@@ -54,17 +54,18 @@ struct PasswordForm;
 // Result types
 //
 typedef enum {
-  BOOL_RESULT = 1,         // WDResult<bool>
-  KEYWORDS_RESULT,         // WDResult<WDKeywordsResult>
-  INT64_RESULT,            // WDResult<int64>
-  PASSWORD_RESULT,         // WDResult<std::vector<PasswordForm*>>
+  BOOL_RESULT = 1,          // WDResult<bool>
+  KEYWORDS_RESULT,          // WDResult<WDKeywordsResult>
+  INT64_RESULT,             // WDResult<int64>
+  PASSWORD_RESULT,          // WDResult<std::vector<PasswordForm*>>
 #if defined(OS_WIN)
-  PASSWORD_IE7_RESULT,     // WDResult<IE7PasswordInfo>
+  PASSWORD_IE7_RESULT,      // WDResult<IE7PasswordInfo>
 #endif
-  WEB_APP_IMAGES,          // WDResult<WDAppImagesResult>
-  AUTOFILL_VALUE_RESULT,   // WDResult<std::vector<string16>>
-  AUTOFILL_CHANGES,        // WDResult<std::vector<AutofillChange>>
-  AUTOFILL_PROFILE_RESULT  // WDResult<AutoFillProfile>
+  WEB_APP_IMAGES,           // WDResult<WDAppImagesResult>
+  AUTOFILL_VALUE_RESULT,    // WDResult<std::vector<string16>>
+  AUTOFILL_CHANGES,         // WDResult<std::vector<AutofillChange>>
+  AUTOFILL_PROFILE_RESULT,  // WDResult<AutoFillProfile>
+  AUTOFILL_PROFILES_RESULT  // WDResult<std::vector<AutoFillProfile*>>
 } WDResultType;
 
 typedef std::vector<AutofillChange> AutofillChangeList;
@@ -85,7 +86,7 @@ struct WDKeywordsResult {
   // Identifies the ID of the TemplateURL that is the default search. A value of
   // 0 indicates there is no default search provider.
   int64 default_search_provider_id;
-  // Version of the builin keywords. A value of 0 indicates a first run.
+  // Version of the built-in keywords. A value of 0 indicates a first run.
   int builtin_keyword_version;
 };
 
@@ -414,13 +415,20 @@ class WebDataService
   void UpdateAutoFillProfile(const AutoFillProfile& profile);
 
   // Schedules a task to remove an AutoFill profile from the web database.
-  void RemoveAutoFillProfile(const AutoFillProfile& profile);
+  // |profile_id| is the unique ID of the profile to remove.
+  void RemoveAutoFillProfile(int profile_id);
 
-  // Initiates the request for an AutoFill profile with label |label.  The
+  // Initiates the request for an AutoFill profile with label |label|.  The
   // method OnWebDataServiceRequestDone of |consumer| gets called back when the
   // request is finished, with the profile included in the argument |result|.
   Handle GetAutoFillProfileForLabel(const string16& label,
                                     WebDataServiceConsumer* consumer);
+
+  // Initiates the request for all AutoFill profiles.  The method
+  // OnWebDataServiceRequestDone of |consumer| gets called when the request is
+  // finished, with the profiles included in the argument |result|.  The
+  // consumer owns the profiles.
+  Handle GetAutoFillProfiles(WebDataServiceConsumer* consumer);
 
   // Testing
 #ifdef UNIT_TEST
@@ -463,6 +471,9 @@ class WebDataService
 
   // Initialize the database, if it hasn't already been initialized.
   void InitializeDatabaseIfNecessary();
+
+  // The notification method.
+  void NotifyDatabaseLoadedOnUIThread();
 
   // Commit any pending transaction and deletes the database.
   void ShutdownDatabase();
@@ -516,9 +527,10 @@ class WebDataService
       GenericRequest2<string16, string16>* request);
   void AddAutoFillProfileImpl(GenericRequest<AutoFillProfile>* request);
   void UpdateAutoFillProfileImpl(GenericRequest<AutoFillProfile>* request);
-  void RemoveAutoFillProfileImpl(GenericRequest<AutoFillProfile>* request);
+  void RemoveAutoFillProfileImpl(GenericRequest<int>* request);
   void GetAutoFillProfileForLabelImpl(WebDataRequest* request,
                                       const string16& label);
+  void GetAutoFillProfilesImpl(WebDataRequest* request);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -591,6 +603,9 @@ class WebDataServiceConsumer {
   // not be opened. The result object is destroyed after this call.
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result) = 0;
+
+ protected:
+  virtual ~WebDataServiceConsumer() {}
 };
 
 #endif  // CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__

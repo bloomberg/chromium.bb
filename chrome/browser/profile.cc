@@ -1095,7 +1095,7 @@ bool ProfileImpl::HasCreatedDownloadManager() const {
 
 PersonalDataManager* ProfileImpl::GetPersonalDataManager() {
   if (!personal_data_manager_.get()) {
-    personal_data_manager_.reset(new PersonalDataManager);
+    personal_data_manager_.reset(new PersonalDataManager(this));
   }
   return personal_data_manager_.get();
 }

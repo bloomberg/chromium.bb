@@ -14,10 +14,11 @@
 // the user has applied changes to the AutoFill profile data.
 class AutoFillDialogObserver {
  public:
-  // The user has confirmed changes by clicking "Apply" or "OK".
+  // The user has confirmed changes by clicking "Apply" or "OK".  Any of the
+  // parameters may be NULL.
   virtual void OnAutoFillDialogApply(
-      const std::vector<AutoFillProfile>& profiles,
-      const std::vector<CreditCard>& credit_cards) = 0;
+      std::vector<AutoFillProfile>* profiles,
+      std::vector<CreditCard>* credit_cards) = 0;
 
  protected:
   virtual ~AutoFillDialogObserver() {}
@@ -29,8 +30,12 @@ class AutoFillDialogObserver {
 // changes made to the profile information through the dialog should be
 // transferred back into |profiles| and |credit_cards|. |observer| will be
 // notified by OnAutoFillDialogAccept when the user has applied changes.
+//
+// The PersonalDataManager owns the contents of these vectors.  The lifetime of
+// the contents is until the PersonalDataManager replaces them with new data
+// whenever the web database is updated.
 void ShowAutoFillDialog(AutoFillDialogObserver* observer,
-                        const std::vector<AutoFillProfile>& profiles,
-                        const std::vector<CreditCard>& credit_cards);
+                        const std::vector<AutoFillProfile*>& profiles,
+                        const std::vector<CreditCard*>& credit_cards);
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DIALOG_H_

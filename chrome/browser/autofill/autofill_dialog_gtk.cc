@@ -26,6 +26,10 @@ namespace {
 // Style for dialog group titles.
 const char kDialogGroupTitleMarkup[] = "<span weight='bold'>%s</span>";
 
+// The name of the object property used to store an entry widget pointer on
+// another widget.
+const char kButtonDataKey[] = "label-entry";
+
 // How far we indent dialog widgets, in pixels.
 const int kAutoFillDialogIndent = 5;
 
@@ -71,6 +75,23 @@ void SetWhiteBackground(GtkWidget* widget) {
   gtk_widget_modify_bg(widget, GTK_STATE_NORMAL,
                        &style->base[GTK_STATE_NORMAL]);
   gtk_widget_destroy(entry);
+}
+
+string16 GetEntryText(GtkWidget* entry) {
+  return UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(entry)));
+}
+
+void SetEntryText(GtkWidget* entry, const string16& text) {
+  gtk_entry_set_text(GTK_ENTRY(entry), UTF16ToUTF8(text).c_str());
+}
+
+void SetButtonData(GtkWidget* widget, GtkWidget* entry) {
+  g_object_set_data(G_OBJECT(widget), kButtonDataKey, entry);
+}
+
+GtkWidget* GetButtonData(GtkWidget* widget) {
+  return static_cast<GtkWidget*>(
+      g_object_get_data(G_OBJECT(widget), kButtonDataKey));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -191,8 +212,8 @@ GtkWidget* FormTableAddLabelEntry(
 class AutoFillDialog {
  public:
   AutoFillDialog(AutoFillDialogObserver* observer,
-                 const std::vector<AutoFillProfile>& profiles,
-                 const std::vector<CreditCard>& credit_cards);
+                 const std::vector<AutoFillProfile*>& profiles,
+                 const std::vector<CreditCard*>& credit_cards);
   ~AutoFillDialog() {}
 
   // Shows the AutoFill dialog.
@@ -216,6 +237,13 @@ class AutoFillDialog {
   // 'clicked' signal handler.  We add a new credit card.
   static void OnAddCreditCardClicked(GtkButton* button, AutoFillDialog* dialog);
 
+  // 'clicked' signal handler.  We delete the associated address.
+  static void OnDeleteAddressClicked(GtkButton* button, AutoFillDialog* dialog);
+
+  // 'clicked' signal handler.  We delete the associated credit card.
+  static void OnDeleteCreditCardClicked(GtkButton* button,
+                                        AutoFillDialog* dialog);
+
   // 'changed' signal handler.  We update the title of the expander widget with
   // the contents of the label entry widget.
   static void OnLabelChanged(GtkEntry* label, GtkWidget* expander);
@@ -236,9 +264,13 @@ class AutoFillDialog {
 
   // Returns a GtkExpander that is added to the appropriate vbox.  Each method
   // adds the necessary widgets and layout required to fill out information
-  // for either an address or a credit card.
-  GtkWidget* AddNewAddress();
+  // for either an address or a credit card.  The expander will be expanded by
+  // default if |expand| is true.
+  GtkWidget* AddNewAddress(bool expand);
   GtkWidget* AddNewCreditCard();
+
+  // Adds a new address filled out with information from |profile|.
+  void AddAddress(const AutoFillProfile& profile);
 
   // The list of current AutoFill profiles.
   std::vector<AutoFillProfile> profiles_;
@@ -268,12 +300,17 @@ class AutoFillDialog {
 static AutoFillDialog* dialog = NULL;
 
 AutoFillDialog::AutoFillDialog(AutoFillDialogObserver* observer,
-                               const std::vector<AutoFillProfile>& profiles,
-                               const std::vector<CreditCard>& credit_cards)
-    : profiles_(profiles),
-      credit_cards_(credit_cards),
-      observer_(observer) {
+                               const std::vector<AutoFillProfile*>& profiles,
+                               const std::vector<CreditCard*>& credit_cards)
+    : observer_(observer) {
   DCHECK(observer);
+
+  // Copy the profiles.
+  std::vector<AutoFillProfile*>::const_iterator profile;
+  for (profile = profiles.begin(); profile != profiles.end(); ++profile)
+    profiles_.push_back(**profile);
+
+  // TODO(jhawkins): Copy the credit cards.
 
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_DIALOG_TITLE).c_str(),
@@ -328,7 +365,9 @@ AutoFillDialog::AutoFillDialog(AutoFillDialogObserver* observer,
                               G_CALLBACK(OnAddAddressClicked));
   gtk_box_pack_start_defaults(GTK_BOX(outer_vbox), addresses_vbox_);
 
-  // TODO(jhawkins): Add addresses from |profiles|.
+  std::vector<AutoFillProfile>::const_iterator iter;
+  for (iter = profiles_.begin(); iter != profiles_.end(); ++iter)
+    AddAddress(*iter);
 
   creditcards_vbox_ = InitGroup(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME,
                                 IDS_AUTOFILL_ADD_CREDITCARD_BUTTON,
@@ -350,10 +389,6 @@ void AutoFillDialog::OnDestroy(GtkWidget* widget,
                                AutoFillDialog* autofill_dialog) {
   dialog = NULL;
   MessageLoop::current()->DeleteSoon(FROM_HERE, autofill_dialog);
-}
-
-static string16 GetEntryText(GtkWidget* entry) {
-  return UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(entry)));
 }
 
 static AutoFillProfile AutoFillProfileFromWidgetValues(
@@ -411,7 +446,8 @@ void AutoFillDialog::OnResponse(GtkDialog* dialog, gint response_id,
     }
 
     autofill_dialog->observer_->OnAutoFillDialogApply(
-        autofill_dialog->profiles_, autofill_dialog->credit_cards_);
+        &autofill_dialog->profiles_,
+        &autofill_dialog->credit_cards_);
   }
 
   if (response_id == GTK_RESPONSE_OK || response_id == GTK_RESPONSE_CANCEL) {
@@ -422,7 +458,7 @@ void AutoFillDialog::OnResponse(GtkDialog* dialog, gint response_id,
 // static
 void AutoFillDialog::OnAddAddressClicked(GtkButton* button,
                                          AutoFillDialog* dialog) {
-  GtkWidget* new_address = dialog->AddNewAddress();
+  GtkWidget* new_address = dialog->AddNewAddress(true);
   gtk_box_pack_start(GTK_BOX(dialog->addresses_vbox_), new_address,
                      FALSE, FALSE, 0);
   gtk_widget_show_all(new_address);
@@ -435,6 +471,50 @@ void AutoFillDialog::OnAddCreditCardClicked(GtkButton* button,
   gtk_box_pack_start(GTK_BOX(dialog->creditcards_vbox_), new_creditcard,
                      FALSE, FALSE, 0);
   gtk_widget_show_all(new_creditcard);
+}
+
+// static
+void AutoFillDialog::OnDeleteAddressClicked(GtkButton* button,
+                                            AutoFillDialog* dialog) {
+  GtkWidget* entry = GetButtonData(GTK_WIDGET(button));
+  string16 label = GetEntryText(entry);
+
+  // TODO(jhawkins): Base this on ID.
+
+  // Remove the profile.
+  for (std::vector<AutoFillProfile>::iterator iter = dialog->profiles_.begin();
+       iter != dialog->profiles_.end();
+       ++iter) {
+    if (iter->Label() == label) {
+      dialog->profiles_.erase(iter);
+      break;
+    }
+  }
+
+  // Remove the set of address widgets.
+  for (std::vector<AddressWidgets>::iterator iter =
+           dialog->address_widgets_.begin();
+       iter != dialog->address_widgets_.end();
+       ++iter) {
+    if (iter->label == entry) {
+      dialog->address_widgets_.erase(iter);
+      break;
+    }
+  }
+
+  // Get back to the expander widget.
+  GtkWidget* expander = gtk_widget_get_ancestor(GTK_WIDGET(button),
+                                                GTK_TYPE_EXPANDER);
+  DCHECK(expander);
+
+  // Destroying the widget will also remove it from the parent container.
+  gtk_widget_destroy(expander);
+}
+
+// static
+void AutoFillDialog::OnDeleteCreditCardClicked(GtkButton* button,
+                                               AutoFillDialog* dialog) {
+  // TODO(jhawkins): Remove the associated credit card.
 }
 
 // static
@@ -492,17 +572,16 @@ GtkWidget* AutoFillDialog::InitGroupContentArea(int name_id,
   gtk_container_add(GTK_CONTAINER(vbox_alignment), vbox);
   gtk_container_add(GTK_CONTAINER(frame), vbox_alignment);
 
-  // Make it expand by default.
-  gtk_expander_set_expanded(GTK_EXPANDER(expander), true);
-
   *content_vbox = vbox;
   return expander;
 }
 
-GtkWidget* AutoFillDialog::AddNewAddress() {
+GtkWidget* AutoFillDialog::AddNewAddress(bool expand) {
   AddressWidgets widgets = {0};
   GtkWidget* vbox;
   GtkWidget* address = InitGroupContentArea(IDS_AUTOFILL_NEW_ADDRESS, &vbox);
+
+  gtk_expander_set_expanded(GTK_EXPANDER(address), expand);
 
   GtkWidget* table = InitFormTable(5, 3);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), table);
@@ -558,6 +637,8 @@ GtkWidget* AutoFillDialog::AddNewAddress() {
 
   GtkWidget* button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_DELETE_BUTTON).c_str());
+  g_signal_connect(button, "clicked", G_CALLBACK(OnDeleteAddressClicked), this);
+  SetButtonData(button, widgets.label);
   GtkWidget* alignment = gtk_alignment_new(0, 0, 0, 0);
   gtk_container_add(GTK_CONTAINER(alignment), button);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), alignment);
@@ -637,12 +718,59 @@ GtkWidget* AutoFillDialog::AddNewCreditCard() {
   return credit_card;
 }
 
+void AutoFillDialog::AddAddress(const AutoFillProfile& profile) {
+  GtkWidget* address = AddNewAddress(false);
+  gtk_expander_set_label(GTK_EXPANDER(address),
+                         UTF16ToUTF8(profile.Label()).c_str());
+
+  // We just pushed the widgets to the back of the vector.
+  const AddressWidgets& widgets = address_widgets_.back();
+  SetEntryText(widgets.label, profile.Label());
+  SetEntryText(widgets.first_name,
+               profile.GetFieldText(AutoFillType(NAME_FIRST)));
+  SetEntryText(widgets.middle_name,
+               profile.GetFieldText(AutoFillType(NAME_MIDDLE)));
+  SetEntryText(widgets.last_name,
+               profile.GetFieldText(AutoFillType(NAME_LAST)));
+  SetEntryText(widgets.email,
+               profile.GetFieldText(AutoFillType(EMAIL_ADDRESS)));
+  SetEntryText(widgets.company_name,
+               profile.GetFieldText(AutoFillType(COMPANY_NAME)));
+  SetEntryText(widgets.address_line1,
+               profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)));
+  SetEntryText(widgets.address_line2,
+               profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)));
+  SetEntryText(widgets.city,
+               profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY)));
+  SetEntryText(widgets.state,
+               profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)));
+  SetEntryText(widgets.zipcode,
+               profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)));
+  SetEntryText(widgets.country,
+               profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)));
+  SetEntryText(widgets.phone1,
+               profile.GetFieldText(AutoFillType(PHONE_HOME_COUNTRY_CODE)));
+  SetEntryText(widgets.phone2,
+               profile.GetFieldText(AutoFillType(PHONE_HOME_CITY_CODE)));
+  SetEntryText(widgets.phone3,
+               profile.GetFieldText(AutoFillType(PHONE_HOME_NUMBER)));
+  SetEntryText(widgets.fax1,
+               profile.GetFieldText(AutoFillType(PHONE_FAX_COUNTRY_CODE)));
+  SetEntryText(widgets.fax2,
+               profile.GetFieldText(AutoFillType(PHONE_FAX_CITY_CODE)));
+  SetEntryText(widgets.fax3,
+               profile.GetFieldText(AutoFillType(PHONE_FAX_NUMBER)));
+
+  gtk_box_pack_start(GTK_BOX(addresses_vbox_), address, FALSE, FALSE, 0);
+  gtk_widget_show_all(address);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Factory/finder method:
 
 void ShowAutoFillDialog(AutoFillDialogObserver* observer,
-                        const std::vector<AutoFillProfile>& profiles,
-                        const std::vector<CreditCard>& credit_cards) {
+                        const std::vector<AutoFillProfile*>& profiles,
+                        const std::vector<CreditCard*>& credit_cards) {
   if (!dialog) {
     dialog = new AutoFillDialog(observer, profiles, credit_cards);
   }

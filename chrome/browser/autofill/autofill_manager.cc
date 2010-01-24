@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_infobar_delegate.h"
 #include "chrome/browser/autofill/form_structure.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
@@ -61,9 +60,24 @@ void AutoFillManager::FormFieldValuesSubmitted(
 }
 
 void AutoFillManager::OnAutoFillDialogApply(
-    const std::vector<AutoFillProfile>& profiles,
-    const std::vector<CreditCard>& credit_cards) {
-  // TODO(jhawkins): Pass the profile data onto the PersonalDataManager.
+    std::vector<AutoFillProfile>* profiles,
+    std::vector<CreditCard>* credit_cards) {
+  // Save the personal data.
+  personal_data_->SetProfiles(profiles);
+  // TODO(jhawkins): Set the credit cards.
+
+  HandleSubmit();
+}
+
+void AutoFillManager::OnPersonalDataLoaded() {
+  // We might have been alerted that the PersonalDataManager has loaded, so
+  // remove ourselves as observer.
+  personal_data_->RemoveObserver(this);
+
+  // TODO(jhawkins): Actually send in the real credit cards from the personal
+  // data manager.
+  std::vector<CreditCard*> credit_cards;
+  ShowAutoFillDialog(this, personal_data_->profiles(), credit_cards);
 }
 
 void AutoFillManager::DeterminePossibleFieldTypes(
@@ -93,13 +107,12 @@ void AutoFillManager::OnInfoBarAccepted() {
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kAutoFillEnabled, true);
 
-  // TODO(jhawkins): Actually send in the real profiles and credit cards from
-  // the personal data manager.
-  std::vector<AutoFillProfile> profiles;
-  std::vector<CreditCard> credit_cards;
-  ShowAutoFillDialog(this, profiles, credit_cards);
-
-  HandleSubmit();
+  // If the personal data manager has not loaded the data yet, set ourselves as
+  // its observer so that we can listen for the OnPersonalDataLoaded signal.
+  if (!personal_data_->IsDataLoaded())
+    personal_data_->SetObserver(this);
+  else
+    OnPersonalDataLoaded();
 }
 
 void AutoFillManager::SaveFormData() {

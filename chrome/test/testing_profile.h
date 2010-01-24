@@ -50,6 +50,14 @@ class TestingProfile : public Profile {
   // BlockUntilBookmarkModelLoaded.
   void CreateBookmarkModel(bool delete_file);
 
+  // Creates the webdata service.  If |delete_file| is true, the webdata file is
+  // deleted first, then the WebDataService is created.  As TestingProfile
+  // deletes the directory containing the files used by WebDataService, this
+  // only matters if you're recreating the WebDataService.
+  void CreateWebDataService(bool delete_file);
+
+  // Destroys
+
   // Blocks until the BookmarkModel finishes loaded. This is NOT invoked from
   // CreateBookmarkModel.
   void BlockUntilBookmarkModelLoaded();
@@ -115,10 +123,10 @@ class TestingProfile : public Profile {
     return NULL;
   }
   virtual WebDataService* GetWebDataService(ServiceAccessType access) {
-    return NULL;
+    return web_data_service_.get();
   }
   virtual WebDataService* GetWebDataServiceWithoutCreating() {
-    return NULL;
+    return web_data_service_.get();
   }
   virtual PasswordStore* GetPasswordStore(ServiceAccessType access) {
     return NULL;
@@ -236,6 +244,10 @@ class TestingProfile : public Profile {
   // from the destructor.
   void DestroyHistoryService();
 
+  // If the webdata service has been created, it is destroyed.  This is invoked
+  // from the destructor.
+  void DestroyWebDataService();
+
   // The history service. Only created if CreateHistoryService is invoked.
   scoped_refptr<HistoryService> history_service_;
 
@@ -244,6 +256,9 @@ class TestingProfile : public Profile {
 
   // The ProfileSyncService.  Created by CreateProfileSyncService.
   scoped_ptr<ProfileSyncService> profile_sync_service_;
+
+  // The WebDataService.  Only created if CreateWebDataService is invoked.
+  scoped_refptr<WebDataService> web_data_service_;
 
   // The TemplateURLFetcher. Only created if CreateTemplateURLModel is invoked.
   scoped_ptr<TemplateURLModel> template_url_model_;

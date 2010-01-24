@@ -204,12 +204,16 @@ class WebDatabase {
   // Updates the database values for the specified profile.
   bool UpdateAutoFillProfile(const AutoFillProfile& profile);
 
-  // Removes a row from the autofill_profiles table.
-  bool RemoveAutoFillProfile(const AutoFillProfile& profile);
+  // Removes a row from the autofill_profiles table.  |profile_id| is the
+  // unique ID of the profile to remove.
+  bool RemoveAutoFillProfile(int profile_id);
 
   // Retrieves a profile with label |label|.  The caller owns |profile|.
   bool GetAutoFillProfileForLabel(const string16& label,
                                   AutoFillProfile** profile);
+
+  // Retrieves all profiles in the database.  Caller owns the returned profiles.
+  bool GetAutoFillProfiles(std::vector<AutoFillProfile*>* profiles);
 
   //////////////////////////////////////////////////////////////////////////////
   //

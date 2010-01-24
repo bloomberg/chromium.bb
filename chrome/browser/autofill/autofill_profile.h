@@ -53,6 +53,7 @@ class AutoFillProfile : public FormGroup {
   void operator=(const AutoFillProfile&);
 
   // Used by tests.
+  // TODO(jhawkins): Move these to private and add the test as a friend.
   bool operator==(const AutoFillProfile& profile) const;
   void set_label(const string16& label) { label_ = label; }
   void set_unique_id(int id) { unique_id_ = id; }
@@ -74,5 +75,8 @@ class AutoFillProfile : public FormGroup {
   // Personal information for this profile.
   FormGroupMap personal_info_;
 };
+
+// So we can compare AutoFillProfiles with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const AutoFillProfile& profile);
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_PROFILE_H_

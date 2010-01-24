@@ -160,10 +160,10 @@ void WebDataService::UpdateAutoFillProfile(const AutoFillProfile& profile) {
                                  request));
 }
 
-void WebDataService::RemoveAutoFillProfile(const AutoFillProfile& profile) {
-  GenericRequest<AutoFillProfile>* request =
-      new GenericRequest<AutoFillProfile>(
-          this, GetNextRequestHandle(), NULL, profile);
+void WebDataService::RemoveAutoFillProfile(int profile_id) {
+  GenericRequest<int>* request =
+      new GenericRequest<int>(
+          this, GetNextRequestHandle(), NULL, profile_id);
   RegisterRequest(request);
   ScheduleTask(NewRunnableMethod(this,
                                  &WebDataService::RemoveAutoFillProfileImpl,
@@ -180,6 +180,18 @@ WebDataService::Handle WebDataService::GetAutoFillProfileForLabel(
                         &WebDataService::GetAutoFillProfileForLabelImpl,
                         request,
                         label));
+  return request->GetHandle();
+}
+
+WebDataService::Handle WebDataService::GetAutoFillProfiles(
+    WebDataServiceConsumer* consumer) {
+  WebDataRequest* request =
+      new WebDataRequest(this, GetNextRequestHandle(), consumer);
+  RegisterRequest(request);
+  ScheduleTask(
+      NewRunnableMethod(this,
+                        &WebDataService::GetAutoFillProfilesImpl,
+                        request));
   return request->GetHandle();
 }
 
@@ -472,8 +484,19 @@ void WebDataService::InitializeDatabaseIfNecessary() {
     return;
   }
 
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &WebDataService::NotifyDatabaseLoadedOnUIThread));
+
   db_ = db;
   db_->BeginTransaction();
+}
+
+void WebDataService::NotifyDatabaseLoadedOnUIThread() {
+  // Notify that the database has been initialized.
+  NotificationService::current()->Notify(NotificationType::WEB_DATABASE_LOADED,
+                                         NotificationService::AllSources(),
+                                         NotificationService::NoDetails());
 }
 
 void WebDataService::ShutdownDatabase() {
@@ -734,11 +757,11 @@ void WebDataService::UpdateAutoFillProfileImpl(
 }
 
 void WebDataService::RemoveAutoFillProfileImpl(
-    GenericRequest<AutoFillProfile>* request) {
+    GenericRequest<int>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    const AutoFillProfile& profile = request->GetArgument();
-    if (!db_->RemoveAutoFillProfile(profile))
+    int profile_id = request->GetArgument();
+    if (!db_->RemoveAutoFillProfile(profile_id))
       NOTREACHED();
     ScheduleCommit();
   }
@@ -754,6 +777,18 @@ void WebDataService::GetAutoFillProfileForLabelImpl(WebDataRequest* request,
     request->SetResult(
         new WDResult<AutoFillProfile>(AUTOFILL_PROFILE_RESULT, *profile));
     delete profile;
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::GetAutoFillProfilesImpl(WebDataRequest* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    std::vector<AutoFillProfile*> profiles;
+    db_->GetAutoFillProfiles(&profiles);
+    request->SetResult(
+        new WDResult<std::vector<AutoFillProfile*> >(AUTOFILL_PROFILES_RESULT,
+                                                     profiles));
   }
   request->RequestComplete();
 }

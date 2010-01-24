@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
 namespace webkit_glue {
@@ -19,14 +20,14 @@ class AutoFillInfoBarDelegate;
 class AutoFillProfile;
 class CreditCard;
 class FormStructure;
-class PersonalDataManager;
 class PrefService;
 class TabContents;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.
 class AutoFillManager : public RenderViewHostDelegate::AutoFill,
-                               AutoFillDialogObserver {
+                        public AutoFillDialogObserver,
+                        public PersonalDataManager::Observer {
  public:
   explicit AutoFillManager(TabContents* tab_contents);
   virtual ~AutoFillManager();
@@ -40,8 +41,11 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
 
   // AutoFillDialogObserver implementation:
   virtual void OnAutoFillDialogApply(
-      const std::vector<AutoFillProfile>& profiles,
-      const std::vector<CreditCard>& credit_cards);
+      std::vector<AutoFillProfile>* profiles,
+      std::vector<CreditCard>* credit_cards);
+
+  // PersonalDataManager::Observer implementation:
+  virtual void OnPersonalDataLoaded();
 
   // Uses heuristics and existing personal data to determine the possible field
   // types.

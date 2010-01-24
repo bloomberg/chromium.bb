@@ -779,12 +779,18 @@ class NotificationType {
     // (the pointer is usable). No details are expected.
     NOTIFY_BALLOON_DISCONNECTED,
 
+    // Web Database Service ----------------------------------------------------
+
     // This notification is sent whenever autofill entries are
     // changed.  The detail of this notification is a list of changes
     // represented by a vector of AutofillChange.  Each change
     // includes a change type (add, update, or remove) as well as the
     // key of the entry that was affected.
     AUTOFILL_ENTRIES_CHANGED,
+
+    // This notification is sent whenever the web database service has finished
+    // loading the web database.  No details are expected.
+    WEB_DATABASE_LOADED,
 
     // Purge Memory ------------------------------------------------------------
 

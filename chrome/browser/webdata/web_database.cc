@@ -1227,11 +1227,45 @@ bool WebDatabase::AddAutoFillProfile(const AutoFillProfile& profile) {
     return false;
   }
 
-  return true;
+  return s.Succeeded();
+}
+
+static AutoFillProfile* AutoFillProfileFromStatement(const sql::Statement& s) {
+  AutoFillProfile* profile = new AutoFillProfile(
+      ASCIIToUTF16(s.ColumnString(0)), s.ColumnInt(1));
+  profile->SetInfo(AutoFillType(NAME_FIRST),
+                   ASCIIToUTF16(s.ColumnString(2)));
+  profile->SetInfo(AutoFillType(NAME_MIDDLE),
+                   ASCIIToUTF16(s.ColumnString(3)));
+  profile->SetInfo(AutoFillType(NAME_LAST),
+                   ASCIIToUTF16(s.ColumnString(4)));
+  profile->SetInfo(AutoFillType(EMAIL_ADDRESS),
+                   ASCIIToUTF16(s.ColumnString(5)));
+  profile->SetInfo(AutoFillType(COMPANY_NAME),
+                   ASCIIToUTF16(s.ColumnString(6)));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+                   ASCIIToUTF16(s.ColumnString(7)));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
+                   ASCIIToUTF16(s.ColumnString(8)));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
+                   ASCIIToUTF16(s.ColumnString(9)));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
+                   ASCIIToUTF16(s.ColumnString(10)));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
+                   ASCIIToUTF16(s.ColumnString(11)));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
+                   ASCIIToUTF16(s.ColumnString(12)));
+  profile->SetInfo(AutoFillType(PHONE_HOME_NUMBER),
+                   ASCIIToUTF16(s.ColumnString(13)));
+  profile->SetInfo(AutoFillType(PHONE_FAX_NUMBER),
+                   ASCIIToUTF16(s.ColumnString(14)));
+
+  return profile;
 }
 
 bool WebDatabase::GetAutoFillProfileForLabel(const string16& label,
                                              AutoFillProfile** profile) {
+  DCHECK(profile);
   sql::Statement s(db_.GetUniqueStatement(
       "SELECT * FROM autofill_profiles "
       "WHERE label = ?"));
@@ -1244,36 +1278,26 @@ bool WebDatabase::GetAutoFillProfileForLabel(const string16& label,
   if (!s.Step())
     return false;
 
-  *profile = new AutoFillProfile(label, s.ColumnInt(1));
-  AutoFillProfile* profile_ptr = *profile;
-  profile_ptr->SetInfo(AutoFillType(NAME_FIRST),
-                       ASCIIToUTF16(s.ColumnString(2)));
-  profile_ptr->SetInfo(AutoFillType(NAME_MIDDLE),
-                       ASCIIToUTF16(s.ColumnString(3)));
-  profile_ptr->SetInfo(AutoFillType(NAME_LAST),
-                       ASCIIToUTF16(s.ColumnString(4)));
-  profile_ptr->SetInfo(AutoFillType(EMAIL_ADDRESS),
-                       ASCIIToUTF16(s.ColumnString(5)));
-  profile_ptr->SetInfo(AutoFillType(COMPANY_NAME),
-                       ASCIIToUTF16(s.ColumnString(6)));
-  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
-                       ASCIIToUTF16(s.ColumnString(7)));
-  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
-                       ASCIIToUTF16(s.ColumnString(8)));
-  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
-                       ASCIIToUTF16(s.ColumnString(9)));
-  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
-                       ASCIIToUTF16(s.ColumnString(10)));
-  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
-                       ASCIIToUTF16(s.ColumnString(11)));
-  profile_ptr->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
-                       ASCIIToUTF16(s.ColumnString(12)));
-  profile_ptr->SetInfo(AutoFillType(PHONE_HOME_NUMBER),
-                       ASCIIToUTF16(s.ColumnString(13)));
-  profile_ptr->SetInfo(AutoFillType(PHONE_FAX_NUMBER),
-                       ASCIIToUTF16(s.ColumnString(14)));
+  *profile = AutoFillProfileFromStatement(s);
 
-  return true;
+  return s.Succeeded();
+}
+
+bool WebDatabase::GetAutoFillProfiles(
+    std::vector<AutoFillProfile*>* profiles) {
+  DCHECK(profiles);
+  profiles->clear();
+
+  sql::Statement s(db_.GetUniqueStatement("SELECT * FROM autofill_profiles"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  while (s.Step())
+    profiles->push_back(AutoFillProfileFromStatement(s));
+
+  return s.Succeeded();
 }
 
 bool WebDatabase::UpdateAutoFillProfile(const AutoFillProfile& profile) {
@@ -1294,8 +1318,8 @@ bool WebDatabase::UpdateAutoFillProfile(const AutoFillProfile& profile) {
   return s.Run();
 }
 
-bool WebDatabase::RemoveAutoFillProfile(const AutoFillProfile& profile) {
-  DCHECK(profile.unique_id());
+bool WebDatabase::RemoveAutoFillProfile(int profile_id) {
+  DCHECK_NE(0, profile_id);
   sql::Statement s(db_.GetUniqueStatement(
       "DELETE FROM autofill_profiles WHERE unique_id = ?"));
   if (!s) {
@@ -1303,7 +1327,7 @@ bool WebDatabase::RemoveAutoFillProfile(const AutoFillProfile& profile) {
     return false;
   }
 
-  s.BindInt(0, profile.unique_id());
+  s.BindInt(0, profile_id);
   return s.Run();
 }
 

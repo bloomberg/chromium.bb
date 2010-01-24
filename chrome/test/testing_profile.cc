@@ -134,6 +134,7 @@ TestingProfile::TestingProfile(int count)
 
 TestingProfile::~TestingProfile() {
   DestroyHistoryService();
+  DestroyWebDataService();
   file_util::Delete(path_, true);
 }
 
@@ -190,6 +191,21 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
         bookmark_bar_model_.get();
   }
   bookmark_bar_model_->Load();
+}
+
+void TestingProfile::CreateWebDataService(bool delete_file) {
+  if (web_data_service_.get())
+    web_data_service_->Shutdown();
+
+  if (delete_file) {
+    FilePath path = GetPath();
+    path = path.Append(chrome::kWebDataFilename);
+    file_util::Delete(path, false);
+  }
+
+  web_data_service_ = new WebDataService;
+  if (web_data_service_.get())
+    web_data_service_->Init(GetPath());
 }
 
 void TestingProfile::BlockUntilBookmarkModelLoaded() {
@@ -264,4 +280,11 @@ void TestingProfile::CreateProfileSyncService() {
 
 ProfileSyncService* TestingProfile::GetProfileSyncService() {
   return profile_sync_service_.get();
+}
+
+void TestingProfile::DestroyWebDataService() {
+  if (!web_data_service_.get())
+    return;
+
+  web_data_service_->Shutdown();
 }
