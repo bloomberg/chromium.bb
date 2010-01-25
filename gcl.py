@@ -29,9 +29,7 @@ __version__ = '1.1.3'
 
 CODEREVIEW_SETTINGS = {
   # Default values.
-  "CODE_REVIEW_SERVER": "codereview.chromium.org",
-  "CC_LIST": "chromium-reviews@googlegroups.com",
-  "VIEW_VC": "http://src.chromium.org/viewvc/chrome?view=rev&revision=",
+  "CODE_REVIEW_SERVER": "codereview.appspot.com",
 }
 
 # globals that store the root of the current repository and the directory where
@@ -1102,13 +1100,6 @@ def main(argv=None):
       os.mkdir(GetInfoDir())
     if not os.path.exists(GetChangesDir()):
       os.mkdir(GetChangesDir())
-      # For smooth upgrade support, move the files in GetInfoDir() to
-      # GetChangesDir().
-      # TODO(maruel): Remove this code in August 2009.
-      for filename in os.listdir(unicode(GetInfoDir())):
-        file_path = os.path.join(unicode(GetInfoDir()), filename)
-        if os.path.isfile(file_path) and filename != CODEREVIEW_SETTINGS_FILE:
-          shutil.move(file_path, GetChangesDir())
     if not os.path.exists(GetCacheDir()):
       os.mkdir(GetCacheDir())
   except gclient_utils.Error:
