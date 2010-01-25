@@ -114,11 +114,11 @@ class GitWrapper(SCMWrapper, scm.GIT):
   """Wrapper for Git"""
 
   def cleanup(self, options, args, file_list):
-    """Cleanup working copy."""
+    """'Cleanup' the repo.
+
+    There's no real git equivalent for the svn cleanup command, do a no-op.
+    """
     __pychecker__ = 'unusednames=options,args,file_list'
-    self._Run(['prune'], redirect_stdout=False)
-    self._Run(['fsck'], redirect_stdout=False)
-    self._Run(['gc'], redirect_stdout=False)
 
   def diff(self, options, args, file_list):
     __pychecker__ = 'unusednames=options,args,file_list'
