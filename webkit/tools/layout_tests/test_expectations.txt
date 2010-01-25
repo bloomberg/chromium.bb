@@ -652,6 +652,10 @@ BUG21113 : userscripts/script-run-at-end.html = FAIL
 // error in the header of the following test.
 BUG24197 SKIP : fast/css/disabled-author-styles.html = FAIL
 
+// Need to implement
+// layoutTestController.setDomainRelaxationForbiddenForURLScheme()
+BUG32674 WIN LINUX MAC : http/tests/security/setDomainRelaxationForbiddenForURLScheme.html = TEXT
+
 // -----------------------------------------------------------------
 // Other
 // -----------------------------------------------------------------
@@ -1280,7 +1284,6 @@ BUG24227 : http/tests/plugins/local-geturl-from-remote.html = FAIL
 // These tests are wrong because of:
 // https://bugs.webkit.org/show_bug.cgi?id=24161. This is not
 // important for current release.
-BUG10353 WIN LINUX : fast/forms/listbox-deselect-scroll.html = FAIL
 BUG10353 LINUX WIN DEBUG : fast/forms/listbox-selection-2.html = FAIL
 BUG10353 LINUX RELEASE : fast/forms/listbox-selection-2.html = FAIL
 BUG10353 SLOW WIN RELEASE : fast/forms/listbox-selection-2.html = FAIL
@@ -3018,9 +3021,7 @@ BUG53331 : fast/gradients/border-image-gradient-sides-and-corners.html = FAIL
 BUG32670 LINUX : fast/css/zoom-body-scroll.html = TEXT
 BUG32671 WIN LINUX MAC : fast/dom/Window/timer-null-script-execution-context.html = TEXT
 BUG32673 WIN LINUX : fast/forms/textarea-scrollbar-height.html = TEXT
-BUG32674 WIN LINUX MAC : http/tests/security/setDomainRelaxationForbiddenForURLScheme.html = TEXT
 BUG32675 LINUX : fast/repaint/trailing-floats-root-line-box-overflow.html = IMAGE
-BUG32676 WIN LINUX MAC : http/tests/appcache/destroyed-frame.html = CRASH
 
 // WebKit roll 53452:53511
 BUG32664 WIN DEBUG : http/tests/security/view-source-no-refresh.html = TIMEOUT
