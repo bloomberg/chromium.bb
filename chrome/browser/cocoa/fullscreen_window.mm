@@ -1,8 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cocoa/fullscreen_window.h"
+#import "chrome/browser/cocoa/fullscreen_window.h"
+
+#include "base/mac_util.h"
 
 @implementation FullscreenWindow
 
@@ -38,6 +40,31 @@
 
 - (BOOL)canBecomeMainWindow {
   return YES;
+}
+
+// We need our own version, since the default one wants to flash the close
+// button (and possibly other things), which results in nothing happening.
+- (void)performClose:(id)sender {
+  BOOL shouldClose = YES;
+
+  // If applicable, check if this window should close.
+  id delegate = [self delegate];
+  if ([delegate respondsToSelector:@selector(windowShouldClose:)])
+    shouldClose = [delegate windowShouldClose:self];
+
+  if (shouldClose) {
+    [self close];
+    mac_util::ReleaseFullScreen();
+  }
+}
+
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  // Explicitly enable |-performClose:| (see above); otherwise the fact that
+  // this window does not have a close button results in it being disabled.
+  if ([item action] == @selector(performClose:))
+    return YES;
+
+  return [super validateUserInterfaceItem:item];
 }
 
 @end
