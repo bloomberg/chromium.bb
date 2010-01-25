@@ -115,13 +115,13 @@ class GitWrapper(SCMWrapper, scm.GIT):
 
   def cleanup(self, options, args, file_list):
     """Cleanup working copy."""
-    __pychecker__ = 'unusednames=args,file_list,options'
+    __pychecker__ = 'unusednames=options,args,file_list'
     self._Run(['prune'], redirect_stdout=False)
     self._Run(['fsck'], redirect_stdout=False)
     self._Run(['gc'], redirect_stdout=False)
 
   def diff(self, options, args, file_list):
-    __pychecker__ = 'unusednames=args,file_list,options'
+    __pychecker__ = 'unusednames=options,args,file_list'
     merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
     self._Run(['diff', merge_base], redirect_stdout=False)
 
@@ -131,7 +131,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
     Exports into the specified directory, creating the path if it does
     already exist.
     """
-    __pychecker__ = 'unusednames=file_list,options'
+    __pychecker__ = 'unusednames=options,file_list'
     assert len(args) == 1
     export_path = os.path.abspath(os.path.join(args[0], self.relpath))
     if not os.path.exists(export_path):
@@ -146,7 +146,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
     The patch file is generated from a diff of the merge base of HEAD and
     its upstream branch.
     """
-    __pychecker__ = 'unusednames=file_list,options'
+    __pychecker__ = 'unusednames=options,file_list'
     path = os.path.join(self._root_dir, self.relpath)
     merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
     command = ['diff', merge_base]
@@ -246,7 +246,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
 
   def revinfo(self, options, args, file_list):
     """Display revision"""
-    __pychecker__ = 'unusednames=args,file_list,options'
+    __pychecker__ = 'unusednames=options,args,file_list'
     return self._Run(['rev-parse', 'HEAD'])
 
   def runhooks(self, options, args, file_list):
@@ -254,7 +254,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
 
   def status(self, options, args, file_list):
     """Display status information."""
-    __pychecker__ = 'unusednames=args,options'
+    __pychecker__ = 'unusednames=options,args'
     if not os.path.isdir(self.checkout_path):
       print('\n________ couldn\'t run status in %s:\nThe directory '
             'does not exist.' % self.checkout_path)
