@@ -7,8 +7,12 @@
 // (<link rel="alternate" type="application/rss+xml" etc). If so, show the
 // page action icon.
 
-if (!isPlainTextFeedDocument())
+debugMsg(logLevels.info, "Running feed finder script");
+
+if (!isFeedDocument()) {
+  debugMsg(logLevels.info, "Document is not a feed, check for <link> tags.");
   findFeedLinks();
+}
 
 // See if the document contains a <link> tag within the <head> and
 // whether that points to an RSS feed.
@@ -34,23 +38,43 @@ function findFeedLinks() {
 }
 
 // Check to see if the current document is a feed delivered as plain text,
-// which Chrome does for some mime types.
-function isPlainTextFeedDocument() {
+// which Chrome does for some mime types, or a feed wrapped in an html.
+function isFeedDocument() {
   var body = document.body;
+
+  debugMsg(logLevels.info, "Checking if document is feed");
+
+  var soleTagInBody = "";
+  if (body && body.childElementCount == 1) {
+    soleTagInBody = body.children[0].tagName;
+    debugMsg(logLevels.info, "The sole tag in the body is: " + soleTagInBody);
+  }
+
+  // Some feeds show up as feed tags within the BODY tag, for example some
+  // ComputerWorld feeds. We cannot check for this at document_start since
+  // the body tag hasn't been defined at that time (contains only HTML element
+  // with no children).
+  if (soleTagInBody == "RSS" || soleTagInBody == "FEED" ||
+      soleTagInBody == "RDF") {
+    debugMsg(logLevels.info, "Found feed: Tag is: " + soleTagInBody);
+    chrome.extension.sendRequest({msg: "feedDocument", href: location.href});
+    return true;
+  }
 
   // Chrome renders some content types like application/rss+xml and
   // application/atom+xml as text/plain, resulting in a body tag with one
   // PRE child containing the XML. So, we attempt to parse it as XML and look
   // for RSS tags within.
-  if (body && body.childElementCount == 1 &&
-      body.children[0].tagName == "PRE") {
+  if (soleTagInBody == "PRE") {
+    debugMsg(logLevels.info, "Found feed: Wrapped in PRE");
     var domParser = new DOMParser();
     var doc = domParser.parseFromString(body.textContent, "text/xml");
 
-    // Uncomment these three lines to see the parsing error.
-    // var error = docWithin.getElementsByTagName("parsererror");
-    // if (error.length)
-    //  console.log('error: ' + doc.childNodes[0].outerHTML);
+    if (currentLogLevel >= logLevels.error) {
+      var error = doc.getElementsByTagName("parsererror");
+      if (error.length)
+        debugMsg(logLevels.error, 'error: ' + doc.childNodes[0].outerHTML);
+    }
 
     // |doc| now contains the parsed document within the PRE tag.
     if (containsFeed(doc)) {
@@ -59,6 +83,8 @@ function isPlainTextFeedDocument() {
       return true;
     }
   }
+
+  debugMsg(logLevels.info, "Exiting: feed is not a feed document");
 
   return false;
 }

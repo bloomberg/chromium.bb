@@ -1,29 +1,24 @@
 {
-  "name": "RSS Subscription Extension (by Google)",
-  "description": "Adds one-click subscription to your toolbar.",
-  "version": "2.0",
-  "permissions": [
-    "tabs",
-    "http://*/*",
-    "https://*/*"
-  ],
-  "background_page": "background.html",
-  "options_page": "options.html",
-  "content_scripts": [
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": ["sniff_common.js", "doc_start.js"],
+   "background_page": "background.html",
+   "content_scripts": [ {
+      "js": [ "sniff_common.js", "doc_start.js" ],
+      "matches": [ "http://*/*", "https://*/*" ],
       "run_at": "document_start"
-    },
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": ["sniff_common.js", "feed_finder.js"]
-    }
-  ],
-  "icons": { "128": "feed-icon-128x128.png" },
-  "page_action": {
-    "default_title": "Subscribe to this feed",
-    "default_icon": "feed-icon-16x16.png",
-    "popup": "popup.html"
-  }
+   }, {
+      "js": [ "sniff_common.js", "feed_finder.js" ],
+      "matches": [ "http://*/*", "https://*/*" ]
+   } ],
+   "description": "Adds one-click subscription to your toolbar.",
+   "icons": {
+      "128": "feed-icon-128x128.png"
+   },
+   "name": "RSS Subscription Extension (by Google)",
+   "options_page": "options.html",
+   "page_action": {
+      "default_icon": "feed-icon-16x16.png",
+      "default_title": "Subscribe to this feed",
+      "popup": "popup.html"
+   },
+   "permissions": [ "tabs", "http://*/*", "https://*/*" ],
+   "version": "2.0.1"
 }
