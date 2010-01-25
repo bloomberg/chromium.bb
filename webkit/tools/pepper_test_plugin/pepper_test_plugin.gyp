@@ -30,10 +30,6 @@
           'product_name': 'pepper_test_plugin',
           'type': 'shared_library',
           'msvs_guid': 'EE00E36E-9E8C-4DFB-925E-FBE32CEDB91A',
-          'dependencies': [
-            '../../../gpu/gpu.gyp:gles2_demo_lib',
-            '../../../gpu/gpu.gyp:pgl',
-          ],
           'sources': [
             'pepper_test_plugin.def',
             'pepper_test_plugin.rc',
@@ -49,7 +45,14 @@
             ],
           },
         }],
-        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
+        ['OS=="linux"', {
+          'type': 'shared_library',
+          'cflags': ['-fvisibility=hidden'],
+          # -gstabs, used in the official builds, causes an ICE. Simply remove
+          # it.
+          'cflags!': ['-gstabs'],
+        }],
+        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm") and linux_fpic!=1', {
           'product_name': 'pepper_test_plugin',
           # Shared libraries need -fPIC on x86-64
           'cflags': ['-fPIC'],
@@ -59,6 +62,14 @@
             '../../../base/base.gyp:base',
             '../../../skia/skia.gyp:skia',
           ],
+          'conditions': [
+            ['OS!="mac"', {
+              'dependencies': [
+                '../../../gpu/gpu.gyp:gles2_demo_lib',
+                '../../../gpu/gpu.gyp:pgl',
+              ],
+            }],
+          ]
         }],
         ['OS=="mac"', {
           'type': 'loadable_module',
