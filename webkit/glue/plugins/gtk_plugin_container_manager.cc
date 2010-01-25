@@ -59,14 +59,17 @@ void GtkPluginContainerManager::MovePluginContainer(
     return;
 
   DCHECK(!GTK_WIDGET_NO_WINDOW(widget));
-  DCHECK(GTK_WIDGET_REALIZED(widget));
 
   if (!move.visible) {
     gtk_widget_hide(widget);
     return;
-  } else {
-    gtk_widget_show(widget);
   }
+
+  DCHECK(GTK_WIDGET_REALIZED(widget));
+  gtk_widget_show(widget);
+
+  if (!move.rects_valid)
+    return;
 
   GdkRectangle clip_rect = move.clip_rect.ToGdkRectangle();
   GdkRegion* clip_region = gdk_region_rectangle(&clip_rect);
