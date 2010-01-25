@@ -4,10 +4,22 @@
 
 #include "chrome/browser/notifications/balloon_collection.h"
 
+#include "base/gfx/size.h"
 #include "base/logging.h"
+#include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/views/notifications/balloon_view.h"
 
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
-  // TODO(johnnyg): http://crbug.com/23954.  Hook up to views.
-  return new Balloon(notification, profile, this);
+  Balloon* balloon = new Balloon(notification, profile, this);
+
+  // TODO(johnnyg): hookup to views code for Chrome OS.
+#if defined(TOOLKIT_GTK)
+  balloon->set_view(new BalloonViewImpl());
+  gfx::Size size(layout_.min_balloon_width(), layout_.min_balloon_height());
+  balloon->set_content_size(size);
+#endif
+
+  return balloon;
+
 }
