@@ -68,6 +68,7 @@
 #include "chrome/browser/gtk/toolbar_star_toggle_gtk.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/page_info_window.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -294,6 +295,26 @@ bool ShouldExecuteReservedCommandImmediately(
 
   // All other reserved accelerators should be processed immediately.
   return true;
+}
+
+// Performs Cut/Copy/Paste operation on the |window|.
+// If the current render view is focused, then just call the specified |method|
+// against the current render view host, otherwise emit the specified |signal|
+// against the focused widget.
+// TODO(suzhe): This approach does not work for plugins.
+void DoCutCopyPaste(BrowserWindowGtk* window, void (RenderViewHost::*method)(),
+                    const char* signal) {
+  TabContents* current_tab_contents =
+      window->browser()->tabstrip_model()->GetSelectedTabContents();
+  if (current_tab_contents && current_tab_contents->GetContentNativeView() &&
+      gtk_widget_is_focus(current_tab_contents->GetContentNativeView())) {
+    (current_tab_contents->render_view_host()->*method)();
+  } else {
+    GtkWidget* widget = gtk_window_get_focus(window->window());
+    guint id;
+    if (widget && (id = g_signal_lookup(signal, G_OBJECT_TYPE(widget))) != 0)
+      g_signal_emit(widget, id, 0);
+  }
 }
 
 }  // namespace
@@ -1000,6 +1021,18 @@ void BrowserWindowGtk::ShowCreateShortcutsDialog(TabContents* tab_contents) {
                                             tab_contents->GetURL(),
                                             tab_contents->GetTitle(),
                                             bitmap);
+}
+
+void BrowserWindowGtk::Cut() {
+  DoCutCopyPaste(this, &RenderViewHost::Cut, "cut-clipboard");
+}
+
+void BrowserWindowGtk::Copy() {
+  DoCutCopyPaste(this, &RenderViewHost::Copy, "copy-clipboard");
+}
+
+void BrowserWindowGtk::Paste() {
+  DoCutCopyPaste(this, &RenderViewHost::Paste, "paste-clipboard");
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {

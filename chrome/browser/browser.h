@@ -383,7 +383,7 @@ class Browser : public TabStripModelDelegate,
   void ToggleEncodingAutoDetect();
   void OverrideEncoding(int encoding_id);
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if !defined(OS_MACOSX)
   // Clipboard commands
   void Cut();
   void Copy();

@@ -292,6 +292,9 @@ class BrowserView : public BrowserWindow,
 #if defined(OS_CHROMEOS)
   virtual void ToggleCompactNavigationBar();
 #endif  // defined(OS_CHROMEOS)
+  virtual void Cut();
+  virtual void Copy();
+  virtual void Paste();
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const;

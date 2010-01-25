@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
+#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -1182,6 +1183,28 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 void BrowserView::ToggleCompactNavigationBar() {
 }
 #endif
+
+// TODO(devint): http://b/issue?id=1117225 Cut, Copy, and Paste are always
+// enabled in the page menu regardless of whether the command will do
+// anything. When someone selects the menu item, we just act as if they hit
+// the keyboard shortcut for the command by sending the associated key press
+// to windows. The real fix to this bug is to disable the commands when they
+// won't do anything. We'll need something like an overall clipboard command
+// manager to do that.
+void BrowserView::Cut() {
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_X, true,
+                            false, false);
+}
+
+void BrowserView::Copy() {
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_C, true,
+                            false, false);
+}
+
+void BrowserView::Paste() {
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_V, true,
+                            false, false);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:

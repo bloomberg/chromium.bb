@@ -114,6 +114,9 @@ class BrowserWindowGtk : public BrowserWindow,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void ShowCreateShortcutsDialog(TabContents* tab_contents);
+  virtual void Cut();
+  virtual void Copy();
+  virtual void Paste();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
