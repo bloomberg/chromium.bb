@@ -17,7 +17,6 @@
 #include <cxxabi.h>
 #endif
 
-#include <iostream>
 #include <string>
 
 #if defined(OS_MACOSX)
@@ -31,11 +30,6 @@
 #include "base/safe_strerror_posix.h"
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
-#include "base/string_util.h"
-
-#if defined(USE_SYMBOLIZE)
-#include "base/third_party/symbolize/symbolize.h"
-#endif
 
 namespace {
 // The prefix used for mangled symbols, per the Itanium C++ ABI:
@@ -92,48 +86,6 @@ void DemangleSymbols(std::string* text) {
 
 #endif  // defined(__GLIBCXX__)
 }
-
-// Gets the backtrace as a vector of strings. If possible, resolve symbol
-// names and attach these. Otherwise just use raw addresses. Returns true
-// if any symbol name is resolved.
-bool GetBacktraceStrings(void **trace, int size,
-                         std::vector<std::string>* trace_strings) {
-  bool symbolized = false;
-
-#if defined(USE_SYMBOLIZE)
-  for (int i = 0; i < size; ++i) {
-    char symbol[1024];
-    // Subtract by one as return address of function may be in the next
-    // function when a function is annotated as noreturn.
-    if (google::Symbolize(static_cast<char *>(trace[i]) - 1,
-                          symbol, sizeof(symbol))) {
-      // Don't call DemangleSymbols() here as the symbol is demangled by
-      // google::Symbolize().
-      trace_strings->push_back(StringPrintf("%s [%p]", symbol, trace[i]));
-      symbolized = true;
-    } else {
-      trace_strings->push_back(StringPrintf("%p", trace[i]));
-    }
-  }
-#else
-  scoped_ptr_malloc<char*> trace_symbols(backtrace_symbols(trace, size));
-  if (trace_symbols.get()) {
-    for (int i = 0; i < size; ++i) {
-      std::string trace_symbol = trace_symbols.get()[i];
-      DemangleSymbols(&trace_symbol);
-      trace_strings->push_back(trace_symbol);
-    }
-    symbolized = true;
-  } else {
-    for (int i = 0; i < size; ++i) {
-      trace_strings->push_back(StringPrintf("%p", trace[i]));
-    }
-  }
-#endif  // defined(USE_SYMBOLIZE)
-
-  return symbolized;
-}
-
 }  // namespace
 
 // static
@@ -257,11 +209,7 @@ void StackTrace::PrintBacktrace() {
     return;
 #endif
   fflush(stderr);
-  std::vector<std::string> trace_strings;
-  GetBacktraceStrings(trace_, count_, &trace_strings);
-  for (size_t i = 0; i < trace_strings.size(); ++i) {
-    std::cerr << "\t" << trace_strings[i] << "\n";
-  }
+  backtrace_symbols_fd(trace_, count_, STDERR_FILENO);
 }
 
 void StackTrace::OutputToStream(std::ostream* os) {
@@ -269,15 +217,22 @@ void StackTrace::OutputToStream(std::ostream* os) {
   if (backtrace_symbols == NULL)
     return;
 #endif
-  std::vector<std::string> trace_strings;
-  if (GetBacktraceStrings(trace_, count_, &trace_strings)) {
-    (*os) << "Backtrace:\n";
-  } else {
+  scoped_ptr_malloc<char*> trace_symbols(backtrace_symbols(trace_, count_));
+
+  // If we can't retrieve the symbols, print an error and just dump the raw
+  // addresses.
+  if (trace_symbols.get() == NULL) {
     (*os) << "Unable get symbols for backtrace (" << safe_strerror(errno)
           << "). Dumping raw addresses in trace:\n";
-  }
-
-  for (size_t i = 0; i < trace_strings.size(); ++i) {
-    (*os) << "\t" << trace_strings[i] << "\n";
+    for (int i = 0; i < count_; ++i) {
+      (*os) << "\t" << trace_[i] << "\n";
+    }
+  } else {
+    (*os) << "Backtrace:\n";
+    for (int i = 0; i < count_; ++i) {
+      std::string trace_symbol(trace_symbols.get()[i]);
+      DemangleSymbols(&trace_symbol);
+      (*os) << "\t" << trace_symbol << "\n";
+    }
   }
 }
