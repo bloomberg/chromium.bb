@@ -87,6 +87,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     "application/x-vnd.movenetworks.qm",  // Crashes on Snow Leopard.
     "application/vnd.o3d.auto",           // Doesn't render, and having it
                                           // detected can prevent fallbacks.
+    "video/divx",                         // Crashes on 10.5.
   };
   // In the case of plugins that share MIME types, we have to blacklist by name.
   const char* blacklisted_plugin_names[] = {
@@ -96,20 +97,6 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     "PDF Browser Plugin",
   };
 
-  // Plugins that we know are working reasonably well.
-  const char* whitelisted_plugin_mimes[] = {
-    "application/geplugin",
-    "application/googletalk",
-    "application/vnd.npapi-test",
-    "application/x-id-quakelive",
-    "application/x-picasa-detect",
-    "application/x-shockwave-flash",
-    "application/x-silverlight",
-    "application/x-webkit-test-netscape",
-    "pepper-application/x-pepper-test-plugin",
-    "video/quicktime",
-  };
-
   // Start with names.
   std::string plugin_name = WideToUTF8(info.name);
   if (ArrayContainsString(blacklisted_plugin_names,
@@ -117,7 +104,6 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     return false;
   }
   // Then check mime types.
-  bool whitelisted = false;
   for (std::vector<WebPluginMimeType>::const_iterator i =
            info.mime_types.begin(); i != info.mime_types.end(); ++i) {
     if (ArrayContainsString(blacklisted_plugin_mimes,
@@ -125,18 +111,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                             i->mime_type)) {
       return false;
     }
-    if (ArrayContainsString(whitelisted_plugin_mimes,
-                            arraysize(whitelisted_plugin_mimes),
-                            i->mime_type)) {
-      whitelisted = true;
-      break;
-    }
   }
-
-#if OS_MACOSX_BLACKLIST_PLUGINS_BY_DEFAULT
-  if (!whitelisted)
-    return false;
-#endif
 
   // Hierarchy check
   // (we're loading plugins hierarchically from Library folders, so plugins we
