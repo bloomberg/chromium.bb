@@ -337,6 +337,12 @@ void DownloadManager::RegisterUserPrefs(PrefService* prefs) {
                         &default_download_path)) {
     NOTREACHED();
   }
+  if (DownloadPathIsDangerous(default_download_path)) {
+    if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE,
+                          &default_download_path)) {
+      NOTREACHED();
+    }
+  }
   prefs->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
                               default_download_path);
 

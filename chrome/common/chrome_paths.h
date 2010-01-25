@@ -15,33 +15,38 @@ namespace chrome {
 enum {
   PATH_START = 1000,
 
-  DIR_APP = PATH_START,  // directory where dlls and data reside
-  DIR_LOGS,              // directory where logs should be written
-  DIR_USER_DATA,         // directory where user data can be written
-  DIR_CRASH_DUMPS,       // directory where crash dumps are written
-  DIR_USER_DESKTOP,      // directory that correspond to the desktop
-  DIR_INSPECTOR,         // directory where web inspector is located
-  DIR_APP_DICTIONARIES,  // directory where the global dictionaries are
-  DIR_USER_DOCUMENTS,    // directory for a user's "My Documents"
-  DIR_DEFAULT_DOWNLOADS, // directory for a user's "My Documents/Downloads"
-  FILE_RESOURCE_MODULE,  // full path and filename of the module that contains
-                         // embedded resources (version, strings, images, etc.)
-  FILE_LOCAL_STATE,      // path and filename to the file in which machine/
-                         // installation-specific state is saved
-  FILE_RECORDED_SCRIPT,  // full path to the script.log file that contains
-                         // recorded browser events for playback.
-  FILE_GEARS_PLUGIN,     // full path to the gears.dll plugin file.
-  FILE_LIBAVCODEC,       // full path to libavcodec media decoding library.
-  FILE_LIBAVFORMAT,      // full path to libavformat media parsing library.
-  FILE_LIBAVUTIL,        // full path to libavutil media utility library.
+  DIR_APP = PATH_START,         // directory where dlls and data reside
+  DIR_LOGS,                     // directory where logs should be written
+  DIR_USER_DATA,                // directory where user data can be written
+  DIR_CRASH_DUMPS,              // directory where crash dumps are written
+  DIR_USER_DESKTOP,             // directory that correspond to the desktop
+  DIR_INSPECTOR,                // directory where web inspector is located
+  DIR_APP_DICTIONARIES,         // directory where the global dictionaries are
+  DIR_USER_DOCUMENTS,           // directory for a user's "My Documents"
+  DIR_DEFAULT_DOWNLOADS_SAFE,   // directory for a user's
+                                // "My Documents/Downloads"
+  DIR_DEFAULT_DOWNLOADS,        // directory for a user's downloads
+  FILE_RESOURCE_MODULE,         // full path and filename of the module that
+                                // contains embedded resources (version,
+                                // strings, images, etc.)
+  FILE_LOCAL_STATE,             // path and filename to the file in which
+                                // machine/installation-specific state is saved
+  FILE_RECORDED_SCRIPT,         // full path to the script.log file that
+                                // contains recorded browser events for playback
+  FILE_GEARS_PLUGIN,            // full path to the gears.dll plugin file.
+  FILE_LIBAVCODEC,              // full path to libavcodec media decoding
+                                // library.
+  FILE_LIBAVFORMAT,             // full path to libavformat media parsing
+                                // library.
+  FILE_LIBAVUTIL,               // full path to libavutil media utility library.
 #if defined(OS_CHROMEOS)
-  FILE_CHROMEOS_API,     // full path to chrome os api shared object.
+  FILE_CHROMEOS_API,            // full path to chrome os api shared object.
 #endif
 
 
   // Valid only in development environment; TODO(darin): move these
-  DIR_TEST_DATA,         // directory where unit test data resides
-  DIR_TEST_TOOLS,        // directory where unit test tools reside
+  DIR_TEST_DATA,                // directory where unit test data resides
+  DIR_TEST_TOOLS,               // directory where unit test tools reside
 
   PATH_END
 };

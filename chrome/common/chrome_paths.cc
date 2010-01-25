@@ -83,6 +83,14 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       create_dir = true;
       break;
+    case chrome::DIR_DEFAULT_DOWNLOADS_SAFE:
+#if defined(OS_WIN)
+      if (!GetUserDownloadsDirectorySafe(&cur))
+        return false;
+      break;
+#else
+      // Fall through for all other platforms.
+#endif
     case chrome::DIR_DEFAULT_DOWNLOADS:
       if (!GetUserDownloadsDirectory(&cur))
         return false;
