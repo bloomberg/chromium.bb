@@ -29,7 +29,7 @@ typedef struct _NPDeviceBuffer {
 
 /* completion callback for flush device */
 typedef void (*NPDeviceFlushContextCallbackPtr)(
-    NPP instace,
+    NPP instance,
     NPDeviceContext* context,
     NPError err,
     NPUserData* userData);
@@ -378,11 +378,10 @@ typedef struct _NPDeviceContextAudioConfig {
 } NPDeviceContextAudioConfig;
 
 struct _NPDeviceContextAudio {
-//  NPP npp;
   NPDeviceContextAudioConfig config;
   void *outBuffer;
   void *inBuffer;
-  void *privatePtr;
+  void *reserved;
 };
 
 #endif  /* _NP_EXTENSIONS_H_ */

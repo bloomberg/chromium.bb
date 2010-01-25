@@ -87,6 +87,8 @@
         'renderer/notification_provider.cc',
         'renderer/notification_provider.h',
         'renderer/paint_aggregator.cc',
+        'renderer/pepper_devices.cc',
+        'renderer/pepper_devices.h',
         'renderer/plugin_channel_host.cc',
         'renderer/plugin_channel_host.h',
         'renderer/print_web_view_helper.cc',

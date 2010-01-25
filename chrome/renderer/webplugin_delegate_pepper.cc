@@ -42,12 +42,6 @@ using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 
-namespace {
-
-const uint32 kBytesPerPixel = 4;  // Only 8888 RGBA for now.
-
-}  // namespace
-
 // Implementation artifacts for a context
 struct Device2DImpl {
   TransportDIB* dib;
@@ -56,8 +50,6 @@ struct Device2DImpl {
 struct Device3DImpl {
   gpu::CommandBuffer* command_buffer;
 };
-
-uint32 WebPluginDelegatePepper::next_buffer_id = 0;
 
 WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
     const FilePath& filename,
@@ -260,63 +252,23 @@ NPError WebPluginDelegatePepper::Device2DQueryConfig(
 NPError WebPluginDelegatePepper::Device2DInitializeContext(
     const NPDeviceContext2DConfig* config,
     NPDeviceContext2D* context) {
+
+  if (!render_view_) {
+    return NPERR_GENERIC_ERROR;
+  }
+
   // This is a windowless plugin, so set it to have a NULL handle. Defer this
   // until we know the plugin will use the 2D device. If it uses the 3D device
   // it will have a window handle.
   plugin_->SetWindow(NULL);
 
-  int width = window_rect_.width();
-  int height = window_rect_.height();
-  uint32 buffer_size = width * height * kBytesPerPixel;
-
-  // Initialize the impelementation information in case of failure.
-  context->reserved = NULL;
-
-  // Allocate the transport DIB and the PlatformCanvas pointing to it.
-  scoped_ptr<OpenPaintContext> paint_context(new OpenPaintContext);
-  paint_context->transport_dib.reset(
-      TransportDIB::Create(buffer_size, ++next_buffer_id));
-  if (!paint_context->transport_dib.get())
-    return NPERR_OUT_OF_MEMORY_ERROR;
-  paint_context->canvas.reset(
-      paint_context->transport_dib->GetPlatformCanvas(width, height));
-  if (!paint_context->canvas.get())
-    return NPERR_OUT_OF_MEMORY_ERROR;
-
-  // Note that we need to get the address out of the bitmap rather than
-  // using plugin_buffer_->memory(). The memory() is when the bitmap data
-  // has had "Map" called on it. For Windows, this is separate than making a
-  // bitmap using the shared section.
-  const SkBitmap& plugin_bitmap =
-      paint_context->canvas->getTopPlatformDevice().accessBitmap(true);
-  SkAutoLockPixels locker(plugin_bitmap);
-
-  // TODO(brettw) this theoretically shouldn't be necessary. But the
-  // platform device on Windows will fill itself with green to help you
-  // catch areas you didn't paint.
-  plugin_bitmap.eraseARGB(0, 0, 0, 0);
-
-  // Save the implementation information (the TransportDIB).
-  Device2DImpl* impl = new Device2DImpl;
-  if (impl == NULL) {
-    // TODO(sehr,brettw): cleanup the context if we fail.
-    return NPERR_GENERIC_ERROR;
+  scoped_ptr<Graphics2DDeviceContext> g2d(new Graphics2DDeviceContext());
+  NPError status = g2d->Initialize(window_rect_, config, context);
+  if (NPERR_NO_ERROR == status) {
+    context->reserved = reinterpret_cast<void *>(
+        graphic2d_contexts_.Add(g2d.release()));
   }
-  impl->dib = paint_context->transport_dib.get();
-  context->reserved = reinterpret_cast<void*>(impl);
-
-  // Save the canvas to the output context structure and save the
-  // OpenPaintContext for future reference.
-  context->region = plugin_bitmap.getAddr32(0, 0);
-  context->stride = width * kBytesPerPixel;
-  context->dirty.left = 0;
-  context->dirty.top = 0;
-  context->dirty.right = width;
-  context->dirty.bottom = height;
-  open_paint_contexts_[context->region] =
-      linked_ptr<OpenPaintContext>(paint_context.release());
-
-  return NPERR_NO_ERROR;
+  return status;
 }
 
 NPError WebPluginDelegatePepper::Device2DSetStateContext(
@@ -338,61 +290,28 @@ NPError WebPluginDelegatePepper::Device2DFlushContext(
     NPDeviceContext2D* context,
     NPDeviceFlushContextCallbackPtr callback,
     void* user_data) {
-  // Get the bitmap data associated with the incoming context.
-  OpenPaintContextMap::iterator found = open_paint_contexts_.find(
-      context->region);
-  if (found == open_paint_contexts_.end())
+
+  if (!context) {
+    return NPERR_INVALID_PARAM;
+  }
+
+  Graphics2DDeviceContext* ctx = graphic2d_contexts_.Lookup(
+      reinterpret_cast<intptr_t>(context->reserved));
+  if (!ctx) {
     return NPERR_INVALID_PARAM;  // TODO(brettw) call callback.
-
-  OpenPaintContext* paint_context = found->second.get();
-
-  // Draw the bitmap to the backing store.
-  //
-  // TODO(brettw) we can optimize this in the case where the entire canvas is
-  // updated by actually taking ownership of the buffer and not telling the
-  // plugin we're done using it. This wat we can avoid the copy when the entire
-  // canvas has been updated.
-  SkIRect src_rect = { context->dirty.left,
-                       context->dirty.top,
-                       context->dirty.right,
-                       context->dirty.bottom };
-  SkRect dest_rect = { SkIntToScalar(context->dirty.left),
-                       SkIntToScalar(context->dirty.top),
-                       SkIntToScalar(context->dirty.right),
-                       SkIntToScalar(context->dirty.bottom) };
-  SkCanvas committed_canvas(committed_bitmap_);
-
-  // We want to replace the contents of the bitmap rather than blend.
-  SkPaint paint;
-  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-  committed_canvas.drawBitmapRect(
-      paint_context->canvas->getTopPlatformDevice().accessBitmap(false),
-      &src_rect, dest_rect);
-
-  committed_bitmap_.setIsOpaque(false);
-
-  // Invoke the callback to inform the caller the work was done.
-  // TODO(brettw) this is not how we want this to work, this should
-  // happen when the frame is painted so the plugin knows when it can draw
-  // the next frame.
-  //
-  // This should also be called in the failure cases as well.
-  if (callback != NULL)
-    (*callback)(id, context, NPERR_NO_ERROR, user_data);
-
-  return NPERR_NO_ERROR;
+  }
+  return ctx->Flush(&committed_bitmap_, context, callback, id, user_data);
 }
 
 NPError WebPluginDelegatePepper::Device2DDestroyContext(
     NPDeviceContext2D* context) {
-  OpenPaintContextMap::iterator found = open_paint_contexts_.find(
-      context->region);
-  if (found == open_paint_contexts_.end())
-    return NPERR_INVALID_PARAM;
 
-  open_paint_contexts_.erase(found);
-  // Free the implementation information.
-  delete reinterpret_cast<Device2DImpl*>(context->reserved);
+  if (!context || !graphic2d_contexts_.Lookup(
+      reinterpret_cast<intptr_t>(context->reserved))) {
+    return NPERR_INVALID_PARAM;
+  }
+  graphic2d_contexts_.Remove(reinterpret_cast<intptr_t>(context->reserved));
+  memset(context, 0, sizeof(NPDeviceContext2D));
   return NPERR_NO_ERROR;
 }
 
@@ -585,39 +504,14 @@ NPError WebPluginDelegatePepper::DeviceAudioInitializeContext(
     return NPERR_GENERIC_ERROR;
   }
 
-  scoped_refptr<AudioMessageFilter> filter =
-      render_view_->audio_message_filter();
-  ViewHostMsg_Audio_CreateStream params;
-
-  params.format = AudioManager::AUDIO_PCM_LINEAR;
-  params.channels = config->outputChannelMap;
-  params.sample_rate = config->sampleRate;
-  switch (config->sampleType) {
-    case NPAudioSampleTypeInt16:
-      params.bits_per_sample = 16;
-      break;
-    case NPAudioSampleTypeFloat32:
-      params.bits_per_sample = 32;
-      break;
-    default:
-      return NPERR_INVALID_PARAM;
+  scoped_ptr<AudioDeviceContext> audio(new AudioDeviceContext());
+  NPError status = audio->Initialize(render_view_->audio_message_filter(),
+                                     config, context);
+  if (NPERR_NO_ERROR == status) {
+    context->reserved =
+        reinterpret_cast<void *>(audio_contexts_.Add(audio.release()));
   }
-
-  context->config = *config;
-  params.packet_size = config->sampleFrameCount * config->outputChannelMap
-      * (params.bits_per_sample >> 3);
-  LOG(INFO) << "Initializing Pepper Audio Context (" <<
-      config->sampleFrameCount << "Hz, " << params.bits_per_sample <<
-      " bits, " << config->outputChannelMap << "channels";
-
-  // TODO(neb): figure out if this number is grounded in reality
-  params.buffer_capacity = params.packet_size * 3;
-
-  // TODO(neb): keep these guys tracked somewhere so we can delete them
-  // even if the plugin doesn't
-  AudioStream *audio = new AudioStream(this);
-  audio->Initialize(filter, params, context);
-  return NPERR_NO_ERROR;
+  return status;
 }
 
 NPError WebPluginDelegatePepper::DeviceAudioSetStateContext(
@@ -647,63 +541,13 @@ NPError WebPluginDelegatePepper::DeviceAudioFlushContext(
 
 NPError WebPluginDelegatePepper::DeviceAudioDestroyContext(
     NPDeviceContextAudio* context) {
-  if (!context || !context->privatePtr) {
+  if (!context || !audio_contexts_.Lookup(
+      reinterpret_cast<intptr_t>(context->reserved))) {
     return NPERR_INVALID_PARAM;
   }
-  delete reinterpret_cast<AudioStream *>(context->privatePtr);
+  audio_contexts_.Remove(reinterpret_cast<intptr_t>(context->reserved));
   memset(context, 0, sizeof(NPDeviceContextAudio));
   return NPERR_NO_ERROR;
-}
-
-WebPluginDelegatePepper::AudioStream::~AudioStream() {
-  if (stream_id_) {
-    OnDestroy();
-  }
-}
-
-void WebPluginDelegatePepper::AudioStream::Initialize(
-    AudioMessageFilter* filter, const ViewHostMsg_Audio_CreateStream& params,
-    NPDeviceContextAudio* context) {
-  filter_ = filter;
-  context_= context;
-  context_->privatePtr = this;
-  // Make sure we don't call init more than once.
-  DCHECK_EQ(0, stream_id_);
-  stream_id_ = filter_->AddDelegate(this);
-  filter->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params));
-}
-
-void WebPluginDelegatePepper::AudioStream::OnDestroy() {
-  // Make sure we don't call destroy more than once.
-  DCHECK_NE(0, stream_id_);
-  filter_->RemoveDelegate(stream_id_);
-  filter_->Send(new ViewHostMsg_CloseAudioStream(0, stream_id_));
-  stream_id_ = 0;
-}
-
-void WebPluginDelegatePepper::AudioStream::OnRequestPacket(
-    size_t bytes_in_buffer, const base::Time& message_timestamp) {
-  context_->config.callback(context_);
-  filter_->Send(new ViewHostMsg_NotifyAudioPacketReady(0, stream_id_,
-                                                        shared_memory_size_));
-}
-
-void WebPluginDelegatePepper::AudioStream::OnStateChanged(
-    ViewMsg_AudioStreamState state) {
-}
-
-void WebPluginDelegatePepper::AudioStream::OnCreated(
-    base::SharedMemoryHandle handle, size_t length) {
-  shared_memory_.reset(new base::SharedMemory(handle, false));
-  shared_memory_->Map(length);
-  shared_memory_size_ = length;
-
-  context_->outBuffer = shared_memory_->memory();
-  // TODO(neb): call play after prefilling
-  filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
-}
-
-void WebPluginDelegatePepper::AudioStream::OnVolume(double volume) {
 }
 
 WebPluginDelegatePepper::WebPluginDelegatePepper(
@@ -712,8 +556,6 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
     : render_view_(render_view),
       plugin_(NULL),
       instance_(instance),
-      buffer_size_(0),
-      plugin_buffer_(0),
       nested_delegate_(NULL) {
   // For now we keep a window struct, although it isn't used.
   memset(&window_, 0, sizeof(window_));

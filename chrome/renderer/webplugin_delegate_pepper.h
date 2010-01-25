@@ -13,20 +13,15 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
-#include "base/linked_ptr.h"
+#include "base/id_map.h"
 #include "base/gfx/rect.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/weak_ptr.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/transport_dib.h"
-#include "chrome/renderer/audio_message_filter.h"
+#include "chrome/renderer/pepper_devices.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/command_buffer_proxy.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include "third_party/npapi/bindings/npapi_extensions.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webplugin_delegate.h"
 
@@ -145,40 +140,6 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
 
   // End of WebPluginDelegate implementation.
 
-  // Each instance of AudioStream corresponds to one host stream (and one
-  // audio context). NPDeviceContextAudio contains a pointer to the context's
-  // stream as privatePtr.
-  class AudioStream : public AudioMessageFilter::Delegate {
-  public:
-    // TODO(neb): if plugin_delegate parameter is indeed unused, remove it
-    explicit AudioStream(WebPluginDelegatePepper* plugin_delegate)
-        : plugin_delegate_(plugin_delegate), stream_id_(0) {
-    }
-    virtual ~AudioStream();
-
-    void Initialize(AudioMessageFilter *filter,
-                    const ViewHostMsg_Audio_CreateStream& params,
-                    NPDeviceContextAudio* context);
-
-    // AudioMessageFilter::Delegate implementation
-    virtual void OnRequestPacket(size_t bytes_in_buffer,
-                                 const base::Time& message_timestamp);
-    virtual void OnStateChanged(ViewMsg_AudioStreamState state);
-    virtual void OnCreated(base::SharedMemoryHandle handle, size_t length);
-    virtual void OnVolume(double volume);
-    // End of AudioMessageFilter::Delegate implementation
-
-  private:
-    void OnDestroy();
-
-    NPDeviceContextAudio *context_;
-    WebPluginDelegatePepper* plugin_delegate_;
-    scoped_refptr<AudioMessageFilter> filter_;
-    int32 stream_id_;
-    scoped_ptr<base::SharedMemory> shared_memory_;
-    size_t shared_memory_size_;
-  };
-
   gfx::Rect GetRect() const { return window_rect_; }
   gfx::Rect GetClipRect() const { return clip_rect_; }
 
@@ -213,25 +174,12 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   gfx::Rect clip_rect_;
   std::vector<gfx::Rect> cutout_rects_;
 
+  // Open device contexts
+  IDMap<Graphics2DDeviceContext, IDMapOwnPointer> graphic2d_contexts_;
+  IDMap<AudioDeviceContext, IDMapOwnPointer> audio_contexts_;
+
   // Plugin graphics context implementation
-  size_t buffer_size_;
-  TransportDIB* plugin_buffer_;
-  static uint32 next_buffer_id;
   SkBitmap committed_bitmap_;
-
-  // Lists all contexts currently open for painting. These are ones requested by
-  // the plugin but not destroyed by it yet. The source pointer is the raw
-  // pixels. We use this to look up the corresponding transport DIB when the
-  // plugin tells us to flush or destroy it.
-  struct OpenPaintContext {
-    scoped_ptr<TransportDIB> transport_dib;
-
-    // The canvas associated with the transport DIB, containing the mapped
-    // memory of the image.
-    scoped_ptr<skia::PlatformCanvas> canvas;
-  };
-  typedef std::map< void*, linked_ptr<OpenPaintContext> > OpenPaintContextMap;
-  OpenPaintContextMap open_paint_contexts_;
 
   // The url with which the plugin was instantiated.
   std::string plugin_url_;
