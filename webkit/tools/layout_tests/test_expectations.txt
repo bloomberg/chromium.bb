@@ -65,7 +65,7 @@ BUG24182 SLOW LINUX DEBUG : http/tests/misc/DOMContentLoaded-event.html = PASS
 BUG24182 SLOW LINUX MAC RELEASE : http/tests/navigation/multiple-back-forward-entries.html = PASS
 BUG24182 SLOW LINUX DEBUG : http/tests/navigation/multiple-back-forward-entries.html = PASS
 BUG24182 SLOW : http/tests/xmlhttprequest/simple-cross-origin-progress-events.html = PASS
-BUG24182 SLOW WIN MAC : svg/custom/invisible-text-after-scrolling.xhtml = PASS
+//BUG24182 SLOW WIN MAC : svg/custom/invisible-text-after-scrolling.xhtml = PASS
 BUG24182 SLOW : tables/mozilla/other/slashlogo.html = PASS
 BUG24182 SLOW WIN RELEASE : tables/mozilla/bugs/bug113235-1.html = PASS
 BUG24182 SLOW DEBUG : fast/js/toString-and-valueOf-override.html = PASS
@@ -798,7 +798,6 @@ BUG13907 SKIP : media/video-zoom-controls.html = FAIL
 
 // The video appears as a white box on Windows.
 BUG13907 SKIP WIN : media/video-zoom.html = FAIL
-BUG13907 MAC DEBUG : media/video-zoom.html = IMAGE+TEXT PASS
 
 // Video has a green background, probably due to Mac repaint debugging code.
 BUG13907 BUG25376 MAC DEBUG : media/video-empty-source.html = FAIL
@@ -1996,7 +1995,6 @@ BUG23475 MAC : svg/custom/junk-data.svg = IMAGE
 // 116/136 of the repaint tests fail due to invalidation that doesn't match; further triage necessary
 BUG23473 MAC : fast/repaint = IMAGE
 BUG23473 MAC : fast/repaint/block-no-inflow-children.html = PASS
-BUG23473 MAC : fast/repaint/block-selection-gap-stale-cache-2.html = PASS
 BUG23473 MAC : fast/repaint/block-selection-gap-stale-cache.html = PASS
 BUG23473 MAC : fast/repaint/flexible-box-overflow.html = PASS
 BUG23473 MAC : fast/repaint/float-new-in-block.html = PASS
@@ -2008,10 +2006,8 @@ BUG23473 MAC : fast/repaint/layer-outline.html = PASS
 BUG23473 MAC : fast/repaint/list-marker.html = PASS
 BUG23473 MAC : fast/repaint/table-cell-vertical-overflow.html = PASS
 BUG23473 MAC : fast/repaint/text-shadow.html = PASS
-BUG23473 MAC : fast/repaint/fixed.html = PASS
 BUG23473 MAC : fast/repaint/flexible-box-overflow-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/layer-outline-horizontal.html = PASS
-BUG23473 MAC : fast/repaint/moving-shadow-on-path.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-strict-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-strict-vertical.html = PASS
@@ -3055,3 +3051,102 @@ BUG32864 WIN LINUX MAC : plugins/mouse-events-fixedpos.html = TEXT
 // WebKit roll 53655 -> 53704
 BUG32898 WIN LINUX MAC : fast/loader/history-forward-in-head.html = TEXT
 BUG32900 WIN LINUX : http/tests/misc/slow-loading-mask.html = IMAGE+TEXT
+
+// WebKit roll 53704 -> 53747
+BUG32929 WIN LINUX MAC : fast/dom/Window/window-property-descriptors.html = TEXT
+BUG32949 WIN LINUX MAC : fast/dom/Window/invalid-protocol.html = TEXT
+BUG32950 WIN LINUX MAC : fast/dom/Window/window-properties-geolocation.html = TEXT
+BUG32951 WIN LINUX MAC : fast/dom/prototype-inheritance.html = TEXT
+BUG32953 WIN LINUX MAC : svg/custom/relative-sized-shadow-tree-content-with-symbol.xhtml = IMAGE+TEXT
+
+// Storage issues jorlow is going to handle.
+BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/iframe-events.html = TEXT
+BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/index-get-and-set.html = TEXT
+BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/onstorage-attribute-markup.html = TEXT
+BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/onstorage-attribute-setattribute.html = TEXT
+BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/onstorage-attribute-setwindow.html = TEXT
+BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/simple-events.html = TEXT
+BUGJORLOW WIN LINUX MAC : storage/domstorage/window-attributes-exist.html = TEXT
+
+// WebKit roll 53704:53787
+BUG33099 : media/video-reverse-play-duration.html = TIMEOUT
+BUG33099 : media/video-timeupdate-reverse-play.html = TIMEOUT
+
+// WebKit roll 53704:53787
+BUG33045 MAC : css1/basic/comments.html = IMAGE
+BUG33045 MAC : css1/basic/containment.html = IMAGE
+BUG33045 MAC : css1/basic/id_as_selector.html = IMAGE
+BUG33045 MAC : css1/basic/inheritance.html = IMAGE
+BUG33045 MAC : css1/box_properties/border.html = IMAGE
+BUG33045 MAC : css1/box_properties/border_bottom.html = IMAGE
+BUG33045 MAC : css1/box_properties/border_bottom_width.html = IMAGE
+BUG33045 MAC : css1/box_properties/border_left.html = IMAGE
+BUG33045 MAC : css1/box_properties/border_left_width.html = IMAGE
+BUG33045 MAC : css1/box_properties/border_right_inline.html = IMAGE
+BUG33045 MAC : css1/box_properties/border_right_width.html = IMAGE
+BUG33045 MAC : css1/box_properties/border_style.html = IMAGE
+BUG33045 MAC : css1/box_properties/border_top.html = IMAGE
+BUG33045 MAC : css1/box_properties/border_top_width.html = IMAGE
+BUG33045 MAC : css1/box_properties/border_width.html = IMAGE
+BUG33045 MAC : css1/box_properties/clear.html = IMAGE
+BUG33045 MAC : css1/box_properties/clear_float.html = IMAGE
+BUG33045 MAC : css1/box_properties/float_elements_in_series.html = IMAGE
+BUG33045 MAC : css1/box_properties/float_margin.html = IMAGE
+BUG33045 MAC : css1/box_properties/float_on_text_elements.html = IMAGE
+BUG33045 MAC : css1/box_properties/height.html = IMAGE
+BUG33045 MAC : css1/box_properties/margin.html = IMAGE
+BUG33045 MAC : css1/box_properties/margin_bottom.html = IMAGE
+BUG33045 MAC : css1/box_properties/margin_inline.html = IMAGE
+BUG33045 MAC : css1/box_properties/margin_left.html = IMAGE
+BUG33045 MAC : css1/box_properties/margin_right.html = IMAGE
+BUG33045 MAC : css1/box_properties/margin_top.html = IMAGE
+BUG33045 MAC : css1/box_properties/padding.html = IMAGE
+BUG33045 MAC : css1/box_properties/padding_bottom.html = IMAGE
+BUG33045 MAC : css1/box_properties/padding_inline.html = IMAGE
+BUG33045 MAC : css1/box_properties/padding_left.html = IMAGE
+BUG33045 MAC : css1/box_properties/padding_right.html = IMAGE
+BUG33045 MAC : css1/box_properties/padding_top.html = IMAGE
+BUG33045 MAC : css1/box_properties/width.html = IMAGE
+BUG33045 MAC : fast/body-propagation/overflow/002-xhtml.xhtml = IMAGE
+BUG33045 MAC : fast/body-propagation/overflow/002.html = IMAGE
+BUG33045 MAC : fast/body-propagation/overflow/003-declarative.xhtml = IMAGE
+BUG33045 MAC : fast/body-propagation/overflow/003-xhtml.xhtml = IMAGE
+BUG33045 MAC : fast/body-propagation/overflow/003.html = IMAGE
+BUG33045 MAC : fast/body-propagation/overflow/004-declarative.xhtml = IMAGE
+BUG33045 MAC : fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE
+BUG33045 MAC : fast/body-propagation/overflow/004.html = IMAGE
+BUG33045 MAC : fast/body-propagation/overflow/007-declarative.xhtml = IMAGE
+BUG33045 MAC : fast/body-propagation/overflow/007-xhtml.xhtml = IMAGE
+BUG33045 MAC : fast/body-propagation/overflow/007.html = IMAGE
+BUG33045 MAC : fast/forms/basic-textareas-quirks.html = IMAGE
+BUG33045 MAC : fast/forms/basic-textareas.html = IMAGE
+BUG33045 MAC : fast/forms/button-default-title.html = IMAGE
+BUG33045 MAC : fast/forms/file-input-direction.html = IMAGE
+BUG33045 MAC : fast/forms/textarea-scroll-height.html = IMAGE
+BUG33045 MAC : fast/inline-block/tricky-baseline.html = IMAGE
+BUG33045 MAC : fast/invalid/residual-style.html = IMAGE
+BUG33045 MAC : fast/overflow/007.html = IMAGE
+BUG33045 MAC : fast/overflow/008.html = IMAGE
+BUG33045 MAC : fast/overflow/childFocusRingClip.html = IMAGE
+BUG33045 MAC : fast/overflow/float-in-relpositioned.html = IMAGE
+BUG33045 MAC : fast/overflow/image-selection-highlight.html = IMAGE
+BUG33045 MAC : fast/overflow/overflow-auto-position-absolute.html = IMAGE
+BUG33045 MAC : fast/overflow/overflow-rtl.html = IMAGE
+BUG33045 MAC : fast/overflow/overflow-text-hit-testing.html = IMAGE
+BUG33045 MAC : fast/overflow/overflow-with-local-background-attachment.html = IMAGE
+BUG33045 MAC : fast/overflow/scroll-nested-positioned-layer-in-overflow.html = IMAGE
+BUG33045 MAC : fast/overflow/scrollbar-position-update.html = IMAGE
+BUG33045 MAC : fast/overflow/table-overflow-float.html = IMAGE
+BUG33045 MAC : fast/repaint/block-selection-gap-stale-cache-2.html = IMAGE
+BUG33045 MAC : fast/repaint/fixed.html = IMAGE
+BUG33045 MAC : fast/repaint/moving-shadow-on-path.html = IMAGE
+BUG33045 MAC : fast/table/edge-offsets.html = IMAGE
+BUG33045 MAC : fast/text/text-letter-spacing.html = IMAGE
+BUG33045 MAC : media/video-controls-rendering.html = IMAGE
+BUG33045 MAC : media/video-zoom.html = IMAGE
+BUG33045 MAC : svg/css/stars-with-shadow.html = IMAGE
+BUG33045 MAC : svg/custom/invisible-text-after-scrolling.xhtml = IMAGE
+BUG33045 MAC : svg/custom/missing-xlink.svg = IMAGE
+BUG33045 MAC : svg/custom/text-xy-updates-SVGList.xhtml = IMAGE
+BUG33045 MAC : tables/mozilla/bugs/bug149275-1.html = IMAGE
+BUG33045 MAC : transforms/2d/transform-fixed-container.html = IMAGE
