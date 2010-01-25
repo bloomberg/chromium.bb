@@ -42,6 +42,10 @@ void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds);
 void NotifyPluginOfSetThemeCursor(WebPluginDelegateImpl* delegate,
                                   ThemeCursor cursor);
 
+// Sends a message to the plugin that a cursor was set.
+void NotifyPluginOfSetCursor(WebPluginDelegateImpl* delegate,
+                             const Cursor* cursor);
+
 // Returns true if the window containing the given plugin delegate is focused.
 bool GetPluginWindowHasFocus(const WebPluginDelegateImpl* delegate);
 

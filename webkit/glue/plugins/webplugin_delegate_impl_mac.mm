@@ -514,6 +514,10 @@ void WebPluginDelegateImpl::SetThemeCursor(ThemeCursor cursor) {
   current_windowless_cursor_.InitFromThemeCursor(cursor);
 }
 
+void WebPluginDelegateImpl::SetCursor(const Cursor* cursor) {
+  current_windowless_cursor_.InitFromCursor(cursor);
+}
+
 void WebPluginDelegateImpl::SetNSCursor(NSCursor* cursor) {
   current_windowless_cursor_.InitFromNSCursor(cursor);
 }

@@ -224,6 +224,51 @@ void WebCursor::InitFromThemeCursor(ThemeCursor cursor) {
   InitFromCursorInfo(cursor_info);
 }
 
+void WebCursor::InitFromCursor(const Cursor* cursor) {
+  // This conversion isn't perfect (in particular, the inversion effect of
+  // data==1, mask==0 won't work). Not planning on fixing it.
+
+  gfx::Size custom_size(16, 16);
+  std::vector<char> raw_data;
+  for (int row = 0; row < 16; ++row) {
+    unsigned short data = cursor->data[row];
+    unsigned short mask = cursor->mask[row];
+
+    // The Core Endian flipper callback for 'CURS' doesn't flip Bits16 as if it
+    // were a short (which it is), so we flip it here.
+    data = ((data << 8) & 0xFF00) | ((data >> 8) & 0x00FF);
+    mask = ((mask << 8) & 0xFF00) | ((mask >> 8) & 0x00FF);
+
+    for (int bit = 0; bit < 16; ++bit) {
+      if (data & 0x8000) {
+        raw_data.push_back(0x00);
+        raw_data.push_back(0x00);
+        raw_data.push_back(0x00);
+      } else {
+        raw_data.push_back(0xFF);
+        raw_data.push_back(0xFF);
+        raw_data.push_back(0xFF);
+      }
+      if (mask & 0x8000)
+        raw_data.push_back(0xFF);
+      else
+        raw_data.push_back(0x00);
+      data <<= 1;
+      mask <<= 1;
+    }
+  }
+
+  scoped_cftyperef<CGImageRef> cg_image(
+      CreateCGImageFromCustomData(raw_data, custom_size));
+
+  WebKit::WebCursorInfo cursor_info;
+  cursor_info.type = WebCursorInfo::TypeCustom;
+  cursor_info.hotSpot = WebKit::WebPoint(cursor->hotSpot.h, cursor->hotSpot.v);
+  cursor_info.customImage = cg_image.get();
+
+  InitFromCursorInfo(cursor_info);
+}
+
 void WebCursor::InitFromNSCursor(NSCursor* cursor) {
   WebKit::WebCursorInfo cursor_info;
 

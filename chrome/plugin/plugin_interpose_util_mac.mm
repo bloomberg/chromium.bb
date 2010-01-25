@@ -76,6 +76,12 @@ void NotifyPluginOfSetThemeCursor(WebPluginDelegateImpl* delegate,
 }
 
 __attribute__((visibility("default")))
+void NotifyPluginOfSetCursor(WebPluginDelegateImpl* delegate,
+                             const Cursor* cursor) {
+  delegate->SetCursor(cursor);
+}
+
+__attribute__((visibility("default")))
 bool GetPluginWindowHasFocus(const WebPluginDelegateImpl* delegate) {
   return delegate->GetWindowHasFocus();
 }

@@ -139,6 +139,8 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   bool GetWindowHasFocus() const { return containing_window_has_focus_; }
   // Informs the delegate that the plugin set a Carbon ThemeCursor.
   void SetThemeCursor(ThemeCursor cursor);
+  // Informs the delegate that the plugin set a Carbon Cursor.
+  void SetCursor(const Cursor* cursor);
   // Informs the delegate that the plugin set a Cocoa NSCursor.
   void SetNSCursor(NSCursor* cursor);
 

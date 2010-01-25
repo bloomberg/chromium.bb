@@ -151,6 +151,15 @@ static OSStatus ChromePluginSetThemeCursor(ThemeCursor cursor) {
   return SetThemeCursor(cursor);
 }
 
+static void ChromePluginSetCursor(const Cursor* cursor) {
+  WebPluginDelegateImpl* delegate = mac_plugin_interposing::GetActiveDelegate();
+  if (delegate) {
+    mac_plugin_interposing::NotifyPluginOfSetCursor(delegate, cursor);
+    return;
+  }
+  return SetCursor(cursor);
+}
+
 #pragma mark -
 
 struct interpose_substitution {
@@ -175,4 +184,5 @@ __attribute__((used)) static const interpose_substitution substitutions[]
   INTERPOSE_FUNCTION(DisposeDialog),
   INTERPOSE_FUNCTION(FindWindow),
   INTERPOSE_FUNCTION(SetThemeCursor),
+  INTERPOSE_FUNCTION(SetCursor),
 };
