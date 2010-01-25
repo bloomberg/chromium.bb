@@ -370,8 +370,10 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
 
 void PatchHelper::PatchBrowserService(IBrowserService* browser_service) {
   DCHECK(state_ == PATCH_IBROWSER);
-  vtable_patch::PatchInterfaceMethods(browser_service,
-                                      IBrowserService_PatchInfo);
+  if (!IS_PATCHED(IBrowserService)) {
+    vtable_patch::PatchInterfaceMethods(browser_service,
+                                        IBrowserService_PatchInfo);
+  }
 }
 
 void PatchHelper::UnpatchIfNeeded() {
