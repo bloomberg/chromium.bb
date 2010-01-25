@@ -711,6 +711,7 @@ BUG32016 SKIP : storage/quota-tracking.html = PASS
 
 // Implement HTML5 Geolocation API.
 BUG11246 DEFER SKIP : fast/dom/Geolocation = FAIL
+BUG11246 DEFER SKIP : fast/dom/Window/window-properties-geolocation.html = TEXT
 
 // Implement HTML5 EventSource API. Skipping, because most of these time out and
 // slow down the test run.
@@ -2456,6 +2457,7 @@ BUG19665 MAC : platform/mac/editing/input/kotoeri-enter-to-confirm-and-newline.h
 
 // WebKit 47777:47790 - getOwnPropertyDescriptor
 BUG20345 : fast/js/getOwnPropertyDescriptor.html = FAIL
+BUG20345 : fast/dom/Window/window-property-descriptors.html = TEXT
 // Failures from Webkit merger 51724 -> 51772
 BUG20345 : http/tests/security/cross-frame-access-getOwnPropertyDescriptor.html = TEXT
 
@@ -3053,10 +3055,7 @@ BUG32898 WIN LINUX MAC : fast/loader/history-forward-in-head.html = TEXT
 BUG32900 WIN LINUX : http/tests/misc/slow-loading-mask.html = IMAGE+TEXT
 
 // WebKit roll 53704 -> 53747
-BUG32929 WIN LINUX MAC : fast/dom/Window/window-property-descriptors.html = TEXT
 BUG32949 WIN LINUX MAC : fast/dom/Window/invalid-protocol.html = TEXT
-BUG32950 WIN LINUX MAC : fast/dom/Window/window-properties-geolocation.html = TEXT
-BUG32951 WIN LINUX MAC : fast/dom/prototype-inheritance.html = TEXT
 BUG32953 WIN LINUX MAC : svg/custom/relative-sized-shadow-tree-content-with-symbol.xhtml = IMAGE+TEXT
 
 // Storage issues jorlow is going to handle.
