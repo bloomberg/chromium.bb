@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,12 +102,18 @@ class ToolbarModel;
   // The default favicon, so we can use one copy for all buttons.
   scoped_nsobject<NSImage> defaultFavIcon_;
 
+  // The amount by which to indent the tabs on the left (to make room for the
+  // red/yellow/green buttons).
+  CGFloat indentForControls_;
+
   // Manages per-tab sheets.
   scoped_nsobject<GTMWindowSheetController> sheetController_;
 
   // Is the mouse currently inside the strip;
   BOOL mouseInside_;
 }
+
+@property(nonatomic) CGFloat indentForControls;
 
 // Initialize the controller with a view and browser that contains
 // everything else we'll need. |switchView| is the view whose contents get
@@ -175,6 +181,9 @@ class ToolbarModel;
 
 // Default height for tabs.
 + (CGFloat)defaultTabHeight;
+
+// Default indentation for tabs (see |indentForControls_|).
++ (CGFloat)defaultIndentForControls;
 
 // Returns the (lazily created) window sheet controller of this window. Used
 // for the per-tab sheets.

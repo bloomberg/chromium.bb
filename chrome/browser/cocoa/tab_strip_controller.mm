@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,10 +53,6 @@ NSString* const kNewTabPressedImage = @"newtab_p.pdf";
 // A value to indicate tab layout should use the full available width of the
 // view.
 const CGFloat kUseFullAvailableWidth = -1.0;
-
-// Left-side indent for tab layout so tabs don't overlap with the window
-// controls.
-const CGFloat kIndentLeavingSpaceForControls = 64.0;
 
 // The amount by which tabs overlap.
 const CGFloat kTabOverlap = 20.0;
@@ -270,6 +266,8 @@ private:
 
 @implementation TabStripController
 
+@synthesize indentForControls = indentForControls_;
+
 - (id)initWithView:(TabStripView*)view
         switchView:(NSView*)switchView
            browser:(Browser*)browser {
@@ -289,6 +287,8 @@ private:
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     defaultFavIcon_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
+
+    [self setIndentForControls:[[self class] defaultIndentForControls]];
 
     // TODO(viettrungluu): WTF? "For some reason, if the view is present in the
     // nib a priori, it draws correctly. If we create it in code and add it to
@@ -379,6 +379,12 @@ private:
 
 + (CGFloat)defaultTabHeight {
   return 24.0;
+}
+
++ (CGFloat)defaultIndentForControls {
+  // Default indentation leaves enough room so tabs don't overlap with the
+  // window controls.
+  return 64.0;
 }
 
 // Finds the TabContentsController associated with the given index into the tab
@@ -619,7 +625,7 @@ private:
 
 - (BOOL)isTabFullyVisible:(TabView*)tab {
   NSRect frame = [tab frame];
-  return NSMinX(frame) >= kIndentLeavingSpaceForControls &&
+  return NSMinX(frame) >= [self indentForControls] &&
       NSMaxX(frame) <= NSMaxX([tabStripView_ frame]);
 }
 
@@ -668,7 +674,7 @@ private:
     availableWidth = NSWidth([tabStripView_ frame]);
     availableWidth -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
   }
-  availableWidth -= kIndentLeavingSpaceForControls;
+  availableWidth -= [self indentForControls];
 
   // This may be negative, but that's okay (taken care of by |MAX()| when
   // calculating tab sizes).
@@ -693,7 +699,7 @@ private:
   const CGFloat minX = NSMinX(placeholderFrame_);
   BOOL visible = [[tabStripView_ window] isVisible];
 
-  CGFloat offset = kIndentLeavingSpaceForControls;
+  CGFloat offset = [self indentForControls];
   NSUInteger i = 0;
   bool hasPlaceholderGap = false;
   for (TabController* tab in tabArray_.get()) {
