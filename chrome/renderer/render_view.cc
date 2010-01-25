@@ -807,6 +807,9 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   if (devtools_agent_.get())
     devtools_agent_->OnNavigate();
 
+  if (notification_provider_.get())
+    notification_provider_->OnNavigate();
+
   child_process_logging::SetActiveURL(params.url);
 
   AboutHandler::MaybeHandle(params.url);

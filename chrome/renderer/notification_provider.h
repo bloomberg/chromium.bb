@@ -36,6 +36,9 @@ class NotificationProvider : public WebKit::WebNotificationPresenter {
   // IPC message handler called from RenderView.
   bool OnMessageReceived(const IPC::Message& message);
 
+  // Called when the RenderView navigates.
+  void OnNavigate();
+
  private:
   // Internal methods used to show notifications.
   bool ShowHTML(const WebKit::WebNotification& notification, int id);

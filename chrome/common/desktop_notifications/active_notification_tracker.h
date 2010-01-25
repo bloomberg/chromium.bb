@@ -35,6 +35,9 @@ class ActiveNotificationTracker {
   void OnPermissionRequestComplete(int id);
   WebKit::WebNotificationPermissionCallback* GetCallback(int id);
 
+  // Clears out all active notifications.  Useful on page navigation.
+  void Clear();
+
  private:
   typedef std::map<WebKit::WebNotification, int> ReverseTable;
 
@@ -47,4 +50,3 @@ class ActiveNotificationTracker {
 };
 
 #endif  // CHROME_COMMON_DESKTOP_NOTIFICATIONS_ACTIVE_NOTIFICATION_TRACKER_H_
-

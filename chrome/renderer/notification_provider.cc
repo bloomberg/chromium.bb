@@ -79,6 +79,10 @@ bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void NotificationProvider::OnNavigate() {
+  //  manager_.Clear();
+}
+
 bool NotificationProvider::ShowHTML(const WebNotification& notification,
                                     int id) {
   // Disallow HTML notifications from non-HTTP schemes.
@@ -126,9 +130,10 @@ void NotificationProvider::OnClose(int id, bool by_user) {
   bool found = manager_.GetNotification(id, &notification);
   // |found| may be false if the WebNotification went out of scope in
   // the page before the associated toast was closed by the user.
-  if (found)
+  if (found) {
     notification.dispatchCloseEvent(by_user);
-  manager_.UnregisterNotification(id);
+    manager_.UnregisterNotification(id);
+  }
 }
 
 void NotificationProvider::OnPermissionRequestComplete(int id) {

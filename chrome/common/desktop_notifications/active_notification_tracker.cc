@@ -51,6 +51,14 @@ void ActiveNotificationTracker::UnregisterNotification(int id) {
     reverse_notification_table_.erase(*notification);
 }
 
+void ActiveNotificationTracker::Clear() {
+  ReverseTable::iterator iter = reverse_notification_table_.begin();
+  while (iter != reverse_notification_table_.end()) {
+    UnregisterNotification((*iter).second);
+    ++iter;
+  }
+}
+
 WebNotificationPermissionCallback* ActiveNotificationTracker::GetCallback(
     int id) {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_DEFAULT);
