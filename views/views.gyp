@@ -369,6 +369,7 @@
         'examples/menu_example.h',
         'examples/radio_button_example.h',
         'examples/scroll_view_example.h',
+        'examples/single_split_view_example.h',
         'examples/slider_example.h',
         'examples/tabbed_pane_example.h',
         'examples/textfield_example.h',

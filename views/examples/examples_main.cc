@@ -17,6 +17,7 @@
 #include "views/examples/menu_example.h"
 #include "views/examples/radio_button_example.h"
 #include "views/examples/scroll_view_example.h"
+#include "views/examples/single_split_view_example.h"
 // Slider is not yet ported to Windows.
 #if defined(OS_LINUX)
 #include "views/examples/slider_example.h"
@@ -113,6 +114,10 @@ void ExamplesMain::Run() {
   examples::ScrollViewExample scroll_view_example(this);
   tabbed_pane->AddTab(scroll_view_example.GetExampleTitle(),
                       scroll_view_example.GetExampleView());
+
+  examples::SingleSplitViewExample single_split_view_example(this);
+  tabbed_pane->AddTab(single_split_view_example.GetExampleTitle(),
+                      single_split_view_example.GetExampleView());
 
 #if defined(OS_WIN)
   examples::TableExample table_example(this);
