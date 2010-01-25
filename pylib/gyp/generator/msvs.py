@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import ntpath
 import os
 import re
 import subprocess
@@ -67,6 +68,8 @@ cached_domain = None
 # python version in depot_tools has been updated to work on Vista
 # 64-bit.
 def _GetDomainAndUserName():
+  if sys.platform not in ('win32', 'cygwin'):
+    return ('DOMAIN', 'USERNAME')
   global cached_username
   global cached_domain
   if not cached_domain or not cached_username:
@@ -631,10 +634,13 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     output_file_props = output_file_map.get(spec['type'])
     if output_file_props and int(spec.get('msvs_auto_output_file', 1)):
       vc_tool, out_dir, suffix = output_file_props
-      out_dir = spec.get('msvs_product_directory', out_dir)
-      out_file = os.path.join(out_dir,
-                              spec.get('product_name',
-                                       '$(ProjectName)') + suffix)
+      out_dir = spec.get('product_dir', out_dir)
+      product_extension = spec.get('product_extension')
+      if product_extension:
+        suffix = '.' + product_extension
+      prefix = spec.get('product_prefix', '')
+      product_name = spec.get('product_name', '$(ProjectName)')
+      out_file = ntpath.join(out_dir, prefix + product_name + suffix)
       _ToolAppend(tools, vc_tool, 'OutputFile', out_file,
                   only_if_unset=True)
 

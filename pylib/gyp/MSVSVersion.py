@@ -54,6 +54,9 @@ def _RegistryGetValue(key, value):
   Return:
     The contents there, or None for failure.
   """
+  # Skip if not on Windows.
+  if sys.platform not in ('win32', 'cygwin'):
+    return None
   # Run reg.exe.
   cmd = [os.path.join(os.environ.get('WINDIR', ''), 'System32', 'reg.exe'),
          'query', key, '/v', value]
@@ -92,7 +95,7 @@ def _CreateVersion(name):
                                    project_version='8.00',
                                    flat_sln=True),
   }
-  return versions.get(name)
+  return versions[str(name)]
 
 
 def _DetectVisualStudioVersions():
@@ -109,7 +112,7 @@ def _DetectVisualStudioVersions():
   """
   version_to_year = {'8.0': '2005', '9.0': '2008'}
   versions = []
-  for version in ['9.0', '8.0']:
+  for version in ('9.0', '8.0'):
     # Get the install dir for this version.
     key = r'HKLM\Software\Microsoft\VisualStudio\%s' % version
     path = _RegistryGetValue(key, 'InstallDir')

@@ -267,6 +267,22 @@ class TestGypBase(TestCommon.TestCommon):
     """
     raise NotImplementedError
 
+  def built_file_basename(self, name, type=None, **kw):
+    """
+    Returns the base name of the specified file name, of the specified type.
+
+    A bare=True keyword argument specifies that prefixes and suffixes shouldn't
+    be applied.
+    """
+    if not kw.get('bare'):
+      if type == self.EXECUTABLE:
+        name = name + self._exe
+      elif type == self.STATIC_LIB:
+        name = self.lib_ + name + self._lib
+      elif type == self.SHARED_LIB:
+        name = self.dll_ + name + self._dll
+    return name
+
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable program built from a gyp-generated configuration.
@@ -360,18 +376,11 @@ class TestGypMake(TestGypBase):
       result.append(chdir)
     configuration = self.configuration_dirname()
     result.extend(['out', configuration])
-    if type == self.EXECUTABLE:
-      result.append(name + self._exe)
-    elif type == self.STATIC_LIB:
-      name =  self.lib_ + name + self._lib
-      libdir = kw.get('libdir', 'lib')
-      result.extend([libdir, name])
+    if type == self.STATIC_LIB:
+      result.append(kw.get('libdir', 'obj.target'))
     elif type == self.SHARED_LIB:
-      name = self.dll_ + name + self._dll
-      libdir = kw.get('libdir', 'lib.target')
-      result.extend([libdir, name])
-    else:
-      result.append(name)
+      result.append(kw.get('libdir', 'lib.target'))
+    result.append(self.built_file_basename(name, type, **kw))
     return self.workpath(*result)
 
 
@@ -475,16 +484,9 @@ class TestGypMSVS(TestGypBase):
     if chdir:
       result.append(chdir)
     result.append(self.configuration_dirname())
-    if type == self.EXECUTABLE:
-      result.append(name + self._exe)
-    elif type == self.STATIC_LIB:
-      name =  self.lib_ + name + self._lib
-      result.extend(['lib', name])
-    elif type == self.SHARED_LIB:
-      name = self.dll_ + name + self._dll
-      result.append(name)
-    else:
-      result.append(name)
+    if type == self.STATIC_LIB:
+      result.append('lib')
+    result.append(self.built_file_basename(name, type, **kw))
     return self.workpath(*result)
 
 
@@ -554,16 +556,9 @@ class TestGypSCons(TestGypBase):
     if chdir:
       result.append(chdir)
     result.append(self.configuration_dirname())
-    if type == self.EXECUTABLE:
-      result.append(name + self._exe)
-    elif type == self.STATIC_LIB:
-      name =  self.lib_ + name + self._lib
-      result.extend(['lib', name])
-    elif type == self.SHARED_LIB:
-      name = self.dll_ + name + self._dll
-      result.extend(['lib', name])
-    else:
-      result.append(name)
+    if type in (self.STATIC_LIB, self.SHARED_LIB):
+      result.append('lib')
+    result.append(self.built_file_basename(name, type, **kw))
     return self.workpath(*result)
 
 
@@ -652,16 +647,7 @@ class TestGypXcode(TestGypBase):
       result.append(chdir)
     configuration = self.configuration_dirname()
     result.extend(['build', configuration])
-    if type == self.EXECUTABLE:
-      result.append(name + self._exe)
-    elif type == self.STATIC_LIB:
-      name =  self.lib_ + name + self._lib
-      result.append(name)
-    elif type == self.SHARED_LIB:
-      name = self.dll_ + name + self._dll
-      result.append(name)
-    else:
-      result.append(name)
+    result.append(self.built_file_basename(name, type, **kw))
     return self.workpath(*result)
 
 

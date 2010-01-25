@@ -622,12 +622,14 @@ def GenerateOutput(target_list, target_dicts, data, params):
     else:
       xctarget_type = gyp.xcodeproj_file.PBXAggregateTarget
 
-    target_product_name = spec.get('product_name', None)
-    if target_product_name:
+    target_product_name = spec.get('product_name')
+    if target_product_name is not None:
       target_properties['productName'] = target_product_name
 
     xct = xctarget_type(target_properties, parent=pbxp,
-                        force_extension=spec.get('product_extension', None))
+                        force_outdir=spec.get('product_dir'),
+                        force_prefix=spec.get('product_prefix'),
+                        force_extension=spec.get('product_extension'))
     pbxp.AppendProperty('targets', xct)
     xcode_targets[qualified_target] = xct
     xcode_target_to_target_dict[xct] = spec

@@ -721,37 +721,36 @@ def compilable_files(env, sources):
 
 def GypProgram(env, target, source, *args, **kw):
   source = compilable_files(env, source)
-  result = env.Program('$TOP_BUILDDIR/' + str(target), source, *args, **kw)
+  result = env.Program(target, source, *args, **kw)
   if env.get('INCREMENTAL'):
     env.Precious(result)
   return result
 
 def GypTestProgram(env, target, source, *args, **kw):
   source = compilable_files(env, source)
-  result = env.Program('$TOP_BUILDDIR/' + str(target), source, *args, **kw)
+  result = env.Program(target, source, *args, **kw)
   if env.get('INCREMENTAL'):
     env.Precious(*result)
   return result
 
 def GypLibrary(env, target, source, *args, **kw):
   source = compilable_files(env, source)
-  result = env.Library('$LIB_DIR/' + str(target), source, *args, **kw)
+  result = env.Library(target, source, *args, **kw)
   return result
 
 def GypLoadableModule(env, target, source, *args, **kw):
   source = compilable_files(env, source)
-  result = env.LoadableModule('$TOP_BUILDDIR/' + str(target), source, *args,
-                              **kw)
+  result = env.LoadableModule(target, source, *args, **kw)
   return result
 
 def GypStaticLibrary(env, target, source, *args, **kw):
   source = compilable_files(env, source)
-  result = env.StaticLibrary('$LIB_DIR/' + str(target), source, *args, **kw)
+  result = env.StaticLibrary(target, source, *args, **kw)
   return result
 
 def GypSharedLibrary(env, target, source, *args, **kw):
   source = compilable_files(env, source)
-  result = env.SharedLibrary('$LIB_DIR/' + str(target), source, *args, **kw)
+  result = env.SharedLibrary(target, source, *args, **kw)
   if env.get('INCREMENTAL'):
     env.Precious(result)
   return result
@@ -975,15 +974,13 @@ def GenerateOutput(target_list, target_dicts, data, params):
       spec['scons_dependencies'].append("Alias('%s')" % target_name)
       if td['type'] in ('static_library', 'shared_library'):
         libname = td.get('product_name', target_name)
-        spec['libraries'].append(libname)
+        spec['libraries'].append('lib' + libname)
       if td['type'] == 'loadable_module':
         prereqs = spec.get('scons_prerequisites', [])
         # TODO:  parameterize with <(SHARED_LIBRARY_*) variables?
         td_target = SCons.Target(td)
         td_target.target_prefix = '${SHLIBPREFIX}'
         td_target.target_suffix = '${SHLIBSUFFIX}'
-        prereqs.append(td_target.full_product_name())
-        spec['scons_prerequisites'] = prereqs
 
     GenerateSConscript(output_file, spec, build_file, data[build_file])
 

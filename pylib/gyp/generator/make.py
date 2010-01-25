@@ -794,26 +794,38 @@ class MakefileWriter:
     """
     output = None
     target = spec['target_name']
-    path = spec.get('product_dir', os.path.join('$(obj).' + self.toolset,
-                                                self.path))
+    target_prefix = ''
+    target_ext = ''
+    path = os.path.join('$(obj).' + self.toolset, self.path)
     if self.type == 'static_library':
-      target = 'lib%s.a' % (target[:3] == 'lib' and [target[3:]] or [target])[0]
+      if target[:3] == 'lib':
+        target = target[3:]
+      target_prefix = 'lib'
+      target_ext = '.a'
     elif self.type in ('loadable_module', 'shared_library'):
-      target = 'lib%s.so' % (target[:3] == 'lib' and [target[3:]] or [target])[0]
-      path = spec.get('product_dir', os.path.join('$(builddir)', 'lib.' +
-                                                  self.toolset, self.path))
+      if target[:3] == 'lib':
+        target = target[3:]
+      target_prefix = 'lib'
+      target_ext = '.so'
+      path = os.path.join('$(builddir)', 'lib.' + self.toolset, self.path)
     elif self.type == 'none':
       target = '%s.stamp' % target
     elif self.type == 'settings':
       return None
     elif self.type == 'executable':
-      target = spec.get('product_name', target)
-      path = spec.get('product_dir', os.path.join('$(builddir)'))
+      path = os.path.join('$(builddir)')
     else:
       print ("ERROR: What output file should be generated?",
              "typ", self.type, "target", target)
 
-    return os.path.join(path, target)
+    path = spec.get('product_dir', path)
+    target_prefix = spec.get('product_prefix', target_prefix)
+    target = spec.get('product_name', target)
+    product_ext = spec.get('product_extension')
+    if product_ext:
+      target_ext = '.' + product_ext
+
+    return os.path.join(path, target_prefix + target + target_ext)
 
 
   def ComputeDeps(self, spec):

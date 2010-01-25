@@ -34,6 +34,8 @@
     {
       'target_name': 'lib1',
       'type': 'loadable_module',
+      'product_name': 'lib1',
+      'product_prefix': '',
       'xcode_settings': {'OTHER_LDFLAGS': ['-dynamiclib'], 'MACH_O_TYPE': ''},
       'sources': [
         'lib1.c',
@@ -41,6 +43,8 @@
     },
     {
       'target_name': 'lib2',
+      'product_name': 'lib2',
+      'product_prefix': '',
       'type': 'loadable_module',
       'xcode_settings': {'OTHER_LDFLAGS': ['-dynamiclib'], 'MACH_O_TYPE': ''},
       'sources': [

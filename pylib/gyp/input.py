@@ -71,6 +71,7 @@ base_non_configuration_keys = [
   'product_dir',
   'product_extension',
   'product_name',
+  'product_prefix',
   'rules',
   'run_as',
   'sources',

@@ -2060,7 +2060,7 @@ class XCTarget(XCRemoteObject):
   })
 
   def __init__(self, properties=None, id=None, parent=None,
-               force_extension=None):
+               force_outdir=None, force_prefix=None, force_extension=None):
     # super
     XCRemoteObject.__init__(self, properties, id, parent)
 
@@ -2178,7 +2178,7 @@ class PBXNativeTarget(XCTarget):
   }
 
   def __init__(self, properties=None, id=None, parent=None,
-               force_extension=None):
+               force_outdir=None, force_prefix=None, force_extension=None):
     # super
     XCTarget.__init__(self, properties, id, parent)
 
@@ -2196,19 +2196,34 @@ class PBXNativeTarget(XCTarget):
             self._product_filetypes[self._properties['productType']]
 
         if force_extension is not None:
-          # Extension override.
-          suffix = '.' + force_extension
-
           # If it's a wrapper (bundle), set WRAPPER_EXTENSION.
           if filetype.startswith('wrapper.'):
             self.SetBuildSetting('WRAPPER_EXTENSION', force_extension)
+          else:
+            # Extension override.
+            suffix = '.' + force_extension
+            self.SetBuildSetting('EXECUTABLE_EXTENSION', force_extension)
+
+          if filetype.startswith('compiled.mach-o.executable'):
+            product_name = self._properties['productName']
+            product_name += suffix
+            suffix = ''
+            self.SetProperty('productName', product_name)
+            self.SetBuildSetting('PRODUCT_NAME', product_name)
 
         # Xcode handles most prefixes based on the target type, however there
         # are exceptions.  If a "BSD Dynamic Library" target is added in the
         # Xcode UI, Xcode sets EXECUTABLE_PREFIX.  This check duplicates that
         # behavior.
-        if set_xc_exe_prefix:
+        if force_prefix is not None:
+          prefix = force_prefix
+        if filetype.startswith('wrapper.'):
+          self.SetBuildSetting('WRAPPER_PREFIX', prefix)
+        else:
           self.SetBuildSetting('EXECUTABLE_PREFIX', prefix)
+
+        if force_outdir is not None:
+          self.SetBuildSetting('TARGET_BUILD_DIR', force_outdir)
 
         # TODO(tvl): Remove the below hack.
         #    http://code.google.com/p/gyp/issues/detail?id=122
@@ -2218,7 +2233,7 @@ class PBXNativeTarget(XCTarget):
         # the prefix.  For example:
         #  target_name = 'libevent', product_name = 'event'
         # This check cleans up for them.
-        product_name = self._properties['productName'];
+        product_name = self._properties['productName']
         prefix_len = len(prefix)
         if prefix_len and (product_name[:prefix_len] == prefix):
           product_name = product_name[prefix_len:]
