@@ -94,7 +94,7 @@ body.platform-windows.inactive #toolbar {
     text-align: right;
 }
 
-#heap-snapshot-summary {
+#heap-snapshot-summary-container {
     position: absolute;
     padding-top: 20px;
     bottom: 0;
@@ -114,6 +114,26 @@ body.platform-windows.inactive #toolbar {
     -webkit-background-size: 1px 6px;
     -webkit-background-origin: padding;
     -webkit-background-clip: padding;
+}
+
+.heap-snapshot-summary {
+    display: inline-block;
+    width: 50%;
+    min-width: 300px;
+    position: relative;
+}
+
+.heap-snapshot-summary canvas.summary-graph {
+    width: 225px;
+}
+
+.heap-snapshot-summary-label {
+    font-size: 12px;
+    font-weight: bold;
+    position: absolute;
+    top: 1px;
+    width: 50%;
+    left: 25%;
 }
 
 body.platform-windows .section > .header {

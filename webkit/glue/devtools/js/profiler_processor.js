@@ -455,8 +455,6 @@ devtools.profiler.Processor.prototype.processHeapSampleBegin_ = function(
 devtools.profiler.Processor.prototype.processHeapSampleStats_ = function(
     space, state, capacity, used) {
   if (space != 'Heap') return;
-  this.currentHeapSnapshot_.capacity = capacity;
-  this.currentHeapSnapshot_.used = used;
 };
 
 
@@ -519,12 +517,6 @@ devtools.profiler.Processor.prototype.processHeapSampleEnd_ = function(
   if (space != 'Heap') return;
   var snapshot = this.currentHeapSnapshot_;
   this.currentHeapSnapshot_ = null;
-  // For some reason, 'used' from 'heap-sample-stats' sometimes differ from
-  // the sum of objects sizes. To avoid discrepancy, we re-calculate 'used'.
-  snapshot.used = 0;
-  for (var item in snapshot.lowlevels) {
-      snapshot.used += snapshot.lowlevels[item].size;
-  }
   WebInspector.panels.profiles.addSnapshot(snapshot);
 };
 

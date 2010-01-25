@@ -40,14 +40,31 @@ WebInspector.HeapSnapshotView = function(parent, profile)
 
     this.categories = {
         code: new WebInspector.ResourceCategory("code", WebInspector.UIString("Code"), "rgb(255,121,0)"),
-        data: new WebInspector.ResourceCategory("data", WebInspector.UIString("Objects and Data"), "rgb(47,102,236)"),
-        other: new WebInspector.ResourceCategory("other", WebInspector.UIString("Other"), "rgb(186,186,186)")
+        data: new WebInspector.ResourceCategory("data", WebInspector.UIString("Objects"), "rgb(47,102,236)")
     };
 
-    this.summaryBar = new WebInspector.SummaryBar(this.categories);
-    this.summaryBar.element.id = "heap-snapshot-summary";
-    this.summaryBar.calculator = new WebInspector.HeapSummaryCalculator(profile.used);
-    this.element.appendChild(this.summaryBar.element);
+    var summaryContainer = document.createElement("div");
+    summaryContainer.id = "heap-snapshot-summary-container";
+
+    this.countsSummaryBar = new WebInspector.SummaryBar(this.categories);
+    this.countsSummaryBar.element.className = "heap-snapshot-summary";
+    this.countsSummaryBar.calculator = new WebInspector.HeapSummaryCountCalculator();
+    var countsLabel = document.createElement("div");
+    countsLabel.className = "heap-snapshot-summary-label";
+    countsLabel.textContent = WebInspector.UIString("Count");
+    this.countsSummaryBar.element.appendChild(countsLabel);
+    summaryContainer.appendChild(this.countsSummaryBar.element);
+
+    this.sizesSummaryBar = new WebInspector.SummaryBar(this.categories);
+    this.sizesSummaryBar.element.className = "heap-snapshot-summary";
+    this.sizesSummaryBar.calculator = new WebInspector.HeapSummarySizeCalculator();
+    var sizesLabel = document.createElement("label");
+    sizesLabel.className = "heap-snapshot-summary-label";
+    sizesLabel.textContent = WebInspector.UIString("Size");
+    this.sizesSummaryBar.element.appendChild(sizesLabel);
+    summaryContainer.appendChild(this.sizesSummaryBar.element);
+
+    this.element.appendChild(summaryContainer);
 
     var columns = { "cons": { title: WebInspector.UIString("Constructor"), disclosure: true, sortable: true },
                     "count": { title: WebInspector.UIString("Count"), width: "54px", sortable: true },
@@ -370,8 +387,11 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _updateSummaryGraph: function()
     {
-        this.summaryBar.calculator.showAsPercent = this._isShowingAsPercent;
-        this.summaryBar.update(this.profile.lowlevels);
+        this.countsSummaryBar.calculator.showAsPercent = this._isShowingAsPercent;
+        this.countsSummaryBar.update(this.profile.lowlevels);
+
+        this.sizesSummaryBar.calculator.showAsPercent = this._isShowingAsPercent;
+        this.sizesSummaryBar.update(this.profile.lowlevels);
     }
 };
 
@@ -411,25 +431,29 @@ WebInspector.HeapSnapshotView.SearchHelper = {
     bytes: /B$/i
 }
 
-WebInspector.HeapSummaryCalculator = function(total)
+WebInspector.HeapSummaryCalculator = function(lowLevelField)
 {
-    this.total = total;
+    this.total = 1;
+    this.lowLevelField = lowLevelField;
 }
 
 WebInspector.HeapSummaryCalculator.prototype = {
     computeSummaryValues: function(lowLevels)
     {
-        function highFromLow(type) {
-            if (type == "CODE_TYPE" || type == "SHARED_FUNCTION_INFO_TYPE" || type == "SCRIPT_TYPE") return "code";
-            if (type == "STRING_TYPE" || type == "HEAP_NUMBER_TYPE" || type.match(/^JS_/) || type.match(/_ARRAY_TYPE$/)) return "data";
-            return "other";
-        }
-        var highLevels = {data: 0, code: 0, other: 0};
+        var highLevels = {data: 0, code: 0};
+        this.total = 0;
         for (var item in lowLevels) {
-            var highItem = highFromLow(item);
-            highLevels[highItem] += lowLevels[item].size;
+            var highItem = this._highFromLow(item);
+            if (highItem) {
+                var value = lowLevels[item][this.lowLevelField];
+                highLevels[highItem] += value;
+                this.total += value;
+            }
         }
-        return {categoryValues: highLevels};
+        var result = {categoryValues: highLevels};
+        if (!this.showAsPercent)
+            result.total = this.total;
+        return result;
     },
 
     formatValue: function(value)
@@ -437,7 +461,7 @@ WebInspector.HeapSummaryCalculator.prototype = {
         if (this.showAsPercent)
             return WebInspector.UIString("%.2f%%", value / this.total * 100.0);
         else
-            return Number.bytesToString(value);
+            return this._valueToString(value);
     },
 
     get showAsPercent()
@@ -450,6 +474,42 @@ WebInspector.HeapSummaryCalculator.prototype = {
         this._showAsPercent = x;
     }
 }
+
+WebInspector.HeapSummaryCountCalculator = function()
+{
+    WebInspector.HeapSummaryCalculator.call(this, "count");
+}
+
+WebInspector.HeapSummaryCountCalculator.prototype = {
+    _highFromLow: function(type) {
+        if (type == "CODE_TYPE" || type == "SHARED_FUNCTION_INFO_TYPE" || type == "SCRIPT_TYPE") return "code";
+        if (type == "STRING_TYPE" || type == "HEAP_NUMBER_TYPE" || type.match(/^JS_/)) return "data";
+        return null;
+    },
+
+    _valueToString: function(value) {
+        return value.toString();
+    }
+}
+
+WebInspector.HeapSummaryCountCalculator.prototype.__proto__ = WebInspector.HeapSummaryCalculator.prototype;
+
+WebInspector.HeapSummarySizeCalculator = function()
+{
+    WebInspector.HeapSummaryCalculator.call(this, "size");
+}
+
+WebInspector.HeapSummarySizeCalculator.prototype = {
+    _highFromLow: function(type) {
+        if (type == "CODE_TYPE" || type == "SHARED_FUNCTION_INFO_TYPE" || type == "SCRIPT_TYPE") return "code";
+        if (type == "STRING_TYPE" || type == "HEAP_NUMBER_TYPE" || type.match(/^JS_/) || type.match(/_ARRAY_TYPE$/)) return "data";
+        return null;
+    },
+
+    _valueToString: Number.bytesToString
+}
+
+WebInspector.HeapSummarySizeCalculator.prototype.__proto__ = WebInspector.HeapSummaryCalculator.prototype;
 
 WebInspector.HeapSnapshotSidebarTreeElement = function(snapshot)
 {
@@ -471,19 +531,6 @@ WebInspector.HeapSnapshotSidebarTreeElement.prototype = {
     set mainTitle(x)
     {
         this._mainTitle = x;
-        this.refreshTitles();
-    },
-
-    get subtitle()
-    {
-        if (this._subTitle)
-            return this._subTitle;
-        return WebInspector.UIString("Used %s of %s (%.0f%%)", Number.bytesToString(this.profile.used, null, false), Number.bytesToString(this.profile.capacity, null, false), this.profile.used / this.profile.capacity * 100.0);
-    },
-
-    set subtitle(x)
-    {
-        this._subTitle = x;
         this.refreshTitles();
     }
 };
