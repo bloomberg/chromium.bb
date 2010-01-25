@@ -81,9 +81,6 @@ SUBSTRING : webplugindelegateimpl::destroyinstance___webplugindelegateimpl::~web
 # 18799
 PREFIX : webplugindelegatestub::onmessagereceived___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::runhandler___messageloop::run___pluginmain___chromemain___wwinmain_____tmaincrtstartup
 
-# 19428
-PREFIX : webcore::rendertextcontrol::calcprefwidths___webcore::renderbox::minprefwidth___webcore::renderblock::calcinlineprefwidths
-
 # 19813
 PREFIX : npobjectgetproperty___npobjectgetnamedproperty___webcore::v8custom::v8htmlpluginelementnamedpropertygetter
 
@@ -154,3 +151,8 @@ PREFIX : v8::internal::context::global_context___v8::internal::top::computelocat
 
 # 31731
 PREFIX : webcore::scriptcontroller::isenabled___webcore::v8proxy::mainworldcontext___webcore::tov8context
+
+# 33067
+# This one is probably fixed by the WebKit 53704:53787 roll.  If so, it can be
+# removed after that roll lands.
+PREFIX : webcore::renderobject::containingblock___webcore::frameview::scrollcontentsfastpath___webcore::scrollview::scrollcontents___webcore::scrollview::valuechanged___webcore::frameview::valuechanged___webcore::scrollbar::setcurrentpos___webcore::scrollbar::scroll___webcore::scrollview::scroll
