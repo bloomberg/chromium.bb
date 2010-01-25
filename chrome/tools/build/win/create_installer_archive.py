@@ -22,11 +22,16 @@ import sys
 
 
 ARCHIVE_DIR = "installer_archive"
-ARCHIVE_FILE = "chrome.7z"     # uncompresed full archive file
+
+# suffix to uncompresed full archive file, appended to options.output_name
+ARCHIVE_SUFFIX = ".7z"
 BSDIFF_EXEC = "bsdiff.exe"
 CHROME_DIR = "Chrome-bin"
-CHROME_PATCH_FILE_PREFIX = "chrome_patch"
-COMPRESSED_ARCHIVE_FILE = "chrome.packed.7z"   # compressed full archive file
+CHROME_PATCH_FILE_SUFFIX = "_patch"  # prefixed by options.output_name
+
+# compressed full archive suffix, will be prefixed by options.output_name
+COMPRESSED_ARCHIVE_SUFFIX = ".packed.7z"
+
 COMPRESSED_FILE_EXT = ".packed.7z"     # extension of patch archive file
 COURGETTE_EXEC = "courgette.exe"
 MINI_INSTALLER_INPUT_FILE = "packed_files.txt"
@@ -136,7 +141,7 @@ def GetPrevVersion(output_dir, temp_dir, last_chrome_installer):
 
   lzma_exec = GetLZMAExec(options.output_dir)
   prev_archive_file = os.path.join(options.last_chrome_installer,
-                                   ARCHIVE_FILE)
+                                   options.output_name + ARCHIVE_SUFFIX)
   cmd = '%s x -o"%s" "%s" Chrome-bin/*/gears.dll' % (lzma_exec, temp_dir,
                                                        prev_archive_file)
   RunSystemCommand(cmd)
@@ -182,7 +187,8 @@ def CreateArchiveFile(options, staging_dir, current_version, prev_version):
   """
   # First create an uncompressed archive file for the current build (chrome.7z)
   lzma_exec = GetLZMAExec(options.output_dir)
-  archive_file = os.path.join(options.output_dir, ARCHIVE_FILE)
+  archive_file = os.path.join(options.output_dir,
+                              options.output_name + ARCHIVE_SUFFIX)
   cmd = '%s a -t7z "%s" "%s" -mx0' % (lzma_exec, archive_file,
                                       os.path.join(staging_dir, CHROME_DIR))
   # There doesnt seem to be any way in 7za.exe to override existing file so
@@ -196,18 +202,19 @@ def CreateArchiveFile(options, staging_dir, current_version, prev_version):
   # If we are generating a patch, run bsdiff against previous build and
   # compress the resulting patch file. If this is not a patch just compress the
   # uncompressed archive file.
+  patch_name_prefix = options.output_name + CHROME_PATCH_FILE_SUFFIX
   if options.last_chrome_installer:
     prev_archive_file = os.path.join(options.last_chrome_installer,
-                                     ARCHIVE_FILE)
-    patch_file = os.path.join(options.output_dir, CHROME_PATCH_FILE_PREFIX +
+                                     options.output_name + ARCHIVE_SUFFIX)
+    patch_file = os.path.join(options.output_dir, patch_name_prefix +
                                                   PATCH_FILE_EXT)
     GenerateDiffPatch(options, prev_archive_file, archive_file, patch_file)
-    compressed_archive_file = CHROME_PATCH_FILE_PREFIX + '_' + \
+    compressed_archive_file = patch_name_prefix + '_' + \
                               current_version + '_from_' + prev_version + \
                               COMPRESSED_FILE_EXT
     orig_file = patch_file
   else:
-    compressed_archive_file = COMPRESSED_ARCHIVE_FILE
+    compressed_archive_file = options.output_name + COMPRESSED_ARCHIVE_SUFFIX
     orig_file = archive_file
 
   compressed_archive_file_path = os.path.join(options.output_dir,
@@ -323,6 +330,8 @@ if '__main__' == __name__:
   option_parser.add_option('-a', '--diff_algorithm', default='BSDIFF',
       help='Diff algorithm to use when generating differential patches ' +
            '{BSDIFF|COURGETTE}.')
+  option_parser.add_option('-n', '--output_name', default='chrome',
+      help='Name used to prefix names of generated archives.')
 
   options, args = option_parser.parse_args()
   print sys.argv

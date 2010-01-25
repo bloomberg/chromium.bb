@@ -240,6 +240,7 @@
                 #'--distribution=$(CHROMIUM_BUILD)',
                 '--distribution=_google_chrome',
                 '--archive_prefix=cf',
+                '--output_name=chrome_frame',
                 # Optional arguments to generate diff installer
                 #'--last_chrome_installer=C:/Temp/base',
                 #'--setup_exe_format=DIFF',
