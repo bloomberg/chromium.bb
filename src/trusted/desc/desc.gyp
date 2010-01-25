@@ -143,22 +143,28 @@
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
       ],
     },
-    {
-      'target_name': 'nrd_xfer64',
-      'type': 'static_library',
-      'variables': {
-        'target_base': 'nrd_xfer',
-      },
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
+  ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'nrd_xfer64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'nrd_xfer',
+          },
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+          ],
         },
-      },
-      'dependencies': [
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
-        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
-      ],
-    }
+      ]
+    }],
   ]
 }
 

@@ -47,17 +47,23 @@
           '<@(common_sources)',
         ],
     },
-    {
-      'target_name': 'gio64',
-      'type': 'static_library',
-        'sources': [
-          '<@(common_sources)',
-        ],
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
-        },
-      },
-    },
+  ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'gio64',
+          'type': 'static_library',
+            'sources': [
+              '<@(common_sources)',
+            ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        }
+      ],
+    }],
   ],
 }

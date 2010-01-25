@@ -173,19 +173,6 @@
     },
     # ----------------------------------------------------------------------
     {
-      'target_name': 'platform64',
-      'type': 'static_library',
-      'variables': {
-        'target_base': 'platform_lib',
-      },
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
-        },
-      },
-    },
-    # ----------------------------------------------------------------------
-    {
       'target_name': 'platform_tests',
       'type': 'executable',
       'variables': {
@@ -196,23 +183,42 @@
         '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
       ],
     },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'platform_tests64',
-      'type': 'executable',
-      'variables': {
-        'target_base': 'platform_tests',
-      },
-      'dependencies': [
-        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
-        '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio64',
-      ],
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
+  ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        # ---------------------------------------------------------------------
+        {
+          'target_name': 'platform64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'platform_lib',
+          },
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
         },
-      },
-    },
+        # ---------------------------------------------------------------------
+        {
+          'target_name': 'platform_tests64',
+          'type': 'executable',
+          'variables': {
+            'target_base': 'platform_tests',
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+            '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio64',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+      ],
+    }],
   ],
 }
 
