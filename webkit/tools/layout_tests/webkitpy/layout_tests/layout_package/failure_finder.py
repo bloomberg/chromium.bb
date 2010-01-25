@@ -72,12 +72,14 @@ CHROMIUM_LINUX_PLATFORM_DIRS = [CHROMIUM_LINUX, CHROMIUM_WIN]
 ARCHIVE_URL_REGEX = "last.*change: (\d+)"
 BUILD_NAME_REGEX = "build name: ([^\s]*)"
 CHROMIUM_FILE_AGE_REGEX = '<br />\s*Modified\s*<em>.*</em> \((.*)\) by'
-TEST_PATH_REGEX = "[^\s]+?"
-FAILED_REGEX = ("DEBUG (" + TEST_PATH_REGEX + ") failed:\s*"
-                "(" + TEXT_DIFF_MISMATCH + ")?\s*"
-                "(" + IMAGE_MISMATCH + ")?\s*"
-                "(" + TEST_TIMED_OUT + ")?\s*"
-                "(" + TEST_SHELL_CRASHED + ")?")
+THREAD_NAME_REGEX = "[\S]+?"
+TEST_PATH_REGEX = "[\S]+?"
+FAILED_REGEX = ("DEBUG " + THREAD_NAME_REGEX + " " +
+               "(" + TEST_PATH_REGEX + ") failed:\s*"
+               "(" + TEXT_DIFF_MISMATCH + ")?\s*"
+               "(" + IMAGE_MISMATCH + ")?\s*"
+               "(" + TEST_TIMED_OUT + ")?\s*"
+               "(" + TEST_SHELL_CRASHED + ")?")
 FAILED_UNEXPECTED_REGEX = "  [^\s]+(?: = .*?)?\n"
 LAST_BUILD_REGEX = ("<h2>Recent Builds:</h2>"
                     "[\s\S]*?<a href=\"../builders/.*?/builds/(\d+)\">")
