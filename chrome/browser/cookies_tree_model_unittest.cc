@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "chrome/browser/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request_context.h"
@@ -26,6 +27,28 @@ class CookiesTreeModelTest : public testing::Test {
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
+    mock_browsing_data_helper_ =
+      new MockBrowsingDataLocalStorageHelper(profile_.get());
+  }
+
+  CookiesTreeModel* CreateCookiesTreeModelWithInitialSample() {
+    net::CookieMonster* monster = profile_->GetCookieMonster();
+    monster->SetCookie(GURL("http://foo1"), "A=1");
+    monster->SetCookie(GURL("http://foo2"), "B=1");
+    monster->SetCookie(GURL("http://foo3"), "C=1");
+    CookiesTreeModel* cookies_model = new CookiesTreeModel(
+        profile_.get(), mock_browsing_data_helper_);
+    mock_browsing_data_helper_->AddLocalStorageSamples();
+    mock_browsing_data_helper_->Notify();
+    {
+      SCOPED_TRACE("Initial State 3 cookies, 2 local storages");
+      // 16 because there's the root, then foo1 -> cookies -> a,
+      // foo2 -> cookies -> b, foo3 -> cookies -> c,
+      // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
+      EXPECT_EQ(16, cookies_model->GetRoot()->GetTotalNodeCount());
+      EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(cookies_model));
+    }
+    return cookies_model;
   }
 
   // Get the cookie names in the cookie list, as a comma seperated string.
@@ -42,35 +65,65 @@ class CookiesTreeModelTest : public testing::Test {
     return JoinString(parts, ',');
   }
 
-  std::string GetCookiesOfChildren(const CookieTreeNode* node) {
+  std::string GetNodesOfChildren(
+      const CookieTreeNode* node,
+      CookieTreeNode::DetailedInfo::NodeType node_type) {
     if (node->GetChildCount()) {
       std::string retval;
       for (int i = 0; i < node->GetChildCount(); ++i) {
-        retval += GetCookiesOfChildren(node->GetChild(i));
+        retval += GetNodesOfChildren(node->GetChild(i), node_type);
       }
       return retval;
     } else {
-      if (node->GetDetailedInfo().node_type ==
-          CookieTreeNode::DetailedInfo::TYPE_COOKIE)
-        return node->GetDetailedInfo().cookie->second.Name() + ",";
-      else
+      if (node->GetDetailedInfo().node_type == node_type) {
+        switch (node_type) {
+          case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
+            return node->GetDetailedInfo().local_storage_info->origin + ",";
+          case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
+            return node->GetDetailedInfo().cookie->second.Name() + ",";
+          default:
+            return "";
+        }
+      } else {
         return "";
+      }
     }
   }
-  // Get the cookie names displayed in the view (if we had one) in the order
+
+  std::string GetCookiesOfChildren(const CookieTreeNode* node) {
+    return GetNodesOfChildren(node, CookieTreeNode::DetailedInfo::TYPE_COOKIE);
+  }
+
+  std::string GetLocalStoragesOfChildren(const CookieTreeNode* node) {
+    return GetNodesOfChildren(node,
+                              CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE);
+  }
+
+  // Get the nodes names displayed in the view (if we had one) in the order
   // they are displayed, as a comma seperated string.
-  // Ex: EXPECT_STREQ("X,Y", GetDisplayedCookies(cookies_view).c_str());
-  std::string GetDisplayedCookies(CookiesTreeModel* cookies_model) {
+  // Ex: EXPECT_STREQ("X,Y", GetDisplayedNodes(cookies_view, type).c_str());
+  std::string GetDisplayedNodes(CookiesTreeModel* cookies_model,
+                                CookieTreeNode::DetailedInfo::NodeType type) {
     CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(
         cookies_model->GetRoot());
-    std::string retval = GetCookiesOfChildren(root);
+    std::string retval = GetNodesOfChildren(root, type);
     if (retval.length() && retval[retval.length() - 1] == ',')
       retval.erase(retval.length() - 1);
     return retval;
   }
 
+  std::string GetDisplayedCookies(CookiesTreeModel* cookies_model) {
+    return GetDisplayedNodes(cookies_model,
+                             CookieTreeNode::DetailedInfo::TYPE_COOKIE);
+  }
+
+  std::string GetDisplayedLocalStorages(CookiesTreeModel* cookies_model) {
+    return GetDisplayedNodes(cookies_model,
+                             CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE);
+  }
+
   // do not call on the root
-  void DeleteCookie(CookieTreeNode* node) {
+  void DeleteStoredObjects(CookieTreeNode* node) {
     node->DeleteStoredObjects();
     // find the parent and index
     CookieTreeNode* parent_node = node->GetParent();
@@ -83,99 +136,114 @@ class CookiesTreeModelTest : public testing::Test {
   ChromeThread io_thread_;
 
   scoped_ptr<TestingProfile> profile_;
+  MockBrowsingDataLocalStorageHelper* mock_browsing_data_helper_;
 };
 
 TEST_F(CookiesTreeModelTest, RemoveAll) {
+  scoped_ptr<CookiesTreeModel> cookies_model(
+      CreateCookiesTreeModelWithInitialSample());
   net::CookieMonster* monster = profile_->GetCookieMonster();
-  monster->SetCookie(GURL("http://foo"), "A=1");
-  monster->SetCookie(GURL("http://foo2"), "B=1");
-  CookiesTreeModel cookies_model(profile_.get());
 
   // Reset the selection of the first row.
   {
     SCOPED_TRACE("Before removing");
-    EXPECT_EQ(GetMonsterCookies(monster), GetDisplayedCookies(&cookies_model));
+    EXPECT_EQ(GetMonsterCookies(monster),
+              GetDisplayedCookies(cookies_model.get()));
+    EXPECT_EQ("origin1,origin2",
+              GetDisplayedLocalStorages(cookies_model.get()));
   }
 
-  cookies_model.DeleteAllCookies();
+  cookies_model->DeleteAllCookies();
+  cookies_model->DeleteAllLocalStorage();
+
   {
     SCOPED_TRACE("After removing");
-    EXPECT_EQ(1, cookies_model.GetRoot()->GetTotalNodeCount());
-    EXPECT_EQ(0, cookies_model.GetRoot()->GetChildCount());
+    EXPECT_EQ(1, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(0, cookies_model->GetRoot()->GetChildCount());
     EXPECT_EQ(std::string(""), GetMonsterCookies(monster));
-    EXPECT_EQ(GetMonsterCookies(monster), GetDisplayedCookies(&cookies_model));
+    EXPECT_EQ(GetMonsterCookies(monster),
+              GetDisplayedCookies(cookies_model.get()));
+    EXPECT_TRUE(mock_browsing_data_helper_->delete_all_files_called_);
   }
 }
 
 TEST_F(CookiesTreeModelTest, Remove) {
+  scoped_ptr<CookiesTreeModel> cookies_model(
+      CreateCookiesTreeModelWithInitialSample());
   net::CookieMonster* monster = profile_->GetCookieMonster();
-  monster->SetCookie(GURL("http://foo1"), "A=1");
-  monster->SetCookie(GURL("http://foo2"), "B=1");
-  monster->SetCookie(GURL("http://foo3"), "C=1");
-  CookiesTreeModel cookies_model(profile_.get());
 
+  DeleteStoredObjects(cookies_model->GetRoot()->GetChild(0));
   {
-    SCOPED_TRACE("Initial State 3 cookies");
-    // 10 because there's the root, then foo1 -> cookies -> a,
-    // foo2 -> cookies -> b, foo3 -> cookies -> c
-    EXPECT_EQ(10, cookies_model.GetRoot()->GetTotalNodeCount());
-  }
-  DeleteCookie(cookies_model.GetRoot()->GetChild(0));
-  {
-    SCOPED_TRACE("First origin removed");
+    SCOPED_TRACE("First cookie origin removed");
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
-    EXPECT_STREQ("B,C", GetDisplayedCookies(&cookies_model).c_str());
-    EXPECT_EQ(7, cookies_model.GetRoot()->GetTotalNodeCount());
+    EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ(13, cookies_model->GetRoot()->GetTotalNodeCount());
+  }
+
+  DeleteStoredObjects(cookies_model->GetRoot()->GetChild(2));
+  {
+    SCOPED_TRACE("First local storage origin removed");
+    EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    EXPECT_EQ("origin2", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ(10, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 }
 
 TEST_F(CookiesTreeModelTest, RemoveCookiesNode) {
+  scoped_ptr<CookiesTreeModel> cookies_model(
+      CreateCookiesTreeModelWithInitialSample());
   net::CookieMonster* monster = profile_->GetCookieMonster();
-  monster->SetCookie(GURL("http://foo1"), "A=1");
-  monster->SetCookie(GURL("http://foo2"), "B=1");
-  monster->SetCookie(GURL("http://foo3"), "C=1");
-  CookiesTreeModel cookies_model(profile_.get());
 
-  {
-    SCOPED_TRACE("Initial State 3 cookies");
-    // 10 because there's the root, then foo1 -> cookies -> a,
-    // foo2 -> cookies -> b, foo3 -> cookies -> c
-    EXPECT_EQ(10, cookies_model.GetRoot()->GetTotalNodeCount());
-  }
-  DeleteCookie(cookies_model.GetRoot()->GetChild(0)->GetChild(0));
+  DeleteStoredObjects(cookies_model->GetRoot()->GetChild(0)->GetChild(0));
   {
     SCOPED_TRACE("First origin removed");
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
-    EXPECT_STREQ("B,C", GetDisplayedCookies(&cookies_model).c_str());
-    // 8 because in this case, the origin remains, although the COOKIES
+    EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    // 14 because in this case, the origin remains, although the COOKIES
     // node beneath it has been deleted. So, we have
     // root -> foo1 -> cookies -> a, foo2, foo3 -> cookies -> c
-    EXPECT_EQ(8, cookies_model.GetRoot()->GetTotalNodeCount());
+    // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
+    EXPECT_EQ(14, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ("origin1,origin2",
+              GetDisplayedLocalStorages(cookies_model.get()));
+  }
+
+  DeleteStoredObjects(cookies_model->GetRoot()->GetChild(3)->GetChild(0));
+  {
+    SCOPED_TRACE("First origin removed");
+    EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    EXPECT_EQ("origin2", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ(12, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 }
 
 TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
+  scoped_ptr<CookiesTreeModel> cookies_model(
+      CreateCookiesTreeModelWithInitialSample());
   net::CookieMonster* monster = profile_->GetCookieMonster();
-  monster->SetCookie(GURL("http://foo1"), "A=1");
-  monster->SetCookie(GURL("http://foo2"), "B=1");
-  monster->SetCookie(GURL("http://foo3"), "C=1");
-  CookiesTreeModel cookies_model(profile_.get());
 
-  {
-    SCOPED_TRACE("Initial State 3 cookies");
-    // 10 because there's the root, then foo1 -> cookies -> a,
-    // foo2 -> cookies -> b, foo3 -> cookies -> c
-    EXPECT_EQ(10, cookies_model.GetRoot()->GetTotalNodeCount());
-  }
-  DeleteCookie(cookies_model.GetRoot()->GetChild(1)->GetChild(0));
+  DeleteStoredObjects(cookies_model->GetRoot()->GetChild(1)->GetChild(0));
   {
     SCOPED_TRACE("Second origin COOKIES node removed");
     EXPECT_STREQ("A,C", GetMonsterCookies(monster).c_str());
-    EXPECT_STREQ("A,C", GetDisplayedCookies(&cookies_model).c_str());
-    // 8 because in this case, the origin remains, although the COOKIES
+    EXPECT_STREQ("A,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    // 14 because in this case, the origin remains, although the COOKIES
     // node beneath it has been deleted. So, we have
     // root -> foo1 -> cookies -> a, foo2, foo3 -> cookies -> c
-    EXPECT_EQ(8, cookies_model.GetRoot()->GetTotalNodeCount());
+    // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
+    EXPECT_EQ(14, cookies_model->GetRoot()->GetTotalNodeCount());
+  }
+
+  DeleteStoredObjects(cookies_model->GetRoot()->GetChild(3)->GetChild(0));
+  {
+    SCOPED_TRACE("First origin removed");
+    EXPECT_STREQ("A,C", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("A,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    EXPECT_EQ("origin2", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ(12, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 }
 
@@ -185,22 +253,27 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
   monster->SetCookie(GURL("http://foo2"), "B=1");
   monster->SetCookie(GURL("http://foo3"), "C=1");
   monster->SetCookie(GURL("http://foo3"), "D=1");
-  CookiesTreeModel cookies_model(profile_.get());
+  CookiesTreeModel cookies_model(
+      profile_.get(), mock_browsing_data_helper_);
+  mock_browsing_data_helper_->AddLocalStorageSamples();
+  mock_browsing_data_helper_->Notify();
 
   {
-    SCOPED_TRACE("Initial State 4 cookies");
-    // 11 because there's the root, then foo1 -> cookies -> a,
+    SCOPED_TRACE("Initial State 4 cookies, 2 local storages");
+    // 17 because there's the root, then foo1 -> cookies -> a,
     // foo2 -> cookies -> b, foo3 -> cookies -> c,d
-    EXPECT_EQ(11, cookies_model.GetRoot()->GetTotalNodeCount());
+    // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
+    EXPECT_EQ(17, cookies_model.GetRoot()->GetTotalNodeCount());
     EXPECT_STREQ("A,B,C,D", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,D", GetDisplayedCookies(&cookies_model).c_str());
+    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(&cookies_model));
   }
-  DeleteCookie(cookies_model.GetRoot()->GetChild(2));
+  DeleteStoredObjects(cookies_model.GetRoot()->GetChild(2));
   {
     SCOPED_TRACE("Third origin removed");
     EXPECT_STREQ("A,B", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B", GetDisplayedCookies(&cookies_model).c_str());
-    EXPECT_EQ(7, cookies_model.GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(13, cookies_model.GetRoot()->GetTotalNodeCount());
   }
 }
 
@@ -211,23 +284,28 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
   monster->SetCookie(GURL("http://foo3"), "C=1");
   monster->SetCookie(GURL("http://foo3"), "D=1");
   monster->SetCookie(GURL("http://foo3"), "E=1");
-  CookiesTreeModel cookies_model(profile_.get());
+  CookiesTreeModel cookies_model(profile_.get(), mock_browsing_data_helper_);
+  mock_browsing_data_helper_->AddLocalStorageSamples();
+  mock_browsing_data_helper_->Notify();
 
   {
-    SCOPED_TRACE("Initial State 5 cookies");
-    // 11 because there's the root, then foo1 -> cookies -> a,
+    SCOPED_TRACE("Initial State 5 cookies, 2 local storages");
+    // 17 because there's the root, then foo1 -> cookies -> a,
     // foo2 -> cookies -> b, foo3 -> cookies -> c,d,e
-    EXPECT_EQ(12, cookies_model.GetRoot()->GetTotalNodeCount());
+    // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
+    EXPECT_EQ(18, cookies_model.GetRoot()->GetTotalNodeCount());
     EXPECT_STREQ("A,B,C,D,E", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,D,E", GetDisplayedCookies(&cookies_model).c_str());
+    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(&cookies_model));
   }
-  DeleteCookie(cookies_model.GetRoot()->GetChild(2)->GetChild(0)->
+  DeleteStoredObjects(cookies_model.GetRoot()->GetChild(2)->GetChild(0)->
       GetChild(1));
   {
     SCOPED_TRACE("Middle cookie in third origin removed");
     EXPECT_STREQ("A,B,C,E", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,E", GetDisplayedCookies(&cookies_model).c_str());
-    EXPECT_EQ(11, cookies_model.GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(17, cookies_model.GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(&cookies_model));
   }
 }
 
@@ -238,8 +316,7 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
   monster->SetCookie(GURL("http://foo3"), "C=1");
   monster->SetCookie(GURL("http://foo3"), "D=1");
   monster->SetCookie(GURL("http://foo3"), "E=1");
-  CookiesTreeModel cookies_model(profile_.get());
-
+  CookiesTreeModel cookies_model(profile_.get(), mock_browsing_data_helper_);
   {
     SCOPED_TRACE("Initial State 5 cookies");
     // 11 because there's the root, then foo1 -> cookies -> a,
@@ -248,7 +325,7 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
     EXPECT_STREQ("A,B,C,D,E", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,D,E", GetDisplayedCookies(&cookies_model).c_str());
   }
-  DeleteCookie(cookies_model.GetRoot()->GetChild(1));
+  DeleteStoredObjects(cookies_model.GetRoot()->GetChild(1));
   {
     SCOPED_TRACE("Second origin removed");
     EXPECT_STREQ("A,C,D,E", GetMonsterCookies(monster).c_str());
@@ -270,7 +347,8 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
   monster->SetCookie(GURL("http://foo3.com"), "G=1");
   monster->SetCookie(GURL("http://foo4.com"), "H=1");
 
-  CookiesTreeModel cookies_model(profile_.get());
+  CookiesTreeModel cookies_model(
+      profile_.get(), new MockBrowsingDataLocalStorageHelper(profile_.get()));
 
   {
     SCOPED_TRACE("Initial State 8 cookies");
@@ -279,7 +357,7 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
     EXPECT_STREQ("F,E,C,B,A,G,D,H",
         GetDisplayedCookies(&cookies_model).c_str());
   }
-  DeleteCookie(cookies_model.GetRoot()->GetChild(1));  // Delete "E"
+  DeleteStoredObjects(cookies_model.GetRoot()->GetChild(1));  // Delete "E"
   {
     SCOPED_TRACE("Second origin removed");
     EXPECT_STREQ("D,A,C,F,B,G,H", GetMonsterCookies(monster).c_str());

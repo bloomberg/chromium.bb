@@ -761,7 +761,9 @@ void PrivacySection::OnCookieBehaviorChanged(GtkComboBox* combo_box,
 void PrivacySection::OnShowCookiesButtonClicked(
     GtkButton *button, PrivacySection* privacy_section) {
   privacy_section->UserMetricsRecordAction("Options_ShowCookies", NULL);
-  CookiesView::Show(privacy_section->profile());
+  CookiesView::Show(privacy_section->profile(),
+                    new BrowsingDataLocalStorageHelper(
+                        privacy_section->profile()));
 }
 
 void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {

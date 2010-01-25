@@ -14,6 +14,7 @@
 #include "app/tree_node_model.h"
 #include "base/linked_ptr.h"
 #include "base/string_util.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
 #include "grit/app_resources.h"
@@ -114,6 +115,22 @@ class OriginNodeComparator {
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
+// CookieTreeLocalStorageNode, public:
+
+CookieTreeLocalStorageNode::CookieTreeLocalStorageNode(
+    BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info)
+    : CookieTreeNode(UTF8ToWide(
+        !local_storage_info->origin.empty() ?
+            local_storage_info->origin :
+            local_storage_info->database_identifier)),
+      local_storage_info_(local_storage_info) {
+}
+
+void CookieTreeLocalStorageNode::DeleteStoredObjects() {
+  GetModel()->DeleteLocalStorage(local_storage_info_->file_path);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // CookieTreeRootNode, public:
 CookieTreeOriginNode* CookieTreeRootNode::GetOrCreateOriginNode(
     const std::wstring& origin) {
@@ -155,6 +172,17 @@ CookieTreeCookiesNode* CookieTreeOriginNode::GetOrCreateCookiesNode() {
   return retval;
 }
 
+CookieTreeLocalStoragesNode*
+    CookieTreeOriginNode::GetOrCreateLocalStoragesNode() {
+  if (local_storages_child_)
+    return local_storages_child_;
+  // need to make a LocalStorages node, add it to the tree, and return it
+  CookieTreeLocalStoragesNode* retval = new CookieTreeLocalStoragesNode;
+  GetModel()->Add(this, cookies_child_ ? 1 : 0, retval);
+  local_storages_child_ = retval;
+  return retval;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeCookiesNode, public:
 
@@ -173,24 +201,67 @@ void CookieTreeCookiesNode::AddCookieNode(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// CookieTreeLocalStoragesNode, public:
+
+CookieTreeLocalStoragesNode::CookieTreeLocalStoragesNode()
+    : CookieTreeNode(l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE)) {
+}
+
+void CookieTreeLocalStoragesNode::AddLocalStorageNode(
+    CookieTreeLocalStorageNode* new_child) {
+  std::vector<CookieTreeNode*>::iterator local_storage_iterator =
+      lower_bound(children().begin(),
+                  children().end(),
+                  new_child,
+                  CookieTreeLocalStorageNode::CookieNodeComparator());
+  GetModel()->Add(this,
+                  (local_storage_iterator - children().begin()),
+                  new_child);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // CookieTreeCookieNode, private
 
 bool CookieTreeCookieNode::CookieNodeComparator::operator() (
     const CookieTreeNode* lhs, const CookieTreeNode* rhs) {
-  return (static_cast<const CookieTreeCookieNode*>(lhs)->
-          cookie_->second.Name() <
-          static_cast<const CookieTreeCookieNode*>(rhs)->
-          cookie_->second.Name());
+  const CookieTreeCookieNode* left =
+      static_cast<const CookieTreeCookieNode*>(lhs);
+  const CookieTreeCookieNode* right =
+      static_cast<const CookieTreeCookieNode*>(rhs);
+  return (left->cookie_->second.Name() < right->cookie_->second.Name());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CookieTreeLocalStorageNode, private
+
+bool CookieTreeLocalStorageNode::CookieNodeComparator::operator() (
+    const CookieTreeNode* lhs, const CookieTreeNode* rhs) {
+  const CookieTreeLocalStorageNode* left  =
+      static_cast<const CookieTreeLocalStorageNode*>(lhs);
+  const CookieTreeLocalStorageNode* right =
+      static_cast<const CookieTreeLocalStorageNode*>(rhs);
+  return (left->local_storage_info_->origin <
+          right->local_storage_info_->origin);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookiesTreeModel, public:
 
-CookiesTreeModel::CookiesTreeModel(Profile* profile)
+CookiesTreeModel::CookiesTreeModel(
+    Profile* profile,
+    BrowsingDataLocalStorageHelper* local_storage_helper)
     : ALLOW_THIS_IN_INITIALIZER_LIST(TreeNodeModel<CookieTreeNode>(
           new CookieTreeRootNode(this))),
-      profile_(profile) {
+      profile_(profile),
+      local_storage_helper_(local_storage_helper) {
   LoadCookies();
+  DCHECK(local_storage_helper_);
+  local_storage_helper_->StartFetching(NewCallback(
+      this, &CookiesTreeModel::OnStorageModelInfoLoaded));
+}
+
+CookiesTreeModel::~CookiesTreeModel() {
+  local_storage_helper_->CancelNotification();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -218,6 +289,8 @@ int CookiesTreeModel::GetIconIndex(TreeModelNode* node) {
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
       return COOKIE;
       break;
+    case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
+      // TODO(bulach): add an icon for local storage.
     default:
       return -1;
   }
@@ -283,11 +356,50 @@ void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
   delete Remove(parent_node, cookie_node_index);
 }
 
+void CookiesTreeModel::DeleteLocalStorage(const FilePath& file_path) {
+  local_storage_helper_->DeleteLocalStorageFile(file_path);
+}
+
+void CookiesTreeModel::DeleteAllLocalStorage() {
+  local_storage_helper_->DeleteAllLocalStorageFiles();
+}
+
 void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
   CookieTreeNode* root = GetRoot();
   int num_children = root->GetChildCount();
   for (int i = num_children - 1; i >= 0; --i)
     delete Remove(root, i);
   LoadCookiesWithFilter(filter);
+  PopulateLocalStorageInfoWithFilter(filter);
+  NotifyObserverTreeNodeChanged(root);
+}
+
+void CookiesTreeModel::OnStorageModelInfoLoaded(
+    const LocalStorageInfoList& local_storage_info) {
+  local_storage_info_list_ = local_storage_info;
+  PopulateLocalStorageInfoWithFilter(L"");
+}
+
+void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
+    const std::wstring& filter) {
+  CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
+  for (LocalStorageInfoList::iterator local_storage_info =
+       local_storage_info_list_.begin();
+       local_storage_info != local_storage_info_list_.end();
+       ++local_storage_info) {
+    std::string origin =
+        !local_storage_info->host.empty() ?
+            local_storage_info->host :
+            local_storage_info->database_identifier;
+    if (!filter.size() ||
+        (UTF8ToWide(origin).find(filter) != std::wstring::npos)) {
+      CookieTreeOriginNode* origin_node = root->GetOrCreateOriginNode(
+          UTF8ToWide(local_storage_info->host));
+      CookieTreeLocalStoragesNode* local_storages_node =
+          origin_node->GetOrCreateLocalStoragesNode();
+      local_storages_node->AddLocalStorageNode(
+          new CookieTreeLocalStorageNode(&(*local_storage_info)));
+    }
+  }
   NotifyObserverTreeNodeChanged(root);
 }

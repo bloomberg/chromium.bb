@@ -1315,8 +1315,11 @@ const int kDisabledIndex = 1;
 // Shows the cookies controller.
 - (IBAction)showCookies:(id)sender {
   // The controller will clean itself up.
+  BrowsingDataLocalStorageHelper* storageHelper =
+      new BrowsingDataLocalStorageHelper(profile_);
   CookiesWindowController* controller =
-      [[CookiesWindowController alloc] initWithProfile:profile_];
+      [[CookiesWindowController alloc] initWithProfile:profile_
+                                         storageHelper:storageHelper];
   [controller attachSheetTo:[self window]];
 }
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/cookies_window_controller.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/test/testing_profile.h"
@@ -65,8 +66,11 @@ class CookiesWindowControllerTest : public CocoaTest {
     CocoaTest::SetUp();
     TestingProfile* profile = browser_helper_.profile();
     profile->CreateRequestContext();
+    local_storage_helper_ = new MockBrowsingDataLocalStorageHelper(profile);
     controller_.reset(
-        [[CookiesWindowController alloc] initWithProfile:profile]);
+        [[CookiesWindowController alloc] initWithProfile:profile
+                                           storageHelper:local_storage_helper_]
+    );
   }
 
   virtual void TearDown() {
@@ -86,6 +90,7 @@ class CookiesWindowControllerTest : public CocoaTest {
  protected:
   BrowserTestHelper browser_helper_;
   scoped_nsobject<CookiesWindowController> controller_;
+  BrowsingDataLocalStorageHelper* local_storage_helper_;
 };
 
 TEST_F(CookiesWindowControllerTest, Construction) {
@@ -137,7 +142,7 @@ TEST_F(CookiesWindowControllerTest, FindCocoaNodeRecursive) {
 TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
   net::CookieMonster* cm = browser_helper_.profile()->GetCookieMonster();
   cm->SetCookie(GURL("http://foo.com"), "A=B");
-  CookiesTreeModel model(browser_helper_.profile());
+  CookiesTreeModel model(browser_helper_.profile(), local_storage_helper_);
 
   // Root --> foo.com --> Cookies --> A. Create node for 'A'.
   TreeModelNode* node = model.GetRoot()->GetChild(0)->GetChild(0)->GetChild(0);
@@ -158,7 +163,7 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
 TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
   net::CookieMonster* cm = browser_helper_.profile()->GetCookieMonster();
   cm->SetCookie(GURL("http://foo.com"), "A=B");
-  CookiesTreeModel model(browser_helper_.profile());
+  CookiesTreeModel model(browser_helper_.profile(), local_storage_helper_);
 
   // Root --> foo.com --> Cookies --> A. Create node for 'foo.com'.
   CookieTreeNode* node = model.GetRoot()->GetChild(0);
@@ -200,7 +205,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodesAdded) {
   cm->SetCookie(url, "A=B");
 
   controller_.reset(
-      [[CookiesWindowController alloc] initWithProfile:profile]);
+      [[CookiesWindowController alloc] initWithProfile:profile
+                                         storageHelper:local_storage_helper_]);
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
@@ -241,7 +247,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodesRemoved) {
   cm->SetCookie(url, "E=F");
 
   controller_.reset(
-      [[CookiesWindowController alloc] initWithProfile:profile]);
+      [[CookiesWindowController alloc] initWithProfile:profile
+                                         storageHelper:local_storage_helper_]);
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
@@ -271,7 +278,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
   cm->SetCookie(url, "E=F");
 
   controller_.reset(
-      [[CookiesWindowController alloc] initWithProfile:profile]);
+      [[CookiesWindowController alloc] initWithProfile:profile
+                                         storageHelper:local_storage_helper_]);
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
@@ -316,7 +324,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
   cm->SetCookie(url, "A=B");
 
   controller_.reset(
-      [[CookiesWindowController alloc] initWithProfile:profile]);
+      [[CookiesWindowController alloc] initWithProfile:profile
+                                         storageHelper:local_storage_helper_]);
 
   CookiesTreeModel* model = [controller_ treeModel];
   // Root --> foo.com --> Cookies.
@@ -348,7 +357,8 @@ TEST_F(CookiesWindowControllerTest, TestDeleteCookie) {
   // This will clean itself up when we call |-closeSheet:|. If we reset the
   // scoper, we'd get a double-free.
   CookiesWindowController* controller =
-      [[CookiesWindowController alloc] initWithProfile:profile];
+      [[CookiesWindowController alloc] initWithProfile:profile
+                                         storageHelper:local_storage_helper_];
   [controller attachSheetTo:test_window()];
   NSTreeController* treeController = [controller treeController];
 
@@ -378,7 +388,8 @@ TEST_F(CookiesWindowControllerTest, TestDidExpandItem) {
   cm->SetCookie(url, "C=D");
 
   controller_.reset(
-      [[CookiesWindowController alloc] initWithProfile:profile]);
+      [[CookiesWindowController alloc] initWithProfile:profile
+                                         storageHelper:local_storage_helper_]);
 
   // Root --> foo.com.
   CocoaCookieTreeNode* foo =
@@ -444,7 +455,8 @@ TEST_F(CookiesWindowControllerTest, RemoveButtonEnabled) {
   // This will clean itself up when we call |-closeSheet:|. If we reset the
   // scoper, we'd get a double-free.
   CookiesWindowController* controller =
-      [[CookiesWindowController alloc] initWithProfile:profile];
+      [[CookiesWindowController alloc] initWithProfile:profile
+                                         storageHelper:local_storage_helper_];
   [controller attachSheetTo:test_window()];
 
   // Nothing should be selected right now.

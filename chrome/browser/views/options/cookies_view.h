@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/task.h"
+#include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "net/base/cookie_monster.h"
 #include "views/controls/button/button.h"
 #include "views/controls/tree/tree_view.h"
@@ -24,9 +25,11 @@ class NativeButton;
 }  // namespace views
 
 
+class BrowsingDataLocalStorageHelper;
 class CookieInfoView;
 class CookiesTreeModel;
 class CookiesTreeView;
+class LocalStorageInfoView;
 class Profile;
 class Timer;
 
@@ -96,13 +99,23 @@ class CookiesView : public views::View,
   // Update the UI when there are no cookies.
   void UpdateForEmptyState();
 
+  // Update the UI when a cookie is selected.
+  void UpdateForCookieState();
+
+  // Update the UI when a local storage is selected.
+  void UpdateForLocalStorageState();
+
+  // Updates view to be visible inside detailed_info_view_;
+  void UpdateVisibleDetailedInfo(views::View* view);
+
   // Assorted dialog controls
   views::Label* search_label_;
   views::Textfield* search_field_;
   views::NativeButton* clear_search_button_;
   views::Label* description_label_;
   CookiesTreeView* cookies_tree_;
-  CookieInfoView* info_view_;
+  CookieInfoView* cookie_info_view_;
+  LocalStorageInfoView* local_storage_info_view_;
   views::NativeButton* remove_button_;
   views::NativeButton* remove_all_button_;
 
@@ -171,5 +184,47 @@ class CookieInfoView : public views::View {
 
   DISALLOW_COPY_AND_ASSIGN(CookieInfoView);
 };
+
+///////////////////////////////////////////////////////////////////////////////
+// LocalStorageInfoView
+//
+//  Responsible for displaying a tabular grid of Local Storage information.
+class LocalStorageInfoView : public views::View {
+ public:
+  LocalStorageInfoView();
+  virtual ~LocalStorageInfoView();
+
+  // Update the display from the specified Local Storage info.
+  void SetLocalStorageInfo(
+      const BrowsingDataLocalStorageHelper::LocalStorageInfo&
+      local_storage_info);
+
+  // Clears the cookie display to indicate that no or multiple local storages
+  // are selected.
+  void ClearLocalStorageDisplay();
+
+  // Enables or disables the local storate property text fields.
+  void EnableLocalStorageDisplay(bool enabled);
+
+ protected:
+  // views::View overrides:
+  virtual void ViewHierarchyChanged(
+      bool is_add, views::View* parent, views::View* child);
+
+ private:
+  // Set up the view layout
+  void Init();
+
+  // Individual property labels
+  views::Label* origin_label_;
+  views::Textfield* origin_value_field_;
+  views::Label* size_label_;
+  views::Textfield* size_value_field_;
+  views::Label* last_modified_label_;
+  views::Textfield* last_modified_value_field_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalStorageInfoView);
+};
+
 
 #endif  // CHROME_BROWSER_VIEWS_OPTIONS_COOKIES_VIEW_H_

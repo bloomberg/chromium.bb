@@ -131,12 +131,14 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
 @synthesize removeButtonEnabled = removeButtonEnabled_;
 @synthesize treeController = treeController_;
 
-- (id)initWithProfile:(Profile*)profile {
+- (id)initWithProfile:(Profile*)profile
+        storageHelper:(BrowsingDataLocalStorageHelper*)storageHelper {
   DCHECK(profile);
   NSString* nibpath = [mac_util::MainAppBundle() pathForResource:@"Cookies"
                                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     profile_ = profile;
+    storageHelper_ = storageHelper;
 
     [self loadTreeModelFromProfile];
 
@@ -305,7 +307,7 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
 // to rebuild after the user clears browsing data. Because the models get
 // clobbered, we rebuild the icon cache for safety (though they do not change).
 - (void)loadTreeModelFromProfile {
-  treeModel_.reset(new CookiesTreeModel(profile_));
+  treeModel_.reset(new CookiesTreeModel(profile_, storageHelper_));
   modelObserver_.reset(new CookiesTreeModelObserverBridge(self));
   treeModel_->SetObserver(modelObserver_.get());
 
