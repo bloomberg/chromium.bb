@@ -96,6 +96,21 @@ def main(argv):
                            stdout=subprocess.PIPE)
       cl_output = p.communicate()[0]
 
+      #
+      # Uncomment this if you need to see exactly what the MSVC preprocessor
+      # has done to your input file.
+      #print >>sys.stderr, '-------------------------------------'
+      #print >>sys.stderr, '# PREPROCESSOR OUTPUT BEGINS        #'
+      #print >>sys.stderr, '-------------------------------------'
+      #print >>sys.stderr, cl_output
+      #print >>sys.stderr, '-------------------------------------'
+      #print >>sys.stderr, '# PREPROCESSOR OUTPUT ENDS          #'
+      #print >>sys.stderr, '-------------------------------------'
+
+      # GNU uses '#<linenum> for line number directives; MSVC uses
+      # '#line <linenum>.'
+      cl_output = re.sub(r'^#line ', r'#', cl_output)
+
       if p.wait() == 0: # success
         #
         # Pipe the preprocessor output into the assembler
@@ -109,6 +124,7 @@ def main(argv):
                              stderr=subprocess.PIPE)
         as_output, as_error = p.communicate(cl_output)
 
+        print >>sys.stderr, as_error
         #
         # massage the assembler stderr into a format that Visual Studio likes
         #
