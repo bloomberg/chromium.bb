@@ -128,6 +128,14 @@ class PyWebSocket(http_server.Lighttpd):
             '-s', self._web_socket_tests,
             '-l', error_log,
         ]
+        handler_map_file = os.path.join(self._web_socket_tests,
+                                        'handler_map.txt')
+        if os.path.exists(handler_map_file):
+            logging.info('Using handler_map_file: %s' % handler_map_file)
+            start_cmd.append('-m')
+            start_cmd.append(handler_map_file)
+        else:
+            logging.warning('No handler_map_file found')
         if self._use_tls:
             start_cmd.extend(['-t', '-k', self._private_key,
                               '-c', self._certificate])
@@ -147,8 +155,11 @@ class PyWebSocket(http_server.Lighttpd):
         env['PYTHONPATH'] = (pywebsocket_base + os.path.pathsep +
                              env.get('PYTHONPATH', ''))
 
-        logging.debug('Starting %s server.' % self._server_name)
+        logging.info('Starting %s server on %d.' % (
+            self._server_name, self._port))
+        logging.debug('cmdline: %s' % ' '.join(start_cmd))
         self._process = subprocess.Popen(start_cmd, stdout=self._wsout,
+                                         stderr=subprocess.STDOUT,
                                          env=env)
 
         # Wait a bit before checking the liveness of the server.
@@ -160,6 +171,12 @@ class PyWebSocket(http_server.Lighttpd):
             url = 'http'
         url = url + '://127.0.0.1:%d/' % self._port
         if not google.httpd_utils.UrlIsAlive(url):
+            fp = open(output_log)
+            try:
+                for line in fp:
+                    logging.error(line)
+            finally:
+                fp.close()
             raise PyWebSocketNotStarted(
                 'Failed to start %s server on port %s.' %
                     (self._server_name, self._port))
@@ -188,7 +205,7 @@ class PyWebSocket(http_server.Lighttpd):
             raise PyWebSocketNotFound(
                 'Failed to find %s server pid.' % self._server_name)
 
-        logging.debug('Shutting down %s server %d.' % (self._server_name, pid))
+        logging.info('Shutting down %s server %d.' % (self._server_name, pid))
         platform_utils.KillProcess(pid)
 
         if self._process:
