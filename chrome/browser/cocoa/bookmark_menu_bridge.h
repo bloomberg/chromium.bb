@@ -58,13 +58,19 @@ class BookmarkMenuBridge : public BookmarkModelObserver {
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node);
 
-  // I wish I has a "friend @class" construct.
+  // Rebuilds the bookmark menu, if it has been marked invalid.
+  void UpdateMenu(NSMenu* bookmark_menu);
+
+  // I wish I had a "friend @class" construct.
   BookmarkModel* GetBookmarkModel();
   Profile* GetProfile();
 
  protected:
   // Clear all bookmarks from the given bookmark menu.
   void ClearBookmarkMenu(NSMenu* menu);
+
+  // Mark the bookmark menu as being invalid.
+  void InvalidateMenu()  { menuIsValid_ = false; }
 
   // Helper for adding the node as a submenu to the menu with the
   // given title.
@@ -97,6 +103,9 @@ class BookmarkMenuBridge : public BookmarkModelObserver {
 
  private:
   friend class BookmarkMenuBridgeTest;
+
+  // True iff the menu is up-to-date with the actual BookmarkModel.
+  bool menuIsValid_;
 
   Profile* profile_;  // weak
   BookmarkMenuCocoaController* controller_;  // strong

@@ -4,6 +4,7 @@
 
 #include "app/gfx/text_elider.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/app/chrome_dll_resource.h"  // IDC_BOOKMARK_MENU
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/bookmark_menu_bridge.h"
@@ -38,8 +39,23 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   if ((self = [super init])) {
     bridge_ = bridge;
     DCHECK(bridge_);
+    [[self menu] setDelegate:self];
   }
   return self;
+}
+
+- (void)dealloc {
+  [[self menu] setDelegate:nil];
+  [super dealloc];
+}
+
+- (NSMenu*)menu {
+  return [[[NSApp mainMenu] itemWithTag:IDC_BOOKMARK_MENU] submenu];
+}
+
+// NSMenu delegate method: called just before menu is displayed.
+- (void)menuNeedsUpdate:(NSMenu*)menu {
+  bridge_->UpdateMenu(menu);
 }
 
 // Return the a BookmarkNode that has the given id (called
