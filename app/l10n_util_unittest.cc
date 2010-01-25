@@ -10,6 +10,7 @@
 
 #include "app/app_paths.h"
 #include "app/l10n_util.h"
+#include "app/l10n_util_collator.h"
 #if !defined(OS_MACOSX)
 #include "app/test/data/resource.h"
 #endif

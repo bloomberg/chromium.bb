@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
 
+#include "app/bidi_line_iterator.h"
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
 #include "app/gfx/insets.h"
@@ -469,7 +470,7 @@ int AutocompleteResultView::DrawString(
   // Initialize a bidirectional line iterator of ICU and split the text into
   // visual runs. (A visual run is consecutive characters which have the same
   // display direction and should be displayed at once.)
-  l10n_util::BiDiLineIterator bidi_line;
+  BiDiLineIterator bidi_line;
   if (!bidi_line.Open(text, mirroring_context_->mirrored(), false))
     return x;
   const int runs = bidi_line.CountRuns();

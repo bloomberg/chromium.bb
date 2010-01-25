@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/json_value_serializer.h"
+#include "unicode/uloc.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;

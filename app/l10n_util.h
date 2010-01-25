@@ -20,11 +20,6 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "unicode/coll.h"
-#include "unicode/locid.h"
-#include "unicode/rbbi.h"
-#include "unicode/ubidi.h"
-#include "unicode/uchar.h"
 
 #if defined(OS_MACOSX)
 #include "app/l10n_util_mac.h"
@@ -269,139 +264,6 @@ std::wstring GetDisplayStringInLTRDirectionality(std::wstring* text);
 // gfx::Canvas::TEXT_ALIGN_RIGHT.
 int DefaultCanvasTextAlignment();
 
-// Compares the two strings using the specified collator.
-UCollationResult CompareStringWithCollator(const icu::Collator* collator,
-                                           const std::wstring& lhs,
-                                           const std::wstring& rhs);
-
-// Used by SortStringsUsingMethod. Invokes a method on the objects passed to
-// operator (), comparing the string results using a collator.
-template <class T, class Method>
-class StringMethodComparatorWithCollator
-    : public std::binary_function<const std::wstring&,
-                                  const std::wstring&,
-                                  bool> {
- public:
-  StringMethodComparatorWithCollator(icu::Collator* collator, Method method)
-      : collator_(collator),
-        method_(method) { }
-
-  // Returns true if lhs preceeds rhs.
-  bool operator() (T* lhs_t, T* rhs_t) {
-    return CompareStringWithCollator(collator_, (lhs_t->*method_)(),
-                                     (rhs_t->*method_)()) == UCOL_LESS;
-  }
-
- private:
-  icu::Collator* collator_;
-  Method method_;
-};
-
-// Used by SortStringsUsingMethod. Invokes a method on the objects passed to
-// operator (), comparing the string results using <.
-template <class T, class Method>
-class StringMethodComparator : public std::binary_function<const std::wstring&,
-                                                           const std::wstring&,
-                                                           bool> {
- public:
-  explicit StringMethodComparator(Method method) : method_(method) { }
-
-  // Returns true if lhs preceeds rhs.
-  bool operator() (T* lhs_t, T* rhs_t) {
-    return (lhs_t->*method_)() < (rhs_t->*method_)();
-  }
-
- private:
-  Method method_;
-};
-
-// Sorts the objects in |elements| using the method |method|, which must return
-// a string. Sorting is done using a collator, unless a collator can not be
-// found in which case the strings are sorted using the operator <.
-template <class T, class Method>
-void SortStringsUsingMethod(const std::wstring& locale,
-                            std::vector<T*>* elements,
-                            Method method) {
-  UErrorCode error = U_ZERO_ERROR;
-  icu::Locale loc(WideToUTF8(locale).c_str());
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
-  if (U_FAILURE(error)) {
-    sort(elements->begin(), elements->end(),
-         StringMethodComparator<T, Method>(method));
-    return;
-  }
-
-  std::sort(elements->begin(), elements->end(),
-      StringMethodComparatorWithCollator<T, Method>(collator.get(), method));
-}
-
-// Compares two elements' string keys and returns true if the first element's
-// string key is less than the second element's string key. The Element must
-// have a method like the follow format to return the string key.
-// const std::wstring& GetStringKey() const;
-// This uses the locale specified in the constructor.
-template <class Element>
-class StringComparator : public std::binary_function<const Element&,
-                                                     const Element&,
-                                                     bool> {
- public:
-  explicit StringComparator(icu::Collator* collator)
-      : collator_(collator) { }
-
-  // Returns true if lhs precedes rhs.
-  bool operator()(const Element& lhs, const Element& rhs) {
-    const std::wstring& lhs_string_key = lhs.GetStringKey();
-    const std::wstring& rhs_string_key = rhs.GetStringKey();
-
-    return StringComparator<std::wstring>(collator_)(lhs_string_key,
-                                                     rhs_string_key);
-  }
-
- private:
-  icu::Collator* collator_;
-};
-
-// Specialization of operator() method for std::wstring version.
-template <>
-bool StringComparator<std::wstring>::operator()(const std::wstring& lhs,
-                                                const std::wstring& rhs);
-
-// In place sorting of |elements| of a vector according to the string key of
-// each element in the vector by using collation rules for |locale|.
-// |begin_index| points to the start position of elements in the vector which
-// want to be sorted. |end_index| points to the end position of elements in the
-// vector which want to be sorted
-template <class Element>
-void SortVectorWithStringKey(const std::string& locale,
-                             std::vector<Element>* elements,
-                             unsigned int begin_index,
-                             unsigned int end_index,
-                             bool needs_stable_sort) {
-  DCHECK(begin_index < end_index &&
-         end_index <= static_cast<unsigned int>(elements->size()));
-  UErrorCode error = U_ZERO_ERROR;
-  icu::Locale loc(locale.c_str());
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
-  if (U_FAILURE(error))
-    collator.reset();
-  StringComparator<Element> c(collator.get());
-  if (needs_stable_sort) {
-    stable_sort(elements->begin() + begin_index,
-                elements->begin() + end_index,
-                c);
-  } else {
-    sort(elements->begin() + begin_index, elements->begin() + end_index, c);
-  }
-}
-
-template <class Element>
-void SortVectorWithStringKey(const std::string& locale,
-                             std::vector<Element>* elements,
-                             bool needs_stable_sort) {
-  SortVectorWithStringKey<Element>(locale, elements, 0, elements->size(),
-                                   needs_stable_sort);
-}
-
 // In place sorting of strings using collation rules for |locale|.
 // TODO(port): this should take string16.
 void SortStrings(const std::string& locale,
@@ -415,33 +277,7 @@ const std::vector<std::string>& GetAvailableLocales();
 void GetAcceptLanguagesForLocale(const std::string& display_locale,
                                  std::vector<std::string>* locale_codes);
 
-// A simple wrapper class for the bidirectional iterator of ICU.
-// This class uses the bidirectional iterator of ICU to split a line of
-// bidirectional texts into visual runs in its display order.
-class BiDiLineIterator {
- public:
-  BiDiLineIterator() : bidi_(NULL) { }
-  ~BiDiLineIterator();
 
-  // Initializes the bidirectional iterator with the specified text.  Returns
-  // whether initialization succeeded.
-  UBool Open(const std::wstring& text, bool right_to_left, bool url);
-
-  // Returns the number of visual runs in the text, or zero on error.
-  int CountRuns();
-
-  // Gets the logical offset, length, and direction of the specified visual run.
-  UBiDiDirection GetVisualRun(int index, int* start, int* length);
-
-  // Given a start position, figure out where the run ends (and the BiDiLevel).
-  void GetLogicalRun(int start, int* end, UBiDiLevel* level);
-
- private:
-  UBiDi* bidi_;
-
-  DISALLOW_COPY_AND_ASSIGN(BiDiLineIterator);
-};
-
-}
+}  // namespace l10n_util
 
 #endif  // APP_L10N_UTIL_H_

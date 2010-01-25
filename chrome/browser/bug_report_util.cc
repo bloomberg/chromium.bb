@@ -14,6 +14,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/locale_settings.h"
+#include "unicode/locid.h"
 
 namespace {
 

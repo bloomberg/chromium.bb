@@ -30,6 +30,7 @@
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
+#include "unicode/coll.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/mach_broker_mac.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/options/fonts_page_gtk.h"
 
 #include "app/l10n_util.h"
+#include "app/l10n_util_collator.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/profile.h"

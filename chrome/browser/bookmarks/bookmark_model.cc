@@ -6,6 +6,7 @@
 
 #include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
+#include "app/l10n_util_collator.h"
 #include "base/scoped_vector.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"

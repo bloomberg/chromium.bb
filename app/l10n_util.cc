@@ -5,9 +5,11 @@
 #include "app/l10n_util.h"
 
 #include <cstdlib>
+
 #include "app/app_paths.h"
 #include "app/app_switches.h"
 #include "app/gfx/canvas.h"
+#include "app/l10n_util_collator.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -19,6 +21,10 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "build/build_config.h"
+#include "unicode/coll.h"
+#include "unicode/locid.h"
+#include "unicode/rbbi.h"
+#include "unicode/uchar.h"
 #include "unicode/uscript.h"
 
 #if defined(TOOLKIT_GTK)
@@ -1013,55 +1019,6 @@ void GetAcceptLanguagesForLocale(const std::string& display_locale,
         continue;
     locale_codes->push_back(kAcceptLanguageList[i]);
   }
-}
-
-BiDiLineIterator::~BiDiLineIterator() {
-  if (bidi_) {
-    ubidi_close(bidi_);
-    bidi_ = NULL;
-  }
-}
-
-UBool BiDiLineIterator::Open(const std::wstring& text,
-                             bool right_to_left,
-                             bool url) {
-  DCHECK(bidi_ == NULL);
-  UErrorCode error = U_ZERO_ERROR;
-  bidi_ = ubidi_openSized(static_cast<int>(text.length()), 0, &error);
-  if (U_FAILURE(error))
-    return false;
-  if (right_to_left && url)
-    ubidi_setReorderingMode(bidi_, UBIDI_REORDER_RUNS_ONLY);
-#if defined(WCHAR_T_IS_UTF32)
-  const string16 text_utf16 = WideToUTF16(text);
-#else
-  const std::wstring &text_utf16 = text;
-#endif  // U_SIZEOF_WCHAR_T != 4
-  ubidi_setPara(bidi_, text_utf16.data(), static_cast<int>(text_utf16.length()),
-                right_to_left ? UBIDI_DEFAULT_RTL : UBIDI_DEFAULT_LTR,
-                NULL, &error);
-  return U_SUCCESS(error);
-}
-
-int BiDiLineIterator::CountRuns() {
-  DCHECK(bidi_ != NULL);
-  UErrorCode error = U_ZERO_ERROR;
-  const int runs = ubidi_countRuns(bidi_, &error);
-  return U_SUCCESS(error) ? runs : 0;
-}
-
-UBiDiDirection BiDiLineIterator::GetVisualRun(int index,
-                                              int* start,
-                                              int* length) {
-  DCHECK(bidi_ != NULL);
-  return ubidi_getVisualRun(bidi_, index, start, length);
-}
-
-void BiDiLineIterator::GetLogicalRun(int start,
-                                     int* end,
-                                     UBiDiLevel* level) {
-  DCHECK(bidi_ != NULL);
-  ubidi_getLogicalRun(bidi_, start, end, level);
 }
 
 }  // namespace l10n_util

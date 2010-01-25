@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/about_chrome_view.h"
 
+#include "app/bidi_line_iterator.h"
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
 #include "base/i18n/word_iterator.h"
@@ -496,7 +497,7 @@ void AboutChromeView::DrawTextAndPositionUrl(gfx::Canvas* canvas,
   // (a run is a sequence of words that share the same directionality). We
   // initialize a bidirectional ICU line iterator and split the text into runs
   // that are either strictly LTR or strictly RTL (and do not contain a mix).
-  l10n_util::BiDiLineIterator bidi_line;
+  BiDiLineIterator bidi_line;
   if (!bidi_line.Open(text.c_str(), true, false))
     return;
 

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "app/l10n_util.h"
+#include "app/l10n_util_collator.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_tokenizer.h"

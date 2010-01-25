@@ -92,6 +92,7 @@
         'animation.h',
         'active_window_watcher_x.cc',
         'active_window_watcher_x.h',
+        'bidi_line_iterator.cc',
         'clipboard/clipboard.cc',
         'clipboard/clipboard.h',
         'clipboard/clipboard_linux.cc',

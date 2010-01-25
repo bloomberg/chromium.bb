@@ -5,6 +5,7 @@
 #include "app/table_model.h"
 
 #include "app/l10n_util.h"
+#include "app/l10n_util_collator.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // TableColumn -----------------------------------------------------------------
