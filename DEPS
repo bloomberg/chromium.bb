@@ -59,7 +59,7 @@ deps = {
   "gpu/command_buffer":
     Var("chromium_trunk") + "/src/gpu/command_buffer@" + Var("chrome_rev"),
   "gpu/pgl":
-    Var("chromium_trunk") + "/src/gpu/pgl",
+    Var("chromium_trunk") + "/src/gpu/pgl@" + Var("chrome_rev"),
 }
 
 deps_os = {
