@@ -25,7 +25,8 @@ static const int kPhoneNumberLength = 7;
 static const int kPhoneCityCodeLength = 3;
 
 PersonalDataManager::~PersonalDataManager() {
-  CancelPendingQuery();
+  CancelPendingQuery(&pending_profiles_query_);
+  CancelPendingQuery(&pending_creditcards_query_);
 }
 
 void PersonalDataManager::OnWebDataServiceRequestDone(
@@ -35,24 +36,27 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   if (!result)
     return;
 
-  DCHECK(pending_query_handle_);
-  DCHECK(result->GetType() == AUTOFILL_PROFILES_RESULT);
-  pending_query_handle_ = 0;
+  DCHECK(pending_profiles_query_ || pending_creditcards_query_);
+  DCHECK(result->GetType() == AUTOFILL_PROFILES_RESULT ||
+         result->GetType() == AUTOFILL_CREDITCARDS_RESULT);
 
-  unique_ids_.clear();
-  profiles_.reset();
-  const WDResult<std::vector<AutoFillProfile*> >* r =
-      static_cast<const WDResult<std::vector<AutoFillProfile*> >*>(result);
-  std::vector<AutoFillProfile*> profiles = r->GetValue();
-  for (std::vector<AutoFillProfile*>::iterator iter = profiles.begin();
-       iter != profiles.end(); ++iter) {
-    unique_ids_.insert((*iter)->unique_id());
-    profiles_.push_back(*iter);
+  switch (result->GetType()) {
+    case AUTOFILL_PROFILES_RESULT:
+      ReceiveLoadedProfiles(h, result);
+      break;
+    case AUTOFILL_CREDITCARDS_RESULT:
+      ReceiveLoadedCreditCards(h, result);
+      break;
+    default:
+      NOTREACHED();
   }
 
-  is_data_loaded_ = true;
-  if (observer_)
-    observer_->OnPersonalDataLoaded();
+  // If both requests have responded, then all personal data is loaded.
+  if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0) {
+    is_data_loaded_ = true;
+    if (observer_)
+      observer_->OnPersonalDataLoaded();
+  }
 }
 
 void PersonalDataManager::SetObserver(PersonalDataManager::Observer* observer) {
@@ -75,9 +79,10 @@ bool PersonalDataManager::ImportFormData(
   // possible to import.
   int importable_fields = 0;
   int importable_credit_card_fields = 0;
-  imported_profile_.reset(new AutoFillProfile(string16(),
-                                              CreateNextUniqueID()));
-  imported_credit_card_.reset(new CreditCard(string16()));
+  imported_profile_.reset(new AutoFillProfile(
+      string16(), CreateNextUniqueID(&unique_profile_ids_)));
+  // TODO(jhawkins): Use a hash of the CC# instead of a list of unique IDs?
+  imported_credit_card_.reset(new CreditCard(string16(), 0));
 
   bool billing_address_info = false;
   std::vector<FormStructure*>::const_iterator iter;
@@ -161,28 +166,28 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
     if (iter->unique_id() != 0)
-      unique_ids_.erase(iter->unique_id());
+      unique_profile_ids_.erase(iter->unique_id());
   }
 
   // Any remaining IDs are not in the new profile list and should be removed
   // from the web database.
-  for (std::set<int>::iterator iter = unique_ids_.begin();
-       iter != unique_ids_.end(); ++iter) {
+  for (std::set<int>::iterator iter = unique_profile_ids_.begin();
+       iter != unique_profile_ids_.end(); ++iter) {
     wds->RemoveAutoFillProfile(*iter);
   }
 
   // Clear the unique IDs.  The set of unique IDs is updated for each profile
-  // added to |profile_| below.
-  unique_ids_.clear();
+  // added to |profiles_| below.
+  unique_profile_ids_.clear();
 
   // Update the web database with the existing profiles.  We need to handle
-  // these first so that |unique_ids_| is reset with the IDs of the existing
-  // profiles; otherwise, new profiles added before older profiles can take
-  // their unique ID.
+  // these first so that |unique_profile_ids_| is reset with the IDs of the
+  // existing profiles; otherwise, new profiles added before older profiles can
+  // take their unique ID.
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
     if (iter->unique_id() != 0) {
-      unique_ids_.insert(iter->unique_id());
+      unique_profile_ids_.insert(iter->unique_id());
       wds->UpdateAutoFillProfile(*iter);
     }
   }
@@ -190,10 +195,11 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   // Add the new profiles to the web database.
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
-    // Profile was added by the AutoFill dialog, so we need to set the unique
-    // ID.  This also means we need to add this profile to the web DB.
+    // The profile was added by the AutoFill dialog, so we need to set the
+    // unique ID.  This also means we need to add this profile to the web
+    // database.
     if (iter->unique_id() == 0) {
-      iter->set_unique_id(CreateNextUniqueID());
+      iter->set_unique_id(CreateNextUniqueID(&unique_profile_ids_));
       wds->AddAutoFillProfile(*iter);
     }
   }
@@ -205,6 +211,64 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   }
 }
 
+void PersonalDataManager::SetCreditCards(
+    std::vector<CreditCard>* credit_cards) {
+  if (profile_->IsOffTheRecord())
+    return;
+
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
+    return;
+
+  // Remove the unique IDs of the new set of credit cards from the unique ID
+  // set.
+  for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
+       iter != credit_cards->end(); ++iter) {
+    if (iter->unique_id() != 0)
+      unique_creditcard_ids_.erase(iter->unique_id());
+  }
+
+  // Any remaining IDs are not in the new credit card list and should be removed
+  // from the web database.
+  for (std::set<int>::iterator iter = unique_creditcard_ids_.begin();
+       iter != unique_creditcard_ids_.end(); ++iter) {
+    wds->RemoveCreditCard(*iter);
+  }
+
+  // Clear the unique IDs.  The set of unique IDs is updated for each credit
+  // card added to |credit_cards_| below.
+  unique_creditcard_ids_.clear();
+
+  // Update the web database with the existing credit cards.  We need to handle
+  // these first so that |unique_creditcard_ids_| is reset with the IDs of the
+  // existing credit cards; otherwise, new credit cards added before older
+  // credit cards can take their unique ID.
+  for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
+       iter != credit_cards->end(); ++iter) {
+    if (iter->unique_id() != 0) {
+      unique_creditcard_ids_.insert(iter->unique_id());
+      wds->UpdateCreditCard(*iter);
+    }
+  }
+
+  // Add the new credit cards to the web database.
+  for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
+       iter != credit_cards->end(); ++iter) {
+    // The credit card was added by the AutoFill dialog, so we need to set the
+    // unique ID.  This also means we need to add this credit card to the web
+    // database.
+    if (iter->unique_id() == 0) {
+      iter->set_unique_id(CreateNextUniqueID(&unique_creditcard_ids_));
+      wds->AddCreditCard(*iter);
+    }
+  }
+
+  credit_cards_.reset();
+  for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
+       iter != credit_cards->end(); ++iter) {
+    credit_cards_.push_back(new CreditCard(*iter));
+  }
+}
 
 void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
                                                 FieldTypeSet* possible_types) {
@@ -227,7 +291,7 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
     profile->GetPossibleFieldTypes(clean_info, possible_types);
   }
 
-  for (ScopedVector<FormGroup>::iterator iter = credit_cards_.begin();
+  for (ScopedVector<CreditCard>::iterator iter = credit_cards_.begin();
        iter != credit_cards_.end(); ++iter) {
     const FormGroup* credit_card = *iter;
     if (!credit_card) {
@@ -250,9 +314,11 @@ PersonalDataManager::PersonalDataManager(Profile* profile)
     : profile_(profile),
       is_initialized_(false),
       is_data_loaded_(false),
-      pending_query_handle_(0),
+      pending_profiles_query_(0),
+      pending_creditcards_query_(0),
       observer_(NULL) {
   LoadProfiles();
+  LoadCreditCards();
 }
 
 void PersonalDataManager::InitializeIfNeeded() {
@@ -263,13 +329,13 @@ void PersonalDataManager::InitializeIfNeeded() {
   // TODO(jhawkins): Load data.
 }
 
-int PersonalDataManager::CreateNextUniqueID() {
+int PersonalDataManager::CreateNextUniqueID(std::set<int>* unique_ids) {
   // Profile IDs MUST start at 1 to allow 0 as an error value when reading
   // the ID from the WebDB (see LoadData()).
   int id = 1;
-  while (unique_ids_.count(id) != 0)
+  while (unique_ids->count(id) != 0)
     ++id;
-  unique_ids_.insert(id);
+  unique_ids->insert(id);
   return id;
 }
 
@@ -307,20 +373,71 @@ void PersonalDataManager::LoadProfiles() {
     return;
   }
 
-  CancelPendingQuery();
+  CancelPendingQuery(&pending_profiles_query_);
 
-  pending_query_handle_ = web_data_service->GetAutoFillProfiles(this);
+  pending_profiles_query_ = web_data_service->GetAutoFillProfiles(this);
 }
 
-void PersonalDataManager::CancelPendingQuery() {
-  if (pending_query_handle_) {
+void PersonalDataManager::LoadCreditCards() {
+  WebDataService* web_data_service =
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service) {
+    NOTREACHED();
+    return;
+  }
+
+  CancelPendingQuery(&pending_creditcards_query_);
+
+  pending_creditcards_query_ = web_data_service->GetCreditCards(this);
+}
+
+void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
+                                                const WDTypedResult* result) {
+  DCHECK_EQ(pending_profiles_query_, h);
+  pending_profiles_query_ = 0;
+
+  unique_profile_ids_.clear();
+  profiles_.reset();
+
+  const WDResult<std::vector<AutoFillProfile*> >* r =
+      static_cast<const WDResult<std::vector<AutoFillProfile*> >*>(result);
+
+  std::vector<AutoFillProfile*> profiles = r->GetValue();
+  for (std::vector<AutoFillProfile*>::iterator iter = profiles.begin();
+       iter != profiles.end(); ++iter) {
+    unique_profile_ids_.insert((*iter)->unique_id());
+    profiles_.push_back(*iter);
+  }
+}
+
+void PersonalDataManager::ReceiveLoadedCreditCards(
+    WebDataService::Handle h, const WDTypedResult* result) {
+  DCHECK_EQ(pending_creditcards_query_, h);
+  pending_creditcards_query_ = 0;
+
+  unique_creditcard_ids_.clear();
+  credit_cards_.reset();
+
+  const WDResult<std::vector<CreditCard*> >* r =
+      static_cast<const WDResult<std::vector<CreditCard*> >*>(result);
+
+  std::vector<CreditCard*> credit_cards = r->GetValue();
+  for (std::vector<CreditCard*>::iterator iter = credit_cards.begin();
+       iter != credit_cards.end(); ++iter) {
+    unique_creditcard_ids_.insert((*iter)->unique_id());
+    credit_cards_.push_back(*iter);
+  }
+}
+
+void PersonalDataManager::CancelPendingQuery(WebDataService::Handle* handle) {
+  if (*handle) {
     WebDataService* web_data_service =
         profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
     if (!web_data_service) {
       NOTREACHED();
       return;
     }
-    web_data_service->CancelRequest(pending_query_handle_);
+    web_data_service->CancelRequest(*handle);
   }
-  pending_query_handle_ = 0;
+  *handle = 0;
 }

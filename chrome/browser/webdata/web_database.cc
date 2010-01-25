@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
+#include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/webdata/autofill_change.h"
@@ -111,6 +112,22 @@ using webkit_glue::PasswordForm;
 //   phone
 //   fax
 //
+// credit_cards         This table contains credit card data added by the user
+//                      with the AutoFill dialog.  Most of the columns are
+//                      standard entries in a credit card form.
+//
+//   label              The label of the credit card.  Presented to the user
+//                      when selecting credit cards.
+//   unique_id          The unique ID of this credit card.
+//   name_on_card
+//   type
+//   card_number
+//   expiration_month
+//   expiration_year
+//   verification_code  The CVC/CVV/CVV2 card security code.
+//   billing_address    A foreign key into the autofill_profiles table.
+//   shipping_address   A foreign key into the autofill_profiles table.
+//
 // web_app_icons
 //   url         URL of the web app.
 //   width       Width of the image.
@@ -198,7 +215,8 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
   // Initialize the tables.
   if (!InitKeywordsTable() || !InitLoginsTable() || !InitWebAppIconsTable() ||
       !InitWebAppsTable() || !InitAutofillTable() ||
-      !InitAutofillDatesTable() || !InitAutoFillProfilesTable()) {
+      !InitAutofillDatesTable() || !InitAutoFillProfilesTable() ||
+      !InitCreditCardsTable()) {
     LOG(WARNING) << "Unable to initialize the web database.";
     return sql::INIT_FAILURE;
   }
@@ -438,6 +456,31 @@ bool WebDatabase::InitAutoFillProfilesTable() {
     }
     if (!db_.Execute("CREATE INDEX autofill_profiles_label_index "
                      "ON autofill_profiles (label)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool WebDatabase::InitCreditCardsTable() {
+  if (!db_.DoesTableExist("credit_cards")) {
+    if (!db_.Execute("CREATE TABLE credit_cards ( "
+                     "label VARCHAR, "
+                     "unique_id INTEGER PRIMARY KEY, "
+                     "name_on_card VARCHAR, "
+                     "type VARCHAR, "
+                     "card_number VARCHAR, "
+                     "expiration_month INTEGER, "
+                     "expiration_year INTEGER, "
+                     "verification_code VARCHAR, "
+                     "billing_address VARCHAR, "
+                     "shipping_address VARCHAR)")) {
+      NOTREACHED();
+      return false;
+    }
+    if (!db_.Execute("CREATE INDEX credit_cards_label_index "
+                     "ON credit_cards (label)")) {
       NOTREACHED();
       return false;
     }
@@ -1328,6 +1371,137 @@ bool WebDatabase::RemoveAutoFillProfile(int profile_id) {
   }
 
   s.BindInt(0, profile_id);
+  return s.Run();
+}
+
+static void BindCreditCardToStatement(const CreditCard& creditcard,
+                                      sql::Statement* s) {
+  s->BindString(0, UTF16ToUTF8(creditcard.Label()));
+  s->BindInt(1, creditcard.unique_id());
+
+  string16 text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NAME));
+  s->BindString(2, UTF16ToUTF8(text));
+  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_TYPE));
+  s->BindString(3, UTF16ToUTF8(text));
+  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER));
+  s->BindString(4, UTF16ToUTF8(text));
+  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH));
+  s->BindString(5, UTF16ToUTF8(text));
+  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  s->BindString(6, UTF16ToUTF8(text));
+  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE));
+  s->BindString(7, UTF16ToUTF8(text));
+  s->BindString(8, UTF16ToUTF8(creditcard.billing_address()));
+  s->BindString(9, UTF16ToUTF8(creditcard.shipping_address()));
+}
+
+bool WebDatabase::AddCreditCard(const CreditCard& creditcard) {
+  sql::Statement s(db_.GetUniqueStatement(
+      "INSERT INTO credit_cards"
+      "(label, unique_id, name_on_card, type, card_number, expiration_month,"
+      " expiration_year, verification_code, billing_address, shipping_address)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?)"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  BindCreditCardToStatement(creditcard, &s);
+
+  if (!s.Run()) {
+    NOTREACHED();
+    return false;
+  }
+
+  return s.Succeeded();
+}
+
+static CreditCard* CreditCardFromStatement(const sql::Statement& s) {
+  CreditCard* creditcard = new CreditCard(
+      ASCIIToUTF16(s.ColumnString(0)), s.ColumnInt(1));
+  creditcard->SetInfo(AutoFillType(CREDIT_CARD_NAME),
+                   ASCIIToUTF16(s.ColumnString(2)));
+  creditcard->SetInfo(AutoFillType(CREDIT_CARD_TYPE),
+                   ASCIIToUTF16(s.ColumnString(3)));
+  creditcard->SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
+                   ASCIIToUTF16(s.ColumnString(4)));
+  creditcard->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+                   ASCIIToUTF16(s.ColumnString(5)));
+  creditcard->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+                   ASCIIToUTF16(s.ColumnString(6)));
+  creditcard->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
+                   ASCIIToUTF16(s.ColumnString(7)));
+  creditcard->set_billing_address(ASCIIToUTF16(s.ColumnString(8)));
+  creditcard->set_shipping_address(ASCIIToUTF16(s.ColumnString(9)));
+
+  return creditcard;
+}
+
+bool WebDatabase::GetCreditCardForLabel(const string16& label,
+                                        CreditCard** creditcard) {
+  DCHECK(creditcard);
+  sql::Statement s(db_.GetUniqueStatement(
+      "SELECT * FROM credit_cards "
+      "WHERE label = ?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  s.BindString(0, UTF16ToUTF8(label));
+  if (!s.Step())
+    return false;
+
+  *creditcard = CreditCardFromStatement(s);
+
+  return s.Succeeded();
+}
+
+bool WebDatabase::GetCreditCards(
+    std::vector<CreditCard*>* creditcards) {
+  DCHECK(creditcards);
+  creditcards->clear();
+
+  sql::Statement s(db_.GetUniqueStatement("SELECT * FROM credit_cards"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  while (s.Step())
+    creditcards->push_back(CreditCardFromStatement(s));
+
+  return s.Succeeded();
+}
+
+bool WebDatabase::UpdateCreditCard(const CreditCard& creditcard) {
+  DCHECK(creditcard.unique_id());
+  sql::Statement s(db_.GetUniqueStatement(
+      "UPDATE credit_cards "
+      "SET label=?, unique_id=?, name_on_card=?, type=?, card_number=?, "
+      "    expiration_month=?, expiration_year=?, verification_code=?, "
+      "    billing_address=?, shipping_address=? "
+      "WHERE unique_id=?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  BindCreditCardToStatement(creditcard, &s);
+  s.BindInt(10, creditcard.unique_id());
+  return s.Run();
+}
+
+bool WebDatabase::RemoveCreditCard(int creditcard_id) {
+  DCHECK_NE(0, creditcard_id);
+  sql::Statement s(db_.GetUniqueStatement(
+      "DELETE FROM credit_cards WHERE unique_id = ?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  s.BindInt(0, creditcard_id);
   return s.Run();
 }
 

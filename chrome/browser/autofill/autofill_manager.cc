@@ -64,7 +64,7 @@ void AutoFillManager::OnAutoFillDialogApply(
     std::vector<CreditCard>* credit_cards) {
   // Save the personal data.
   personal_data_->SetProfiles(profiles);
-  // TODO(jhawkins): Set the credit cards.
+  personal_data_->SetCreditCards(credit_cards);
 
   HandleSubmit();
 }
@@ -74,10 +74,8 @@ void AutoFillManager::OnPersonalDataLoaded() {
   // remove ourselves as observer.
   personal_data_->RemoveObserver(this);
 
-  // TODO(jhawkins): Actually send in the real credit cards from the personal
-  // data manager.
-  std::vector<CreditCard*> credit_cards;
-  ShowAutoFillDialog(this, personal_data_->profiles(), credit_cards);
+  ShowAutoFillDialog(
+      this, personal_data_->profiles(), personal_data_->credit_cards());
 }
 
 void AutoFillManager::DeterminePossibleFieldTypes(

@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 
@@ -23,23 +24,16 @@ static const AutoFillFieldType kAutoFillCreditCardTypes[] = {
 static const int kAutoFillCreditCardLength =
     arraysize(kAutoFillCreditCardTypes);
 
-CreditCard::CreditCard(const string16& label)
+CreditCard::CreditCard(const string16& label, int unique_id)
     : expiration_month_(0),
       expiration_year_(0),
-      label_(label) {
+      label_(label),
+      unique_id_(unique_id) {
 }
 
-CreditCard::CreditCard(const CreditCard& card)
-    : number_(card.number_),
-      name_on_card_(card.name_on_card_),
-      type_(card.type_),
-      verification_code_(card.verification_code_),
-      last_four_digits_(card.last_four_digits_),
-      expiration_month_(card.expiration_month_),
-      expiration_year_(card.expiration_year_),
-      label_(card.label_) {
+CreditCard::CreditCard(const CreditCard& card) {
+  operator=(card);
 }
-
 FormGroup* CreditCard::Clone() const {
   return new CreditCard(*this);
 }
@@ -190,7 +184,8 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
       break;
 
     default:
-      DLOG(ERROR) << "Attempting to set unknown info-type";
+      DLOG(ERROR) << "Attempting to set unknown info-type "
+                  << type.field_type();
       break;
   }
 }
@@ -252,6 +247,48 @@ void CreditCard::set_expiration_year(int expiration_year) {
   }
 
   expiration_year_ = expiration_year;
+}
+
+
+void CreditCard::operator=(const CreditCard& source) {
+  number_ = source.number_;
+  name_on_card_ = source.name_on_card_;
+  type_ = source.type_;
+  verification_code_ = source.verification_code_;
+  last_four_digits_ = source.last_four_digits_;
+  expiration_month_ = source.expiration_month_;
+  expiration_year_ = source.expiration_year_;
+  label_ = source.label_;
+  billing_address_ = source.billing_address_;
+  shipping_address_ = source.shipping_address_;
+  unique_id_ = source.unique_id_;
+}
+
+bool CreditCard::operator==(const CreditCard& creditcard) const {
+  // The following CreditCard field types are the only types we store in the
+  // WebDB so far, so we're only concerned with matching these types in the
+  // profile.
+  const AutoFillFieldType types[] = { CREDIT_CARD_NAME,
+                                      CREDIT_CARD_TYPE,
+                                      CREDIT_CARD_NUMBER,
+                                      CREDIT_CARD_VERIFICATION_CODE,
+                                      CREDIT_CARD_EXP_MONTH,
+                                      CREDIT_CARD_EXP_4_DIGIT_YEAR };
+
+  if (label_ != creditcard.label_ ||
+      unique_id_ != creditcard.unique_id_ ||
+      billing_address_ != creditcard.billing_address_ ||
+      shipping_address_ != creditcard.shipping_address_) {
+    return false;
+  }
+
+  for (size_t index = 0; index < arraysize(types); ++index) {
+    if (GetFieldText(AutoFillType(types[index])) !=
+        creditcard.GetFieldText(AutoFillType(types[index])))
+      return false;
+  }
+
+  return true;
 }
 
 bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,
@@ -394,4 +431,31 @@ bool CreditCard::ConvertDate(const string16& date, int* num) const {
   }
 
   return true;
+}
+
+// So we can compare CreditCards with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const CreditCard& creditcard) {
+  return os
+      << UTF16ToUTF8(creditcard.Label())
+      << " "
+      << creditcard.unique_id()
+      << " "
+      << UTF16ToUTF8(creditcard.billing_address())
+      << " "
+      << UTF16ToUTF8(creditcard.shipping_address())
+      << " "
+      << UTF16ToUTF8(creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NAME)))
+      << " "
+      << UTF16ToUTF8(creditcard.GetFieldText(AutoFillType(CREDIT_CARD_TYPE)))
+      << " "
+      << UTF16ToUTF8(creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)))
+      << " "
+      << UTF16ToUTF8(creditcard.GetFieldText(
+             AutoFillType(CREDIT_CARD_VERIFICATION_CODE)))
+      << " "
+      << UTF16ToUTF8(creditcard.GetFieldText(
+             AutoFillType(CREDIT_CARD_EXP_MONTH)))
+      << " "
+      << UTF16ToUTF8(creditcard.GetFieldText(
+             AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
 }

@@ -19,6 +19,7 @@
 
 class AutofillChange;
 class AutoFillProfile;
+class CreditCard;
 #if defined(OS_WIN)
 struct IE7PasswordInfo;
 #endif
@@ -54,18 +55,20 @@ struct PasswordForm;
 // Result types
 //
 typedef enum {
-  BOOL_RESULT = 1,          // WDResult<bool>
-  KEYWORDS_RESULT,          // WDResult<WDKeywordsResult>
-  INT64_RESULT,             // WDResult<int64>
-  PASSWORD_RESULT,          // WDResult<std::vector<PasswordForm*>>
+  BOOL_RESULT = 1,             // WDResult<bool>
+  KEYWORDS_RESULT,             // WDResult<WDKeywordsResult>
+  INT64_RESULT,                // WDResult<int64>
+  PASSWORD_RESULT,             // WDResult<std::vector<PasswordForm*>>
 #if defined(OS_WIN)
-  PASSWORD_IE7_RESULT,      // WDResult<IE7PasswordInfo>
+  PASSWORD_IE7_RESULT,         // WDResult<IE7PasswordInfo>
 #endif
-  WEB_APP_IMAGES,           // WDResult<WDAppImagesResult>
-  AUTOFILL_VALUE_RESULT,    // WDResult<std::vector<string16>>
-  AUTOFILL_CHANGES,         // WDResult<std::vector<AutofillChange>>
-  AUTOFILL_PROFILE_RESULT,  // WDResult<AutoFillProfile>
-  AUTOFILL_PROFILES_RESULT  // WDResult<std::vector<AutoFillProfile*>>
+  WEB_APP_IMAGES,              // WDResult<WDAppImagesResult>
+  AUTOFILL_VALUE_RESULT,       // WDResult<std::vector<string16>>
+  AUTOFILL_CHANGES,            // WDResult<std::vector<AutofillChange>>
+  AUTOFILL_PROFILE_RESULT,     // WDResult<AutoFillProfile>
+  AUTOFILL_PROFILES_RESULT,     // WDResult<std::vector<AutoFillProfile*>>
+  AUTOFILL_CREDITCARD_RESULT,  // WDResult<CreditCard>
+  AUTOFILL_CREDITCARDS_RESULT  // WDResult<std::vector<CreditCard*>>
 } WDResultType;
 
 typedef std::vector<AutofillChange> AutofillChangeList;
@@ -418,17 +421,27 @@ class WebDataService
   // |profile_id| is the unique ID of the profile to remove.
   void RemoveAutoFillProfile(int profile_id);
 
-  // Initiates the request for an AutoFill profile with label |label|.  The
-  // method OnWebDataServiceRequestDone of |consumer| gets called back when the
-  // request is finished, with the profile included in the argument |result|.
-  Handle GetAutoFillProfileForLabel(const string16& label,
-                                    WebDataServiceConsumer* consumer);
-
   // Initiates the request for all AutoFill profiles.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
   // finished, with the profiles included in the argument |result|.  The
   // consumer owns the profiles.
   Handle GetAutoFillProfiles(WebDataServiceConsumer* consumer);
+
+  // Schedules a task to add credit card to the web database.
+  void AddCreditCard(const CreditCard& creditcard);
+
+  // Schedules a task to update credit card in the web database.
+  void UpdateCreditCard(const CreditCard& creditcard);
+
+  // Schedules a task to remove a credit card from the web database.
+  // |creditcard_id| is the unique ID of the credit card to remove.
+  void RemoveCreditCard(int creditcard_id);
+
+  // Initiates the request for all credit cards.  The method
+  // OnWebDataServiceRequestDone of |consumer| gets called when the request is
+  // finished, with the credit cards included in the argument |result|.  The
+  // consumer owns the credit cards.
+  Handle GetCreditCards(WebDataServiceConsumer* consumer);
 
   // Testing
 #ifdef UNIT_TEST
@@ -531,6 +544,12 @@ class WebDataService
   void GetAutoFillProfileForLabelImpl(WebDataRequest* request,
                                       const string16& label);
   void GetAutoFillProfilesImpl(WebDataRequest* request);
+  void AddCreditCardImpl(GenericRequest<CreditCard>* request);
+  void UpdateCreditCardImpl(GenericRequest<CreditCard>* request);
+  void RemoveCreditCardImpl(GenericRequest<int>* request);
+  void GetCreditCardForLabelImpl(WebDataRequest* request,
+                                 const string16& label);
+  void GetCreditCardsImpl(WebDataRequest* request);
 
   //////////////////////////////////////////////////////////////////////////////
   //

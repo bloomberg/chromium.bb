@@ -17,6 +17,7 @@
 
 class AutofillChange;
 class AutoFillProfile;
+class CreditCard;
 class FilePath;
 
 namespace base {
@@ -215,6 +216,23 @@ class WebDatabase {
   // Retrieves all profiles in the database.  Caller owns the returned profiles.
   bool GetAutoFillProfiles(std::vector<AutoFillProfile*>* profiles);
 
+  // Records a single credit card in the credit_cards table.
+  bool AddCreditCard(const CreditCard& creditcard);
+
+  // Updates the database values for the specified profile.
+  bool UpdateCreditCard(const CreditCard& profile);
+
+  // Removes a row from the autofill_profiles table.  |profile_id| is the
+  // unique ID of the profile to remove.
+  bool RemoveCreditCard(int profile_id);
+
+  // Retrieves a profile with label |label|.  The caller owns |profile|.
+  bool GetCreditCardForLabel(const string16& label,
+                                  CreditCard** profile);
+
+  // Retrieves all profiles in the database.  Caller owns the returned profiles.
+  bool GetCreditCards(std::vector<CreditCard*>* profiles);
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Web Apps
@@ -255,6 +273,7 @@ class WebDatabase {
   bool InitAutofillTable();
   bool InitAutofillDatesTable();
   bool InitAutoFillProfilesTable();
+  bool InitCreditCardsTable();
   bool InitWebAppIconsTable();
   bool InitWebAppsTable();
 

@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
+#include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
@@ -900,8 +901,7 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
 
   // Get the 'Home' profile.
   AutoFillProfile* db_profile;
-  EXPECT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Home"),
-                                            &db_profile));
+  ASSERT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Home"), &db_profile));
   EXPECT_EQ(home_profile, *db_profile);
   delete db_profile;
 
@@ -915,7 +915,7 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
                           ASCIIToUTF16("suite 3"));
 
   EXPECT_TRUE(db.AddAutoFillProfile(billing_profile));
-  EXPECT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
+  ASSERT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
                                             &db_profile));
   EXPECT_EQ(billing_profile, *db_profile);
   delete db_profile;
@@ -923,7 +923,7 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   // Update the 'Billing' profile.
   billing_profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Jane"));
   EXPECT_TRUE(db.UpdateAutoFillProfile(billing_profile));
-  EXPECT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
+  ASSERT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
                                             &db_profile));
   EXPECT_EQ(billing_profile, *db_profile);
   delete db_profile;
@@ -932,4 +932,71 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   EXPECT_TRUE(db.RemoveAutoFillProfile(billing_profile.unique_id()));
   EXPECT_FALSE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
                                              &db_profile));
+}
+
+TEST_F(WebDatabaseTest, CreditCard) {
+  WebDatabase db;
+
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  // Add a 'Work' credit card.
+  CreditCard work_creditcard(ASCIIToUTF16("Work"), 13);
+  work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NAME),
+                          ASCIIToUTF16("Jack Torrance"));
+  work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_TYPE),
+                          ASCIIToUTF16("Visa"));
+  work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
+                          ASCIIToUTF16("1234567890123456"));
+  work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+                          ASCIIToUTF16("04"));
+  work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+                          ASCIIToUTF16("2013"));
+  work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
+                          ASCIIToUTF16("987"));
+  work_creditcard.set_billing_address(ASCIIToUTF16("Overlook Hotel"));
+  work_creditcard.set_shipping_address(ASCIIToUTF16("Timberline Lodge"));
+
+  EXPECT_TRUE(db.AddCreditCard(work_creditcard));
+
+  // Get the 'Work' credit card.
+  CreditCard* db_creditcard;
+  ASSERT_TRUE(db.GetCreditCardForLabel(ASCIIToUTF16("Work"), &db_creditcard));
+  EXPECT_EQ(work_creditcard, *db_creditcard);
+  delete db_creditcard;
+
+  // Add a 'Target' profile.
+  CreditCard target_creditcard(ASCIIToUTF16("Target"), 7);
+  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NAME),
+                            ASCIIToUTF16("Jack Torrance"));
+  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_TYPE),
+                            ASCIIToUTF16("Mastercard"));
+  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
+                            ASCIIToUTF16("1111222233334444"));
+  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+                            ASCIIToUTF16("06"));
+  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+                            ASCIIToUTF16("2012"));
+  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
+                            ASCIIToUTF16("123"));
+  target_creditcard.set_billing_address(ASCIIToUTF16("Overlook Hotel"));
+  target_creditcard.set_shipping_address(string16());
+
+  EXPECT_TRUE(db.AddCreditCard(target_creditcard));
+  ASSERT_TRUE(db.GetCreditCardForLabel(ASCIIToUTF16("Target"),
+                                       &db_creditcard));
+  EXPECT_EQ(target_creditcard, *db_creditcard);
+  delete db_creditcard;
+
+  // Update the 'Target' profile.
+  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NAME),
+                          ASCIIToUTF16("Charles Grady"));
+  EXPECT_TRUE(db.UpdateCreditCard(target_creditcard));
+  ASSERT_TRUE(db.GetCreditCardForLabel(ASCIIToUTF16("Target"), &db_creditcard));
+  EXPECT_EQ(target_creditcard, *db_creditcard);
+  delete db_creditcard;
+
+  // Remove the 'Billing' profile.
+  EXPECT_TRUE(db.RemoveCreditCard(target_creditcard.unique_id()));
+  EXPECT_FALSE(db.GetCreditCardForLabel(ASCIIToUTF16("Target"),
+                                        &db_creditcard));
 }

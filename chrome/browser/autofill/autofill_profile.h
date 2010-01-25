@@ -21,7 +21,7 @@ typedef std::map<FieldTypeGroup, FormGroup*> FormGroupMap;
 class AutoFillProfile : public FormGroup {
  public:
   AutoFillProfile(const string16& label, int unique_id);
-  // For use in std containers.
+  // For use in STL containers.
   AutoFillProfile();
   AutoFillProfile(const AutoFillProfile&);
   virtual ~AutoFillProfile();
@@ -47,16 +47,16 @@ class AutoFillProfile : public FormGroup {
   void set_use_billing_address(bool use);
   bool use_billing_address() const { return use_billing_address_; }
 
+  void set_unique_id(int id) { unique_id_ = id; }
   int unique_id() const { return unique_id_; }
 
-  // For use in std containers.
+  // For use in STL containers.
   void operator=(const AutoFillProfile&);
 
   // Used by tests.
   // TODO(jhawkins): Move these to private and add the test as a friend.
   bool operator==(const AutoFillProfile& profile) const;
   void set_label(const string16& label) { label_ = label; }
-  void set_unique_id(int id) { unique_id_ = id; }
 
  private:
   Address* GetBillingAddress();

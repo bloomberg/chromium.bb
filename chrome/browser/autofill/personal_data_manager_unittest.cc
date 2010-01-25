@@ -82,6 +82,27 @@ class PersonalDataManagerTest : public testing::Test {
     profile->SetInfo(AutoFillType(PHONE_FAX_NUMBER), ASCIIToUTF16(fax));
   }
 
+  static void SetCreditCardInfo(CreditCard* credit_card,
+      const char* label, const char* name_on_card, const char* type,
+      const char* card_number, const char* expiration_month,
+      const char* expiration_year, const char* verification_code,
+      const char* billing_address, const char* shipping_address) {
+    credit_card->set_label(ASCIIToUTF16(label));
+    credit_card->SetInfo(AutoFillType(CREDIT_CARD_NAME),
+                     ASCIIToUTF16(name_on_card));
+    credit_card->SetInfo(AutoFillType(CREDIT_CARD_TYPE), ASCIIToUTF16(type));
+    credit_card->SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
+                     ASCIIToUTF16(card_number));
+    credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+                     ASCIIToUTF16(expiration_month));
+    credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+                     ASCIIToUTF16(expiration_year));
+    credit_card->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
+                     ASCIIToUTF16(verification_code));
+    credit_card->set_billing_address(ASCIIToUTF16(billing_address));
+    credit_card->set_shipping_address(ASCIIToUTF16(shipping_address));
+  }
+
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
   ChromeThread db_thread_;
@@ -92,7 +113,7 @@ class PersonalDataManagerTest : public testing::Test {
   PersonalDataLoadedObserverMock personal_data_observer_;
 };
 
-// TODO(jhawkins): Test SaveProfiles w/out a WebDataService in the profile.
+// TODO(jhawkins): Test SetProfiles w/out a WebDataService in the profile.
 TEST_F(PersonalDataManagerTest, SetProfiles) {
   AutoFillProfile profile0(string16(), 0);
   SetProfileInfo(&profile0, "Billing", "Marion", "Mitchell", "Morrison",
@@ -173,4 +194,84 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
   ASSERT_EQ(2U, results3.size());
   EXPECT_EQ(profile0, *results3.at(0));
   EXPECT_EQ(profile2, *results3.at(1));
+}
+
+// TODO(jhawkins): Test SetCreditCards w/out a WebDataService in the profile.
+TEST_F(PersonalDataManagerTest, SetCreditCards) {
+  CreditCard creditcard0(string16(), 0);
+  SetCreditCardInfo(&creditcard0, "Corporate", "John Dillinger", "Visa",
+      "123456789012", "01", "2010", "123", "Chicago", "Indianapolis");
+
+  CreditCard creditcard1(string16(), 0);
+  SetCreditCardInfo(&creditcard1, "Personal", "Bonnie Parker", "Mastercard",
+      "098765432109", "12", "2012", "987", "Dallas", "");
+
+  CreditCard creditcard2(string16(), 0);
+  SetCreditCardInfo(&creditcard2, "Savings", "Clyde Barrow", "American Express",
+      "777666888555", "04", "2015", "445", "Home", "Farm");
+
+  // This will verify that the web database has been loaded and the notification
+  // sent out.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  // The message loop will exit when the mock observer is notified.
+  MessageLoop::current()->Run();
+
+  // Add the three test credit cards to the database.
+  std::vector<CreditCard> update;
+  update.push_back(creditcard0);
+  update.push_back(creditcard1);
+  personal_data_->SetCreditCards(&update);
+
+  // The PersonalDataManager will update the unique IDs when saving the
+  // credit cards, so we have to update the expectations.
+  creditcard0.set_unique_id(update[0].unique_id());
+  creditcard1.set_unique_id(update[1].unique_id());
+
+  const std::vector<CreditCard*>& results1 = personal_data_->credit_cards();
+  ASSERT_EQ(2U, results1.size());
+  EXPECT_EQ(creditcard0, *results1.at(0));
+  EXPECT_EQ(creditcard1, *results1.at(1));
+
+  // Three operations in one:
+  //  - Update creditcard0
+  //  - Remove creditcard1
+  //  - Add creditcard2
+  creditcard0.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
+  update.clear();
+  update.push_back(creditcard0);
+  update.push_back(creditcard2);
+  personal_data_->SetCreditCards(&update);
+
+  // Set the expected unique ID for creditcard2.
+  creditcard2.set_unique_id(update[1].unique_id());
+
+  // CreditCard IDs are re-used, so the third credit card to be added will have
+  // a unique ID that matches the old unique ID of the removed creditcard1, even
+  // though that ID has already been used.
+  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  ASSERT_EQ(2U, results2.size());
+  EXPECT_EQ(creditcard0, *results2.at(0));
+  EXPECT_EQ(creditcard2, *results2.at(1));
+  EXPECT_EQ(creditcard2.unique_id(), creditcard1.unique_id());
+
+  // Reset the PersonalDataManager.  This tests that the personal data was saved
+  // to the web database, and that we can load the credit cards from the web
+  // database.
+  ResetPersonalDataManager();
+
+  // This will verify that the web database has been loaded and the notification
+  // sent out.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  // The message loop will exit when the PersonalDataLoadedObserver is notified.
+  MessageLoop::current()->Run();
+
+  // Verify that we've loaded the credit cards from the web database.
+  const std::vector<CreditCard*>& results3 = personal_data_->credit_cards();
+  ASSERT_EQ(2U, results3.size());
+  EXPECT_EQ(creditcard0, *results3.at(0));
+  EXPECT_EQ(creditcard2, *results3.at(1));
 }

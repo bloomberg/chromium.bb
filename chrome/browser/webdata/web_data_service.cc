@@ -8,6 +8,7 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -170,19 +171,6 @@ void WebDataService::RemoveAutoFillProfile(int profile_id) {
                                  request));
 }
 
-WebDataService::Handle WebDataService::GetAutoFillProfileForLabel(
-    const string16& label, WebDataServiceConsumer* consumer) {
-  WebDataRequest* request =
-      new WebDataRequest(this, GetNextRequestHandle(), consumer);
-  RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::GetAutoFillProfileForLabelImpl,
-                        request,
-                        label));
-  return request->GetHandle();
-}
-
 WebDataService::Handle WebDataService::GetAutoFillProfiles(
     WebDataServiceConsumer* consumer) {
   WebDataRequest* request =
@@ -191,6 +179,48 @@ WebDataService::Handle WebDataService::GetAutoFillProfiles(
   ScheduleTask(
       NewRunnableMethod(this,
                         &WebDataService::GetAutoFillProfilesImpl,
+                        request));
+  return request->GetHandle();
+}
+
+void WebDataService::AddCreditCard(const CreditCard& creditcard) {
+  GenericRequest<CreditCard>* request =
+      new GenericRequest<CreditCard>(
+          this, GetNextRequestHandle(), NULL, creditcard);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::AddCreditCardImpl,
+                                 request));
+}
+
+void WebDataService::UpdateCreditCard(const CreditCard& creditcard) {
+  GenericRequest<CreditCard>* request =
+      new GenericRequest<CreditCard>(
+          this, GetNextRequestHandle(), NULL, creditcard);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::UpdateCreditCardImpl,
+                                 request));
+}
+
+void WebDataService::RemoveCreditCard(int creditcard_id) {
+  GenericRequest<int>* request =
+      new GenericRequest<int>(
+          this, GetNextRequestHandle(), NULL, creditcard_id);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::RemoveCreditCardImpl,
+                                 request));
+}
+
+WebDataService::Handle WebDataService::GetCreditCards(
+    WebDataServiceConsumer* consumer) {
+  WebDataRequest* request =
+      new WebDataRequest(this, GetNextRequestHandle(), consumer);
+  RegisterRequest(request);
+  ScheduleTask(
+      NewRunnableMethod(this,
+                        &WebDataService::GetCreditCardsImpl,
                         request));
   return request->GetHandle();
 }
@@ -768,19 +798,6 @@ void WebDataService::RemoveAutoFillProfileImpl(
   request->RequestComplete();
 }
 
-void WebDataService::GetAutoFillProfileForLabelImpl(WebDataRequest* request,
-                                                    const string16& label) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
-    AutoFillProfile* profile;
-    db_->GetAutoFillProfileForLabel(label, &profile);
-    request->SetResult(
-        new WDResult<AutoFillProfile>(AUTOFILL_PROFILE_RESULT, *profile));
-    delete profile;
-  }
-  request->RequestComplete();
-}
-
 void WebDataService::GetAutoFillProfilesImpl(WebDataRequest* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
@@ -789,6 +806,54 @@ void WebDataService::GetAutoFillProfilesImpl(WebDataRequest* request) {
     request->SetResult(
         new WDResult<std::vector<AutoFillProfile*> >(AUTOFILL_PROFILES_RESULT,
                                                      profiles));
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::AddCreditCardImpl(
+    GenericRequest<CreditCard>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    const CreditCard& creditcard = request->GetArgument();
+    if (!db_->AddCreditCard(creditcard))
+      NOTREACHED();
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::UpdateCreditCardImpl(
+    GenericRequest<CreditCard>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    const CreditCard& creditcard = request->GetArgument();
+    if (!db_->UpdateCreditCard(creditcard))
+      NOTREACHED();
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::RemoveCreditCardImpl(
+    GenericRequest<int>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    int creditcard_id = request->GetArgument();
+    if (!db_->RemoveCreditCard(creditcard_id))
+      NOTREACHED();
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::GetCreditCardsImpl(WebDataRequest* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    std::vector<CreditCard*> creditcards;
+    db_->GetCreditCards(&creditcards);
+    request->SetResult(
+        new WDResult<std::vector<CreditCard*> >(AUTOFILL_CREDITCARDS_RESULT,
+                                                creditcards));
   }
   request->RequestComplete();
 }

@@ -58,8 +58,14 @@ class PersonalDataManager : public WebDataServiceConsumer {
                       AutoFillManager* autofill_manager);
 
   // Sets |profiles_| to the contents of |profiles| and updates the web database
-  // by adding, updating and removing profiles.
+  // by adding, updating and removing profiles.  Sets the unique ID of
+  // newly-added profiles.
   void SetProfiles(std::vector<AutoFillProfile>* profiles);
+
+  // Sets |credit_cards_| to the contents of |credit_cards| and updates the web
+  // database by adding, updating and removing credit cards.  Sets the unique
+  // ID of newly-added profiles.
+  void SetCreditCards(std::vector<CreditCard>* credit_cards);
 
   // Gets the possible field types for the given text, determined by matching
   // the text with all known personal information and returning matching types.
@@ -72,9 +78,11 @@ class PersonalDataManager : public WebDataServiceConsumer {
   // Returns whether the personal data has been loaded from the web database.
   bool IsDataLoaded() const { return is_data_loaded_; }
 
-  // This PersonalDataManager owns these profiles.  Their lifetime is until the
-  // web database is updated with new profile information.
+  // This PersonalDataManager owns these profiles and credit cards.  Their
+  // lifetime is until the web database is updated with new profile and credit
+  // card information, respectively.
   const std::vector<AutoFillProfile*>& profiles() { return profiles_.get(); }
+  const std::vector<CreditCard*>& credit_cards() { return credit_cards_.get(); }
 
  private:
   // Make sure that only Profile and the PersonalDataManager tests can create an
@@ -93,7 +101,7 @@ class PersonalDataManager : public WebDataServiceConsumer {
   void InitializeIfNeeded();
 
   // This will create and reserve a new unique ID for a profile.
-  int CreateNextUniqueID();
+  int CreateNextUniqueID(std::set<int>* unique_ids);
 
   // Parses value to extract the components of a phone number and adds them to
   // profile.
@@ -108,8 +116,22 @@ class PersonalDataManager : public WebDataServiceConsumer {
   // Loads the saved profiles from the web database.
   void LoadProfiles();
 
-  // Cancels a pending query to the web database.
-  void CancelPendingQuery();
+  // Loads the saved credit cards from the web database.
+  void LoadCreditCards();
+
+  // Receives the loaded profiles from the web data service and stores them in
+  // |credit_cards_|.
+  void ReceiveLoadedProfiles(WebDataService::Handle h,
+                             const WDTypedResult* result);
+
+  // Receives the loaded credit cards from the web data service and stores them
+  // in |credit_cards_|.
+  void ReceiveLoadedCreditCards(WebDataService::Handle h,
+                                const WDTypedResult* result);
+
+  // Cancels a pending query to the web database.  |handle| is a pointer to the
+  // query handle.
+  void CancelPendingQuery(WebDataService::Handle* handle);
 
   // The profile hosting this PersonalDataManager.
   Profile* profile_;
@@ -120,14 +142,19 @@ class PersonalDataManager : public WebDataServiceConsumer {
   // True if personal data has been loaded from the web database.
   bool is_data_loaded_;
 
-  // The set of already created unique IDs, used to create a new unique ID.
-  std::set<int> unique_ids_;
+  // The set of already created unique profile IDs, used to create a new unique
+  // profile ID.
+  std::set<int> unique_profile_ids_;
+
+  // The set of already created unique credit card IDs, used to create a new
+  // unique credit card ID.
+  std::set<int> unique_creditcard_ids_;
 
   // The loaded profiles.
   ScopedVector<AutoFillProfile> profiles_;
 
   // The loaded credit cards.
-  ScopedVector<FormGroup> credit_cards_;
+  ScopedVector<CreditCard> credit_cards_;
 
   // The profile that is imported from a web form by ImportFormData.
   scoped_ptr<AutoFillProfile> imported_profile_;
@@ -141,8 +168,10 @@ class PersonalDataManager : public WebDataServiceConsumer {
 
   // When the manager makes a request from WebDataService, the database
   // is queried on another thread, we record the query handle until we
-  // get called back.
-  WebDataService::Handle pending_query_handle_;
+  // get called back.  We store handles for both profile and credit card queries
+  // so they can be loaded at the same time.
+  WebDataService::Handle pending_profiles_query_;
+  WebDataService::Handle pending_creditcards_query_;
 
   // The observer.  This can be NULL.
   Observer* observer_;

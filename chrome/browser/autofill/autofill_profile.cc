@@ -188,7 +188,7 @@ Address* AutoFillProfile::GetHomeAddress() {
 // So we can compare AutoFillProfiles with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutoFillProfile& profile) {
   return os
-      << UTF16ToASCII(profile.Label())
+      << UTF16ToUTF8(profile.Label())
       << " "
       << profile.unique_id()
       << " "

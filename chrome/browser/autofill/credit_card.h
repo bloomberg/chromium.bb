@@ -13,9 +13,9 @@
 // A form group that stores credit card information.
 class CreditCard : public FormGroup {
  public:
-  explicit CreditCard(const string16& label);
-  // Used for STL.
-  explicit CreditCard(const CreditCard& card);
+  CreditCard(const string16& label, int unique_id);
+  // For use in STL containers.
+  CreditCard(const CreditCard& card);
 
   // FormGroup implementation:
   FormGroup* Clone() const;
@@ -49,6 +49,9 @@ class CreditCard : public FormGroup {
   string16 last_four_digits() const { return last_four_digits_; }
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
+  string16 billing_address() const { return billing_address_; }
+  string16 shipping_address() const { return shipping_address_; }
+  int unique_id() const { return unique_id_; }
 
   void set_number(const string16& number) { number_ = number; }
   void set_name_on_card(const string16& name_on_card) {
@@ -61,15 +64,31 @@ class CreditCard : public FormGroup {
   void set_last_four_digits(const string16& last_four_digits) {
     last_four_digits_ = last_four_digits;
   }
+  void set_unique_id(int id) { unique_id_ = id; }
+
+  // The caller should verify that the corresponding AutoFillProfile exists.  If
+  // the shipping address should be the same as the billing address, send in an
+  // empty string to set_shipping_address.
+  void set_billing_address(const string16& address) {
+    billing_address_ = address;
+  }
+  void set_shipping_address(const string16& address) {
+    shipping_address_ = address;
+  }
 
   // These setters verify that the month and year are within appropriate
   // ranges.
   void set_expiration_month(int expiration_month);
   void set_expiration_year(int expiration_year);
 
- private:
-  void operator=(const CreditCard& card);
+  // For use in STL containers.
+  void operator=(const CreditCard&);
 
+  // Used by tests.
+  bool operator==(const CreditCard& creditcard) const;
+  void set_label(const string16& label) { label_ = label; }
+
+ private:
   // A helper function for FindInfoMatches that only handles matching the info
   // with the requested field type.
   bool FindInfoMatchesHelper(const AutoFillFieldType& field_type,
@@ -121,6 +140,19 @@ class CreditCard : public FormGroup {
 
   // This is the display name of the card set by the user, e.g., Amazon Visa.
   string16 label_;
+
+  // The billing and shipping addresses.  The are the labels of
+  // AutoFillProfiles that contain the corresponding address.  If
+  // |shipping_address_| is empty, the billing address is used for the shipping
+  // address.
+  string16 billing_address_;
+  string16 shipping_address_;
+
+  // The unique ID of this profile.
+  int unique_id_;
 };
+
+// So we can compare CreditCards with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const CreditCard& creditcard);
 
 #endif  // CHROME_BROWSER_AUTOFILL_CREDIT_CARD_H_
