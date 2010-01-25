@@ -22,6 +22,9 @@ BrowsingDataLocalStorageHelper::BrowsingDataLocalStorageHelper(
   DCHECK(profile_);
 }
 
+BrowsingDataLocalStorageHelper::~BrowsingDataLocalStorageHelper() {
+}
+
 void BrowsingDataLocalStorageHelper::StartFetching(
     Callback1<const std::vector<LocalStorageInfo>& >::Type* callback) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));

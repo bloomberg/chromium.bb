@@ -14,6 +14,7 @@ class MockBrowsingDataLocalStorageHelper
     : public BrowsingDataLocalStorageHelper {
  public:
   explicit MockBrowsingDataLocalStorageHelper(Profile* profile);
+  virtual ~MockBrowsingDataLocalStorageHelper();
 
   virtual void StartFetching(
       Callback1<const std::vector<LocalStorageInfo>& >::Type* callback);
@@ -28,7 +29,8 @@ class MockBrowsingDataLocalStorageHelper
   void Notify();
 
   Profile* profile_;
-  Callback1<const std::vector<LocalStorageInfo>& >::Type* callback_;
+  scoped_ptr<Callback1<const std::vector<LocalStorageInfo>& >::Type >
+      callback_;
   FilePath last_deleted_file_;
   bool delete_all_files_called_;
   std::vector<LocalStorageInfo> response_;

@@ -136,7 +136,7 @@ class CookiesTreeModelTest : public testing::Test {
   ChromeThread io_thread_;
 
   scoped_ptr<TestingProfile> profile_;
-  MockBrowsingDataLocalStorageHelper* mock_browsing_data_helper_;
+  scoped_refptr<MockBrowsingDataLocalStorageHelper> mock_browsing_data_helper_;
 };
 
 TEST_F(CookiesTreeModelTest, RemoveAll) {

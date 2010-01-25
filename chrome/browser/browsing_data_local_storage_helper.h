@@ -71,6 +71,10 @@ class BrowsingDataLocalStorageHelper
   virtual void DeleteAllLocalStorageFiles();
 
  private:
+  friend class base::RefCountedThreadSafe<BrowsingDataLocalStorageHelper>;
+  friend class MockBrowsingDataLocalStorageHelper;
+  virtual ~BrowsingDataLocalStorageHelper();
+
   // Enumerates all local storage files in the WEBKIT thread.
   void FetchLocalStorageInfoInWebKitThread();
   // Notifies the completion callback in the UI thread.

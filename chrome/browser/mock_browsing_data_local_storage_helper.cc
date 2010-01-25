@@ -8,17 +8,19 @@ MockBrowsingDataLocalStorageHelper::MockBrowsingDataLocalStorageHelper(
   Profile* profile)
   : BrowsingDataLocalStorageHelper(profile),
     profile_(profile),
-    callback_(NULL),
     delete_all_files_called_(false) {
+}
+
+MockBrowsingDataLocalStorageHelper::~MockBrowsingDataLocalStorageHelper() {
 }
 
 void MockBrowsingDataLocalStorageHelper::StartFetching(
     Callback1<const std::vector<LocalStorageInfo>& >::Type* callback) {
-  callback_ = callback;
+  callback_.reset(callback);
 }
 
 void MockBrowsingDataLocalStorageHelper::CancelNotification() {
-  callback_ = NULL;
+  callback_.reset(NULL);
 }
 
 void MockBrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
@@ -42,6 +44,6 @@ void MockBrowsingDataLocalStorageHelper::AddLocalStorageSamples() {
 }
 
 void MockBrowsingDataLocalStorageHelper::Notify() {
-  CHECK(callback_);
+  CHECK(callback_.get());
   callback_->Run(response_);
 }
