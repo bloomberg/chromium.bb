@@ -43,19 +43,19 @@ class DescWrapperFactory {
   DescWrapper* OpenHostFile(const char* fname, int flags, int mode);
 
   // Create a DescWrapper from a base::SharedMemory
-  DescWrapper* ImportSharedMemory(base::SharedMemory* shm);
+  DescWrapper* ImportSharedMemory(base::SharedMemory* shm, size_t size);
   // Create a DescWrapper from a TransportDIB
   DescWrapper* ImportTransportDIB(TransportDIB* dib);
   // Create a DescWrapper from a base::SyncSocket
   DescWrapper* ImportSyncSocket(base::SyncSocket* sock);
-  // Utility routine for importing Linux/Mac (posix) and Windows shared memory.
-  DescWrapper* ImportShmHandle(NaClHandle handle, size_t size);
 
   // We will doubtless want more specific factory methods.  For now,
   // we provide a wide-open method.
   DescWrapper* MakeGeneric(struct NaClDesc* desc);
 
  private:
+  // Utility routine for importing Linux/Mac (posix) and Windows shared memory.
+  DescWrapper* ImportShmHandle(NaClHandle handle, size_t size);
   // Utility routine for importing SysV shared memory.
   DescWrapper* ImportSysvShm(int key, size_t size);
   // The common data from this instance of the wrapper.

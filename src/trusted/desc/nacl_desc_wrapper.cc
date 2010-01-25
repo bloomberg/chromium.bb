@@ -286,17 +286,19 @@ cleanup:
 }
 #endif  // NACL_LINUX
 
-DescWrapper* DescWrapperFactory::ImportSharedMemory(base::SharedMemory* shm) {
-#ifdef NACL_STANDALONE
+DescWrapper* DescWrapperFactory::ImportSharedMemory(base::SharedMemory* shm,
+                                                    size_t size) {
+#if defined(NACL_STANDALONE)
   // base::SharedMemory is only present in the Chrome hookup.
   // TODO(sehr): Add a stub library for the Chrome dependencies for standalone.
   UNREFERENCED_PARAMETER(shm);
+  UNREFERENCED_PARAMETER(size);
   return NULL;
 #else
 #if  NACL_LINUX || NACL_OSX
-  return ImportShmHandle(shm->handle().fd, shm->max_size());
+  return ImportShmHandle(shm->handle().fd, size);
 #elif NACL_WINDOWS
-  return ImportShmHandle(shm->handle(), shm->max_size());
+  return ImportShmHandle(shm->handle(), size);
 #else
 # error "What platform?"
 #endif  // NACL_LINUX || NACL_OSX
