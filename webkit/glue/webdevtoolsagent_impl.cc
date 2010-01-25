@@ -180,11 +180,17 @@ void WebDevToolsAgentImpl::attach() {
   // Allow controller to send messages to the frontend.
   InspectorController* ic = web_view_impl_->page()->inspectorController();
 
-  // TODO(yurys): the source should have already been pushed by the frontend.
-  base::StringPiece injectjs_webkit =
-      webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_WEBKIT_JS);
-  ic->injectedScriptHost()->setInjectedScriptSource(
-      injectjs_webkit.as_string().c_str());
+  { // TODO(yurys): the source should have already been pushed by the frontend.
+    v8::HandleScope scope;
+    v8::Context::Scope context_scope(utility_context_);
+    v8::Handle<v8::Value> constructor_value = utility_context_->Global()->Get(
+        v8::String::New("injectedScriptConstructor"));
+    if (constructor_value->IsFunction()) {
+      String source = WebCore::toWebCoreString(constructor_value);
+      ic->injectedScriptHost()->setInjectedScriptSource("(" + source + ")");
+    }
+  }
+
   ic->setWindowVisible(true, false);
   attached_ = true;
 }
@@ -441,10 +447,14 @@ void WebDevToolsAgentImpl::ResetInspectorFrontendProxy() {
   inspector_frontend_script_state_.set(new ScriptState(
       web_view_impl_->page()->mainFrame(),
       utility_context_));
-  v8::Local<v8::Object> injected_script = v8::Local<v8::Object>::Cast(
-      utility_context_->Global()->Get(v8::String::New("InjectedScript")));
+
+  v8::Local<v8::Value> injected_script_value =
+      utility_context_->Global()->Get(v8::String::New("InjectedScript"));
+  v8::Local<v8::Object> injected_script;
   // TODO(yurys): get rid of the 'if' once WebKit is rolled.
-  if (injected_script->IsUndefined()) {
+  if (injected_script_value->IsObject()) {
+    injected_script = v8::Local<v8::Object>::Cast(injected_script_value);
+  } else {
     v8::Local<v8::Object> global = utility_context_->Global();
     v8::Handle<v8::Function> injected_script_constructor =
         v8::Local<v8::Function>::Cast(global->Get(v8::String::New(
