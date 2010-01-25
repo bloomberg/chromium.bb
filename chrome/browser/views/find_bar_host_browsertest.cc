@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -554,9 +554,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 }
 
 // Make sure Find box moves out of the way if it is obscuring the active match.
-// Flaky, see http://crbug.com/16447.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       FLAKY_FindMovesWhenObscuring) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   HTTPTestServer* server = StartHTTPServer();
 
   GURL url = server->TestServerPageW(kMoveIfOver);
