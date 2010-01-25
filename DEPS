@@ -127,6 +127,10 @@ deps_os = {
     # Parses Windows PE/COFF executable format.
     "src/third_party/pefile":
       "http://pefile.googlecode.com/svn/trunk@63",
+
+    # NSS, for SSLClientSocketNSS.
+    "src/third_party/nss":
+      "/trunk/deps/third_party/nss@36871",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
