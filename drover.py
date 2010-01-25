@@ -477,7 +477,12 @@ def main(options, args):
     revertExportRevision(url, revision)
 
   # Check the base url so we actually find the author who made the change
-  author = getAuthor(url, revision)
+  if options.auditor:
+    author = options.auditor
+  else:
+    author = getAuthor(url, revision)
+    if not author:
+      author = getAuthor(TRUNK_URL, revision)
 
   filename = str(revision)+".txt"
   out = open(filename,"w")
@@ -532,6 +537,8 @@ if __name__ == "__main__":
                            help='Revision to revert')
   option_parser.add_option('-w', '--workdir',
                            help='subdir to use for the revert')
+  option_parser.add_option('-a', '--auditor',
+                           help='overrides the author for reviewer')                           
   option_parser.add_option('', '--revertbot', action='store_true',
                            default=False)
   option_parser.add_option('', '--revertbot-commit', action='store_true',
