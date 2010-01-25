@@ -508,7 +508,7 @@
       </message>
 
       <!-- The URL for Adobe Flash storage settings -->
-      <message name="IDS_FLASH_STORAGE_URL">
+      <message name="IDS_FLASH_STORAGE_URL" use_name_for_id="true">
         http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager07.html
       </message>
 
