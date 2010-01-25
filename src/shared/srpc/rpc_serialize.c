@@ -511,7 +511,7 @@ static int StringPut(const NaClSrpcArg* arg,
     uint32_t slen = (uint32_t) strlen(arg->u.sval);
     if (1 != __NaClSrpcImcWrite(&slen, sizeof(slen), 1, buffer) ||
         slen !=
-        __NaClSrpcImcWrite(arg->u.sval, 1, (size_t) slen, buffer)) {
+        __NaClSrpcImcWrite(arg->u.sval, 1, (nacl_abi_size_t) slen, buffer)) {
       return 0;
     }
   }

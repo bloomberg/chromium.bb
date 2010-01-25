@@ -33,76 +33,174 @@
     # NOTE: this file also defines common dependencies.
     'nonnacl_util.gypi',
   ],
+  'target_defaults': {
+    'target_conditions': [
+      ['target_base=="sel_ldr_launcher"', {
+        'sources': [
+          'sel_ldr_launcher.cc',
+          'sel_ldr_launcher.h',
+        ],
+        'cflags!': [
+          '-Wextra',
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-pedantic',  # import is a gcc extension
+            '-Wextra',
+          ]
+        },
+      }],
+      ['target_base=="nonnacl_util"', {
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-pedantic',  # import is a gcc extension
+          ]
+        },
+      }],
+      ['target_base=="nonnacl_util_c"', {
+        'sources': [
+          'sel_ldr_launcher_c.cc',
+          'sel_ldr_launcher_c.h',
+        ],
+        'cflags!': [
+          '-Wextra',
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-pedantic',  # import is a gcc extension
+            '-Wextra',
+          ]
+        },
+      }],
+      ['target_base=="nonnacl_util_chrome"', {
+        'sources': [
+          'sel_ldr_launcher_chrome.cc',
+        ],
+        'conditions': [
+          ['OS=="win"', {
+            'dependencies': [
+              '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
+            ],
+          }],
+        ],
+      }],
+    ]
+  },
   'targets': [
+    # ----------------------------------------------------------------------
     {
       'target_name': 'sel_ldr_launcher',
       'type': 'static_library',
-      'sources': [
-        'sel_ldr_launcher.cc',
-        'sel_ldr_launcher.h',
-      ],
-      'cflags!': [
-        '-Wextra',
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-pedantic',  # import is a gcc extension
-          '-Wextra',
-        ]
+      'variables': {
+        'target_base': 'sel_ldr_launcher',
       },
     },
+    # ----------------------------------------------------------------------
     {
       'target_name': 'nonnacl_util',
       'type': 'static_library',
+      'variables': {
+        'target_base': 'nonnacl_util',
+      },
       'dependencies': [
         'sel_ldr_launcher',
       ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-pedantic',  # import is a gcc extension
-        ]
-      },
     },
+    # ----------------------------------------------------------------------
     {
       'target_name': 'nonnacl_util_c',
       'type': 'static_library',
-      'sources': [
-        'sel_ldr_launcher_c.cc',
-        'sel_ldr_launcher_c.h',
-      ],
-      'cflags!': [
-        '-Wextra',
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-pedantic',  # import is a gcc extension
-          '-Wextra',
-        ]
+      'variables': {
+        'target_base': 'nonnacl_util_c',
       },
       'dependencies': [
         'sel_ldr_launcher',
       ],
     },
   ],
+  # ----------------------------------------------------------------------
   'conditions': [
-    ['nacl_standalone==0', {
+    ['OS=="win"', {
       'targets': [
+        # --------------------------------------------------------------------
         {
-          'target_name': 'nonnacl_util_chrome',
+          'target_name': 'sel_ldr_launcher64',
           'type': 'static_library',
-          'sources': [
-            'sel_ldr_launcher_chrome.cc',
-          ],
+          'variables': {
+            'target_base': 'sel_ldr_launcher',
+          },
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+        # --------------------------------------------------------------------
+        {
+          'target_name': 'nonnacl_util64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'nonnacl_util',
+          },
           'dependencies': [
             'sel_ldr_launcher',
           ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
-              ],
-            }],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+        # ----------------------------------------------------------------
+        {
+          'target_name': 'nonnacl_util_c64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'nonnacl_util_c',
+          },
+          'dependencies': [
+            'sel_ldr_launcher64',
           ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+      ],
+    }],
+    ['nacl_standalone==0', {
+      'targets': [
+        # ----------------------------------------------------------------
+        {
+          'target_name': 'nonnacl_util_chrome',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'nonnacl_util_chrome',
+          },
+          'dependencies': [
+            'sel_ldr_launcher',
+          ],
+        },
+      ],
+    }],
+    ['OS=="win" and nacl_standalone==0', {
+      'targets': [
+        # ----------------------------------------------------------------
+        {
+          'target_name': 'nonnacl_util_chrome64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'nonnacl_util_chrome',
+          },
+          'dependencies': [
+            'sel_ldr_launcher64',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
         },
       ],
     }],

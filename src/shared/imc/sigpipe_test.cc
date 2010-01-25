@@ -43,6 +43,7 @@
 #include <string>
 #include <vector>
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
@@ -189,7 +190,7 @@ int TestState::Init() {
 
   strncpy(msg_buffer, "hello world\n", sizeof msg_buffer);
   msg_buffer[sizeof msg_buffer - 1] = '\0';
-  msg_len = strlen(msg_buffer);
+  msg_len = nacl::assert_cast<int>(strlen(msg_buffer));
 
   printf("cli_sock %d, srv_sock %d, pair[0] %d, pair[1] %d\n",
          cli_sock, srv_sock, pair[0], pair[1]);
@@ -569,8 +570,7 @@ struct TestFn {
   int mode;        // currently, only 0,1 for using bound socket and socketpair
   bool new_socks;  // run test w/ per-test sockets
   bool flakey;       // known-to-be-flakey test (known IMC implementation bug)
-} test_fn[] = {
-  {
+} test_fn[] = { {
     "Send one descriptor via bound socket, shared socket",
     SendDescriptor,
     ReceiveDescriptor,
@@ -881,7 +881,7 @@ int main(int ac,
   if (gTestSequence.empty()) {
     for (size_t i = 0; i < NACL_ARRAY_SIZE(test_fn); ++i) {
       if (!test_fn[i].flakey) {
-        gTestSequence.push_back(i);
+        gTestSequence.push_back(nacl::assert_cast<int>(i));
       }
     }
   }
