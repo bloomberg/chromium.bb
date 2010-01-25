@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -317,11 +317,13 @@ const CGFloat kRapidCloseDist = 2.5;
 - (void)mouseDragged:(NSEvent*)theEvent {
   // Special-case this to keep the logic below simpler.
   if (moveWindowOnDrag_) {
-    NSPoint thisPoint = [NSEvent mouseLocation];
-    NSPoint origin = sourceWindowFrame_.origin;
-    origin.x += (thisPoint.x - dragOrigin_.x);
-    origin.y += (thisPoint.y - dragOrigin_.y);
-    [sourceWindow_ setFrameOrigin:NSMakePoint(origin.x, origin.y)];
+    if ([sourceController_ windowMovementAllowed]) {
+      NSPoint thisPoint = [NSEvent mouseLocation];
+      NSPoint origin = sourceWindowFrame_.origin;
+      origin.x += (thisPoint.x - dragOrigin_.x);
+      origin.y += (thisPoint.y - dragOrigin_.y);
+      [sourceWindow_ setFrameOrigin:NSMakePoint(origin.x, origin.y)];
+    }  // else do nothing.
     return;
   }
 
@@ -346,7 +348,8 @@ const CGFloat kRapidCloseDist = 2.5;
     // strip that would cause it to no longer be fully visible.
     BOOL stillVisible = [sourceController_ isTabFullyVisible:self];
     CGFloat tearForce = fabs(thisPoint.y - dragOrigin_.y);
-    if (tearForce > kTearDistance || !stillVisible) {
+    if ([sourceController_ tabTearingAllowed] &&
+        (tearForce > kTearDistance || !stillVisible)) {
       draggingWithinTabStrip_ = NO;
       // When you finally leave the strip, we treat that as the origin.
       dragOrigin_.x = thisPoint.x;
