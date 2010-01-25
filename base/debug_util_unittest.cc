@@ -91,3 +91,18 @@ TEST(StackTrace, DISABLED_OutputToStream) {
 
 #endif  // define(OS_MACOSX)
 }
+
+// The test is used for manual testing (i.e. see the raw output).
+// To run the test use the flags:
+// --gtest_filter='*DebugOutputToStream' --gtest_also_run_disabled_tests
+TEST(StackTrace, DISABLED_DebugOutputToStream) {
+  StackTrace trace;
+  std::ostringstream os;
+  trace.OutputToStream(&os);
+  LOG(INFO) << os.str();
+}
+
+// The test is used for manual testing. See the comment above.
+TEST(StackTrace, DISABLED_DebugPrintBacktrace) {
+  StackTrace().PrintBacktrace();
+}
