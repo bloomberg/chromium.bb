@@ -254,6 +254,9 @@ BookmarkContextMenuGtk::BookmarkContextMenuGtk(
   AppendItem(IDS_COPY);
   AppendItem(IDS_PASTE);
 
+  AppendSeparator();
+  AppendItem(IDS_BOOKMARK_BAR_REMOVE);
+
   if (configuration == BOOKMARK_MANAGER_ORGANIZE_MENU) {
     AppendSeparator();
     AppendItem(IDS_BOOKMARK_MANAGER_SORT);
