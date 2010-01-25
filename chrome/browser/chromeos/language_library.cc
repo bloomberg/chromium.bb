@@ -42,13 +42,10 @@ bool FindAndUpdateProperty(const chromeos::ImeProperty& new_prop,
 namespace chromeos {
 
 LanguageLibrary::LanguageLibrary() : language_status_connection_(NULL) {
-  if (EnsureLoaded()) {
-    Init();
-  }
 }
 
 LanguageLibrary::~LanguageLibrary() {
-  if (EnsureLoaded()) {
+  if (EnsureLoadedAndStarted()) {
     chromeos::DisconnectLanguageStatus(language_status_connection_);
   }
 }
@@ -61,11 +58,6 @@ LanguageLibrary* LanguageLibrary::Get() {
   return Singleton<LanguageLibrary>::get();
 }
 
-// static
-bool LanguageLibrary::EnsureLoaded() {
-  return CrosLibrary::EnsureLoaded();
-}
-
 void LanguageLibrary::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -76,7 +68,7 @@ void LanguageLibrary::RemoveObserver(Observer* observer) {
 
 chromeos::InputLanguageList* LanguageLibrary::GetActiveLanguages() {
   chromeos::InputLanguageList* result = NULL;
-  if (EnsureLoaded()) {
+  if (EnsureLoadedAndStarted()) {
     result = chromeos::GetActiveLanguages(language_status_connection_);
   }
   return result ? result : CreateFallbackInputLanguageList();
@@ -84,7 +76,7 @@ chromeos::InputLanguageList* LanguageLibrary::GetActiveLanguages() {
 
 chromeos::InputLanguageList* LanguageLibrary::GetSupportedLanguages() {
   chromeos::InputLanguageList* result = NULL;
-  if (EnsureLoaded()) {
+  if (EnsureLoadedAndStarted()) {
     result = chromeos::GetSupportedLanguages(language_status_connection_);
   }
   return result ? result : CreateFallbackInputLanguageList();
@@ -92,14 +84,14 @@ chromeos::InputLanguageList* LanguageLibrary::GetSupportedLanguages() {
 
 void LanguageLibrary::ChangeLanguage(
     LanguageCategory category, const std::string& id) {
-  if (EnsureLoaded()) {
+  if (EnsureLoadedAndStarted()) {
     chromeos::ChangeLanguage(language_status_connection_, category, id.c_str());
   }
 }
 
 void LanguageLibrary::ActivateImeProperty(const std::string& key) {
   DCHECK(!key.empty());
-  if (EnsureLoaded()) {
+  if (EnsureLoadedAndStarted()) {
     chromeos::ActivateImeProperty(
         language_status_connection_, key.c_str());
   }
@@ -107,7 +99,7 @@ void LanguageLibrary::ActivateImeProperty(const std::string& key) {
 
 void LanguageLibrary::DeactivateImeProperty(const std::string& key) {
   DCHECK(!key.empty());
-  if (EnsureLoaded()) {
+  if (EnsureLoadedAndStarted()) {
     chromeos::DeactivateImeProperty(
         language_status_connection_, key.c_str());
   }
@@ -116,7 +108,7 @@ void LanguageLibrary::DeactivateImeProperty(const std::string& key) {
 bool LanguageLibrary::ActivateLanguage(
     LanguageCategory category, const std::string& id) {
   bool success = false;
-  if (EnsureLoaded()) {
+  if (EnsureLoadedAndStarted()) {
     success = chromeos::ActivateLanguage(language_status_connection_,
                                          category, id.c_str());
   }
@@ -126,7 +118,7 @@ bool LanguageLibrary::ActivateLanguage(
 bool LanguageLibrary::DeactivateLanguage(
     LanguageCategory category, const std::string& id) {
   bool success = false;
-  if (EnsureLoaded()) {
+  if (EnsureLoadedAndStarted()) {
     success = chromeos::DeactivateLanguage(language_status_connection_,
                                            category, id.c_str());
   }
@@ -154,13 +146,21 @@ void LanguageLibrary::UpdatePropertyHandler(
   language_library->UpdateProperty(prop_list);
 }
 
-void LanguageLibrary::Init() {
+bool LanguageLibrary::EnsureStarted() {
+  if (language_status_connection_) {
+    return true;
+  }
   chromeos::LanguageStatusMonitorFunctions monitor_functions;
   monitor_functions.current_language = &LanguageChangedHandler;
   monitor_functions.register_ime_properties = &RegisterPropertiesHandler;
   monitor_functions.update_ime_property = &UpdatePropertyHandler;
   language_status_connection_
       = chromeos::MonitorLanguageStatus(monitor_functions, this);
+  return language_status_connection_ != NULL;
+}
+
+bool LanguageLibrary::EnsureLoadedAndStarted() {
+  return CrosLibrary::EnsureLoaded() && EnsureStarted();
 }
 
 void LanguageLibrary::UpdateCurrentLanguage(

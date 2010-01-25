@@ -29,10 +29,6 @@ class LanguageLibrary {
   // This gets the singleton LanguageLibrary
   static LanguageLibrary* Get();
 
-  // Makes sure the library is loaded, loading it if necessary. Returns true if
-  // the library has been successfully loaded.
-  static bool EnsureLoaded();
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -97,8 +93,15 @@ class LanguageLibrary {
   static void UpdatePropertyHandler(
       void* object, const ImePropertyList& prop_list);
 
-  // This methods starts the monitoring of language changes.
-  void Init();
+  // Ensures that the monitoring of language changes is started. Starts
+  // the monitoring if necessary. Returns true if the monitoring has been
+  // successfully started.
+  bool EnsureStarted();
+
+  // Ensures that the cros library is loaded and the the monitoring is
+  // started. Loads the cros library and starts the monitoring if
+  // necessary.  Returns true if the two conditions are both met.
+  bool EnsureLoadedAndStarted();
 
   // Called by the handler to update the language status.
   // This will notify all the Observers.
