@@ -20,12 +20,12 @@ TEST(StackTrace, DISABLED_OutputToStream) {
   trace.OutputToStream(&os);
   std::string backtrace_message = os.str();
 
-#if defined(OS_LINUX) && NDEBUG
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && NDEBUG
   // Stack traces require an extra data table that bloats our binaries,
   // so they're turned off for release builds.  We stop the test here,
   // at least letting us verify that the calls don't crash.
   return;
-#endif  // defined(OS_LINUX) && NDEBUG
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && NDEBUG
 
   size_t frames_found = 0;
   trace.Addresses(&frames_found);
