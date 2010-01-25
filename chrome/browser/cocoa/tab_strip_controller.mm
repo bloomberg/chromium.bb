@@ -939,10 +939,12 @@ private:
   [self layoutTabs];
 
   if (oldContents) {
-    int index = browser_->GetIndexOfController(&(oldContents->controller()));
-    if (index != -1) {  // When closing a tab, the old tab may be gone.
+    int oldModelIndex =
+        browser_->GetIndexOfController(&(oldContents->controller()));
+    if (oldModelIndex != -1) {  // When closing a tab, the old tab may be gone.
+      NSInteger oldIndex = [self indexFromModelIndex:oldModelIndex];
       TabContentsController* oldController =
-          [tabContentsArray_ objectAtIndex:index];
+          [tabContentsArray_ objectAtIndex:oldIndex];
       [oldController willBecomeUnselectedTab];
       oldContents->view()->StoreFocus();
       oldContents->WasHidden();
