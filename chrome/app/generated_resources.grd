@@ -2919,7 +2919,7 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSION_CRASHED_INFOBAR_MESSAGE" desc="Message displayed on the extension crashed infobar.">
         The following extension has crashed : <ph name="EXTENSION_NAME">$1<ex>Buildbot Monitor</ex></ph>
-  	  </message>
+      </message>
 
       <!-- Theme preview info bar -->
       <message name="IDS_THEME_INSTALL_INFOBAR_LABEL" desc="Text displayed on an infobar when a theme has been installed.">
@@ -2935,6 +2935,11 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSION_DISABLED_INFOBAR_ENABLE_BUTTON" desc="Text displayed on the button to re-enable the disabled extension.">
         Re-enable
+      </message>
+
+      <!-- Extension incognito install failure info bar -->
+      <message name="IDS_EXTENSION_INCOGNITO_INSTALL_INFOBAR_LABEL" desc="Text displayed on an infobar when the user attempts to install an extension in incognito mode.">
+        Extension install failed: extensions are not supported in incognito windows.
       </message>
 
       <!-- Extension install prompt -->

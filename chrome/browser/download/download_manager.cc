@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/download/download_manager.h"
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_constants.h"
@@ -44,6 +46,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context.h"
@@ -53,6 +56,8 @@
 #include "base/registry.h"
 #include "base/win_util.h"
 #endif
+
+namespace {
 
 // Periodically update our observers.
 class DownloadItemUpdateTask : public Task {
@@ -65,17 +70,17 @@ class DownloadItemUpdateTask : public Task {
 };
 
 // Update frequency (milliseconds).
-static const int kUpdateTimeMs = 1000;
+const int kUpdateTimeMs = 1000;
 
 // Our download table ID starts at 1, so we use 0 to represent a download that
 // has started, but has not yet had its data persisted in the table. We use fake
 // database handles in incognito mode starting at -1 and progressively getting
 // more negative.
-static const int kUninitializedHandle = 0;
+const int kUninitializedHandle = 0;
 
 // Appends the passed the number between parenthesis the path before the
 // extension.
-static void AppendNumberToPath(FilePath* path, int number) {
+void AppendNumberToPath(FilePath* path, int number) {
   file_util::InsertBeforeExtension(path,
       StringPrintf(FILE_PATH_LITERAL(" (%d)"), number));
 }
@@ -83,7 +88,7 @@ static void AppendNumberToPath(FilePath* path, int number) {
 // Attempts to find a number that can be appended to that path to make it
 // unique. If |path| does not exist, 0 is returned.  If it fails to find such
 // a number, -1 is returned.
-static int GetUniquePathNumber(const FilePath& path) {
+int GetUniquePathNumber(const FilePath& path) {
   const int kMaxAttempts = 100;
 
   if (!file_util::PathExists(path))
@@ -109,6 +114,8 @@ static bool DownloadPathIsDangerous(const FilePath& download_path) {
   }
   return (download_path == desktop_dir);
 }
+
+}  // namespace
 
 // DownloadItem implementation -------------------------------------------------
 
@@ -1364,6 +1371,19 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
           true,  // privilege increase allowed
           service,
           new ExtensionInstallUI(profile_));
+    }
+  } else {
+    TabContents* contents = NULL;
+    Browser* last_active = BrowserList::GetLastActiveWithProfile(profile_);
+    if (last_active)
+      contents = last_active->GetSelectedTabContents();
+    if (contents) {
+      contents->AddInfoBar(
+          new SimpleAlertInfoBarDelegate(contents,
+              l10n_util::GetString(
+                  IDS_EXTENSION_INCOGNITO_INSTALL_INFOBAR_LABEL),
+              ResourceBundle::GetSharedInstance().GetBitmapNamed(
+                  IDR_INFOBAR_PLUGIN_INSTALL)));
     }
   }
 }
