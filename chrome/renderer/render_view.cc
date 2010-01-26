@@ -1708,12 +1708,13 @@ void RenderView::showContextMenu(
   ContextMenuParams params = ContextMenuParams(data);
   if (!params.misspelled_word.empty() && RenderThread::current()) {
     int misspelled_offset, misspelled_length;
-    bool misspelled = RenderThread::current()->spellchecker()->SpellCheckWord(
-          params.misspelled_word.c_str(), params.misspelled_word.size(),
-          document_tag_,
-          &misspelled_offset, &misspelled_length,
-          &params.dictionary_suggestions);
-    if (!misspelled)
+    bool spelled_right = RenderThread::current()->spellchecker()->
+        SpellCheckWord(
+            params.misspelled_word.c_str(), params.misspelled_word.size(),
+            document_tag_,
+            &misspelled_offset, &misspelled_length,
+            &params.dictionary_suggestions);
+    if (spelled_right)
       params.misspelled_word.clear();
   }
 
