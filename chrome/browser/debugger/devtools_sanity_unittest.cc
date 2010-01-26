@@ -298,7 +298,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
 }
 
 // Tests scripts panel showing.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
+// TODO(yurys): Re-enable.  http://crbugs.com/33107
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
