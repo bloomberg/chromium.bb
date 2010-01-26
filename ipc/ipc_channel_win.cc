@@ -77,15 +77,6 @@ void Channel::ChannelImpl::Close() {
 
 bool Channel::ChannelImpl::Send(Message* message) {
   DCHECK(thread_check_->CalledOnValidThread());
-  if (message->size() > kMaximumMessageSize) {
-    LOG(ERROR) << "Attempt to send oversized message "
-               << message->size()
-               << " type="
-               << message->type();
-    Close();
-    delete message;
-    return false;
-  }
 #ifdef IPC_MESSAGE_DEBUG_EXTRA
   DLOG(INFO) << "sending message @" << message << " on channel @" << this
              << " with type " << message->type()
@@ -354,11 +345,6 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages(
 
   // Write to pipe...
   Message* m = output_queue_.front();
-
-  // Oversized messages should be rejected in Send().
-  DCHECK_LE(m->size(), kMaximumMessageSize)
-      << "Attempt to send oversized message";
-
   BOOL ok = WriteFile(pipe_,
                       m->data(),
                       m->size(),
