@@ -439,42 +439,13 @@ TestSuite.prototype.testProfilerTab = function() {
  * Tests that scripts tab can be open and populated with inspected scripts.
  */
 TestSuite.prototype.testShowScriptsTab = function() {
-  var parsedDebuggerTestPageHtml = false;
-
-  // Intercept parsedScriptSource calls to check that all expected scripts are
-  // added to the debugger.
-  var test = this;
-  var receivedConsoleApiSource = false;
-  this.addSniffer(WebInspector, 'parsedScriptSource',
-      function(sourceID, sourceURL, source, startingLine) {
-        if (sourceURL == undefined) {
-          if (receivedConsoleApiSource) {
-            test.fail('Unexpected script without URL');
-          } else {
-            receivedConsoleApiSource = true;
-          }
-        } else if (sourceURL.search(/debugger_test_page.html$/) != -1) {
-          if (parsedDebuggerTestPageHtml) {
-            test.fail('Unexpected parse event: ' + sourceURL);
-          }
-          parsedDebuggerTestPageHtml = true;
-          if (!WebInspector.panels.scripts.visibleView) {
-            test.fail('No visible script view: ' + sourceURL);
-          }
-        } else {
-          test.fail('Unexpected script URL: ' + sourceURL);
-        }
-
-        // There should be two scripts: one for the main page and another
-        // one which is source of console API(see
-        // InjectedScript._ensureCommandLineAPIInstalled).
-        if (parsedDebuggerTestPageHtml && receivedConsoleApiSource) {
-           test.releaseControl();
-        }
-      }, true /* sticky */);
-
   this.showPanel('scripts');
-
+  var test = this;
+  // There should be at least main page script.
+  this._waitUntilScriptsAreParsed(['debugger_test_page.html$'],
+      function() {
+        test.releaseControl();
+      });
   // Wait until all scripts are added to the debugger.
   this.takeControl();
 };
