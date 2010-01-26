@@ -734,6 +734,10 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
   while (!output_queue_.empty()) {
     Message* msg = output_queue_.front();
 
+    // Oversized messages should be rejected in Send().
+    DCHECK_LE(msg->size(), kMaximumMessageSize)
+        << "Attempt to send oversized message";
+
 #if defined(OS_LINUX)
     scoped_ptr<Message> hello;
     if (remote_fd_pipe_ != -1 &&
@@ -884,6 +888,15 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
 }
 
 bool Channel::ChannelImpl::Send(Message* message) {
+  if(message->size(), kMaximumMessageSize) {
+    LOG(ERROR) << "Attempt to send oversized message "
+                 << message->size()
+                 << " type="
+                 << message->type();
+    Close();
+    delete message;
+    return false;
+  }
 #ifdef IPC_MESSAGE_DEBUG_EXTRA
   DLOG(INFO) << "sending message @" << message << " on channel @" << this
              << " with type " << message->type()

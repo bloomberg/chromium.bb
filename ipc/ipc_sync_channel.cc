@@ -382,6 +382,15 @@ bool SyncChannel::Send(Message* message) {
 }
 
 bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
+  if(message->size() > IPC::Channel::kMaximumMessageSize) {
+    LOG(ERROR) << "Attempt to send oversized message "
+               << message->size()
+               << " type="
+               << message->type();
+    delete message;
+    return false;
+  }
+
   if (!message->is_sync()) {
     ChannelProxy::Send(message);
     return true;
