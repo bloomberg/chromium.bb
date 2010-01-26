@@ -28,8 +28,21 @@ __version__ = '1.1.3'
 
 
 CODEREVIEW_SETTINGS = {
+  # Ideally, we want to set |CODE_REVIEW_SERVER| to a generic server like
+  # codereview.appspot.com and remove |CC_LIST| and |VIEW_VC|. In practice, we
+  # need these settings so developers making changes in directories such as
+  # Chromium's src/third_party/WebKit will send change lists to the correct
+  # server.
+  #
+  # To make gcl send reviews to a different server, check in a file named
+  # "codereview.settings" (see |CODEREVIEW_SETTINGS_FILE| below) to your
+  # project's base directory and add the following line to codereview.settings:
+  # CODE_REVIEW_SERVER: codereview.yourserver.org
+  #
   # Default values.
-  "CODE_REVIEW_SERVER": "codereview.appspot.com",
+  "CODE_REVIEW_SERVER": "codereview.chromium.org",
+  "CC_LIST": "chromium-reviews@chromium.org",
+  "VIEW_VC": "http://src.chromium.org/viewvc/chrome?view=rev&revision=",
 }
 
 # globals that store the root of the current repository and the directory where
