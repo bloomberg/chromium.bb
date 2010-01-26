@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings_window.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/gears_integration.h"
 #include "chrome/browser/net/dns_global.h"
@@ -32,7 +33,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_dialogs.h"
-#include "chrome/browser/views/options/cookies_view.h"
+#include "chrome/browser/views/clear_browsing_data.h"
 #include "chrome/browser/views/options/fonts_languages_window_view.h"
 #include "chrome/browser/views/restart_message_box.h"
 #include "chrome/common/pref_member.h"
@@ -54,6 +55,7 @@
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
 #include "views/widget/widget.h"
+#include "views/window/window.h"
 
 using views::GridLayout;
 using views::ColumnSet;
@@ -248,9 +250,15 @@ class AdvancedSection : public OptionsPageView {
                            views::Label* label,
                            int id,
                            bool related_follows);
+  void AddLabeledTwoColumnRow(views::GridLayout* layout,
+                              views::Label* label,
+                              views::View* control,
+                              bool control_stretches,
+                              int id,
+                              bool related_follows);
   void AddTwoColumnRow(views::GridLayout* layout,
-                       views::Label* label,
-                       views::View* control,
+                       views::View* first,
+                       views::View* second,
                        bool control_stretches,  // Whether or not the control
                                                 // expands to fill the width.
                        int id,
@@ -361,19 +369,29 @@ void AdvancedSection::AddWrappingLabelRow(views::GridLayout* layout,
   AddSpacing(layout, related_follows);
 }
 
+void AdvancedSection::AddLabeledTwoColumnRow(views::GridLayout* layout,
+                                             views::Label* label,
+                                             views::View* control,
+                                             bool control_stretches,
+                                             int id,
+                                             bool related_follows) {
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  AddTwoColumnRow(layout, label, control, control_stretches, id,
+                  related_follows);
+}
+
 void AdvancedSection::AddTwoColumnRow(views::GridLayout* layout,
-                                      views::Label* label,
-                                      views::View* control,
+                                      views::View* first,
+                                      views::View* second,
                                       bool control_stretches,
                                       int id,
                                       bool related_follows) {
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->StartRow(0, id);
-  layout->AddView(label);
+  layout->AddView(first);
   if (control_stretches) {
-    layout->AddView(control);
+    layout->AddView(second);
   } else {
-    layout->AddView(control, 1, 1, views::GridLayout::LEADING,
+    layout->AddView(second, 1, 1, views::GridLayout::LEADING,
                     views::GridLayout::CENTER);
   }
   AddSpacing(layout, related_follows);
@@ -463,7 +481,6 @@ class CookieBehaviorComboModel : public ComboboxModel {
 
 class PrivacySection : public AdvancedSection,
                        public views::ButtonListener,
-                       public views::Combobox::Listener,
                        public views::LinkController {
  public:
   explicit PrivacySection(Profile* profile);
@@ -471,11 +488,6 @@ class PrivacySection : public AdvancedSection,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
-  // Overridden from views::Combobox::Listener:
-  virtual void ItemChanged(views::Combobox* sender,
-                           int prev_index,
-                           int new_index);
 
   // Overridden from views::LinkController:
   virtual void LinkActivated(views::Link* source, int event_flags);
@@ -490,6 +502,8 @@ class PrivacySection : public AdvancedSection,
 
  private:
   // Controls for this section:
+  views::NativeButton* content_settings_button_;
+  views::NativeButton* clear_data_button_;
   views::Label* section_description_label_;
   views::Checkbox* enable_link_doctor_checkbox_;
   views::Checkbox* enable_suggest_checkbox_;
@@ -497,9 +511,6 @@ class PrivacySection : public AdvancedSection,
   views::Checkbox* enable_safe_browsing_checkbox_;
   views::Checkbox* reporting_enabled_checkbox_;
   views::Link* learn_more_link_;
-  views::Label* cookie_behavior_label_;
-  views::Combobox* cookie_behavior_combobox_;
-  views::NativeButton* show_cookies_button_;
 
   // Dummy for now. Used to populate cookies models.
   scoped_ptr<CookieBehaviorComboModel> allow_cookies_model_;
@@ -510,7 +521,6 @@ class PrivacySection : public AdvancedSection,
   BooleanPrefMember dns_prefetch_enabled_;
   BooleanPrefMember safe_browsing_;
   BooleanPrefMember enable_metrics_recording_;
-  IntegerPrefMember cookie_behavior_;
 
   void ResolveMetricsReportingEnabled();
 
@@ -518,16 +528,15 @@ class PrivacySection : public AdvancedSection,
 };
 
 PrivacySection::PrivacySection(Profile* profile)
-    : section_description_label_(NULL),
+    : content_settings_button_(NULL),
+      clear_data_button_(NULL),
+      section_description_label_(NULL),
       enable_link_doctor_checkbox_(NULL),
       enable_suggest_checkbox_(NULL),
       enable_dns_prefetching_checkbox_(NULL),
       enable_safe_browsing_checkbox_(NULL),
       reporting_enabled_checkbox_(NULL),
       learn_more_link_(NULL),
-      cookie_behavior_label_(NULL),
-      cookie_behavior_combobox_(NULL),
-      show_cookies_button_(NULL),
       AdvancedSection(profile,
           l10n_util::GetString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)) {
 }
@@ -577,9 +586,16 @@ void PrivacySection::ButtonPressed(
     if (enabled == reporting_enabled_checkbox_->checked())
       RestartMessageBox::ShowMessageBox(GetWindow()->GetNativeWindow());
     enable_metrics_recording_.SetValue(enabled);
-  } else if (sender == show_cookies_button_) {
-    UserMetricsRecordAction("Options_ShowCookies", NULL);
-    CookiesView::ShowCookiesWindow(profile());
+  } else if (sender == content_settings_button_) {
+    UserMetricsRecordAction("Options_ContentSettings", NULL);
+    ContentSettings::ShowContentSettingsWindow(CONTENT_SETTINGS_TAB_DEFAULT,
+                                               profile());
+  } else if (sender == clear_data_button_) {
+    UserMetricsRecordAction("Options_ClearData", NULL);
+    views::Window::CreateChromeWindow(
+        GetWindow()->GetNativeWindow(),
+        gfx::Rect(),
+        new ClearBrowsingDataView(profile()))->Show();
   }
 }
 
@@ -607,26 +623,13 @@ void PrivacySection::Layout() {
   View::Layout();
 }
 
-void PrivacySection::ItemChanged(views::Combobox* sender,
-                                 int prev_index,
-                                 int new_index) {
-  if (sender == cookie_behavior_combobox_) {
-    net::CookiePolicy::Type cookie_policy =
-        CookieBehaviorComboModel::IndexToCookiePolicy(new_index);
-    const char* kUserMetrics[] = {
-        "Options_AllowAllCookies",
-        "Options_BlockThirdPartyCookies",
-        "Options_BlockAllCookies"
-    };
-    DCHECK(cookie_policy >= 0 && cookie_policy < arraysize(kUserMetrics));
-    UserMetricsRecordAction(kUserMetrics[cookie_policy], profile()->GetPrefs());
-    this->cookie_behavior_.SetValue(cookie_policy);
-  }
-}
-
 void PrivacySection::InitControlLayout() {
   AdvancedSection::InitControlLayout();
 
+  content_settings_button_ = new views::NativeButton(
+      this, l10n_util::GetString(IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON));
+  clear_data_button_ =  new views::NativeButton(
+      this, l10n_util::GetString(IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON));
   section_description_label_ = new views::Label(
     l10n_util::GetString(IDS_OPTIONS_DISABLE_SERVICES));
   enable_link_doctor_checkbox_ = new views::Checkbox(
@@ -652,27 +655,23 @@ void PrivacySection::InitControlLayout() {
 #endif
   learn_more_link_ = new views::Link(l10n_util::GetString(IDS_LEARN_MORE));
   learn_more_link_->SetController(this);
-  cookie_behavior_label_ = new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_COOKIES_ACCEPT_LABEL));
-  allow_cookies_model_.reset(new CookieBehaviorComboModel);
-  cookie_behavior_combobox_ = new views::Combobox(
-      allow_cookies_model_.get());
-  cookie_behavior_combobox_->set_listener(this);
-  show_cookies_button_ = new views::NativeButton(
-      this, l10n_util::GetString(
-      IDS_OPTIONS_COOKIES_SHOWCOOKIES_WEBSITE_PERMISSIONS));
 
   GridLayout* layout = new GridLayout(contents_);
   contents_->SetLayoutManager(layout);
 
-  const int single_column_view_set_id = 0;
+  const int leading_column_set_id = 0;
+  AddTwoColumnSet(layout, leading_column_set_id);
+  const int single_column_view_set_id = 1;
   AddWrappingColumnSet(layout, single_column_view_set_id);
-  const int dependent_labeled_field_set_id = 1;
+  const int dependent_labeled_field_set_id = 2;
   AddDependentTwoColumnSet(layout, dependent_labeled_field_set_id);
-  const int indented_view_set_id = 2;
+  const int indented_view_set_id = 3;
   AddIndentedColumnSet(layout, indented_view_set_id);
-  const int indented_column_set_id = 3;
+  const int indented_column_set_id = 4;
   AddIndentedColumnSet(layout, indented_column_set_id);
+
+  AddTwoColumnRow(layout, content_settings_button_, clear_data_button_, false,
+                  leading_column_set_id, false);
 
   // The description label at the top and label.
   section_description_label_->SetMultiLine(true);
@@ -697,13 +696,6 @@ void PrivacySection::InitControlLayout() {
   // The "Help make Google Chrome better" checkbox.
   AddLeadingControl(layout, reporting_enabled_checkbox_,
                     single_column_view_set_id, false);
-  // Cookies.
-  AddWrappingLabelRow(layout, cookie_behavior_label_, single_column_view_set_id,
-                      true);
-  AddLeadingControl(layout, cookie_behavior_combobox_, indented_column_set_id,
-                    true);
-  AddLeadingControl(layout, show_cookies_button_, indented_column_set_id,
-                    false);
 
   // Init member prefs so we can update the controls if prefs change.
   alternate_error_pages_.Init(prefs::kAlternateErrorPagesEnabled,
@@ -715,7 +707,6 @@ void PrivacySection::InitControlLayout() {
   safe_browsing_.Init(prefs::kSafeBrowsingEnabled, profile()->GetPrefs(), this);
   enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
                                  g_browser_process->local_state(), this);
-  cookie_behavior_.Init(prefs::kCookieBehavior, profile()->GetPrefs(), this);
 }
 
 void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
@@ -737,11 +728,6 @@ void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
     reporting_enabled_checkbox_->SetChecked(
         enable_metrics_recording_.GetValue());
     ResolveMetricsReportingEnabled();
-  }
-  if (!pref_name || *pref_name == prefs::kCookieBehavior) {
-    cookie_behavior_combobox_->SetSelectedItem(
-        CookieBehaviorComboModel::CookiePolicyToIndex(
-            net::CookiePolicy::FromInt(cookie_behavior_.GetValue())));
   }
 }
 
@@ -845,8 +831,8 @@ void WebContentSection::InitControlLayout() {
                     false);
 
   // Gears.
-  AddTwoColumnRow(layout, gears_label_, gears_settings_button_, false,
-                  single_double_column_set, false);
+  AddLabeledTwoColumnRow(layout, gears_label_, gears_settings_button_, false,
+                         single_double_column_set, false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1361,9 +1347,9 @@ void AdvancedContentsView::InitControlLayout() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(new NetworkSection(profile()));
-  layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new PrivacySection(profile()));
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(new NetworkSection(profile()));
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new DownloadSection(profile()));
   layout->StartRow(0, single_column_view_set_id);

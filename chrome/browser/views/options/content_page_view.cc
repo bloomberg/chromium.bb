@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/browser/views/clear_browsing_data.h"
 #include "chrome/browser/views/importer_view.h"
 #include "chrome/browser/views/options/options_group_view.h"
 #include "chrome/browser/views/options/passwords_exceptions_window_view.h"
@@ -58,7 +57,6 @@ ContentPageView::ContentPageView(Profile* profile)
       browsing_data_label_(NULL),
       browsing_data_group_(NULL),
       import_button_(NULL),
-      clear_data_button_(NULL),
       sync_group_(NULL),
       sync_status_label_(NULL),
       sync_action_link_(NULL),
@@ -114,11 +112,6 @@ void ContentPageView::ButtonPressed(
       GetWindow()->GetNativeWindow(),
       gfx::Rect(),
       new ImporterView(profile(), ALL))->Show();
-  } else if (sender == clear_data_button_) {
-    views::Window::CreateChromeWindow(
-      GetWindow()->GetNativeWindow(),
-      gfx::Rect(),
-      new ClearBrowsingDataView(profile()))->Show();
   } else if (sender == sync_start_stop_button_) {
     DCHECK(sync_service_);
 
@@ -369,8 +362,6 @@ void ContentPageView::InitThemesGroup() {
 }
 
 void ContentPageView::InitBrowsingDataGroup() {
-  clear_data_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_OPTIONS_CLEAR_DATA_BUTTON));
   import_button_ = new views::NativeButton(this,
       l10n_util::GetString(IDS_OPTIONS_IMPORT_DATA_BUTTON));
   browsing_data_label_ = new views::Label(
@@ -389,24 +380,15 @@ void ContentPageView::InitBrowsingDataGroup() {
   const int single_column_view_set_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
-      GridLayout::USE_PREF, 0, 0);
+                        GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(browsing_data_label_);
 
   // Add some padding for not making the next component close together.
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  // Add double column layout for import and clear browsing buttons.
-  const int double_column_view_set_id = 1;
-  ColumnSet* double_col_set = layout->AddColumnSet(double_column_view_set_id);
-  double_col_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                            GridLayout::USE_PREF, 0, 0);
-  double_col_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
-  double_col_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                            GridLayout::USE_PREF, 0, 0);
-  layout->StartRow(0, double_column_view_set_id);
+  layout->StartRow(0, single_column_view_set_id);
   layout->AddView(import_button_);
-  layout->AddView(clear_data_button_);
 
   browsing_data_group_ = new OptionsGroupView(
       contents, l10n_util::GetString(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME),

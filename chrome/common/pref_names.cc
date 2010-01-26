@@ -514,6 +514,11 @@ const wchar_t kSafeBrowsingWrappedKey[] = L"safe_browsing.wrapped_key";
 // last visited the options window.
 const wchar_t kOptionsWindowLastTabIndex[] = L"options_window.last_tab_index";
 
+// Integer that specifies the index of the tab the user was on when they
+// last visited the content settings window.
+const wchar_t kContentSettingsWindowLastTabIndex[] =
+    L"content_settings_window.last_tab_index";
+
 // The mere fact that this pref is registered signals that we should show the
 // First Run Search Information bubble when the first browser window appears.
 // This preference is only registered by the first-run procedure.

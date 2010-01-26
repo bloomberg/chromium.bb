@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,55 +134,6 @@ class CookiesView : public views::View,
   static views::Window* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(CookiesView);
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// CookieInfoView
-//
-//  Responsible for displaying a tabular grid of Cookie information.
-class CookieInfoView : public views::View {
- public:
-  CookieInfoView();
-  virtual ~CookieInfoView();
-
-  // Update the display from the specified CookieNode.
-  void SetCookie(const std::string& domain,
-                 const net::CookieMonster::CanonicalCookie& cookie_node);
-
-  // Clears the cookie display to indicate that no or multiple cookies are
-  // selected.
-  void ClearCookieDisplay();
-
-  // Enables or disables the cookie proerty text fields.
-  void EnableCookieDisplay(bool enabled);
-
- protected:
-  // views::View overrides:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child);
-
- private:
-  // Set up the view layout
-  void Init();
-
-  // Individual property labels
-  views::Label* name_label_;
-  views::Textfield* name_value_field_;
-  views::Label* content_label_;
-  views::Textfield* content_value_field_;
-  views::Label* domain_label_;
-  views::Textfield* domain_value_field_;
-  views::Label* path_label_;
-  views::Textfield* path_value_field_;
-  views::Label* send_for_label_;
-  views::Textfield* send_for_value_field_;
-  views::Label* created_label_;
-  views::Textfield* created_value_field_;
-  views::Label* expires_label_;
-  views::Textfield* expires_value_field_;
-
-  DISALLOW_COPY_AND_ASSIGN(CookieInfoView);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -271,6 +271,18 @@
         80
       </message>
 
+      <!-- The width of the Content Settings dialog box, in characters (character width = -->
+      <!-- average character width for default dialog box font) -->
+      <message name="IDS_CONTENT_SETTINGS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+        72
+      </message>
+
+      <!-- The height of the Content Settings dialog box, in lines (line height = character -->
+      <!-- height for default dialog box font) -->
+      <message name="IDS_CONTENT_SETTINGS_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+        23
+      </message>
+
       <!-- The width and height of the URL picker dialog box in characters and lines -->
       <!-- (See above). -->
       <message name="IDS_URLPICKER_DIALOG_WIDTH_CHARS" use_name_for_id="true">
@@ -391,6 +403,15 @@
       </message>
       <message name="IDS_FIRSTRUNCUSTOMIZE_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         17
+      </message>
+
+      <!-- The width and height of the Cookies dialog box in characters and lines -->
+      <!-- (See above). -->
+      <message name="IDS_COOKIES_PROMPT_WIDTH_CHARS" use_name_for_id="true">
+        82
+      </message>
+      <message name="IDS_COOKIES_PROMPT_HEIGHT_LINES" use_name_for_id="true">
+        25
       </message>
 
       <!-- The width and height of the Cookies dialog box in characters and lines -->
