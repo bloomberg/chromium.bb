@@ -19,6 +19,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/result_codes.h"
 #include "grit/chromium_strings.h"
+#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -142,8 +143,16 @@ HungRendererController* g_instance = NULL;
       } else {
         [titles addObject:base::SysUTF16ToNSString(title)];
       }
-      [favicons addObject:gfx::SkBitmapToNSImage(it->GetFavIcon())];
 
+      // TabContents can return a null SkBitmap if it has no favicon.  If this
+      // happens, use the default favicon.
+      const SkBitmap& bitmap = it->GetFavIcon();
+      if (!bitmap.isNull()) {
+        [favicons addObject:gfx::SkBitmapToNSImage(bitmap)];
+      } else {
+        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+        [favicons addObject:rb.GetNSImageNamed(IDR_DEFAULT_FAVICON)];
+      }
     }
   }
   hungTitles_.reset([titles copy]);
