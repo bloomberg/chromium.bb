@@ -3139,7 +3139,8 @@ BUGJORLOW : editing/pasteboard/paste-noscript-xhtml.xhtml = TEXT
 
 // Added in WebKit 53839
 BUGJORLOW : fast/lists/w3-css3-list-styles-alphabetic.html = IMAGE
-BUGJORLOW : tables/mozilla/bugs/bug6674.html = IMAGE+TEXT
+BUGJORLOW MAC : tables/mozilla/bugs/bug6674.html = IMAGE
+BUGJORLOW LINUX WIN : tables/mozilla/bugs/bug6674.html = IMAGE+TEXT
 
 // Added in WebKit 53840
 BUGJORLOW : storage/domstorage/events/ = TEXT
