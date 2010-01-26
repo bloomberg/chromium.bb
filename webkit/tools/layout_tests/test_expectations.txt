@@ -1274,10 +1274,6 @@ BUG24227 : http/tests/plugins/local-geturl-from-remote.html = FAIL
 // These tests are wrong because of:
 // https://bugs.webkit.org/show_bug.cgi?id=24161. This is not
 // important for current release.
-BUG10353 LINUX WIN DEBUG : fast/forms/listbox-selection-2.html = FAIL
-BUG10353 LINUX RELEASE : fast/forms/listbox-selection-2.html = FAIL
-BUG10353 SLOW WIN RELEASE : fast/forms/listbox-selection-2.html = FAIL
-BUG10353 WIN LINUX : fast/forms/select-item-background-clip.html = FAIL
 BUG10353 WIN LINUX : fast/forms/textarea-rows-cols.html = FAIL
 
 // Form control scrollbars seem to be drawn incorrectly.
