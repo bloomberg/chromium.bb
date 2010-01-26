@@ -2257,7 +2257,6 @@ BUG9798 LINUX RELEASE : tables/mozilla/bugs/45621.html = FAIL
 BUG9798 LINUX DEBUG SLOW : tables/mozilla/bugs/45621.html = FAIL
 //also BUG24868 (crash)
 BUG9798 LINUX DEBUG : transitions/mask-transitions.html = FAIL PASS
-BUG9798 LINUX : transitions/shorthand-border-transitions.html = FAIL PASS
 BUG9798 SLOW LINUX RELEASE : transitions/transition-timing-function.html = PASS
 // This test definitely times out (i.e. is not just slow).
 BUG9798 MAC WIN RELEASE : http/tests/xmlhttprequest/small-chunks-response-text.html = PASS TIMEOUT
@@ -3024,7 +3023,6 @@ BUG32675 LINUX : fast/repaint/trailing-floats-root-line-box-overflow.html = IMAG
 // WebKit roll 53452:53511
 BUG32664 WIN DEBUG : http/tests/security/view-source-no-refresh.html = TIMEOUT
 BUG32665 WIN DEBUG : media/video-source-error-no-candidate.html = TIMEOUT
-BUG32695 WIN : transitions/shorthand-border-transitions.html = TEXT
 
 // Flaky tests found during the roll.
 BUG32679 LINUX DEBUG : http/tests/navigation/lockedhistory-iframe.html = TEXT PASS
