@@ -268,26 +268,27 @@ BrowserActionsContainer::BrowserActionsContainer(
       toolbar_(toolbar),
       popup_(NULL),
       popup_button_(NULL),
-      model_(NULL),
       resize_gripper_(NULL),
       chevron_(NULL),
       suppress_chevron_(false),
       resize_amount_(0),
       animation_target_size_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
-  SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
-
   ExtensionsService* extension_service = profile->GetExtensionsService();
   if (!extension_service)  // The |extension_service| can be NULL in Incognito.
     return;
 
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+                 Source<Profile>(profile_));
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+                 Source<Profile>(profile_));
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
+                 Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  Source<Profile>(profile_));
 
-  model_ = extension_service->toolbar_model();
-  model_->AddObserver(this);
-
   resize_animation_.reset(new SlideAnimation(this));
+
   resize_gripper_ = new views::ResizeGripper(this);
   resize_gripper_->SetVisible(false);
   AddChildView(resize_gripper_);
@@ -305,6 +306,8 @@ BrowserActionsContainer::BrowserActionsContainer(
   int predefined_width =
       profile_->GetPrefs()->GetInteger(prefs::kBrowserActionContainerWidth);
   container_size_ = gfx::Size(predefined_width, kButtonSize);
+
+  SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {
@@ -340,6 +343,96 @@ BrowserActionView* BrowserActionsContainer::GetBrowserActionView(
 void BrowserActionsContainer::RefreshBrowserActionViews() {
   for (size_t i = 0; i < browser_action_views_.size(); ++i)
     browser_action_views_[i]->button()->UpdateState();
+}
+
+void BrowserActionsContainer::AddBrowserAction(Extension* extension) {
+#if defined(DEBUG)
+  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
+    DCHECK(browser_action_views_[i]->button()->extension() != extension) <<
+           "Asked to add a browser action view for an extension that already "
+           "exists.";
+  }
+#endif
+  if (!extension->browser_action())
+    return;
+
+  // Before we change anything, determine the number of visible browser actions.
+  size_t visible_actions = 0;
+  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
+    if (browser_action_views_[i]->IsVisible())
+      ++visible_actions;
+  }
+
+  // Add the new browser action to the vector and the view hierarchy.
+  BrowserActionView* view = new BrowserActionView(extension, this);
+  browser_action_views_.push_back(view);
+  AddChildView(view);
+
+  // For details on why we do the following see the class comments in the
+  // header.
+
+  // Determine if we need to increase (we only do that if the container was
+  // showing all icons before the addition of this icon). We use -1 because
+  // we don't want to count the view that we just added.
+  if (visible_actions < browser_action_views_.size() - 1) {
+    // Some icons were hidden, don't increase the size of the container.
+    OnBrowserActionVisibilityChanged();
+  } else {
+    // Container was at max, increase the size of it by one icon.
+    animation_target_size_ = IconCountToWidth(visible_actions + 1);
+
+    // We don't want the chevron to appear while we animate. See documentation
+    // in the header for why we do this.
+    suppress_chevron_ = !chevron_->IsVisible();
+
+    // Animate!
+    resize_animation_->Reset();
+    resize_animation_->SetTweenType(SlideAnimation::NONE);
+    resize_animation_->Show();
+  }
+}
+
+void BrowserActionsContainer::RemoveBrowserAction(Extension* extension) {
+  if (!extension->browser_action())
+    return;
+
+  if (popup_ && popup_->host()->extension() == extension) {
+    HidePopup();
+  }
+
+  // Before we change anything, determine the number of visible browser actions.
+  int visible_actions = 0;
+  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
+    if (browser_action_views_[i]->IsVisible())
+      ++visible_actions;
+  }
+
+  for (std::vector<BrowserActionView*>::iterator iter =
+       browser_action_views_.begin(); iter != browser_action_views_.end();
+       ++iter) {
+    if ((*iter)->button()->extension() == extension) {
+      RemoveChildView(*iter);
+      delete *iter;
+      browser_action_views_.erase(iter);
+
+      // For details on why we do the following see the class comments in the
+      // header.
+
+      // Calculate the target size we'll animate to (end state). This might be
+      // the same size (if the icon we are removing is in the overflow bucket
+      // and there are other icons there). We don't decrement visible_actions
+      // because we want the container to stay the same size (clamping will take
+      // care of shrinking the container if there aren't enough icons to show).
+      animation_target_size_ =
+          ClampToNearestIconCount(IconCountToWidth(visible_actions));
+
+      // Animate!
+      resize_animation_->Reset();
+      resize_animation_->SetTweenType(SlideAnimation::EASE_OUT);
+      resize_animation_->Show();
+      return;
+    }
+  }
 }
 
 void BrowserActionsContainer::DeleteBrowserActionViews() {
@@ -522,21 +615,15 @@ void BrowserActionsContainer::Paint(gfx::Canvas* canvas) {
 void BrowserActionsContainer::ViewHierarchyChanged(bool is_add,
                                                    views::View* parent,
                                                    views::View* child) {
-  // No extensions (e.g., incognito).
-  if (!model_)
-    return;
-
   if (is_add && child == this) {
-    // Initial toolbar button creation and placement in the widget hierarchy.
     // We do this here instead of in the constructor because AddBrowserAction
     // calls Layout on the Toolbar, which needs this object to be constructed
     // before its Layout function is called.
-    for (ExtensionList::iterator iter = model_->begin();
-        iter != model_->end(); ++iter) {
-      BrowserActionView* view = new BrowserActionView(*iter, this);
-      browser_action_views_.push_back(view);
-      AddChildView(view);
-    }
+    ExtensionsService* extension_service = profile_->GetExtensionsService();
+    if (!extension_service)
+      return;  // The |extension_service| can be NULL in Incognito.
+    for (size_t i = 0; i < extension_service->extensions()->size(); ++i)
+      AddBrowserAction(extension_service->extensions()->at(i));
   }
 }
 
@@ -544,6 +631,17 @@ void BrowserActionsContainer::Observe(NotificationType type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
   switch (type.value) {
+    case NotificationType::EXTENSION_LOADED:
+      AddBrowserAction(Details<Extension>(details).ptr());
+      OnBrowserActionVisibilityChanged();
+      break;
+
+    case NotificationType::EXTENSION_UNLOADED:
+    case NotificationType::EXTENSION_UNLOADED_DISABLED:
+      RemoveBrowserAction(Details<Extension>(details).ptr());
+      OnBrowserActionVisibilityChanged();
+      break;
+
     case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       // If we aren't the host of the popup, then disregard the notification.
       if (!popup_ || Details<ExtensionHost>(popup_->host()) != details)
@@ -637,91 +735,6 @@ int BrowserActionsContainer::ClampToNearestIconCount(int pixelWidth) const {
 
   int returning = extras + (icon_count * icon_width);
   return returning;
-}
-
-void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
-                                                 int index) {
-#if defined(DEBUG)
-  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    DCHECK(browser_action_views_[i]->button()->extension() != extension) <<
-           "Asked to add a browser action view for an extension that already "
-           "exists.";
-  }
-#endif
-
-  // Before we change anything, determine the number of visible browser actions.
-  size_t visible_actions = 0;
-  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    if (browser_action_views_[i]->IsVisible())
-      ++visible_actions;
-  }
-
-  // Add the new browser action to the vector and the view hierarchy.
-  BrowserActionView* view = new BrowserActionView(extension, this);
-  browser_action_views_.push_back(view);
-  AddChildView(index, view);
-
-  // For details on why we do the following see the class comments in the
-  // header.
-
-  // Determine if we need to increase (we only do that if the container was
-  // showing all icons before the addition of this icon). We use -1 because
-  // we don't want to count the view that we just added.
-  if (visible_actions < browser_action_views_.size() - 1) {
-    // Some icons were hidden, don't increase the size of the container.
-    OnBrowserActionVisibilityChanged();
-  } else {
-    // Container was at max, increase the size of it by one icon.
-    animation_target_size_ = IconCountToWidth(visible_actions + 1);
-
-    // We don't want the chevron to appear while we animate. See documentation
-    // in the header for why we do this.
-    suppress_chevron_ = !chevron_->IsVisible();
-
-    // Animate!
-    resize_animation_->Reset();
-    resize_animation_->SetTweenType(SlideAnimation::NONE);
-    resize_animation_->Show();
-  }
-}
-
-void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
-  if (popup_ && popup_->host()->extension() == extension)
-    HidePopup();
-
-  // Before we change anything, determine the number of visible browser actions.
-  int visible_actions = 0;
-  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    if (browser_action_views_[i]->IsVisible())
-      ++visible_actions;
-  }
-
-  for (std::vector<BrowserActionView*>::iterator iter =
-       browser_action_views_.begin(); iter != browser_action_views_.end();
-       ++iter) {
-    if ((*iter)->button()->extension() == extension) {
-      RemoveChildView(*iter);
-      delete *iter;
-      browser_action_views_.erase(iter);
-
-      // For details on why we do the following see the class comments in the
-      // header.
-
-      // Calculate the target size we'll animate to (end state). This might be
-      // the same size (if the icon we are removing is in the overflow bucket
-      // and there are other icons there). We don't decrement visible_actions
-      // because we want the container to stay the same size (clamping will take
-      // care of shrinking the container if there aren't enough icons to show).
-      animation_target_size_ =
-          ClampToNearestIconCount(IconCountToWidth(visible_actions));
-
-      // Animate!
-      resize_animation_->Reset();
-      resize_animation_->SetTweenType(SlideAnimation::EASE_OUT);
-      resize_animation_->Show();
-      return;
-    }
-  }
 }
 
 int BrowserActionsContainer::WidthOfNonIconArea() const {
