@@ -213,6 +213,7 @@
       <include name="IDR_INFOBAR_THEME" file="infobar_theme.png" type="BINDATA" />
       <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="infobar_plugin_crashed.png" type="BINDATA" />
       <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="infobar_multiple_downloads.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_TRANSLATE" file="infobar_translate.png" type="BINDATA" />
       <include name="IDR_MENU_MARKER" file="menu_marker.png" type="BINDATA" />
       <include name="IDR_FROZEN_TAB_ICON" file="frozen_tab.png" type="BINDATA" />
       <include name="IDR_UPDATE_AVAILABLE" file="update_available.png" type="BINDATA" />

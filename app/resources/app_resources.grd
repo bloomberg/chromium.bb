@@ -121,6 +121,35 @@
       <include name="IDR_BROWSER_ACTION_BADGE_CENTER" file="browser_action_badge_center.png" type="BINDATA" />
 
       <include name="IDR_GLEN" file="linux_close_glen.png" type="BINDATA" />
+
+      <!-- Infobar Buttons normal, highlighted and pushed images -->
+      <include name="IDR_INFOBARBUTTON_TOP_LEFT_N" file="infobarbutton_tl_n.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_TOP_N" file="infobarbutton_t_n.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_TOP_RIGHT_N" file="infobarbutton_tr_n.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_LEFT_N" file="infobarbutton_l_n.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_CENTER_N" file="infobarbutton_c_n.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_RIGHT_N" file="infobarbutton_r_n.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_BOTTOM_LEFT_N" file="infobarbutton_bl_n.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_BOTTOM_N" file="infobarbutton_b_n.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_BOTTOM_RIGHT_N" file="infobarbutton_br_n.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_TOP_LEFT_H" file="infobarbutton_tl_h.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_TOP_H" file="infobarbutton_t_h.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_TOP_RIGHT_H" file="infobarbutton_tr_h.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_LEFT_H" file="infobarbutton_l_h.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_CENTER_H" file="infobarbutton_c_h.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_RIGHT_H" file="infobarbutton_r_h.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_BOTTOM_LEFT_H" file="infobarbutton_bl_h.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_BOTTOM_H" file="infobarbutton_b_h.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_BOTTOM_RIGHT_H" file="infobarbutton_br_h.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_TOP_LEFT_P" file="infobarbutton_tl_p.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_TOP_P" file="infobarbutton_t_p.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_TOP_RIGHT_P" file="infobarbutton_tr_p.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_LEFT_P" file="infobarbutton_l_p.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_CENTER_P" file="infobarbutton_c_p.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_RIGHT_P" file="infobarbutton_r_p.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_BOTTOM_LEFT_P" file="infobarbutton_bl_p.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_BOTTOM_P" file="infobarbutton_b_p.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_BOTTOM_RIGHT_P" file="infobarbutton_br_p.png" type="BINDATA" />
     </includes>
   </release>
 </grit>
