@@ -28,3 +28,9 @@ include_rules = [
   # structure for these includes.
   "+chrome/renderer",
 ]
+
+# checkdeps needs to skip geolocation as it is unmodified gears code.
+# TODO(joth): remove in next patch when this code is ported to chromium.
+skip_child_includes = [
+  "geolocation"
+]
