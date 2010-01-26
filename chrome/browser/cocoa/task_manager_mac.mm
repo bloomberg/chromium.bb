@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,44 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 
-// TODO(thakis): Better resizing behavior (and think about storing column sizes)
 // TODO(thakis): Column sort comparator
 // TODO(thakis): Clicking column header doesn't sort
 // TODO(thakis): Default sort column
+
+// Width of "a" and most other letters/digits in "small" table views.
+static const int kCharWidth = 6;
+
+// Some of the strings below have spaces at the end or are missing letters, to
+// make the columns look nicer, and to take potentially longer localized strings
+// into account.
+static const struct ColumnWidth {
+  int columnId;
+  int minWidth;
+  int maxWidth;  // If this is -1, 1.5*minColumWidth is used as max width.
+} columnWidths[] = {
+  // Note that arraysize includes the trailing \0. That's intended.
+  { IDS_TASK_MANAGER_PAGE_COLUMN, 120, 600 },
+  { IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN,
+      arraysize("800 MiB") * kCharWidth, -1 },
+  { IDS_TASK_MANAGER_SHARED_MEM_COLUMN,
+      arraysize("800 MiB") * kCharWidth, -1 },
+  { IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN,
+      arraysize("800 MiB") * kCharWidth, -1 },
+  { IDS_TASK_MANAGER_CPU_COLUMN,
+      arraysize("99.9") * kCharWidth, -1 },
+  { IDS_TASK_MANAGER_NET_COLUMN,
+      arraysize("150 kiB/s") * kCharWidth, -1 },
+  { IDS_TASK_MANAGER_PROCESS_ID_COLUMN,
+      arraysize("73099  ") * kCharWidth, -1 },
+  { IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN,
+      arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
+  { IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN,
+      arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
+  { IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
+      arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
+  { IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN,
+      arraysize("15 ") * kCharWidth, -1 },
+};
 
 @interface TaskManagerWindowController (Private)
 - (NSTableColumn*)addColumnWithId:(int)columnId visible:(BOOL)isVisible;
@@ -106,6 +140,27 @@
   
   [column.get() setHidden:!isVisible];
   [column.get() setEditable:NO];
+
+  // Default values, only used in release builds if nobody notices the DCHECK
+  // during development when adding new columns.
+  int minWidth = 200, maxWidth = 400;
+
+  size_t i;
+  for (i = 0; i < arraysize(columnWidths); ++i) {
+    if (columnWidths[i].columnId == columnId) {
+      minWidth = columnWidths[i].minWidth;
+      maxWidth = columnWidths[i].maxWidth;
+      if (maxWidth < 0)
+        maxWidth = 3 * minWidth / 2;  // *1.5 for ints.
+      break;
+    }
+  }
+  DCHECK(i < arraysize(columnWidths)) << "Could not find " << columnId;
+  [column.get() setMinWidth:minWidth];
+  [column.get() setMaxWidth:maxWidth];
+  [column.get() setResizingMask:NSTableColumnAutoresizingMask |
+                                NSTableColumnUserResizingMask];
+
   [tableView_ addTableColumn:column.get()];
   return column.get();  // Now retained by |tableView_|.
 }
