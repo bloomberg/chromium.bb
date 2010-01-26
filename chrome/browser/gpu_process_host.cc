@@ -17,7 +17,11 @@
 #include "ipc/ipc_switches.h"
 
 GpuProcessHost::GpuProcessHost() : last_routing_id_(1) {
-  FilePath exe_path = ChildProcessHost::GetChildPath();
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  std::wstring gpu_launcher =
+      browser_command_line.GetSwitchValue(switches::kGpuLauncher);
+
+  FilePath exe_path = ChildProcessHost::GetChildPath(gpu_launcher.empty());
   if (exe_path.empty())
     return;
 
@@ -35,11 +39,16 @@ GpuProcessHost::GpuProcessHost() : last_routing_id_(1) {
   cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
                                   ASCIIToWide(channel_id));
 
+  // If specified, prepend a launcher program to the command line.
+  if (!gpu_launcher.empty())
+    cmd_line->PrependWrapper(gpu_launcher);
+
   // Spawn the child process asynchronously to avoid blocking the UI thread.
   child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
       FilePath(),
 #elif defined(POSIX)
+      false,  // Never use the zygote (GPU plugin can't be sandboxed).
       base::environment_vector(),
       channel_->GetClientFileDescriptor(),
 #endif
@@ -62,7 +71,7 @@ int32 GpuProcessHost::GetNextRoutingId() {
   return ++last_routing_id_;
 }
 
-int32 GpuProcessHost::NewRenderWidgetHostView(gfx::NativeViewId parent) {
+int32 GpuProcessHost::NewRenderWidgetHostView(GpuNativeWindowHandle parent) {
   int32 routing_id = GetNextRoutingId();
   Send(new GpuMsg_NewRenderWidgetHostView(parent, routing_id));
   return routing_id;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/gpu/gpu_backing_store.h"
+#include "chrome/gpu/gpu_backing_store_win.h"
 
 #include "app/gfx/gdi_util.h"
 #include "app/win_util.h"
@@ -65,10 +65,10 @@ void CallStretchDIBits(HDC hdc, int dest_x, int dest_y, int dest_w, int dest_h,
 }  // namespace
 
 
-GpuBackingStore::GpuBackingStore(GpuViewWin* view,
-                                 GpuThread* gpu_thread,
-                                 int32 routing_id,
-                                 const gfx::Size& size)
+GpuBackingStoreWin::GpuBackingStoreWin(GpuViewWin* view,
+                                       GpuThread* gpu_thread,
+                                       int32 routing_id,
+                                       const gfx::Size& size)
     : view_(view),
       gpu_thread_(gpu_thread),
       routing_id_(routing_id),
@@ -86,7 +86,7 @@ GpuBackingStore::GpuBackingStore(GpuViewWin* view,
   ReleaseDC(NULL, screen_dc);
 }
 
-GpuBackingStore::~GpuBackingStore() {
+GpuBackingStoreWin::~GpuBackingStoreWin() {
   gpu_thread_->RemoveRoute(routing_id_);
 
   DCHECK(hdc_);
@@ -100,22 +100,22 @@ GpuBackingStore::~GpuBackingStore() {
   DeleteDC(hdc_);
 }
 
-void GpuBackingStore::OnMessageReceived(const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(GpuBackingStore, msg)
+void GpuBackingStoreWin::OnMessageReceived(const IPC::Message& msg) {
+  IPC_BEGIN_MESSAGE_MAP(GpuBackingStoreWin, msg)
     IPC_MESSAGE_HANDLER(GpuMsg_PaintToBackingStore, OnPaintToBackingStore)
     IPC_MESSAGE_HANDLER(GpuMsg_ScrollBackingStore, OnScrollBackingStore)
   IPC_END_MESSAGE_MAP_EX()
 }
 
-void GpuBackingStore::OnChannelConnected(int32 peer_pid) {
+void GpuBackingStoreWin::OnChannelConnected(int32 peer_pid) {
 }
 
-void GpuBackingStore::OnChannelError() {
+void GpuBackingStoreWin::OnChannelError() {
   // FIXME(brettw) does this mean we aren't getting any more messages and we
   // should delete outselves?
 }
 
-void GpuBackingStore::OnPaintToBackingStore(
+void GpuBackingStoreWin::OnPaintToBackingStore(
     base::ProcessId source_process_id,
     TransportDIB::Id id,
     const gfx::Rect& bitmap_rect,
@@ -172,9 +172,9 @@ void GpuBackingStore::OnPaintToBackingStore(
   gpu_thread_->Send(new GpuHostMsg_PaintToBackingStore_ACK(routing_id_));
 }
 
-void GpuBackingStore::OnScrollBackingStore(int dx, int dy,
-                                           const gfx::Rect& clip_rect,
-                                           const gfx::Size& view_size) {
+void GpuBackingStoreWin::OnScrollBackingStore(int dx, int dy,
+                                              const gfx::Rect& clip_rect,
+                                              const gfx::Size& view_size) {
   RECT damaged_rect, r = clip_rect.ToRECT();
   ScrollDC(hdc_, dx, dy, NULL, &r, NULL, &damaged_rect);
 

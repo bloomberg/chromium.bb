@@ -1,21 +1,19 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_BACKING_STORE_MANAGER_GLX_H_
-#define CHROME_BROWSER_RENDERER_HOST_BACKING_STORE_MANAGER_GLX_H_
-
-#include <GL/glx.h>
-#include <X11/Xlib.h>
+#ifndef CHROME_GPU_GPU_BACKING_STORE_GLX_CONTEXT_H_
+#define CHROME_GPU_GPU_BACKING_STORE_GLX_CONTEXT_H_
 
 #include "base/basictypes.h"
+#include "chrome/gpu/x_util.h"
 
-class BackingStoreManagerGlx {
+class GpuThread;
+
+class GpuBackingStoreGLXContext {
  public:
-  BackingStoreManagerGlx();
-  ~BackingStoreManagerGlx();
-
-  Display* display() const { return display_; }
+  GpuBackingStoreGLXContext(GpuThread* gpu_thread);
+  ~GpuBackingStoreGLXContext();
 
   // Returns the context, creating it if necessary, and binding it to the given
   // display and window identified by the XID. This will avoid duplicate calls
@@ -24,7 +22,7 @@ class BackingStoreManagerGlx {
   GLXContext BindContext(XID window_id);
 
  private:
-  Display* display_;
+  GpuThread* gpu_thread_;
 
   // Set to true when we've tried to create the context. This prevents us from
   // trying to initialize the OpenGL context over and over in the failure case.
@@ -37,7 +35,7 @@ class BackingStoreManagerGlx {
   // duplicate "MakeCurrent" calls which are expensive.
   XID previous_window_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(BackingStoreManagerGlx);
+  DISALLOW_COPY_AND_ASSIGN(GpuBackingStoreGLXContext);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_BACKING_STORE_MANAGER_GLX_H_
+#endif  // CHROME_GPU_GPU_BACKING_STORE_GLX_CONTEXT_H_

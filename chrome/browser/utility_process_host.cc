@@ -52,7 +52,7 @@ bool UtilityProcessHost::StartUpdateManifestParse(const std::string& xml) {
 }
 
 FilePath UtilityProcessHost::GetUtilityProcessCmd() {
-  return GetChildPath();
+  return GetChildPath(true);
 }
 
 bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
@@ -106,6 +106,7 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
 #if defined(OS_WIN)
       exposed_dir,
 #elif defined(OS_POSIX)
+      false,
       base::environment_vector(),
 #endif
       cmd_line);

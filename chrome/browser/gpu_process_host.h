@@ -7,11 +7,11 @@
 
 #include <queue>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "chrome/browser/child_process_launcher.h"
+#include "chrome/common/gpu_native_window_handle.h"
 #include "chrome/common/message_router.h"
 #include "ipc/ipc_channel_proxy.h"
 
@@ -28,7 +28,7 @@ class GpuProcessHost : public IPC::Channel::Sender,
 
   // Creates the new remote view and returns the routing ID for the view, or 0
   // on failure.
-  int32 NewRenderWidgetHostView(gfx::NativeViewId parent);
+  int32 NewRenderWidgetHostView(GpuNativeWindowHandle parent);
 
   // IPC::Channel::Sender implementation.
   virtual bool Send(IPC::Message* msg);

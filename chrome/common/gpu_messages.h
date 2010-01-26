@@ -9,9 +9,11 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "base/process.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
 #include "chrome/common/common_param_traits.h"
+#include "chrome/common/gpu_native_window_handle.h"
 #include "chrome/common/transport_dib.h"
 
 namespace IPC {

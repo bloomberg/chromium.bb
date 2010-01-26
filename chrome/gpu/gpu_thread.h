@@ -7,20 +7,39 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chrome/common/child_thread.h"
+#include "chrome/common/gpu_native_window_handle.h"
+#include "chrome/gpu/x_util.h"
+
+#if defined(OS_LINUX)
+class GpuBackingStoreGLXContext;
+#endif
 
 class GpuThread : public ChildThread {
  public:
   GpuThread();
   ~GpuThread();
 
+#if defined(OS_LINUX)
+  GpuBackingStoreGLXContext* GetGLXContext();
+
+  Display* display() const { return display_; }
+#endif
+
  private:
   // ChildThread overrides.
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
   // Message handlers.
-  void OnNewRenderWidgetHostView(gfx::NativeViewId parent_window,
+  void OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,
                                  int32 routing_id);
+
+#if defined(OS_LINUX)
+  Display* display_;
+  scoped_ptr<GpuBackingStoreGLXContext> glx_context_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuThread);
 };

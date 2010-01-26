@@ -15,6 +15,9 @@
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
+#elif defined(OS_LINUX)
+#include <dlfcn.h>
+#include <GL/glxew.h>
 #endif
 
 // Main function for starting the Gpu process.
@@ -30,6 +33,9 @@ int GpuMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   win_util::ScopedCOMInitializer com_initializer;
+#elif defined(OS_LINUX)
+  dlopen("libGL.so.1", RTLD_LAZY | RTLD_GLOBAL);
+  glxewInit();
 #endif
 
   GpuProcess gpu_process;

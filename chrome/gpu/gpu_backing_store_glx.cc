@@ -1,32 +1,32 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/backing_store.h"
+#include "chrome/gpu/gpu_backing_store_glx.h"
 
-#include <GL/gl.h>
+#include <GL/glew.h>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/renderer_host/backing_store_manager.h"
-#include "chrome/browser/renderer_host/backing_store_manager_glx.h"
-#include "chrome/browser/renderer_host/render_widget_host.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/common/gpu_messages.h"
 #include "chrome/common/transport_dib.h"
-#include "chrome/common/x11_util.h"
+#include "chrome/gpu/gpu_backing_store_glx_context.h"
+#include "chrome/gpu/gpu_thread.h"
+#include "chrome/gpu/gpu_view_x.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-BackingStore::BackingStore(RenderWidgetHost* widget,
-                           const gfx::Size& size,
-                           void* visual,
-                           int depth)
-    : render_widget_host_(widget),
+GpuBackingStoreGLX::GpuBackingStoreGLX(GpuViewX* view,
+                                       GpuThread* gpu_thread,
+                                       int32 routing_id,
+                                       const gfx::Size& size)
+    : view_(view),
+      gpu_thread_(gpu_thread),
+      routing_id_(routing_id),
       size_(size),
-      display_(x11_util::GetXDisplay()),
-      root_window_(x11_util::GetX11RootWindow()),
       texture_id_(0) {
-  XID id = x11_util::GetX11WindowFromGtkWidget(widget->view()->GetNativeView());
-  BackingStoreManager::GetGlManager()->BindContext(id);
+  gpu_thread_->AddRoute(routing_id_, this);
+
+  view_->BindContext();  // Must do this before issuing OpenGl.
 
   glGenTextures(1, &texture_id_);
   glBindTexture(GL_TEXTURE_2D, texture_id_);
@@ -37,89 +37,59 @@ BackingStore::BackingStore(RenderWidgetHost* widget,
   DCHECK(glGetError() == GL_NO_ERROR);
 }
 
-BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
-    : render_widget_host_(widget),
-      size_(size),
-      display_(NULL),
-      root_window_(0),
-      texture_id_(0) {
-}
-
-BackingStore::~BackingStore() {
+GpuBackingStoreGLX::~GpuBackingStoreGLX() {
   if (texture_id_)
     glDeleteTextures(1, &texture_id_);
+  gpu_thread_->RemoveRoute(routing_id_);
 }
 
-void BackingStore::ShowRect(const gfx::Rect& damage, XID target) {
-  DCHECK(texture_id_ > 0);
-
-  // TODO(brettw) is this necessray?
-  XID id = x11_util::GetX11WindowFromGtkWidget(
-      render_widget_host_->view()->GetNativeView());
-  BackingStoreManager::GetGlManager()->BindContext(id);
-
-  glViewport(0, 0, size_.width(), size_.height());
-
-  // TODO(brettw) only repaint the damaged area. This currently erases and
-  // repaints the entire screen.
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, texture_id_);
-
-  // TODO(brettw) use vertex buffers.
-  // TODO(brettw) make this so we use the texture size rather than the whole
-  // area size so we don't stretch bitmaps.
-  glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2f(-1.0, 1.0);
-
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex2f(-1.0, -1.0);
-
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex2f(1.0, -1.0);
-
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2f(1.0, 1.0);
-  glEnd();
-  DCHECK(glGetError() == GL_NO_ERROR);
-
-  // TODO(brettw) when we no longer stretch non-fitting bitmaps, we should
-  // paint white over any unpainted area here.
-
-  glXSwapBuffers(display_, id);
+void GpuBackingStoreGLX::OnMessageReceived(const IPC::Message& msg) {
+  IPC_BEGIN_MESSAGE_MAP(GpuBackingStoreGLX, msg)
+    IPC_MESSAGE_HANDLER(GpuMsg_PaintToBackingStore, OnPaintToBackingStore)
+    IPC_MESSAGE_HANDLER(GpuMsg_ScrollBackingStore, OnScrollBackingStore)
+  IPC_END_MESSAGE_MAP_EX()
 }
 
-SkBitmap BackingStore::PaintRectToBitmap(const gfx::Rect& rect) {
-  NOTIMPLEMENTED();
-  return SkBitmap();
+void GpuBackingStoreGLX::OnChannelConnected(int32 peer_pid) {
 }
 
-#if defined(TOOLKIT_GTK)
-void BackingStore::PaintToRect(const gfx::Rect& rect, GdkDrawable* target) {
+void GpuBackingStoreGLX::OnChannelError() {
+  // FIXME(brettw) does this mean we aren't getting any more messages and we
+  // should delete outselves?
   NOTIMPLEMENTED();
 }
-#endif
 
-// Paint the given transport DIB into our backing store.
-void BackingStore::PaintRect(base::ProcessHandle process,
-                             TransportDIB* bitmap,
-                             const gfx::Rect& bitmap_rect,
-                             const gfx::Rect& copy_rect) {
-  if (!display_)
-    return;
-
-  if (bitmap_rect.IsEmpty() || copy_rect.IsEmpty())
-    return;
+void GpuBackingStoreGLX::OnPaintToBackingStore(
+    base::ProcessId source_process_id,
+    TransportDIB::Id id,
+    const gfx::Rect& bitmap_rect,
+    const std::vector<gfx::Rect>& copy_rects) {
+  TransportDIB* dib = TransportDIB::Map(id);
+  view_->BindContext();
 
   scoped_ptr<skia::PlatformCanvas> canvas(
-      bitmap->GetPlatformCanvas(bitmap_rect.width(), bitmap_rect.height()));
+      dib->GetPlatformCanvas(bitmap_rect.width(), bitmap_rect.height()));
   const SkBitmap& transport_bitmap =
       canvas->getTopPlatformDevice().accessBitmap(false);
 
+  for (size_t i = 0; i < copy_rects.size(); i++)
+    PaintOneRectToBackingStore(transport_bitmap, bitmap_rect, copy_rects[i]);
+
+  gpu_thread_->Send(new GpuHostMsg_PaintToBackingStore_ACK(routing_id_));
+
+  view_->Repaint();
+}
+
+void GpuBackingStoreGLX::OnScrollBackingStore(int dx, int dy,
+                                              const gfx::Rect& clip_rect,
+                                              const gfx::Size& view_size) {
+
+}
+
+void GpuBackingStoreGLX::PaintOneRectToBackingStore(
+    const SkBitmap& transport_bitmap,
+    const gfx::Rect& bitmap_rect,
+    const gfx::Rect& copy_rect) {
   // Make a bitmap referring to the correct subset of the input bitmap.
   SkBitmap copy_bitmap;
   if (copy_rect.x() == 0 &&
@@ -194,17 +164,4 @@ void BackingStore::PaintRect(base::ProcessHandle process,
            " for " << this;
     */
   }
-}
-
-void BackingStore::ScrollRect(base::ProcessHandle process,
-                              TransportDIB* bitmap,
-                              const gfx::Rect& bitmap_rect,
-                              int dx, int dy,
-                              const gfx::Rect& clip_rect,
-                              const gfx::Size& view_size) {
-  NOTIMPLEMENTED();
-}
-
-size_t BackingStore::MemorySize() {
-  return texture_size_.GetArea() * 4;
 }

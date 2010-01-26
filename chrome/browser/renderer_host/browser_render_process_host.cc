@@ -271,9 +271,19 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
                                 widget_helper_,
                                 request_context);
 
+  std::wstring renderer_prefix;
+#if defined(OS_POSIX)
+  // A command prefix is something prepended to the command line of the spawned
+  // process. It is supported only on POSIX systems.
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  renderer_prefix =
+      browser_command_line.GetSwitchValue(switches::kRendererCmdPrefix);
+#endif  // defined(OS_POSIX)
+
   // Find the renderer before creating the channel so if this fails early we
   // return without creating the channel.
-  FilePath renderer_path = ChildProcessHost::GetChildPath();
+  FilePath renderer_path = ChildProcessHost::GetChildPath(
+      renderer_prefix.empty());
   if (renderer_path.empty())
     return false;
 
@@ -315,15 +325,20 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
     // Build command line for renderer.  We call AppendRendererCommandLine()
     // first so the process type argument will appear first.
     CommandLine* cmd_line = new CommandLine(renderer_path);
+    if (!renderer_prefix.empty())
+      cmd_line->PrependWrapper(renderer_prefix);
     AppendRendererCommandLine(cmd_line);
     cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
                                     ASCIIToWide(channel_id));
 
     // Spawn the child process asynchronously to avoid blocking the UI thread.
+    // As long as there's no renderer prefix, we can use the zygote process
+    // at this stage.
     child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
         FilePath(),
 #elif defined(POSIX)
+        renderer_prefix.empty(),
         base::environment_vector(),
         channel_->GetClientFileDescriptor(),
 #endif
@@ -452,17 +467,6 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
     command_line->AppendSwitchWithValue(switches::kForceFieldTestNameAndValue,
         field_trial_states);
   }
-
-  // A command prefix is something prepended to the command line of the spawned
-  // process. It is supported only on POSIX systems.
-#if defined(OS_POSIX)
-  if (browser_command_line.HasSwitch(switches::kRendererCmdPrefix)) {
-    // launch the renderer child with some prefix (usually "gdb --args")
-    const std::wstring prefix =
-        browser_command_line.GetSwitchValue(switches::kRendererCmdPrefix);
-    command_line->PrependWrapper(prefix);
-  }
-#endif  // defined(OS_POSIX)
 
   ChildProcessHost::SetCrashReporterCommandLine(command_line);
 

@@ -83,7 +83,7 @@ ChildProcessHost::~ChildProcessHost() {
 }
 
 // static
-FilePath ChildProcessHost::GetChildPath() {
+FilePath ChildProcessHost::GetChildPath(bool allow_self) {
   FilePath child_path;
 
   child_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
@@ -101,10 +101,8 @@ FilePath ChildProcessHost::GetChildPath() {
 #if defined(OS_LINUX)
   // Use /proc/self/exe rather than our known binary path so updates
   // can't swap out the binary from underneath us.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kRendererCmdPrefix)) {
+  if (allow_self)
     return FilePath("/proc/self/exe");
-  }
 #endif
 
   // On most platforms, the child executable is the same as the current
@@ -134,6 +132,7 @@ void ChildProcessHost::Launch(
 #if defined(OS_WIN)
     const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
+    bool use_zygote,
     const base::environment_vector& environ,
 #endif
     CommandLine* cmd_line) {
@@ -141,6 +140,7 @@ void ChildProcessHost::Launch(
 #if defined(OS_WIN)
       exposed_dir,
 #elif defined(OS_POSIX)
+      use_zygote,
       environ,
       channel_->GetClientFileDescriptor(),
 #endif

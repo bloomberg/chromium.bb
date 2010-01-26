@@ -34,9 +34,18 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   // Returns the pathname to be used for a child process.  If a subprocess
   // pathname was specified on the command line, that will be used.  Otherwise,
   // the default child process pathname will be returned.  On most platforms,
-  // this will be the same as the currently-executing process.  On failure,
-  // returns an empty wstring.
-  static FilePath GetChildPath();
+  // this will be the same as the currently-executing process.
+  //
+  // The argument allow_self is used on Linux to indicate that we allow us to
+  // fork from /proc/self/exe rather than using the "real" app path. This
+  // prevents autoupdate from confusing us if it changes the file out from
+  // under us. You will generally want to set this to true, except when there
+  // is an override to the command line (for example, we're forking a renderer
+  // in gdb). In this case, you'd use GetChildPath to get the real executable
+  // file name, and then prepend the GDB command to the command line.
+  //
+  // On failure, returns an empty FilePath.
+  static FilePath GetChildPath(bool allow_self);
 
   // Prepares command_line for crash reporting as appropriate.  On Linux and
   // Mac, a command-line flag to enable crash reporting in the child process
@@ -79,6 +88,7 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
 #if defined(OS_WIN)
       const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
+      bool use_zygote,
       const base::environment_vector& environ,
 #endif
       CommandLine* cmd_line);

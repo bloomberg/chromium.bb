@@ -255,7 +255,8 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
   if (process_type == switches::kPluginProcess) {
     score = kPluginScore;
   } else if (process_type == switches::kUtilityProcess ||
-             process_type == switches::kWorkerProcess) {
+             process_type == switches::kWorkerProcess ||
+             process_type == switches::kGpuProcess) {
     score = kMiscScore;
   } else if (process_type == switches::kProfileImportProcess) {
     NOTIMPLEMENTED();

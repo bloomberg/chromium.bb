@@ -5,7 +5,7 @@
 #include "chrome/gpu/gpu_view_win.h"
 
 #include "chrome/common/gpu_messages.h"
-#include "chrome/gpu/gpu_backing_store.h"
+#include "chrome/gpu/gpu_backing_store_win.h"
 #include "chrome/gpu/gpu_thread.h"
 
 namespace {
@@ -22,13 +22,13 @@ void DrawResizeCorner(const RECT& dirty_rect, HDC dc) {
 }  // namespace
 
 GpuViewWin::GpuViewWin(GpuThread* gpu_thread,
-                       gfx::NativeViewId parent_window,
+                       HWND parent,
                        int32 routing_id)
     : gpu_thread_(gpu_thread),
       routing_id_(routing_id),
-      parent_window_(gfx::NativeViewFromId(parent_window)) {
+      parent_(parent) {
   gpu_thread_->AddRoute(routing_id_, this);
-  Create(gfx::NativeViewFromId(parent_window));
+  Create(parent_);
   SetWindowText(L"GPU window");
   ShowWindow(SW_SHOW);
 }
@@ -64,7 +64,7 @@ void GpuViewWin::DidScrollBackingStoreRect(int dx, int dy,
 
 void GpuViewWin::OnNewBackingStore(int32 routing_id, const gfx::Size& size) {
   backing_store_.reset(
-      new GpuBackingStore(this, gpu_thread_, routing_id, size));
+      new GpuBackingStoreWin(this, gpu_thread_, routing_id, size));
   MoveWindow(0, 0, size.width(), size.height(), TRUE);
 }
 

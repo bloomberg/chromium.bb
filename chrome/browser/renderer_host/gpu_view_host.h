@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_GPU_VIEW_HOST_H_
 #define CHROME_BROWSER_RENDERER_HOST_GPU_VIEW_HOST_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "chrome/common/gpu_native_window_handle.h"
 
 class BackingStore;
 class GpuProcessHost;
@@ -19,7 +19,7 @@ class Size;
 // A proxy for the GPU process' window for rendering pages.
 class GpuViewHost {
  public:
-  GpuViewHost(RenderWidgetHost* widget, gfx::NativeView parent);
+  GpuViewHost(RenderWidgetHost* widget, GpuNativeWindowHandle parent);
   ~GpuViewHost();
 
   // Creates a new backing store in the GPU process and returns ownership of

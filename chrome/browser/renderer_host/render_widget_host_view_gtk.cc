@@ -39,6 +39,10 @@
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
 
+// True if we're doing out-of-process painting via the GPU process.
+// TODO(brettw) make this a command line option.
+static const bool kUseGPURendering = false;
+
 using WebKit::WebInputEventFactory;
 
 // This class is a simple convenience wrapper for Gtk functions. It has only
@@ -334,9 +338,6 @@ void RenderWidgetHostViewGtk::InitAsChild() {
   key_bindings_handler_.reset(new GtkKeyBindingsHandler(view_.get()));
   plugin_container_manager_.set_host_widget(view_.get());
   gtk_widget_show(view_.get());
-
-  // Uncomment this line to use out-of-process painting.
-  // gpu_view_host_.reset(new GpuViewHost(host_, GetNativeView()));
 }
 
 void RenderWidgetHostViewGtk::InitAsPopup(
@@ -608,8 +609,19 @@ void RenderWidgetHostViewGtk::AppendInputMethodsContextMenu(MenuGtk* menu) {
 
 BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
     const gfx::Size& size) {
-  if (gpu_view_host_.get())
+  if (kUseGPURendering) {
+    // Use a special GPU accelerated backing store.
+    if (!gpu_view_host_.get()) {
+      // Here we lazily make the GpuViewHost. This must be allocated when we
+      // have a native view realized, which happens sometime after creation
+      // when our owner puts us in the parent window.
+      DCHECK(GetNativeView());
+      XID window_xid = x11_util::GetX11WindowFromGtkWidget(GetNativeView());
+      gpu_view_host_.reset(new GpuViewHost(host_, window_xid));
+    }
     return gpu_view_host_->CreateBackingStore(size);
+  }
+
   return new BackingStoreX(host_, size,
                            x11_util::GetVisualFromGtkWidget(view_.get()),
                            gtk_widget_get_visual(view_.get())->depth);
@@ -621,17 +633,13 @@ void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
 }
 
 void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
-  GdkWindow* window = view_.get()->window;
-
-  if (gpu_view_host_.get()) {
+  if (kUseGPURendering) {
     // When we're proxying painting, we don't actually display the web page
-    // ourselves. We clear it white in case the proxy window isn't visible
-    // yet we won't show gibberish.
-    if (window)
-      gdk_window_clear(window);
+    // ourselves.
     return;
   }
 
+  GdkWindow* window = view_.get()->window;
   DCHECK(!about_to_validate_and_paint_);
 
   invalid_rect_ = damage_rect;

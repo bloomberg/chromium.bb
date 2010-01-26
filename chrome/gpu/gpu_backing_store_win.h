@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_GPU_GPU_BACKING_STORE_H_
-#define CHROME_GPU_GPU_BACKING_STORE_H_
+#ifndef CHROME_GPU_GPU_BACKING_STORE_WIN_H_
+#define CHROME_GPU_GPU_BACKING_STORE_WIN_H_
 
 #include <windows.h>
 
@@ -23,13 +23,13 @@ class Rect;
 class Size;
 }
 
-class GpuBackingStore : public IPC::Channel::Listener {
+class GpuBackingStoreWin : public IPC::Channel::Listener {
  public:
-  GpuBackingStore(GpuViewWin* view,
-                  GpuThread* gpu_thread,
-                  int32 routing_id,
-                  const gfx::Size& size);
-  ~GpuBackingStore();
+  GpuBackingStoreWin(GpuViewWin* view,
+                     GpuThread* gpu_thread,
+                     int32 routing_id,
+                     const gfx::Size& size);
+  ~GpuBackingStoreWin();
 
   gfx::Size size() const { return size_; }
   HDC hdc() const { return hdc_; }
@@ -68,7 +68,7 @@ class GpuBackingStore : public IPC::Channel::Listener {
   // Number of bits per pixel of the screen.
   int color_depth_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuBackingStore);
+  DISALLOW_COPY_AND_ASSIGN(GpuBackingStoreWin);
 };
 
-#endif  // CHROME_GPU_GPU_BACKING_STORE_H_
+#endif  // CHROME_GPU_GPU_BACKING_STORE_WIN_H_

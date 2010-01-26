@@ -585,29 +585,43 @@
       'dependencies': [
         '../base/base.gyp:base',
         'common',
+        '../skia/skia.gyp:skia',
+      ],
+      'sources': [
+        'gpu/gpu_backing_store_win.cc',
+        'gpu/gpu_backing_store_win.h',
+        'gpu/gpu_main.cc',
+        'gpu/gpu_process.cc',
+        'gpu/gpu_process.h',
+        'gpu/gpu_thread.cc',
+        'gpu/gpu_thread.h',
+        'gpu/gpu_view_win.cc',
+        'gpu/gpu_view_win.h',
+      ],
+      'include_dirs': [
+        '..',
       ],
       'conditions': [
         ['OS=="win"', {
           'include_dirs': [
             'third_party/wtl/include',
           ],
+        }],
+        ['OS=="linux"', {
           'sources': [
-            'gpu/gpu_backing_store.cc',
-            'gpu/gpu_backing_store.h',
-            'gpu/gpu_view_win.cc',
-            'gpu/gpu_view_win.h',
+            'gpu/gpu_backing_store_glx.cc',
+            'gpu/gpu_backing_store_glx.h',
+            'gpu/gpu_backing_store_glx_context.cc',
+            'gpu/gpu_backing_store_glx_context.h',
+            'gpu/gpu_view_x.cc',
+            'gpu/gpu_view_x.h',
+            'gpu/x_util.cc',
+            'gpu/x_util.h',
           ],
-        }]
-      ],
-      'sources': [
-        'gpu/gpu_main.cc',
-        'gpu/gpu_process.cc',
-        'gpu/gpu_process.h',
-        'gpu/gpu_thread.cc',
-        'gpu/gpu_thread.h',
-      ],
-      'include_dirs': [
-        '..',
+          'dependencies': [
+            '../gpu/gpu.gyp:gl_libs',
+          ],
+        }],
       ],
     },
     {

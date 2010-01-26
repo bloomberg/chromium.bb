@@ -15,7 +15,7 @@
 #include "base/scoped_ptr.h"
 #include "ipc/ipc_channel.h"
 
-class GpuBackingStore;
+class GpuBackingStoreWin;
 class GpuThread;
 
 namespace gfx {
@@ -36,8 +36,8 @@ class GpuViewWin
                          GpuRenderWidgetHostViewWinTraits> {
  public:
   GpuViewWin(GpuThread* gpu_thread,
-                             gfx::NativeViewId parent_window,
-                             int32 routing_id);
+             HWND parent,
+             int32 routing_id);
   ~GpuViewWin();
 
   // IPC::Channel::Listener implementation.
@@ -61,9 +61,9 @@ class GpuViewWin
   GpuThread* gpu_thread_;
   int32 routing_id_;
 
-  HWND parent_window_;
+  HWND parent_;
 
-  scoped_ptr<GpuBackingStore> backing_store_;
+  scoped_ptr<GpuBackingStoreWin> backing_store_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuViewWin);
 };

@@ -96,6 +96,7 @@ extern const char kExtensionsUpdateFrequency[];
 extern const char kFileDescriptorLimit[];
 extern const char kFirstRun[];
 extern const char kForceFieldTestNameAndValue[];
+extern const char kGpuLauncher[];
 extern const char kGpuProcess[];
 extern const char kHideIcons[];
 extern const char kHomePage[];

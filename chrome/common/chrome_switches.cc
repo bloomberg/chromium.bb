@@ -298,6 +298,10 @@ const char kFirstRun[]                      = "first-run";
 // current details.
 const char kForceFieldTestNameAndValue[]    = "force-fieldtest";
 
+// Extra command line options for launching the GPU process (normally used
+// for debugging). Use like renderer-cmd-prefix.
+const char kGpuLauncher[]                   = "gpu-launcher";
+
 // Makes this process a GPU sub-process.
 const char kGpuProcess[]                    = "gpu-process";
 

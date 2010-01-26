@@ -8,7 +8,7 @@
 #include "chrome/browser/renderer_host/backing_store_proxy.h"
 #include "chrome/common/gpu_messages.h"
 
-GpuViewHost::GpuViewHost(RenderWidgetHost* widget, gfx::NativeView parent)
+GpuViewHost::GpuViewHost(RenderWidgetHost* widget, GpuNativeWindowHandle parent)
     : widget_(widget),
       process_(GpuProcessHost::Get()),
       routing_id_(0) {
@@ -16,8 +16,7 @@ GpuViewHost::GpuViewHost(RenderWidgetHost* widget, gfx::NativeView parent)
     // TODO(brettw) handle error.
     return;
   }
-  routing_id_ = process_->NewRenderWidgetHostView(
-      gfx::IdFromNativeView(parent));
+  routing_id_ = process_->NewRenderWidgetHostView(parent);
 }
 
 GpuViewHost::~GpuViewHost() {

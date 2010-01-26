@@ -79,7 +79,7 @@ bool WorkerProcessHost::Init() {
   if (!CreateChannel())
     return false;
 
-  FilePath exe_path = GetChildPath();
+  FilePath exe_path = GetChildPath(true);
   if (exe_path.empty())
     return false;
 
@@ -143,6 +143,7 @@ bool WorkerProcessHost::Init() {
 #if defined(OS_WIN)
       FilePath(),
 #elif defined(OS_POSIX)
+      false,
       base::environment_vector(),
 #endif
       cmd_line);

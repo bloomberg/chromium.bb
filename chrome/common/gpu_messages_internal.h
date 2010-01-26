@@ -16,7 +16,7 @@
 IPC_BEGIN_MESSAGES(Gpu)
 
   IPC_MESSAGE_CONTROL2(GpuMsg_NewRenderWidgetHostView,
-                       gfx::NativeViewId, /* parent window */
+                       GpuNativeWindowHandle, /* parent window */
                        int32 /* view_id */)
 
   // Creates a new backing store.

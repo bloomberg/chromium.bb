@@ -49,6 +49,7 @@ class ChildProcessLauncher::Context
 #if defined(OS_WIN)
       const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
+      bool use_zygote,
       const base::environment_vector& environ,
       int ipcfd,
 #endif
@@ -66,6 +67,7 @@ class ChildProcessLauncher::Context
 #if defined(OS_WIN)
             exposed_dir,
 #elif defined(POSIX)
+            use_zygote,
             environ,
             ipcfd,
 #endif
@@ -91,6 +93,7 @@ class ChildProcessLauncher::Context
 #if defined(OS_WIN)
       const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
+      bool use_zygote,
       const base::environment_vector& env,
       int ipcfd,
 #endif
@@ -102,22 +105,7 @@ class ChildProcessLauncher::Context
 #elif defined(OS_POSIX)
 
 #if defined(OS_LINUX)
-    bool zygote = false;
-    // On Linux, normally spawn renderer processes with zygotes. We can't do
-    // this when we're spawning child processes through an external program
-    // (i.e. there is a command prefix) like GDB so fall through to the POSIX
-    // case then.
-    bool is_renderer = cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
-        switches::kRendererProcess;
-    bool is_extension = cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
-        switches::kExtensionProcess;
-    bool is_plugin = cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
-        switches::kPluginProcess;
-    if ((is_renderer || is_extension) &&
-        !CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kRendererCmdPrefix)) {
-      zygote = true;
-
+    if (use_zygote) {
       base::GlobalDescriptors::Mapping mapping;
       mapping.push_back(std::pair<uint32_t, int>(kPrimaryIPCChannel, ipcfd));
       const int crash_signal_fd =
@@ -127,9 +115,8 @@ class ChildProcessLauncher::Context
                                                    crash_signal_fd));
       }
       handle = Singleton<ZygoteHost>()->ForkRenderer(cmd_line->argv(), mapping);
-    }
-
-    if (!zygote)
+    } else
+    // Fall through to the normal posix case below when we're not zygoting.
 #endif
     {
       base::file_handle_mapping_vector fds_to_map;
@@ -140,6 +127,13 @@ class ChildProcessLauncher::Context
 #if defined(OS_LINUX)
       // On Linux, we need to add some extra file descriptors for crash handling
       // and the sandbox.
+      bool is_renderer =
+          cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
+          switches::kRendererProcess;
+      bool is_plugin =
+          cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
+          switches::kPluginProcess;
+
       if (is_renderer || is_plugin) {
         int crash_signal_fd;
         if (is_renderer) {
@@ -190,7 +184,7 @@ class ChildProcessLauncher::Context
             this,
             &ChildProcessLauncher::Context::Notify,
 #if defined(OS_LINUX)
-            zygote,
+            use_zygote,
 #endif
             handle));
   }
@@ -269,6 +263,7 @@ ChildProcessLauncher::ChildProcessLauncher(
 #if defined(OS_WIN)
     const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
+    bool use_zygote,
     const base::environment_vector& environ,
     int ipcfd,
 #endif
@@ -279,6 +274,7 @@ ChildProcessLauncher::ChildProcessLauncher(
 #if defined(OS_WIN)
       exposed_dir,
 #elif defined(OS_POSIX)
+      use_zygote,
       environ,
       ipcfd,
 #endif

@@ -336,9 +336,12 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   if (!CreateChannel())
     return false;
 
-  // Build command line for plugin, we have to quote the plugin's path to deal
-  // with spaces.
-  FilePath exe_path = GetChildPath();
+  // Build command line for plugin. When we have a plugin launcher, we can't
+  // allow "self" on linux and we need the real file path.
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  std::wstring plugin_launcher =
+      browser_command_line.GetSwitchValue(switches::kPluginLauncher);
+  FilePath exe_path = GetChildPath(plugin_launcher.empty());
   if (exe_path.empty())
     return false;
 
@@ -379,8 +382,6 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 #endif
   };
 
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-
   for (size_t i = 0; i < arraysize(switch_names); ++i) {
     if (browser_command_line.HasSwitch(switch_names[i])) {
       cmd_line->AppendSwitchWithValue(
@@ -390,8 +391,6 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   }
 
   // If specified, prepend a launcher program to the command line.
-  std::wstring plugin_launcher =
-      browser_command_line.GetSwitchValue(switches::kPluginLauncher);
   if (!plugin_launcher.empty())
     cmd_line->PrependWrapper(plugin_launcher);
 
@@ -434,6 +433,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 #if defined(OS_WIN)
       FilePath(),
 #elif defined(OS_POSIX)
+      false,
       env,
 #endif
       cmd_line);
