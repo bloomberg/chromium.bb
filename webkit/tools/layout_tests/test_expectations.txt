@@ -3051,7 +3051,7 @@ BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/onstorage-attribute-se
 BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/simple-events.html = TEXT
 BUGJORLOW WIN LINUX MAC : storage/domstorage/window-attributes-exist.html = TEXT
 
-// WebKit roll 53704:53787
+// WebKit roll 53704:53787.  Not going to fix for now.
 BUG33099 : media/video-reverse-play-duration.html = TIMEOUT
 BUG33099 : media/video-timeupdate-reverse-play.html = TIMEOUT
 
@@ -3133,14 +3133,6 @@ BUG33045 MAC : svg/custom/missing-xlink.svg = IMAGE
 BUG33045 MAC : svg/custom/text-xy-updates-SVGList.xhtml = IMAGE
 BUG33045 MAC : tables/mozilla/bugs/bug149275-1.html = IMAGE
 BUG33045 MAC : transforms/2d/transform-fixed-container.html = IMAGE
-
-// Added in WebKit 53835
-BUGJORLOW : editing/pasteboard/paste-noscript-xhtml.xhtml = TEXT
-
-// Added in WebKit 53839
-BUGJORLOW : fast/lists/w3-css3-list-styles-alphabetic.html = IMAGE
-BUGJORLOW MAC : tables/mozilla/bugs/bug6674.html = IMAGE
-BUGJORLOW LINUX WIN : tables/mozilla/bugs/bug6674.html = IMAGE+TEXT
 
 // Added in WebKit 53840
 BUGJORLOW : storage/domstorage/events/ = TEXT
