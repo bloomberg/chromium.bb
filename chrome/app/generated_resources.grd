@@ -3776,9 +3776,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIE_MANAGE_ALERTS_LABEL" desc="A link title for managing alerts and exceptions">
         Manage these alerts and exceptions
       </message>
-      <message name="IDS_COOKIE_EXPIRES_PULLDOWN_OPTION" desc="An option for expiration date in cookie details dialog to force a cookie to be deleted at the end of the session">
-        When I close my browser
-      </message>
 
       <!-- Automatic updates -->
       <if expr="os == 'darwin'">
@@ -5101,8 +5098,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_COOKIE_EXPIRES_LABEL" desc="The Cookie Expires label">
         Expires:
       </message>
-      <message name="IDS_COOKIES_COOKIE_EXPIRES_SESSION" desc="The Cookie Expires field value for a session cookie">
-        End of the session
+      <message name="IDS_COOKIE_EXPIRES_PULLDOWN_OPTION" desc="The Cookie Expires field value for a session cookie">
+        When I close my browser
       </message>
       <message name="IDS_COOKIES_COOKIE_SENDFOR_ANY" desc="Send Cookie for any kind of connection">
         Any kind of connection
