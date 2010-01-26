@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -271,13 +271,11 @@ void MainMenu::CreateNewWindow(int route_id) {
 void MainMenu::ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
-                                 bool user_gesture,
-                                 const GURL& creator_url) {
+                                 bool user_gesture) {
   if (disposition == NEW_POPUP) {
     pending_contents_->set_delegate(NULL);
     browser_->GetSelectedTabContents()->AddNewContents(
-        pending_contents_.release(), disposition, initial_pos, user_gesture,
-        creator_url);
+        pending_contents_.release(), disposition, initial_pos, user_gesture);
     Hide();
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -44,7 +44,7 @@ void BlockedPopupContainer::AddTabContents(TabContents* tab_contents,
   // Show whitelisted popups immediately.
   bool whitelisted = !!whitelist_.count(host);
   if (whitelisted)
-    owner_->AddNewContents(tab_contents, NEW_POPUP, bounds, true, GURL());
+    owner_->AddNewContents(tab_contents, NEW_POPUP, bounds, true);
 
   if (has_been_dismissed_) {
     // Don't want to show any other UI.
@@ -91,7 +91,7 @@ void BlockedPopupContainer::LaunchPopupAtIndex(size_t index) {
   BlockedPopups::iterator i(blocked_popups_.begin() + index);
   TabContents* tab_contents = i->tab_contents;
   tab_contents->set_delegate(NULL);
-  owner_->AddNewContents(tab_contents, NEW_POPUP, i->bounds, true, GURL());
+  owner_->AddNewContents(tab_contents, NEW_POPUP, i->bounds, true);
 
   const std::string& host = i->host;
   if (!host.empty()) {
@@ -254,7 +254,7 @@ void BlockedPopupContainer::AddNewContents(TabContents* source,
                                            const gfx::Rect& initial_position,
                                            bool user_gesture) {
   owner_->AddNewContents(new_contents, disposition, initial_position,
-                         user_gesture, GURL());
+                         user_gesture);
 }
 
 void BlockedPopupContainer::CloseContents(TabContents* source) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -452,8 +452,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgShowView(int route_id,
                      WindowOpenDisposition disposition,
                      const gfx::Rect& initial_pos,
-                     bool user_gesture,
-                     const GURL& creator_url);
+                     bool user_gesture);
   void OnMsgShowWidget(int route_id, const gfx::Rect& initial_pos);
   void OnMsgRunModal(IPC::Message* reply_msg);
   void OnMsgRenderViewReady();

@@ -99,8 +99,7 @@ void BalloonViewHost::CreateNewWindow(int route_id) {
 void BalloonViewHost::ShowCreatedWindow(int route_id,
                                         WindowOpenDisposition disposition,
                                         const gfx::Rect& initial_pos,
-                                        bool user_gesture,
-                                        const GURL& creator_url) {
+                                        bool user_gesture) {
   // Don't allow pop-ups from notifications.
   if (disposition == NEW_POPUP)
     return;

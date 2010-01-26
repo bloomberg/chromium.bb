@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -358,8 +358,7 @@ class TabContents : public PageNavigator,
   void AddNewContents(TabContents* new_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_pos,
-                      bool user_gesture,
-                      const GURL& creator_url);
+                      bool user_gesture);
 
   // Closes all constrained windows that represent web popups that have not yet
   // been activated by the user and are as such auto-positioned in the bottom
@@ -698,8 +697,7 @@ class TabContents : public PageNavigator,
 
   // Adds the incoming |new_contents| to the |blocked_popups_| container.
   void AddPopup(TabContents* new_contents,
-                const gfx::Rect& initial_pos,
-                const std::string& host);
+                const gfx::Rect& initial_pos);
 
   // Called by a derived class when the TabContents is resized, causing
   // suppressed constrained web popups to be repositioned to the new bounds

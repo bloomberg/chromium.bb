@@ -1883,7 +1883,7 @@ void RenderView::show(WebNavigationPolicy policy) {
   // browser process will impose a default position otherwise.
   Send(new ViewHostMsg_ShowView(opener_id_, routing_id_,
       NavigationPolicyToDisposition(policy), initial_pos_,
-      opened_by_user_gesture_, creator_url_));
+      opened_by_user_gesture_));
   SetPendingWindowRect(initial_pos_);
 }
 

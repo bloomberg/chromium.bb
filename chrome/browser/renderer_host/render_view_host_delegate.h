@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,8 +97,7 @@ class RenderViewHostDelegate {
     virtual void ShowCreatedWindow(int route_id,
                                    WindowOpenDisposition disposition,
                                    const gfx::Rect& initial_pos,
-                                   bool user_gesture,
-                                   const GURL& creator_url) = 0;
+                                   bool user_gesture) = 0;
 
     // Show the newly created widget with the specified bounds.
     // The widget is identified by the route_id passed to CreateNewWidget.

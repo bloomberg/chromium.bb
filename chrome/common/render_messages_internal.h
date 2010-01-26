@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -880,12 +880,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   //
   // FUTURE: there will probably be flags here to control if the result is
   // in a new window.
-  IPC_MESSAGE_ROUTED5(ViewHostMsg_ShowView,
+  IPC_MESSAGE_ROUTED4(ViewHostMsg_ShowView,
                       int /* route_id */,
                       WindowOpenDisposition /* disposition */,
                       gfx::Rect /* initial_pos */,
-                      bool /* opened_by_user_gesture */,
-                      GURL /* creator_url */)
+                      bool /* opened_by_user_gesture */)
 
   IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowWidget,
                       int /* route_id */,

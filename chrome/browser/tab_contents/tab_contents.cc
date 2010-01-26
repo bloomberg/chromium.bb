@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -789,8 +789,7 @@ void TabContents::BlockTabContent(bool blocked) {
 void TabContents::AddNewContents(TabContents* new_contents,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
-                                 bool user_gesture,
-                                 const GURL& creator_url) {
+                                 bool user_gesture) {
   if (!delegate_)
     return;
 
@@ -799,9 +798,8 @@ void TabContents::AddNewContents(TabContents* new_contents,
           switches::kDisablePopupBlocking)) {
     // Unrequested popups from normal pages are constrained unless they're in
     // the whitelist.  The popup owner will handle checking this.
-    delegate_->GetConstrainingContents(this)->AddPopup(new_contents,
-        initial_pos,
-        creator_url.is_valid() ? creator_url.host() : std::string());
+    delegate_->GetConstrainingContents(this)->AddPopup(
+        new_contents, initial_pos);
   } else {
 #if defined(OS_CHROMEOS)
     if (disposition == NEW_POPUP) {
@@ -1257,10 +1255,14 @@ void TabContents::CreateBlockedPopupContainerIfNecessary() {
 }
 
 void TabContents::AddPopup(TabContents* new_contents,
-                           const gfx::Rect& initial_pos,
-                           const std::string& host) {
+                           const gfx::Rect& initial_pos) {
   CreateBlockedPopupContainerIfNecessary();
-  blocked_popups_->AddTabContents(new_contents, initial_pos, host);
+  // A popup is associated with the toplevel site instead of a potential frame
+  // that spawns it.
+  const GURL& url = GetURL();
+  blocked_popups_->AddTabContents(
+      new_contents, initial_pos,
+      url.is_valid() ? url.host() : std::string());
 }
 
 // TODO(brettw) This should be on the TabContentsView.

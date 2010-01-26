@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,8 +183,7 @@ class TabContentsView : public RenderViewHostDelegate::View {
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
-                                 bool user_gesture,
-                                 const GURL& creator_url);
+                                 bool user_gesture);
   virtual void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos);
 
   // The TabContents whose contents we display.
