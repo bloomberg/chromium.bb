@@ -143,6 +143,16 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
   // Set up the action button's menu.
   [self setupActionMenu];
 
+  // Set the tooltips of the +/- buttons. Chrome's automatic UI localization
+  // doesn't know about tooltips of NSSegmentedCells.
+  NSSegmentedCell* cell = [addRemoveButton_ cell];
+  [cell setToolTip:l10n_util::GetNSString(
+      IDS_BOOKMARK_MANAGER_TOOLTIP_NEW_FOLDER_MAC)
+        forSegment:0];
+  [cell setToolTip:l10n_util::GetNSString(
+      IDS_BOOKMARK_MANAGER_TOOLTIP_DELETE_MAC)
+        forSegment:1];
+
   // Synthesize the hierarchy of the left-hand outline view.
   BookmarkModel* model = [self bookmarkModel];
   BookmarkItem* bar = [self itemFromNode:model->GetBookmarkBarNode()];
@@ -495,9 +505,9 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
 - (void)windowDidUpdate:(NSNotification*)n {
   // After any event, enable/disable the buttons:
   BookmarkTreeController* tree = [self focusedController];
-  [_addRemoveButton setEnabled:[tree validateAction:@selector(newFolder:)]
+  [addRemoveButton_ setEnabled:[tree validateAction:@selector(newFolder:)]
                     forSegment:0];
-  [_addRemoveButton setEnabled:[tree validateAction:@selector(delete:)]
+  [addRemoveButton_ setEnabled:[tree validateAction:@selector(delete:)]
                     forSegment:1];
 }
 

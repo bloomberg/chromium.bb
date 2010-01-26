@@ -6159,6 +6159,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BOOKMARK_MANAGER_SEARCH_TITLE" desc="Text shown before the search text field.">
         Search:
       </message>
+
+      <!--Bookmark manager tooltip strings-->
+      <message name="IDS_BOOKMARK_MANAGER_TOOLTIP_NEW_FOLDER_MAC" desc="Tooltip for bookmark manager New Folder button">
+        New folder
+      </message>
+      <message name="IDS_BOOKMARK_MANAGER_TOOLTIP_DELETE_MAC" desc="Tooltip for bookmark manager Delete button">
+        Delete selected item
+      </message>
+      <message name="IDS_BOOKMARK_MANAGER_TOOLTIP_GEAR_MAC" desc="Tooltip for bookmark manager Gear (action) button">
+        Perform an action on the selected item
+      </message>
+
       <message name="IDS_DEFAULT_FILENAME" desc="Default name for saved files when we have no idea what they could be.">
         unknown
       </message>

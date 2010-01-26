@@ -18,7 +18,7 @@ class Profile;
 @interface BookmarkManagerController : NSWindowController {
  @private
   IBOutlet NSSearchField* searchField_;
-  IBOutlet NSSegmentedControl* _addRemoveButton;
+  IBOutlet NSSegmentedControl* addRemoveButton_;
   IBOutlet NSPopUpButton* actionButton_;
   IBOutlet BookmarkTreeController* groupsController_;
   IBOutlet BookmarkTreeController* listController_;
