@@ -615,7 +615,7 @@ void RenderThread::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisableDatabases));
 
   WebRuntimeFeatures::enableApplicationCache(
-      command_line.HasSwitch(switches::kEnableApplicationCache));
+      !command_line.HasSwitch(switches::kDisableApplicationCache));
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && defined(TOOLKIT_GTK))
   // Notifications are supported on Windows and Linux only.

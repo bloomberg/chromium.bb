@@ -61,6 +61,9 @@ const char kDiagnostics[]                   = "diagnostics";
 // Disables the alternate window station for the renderer.
 const char kDisableAltWinstation[]          = "disable-winsta";
 
+// Disable the ApplicationCache.
+const char kDisableApplicationCache[]       = "disable-application-cache";
+
 // Replaces the audio IPC layer for <audio> and <video> with a mock audio
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.
@@ -174,9 +177,6 @@ const char kDomAutomationController[]       = "dom-automation";
 // logging to be enabled to really do anything).  Used by developers and test
 // scripts.
 const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
-
-// Enable ApplicationCache. Still mostly not there.
-const char kEnableApplicationCache[]        = "enable-application-cache";
 
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";

@@ -177,7 +177,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.xss_auditor_enabled =
         !command_line.HasSwitch(switches::kDisableXSSAuditor);
     web_prefs.application_cache_enabled =
-        command_line.HasSwitch(switches::kEnableApplicationCache);
+        !command_line.HasSwitch(switches::kDisableApplicationCache);
 
     web_prefs.local_storage_enabled =
       !command_line.HasSwitch(switches::kDisableLocalStorage);

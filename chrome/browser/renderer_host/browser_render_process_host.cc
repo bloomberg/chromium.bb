@@ -532,7 +532,7 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kDisableLocalStorage,
     switches::kEnableSessionStorage,
     switches::kDisableSharedWorkers,
-    switches::kEnableApplicationCache,
+    switches::kDisableApplicationCache,
     switches::kEnableGeolocation,
     switches::kShowPaintRects,
     switches::kEnableOpenMax,
