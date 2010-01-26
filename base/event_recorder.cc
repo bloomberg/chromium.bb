@@ -179,7 +179,7 @@ LRESULT EventRecorder::RecordWndProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
   // The Journal Recorder must stop recording events when system modal
   // dialogs are present. (see msdn link above)
-  switch(nCode) {
+  switch (nCode) {
     case HC_SYSMODALON:
       recording_enabled = false;
       break;
@@ -205,7 +205,7 @@ LRESULT EventRecorder::PlaybackWndProc(int nCode, WPARAM wParam,
   static bool playback_enabled = true;
   int delay = 0;
 
-  switch(nCode) {
+  switch (nCode) {
     // A system modal dialog box is being displayed.  Stop playing back
     // messages.
     case HC_SYSMODALON:

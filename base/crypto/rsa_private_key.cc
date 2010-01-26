@@ -53,7 +53,7 @@ void PrivateKeyInfoCodec::PrependBytes(uint8* val,
                                        int start,
                                        int num_bytes,
                                        std::list<uint8>* data) {
-  while(num_bytes > 0) {
+  while (num_bytes > 0) {
     --num_bytes;
     data->push_front(val[start + num_bytes]);
   }
@@ -288,7 +288,7 @@ void PrivateKeyInfoCodec::PrependIntegerImpl(uint8* val,
    reverse(tmp.begin(), tmp.end());
    val = &tmp.front();
  }
-                                               
+
   // ASN.1 integers are unpadded byte arrays, so skip any null padding bytes
   // from the most-significant end of the integer.
   int start = 0;
@@ -360,7 +360,7 @@ bool PrivateKeyInfoCodec::ReadIntegerWithExpectedSize(uint8** pos,
     READ_ASSERT(out->size() <= expected_size);
   }
 
-  while(pad) {
+  while (pad) {
     out->push_back(0x00);
     pad--;
   }

@@ -51,4 +51,4 @@ class ScopedStdioHandle {
   DISALLOW_EVIL_CONSTRUCTORS(ScopedStdioHandle);
 };
 
-#endif // BASE_SCOPED_HANDLE_H_
+#endif  // BASE_SCOPED_HANDLE_H_

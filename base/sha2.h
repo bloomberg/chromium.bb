@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SHA2_H__
-#define BASE_SHA2_H__
+#ifndef BASE_SHA2_H_
+#define BASE_SHA2_H_
 
 #include <string>
 
@@ -24,4 +24,4 @@ void SHA256HashString(const std::string& str, void* output, size_t len);
 
 }  // namespace base
 
-#endif // BASE_SHA2_H__
+#endif  // BASE_SHA2_H_

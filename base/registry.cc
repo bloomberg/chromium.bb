@@ -51,7 +51,7 @@ bool RegistryValueIterator::Valid() const {
   return key_ != NULL && index_ >= 0;
 }
 
-void RegistryValueIterator::operator ++ () {
+void RegistryValueIterator::operator++() {
   // advance to the next entry in the folder
   --index_;
   Read();
@@ -120,7 +120,7 @@ bool RegistryKeyIterator::Valid() const {
   return key_ != NULL && index_ >= 0;
 }
 
-void RegistryKeyIterator::operator ++ () {
+void RegistryKeyIterator::operator++() {
   // advance to the next entry in the folder
   --index_;
   Read();
@@ -163,8 +163,9 @@ RegKey::RegKey(HKEY rootkey, const tchar* subkey, REGSAM access)
       this->Create(rootkey, subkey, access);
     else
       this->Open(rootkey, subkey, access);
+  } else {
+    assert(!subkey);
   }
-  else assert(!subkey);
 }
 
 void RegKey::Close() {
@@ -198,7 +199,8 @@ bool RegKey::CreateWithDisposition(HKEY rootkey, const tchar* subkey,
     key_ = NULL;
     return false;
   }
-  else return true;
+
+  return true;
 }
 
 bool RegKey::Open(HKEY rootkey, const tchar* subkey, REGSAM access) {
@@ -211,7 +213,8 @@ bool RegKey::Open(HKEY rootkey, const tchar* subkey, REGSAM access) {
     key_ = NULL;
     return false;
   }
-  else return true;
+
+  return true;
 }
 
 bool RegKey::CreateKey(const tchar* name, REGSAM access) {
@@ -297,7 +300,8 @@ bool RegKey::ReadValue(const tchar* name, tstr * value) {
     }
     return true;
   }
-  else return false;
+
+  return false;
 }
 
 bool RegKey::ReadValueDW(const tchar* name, DWORD * value) {
@@ -309,7 +313,8 @@ bool RegKey::ReadValueDW(const tchar* name, DWORD * value) {
     *value = result;
     return true;
   }
-  else return false;
+
+  return false;
 }
 
 bool RegKey::WriteValue(const tchar* name,

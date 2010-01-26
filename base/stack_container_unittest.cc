@@ -13,7 +13,7 @@ namespace {
 
 class Dummy : public base::RefCounted<Dummy> {
  public:
-  Dummy(int* alive) : alive_(alive) {
+  explicit Dummy(int* alive) : alive_(alive) {
     ++*alive_;
   }
 

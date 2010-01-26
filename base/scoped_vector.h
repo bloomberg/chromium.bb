@@ -39,7 +39,10 @@ class ScopedVector {
   std::vector<T*>& get() { return v; }
   const std::vector<T*>& get() const { return v; }
   void swap(ScopedVector<T>& other) { v.swap(other.v); }
-  void release(std::vector<T*>* out) { out->swap(v); v.clear(); }
+  void release(std::vector<T*>* out) {
+    out->swap(v);
+    v.clear();
+  }
 
   void reset() { STLDeleteElements(&v); }
 
@@ -49,4 +52,4 @@ class ScopedVector {
   DISALLOW_COPY_AND_ASSIGN(ScopedVector);
 };
 
-#endif // BASE_SCOPED_VECTOR_H_
+#endif  // BASE_SCOPED_VECTOR_H_

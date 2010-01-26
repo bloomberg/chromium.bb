@@ -30,4 +30,4 @@
 
 #endif  // OS_POSIX
 
-#endif  // !BASE_EINTR_WRAPPER_H_
+#endif  // BASE_EINTR_WRAPPER_H_

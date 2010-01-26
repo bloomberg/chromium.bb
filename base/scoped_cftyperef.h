@@ -14,7 +14,7 @@
 // scoped_ptr<>'s interface, with which everyone is already familiar.
 //
 // When scoped_cftyperef<> takes ownership of an object (in the constructor or
-// in reset()), it takes over the caller's existing ownership claim.  The 
+// in reset()), it takes over the caller's existing ownership claim.  The
 // caller must own the object it gives to scoped_cftyperef<>, and relinquishes
 // an ownership claim to that object.  scoped_cftyperef<> does not call
 // CFRetain().

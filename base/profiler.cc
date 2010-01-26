@@ -6,7 +6,7 @@
 #include "base/string_util.h"
 
 // When actually using quantify, uncomment the following line.
-//#define QUANTIFY
+// #define QUANTIFY
 
 #ifdef QUANTIFY
 // this #define is used to prevent people from directly using pure.h

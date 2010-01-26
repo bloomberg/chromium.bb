@@ -130,4 +130,4 @@ class TraceLog {
 
 } // namespace base
 
-#endif // BASE_TRACE_EVENT_H_
+#endif  // BASE_TRACE_EVENT_H_

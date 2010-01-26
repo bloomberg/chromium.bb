@@ -32,4 +32,4 @@ class ScopedNSDisableScreenUpdates {
 
 }  // namespace
 
-#endif
+#endif  // BASE_SCOPED_NSDISABLE_SCREEN_UPDATES_H_

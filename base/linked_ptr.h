@@ -85,7 +85,11 @@ class linked_ptr {
 
   // Copy an existing linked_ptr<>, adding ourselves to the list of references.
   template <typename U> linked_ptr(linked_ptr<U> const& ptr) { copy(&ptr); }
-  linked_ptr(linked_ptr const& ptr) { DCHECK_NE(&ptr, this); copy(&ptr); }
+
+  linked_ptr(linked_ptr const& ptr) {
+    DCHECK_NE(&ptr, this);
+    copy(&ptr);
+  }
 
   // Assignment releases the old value and acquires the new.
   template <typename U> linked_ptr& operator=(linked_ptr<U> const& ptr) {
@@ -103,7 +107,10 @@ class linked_ptr {
   }
 
   // Smart pointer members.
-  void reset(T* ptr = NULL) { depart(); capture(ptr); }
+  void reset(T* ptr = NULL) {
+    depart();
+    capture(ptr);
+  }
   T* get() const { return value_; }
   T* operator->() const { return value_; }
   T& operator*() const { return *value_; }

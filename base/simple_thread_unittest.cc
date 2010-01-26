@@ -27,7 +27,7 @@ class SetIntRunner : public base::DelegateSimpleThread::Delegate {
 
 class WaitEventRunner : public base::DelegateSimpleThread::Delegate {
  public:
-  WaitEventRunner(base::WaitableEvent* event) : event_(event) { }
+  explicit WaitEventRunner(base::WaitableEvent* event) : event_(event) { }
   ~WaitEventRunner() { }
 
   virtual void Run() {
@@ -41,7 +41,7 @@ class WaitEventRunner : public base::DelegateSimpleThread::Delegate {
 
 class SeqRunner : public base::DelegateSimpleThread::Delegate {
  public:
-  SeqRunner(base::AtomicSequenceNumber* seq) : seq_(seq) { }
+  explicit SeqRunner(base::AtomicSequenceNumber* seq) : seq_(seq) { }
   virtual void Run() {
     seq_->GetNext();
   }

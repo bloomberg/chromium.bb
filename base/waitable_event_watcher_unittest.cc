@@ -22,7 +22,7 @@ class QuitDelegate : public WaitableEventWatcher::Delegate {
 
 class DecrementCountDelegate : public WaitableEventWatcher::Delegate {
  public:
-  DecrementCountDelegate(int* counter) : counter_(counter) {
+  explicit DecrementCountDelegate(int* counter) : counter_(counter) {
   }
   virtual void OnWaitableEventSignaled(WaitableEvent* object) {
     --(*counter_);

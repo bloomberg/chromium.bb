@@ -57,7 +57,7 @@ base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
     case GDK_KP_4:
       return VKEY_NUMPAD4;  // (64) Numeric keypad 4 key
     case GDK_KP_5:
-      return VKEY_NUMPAD5;  //(65) Numeric keypad 5 key
+      return VKEY_NUMPAD5;  // (65) Numeric keypad 5 key
     case GDK_KP_6:
       return VKEY_NUMPAD6;  // (66) Numeric keypad 6 key
     case GDK_KP_7:
@@ -78,190 +78,190 @@ base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
       return VKEY_DIVIDE; // (6F) Divide key
 
     case GDK_BackSpace:
-      return VKEY_BACK; // (08) BACKSPACE key
+      return VKEY_BACK;  // (08) BACKSPACE key
     case GDK_ISO_Left_Tab:
     case GDK_3270_BackTab:
     case GDK_Tab:
-      return VKEY_TAB; // (09) TAB key
+      return VKEY_TAB;  // (09) TAB key
     case GDK_Clear:
-      return VKEY_CLEAR; // (0C) CLEAR key
+      return VKEY_CLEAR;  // (0C) CLEAR key
     case GDK_ISO_Enter:
     case GDK_KP_Enter:
     case GDK_Return:
-      return VKEY_RETURN; //(0D) Return key
+      return VKEY_RETURN;  // (0D) Return key
     case GDK_Shift_L:
     case GDK_Shift_R:
-      return VKEY_SHIFT; // (10) SHIFT key
+      return VKEY_SHIFT;  // (10) SHIFT key
     case GDK_Control_L:
     case GDK_Control_R:
-      return VKEY_CONTROL; // (11) CTRL key
+      return VKEY_CONTROL;  // (11) CTRL key
     case GDK_Menu:
     case GDK_Alt_L:
     case GDK_Alt_R:
-      return VKEY_MENU; // (12) ALT key
+      return VKEY_MENU;  // (12) ALT key
 
     case GDK_Pause:
-      return VKEY_PAUSE; // (13) PAUSE key
+      return VKEY_PAUSE;  // (13) PAUSE key
     case GDK_Caps_Lock:
-      return VKEY_CAPITAL; // (14) CAPS LOCK key
+      return VKEY_CAPITAL;  // (14) CAPS LOCK key
     case GDK_Kana_Lock:
     case GDK_Kana_Shift:
-      return VKEY_KANA; // (15) Input Method Editor (IME) Kana mode
+      return VKEY_KANA;  // (15) Input Method Editor (IME) Kana mode
     case GDK_Hangul:
-      return VKEY_HANGUL; // VKEY_HANGUL (15) IME Hangul mode
+      return VKEY_HANGUL;  // VKEY_HANGUL (15) IME Hangul mode
       // VKEY_JUNJA (17) IME Junja mode
       // VKEY_FINAL (18) IME final mode
     case GDK_Hangul_Hanja:
-      return VKEY_HANJA; // (19) IME Hanja mode
+      return VKEY_HANJA;  // (19) IME Hanja mode
     case GDK_Kanji:
-      return VKEY_KANJI; // (19) IME Kanji mode
+      return VKEY_KANJI;  // (19) IME Kanji mode
     case GDK_Escape:
-      return VKEY_ESCAPE; // (1B) ESC key
+      return VKEY_ESCAPE;  // (1B) ESC key
       // VKEY_CONVERT (1C) IME convert
       // VKEY_NONCONVERT (1D) IME nonconvert
       // VKEY_ACCEPT (1E) IME accept
       // VKEY_MODECHANGE (1F) IME mode change request
     case GDK_space:
-      return VKEY_SPACE; // (20) SPACEBAR
+      return VKEY_SPACE;  // (20) SPACEBAR
     case GDK_Page_Up:
-      return VKEY_PRIOR; // (21) PAGE UP key
+      return VKEY_PRIOR;  // (21) PAGE UP key
     case GDK_Page_Down:
-      return VKEY_NEXT; // (22) PAGE DOWN key
+      return VKEY_NEXT;  // (22) PAGE DOWN key
     case GDK_End:
-      return VKEY_END; // (23) END key
+      return VKEY_END;  // (23) END key
     case GDK_Home:
-      return VKEY_HOME; // (24) HOME key
+      return VKEY_HOME;  // (24) HOME key
     case GDK_Left:
-      return VKEY_LEFT; // (25) LEFT ARROW key
+      return VKEY_LEFT;  // (25) LEFT ARROW key
     case GDK_Up:
-      return VKEY_UP; // (26) UP ARROW key
+      return VKEY_UP;  // (26) UP ARROW key
     case GDK_Right:
-      return VKEY_RIGHT; // (27) RIGHT ARROW key
+      return VKEY_RIGHT;  // (27) RIGHT ARROW key
     case GDK_Down:
-      return VKEY_DOWN; // (28) DOWN ARROW key
+      return VKEY_DOWN;  // (28) DOWN ARROW key
     case GDK_Select:
-      return VKEY_SELECT; // (29) SELECT key
+      return VKEY_SELECT;  // (29) SELECT key
     case GDK_Print:
-      return VKEY_PRINT; // (2A) PRINT key
+      return VKEY_PRINT;  // (2A) PRINT key
     case GDK_Execute:
-      return VKEY_EXECUTE;// (2B) EXECUTE key
-      //dunno on this
-      //case GDK_PrintScreen:
+      return VKEY_EXECUTE;  // (2B) EXECUTE key
+      // dunno on this
+      // case GDK_PrintScreen:
       //      return VKEY_SNAPSHOT; // (2C) PRINT SCREEN key
     case GDK_Insert:
-      return VKEY_INSERT; // (2D) INS key
+      return VKEY_INSERT;  // (2D) INS key
     case GDK_Delete:
-      return VKEY_DELETE; // (2E) DEL key
+      return VKEY_DELETE;  // (2E) DEL key
     case GDK_Help:
-      return VKEY_HELP; // (2F) HELP key
+      return VKEY_HELP;  // (2F) HELP key
     case GDK_0:
     case GDK_parenright:
-      return VKEY_0;    //  (30) 0) key
+      return VKEY_0;  // (30) 0) key
     case GDK_1:
     case GDK_exclam:
-      return VKEY_1; //  (31) 1 ! key
+      return VKEY_1;  // (31) 1 ! key
     case GDK_2:
     case GDK_at:
-      return VKEY_2; //  (32) 2 & key
+      return VKEY_2;  // (32) 2 & key
     case GDK_3:
     case GDK_numbersign:
-      return VKEY_3; //case '3': case '#';
+      return VKEY_3;  // case '3': case '#';
     case GDK_4:
-    case GDK_dollar: //  (34) 4 key '$';
+    case GDK_dollar:  // (34) 4 key '$';
       return VKEY_4;
     case GDK_5:
     case GDK_percent:
-      return VKEY_5; //  (35) 5 key  '%'
+      return VKEY_5;  // (35) 5 key  '%'
     case GDK_6:
     case GDK_asciicircum:
-      return VKEY_6; //  (36) 6 key  '^'
+      return VKEY_6;  // (36) 6 key  '^'
     case GDK_7:
     case GDK_ampersand:
-      return VKEY_7; //  (37) 7 key  case '&'
+      return VKEY_7;  // (37) 7 key  case '&'
     case GDK_8:
     case GDK_asterisk:
-      return VKEY_8; //  (38) 8 key  '*'
+      return VKEY_8;  // (38) 8 key  '*'
     case GDK_9:
     case GDK_parenleft:
-      return VKEY_9; //  (39) 9 key '('
+      return VKEY_9;  // (39) 9 key '('
     case GDK_a:
     case GDK_A:
-      return VKEY_A; //  (41) A key case 'a': case 'A': return 0x41;
+      return VKEY_A;  // (41) A key case 'a': case 'A': return 0x41;
     case GDK_b:
     case GDK_B:
-      return VKEY_B; //  (42) B key case 'b': case 'B': return 0x42;
+      return VKEY_B;  // (42) B key case 'b': case 'B': return 0x42;
     case GDK_c:
     case GDK_C:
-      return VKEY_C; //  (43) C key case 'c': case 'C': return 0x43;
+      return VKEY_C;  // (43) C key case 'c': case 'C': return 0x43;
     case GDK_d:
     case GDK_D:
-      return VKEY_D; //  (44) D key case 'd': case 'D': return 0x44;
+      return VKEY_D;  // (44) D key case 'd': case 'D': return 0x44;
     case GDK_e:
     case GDK_E:
-      return VKEY_E; //  (45) E key case 'e': case 'E': return 0x45;
+      return VKEY_E;  // (45) E key case 'e': case 'E': return 0x45;
     case GDK_f:
     case GDK_F:
-      return VKEY_F; //  (46) F key case 'f': case 'F': return 0x46;
+      return VKEY_F;  // (46) F key case 'f': case 'F': return 0x46;
     case GDK_g:
     case GDK_G:
-      return VKEY_G; //  (47) G key case 'g': case 'G': return 0x47;
+      return VKEY_G;  // (47) G key case 'g': case 'G': return 0x47;
     case GDK_h:
     case GDK_H:
-      return VKEY_H; //  (48) H key case 'h': case 'H': return 0x48;
+      return VKEY_H;  // (48) H key case 'h': case 'H': return 0x48;
     case GDK_i:
     case GDK_I:
-      return VKEY_I; //  (49) I key case 'i': case 'I': return 0x49;
+      return VKEY_I;  // (49) I key case 'i': case 'I': return 0x49;
     case GDK_j:
     case GDK_J:
-      return VKEY_J; //  (4A) J key case 'j': case 'J': return 0x4A;
+      return VKEY_J;  // (4A) J key case 'j': case 'J': return 0x4A;
     case GDK_k:
     case GDK_K:
-      return VKEY_K; //  (4B) K key case 'k': case 'K': return 0x4B;
+      return VKEY_K;  // (4B) K key case 'k': case 'K': return 0x4B;
     case GDK_l:
     case GDK_L:
-      return VKEY_L; //  (4C) L key case 'l': case 'L': return 0x4C;
+      return VKEY_L;  // (4C) L key case 'l': case 'L': return 0x4C;
     case GDK_m:
     case GDK_M:
-      return VKEY_M; //  (4D) M key case 'm': case 'M': return 0x4D;
+      return VKEY_M;  // (4D) M key case 'm': case 'M': return 0x4D;
     case GDK_n:
     case GDK_N:
-      return VKEY_N; //  (4E) N key case 'n': case 'N': return 0x4E;
+      return VKEY_N;  // (4E) N key case 'n': case 'N': return 0x4E;
     case GDK_o:
     case GDK_O:
-      return VKEY_O; //  (4F) O key case 'o': case 'O': return 0x4F;
+      return VKEY_O;  // (4F) O key case 'o': case 'O': return 0x4F;
     case GDK_p:
     case GDK_P:
-      return VKEY_P; //  (50) P key case 'p': case 'P': return 0x50;
+      return VKEY_P;  // (50) P key case 'p': case 'P': return 0x50;
     case GDK_q:
     case GDK_Q:
-      return VKEY_Q; //  (51) Q key case 'q': case 'Q': return 0x51;
+      return VKEY_Q;  // (51) Q key case 'q': case 'Q': return 0x51;
     case GDK_r:
     case GDK_R:
-      return VKEY_R; //  (52) R key case 'r': case 'R': return 0x52;
+      return VKEY_R;  // (52) R key case 'r': case 'R': return 0x52;
     case GDK_s:
     case GDK_S:
-      return VKEY_S; //  (53) S key case 's': case 'S': return 0x53;
+      return VKEY_S;  // (53) S key case 's': case 'S': return 0x53;
     case GDK_t:
     case GDK_T:
-      return VKEY_T; //  (54) T key case 't': case 'T': return 0x54;
+      return VKEY_T;  // (54) T key case 't': case 'T': return 0x54;
     case GDK_u:
     case GDK_U:
-      return VKEY_U; //  (55) U key case 'u': case 'U': return 0x55;
+      return VKEY_U;  // (55) U key case 'u': case 'U': return 0x55;
     case GDK_v:
     case GDK_V:
-      return VKEY_V; //  (56) V key case 'v': case 'V': return 0x56;
+      return VKEY_V;  // (56) V key case 'v': case 'V': return 0x56;
     case GDK_w:
     case GDK_W:
-      return VKEY_W; //  (57) W key case 'w': case 'W': return 0x57;
+      return VKEY_W;  // (57) W key case 'w': case 'W': return 0x57;
     case GDK_x:
     case GDK_X:
-      return VKEY_X; //  (58) X key case 'x': case 'X': return 0x58;
+      return VKEY_X;  // (58) X key case 'x': case 'X': return 0x58;
     case GDK_y:
     case GDK_Y:
-      return VKEY_Y; //  (59) Y key case 'y': case 'Y': return 0x59;
+      return VKEY_Y;  // (59) Y key case 'y': case 'Y': return 0x59;
     case GDK_z:
     case GDK_Z:
-      return VKEY_Z; //  (5A) Z key case 'z': case 'Z': return 0x5A;
+      return VKEY_Z;  // (5A) Z key case 'z': case 'Z': return 0x5A;
     case GDK_Meta_L:
       return VKEY_LWIN; // (5B) Left Windows key (Microsoft Natural keyboard)
     case GDK_Meta_R:
@@ -275,10 +275,10 @@ base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
       // handled by key code above
 
     case GDK_Num_Lock:
-      return VKEY_NUMLOCK; // (90) NUM LOCK key
+      return VKEY_NUMLOCK;  // (90) NUM LOCK key
 
     case GDK_Scroll_Lock:
-      return VKEY_SCROLL; // (91) SCROLL LOCK key
+      return VKEY_SCROLL;  // (91) SCROLL LOCK key
 
       // VKEY_LSHIFT (A0) Left SHIFT key
       // VKEY_RSHIFT (A1) Right SHIFT key
@@ -309,57 +309,57 @@ base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
       // keyboard. Windows 2000/XP: For the US standard keyboard, the ';:' key
     case GDK_semicolon:
     case GDK_colon:
-      return VKEY_OEM_1; //case ';': case ':': return 0xBA;
+      return VKEY_OEM_1;  // case ';': case ':': return 0xBA;
       // VKEY_OEM_PLUS (BB) Windows 2000/XP: For any country/region, the '+' key
     case GDK_plus:
     case GDK_equal:
-      return VKEY_OEM_PLUS; //case '=': case '+': return 0xBB;
+      return VKEY_OEM_PLUS;  // case '=': case '+': return 0xBB;
       // VKEY_OEM_COMMA (BC) Windows 2000/XP: For any country/region, the ','
       // key
     case GDK_comma:
     case GDK_less:
-      return VKEY_OEM_COMMA; //case ',': case '<': return 0xBC;
+      return VKEY_OEM_COMMA;  // case ',': case '<': return 0xBC;
       // VKEY_OEM_MINUS (BD) Windows 2000/XP: For any country/region, the '-'
       // key
     case GDK_minus:
     case GDK_underscore:
-      return VKEY_OEM_MINUS; //case '-': case '_': return 0xBD;
+      return VKEY_OEM_MINUS;  // case '-': case '_': return 0xBD;
       // VKEY_OEM_PERIOD (BE) Windows 2000/XP: For any country/region, the '.'
       // key
     case GDK_period:
     case GDK_greater:
-      return VKEY_OEM_PERIOD; //case '.': case '>': return 0xBE;
+      return VKEY_OEM_PERIOD;  // case '.': case '>': return 0xBE;
       // VKEY_OEM_2 (BF) Used for miscellaneous characters; it can vary by
       // keyboard. Windows 2000/XP: For the US standard keyboard, the '/?' key
     case GDK_slash:
     case GDK_question:
-      return VKEY_OEM_2; //case '/': case '?': return 0xBF;
+      return VKEY_OEM_2;  // case '/': case '?': return 0xBF;
       // VKEY_OEM_3 (C0) Used for miscellaneous characters; it can vary by
       // keyboard. Windows 2000/XP: For the US standard keyboard, the '`~' key
     case GDK_asciitilde:
     case GDK_quoteleft:
-      return VKEY_OEM_3; //case '`': case '~': return 0xC0;
+      return VKEY_OEM_3;  // case '`': case '~': return 0xC0;
       // VKEY_OEM_4 (DB) Used for miscellaneous characters; it can vary by
       // keyboard. Windows 2000/XP: For the US standard keyboard, the '[{' key
     case GDK_bracketleft:
     case GDK_braceleft:
-      return VKEY_OEM_4; //case '[': case '{': return 0xDB;
+      return VKEY_OEM_4;  // case '[': case '{': return 0xDB;
       // VKEY_OEM_5 (DC) Used for miscellaneous characters; it can vary by
       // keyboard. Windows 2000/XP: For the US standard keyboard, the '\|' key
     case GDK_backslash:
     case GDK_bar:
-      return VKEY_OEM_5; //case '\\': case '|': return 0xDC;
+      return VKEY_OEM_5;  // case '\\': case '|': return 0xDC;
       // VKEY_OEM_6 (DD) Used for miscellaneous characters; it can vary by
       // keyboard. Windows 2000/XP: For the US standard keyboard, the ']}' key
     case GDK_bracketright:
     case GDK_braceright:
-      return VKEY_OEM_6; // case ']': case '}': return 0xDD;
+      return VKEY_OEM_6;  // case ']': case '}': return 0xDD;
       // VKEY_OEM_7 (DE) Used for miscellaneous characters; it can vary by
       // keyboard. Windows 2000/XP: For the US standard keyboard, the
       // 'single-quote/double-quote' key
     case GDK_quoteright:
     case GDK_quotedbl:
-      return VKEY_OEM_7; // case '\'': case '"': return 0xDE;
+      return VKEY_OEM_7;  // case '\'': case '"': return 0xDE;
       // VKEY_OEM_8 (DF) Used for miscellaneous characters; it can vary by
       // keyboard.
       // VKEY_OEM_102 (E2) Windows 2000/XP: Either the angle bracket key or the

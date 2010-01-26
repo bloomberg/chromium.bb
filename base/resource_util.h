@@ -21,4 +21,4 @@ bool GetDataResourceFromModule(HMODULE module, int resource_id,
                                void** data, size_t* length);
 }  // namespace
 
-#endif // BASE_RESOURCE_UTIL_H__
+#endif  // BASE_RESOURCE_UTIL_H__

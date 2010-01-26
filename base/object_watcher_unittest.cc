@@ -19,7 +19,7 @@ class QuitDelegate : public base::ObjectWatcher::Delegate {
 
 class DecrementCountDelegate : public base::ObjectWatcher::Delegate {
  public:
-  DecrementCountDelegate(int* counter) : counter_(counter) {
+  explicit DecrementCountDelegate(int* counter) : counter_(counter) {
   }
   virtual void OnObjectSignaled(HANDLE object) {
     --(*counter_);

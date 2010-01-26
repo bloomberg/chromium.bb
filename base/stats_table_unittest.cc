@@ -242,7 +242,7 @@ TEST_F(StatsTableTest, MultipleProcesses) {
 
 class MockStatsCounter : public StatsCounter {
  public:
-  MockStatsCounter(const std::string& name)
+  explicit MockStatsCounter(const std::string& name)
       : StatsCounter(name) {}
   int* Pointer() { return GetPtr(); }
 };
@@ -266,7 +266,7 @@ TEST_F(StatsTableTest, StatsCounter) {
   EXPECT_EQ(0, table.GetCounterValue("c:foo"));
 
   // Test Increment.
-  while(*(foo.Pointer()) < 123) foo.Increment();
+  while (*(foo.Pointer()) < 123) foo.Increment();
   EXPECT_EQ(123, table.GetCounterValue("c:foo"));
   foo.Add(0);
   EXPECT_EQ(123, table.GetCounterValue("c:foo"));
@@ -296,7 +296,7 @@ TEST_F(StatsTableTest, StatsCounter) {
 
 class MockStatsCounterTimer : public StatsCounterTimer {
  public:
-  MockStatsCounterTimer(const std::string& name)
+  explicit MockStatsCounterTimer(const std::string& name)
       : StatsCounterTimer(name) {}
 
   TimeTicks start_time() { return start_time_; }

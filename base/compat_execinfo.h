@@ -5,8 +5,8 @@
 // A file you can include instead of <execinfo.h> if your project might need
 // to run on Mac OS X 10.4.
 
-#ifndef BASE_COMPAT_EXECINFO_H
-#define BASE_COMPAT_EXECINFO_H
+#ifndef BASE_COMPAT_EXECINFO_H_
+#define BASE_COMPAT_EXECINFO_H_
 
 #include "build/build_config.h"
 
@@ -30,4 +30,4 @@ extern void backtrace_symbols_fd(void* const*, int, int)
 #include <execinfo.h>
 #endif
 
-#endif  // BASE_COMPAT_EXECINFO_H
+#endif  // BASE_COMPAT_EXECINFO_H_

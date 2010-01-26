@@ -16,7 +16,7 @@ namespace {
 
 class PostTaskTestTask : public Task {
  public:
-  PostTaskTestTask(WaitableEvent* event) : event_(event) {
+  explicit PostTaskTestTask(WaitableEvent* event) : event_(event) {
   }
 
   void Run() {

@@ -18,8 +18,8 @@ namespace image_util {
 
 // Contains both the PE section name (.text, .reloc etc) and its size.
 struct ImageSectionData {
-  ImageSectionData (const std::string& section_name, size_t section_size)
-      : name (section_name),
+  ImageSectionData(const std::string& section_name, size_t section_size)
+      : name(section_name),
         size_in_bytes(section_size) {
   }
 

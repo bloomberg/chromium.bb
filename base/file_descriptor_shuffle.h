@@ -76,4 +76,4 @@ static inline bool ShuffleFileDescriptors(const InjectiveMultimap& map) {
 
 }  // namespace base
 
-#endif  // !BASE_FILE_DESCRIPTOR_SHUFFLE_H_
+#endif  // BASE_FILE_DESCRIPTOR_SHUFFLE_H_
