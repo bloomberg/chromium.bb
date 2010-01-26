@@ -19,6 +19,7 @@
 #import "chrome/browser/cocoa/cookies_window_controller.h"
 #import "chrome/browser/cocoa/custom_home_pages_model.h"
 #import "chrome/browser/cocoa/font_language_settings_controller.h"
+#import "chrome/browser/cocoa/import_settings_dialog.h"
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
 #import "chrome/browser/cocoa/search_engine_list_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -1150,7 +1151,12 @@ const int kDisabledIndex = 1;
 
 // Called to import data from other browsers (Safari, Firefox, etc).
 - (IBAction)importData:(id)sender {
-  NOTIMPLEMENTED();
+  UserMetrics::RecordAction("Import_ShowDlg", profile_);
+
+  // Note that the dialog controller takes care of cleaning itself up
+  // upon dismissal so auto-scoping here is not necessary.
+  [[[ImportSettingsDialogController alloc]
+      initWithProfile:profile_ parentWindow:nil] runModalDialog];
 }
 
 // Called to clear user's browsing data. This puts up an application-modal
