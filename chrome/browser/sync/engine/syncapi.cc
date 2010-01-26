@@ -1086,7 +1086,8 @@ bool SyncManager::SyncInternal::Init(
 
   string client_id = user_settings_->GetClientId();
   connection_manager_.reset(new SyncAPIServerConnectionManager(
-      sync_server_and_path, port, use_ssl, user_agent, client_id));
+      sync_server_and_path, port, use_ssl, user_agent, client_id,
+      post_factory));
 
   // TODO(timsteele): This is temporary windows crap needed to listen for
   // network status changes. We should either pump this up to the embedder to
@@ -1116,10 +1117,6 @@ bool SyncManager::SyncInternal::Init(
     }
   }
 #endif
-
-  // Hand over the bridged POST factory to be owned by the connection
-  // dir_manager.
-  connection_manager()->SetHttpPostProviderFactory(post_factory);
 
   // Watch various objects for aggregated status.
   allstatus()->WatchConnectionManager(connection_manager());
