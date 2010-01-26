@@ -9,7 +9,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
+#if defined(OS_LINUX) && !defined(ARCH_CPU_ARMEL)
 
 // Only define GLX support for Intel CPUs for now until we can get the
 // proper dependencies and build setup for ARM.
