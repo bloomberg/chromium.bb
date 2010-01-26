@@ -13,6 +13,8 @@
 # To run unit tests, you probably want to run chrome_tests.sh instead.
 # That's the script used by the valgrind buildbot.
 
+export THISDIR=`dirname $0`
+
 setup_memcheck() {
   # Prefer a 32-bit gdb if it's available.
   GDB="/usr/bin/gdb32";
@@ -28,7 +30,7 @@ setup_memcheck() {
 }
 
 setup_tsan() {
-  IGNORE_FILE="$(cd `dirname "$0"` && pwd)/tsan/ignores.txt"
+  IGNORE_FILE="$THISDIR/tsan/ignores.txt"
   DEFAULT_TOOL_FLAGS=("--announce-threads" "--pure-happens-before=yes" \
                       "--ignore=$IGNORE_FILE")
 }
@@ -66,30 +68,23 @@ case $TOOL_NAME in
   *)          setup_unknown;;
 esac
 
-SUPPRESSIONS="$(cd `dirname "$0"` && pwd)/$TOOL_NAME/suppressions.txt"
 
-if test x"$CHROME_VALGRIND_BIN" = x
-then
-  # Figure out which valgrind is installed.  Use most recent one.
-  # See build-valgrind-for-chromium.sh and its history for these constants.
-  for SVNREV in 10880-redzone 10880 10771 20090715
-  do
-    CHROME_VALGRIND_BIN=/usr/local/valgrind-$SVNREV/bin
-    test -x $CHROME_VALGRIND_BIN/valgrind && break
-  done
-fi
+SUPPRESSIONS="$THISDIR/$TOOL_NAME/suppressions.txt"
 
-if ! test -x $CHROME_VALGRIND_BIN/valgrind
+CHROME_VALGRIND=`sh $THISDIR/locate_valgrind.sh`
+if [ "$CHROME_VALGRIND" = "" ]
 then
-  echo "Could not find chromium's version of valgrind."
-  echo "Please run build-valgrind-for-chromium.sh or set CHROME_VALGRIND_BIN."
-  echo "Defaulting to system valgrind."
-else
-  echo "Using ${CHROME_VALGRIND_BIN}/valgrind."
-  PATH="${CHROME_VALGRIND_BIN}:$PATH"
+  # locate_valgrind.sh failed
+  exit 1
 fi
+echo "Using valgrind binaries from ${CHROME_VALGRIND}"
 
 set -x
+PATH="${CHROME_VALGRIND}/bin:$PATH"
+# We need to set these variables to override default lib paths hard-coded into
+# Valgrind binary.
+export VALGRIND_LIB="$CHROME_VALGRIND/lib/valgrind"
+export VALGRIND_LIB_INNER="$CHROME_VALGRIND/lib/valgrind"
 
 # G_SLICE=always-malloc: make glib use system malloc
 # NSS_DISABLE_ARENA_FREE_LIST=1: make nss use system malloc
