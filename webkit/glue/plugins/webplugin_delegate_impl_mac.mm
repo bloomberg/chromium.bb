@@ -818,12 +818,13 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   DCHECK(windowless_) << "events should only be received in windowless mode";
   DCHECK(cursor != NULL);
 
-  // if we do not currently have focus and this is a mouseDown, trigger a
-  // notification that we are taking the keyboard focus.  We can't just key
-  // off of incoming calls to SetFocus, since WebKit may already think we
-  // have it if we were the most recently focused element on our parent tab.
-  if (event.type == WebInputEvent::MouseDown && !have_focus_)
-    SetFocus();
+#ifndef NP_NO_CARBON
+  if (instance()->event_model() == NPEventModelCarbon &&
+      !cg_context_.context) {
+    // If we somehow get an event before we've set up the plugin window, bail.
+    return false;
+  }
+#endif
 
   if (WebInputEventIsWebMouseEvent(event)) {
     // Make sure we update our plugin location tracking before we send the
@@ -836,12 +837,15 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
     current_windowless_cursor_.GetCursorInfo(cursor);
   }
 
+  // if we do not currently have focus and this is a mouseDown, trigger a
+  // notification that we are taking the keyboard focus.  We can't just key
+  // off of incoming calls to SetFocus, since WebKit may already think we
+  // have it if we were the most recently focused element on our parent tab.
+  if (event.type == WebInputEvent::MouseDown && !have_focus_)
+    SetFocus();
+
 #ifndef NP_NO_CARBON
   if (instance()->event_model() == NPEventModelCarbon) {
-    // If we somehow get an event before we've set up the plugin window, bail.
-    if (!cg_context_.context)
-      return false;
-
     if (event.type == WebInputEvent::MouseMove) {
       return true;  // The recurring OnNull will send null events.
     }
