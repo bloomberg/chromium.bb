@@ -3133,3 +3133,6 @@ BUG33045 MAC : svg/custom/missing-xlink.svg = IMAGE
 BUG33045 MAC : svg/custom/text-xy-updates-SVGList.xhtml = IMAGE
 BUG33045 MAC : tables/mozilla/bugs/bug149275-1.html = IMAGE
 BUG33045 MAC : transforms/2d/transform-fixed-container.html = IMAGE
+
+// Added in WebKit 53835
+BUGJORLOW : editing/pasteboard/paste-noscript-xhtml.xhtml = TEXT
