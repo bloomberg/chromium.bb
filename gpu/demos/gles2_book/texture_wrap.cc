@@ -5,25 +5,29 @@
 // This is an example that demonstrates the three texture
 // wrap modes available on 2D textures.
 
+#include "gpu/demos/framework/demo_factory.h"
 #include "gpu/demos/gles2_book/example.h"
 #include "third_party/gles2_book/Chapter_9/TextureWrap/TextureWrap.h"
 
 namespace gpu {
 namespace demos {
+
 namespace gles2_book {
-typedef Example<TWUserData,
-                twInit,
-                NoOpUpdateFunc,
-                twDraw,
-                twShutDown> TextureWrap;
+class TextureWrap : public Example<TWUserData> {
+ public:
+  TextureWrap() {
+    RegisterCallbacks(twInit, NULL, twDraw, twShutDown);
+  }
+
+  const wchar_t* Title() const {
+    return L"Texture Wrap";
+  }
+};
 }  // namespace gles2_book
+
+Demo* CreateDemo() {
+  return new gles2_book::TextureWrap();
+}
+
 }  // namespace demos
 }  // namespace gpu
-
-int main(int argc, char *argv[]) {
-  gpu::demos::gles2_book::TextureWrap demo;
-  CHECK(demo.Init());
-
-  demo.MainLoop();
-  return EXIT_SUCCESS;
-}

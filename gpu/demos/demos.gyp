@@ -94,6 +94,150 @@
         'gles2_book/hello_triangle.cc',
       ],
     },
+    {
+      'target_name': 'mip_map_2d_exe',
+      'type': 'executable',
+      'dependencies': [
+        'gpu_demo_framework_exe',
+        '../../third_party/gles2_book/gles2_book.gyp:mip_map_2d',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/mip_map_2d.cc',
+      ],
+    },
+    {
+      'target_name': 'mip_map_2d_pepper',
+      'type': 'shared_library',
+      'dependencies': [
+        'gpu_demo_framework_pepper',
+        '../../third_party/gles2_book/gles2_book.gyp:mip_map_2d',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/mip_map_2d.cc',
+      ],
+    },
+    {
+      'target_name': 'simple_texture_2d_exe',
+      'type': 'executable',
+      'dependencies': [
+        'gpu_demo_framework_exe',
+        '../../third_party/gles2_book/gles2_book.gyp:simple_texture_2d',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/simple_texture_2d.cc',
+      ],
+    },
+    {
+      'target_name': 'simple_texture_2d_pepper',
+      'type': 'shared_library',
+      'dependencies': [
+        'gpu_demo_framework_pepper',
+        '../../third_party/gles2_book/gles2_book.gyp:simple_texture_2d',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/simple_texture_2d.cc',
+      ],
+    },
+    {
+      'target_name': 'simple_texture_cubemap_exe',
+      'type': 'executable',
+      'dependencies': [
+        'gpu_demo_framework_exe',
+        '../../third_party/gles2_book/gles2_book.gyp:simple_texture_cubemap',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/simple_texture_cubemap.cc',
+      ],
+    },
+    {
+      'target_name': 'simple_texture_cubemap_pepper',
+      'type': 'shared_library',
+      'dependencies': [
+        'gpu_demo_framework_pepper',
+        '../../third_party/gles2_book/gles2_book.gyp:simple_texture_cubemap',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/simple_texture_cubemap.cc',
+      ],
+    },
+    {
+      'target_name': 'simple_vertex_shader_exe',
+      'type': 'executable',
+      'dependencies': [
+        'gpu_demo_framework_exe',
+        '../../third_party/gles2_book/gles2_book.gyp:simple_vertex_shader',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/simple_vertex_shader.cc',
+      ],
+    },
+    {
+      'target_name': 'simple_vertex_shader_pepper',
+      'type': 'shared_library',
+      'dependencies': [
+        'gpu_demo_framework_pepper',
+        '../../third_party/gles2_book/gles2_book.gyp:simple_vertex_shader',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/simple_vertex_shader.cc',
+      ],
+    },
+    {
+      'target_name': 'stencil_test_exe',
+      'type': 'executable',
+      'dependencies': [
+        'gpu_demo_framework_exe',
+        '../../third_party/gles2_book/gles2_book.gyp:stencil_test',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/stencil_test.cc',
+      ],
+    },
+    {
+      'target_name': 'stencil_test_pepper',
+      'type': 'shared_library',
+      'dependencies': [
+        'gpu_demo_framework_pepper',
+        '../../third_party/gles2_book/gles2_book.gyp:stencil_test',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/stencil_test.cc',
+      ],
+    },
+    {
+      'target_name': 'texture_wrap_exe',
+      'type': 'executable',
+      'dependencies': [
+        'gpu_demo_framework_exe',
+        '../../third_party/gles2_book/gles2_book.gyp:texture_wrap',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/texture_wrap.cc',
+      ],
+    },
+    {
+      'target_name': 'texture_wrap_pepper',
+      'type': 'shared_library',
+      'dependencies': [
+        'gpu_demo_framework_pepper',
+        '../../third_party/gles2_book/gles2_book.gyp:texture_wrap',
+      ],
+      'sources': [
+        'gles2_book/example.h',
+        'gles2_book/texture_wrap.cc',
+      ],
+    },
   ]
 }
 
