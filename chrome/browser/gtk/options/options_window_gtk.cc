@@ -8,11 +8,14 @@
 
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/options/advanced_page_gtk.h"
 #include "chrome/browser/gtk/options/content_page_gtk.h"
 #include "chrome/browser/gtk/options/general_page_gtk.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/window_sizer.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"
@@ -134,6 +137,17 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
   DCHECK_EQ(
       gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)), OPTIONS_PAGE_COUNT);
 
+  if (Browser* b = BrowserList::GetLastActive()) {
+    // Set temporary transient parent to align the windows before showing it.
+    // gtk_widget_show_all below shows options dialog before ShowOptionsPage
+    // is able to move the window to desired position. Therefor without
+    // gtk_window_set_transient_for(), the window initially appears at 0,0
+    // and then moves to the center. This trick eliminates blinking.
+    gtk_window_set_transient_for(GTK_WINDOW(dialog_),
+                                 b->window()->GetNativeHandle());
+    gtk_window_set_position(GTK_WINDOW(dialog_), GTK_WIN_POS_CENTER_ON_PARENT);
+  }
+
   // Need to show the notebook before connecting switch-page signal, otherwise
   // we'll immediately get a signal switching to page 0 and overwrite our
   // last_selected_page_ value.
@@ -151,8 +165,35 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
 OptionsWindowGtk::~OptionsWindowGtk() {
 }
 
+static gfx::Rect GetWindowBounds(GtkWindow* window) {
+  gint x, y, width, height;
+  gtk_window_get_position(window, &x, &y);
+  gtk_window_get_size(window, &width, &height);
+  return gfx::Rect(x, y, width, height);
+}
+
+static gfx::Size GetWindowSize(GtkWindow* window) {
+  gint width, height;
+  gtk_window_get_size(window, &width, &height);
+  return gfx::Size(width, height);
+}
+
 void OptionsWindowGtk::ShowOptionsPage(OptionsPage page,
                                        OptionsGroup highlight_group) {
+  // Remove transient parent to detach window since it doesn't belong to
+  // any particular browser instance.
+  gtk_window_set_transient_for(GTK_WINDOW(dialog_), NULL);
+  if (Browser* b = BrowserList::GetLastActive()) {
+    // Move dialog to user expected position.
+    gfx::Rect frame_bounds = GetWindowBounds(b->window()->GetNativeHandle());
+    gfx::Point origin = frame_bounds.origin();
+    gfx::Size size = GetWindowSize(GTK_WINDOW(dialog_));
+    origin.Offset(
+        (frame_bounds.width() - size.width()) / 2,
+        (frame_bounds.height() - size.height()) / 2);
+    gtk_window_move(GTK_WINDOW(dialog_), origin.x(), origin.y());
+  }
+
   // Bring options window to front if it already existed and isn't already
   // in front
   gtk_window_present_with_time(GTK_WINDOW(dialog_),
