@@ -978,16 +978,6 @@ BUG10298 LINUX : svg/custom/use-on-disallowed-foreign-object-3.svg = FAIL
 // There's no baseline at all for this!
 BUG32392 SKIP : svg/batik/text/smallFonts.svg = FAIL
 
-// This test fails because of an oddity in stroke width calculation. A
-// line is stroked horizontally from Y=100 with stroke width 100, we consider
-// it to be occupying the scan lines from Y=50 to Y=149 inclusive, which
-// is a total of 100 lines. Apple expects it to be occupying Y=150 as
-// well. The specification isn't very specific on which behavior is correct,
-// but I feel like ours makes more sense.
-// The crash started occuring after the WebKit merge 43242:43321
-BUG32408 RELEASE : svg/custom/stroke-width-click.svg = TEXT
-BUG32408 DEBUG : svg/custom/stroke-width-click.svg = CRASH
-
 // The test is flaky and maybe platform-dependent.
 BUG32401 LINUX WIN : svg/custom/marker-changes.svg = IMAGE+TEXT IMAGE
 
