@@ -9,6 +9,14 @@
 
 #include "chrome/browser/views/options/options_page_view.h"
 
+#include "app/l10n_util.h"
+#include "app/resource_bundle.h"
+#include "views/grid_layout.h"
+#include "views/standard_layout.h"
+
+using views::ColumnSet;
+using views::GridLayout;
+
 namespace chromeos {
 
 class SettingsContentsView;
@@ -24,13 +32,33 @@ class SettingsPageView : public OptionsPageView {
   GtkWidget* WrapInGtkWidget();
 
  protected:
-  virtual void InitControlLayout();
-
- private:
-  // Controls for the Settings page
-  SettingsContentsView* settings_contents_view_;
+  virtual void InitControlLayout() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPageView);
+};
+
+// Base section class settings
+class SettingsPageSection : public OptionsPageView {
+ public:
+  explicit SettingsPageSection(Profile* profile, int title_msg_id);
+  virtual ~SettingsPageSection() {}
+
+ protected:
+  // OptionsPageView overrides:
+  virtual void InitControlLayout();
+  virtual void InitContents(GridLayout* layout) = 0;
+
+  int single_column_view_set_id() const { return single_column_view_set_id_; }
+  int double_column_view_set_id() const { return double_column_view_set_id_; }
+
+ private:
+  // The message id for the title of this section.
+  int title_msg_id_;
+
+  int single_column_view_set_id_;
+  int double_column_view_set_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SettingsPageSection);
 };
 
 }  // namespace chromeos

@@ -267,7 +267,7 @@ void LanguageMenuButton::ActivatedAt(int index) {
   DCHECK(language_list_.get());
 
   if (IndexPointsToConfigureImeMenuItem(index)) {
-    browser_->ShowControlPanel();
+    browser_->OpenSystemOptionsDialog();
     return;
   }
 

@@ -432,7 +432,8 @@ class Browser : public TabStripModelDelegate,
   // Used by the "Get themes" link in the options dialog.
   void OpenThemeGalleryTabAndActivate();
 #if defined(OS_CHROMEOS)
-  void ShowControlPanel();
+  void OpenSystemOptionsDialog();
+  void OpenInternetOptionsDialog();
 #endif
 
   virtual void UpdateDownloadShelfVisibility(bool visible);
@@ -806,7 +807,7 @@ class Browser : public TabStripModelDelegate,
 
   // UI update coalescing and handling ////////////////////////////////////////
 
-  typedef std::map<const TabContents*,int> UpdateMap;
+  typedef std::map<const TabContents*, int> UpdateMap;
 
   // Maps from TabContents to pending UI updates that need to be processed.
   // We don't update things like the URL or tab title right away to avoid

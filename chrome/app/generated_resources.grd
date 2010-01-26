@@ -4662,6 +4662,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_DIALOG_TITLE" desc="The title of the Options dialog box">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Options
       </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_OPTIONS_SYSTEM_TAB_LABEL" desc="The title of the System tab">
+          System
+        </message>
+        <message name="IDS_OPTIONS_INTERNET_TAB_LABEL" desc="The title of the Internet tab">
+          Internet
+        </message>
+      </if>
       <message name="IDS_OPTIONS_GENERAL_TAB_LABEL" desc="The title of the Basics tab">
         Basics
       </message>

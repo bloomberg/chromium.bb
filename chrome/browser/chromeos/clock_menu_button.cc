@@ -131,7 +131,7 @@ bool ClockMenuButton::IsEnabledAt(int index) const {
 }
 
 void ClockMenuButton::ActivatedAt(int index) {
-  browser_->ShowControlPanel();
+  browser_->OpenSystemOptionsDialog();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

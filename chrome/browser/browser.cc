@@ -4,6 +4,9 @@
 
 #include "chrome/browser/browser.h"
 
+#include <algorithm>
+#include <string>
+
 #include "app/animation.h"
 #include "app/l10n_util.h"
 #include "base/base_paths.h"
@@ -1322,9 +1325,14 @@ void Browser::OpenThemeGalleryTabAndActivate() {
 }
 
 #if defined(OS_CHROMEOS)
-void Browser::ShowControlPanel() {
-  UserMetrics::RecordAction("ShowControlPanel", profile_);
-  ShowOptionsWindow(OPTIONS_PAGE_SETTINGS, OPTIONS_GROUP_NONE, profile_);
+void Browser::OpenSystemOptionsDialog() {
+  UserMetrics::RecordAction("OpenSystemOptionsDialog", profile_);
+  ShowOptionsWindow(OPTIONS_PAGE_SYSTEM, OPTIONS_GROUP_NONE, profile_);
+}
+
+void Browser::OpenInternetOptionsDialog() {
+  UserMetrics::RecordAction("OpenInternetOptionsDialog", profile_);
+  ShowOptionsWindow(OPTIONS_PAGE_INTERNET, OPTIONS_GROUP_NONE, profile_);
 }
 #endif
 
@@ -1420,7 +1428,7 @@ void Browser::ExecuteCommandWithDisposition(
   if (block_command_execution_) {
     // We actually only allow no more than one blocked command, otherwise some
     // commands maybe lost.
-    DCHECK(last_blocked_command_id_ == -1);
+    DCHECK_EQ(last_blocked_command_id_, -1);
     last_blocked_command_id_ = id;
     last_blocked_command_disposition_ = disposition;
     return;
@@ -1578,7 +1586,8 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_ABOUT:                 OpenAboutChromeDialog();       break;
     case IDC_HELP_PAGE:             OpenHelpTab();                 break;
 #if defined(OS_CHROMEOS)
-    case IDC_CONTROL_PANEL:         ShowControlPanel();            break;
+    case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();     break;
+    case IDC_INTERNET_OPTIONS:      OpenInternetOptionsDialog();   break;
 #endif
 
     default:
@@ -2560,7 +2569,8 @@ void Browser::InitCommandState() {
                                         enable_extensions);
 
 #if defined(OS_CHROMEOS)
-  command_updater_.UpdateCommandEnabled(IDC_CONTROL_PANEL, true);
+  command_updater_.UpdateCommandEnabled(IDC_SYSTEM_OPTIONS, true);
+  command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
 #endif
 
   // Initialize other commands based on the window type.

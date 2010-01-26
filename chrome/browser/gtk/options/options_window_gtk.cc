@@ -24,7 +24,8 @@
 #include "grit/generated_resources.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings_page_view.h"
+#include "chrome/browser/chromeos/internet_page_view.h"
+#include "chrome/browser/chromeos/system_page_view.h"
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -109,9 +110,15 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
 #if defined(OS_CHROMEOS)
   gtk_notebook_append_page(
       GTK_NOTEBOOK(notebook_),
-      (new chromeos::SettingsPageView(profile_))->WrapInGtkWidget(),
+      (new chromeos::SystemPageView(profile_))->WrapInGtkWidget(),
       gtk_label_new(
-          l10n_util::GetStringUTF8(IDS_PRODUCT_OS_NAME).c_str()));
+          l10n_util::GetStringUTF8(IDS_OPTIONS_SYSTEM_TAB_LABEL).c_str()));
+
+  gtk_notebook_append_page(
+      GTK_NOTEBOOK(notebook_),
+      (new chromeos::InternetPageView(profile_))->WrapInGtkWidget(),
+      gtk_label_new(
+          l10n_util::GetStringUTF8(IDS_OPTIONS_INTERNET_TAB_LABEL).c_str()));
 #endif
 
   gtk_notebook_append_page(

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/settings_page_view.h"
 
-#include "chrome/browser/chromeos/settings_contents_view.h"
 #include "skia/ext/skia_utils_gtk.h"
 #include "views/controls/label.h"
 #include "views/fill_layout.h"
@@ -36,10 +35,59 @@ GtkWidget* SettingsPageView::WrapInGtkWidget() {
   return widget->GetNativeView();
 }
 
-void SettingsPageView::InitControlLayout() {
-  // We'll likely need to make this scrollable
-  settings_contents_view_ = new SettingsContentsView(profile());
-  AddChildView(settings_contents_view_);
+
+////////////////////////////////////////////////////////////////////////////////
+// SettingsPageSection
+
+SettingsPageSection::SettingsPageSection(Profile* profile, int title_msg_id)
+    : OptionsPageView(profile),
+      title_msg_id_(title_msg_id),
+      single_column_view_set_id_(0),
+      double_column_view_set_id_(1) {
+}
+
+void SettingsPageSection::InitControlLayout() {
+  GridLayout* layout = new GridLayout(this);
+  SetLayoutManager(layout);
+
+  int single_column_layout_id = 0;
+  ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  int inset_column_layout_id = 1;
+  column_set = layout->AddColumnSet(inset_column_layout_id);
+  column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  layout->StartRow(0, single_column_layout_id);
+  views::Label* title_label = new views::Label(
+      l10n_util::GetString(title_msg_id_));
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::Font title_font =
+      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
+  title_label->SetFont(title_font);
+  layout->AddView(title_label);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->StartRow(0, inset_column_layout_id);
+
+  views::View* contents = new views::View;
+  GridLayout* child_layout = new GridLayout(contents);
+  contents->SetLayoutManager(child_layout);
+
+  column_set = child_layout->AddColumnSet(single_column_view_set_id_);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  column_set = child_layout->AddColumnSet(double_column_view_set_id_);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  InitContents(child_layout);
+  layout->AddView(contents);
 }
 
 }  // namespace chromeos

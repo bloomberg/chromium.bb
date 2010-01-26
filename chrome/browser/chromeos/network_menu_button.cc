@@ -344,6 +344,10 @@ void NetworkMenuButton::InitMenuItems() {
   menu_items_.clear();
   // Populate our MenuItems with the current list of wifi networks.
   NetworkLibrary* cros = NetworkLibrary::Get();
+  // If cros is not loaded, then have an empty menu.
+  if (!cros->EnsureLoaded())
+    return;
+
   bool offline_mode = cros->offline_mode();
 
   // Wifi: Status.
