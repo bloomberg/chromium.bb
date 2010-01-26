@@ -21,7 +21,7 @@
 
 #include "base/message_loop.h"
 #include "media/base/callback.h"
-#include "media/filters/ffmpeg_common.h"
+#include "media/ffmpeg/ffmpeg_common.h"
 
 namespace media {
 

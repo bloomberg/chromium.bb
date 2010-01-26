@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/tools/media_bench/file_protocol.h"
+#include "media/ffmpeg/file_protocol.h"
 
 #include "build/build_config.h"
 
@@ -16,7 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "media/filters/ffmpeg_common.h"
+#include "media/ffmpeg/ffmpeg_common.h"
 
 // warning C4996: 'open': The POSIX name for this item is deprecated.
 MSVC_PUSH_DISABLE_WARNING(4996)

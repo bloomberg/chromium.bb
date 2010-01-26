@@ -5,7 +5,7 @@
 #include "media/base/mock_ffmpeg.h"
 
 #include "base/logging.h"
-#include "media/filters/ffmpeg_common.h"
+#include "media/ffmpeg/ffmpeg_common.h"
 
 using ::testing::_;
 using ::testing::AtMost;

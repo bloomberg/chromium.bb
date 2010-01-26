@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,9 +29,9 @@
 #include "base/time.h"
 #include "media/base/djb2.h"
 #include "media/base/media.h"
-#include "media/filters/ffmpeg_common.h"
+#include "media/ffmpeg/ffmpeg_common.h"
+#include "media/ffmpeg/file_protocol.h"
 #include "media/filters/ffmpeg_video_decoder.h"
-#include "media/tools/media_bench/file_protocol.h"
 
 namespace switches {
 const char kStream[]       = "stream";
