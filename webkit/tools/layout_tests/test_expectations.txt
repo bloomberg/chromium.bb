@@ -3139,13 +3139,10 @@ BUGJORLOW : editing/pasteboard/paste-noscript-xhtml.xhtml = TEXT
 
 // Added in WebKit 53839
 BUGJORLOW : fast/lists/w3-css3-list-styles-alphabetic.html = IMAGE
-BUGJORLOW MAC : tables/mozilla/bugs/bug6674.html = IMAGE
+BUGJORLOW : tables/mozilla/bugs/bug6674.html = IMAGE+TEXT
 
 // Added in WebKit 53840
 BUGJORLOW : storage/domstorage/events/ = TEXT
 
 // From 53835:53838 roll...probably rebaseline
 BUGJORLOW  MAC : fast/lists/w3-css3-list-styles-alphabetic.html = IMAGE
-
-// From 53838:53840 roll
-BUGJORLOW LINUX : tables/mozilla/bugs/bug6674.html = IMAGE+TEXT
