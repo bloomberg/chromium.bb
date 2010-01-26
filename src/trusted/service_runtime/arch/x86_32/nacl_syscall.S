@@ -29,6 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// This code is not for public consumption.
+#if defined(GOOGLE_CHROME_BUILD)
+#error "This code is experimental and insecure -- do not ship!"
+#endif
+
 /*
  * NaCl service runtime context switch code.  NaClSyscallSeg is the
  * lcall target from the syscall trampoline code, and this code is
@@ -51,6 +56,7 @@
  *  RA for trampoline lcall (used to compute syscall number)
  */
 
+.text
 .globl  IDENTIFIER(NaClSyscallSeg)
         HIDDEN(NaClSyscallSeg)
 IDENTIFIER(NaClSyscallSeg):
@@ -85,7 +91,19 @@ IDENTIFIER(NaClSyscallSeg):
         xor     %eax, %eax
         mov     %gs, %ax
         shr     $3, %eax
+#ifdef __PIC__
+        push    %ebx
+        call    L1
+"L01$pb":
+L1:
+        pop     %ebx
+        leal    L_nacl_user$non_lazy_ptr-"L01$pb"(%ebx), %ebx
+        movl    (%ebx), %ebx
+        lea     (%ebx,%eax,4), %edx
+        pop     %ebx
+#else
         lea     IDENTIFIER(nacl_user)(,%eax,4), %edx
+#endif
 
         movl    0(%edx), %edx
         movl    %ebx, 0x0(%edx)
@@ -117,7 +135,19 @@ IDENTIFIER(NaClSyscallSeg):
          * any registers having particular values.  we will clear/discard
          * caller-saved registers at system call return.
          */
+#ifdef __PIC__
+        push    %ebx
+        call    L2
+"L02$pb":
+L2:
+        pop     %ebx
+        leal    L_nacl_sys$non_lazy_ptr-"L02$pb"(%ebx), %ebx
+        movl    (%ebx), %ebx
+        lea     (%ebx,%eax,4), %edx
+        pop     %ebx
+#else
         lea     IDENTIFIER(nacl_sys)(,%eax,4), %edx
+#endif
         movl    0(%edx), %edx
         /*
          * %cs and %ds already taken care of by NaCl_trampoline_seg_code
@@ -134,6 +164,7 @@ IDENTIFIER(NaClSyscallSeg):
         mov     %ecx, %ss  /* disable intr */
         movl    %edx, %esp
         push    %eax
+        /* call should already be relative */
         call    IDENTIFIER(NaClSyscallCSegHook)
         /*
          * If stack usage in the above code changes, modify initial %esp
@@ -141,3 +172,15 @@ IDENTIFIER(NaClSyscallSeg):
          */
         hlt
         /* noret */
+
+#ifdef __PIC__
+        .section __IMPORT,__pointers,non_lazy_symbol_pointers
+L_nacl_user$non_lazy_ptr:
+        .indirect_symbol IDENTIFIER(nacl_user)
+        .long   0
+        .subsections_via_symbols
+L_nacl_sys$non_lazy_ptr:
+        .indirect_symbol IDENTIFIER(nacl_sys)
+        .long   0
+        .subsections_via_symbols
+#endif

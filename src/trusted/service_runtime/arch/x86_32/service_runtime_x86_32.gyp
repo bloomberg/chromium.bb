@@ -40,12 +40,14 @@
         'sel_rt_32.c',
       ],
       'conditions': [
-        ['OS=="mac" and nacl_standalone==0', {
+        # TODO(dspringer): for now, official Chrome builds use the stubbed-out
+        # NaClSyscallSeg code.  Remove this when the real code is in place.
+        ['branding=="Chrome" and buildtype=="Official" and OS=="mac" and '
+         'nacl_standalone==0', {
           'sources': [
             'nacl_syscall_weak.S',
           ],
-        },
-        {
+        }, {  # All other builds use the NaClSyscallSeg code.
           'sources': [
             'nacl_syscall.S'
           ],

@@ -49,8 +49,25 @@
       # By default we assume that we are building as part of Chrome
       'variables': {
         'nacl_standalone%': 0,
+
+        # Override branding to select the desired branding flavor.
+        'branding%': 'Chromium',
+
+        # Override buildtype to select the desired build flavor.
+        # Dev - everyday build for development/testing
+        # Official - release build (generally implies additional processing)
+        # TODO(mmoss) Once 'buildtype' is fully supported (e.g. Windows gyp
+        # conversion is done), some of the things which are now controlled by
+        # 'branding', such as symbol generation, will need to be refactored
+        # based on 'buildtype' (i.e. we don't care about saving symbols for
+        # non-Official builds).
+        'buildtype%': 'Dev',
       },
       'nacl_standalone%': '<(nacl_standalone)',
+      # Define branding and buildtype on the basis of their settings within the
+      # variables sub-dict above, unless overridden.
+      'branding%': '<(branding)',
+      'buildtype%': '<(buildtype)',
       # Compute the architecture that we're building for. Default to the
       # architecture that we're building on.
       'conditions': [
@@ -68,6 +85,8 @@
     # These come from the above variable scope.
     'target_arch%': '<(target_arch)',
     'nacl_standalone%': '<(nacl_standalone)',
+    'branding%': '<(branding)',
+    'buildtype%': '<(buildtype)',
 
     'linux2%': 0,
 
