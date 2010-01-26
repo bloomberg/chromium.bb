@@ -58,7 +58,10 @@ static const char* RunModeName(RunMode mode) {
 static RunMode FLAGS_run_mode = X86_32;
 
 /* Holds the current instruction prefix. */
-OpcodePrefix current_opcode_prefix = NoPrefix;
+static OpcodePrefix current_opcode_prefix = NoPrefix;
+
+/* Holds the default instruction prefix. */
+static OpcodePrefix default_opcode_prefix = NoPrefix;
 
 /* Holds the current opcode instruction being built. */
 Opcode* current_opcode = NULL;
@@ -107,6 +110,15 @@ static void EncodePrefixName(const uint8_t byte, const char* name) {
 /* Change the current opcode prefix to the given value. */
 void DefineOpcodePrefix(OpcodePrefix prefix) {
   current_opcode_prefix = prefix;
+}
+
+void DefineDefaultOpcodePrefix(OpcodePrefix prefix) {
+  default_opcode_prefix = prefix;
+  DefineOpcodePrefix(prefix);
+}
+
+void ResetToDefaultOpcodePrefix() {
+  DefineOpcodePrefix(default_opcode_prefix);
 }
 
 /* Check that the given operand is an extention of the opcode
@@ -689,8 +701,6 @@ static void BuildOpcodeTables() {
   DefineOneByteOpcodes();
 
   Define0FOpcodes();
-
-  DefineDCOpcodes();
 
   DefineSseOpcodes();
 

@@ -1503,8 +1503,6 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
        * how to process the J operand (see Intel manual for call statement).
        */
       return AppendRelativeImmediate(state);
-    case MemOffset_E_Operand:
-      return AppendEffectiveAddress(state, operand, ModRmNoTopLevelRegisters);
     case Mmx_G_Operand:
       return AppendOperandRegister(state, operand, GetGenRegRegister(state),
                                    ModRmMmx);

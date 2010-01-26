@@ -923,7 +923,7 @@ ExprNodeVector[4] = {
     3, {
       { Opcode6, OpFlag(OperandExtendsOpcode) },
       { RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { MemOffset_E_Operand, OpFlag(OpUse) },
+      { M_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
@@ -943,7 +943,7 @@ ExprNodeVector[8] = {
     3, {
       { Opcode6, OpFlag(OperandExtendsOpcode) },
       { RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { MemOffset_E_Operand, OpFlag(OpUse) },
+      { M_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
@@ -963,7 +963,7 @@ ExprNodeVector[8] = {
     3, {
       { Opcode0, OpFlag(OperandExtendsOpcode) },
       { RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { MemOffset_E_Operand, OpFlag(OpUse) },
+      { M_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
@@ -983,7 +983,7 @@ ExprNodeVector[8] = {
     3, {
       { Opcode0, OpFlag(OperandExtendsOpcode) },
       { RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { MemOffset_E_Operand, OpFlag(OpUse) },
+      { M_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
@@ -1003,7 +1003,7 @@ ExprNodeVector[8] = {
     3, {
       { Opcode6, OpFlag(OperandExtendsOpcode) },
       { RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { MemOffset_E_Operand, OpFlag(OpUse) },
+      { M_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
@@ -1022,12 +1022,12 @@ ExprNodeVector[8] = {
     InstFicom,
     3, {
       { Opcode2, OpFlag(OperandExtendsOpcode) },
-      { RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { MemOffset_E_Operand, OpFlag(OpUse) },
+      { RegST0, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { M_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprRegister[0] , %st0, ExprSet | ExprUsed },
+  { ExprRegister[0] , %st0, ExprUsed },
   { OperandReference[1] , 2, 0 },
   { ExprMemOffset[4] , 0, ExprUsed },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
@@ -3384,7 +3384,7 @@ ExprNodeVector[4] = {
     InstFld,
     2, {
       { Opcode5, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) },
+      { M_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[6] = {
   { OperandReference[1] , 1, 0 },
@@ -3401,7 +3401,7 @@ ExprNodeVector[6] = {
     InstFld,
     2, {
       { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) },
+      { M_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[6] = {
   { OperandReference[1] , 1, 0 },

@@ -201,7 +201,6 @@
       'sources': ['ncdecode_tablegen.c',
                   'ncdecode_onebyte.c',
                   'ncdecode_OF.c',
-                  'ncdecode_DC.c',
                   'ncdecode_sse.c',
                   'ncdecodeX87.c',
       ],

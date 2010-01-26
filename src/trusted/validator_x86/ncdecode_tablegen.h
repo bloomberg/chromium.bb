@@ -25,6 +25,20 @@ typedef enum {
 /* Change the current opcode prefix to the given value. */
 void DefineOpcodePrefix(OpcodePrefix prefix);
 
+/* Define the default prefix to use. Typical use is top-level
+ * routine in file defines the default. All helping routines
+ * that define a specific local prefix (using DefineOpcodePrefix),
+ * then only need to call ResetToDefaultOpcodePrefix.
+ *
+ * Note: automatically calls DefineOpcodePrefix on the given prefix.
+ */
+void DefineDefaultOpcodePrefix(OpcodePrefix prefix);
+
+/* Resets the default opcode prefix to the value of the last
+ * call to DefineDefaultOpcodePrefix.
+ */
+void ResetToDefaultOpcodePrefix();
+
 /* Define the next opcode (instruction), initializing with
  * no operands.
  */

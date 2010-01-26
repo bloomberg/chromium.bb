@@ -55,11 +55,17 @@ typedef uint64_t OpcodeFlags;
 /* Converts an OpcodeFlagEnum to the corresponding bit in OpcodeFlags. */
 #define InstFlag(x) (((OpcodeFlags) 1) << (x))
 
+/* Models the empty set of opcode flags. */
+#define EmptyInstFlags ((OpcodeFlags) 0)
+
 /* Defines integer to represent sets of possible operand flags. */
 typedef uint32_t OperandFlags;
 
 /* Converts an OperandFlagEnum to the corresponding bit in OperandFlags. */
 #define OpFlag(x) (((OperandFlags) 1) << x)
+
+/* Models the empty set of operand flags. */
+#define EmptyOpFlags ((OperandFlags) 0)
 
 /* Metadata about an instruction operand. */
 typedef struct Operand {

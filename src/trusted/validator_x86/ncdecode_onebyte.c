@@ -398,72 +398,6 @@ static void DefineGroup2OpcodesInModRm() {
   }
 }
 
-static const int kFirstByteGroupsForX87Inst = 2;
-static const int kFirstByteGroupSizeForX87Inst = 2;
-static const int kNumInstForX87Inst = 8;
-
-/*
- * Group the first byte of the X87 opcodes by the set of instructions
- * they define.
- *
- * kFirstByteGroupsForX87Inst x kFirstByteGroupSizeForX87Inst
- */
-static const uint8_t FirstByteOpcodeForX87Inst[2][2] = {
-  {0xD8, 0xDC},
-  {0xDA, 0xDE}
-};
-
-/*
- * kFirstByteGroupsForX87Inst x kNumInstForX87Inst
- */
-static const InstMnemonic OneByteOpcodeNameForX87Inst[2][8] = {
-  { InstFadd, /* 0xD8 and 0xDC */
-    InstFmul,
-    InstFcom,
-    InstFcomp,
-    InstFsub,
-    InstFsubr,
-    InstFdiv,
-    InstFdivr },
-  { InstFiadd, /* 0xDA and 0xDE */
-    InstFimul,
-    InstFicom,
-    InstFicomp,
-    InstFisub,
-    InstFisubr,
-    InstFidiv,
-    InstFidivr }
-};
-
-/*
- *
- * The X87 opcode maps are grouped by the first byte of the opcode,
- * from D8-DF. Some opcodes refer to the same instruction sets.
- *
- * 0xD8 {InstFadd, .. InstFdivr}
- * 0xDC {InstFadd, .. InstFdivr}
- * 0xDA {InstFiadd, .. InstFidivr}
- * 0xDE {InstFiadd, .. InstFidivr}
- */
-static void DefineModRmOpcodesForX87Inst() {
-  int byte_group;
-  int byte_idx;
-  int i;
-  for (byte_group = 0; byte_group < kFirstByteGroupsForX87Inst; ++byte_group)
-    for (byte_idx = 0; byte_idx < kFirstByteGroupSizeForX87Inst; ++byte_idx)
-      for (i = 0; i < kNumInstForX87Inst; ++i) {
-        DefineOpcode(
-            FirstByteOpcodeForX87Inst[byte_group][byte_idx],
-            NACLi_X87,
-            InstFlag(OpcodeInModRm),
-            OneByteOpcodeNameForX87Inst[byte_group][i]);
-        DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-        DefineOperand(RegST0,
-                      OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
-        DefineOperand(MemOffset_E_Operand, OpFlag(OpUse));
-      }
-}
-
 void DefineOneByteOpcodes() {
   uint8_t i;
 
@@ -1323,11 +1257,6 @@ void DefineOneByteOpcodes() {
   DefineOperand(RegAL, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegAH, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(I_Operand, OpFlag(OpUse) | OpFlag(OpImplicit));
-
-  /* Maps for escape instruction opcodes (x87 FP) when the ModR/M byte
-   * is within the range of 00H-BFH. The maps are grouped by the first
-   * byte of the opcode, from D8-DF. */
-  DefineModRmOpcodesForX87Inst();
 
   DefineOpcode(0xDD,
                NACLi_X87,
