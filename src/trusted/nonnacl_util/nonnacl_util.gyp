@@ -76,13 +76,6 @@
         'sources': [
           'sel_ldr_launcher_chrome.cc',
         ],
-        'conditions': [
-          ['OS=="win"', {
-            'dependencies': [
-              '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
-            ],
-          }],
-        ],
       }],
     ]
   },
@@ -180,6 +173,13 @@
           },
           'dependencies': [
             'sel_ldr_launcher',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
+              ],
+            }],
           ],
         },
       ],
