@@ -16,7 +16,6 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
-class Browser;
 class SkBitmap;
 
 namespace gfx {
@@ -58,7 +57,7 @@ class NetworkMenuButton : public StatusAreaButton,
                           public PasswordDialogDelegate,
                           public NetworkLibrary::Observer {
  public:
-  explicit NetworkMenuButton(gfx::NativeWindow browser_window);
+  explicit NetworkMenuButton(gfx::NativeWindow parent_window);
   virtual ~NetworkMenuButton();
 
   // menus::MenuModel implementation.
@@ -170,7 +169,7 @@ class NetworkMenuButton : public StatusAreaButton,
   views::Menu2 network_menu_;
 
   // Our parent window
-  gfx::NativeWindow browser_window_;
+  gfx::NativeWindow parent_window_;
 
   // The throb animation that does the wifi connecting animation.
   ThrobAnimation animation_connecting_;

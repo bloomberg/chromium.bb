@@ -30,10 +30,10 @@ SkBitmap* NetworkMenuButton::menu_wifi_icons_ = NULL;
 SkBitmap* NetworkMenuButton::menu_wired_icon_ = NULL;
 SkBitmap* NetworkMenuButton::menu_disconnected_icon_ = NULL;
 
-NetworkMenuButton::NetworkMenuButton(gfx::NativeWindow browser_window)
+NetworkMenuButton::NetworkMenuButton(gfx::NativeWindow parent_window)
     : StatusAreaButton(this),
       ALLOW_THIS_IN_INITIALIZER_LIST(network_menu_(this)),
-      browser_window_(browser_window),
+      parent_window_(parent_window),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_downloading_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_uploading_(this)) {
@@ -134,14 +134,14 @@ void NetworkMenuButton::ActivatedAt(int index) {
     } else {
       PasswordDialogView* dialog = new PasswordDialogView(this,
          activated_wifi_network_.ssid);
-      views::Window* window = views::Window::CreateChromeWindow(browser_window_,
+      views::Window* window = views::Window::CreateChromeWindow(parent_window_,
           gfx::Rect(), dialog);
       // Draw the password dialog right below this button and right aligned.
       gfx::Size size = dialog->GetPreferredSize();
       gfx::Rect rect = bounds();
       gfx::Point point = gfx::Point(rect.width() - size.width(), rect.height());
       ConvertPointToScreen(this, &point);
-      window->SetBounds(gfx::Rect(point, size), browser_window_);
+      window->SetBounds(gfx::Rect(point, size), parent_window_);
       window->Show();
     }
   } else if (menu_items_[index].flags & FLAG_ACTIVATE_CELLULAR) {
