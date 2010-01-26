@@ -377,21 +377,6 @@ void GetParsedFeedData(HTTPTestServer* server,
   EXPECT_STREQ(expected_error.c_str(), error.c_str());
 }
 
-#if defined(OS_LINUX)
-// http://crbug.com/33085 Temporarily disabled some browser tests
-// that fail because of r53715 upstream.
-#define ParseFeedValidFeed0 DISABLED_ParseFeedValidFeed0
-#define ParseFeedValidFeed1 DISABLED_ParseFeedValidFeed1
-#define ParseFeedValidFeed2 DISABLED_ParseFeedValidFeed2
-#define ParseFeedValidFeed3 DISABLED_ParseFeedValidFeed3
-#define ParseFeedValidFeed4 DISABLED_ParseFeedValidFeed4
-#define ParseFeedValidFeed5 DISABLED_ParseFeedValidFeed5
-#define ParseFeedValidFeedNoLinks DISABLED_ParseFeedValidFeedNoLinks
-#define ParseFeedInvalidFeed1 DISABLED_ParseFeedInvalidFeed1
-#define ParseFeedInvalidFeed2 DISABLED_ParseFeedInvalidFeed2
-#define ParseFeedInvalidFeed3 DISABLED_ParseFeedInvalidFeed3
-#endif
-
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
   GetParsedFeedData(server, kValidFeed1, browser(),
