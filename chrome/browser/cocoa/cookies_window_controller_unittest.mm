@@ -501,4 +501,56 @@ TEST_F(CookiesWindowControllerTest, RemoveButtonEnabled) {
   [controller closeSheet:nil];
 }
 
+TEST_F(CookiesWindowControllerTest, UpdateFilter)
+{
+  const GURL url = GURL("http://foo.com");
+  TestingProfile* profile = browser_helper_.profile();
+  net::CookieMonster* cm = profile->GetCookieMonster();
+  cm->SetCookie(GURL("http://a.com"), "A=B");
+  cm->SetCookie(GURL("http://aa.com"), "C=D");
+  cm->SetCookie(GURL("http://b.com"), "E=F");
+  cm->SetCookie(GURL("http://d.com"), "G=H");
+  cm->SetCookie(GURL("http://dd.com"), "I=J");
+
+  controller_.reset(
+      [[CookiesWindowController alloc] initWithProfile:profile
+                                         storageHelper:local_storage_helper_]);
+
+  // Make sure we registered all five cookies.
+  EXPECT_EQ(5U, [[[controller_ cocoaTreeModel] childs] count]);
+
+  NSSearchField* field =
+      [[NSSearchField alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)];
+
+  // Make sure we still have five cookies.
+  [field setStringValue:@""];
+  [controller_ updateFilter:field];
+  EXPECT_EQ(5U, [[[controller_ cocoaTreeModel] childs] count]);
+
+  // Search for "a".
+  [field setStringValue:@"a"];
+  [controller_ updateFilter:field];
+  EXPECT_EQ(2U, [[[controller_ cocoaTreeModel] childs] count]);
+
+  // Search for "b".
+  [field setStringValue:@"b"];
+  [controller_ updateFilter:field];
+  EXPECT_EQ(1U, [[[controller_ cocoaTreeModel] childs] count]);
+
+  // Search for "d".
+  [field setStringValue:@"d"];
+  [controller_ updateFilter:field];
+  EXPECT_EQ(2U, [[[controller_ cocoaTreeModel] childs] count]);
+
+  // Search for "e".
+  [field setStringValue:@"e"];
+  [controller_ updateFilter:field];
+  EXPECT_EQ(0U, [[[controller_ cocoaTreeModel] childs] count]);
+
+  // Search for "aa".
+  [field setStringValue:@"aa"];
+  [controller_ updateFilter:field];
+  EXPECT_EQ(1U, [[[controller_ cocoaTreeModel] childs] count]);
+}
+
 }  // namespace

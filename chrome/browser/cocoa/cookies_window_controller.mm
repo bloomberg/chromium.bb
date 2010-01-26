@@ -167,6 +167,8 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
 }
 
 - (void)windowWillClose:(NSNotification*)notif {
+  [searchField_ setTarget:nil];
+  [outlineView_ setDelegate:nil];
   [self autorelease];
 }
 
@@ -183,6 +185,12 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
          contextInfo:(void*)context {
   [sheet close];
   [sheet orderOut:self];
+}
+
+- (IBAction)updateFilter:(id)sender {
+  DCHECK([sender isKindOfClass:[NSSearchField class]]);
+  NSString* string = [sender stringValue];
+  treeModel_->UpdateSearchResults(base::SysNSStringToWide(string));
 }
 
 - (IBAction)deleteCookie:(id)sender {

@@ -85,6 +85,8 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
   BOOL removeButtonEnabled_;
 
   IBOutlet NSTreeController* treeController_;
+  IBOutlet NSOutlineView* outlineView_;
+  IBOutlet NSSearchField* searchField_;
 
   Profile* profile_;  // weak
   BrowsingDataLocalStorageHelper* storageHelper_;  // weak
@@ -98,6 +100,9 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
 
 // Shows the cookies window as a modal sheet attached to |window|.
 - (void)attachSheetTo:(NSWindow*)window;
+
+// Updates the filter from the search field.
+- (IBAction)updateFilter:(id)sender;
 
 // Delete cookie actions.
 - (IBAction)deleteCookie:(id)sender;
