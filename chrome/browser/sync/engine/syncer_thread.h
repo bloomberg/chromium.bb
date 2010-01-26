@@ -21,6 +21,9 @@
 #include "base/time.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/sync/engine/all_status.h"
+#if defined(OS_LINUX)
+#include "chrome/browser/sync/engine/idle_query_linux.h"
+#endif
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
@@ -247,6 +250,8 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   void SetUpdatesSource(bool nudged, NudgeSource nudge_source,
                         bool* initial_sync);
 
+  int UserIdleTime();
+
   // For unit tests only.
   virtual void DisableIdleDetection() { disable_idle_detection_ = true; }
 
@@ -279,6 +284,11 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   scoped_ptr<EventListenerHookup> talk_mediator_hookup_;
   scoped_ptr<EventListenerHookup> directory_manager_hookup_;
   scoped_ptr<EventListenerHookup> syncer_events_;
+
+#if defined(OS_LINUX)
+  // On Linux, we need this information in order to query idle time.
+  scoped_ptr<IdleQueryLinux> idle_query_;
+#endif
 
   scoped_ptr<sessions::SyncSessionContext> session_context_;
 

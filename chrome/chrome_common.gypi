@@ -298,6 +298,7 @@
             'libraries': [
               '-lX11',
               '-lXrender',
+              '-lXss',
               '-lXext',
             ],
           },

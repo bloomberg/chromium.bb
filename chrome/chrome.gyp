@@ -860,6 +860,8 @@
         'browser/sync/engine/download_updates_command.h',
         'browser/sync/engine/get_commit_ids_command.cc',
         'browser/sync/engine/get_commit_ids_command.h',
+        'browser/sync/engine/idle_query_linux.cc',
+        'browser/sync/engine/idle_query_linux.h',
         'browser/sync/engine/model_changing_syncer_command.cc',
         'browser/sync/engine/model_changing_syncer_command.h',
         'browser/sync/engine/model_safe_worker.h',

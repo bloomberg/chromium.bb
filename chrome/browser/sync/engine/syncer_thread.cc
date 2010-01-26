@@ -31,80 +31,6 @@ using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 
-namespace {
-
-// Returns the amount of time since the user last interacted with the computer,
-// in milliseconds
-int UserIdleTime() {
-#if defined(OS_WIN)
-  LASTINPUTINFO last_input_info;
-  last_input_info.cbSize = sizeof(LASTINPUTINFO);
-
-  // Get time in windows ticks since system start of last activity.
-  BOOL b = ::GetLastInputInfo(&last_input_info);
-  if (b == TRUE)
-    return ::GetTickCount() - last_input_info.dwTime;
-#elif defined(OS_MACOSX)
-  // It would be great to do something like:
-  //
-  // return 1000 *
-  //     CGEventSourceSecondsSinceLastEventType(
-  //         kCGEventSourceStateCombinedSessionState,
-  //         kCGAnyInputEventType);
-  //
-  // Unfortunately, CGEvent* lives in ApplicationServices, and we're a daemon
-  // and can't link that high up the food chain. Thus this mucking in IOKit.
-
-  io_service_t hid_service =
-      IOServiceGetMatchingService(kIOMasterPortDefault,
-                                  IOServiceMatching("IOHIDSystem"));
-  if (!hid_service) {
-    LOG(WARNING) << "Could not obtain IOHIDSystem";
-    return 0;
-  }
-
-  CFTypeRef object = IORegistryEntryCreateCFProperty(hid_service,
-                                                     CFSTR("HIDIdleTime"),
-                                                     kCFAllocatorDefault,
-                                                     0);
-  if (!object) {
-    LOG(WARNING) << "Could not get IOHIDSystem's HIDIdleTime property";
-    IOObjectRelease(hid_service);
-    return 0;
-  }
-
-  int64 idle_time;  // in nanoseconds
-  Boolean success = false;
-  if (CFGetTypeID(object) == CFNumberGetTypeID()) {
-    success = CFNumberGetValue((CFNumberRef)object,
-                               kCFNumberSInt64Type,
-                               &idle_time);
-  } else {
-    LOG(WARNING) << "IOHIDSystem's HIDIdleTime property isn't a number!";
-  }
-
-  CFRelease(object);
-  IOObjectRelease(hid_service);
-
-  if (!success) {
-    LOG(WARNING) << "Could not get IOHIDSystem's HIDIdleTime property's value";
-    return 0;
-  } else {
-    return idle_time / 1000000;  // nano to milli
-  }
-#else
-  static bool was_logged = false;
-  if (!was_logged) {
-    was_logged = true;
-    LOG(INFO) << "UserIdleTime unimplemented on this platform, "
-        "synchronization will not throttle when user idle";
-  }
-#endif
-
-  return 0;
-}
-
-}  // namespace
 
 namespace browser_sync {
 
@@ -260,6 +186,10 @@ void SyncerThread::ThreadMainLoop() {
   bool initial_sync_for_thread = true;
   bool continue_sync_cycle = false;
 
+#if defined(OS_LINUX)
+  idle_query_.reset(new IdleQueryLinux());
+#endif
+
   while (!vault_.stop_syncer_thread_) {
     // The Wait()s in these conditionals using |vault_| are not TimedWait()s (as
     // below) because we cannot poll until these conditions are met, so we wait
@@ -329,6 +259,9 @@ void SyncerThread::ThreadMainLoop() {
         static_cast<int>(vault_.current_wait_interval_.poll_delta.InSeconds()),
         &user_idle_milliseconds, &continue_sync_cycle, nudged);
   }
+#if defined(OS_LINUX)
+  idle_query_.reset();
+#endif
 }
 
 // We check how long the user's been idle and sync less often if the machine is
@@ -636,5 +569,83 @@ void SyncerThread::HandleTalkMediatorEvent(const TalkMediatorEvent& event) {
   session_context_->set_notifications_enabled(p2p_authenticated_ &&
                                               p2p_subscribed_);
 }
+
+// Returns the amount of time since the user last interacted with the computer,
+// in milliseconds
+int SyncerThread::UserIdleTime() {
+#if defined(OS_WIN)
+  LASTINPUTINFO last_input_info;
+  last_input_info.cbSize = sizeof(LASTINPUTINFO);
+
+  // Get time in windows ticks since system start of last activity.
+  BOOL b = ::GetLastInputInfo(&last_input_info);
+  if (b == TRUE)
+    return ::GetTickCount() - last_input_info.dwTime;
+#elif defined(OS_MACOSX)
+  // It would be great to do something like:
+  //
+  // return 1000 *
+  //     CGEventSourceSecondsSinceLastEventType(
+  //         kCGEventSourceStateCombinedSessionState,
+  //         kCGAnyInputEventType);
+  //
+  // Unfortunately, CGEvent* lives in ApplicationServices, and we're a daemon
+  // and can't link that high up the food chain. Thus this mucking in IOKit.
+
+  io_service_t hid_service =
+      IOServiceGetMatchingService(kIOMasterPortDefault,
+                                  IOServiceMatching("IOHIDSystem"));
+  if (!hid_service) {
+    LOG(WARNING) << "Could not obtain IOHIDSystem";
+    return 0;
+  }
+
+  CFTypeRef object = IORegistryEntryCreateCFProperty(hid_service,
+                                                     CFSTR("HIDIdleTime"),
+                                                     kCFAllocatorDefault,
+                                                     0);
+  if (!object) {
+    LOG(WARNING) << "Could not get IOHIDSystem's HIDIdleTime property";
+    IOObjectRelease(hid_service);
+    return 0;
+  }
+
+  int64 idle_time;  // in nanoseconds
+  Boolean success = false;
+  if (CFGetTypeID(object) == CFNumberGetTypeID()) {
+    success = CFNumberGetValue((CFNumberRef)object,
+                               kCFNumberSInt64Type,
+                               &idle_time);
+  } else {
+    LOG(WARNING) << "IOHIDSystem's HIDIdleTime property isn't a number!";
+  }
+
+  CFRelease(object);
+  IOObjectRelease(hid_service);
+
+  if (!success) {
+    LOG(WARNING) << "Could not get IOHIDSystem's HIDIdleTime property's value";
+    return 0;
+  } else {
+    return idle_time / 1000000;  // nano to milli
+  }
+#elif defined(OS_LINUX)
+  if (idle_query_.get()) {
+    return idle_query_->IdleTime();
+  } else {
+    return 0;
+  }
+#else
+  static bool was_logged = false;
+  if (!was_logged) {
+    was_logged = true;
+    LOG(INFO) << "UserIdleTime unimplemented on this platform, "
+        "synchronization will not throttle when user idle";
+  }
+#endif
+
+  return 0;
+}
+
 
 }  // namespace browser_sync
