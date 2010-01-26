@@ -43,7 +43,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
       Extension* extension, SkBitmap* icon, const std::wstring& warning_text,
       bool is_uninstall)
           : delegate_(delegate), icon_(NULL), warning_(NULL),
-            create_shortcut_(NULL), is_uninstall_(false) {
+            create_shortcut_(NULL), is_uninstall_(is_uninstall) {
     if (extension->IsApp()) {
       icon_size_ = kIconSizeApp;
       right_column_width_ = kRightColumnWidthApp;
