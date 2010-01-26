@@ -2216,3 +2216,12 @@
    fun:find_objects_by_template
    fun:nssToken_FindCertificatesBySubject
 }
+{
+   bug_33108
+   Memcheck:Cond
+   fun:_ZN7WebCore16StorageAreaProxy5clearEPNS_5FrameE
+   fun:_ZN7WebCore7Storage5clearEv
+   fun:_ZN7WebCore15StorageInternal13clearCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internal21Builtin_HandleApiCallENS0_9ArgumentsE
+   obj:*
+}
