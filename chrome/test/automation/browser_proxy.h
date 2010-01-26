@@ -211,6 +211,10 @@ class BrowserProxy : public AutomationResourceProxy {
   // Sets |is_visible| to whether the browser's fullscreen bubble is visible.
   bool IsFullscreenBubbleVisible(bool* is_visible);
 
+  // Shuts down the session service for the browser's profile. Returns true
+  // on success.
+  bool ShutdownSessionService();
+
  protected:
   virtual ~BrowserProxy() {}
  private:

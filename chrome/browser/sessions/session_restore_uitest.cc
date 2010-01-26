@@ -86,13 +86,6 @@ class SessionRestoreUITest : public UITest {
   DISALLOW_COPY_AND_ASSIGN(SessionRestoreUITest);
 };
 
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// This test is flaky on linux/views builds.
-// See http://crbug.com/28808.
-#define NormalAndPopup FLAKY_NormalAndPopup
-#endif
-
-
 TEST_F(SessionRestoreUITest, Basic) {
   NavigateToURL(url1_);
   NavigateToURL(url2_);
@@ -279,6 +272,22 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   ASSERT_EQ(2, window_count);
 
+  scoped_refptr<BrowserProxy> popup(automation()->GetBrowserWindow(1));
+  ASSERT_TRUE(popup.get());
+
+  scoped_refptr<TabProxy> tab(popup->GetTab(0));
+  ASSERT_TRUE(tab.get());
+
+  tab->NavigateToURL(url1_);
+
+  // Simulate an exit by shuting down the session service. If we don't do this
+  // the first window close is treated as though the user closed the window
+  // and won't be restored.
+  ASSERT_TRUE(popup->ShutdownSessionService());
+
+  tab = NULL;
+  popup = NULL;
+
   // Restart and make sure we have only one window with one tab and the url
   // is url1_.
   QuitBrowserAndRestore(1);
@@ -307,7 +316,6 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
     EXPECT_EQ(type2, Browser::TYPE_NORMAL);
   }
 }
-
 
 #if defined(OS_WIN)
 // Creates a browser, goes incognito, closes browser, launches and make sure

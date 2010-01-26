@@ -1183,4 +1183,10 @@ IPC_BEGIN_MESSAGES(Automation)
                       int /* tab_handle */,
                       int /* request_id */)
 
+  // Shuts down the session service for the browser identified by
+  // |browser_handle|. On success |result| is set to true.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_ShutdownSessionService,
+                             int   /* browser_handle */,
+                             bool  /* result */)
+
 IPC_END_MESSAGES(Automation)

@@ -477,3 +477,18 @@ bool BrowserProxy::IsFullscreenBubbleVisible(bool* is_visible) {
   return sender_->Send(new AutomationMsg_IsFullscreenBubbleVisible(0, handle_,
                                                                    is_visible));
 }
+
+bool BrowserProxy::ShutdownSessionService() {
+  bool did_shutdown = false;
+  bool succeeded = sender_->Send(
+      new AutomationMsg_ShutdownSessionService(0, handle_, &did_shutdown));
+
+  if (!succeeded) {
+    DLOG(ERROR) <<
+        "ShutdownSessionService did not complete in a timely fashion";
+    return false;
+  }
+
+  return did_shutdown;
+}
+

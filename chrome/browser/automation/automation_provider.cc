@@ -462,6 +462,8 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                                     InstallExtension)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoadExpandedExtension,
                                     LoadExpandedExtension)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ShutdownSessionService,
+                        ShutdownSessionService)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -742,6 +744,16 @@ void AutomationProvider::ClickAppModalDialogButton(int button, bool* success) {
       dialog_delegate->CancelWindow();
       *success =  true;
     }
+  }
+}
+
+void AutomationProvider::ShutdownSessionService(int handle, bool* result) {
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    browser->profile()->ShutdownSessionService();
+    *result = true;
+  } else {
+    *result = false;
   }
 }
 
