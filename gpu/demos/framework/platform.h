@@ -4,8 +4,8 @@
 
 // Platform-specific types and definitions for native widget handles.
 
-#ifndef GPU_DEMOS_APP_FRAMEWORK_PLATFORM_H_
-#define GPU_DEMOS_APP_FRAMEWORK_PLATFORM_H_
+#ifndef GPU_DEMOS_FRAMEWORK_PLATFORM_H_
+#define GPU_DEMOS_FRAMEWORK_PLATFORM_H_
 
 #ifdef _WINDOWS
 #include <windows.h>
@@ -13,11 +13,13 @@
 
 #include "build/build_config.h"
 
-namespace gpu_demos {
+namespace gpu {
+namespace demos {
 
 #if defined(OS_WIN)
 typedef HWND NativeWindowHandle;
 #endif  // defined(OS_WIN)
 
-}  // namespace gpu_demos
-#endif  // GPU_DEMOS_APP_FRAMEWORK_PLATFORM_H_
+}  // namespace demos
+}  // namespace gpu
+#endif  // GPU_DEMOS_FRAMEWORK_PLATFORM_H_

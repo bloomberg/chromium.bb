@@ -11,93 +11,87 @@
   ],
   'targets': [
     {
-      'target_name': 'app_framework',
+      'target_name': 'gpu_demo_framework',
       'type': 'static_library',
       'dependencies': [
+        '../../base/base.gyp:base',
+      ],
+      'sources': [
+        'framework/demo.cc',
+        'framework/demo.h',
+        'framework/demo_factory.h',
+      ],
+    },
+    {
+      'target_name': 'gpu_demo_framework_exe',
+      'type': 'static_library',
+      'dependencies': [
+        'gpu_demo_framework',
         '../gpu.gyp:command_buffer_client',
         '../gpu.gyp:command_buffer_service',
       ],
+      'all_dependent_settings': {
+        'sources': [
+          'framework/main_exe.cc',
+        ],
+      },
       'sources': [
-        'app_framework/application.cc',
-        'app_framework/application.h',
-        'app_framework/platform.h',
+        'framework/platform.h',
+        'framework/window.cc',
+        'framework/window.h',
       ],
     },
     {
-      'target_name': 'hello_triangle',
+      'target_name': 'gpu_demo_framework_pepper',
+      'type': 'static_library',
+      'dependencies': [
+        'gpu_demo_framework',
+        '../gpu.gyp:pgl',
+      ],
+      'all_dependent_settings': {
+        'sources': [
+          'framework/main_pepper.cc',
+          'framework/plugin.def',
+          'framework/plugin.rc',
+        ],
+        'run_as': {
+          'action': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
+            '--no-sandbox',
+            '--internal-pepper',
+            '--enable-gpu-plugin',
+            '--load-plugin=$(TargetPath)',
+            'file://$(ProjectDir)pepper_gpu_demo.html',
+          ],
+        },
+      },
+      'sources': [
+        'framework/plugin.cc',
+        'framework/plugin.h',
+      ],
+    },
+    {
+      'target_name': 'hello_triangle_exe',
       'type': 'executable',
       'dependencies': [
-        'app_framework',
+        'gpu_demo_framework_exe',
         '../../third_party/gles2_book/gles2_book.gyp:hello_triangle',
       ],
       'sources': [
-        'hello_triangle/main.cc',
+        'gles2_book/example.h',
+        'gles2_book/hello_triangle.cc',
       ],
     },
     {
-      'target_name': 'mip_map_2d',
-      'type': 'executable',
+      'target_name': 'hello_triangle_pepper',
+      'type': 'shared_library',
       'dependencies': [
-        'app_framework',
-        '../../third_party/gles2_book/gles2_book.gyp:mip_map_2d',
+        'gpu_demo_framework_pepper',
+        '../../third_party/gles2_book/gles2_book.gyp:hello_triangle',
       ],
       'sources': [
-        'mip_map_2d/main.cc',
-      ],
-    },
-    {
-      'target_name': 'simple_texture_2d',
-      'type': 'executable',
-      'dependencies': [
-        'app_framework',
-        '../../third_party/gles2_book/gles2_book.gyp:simple_texture_2d',
-      ],
-      'sources': [
-        'simple_texture_2d/main.cc',
-      ],
-    },
-    {
-      'target_name': 'simple_texture_cubemap',
-      'type': 'executable',
-      'dependencies': [
-        'app_framework',
-        '../../third_party/gles2_book/gles2_book.gyp:simple_texture_cubemap',
-      ],
-      'sources': [
-        'simple_texture_cubemap/main.cc',
-      ],
-    },
-    {
-      'target_name': 'simple_vertex_shader',
-      'type': 'executable',
-      'dependencies': [
-        'app_framework',
-        '../../third_party/gles2_book/gles2_book.gyp:simple_vertex_shader',
-      ],
-      'sources': [
-        'simple_vertex_shader/main.cc',
-      ],
-    },
-    {
-      'target_name': 'stencil_test',
-      'type': 'executable',
-      'dependencies': [
-        'app_framework',
-        '../../third_party/gles2_book/gles2_book.gyp:stencil_test',
-      ],
-      'sources': [
-        'stencil_test/main.cc',
-      ],
-    },
-    {
-      'target_name': 'texture_wrap',
-      'type': 'executable',
-      'dependencies': [
-        'app_framework',
-        '../../third_party/gles2_book/gles2_book.gyp:texture_wrap',
-      ],
-      'sources': [
-        'texture_wrap/main.cc',
+        'gles2_book/example.h',
+        'gles2_book/hello_triangle.cc',
       ],
     },
   ]
