@@ -101,9 +101,8 @@ class Browser : public TabStripModelDelegate,
   static Browser* CreateForPopup(Profile* profile);
 
   // Like Create, but creates a tabstrip-less and toolbar-less "app" window for
-  // the specified app. Passing popup=true will create a TYPE_APP_POPUP browser
-  static Browser* CreateForApp(const std::wstring& app_name, Profile* profile,
-                               bool is_popup);
+  // the specified app.
+  static Browser* CreateForApp(const std::wstring& app_name, Profile* profile);
 
   // Like Create, but creates a tabstrip-less and toolbar-less
   // DevTools "app" window.

@@ -234,8 +234,8 @@ Browser* Browser::CreateForPopup(Profile* profile) {
 
 // static
 Browser* Browser::CreateForApp(const std::wstring& app_name,
-                               Profile* profile, bool is_popup) {
-  Browser* browser = new Browser(is_popup? TYPE_APP_POPUP : TYPE_APP, profile);
+                               Profile* profile) {
+  Browser* browser = new Browser(TYPE_APP, profile);
   browser->app_name_ = app_name;
   browser->CreateBrowserWindow();
   return browser;
@@ -351,7 +351,7 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url) {
   std::wstring app_name = web_app::GenerateApplicationNameFromURL(url);
   RegisterAppPrefs(app_name);
 
-  Browser* browser = Browser::CreateForApp(app_name, profile, false);
+  Browser* browser = Browser::CreateForApp(app_name, profile);
   browser->AddTabWithURL(url, GURL(), PageTransition::START_PAGE, true, -1,
                          false, NULL);
 
@@ -1729,8 +1729,8 @@ void Browser::DuplicateContentsAt(int index) {
   } else {
     Browser* browser = NULL;
     if (type_ & TYPE_APP) {
-      browser = Browser::CreateForApp(app_name_, profile_,
-                                      !!(type_ & TYPE_POPUP));
+      DCHECK((type_ & TYPE_POPUP) == 0);
+      browser = Browser::CreateForApp(app_name_, profile_);
     } else if (type_ == TYPE_POPUP) {
       browser = Browser::CreateForPopup(profile_);
     }
@@ -2185,7 +2185,7 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
   RegisterAppPrefs(app_name);
 
   DetachContents(contents);
-  Browser* browser = Browser::CreateForApp(app_name, profile_, false);
+  Browser* browser = Browser::CreateForApp(app_name, profile_);
   browser->tabstrip_model()->AppendTabContents(contents, true);
   TabContents* tab_contents = browser->GetSelectedTabContents();
   tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
