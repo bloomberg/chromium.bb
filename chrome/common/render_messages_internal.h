@@ -1881,23 +1881,26 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               NullableString16 /* value */)
 
   // Set a value that's associated with a key in a storage area.
-  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_DOMStorageSetItem,
+  IPC_SYNC_MESSAGE_CONTROL4_2(ViewHostMsg_DOMStorageSetItem,
                               int64 /* storage_area_id */,
                               string16 /* key */,
                               string16 /* value */,
                               GURL /* url */,
-                              bool /* quota_exception */)
+                              bool /* quota_exception */,
+                              NullableString16 /* old_value */)
 
   // Remove the value associated with a key in a storage area.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_DOMStorageRemoveItem,
-                       int64 /* storage_area_id */,
-                       string16 /* key */,
-                       GURL /* url */)
+  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_DOMStorageRemoveItem,
+                              int64 /* storage_area_id */,
+                              string16 /* key */,
+                              GURL /* url */,
+                              NullableString16 /* old_value */)
 
   // Clear the storage area.
-  IPC_MESSAGE_CONTROL2(ViewHostMsg_DOMStorageClear,
-                       int64 /* storage_area_id */,
-                       GURL /* url */)
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DOMStorageClear,
+                              int64 /* storage_area_id */,
+                              GURL /* url */,
+                              bool /* something_cleared */)
 
   // Get file size in bytes. Set result to -1 if failed to get the file size.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileSize,

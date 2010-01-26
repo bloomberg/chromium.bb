@@ -67,8 +67,8 @@ class DOMStorageDispatcherHost
                  const string16& value, const GURL& url,
                  IPC::Message* reply_msg);
   void OnRemoveItem(int64 storage_area_id, const string16& key,
-                    const GURL& url);
-  void OnClear(int64 storage_area_id, const GURL& url);
+                    const GURL& url, IPC::Message* reply_msg);
+  void OnClear(int64 storage_area_id, const GURL& url, IPC::Message* reply_msg);
 
   // Only call on the IO thread.
   void OnStorageEvent(const ViewMsg_DOMStorageEvent_Params& params);

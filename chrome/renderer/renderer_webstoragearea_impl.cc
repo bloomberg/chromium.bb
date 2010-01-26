@@ -44,19 +44,26 @@ WebString RendererWebStorageAreaImpl::getItem(const WebString& key) {
 
 void RendererWebStorageAreaImpl::setItem(
     const WebString& key, const WebString& value, const WebURL& url,
-    bool& quota_exception) {
+    bool& quota_exception, WebString& old_value_webkit) {
+  NullableString16 old_value;
   RenderThread::current()->Send(
       new ViewHostMsg_DOMStorageSetItem(storage_area_id_, key, value, url,
-                                        &quota_exception));
+                                        &quota_exception, &old_value));
+  old_value_webkit = old_value;
 }
 
-void RendererWebStorageAreaImpl::removeItem(const WebString& key,
-                                            const WebURL& url) {
+void RendererWebStorageAreaImpl::removeItem(
+    const WebString& key, const WebURL& url, WebString& old_value_webkit) {
+  NullableString16 old_value;
   RenderThread::current()->Send(
-      new ViewHostMsg_DOMStorageRemoveItem(storage_area_id_, key, url));
+      new ViewHostMsg_DOMStorageRemoveItem(storage_area_id_, key,
+                                           url, &old_value));
+  old_value_webkit = old_value;
 }
 
-void RendererWebStorageAreaImpl::clear(const WebURL& url) {
+void RendererWebStorageAreaImpl::clear(
+    const WebURL& url, bool& cleared_something) {
   RenderThread::current()->Send(
-      new ViewHostMsg_DOMStorageClear(storage_area_id_, url));
+      new ViewHostMsg_DOMStorageClear(storage_area_id_, url,
+                                      &cleared_something));
 }

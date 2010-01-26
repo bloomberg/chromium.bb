@@ -25,10 +25,10 @@ class DOMStorageArea {
   unsigned Length();
   NullableString16 Key(unsigned index);
   NullableString16 GetItem(const string16& key);
-  void SetItem(const string16& key, const string16& value,
-               bool* quota_xception);
-  void RemoveItem(const string16& key);
-  void Clear();
+  NullableString16 SetItem(const string16& key, const string16& value,
+                           bool* quota_exception);
+  NullableString16 RemoveItem(const string16& key);
+  bool Clear();
   void PurgeMemory();
 
   int64 id() const { return id_; }

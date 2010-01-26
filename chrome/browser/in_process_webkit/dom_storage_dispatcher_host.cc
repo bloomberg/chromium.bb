@@ -118,8 +118,9 @@ bool DOMStorageDispatcherHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageKey, OnKey)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageGetItem, OnGetItem)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageSetItem, OnSetItem)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DOMStorageRemoveItem, OnRemoveItem)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DOMStorageClear, OnClear)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageRemoveItem,
+                                    OnRemoveItem)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageClear, OnClear)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -258,17 +259,20 @@ void DOMStorageDispatcherHost::OnSetItem(
   }
 
   ScopedStorageEventContext scope(this, &url);
-  storage_area->SetItem(key, value, &quota_exception);
-  ViewHostMsg_DOMStorageSetItem::WriteReplyParams(reply_msg, quota_exception);
+  NullableString16 old_value = storage_area->SetItem(key, value,
+                                                     &quota_exception);
+  ViewHostMsg_DOMStorageSetItem::WriteReplyParams(reply_msg, quota_exception,
+                                                  old_value);
   Send(reply_msg);
 }
 
 void DOMStorageDispatcherHost::OnRemoveItem(
-    int64 storage_area_id, const string16& key, const GURL& url) {
+    int64 storage_area_id, const string16& key, const GURL& url,
+    IPC::Message* reply_msg) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
         this, &DOMStorageDispatcherHost::OnRemoveItem, storage_area_id, key,
-        url));
+        url, reply_msg));
     return;
   }
 
@@ -281,13 +285,17 @@ void DOMStorageDispatcherHost::OnRemoveItem(
   }
 
   ScopedStorageEventContext scope(this, &url);
-  storage_area->RemoveItem(key);
+  NullableString16 old_value = storage_area->RemoveItem(key);
+  ViewHostMsg_DOMStorageRemoveItem::WriteReplyParams(reply_msg, old_value);
+  Send(reply_msg);
 }
 
-void DOMStorageDispatcherHost::OnClear(int64 storage_area_id, const GURL& url) {
+void DOMStorageDispatcherHost::OnClear(int64 storage_area_id, const GURL& url,
+                                       IPC::Message* reply_msg) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnClear, storage_area_id, url));
+        this, &DOMStorageDispatcherHost::OnClear, storage_area_id, url,
+        reply_msg));
     return;
   }
 
@@ -300,7 +308,9 @@ void DOMStorageDispatcherHost::OnClear(int64 storage_area_id, const GURL& url) {
   }
 
   ScopedStorageEventContext scope(this, &url);
-  storage_area->Clear();
+  bool something_cleared = storage_area->Clear();
+  ViewHostMsg_DOMStorageClear::WriteReplyParams(reply_msg, something_cleared);
+  Send(reply_msg);
 }
 
 void DOMStorageDispatcherHost::OnStorageEvent(
@@ -310,7 +320,9 @@ void DOMStorageDispatcherHost::OnStorageEvent(
       Context()->GetDispatcherHostSet();
   DOMStorageContext::DispatcherHostSet::const_iterator cur = set->begin();
   while (cur != set->end()) {
-    (*cur)->Send(new ViewMsg_DOMStorageEvent(params));
+    // The renderer that generates the event handles it itself.
+    if (*cur != this)
+      (*cur)->Send(new ViewMsg_DOMStorageEvent(params));
     ++cur;
   }
 }

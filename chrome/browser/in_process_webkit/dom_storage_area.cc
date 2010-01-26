@@ -11,6 +11,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
 using WebKit::WebStorageArea;
+using WebKit::WebString;
 using WebKit::WebURL;
 
 DOMStorageArea::DOMStorageArea(const string16& origin,
@@ -40,20 +41,26 @@ NullableString16 DOMStorageArea::GetItem(const string16& key) {
   return storage_area_->getItem(key);
 }
 
-void DOMStorageArea::SetItem(const string16& key, const string16& value,
-                             bool* quota_exception) {
+NullableString16 DOMStorageArea::SetItem(
+    const string16& key, const string16& value, bool* quota_exception) {
   CreateWebStorageAreaIfNecessary();
-  storage_area_->setItem(key, value, WebURL(), *quota_exception);
+  WebString old_value;
+  storage_area_->setItem(key, value, WebURL(), *quota_exception, old_value);
+  return old_value;
 }
 
-void DOMStorageArea::RemoveItem(const string16& key) {
+NullableString16 DOMStorageArea::RemoveItem(const string16& key) {
   CreateWebStorageAreaIfNecessary();
-  storage_area_->removeItem(key, WebURL());
+  WebString old_value;
+  storage_area_->removeItem(key, WebURL(), old_value);
+  return old_value;
 }
 
-void DOMStorageArea::Clear() {
+bool DOMStorageArea::Clear() {
   CreateWebStorageAreaIfNecessary();
-  storage_area_->clear(WebURL());
+  bool somethingCleared;
+  storage_area_->clear(WebURL(), somethingCleared);
+  return somethingCleared;
 }
 
 void DOMStorageArea::PurgeMemory() {
