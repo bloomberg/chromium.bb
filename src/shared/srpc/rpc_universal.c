@@ -589,7 +589,7 @@ static void DumpArg(const NaClSrpcArg* arg) {
     printf("h(%d)", AddDescToList(arg->u.hval, "imported"));
     break;
    case NACL_SRPC_ARG_TYPE_INT:
-    printf("i(%d)", arg->u.ival);
+    printf("i(%"PRId32")", arg->u.ival);
     break;
    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
     count = arg->u.iaval.count;

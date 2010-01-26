@@ -38,6 +38,61 @@ env_no_strict_aliasing = env.Clone()
 if env.Bit('linux'):
    env_no_strict_aliasing.Append(CCFLAGS = ['-fno-strict-aliasing'])
 
+# The RPCs performed by the trusted portion of the NPAPI layer are specified
+# abstractly, and proxies and stubs are generated automatically.
+SRPCGEN = '${SOURCE_ROOT}/native_client/tools/srpcgen.py'
+GENERATED = '${TARGET_ROOT}/gen/native_client/src/shared/npruntime'
+
+npmodule_specinputs = ['npmodule.srpc',
+                       'npobjectstub.srpc',
+                       'device2d.srpc',
+                       'device3d.srpc', ]
+
+npmodule_rpc_header = GENERATED + '/npmodule_rpc.h'
+npmodule_rpc_server = GENERATED + '/npmodule_rpc_server.cc'
+env.Command(target=env.File(npmodule_rpc_header),
+            source=[SRPCGEN, npmodule_specinputs],
+            action=[Action('${PYTHON} ${SOURCES[0]}'
+                           ' -o ${TARGET} -h '
+                           'NPModuleRpcs '
+                           'GEN_NPRUNTIME_NPMODULE_RPC_H_'
+                           ' ${SOURCES[1:]}'),
+                   ],
+           )
+env.Command(target=env.File(npmodule_rpc_server),
+            source=[SRPCGEN, npmodule_specinputs],
+            action=[Action('${PYTHON} ${SOURCES[0]}'
+                           ' -o ${TARGET} -s '
+                           'NPModuleRpcs '
+                           + npmodule_rpc_header +
+                           ' ${SOURCES[1:]}'),
+                   ],
+           )
+
+npnavigator_specinputs = ['npnavigator.srpc',
+                          'npobjectstub.srpc', ]
+
+npnavigator_rpc_header = GENERATED + '/npnavigator_rpc.h'
+npnavigator_rpc_client = GENERATED + '/npnavigator_rpc_client.cc'
+env.Command(target=env.File(npnavigator_rpc_header),
+            source=[SRPCGEN, npnavigator_specinputs],
+            action=[Action('${PYTHON} ${SOURCES[0]}'
+                           ' -o ${TARGET} -h '
+                           'NPNavigatorRpcs '
+                           'GEN_NPRUNTIME_NPNAVIGATOR_RPC_H_'
+                           ' ${SOURCES[1:]}'),
+                   ],
+           )
+env.Command(target=env.File(npnavigator_rpc_client),
+            source=[SRPCGEN, npnavigator_specinputs],
+            action=[Action('${PYTHON} ${SOURCES[0]}'
+                           ' -o ${TARGET} -c '
+                           'NPNavigatorRpcs '
+                           + npnavigator_rpc_header +
+                           ' ${SOURCES[1:]}'),
+                   ],
+           )
+
 NACL_NPRUNTIME_INPUTS = [
     'naclnp_util.cc',
     'npbridge.cc',
@@ -45,5 +100,7 @@ NACL_NPRUNTIME_INPUTS = [
     'npobject_proxy.cc',
     'npobject_stub.cc',
     env_no_strict_aliasing.ComponentObject('nprpc.cc'),
+    npmodule_rpc_server,
+    npnavigator_rpc_client
 ]
 env.ComponentLibrary('google_nacl_npruntime', NACL_NPRUNTIME_INPUTS)

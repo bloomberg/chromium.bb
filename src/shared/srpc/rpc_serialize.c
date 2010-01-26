@@ -304,7 +304,7 @@ static int name##Put(const NaClSrpcArg* arg,                    \
 }                                                               \
                                                                 \
 static void name##Print(const NaClSrpcArg* arg) {               \
-  dprintf(("%"#format"", arg->u.field));                        \
+  dprintf(("%"format"", arg->u.field));                        \
 }                                                               \
                                                                 \
 static uint32_t name##Length(const NaClSrpcArg* arg,            \
@@ -330,9 +330,9 @@ static const ArgEltInterface k##name##IoInterface = {           \
 /*
  * The three basic parameter types.
  */
-BASIC_TYPE_IO_DECLARE(Bool, char, bval, 1d)
-BASIC_TYPE_IO_DECLARE(Double, double, dval, f)
-BASIC_TYPE_IO_DECLARE(Int, int, ival, d)
+BASIC_TYPE_IO_DECLARE(Bool, char, bval, "1d")
+BASIC_TYPE_IO_DECLARE(Double, double, dval, "f")
+BASIC_TYPE_IO_DECLARE(Int, int32_t, ival, PRId32)
 
 #define ARRAY_TYPE_IO_DECLARE(name, impl_type, field, array)                   \
 static int name##ArrGet(NaClSrpcImcBuffer* buffer,                             \

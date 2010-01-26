@@ -207,7 +207,7 @@ struct NaClSrpcArg {
     /** A boolean value */
     int                         bval;
     /** An integer value */
-    int                         ival;
+    int32_t                     ival;
     /** A double-precision floating point value */
     double                      dval;
     /** An array of character values */
