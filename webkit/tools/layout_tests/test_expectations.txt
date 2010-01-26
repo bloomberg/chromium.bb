@@ -3136,3 +3136,10 @@ BUG33045 MAC : transforms/2d/transform-fixed-container.html = IMAGE
 
 // Added in WebKit 53835
 BUGJORLOW : editing/pasteboard/paste-noscript-xhtml.xhtml = TEXT
+
+// Added in WebKit 53839
+BUGJORLOW : fast/lists/w3-css3-list-styles-alphabetic.html = IMAGE
+BUGJORLOW MAC : tables/mozilla/bugs/bug6674.html = IMAGE
+
+// Added in WebKit 53840
+BUGJORLOW : storage/domstorage/events/ = TEXT
