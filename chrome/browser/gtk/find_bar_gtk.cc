@@ -387,7 +387,11 @@ void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
 }
 
 void FindBarGtk::AudibleAlert() {
-  gtk_widget_error_bell(widget());
+  // This call causes a lot of weird bugs, especially when using the custom
+  // frame. TODO(estade): if people complain, re-enable it. See
+  // http://crbug.com/27635 and others.
+  //
+  //   gtk_widget_error_bell(widget());
 }
 
 gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
