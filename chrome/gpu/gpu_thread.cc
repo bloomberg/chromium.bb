@@ -6,10 +6,11 @@
 
 #include "build/build_config.h"
 #include "chrome/common/gpu_messages.h"
+#include "chrome/gpu/gpu_config.h"
 
 #if defined(OS_WIN)
 #include "chrome/gpu/gpu_view_win.h"
-#elif defined(OS_LINUX)
+#elif defined(GPU_USE_GLX)
 #include "chrome/gpu/gpu_backing_store_glx_context.h"
 #include "chrome/gpu/gpu_view_x.h"
 
@@ -17,7 +18,7 @@
 #endif
 
 GpuThread::GpuThread() {
-#if defined(OS_LINUX)
+#if defined(GPU_USE_GLX)
   display_ = ::XOpenDisplay(NULL);
 #endif
 }
@@ -25,7 +26,7 @@ GpuThread::GpuThread() {
 GpuThread::~GpuThread() {
 }
 
-#if defined(OS_LINUX)
+#if defined(GPU_USE_GLX)
 GpuBackingStoreGLXContext* GpuThread::GetGLXContext() {
   if (!glx_context_.get())
     glx_context_.reset(new GpuBackingStoreGLXContext(this));
@@ -48,7 +49,7 @@ void GpuThread::OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,
   // lifetime of this object.
 #if defined(OS_WIN)
   new GpuViewWin(this, parent_window, routing_id);
-#elif defined(OS_LINUX)
+#elif defined(GPU_USE_GLX)
   new GpuViewX(this, parent_window, routing_id);
 #else
   NOTIMPLEMENTED();

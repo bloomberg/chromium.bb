@@ -11,9 +11,10 @@
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/gpu_native_window_handle.h"
+#include "chrome/gpu/gpu_config.h"
 #include "chrome/gpu/x_util.h"
 
-#if defined(OS_LINUX)
+#if defined(GPU_USE_GLX)
 class GpuBackingStoreGLXContext;
 #endif
 
@@ -22,7 +23,7 @@ class GpuThread : public ChildThread {
   GpuThread();
   ~GpuThread();
 
-#if defined(OS_LINUX)
+#if defined(GPU_USE_GLX)
   GpuBackingStoreGLXContext* GetGLXContext();
 
   Display* display() const { return display_; }
@@ -36,7 +37,7 @@ class GpuThread : public ChildThread {
   void OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,
                                  int32 routing_id);
 
-#if defined(OS_LINUX)
+#if defined(GPU_USE_GLX)
   Display* display_;
   scoped_ptr<GpuBackingStoreGLXContext> glx_context_;
 #endif

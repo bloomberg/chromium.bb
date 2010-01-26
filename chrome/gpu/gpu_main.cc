@@ -6,6 +6,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/main_function_params.h"
+#include "chrome/gpu/gpu_config.h"
 #include "chrome/gpu/gpu_process.h"
 #include "chrome/gpu/gpu_thread.h"
 
@@ -15,7 +16,7 @@
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
-#elif defined(OS_LINUX)
+#elif defined(GPU_USE_GLX)
 #include <dlfcn.h>
 #include <GL/glxew.h>
 #endif
@@ -33,7 +34,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   win_util::ScopedCOMInitializer com_initializer;
-#elif defined(OS_LINUX)
+#elif defined(GPU_USE_GLX)
   dlopen("libGL.so.1", RTLD_LAZY | RTLD_GLOBAL);
   glxewInit();
 #endif

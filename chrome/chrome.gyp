@@ -590,6 +590,7 @@
       'sources': [
         'gpu/gpu_backing_store_win.cc',
         'gpu/gpu_backing_store_win.h',
+        'gpu/gpu_config.h',
         'gpu/gpu_main.cc',
         'gpu/gpu_process.cc',
         'gpu/gpu_process.h',
@@ -607,7 +608,7 @@
             'third_party/wtl/include',
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" and target_arch!="arm"', {
           'sources': [
             'gpu/gpu_backing_store_glx.cc',
             'gpu/gpu_backing_store_glx.h',

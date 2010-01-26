@@ -9,6 +9,7 @@
 // be a NOP on non-Linux ones.
 
 #include "build/build_config.h"
+#include "chrome/gpu/gpu_config.h"
 
 #if defined(OS_LINUX)
 
