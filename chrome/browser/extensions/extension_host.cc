@@ -137,6 +137,10 @@ ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
   // to the task manager then.
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
                  Source<RenderProcessHost>(render_process_host()));
+  // Listen for when an extension is unloaded from the same profile, as it may
+  // be the same extension that this points to.
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+                 Source<Profile>(profile_));
 }
 
 ExtensionHost::~ExtensionHost() {
@@ -226,19 +230,32 @@ void ExtensionHost::NavigateToURL(const GURL& url) {
 void ExtensionHost::Observe(NotificationType type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  if (type == NotificationType::EXTENSION_BACKGROUND_PAGE_READY) {
-    DCHECK(extension_->GetBackgroundPageReady());
-    NavigateToURL(url_);
-  } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
-    InsertThemeCSS();
-  } else if (type == NotificationType::RENDERER_PROCESS_CREATED) {
-    LOG(INFO) << "Sending EXTENSION_PROCESS_CREATED";
-    NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PROCESS_CREATED,
-        Source<Profile>(profile_),
-        Details<ExtensionHost>(this));
-  } else {
-    NOTREACHED();
+  switch (type.value) {
+    case NotificationType::EXTENSION_BACKGROUND_PAGE_READY:
+      DCHECK(extension_->GetBackgroundPageReady());
+      NavigateToURL(url_);
+      break;
+    case NotificationType::BROWSER_THEME_CHANGED:
+      InsertThemeCSS();
+      break;
+    case NotificationType::RENDERER_PROCESS_CREATED:
+      LOG(INFO) << "Sending EXTENSION_PROCESS_CREATED";
+      NotificationService::current()->Notify(
+          NotificationType::EXTENSION_PROCESS_CREATED,
+          Source<Profile>(profile_),
+          Details<ExtensionHost>(this));
+      break;
+    case NotificationType::EXTENSION_UNLOADED:
+      // The extension object will be deleted after this notification has been
+      // sent. NULL it out so that dirty pointer issues don't arise in cases
+      // when multiple ExtensionHost objects pointing to the same Extension are
+      // present.
+      if (extension_ == Details<Extension>(details).ptr())
+        extension_ = NULL;
+      break;
+    default:
+      NOTREACHED() << "Unexpected notification sent.";
+      break;
   }
 }
 
@@ -252,6 +269,15 @@ void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host) {
   // process, so it is expected to lose our connection to the render view.
   // Do nothing.
   if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
+    return;
+
+  // In certain cases, multiple ExtensionHost objects may have pointed to
+  // the same Extension at some point (one with a background page and a
+  // popup, for example). When the first ExtensionHost goes away, the extension
+  // is unloaded, and any other host that pointed to that extension will have
+  // its pointer to it NULLed out so that any attempt to unload a dirty pointer
+  // will be averted.
+  if (!extension_)
     return;
 
   LOG(INFO) << "Sending EXTENSION_PROCESS_TERMINATED for " + extension_->name();

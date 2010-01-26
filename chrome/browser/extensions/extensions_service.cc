@@ -845,15 +845,11 @@ void ExtensionsService::Observe(NotificationType type,
       std::string extension_id(host->extension()->id());
       CHECK(extension_id.length() == 32U);
       Extension* extension = GetExtensionById(extension_id, true);
-      // It is possible that the extension is already unloaded. If it is not
-      // found, then bail. This seems to be Mac-specific caused by the race
-      // conditions introduced by Core Animation and Browser Action popups.
-      // TODO(andybons): Find out why this is fired twice. http://crbug/32653
-      if (!extension)
-        return;
-
-      // http://crbug.com/30405
       CHECK(extension == host->extension());
+      if (!extension) {
+        NOTREACHED();
+        return;
+      }
 
       // Unload the entire extension. We want it to be in a consistent state:
       // either fully working or not loaded at all, but never half-crashed.
