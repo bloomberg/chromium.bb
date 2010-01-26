@@ -88,6 +88,9 @@ class AutocompleteTextFieldObserver {
 
   // Handles being a drag-and-drop target.
   scoped_nsobject<URLDropTargetHandler> dropHandler_;
+
+  // Holds current tooltip strings, to keep them from being dealloced.
+  scoped_nsobject<NSMutableArray> currentToolTips_;
 }
 
 @property AutocompleteTextFieldObserver* observer;

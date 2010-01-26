@@ -26,6 +26,7 @@
 - (void)awakeFromNib {
   DCHECK([[self cell] isKindOfClass:[AutocompleteTextFieldCell class]]);
   dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
+  currentToolTips_.reset([[NSMutableArray alloc] init]);
 }
 
 - (void)flagsChanged:(NSEvent*)theEvent {
@@ -222,6 +223,7 @@
   // subviews. Unless more tooltips are added to this view, this should suffice
   // in place of managing a set of NSToolTipTag objects.
   [self removeAllToolTips];
+  [currentToolTips_ removeAllObjects];
 
   AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
   const size_t pageActionCount = [cell pageActionCount];
@@ -231,6 +233,9 @@
     if (!tooltip)
       continue;
 
+    // -[NSView addToolTipRect:owner:userData] does _not_ retain the owner!
+    // Put the string in a collection so it can't be dealloced while in use.
+    [currentToolTips_ addObject:tooltip];
     [self addToolTipRect:iconRect owner:tooltip userData:nil];
   }
 }
