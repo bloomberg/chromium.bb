@@ -2265,7 +2265,6 @@ BUG9798 LINUX : http/tests/multipart/invalid-image-data.html = PASS IMAGE
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
-BUG9962 LINUX : fast/block/positioning/fixed-positioning-scrollbar-bug.html = FAIL
 BUG9962 MAC : fast/js/function-apply-aliased.html = FAIL
 
 // Regressions from WebKit merge 43264:42403, unknown cause(s)
