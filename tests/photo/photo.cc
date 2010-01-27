@@ -1,32 +1,7 @@
 /*
- * Copyright 2008, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that be
+ * found in the LICENSE file.
  */
 
 // Native Client Photo Darkroom demo
@@ -34,7 +9,7 @@
 //   Uses low level NaCl multimedia system.
 //   Runs in the browser.
 //   Can not be run standalone.
-//   Expects to live in native_client/tests/photo directory
+//   Expects to live in native_client_sdk/examples/photo directory
 
 #include <errno.h>
 #include <limits.h>
@@ -46,19 +21,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/nacl_syscalls.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 #include <xmmintrin.h>
 
+extern "C" {
+#include <jpeglib.h>
+#include <jerror.h>
+}
+
 #include <cstdlib>
 
-extern "C" {
-#include "native_client/tests/photo/jpeglib.h"
-#include "native_client/tests/photo/jerror.h"
-}
-#include "native_client/tests/photo/fastmath.h"
-#include "native_client/tests/photo/surface.h"
+#include "fastmath.h"
+#include "surface.h"
 
 // global properties used to setup darkroom
 static int g_window_width = 620;
@@ -93,7 +70,6 @@ class Darkroom {
   void SetGeoSurface(Surface *surf) { geoSurf_ = surf; }
   void SetPhotoSurface(Surface *surf) { photoSurf_ = surf; }
   void SetTempSurface(Surface *surf) { tempSurf_ = surf; }
-  void Sleep();
   explicit Darkroom();
   ~Darkroom();
 
@@ -153,10 +129,6 @@ class Darkroom {
 
   // general mutex used to protect settings
   pthread_mutex_t mutex_;
-
-  // timed condvar to converse CPU when idle...
-  pthread_cond_t conserveCond_;
-  pthread_mutex_t conserveMutex_;
 
   // internal state of darkroom
   //    setting                    range
@@ -535,26 +507,6 @@ bool Darkroom::PollEvents() {
 }
 
 
-// Native Client does not have a Sleep syscall, so emulate one using a
-// timed wait on a cond var...
-// Called from the main application thread.
-void Darkroom::Sleep() {
-  timeval time;
-  timespec timeout;
-  // sleep 1/60th of a second
-  const int64_t TIMEDELTA = 16666666;
-  gettimeofday(&time, NULL);
-  timeout.tv_sec = time.tv_sec;
-  timeout.tv_nsec = time.tv_usec * 1000;
-  if ((LONG_MAX - timeout.tv_nsec) < TIMEDELTA)
-    timeout.tv_sec += 1;
-  timeout.tv_nsec += TIMEDELTA;
-  pthread_mutex_lock(&conserveMutex_);
-  pthread_cond_timedwait(&conserveCond_, &conserveMutex_, &timeout);
-  pthread_mutex_unlock(&conserveMutex_);
-}
-
-
 // Sets up and initializes Darkroom data structures.  Seeds with random values.
 // Called from the main application thread.
 Darkroom::Darkroom()
@@ -578,8 +530,6 @@ Darkroom::Darkroom()
       zoomx_(0),
       zoomy_(0) {
   pthread_mutex_init(&mutex_, NULL);
-  pthread_cond_init(&conserveCond_, NULL);
-  pthread_mutex_init(&conserveMutex_, NULL);
   strncpy(filename_, "", FILENAME_MAX);
   browserSurf_ = NULL;
   workingSurf_ = NULL;
@@ -591,8 +541,6 @@ Darkroom::Darkroom()
 // Called from the main application thread.
 Darkroom::~Darkroom() {
   pthread_mutex_destroy(&mutex_);
-  pthread_cond_destroy(&conserveCond_);
-  pthread_mutex_destroy(&conserveMutex_);
 }
 
 
@@ -823,7 +771,10 @@ void RunDemo() {
       g_darkroom.Draw();
     } else {
       // attempt to play nice and conserve resources
-      g_darkroom.Sleep();
+      struct timespec q;
+      q.tv_sec = 0;
+      q.tv_nsec = 16666666;  // 60fps
+      nanosleep(&q, &q);
     }
   }
 
