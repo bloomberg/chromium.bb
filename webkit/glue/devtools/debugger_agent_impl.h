@@ -1,6 +1,32 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (C) 2010 Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #ifndef WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_IMPL_H_
 #define WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_IMPL_H_
@@ -14,65 +40,62 @@
 class WebDevToolsAgentImpl;
 
 namespace WebCore {
-class Document;
-class Node;
-class Page;
-class String;
+    class Document;
+    class Node;
+    class Page;
+    class String;
 }
 
 namespace WebKit {
-class WebViewImpl;
+    class WebViewImpl;
 }
 
 class DebuggerAgentImpl : public DebuggerAgent {
- public:
-  // Creates utility context with injected js agent.
-  static void CreateUtilityContext(WebCore::Frame* frame,
-                                   v8::Persistent<v8::Context>* context);
+public:
+    // Creates utility context with injected js agent.
+    static void createUtilityContext(WebCore::Frame* frame, v8::Persistent<v8::Context>* context);
 
-  DebuggerAgentImpl(WebKit::WebViewImpl* web_view_impl,
-                    DebuggerAgentDelegate* delegate,
-                    WebDevToolsAgentImpl* webdevtools_agent);
-  virtual ~DebuggerAgentImpl();
+    DebuggerAgentImpl(WebKit::WebViewImpl* webViewImpl,
+                      DebuggerAgentDelegate* delegate,
+                      WebDevToolsAgentImpl* webdevtoolsAgent);
+    virtual ~DebuggerAgentImpl();
 
-  // DebuggerAgent implementation.
-  virtual void GetContextId();
+    // DebuggerAgent implementation.
+    virtual void getContextId();
 
-  void DebuggerOutput(const WebCore::String& out);
+    void debuggerOutput(const WebCore::String& out);
 
-  void set_auto_continue_on_exception(bool auto_continue) {
-    auto_continue_on_exception_ = auto_continue;
-  }
+    void setAutoContinueOnException(bool autoContinue) { m_autoContinueOnException = autoContinue; }
 
-  bool auto_continue_on_exception() { return auto_continue_on_exception_; }
+    bool autoContinueOnException() { return m_autoContinueOnException; }
 
-  // Executes function with the given name in the utility context. Passes node
-  // and json args as parameters. Note that the function called must be
-  // implemented in the inject_dispatch.js file.
-  WebCore::String ExecuteUtilityFunction(
-      v8::Handle<v8::Context> context,
-      int call_id,
-      const char* object,
-      const WebCore::String& function_name,
-      const WebCore::String& json_args,
-      bool async,
-      WebCore::String* exception);
+    // Executes function with the given name in the utility context. Passes node
+    // and json args as parameters. Note that the function called must be
+    // implemented in the inject_dispatch.js file.
+    WebCore::String executeUtilityFunction(
+        v8::Handle<v8::Context> context,
+        int callId,
+        const char* object,
+        const WebCore::String& functionName,
+        const WebCore::String& jsonArgs,
+        bool async,
+        WebCore::String* exception);
 
-  // Executes a no-op function in the utility context. We don't use
-  // ExecuteUtilityFunction for that to avoid script evaluation leading to
-  // undesirable AfterCompile events.
-  void ExecuteVoidJavaScript(v8::Handle<v8::Context> context);
+    // Executes a no-op function in the utility context. We don't use
+    // executeUtilityFunction for that to avoid script evaluation leading to
+    // undesirable AfterCompile events.
+    void executeVoidJavaScript(v8::Handle<v8::Context> context);
 
-  WebCore::Page* GetPage();
-  WebDevToolsAgentImpl* webdevtools_agent() { return webdevtools_agent_; };
+    WebCore::Page* page();
+    WebDevToolsAgentImpl* webdevtoolsAgent() { return m_webdevtoolsAgent; };
 
-  WebKit::WebViewImpl* web_view() { return web_view_impl_; }
+    WebKit::WebViewImpl* webView() { return m_webViewImpl; }
 
- private:
-  WebKit::WebViewImpl* web_view_impl_;
-  DebuggerAgentDelegate* delegate_;
-  WebDevToolsAgentImpl* webdevtools_agent_;
-  bool auto_continue_on_exception_;
+private:
+    WebKit::WebViewImpl* m_webViewImpl;
+    DebuggerAgentDelegate* m_delegate;
+    WebDevToolsAgentImpl* m_webdevtoolsAgent;
+    bool m_autoContinueOnException;
 };
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_IMPL_H_

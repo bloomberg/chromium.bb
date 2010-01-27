@@ -1,6 +1,32 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (C) 2010 Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #ifndef WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_MANAGER_H_
 #define WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_MANAGER_H_
@@ -12,12 +38,12 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
 
 namespace WebCore {
-class PageGroupLoadDeferrer;
+    class PageGroupLoadDeferrer;
 }
 
 namespace WebKit {
-class WebFrameImpl;
-class WebViewImpl;
+    class WebFrameImpl;
+    class WebViewImpl;
 }
 
 class DebuggerAgentImpl;
@@ -36,63 +62,61 @@ class DictionaryValue;
 // debugger agent to handle such messages the manager will perform the action
 // itself, otherwise v8 may hang waiting for the action.
 class DebuggerAgentManager : public Noncopyable {
- public:
-  static void DebugAttach(DebuggerAgentImpl* debugger_agent);
-  static void DebugDetach(DebuggerAgentImpl* debugger_agent);
-  static void PauseScript();
-  static void ExecuteDebuggerCommand(const WebCore::String& command,
-                                     int caller_id);
-  static void SetMessageLoopDispatchHandler(
-      WebKit::WebDevToolsAgent::MessageLoopDispatchHandler handler);
+public:
+    static void debugAttach(DebuggerAgentImpl* debuggerAgent);
+    static void debugDetach(DebuggerAgentImpl* debuggerAgent);
+    static void pauseScript();
+    static void executeDebuggerCommand(const WebCore::String& command, int callerId);
+    static void setMessageLoopDispatchHandler(WebKit::WebDevToolsAgent::MessageLoopDispatchHandler handler);
 
-  // Sets |host_id| as the frame context data. This id is used to filter scripts
-  // related to the inspected page.
-  static void SetHostId(WebKit::WebFrameImpl* webframe, int host_id);
+    // Sets |hostId| as the frame context data. This id is used to filter scripts
+    // related to the inspected page.
+    static void setHostId(WebKit::WebFrameImpl* webframe, int hostId);
 
-  static void OnWebViewClosed(WebKit::WebViewImpl* webview);
+    static void onWebViewClosed(WebKit::WebViewImpl* webview);
 
-  static void OnNavigate();
+    static void onNavigate();
 
-  class UtilityContextScope : public Noncopyable {
-   public:
-    UtilityContextScope() {
-      ASSERT(!in_utility_context_);
-      in_utility_context_ = true;
-    }
-    ~UtilityContextScope() {
-      if (debug_break_delayed_) {
-        v8::Debug::DebugBreak();
-        debug_break_delayed_ = false;
-      }
-      in_utility_context_ = false;
-    }
-  };
+    class UtilityContextScope : public Noncopyable {
+    public:
+        UtilityContextScope()
+        {
+            ASSERT(!s_inUtilityContext);
+            s_inUtilityContext = true;
+        }
+        ~UtilityContextScope()
+        {
+            if (s_debugBreakDelayed) {
+              v8::Debug::DebugBreak();
+              s_debugBreakDelayed = false;
+            }
+            s_inUtilityContext = false;
+        }
+    };
 
- private:
-  DebuggerAgentManager();
-  ~DebuggerAgentManager();
+private:
+    DebuggerAgentManager();
+    ~DebuggerAgentManager();
 
-  static void V8DebugHostDispatchHandler();
-  static void OnV8DebugMessage(const v8::Debug::Message& message);
-  static void SendCommandToV8(const WebCore::String& cmd,
-                              v8::Debug::ClientData* data);
-  static void SendContinueCommandToV8();
+    static void debugHostDispatchHandler();
+    static void onV8DebugMessage(const v8::Debug::Message& message);
+    static void sendCommandToV8(const WebCore::String& cmd,
+                                v8::Debug::ClientData* data);
+    static void sendContinueCommandToV8();
 
-  static DebuggerAgentImpl* FindAgentForCurrentV8Context();
-  static DebuggerAgentImpl* DebuggerAgentForHostId(int host_id);
+    static DebuggerAgentImpl* findAgentForCurrentV8Context();
+    static DebuggerAgentImpl* debuggerAgentForHostId(int hostId);
 
-  typedef HashMap<int, DebuggerAgentImpl*> AttachedAgentsMap;
-  static AttachedAgentsMap* attached_agents_map_;
+    typedef HashMap<int, DebuggerAgentImpl*> AttachedAgentsMap;
+    static AttachedAgentsMap* s_attachedAgentsMap;
 
-  static WebKit::WebDevToolsAgent::MessageLoopDispatchHandler
-      message_loop_dispatch_handler_;
-  static bool in_host_dispatch_handler_;
-  typedef HashMap<WebKit::WebViewImpl*, WebCore::PageGroupLoadDeferrer*>
-      DeferrersMap;
-  static DeferrersMap page_deferrers_;
+    static WebKit::WebDevToolsAgent::MessageLoopDispatchHandler s_messageLoopDispatchHandler;
+    static bool s_inHostDispatchHandler;
+    typedef HashMap<WebKit::WebViewImpl*, WebCore::PageGroupLoadDeferrer*> DeferrersMap;
+    static DeferrersMap s_pageDeferrers;
 
-  static bool in_utility_context_;
-  static bool debug_break_delayed_;
+    static bool s_inUtilityContext;
+    static bool s_debugBreakDelayed;
 };
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_MANAGER_H_

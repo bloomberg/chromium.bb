@@ -16,8 +16,8 @@ RemoteDebuggerAgentStub = function() {
 };
 
 
-RemoteDebuggerAgentStub.prototype.GetContextId = function() {
-  RemoteDebuggerAgent.SetContextId(3);
+RemoteDebuggerAgentStub.prototype.getContextId = function() {
+  RemoteDebuggerAgent.setContextId(3);
 };
 
 
@@ -28,13 +28,13 @@ RemoteProfilerAgentStub = function() {
 };
 
 
-RemoteProfilerAgentStub.prototype.GetActiveProfilerModules = function() {
-  ProfilerStubHelper.GetInstance().GetActiveProfilerModules();
+RemoteProfilerAgentStub.prototype.getActiveProfilerModules = function() {
+  ProfilerStubHelper.GetInstance().getActiveProfilerModules();
 };
 
 
-RemoteProfilerAgentStub.prototype.GetLogLines = function(pos) {
-  ProfilerStubHelper.GetInstance().GetLogLines(pos);
+RemoteProfilerAgentStub.prototype.getLogLines = function(pos) {
+  ProfilerStubHelper.GetInstance().getLogLines(pos);
 };
 
 
@@ -45,15 +45,15 @@ RemoteToolsAgentStub = function() {
 };
 
 
-RemoteToolsAgentStub.prototype.DispatchOnInjectedScript = function() {
+RemoteToolsAgentStub.prototype.dispatchOnInjectedScript = function() {
 };
 
 
-RemoteToolsAgentStub.prototype.DispatchOnInspectorController = function() {
+RemoteToolsAgentStub.prototype.dispatchOnInspectorController = function() {
 };
 
 
-RemoteToolsAgentStub.prototype.ExecuteVoidJavaScript = function() {
+RemoteToolsAgentStub.prototype.executeVoidJavaScript = function() {
 };
 
 
@@ -108,20 +108,20 @@ ProfilerStubHelper.prototype.StartProfiling = function(modules) {
 };
 
 
-ProfilerStubHelper.prototype.GetActiveProfilerModules = function() {
+ProfilerStubHelper.prototype.getActiveProfilerModules = function() {
   var self = this;
   setTimeout(function() {
-      RemoteProfilerAgent.DidGetActiveProfilerModules(
+      RemoteProfilerAgent.didGetActiveProfilerModules(
           self.activeProfilerModules_);
   }, 100);
 };
 
 
-ProfilerStubHelper.prototype.GetLogLines = function(pos) {
+ProfilerStubHelper.prototype.getLogLines = function(pos) {
   var profModules = devtools.ProfilerAgent.ProfilerModules;
   var logLines = this.log_.substr(pos);
   setTimeout(function() {
-    RemoteProfilerAgent.DidGetLogLines(pos + logLines.length, logLines);
+    RemoteProfilerAgent.didGetLogLines(pos + logLines.length, logLines);
   }, 100);
 };
 
@@ -239,7 +239,7 @@ RemoteDebuggerCommandExecutorStub.prototype.DebuggerPauseScript = function() {
 
 RemoteDebuggerCommandExecutorStub.prototype.sendResponse_ = function(response) {
   setTimeout(function() {
-    RemoteDebuggerAgent.DebuggerOutput(response);
+    RemoteDebuggerAgent.debuggerOutput(response);
   }, 0);
 };
 

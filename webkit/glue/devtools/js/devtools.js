@@ -35,11 +35,11 @@ devtools$$dispatch = function(remoteName, methodName, param1, param2, param3) {
 
 
 devtools.ToolsAgent = function() {
-  RemoteToolsAgent.DidDispatchOn =
+  RemoteToolsAgent.didDispatchOn =
       WebInspector.Callback.processCallback;
-  RemoteToolsAgent.FrameNavigate =
+  RemoteToolsAgent.frameNavigate =
       goog.bind(this.frameNavigate_, this);
-  RemoteToolsAgent.DispatchOnClient =
+  RemoteToolsAgent.dispatchOnClient =
       goog.bind(this.dispatchOnClient_, this);
   this.debuggerAgent_ = new devtools.DebuggerAgent();
   this.profilerAgent_ = new devtools.ProfilerAgent();

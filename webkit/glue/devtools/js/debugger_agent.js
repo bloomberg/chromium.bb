@@ -13,9 +13,9 @@ goog.provide('devtools.DebuggerAgent');
  * @constructor
  */
 devtools.DebuggerAgent = function() {
-  RemoteDebuggerAgent.DebuggerOutput =
+  RemoteDebuggerAgent.debuggerOutput =
       goog.bind(this.handleDebuggerOutput_, this);
-  RemoteDebuggerAgent.SetContextId =
+  RemoteDebuggerAgent.setContextId =
       goog.bind(this.setContextId_, this);
 
   /**
@@ -158,7 +158,7 @@ devtools.DebuggerAgent.prototype.initUI = function() {
   }
   this.waitingForInitialScriptsResponse_ = true;
   // Script list should be requested only when current context id is known.
-  RemoteDebuggerAgent.GetContextId();
+  RemoteDebuggerAgent.getContextId();
   this.requestScriptsWhenContextIdSet_ = true;
 };
 
@@ -184,7 +184,7 @@ devtools.DebuggerAgent.prototype.resolveScriptSource = function(
   });
   devtools.DebuggerAgent.sendCommand_(cmd);
   // Force v8 execution so that it gets to processing the requested command.
-  RemoteToolsAgent.ExecuteVoidJavaScript();
+  RemoteToolsAgent.executeVoidJavaScript();
 
   this.requestSeqToCallback_[cmd.getSequenceNumber()] = function(msg) {
     if (msg.isSuccess()) {
@@ -266,7 +266,7 @@ devtools.DebuggerAgent.prototype.addBreakpoint = function(
   // Force v8 execution so that it gets to processing the requested command.
   // It is necessary for being able to change a breakpoint just after it
   // has been created (since we need an existing breakpoint id for that).
-  RemoteToolsAgent.ExecuteVoidJavaScript();
+  RemoteToolsAgent.executeVoidJavaScript();
 };
 
 
@@ -725,7 +725,7 @@ devtools.DebuggerAgent.prototype.setContextId_ = function(contextId) {
     });
     devtools.DebuggerAgent.sendCommand_(cmd);
     // Force v8 execution so that it gets to processing the requested command.
-    RemoteToolsAgent.ExecuteVoidJavaScript();
+    RemoteToolsAgent.executeVoidJavaScript();
 
     var debuggerAgent = this;
     this.requestSeqToCallback_[cmd.getSequenceNumber()] = function(msg) {

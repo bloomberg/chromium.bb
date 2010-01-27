@@ -11,9 +11,9 @@ goog.provide('devtools.ProfilerAgent');
  * @constructor
  */
 devtools.ProfilerAgent = function() {
-  RemoteProfilerAgent.DidGetActiveProfilerModules =
+  RemoteProfilerAgent.didGetActiveProfilerModules =
       goog.bind(this.didGetActiveProfilerModules_, this);
-  RemoteProfilerAgent.DidGetLogLines =
+  RemoteProfilerAgent.didGetLogLines =
       goog.bind(this.didGetLogLines_, this);
 
   /**
@@ -107,7 +107,7 @@ devtools.ProfilerAgent.prototype.initializeProfiling = function() {
   this.setupProfilerProcessorCallbacks();
   this.forceGetLogLines_ = true;
   this.getActiveProfilerModulesInterval_ = setInterval(
-        function() { RemoteProfilerAgent.GetActiveProfilerModules(); }, 1000);
+        function() { RemoteProfilerAgent.getActiveProfilerModules(); }, 1000);
 };
 
 
@@ -120,12 +120,12 @@ devtools.ProfilerAgent.prototype.startProfiling = function(modules) {
       'modules': modules,
       'command': 'resume'});
   devtools.DebuggerAgent.sendCommand_(cmd);
-  RemoteToolsAgent.ExecuteVoidJavaScript();
+  RemoteToolsAgent.executeVoidJavaScript();
   if (modules &
       devtools.ProfilerAgent.ProfilerModules.PROFILER_MODULE_HEAP_SNAPSHOT) {
     var pos = this.logPosition_;
     // Active modules will not change, instead, a snapshot will be logged.
-    setTimeout(function() { RemoteProfilerAgent.GetLogLines(pos); }, 500);
+    setTimeout(function() { RemoteProfilerAgent.getLogLines(pos); }, 500);
   }
 };
 
@@ -138,7 +138,7 @@ devtools.ProfilerAgent.prototype.stopProfiling = function(modules) {
       'modules': modules,
       'command': 'pause'});
   devtools.DebuggerAgent.sendCommand_(cmd);
-  RemoteToolsAgent.ExecuteVoidJavaScript();
+  RemoteToolsAgent.executeVoidJavaScript();
 };
 
 
@@ -155,7 +155,7 @@ devtools.ProfilerAgent.prototype.didGetActiveProfilerModules_ = function(
       this.activeProfilerModules_ == profModuleNone)) {
     this.forceGetLogLines_ = false;
     // Start to query log data.
-    RemoteProfilerAgent.GetLogLines(this.logPosition_);
+    RemoteProfilerAgent.getLogLines(this.logPosition_);
   }
   this.activeProfilerModules_ = modules;
   // Update buttons.
@@ -164,7 +164,7 @@ devtools.ProfilerAgent.prototype.didGetActiveProfilerModules_ = function(
 
 
 /**
- * Handles a portion of a profiler log retrieved by GetLogLines call.
+ * Handles a portion of a profiler log retrieved by getLogLines call.
  * @param {number} pos Current position in log.
  * @param {string} log A portion of profiler log.
  */
@@ -177,5 +177,5 @@ devtools.ProfilerAgent.prototype.didGetLogLines_ = function(pos, log) {
     // No new data and profiling is stopped---suspend log reading.
     return;
   }
-  setTimeout(function() { RemoteProfilerAgent.GetLogLines(pos); }, 500);
+  setTimeout(function() { RemoteProfilerAgent.getLogLines(pos); }, 500);
 };

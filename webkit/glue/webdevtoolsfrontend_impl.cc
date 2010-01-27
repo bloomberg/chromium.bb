@@ -1,6 +1,32 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (C) 2010 Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include "config.h"
 
@@ -55,492 +81,461 @@ using WebKit::WebString;
 using WebKit::WebView;
 using WebKit::WebViewImpl;
 
-static v8::Local<v8::String> ToV8String(const String& s) {
-  if (s.isNull())
-    return v8::Local<v8::String>();
+static v8::Local<v8::String> ToV8String(const String& s)
+{
+    if (s.isNull())
+        return v8::Local<v8::String>();
 
-  return v8::String::New(reinterpret_cast<const uint16_t*>(s.characters()),
-                         s.length());
+    return v8::String::New(reinterpret_cast<const uint16_t*>(s.characters()), s.length());
 }
 
-DEFINE_RPC_JS_BOUND_OBJ(DebuggerAgent, DEBUGGER_AGENT_STRUCT,
-    DebuggerAgentDelegate, DEBUGGER_AGENT_DELEGATE_STRUCT)
-DEFINE_RPC_JS_BOUND_OBJ(ProfilerAgent, PROFILER_AGENT_STRUCT,
-    ProfilerAgentDelegate, PROFILER_AGENT_DELEGATE_STRUCT)
-DEFINE_RPC_JS_BOUND_OBJ(ToolsAgent, TOOLS_AGENT_STRUCT,
-    ToolsAgentDelegate, TOOLS_AGENT_DELEGATE_STRUCT)
+DEFINE_RPC_JS_BOUND_OBJ(DebuggerAgent, DEBUGGER_AGENT_STRUCT, DebuggerAgentDelegate, DEBUGGER_AGENT_DELEGATE_STRUCT)
+DEFINE_RPC_JS_BOUND_OBJ(ProfilerAgent, PROFILER_AGENT_STRUCT, ProfilerAgentDelegate, PROFILER_AGENT_DELEGATE_STRUCT)
+DEFINE_RPC_JS_BOUND_OBJ(ToolsAgent, TOOLS_AGENT_STRUCT, ToolsAgentDelegate, TOOLS_AGENT_DELEGATE_STRUCT)
 
 class ToolsAgentNativeDelegateImpl : public ToolsAgentNativeDelegate {
- public:
-  struct ResourceContentRequestData {
-    String mime_type;
-    RefPtr<Node> frame;
-  };
+public:
+    struct ResourceContentRequestData {
+        String mimeType;
+        RefPtr<Node> frame;
+    };
 
-  ToolsAgentNativeDelegateImpl(WebFrameImpl* frame) : frame_(frame) {}
-  virtual ~ToolsAgentNativeDelegateImpl() {}
+    ToolsAgentNativeDelegateImpl(WebFrameImpl* frame) : m_frame(frame) {}
+    virtual ~ToolsAgentNativeDelegateImpl() {}
 
-  // ToolsAgentNativeDelegate implementation.
-  virtual void DidGetResourceContent(int request_id, const String& content) {
-    if (!resource_content_requests_.contains(request_id)) {
-      // This can happen when the redirect source content is reported
-      // (after a new Delegate has been created due to JsReset, thus losing the
-      // |request_id| put into resource_content_requests_ by RequestSent)
-      // which we should ignore. We cannot identify the case relying solely on
-      // the |content| (which may or may not be null for various 3xx responses).
-      return;
+    // ToolsAgentNativeDelegate implementation.
+    virtual void didGetResourceContent(int requestId, const String& content)
+    {
+        if (!m_resourceContentRequests.contains(requestId)) {
+            // This can happen when the redirect source content is reported
+            // (after a new Delegate has been created due to JsReset, thus losing the
+            // |requestId| put into m_resourceContentRequests by requestSent)
+            // which we should ignore. We cannot identify the case relying solely on
+            // the |content| (which may or may not be null for various 3xx responses).
+            return;
+        }
+        ResourceContentRequestData request = m_resourceContentRequests.take(requestId);
+
+        InspectorController* ic = m_frame->frame()->page()->inspectorController();
+        if (request.frame && request.frame->attached())
+            ic->inspectorFrontendHost()->addSourceToFrame(request.mimeType, content, request.frame.get());
     }
-    ResourceContentRequestData request =
-        resource_content_requests_.take(request_id);
 
-    InspectorController* ic = frame_->frame()->page()->inspectorController();
-    if (request.frame && request.frame->attached()) {
-      ic->inspectorFrontendHost()->addSourceToFrame(request.mime_type,
-                                                    content,
-                                                    request.frame.get());
+    bool waitingForResponse(int resourceId, Node* frame)
+    {
+        if (m_resourceContentRequests.contains(resourceId)) {
+            ASSERT(m_resourceContentRequests.get(resourceId).frame.get() == frame);
+            return true;
+        }
+        return false;
     }
-  }
 
-  bool WaitingForResponse(int resource_id, Node* frame) {
-    if (resource_content_requests_.contains(resource_id)) {
-      ASSERT(resource_content_requests_.get(resource_id).frame.get() == frame);
-      return true;
+    void requestSent(int resourceId, String mimeType, Node* frame)
+    {
+        ResourceContentRequestData data;
+        data.mimeType = mimeType;
+        data.frame = frame;
+        ASSERT(!m_resourceContentRequests.contains(resourceId));
+        m_resourceContentRequests.set(resourceId, data);
     }
-    return false;
-  }
 
-  void RequestSent(int resource_id, String mime_type, Node* frame) {
-    ResourceContentRequestData data;
-    data.mime_type = mime_type;
-    data.frame = frame;
-    ASSERT(!resource_content_requests_.contains(resource_id));
-    resource_content_requests_.set(resource_id, data);
-  }
-
- private:
-  WebFrameImpl* frame_;
-  HashMap<int, ResourceContentRequestData> resource_content_requests_;
-  DISALLOW_COPY_AND_ASSIGN(ToolsAgentNativeDelegateImpl);
+private:
+    WebFrameImpl* m_frame;
+    HashMap<int, ResourceContentRequestData> m_resourceContentRequests;
 };
 
 // static
 WebDevToolsFrontend* WebDevToolsFrontend::create(
     WebView* view,
     WebDevToolsFrontendClient* client,
-    const WebString& application_locale) {
-  return new WebDevToolsFrontendImpl(
+    const WebString& applicationLocale)
+{
+    return new WebDevToolsFrontendImpl(
       static_cast<WebViewImpl*>(view),
       client,
-      webkit_glue::WebStringToString(application_locale));
+      webkit_glue::WebStringToString(applicationLocale));
 }
 
 WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
-    WebViewImpl* web_view_impl,
+    WebViewImpl* webViewImpl,
     WebDevToolsFrontendClient* client,
-    const String& application_locale)
-    : web_view_impl_(web_view_impl),
-      client_(client),
-      application_locale_(application_locale),
-      loaded_(false) {
-  WebFrameImpl* frame = web_view_impl_->mainFrameImpl();
-  v8::HandleScope scope;
-  v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
+    const String& applicationLocale)
+    : m_webViewImpl(webViewImpl)
+    , m_client(client)
+    , m_applicationLocale(applicationLocale)
+    , m_loaded(false)
+{
+    WebFrameImpl* frame = m_webViewImpl->mainFrameImpl();
+    v8::HandleScope scope;
+    v8::Handle<v8::Context> frameContext = V8Proxy::context(frame->frame());
 
-  debugger_agent_obj_.set(new JsDebuggerAgentBoundObj(
-      this, frame_context, "RemoteDebuggerAgent"));
-  profiler_agent_obj_.set(new JsProfilerAgentBoundObj(
-      this, frame_context, "RemoteProfilerAgent"));
-  tools_agent_obj_.set(
-      new JsToolsAgentBoundObj(this, frame_context, "RemoteToolsAgent"));
+    m_debuggerAgentObj.set(new JsDebuggerAgentBoundObj(this, frameContext, "RemoteDebuggerAgent"));
+    m_profilerAgentObj.set(new JsProfilerAgentBoundObj(this, frameContext, "RemoteProfilerAgent"));
+    m_toolsAgentObj.set(new JsToolsAgentBoundObj(this, frameContext, "RemoteToolsAgent"));
 
-  // Debugger commands should be sent using special method.
-  BoundObject debugger_command_executor_obj(frame_context, this,
-                                            "RemoteDebuggerCommandExecutor");
-  debugger_command_executor_obj.AddProtoFunction(
-      "DebuggerCommand",
-      WebDevToolsFrontendImpl::JsDebuggerCommand);
-  debugger_command_executor_obj.AddProtoFunction(
-      "DebuggerPauseScript",
-      WebDevToolsFrontendImpl::JsDebuggerPauseScript);
-  debugger_command_executor_obj.Build();
+    // Debugger commands should be sent using special method.
+    BoundObject debuggerCommandExecutorObj(frameContext, this, "RemoteDebuggerCommandExecutor");
+    debuggerCommandExecutorObj.addProtoFunction(
+        "DebuggerCommand",
+        WebDevToolsFrontendImpl::jsDebuggerCommand);
+    debuggerCommandExecutorObj.addProtoFunction(
+        "DebuggerPauseScript",
+        WebDevToolsFrontendImpl::jsDebuggerPauseScript);
+    debuggerCommandExecutorObj.build();
 
-  BoundObject dev_tools_host(frame_context, this, "InspectorFrontendHost");
-  dev_tools_host.AddProtoFunction(
-      "reset",
-      WebDevToolsFrontendImpl::JsReset);
-  dev_tools_host.AddProtoFunction(
-      "addSourceToFrame",
-      WebDevToolsFrontendImpl::JsAddSourceToFrame);
-  dev_tools_host.AddProtoFunction(
-      "addResourceSourceToFrame",
-      WebDevToolsFrontendImpl::JsAddResourceSourceToFrame);
-  dev_tools_host.AddProtoFunction(
-      "loaded",
-      WebDevToolsFrontendImpl::JsLoaded);
-  dev_tools_host.AddProtoFunction(
-      "search",
-      WebCore::V8InspectorFrontendHost::searchCallback);
-  dev_tools_host.AddProtoFunction(
-      "platform",
-      WebDevToolsFrontendImpl::JsPlatform);
-  dev_tools_host.AddProtoFunction(
-      "port",
-      WebDevToolsFrontendImpl::JsPort);
-  dev_tools_host.AddProtoFunction(
-      "activateWindow",
-      WebDevToolsFrontendImpl::JsActivateWindow);
-  dev_tools_host.AddProtoFunction(
-      "closeWindow",
-      WebDevToolsFrontendImpl::JsCloseWindow);
-  dev_tools_host.AddProtoFunction(
-      "attach",
-      WebDevToolsFrontendImpl::JsDockWindow);
-  dev_tools_host.AddProtoFunction(
-      "detach",
-      WebDevToolsFrontendImpl::JsUndockWindow);
-  dev_tools_host.AddProtoFunction(
-      "localizedStringsURL",
-      WebDevToolsFrontendImpl::JsLocalizedStringsURL);
-  dev_tools_host.AddProtoFunction(
-      "hiddenPanels",
-      WebDevToolsFrontendImpl::JsHiddenPanels);
-  dev_tools_host.AddProtoFunction(
-      "setting",
-      WebDevToolsFrontendImpl::JsSetting);
-  dev_tools_host.AddProtoFunction(
-      "setSetting",
-      WebDevToolsFrontendImpl::JsSetSetting);
-  dev_tools_host.AddProtoFunction(
-      "windowUnloading",
-      WebDevToolsFrontendImpl::JsWindowUnloading);
-  dev_tools_host.AddProtoFunction(
-      "showContextMenu",
-      WebDevToolsFrontendImpl::JsShowContextMenu);
-  dev_tools_host.Build();
+    BoundObject devToolsHost(frameContext, this, "InspectorFrontendHost");
+    devToolsHost.addProtoFunction(
+        "reset",
+        WebDevToolsFrontendImpl::jsReset);
+    devToolsHost.addProtoFunction(
+        "addSourceToFrame",
+        WebDevToolsFrontendImpl::jsAddSourceToFrame);
+    devToolsHost.addProtoFunction(
+        "addResourceSourceToFrame",
+        WebDevToolsFrontendImpl::jsAddResourceSourceToFrame);
+    devToolsHost.addProtoFunction(
+        "loaded",
+        WebDevToolsFrontendImpl::jsLoaded);
+    devToolsHost.addProtoFunction(
+        "search",
+        WebCore::V8InspectorFrontendHost::searchCallback);
+    devToolsHost.addProtoFunction(
+        "platform",
+        WebDevToolsFrontendImpl::jsPlatform);
+    devToolsHost.addProtoFunction(
+        "port",
+        WebDevToolsFrontendImpl::jsPort);
+    devToolsHost.addProtoFunction(
+        "activateWindow",
+        WebDevToolsFrontendImpl::jsActivateWindow);
+    devToolsHost.addProtoFunction(
+        "closeWindow",
+        WebDevToolsFrontendImpl::jsCloseWindow);
+    devToolsHost.addProtoFunction(
+        "attach",
+        WebDevToolsFrontendImpl::jsDockWindow);
+    devToolsHost.addProtoFunction(
+        "detach",
+        WebDevToolsFrontendImpl::jsUndockWindow);
+    devToolsHost.addProtoFunction(
+        "localizedStringsURL",
+        WebDevToolsFrontendImpl::jsLocalizedStringsURL);
+    devToolsHost.addProtoFunction(
+        "hiddenPanels",
+        WebDevToolsFrontendImpl::jsHiddenPanels);
+    devToolsHost.addProtoFunction(
+        "setting",
+        WebDevToolsFrontendImpl::jsSetting);
+    devToolsHost.addProtoFunction(
+        "setSetting",
+        WebDevToolsFrontendImpl::jsSetSetting);
+    devToolsHost.addProtoFunction(
+        "windowUnloading",
+        WebDevToolsFrontendImpl::jsWindowUnloading);
+    devToolsHost.addProtoFunction(
+        "showContextMenu",
+        WebDevToolsFrontendImpl::jsShowContextMenu);
+    devToolsHost.build();
 }
 
-WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
-  if (menu_provider_)
-    menu_provider_->disconnect();
+WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl()
+{
+    if (m_menuProvider)
+        m_menuProvider->disconnect();
 }
 
-void WebDevToolsFrontendImpl::dispatchMessageFromAgent(
-    const WebKit::WebDevToolsMessageData& data) {
-  if (ToolsAgentNativeDelegateDispatch::Dispatch(
-          tools_agent_native_delegate_impl_.get(),
-          data)) {
-    return;
-  }
-  Vector<String> v;
-  v.append(webkit_glue::WebStringToString(data.className));
-  v.append(webkit_glue::WebStringToString(data.methodName));
-  for (size_t i = 0; i < data.arguments.size(); i++)
-    v.append(webkit_glue::WebStringToString(data.arguments[i]));
-  if (!loaded_) {
-    pending_incoming_messages_.append(v);
-    return;
-  }
-  ExecuteScript(v);
+void WebDevToolsFrontendImpl::dispatchMessageFromAgent(const WebKit::WebDevToolsMessageData& data)
+{
+    if (ToolsAgentNativeDelegateDispatch::dispatch(m_toolsAgentNativeDelegateImpl.get(), data))
+        return;
+
+    Vector<String> v;
+    v.append(webkit_glue::WebStringToString(data.className));
+    v.append(webkit_glue::WebStringToString(data.methodName));
+    for (size_t i = 0; i < data.arguments.size(); i++)
+        v.append(webkit_glue::WebStringToString(data.arguments[i]));
+    if (!m_loaded) {
+        m_pendingIncomingMessages.append(v);
+        return;
+    }
+    executeScript(v);
 }
 
-void WebDevToolsFrontendImpl::AddResourceSourceToFrame(int resource_id,
-                                                     String mime_type,
-                                                     Node* frame) {
-  if (tools_agent_native_delegate_impl_->WaitingForResponse(resource_id,
-                                                            frame)) {
-    return;
-  }
-  tools_agent_obj_->GetResourceContent(resource_id, resource_id);
-  tools_agent_native_delegate_impl_->RequestSent(resource_id, mime_type, frame);
+void WebDevToolsFrontendImpl::addResourceSourceToFrame(int resourceId, String mimeType, Node* frame)
+{
+    if (m_toolsAgentNativeDelegateImpl->waitingForResponse(resourceId, frame))
+        return;
+    m_toolsAgentObj->getResourceContent(resourceId, resourceId);
+    m_toolsAgentNativeDelegateImpl->requestSent(resourceId, mimeType, frame);
 }
 
-void WebDevToolsFrontendImpl::ExecuteScript(const Vector<String>& v) {
-  WebFrameImpl* frame = web_view_impl_->mainFrameImpl();
-  v8::HandleScope scope;
-  v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
-  v8::Context::Scope context_scope(frame_context);
-  v8::Handle<v8::Value> dispatch_function =
-      frame_context->Global()->Get(v8::String::New("devtools$$dispatch"));
-  ASSERT(dispatch_function->IsFunction());
-  v8::Handle<v8::Function> function =
-      v8::Handle<v8::Function>::Cast(dispatch_function);
-  Vector< v8::Handle<v8::Value> > args;
-  for (size_t i = 0; i < v.size(); i++)
-    args.append(ToV8String(v.at(i)));
-  function->Call(frame_context->Global(), args.size(), args.data());
+void WebDevToolsFrontendImpl::executeScript(const Vector<String>& v)
+{
+    WebFrameImpl* frame = m_webViewImpl->mainFrameImpl();
+    v8::HandleScope scope;
+    v8::Handle<v8::Context> frameContext = V8Proxy::context(frame->frame());
+    v8::Context::Scope contextScope(frameContext);
+    v8::Handle<v8::Value> dispatchFunction = frameContext->Global()->Get(v8::String::New("devtools$$dispatch"));
+    ASSERT(dispatchFunction->IsFunction());
+    v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(dispatchFunction);
+    Vector< v8::Handle<v8::Value> > args;
+    for (size_t i = 0; i < v.size(); i++)
+        args.append(ToV8String(v.at(i)));
+    function->Call(frameContext->Global(), args.size(), args.data());
 }
 
-void WebDevToolsFrontendImpl::DispatchOnWebInspector(
-    const String& methodName, const String& param) {
-  WebFrameImpl* frame = web_view_impl_->mainFrameImpl();
-  v8::HandleScope scope;
-  v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
-  v8::Context::Scope context_scope(frame_context);
+void WebDevToolsFrontendImpl::dispatchOnWebInspector(const String& methodName, const String& param)
+{
+    WebFrameImpl* frame = m_webViewImpl->mainFrameImpl();
+    v8::HandleScope scope;
+    v8::Handle<v8::Context> frameContext = V8Proxy::context(frame->frame());
+    v8::Context::Scope contextScope(frameContext);
 
-  v8::Handle<v8::Value> web_inspector =
-      frame_context->Global()->Get(v8::String::New("WebInspector"));
-  ASSERT(web_inspector->IsObject());
-  v8::Handle<v8::Object> web_inspector_obj =
-      v8::Handle<v8::Object>::Cast(web_inspector);
+    v8::Handle<v8::Value> webInspector = frameContext->Global()->Get(v8::String::New("WebInspector"));
+    ASSERT(webInspector->IsObject());
+    v8::Handle<v8::Object> webInspectorObj = v8::Handle<v8::Object>::Cast(webInspector);
 
-  v8::Handle<v8::Value> method =
-      web_inspector_obj->Get(ToV8String(methodName));
-  ASSERT(method->IsFunction());
-  v8::Handle<v8::Function> method_func = v8::Handle<v8::Function>::Cast(method);
-  v8::Handle<v8::Value> args[] = {
-    ToV8String(param)
-  };
-  method_func->Call(frame_context->Global(), 1, args);
+    v8::Handle<v8::Value> method = webInspectorObj->Get(ToV8String(methodName));
+    ASSERT(method->IsFunction());
+    v8::Handle<v8::Function> methodFunc = v8::Handle<v8::Function>::Cast(method);
+    v8::Handle<v8::Value> args[] = {
+      ToV8String(param)
+    };
+    methodFunc->Call(frameContext->Global(), 1, args);
 }
 
-
-void WebDevToolsFrontendImpl::SendRpcMessage(
-    const WebKit::WebDevToolsMessageData& data) {
-  client_->sendMessageToAgent(data);
+void WebDevToolsFrontendImpl::sendRpcMessage(const WebKit::WebDevToolsMessageData& data)
+{
+    m_client->sendMessageToAgent(data);
 }
 
-void WebDevToolsFrontendImpl::ContextMenuItemSelected(
-    ContextMenuItem* item) {
-  int item_number = item->action() - ContextMenuItemBaseCustomTag;
-  DispatchOnWebInspector("contextMenuItemSelected",
-                         String::number(item_number));
+void WebDevToolsFrontendImpl::contextMenuItemSelected(ContextMenuItem* item)
+{
+    int itemNumber = item->action() - ContextMenuItemBaseCustomTag;
+    dispatchOnWebInspector("contextMenuItemSelected", String::number(itemNumber));
 }
 
-void WebDevToolsFrontendImpl::ContextMenuCleared() {
-  DispatchOnWebInspector("contextMenuCleared", "");
+void WebDevToolsFrontendImpl::contextMenuCleared()
+{
+    dispatchOnWebInspector("contextMenuCleared", "");
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsReset(
-    const v8::Arguments& args) {
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  WebFrameImpl* frame = frontend->web_view_impl_->mainFrameImpl();
-  frontend->tools_agent_native_delegate_impl_.set(
-      new ToolsAgentNativeDelegateImpl(frame));
-  return v8::Undefined();
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsReset(const v8::Arguments& args)
+{
+    WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
+        v8::External::Cast(*args.Data())->Value());
+    WebFrameImpl* frame = frontend->m_webViewImpl->mainFrameImpl();
+    frontend->m_toolsAgentNativeDelegateImpl.set(new ToolsAgentNativeDelegateImpl(frame));
+    return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsAddSourceToFrame(
-    const v8::Arguments& args) {
-  if (args.Length() < 2) {
-    return v8::Undefined();
-  }
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsAddSourceToFrame(const v8::Arguments& args)
+{
+    if (args.Length() < 2)
+        return v8::Undefined();
 
-  v8::TryCatch exception_catcher;
+    v8::TryCatch exceptionCatcher;
 
-  String mime_type = WebCore::toWebCoreStringWithNullCheck(args[0]);
-  if (mime_type.isEmpty() || exception_catcher.HasCaught()) {
-    return v8::Undefined();
-  }
-  String source_string = WebCore::toWebCoreStringWithNullCheck(args[1]);
-  if (source_string.isEmpty() || exception_catcher.HasCaught()) {
-    return v8::Undefined();
-  }
-  v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(args[2]);
-  Node* node = V8Node::toNative(wrapper);
-  if (!node || !node->attached()) {
-    return v8::Undefined();
-  }
+    String mimeType = WebCore::toWebCoreStringWithNullCheck(args[0]);
+    if (mimeType.isEmpty() || exceptionCatcher.HasCaught())
+        return v8::Undefined();
 
-  Page* page = V8Proxy::retrieveFrameForEnteredContext()->page();
-  InspectorController* inspectorController = page->inspectorController();
-  return WebCore::v8Boolean(inspectorController->inspectorFrontendHost()->
-      addSourceToFrame(mime_type, source_string, node));
+    String sourceString = WebCore::toWebCoreStringWithNullCheck(args[1]);
+    if (sourceString.isEmpty() || exceptionCatcher.HasCaught())
+        return v8::Undefined();
+
+    v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(args[2]);
+    Node* node = V8Node::toNative(wrapper);
+    if (!node || !node->attached())
+        return v8::Undefined();
+
+    Page* page = V8Proxy::retrieveFrameForEnteredContext()->page();
+    InspectorController* inspectorController = page->inspectorController();
+    return WebCore::v8Boolean(inspectorController->inspectorFrontendHost()->
+        addSourceToFrame(mimeType, sourceString, node));
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsAddResourceSourceToFrame(
-    const v8::Arguments& args) {
-  int resource_id = static_cast<int>(args[0]->NumberValue());
-  String mime_type = WebCore::toWebCoreStringWithNullCheck(args[1]);
-  if (mime_type.isEmpty()) {
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsAddResourceSourceToFrame(const v8::Arguments& args)
+{
+    int resourceId = static_cast<int>(args[0]->NumberValue());
+    String mimeType = WebCore::toWebCoreStringWithNullCheck(args[1]);
+    if (mimeType.isEmpty())
+        return v8::Undefined();
+
+    v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(args[2]);
+    Node* node = V8Node::toNative(wrapper);
+    WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
+        v8::External::Cast(*args.Data())->Value());
+    frontend->addResourceSourceToFrame(resourceId, mimeType, node);
     return v8::Undefined();
-  }
-  v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(args[2]);
-  Node* node = V8Node::toNative(wrapper);
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  frontend->AddResourceSourceToFrame(resource_id, mime_type, node);
-  return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsLoaded(
-    const v8::Arguments& args) {
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  frontend->loaded_ = true;
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsLoaded(const v8::Arguments& args)
+{
+    WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(v8::External::Cast(*args.Data())->Value());
+    frontend->m_loaded = true;
 
-  // Grant the devtools page the ability to have source view iframes.
-  Page* page = V8Proxy::retrieveFrameForEnteredContext()->page();
-  SecurityOrigin* origin = page->mainFrame()->domWindow()->securityOrigin();
-  origin->grantUniversalAccess();
+    // Grant the devtools page the ability to have source view iframes.
+    Page* page = V8Proxy::retrieveFrameForEnteredContext()->page();
+    SecurityOrigin* origin = page->mainFrame()->domWindow()->securityOrigin();
+    origin->grantUniversalAccess();
 
-  for (Vector<Vector<String> >::iterator it =
-           frontend->pending_incoming_messages_.begin();
-       it != frontend->pending_incoming_messages_.end();
-       ++it) {
-    frontend->ExecuteScript(*it);
-  }
-  frontend->pending_incoming_messages_.clear();
-  return v8::Undefined();
+    for (Vector<Vector<String> >::iterator it = frontend->m_pendingIncomingMessages.begin();
+         it != frontend->m_pendingIncomingMessages.end();
+         ++it) {
+        frontend->executeScript(*it);
+    }
+    frontend->m_pendingIncomingMessages.clear();
+    return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsPlatform(
-    const v8::Arguments& args) {
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsPlatform(const v8::Arguments& args)
+{
 #if defined(OS_MACOSX)
-  return v8String("mac-leopard");
+    return v8String("mac-leopard");
 #elif defined(OS_LINUX)
-  return v8String("linux");
+    return v8String("linux");
 #elif defined(OS_FREEBSD)
-  return v8String("freebsd");
+    return v8String("freebsd");
 #elif defined(OS_OPENBSD)
-  return v8String("openbsd");
+    return v8String("openbsd");
 #elif defined(OS_WIN)
-  return v8String("windows");
+    return v8String("windows");
 #endif
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsPort(
-    const v8::Arguments& args) {
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsActivateWindow(
-    const v8::Arguments& args) {
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  frontend->client_->activateWindow();
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsCloseWindow(
-    const v8::Arguments& args) {
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  frontend->client_->closeWindow();
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsDockWindow(
-    const v8::Arguments& args) {
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  frontend->client_->dockWindow();
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsUndockWindow(
-    const v8::Arguments& args) {
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  frontend->client_->undockWindow();
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsLocalizedStringsURL(
-    const v8::Arguments& args) {
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsHiddenPanels(
-    const v8::Arguments& args) {
-  return v8String("");
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsDebuggerCommand(
-    const v8::Arguments& args) {
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  String command = WebCore::toWebCoreStringWithNullCheck(args[0]);
-  WebString std_command = webkit_glue::StringToWebString(command);
-  frontend->client_->sendDebuggerCommandToAgent(std_command);
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsSetting(
-    const v8::Arguments& args) {
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsSetSetting(
-    const v8::Arguments& args) {
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsDebuggerPauseScript(
-    const v8::Arguments& args) {
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  frontend->client_->sendDebuggerPauseScript();
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsWindowUnloading(
-    const v8::Arguments& args) {
-  //TODO(pfeldman): Implement this.
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsShowContextMenu(
-    const v8::Arguments& args) {
-  if (args.Length() < 2)
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsPort(const v8::Arguments& args)
+{
     return v8::Undefined();
+}
 
-  v8::Local<v8::Object> event_wrapper = v8::Local<v8::Object>::Cast(args[0]);
-  if (V8DOMWrapper::domWrapperType(event_wrapper) != V8ClassIndex::EVENT)
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsActivateWindow(const v8::Arguments& args)
+{
+    WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(v8::External::Cast(*args.Data())->Value());
+    frontend->m_client->activateWindow();
     return v8::Undefined();
+}
 
-  Event* event = V8Event::toNative(event_wrapper);
-  if (!args[1]->IsArray())
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsCloseWindow(const v8::Arguments& args)
+{
+    WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(v8::External::Cast(*args.Data())->Value());
+    frontend->m_client->closeWindow();
     return v8::Undefined();
+}
 
-  v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(args[1]);
-  Vector<ContextMenuItem*> items;
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsDockWindow(const v8::Arguments& args)
+{
+    WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(v8::External::Cast(*args.Data())->Value());
+    frontend->m_client->dockWindow();
+    return v8::Undefined();
+}
 
-  for (size_t i = 0; i < array->Length(); ++i) {
-    v8::Local<v8::Object> item = v8::Local<v8::Object>::Cast(
-        array->Get(v8::Integer::New(i)));
-    v8::Local<v8::Value> label = item->Get(v8::String::New("label"));
-    v8::Local<v8::Value> id = item->Get(v8::String::New("id"));
-    if (label->IsUndefined() || id->IsUndefined()) {
-      items.append(new ContextMenuItem(SeparatorType,
-                                       ContextMenuItemTagNoAction,
-                                       String()));
-    } else {
-      ContextMenuAction typedId = static_cast<ContextMenuAction>(
-          ContextMenuItemBaseCustomTag + id->ToInt32()->Value());
-      items.append(new ContextMenuItem(ActionType,
-                                       typedId,
-                                       toWebCoreStringWithNullCheck(label)));
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsUndockWindow(const v8::Arguments& args)
+{
+    WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(v8::External::Cast(*args.Data())->Value());
+    frontend->m_client->undockWindow();
+    return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsLocalizedStringsURL(const v8::Arguments& args)
+{
+    return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsHiddenPanels(const v8::Arguments& args)
+{
+    return v8String("");
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsDebuggerCommand(const v8::Arguments& args)
+{
+    WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(v8::External::Cast(*args.Data())->Value());
+    String command = WebCore::toWebCoreStringWithNullCheck(args[0]);
+    WebString stdCommand = webkit_glue::StringToWebString(command);
+    frontend->m_client->sendDebuggerCommandToAgent(stdCommand);
+    return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsSetting(const v8::Arguments& args)
+{
+    return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsSetSetting(const v8::Arguments& args)
+{
+    return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsDebuggerPauseScript(const v8::Arguments& args)
+{
+    WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(v8::External::Cast(*args.Data())->Value());
+    frontend->m_client->sendDebuggerPauseScript();
+    return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsWindowUnloading(const v8::Arguments& args)
+{
+    //TODO(pfeldman): Implement this.
+    return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsShowContextMenu(const v8::Arguments& args)
+{
+    if (args.Length() < 2)
+        return v8::Undefined();
+
+    v8::Local<v8::Object> eventWrapper = v8::Local<v8::Object>::Cast(args[0]);
+    if (V8DOMWrapper::domWrapperType(eventWrapper) != V8ClassIndex::EVENT)
+        return v8::Undefined();
+
+    Event* event = V8Event::toNative(eventWrapper);
+    if (!args[1]->IsArray())
+        return v8::Undefined();
+
+    v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(args[1]);
+    Vector<ContextMenuItem*> items;
+
+    for (size_t i = 0; i < array->Length(); ++i) {
+        v8::Local<v8::Object> item = v8::Local<v8::Object>::Cast(array->Get(v8::Integer::New(i)));
+        v8::Local<v8::Value> label = item->Get(v8::String::New("label"));
+        v8::Local<v8::Value> id = item->Get(v8::String::New("id"));
+        if (label->IsUndefined() || id->IsUndefined()) {
+          items.append(new ContextMenuItem(SeparatorType,
+                                           ContextMenuItemTagNoAction,
+                                           String()));
+        } else {
+          ContextMenuAction typedId = static_cast<ContextMenuAction>(
+              ContextMenuItemBaseCustomTag + id->ToInt32()->Value());
+          items.append(new ContextMenuItem(ActionType,
+                                           typedId,
+                                           toWebCoreStringWithNullCheck(label)));
+        }
     }
-  }
 
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
+    WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(v8::External::Cast(*args.Data())->Value());
 
-  frontend->menu_provider_ = MenuProvider::create(frontend, items);
+    frontend->m_menuProvider = MenuProvider::create(frontend, items);
 
-  ContextMenuController* menu_controller = frontend->web_view_impl_->page()->
-      contextMenuController();
-  menu_controller->showContextMenu(event,
-                                   frontend->menu_provider_);
+    ContextMenuController* menuController = frontend->m_webViewImpl->page()->contextMenuController();
+    menuController->showContextMenu(event, frontend->m_menuProvider);
 
-  return v8::Undefined();
+    return v8::Undefined();
 }

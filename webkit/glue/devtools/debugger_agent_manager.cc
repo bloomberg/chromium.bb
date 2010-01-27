@@ -1,6 +1,32 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (C) 2010 Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include "config.h"
 
@@ -8,6 +34,7 @@
 #include "PageGroupLoadDeferrer.h"
 #include "V8Proxy.h"
 #include <wtf/HashSet.h>
+#include <wtf/Noncopyable.h>
 #undef LOG
 
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
@@ -17,310 +44,276 @@
 #include "webkit/glue/devtools/debugger_agent_manager.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 
-#if USE(V8)
 #include "v8/include/v8-debug.h"
-#endif
 
 using WebKit::WebDevToolsAgent;
 using WebKit::WebFrameImpl;
 using WebKit::WebViewImpl;
 
-WebDevToolsAgent::MessageLoopDispatchHandler
-    DebuggerAgentManager::message_loop_dispatch_handler_ = NULL;
+WebDevToolsAgent::MessageLoopDispatchHandler DebuggerAgentManager::s_messageLoopDispatchHandler = 0;
 
-// static
-bool DebuggerAgentManager::in_host_dispatch_handler_ = false;
+bool DebuggerAgentManager::s_inHostDispatchHandler = false;
 
-// static
-DebuggerAgentManager::DeferrersMap DebuggerAgentManager::page_deferrers_;
+DebuggerAgentManager::DeferrersMap DebuggerAgentManager::s_pageDeferrers;
 
-// static
-bool DebuggerAgentManager::in_utility_context_ = false;
+bool DebuggerAgentManager::s_inUtilityContext = false;
 
-// static
-bool DebuggerAgentManager::debug_break_delayed_ = false;
+bool DebuggerAgentManager::s_debugBreakDelayed = false;
 
 namespace {
 
-class CallerIdWrapper : public v8::Debug::ClientData {
- public:
-  CallerIdWrapper() : caller_is_mananager_(true), caller_id_(0) {}
-  explicit CallerIdWrapper(int caller_id)
-    : caller_is_mananager_(false),
-      caller_id_(caller_id) {}
-  ~CallerIdWrapper() {}
-  bool caller_is_mananager() const { return caller_is_mananager_; }
-  int caller_id() const { return caller_id_; }
- private:
-  bool caller_is_mananager_;
-  int caller_id_;
-  DISALLOW_COPY_AND_ASSIGN(CallerIdWrapper);
+class CallerIdWrapper : public v8::Debug::ClientData, public Noncopyable {
+public:
+    CallerIdWrapper() : m_callerIsMananager(true), m_callerId(0) { }
+    explicit CallerIdWrapper(int callerId)
+        : m_callerIsMananager(false)
+        , m_callerId(callerId) { }
+    ~CallerIdWrapper() { }
+    bool callerIsMananager() const { return m_callerIsMananager; }
+    int callerId() const { return m_callerId; }
+private:
+    bool m_callerIsMananager;
+    int m_callerId;
 };
 
 }  // namespace
 
 
-void DebuggerAgentManager::V8DebugHostDispatchHandler() {
-  if (!DebuggerAgentManager::message_loop_dispatch_handler_ ||
-      !attached_agents_map_) {
-    return;
-  }
-  if (in_host_dispatch_handler_) {
-    return;
-  }
-  in_host_dispatch_handler_ = true;
-
-  Vector<WebViewImpl*> views;
-  // 1. Disable active objects and input events.
-  for (AttachedAgentsMap::iterator it = attached_agents_map_->begin();
-       it != attached_agents_map_->end();
-       ++it) {
-    DebuggerAgentImpl* agent = it->second;
-    page_deferrers_.set(
-        agent->web_view(),
-        new WebCore::PageGroupLoadDeferrer(agent->GetPage(), true));
-    views.append(agent->web_view());
-    agent->web_view()->setIgnoreInputEvents(true);
-  }
-
-  // 2. Process messages.
-  DebuggerAgentManager::message_loop_dispatch_handler_();
-
-  // 3. Bring things back.
-  for (Vector<WebViewImpl*>::iterator it = views.begin();
-       it != views.end();
-       ++it) {
-    if (page_deferrers_.contains(*it)) {
-      // The view was not closed during the dispatch.
-      (*it)->setIgnoreInputEvents(false);
-    }
-  }
-  deleteAllValues(page_deferrers_);
-  page_deferrers_.clear();
-
-  in_host_dispatch_handler_ = false;
-  if (!attached_agents_map_) {
-    // Remove handlers if all agents were detached within host dispatch.
-    v8::Debug::SetMessageHandler(NULL);
-    v8::Debug::SetHostDispatchHandler(NULL);
-  }
-}
-
-// static
-DebuggerAgentManager::AttachedAgentsMap*
-    DebuggerAgentManager::attached_agents_map_ = NULL;
-
-// static
-void DebuggerAgentManager::DebugAttach(DebuggerAgentImpl* debugger_agent) {
-  if (!attached_agents_map_) {
-    attached_agents_map_ = new AttachedAgentsMap();
-    v8::Debug::SetMessageHandler2(&DebuggerAgentManager::OnV8DebugMessage);
-    v8::Debug::SetHostDispatchHandler(
-        &DebuggerAgentManager::V8DebugHostDispatchHandler, 100 /* ms */);
-  }
-  int host_id = debugger_agent->webdevtools_agent()->host_id();
-  ASSERT(host_id != 0);
-  attached_agents_map_->set(host_id, debugger_agent);
-}
-
-// static
-void DebuggerAgentManager::DebugDetach(DebuggerAgentImpl* debugger_agent) {
-  if (!attached_agents_map_) {
-    ASSERT_NOT_REACHED();
-    return;
-  }
-  int host_id = debugger_agent->webdevtools_agent()->host_id();
-  ASSERT(attached_agents_map_->get(host_id) == debugger_agent);
-  bool is_on_breakpoint = (FindAgentForCurrentV8Context() == debugger_agent);
-  attached_agents_map_->remove(host_id);
-
-  if (attached_agents_map_->isEmpty()) {
-    delete attached_agents_map_;
-    attached_agents_map_ = NULL;
-    // Note that we do not empty handlers while in dispatch - we schedule
-    // continue and do removal once we are out of the dispatch. Also there is
-    // no need to send continue command in this case since removing message
-    // handler will cause debugger unload and all breakpoints will be cleared.
-    if (!in_host_dispatch_handler_) {
-      v8::Debug::SetMessageHandler2(NULL);
-      v8::Debug::SetHostDispatchHandler(NULL);
-    }
-  } else {
-    // Remove all breakpoints set by the agent.
-    String clear_breakpoint_group_cmd = String::format(
-        "{\"seq\":1,\"type\":\"request\",\"command\":\"clearbreakpointgroup\","
-            "\"arguments\":{\"groupId\":%d}}",
-        host_id);
-    SendCommandToV8(clear_breakpoint_group_cmd, new CallerIdWrapper());
-
-    if (is_on_breakpoint) {
-      // Force continue if detach happened in nessted message loop while
-      // debugger was paused on a breakpoint(as long as there are other
-      // attached agents v8 will wait for explicit'continue' message).
-      SendContinueCommandToV8();
-    }
-  }
-}
-
-// static
-void DebuggerAgentManager::OnV8DebugMessage(const v8::Debug::Message& message) {
-  v8::HandleScope scope;
-  v8::String::Value value(message.GetJSON());
-  String out(reinterpret_cast<const UChar*>(*value), value.length());
-
-  // If caller_data is not NULL the message is a response to a debugger command.
-  if (v8::Debug::ClientData* caller_data = message.GetClientData()) {
-    CallerIdWrapper* wrapper = static_cast<CallerIdWrapper*>(caller_data);
-    if (wrapper->caller_is_mananager()) {
-      // Just ignore messages sent by this manager.
-      return;
-    }
-    DebuggerAgentImpl* debugger_agent =
-        DebuggerAgentForHostId(wrapper->caller_id());
-    if (debugger_agent) {
-      debugger_agent->DebuggerOutput(out);
-    } else if (!message.WillStartRunning()) {
-      // Autocontinue execution if there is no handler.
-      SendContinueCommandToV8();
-    }
-    return;
-  } // Otherwise it's an event message.
-  ASSERT(message.IsEvent());
-
-  // Ignore unsupported event types.
-  if (message.GetEvent() != v8::AfterCompile &&
-      message.GetEvent() != v8::Break &&
-      message.GetEvent() != v8::Exception) {
-    return;
-  }
-
-  v8::Handle<v8::Context> context = message.GetEventContext();
-  // If the context is from one of the inpected tabs it should have its context
-  // data.
-  if (context.IsEmpty()) {
-    // Unknown context, skip the event.
-    return;
-  }
-
-  if (in_utility_context_ && message.GetEvent() == v8::Break) {
-    // This may happen when two tabs are being debugged in the same process.
-    // Suppose that first debugger is pauesed on an exception. It will run
-    // nested MessageLoop which may process Break request from the second
-    // debugger.
-    debug_break_delayed_ = true;
-  } else {
-    // If the context is from one of the inpected tabs or injected extension
-    // scripts it must have host_id in the data field.
-    int host_id = WebCore::V8Proxy::contextDebugId(context);
-    if (host_id != -1) {
-      DebuggerAgentImpl* agent = DebuggerAgentForHostId(host_id);
-      if (agent) {
-        if (agent->auto_continue_on_exception()
-            && message.GetEvent() == v8::Exception) {
-          SendContinueCommandToV8();
-          return;
-        }
-
-        agent->DebuggerOutput(out);
+void DebuggerAgentManager::debugHostDispatchHandler()
+{
+    if (!s_messageLoopDispatchHandler || !s_attachedAgentsMap)
         return;
+
+    if (s_inHostDispatchHandler)
+        return;
+
+    s_inHostDispatchHandler = true;
+
+    Vector<WebViewImpl*> views;
+    // 1. Disable active objects and input events.
+    for (AttachedAgentsMap::iterator it = s_attachedAgentsMap->begin(); it != s_attachedAgentsMap->end(); ++it) {
+        DebuggerAgentImpl* agent = it->second;
+        s_pageDeferrers.set(agent->webView(), new WebCore::PageGroupLoadDeferrer(agent->page(), true));
+        views.append(agent->webView());
+        agent->webView()->setIgnoreInputEvents(true);
+    }
+
+    // 2. Process messages.
+    s_messageLoopDispatchHandler();
+
+    // 3. Bring things back.
+    for (Vector<WebViewImpl*>::iterator it = views.begin(); it != views.end(); ++it) {
+        if (s_pageDeferrers.contains(*it)) {
+            // The view was not closed during the dispatch.
+            (*it)->setIgnoreInputEvents(false);
+        }
+    }
+    deleteAllValues(s_pageDeferrers);
+    s_pageDeferrers.clear();
+
+    s_inHostDispatchHandler = false;
+    if (!s_attachedAgentsMap) {
+        // Remove handlers if all agents were detached within host dispatch.
+        v8::Debug::SetMessageHandler(0);
+        v8::Debug::SetHostDispatchHandler(0);
+    }
+}
+
+DebuggerAgentManager::AttachedAgentsMap* DebuggerAgentManager::s_attachedAgentsMap = 0;
+
+void DebuggerAgentManager::debugAttach(DebuggerAgentImpl* debuggerAgent)
+{
+    if (!s_attachedAgentsMap) {
+        s_attachedAgentsMap = new AttachedAgentsMap();
+        v8::Debug::SetMessageHandler2(&DebuggerAgentManager::onV8DebugMessage);
+        v8::Debug::SetHostDispatchHandler(&DebuggerAgentManager::debugHostDispatchHandler, 100 /* ms */);
+    }
+    int hostId = debuggerAgent->webdevtoolsAgent()->hostId();
+    ASSERT(hostId != 0);
+    s_attachedAgentsMap->set(hostId, debuggerAgent);
+}
+
+void DebuggerAgentManager::debugDetach(DebuggerAgentImpl* debuggerAgent)
+{
+    if (!s_attachedAgentsMap) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
+    int hostId = debuggerAgent->webdevtoolsAgent()->hostId();
+    ASSERT(s_attachedAgentsMap->get(hostId) == debuggerAgent);
+    bool isOnBreakpoint = (findAgentForCurrentV8Context() == debuggerAgent);
+    s_attachedAgentsMap->remove(hostId);
+
+    if (s_attachedAgentsMap->isEmpty()) {
+        delete s_attachedAgentsMap;
+        s_attachedAgentsMap = 0;
+        // Note that we do not empty handlers while in dispatch - we schedule
+        // continue and do removal once we are out of the dispatch. Also there is
+        // no need to send continue command in this case since removing message
+        // handler will cause debugger unload and all breakpoints will be cleared.
+        if (!s_inHostDispatchHandler) {
+            v8::Debug::SetMessageHandler2(0);
+            v8::Debug::SetHostDispatchHandler(0);
+        }
+    } else {
+      // Remove all breakpoints set by the agent.
+      String clearBreakpointGroupCmd = String::format(
+          "{\"seq\":1,\"type\":\"request\",\"command\":\"clearbreakpointgroup\","
+              "\"arguments\":{\"groupId\":%d}}",
+          hostId);
+      sendCommandToV8(clearBreakpointGroupCmd, new CallerIdWrapper());
+
+      if (isOnBreakpoint) {
+          // Force continue if detach happened in nessted message loop while
+          // debugger was paused on a breakpoint(as long as there are other
+          // attached agents v8 will wait for explicit'continue' message).
+          sendContinueCommandToV8();
       }
     }
-  }
-
-  if (!message.WillStartRunning()) {
-    // Autocontinue execution on break and exception  events if there is no
-    // handler.
-    SendContinueCommandToV8();
-  }
 }
 
-// static
-void DebuggerAgentManager::PauseScript() {
-  if (in_utility_context_) {
-    debug_break_delayed_ = true;
-  } else {
-    v8::Debug::DebugBreak();
-  }
-}
+void DebuggerAgentManager::onV8DebugMessage(const v8::Debug::Message& message)
+{
+    v8::HandleScope scope;
+    v8::String::Value value(message.GetJSON());
+    String out(reinterpret_cast<const UChar*>(*value), value.length());
 
-// static
-void DebuggerAgentManager::ExecuteDebuggerCommand(
-    const String& command,
-    int caller_id) {
-  SendCommandToV8(command, new CallerIdWrapper(caller_id));
-}
+    // If callerData is not 0 the message is a response to a debugger command.
+    if (v8::Debug::ClientData* callerData = message.GetClientData()) {
+        CallerIdWrapper* wrapper = static_cast<CallerIdWrapper*>(callerData);
+        if (wrapper->callerIsMananager()) {
+            // Just ignore messages sent by this manager.
+            return;
+        }
+        DebuggerAgentImpl* debuggerAgent = debuggerAgentForHostId(wrapper->callerId());
+        if (debuggerAgent)
+            debuggerAgent->debuggerOutput(out);
+        else if (!message.WillStartRunning()) {
+            // Autocontinue execution if there is no handler.
+            sendContinueCommandToV8();
+        }
+        return;
+    } // Otherwise it's an event message.
+    ASSERT(message.IsEvent());
 
-// static
-void DebuggerAgentManager::SetMessageLoopDispatchHandler(
-    WebDevToolsAgent::MessageLoopDispatchHandler handler) {
-  message_loop_dispatch_handler_ = handler;
-}
-
-// static
-void DebuggerAgentManager::SetHostId(WebFrameImpl* webframe, int host_id) {
-  ASSERT(host_id > 0);
-  WebCore::V8Proxy* proxy = WebCore::V8Proxy::retrieve(webframe->frame());
-  if (proxy) {
-    proxy->setContextDebugId(host_id);
-  }
-}
-
-// static
-void DebuggerAgentManager::OnWebViewClosed(WebViewImpl* webview) {
-  if (page_deferrers_.contains(webview)) {
-    delete page_deferrers_.get(webview);
-    page_deferrers_.remove(webview);
-  }
-}
-
-// static
-void DebuggerAgentManager::OnNavigate() {
-  if (in_host_dispatch_handler_) {
-    DebuggerAgentManager::SendContinueCommandToV8();
-  }
-}
-
-// static
-void DebuggerAgentManager::SendCommandToV8(const String& cmd,
-                                           v8::Debug::ClientData* data) {
-#if USE(V8)
-  v8::Debug::SendCommand(reinterpret_cast<const uint16_t*>(cmd.characters()),
-                         cmd.length(),
-                         data);
-#endif
-}
-
-void DebuggerAgentManager::SendContinueCommandToV8() {
-  String continue_cmd(
-      "{\"seq\":1,\"type\":\"request\",\"command\":\"continue\"}");
-  SendCommandToV8(continue_cmd, new CallerIdWrapper());
-}
-
-// static
-DebuggerAgentImpl* DebuggerAgentManager::FindAgentForCurrentV8Context() {
-  if (!attached_agents_map_) {
-    return NULL;
-  }
-  ASSERT(!attached_agents_map_->isEmpty());
-
-  WebCore::Frame* frame = WebCore::V8Proxy::retrieveFrameForEnteredContext();
-  if (!frame) {
-    return NULL;
-  }
-  WebCore::Page* page = frame->page();
-  for (AttachedAgentsMap::iterator it = attached_agents_map_->begin();
-       it != attached_agents_map_->end(); ++it) {
-    if (it->second->GetPage() == page) {
-      return it->second;
+    // Ignore unsupported event types.
+    if (message.GetEvent() != v8::AfterCompile &&
+        message.GetEvent() != v8::Break &&
+        message.GetEvent() != v8::Exception) {
+        return;
     }
-  }
-  return NULL;
+
+    v8::Handle<v8::Context> context = message.GetEventContext();
+    // If the context is from one of the inpected tabs it should have its context
+    // data.
+    if (context.IsEmpty()) {
+        // Unknown context, skip the event.
+        return;
+    }
+
+    if (s_inUtilityContext && message.GetEvent() == v8::Break) {
+        // This may happen when two tabs are being debugged in the same process.
+        // Suppose that first debugger is pauesed on an exception. It will run
+        // nested MessageLoop which may process Break request from the second
+        // debugger.
+        s_debugBreakDelayed = true;
+    } else {
+        // If the context is from one of the inpected tabs or injected extension
+        // scripts it must have hostId in the data field.
+        int hostId = WebCore::V8Proxy::contextDebugId(context);
+        if (hostId != -1) {
+            DebuggerAgentImpl* agent = debuggerAgentForHostId(hostId);
+            if (agent) {
+                if (agent->autoContinueOnException()
+                    && message.GetEvent() == v8::Exception) {
+                    sendContinueCommandToV8();
+                    return;
+                }
+
+                agent->debuggerOutput(out);
+                return;
+            }
+        }
+    }
+
+    if (!message.WillStartRunning()) {
+        // Autocontinue execution on break and exception  events if there is no
+        // handler.
+        sendContinueCommandToV8();
+    }
 }
 
-// static
-DebuggerAgentImpl* DebuggerAgentManager::DebuggerAgentForHostId(int host_id) {
-  if (!attached_agents_map_) {
-    return NULL;
-  }
-  return attached_agents_map_->get(host_id);
+void DebuggerAgentManager::pauseScript()
+{
+    if (s_inUtilityContext)
+        s_debugBreakDelayed = true;
+    else
+        v8::Debug::DebugBreak();
+}
+
+void DebuggerAgentManager::executeDebuggerCommand(const String& command, int callerId)
+{
+    sendCommandToV8(command, new CallerIdWrapper(callerId));
+}
+
+void DebuggerAgentManager::setMessageLoopDispatchHandler(WebDevToolsAgent::MessageLoopDispatchHandler handler)
+{
+    s_messageLoopDispatchHandler = handler;
+}
+
+void DebuggerAgentManager::setHostId(WebFrameImpl* webframe, int hostId)
+{
+    ASSERT(hostId > 0);
+    WebCore::V8Proxy* proxy = WebCore::V8Proxy::retrieve(webframe->frame());
+    if (proxy)
+        proxy->setContextDebugId(hostId);
+}
+
+void DebuggerAgentManager::onWebViewClosed(WebViewImpl* webview)
+{
+    if (s_pageDeferrers.contains(webview)) {
+        delete s_pageDeferrers.get(webview);
+        s_pageDeferrers.remove(webview);
+    }
+}
+
+void DebuggerAgentManager::onNavigate()
+{
+    if (s_inHostDispatchHandler)
+        DebuggerAgentManager::sendContinueCommandToV8();
+}
+
+void DebuggerAgentManager::sendCommandToV8(const String& cmd, v8::Debug::ClientData* data)
+{
+    v8::Debug::SendCommand(reinterpret_cast<const uint16_t*>(cmd.characters()), cmd.length(), data);
+}
+
+void DebuggerAgentManager::sendContinueCommandToV8()
+{
+    String continueCmd("{\"seq\":1,\"type\":\"request\",\"command\":\"continue\"}");
+    sendCommandToV8(continueCmd, new CallerIdWrapper());
+}
+
+DebuggerAgentImpl* DebuggerAgentManager::findAgentForCurrentV8Context()
+{
+    if (!s_attachedAgentsMap)
+        return 0;
+    ASSERT(!s_attachedAgentsMap->isEmpty());
+
+    WebCore::Frame* frame = WebCore::V8Proxy::retrieveFrameForEnteredContext();
+    if (!frame)
+        return 0;
+    WebCore::Page* page = frame->page();
+    for (AttachedAgentsMap::iterator it = s_attachedAgentsMap->begin(); it != s_attachedAgentsMap->end(); ++it) {
+        if (it->second->page() == page)
+            return it->second;
+    }
+    return 0;
+}
+
+DebuggerAgentImpl* DebuggerAgentManager::debuggerAgentForHostId(int hostId)
+{
+    if (!s_attachedAgentsMap)
+        return 0;
+    return s_attachedAgentsMap->get(hostId);
 }

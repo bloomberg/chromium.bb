@@ -221,7 +221,7 @@ devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript = function(
   if (typeof injectedScriptId != 'number') {
     injectedScriptId = 0;
   }
-  RemoteToolsAgent.DispatchOnInjectedScript(
+  RemoteToolsAgent.dispatchOnInjectedScript(
       callId,
       injectedScriptId,
       methodName,
@@ -237,7 +237,7 @@ devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript = function(
 devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript = function(
     callId, methodName, argsString, async) {
   var injectedScriptId = 1000000;
-  RemoteToolsAgent.DispatchOnInjectedScript(
+  RemoteToolsAgent.dispatchOnInjectedScript(
       callId,
       injectedScriptId,
       methodName,
@@ -265,7 +265,7 @@ devtools.InspectorBackendImpl.prototype.installInspectorControllerDelegate_
 devtools.InspectorBackendImpl.prototype.callInspectorController_ =
     function(methodName, var_arg) {
   var args = Array.prototype.slice.call(arguments, 1);
-  RemoteToolsAgent.DispatchOnInspectorController(
+  RemoteToolsAgent.dispatchOnInspectorController(
       WebInspector.Callback.wrap(function(){}),
       methodName,
       JSON.stringify(args));

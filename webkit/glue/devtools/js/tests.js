@@ -418,7 +418,7 @@ TestSuite.prototype.testProfilerTab = function() {
       });
   var ticksCount = 0;
   var tickRecord = '\nt,';
-  this.addSniffer(RemoteProfilerAgent, 'DidGetLogLines',
+  this.addSniffer(RemoteProfilerAgent, 'didGetLogLines',
       function(posIgnored, log) {
         var pos = 0;
         while ((pos = log.indexOf(tickRecord, pos)) != -1) {
@@ -591,7 +591,7 @@ TestSuite.prototype.testSetBreakpoint = function() {
             function(view, url) {
               view._addBreakpoint(breakpointLine);
               // Force v8 execution.
-              RemoteToolsAgent.ExecuteVoidJavaScript();
+              RemoteToolsAgent.executeVoidJavaScript();
               test.waitForSetBreakpointResponse_(url, breakpointLine,
                   function() {
                     test.releaseControl();
@@ -861,7 +861,7 @@ TestSuite.prototype.testEvalOnCallFrame = function() {
             function(view, url) {
               view._addBreakpoint(breakpointLine);
               // Force v8 execution.
-              RemoteToolsAgent.ExecuteVoidJavaScript();
+              RemoteToolsAgent.executeVoidJavaScript();
               test.waitForSetBreakpointResponse_(url, breakpointLine,
                                                  setBreakpointCallback);
             });
