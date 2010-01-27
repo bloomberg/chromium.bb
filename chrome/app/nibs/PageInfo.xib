@@ -386,15 +386,15 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: enableCertButton_</string>
+						<string key="label">enabled: enableCertButton</string>
 						<reference key="source" ref="339407270"/>
 						<reference key="destination" ref="1001"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="339407270"/>
 							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: enableCertButton_</string>
+							<string key="NSLabel">enabled: enableCertButton</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">enableCertButton_</string>
+							<string key="NSKeyPath">enableCertButton</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
