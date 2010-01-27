@@ -32,9 +32,6 @@ import sys
 
 Import('env')
 
-# Make this option as it does a download.
-if not ARGUMENTS.get('BUILD_VIM'): Return()
-
 buildout = env.Dir('$OBJ_ROOT/tests/vim/buildout')
 env['ENV']['LIB_DIR'] = env.subst('$LIB_DIR').replace('\\', '/')
 env['ENV']['STAGING_DIR'] = env.subst('$STAGING_DIR').replace('\\', '/')

@@ -19,6 +19,45 @@ Dir('src/third_party_mod/gtest').addRepository(
 
 
 # ----------------------------------------------------------
+# SANITY CHECKS
+# ----------------------------------------------------------
+
+ACCEPTABLE_ARGUMENTS = {
+    # TODO: add comments what these mean
+    # TODO: check which ones are obsolete
+    ####  ASCII SORTED ####
+    'COVERAGE': None,
+    'DOXYGEN': None,
+    'LOAD': None,
+    'MODE': None,
+    'PROFILE': None,
+    'PROGRESS': None,
+    'SYMBOLS': None,
+    'build_av_apps': None,
+    'build_vim': None,
+    'built_elsewhere': None,
+    'dangerous_debug_disable_inner_sandbox': None,
+    'loader': None,
+    'nacl_ccflags': None,
+    'naclsdk_validate': None,
+    'nocpp': None,
+    'platform': None,
+    'pp': None,
+    'prebuilt': None,
+    'sdl': None,
+    'sysinfo': None,
+  }
+
+
+def CheckArguments():
+  for key in ARGUMENTS:
+    print key
+    if key not in ACCEPTABLE_ARGUMENTS:
+      print 'ERROR'
+      print 'ERROR bad argument: ', key
+      print 'ERROR'
+
+# ----------------------------------------------------------
 environment_list = []
 
 # ----------------------------------------------------------
@@ -1012,11 +1051,18 @@ nacl_env.Append(
     'tests/threads/nacl.scons',
     'tests/time/nacl.scons',
     'tests/toolchain/nacl.scons',
-    'tests/vim/nacl.scons',
     ####  ALPHABETICALLY SORTED ####
     ])
 
-if ARGUMENTS.get('sdl', 'hermetic') != 'none':
+# NOTE: DEFAULT OFF
+if int(ARGUMENTS.get('build_vim', '0')):
+  nacl_env.Append(
+    BUILD_SCONSCRIPTS = [
+    'tests/vim/nacl.scons',
+    ])
+
+# NOTE: DEFAULT ON
+if int(ARGUMENTS.get('build_av_apps', '1')):
   nacl_env.Append(
       BUILD_SCONSCRIPTS = [
       ####  ALPHABETICALLY SORTED ####
@@ -1123,6 +1169,7 @@ nacl_extra_sdk_env.Append(
       ####  ALPHABETICALLY SORTED ####
       'src/include/nacl/nacl.scons',
       'src/shared/srpc/nacl.scons',
+      'src/untrusted/av/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
       'src/untrusted/pthread/nacl.scons',
       'src/untrusted/stubs/nacl.scons',
@@ -1130,10 +1177,6 @@ nacl_extra_sdk_env.Append(
       ####  ALPHABETICALLY SORTED ####
    ],
 )
-
-if ARGUMENTS.get('sdl', 'hermetic') != 'none':
-  nacl_extra_sdk_env.Append(
-      BUILD_SCONSCRIPTS = ['src/untrusted/av/nacl.scons',])
 
 # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
 if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
@@ -1369,7 +1412,7 @@ if ARGUMENTS.get('sysinfo', 1):
   Banner('SCONS ARGS:' + str(sys.argv))
   os.system(pre_base_env.subst('${PYTHON} tools/sysinfo.py'))
 
-
+CheckArguments()
 
 selected_envs = FilterEnvironments(environment_list)
 family_map = SanityCheckAndMapExtraction(environment_list, selected_envs)
