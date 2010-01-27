@@ -1144,6 +1144,7 @@ BUG27914 : fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
 
 // This test isn't hanging, it just takes 12-13 seconds to run.
 BUG30536 SLOW WIN LINUX : http/tests/misc/acid3.html = FAIL
+BUG30536 : http/tests/misc/favicon-as-image.html = FAIL
 
 // Has failed for Chromium since it was first checked in.  (Lighttpd related?)
 BUG10323 WIN : http/tests/xmlhttprequest/xmlhttprequest-no-content-length-onProgress.html = FAIL
@@ -1258,9 +1259,6 @@ BUG32191 : fast/js/primitive-method-this.html = FAIL
 // See bug http://code.google.com/p/chromium/issues/detail?id=7868,
 // not urgent for current release.
 BUG24227 : http/tests/plugins/local-geturl-from-remote.html = FAIL
-
-// Form control scrollbars seem to be drawn incorrectly.
-BUG10353 LINUX : fast/replaced/width100percent-textarea.html = FAIL
 
 // This test sometimes fails indefinitely, other times it takes 1-2 seconds.
 BUG14009 LINUX : http/tests/misc/dns-prefetch-control.html = TIMEOUT PASS FAIL
@@ -1870,7 +1868,6 @@ BUG23476 MAC : fast/forms/hidden-listbox.html = IMAGE
 BUG23476 MAC : fast/forms/listbox-clip.html = IMAGE
 BUG23476 MAC : fast/frames/inline-object-inside-frameset.html = IMAGE
 BUG23476 MAC : fast/overflow/hidden-scrollbar-resize.html = IMAGE
-BUG23476 MAC : fast/replaced/width100percent-textarea.html = IMAGE
 BUG23476 MAC : fast/text/font-initial.html = IMAGE
 
 // Missing corner resize image
@@ -2225,9 +2222,6 @@ BUG11613 LINUX : editing/inserting/5607069-2.html = FAIL
 
 // This needs to be rebaselined.  See http://trac.webkit.org/changeset/43378
 BUG11669 LINUX : fast/layers/remove-only-this-layer-update.html = FAIL
-
-// Passes in Chrome, fails in test_shell
-BUG11795 : http/tests/misc/favicon-as-image.html = FAIL
 
 // Already baselined for chromium-win, may need to be done for mac/linux as well.
 BUG11796 LINUX : fast/forms/search-styled.html = FAIL
