@@ -1785,19 +1785,7 @@ void Browser::CreateHistoricalTab(TabContents* contents) {
 }
 
 bool Browser::RunUnloadListenerBeforeClosing(TabContents* contents) {
-  // If the TabContents is not connected yet, then there's no unload
-  // handler we can fire even if the TabContents has an unload listener.
-  // One case where we hit this is in a tab that has an infinite loop
-  // before load.
-  if (TabHasUnloadListener(contents)) {
-    // If the page has unload listeners, then we tell the renderer to fire
-    // them. Once they have fired, we'll get a message back saying whether
-    // to proceed closing the page or not, which sends us back to this method
-    // with the HasUnloadListener bit cleared.
-    contents->render_view_host()->FirePageBeforeUnload(false);
-    return true;
-  }
-  return false;
+  return Browser::RunUnloadEventsHelper(contents);
 }
 
 bool Browser::CanReloadContents(TabContents* source) const {
@@ -3210,6 +3198,23 @@ void Browser::RegisterAppPrefs(const std::wstring& app_name) {
   DCHECK(prefs);
 
   prefs->RegisterDictionaryPref(window_pref.c_str());
+}
+
+// static
+bool Browser::RunUnloadEventsHelper(TabContents* contents) {
+  // If the TabContents is not connected yet, then there's no unload
+  // handler we can fire even if the TabContents has an unload listener.
+  // One case where we hit this is in a tab that has an infinite loop
+  // before load.
+  if (TabHasUnloadListener(contents)) {
+    // If the page has unload listeners, then we tell the renderer to fire
+    // them. Once they have fired, we'll get a message back saying whether
+    // to proceed closing the page or not, which sends us back to this method
+    // with the HasUnloadListener bit cleared.
+    contents->render_view_host()->FirePageBeforeUnload(false);
+    return true;
+  }
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

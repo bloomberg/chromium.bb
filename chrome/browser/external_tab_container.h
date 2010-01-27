@@ -252,6 +252,9 @@ class ExternalTabContainer : public TabContentsDelegate,
   // A mapping between accelerators and commands.
   std::map<views::Accelerator, int> accelerator_table_;
 
+  // Set to true if the tab is waiting for the unload event to complete.
+  bool waiting_for_unload_event_;
+
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };
 

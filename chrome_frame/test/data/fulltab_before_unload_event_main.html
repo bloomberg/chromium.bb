@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <meta http-equiv="x-ua-compatible" content="chrome=1" />
+    <title>ChromeFrame fulltab mode unload event final page</title>
+    <script type="text/javascript"
+        src="chrome_frame_tester_helpers.js"></script>
+    <script language=javascript>
+      function onLoad() {
+        if (isRunningInChrome()) {
+          if (/unload_success/.test(document.cookie)) {
+            window.externalHost.postMessage("Unload success");
+          }
+          eraseCookie("unload_success");
+        }
+      }
+    </script>
+  </head>
+  <body onload="setTimeout('onLoad()', 50);">
+    ChromeFrame full tab mode unload event final page.
+    Validates that page unload events are received in ChromeFrame.
+  </body>
+</html>

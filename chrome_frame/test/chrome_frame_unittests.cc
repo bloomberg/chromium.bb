@@ -1867,3 +1867,83 @@ TEST_F(ChromeFrameTestWithWebServer,
   chrome_frame_test::CloseAllIEWindows();
   ASSERT_TRUE(CheckResultFile(L"FullTab_AnchorURLNavigateTest", "OK"));
 }
+
+const wchar_t kChromeFrameFullTabModeBeforeUnloadEventTest[] =
+    L"http://localhost:1337/files/fulltab_before_unload_event_test.html";
+
+const wchar_t kChromeFrameFullTabModeBeforeUnloadEventMain[] =
+    L"http://localhost:1337/files/fulltab_before_unload_event_main.html";
+
+TEST_F(ChromeFrameTestWithWebServer,
+       FullTabModeIE_ChromeFrameUnloadEventTest) {
+  chrome_frame_test::TimedMsgLoop loop;
+  CComObjectStackEx<MockWebBrowserEventSink> mock;
+  ::testing::InSequence sequence;   // Everything in sequence
+
+  // We will get two BeforeNavigate2/OnNavigateComplete2 notifications due to
+  // switching from IE to CF.
+  EXPECT_CALL(
+      mock,
+      OnBeforeNavigate2(
+          _, testing::Field(&VARIANT::bstrVal,
+          testing::StrCaseEq(kChromeFrameFullTabModeBeforeUnloadEventTest)),
+          _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
+
+  EXPECT_CALL(
+      mock,
+      OnBeforeNavigate2(
+          _, testing::Field(&VARIANT::bstrVal,
+          testing::StrCaseEq(kChromeFrameFullTabModeBeforeUnloadEventTest)),
+          _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
+
+  // We will get two BeforeNavigate2/OnNavigateComplete2 notifications due to
+  // switching from IE to CF.
+  EXPECT_CALL(
+      mock,
+      OnBeforeNavigate2(
+          _, testing::Field(&VARIANT::bstrVal,
+          testing::StrCaseEq(kChromeFrameFullTabModeBeforeUnloadEventMain)),
+          _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
+
+  EXPECT_CALL(
+      mock,
+      OnBeforeNavigate2(
+          _, testing::Field(&VARIANT::bstrVal,
+          testing::StrCaseEq(kChromeFrameFullTabModeBeforeUnloadEventMain)),
+          _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
+
+  EXPECT_CALL(mock, OnMessage(_))
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs(CreateFunctor(&mock,
+              &chrome_frame_test::WebBrowserEventSink::Uninitialize)),
+          testing::IgnoreResult(testing::InvokeWithoutArgs(
+              &chrome_frame_test::CloseAllIEWindows)),
+          QUIT_LOOP_SOON(loop, 2)));
+
+  HRESULT hr =
+      mock.LaunchIEAndNavigate(kChromeFrameFullTabModeBeforeUnloadEventTest);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
+
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  mock.Uninitialize();
+  chrome_frame_test::CloseAllIEWindows();
+}

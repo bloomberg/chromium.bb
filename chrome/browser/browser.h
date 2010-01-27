@@ -499,6 +499,9 @@ class Browser : public TabStripModelDelegate,
   // Overridden from CommandUpdater::CommandUpdaterDelegate:
   virtual void ExecuteCommand(int id);
 
+  // Helper function to run unload listeners on a TabContents.
+  static bool RunUnloadEventsHelper(TabContents* contents);
+
  private:
   FRIEND_TEST(BrowserTest, NoTabsInPopups);
 

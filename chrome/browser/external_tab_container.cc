@@ -47,7 +47,8 @@ ExternalTabContainer::ExternalTabContainer(
       load_requests_via_automation_(false),
       handle_top_level_requests_(false),
       external_method_factory_(this),
-      enabled_extension_automation_(false) {
+      enabled_extension_automation_(false),
+      waiting_for_unload_event_(false) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -162,6 +163,12 @@ void ExternalTabContainer::Uninitialize() {
 
   registrar_.RemoveAll();
   if (tab_contents_) {
+    if (Browser::RunUnloadEventsHelper(tab_contents_)) {
+      waiting_for_unload_event_ = true;
+      MessageLoop::current()->Run();
+      waiting_for_unload_event_ = false;
+    }
+
     RenderViewHost* rvh = tab_contents_->render_view_host();
     if (rvh && DevToolsManager::GetInstance()) {
       DevToolsManager::GetInstance()->UnregisterDevToolsClientHostFor(rvh);
@@ -361,6 +368,9 @@ void ExternalTabContainer::LoadingStateChanged(TabContents* source) {
 }
 
 void ExternalTabContainer::CloseContents(TabContents* source) {
+  if (waiting_for_unload_event_) {
+    MessageLoop::current()->Quit();
+  }
 }
 
 void ExternalTabContainer::MoveContents(TabContents* source,
