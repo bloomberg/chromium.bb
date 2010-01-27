@@ -586,6 +586,11 @@
       <message name="IDS_AUTOFILL_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         35
       </message>
+
+      <!-- The URL for About Google Translate. -->
+      <message name="IDS_ABOUT_GOOGLE_TRANSLATE_URL" translateable="false">
+        http://translate.google.com/support/?hl=[GRITLANGCODE]
+      </message>
     </messages>
   </release>
 </grit>

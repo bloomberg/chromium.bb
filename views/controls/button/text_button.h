@@ -36,7 +36,7 @@ class TextButtonBorder : public Border {
   // Returns the insets for the border.
   virtual void GetInsets(gfx::Insets* insets) const;
 
- private:
+ protected:
   // Images
   struct MBBImageSet {
     SkBitmap* top_left;
@@ -52,6 +52,10 @@ class TextButtonBorder : public Border {
   MBBImageSet hot_set_;
   MBBImageSet pushed_set_;
 
+  virtual void Paint(const View& view, gfx::Canvas* canvas,
+      const MBBImageSet& set) const;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(TextButtonBorder);
 };
 
@@ -112,6 +116,7 @@ class TextButton : public CustomButton {
   void SetDisabledColor(SkColor color);
   void SetHighlightColor(SkColor color);
   void SetHoverColor(SkColor color);
+  void SetNormalHasBorder(bool normal_has_border);
 
   // Paint the button into the specified canvas. If |for_drag| is true, the
   // function paints a drag image representation into the canvas.
@@ -175,6 +180,9 @@ class TextButton : public CustomButton {
   // The width of the button will never be larger than this value. A value <= 0
   // indicates the width is not constrained.
   int max_width_;
+
+  // This is true if normal state has a border frame; default is false.
+  bool normal_has_border_;
 
   DISALLOW_COPY_AND_ASSIGN(TextButton);
 };

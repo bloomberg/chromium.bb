@@ -68,9 +68,10 @@ TextButtonBorder::TextButtonBorder() {
 TextButtonBorder::~TextButtonBorder() {
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 //
-// TextButtonBackground - painting
+// TextButtonBorder - painting
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -84,69 +85,74 @@ void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
     set = &pushed_set_;
 
   if (set) {
-    gfx::Rect bounds = view.bounds();
-
-    // Draw the top left image
-    canvas->DrawBitmapInt(*set->top_left, 0, 0);
-
-    // Tile the top image
-    canvas->TileImageInt(
-        *set->top,
-        set->top_left->width(),
-        0,
-        bounds.width() - set->top_right->width() - set->top_left->width(),
-        set->top->height());
-
-    // Draw the top right image
-    canvas->DrawBitmapInt(*set->top_right,
-                          bounds.width() - set->top_right->width(), 0);
-
-    // Tile the left image
-    canvas->TileImageInt(
-        *set->left,
-        0,
-        set->top_left->height(),
-        set->top_left->width(),
-        bounds.height() - set->top->height() - set->bottom_left->height());
-
-    // Tile the center image
-    canvas->TileImageInt(
-        *set->center,
-        set->left->width(),
-        set->top->height(),
-        bounds.width() - set->right->width() - set->left->width(),
-        bounds.height() - set->bottom->height() - set->top->height());
-
-    // Tile the right image
-    canvas->TileImageInt(
-        *set->right,
-        bounds.width() - set->right->width(),
-        set->top_right->height(),
-        bounds.width(),
-        bounds.height() - set->bottom_right->height() -
-            set->top_right->height());
-
-    // Draw the bottom left image
-    canvas->DrawBitmapInt(*set->bottom_left,
-                          0,
-                          bounds.height() - set->bottom_left->height());
-
-    // Tile the bottom image
-    canvas->TileImageInt(
-        *set->bottom,
-        set->bottom_left->width(),
-        bounds.height() - set->bottom->height(),
-        bounds.width() - set->bottom_right->width() -
-            set->bottom_left->width(),
-        set->bottom->height());
-
-    // Draw the bottom right image
-    canvas->DrawBitmapInt(*set->bottom_right,
-                          bounds.width() - set->bottom_right->width(),
-                          bounds.height() -  set->bottom_right->height());
+    Paint(view, canvas, *set);
   } else {
     // Do nothing
   }
+}
+
+void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas,
+    const MBBImageSet& set) const {
+  gfx::Rect bounds = view.bounds();
+
+  // Draw the top left image
+  canvas->DrawBitmapInt(*set.top_left, 0, 0);
+
+  // Tile the top image
+  canvas->TileImageInt(
+      *set.top,
+      set.top_left->width(),
+      0,
+      bounds.width() - set.top_right->width() - set.top_left->width(),
+      set.top->height());
+
+  // Draw the top right image
+  canvas->DrawBitmapInt(*set.top_right,
+                        bounds.width() - set.top_right->width(), 0);
+
+  // Tile the left image
+  canvas->TileImageInt(
+      *set.left,
+      0,
+      set.top_left->height(),
+      set.top_left->width(),
+      bounds.height() - set.top->height() - set.bottom_left->height());
+
+  // Tile the center image
+  canvas->TileImageInt(
+      *set.center,
+      set.left->width(),
+      set.top->height(),
+      bounds.width() - set.right->width() - set.left->width(),
+      bounds.height() - set.bottom->height() - set.top->height());
+
+  // Tile the right image
+  canvas->TileImageInt(
+      *set.right,
+      bounds.width() - set.right->width(),
+      set.top_right->height(),
+      bounds.width(),
+      bounds.height() - set.bottom_right->height() -
+          set.top_right->height());
+
+  // Draw the bottom left image
+  canvas->DrawBitmapInt(*set.bottom_left,
+                        0,
+                        bounds.height() - set.bottom_left->height());
+
+  // Tile the bottom image
+  canvas->TileImageInt(
+      *set.bottom,
+      set.bottom_left->width(),
+      bounds.height() - set.bottom->height(),
+      bounds.width() - set.bottom_right->width() -
+          set.bottom_left->width(),
+      set.bottom->height());
+
+  // Draw the bottom right image
+  canvas->DrawBitmapInt(*set.bottom_right,
+                        bounds.width() - set.bottom_right->width(),
+                        bounds.height() -  set.bottom_right->height());
 }
 
 void TextButtonBorder::GetInsets(gfx::Insets* insets) const {
@@ -169,7 +175,8 @@ TextButton::TextButton(ButtonListener* listener, const std::wstring& text)
       color_highlight_(kHighlightColor),
       color_hover_(kHoverColor),
       has_hover_icon_(false),
-      max_width_(0) {
+      max_width_(0),
+      normal_has_border_(false) {
   SetText(text);
   set_border(new TextButtonBorder);
   SetAnimationDuration(kHoverAnimationDurationMs);
@@ -222,6 +229,10 @@ void TextButton::ClearMaxTextSize() {
   max_text_size_ = text_size_;
 }
 
+void TextButton::SetNormalHasBorder(bool normal_has_border) {
+  normal_has_border_ = normal_has_border;
+}
+
 void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
   if (!for_drag) {
     PaintBackground(canvas);
@@ -235,7 +246,8 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
       canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
       PaintBorder(canvas);
       canvas->restore();
-    } else if (state_ == BS_HOT || state_ == BS_PUSHED) {
+    } else if (state_ == BS_HOT || state_ == BS_PUSHED ||
+               (state_ == BS_NORMAL && normal_has_border_)) {
       PaintBorder(canvas);
     }
 

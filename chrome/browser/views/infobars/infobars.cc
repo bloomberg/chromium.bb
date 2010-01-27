@@ -23,11 +23,9 @@
 
 // static
 const double InfoBar::kTargetHeight = 37.0;
-
-static const int kVerticalPadding = 3;
-static const int kHorizontalPadding = 3;
-static const int kIconLabelSpacing = 5;
-static const int kButtonSpacing = 5;
+const int InfoBar::kHorizontalPadding = 3;
+const int InfoBar::kIconLabelSpacing = 5;
+const int InfoBar::kButtonSpacing = 5;
 
 static const SkColor kInfoBackgroundColorTop = SkColorSetRGB(170, 214, 112);
 static const SkColor kInfoBackgroundColorBottom = SkColorSetRGB(146, 205, 114);
@@ -40,25 +38,12 @@ static const SkColor kErrorBackgroundColorTop = kWarningBackgroundColorTop;
 static const SkColor kErrorBackgroundColorBottom =
     kWarningBackgroundColorBottom;
 
+static const SkColor kPageActionBackgroundColorTop =
+    SkColorSetRGB(209, 222, 245);
+static const SkColor kPageActionBackgroundColorBottom =
+    SkColorSetRGB(178, 201, 239);
+
 static const int kSeparatorLineHeight = 1;
-
-namespace {
-// Returns a centered y-position of a control of height specified in |prefsize|
-// within the standard InfoBar height. Stable during an animation.
-int CenterY(const gfx::Size prefsize) {
-  return std::max((static_cast<int>(InfoBar::kTargetHeight) -
-      prefsize.height()) / 2, 0);
-}
-
-// Returns a centered y-position of a control of height specified in |prefsize|
-// within the standard InfoBar height, adjusted according to the current amount
-// of animation offset the |parent| InfoBar currently has. Changes during an
-// animation.
-int OffsetY(views::View* parent, const gfx::Size prefsize) {
-  return CenterY(prefsize) -
-      (static_cast<int>(InfoBar::kTargetHeight) - parent->height());
-}
-}
 
 // InfoBarBackground -----------------------------------------------------------
 
@@ -79,6 +64,10 @@ class InfoBarBackground : public views::Background {
       case InfoBarDelegate::ERROR_TYPE:
         top_color = kErrorBackgroundColorTop;
         bottom_color = kErrorBackgroundColorBottom;
+        break;
+      case InfoBarDelegate::PAGE_ACTION_TYPE:
+        top_color = kPageActionBackgroundColorTop;
+        bottom_color = kPageActionBackgroundColorBottom;
         break;
       default:
         NOTREACHED();
@@ -193,6 +182,16 @@ int InfoBar::GetAvailableWidth() const {
 
 void InfoBar::RemoveInfoBar() const {
   container_->RemoveDelegate(delegate());
+}
+
+int InfoBar::CenterY(const gfx::Size prefsize) {
+  return std::max((static_cast<int>(InfoBar::kTargetHeight) -
+      prefsize.height()) / 2, 0);
+}
+
+int InfoBar::OffsetY(views::View* parent, const gfx::Size prefsize) {
+  return CenterY(prefsize) -
+      (static_cast<int>(InfoBar::kTargetHeight) - parent->height());
 }
 
 // InfoBar, views::ButtonListener implementation: ------------------

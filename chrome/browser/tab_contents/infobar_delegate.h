@@ -13,6 +13,7 @@
 
 class AlertInfoBarDelegate;
 class ConfirmInfoBarDelegate;
+class TranslateInfoBarDelegate;
 class InfoBar;
 class LinkInfoBarDelegate;
 class SkBitmap;
@@ -47,7 +48,8 @@ class InfoBarDelegate {
   enum Type {
     INFO_TYPE,
     WARNING_TYPE,
-    ERROR_TYPE
+    ERROR_TYPE,
+    PAGE_ACTION_TYPE
   };
 
   // Returns true if the supplied |delegate| is equal to this one. Equality is
@@ -99,6 +101,12 @@ class InfoBarDelegate {
   // Returns a pointer to the ThemeInstalledInfoBarDelegate interface, if
   // implemented.
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate() {
+    return NULL;
+  }
+
+  // Returns a pointer to the TranslateInfoBarDelegate interface, if
+  // implemented.
+  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() {
     return NULL;
   }
 

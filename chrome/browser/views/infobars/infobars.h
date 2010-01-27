@@ -56,6 +56,10 @@ class InfoBar : public views::View,
   // is (due to animation).
   static const double kTargetHeight;
 
+  static const int kHorizontalPadding;
+  static const int kIconLabelSpacing;
+  static const int kButtonSpacing;
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
@@ -73,6 +77,16 @@ class InfoBar : public views::View,
   // Removes our associated InfoBarDelegate from the associated TabContents.
   // (Will lead to this InfoBar being closed).
   void RemoveInfoBar() const;
+
+  // Returns a centered y-position of a control of height specified in
+  // |prefsize| within the standard InfoBar height. Stable during an animation.
+  int CenterY(const gfx::Size prefsize);
+
+  // Returns a centered y-position of a control of height specified in
+  // |prefsize| within the standard InfoBar height, adjusted according to the
+  // current amount of animation offset the |parent| InfoBar currently has.
+  // Changes during an animation.
+  int OffsetY(views::View* parent, const gfx::Size prefsize);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
