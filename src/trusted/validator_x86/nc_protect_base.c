@@ -137,6 +137,15 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                *        OP %esp, C
                *        add %rsp, %r15
                *     where OP is in { add , sub }, and C is a constant.
+               * (5) Allow "and $rsp, 0xXX" where 0xXX is an immediate 8 bit
+               *     value that is negative. Used to realign the stack pointer.
+               *
+               * Note: Cases 4 and 5 are maintaining the invariant that the top
+               * half of RSP is the same as R15, and the lower half of R15 is
+               * zero. Case (4) maintains this by first clearing the top half
+               * of RSP, and then setting the top half to match R15. Case (5)
+               * maintains the variant becaus the constant is small (-1 to -128)
+               * to that the invariant for $RSP (top half is unchanged).
                */
               switch (inst_name) {
                 case InstPush:
@@ -182,6 +191,18 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                     }
                   }
                   break;
+                case InstAnd:
+                  /* See if case 5: and $rsp, 0xXX */
+                  if (NcInstStateLength(inst) == 4 &&
+                      NcInstStateByte(inst, 0) == 0x48 &&
+                      NcInstStateByte(inst, 1) == 0x83 &&
+                      NcInstStateByte(inst, 2) == 0xe4 &&
+                      /* negative byte test: check if leftmost bit set. */
+                      (NcInstStateByte(inst, 3) & 0x80)) {
+                    MaybeReportPreviousBad(state, locals);
+                    return;
+                  }
+                  /* Intentionally fall to the next case. */
                 default:
                   if (NcIsMovUsingRegisters(inst_opcode, vector,
                                                  RegRSP, RegRBP)) {
