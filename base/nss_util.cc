@@ -4,7 +4,6 @@
 
 #include "base/nss_util.h"
 
-#include <dlfcn.h>
 #include <nss.h>
 #include <plarena.h>
 #include <prerror.h>
@@ -12,7 +11,6 @@
 #include <prtime.h>
 #include <pk11pub.h>
 #include <secmod.h>
-#include <ssl.h>
 
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -41,7 +39,7 @@ SECMODModule *InitDefaultRootCerts() {
   const char* kModulePath = "libnssckbi.so";
   char modparams[1024];
   snprintf(modparams, sizeof(modparams),
-          "name=\"Root Certs\" library=\"%s\"", kModulePath);
+           "name=\"Root Certs\" library=\"%s\"", kModulePath);
   SECMODModule *root = SECMOD_LoadUserModule(modparams, NULL, PR_FALSE);
   if (root)
     return root;
@@ -61,6 +59,7 @@ class NSPRInitSingleton {
   }
 
   ~NSPRInitSingleton() {
+    PL_ArenaFinish();
     PRStatus prstatus = PR_Cleanup();
     if (prstatus != PR_SUCCESS) {
       LOG(ERROR) << "PR_Cleanup failed; was NSPR initialized on wrong thread?";
@@ -118,37 +117,6 @@ class NSSInitSingleton {
     }
 
     root_ = InitDefaultRootCerts();
-
-    NSS_SetDomesticPolicy();
-
-#if defined(USE_SYSTEM_SSL)
-    // Use late binding to avoid scary but benign warning
-    // "Symbol `SSL_ImplementedCiphers' has different size in shared object,
-    //  consider re-linking"
-    const PRUint16* pSSL_ImplementedCiphers = static_cast<const PRUint16*>(
-        dlsym(RTLD_DEFAULT, "SSL_ImplementedCiphers"));
-    if (pSSL_ImplementedCiphers == NULL) {
-      NOTREACHED() << "Can't get list of supported ciphers";
-      return;
-    }
-#else
-#define pSSL_ImplementedCiphers SSL_ImplementedCiphers
-#endif
-
-    // Explicitly enable exactly those ciphers with keys of at least 80 bits
-    for (int i = 0; i < SSL_NumImplementedCiphers; i++) {
-      SSLCipherSuiteInfo info;
-      if (SSL_GetCipherSuiteInfo(pSSL_ImplementedCiphers[i], &info,
-                                 sizeof(info)) == SECSuccess) {
-        SSL_CipherPrefSetDefault(pSSL_ImplementedCiphers[i],
-                                 (info.effectiveKeyBits >= 80));
-      }
-    }
-
-    // Enable SSL
-    SSL_OptionSetDefault(SSL_SECURITY, PR_TRUE);
-
-    // All other SSL options are set per-session by SSLClientSocket.
   }
 
   ~NSSInitSingleton() {
@@ -158,9 +126,6 @@ class NSSInitSingleton {
       root_ = NULL;
     }
 
-    // Have to clear the cache, or NSS_Shutdown fails with SEC_ERROR_BUSY
-    SSL_ClearSessionCache();
-
     SECStatus status = NSS_Shutdown();
     if (status != SECSuccess) {
       // We LOG(INFO) because this failure is relatively harmless
@@ -168,8 +133,6 @@ class NSSInitSingleton {
       LOG(INFO) << "NSS_Shutdown failed; see "
                    "http://code.google.com/p/chromium/issues/detail?id=4609";
     }
-
-    PL_ArenaFinish();
   }
 
  private:
