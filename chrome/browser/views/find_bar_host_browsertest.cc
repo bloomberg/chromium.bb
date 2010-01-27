@@ -593,9 +593,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FLAKY_FindMovesWhenObscuring) {
   // We should not have reached the end.
   ASSERT_GT(kMoveIterations, index);
 
-  // Search backwards once to get the Find box to move back.
-  EXPECT_EQ(kMoveIterations, FindInPageWchar(tab, L"Chromium",
-                                             kBack, kIgnoreCase, &ordinal));
+  // Search for something guaranteed not to be obscured by the Find box.
+  EXPECT_EQ(1, FindInPageWchar(tab, L"Done",
+                               kFwd, kIgnoreCase, &ordinal));
   // Check the position.
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
