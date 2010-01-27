@@ -2885,7 +2885,7 @@ BUG32665 WIN DEBUG : media/video-source-error-no-candidate.html = TIMEOUT
 // Flaky tests found during the roll.
 BUG32679 LINUX DEBUG : http/tests/navigation/lockedhistory-iframe.html = TEXT PASS
 BUG32680 LINUX DEBUG : svg/filters/big-sized-filter.svg = IMAGE+TEXT TIMEOUT PASS
-BUG32682 LINUX DEBUG : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
+BUG32682 LINUX : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
 BUG32683 LINUX DEBUG : svg/css/glyph-orientation-rounding-test.xhtml = TEXT PASS
 BUG32684 WIN DEBUG : inspector/timeline-layout.html = TEXT PASS
 BUG32685 WIN DEBUG : storage/statement-error-callback.html = TEXT PASS
