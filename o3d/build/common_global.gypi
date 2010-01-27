@@ -9,6 +9,13 @@
 # that generally in Chrome (so it can't be lumped into the top-level
 # build/common.gypi).
 {
+  'variables': {
+    'conditions': [
+      [ 'OS == "linux"', {
+        'use_system_zlib': 0,
+      }],
+    ],
+  },
   'target_defaults': {
     'conditions': [
       [ 'OS == "linux" and target_arch=="x64"', {
@@ -19,6 +26,16 @@
         'ldflags': [
           '-m64',
         ],
+      }],
+      [ 'OS == "mac"', {
+          'xcode_settings': {
+            'MACOSX_DEPLOYMENT_TARGET': '10.5',
+            'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+            'OTHER_CFLAGS': ['-mmacosx-version-min=10.5'],
+          },
+          'defines': [
+            'MAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_5',
+          ],
       }],
     ],
   },

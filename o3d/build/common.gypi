@@ -76,7 +76,7 @@
     'target_conditions': [
       ['OS=="mac"', {
           'xcode_settings': {
-            'MACOSX_DEPLOYMENT_TARGET': '10.4',
+            'MACOSX_DEPLOYMENT_TARGET': '10.5',
             # TODO(maf): figure out proper fix for the following.
             # There is only one place in plugin_mac.mm which attempts
             # to use ObjC exception handling.
@@ -132,7 +132,7 @@
             'UNICODE',
             'GTEST_NOT_MAC_FRAMEWORK_MODE',
             'NACL_OSX=1',
-            'MAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_4',
+            'MAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_5',
             'SK_BUILD_FOR_MAC',
           ],
           'configurations': {
@@ -146,7 +146,7 @@
             'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
             'OTHER_CFLAGS': [
                '-fno-eliminate-unused-debug-symbols',
-               '-mmacosx-version-min=10.4'],
+               '-mmacosx-version-min=10.5'],
             'WARNING_CFLAGS': ['-Wno-deprecated-declarations'],
             'WARNING_CXXFLAGS': ['-Wstrict-aliasing',
                                  '-Wno-deprecated',],

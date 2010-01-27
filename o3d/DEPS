@@ -1,15 +1,15 @@
 vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "63",
-  "chromium_rev": "28829",
+  "chromium_rev": "36817",
   "o3d_code_rev": "166",
-  "skia_rev": "376",
-  "gyp_rev": "749",
-  "gtest_rev": "329",
+  "skia_rev": "474",
+  "gyp_rev": "775",
+  "gtest_rev": "359",
   "gflags_rev": "30",
   "breakpad_rev": "391",
-  "v8_rev": "2901",
-  "nacl_rev": "842",
+  "v8_rev": "3608",
+  "nacl_rev": "1377",
 }
 
 deps = {
@@ -83,6 +83,9 @@ deps = {
   "third_party/libpng":
     Var("chromium_trunk") + "/src/third_party/libpng@" + Var("chromium_rev"),
 
+  "third_party/modp_b64":
+    Var("chromium_trunk") + "/src/third_party/modp_b64@" + Var("chromium_rev"),
+
   "chrome/third_party/wtl":
     Var("chromium_trunk") + "/src/chrome/third_party/wtl@" + Var("chromium_rev"),
 
@@ -112,6 +115,9 @@ deps = {
 
   "native_client":
     "http://nativeclient.googlecode.com/svn/trunk/src/native_client@" + Var("nacl_rev"),
+
+  "net":
+    Var("chromium_trunk") + "/src/net@" + Var("chromium_rev"),
 
   "breakpad/src":
     "http://google-breakpad.googlecode.com/svn/trunk/src@" + Var("breakpad_rev"),
