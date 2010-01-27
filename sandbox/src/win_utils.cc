@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,16 @@ const KnownReservedKey kKnownKey[] = {
     { L"HKEY_CURRENT_CONFIG", HKEY_CURRENT_CONFIG},
     { L"HKEY_DYN_DATA", HKEY_DYN_DATA}
 };
+
+// Returns true if the provided path points to a pipe.
+bool IsPipe(const std::wstring& path) {
+  size_t start = 0;
+  if (0 == path.compare(0, sandbox::kNTPrefixLen, sandbox::kNTPrefix))
+    start = sandbox::kNTPrefixLen;
+
+  const wchar_t kPipe[] = L"pipe\\";
+  return (0 == path.compare(start, arraysize(kPipe) - 1, kPipe));
+}
 
 }  // namespace
 
@@ -77,8 +87,7 @@ DWORD IsReparsePoint(const std::wstring& full_path, bool* result) {
     path = path.substr(kNTPrefixLen);
 
   // Check if it's a pipe. We can't query the attributes of a pipe.
-  const wchar_t kPipe[] = L"pipe\\";
-  if (0 == path.compare(0, arraysize(kPipe) - 1, kPipe)) {
+  if (IsPipe(path)) {
     *result = FALSE;
     return ERROR_SUCCESS;
   }
@@ -109,6 +118,66 @@ DWORD IsReparsePoint(const std::wstring& full_path, bool* result) {
 
   *result = false;
   return ERROR_SUCCESS;
+}
+
+// We get a |full_path| of the form \??\c:\some\foo\bar, and the name that
+// we'll get from |handle| will be \device\harddiskvolume1\some\foo\bar.
+bool SameObject(HANDLE handle, const wchar_t* full_path) {
+  std::wstring path(full_path);
+  DCHECK(!path.empty());
+
+  // Check if it's a pipe.
+  if (IsPipe(path))
+    return true;
+
+  std::wstring actual_path;
+  if (!GetPathFromHandle(handle, &actual_path))
+    return false;
+
+  // This may end with a backslash.
+  const wchar_t kBackslash = '\\';
+  if (path[path.length() - 1] == kBackslash)
+    path = path.substr(0, path.length() - 1);
+
+  if (0 == actual_path.compare(full_path))
+    return true;
+
+  // Look for the drive letter.
+  size_t colon_pos = path.find(L':');
+  if (colon_pos == 0 || colon_pos == std::wstring::npos)
+    return false;
+
+  // Only one character for the drive.
+  if (colon_pos > 1 && path[colon_pos - 2] != kBackslash)
+    return false;
+
+  // We only need 3 chars, but let's alloc a buffer for four.
+  wchar_t drive[4] = {0};
+  wchar_t vol_name[MAX_PATH];
+  memcpy(drive, &path[colon_pos - 1], 2 * sizeof(*drive));
+
+  // We'll get a double null terminated string.
+  DWORD vol_length = ::QueryDosDeviceW(drive, vol_name, MAX_PATH);
+  if (vol_length < 2 || vol_length == MAX_PATH)
+    return false;
+
+  // Ignore the nulls at the end.
+  vol_length -= 2;
+
+  // The two paths should be the same length.
+  if (vol_length + path.size() - (colon_pos + 1) != actual_path.size())
+    return false;
+
+  // Check up to the drive letter.
+  if (0 != actual_path.compare(0, vol_length, vol_name))
+    return false;
+
+  // Check the path after the drive letter.
+  if (0 != actual_path.compare(vol_length, std::wstring::npos,
+                               &path[colon_pos + 1]))
+    return false;
+
+  return true;
 }
 
 bool ConvertToLongPath(const std::wstring& short_path,
@@ -171,8 +240,9 @@ bool GetPathFromHandle(HANDLE handle, std::wstring* path) {
   NtQueryObjectFunction NtQueryObject = NULL;
   ResolveNTFunctionPtr("NtQueryObject", &NtQueryObject);
 
-  OBJECT_NAME_INFORMATION* name = NULL;
-  ULONG size = 0;
+  OBJECT_NAME_INFORMATION initial_buffer;
+  OBJECT_NAME_INFORMATION* name = &initial_buffer;
+  ULONG size = sizeof(initial_buffer);
   // Query the name information a first time to get the size of the name.
   NTSTATUS status = NtQueryObject(handle, ObjectNameInformation, name, size,
                                   &size);

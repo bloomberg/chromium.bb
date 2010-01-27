@@ -1,91 +1,22 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "sandbox/src/sandbox_policy.h"
 
 #include <windows.h>
 #include <winioctl.h>
 
 #include "base/scoped_handle_win.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "sandbox/src/nt_internals.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_factory.h"
-#include "sandbox/src/nt_internals.h"
+#include "sandbox/src/sandbox_policy.h"
 #include "sandbox/tests/common/controller.h"
+#include "sandbox/tests/common/test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #define BINDNTDLL(name) \
   name ## Function name = reinterpret_cast<name ## Function>( \
     ::GetProcAddress(::GetModuleHandle(L"ntdll.dll"), #name))
-
-namespace {
-
-typedef struct _REPARSE_DATA_BUFFER {
-  ULONG  ReparseTag;
-  USHORT  ReparseDataLength;
-  USHORT  Reserved;
-  union {
-    struct {
-      USHORT SubstituteNameOffset;
-      USHORT SubstituteNameLength;
-      USHORT PrintNameOffset;
-      USHORT PrintNameLength;
-      ULONG Flags;
-      WCHAR PathBuffer[1];
-      } SymbolicLinkReparseBuffer;
-    struct {
-      USHORT SubstituteNameOffset;
-      USHORT SubstituteNameLength;
-      USHORT PrintNameOffset;
-      USHORT PrintNameLength;
-      WCHAR PathBuffer[1];
-      } MountPointReparseBuffer;
-    struct {
-      UCHAR DataBuffer[1];
-    } GenericReparseBuffer;
-  };
-} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
-
-// Sets a reparse point. |source| will now point to |target|. Returns true if
-// the call succeeds, false otherwise.
-bool SetReparsePoint(HANDLE source, const wchar_t* target) {
-  USHORT size_target = static_cast<USHORT>(wcslen(target)) * sizeof(target[0]);
-
-  char buffer[2000] = {0};
-  DWORD returned;
-
-  REPARSE_DATA_BUFFER* data = reinterpret_cast<REPARSE_DATA_BUFFER*>(buffer);
-
-  data->ReparseTag = 0xa0000003;
-  memcpy(data->MountPointReparseBuffer.PathBuffer, target, size_target + 2);
-  data->MountPointReparseBuffer.SubstituteNameLength = size_target;
-  data->MountPointReparseBuffer.PrintNameOffset = size_target + 2;
-  data->ReparseDataLength = size_target + 4 + 8;
-
-  int data_size = data->ReparseDataLength + 8;
-
-  if (!DeviceIoControl(source, FSCTL_SET_REPARSE_POINT, &buffer, data_size,
-                       NULL, 0, &returned, NULL)) {
-    return false;
-  }
-  return true;
-}
-
-// Delete the reparse point referenced by |source|. Returns true if the call
-// succeeds, false otherwise.
-bool DeleteReparsePoint(HANDLE source) {
-  DWORD returned;
-  REPARSE_DATA_BUFFER data = {0};
-  data.ReparseTag = 0xa0000003;
-  if (!DeviceIoControl(source, FSCTL_DELETE_REPARSE_POINT, &data, 8, NULL, 0,
-                       &returned, NULL)) {
-    return false;
-  }
-
-  return true;
-}
-
-}  // unamed namespace
 
 namespace sandbox {
 
@@ -126,7 +57,7 @@ SBOX_TESTS_COMMAND int File_Win32Create(int argc, wchar_t **argv) {
     SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
 
-  std::wstring full_path = MakePathToSys32(argv[0], false);
+  std::wstring full_path = MakePathToSys(argv[0], false);
   if (full_path.empty()) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
@@ -158,7 +89,7 @@ SBOX_TESTS_COMMAND int File_CreateSys32(int argc, wchar_t **argv) {
   if (argc != 1)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
-  std::wstring file = MakePathToSys32(argv[0], true);
+  std::wstring file = MakePathToSys(argv[0], true);
   UNICODE_STRING object_name;
   RtlInitUnicodeString(&object_name, file.c_str());
 
@@ -193,7 +124,7 @@ SBOX_TESTS_COMMAND int File_OpenSys32(int argc, wchar_t **argv) {
   if (argc != 1)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
-  std::wstring file = MakePathToSys32(argv[0], true);
+  std::wstring file = MakePathToSys(argv[0], true);
   UNICODE_STRING object_name;
   RtlInitUnicodeString(&object_name, file.c_str());
 
@@ -217,7 +148,7 @@ SBOX_TESTS_COMMAND int File_OpenSys32(int argc, wchar_t **argv) {
 }
 
 SBOX_TESTS_COMMAND int File_GetDiskSpace(int argc, wchar_t **argv) {
-  std::wstring sys_path = MakePathToSys32(L"", false);
+  std::wstring sys_path = MakePathToSys(L"", false);
   if (sys_path.empty()) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
@@ -273,7 +204,7 @@ SBOX_TESTS_COMMAND int File_QueryAttributes(int argc, wchar_t **argv) {
   bool expect_directory = (L'd' == argv[1][0]);
 
   UNICODE_STRING object_name;
-  std::wstring file = MakePathToSys32(argv[0], true);
+  std::wstring file = MakePathToSys(argv[0], true);
   RtlInitUnicodeString(&object_name, file.c_str());
 
   OBJECT_ATTRIBUTES obj_attributes = {0};

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,17 +8,13 @@
 
 #include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/sandbox_utils.h"
+#include "sandbox/src/wow64.h"
 
 namespace {
 
 static const int kDefaultTimeout = 3000;
 
-}  // namespace
-
-namespace sandbox {
-
-// Utility function that constructs a full path to a file inside the system32
-// folder.
+// Constructs a full path to a file inside the system32 folder.
 std::wstring MakePathToSys32(const wchar_t* name, bool is_obj_man_path) {
   wchar_t windows_path[MAX_PATH] = {0};
   if (0 == ::GetSystemWindowsDirectoryW(windows_path, MAX_PATH))
@@ -34,6 +30,36 @@ std::wstring MakePathToSys32(const wchar_t* name, bool is_obj_man_path) {
   full_path += L"\\system32\\";
   full_path += name;
   return full_path;
+}
+
+// Constructs a full path to a file inside the syswow64 folder.
+std::wstring MakePathToSysWow64(const wchar_t* name, bool is_obj_man_path) {
+  wchar_t windows_path[MAX_PATH] = {0};
+  if (0 == ::GetSystemWindowsDirectoryW(windows_path, MAX_PATH))
+    return std::wstring();
+
+  std::wstring full_path(windows_path);
+  if (full_path.empty())
+    return full_path;
+
+  if (is_obj_man_path)
+    full_path.insert(0, L"\\??\\");
+
+  full_path += L"\\SysWOW64\\";
+  full_path += name;
+  return full_path;
+}
+
+}  // namespace
+
+namespace sandbox {
+
+std::wstring MakePathToSys(const wchar_t* name, bool is_obj_man_path) {
+  Wow64 current_proc(NULL, NULL);
+  if (current_proc.IsWow64())
+    return MakePathToSysWow64(name, is_obj_man_path);
+  else
+    return MakePathToSys32(name, is_obj_man_path);
 }
 
 BrokerServices* GetBroker() {
@@ -108,6 +134,17 @@ bool TestRunner::AddRuleSys32(TargetPolicy::Semantics semantics,
     return false;
 
   std::wstring win32_path = MakePathToSys32(pattern, false);
+  if (win32_path.empty())
+    return false;
+
+  if (!AddRule(TargetPolicy::SUBSYS_FILES, semantics, win32_path.c_str()))
+    return false;
+
+  Wow64 current_proc(NULL, NULL);
+  if (!current_proc.IsWow64())
+    return true;
+
+  win32_path = MakePathToSysWow64(pattern, false);
   if (win32_path.empty())
     return false;
 

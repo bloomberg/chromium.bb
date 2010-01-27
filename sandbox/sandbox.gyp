@@ -286,6 +286,8 @@
           'sources': [
             'tests/common/controller.cc',
             'tests/common/controller.h',
+            'tests/common/test_utils.cc',
+            'tests/common/test_utils.h',
             'tests/integration_tests/integration_tests.cc',
             'src/dep_test.cc',
             'src/file_policy_test.cc',
@@ -324,6 +326,8 @@
             '../testing/gtest.gyp:gtest',
           ],
           'sources': [
+            'tests/common/test_utils.cc',
+            'tests/common/test_utils.h',
             'tests/unit_tests/unit_tests.cc',
             'src/interception_unittest.cc',
             'src/service_resolver_unittest.cc',
@@ -335,6 +339,7 @@
             'src/policy_opcodes_unittest.cc',
             'src/ipc_unittest.cc',
             'src/threadpool_unittest.cc',
+            'src/win_utils_unittest.cc',
           ],
         },
         {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,8 @@ class AutoLock {
   };
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AutoLock);
   CRITICAL_SECTION *lock_;
+  DISALLOW_IMPLICIT_CONSTRUCTORS(AutoLock);
 };
 
 // Basic implementation of a singleton which calls the destructor
@@ -70,6 +70,9 @@ bool ConvertToLongPath(const std::wstring& short_path, std::wstring* long_path);
 // This function is not smart. It looks for each element in the path and
 // returns true if any of them is a reparse point.
 DWORD IsReparsePoint(const std::wstring& full_path, bool* result);
+
+// Returns true if the handle corresponds to the object pointed by this path.
+bool SameObject(HANDLE handle, const wchar_t* full_path);
 
 // Resolves a handle to a path. Returns true if the handle can be resolved.
 bool GetPathFromHandle(HANDLE handle, std::wstring* path);

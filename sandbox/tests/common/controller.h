@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_TESTS_COMMON_CONTROLLER_H__
+#ifndef SANDBOX_TESTS_COMMON_CONTROLLER_H_
 #define SANDBOX_TESTS_COMMON_CONTROLLER_H__
 
 #include <windows.h>
@@ -117,12 +117,12 @@ class TestRunner {
 // Returns the broker services.
 BrokerServices* GetBroker();
 
-// Constructs a full path to a file inside the system32 folder.
-std::wstring MakePathToSys32(const wchar_t* name, bool is_obj_man_path);
+// Constructs a full path to a file inside the system32 (or syswow64) folder.
+std::wstring MakePathToSys(const wchar_t* name, bool is_obj_man_path);
 
 // Runs the given test on the target process.
 int DispatchCall(int argc, wchar_t **argv);
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_TESTS_COMMON_CONTROLLER_H__
+#endif  // SANDBOX_TESTS_COMMON_CONTROLLER_H_

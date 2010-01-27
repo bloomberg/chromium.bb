@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,12 @@ NTSTATUS NtCreateFileInTarget(HANDLE* target_file_handle,
     return status;
   }
 
+  if (!sandbox::SameObject(local_handle, obj_attributes->ObjectName->Buffer)) {
+    // The handle points somewhere else. Fail the operation.
+    ::CloseHandle(local_handle);
+    return STATUS_ACCESS_DENIED;
+  }
+
   if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
                          target_process, target_file_handle, 0, FALSE,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
@@ -49,7 +55,7 @@ NTSTATUS NtCreateFileInTarget(HANDLE* target_file_handle,
   return STATUS_SUCCESS;
 }
 
-}
+}  // namespace.
 
 namespace sandbox {
 
@@ -61,7 +67,7 @@ bool FileSystemPolicy::GenerateRules(const wchar_t* name,
     return false;
   }
 
-  // TODO(cpu): This prefix add is a hack because we don't have the
+  // TODO(cpu) bug 32224: This prefix add is a hack because we don't have the
   // infrastructure to normalize names. In any case we need to escape the
   // question marks.
   if (!PreProcessName(mod_name, &mod_name)) {
