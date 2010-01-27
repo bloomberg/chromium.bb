@@ -26,7 +26,6 @@ coverage-reset:
 ### Variables that are useful to override on the command line.
 CC = gcc
 CXX = g++
-CPPFLAGS = -DNDEBUG
 CXXFLAGS = -g3 -O2 -Wall -m32
 
 # To produce test coverage reports:
