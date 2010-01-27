@@ -103,6 +103,10 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_F5, false, false, false, IDC_RELOAD },
   { base::VKEY_F5, false,  true, false, IDC_RELOAD },
   { base::VKEY_F5, true, false, false, IDC_RELOAD },
+#if defined(OS_CHROMEOS)
+  { base::VKEY_F1, false, false, false, IDC_BACK },
+  { base::VKEY_F2, false, false, false, IDC_FORWARD },
+#endif
 
   // Miscellany.
   { base::VKEY_D, false, true, false, IDC_BOOKMARK_PAGE },
@@ -122,7 +126,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_DELETE, false, true, true, IDC_TASK_MANAGER },
   { base::VKEY_OEM_COMMA, false, true, false, IDC_SYSTEM_OPTIONS },
   { base::VKEY_B, true, true, false, IDC_SHOW_BOOKMARK_MANAGER },
+#if !defined(OS_CHROMEOS)
   { base::VKEY_F1, false, false, false, IDC_HELP_PAGE },
+#endif
   { base::VKEY_Q, true, true, false, IDC_EXIT },
   { base::VKEY_F, false, false, true, IDC_SHOW_APP_MENU},
   { base::VKEY_E, false, false, true, IDC_SHOW_PAGE_MENU},
