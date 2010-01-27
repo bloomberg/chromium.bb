@@ -287,13 +287,10 @@ class BrowserWindow {
   virtual void ToggleCompactNavigationBar() = 0;
 #endif
 
-#if !defined(OS_MACOSX)
-  // Clipboard commands applied to the whole browser window. Only for Linux,
-  // Windows and ChromeOS ports.
-  virtual void Cut() {}
-  virtual void Copy() {}
-  virtual void Paste() {}
-#endif
+  // Clipboard commands applied to the whole browser window.
+  virtual void Cut() = 0;
+  virtual void Copy() = 0;
+  virtual void Paste() = 0;
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);

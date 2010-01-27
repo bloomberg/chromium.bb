@@ -502,6 +502,18 @@ void BrowserWindowCocoa::ShowCreateShortcutsDialog(TabContents* tab_contents) {
   NOTIMPLEMENTED();
 }
 
+void BrowserWindowCocoa::Cut() {
+  [NSApp sendAction:@selector(cut:) to:nil from:nil];
+}
+
+void BrowserWindowCocoa::Copy() {
+  [NSApp sendAction:@selector(copy:) to:nil from:nil];
+}
+
+void BrowserWindowCocoa::Paste() {
+  [NSApp sendAction:@selector(paste:) to:nil from:nil];
+}
+
 void BrowserWindowCocoa::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

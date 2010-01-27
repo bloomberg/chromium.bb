@@ -1107,7 +1107,6 @@ void Browser::OverrideEncoding(int encoding_id) {
   }
 }
 
-#if !defined(OS_MACOSX)
 void Browser::Cut() {
   UserMetrics::RecordAction("Cut", profile_);
   window()->Cut();
@@ -1122,7 +1121,6 @@ void Browser::Paste() {
   UserMetrics::RecordAction("Paste", profile_);
   window()->Paste();
 }
-#endif
 
 void Browser::Find() {
   UserMetrics::RecordAction("Find", profile_);
@@ -1536,12 +1534,10 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_ENCODING_WINDOWS1255:
     case IDC_ENCODING_WINDOWS1258:  OverrideEncoding(id);          break;
 
-#if !defined(OS_MACOSX)
     // Clipboard commands
     case IDC_CUT:                   Cut();                         break;
     case IDC_COPY:                  Copy();                        break;
     case IDC_PASTE:                 Paste();                       break;
-#endif
 
     // Find-in-page
     case IDC_FIND:                  Find();                        break;

@@ -93,6 +93,9 @@ class TestBrowserWindow : public BrowserWindow {
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history) { }
+  virtual void Cut() { }
+  virtual void Copy() { }
+  virtual void Paste() { }
 
  protected:
   virtual void DestroyBrowser() {}
