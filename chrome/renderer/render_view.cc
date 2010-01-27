@@ -842,15 +842,21 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
     pending_navigation_state_.reset(state);
   }
 
+  NavigationState* navigation_state = pending_navigation_state_.get();
+
   // If we are reloading, then WebKit will use the history state of the current
   // page, so we should just ignore any given history state.  Otherwise, if we
   // have history state, then we need to navigate to it, which corresponds to a
   // back/forward navigation event.
   if (is_reload) {
+    if (navigation_state)
+      navigation_state->set_load_type(NavigationState::RELOAD);
     main_frame->reload();
   } else if (!params.state.empty()) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
+    if (navigation_state)
+      navigation_state->set_load_type(NavigationState::HISTORY_LOAD);
     main_frame->loadHistoryItem(
         webkit_glue::HistoryItemFromString(params.state));
   } else {
@@ -868,6 +874,8 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
                                  WebString::fromUTF8(params.referrer.spec()));
     }
 
+    if (navigation_state)
+      navigation_state->set_load_type(NavigationState::NORMAL_LOAD);
     main_frame->loadRequest(request);
   }
 
@@ -2182,9 +2190,15 @@ void RenderView::didCompleteClientRedirect(
 void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
-  NavigationState* state = pending_navigation_state_.get() ?
-      pending_navigation_state_.release() :
-      NavigationState::CreateContentInitiated();
+  bool content_initiated = !pending_navigation_state_.get();
+  NavigationState* state = content_initiated ?
+      NavigationState::CreateContentInitiated() :
+      pending_navigation_state_.release();
+  // TODO(jar): We may need to split up LINK_LOAD into several categories, based
+  // on cache policy (not that location.reload() forces cache to be avoided).
+  // Without the distinction, the distribution may be significantly bimodal.
+  if (content_initiated)
+    state->set_load_type(NavigationState::LINK_LOAD);
 
   state->set_user_script_idle_scheduler(
       new UserScriptIdleScheduler(this, frame));
@@ -3084,10 +3098,10 @@ std::string RenderView::DetermineTextLanguage(const std::wstring& text) {
                                   &num_languages, NULL);
   if (cld_language != NUM_LANGUAGES && cld_language != UNKNOWN_LANGUAGE &&
       cld_language != TG_UNKNOWN_LANGUAGE) {
-    // We should not use LanguageCode_ISO_639_1 because it does not cover all the
-    // languages CLD can detect. As a result, it'll return the invalid language
-    // code for tradtional Chinese among others. |LanguageCode| will go through
-    // ISO 639-1, ISO-639-2 and 'other' tables to do the 'right' thing.
+    // We should not use LanguageCode_ISO_639_1 because it does not cover all
+    // the languages CLD can detect. As a result, it'll return the invalid
+    // language code for tradtional Chinese among others. |LanguageCode| will go
+    // through ISO 639-1, ISO-639-2 and 'other' tables to do the 'right' thing.
     language = LanguageCode(cld_language);
   }
   return language;
@@ -3729,6 +3743,10 @@ void RenderView::DumpLoadHistograms() const {
 
   LogNavigationState(navigation_state, main_frame->dataSource());
 
+  NavigationState::LoadType load_type = navigation_state->load_type();
+  UMA_HISTOGRAM_ENUMERATION("Renderer4.LoadType", load_type,
+                        NavigationState::LOAD_TYPE_MAX);
+
   Time request = navigation_state->request_time();
   Time start = navigation_state->start_load_time();
   Time commit = navigation_state->commit_load_time();
@@ -3752,7 +3770,114 @@ void RenderView::DumpLoadHistograms() const {
       "Renderer4.FinishDocToFinish", finish - finish_doc);
 
   UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.BeginToCommit", commit - begin);
-  UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.BeginToFinishDoc", finish_doc - begin);
+
+  static const TimeDelta kBeginToFinishDocMin(TimeDelta::FromMilliseconds(10));
+  static const TimeDelta kBeginToFinishDocMax(TimeDelta::FromMinutes(10));
+  static const size_t kBeginToFinishDocBucketCount(100);
+
+  TimeDelta begin_to_finish_doc = finish_doc - begin;
+  UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.BeginToFinishDoc", begin_to_finish_doc);
+  switch (load_type) {
+    case NavigationState::UNDEFINED_LOAD:
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_UndefLoad",
+           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+           kBeginToFinishDocBucketCount);
+      break;
+    case NavigationState::RELOAD:
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_Reload",
+           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+           kBeginToFinishDocBucketCount);
+      break;
+    case NavigationState::HISTORY_LOAD:
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_HistoryLoad",
+           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+           kBeginToFinishDocBucketCount);
+      break;
+    case NavigationState::NORMAL_LOAD:
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_NormalLoad",
+           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+           kBeginToFinishDocBucketCount);
+      break;
+    case NavigationState::LINK_LOAD:
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_LinkLoad",
+           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+           kBeginToFinishDocBucketCount);
+      break;
+    default:
+      break;
+  }
+
+  static bool use_dns_histogram(FieldTrialList::Find("DnsImpact") &&
+      !FieldTrialList::Find("DnsImpact")->group_name().empty());
+  if (use_dns_histogram) {
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_NormalLoad", "DnsImpact"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        break;
+      case NavigationState::LINK_LOAD:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_LinkLoad", "DnsImpact"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static bool use_sdch_histogram(FieldTrialList::Find("GlobalSdch") &&
+      !FieldTrialList::Find("GlobalSdch")->group_name().empty());
+  if (use_sdch_histogram) {
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_NormalLoad", "GlobalSdch"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        break;
+      case NavigationState::LINK_LOAD:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_LinkLoad", "GlobalSdch"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static bool use_socket_late_binding_histogram =
+      FieldTrialList::Find("SocketLateBinding") &&
+      !FieldTrialList::Find("SocketLateBinding")->group_name().empty();
+  if (use_socket_late_binding_histogram) {
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_NormalLoad", "SocketLateBinding"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        break;
+      case NavigationState::LINK_LOAD:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_LinkLoad", "SocketLateBinding"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static bool use_cache_histogram1(FieldTrialList::Find("CacheSize") &&
+      !FieldTrialList::Find("CacheSize")->group_name().empty());
+  if (use_cache_histogram1 && NavigationState::LINK_LOAD == load_type)
+    UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+        "Renderer4.BeginToFinishDoc_LinkLoad", "CacheSize"),
+        begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+        kBeginToFinishDocBucketCount);
 
   static const TimeDelta kBeginToFinishMin(TimeDelta::FromMilliseconds(10));
   static const TimeDelta kBeginToFinishMax(TimeDelta::FromMinutes(10));
@@ -3767,81 +3892,6 @@ void RenderView::DumpLoadHistograms() const {
   if (!request.is_null())
     UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.RequestToFinish",
         finish - request, kBeginToFinishMin,
-        kBeginToFinishMax, kBeginToFinishBucketCount);
-
-  static bool use_dns_histogram(FieldTrialList::Find("DnsImpact") &&
-      !FieldTrialList::Find("DnsImpact")->group_name().empty());
-  if (use_dns_histogram) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        FieldTrial::MakeName("Renderer4.BeginToFinish", "DnsImpact").data(),
-        finish - begin, kBeginToFinishMin,
-        kBeginToFinishMax, kBeginToFinishBucketCount);
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        FieldTrial::MakeName("Renderer4.StartToFinish", "DnsImpact").data(),
-        finish - start, kBeginToFinishMin,
-        kBeginToFinishMax, kBeginToFinishBucketCount);
-    if (!request.is_null())
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          FieldTrial::MakeName("Renderer4.RequestToFinish", "DnsImpact").data(),
-          finish - request, kBeginToFinishMin,
-          kBeginToFinishMax, kBeginToFinishBucketCount);
-  }
-
-  static bool use_sdch_histogram(FieldTrialList::Find("GlobalSdch") &&
-      !FieldTrialList::Find("GlobalSdch")->group_name().empty());
-  if (use_sdch_histogram) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        FieldTrial::MakeName("Renderer4.BeginToFinish", "GlobalSdch").data(),
-        finish - begin, kBeginToFinishMin,
-        kBeginToFinishMax, kBeginToFinishBucketCount);
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        FieldTrial::MakeName("Renderer4.StartToFinish", "GlobalSdch").data(),
-        finish - start, kBeginToFinishMin,
-        kBeginToFinishMax, kBeginToFinishBucketCount);
-    if (!request.is_null())
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          FieldTrial::MakeName("Renderer4.RequestToFinish",
-                               "GlobalSdch").data(),
-          finish - request, kBeginToFinishMin,
-          kBeginToFinishMax, kBeginToFinishBucketCount);
-  }
-
-  static bool use_socket_late_binding_histogram =
-      FieldTrialList::Find("SocketLateBinding") &&
-      !FieldTrialList::Find("SocketLateBinding")->group_name().empty();
-  if (use_socket_late_binding_histogram) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        FieldTrial::MakeName("Renderer4.BeginToFinish",
-                             "SocketLateBinding").data(),
-        finish - begin, kBeginToFinishMin,
-        kBeginToFinishMax, kBeginToFinishBucketCount);
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        FieldTrial::MakeName("Renderer4.StartToFinish",
-                             "SocketLateBinding").data(),
-        finish - start, kBeginToFinishMin,
-        kBeginToFinishMax, kBeginToFinishBucketCount);
-    if (!request.is_null())
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          FieldTrial::MakeName("Renderer4.RequestToFinish",
-                               "SocketLateBinding").data(),
-          finish - request, kBeginToFinishMin,
-          kBeginToFinishMax, kBeginToFinishBucketCount);
-  }
-
-  static bool use_cache_histogram1(FieldTrialList::Find("CacheSize") &&
-      !FieldTrialList::Find("CacheSize")->group_name().empty());
-  if (use_cache_histogram1)
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        FieldTrial::MakeName("Renderer4.StartToFinish", "CacheSize").data(),
-        finish - start, kBeginToFinishMin,
-        kBeginToFinishMax, kBeginToFinishBucketCount);
-
-  static bool use_cache_histogram2(FieldTrialList::Find("NewEviction") &&
-      !FieldTrialList::Find("NewEviction")->group_name().empty());
-  if (use_cache_histogram2)
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        FieldTrial::MakeName("Renderer4.StartToFinish", "NewEviction").data(),
-        finish - start, kBeginToFinishMin,
         kBeginToFinishMax, kBeginToFinishBucketCount);
 
   UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.CommitToFinish", finish - commit);
@@ -3871,6 +3921,9 @@ void RenderView::DumpLoadHistograms() const {
   // the histograms we generated.  Without this call, pages that don't have an
   // on-close-handler might generate data that is lost when the renderer is
   // shutdown abruptly (perchance because the user closed the tab).
+  // TODO(jar) BUG=33233: This needs to be moved to a PostDelayedTask, and it
+  // should post when the onload is complete, so that it doesn't interfere with
+  // the next load.
   if (RenderThread::current()) {
     RenderThread::current()->SendHistograms(
         HistogramSynchronizer::kReservedSequenceNumber);

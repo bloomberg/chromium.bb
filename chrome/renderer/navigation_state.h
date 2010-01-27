@@ -18,6 +18,15 @@
 // WebDataSource (see RenderView::DidCreateDataSource).
 class NavigationState : public WebKit::WebDataSource::ExtraData {
  public:
+  enum LoadType {
+    UNDEFINED_LOAD,  // Not yet initialized.
+    RELOAD,          // User pressed reload.
+    HISTORY_LOAD,    // Back or forward.
+    NORMAL_LOAD,     // User entered URL, or omnibox search.
+    LINK_LOAD,       // Includes links, submits, location.reload().
+    LOAD_TYPE_MAX    // Bounding value for this enum.
+  };
+
   static NavigationState* CreateBrowserInitiated(
       int32 pending_page_id,
       PageTransition::Type transition_type,
@@ -51,6 +60,10 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   void set_transition_type(PageTransition::Type type) {
     transition_type_ = type;
   }
+
+  // Record the nature of this load, for use when histogramming page load times.
+  LoadType load_type() const { return load_type_; }
+  void set_load_type(LoadType load_type) { load_type_ = load_type; }
 
   // The time that this navigation was requested.
   const base::Time& request_time() const {
@@ -200,6 +213,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
                   bool is_content_initiated,
                   int32 pending_page_id)
       : transition_type_(transition_type),
+        load_type_(UNDEFINED_LOAD),
         request_time_(request_time),
         load_histograms_recorded_(false),
         request_committed_(false),
@@ -213,6 +227,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   }
 
   PageTransition::Type transition_type_;
+  LoadType load_type_;
   base::Time request_time_;
   base::Time start_load_time_;
   base::Time commit_load_time_;
