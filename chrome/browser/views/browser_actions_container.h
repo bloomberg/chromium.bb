@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/task.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/extensions/extension_action_context_menu.h"
@@ -217,7 +218,8 @@ class BrowserActionsContainer
     public BrowserBubble::Delegate,
     public views::ViewMenuDelegate,
     public views::ResizeGripper::ResizeGripperDelegate,
-    public AnimationDelegate {
+    public AnimationDelegate,
+    public ExtensionToolbarModel::Observer {
  public:
   BrowserActionsContainer(Profile* profile, ToolbarView* toolbar);
   virtual ~BrowserActionsContainer();
@@ -297,13 +299,9 @@ class BrowserActionsContainer
   ExtensionPopup* TestGetPopup() { return popup_; }
 
  private:
-  // Adds a browser action view for the extension if it needs one. DCHECK if
-  // it has already been added.
-  void AddBrowserAction(Extension* extension);
-
-  // Removes the browser action view for an extension if it has one. DCHECK if
-  // no such view.
-  void RemoveBrowserAction(Extension* extension);
+  // ExtensionToolbarModel::Observer implementation.
+  virtual void BrowserActionAdded(Extension* extension, int index);
+  virtual void BrowserActionRemoved(Extension* extension);
 
   // Closes the overflow menu if open.
   void CloseOverflowMenu();
@@ -345,6 +343,9 @@ class BrowserActionsContainer
   // The button that triggered the current popup (just a reference to a button
   // from browser_action_views_).
   BrowserActionButton* popup_button_;
+
+  // The model that tracks the order of the toolbar icons.
+  ExtensionToolbarModel* model_;
 
   // The current size of the container.
   gfx::Size container_size_;
