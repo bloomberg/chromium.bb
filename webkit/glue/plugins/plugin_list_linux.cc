@@ -56,8 +56,9 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   // We first consult Chrome-specific dirs, then fall back on the logic
   // Mozilla uses.
 
-  // TODO(evanm): maybe consult our own plugins dir, like
-  // ~/.config/chromium/Plugins?
+  // Note: "extra" plugin dirs, including the Plugins subdirectory of
+  // your Chrome config, are examined before these.  See the logic
+  // related to extra_plugin_dirs in plugin_list.cc.
 
   // The Chrome binary dir + "plugins/".
   FilePath dir;

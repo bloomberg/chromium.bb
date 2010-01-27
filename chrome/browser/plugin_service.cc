@@ -7,6 +7,7 @@
 #include "chrome/browser/plugin_service.h"
 
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_plugin_lib.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/gpu_plugin.h"
@@ -87,6 +89,14 @@ PluginService::PluginService()
   if (hklm_key_.StartWatching()) {
     hklm_event_.reset(new base::WaitableEvent(hklm_key_.watch_event()));
     hklm_watcher_.StartWatching(hklm_event_.get(), this);
+  }
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+  // Also find plugins in a user-specific plugins dir,
+  // e.g. ~/.config/chromium/Plugins.
+  FilePath user_data_dir;
+  if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    NPAPI::PluginList::Singleton()->AddExtraPluginDir(
+        user_data_dir.Append("Plugins"));
   }
 #endif
 
