@@ -150,6 +150,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setAllowUniversalAccessFromFileURLs", &LayoutTestController::setAllowUniversalAccessFromFileURLs);
   BindMethod("setTimelineProfilingEnabled", &LayoutTestController::setTimelineProfilingEnabled);
   BindMethod("evaluateInWebInspector", &LayoutTestController::evaluateInWebInspector);
+  BindMethod("forceRedSelectionColors", &LayoutTestController::forceRedSelectionColors);
 
   // The fallback method is called when an unknown method is invoked.
   BindFallbackMethod(&LayoutTestController::fallbackMethod);
@@ -440,6 +441,12 @@ void LayoutTestController::Reset() {
   if (shell_) {
     shell_->webView()->setZoomLevel(false, 0);
     shell_->webView()->setTabKeyCyclesThroughElements(true);
+#if defined(OS_LINUX)
+    // (Constants copied because we can't depend on the header that defined
+    // them from this file.)
+    shell_->webView()->setSelectionColors(
+        0xff1e90ff, 0xff000000, 0xffc8c8c8, 0xff323232);
+#endif  // defined(OS_LINUX)
   }
   dump_as_text_ = false;
   dump_editing_callbacks_ = false;
@@ -1080,4 +1087,11 @@ void LayoutTestController::evaluateInWebInspector(const CppArgumentList& args,
     return;
   shell_->dev_tools_agent()->evaluateInWebInspector(args[0].ToInt32(),
                                                     args[1].ToString());
+}
+
+void LayoutTestController::forceRedSelectionColors(const CppArgumentList& args,
+                                                   CppVariant* result) {
+  result->SetNull();
+  shell_->webView()->setSelectionColors(0xffee0000, 0xff00ee00, 0xff000000,
+                                        0xffc0c0c0);
 }

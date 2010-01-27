@@ -89,6 +89,18 @@ class GtkThemeProvider : public BrowserThemeProvider,
     return thumb_inactive_color_;
   }
   const SkColor& get_track_color() const { return track_color_; }
+  const SkColor& get_active_selection_bg_color() const {
+    return active_selection_bg_color_;
+  }
+  const SkColor& get_active_selection_fg_color() const {
+    return active_selection_fg_color_;
+  }
+  const SkColor& get_inactive_selection_bg_color() const {
+    return inactive_selection_bg_color_;
+  }
+  const SkColor& get_inactive_selection_fg_color() const {
+    return inactive_selection_fg_color_;
+  }
 
   // These functions do not add a ref to the returned pixbuf, and it should not
   // be unreffed.  If |native| is true, get the GTK_STOCK version of the icon.
@@ -180,6 +192,10 @@ class GtkThemeProvider : public BrowserThemeProvider,
   SkColor thumb_active_color_;
   SkColor thumb_inactive_color_;
   SkColor track_color_;
+  SkColor active_selection_bg_color_;
+  SkColor active_selection_fg_color_;
+  SkColor inactive_selection_bg_color_;
+  SkColor inactive_selection_fg_color_;
 
   // Image cache of lazily created images, created when requested by
   // GetBitmapNamed().

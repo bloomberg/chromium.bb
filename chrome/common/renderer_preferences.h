@@ -57,6 +57,12 @@ struct RendererPreferences {
   SkColor thumb_inactive_color;
   SkColor track_color;
 
+  // The colors used in selection text. Currently only used on Linux.
+  SkColor active_selection_bg_color;
+  SkColor active_selection_fg_color;
+  SkColor inactive_selection_bg_color;
+  SkColor inactive_selection_fg_color;
+
   // Browser wants a look at all top level requests
   bool browser_handles_top_level_requests;
 
@@ -70,6 +76,10 @@ struct RendererPreferences {
         thumb_active_color(0),
         thumb_inactive_color(0),
         track_color(0),
+        active_selection_bg_color(0),
+        active_selection_fg_color(0),
+        inactive_selection_bg_color(0),
+        inactive_selection_fg_color(0),
         browser_handles_top_level_requests(false) {
   }
 };

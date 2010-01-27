@@ -24,6 +24,12 @@ void UpdateFromSystemSettings(RendererPreferences* prefs, Profile* profile) {
   prefs->thumb_active_color = provider->get_thumb_active_color();
   prefs->thumb_inactive_color = provider->get_thumb_inactive_color();
   prefs->track_color = provider->get_track_color();
+  prefs->active_selection_bg_color = provider->get_active_selection_bg_color();
+  prefs->active_selection_fg_color = provider->get_active_selection_fg_color();
+  prefs->inactive_selection_bg_color =
+      provider->get_inactive_selection_bg_color();
+  prefs->inactive_selection_fg_color =
+      provider->get_inactive_selection_fg_color();
 #endif  // !defined(TOOLKIT_VIEWS)
 #endif  // defined(OS_LINUX)
 }

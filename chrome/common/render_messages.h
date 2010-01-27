@@ -1601,6 +1601,10 @@ struct ParamTraits<RendererPreferences> {
     WriteParam(m, p.thumb_active_color);
     WriteParam(m, p.thumb_inactive_color);
     WriteParam(m, p.track_color);
+    WriteParam(m, p.active_selection_bg_color);
+    WriteParam(m, p.active_selection_fg_color);
+    WriteParam(m, p.inactive_selection_bg_color);
+    WriteParam(m, p.inactive_selection_fg_color);
     WriteParam(m, p.browser_handles_top_level_requests);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
@@ -1627,13 +1631,23 @@ struct ParamTraits<RendererPreferences> {
     p->focus_ring_color = focus_ring_color;
 
     int thumb_active_color, thumb_inactive_color, track_color;
+    int active_selection_bg_color, active_selection_fg_color;
+    int inactive_selection_bg_color, inactive_selection_fg_color;
     if (!ReadParam(m, iter, &thumb_active_color) ||
         !ReadParam(m, iter, &thumb_inactive_color) ||
-        !ReadParam(m, iter, &track_color))
+        !ReadParam(m, iter, &track_color) ||
+        !ReadParam(m, iter, &active_selection_bg_color) ||
+        !ReadParam(m, iter, &active_selection_fg_color) ||
+        !ReadParam(m, iter, &inactive_selection_bg_color) ||
+        !ReadParam(m, iter, &inactive_selection_fg_color))
       return false;
     p->thumb_active_color = thumb_active_color;
     p->thumb_inactive_color = thumb_inactive_color;
     p->track_color = track_color;
+    p->active_selection_bg_color = active_selection_bg_color;
+    p->active_selection_fg_color = active_selection_fg_color;
+    p->inactive_selection_bg_color = inactive_selection_bg_color;
+    p->inactive_selection_fg_color = inactive_selection_fg_color;
 
     if (!ReadParam(m, iter, &p->browser_handles_top_level_requests))
       return false;

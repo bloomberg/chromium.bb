@@ -230,6 +230,10 @@ class LayoutTestController : public CppBoundClass {
   // Allows layout tests to exec scripts at WebInspector side.
   void evaluateInWebInspector(const CppArgumentList& args, CppVariant* result);
 
+  // Forces the selection colors for testing under Linux.
+  void forceRedSelectionColors(const CppArgumentList& args,
+                               CppVariant* result);
+
  public:
   // The following methods are not exposed to JavaScript.
   void SetWorkQueueFrozen(bool frozen) { work_queue_.set_frozen(frozen); }

@@ -552,15 +552,6 @@ void GtkThemeProvider::LoadGtkValues() {
   SetTintToExactColor(BrowserThemeProvider::TINT_FRAME_INCOGNITO_INACTIVE,
                       &inactive_frame_color);
 
-  focus_ring_color_ = GdkToSkColor(&button_color);
-  GdkColor thumb_active_color, thumb_inactive_color, track_color;
-  GtkThemeProvider::GetScrollbarColors(&thumb_active_color,
-                                       &thumb_inactive_color,
-                                       &track_color);
-  thumb_active_color_ = GdkToSkColor(&thumb_active_color);
-  thumb_inactive_color_ = GdkToSkColor(&thumb_inactive_color);
-  track_color_ = GdkToSkColor(&track_color);
-
   // We pick the text and background colors for the NTP out of the colors for a
   // GtkEntry. We do this because GtkEntries background color is never the same
   // as |toolbar_color|, is usually a white, and when it isn't a white,
@@ -601,6 +592,27 @@ void GtkThemeProvider::LoadGtkValues() {
                        link_color);
   SetThemeColorFromGtk(BrowserThemeProvider::COLOR_NTP_SECTION_LINK_UNDERLINE,
                        link_color);
+
+  // Generate the colors that we pass to WebKit.
+  focus_ring_color_ = GdkToSkColor(&button_color);
+  GdkColor thumb_active_color, thumb_inactive_color, track_color;
+  GtkThemeProvider::GetScrollbarColors(&thumb_active_color,
+                                       &thumb_inactive_color,
+                                       &track_color);
+  thumb_active_color_ = GdkToSkColor(&thumb_active_color);
+  thumb_inactive_color_ = GdkToSkColor(&thumb_inactive_color);
+  track_color_ = GdkToSkColor(&track_color);
+
+  // Some GTK themes only define the text selection colors on the GtkEntry
+  // class, so we need to use that for getting selection colors.
+  active_selection_bg_color_ =
+      GdkToSkColor(&entry_style->base[GTK_STATE_SELECTED]);
+  active_selection_fg_color_ =
+      GdkToSkColor(&entry_style->text[GTK_STATE_SELECTED]);
+  inactive_selection_bg_color_ =
+      GdkToSkColor(&entry_style->base[GTK_STATE_ACTIVE]);
+  inactive_selection_fg_color_ =
+      GdkToSkColor(&entry_style->text[GTK_STATE_ACTIVE]);
 }
 
 GtkStyle* GtkThemeProvider::GetFrameStyle() {
@@ -622,6 +634,11 @@ void GtkThemeProvider::LoadDefaultValues() {
   thumb_active_color_ = SkColorSetRGB(250, 248, 245);
   thumb_inactive_color_ = SkColorSetRGB(240, 235, 229);
   track_color_ = SkColorSetRGB(227, 221, 216);
+
+  active_selection_bg_color_ = SkColorSetRGB(30, 144, 255);
+  active_selection_fg_color_ = SK_ColorBLACK;
+  inactive_selection_bg_color_ = SkColorSetRGB(200, 200, 200);
+  inactive_selection_fg_color_ = SkColorSetRGB(50, 50, 50);
 }
 
 void GtkThemeProvider::SetThemeColorFromGtk(int id, const GdkColor* color) {
