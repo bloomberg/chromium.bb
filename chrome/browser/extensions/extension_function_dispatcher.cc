@@ -10,6 +10,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
+#include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
@@ -161,6 +162,10 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<ExtensionTestFailFunction>();
   RegisterFunction<ExtensionTestLogFunction>();
   RegisterFunction<ExtensionTestQuotaResetFunction>();
+
+  // Accessibility.
+  RegisterFunction<GetFocusedControlFunction>();
+  RegisterFunction<SetAccessibilityEnabledFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

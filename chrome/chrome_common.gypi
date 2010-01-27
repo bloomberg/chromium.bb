@@ -34,6 +34,8 @@
           # .cc, .h, and .mm files under chrome/common that are used on all
           # platforms, including both 32-bit and 64-bit Windows.
           # Test files are not included.
+          'common/accessibility_events.h',
+          'common/accessibility_events.cc',
           'common/bindings_policy.h',
           'common/child_process.cc',
           'common/child_process.h',

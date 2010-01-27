@@ -241,14 +241,28 @@ var chrome = chrome || {};
     // that should prevent it from getting stale).
     var privileged = [
       // Entire namespaces.
-      "bookmarks", "browserAction", "devtools", "experimental.bookmarkManager",
-      "experimental.extension", "experimental.history", "experimental.popup",
-      "pageAction", "pageActions", "tabs", "test", "toolstrip", "windows",
-
+      "bookmarks",
+      "browserAction",
+      "devtools",
+      "experimental.accessibility",
+      "experimental.bookmarkManager",
+      "experimental.extension",
+      "experimental.history",
+      "experimental.popup",
+      "pageAction",
+      "pageActions",
+      "tabs",
+      "test",
+      "toolstrip",
+      "windows",
       // Functions/events/properties within the extension namespace.
-      "extension.getBackgroundPage", "extension.getExtensionTabs",
-      "extension.getToolstrips", "extension.getViews", "extension.lastError",
-      "extension.onConnectExternal", "extension.onRequestExternal",
+      "extension.getBackgroundPage",
+      "extension.getExtensionTabs",
+      "extension.getToolstrips",
+      "extension.getViews",
+      "extension.lastError",
+      "extension.onConnectExternal",
+      "extension.onRequestExternal",
       "i18n.getAcceptLanguages"
     ];
     for (var i = 0; i < privileged.length; i++) {

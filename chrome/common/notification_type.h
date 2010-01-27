@@ -798,6 +798,30 @@ class NotificationType {
     // memory in use, no source or details are passed. See memory_purger.h .cc.
     PURGE_MEMORY,
 
+    // Accessibility Notifications ---------------------------------------------
+
+    // Notification that a window in the browser UI (not the web content)
+    // was opened, for propagating to an accessibility extension.
+    // Details will be an AccessibilityWindowInfo.
+    ACCESSIBILITY_WINDOW_OPENED,
+
+    // Notification that a window in the browser UI was closed.
+    // Details will be an AccessibilityWindowInfo.
+    ACCESSIBILITY_WINDOW_CLOSED,
+
+    // Notification that a control in the browser UI was focused.
+    // Details will be an AccessibilityControlInfo.
+    ACCESSIBILITY_CONTROL_FOCUSED,
+
+    // Notification that a control in the browser UI had its action taken,
+    // like pressing a button or toggling a checkbox.
+    // Details will be an AccessibilityControlInfo.
+    ACCESSIBILITY_CONTROL_ACTION,
+
+    // Notification that text box in the browser UI had text change.
+    // Details will be an AccessibilityControlInfo.
+    ACCESSIBILITY_TEXT_CHANGED,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.
