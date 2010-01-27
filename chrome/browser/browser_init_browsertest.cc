@@ -57,9 +57,11 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
 }
 
 // Test that we prevent openning potentially dangerous schemes from the
-// command line. Marked FLAKY because browser instance may not start before
-// enumerating the tabs.
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, FLAKY_BlockBadURLs) {
+// command line.
+// jschuh: DISABLED because the process doesn't have sufficient time
+// to start on most BuildBot runs and I don't want to add longer delays to
+// the test. I'll circle back and make this work properly when i get a chance.
+IN_PROC_BROWSER_TEST_F(BrowserInitTest, DISABLED_BlockBadURLs) {
   const std::wstring testurlstr(L"http://localhost/");
   const GURL testurl(WideToUTF16Hack(testurlstr));
   CommandLine cmdline(CommandLine::ARGUMENTS_ONLY);
@@ -72,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, FLAKY_BlockBadURLs) {
   BrowserInit::LaunchWithProfile launch(std::wstring(), cmdline);
   launch.Launch(browser()->profile(), false);
 
-  // Give the browser a chance to start first.
+  // Give the browser a chance to start first. FIXME(jschuh)
   PlatformThread::Sleep(50);
 
   // Skip about:blank in the first tab
