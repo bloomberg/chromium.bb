@@ -15,6 +15,9 @@
         'use_system_zlib': 0,
         'use_system_libjpeg': 0,
       }],
+      [ 'OS == "win"', {
+        'nacl_standalone': 1,
+      }],
     ],
   },
   'target_defaults': {
