@@ -3363,9 +3363,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXCEPTIONS_PAGE_VIEW_REMOVE_ALL_BUTTON" desc="Exceptions page view's 'Remove all' button text">
         Remove All
       </message>
-      <message name="IDS_EXCEPTIONS_SAMPLE_HOST" desc="Exceptions page view's host entry field's watermark - example host name. Users will see this text before they start typing host name in the field.">
-        example.com
-      </message>
 
       <!-- Confirm MessageBox Dialog -->
       <message name="IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL" desc="Confirm MessageBox Dialog's 'Yes' button text">
@@ -3740,6 +3737,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXCEPTIONS_BLOCK_BUTTON" desc="A button in the cookie/image/javascript/plugins exceptions dialog for blocking cookie/image/javascript/plugins for given domain name.">
         Block
+      </message>
+      <message name="IDS_EXCEPTIONS_SAMPLE_HOST" desc="Exceptions page view's host entry field's watermark - example host name. Users will see this text before they start typing host name in the field.">
+        example.com
       </message>
 
       <!-- Cookie alert dialog -->
