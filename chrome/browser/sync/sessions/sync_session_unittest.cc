@@ -77,6 +77,7 @@ TEST_F(SyncSessionTest, ScopedContextHelpers) {
   }
   EXPECT_FALSE(context_->resolver());
   EXPECT_FALSE(context_->syncer_event_channel());
+  delete channel;
 }
 
 TEST_F(SyncSessionTest, SetWriteTransaction) {

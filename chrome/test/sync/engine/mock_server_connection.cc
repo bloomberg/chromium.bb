@@ -55,6 +55,7 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
 MockConnectionManager::~MockConnectionManager() {
   for (size_t i = 0; i < commit_messages_.size(); i++)
     delete commit_messages_[i];
+  delete mid_commit_callback_;
 }
 
 void MockConnectionManager::SetCommitTimeRename(string prepend) {
@@ -413,4 +414,3 @@ void MockConnectionManager::ThrottleNextRequest(
   if (visitor)
     visitor->VisitAtomically();
 }
-

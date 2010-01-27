@@ -3054,6 +3054,7 @@ TEST_F(SusanDeletingTest,
     EXPECT_TRUE(joe.Get(IS_UNSYNCED));
   }
   EXPECT_TRUE(0 == countdown_till_delete_);
+  delete syncer_->pre_conflict_resolution_closure_;
   syncer_->pre_conflict_resolution_closure_ = NULL;
   LoopSyncShare(syncer_);
   LoopSyncShare(syncer_);

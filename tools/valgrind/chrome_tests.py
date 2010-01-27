@@ -78,10 +78,11 @@ class ChromeTests:
       "net": self.TestNet,              "net_unittests": self.TestNet,
       "printing": self.TestPrinting,    "printing_unittests": self.TestPrinting,
       "startup": self.TestStartup,      "startup_tests": self.TestStartup,
+      "sync": self.TestSync,            "sync_unit_tests": self.TestSync,
       "test_shell": self.TestTestShell, "test_shell_tests": self.TestTestShell,
       "ui": self.TestUI,                "ui_tests": self.TestUI,
       "unit": self.TestUnit,            "unit_tests": self.TestUnit,
-      "app": self.TestApp,               "app_unittests": self.TestApp,
+      "app": self.TestApp,              "app_unittests": self.TestApp,
     }
 
     if test not in self._test_list:
@@ -269,6 +270,9 @@ class ChromeTests:
                             "--ui-test-action-timeout=80000",
                             "--ui-test-action-max-timeout=180000",
                             "--ui-test-terminate-timeout=60000"])
+
+  def TestSync(self):
+    return self.SimpleTest("chrome", "sync_unit_tests")
 
   def TestLayoutChunk(self, chunk_num, chunk_size):
     # Run tests [chunk_num*chunk_size .. (chunk_num+1)*chunk_size) from the

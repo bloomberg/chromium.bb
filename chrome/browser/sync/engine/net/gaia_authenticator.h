@@ -158,8 +158,14 @@ class GaiaAuthenticator {
     std::string captcha_url;
     SignIn signin;
 
+    // TODO(skrul): When auth fails, the "signin" field of the results
+    // struct never gets set, which causes valgrind to complain.  Give
+    // this field a value here so the error is suppressed. It turns
+    // out that the signin field has only one possible value, so the
+    // correct fix here would be to to remove it entirely.
     AuthResults() : credentials_saved(DONT_SAVE_CREDENTIALS),
-                    auth_error(None) { }
+                    auth_error(None),
+                    signin(GMAIL_SIGNIN) { }
   };
 
  protected:
