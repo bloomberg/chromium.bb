@@ -742,9 +742,14 @@ static bool NPCocoaEventFromWebMouseEvent(const WebMouseEvent& event,
     case WebInputEvent::MouseUp:
       np_cocoa_event->type = NPCocoaEventMouseUp;
       return true;
-    case WebInputEvent::MouseMove:
-      np_cocoa_event->type = NPCocoaEventMouseMoved;
+    case WebInputEvent::MouseMove: {
+      bool mouse_is_down = (event.modifiers & WebInputEvent::LeftButtonDown) ||
+                           (event.modifiers & WebInputEvent::RightButtonDown) ||
+                           (event.modifiers & WebInputEvent::MiddleButtonDown);
+      np_cocoa_event->type = mouse_is_down ? NPCocoaEventMouseDragged
+                                           : NPCocoaEventMouseMoved;
       return true;
+    }
     case WebInputEvent::MouseEnter:
       np_cocoa_event->type = NPCocoaEventMouseEntered;
       return true;
