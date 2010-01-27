@@ -552,6 +552,7 @@ void AutocompleteEditViewMac::OnDidBeginEditing() {
   NSEvent* theEvent = [NSApp currentEvent];
   const bool controlDown = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
   model_->OnSetFocus(controlDown);
+  controller_->OnSetFocus();
 
   // Capture the current state.
   OnBeforePossibleChange();
@@ -570,6 +571,7 @@ void AutocompleteEditViewMac::OnDidEndEditing() {
 
   // Tell the model to reset itself.
   model_->OnKillFocus();
+  controller_->OnKillFocus();
 }
 
 bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
