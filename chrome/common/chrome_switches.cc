@@ -222,6 +222,12 @@ const char kEnableLogging[]                 = "enable-logging";
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
+// Enables launching of Native Client processes.
+// TODO(dspringer): NaCl is disabled on the Mac by default until the
+// NaClSyscallSeg relocatable code can be made secure.  Use this switch to
+// enable NaCl loading on the Mac for development.
+const char kEnableNaCl[]                    = "enable-nacl";
+
 // Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 
@@ -376,6 +382,9 @@ const char kMetricsRecordingOnly[]          = "metrics-recording-only";
 
 // Causes the process to run as a NativeClient's sel_ldr subprocess.
 const char kNaClProcess[]                   = "nacl";
+
+// Causes the Native Client process to display a dialog on launch.
+const char kNaClStartupDialog[]             = "nacl-startup-dialog";
 
 // Allows the new tab page resource to be loaded from a local HTML file. This
 // should be a path to the HTML file that you want to use for the new tab page.
