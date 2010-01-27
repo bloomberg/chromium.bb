@@ -404,8 +404,14 @@ class TestExpectationsFile:
                 parts = line.split(':')
                 new_options = parts[0]
                 for p in self.PLATFORMS:
-                    if not p == platform:
-                        new_options += p.upper() + ' '
+                    p = p.upper();
+                    # This is a temp solution for rebaselining tool.
+                    # Do not add tags WIN-7 and WIN-VISTA to test expectations
+                    # if the original line does not specify the platform option.
+                    # TODO(victorw): Remove WIN-VISTA and WIN-7 once we have
+                    # reliable Win 7 and Win Vista buildbots setup.
+                    if not p in (platform.upper(), 'WIN-VISTA', 'WIN-7'):
+                        new_options += p + ' '
                 new_line = ('%s:%s' % (new_options, parts[1]))
                 f_new.write(new_line)
                 tests_updated += 1
