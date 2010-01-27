@@ -239,6 +239,15 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/include/machine/setjmp.h newlib-1.17.0/
  #if defined(__arm__) || defined(__thumb__)
  /*
   * All callee preserved registers:
+@@ -69,7 +74,7 @@
+ 
+ #ifdef __x86_64__
+ #define _JBTYPE long long
+-#define _JBLEN  8
++#define _JBLEN  6
+ #endif
+ 
+ #ifdef __i960__
 diff -uNr newlib-1.17.0.orig/newlib/libc/include/sys/config.h newlib-1.17.0/newlib/libc/include/sys/config.h
 --- newlib-1.17.0.orig/newlib/libc/include/sys/config.h	2008-11-19 22:05:31.000000000 +0100
 +++ newlib-1.17.0/newlib/libc/include/sys/config.h	2009-12-17 13:51:54.000000000 +0100
@@ -1106,7 +1115,18 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/memset.S newlib-1.17.0/n
 diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/setjmp.S newlib-1.17.0/newlib/libc/machine/x86_64/setjmp.S
 --- newlib-1.17.0.orig/newlib/libc/machine/x86_64/setjmp.S	2007-08-28 23:56:50.000000000 +0200
 +++ newlib-1.17.0/newlib/libc/machine/x86_64/setjmp.S	2009-12-17 16:14:03.000000000 +0100
-@@ -22,32 +22,35 @@
+@@ -10,8 +10,8 @@
+ 
+  /*
+  **  jmp_buf:
+- **   rbx rbp r12 r13 r14 r15 rsp rip
+- **   0   8   16  24  32  40  48  56
++ **   rbx r12 r13 r14 rip ebp esp
++ **   0   8   16  24  32  40  44
+  */
+ 
+   #include "x86_64mach.h"
+@@ -22,32 +22,33 @@
    SOTYPE_FUNCTION(longjmp)
  
  SYM (setjmp):
@@ -1116,18 +1136,18 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/setjmp.S newlib-1.17.0/n
 -  movq    r13, 24 (rdi)
 -  movq    r14, 32 (rdi)
 -  movq    r15, 40 (rdi)
-+  movq    rbx, %nacl:  0 (r15,rdi)
-+  movq    rbp, %nacl:  8 (r15,rdi)
-+  movq    r12, %nacl: 16 (r15,rdi)
-+  movq    r13, %nacl: 24 (r15,rdi)
-+  movq    r14, %nacl: 32 (r15,rdi)
-+  movq    r15, %nacl: 40 (r15,rdi)
-   leaq    8 (rsp), rax
+-  leaq    8 (rsp), rax
 -  movq    rax, 48 (rdi)
-+  movq    rax, %nacl: 48 (r15,rdi)
++  movq    rbx, %nacl:  0 (r15,rdi)
++  movq    r12, %nacl:  8 (r15,rdi)
++  movq    r13, %nacl: 16 (r15,rdi)
++  movq    r14, %nacl: 24 (r15,rdi)
    movq    (rsp), rax
 -  movq    rax, 56 (rdi)
-+  movq    rax, %nacl: 56 (r15,rdi)
++  movq    rax, %nacl: 32 (r15,rdi)
++  leaq    8 (rsp), rax
++  movl    ebp, %nacl: 40 (r15,rdi)
++  movl    eax, %nacl: 44 (r15,rdi)
    movq    $0, rax
 -  ret
 +  pop     r11
@@ -1138,7 +1158,7 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/setjmp.S newlib-1.17.0/n
    movq    rsi, rax        /* Return value */
  
 -  movq     8 (rdi), rbp
-+  movq     8 (r15,rdi), rbp
++  naclrestbp 40 (r15,rdi), r15
  
    __CLI
 -  movq    48 (rdi), rsp
@@ -1148,13 +1168,12 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/machine/x86_64/setjmp.S newlib-1.17.0/n
 -  movq    24 (rdi), r13
 -  movq    32 (rdi), r14
 -  movq    40 (rdi), r15
-+  movq    48 (r15,rdi), rsp
-+  pushq   56 (r15,rdi)
++  naclrestsp 44 (r15,rdi), r15
++  pushq   32 (r15,rdi)
 +  movq     0 (r15,rdi), rbx
-+  movq    16 (r15,rdi), r12
-+  movq    24 (r15,rdi), r13
-+  movq    32 (r15,rdi), r14
-+  movq    40 (r15,rdi), r15
++  movq     8 (r15,rdi), r12
++  movq    16 (r15,rdi), r13
++  movq    24 (r15,rdi), r14
    __STI
  
 -  ret
