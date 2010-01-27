@@ -388,12 +388,12 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
+  bool off_the_record = window->browser()->profile()->IsOffTheRecord();
   int image_name;
   if (window->IsActive()) {
-    image_name = window->browser()->profile()->IsOffTheRecord() ?
-                 IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+    image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
   } else {
-    image_name = window->browser()->profile()->IsOffTheRecord() ?
+    image_name = off_the_record ?
                  IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
   }
   CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
@@ -409,7 +409,8 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
     cairo_fill(cr);
   }
 
-  if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
+  if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
+      !off_the_record) {
     CairoCachedSurface* theme_overlay = theme_provider->GetSurfaceNamed(
         window->IsActive() ? IDR_THEME_FRAME_OVERLAY
                            : IDR_THEME_FRAME_OVERLAY_INACTIVE, widget);
