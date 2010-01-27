@@ -289,18 +289,24 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   static void SetUpTestCase() {
-    io_thread_.reset(new base::Thread("AppCacheUpdateJob IO test thread"));
+    io_thread_ = new base::Thread("AppCacheUpdateJob IO test thread");
     base::Thread::Options options(MessageLoop::TYPE_IO, 0);
     io_thread_->StartWithOptions(options);
 
-    http_server_ =
-        HTTPTestServer::CreateServer(kDocRoot, io_thread_->message_loop());
+    http_server_ = HTTPTestServer::CreateServer(
+        kDocRoot, io_thread_->message_loop()).release();
     ASSERT_TRUE(http_server_);
+    request_context_ = new TestURLRequestContext();
+    request_context_->AddRef();
   }
 
   static void TearDownTestCase() {
+    http_server_->Release();
     http_server_ = NULL;
-    io_thread_.reset(NULL);
+    delete io_thread_;
+    io_thread_ = NULL;
+    request_context_->Release();
+    request_context_ = NULL;
   }
 
   // Use a separate IO thread to run a test. Thread will be destroyed
@@ -2477,7 +2483,6 @@ class AppCacheUpdateJobTest : public testing::Test,
 
   void MakeService() {
     service_.reset(new MockAppCacheService());
-    request_context_ = new TestURLRequestContext();
     service_->set_request_context(request_context_);
   }
 
@@ -2762,12 +2767,12 @@ class AppCacheUpdateJobTest : public testing::Test,
     PENDING_MASTER_NO_UPDATE,
   };
 
-  static scoped_ptr<base::Thread> io_thread_;
-  static scoped_refptr<HTTPTestServer> http_server_;
+  static base::Thread* io_thread_;
+  static HTTPTestServer* http_server_;
+  static TestURLRequestContext* request_context_;
 
   ScopedRunnableMethodFactory<AppCacheUpdateJobTest> method_factory_;
   scoped_ptr<MockAppCacheService> service_;
-  scoped_refptr<TestURLRequestContext> request_context_;
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> protect_newest_cache_;
   scoped_ptr<base::WaitableEvent> event_;
@@ -2797,8 +2802,9 @@ class AppCacheUpdateJobTest : public testing::Test,
 };
 
 // static
-scoped_ptr<base::Thread> AppCacheUpdateJobTest::io_thread_;
-scoped_refptr<HTTPTestServer> AppCacheUpdateJobTest::http_server_;
+base::Thread* AppCacheUpdateJobTest::io_thread_ = NULL;
+HTTPTestServer* AppCacheUpdateJobTest::http_server_ = NULL;
+TestURLRequestContext* AppCacheUpdateJobTest::request_context_ = NULL;
 
 TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
   MockAppCacheService service;

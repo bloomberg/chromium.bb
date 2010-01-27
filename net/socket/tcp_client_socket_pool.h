@@ -26,7 +26,6 @@ class TCPConnectJob : public ConnectJob {
  public:
   TCPConnectJob(const std::string& group_name,
                 const HostResolver::RequestInfo& resolve_info,
-                const ClientSocketHandle* handle,
                 base::TimeDelta timeout_duration,
                 ClientSocketFactory* client_socket_factory,
                 HostResolver* host_resolver,

@@ -838,14 +838,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // to clear the host cache when closing incognito mode.
   chrome_browser_net::DnsGlobalInit dns_prefetch(user_prefs, local_state);
 
-  scoped_refptr<FieldTrial> socket_late_binding_trial =
-      new FieldTrial("SocketLateBinding", 100);
-  socket_late_binding_trial->AppendGroup("_disable_late_binding", 50);
-  const int late_binding_group =
-      socket_late_binding_trial->AppendGroup("_enable_late_binding", 50);
-  if (socket_late_binding_trial->group() == late_binding_group)
-    net::EnableLateBindingOfSockets(true);
-
 #if defined(OS_WIN)
   // Init common control sex.
   INITCOMMONCONTROLSEX config;

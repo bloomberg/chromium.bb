@@ -34,13 +34,12 @@ static const int kTCPConnectJobTimeoutInSeconds = 240; // 4 minutes.
 TCPConnectJob::TCPConnectJob(
     const std::string& group_name,
     const HostResolver::RequestInfo& resolve_info,
-    const ClientSocketHandle* handle,
     base::TimeDelta timeout_duration,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     Delegate* delegate,
     LoadLog* load_log)
-    : ConnectJob(group_name, handle, timeout_duration, delegate, load_log),
+    : ConnectJob(group_name, timeout_duration, delegate, load_log),
       resolve_info_(resolve_info),
       client_socket_factory_(client_socket_factory),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -162,7 +161,7 @@ ConnectJob* TCPClientSocketPool::TCPConnectJobFactory::NewConnectJob(
     ConnectJob::Delegate* delegate,
     LoadLog* load_log) const {
   return new TCPConnectJob(
-      group_name, request.params(), request.handle(),
+      group_name, request.params(),
       base::TimeDelta::FromSeconds(kTCPConnectJobTimeoutInSeconds),
       client_socket_factory_, host_resolver_, delegate, load_log);
 }

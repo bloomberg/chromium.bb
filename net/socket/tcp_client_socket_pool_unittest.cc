@@ -509,7 +509,15 @@ class RequestSocketCallback : public CallbackRunner< Tuple1<int> > {
     ASSERT_EQ(OK, params.a);
 
     if (!within_callback_) {
+      // Don't allow reuse of the socket.  Disconnect it and then release it and
+      // run through the MessageLoop once to get it completely released.
+      handle_->socket()->Disconnect();
       handle_->Reset();
+      {
+        MessageLoop::ScopedNestableTaskAllower nestable(
+            MessageLoop::current());
+        MessageLoop::current()->RunAllPending();
+      }
       within_callback_ = true;
       int rv = handle_->Init(
           "a", HostResolver::RequestInfo("www.google.com", 80), LOWEST,
