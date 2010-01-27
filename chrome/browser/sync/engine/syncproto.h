@@ -7,7 +7,9 @@
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCPROTO_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCPROTO_H_
 
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 
 namespace browser_sync {
@@ -48,6 +50,28 @@ class SyncEntity : public IdWrapper<sync_pb::SyncEntity> {
   bool IsFolder() const {
     return ((has_folder() && folder()) ||
             (has_bookmarkdata() && bookmarkdata().bookmark_folder()));
+  }
+
+  // Note: keep this consistent with GetModelType in syncable.cc!
+  syncable::ModelType GetModelType() const {
+    DCHECK(!id().IsRoot());  // Root shouldn't ever go over the wire.
+
+    if (deleted())
+      return syncable::UNSPECIFIED;
+
+    if (specifics().HasExtension(sync_pb::bookmark) || has_bookmarkdata())
+      return syncable::BOOKMARKS;
+
+    // Loose check for server-created top-level folders that aren't
+    // bound to a particular model type.
+    if (!singleton_tag().empty() && IsFolder())
+      return syncable::TOP_LEVEL_FOLDER;
+
+    // This is an item of a datatype we can't understand. Maybe it's
+    // from the future?  Either we mis-encoded the object, or the
+    // server sent us entries it shouldn't have.
+    NOTREACHED() << "Unknown datatype in sync proto.";
+    return syncable::UNSPECIFIED;
   }
 };
 

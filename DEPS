@@ -33,7 +33,7 @@ deps = {
    "/trunk/deps/third_party/hunspell128@30191",
 
   "src/third_party/protobuf2/src":
-    "http://protobuf.googlecode.com/svn/trunk@219",
+    "http://protobuf.googlecode.com/svn/trunk@305",
 
   "src/tools/gyp":
     "http://gyp.googlecode.com/svn/trunk@776",

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Enumerate the various item subtypes that are supported by sync.
+// Each sync object is expected to have an immutable object type.
+// An object's type is inferred from the type of data it holds.
+
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_MODEL_TYPE_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_MODEL_TYPE_H_
 
@@ -10,9 +14,14 @@
 namespace syncable {
 
 enum ModelType {
-  UNSPECIFIED = 0,
-  BOOKMARKS,
-  MODEL_TYPE_COUNT
+  UNSPECIFIED,       // Object type unknown.  Objects may transition through
+                     // the unknown state during their initial creation, before
+                     // their properties are set.  After deletion, object types
+                     // are generally preserved.
+  TOP_LEVEL_FOLDER,  // A permanent folder whose children may be of mixed
+                     // datatypes (e.g. the "Google Chrome" folder).
+  BOOKMARKS,         // A bookmark folder or a bookmark URL object.
+  MODEL_TYPE_COUNT,
 };
 
 inline ModelType ModelTypeFromInt(int i) {
@@ -24,4 +33,3 @@ inline ModelType ModelTypeFromInt(int i) {
 }  // namespace syncable
 
 #endif  // CHROME_BROWSER_SYNC_SYNCABLE_MODEL_TYPE_H_
-

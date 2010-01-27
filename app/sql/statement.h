@@ -25,7 +25,7 @@ enum ColType {
 };
 
 // Normal usage:
-//   sql::Statement s = connection_.GetUniqueStatement(...);
+//   sql::Statement s(connection_.GetUniqueStatement(...));
 //   if (!s)  // You should check for errors before using the statement.
 //     return false;
 //

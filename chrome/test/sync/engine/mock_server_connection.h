@@ -98,7 +98,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
                                    std::string* xattr_key,
                                    syncable::Blob* xattr_value,
                                    int xattr_count);
-  // Prepare to add checksums.
+
   void SetLastUpdateDeleted();
   void SetLastUpdateSingletonTag(const string& tag);
   void SetLastUpdateOriginatorFields(const string& client_id,
@@ -149,6 +149,10 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
     conflict_n_commits_ = value;
   }
 
+  void set_use_legacy_bookmarks_protocol(bool value) {
+    use_legacy_bookmarks_protocol_ = value;
+  }
+
  private:
   sync_pb::SyncEntity* AddUpdateFull(syncable::Id id, syncable::Id parentid,
                                      string name, int64 version,
@@ -165,6 +169,9 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
                            const std::string& auth_token);
   void ProcessCommit(sync_pb::ClientToServerMessage* csm,
                      sync_pb::ClientToServerResponse* response_buffer);
+
+  void AddDefaultBookmarkData(sync_pb::SyncEntity* entity, bool is_folder);
+
   // Locate the most recent update message for purpose of alteration.
   sync_pb::SyncEntity* GetMutableLastUpdate();
 
@@ -226,6 +233,11 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   // The next value to use for the position_in_parent property.
   int64 next_position_in_parent_;
+
+  // The default is to use the newer sync_pb::BookmarkSpecifics-style protocol.
+  // If this option is set to true, then the MockConnectionManager will
+  // use the older sync_pb::SyncEntity_BookmarkData-style protocol.
+  bool use_legacy_bookmarks_protocol_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnectionManager);
 };

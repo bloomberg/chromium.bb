@@ -121,15 +121,14 @@ bool ReverifyEntry(syncable::WriteTransaction* trans, const SyncEntity& entry,
 
   const bool deleted = entry.has_deleted() && entry.deleted();
   const bool is_directory = entry.IsFolder();
-  const bool is_bookmark =
-      SyncerUtil::GetModelType(entry) == syncable::BOOKMARKS;
+  const syncable::ModelType model_type = entry.GetModelType();
 
   return VERIFY_SUCCESS == SyncerUtil::VerifyUpdateConsistency(trans,
                                                                entry,
                                                                same_id,
                                                                deleted,
                                                                is_directory,
-                                                               is_bookmark);
+                                                               model_type);
 }
 }  // namespace
 

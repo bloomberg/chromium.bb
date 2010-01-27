@@ -1439,6 +1439,7 @@
         'browser/sync/sessions/status_controller_unittest.cc',
         'browser/sync/sessions/sync_session_unittest.cc',
         'browser/sync/syncable/syncable_id_unittest.cc',
+        'browser/sync/syncable/directory_backing_store_unittest.cc',
         'browser/sync/syncable/syncable_unittest.cc',
         'browser/sync/util/crypto_helpers_unittest.cc',
         'browser/sync/util/event_sys_unittest.cc',

@@ -34,6 +34,7 @@
 #include "base/logging.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/closure.h"
@@ -626,7 +627,6 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
   EntryKernel create_pre_save, update_pre_save;
   EntryKernel create_post_save, update_post_save;
   string create_name =  "Create";
-  string favicon_bytes = "PNG";
 
   {
     WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
@@ -634,10 +634,10 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
     MutableEntry update(&trans, CREATE_NEW_UPDATE_ITEM, update_id);
     create.Put(IS_UNSYNCED, true);
     update.Put(IS_UNAPPLIED_UPDATE, true);
-    syncable::Blob fav(favicon_bytes.data(),
-                       favicon_bytes.data() + favicon_bytes.size());
-    create.Put(BOOKMARK_FAVICON, fav);
-    update.Put(BOOKMARK_FAVICON, fav);
+    sync_pb::EntitySpecifics specifics;
+    specifics.MutableExtension(sync_pb::bookmark)->set_favicon("PNG");
+    specifics.MutableExtension(sync_pb::bookmark)->set_url("http://nowhere");
+    create.Put(SPECIFICS, specifics);
     create_pre_save = create.GetKernelCopy();
     update_pre_save = update.GetKernelCopy();
     create_id = create.Get(ID);
@@ -690,12 +690,12 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
               update_post_save.ref((StringField)i))
               << "String field #" << i << " changed during save/load";
   }
-  for ( ; i < BLOB_FIELDS_END; ++i) {
-    EXPECT_EQ(create_pre_save.ref((BlobField)i),
-              create_post_save.ref((BlobField)i))
+  for ( ; i < PROTO_FIELDS_END; ++i) {
+    EXPECT_EQ(create_pre_save.ref((ProtoField)i).SerializeAsString(),
+              create_post_save.ref((ProtoField)i).SerializeAsString())
               << "Blob field #" << i << " changed during save/load";
-    EXPECT_EQ(update_pre_save.ref((BlobField)i),
-              update_post_save.ref((BlobField)i))
+    EXPECT_EQ(update_pre_save.ref((ProtoField)i).SerializeAsString(),
+              update_post_save.ref((ProtoField)i).SerializeAsString())
               << "Blob field #" << i << " changed during save/load";
   }
 }

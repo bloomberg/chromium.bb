@@ -47,6 +47,7 @@
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -82,6 +83,7 @@ using std::string;
 using std::vector;
 using syncable::Directory;
 using syncable::DirectoryManager;
+using syncable::SPECIFICS;
 
 typedef GoogleServiceAuthError AuthError;
 
@@ -400,20 +402,9 @@ struct UserShare {
 ////////////////////////////////////
 // BaseNode member definitions.
 
-// BaseNode::BaseNodeInternal provides storage for member Get() functions that
-// need to return pointers (e.g. strings).
-struct BaseNode::BaseNodeInternal {
-  GURL url;
-  std::wstring title;
-  Directory::ChildHandles child_handles;
-  syncable::Blob favicon;
-};
+BaseNode::BaseNode() {}
 
-BaseNode::BaseNode() : data_(new BaseNode::BaseNodeInternal) {}
-
-BaseNode::~BaseNode() {
-  delete data_;
-}
+BaseNode::~BaseNode() {}
 
 int64 BaseNode::GetParentId() const {
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(),
@@ -428,26 +419,14 @@ bool BaseNode::GetIsFolder() const {
   return GetEntry()->Get(syncable::IS_DIR);
 }
 
-const std::wstring& BaseNode::GetTitle() const {
-  ServerNameToSyncAPIName(GetEntry()->Get(syncable::NON_UNIQUE_NAME),
-                          &data_->title);
-  return data_->title;
+std::wstring BaseNode::GetTitle() const {
+  std::wstring result;
+  ServerNameToSyncAPIName(GetEntry()->Get(syncable::NON_UNIQUE_NAME), &result);
+  return result;
 }
 
-const GURL& BaseNode::GetURL() const {
-  GURL url(GetEntry()->Get(syncable::BOOKMARK_URL));
-  url.Swap(&data_->url);
-  return data_->url;
-}
-
-const int64* BaseNode::GetChildIds(size_t* child_count) const {
-  DCHECK(child_count);
-  Directory* dir = GetTransaction()->GetLookup();
-  dir->GetChildHandles(GetTransaction()->GetWrappedTrans(),
-                       GetEntry()->Get(syncable::ID), &data_->child_handles);
-
-  *child_count = data_->child_handles.size();
-  return (data_->child_handles.empty()) ? NULL : &data_->child_handles[0];
+GURL BaseNode::GetURL() const {
+  return GURL(GetBookmarkSpecifics().url());
 }
 
 int64 BaseNode::GetPredecessorId() const {
@@ -474,17 +453,26 @@ int64 BaseNode::GetFirstChildId() const {
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
 }
 
-const unsigned char* BaseNode::GetFaviconBytes(size_t* size_in_bytes) {
-  data_->favicon = GetEntry()->Get(syncable::BOOKMARK_FAVICON);
-  *size_in_bytes = data_->favicon.size();
-  if (*size_in_bytes)
-    return &(data_->favicon[0]);
-  else
-    return NULL;
+void BaseNode::GetFaviconBytes(std::vector<unsigned char>* output) const {
+  if (!output)
+    return;
+  const std::string& favicon = GetBookmarkSpecifics().favicon();
+  output->assign(reinterpret_cast<const unsigned char*>(favicon.data()),
+      reinterpret_cast<const unsigned char*>(favicon.data() +
+                                             favicon.length()));
 }
 
 int64 BaseNode::GetExternalId() const {
   return GetEntry()->Get(syncable::LOCAL_EXTERNAL_ID);
+}
+
+const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
+  DCHECK(GetModelType() == syncable::BOOKMARKS);
+  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::bookmark);
+}
+
+syncable::ModelType BaseNode::GetModelType() const {
+  return GetEntry()->GetModelType();
 }
 
 ////////////////////////////////////
@@ -511,11 +499,32 @@ void WriteNode::SetTitle(const std::wstring& title) {
 }
 
 void WriteNode::SetURL(const GURL& url) {
-  const std::string& url_string = url.spec();
-  if (url_string == entry_->Get(syncable::BOOKMARK_URL))
-    return;  // Skip redundant changes.
+  sync_pb::BookmarkSpecifics new_value = GetBookmarkSpecifics();
+  new_value.set_url(url.spec());
+  SetBookmarkSpecifics(new_value);
+}
 
-  entry_->Put(syncable::BOOKMARK_URL, url_string);
+void WriteNode::SetBookmarkSpecifics(
+    const sync_pb::BookmarkSpecifics& new_value) {
+  DCHECK(GetModelType() == syncable::BOOKMARKS);
+  PutBookmarkSpecificsAndMarkForSyncing(new_value);
+}
+
+void WriteNode::PutBookmarkSpecificsAndMarkForSyncing(
+    const sync_pb::BookmarkSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::bookmark)->CopyFrom(new_value);
+  PutSpecificsAndMarkForSyncing(entity_specifics);
+}
+
+void WriteNode::PutSpecificsAndMarkForSyncing(
+    const sync_pb::EntitySpecifics& specifics) {
+  // Skip redundant changes.
+  if (specifics.SerializeAsString() ==
+      entry_->Get(SPECIFICS).SerializeAsString()) {
+    return;
+  }
+  entry_->Put(SPECIFICS, specifics);
   MarkForSyncing();
 }
 
@@ -545,7 +554,8 @@ bool WriteNode::InitByIdLookup(int64 id) {
 
 // Create a new node with default properties, and bind this WriteNode to it.
 // Return true on success.
-bool WriteNode::InitByCreation(const BaseNode& parent,
+bool WriteNode::InitByCreation(syncable::ModelType model_type,
+                               const BaseNode& parent,
                                const BaseNode* predecessor) {
   DCHECK(!entry_) << "Init called twice";
   // |predecessor| must be a child of |parent| or NULL.
@@ -568,9 +578,18 @@ bool WriteNode::InitByCreation(const BaseNode& parent,
 
   // Entries are untitled folders by default.
   entry_->Put(syncable::IS_DIR, true);
-  // TODO(ncarter): Naming this bit IS_BOOKMARK_OBJECT is a bit unfortunate,
-  // since the rest of SyncAPI is essentially bookmark-agnostic.
-  entry_->Put(syncable::IS_BOOKMARK_OBJECT, true);
+
+  // Set an empty specifics of the appropriate datatype.  The presence
+  // of the specific extension will identify the model type.
+  switch (model_type) {
+    case syncable::BOOKMARKS:
+      PutBookmarkSpecificsAndMarkForSyncing(
+          sync_pb::BookmarkSpecifics::default_instance());
+      break;
+    default:
+      NOTREACHED();
+  }
+  DCHECK(GetModelType() == model_type);
 
   // Now set the predecessor, which sets IS_UNSYNCED as necessary.
   PutPredecessor(predecessor);
@@ -629,14 +648,10 @@ void WriteNode::PutPredecessor(const BaseNode* predecessor) {
   MarkForSyncing();
 }
 
-void WriteNode::SetFaviconBytes(const unsigned char* bytes,
-                                size_t size_in_bytes) {
-  syncable::Blob new_favicon(bytes, bytes + size_in_bytes);
-  if (new_favicon == entry_->Get(syncable::BOOKMARK_FAVICON))
-    return;  // Skip redundant changes.
-
-  entry_->Put(syncable::BOOKMARK_FAVICON, new_favicon);
-  MarkForSyncing();
+void WriteNode::SetFaviconBytes(const vector<unsigned char>& bytes) {
+  sync_pb::BookmarkSpecifics new_value = GetBookmarkSpecifics();
+  new_value.set_favicon(bytes.empty() ? NULL : &bytes[0], bytes.size());
+  SetBookmarkSpecifics(new_value);
 }
 
 void WriteNode::MarkForSyncing() {
@@ -671,8 +686,10 @@ bool ReadNode::InitByIdLookup(int64 id) {
     return false;
   if (entry_->Get(syncable::IS_DEL))
     return false;
-  LOG_IF(WARNING, !entry_->Get(syncable::IS_BOOKMARK_OBJECT))
-      << "SyncAPI InitByIdLookup referencing non-bookmark object.";
+  syncable::ModelType model_type = GetModelType();
+  LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
+                  model_type == syncable::TOP_LEVEL_FOLDER)
+      << "SyncAPI InitByIdLookup referencing unusual object.";
   return true;
 }
 
@@ -694,11 +711,12 @@ bool ReadNode::InitByTagLookup(const std::string& tag) {
     return false;
   if (entry_->Get(syncable::IS_DEL))
     return false;
-  LOG_IF(WARNING, !entry_->Get(syncable::IS_BOOKMARK_OBJECT))
-      << "SyncAPI InitByTagLookup referencing non-bookmark object.";
+  syncable::ModelType model_type = GetModelType();
+  LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
+                  model_type == syncable::TOP_LEVEL_FOLDER)
+      << "SyncAPI InitByTagLookup referencing unusually typed object.";
   return true;
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 // ReadTransaction member definitions
@@ -917,8 +935,12 @@ class SyncManager::SyncInternal {
   // the relative order is unchanged).  To handle such cases, we rely on the
   // caller to treat a position update on any sibling as updating the positions
   // of all siblings.
-  static bool BookmarkPositionsDiffer(const syncable::EntryKernel& a,
-                                      const syncable::Entry& b) {
+  static bool VisiblePositionsDiffer(const syncable::EntryKernel& a,
+                                     const syncable::Entry& b) {
+    // If the datatype isn't one where the browser model cares about position,
+    // don't bother notifying that data model of position-only changes.
+    if (!b.ShouldMaintainPosition())
+      return false;
     if (a.ref(syncable::NEXT_ID) != b.Get(syncable::NEXT_ID))
       return true;
     if (a.ref(syncable::PARENT_ID) != b.Get(syncable::PARENT_ID))
@@ -929,17 +951,23 @@ class SyncManager::SyncInternal {
   // Determine if any of the fields made visible to clients of the Sync API
   // differ between the versions of an entry stored in |a| and |b|. A return
   // value of false means that it should be OK to ignore this change.
-  static bool BookmarkPropertiesDiffer(const syncable::EntryKernel& a,
-                                       const syncable::Entry& b) {
+  static bool VisiblePropertiesDiffer(const syncable::EntryKernel& a,
+                                      const syncable::Entry& b) {
+    syncable::ModelType model_type = b.GetModelType();
+    // Suppress updates to items that aren't tracked by any browser model.
+    if (model_type == syncable::UNSPECIFIED ||
+        model_type == syncable::TOP_LEVEL_FOLDER) {
+      return false;
+    }
     if (a.ref(syncable::NON_UNIQUE_NAME) != b.Get(syncable::NON_UNIQUE_NAME))
       return true;
     if (a.ref(syncable::IS_DIR) != b.Get(syncable::IS_DIR))
       return true;
-    if (a.ref(syncable::BOOKMARK_URL) != b.Get(syncable::BOOKMARK_URL))
+    if (a.ref(SPECIFICS).SerializeAsString() !=
+        b.Get(SPECIFICS).SerializeAsString()) {
       return true;
-    if (a.ref(syncable::BOOKMARK_FAVICON) != b.Get(syncable::BOOKMARK_FAVICON))
-      return true;
-    if (BookmarkPositionsDiffer(a, b))
+    }
+    if (VisiblePositionsDiffer(a, b))
       return true;
     return false;
   }
@@ -1398,7 +1426,7 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
     if (e.IsRoot()) {
       // Ignore root object, should it ever change.
       continue;
-    } else if (!e.Get(syncable::IS_BOOKMARK_OBJECT)) {
+    } else if (e.GetModelType() != syncable::BOOKMARKS) {
       // Ignore non-bookmark objects.
       continue;
     } else if (e.Get(syncable::IS_UNSYNCED)) {
@@ -1432,15 +1460,15 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
     if (e.IsRoot())
       continue;
     // Ignore non-bookmark objects.
-    if (!e.Get(syncable::IS_BOOKMARK_OBJECT))
+    if (e.GetModelType() != syncable::BOOKMARKS)
       continue;
 
     if (exists_now && !existed_before)
       change_buffer_.PushAddedItem(id);
     else if (!exists_now && existed_before)
       change_buffer_.PushDeletedItem(id);
-    else if (exists_now && existed_before && BookmarkPropertiesDiffer(*i, e))
-      change_buffer_.PushUpdatedItem(id, BookmarkPositionsDiffer(*i, e));
+    else if (exists_now && existed_before && VisiblePropertiesDiffer(*i, e))
+      change_buffer_.PushUpdatedItem(id, VisiblePositionsDiffer(*i, e));
   }
 }
 

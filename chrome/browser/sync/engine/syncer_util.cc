@@ -14,13 +14,12 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 using syncable::BASE_VERSION;
-using syncable::BOOKMARK_FAVICON;
-using syncable::BOOKMARK_URL;
 using syncable::Blob;
 using syncable::CHANGES_VERSION;
 using syncable::CREATE;
@@ -33,7 +32,6 @@ using syncable::ExtendedAttributeKey;
 using syncable::GET_BY_HANDLE;
 using syncable::GET_BY_ID;
 using syncable::ID;
-using syncable::IS_BOOKMARK_OBJECT;
 using syncable::IS_DEL;
 using syncable::IS_DIR;
 using syncable::IS_UNAPPLIED_UPDATE;
@@ -48,18 +46,17 @@ using syncable::NON_UNIQUE_NAME;
 using syncable::PARENT_ID;
 using syncable::PREV_ID;
 using syncable::ReadTransaction;
-using syncable::SERVER_BOOKMARK_FAVICON;
-using syncable::SERVER_BOOKMARK_URL;
 using syncable::SERVER_CTIME;
-using syncable::SERVER_IS_BOOKMARK_OBJECT;
 using syncable::SERVER_IS_DEL;
 using syncable::SERVER_IS_DIR;
 using syncable::SERVER_MTIME;
 using syncable::SERVER_NON_UNIQUE_NAME;
 using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
+using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
 using syncable::SINGLETON_TAG;
+using syncable::SPECIFICS;
 using syncable::SYNCER;
 using syncable::WriteTransaction;
 
@@ -237,14 +234,24 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
 }
 
 namespace {
-void UpdateLocalBookmarkSpecifics(const string& url,
-                                  const string& favicon_bytes,
-                                  MutableEntry* local_entry) {
-  local_entry->Put(SERVER_BOOKMARK_URL, url);
-  Blob favicon_blob;
-  SyncerProtoUtil::CopyProtoBytesIntoBlob(favicon_bytes,
-                                          &favicon_blob);
-  local_entry->Put(SERVER_BOOKMARK_FAVICON, favicon_blob);
+// Helper to synthesize a new-style sync_pb::EntitySpecifics for use locally,
+// when the server speaks only the old sync_pb::SyncEntity_BookmarkData-based
+// protocol.
+void UpdateBookmarkSpecifics(const string& singleton_tag,
+                             const string& url,
+                             const string& favicon_bytes,
+                             MutableEntry* local_entry) {
+  // In the new-style protocol, the server no longer sends bookmark info for
+  // the "google_chrome" folder.  Mimic that here.
+  if (singleton_tag == "google_chrome")
+    return;
+  sync_pb::EntitySpecifics pb;
+  sync_pb::BookmarkSpecifics* bookmark = pb.MutableExtension(sync_pb::bookmark);
+  if (!url.empty())
+    bookmark->set_url(url);
+  if (!favicon_bytes.empty())
+    bookmark->set_favicon(favicon_bytes);
+  local_entry->Put(SERVER_SPECIFICS, pb);
 }
 
 }  // namespace
@@ -275,27 +282,23 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
       ServerTimeToClientTime(server_entry.ctime()));
   local_entry->Put(SERVER_MTIME,
       ServerTimeToClientTime(server_entry.mtime()));
-  local_entry->Put(SERVER_IS_BOOKMARK_OBJECT,
-      GetModelType(server_entry) == syncable::BOOKMARKS);
   local_entry->Put(SERVER_IS_DIR, server_entry.IsFolder());
   if (server_entry.has_singleton_tag()) {
     const string& tag = server_entry.singleton_tag();
     local_entry->Put(SINGLETON_TAG, tag);
   }
-  if (!server_entry.deleted()) {
-    if (server_entry.specifics().HasExtension(sync_pb::bookmark)) {
-      // New style bookmark data.
-      const sync_pb::BookmarkSpecifics& bookmark =
-          server_entry.specifics().GetExtension(sync_pb::bookmark);
-      UpdateLocalBookmarkSpecifics(bookmark.url(),
-          bookmark.favicon(), local_entry);
-    } else if (server_entry.has_bookmarkdata()) {
-      // Old style bookmark data.
-      const SyncEntity::BookmarkData& bookmark = server_entry.bookmarkdata();
-      UpdateLocalBookmarkSpecifics(bookmark.bookmark_url(),
-                                   bookmark.bookmark_favicon(),
-                                   local_entry);
-    }
+  // Store the datatype-specific part as a protobuf.
+  if (server_entry.has_specifics()) {
+    DCHECK(server_entry.GetModelType() != syncable::UNSPECIFIED)
+        << "Storing unrecognized datatype in sync database.";
+    local_entry->Put(SERVER_SPECIFICS, server_entry.specifics());
+  } else if (server_entry.has_bookmarkdata()) {
+    // Legacy protocol response for bookmark data.
+    const SyncEntity::BookmarkData& bookmark = server_entry.bookmarkdata();
+    UpdateBookmarkSpecifics(server_entry.singleton_tag(),
+                            bookmark.bookmark_url(),
+                            bookmark.bookmark_favicon(),
+                            local_entry);
   }
   if (server_entry.has_position_in_parent()) {
     local_entry->Put(SERVER_POSITION_IN_PARENT,
@@ -391,13 +394,11 @@ bool SyncerUtil::ServerAndLocalEntriesMatch(syncable::Entry* entry) {
     return false;
   }
 
-  if (entry->Get(IS_BOOKMARK_OBJECT)) {
-    if (!entry->Get(IS_DIR)) {
-      if (entry->Get(BOOKMARK_URL) != entry->Get(SERVER_BOOKMARK_URL)) {
-        LOG(WARNING) << "Bookmark URL mismatch";
-        return false;
-      }
-    }
+  // TODO(ncarter): This is unfortunately heavyweight.  Can we do better?
+  if (entry->Get(SPECIFICS).SerializeAsString() !=
+      entry->Get(SERVER_SPECIFICS).SerializeAsString()) {
+    LOG(WARNING) << "Specifics mismatch";
+    return false;
   }
   if (entry->Get(IS_DIR))
     return true;
@@ -435,8 +436,11 @@ void SyncerUtil::UpdateLocalDataFromServerData(
     syncable::MutableEntry* entry) {
   CHECK(!entry->Get(IS_UNSYNCED));
   CHECK(entry->Get(IS_UNAPPLIED_UPDATE));
+
   LOG(INFO) << "Updating entry : " << *entry;
-  entry->Put(IS_BOOKMARK_OBJECT, entry->Get(SERVER_IS_BOOKMARK_OBJECT));
+  // Start by setting the properties that determine the model_type.
+  entry->Put(SPECIFICS, entry->Get(SERVER_SPECIFICS));
+  entry->Put(IS_DIR, entry->Get(SERVER_IS_DIR));
   // This strange dance around the IS_DEL flag avoids problems when setting
   // the name.
   // TODO(chron): Is this still an issue? Unit test this codepath.
@@ -455,10 +459,7 @@ void SyncerUtil::UpdateLocalDataFromServerData(
   entry->Put(CTIME, entry->Get(SERVER_CTIME));
   entry->Put(MTIME, entry->Get(SERVER_MTIME));
   entry->Put(BASE_VERSION, entry->Get(SERVER_VERSION));
-  entry->Put(IS_DIR, entry->Get(SERVER_IS_DIR));
   entry->Put(IS_DEL, entry->Get(SERVER_IS_DEL));
-  entry->Put(BOOKMARK_URL, entry->Get(SERVER_BOOKMARK_URL));
-  entry->Put(BOOKMARK_FAVICON, entry->Get(SERVER_BOOKMARK_FAVICON));
   entry->Put(IS_UNAPPLIED_UPDATE, false);
 }
 
@@ -616,7 +617,7 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
     syncable::MutableEntry* same_id,
     const bool deleted,
     const bool is_directory,
-    const bool has_bookmark_data) {
+    syncable::ModelType model_type) {
 
   CHECK(same_id->good());
 
@@ -624,11 +625,16 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
   if (deleted)
     return VERIFY_SUCCESS;
 
+  if (model_type == syncable::UNSPECIFIED) {
+    // This update is to an item of a datatype we don't recognize. The server
+    // shouldn't have sent it to us.  Throw it on the ground.
+    return VERIFY_SKIP;
+  }
+
   if (same_id->Get(SERVER_VERSION) > 0) {
     // Then we've had an update for this entry before.
     if (is_directory != same_id->Get(SERVER_IS_DIR) ||
-        (!is_directory &&
-         has_bookmark_data != same_id->Get(SERVER_IS_BOOKMARK_OBJECT))) {
+        model_type != same_id->GetServerModelType()) {
       if (same_id->Get(IS_DEL)) {  // If we've deleted the item, we don't care.
         return VERIFY_SKIP;
       } else {
@@ -657,8 +663,7 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
   if (same_id->Get(BASE_VERSION) > 0) {
     // We've committed this entry in the past.
     if (is_directory != same_id->Get(IS_DIR) ||
-        (!is_directory &&
-         has_bookmark_data != same_id->Get(IS_BOOKMARK_OBJECT))) {
+        model_type != same_id->GetModelType()) {
       LOG(ERROR) << "Server update doesn't agree with committed item. ";
       LOG(ERROR) << " Entry: " << *same_id;
       LOG(ERROR) << " Update: " << SyncEntityDebugString(entry);

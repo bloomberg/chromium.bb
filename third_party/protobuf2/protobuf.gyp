@@ -64,6 +64,7 @@
         'src/src/google/protobuf/repeated_field.cc',
         'src/src/google/protobuf/wire_format_lite.cc',
         'src/src/google/protobuf/io/coded_stream.cc',
+        'src/src/google/protobuf/io/coded_stream_inl.h',
         'src/src/google/protobuf/io/zero_copy_stream.cc',
         'src/src/google/protobuf/io/zero_copy_stream_impl_lite.cc',
         '<(config_h_dir)/config.h',
@@ -116,10 +117,10 @@
         'src/src/google/protobuf/compiler/importer.h',
         'src/src/google/protobuf/compiler/parser.h',
 
-        'src/src/google/protobuf/stubs/substitute.cc',
-        'src/src/google/protobuf/stubs/substitute.h',
         'src/src/google/protobuf/stubs/strutil.cc',
         'src/src/google/protobuf/stubs/strutil.h',
+        'src/src/google/protobuf/stubs/substitute.cc',
+        'src/src/google/protobuf/stubs/substitute.h',
         'src/src/google/protobuf/stubs/structurally_valid.cc',
         'src/src/google/protobuf/descriptor.cc',
         'src/src/google/protobuf/descriptor.pb.cc',
@@ -156,6 +157,12 @@
       'sources': [
         'src/src/google/protobuf/compiler/code_generator.cc',
         'src/src/google/protobuf/compiler/command_line_interface.cc',
+        'src/src/google/protobuf/compiler/plugin.cc',
+        'src/src/google/protobuf/compiler/plugin.pb.cc',
+        'src/src/google/protobuf/compiler/subprocess.cc',
+        'src/src/google/protobuf/compiler/subprocess.h',
+        'src/src/google/protobuf/compiler/zip_writer.cc',
+        'src/src/google/protobuf/compiler/zip_writer.h',
         'src/src/google/protobuf/compiler/cpp/cpp_enum.cc',
         'src/src/google/protobuf/compiler/cpp/cpp_enum.h',
         'src/src/google/protobuf/compiler/cpp/cpp_enum_field.cc',
@@ -203,18 +210,16 @@
         'src/src/google/protobuf/compiler/python/python_generator.cc',
         'src/src/google/protobuf/compiler/main.cc',
       ],
-
       'dependencies': [
         'protobuf',
       ],
-
       'include_dirs': [
         '<(config_h_dir)',
         'src/src',
       ],
     },
   ],
- }
+}
 
 # Local Variables:
 # tab-width:2

@@ -35,6 +35,7 @@
 #include "base/time.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -396,8 +397,8 @@ void ZeroFields(EntryKernel* entry, int first_field) {
     entry->mutable_ref(static_cast<IdField>(i)).Clear();
   for ( ; i < BIT_FIELDS_END; ++i)
     entry->put(static_cast<BitField>(i), false);
-  if (i < BLOB_FIELDS_END)
-    i = BLOB_FIELDS_END;
+  if (i < PROTO_FIELDS_END)
+    i = PROTO_FIELDS_END;
 }
 
 void Directory::InsertEntry(EntryKernel* entry) {
@@ -998,6 +999,51 @@ void Entry::DeleteAllExtendedAttributes(WriteTransaction *trans) {
   dir()->DeleteAllExtendedAttributes(trans, kernel_->ref(META_HANDLE));
 }
 
+syncable::ModelType Entry::GetServerModelType() const {
+  if (Get(SERVER_SPECIFICS).HasExtension(sync_pb::bookmark))
+    return BOOKMARKS;
+  if (IsRoot())
+    return TOP_LEVEL_FOLDER;
+  // Loose check for server-created top-level folders that aren't
+  // bound to a particular model type.
+  if (!Get(SINGLETON_TAG).empty() && Get(SERVER_IS_DIR))
+    return TOP_LEVEL_FOLDER;
+
+  // Otherwise, we don't have a server type yet.  That should only happen
+  // if the item is an uncommitted locally created item.
+  // It's possible we'll need to relax these checks in the future; they're
+  // just here for now as a safety measure.
+  DCHECK(Get(IS_UNSYNCED));
+  DCHECK(Get(SERVER_VERSION) == 0);
+  DCHECK(Get(SERVER_IS_DEL));
+  // Note: can't enforce !Get(ID).ServerKnows() here because that could
+  // actually happen if we hit AttemptReuniteLostCommitResponses.
+  return UNSPECIFIED;
+}
+
+// Note: keep this consistent with GetModelType in syncproto.h!
+syncable::ModelType Entry::GetModelType() const {
+  if (Get(SPECIFICS).HasExtension(sync_pb::bookmark))
+    return BOOKMARKS;
+  if (IsRoot())
+    return TOP_LEVEL_FOLDER;
+  // Loose check for server-created top-level folders that aren't
+  // bound to a particular model type.
+  if (!Get(SINGLETON_TAG).empty() && Get(IS_DIR))
+    return TOP_LEVEL_FOLDER;
+
+  // Otherwise, we don't have a local type yet.  That should only happen
+  // if the item doesn't exist locally -- like if it's a new update item.
+  // It's possible we'll need to relax these checks in the future; they're
+  // just here for now as a safety measure.
+  DCHECK(Get(ID).ServerKnows());
+  DCHECK(Get(IS_UNAPPLIED_UPDATE));
+  DCHECK(!Get(IS_UNSYNCED));
+  DCHECK(Get(BASE_VERSION) == CHANGES_VERSION);
+  DCHECK(Get(IS_DEL));
+  return UNSPECIFIED;
+}
+
 ///////////////////////////////////////////////////////////////////////////
 // MutableEntry
 
@@ -1176,15 +1222,21 @@ void MutableEntry::UnlinkFromOrder() {
 }
 
 bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
-  // TODO(ncarter): Maybe there should be an independent HAS_POSITION bit?
-  if (!Get(IS_BOOKMARK_OBJECT))
-    return true;
   UnlinkFromOrder();
 
   if (Get(IS_DEL)) {
     DCHECK(predecessor_id.IsNull());
     return true;
   }
+
+  // TODO(ncarter): It should be possible to not maintain position for
+  // non-bookmark items.  However, we'd need to robustly handle all possible
+  // permutations of setting IS_DEL and the SPECIFICS to identify the
+  // object type; or else, we'd need to add a ModelType to the
+  // MutableEntry's Create ctor.
+  //   if (!ShouldMaintainPosition()) {
+  //     return false;
+  //   }
 
   // This is classic insert-into-doubly-linked-list from CS 101 and your last
   // job interview.  An "IsRoot" Id signifies the head or tail.
@@ -1356,22 +1408,22 @@ inline FastDump& operator<<(FastDump& dump, const DumpColon&) {
 std::ostream& operator<<(std::ostream& stream, const syncable::Entry& entry) {
   // Using ostreams directly here is dreadfully slow, because a mutex is
   // acquired for every <<.  Users noticed it spiking CPU.
-  using syncable::BitField;
-  using syncable::BitTemp;
-  using syncable::BlobField;
-  using syncable::EntryKernel;
-  using syncable::g_metas_columns;
-  using syncable::IdField;
-  using syncable::Int64Field;
-  using syncable::StringField;
   using syncable::BEGIN_FIELDS;
   using syncable::BIT_FIELDS_END;
   using syncable::BIT_TEMPS_BEGIN;
   using syncable::BIT_TEMPS_END;
-  using syncable::BLOB_FIELDS_END;
-  using syncable::INT64_FIELDS_END;
+  using syncable::BitField;
+  using syncable::BitTemp;
+  using syncable::EntryKernel;
   using syncable::ID_FIELDS_END;
+  using syncable::INT64_FIELDS_END;
+  using syncable::IdField;
+  using syncable::Int64Field;
+  using syncable::PROTO_FIELDS_END;
+  using syncable::ProtoField;
   using syncable::STRING_FIELDS_END;
+  using syncable::StringField;
+  using syncable::g_metas_columns;
 
   int i;
   FastDump s(&stream);
@@ -1393,9 +1445,10 @@ std::ostream& operator<<(std::ostream& stream, const syncable::Entry& entry) {
     const string& field = kernel->ref(static_cast<StringField>(i));
     s << g_metas_columns[i].name << colon << field << separator;
   }
-  for ( ; i < BLOB_FIELDS_END; ++i) {
+  for ( ; i < PROTO_FIELDS_END; ++i) {
     s << g_metas_columns[i].name << colon
-      << kernel->ref(static_cast<BlobField>(i)) << separator;
+      << kernel->ref(static_cast<ProtoField>(i)).SerializeAsString()
+      << separator;
   }
   s << "TempFlags: ";
   for ( ; i < BIT_TEMPS_END; ++i) {

@@ -11,10 +11,17 @@
 #include "base/file_path.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 extern "C" {
 struct sqlite3;
 struct sqlite3_stmt;
+}
+
+class SQLStatement;
+
+namespace sync_pb {
+class EntitySpecifics;
 }
 
 namespace syncable {
@@ -68,10 +75,18 @@ class DirectoryBackingStore {
   virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot);
 
  private:
+  FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion67To68);
+  FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion68To69);
+  FRIEND_TEST(MigrationTest, ToCurrentVersion);
+
   // General Directory initialization and load helpers.
   DirOpenResult InitializeTables();
   // Returns an sqlite return code, usually SQLITE_DONE.
   int CreateTables();
+  // Create 'metas' or 'temp_metas' depending on value of is_temporary.
+  // Returns an sqlite return code, SQLITE_DONE on success.
+  int CreateMetasTable(bool is_temporary);
+
   int CreateExtendedAttributeTable();
   // We don't need to load any synced and applied deleted entries, we can
   // in fact just purge them forever on startup.
@@ -98,12 +113,31 @@ class DirectoryBackingStore {
   // said handle.  Returns true on success, false if the sqlite open operation
   // did not succeed.
   bool OpenAndConfigureHandleHelper(sqlite3** handle) const;
+  // Initialize and destroy load_dbhandle_.  Broken out for testing.
+  bool BeginLoad();
+  void EndLoad();
 
   // Lazy creation of save_dbhandle_ for use by SaveChanges code path.
   sqlite3* LazyGetSaveHandle();
 
   // Drop all tables in preparation for reinitialization.
   void DropAllTables();
+
+  // Migration utilities.
+  bool AddColumn(const ColumnSpec* column);
+  bool RefreshColumns();
+  bool SetVersion(int version);
+  int GetVersion();
+  bool MigrateToSpecifics(const char* old_columns,
+                          const char* specifics_column,
+                          void (*handler_function)(
+                              SQLStatement* old_value_query,
+                              int old_value_column,
+                              sync_pb::EntitySpecifics* mutable_new_value));
+
+  // Individual version migrations.
+  bool MigrateVersion67To68();
+  bool MigrateVersion68To69();
 
   // The handle to our sqlite on-disk store for initialization and loading, and
   // for saving changes periodically via SaveChanges, respectively.
@@ -116,6 +150,10 @@ class DirectoryBackingStore {
 
   std::string dir_name_;
   FilePath backing_filepath_;
+
+  // Set to true if migration left some old columns around that need to be
+  // discarded.
+  bool needs_column_refresh_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryBackingStore);
 };

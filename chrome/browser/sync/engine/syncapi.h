@@ -39,11 +39,13 @@
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCAPI_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "build/build_config.h"
 #include "chrome/browser/google_service_auth_error.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "googleurl/src/gurl.h"
 
 namespace browser_sync {
@@ -60,6 +62,11 @@ class MutableEntry;
 class ReadTransaction;
 class ScopedDirLookup;
 class WriteTransaction;
+}
+
+namespace sync_pb {
+class BookmarkSpecifics;
+class EntitySpecifics;
 }
 
 namespace sync_api {
@@ -104,18 +111,29 @@ class BaseNode {
   // Returns the title of the object.
   // Uniqueness of the title is not enforced on siblings -- it is not an error
   // for two children to share a title.
-  const std::wstring& GetTitle() const;
+  std::wstring GetTitle() const;
 
+  // Returns the model type of this object.  The model type is set at node
+  // creation time and is expected never to change.
+  syncable::ModelType GetModelType() const;
+
+  // Getter specific to the BOOKMARK datatype.  Returns protobuf
+  // data.  Can only be called if GetModelType() == BOOKMARK.
+  const sync_pb::BookmarkSpecifics& GetBookmarkSpecifics() const;
+
+  // Legacy, bookmark-specific getter that wraps GetBookmarkSpecifics() above.
   // Returns the URL of a bookmark object.
-  const GURL& GetURL() const;
+  // TODO(ncarter): Remove this datatype-specific accessor.
+  GURL GetURL() const;
 
-  // Return a pointer to the byte data of the favicon image for this node.
-  // Will return NULL if there is no favicon data associated with this node.
-  // The length of the array is returned to the caller via |size_in_bytes|.
+  // Legacy, bookmark-specific getter that wraps GetBookmarkSpecifics() above.
+  // Fill in a vector with the byte data of this node's favicon.  Assumes
+  // that the node is a bookmark.
   // Favicons are expected to be PNG images, and though no verification is
   // done on the syncapi client of this, the server may reject favicon updates
   // that are invalid for whatever reason.
-  const unsigned char* GetFaviconBytes(size_t* size_in_bytes);
+  // TODO(ncarter): Remove this datatype-specific accessor.
+  void GetFaviconBytes(std::vector<unsigned char>* output) const;
 
   // Returns the local external ID associated with the node.
   int64 GetExternalId() const;
@@ -132,12 +150,6 @@ class BaseNode {
   // children, return 0.
   int64 GetFirstChildId() const;
 
-  // Get an array containing the IDs of this node's children.  The memory is
-  // owned by BaseNode and becomes invalid if GetChildIds() is called a second
-  // time on this node, or when the node is destroyed.  Return the array size
-  // in the child_count parameter.
-  const int64* GetChildIds(size_t* child_count) const;
-
   // These virtual accessors provide access to data members of derived classes.
   virtual const syncable::Entry* GetEntry() const = 0;
   virtual const BaseTransaction* GetTransaction() const = 0;
@@ -147,14 +159,8 @@ class BaseNode {
   virtual ~BaseNode();
 
  private:
-  struct BaseNodeInternal;
-
   // Node is meant for stack use only.
   void* operator new(size_t size);
-
-  // Provides storage for member functions that return pointers to class
-  // memory, e.g. C strings returned by GetTitle().
-  BaseNodeInternal* data_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseNode);
 };
@@ -173,17 +179,20 @@ class WriteNode : public BaseNode {
   // BaseNode implementation.
   virtual bool InitByIdLookup(int64 id);
 
-  // Create a new node with the specified parent and predecessor.  Use a NULL
-  // |predecessor| to indicate that this is to be the first child.
+  // Create a new node with the specified parent and predecessor.  |model_type|
+  // dictates the type of the item, and controls which EntitySpecifics proto
+  // extension can be used with this item.  Use a NULL |predecessor|
+  // to indicate that this is to be the first child.
   // |predecessor| must be a child of |new_parent| or NULL. Returns false on
   // failure.
-  bool InitByCreation(const BaseNode& parent, const BaseNode* predecessor);
+  bool InitByCreation(syncable::ModelType model_type,
+                      const BaseNode& parent,
+                      const BaseNode* predecessor);
 
   // These Set() functions correspond to the Get() functions of BaseNode.
   void SetIsFolder(bool folder);
   void SetTitle(const std::wstring& title);
-  void SetURL(const GURL& url);
-  void SetFaviconBytes(const unsigned char* bytes, size_t size_in_bytes);
+
   // External ID is a client-only field, so setting it doesn't cause the item to
   // be synced again.
   void SetExternalId(int64 external_id);
@@ -196,6 +205,16 @@ class WriteNode : public BaseNode {
   // be a child of |new_parent| or NULL.  Returns false on failure..
   bool SetPosition(const BaseNode& new_parent, const BaseNode* predecessor);
 
+  // Set the bookmark specifics (url and favicon).
+  // Should only be called if GetModelType() == BOOKMARK.
+  void SetBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics);
+
+  // Legacy, bookmark-specific setters that wrap SetBookmarkSpecifics() above.
+  // Should only be called if GetModelType() == BOOKMARK.
+  // TODO(ncarter): Remove these two datatype-specific accessors.
+  void SetURL(const GURL& url);
+  void SetFaviconBytes(const std::vector<unsigned char>& bytes);
+
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const;
 
@@ -206,6 +225,16 @@ class WriteNode : public BaseNode {
 
   // Helper to set the previous node.
   void PutPredecessor(const BaseNode* predecessor);
+
+  // Private helpers to set type-specific protobuf data.  These don't
+  // do any checking on the previous modeltype, so they can be used
+  // for internal initialization (you can use them to set the modeltype).
+  // Additionally, they will mark for syncing if the underlying value
+  // changes.
+  void PutBookmarkSpecificsAndMarkForSyncing(
+      const sync_pb::BookmarkSpecifics& new_value);
+  void PutSpecificsAndMarkForSyncing(
+      const sync_pb::EntitySpecifics& specifics);
 
   // Sets IS_UNSYNCED and SYNCING to ensure this entry is considered in an
   // upcoming commit pass.

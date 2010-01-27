@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/syncable/directory_event.h"
 #include "chrome/browser/sync/syncable/path_name_cmp.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/dbgq.h"
 #include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/row_iterator.h"
@@ -116,12 +117,8 @@ enum IsDelField {
 
 enum BitField {
   IS_DIR = IS_DEL + 1,
-  IS_BOOKMARK_OBJECT,
-
   SERVER_IS_DIR,
   SERVER_IS_DEL,
-  SERVER_IS_BOOKMARK_OBJECT,
-
   BIT_FIELDS_END
 };
 
@@ -135,9 +132,6 @@ enum StringField {
   NON_UNIQUE_NAME = STRING_FIELDS_BEGIN,
   // The server version of |NON_UNIQUE_NAME|.
   SERVER_NON_UNIQUE_NAME,
-  // For bookmark entries, the URL of the bookmark.
-  BOOKMARK_URL,
-  SERVER_BOOKMARK_URL,
 
   // A tag string which identifies this node as a particular top-level
   // permanent object.  The tag can be thought of as a unique key that
@@ -148,27 +142,25 @@ enum StringField {
 
 enum {
   STRING_FIELDS_COUNT = STRING_FIELDS_END - STRING_FIELDS_BEGIN,
-  BLOB_FIELDS_BEGIN = STRING_FIELDS_END
+  PROTO_FIELDS_BEGIN = STRING_FIELDS_END
 };
 
 // From looking at the sqlite3 docs, it's not directly stated, but it
 // seems the overhead for storing a NULL blob is very small.
-enum BlobField {
-  // For bookmark entries, the favicon data.  These will be NULL for
-  // non-bookmark items.
-  BOOKMARK_FAVICON = BLOB_FIELDS_BEGIN,
-  SERVER_BOOKMARK_FAVICON,
-  BLOB_FIELDS_END,
+enum ProtoField {
+  SPECIFICS = PROTO_FIELDS_BEGIN,
+  SERVER_SPECIFICS,
+  PROTO_FIELDS_END,
 };
 
 enum {
-  BLOB_FIELDS_COUNT = BLOB_FIELDS_END - BLOB_FIELDS_BEGIN
+  PROTO_FIELDS_COUNT = PROTO_FIELDS_END - PROTO_FIELDS_BEGIN
 };
 
 enum {
-  FIELD_COUNT = BLOB_FIELDS_END,
+  FIELD_COUNT = PROTO_FIELDS_END,
   // Past this point we have temporaries, stored in memory only.
-  BEGIN_TEMPS = BLOB_FIELDS_END,
+  BEGIN_TEMPS = PROTO_FIELDS_END,
   BIT_TEMPS_BEGIN = BEGIN_TEMPS,
 };
 
@@ -225,7 +217,7 @@ typedef std::set<std::string> AttributeKeySet;
 struct EntryKernel {
  private:
   std::string string_fields[STRING_FIELDS_COUNT];
-  Blob blob_fields[BLOB_FIELDS_COUNT];
+  sync_pb::EntitySpecifics specifics_fields[PROTO_FIELDS_COUNT];
   int64 int64_fields[INT64_FIELDS_COUNT];
   Id id_fields[ID_FIELDS_COUNT];
   std::bitset<BIT_FIELDS_COUNT> bit_fields;
@@ -269,8 +261,8 @@ struct EntryKernel {
   inline void put(StringField field, const std::string& value) {
     string_fields[field - STRING_FIELDS_BEGIN] = value;
   }
-  inline void put(BlobField field, const Blob& value) {
-    blob_fields[field - BLOB_FIELDS_BEGIN] = value;
+  inline void put(ProtoField field, const sync_pb::EntitySpecifics& value) {
+    specifics_fields[field - PROTO_FIELDS_BEGIN].CopyFrom(value);
   }
   inline void put(BitTemp field, bool value) {
     bit_temps[field - BIT_TEMPS_BEGIN] = value;
@@ -301,8 +293,8 @@ struct EntryKernel {
   inline const std::string& ref(StringField field) const {
     return string_fields[field - STRING_FIELDS_BEGIN];
   }
-  inline const Blob& ref(BlobField field) const {
-    return blob_fields[field - BLOB_FIELDS_BEGIN];
+  inline const sync_pb::EntitySpecifics& ref(ProtoField field) const {
+    return specifics_fields[field - PROTO_FIELDS_BEGIN];
   }
   inline bool ref(BitTemp field) const {
     return bit_temps[field - BIT_TEMPS_BEGIN];
@@ -312,8 +304,8 @@ struct EntryKernel {
   inline std::string& mutable_ref(StringField field) {
     return string_fields[field - STRING_FIELDS_BEGIN];
   }
-  inline Blob& mutable_ref(BlobField field) {
-    return blob_fields[field - BLOB_FIELDS_BEGIN];
+  inline sync_pb::EntitySpecifics& mutable_ref(ProtoField field) {
+    return specifics_fields[field - PROTO_FIELDS_BEGIN];
   }
   inline Id& mutable_ref(IdField field) {
     return id_fields[field - ID_FIELDS_BEGIN];
@@ -369,13 +361,22 @@ class Entry {
     return kernel_->ref(field);
   }
   const std::string& Get(StringField field) const;
-  inline Blob Get(BlobField field) const {
+  inline const sync_pb::EntitySpecifics& Get(ProtoField field) const {
     DCHECK(kernel_);
     return kernel_->ref(field);
   }
   inline bool Get(BitTemp field) const {
     DCHECK(kernel_);
     return kernel_->ref(field);
+  }
+
+  ModelType GetServerModelType() const;
+  ModelType GetModelType() const;
+
+  // If this returns false, we shouldn't bother maintaining
+  // a position value (sibling ordering) for this item.
+  bool ShouldMaintainPosition() const {
+    return GetModelType() == BOOKMARKS;
   }
 
   inline bool ExistsOnClientBecauseNameIsNonEmpty() const {
@@ -444,8 +445,15 @@ class MutableEntry : public Entry {
   bool Put(StringField field, const std::string& value);
   bool Put(BaseVersion field, int64 value);
 
-  inline bool Put(BlobField field, const Blob& value) {
-    return PutField(field, value);
+  inline bool Put(ProtoField field, const sync_pb::EntitySpecifics& value) {
+    DCHECK(kernel_);
+    // TODO(ncarter): This is unfortunately heavyweight.  Can we do
+    // better?
+    if (kernel_->ref(field).SerializeAsString() != value.SerializeAsString()) {
+      kernel_->put(field, value);
+      kernel_->mark_dirty();
+    }
+    return true;
   }
   inline bool Put(BitField field, bool value) {
     return PutField(field, value);

@@ -33,16 +33,14 @@ using base::TimeDelta;
 using sync_pb::ClientCommand;
 using syncable::Blob;
 using syncable::IS_UNAPPLIED_UPDATE;
-using syncable::SERVER_BOOKMARK_FAVICON;
-using syncable::SERVER_BOOKMARK_URL;
 using syncable::SERVER_CTIME;
-using syncable::SERVER_IS_BOOKMARK_OBJECT;
 using syncable::SERVER_IS_DEL;
 using syncable::SERVER_IS_DIR;
 using syncable::SERVER_MTIME;
 using syncable::SERVER_NON_UNIQUE_NAME;
 using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
+using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
 using syncable::SYNCER;
 using syncable::ScopedDirLookup;
@@ -294,10 +292,8 @@ void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest) {
   dest->Put(SERVER_VERSION, src->Get(SERVER_VERSION));
   dest->Put(SERVER_IS_DIR, src->Get(SERVER_IS_DIR));
   dest->Put(SERVER_IS_DEL, src->Get(SERVER_IS_DEL));
-  dest->Put(SERVER_IS_BOOKMARK_OBJECT, src->Get(SERVER_IS_BOOKMARK_OBJECT));
   dest->Put(IS_UNAPPLIED_UPDATE, src->Get(IS_UNAPPLIED_UPDATE));
-  dest->Put(SERVER_BOOKMARK_URL, src->Get(SERVER_BOOKMARK_URL));
-  dest->Put(SERVER_BOOKMARK_FAVICON, src->Get(SERVER_BOOKMARK_FAVICON));
+  dest->Put(SERVER_SPECIFICS, src->Get(SERVER_SPECIFICS));
   dest->Put(SERVER_POSITION_IN_PARENT, src->Get(SERVER_POSITION_IN_PARENT));
 }
 
@@ -309,10 +305,8 @@ void ClearServerData(syncable::MutableEntry* entry) {
   entry->Put(SERVER_VERSION, 0);
   entry->Put(SERVER_IS_DIR, false);
   entry->Put(SERVER_IS_DEL, false);
-  entry->Put(SERVER_IS_BOOKMARK_OBJECT, false);
   entry->Put(IS_UNAPPLIED_UPDATE, false);
-  entry->Put(SERVER_BOOKMARK_URL, "");
-  entry->Put(SERVER_BOOKMARK_FAVICON, Blob());
+  entry->Put(SERVER_SPECIFICS, sync_pb::EntitySpecifics::default_instance());
   entry->Put(SERVER_POSITION_IN_PARENT, 0);
 }
 

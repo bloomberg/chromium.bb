@@ -72,7 +72,7 @@ class TestModelAssociator : public BookmarkModelAssociator {
     }
     sync_api::WriteNode node(&trans);
     // Create new fake tagged nodes at the end of the ordering.
-    node.InitByCreation(root, predecessor);
+    node.InitByCreation(syncable::BOOKMARKS, root, predecessor);
     node.SetIsFolder(true);
     node.SetTitle(tag_wide);
     node.SetExternalId(0);
@@ -146,12 +146,13 @@ class FakeServerChange {
     EXPECT_TRUE(parent.InitByIdLookup(parent_id));
     sync_api::WriteNode node(trans_);
     if (predecessor_id == 0) {
-      EXPECT_TRUE(node.InitByCreation(parent, NULL));
+      EXPECT_TRUE(node.InitByCreation(syncable::BOOKMARKS, parent, NULL));
     } else {
       sync_api::ReadNode predecessor(trans_);
       EXPECT_TRUE(predecessor.InitByIdLookup(predecessor_id));
       EXPECT_EQ(predecessor.GetParentId(), parent.GetId());
-      EXPECT_TRUE(node.InitByCreation(parent, &predecessor));
+      EXPECT_TRUE(node.InitByCreation(syncable::BOOKMARKS, parent,
+                                      &predecessor));
     }
     EXPECT_EQ(node.GetPredecessorId(), predecessor_id);
     EXPECT_EQ(node.GetParentId(), parent_id);

@@ -59,8 +59,7 @@ VerifyResult VerifyUpdatesCommand::VerifyUpdate(
 
   const bool deleted = entry.has_deleted() && entry.deleted();
   const bool is_directory = entry.IsFolder();
-  const bool is_bookmark =
-      SyncerUtil::GetModelType(entry) == syncable::BOOKMARKS;
+  const syncable::ModelType model_type = entry.GetModelType();
 
   if (!id.ServerKnows()) {
     LOG(ERROR) << "Illegal negative id in received updates";
@@ -91,7 +90,7 @@ VerifyResult VerifyUpdatesCommand::VerifyUpdate(
   // consistency rules.
   if (VERIFY_UNDECIDED == result) {
     result = SyncerUtil::VerifyUpdateConsistency(trans, entry, &same_id,
-      deleted, is_directory, is_bookmark);
+        deleted, is_directory, model_type);
   }
 
   if (VERIFY_UNDECIDED == result)

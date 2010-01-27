@@ -281,8 +281,9 @@ bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
   bool success = false;
   if (index == 0) {
     // Insert into first position.
-    success = (operation == CREATE) ? dst->InitByCreation(sync_parent, NULL) :
-                                      dst->SetPosition(sync_parent, NULL);
+    success = (operation == CREATE) ?
+        dst->InitByCreation(syncable::BOOKMARKS, sync_parent, NULL) :
+        dst->SetPosition(sync_parent, NULL);
     if (success) {
       DCHECK_EQ(dst->GetParentId(), sync_parent.GetId());
       DCHECK_EQ(dst->GetId(), sync_parent.GetFirstChildId());
@@ -297,7 +298,7 @@ bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
       return false;
     }
     success = (operation == CREATE) ?
-        dst->InitByCreation(sync_parent, &sync_prev) :
+        dst->InitByCreation(syncable::BOOKMARKS, sync_parent, &sync_prev) :
         dst->SetPosition(sync_parent, &sync_prev);
     if (success) {
       DCHECK_EQ(dst->GetParentId(), sync_parent.GetId());
@@ -498,9 +499,9 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
     sync_api::BaseNode* sync_node,
     const BookmarkNode* bookmark_node,
     Profile* profile) {
-  size_t icon_size = 0;
-  const unsigned char* icon_bytes = sync_node->GetFaviconBytes(&icon_size);
-  if (!icon_size || !icon_bytes)
+  std::vector<unsigned char> icon_bytes_vector;
+  sync_node->GetFaviconBytes(&icon_bytes_vector);
+  if (icon_bytes_vector.empty())
     return false;
 
   // Registering a favicon requires that we provide a source URL, but we
@@ -509,9 +510,6 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
   // is used as a key in the history's thumbnail DB, this gives us a value
   // which does not collide with others.
   GURL fake_icon_url = bookmark_node->GetURL();
-
-  std::vector<unsigned char> icon_bytes_vector(icon_bytes,
-                                               icon_bytes + icon_size);
 
   HistoryService* history =
       profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
@@ -534,7 +532,7 @@ void BookmarkChangeProcessor::SetSyncNodeFavicon(
   std::vector<unsigned char> favicon_bytes;
   EncodeFavicon(bookmark_node, model, &favicon_bytes);
   if (!favicon_bytes.empty())
-    sync_node->SetFaviconBytes(&favicon_bytes[0], favicon_bytes.size());
+    sync_node->SetFaviconBytes(favicon_bytes);
 }
 
 }  // namespace browser_sync

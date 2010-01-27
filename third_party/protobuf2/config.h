@@ -1,11 +1,17 @@
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* the name of <hash_set> */
+#define HASH_MAP_CLASS hash_map
+
 /* the location of <hash_map> */
 #define HASH_MAP_H <ext/hash_map>
 
 /* the namespace of hash_map/hash_set */
 #define HASH_NAMESPACE __gnu_cxx
+
+/* the name of <hash_set> */
+#define HASH_SET_CLASS hash_set
 
 /* the location of <hash_set> */
 #define HASH_SET_H <ext/hash_set>
@@ -86,13 +92,13 @@
 #define PACKAGE_NAME "Protocol Buffers"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Protocol Buffers 2.1.1-pre"
+#define PACKAGE_STRING "Protocol Buffers 2.3.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "protobuf"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.1.1-pre"
+#define PACKAGE_VERSION "2.3.0"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -102,7 +108,7 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "2.1.1-pre"
+#define VERSION "2.3.0"
 
 /* Define to 1 if on AIX 3.
    System headers sometimes define this.

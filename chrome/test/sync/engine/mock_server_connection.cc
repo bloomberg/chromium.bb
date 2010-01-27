@@ -7,6 +7,7 @@
 #include "chrome/test/sync/engine/mock_server_connection.h"
 
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +47,8 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
       throttling_(false),
       fail_non_periodic_get_updates_(false),
       client_command_(NULL),
-      next_position_in_parent_(2) {
+      next_position_in_parent_(2),
+      use_legacy_bookmarks_protocol_(false) {
     server_reachable_ = true;
 };
 
@@ -152,18 +154,24 @@ void MockConnectionManager::ResetUpdates() {
   updates_.Clear();
 }
 
-namespace {
+void MockConnectionManager::AddDefaultBookmarkData(sync_pb::SyncEntity* entity,
+                                                   bool is_folder) {
+  if (use_legacy_bookmarks_protocol_) {
+    sync_pb::SyncEntity_BookmarkData* data = entity->mutable_bookmarkdata();
+    data->set_bookmark_folder(is_folder);
 
-void AddDefaultBookmarkData(SyncEntity* entity, bool is_folder) {
-  sync_pb::SyncEntity_BookmarkData* data = entity->mutable_bookmarkdata();
-  data->set_bookmark_folder(is_folder);
-
-  if (!is_folder) {
-    data->set_bookmark_url("http://google.com");
+    if (!is_folder) {
+      data->set_bookmark_url("http://google.com");
+    }
+  } else {
+    entity->set_folder(is_folder);
+    entity->mutable_specifics()->MutableExtension(sync_pb::bookmark);
+    if (!is_folder) {
+      entity->mutable_specifics()->MutableExtension(sync_pb::bookmark)->
+          set_url("http://google.com");
+    }
   }
 }
-
-}  // namespace
 
 SyncEntity* MockConnectionManager::AddUpdateDirectory(int id,
                                                       int parent_id,
@@ -199,6 +207,7 @@ SyncEntity* MockConnectionManager::AddUpdateFull(string id, string parent_id,
   SyncEntity* ent = updates_.add_entries();
   ent->set_id_string(id);
   ent->set_parent_id_string(parent_id);
+  ent->set_non_unique_name(name);
   ent->set_name(name);
   ent->set_version(version);
   ent->set_sync_timestamp(sync_ts);

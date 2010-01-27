@@ -224,8 +224,8 @@ class Connection {
   // you having to manage unique names. See StatementID above for more.
   //
   // Example:
-  //   sql::Statement stmt = connection_.GetCachedStatement(
-  //       SQL_FROM_HERE, "SELECT * FROM foo");
+  //   sql::Statement stmt(connection_.GetCachedStatement(
+  //       SQL_FROM_HERE, "SELECT * FROM foo"));
   //   if (!stmt)
   //     return false;  // Error creating statement.
   scoped_refptr<StatementRef> GetCachedStatement(const StatementID& id,

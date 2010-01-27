@@ -276,8 +276,8 @@ int SQLStatement::prepare(sqlite3* db, const char* sql, int sql_len) {
   DCHECK(!stmt_);
   int rv = sqlite3_prepare_v2(db, sql, sql_len, &stmt_, NULL);
   if (rv != SQLITE_OK) {
-   SQLErrorHandler* error_handler = GetErrorHandlerFactory()->Make();
-   return error_handler->HandleError(rv, db_handle());
+    SQLErrorHandler* error_handler = GetErrorHandlerFactory()->Make();
+    return error_handler->HandleError(rv, db);
   }
   return rv;
 }

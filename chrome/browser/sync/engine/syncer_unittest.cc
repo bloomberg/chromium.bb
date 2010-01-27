@@ -20,8 +20,9 @@
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/process_updates_command.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
+#include "chrome/browser/sync/engine/syncer_util.h"
+#include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -65,7 +66,6 @@ using syncable::GET_BY_HANDLE;
 using syncable::GET_BY_ID;
 using syncable::GET_BY_TAG;
 using syncable::ID;
-using syncable::IS_BOOKMARK_OBJECT;
 using syncable::IS_DEL;
 using syncable::IS_DIR;
 using syncable::IS_UNAPPLIED_UPDATE;
@@ -80,8 +80,10 @@ using syncable::SERVER_IS_DEL;
 using syncable::SERVER_NON_UNIQUE_NAME;
 using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
+using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
 using syncable::SINGLETON_TAG;
+using syncable::SPECIFICS;
 using syncable::UNITTEST;
 
 using sessions::ConflictProgress;
@@ -205,6 +207,10 @@ class SyncerTest : public testing::Test,
     ExtendedAttributeKey key(entry->Get(META_HANDLE), "DATA");
     MutableExtendedAttribute attr(trans, CREATE, key);
     attr.mutable_value()->swap(test_value);
+    sync_pb::EntitySpecifics specifics;
+    specifics.MutableExtension(sync_pb::bookmark)->set_url("http://demo/");
+    specifics.MutableExtension(sync_pb::bookmark)->set_favicon("PNG");
+    entry->Put(syncable::SPECIFICS, specifics);
     entry->Put(syncable::IS_UNSYNCED, true);
   }
   void VerifyTestDataInEntry(BaseTransaction* trans, Entry* entry) {
@@ -215,7 +221,15 @@ class SyncerTest : public testing::Test,
     ExtendedAttribute attr(trans, GET_BY_HANDLE, key);
     EXPECT_FALSE(attr.is_deleted());
     EXPECT_TRUE(test_value == attr.value());
+    VerifyTestBookmarkDataInEntry(entry);
   }
+  void VerifyTestBookmarkDataInEntry(Entry* entry) {
+    const sync_pb::EntitySpecifics& specifics = entry->Get(syncable::SPECIFICS);
+    EXPECT_TRUE(specifics.HasExtension(sync_pb::bookmark));
+    EXPECT_EQ("PNG", specifics.GetExtension(sync_pb::bookmark).favicon());
+    EXPECT_EQ("http://demo/", specifics.GetExtension(sync_pb::bookmark).url());
+  }
+
   void SyncRepeatedlyToTriggerConflictResolution(SyncSession* session) {
     // We should trigger after less than 6 syncs, but extra does no harm.
     for (int i = 0 ; i < 6 ; ++i)
@@ -227,7 +241,11 @@ class SyncerTest : public testing::Test,
     for (int i = 0 ; i < 12 ; ++i)
       syncer_->SyncShare(session);
   }
-
+  sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
+    sync_pb::EntitySpecifics result;
+    result.MutableExtension(sync_pb::bookmark);
+    return result;
+  }
   // Enumeration of alterations to entries for commit ordering tests.
   enum EntryFeature {
     LIST_END = 0,  // Denotes the end of the list of features from below.
@@ -251,6 +269,7 @@ class SyncerTest : public testing::Test,
   void RunCommitOrderingTest(CommitOrderingTest* test) {
     ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
     ASSERT_TRUE(dir.good());
+
     map<int, syncable::Id> expected_positions;
     {  // Transaction scope.
       WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
@@ -264,6 +283,7 @@ class SyncerTest : public testing::Test,
         string utf8_name = test->id.GetServerId();
         string name(utf8_name.begin(), utf8_name.end());
         MutableEntry entry(&trans, CREATE, test->parent_id, name);
+
         entry.Put(syncable::ID, test->id);
         if (test->id.ServerKnows()) {
           entry.Put(BASE_VERSION, 5);
@@ -272,6 +292,7 @@ class SyncerTest : public testing::Test,
         }
         entry.Put(syncable::IS_DIR, true);
         entry.Put(syncable::IS_UNSYNCED, true);
+        entry.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
         // Set the time to 30 seconds in the future to reduce the chance of
         // flaky tests.
         int64 now_server_time = ClientTimeToServerTime(syncable::Now());
@@ -351,6 +372,7 @@ class SyncerTest : public testing::Test,
     EXPECT_TRUE(entry.good());
     entry.Put(syncable::IS_UNSYNCED, true);
     entry.Put(syncable::IS_DIR, true);
+    entry.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     entry.Put(syncable::BASE_VERSION, id.ServerKnows() ? 1 : 0);
     entry.Put(syncable::ID, id);
     return entry.Get(META_HANDLE);
@@ -413,11 +435,11 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
     MutableEntry entry_c(&wtrans, GET_BY_HANDLE, handle_c);
     MutableEntry entry_d(&wtrans, GET_BY_HANDLE, handle_d);
     MutableEntry entry_e(&wtrans, GET_BY_HANDLE, handle_e);
-    entry_x.Put(IS_BOOKMARK_OBJECT, true);
-    entry_b.Put(IS_BOOKMARK_OBJECT, true);
-    entry_c.Put(IS_BOOKMARK_OBJECT, true);
-    entry_d.Put(IS_BOOKMARK_OBJECT, true);
-    entry_e.Put(IS_BOOKMARK_OBJECT, true);
+    entry_x.Put(SPECIFICS, DefaultBookmarkSpecifics());
+    entry_b.Put(SPECIFICS, DefaultBookmarkSpecifics());
+    entry_c.Put(SPECIFICS, DefaultBookmarkSpecifics());
+    entry_d.Put(SPECIFICS, DefaultBookmarkSpecifics());
+    entry_e.Put(SPECIFICS, DefaultBookmarkSpecifics());
     entry_b.Put(PARENT_ID, entry_x.Get(ID));
     entry_c.Put(PARENT_ID, entry_x.Get(ID));
     entry_c.PutPredecessor(entry_b.Get(ID));
@@ -495,6 +517,7 @@ TEST_F(SyncerTest, TestGetUnsyncedAndSimpleCommit) {
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     parent.Put(syncable::BASE_VERSION, 1);
     parent.Put(syncable::ID, parent_id_);
     MutableEntry child(&wtrans, syncable::CREATE, parent_id_, "Pete");
@@ -661,6 +684,7 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNesting) {
       ASSERT_TRUE(parent.good());
       parent.Put(syncable::IS_UNSYNCED, true);
       parent.Put(syncable::IS_DIR, true);
+      parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
       parent.Put(syncable::ID, ids_.FromNumber(100));
       parent.Put(syncable::BASE_VERSION, 1);
       MutableEntry child(&wtrans, syncable::CREATE, ids_.FromNumber(100),
@@ -668,6 +692,7 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNesting) {
       ASSERT_TRUE(child.good());
       child.Put(syncable::IS_UNSYNCED, true);
       child.Put(syncable::IS_DIR, true);
+      child.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
       child.Put(syncable::ID, ids_.FromNumber(101));
       child.Put(syncable::BASE_VERSION, 1);
       MutableEntry grandchild(&wtrans, syncable::CREATE, ids_.FromNumber(101),
@@ -675,6 +700,7 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNesting) {
       ASSERT_TRUE(grandchild.good());
       grandchild.Put(syncable::ID, ids_.FromNumber(102));
       grandchild.Put(syncable::IS_UNSYNCED, true);
+      grandchild.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
       grandchild.Put(syncable::BASE_VERSION, 1);
     }
     {
@@ -736,11 +762,13 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNewItems) {
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     parent.Put(syncable::ID, parent_id_);
     MutableEntry child(&wtrans, syncable::CREATE, wtrans.root_id(), "2");
     ASSERT_TRUE(child.good());
     child.Put(syncable::IS_UNSYNCED, true);
     child.Put(syncable::IS_DIR, true);
+    child.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     child.Put(syncable::ID, child_id_);
     parent.Put(syncable::BASE_VERSION, 1);
     child.Put(syncable::BASE_VERSION, 1);
@@ -751,11 +779,13 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNewItems) {
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     parent.Put(syncable::ID, ids_.FromNumber(102));
     MutableEntry child(&wtrans, syncable::CREATE, parent_id_, "B");
     ASSERT_TRUE(child.good());
     child.Put(syncable::IS_UNSYNCED, true);
     child.Put(syncable::IS_DIR, true);
+    child.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     child.Put(syncable::ID, ids_.FromNumber(-103));
     parent.Put(syncable::BASE_VERSION, 1);
   }
@@ -765,11 +795,13 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNewItems) {
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     parent.Put(syncable::ID, ids_.FromNumber(-104));
     MutableEntry child(&wtrans, syncable::CREATE, child_id_, "B");
     ASSERT_TRUE(child.good());
     child.Put(syncable::IS_UNSYNCED, true);
     child.Put(syncable::IS_DIR, true);
+    child.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     child.Put(syncable::ID, ids_.FromNumber(105));
     child.Put(syncable::BASE_VERSION, 1);
   }
@@ -798,6 +830,7 @@ TEST_F(SyncerTest, TestCommitListOrderingCounterexample) {
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     parent.Put(syncable::ID, parent_id_);
     MutableEntry child1(&wtrans, syncable::CREATE, parent_id_, "1");
     ASSERT_TRUE(child1.good());
@@ -836,6 +869,7 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParent) {
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     parent.Put(syncable::ID, parent_id_);
     parent.Put(syncable::BASE_VERSION, 1);
   }
@@ -848,12 +882,14 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParent) {
     ASSERT_TRUE(parent2.good());
     parent2.Put(syncable::IS_UNSYNCED, true);
     parent2.Put(syncable::IS_DIR, true);
+    parent2.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     parent2.Put(syncable::ID, parent2_id);
 
     MutableEntry child(&wtrans, syncable::CREATE, parent2_id, child_name);
     ASSERT_TRUE(child.good());
     child.Put(syncable::IS_UNSYNCED, true);
     child.Put(syncable::IS_DIR, true);
+    child.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     child.Put(syncable::ID, child_id);
     child.Put(syncable::BASE_VERSION, 1);
   }
@@ -906,6 +942,7 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParentAndChild) {
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     parent.Put(syncable::ID, parent_id_);
     parent.Put(syncable::BASE_VERSION, 1);
   }
@@ -919,6 +956,7 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParentAndChild) {
     ASSERT_TRUE(parent2.good());
     parent2.Put(syncable::IS_UNSYNCED, true);
     parent2.Put(syncable::IS_DIR, true);
+    parent2.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
 
     parent2.Put(syncable::ID, parent2_local_id);
     meta_handle_a = parent2.Get(syncable::META_HANDLE);
@@ -926,6 +964,7 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParentAndChild) {
     ASSERT_TRUE(child.good());
     child.Put(syncable::IS_UNSYNCED, true);
     child.Put(syncable::IS_DIR, true);
+    child.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     child.Put(syncable::ID, child_local_id);
     meta_handle_b = child.Get(syncable::META_HANDLE);
   }
@@ -1197,6 +1236,7 @@ TEST_F(SyncerTest, CommitTimeRename) {
     MutableEntry parent(&trans, CREATE, root_id_, "Folder");
     ASSERT_TRUE(parent.good());
     parent.Put(IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     parent.Put(IS_UNSYNCED, true);
     metahandle_folder = parent.Get(META_HANDLE);
 
@@ -1246,6 +1286,7 @@ TEST_F(SyncerTest, CommitTimeRenameI18N) {
     MutableEntry parent(&trans, CREATE, root_id_, "Folder");
     ASSERT_TRUE(parent.good());
     parent.Put(IS_DIR, true);
+    parent.Put(SPECIFICS, DefaultBookmarkSpecifics());
     parent.Put(IS_UNSYNCED, true);
     metahandle = parent.Get(META_HANDLE);
   }
@@ -1279,6 +1320,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
     MutableEntry entry(&trans, CREATE, trans.root_id(), "new_folder");
     ASSERT_TRUE(entry.good());
     entry.Put(IS_DIR, true);
+    entry.Put(SPECIFICS, DefaultBookmarkSpecifics());
     entry.Put(IS_UNSYNCED, true);
     metahandle_folder = entry.Get(META_HANDLE);
   }
@@ -1604,6 +1646,7 @@ class EntryCreatedInNewFolderTest : public SyncerTest {
     CHECK(entry2.good());
     entry2.Put(syncable::IS_DIR, true);
     entry2.Put(syncable::IS_UNSYNCED, true);
+    entry2.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
   }
 };
 
@@ -1617,6 +1660,7 @@ TEST_F(EntryCreatedInNewFolderTest, EntryCreatedInNewFolderMidSync) {
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::IS_DIR, true);
     entry.Put(syncable::IS_UNSYNCED, true);
+    entry.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
   }
 
   mock_server_->SetMidCommitCallback(
@@ -1697,24 +1741,28 @@ TEST_F(SyncerTest, DoublyChangedWithResolver) {
     parent.Put(syncable::IS_DIR, true);
     parent.Put(syncable::ID, parent_id_);
     parent.Put(syncable::BASE_VERSION, 5);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     MutableEntry child(&wtrans, syncable::CREATE, parent_id_, "Pete.htm");
     ASSERT_TRUE(child.good());
     child.Put(syncable::ID, child_id_);
     child.Put(syncable::BASE_VERSION, 10);
     WriteTestDataToEntry(&wtrans, &child);
   }
-  mock_server_->AddUpdateBookmark(child_id_, parent_id_, "Pete.htm", 11, 10);
+  mock_server_->AddUpdateBookmark(child_id_, parent_id_, "Pete2.htm", 11, 10);
   mock_server_->set_conflict_all_commits(true);
   LoopSyncShare(syncer_);
   syncable::Directory::ChildHandles children;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
     dir->GetChildHandles(&trans, parent_id_, &children);
-    // We expect the conflict resolver to just clobber the entry.
+    // We expect the conflict resolver to preserve the local entry.
     Entry child(&trans, syncable::GET_BY_ID, child_id_);
     ASSERT_TRUE(child.good());
     EXPECT_TRUE(child.Get(syncable::IS_UNSYNCED));
     EXPECT_FALSE(child.Get(syncable::IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(child.Get(SPECIFICS).HasExtension(sync_pb::bookmark));
+    EXPECT_EQ("Pete.htm", child.Get(NON_UNIQUE_NAME));
+    VerifyTestBookmarkDataInEntry(&child);
   }
 
   // Only one entry, since we just overwrite one.
@@ -1735,6 +1783,7 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
     ASSERT_TRUE(entry.good());
     EXPECT_FALSE(entry.Get(ID).ServerKnows());
     entry.Put(syncable::IS_DIR, true);
+    entry.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     entry.Put(syncable::IS_UNSYNCED, true);
     entry.Put(syncable::MTIME, test_time);
     entry_metahandle = entry.Get(META_HANDLE);
@@ -1777,13 +1826,13 @@ TEST_F(SyncerTest, ParentAndChildBothMatch) {
     parent.Put(IS_UNSYNCED, true);
     parent.Put(ID, parent_id);
     parent.Put(BASE_VERSION, 1);
-    parent.Put(IS_BOOKMARK_OBJECT, true);
+    parent.Put(SPECIFICS, DefaultBookmarkSpecifics());
 
     MutableEntry child(&wtrans, CREATE, parent.Get(ID), "test.htm");
     ASSERT_TRUE(child.good());
     child.Put(ID, child_id);
     child.Put(BASE_VERSION, 1);
-    child.Put(IS_BOOKMARK_OBJECT, true);
+    child.Put(SPECIFICS, DefaultBookmarkSpecifics());
     WriteTestDataToEntry(&wtrans, &child);
   }
   mock_server_->AddUpdateDirectory(parent_id, root_id_, "Folder", 10, 10);
@@ -1844,6 +1893,8 @@ TEST_F(SyncerTest, UnappliedUpdateDuringCommit) {
     entry.Put(SERVER_PARENT_ID, ids_.FromNumber(9999));  // Bad parent.
     entry.Put(IS_UNSYNCED, true);
     entry.Put(IS_UNAPPLIED_UPDATE, true);
+    entry.Put(SPECIFICS, DefaultBookmarkSpecifics());
+    entry.Put(SERVER_SPECIFICS, DefaultBookmarkSpecifics());
     entry.Put(IS_DEL, false);
   }
   syncer_->SyncShare(session_.get());
@@ -1875,6 +1926,7 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
     MutableEntry entry(&trans, CREATE, trans.root_id(), "existing");
     ASSERT_TRUE(entry.good());
     entry.Put(IS_DIR, true);
+    entry.Put(SPECIFICS, DefaultBookmarkSpecifics());
     entry.Put(IS_UNSYNCED, true);
     existing_metahandle = entry.Get(META_HANDLE);
   }
@@ -1884,6 +1936,7 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
     MutableEntry newfolder(&trans, CREATE, trans.root_id(), "new");
     ASSERT_TRUE(newfolder.good());
     newfolder.Put(IS_DIR, true);
+    newfolder.Put(SPECIFICS, DefaultBookmarkSpecifics());
     newfolder.Put(IS_UNSYNCED, true);
 
     MutableEntry existing(&trans, GET_BY_HANDLE, existing_metahandle);
@@ -1912,6 +1965,8 @@ TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {
     MutableEntry newfolder(&trans, CREATE, ids_.FromNumber(1), "local");
     ASSERT_TRUE(newfolder.good());
     newfolder.Put(IS_UNSYNCED, true);
+    newfolder.Put(IS_DIR, true);
+    newfolder.Put(SPECIFICS, DefaultBookmarkSpecifics());
     newfolder_metahandle = newfolder.Get(META_HANDLE);
   }
   mock_server_->AddUpdateDirectory(1, 0, "bob", 2, 20);
@@ -2004,6 +2059,7 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo) {
       MutableEntry e(&trans, CREATE, trans.root_id(), name);
       e.Put(IS_UNSYNCED, true);
       e.Put(IS_DIR, true);
+      e.Put(SPECIFICS, DefaultBookmarkSpecifics());
     }
   }
   uint32 num_loops = 0;
@@ -2107,6 +2163,7 @@ TEST_F(SyncerTest, NewEntryAndAlteredServerEntrySharePath) {
     local_folder_id = new_entry.Get(ID);
     local_folder_handle = new_entry.Get(META_HANDLE);
     new_entry.Put(IS_UNSYNCED, true);
+    new_entry.Put(SPECIFICS, DefaultBookmarkSpecifics());
     MutableEntry old(&wtrans, GET_BY_ID, ids_.FromNumber(1));
     ASSERT_TRUE(old.good());
     WriteTestDataToEntry(&wtrans, &old);
@@ -2115,7 +2172,117 @@ TEST_F(SyncerTest, NewEntryAndAlteredServerEntrySharePath) {
   mock_server_->set_conflict_all_commits(true);
   syncer_->SyncShare(this);
   syncer_events_.clear();
+  {
+    // Update #20 should have been dropped in favor of the local version.
+    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry server(&wtrans, GET_BY_ID, ids_.FromNumber(1));
+    MutableEntry local(&wtrans, GET_BY_HANDLE, local_folder_handle);
+    ASSERT_TRUE(server.good());
+    ASSERT_TRUE(local.good());
+    EXPECT_TRUE(local.Get(META_HANDLE) != server.Get(META_HANDLE));
+    EXPECT_FALSE(server.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(local.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(server.Get(IS_UNSYNCED));
+    EXPECT_TRUE(local.Get(IS_UNSYNCED));
+    EXPECT_EQ("Foo.htm", server.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ("Bar.htm", local.Get(NON_UNIQUE_NAME));
+  }
+  // Allow local changes to commit.
+  mock_server_->set_conflict_all_commits(false);
+  syncer_->SyncShare(this);
+  syncer_events_.clear();
+
+  // Now add a server change to make the two names equal.  There should
+  // be no conflict with that, since names are not unique.
+  mock_server_->AddUpdateBookmark(1, 0, "Bar.htm", 30, 30);
+  syncer_->SyncShare(this);
+  syncer_events_.clear();
+  {
+    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry server(&wtrans, GET_BY_ID, ids_.FromNumber(1));
+    MutableEntry local(&wtrans, GET_BY_HANDLE, local_folder_handle);
+    ASSERT_TRUE(server.good());
+    ASSERT_TRUE(local.good());
+    EXPECT_TRUE(local.Get(META_HANDLE) != server.Get(META_HANDLE));
+    EXPECT_FALSE(server.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(local.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(server.Get(IS_UNSYNCED));
+    EXPECT_FALSE(local.Get(IS_UNSYNCED));
+    EXPECT_EQ("Bar.htm", server.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ("Bar.htm", local.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ("http://google.com",  // Default from AddUpdateBookmark.
+        server.Get(SPECIFICS).GetExtension(sync_pb::bookmark).url());
+  }
 }
+
+// Same as NewEntryAnddServerEntrySharePath, but using the old-style protocol.
+TEST_F(SyncerTest, NewEntryAndAlteredServerEntrySharePath_OldBookmarksProto) {
+  mock_server_->set_use_legacy_bookmarks_protocol(true);
+  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+  CHECK(dir.good());
+  mock_server_->AddUpdateBookmark(1, 0, "Foo.htm", 10, 10);
+  syncer_->SyncShare(this);
+  int64 local_folder_handle;
+  syncable::Id local_folder_id;
+  {
+    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry new_entry(&wtrans, CREATE, wtrans.root_id(), "Bar.htm");
+    ASSERT_TRUE(new_entry.good());
+    local_folder_id = new_entry.Get(ID);
+    local_folder_handle = new_entry.Get(META_HANDLE);
+    new_entry.Put(IS_UNSYNCED, true);
+    new_entry.Put(SPECIFICS, DefaultBookmarkSpecifics());
+    MutableEntry old(&wtrans, GET_BY_ID, ids_.FromNumber(1));
+    ASSERT_TRUE(old.good());
+    WriteTestDataToEntry(&wtrans, &old);
+  }
+  mock_server_->AddUpdateBookmark(1, 0, "Bar.htm", 20, 20);
+  mock_server_->set_conflict_all_commits(true);
+  syncer_->SyncShare(this);
+  syncer_events_.clear();
+  {
+    // Update #20 should have been dropped in favor of the local version.
+    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry server(&wtrans, GET_BY_ID, ids_.FromNumber(1));
+    MutableEntry local(&wtrans, GET_BY_HANDLE, local_folder_handle);
+    ASSERT_TRUE(server.good());
+    ASSERT_TRUE(local.good());
+    EXPECT_TRUE(local.Get(META_HANDLE) != server.Get(META_HANDLE));
+    EXPECT_FALSE(server.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(local.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(server.Get(IS_UNSYNCED));
+    EXPECT_TRUE(local.Get(IS_UNSYNCED));
+    EXPECT_EQ("Foo.htm", server.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ("Bar.htm", local.Get(NON_UNIQUE_NAME));
+  }
+  // Allow local changes to commit.
+  mock_server_->set_conflict_all_commits(false);
+  syncer_->SyncShare(this);
+  syncer_events_.clear();
+
+  // Now add a server change to make the two names equal.  There should
+  // be no conflict with that, since names are not unique.
+  mock_server_->AddUpdateBookmark(1, 0, "Bar.htm", 30, 30);
+  syncer_->SyncShare(this);
+  syncer_events_.clear();
+  {
+    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry server(&wtrans, GET_BY_ID, ids_.FromNumber(1));
+    MutableEntry local(&wtrans, GET_BY_HANDLE, local_folder_handle);
+    ASSERT_TRUE(server.good());
+    ASSERT_TRUE(local.good());
+    EXPECT_TRUE(local.Get(META_HANDLE) != server.Get(META_HANDLE));
+    EXPECT_FALSE(server.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(local.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(server.Get(IS_UNSYNCED));
+    EXPECT_FALSE(local.Get(IS_UNSYNCED));
+    EXPECT_EQ("Bar.htm", server.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ("Bar.htm", local.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ("http://google.com",  // Default from AddUpdateBookmark.
+        server.Get(SPECIFICS).GetExtension(sync_pb::bookmark).url());
+  }
+}
+
 
 // Circular links should be resolved by the server.
 TEST_F(SyncerTest, SiblingDirectoriesBecomeCircular) {
@@ -3075,10 +3242,12 @@ TEST_F(SyncerTest, DuplicateIDReturn) {
     ASSERT_TRUE(folder.good());
     folder.Put(IS_UNSYNCED, true);
     folder.Put(IS_DIR, true);
+    folder.Put(SPECIFICS, DefaultBookmarkSpecifics());
     MutableEntry folder2(&trans, CREATE, trans.root_id(), "fred");
     ASSERT_TRUE(folder2.good());
     folder2.Put(IS_UNSYNCED, false);
     folder2.Put(IS_DIR, true);
+    folder2.Put(SPECIFICS, DefaultBookmarkSpecifics());
     folder2.Put(BASE_VERSION, 3);
     folder2.Put(ID, syncable::Id::CreateFromServerId("mock_server:10000"));
   }
@@ -3158,7 +3327,7 @@ TEST_F(SyncerTest, ConflictResolverMergesLocalDeleteAndServerUpdate) {
     local_deleted.Put(IS_DEL, true);
     local_deleted.Put(IS_DIR, false);
     local_deleted.Put(IS_UNSYNCED, true);
-    local_deleted.Put(IS_BOOKMARK_OBJECT, true);
+    local_deleted.Put(SPECIFICS, DefaultBookmarkSpecifics());
   }
 
   mock_server_->AddUpdateBookmark(ids_.FromNumber(1), root_id_, "name", 10, 10);
@@ -3476,6 +3645,7 @@ TEST_F(SyncerTest, DirectoryCommitTest) {
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     in_root_id = parent.Get(syncable::ID);
     foo_metahandle = parent.Get(META_HANDLE);
 
@@ -3483,6 +3653,7 @@ TEST_F(SyncerTest, DirectoryCommitTest) {
     ASSERT_TRUE(child.good());
     child.Put(syncable::IS_UNSYNCED, true);
     child.Put(syncable::IS_DIR, true);
+    child.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     bar_metahandle = child.Get(META_HANDLE);
     in_dir_id = parent.Get(syncable::ID);
   }
@@ -3571,15 +3742,16 @@ TEST_F(SyncerTest, EnsureWeSendUpOldParent) {
       "folder_two", 1, 1);
   syncer_->SyncShare(this);
   {
-    // A moved entry should send an old parent.
+    // A moved entry should send an "old parent."
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, GET_BY_ID, folder_one_id);
     ASSERT_TRUE(entry.good());
     entry.Put(PARENT_ID, folder_two_id);
     entry.Put(IS_UNSYNCED, true);
-    // A new entry should send no parent.
+    // A new entry should send no "old parent."
     MutableEntry create(&trans, CREATE, trans.root_id(), "new_folder");
     create.Put(IS_UNSYNCED, true);
+    create.Put(SPECIFICS, DefaultBookmarkSpecifics());
   }
   syncer_->SyncShare(this);
   const sync_pb::CommitMessage& commit = mock_server_->last_sent_commit();

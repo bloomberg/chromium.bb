@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/engine/apply_updates_command.h"
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -78,6 +79,9 @@ class ApplyUpdatesCommandTest : public testing::Test,
     entry.Put(syncable::SERVER_NON_UNIQUE_NAME, item_id);
     entry.Put(syncable::SERVER_PARENT_ID, Id::CreateFromServerId(parent_id));
     entry.Put(syncable::SERVER_IS_DIR, true);
+    sync_pb::EntitySpecifics default_bookmark_specifics;
+    default_bookmark_specifics.MutableExtension(sync_pb::bookmark);
+    entry.Put(syncable::SERVER_SPECIFICS, default_bookmark_specifics);
   }
 
   TestDirectorySetterUpper syncdb_;

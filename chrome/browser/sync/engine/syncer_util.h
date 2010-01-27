@@ -88,7 +88,7 @@ class SyncerUtil {
                                               syncable::MutableEntry* same_id,
                                               const bool deleted,
                                               const bool is_directory,
-                                              const bool is_bookmark);
+                                              syncable::ModelType model_type);
 
   // Assumes we have an existing entry; verify an update that seems to be
   // expressing an 'undelete'

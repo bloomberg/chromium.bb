@@ -44,21 +44,17 @@ static const ColumnSpec g_metas_columns[] = {
   {"is_unapplied_update", "bit default 0"},
   {"is_del", "bit default 0"},
   {"is_dir", "bit default 0"},
-  {"is_bookmark_object", "bit default 0"},
   {"server_is_dir", "bit default 0"},
   {"server_is_del", "bit default 0"},
-  {"server_is_bookmark_object", "bit default 0"},
   //////////////////////////////////////
   // Strings
   {"non_unique_name", "varchar"},
-  {"server_non_unique_name", "varchar(255) COLLATE PATHNAME"},
-  {"bookmark_url", "varchar"},
-  {"server_bookmark_url", "varchar"},
+  {"server_non_unique_name", "varchar(255)"},
   {"singleton_tag", "varchar"},
   //////////////////////////////////////
   // Blobs.
-  {"bookmark_favicon", "blob"},
-  {"server_bookmark_favicon", "blob"},
+  {"specifics", "blob"},
+  {"server_specifics", "blob"},
 };
 
 // At least enforce that there are equal number of column names and fields.
