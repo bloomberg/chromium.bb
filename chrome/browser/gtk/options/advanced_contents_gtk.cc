@@ -18,7 +18,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/fonts_languages_window.h"
-#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/options/cookies_view.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
@@ -83,7 +82,6 @@ GtkWidget* AddCheckButtonWithWrappedLabel(int string_id,
   GtkWidget* checkbox = CreateCheckButtonWithWrappedLabel(string_id);
   gtk_box_pack_start(GTK_BOX(container), checkbox, FALSE, FALSE, 0);
   g_signal_connect(checkbox, "toggled", handler, data);
-
   return checkbox;
 }
 
@@ -169,18 +167,12 @@ class DownloadSection : public OptionsPageBase {
   // then turning around and saving them again.
   bool pref_changing_;
 
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(DownloadSection);
 };
 
 DownloadSection::DownloadSection(Profile* profile)
-    : OptionsPageBase(profile),
-      pref_changing_(true) {
+    : OptionsPageBase(profile), pref_changing_(true) {
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-      page_, profile));
 
   // Download location options.
   download_location_button_ = gtk_file_chooser_button_new(
@@ -220,9 +212,6 @@ DownloadSection::DownloadSection(Profile* profile)
                      FALSE, FALSE, 0);
   g_signal_connect(download_ask_for_save_location_checkbox_, "clicked",
                    G_CALLBACK(OnDownloadAskForSaveLocationChanged), this);
-  accessible_widget_helper_->SetWidgetName(
-      download_ask_for_save_location_checkbox_,
-      IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION);
 
   // Option for resetting file handlers.
   reset_file_handlers_label_ = CreateWrappedLabel(
@@ -370,7 +359,6 @@ NetworkSection::NetworkSection(Profile* profile)
           IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON).c_str());
   g_signal_connect(change_proxies_button, "clicked",
                    G_CALLBACK(OnChangeProxiesButtonClicked), this);
-
   // Stick it in an hbox so it doesn't expand to the whole width.
   GtkWidget* button_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(button_hbox),
@@ -538,8 +526,6 @@ class PrivacySection : public OptionsPageBase {
   // then turning around and saving them again.
   bool pref_changing_;
 
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(PrivacySection);
 };
 
@@ -547,9 +533,6 @@ PrivacySection::PrivacySection(Profile* profile)
     : OptionsPageBase(profile),
       pref_changing_(true) {
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-      page_, profile));
 
   GtkWidget* section_description_label = CreateWrappedLabel(
       IDS_OPTIONS_DISABLE_SERVICES);
@@ -574,8 +557,6 @@ PrivacySection::PrivacySection(Profile* profile)
                      FALSE, FALSE, 0);
   g_signal_connect(enable_link_doctor_checkbox_, "clicked",
                    G_CALLBACK(OnEnableLinkDoctorChange), this);
-  accessible_widget_helper_->SetWidgetName(
-      enable_link_doctor_checkbox_, IDS_OPTIONS_LINKDOCTOR_PREF);
 
   enable_suggest_checkbox_ = CreateCheckButtonWithWrappedLabel(
       IDS_OPTIONS_SUGGEST_PREF);
@@ -583,8 +564,6 @@ PrivacySection::PrivacySection(Profile* profile)
                      FALSE, FALSE, 0);
   g_signal_connect(enable_suggest_checkbox_, "clicked",
                    G_CALLBACK(OnEnableSuggestChange), this);
-  accessible_widget_helper_->SetWidgetName(
-      enable_suggest_checkbox_, IDS_OPTIONS_SUGGEST_PREF);
 
   enable_dns_prefetching_checkbox_ = CreateCheckButtonWithWrappedLabel(
       IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION);
@@ -592,9 +571,6 @@ PrivacySection::PrivacySection(Profile* profile)
                      FALSE, FALSE, 0);
   g_signal_connect(enable_dns_prefetching_checkbox_, "clicked",
                    G_CALLBACK(OnDNSPrefetchingChange), this);
-  accessible_widget_helper_->SetWidgetName(
-      enable_dns_prefetching_checkbox_,
-      IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION);
 
   enable_safe_browsing_checkbox_ = CreateCheckButtonWithWrappedLabel(
       IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION);
@@ -602,9 +578,6 @@ PrivacySection::PrivacySection(Profile* profile)
                      FALSE, FALSE, 0);
   g_signal_connect(enable_safe_browsing_checkbox_, "clicked",
                    G_CALLBACK(OnSafeBrowsingChange), this);
-  accessible_widget_helper_->SetWidgetName(
-      enable_safe_browsing_checkbox_,
-      IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION);
 
 #if defined(GOOGLE_CHROME_BUILD)
   reporting_enabled_checkbox_ = CreateCheckButtonWithWrappedLabel(
@@ -613,8 +586,6 @@ PrivacySection::PrivacySection(Profile* profile)
                      FALSE, FALSE, 0);
   g_signal_connect(reporting_enabled_checkbox_, "clicked",
                    G_CALLBACK(OnLoggingChange), this);
-  accessible_widget_helper_->SetWidgetName(
-      reporting_enabled_checkbox_, IDS_OPTIONS_ENABLE_LOGGING);
 #endif
 
   GtkWidget* cookie_description_label = gtk_label_new(
@@ -649,7 +620,6 @@ PrivacySection::PrivacySection(Profile* profile)
           IDS_OPTIONS_COOKIES_SHOWCOOKIES_WEBSITE_PERMISSIONS).c_str());
   g_signal_connect(show_cookies_button, "clicked",
                    G_CALLBACK(OnShowCookiesButtonClicked), this);
-
   // Stick it in an hbox so it doesn't expand to the whole width.
   GtkWidget* button_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(button_hbox), show_cookies_button,
@@ -906,18 +876,12 @@ class SecuritySection : public OptionsPageBase {
   // then turning around and saving them again.
   bool pref_changing_;
 
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(SecuritySection);
 };
 
 SecuritySection::SecuritySection(Profile* profile)
-    : OptionsPageBase(profile),
-      pref_changing_(true) {
+    : OptionsPageBase(profile), pref_changing_(true) {
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-      page_, profile));
 
   GtkWidget* manage_certificates_label = CreateWrappedLabel(
       IDS_OPTIONS_CERTIFICATES_LABEL);
@@ -945,20 +909,13 @@ SecuritySection::SecuritySection(Profile* profile)
   rev_checking_enabled_checkbox_ = AddCheckButtonWithWrappedLabel(
       IDS_OPTIONS_SSL_CHECKREVOCATION, page_,
       G_CALLBACK(OnRevCheckingEnabledToggled), this);
-  accessible_widget_helper_->SetWidgetName(
-      rev_checking_enabled_checkbox_, IDS_OPTIONS_SSL_CHECKREVOCATION);
   ssl2_enabled_checkbox_ = AddCheckButtonWithWrappedLabel(
       IDS_OPTIONS_SSL_USESSL2, page_, G_CALLBACK(OnSSL2EnabledToggled), this);
-  accessible_widget_helper_->SetWidgetName(
-      ssl2_enabled_checkbox_, IDS_OPTIONS_SSL_USESSL2);
   ssl3_enabled_checkbox_ = AddCheckButtonWithWrappedLabel(
       IDS_OPTIONS_SSL_USESSL3, page_, G_CALLBACK(OnSSL3EnabledToggled), this);
-  accessible_widget_helper_->SetWidgetName(
-      ssl3_enabled_checkbox_, IDS_OPTIONS_SSL_USESSL3);
   tls1_enabled_checkbox_ = AddCheckButtonWithWrappedLabel(
       IDS_OPTIONS_SSL_USETLS1, page_, G_CALLBACK(OnTLS1EnabledToggled), this);
-  accessible_widget_helper_->SetWidgetName(
-      tls1_enabled_checkbox_, IDS_OPTIONS_SSL_USETLS1);
+
 
   rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
                              profile->GetPrefs(), this);

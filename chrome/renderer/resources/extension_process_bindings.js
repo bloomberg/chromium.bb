@@ -551,9 +551,6 @@ var chrome = chrome || {};
   if (!chrome.experimental)
     chrome.experimental = {};
 
-  if (!chrome.experimental.accessibility)
-    chrome.experimental.accessibility = {};
-
   if (!chrome.experimental.history)
     chrome.experimental.history = {};
 

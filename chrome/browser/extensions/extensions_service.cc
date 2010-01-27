@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
@@ -163,7 +162,6 @@ void ExtensionsService::Init() {
 
   // Start up the extension event routers.
   ExtensionHistoryEventRouter::GetInstance()->ObserveProfile(profile_);
-  ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);
 
   LoadAllExtensions();
 

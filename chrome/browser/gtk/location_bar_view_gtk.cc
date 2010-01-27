@@ -19,7 +19,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/extensions/extension_action_context_menu_model.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -33,7 +32,6 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/accessibility_events.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/gtk_util.h"
@@ -451,14 +449,6 @@ void LocationBarViewGtk::OnKillFocus() {
 }
 
 void LocationBarViewGtk::OnSetFocus() {
-  AccessibilityTextBoxInfo info(
-      profile_,
-      l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION).c_str(),
-      false);
-  NotificationService::current()->Notify(
-      NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
-      Source<Profile>(profile_),
-      Details<AccessibilityTextBoxInfo>(&info));
 }
 
 SkBitmap LocationBarViewGtk::GetFavIcon() const {

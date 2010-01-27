@@ -102,7 +102,7 @@ class Profile {
   // Value that represents no profile Id.
   static const ProfileId InvalidProfileId;
 
-  Profile() : restored_last_session_(false), accessibility_pause_level_(0) {}
+  Profile() : restored_last_session_(false) {}
   virtual ~Profile() {}
 
   // Profile prefs are registered as soon as the prefs are loaded for the first
@@ -381,33 +381,11 @@ class Profile {
     return restored_last_session_;
   }
 
-  // Stop sending accessibility events until ResumeAccessibilityEvents().
-  // Calls to Pause nest; no events will be sent until the number of
-  // Resume calls matches the number of Pause calls received.
-  void PauseAccessibilityEvents() {
-    accessibility_pause_level_++;
-  }
-
-  void ResumeAccessibilityEvents() {
-    DCHECK(accessibility_pause_level_ > 0);
-    accessibility_pause_level_--;
-  }
-
-  bool ShouldSendAccessibilityEvents() {
-    return 0 == accessibility_pause_level_;
-  }
-
  protected:
   static URLRequestContextGetter* default_request_context_;
 
  private:
   bool restored_last_session_;
-
-  // Accessibility events will only be propagated when the pause
-  // level is zero.  PauseAccessibilityEvents and ResumeAccessibilityEvents
-  // increment and decrement the level, respectively, rather than set it to
-  // true or false, so that calls can be nested.
-  int accessibility_pause_level_;
 };
 
 class OffTheRecordProfileImpl;
