@@ -5,6 +5,7 @@ vars = {
   "ffmpeg_revision": "34297",
   "skia_revision": "475",
   "chromium_git": "http://src.chromium.org/git",
+  "swig_revision": "37274",
 }
 
 deps = {
@@ -98,6 +99,9 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/websocket/tests/workers":
     Var("webkit_trunk") + "/LayoutTests/websocket/tests/workers@" +
     Var("webkit_revision"),
+
+  "src/third_party/swig/Lib":
+    "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
 }
 
 
@@ -131,6 +135,9 @@ deps_os = {
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
       "/trunk/deps/third_party/nss@36871",
+
+    "src/third_party/swig/win":
+      "/trunk/deps/third_party/swig/win@" + Var("swig_revision"),
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
@@ -160,6 +167,9 @@ deps_os = {
     "src/third_party/ffmpeg/binaries/chromium/mac/ia32_dbg":
       "/trunk/deps/third_party/ffmpeg/binaries/mac_dbg@" +
       Var("ffmpeg_revision"),
+
+    "src/third_party/swig/mac":
+      "/trunk/deps/third_party/swig/mac@" + Var("swig_revision"),
   },
   "unix": {
     # Linux, really.
@@ -189,6 +199,9 @@ deps_os = {
     "src/third_party/ffmpeg/binaries/chromium/linux/x64_dbg":
       "/trunk/deps/third_party/ffmpeg/binaries/linux_64_dbg@" +
       Var("ffmpeg_revision"),
+
+    "src/third_party/swig/linux":
+      "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
   },
 }
 
