@@ -16,20 +16,28 @@
 #if defined(OS_WIN)
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #endif
+#if defined(OS_LINUX)
+#include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
+#endif
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "views/widget/widget.h"
+#if defined(OS_WIN)
 #include "views/widget/widget_win.h"
+#endif
+#if defined(OS_LINUX)
+#include "views/widget/widget_gtk.h"
+#endif
 
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
-    : balloon_(balloon),
+    : initialized_(false),
+      balloon_(balloon),
       site_instance_(SiteInstance::CreateSiteInstance(balloon->profile())),
       render_view_host_(NULL),
-      should_notify_on_disconnect_(false),
-      initialized_(false) {
+      should_notify_on_disconnect_(false) {
   DCHECK(balloon_);
 }
 
@@ -121,6 +129,11 @@ void BalloonViewHost::Init(gfx::NativeView parent_hwnd) {
   HWND hwnd = view_win->Create(parent_hwnd);
   view_win->ShowWindow(SW_SHOW);
   Attach(hwnd);
+#elif defined(OS_LINUX)
+  RenderWidgetHostViewGtk* view_gtk =
+      static_cast<RenderWidgetHostViewGtk*>(view);
+  view_gtk->InitAsChild();
+  Attach(view_gtk->native_view());
 #else
   NOTIMPLEMENTED();
 #endif

@@ -13,13 +13,8 @@ Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
   Balloon* balloon = new Balloon(notification, profile, this);
 
-  // TODO(johnnyg): hookup to views code for Chrome OS.
-#if defined(TOOLKIT_GTK)
   balloon->set_view(new BalloonViewImpl());
   gfx::Size size(layout_.min_balloon_width(), layout_.min_balloon_height());
   balloon->set_content_size(size);
-#endif
-
   return balloon;
-
 }

@@ -163,7 +163,7 @@ TEST_F(DesktopNotificationsTest, TestCancel) {
             log_output_);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 TEST_F(DesktopNotificationsTest, TestPositioning) {
   std::string expected_log;
   // Create some toasts.  After each but the first, make sure there
@@ -188,7 +188,6 @@ TEST_F(DesktopNotificationsTest, TestVariableSize) {
   std::string expected_log;
   // Create some toasts.  After each but the first, make sure there
   // is a minimum separation between the toasts.
-  int last_top = 0;
   EXPECT_TRUE(service_->ShowDesktopNotificationText(
       GURL("http://long.google.com"), GURL("/icon.png"),
       ASCIIToUTF16("Really Really Really Really Really Really "
@@ -303,4 +302,3 @@ TEST_F(DesktopNotificationsTest, TestUserInputEscaping) {
   EXPECT_EQ(std::string::npos, data_url.spec().find("<script>"));
   EXPECT_EQ(std::string::npos, data_url.spec().find("<i>"));
 }
-

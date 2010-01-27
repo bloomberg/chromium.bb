@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/gdi_util.h"
 #include "app/gfx/insets.h"
 #include "app/gfx/native_widget_types.h"
 #include "app/l10n_util.h"
@@ -31,7 +30,13 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/painter.h"
+#include "views/widget/root_view.h"
+#if defined(OS_WIN)
 #include "views/widget/widget_win.h"
+#endif
+#if defined(OS_LINUX)
+#include "views/widget/widget_gtk.h"
+#endif
 
 using views::Widget;
 
@@ -95,6 +100,7 @@ BalloonViewImpl::BalloonViewImpl()
       frame_container_(NULL),
       html_container_(NULL),
       html_contents_(NULL),
+      method_factory_(this),
       shelf_background_(NULL),
       balloon_background_(NULL),
       close_button_(NULL),
@@ -102,8 +108,7 @@ BalloonViewImpl::BalloonViewImpl()
       animation_(NULL),
       options_menu_contents_(NULL),
       options_menu_menu_(NULL),
-      options_menu_button_(NULL),
-      method_factory_(this) {
+      options_menu_button_(NULL) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
   set_parent_owned(false);
@@ -146,6 +151,10 @@ void BalloonViewImpl::RunMenu(views::View* source, const gfx::Point& pt) {
 void BalloonViewImpl::DelayedClose(bool by_user) {
   html_contents_->Shutdown();
   html_container_->CloseNow();
+  // The BalloonViewImpl has to be detached from frame_container_ now
+  // because CloseNow on linux/views destroys the view hierachy
+  // asynchronously.
+  frame_container_->GetRootView()->RemoveAllChildViews(true);
   frame_container_->CloseNow();
   balloon_->OnClose(by_user);
 }
@@ -247,8 +256,10 @@ gfx::Rect BalloonViewImpl::GetOptionsMenuBounds() const {
 gfx::Rect BalloonViewImpl::GetLabelBounds() const {
   return gfx::Rect(
       kLeftLabelMargin,
-      height() - kDismissButtonHeight - kShelfBorderTopOverlap - kBottomMargin,
-      width() - kDismissButtonWidth - kOptionsMenuWidth - kRightMargin,
+      std::max(0, height() - kDismissButtonHeight - kShelfBorderTopOverlap -
+               kBottomMargin),
+      std::max(0, width() - kDismissButtonWidth - kOptionsMenuWidth -
+               kRightMargin),
       kDismissButtonHeight);
 }
 
@@ -296,16 +307,16 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   html_container_ = Widget::CreatePopupWidget(Widget::NotTransparent,
                                               Widget::AcceptEvents,
                                               Widget::DeleteOnDestroy);
-  html_container_->SetAlwaysOnTop(true);
   html_container_->Init(NULL, contents_rect);
+  html_container_->SetAlwaysOnTop(true);
   html_container_->SetContentsView(html_contents_);
 
   gfx::Rect balloon_rect(x(), y(), width(), height());
   frame_container_ = Widget::CreatePopupWidget(Widget::Transparent,
                                                Widget::AcceptEvents,
                                                Widget::DeleteOnDestroy);
-  frame_container_->SetAlwaysOnTop(true);
   frame_container_->Init(NULL, balloon_rect);
+  frame_container_->SetAlwaysOnTop(true);
   frame_container_->SetContentsView(this);
 
   close_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE));
@@ -349,9 +360,9 @@ void BalloonViewImpl::CreateOptionsMenu() {
   if (options_menu_contents_.get())
     return;
 
-  const std::wstring label_text = l10n_util::GetStringF(
+  const string16 label_text = WideToUTF16Hack(l10n_util::GetStringF(
       IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
-      this->balloon_->notification().display_source());
+      this->balloon_->notification().display_source()));
 
   options_menu_contents_.reset(new menus::SimpleMenuModel(this));
   options_menu_contents_->AddItem(kRevokePermissionCommand, label_text);
