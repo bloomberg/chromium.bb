@@ -2254,7 +2254,7 @@ BUG12361 SLOW MAC RELEASE : http/tests/cookies/double-quoted-value-with-semi-col
 BUG13721 LINUX : fast/dynamic/positioned-movement-with-positioned-children.html = FAIL
 
 BUG14207 LINUX : tables/mozilla/bugs/bug28341.html = FAIL
-BUG32231 MAC DEBUG : tables/mozilla/bugs/bug28341.html = IMAGE
+BUG32231 WIN DEBUG : tables/mozilla/bugs/bug28341.html = IMAGE PASS
 
 // Newly added test http://trac.webkit.org/changeset/44816
 BUG18733 WIN SLOW : http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
