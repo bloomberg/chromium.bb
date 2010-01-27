@@ -14,6 +14,7 @@
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/gtk/bookmark_bar_instructions_gtk.h"
 #include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -36,7 +37,8 @@ class BookmarkBarGtk : public AnimationDelegate,
                        public ProfileSyncServiceObserver,
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
-                       public NotificationObserver {
+                       public NotificationObserver,
+                       public BookmarkBarInstructionsGtk::Delegate {
   FRIEND_TEST(BookmarkBarGtkUnittest, DisplaysHelpMessageOnEmpty);
   FRIEND_TEST(BookmarkBarGtkUnittest, HidesHelpMessageWithBookmark);
   FRIEND_TEST(BookmarkBarGtkUnittest, BuildsButtons);
@@ -121,9 +123,6 @@ class BookmarkBarGtk : public AnimationDelegate,
   // is equivalent to the number of children the bookmark bar node from the
   // bookmark bar model has.
   int GetBookmarkButtonCount();
-
-  // Sets the correct color for |instructions_label_|.
-  void UpdateInstructionsLabelColor();
 
   // Set the appearance of the overflow button appropriately (either chromium
   // style or GTK style).
@@ -266,6 +265,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 
+  // Overriden from BookmarkBarInstructionsGtk::Delegate.
+  virtual void ShowImportDialog();
+
   Profile* profile_;
 
   // Used for opening urls.
@@ -294,11 +296,13 @@ class BookmarkBarGtk : public AnimationDelegate,
   // Used to position all children.
   GtkWidget* bookmark_hbox_;
 
-  // A GtkLabel to display when there are no bookmark buttons to display.
-  GtkWidget* instructions_label_;
-
-  // The alignment for |instructions_label_|.
+  // Alignment widget that is visible if there are no bookmarks on
+  // the bookmar bar.
   GtkWidget* instructions_;
+
+  // BookmarkBarInstructionsGtk that holds the label and the link for importing
+  // bookmarks when there are no bookmarks on the bookmark bar.
+  scoped_ptr<BookmarkBarInstructionsGtk> instructions_gtk_;
 
   // GtkToolbar which contains all the bookmark buttons.
   OwnedWidgetGtk bookmark_toolbar_;

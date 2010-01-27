@@ -845,7 +845,7 @@ void BrowserWindowGtk::ShowClearBrowsingDataDialog() {
 }
 
 void BrowserWindowGtk::ShowImportDialog() {
-  ImportDialogGtk::Show(window_, browser_->profile());
+  ImportDialogGtk::Show(window_, browser_->profile(), ALL);
 }
 
 void BrowserWindowGtk::ShowSearchEnginesDialog() {

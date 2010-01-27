@@ -11,8 +11,9 @@
 #include "grit/locale_settings.h"
 
 // static
-void ImportDialogGtk::Show(GtkWindow* parent, Profile* profile) {
-  new ImportDialogGtk(parent, profile);
+void ImportDialogGtk::Show(GtkWindow* parent, Profile* profile,
+                           int initial_state) {
+  new ImportDialogGtk(parent, profile, initial_state);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,8 +27,12 @@ void ImportDialogGtk::ImportComplete() {
   delete this;
 }
 
-ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile)
-    : parent_(parent), profile_(profile), importer_host_(new ImporterHost()) {
+ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
+                                 int initial_state)
+    : parent_(parent),
+      profile_(profile),
+      importer_host_(new ImporterHost()),
+      initial_state_(initial_state) {
   // Build the dialog.
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_IMPORT_SETTINGS_TITLE).c_str(),
@@ -74,22 +79,26 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile)
   bookmarks_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_IMPORT_FAVORITES_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), bookmarks_, FALSE, FALSE, 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bookmarks_), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bookmarks_),
+      (initial_state_ & FAVORITES) != 0);
 
   search_engines_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_IMPORT_SEARCH_ENGINES_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), search_engines_, FALSE, FALSE, 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(search_engines_), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(search_engines_),
+      (initial_state_ & SEARCH_ENGINES) != 0);
 
   passwords_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_IMPORT_PASSWORDS_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), passwords_, FALSE, FALSE, 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(passwords_), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(passwords_),
+      (initial_state_ & PASSWORDS) != 0);
 
   history_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_IMPORT_HISTORY_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), history_, FALSE, FALSE, 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(history_), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(history_),
+      (initial_state_ & HISTORY) !=0);
 
   gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
 

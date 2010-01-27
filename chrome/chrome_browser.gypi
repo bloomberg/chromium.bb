@@ -851,6 +851,8 @@
         'browser/gtk/blocked_popup_container_view_gtk.h',
         'browser/gtk/bookmark_bar_gtk.cc',
         'browser/gtk/bookmark_bar_gtk.h',
+        'browser/gtk/bookmark_bar_instructions_gtk.cc',
+        'browser/gtk/bookmark_bar_instructions_gtk.h',
         'browser/gtk/bookmark_bubble_gtk.cc',
         'browser/gtk/bookmark_bubble_gtk.h',
         'browser/gtk/bookmark_context_menu_gtk.cc',

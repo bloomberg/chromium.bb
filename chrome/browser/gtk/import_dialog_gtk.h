@@ -12,14 +12,16 @@ class Profile;
 class ImportDialogGtk : public ImportObserver {
  public:
   // Displays the import box to import data from another browser into |profile|
-  static void Show(GtkWindow* parent, Profile* profile);
+  // |initial_state| is a bitmask of ImportItems. Each checkbox for the bits in
+  // is checked.
+  static void Show(GtkWindow* parent, Profile* profile, int initial_state);
 
   // Overridden from ImportObserver:
   virtual void ImportCanceled();
   virtual void ImportComplete();
 
  private:
-  ImportDialogGtk(GtkWindow* parent, Profile* profile);
+  ImportDialogGtk(GtkWindow* parent, Profile* profile, int initial_state);
   ~ImportDialogGtk() { }
 
   static void HandleOnResponseDialog(GtkWidget* widget,
@@ -55,6 +57,8 @@ class ImportDialogGtk : public ImportObserver {
 
   // Utility class that does the actual import.
   scoped_refptr<ImporterHost> importer_host_;
+
+  int initial_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportDialogGtk);
 };

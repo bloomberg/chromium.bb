@@ -397,7 +397,7 @@ void ContentPageGtk::OnImportButtonClicked(GtkButton* widget,
                                            ContentPageGtk* page) {
   ImportDialogGtk::Show(
       GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
-      page->profile());
+      page->profile(), ALL);
 }
 
 // static

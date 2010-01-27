@@ -26,6 +26,7 @@
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/gtk/import_dialog_gtk.h"
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
@@ -123,7 +124,6 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       window_(window),
       tabstrip_origin_provider_(tabstrip_origin_provider),
       model_(NULL),
-      instructions_label_(NULL),
       instructions_(NULL),
       sync_service_(NULL),
       dragged_node_(NULL),
@@ -209,15 +209,11 @@ void BookmarkBarGtk::Init(Profile* profile) {
   bookmark_hbox_ = gtk_hbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(paint_box_), bookmark_hbox_);
 
-  instructions_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  instructions_ = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(instructions_), 0, 0,
                             kInstructionsPadding, 0);
-  g_signal_connect(instructions_, "destroy", G_CALLBACK(gtk_widget_destroyed),
-                   &instructions_);
-  instructions_label_ =
-      gtk_label_new(l10n_util::GetStringUTF8(IDS_BOOKMARKS_NO_ITEMS).c_str());
-  UpdateInstructionsLabelColor();
-  gtk_container_add(GTK_CONTAINER(instructions_), instructions_label_);
+  instructions_gtk_.reset(new BookmarkBarInstructionsGtk(this, profile));
+  gtk_container_add(GTK_CONTAINER(instructions_), instructions_gtk_->widget());
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), instructions_,
                      FALSE, FALSE, 0);
 
@@ -348,6 +344,10 @@ void BookmarkBarGtk::OnStateChanged() {
   } else {
     gtk_widget_hide(sync_error_button_);
   }
+}
+
+void BookmarkBarGtk::ShowImportDialog() {
+  ImportDialogGtk::Show(window_->window(), browser_->profile(), FAVORITES);
 }
 
 void BookmarkBarGtk::EnterFullscreen() {
@@ -529,16 +529,6 @@ int BookmarkBarGtk::GetBookmarkButtonCount() {
   int count = g_list_length(children);
   g_list_free(children);
   return count;
-}
-
-void BookmarkBarGtk::UpdateInstructionsLabelColor() {
-  if (theme_provider_->UseGtkTheme()) {
-    gtk_util::SetLabelColor(instructions_label_, NULL);
-  } else {
-    GdkColor color = theme_provider_->GetGdkColor(
-        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-    gtk_util::SetLabelColor(instructions_label_, &color);
-  }
 }
 
 void BookmarkBarGtk::SetOverflowButtonAppearance() {
@@ -732,8 +722,6 @@ void BookmarkBarGtk::Observe(NotificationType type,
       DLOG(ERROR) << "Received a theme change notification while we "
                   << "don't have a BookmarkModel. Taking no action.";
     }
-
-    UpdateInstructionsLabelColor();
 
     UpdateEventBoxPaintability();
 
