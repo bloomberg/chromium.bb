@@ -19,27 +19,22 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/label.h"
-#include "views/focus/accelerator_handler.h"
-#include "views/grid_layout.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
 #include "views/window/window_gtk.h"
 
 using views::Background;
-using views::ColumnSet;
-using views::GridLayout;
 using views::Label;
 using views::Textfield;
 using views::View;
 using views::Widget;
-using views::Accelerator;
 
-const int kPanelY = 0;
 const int kUsernameY = 386;
 const int kPanelSpacing = 36;
+const int kVersionPad = 4;
 const int kTextfieldWidth = 286;
-const int kBottomPadding = 112;
+const SkColor kVersionColor = 0xFF7691DA;
 
 namespace browser {
 
@@ -116,20 +111,28 @@ LoginManagerView::~LoginManagerView() {
 
 void LoginManagerView::Init() {
   username_field_ = new views::Textfield;
+  username_field_->RemoveBorder();
   password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
+  password_field_->RemoveBorder();
 
+  os_version_label_ = new views::Label();
+  os_version_label_->SetColor(kVersionColor);
+  os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   // Creates the main window
   BuildWindow();
 
   // Controller to handle events from textfields
   username_field_->SetController(this);
   password_field_->SetController(this);
+  if (chromeos::LoginLibrary::EnsureLoaded()) {
+    loader_.GetVersion(
+        &consumer_, NewCallback(this, &LoginManagerView::OnOSVersion));
+  }
 }
 
 gfx::Size LoginManagerView::GetPreferredSize() {
   return dialog_dimensions_;
 }
-
 
 void LoginManagerView::BuildWindow() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -146,58 +149,35 @@ void LoginManagerView::BuildWindow() {
   // ---------------------- Set up root View ------------------------------
   set_background(new views::ImageBackground(background_pixbuf_));
 
-  // Set layout
-  GridLayout* layout = new GridLayout(this);
-  SetLayoutManager(layout);
+  View* login_prompt = new View();
+  login_prompt->set_background(new views::ImageBackground(panel_pixbuf_));
+  login_prompt->SetBounds(0, 0, panel_width, panel_height);
 
-  ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddPaddingColumn(1, 0);
-  column_set->AddColumn(GridLayout::CENTER, GridLayout::FILL, 0,
-                        GridLayout::FIXED, panel_width, panel_width);
-  column_set->AddPaddingColumn(1, 0);
+  int x = (panel_width - kTextfieldWidth) / 2;
+  int y = kUsernameY;
+  username_field_->SetBounds(x, y, kTextfieldWidth, kPanelSpacing);
+  y += 2 * kPanelSpacing;
+  password_field_->SetBounds(x, y, kTextfieldWidth, kPanelSpacing);
+  y += 2 * kPanelSpacing;
+  os_version_label_->SetBounds(
+      x,
+      y,
+      panel_width - (x + kVersionPad),
+      os_version_label_->GetPreferredSize().height());
 
-  // Row is resized with window (panel page)
-  layout->AddPaddingRow(0, kPanelY);
+  login_prompt->AddChildView(username_field_);
+  login_prompt->AddChildView(password_field_);
+  login_prompt->AddChildView(os_version_label_);
+  AddChildView(login_prompt);
 
-  layout->StartRow(1, 0);
-  {
-    // Create login_prompt view
-    View* login_prompt = new View();
-    // TODO(cmasone): determine if it's more performant to do the background
-    // by creating an BackgroundPainter directly, like so:
-    // Background::CreateBackgroundPainter(true,
-    //     Painter::CreateImagePainter(image, ...))
-    login_prompt->set_background(new views::ImageBackground(panel_pixbuf_));
-
-    // Set layout
-    GridLayout* prompt_layout = new GridLayout(login_prompt);
-    login_prompt->SetLayoutManager(prompt_layout);
-    ColumnSet* prompt_column_set = prompt_layout->AddColumnSet(0);
-    prompt_column_set->AddPaddingColumn(1, 0);
-    prompt_column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                                 GridLayout::FIXED,
-                                 kTextfieldWidth, kTextfieldWidth);
-    prompt_column_set->AddPaddingColumn(1, 0);
-
-    prompt_layout->AddPaddingRow(0, kUsernameY);
-    prompt_layout->StartRow(1, 0);
-    prompt_layout->AddView(username_field_);
-    prompt_layout->AddPaddingRow(0, kPanelSpacing);
-    prompt_layout->StartRow(1, 0);
-    prompt_layout->AddView(password_field_);
-    prompt_layout->AddPaddingRow(0, kBottomPadding);
-
-    if (!chromeos::LoginLibrary::EnsureLoaded()) {
-      username_field_->SetText(
-          l10n_util::GetStringUTF16(IDS_LOGIN_DISABLED_NO_LIBCROS));
-      username_field_->SetReadOnly(true);
-      password_field_->SetReadOnly(true);
-    }
-    layout->AddView(login_prompt, 1, 1, GridLayout::CENTER, GridLayout::CENTER,
-                    panel_width, panel_height);
+  if (!chromeos::LoginLibrary::EnsureLoaded()) {
+    username_field_->SetText(
+        l10n_util::GetStringUTF16(IDS_LOGIN_DISABLED_NO_LIBCROS));
+    username_field_->SetReadOnly(true);
+    password_field_->SetReadOnly(true);
   }
 
-  layout->AddPaddingRow(1, 0);
+  return;
 }
 
 views::View* LoginManagerView::GetContentsView() {
@@ -267,4 +247,10 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
   }
   // Return false so that processing does not end
   return false;
+}
+
+void LoginManagerView::OnOSVersion(
+    chromeos::VersionLoader::Handle handle,
+    std::string version) {
+  os_version_label_->SetText(ASCIIToWide(version));
 }

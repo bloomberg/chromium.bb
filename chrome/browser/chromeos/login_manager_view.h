@@ -4,7 +4,9 @@
 
 #include <string>
 #include "chrome/browser/chromeos/ipc_message.h"
+#include "chrome/browser/chromeos/version_loader.h"
 #include "views/accelerator.h"
+#include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
@@ -44,12 +46,19 @@ class LoginManagerView : public views::View,
  private:
   views::Textfield* username_field_;
   views::Textfield* password_field_;
+  views::Label* os_version_label_;
 
   // The dialog dimensions.
   gfx::Size dialog_dimensions_;
 
   GdkPixbuf* background_pixbuf_;
   GdkPixbuf* panel_pixbuf_;
+
+  // Handles asynchronously loading the version.
+  chromeos::VersionLoader loader_;
+
+  // Used to request the version.
+  CancelableRequestConsumer consumer_;
 
   // Helper functions to modularize class
   void BuildWindow();
@@ -70,6 +79,10 @@ class LoginManagerView : public views::View,
   // for Googlers.  So, if we can do that differently to make this thread-safe,
   // that'd be A Good Thing (tm).
   void SetupSession(const std::string& username);
+
+  // Callback from chromeos::VersionLoader giving the version.
+  void OnOSVersion(chromeos::VersionLoader::Handle handle,
+                   std::string version);
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerView);
 };
