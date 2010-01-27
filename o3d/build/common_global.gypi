@@ -13,6 +13,7 @@
     'conditions': [
       [ 'OS == "linux"', {
         'use_system_zlib': 0,
+        'use_system_libjpeg': 0,
       }],
     ],
   },
