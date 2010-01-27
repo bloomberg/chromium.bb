@@ -2271,13 +2271,13 @@ each locale. -->
       </message>
 
       <!-- Content blocking strings -->
-      <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Bubble info header text when a page is not allowed to write cookies or other site data.">
+      <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to write cookies or other site data.">
         This page was prevented from setting cookies.
       </message>
       <message name="IDS_BLOCKED_COOKIES_LINK" desc="Link to cookie section of content blocking management dialog, displayed in bubble when a page tries to write cookies or other site data.">
         Manage cookie blocking...
       </message>
-      <message name="IDS_BLOCKED_IMAGES_TITLE" desc="Bubble info header text when a page is not allowed to display images.">
+      <message name="IDS_BLOCKED_IMAGES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
         Images were blocked on this page.
       </message>
       <message name="IDS_BLOCKED_IMAGES_UNBLOCK" desc="Radio button choice to unblock a site from showing images, displayed in bubble when a page tries to display images.">
@@ -2288,6 +2288,9 @@ each locale. -->
       </message>
       <message name="IDS_BLOCKED_IMAGES_LINK" desc="Link to images section of content blocking management dialog, displayed in bubble when a page tries to display images.">
         Manage image blocking...
+      </message>
+      <message name="IDS_BLOCKED_POPUPS_TOOLTIP" desc="Tooltip text when a page is not allowed to display popups.">
+        Pop-ups were blocked on this page.
       </message>
       <message name="IDS_BLOCKED_POPUPS_TITLE" desc="Bubble info header text when a page is not allowed to display popups.  This appears above a list of popup titles.">
         The following pop-ups were blocked on this page:
@@ -2301,7 +2304,7 @@ each locale. -->
       <message name="IDS_BLOCKED_POPUPS_LINK" desc="Link to popups section of content blocking management dialog, displayed in bubble when a page tries to display popups.">
         Manage pop-up blocking...
       </message>
-      <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="Bubble info header text when a page is not allowed to run JavaScript.">
+      <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to run JavaScript.">
         JavaScript was blocked on this page.
       </message>
       <message name="IDS_BLOCKED_JAVASCRIPT_UNBLOCK" desc="Radio button choice to unblock a site from running JavaScript, displayed in bubble when a page tries to run JavaScript.">
@@ -2313,7 +2316,7 @@ each locale. -->
       <message name="IDS_BLOCKED_JAVASCRIPT_LINK" desc="Link to JavaScript section of content blocking management dialog, displayed in bubble when a page tries to run JavaScript.">
         Manage JavaScript blocking...
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to display plug-ins.">
+      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to display plug-ins.">
         Plug-ins were blocked on this page.
       </message>
       <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
