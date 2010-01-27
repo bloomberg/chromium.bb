@@ -158,7 +158,22 @@ void BrowserActionButton::Observe(NotificationType type,
 }
 
 bool BrowserActionButton::IsPopup() {
-  return browser_action_->has_popup();
+  int tab_id = panel_->GetCurrentTabId();
+  if (tab_id < 0) {
+    NOTREACHED() << "Button is not on a specific tab.";
+    return false;
+  }
+  return browser_action_->HasPopup(tab_id);
+}
+
+GURL BrowserActionButton::GetPopupUrl() {
+  int tab_id = panel_->GetCurrentTabId();
+  if (tab_id < 0) {
+    NOTREACHED() << "Button is not on a specific tab.";
+    GURL empty_url;
+    return empty_url;
+  }
+  return browser_action_->GetPopupUrl(tab_id);
 }
 
 bool BrowserActionButton::Activate() {
@@ -510,7 +525,8 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
         toolbar_->browser()->window()->GetNativeHandle();
     BubbleBorder::ArrowLocation arrow_location = UILayoutIsRightToLeft() ?
         BubbleBorder::TOP_LEFT : BubbleBorder::TOP_RIGHT;
-    popup_ = ExtensionPopup::Show(browser_action->popup_url(),
+
+    popup_ = ExtensionPopup::Show(button->GetPopupUrl(),
                                   toolbar_->browser(),
                                   toolbar_->browser()->profile(),
                                   frame_window,

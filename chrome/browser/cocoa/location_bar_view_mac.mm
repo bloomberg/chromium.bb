@@ -543,7 +543,14 @@ LocationBarViewMac::PageActionImageView::~PageActionImageView() {
 // Overridden from LocationBarImageView. Either notify listeners or show a
 // popup depending on the Page Action.
 bool LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
-  if (page_action_->has_popup()) {
+  if (current_tab_id_ < 0) {
+    NOTREACHED() << "No current tab.";
+    // We don't want other code to try and handle this click.  Returning true
+    // prevents this by indicating that we handled it.
+    return true;
+  }
+
+  if (page_action_->HasPopup(current_tab_id_)) {
     AutocompleteTextField* textField = owner_->GetAutocompleteTextField();
     NSWindow* window = [textField window];
     NSRect relativeBounds = [[window contentView] convertRect:bounds
@@ -555,16 +562,16 @@ bool LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
     // Adjust the anchor point to be at the center of the page action icon.
     arrowPoint.x += [GetImage() size].width / 2;
 
-    popup_controller_ =
-        [ExtensionPopupController showURL:page_action_->popup_url()
-                                inBrowser:BrowserList::GetLastActive()
-                               anchoredAt:arrowPoint
-                            arrowLocation:kTopRight];
-    } else {
-      ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
-          profile_, page_action_->extension_id(), page_action_->id(),
-          current_tab_id_, current_url_.spec(),
-          1);  // TODO(pamg): Add support for middle and right buttons.
+    popup_controller_ = [ExtensionPopupController
+            showURL:page_action_->GetPopupUrl(current_tab_id_)
+          inBrowser:BrowserList::GetLastActive()
+         anchoredAt:arrowPoint
+      arrowLocation:kTopRight];
+  } else {
+    ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+        profile_, page_action_->extension_id(), page_action_->id(),
+        current_tab_id_, current_url_.spec(),
+        1);
   }
   return true;
 }

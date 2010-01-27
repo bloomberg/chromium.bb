@@ -1050,9 +1050,9 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     GtkWidget* sender,
     GdkEvent* event) {
   if (event->button.button != 3) {
-    if (page_action_->has_popup()) {
+    if (page_action_->HasPopup(current_tab_id_)) {
       ExtensionPopupGtk::Show(
-          page_action_->popup_url(),
+          page_action_->GetPopupUrl(current_tab_id_),
           owner_->browser_,
           gtk_util::GetWidgetRectRelativeToToplevel(event_box_.get()));
     } else {

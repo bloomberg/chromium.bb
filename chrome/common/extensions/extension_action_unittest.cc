@@ -138,4 +138,31 @@ TEST(ExtensionActionTest, TabSpecificState) {
   ASSERT_EQ(0xFF0000FFu, action.GetBadgeBackgroundColor(1));
   action.ClearAllValuesForTab(100);
   ASSERT_EQ(0xFF0000FFu, action.GetBadgeBackgroundColor(100));
+
+  // popup url
+  GURL url_unset;
+  GURL url_foo("http://www.example.com/foo.html");
+  GURL url_bar("http://www.example.com/bar.html");
+  GURL url_baz("http://www.example.com/baz.html");
+
+  ASSERT_EQ(url_unset, action.GetPopupUrl(1));
+  ASSERT_EQ(url_unset, action.GetPopupUrl(100));
+  ASSERT_FALSE(action.HasPopup(1));
+  ASSERT_FALSE(action.HasPopup(100));
+
+  action.SetPopupUrl(ExtensionAction::kDefaultTabId, url_foo);
+  ASSERT_EQ(url_foo, action.GetPopupUrl(1));
+  ASSERT_EQ(url_foo, action.GetPopupUrl(100));
+
+  action.SetPopupUrl(100, url_bar);
+  ASSERT_EQ(url_foo, action.GetPopupUrl(1));
+  ASSERT_EQ(url_bar, action.GetPopupUrl(100));
+
+  action.SetPopupUrl(ExtensionAction::kDefaultTabId, url_baz);
+  ASSERT_EQ(url_baz, action.GetPopupUrl(1));
+  ASSERT_EQ(url_bar, action.GetPopupUrl(100));
+
+  action.ClearAllValuesForTab(100);
+  ASSERT_EQ(url_baz, action.GetPopupUrl(1));
+  ASSERT_EQ(url_baz, action.GetPopupUrl(100));
 }

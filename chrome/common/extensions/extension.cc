@@ -457,7 +457,7 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
           errors::kInvalidPageActionPopupPath, url_str);
       return NULL;
     }
-    result->set_popup_url(url);
+    result->SetPopupUrl(ExtensionAction::kDefaultTabId, url);
   } else if (!url_str.empty()) {
     GURL url = GetResourceURL(url_str);
     if (!url.is_valid()) {
@@ -465,7 +465,7 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
           errors::kInvalidPageActionPopupPath, url_str);
       return NULL;
     }
-    result->set_popup_url(url);
+    result->SetPopupUrl(ExtensionAction::kDefaultTabId, url);
   }
 
   return result.release();

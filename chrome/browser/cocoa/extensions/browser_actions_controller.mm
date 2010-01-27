@@ -220,8 +220,14 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
 }
 
 - (void)browserActionClicked:(BrowserActionButton*)sender {
+  int tabId = [self currentTabId];
+  if (tabId < 0) {
+    NOTREACHED() << "No current tab.";
+    return;
+  }
+
   ExtensionAction* action = [sender extension]->browser_action();
-  if (action->has_popup() && !popupController_) {
+  if (action->HasPopup(tabId) && !popupController_) {
     NSString* extensionId = base::SysUTF8ToNSString([sender extension]->id());
     // If the extension ID is not valid UTF-8, then the NSString will be nil
     // and an exception will be thrown when calling objectForKey below, hosing
@@ -239,10 +245,12 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
     // Adjust the anchor point to be at the center of the browser action button.
     arrowPoint.x += kBrowserActionWidth / 2;
 
-    popupController_ = [ExtensionPopupController showURL:action->popup_url()
-                                               inBrowser:browser_
-                                              anchoredAt:arrowPoint
-                                           arrowLocation:kTopRight];
+    popupController_ = [ExtensionPopupController
+            showURL:action->GetPopupUrl(tabId)
+          inBrowser:browser_
+         anchoredAt:arrowPoint
+      arrowLocation:kTopRight];
+
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(popupWillClose:)

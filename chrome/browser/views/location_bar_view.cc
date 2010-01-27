@@ -1316,7 +1316,12 @@ LocationBarView::PageActionImageView::~PageActionImageView() {
 }
 
 void LocationBarView::PageActionImageView::ExecuteAction(int button) {
-  if (page_action_->has_popup()) {
+  if (current_tab_id_ < 0) {
+    NOTREACHED() << "No current tab.";
+    return;
+  }
+
+  if (page_action_->HasPopup(current_tab_id_)) {
     // In tests, GetLastActive could return NULL, so we need to have
     // a fallback.
     // TODO(erikkay): Find a better way to get the Browser that this
@@ -1342,7 +1347,7 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button) {
     rect.set_x(origin.x());
     rect.set_y(origin.y());
 
-    popup_ = ExtensionPopup::Show(page_action_->popup_url(),
+    popup_ = ExtensionPopup::Show(page_action_->GetPopupUrl(current_tab_id_),
                                   browser,
                                   browser->profile(),
                                   browser->window()->GetNativeHandle(),

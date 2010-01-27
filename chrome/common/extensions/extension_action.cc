@@ -92,6 +92,7 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   badge_text_color_.erase(tab_id);
   badge_background_color_.erase(tab_id);
   visible_.erase(tab_id);
+  popup_url_.erase(tab_id);
 }
 
 void ExtensionAction::PaintBadge(gfx::Canvas* canvas,

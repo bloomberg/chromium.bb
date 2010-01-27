@@ -76,6 +76,7 @@ class BrowserActionButton : public views::MenuButton,
 
   // Does this button's action have a popup?
   virtual bool IsPopup();
+  virtual GURL GetPopupUrl();
 
   // Notifications when to set button state to pushed/not pushed (for when the
   // popup/context menu is hidden or shown by the container).

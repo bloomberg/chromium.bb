@@ -188,9 +188,17 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   static void OnClicked(GtkWidget* widget, BrowserActionButton* action) {
-    if (action->extension_->browser_action()->has_popup()) {
+    ExtensionAction* browser_action = action->extension_->browser_action();
+
+    int tab_id = action->toolbar_->GetCurrentTabId();
+    if (tab_id < 0) {
+      NOTREACHED() << "No current tab.";
+      return;
+    }
+
+    if (browser_action->HasPopup(tab_id)) {
       ExtensionPopupGtk::Show(
-          action->extension_->browser_action()->popup_url(),
+          action->extension_->browser_action()->GetPopupUrl(tab_id),
           action->toolbar_->browser(),
           gtk_util::GetWidgetRectRelativeToToplevel(widget));
     } else {

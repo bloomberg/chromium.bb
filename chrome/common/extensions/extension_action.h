@@ -36,11 +36,6 @@ class ExtensionAction {
     extension_id_ = extension_id;
   }
 
-  // popup details
-  const GURL& popup_url() const { return popup_url_; }
-  void set_popup_url(const GURL& url) { popup_url_ = url; }
-  bool has_popup() const { return !popup_url_.is_empty(); }
-
   // action id -- only used with legacy page actions API
   std::string id() const { return id_; }
   void set_id(const std::string& id) { id_ = id; }
@@ -48,10 +43,32 @@ class ExtensionAction {
   // static icon paths from manifest -- only used with legacy page actions API.
   std::vector<std::string>* icon_paths() { return &icon_paths_; }
 
-  // title
+  // Set the url which the popup will load when the user clicks this action's
+  // icon.  Setting an empty URL will disable the popup for a given tab.
+  void SetPopupUrl(int tab_id, const GURL& url) {
+    // We store |url| even if it is empty, rather than removing a URL from the
+    // map.  If an extension has a default popup, and removes it for a tab via
+    // the API, we must remember that there is no popup for that specific tab.
+    // If we removed the tab's URL, GetPopupURL would incorrectly return the
+    // default URL.
+    SetValue(&popup_url_, tab_id, url);
+  }
+
+  // Use HasPopup() to see if a popup should be displayed.
+  bool HasPopup(int tab_id) {
+    return !GetPopupUrl(tab_id).is_empty();
+  }
+
+  // Get the URL to display in a popup.
+  GURL GetPopupUrl(int tab_id) { return GetValue(&popup_url_, tab_id); }
+
+  // Set this action's title on a specific tab.
   void SetTitle(int tab_id, const std::string& title) {
     SetValue(&title_, tab_id, title);
   }
+
+  // If tab |tab_id| has a set title, return it.  Otherwise, return
+  // the default title.
   std::string GetTitle(int tab_id) { return GetValue(&title_, tab_id); }
 
   // Icons are a bit different because the default value can be set to either a
@@ -61,13 +78,15 @@ class ExtensionAction {
   // To get the default icon, first check for the bitmap. If it is null, check
   // for the path.
 
-  // Icon bitmap.
+  // Set this action's icon bitmap on a specific tab.
   void SetIcon(int tab_id, const SkBitmap& bitmap) {
     SetValue(&icon_, tab_id, bitmap);
   }
+  // Get the icon for a tab, or the default if no icon was set.
   SkBitmap GetIcon(int tab_id) { return GetValue(&icon_, tab_id); }
 
-  // Icon index -- for use with icon_paths(), only used in page actions.
+  // Set this action's icon index for a specific tab.  For use with
+  // icon_paths(), only used in page actions.
   void SetIconIndex(int tab_id, int index) {
     if (static_cast<size_t>(index) >= icon_paths_.size()) {
       NOTREACHED();
@@ -75,6 +94,8 @@ class ExtensionAction {
     }
     SetValue(&icon_index_, tab_id, index);
   }
+  // Get this action's icon index for a tab, or the default if no icon index
+  // was set.
   int GetIconIndex(int tab_id) {
     return GetValue(&icon_index_, tab_id);
   }
@@ -88,32 +109,41 @@ class ExtensionAction {
     return default_icon_path_;
   }
 
-  // badge text
+  // Set this action's badge text on a specific tab.
   void SetBadgeText(int tab_id, const std::string& text) {
     SetValue(&badge_text_, tab_id, text);
   }
-  std::string GetBadgeText(int tab_id) { return GetValue(&badge_text_, tab_id); }
+  // Get the badge text for a tab, or the default if no badge text was set.
+  std::string GetBadgeText(int tab_id) {
+    return GetValue(&badge_text_, tab_id);
+  }
 
-  // badge text color
+  // Set this action's badge text color on a specific tab.
   void SetBadgeTextColor(int tab_id, const SkColor& text_color) {
     SetValue(&badge_text_color_, tab_id, text_color);
   }
+  // Get the text color for a tab, or the default color if no text color
+  // was set.
   SkColor GetBadgeTextColor(int tab_id) {
     return GetValue(&badge_text_color_, tab_id);
   }
 
-  // badge background color
+  // Set this action's badge background color on a specific tab.
   void SetBadgeBackgroundColor(int tab_id, const SkColor& color) {
     SetValue(&badge_background_color_, tab_id, color);
   }
+  // Get the badge backround color for a tab, or the default if no color
+  // was set.
   SkColor GetBadgeBackgroundColor(int tab_id) {
     return GetValue(&badge_background_color_, tab_id);
   }
 
-  // visibility
+  // Set this action's badge visibility on a specific tab.
   void SetIsVisible(int tab_id, bool value) {
     SetValue(&visible_, tab_id, value);
   }
+  // Get the badge visibility for a tab, or the default badge visibility
+  // if none was set.
   bool GetIsVisible(int tab_id) {
     return GetValue(&visible_, tab_id);
   }
@@ -154,6 +184,7 @@ class ExtensionAction {
 
   // Each of these data items can have both a global state (stored with the key
   // kDefaultTabId), or tab-specific state (stored with the tab_id as the key).
+  std::map<int, GURL> popup_url_;
   std::map<int, std::string> title_;
   std::map<int, SkBitmap> icon_;
   std::map<int, int> icon_index_;  // index into icon_paths_
@@ -163,9 +194,6 @@ class ExtensionAction {
   std::map<int, bool> visible_;
 
   std::string default_icon_path_;
-
-  // If the action has a popup, it has a URL and a height.
-  GURL popup_url_;
 
   // The id for the ExtensionAction, for example: "RssPageAction". This is
   // needed for compat with an older version of the page actions API.
