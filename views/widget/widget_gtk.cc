@@ -427,7 +427,12 @@ void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
 }
 
 void WidgetGtk::MoveAbove(Widget* widget) {
-  NOTIMPLEMENTED();
+  DCHECK(widget_);
+  DCHECK(widget_->window);
+  // TODO(oshima): gdk_window_restack is not available in gtk2.0, so
+  // we're simply raising the window to the top. We should switch to
+  // gdk_window_restack when we upgrade gtk to 2.18 or up.
+  gdk_window_raise(widget_->window);
 }
 
 void WidgetGtk::SetShape(gfx::NativeRegion region) {
@@ -496,7 +501,8 @@ void WidgetGtk::SetOpacity(unsigned char opacity) {
 }
 
 void WidgetGtk::SetAlwaysOnTop(bool on_top) {
-  NOTIMPLEMENTED();
+  DCHECK(widget_);
+  gtk_window_set_keep_above(GTK_WINDOW(widget_), on_top);
 }
 
 RootView* WidgetGtk::GetRootView() {
