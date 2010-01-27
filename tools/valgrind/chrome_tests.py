@@ -98,7 +98,7 @@ class ChromeTests:
     self._source_dir = os.path.dirname(os.path.dirname(script_dir))
     # since this path is used for string matching, make sure it's always
     # an absolute Windows-style path
-    self._source_dir = layout_package.path_utils.GetAbsolutePath(
+    self._source_dir = layout_package.path_utils.get_absolute_path(
         self._source_dir)
     valgrind_test_script = os.path.join(script_dir, "valgrind_test.py")
     self._command_preamble = [valgrind_test_script,
