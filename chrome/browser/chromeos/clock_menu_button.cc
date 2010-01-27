@@ -26,7 +26,6 @@ const int kTimerSlopSeconds = 1;
 
 ClockMenuButton::ClockMenuButton(Browser* browser)
     : MenuButton(NULL, std::wstring(), this, false),
-      clock_menu_(this),
       browser_(browser) {
   set_border(NULL);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
@@ -141,9 +140,12 @@ void ClockMenuButton::ActivatedAt(int index) {
 // ClockMenuButton, views::ViewMenuDelegate implementation:
 
 void ClockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
-  clock_menu_.Rebuild();
-  clock_menu_.UpdateStates();
-  clock_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+  if (!clock_menu_.get())
+    clock_menu_.reset(new views::Menu2(this));
+  else
+    clock_menu_->Rebuild();
+  clock_menu_->UpdateStates();
+  clock_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
 
 }  // namespace chromeos

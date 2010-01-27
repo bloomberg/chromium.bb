@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CLOCK_MENU_BUTTON_H_
 #define CHROME_BROWSER_CHROMEOS_CLOCK_MENU_BUTTON_H_
 
+#include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/pref_member.h"
@@ -67,7 +68,9 @@ class ClockMenuButton : public views::MenuButton,
   StringPrefMember timezone_;
 
   // The clock menu.
-  views::Menu2 clock_menu_;
+  // NOTE: we use a scoped_ptr here as menu calls into 'this' from the
+  // constructor.
+  scoped_ptr<views::Menu2> clock_menu_;
 
   // The browser object. Can be NULL if the button is on the login manager
   // screen.

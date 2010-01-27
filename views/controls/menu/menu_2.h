@@ -20,6 +20,12 @@ class NativeMenuGtk;
 // A menu. Populated from a model, and relies on a delegate to execute commands.
 class Menu2 {
  public:
+  // Creates a new menu populated with the contents of |model|.
+  // WARNING: this populates the menu on construction by invoking methods on
+  // the model. As such, it is typically not safe to use this as the model
+  // from the constructor. EG:
+  //   MyClass : menu_(this) {}
+  // is likely to have problems.
   explicit Menu2(menus::MenuModel* model);
   virtual ~Menu2() {}
 
