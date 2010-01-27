@@ -15,10 +15,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
-// TODO(akalin): Now that AppMenuModel handles the sync item
-// dynamically, we don't need to refresh the menu on Windows/Linux.
-// Remove that code and make sure it works.
-
 AppMenuModel::AppMenuModel(menus::SimpleMenuModel::Delegate* delegate,
                            Browser* browser)
     : menus::SimpleMenuModel(delegate),

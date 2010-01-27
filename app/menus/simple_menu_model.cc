@@ -60,6 +60,67 @@ void SimpleMenuModel::AddSubMenuWithStringId(int string_id, MenuModel* model) {
   AddSubMenu(l10n_util::GetStringUTF16(string_id), model);
 }
 
+void SimpleMenuModel::InsertItemAt(
+    int index, int command_id, const string16& label) {
+  Item item = { command_id, label, TYPE_COMMAND, -1, NULL };
+  items_.insert(items_.begin() + FlipIndex(index), item);
+}
+
+void SimpleMenuModel::InsertItemWithStringIdAt(
+    int index, int command_id, int string_id) {
+  InsertItemAt(index, command_id, l10n_util::GetStringUTF16(string_id));
+}
+
+void SimpleMenuModel::InsertSeparatorAt(int index) {
+  Item item = { -1, string16(), TYPE_SEPARATOR, -1, NULL };
+  items_.insert(items_.begin() + FlipIndex(index), item);
+}
+
+void SimpleMenuModel::InsertCheckItemAt(
+    int index, int command_id, const string16& label) {
+  Item item = { command_id, label, TYPE_CHECK, -1, NULL };
+  items_.insert(items_.begin() + FlipIndex(index), item);
+}
+
+void SimpleMenuModel::InsertCheckItemWithStringIdAt(
+    int index, int command_id, int string_id) {
+  InsertCheckItemAt(
+      FlipIndex(index), command_id, l10n_util::GetStringUTF16(string_id));
+}
+
+void SimpleMenuModel::InsertRadioItemAt(
+    int index, int command_id, const string16& label, int group_id) {
+  Item item = { command_id, label, TYPE_RADIO, group_id, NULL };
+  items_.insert(items_.begin() + FlipIndex(index), item);
+}
+
+void SimpleMenuModel::InsertRadioItemWithStringIdAt(
+    int index, int command_id, int string_id, int group_id) {
+  InsertRadioItemAt(
+      index, command_id, l10n_util::GetStringUTF16(string_id), group_id);
+}
+
+void SimpleMenuModel::InsertSubMenuAt(
+    int index, const string16& label, MenuModel* model) {
+  Item item = { -1, label, TYPE_SUBMENU, -1, model };
+  items_.insert(items_.begin() + FlipIndex(index), item);
+}
+
+void SimpleMenuModel::InsertSubMenuWithStringIdAt(
+    int index, int string_id, MenuModel* model) {
+  InsertSubMenuAt(index, l10n_util::GetStringUTF16(string_id), model);
+}
+
+int SimpleMenuModel::GetIndexOfCommandId(int command_id) {
+  std::vector<Item>::iterator itr;
+  for (itr = items_.begin(); itr != items_.end(); itr++) {
+    if ((*itr).command_id == command_id) {
+      return FlipIndex(static_cast<int>(std::distance(items_.begin(), itr)));
+    }
+  }
+  return -1;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMenuModel, MenuModel implementation:
 

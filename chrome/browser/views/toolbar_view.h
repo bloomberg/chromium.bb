@@ -59,6 +59,9 @@ class ToolbarView : public AccessibleToolbarView,
   // (such as user editing) as well.
   void Update(TabContents* tab, bool should_restore_state);
 
+  // Sets the app menu model.
+  void SetAppMenuModel(AppMenuModel* model);
+
   // Accessors...
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }

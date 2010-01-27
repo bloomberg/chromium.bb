@@ -62,6 +62,23 @@ class SimpleMenuModel : public MenuModel {
   void AddSubMenu(const string16& label, MenuModel* model);
   void AddSubMenuWithStringId(int string_id, MenuModel* model);
 
+  // Methods for inserting items into the model.
+  void InsertItemAt(int index, int command_id, const string16& label);
+  void InsertItemWithStringIdAt(int index, int command_id, int string_id);
+  void InsertSeparatorAt(int index);
+  void InsertCheckItemAt(int index, int command_id, const string16& label);
+  void InsertCheckItemWithStringIdAt(int index, int command_id, int string_id);
+  void InsertRadioItemAt(
+      int index, int command_id, const string16& label, int group_id);
+  void InsertRadioItemWithStringIdAt(
+      int index, int command_id, int string_id, int group_id);
+  void InsertSubMenuAt(int index, const string16& label, MenuModel* model);
+  void InsertSubMenuWithStringIdAt(int index, int string_id, MenuModel* model);
+
+  // Returns the index of the item that has the given |command_id|. Returns
+  // -1 if not found.
+  int GetIndexOfCommandId(int command_id);
+
   // Overridden from MenuModel:
   virtual bool HasIcons() const;
   virtual int GetItemCount() const;

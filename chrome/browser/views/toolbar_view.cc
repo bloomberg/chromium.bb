@@ -121,6 +121,9 @@ void ToolbarView::Init(Profile* profile) {
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
 
   SetProfile(profile);
+  if (!app_menu_model_.get()) {
+    SetAppMenuModel(new AppMenuModel(this, browser_));
+  }
 }
 
 void ToolbarView::SetProfile(Profile* profile) {
@@ -137,6 +140,11 @@ void ToolbarView::Update(TabContents* tab, bool should_restore_state) {
 
   if (browser_actions_)
     browser_actions_->RefreshBrowserActionViews();
+}
+
+void ToolbarView::SetAppMenuModel(AppMenuModel* model) {
+  app_menu_model_.reset(model);
+  app_menu_menu_.reset(new views::Menu2(app_menu_model_.get()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -713,9 +721,5 @@ void ToolbarView::RunPageMenu(const gfx::Point& pt) {
 }
 
 void ToolbarView::RunAppMenu(const gfx::Point& pt) {
-  // We always rebuild the app menu so that we can get the current state of
-  // the sync system.
-  app_menu_model_.reset(new AppMenuModel(this, browser_));
-  app_menu_menu_.reset(new views::Menu2(app_menu_model_.get()));
   app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
