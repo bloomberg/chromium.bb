@@ -518,11 +518,6 @@ void NTPResourceCache::CreateNewTabCSS() {
   subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$6
   subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$7
 
-#if defined(OS_MACOSX)
-  // No extensions available on Mac yet.
-  subst2.push_back("none");  // $$8: display of lower right promo image
-  subst2.push_back("none");  // $$9: display of butterbar footer promo line
-#else
   if (profile_->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) > 0) {
     subst2.push_back("block");  // $$8
   } else {
@@ -533,7 +528,6 @@ void NTPResourceCache::CreateNewTabCSS() {
   } else {
     subst2.push_back("none");  // $$9
   }
-#endif
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
