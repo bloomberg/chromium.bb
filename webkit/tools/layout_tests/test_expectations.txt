@@ -2907,7 +2907,7 @@ BUG32692 MAC DEBUG : svg/custom/visibility-override-filter.svg = TEXT PASS
 BUG32693 MAC DEBUG : svg/dom/SVGRectElement/rect-modify-rx.svg = TEXT PASS
 BUG32666 MAC DEBUG : svg/custom/use-detach.svg = IMAGE PASS
 
-BUG_DPRANKE WIN : fast/media/lifetime.html = PASS TIMEOUT
+BUG33293 SKIP : fast/media/lifetime.html = TIMEOUT
 
 // WebKit roll 53585 -> 53655
 BUG32863 LINUX MAC : websocket/tests/url-no-trailing-slash.html = TEXT
