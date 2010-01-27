@@ -554,6 +554,9 @@ BUG30536 WIN SLOW : http/tests/xmlhttprequest/access-control-basic-allow-preflig
 BUG30536 WIN SLOW : http/tests/xmlhttprequest/methods.html = FAIL
 BUG30536 LINUX : http/tests/xmlhttprequest/methods.html = FAIL
 BUG30536 MAC : http/tests/xmlhttprequest/methods.html = FAIL TIMEOUT
+// Webkit 50667:50696 (Lighttpd related?)
+BUG30536 WIN : http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html = TEXT
+
 // Another lighttpd quirk.
 BUG8941 WIN SLOW : http/tests/xmlhttprequest/web-apps/013.html = FAIL
 BUG8941 LINUX SLOW : http/tests/xmlhttprequest/web-apps/013.html = PASS
@@ -908,8 +911,7 @@ BUG8635 LINUX : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
 BUG8635 WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-06-b.svg = FAIL
 BUG8635 WIN LINUX : svg/batik/paints/patternRegionA.svg = FAIL
 BUG8635 WIN LINUX : svg/W3C-SVG-1.1/pservers-pattern-01-b.svg = FAIL
-
-BUG10415 WIN LINUX : svg/custom/pattern-with-transformation.svg = FAIL
+BUG8635 WIN LINUX : svg/custom/pattern-with-transformation.svg = FAIL
 
 // Text fails very rarely, 1/200 runs or fewer.
 BUG29737 LINUX DEBUG : svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
@@ -2463,9 +2465,6 @@ BUG26291 MAC : transforms/2d/hindi-rotated.html = IMAGE
 BUG9798 WIN DEBUG : media/video-empty-source.html = IMAGE PASS
 BUG32098 : fast/dom/defaultView.html = TEXT PASS
 BUG9798 WIN RELEASE : http/tests/navigation/no-referrer-reset.html = TIMEOUT PASS
-
-// Webkit 50667:50696 (Lighttpd related?)
-BUG28417 WIN : http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html = TEXT
 
 // more test flakiness
 BUG27334 MAC RELEASE : http/tests/misc/xhtml.php = PASS TIMEOUT
