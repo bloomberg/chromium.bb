@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,19 +45,25 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
   // Notification that the contents of a node has changed.
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node);
 
+  // Invalidates the Cocoa model. This is used to tear down the Cocoa model
+  // when we're about to entirely rebuild it.
+  void InvalidateCocoaModel();
+
  private:
   friend class ::CookiesWindowControllerTest;
 
   // Creates an CocoaCookieTreeNodefrom a platform-independent one.
-  // Return value is autoreleased. This can recusively create child nodes.
-  CocoaCookieTreeNode* CocoaNodeFromTreeNode(TreeModelNode* node,
-                                             bool recurse);
+  // Return value is autoreleased. This creates child nodes recusively.
+  CocoaCookieTreeNode* CocoaNodeFromTreeNode(TreeModelNode* node);
 
   // Finds the Cocoa model node based on a platform-independent one. This is
   // done by comparing the treeNode pointers. |start| is the node to start
   // searching at. If |start| is nil, the root is used.
   CocoaCookieTreeNode* FindCocoaNode(TreeModelNode* node,
                                      CocoaCookieTreeNode* start);
+
+  // Returns whether or not the Cocoa tree model is built.
+  bool HasCocoaModel();
 
   CookiesWindowController* window_controller_;  // weak, owns us.
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,10 @@ void CookiesTreeModelObserverBridge::TreeNodesAdded(TreeModel* model,
                                                     TreeModelNode* parent,
                                                     int start,
                                                     int count) {
+  // We're in for a major rebuild. Ignore this request.
+  if (!HasCocoaModel())
+    return;
+
   CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
   NSMutableArray* cocoa_children = [cocoa_parent children];
 
@@ -40,7 +44,7 @@ void CookiesTreeModelObserverBridge::TreeNodesAdded(TreeModel* model,
   CookieTreeNode* cookie_parent = static_cast<CookieTreeNode*>(parent);
   for (int i = 0; i < count; ++i) {
     CookieTreeNode* cookie_child = cookie_parent->GetChild(start + i);
-    CocoaCookieTreeNode* new_child = CocoaNodeFromTreeNode(cookie_child, true);
+    CocoaCookieTreeNode* new_child = CocoaNodeFromTreeNode(cookie_child);
     [cocoa_children addObject:new_child];
   }
   [window_controller_ didChangeValueForKey:kCocoaTreeModel];
@@ -51,6 +55,10 @@ void CookiesTreeModelObserverBridge::TreeNodesRemoved(TreeModel* model,
                                                       TreeModelNode* parent,
                                                       int start,
                                                       int count) {
+  // We're in for a major rebuild. Ignore this request.
+  if (!HasCocoaModel())
+    return;
+
   CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
   [window_controller_ willChangeValueForKey:kCocoaTreeModel];
   NSMutableArray* cocoa_children = [cocoa_parent children];
@@ -64,6 +72,10 @@ void CookiesTreeModelObserverBridge::TreeNodesRemoved(TreeModel* model,
 // the direct children of |parent| have been reordered, not descendants.
 void CookiesTreeModelObserverBridge::TreeNodeChildrenReordered(TreeModel* model,
     TreeModelNode* parent) {
+  // We're in for a major rebuild. Ignore this request.
+  if (!HasCocoaModel())
+    return;
+
   CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
   NSMutableArray* cocoa_children = [cocoa_parent children];
 
@@ -88,14 +100,28 @@ void CookiesTreeModelObserverBridge::TreeNodeChildrenReordered(TreeModel* model,
 // Notification that the contents of a node has changed.
 void CookiesTreeModelObserverBridge::TreeNodeChanged(TreeModel* model,
                                                      TreeModelNode* node) {
-  [window_controller_ willChangeValueForKey:kCocoaTreeModel];
-  CocoaCookieTreeNode* changed_node = FindCocoaNode(node, nil);
-  [changed_node rebuild];
-  [window_controller_ didChangeValueForKey:kCocoaTreeModel];
+  // If we don't have a Cocoa model, only let the root node change.
+  if (!HasCocoaModel() && model->GetRoot() != node)
+    return;
+
+  if (HasCocoaModel()) {
+    // We still have a Cocoa model, so just rebuild the node.
+    [window_controller_ willChangeValueForKey:kCocoaTreeModel];
+    CocoaCookieTreeNode* changed_node = FindCocoaNode(node, nil);
+    [changed_node rebuild];
+    [window_controller_ didChangeValueForKey:kCocoaTreeModel];
+  } else {
+    // Full rebuild.
+    [window_controller_ setCocoaTreeModel:CocoaNodeFromTreeNode(node)];
+  }
+}
+
+void CookiesTreeModelObserverBridge::InvalidateCocoaModel() {
+  [[[window_controller_ cocoaTreeModel] children] removeAllObjects];
 }
 
 CocoaCookieTreeNode* CookiesTreeModelObserverBridge::CocoaNodeFromTreeNode(
-    TreeModelNode* node, bool recurse) {
+    TreeModelNode* node) {
   CookieTreeNode* cookie_node = static_cast<CookieTreeNode*>(node);
   return [[[CocoaCookieTreeNode alloc] initWithNode:cookie_node] autorelease];
 }
@@ -122,6 +148,11 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
       return recurse;
   }
   return nil;  // We couldn't find the node.
+}
+
+// Returns whether or not the Cocoa tree model is built.
+bool CookiesTreeModelObserverBridge::HasCocoaModel() {
+  return ([[[window_controller_ cocoaTreeModel] children] count] > 0U);
 }
 
 #pragma mark Window Controller
@@ -190,6 +221,10 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
 - (IBAction)updateFilter:(id)sender {
   DCHECK([sender isKindOfClass:[NSSearchField class]]);
   NSString* string = [sender stringValue];
+  // Invalidate the model here because all the nodes are going to be removed
+  // in UpdateSearchResults(). This could lead to there temporarily being
+  // invalid pointers in the Cocoa model.
+  modelObserver_->InvalidateCocoaModel();
   treeModel_->UpdateSearchResults(base::SysNSStringToWide(string));
 }
 
@@ -211,6 +246,8 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
 }
 
 - (IBAction)deleteAllCookies:(id)sender {
+  // Preemptively delete all cookies in the Cocoa model.
+  modelObserver_->InvalidateCocoaModel();
   treeModel_->DeleteAllCookies();
 }
 
@@ -232,7 +269,7 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
   return cocoaTreeModel_.get();
 }
 - (void)setCocoaTreeModel:(CocoaCookieTreeNode*)model {
-  return cocoaTreeModel_.reset([model retain]);
+  cocoaTreeModel_.reset([model retain]);
 }
 
 - (CookiesTreeModel*)treeModel {

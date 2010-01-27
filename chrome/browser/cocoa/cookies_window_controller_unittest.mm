@@ -77,9 +77,8 @@ class CookiesWindowControllerTest : public CocoaTest {
     CocoaTest::TearDown();
   }
 
-  CocoaCookieTreeNode* CocoaNodeFromTreeNode(TreeModelNode* node,
-                                             bool recurse) {
-    return [controller_ modelObserver]->CocoaNodeFromTreeNode(node, recurse);
+  CocoaCookieTreeNode* CocoaNodeFromTreeNode(TreeModelNode* node) {
+    return [controller_ modelObserver]->CocoaNodeFromTreeNode(node);
   }
 
   CocoaCookieTreeNode* FindCocoaNode(TreeModelNode* node,
@@ -146,7 +145,7 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
 
   // Root --> foo.com --> Cookies --> A. Create node for 'A'.
   TreeModelNode* node = model.GetRoot()->GetChild(0)->GetChild(0)->GetChild(0);
-  CocoaCookieTreeNode* cookie = CocoaNodeFromTreeNode(node, false);
+  CocoaCookieTreeNode* cookie = CocoaNodeFromTreeNode(node);
 
   EXPECT_TRUE([@"B" isEqualToString:[cookie content]]);
   EXPECT_TRUE([@"When I close my browser" isEqualToString:[cookie expires]]);
@@ -167,7 +166,7 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
 
   // Root --> foo.com --> Cookies --> A. Create node for 'foo.com'.
   CookieTreeNode* node = model.GetRoot()->GetChild(0);
-  CocoaCookieTreeNode* domain = CocoaNodeFromTreeNode(node, true);
+  CocoaCookieTreeNode* domain = CocoaNodeFromTreeNode(node);
   CocoaCookieTreeNode* cookies = [[domain childs] objectAtIndex:0];
   CocoaCookieTreeNode* cookie = [[cookies childs] objectAtIndex:0];
 
