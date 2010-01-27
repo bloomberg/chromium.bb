@@ -252,7 +252,7 @@ class AddressWatchTask : public Task {
         break;
       }
 
-      // If result is 0, select timed out.
+      // If fd is set, the network address might have changed.
       if (FD_ISSET(fd, &rdfs)) {
         char buf[4096];
         struct iovec iov = { buf, sizeof(buf) };

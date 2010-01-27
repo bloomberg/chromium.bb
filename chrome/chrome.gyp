@@ -734,7 +734,7 @@
         'browser/sync/notifier/base/async_dns_lookup.h',
         'browser/sync/notifier/base/async_network_alive.h',
         'browser/sync/notifier/base/fastalloc.h',
-        'browser/sync/notifier/base/linux/network_status_detector_task_linux.cc',
+        'browser/sync/notifier/base/linux/async_network_alive_linux.cc',
         'browser/sync/notifier/base/mac/network_status_detector_task_mac.h',
         'browser/sync/notifier/base/mac/network_status_detector_task_mac.cc',
         'browser/sync/notifier/base/nethelpers.cc',
@@ -823,9 +823,6 @@
       ],
       'conditions': [
         ['OS=="linux"', {
-          'sources!': [
-            'browser/sync/notifier/base/network_status_detector_task_mt.cc',
-          ],
           'dependencies': [
             '../build/linux/system.gyp:gtk'
           ],
