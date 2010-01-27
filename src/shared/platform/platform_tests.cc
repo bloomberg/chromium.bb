@@ -16,6 +16,7 @@ extern "C" {
 }
 #endif
 
+using nacl::can_cast;
 using nacl::saturate_cast;
 using nacl::assert_cast;
 
@@ -43,10 +44,11 @@ int TestCheckedCastSaturate() {
   uint8_t u8;
   int8_t  i8;
 
+  CHECK(can_cast<uint8_t>(u32), false);
   u8 = saturate_cast<uint8_t>(u32);
   CHECK(u8, 255);
 
-
+  CHECK(can_cast<uint8_t>(i32), false);
   u8 = saturate_cast<uint8_t>(i32);
   CHECK(u8, 0);
 
@@ -56,6 +58,9 @@ int TestCheckedCastSaturate() {
   i8 = saturate_cast<int8_t>(i32);
   CHECK(i8, -128);
 
+  CHECK(can_cast<uint16_t>(u32), false);
+  CHECK(can_cast<int32_t>(u32), false);
+  CHECK(can_cast<uint32_t>(u32), true);
   return errors;
 }
 
@@ -137,6 +142,7 @@ int TestCheckedCastUDT() {
   i28 = int28_t(0x80000000);
   CHECK(i28.Overflow(), true);
 
+  CHECK(can_cast<int28_t>(i32),false);
   i28 = saturate_cast<int28_t>(i32);
   CHECK(i28.Overflow(), false);
   CHECK(i28, static_cast<int>(0xf8000000));

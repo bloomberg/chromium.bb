@@ -36,6 +36,19 @@
 
 namespace nacl {
 
+  //
+  // Function to determine whether an information-preserving cast
+  // is possible. In other words, if this function returns true, then
+  // the input value has an exact representation in the target type.
+  //
+  template<typename target_t, typename source_t>
+  bool can_cast(const source_t& input);
+
+  //
+  // Function to safely cast from one type to another, with a customizable
+  // policy determining what happens if the cast cannot complete without
+  // losing information.
+  //
   template <
     typename target_t,
     typename source_t,
@@ -46,12 +59,12 @@ namespace nacl {
   // Convenience wrappers for specializations of checked_cast with
   // different truncation policies
   //
-
   template<typename T, typename S>
   T assert_cast(const S& input);
 
   template<typename T, typename S>
   T saturate_cast(const S& input);
+
 
   //
   // Helper function prototypes
@@ -291,9 +304,8 @@ namespace nacl {
 //
 //-----------------------------------------------------------------------------
 
-
 //-----------------------------------------------------------------------------
-// checked_cast(const source_t& input, trunc_fn& OnTrunc)
+// checked_cast(const source_t& input)
 //    An augmented replacement for static_cast. Does range checking,
 //    overflow validation. Includes a policy which allows the caller to
 //    specify what action to take if it's determined that the cast
@@ -315,9 +327,6 @@ namespace nacl {
 //
 // Function parameters:
 //    input:    the value to convert.
-//    onTrunc:  reference to the function or functor which will be
-//              called if conversion would lose data. See notes regarding
-//              template parameter trunc_fn for more details.
 //
 // usage:
 //    // naive truncation handler for sample purposes ONLY!!
@@ -348,10 +357,7 @@ target_t nacl::checked_cast(const source_t& input) {
   //
   // Runtime checks--these should compile out for all basic types
   //
-  if (info::RuntimeTrivial()
-     || (info::RuntimePossible()
-        && info::RuntimeRangeCheck(input))
-    ) {
+  if (nacl::can_cast<target_t>(input)) {
     output = static_cast<target_t>(input);
   } else {
     output = trunc_policy<target_t, source_t>::OnTruncate(input);
@@ -359,6 +365,27 @@ target_t nacl::checked_cast(const source_t& input) {
 
   return output;
 }
+
+//-----------------------------------------------------------------------------
+// can_cast(const source_t& input)
+//  Returns true if checked_cast will return without invoking trunc_policy.
+//-----------------------------------------------------------------------------
+template <typename target_t, typename source_t>
+bool nacl::can_cast(const source_t& input) {
+  typedef CheckedCast::detail::CastInfo<target_t, source_t> info;
+
+  bool result;
+
+  //
+  // Runtime checks--these should compile out for all basic types
+  //
+  result = info::RuntimeTrivial()
+    || (info::RuntimePossible()
+    && info::RuntimeRangeCheck(input));
+
+  return result;
+}
+
 
 //
 // Convenience wrappers for specializations of checked_cast
