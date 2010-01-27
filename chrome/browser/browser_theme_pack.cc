@@ -26,6 +26,12 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 
+// No optimizations under windows until we know what's up with the crashing.
+#if defined(OS_WIN)
+#pragma optimize("", off)
+#pragma warning(disable:4748)
+#endif
+
 namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
@@ -211,8 +217,8 @@ BrowserThemePack::~BrowserThemePack() {
 // static
 BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DCHECK(extension);
-  DCHECK(extension->IsTheme());
+  CHECK(extension);
+  CHECK(extension->IsTheme());
 
   BrowserThemePack* pack = new BrowserThemePack;
   pack->BuildHeader(extension);
@@ -291,6 +297,18 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
 }
 
 bool BrowserThemePack::WriteToDisk(FilePath path) const {
+  FilePath::CharType full_path_on_stack[512 + 1];
+  int image_memory_size = image_memory_.size();
+  int prepared_images_size = prepared_images_.size();
+
+  // Copy path's backing string onto the stack because that's what get's stored
+  // in minidumps. :(
+  size_t i = 0;
+  for (i = 0; i < 512 && i < path.value().size(); ++i) {
+    full_path_on_stack[i] = path.value()[i];
+  }
+  full_path_on_stack[i] = '\0';
+
   // Add resources for each of the property arrays.
   RawDataForWriting resources;
   resources[kHeaderID] = base::StringPiece(
@@ -309,6 +327,11 @@ bool BrowserThemePack::WriteToDisk(FilePath path) const {
   RawImages reencoded_images;
   RepackImages(prepared_images_, &reencoded_images);
   AddRawImagesTo(reencoded_images, &resources);
+
+  // Force the values to stick around since the crash happens in
+  // reencoded_images.
+  LOG(INFO) << full_path_on_stack << " / " << image_memory_size
+            << prepared_images_size;
 
   return base::DataPack::WritePack(path, resources);
 }
@@ -825,14 +848,16 @@ void BrowserThemePack::RepackImages(const ImageCache& images,
       NOTREACHED() << "Image file for resource " << it->first
                    << " could not be encoded.";
     } else {
-      (*reencoded_images)[it->first] = RefCountedBytes::TakeVector(&image_data);
+      RefCountedBytes* bytes = RefCountedBytes::TakeVector(&image_data);
+      CHECK(bytes);
+      (*reencoded_images)[it->first] = bytes;
     }
   }
 }
 
 void BrowserThemePack::MergeImageCaches(
     const ImageCache& source, ImageCache* destination) const {
-
+  CHECK(destination);
   for (ImageCache::const_iterator it = source.begin(); it != source.end();
        ++it) {
     ImageCache::const_iterator bitmap_it = destination->find(it->first);
@@ -845,8 +870,16 @@ void BrowserThemePack::MergeImageCaches(
 
 void BrowserThemePack::AddRawImagesTo(const RawImages& images,
                                       RawDataForWriting* out) const {
+  int resource_at_time_of_crash = -1;
+
+  CHECK(out);
   for (RawImages::const_iterator it = images.begin(); it != images.end();
        ++it) {
+    resource_at_time_of_crash = it->first;
+
+    CHECK(it->second->front());
+    CHECK(it->second->size());
+
     (*out)[it->first] = base::StringPiece(
         reinterpret_cast<const char*>(it->second->front()), it->second->size());
   }
@@ -867,3 +900,9 @@ color_utils::HSL BrowserThemePack::GetTintInternal(int id) const {
 
   return BrowserThemeProvider::GetDefaultTint(id);
 }
+
+// No optimizations under windows until we know what's up with the crashing.
+#if defined(OS_WIN)
+#pragma warning(default:4748)
+#pragma optimize("", on)
+#endif

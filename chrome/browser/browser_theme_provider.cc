@@ -38,6 +38,12 @@
 #include "app/win_util.h"
 #endif
 
+// No optimizations under windows until we know what's up with the crashing.
+#if defined(OS_WIN)
+#pragma optimize("", off)
+#pragma warning(disable:4748)
+#endif
+
 // Strings used in alignment properties.
 const char* BrowserThemeProvider::kAlignmentTop = "top";
 const char* BrowserThemeProvider::kAlignmentBottom = "bottom";
@@ -558,17 +564,29 @@ void BrowserThemeProvider::SaveThemeID(const std::string& id) {
 
 void BrowserThemeProvider::MigrateTheme(Extension* extension,
                                         const std::string& name) {
+  FilePath::CharType full_name_on_stack[512 + 1];
+
+  // Copy names's backing string onto the stack because that's what get's
+  // stored in minidumps. :(
+  size_t i = 0;
+  for (i = 0; i < 512 && i < name.size(); ++i) {
+    full_name_on_stack[i] = name[i];
+  }
+  full_name_on_stack[i] = '\0';
+
   // TODO(erg): Remove this hack.
   //
   // This is a hack to force the name of the theme into the stack
   // frame. Hopefully.
   BuildFromExtension(extension, true);
   UserMetrics::RecordAction("Themes.Migrated", profile_);
-  LOG(ERROR) << "Migrating theme: " << name;
+  LOG(INFO) << "Migrating theme: " << full_name_on_stack;
 }
 
 void BrowserThemeProvider::BuildFromExtension(Extension* extension,
                                               bool synchronously) {
+  CHECK(extension);
+
   scoped_refptr<BrowserThemePack> pack =
       BrowserThemePack::BuildFromExtension(extension);
   if (!pack.get()) {
@@ -603,3 +621,9 @@ void BrowserThemeProvider::OnInfobarDestroyed() {
   if (number_of_infobars_ == 0)
     RemoveUnusedThemes();
 }
+
+// No optimizations under windows until we know what's up with the crashing.
+#if defined(OS_WIN)
+#pragma warning(default:4748)
+#pragma optimize("", on)
+#endif
