@@ -544,16 +544,16 @@ BUG10270 : fast/dom/frame-loading-via-document-write.html = FAIL
 // Maybe flaky and need to be forked?
 
 // LightTPD doesn't accept unknown HTTP methods
-BUG18978 SKIP : http/tests/xmlhttprequest/methods-lower-case.html = TIMEOUT CRASH
-BUG18978 DEBUG : http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
-BUG18978 LINUX MAC RELEASE : http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
-BUG18978 WIN RELEASE : http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
-BUG18978 WIN SLOW : http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
+BUG30536 SKIP : http/tests/xmlhttprequest/methods-lower-case.html = TIMEOUT CRASH
+BUG30536 DEBUG : http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
+BUG30536 LINUX MAC RELEASE : http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
+BUG30536 WIN RELEASE : http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
+BUG30536 WIN SLOW : http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods and passes CGIs a Content-Type
 // even when a request didn't send the header.
-BUG18978 WIN SLOW : http/tests/xmlhttprequest/methods.html = FAIL
-BUG18978 LINUX : http/tests/xmlhttprequest/methods.html = FAIL
-BUG18978 MAC : http/tests/xmlhttprequest/methods.html = FAIL TIMEOUT
+BUG30536 WIN SLOW : http/tests/xmlhttprequest/methods.html = FAIL
+BUG30536 LINUX : http/tests/xmlhttprequest/methods.html = FAIL
+BUG30536 MAC : http/tests/xmlhttprequest/methods.html = FAIL TIMEOUT
 // Another lighttpd quirk.
 BUG8941 WIN SLOW : http/tests/xmlhttprequest/web-apps/013.html = FAIL
 BUG8941 LINUX SLOW : http/tests/xmlhttprequest/web-apps/013.html = PASS
@@ -2485,7 +2485,6 @@ BUG27418 MAC DEBUG : http/tests/plugins/interrupted-get-url.html = PASS TEXT
 BUG27418 MAC RELEASE SLOW : http/tests/plugins/interrupted-get-url.html = PASS
 BUG27418 MAC DEBUG : plugins/getintidentifier-special-values.html = PASS TEXT
 BUG27418 MAC DEBUG : plugins/netscape-construct.html = PASS TEXT
-BUG27418 MAC DEBUG : plugins/netscape-invoke-browserfuncs.html = PASS TEXT
 BUG27418 MAC DEBUG : plugins/netscape-get-property-return-value.html = PASS TEXT
 BUG27418 MAC DEBUG : plugins/netscape-throw-exception.html = PASS TEXT
 BUG27418 MAC DEBUG : plugins/get-url-that-the-resource-load-delegate-will-disallow.html = PASS TEXT
