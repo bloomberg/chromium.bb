@@ -117,6 +117,7 @@ bool InitRenderContext(HWND hwnd) {
       command_buffer->GetTransferBuffer(transfer_buffer_id);
   if (transfer_buffer.ptr == NULL) return false;
 
+  gles2::Initialize();
   gles2::SetGLContext(new GLES2Implementation(helper,
                                               transfer_buffer.size,
                                               transfer_buffer.ptr,

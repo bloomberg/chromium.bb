@@ -114,6 +114,7 @@
         'command_buffer/common/mocks.h',
         'command_buffer/common/resource.cc',
         'command_buffer/common/resource.h',
+        'command_buffer/common/thread_local.h',
         'command_buffer/common/types.h',
       ],
     },

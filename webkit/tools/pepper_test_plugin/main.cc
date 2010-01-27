@@ -34,6 +34,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "gpu/pgl/pgl.h"
+
 #if defined(INDEPENDENT_PLUGIN)
 #include <iostream>
 #define LOG(x) std::cerr
@@ -118,6 +120,9 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs
 EXPORT NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* plugin_funcs);
 
 EXPORT void API_CALL NP_Shutdown() {
+#if !defined(INDEPENDENT_PLUGIN)
+  pglTerminate();
+#endif
 }
 
 #if defined(OS_LINUX)
@@ -136,6 +141,9 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs
 #endif
                             ) {
   browser = browser_funcs;
+#if !defined(INDEPENDENT_PLUGIN)
+  pglInitialize();
+#endif
 #if defined(OS_LINUX)
   return NP_GetEntryPoints(plugin_funcs);
 #else

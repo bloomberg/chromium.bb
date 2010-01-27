@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <build/build_config.h>
+
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/common/thread_local.h"
 #include "gpu/pgl/command_buffer_pepper.h"
 #include "gpu/pgl/pgl.h"
 
@@ -43,7 +46,7 @@ class PGLContextImpl {
   gpu::gles2::GLES2Implementation* gles2_implementation_;
 };
 
-THREAD_LOCAL PGLContextImpl* g_current_pgl_context;
+gpu::ThreadLocalKey g_pgl_context_key;
 
 PGLContextImpl::PGLContextImpl(NPP npp,
                                NPDevice* device,
@@ -103,7 +106,10 @@ void PGLContextImpl::Destroy() {
 }
 
 bool PGLContextImpl::MakeCurrent(PGLContextImpl* pgl_context) {
-  g_current_pgl_context = pgl_context;
+  if (!g_pgl_context_key)
+    return false;
+
+  gpu::ThreadLocalSetValue(g_pgl_context_key, pgl_context);
   if (pgl_context)
     gles2::SetGLContext(pgl_context->gles2_implementation_);
   else
@@ -120,9 +126,30 @@ bool PGLContextImpl::SwapBuffers() {
 
 extern "C" {
 
+PGLBoolean pglInitialize() {
+  if (g_pgl_context_key)
+    return true;
+
+  gles2::Initialize();
+  g_pgl_context_key = gpu::ThreadLocalAlloc();
+  return true;
+}
+
+PGLBoolean pglTerminate() {
+  if (!g_pgl_context_key)
+    return true;
+
+  gpu::ThreadLocalFree(g_pgl_context_key);
+  gles2::Terminate();
+  return true;
+}
+
 PGLContext pglCreateContext(NPP npp,
                             NPDevice* device,
                             NPDeviceContext3D* device_context) {
+  if (!g_pgl_context_key)
+    return NULL;
+
   PGLContextImpl* pgl_context = new PGLContextImpl(
       npp, device, device_context);
   if (pgl_context->Initialize(kTransferBufferSize)) {
@@ -138,19 +165,30 @@ PGLBoolean pglMakeCurrent(PGLContext pgl_context) {
 }
 
 PGLContext pglGetCurrentContext(void) {
-  return g_current_pgl_context;
+  if (!g_pgl_context_key)
+    return NULL;
+
+  return static_cast<PGLContext>(gpu::ThreadLocalGetValue(g_pgl_context_key));
 }
 
 PGLBoolean pglSwapBuffers(void) {
-  if (!g_current_pgl_context)
+  PGLContextImpl* context = static_cast<PGLContextImpl*>(
+      pglGetCurrentContext());
+  if (!context)
     return false;
 
-  return g_current_pgl_context->SwapBuffers();
+  return context->SwapBuffers();
 }
 
 PGLBoolean pglDestroyContext(PGLContext pgl_context) {
+  if (!g_pgl_context_key)
+    return NULL;
+
   if (!pgl_context)
     return false;
+
+  if (pgl_context == pglGetCurrentContext())
+    pglMakeCurrent(NULL);
 
   delete static_cast<PGLContextImpl*>(pgl_context);
   return true;

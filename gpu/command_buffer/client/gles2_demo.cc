@@ -77,10 +77,11 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
     return false;
 
 
-  gles2::g_gl_impl = new GLES2Implementation(helper,
-                                             transfer_buffer.size,
-                                             transfer_buffer.ptr,
-                                             transfer_buffer_id);
+  gles2::Initialize();
+  gles2::SetGLContext(new GLES2Implementation(helper,
+                                              transfer_buffer.size,
+                                              transfer_buffer.ptr,
+                                              transfer_buffer_id));
 
   return command_buffer.release() != NULL;
 }

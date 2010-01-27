@@ -15,6 +15,14 @@ extern "C" {
 typedef void* PGLContext;
 typedef bool PGLBoolean;
 
+// Initialize the PGL library. This must have completed before any other PGL
+// functions are invoked.
+PGLBoolean pglInitialize();
+
+// Terminate the PGL library. This must be called after any other PGL functions
+// have completed.
+PGLBoolean pglTerminate();
+
 // Create A PGL context from a Pepper 3D device context.
 PGLContext pglCreateContext(NPP npp,
                             NPDevice* device,

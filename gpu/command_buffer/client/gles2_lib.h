@@ -9,23 +9,19 @@
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
-#if defined(_MSC_VER)
-#define THREAD_LOCAL __declspec(thread)
-#else
-#define THREAD_LOCAL __thread
-#endif
-
 namespace gles2 {
 
-extern THREAD_LOCAL gpu::gles2::GLES2Implementation* g_gl_impl;
+// Initialize the GLES2 library.
+void Initialize();
 
-inline gpu::gles2::GLES2Implementation* GetGLContext() {
-  return g_gl_impl;
-}
+// Terminate the GLES2 library.
+void Terminate();
 
-inline void SetGLContext(gpu::gles2::GLES2Implementation* impl) {
-  g_gl_impl = impl;
-}
+// Get the current GL context.
+gpu::gles2::GLES2Implementation* GetGLContext();
+
+// Set the current GL context.
+void SetGLContext(gpu::gles2::GLES2Implementation* impl);
 
 }  // namespace gles2
 

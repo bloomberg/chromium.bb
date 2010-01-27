@@ -5,6 +5,7 @@
 #include "base/at_exit.h"
 #include "base/logging.h"
 #include "gpu/demos/framework/plugin.h"
+#include "gpu/pgl/pgl.h"
 #include "webkit/glue/plugins/nphostapi.h"
 
 namespace {
@@ -139,10 +140,12 @@ NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* plugin_funcs) {
 NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs) {
   g_at_exit_manager_ = new base::AtExitManager();
   gpu::demos::g_browser = browser_funcs;
+  pglInitialize();
   return NPERR_NO_ERROR;
 }
 
 void API_CALL NP_Shutdown() {
+  pglTerminate();
   delete g_at_exit_manager_;
 }
 }  // extern "C"

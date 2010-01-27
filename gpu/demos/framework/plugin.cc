@@ -92,7 +92,11 @@ Plugin::Plugin(NPP npp)
 }
 
 Plugin::~Plugin() {
+  // Destroy demo while GL context is current and before it is destroyed.
+  pglMakeCurrent(pgl_context_);
+  demo_.reset();
   pglMakeCurrent(NULL);
+
   pglDestroyContext(pgl_context_);
 }
 

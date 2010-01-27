@@ -18,12 +18,13 @@ class MockGLES2Decoder : public GLES2Decoder {
   MockGLES2Decoder() {
     ON_CALL(*this, GetCommandName(testing::_))
       .WillByDefault(testing::Return(""));
+    ON_CALL(*this, MakeCurrent())
+      .WillByDefault(testing::Return(true));
   }
 
   MOCK_METHOD0(Initialize, bool());
   MOCK_METHOD0(Destroy, void());
   MOCK_METHOD0(MakeCurrent, bool());
-  MOCK_METHOD0(ReleaseCurrent, void());
   MOCK_METHOD1(GetServiceIdForTesting, uint32(uint32 client_id));
   MOCK_METHOD3(DoCommand, parse_error::ParseError(unsigned int command,
                                                   unsigned int arg_count,
