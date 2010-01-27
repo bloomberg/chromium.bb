@@ -414,7 +414,7 @@ WONTFIX : fast/js/global-constructors.html = FAIL
 WONTFIX : fast/js/global-recursion-on-full-stack.html = FAIL
 
 // Our DOM Storage implementation doesn't use WebKit's private browsing feature (even for incognito mode).
-BUG30081 : storage/domstorage/localstorage/private-browsing-affects-storage.html = CRASH FAIL
+WONTFIX : storage/domstorage/localstorage/private-browsing-affects-storage.html = FAIL
 WONTFIX : storage/domstorage/sessionstorage/private-browsing-affects-storage.html = FAIL
 
 // These tests propagate auth credentials back to the renderer, which we
@@ -687,12 +687,8 @@ BUG24208 WIN DEBUG : http/tests/navigation/post-goback1.html = FAIL
 BUG24208 SLOW WIN RELEASE : http/tests/navigation/post-goback1.html = FAIL
 BUG24208 LINUX MAC : http/tests/navigation/post-goback1.html = FAIL
 
-// These tests all depend on SessionStorage events which are not yet supported.
-BUG4360 : storage/domstorage/sessionstorage/index-get-and-set.html = FAIL
-BUG4360 : storage/domstorage/sessionstorage/string-conversion.html = FAIL
-// Flaky ASSERTION FAILED: currentThread() == m_openingThread
-BUG4360_and_BUG30081 : storage/domstorage/complex-values.html = FAIL CRASH
-BUG4360 : http/tests/loading/deleted-host-in-resource-load-delegate-callback.html = TIMEOUT
+// Requires layoutTestController.dispatchPendingLoadRequests
+BUG33211 : http/tests/loading/deleted-host-in-resource-load-delegate-callback.html = TIMEOUT
 
 // HTML5 DB layout tests
 BUG27697 SKIP : storage/hash-change-with-xhr.html = PASS
@@ -2633,10 +2629,6 @@ BUG28034 MAC : http/tests/security/XFrameOptions/x-frame-options-deny.html = PAS
 // BUG28040 WIN LINUX DEBUG : fast/body-propagation/overflow/004.html = PASS FAIL
 BUG28040 WIN LINUX DEBUG : fast/body-propagation/overflow/004.html = PASS FAIL IMAGE
 
-BUG28041 MAC : storage/domstorage/clear.html = PASS FAIL
-BUG28074 MAC : http/tests/loading/redirect-with-no-location-crash.html = PASS TIMEOUT
-BUG28077 MAC : plugins/netscape-invoke-default.html = PASS FAIL
-BUG28079 LINUX : http/tests/misc/uncacheable-script-repeated.html = PASS TIMEOUT
 BUG28092 WIN : http/tests/xmlhttprequest/redirect-cross-origin-post.html = PASS FAIL
 BUG28095 MAC : http/tests/cookies/simple-cookies-expired.html = PASS TIMEOUT
 
@@ -2703,9 +2695,6 @@ BUG28646 : editing/selection/transformed-selection-rects.html = FAIL
 // New failures from merge 51412:51455.
 BUG28916 MAC : editing/pasteboard/paste-xml.xhtml = IMAGE+TEXT
 
-// Flaky test from r51224:r51237 roll.
-// BUG28918 DEBUG : storage/domstorage/localstorage/iframe-events.html = CRASH PASS
-
 // New failures from WebKit r51534:r51576
 BUG29157 WIN LINUX MAC :  svg/animations/animVal-basics.html = TIMEOUT
 
@@ -2737,7 +2726,6 @@ BUG31997 DEBUG WIN : fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE+TEXT
 BUG29943 WIN : websocket/tests/send.html = TEXT PASS
 
 // Regression from Webkit merge 51772 -> 51784
-BUG_AJWONG MAC LINUX : storage/domstorage/quota.html = CRASH PASS
 BUG_AJWONG : http/tests/appcache/resource-redirect-2.html = TIMEOUT PASS
 
 // Webkit Roll to r51875
@@ -2886,10 +2874,6 @@ BUG25977 WIN DEBUG : http/tests/appcache/wrong-signature-2.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : http/tests/appcache/top-frame-4.html = TIMEOUT TEXT PASS
 BUG25977 WIN DEBUG : http/tests/appcache/top-frame-3.html = TIMEOUT TEXT PASS
 
-// Flaky ASSERTION FAILED: currentThread() == m_openingThread
-// This test is flaky since this file is added.
-BUG30543 : storage/domstorage/localstorage/enumerate-with-length-and-key.html = CRASH PASS
-
 // Flaky.
 BUG9798 WIN LINUX : fast/loader/javascript-url-encoding-2.html = TIMEOUT PASS
 BUG9798 RELEASE : fast/loading/subframe-removes-itself.html = TEXT PASS
@@ -2936,9 +2920,6 @@ BUG31642 LINUX DEBUG: svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE+TEXT CRASH
 // WebKit roll 52852 -> 52867
 BUG32018 : websocket/tests/frame-lengths.html = PASS TIMEOUT
 BUG32018 DEBUG : websocket/tests/simple-stress.html = PASS TEXT
-
-// Flaky crash
-BUG31794 WIN MAC : storage/domstorage/localstorage/enumerate-storage.html = CRASH PASS
 
 // Flaky
 BUG31803 LINUX : editing/inserting/12882.html = IMAGE PASS
@@ -3019,7 +3000,6 @@ BUG32693 MAC DEBUG : svg/dom/SVGRectElement/rect-modify-rx.svg = TEXT PASS
 BUG32666 MAC DEBUG : svg/custom/use-detach.svg = IMAGE PASS
 
 BUG_DPRANKE WIN : fast/media/lifetime.html = PASS TIMEOUT
-BUG_DPRANKE WIN : storage/domstorage/sessionstorage/delete-removal.html = PASS CRASH
 
 // WebKit roll 53585 -> 53655
 BUG32863 LINUX MAC : websocket/tests/url-no-trailing-slash.html = TEXT
@@ -3032,10 +3012,6 @@ BUG32900 WIN LINUX : http/tests/misc/slow-loading-mask.html = IMAGE+TEXT
 // WebKit roll 53704 -> 53747
 BUG32949 WIN LINUX MAC : fast/dom/Window/invalid-protocol.html = TEXT
 BUG32953 WIN LINUX MAC : svg/custom/relative-sized-shadow-tree-content-with-symbol.xhtml = IMAGE+TEXT
-
-// Storage issues jorlow is going to handle.
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/index-get-and-set.html = TEXT
-BUGJORLOW WIN LINUX MAC : storage/domstorage/window-attributes-exist.html = TEXT
 
 // WebKit roll 53704:53787.  Not going to fix for now.
 BUG33099 : media/video-reverse-play-duration.html = TIMEOUT
@@ -3119,6 +3095,3 @@ BUG33045 MAC : svg/custom/missing-xlink.svg = IMAGE
 BUG33045 MAC : svg/custom/text-xy-updates-SVGList.xhtml = IMAGE
 BUG33045 MAC : tables/mozilla/bugs/bug149275-1.html = IMAGE
 BUG33045 MAC : transforms/2d/transform-fixed-container.html = IMAGE
-
-// Added in WebKit 53840
-BUGJORLOW : storage/domstorage/events/ = TEXT

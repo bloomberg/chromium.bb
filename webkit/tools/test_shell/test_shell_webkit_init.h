@@ -206,16 +206,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& old_value, const WebKit::WebString& new_value,
       const WebKit::WebString& origin, const WebKit::WebURL& url,
       bool is_local_storage) {
-    // TODO(jorlow): Implement
-    if (!is_local_storage)
-      return;
-
-    if (!dom_storage_event_dispatcher_.get()) {
-      dom_storage_event_dispatcher_.reset(
-          WebKit::WebStorageEventDispatcher::create());
-    }
-    dom_storage_event_dispatcher_->dispatchStorageEvent(
-        key, old_value, new_value, origin, url, is_local_storage);
+    // The event is dispatched by the proxy.
   }
 
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
@@ -244,7 +235,6 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   ScopedTempDir appcache_dir_;
   SimpleAppCacheSystem appcache_system_;
   SimpleDatabaseSystem database_system_;
-  scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
 
 #if defined(OS_WIN)
   WebKit::WebThemeEngine* active_theme_engine_;
