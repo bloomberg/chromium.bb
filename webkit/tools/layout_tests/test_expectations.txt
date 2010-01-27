@@ -2611,7 +2611,7 @@ BUG29018 : plugins/reloadplugins-and-pages.html = TIMEOUT
 BUG28646 : editing/selection/transformed-selection-rects.html = FAIL
 
 // New failures from merge 51412:51455.
-BUG28916 MAC : editing/pasteboard/paste-xml.xhtml = IMAGE+TEXT
+BUG28916 MAC : editing/pasteboard/paste-xml.xhtml = TEXT
 
 // New failures from WebKit r51534:r51576
 BUG29157 WIN LINUX MAC :  svg/animations/animVal-basics.html = TIMEOUT
