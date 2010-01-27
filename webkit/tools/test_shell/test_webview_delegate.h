@@ -38,6 +38,7 @@
 #include "webkit/tools/test_shell/drag_delegate.h"
 #include "webkit/tools/test_shell/drop_delegate.h"
 #endif
+#include "webkit/tools/test_shell/mock_spellcheck.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 
 struct WebPreferences;
@@ -100,6 +101,9 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void didChangeContents();
   virtual void didEndEditing();
   virtual bool handleCurrentKeyboardEvent();
+  virtual void spellCheck(
+      const WebKit::WebString& text, int& misspelledOffset,
+      int& misspelledLength);
   virtual WebKit::WebString autoCorrectWord(
       const WebKit::WebString& misspelled_word);
   virtual void runModalAlertDialog(
@@ -391,6 +395,9 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   // Edit command associated to the current keyboard event.
   std::string edit_command_name_;
   std::string edit_command_value_;
+
+  // The mock spellchecker used in TestWebViewDelegate::spellCheck().
+  MockSpellCheck mock_spellcheck_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebViewDelegate);
 };

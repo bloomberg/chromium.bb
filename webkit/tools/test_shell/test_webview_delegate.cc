@@ -52,6 +52,7 @@
 #include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/glue/window_open_disposition.h"
 #include "webkit/tools/test_shell/accessibility_controller.h"
+#include "webkit/tools/test_shell/mock_spellcheck.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_web_worker.h"
@@ -462,9 +463,24 @@ bool TestWebViewDelegate::handleCurrentKeyboardEvent() {
                                WebString::fromUTF8(edit_command_value_));
 }
 
+void TestWebViewDelegate::spellCheck(const WebString& text,
+                                     int& misspelledOffset,
+                                     int& misspelledLength) {
+#if defined(OS_MACOSX)
+  // Check the spelling of the given text.
+  // TODO(hbono): rebaseline layout-test results of Windows and Linux so we
+  // can enable this mock spellchecker on them.
+  string16 word(text);
+  mock_spellcheck_.SpellCheckWord(word, &misspelledOffset, &misspelledLength);
+#endif
+}
+
 WebString TestWebViewDelegate::autoCorrectWord(const WebString& word) {
-  // Dummy implementation.
-  return word;
+  // Returns an empty string as Mac WebKit ('WebKitSupport/WebEditorClient.mm')
+  // does. (If this function returns a non-empty string, WebKit replaces the
+  // given misspelled string with the result one. This process executes some
+  // editor commands and causes layout-test failures.)
+  return WebString();
 }
 
 void TestWebViewDelegate::runModalAlertDialog(
