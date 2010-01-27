@@ -607,9 +607,6 @@ TestSuite.prototype.testSetBreakpoint = function() {
  * Tests that pause on exception works.
  */
 TestSuite.prototype.testPauseOnException = function() {
-  // TODO(pfeldman): fix and uncomment.
-  return;
-
   this.showPanel('scripts');
   var test = this;
 
@@ -649,9 +646,6 @@ TestSuite.prototype.testPauseOnException = function() {
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
 TestSuite.prototype.testPauseWhenLoadingDevTools = function() {
-  // TODO(pfeldman): fix and uncomment.
-  return;
-
   this.showPanel('scripts');
   var test = this;
 
@@ -697,9 +691,6 @@ TestSuite.prototype.testPauseWhenLoadingDevTools = function() {
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
 TestSuite.prototype.testPauseWhenScriptIsRunning = function() {
-  // TODO(pfeldman): fix and uncomment.
-  return;
-
   this.showPanel('scripts');
   var test = this;
 
@@ -916,9 +907,6 @@ TestSuite.prototype.testEvalOnCallFrame = function() {
  * Tests that console auto completion works when script execution is paused.
  */
 TestSuite.prototype.testCompletionOnPause = function() {
-  // TODO(pfeldman): fix and uncomment.
-  return;
-
   this.showPanel('scripts');
   var test = this;
   this._executeCodeWhenScriptsAreParsed(
@@ -1054,18 +1042,10 @@ TestSuite.prototype.testAutoContinueOnSyntaxError = function() {
  */
 TestSuite.prototype._checkExecutionLine = function(sourceFrame, lineNumber,
                                                    lineContent) {
-  var sourceRow = sourceFrame.sourceRow(lineNumber);
-
-  var line = sourceRow.getElementsByClassName('webkit-line-content')[0];
   this.assertEquals(lineNumber, sourceFrame.executionLine,
                     'Unexpected execution line number.');
-  this.assertEquals(lineContent, line.textContent,
+  this.assertEquals(lineContent, sourceFrame._textModel.line(lineNumber - 1),
                     'Unexpected execution line text.');
-
-  this.assertTrue(!!sourceRow, 'Execution line not found');
-  this.assertTrue(sourceRow.hasStyleClass('webkit-execution-line'),
-      'Execution line ' + lineNumber + ' is not highlighted. Class: ' +
-          sourceRow.className);
 }
 
 
@@ -1137,13 +1117,13 @@ TestSuite.prototype._checkSourceFrameWhenLoaded = function(
   if (frame._loaded) {
     checkExecLine();
   } else {
-    frame.addEventListener('content loaded', checkExecLine);
+    setTimeout(function() {
+        test._checkSourceFrameWhenLoaded(expectations, callback);
+    }, 100);
   }
   function checkExecLine() {
     test._checkExecutionLine(frame, expectations.lineNumber,
                              expectations.lineText);
-    // Make sure we don't listen anymore.
-    frame.removeEventListener('content loaded', checkExecLine);
     callback();
   }
 };
@@ -1227,9 +1207,6 @@ TestSuite.prototype._executeFunctionForStepTest = function() {
  * Tests step over in the debugger.
  */
 TestSuite.prototype.testStepOver = function() {
-  // TODO(pfeldman): fix and uncomment.
-  return;
-
   this.showPanel('scripts');
   var test = this;
 
@@ -1270,9 +1247,6 @@ TestSuite.prototype.testStepOver = function() {
  * Tests step out in the debugger.
  */
 TestSuite.prototype.testStepOut = function() {
-  // TODO(pfeldman): fix and uncomment.
-  return;
-
   this.showPanel('scripts');
   var test = this;
 
@@ -1305,9 +1279,6 @@ TestSuite.prototype.testStepOut = function() {
  * Tests step in in the debugger.
  */
 TestSuite.prototype.testStepIn = function() {
-  // TODO(pfeldman): fix and uncomment.
-  return;
-
   this.showPanel('scripts');
   var test = this;
 
@@ -1495,9 +1466,6 @@ TestSuite.prototype._expandScopeSections = function(filter, callback) {
  * Tests that scopes can be expanded and contain expected data.
  */
 TestSuite.prototype.testExpandScope = function() {
-  // TODO(pfeldman): fix and uncomment.
-  return;
-
   this.showPanel('scripts');
   var test = this;
 
@@ -1626,9 +1594,6 @@ TestSuite.prototype._hookGetPropertiesCallback = function(hook, code) {
  * intrinic proprties(__proto__, constructor, prototype).
  */
 TestSuite.prototype.testDebugIntrinsicProperties = function() {
-  // TODO(pfeldman): fix and uncomment.
-  return;
-
   this.showPanel('scripts');
   var test = this;
 
