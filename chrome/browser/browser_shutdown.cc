@@ -148,7 +148,8 @@ void Shutdown() {
     ResourceBundle::CleanupSharedInstance();
 
 #if defined(OS_WIN)
-  if (!Upgrade::IsBrowserAlreadyRunning()) {
+  if (!Upgrade::IsBrowserAlreadyRunning() &&
+      shutdown_type_ != browser_shutdown::END_SESSION) {
     Upgrade::SwapNewChromeExeIfPresent();
   }
 
