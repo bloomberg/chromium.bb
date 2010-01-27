@@ -996,7 +996,6 @@ BUG3244 WIN LINUX : fast/backgrounds/repeat/mask-negative-offset-repeat.html = F
 // or change the test upstream to specify explicitly what font to use.
 // The mask part of this test is totally wrong.
 BUG3244 LINUX WIN : fast/backgrounds/svg-as-background-6.html = FAIL
-BUG3244 LINUX WIN : svg/custom/mask-excessive-malloc.svg = IMAGE
 
 BUG10302 LINUX : svg/W3C-SVG-1.1/pservers-grad-10-b.svg = FAIL
 
@@ -1038,7 +1037,6 @@ BUG19559 WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-08-b.svg = FAIL
 BUG10304 LINUX : svg/carto.net/button.svg = FAIL
 
 // New tests. We should fix these, but they don't need to block the current release
-BUG10305 WIN LINUX : svg/custom/use-instanceRoot-as-event-target.xhtml = FAIL
 BUG10305 : svg/custom/use-instanceRoot-event-listeners.xhtml = FAIL
 
 // Probably need to change the test upstream to describe it better and use no
