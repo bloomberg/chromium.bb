@@ -171,6 +171,15 @@ TestShell::~TestShell() {
   }
 }
 
+void TestShell::UpdateNavigationControls() {
+  int current_index = navigation_controller()->GetCurrentEntryIndex();
+  int max_index = navigation_controller()->GetEntryCount() - 1;
+
+  EnableUIControl(BACK_BUTTON, current_index > 0);
+  EnableUIControl(FORWARD_BUTTON, current_index < max_index);
+  EnableUIControl(STOP_BUTTON, is_loading_);
+}
+
 bool TestShell::CreateNewWindow(const GURL& starting_url,
                                 TestShell** result) {
   TestShell* shell = new TestShell();

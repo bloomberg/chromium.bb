@@ -155,6 +155,10 @@ FilePath GetResourcesFilePath() {
 void TestShell::PlatformCleanUp() {
 }
 
+void TestShell::EnableUIControl(UIControl control, bool is_enabled) {
+  // TODO(darin): Implement me.
+}
+
 // static
 void TestShell::DestroyAssociatedShell(gfx::NativeWindow handle) {
   WindowMap::iterator it = window_map_.Get().find(handle);

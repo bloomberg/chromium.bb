@@ -336,6 +336,16 @@ void TestWebViewDelegate::didAddMessageToConsole(
   }
 }
 
+void TestWebViewDelegate::didStartLoading() {
+  shell_->set_is_loading(true);
+  shell_->UpdateNavigationControls();
+}
+
+void TestWebViewDelegate::didStopLoading() {
+  shell_->set_is_loading(false);
+  shell_->UpdateNavigationControls();
+}
+
 // The output from these methods in layout test mode should match that
 // expected by the layout tests.  See EditingDelegate.m in DumpRenderTree.
 
@@ -1146,6 +1156,7 @@ void TestWebViewDelegate::UpdateURL(WebFrame* frame) {
     entry->SetContentState(webkit_glue::HistoryItemToString(history_item));
 
   shell_->navigation_controller()->DidNavigateToEntry(entry.release());
+  shell_->UpdateNavigationControls();
 
   last_page_id_updated_ = std::max(last_page_id_updated_, page_id_);
 }

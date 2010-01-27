@@ -317,6 +317,25 @@ void TestShell::PlatformCleanUp() {
   win_util::SetWindowUserData(m_editWnd, NULL);
 }
 
+void TestShell::EnableUIControl(UIControl control, bool is_enabled) {
+  int id;
+  switch (control) {
+    case BACK_BUTTON:
+      id = IDC_NAV_BACK;
+      break;
+    case FORWARD_BUTTON:
+      id = IDC_NAV_FORWARD;
+      break;
+    case STOP_BUTTON:
+      id = IDC_NAV_STOP;
+      break;
+    default:
+      NOTREACHED() << "Unknown UI control";
+      return;
+  }
+  EnableWindow(GetDlgItem(m_mainWnd, id), is_enabled);
+}
+
 bool TestShell::Initialize(const GURL& starting_url) {
   // Perform application initialization:
   m_mainWnd = CreateWindow(g_windowClass, g_windowTitle,

@@ -107,6 +107,11 @@ public:
     }
     WebWidgetHost* popupHost() { return m_popupHost; }
 
+    bool is_loading() const { return is_loading_; }
+    void set_is_loading(bool is_loading) { is_loading_ = is_loading; }
+
+    void UpdateNavigationControls();
+
     // A new TestShell window will be opened with devtools url.
     // DevTools window can be opened manually via menu or automatically when
     // inspector's layout test url is passed from command line or console.
@@ -312,6 +317,14 @@ protected:
     // Set the focus in interactive mode (pass through to relevant system call).
     void InteractiveSetFocus(WebWidgetHost* host, bool enable);
 
+    enum UIControl {
+      BACK_BUTTON,
+      FORWARD_BUTTON,
+      STOP_BUTTON
+    };
+
+    void EnableUIControl(UIControl control, bool is_enabled);
+
 #if defined(OS_WIN)
     static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
     static LRESULT CALLBACK EditWndProc(HWND, UINT, WPARAM, LPARAM);
@@ -374,6 +387,9 @@ private:
 
     // True if driven from a nested message loop.
     bool is_modal_;
+
+    // True if the page is loading.
+    bool is_loading_;
 
     // The preferences for the test shell.
     static WebPreferences* web_prefs_;

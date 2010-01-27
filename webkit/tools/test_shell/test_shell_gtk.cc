@@ -319,6 +319,10 @@ void TestShell::PlatformCleanUp() {
   }
 }
 
+void TestShell::EnableUIControl(UIControl control, bool is_enabled) {
+  // TODO(darin): Implement me.
+}
+
 bool TestShell::Initialize(const GURL& starting_url) {
   m_mainWnd = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   gtk_window_set_title(m_mainWnd, "Test Shell");
