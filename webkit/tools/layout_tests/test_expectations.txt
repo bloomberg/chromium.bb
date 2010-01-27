@@ -688,17 +688,9 @@ BUG24208 SLOW WIN RELEASE : http/tests/navigation/post-goback1.html = FAIL
 BUG24208 LINUX MAC : http/tests/navigation/post-goback1.html = FAIL
 
 // These tests all depend on SessionStorage events which are not yet supported.
-BUG4360 : storage/domstorage/sessionstorage/iframe-events.html = TIMEOUT
-BUG4360 : storage/domstorage/sessionstorage/simple-events.html = FAIL
 BUG4360 : storage/domstorage/sessionstorage/index-get-and-set.html = FAIL
-BUG4360 : storage/domstorage/sessionstorage/onstorage-attribute-markup.html = FAIL
-BUG4360 : storage/domstorage/sessionstorage/onstorage-attribute-setattribute.html = FAIL
-BUG4360 : storage/domstorage/sessionstorage/onstorage-attribute-setwindow.html = FAIL
 BUG4360 : storage/domstorage/sessionstorage/string-conversion.html = FAIL
-BUG4360 WIN MAC : storage/domstorage/documentURI.html = FAIL
-BUG4360 LINUX RELEASE : storage/domstorage/documentURI.html = FAIL
 // Flaky ASSERTION FAILED: currentThread() == m_openingThread
-BUG4360 LINUX DEBUG : storage/domstorage/documentURI.html = FAIL CRASH
 BUG4360_and_BUG30081 : storage/domstorage/complex-values.html = FAIL CRASH
 BUG4360 : http/tests/loading/deleted-host-in-resource-load-delegate-callback.html = TIMEOUT
 
@@ -3042,12 +3034,7 @@ BUG32949 WIN LINUX MAC : fast/dom/Window/invalid-protocol.html = TEXT
 BUG32953 WIN LINUX MAC : svg/custom/relative-sized-shadow-tree-content-with-symbol.xhtml = IMAGE+TEXT
 
 // Storage issues jorlow is going to handle.
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/iframe-events.html = TEXT
 BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/index-get-and-set.html = TEXT
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/onstorage-attribute-markup.html = TEXT
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/onstorage-attribute-setattribute.html = TEXT
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/onstorage-attribute-setwindow.html = TEXT
-BUGJORLOW WIN LINUX MAC : storage/domstorage/localstorage/simple-events.html = TEXT
 BUGJORLOW WIN LINUX MAC : storage/domstorage/window-attributes-exist.html = TEXT
 
 // WebKit roll 53704:53787.  Not going to fix for now.
