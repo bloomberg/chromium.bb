@@ -123,9 +123,14 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
                     NULL,
                     false,
                     kCGRenderingIntentDefault));
+  // Aggressively free storage since image buffers can potentially be very
+  // large.
+  data_provider.reset();
+  data.reset();
 
   scoped_nsobject<NSBitmapImageRep> bitmap(
       [[NSBitmapImageRep alloc] initWithCGImage:cgimage]);
+  cgimage.reset();
 
   scoped_nsobject<NSImage> image([[NSImage alloc] init]);
   [image addRepresentation:bitmap];
@@ -134,7 +139,11 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
   // For now, spit out the image as a TIFF.
   NSPasteboard* pb = GetPasteboard();
   [pb addTypes:[NSArray arrayWithObject:NSTIFFPboardType] owner:nil];
-  [pb setData:[image TIFFRepresentation] forType:NSTIFFPboardType];
+  NSData *tiff_data = [image TIFFRepresentation];
+  LOG_IF(ERROR, tiff_data == NULL) << "Failed to allocate image for clipboard";
+  if (tiff_data) {
+    [pb setData:tiff_data forType:NSTIFFPboardType];
+  }
 }
 
 // Write an extra flavor that signifies WebKit was the last to modify the
@@ -291,6 +300,12 @@ Clipboard::FormatType Clipboard::GetFilenameWFormatType() {
 // static
 Clipboard::FormatType Clipboard::GetHtmlFormatType() {
   static const std::string type = base::SysNSStringToUTF8(NSHTMLPboardType);
+  return type;
+}
+
+// static
+Clipboard::FormatType Clipboard::GetBitmapFormatType() {
+  static const std::string type = base::SysNSStringToUTF8(NSTIFFPboardType);
   return type;
 }
 

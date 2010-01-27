@@ -378,6 +378,11 @@ Clipboard::FormatType Clipboard::GetHtmlFormatType() {
 }
 
 // static
+Clipboard::FormatType Clipboard::GetBitmapFormatType() {
+  return std::string(kMimeBmp);
+}
+
+// static
 Clipboard::FormatType Clipboard::GetWebKitSmartPasteFormatType() {
   return std::string(kMimeWebkitSmartPaste);
 }

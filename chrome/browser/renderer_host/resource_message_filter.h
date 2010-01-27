@@ -197,7 +197,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #endif
   void OnReceiveContextMenuMsg(const IPC::Message& msg);
   // Clipboard messages
-  void OnClipboardWriteObjects(const Clipboard::ObjectMap& objects);
+  void OnClipboardWriteObjectsAsync(const Clipboard::ObjectMap& objects);
+  void OnClipboardWriteObjectsSync(const Clipboard::ObjectMap& objects,
+                                   base::SharedMemoryHandle bitmap_handle);
 
   void OnClipboardIsFormatAvailable(Clipboard::FormatType format,
                                     Clipboard::Buffer buffer,
@@ -239,8 +241,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #endif
 #if defined(OS_MACOSX)
   // Used to ask the browser to allocate a block of shared memory for the
-  // renderer to send PDF across in.
-  void OnAllocatePDFTransport(size_t buffer_size,
+  // renderer to send back data in, since shared memory can't be created
+  // in the renderer on OS X due to the sandbox.
+  void OnAllocateSharedMemoryBuffer(size_t buffer_size,
                               base::SharedMemoryHandle* handle);
 #endif
 

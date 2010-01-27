@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/process.h"
+#include "base/shared_memory.h"
 #include "base/string16.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace gfx {
 class Size;
@@ -61,7 +63,8 @@ class Clipboard {
   // CBF_WEBKIT    none         empty vector
   // CBF_BITMAP    pixels       byte array
   //               size         gfx::Size struct
-  // CBF_SMBITMAP  shared_mem   shared memory handle
+  // CBF_SMBITMAP  shared_mem   A pointer to an unmapped base::SharedMemory
+  //                            object containing the bitmap data.
   //               size         gfx::Size struct
   // CBF_DATA      format       char array
   //               data         byte array
@@ -160,21 +163,26 @@ class Clipboard {
   static FormatType GetWebKitSmartPasteFormatType();
   // Win: MS HTML Format, Other: Generic HTML format
   static FormatType GetHtmlFormatType();
-#if defined(OS_WIN)
   static FormatType GetBitmapFormatType();
+
+  // Embeds a pointer to a SharedMemory object pointed to by |bitmap_handle|
+  // belonging to |process| into a shared bitmap [CBF_SMBITMAP] slot in
+  // |objects|.  The pointer is deleted by DispatchObjects().
+  //
+  // On non-Windows platforms, |process| is ignored.
+  static void ReplaceSharedMemHandle(ObjectMap* objects,
+                                     base::SharedMemoryHandle bitmap_handle,
+                                     base::ProcessHandle process);
+#if defined(OS_WIN)
   // Firefox text/html
   static FormatType GetTextHtmlFormatType();
   static FormatType GetCFHDropFormatType();
   static FormatType GetFileDescriptorFormatType();
   static FormatType GetFileContentFormatZeroType();
-
-  // Duplicates any remote shared memory handle embedded inside |objects| that
-  // was created by |process| so that it can be used by this process.
-  static void DuplicateRemoteHandles(base::ProcessHandle process,
-                                     ObjectMap* objects);
 #endif
 
  private:
+  FRIEND_TEST(ClipboardTest, SharedBitmapTest);
   void DispatchObject(ObjectType type, const ObjectMapParams& params);
 
   void WriteText(const char* text_data, size_t text_len);
@@ -200,10 +208,6 @@ class Clipboard {
                  const char* data_data, size_t data_len);
 #endif
 #if defined(OS_WIN)
-  void WriteBitmapFromSharedMemory(const char* bitmap_data,
-                                   const char* size_data,
-                                   base::ProcessHandle handle);
-
   void WriteBitmapFromHandle(HBITMAP source_hbitmap,
                              const gfx::Size& size);
 

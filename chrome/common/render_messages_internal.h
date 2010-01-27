@@ -1250,8 +1250,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // This message is used when the object list contains a bitmap.
   // It is synchronized so that the renderer knows when it is safe to
   // free the shared memory used to transfer the bitmap.
-  IPC_SYNC_MESSAGE_CONTROL1_0(ViewHostMsg_ClipboardWriteObjectsSync,
-      Clipboard::ObjectMap /* objects */)
+  IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_ClipboardWriteObjectsSync,
+      Clipboard::ObjectMap /* objects */,
+      base::SharedMemoryHandle /* bitmap handle */)
   IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_ClipboardIsFormatAvailable,
                               std::string /* format */,
                               Clipboard::Buffer /* buffer */,
@@ -1578,7 +1579,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
 #endif
 
 #if defined(OS_LINUX)
-  // Asks the browser create a temporary file for the renderer to fill
+  // Asks the browser to create a temporary file for the renderer to fill
   // in resulting NativeMetafile in printing.
   IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_AllocateTempFileForPrinting,
                               base::FileDescriptor /* temp file fd */,
@@ -1588,9 +1589,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
 #endif
 
 #if defined(OS_MACOSX)
-  // Asks the browser create a block of shared memory for the renderer to pass
+  // Asks the browser to create a block of shared memory for the renderer to pass
   // NativeMetafile data to the browser.
   IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_AllocatePDFTransport,
+                             size_t /* buffer size */,
+                             base::SharedMemoryHandle /* browser handle */)
+  // Asks the browser to create a block of shared memory for the renderer to
+  // fill in and pass back to the browser.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_AllocateSharedMemoryBuffer,
                              size_t /* buffer size */,
                              base::SharedMemoryHandle /* browser handle */)
 #endif

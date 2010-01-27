@@ -82,7 +82,6 @@ class ResizableStackArray {
   size_t cur_capacity_;
 };
 
-#if defined(OS_WIN)
 // This definition of WriteBitmapFromPixels uses shared memory to communicate
 // across processes.
 void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
@@ -93,7 +92,30 @@ void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
 
   size_t buf_size = 4 * size.width() * size.height();
 
-  // Allocate a shared memory buffer to hold the bitmap bits
+  // Allocate a shared memory buffer to hold the bitmap bits.
+#if defined(OS_MACOSX)
+  // On OS X, we need to ask the browser to create the shared memory for us,
+  // since this is blocked by the sandbox.
+  base::SharedMemoryHandle shared_mem_handle;
+  ViewHostMsg_AllocateSharedMemoryBuffer *msg =
+      new ViewHostMsg_AllocateSharedMemoryBuffer(buf_size,
+                                                 &shared_mem_handle);
+  if (RenderThread::current()->Send(msg)) {
+    if (base::SharedMemory::IsHandleValid(shared_mem_handle)) {
+      shared_buf_ = new base::SharedMemory(shared_mem_handle, false);
+      if (!shared_buf_ || !shared_buf_->Map(buf_size)) {
+        NOTREACHED() << "Map failed";
+        return;
+      }
+    } else {
+      NOTREACHED() << "Browser failed to allocate shared memory";
+      return;
+    }
+  } else {
+    NOTREACHED() << "Browser allocation request message failed";
+    return;
+  }
+#else
   shared_buf_ = new base::SharedMemory;
   const bool created = shared_buf_ && shared_buf_->Create(
       L"", false /* read write */, true /* open existing */, buf_size);
@@ -101,28 +123,26 @@ void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
     NOTREACHED();
     return;
   }
+#endif  // !OS_MACOSX
 
   // Copy the bits into shared memory
   memcpy(shared_buf_->memory(), pixels, buf_size);
   shared_buf_->Unmap();
 
-  Clipboard::ObjectMapParam param1, param2;
-  base::SharedMemoryHandle smh = shared_buf_->handle();
-
-  const char* shared_handle = reinterpret_cast<const char*>(&smh);
-  for (size_t i = 0; i < sizeof base::SharedMemoryHandle; i++)
-    param1.push_back(shared_handle[i]);
-
+  Clipboard::ObjectMapParam size_param;
   const char* size_data = reinterpret_cast<const char*>(&size);
-  for (size_t i = 0; i < sizeof gfx::Size; i++)
-    param2.push_back(size_data[i]);
+  for (size_t i = 0; i < sizeof(gfx::Size); ++i)
+    size_param.push_back(size_data[i]);
 
   Clipboard::ObjectMapParams params;
-  params.push_back(param1);
-  params.push_back(param2);
+
+  // The first parameter is replaced on the receiving end with a pointer to
+  // a shared memory object containing the bitmap. We reserve space for it here.
+  Clipboard::ObjectMapParam place_holder_param;
+  params.push_back(place_holder_param);
+  params.push_back(size_param);
   objects_[Clipboard::CBF_SMBITMAP] = params;
 }
-#endif
 
 // Define a destructor that makes IPCs to flush the contents to the
 // system clipboard.
@@ -130,14 +150,13 @@ ScopedClipboardWriterGlue::~ScopedClipboardWriterGlue() {
   if (objects_.empty())
     return;
 
-#if defined(OS_WIN)
   if (shared_buf_) {
     RenderThread::current()->Send(
-        new ViewHostMsg_ClipboardWriteObjectsSync(objects_));
+        new ViewHostMsg_ClipboardWriteObjectsSync(objects_,
+                shared_buf_->handle()));
     delete shared_buf_;
     return;
   }
-#endif
 
   RenderThread::current()->Send(
       new ViewHostMsg_ClipboardWriteObjectsAsync(objects_));

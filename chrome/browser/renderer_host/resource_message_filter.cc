@@ -340,9 +340,9 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
           render_widget_helper_->DidReceiveUpdateMsg(msg))
       IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsAsync,
-                          OnClipboardWriteObjects)
+                          OnClipboardWriteObjectsAsync)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsSync,
-                          OnClipboardWriteObjects)
+                          OnClipboardWriteObjectsSync)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardIsFormatAvailable,
                                       OnClipboardIsFormatAvailable)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadText,
@@ -376,7 +376,9 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
 #endif
 #if defined(OS_MACOSX)
       IPC_MESSAGE_HANDLER(ViewHostMsg_AllocatePDFTransport,
-                          OnAllocatePDFTransport)
+                          OnAllocateSharedMemoryBuffer)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
+                          OnAllocateSharedMemoryBuffer)
 #endif
       IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
       IPC_MESSAGE_HANDLER(ViewHostMsg_V8HeapStats, OnV8HeapStats)
@@ -684,25 +686,38 @@ void ResourceMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                            context);
 }
 
-void ResourceMessageFilter::OnClipboardWriteObjects(
-    const Clipboard::ObjectMap& objects) {
+void ResourceMessageFilter::OnClipboardWriteObjectsSync(
+    const Clipboard::ObjectMap& objects,
+    base::SharedMemoryHandle bitmap_handle) {
+  DCHECK(base::SharedMemory::IsHandleValid(bitmap_handle))
+      << "Bad bitmap handle";
   // We cannot write directly from the IO thread, and cannot service the IPC
   // on the UI thread. We'll copy the relevant data and get a handle to any
   // shared memory so it doesn't go away when we resume the renderer, and post
   // a task to perform the write on the UI thread.
   Clipboard::ObjectMap* long_living_objects = new Clipboard::ObjectMap(objects);
 
-#if defined(OS_WIN)
-  // We pass the renderer handle to assist the clipboard with using shared
-  // memory objects. handle() is a handle to the process that would
-  // own any shared memory that might be in the object list. We only do this
-  // on Windows and it only applies to bitmaps. (On Linux, bitmaps
-  // are copied pixel by pixel rather than using shared memory.)
-  Clipboard::DuplicateRemoteHandles(handle(), long_living_objects);
-#endif
+  // Splice the shared memory handle into the clipboard data.
+  Clipboard::ReplaceSharedMemHandle(long_living_objects, bitmap_handle,
+                                    handle());
 
   ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE, new WriteClipboardTask(long_living_objects));
+      ChromeThread::UI,
+      FROM_HERE,
+      new WriteClipboardTask(long_living_objects));
+}
+
+void ResourceMessageFilter::OnClipboardWriteObjectsAsync(
+    const Clipboard::ObjectMap& objects) {
+  // We cannot write directly from the IO thread, and cannot service the IPC
+  // on the UI thread. We'll copy the relevant data and post a task to preform
+  // the write on the UI thread.
+  Clipboard::ObjectMap* long_living_objects = new Clipboard::ObjectMap(objects);
+
+  ChromeThread::PostTask(
+      ChromeThread::UI,
+      FROM_HERE,
+      new WriteClipboardTask(long_living_objects));
 }
 
 #if !defined(OS_LINUX)
@@ -793,14 +808,14 @@ void ResourceMessageFilter::OnDuplicateSection(
 #endif
 
 #if defined(OS_MACOSX)
-void ResourceMessageFilter::OnAllocatePDFTransport(
+void ResourceMessageFilter::OnAllocateSharedMemoryBuffer(
     size_t buffer_size,
     base::SharedMemoryHandle* handle) {
   base::SharedMemory shared_buf;
   shared_buf.Create(L"", false, false, buffer_size);
   if (!shared_buf.Map(buffer_size)) {
     *handle = base::SharedMemory::NULLHandle();
-    NOTREACHED() << "Cannot map PDF transport buffer";
+    NOTREACHED() << "Cannot map shared memory buffer";
     return;
   }
   shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), handle);

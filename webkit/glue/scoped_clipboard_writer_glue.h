@@ -22,9 +22,7 @@ class ScopedClipboardWriterGlue : public ScopedClipboardWriter {
 
   ~ScopedClipboardWriterGlue();
 
-#if defined(OS_WIN)
   void WriteBitmapFromPixels(const void* pixels, const gfx::Size& size);
-#endif
 
  private:
   base::SharedMemory* shared_buf_;

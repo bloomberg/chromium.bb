@@ -162,12 +162,7 @@ void Clipboard::WriteObjects(const ObjectMap& objects,
 
   for (ObjectMap::const_iterator iter = objects.begin();
        iter != objects.end(); ++iter) {
-    if (iter->first == CBF_SMBITMAP)
-      WriteBitmapFromSharedMemory(&(iter->second[0].front()),
-                                  &(iter->second[1].front()),
-                                  process);
-    else
-      DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
+    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
 }
 
@@ -243,44 +238,6 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
     memcpy(bits, pixel_data, 4 * size->width() * size->height());
 
     // Now we have an HBITMAP, we can write it to the clipboard
-    WriteBitmapFromHandle(source_hbitmap, *size);
-  }
-
-  ::DeleteObject(source_hbitmap);
-  ::ReleaseDC(NULL, dc);
-}
-
-void Clipboard::WriteBitmapFromSharedMemory(const char* bitmap_data,
-                                            const char* size_data,
-                                            base::ProcessHandle process) {
-  const gfx::Size* size = reinterpret_cast<const gfx::Size*>(size_data);
-
-  // bitmap_data has an encoded shared memory object. See
-  // DuplicateRemoteHandles().
-  char* ptr = const_cast<char*>(bitmap_data);
-  scoped_ptr<const base::SharedMemory> bitmap(*
-      reinterpret_cast<const base::SharedMemory**>(ptr));
-
-  // TODO(darin): share data in gfx/bitmap_header.cc somehow.
-  BITMAPINFO bm_info = {0};
-  bm_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-  bm_info.bmiHeader.biWidth = size->width();
-  // Sets the vertical orientation.
-  bm_info.bmiHeader.biHeight = -size->height();
-  bm_info.bmiHeader.biPlanes = 1;
-  bm_info.bmiHeader.biBitCount = 32;
-  bm_info.bmiHeader.biCompression = BI_RGB;
-
-  HDC dc = ::GetDC(NULL);
-
-  // We can create an HBITMAP directly using the shared memory handle, saving
-  // a memcpy.
-  HBITMAP source_hbitmap =
-      ::CreateDIBSection(dc, &bm_info, DIB_RGB_COLORS, NULL,
-                         bitmap->handle(), 0);
-
-  if (source_hbitmap) {
-    // Now we can write the HBITMAP to the clipboard
     WriteBitmapFromHandle(source_hbitmap, *size);
   }
 
@@ -612,30 +569,6 @@ Clipboard::FormatType Clipboard::GetFileDescriptorFormatType() {
 // static
 Clipboard::FormatType Clipboard::GetFileContentFormatZeroType() {
   return IntToString(ClipboardUtil::GetFileContentFormatZero()->cfFormat);
-}
-
-// static
-void Clipboard::DuplicateRemoteHandles(base::ProcessHandle process,
-                                       ObjectMap* objects) {
-  for (ObjectMap::iterator iter = objects->begin(); iter != objects->end();
-       ++iter) {
-    if (iter->first == CBF_SMBITMAP) {
-      // There is a shared memory handle encoded on the first ObjectMapParam.
-      // Use it to open a local handle to the memory.
-      char* bitmap_data = &(iter->second[0].front());
-      base::SharedMemoryHandle* remote_bitmap_handle =
-          reinterpret_cast<base::SharedMemoryHandle*>(bitmap_data);
-
-      base::SharedMemory* bitmap = new base::SharedMemory(*remote_bitmap_handle,
-                                                          false, process);
-
-      // We store the object where the remote handle was located so it can
-      // be retrieved by the UI thread (see WriteBitmapFromSharedMemory()).
-      iter->second[0].clear();
-      for (size_t i = 0; i < sizeof(bitmap); i++)
-        iter->second[0].push_back(reinterpret_cast<char*>(&bitmap)[i]);
-    }
-  }
 }
 
 // static

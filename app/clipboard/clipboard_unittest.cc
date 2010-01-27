@@ -213,6 +213,50 @@ TEST_F(ClipboardTest, URLTest) {
 #endif  // defined(OS_LINUX)
 }
 
+TEST_F(ClipboardTest, SharedBitmapTest) {
+  unsigned int fake_bitmap[] = {
+    0x46155189, 0xF6A55C8D, 0x79845674, 0xFA57BD89,
+    0x78FD46AE, 0x87C64F5A, 0x36EDC5AF, 0x4378F568,
+    0x91E9F63A, 0xC31EA14F, 0x69AB32DF, 0x643A3FD1,
+  };
+  gfx::Size fake_bitmap_size(3, 4);
+  size_t bytes = sizeof(fake_bitmap);
+
+  // Create shared memory region.
+  base::SharedMemory shared_buf;
+  ASSERT_TRUE(shared_buf.Create(L"", false, true, bytes));
+  ASSERT_TRUE(shared_buf.Map(bytes));
+  memcpy(shared_buf.memory(), fake_bitmap, bytes);
+  base::SharedMemoryHandle handle_to_share;
+  base::ProcessHandle current_process = NULL;
+#if defined(OS_WIN)
+  current_process = GetCurrentProcess();
+#endif
+  shared_buf.ShareToProcess(current_process, &handle_to_share);
+  ASSERT_TRUE(shared_buf.Unmap());
+
+  // Setup data for clipboard.
+  Clipboard::ObjectMapParam placeholder_param;
+  Clipboard::ObjectMapParam size_param;
+  const char* size_data = reinterpret_cast<const char*>(&fake_bitmap_size);
+  for (size_t i = 0; i < sizeof(fake_bitmap_size); ++i)
+    size_param.push_back(size_data[i]);
+
+  Clipboard::ObjectMapParams params;
+  params.push_back(placeholder_param);
+  params.push_back(size_param);
+
+  Clipboard::ObjectMap objects;
+  objects[Clipboard::CBF_SMBITMAP] = params;
+  Clipboard::ReplaceSharedMemHandle(&objects, handle_to_share, current_process);
+
+  Clipboard clipboard;
+  clipboard.WriteObjects(objects);
+
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetBitmapFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+}
+
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
 TEST_F(ClipboardTest, DataTest) {
   Clipboard clipboard;
