@@ -3602,8 +3602,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Text for OK button on dialog">
         Clear browsing data
       </message>
-      <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash storage settings">
-        Adobe Flash storage settings...
+      <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash Player storage settings">
+        Adobe Flash Player storage settings...
       </message>
       <message name="IDS_CLEAR_DATA_DAY" desc="deletion period combo box: day">
         Last day
@@ -5098,7 +5098,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_COOKIE_EXPIRES_LABEL" desc="The Cookie Expires label">
         Expires:
       </message>
-      <message name="IDS_COOKIE_EXPIRES_PULLDOWN_OPTION" desc="The Cookie Expires field value for a session cookie">
+      <message name="IDS_COOKIES_COOKIE_EXPIRES_SESSION" desc="The Cookie Expires field value for a session cookie">
         When I close my browser
       </message>
       <message name="IDS_COOKIES_COOKIE_SENDFOR_ANY" desc="Send Cookie for any kind of connection">
