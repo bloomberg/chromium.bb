@@ -2631,7 +2631,7 @@ BUG29393 SKIP DEFER : fast/loader/stateobjects = TIMEOUT
 BUG29944 WIN : websocket/tests/unicode.html = TEXT PASS
 
 // Failures introduced by USE_NEW_BUILDER in Skia.
-BUG_SENORBLANCO WIN LINUX : fast/canvas/set-colors.html = TEXT
+BUG33287 WIN LINUX : fast/canvas/set-colors.html = TEXT
 
 // Failures from WebKit merge 51711:51724
 BUG32003 : fast/js/string-property-deletion.html = TEXT
