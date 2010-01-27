@@ -41,8 +41,7 @@
 BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                                        BrowserWindowController* controller,
                                        NSWindow* window)
-  : window_(window),
-    browser_(browser),
+  : browser_(browser),
     controller_(controller) {
   // This pref applies to all windows, so all must watch for it.
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
@@ -61,7 +60,7 @@ void BrowserWindowCocoa::Show() {
   // the previous browser instead if we don't explicitly set it here.
   BrowserList::SetLastActive(browser_);
 
-  [window_ makeKeyAndOrderFront:controller_];
+  [window() makeKeyAndOrderFront:controller_];
 }
 
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
@@ -72,7 +71,7 @@ void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   cocoa_bounds.origin.y =
       [screen frame].size.height - bounds.height() - bounds.y();
 
-  [window_ setFrame:cocoa_bounds display:YES];
+  [window() setFrame:cocoa_bounds display:YES];
 }
 
 // Callers assume that this doesn't immediately delete the Browser object.
@@ -82,14 +81,19 @@ void BrowserWindowCocoa::Close() {
   // If there is an overlay window, we contain a tab being dragged between
   // windows. Don't hide the window as it makes the UI extra confused. We can
   // still close the window, as that will happen when the drag completes.
-  if ([controller_ overlayWindow])
+  if ([controller_ overlayWindow]) {
     [controller_ deferPerformClose];
-  else {
+  } else {
     // Make sure we hide the window immediately. Even though performClose:
     // calls orderOut: eventually, it leaves the window on-screen long enough
     // that we start to see tabs shutting down. http://crbug.com/23959
-    [window_ orderOut:controller_];
-    [window_ performClose:controller_];
+    // TODO(viettrungluu): This is kind of bad, since |-performClose:| calls
+    // |-windowShouldClose:| (on its delegate, which is probably the
+    // controller) which may return |NO| causing the window to not be closed,
+    // thereby leaving a hidden window. In fact, our window-closing procedure
+    // involves a (indirect) recursion on |-performClose:|, which is also bad.
+    [window() orderOut:controller_];
+    [window() performClose:controller_];
   }
 }
 
@@ -102,11 +106,11 @@ void BrowserWindowCocoa::FlashFrame() {
 }
 
 bool BrowserWindowCocoa::IsActive() const {
-  return [window_ isKeyWindow];
+  return [window() isKeyWindow];
 }
 
 gfx::NativeWindow BrowserWindowCocoa::GetNativeHandle() {
-  return [controller_ window];
+  return window();
 }
 
 BrowserWindowTesting* BrowserWindowCocoa::GetBrowserWindowTesting() {
@@ -133,7 +137,7 @@ void BrowserWindowCocoa::UpdateTitleBar() {
   NSString* newTitle =
       base::SysUTF16ToNSString(browser_->GetWindowTitleForCurrentTab());
 
-  [window_ setTitle:newTitle];
+  [window() setTitle:newTitle];
 }
 
 void BrowserWindowCocoa::ShelfVisibilityChanged() {
@@ -165,14 +169,14 @@ gfx::Rect BrowserWindowCocoa::GetRestoredBounds() const {
   // really matters. We may want to let Cocoa handle all this for us.
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
-  NSRect frame = [window_ frame];
+  NSRect frame = [window() frame];
   gfx::Rect bounds(frame.origin.x, 0, frame.size.width, frame.size.height);
   bounds.set_y([screen frame].size.height - frame.origin.y - frame.size.height);
   return bounds;
 }
 
 bool BrowserWindowCocoa::IsMaximized() const {
-  return [window_ isZoomed];
+  return [window() isZoomed];
 }
 
 void BrowserWindowCocoa::SetFullscreen(bool fullscreen) {
@@ -293,7 +297,7 @@ void BrowserWindowCocoa::ShowImportDialog() {
   // Note that the dialog controller takes care of cleaning itself up
   // upon dismissal so auto-scoping here is not necessary.
   [[[ImportSettingsDialogController alloc]
-      initWithProfile:browser_->profile() parentWindow:window_] runModalDialog];
+    initWithProfile:browser_->profile() parentWindow:window()] runModalDialog];
 }
 
 void BrowserWindowCocoa::ShowSearchEnginesDialog() {
@@ -327,7 +331,7 @@ void BrowserWindowCocoa::ShowProfileErrorDialog(int message_id) {
 }
 
 void BrowserWindowCocoa::ShowThemeInstallBubble() {
-  ThemeInstallBubbleView::Show(window_);
+  ThemeInstallBubbleView::Show(window());
 }
 
 // We allow closing the window here since the real quit decision on Mac is made
@@ -471,7 +475,7 @@ int BrowserWindowCocoa::GetCommandId(const NativeWebKeyboardEvent& event) {
 
 bool BrowserWindowCocoa::HandleKeyboardEventInternal(NSEvent* event) {
   ChromeEventProcessingWindow* event_window =
-      static_cast<ChromeEventProcessingWindow*>(window_);
+      static_cast<ChromeEventProcessingWindow*>(window());
   DCHECK([event_window isKindOfClass:[ChromeEventProcessingWindow class]]);
 
   // Do not fire shortcuts on key up.
@@ -534,4 +538,8 @@ void BrowserWindowCocoa::DestroyBrowser() {
 
   // at this point the controller is dead (autoreleased), so
   // make sure we don't try to reference it any more.
+}
+
+NSWindow* BrowserWindowCocoa::window() const {
+  return [controller_ window];
 }

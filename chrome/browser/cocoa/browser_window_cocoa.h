@@ -116,9 +116,9 @@ class BrowserWindowCocoa : public BrowserWindow,
  private:
   int GetCommandId(const NativeWebKeyboardEvent& event);
   bool HandleKeyboardEventInternal(NSEvent* event);
+  NSWindow* window() const;  // Accessor for the (current) |NSWindow|.
 
   NotificationRegistrar registrar_;
-  NSWindow* window_;  // weak, owned by controller
   Browser* browser_;  // weak, owned by controller
   BrowserWindowController* controller_;  // weak, owns us
 };
