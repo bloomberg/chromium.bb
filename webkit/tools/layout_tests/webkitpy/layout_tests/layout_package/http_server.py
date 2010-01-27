@@ -20,11 +20,11 @@ import http_server_base
 import path_utils
 
 # So we can import httpd_utils below to make ui_tests happy.
-sys.path.append(path_utils.PathFromBase('tools', 'python'))
+sys.path.append(path_utils.path_from_base('tools', 'python'))
 import google.httpd_utils
 
 
-def RemoveLogFiles(folder, starts_with):
+def remove_log_files(folder, starts_with):
     files = os.listdir(folder)
     for file in files:
         if file.startswith(starts_with):
@@ -35,21 +35,22 @@ def RemoveLogFiles(folder, starts_with):
 class Lighttpd(http_server_base.HttpServerBase):
     # Webkit tests
     try:
-        _webkit_tests = path_utils.PathFromBase('third_party', 'WebKit',
-                                                'LayoutTests', 'http', 'tests')
-        _js_test_resource = path_utils.PathFromBase('third_party', 'WebKit',
-                                                    'LayoutTests', 'fast',
-                                                    'js', 'resources')
+        _webkit_tests = path_utils.path_from_base('third_party', 'WebKit',
+                                                  'LayoutTests', 'http',
+                                                  'tests')
+        _js_test_resource = path_utils.path_from_base('third_party', 'WebKit',
+                                                      'LayoutTests', 'fast',
+                                                      'js', 'resources')
     except path_utils.PathNotFound:
         _webkit_tests = None
         _js_test_resource = None
 
     # Path where we can access all of the tests
-    _all_tests = path_utils.PathFromBase('webkit', 'data', 'layout_tests')
+    _all_tests = path_utils.path_from_base('webkit', 'data', 'layout_tests')
     # Self generated certificate for SSL server (for client cert get
     # <base-path>\chrome\test\data\ssl\certs\root_ca_cert.crt)
-    _pem_file = path_utils.PathFromBase('tools', 'python', 'google',
-        'httpd_config', 'httpd2.pem')
+    _pem_file = path_utils.path_from_base('tools', 'python', 'google',
+                                          'httpd_config', 'httpd2.pem')
     # One mapping where we can get to everything
     VIRTUALCONFIG = [{'port': 8081, 'docroot': _all_tests}]
 
@@ -74,14 +75,14 @@ class Lighttpd(http_server_base.HttpServerBase):
         if self._port:
             self._port = int(self._port)
 
-    def IsRunning(self):
+    def is_running(self):
         return self._process != None
 
-    def Start(self):
-        if self.IsRunning():
+    def start(self):
+        if self.is_running():
             raise 'Lighttpd already running'
 
-        base_conf_file = path_utils.PathFromBase('webkit',
+        base_conf_file = path_utils.path_from_base('webkit',
             'tools', 'layout_tests', 'webkitpy', 'layout_tests',
             'layout_package', 'lighttpd.conf')
         out_conf_file = os.path.join(self._output_dir, 'lighttpd.conf')
@@ -92,8 +93,8 @@ class Lighttpd(http_server_base.HttpServerBase):
         error_log = os.path.join(self._output_dir, log_file_name)
 
         # Remove old log files. We only need to keep the last ones.
-        RemoveLogFiles(self._output_dir, "access.log-")
-        RemoveLogFiles(self._output_dir, "error.log-")
+        remove_log_files(self._output_dir, "access.log-")
+        remove_log_files(self._output_dir, "error.log-")
 
         # Write out the config
         f = file(base_conf_file, 'rb')
@@ -110,7 +111,7 @@ class Lighttpd(http_server_base.HttpServerBase):
                  '               ".pl"   => "/usr/bin/env",\n'
                  '               ".asis" => "/bin/cat",\n'
                  '               ".php"  => "%s" )\n\n') %
-                                     path_utils.LigHTTPdPHPPath())
+                                     path_utils.lighttpd_php_path())
 
         # Setup log files
         f.write(('server.errorlog = "%s"\n'
@@ -154,12 +155,12 @@ class Lighttpd(http_server_base.HttpServerBase):
                      '}\n\n') % (mapping['port'], mapping['docroot']))
         f.close()
 
-        executable = path_utils.LigHTTPdExecutablePath()
-        module_path = path_utils.LigHTTPdModulePath()
+        executable = path_utils.lighttpd_executable_path()
+        module_path = path_utils.lighttpd_module_path()
         start_cmd = [executable,
                      # Newly written config file
-                     '-f', path_utils.PathFromBase(self._output_dir,
-                                                   'lighttpd.conf'),
+                     '-f', path_utils.path_from_base(self._output_dir,
+                                                     'lighttpd.conf'),
                      # Where it can find its module dynamic libraries
                      '-m', module_path]
 
@@ -181,12 +182,12 @@ class Lighttpd(http_server_base.HttpServerBase):
         env = os.environ
         if sys.platform in ('cygwin', 'win32'):
             env['PATH'] = '%s;%s' % (
-                path_utils.PathFromBase('third_party', 'cygwin', 'bin'),
+                path_utils.path_from_base('third_party', 'cygwin', 'bin'),
                 env['PATH'])
 
         if sys.platform == 'win32' and self._register_cygwin:
-            setup_mount = path_utils.PathFromBase('third_party', 'cygwin',
-                'setup_mount.bat')
+            setup_mount = path_utils.path_from_base('third_party', 'cygwin',
+                                                    'setup_mount.bat')
             subprocess.Popen(setup_mount).wait()
 
         logging.debug('Starting http server')
@@ -194,7 +195,8 @@ class Lighttpd(http_server_base.HttpServerBase):
 
         # Wait for server to start.
         self.mappings = mappings
-        server_started = self.WaitForAction(self.IsServerRunningOnAllPorts)
+        server_started = self.wait_for_action(
+            self.is_server_running_on_all_ports)
 
         # Our process terminated already
         if not server_started or self._process.returncode != None:
@@ -205,14 +207,14 @@ class Lighttpd(http_server_base.HttpServerBase):
     # TODO(deanm): Find a nicer way to shutdown cleanly.  Our log files are
     # probably not being flushed, etc... why doesn't our python have os.kill ?
 
-    def Stop(self, force=False):
-        if not force and not self.IsRunning():
+    def stop(self, force=False):
+        if not force and not self.is_running():
             return
 
         httpd_pid = None
         if self._process:
             httpd_pid = self._process.pid
-        path_utils.ShutDownHTTPServer(httpd_pid)
+        path_utils.shut_down_http_server(httpd_pid)
 
         if self._process:
             self._process.wait()
@@ -251,6 +253,6 @@ if '__main__' == __name__:
                          register_cygwin=options.register_cygwin,
                          run_background=options.run_background)
         if 'start' == options.server:
-            httpd.Start()
+            httpd.start()
         else:
-            httpd.Stop(force=True)
+            httpd.stop(force=True)

@@ -17,7 +17,7 @@ from layout_package import test_failures
 from test_types import test_type_base
 
 
-def isRenderTreeDump(data):
+def is_render_tree_dump(data):
     """Returns true if data appears to be a render tree dump as opposed to a
     plain text dump."""
     return data.find("RenderView at (0,0)") != -1
@@ -25,25 +25,25 @@ def isRenderTreeDump(data):
 
 class TestTextDiff(test_type_base.TestTypeBase):
 
-    def GetNormalizedOutputText(self, output):
+    def get_normalized_output_text(self, output):
         # Some tests produce "\r\n" explicitly.  Our system (Python/Cygwin)
         # helpfully changes the "\n" to "\r\n", resulting in "\r\r\n".
         norm = output.replace("\r\r\n", "\r\n").strip("\r\n").replace(
              "\r\n", "\n")
         return norm + "\n"
 
-    def GetNormalizedExpectedText(self, filename, show_sources):
+    def get_normalized_expected_text(self, filename, show_sources):
         """Given the filename of the test, read the expected output from a file
         and normalize the text.  Returns a string with the expected text, or ''
         if the expected output file was not found."""
         # Read the platform-specific expected text.
-        expected_filename = path_utils.ExpectedFilename(filename, '.txt')
+        expected_filename = path_utils.expected_filename(filename, '.txt')
         if show_sources:
             logging.debug('Using %s' % expected_filename)
 
-        return self.GetNormalizedText(expected_filename)
+        return self.get_normalized_text(expected_filename)
 
-    def GetNormalizedText(self, filename):
+    def get_normalized_text(self, filename):
         try:
             text = open(filename).read()
         except IOError, e:
@@ -54,26 +54,26 @@ class TestTextDiff(test_type_base.TestTypeBase):
         # Normalize line endings
         return text.strip("\r\n").replace("\r\n", "\n") + "\n"
 
-    def CompareOutput(self, filename, proc, output, test_args, target):
+    def compare_output(self, filename, proc, output, test_args, target):
         """Implementation of CompareOutput that checks the output text against
         the expected text from the LayoutTest directory."""
         failures = []
 
         # If we're generating a new baseline, we pass.
         if test_args.new_baseline:
-            self._SaveBaselineData(filename, output, ".txt")
+            self._save_baseline_data(filename, output, ".txt")
             return failures
 
         # Normalize text to diff
-        output = self.GetNormalizedOutputText(output)
-        expected = self.GetNormalizedExpectedText(filename,
-                                                  test_args.show_sources)
+        output = self.get_normalized_output_text(output)
+        expected = self.get_normalized_expected_text(filename,
+                                                     test_args.show_sources)
 
         # Write output files for new tests, too.
         if output != expected:
             # Text doesn't match, write output files.
-            self.WriteOutputFiles(filename, "", ".txt", output, expected,
-                                  diff=True, wdiff=True)
+            self.write_output_files(filename, "", ".txt", output, expected,
+                                    diff=True, wdiff=True)
 
             if expected == '':
                 failures.append(test_failures.FailureMissingResult(self))
@@ -82,7 +82,7 @@ class TestTextDiff(test_type_base.TestTypeBase):
 
         return failures
 
-    def DiffFiles(self, file1, file2):
+    def diff_files(self, file1, file2):
         """Diff two text files.
 
         Args:
@@ -93,4 +93,5 @@ class TestTextDiff(test_type_base.TestTypeBase):
           False otherwise.
         """
 
-        return self.GetNormalizedText(file1) != self.GetNormalizedText(file2)
+        return (self.get_normalized_text(file1) !=
+                self.get_normalized_text(file2))

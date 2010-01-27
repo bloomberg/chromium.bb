@@ -11,14 +11,14 @@ import subprocess
 import sys
 
 
-def PlatformName():
+def platform_name():
     """Returns the name of the platform we're currently running on."""
     # We're not ready for version-specific results yet. When we uncomment
     # this, we also need to add it to the BaselineSearchPath()
-    return 'chromium-win' + PlatformVersion()
+    return 'chromium-win' + platform_version()
 
 
-def PlatformVersion():
+def platform_version():
     """Returns the version string for the platform, e.g. '-vista' or
     '-snowleopard'. If the platform does not distinguish between
     minor versions, it returns ''."""
@@ -32,45 +32,46 @@ def PlatformVersion():
     return ''
 
 
-def GetNumCores():
+def get_num_cores():
     """Returns the number of cores on the machine. For hyperthreaded machines,
     this will be double the number of actual processors."""
     return int(os.environ.get('NUMBER_OF_PROCESSORS', 1))
 
 
-def BaselinePath(platform=None):
+def baseline_path(platform=None):
     """Returns the path relative to the top of the source tree for the
     baselines for the specified platform version. If |platform| is None,
     then the version currently in use is used."""
     if platform is None:
-        platform = PlatformName()
-    return path_utils.PathFromBase('webkit', 'data', 'layout_tests',
-                                   'platform', platform, 'LayoutTests')
+        platform = platform_name()
+    return path_utils.path_from_base('webkit', 'data', 'layout_tests',
+                                     'platform', platform, 'LayoutTests')
 
 
-def BaselineSearchPath(platform=None):
+def baseline_search_path(platform=None):
     """Returns the list of directories to search for baselines/results, in
     order of preference. Paths are relative to the top of the source tree."""
     dirs = []
     if platform is None:
-        platform = PlatformName()
+        platform = platform_name()
 
     if platform == 'chromium-win-xp':
-        dirs.append(BaselinePath(platform))
+        dirs.append(baseline_path(platform))
     if platform in ('chromium-win-xp', 'chromium-win-vista'):
-        dirs.append(BaselinePath('chromium-win-vista'))
-    dirs.append(BaselinePath('chromium-win'))
-    dirs.append(path_utils.WebKitBaselinePath('win'))
-    dirs.append(path_utils.WebKitBaselinePath('mac'))
+        dirs.append(baseline_path('chromium-win-vista'))
+    dirs.append(baseline_path('chromium-win'))
+    dirs.append(path_utils.webkit_baseline_path('win'))
+    dirs.append(path_utils.webkit_baseline_path('mac'))
     return dirs
 
 
-def WDiffPath():
+def wdiff_path():
     """Path to the WDiff executable, whose binary is checked in on Win"""
-    return path_utils.PathFromBase('third_party', 'cygwin', 'bin', 'wdiff.exe')
+    return path_utils.path_from_base('third_party', 'cygwin', 'bin',
+                                     'wdiff.exe')
 
 
-def ImageDiffPath(target):
+def image_diff_path(target):
     """Return the platform-specific binary path for the image compare util.
          We use this if we can't find the binary in the default location
          in path_utils.
@@ -78,10 +79,10 @@ def ImageDiffPath(target):
     Args:
       target: Build target mode (debug or release)
     """
-    return _FindBinary(target, 'image_diff.exe')
+    return _find_binary(target, 'image_diff.exe')
 
 
-def LayoutTestHelperPath(target):
+def layout_test_helper_path(target):
     """Return the platform-specific binary path for the layout test helper.
     We use this if we can't find the binary in the default location
     in path_utils.
@@ -89,10 +90,10 @@ def LayoutTestHelperPath(target):
     Args:
       target: Build target mode (debug or release)
     """
-    return _FindBinary(target, 'layout_test_helper.exe')
+    return _find_binary(target, 'layout_test_helper.exe')
 
 
-def TestShellPath(target):
+def test_shell_path(target):
     """Return the platform-specific binary path for our TestShell.
        We use this if we can't find the binary in the default location
        in path_utils.
@@ -100,40 +101,40 @@ def TestShellPath(target):
     Args:
       target: Build target mode (debug or release)
     """
-    return _FindBinary(target, 'test_shell.exe')
+    return _find_binary(target, 'test_shell.exe')
 
 
-def ApacheExecutablePath():
+def apache_executable_path():
     """Returns the executable path to start Apache"""
-    path = path_utils.PathFromBase('third_party', 'cygwin', "usr", "sbin")
+    path = path_utils.path_from_base('third_party', 'cygwin', "usr", "sbin")
     # Don't return httpd.exe since we want to use this from cygwin.
     return os.path.join(path, "httpd")
 
 
-def ApacheConfigFilePath():
+def apache_config_file_path():
     """Returns the path to Apache config file"""
-    return path_utils.PathFromBase("third_party", "WebKit", "LayoutTests",
+    return path_utils.path_from_base("third_party", "WebKit", "LayoutTests",
         "http", "conf", "cygwin-httpd.conf")
 
 
-def LigHTTPdExecutablePath():
+def lighttpd_executable_path():
     """Returns the executable path to start LigHTTPd"""
-    return path_utils.PathFromBase('third_party', 'lighttpd', 'win',
-                                   'LightTPD.exe')
+    return path_utils.path_from_base('third_party', 'lighttpd', 'win',
+                                     'LightTPD.exe')
 
 
-def LigHTTPdModulePath():
+def lighttpd_module_path():
     """Returns the library module path for LigHTTPd"""
-    return path_utils.PathFromBase('third_party', 'lighttpd', 'win', 'lib')
+    return path_utils.path_from_base('third_party', 'lighttpd', 'win', 'lib')
 
 
-def LigHTTPdPHPPath():
+def lighttpd_php_path():
     """Returns the PHP executable path for LigHTTPd"""
-    return path_utils.PathFromBase('third_party', 'lighttpd', 'win', 'php5',
-                                   'php-cgi.exe')
+    return path_utils.path_from_base('third_party', 'lighttpd', 'win', 'php5',
+                                     'php-cgi.exe')
 
 
-def ShutDownHTTPServer(server_pid):
+def shut_down_http_server(server_pid):
     """Shut down the lighttpd web server. Blocks until it's fully shut down.
 
     Args:
@@ -148,7 +149,7 @@ def ShutDownHTTPServer(server_pid):
                      stderr=subprocess.PIPE).wait()
 
 
-def KillProcess(pid):
+def kill_process(pid):
     """Forcefully kill the process.
 
     Args:
@@ -159,7 +160,7 @@ def KillProcess(pid):
                     stderr=subprocess.PIPE)
 
 
-def KillAllTestShells(self):
+def kill_all_test_shells(self):
     """Kills all instances of the test_shell binary currently running."""
     subprocess.Popen(('taskkill.exe', '/f', '/im', 'test_shell.exe'),
                      stdout=subprocess.PIPE,
@@ -170,15 +171,15 @@ def KillAllTestShells(self):
 #
 
 
-def _FindBinary(target, binary):
+def _find_binary(target, binary):
     """On Windows, we look for binaries that we compile in potentially
     two places: src/webkit/$target (preferably, which we get if we
     built using webkit_glue.gyp), or src/chrome/$target (if compiled some
     other way)."""
     try:
-        return path_utils.PathFromBase('webkit', target, binary)
+        return path_utils.path_from_base('webkit', target, binary)
     except path_utils.PathNotFound:
         try:
-            return path_utils.PathFromBase('chrome', target, binary)
+            return path_utils.path_from_base('chrome', target, binary)
         except path_utils.PathNotFound:
-            return path_utils.PathFromBase('build', target, binary)
+            return path_utils.path_from_base('build', target, binary)

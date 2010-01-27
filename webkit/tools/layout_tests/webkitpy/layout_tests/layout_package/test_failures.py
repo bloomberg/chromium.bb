@@ -8,7 +8,7 @@ import os
 import test_expectations
 
 
-def DetermineResultType(failure_list):
+def determine_result_type(failure_list):
     """Takes a set of test_failures and returns which result type best fits
     the list of failures. "Best fits" means we use the worst type of failure.
 
@@ -46,20 +46,20 @@ class TestFailure(object):
     """Abstract base class that defines the failure interface."""
 
     @staticmethod
-    def Message():
+    def message():
         """Returns a string describing the failure in more detail."""
         raise NotImplemented
 
-    def ResultHtmlOutput(self, filename):
+    def result_html_output(self, filename):
         """Returns an HTML string to be included on the results.html page."""
         raise NotImplemented
 
-    def ShouldKillTestShell(self):
+    def should_kill_test_shell(self):
         """Returns True if we should kill the test shell before the next
         test."""
         return False
 
-    def RelativeOutputFilename(self, filename, modifier):
+    def relative_output_filename(self, filename, modifier):
         """Returns a relative filename inside the output dir that contains
         modifier.
 
@@ -91,7 +91,7 @@ class FailureWithType(TestFailure):
     # Filename suffixes used by ResultHtmlOutput.
     OUT_FILENAMES = []
 
-    def OutputLinks(self, filename, out_names):
+    def output_links(self, filename, out_names):
         """Returns a string holding all applicable output file links.
 
         Args:
@@ -103,7 +103,8 @@ class FailureWithType(TestFailure):
               If out_names is empty, returns the empty string.
         """
         links = ['']
-        uris = [self.RelativeOutputFilename(filename, fn) for fn in out_names]
+        uris = [self.relative_output_filename(filename, fn) for
+                fn in out_names]
         if len(uris) > 1:
             links.append("<a href='%s'>expected</a>" % uris[1])
         if len(uris) > 0:
@@ -114,8 +115,8 @@ class FailureWithType(TestFailure):
             links.append("<a href='%s'>wdiff</a>" % uris[3])
         return ' '.join(links)
 
-    def ResultHtmlOutput(self, filename):
-        return self.Message() + self.OutputLinks(filename, self.OUT_FILENAMES)
+    def result_html_output(self, filename):
+        return self.message() + self.output_links(filename, self.OUT_FILENAMES)
 
 
 class FailureTimeout(TestFailure):
@@ -123,13 +124,13 @@ class FailureTimeout(TestFailure):
     happens."""
 
     @staticmethod
-    def Message():
+    def message():
         return "Test timed out"
 
-    def ResultHtmlOutput(self, filename):
-        return "<strong>%s</strong>" % self.Message()
+    def result_html_output(self, filename):
+        return "<strong>%s</strong>" % self.message()
 
-    def ShouldKillTestShell(self):
+    def should_kill_test_shell(self):
         return True
 
 
@@ -137,16 +138,16 @@ class FailureCrash(TestFailure):
     """Test shell crashed."""
 
     @staticmethod
-    def Message():
+    def message():
         return "Test shell crashed"
 
-    def ResultHtmlOutput(self, filename):
+    def result_html_output(self, filename):
         # TODO(tc): create a link to the minidump file
-        stack = self.RelativeOutputFilename(filename, "-stack.txt")
-        return "<strong>%s</strong> <a href=%s>stack</a>" % (self.Message(),
-            stack)
+        stack = self.relative_output_filename(filename, "-stack.txt")
+        return "<strong>%s</strong> <a href=%s>stack</a>" % (self.message(),
+                                                             stack)
 
-    def ShouldKillTestShell(self):
+    def should_kill_test_shell(self):
         return True
 
 
@@ -155,12 +156,12 @@ class FailureMissingResult(FailureWithType):
     OUT_FILENAMES = ["-actual.txt"]
 
     @staticmethod
-    def Message():
+    def message():
         return "No expected results found"
 
-    def ResultHtmlOutput(self, filename):
-        return ("<strong>%s</strong>" % self.Message() +
-                self.OutputLinks(filename, self.OUT_FILENAMES))
+    def result_html_output(self, filename):
+        return ("<strong>%s</strong>" % self.message() +
+                self.output_links(filename, self.OUT_FILENAMES))
 
 
 class FailureTextMismatch(FailureWithType):
@@ -176,7 +177,7 @@ class FailureTextMismatch(FailureWithType):
             self.OUT_FILENAMES = self.OUT_FILENAMES_WDIFF
 
     @staticmethod
-    def Message():
+    def message():
         return "Text diff mismatch"
 
 
@@ -187,11 +188,11 @@ class FailureMissingImageHash(FailureWithType):
     OUT_FILENAMES = []
 
     @staticmethod
-    def Message():
+    def message():
         return "No expected image hash found"
 
-    def ResultHtmlOutput(self, filename):
-        return "<strong>%s</strong>" % self.Message()
+    def result_html_output(self, filename):
+        return "<strong>%s</strong>" % self.message()
 
 
 class FailureMissingImage(FailureWithType):
@@ -199,12 +200,12 @@ class FailureMissingImage(FailureWithType):
     OUT_FILENAMES = ["-actual.png"]
 
     @staticmethod
-    def Message():
+    def message():
         return "No expected image found"
 
-    def ResultHtmlOutput(self, filename):
-        return ("<strong>%s</strong>" % self.Message() +
-                self.OutputLinks(filename, self.OUT_FILENAMES))
+    def result_html_output(self, filename):
+        return ("<strong>%s</strong>" % self.message() +
+                self.output_links(filename, self.OUT_FILENAMES))
 
 
 class FailureImageHashMismatch(FailureWithType):
@@ -212,7 +213,7 @@ class FailureImageHashMismatch(FailureWithType):
     OUT_FILENAMES = ["-actual.png", "-expected.png", "-diff.png"]
 
     @staticmethod
-    def Message():
+    def message():
         # We call this a simple image mismatch to avoid confusion, since
         # we link to the PNGs rather than the checksums.
         return "Image mismatch"
@@ -223,7 +224,7 @@ class FailureFuzzyFailure(FailureWithType):
     OUT_FILENAMES = ["-actual.png", "-expected.png"]
 
     @staticmethod
-    def Message():
+    def message():
         return "Fuzzy image match also failed"
 
 
@@ -234,8 +235,8 @@ class FailureImageHashIncorrect(FailureWithType):
     OUT_FILENAMES = []
 
     @staticmethod
-    def Message():
+    def message():
         return "Images match, expected image hash incorrect. "
 
-    def ResultHtmlOutput(self, filename):
-        return "<strong>%s</strong>" % self.Message()
+    def result_html_output(self, filename):
+        return "<strong>%s</strong>" % self.message()

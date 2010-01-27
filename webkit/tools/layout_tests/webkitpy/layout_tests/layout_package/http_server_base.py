@@ -11,7 +11,7 @@ import urllib
 
 class HttpServerBase(object):
 
-    def WaitForAction(self, action):
+    def wait_for_action(self, action):
         """Repeat the action for 20 seconds or until it succeeds. Returns
         whether it succeeded."""
         start_time = time.time()
@@ -22,7 +22,7 @@ class HttpServerBase(object):
 
         return False
 
-    def IsServerRunningOnAllPorts(self):
+    def is_server_running_on_all_ports(self):
         """Returns whether the server is running on all the desired ports."""
         for mapping in self.mappings:
             if 'sslcert' in mapping:

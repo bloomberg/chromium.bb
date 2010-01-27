@@ -26,7 +26,7 @@ _compare_msg_printed = False
 
 class ImageDiff(test_type_base.TestTypeBase):
 
-    def _CopyOutputPNG(self, test_filename, source_image, extension):
+    def _copy_output_png(self, test_filename, source_image, extension):
         """Copies result files into the output directory with appropriate
         names.
 
@@ -35,8 +35,8 @@ class ImageDiff(test_type_base.TestTypeBase):
           source_file: path to the image file (either actual or expected)
           extension: extension to indicate -actual.png or -expected.png
         """
-        self._MakeOutputDirectory(test_filename)
-        dest_image = self.OutputFilename(test_filename, extension)
+        self._make_output_directory(test_filename)
+        dest_image = self.output_filename(test_filename, extension)
 
         try:
             shutil.copyfile(source_image, dest_image)
@@ -45,7 +45,7 @@ class ImageDiff(test_type_base.TestTypeBase):
             if errno.ENOENT != e.errno:
                 raise
 
-    def _SaveBaselineFiles(self, filename, png_path, checksum):
+    def _save_baseline_files(self, filename, png_path, checksum):
         """Saves new baselines for the PNG and checksum.
 
         Args:
@@ -56,28 +56,28 @@ class ImageDiff(test_type_base.TestTypeBase):
         png_file = open(png_path, "rb")
         png_data = png_file.read()
         png_file.close()
-        self._SaveBaselineData(filename, png_data, ".png")
-        self._SaveBaselineData(filename, checksum, ".checksum")
+        self._save_baseline_data(filename, png_data, ".png")
+        self._save_baseline_data(filename, checksum, ".checksum")
 
-    def _CreateImageDiff(self, filename, target):
+    def _create_image_diff(self, filename, target):
         """Creates the visual diff of the expected/actual PNGs.
 
         Args:
           filename: the name of the test
           target: Debug or Release
         """
-        diff_filename = self.OutputFilename(filename,
+        diff_filename = self.output_filename(filename,
           self.FILENAME_SUFFIX_COMPARE)
-        actual_filename = self.OutputFilename(filename,
+        actual_filename = self.output_filename(filename,
           self.FILENAME_SUFFIX_ACTUAL + '.png')
-        expected_filename = self.OutputFilename(filename,
+        expected_filename = self.output_filename(filename,
           self.FILENAME_SUFFIX_EXPECTED + '.png')
 
         global _compare_available
         cmd = ''
 
         try:
-            executable = path_utils.ImageDiffPath(target)
+            executable = path_utils.image_diff_path(target)
             cmd = [executable, '--diff', actual_filename, expected_filename,
                    diff_filename]
         except Exception, e:
@@ -106,7 +106,7 @@ class ImageDiff(test_type_base.TestTypeBase):
 
         return result
 
-    def CompareOutput(self, filename, proc, output, test_args, target):
+    def compare_output(self, filename, proc, output, test_args, target):
         """Implementation of CompareOutput that checks the output image and
         checksum against the expected files from the LayoutTest directory.
         """
@@ -118,14 +118,14 @@ class ImageDiff(test_type_base.TestTypeBase):
 
         # If we're generating a new baseline, we pass.
         if test_args.new_baseline:
-            self._SaveBaselineFiles(filename, test_args.png_path,
+            self._save_baseline_files(filename, test_args.png_path,
                                     test_args.hash)
             return failures
 
         # Compare hashes.
-        expected_hash_file = path_utils.ExpectedFilename(filename, '.checksum')
-
-        expected_png_file = path_utils.ExpectedFilename(filename, '.png')
+        expected_hash_file = path_utils.expected_filename(filename,
+                                                          '.checksum')
+        expected_png_file = path_utils.expected_filename(filename, '.png')
 
         if test_args.show_sources:
             logging.debug('Using %s' % expected_hash_file)
@@ -141,9 +141,9 @@ class ImageDiff(test_type_base.TestTypeBase):
 
         if not os.path.isfile(expected_png_file):
             # Report a missing expected PNG file.
-            self.WriteOutputFiles(filename, '', '.checksum', test_args.hash,
-                                  expected_hash, diff=False, wdiff=False)
-            self._CopyOutputPNG(filename, test_args.png_path, '-actual.png')
+            self.write_output_files(filename, '', '.checksum', test_args.hash,
+                                    expected_hash, diff=False, wdiff=False)
+            self._copy_output_png(filename, test_args.png_path, '-actual.png')
             failures.append(test_failures.FailureMissingImage(self))
             return failures
         elif test_args.hash == expected_hash:
@@ -151,14 +151,14 @@ class ImageDiff(test_type_base.TestTypeBase):
             return failures
 
 
-        self.WriteOutputFiles(filename, '', '.checksum', test_args.hash,
-                              expected_hash, diff=False, wdiff=False)
-        self._CopyOutputPNG(filename, test_args.png_path, '-actual.png')
-        self._CopyOutputPNG(filename, expected_png_file, '-expected.png')
+        self.write_output_files(filename, '', '.checksum', test_args.hash,
+                                expected_hash, diff=False, wdiff=False)
+        self._copy_output_png(filename, test_args.png_path, '-actual.png')
+        self._copy_output_png(filename, expected_png_file, '-expected.png')
 
         # Even though we only use result in one codepath below but we
         # still need to call CreateImageDiff for other codepaths.
-        result = self._CreateImageDiff(filename, target)
+        result = self._create_image_diff(filename, target)
         if expected_hash == '':
             failures.append(test_failures.FailureMissingImageHash(self))
         elif test_args.hash != expected_hash:
@@ -171,7 +171,7 @@ class ImageDiff(test_type_base.TestTypeBase):
 
         return failures
 
-    def DiffFiles(self, file1, file2):
+    def diff_files(self, file1, file2):
         """Diff two image files.
 
         Args:
@@ -183,7 +183,7 @@ class ImageDiff(test_type_base.TestTypeBase):
         """
 
         try:
-            executable = path_utils.ImageDiffPath('Debug')
+            executable = path_utils.image_diff_path('Debug')
         except Exception, e:
             logging.warn('Failed to find image diff executable.')
             return True

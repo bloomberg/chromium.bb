@@ -51,7 +51,7 @@ from test_types import image_diff
 from test_types import test_type_base
 from test_types import text_diff
 
-sys.path.append(path_utils.PathFromBase('third_party'))
+sys.path.append(path_utils.path_from_base('third_party'))
 import simplejson
 
 # Indicates that we want detailed progress updates in the output (prints
@@ -77,9 +77,10 @@ class TestInfo:
           timeout: Timeout for running the test in TestShell.
           """
         self.filename = filename
-        self.uri = path_utils.FilenameToUri(filename)
+        self.uri = path_utils.filename_to_uri(filename)
         self.timeout = timeout
-        expected_hash_file = path_utils.ExpectedFilename(filename, '.checksum')
+        expected_hash_file = path_utils.expected_filename(filename,
+                                                          '.checksum')
         try:
             self.image_hash = open(expected_hash_file, "r").read()
         except IOError, e:
@@ -110,9 +111,9 @@ class ResultSummary(object):
             self.tests_by_expectation[expectation] = set()
         for timeline in TestExpectationsFile.TIMELINES.values():
             self.tests_by_timeline[timeline] = (
-                expectations.GetTestsWithTimeline(timeline))
+                expectations.get_tests_with_timeline(timeline))
 
-    def Add(self, test, failures, result, expected):
+    def add(self, test, failures, result, expected):
         """Add a result into the appropriate bin.
 
         Args:
@@ -176,7 +177,7 @@ class TestRunner:
         # a set of test files, and the same tests as a list
         self._test_files = set()
         self._test_files_list = None
-        self._file_dir = path_utils.PathFromBase('webkit', 'tools',
+        self._file_dir = path_utils.path_from_base('webkit', 'tools',
             'layout_tests')
         self._result_queue = Queue.Queue()
 
@@ -193,19 +194,19 @@ class TestRunner:
         sys.stderr.flush()
         logging.debug("stopping http server")
         # Stop the http server.
-        self._http_server.Stop()
+        self._http_server.stop()
         # Stop the Web Socket / Web Socket Secure servers.
-        self._websocket_server.Stop()
+        self._websocket_server.stop()
         # self._websocket_secure_server.Stop()
 
-    def GatherFilePaths(self, paths):
+    def gather_file_paths(self, paths):
         """Find all the files to test.
 
         Args:
           paths: a list of globs to use instead of the defaults."""
-        self._test_files = test_files.GatherTestFiles(paths)
+        self._test_files = test_files.gather_test_files(paths)
 
-    def ParseExpectations(self, platform, is_debug_mode):
+    def parse_expectations(self, platform, is_debug_mode):
         """Parse the expectations from the test_list files and return a data
         structure holding them. Throws an error if the test_list files have
         invalid syntax."""
@@ -225,7 +226,7 @@ class TestRunner:
             else:
                 raise err
 
-    def PrepareListsAndPrintOutput(self, write):
+    def prepare_lists_and_print_output(self, write):
         """Create appropriate subsets of test lists and returns a
         ResultSummary object. Also prints expected test counts.
 
@@ -240,7 +241,7 @@ class TestRunner:
         write("Found:  %d tests" % (len(self._test_files)))
         skipped = set()
         if num_all_test_files > 1 and not self._options.force:
-            skipped = self._expectations.GetTestsWithResultType(
+            skipped = self._expectations.get_tests_with_result_type(
                            test_expectations.SKIP)
             self._test_files -= skipped
 
@@ -331,8 +332,8 @@ class TestRunner:
             self._test_files_list = files + skip_chunk_list
             self._test_files = set(self._test_files_list)
 
-            self._expectations = self.ParseExpectations(
-                path_utils.PlatformName(), self._options.target == 'Debug')
+            self._expectations = self.parse_expectations(
+                path_utils.platform_name(), self._options.target == 'Debug')
 
             self._test_files = set(files)
             self._test_files_list = files
@@ -341,13 +342,13 @@ class TestRunner:
 
         result_summary = ResultSummary(self._expectations,
             self._test_files | skip_chunk)
-        self._PrintExpectedResultsOfType(write, result_summary,
+        self._print_expected_results_of_type(write, result_summary,
             test_expectations.PASS, "passes")
-        self._PrintExpectedResultsOfType(write, result_summary,
+        self._print_expected_results_of_type(write, result_summary,
             test_expectations.FAIL, "failures")
-        self._PrintExpectedResultsOfType(write, result_summary,
+        self._print_expected_results_of_type(write, result_summary,
             test_expectations.FLAKY, "flaky")
-        self._PrintExpectedResultsOfType(write, result_summary,
+        self._print_expected_results_of_type(write, result_summary,
             test_expectations.SKIP, "skipped")
 
 
@@ -358,17 +359,17 @@ class TestRunner:
             # subtracted out of self._test_files, above), but we stub out the
             # results here so the statistics can remain accurate.
             for test in skip_chunk:
-                result_summary.Add(test, [], test_expectations.SKIP,
-                expected=True)
+                result_summary.add(test, [], test_expectations.SKIP,
+                                   expected=True)
         write("")
 
         return result_summary
 
-    def AddTestType(self, test_type):
+    def add_test_type(self, test_type):
         """Add a TestType to the TestRunner."""
         self._test_types.append(test_type)
 
-    def _GetDirForTestFile(self, test_file):
+    def _get_dir_for_test_file(self, test_file):
         """Returns the highest-level directory by which to shard the given
         test file."""
         index = test_file.rfind(os.sep + 'LayoutTests' + os.sep)
@@ -392,15 +393,15 @@ class TestRunner:
 
         return return_value
 
-    def _GetTestInfoForFile(self, test_file):
+    def _get_test_info_for_file(self, test_file):
         """Returns the appropriate TestInfo object for the file. Mostly this
         is used for looking up the timeout value (in ms) to use for the given
         test."""
-        if self._expectations.HasModifier(test_file, test_expectations.SLOW):
+        if self._expectations.has_modifier(test_file, test_expectations.SLOW):
             return TestInfo(test_file, self._options.slow_time_out_ms)
         return TestInfo(test_file, self._options.time_out_ms)
 
-    def _GetTestFileQueue(self, test_files):
+    def _get_test_file_queue(self, test_files):
         """Create the thread safe queue of lists of (test filenames, test URIs)
         tuples. Each TestShellThread pulls a list from this queue and runs
         those tests in order before grabbing the next available list.
@@ -414,17 +415,19 @@ class TestRunner:
         """
 
         if (self._options.experimental_fully_parallel or
-            self._IsSingleThreaded()):
+            self._is_single_threaded()):
             filename_queue = Queue.Queue()
             for test_file in test_files:
-                filename_queue.put('.', [self._GetTestInfoForFile(test_file)])
+                filename_queue.put('.',
+                                   [self._get_test_info_for_file(test_file)])
             return filename_queue
 
         tests_by_dir = {}
         for test_file in test_files:
-            directory = self._GetDirForTestFile(test_file)
+            directory = self._get_dir_for_test_file(test_file)
             tests_by_dir.setdefault(directory, [])
-            tests_by_dir[directory].append(self._GetTestInfoForFile(test_file))
+            tests_by_dir[directory].append(
+                self._get_test_info_for_file(test_file))
 
         # Sort by the number of tests in the dir so that the ones with the
         # most tests get run first in order to maximize parallelization.
@@ -457,7 +460,7 @@ class TestRunner:
             filename_queue.put(item)
         return filename_queue
 
-    def _GetTestShellArgs(self, index):
+    def _get_test_shell_args(self, index):
         """Returns the tuple of arguments for tests and for test_shell."""
         shell_args = []
         test_args = test_type_base.TestArguments()
@@ -479,13 +482,13 @@ class TestRunner:
 
         return (test_args, shell_args)
 
-    def _ContainsTests(self, subdir):
+    def _contains_tests(self, subdir):
         for test_file in self._test_files_list:
             if test_file.find(subdir) >= 0:
                 return True
         return False
 
-    def _InstantiateTestShellThreads(self, test_shell_binary, test_files,
+    def _instantiate_test_shell_threads(self, test_shell_binary, test_files,
                                      result_summary):
         """Instantitates and starts the TestShellThread(s).
 
@@ -502,7 +505,7 @@ class TestRunner:
             test_shell_command = (self._options.wrapper.split() +
                 test_shell_command)
 
-        filename_queue = self._GetTestFileQueue(test_files)
+        filename_queue = self._get_test_file_queue(test_files)
 
         # Instantiate TestShellThreads and start them.
         threads = []
@@ -513,7 +516,7 @@ class TestRunner:
                 test_types.append(t(self._options.platform,
                                     self._options.results_directory))
 
-            test_args, shell_args = self._GetTestShellArgs(i)
+            test_args, shell_args = self._get_test_shell_args(i)
             thread = test_shell_thread.TestShellThread(filename_queue,
                                                        self._result_queue,
                                                        test_shell_command,
@@ -521,15 +524,15 @@ class TestRunner:
                                                        test_args,
                                                        shell_args,
                                                        self._options)
-            if self._IsSingleThreaded():
-                thread.RunInMainThread(self, result_summary)
+            if self._is_single_threaded():
+                thread.run_in_main_thread(self, result_summary)
             else:
                 thread.start()
             threads.append(thread)
 
         return threads
 
-    def _StopLayoutTestHelper(self, proc):
+    def _stop_layout_test_helper(self, proc):
         """Stop the layout test helper and closes it down."""
         if proc:
             logging.debug("Stopping layout test helper")
@@ -537,11 +540,11 @@ class TestRunner:
             proc.stdin.close()
             proc.wait()
 
-    def _IsSingleThreaded(self):
+    def _is_single_threaded(self):
         """Returns whether we should run all the tests in the main thread."""
         return int(self._options.num_test_shells) == 1
 
-    def _RunTests(self, test_shell_binary, file_list, result_summary):
+    def _run_tests(self, test_shell_binary, file_list, result_summary):
         """Runs the tests in the file_list.
 
         Return: A tuple (failures, thread_timings, test_timings,
@@ -555,7 +558,7 @@ class TestRunner:
               in the form {filename:filename, test_run_time:test_run_time}
             result_summary: summary object to populate with the results
         """
-        threads = self._InstantiateTestShellThreads(test_shell_binary,
+        threads = self._instantiate_test_shell_threads(test_shell_binary,
                                                     file_list,
                                                     result_summary)
 
@@ -573,20 +576,21 @@ class TestRunner:
                     # an indefinite blocking join for it to
                     # be interruptible by KeyboardInterrupt.
                     thread.join(0.1)
-                    self.UpdateSummary(result_summary)
+                    self.update_summary(result_summary)
                 thread_timings.append({'name': thread.getName(),
-                                       'num_tests': thread.GetNumTests(),
-                                       'total_time': thread.GetTotalTime()})
-                test_timings.update(thread.GetDirectoryTimingStats())
-                individual_test_timings.extend(thread.GetIndividualTestStats())
+                                       'num_tests': thread.get_num_tests(),
+                                       'total_time': thread.get_total_time()})
+                test_timings.update(thread.get_directory_timing_stats())
+                individual_test_timings.extend(
+                    thread.get_individual_test_stats())
         except KeyboardInterrupt:
             for thread in threads:
-                thread.Cancel()
-            self._StopLayoutTestHelper(layout_test_helper_proc)
+                thread.cancel()
+            self._stop_layout_test_helper(layout_test_helper_proc)
             raise
         for thread in threads:
             # Check whether a TestShellThread died before normal completion.
-            exception_info = thread.GetExceptionInfo()
+            exception_info = thread.get_exception_info()
             if exception_info is not None:
                 # Re-raise the thread's exception here to make it clear that
                 # testing was aborted. Otherwise, the tests that did not run
@@ -594,10 +598,10 @@ class TestRunner:
                 raise exception_info[0], exception_info[1], exception_info[2]
 
         # Make sure we pick up any remaining tests.
-        self.UpdateSummary(result_summary)
+        self.update_summary(result_summary)
         return (thread_timings, test_timings, individual_test_timings)
 
-    def Run(self, result_summary):
+    def run(self, result_summary):
         """Run all our tests on all our test files.
 
         For each test file, we run each test type. If there are any failures,
@@ -612,12 +616,13 @@ class TestRunner:
         if not self._test_files:
             return 0
         start_time = time.time()
-        test_shell_binary = path_utils.TestShellPath(self._options.target)
+        test_shell_binary = path_utils.test_shell_path(self._options.target)
 
         # Start up any helper needed
         layout_test_helper_proc = None
         if not self._options.no_pixel_tests:
-            helper_path = path_utils.LayoutTestHelperPath(self._options.target)
+            helper_path = path_utils.layout_test_helper_path(
+                self._options.target)
             if len(helper_path):
                 logging.debug("Starting layout helper %s" % helper_path)
                 layout_test_helper_proc = subprocess.Popen(
@@ -637,20 +642,20 @@ class TestRunner:
                              "--nocheck-sys-deps")
                 sys.exit(1)
 
-        if self._ContainsTests(self.HTTP_SUBDIR):
-            self._http_server.Start()
+        if self._contains_tests(self.HTTP_SUBDIR):
+            self._http_server.start()
 
-        if self._ContainsTests(self.WEBSOCKET_SUBDIR):
-            self._websocket_server.Start()
+        if self._contains_tests(self.WEBSOCKET_SUBDIR):
+            self._websocket_server.start()
             # self._websocket_secure_server.Start()
 
         thread_timings, test_timings, individual_test_timings = (
-            self._RunTests(test_shell_binary, self._test_files_list,
+            self._run_tests(test_shell_binary, self._test_files_list,
                            result_summary))
 
         # We exclude the crashes from the list of results to retry, because
         # we want to treat even a potentially flaky crash as an error.
-        failures = self._GetFailures(result_summary, include_crashes=False)
+        failures = self._get_failures(result_summary, include_crashes=False)
         retries = 0
         retry_summary = result_summary
         while (retries < self.NUM_RETRY_ON_UNEXPECTED_FAILURE and
@@ -658,14 +663,14 @@ class TestRunner:
             logging.debug("Retrying %d unexpected failure(s)" % len(failures))
             retries += 1
             retry_summary = ResultSummary(self._expectations, failures.keys())
-            self._RunTests(test_shell_binary, failures.keys(), retry_summary)
-            failures = self._GetFailures(retry_summary, include_crashes=True)
+            self._run_tests(test_shell_binary, failures.keys(), retry_summary)
+            failures = self._get_failures(retry_summary, include_crashes=True)
 
-        self._StopLayoutTestHelper(layout_test_helper_proc)
+        self._stop_layout_test_helper(layout_test_helper_proc)
         end_time = time.time()
 
-        write = CreateLoggingWriter(self._options, 'timing')
-        self._PrintTimingStatistics(write, end_time - start_time,
+        write = create_logging_writer(self._options, 'timing')
+        self._print_timing_statistics(write, end_time - start_time,
                                     thread_timings, test_timings,
                                     individual_test_timings,
                                     result_summary)
@@ -677,9 +682,9 @@ class TestRunner:
             # buildbot log parser, which only looks at stdout, not stderr :(
             write = lambda s: sys.stdout.write("%s\n" % s)
         else:
-            write = CreateLoggingWriter(self._options, 'actual')
+            write = create_logging_writer(self._options, 'actual')
 
-        self._PrintResultSummary(write, result_summary)
+        self._print_result_summary(write, result_summary)
 
         sys.stdout.flush()
         sys.stderr.flush()
@@ -690,54 +695,54 @@ class TestRunner:
             print
 
         # This summary data gets written to stdout regardless of log level
-        self._PrintOneLineSummary(result_summary.total,
+        self._print_one_line_summary(result_summary.total,
                                   result_summary.expected)
 
-        unexpected_results = self._SummarizeUnexpectedResults(result_summary,
+        unexpected_results = self._summarize_unexpected_results(result_summary,
             retry_summary)
-        self._PrintUnexpectedResults(unexpected_results)
+        self._print_unexpected_results(unexpected_results)
 
         # Write the same data to log files.
-        self._WriteJSONFiles(unexpected_results, result_summary,
+        self._write_json_files(unexpected_results, result_summary,
                              individual_test_timings)
 
         # Write the summary to disk (results.html) and maybe open the
         # test_shell to this file.
-        wrote_results = self._WriteResultsHtmlFile(result_summary)
+        wrote_results = self._write_results_html_file(result_summary)
         if not self._options.noshow_results and wrote_results:
-            self._ShowResultsHtmlFile()
+            self._show_results_html_file()
 
         # Ignore flaky failures and unexpected passes so we don't turn the
         # bot red for those.
         return unexpected_results['num_regressions']
 
-    def UpdateSummary(self, result_summary):
+    def update_summary(self, result_summary):
         """Update the summary while running tests."""
         while True:
             try:
                 (test, fail_list) = self._result_queue.get_nowait()
-                result = test_failures.DetermineResultType(fail_list)
-                expected = self._expectations.MatchesAnExpectedResult(test,
+                result = test_failures.determine_result_type(fail_list)
+                expected = self._expectations.matches_an_expected_result(test,
                                                                       result)
-                result_summary.Add(test, fail_list, result, expected)
+                result_summary.add(test, fail_list, result, expected)
                 if (LOG_DETAILED_PROGRESS in self._options.log and
                     (self._options.experimental_fully_parallel or
-                     self._IsSingleThreaded())):
-                    self._DisplayDetailedProgress(result_summary)
+                     self._is_single_threaded())):
+                    self._display_detailed_progress(result_summary)
                 else:
                     if not expected and LOG_UNEXPECTED in self._options.log:
-                        self._PrintUnexpectedTestResult(test, result)
-                    self._DisplayOneLineProgress(result_summary)
+                        self._print_unexpected_test_result(test, result)
+                    self._display_one_line_progress(result_summary)
             except Queue.Empty:
                 return
 
-    def _DisplayOneLineProgress(self, result_summary):
+    def _display_one_line_progress(self, result_summary):
         """Displays the progress through the test run."""
         self._meter.update("Testing: %d ran as expected, %d didn't, %d left" %
             (result_summary.expected, result_summary.unexpected,
              result_summary.remaining))
 
-    def _DisplayDetailedProgress(self, result_summary):
+    def _display_detailed_progress(self, result_summary):
         """Display detailed progress output where we print the directory name
         and one dot for each completed test. This is triggered by
         "--log detailed-progress"."""
@@ -745,7 +750,8 @@ class TestRunner:
             return
 
         next_test = self._test_files_list[self._current_test_number]
-        next_dir = os.path.dirname(path_utils.RelativeTestFilename(next_test))
+        next_dir = os.path.dirname(
+            path_utils.relative_test_filename(next_test))
         if self._current_progress_str == "":
             self._current_progress_str = "%s: " % (next_dir)
             self._current_dir = next_dir
@@ -762,7 +768,7 @@ class TestRunner:
                 LOG_UNEXPECTED in self._options.log):
                 result = result_summary.unexpected_results[next_test]
                 self._meter.write("%s\n" % self._current_progress_str)
-                self._PrintUnexpectedTestResult(next_test, result)
+                self._print_unexpected_test_result(next_test, result)
                 self._current_progress_str = "%s: " % self._current_dir
 
             self._current_test_number += 1
@@ -771,7 +777,7 @@ class TestRunner:
 
             next_test = self._test_files_list[self._current_test_number]
             next_dir = os.path.dirname(
-                path_utils.RelativeTestFilename(next_test))
+                path_utils.relative_test_filename(next_test))
 
         if result_summary.remaining:
             remain_str = " (%d)" % (result_summary.remaining)
@@ -780,7 +786,7 @@ class TestRunner:
         else:
             self._meter.write("%s\n" % (self._current_progress_str))
 
-    def _GetFailures(self, result_summary, include_crashes):
+    def _get_failures(self, result_summary, include_crashes):
         """Filters a dict of results and returns only the failures.
 
         Args:
@@ -801,7 +807,7 @@ class TestRunner:
 
         return failed_results
 
-    def _SummarizeUnexpectedResults(self, result_summary, retry_summary):
+    def _summarize_unexpected_results(self, result_summary, retry_summary):
         """Summarize any unexpected results as a dict.
 
         TODO(dpranke): split this data structure into a separate class?
@@ -842,8 +848,8 @@ class TestRunner:
             # Note that if a test crashed in the original run, we ignore
             # whether or not it crashed when we retried it (if we retried it),
             # and always consider the result not flaky.
-            test = path_utils.RelativeTestFilename(filename)
-            expected = self._expectations.GetExpectationsString(filename)
+            test = path_utils.relative_test_filename(filename)
+            expected = self._expectations.get_expectations_string(filename)
             actual = [keywords[result]]
 
             if result == test_expectations.PASS:
@@ -853,7 +859,7 @@ class TestRunner:
             else:
                 if filename not in retry_summary.unexpected_results:
                     actual.extend(
-                        self._expectations.GetExpectationsString(
+                        self._expectations.get_expectations_string(
                         filename).split(" "))
                     num_flaky += 1
                 else:
@@ -875,7 +881,7 @@ class TestRunner:
 
         return results
 
-    def _WriteJSONFiles(self, unexpected_results, result_summary,
+    def _write_json_files(self, unexpected_results, result_summary,
                         individual_test_timings):
         """Writes the results of the test run as JSON files into the results
         dir.
@@ -906,7 +912,7 @@ class TestRunner:
         expectations_file = open(os.path.join(self._options.results_directory,
             "expectations.json"), "w")
         expectations_json = \
-            self._expectations.GetExpectationsJsonForAllPlatforms()
+            self._expectations.get_expectations_json_for_all_platforms()
         expectations_file.write("ADD_EXPECTATIONS(" + expectations_json + ");")
         expectations_file.close()
 
@@ -918,8 +924,8 @@ class TestRunner:
 
         logging.debug("Finished writing JSON files.")
 
-    def _PrintExpectedResultsOfType(self, write, result_summary, result_type,
-        result_type_str):
+    def _print_expected_results_of_type(self, write, result_summary,
+                                        result_type, result_type_str):
         """Print the number of the tests in a given result class.
 
         Args:
@@ -929,7 +935,7 @@ class TestRunner:
           result_type - the particular result type to report in the summary.
           result_type_str - a string description of the result_type.
         """
-        tests = self._expectations.GetTestsWithResultType(result_type)
+        tests = self._expectations.get_tests_with_result_type(result_type)
         now = result_summary.tests_by_timeline[test_expectations.NOW]
         wontfix = result_summary.tests_by_timeline[test_expectations.WONTFIX]
         defer = result_summary.tests_by_timeline[test_expectations.DEFER]
@@ -937,12 +943,12 @@ class TestRunner:
         # We use a fancy format string in order to print the data out in a
         # nicely-aligned table.
         fmtstr = ("Expect: %%5d %%-8s (%%%dd now, %%%dd defer, %%%dd wontfix)"
-                  % (self._NumDigits(now), self._NumDigits(defer),
-                  self._NumDigits(wontfix)))
+                  % (self._num_digits(now), self._num_digits(defer),
+                  self._num_digits(wontfix)))
         write(fmtstr % (len(tests), result_type_str, len(tests & now),
               len(tests & defer), len(tests & wontfix)))
 
-    def _NumDigits(self, num):
+    def _num_digits(self, num):
         """Returns the number of digits needed to represent the length of a
         sequence."""
         ndigits = 1
@@ -950,7 +956,7 @@ class TestRunner:
             ndigits = int(math.log10(len(num))) + 1
         return ndigits
 
-    def _PrintTimingStatistics(self, write, total_time, thread_timings,
+    def _print_timing_statistics(self, write, total_time, thread_timings,
                                directory_test_timings, individual_test_timings,
                                result_summary):
         """Record timing-specific information for the test run.
@@ -977,12 +983,12 @@ class TestRunner:
               (cuml_time, cuml_time / int(self._options.num_test_shells)))
         write("")
 
-        self._PrintAggregateTestStatistics(write, individual_test_timings)
-        self._PrintIndividualTestTimes(write, individual_test_timings,
-                                       result_summary)
-        self._PrintDirectoryTimings(write, directory_test_timings)
+        self._print_aggregate_test_statistics(write, individual_test_timings)
+        self._print_individual_test_times(write, individual_test_timings,
+                                          result_summary)
+        self._print_directory_timings(write, directory_test_timings)
 
-    def _PrintAggregateTestStatistics(self, write, individual_test_timings):
+    def _print_aggregate_test_statistics(self, write, individual_test_timings):
         """Prints aggregate statistics (e.g. median, mean, etc.) for all tests.
         Args:
           write: A callback to write info to (e.g., a LoggingWriter) or
@@ -1006,17 +1012,17 @@ class TestRunner:
                 times_per_test_type[test_type].append(
                     time_for_diffs[test_type])
 
-        self._PrintStatisticsForTestTimings(write,
+        self._print_statistics_for_test_timings(write,
             "PER TEST TIME IN TESTSHELL (seconds):", times_for_test_shell)
-        self._PrintStatisticsForTestTimings(write,
+        self._print_statistics_for_test_timings(write,
             "PER TEST DIFF PROCESSING TIMES (seconds):",
             times_for_diff_processing)
         for test_type in test_types:
-            self._PrintStatisticsForTestTimings(write,
+            self._print_statistics_for_test_timings(write,
                 "PER TEST TIMES BY TEST TYPE: %s" % test_type,
                 times_per_test_type[test_type])
 
-    def _PrintIndividualTestTimes(self, write, individual_test_timings,
+    def _print_individual_test_times(self, write, individual_test_timings,
                                   result_summary):
         """Prints the run times for slow, timeout and crash tests.
         Args:
@@ -1037,8 +1043,8 @@ class TestRunner:
         for test_tuple in individual_test_timings:
             filename = test_tuple.filename
             is_timeout_crash_or_slow = False
-            if self._expectations.HasModifier(filename,
-                                              test_expectations.SLOW):
+            if self._expectations.has_modifier(filename,
+                                               test_expectations.SLOW):
                 is_timeout_crash_or_slow = True
                 slow_tests.append(test_tuple)
 
@@ -1055,17 +1061,18 @@ class TestRunner:
                 unexpected_slow_tests.append(test_tuple)
 
         write("")
-        self._PrintTestListTiming(write, "%s slowest tests that are not "
+        self._print_test_list_timing(write, "%s slowest tests that are not "
             "marked as SLOW and did not timeout/crash:" %
             self._options.num_slow_tests_to_log, unexpected_slow_tests)
         write("")
-        self._PrintTestListTiming(write, "Tests marked as SLOW:", slow_tests)
+        self._print_test_list_timing(write, "Tests marked as SLOW:",
+                                     slow_tests)
         write("")
-        self._PrintTestListTiming(write, "Tests that timed out or crashed:",
-            timeout_or_crash_tests)
+        self._print_test_list_timing(write, "Tests that timed out or crashed:",
+                                     timeout_or_crash_tests)
         write("")
 
-    def _PrintTestListTiming(self, write, title, test_list):
+    def _print_test_list_timing(self, write, title, test_list):
         """Print timing info for each test.
 
         Args:
@@ -1077,12 +1084,12 @@ class TestRunner:
         write(title)
         for test_tuple in test_list:
             filename = test_tuple.filename[len(
-                path_utils.LayoutTestsDir()) + 1:]
+                path_utils.layout_tests_dir()) + 1:]
             filename = filename.replace('\\', '/')
             test_run_time = round(test_tuple.test_run_time, 1)
             write("  %s took %s seconds" % (filename, test_run_time))
 
-    def _PrintDirectoryTimings(self, write, directory_test_timings):
+    def _print_directory_timings(self, write, directory_test_timings):
         """Print timing info by directory for any directories that
         take > 10 seconds to run.
 
@@ -1106,7 +1113,7 @@ class TestRunner:
                       timing[0], timing[2]))
         write("")
 
-    def _PrintStatisticsForTestTimings(self, write, title, timings):
+    def _print_statistics_for_test_timings(self, write, title, timings):
         """Prints the median, mean and standard deviation of the values in
         timings.
 
@@ -1143,7 +1150,7 @@ class TestRunner:
         write("  Standard dev:    %6.3f" % std_deviation)
         write("")
 
-    def _PrintResultSummary(self, write, result_summary):
+    def _print_result_summary(self, write, result_summary):
         """Print a short summary about how many tests passed.
 
         Args:
@@ -1164,21 +1171,21 @@ class TestRunner:
         write("=> Results: %d/%d tests passed (%.1f%%)" %
                      (passed, total, pct_passed))
         write("")
-        self._PrintResultSummaryEntry(write, result_summary,
+        self._print_result_summary_entry(write, result_summary,
             test_expectations.NOW, "Tests to be fixed for the current release")
 
         write("")
-        self._PrintResultSummaryEntry(write, result_summary,
+        self._print_result_summary_entry(write, result_summary,
             test_expectations.DEFER,
             "Tests we'll fix in the future if they fail (DEFER)")
 
         write("")
-        self._PrintResultSummaryEntry(write, result_summary,
+        self._print_result_summary_entry(write, result_summary,
             test_expectations.WONTFIX,
             "Tests that will only be fixed if they crash (WONTFIX)")
 
-    def _PrintResultSummaryEntry(self, write, result_summary, timeline,
-                                 heading):
+    def _print_result_summary_entry(self, write, result_summary, timeline,
+                                    heading):
         """Print a summary block of results for a particular timeline of test.
 
         Args:
@@ -1205,7 +1212,7 @@ class TestRunner:
                 write("  %5d %-24s (%4.1f%%)" % (len(results),
                       desc[len(results) != 1], pct))
 
-    def _PrintOneLineSummary(self, total, expected):
+    def _print_one_line_summary(self, total, expected):
         """Print a one-line summary of the test run to stdout.
 
         Args:
@@ -1221,7 +1228,7 @@ class TestRunner:
             print "%d tests ran as expected, %d didn't:" % (expected,
                 unexpected)
 
-    def _PrintUnexpectedResults(self, unexpected_results):
+    def _print_unexpected_results(self, unexpected_results):
         """Prints any unexpected results in a human-readable form to stdout."""
         passes = {}
         flaky = {}
@@ -1235,19 +1242,22 @@ class TestRunner:
             expected = results['expected'].split(" ")
             if actual == ['PASS']:
                 if 'CRASH' in expected:
-                    _AddToDictOfLists(passes, 'Expected to crash, but passed',
-                                      test)
+                    _add_to_dict_of_lists(passes,
+                                          'Expected to crash, but passed',
+                                          test)
                 elif 'TIMEOUT' in expected:
-                    _AddToDictOfLists(passes,
-                                      'Expected to timeout, but passed', test)
+                    _add_to_dict_of_lists(passes,
+                                          'Expected to timeout, but passed',
+                                           test)
                 else:
-                    _AddToDictOfLists(passes, 'Expected to fail, but passed',
-                                      test)
+                    _add_to_dict_of_lists(passes,
+                                          'Expected to fail, but passed',
+                                          test)
             elif len(actual) > 1:
                 # We group flaky tests by the first actual result we got.
-                _AddToDictOfLists(flaky, actual[0], test)
+                _add_to_dict_of_lists(flaky, actual[0], test)
             else:
-                _AddToDictOfLists(regressions, results['actual'], test)
+                _add_to_dict_of_lists(regressions, results['actual'], test)
 
         if len(passes):
             for key, tests in passes.iteritems():
@@ -1288,13 +1298,13 @@ class TestRunner:
         if len(unexpected_results['tests']) and self._options.verbose:
             print "-" * 78
 
-    def _PrintUnexpectedTestResult(self, test, result):
+    def _print_unexpected_test_result(self, test, result):
         """Prints one unexpected test result line."""
         desc = TestExpectationsFile.EXPECTATION_DESCRIPTIONS[result][0]
         self._meter.write("  %s -> unexpected %s\n" %
-                          (path_utils.RelativeTestFilename(test), desc))
+                          (path_utils.relative_test_filename(test), desc))
 
-    def _WriteResultsHtmlFile(self, result_summary):
+    def _write_results_html_file(self, result_summary):
         """Write results.html which is a summary of tests that failed.
 
         Args:
@@ -1308,7 +1318,7 @@ class TestRunner:
         if self._options.full_results_html:
             test_files = result_summary.failures.keys()
         else:
-            unexpected_failures = self._GetFailures(result_summary,
+            unexpected_failures = self._get_failures(result_summary,
                 include_crashes=True)
             test_files = unexpected_failures.keys()
         if not len(test_files):
@@ -1330,41 +1340,41 @@ class TestRunner:
         for test_file in test_files:
             test_failures = result_summary.failures.get(test_file, [])
             out_file.write("<p><a href='%s'>%s</a><br />\n"
-                           % (path_utils.FilenameToUri(test_file),
-                              path_utils.RelativeTestFilename(test_file)))
+                           % (path_utils.filename_to_uri(test_file),
+                              path_utils.relative_test_filename(test_file)))
             for failure in test_failures:
                 out_file.write("&nbsp;&nbsp;%s<br/>"
-                               % failure.ResultHtmlOutput(
-                                 path_utils.RelativeTestFilename(test_file)))
+                               % failure.result_html_output(
+                                 path_utils.relative_test_filename(test_file)))
             out_file.write("</p>\n")
 
         # footer
         out_file.write("</body></html>\n")
         return True
 
-    def _ShowResultsHtmlFile(self):
+    def _show_results_html_file(self):
         """Launches the test shell open to the results.html page."""
         results_filename = os.path.join(self._options.results_directory,
                                         "results.html")
-        subprocess.Popen([path_utils.TestShellPath(self._options.target),
-                          path_utils.FilenameToUri(results_filename)])
+        subprocess.Popen([path_utils.test_shell_path(self._options.target),
+                          path_utils.filename_to_uri(results_filename)])
 
 
-def _AddToDictOfLists(dict, key, value):
+def _add_to_dict_of_lists(dict, key, value):
     dict.setdefault(key, []).append(value)
 
 
-def ReadTestFiles(files):
+def read_test_files(files):
     tests = []
     for file in files:
         for line in open(file):
-            line = test_expectations.StripComments(line)
+            line = test_expectations.strip_comments(line)
             if line:
                 tests.append(line)
     return tests
 
 
-def CreateLoggingWriter(options, log_option):
+def create_logging_writer(options, log_option):
     """Returns a write() function that will write the string to logging.info()
     if comp was specified in --log or if --verbose is true. Otherwise the
     message is dropped.
@@ -1413,13 +1423,13 @@ def main(options, args):
 
     if options.results_directory.startswith("/"):
         # Assume it's an absolute path and normalize.
-        options.results_directory = path_utils.GetAbsolutePath(
+        options.results_directory = path_utils.get_absolute_path(
             options.results_directory)
     else:
         # If it's a relative path, make the output directory relative to
         # Debug or Release.
-        basedir = path_utils.PathFromBase('webkit')
-        options.results_directory = path_utils.GetAbsolutePath(
+        basedir = path_utils.path_from_base('webkit')
+        options.results_directory = path_utils.get_absolute_path(
             os.path.join(basedir, options.target, options.results_directory))
 
     if options.clobber_old_results:
@@ -1431,13 +1441,13 @@ def main(options, args):
             shutil.rmtree(path)
 
     # Ensure platform is valid and force it to the form 'chromium-<platform>'.
-    options.platform = path_utils.PlatformName(options.platform)
+    options.platform = path_utils.platform_name(options.platform)
 
     if not options.num_test_shells:
         # TODO(ojan): Investigate perf/flakiness impact of using numcores + 1.
-        options.num_test_shells = platform_utils.GetNumCores()
+        options.num_test_shells = platform_utils.get_num_cores()
 
-    write = CreateLoggingWriter(options, 'config')
+    write = create_logging_writer(options, 'config')
     write("Running %s test_shells in parallel" % options.num_test_shells)
 
     if not options.time_out_ms:
@@ -1460,27 +1470,27 @@ def main(options, args):
     if not paths:
         paths = []
     if options.test_list:
-        paths += ReadTestFiles(options.test_list)
+        paths += read_test_files(options.test_list)
 
     # Create the output directory if it doesn't already exist.
-    path_utils.MaybeMakeDirectory(options.results_directory)
+    path_utils.maybe_make_directory(options.results_directory)
     meter.update("Gathering files ...")
 
     test_runner = TestRunner(options, meter)
-    test_runner.GatherFilePaths(paths)
+    test_runner.gather_file_paths(paths)
 
     if options.lint_test_files:
         # Creating the expecations for each platform/target pair does all the
         # test list parsing and ensures it's correct syntax (e.g. no dupes).
         for platform in TestExpectationsFile.PLATFORMS:
-            test_runner.ParseExpectations(platform, is_debug_mode=True)
-            test_runner.ParseExpectations(platform, is_debug_mode=False)
+            test_runner.parse_expectations(platform, is_debug_mode=True)
+            test_runner.parse_expectations(platform, is_debug_mode=False)
         print ("If there are no fail messages, errors or exceptions, then the "
             "lint succeeded.")
         sys.exit(0)
 
     try:
-        test_shell_binary_path = path_utils.TestShellPath(options.target)
+        test_shell_binary_path = path_utils.test_shell_path(options.target)
     except path_utils.PathNotFound:
         print "\nERROR: test_shell is not found. Be sure that you have built"
         print "it and that you are using the correct build. This script"
@@ -1488,23 +1498,23 @@ def main(options, args):
         print "Debug build.\n"
         sys.exit(1)
 
-    write = CreateLoggingWriter(options, "config")
+    write = create_logging_writer(options, "config")
     write("Using platform '%s'" % options.platform)
     write("Placing test results in %s" % options.results_directory)
     if options.new_baseline:
         write("Placing new baselines in %s" %
-              path_utils.ChromiumBaselinePath(options.platform))
+              path_utils.chromium_baseline_path(options.platform))
     write("Using %s build at %s" % (options.target, test_shell_binary_path))
     if options.no_pixel_tests:
         write("Not running pixel tests")
     write("")
 
     meter.update("Parsing expectations ...")
-    test_runner.ParseExpectations(options.platform, options.target == 'Debug')
+    test_runner.parse_expectations(options.platform, options.target == 'Debug')
 
     meter.update("Preparing tests ...")
-    write = CreateLoggingWriter(options, "expected")
-    result_summary = test_runner.PrepareListsAndPrintOutput(write)
+    write = create_logging_writer(options, "expected")
+    result_summary = test_runner.prepare_lists_and_print_output(write)
 
     if 'cygwin' == sys.platform:
         logging.warn("#" * 40)
@@ -1520,17 +1530,18 @@ def main(options, args):
     if os.path.exists(cachedir):
         shutil.rmtree(cachedir)
 
-    test_runner.AddTestType(text_diff.TestTextDiff)
+    test_runner.add_test_type(text_diff.TestTextDiff)
     if not options.no_pixel_tests:
-        test_runner.AddTestType(image_diff.ImageDiff)
+        test_runner.add_test_type(image_diff.ImageDiff)
         if options.fuzzy_pixel_tests:
-            test_runner.AddTestType(fuzzy_image_diff.FuzzyImageDiff)
+            test_runner.add_test_type(fuzzy_image_diff.FuzzyImageDiff)
 
     meter.update("Starting ...")
-    has_new_failures = test_runner.Run(result_summary)
+    has_new_failures = test_runner.run(result_summary)
 
     logging.debug("Exit status: %d" % has_new_failures)
     sys.exit(has_new_failures)
+
 
 def parse_args(args=None):
     """Prove a default set of command line args.

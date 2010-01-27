@@ -25,7 +25,7 @@ import path_utils
 import test_failures
 
 
-def ProcessOutput(proc, test_info, test_types, test_args, target, output_dir):
+def process_output(proc, test_info, test_types, test_args, target, output_dir):
     """Receives the output from a test_shell process, subjects it to a number
     of tests, and returns a list of failure types the test produced.
 
@@ -102,9 +102,9 @@ def ProcessOutput(proc, test_info, test_types, test_args, target, output_dir):
             # Strip off "file://" since RelativeTestFilename expects
             # filesystem paths.
             filename = os.path.join(output_dir,
-                path_utils.RelativeTestFilename(test_string[7:]))
+                path_utils.relative_test_filename(test_string[7:]))
             filename = os.path.splitext(filename)[0] + "-stack.txt"
-            path_utils.MaybeMakeDirectory(os.path.split(filename)[0])
+            path_utils.maybe_make_directory(os.path.split(filename)[0])
             open(filename, "wb").write(extra)
         else:
             logging.debug("Previous test output extra lines after dump:\n%s" %
@@ -114,11 +114,9 @@ def ProcessOutput(proc, test_info, test_types, test_args, target, output_dir):
     time_for_diffs = {}
     for test_type in test_types:
         start_diff_time = time.time()
-        new_failures = test_type.CompareOutput(test_info.filename,
-                                               proc,
-                                               ''.join(outlines),
-                                               local_test_args,
-                                               target)
+        new_failures = test_type.compare_output(test_info.filename,
+                                                proc, ''.join(outlines),
+                                                local_test_args, target)
         # Don't add any more failures if we already have a crash, so we don't
         # double-report those tests. We do double-report for timeouts since
         # we still want to see the text and image output.
@@ -133,7 +131,7 @@ def ProcessOutput(proc, test_info, test_types, test_args, target, output_dir):
         total_time_for_all_diffs, time_for_diffs)
 
 
-def StartTestShell(command, args):
+def start_test_shell(command, args):
     """Returns the process for a new test_shell started in layout-tests mode.
     """
     cmd = []
@@ -182,12 +180,12 @@ class SingleTestThread(threading.Thread):
         self._output_dir = output_dir
 
     def run(self):
-        proc = StartTestShell(self._command, self._shell_args +
+        proc = start_test_shell(self._command, self._shell_args +
             ["--time-out-ms=" + self._test_info.timeout, self._test_info.uri])
-        self._test_stats = ProcessOutput(proc, self._test_info,
+        self._test_stats = process_output(proc, self._test_info,
             self._test_types, self._test_args, self._target, self._output_dir)
 
-    def GetTestStats(self):
+    def get_test_stats(self):
         return self._test_stats
 
 
@@ -237,31 +235,31 @@ class TestShellThread(threading.Thread):
         # Time at which we started running tests from self._current_dir.
         self._current_dir_start_time = None
 
-    def GetDirectoryTimingStats(self):
+    def get_directory_timing_stats(self):
         """Returns a dictionary mapping test directory to a tuple of
         (number of tests in that directory, time to run the tests)"""
         return self._directory_timing_stats
 
-    def GetIndividualTestStats(self):
+    def get_individual_test_stats(self):
         """Returns a list of (test_filename, time_to_run_test,
         total_time_for_all_diffs, time_for_diffs) tuples."""
         return self._test_stats
 
-    def Cancel(self):
+    def cancel(self):
         """Set a flag telling this thread to quit."""
         self._canceled = True
 
-    def GetExceptionInfo(self):
+    def get_exception_info(self):
         """If run() terminated on an uncaught exception, return it here
         ((type, value, traceback) tuple).
         Returns None if run() terminated normally. Meant to be called after
         joining this thread."""
         return self._exception_info
 
-    def GetTotalTime(self):
+    def get_total_time(self):
         return max(self._stop_time - self._start_time, 0.0)
 
-    def GetNumTests(self):
+    def get_num_tests(self):
         return self._num_tests
 
     def run(self):
@@ -271,9 +269,9 @@ class TestShellThread(threading.Thread):
         self._num_tests = 0
         try:
             logging.debug('%s starting' % (self.getName()))
-            self._Run(test_runner=None, result_summary=None)
+            self._run(test_runner=None, result_summary=None)
             logging.debug('%s done (%d tests)' % (self.getName(),
-                          self.GetNumTests()))
+                          self.get_num_tests()))
         except:
             # Save the exception for our caller to see.
             self._exception_info = sys.exc_info()
@@ -284,14 +282,14 @@ class TestShellThread(threading.Thread):
             raise
         self._stop_time = time.time()
 
-    def RunInMainThread(self, test_runner, result_summary):
+    def run_in_main_thread(self, test_runner, result_summary):
         """This hook allows us to run the tests from the main thread if
         --num-test-shells==1, instead of having to always run two or more
         threads. This allows us to debug the test harness without having to
         do multi-threaded debugging."""
-        self._Run(test_runner, result_summary)
+        self._run(test_runner, result_summary)
 
-    def _Run(self, test_runner, result_summary):
+    def _run(self, test_runner, result_summary):
         """Main work entry point of the thread. Basically we pull urls from the
         filename queue and run the tests until we run out of urls.
 
@@ -328,7 +326,7 @@ class TestShellThread(threading.Thread):
                     self._current_dir, self._filename_list = \
                         self._filename_list_queue.get_nowait()
                 except Queue.Empty:
-                    self._KillTestShell()
+                    self._kill_test_shell()
                     tests_run_file.close()
                     return
 
@@ -341,37 +339,37 @@ class TestShellThread(threading.Thread):
             batch_count += 1
             self._num_tests += 1
             if self._options.run_singly:
-                failures = self._RunTestSingly(test_info)
+                failures = self._run_test_singly(test_info)
             else:
-                failures = self._RunTest(test_info)
+                failures = self._run_test(test_info)
 
             filename = test_info.filename
             tests_run_file.write(filename + "\n")
             if failures:
                 # Check and kill test shell if we need too.
-                if len([1 for f in failures if f.ShouldKillTestShell()]):
-                    self._KillTestShell()
+                if len([1 for f in failures if f.should_kill_test_shell()]):
+                    self._kill_test_shell()
                     # Reset the batch count since the shell just bounced.
                     batch_count = 0
                 # Print the error message(s).
-                error_str = '\n'.join(['  ' + f.Message() for f in failures])
+                error_str = '\n'.join(['  ' + f.message() for f in failures])
                 logging.debug("%s %s failed:\n%s" % (self.getName(),
-                              path_utils.RelativeTestFilename(filename),
+                              path_utils.relative_test_filename(filename),
                               error_str))
             else:
                 logging.debug("%s %s passed" % (self.getName(),
-                              path_utils.RelativeTestFilename(filename)))
+                              path_utils.relative_test_filename(filename)))
             self._result_queue.put((filename, failures))
 
             if batch_size > 0 and batch_count > batch_size:
                 # Bounce the shell and reset count.
-                self._KillTestShell()
+                self._kill_test_shell()
                 batch_count = 0
 
             if test_runner:
-                test_runner.UpdateSummary(result_summary)
+                test_runner.update_summary(result_summary)
 
-    def _RunTestSingly(self, test_info):
+    def _run_test_singly(self, test_info):
         """Run a test in a separate thread, enforcing a hard time limit.
 
         Since we can only detect the termination of a thread, not any internal
@@ -408,10 +406,10 @@ class TestShellThread(threading.Thread):
             # tradeoff in order to avoid losing the rest of this thread's
             # results.
             logging.error('Test thread hung: killing all test_shells')
-            path_utils.KillAllTestShells()
+            path_utils.kill_all_test_shells()
 
         try:
-            stats = worker.GetTestStats()
+            stats = worker.get_test_stats()
             self._test_stats.append(stats)
             failures = stats.failures
         except AttributeError, e:
@@ -421,7 +419,7 @@ class TestShellThread(threading.Thread):
 
         return failures
 
-    def _RunTest(self, test_info):
+    def _run_test(self, test_info):
         """Run a single test file using a shared test_shell process.
 
         Args:
@@ -430,7 +428,7 @@ class TestShellThread(threading.Thread):
         Return:
           A list of TestFailure objects describing the error.
         """
-        self._EnsureTestShellIsRunning()
+        self._ensure_test_shell_is_running()
         # Args to test_shell is a space-separated list of
         # "uri timeout pixel_hash"
         # The timeout and pixel_hash are optional.  The timeout is used if this
@@ -453,25 +451,25 @@ class TestShellThread(threading.Thread):
         # try to recover here.
         self._test_shell_proc.stdin.flush()
 
-        stats = ProcessOutput(self._test_shell_proc, test_info,
-                              self._test_types, self._test_args,
-                              self._options.target,
-                              self._options.results_directory)
+        stats = process_output(self._test_shell_proc, test_info,
+                               self._test_types, self._test_args,
+                               self._options.target,
+                               self._options.results_directory)
 
         self._test_stats.append(stats)
         return stats.failures
 
-    def _EnsureTestShellIsRunning(self):
+    def _ensure_test_shell_is_running(self):
         """Start the shared test shell, if it's not running.  Not for use when
         running tests singly, since those each start a separate test shell in
         their own thread.
         """
         if (not self._test_shell_proc or
             self._test_shell_proc.poll() is not None):
-            self._test_shell_proc = StartTestShell(self._test_shell_command,
-                                                   self._shell_args)
+            self._test_shell_proc = start_test_shell(self._test_shell_command,
+                                                     self._shell_args)
 
-    def _KillTestShell(self):
+    def _kill_test_shell(self):
         """Kill the test shell process if it's running."""
         if self._test_shell_proc:
             self._test_shell_proc.stdin.close()

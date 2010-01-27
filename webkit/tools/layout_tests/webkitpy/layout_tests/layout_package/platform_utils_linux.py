@@ -15,19 +15,19 @@ import path_utils
 import platform_utils_win
 
 
-def PlatformName():
+def platform_name():
     """Returns the name of the platform we're currently running on."""
-    return 'chromium-linux' + PlatformVersion()
+    return 'chromium-linux' + platform_version()
 
 
-def PlatformVersion():
+def platform_version():
     """Returns the version string for the platform, e.g. '-vista' or
     '-snowleopard'. If the platform does not distinguish between
     minor versions, it returns ''."""
     return ''
 
 
-def GetNumCores():
+def get_num_cores():
     """Returns the number of cores on the machine. For hyperthreaded machines,
     this will be double the number of actual processors."""
     num_cores = os.sysconf("SC_NPROCESSORS_ONLN")
@@ -36,95 +36,95 @@ def GetNumCores():
     return 1
 
 
-def BaselinePath(platform=None):
+def baseline_path(platform=None):
     """Returns the path relative to the top of the source tree for the
     baselines for the specified platform version. If |platform| is None,
     then the version currently in use is used."""
     if platform is None:
-        platform = PlatformName()
-    return path_utils.PathFromBase('webkit', 'data', 'layout_tests',
-                                   'platform', platform, 'LayoutTests')
+        platform = platform_name()
+    return path_utils.path_from_base('webkit', 'data', 'layout_tests',
+                                     'platform', platform, 'LayoutTests')
 
 
-def BaselineSearchPath(platform=None):
+def baseline_search_path(platform=None):
     """Returns the list of directories to search for baselines/results, in
     order of preference. Paths are relative to the top of the source tree."""
-    return [BaselinePath(platform),
-            platform_utils_win.BaselinePath('chromium-win'),
-            path_utils.WebKitBaselinePath('win'),
-            path_utils.WebKitBaselinePath('mac')]
+    return [baseline_path(platform),
+            platform_utils_win.baseline_path('chromium-win'),
+            path_utils.webkit_baseline_path('win'),
+            path_utils.webkit_baseline_path('mac')]
 
 
-def ApacheExecutablePath():
+def apache_executable_path():
     """Returns the executable path to start Apache"""
     path = os.path.join("/usr", "sbin", "apache2")
     if os.path.exists(path):
         return path
     print "Unable to fine Apache executable %s" % path
-    _MissingApache()
+    _missing_apache()
 
 
-def ApacheConfigFilePath():
+def apache_config_file_path():
     """Returns the path to Apache config file"""
-    return path_utils.PathFromBase("third_party", "WebKit", "LayoutTests",
+    return path_utils.path_from_base("third_party", "WebKit", "LayoutTests",
         "http", "conf", "apache2-debian-httpd.conf")
 
 
-def LigHTTPdExecutablePath():
+def lighttpd_executable_path():
     """Returns the executable path to start LigHTTPd"""
     binpath = "/usr/sbin/lighttpd"
     if os.path.exists(binpath):
         return binpath
     print "Unable to find LigHTTPd executable %s" % binpath
-    _MissingLigHTTPd()
+    _missing_lighttpd()
 
 
-def LigHTTPdModulePath():
+def lighttpd_module_path():
     """Returns the library module path for LigHTTPd"""
     modpath = "/usr/lib/lighttpd"
     if os.path.exists(modpath):
         return modpath
     print "Unable to find LigHTTPd modules %s" % modpath
-    _MissingLigHTTPd()
+    _missing_lighttpd()
 
 
-def LigHTTPdPHPPath():
+def lighttpd_php_path():
     """Returns the PHP executable path for LigHTTPd"""
     binpath = "/usr/bin/php-cgi"
     if os.path.exists(binpath):
         return binpath
     print "Unable to find PHP CGI executable %s" % binpath
-    _MissingLigHTTPd()
+    _missing_lighttpd()
 
 
-def WDiffPath():
+def wdiff_path():
     """Path to the WDiff executable, which we assume is already installed and
     in the user's $PATH."""
     return 'wdiff'
 
 
-def ImageDiffPath(target):
+def image_diff_path(target):
     """Path to the image_diff binary.
 
     Args:
       target: Build target mode (debug or release)"""
-    return _PathFromBuildResults(target, 'image_diff')
+    return _path_from_build_results(target, 'image_diff')
 
 
-def LayoutTestHelperPath(target):
+def layout_test_helper_path(target):
     """Path to the layout_test helper binary, if needed, empty otherwise"""
     return ''
 
 
-def TestShellPath(target):
+def test_shell_path(target):
     """Return the platform-specific binary path for our TestShell.
 
     Args:
       target: Build target mode (debug or release) """
     if target in ('Debug', 'Release'):
         try:
-            debug_path = _PathFromBuildResults('Debug', 'test_shell')
-            release_path = _PathFromBuildResults('Release', 'test_shell')
+            debug_path = _path_from_build_results('Debug', 'test_shell')
+            release_path = _path_from_build_results('Release', 'test_shell')
 
             debug_mtime = os.stat(debug_path).st_mtime
             release_mtime = os.stat(release_path).st_mtime
@@ -141,15 +141,15 @@ def TestShellPath(target):
         except path_utils.PathNotFound:
             pass
 
-    return _PathFromBuildResults(target, 'test_shell')
+    return _path_from_build_results(target, 'test_shell')
 
 
-def FuzzyMatchPath():
+def fuzzy_match_path():
     """Return the path to the fuzzy matcher binary."""
-    return path_utils.PathFromBase('third_party', 'fuzzymatch', 'fuzzymatch')
+    return path_utils.path_from_base('third_party', 'fuzzymatch', 'fuzzymatch')
 
 
-def ShutDownHTTPServer(server_pid):
+def shut_down_http_server(server_pid):
     """Shut down the lighttpd web server. Blocks until it's fully shut down.
 
     Args:
@@ -159,8 +159,8 @@ def ShutDownHTTPServer(server_pid):
     if server_pid is None:
         # This isn't ideal, since it could conflict with web server processes
         # not started by http_server.py, but good enough for now.
-        KillAllProcess('lighttpd')
-        KillAllProcess('apache2')
+        kill_all_process('lighttpd')
+        kill_all_process('apache2')
     else:
         try:
             os.kill(server_pid, signal.SIGTERM)
@@ -169,10 +169,10 @@ def ShutDownHTTPServer(server_pid):
             # Sometimes we get a bad PID (e.g. from a stale httpd.pid file),
             # so if kill fails on the given PID, just try to 'killall' web
             # servers.
-            ShutDownHTTPServer(None)
+            shut_down_http_server(None)
 
 
-def KillProcess(pid):
+def kill_process(pid):
     """Forcefully kill the process.
 
     Args:
@@ -181,30 +181,30 @@ def KillProcess(pid):
     os.kill(pid, signal.SIGKILL)
 
 
-def KillAllProcess(process_name):
+def kill_all_process(process_name):
     null = open(os.devnull)
     subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'),
                     process_name], stderr=null)
     null.close()
 
 
-def KillAllTestShells():
+def kill_all_test_shells():
     """Kills all instances of the test_shell binary currently running."""
-    KillAllProcess('test_shell')
+    kill_all_process('test_shell')
 
 #
 # Private helper functions
 #
 
 
-def _MissingLigHTTPd():
+def _missing_lighttpd():
     print 'Please install using: "sudo apt-get install lighttpd php5-cgi"'
     print 'For complete Linux build requirements, please see:'
     print 'http://code.google.com/p/chromium/wiki/LinuxBuildInstructions'
     sys.exit(1)
 
 
-def _MissingApache():
+def _missing_apache():
     print ('Please install using: "sudo apt-get install apache2 '
         'libapache2-mod-php5"')
     print 'For complete Linux build requirements, please see:'
@@ -212,11 +212,11 @@ def _MissingApache():
     sys.exit(1)
 
 
-def _PathFromBuildResults(*pathies):
+def _path_from_build_results(*pathies):
     # FIXME(dkegel): use latest or warn if more than one found?
     for dir in ["sconsbuild", "out", "xcodebuild"]:
         try:
-            return path_utils.PathFromBase(dir, *pathies)
+            return path_utils.path_from_base(dir, *pathies)
         except:
             pass
     raise path_utils.PathNotFound("Unable to find %s in build tree" %

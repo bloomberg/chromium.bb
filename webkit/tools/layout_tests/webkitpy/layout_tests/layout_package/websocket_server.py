@@ -19,7 +19,7 @@ import platform_utils
 import http_server
 
 # So we can import httpd_utils below to make ui_tests happy.
-sys.path.append(path_utils.PathFromBase('tools', 'python'))
+sys.path.append(path_utils.path_from_base('tools', 'python'))
 import google.httpd_utils
 
 _WS_LOG_PREFIX = 'pywebsocket.ws.log-'
@@ -29,7 +29,7 @@ _DEFAULT_WS_PORT = 8880
 _DEFAULT_WSS_PORT = 9323
 
 
-def RemoveLogFiles(folder, starts_with):
+def remove_log_files(folder, starts_with):
     files = os.listdir(folder)
     for file in files:
         if file.startswith(starts_with):
@@ -84,19 +84,19 @@ class PyWebSocket(http_server.Lighttpd):
                 os.path.join(self._root, 'websocket', 'tests'))
         else:
             try:
-                self._web_socket_tests = path_utils.PathFromBase(
+                self._web_socket_tests = path_utils.path_from_base(
                     'third_party', 'WebKit', 'LayoutTests', 'websocket',
                     'tests')
-                self._layout_tests = path_utils.PathFromBase(
+                self._layout_tests = path_utils.path_from_base(
                     'third_party', 'WebKit', 'LayoutTests')
             except path_utils.PathNotFound:
                 self._web_socket_tests = None
 
-    def Start(self):
+    def start(self):
         if not self._web_socket_tests:
             logging.info('No need to start %s server.' % self._server_name)
             return
-        if self.IsRunning():
+        if self.is_running():
             raise PyWebSocketNotStarted('%s is already running.' %
                                         self._server_name)
 
@@ -108,7 +108,7 @@ class PyWebSocket(http_server.Lighttpd):
         log_file_name = log_prefix + time_str
 
         # Remove old log files. We only need to keep the last ones.
-        RemoveLogFiles(self._output_dir, log_prefix)
+        remove_log_files(self._output_dir, log_prefix)
 
         error_log = os.path.join(self._output_dir, log_file_name + "-err.txt")
 
@@ -116,9 +116,9 @@ class PyWebSocket(http_server.Lighttpd):
         self._wsout = open(output_log, "w")
 
         python_interp = sys.executable
-        pywebsocket_base = path_utils.PathFromBase(
+        pywebsocket_base = path_utils.path_from_base(
             'third_party', 'WebKit', 'WebKitTools', 'pywebsocket')
-        pywebsocket_script = path_utils.PathFromBase(
+        pywebsocket_script = path_utils.path_from_base(
             'third_party', 'WebKit', 'WebKitTools', 'pywebsocket',
             'mod_pywebsocket', 'standalone.py')
         start_cmd = [
@@ -128,6 +128,7 @@ class PyWebSocket(http_server.Lighttpd):
             '-s', self._web_socket_tests,
             '-l', error_log,
         ]
+
         handler_map_file = os.path.join(self._web_socket_tests,
                                         'handler_map.txt')
         if os.path.exists(handler_map_file):
@@ -136,6 +137,7 @@ class PyWebSocket(http_server.Lighttpd):
             start_cmd.append(handler_map_file)
         else:
             logging.warning('No handler_map_file found')
+
         if self._use_tls:
             start_cmd.extend(['-t', '-k', self._private_key,
                               '-c', self._certificate])
@@ -144,11 +146,11 @@ class PyWebSocket(http_server.Lighttpd):
         env = os.environ
         if sys.platform in ('cygwin', 'win32'):
             env['PATH'] = '%s;%s' % (
-                path_utils.PathFromBase('third_party', 'cygwin', 'bin'),
+                path_utils.path_from_base('third_party', 'cygwin', 'bin'),
                 env['PATH'])
 
         if sys.platform == 'win32' and self._register_cygwin:
-            setup_mount = path_utils.PathFromBase('third_party', 'cygwin',
+            setup_mount = path_utils.path_from_base('third_party', 'cygwin',
                 'setup_mount.bat')
             subprocess.Popen(setup_mount).wait()
 
@@ -190,8 +192,8 @@ class PyWebSocket(http_server.Lighttpd):
             f.write("%d" % self._process.pid)
             f.close()
 
-    def Stop(self, force=False):
-        if not force and not self.IsRunning():
+    def stop(self, force=False):
+        if not force and not self.is_running():
             return
 
         if self._process:
@@ -206,7 +208,7 @@ class PyWebSocket(http_server.Lighttpd):
                 'Failed to find %s server pid.' % self._server_name)
 
         logging.info('Shutting down %s server %d.' % (self._server_name, pid))
-        platform_utils.KillProcess(pid)
+        platform_utils.kill_process(pid)
 
         if self._process:
             self._process.wait()
@@ -262,6 +264,6 @@ if '__main__' == __name__:
     pywebsocket = PyWebSocket(tempfile.gettempdir(), **kwds)
 
     if 'start' == options.server:
-        pywebsocket.Start()
+        pywebsocket.start()
     else:
-        pywebsocket.Stop(force=True)
+        pywebsocket.stop(force=True)

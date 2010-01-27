@@ -75,11 +75,11 @@ CHROMIUM_FILE_AGE_REGEX = '<br />\s*Modified\s*<em>.*</em> \((.*)\) by'
 THREAD_NAME_REGEX = "[\S]+?"
 TEST_PATH_REGEX = "[\S]+?"
 FAILED_REGEX = ("DEBUG " + THREAD_NAME_REGEX + " " +
-               "(" + TEST_PATH_REGEX + ") failed:\s*"
-               "(" + TEXT_DIFF_MISMATCH + ")?\s*"
-               "(" + IMAGE_MISMATCH + ")?\s*"
-               "(" + TEST_TIMED_OUT + ")?\s*"
-               "(" + TEST_SHELL_CRASHED + ")?")
+                "(" + TEST_PATH_REGEX + ") failed:\s*"
+                "(" + TEXT_DIFF_MISMATCH + ")?\s*"
+                "(" + IMAGE_MISMATCH + ")?\s*"
+                "(" + TEST_TIMED_OUT + ")?\s*"
+                "(" + TEST_SHELL_CRASHED + ")?")
 FAILED_UNEXPECTED_REGEX = "  [^\s]+(?: = .*?)?\n"
 LAST_BUILD_REGEX = ("<h2>Recent Builds:</h2>"
                     "[\s\S]*?<a href=\"../builders/.*?/builds/(\d+)\">")
@@ -114,43 +114,43 @@ TEMP_ZIP_DIR = "temp-zip-dir"
 TARGETS = ["Release", "Debug"]
 
 
-def GetURLBase(use_fyi):
+def get_url_base(use_fyi):
     if use_fyi:
         return FYI_BUILDER_BASE
     return WEBKIT_BUILDER_BASE
 
 
-def GetResultsURL(build, platform, use_fyi=False):
-    return (GetURLBase(use_fyi) + RESULTS_URL_BASE) % (platform, build)
+def get_results_url(build, platform, use_fyi=False):
+    return (get_url_base(use_fyi) + RESULTS_URL_BASE) % (platform, build)
 
 
-def GetArchiveURL(build, platform, use_fyi=False):
-    return (GetURLBase(use_fyi) + ARCHIVE_URL_BASE) % (platform, build)
+def get_archive_url(build, platform, use_fyi=False):
+    return (get_url_base(use_fyi) + ARCHIVE_URL_BASE) % (platform, build)
 
 
-def GetZipFileURL(build, platform):
+def get_zip_file_url(build, platform):
     return ZIP_FILE_URL_BASE % (platform, build)
 
 
-def GetBuilderURL(platform, use_fyi=False):
-    return GetURLBase(use_fyi) % platform
+def get_builder_url(platform, use_fyi=False):
+    return get_url_base(use_fyi) % platform
 
 
 # TODO(gwilson): Once the new flakiness dashboard is done, connect it here.
-def GetFlakyTestURL(platform):
+def get_flaky_test_url(platform):
     return ""
 
 
 # TODO(gwilson): can we refactor these into the resourcegatherer?
-def IsLinuxPlatform(platform):
+def is_linux_platform(platform):
     return (platform and platform.find("Linux") > -1)
 
 
-def IsMacPlatform(platform):
+def is_mac_platform(platform):
     return (platform and platform.find("Mac") > -1)
 
 
-def CreateDirectory(dir):
+def create_directory(dir):
     """
     Method that creates the directory structure given.
     This will create directories recursively until the given dir exists.
@@ -159,29 +159,29 @@ def CreateDirectory(dir):
         os.makedirs(dir, 0777)
 
 
-def ExtractFirstValue(string, regex):
+def extract_first_value(string, regex):
     m = re.search(regex, string)
     if m and m.group(1):
         return m.group(1)
     return None
 
 
-def ExtractSingleRegexAtURL(url, regex):
-    content = ScrapeURL(url)
+def extract_single_regex_at_url(url, regex):
+    content = scrape_url(url)
     m = re.search(regex, content, re.DOTALL)
     if m and m.group(1):
         return m.group(1)
     return None
 
 
-def ScrapeURL(url):
+def scrape_url(url):
     return urllib2.urlopen(urllib2.Request(url)).read()
 
 
-def GetImageDiffExecutable():
+def get_image_diff_executable():
     for target in TARGETS:
         try:
-            return path_utils.ImageDiffPath(target)
+            return path_utils.image_diff_path(target)
         except Exception, e:
             continue
             # This build target did not exist, try the next one.
@@ -190,10 +190,10 @@ def GetImageDiffExecutable():
                     "target to create image diffs.")
 
 
-def GeneratePNGDiff(file1, file2, output_file):
+def generate_png_diff(file1, file2, output_file):
     _compare_available = False
     try:
-        executable = GetImageDiffExecutable()
+        executable = get_image_diff_executable()
         cmd = [executable, '--diff', file1, file2, output_file]
         _compare_available = True
     except Exception, e:
@@ -216,7 +216,7 @@ def GeneratePNGDiff(file1, file2, output_file):
 
 
 # TODO(gwilson): Change this to use the pretty print differs.
-def GenerateTextDiff(file1, file2, output_file):
+def generate_text_diff(file1, file2, output_file):
     # Open up expected and actual text files and use difflib to compare them.
     dataA = open(file1, 'r').read()
     dataB = open(file2, 'r').read()
@@ -236,7 +236,7 @@ class BaselineCandidate(object):
         self.local_file = local
         self.baseline_url = url
 
-    def IsValid(self):
+    def is_valid(self):
         return self.local_file != None and self.baseline_url != None
 
 
@@ -256,7 +256,7 @@ class FailureFinder(object):
                  test_expectations_file=None):
         self.build = build
         # TODO(gwilson): add full url-encoding for the platform.
-        self.SetPlatform(builder_name)
+        self.set_platform(builder_name)
         self.exclude_known_failures = exclude_known_failures
         self.exclude_wontfix = True
         self.test_regex = test_regex
@@ -280,41 +280,40 @@ class FailureFinder(object):
         # checkout.
         self.use_local_baselines = False
 
-    def SetPlatform(self, platform):
+    def set_platform(self, platform):
         self.platform = platform.replace(" ", "%20")
 
     # TODO(gwilson): Change this to get the last build that finished
     # successfully.
 
-    def GetLastBuild(self):
+    def get_last_build(self):
         """
         Returns the last build number for this platform.
         If use_fyi is true, this only looks at the fyi builder.
         """
         try:
-            return ExtractSingleRegexAtURL(GetBuilderURL(self.platform,
-                                                         self.fyi_builder),
-                                           LAST_BUILD_REGEX)
+            return extract_single_regex_at_url(get_builder_url(self.platform,
+                self.fyi_builder), LAST_BUILD_REGEX)
         except urllib2.HTTPError:
             if not self.fyi_builder:
                 self.fyi_builder = True
-                return self.GetLastBuild()
+                return self.get_last_build()
 
-    def GetFailures(self):
+    def get_failures(self):
         if not self.build:
-            self.build = self.GetLastBuild()
+            self.build = self.get_last_build()
         if self.verbose:
             print "Using build number %s" % self.build
 
         if self.use_local_baselines:
-            self._BuildBaselineIndexes()
-        self.failures = self._GetFailuresFromBuilder()
+            self._build_baseline_indexes()
+        self.failures = self._get_failures_from_builder()
         if (self.failures and
-            (self._DownloadResultResources() or self.dont_download)):
+            (self._download_result_resources() or self.dont_download)):
             return self.failures
         return None
 
-    def _GetFailuresFromBuilder(self):
+    def _get_failures_from_builder(self):
         """
         Returns a list of failures for the given build and platform by scraping
         the buildbots and parsing their results.
@@ -323,10 +322,10 @@ class FailureFinder(object):
         if self.verbose:
             print "Fetching failures from buildbot..."
 
-        content = self._ScrapeBuilderOutput()
+        content = self._scrape_builder_output()
         if not content:
             return None
-        matches = self._FindMatchesInBuilderOutput(content)
+        matches = self._find_matches_in_builder_output(content)
 
         if self.verbose:
             print "%s failures found." % len(matches)
@@ -336,14 +335,14 @@ class FailureFinder(object):
         for match in matches:
             if (len(failures) < self.max_failures and
                 (not self.test_regex or match[0].find(self.test_regex) > -1)):
-                failure = self._CreateFailureFromMatch(match)
+                failure = self._create_failure_from_match(match)
                 if self.verbose:
                     print failure.test_path
                 failures.append(failure)
 
         return failures
 
-    def _ScrapeBuilderOutput(self):
+    def _scrape_builder_output(self):
         # If the build log file is specified, use that instead of scraping.
         if self.builder_output_log_file:
             log = open(self.builder_output_log_file, 'r')
@@ -352,9 +351,8 @@ class FailureFinder(object):
         # Scrape the failures from the buildbot for this revision.
         try:
 
-            return ScrapeURL(GetResultsURL(self.build,
-                                           self.platform,
-                                           self.fyi_builder))
+            return scrape_url(get_results_url(self.build, self.platform,
+                                              self.fyi_builder))
         except:
             # If we hit a problem, and we're not on the FYI builder, try it
             # again on the FYI builder.
@@ -363,7 +361,7 @@ class FailureFinder(object):
                     print ("Could not find builder on waterfall, trying fyi "
                           "waterfall...")
                 self.fyi_builder = True
-                return self._ScrapeBuilderOutput()
+                return self._scrape_builder_output()
             print "I could not find that builder, or build did not compile."
             print "Check that the builder name matches exactly "
             print "(case sensitive), and wrap quotes around builder names "
@@ -374,18 +372,19 @@ class FailureFinder(object):
     # matching between the summary and the earlier output is necessary.
     # Change this method and others to derive failure types from summary only.
 
-    def _FindMatchesInBuilderOutput(self, output):
+    def _find_matches_in_builder_output(self, output):
         matches = []
         matches = re.findall(FAILED_REGEX, output, re.MULTILINE)
         if self.exclude_known_failures:
             summary = re.search(SUMMARY_REGEX, output, re.DOTALL)
             regressions = []
             if summary:
-                regressions = self._FindRegressionsInSummary(summary.group(1))
-            matches = self._MatchRegressionsToFailures(regressions, matches)
+                regressions = self._find_regressions_in_summary(
+                    summary.group(1))
+            matches = self._match_regressions_to_failures(regressions, matches)
         return matches
 
-    def _CreateFailureFromMatch(self, match):
+    def _create_failure_from_match(self, match):
         failure = Failure()
         failure.text_diff_mismatch = match[1] != ''
         failure.image_mismatch = match[2] != ''
@@ -395,7 +394,7 @@ class FailureFinder(object):
         failure.platform = self.platform
         return failure
 
-    def _FindRegressionsInSummary(self, summary):
+    def _find_regressions_in_summary(self, summary):
         regressions = []
         if not summary or not len(summary):
             return regressions
@@ -409,7 +408,7 @@ class FailureFinder(object):
                 regressions.append(clipped)
         return regressions
 
-    def _MatchRegressionsToFailures(self, regressions, failures):
+    def _match_regressions_to_failures(self, regressions, failures):
         matches = []
         for regression in regressions:
             for failure in failures:
@@ -421,7 +420,7 @@ class FailureFinder(object):
     # TODO(gwilson): add support for multiple conflicting build numbers by
     # renaming the zip file and naming the directory appropriately.
 
-    def _DownloadResultResources(self):
+    def _download_result_resources(self):
         """
         Finds and downloads/extracts all of the test results (pixel/text
         output) for all of the given failures.
@@ -433,12 +432,13 @@ class FailureFinder(object):
             filename = self.zip_file
             self.delete_zip_file = False
         else:
-            revision, build_name = self._GetRevisionAndBuildFromArchiveStep()
-            zip_url = GetZipFileURL(revision, build_name)
+            revision, build_name = \
+                self._get_revision_and_build_from_archive_step()
+            zip_url = get_zip_file_url(revision, build_name)
             if self.verbose:
                 print "Downloading zip file from %s to %s" % (zip_url,
                                                               target_zip)
-            filename = self._DownloadFile(zip_url, target_zip, "b")
+            filename = self._download_file(zip_url, target_zip, "b")
             if not filename:
                 if self.verbose:
                     print ("Could not download zip file from %s. "
@@ -451,30 +451,31 @@ class FailureFinder(object):
                 print 'Extracting files...'
             directory = "%s/layout-test-results-%s" % (self.output_dir,
                                                        self.build)
-            CreateDirectory(directory)
-            self._UnzipZipfile(zip, TEMP_ZIP_DIR)
+            create_directory(directory)
+            self._unzip_zipfile(zip, TEMP_ZIP_DIR)
 
             for failure in self.failures:
                 failure.test_expectations_line = (
-                  self._GetTestExpectationsLine(failure.test_path))
-                if self.exclude_wontfix and failure.IsWontFix():
+                  self._get_test_expectations_line(failure.test_path))
+                if self.exclude_wontfix and failure.is_wont_fix():
                     self.failures.remove(failure)
                     continue
                 if failure.text_diff_mismatch:
-                    self._PopulateTextFailure(failure, directory, zip)
+                    self._populate_text_failure(failure, directory, zip)
                 if failure.image_mismatch:
-                    self._PopulateImageFailure(failure, directory, zip)
+                    self._populate_image_failure(failure, directory, zip)
                 if not self.use_local_baselines:
-                    failure.test_age = self._GetFileAge(failure.GetTestHome())
-                failure.flakiness = self._GetFlakiness(failure.test_path,
-                                                       self.platform)
+                    failure.test_age = self._get_file_age(
+                        failure.get_test_home())
+                failure.flakiness = self._get_flakiness(failure.test_path,
+                                                        self.platform)
             zip.close()
             if self.verbose:
                 print "Files extracted."
             if self.delete_zip_file:
                 if self.verbose:
                     print "Cleaning up zip file..."
-                path_utils.RemoveDirectory(TEMP_ZIP_DIR)
+                path_utils.remove_directory(TEMP_ZIP_DIR)
                 os.remove(filename)
             return True
         else:
@@ -483,7 +484,7 @@ class FailureFinder(object):
                        % filename)
             return False
 
-    def _UnzipZipfile(self, zip, base_dir):
+    def _unzip_zipfile(self, zip, base_dir):
         for i, name in enumerate(zip.namelist()):
             if not name.endswith('/'):
                 extracted_file_path = os.path.join(base_dir, name)
@@ -498,62 +499,63 @@ class FailureFinder(object):
                 outfile.close()
                 os.chmod(extracted_file_path, 0777)
 
-    def _GetRevisionAndBuildFromArchiveStep(self):
+    def _get_revision_and_build_from_archive_step(self):
         if self.archive_step_log_file:
             log = open(self.archive_step_log_file, 'r')
             content = "".join(log.readlines())
         else:
-            content = ScrapeURL(GetArchiveURL(self.build,
-                                              self.platform,
-                                              self.fyi_builder))
-        revision = ExtractFirstValue(content, ARCHIVE_URL_REGEX)
-        build_name = ExtractFirstValue(content, BUILD_NAME_REGEX)
+            content = scrape_url(get_archive_url(self.build, self.platform,
+                                                 self.fyi_builder))
+        revision = extract_first_value(content, ARCHIVE_URL_REGEX)
+        build_name = extract_first_value(content, BUILD_NAME_REGEX)
         return (revision, build_name)
 
-    def _PopulateTextFailure(self, failure, directory, zip):
-        baseline = self._GetBaseline(failure.GetExpectedTextFilename(),
-                                     directory)
+    def _populate_text_failure(self, failure, directory, zip):
+        baseline = self._get_baseline(failure.get_expected_text_filename(),
+                                      directory)
         failure.text_baseline_local = baseline.local_file
         failure.text_baseline_url = baseline.baseline_url
         failure.text_baseline_age = (
-          self._GetFileAge(failure.GetTextBaselineTracHome()))
-        failure.text_actual_local = "%s/%s" % (directory,
-                                               failure.GetActualTextFilename())
-        if (baseline and baseline.IsValid() and not self.dont_download):
-            self._CopyFileFromZipDir(failure.GetTextResultLocationInZipFile(),
-                                     failure.text_actual_local)
-            GenerateTextDiff(failure.text_baseline_local,
-                             failure.text_actual_local,
-                             directory + "/" + failure.GetTextDiffFilename())
+            self._get_file_age(failure.get_text_baseline_trac_home()))
+        failure.text_actual_local = "%s/%s" % (
+            directory, failure.get_actual_text_filename())
+        if (baseline and baseline.is_valid() and not self.dont_download):
+            self._copy_file_from_zip_dir(
+                failure.get_text_result_location_in_zip_file(),
+                failure.text_actual_local)
+            generate_text_diff(failure.text_baseline_local,
+                failure.text_actual_local,
+                directory + "/" + failure.get_text_diff_filename())
 
-    def _PopulateImageFailure(self, failure, directory, zip):
-        baseline = self._GetBaseline(failure.GetExpectedImageFilename(),
-                                     directory)
+    def _populate_image_failure(self, failure, directory, zip):
+        baseline = self._get_baseline(failure.get_expected_image_filename(),
+                                      directory)
         failure.image_baseline_local = baseline.local_file
         failure.image_baseline_url = baseline.baseline_url
-        if baseline and baseline.IsValid():
+        if baseline and baseline.is_valid():
             failure.image_baseline_age = (
-              self._GetFileAge(failure.GetImageBaselineTracHome()))
+                self._get_file_age(failure.get_image_baseline_trac_home()))
             failure.image_actual_local = "%s/%s" % (directory,
-                                         failure.GetActualImageFilename())
-            self._CopyFileFromZipDir(failure.GetImageResultLocationInZipFile(),
-                                     failure.image_actual_local)
-            if (not GeneratePNGDiff(failure.image_baseline_local,
-                                    failure.image_actual_local,
-                                   "%s/%s" %
-                                   (directory, failure.GetImageDiffFilename()))
+                                         failure.get_actual_image_filename())
+            self._copy_file_from_zip_dir(
+                failure.get_image_result_location_in_zip_file(),
+                failure.image_actual_local)
+            if (not generate_png_diff(failure.image_baseline_local,
+                                      failure.image_actual_local,
+                                      "%s/%s" % (directory,
+                                      failure.get_image_diff_filename()))
                 and self.verbose):
                 print "Could not generate PNG diff for %s" % failure.test_path
-            if failure.IsImageBaselineInChromium() or self.use_local_baselines:
-                upstream_baseline = (
-                  self._GetUpstreamBaseline(failure.GetExpectedImageFilename(),
-                                            directory))
+            if (failure.is_image_baseline_in_chromium() or
+                self.use_local_baselines):
+                upstream_baseline = (self._get_upstream_baseline(
+                    failure.get_expected_image_filename(), directory))
                 failure.image_baseline_upstream_local = \
                     upstream_baseline.local_file
                 failure.image_baseline_upstream_url = \
                     upstream_baseline.baseline_url
 
-    def _GetBaseline(self, filename, directory, upstream_only=False):
+    def _get_baseline(self, filename, directory, upstream_only=False):
         """ Search and download the baseline for the given test (put it in the
         directory given.)"""
 
@@ -570,13 +572,13 @@ class FailureFinder(object):
             download_file_modifiers = "b"  # binary file
 
         if not self.dont_download:
-            CreateDirectory(local_directory)
+            create_directory(local_directory)
 
         local_baseline = None
         url_of_baseline = None
 
         if self.use_local_baselines:
-            test_path_key = self._NormalizeBaselineIdentifier(filename)
+            test_path_key = self._normalize_baseline_identifier(filename)
             dict = self.baseline_dict
             if upstream_only:
                 dict = self.webkit_baseline_dict
@@ -589,10 +591,11 @@ class FailureFinder(object):
                        test_path_key)
         else:
             index = 0
-            possible_files = self._GetPossibleFileList(filename, upstream_only)
+            possible_files = self._get_possible_file_list(filename,
+                                                          upstream_only)
             # Download the baselines from the webkit.org site.
             while local_baseline == None and index < len(possible_files):
-                local_baseline = self._DownloadFile(possible_files[index],
+                local_baseline = self._download_file(possible_files[index],
                                                     local_filename,
                                                     download_file_modifiers,
                                                     True)
@@ -610,14 +613,14 @@ class FailureFinder(object):
 
         return BaselineCandidate(local_baseline, url_of_baseline)
 
-    def _AddBaselinePaths(self, list, base_path, directories):
+    def _add_baseline_paths(self, list, base_path, directories):
         for dir in directories:
             list.append(os.path.join(base_path, dir))
 
     # TODO(gwilson): Refactor this method to use
     # platform_utils_*.BaselineSearchPath instead of custom logic.
 
-    def _BuildBaselineIndexes(self):
+    def _build_baseline_indexes(self):
         """ Builds an index of all the known local baselines in both chromium
         and webkit. Two baselines are created, a webkit-specific (no chromium
         baseline) dictionary and an overall (both) dictionary. Each one has a
@@ -631,57 +634,57 @@ class FailureFinder(object):
         self.webkit_baseline_dict = {}
 
         base = os.path.abspath(os.path.curdir)
-        webkit_base = path_utils.PathFromBase('third_party', 'Webkit',
-                                              'LayoutTests')
-        chromium_base = path_utils.PathFromBase('webkit', 'data',
-                                                'layout_tests')
+        webkit_base = path_utils.path_from_base('third_party', 'Webkit',
+                                                'LayoutTests')
+        chromium_base = path_utils.path_from_base('webkit', 'data',
+                                                  'layout_tests')
         chromium_base_platform = os.path.join(chromium_base, PLATFORM)
         webkit_base_platform = os.path.join(webkit_base, PLATFORM)
 
         possible_chromium_files = []
         possible_webkit_files = []
 
-        if IsMacPlatform(self.platform):
-            self._AddBaselinePaths(possible_chromium_files,
-                                   chromium_base_platform,
-                                   CHROMIUM_MAC_PLATFORM_DIRS)
-            self._AddBaselinePaths(possible_chromium_files,
-                                   webkit_base_platform,
-                                   WEBKIT_MAC_PLATFORM_DIRS)
-            self._AddBaselinePaths(possible_webkit_files,
-                                   webkit_base_platform,
-                                   WEBKIT_MAC_PLATFORM_DIRS)
-        elif IsLinuxPlatform(self.platform):
-            self._AddBaselinePaths(possible_chromium_files,
-                                   chromium_base_platform,
-                                   CHROMIUM_LINUX_PLATFORM_DIRS)
+        if is_mac_platform(self.platform):
+            self._add_baseline_paths(possible_chromium_files,
+                                     chromium_base_platform,
+                                     CHROMIUM_MAC_PLATFORM_DIRS)
+            self._add_baseline_paths(possible_chromium_files,
+                                     webkit_base_platform,
+                                     WEBKIT_MAC_PLATFORM_DIRS)
+            self._add_baseline_paths(possible_webkit_files,
+                                     webkit_base_platform,
+                                     WEBKIT_MAC_PLATFORM_DIRS)
+        elif is_linux_platform(self.platform):
+            self._add_baseline_paths(possible_chromium_files,
+                                     chromium_base_platform,
+                                     CHROMIUM_LINUX_PLATFORM_DIRS)
         else:
-            self._AddBaselinePaths(possible_chromium_files,
-                                   chromium_base_platform,
-                                   CHROMIUM_WIN_PLATFORM_DIRS)
+            self._add_baseline_paths(possible_chromium_files,
+                                     chromium_base_platform,
+                                     CHROMIUM_WIN_PLATFORM_DIRS)
 
-        if not IsMacPlatform(self.platform):
-            self._AddBaselinePaths(possible_webkit_files,
-                                   webkit_base_platform,
-                                   WEBKIT_WIN_PLATFORM_DIRS)
+        if not is_mac_platform(self.platform):
+            self._add_baseline_paths(possible_webkit_files,
+                                     webkit_base_platform,
+                                     WEBKIT_WIN_PLATFORM_DIRS)
 
         possible_webkit_files.append(webkit_base)
 
-        self._PopulateBaselineDict(possible_webkit_files,
-                                   self.webkit_baseline_dict)
-        self._PopulateBaselineDict(possible_chromium_files,
-                                   self.baseline_dict)
+        self._populate_baseline_dict(possible_webkit_files,
+                                     self.webkit_baseline_dict)
+        self._populate_baseline_dict(possible_chromium_files,
+                                     self.baseline_dict)
         for key in self.webkit_baseline_dict.keys():
             if not key in self.baseline_dict:
                 self.baseline_dict[key] = self.webkit_baseline_dict[key]
 
         return True
 
-    def _PopulateBaselineDict(self, directories, dictionary):
+    def _populate_baseline_dict(self, directories, dictionary):
         for dir in directories:
-            os.path.walk(dir, self._VisitBaselineDir, dictionary)
+            os.path.walk(dir, self._visit_baseline_dir, dictionary)
 
-    def _VisitBaselineDir(self, dict, dirname, names):
+    def _visit_baseline_dir(self, dict, dirname, names):
         """ Method intended to be called by os.path.walk to build up an index
         of where all the test baselines exist. """
         # Exclude .svn from the walk, since we don't care what is in these
@@ -694,7 +697,7 @@ class FailureFinder(object):
                 # Fix path separators to match the separators used on
                 # the buildbots.
                 test_path_key = test_path_key.replace("\\", "/")
-                test_path_key = self._NormalizeBaselineIdentifier(
+                test_path_key = self._normalize_baseline_identifier(
                     test_path_key)
                 if not test_path_key in dict:
                     dict[test_path_key] = os.path.join(dirname, name)
@@ -702,19 +705,19 @@ class FailureFinder(object):
     # TODO(gwilson): Simplify identifier creation to not rely so heavily on
     # directory and path names.
 
-    def _NormalizeBaselineIdentifier(self, test_path):
+    def _normalize_baseline_identifier(self, test_path):
         """ Given either a baseline path (i.e. /LayoutTests/platform/mac/...)
         or a test path (i.e. /LayoutTests/fast/dom/....) will normalize
         to a unique identifier. This is basically a hashing function for
         layout test paths."""
 
         for regex in LOCAL_BASELINE_REGEXES:
-            value = ExtractFirstValue(test_path, regex)
+            value = extract_first_value(test_path, regex)
             if value:
                 return value
         return test_path
 
-    def _AddBaselineURLs(self, list, base_url, platforms):
+    def _add_baseline_ur_ls(self, list, base_url, platforms):
         # If the base URL doesn't contain any platform in its path, only add
         # the base URL to the list.  This happens with the chrome/ dir.
         if base_url.find("%s") == -1:
@@ -728,7 +731,7 @@ class FailureFinder(object):
     # require some kind of wrapper since this method looks for URLs instead
     # of local paths.
 
-    def _GetPossibleFileList(self, filename, only_webkit):
+    def _get_possible_file_list(self, filename, only_webkit):
         """ Returns a list of possible filename locations for the given file.
         Uses the platform of the class to determine the order.
         """
@@ -743,24 +746,24 @@ class FailureFinder(object):
 
         webkit_platform_url = WEBKIT_PLATFORM_BASELINE_URL + filename
 
-        if IsMacPlatform(self.platform):
-            self._AddBaselineURLs(possible_chromium_files,
+        if is_mac_platform(self.platform):
+            self._add_baseline_ur_ls(possible_chromium_files,
                                   chromium_platform_url,
                                   CHROMIUM_MAC_PLATFORM_DIRS)
-            self._AddBaselineURLs(possible_webkit_files,
+            self._add_baseline_ur_ls(possible_webkit_files,
                                   webkit_platform_url,
                                   WEBKIT_MAC_PLATFORM_DIRS)
-        elif IsLinuxPlatform(self.platform):
-            self._AddBaselineURLs(possible_chromium_files,
+        elif is_linux_platform(self.platform):
+            self._add_baseline_ur_ls(possible_chromium_files,
                                   chromium_platform_url,
                                   CHROMIUM_LINUX_PLATFORM_DIRS)
         else:
-            self._AddBaselineURLs(possible_chromium_files,
+            self._add_baseline_ur_ls(possible_chromium_files,
                                   chromium_platform_url,
                                   CHROMIUM_WIN_PLATFORM_DIRS)
 
-        if not IsMacPlatform(self.platform):
-            self._AddBaselineURLs(possible_webkit_files,
+        if not is_mac_platform(self.platform):
+            self._add_baseline_ur_ls(possible_webkit_files,
                                   webkit_platform_url,
                                   WEBKIT_WIN_PLATFORM_DIRS)
         possible_webkit_files.append(WEBKIT_LAYOUT_TEST_BASE_URL + filename)
@@ -772,21 +775,21 @@ class FailureFinder(object):
     # Like _GetBaseline, but only retrieves the baseline from upstream (skip
     # looking in chromium).
 
-    def _GetUpstreamBaseline(self, filename, directory):
-        return self._GetBaseline(filename, directory, upstream_only=True)
+    def _get_upstream_baseline(self, filename, directory):
+        return self._get_baseline(filename, directory, upstream_only=True)
 
-    def _GetFileAge(self, url):
+    def _get_file_age(self, url):
         # Check if the given URL is really a local file path.
         if not url or not url.startswith("http"):
             return None
         try:
             if url.find(WEBKIT_TRAC_HOSTNAME) > -1:
-                return ExtractSingleRegexAtURL(url[:url.rfind("/")],
-                                               WEBKIT_FILE_AGE_REGEX %
-                                               url[url.find("/browser"):])
+                return extract_single_regex_at_url(url[:url.rfind("/")],
+                                                   WEBKIT_FILE_AGE_REGEX %
+                                                   url[url.find("/browser"):])
             else:
-                return ExtractSingleRegexAtURL(url + "?view=log",
-                                               CHROMIUM_FILE_AGE_REGEX)
+                return extract_single_regex_at_url(url + "?view=log",
+                                                   CHROMIUM_FILE_AGE_REGEX)
         except:
             if self.verbose:
                 print "Could not find age for %s. Does the file exist?" % url
@@ -796,8 +799,8 @@ class FailureFinder(object):
     # TODO(gwilson): modify this to also return which of the last 10
     # builds failed for this test.
 
-    def _GetFlakiness(self, test_path, target_platform):
-        url = GetFlakyTestURL(target_platform)
+    def _get_flakiness(self, test_path, target_platform):
+        url = get_flaky_test_url(target_platform)
         if url == "":
             return None
 
@@ -807,17 +810,17 @@ class FailureFinder(object):
             content = urllib2.urlopen(urllib2.Request(url)).read()
             self._flaky_test_cache[url] = content
 
-        flakiness = ExtractFirstValue(content, FLAKY_TEST_REGEX % test_path)
+        flakiness = extract_first_value(content, FLAKY_TEST_REGEX % test_path)
         return flakiness
 
-    def _GetTestExpectations(self):
+    def _get_test_expectations(self):
         if not self._test_expectations_cache:
             try:
                 if self.test_expectations_file:
                     log = open(self.test_expectations_file, 'r')
                     self._test_expectations_cache = "\n".join(log.readlines())
                 else:
-                    self._test_expectations_cache = ScrapeURL(
+                    self._test_expectations_cache = scrape_url(
                         TEST_EXPECTATIONS_URL)
             except HTTPError:
                 print ("Could not find test_expectations.txt at %s" %
@@ -825,8 +828,8 @@ class FailureFinder(object):
 
         return self._test_expectations_cache
 
-    def _GetTestExpectationsLine(self, test_path):
-        content = self._GetTestExpectations()
+    def _get_test_expectations_line(self, test_path):
+        content = self._get_test_expectations()
 
         if not content:
             return None
@@ -838,21 +841,21 @@ class FailureFinder(object):
 
         return None
 
-    def _CopyFileFromZipDir(self, file_in_zip, file_to_create):
+    def _copy_file_from_zip_dir(self, file_in_zip, file_to_create):
         modifiers = ""
         if file_to_create.endswith(".png"):
             modifiers = "b"
         dir = os.path.join(os.path.split(file_to_create)[0:-1])[0]
-        CreateDirectory(dir)
+        create_directory(dir)
         file = os.path.normpath(os.path.join(TEMP_ZIP_DIR, file_in_zip))
         shutil.copy(file, dir)
 
-    def _ExtractFileFromZip(self, zip, file_in_zip, file_to_create):
+    def _extract_file_from_zip(self, zip, file_in_zip, file_to_create):
         modifiers = ""
         if file_to_create.endswith(".png"):
             modifiers = "b"
         try:
-            CreateDirectory(file_to_create[0:file_to_create.rfind("/")])
+            create_directory(file_to_create[0:file_to_create.rfind("/")])
             localFile = open(file_to_create, "w%s" % modifiers)
             localFile.write(zip.read(file_in_zip))
             localFile.close()
@@ -865,7 +868,7 @@ class FailureFinder(object):
             print "Is this zip file assembled correctly?"
         return False
 
-    def _DownloadFile(self, url, local_filename=None, modifiers="",
+    def _download_file(self, url, local_filename=None, modifiers="",
                       force=False):
         """
         Copy the contents of a file from a given URL

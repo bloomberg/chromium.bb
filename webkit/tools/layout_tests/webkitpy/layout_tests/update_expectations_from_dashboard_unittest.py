@@ -17,7 +17,7 @@ class UpdateExpectationsUnittest(unittest.TestCase):
     ###########################################################################
     # Tests
 
-    def testKeepsUnmodifiedLines(self):
+    def test_keeps_unmodified_lines(self):
         expectations = """// Ensure comments and newlines don't get stripped.
     BUG1 SLOW : 1.html = PASS
 
@@ -30,9 +30,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
     """
 
         updates = []
-        self.updateExpectations(expectations, updates, exp_results)
+        self.update_expectations(expectations, updates, exp_results)
 
-    def testRemoveFlakyExpectation(self):
+    def test_remove_flaky_expectation(self):
         expectations = "BUG1 : 1.html = TIMEOUT FAIL\n"
         expected_results = "BUG1 : 1.html = TIMEOUT\n"
         updates = {"1.html": {
@@ -42,9 +42,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX DEBUG": {"extra": "FAIL"},
             "MAC RELEASE": {"extra": "FAIL"},
             "MAC DEBUG": {"extra": "FAIL"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testRemoveExpectationSlowTest(self):
+    def test_remove_expectation_slow_test(self):
         expectations = "BUG1 SLOW : 1.html = FAIL\n"
         expected_results = "BUG1 SLOW : 1.html = PASS\n"
         updates = {"1.html": {
@@ -54,9 +54,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX DEBUG": {"extra": "FAIL"},
             "MAC RELEASE": {"extra": "FAIL"},
             "MAC DEBUG": {"extra": "FAIL"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testRemoveExpectation(self):
+    def test_remove_expectation(self):
         expectations = "BUG1 : 1.html = FAIL\n"
         expected_results = ""
         updates = {"1.html": {
@@ -66,17 +66,17 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX DEBUG": {"extra": "FAIL"},
             "MAC RELEASE": {"extra": "FAIL"},
             "MAC DEBUG": {"extra": "FAIL"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testRemoveExpectationFromOnePlatform(self):
+    def test_remove_expectation_from_one_platform(self):
         expectations = "BUG1 : 1.html = FAIL\n"
         expected_results = """BUG1 MAC WIN DEBUG : 1.html = FAIL
     BUG1 RELEASE : 1.html = FAIL
     """
         updates = {"1.html": {"LINUX DEBUG": {"extra": "FAIL"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testRemoveSlow(self):
+    def test_remove_slow(self):
         expectations = "BUG1 SLOW : 1.html = PASS\n"
         expected_results = ""
         updates = {"1.html": {
@@ -86,9 +86,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX DEBUG": {"extra": "SLOW"},
             "MAC RELEASE": {"extra": "SLOW"},
             "MAC DEBUG": {"extra": "SLOW"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testAddFlakyExpectation(self):
+    def test_add_flaky_expectation(self):
         expectations = "BUG1 : 1.html = TIMEOUT\n"
         expected_results = "BUG1 : 1.html = TIMEOUT FAIL\n"
         updates = {"1.html": {
@@ -98,9 +98,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX DEBUG": {"missing": "FAIL"},
             "MAC RELEASE": {"missing": "FAIL"},
             "MAC DEBUG": {"missing": "FAIL"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testAddExpectationSlowTest(self):
+    def test_add_expectation_slow_test(self):
         expectations = "BUG1 SLOW : 1.html = PASS\n"
         expected_results = "BUG1 SLOW : 1.html = PASS FAIL\n"
         updates = {"1.html": {
@@ -110,9 +110,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX DEBUG": {"missing": "FAIL"},
             "MAC RELEASE": {"missing": "FAIL"},
             "MAC DEBUG": {"missing": "FAIL"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testAddExpectation(self):
+    def test_add_expectation(self):
         # not yet implemented
         return
 
@@ -125,9 +125,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX DEBUG": {"missing": "FAIL"},
             "MAC RELEASE": {"missing": "FAIL"},
             "MAC DEBUG": {"missing": "FAIL"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testAddExpectationForOnePlatform(self):
+    def test_add_expectation_for_one_platform(self):
         expectations = "BUG1 WIN : 1.html = TIMEOUT\n"
         expected_results = "BUG1 WIN : 1.html = TIMEOUT\n"
         # TODO(ojan): Once we add currently unlisted tests, this expect results
@@ -136,9 +136,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
         #BUG_AUTO LINUX DEBUG : 1.html = TIMEOUT
         #"""
         updates = {"1.html": {"LINUX DEBUG": {"missing": "TIMEOUT"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testAddSlow(self):
+    def test_add_slow(self):
         expectations = "BUG1 : 1.html = FAIL\n"
         expected_results = "BUG1 SLOW : 1.html = FAIL\n"
         updates = {"1.html": {
@@ -148,9 +148,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX DEBUG": {"missing": "SLOW"},
             "MAC RELEASE": {"missing": "SLOW"},
             "MAC DEBUG": {"missing": "SLOW"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testAddRemoveMultipleExpectations(self):
+    def test_add_remove_multiple_expectations(self):
         expectations = """BUG1 WIN : 1.html = FAIL
     BUG2 MAC : 1.html = FAIL"""
         expected_results = """BUG1 SLOW WIN : 1.html = FAIL
@@ -169,15 +169,15 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX DEBUG": {"missing": "SLOW"},
             "MAC RELEASE": {"missing": "TIMEOUT", "extra": "FAIL"},
             "MAC DEBUG": {"missing": "TIMEOUT", "extra": "FAIL"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testAddExistingExpectation(self):
+    def test_add_existing_expectation(self):
         expectations = "BUG1 : 1.html = FAIL\n"
         expected_results = "BUG1 : 1.html = FAIL\n"
         updates = {"1.html": {"WIN RELEASE": {"missing": "FAIL"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testAddImageOrTextToFailExpectation(self):
+    def test_add_image_or_text_to_fail_expectation(self):
         expectations = """BUG1 WIN RELEASE : 1.html = FAIL
     BUG1 MAC RELEASE : 1.html = FAIL
     BUG1 LINUX RELEASE : 1.html = FAIL
@@ -193,23 +193,23 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "MAC RELEASE": {"missing": "IMAGE"},
             "LINUX RELEASE": {"missing": "TEXT"},
             "LINUX DEBUG": {"missing": "IMAGE+TEXT"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testAddOther(self):
+    def test_add_other(self):
         # Other is a catchall for more obscure expectations results.
         # We should never add it to test_expectations.
         expectations = "BUG1 WIN RELEASE : 1.html = FAIL\n"
         expected_results = "BUG1 WIN RELEASE : 1.html = FAIL\n"
         updates = {"1.html": {"WIN RELEASE": {"missing": "OTHER"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testRemoveNonExistantExpectation(self):
+    def test_remove_non_existant_expectation(self):
         expectations = "BUG1 : 1.html = FAIL\n"
         expected_results = "BUG1 : 1.html = FAIL\n"
         updates = {"1.html": {"WIN RELEASE": {"extra": "TIMEOUT"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testUpdateSomePlatforms(self):
+    def test_update_some_platforms(self):
         expectations = "BUG1 DEBUG : 1.html = TEXT PASS\n"
         # TODO(ojan): Once we add currently unlisted tests, the expect results
         # for this test should include the missing bits for RELEASE.
@@ -219,25 +219,25 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "WIN DEBUG": {"extra": "MISSING TEXT"},
             "MAC RELEASE": {"missing": "PASS TEXT"},
             "MAC DEBUG": {"extra": "MISSING TEXT"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testAddTimeoutToSlowTest(self):
+    def test_add_timeout_to_slow_test(self):
         # SLOW tests needing TIMEOUT need manual updating. Should just print
         # a log and not modify the test.
         expectations = "BUG1 SLOW : 1.html = TEXT\n"
         expected_results = "BUG1 SLOW : 1.html = TEXT\n"
         updates = {"1.html": {"WIN RELEASE": {"missing": "TIMEOUT"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testAddSlowToTimeoutTest(self):
+    def test_add_slow_to_timeout_test(self):
         # SLOW tests needing TIMEOUT need manual updating. Should just print
         # a log and not modify the test.
         expectations = "BUG1 : 1.html = TIMEOUT\n"
         expected_results = "BUG1 : 1.html = TIMEOUT\n"
         updates = {"1.html": {"WIN RELEASE": {"missing": "SLOW"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testIncludeLastPlatformInFlakiness(self):
+    def test_include_last_platform_in_flakiness(self):
         # If a test is flaky on 5/6 platforms and the 6th's expectations are a
         # subset of the other 5/6, then give them all the same expectations.
         expectations = "BUG2 : 1.html = FAIL\n"
@@ -249,9 +249,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX DEBUG": {"missing": "TIMEOUT"},
             "MAC RELEASE": {"missing": "TIMEOUT"},
             "MAC DEBUG": {"missing": "TIMEOUT"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testIncludeLastPlatformInFlakinessThreeOutOfFour(self):
+    def test_include_last_platform_in_flakiness_three_out_of_four(self):
         # If a test is flaky on 5/6 platforms and the 6th's expectations are a
         # subset of the other 5/6, then give them all the same expectations.
         expectations = "BUG2 MAC LINUX : 1.html = FAIL\n"
@@ -260,9 +260,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX RELEASE": {"missing": "TIMEOUT"},
             "MAC RELEASE": {"missing": "TIMEOUT"},
             "MAC DEBUG": {"missing": "TIMEOUT"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testExcludeLastPlatformFromFlakiness(self):
+    def test_exclude_last_platform_from_flakiness(self):
         # If a test is flaky on 5/6 platforms and the 6th's expectations
         # are not a subset of the other 5/6, then don't give them
         # all the same expectations.
@@ -278,9 +278,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "LINUX DEBUG": {"missing": "TIMEOUT"},
             "MAC RELEASE": {"missing": "TIMEOUT"},
             "MAC DEBUG": {"missing": "TIMEOUT"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testStripComments(self):
+    def test_strip_comments(self):
         expectations = """BUG1 : 1.html = TIMEOUT
 
     // Comment/whitespace should be removed when the test is.
@@ -303,9 +303,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
         updates = {"2.html": {
             "WIN RELEASE": {"extra": "TEXT"},
             "MAC RELEASE": {"extra": "TEXT"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testLeaveComments(self):
+    def test_leave_comments(self):
         expectations = """BUG1 : 1.html = TIMEOUT
 
     // Comment/whitespace should remain.
@@ -321,9 +321,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
             "WIN RELEASE": {"extra": "FAIL"},
             "WIN DEBUG": {"extra": "FAIL"},
             "LINUX DEBUG": {"extra": "FAIL"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testLeaveCommentsIfNoWhitespaceAfterTest(self):
+    def test_leave_comments_if_no_whitespace_after_test(self):
         expectations = """// Comment/whitespace should remain.
     BUG2 WIN RELEASE : 2.html = TEXT
     BUG2 : 1.html = IMAGE
@@ -332,20 +332,20 @@ class UpdateExpectationsUnittest(unittest.TestCase):
     BUG2 : 1.html = IMAGE
     """
         updates = {"2.html": {"WIN RELEASE": {"extra": "TEXT"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
-    def testLeavesUnmodifiedExpectationsUntouched(self):
+    def test_leaves_unmodified_expectations_untouched(self):
         # Ensures tests that would just change sort order of a line are noops.
         expectations = "BUG1 WIN LINUX : 1.html = TIMEOUT\n"
         expected_results = "BUG1 WIN LINUX : 1.html = TIMEOUT\n"
         updates = {"1.html": {"MAC RELEASE": {"missing": "SLOW"}}}
-        self.updateExpectations(expectations, updates, expected_results)
+        self.update_expectations(expectations, updates, expected_results)
 
     ###########################################################################
     # Helper functions
 
-    def updateExpectations(self, expectations, updates, expected_results):
-        results = update_expectations_from_dashboard.UpdateExpectations(
+    def update_expectations(self, expectations, updates, expected_results):
+        results = update_expectations_from_dashboard.update_expectations(
             expectations, updates)
         self.assertEqual(expected_results, results)
 

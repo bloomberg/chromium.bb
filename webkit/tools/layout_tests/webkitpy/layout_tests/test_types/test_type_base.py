@@ -60,14 +60,14 @@ class TestTypeBase(object):
         self._root_output_dir = root_output_dir
         self._platform = platform
 
-    def _MakeOutputDirectory(self, filename):
+    def _make_output_directory(self, filename):
         """Creates the output directory (if needed) for a given test
         filename."""
         output_filename = os.path.join(self._root_output_dir,
-            path_utils.RelativeTestFilename(filename))
-        path_utils.MaybeMakeDirectory(os.path.split(output_filename)[0])
+            path_utils.relative_test_filename(filename))
+        path_utils.maybe_make_directory(os.path.split(output_filename)[0])
 
-    def _SaveBaselineData(self, filename, data, modifier):
+    def _save_baseline_data(self, filename, data, modifier):
         """Saves a new baseline file into the platform directory.
 
         The file will be named simply "<test>-expected<modifier>", suitable for
@@ -79,18 +79,18 @@ class TestTypeBase(object):
           modifier: type of the result file, e.g. ".txt" or ".png"
         """
         relative_dir = os.path.dirname(
-            path_utils.RelativeTestFilename(filename))
+            path_utils.relative_test_filename(filename))
         output_dir = os.path.join(
-            path_utils.ChromiumBaselinePath(self._platform), relative_dir)
+            path_utils.chromium_baseline_path(self._platform), relative_dir)
         output_file = os.path.basename(os.path.splitext(filename)[0] +
             self.FILENAME_SUFFIX_EXPECTED + modifier)
 
-        path_utils.MaybeMakeDirectory(output_dir)
+        path_utils.maybe_make_directory(output_dir)
         output_path = os.path.join(output_dir, output_file)
         logging.debug('writing new baseline to "%s"' % (output_path))
         open(output_path, "wb").write(data)
 
-    def OutputFilename(self, filename, modifier):
+    def output_filename(self, filename, modifier):
         """Returns a filename inside the output dir that contains modifier.
 
         For example, if filename is c:/.../fast/dom/foo.html and modifier is
@@ -105,10 +105,10 @@ class TestTypeBase(object):
           The absolute windows path to the output filename
         """
         output_filename = os.path.join(self._root_output_dir,
-            path_utils.RelativeTestFilename(filename))
+            path_utils.relative_test_filename(filename))
         return os.path.splitext(output_filename)[0] + modifier
 
-    def CompareOutput(self, filename, proc, output, test_args, target):
+    def compare_output(self, filename, proc, output, test_args, target):
         """Method that compares the output from the test with the
         expected value.
 
@@ -127,8 +127,8 @@ class TestTypeBase(object):
         """
         raise NotImplemented
 
-    def WriteOutputFiles(self, filename, test_type, file_type, output,
-                         expected, diff=True, wdiff=False):
+    def write_output_files(self, filename, test_type, file_type, output,
+                           expected, diff=True, wdiff=False):
         """Writes the test output, the expected output and optionally the diff
         between the two to files in the results directory.
 
@@ -147,10 +147,10 @@ class TestTypeBase(object):
               False for results that are not text
           wdiff: if True, write an HTML file containing word-by-word diffs
         """
-        self._MakeOutputDirectory(filename)
-        actual_filename = self.OutputFilename(filename,
+        self._make_output_directory(filename)
+        actual_filename = self.output_filename(filename,
             test_type + self.FILENAME_SUFFIX_ACTUAL + file_type)
-        expected_filename = self.OutputFilename(filename,
+        expected_filename = self.output_filename(filename,
             test_type + self.FILENAME_SUFFIX_EXPECTED + file_type)
         if output:
             open(actual_filename, "wb").write(output)
@@ -166,13 +166,13 @@ class TestTypeBase(object):
                                         expected_filename,
                                         actual_filename)
 
-            diff_filename = self.OutputFilename(filename,
+            diff_filename = self.output_filename(filename,
                 test_type + self.FILENAME_SUFFIX_DIFF + file_type)
             open(diff_filename, "wb").write(''.join(diff))
 
         if wdiff:
             # Shell out to wdiff to get colored inline diffs.
-            executable = path_utils.WDiffPath()
+            executable = path_utils.wdiff_path()
             cmd = [executable,
                    '--start-delete=##WDIFF_DEL##',
                    '--end-delete=##WDIFF_END##',
@@ -180,7 +180,7 @@ class TestTypeBase(object):
                    '--end-insert=##WDIFF_END##',
                    expected_filename,
                    actual_filename]
-            filename = self.OutputFilename(filename,
+            filename = self.output_filename(filename,
                             test_type + self.FILENAME_SUFFIX_WDIFF)
 
             global _wdiff_available

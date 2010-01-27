@@ -33,13 +33,13 @@ class PathNotFound(Exception):
     pass
 
 
-def LayoutTestsDir():
+def layout_tests_dir():
     """Returns the fully-qualified path to the directory containing the input
     data for the specified layout test."""
-    return PathFromBase('third_party', 'WebKit', 'LayoutTests')
+    return path_from_base('third_party', 'WebKit', 'LayoutTests')
 
 
-def ChromiumBaselinePath(platform=None):
+def chromium_baseline_path(platform=None):
     """Returns the full path to the directory containing expected
     baseline results from chromium ports. If |platform| is None, the
     currently executing platform is used.
@@ -49,25 +49,25 @@ def ChromiumBaselinePath(platform=None):
     pull baselines for platforms other than the host platform."""
 
     # Normalize the platform string.
-    platform = PlatformName(platform)
+    platform = platform_name(platform)
     if platform.startswith('chromium-mac'):
-        return platform_utils_mac.BaselinePath(platform)
+        return platform_utils_mac.baseline_path(platform)
     elif platform.startswith('chromium-win'):
-        return platform_utils_win.BaselinePath(platform)
+        return platform_utils_win.baseline_path(platform)
     elif platform.startswith('chromium-linux'):
-        return platform_utils_linux.BaselinePath(platform)
+        return platform_utils_linux.baseline_path(platform)
 
-    return platform_utils.BaselinePath()
+    return platform_utils.baseline_path()
 
 
-def WebKitBaselinePath(platform):
+def webkit_baseline_path(platform):
     """Returns the full path to the directory containing expected
     baseline results from WebKit ports."""
-    return PathFromBase('third_party', 'WebKit', 'LayoutTests',
-                        'platform', platform)
+    return path_from_base('third_party', 'WebKit', 'LayoutTests',
+                          'platform', platform)
 
 
-def BaselineSearchPath(platform=None):
+def baseline_search_path(platform=None):
     """Returns the list of directories to search for baselines/results for a
     given platform, in order of preference. Paths are relative to the top of
     the source tree. If parameter platform is None, returns the list for the
@@ -78,17 +78,17 @@ def BaselineSearchPath(platform=None):
     pull baselines for platforms other than the host platform."""
 
     # Normalize the platform name.
-    platform = PlatformName(platform)
+    platform = platform_name(platform)
     if platform.startswith('chromium-mac'):
-        return platform_utils_mac.BaselineSearchPath(platform)
+        return platform_utils_mac.baseline_search_path(platform)
     elif platform.startswith('chromium-win'):
-        return platform_utils_win.BaselineSearchPath(platform)
+        return platform_utils_win.baseline_search_path(platform)
     elif platform.startswith('chromium-linux'):
-        return platform_utils_linux.BaselineSearchPath(platform)
-    return platform_utils.BaselineSearchPath()
+        return platform_utils_linux.baseline_search_path(platform)
+    return platform_utils.baseline_search_path()
 
 
-def ExpectedBaselines(filename, suffix, platform=None, all_baselines=False):
+def expected_baselines(filename, suffix, platform=None, all_baselines=False):
     """Given a test name, finds where the baseline results are located.
 
     Args:
@@ -113,12 +113,12 @@ def ExpectedBaselines(filename, suffix, platform=None, all_baselines=False):
     """
     global _baseline_search_path
     global _search_path_platform
-    testname = os.path.splitext(RelativeTestFilename(filename))[0]
+    testname = os.path.splitext(relative_test_filename(filename))[0]
 
     baseline_filename = testname + '-expected' + suffix
 
     if (_baseline_search_path is None) or (_search_path_platform != platform):
-        _baseline_search_path = BaselineSearchPath(platform)
+        _baseline_search_path = baseline_search_path(platform)
         _search_path_platform = platform
 
     baselines = []
@@ -131,7 +131,7 @@ def ExpectedBaselines(filename, suffix, platform=None, all_baselines=False):
 
     # If it wasn't found in a platform directory, return the expected result
     # in the test directory, even if no such file actually exists.
-    platform_dir = LayoutTestsDir()
+    platform_dir = layout_tests_dir()
     if os.path.exists(os.path.join(platform_dir, baseline_filename)):
         baselines.append((platform_dir, baseline_filename))
 
@@ -141,7 +141,7 @@ def ExpectedBaselines(filename, suffix, platform=None, all_baselines=False):
     return [(None, baseline_filename)]
 
 
-def ExpectedFilename(filename, suffix):
+def expected_filename(filename, suffix):
     """Given a test name, returns an absolute path to its expected results.
 
     If no expected results are found in any of the searched directories, the
@@ -157,19 +157,19 @@ def ExpectedFilename(filename, suffix):
            search list of directories, e.g., 'chromium-win', or
            'chromium-mac-leopard' (we follow the WebKit format)
     """
-    platform_dir, baseline_filename = ExpectedBaselines(filename, suffix)[0]
+    platform_dir, baseline_filename = expected_baselines(filename, suffix)[0]
     if platform_dir:
         return os.path.join(platform_dir, baseline_filename)
-    return os.path.join(LayoutTestsDir(), baseline_filename)
+    return os.path.join(layout_tests_dir(), baseline_filename)
 
 
-def RelativeTestFilename(filename):
+def relative_test_filename(filename):
     """Provide the filename of the test relative to the layout tests
     directory as a unix style path (a/b/c)."""
-    return _WinPathToUnix(filename[len(LayoutTestsDir()) + 1:])
+    return _win_path_to_unix(filename[len(layout_tests_dir()) + 1:])
 
 
-def _WinPathToUnix(path):
+def _win_path_to_unix(path):
     """Convert a windows path to use unix-style path separators (a/b/c)."""
     return path.replace('\\', '/')
 
@@ -179,12 +179,12 @@ def _WinPathToUnix(path):
 #
 
 
-def FilenameToUri(full_path):
+def filename_to_uri(full_path):
     """Convert a test file to a URI."""
     LAYOUTTEST_HTTP_DIR = "http/tests/"
     LAYOUTTEST_WEBSOCKET_DIR = "websocket/tests/"
 
-    relative_path = _WinPathToUnix(RelativeTestFilename(full_path))
+    relative_path = _win_path_to_unix(relative_test_filename(full_path))
     port = None
     use_ssl = False
 
@@ -209,16 +209,16 @@ def FilenameToUri(full_path):
         return "%s://127.0.0.1:%u/%s" % (protocol, port, relative_path)
 
     if sys.platform in ('cygwin', 'win32'):
-        return "file:///" + GetAbsolutePath(full_path)
-    return "file://" + GetAbsolutePath(full_path)
+        return "file:///" + get_absolute_path(full_path)
+    return "file://" + get_absolute_path(full_path)
 
 
-def GetAbsolutePath(path):
+def get_absolute_path(path):
     """Returns an absolute UNIX path."""
-    return _WinPathToUnix(os.path.abspath(path))
+    return _win_path_to_unix(os.path.abspath(path))
 
 
-def MaybeMakeDirectory(*path):
+def maybe_make_directory(*path):
     """Creates the specified directory if it doesn't already exist."""
     # This is a reimplementation of google.path_utils.MaybeMakeDirectory().
     try:
@@ -228,7 +228,7 @@ def MaybeMakeDirectory(*path):
             raise
 
 
-def PathFromBase(*comps):
+def path_from_base(*comps):
     """Returns an absolute filename from a set of components specified
     relative to the top of the source tree. If the path does not exist,
     the exception PathNotFound is raised."""
@@ -248,7 +248,7 @@ def PathFromBase(*comps):
     return path
 
 
-def RemoveDirectory(*path):
+def remove_directory(*path):
     """Recursively removes a directory, even if it's marked read-only.
 
     Remove the directory located at *path, if it exists.
@@ -316,57 +316,57 @@ def RemoveDirectory(*path):
 #
 
 
-def PlatformName(platform=None):
+def platform_name(platform=None):
     """Returns the appropriate chromium platform name for |platform|. If
        |platform| is None, returns the name of the chromium platform on the
        currently running system. If |platform| is of the form 'chromium-*',
        it is returned unchanged, otherwise 'chromium-' is prepended."""
     if platform == None:
-        return platform_utils.PlatformName()
+        return platform_utils.platform_name()
     if not platform.startswith('chromium-'):
         platform = "chromium-" + platform
     return platform
 
 
-def PlatformVersion():
-    return platform_utils.PlatformVersion()
+def platform_version():
+    return platform_utils.platform_version()
 
 
-def LigHTTPdExecutablePath():
-    return platform_utils.LigHTTPdExecutablePath()
+def lighttpd_executable_path():
+    return platform_utils.lighttpd_executable_path()
 
 
-def LigHTTPdModulePath():
-    return platform_utils.LigHTTPdModulePath()
+def lighttpd_module_path():
+    return platform_utils.lighttpd_module_path()
 
 
-def LigHTTPdPHPPath():
-    return platform_utils.LigHTTPdPHPPath()
+def lighttpd_php_path():
+    return platform_utils.lighttpd_php_path()
 
 
-def WDiffPath():
-    return platform_utils.WDiffPath()
+def wdiff_path():
+    return platform_utils.wdiff_path()
 
 
-def TestShellPath(target):
-    return platform_utils.TestShellPath(target)
+def test_shell_path(target):
+    return platform_utils.test_shell_path(target)
 
 
-def ImageDiffPath(target):
-    return platform_utils.ImageDiffPath(target)
+def image_diff_path(target):
+    return platform_utils.image_diff_path(target)
 
 
-def LayoutTestHelperPath(target):
-    return platform_utils.LayoutTestHelperPath(target)
+def layout_test_helper_path(target):
+    return platform_utils.layout_test_helper_path(target)
 
 
-def FuzzyMatchPath():
-    return platform_utils.FuzzyMatchPath()
+def fuzzy_match_path():
+    return platform_utils.fuzzy_match_path()
 
 
-def ShutDownHTTPServer(server_pid):
-    return platform_utils.ShutDownHTTPServer(server_pid)
+def shut_down_http_server(server_pid):
+    return platform_utils.shut_down_http_server(server_pid)
 
 
-def KillAllTestShells():
-    platform_utils.KillAllTestShells()
+def kill_all_test_shells():
+    platform_utils.kill_all_test_shells()

@@ -20,14 +20,14 @@ import sys
 from layout_package import path_utils
 from layout_package import test_expectations
 
-sys.path.append(path_utils.PathFromBase('third_party'))
+sys.path.append(path_utils.path_from_base('third_party'))
 import simplejson
 
 
-def UpdateExpectations(expectations, updates):
+def update_expectations(expectations, updates):
     expectations = ExpectationsUpdater(None, None,
         'WIN', False, False, expectations, True)
-    return expectations.UpdateBasedOnJSON(updates)
+    return expectations.update_based_on_json(updates)
 
 
 class OptionsAndExpectationsHolder(object):
@@ -60,7 +60,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
     }
     """
 
-    def _GetBuildTypesAndPlatforms(self, options):
+    def _get_build_types_and_platforms(self, options):
         """Splits up the options list into three lists: platforms,
         build_types and other_options."""
         platforms = []
@@ -84,8 +84,8 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
 
         return (platforms, build_types, other_options)
 
-    def _ApplyUpdatesToResults(self, test, results, update_json, expectations,
-        other_options):
+    def _apply_updates_to_results(self, test, results, update_json,
+        expectations, other_options):
         """Applies the updates from the JSON to the existing results in
         test_expectations.
         Args:
@@ -111,12 +111,12 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
             these_expectations = these_results.expectations
             these_options = these_results.options
 
-            self._ApplyExtraUpdates(these_updates, these_options,
-                                    these_expectations)
-            self._ApplyMissingUpdates(test, these_updates, these_options,
-                these_expectations)
+            self._apply_extra_updates(these_updates, these_options,
+                                      these_expectations)
+            self._apply_missing_updates(test, these_updates, these_options,
+                                        these_expectations)
 
-    def _ApplyExtraUpdates(self, updates, options, expectations):
+    def _apply_extra_updates(self, updates, options, expectations):
         """Remove extraneous expectations/options in the updates object to
         the given options/expectations lists.
         """
@@ -132,7 +132,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
                 if item in options:
                     options.remove(item)
 
-    def _ApplyMissingUpdates(self, test, updates, options, expectations):
+    def _apply_missing_updates(self, test, updates, options, expectations):
         """Apply an addition expectations/options in the updates object to
         the given options/expectations lists.
         """
@@ -163,7 +163,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
                 if item not in options:
                     options.append(item)
 
-    def _AppendPlatform(self, item, build_type, platform):
+    def _append_platform(self, item, build_type, platform):
         """Appends the give build_type and platform to the BuildInfo item.
         """
         build_info = item.build_info
@@ -171,7 +171,8 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
             build_info[build_type] = []
         build_info[build_type].append(platform)
 
-    def _GetUpdatesDedupedByMatchingOptionsAndExpectations(self, results):
+    def _get_updates_deduped_by_matching_options_and_expectations(self,
+                                                                  results):
         """Converts the results, which is
         results[platforms][build_type] = OptionsAndExpectationsHolder
         to BuildInfo objects, which dedupes platform/build_types that
@@ -187,7 +188,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
                 for update in updates:
                     if (update.options == options and
                         update.expectations == expectations):
-                        self._AppendPlatform(update, build_type, platform)
+                        self._append_platform(update, build_type, platform)
                         found_match = True
                         break
 
@@ -195,12 +196,12 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
                     continue
 
                 update = BuildInfo(options, expectations, {})
-                self._AppendPlatform(update, build_type, platform)
+                self._append_platform(update, build_type, platform)
                 updates.append(update)
 
-        return self._RoundUpFlakyUpdates(updates)
+        return self._round_up_flaky_updates(updates)
 
-    def _HasMajorityBuildConfigurations(self, candidate, candidate2):
+    def _has_majority_build_configurations(self, candidate, candidate2):
         """Returns true if the candidate BuildInfo represents all build
         configurations except the single one listed in candidate2.
         For example, if a test is FAIL TIMEOUT on all bots except WIN-Release,
@@ -241,7 +242,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
         else:
             return None
 
-    def _RoundUpFlakyUpdates(self, updates):
+    def _round_up_flaky_updates(self, updates):
         """Consolidates the updates into one update if 5/6 results are
         flaky and the is a subset of the flaky results 6th just not
         happening to flake or 3/4 results are flaky and the 4th has a
@@ -252,13 +253,13 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
 
         item1, item2 = updates
         candidate = None
-        candidate_platforms = self._HasMajorityBuildConfigurations(item1,
-                                                                   item2)
+        candidate_platforms = self._has_majority_build_configurations(item1,
+                                                                      item2)
         if candidate_platforms:
             candidate = item1
         else:
-            candidate_platforms = self._HasMajorityBuildConfigurations(item1,
-                                                                       item2)
+            candidate_platforms = self._has_majority_build_configurations(
+                item1, item2)
             if candidate_platforms:
                 candidate = item2
 
@@ -286,7 +287,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
                 updates = [candidate]
         return updates
 
-    def UpdateBasedOnJSON(self, update_json):
+    def update_based_on_json(self, update_json):
         """Updates the expectations based on the update_json, which is of the
         following form:
         {"1.html": {
@@ -299,16 +300,16 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
         comment_lines = []
         removed_test_on_previous_line = False
         lineno = 0
-        for line in self._GetIterableExpectations():
+        for line in self._get_iterable_expectations():
             lineno += 1
-            test, options, expectations = self.ParseExpectationsLine(line,
-                                                                     lineno)
+            test, options, expectations = self.parse_expectations_line(line,
+                                                                       lineno)
 
             # If there are no updates for this test, then output the line
             # unmodified.
             if (test not in update_json):
                 if test:
-                    self._WriteCompletedLines(output, comment_lines, line)
+                    self._write_completed_lines(output, comment_lines, line)
                 else:
                     if removed_test_on_previous_line:
                         removed_test_on_previous_line = False
@@ -317,7 +318,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
                 continue
 
             platforms, build_types, other_options = \
-                self._GetBuildTypesAndPlatforms(options)
+                self._get_build_types_and_platforms(options)
 
             updates = update_json[test]
             has_updates_for_this_line = False
@@ -329,7 +330,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
             # If the updates for this test don't apply for the platforms /
             # build-types listed in this line, then output the line unmodified.
             if not has_updates_for_this_line:
-                self._WriteCompletedLines(output, comment_lines, line)
+                self._write_completed_lines(output, comment_lines, line)
                 continue
 
             results = {}
@@ -340,19 +341,19 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
                         OptionsAndExpectationsHolder(other_options[:],
                                                      expectations[:])
 
-            self._ApplyUpdatesToResults(test, results, update_json,
-                                        expectations, other_options)
+            self._apply_updates_to_results(test, results, update_json,
+                                           expectations, other_options)
 
             deduped_updates = \
-                self._GetUpdatesDedupedByMatchingOptionsAndExpectations(
+                self._get_updates_deduped_by_matching_options_and_expectations(
                     results)
-            removed_test_on_previous_line = not self._WriteUpdates(output,
+            removed_test_on_previous_line = not self._write_updates(output,
                 comment_lines, test, deduped_updates)
         # Append any comment/whitespace lines at the end of test_expectations.
         output.extend(comment_lines)
         return "".join(output)
 
-    def _WriteUpdates(self, output, comment_lines, test, updates):
+    def _write_updates(self, output, comment_lines, test, updates):
         """Writes the updates to the output.
         Args:
           output: List to append updates to.
@@ -399,20 +400,20 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
 
             has_all_build_types = not len(missing_build_types)
             if has_all_build_types:
-                self._WriteLine(output, comment_lines, update, options,
-                                build_type, expectations, test,
-                                has_all_build_types)
+                self._write_line(output, comment_lines, update, options,
+                                 build_type, expectations, test,
+                                 has_all_build_types)
                 wrote_any_lines = True
             else:
                 for build_type in update.build_info:
-                    self._WriteLine(output, comment_lines, update, options,
-                                    build_type, expectations, test,
-                                    has_all_build_types)
+                    self._write_line(output, comment_lines, update, options,
+                                     build_type, expectations, test,
+                                     has_all_build_types)
                     wrote_any_lines = True
 
         return wrote_any_lines
 
-    def _WriteCompletedLines(self, output, comment_lines, test_line=None):
+    def _write_completed_lines(self, output, comment_lines, test_line=None):
         """Writes the comment_lines and test_line to the output and empties
         out the comment_lines."""
         output.extend(comment_lines)
@@ -420,7 +421,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
         if test_line:
             output.append(test_line)
 
-    def _GetPlatform(self, platforms):
+    def _get_platform(self, platforms):
         """Returns the platform to use. If all platforms are listed, then
         return the empty string as that's what we want to list in
         test_expectations.txt.
@@ -434,7 +435,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
         else:
             return " ".join(platforms)
 
-    def _WriteLine(self, output, comment_lines, update, options, build_type,
+    def _write_line(self, output, comment_lines, update, options, build_type,
         expectations, test, exclude_build_type):
         """Writes a test_expectations.txt line.
         Args:
@@ -444,7 +445,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
         """
         line = options[:]
 
-        platforms = self._GetPlatform(update.build_info[build_type])
+        platforms = self._get_platform(update.build_info[build_type])
         if platforms:
             line.append(platforms)
         if not exclude_build_type:
@@ -454,7 +455,8 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
         expectations = [x.upper() for x in expectations]
 
         line = line + [":", test, "="] + expectations
-        self._WriteCompletedLines(output, comment_lines, " ".join(line) + "\n")
+        self._write_completed_lines(output, comment_lines,
+                                    " ".join(line) + "\n")
 
 
 def main():
@@ -463,13 +465,13 @@ def main():
 
     updates = simplejson.load(open(sys.argv[1]))
 
-    path_to_expectations = path_utils.GetAbsolutePath(
+    path_to_expectations = path_utils.get_absolute_path(
         os.path.dirname(sys.argv[0]))
     path_to_expectations = os.path.join(path_to_expectations,
         "test_expectations.txt")
 
     old_expectations = open(path_to_expectations).read()
-    new_expectations = UpdateExpectations(old_expectations, updates)
+    new_expectations = update_expectations(old_expectations, updates)
     open(path_to_expectations, 'w').write(new_expectations)
 
 if '__main__' == __name__:

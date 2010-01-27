@@ -44,19 +44,19 @@ class JSONLayoutResultsGenerator(json_results_generator.JSONResultsGenerator):
         # override _InsertFailureSummaries.
 
         # We want relative paths to LayoutTest root for JSON output.
-        path_to_name = self._GetPathRelativeToLayoutTestRoot
+        path_to_name = self._get_path_relative_to_layout_test_root
         self._result_summary = result_summary
         self._failures = dict(
-            (path_to_name(test), test_failures.DetermineResultType(failures))
+            (path_to_name(test), test_failures.determine_result_type(failures))
             for (test, failures) in result_summary.failures.iteritems())
         self._all_tests = [path_to_name(test) for test in all_tests]
         self._test_timings = dict(
             (path_to_name(test_tuple.filename), test_tuple.test_run_time)
             for test_tuple in test_timings)
 
-        self._GenerateJSONOutput()
+        self._generate_json_output()
 
-    def _GetPathRelativeToLayoutTestRoot(self, test):
+    def _get_path_relative_to_layout_test_root(self, test):
         """Returns the path of the test relative to the layout test root.
         For example, for:
           src/third_party/WebKit/LayoutTests/fast/forms/foo.html
@@ -77,13 +77,13 @@ class JSONLayoutResultsGenerator(json_results_generator.JSONResultsGenerator):
         return relativePath.replace('\\', '/')
 
     # override
-    def _ConvertJSONToCurrentVersion(self, results_json):
+    def _convert_json_to_current_version(self, results_json):
         archive_version = None
         if self.VERSION_KEY in results_json:
             archive_version = results_json[self.VERSION_KEY]
 
-        super(JSONLayoutResultsGenerator, self)._ConvertJSONToCurrentVersion(
-            results_json)
+        super(JSONLayoutResultsGenerator,
+              self)._convert_json_to_current_version(results_json)
 
         # version 2->3
         if archive_version == 2:
@@ -95,45 +95,45 @@ class JSONLayoutResultsGenerator(json_results_generator.JSONResultsGenerator):
 
             for test in test_results:
                 # Make sure all paths are relative
-                test_path = self._GetPathRelativeToLayoutTestRoot(test)
+                test_path = self._get_path_relative_to_layout_test_root(test)
                 if test_path != test:
                     test_results[test_path] = test_results[test]
                     del test_results[test]
 
     # override
-    def _InsertFailureSummaries(self, results_for_builder):
+    def _insert_failure_summaries(self, results_for_builder):
         summary = self._result_summary
 
-        self._InsertItemIntoRawList(results_for_builder,
+        self._insert_item_into_raw_list(results_for_builder,
             len((set(summary.failures.keys()) |
                 summary.tests_by_expectation[test_expectations.SKIP]) &
                 summary.tests_by_timeline[test_expectations.NOW]),
             self.FIXABLE_COUNT)
-        self._InsertItemIntoRawList(results_for_builder,
-            self._GetFailureSummaryEntry(test_expectations.NOW),
+        self._insert_item_into_raw_list(results_for_builder,
+            self._get_failure_summary_entry(test_expectations.NOW),
             self.FIXABLE)
-        self._InsertItemIntoRawList(results_for_builder,
-            len(self._expectations.GetTestsWithTimeline(
+        self._insert_item_into_raw_list(results_for_builder,
+            len(self._expectations.get_tests_with_timeline(
                 test_expectations.NOW)), self.ALL_FIXABLE_COUNT)
-        self._InsertItemIntoRawList(results_for_builder,
-            self._GetFailureSummaryEntry(test_expectations.DEFER),
+        self._insert_item_into_raw_list(results_for_builder,
+            self._get_failure_summary_entry(test_expectations.DEFER),
             self.DEFERRED)
-        self._InsertItemIntoRawList(results_for_builder,
-            self._GetFailureSummaryEntry(test_expectations.WONTFIX),
+        self._insert_item_into_raw_list(results_for_builder,
+            self._get_failure_summary_entry(test_expectations.WONTFIX),
             self.WONTFIX)
 
     # override
-    def _NormalizeResultsJSON(self, test, test_name, tests):
-        super(JSONLayoutResultsGenerator, self)._NormalizeResultsJSON(
+    def _normalize_results_json(self, test, test_name, tests):
+        super(JSONLayoutResultsGenerator, self)._normalize_results_json(
             test, test_name, tests)
 
         # Remove tests that don't exist anymore.
-        full_path = os.path.join(path_utils.LayoutTestsDir(), test_name)
+        full_path = os.path.join(path_utils.layout_tests_dir(), test_name)
         full_path = os.path.normpath(full_path)
         if not os.path.exists(full_path):
             del tests[test_name]
 
-    def _GetFailureSummaryEntry(self, timeline):
+    def _get_failure_summary_entry(self, timeline):
         """Creates a summary object to insert into the JSON.
 
         Args:

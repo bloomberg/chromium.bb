@@ -52,7 +52,7 @@ ARCHIVE_DIR_NAME_DICT = {'win': 'webkit-rel',
                          'linux-canary': 'webkit-rel-linux-webkit-org'}
 
 
-def RunShellWithReturnCode(command, print_output=False):
+def run_shell_with_return_code(command, print_output=False):
     """Executes a command and returns the output and process return code.
 
     Args:
@@ -85,7 +85,7 @@ def RunShellWithReturnCode(command, print_output=False):
     return output, p.returncode
 
 
-def RunShell(command, print_output=False):
+def run_shell(command, print_output=False):
     """Executes a command and returns the output.
 
     Args:
@@ -96,11 +96,11 @@ def RunShell(command, print_output=False):
       command output
     """
 
-    output, return_code = RunShellWithReturnCode(command, print_output)
+    output, return_code = run_shell_with_return_code(command, print_output)
     return output
 
 
-def LogDashedString(text, platform, logging_level=logging.INFO):
+def log_dashed_string(text, platform, logging_level=logging.INFO):
     """Log text message with dashes on both sides."""
 
     msg = text
@@ -118,7 +118,7 @@ def LogDashedString(text, platform, logging_level=logging.INFO):
         logging.info(msg)
 
 
-def SetupHtmlDirectory(html_directory):
+def setup_html_directory(html_directory):
     """Setup the directory to store html results.
 
        All html related files are stored in the "rebaseline_html" subdirectory.
@@ -148,8 +148,8 @@ def SetupHtmlDirectory(html_directory):
     return html_directory
 
 
-def GetResultFileFullpath(html_directory, baseline_filename, platform,
-                          result_type):
+def get_result_file_fullpath(html_directory, baseline_filename, platform,
+                             result_type):
     """Get full path of the baseline result file.
 
     Args:
@@ -175,7 +175,7 @@ class Rebaseliner(object):
     REVISION_REGEX = r'<a href=\"(\d+)/\">'
 
     def __init__(self, platform, options):
-        self._file_dir = path_utils.PathFromBase('webkit', 'tools',
+        self._file_dir = path_utils.path_from_base('webkit', 'tools',
             'layout_tests')
         self._platform = platform
         self._options = options
@@ -193,28 +193,30 @@ class Rebaseliner(object):
                                                False,
                                                False)
 
-        self._repo_type = self._GetRepoType()
+        self._repo_type = self._get_repo_type()
 
-    def Run(self, backup):
+    def run(self, backup):
         """Run rebaseline process."""
 
-        LogDashedString('Compiling rebaselining tests', self._platform)
-        if not self._CompileRebaseliningTests():
+        log_dashed_string('Compiling rebaselining tests', self._platform)
+        if not self._compile_rebaselining_tests():
             return True
 
-        LogDashedString('Downloading archive', self._platform)
-        archive_file = self._DownloadBuildBotArchive()
+        log_dashed_string('Downloading archive', self._platform)
+        archive_file = self._download_buildbot_archive()
         logging.info('')
         if not archive_file:
             logging.error('No archive found.')
             return False
 
-        LogDashedString('Extracting and adding new baselines', self._platform)
-        if not self._ExtractAndAddNewBaselines(archive_file):
+        log_dashed_string('Extracting and adding new baselines',
+                          self._platform)
+        if not self._extract_and_add_new_baselines(archive_file):
             return False
 
-        LogDashedString('Updating rebaselined tests in file', self._platform)
-        self._UpdateRebaselinedTestsInFile(backup)
+        log_dashed_string('Updating rebaselined tests in file',
+                          self._platform)
+        self._update_rebaselined_tests_in_file(backup)
         logging.info('')
 
         if len(self._rebaselining_tests) != len(self._rebaselined_tests):
@@ -231,19 +233,19 @@ class Rebaseliner(object):
 
         return True
 
-    def GetRebaseliningTests(self):
+    def get_rebaselining_tests(self):
         return self._rebaselining_tests
 
-    def _GetRepoType(self):
+    def _get_repo_type(self):
         """Get the repository type that client is using."""
-
-        output, return_code = RunShellWithReturnCode(['svn', 'info'], False)
+        output, return_code = run_shell_with_return_code(['svn', 'info'],
+                                                         False)
         if return_code == 0:
             return REPO_SVN
 
         return REPO_UNKNOWN
 
-    def _CompileRebaseliningTests(self):
+    def _compile_rebaselining_tests(self):
         """Compile list of tests that need rebaselining for the platform.
 
         Returns:
@@ -252,7 +254,7 @@ class Rebaseliner(object):
         """
 
         self._rebaselining_tests = \
-            self._test_expectations.GetRebaseliningFailures()
+            self._test_expectations.get_rebaselining_failures()
         if not self._rebaselining_tests:
             logging.warn('No tests found that need rebaselining.')
             return None
@@ -268,7 +270,7 @@ class Rebaseliner(object):
 
         return self._rebaselining_tests
 
-    def _GetLatestRevision(self, url):
+    def _get_latest_revision(self, url):
         """Get the latest layout test revision number from buildbot.
 
         Args:
@@ -294,7 +296,7 @@ class Rebaseliner(object):
         logging.info('Latest revision: "%s"', revisions[len(revisions) - 1])
         return revisions[len(revisions) - 1]
 
-    def _GetArchiveDirName(self, platform, webkit_canary):
+    def _get_archive_dir_name(self, platform, webkit_canary):
         """Get name of the layout test archive directory.
 
         Returns:
@@ -312,7 +314,7 @@ class Rebaseliner(object):
                           'directory name dictionary', platform)
             return None
 
-    def _GetArchiveUrl(self):
+    def _get_archive_url(self):
         """Generate the url to download latest layout test archive.
 
         Returns:
@@ -320,15 +322,15 @@ class Rebaseliner(object):
           None on failure
         """
 
-        dir_name = self._GetArchiveDirName(self._platform,
-                                           self._options.webkit_canary)
+        dir_name = self._get_archive_dir_name(self._platform,
+                                              self._options.webkit_canary)
         if not dir_name:
             return None
 
         logging.debug('Buildbot platform dir name: "%s"', dir_name)
 
         url_base = '%s/%s/' % (self._options.archive_url, dir_name)
-        latest_revision = self._GetLatestRevision(url_base)
+        latest_revision = self._get_latest_revision(url_base)
         if latest_revision is None or latest_revision <= 0:
             return None
 
@@ -337,7 +339,7 @@ class Rebaseliner(object):
         logging.info('Archive url: "%s"', archive_url)
         return archive_url
 
-    def _DownloadBuildBotArchive(self):
+    def _download_buildbot_archive(self):
         """Download layout test archive file from buildbot.
 
         Returns:
@@ -345,7 +347,7 @@ class Rebaseliner(object):
           False otherwise.
         """
 
-        url = self._GetArchiveUrl()
+        url = self._get_archive_url()
         if url is None:
             return None
 
@@ -353,7 +355,7 @@ class Rebaseliner(object):
         logging.info('Archive downloaded and saved to file: "%s"', fn)
         return fn
 
-    def _ExtractAndAddNewBaselines(self, archive_file):
+    def _extract_and_add_new_baselines(self, archive_file):
         """Extract new baselines from archive and add them to SVN repository.
 
         Args:
@@ -371,7 +373,7 @@ class Rebaseliner(object):
         for name in zip_namelist:
             logging.debug('  ' + name)
 
-        platform = path_utils.PlatformName(self._platform)
+        platform = path_utils.platform_name(self._platform)
         logging.debug('Platform dir: "%s"', platform)
 
         test_no = 1
@@ -403,7 +405,7 @@ class Rebaseliner(object):
 
                 expected_filename = '%s-expected%s' % (test_basename, suffix)
                 expected_fullpath = os.path.join(
-                    path_utils.ChromiumBaselinePath(platform),
+                    path_utils.chromium_baseline_path(platform),
                     expected_filename)
                 expected_fullpath = os.path.normpath(expected_fullpath)
                 logging.debug('  Expected file full path: "%s"',
@@ -414,26 +416,26 @@ class Rebaseliner(object):
                 # We could improve the tool to check all baselines in upper
                 # and lower
                 # levels and remove all duplicated baselines.
-                if self._IsDupBaseline(temp_name,
+                if self._is_dup_baseline(temp_name,
                                        expected_fullpath,
                                        test,
                                        suffix,
                                        self._platform):
                     os.remove(temp_name)
-                    self._DeleteBaseline(expected_fullpath)
+                    self._delete_baseline(expected_fullpath)
                     continue
 
                 # Create the new baseline directory if it doesn't already
                 # exist.
-                path_utils.MaybeMakeDirectory(
+                path_utils.maybe_make_directory(
                     os.path.dirname(expected_fullpath))
 
                 shutil.move(temp_name, expected_fullpath)
 
-                if not self._SvnAdd(expected_fullpath):
+                if not self._svn_add(expected_fullpath):
                     svn_error = True
                 elif suffix != '.checksum':
-                    self._CreateHtmlBaselineFiles(expected_fullpath)
+                    self._create_html_baseline_files(expected_fullpath)
 
             if not found:
                 logging.warn('  No new baselines found in archive.')
@@ -451,8 +453,8 @@ class Rebaseliner(object):
 
         return self._rebaselined_tests
 
-    def _IsDupBaseline(self, new_baseline, baseline_path, test, suffix,
-                       platform):
+    def _is_dup_baseline(self, new_baseline, baseline_path, test, suffix,
+                         platform):
         """Check whether a baseline is duplicate and can fallback to same
            baseline for another platform. For example, if a test has same
            baseline on linux and windows, then we only store windows
@@ -469,18 +471,16 @@ class Rebaseliner(object):
           True if the baseline is unnecessary.
           False otherwise.
         """
-        test_filepath = os.path.join(path_utils.LayoutTestsDir(), test)
-        all_baselines = path_utils.ExpectedBaselines(test_filepath,
-                                                     suffix,
-                                                     platform,
-                                                     True)
+        test_filepath = os.path.join(path_utils.layout_tests_dir(), test)
+        all_baselines = path_utils.expected_baselines(test_filepath,
+                                                      suffix, platform, True)
         for (fallback_dir, fallback_file) in all_baselines:
             if fallback_dir and fallback_file:
                 fallback_fullpath = os.path.normpath(
                     os.path.join(fallback_dir, fallback_file))
                 if fallback_fullpath.lower() != baseline_path.lower():
-                    if not self._DiffBaselines(new_baseline,
-                                               fallback_fullpath):
+                    if not self._diff_baselines(new_baseline,
+                                                fallback_fullpath):
                         logging.info('  Found same baseline at %s',
                                      fallback_fullpath)
                         return True
@@ -489,7 +489,7 @@ class Rebaseliner(object):
 
         return False
 
-    def _DiffBaselines(self, file1, file2):
+    def _diff_baselines(self, file1, file2):
         """Check whether two baselines are different.
 
         Args:
@@ -508,13 +508,13 @@ class Rebaseliner(object):
             return True
 
         if ext1 == '.PNG':
-            return image_diff.ImageDiff(self._platform, '').DiffFiles(file1,
-                                                                      file2)
+            return image_diff.ImageDiff(self._platform, '').diff_files(file1,
+                                                                       file2)
         else:
-            return text_diff.TestTextDiff(self._platform, '').DiffFiles(file1,
-                                                                        file2)
+            return text_diff.TestTextDiff(self._platform, '').diff_files(file1,
+                                                                         file2)
 
-    def _DeleteBaseline(self, filename):
+    def _delete_baseline(self, filename):
         """Remove the file from repository and delete it from disk.
 
         Args:
@@ -528,12 +528,12 @@ class Rebaseliner(object):
             parent_dir, basename = os.path.split(filename)
             original_dir = os.getcwd()
             os.chdir(parent_dir)
-            RunShell(['svn', 'delete', '--force', basename], False)
+            run_shell(['svn', 'delete', '--force', basename], False)
             os.chdir(original_dir)
         else:
             os.remove(filename)
 
-    def _UpdateRebaselinedTestsInFile(self, backup):
+    def _update_rebaselined_tests_in_file(self, backup):
         """Update the rebaselined tests in test expectations file.
 
         Args:
@@ -544,12 +544,12 @@ class Rebaseliner(object):
         """
 
         if self._rebaselined_tests:
-            self._test_expectations.RemovePlatformFromFile(
+            self._test_expectations.remove_platform_from_file(
                 self._rebaselined_tests, self._platform, backup)
         else:
             logging.info('No test was rebaselined so nothing to remove.')
 
-    def _SvnAdd(self, filename):
+    def _svn_add(self, filename):
         """Add the file to SVN repository.
 
         Args:
@@ -571,7 +571,7 @@ class Rebaseliner(object):
 
         original_dir = os.getcwd()
         os.chdir(parent_dir)
-        status_output = RunShell(['svn', 'status', basename], False)
+        status_output = run_shell(['svn', 'status', basename], False)
         os.chdir(original_dir)
         output = status_output.upper()
         if output.startswith('A') or output.startswith('M'):
@@ -581,15 +581,15 @@ class Rebaseliner(object):
         if output.find('IS NOT A WORKING COPY') >= 0:
             logging.info('  File is not a working copy, add its parent: "%s"',
                          parent_dir)
-            return self._SvnAdd(parent_dir)
+            return self._svn_add(parent_dir)
 
         os.chdir(parent_dir)
-        add_output = RunShell(['svn', 'add', basename], True)
+        add_output = run_shell(['svn', 'add', basename], True)
         os.chdir(original_dir)
         output = add_output.upper().rstrip()
         if output.startswith('A') and output.find(basename.upper()) >= 0:
             logging.info('  Added new file: "%s"', filename)
-            self._SvnPropSet(filename)
+            self._svn_prop_set(filename)
             return True
 
         if (not status_output) and (add_output.upper().find(
@@ -603,7 +603,7 @@ class Rebaseliner(object):
         logging.warn('  Svn add output: "%s"', add_output)
         return False
 
-    def _SvnPropSet(self, filename):
+    def _svn_prop_set(self, filename):
         """Set the baseline property
 
         Args:
@@ -627,10 +627,10 @@ class Rebaseliner(object):
             cmd = ['svn', 'pset', 'svn:eol-style', 'LF', basename]
 
         logging.debug('  Set svn prop: %s', ' '.join(cmd))
-        RunShell(cmd, False)
+        run_shell(cmd, False)
         os.chdir(original_dir)
 
-    def _CreateHtmlBaselineFiles(self, baseline_fullpath):
+    def _create_html_baseline_files(self, baseline_fullpath):
         """Create baseline files (old, new and diff) in html directory.
 
            The files are used to compare the rebaselining results.
@@ -644,24 +644,22 @@ class Rebaseliner(object):
 
         # Copy the new baseline to html directory for result comparison.
         baseline_filename = os.path.basename(baseline_fullpath)
-        new_file = GetResultFileFullpath(self._options.html_directory,
-                                         baseline_filename,
-                                         self._platform,
-                                         'new')
+        new_file = get_result_file_fullpath(self._options.html_directory,
+                                            baseline_filename, self._platform,
+                                            'new')
         shutil.copyfile(baseline_fullpath, new_file)
         logging.info('  Html: copied new baseline file from "%s" to "%s".',
                      baseline_fullpath, new_file)
 
         # Get the old baseline from SVN and save to the html directory.
-        output = RunShell(['svn', 'cat', '-r', 'BASE', baseline_fullpath])
+        output = run_shell(['svn', 'cat', '-r', 'BASE', baseline_fullpath])
         if (not output) or (output.upper().rstrip().endswith(
             'NO SUCH FILE OR DIRECTORY')):
             logging.info('  No base file: "%s"', baseline_fullpath)
             return
-        base_file = GetResultFileFullpath(self._options.html_directory,
-                                          baseline_filename,
-                                          self._platform,
-                                          'old')
+        base_file = get_result_file_fullpath(self._options.html_directory,
+                                             baseline_filename, self._platform,
+                                             'old')
         f = open(base_file, 'wb')
         f.write(output)
         f.close()
@@ -689,13 +687,12 @@ class Rebaseliner(object):
             else:
                 delete_bogus_dir = False
 
-            output = RunShell(["svn", "diff", "--config-dir", bogus_dir,
+            output = run_shell(["svn", "diff", "--config-dir", bogus_dir,
                                baseline_fullpath])
             if output:
-                diff_file = GetResultFileFullpath(self._options.html_directory,
-                                                  baseline_filename,
-                                                  self._platform,
-                                                  'diff')
+                diff_file = get_result_file_fullpath(
+                    self._options.html_directory, baseline_filename,
+                    self._platform, 'diff')
                 f = open(diff_file, 'wb')
                 f.write(output)
                 f.close()
@@ -761,7 +758,7 @@ class HtmlGenerator(object):
         self._html_file = os.path.join(options.html_directory,
                                        'rebaseline.html')
 
-    def GenerateHtml(self):
+    def generate_html(self):
         """Generate html file for rebaselining result comparison."""
 
         logging.info('Generating html file')
@@ -776,7 +773,7 @@ class HtmlGenerator(object):
             test_no = 1
             for test in tests:
                 logging.info('Test %d: %s', test_no, test)
-                html_body += self._GenerateHtmlForOneTest(test)
+                html_body += self._generate_html_for_one_test(test)
 
         html = self.HTML_REBASELINE % ({'time': time.asctime(),
                                         'body': html_body})
@@ -789,17 +786,17 @@ class HtmlGenerator(object):
         logging.info('Baseline comparison html generated at "%s"',
                      self._html_file)
 
-    def ShowHtml(self):
+    def show_html(self):
         """Launch the rebaselining html in brwoser."""
 
         logging.info('Launching html: "%s"', self._html_file)
 
-        html_uri = path_utils.FilenameToUri(self._html_file)
+        html_uri = path_utils.filename_to_uri(self._html_file)
         webbrowser.open(html_uri, 1)
 
         logging.info('Html launched.')
 
-    def _GenerateBaselineLinks(self, test_basename, suffix, platform):
+    def _generate_baseline_links(self, test_basename, suffix, platform):
         """Generate links for baseline results (old, new and diff).
 
         Args:
@@ -814,19 +811,15 @@ class HtmlGenerator(object):
         baseline_filename = '%s-expected%s' % (test_basename, suffix)
         logging.debug('    baseline filename: "%s"', baseline_filename)
 
-        new_file = GetResultFileFullpath(self._html_directory,
-                                         baseline_filename,
-                                         platform,
-                                         'new')
+        new_file = get_result_file_fullpath(self._html_directory,
+                                            baseline_filename, platform, 'new')
         logging.info('    New baseline file: "%s"', new_file)
         if not os.path.exists(new_file):
             logging.info('    No new baseline file: "%s"', new_file)
             return ''
 
-        old_file = GetResultFileFullpath(self._html_directory,
-                                         baseline_filename,
-                                         platform,
-                                         'old')
+        old_file = get_result_file_fullpath(self._html_directory,
+                                            baseline_filename, platform, 'old')
         logging.info('    Old baseline file: "%s"', old_file)
         if suffix == '.png':
             html_td_link = self.HTML_TD_LINK_IMG
@@ -835,22 +828,22 @@ class HtmlGenerator(object):
 
         links = ''
         if os.path.exists(old_file):
-            links += html_td_link % {'uri': path_utils.FilenameToUri(old_file),
-                                     'name': baseline_filename}
+            links += html_td_link % {
+                'uri': path_utils.filename_to_uri(old_file),
+                'name': baseline_filename}
         else:
             logging.info('    No old baseline file: "%s"', old_file)
             links += self.HTML_TD_NOLINK % ''
 
-        links += html_td_link % {'uri': path_utils.FilenameToUri(new_file),
+        links += html_td_link % {'uri': path_utils.filename_to_uri(new_file),
                                  'name': baseline_filename}
 
-        diff_file = GetResultFileFullpath(self._html_directory,
-                                          baseline_filename,
-                                          platform,
-                                          'diff')
+        diff_file = get_result_file_fullpath(self._html_directory,
+                                             baseline_filename, platform,
+                                             'diff')
         logging.info('    Baseline diff file: "%s"', diff_file)
         if os.path.exists(diff_file):
-            links += html_td_link % {'uri': path_utils.FilenameToUri(
+            links += html_td_link % {'uri': path_utils.filename_to_uri(
                 diff_file), 'name': 'Diff'}
         else:
             logging.info('    No baseline diff file: "%s"', diff_file)
@@ -858,7 +851,7 @@ class HtmlGenerator(object):
 
         return links
 
-    def _GenerateHtmlForOneTest(self, test):
+    def _generate_html_for_one_test(self, test):
         """Generate html for one rebaselining test.
 
         Args:
@@ -877,10 +870,10 @@ class HtmlGenerator(object):
 
             logging.info('  Checking %s files', suffix)
             for platform in self._platforms:
-                links = self._GenerateBaselineLinks(test_basename, suffix,
+                links = self._generate_baseline_links(test_basename, suffix,
                     platform)
                 if links:
-                    row = self.HTML_TD_NOLINK % self._GetBaselineResultType(
+                    row = self.HTML_TD_NOLINK % self._get_baseline_result_type(
                         suffix)
                     row += self.HTML_TD_NOLINK % platform
                     row += links
@@ -889,8 +882,8 @@ class HtmlGenerator(object):
                     rows.append(self.HTML_TR % row)
 
         if rows:
-            test_path = os.path.join(path_utils.LayoutTestsDir(), test)
-            html = self.HTML_TR_TEST % (path_utils.FilenameToUri(test_path),
+            test_path = os.path.join(path_utils.layout_tests_dir(), test)
+            html = self.HTML_TR_TEST % (path_utils.filename_to_uri(test_path),
                 test)
             html += self.HTML_TEST_DETAIL % ' '.join(rows)
 
@@ -899,7 +892,7 @@ class HtmlGenerator(object):
 
         return ''
 
-    def _GetBaselineResultType(self, suffix):
+    def _get_baseline_result_type(self, suffix):
         """Name of the baseline result type."""
 
         if suffix == '.png':
@@ -978,7 +971,7 @@ def main():
         if platform in platforms:
             rebaseline_platforms.append(platform)
 
-    options.html_directory = SetupHtmlDirectory(options.html_directory)
+    options.html_directory = setup_html_directory(options.html_directory)
 
     rebaselining_tests = set()
     backup = options.backup
@@ -986,24 +979,24 @@ def main():
         rebaseliner = Rebaseliner(platform, options)
 
         logging.info('')
-        LogDashedString('Rebaseline started', platform)
-        if rebaseliner.Run(backup):
+        log_dashed_string('Rebaseline started', platform)
+        if rebaseliner.run(backup):
             # Only need to backup one original copy of test expectation file.
             backup = False
-            LogDashedString('Rebaseline done', platform)
+            log_dashed_string('Rebaseline done', platform)
         else:
-            LogDashedString('Rebaseline failed', platform, logging.ERROR)
+            log_dashed_string('Rebaseline failed', platform, logging.ERROR)
 
-        rebaselining_tests |= set(rebaseliner.GetRebaseliningTests())
+        rebaselining_tests |= set(rebaseliner.get_rebaselining_tests())
 
     logging.info('')
-    LogDashedString('Rebaselining result comparison started', None)
+    log_dashed_string('Rebaselining result comparison started', None)
     html_generator = HtmlGenerator(options,
                                    rebaseline_platforms,
                                    rebaselining_tests)
-    html_generator.GenerateHtml()
-    html_generator.ShowHtml()
-    LogDashedString('Rebaselining result comparison done', None)
+    html_generator.generate_html()
+    html_generator.show_html()
+    log_dashed_string('Rebaselining result comparison done', None)
 
     sys.exit(0)
 

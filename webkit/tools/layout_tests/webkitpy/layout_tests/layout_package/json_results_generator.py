@@ -13,7 +13,7 @@ import xml.dom.minidom
 from layout_package import path_utils
 from layout_package import test_expectations
 
-sys.path.append(path_utils.PathFromBase('third_party'))
+sys.path.append(path_utils.path_from_base('third_party'))
 import simplejson
 
 
@@ -86,17 +86,17 @@ class JSONResultsGenerator(object):
         self._skipped_tests = skipped_tests
         self._all_tests = all_tests
 
-        self._GenerateJSONOutput()
+        self._generate_json_output()
 
-    def _GenerateJSONOutput(self):
+    def _generate_json_output(self):
         """Generates the JSON output file."""
-        json = self._GetJSON()
+        json = self._get_json()
         if json:
             results_file = open(self._results_file_path, "w")
             results_file.write(json)
             results_file.close()
 
-    def _GetSVNRevision(self, in_directory=None):
+    def _get_svn_revision(self, in_directory=None):
         """Returns the svn revision for the given directory.
 
         Args:
@@ -113,7 +113,7 @@ class JSONResultsGenerator(object):
         except xml.parsers.expat.ExpatError:
             return ""
 
-    def _GetArchivedJSONResults(self):
+    def _get_archived_json_results(self):
         """Reads old results JSON file if it exists.
         Returns (archived_results, error) tuple where error is None if results
         were successfully read.
@@ -161,9 +161,9 @@ class JSONResultsGenerator(object):
 
         return results_json, error
 
-    def _GetJSON(self):
+    def _get_json(self):
         """Gets the results for the results.json file."""
-        results_json, error = self._GetArchivedJSONResults()
+        results_json, error = self._get_archived_json_results()
         if error:
             # If there was an error don't write a results.json
             # file at all as it would lose all the information on the bot.
@@ -176,29 +176,30 @@ class JSONResultsGenerator(object):
             logging.debug("Builder name (%s) is not in the results.json file."
                           % builder_name)
 
-        self._ConvertJSONToCurrentVersion(results_json)
+        self._convert_json_to_current_version(results_json)
 
         if builder_name not in results_json:
-            results_json[builder_name] = self._CreateResultsForBuilderJSON()
+            results_json[builder_name] = (
+                self._create_results_for_builder_json())
 
         results_for_builder = results_json[builder_name]
 
-        self._InsertGenericMetadata(results_for_builder)
+        self._insert_generic_metadata(results_for_builder)
 
-        self._InsertFailureSummaries(results_for_builder)
+        self._insert_failure_summaries(results_for_builder)
 
         # Update the all failing tests with result type and time.
         tests = results_for_builder[self.TESTS]
         all_failing_tests = set(self._failures.iterkeys())
         all_failing_tests.update(tests.iterkeys())
         for test in all_failing_tests:
-            self._InsertTestTimeAndResult(test, tests)
+            self._insert_test_time_and_result(test, tests)
 
         # Specify separators in order to get compact encoding.
         results_str = simplejson.dumps(results_json, separators=(',', ':'))
         return self.JSON_PREFIX + results_str + self.JSON_SUFFIX
 
-    def _InsertFailureSummaries(self, results_for_builder):
+    def _insert_failure_summaries(self, results_for_builder):
         """Inserts aggregate pass/failure statistics into the JSON.
         This method reads self._skipped_tests, self._passed_tests and
         self._failures and inserts FIXABLE, FIXABLE_COUNT and ALL_FIXABLE_COUNT
@@ -209,7 +210,7 @@ class JSONResultsGenerator(object):
               single builder.
         """
         # Insert the number of tests that failed.
-        self._InsertItemIntoRawList(results_for_builder,
+        self._insert_item_into_raw_list(results_for_builder,
             len(set(self._failures.keys()) | self._skipped_tests),
             self.FIXABLE_COUNT)
 
@@ -223,14 +224,15 @@ class JSONResultsGenerator(object):
             entry[failure_char] = get(failure_char, 0) + 1
 
         # Insert the pass/skip/failure summary dictionary.
-        self._InsertItemIntoRawList(results_for_builder, entry, self.FIXABLE)
+        self._insert_item_into_raw_list(results_for_builder, entry,
+                                        self.FIXABLE)
 
         # Insert the number of all the tests that are supposed to pass.
-        self._InsertItemIntoRawList(results_for_builder,
+        self._insert_item_into_raw_list(results_for_builder,
             len(self._skipped_tests | self._all_tests),
             self.ALL_FIXABLE_COUNT)
 
-    def _InsertItemIntoRawList(self, results_for_builder, item, key):
+    def _insert_item_into_raw_list(self, results_for_builder, item, key):
         """Inserts the item into the list with the given key in the results for
         this builder. Creates the list if no such list exists.
 
@@ -249,7 +251,7 @@ class JSONResultsGenerator(object):
         raw_list = raw_list[:self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG]
         results_for_builder[key] = raw_list
 
-    def _InsertItemRunLengthEncoded(self, item, encoded_results):
+    def _insert_item_run_length_encoded(self, item, encoded_results):
         """Inserts the item into the run-length encoded results.
 
         Args:
@@ -266,7 +268,7 @@ class JSONResultsGenerator(object):
             # we want the serialized form to be concise.
             encoded_results.insert(0, [1, item])
 
-    def _InsertGenericMetadata(self, results_for_builder):
+    def _insert_generic_metadata(self, results_for_builder):
         """ Inserts generic metadata (such as version number, current time etc)
         into the JSON.
 
@@ -274,25 +276,25 @@ class JSONResultsGenerator(object):
           results_for_builder: Dictionary containing the test results for
               a single builder.
         """
-        self._InsertItemIntoRawList(results_for_builder,
+        self._insert_item_into_raw_list(results_for_builder,
             self._build_number, self.BUILD_NUMBERS)
 
-        path_to_webkit = path_utils.PathFromBase('third_party', 'WebKit',
-                                                 'WebCore')
-        self._InsertItemIntoRawList(results_for_builder,
-            self._GetSVNRevision(path_to_webkit),
+        path_to_webkit = path_utils.path_from_base('third_party', 'WebKit',
+                                                   'WebCore')
+        self._insert_item_into_raw_list(results_for_builder,
+            self._get_svn_revision(path_to_webkit),
             self.WEBKIT_SVN)
 
-        path_to_chrome_base = path_utils.PathFromBase()
-        self._InsertItemIntoRawList(results_for_builder,
-            self._GetSVNRevision(path_to_chrome_base),
+        path_to_chrome_base = path_utils.path_from_base()
+        self._insert_item_into_raw_list(results_for_builder,
+            self._get_svn_revision(path_to_chrome_base),
             self.CHROME_SVN)
 
-        self._InsertItemIntoRawList(results_for_builder,
+        self._insert_item_into_raw_list(results_for_builder,
             int(time.time()),
             self.TIME)
 
-    def _InsertTestTimeAndResult(self, test_name, tests):
+    def _insert_test_time_and_result(self, test_name, tests):
         """ Insert a test item with its results to the given tests dictionary.
 
         Args:
@@ -313,14 +315,14 @@ class JSONResultsGenerator(object):
             time = int(self._test_timings[test_name])
 
         if test_name not in tests:
-            tests[test_name] = self._CreateResultsAndTimesJSON()
+            tests[test_name] = self._create_results_and_times_json()
 
         thisTest = tests[test_name]
-        self._InsertItemRunLengthEncoded(result, thisTest[self.RESULTS])
-        self._InsertItemRunLengthEncoded(time, thisTest[self.TIMES])
-        self._NormalizeResultsJSON(thisTest, test_name, tests)
+        self._insert_item_run_length_encoded(result, thisTest[self.RESULTS])
+        self._insert_item_run_length_encoded(time, thisTest[self.TIMES])
+        self._normalize_results_json(thisTest, test_name, tests)
 
-    def _ConvertJSONToCurrentVersion(self, results_json):
+    def _convert_json_to_current_version(self, results_json):
         """If the JSON does not match the current version, converts it to the
         current version and adds in the new version number.
         """
@@ -330,18 +332,18 @@ class JSONResultsGenerator(object):
 
         results_json[self.VERSION_KEY] = self.VERSION
 
-    def _CreateResultsAndTimesJSON(self):
+    def _create_results_and_times_json(self):
         results_and_times = {}
         results_and_times[self.RESULTS] = []
         results_and_times[self.TIMES] = []
         return results_and_times
 
-    def _CreateResultsForBuilderJSON(self):
+    def _create_results_for_builder_json(self):
         results_for_builder = {}
         results_for_builder[self.TESTS] = {}
         return results_for_builder
 
-    def _RemoveItemsOverMaxNumberOfBuilds(self, encoded_list):
+    def _remove_items_over_max_number_of_builds(self, encoded_list):
         """Removes items from the run-length encoded list after the final
         item that exceeds the max number of builds to track.
 
@@ -358,7 +360,7 @@ class JSONResultsGenerator(object):
                 return encoded_list[:index]
         return encoded_list
 
-    def _NormalizeResultsJSON(self, test, test_name, tests):
+    def _normalize_results_json(self, test, test_name, tests):
         """ Prune tests where all runs pass or tests that no longer exist and
         truncate all results to maxNumberOfBuilds.
 
@@ -367,14 +369,14 @@ class JSONResultsGenerator(object):
           test_name: Name of the test.
           tests: The JSON object with all the test results for this builder.
         """
-        test[self.RESULTS] = self._RemoveItemsOverMaxNumberOfBuilds(
+        test[self.RESULTS] = self._remove_items_over_max_number_of_builds(
             test[self.RESULTS])
-        test[self.TIMES] = self._RemoveItemsOverMaxNumberOfBuilds(
+        test[self.TIMES] = self._remove_items_over_max_number_of_builds(
             test[self.TIMES])
 
-        is_all_pass = self._IsResultsAllOfType(test[self.RESULTS],
-                                               self.PASS_RESULT)
-        is_all_no_data = self._IsResultsAllOfType(test[self.RESULTS],
+        is_all_pass = self._is_results_all_of_type(test[self.RESULTS],
+                                                   self.PASS_RESULT)
+        is_all_no_data = self._is_results_all_of_type(test[self.RESULTS],
             self.NO_DATA_RESULT)
         max_time = max([time[1] for time in test[self.TIMES]])
 
@@ -384,7 +386,7 @@ class JSONResultsGenerator(object):
         if is_all_no_data or (is_all_pass and max_time <= self.MIN_TIME):
             del tests[test_name]
 
-    def _IsResultsAllOfType(self, results, type):
+    def _is_results_all_of_type(self, results, type):
         """Returns whether all the results are of the given type
         (e.g. all passes)."""
         return len(results) == 1 and results[0][1] == type

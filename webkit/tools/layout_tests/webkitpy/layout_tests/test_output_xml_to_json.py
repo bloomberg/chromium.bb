@@ -40,7 +40,7 @@ class JSONGeneratorFromXML(object):
                           self._options.input_results_xml)
             sys.exit(1)
 
-        summary = self._ParseTestResultsXML(
+        summary = self._parse_test_results_xml(
             minidom.parse(results_xml_file).documentElement)
         results_xml_file.close()
 
@@ -52,7 +52,7 @@ class JSONGeneratorFromXML(object):
             self._failures, self._passed_tests, self._skipped_tests,
             self._tests_list)
 
-    def _ParseTestResultsXML(self, node):
+    def _parse_test_results_xml(self, node):
         self._tests_list = set()
         self._passed_tests = set()
         self._skipped_tests = set()

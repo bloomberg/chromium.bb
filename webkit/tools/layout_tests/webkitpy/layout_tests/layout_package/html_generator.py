@@ -9,7 +9,7 @@ from failure import Failure
 CHROMIUM_BUG_URL = "http://crbug.com/"
 
 
-def ExtractFirstValue(string, regex):
+def extract_first_value(string, regex):
     m = re.search(regex, string)
     if m and m.group(1):
         return m.group(1)
@@ -30,7 +30,7 @@ class HTMLGenerator(object):
         self.exclude_known_failures = exclude_known_failures
         self.image_size = "200px"
 
-    def GenerateHTML(self):
+    def generate_html(self):
         html = ""
         html += """
                 <html>
@@ -81,13 +81,13 @@ class HTMLGenerator(object):
                      border-bottom: 1px solid black;">
                     <span class="titlelink">%s.&nbsp;&nbsp;%s</span></td></tr>
                   <tr><td>&nbsp;&nbsp;Last modified: <a href="%s">%s</a>
-                """ % (test_number, failure.test_path, failure.GetTestHome(),
+                """ % (test_number, failure.test_path, failure.get_test_home(),
                        failure.test_age)
             html += "<div class='detail'>"
             html += "<pre>%s</pre>" % \
-                    (self._GenerateLinkifiedTextExpectations(failure))
+                    (self._generate_linkified_text_expectations(failure))
 
-            html += self._GenerateFlakinessHTML(failure)
+            html += self._generate_flakiness_html(failure)
 
             if failure.crashed:
                 html += "<div>Test <b>CRASHED</b></div>"
@@ -106,10 +106,10 @@ class HTMLGenerator(object):
                         """
 
                 if failure.text_diff_mismatch:
-                    html += self._GenerateTextFailureHTML(failure)
+                    html += self._generate_text_failure_html(failure)
 
                 if failure.image_mismatch:
-                    html += self._GenerateImageFailureHTML(failure)
+                    html += self._generate_image_failure_html(failure)
 
                 html += "</table>"
             html += "</div></td></tr></table><br>"
@@ -122,22 +122,21 @@ class HTMLGenerator(object):
         htmlFile.close()
         return html_filename
 
-    def _GenerateLinkifiedTextExpectations(self, failure):
+    def _generate_linkified_text_expectations(self, failure):
         if not failure.test_expectations_line:
             return ""
-        bug_number = ExtractFirstValue(failure.test_expectations_line,
-            "BUG(\d+)")
+        bug_number = extract_first_value(failure.test_expectations_line,
+                                         "BUG(\d+)")
         if not bug_number or bug_number == "":
             return ""
-        return failure.test_expectations_line.replace(
-          "BUG" + bug_number,
-          "<a href='%s%s'>BUG%s</a>" % (CHROMIUM_BUG_URL, bug_number,
-               bug_number))
+        return failure.test_expectations_line.replace("BUG" + bug_number,
+            "<a href='%s%s'>BUG%s</a>" % (CHROMIUM_BUG_URL, bug_number,
+                                          bug_number))
 
     # TODO(gwilson): Fix this so that it shows the last ten runs
     # not just a "meter" of flakiness.
 
-    def _GenerateFlakinessHTML(self, failure):
+    def _generate_flakiness_html(self, failure):
         html = ""
         if not failure.flakiness:
             return html
@@ -163,9 +162,9 @@ class HTMLGenerator(object):
                 """
         return html
 
-    def _GenerateTextFailureHTML(self, failure):
+    def _generate_text_failure_html(self, failure):
         html = ""
-        if not failure.GetTextBaselineLocation():
+        if not failure.get_text_baseline_location():
             return """<tr><td colspan='5'>This test likely does not have any
                       TEXT baseline for this platform, or one could not
                       be found.</td></tr>"""
@@ -177,25 +176,25 @@ class HTMLGenerator(object):
                       Age: %s<br>
                     </td>
                 """ % (failure.text_baseline_url,
-                       failure.GetTextBaselineLocation(),
+                       failure.get_text_baseline_location(),
                        failure.text_baseline_age)
-        html += self._GenerateTextFailureTD(failure.GetExpectedTextFilename(),
-                                            "expected text")
-        html += self._GenerateTextFailureTD(failure.GetActualTextFilename(),
-                                            "actual text")
-        html += self._GenerateTextFailureTD(failure.GetTextDiffFilename(),
-                                            "text diff")
+        html += self._generate_text_failure_td(
+            failure.get_expected_text_filename(), "expected text")
+        html += self._generate_text_failure_td(
+            failure.get_actual_text_filename(), "actual text")
+        html += self._generate_text_failure_td(
+            failure.get_text_diff_filename(), "text diff")
         html += "<td>&nbsp;</td>"
         html += "</tr>"
         return html
 
-    def _GenerateTextFailureTD(self, file_path, anchor_text):
+    def _generate_text_failure_td(self, file_path, anchor_text):
         return ("<td align=center>"
                 "<a href='./layout-test-results-%s/%s'>%s</a></td>") % (
                 self.build, file_path, anchor_text)
 
-    def _GenerateImageFailureHTML(self, failure):
-        if not failure.GetImageBaselineLocation():
+    def _generate_image_failure_html(self, failure):
+        if not failure.get_image_baseline_location():
             return """<tr><td colspan='5'>This test likely does not have any
                       IMAGE baseline for this platform, or one could not be
                       found.</td></tr>"""
@@ -204,18 +203,18 @@ class HTMLGenerator(object):
             <td><b><a href="%s">Pixel Dump</a></b><br>
             <b>%s</b> baseline<br>Age: %s</td>
           """ % (failure.image_baseline_url,
-                 failure.GetImageBaselineLocation(),
+                 failure.get_image_baseline_location(),
                  failure.image_baseline_age)
-        html += self._GenerateImageFailureTD(
-            failure.GetExpectedImageFilename())
-        html += self._GenerateImageFailureTD(
-            failure.GetActualImageFilename())
-        html += self._GenerateImageFailureTD(
-            failure.GetImageDiffFilename())
+        html += self._generate_image_failure_td(
+            failure.get_expected_image_filename())
+        html += self._generate_image_failure_td(
+            failure.get_actual_image_filename())
+        html += self._generate_image_failure_td(
+            failure.get_image_diff_filename())
         if (failure.image_baseline_upstream_local and
             failure.image_baseline_upstream_local != ""):
-            html += self._GenerateImageFailureTD(
-                failure.GetImageUpstreamFilename())
+            html += self._generate_image_failure_td(
+                failure.get_image_upstream_filename())
         else:
             html += """
                     <td>&nbsp;</td>
@@ -223,7 +222,7 @@ class HTMLGenerator(object):
         html += "</tr>"
         return html
 
-    def _GenerateImageFailureTD(self, filename):
+    def _generate_image_failure_td(self, filename):
         return ("<td><a href='./layout-test-results-%s/%s'>"
                 "<img style='width: %s' src='./layout-test-results-%s/%s' />"
                 "</a></td>") % (self.build, filename, self.image_size,

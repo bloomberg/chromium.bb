@@ -38,7 +38,7 @@ def main(options, args):
                                           options.zip_file,
                                           options.expectations_file)
     finder.use_local_baselines = options.local
-    failure_list = finder.GetFailures()
+    failure_list = finder.get_failures()
 
     if not failure_list:
         print "Did not find any failures."
@@ -49,7 +49,7 @@ def main(options, args):
                                              finder.build,
                                              options.platform_builder,
                                              (not options.include_expected))
-    filename = generator.GenerateHTML()
+    filename = generator.generate_html()
 
     if filename and options.verbose:
         print "File created at %s" % filename

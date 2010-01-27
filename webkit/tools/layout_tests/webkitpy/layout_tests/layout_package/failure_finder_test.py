@@ -144,13 +144,13 @@ class FailureFinderTest(object):
         return all_tests_passed
 
 
-def _getBasicFailureFinder():
+def _get_basic_failure_finder():
     return FailureFinder(None, "Webkit", False, "", ".", 10, False)
 
 
-def _testLastBuild(failure_finder):
+def _test_last_build(failure_finder):
     try:
-        last_build = failure_finder.GetLastBuild()
+        last_build = failure_finder.get_last_build()
         # Verify that last_build is not empty and is a number.
         build = int(last_build)
         return (build > 0)
@@ -158,58 +158,58 @@ def _testLastBuild(failure_finder):
         return False
 
 
-def testGetLastBuild():
-    test = _getBasicFailureFinder()
-    return _testLastBuild(test)
+def test_get_last_build():
+    test = _get_basic_failure_finder()
+    return _test_last_build(test)
 
 
-def testWhitespaceInBuilderName():
-    test = _getBasicFailureFinder()
-    test.SetPlatform("Webkit (webkit.org)")
-    return _testLastBuild(test)
+def test_whitespace_in_builder_name():
+    test = _get_basic_failure_finder()
+    test.set_platform("Webkit (webkit.org)")
+    return _test_last_build(test)
 
 
-def testScrapeBuilderOutput():
+def test_scrape_builder_output():
 
     # Try on the default builder.
-    test = _getBasicFailureFinder()
+    test = _get_basic_failure_finder()
     test.build = "9800"
-    output = test._ScrapeBuilderOutput()
+    output = test._scrape_builder_output()
     if not output:
         return False
 
     # Try on a crazy builder on the FYI waterfall.
-    test = _getBasicFailureFinder()
+    test = _get_basic_failure_finder()
     test.build = "1766"
-    test.SetPlatform("Webkit Linux (webkit.org)")
-    output = test._ScrapeBuilderOutput()
+    test.set_platform("Webkit Linux (webkit.org)")
+    output = test._scrape_builder_output()
     if not output:
         return False
 
     return True
 
 
-def testFindMatchesInBuilderOutput():
-    test = _getBasicFailureFinder()
+def test_find_matches_in_builder_output():
+    test = _get_basic_failure_finder()
     test.exclude_known_failures = True
-    matches = test._FindMatchesInBuilderOutput(TEST_BUILDER_OUTPUT)
+    matches = test._find_matches_in_builder_output(TEST_BUILDER_OUTPUT)
     # Verify that we found x matches.
     if len(matches) != 2:
         print "Did not find all unexpected failures."
         return False
 
     test.exclude_known_failures = False
-    matches = test._FindMatchesInBuilderOutput(TEST_BUILDER_OUTPUT)
+    matches = test._find_matches_in_builder_output(TEST_BUILDER_OUTPUT)
     if len(matches) != 3:
         print "Did not find all failures."
         return False
     return True
 
 
-def _testBaseline(test_name, expected_local, expected_url):
-    test = _getBasicFailureFinder()
+def _test_baseline(test_name, expected_local, expected_url):
+    test = _get_basic_failure_finder()
     # Test baseline that is obviously in Chromium's tree.
-    baseline = test._GetBaseline(test_name, ".", False)
+    baseline = test._get_baseline(test_name, ".", False)
     try:
         os.remove(baseline.local_file)
         if (baseline.local_file != expected_local or
@@ -220,28 +220,28 @@ def _testBaseline(test_name, expected_local, expected_url):
     return True
 
 
-def testGetChromiumBaseline():
-    return _testBaseline(CHROMIUM_BASELINE, EXPECTED_CHROMIUM_LOCAL_BASELINE,
+def test_get_chromium_baseline():
+    return _test_baseline(CHROMIUM_BASELINE, EXPECTED_CHROMIUM_LOCAL_BASELINE,
                          EXPECTED_CHROMIUM_URL_BASELINE)
 
 
-def testGetWebkitBaseline():
-    return _testBaseline(WEBKIT_BASELINE, EXPECTED_WEBKIT_LOCAL_BASELINE,
+def test_get_webkit_baseline():
+    return _test_baseline(WEBKIT_BASELINE, EXPECTED_WEBKIT_LOCAL_BASELINE,
                          EXPECTED_WEBKIT_URL_BASELINE)
 
 
-def testUseLocalOutput():
+def test_use_local_output():
     test_result = True
     try:
-        _writeFile(TEST_BUILDER_LOG_FILE, TEST_BUILDER_OUTPUT)
-        _writeFile(TEST_ARCHIVE_LOG_FILE, TEST_ARCHIVE_OUTPUT)
-        _writeFile(TEST_EXPECTATIONS_FILE, TEST_TEST_EXPECTATIONS)
+        _write_file(TEST_BUILDER_LOG_FILE, TEST_BUILDER_OUTPUT)
+        _write_file(TEST_ARCHIVE_LOG_FILE, TEST_ARCHIVE_OUTPUT)
+        _write_file(TEST_EXPECTATIONS_FILE, TEST_TEST_EXPECTATIONS)
         zip = zipfile.ZipFile(TEST_DUMMY_ZIP_FILE, 'w')
         zip.write(TEST_BUILDER_LOG_FILE, TEST_FAILURE_1)
         zip.write(TEST_BUILDER_LOG_FILE, TEST_FAILURE_2)
         zip.write(TEST_BUILDER_LOG_FILE, TEST_FAILURE_3)
         zip.close()
-        test = _getBasicFailureFinder()
+        test = _get_basic_failure_finder()
         test.archive_step_log_file = TEST_ARCHIVE_LOG_FILE
         test.builder_output_log_file = TEST_BUILDER_LOG_FILE
         test.test_expectations_file = TEST_EXPECTATIONS_FILE
@@ -249,7 +249,7 @@ def testUseLocalOutput():
         test.dont_download = True
         test.exclude_known_failures = True
         test.delete_zip_file = False
-        failures = test.GetFailures()
+        failures = test.get_failures()
         if not failures or len(failures) != 2:
             print "Did not get expected number of failures :"
             for failure in failures:
@@ -263,50 +263,50 @@ def testUseLocalOutput():
     return test_result
 
 
-def _writeFile(filename, contents):
+def _write_file(filename, contents):
     myfile = open(filename, 'w')
     myfile.write(contents)
     myfile.close()
 
 
-def testZipDownload():
-    test = _getBasicFailureFinder()
+def test_zip_download():
+    test = _get_basic_failure_finder()
     try:
-        test._DownloadFile(TEST_ZIP_FILE, "test.zip", "b") # "b" -> binary
+        test._download_file(TEST_ZIP_FILE, "test.zip", "b") # "b" -> binary
         os.remove("test.zip")
         return True
     except:
         return False
 
 
-def testTranslateBuildToZip():
-    test = _getBasicFailureFinder()
+def test_translate_build_to_zip():
+    test = _get_basic_failure_finder()
     test.build = WEBKIT_BUILDER_NUMBER
-    revision, build_name = test._GetRevisionAndBuildFromArchiveStep()
+    revision, build_name = test._get_revision_and_build_from_archive_step()
     if revision != EXPECTED_REVISION or build_name != EXPECTED_BUILD_NAME:
         return False
     return True
 
 
-def testGetBaseline():
-    test = _getBasicFailureFinder()
+def test_get_baseline():
+    test = _get_basic_failure_finder()
     result = True
     test.platform = "chromium-mac"
-    baseline = test._GetBaseline(WEBARCHIVE_TEST_EXPECTATION, ".")
+    baseline = test._get_baseline(WEBARCHIVE_TEST_EXPECTATION, ".")
     if not baseline.local_file or baseline.baseline_url.find(WEBKIT_ORG) == -1:
         result = False
         print "Webarchive layout test not found at webkit.org: %s" % url
     test.platform = "chromium-win"
-    baseline = test._GetBaseline(SVG_TEST_EXPECTATION, ".")
+    baseline = test._get_baseline(SVG_TEST_EXPECTATION, ".")
     if (not baseline.local_file or
         baseline.baseline_url.find(CHROMIUM_ORG) == -1):
         result = False
         print "SVG layout test found at %s, not chromium.org" % url
-    baseline = test._GetBaseline(SVG_TEST_EXPECTATION, ".", True)
+    baseline = test._get_baseline(SVG_TEST_EXPECTATION, ".", True)
     if not baseline.local_file or baseline.baseline_url.find(WEBKIT_ORG) == -1:
         result = False
         print "Upstream SVG layout test NOT found at webkit.org!"
-    baseline = test._GetBaseline(DOM_TEST_EXPECTATION, ".", True)
+    baseline = test._get_baseline(DOM_TEST_EXPECTATION, ".", True)
     if (not baseline.local_file or
         baseline.baseline_url.find("/platform/") > -1):
         result = False
@@ -316,11 +316,11 @@ def testGetBaseline():
     os.remove(SVG_TEST_EXPECTATION)
     os.remove(SVG_TEST_EXPECTATION_UPSTREAM)
     os.remove(DOM_TEST_EXPECTATION_UPSTREAM)
-    deleteDir("LayoutTests")
+    delete_dir("LayoutTests")
     return result
 
 
-def deleteDir(directory):
+def delete_dir(directory):
     """ Recursively deletes empty directories given a root.
     This method will throw an exception if they are not empty. """
     for root, dirs, files in os.walk(directory, topdown=False):
@@ -332,12 +332,12 @@ def deleteDir(directory):
     os.rmdir(directory)
 
 
-def testFull():
+def test_full():
     """ Verifies that the entire system works end-to-end. """
-    test = _getBasicFailureFinder()
+    test = _get_basic_failure_finder()
     test.build = WEBKIT_BUILDER_NUMBER
     test.dont_download = True  # Dry run only, no downloading needed.
-    failures = test.GetFailures()
+    failures = test.get_failures()
     # Verify that the max failures parameter works.
     if not failures or len(failures) > 10:
         "Got no failures or too many failures."
@@ -352,16 +352,16 @@ def testFull():
     return True
 
 
-def testFindTestExpectations():
-    test = _getBasicFailureFinder()
+def test_find_test_expectations():
+    test = _get_basic_failure_finder()
     test._test_expectations_cache = TEST_EXPECTATIONS
-    match = test._GetTestExpectationsLine(EXPECT_EXACT_MATCH)
+    match = test._get_test_expectations_line(EXPECT_EXACT_MATCH)
     if not match:
         return False
-    match = test._GetTestExpectationsLine(EXPECT_GENERAL_MATCH)
+    match = test._get_test_expectations_line(EXPECT_GENERAL_MATCH)
     if not match:
         return False
-    match = test._GetTestExpectationsLine(EXPECT_NO_MATCH)
+    match = test._get_test_expectations_line(EXPECT_NO_MATCH)
     return not match
 
 
