@@ -715,6 +715,23 @@ static NSInteger CocoaModifiersFromWebEvent(const WebInputEvent& event) {
   return modifiers;
 }
 
+static bool KeyIsModifier(int native_key_code) {
+  switch (native_key_code) {
+    case 55:  // Left command
+    case 54:  // Right command
+    case 58:  // Left option
+    case 61:  // Right option
+    case 59:  // Left control
+    case 62:  // Right control
+    case 56:  // Left shift
+    case 60:  // Right shift
+    case 57:  // Caps lock
+      return true;
+    default:
+      return false;
+  }
+}
+
 static bool NPCocoaEventFromWebMouseEvent(const WebMouseEvent& event,
                                           NPCocoaEvent *np_cocoa_event) {
   np_cocoa_event->data.mouse.pluginX = event.x;
@@ -777,13 +794,20 @@ static bool NPCocoaEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
                                              NPCocoaEvent *np_cocoa_event) {
   np_cocoa_event->data.key.keyCode = event.nativeKeyCode;
 
+  np_cocoa_event->data.key.modifierFlags |= CocoaModifiersFromWebEvent(event);
+
+  // Modifier keys have their own event type, and don't get character or
+  // repeat data.
+  if (KeyIsModifier(event.nativeKeyCode)) {
+    np_cocoa_event->type = NPCocoaEventFlagsChanged;
+    return true;
+  }
+
   np_cocoa_event->data.key.characters = reinterpret_cast<NPNSString*>(
       [NSString stringWithFormat:@"%S", event.text]);
   np_cocoa_event->data.key.charactersIgnoringModifiers =
       reinterpret_cast<NPNSString*>(
           [NSString stringWithFormat:@"%S", event.unmodifiedText]);
-
-  np_cocoa_event->data.key.modifierFlags |= CocoaModifiersFromWebEvent(event);
 
   if (event.modifiers & WebInputEvent::IsAutoRepeat)
     np_cocoa_event->data.key.isARepeat = true;
