@@ -150,7 +150,7 @@ TEST_F(FlipFramerTest, HeaderBlock) {
   EXPECT_EQ(headers["gamma"], new_headers["gamma"]);
 }
 
-TEST_F(FlipFramerTest, HeaderBlockBarfsOnOutOfOrderHeaders) {
+TEST_F(FlipFramerTest, OutOfOrderHeaders) {
   FlipFrameBuilder frame;
 
   frame.WriteUInt16(kControlFlagMask | 1);
@@ -172,7 +172,59 @@ TEST_F(FlipFramerTest, HeaderBlockBarfsOnOutOfOrderHeaders) {
   scoped_ptr<FlipFrame> control_frame(frame.take());
   FlipFramer framer;
   FramerSetEnableCompressionHelper(&framer, false);
+  EXPECT_TRUE(framer.ParseHeaderBlock(control_frame.get(), &new_headers));
+}
+
+TEST_F(FlipFramerTest, DuplicateHeader) {
+  FlipFrameBuilder frame;
+
+  frame.WriteUInt16(kControlFlagMask | 1);
+  frame.WriteUInt16(SYN_STREAM);
+  frame.WriteUInt32(0);  // Placeholder for the length.
+  frame.WriteUInt32(3);  // stream_id
+  frame.WriteUInt16(0);  // Priority.
+
+  frame.WriteUInt16(2);  // Number of headers.
+  FlipHeaderBlock::iterator it;
+  frame.WriteString("name");
+  frame.WriteString("value1");
+  frame.WriteString("name");
+  frame.WriteString("value2");
+  // write the length
+  frame.WriteUInt32ToOffset(4, frame.length() - FlipFrame::size());
+
+  FlipHeaderBlock new_headers;
+  scoped_ptr<FlipFrame> control_frame(frame.take());
+  FlipFramer framer;
+  FramerSetEnableCompressionHelper(&framer, false);
+  // This should fail because duplicate headers are verboten by the spec.
   EXPECT_FALSE(framer.ParseHeaderBlock(control_frame.get(), &new_headers));
+}
+
+TEST_F(FlipFramerTest, MultiValueHeader) {
+  FlipFrameBuilder frame;
+
+  frame.WriteUInt16(kControlFlagMask | 1);
+  frame.WriteUInt16(SYN_STREAM);
+  frame.WriteUInt32(0);  // Placeholder for the length.
+  frame.WriteUInt32(3);  // stream_id
+  frame.WriteUInt16(0);  // Priority.
+
+  frame.WriteUInt16(2);  // Number of headers.
+  FlipHeaderBlock::iterator it;
+  frame.WriteString("name");
+  std::string value("value1\0value2");
+  frame.WriteString(value);
+  // write the length
+  frame.WriteUInt32ToOffset(4, frame.length() - FlipFrame::size());
+
+  FlipHeaderBlock new_headers;
+  scoped_ptr<FlipFrame> control_frame(frame.take());
+  FlipFramer framer;
+  FramerSetEnableCompressionHelper(&framer, false);
+  EXPECT_TRUE(framer.ParseHeaderBlock(control_frame.get(), &new_headers));
+  EXPECT_TRUE(new_headers.find("name") != new_headers.end());
+  EXPECT_EQ(value, new_headers.find("name")->second);
 }
 
 TEST_F(FlipFramerTest, BasicCompression) {

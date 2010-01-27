@@ -419,16 +419,10 @@ bool FlipFramer::ParseHeaderBlock(const FlipFrame* frame,
         break;
       if (!builder.ReadString(&iter, &value))
         break;
-      if (block->empty()) {
+      if (block->find(name) == block->end()) {
         (*block)[name] = value;
       } else {
-        FlipHeaderBlock::iterator last = --block->end();
-        if (block->key_comp()(last->first, name)) {
-          block->insert(block->end(),
-                       std::pair<std::string, std::string>(name, value));
-        } else {
-          return false;
-        }
+        return false;
       }
     }
     return true;
