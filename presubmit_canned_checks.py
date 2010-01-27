@@ -267,6 +267,25 @@ def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
     return []
 
 
+def CheckLicense(input_api, output_api, license, source_file_filter=None):
+  """Verifies the license header.
+  """
+  license_re = input_api.re.compile(license, input_api.re.MULTILINE)
+  bad_files = []
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    contents = input_api.ReadFile(f, 'rb')
+    if not license_re.search(contents):
+      bad_files.append(f.LocalPath())
+  if bad_files:
+    if input_api.is_committing:
+      res_type = output_api.PresubmitPromptWarning
+    else:
+      res_type = output_api.PresubmitNotifyResult
+    return [res_type(
+        "Found a bad license header in these files:", items=bad_files)]
+  return []
+
+
 def CheckChangeSvnEolStyle(input_api, output_api, source_file_filter=None):
   """Checks that the source files have svn:eol-style=LF."""
   return CheckSvnProperty(input_api, output_api,

@@ -1069,6 +1069,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckChangeHasTestField',
       'CheckChangeLintsClean',
       'CheckChangeSvnEolStyle',
+      'CheckLicense',
       'CheckSvnModifiedDirectories',
       'CheckSvnForCommonMimeTypes', 'CheckSvnProperty',
       'CheckDoNotSubmit',
@@ -1281,6 +1282,66 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.SvnPropertyTest(presubmit_canned_checks.CheckChangeSvnEolStyle,
                          'svn:eol-style', 'LF', '', False,
                          presubmit.OutputApi.PresubmitNotifyResult, True)
+
+  def _LicenseCheck(self, text, license, committing, expected_result):
+    change = self.mox.CreateMock(presubmit.SvnChange)
+    change.scm = 'svn'
+    input_api = self.MockInputApi(change, committing)
+    affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
+    input_api.AffectedSourceFiles(42).AndReturn([affected_file])
+    input_api.ReadFile(affected_file, 'rb').AndReturn(text)
+    if expected_result:
+      affected_file.LocalPath().AndReturn('bleh')
+
+    self.mox.ReplayAll()
+    result = presubmit_canned_checks.CheckLicense(
+                 input_api, presubmit.OutputApi, license, 42)
+    if expected_result:
+      self.assertEqual(len(result), 1)
+      self.assertEqual(result[0].__class__, expected_result)
+    else:
+      self.assertEqual(result, [])
+
+  def testCheckLicenseSuccess(self):
+    text = (
+        "#!/bin/python\n"
+        "# Copyright (c) 2037 Nobody.\n"
+        "# All Rights Reserved.\n"
+        "print 'foo'\n"
+    )
+    license = (
+        r".*? Copyright \(c\) 2037 Nobody." "\n"
+        r".*? All Rights Reserved\." "\n"
+    )
+    self._LicenseCheck(text, license, True, None)
+
+  def testCheckLicenseFailCommit(self):
+    text = (
+        "#!/bin/python\n"
+        "# Copyright (c) 2037 Nobody.\n"
+        "# All Rights Reserved.\n"
+        "print 'foo'\n"
+    )
+    license = (
+        r".*? Copyright \(c\) 0007 Nobody." "\n"
+        r".*? All Rights Reserved\." "\n"
+    )
+    self._LicenseCheck(text, license, True,
+                       presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCheckLicenseFailUpload(self):
+    text = (
+        "#!/bin/python\n"
+        "# Copyright (c) 2037 Nobody.\n"
+        "# All Rights Reserved.\n"
+        "print 'foo'\n"
+    )
+    license = (
+        r".*? Copyright \(c\) 0007 Nobody." "\n"
+        r".*? All Rights Reserved\." "\n"
+    )
+    self._LicenseCheck(text, license, False,
+                       presubmit.OutputApi.PresubmitNotifyResult)
 
   def testCannedCheckSvnAccidentalSubmission(self):
     modified_dir_file = 'foo/'
