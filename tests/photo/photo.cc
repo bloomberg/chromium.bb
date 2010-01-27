@@ -9,7 +9,7 @@
 //   Uses low level NaCl multimedia system.
 //   Runs in the browser.
 //   Can not be run standalone.
-//   Expects to live in native_client_sdk/examples/photo directory
+//   Expects to live in native_client/tests/photo directory
 
 #include <errno.h>
 #include <limits.h>
