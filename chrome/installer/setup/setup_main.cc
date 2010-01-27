@@ -39,7 +39,7 @@
 
 namespace {
 
-  // This method unpacks and uncompresses the given archive file. For Chrome
+// This method unpacks and uncompresses the given archive file. For Chrome
 // install we are creating a uncompressed archive that contains all the files
 // needed for the installer. This uncompressed archive is later compressed.
 //
@@ -61,8 +61,15 @@ DWORD UnPackArchive(const std::wstring& archive, bool system_install,
   if (ret != NO_ERROR)
     return ret;
 
+  std::wstring archive_name;
+  if (InstallUtil::IsChromeFrameProcess()) {
+    archive_name = installer::kChromeFrameArchive;
+  } else {
+    archive_name = installer::kChromeArchive;
+  }
+
   std::wstring uncompressed_archive(temp_path);
-  file_util::AppendToPath(&uncompressed_archive, installer::kChromeArchive);
+  file_util::AppendToPath(&uncompressed_archive, archive_name);
 
   // Check if this is differential update and if it is, patch it to the
   // installer archive that should already be on the machine. We assume
@@ -80,7 +87,7 @@ DWORD UnPackArchive(const std::wstring& archive, bool system_install,
     file_util::AppendToPath(&existing_archive,
                             installed_version->GetString());
     file_util::AppendToPath(&existing_archive, installer_util::kInstallerDir);
-    file_util::AppendToPath(&existing_archive, installer::kChromeArchive);
+    file_util::AppendToPath(&existing_archive, archive_name);
     if (int i = setup_util::ApplyDiffPatch(existing_archive, unpacked_file,
                                            uncompressed_archive)) {
       LOG(ERROR) << "Binary patching failed with error " << i;
@@ -191,8 +198,13 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
   // For install the default location for chrome.packed.7z is in current
   // folder, so get that value first.
   std::wstring archive = file_util::GetDirectoryFromPath(cmd_line.program());
-  file_util::AppendToPath(&archive,
-                          std::wstring(installer::kChromeCompressedArchive));
+  if (InstallUtil::IsChromeFrameProcess()) {
+    file_util::AppendToPath(&archive,
+        std::wstring(installer::kChromeFrameCompressedArchive));
+  } else {
+    file_util::AppendToPath(&archive,
+                            std::wstring(installer::kChromeCompressedArchive));
+  }
   // If --install-archive is given, get the user specified value
   if (cmd_line.HasSwitch(installer_util::switches::kInstallArchive)) {
     archive = cmd_line.GetSwitchValue(
@@ -250,8 +262,13 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
         // We want to keep uncompressed archive (chrome.7z) that we get after
         // uncompressing and binary patching. Get the location for this file.
         std::wstring archive_to_copy(temp_path.ToWStringHack());
-        file_util::AppendToPath(&archive_to_copy,
-                                std::wstring(installer::kChromeArchive));
+        std::wstring archive_name;
+        if (InstallUtil::IsChromeFrameProcess()) {
+          archive_name = installer::kChromeFrameArchive;
+        } else {
+          archive_name = installer::kChromeArchive;
+        }
+        file_util::AppendToPath(&archive_to_copy, archive_name);
         std::wstring prefs_source_path = cmd_line.GetSwitchValue(
             installer_util::switches::kInstallerData);
         install_status = installer::InstallOrUpdateChrome(
@@ -295,7 +312,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
               &do_not_launch_chrome);
           if (!system_level && !do_not_launch_chrome)
             installer::LaunchChrome(system_level);
-        } else if ((install_status == installer_util::NEW_VERSION_UPDATED) || 
+        } else if ((install_status == installer_util::NEW_VERSION_UPDATED) ||
                    (install_status == installer_util::IN_USE_UPDATED)) {
           installer_setup::RemoveLegacyRegistryKeys();
         }

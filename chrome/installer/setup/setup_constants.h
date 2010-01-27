@@ -12,7 +12,9 @@ namespace installer {
 extern const wchar_t kWowHelperExe[];
 extern const wchar_t kDictionaries[];
 extern const wchar_t kChromeArchive[];
+extern const wchar_t kChromeFrameArchive[];
 extern const wchar_t kChromeCompressedArchive[];
+extern const wchar_t kChromeFrameCompressedArchive[];
 
 extern const wchar_t kInstallSourceDir[];
 extern const wchar_t kInstallSourceChromeDir[];
