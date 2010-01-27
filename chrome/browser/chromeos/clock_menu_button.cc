@@ -39,8 +39,10 @@ ClockMenuButton::ClockMenuButton(Browser* browser)
   SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_PM, zero, zero));
   set_alignment(TextButton::ALIGN_RIGHT);
   UpdateTextAndSetNextTimer();
-  // Init member prefs so we can update the controls if prefs change.
-  timezone_.Init(prefs::kTimeZone, browser_->profile()->GetPrefs(), this);
+  if (browser_ != NULL) {
+    // Init member prefs so we can update the controls if prefs change.
+    timezone_.Init(prefs::kTimeZone, browser_->profile()->GetPrefs(), this);
+  }
 }
 
 void ClockMenuButton::Observe(NotificationType type,
@@ -109,7 +111,7 @@ void ClockMenuButton::UpdateText() {
 // ClockMenuButton, menus::MenuModel implementation:
 
 int ClockMenuButton::GetItemCount() const {
-  return 3;
+  return browser_ == NULL ? 1 : 3;
 }
 
 menus::MenuModel::ItemType ClockMenuButton::GetTypeAt(int index) const {
@@ -131,7 +133,8 @@ bool ClockMenuButton::IsEnabledAt(int index) const {
 }
 
 void ClockMenuButton::ActivatedAt(int index) {
-  browser_->OpenSystemOptionsDialog();
+  if (browser_ != NULL)
+    browser_->OpenSystemOptionsDialog();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

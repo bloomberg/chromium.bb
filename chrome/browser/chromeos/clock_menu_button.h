@@ -23,6 +23,9 @@ class ClockMenuButton : public views::MenuButton,
                         public menus::MenuModel,
                         public NotificationObserver {
  public:
+  // Browser can be NULL in case we're showing the button from login
+  // manager. In this case timezone is initialized to PST and options dialog
+  // menu is absent.
   explicit ClockMenuButton(Browser* browser);
   virtual ~ClockMenuButton() {}
 
@@ -66,7 +69,8 @@ class ClockMenuButton : public views::MenuButton,
   // The clock menu.
   views::Menu2 clock_menu_;
 
-  // The browser window that owns us.
+  // The browser object. Can be NULL if the button is on the login manager
+  // screen.
   Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(ClockMenuButton);
