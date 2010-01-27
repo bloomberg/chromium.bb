@@ -109,7 +109,8 @@ def main(argv):
 
       # GNU uses '#<linenum> for line number directives; MSVC uses
       # '#line <linenum>.'
-      cl_output = re.sub(r'^#line ', r'#', cl_output)
+      foo = re.compile(r'^#line ', re.MULTILINE)
+      cl_output = foo.sub(r'#', cl_output)
 
       if p.wait() == 0: # success
         #
@@ -124,7 +125,6 @@ def main(argv):
                              stderr=subprocess.PIPE)
         as_output, as_error = p.communicate(cl_output)
 
-        print >>sys.stderr, as_error
         #
         # massage the assembler stderr into a format that Visual Studio likes
         #
