@@ -2216,3 +2216,20 @@
    fun:find_objects_by_template
    fun:nssToken_FindCertificatesBySubject
 }
+{
+   bug_32641_e
+    Memcheck:Addr4
+   fun:cert_PKIXMakeOIDList
+   fun:cert_pkixSetParam
+   fun:CERT_PKIXVerifyCert
+   fun:_ZN3net119_GLOBAL__N__b_slave_chromium_rel_chromeos_valgrind_tests_2_build_src_net_base_x509_certificate_nss.cc_00000000_D70C13C114PKIXVerifyCertEP18CERTCertificateStrbPK9SECOidTagiP15CERTValOutParam
+   fun:_ZNK3net15X509Certificate8VerifyEVEv
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+   fun:_ZN3net12CertVerifier7Request8DoVerifyEv
+   fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
+   fun:_ZN112_GLOBAL__N__b_slave_chromium_rel_chromeos_valgrind_tests_2_build_src_base_worker_pool_linux.cc_00000000_1B1688C112WorkerThread10ThreadMainEv
+   fun:_Z10ThreadFuncPv
+   fun:start_thread
+   fun:clone
+}
