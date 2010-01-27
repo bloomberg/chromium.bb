@@ -39,7 +39,7 @@ Example: %(app)s --revert 12345 --branch 187
 export_map_ = None
 files_info_ = None
 delete_map_ = None
-file_pattern_ =  r"[ ]+([MADUC])[ ]+/((?:trunk|branches/\d+)/src(.*)/(.*))"
+file_pattern_ =  r"[ ]+([MADUC])[ ]+/((?:trunk|branches/.*?)/src(.*)/(.*))"
 
 def deltree(root):
   """Removes a given directory"""
