@@ -167,7 +167,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 {
     m_debuggerAgentDelegateStub.set(new DebuggerAgentDelegateStub(this));
     m_toolsAgentDelegateStub.set(new ToolsAgentDelegateStub(this));
-    m_toolsAgentNativeDelegateStub.set(new ToolsAgentNativeDelegateStub(this));
     m_apuAgentDelegateStub.set(new ApuAgentDelegateStub(this));
 }
 
@@ -312,18 +311,6 @@ void WebDevToolsAgentImpl::dispatchOnInjectedScript(
 void WebDevToolsAgentImpl::executeVoidJavaScript()
 {
     m_debuggerAgentImpl->executeVoidJavaScript(m_utilityContext);
-}
-
-void WebDevToolsAgentImpl::getResourceContent(int callId, int identifier)
-{
-    String content;
-    Page* page = m_webViewImpl->page();
-    if (page) {
-        RefPtr<InspectorResource> resource = page->inspectorController()->resources().get(identifier);
-        if (resource.get())
-            content = resource->sourceString();
-    }
-    m_toolsAgentNativeDelegateStub->didGetResourceContent(callId, content);
 }
 
 void WebDevToolsAgentImpl::dispatchMessageFromFrontend(const WebDevToolsMessageData& data)

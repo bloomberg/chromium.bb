@@ -24,6 +24,7 @@ devtools.InspectorBackendImpl = function() {
   this.installInspectorControllerDelegate_('getDatabaseTableNames');
   this.installInspectorControllerDelegate_('getDOMStorageEntries');
   this.installInspectorControllerDelegate_('getEventListenersForNode');
+  this.installInspectorControllerDelegate_('getResourceContent');
   this.installInspectorControllerDelegate_('highlightDOMNode');
   this.installInspectorControllerDelegate_('hideDOMNodeHighlight');
   this.installInspectorControllerDelegate_('releaseWrapperObjectGroup');

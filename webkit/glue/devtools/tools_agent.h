@@ -47,11 +47,7 @@
   /* Dispatches given function on the InjectedScript object */ \
   METHOD5(dispatchOnInjectedScript, int /* call_id */, \
       int /* injected_script_id */, String /* function_name */, \
-      String /* json_args */, bool /* async */) \
-  \
-  /* Requests that the agent sends content of the resource with given id to the
-     delegate. */ \
-  METHOD2(getResourceContent, int /* call_id */, int /* identifier */)
+      String /* json_args */, bool /* async */)
 
 DEFINE_RPC_CLASS(ToolsAgent, TOOLS_AGENT_STRUCT)
 
@@ -67,11 +63,5 @@ DEFINE_RPC_CLASS(ToolsAgent, TOOLS_AGENT_STRUCT)
   METHOD1(dispatchOnClient, String /* data */)
 
 DEFINE_RPC_CLASS(ToolsAgentDelegate, TOOLS_AGENT_DELEGATE_STRUCT)
-
-#define TOOLS_AGENT_NATIVE_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, METHOD4, METHOD5) \
-  /* Response to the async call. */ \
-  METHOD2(didGetResourceContent, int /* call_id */, String /* content */) \
-
-DEFINE_RPC_CLASS(ToolsAgentNativeDelegate, TOOLS_AGENT_NATIVE_DELEGATE_STRUCT)
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_TOOLS_AGENT_H_

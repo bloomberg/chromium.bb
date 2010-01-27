@@ -50,7 +50,6 @@ devtools.ToolsAgent = function() {
  * Resets tools agent to its initial state.
  */
 devtools.ToolsAgent.prototype.reset = function() {
-  InspectorFrontendHost.reset();
   this.debuggerAgent_.reset();
 };
 
@@ -254,16 +253,9 @@ WebInspector.ScriptView.prototype.setupSourceFrameIfNeeded = function() {
  * Performs source frame setup when script source is aready resolved.
  */
 WebInspector.ScriptView.prototype.didResolveScriptSource_ = function() {
-  if (!InspectorFrontendHost.addSourceToFrame(
-      "text/javascript", this.script.source, this.sourceFrame.element)) {
-    return;
-  }
-
+  this.sourceFrame.setContent("text/javascript", this.script.source);
+  this._sourceFrameSetup = true;
   delete this._frameNeedsSetup;
-
-  this.sourceFrame.addEventListener(
-      "syntax highlighting complete", this._syntaxHighlightingComplete, this);
-  this.sourceFrame.syntaxHighlightJavascript();
 };
 
 

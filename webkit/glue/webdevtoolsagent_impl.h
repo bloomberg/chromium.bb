@@ -84,7 +84,6 @@ public:
         const WebCore::String& jsonArgs,
         bool async);
     virtual void executeVoidJavaScript();
-    virtual void getResourceContent(int callId, int identifier);
 
     // WebDevToolsAgentPrivate implementation.
     virtual void didClearWindowObject(WebKit::WebFrameImpl* frame);
@@ -141,7 +140,6 @@ private:
     WebKit::WebViewImpl* m_webViewImpl;
     OwnPtr<DebuggerAgentDelegateStub> m_debuggerAgentDelegateStub;
     OwnPtr<ToolsAgentDelegateStub> m_toolsAgentDelegateStub;
-    OwnPtr<ToolsAgentNativeDelegateStub> m_toolsAgentNativeDelegateStub;
     OwnPtr<DebuggerAgentImpl> m_debuggerAgentImpl;
     OwnPtr<ApuAgentDelegateStub> m_apuAgentDelegateStub;
     bool m_apuAgentEnabled;

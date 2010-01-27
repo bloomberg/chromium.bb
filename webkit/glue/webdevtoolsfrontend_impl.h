@@ -61,7 +61,6 @@ class JsDebuggerAgentBoundObj;
 class JsNetAgentBoundObj;
 class JsProfilerAgentBoundObj;
 class JsToolsAgentBoundObj;
-class ToolsAgentNativeDelegateImpl;
 class WebDevToolsClientDelegate;
 
 class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend
@@ -126,8 +125,6 @@ private:
         Vector<WebCore::ContextMenuItem*> m_items;
     };
 
-    void addResourceSourceToFrame(int resourceId, String mimeType, WebCore::Node* frame);
-
     void executeScript(const Vector<String>& v);
     void dispatchOnWebInspector(const String& method, const String& param);
 
@@ -135,12 +132,10 @@ private:
     void contextMenuItemSelected(WebCore::ContextMenuItem* menuItem);
     void contextMenuCleared();
 
-    static v8::Handle<v8::Value> jsReset(const v8::Arguments& args);
-    static v8::Handle<v8::Value> jsAddSourceToFrame(const v8::Arguments& args);
-    static v8::Handle<v8::Value> jsAddResourceSourceToFrame(const v8::Arguments& args);
     static v8::Handle<v8::Value> jsLoaded(const v8::Arguments& args);
     static v8::Handle<v8::Value> jsPlatform(const v8::Arguments& args);
     static v8::Handle<v8::Value> jsPort(const v8::Arguments& args);
+    static v8::Handle<v8::Value> jsCopyText(const v8::Arguments& args);
 
     static v8::Handle<v8::Value> jsActivateWindow(const v8::Arguments& args);
     static v8::Handle<v8::Value> jsCloseWindow(const v8::Arguments& args);
@@ -163,7 +158,6 @@ private:
     OwnPtr<JsToolsAgentBoundObj> m_toolsAgentObj;
     bool m_loaded;
     Vector<Vector<String> > m_pendingIncomingMessages;
-    OwnPtr<ToolsAgentNativeDelegateImpl> m_toolsAgentNativeDelegateImpl;
     RefPtr<MenuProvider> m_menuProvider;
 };
 
