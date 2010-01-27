@@ -1489,7 +1489,6 @@ BUG23498 MAC : fast/forms/fieldset-align.html = IMAGE
 BUG23498 MAC : fast/forms/form-hides-table.html = IMAGE
 BUG23498 MAC : fast/forms/input-table.html = IMAGE
 BUG23498 MAC : fast/forms/textAreaLineHeight.html = IMAGE
-BUG23498 MAC : fast/forms/textarea-rows-cols.html = IMAGE
 
 BUG23498 MAC : fast/frames/frame-scrolling-attribute.html = IMAGE
 
@@ -1811,7 +1810,6 @@ BUG23489 MAC : fast/forms/menulist-option-wrap.html = IMAGE
 BUG23489 MAC : fast/forms/menulist-restrict-line-height.html = IMAGE
 BUG23489 MAC : fast/forms/select-baseline.html = IMAGE
 BUG23489 MAC : fast/table/empty-section-crash.html = IMAGE
-BUG23489 MAC : svg/W3C-SVG-1.1/pservers-grad-17-b.svg = IMAGE
 
 // Uses the wrong bullets for the bulleted list
 // BUG_HCLAM BUG23487 MAC : editing/execCommand/indent-selection.html = IMAGE
@@ -1922,9 +1920,6 @@ BUG23466 MAC : svg/custom/foreign-object-skew.svg = IMAGE
 // Failing on the bots but not locally; need investigation
 BUG23560 MAC : fast/images/animated-svg-as-image.html = IMAGE PASS
 BUG23560 MAC : svg/W3C-SVG-1.1/filters-conv-01-f.svg = FAIL
-
-// This begin crashing some of the time after Webkit merge to r49997
-BUG23560 MAC : fast/overflow/003.xml = IMAGE
 
 // Fails the first run, passes the flaky-check: corruption from a prior test?
 BUG31362 MAC : fast/forms/select-style.html = IMAGE
@@ -2144,7 +2139,6 @@ BUG9798 MAC RELEASE : http/tests/xmlhttprequest/state-after-network-error.html =
 BUG9797 LINUX DEBUG : svg/carto.net/colourpicker.svg = FAIL
 BUG9798 LINUX RELEASE : svg/carto.net/colourpicker.svg = FAIL
 BUG9798 SLOW LINUX : svg/custom/invisible-text-after-scrolling.xhtml = FAIL
-BUG9798 MAC : svg/custom/use-instanceRoot-as-event-target.xhtml = FAIL
 BUG9798 LINUX RELEASE : tables/mozilla/bugs/45621.html = FAIL
 BUG9798 LINUX DEBUG SLOW : tables/mozilla/bugs/45621.html = FAIL
 //also BUG24868 (crash)
@@ -2731,7 +2725,6 @@ BUG29737 MAC : svg/W3C-SVG-1.1/struct-image-02-b.svg = IMAGE
 BUG29737 MAC : svg/filters/sourceAlpha.svg = IMAGE+TEXT
 
 // More Webkit Roll to r51875
-BUG32425 : svg/dom/operatorAttribute.html = TEXT
 BUG32432 LINUX DEBUG : svg/filters/feComposite.svg = TIMEOUT PASS
 
 // WebKit Roll to r51915
@@ -2885,11 +2878,6 @@ BUG32516 WIN : tables/mozilla_expected_failures/core/backgrounds.html = CRASH PA
 BUG32518 WIN : editing/unsupported-content/list-delete-001.html = CRASH PASS
 BUG32572 WIN : svg/hixie/mixed/003.xml = CRASH PASS
 
-// WebKit roll: 53314:53340
-BUG53331 MAC : fast/gradients/simple-gradients.html = FAIL
-BUG53331 MAC : fast/gradients/border-image-gradient.html = FAIL
-BUG53331 : fast/gradients/border-image-gradient-sides-and-corners.html = FAIL
-
 // WebKit roll 53341:53451
 BUG32670 LINUX : fast/css/zoom-body-scroll.html = TEXT
 BUG32671 WIN LINUX MAC : fast/dom/Window/timer-null-script-execution-context.html = TEXT
@@ -2929,7 +2917,6 @@ BUG32900 WIN LINUX : http/tests/misc/slow-loading-mask.html = IMAGE+TEXT
 
 // WebKit roll 53704 -> 53747
 BUG32949 WIN LINUX MAC : fast/dom/Window/invalid-protocol.html = TEXT
-BUG32953 WIN LINUX MAC : svg/custom/relative-sized-shadow-tree-content-with-symbol.xhtml = IMAGE+TEXT
 
 // WebKit roll 53704:53787.  Not going to fix for now.
 BUG33099 : media/video-reverse-play-duration.html = TIMEOUT
@@ -2970,46 +2957,18 @@ BUG33045 MAC : css1/box_properties/padding_left.html = IMAGE
 BUG33045 MAC : css1/box_properties/padding_right.html = IMAGE
 BUG33045 MAC : css1/box_properties/padding_top.html = IMAGE
 BUG33045 MAC : css1/box_properties/width.html = IMAGE
-BUG33045 MAC : fast/body-propagation/overflow/002-xhtml.xhtml = IMAGE
-BUG33045 MAC : fast/body-propagation/overflow/002.html = IMAGE
-BUG33045 MAC : fast/body-propagation/overflow/003-declarative.xhtml = IMAGE
-BUG33045 MAC : fast/body-propagation/overflow/003-xhtml.xhtml = IMAGE
-BUG33045 MAC : fast/body-propagation/overflow/003.html = IMAGE
-BUG33045 MAC : fast/body-propagation/overflow/004-declarative.xhtml = IMAGE
-BUG33045 MAC : fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE
-BUG33045 MAC : fast/body-propagation/overflow/004.html = IMAGE
-BUG33045 MAC : fast/body-propagation/overflow/007-declarative.xhtml = IMAGE
-BUG33045 MAC : fast/body-propagation/overflow/007-xhtml.xhtml = IMAGE
-BUG33045 MAC : fast/body-propagation/overflow/007.html = IMAGE
 BUG33045 MAC : fast/forms/basic-textareas-quirks.html = IMAGE
 BUG33045 MAC : fast/forms/basic-textareas.html = IMAGE
 BUG33045 MAC : fast/forms/button-default-title.html = IMAGE
 BUG33045 MAC : fast/forms/file-input-direction.html = IMAGE
-BUG33045 MAC : fast/forms/textarea-scroll-height.html = IMAGE
-BUG33045 MAC : fast/inline-block/tricky-baseline.html = IMAGE
 BUG33045 MAC : fast/invalid/residual-style.html = IMAGE
-BUG33045 MAC : fast/overflow/007.html = IMAGE
-BUG33045 MAC : fast/overflow/008.html = IMAGE
-BUG33045 MAC : fast/overflow/childFocusRingClip.html = IMAGE
-BUG33045 MAC : fast/overflow/float-in-relpositioned.html = IMAGE
-BUG33045 MAC : fast/overflow/image-selection-highlight.html = IMAGE
-BUG33045 MAC : fast/overflow/overflow-auto-position-absolute.html = IMAGE
-BUG33045 MAC : fast/overflow/overflow-rtl.html = IMAGE
-BUG33045 MAC : fast/overflow/overflow-text-hit-testing.html = IMAGE
-BUG33045 MAC : fast/overflow/overflow-with-local-background-attachment.html = IMAGE
-BUG33045 MAC : fast/overflow/scroll-nested-positioned-layer-in-overflow.html = IMAGE
-BUG33045 MAC : fast/overflow/scrollbar-position-update.html = IMAGE
-BUG33045 MAC : fast/overflow/table-overflow-float.html = IMAGE
 BUG33045 MAC : fast/repaint/block-selection-gap-stale-cache-2.html = IMAGE
 BUG33045 MAC : fast/repaint/fixed.html = IMAGE
 BUG33045 MAC : fast/repaint/moving-shadow-on-path.html = IMAGE
-BUG33045 MAC : fast/table/edge-offsets.html = IMAGE
 BUG33045 MAC : fast/text/text-letter-spacing.html = IMAGE
 BUG33045 MAC : media/video-controls-rendering.html = IMAGE
 BUG33045 MAC : media/video-zoom.html = IMAGE
 BUG33045 MAC : svg/css/stars-with-shadow.html = IMAGE
-BUG33045 MAC : svg/custom/invisible-text-after-scrolling.xhtml = IMAGE
 BUG33045 MAC : svg/custom/missing-xlink.svg = IMAGE
 BUG33045 MAC : svg/custom/text-xy-updates-SVGList.xhtml = IMAGE
-BUG33045 MAC : tables/mozilla/bugs/bug149275-1.html = IMAGE
 BUG33045 MAC : transforms/2d/transform-fixed-container.html = IMAGE
