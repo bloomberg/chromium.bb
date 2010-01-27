@@ -398,9 +398,9 @@ static Bool ConsumeAndCheckAddressSize(NcInstState* state) {
 /* Returns true if the instruction requires a ModRm bytes. */
 static Bool InstructionRequiresModRm(NcInstState* state) {
   return
-      ((OpcodeFlag) 0) != (state->opcode->flags &
-               (InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeInModRm) |
-                InstFlag(ModRmLessThanC0ForX87Inst)));
+      ((OpcodeFlag) 0) !=
+      (state->opcode->flags &
+       (InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeInModRm)));
 }
 
 /* Consume the Mod/Rm byte of the instruction, if applicable.
@@ -423,7 +423,7 @@ static Bool ConsumeModRm(NcInstState* state) {
      * and is marked using the ModRmLessThanC0 flag. Check for
      * this case, and quit if the condition is violated.
      */
-    if ((state->opcode->flags & InstFlag(ModRmLessThanC0ForX87Inst)) &&
+    if ((state->opcode->flags & InstFlag(OpcodeLtC0InModRm)) &&
         byte >= 0xC0) {
       DEBUG(printf("Can't read x87 mod/rm value, %"PRIx8" not < 0xC0\n",
                    byte));

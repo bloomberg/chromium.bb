@@ -21,12 +21,14 @@ OpcodeHasRexR
 # stored in the first operand, using a ModRmOpcode operand kind.
 OpcodeInModRm
 
+# Defines an OpcodeInModRm, where the value of ModRm must also be less
+# than 0xC0 (see x87 instructions for examples of this).
+# NOTE: When this flag is set, so is OpcodeInModRm.
+OpcodeLtC0InModRm
+
 # Defines instruction that the ModR/M byte contains a register operand and
 # an r/m operand. Intel's notation is /r
 OpcodeUsesModRm
-
-# Defines that the ModRm byte must be a value less than C0.
-ModRmLessThanC0ForX87Inst
 
 # Defines the size of the immediate value that must follow the opcode.
 # Intel's notation is ib, iw, id, and io.

@@ -63,13 +63,13 @@ static void DefineX87St0(const OpcodePrefix prefix,
 }
 
 /* Define an x87 instruction that uses a single memory pointer. */
-static void DefineX87Mem(const OpcodePrefix prefix,
-                         const uint8_t opcode,
-                         const OperandKind opcode_in_modrm,
-                         const InstMnemonic mnemonic,
-                         const OperandFlags mfp_flags) {
+static void DefineX87LtC0Mem(const OpcodePrefix prefix,
+                             const uint8_t opcode,
+                             const OperandKind opcode_in_modrm,
+                             const InstMnemonic mnemonic,
+                             const OperandFlags mfp_flags) {
   DefineOpcodePrefix(prefix);
-  DefineOpcode(opcode, NACLi_X87, InstFlag(OpcodeInModRm), mnemonic);
+  DefineOpcode(opcode, NACLi_X87, InstFlag(OpcodeLtC0InModRm), mnemonic);
   DefineOperand(opcode_in_modrm, OpFlag(OperandExtendsOpcode));
   DefineOperand(M_Operand, mfp_flags);
   ResetToDefaultOpcodePrefix();
@@ -78,12 +78,12 @@ static void DefineX87Mem(const OpcodePrefix prefix,
 /* Define an x87 instruction that has two operands, a memory pointer
  * and st0, and the memory pointer is defined by the value of st0.
  */
-static void DefineX87MoveMemSt0(const OpcodePrefix prefix,
-                                const uint8_t opcode,
-                                const OperandKind opcode_in_modrm,
-                                const InstMnemonic mnemonic) {
+static void DefineX87LtC0MoveMemSt0(const OpcodePrefix prefix,
+                                    const uint8_t opcode,
+                                    const OperandKind opcode_in_modrm,
+                                    const InstMnemonic mnemonic) {
   DefineOpcodePrefix(prefix);
-  DefineOpcode(opcode, NACLi_X87, InstFlag(OpcodeInModRm), mnemonic);
+  DefineOpcode(opcode, NACLi_X87, InstFlag(OpcodeLtC0InModRm), mnemonic);
   DefineOperand(opcode_in_modrm, OpFlag(OperandExtendsOpcode));
   DefineOperand(M_Operand, OpFlag(OpSet));
   DefineOperand(RegST0, OpFlag(OpUse) | OpFlag(OpImplicit));
@@ -93,12 +93,12 @@ static void DefineX87MoveMemSt0(const OpcodePrefix prefix,
 /* Define an x87 binary instruction that has St0 as its first
  * argument, and a memory pointer as its second argument.
  */
-static void DefineX87BinopSt0Mem(const OpcodePrefix prefix,
-                                 const uint8_t opcode,
-                                 const OperandKind opcode_in_modrm,
-                                 const InstMnemonic mnemonic) {
+static void DefineX87LtC0BinopSt0Mem(const OpcodePrefix prefix,
+                                     const uint8_t opcode,
+                                     const OperandKind opcode_in_modrm,
+                                     const InstMnemonic mnemonic) {
   DefineOpcodePrefix(prefix);
-  DefineOpcode(opcode, NACLi_X87, InstFlag(OpcodeInModRm), mnemonic);
+  DefineOpcode(opcode, NACLi_X87, InstFlag(OpcodeLtC0InModRm), mnemonic);
   DefineOperand(opcode_in_modrm, OpFlag(OperandExtendsOpcode));
   DefineOperand(RegST0, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
   DefineOperand(M_Operand, OpFlag(OpUse));
@@ -165,12 +165,12 @@ static void DefineX87CompareSt0StiGroup(const OpcodePrefix prefix,
 /* Define an x87 compare instruction that has st0 as its first
  * argument, and a Memory pointer as its second.
  */
-static void DefineX87CompareSt0Mem(const OpcodePrefix prefix,
-                                   const uint8_t opcode,
-                                   const OperandKind opcode_in_modrm,
-                                   const InstMnemonic mnemonic) {
+static void DefineX87LtC0CompareSt0Mem(const OpcodePrefix prefix,
+                                       const uint8_t opcode,
+                                       const OperandKind opcode_in_modrm,
+                                       const InstMnemonic mnemonic) {
   DefineOpcodePrefix(prefix);
-  DefineOpcode(opcode, NACLi_X87, InstFlag(OpcodeInModRm), mnemonic);
+  DefineOpcode(opcode, NACLi_X87, InstFlag(OpcodeLtC0InModRm), mnemonic);
   DefineOperand(opcode_in_modrm, OpFlag(OperandExtendsOpcode));
   DefineOperand(RegST0, OpFlag(OpUse) | OpFlag(OpImplicit));
   DefineOperand(M_Operand, OpFlag(OpUse));
@@ -341,14 +341,14 @@ void DefineX87Opcodes() {
 
   /* Define D8 x87 instructions. */
 
-  DefineX87BinopSt0Mem(NoPrefix, 0xd8, Opcode0, InstFadd);
-  DefineX87BinopSt0Mem(NoPrefix, 0xd8, Opcode1, InstFmul);
-  DefineX87BinopSt0Mem(NoPrefix, 0xd8, Opcode2, InstFcom);
-  DefineX87BinopSt0Mem(NoPrefix, 0xd8, Opcode3, InstFcomp);
-  DefineX87BinopSt0Mem(NoPrefix, 0xd8, Opcode4, InstSub);
-  DefineX87BinopSt0Mem(NoPrefix, 0xd8, Opcode5, InstFsubr);
-  DefineX87BinopSt0Mem(NoPrefix, 0xd8, Opcode6, InstFdiv);
-  DefineX87BinopSt0Mem(NoPrefix, 0xd8, Opcode7, InstFdivr);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode0, InstFadd);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode1, InstFmul);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode2, InstFcom);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode3, InstFcomp);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode4, InstSub);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode5, InstFsubr);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode6, InstFdiv);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode7, InstFdivr);
   DefineX87BinopSt0StiGroup(PrefixD8, 0xc0, InstFadd);
   DefineX87BinopSt0StiGroup(PrefixD8, 0xc8, InstFmul);
   DefineX87BinopSt0StiGroup(PrefixD8, 0xd0, InstFcom);
@@ -360,14 +360,14 @@ void DefineX87Opcodes() {
 
   /* Define D9 x87 instructions. */
 
-  DefineX87Mem(NoPrefix, 0xd9, Opcode0, InstFld, OpFlag(OpUse));
-  DefineX87MoveMemSt0(NoPrefix, 0xd9, Opcode2, InstFst);
-  DefineX87MoveMemSt0(NoPrefix, 0xd9, Opcode3, InstFstp);
-  DefineX87Mem(NoPrefix, 0xd9, Opcode4, InstFldenv, OpFlag(OpUse));
-  DefineX87Mem(NoPrefix, 0xd9, Opcode5, InstFldcw, OpFlag(OpUse));
-  DefineX87Mem(NoPrefix, 0xd9, Opcode6, InstFnstenv,
+  DefineX87LtC0Mem(NoPrefix, 0xd9, Opcode0, InstFld, OpFlag(OpUse));
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xd9, Opcode2, InstFst);
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xd9, Opcode3, InstFstp);
+  DefineX87LtC0Mem(NoPrefix, 0xd9, Opcode4, InstFldenv, OpFlag(OpUse));
+  DefineX87LtC0Mem(NoPrefix, 0xd9, Opcode5, InstFldcw, OpFlag(OpUse));
+  DefineX87LtC0Mem(NoPrefix, 0xd9, Opcode6, InstFnstenv,
             OpFlag(OpSet));
-  DefineX87Mem(NoPrefix, 0xd9, Opcode7, InstFnstcw, OpFlag(OpSet));
+  DefineX87LtC0Mem(NoPrefix, 0xd9, Opcode7, InstFnstcw, OpFlag(OpSet));
 
   DefineX87StiGroup(PrefixD9, 0xc0, InstFld, OpFlag(OpUse));
   DefineX87ExchangeSt0StiGroup(PrefixD9, 0xc8, InstFxch);
@@ -404,14 +404,14 @@ void DefineX87Opcodes() {
 
   /* Define DA x87 instructions. */
 
-  DefineX87BinopSt0Mem(NoPrefix, 0xda, Opcode0, InstFiadd);
-  DefineX87BinopSt0Mem(NoPrefix, 0xda, Opcode1, InstFimul);
-  DefineX87BinopSt0Mem(NoPrefix, 0xda, Opcode2, InstFicom);
-  DefineX87BinopSt0Mem(NoPrefix, 0xda, Opcode3, InstFicomp);
-  DefineX87BinopSt0Mem(NoPrefix, 0xda, Opcode4, InstFisub);
-  DefineX87BinopSt0Mem(NoPrefix, 0xda, Opcode5, InstFisubr);
-  DefineX87BinopSt0Mem(NoPrefix, 0xda, Opcode6, InstFidiv);
-  DefineX87BinopSt0Mem(NoPrefix, 0xda, Opcode7, InstFidivr);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode0, InstFiadd);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode1, InstFimul);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode2, InstFicom);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode3, InstFicomp);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode4, InstFisub);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode5, InstFisubr);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode6, InstFidiv);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode7, InstFidivr);
   DefineX87BinopSt0StiGroup(PrefixDA, 0xc0, InstFcmovb);
   DefineX87BinopSt0StiGroup(PrefixDA, 0xc8, InstFcmove);
   DefineX87BinopSt0StiGroup(PrefixDA, 0xd0, InstFcmovbe);
@@ -420,12 +420,12 @@ void DefineX87Opcodes() {
 
   /* Define DB x87 instructions. */
 
-  DefineX87Mem(NoPrefix, 0xdb, Opcode0, InstFild, OpFlag(OpUse));
-  DefineX87MoveMemSt0(NoPrefix, 0xdb, Opcode1, InstFisttp);
-  DefineX87MoveMemSt0(NoPrefix, 0xdb, Opcode2, InstFist);
-  DefineX87MoveMemSt0(NoPrefix, 0xdb, Opcode3, InstFistp);
-  DefineX87Mem(NoPrefix, 0xdb, Opcode5, InstFld, OpFlag(OpUse));
-  DefineX87MoveMemSt0(NoPrefix, 0xdb, Opcode7, InstFstp);
+  DefineX87LtC0Mem(NoPrefix, 0xdb, Opcode0, InstFild, OpFlag(OpUse));
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode1, InstFisttp);
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode2, InstFist);
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode3, InstFistp);
+  DefineX87LtC0Mem(NoPrefix, 0xdb, Opcode5, InstFld, OpFlag(OpUse));
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode7, InstFstp);
   DefineX87BinopSt0StiGroup(PrefixDB, 0xc0, InstFcmovnb);
   DefineX87BinopSt0StiGroup(PrefixDB, 0xc8, InstFcmovne);
   DefineX87BinopSt0StiGroup(PrefixDB, 0xd0, InstFcmovnbe);
@@ -437,14 +437,14 @@ void DefineX87Opcodes() {
 
   /* Define DC x87 instructions. */
 
-  DefineX87BinopSt0Mem(NoPrefix, 0xdc, Opcode0, InstFadd);
-  DefineX87BinopSt0Mem(NoPrefix, 0xdc, Opcode1, InstFmul);
-  DefineX87BinopSt0Mem(NoPrefix, 0xdc, Opcode2, InstFcom);
-  DefineX87BinopSt0Mem(NoPrefix, 0xdc, Opcode3, InstFcomp);
-  DefineX87BinopSt0Mem(NoPrefix, 0xdc, Opcode4, InstSub);
-  DefineX87BinopSt0Mem(NoPrefix, 0xdc, Opcode5, InstFsubr);
-  DefineX87BinopSt0Mem(NoPrefix, 0xdc, Opcode6, InstFdiv);
-  DefineX87BinopSt0Mem(NoPrefix, 0xdc, Opcode7, InstFdivr);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode0, InstFadd);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode1, InstFmul);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode2, InstFcom);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode3, InstFcomp);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode4, InstSub);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode5, InstFsubr);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode6, InstFdiv);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode7, InstFdivr);
   DefineX87BinopStiSt0Group(PrefixDC, 0xc0, InstFadd);
   DefineX87BinopStiSt0Group(PrefixDC, 0xc8, InstFmul);
   DefineX87BinopStiSt0Group(PrefixDC, 0xe0, InstFsubr);
@@ -454,13 +454,13 @@ void DefineX87Opcodes() {
 
   /* Define DD x87 instructions. */
 
-  DefineX87Mem(NoPrefix, 0xdd, Opcode0, InstFld, OpFlag(OpUse));
-  DefineX87MoveMemSt0(NoPrefix, 0xdd, Opcode1, InstFisttp);
-  DefineX87MoveMemSt0(NoPrefix, 0xdd, Opcode2, InstFst);
-  DefineX87MoveMemSt0(NoPrefix, 0xdd, Opcode3, InstFstp);
-  DefineX87Mem(NoPrefix, 0xdd, Opcode4, InstFrstor, OpFlag(OpUse));
-  DefineX87Mem(NoPrefix, 0xdd, Opcode6, InstFnsave, OpFlag(OpSet));
-  DefineX87Mem(NoPrefix, 0xdd, Opcode7, InstFnstsw, OpFlag(OpSet));
+  DefineX87LtC0Mem(NoPrefix, 0xdd, Opcode0, InstFld, OpFlag(OpUse));
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdd, Opcode1, InstFisttp);
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdd, Opcode2, InstFst);
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdd, Opcode3, InstFstp);
+  DefineX87LtC0Mem(NoPrefix, 0xdd, Opcode4, InstFrstor, OpFlag(OpUse));
+  DefineX87LtC0Mem(NoPrefix, 0xdd, Opcode6, InstFnsave, OpFlag(OpSet));
+  DefineX87LtC0Mem(NoPrefix, 0xdd, Opcode7, InstFnstsw, OpFlag(OpSet));
   DefineX87StiGroup(PrefixDD, 0xc0, InstFfree, EmptyOpFlags);
   DefineX87MoveStiSt0Group(PrefixDD, 0xd0, InstFst);
   DefineX87MoveStiSt0Group(PrefixDD, 0xd8, InstFstp);
@@ -469,14 +469,14 @@ void DefineX87Opcodes() {
 
   /* Define DE x87 instructions. */
 
-  DefineX87BinopSt0Mem(NoPrefix, 0xde, Opcode0, InstFiadd);
-  DefineX87BinopSt0Mem(NoPrefix, 0xde, Opcode1, InstFimul);
-  DefineX87CompareSt0Mem(NoPrefix, 0xde, Opcode2, InstFicom);
-  DefineX87CompareSt0Mem(NoPrefix, 0xde, Opcode3, InstFicomp);
-  DefineX87BinopSt0Mem(NoPrefix, 0xde, Opcode4, InstFisub);
-  DefineX87BinopSt0Mem(NoPrefix, 0xde, Opcode5, InstFisubr);
-  DefineX87BinopSt0Mem(NoPrefix, 0xde, Opcode6, InstFidiv);
-  DefineX87BinopSt0Mem(NoPrefix, 0xde, Opcode7, InstFidivr);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode0, InstFiadd);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode1, InstFimul);
+  DefineX87LtC0CompareSt0Mem(NoPrefix, 0xde, Opcode2, InstFicom);
+  DefineX87LtC0CompareSt0Mem(NoPrefix, 0xde, Opcode3, InstFicomp);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode4, InstFisub);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode5, InstFisubr);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode6, InstFidiv);
+  DefineX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode7, InstFidivr);
   DefineX87BinopStiSt0Group(PrefixDE, 0xc0, InstFaddp);
   DefineX87BinopStiSt0Group(PrefixDE, 0xc8, InstFmulp);
   DefineX87CompareSt0St1(PrefixDE, 0xd9, InstFcompp);
@@ -487,14 +487,14 @@ void DefineX87Opcodes() {
 
   /* Define DF x87 instructions. */
 
-  DefineX87Mem(NoPrefix, 0xdf, Opcode0, InstFild, OpFlag(OpUse));
-  DefineX87MoveMemSt0(NoPrefix, 0xdf, Opcode1, InstFisttp);
-  DefineX87MoveMemSt0(NoPrefix, 0xdf, Opcode2, InstFist);
-  DefineX87MoveMemSt0(NoPrefix, 0xdf, Opcode3, InstFistp);
-  DefineX87Mem(NoPrefix, 0xdf, Opcode4, InstFbld, OpFlag(OpUse));
-  DefineX87Mem(NoPrefix, 0xdf, Opcode5, InstFild, OpFlag(OpUse));
-  DefineX87MoveMemSt0(NoPrefix, 0xdf, Opcode6, InstFbstp);
-  DefineX87MoveMemSt0(NoPrefix, 0xdf, Opcode7, InstFistp);
+  DefineX87LtC0Mem(NoPrefix, 0xdf, Opcode0, InstFild, OpFlag(OpUse));
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode1, InstFisttp);
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode2, InstFist);
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode3, InstFistp);
+  DefineX87LtC0Mem(NoPrefix, 0xdf, Opcode4, InstFbld, OpFlag(OpUse));
+  DefineX87LtC0Mem(NoPrefix, 0xdf, Opcode5, InstFild, OpFlag(OpUse));
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode6, InstFbstp);
+  DefineX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode7, InstFistp);
   DefineX87Ax(PrefixDF, 0xe0, InstFnstsw, OpFlag(OpSet));
   DefineX87BinopSt0StiGroup(PrefixDF, 0xe8, InstFucomip);
   DefineX87BinopSt0StiGroup(PrefixDF, 0xe8, InstFcomip);

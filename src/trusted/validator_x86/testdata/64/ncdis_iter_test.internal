@@ -918,7 +918,7 @@ ExprNodeVector[4] = {
 0000000000000000: d8 74 24 10                                  fdiv [%rsp+0x10]
   { 1, { 0xd8, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm),
+    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
     InstFdiv,
     3, {
       { Opcode6, OpFlag(OperandExtendsOpcode) },
@@ -938,7 +938,7 @@ ExprNodeVector[8] = {
 0000000000000000: 67 d8 74 24 10                               fdiv [%esp+0x10]
   { 1, { 0xd8, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm),
+    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
     InstFdiv,
     3, {
       { Opcode6, OpFlag(OperandExtendsOpcode) },
@@ -958,7 +958,7 @@ ExprNodeVector[8] = {
 0000000000000000: dc 44 00 04                                  fadd [%rax+%rax*1+0x4]
   { 1, { 0xdc, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm),
+    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
     InstFadd,
     3, {
       { Opcode0, OpFlag(OperandExtendsOpcode) },
@@ -978,7 +978,7 @@ ExprNodeVector[8] = {
 0000000000000000: da 04 25 04 00 00 00                         fiadd [0x4]
   { 1, { 0xda, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm),
+    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
     InstFiadd,
     3, {
       { Opcode0, OpFlag(OperandExtendsOpcode) },
@@ -998,7 +998,7 @@ ExprNodeVector[8] = {
 0000000000000000: da 70 04                                     fidiv [%rax+0x4]
   { 1, { 0xda, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm),
+    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
     InstFidiv,
     3, {
       { Opcode6, OpFlag(OperandExtendsOpcode) },
@@ -1018,7 +1018,7 @@ ExprNodeVector[8] = {
 0000000000000000: de 50 04                                     ficom [%rax+0x4]
   { 1, { 0xde, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm),
+    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
     InstFicom,
     3, {
       { Opcode2, OpFlag(OperandExtendsOpcode) },
@@ -3380,7 +3380,7 @@ ExprNodeVector[4] = {
 0000000000000000: 41 db 2c 07                                  fld [%r15+%rax*1]
   { 1, { 0xdb, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm),
+    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
     InstFld,
     2, {
       { Opcode5, OpFlag(OperandExtendsOpcode) },
@@ -3397,7 +3397,7 @@ ExprNodeVector[6] = {
 0000000000000000: dd 04 24                                     fld [%rsp]
   { 1, { 0xdd, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm),
+    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
     InstFld,
     2, {
       { Opcode0, OpFlag(OperandExtendsOpcode) },

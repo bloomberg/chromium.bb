@@ -596,6 +596,12 @@ void DefineOpcode(
    * need to specify the prefix to use.
    */
   int i;
+
+  /* Before starting, expand appropriate implicit flag assumnptions. */
+  if (flags & InstFlag(OpcodeLtC0InModRm)) {
+    flags |= InstFlag(OpcodeInModRm);
+  }
+
   DEBUG(printf("Define %s %"PRIx8": %s(%d)",
                OpcodePrefixName(current_opcode_prefix),
                opcode, InstMnemonicName(name), name);

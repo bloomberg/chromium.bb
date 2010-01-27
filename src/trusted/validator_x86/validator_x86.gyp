@@ -239,6 +239,7 @@
       'dependencies': [
         'ncdecode_table',
         'ncdecode_tablegen',
+        'ncopcode_utils_gen',
       ],
       'sources': [
         'nacl_cpuid.c',
