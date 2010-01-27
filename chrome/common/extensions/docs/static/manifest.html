@@ -37,7 +37,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="background_pages.html">background_page</a>": "<em>aFile</em>.html",
   "<a href="override.html">chrome_url_overrides</a>": {...},
   "<a href="content_scripts.html">content_scripts</a>": [...],
-  "<a href="#minimum_chrome_version">minimum_chrome_version</a>": "x.y",
+  "<a href="#minimum_chrome_version">minimum_chrome_version</a>": "<em>versionString</em>",
   "<a href="options.html">options_page</a>": "<em>aFile</em>.html",
   "<a href="#permissions">permissions</a>": [...],
   "<a href="npapi.html">plugins</a>": [...],
@@ -65,6 +65,8 @@ that describes the extension.
 The description should be suitable for both
 the browser's extension management UI
 and the <a href="https://chrome.google.com/extensions">extension gallery</a>.
+You can specify locale-specific strings for this field;
+see <a href="i18n.html">Internationalization</a> for details.
 </p>
 
 
@@ -116,6 +118,13 @@ For details, see
 <a href="i18n.html">Internationalization</a>.
 </p>
 
+<h3 id="minimum_chrome_version">minimum_chrome_version</h3>
+
+<p>
+The version of Google Chrome that your extension requires, if any.
+The format for this string is the same as for the
+<a href="#version">version</a> field.
+
 <h3 id="name">name</h3>
 
 <p>
@@ -125,14 +134,9 @@ that identifies the extension.
 The name is used in the install dialog,
 extension management UI,
 and the <a href="https://chrome.google.com/extensions">extension gallery</a>.
+You can specify locale-specific strings for this field;
+see <a href="i18n.html">Internationalization</a> for details.
 </p>
-
-<h3 id="minimum_chrome_version">Minimum Chrome Version</h3>
-
-<p>
-The version of Google Chrome that your extension requires, if any.
-The format for this string is the same as for the <a href="#version">version
-field</a>.
 
 <h3 id="permissions">permissions</h3>
 
