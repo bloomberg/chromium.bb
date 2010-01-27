@@ -253,6 +253,8 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleBackSpaceThunk), this);
   g_signal_connect(text_view_, "copy-clipboard",
                    G_CALLBACK(&HandleCopyClipboardThunk), this);
+  g_signal_connect(text_view_, "cut-clipboard",
+                   G_CALLBACK(&HandleCutClipboardThunk), this);
   g_signal_connect(text_view_, "paste-clipboard",
                    G_CALLBACK(&HandlePasteClipboardThunk), this);
   g_signal_connect_after(text_view_, "expose-event",
@@ -1080,8 +1082,8 @@ void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget) {
   // Propagate the signal so that focus can be moved as normal.
 }
 
-void AutocompleteEditViewGtk::HandleCopyClipboard() {
-  // On copy, we manually update the PRIMARY selection to contain the
+void AutocompleteEditViewGtk::HandleCopyOrCutClipboard() {
+  // On copy or cut, we manually update the PRIMARY selection to contain the
   // highlighted text.  This matches Firefox -- we highlight the URL but don't
   // update PRIMARY on Ctrl-L, so Ctrl-L, Ctrl-C and then middle-click is a
   // convenient way to paste the current URL somewhere.

@@ -279,9 +279,14 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   void HandleViewMoveFocus(GtkWidget* widget);
 
   static void HandleCopyClipboardThunk(GtkTextView* text_view, gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandleCopyClipboard();
+    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
+        HandleCopyOrCutClipboard();
   }
-  void HandleCopyClipboard();
+  static void HandleCutClipboardThunk(GtkTextView* text_view, gpointer self) {
+    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
+        HandleCopyOrCutClipboard();
+  }
+  void HandleCopyOrCutClipboard();
 
   static void HandlePasteClipboardThunk(GtkTextView* text_view, gpointer self) {
     reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandlePasteClipboard();
