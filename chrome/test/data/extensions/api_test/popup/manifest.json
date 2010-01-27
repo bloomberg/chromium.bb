@@ -4,5 +4,6 @@
   "description": "apitest for the popup api",
   "toolstrips": [
     "toolband.html"
-  ]
+  ],
+  "permissions": ["experimental"]
 }
