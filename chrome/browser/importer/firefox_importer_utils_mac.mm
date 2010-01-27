@@ -7,27 +7,18 @@
 #include "chrome/browser/importer/firefox_importer_utils.h"
 
 #include "base/file_util.h"
+#include "base/path_service.h"
 
 FilePath GetProfilesINI() {
-  FilePath ini_file;
-  NSArray* dirs =
-      NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory,
-                                          NSUserDomainMask, YES);
-  if ([dirs count]) {
-    NSString* app_support_dir = [dirs objectAtIndex:0];
-    NSString* firefox_dir = [app_support_dir
-        stringByAppendingPathComponent:@"Firefox"];
-    NSString* profiles_ini = [firefox_dir
-        stringByAppendingPathComponent:@"profiles.ini"];
-    if (profiles_ini) {
-      ini_file = FilePath([profiles_ini fileSystemRepresentation]);
-    }
+  FilePath app_data_path;
+  if (!PathService::Get(base::DIR_APP_DATA, &app_data_path)) {
+    return FilePath();
   }
-
-  if (file_util::PathExists(ini_file))
-    return ini_file;
-
-  return FilePath();
+  FilePath ini_file = app_data_path.Append("Firefox").Append("profiles.ini");
+  if (!file_util::PathExists(ini_file)) {
+    return FilePath();
+  }
+  return ini_file;
 }
 
 FilePath GetFirefoxDylibPath() {

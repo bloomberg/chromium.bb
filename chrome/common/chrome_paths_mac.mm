@@ -41,42 +41,15 @@ bool GetChromeFrameUserDataDirectory(FilePath* result) {
 }
 
 bool GetUserDocumentsDirectory(FilePath* result) {
-  bool success = false;
-  NSArray* docArray =
-      NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
-                                          NSUserDomainMask,
-                                          YES);
-  if ([docArray count] && result) {
-    *result = FilePath([[docArray objectAtIndex:0] fileSystemRepresentation]);
-    success = true;
-  }
-  return success;
+  return mac_util::GetUserDirectory(NSDocumentDirectory, result);
 }
 
 bool GetUserDownloadsDirectory(FilePath* result) {
-  bool success = false;
-  NSArray* docArray =
-      NSSearchPathForDirectoriesInDomains(NSDownloadsDirectory,
-                                          NSUserDomainMask,
-                                          YES);
-  if ([docArray count] && result) {
-    *result = FilePath([[docArray objectAtIndex:0] fileSystemRepresentation]);
-    success = true;
-  }
-  return success;
+  return mac_util::GetUserDirectory(NSDownloadsDirectory, result);
 }
 
 bool GetUserDesktop(FilePath* result) {
-  bool success = false;
-  NSArray* docArray =
-      NSSearchPathForDirectoriesInDomains(NSDesktopDirectory,
-                                          NSUserDomainMask,
-                                          YES);
-  if ([docArray count] && result) {
-    *result = FilePath([[docArray objectAtIndex:0] fileSystemRepresentation]);
-    success = true;
-  }
-  return success;
+  return mac_util::GetUserDirectory(NSDesktopDirectory, result);
 }
 
 FilePath GetVersionedDirectory() {

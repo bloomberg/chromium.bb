@@ -96,18 +96,24 @@ OSType CreatorCodeForApplication() {
   return CreatorCodeForCFBundleRef(bundle);
 }
 
+bool GetUserDirectory(NSSearchPathDirectory directory, FilePath* result) {
+  DCHECK(result);
+  NSArray* dirs =
+      NSSearchPathForDirectoriesInDomains(directory, NSUserDomainMask, YES);
+  if ([dirs count] < 1) {
+    return false;
+  }
+  NSString* path = [dirs objectAtIndex:0];
+  *result = FilePath([path fileSystemRepresentation]);
+  return true;
+}
+
 FilePath GetUserLibraryPath() {
-  NSArray* dirs = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
-                                                      NSUserDomainMask, YES);
-  if ([dirs count] == 0)
-    return FilePath();
-
-  NSString* library_dir = [dirs objectAtIndex:0];
-  const char* library_dir_path = [library_dir fileSystemRepresentation];
-  if (!library_dir_path)
-    return FilePath();
-
-  return FilePath(library_dir_path);
+  FilePath user_library_path;
+  if (!GetUserDirectory(NSLibraryDirectory, &user_library_path)) {
+    LOG(WARNING) << "Could not get user library path";
+  }
+  return user_library_path;
 }
 
 CGColorSpaceRef GetSRGBColorSpace() {

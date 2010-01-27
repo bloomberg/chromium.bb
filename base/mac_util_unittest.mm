@@ -29,6 +29,22 @@ TEST_F(MacUtilTest, TestFSRef) {
   EXPECT_EQ(path, PathFromFSRef(ref));
 }
 
+TEST_F(MacUtilTest, GetUserDirectoryTest) {
+  // Try a few keys, make sure they come back with non-empty paths.
+  FilePath caches_dir;
+  EXPECT_TRUE(GetUserDirectory(NSCachesDirectory, &caches_dir));
+  EXPECT_FALSE(caches_dir.empty());
+
+  FilePath application_support_dir;
+  EXPECT_TRUE(GetUserDirectory(NSApplicationSupportDirectory,
+                               &application_support_dir));
+  EXPECT_FALSE(application_support_dir.empty());
+
+  FilePath library_dir;
+  EXPECT_TRUE(GetUserDirectory(NSLibraryDirectory, &library_dir));
+  EXPECT_FALSE(library_dir.empty());
+}
+
 TEST_F(MacUtilTest, TestLibraryPath) {
   FilePath library_dir = GetUserLibraryPath();
   // Make sure the string isn't empty.

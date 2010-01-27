@@ -19,6 +19,13 @@ class NSBundle;
 class NSWindow;
 #endif
 
+// Adapted from NSPathUtilities.h and NSObjCRuntime.h.
+#if __LP64__ || NS_BUILD_32_LIKE_64
+typedef unsigned long NSSearchPathDirectory;
+#else
+typedef unsigned int NSSearchPathDirectory;
+#endif
+
 namespace mac_util {
 
 std::string PathFromFSRef(const FSRef& ref);
@@ -51,6 +58,11 @@ OSType CreatorCodeForCFBundleRef(CFBundleRef bundle);
 // instead of NSBundle, and because callers probably don't want the override
 // app bundle's creator code anyway.
 OSType CreatorCodeForApplication();
+
+// Searches for directories for the given key in only the user domain.
+// If found, fills result (which must always be non-NULL) with the
+// first found directory and returns true.  Otherwise, returns false.
+bool GetUserDirectory(NSSearchPathDirectory directory, FilePath* result);
 
 // Returns the ~/Library directory.
 FilePath GetUserLibraryPath();
