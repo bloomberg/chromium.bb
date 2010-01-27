@@ -31,6 +31,7 @@
 const std::wstring kSubscribePage =
     L"files/extensions/subscribe_page_action/subscribe.html";
 const std::wstring kFeedPage = L"files/feeds/feed.html";
+const std::wstring kFeedPageMultiRel = L"files/feeds/feed_multi_rel.html";
 const std::wstring kNoFeedPage = L"files/feeds/no_feed.html";
 const std::wstring kValidFeed0 = L"files/feeds/feed_script.xml";
 const std::wstring kValidFeed1 = L"files/feeds/feed1.xml";
@@ -204,11 +205,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
 // keep these from working
 #define MAYBE_PageAction DISABLED_PageAction
 #define MAYBE_UnloadPageAction DISABLED_UnloadPageAction
+#define MAYBE_RSSMultiRelLink DISABLED_RSSMultiRelLink
 #define MAYBE_TitleLocalizationBrowserAction DISABLED_TitleLocalizationBrowserAction
 #define MAYBE_TitleLocalizationPageAction DISABLED_TitleLocalizationPageAction
 #else
 #define MAYBE_PageAction PageAction
 #define MAYBE_UnloadPageAction UnloadPageAction
+#define MAYBE_RSSMultiRelLink RSSMultiRelLink
 #define MAYBE_TitleLocalizationBrowserAction TitleLocalizationBrowserAction
 #define MAYBE_TitleLocalizationPageAction TitleLocalizationPageAction
 #endif
@@ -257,6 +260,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_UnloadPageAction) {
 
   // Make sure the page action goes away when it's unloaded.
   ASSERT_TRUE(WaitForPageActionCountChangeTo(0));
+}
+
+// Makes sure that the RSS detects RSS feed links, even when rel tag contains
+// more than just "alternate".
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_RSSMultiRelLink) {
+  HTTPTestServer* server = StartHTTPServer();
+
+  ASSERT_TRUE(LoadExtension(
+    test_data_dir_.AppendASCII("subscribe_page_action")));
+
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
+
+  // Navigate to the feed page.
+  GURL feed_url = server->TestServerPageW(kFeedPageMultiRel);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
+  // We should now have one page action ready to go in the LocationBar.
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 }
 
 // Tests that tooltips of a browser action icon can be specified using UTF8.

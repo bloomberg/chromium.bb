@@ -19,9 +19,9 @@ if (!isFeedDocument()) {
 function findFeedLinks() {
   // Find all the RSS link elements.
   var result = document.evaluate(
-      '//*[local-name()="link"][@rel="alternate"][contains(@type, "rss") or ' +
-      'contains(@type, "atom") or contains(@type, "rdf")]',
-      document, null, 0, null);
+      '//*[local-name()="link"][contains(@rel, "alternate")] ' +
+      '[contains(@type, "rss") or contains(@type, "atom") or ' +
+      'contains(@type, "rdf")]', document, null, 0, null);
 
   var feeds = [];
   var item;
