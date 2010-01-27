@@ -644,7 +644,57 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
        tmp = XEXP (addr, 1);
        if (!CONST_INT_P (tmp))
  	return 0;
-@@ -9297,9 +9481,10 @@
+@@ -8855,6 +9039,49 @@
+   base_reg = base && GET_CODE (base) == SUBREG ? SUBREG_REG (base) : base;
+   index_reg = index && GET_CODE (index) == SUBREG ? SUBREG_REG (index) : index;
+ 
++  /* Disallow positive constant displacement followed by a register offset for
++   * NaCl64. This may hurt when a symbol is referenced with integer overflow in
++   * mind. NaCl64 will miss overflow because of sandboxing base addition in the
++   * middle.
++   *
++   * Example problem code:
++   * static struct ppp* zzz[16 * 2 + 1];
++   * int main() {
++   *   for (int i = -16; i <= 16; i++)
++   *   zzz[i + 16] = NULL;
++   *   return 0;
++   * }
++   *
++   * Incorrect assembly generated with -O2:
++   *          movl    $-16, %eax
++   *  .L2:
++   *          mov     %eax, %edx
++   *          addl    $1, %eax
++   *          cmpl    $17, %eax
++   *          movl    $0, %nacl:_ZL3zzz+64(%r15,%rdx,4)
++   *          jne     .L2
++   * */
++  if (getenv("NACL_ALLOW_MAGIC_DISP") &&
++      TARGET_64BIT && flag_control_integrity &&
++      !NACL_LEA_MATCH_ADDRESS_OPERAND &&
++      index_reg &&
++      disp && GET_CODE(disp) == CONST)
++    {
++      rtx opcode = XEXP(disp, 0);
++      if (GET_CODE(opcode) == PLUS)
++        {
++          rtx cnst = XEXP(opcode, 1);
++          if (GET_CODE(cnst) != CONST_INT || INTVAL(cnst) > 0)
++            return 0;
++        }
++      else if (GET_CODE(opcode) == MINUS)
++        {
++          rtx cnst = XEXP(opcode, 1);
++          if (GET_CODE(cnst) != CONST_INT || INTVAL(cnst) < 0)
++            return 0;
++        }
++    }
++
+   /* Allow arg pointer and stack pointer as index if there is not scaling.  */
+   if (base_reg && index_reg && scale == 1
+       && (index_reg == arg_pointer_rtx
+@@ -9297,9 +9524,10 @@
  	  goto report_error;
  	}
  
@@ -657,7 +707,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	  goto report_error;
  	}
  
-@@ -9333,9 +9518,16 @@
+@@ -9333,9 +9561,16 @@
  	  goto report_error;
  	}
  
@@ -676,7 +726,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	  goto report_error;
  	}
  
-@@ -9514,7 +9706,9 @@
+@@ -9514,7 +9749,9 @@
    rtx addr = orig;
    rtx new_rtx = orig;
    rtx base;
@@ -686,7 +736,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  #if TARGET_MACHO
    if (TARGET_MACHO && !TARGET_64BIT)
      {
-@@ -9562,7 +9756,7 @@
+@@ -9562,7 +9799,7 @@
  	}
        else new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmpreg);
      }
@@ -695,7 +745,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
      {
        /* This symbol may be referenced via a displacement from the PIC
  	 base address (@GOTOFF).  */
-@@ -9573,14 +9767,14 @@
+@@ -9573,14 +9810,14 @@
  	addr = XEXP (addr, 0);
        if (GET_CODE (addr) == PLUS)
  	  {
@@ -715,7 +765,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
        if (reg != 0)
  	{
-@@ -9602,19 +9796,19 @@
+@@ -9602,19 +9839,19 @@
                && SYMBOL_REF_DLLIMPORT_P (XEXP (XEXP (addr, 0), 0)))
              {
                rtx t = legitimize_dllimport_symbol (XEXP (XEXP (addr, 0), 0), true);
@@ -740,7 +790,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	  /* Use directly gen_movsi, otherwise the address is loaded
  	     into register for CSE.  We don't want to CSE this addresses,
  	     instead we CSE addresses from the GOT table, so skip this.  */
-@@ -9628,16 +9822,16 @@
+@@ -9628,16 +9865,16 @@
  
  	  if (reload_in_progress)
  	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
@@ -763,7 +813,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	  emit_move_insn (reg, new_rtx);
  	  new_rtx = reg;
  	}
-@@ -9653,7 +9847,7 @@
+@@ -9653,7 +9890,7 @@
  	      new_rtx = reg;
  	    }
  	  else
@@ -772,7 +822,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	}
        else if (GET_CODE (addr) == CONST)
  	{
-@@ -9674,18 +9868,18 @@
+@@ -9674,18 +9911,18 @@
  
  	  /* Check first to see if this is a constant offset from a @GOTOFF
  	     symbol reference.  */
@@ -796,7 +846,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
  		  if (reg != 0)
  		    {
-@@ -9698,9 +9892,9 @@
+@@ -9698,9 +9935,9 @@
  		  if (INTVAL (op1) < -16*1024*1024
  		      || INTVAL (op1) >= 16*1024*1024)
  		    {
@@ -809,7 +859,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  		    }
  		}
  	    }
-@@ -9716,10 +9910,10 @@
+@@ -9716,10 +9953,10 @@
  		{
  		  if (GET_CODE (new_rtx) == PLUS && CONSTANT_P (XEXP (new_rtx, 1)))
  		    {
@@ -822,7 +872,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  		}
  	    }
  	}
-@@ -9878,6 +10072,15 @@
+@@ -9878,6 +10115,15 @@
        break;
  
      case TLS_MODEL_LOCAL_EXEC:
@@ -838,7 +888,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
        off = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x),
  			    (TARGET_64BIT || TARGET_ANY_GNU_TLS)
  			    ? UNSPEC_NTPOFF : UNSPEC_TPOFF);
-@@ -10166,7 +10369,21 @@
+@@ -10166,7 +10412,21 @@
  	  rtx temp = gen_reg_rtx (Pmode);
  	  rtx val  = force_operand (XEXP (x, 1), temp);
  	  if (val != temp)
@@ -860,7 +910,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
  	  XEXP (x, 1) = temp;
  	  return x;
-@@ -10177,7 +10394,21 @@
+@@ -10177,7 +10437,21 @@
  	  rtx temp = gen_reg_rtx (Pmode);
  	  rtx val  = force_operand (XEXP (x, 0), temp);
  	  if (val != temp)
@@ -882,7 +932,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
  	  XEXP (x, 0) = temp;
  	  return x;
-@@ -11437,9 +11668,23 @@
+@@ -11437,9 +11711,23 @@
        break;
      case SEG_FS:
      case SEG_GS:
@@ -907,7 +957,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
        break;
      default:
        gcc_unreachable ();
-@@ -12329,6 +12574,7 @@
+@@ -12329,6 +12617,7 @@
  {
    rtx op0, op1;
    enum tls_model model;
@@ -915,7 +965,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
    op0 = operands[0];
    op1 = operands[1];
-@@ -12365,14 +12611,28 @@
+@@ -12365,14 +12654,28 @@
        if (tmp)
  	{
  	  tmp = force_operand (tmp, NULL);
@@ -949,7 +999,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
      {
        if (TARGET_MACHO && !TARGET_64BIT)
  	{
-@@ -12381,8 +12641,8 @@
+@@ -12381,8 +12684,8 @@
  	    {
  	      rtx temp = ((reload_in_progress
  			   || ((op0 && REG_P (op0))
@@ -960,7 +1010,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	      op1 = machopic_indirect_data_reference (op1, temp);
  	      op1 = machopic_legitimize_pic_address (op1, mode,
  						     temp == op1 ? 0 : temp);
-@@ -12396,8 +12656,8 @@
+@@ -12396,8 +12699,8 @@
        else
  	{
  	  if (MEM_P (op0))
@@ -971,7 +1021,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  	    {
  	      rtx reg = !can_create_pseudo_p () ? op0 : NULL_RTX;
  	      op1 = legitimize_pic_address (op1, reg);
-@@ -12447,6 +12707,12 @@
+@@ -12447,6 +12750,12 @@
  	}
      }
  
@@ -984,7 +1034,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
    emit_insn (gen_rtx_SET (VOIDmode, op0, op1));
  }
  
-@@ -19048,7 +19314,7 @@
+@@ -19048,7 +19357,7 @@
  {
    int i;
  
@@ -993,7 +1043,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
      {
        rtx set = PATTERN (insn);
  
-@@ -19057,7 +19323,10 @@
+@@ -19057,7 +19366,10 @@
  
        gcc_assert (GET_CODE (set) == SET);
  
