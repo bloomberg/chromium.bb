@@ -696,8 +696,6 @@ BUG33211 : http/tests/loading/deleted-host-in-resource-load-delegate-callback.ht
 BUG27697 SKIP : storage/hash-change-with-xhr.html = PASS
 // We do not use Safari's private browsing
 WONTFIX SKIP : storage/private-browsing-readonly.html = PASS
-// Need to implement LayoutTestController::setDatabaseQuota
-BUG32016 SKIP : storage/quota-tracking.html = PASS
 
 // Implement HTML5 Geolocation API.
 BUG11246 DEFER SKIP : fast/dom/Geolocation = FAIL
@@ -2839,7 +2837,6 @@ BUG32153 : svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = TEXT
 // after the major flakiness goes away
 BUG32155 : fast/js/Object-getOwnPropertyNames.html = TEXT
 BUG32155 : http/tests/security/cross-frame-access-enumeration.html = TIMEOUT
-BUG32157 : storage/multiple-databases-garbage-collection.html = CRASH PASS
 
 // New flakiness?
 BUG32144 WIN RELEASE : svg/webarchive/svg-script-subresouces.svg = CRASH TEXT PASS
@@ -2851,11 +2848,9 @@ BUG32195 : fast/repaint/renderer-destruction-by-invalidateSelection-crash.html =
 BUG32201 LINUX DEBUG : fast/text/atsui-spacing-features.html = IMAGE+TEXT
 
 // Expectations from roll to 53171:53194
-BUG32206 LINUX MAC : storage/database-lock-after-reload.html = PASS FAIL CRASH
 BUG32235 LINUX DEBUG : svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = PASS TEXT
 
 // Errors from roll from 53207:53246
-BUG32396 LINUX : storage/transaction-error-callback.html = TEXT PASS
 BUG32398 MAC : svg/custom/resource-invalidate-on-target-update.svg = IMAGE PASS
 
 // Bugs from rolling from 53275:53289
@@ -2888,9 +2883,7 @@ BUG32680 LINUX DEBUG : svg/filters/big-sized-filter.svg = IMAGE+TEXT TIMEOUT PAS
 BUG32682 LINUX : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
 BUG32683 LINUX DEBUG : svg/css/glyph-orientation-rounding-test.xhtml = TEXT PASS
 BUG32684 WIN DEBUG : inspector/timeline-layout.html = TEXT PASS
-BUG32685 WIN DEBUG : storage/statement-error-callback.html = TEXT PASS
 BUG32686 WIN DEBUG : fast/block/margin-collapse/block-inside-inline/006.html = CRASH PASS
-BUG32687 WIN DEBUG : storage/close-during-stress-test.html = CRASH PASS
 BUG32688 MAC DEBUG : fast/lists/inlineBoxWrapperNullCheck.html = TEXT PASS
 BUG32689 MAC DEBUG : http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html = TEXT PASS
 BUG32690 MAC DEBUG : plugins/plugin-remove-subframe.html = TEXT PASS
