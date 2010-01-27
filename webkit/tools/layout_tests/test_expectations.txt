@@ -640,6 +640,8 @@ BUG18772 LINUX : fast/backgrounds/001.html = FAIL
 
 // Need to implement layoutTestController.addUserScript.
 BUG21113 : userscripts/script-run-at-end.html = FAIL
+BUG21113 : userscripts/script-run-at-start.html = FAIL
+BUG21113 : userscripts/script-not-run-for-fragments.html = FAIL
 
 // Need a setAuthorAndUserStylesEnabled method in
 // layoutTestController. Now we have preference to enable/disable user
@@ -2921,3 +2923,8 @@ BUG32949 WIN LINUX MAC : fast/dom/Window/invalid-protocol.html = TEXT
 // WebKit roll 53704:53787.  Not going to fix for now.
 BUG33099 : media/video-reverse-play-duration.html = TIMEOUT
 BUG33099 : media/video-timeupdate-reverse-play.html = TIMEOUT
+
+// Newly added tests from r53893
+BUG33288 : fast/forms/input-valueasnumber-date.html = TEXT
+BUG33288 : fast/forms/input-valueasnumber-datetime.html = TEXT
+BUG33288 : fast/forms/input-valueasnumber-month.html = TEXT
