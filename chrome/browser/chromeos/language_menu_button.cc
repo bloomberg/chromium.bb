@@ -266,7 +266,7 @@ void LanguageMenuButton::ActivatedAt(int index) {
   DCHECK_GE(index, 0);
   DCHECK(language_list_.get());
 
-  if (IndexPointsToConfigureImeMenuItem(index)) {
+  if (browser_ != NULL && IndexPointsToConfigureImeMenuItem(index)) {
     browser_->OpenSystemOptionsDialog();
     return;
   }
@@ -345,27 +345,38 @@ void LanguageMenuButton::UpdateIcon(const std::wstring& name) {
 void LanguageMenuButton::RebuildModel() {
   model_.reset(new menus::SimpleMenuModel(NULL));
   string16 dummy_label = UTF8ToUTF16("");
+  // Indicates if separator's needed before each section.
+  bool need_separator = false;
 
-  // We "abuse" the command_id and group_id arguments of AddRadioItem method.
-  // A COMMAND_ID_XXX enum value is passed as command_id, and array index of
-  // |language_list_| or |property_list| is passed as group_id.
-  for (size_t i = 0; i < language_list_->size(); ++i) {
-    model_->AddRadioItem(COMMAND_ID_LANGUAGES, dummy_label, i);
+  if (!language_list_->empty()) {
+    // We "abuse" the command_id and group_id arguments of AddRadioItem method.
+    // A COMMAND_ID_XXX enum value is passed as command_id, and array index of
+    // |language_list_| or |property_list| is passed as group_id.
+    for (size_t i = 0; i < language_list_->size(); ++i) {
+      model_->AddRadioItem(COMMAND_ID_LANGUAGES, dummy_label, i);
+    }
+    need_separator = true;
   }
-  model_->AddSeparator();
 
   const ImePropertyList& property_list
       = LanguageLibrary::Get()->current_ime_properties();
-  for (size_t i = 0; i < property_list.size(); ++i) {
-    model_->AddRadioItem(COMMAND_ID_IME_PROPERTIES, dummy_label, i);
-  }
   if (!property_list.empty()) {
-    model_->AddSeparator();
+    if (need_separator)
+      model_->AddSeparator();
+    for (size_t i = 0; i < property_list.size(); ++i) {
+      model_->AddRadioItem(COMMAND_ID_IME_PROPERTIES, dummy_label, i);
+    }
+    need_separator = true;
   }
 
-  // Note: We use AddSeparator() for separators, and AddRadioItem() for all
-  // other items even if an item is not actually a radio item.
-  model_->AddRadioItem(COMMAND_ID_CONFIGURE_IME, dummy_label, 0 /* dummy */);
+  // Can't configure IME if on login screen.
+  if (browser_ != NULL) {
+    // Note: We use AddSeparator() for separators, and AddRadioItem() for all
+    // other items even if an item is not actually a radio item.
+    if (need_separator)
+      model_->AddSeparator();
+    model_->AddRadioItem(COMMAND_ID_CONFIGURE_IME, dummy_label, 0 /* dummy */);
+  }
 }
 
 bool LanguageMenuButton::IndexIsInLanguageList(int index) const {

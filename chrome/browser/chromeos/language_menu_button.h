@@ -23,6 +23,9 @@ class LanguageMenuButton : public views::MenuButton,
                            public menus::MenuModel,
                            public LanguageLibrary::Observer {
  public:
+  // If |browser| is null, options are unavailable and corresponding menu
+  // item is not shown. This happens when the button is shown on login
+  // screen and browser is not loaded yet.
   explicit LanguageMenuButton(Browser* browser);
   virtual ~LanguageMenuButton();
 
@@ -82,7 +85,7 @@ class LanguageMenuButton : public views::MenuButton,
 
   // The language menu which pops up when the button in status area is clicked.
   views::Menu2 language_menu_;
-  // The browser window that owns us.
+  // The browser object. May be null if the button is on login screen.
   Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageMenuButton);
