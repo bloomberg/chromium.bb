@@ -20,6 +20,9 @@ class ExtensionActionContextMenu {
   // Display the context menu at a given point.
   void Run(Extension* extension, const gfx::Point& point);
 
+  // Closes the context menu if open.
+  void Cancel();
+
  private:
   // The options menu.
   scoped_ptr<ExtensionActionContextMenuModel> context_menu_contents_;

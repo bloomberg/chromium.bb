@@ -64,22 +64,26 @@ bool ResizeGripper::OnMouseDragged(const views::MouseEvent& event) {
   if (!event.IsLeftMouseButton())
     return false;
 
-  gfx::Point point(event.x(), 0);
-  View::ConvertPointToScreen(this, &point);
-
-  delegate_->OnResize(point.x() - initial_position_, false);
+  ReportResizeAmount(event.x(), false);
   return true;
 }
 
 void ResizeGripper::OnMouseReleased(const views::MouseEvent& event,
                                     bool canceled) {
-  gfx::Point point(event.x(), 0);
-  View::ConvertPointToScreen(this, &point);
-
   if (canceled)
-    delegate_->OnResize(0, true);
+    ReportResizeAmount(initial_position_, true);
   else
-    delegate_->OnResize(point.x() - initial_position_, true);
+    ReportResizeAmount(event.x(), true);
+}
+
+void ResizeGripper::ReportResizeAmount(int resize_amount, bool last_update) {
+  gfx::Point point(resize_amount, 0);
+  View::ConvertPointToScreen(this, &point);
+  resize_amount = point.x() - initial_position_;
+
+  if (UILayoutIsRightToLeft())
+    resize_amount = -1 * resize_amount;
+  delegate_->OnResize(resize_amount, last_update);
 }
 
 }  // namespace views

@@ -27,8 +27,10 @@ class ResizeGripper : public ImageView {
   public:
     // OnResize is sent when resizing is detected. |resize_amount| specifies the
     // number of pixels that the user wants to resize by, and can be negative or
-    // positive (depending on direction of dragging). |done_resizing| is
-    // true if the user has released the mouse.
+    // positive (depending on direction of dragging and flips according to
+    // locale directionality: dragging to the left in LTR locales gives negative
+    // |resize_amount| but positive amount for RTL). |done_resizing| is true if
+    // the user has released the mouse.
     virtual void OnResize(int resize_amount, bool done_resizing) = 0;
   };
 
@@ -46,6 +48,10 @@ class ResizeGripper : public ImageView {
   static const char kViewClassName[];
 
  private:
+  // Report the amount the user resized by to the delegate, accounting for
+  // directionality.
+  void ReportResizeAmount(int resize_amount, bool last_update);
+
   // The delegate to notify when we have updates.
   ResizeGripperDelegate* delegate_;
 

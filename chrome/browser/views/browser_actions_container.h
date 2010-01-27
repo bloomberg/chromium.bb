@@ -19,6 +19,7 @@
 #include "views/view.h"
 
 class BrowserActionsContainer;
+class BrowserActionOverflowMenuController;
 class Extension;
 class ExtensionAction;
 class ExtensionPopup;
@@ -303,6 +304,9 @@ class BrowserActionsContainer
   // no such view.
   void RemoveBrowserAction(Extension* extension);
 
+  // Closes the overflow menu if open.
+  void CloseOverflowMenu();
+
   // Takes a width in pixels, calculates how many icons fit within that space
   // (up to the maximum number of icons in our vector) and shaves off the
   // excess pixels.
@@ -320,6 +324,9 @@ class BrowserActionsContainer
   // still show it. We account for the chevron and the resize gripper, but not
   // all the padding that we normally show if there are icons.
   int ContainerMinSize() const;
+
+  // Returns how many browser actions are visible.
+  size_t VisibleBrowserActions() const;
 
   // The vector of browser actions (icons/image buttons for each action).
   std::vector<BrowserActionView*> browser_action_views_;
@@ -346,6 +353,9 @@ class BrowserActionsContainer
 
   // The chevron for accessing the overflow items.
   views::MenuButton* chevron_;
+
+  // The menu to show for the overflow button (chevron).
+  scoped_ptr<BrowserActionOverflowMenuController> overflow_menu_;
 
   // The animation that happens when the container snaps to place.
   scoped_ptr<SlideAnimation> resize_animation_;

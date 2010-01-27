@@ -25,3 +25,8 @@ void ExtensionActionContextMenu::Run(Extension* extension,
   context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
   context_menu_menu_->RunContextMenuAt(point);
 }
+
+void ExtensionActionContextMenu::Cancel() {
+  if (context_menu_menu_.get())
+    context_menu_menu_->CancelMenu();
+}

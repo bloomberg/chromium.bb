@@ -19,6 +19,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/detachable_toolbar_view.h"
+#include "chrome/browser/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/notification_source.h"
@@ -30,6 +31,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
+#include "views/window/window.h"
 
 #include "grit/theme_resources.h"
 
@@ -311,6 +313,7 @@ BrowserActionsContainer::BrowserActionsContainer(
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {
+  CloseOverflowMenu();
   HidePopup();
   DeleteBrowserActionViews();
 }
@@ -357,11 +360,7 @@ void BrowserActionsContainer::AddBrowserAction(Extension* extension) {
     return;
 
   // Before we change anything, determine the number of visible browser actions.
-  size_t visible_actions = 0;
-  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    if (browser_action_views_[i]->IsVisible())
-      ++visible_actions;
-  }
+  size_t visible_actions = VisibleBrowserActions();
 
   // Add the new browser action to the vector and the view hierarchy.
   BrowserActionView* view = new BrowserActionView(extension, this);
@@ -401,11 +400,7 @@ void BrowserActionsContainer::RemoveBrowserAction(Extension* extension) {
   }
 
   // Before we change anything, determine the number of visible browser actions.
-  int visible_actions = 0;
-  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    if (browser_action_views_[i]->IsVisible())
-      ++visible_actions;
-  }
+  int visible_actions = VisibleBrowserActions();
 
   for (std::vector<BrowserActionView*>::iterator iter =
        browser_action_views_.begin(); iter != browser_action_views_.end();
@@ -433,6 +428,12 @@ void BrowserActionsContainer::RemoveBrowserAction(Extension* extension) {
       return;
     }
   }
+}
+
+void BrowserActionsContainer::CloseOverflowMenu() {
+  // Close the overflow menu if open (and the context menu off of that).
+  if (overflow_menu_.get())
+    overflow_menu_->CancelMenu();
 }
 
 void BrowserActionsContainer::DeleteBrowserActionViews() {
@@ -495,9 +496,13 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
     if (same_showing)
       return;
 
+    // We can get the execute event for browser actions that are not visible,
+    // since buttons can be activated from the overflow menu (chevron). In that
+    // case we show the popup as originating from the chevron.
+    View* reference_view = button->GetParent()->IsVisible() ? button : chevron_;
     gfx::Point origin;
-    View::ConvertPointToScreen(button, &origin);
-    gfx::Rect rect = button->bounds();
+    View::ConvertPointToScreen(reference_view, &origin);
+    gfx::Rect rect = reference_view->bounds();
     rect.set_x(origin.x());
     rect.set_y(origin.y());
 
@@ -603,10 +608,11 @@ void BrowserActionsContainer::Layout() {
 }
 
 void BrowserActionsContainer::Paint(gfx::Canvas* canvas) {
-  // The one pixel themed vertical divider to the right of the browser actions.
+  // The one-pixel themed vertical divider to the right of the browser actions.
+  int x = UILayoutIsRightToLeft() ? kDividerHorizontalMargin :
+                                    width() - kDividerHorizontalMargin;
   DetachableToolbarView::PaintVerticalDivider(
-      canvas,
-      width() - kDividerHorizontalMargin, height(), kDividerVerticalPadding,
+      canvas, x, height(), kDividerVerticalPadding,
       DetachableToolbarView::kEdgeDividerColor,
       DetachableToolbarView::kMiddleDividerColor,
       GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
@@ -632,12 +638,14 @@ void BrowserActionsContainer::Observe(NotificationType type,
                                       const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED:
+      CloseOverflowMenu();
       AddBrowserAction(Details<Extension>(details).ptr());
       OnBrowserActionVisibilityChanged();
       break;
 
     case NotificationType::EXTENSION_UNLOADED:
     case NotificationType::EXTENSION_UNLOADED_DISABLED:
+      CloseOverflowMenu();
       RemoveBrowserAction(Details<Extension>(details).ptr());
       OnBrowserActionVisibilityChanged();
       break;
@@ -698,7 +706,11 @@ void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble,
 }
 
 void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {
-  // TODO(finnur): Show menu for all the hidden icons.
+  if (source == chevron_) {
+    overflow_menu_.reset(new BrowserActionOverflowMenuController(
+        this, chevron_, browser_action_views_, VisibleBrowserActions()));
+    overflow_menu_->RunMenu(GetWindow()->GetNativeWindow());
+  }
 }
 
 int BrowserActionsContainer::ClampToNearestIconCount(int pixelWidth) const {
@@ -756,6 +768,16 @@ int BrowserActionsContainer::IconCountToWidth(int icons) const {
 
 int BrowserActionsContainer::ContainerMinSize() const {
   return resize_gripper_->width() + chevron_->width() + kChevronRightMargin;
+}
+
+size_t BrowserActionsContainer::VisibleBrowserActions() const {
+  size_t visible_actions = 0;
+  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
+    if (browser_action_views_[i]->IsVisible())
+      ++visible_actions;
+  }
+
+  return visible_actions;
 }
 
 void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
