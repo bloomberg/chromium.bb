@@ -448,13 +448,6 @@ static void addItem(NSMenu* menu, int command, SEL action) {
     item = (item ? item : group_);
     [cell setImage:[item icon]];
   }
-
-  // Show special folders (Bookmarks Bar, Others, Recents, Search) in bold.
-  static NSFont* sBoldFont = [[NSFont boldSystemFontOfSize:
-      [NSFont smallSystemFontSize]] retain];
-  static NSFont* sPlainFont = [[NSFont systemFontOfSize:
-      [NSFont smallSystemFontSize]] retain];
-  [cell setFont:[item isFixed] ? sBoldFont : sPlainFont];
 }
 
 // Updates the tree after the data model has changed.
