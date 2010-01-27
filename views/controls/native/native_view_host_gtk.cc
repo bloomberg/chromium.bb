@@ -14,6 +14,75 @@
 
 namespace views {
 
+namespace {
+static bool signal_id_initialized_ = false;
+static guint focus_in_event_signal_id_;
+static guint focus_out_event_signal_id_;
+
+////////////////////////////////////////////////////////////////////////////////
+// Utility functions to block focus signals while re-creating
+// Fixed widget.
+
+void InitSignalIds() {
+  if (!signal_id_initialized_) {
+    signal_id_initialized_ = true;
+    focus_in_event_signal_id_ =
+        g_signal_lookup("focus-in-event", GTK_TYPE_WIDGET);
+    focus_out_event_signal_id_ =
+        g_signal_lookup("focus-out-event", GTK_TYPE_WIDGET);
+  }
+}
+
+// Blocks a |signal_id| on the given |widget| if any.
+void BlockSignal(GtkWidget* widget, guint signal_id) {
+  int handler_id = g_signal_handler_find(G_OBJECT(widget),
+                                         G_SIGNAL_MATCH_ID,
+                                         signal_id,
+                                         0, NULL, NULL, NULL);
+  if (handler_id) {
+    g_signal_handler_block(G_OBJECT(widget), handler_id);
+  }
+}
+
+// Unblocks a |signal_id| on the given |widget| if any.
+void UnblockSignal(GtkWidget* widget, guint signal_id) {
+  int handler_id = g_signal_handler_find(G_OBJECT(widget),
+                                         G_SIGNAL_MATCH_ID,
+                                         signal_id,
+                                         0, NULL, NULL, NULL);
+  if (handler_id) {
+    g_signal_handler_unblock(G_OBJECT(widget), handler_id);
+  }
+}
+
+// Blocks focus in/out signals of the widget and its descendent
+// children.
+// Note: Due to the limiation of Gtk API, this only blocks the 1st
+// handler found and won't block the rest if there is more than one handlers.
+// See bug http://crbug.com/33236.
+void BlockFocusSignals(GtkWidget* widget, gpointer data) {
+  if (!widget)
+    return;
+  InitSignalIds();
+  BlockSignal(widget, focus_in_event_signal_id_);
+  BlockSignal(widget, focus_out_event_signal_id_);
+  if (GTK_IS_CONTAINER(widget))
+    gtk_container_foreach(GTK_CONTAINER(widget), BlockFocusSignals, data);
+}
+
+// Unlocks focus in/out signals of the widget and its descendent children.
+void UnblockFocusSignals(GtkWidget* widget, gpointer data) {
+  if (!widget)
+    return;
+  InitSignalIds();
+  UnblockSignal(widget, focus_in_event_signal_id_);
+  UnblockSignal(widget, focus_out_event_signal_id_);
+  if (GTK_IS_CONTAINER(widget))
+    gtk_container_foreach(GTK_CONTAINER(widget), UnblockFocusSignals, data);
+}
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostGtk, public:
 
@@ -183,7 +252,10 @@ void NativeViewHostGtk::SetFocus() {
 
 void NativeViewHostGtk::CreateFixed(bool needs_window) {
   GtkWidget* focused_widget = GetFocusedDescendant();
-  bool fixed_is_focused = (focused_widget == fixed_);
+
+  // We move focus around and do not want focus events to be emitted
+  // during this process.
+  BlockFocusSignals(GetHostWidget()->GetNativeView(), NULL);
 
   if (focused_widget) {
     // A descendant of our fixed has focus. When we destroy the fixed focus is
@@ -208,11 +280,9 @@ void NativeViewHostGtk::CreateFixed(bool needs_window) {
     gtk_container_add(GTK_CONTAINER(fixed_), host_->native_view());
 
   if (widget_gtk && host_->native_view() && focused_widget) {
-    if (fixed_is_focused)
-      gtk_widget_grab_focus(fixed_);
-    else
-      gtk_widget_grab_focus(focused_widget);
+    gtk_widget_grab_focus(focused_widget);
   }
+  UnblockFocusSignals(GetHostWidget()->GetNativeView(), NULL);
 }
 
 void NativeViewHostGtk::DestroyFixed() {

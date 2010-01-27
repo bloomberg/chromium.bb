@@ -276,10 +276,10 @@ class ChromeosBrowserViewLayoutManager : public ChromeBrowserViewLayoutManager {
 
     if (compact_navigation_bar_->IsVisible()) {
       gfx::Size cnb_bounds = compact_navigation_bar_->GetPreferredSize();
-      // This (+1/-1) is a quick hack for the bug
-      // http://code.google.com/p/chromium-os/issues/detail?id=1010
-      // while investigating the issue. It could be in gtk or around
-      // NativeViewHostGtk::CreateFixed, but it will take some time.
+      // Adjust the size of the compact nativation bar to avoid creating
+      // a fixed widget with its own gdk window. AutocompleteEditView
+      // expects the parent view to be transparent, but a fixed with
+      // its own window is not.
       compact_navigation_bar_->SetBounds(curx, bounds.y() + 1,
                                          cnb_bounds.width(),
                                          bounds.height() - 1);
