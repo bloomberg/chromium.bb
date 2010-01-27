@@ -54,7 +54,7 @@
 #include <string.h>
 #define PORT_New(type) static_cast<type*>(malloc(sizeof(type)))
 #define PORT_ZFree(ptr, len) do { memset(ptr, 0, len); free(ptr); } while (0)
-#define PORT_Strlen(s) static_cast<uint32>(strlen(s))
+#define PORT_Strlen(s) static_cast<unsigned int>(strlen(s))
 #define PORT_Memcpy memcpy
 
 /* ============= Common constants and defines ======================= */
@@ -475,7 +475,7 @@ SHA256_End(SHA256Context *ctx, unsigned char *digest,
 #if 0
 SECStatus
 SHA256_HashBuf(unsigned char *dest, const unsigned char *src,
-               uint32 src_length)
+               unsigned int src_length)
 {
     SHA256Context ctx;
     unsigned int outLen;
@@ -1133,7 +1133,7 @@ SHA512_End(SHA512Context *ctx, unsigned char *digest,
 
 SECStatus
 SHA512_HashBuf(unsigned char *dest, const unsigned char *src,
-               uint32 src_length)
+               unsigned int src_length)
 {
     SHA512Context ctx;
     unsigned int outLen;
@@ -1241,7 +1241,7 @@ SHA384_End(SHA384Context *ctx, unsigned char *digest,
 
 SECStatus
 SHA384_HashBuf(unsigned char *dest, const unsigned char *src,
-			  uint32 src_length)
+			  unsigned int src_length)
 {
     SHA512Context ctx;
     unsigned int outLen;

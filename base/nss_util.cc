@@ -17,8 +17,16 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 
+// On some platforms, we use NSS for SSL only -- we don't use NSS for crypto
+// or certificate verification, and we don't use the NSS certificate and key
+// databases.
+#if defined(OS_WIN)
+#define USE_NSS_FOR_SSL_ONLY 1
+#endif
+
 namespace {
 
+#if !defined(USE_NSS_FOR_SSL_ONLY)
 std::string GetDefaultConfigDirectory() {
   const char* home = getenv("HOME");
   if (home == NULL) {
@@ -49,6 +57,7 @@ SECMODModule *InitDefaultRootCerts() {
   NOTREACHED();
   return NULL;
 }
+#endif  // !defined(USE_NSS_FOR_SSL_ONLY)
 
 // A singleton to initialize/deinitialize NSPR.
 // Separate from the NSS singleton because we initialize NSPR on the UI thread.
@@ -69,7 +78,7 @@ class NSPRInitSingleton {
 
 class NSSInitSingleton {
  public:
-  NSSInitSingleton() {
+  NSSInitSingleton() : root_(NULL) {
     base::EnsureNSPRInit();
 
     // We *must* have NSS >= 3.12.3.  See bug 26448.
@@ -83,6 +92,14 @@ class NSSInitSingleton {
     CHECK(NSS_VersionCheck("3.12.3")) << "We depend on NSS >= 3.12.3";
 
     SECStatus status = SECFailure;
+#if defined(USE_NSS_FOR_SSL_ONLY)
+    // Use the system certificate store, so initialize NSS without database.
+    status = NSS_NoDB_Init(NULL);
+    if (status != SECSuccess) {
+      LOG(ERROR) << "Error initializing NSS without a persistent "
+                    "database: NSS error code " << PR_GetError();
+    }
+#else
     std::string database_dir = GetDefaultConfigDirectory();
     if (!database_dir.empty()) {
       // Initialize with a persistant database (~/.pki/nssdb).
@@ -117,6 +134,7 @@ class NSSInitSingleton {
     }
 
     root_ = InitDefaultRootCerts();
+#endif  // defined(USE_NSS_FOR_SSL_ONLY)
   }
 
   ~NSSInitSingleton() {

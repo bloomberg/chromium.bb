@@ -54,7 +54,7 @@ extern void SHA256_Update(SHA256Context *cx, const unsigned char *input,
 extern void SHA256_End(SHA256Context *cx, unsigned char *digest,
 		     unsigned int *digestLen, unsigned int maxDigestLen);
 extern SECStatus SHA256_HashBuf(unsigned char *dest, const unsigned char *src,
-			      uint32 src_length);
+			      unsigned int src_length);
 extern SECStatus SHA256_Hash(unsigned char *dest, const char *src);
 extern void SHA256_TraceState(SHA256Context *cx);
 extern unsigned int SHA256_FlattenSize(SHA256Context *cx);
@@ -72,7 +72,7 @@ extern void SHA512_Update(SHA512Context *cx, const unsigned char *input,
 extern void SHA512_End(SHA512Context *cx, unsigned char *digest,
 		     unsigned int *digestLen, unsigned int maxDigestLen);
 extern SECStatus SHA512_HashBuf(unsigned char *dest, const unsigned char *src,
-			      uint32 src_length);
+			      unsigned int src_length);
 extern SECStatus SHA512_Hash(unsigned char *dest, const char *src);
 extern void SHA512_TraceState(SHA512Context *cx);
 extern unsigned int SHA512_FlattenSize(SHA512Context *cx);
@@ -90,7 +90,7 @@ extern void SHA384_Update(SHA384Context *cx, const unsigned char *input,
 extern void SHA384_End(SHA384Context *cx, unsigned char *digest,
 		     unsigned int *digestLen, unsigned int maxDigestLen);
 extern SECStatus SHA384_HashBuf(unsigned char *dest, const unsigned char *src,
-			      uint32 src_length);
+			      unsigned int src_length);
 extern SECStatus SHA384_Hash(unsigned char *dest, const char *src);
 extern void SHA384_TraceState(SHA384Context *cx);
 extern unsigned int SHA384_FlattenSize(SHA384Context *cx);
