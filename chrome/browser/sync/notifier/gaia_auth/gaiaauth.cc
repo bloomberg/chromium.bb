@@ -251,6 +251,8 @@ class GaiaAuth::WorkerTask {
   std::string agent_;
   std::string signature_;
   std::string token_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkerTask);
 };
 
 }  // namespace buzz
@@ -278,11 +280,21 @@ namespace buzz {
 
 GaiaAuth::GaiaAuth(const std::string &user_agent, const std::string &sig)
     : agent_(user_agent), signature_(sig), firewall_(0),
-      worker_thread_("GaiaAuth worker thread"), worker_task_(NULL),
-      done_(false) {
+      worker_task_(NULL), on_work_done_task_(NULL),
+      worker_thread_("GaiaAuth worker thread"), done_(false),
+      current_message_loop_(MessageLoop::current()) {
+  DCHECK(current_message_loop_);
 }
 
 GaiaAuth::~GaiaAuth() {
+  DCHECK_EQ(MessageLoop::current(), current_message_loop_);
+  // Wait until worker thread stops running.
+  worker_thread_.Stop();
+  // Then, if the worker thread posted an OnAuthDone() task that is
+  // still pending, cancel it.
+  if (on_work_done_task_) {
+    on_work_done_task_->Cancel();
+  }
 }
 
 void GaiaAuth::StartPreXmppAuth(const buzz::Jid& jid,
@@ -319,25 +331,26 @@ void GaiaAuth::InternalStartGaiaAuth(const buzz::Jid& jid,
                                      const std::string& token,
                                      const std::string& service,
                                      bool obtain_auth) {
+  DCHECK_EQ(MessageLoop::current(), current_message_loop_);
   worker_task_.reset(
       new WorkerTask(jid.Str(), pass, service, proxy_, firewall_,
                      token, captcha_answer_, obtain_auth, agent_,
                      signature_, token_service_));
-  MessageLoop* current_message_loop = MessageLoop::current();
-  DCHECK(current_message_loop);
-  Task* on_work_done_task = NewRunnableMethod(this, &GaiaAuth::OnAuthDone);
+  on_work_done_task_ = NewRunnableMethod(this, &GaiaAuth::OnAuthDone);
   LOG(INFO) << "GaiaAuth begin (async)";
   worker_thread_.Start();
   worker_thread_.message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(worker_task_.get(),
                                    &WorkerTask::DoWork,
-                                   current_message_loop,
-                                   on_work_done_task));
+                                   current_message_loop_,
+                                   on_work_done_task_));
 }
 
 void GaiaAuth::OnAuthDone() {
+  DCHECK_EQ(MessageLoop::current(), current_message_loop_);
   LOG(INFO) << "GaiaAuth done (async)";
   worker_thread_.Stop();
+  on_work_done_task_ = NULL;
   done_ = true;
 
   if (worker_task_->fresh_auth_token()) {

@@ -19,6 +19,8 @@
 #include "talk/base/proxyinfo.h"
 #include "talk/xmpp/prexmppauth.h"
 
+class MessageLoop;
+
 namespace talk_base {
 class FirewallManager;
 }
@@ -113,9 +115,11 @@ class GaiaAuth : public PreXmppAuth {
   std::string signature_;
   talk_base::ProxyInfo proxy_;
   talk_base::FirewallManager* firewall_;
-  base::Thread worker_thread_;
   scoped_ptr<WorkerTask> worker_task_;
+  CancelableTask* on_work_done_task_;
+  base::Thread worker_thread_;
   bool done_;
+  MessageLoop* current_message_loop_;
 
   CaptchaAnswer captcha_answer_;
   std::string token_service_;
