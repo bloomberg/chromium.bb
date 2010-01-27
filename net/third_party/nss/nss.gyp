@@ -78,6 +78,12 @@
       'cflags': [
         '<!@(<(pkg-config) --cflags nss)',
       ],
+      'ldflags': [
+        '<!@(<(pkg-config) --libs-only-L --libs-only-other nss)',
+      ],
+      'libraries': [
+        '<!@(<(pkg-config) --libs-only-l nss | sed -e "s/-lssl3//")',
+      ],
       'conditions': [
         [ 'OS == "linux"', {
           'sources!': [
