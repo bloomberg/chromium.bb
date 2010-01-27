@@ -149,7 +149,7 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
   CocoaCookieTreeNode* cookie = CocoaNodeFromTreeNode(node, false);
 
   EXPECT_TRUE([@"B" isEqualToString:[cookie content]]);
-  EXPECT_TRUE([@"End of the session" isEqualToString:[cookie expires]]);
+  EXPECT_TRUE([@"When I close my browser" isEqualToString:[cookie expires]]);
   EXPECT_TRUE([@"Any kind of connection" isEqualToString:[cookie sendFor]]);
   EXPECT_TRUE([@"A" isEqualToString:[cookie title]]);
   EXPECT_TRUE([@"A" isEqualToString:[cookie name]]);
@@ -186,7 +186,7 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
 
   // Test cookie node. This is the same as CocoaNodeFromTreeNodeCookie.
   EXPECT_TRUE([@"B" isEqualToString:[cookie content]]);
-  EXPECT_TRUE([@"End of the session" isEqualToString:[cookie expires]]);
+  EXPECT_TRUE([@"When I close my browser" isEqualToString:[cookie expires]]);
   EXPECT_TRUE([@"Any kind of connection" isEqualToString:[cookie sendFor]]);
   EXPECT_TRUE([@"A" isEqualToString:[cookie title]]);
   EXPECT_TRUE([@"A" isEqualToString:[cookie name]]);
