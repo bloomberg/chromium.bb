@@ -94,13 +94,22 @@ bool NaClProcessHost::LaunchSelLdr() {
     switches::kEnableDCHECK,
     switches::kSilentDumpOnDCHECK,
     switches::kMemoryProfiling,
+    switches::kEnableNaCl,
   };
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+
+#if defined(OS_MACOSX)
+// TODO(dspringer): NaCl is temporalrily disabled on the Mac by default, but it
+// can be enabled with the --enable-nacl cmd-line switch.  Remove this check
+// when the security issues in the Mac PIC code are resolved.
+  if (!browser_command_line.HasSwitch(switches::kEnableNaCl))
+    return false;
+#endif
+
   for (size_t i = 0; i < arraysize(switch_names); ++i) {
     if (browser_command_line.HasSwitch(switch_names[i])) {
-      cmd_line->AppendSwitchWithValue(
-          switch_names[i],
+      cmd_line->AppendSwitchWithValue(switch_names[i],
           browser_command_line.GetSwitchValueASCII(switch_names[i]));
     }
   }

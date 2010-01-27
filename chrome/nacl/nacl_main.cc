@@ -22,8 +22,42 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/nacl/nacl_thread.h"
 
+// This function provides some ways to test crash and assertion handling
+// behavior of the renderer.
+static void HandleNaClTestParameters(const CommandLine& command_line) {
+  if (command_line.HasSwitch(switches::kNaClStartupDialog)) {
+    ChildProcess::WaitForDebugger(L"NativeClient");
+  }
+}
+
+// Launch the NaCl child process in its own thread.
+#if defined (OS_WIN)
+static void LaunchNaClChildProcess(bool no_sandbox,
+                                   sandbox::TargetServices* target_services) {
+  ChildProcess nacl_process;
+  nacl_process.set_main_thread(new NaClThread());
+  if (!no_sandbox && target_services)
+    target_services->LowerToken();
+  MessageLoop::current()->Run();
+}
+#elif defined(OS_MACOSX)
+static void LaunchNaClChildProcess() {
+  ChildProcess nacl_process;
+  nacl_process.set_main_thread(new NaClThread());
+  MessageLoop::current()->Run();
+}
+#endif
+
 // main() routine for running as the sel_ldr process.
 int NaClMain(const MainFunctionParams& parameters) {
+  const CommandLine& parsed_command_line = parameters.command_line_;
+
+  // This function allows pausing execution using the --nacl-startup-dialog
+  // flag allowing us to attach a debugger.
+  // Do not move this function down since that would mean we can't easily debug
+  // whatever occurs before it.
+  HandleNaClTestParameters(parsed_command_line);
+
   // The main thread of the plugin services IO.
   MessageLoopForIO main_message_loop;
   std::wstring app_name = chrome::kBrowserAppName;
@@ -33,8 +67,6 @@ int NaClMain(const MainFunctionParams& parameters) {
   HighResolutionTimerManager hi_res_timer_manager;
 
 #if defined(OS_WIN)
-  const CommandLine& parsed_command_line = parameters.command_line_;
-
   sandbox::TargetServices* target_services =
       parameters.sandbox_info_.TargetServices();
 
@@ -52,21 +84,14 @@ int NaClMain(const MainFunctionParams& parameters) {
       DCHECK(sandbox_test_module);
     }
   }
+  LaunchNaClChildProcess(no_sandbox, target_services);
+
+#elif defined(OS_MACOSX)
+  LaunchNaClChildProcess();
 
 #else
-  NOTIMPLEMENTED() << " non-windows startup, plugin startup dialog etc.";
+  NOTIMPLEMENTED() << " not implemented startup, plugin startup dialog etc.";
 #endif
-
-  {
-    ChildProcess nacl_process;
-    nacl_process.set_main_thread(new NaClThread());
-#if defined(OS_WIN)
-    if (!no_sandbox && target_services)
-      target_services->LowerToken();
-#endif
-
-    MessageLoop::current()->Run();
-  }
 
   return 0;
 }

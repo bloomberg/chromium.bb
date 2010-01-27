@@ -495,9 +495,10 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kTestSandbox,
     switches::kEnableSeccompSandbox,
 #if !defined (GOOGLE_CHROME_BUILD)
-    // This is an unsupported and not fully tested mode, so don't enable it for
-    // official Chrome builds.
+    // These are unsupported and not fully tested modes, so don't enable them
+    // for official Google Chrome builds.
     switches::kInProcessPlugins,
+    switches::kEnableNaCl,
 #endif
     switches::kDomAutomationController,
     switches::kUserAgent,
