@@ -179,57 +179,6 @@ CFUrlRequestUnittestRunner::~CFUrlRequestUnittestRunner() {
   fake_chrome_.Shutdown();
 }
 
-DWORD WINAPI NavigateIE(void* param) {
-  return 0;
-  win_util::ScopedCOMInitializer com;
-  BSTR url = reinterpret_cast<BSTR>(param);
-
-  bool found = false;
-  int retries = 0;
-  const int kMaxRetries = 20;
-  while (!found && retries < kMaxRetries) {
-    ScopedComPtr<IShellWindows> windows;
-    HRESULT hr = ::CoCreateInstance(__uuidof(ShellWindows), NULL, CLSCTX_ALL,
-        IID_IShellWindows, reinterpret_cast<void**>(windows.Receive()));
-    DCHECK(SUCCEEDED(hr)) << "CoCreateInstance";
-
-    if (SUCCEEDED(hr)) {
-      hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
-      long count = 0;  // NOLINT
-      windows->get_Count(&count);
-      VARIANT i = { VT_I4 };
-      for (i.lVal = 0; i.lVal < count; ++i.lVal) {
-        ScopedComPtr<IDispatch> folder;
-        windows->Item(i, folder.Receive());
-        if (folder != NULL) {
-          ScopedComPtr<IWebBrowser2> browser;
-          if (SUCCEEDED(browser.QueryFrom(folder))) {
-            found = true;
-            browser->Stop();
-            Sleep(1000);
-            VARIANT empty = ScopedVariant::kEmptyVariant;
-            hr = browser->Navigate(url, &empty, &empty, &empty, &empty);
-            DCHECK(SUCCEEDED(hr)) << "Failed to navigate";
-            break;
-          }
-        }
-      }
-    }
-    if (!found) {
-      DLOG(INFO) << "Waiting for browser to initialize...";
-      ::Sleep(100);
-      retries++;
-    }
-  }
-
-  DCHECK(retries < kMaxRetries);
-  DCHECK(found);
-
-  ::SysFreeString(url);
-
-  return 0;
-}
-
 void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
   if (!ShouldLaunchBrowser())
     return;
