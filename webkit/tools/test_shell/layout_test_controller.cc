@@ -903,9 +903,9 @@ bool LayoutTestController::CppVariantToBool(const CppVariant& value) {
     return 0 != value.ToInt32();
   else if (value.isString()) {
     std::string valueString = value.ToString();
-    if (valueString == "true")
+    if (valueString == "true" || valueString == "1")
       return true;
-    if (valueString == "false")
+    if (valueString == "false" || valueString == "0")
       return false;
   }
   LogErrorToConsole("Invalid value. Expected boolean value.");
@@ -991,6 +991,8 @@ void LayoutTestController::overridePreference(
       preferences->application_cache_enabled = CppVariantToBool(value);
     else if (key == "WebKitTabToLinksPreferenceKey")
       preferences->tabs_to_links = CppVariantToBool(value);
+    else if (key == "WebKitWebGLEnabled")
+      preferences->experimental_webgl_enabled = CppVariantToBool(value);
     else {
       std::string message("Invalid name for preference: ");
       message.append(key);

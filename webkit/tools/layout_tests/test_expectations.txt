@@ -173,9 +173,6 @@ WONTFIX SKIP BUG19635 : fast/events/pageshow-pagehide-on-back-cached-with-frames
 WONTFIX SKIP BUG19635 : media/restore-from-page-cache.html = TIMEOUT
 WONTFIX SKIP BUG19635 : loader/go-back-to-different-window-size.html = TIMEOUT TEXT
 
-// No support for WebGL yet
-BUG21852 SKIP : fast/canvas/webgl = FAIL
-
 // Tests that rely on cross-process MessagePorts.  No point in running them in
 // test_shell, since we'd have to use a completely different implementation from
 // what is used in the browser.
@@ -2915,3 +2912,9 @@ BUG33288 : fast/forms/input-valueasnumber-month.html = TEXT
 // Flaky storage tests
 BUG33343 LINUX MAC : storage/database-lock-after-reload.html = CRASH TEXT PASS
 BUG33343 DEBUG : storage/multiple-databases-garbage-collection.html = CRASH PASS
+
+// Rebaseline!
+BUG21852 : fast/canvas/webgl/gl-object-get-calls.html = TEXT
+BUG21852 : fast/canvas/webgl/null-object-behaviour.html = TEXT
+BUG21852 : fast/canvas/webgl/texImageTest.html = TEXT
+BUG21852 : fast/canvas/webgl/uniform-location.html = TEXT
