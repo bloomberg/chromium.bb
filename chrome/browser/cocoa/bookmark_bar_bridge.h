@@ -45,9 +45,13 @@ class BookmarkBarBridge : public BookmarkModelObserver {
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node);
 
+  virtual void BookmarkImportBeginning(BookmarkModel* model);
+  virtual void BookmarkImportEnding(BookmarkModel* model);
+
  private:
   BookmarkBarController* controller_;  // weak; owns me
   BookmarkModel* model_;  // weak; it is owned by a Profile.
+  bool batch_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarBridge);
 };

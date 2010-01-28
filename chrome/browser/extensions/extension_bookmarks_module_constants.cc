@@ -33,5 +33,8 @@ const char kOnBookmarkRemoved[] = "bookmarks.onRemoved";
 const char kOnBookmarkChanged[] = "bookmarks.onChanged";
 const char kOnBookmarkMoved[] = "bookmarks.onMoved";
 const char kOnBookmarkChildrenReordered[] = "bookmarks.onChildrenReordered";
-
+const char kOnBookmarkImportBegan[] =
+    "experimental.bookmarkManager.onImportBegan";
+const char kOnBookmarkImportEnded[] =
+    "experimental.bookmarkManager.onImportEnded";
 }  // namespace extension_bookmarks_module_constants

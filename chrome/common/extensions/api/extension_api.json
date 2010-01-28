@@ -1776,6 +1776,24 @@
         ]
       },
       {
+        "name": "import",
+        "type": "function",
+        "description": "Imports bookmarks from a chrome html bookmark file",
+        "nodoc": "true",
+        "parameters": [
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      },
+      {
+        "name": "export",
+        "type": "function",
+        "description": "Exports bookmarks to a chrome html bookmark file",
+        "nodoc": "true",
+        "parameters": [
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      },
+      {
         "name": "getStrings",
         "type": "function",
         "description": "Gets the i18n strings for the bookmark manager",
@@ -1794,6 +1812,25 @@
           }
         ]
       }
+    ],
+    "events": [
+      {
+        "name": "onImportBegan",
+        "type": "function",
+        "description": "Fired when a bookmark import session is begun.  Expensive observers should ignore updates until onImportEnded is fired.",
+        "parameters": [
+          {}
+        ]
+      },
+      {
+        "name": "onImportEnded",
+        "type": "function",
+        "description": "Fired when a bookmark import session is ended.",
+        "parameters": [
+          {}
+        ]
+      }
+
     ]
   },
   {

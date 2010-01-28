@@ -85,6 +85,11 @@ void ProfileWriter::AddBookmarkEntry(
 
   bool show_bookmark_toolbar = false;
   std::set<const BookmarkNode*> groups_added_to;
+  bool import_mode = false;
+  if (bookmark.size() > 1) {
+    model->BeginImportMode();
+    import_mode = true;
+  }
   for (std::vector<BookmarkEntry>::const_iterator it = bookmark.begin();
        it != bookmark.end(); ++it) {
     // Don't insert this url if it isn't valid.
@@ -140,6 +145,10 @@ void ProfileWriter::AddBookmarkEntry(
           groups_added_to.begin();
        i != groups_added_to.end(); ++i) {
     model->ResetDateGroupModified(*i);
+  }
+
+  if (import_mode) {
+    model->EndImportMode();
   }
 
   if (show_bookmark_toolbar)

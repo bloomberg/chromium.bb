@@ -205,6 +205,12 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
     observers_.RemoveObserver(observer);
   }
 
+  // Notify the observes that an import is about to happen, so they can
+  // delay any expensive UI updates until it is finished.
+  void BeginImportMode();
+  void EndImportMode();
+
+
   // Unstars or deletes the specified entry. Removing a group entry recursively
   // unstars all nodes. Observers are notified immediately.
   void Remove(const BookmarkNode* parent, int index);

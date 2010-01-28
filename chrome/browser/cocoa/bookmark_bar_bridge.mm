@@ -10,7 +10,8 @@
 BookmarkBarBridge::BookmarkBarBridge(BookmarkBarController* controller,
                                      BookmarkModel* model)
     : controller_(controller),
-      model_(model) {
+      model_(model),
+      batch_mode_(false) {
   model_->AddObserver(this);
 
   // Bookmark loading is async; it may may not have happened yet.
@@ -44,7 +45,9 @@ void BookmarkBarBridge::BookmarkNodeMoved(BookmarkModel* model,
 void BookmarkBarBridge::BookmarkNodeAdded(BookmarkModel* model,
                                           const BookmarkNode* parent,
                                           int index) {
-  [controller_ nodeAdded:model parent:parent index:index];
+  if (!batch_mode_) {
+    [controller_ nodeAdded:model parent:parent index:index];
+  }
 }
 
 void BookmarkBarBridge::BookmarkNodeRemoved(BookmarkModel* model,
@@ -67,4 +70,13 @@ void BookmarkBarBridge::BookmarkNodeFavIconLoaded(BookmarkModel* model,
 void BookmarkBarBridge::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
   [controller_ nodeChildrenReordered:model node:node];
+}
+
+void BookmarkBarBridge::BookmarkImportBeginning(BookmarkModel* model) {
+  batch_mode_ = true;
+}
+
+void BookmarkBarBridge::BookmarkImportEnding(BookmarkModel* model) {
+  batch_mode_ = false;
+  [controller_ loaded:model];
 }

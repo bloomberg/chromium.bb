@@ -45,6 +45,8 @@ class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
                                          const BookmarkNode* node);
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node);
+  virtual void BookmarkImportBeginning(BookmarkModel* model);
+  virtual void BookmarkImportEnding(BookmarkModel* model);
 
  private:
   ExtensionBookmarkEventRouter();

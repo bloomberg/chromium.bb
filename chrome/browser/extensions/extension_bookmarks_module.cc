@@ -279,6 +279,25 @@ void ExtensionBookmarkEventRouter::BookmarkNodeChildrenReordered(
                 json_args);
 }
 
+void ExtensionBookmarkEventRouter::
+    BookmarkImportBeginning(BookmarkModel* model) {
+  ListValue args;
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  DispatchEvent(model->profile(),
+                keys::kOnBookmarkImportBegan,
+                json_args);
+}
+
+void ExtensionBookmarkEventRouter::BookmarkImportEnding(BookmarkModel* model) {
+  ListValue args;
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  DispatchEvent(model->profile(),
+                keys::kOnBookmarkImportEnded,
+                json_args);
+}
+
 bool GetBookmarksFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   scoped_ptr<ListValue> json(new ListValue());

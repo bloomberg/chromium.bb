@@ -38,6 +38,8 @@ extern const char kOnBookmarkRemoved[];
 extern const char kOnBookmarkChanged[];
 extern const char kOnBookmarkMoved[];
 extern const char kOnBookmarkChildrenReordered[];
+extern const char kOnBookmarkImportBegan[];
+extern const char kOnBookmarkImportEnded[];
 
 };  // namespace extension_bookmarks_module_constants
 

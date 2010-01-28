@@ -52,6 +52,17 @@ class BookmarkModelObserver {
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) = 0;
 
+  // Invoked before a batch import begins.  This tells UI intensive observers
+  // to wait until the updates finish to update themselves.
+  // These methods should only be used for imports. Observers should still
+  // respond to BookmarkNodeRemoved immediately, to avoid holding onto
+  // stale node pointers.
+  virtual void BookmarkImportBeginning(BookmarkModel* model) {}
+
+  // Invoked after a batch import finishes.  This tells observers to update
+  // themselves if they were waiting for the update to finish.
+  virtual void BookmarkImportEnding(BookmarkModel* model) {}
+
  protected:
   virtual ~BookmarkModelObserver() {}
 };

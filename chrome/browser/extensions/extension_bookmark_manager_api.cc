@@ -7,6 +7,9 @@
 #include "app/l10n_util.h"
 #include "base/values.h"
 #include "grit/generated_resources.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/bookmarks/bookmark_html_writer.h"
+#include "chrome/browser/importer/importer.h"
 
 bool CopyBookmarkManagerFunction::RunImpl() {
   NOTIMPLEMENTED();
@@ -25,6 +28,66 @@ bool PasteBookmarkManagerFunction::RunImpl() {
   return true;
 }
 
+void BookmarkManagerIOFunction::SelectFile(SelectFileDialog::Type type) {
+  // Balanced in one of the three callbacks of SelectFileDialog:
+  // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
+  AddRef();
+  select_file_dialog_ = SelectFileDialog::Create(this);
+  SelectFileDialog::FileTypeInfo file_type_info;
+  file_type_info.extensions.resize(1);
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
+
+  select_file_dialog_->SelectFile(type,
+                                  string16(),
+                                  FilePath(),
+                                  &file_type_info,
+                                  0,
+                                  FILE_PATH_LITERAL(""),
+                                  NULL,
+                                  NULL);
+}
+
+void BookmarkManagerIOFunction::FileSelectionCanceled(void* params) {
+  Release(); //Balanced in BookmarkManagerIOFunction::SelectFile()
+}
+
+void BookmarkManagerIOFunction::MultiFilesSelected(
+    const std::vector<FilePath>& files, void* params) {
+  Release(); //Balanced in BookmarkManagerIOFunction::SelectFile()
+  NOTREACHED() << "Should not be able to select multiple files";
+}
+
+bool ImportBookmarksFunction::RunImpl() {
+  SelectFile(SelectFileDialog::SELECT_OPEN_FILE);
+  return true;
+}
+
+void ImportBookmarksFunction::FileSelected(const FilePath& path,
+                                           int index,
+                                           void* params) {
+  ImporterHost* host = new ImporterHost();
+  ProfileInfo profile_info;
+  profile_info.browser_type = BOOKMARKS_HTML;
+  profile_info.source_path = path.ToWStringHack();
+  host->StartImportSettings(profile_info,
+                            profile(),
+                            FAVORITES,
+                            new ProfileWriter(profile()),
+                            true);
+  Release(); //Balanced in BookmarkManagerIOFunction::SelectFile()
+}
+
+bool ExportBookmarksFunction::RunImpl() {
+  SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE);
+  return true;
+}
+
+void ExportBookmarksFunction::FileSelected(const FilePath& path,
+                                                int index,
+                                                void* params) {
+  bookmark_html_writer::WriteBookmarks(profile()->GetBookmarkModel(), path);
+  Release(); //Balanced in BookmarkManagerIOFunction::SelectFile()
+}
 
 bool BookmarkManagerGetStringsFunction::RunImpl() {
   DictionaryValue* localized_strings = new DictionaryValue();

@@ -609,6 +609,16 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
       Details<history::URLsStarredDetails>(&details));
 }
 
+void BookmarkModel::BeginImportMode() {
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    BookmarkImportBeginning(this));
+}
+
+void BookmarkModel::EndImportMode() {
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    BookmarkImportEnding(this));
+}
+
 BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
                                      int index,
                                      BookmarkNode* node,
