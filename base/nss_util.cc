@@ -89,7 +89,9 @@ class NSSInitSingleton {
         nss_version_check_failed);
     // Also check the run-time NSS version.
     // NSS_VersionCheck is a >= check, not strict equality.
-    CHECK(NSS_VersionCheck("3.12.3")) << "We depend on NSS >= 3.12.3";
+    CHECK(NSS_VersionCheck("3.12.3")) << "We depend on NSS >= 3.12.3. "
+                                         "If NSS is up to date, please "
+                                         "update NSPR to the latest version.";
 
     SECStatus status = SECFailure;
 #if defined(USE_NSS_FOR_SSL_ONLY)
