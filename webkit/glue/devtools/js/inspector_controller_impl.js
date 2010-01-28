@@ -210,9 +210,6 @@ devtools.InspectorBackendImpl.prototype.takeHeapSnapshot = function() {
 };
 
 
-// TODO(yurys): remove the if once WebKit change is rolled.
-if (InjectedScriptAccess.getDefault) {
-
 /**
  * @override
  */
@@ -230,23 +227,6 @@ devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript = function(
       async);
 };
 
-} else {
-
-/**
- * @override
- */
-devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript = function(
-    callId, methodName, argsString, async) {
-  var injectedScriptId = 1000000;
-  RemoteToolsAgent.dispatchOnInjectedScript(
-      callId,
-      injectedScriptId,
-      methodName,
-      argsString,
-      async);
-};
-
-}
 
 /**
  * Installs delegating handler into the inspector controller.

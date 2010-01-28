@@ -392,15 +392,8 @@ WebInspector.UIString = function(string) {
 
 
 (function () {
-// TODO(yurys): get rid of the if once WebKit change is rolled.
-var accessor;
-if (InjectedScriptAccess.getDefault)
-  accessor = InjectedScriptAccess.prototype;
-else
-  accessor = InjectedScriptAccess;
-
-var orig = accessor.getProperties;
-accessor.getProperties = function(
+var orig = InjectedScriptAccess.prototype.getProperties;
+InjectedScriptAccess.prototype.getProperties = function(
     objectProxy, ignoreHasOwnProperty, abbreviate, callback) {
   if (objectProxy.isScope) {
     devtools.tools.getDebuggerAgent().resolveScope(objectProxy.objectId,
@@ -416,15 +409,8 @@ accessor.getProperties = function(
 
 
 (function() {
-// TODO(yurys): get rid of the if once WebKit change is rolled.
-var accessor;
-if (InjectedScriptAccess.getDefault)
-  accessor = InjectedScriptAccess.prototype;
-else
-  accessor = InjectedScriptAccess;
-
-accessor.evaluateInCallFrame = function(callFrameId, code,
-                                        objectGroup, callback)
+InjectedScriptAccess.prototype.evaluateInCallFrame = function(callFrameId,
+    code, objectGroup, callback)
 {
   //TODO(pfeldman): remove once 49084 is rolled.
   if (!callback) {
@@ -462,15 +448,8 @@ WebInspector.ConsoleMessage.prototype.setMessageBody = function(args) {
 
 
 (function() {
-// TODO(yurys): get rid of the if once WebKit change is rolled.
-var accessor;
-if (InjectedScriptAccess.getDefault)
-  accessor = InjectedScriptAccess.prototype;
-else
-  accessor = InjectedScriptAccess;
-
-var orig = accessor.getCompletions;
-accessor.getCompletions = function(expressionString,
+var orig = InjectedScriptAccess.prototype.getCompletions;
+InjectedScriptAccess.prototype.getCompletions = function(expressionString,
     includeInspectorCommandLineAPI, callFrameId, reportCompletions) {
   if (goog.isDef(callFrameId)) {
     devtools.tools.getDebuggerAgent().resolveCompletionsOnFrame(

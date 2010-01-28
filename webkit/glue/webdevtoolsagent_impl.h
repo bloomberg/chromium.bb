@@ -133,7 +133,6 @@ private:
     // Otherwise some useful methods  defined on Function.prototype(such as bind)
     // are missing for InspectorController native methods.
     v8::Local<v8::Object> createInspectorBackendV8Wrapper();
-    v8::Local<v8::Object> createInjectedScriptHostV8Wrapper();
 
     int m_hostId;
     WebKit::WebDevToolsAgentClient* m_client;

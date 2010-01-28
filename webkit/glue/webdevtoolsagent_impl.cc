@@ -111,13 +111,6 @@ using WebKit::WebViewImpl;
 
 namespace {
 
-void InjectedScriptHostWeakReferenceCallback(v8::Persistent<v8::Value> object, void* parameter)
-{
-    InjectedScriptHost* host = static_cast<InjectedScriptHost*>(parameter);
-    host->deref();
-    object.Dispose();
-}
-
 void InspectorBackendWeakReferenceCallback(v8::Persistent<v8::Value> object, void* parameter)
 {
     InspectorBackend* backend = static_cast<InspectorBackend*>(parameter);
@@ -204,7 +197,7 @@ void WebDevToolsAgentImpl::attach()
     resetInspectorFrontendProxy();
     unhideResourcesPanelIfNecessary();
     // Allow controller to send messages to the frontend.
-    InspectorController* ic = m_webViewImpl->page()->inspectorController();
+    InspectorController* ic = inspectorController();
 
     { // TODO(yurys): the source should have already been pushed by the frontend.
         v8::HandleScope scope;
@@ -290,22 +283,12 @@ void WebDevToolsAgentImpl::dispatchOnInjectedScript(
       const String& jsonArgs,
       bool async)
 {
-    // TODO(yurys): get rid of this code once WebKit change is rolled.
-    if (injectedScriptId != 1000000) {
-        inspectorController()->inspectorBackend()->dispatchOnInjectedScript(
-            callId,
-            injectedScriptId,
-            functionName,
-            jsonArgs,
-            async);
-        return;
-    }
-    String result;
-    String exception;
-    result = m_debuggerAgentImpl->executeUtilityFunction(m_utilityContext,
-        callId, "InjectedScript", functionName, jsonArgs, async, &exception);
-    if (!async)
-        m_toolsAgentDelegateStub->didDispatchOn(callId, result, exception);
+    inspectorController()->inspectorBackend()->dispatchOnInjectedScript(
+        callId,
+        injectedScriptId,
+        functionName,
+        jsonArgs,
+        async);
 }
 
 void WebDevToolsAgentImpl::executeVoidJavaScript()
@@ -373,38 +356,10 @@ void WebDevToolsAgentImpl::initDevToolsAgentHost()
     // Call custom code to create inspector backend wrapper in the utility context
     // instead of calling V8DOMWrapper::convertToV8Object that would create the
     // wrapper in the Page main frame context.
-    v8::Handle<v8::Object> scriptHostWrapper = createInjectedScriptHostV8Wrapper();
-    if (scriptHostWrapper.IsEmpty())
-        return;
-    m_utilityContext->Global()->Set(v8::String::New("InjectedScriptHost"), scriptHostWrapper);
-
     v8::Handle<v8::Object> backendWrapper = createInspectorBackendV8Wrapper();
     if (backendWrapper.IsEmpty())
         return;
     m_utilityContext->Global()->Set(v8::String::New("InspectorBackend"), backendWrapper);
-}
-
-v8::Local<v8::Object> WebDevToolsAgentImpl::createInjectedScriptHostV8Wrapper()
-{
-    V8ClassIndex::V8WrapperType descriptorType = V8ClassIndex::INJECTEDSCRIPTHOST;
-    v8::Handle<v8::Function> function = V8DOMWrapper::getTemplate(descriptorType)->GetFunction();
-    if (function.IsEmpty()) {
-        // Return if allocation failed.
-        return v8::Local<v8::Object>();
-    }
-    v8::Local<v8::Object> instance = SafeAllocation::newInstance(function);
-    if (instance.IsEmpty()) {
-        // Avoid setting the wrapper if allocation failed.
-        return v8::Local<v8::Object>();
-    }
-    InjectedScriptHost* host = m_webViewImpl->page()->inspectorController()->injectedScriptHost();
-    V8DOMWrapper::setDOMWrapper(instance, V8ClassIndex::ToInt(descriptorType), host);
-    // Create a weak reference to the v8 wrapper of InspectorBackend to deref
-    // InspectorBackend when the wrapper is garbage collected.
-    host->ref();
-    v8::Persistent<v8::Object> weakHandle = v8::Persistent<v8::Object>::New(instance);
-    weakHandle.MakeWeak(host, &InjectedScriptHostWeakReferenceCallback);
-    return instance;
 }
 
 v8::Local<v8::Object> WebDevToolsAgentImpl::createInspectorBackendV8Wrapper()
@@ -442,37 +397,9 @@ void WebDevToolsAgentImpl::resetInspectorFrontendProxy()
         m_webViewImpl->page()->mainFrame(),
         m_utilityContext));
 
-    v8::Local<v8::Value> injectedScriptValue = m_utilityContext->Global()->Get(v8::String::New("InjectedScript"));
-    v8::Local<v8::Object> injectedScript;
-    // TODO(yurys): get rid of the 'if' once WebKit is rolled.
-    if (injectedScriptValue->IsObject())
-        injectedScript = v8::Local<v8::Object>::Cast(injectedScriptValue);
-    else {
-        v8::Local<v8::Object> global = m_utilityContext->Global();
-        v8::Handle<v8::Function> injectedScriptConstructor =
-            v8::Local<v8::Function>::Cast(global->Get(v8::String::New("injectedScriptConstructor")));
-        v8::Local<v8::Value> injectedScriptHost = global->Get(v8::String::New("InjectedScriptHost"));
-        ASSERT(!injectedScriptHost->IsUndefined());
-        v8::Local<v8::Value> inspectedWindow = global->Get(v8::String::New("contentWindow"));
-        ASSERT(!inspectedWindow->IsUndefined());
-        v8::Local<v8::Number> id = v8::Number::New(0);
-
-        v8::Handle<v8::Value> args[] = {
-          injectedScriptHost,
-          inspectedWindow,
-          id
-        };
-        v8::Local<v8::Value> injectedScriptValue = injectedScriptConstructor->Call(global, 3, args);
-        injectedScript = v8::Local<v8::Object>::Cast(injectedScriptValue);
-        m_utilityContext->Global()->Set(v8::String::New("InjectedScript"), injectedScript);
-    }
-
     ScriptState* state = m_inspectorFrontendScriptState.get();
-    InspectorController* ic = m_webViewImpl->page()->inspectorController();
-    ic->setFrontendProxyObject(
-        state,
-        ScriptObject(state, m_utilityContext->Global()),
-        ScriptObject(state, injectedScript));
+    InspectorController* ic = inspectorController();
+    ic->setFrontendProxyObject(state, ScriptObject(state, m_utilityContext->Global()));
 }
 
 void WebDevToolsAgentImpl::setApuAgentEnabled(bool enabled)

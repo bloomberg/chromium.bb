@@ -1565,13 +1565,7 @@ TestSuite.prototype._findChildProperty = function(
  * @param {Function} code A code snippet to be executed.
  */
 TestSuite.prototype._hookGetPropertiesCallback = function(hook, code) {
-  // TODO(yurys): get rid of the if once WebKit change is rolled.
-  var accessor;
-  if (InjectedScriptAccess.getDefault)
-    accessor = InjectedScriptAccess.prototype;
-  else
-    accessor = InjectedScriptAccess;
-
+  var accessor = InjectedScriptAccess.prototype;
   var orig = accessor.getProperties;
   accessor.getProperties = function(objectProxy,
       ignoreHasOwnProperty, abbreviate, callback) {
