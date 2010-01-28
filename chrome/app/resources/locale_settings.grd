@@ -528,9 +528,11 @@
         http://www.google.com/chrome/intl/[GRITLANGCODE]/welcome.html
       </message>
 
-      <!-- The URL for Adobe Flash storage settings -->
+      <!-- The URL for Adobe Flash storage settings. We cannot rely on -->
+      <!-- the automatic expansion of GRITLANGCODE here because Adobe does -->
+      <!-- not use the language/locale code. -->
       <message name="IDS_FLASH_STORAGE_URL" use_name_for_id="true">
-        http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager07.html
+        http://www.adobe.com/go/settmgr_storage_en
       </message>
 
       <!-- The width of the sync setup wizard / login dialog in characters. -->
