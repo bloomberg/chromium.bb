@@ -46,8 +46,18 @@ class ResourceRequestDetails {
     // such as ssl state etc.
     const WorkerProcessHost::WorkerInstance* worker_instance =
         WorkerService::GetInstance()->FindWorkerInstance(info->child_id());
-    origin_child_id_ =
-        worker_instance ? worker_instance->renderer_id() : info->child_id();
+    if (worker_instance) {
+      DCHECK(!worker_instance->worker_document_set()->IsEmpty());
+      const WorkerDocumentSet::DocumentInfoSet& parents =
+          worker_instance->worker_document_set()->documents();
+      // TODO(atwilson): need to notify all associated renderers in the case
+      // of ssl state change (http://crbug.com/25357). For now, just notify
+      // the first one (works for dedicated workers and shared workers with
+      // a single process).
+      origin_child_id_ = parents.begin()->renderer_id();
+    } else {
+      origin_child_id_ = info->child_id();
+    }
   }
 
   virtual ~ResourceRequestDetails() {}

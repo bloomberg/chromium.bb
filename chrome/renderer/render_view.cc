@@ -1925,11 +1925,12 @@ WebSharedWorker* RenderView::createSharedWorker(
   int route_id = MSG_ROUTING_NONE;
   bool url_mismatch = false;
   Send(new ViewHostMsg_LookupSharedWorker(
-      url, name, document_id, &route_id, &url_mismatch));
+      url, name, document_id, routing_id_, &route_id, &url_mismatch));
   if (url_mismatch) {
     return NULL;
   } else {
     return new WebSharedWorkerProxy(RenderThread::current(),
+                                    document_id,
                                     route_id,
                                     routing_id_);
   }
