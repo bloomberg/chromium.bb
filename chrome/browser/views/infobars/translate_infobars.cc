@@ -267,24 +267,28 @@ void TranslateInfoBar::Layout() {
       InfoBar::OffsetY(this, label1_ps), text1_width, label1_ps.height());
 
   // Place first language menu button after label_1.
-  button1->SetBounds(label_1_->bounds().right() + InfoBar::kButtonSpacing,
-      OffsetY(this, button1_ps), button1_ps.width(), button1_ps.height());
+  button1->SetBounds(label_1_->bounds().right() +
+      InfoBar::kButtonInLabelSpacing, OffsetY(this, button1_ps),
+      button1_ps.width(), button1_ps.height());
 
   // Place label_2 after first language menu button.
-  label_2_->SetBounds(button1->bounds().right() + InfoBar::kButtonSpacing,
-      InfoBar::OffsetY(this, label2_ps), text2_width, label2_ps.height());
+  label_2_->SetBounds(button1->bounds().right() +
+      GetSpacingAfterFirstLanguageButton(), InfoBar::OffsetY(this, label2_ps),
+      text2_width, label2_ps.height());
 
   // If second language menu button is available, place it after label_2.
   if (button2) {
     gfx::Size button2_ps = button2->GetPreferredSize();
-    button2->SetBounds(label_2_->bounds().right() + InfoBar::kButtonSpacing,
-        OffsetY(this, button2_ps), button2_ps.width(), button2_ps.height());
+    button2->SetBounds(label_2_->bounds().right() +
+        InfoBar::kButtonInLabelSpacing, OffsetY(this, button2_ps),
+        button2_ps.width(), button2_ps.height());
 
     if (label_3_) {
       gfx::Size label3_ps = label_3_->GetPreferredSize();
       // Place label_3 after first language menu button.
-      label_3_->SetBounds(button2->bounds().right() + InfoBar::kButtonSpacing,
-          InfoBar::OffsetY(this, label3_ps), text3_width, label3_ps.height());
+      label_3_->SetBounds(button2->bounds().right() +
+          InfoBar::kButtonInLabelSpacing, InfoBar::OffsetY(this, label3_ps),
+          text3_width, label3_ps.height());
     }
   }
 }
@@ -293,11 +297,25 @@ void TranslateInfoBar::Layout() {
 
 int TranslateInfoBar::GetAvailableWidth() const {
   gfx::Size icon_ps = icon_->GetPreferredSize();
+  // For language button, reserve spacing before and after it.
   gfx::Size language_ps = original_language_menu_button_->GetPreferredSize();
+  int language_spacing = InfoBar::kButtonInLabelSpacing +
+      GetSpacingAfterFirstLanguageButton();
+  // Options button could come after different types of controls, so we reserve
+  // different spacings for each:
+  // - after label_3 (i.e. this label follows the second language button):
+  //   spacing after second language button and for end of sentence
+  // - after second language button (i.e. there's no label_3): spacing for end
+  //   of sentence
+  // - all other cases, regular button spacing before options button
   gfx::Size options_ps = options_menu_button_->GetPreferredSize();
-  return (InfoBar::GetAvailableWidth() - options_ps.width() -
-      language_ps.width() - (InfoBar::kButtonSpacing * 3) -
-      icon_ps.width() - InfoBar::kIconLabelSpacing);
+  int options_spacing =
+      (label_3_ ? InfoBar::kButtonInLabelSpacing + InfoBar::kEndOfLabelSpacing :
+          (target_language_menu_button() ? InfoBar::kEndOfLabelSpacing :
+              InfoBar::kButtonButtonSpacing));
+  return (InfoBar::GetAvailableWidth() - options_ps.width() - options_spacing -
+      language_ps.width() - language_spacing -
+      icon_->bounds().right() - InfoBar::kIconLabelSpacing);
 }
 
 // TranslateInfoBar, views::ViewMenuDelegate implementation: -------------------
@@ -411,7 +429,7 @@ views::MenuButton* TranslateInfoBar::CreateMenuButton(int menu_id,
 
 int TranslateInfoBar::GetAvailableX() const {
   return ((label_3_ ? label_3_->bounds().right() : label_2_->bounds().right()) +
-      InfoBar::kButtonSpacing);
+      InfoBar::kEndOfLabelSpacing);
 }
 
 gfx::Point TranslateInfoBar::DetermineMenuPositionAndAlignment(
@@ -479,8 +497,9 @@ BeforeTranslateInfoBar::~BeforeTranslateInfoBar() {
 int BeforeTranslateInfoBar::GetAvailableWidth() const {
   gfx::Size accept_ps = accept_button_->GetPreferredSize();
   gfx::Size deny_ps = deny_button_->GetPreferredSize();
-  return (TranslateInfoBar::GetAvailableWidth() - accept_ps.width() -
-      deny_ps.width() - (InfoBar::kButtonSpacing * 2));
+  return (TranslateInfoBar::GetAvailableWidth() -
+      accept_ps.width() - InfoBar::kEndOfLabelSpacing -
+      deny_ps.width() - InfoBar::kButtonButtonSpacing);
 }
 
 // BeforeTranslateInfoBar, views::View overrides: ------------------------------
@@ -491,14 +510,13 @@ void BeforeTranslateInfoBar::Layout() {
 
   // Layout accept button.
   gfx::Size accept_ps = accept_button_->GetPreferredSize();
-  accept_button_->SetBounds(
-      TranslateInfoBar::GetAvailableX() + InfoBar::kButtonSpacing,
+  accept_button_->SetBounds(TranslateInfoBar::GetAvailableX(),
       OffsetY(this, accept_ps), accept_ps.width(), accept_ps.height());
 
   // Layout deny button.
   gfx::Size deny_ps = deny_button_->GetPreferredSize();
   deny_button_->SetBounds(
-      accept_button_->bounds().right() + InfoBar::kButtonSpacing,
+      accept_button_->bounds().right() + InfoBar::kButtonButtonSpacing,
       OffsetY(this, deny_ps), deny_ps.width(), deny_ps.height());
 }
 
@@ -534,7 +552,7 @@ AfterTranslateInfoBar::~AfterTranslateInfoBar() {
 int AfterTranslateInfoBar::GetAvailableWidth() const {
   gfx::Size target_ps = target_language_menu_button_->GetPreferredSize();
   return (TranslateInfoBar::GetAvailableWidth() - target_ps.width() -
-      InfoBar::kButtonSpacing);
+      InfoBar::kButtonInLabelSpacing);
 }
 
 // AfterTranslateInfoBar, views::ViewMenuDelegate implementation: --------------

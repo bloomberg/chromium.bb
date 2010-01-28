@@ -58,8 +58,12 @@ class TranslateInfoBar : public InfoBar,
   // Returns the leftmost position that subclasses can position their controls.
   virtual int GetAvailableX() const;
 
-  virtual views::MenuButton* target_language_menu_button() {
+  virtual views::MenuButton* target_language_menu_button() const {
     return NULL;
+  }
+
+  virtual int GetSpacingAfterFirstLanguageButton() const {
+    return InfoBar::kButtonInLabelSpacing;
   }
 
  private:
@@ -95,6 +99,11 @@ class BeforeTranslateInfoBar : public TranslateInfoBar {
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
+  // Overriden from TranslateInfoBar:
+  virtual int GetSpacingAfterFirstLanguageButton() const {
+    return 10;
+  }
+
   // Overridden from InfoBar:
   virtual int GetAvailableWidth() const;
 
@@ -120,7 +129,7 @@ class AfterTranslateInfoBar : public TranslateInfoBar {
   // Overridden from InfoBar:
   virtual int GetAvailableWidth() const;
 
-  virtual views::MenuButton* target_language_menu_button() {
+  virtual views::MenuButton* target_language_menu_button() const {
     return target_language_menu_button_;
   }
 

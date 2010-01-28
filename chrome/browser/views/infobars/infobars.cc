@@ -22,10 +22,13 @@
 #include "views/widget/widget.h"
 
 // static
-const double InfoBar::kTargetHeight = 37.0;
-const int InfoBar::kHorizontalPadding = 3;
-const int InfoBar::kIconLabelSpacing = 5;
-const int InfoBar::kButtonSpacing = 5;
+const double InfoBar::kTargetHeight = 36.0;
+const int InfoBar::kHorizontalPadding = 6;
+const int InfoBar::kIconLabelSpacing = 6;
+const int InfoBar::kButtonButtonSpacing = 10;
+const int InfoBar::kEndOfLabelSpacing = 16;
+const int InfoBar::kCloseButtonSpacing = 12;
+const int InfoBar::kButtonInLabelSpacing = 5;
 
 static const SkColor kInfoBackgroundColorTop = SkColorSetRGB(170, 214, 112);
 static const SkColor kInfoBackgroundColorBottom = SkColorSetRGB(146, 205, 114);
@@ -158,7 +161,7 @@ gfx::Size InfoBar::GetPreferredSize() {
 
 void InfoBar::Layout() {
   gfx::Size button_ps = close_button_->GetPreferredSize();
-  close_button_->SetBounds(width() - kButtonSpacing - button_ps.width(),
+  close_button_->SetBounds(width() - kHorizontalPadding - button_ps.width(),
                            OffsetY(this, button_ps), button_ps.width(),
                            button_ps.height());
 }
@@ -177,7 +180,7 @@ void InfoBar::ViewHierarchyChanged(bool is_add, views::View* parent,
 // InfoBar, protected: ---------------------------------------------------------
 
 int InfoBar::GetAvailableWidth() const {
-  return close_button_->x() - kButtonSpacing;
+  return close_button_->x() - kCloseButtonSpacing;
 }
 
 void InfoBar::RemoveInfoBar() const {
@@ -452,7 +455,7 @@ void ConfirmInfoBar::Layout() {
   cancel_button_->SetBounds(available_width - cancel_button_width,
                             OffsetY(this, cancel_ps), cancel_ps.width(),
                             cancel_ps.height());
-  int spacing = cancel_button_width > 0 ? kButtonSpacing : 0;
+  int spacing = cancel_button_width > 0 ? kButtonButtonSpacing : 0;
   ok_button_->SetBounds(cancel_button_->x() - spacing - ok_button_width,
                         OffsetY(this, ok_ps), ok_ps.width(), ok_ps.height());
   AlertInfoBar::Layout();
@@ -486,9 +489,9 @@ void ConfirmInfoBar::ButtonPressed(
 
 int ConfirmInfoBar::GetAvailableWidth() const {
   if (ok_button_)
-    return ok_button_->x() - kButtonSpacing;
+    return ok_button_->x() - kEndOfLabelSpacing;
   if (cancel_button_)
-    return cancel_button_->x() - kButtonSpacing;
+    return cancel_button_->x() - kEndOfLabelSpacing;
   return InfoBar::GetAvailableWidth();
 }
 

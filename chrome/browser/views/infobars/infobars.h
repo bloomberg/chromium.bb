@@ -58,7 +58,10 @@ class InfoBar : public views::View,
 
   static const int kHorizontalPadding;
   static const int kIconLabelSpacing;
-  static const int kButtonSpacing;
+  static const int kButtonButtonSpacing;
+  static const int kEndOfLabelSpacing;
+  static const int kCloseButtonSpacing;
+  static const int kButtonInLabelSpacing;
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
