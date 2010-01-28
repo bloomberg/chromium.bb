@@ -50,6 +50,10 @@ struct SerializeObject {
 // 4: Adds support for storing FormData::identifier().
 // 5: Adds support for empty FormData
 // Should be const, but unit tests may modify it.
+//
+// NOTE: If the version is -1, then the pickle contains only a URL string.
+// See CreateHistoryStateForURL.
+//
 int kVersion = 5;
 
 // A bunch of convenience functions to read/write to SerializeObjects.
@@ -117,6 +121,16 @@ inline bool ReadBoolean(const SerializeObject* obj) {
   bool tmp = false;
   obj->pickle.ReadBool(&obj->iter, &tmp);
   return tmp;
+}
+
+inline void WriteGURL(const GURL& url, SerializeObject* obj) {
+  obj->pickle.WriteString(url.possibly_invalid_spec());
+}
+
+inline GURL ReadGURL(const SerializeObject* obj) {
+  std::string spec;
+  obj->pickle.ReadString(&obj->iter, &spec);
+  return GURL(spec);
 }
 
 // Read/WriteString pickle the WebString as <int length><WebUChar* data>.
@@ -293,6 +307,14 @@ static WebHistoryItem ReadHistoryItem(
   // See note in WriteHistoryItem. on this.
   obj->version = ReadInteger(obj);
 
+  if (obj->version == -1) {
+    GURL url = ReadGURL(obj);
+    WebHistoryItem item;
+    item.initialize();
+    item.setURLString(WebString::fromUTF8(url.possibly_invalid_spec()));
+    return item;
+  }
+
   if (obj->version > kVersion || obj->version < 1)
     return WebHistoryItem();
 
@@ -382,14 +404,20 @@ void HistoryItemToVersionedString(const WebHistoryItem& item, int version,
 }
 
 std::string CreateHistoryStateForURL(const GURL& url) {
-  WebHistoryItem item;
-  item.initialize();
-  item.setURLString(UTF8ToUTF16(url.spec()));
-
-  return HistoryItemToString(item);
+  // We avoid using the WebKit API here, so that we do not need to have WebKit
+  // initialized before calling this method.  Instead, we write a simple
+  // serialization of the given URL with a dummy version number of -1.  This
+  // will be interpreted by ReadHistoryItem as a request to create a default
+  // WebHistoryItem.
+  SerializeObject obj;
+  WriteInteger(-1, &obj);
+  WriteGURL(url, &obj);
+  return obj.GetAsString();
 }
 
 std::string RemoveFormDataFromHistoryState(const std::string& content_state) {
+  // TODO(darin): We should avoid using the WebKit API here, so that we do not
+  // need to have WebKit initialized before calling this method.
   const WebHistoryItem& item = HistoryItemFromString(content_state, false);
   if (item.isNull()) {
     // Couldn't parse the string, return an empty string.
