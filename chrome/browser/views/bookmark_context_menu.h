@@ -8,6 +8,17 @@
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
 #include "views/controls/menu/menu_delegate.h"
 
+// Observer for the BookmarkContextMenu.
+class BookmarkContextMenuObserver {
+ public:
+  // Invoked before the specified items are removed from the bookmark model.
+  virtual void WillRemoveBookmarks(
+      const std::vector<const BookmarkNode*>& bookmarks) = 0;
+
+  // Invoked after the items have been removed from the model.
+  virtual void DidRemoveBookmarks() = 0;
+};
+
 class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
                             public views::MenuDelegate {
  public:
@@ -25,10 +36,15 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
 
   views::MenuItemView* menu() const { return menu_.get(); }
 
+  void set_observer(BookmarkContextMenuObserver* observer) {
+    observer_ = observer;
+  }
+
   // Overridden from views::MenuDelegate:
   virtual void ExecuteCommand(int command_id);
   virtual bool IsItemChecked(int command_id) const;
   virtual bool IsCommandEnabled(int command_id) const;
+  virtual bool ShouldCloseAllMenusOnExecute(int id);
 
   // Overridden from BookmarkContextMenuControllerDelegate:
   virtual void CloseMenu();
@@ -36,6 +52,9 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
   virtual void AddItemWithStringId(int command_id, int string_id);
   virtual void AddSeparator();
   virtual void AddCheckboxItem(int command_id);
+  virtual void WillRemoveBookmarks(
+      const std::vector<const BookmarkNode*>& bookmarks);
+  virtual void DidRemoveBookmarks();
 
  private:
   scoped_ptr<BookmarkContextMenuController> controller_;
@@ -45,6 +64,8 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
 
   // The menu itself.
   scoped_ptr<views::MenuItemView> menu_;
+
+  BookmarkContextMenuObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenu);
 };

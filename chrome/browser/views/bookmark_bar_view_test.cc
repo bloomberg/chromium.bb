@@ -14,6 +14,7 @@
 #include "chrome/common/pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/interactive_ui/view_event_test_base.h"
+#include "grit/generated_resources.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_controller.h"
@@ -38,8 +39,8 @@ class TestingPageNavigator : public PageNavigator {
 }  // namespace
 
 // Base class for event generating bookmark view tests. These test are intended
-// to exercise ChromeMenus, but that's easier done with BookmarkBarView rather
-// than ChromeMenu itself.
+// to exercise View's menus, but that's easier done with BookmarkBarView rather
+// than View's menu itself.
 //
 // SetUp creates a bookmark model with the following structure.
 // All folders are in upper case, all URLs in lower case.
@@ -1101,3 +1102,76 @@ class BookmarkBarViewTest14 : public BookmarkBarViewEventTestBase {
 };
 
 VIEW_TEST(BookmarkBarViewTest14, ContextMenus2)
+
+// Makes sure deleting from the context menu keeps the bookmark menu showing.
+class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
+ public:
+  BookmarkBarViewTest15() : deleted_menu_id_(0) {}
+
+ protected:
+  virtual void DoTestOnMessageLoop() {
+    // Show the other bookmarks.
+    views::TextButton* button = bb_view_->other_bookmarked_button();
+    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest15::Step2));
+  }
+
+ private:
+  void Step2() {
+    // Menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    views::MenuItemView* child_menu =
+        menu->GetSubmenu()->GetMenuItemAt(1);
+    ASSERT_TRUE(child_menu != NULL);
+
+    deleted_menu_id_ = child_menu->GetCommand();
+
+    // Right click on the second child to get its context menu.
+    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
+        ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest15::Step3));
+  }
+
+  void Step3() {
+    // Make sure the context menu is showing.
+    views::MenuItemView* menu = bb_view_->GetContextMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu());
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    views::MenuItemView* delete_menu =
+        menu->GetMenuItemByID(IDS_BOOKMARK_BAR_REMOVE);
+    ASSERT_TRUE(delete_menu);
+
+    // Click on the delete button.
+    ui_controls::MoveMouseToCenterAndPress(delete_menu,
+        ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest15::Step4));
+  }
+
+  void Step4() {
+    // The context menu should not be showing.
+    views::MenuItemView* context_menu = bb_view_->GetContextMenu();
+    ASSERT_TRUE(context_menu == NULL);
+
+    // But the menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    // And the deleted_menu_id_ should have been removed.
+    ASSERT_TRUE(menu->GetMenuItemByID(deleted_menu_id_) == NULL);
+
+    bb_view_->GetMenu()->GetMenuController()->Cancel(true);
+
+    Done();
+  }
+
+  int deleted_menu_id_;
+};
+
+VIEW_TEST(BookmarkBarViewTest15, MenuStaysVisibleAfterDelete)

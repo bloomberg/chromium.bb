@@ -278,6 +278,8 @@ void BookmarkContextMenuController::BuildMenu() {
 }
 
 void BookmarkContextMenuController::ExecuteCommand(int id) {
+  BookmarkModel* model = RemoveModelObserver();
+
   switch (id) {
     case IDS_BOOMARK_BAR_OPEN_ALL:
     case IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO:
@@ -327,12 +329,13 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
     case IDS_BOOKMARK_BAR_REMOVE: {
       UserMetrics::RecordAction("BookmarkBar_ContextMenu_Remove", profile_);
-      BookmarkModel* model = RemoveModelObserver();
 
+      delegate_->WillRemoveBookmarks(selection_);
       for (size_t i = 0; i < selection_.size(); ++i) {
         model->Remove(selection_[i]->GetParent(),
                       selection_[i]->GetParent()->IndexOfChild(selection_[i]));
       }
+      delegate_->DidRemoveBookmarks();
       selection_.clear();
       break;
     }
@@ -387,13 +390,17 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
     case IDS_BOOKMARK_MANAGER_SORT:
       UserMetrics::RecordAction("BookmarkManager_Sort", profile_);
-      model_->SortChildren(parent_);
+      model->SortChildren(parent_);
+      break;
+
+    case IDS_CUT:
+      delegate_->WillRemoveBookmarks(selection_);
+      bookmark_utils::CopyToClipboard(model, selection_, false);
+      delegate_->DidRemoveBookmarks();
       break;
 
     case IDS_COPY:
-    case IDS_CUT:
-      bookmark_utils::CopyToClipboard(profile_->GetBookmarkModel(),
-                                      selection_, id == IDS_CUT);
+      bookmark_utils::CopyToClipboard(model, selection_, false);
       break;
 
     case IDS_PASTE: {
@@ -405,8 +412,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
           parent_->IndexOfChild(selection_[0]) : -1;
       if (index != -1)
         index++;
-      bookmark_utils::PasteFromClipboard(profile_->GetBookmarkModel(),
-                                         parent_, index);
+      bookmark_utils::PasteFromClipboard(model, parent_, index);
       break;
     }
 

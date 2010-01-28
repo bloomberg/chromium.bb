@@ -234,6 +234,10 @@ void SubmenuView::ShowAt(gfx::NativeWindow parent,
   host_->Init(parent, bounds, scroll_view_container_, do_capture);
 }
 
+void SubmenuView::Reposition(const gfx::Rect& bounds) {
+  host_->SetBounds(bounds);
+}
+
 void SubmenuView::Close() {
   if (host_) {
     host_->Close();

@@ -84,6 +84,15 @@ class MenuDelegate : Controller {
   virtual void ExecuteCommand(int id) {
   }
 
+  // If nested menus are showing (nested menus occur when a menu shows a context
+  // menu) this is invoked to determine if all the menus should be closed when
+  // the user selects the menu with the command |id|. This returns true to
+  // indicate that all menus should be closed. Return false if only the
+  // context menu should be closed.
+  virtual bool ShouldCloseAllMenusOnExecute(int id) {
+    return true;
+  }
+
   // Executes the specified command. mouse_event_flags give the flags of the
   // mouse event that triggered this to be invoked (views::MouseEvent
   // flags). mouse_event_flags is 0 if this is triggered by a user gesture

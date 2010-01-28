@@ -25,7 +25,8 @@ BookmarkContextMenu::BookmarkContextMenu(
                                                         parent, selection,
                                                         configuration))),
       parent_window_(parent_window),
-      ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))),
+      observer_(NULL) {
   controller_->BuildMenu();
 }
 
@@ -56,6 +57,10 @@ bool BookmarkContextMenu::IsCommandEnabled(int command_id) const {
   return controller_->IsCommandEnabled(command_id);
 }
 
+bool BookmarkContextMenu::ShouldCloseAllMenusOnExecute(int id) {
+  return id != IDS_BOOKMARK_BAR_REMOVE;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BookmarkContextMenu, BookmarkContextMenuControllerDelegate implementation:
 
@@ -78,4 +83,15 @@ void BookmarkContextMenu::AddSeparator() {
 void BookmarkContextMenu::AddCheckboxItem(int command_id) {
   menu_->AppendMenuItem(command_id, l10n_util::GetString(command_id),
                         views::MenuItemView::CHECKBOX);
+}
+
+void BookmarkContextMenu::WillRemoveBookmarks(
+    const std::vector<const BookmarkNode*>& bookmarks) {
+  if (observer_)
+    observer_->WillRemoveBookmarks(bookmarks);
+}
+
+void BookmarkContextMenu::DidRemoveBookmarks() {
+  if (observer_)
+    observer_->DidRemoveBookmarks();
 }

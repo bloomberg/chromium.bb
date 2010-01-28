@@ -98,6 +98,18 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   void OnDragExitedScrollButton(SubmenuView* source);
 
  private:
+  // Enumeration of how the menu should exit.
+  enum ExitType {
+    // Don't exit.
+    EXIT_NONE,
+
+    // All menus, including nested, should be exited.
+    EXIT_ALL,
+
+    // Only the outermost menu should be exited.
+    EXIT_OUTERMOST
+  };
+
   class MenuScrollTask;
 
   // Tracks selection information.
@@ -243,6 +255,14 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // in anyway.
   void OpenMenu(MenuItemView* item);
 
+  // Implementation of OpenMenu. If |show| is true, this invokes show on the
+  // menu, otherwise Reposition is invoked.
+  void OpenMenuImpl(MenuItemView* item, bool show);
+
+  // Invoked when the children of a menu change and the menu is showing.
+  // This closes any submenus and resizes the submenu.
+  void MenuChildrenChanged(MenuItemView* item);
+
   // Builds the paths of the two menu items into the two paths, and
   // sets first_diff_at to the location of the first difference between the
   // two paths.
@@ -317,8 +337,8 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // If true, we're showing.
   bool showing_;
 
-  // If true, all nested run loops should be exited.
-  bool exit_all_;
+  // Indicates what to exit.
+  ExitType exit_type_;
 
   // Whether we did a capture. We do a capture only if we're blocking and
   // the mouse was down when Run.

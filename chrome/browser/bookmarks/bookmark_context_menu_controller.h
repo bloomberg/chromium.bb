@@ -29,6 +29,13 @@ class BookmarkContextMenuControllerDelegate {
   virtual void AddItemWithStringId(int command_id, int string_id) = 0;
   virtual void AddSeparator() = 0;
   virtual void AddCheckboxItem(int command_id) = 0;
+
+  // Sent before bookmarks are removed.
+  virtual void WillRemoveBookmarks(
+      const std::vector<const BookmarkNode*>& bookmarks) {}
+
+  // Sent after bookmarks have been removed.
+  virtual void DidRemoveBookmarks() {}
 };
 
 // BookmarkContextMenuController creates and manages state for the context menu

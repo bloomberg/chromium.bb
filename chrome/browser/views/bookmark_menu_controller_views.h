@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_BOOKMARK_MENU_CONTROLLER_VIEWS_H_
 
 #include <map>
+#include <set>
 
 #include "app/gfx/native_widget_types.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
@@ -35,7 +36,8 @@ class Profile;
 // BookmarkMenuController deletes itself as necessary, although the menu can
 // be explicitly hidden by way of the Cancel method.
 class BookmarkMenuController : public BaseBookmarkModelObserver,
-                               public views::MenuDelegate {
+                               public views::MenuDelegate,
+                               public BookmarkContextMenuObserver {
  public:
   // The observer is notified prior to the menu being deleted.
   class Observer {
@@ -112,7 +114,14 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node);
 
+  // BookmarkContextMenu::Observer methods.
+  virtual void WillRemoveBookmarks(
+      const std::vector<const BookmarkNode*>& bookmarks);
+  virtual void DidRemoveBookmarks();
+
  private:
+  typedef std::map<const BookmarkNode*, int> NodeToMenuIDMap;
+
   // BookmarkMenuController deletes itself as necessary.
   ~BookmarkMenuController();
 
@@ -132,6 +141,16 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
                  views::MenuItemView* menu,
                  int* next_menu_id);
 
+  // Returns the menu whose id is |id|.
+  views::MenuItemView* GetMenuByID(int id);
+
+  // Does the work of processing WillRemoveBookmarks. On exit the set of removed
+  // menus is added to |removed_menus|. It's up to the caller to delete the
+  // the menus added to |removed_menus|.
+  void WillRemoveBookmarksImpl(
+      const std::vector<const BookmarkNode*>& bookmarks,
+      std::set<views::MenuItemView*>* removed_menus);
+
   Browser* browser_;
 
   Profile* profile_;
@@ -149,7 +168,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
 
   // Mapping from node to menu id. This only contains entries for nodes of type
   // URL.
-  std::map<const BookmarkNode*, int> node_to_menu_id_map_;
+  NodeToMenuIDMap node_to_menu_id_map_;
 
   // Current menu.
   views::MenuItemView* menu_;

@@ -233,6 +233,20 @@ MenuItemView* MenuItemView::GetMenuItemByID(int id) {
   return NULL;
 }
 
+void MenuItemView::ChildrenChanged() {
+  MenuController* controller = GetMenuController();
+  if (!controller)
+    return;  // We're not showing, nothing to do.
+
+  // Handles the case where we were empty and are no longer empty.
+  RemoveEmptyMenus();
+
+  // Handles the case where we were not empty, but now are.
+  AddEmptyMenus();
+
+  controller->MenuChildrenChanged(this);
+}
+
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
                            MenuItemView::Type type) {

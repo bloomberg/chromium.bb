@@ -221,6 +221,10 @@ class MenuItemView : public View {
   // Returns the descendant with the specified command.
   MenuItemView* GetMenuItemByID(int id);
 
+  // Invoke if you remove/add children to the menu while it's showing. This
+  // recalculates the bounds.
+  void ChildrenChanged();
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
@@ -255,8 +259,8 @@ class MenuItemView : public View {
   int GetDrawStringFlags();
 
   // If this menu item has no children a child is added showing it has no
-  // children. Otherwise AddEmtpyMenuIfNecessary is recursively invoked on
-  // child menu items that have children.
+  // children. Otherwise AddEmtpyMenus is recursively invoked on child menu
+  // items that have children.
   void AddEmptyMenus();
 
   // Undoes the work of AddEmptyMenus.

@@ -149,7 +149,7 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
                                   const gfx::Rect& bounds,
                                   MenuItemView::AnchorPosition position,
                                   int* result_mouse_event_flags) {
-  exit_all_ = false;
+  exit_type_ = EXIT_NONE;
   possible_drag_ = false;
 
   bool nested_menu = showing_;
@@ -228,15 +228,18 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
   if (result_mouse_event_flags)
     *result_mouse_event_flags = result_mouse_event_flags_;
 
-  if (nested_menu && result) {
-    // We're nested and about to return a value. The caller might enter another
-    // blocking loop. We need to make sure all menus are hidden before that
-    // happens otherwise the menus will stay on screen.
-    CloseAllNestedMenus();
+  if (exit_type_ == EXIT_OUTERMOST) {
+    exit_type_ = EXIT_NONE;
+  } else {
+    if (nested_menu && result) {
+      // We're nested and about to return a value. The caller might enter
+      // another blocking loop. We need to make sure all menus are hidden
+      // before that happens otherwise the menus will stay on screen.
+      CloseAllNestedMenus();
 
-    // Set exit_all_ to true, which makes sure all nested loops exit
-    // immediately.
-    exit_all_ = true;
+      // Set exit_all_, which makes sure all nested loops exit immediately.
+      exit_type_ = EXIT_ALL;
+    }
   }
 
   if (menu_button_) {
@@ -291,7 +294,7 @@ void MenuController::Cancel(bool all) {
   }
 
   MenuItemView* selected = state_.item;
-  exit_all_ = all;
+  exit_type_ = all ? EXIT_ALL : EXIT_OUTERMOST;
 
   // Hide windows immediately.
   SetSelection(NULL, false, true);
@@ -605,7 +608,7 @@ int MenuController::OnPerformDrop(SubmenuView* source,
 
   // Set state such that we exit.
   showing_ = false;
-  exit_all_ = true;
+  exit_type_ = EXIT_ALL;
 
   if (!IsBlockingRun())
     item->GetRootMenuItem()->DropMenuClosed(false);
@@ -648,7 +651,7 @@ void MenuController::SetActiveInstance(MenuController* controller) {
 bool MenuController::Dispatch(const MSG& msg) {
   DCHECK(blocking_run_);
 
-  if (exit_all_) {
+  if (exit_type_ == EXIT_ALL) {
     // We must translate/dispatch the message here, otherwise we would drop
     // the message on the floor.
     TranslateMessage(&msg);
@@ -697,14 +700,14 @@ bool MenuController::Dispatch(const MSG& msg) {
   }
   TranslateMessage(&msg);
   DispatchMessage(&msg);
-  return !exit_all_;
+  return exit_type_ == EXIT_NONE;
 }
 
 #else
 bool MenuController::Dispatch(GdkEvent* event) {
   gtk_main_do_event(event);
 
-  if (exit_all_)
+  if (exit_type_ == EXIT_ALL)
     return false;
 
   switch (event->type) {
@@ -721,7 +724,7 @@ bool MenuController::Dispatch(GdkEvent* event) {
       break;
   }
 
-  return !exit_all_;
+  return exit_type_ == EXIT_NONE;
 }
 #endif
 
@@ -799,7 +802,7 @@ bool MenuController::OnKeyDown(int key_code
 MenuController::MenuController(bool blocking)
     : blocking_run_(blocking),
       showing_(false),
-      exit_all_(false),
+      exit_type_(EXIT_NONE),
       did_capture_(false),
       result_(NULL),
       result_mouse_event_flags_(0),
@@ -845,7 +848,12 @@ void MenuController::UpdateInitialLocation(
 void MenuController::Accept(MenuItemView* item, int mouse_event_flags) {
   DCHECK(IsBlockingRun());
   result_ = item;
-  exit_all_ = true;
+  if (item && !menu_stack_.empty() &&
+      !item->GetDelegate()->ShouldCloseAllMenusOnExecute(item->GetCommand())) {
+    exit_type_ = EXIT_OUTERMOST;
+  } else {
+    exit_type_ = EXIT_ALL;
+  }
   result_mouse_event_flags_ = mouse_event_flags;
 }
 
@@ -1114,6 +1122,11 @@ void MenuController::OpenMenu(MenuItemView* item) {
     return;
   }
 
+  OpenMenuImpl(item, true);
+  did_capture_ = true;
+}
+
+void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
   bool prefer_leading =
       state_.open_leading.empty() ? true : state_.open_leading.back();
   bool resulting_direction;
@@ -1122,9 +1135,26 @@ void MenuController::OpenMenu(MenuItemView* item) {
   state_.open_leading.push_back(resulting_direction);
   bool do_capture = (!did_capture_ && blocking_run_);
   showing_submenu_ = true;
-  item->GetSubmenu()->ShowAt(owner_, bounds, do_capture);
+  if (show)
+    item->GetSubmenu()->ShowAt(owner_, bounds, do_capture);
+  else
+    item->GetSubmenu()->Reposition(bounds);
   showing_submenu_ = false;
-  did_capture_ = true;
+}
+
+void MenuController::MenuChildrenChanged(MenuItemView* item) {
+  DCHECK(item);
+  DCHECK(item->GetSubmenu()->IsShowing());
+
+  // Currently this only supports adjusting the bounds of the last menu.
+  DCHECK(item == state_.item->GetParentMenuItem());
+
+  // Make sure the submenu isn't showing for the current item (the position may
+  // have changed or the menu removed). This also moves the selection back to
+  // the parent, which handles the case where the selected item was removed.
+  SetSelection(state_.item->GetParentMenuItem(), true, true);
+
+  OpenMenuImpl(item, false);
 }
 
 void MenuController::BuildPathsAndCalculateDiff(
