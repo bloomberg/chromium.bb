@@ -408,7 +408,8 @@ END_MSG_MAP()
     if (ie_version == IE_6) {
       if (open_disposition == NEW_FOREGROUND_TAB ||
           open_disposition == NEW_BACKGROUND_TAB ||
-          open_disposition == NEW_WINDOW) {
+          open_disposition == NEW_WINDOW ||
+          open_disposition == NEW_POPUP) {
         V_I4(&flags) = navOpenInNewWindow;
       } else if (open_disposition != CURRENT_TAB) {
         NOTREACHED() << "Unsupported open disposition in IE6";
@@ -422,6 +423,7 @@ END_MSG_MAP()
           V_I4(&flags) = navOpenInBackgroundTab;
           break;
         case NEW_WINDOW:
+        case NEW_POPUP:
           V_I4(&flags) = navOpenInNewWindow;
           break;
         default:

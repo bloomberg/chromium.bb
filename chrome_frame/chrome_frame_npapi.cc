@@ -500,6 +500,7 @@ void ChromeFrameNPAPI::OnOpenURL(int tab_handle,
       target = "_blank";
       break;
     case NEW_WINDOW:
+    case NEW_POPUP:
       target = "_new";
       break;
     default:

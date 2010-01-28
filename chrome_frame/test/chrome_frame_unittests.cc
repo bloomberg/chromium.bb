@@ -1311,7 +1311,10 @@ const wchar_t kChromeFrameFullTabWindowOpenPopupUrl[] =
 // This test checks if window.open calls issued by a full tab mode ChromeFrame
 // instance make it back to IE and then transitions back to Chrome as the
 // window.open target page is supposed to render within Chrome.
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_WindowOpen) {
+// Marking this test as FLAKY initially as it relies on getting focus and user
+// input which don't work correctly at times.
+// http://code.google.com/p/chromium/issues/detail?id=26549
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
   chrome_frame_test::TimedMsgLoop loop;
   CComObjectStackEx<MockWebBrowserEventSink> mock;
 
@@ -1324,21 +1327,31 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_WindowOpen) {
       .WillOnce(testing::Return(S_OK));
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
-  EXPECT_CALL(mock,
-              OnLoad(testing::StrEq(kChromeFrameFullTabWindowOpenTestUrl)))
-      .WillOnce(testing::Return());
 
   EXPECT_CALL(mock,
               OnBeforeNavigate2(
                   _, testing::Field(&VARIANT::bstrVal,
-                  testing::StrCaseEq(kChromeFrameFullTabWindowOpenPopupUrl)),
+                  testing::StrCaseEq(kChromeFrameFullTabWindowOpenTestUrl)),
                   _, _, _, _, _))
       .WillOnce(testing::Return(S_OK));
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
+
   EXPECT_CALL(mock,
-              OnLoad(testing::StrEq(kChromeFrameFullTabWindowOpenPopupUrl)))
-      .WillOnce(QUIT_LOOP_SOON(loop, 2));
+              OnLoad(testing::StrEq(kChromeFrameFullTabWindowOpenTestUrl)))
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs(CreateFunctor(&mock,
+              &chrome_frame_test::WebBrowserEventSink::SetFocusToChrome)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableMethod(
+                  &mock,
+                  &chrome_frame_test::WebBrowserEventSink::SendInputToChrome,
+                  std::string("A")), 0))));
+
+  EXPECT_CALL(mock,
+              OnNewWindow3(_, _, _, _, _))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kChromeFrameFullTabWindowOpenTestUrl);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -1349,10 +1362,9 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_WindowOpen) {
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
-  ASSERT_TRUE(CheckResultFile(L"ChromeFrameWindowOpenPopup", "OK"));
-
   mock.Uninitialize();
   chrome_frame_test::CloseAllIEWindows();
+  ASSERT_TRUE(CheckResultFile(L"ChromeFrameWindowOpenPopup", "OK"));
 }
 
 const wchar_t kSubFrameUrl1[] =

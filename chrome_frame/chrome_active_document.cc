@@ -578,9 +578,18 @@ void ChromeActiveDocument::UpdateNavigationState(
   // that only happen within Chrome such as anchor navigations) we need to
   // update IE's internal state after the fact. In the case of internal
   // navigations, we notify the BHOs but ignore the should_cancel flag.
-  bool is_internal_navigation = (new_navigation_info.navigation_index > 0) &&
+
+  // Another case where we need to issue BeforeNavigate2 calls is as below:-
+  // We get notified after the fact, when navigations are initiated within
+  // Chrome via window.open calls. These navigations are handled by creating
+  // an external tab container within chrome and then connecting to it from IE.
+  // We still want to update the address bar/history, etc, to ensure that
+  // the special URL used by Chrome to indicate this is updated correctly.
+  bool is_internal_navigation = ((new_navigation_info.navigation_index > 0) &&
       (new_navigation_info.navigation_index !=
-       navigation_info_.navigation_index);
+       navigation_info_.navigation_index)) ||
+       StartsWith(static_cast<BSTR>(url_), kChromeAttachExternalTabPrefix,
+                  false);
 
   if (new_navigation_info.url.is_valid()) {
     url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
@@ -830,6 +839,8 @@ bool ChromeActiveDocument::ParseUrl(const std::wstring& url,
 
 bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
                                      bool is_new_navigation) {
+  url_.Reset(::SysAllocString(url.c_str()));
+
   if (!is_new_navigation) {
     WStringTokenizer tokenizer(url, L"&");
     // Skip over kChromeAttachExternalTabPrefix
@@ -850,7 +861,6 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
   } else {
     // Initiate navigation before launching chrome so that the url will be
     // cached and sent with launch settings.
-    url_.Reset(::SysAllocString(url.c_str()));
     if (url_.Length()) {
       std::string utf8_url;
       WideToUTF8(url_, url_.Length(), &utf8_url);

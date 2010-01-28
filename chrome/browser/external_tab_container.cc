@@ -311,53 +311,35 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
                             WindowOpenDisposition disposition,
                             const gfx::Rect& initial_pos,
                             bool user_gesture) {
-  switch (disposition) {
-    case NEW_POPUP:
-    case NEW_WINDOW: {
-      Browser::BuildPopupWindowHelper(source, new_contents, initial_pos,
-                                      Browser::TYPE_POPUP,
-                                      tab_contents_->profile(), true);
-      break;
-    }
+  DCHECK(automation_ != NULL);
 
-    case NEW_FOREGROUND_TAB:
-    case NEW_BACKGROUND_TAB: {
-      DCHECK(automation_ != NULL);
+  scoped_refptr<ExternalTabContainer> new_container =
+      new ExternalTabContainer(NULL, NULL);
 
-      scoped_refptr<ExternalTabContainer> new_container =
-          new ExternalTabContainer(NULL, NULL);
+  // Make sure that ExternalTabContainer instance is initialized with
+  // an unwrapped Profile.
+  bool result = new_container->Init(
+      new_contents->profile()->GetOriginalProfile(),
+      NULL,
+      initial_pos,
+      WS_CHILD,
+      load_requests_via_automation_,
+      handle_top_level_requests_,
+      new_contents,
+      GURL(),
+      GURL());
 
-      // Make sure that ExternalTabContainer instance is initialized with
-      // an unwrapped Profile.
-      bool result = new_container->Init(
-          new_contents->profile()->GetOriginalProfile(),
-          NULL,
-          initial_pos,
-          WS_CHILD,
-          load_requests_via_automation_,
-          handle_top_level_requests_,
-          new_contents,
-          GURL(),
-          GURL());
+  if (result) {
+    pending_tabs_[reinterpret_cast<intptr_t>(new_container.get())] =
+        new_container;
 
-      if (result) {
-        pending_tabs_[reinterpret_cast<intptr_t>(new_container.get())] =
-            new_container;
-
-        automation_->Send(new AutomationMsg_AttachExternalTab(
-            0,
-            tab_handle_,
-            reinterpret_cast<intptr_t>(new_container.get()),
-            disposition));
-      } else {
-        NOTREACHED();
-      }
-      break;
-    }
-
-    default:
-      NOTREACHED();
-      break;
+    automation_->Send(new AutomationMsg_AttachExternalTab(
+        0,
+        tab_handle_,
+        reinterpret_cast<intptr_t>(new_container.get()),
+        disposition));
+  } else {
+    NOTREACHED();
   }
 }
 

@@ -12,18 +12,17 @@ function onLoad() {
   if (!TestIfRunningInChrome()) {
     onFailure("ChromeFrameWindowOpen", "Window Open failed :-(",
                 "User agent = " + navigator.userAgent.toLowerCase());
-  } else {
-    setTimeout(OpenPopup, 100);
   }
 }
 
 function OpenPopup() {
-  window.open("chrome_frame_window_open_popup.html", "_self");
+  window.open("chrome_frame_window_open_popup.html", "mywindow",
+              "left=10, top=10, height=100, width=100");
 }
 </script>
 </head>
 
-<body onload="onLoad();">
+<body onload="onLoad();" onkeypress="OpenPopup();">
 <div id="statusPanel" style="border: 1px solid red; width: 100%">
 ChromeFrame full tab mode window open test running....
 </div>
