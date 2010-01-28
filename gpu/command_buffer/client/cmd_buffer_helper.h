@@ -55,49 +55,6 @@ class CommandBufferHelper {
   //     the size of the buffer minus one.
   void WaitForAvailableEntries(int32 count);
 
-  // Adds a command data to the command buffer. This may wait until sufficient
-  // space is available.
-  // Parameters:
-  //   entries: The command entries to add.
-  //   count: The number of entries.
-  void AddCommandData(const CommandBufferEntry* entries, int32 count) {
-    WaitForAvailableEntries(count);
-    for (; count > 0; --count) {
-      entries_[put_++] = *entries++;
-    }
-    DCHECK_LE(put_, entry_count_);
-    if (put_ == entry_count_) put_ = 0;
-  }
-
-  // A typed version of AddCommandData.
-  template <typename T>
-  void AddTypedCmdData(const T& cmd) {
-    AddCommandData(reinterpret_cast<const CommandBufferEntry*>(&cmd),
-                   ComputeNumEntries(sizeof(cmd)));
-  }
-
-  // Adds a command to the command buffer. This may wait until sufficient space
-  // is available.
-  // Parameters:
-  //   command: the command index.
-  //   arg_count: the number of arguments for the command.
-  //   args: the arguments for the command (these are copied before the
-  //     function returns).
-  void AddCommand(int32 command,
-                  int32 arg_count,
-                  const CommandBufferEntry *args) {
-    CommandHeader header;
-    header.size = arg_count + 1;
-    header.command = command;
-    WaitForAvailableEntries(header.size);
-    entries_[put_++].value_header = header;
-    for (int i = 0; i < arg_count; ++i) {
-      entries_[put_++] = args[i];
-    }
-    DCHECK_LE(put_, entry_count_);
-    if (put_ == entry_count_) put_ = 0;
-  }
-
   // Inserts a new token into the command buffer. This token either has a value
   // different from previously inserted tokens, or ensures that previously
   // inserted tokens with that value have already passed through the command

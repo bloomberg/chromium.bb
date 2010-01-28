@@ -80,4 +80,16 @@ void GPUProcessor::set_token(int32 token) {
   command_buffer_->SetToken(token);
 }
 
+bool GPUProcessor::SetGetOffset(int32 offset) {
+  if (parser_->set_get(offset)) {
+    command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
+    return true;
+  }
+  return false;
+}
+
+int32 GPUProcessor::GetGetOffset() {
+  return parser_->get();
+}
+
 }  // namespace gpu

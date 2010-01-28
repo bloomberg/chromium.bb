@@ -35,7 +35,7 @@ class CommandBufferHelperTest : public testing::Test {
     api_mock_.reset(new AsyncAPIMock);
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
-    EXPECT_CALL(*api_mock_, DoCommand(0, 0, _))
+    EXPECT_CALL(*api_mock_, DoCommand(0, _, _))
         .WillRepeatedly(Return(parse_error::kParseNoError));
 
     command_buffer_.reset(new CommandBufferService);
@@ -70,9 +70,18 @@ class CommandBufferHelperTest : public testing::Test {
   // expected call on the API mock.
   void AddCommandWithExpect(parse_error::ParseError _return,
                             unsigned int command,
-                            unsigned int arg_count,
+                            int arg_count,
                             CommandBufferEntry *args) {
-    helper_->AddCommand(command, arg_count, args);
+    CommandHeader header;
+    header.size = arg_count + 1;
+    header.command = command;
+    CommandBufferEntry* cmds = helper_->GetSpace(arg_count + 1);
+    CommandBufferOffset put = 0;
+    cmds[put++].value_header = header;
+    for (int ii = 0; ii < arg_count; ++ii) {
+      cmds[put++] = args[ii];
+    }
+
     EXPECT_CALL(*api_mock_, DoCommand(command, arg_count,
         Truly(AsyncAPIMock::IsArgs(arg_count, args))))
         .InSequence(sequence_)

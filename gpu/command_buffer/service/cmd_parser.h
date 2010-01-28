@@ -29,6 +29,16 @@ class CommandParser {
   // buffer considered as an array of CommandBufferEntry.
   CommandBufferOffset get() const { return get_; }
 
+  // Sets the "get" pointer. The get pointer is an index into the command buffer
+  // considered as an array of CommandBufferEntry.
+  bool set_get(CommandBufferOffset get) {
+    if (get < entry_count_) {
+      get_ = get;
+      return true;
+    }
+    return false;
+  }
+
   // Sets the "put" pointer. The put pointer is an index into the command
   // buffer considered as an array of CommandBufferEntry.
   void set_put(CommandBufferOffset put) { put_ = put; }
@@ -54,7 +64,7 @@ class CommandParser {
   CommandBufferOffset get_;
   CommandBufferOffset put_;
   CommandBufferEntry *buffer_;
-  size_t entry_count_;
+  int32 entry_count_;
   AsyncAPIInterface *handler_;
 };
 

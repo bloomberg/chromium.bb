@@ -70,17 +70,23 @@ class TestCommonDecoder : public CommonDecoder {
 
 class MockCommandBufferEngine : public CommandBufferEngine {
  public:
-  static const int32 kValidShmId = 1;
+  static const int32 kStartValidShmId = 1;
+  static const int32 kValidShmId = 2;
+  static const int32 kInvalidShmId = 3;
+  static const size_t kBufferSize = 1024;
+  static const uint32 kValidOffset = kBufferSize / 2;
+  static const uint32 kInvalidOffset = kBufferSize;
 
   MockCommandBufferEngine()
       : CommandBufferEngine(),
-        token_() {
+        token_(),
+        get_offset_(0) {
   }
 
   // Overridden from CommandBufferEngine.
   virtual Buffer GetSharedMemoryBuffer(int32 shm_id) {
     Buffer buffer;
-    if (shm_id == kValidShmId) {
+    if (IsValidSharedMemoryId(shm_id)) {
       buffer.ptr = buffer_;
       buffer.size = kBufferSize;
     }
@@ -95,7 +101,7 @@ class MockCommandBufferEngine : public CommandBufferEngine {
 
   uint32 GetSharedMemoryOffset(const void* memory) {
     ptrdiff_t offset = reinterpret_cast<const int8*>(memory) - &buffer_[0];
-    DCHECK(offset >= 0);
+    DCHECK_GE(offset, 0);
     DCHECK(offset < kBufferSize);
     return static_cast<uint32>(offset);
   }
@@ -109,11 +115,28 @@ class MockCommandBufferEngine : public CommandBufferEngine {
     return token_;
   }
 
+  // Overridden from CommandBufferEngine.
+  virtual bool SetGetOffset(int32 offset) {
+    if (offset < kBufferSize) {
+      get_offset_ = offset;
+      return true;
+    }
+    return false;
+  }
+
+  // Overridden from CommandBufferEngine.
+  virtual int32 GetGetOffset() {
+    return get_offset_;
+  }
+
  private:
-  static const size_t kBufferSize = 1024;
+  bool IsValidSharedMemoryId(int32 shm_id) {
+    return shm_id == kValidShmId || shm_id == kStartValidShmId;
+  }
 
   int8 buffer_[kBufferSize];
   int32 token_;
+  int32 get_offset_;
 };
 
 class CommonDecoderTest : public testing::Test {
@@ -145,6 +168,10 @@ class CommonDecoderTest : public testing::Test {
   TestCommonDecoder decoder_;
 };
 
+TEST_F(CommonDecoderTest, Initialize) {
+  EXPECT_EQ(0u, engine_.GetGetOffset());
+}
+
 TEST_F(CommonDecoderTest, HandleNoop) {
   cmd::Noop cmd;
   const uint32 kSkipCount = 5;
@@ -164,28 +191,117 @@ TEST_F(CommonDecoderTest, SetToken) {
 }
 
 TEST_F(CommonDecoderTest, Jump) {
-  // cmd::Jump cmd;
-  // TODO(gman): implement.
+  cmd::Jump cmd;
+  // Check valid args succeed.
+  cmd.Init(MockCommandBufferEngine::kValidOffset);
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(MockCommandBufferEngine::kValidOffset,
+            engine_.GetGetOffset());
+  // Check invalid offset fails.
+  cmd.Init(MockCommandBufferEngine::kInvalidOffset);
+  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(MockCommandBufferEngine::kValidOffset,
+            engine_.GetGetOffset());
 }
 
+// NOTE: The read_pointer checks for relative commands do not take into account
+//     that the actual implementation of CommandBufferEngine uses the parse
+//     which will advance the read pointer to the start of the next command.
+
 TEST_F(CommonDecoderTest, JumpRelative) {
-  // cmd::JumpRelative cmd;
-  // TODO(gman): implement.
+  cmd::JumpRelative cmd;
+  // Check valid positive offset succeeds.
+  const int32 kPositiveOffset = 16;
+  cmd.Init(kPositiveOffset);
+  uint32 read_pointer = engine_.GetGetOffset();
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  // See note above.
+  EXPECT_EQ(read_pointer + kPositiveOffset, engine_.GetGetOffset());
+  // Check valid negative offset succeeds.
+  const int32 kNegativeOffset = -8;
+  read_pointer = engine_.GetGetOffset();
+  cmd.Init(kNegativeOffset);
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  // See note above.
+  EXPECT_EQ(read_pointer + kNegativeOffset, engine_.GetGetOffset());
+  // Check invalid offset fails.
+  cmd.Init(MockCommandBufferEngine::kInvalidOffset);
+  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  // See note above.
+  EXPECT_EQ(read_pointer + kNegativeOffset, engine_.GetGetOffset());
 }
 
 TEST_F(CommonDecoderTest, Call) {
-  // cmd::Call cmd;
-  // TODO(gman): implement.
+  cmd::Call cmd;
+  // Check valid args succeed.
+  cmd.Init(MockCommandBufferEngine::kValidOffset);
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(MockCommandBufferEngine::kValidOffset,
+            engine_.GetGetOffset());
+  // Check invalid offset fails.
+  cmd.Init(MockCommandBufferEngine::kInvalidOffset);
+  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(MockCommandBufferEngine::kValidOffset,
+            engine_.GetGetOffset());
+  // Check that the call values are on the stack.
+  cmd::Return return_cmd;
+  return_cmd.Init();
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(return_cmd));
+  EXPECT_EQ(0u, engine_.GetGetOffset());
+  // Check that stack overflow fails.
+  cmd.Init(MockCommandBufferEngine::kValidOffset);
+  for (unsigned int ii = 0; ii < CommonDecoder::kMaxStackDepth; ++ii) {
+    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  }
+  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(CommonDecoderTest, CallRelative) {
-  // cmd::CallRelative cmd;
-  // TODO(gman): implement.
+  cmd::CallRelative cmd;
+  // Check valid positive offset succeeds.
+  const int32 kPositiveOffset = 16;
+  cmd.Init(kPositiveOffset);
+  uint32 read_pointer_1 = engine_.GetGetOffset();
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  // See note above.
+  EXPECT_EQ(read_pointer_1 + kPositiveOffset, engine_.GetGetOffset());
+  // Check valid negative offset succeeds.
+  const int32 kNegativeOffset = -8;
+  uint32 read_pointer_2 = engine_.GetGetOffset();
+  cmd.Init(kNegativeOffset);
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  // See note above.
+  EXPECT_EQ(read_pointer_2 + kNegativeOffset, engine_.GetGetOffset());
+  // Check invalid offset fails.
+  cmd.Init(MockCommandBufferEngine::kInvalidOffset);
+  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  // See note above.
+  EXPECT_EQ(read_pointer_2 + kNegativeOffset, engine_.GetGetOffset());
+
+  // Check that the call values are on the stack.
+  cmd::Return return_cmd;
+  return_cmd.Init();
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(return_cmd));
+  // See note above.
+  EXPECT_EQ(read_pointer_1 + kPositiveOffset, engine_.GetGetOffset());
+
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(return_cmd));
+  // See note above.
+  EXPECT_EQ(0u, engine_.GetGetOffset());
+  // Check that stack overflow fails.
+  cmd.Init(kPositiveOffset);
+  for (unsigned int ii = 0; ii < CommonDecoder::kMaxStackDepth; ++ii) {
+    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  }
+  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(CommonDecoderTest, Return) {
-  // cmd::Return cmd;
-  // TODO(gman): implement.
+  // Success is tested by Call and CallRelative
+  // Test that an empty stack fails.
+  cmd::Return cmd;
+  cmd.Init();
+  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(CommonDecoderTest, SetBucketSize) {
@@ -412,7 +528,6 @@ TEST_F(CommonDecoderTest, GetBucketData) {
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
   EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
 }
-
 
 }  // namespace gpu
 

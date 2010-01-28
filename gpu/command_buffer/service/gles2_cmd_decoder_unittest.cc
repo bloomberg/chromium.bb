@@ -226,6 +226,18 @@ class GLES2DecoderTest : public testing::Test {
       DCHECK(false);
     }
 
+    // Overridden from CommandBufferEngine.
+    virtual bool SetGetOffset(int32 offset) {
+      DCHECK(false);
+      return false;
+    }
+
+    // Overridden from CommandBufferEngine.
+    virtual int32 GetGetOffset() {
+      DCHECK(false);
+      return 0;
+    }
+
    private:
     scoped_array<int8> data_;
     Buffer valid_buffer_;

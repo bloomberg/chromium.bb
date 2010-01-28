@@ -29,6 +29,12 @@ class CommandBufferEngine {
   // Sets the token value.
   virtual void set_token(int32 token) = 0;
 
+  // Sets the "get" pointer. Return false if offset is out of range.
+  virtual bool SetGetOffset(int32 offset) = 0;
+
+  // Gets the "get" pointer.
+  virtual int32 GetGetOffset() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CommandBufferEngine);
 };

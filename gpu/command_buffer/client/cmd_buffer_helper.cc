@@ -62,10 +62,8 @@ int32 CommandBufferHelper::InsertToken() {
   // Increment token as 31-bit integer. Negative values are used to signal an
   // error.
   token_ = (token_ + 1) & 0x7FFFFFFF;
-  CommandBufferEntry args;
-  args.value_uint32 = token_;
-  const uint32 kSetToken = 1;  // TODO(gman): add a common set of commands.
-  AddCommand(kSetToken, 1, &args);
+  cmd::SetToken& cmd = GetCmdSpace<cmd::SetToken>();
+  cmd.Init(token_);
   if (token_ == 0) {
     // we wrapped
     Finish();
@@ -118,15 +116,13 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
       if (!Flush())
         return;
     }
-    // Add the noops. By convention, a noop is a command 0 with no args.
-    // TODO(apatrick): A noop can have a size. It would be better to add a
-    //    single noop with a variable size. Watch out for size limit on
-    //    individual commands.
-    CommandHeader header;
-    header.size = 1;
-    header.command = 0;
-    while (put_ < entry_count_) {
-      entries_[put_++].value_header = header;
+    // Insert Noops to fill out buffer.
+    int32 num_entries = entry_count_ - put_;
+    while (num_entries > 0) {
+      int32 num_to_skip = std::min(CommandHeader::kMaxSize, num_entries);
+      cmd::Noop::Set(&entries_[put_], num_to_skip);
+      put_ += num_to_skip;
+      num_entries -= num_to_skip;
     }
     put_ = 0;
   }

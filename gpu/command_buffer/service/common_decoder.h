@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_COMMON_DECODER_H_
 
 #include <map>
+#include <stack>
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
@@ -19,6 +20,8 @@ class CommandBufferEngine;
 class CommonDecoder : public AsyncAPIInterface {
  public:
   typedef parse_error::ParseError ParseError;
+
+  static const unsigned int kMaxStackDepth = 32;
 
   // A bucket is a buffer to help collect memory across a command buffer. When
   // creating a command buffer implementation of an existing API, sometimes that
@@ -143,10 +146,23 @@ class CommonDecoder : public AsyncAPIInterface {
 
   #undef COMMON_COMMAND_BUFFER_CMD_OP
 
+  // Pushes an address on the call stack.
+  bool PushAddress(uint32 offset);
+
   CommandBufferEngine* engine_;
 
   typedef std::map<uint32, linked_ptr<Bucket> > BucketMap;
   BucketMap buckets_;
+
+  // The value put on the call stack.
+  struct CommandAddress {
+    explicit CommandAddress(uint32 _offset)
+        : offset(_offset) {
+    }
+
+    uint32 offset;
+  };
+  std::stack<CommandAddress> call_stack_;
 };
 
 }  // namespace gpu

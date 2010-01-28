@@ -45,6 +45,17 @@ void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
   return static_cast<int8*>(buffer.ptr) + offset;
 }
 
+bool CommonDecoder::PushAddress(uint32 offset) {
+  if (call_stack_.size() < kMaxStackDepth) {
+    CommandAddress return_address(engine_->GetGetOffset());
+    if (engine_->SetGetOffset(offset)) {
+      call_stack_.push(return_address);
+      return true;
+    }
+  }
+  return false;
+}
+
 const char* CommonDecoder::GetCommonCommandName(
     cmd::CommandId command_id) const {
   return cmd::GetCommandName(command_id);
@@ -138,35 +149,50 @@ parse_error::ParseError CommonDecoder::HandleSetToken(
 parse_error::ParseError CommonDecoder::HandleJump(
     uint32 immediate_data_size,
     const cmd::Jump& args) {
-  DCHECK(false);  // TODO(gman): Implement.
+  if (!engine_->SetGetOffset(args.offset)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError CommonDecoder::HandleJumpRelative(
     uint32 immediate_data_size,
     const cmd::JumpRelative& args) {
-  DCHECK(false);  // TODO(gman): Implement.
+  if (!engine_->SetGetOffset(engine_->GetGetOffset() + args.offset)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError CommonDecoder::HandleCall(
     uint32 immediate_data_size,
     const cmd::Call& args) {
-  DCHECK(false);  // TODO(gman): Implement.
+  if (!PushAddress(args.offset)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError CommonDecoder::HandleCallRelative(
     uint32 immediate_data_size,
     const cmd::CallRelative& args) {
-  DCHECK(false);  // TODO(gman): Implement.
+  if (!PushAddress(engine_->GetGetOffset() + args.offset)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError CommonDecoder::HandleReturn(
     uint32 immediate_data_size,
     const cmd::Return& args) {
-  DCHECK(false);  // TODO(gman): Implement.
+  if (call_stack_.empty()) {
+    return parse_error::kParseInvalidArguments;
+  }
+  CommandAddress return_address = call_stack_.top();
+  call_stack_.pop();
+  if (!engine_->SetGetOffset(return_address.offset)) {
+    return parse_error::kParseInvalidArguments;
+  }
   return parse_error::kParseNoError;
 }
 

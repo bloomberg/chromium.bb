@@ -38,8 +38,10 @@ struct CommandHeader {
   Uint32 size:21;
   Uint32 command:11;
 
-  void Init(uint32 _command, uint32 _size) {
-    DCHECK_LE(_size, 1u << 22);
+  static const int32 kMaxSize = (1 << 21) - 1;
+
+  void Init(uint32 _command, int32 _size) {
+    DCHECK_LE(_size, kMaxSize);
     command = _command;
     size = _size;
   }
@@ -180,7 +182,8 @@ struct Noop {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
 
   void SetHeader(uint32 skip_count) {
-    header.Init(kCmdId, skip_count + 1);
+    DCHECK_GT(skip_count, 0u);
+    header.Init(kCmdId, skip_count);
   }
 
   void Init(uint32 skip_count) {
@@ -239,30 +242,25 @@ struct Jump {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _shared_memory_id, uint32 _shared_memory_offset) {
+  void Init(uint32 _offset) {
     SetHeader();
-    shared_memory_id = _shared_memory_id;
-    shared_memory_offset = _shared_memory_offset;
+    offset = _offset;
   }
   static void* Set(
-      void* cmd, uint32 _shared_memory_id, uint32 _shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(
-        _shared_memory_id, _shared_memory_offset);
+      void* cmd, uint32 _offset) {
+    static_cast<ValueType*>(cmd)->Init(_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 shared_memory_id;
-  uint32 shared_memory_offset;
+  uint32 offset;
 };
 
-COMPILE_ASSERT(sizeof(Jump) == 12, Sizeof_Jump_is_not_12);
+COMPILE_ASSERT(sizeof(Jump) == 8, Sizeof_Jump_is_not_8);
 COMPILE_ASSERT(offsetof(Jump, header) == 0,
                Offsetof_Jump_header_not_0);
-COMPILE_ASSERT(offsetof(Jump, shared_memory_id) == 4,
-               Offsetof_Jump_shared_memory_id_not_4);
-COMPILE_ASSERT(offsetof(Jump, shared_memory_offset) == 8,
-               Offsetof_Jump_shared_memory_offset_not_8);
+COMPILE_ASSERT(offsetof(Jump, offset) == 4,
+               Offsetof_Jump_offset_not_4);
 
 // The JumpRelative command jumps to another place in the command buffer
 // relative to the end of this command. In other words. JumpRelative with an
@@ -306,30 +304,24 @@ struct Call {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _shared_memory_id, uint32 _shared_memory_offset) {
+  void Init(uint32 _offset) {
     SetHeader();
-    shared_memory_id = _shared_memory_id;
-    shared_memory_offset = _shared_memory_offset;
+    offset = _offset;
   }
-  static void* Set(
-      void* cmd, uint32 _shared_memory_id, uint32 _shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(
-        _shared_memory_id, _shared_memory_offset);
+  static void* Set(void* cmd, uint32 _offset) {
+    static_cast<ValueType*>(cmd)->Init(_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 shared_memory_id;
-  uint32 shared_memory_offset;
+  uint32 offset;
 };
 
-COMPILE_ASSERT(sizeof(Call) == 12, Sizeof_Call_is_not_12);
+COMPILE_ASSERT(sizeof(Call) == 8, Sizeof_Call_is_not_8);
 COMPILE_ASSERT(offsetof(Call, header) == 0,
                Offsetof_Call_header_not_0);
-COMPILE_ASSERT(offsetof(Call, shared_memory_id) == 4,
-               Offsetof_Call_shared_memory_id_not_4);
-COMPILE_ASSERT(offsetof(Call, shared_memory_offset) == 8,
-               Offsetof_Call_shared_memory_offset_not_8);
+COMPILE_ASSERT(offsetof(Call, offset) == 4,
+               Offsetof_Call_offset_not_4);
 
 // The CallRelative command jumps to a subroutine using a relative offset. The
 // offset is relative to the end of this command..
