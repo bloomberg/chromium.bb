@@ -147,7 +147,8 @@ class MessageNode(base.ContentNode):
       description_or_id = 'ID: %s' % self.attrs['name']
 
     assigned_id = None
-    if self.attrs['use_name_for_id'] == 'true':
+    if (self.attrs['use_name_for_id'] == 'true' and
+        self.SatisfiesOutputCondition()):
       assigned_id = self.attrs['name']
     message = tclib.Message(text=text, placeholders=placeholders,
                             description=description_or_id,
