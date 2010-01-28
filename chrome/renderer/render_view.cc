@@ -472,6 +472,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_PrintingDone, OnPrintingDone)
     IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
+    IPC_MESSAGE_HANDLER(ViewMsg_ReloadFrame, OnReloadFrame)
     IPC_MESSAGE_HANDLER(ViewMsg_LoadAlternateHTMLText, OnLoadAlternateHTMLText)
     IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
     IPC_MESSAGE_HANDLER(ViewMsg_Undo, OnUndo)
@@ -887,6 +888,12 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
 void RenderView::OnStop() {
   if (webview())
     webview()->mainFrame()->stopLoading();
+}
+
+// Reload current focused frame
+void RenderView::OnReloadFrame() {
+  if (webview() && webview()->focusedFrame())
+    webview()->focusedFrame()->reload();
 }
 
 void RenderView::OnLoadAlternateHTMLText(const std::string& html,

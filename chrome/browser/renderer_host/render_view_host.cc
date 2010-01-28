@@ -370,6 +370,10 @@ void RenderViewHost::Stop() {
   Send(new ViewMsg_Stop(routing_id()));
 }
 
+void RenderViewHost::ReloadFrame() {
+  Send(new ViewMsg_ReloadFrame(routing_id()));
+}
+
 bool RenderViewHost::PrintPages() {
   return Send(new ViewMsg_PrintPages(routing_id()));
 }

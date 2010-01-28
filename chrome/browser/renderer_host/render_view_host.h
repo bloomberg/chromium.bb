@@ -192,6 +192,9 @@ class RenderViewHost : public RenderWidgetHost {
   // Stops the current load.
   void Stop();
 
+  // Reloads the current frame.
+  void ReloadFrame();
+
   // Asks the renderer to "render" printed pages and initiate printing on our
   // behalf.
   bool PrintPages();

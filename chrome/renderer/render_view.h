@@ -547,6 +547,7 @@ class RenderView : public RenderWidget,
   void OnPrintingDone(int document_cookie, bool success);
   void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnStop();
+  void OnReloadFrame();
   void OnLoadAlternateHTMLText(const std::string& html_contents,
                                bool new_navigation,
                                const GURL& display_url,

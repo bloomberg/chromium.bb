@@ -215,6 +215,7 @@ void RenderViewContextMenu::AppendFrameItems() {
   AppendMenuItem(IDS_CONTENT_CONTEXT_BACK);
   AppendMenuItem(IDS_CONTENT_CONTEXT_FORWARD);
   AppendSeparator();
+  AppendMenuItem(IDS_CONTENT_CONTEXT_RELOADFRAME);
   AppendMenuItem(IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB);
   AppendMenuItem(IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW);
   AppendMenuItem(IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD);
@@ -458,6 +459,7 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
           (active_entry) ? active_entry->url() : GURL());
     }
 
+    case IDS_CONTENT_CONTEXT_RELOADFRAME:
     case IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB:
     case IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW:
       return params_.frame_url.is_valid();
@@ -694,6 +696,10 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
                                          true);
       break;
     }
+
+    case IDS_CONTENT_CONTEXT_RELOADFRAME:
+      source_tab_contents_->render_view_host()->ReloadFrame();
+      break;
 
     case IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB:
       OpenURL(params_.frame_url, NEW_BACKGROUND_TAB, PageTransition::LINK);

@@ -190,6 +190,9 @@ IPC_BEGIN_MESSAGES(View)
 
   IPC_MESSAGE_ROUTED0(ViewMsg_Stop)
 
+  // Tells the renderer to reload the current focused frame
+  IPC_MESSAGE_ROUTED0(ViewMsg_ReloadFrame)
+
   // Tells the renderer to load the specified html text and report a navigation
   // to display_url if passing true for new navigation.
   IPC_MESSAGE_ROUTED4(ViewMsg_LoadAlternateHTMLText,
