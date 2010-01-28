@@ -327,10 +327,6 @@ void AddPolicyForRenderer(sandbox::TargetPolicy* policy,
 
 namespace sandbox {
 
-base::ProcessHandle StartProcess(CommandLine* cmd_line) {
-  return StartProcessWithAccess(cmd_line, FilePath());
-}
-
 base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
                                            const FilePath& exposed_dir) {
   base::ProcessHandle process = 0;

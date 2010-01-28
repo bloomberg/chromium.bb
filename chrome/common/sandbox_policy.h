@@ -12,9 +12,6 @@ class CommandLine;
 
 namespace sandbox {
 
-// Starts a sandboxed process and returns a handle to it.
-base::ProcessHandle StartProcess(CommandLine* cmd_line);
-
 // Starts a sandboxed process with the given directory unsandboxed
 // and returns a handle to it.
 base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
