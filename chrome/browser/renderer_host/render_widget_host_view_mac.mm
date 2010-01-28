@@ -395,6 +395,13 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
     const std::vector<WebMenuItem>& items) {
   is_popup_menu_ = true;
 
+  // Retain the Cocoa view for the duration of the pop-up so that it can't
+  // be dealloced if my Destroy() method is called while the pop-up's up
+  // (which would in turn delete me, causing a crash once the -runMenuInView
+  // call returns. That's what was happening in <http://crbug.com/33250>).
+  scoped_nsobject<RenderWidgetHostViewCocoa> retainedCocoaView
+      ([cocoa_view_ retain]);
+
   NSRect view_rect = [cocoa_view_ bounds];
   NSRect parent_rect = [parent_view_ bounds];
   int y_offset = bounds.y() + bounds.height();
@@ -416,9 +423,17 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
     // be done manually.
     chrome_application_mac::ScopedSendingEvent sendingEventScoper;
 
+    // Now run a SYNCHRONOUS NESTED EVENT LOOP until the pop-up is finished.
     [menu_runner runMenuInView:parent_view_
                     withBounds:position
                   initialIndex:selected_item];
+  }
+
+  if (!render_widget_host_) {
+    // Bad news -- my Destroy() was called while I was off running the menu.
+    // Return ASAP, and the release of retainedCocoaView will dealloc my NSView,
+    // which will delete me (whew).
+    return;
   }
 
   int window_num = [[parent_view_ window] windowNumber];
@@ -428,9 +443,6 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
                                        [menu_runner indexOfSelectedItem],
                                        position, view_rect);
 
-  // CHECK()s inserted to diagnose the crash in http://crbug.com/31716
-  // TODO(pamg): Remove when no longer needed.
-  CHECK(render_widget_host_);
   if ([menu_runner menuItemWasChosen]) {
     // Simulate a menu selection event.
     CHECK(cocoa_view_);
