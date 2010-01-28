@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
+#import "base/chrome_application_mac.h"
 #include "base/histogram.h"
 #import "base/scoped_nsobject.h"
 #include "base/string_util.h"
@@ -407,6 +408,14 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
   {
     // Make sure events can be pumped while the menu is up.
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+
+    // One of the events that could be pumped is |window.close()|.
+    // User-initiated event-tracking loops protect against this by
+    // setting flags in -[CrApplication sendEvent:], but since
+    // web-content menus are initiated by IPC message the setup has to
+    // be done manually.
+    chrome_application_mac::ScopedSendingEvent sendingEventScoper;
+
     [menu_runner runMenuInView:parent_view_
                     withBounds:position
                   initialIndex:selected_item];
