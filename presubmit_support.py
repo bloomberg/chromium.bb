@@ -153,11 +153,12 @@ class InputApi(object):
       r".*\.c", r".*\.cc", r".*\.cpp", r".*\.h", r".*\.m", r".*\.mm",
       r".*\.inl", r".*\.asm", r".*\.hxx", r".*\.hpp",
       # Scripts
-      r".*\.js", r".*\.py", r".*\.json", r".*\.sh", r".*\.rb",
-      # No extension at all
+      r".*\.js", r".*\.py", r".*\.sh", r".*\.rb", r".*\.pl", r".*\.pm",
+      # No extension at all, note that ALL CAPS files are black listed in
+      # DEFAULT_BLACK_LIST below.
       r"(^|.*[\\\/])[^.]+$",
       # Other
-      r".*\.java", r".*\.mk", r".*\.am", r".*\.txt",
+      r".*\.java", r".*\.mk", r".*\.am",
   )
 
   # Path regexp that should be excluded from being considered containing source
