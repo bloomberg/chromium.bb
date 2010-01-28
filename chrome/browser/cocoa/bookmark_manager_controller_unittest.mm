@@ -42,6 +42,11 @@ class BookmarkManagerControllerTest : public CocoaTest {
         nil];
   }
 
+  bool SearchResultsVisible() {
+    NSOutlineView* outline = [[controller_ groupsController] outline];
+    return [outline rowForItem:[controller_ searchGroup]] >= 0;
+  }
+
   BrowserTestHelper browser_test_helper_;
   BookmarkManagerController* controller_;
 };
@@ -118,6 +123,39 @@ TEST_F(BookmarkManagerControllerTest, Search) {
   [controller_ setSearchString:@"fnord"];
   shown = [search children];
   EXPECT_EQ(0U, [shown count]);
+}
+
+TEST_F(BookmarkManagerControllerTest, SearchSelection) {
+  BookmarkTreeController* groupsController = [controller_ groupsController];
+  AddFixtureItems();
+  BookmarkItem* originalSelection = [controller_ bookmarkBarItem];
+  EXPECT_FALSE(SearchResultsVisible());
+  EXPECT_EQ(originalSelection, [groupsController selectedItem]);
+
+  // Start a search and verify the search results group is selected.
+  [controller_ setSearchString:@"g"];
+  EXPECT_TRUE(SearchResultsVisible());
+  EXPECT_EQ([controller_ searchGroup], [groupsController selectedItem]);
+
+  // Type some more, see if updating the search string works.
+  [controller_ setSearchString:@"gmail"];
+  EXPECT_TRUE(SearchResultsVisible());
+  EXPECT_EQ([controller_ searchGroup], [groupsController selectedItem]);
+
+  // Clear search, verify search results are hidden and original sel restored.
+  [controller_ setSearchString:@""];
+  EXPECT_FALSE(SearchResultsVisible());
+  EXPECT_EQ(originalSelection, [groupsController selectedItem]);
+
+  // Now search, then change the selection, then clear search:
+  [controller_ setSearchString:@"gmail"];
+  EXPECT_TRUE(SearchResultsVisible());
+  EXPECT_EQ([controller_ searchGroup], [groupsController selectedItem]);
+  BookmarkItem* newerSelection = [controller_ otherBookmarksItem];
+  [controller_ showGroup:newerSelection];
+  [controller_ setSearchString:@""];
+  EXPECT_FALSE(SearchResultsVisible());
+  EXPECT_EQ(newerSelection, [groupsController selectedItem]);
 }
 
 }  // namespace

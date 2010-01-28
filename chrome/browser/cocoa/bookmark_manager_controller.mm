@@ -291,6 +291,9 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
   for (int i = node->GetChildCount() - 1 ; i >= 0 ; i--) {
     [self forgetNode:node->GetChild(i)];
   }
+
+  if (node == [preSearchGroup_ node])
+    preSearchGroup_.reset();
 }
 
 // Called when the bookmark model changes; forwards to the sub-controllers.
@@ -414,11 +417,46 @@ class BookmarkManagerBridge : public BookmarkModelObserver {
       [listController_ revealItem:item];
 }
 
-// Called when the user types into the search field.
+// Shows/hides the "Search Results" item.
+- (void)setSearchGroupVisible:(BOOL)visible {
+  NSMutableArray* rootItems = [NSMutableArray arrayWithArray:[root_ children]];
+  if (visible != [rootItems containsObject:searchGroup_]) {
+    if (visible) {
+      [rootItems addObject:searchGroup_];
+    } else {
+      [rootItems removeObject:searchGroup_];
+    }
+    [root_ setChildren:rootItems];
+    [self itemChanged:root_ childrenChanged:YES];
+  }
+}
+
+// Called when the user modifies the search field.
 - (IBAction)searchFieldChanged:(id)sender {
   [self updateSearch];
-  if ([[searchField_ stringValue] length])
-    [self showGroup:searchGroup_];
+  if ([[searchField_ stringValue] length]) {
+    // There is search text. Show searchGroup_ if it's not visible yet:
+    [self setSearchGroupVisible:YES];
+
+    BookmarkItem *sel = [groupsController_ selectedItem];
+    if (sel != searchGroup_.get()) {
+      // Remember which group used to be selected.
+      preSearchGroup_.reset([sel retain]);
+      // And select searchGroup_.
+      [self showGroup:searchGroup_];
+    }
+
+  } else {
+    // No search text. Restore the pre-search group selction:
+    if (preSearchGroup_.get()) {
+      if ([groupsController_ selectedItem] == searchGroup_.get()) {
+        [self showGroup:preSearchGroup_];
+      }
+      preSearchGroup_.reset();
+    }
+    // Hide the Search Results group:
+    [self setSearchGroupVisible:NO];
+  }
 }
 
 - (IBAction)segmentedControlClicked:(id)sender {

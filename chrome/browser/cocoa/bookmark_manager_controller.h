@@ -29,6 +29,7 @@ class Profile;
   scoped_nsobject<FakeBookmarkItem> root_;  // Root of tree
   scoped_nsobject<FakeBookmarkItem> searchGroup_;  // Search Results group item
   scoped_nsobject<FakeBookmarkItem> recentGroup_;  // Recently-Added group item
+  scoped_nsobject<BookmarkItem> preSearchGroup_;  // Selected before search
 }
 
 // Opens the bookmark manager window, or brings it to the front if it's open.

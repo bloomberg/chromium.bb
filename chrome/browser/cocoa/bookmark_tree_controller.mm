@@ -150,7 +150,7 @@ static NSString* const kFolderColIdent = @"folder";
 }
 
 - (BOOL)revealItem:(BookmarkItem*)item {
-  if (![self expandItem:[item parent]])
+  if ([item parent] && ![self expandItem:[item parent]])
     return NO;
   [outline_ scrollRowToVisible:[outline_ rowForItem:item]];
   [self setSelectedItems:[NSArray arrayWithObject:item]];
@@ -454,7 +454,9 @@ static void addItem(NSMenu* menu, int command, SEL action) {
 - (void)itemChanged:(id)nodeItem childrenChanged:(BOOL)childrenChanged {
   if (nodeItem == group_)
     nodeItem = nil;
+  NSArray* sel = [self selectedItems];
   [outline_ reloadItem:nodeItem reloadChildren:childrenChanged];
+  [self setSelectedItems:sel];
 }
 
 @end
