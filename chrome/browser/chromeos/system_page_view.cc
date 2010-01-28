@@ -326,7 +326,8 @@ class LanguageCheckbox : public views::Checkbox {
 
 // TextInput section for text input settings.
 class TextInputSection : public SettingsPageSection,
-                         public views::ButtonListener {
+                         public views::ButtonListener,
+                         public views::Combobox::Listener {
  public:
   explicit TextInputSection(Profile* profile);
   virtual ~TextInputSection() {}
@@ -338,12 +339,88 @@ class TextInputSection : public SettingsPageSection,
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
+
+  // Overridden from views::Combobox::Listener:
+  virtual void ItemChanged(views::Combobox* sender,
+                           int prev_index,
+                           int new_index);
+
+  void UpdateHangulKeyboardCombobox();
+
+  // The combobox model for the list of hangul keyboards.
+  class HangulKeyboardComboboxModel : public ComboboxModel {
+   public:
+    HangulKeyboardComboboxModel() {
+      // We have to sync the IDs ("2", "3f", "39", ...) with those in
+      // ibus-hangul/setup/main.py.
+      // TODO(yusukes): Use l10n_util::GetString for these label strings.
+      layouts_.push_back(std::make_pair(L"Dubeolsik", "2"));
+      layouts_.push_back(std::make_pair(L"Sebeolsik Final", "3f"));
+      layouts_.push_back(std::make_pair(L"Sebeolsik 390", "39"));
+      layouts_.push_back(std::make_pair(L"Sebeolsik No-shift", "3s"));
+      layouts_.push_back(std::make_pair(L"Sebeolsik 2 set", "32"));
+    }
+
+    // Implements ComboboxModel interface.
+    virtual int GetItemCount() {
+      return static_cast<int>(layouts_.size());
+    }
+
+    // Implements ComboboxModel interface.
+    virtual std::wstring GetItemAt(int index) {
+      if (index < 0 || index > GetItemCount()) {
+        LOG(ERROR) << "Index is out of bounds: " << index;
+        return L"";
+      }
+      return layouts_.at(index).first;
+    }
+
+    // Gets a keyboard layout ID (e.g. "2", "3f", ..) for an item at zero-origin
+    // |index|. This function is NOT part of the ComboboxModel interface.
+    std::string GetItemIDAt(int index) {
+      if (index < 0 || index > GetItemCount()) {
+        LOG(ERROR) << "Index is out of bounds: " << index;
+        return "";
+      }
+      return layouts_.at(index).second;
+    }
+
+    // Gets an index (>= 0) of an item whose keyboard layout ID is |layout_ld|.
+    // Returns -1 if such item is not found. This function is NOT part of the
+    // ComboboxModel interface.
+    int GetIndexFromID(const std::string& layout_id) {
+      for (size_t i = 0; i < layouts_.size(); ++i) {
+        if (GetItemIDAt(i) == layout_id) {
+          return static_cast<int>(i);
+        }
+      }
+      return -1;
+    }
+
+   private:
+    std::vector<std::pair<std::wstring, std::string> > layouts_;
+
+    DISALLOW_COPY_AND_ASSIGN(HangulKeyboardComboboxModel);
+  };
+
+  // GConf config path names for the Korean IME.
+  static const char kHangulSection[];
+  static const char kHangulKeyboardConfigName[];
+
+  // A combobox for Hangul keyboard layouts and its model.
+  views::Combobox* hangul_keyboard_combobox_;
+  HangulKeyboardComboboxModel hangul_keyboard_combobox_model_;
+
   DISALLOW_COPY_AND_ASSIGN(TextInputSection);
 };
 
+const char TextInputSection::kHangulSection[] = "engine/Hangul";
+const char TextInputSection::kHangulKeyboardConfigName[] = "HangulKeyboard";
+
 TextInputSection::TextInputSection(Profile* profile)
     : SettingsPageSection(profile,
-                          IDS_OPTIONS_SETTINGS_SECTION_TITLE_TEXT_INPUT) {
+                          IDS_OPTIONS_SETTINGS_SECTION_TITLE_TEXT_INPUT),
+      hangul_keyboard_combobox_(NULL) {
 }
 
 void TextInputSection::ButtonPressed(
@@ -352,6 +429,9 @@ void TextInputSection::ButtonPressed(
   const InputLanguage& language = checkbox->language();
   // Check if the checkbox is now being checked.
   if (checkbox->checked()) {
+    // TODO(yusukes): limit the number of active languages so the pop-up menu
+    //   of the language_menu_button does not overflow.
+
     // Try to activate the language.
     if (!LanguageLibrary::Get()->ActivateLanguage(language.category,
                                                   language.id)) {
@@ -371,6 +451,17 @@ void TextInputSection::ButtonPressed(
       LOG(ERROR) << "Failed to deactivate language: " << language.display_name;
     }
   }
+}
+
+void TextInputSection::ItemChanged(
+    views::Combobox* sender, int prev_index, int new_index) {
+  ImeConfigValue config;
+  config.type = ImeConfigValue::kValueTypeString;
+  config.string_value = hangul_keyboard_combobox_model_.GetItemIDAt(new_index);
+  LanguageLibrary::Get()->SetImeConfig(
+      kHangulSection, kHangulKeyboardConfigName, config);
+
+  UpdateHangulKeyboardCombobox();
 }
 
 void TextInputSection::InitContents(GridLayout* layout) {
@@ -396,6 +487,37 @@ void TextInputSection::InitContents(GridLayout* layout) {
     // Add the checkbox to the layout manager.
     layout->StartRow(0, single_column_view_set_id());
     layout->AddView(checkbox);
+  }
+
+  // Settings for IME engines.
+  // TODO(yusukes): This is a temporary location of the settings. Ask UX team
+  //   where is the best place for this and then move the code.
+  // TODO(yusukes): Use l10n_util::GetString for all views::Labels.
+
+  // Hangul IME
+  hangul_keyboard_combobox_
+      = new views::Combobox(&hangul_keyboard_combobox_model_);
+  hangul_keyboard_combobox_->set_listener(this);
+  UpdateHangulKeyboardCombobox();
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->StartRow(0, single_column_view_set_id());
+  layout->AddView(new views::Label(L"Hangul IME"), 1, 1,
+                  views::GridLayout::LEADING, views::GridLayout::LEADING);
+  layout->StartRow(0, double_column_view_set_id());
+  layout->AddView(new views::Label(L"Keyboard Layout"));
+  layout->AddView(hangul_keyboard_combobox_);
+}
+
+void TextInputSection::UpdateHangulKeyboardCombobox() {
+  DCHECK(hangul_keyboard_combobox_);
+  ImeConfigValue config;
+  if (LanguageLibrary::Get()->GetImeConfig(
+          kHangulSection, kHangulKeyboardConfigName, &config)) {
+    const int index
+        = hangul_keyboard_combobox_model_.GetIndexFromID(config.string_value);
+    if (index >= 0) {
+      hangul_keyboard_combobox_->SetSelectedItem(index);
+    }
   }
 }
 

@@ -125,6 +125,26 @@ bool LanguageLibrary::DeactivateLanguage(
   return success;
 }
 
+bool LanguageLibrary::GetImeConfig(
+    const char* section, const char* config_name, ImeConfigValue* out_value) {
+  bool success = false;
+  if (EnsureLoadedAndStarted()) {
+    success = chromeos::GetImeConfig(
+        language_status_connection_, section, config_name, out_value);
+  }
+  return success;
+}
+
+bool LanguageLibrary::SetImeConfig(
+    const char* section, const char* config_name, const ImeConfigValue& value) {
+  bool success = false;
+  if (EnsureLoadedAndStarted()) {
+    success = chromeos::SetImeConfig(
+        language_status_connection_, section, config_name, value);
+  }
+  return success;
+}
+
 // static
 void LanguageLibrary::LanguageChangedHandler(
     void* object, const chromeos::InputLanguage& current_language) {

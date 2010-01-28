@@ -67,6 +67,21 @@ class LanguageLibrary {
   // true on success.
   bool DeactivateLanguage(LanguageCategory category, const std::string& id);
 
+  // Get a configuration of ibus-daemon or IBus engines and stores it on
+  // |out_value|. Returns true if |out_value| is successfully updated.
+  // When you would like to retrieve 'panel/custom_font', |section| should
+  // be "panel", and |config_name| should be "custom_font".
+  bool GetImeConfig(
+      const char* section, const char* config_name, ImeConfigValue* out_value);
+
+  // Updates a configuration of ibus-daemon or IBus engines with |value|.
+  // Returns true if the configuration is successfully updated.
+  // You can specify |section| and |config_name| arguments in the same way
+  // as GetImeConfig() above.
+  bool SetImeConfig(const char* section,
+                    const char* config_name,
+                    const ImeConfigValue& value);
+
   const InputLanguage& current_language() const {
     return current_language_;
   }
