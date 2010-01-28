@@ -43,6 +43,8 @@ WorkerTest.FLAKY_LimitTotal
 WorkerTest.LimitPerPage
 WorkerTest.WorkerXhrHttpLayoutTests
 WorkerTest.FLAKY_SharedWorkerFastLayoutTests
+# See http://crbug.com/28439
+WorkerTest.WorkerHttpAuth
 
 # Appears to time out on valgrind.
 # http://crbug.com/32818
@@ -53,7 +55,7 @@ NPAPITester.GetURL
 NPAPITester.SelfDeletePluginGetUrl
 NPAPITester.PluginThreadAsyncCall
 NPAPITester.GetJavaScriptURL
-NPAPITester.SelfDeletePluginInvoke
+NPAPITester.FLAKY_SelfDeletePluginInvoke
 NPAPITester.NPObjectReleasedOnDestruction
 NPAPITester.Arguments
 NPAPITester.FLAKY_GetJavaScriptURL2
