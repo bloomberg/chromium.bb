@@ -2883,7 +2883,7 @@ BUG32683 LINUX DEBUG : svg/css/glyph-orientation-rounding-test.xhtml = TEXT PASS
 BUG32684 WIN DEBUG : inspector/timeline-layout.html = TEXT PASS
 BUG32686 WIN DEBUG : fast/block/margin-collapse/block-inside-inline/006.html = CRASH PASS
 BUG32688 MAC DEBUG : fast/lists/inlineBoxWrapperNullCheck.html = TEXT PASS
-BUG32689 MAC DEBUG : http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html = TEXT PASS
+BUG32689 MAC LINUX DEBUG : http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html = TEXT PASS
 BUG32690 MAC DEBUG : plugins/plugin-remove-subframe.html = TEXT PASS
 BUG32691 MAC DEBUG : svg/batik/text/textEffect.svg = TEXT PASS
 BUG32692 MAC DEBUG : svg/custom/visibility-override-filter.svg = TEXT PASS
@@ -2910,3 +2910,7 @@ BUG33099 : media/video-timeupdate-reverse-play.html = TIMEOUT
 BUG33288 : fast/forms/input-valueasnumber-date.html = TEXT
 BUG33288 : fast/forms/input-valueasnumber-datetime.html = TEXT
 BUG33288 : fast/forms/input-valueasnumber-month.html = TEXT
+
+// Flaky storage tests
+BUG33343 LINUX MAC : storage/database-lock-after-reload.html = CRASH TEXT PASS
+BUG33343 DEBUG : storage/multiple-databases-garbage-collection.html = CRASH PASS
