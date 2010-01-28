@@ -1,28 +1,7 @@
-// Copyright 2008, Google Inc.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//  1. Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//  3. Neither the name of Google Inc. nor the names of its contributors may be
-//     used to endorse or promote products derived from this software without
-//     specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
-// WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-// EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-// OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-// OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Windows Vista uses the Native Wifi (WLAN) API for accessing WiFi cards. See
 // http://msdn.microsoft.com/en-us/library/ms705945(VS.85).aspx. Windows XP
 // Service Pack 3 (and Windows XP Service Pack 2, if upgraded with a hot fix)
@@ -33,7 +12,7 @@
 //
 // Windows XP from Service Pack 2 onwards supports the Wireless Zero
 // Configuration (WZC) programming interface. See
-// http://msdn.microsoft.com/en-us/library/ms706587(VS.85).aspx. 
+// http://msdn.microsoft.com/en-us/library/ms706587(VS.85).aspx.
 //
 // The MSDN recommends that one use the WLAN API where available, and WZC
 // otherwise.
@@ -42,75 +21,180 @@
 // not to work on XP SP3. So we use WLAN on Vista, and use NDIS directly
 // otherwise.
 
-// TODO(cprince): remove platform-specific #ifdef guards when OS-specific
-// sources (e.g. WIN32_CPPSRCS) are implemented
-#if defined(WIN32) && !defined(OS_WINCE)
-
-#include "gears/geolocation/wifi_data_provider_win32.h"
+#include "chrome/browser/geolocation/wifi_data_provider_win.h"
 
 #include <windows.h>
-#include <ntddndis.h>  // For IOCTL_NDIS_QUERY_GLOBAL_STATS
-#include "gears/base/common/string_utils.h"
-#include "gears/base/common/vista_utils.h"
-#include "gears/geolocation/wifi_data_provider_common.h"
-#include "gears/geolocation/wifi_data_provider_windows_common.h"
+#include <winioctl.h>
+#include <wlanapi.h>
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/geolocation/wifi_data_provider_common.h"
+#include "chrome/browser/geolocation/wifi_data_provider_common_win.h"
+
+#ifdef _MSC_VER
+#pragma warning(disable:4355)  // 'this' : used in base member initializer list
+#endif
 
 // Taken from ndis.h for WinCE.
 #define NDIS_STATUS_INVALID_LENGTH   ((NDIS_STATUS)0xC0010014L)
 #define NDIS_STATUS_BUFFER_TOO_SHORT ((NDIS_STATUS)0xC0010016L)
 
+namespace {
 // The limits on the size of the buffer used for the OID query.
-static const int kInitialBufferSize = 2 << 12;  // Good for about 50 APs.
-static const int kMaximumBufferSize = 2 << 20;  // 2MB
+const int kInitialBufferSize = 2 << 12;  // Good for about 50 APs.
+const int kMaximumBufferSize = 2 << 20;  // 2MB
 
 // Length for generic string buffers passed to Win32 APIs.
-static const int kStringLength = 512;
+const int kStringLength = 512;
 
 // The time periods, in milliseconds, between successive polls of the wifi data.
-extern const int kDefaultPollingInterval = 10000;  // 10s
-extern const int kNoChangePollingInterval = 120000;  // 2 mins
-extern const int kTwoNoChangePollingInterval = 600000;  // 10 mins
+const int kDefaultPollingInterval = 10000;  // 10s
+const int kNoChangePollingInterval = 120000;  // 2 mins
+const int kTwoNoChangePollingInterval = 600000;  // 10 mins
 
-// Local functions
+// WlanOpenHandle
+typedef DWORD (WINAPI *WlanOpenHandleFunction)(DWORD dwClientVersion,
+                                               PVOID pReserved,
+                                               PDWORD pdwNegotiatedVersion,
+                                               PHANDLE phClientHandle);
+
+// WlanEnumInterfaces
+typedef DWORD (WINAPI *WlanEnumInterfacesFunction)(
+    HANDLE hClientHandle,
+    PVOID pReserved,
+    PWLAN_INTERFACE_INFO_LIST *ppInterfaceList);
+
+// WlanGetNetworkBssList
+typedef DWORD (WINAPI *WlanGetNetworkBssListFunction)(
+    HANDLE hClientHandle,
+    const GUID *pInterfaceGuid,
+    const  PDOT11_SSID pDot11Ssid,
+    DOT11_BSS_TYPE dot11BssType,
+    BOOL bSecurityEnabled,
+    PVOID pReserved,
+    PWLAN_BSS_LIST *ppWlanBssList
+);
+
+// WlanFreeMemory
+typedef VOID (WINAPI *WlanFreeMemoryFunction)(PVOID pMemory);
+
+// WlanCloseHandle
+typedef DWORD (WINAPI *WlanCloseHandleFunction)(HANDLE hClientHandle,
+                                                PVOID pReserved);
+
+
+// Local classes and functions
+class WindowsWlanApi : public Win32WifiDataProvider::WlanApiInterface {
+ public:
+  ~WindowsWlanApi();
+  // Factory function. Will return NULL if this API is unavailable.
+  static WindowsWlanApi* Create();
+
+  // WlanApiInterface
+  virtual bool GetAccessPointData(WifiData::AccessPointDataSet *data);
+
+ private:
+  // Takes ownership of the library handle.
+  explicit WindowsWlanApi(HINSTANCE library);
+
+  // Loads the required functions from the DLL.
+  void GetWLANFunctions(HINSTANCE wlan_library);
+  int GetInterfaceDataWLAN(HANDLE wlan_handle,
+                           const GUID &interface_id,
+                           WifiData::AccessPointDataSet *data);
+
+  // Handle to the wlanapi.dll library.
+  HINSTANCE library_;
+
+  // Function pointers for WLAN
+  WlanOpenHandleFunction WlanOpenHandle_function_;
+  WlanEnumInterfacesFunction WlanEnumInterfaces_function_;
+  WlanGetNetworkBssListFunction WlanGetNetworkBssList_function_;
+  WlanFreeMemoryFunction WlanFreeMemory_function_;
+  WlanCloseHandleFunction WlanCloseHandle_function_;
+};
+
+class WindowsNdisApi : public Win32WifiDataProvider::WlanApiInterface {
+ public:
+  ~WindowsNdisApi();
+  static WindowsNdisApi* Create();
+
+  // WlanApiInterface
+  virtual bool GetAccessPointData(WifiData::AccessPointDataSet *data);
+
+ private:
+  static bool GetInterfacesNDIS(
+      std::vector<string16>* interface_service_names_out);
+
+  // Swaps in content of the vector passed
+  explicit WindowsNdisApi(std::vector<string16>* interface_service_names);
+
+  bool GetInterfaceDataNDIS(HANDLE adapter_handle,
+                            WifiData::AccessPointDataSet *data);
+  // NDIS variables.
+  std::vector<string16> interface_service_names_;
+
+  // Remembers scan result buffer size across calls.
+  int oid_buffer_size_;
+};
+
+
+// TODO(joth): Share with the N other copies of this method.
+bool IsRunningOnVistaOrNewer();
 
 // Extracts data for an access point and converts to Gears format.
-static bool GetNetworkData(const WLAN_BSS_ENTRY &bss_entry,
-                           AccessPointData *access_point_data);
-bool UndefineDosDevice(const std::string16 &device_name);
-bool DefineDosDeviceIfNotExists(const std::string16 &device_name);
-HANDLE GetFileHandle(const std::string16 &device_name);
+bool GetNetworkData(const WLAN_BSS_ENTRY &bss_entry,
+                    AccessPointData *access_point_data);
+bool UndefineDosDevice(const string16 &device_name);
+bool DefineDosDeviceIfNotExists(const string16 &device_name);
+HANDLE GetFileHandle(const string16 &device_name);
 // Makes the OID query and returns a Win32 error code.
 int PerformQuery(HANDLE adapter_handle,
                  BYTE *buffer,
                  DWORD buffer_size,
                  DWORD *bytes_out);
-bool ResizeBuffer(int requested_size, BYTE **buffer);
+bool ResizeBuffer(int requested_size, scoped_ptr_malloc<BYTE>* buffer);
 // Gets the system directory and appends a trailing slash if not already
 // present.
-bool GetSystemDirectory(std::string16 *path);
+bool GetSystemDirectory(string16 *path);
+}  // namespace
 
-// static
 template<>
 WifiDataProviderImplBase *WifiDataProvider::DefaultFactoryFunction() {
   return new Win32WifiDataProvider();
 }
 
-
 Win32WifiDataProvider::Win32WifiDataProvider()
-    : oid_buffer_size_(kInitialBufferSize),
-      is_first_scan_complete_(false) {
-  // Start the polling thread.
-  Start();
+    : Thread(__FILE__),
+      is_first_scan_complete_(false),
+      task_factory_(this) {
 }
 
 Win32WifiDataProvider::~Win32WifiDataProvider() {
-  stop_event_.Signal();
-  Join();
+  // Base class auto-stops the thread, however we need to do it here so our
+  // override of CleanUp still exists whilst the thread is shutting down.
+  Stop();
+}
+
+void Win32WifiDataProvider::inject_mock_wlan_api(WlanApiInterface* wlan_api) {
+  assert(wlan_api_ == NULL);
+  assert(wlan_api);
+  wlan_api_.reset(wlan_api);
+}
+
+void Win32WifiDataProvider::inject_mock_polling_policy(
+    PollingPolicyInterface* policy) {
+  assert(polling_policy_ == NULL);
+  assert(policy);
+  polling_policy_.reset(policy);
+}
+
+bool Win32WifiDataProvider::StartDataProvider() {
+  return base::Thread::Start();
 }
 
 bool Win32WifiDataProvider::GetData(WifiData *data) {
   assert(data);
-  MutexLock lock(&data_mutex_);
+  AutoLock lock(data_mutex_);
   *data = wifi_data_;
   // If we've successfully completed a scan, indicate that we have all of the
   // data we can get.
@@ -118,63 +202,94 @@ bool Win32WifiDataProvider::GetData(WifiData *data) {
 }
 
 // Thread implementation
-void Win32WifiDataProvider::Run() {
-  // We use an absolute path to load the DLL to avoid DLL preloading attacks.
-  HINSTANCE library = NULL;
-  std::string16 system_directory;
-  if (GetSystemDirectory(&system_directory)) {
-    assert(!system_directory.empty());
-    std::string16 dll_path = system_directory + L"wlanapi.dll";
-    library = LoadLibraryEx(dll_path.c_str(),
-                            NULL,
-                            LOAD_WITH_ALTERED_SEARCH_PATH);
-  }
-
+void Win32WifiDataProvider::Init() {
   // Use the WLAN interface if we're on Vista and if it's available. Otherwise,
   // use NDIS.
-  typedef bool (Win32WifiDataProvider::*GetAccessPointDataFunction)(
-      WifiData::AccessPointDataSet *data);
-  GetAccessPointDataFunction get_access_point_data_function = NULL;
-  if (VistaUtils::IsRunningOnVista() && library) {
-    GetWLANFunctions(library);
-    get_access_point_data_function =
-        &Win32WifiDataProvider::GetAccessPointDataWLAN;
-  } else {
-    // We assume the list of interfaces doesn't change while Gears is running.
-    if (!GetInterfacesNDIS()) {
-      is_first_scan_complete_ = true;
-      return;
-    }
-    get_access_point_data_function =
-        &Win32WifiDataProvider::GetAccessPointDataNDIS;
+  if (wlan_api_ == NULL) {
+    wlan_api_.reset(WindowsWlanApi::Create());
   }
-  assert(get_access_point_data_function);
+  if (wlan_api_ == NULL) {
+    wlan_api_.reset(WindowsNdisApi::Create());
+  }
+  if (wlan_api_ == NULL) {
+    // Error! Can't do scans, so don't try and schedule one.
+    is_first_scan_complete_ = true;
+    return;
+  }
 
-  int polling_interval = kDefaultPollingInterval;
-  // Regularly get the access point data.
-  do {
-    WifiData new_data;
-    if ((this->*get_access_point_data_function)(&new_data.access_point_data)) {
-      bool update_available;
-      data_mutex_.Lock();
-      update_available = wifi_data_.DiffersSignificantly(new_data);
-      wifi_data_ = new_data;
-      data_mutex_.Unlock();
-      polling_interval =
-          UpdatePollingInterval(polling_interval, update_available);
-      if (update_available) {
-        is_first_scan_complete_ = true;
-        NotifyListeners();
-      }
-    }
-  } while (!stop_event_.WaitWithTimeout(polling_interval));
+  if (polling_policy_ == NULL) {
+    polling_policy_.reset(
+        new GenericPollingPolicy<kDefaultPollingInterval,
+                                 kNoChangePollingInterval,
+                                 kTwoNoChangePollingInterval>);
+  }
+  assert(polling_policy_ != NULL);
 
-  FreeLibrary(library);
+  ScheduleNextScan();
 }
 
-// WLAN functions
+void Win32WifiDataProvider::CleanUp() {
+  // Destroy the wlan api instance in the thread in which it was created.
+  wlan_api_.reset(NULL);
+}
 
-void Win32WifiDataProvider::GetWLANFunctions(HINSTANCE wlan_library) {
+void Win32WifiDataProvider::DoWifiScanTask() {
+  WifiData new_data;
+  if (wlan_api_->GetAccessPointData(&new_data.access_point_data)) {
+    bool update_available;
+    data_mutex_.Acquire();
+    update_available = wifi_data_.DiffersSignificantly(new_data);
+    wifi_data_ = new_data;
+    data_mutex_.Release();
+    polling_policy_->UpdatePollingInterval(update_available);
+    if (update_available) {
+      is_first_scan_complete_ = true;
+      NotifyListeners();
+    }
+  }
+  ScheduleNextScan();
+}
+
+void Win32WifiDataProvider::ScheduleNextScan() {
+  message_loop()->PostDelayedTask(FROM_HERE,
+      task_factory_.NewRunnableMethod(&Win32WifiDataProvider::DoWifiScanTask),
+      polling_policy_->PollingInterval());
+}
+
+// Local classes and functions
+namespace {
+
+// WindowsWlanApi
+WindowsWlanApi::WindowsWlanApi(HINSTANCE library)
+    : library_(library) {
+  GetWLANFunctions(library_);
+}
+
+WindowsWlanApi::~WindowsWlanApi() {
+  FreeLibrary(library_);
+}
+
+WindowsWlanApi* WindowsWlanApi::Create() {
+  // We use an absolute path to load the DLL to avoid DLL preloading attacks.
+  string16 system_directory;
+  if (!IsRunningOnVistaOrNewer()) {
+    return NULL;
+  }
+  if (!GetSystemDirectory(&system_directory)) {
+    return NULL;
+  }
+  assert(!system_directory.empty());
+  string16 dll_path = system_directory + L"wlanapi.dll";
+  HINSTANCE library = LoadLibraryEx(dll_path.c_str(),
+                                    NULL,
+                                    LOAD_WITH_ALTERED_SEARCH_PATH);
+  if (!library) {
+    return NULL;
+  }
+  return new WindowsWlanApi(library);
+}
+
+void WindowsWlanApi::GetWLANFunctions(HINSTANCE wlan_library) {
   assert(wlan_library);
   WlanOpenHandle_function_ = reinterpret_cast<WlanOpenHandleFunction>(
       GetProcAddress(wlan_library, "WlanOpenHandle"));
@@ -194,7 +309,7 @@ void Win32WifiDataProvider::GetWLANFunctions(HINSTANCE wlan_library) {
          WlanCloseHandle_function_);
 }
 
-bool Win32WifiDataProvider::GetAccessPointDataWLAN(
+bool WindowsWlanApi::GetAccessPointData(
     WifiData::AccessPointDataSet *data) {
   assert(data);
 
@@ -241,7 +356,7 @@ bool Win32WifiDataProvider::GetAccessPointDataWLAN(
 
 // Appends the data for a single interface to the data vector. Returns the
 // number of access points found, or -1 on error.
-int Win32WifiDataProvider::GetInterfaceDataWLAN(
+int WindowsWlanApi::GetInterfaceDataWLAN(
     const HANDLE wlan_handle,
     const GUID &interface_id,
     WifiData::AccessPointDataSet *data) {
@@ -251,7 +366,7 @@ int Win32WifiDataProvider::GetInterfaceDataWLAN(
   if ((*WlanGetNetworkBssList_function_)(wlan_handle,
                                          &interface_id,
                                          NULL,   // Use all SSIDs.
-                                         DOT11_BSS_TYPE_UNUSED,
+                                         dot11_BSS_type_any,
                                          false,  // bSecurityEnabled - unused
                                          NULL,   // reserved
                                          &bss_list) != ERROR_SUCCESS) {
@@ -272,9 +387,62 @@ int Win32WifiDataProvider::GetInterfaceDataWLAN(
   return found;
 }
 
-// NDIS functions
+// WindowsNdisApi
+WindowsNdisApi::WindowsNdisApi(
+    std::vector<string16>* interface_service_names)
+    : oid_buffer_size_(kInitialBufferSize) {
+  assert(!interface_service_names->empty());
+  interface_service_names_.swap(*interface_service_names);
+}
 
-bool Win32WifiDataProvider::GetInterfacesNDIS() {
+WindowsNdisApi::~WindowsNdisApi() {
+}
+
+WindowsNdisApi* WindowsNdisApi::Create() {
+  std::vector<string16> interface_service_names;
+  if (GetInterfacesNDIS(&interface_service_names)) {
+    return new WindowsNdisApi(&interface_service_names);
+  }
+  return NULL;
+}
+
+bool WindowsNdisApi::GetAccessPointData(WifiData::AccessPointDataSet *data) {
+  assert(data);
+  int interfaces_failed = 0;
+  int interfaces_succeeded = 0;
+
+  for (int i = 0; i < static_cast<int>(interface_service_names_.size()); ++i) {
+    // First, check that we have a DOS device for this adapter.
+    if (!DefineDosDeviceIfNotExists(interface_service_names_[i])) {
+      continue;
+    }
+
+    // Get the handle to the device. This will fail if the named device is not
+    // valid.
+    HANDLE adapter_handle = GetFileHandle(interface_service_names_[i]);
+    if (adapter_handle == INVALID_HANDLE_VALUE) {
+      continue;
+    }
+
+    // Get the data.
+    if (GetInterfaceDataNDIS(adapter_handle, data)) {
+      ++interfaces_succeeded;
+    } else {
+      ++interfaces_failed;
+    }
+
+    // Clean up.
+    CloseHandle(adapter_handle);
+    UndefineDosDevice(interface_service_names_[i]);
+  }
+
+  // Return true if at least one interface succeeded, or at the very least none
+  // failed.
+  return interfaces_succeeded > 0 || interfaces_failed == 0;
+}
+
+bool WindowsNdisApi::GetInterfacesNDIS(
+    std::vector<string16>* interface_service_names_out) {
   HKEY network_cards_key = NULL;
   if (RegOpenKeyEx(
       HKEY_LOCAL_MACHINE,
@@ -316,7 +484,7 @@ bool Win32WifiDataProvider::GetInterfacesNDIS() {
                         &type,
                         reinterpret_cast<LPBYTE>(service_name),
                         &service_name_size) == ERROR_SUCCESS) {
-      interface_service_names_.push_back(service_name);
+      interface_service_names_out->push_back(service_name);
     }
     RegCloseKey(hardware_key);
   }
@@ -325,40 +493,13 @@ bool Win32WifiDataProvider::GetInterfacesNDIS() {
   return true;
 }
 
-bool Win32WifiDataProvider::GetAccessPointDataNDIS(
-    WifiData::AccessPointDataSet *data) {
+
+bool WindowsNdisApi::GetInterfaceDataNDIS(HANDLE adapter_handle,
+                                          WifiData::AccessPointDataSet *data) {
   assert(data);
 
-  for (int i = 0; i < static_cast<int>(interface_service_names_.size()); ++i) {
-    // First, check that we have a DOS device for this adapter.
-    if (!DefineDosDeviceIfNotExists(interface_service_names_[i])) {
-      continue;
-    }
-
-    // Get the handle to the device. This will fail if the named device is not
-    // valid.
-    HANDLE adapter_handle = GetFileHandle(interface_service_names_[i]);
-    if (adapter_handle == INVALID_HANDLE_VALUE) {
-      continue;
-    }
-
-    // Get the data.
-    GetInterfaceDataNDIS(adapter_handle, data);
-
-    // Clean up.
-    CloseHandle(adapter_handle);
-    UndefineDosDevice(interface_service_names_[i]);
-  }
-
-  return true;
-}
-
-bool Win32WifiDataProvider::GetInterfaceDataNDIS(
-    HANDLE adapter_handle,
-    WifiData::AccessPointDataSet *data) {
-  assert(data);
-
-  BYTE *buffer = reinterpret_cast<BYTE*>(malloc(oid_buffer_size_));
+  scoped_ptr_malloc<BYTE> buffer(
+      reinterpret_cast<BYTE*>(malloc(oid_buffer_size_)));
   if (buffer == NULL) {
     return false;
   }
@@ -368,7 +509,8 @@ bool Win32WifiDataProvider::GetInterfaceDataNDIS(
 
   while (true) {
     bytes_out = 0;
-    result = PerformQuery(adapter_handle, buffer, oid_buffer_size_, &bytes_out);
+    result = PerformQuery(adapter_handle, buffer.get(),
+                          oid_buffer_size_, &bytes_out);
     if (result == ERROR_GEN_FAILURE ||  // Returned by some Intel cards.
         result == ERROR_INSUFFICIENT_BUFFER ||
         result == ERROR_MORE_DATA ||
@@ -390,49 +532,53 @@ bool Win32WifiDataProvider::GetInterfaceDataNDIS(
       break;
     }
   }
-  assert(buffer);
+  assert(buffer.get());
 
   if (result == ERROR_SUCCESS) {
     NDIS_802_11_BSSID_LIST* bssid_list =
-        reinterpret_cast<NDIS_802_11_BSSID_LIST*>(buffer);
+        reinterpret_cast<NDIS_802_11_BSSID_LIST*>(buffer.get());
     GetDataFromBssIdList(*bssid_list, oid_buffer_size_, data);
   }
 
-  free(buffer);
   return true;
 }
 
-// Local functions
+bool IsRunningOnVistaOrNewer() {
+  OSVERSIONINFO info = {0};
+  info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+  GetVersionEx(&info);
+  return (info.dwMajorVersion >=6);
+}
 
-static bool GetNetworkData(const WLAN_BSS_ENTRY &bss_entry,
+bool GetNetworkData(const WLAN_BSS_ENTRY &bss_entry,
                            AccessPointData *access_point_data) {
   // Currently we get only MAC address, signal strength and SSID.
   assert(access_point_data);
   access_point_data->mac_address = MacAddressAsString16(bss_entry.dot11Bssid);
   access_point_data->radio_signal_strength = bss_entry.lRssi;
   // bss_entry.dot11Ssid.ucSSID is not null-terminated.
-  UTF8ToString16(reinterpret_cast<const char*>(bss_entry.dot11Ssid.ucSSID),
-                 static_cast<ULONG>(bss_entry.dot11Ssid.uSSIDLength),
-                 &access_point_data->ssid);
+  UTF8ToUTF16(reinterpret_cast<const char*>(bss_entry.dot11Ssid.ucSSID),
+              static_cast<ULONG>(bss_entry.dot11Ssid.uSSIDLength),
+              &access_point_data->ssid);
   // TODO(steveblock): Is it possible to get the following?
-  //access_point_data->signal_to_noise
-  //access_point_data->age
-  //access_point_data->channel
+  // access_point_data->signal_to_noise
+  // access_point_data->age
+  // access_point_data->channel
   return true;
 }
 
-bool UndefineDosDevice(const std::string16 &device_name) {
+bool UndefineDosDevice(const string16 &device_name) {
   // We remove only the mapping we use, that is \Device\<device_name>.
-  std::string16 target_path = L"\\Device\\" + device_name;
+  string16 target_path = L"\\Device\\" + device_name;
   return DefineDosDevice(
       DDD_RAW_TARGET_PATH | DDD_REMOVE_DEFINITION | DDD_EXACT_MATCH_ON_REMOVE,
       device_name.c_str(),
       target_path.c_str()) == TRUE;
 }
 
-bool DefineDosDeviceIfNotExists(const std::string16 &device_name) {
+bool DefineDosDeviceIfNotExists(const string16 &device_name) {
   // We create a DOS device name for the device at \Device\<device_name>.
-  std::string16 target_path = L"\\Device\\" + device_name;
+  string16 target_path = L"\\Device\\" + device_name;
 
   TCHAR target[kStringLength];
   if (QueryDosDevice(device_name.c_str(), target, kStringLength) > 0 &&
@@ -456,10 +602,10 @@ bool DefineDosDeviceIfNotExists(const std::string16 &device_name) {
       target_path.compare(target) == 0;
 }
 
-HANDLE GetFileHandle(const std::string16 &device_name) {
+HANDLE GetFileHandle(const string16 &device_name) {
   // We access a device with DOS path \Device\<device_name> at
   // \\.\<device_name>.
-  std::string16 formatted_device_name = L"\\\\.\\" + device_name;
+  string16 formatted_device_name = L"\\\\.\\" + device_name;
 
   return CreateFile(formatted_device_name.c_str(),
                     GENERIC_READ,
@@ -488,35 +634,30 @@ int PerformQuery(HANDLE adapter_handle,
   return ERROR_SUCCESS;
 }
 
-bool ResizeBuffer(int requested_size, BYTE **buffer) {
+bool ResizeBuffer(int requested_size, scoped_ptr_malloc<BYTE>* buffer) {
+  assert(requested_size > 0);
+  assert(buffer);
   if (requested_size > kMaximumBufferSize) {
-    free(*buffer);
-    *buffer = NULL;
+    buffer->reset(NULL);
     return false;
   }
 
-  BYTE *new_buffer = reinterpret_cast<BYTE*>(realloc(*buffer, requested_size));
-  if (new_buffer == NULL) {
-    free(*buffer);
-    *buffer = NULL;
-    return false;
-  }
-
-  *buffer = new_buffer;
-  return true;
+  buffer->reset(reinterpret_cast<BYTE*>(
+      realloc(buffer->release(), requested_size)));
+  return buffer != NULL;
 }
 
-bool GetSystemDirectory(std::string16 *path) {
+bool GetSystemDirectory(string16 *path) {
   assert(path);
   // Return value includes terminating NULL.
-  int buffer_size = GetSystemDirectory(NULL, 0);
+  int buffer_size = ::GetSystemDirectory(NULL, 0);
   if (buffer_size == 0) {
     return false;
   }
   char16 *buffer = new char16[buffer_size];
 
   // Return value excludes terminating NULL.
-  int characters_written = GetSystemDirectory(buffer, buffer_size);
+  int characters_written = ::GetSystemDirectory(buffer, buffer_size);
   if (characters_written == 0) {
     return false;
   }
@@ -530,5 +671,4 @@ bool GetSystemDirectory(std::string16 *path) {
   }
   return true;
 }
-
-#endif  // WIN32 && !OS_WINCE
+}  // namespace

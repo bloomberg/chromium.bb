@@ -1,39 +1,52 @@
-// Copyright 2008, Google Inc.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//  1. Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//  3. Neither the name of Google Inc. nor the names of its contributors may be
-//     used to endorse or promote products derived from this software without
-//     specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
-// WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-// EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-// OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-// OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#ifndef GEARS_GEOLOCATION_WIFI_DATA_PROVIDER_COMMON_H__
-#define GEARS_GEOLOCATION_WIFI_DATA_PROVIDER_COMMON_H__
+#ifndef CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_COMMON_H_
+#define CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_COMMON_H_
 
-#include "gears/base/common/string16.h"
-#include "gears/base/common/basictypes.h"
+#include <assert.h>
+
+#include "base/string16.h"
+#include "base/basictypes.h"
 
 // Converts a MAC address stored as an array of uint8 to a string.
-std::string16 MacAddressAsString16(const uint8 mac_as_int[6]);
+string16 MacAddressAsString16(const uint8 mac_as_int[6]);
 
-// Calculates the new polling interval for wiFi scans, given the previous
-// interval and whether the last scan produced new results.
-int UpdatePollingInterval(int polling_interval, bool scan_results_differ);
+// Allows sharing and mocking of the update polling policy function.
+class PollingPolicyInterface {
+ public:
+  virtual ~PollingPolicyInterface() {}
+  // Calculates the new polling interval for wiFi scans, given the previous
+  // interval and whether the last scan produced new results.
+  virtual void UpdatePollingInterval(bool scan_results_differ) = 0;
+  virtual int PollingInterval() = 0;
+};
 
-#endif  // GEARS_GEOLOCATION_WIFI_DATA_PROVIDER_COMMON_H__
+// Generic polling policy, constants are compile-time parameterized to allow
+// tuning on a per-platform basis.
+template<int DEFAULT_INTERVAL,
+         int NO_CHANGE_INTERVAL,
+         int TWO_NO_CHANGE_INTERVAL>
+class GenericPollingPolicy : public PollingPolicyInterface {
+ public:
+  GenericPollingPolicy() : polling_interval_(DEFAULT_INTERVAL) {}
+  // PollingPolicyInterface
+  virtual void UpdatePollingInterval(bool scan_results_differ) {
+    if (scan_results_differ) {
+      polling_interval_ = DEFAULT_INTERVAL;
+    } else if (polling_interval_ == DEFAULT_INTERVAL) {
+      polling_interval_ = NO_CHANGE_INTERVAL;
+    } else {
+      assert(polling_interval_ == NO_CHANGE_INTERVAL ||
+             polling_interval_ == TWO_NO_CHANGE_INTERVAL);
+      polling_interval_ = TWO_NO_CHANGE_INTERVAL;
+    }
+  }
+  virtual int PollingInterval() { return polling_interval_; }
+
+ private:
+  int polling_interval_;
+};
+
+#endif  // CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_COMMON_H_
