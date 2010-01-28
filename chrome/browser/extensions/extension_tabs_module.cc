@@ -721,7 +721,12 @@ bool RemoveTabFunction::RunImpl() {
     return false;
   }
 
-  browser->CloseTabContents(contents);
+  // Close the tab in this convoluted way, since there's a chance that the tab
+  // is being dragged, or we're in some other nested event loop. This code path
+  // should ensure that the tab is safely closed under such circumstances,
+  // whereas |Browser::CloseTabContents()| does not.
+  RenderViewHost* render_view_host = contents->render_view_host();
+  render_view_host->delegate()->Close(render_view_host);
   return true;
 }
 
