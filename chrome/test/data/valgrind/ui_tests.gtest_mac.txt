@@ -45,6 +45,7 @@ WorkerTest.WorkerXhrHttpLayoutTests
 WorkerTest.FLAKY_SharedWorkerFastLayoutTests
 # See http://crbug.com/28439
 WorkerTest.WorkerHttpAuth
+WorkerTest.SharedWorkerHttpAuth
 
 # Appears to time out on valgrind.
 # http://crbug.com/32818
