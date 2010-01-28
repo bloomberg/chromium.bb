@@ -69,3 +69,17 @@ bool GoogleUpdateSettings::SetMetricsId(const std::wstring& client_id) {
   google_update::posix_guid = WideToASCII(client_id);
   return GoogleUpdateSettings::SetCollectStatsConsent(true);
 }
+
+// GetLastRunTime and SetLastRunTime are not implemented for posix. Their
+// currebnt return values signal failure which the caller is designed to
+// handle.
+
+// static
+int GoogleUpdateSettings::GetLastRunTime() {
+  return -1;
+}
+
+// static
+bool GoogleUpdateSettings::SetLastRunTime() {
+  return false;
+}

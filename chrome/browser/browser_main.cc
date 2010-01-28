@@ -978,6 +978,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // the main message loop.
     if (browser_init.Start(parsed_command_line, std::wstring(), profile,
                            &result_code)) {
+      // Record now as the last succesful chrome start.
+      GoogleUpdateSettings::SetLastRunTime();
       // Call Recycle() here as late as possible, before going into the loop
       // because Start() will add things to it while creating the main window.
       if (pool)
