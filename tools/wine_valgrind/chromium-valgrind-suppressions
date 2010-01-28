@@ -299,8 +299,7 @@
    fun:ExtensionsService::ClearProvidersForTesting
 }
 {
-   # TODO(thestig) investigate why this is happening
-   todo_net_unittest1
+   bug_33424
    Memcheck:Leak
    ...
    fun:net::TCPClientSocketWin::Read
@@ -309,10 +308,9 @@
    fun:net::HttpNetworkTransaction::OnIOComplete
 }
 {
-   # TODO(thestig) investigate why this is happening
    # This is a bit flaky, but it happens with both
    # FLAKY_FTPDirectoryListing_Test and FLAKY_FTPCacheLoginBoxCredentials_Test
-   todo_net_unittest2
+   bug_33425
    Memcheck:Leak
    ...
    fun:net::TCPClientSocketWin::Read
@@ -320,4 +318,19 @@
    fun:net::FtpNetworkTransaction::DoLoop
    fun:net::FtpNetworkTransaction::OnIOComplete
    fun:DispatchToMethod<net::FtpNetworkTransaction,void (__thiscall net::FtpNetworkTransaction::*)(int),int>
+}
+{
+   # This is an invalid read/write that shows up sporadically.
+   bug_33426
+   Memcheck:Addr4
+   fun:_free_base
+   ...
+   fun:std::basic_stringbuf<char,std::char_traits<char>,std::allocator<char> >::~basic_stringbuf<char,std::char_traits<char>,std::allocator<char> >
+   fun:std::basic_stringstream<char,std::char_traits<char>,std::allocator<char> >::~basic_stringstream<char,std::char_traits<char>,std::allocator<char> >
+   fun:std::basic_stringstream<char,std::char_traits<char>,std::allocator<char> >::`vbase destructor'
+   fun:testing::internal::StrStreamToString
+   fun:testing::Message::GetString
+   fun:testing::AssertionResult::operator<<<enum net::LoadLog::EventPhase>
+   fun:net::LogContains
+   fun:SSLClientSocketTest_ConnectMismatched_Test::TestBody
 }
