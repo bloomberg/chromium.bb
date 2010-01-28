@@ -59,7 +59,7 @@ ContentSettingsWindowView::ContentSettingsWindowView(Profile* profile)
       profile_(profile->GetOriginalProfile()) {
   // We don't need to observe changes in this value.
   last_selected_page_.Init(prefs::kContentSettingsWindowLastTabIndex,
-                           g_browser_process->local_state(), NULL);
+                           profile->GetPrefs(), NULL);
 }
 
 ContentSettingsWindowView::~ContentSettingsWindowView() {
