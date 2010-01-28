@@ -274,8 +274,6 @@ static void WriteHistoryItem(
 
   WriteStringVector(item.documentState(), obj);
 
-  WriteInteger64(item.documentSequenceNumber(), obj);
-
   // Yes, the referrer is written twice.  This is for backwards
   // compatibility with the format.
   WriteFormData(item.httpBody(), obj);
@@ -287,6 +285,8 @@ static void WriteHistoryItem(
   WriteInteger(static_cast<int>(children.size()), obj);
   for (size_t i = 0, c = children.size(); i < c; ++i)
     WriteHistoryItem(children[i], obj);
+
+  WriteInteger64(item.documentSequenceNumber(), obj);
 }
 
 // Creates a new HistoryItem tree based on the serialized string.
@@ -318,9 +318,6 @@ static WebHistoryItem ReadHistoryItem(
 
   item.setDocumentState(ReadStringVector(obj));
 
-  if (obj->version >= 6)
-    item.setDocumentSequenceNumber(ReadInteger64(obj));
-
   // The extra referrer string is read for backwards compat.
   const WebHTTPBody& http_body = ReadFormData(obj);
   const WebString& http_content_type = ReadString(obj);
@@ -334,6 +331,9 @@ static WebHistoryItem ReadHistoryItem(
   int num_children = ReadInteger(obj);
   for (int i = 0; i < num_children; ++i)
     item.appendToChildren(ReadHistoryItem(obj, include_form_data));
+
+  if (obj->version >= 6)
+    item.setDocumentSequenceNumber(ReadInteger64(obj));
 
   return item;
 }
