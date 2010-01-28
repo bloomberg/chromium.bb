@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_
 
-#include "base/lazy_instance.h"
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"

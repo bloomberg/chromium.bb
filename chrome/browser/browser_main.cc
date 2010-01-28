@@ -14,7 +14,6 @@
 #include "base/field_trial.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
-#include "base/lazy_instance.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
