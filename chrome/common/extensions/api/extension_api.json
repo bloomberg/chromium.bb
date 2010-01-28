@@ -1876,6 +1876,50 @@
     ]
   },
   {
+    "namespace": "experimental.processes",
+    "nodoc": true,
+    "types": [
+      {
+        "id": "Process",
+        "type": "object",
+        "description": "An object containing information about one of the browser's processes.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The internal ID of the process."
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "getProcessForTab",
+        "type": "function",
+        "description": "Returns details about the current renderer process of the specified tab.",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer",
+            "minimum": 0
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "process",
+                "$ref": "Process",
+                "description": "Details about the tab's process."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": []
+  },
+  {
     "namespace": "test",
     "types": [],
     "functions": [

@@ -243,7 +243,8 @@ var chrome = chrome || {};
       // Entire namespaces.
       "bookmarks", "browserAction", "devtools", "experimental.bookmarkManager",
       "experimental.extension", "experimental.history", "experimental.popup",
-      "pageAction", "pageActions", "tabs", "test", "toolstrip", "windows",
+      "experimental.processes", "pageAction", "pageActions", "tabs", "test",
+      "toolstrip", "windows",
 
       // Functions/events/properties within the extension namespace.
       "extension.getBackgroundPage", "extension.getExtensionTabs",

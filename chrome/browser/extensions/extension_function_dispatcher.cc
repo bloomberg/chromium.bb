@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/extension_page_actions_module_constants.h"
 #include "chrome/browser/extensions/extension_popup_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_test_api.h"
@@ -158,6 +159,9 @@ void FactoryRegistry::ResetFunctions() {
 
   // Popup API.
   RegisterFunction<PopupShowFunction>();
+
+  // Processes.
+  RegisterFunction<GetProcessForTabFunction>();
 
   // Test.
   RegisterFunction<ExtensionTestPassFunction>();
