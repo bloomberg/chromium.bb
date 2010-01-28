@@ -113,6 +113,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<PageActionHideFunction>();
   RegisterFunction<PageActionSetIconFunction>();
   RegisterFunction<PageActionSetTitleFunction>();
+  RegisterFunction<PageActionSetPopupFunction>();
 
   // Browser Actions.
   RegisterFunction<BrowserActionSetIconFunction>();

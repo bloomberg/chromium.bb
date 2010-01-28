@@ -436,36 +436,55 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
   result->SetTitle(ExtensionAction::kDefaultTabId, title);
 
   // Read the action's |popup| (optional).
-  DictionaryValue* popup = NULL;
-  std::string url_str;
-  if (extension_action->HasKey(keys::kPageActionPopup) &&
-     !extension_action->GetDictionary(keys::kPageActionPopup, &popup) &&
-     !extension_action->GetString(keys::kPageActionPopup, &url_str)) {
-    *error = errors::kInvalidPageActionPopup;
-    return NULL;
+  const wchar_t* popup_key = NULL;
+  if (extension_action->HasKey(keys::kPageActionDefaultPopup))
+    popup_key = keys::kPageActionDefaultPopup;
+
+  // For backward compatibility, alias old key "popup" to new
+  // key "default_popup".
+  if (extension_action->HasKey(keys::kPageActionPopup)) {
+    if (popup_key) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidPageActionOldAndNewKeys,
+          WideToASCII(keys::kPageActionDefaultPopup),
+          WideToASCII(keys::kPageActionPopup));
+      return NULL;
+    }
+    popup_key = keys::kPageActionPopup;
   }
-  if (popup) {
-    // TODO(EXTENSIONS_DEPRECATED): popup is a string only
-    if (!popup->GetString(keys::kPageActionPopupPath, &url_str)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidPageActionPopupPath, "<missing>");
+
+  if (popup_key) {
+    DictionaryValue* popup = NULL;
+    std::string url_str;
+
+    if (extension_action->GetString(popup_key, &url_str)) {
+      // On success, |url_str| is set.  Nothing else to do.
+    } else if (extension_action->GetDictionary(popup_key, &popup)) {
+      // TODO(EXTENSIONS_DEPRECATED): popup is now a string only.
+      // Support the old dictionary format for backward compatibility.
+      if (!popup->GetString(keys::kPageActionPopupPath, &url_str)) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidPageActionPopupPath, "<missing>");
+        return NULL;
+      }
+    } else {
+      *error = errors::kInvalidPageActionPopup;
       return NULL;
     }
-    GURL url = GetResourceURL(url_str);
-    if (!url.is_valid()) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidPageActionPopupPath, url_str);
-      return NULL;
+
+    if (!url_str.empty()) {
+      // An empty string is treated as having no popup.
+      GURL url = GetResourceURL(url_str);
+      if (!url.is_valid()) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidPageActionPopupPath, url_str);
+        return NULL;
+      }
+      result->SetPopupUrl(ExtensionAction::kDefaultTabId, url);
+    } else {
+      DCHECK(!result->HasPopup(ExtensionAction::kDefaultTabId))
+          << "Shouldn't be posible for the popup to be set.";
     }
-    result->SetPopupUrl(ExtensionAction::kDefaultTabId, url);
-  } else if (!url_str.empty()) {
-    GURL url = GetResourceURL(url_str);
-    if (!url.is_valid()) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidPageActionPopupPath, url_str);
-      return NULL;
-    }
-    result->SetPopupUrl(ExtensionAction::kDefaultTabId, url);
   }
 
   return result.release();

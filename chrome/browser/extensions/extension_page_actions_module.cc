@@ -192,6 +192,29 @@ bool PageActionSetTitleFunction::RunImpl() {
   return true;
 }
 
+bool PageActionSetPopupFunction::RunImpl() {
+  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
+  const DictionaryValue* args = args_as_dictionary();
+
+  int tab_id;
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));
+  if (!InitCommon(tab_id))
+    return false;
+
+  // TODO(skerner): Consider allowing null and undefined to mean the popup
+  // should be removed.
+  std::string popup_string;
+  EXTENSION_FUNCTION_VALIDATE(args->GetString(L"popup", &popup_string));
+
+  GURL popup_url;
+  if (!popup_string.empty())
+    popup_url = GetExtension()->GetResourceURL(popup_string);
+
+  page_action_->SetPopupUrl(tab_id, popup_url);
+  contents_->PageActionStateChanged();
+  return true;
+}
+
 // Not currently exposed to extensions. To re-enable, add mapping in
 // extension_function_dispatcher.
 bool PageActionSetBadgeBackgroundColorFunction::RunImpl() {

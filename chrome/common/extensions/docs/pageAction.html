@@ -243,6 +243,8 @@
                       </li><li>
                         <a href="#method-setIcon">setIcon</a>
                       </li><li>
+                        <a href="#method-setPopup">setPopup</a>
+                      </li><li>
                         <a href="#method-setTitle">setTitle</a>
                       </li><li>
                         <a href="#method-show">show</a>
@@ -316,7 +318,7 @@ like this:
   <b>"page_action": {
     "default_icon": "icons/foo.png", <em>// <b>required</b></em>
     "default_title": "Do action",    <em>// optional; shown in tooltip</em>
-    "popup": "popup.html"            <em>// optional</em>
+    "default_popup": "popup.html"    <em>// optional</em>
   }</b>,
   ...
 }</pre>
@@ -773,6 +775,182 @@ For other examples and for help in viewing the source code, see
               </div> <!-- /description -->
 
             </div><div class="apiItem">
+              <a name="method-setPopup"></a> <!-- method-anchor -->
+              <h4>setPopup</h4>
+
+              <div class="summary"><span style="display: none; ">void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.pageAction.setPopup</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                      <var><span>details</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Sets the html document to be opened as a popup when the user clicks on the page action's icon.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>details</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The id of the tab for which you want to modify the page action.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>popup</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The html file to show in a popup.  If set to the empty string (''), no popup is shown.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4 style="display: none; ">Returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div style="display: none; ">
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
               <a name="method-setTitle"></a> <!-- method-anchor -->
               <h4>setTitle</h4>
 
@@ -1064,7 +1242,7 @@ For other examples and for help in viewing the source code, see
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when a page action icon is clicked.</p>
+                <p>Fired when a page action icon is clicked if the page action doesn't show a popup.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>

@@ -31,6 +31,7 @@ const wchar_t* kPageAction = L"page_action";
 const wchar_t* kPageActions = L"page_actions";
 const wchar_t* kPageActionIcons = L"icons";
 const wchar_t* kPageActionDefaultIcon = L"default_icon";
+const wchar_t* kPageActionDefaultPopup = L"default_popup";
 const wchar_t* kPageActionDefaultTitle = L"default_title";
 const wchar_t* kPageActionPopup = L"popup";
 const wchar_t* kPageActionPopupHeight = L"height";
@@ -133,6 +134,9 @@ const char* kInvalidPageActionId =
     "Required value 'id' is missing or invalid.";
 const char* kInvalidPageActionDefaultTitle =
     "Invalid value for 'default_title'.";
+const char* kInvalidPageActionOldAndNewKeys =
+    "Key \"*\" is deprecated.  Key \"*\" has the same meaning.  You can not "
+    "use both.";
 const char* kInvalidPageActionPopup =
     "Invalid type for page action popup.";
 const char* kInvalidPageActionPopupHeight =
