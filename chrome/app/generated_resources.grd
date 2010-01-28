@@ -4794,6 +4794,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_AUTOFILL_NEVERSAVE" desc="The label of the 'Never save autofill' radio button">
         Never save text from forms
       </message>
+      <message name="IDS_OPTIONS_AUTOFILL_SETTINGS" desc="The label of the 'Change autofill settings' button">
+        Change autofill settings
+      </message>
       <message name="IDS_AUTOFILL_INFOBAR_ACCEPT" desc="Text to show for the autofill request infobar accept button.">
         Set up AutoFill...
       </message>
@@ -4892,6 +4895,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_AUTOFILL_DIALOG_MAKE_DEFAULT" desc="The label of the Make this my default profile entry.">
         Make this my default profile
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_SAVE" desc="The label of the Save button on the autofill dialog.">
+        Save
       </message>
 
       <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">

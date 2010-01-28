@@ -34,6 +34,13 @@ CreditCard::CreditCard(const string16& label, int unique_id)
 CreditCard::CreditCard(const CreditCard& card) {
   operator=(card);
 }
+
+CreditCard::CreditCard()
+    : expiration_month_(0),
+      expiration_year_(0) {
+}
+
+
 FormGroup* CreditCard::Clone() const {
   return new CreditCard(*this);
 }

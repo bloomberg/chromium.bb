@@ -16,6 +16,7 @@ class CreditCard : public FormGroup {
   CreditCard(const string16& label, int unique_id);
   // For use in STL containers.
   CreditCard(const CreditCard& card);
+  CreditCard();
 
   // FormGroup implementation:
   FormGroup* Clone() const;
