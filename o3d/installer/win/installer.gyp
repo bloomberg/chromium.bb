@@ -57,6 +57,8 @@
         '../../<(glewdir)/include',
         '../../<(cgdir)/include',
         '<(INTERMEDIATE_DIR)',
+      ],
+      'msvs_system_include_dirs': [
         '$(DXSDK_DIR)/Include',
       ],
       'defines': [

@@ -32,7 +32,7 @@
       ],
       ['renderer == "d3d9" and OS == "win"',
         {
-          'include_dirs': [
+          'msvs_system_include_dirs': [
             '$(DXSDK_DIR)/Include',
           ],
         }

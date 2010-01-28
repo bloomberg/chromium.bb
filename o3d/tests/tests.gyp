@@ -198,7 +198,7 @@
             'sources': [
               'common/win/dxcapture.cc',
             ],
-            'include_dirs': [
+            'msvs_system_include_dirs': [
               '"$(DXSDK_DIR)/Include"',
             ],
             'link_settings': {

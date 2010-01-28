@@ -257,7 +257,7 @@
             'target_name': 'dx_dll',
             'type': 'none',
             'all_dependent_settings': {
-              'include_dirs': [
+              'msvs_system_include_dirs': [
                 '$(DXSDK_DIR)/Include',
               ],
               'libraries': [

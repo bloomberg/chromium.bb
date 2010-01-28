@@ -53,7 +53,7 @@
       'conditions' : [
         ['OS == "win"',
           {
-            'include_dirs': [
+            'msvs_system_include_dirs': [
               '$(DXSDK_DIR)/Include',
             ],
             'sources': [
