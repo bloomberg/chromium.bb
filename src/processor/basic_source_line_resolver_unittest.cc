@@ -63,7 +63,7 @@ class TestCodeModule : public CodeModule {
   virtual ~TestCodeModule() {}
 
   virtual u_int64_t base_address() const { return 0; }
-  virtual u_int64_t size() const { return 0x4000; }
+  virtual u_int64_t size() const { return 0xb000; }
   virtual string code_file() const { return code_file_; }
   virtual string code_identifier() const { return ""; }
   virtual string debug_file() const { return ""; }
@@ -161,6 +161,16 @@ static bool RunTests() {
   frame.instruction = 0x2000;
   frame_info.reset(resolver.FindWindowsFrameInfo(&frame));
   ASSERT_FALSE(frame_info.get());
+
+  frame.instruction = 0x2900;
+  frame.module = &module1;
+  resolver.FillSourceLineInfo(&frame);
+  ASSERT_EQ(frame.function_name, string("PublicSymbol"));
+
+  frame.instruction = 0x4000;
+  frame.module = &module1;
+  resolver.FillSourceLineInfo(&frame);
+  ASSERT_EQ(frame.function_name, string("LargeFunction"));
 
   TestCodeModule module2("module2");
 

@@ -442,7 +442,7 @@ void BasicSourceLineResolver::Module::LookupAddress(StackFrame *frame) const {
   MemAddr public_address;
   if (functions_.RetrieveNearestRange(address, &func,
                                       &function_base, &function_size) &&
-      address >= function_base && address - function_size < function_base) {
+      address >= function_base && address - function_base < function_size) {
     frame->function_name = func->name;
     frame->function_base = frame->module->base_address() + function_base;
 
@@ -458,7 +458,7 @@ void BasicSourceLineResolver::Module::LookupAddress(StackFrame *frame) const {
     }
   } else if (public_symbols_.Retrieve(address,
                                       &public_symbol, &public_address) &&
-             (!func.get() || public_address - function_size > function_base)) {
+             (!func.get() || public_address > function_base)) {
     frame->function_name = public_symbol->name;
     frame->function_base = frame->module->base_address() + public_address;
   }
@@ -502,7 +502,7 @@ WindowsFrameInfo *BasicSourceLineResolver::Module::FindWindowsFrameInfo(
   linked_ptr<PublicSymbol> public_symbol;
   MemAddr public_address;
   if (public_symbols_.Retrieve(address, &public_symbol, &public_address) &&
-      (!function.get() || public_address - function_size > function_base)) {
+      (!function.get() || public_address > function_base)) {
     result->parameter_size = public_symbol->parameter_size;
   }
   
