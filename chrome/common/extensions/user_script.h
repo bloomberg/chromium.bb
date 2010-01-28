@@ -10,7 +10,6 @@
 
 #include "base/file_path.h"
 #include "base/string_piece.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
 
