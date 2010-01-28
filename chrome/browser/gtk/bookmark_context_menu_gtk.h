@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "app/gfx/native_widget_types.h"
+#include "app/menus/simple_menu_model.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "chrome/browser/gtk/menu_gtk.h"
 
 class Browser;
 class PageNavigator;
@@ -21,7 +21,7 @@ class Profile;
 // bookmark bar, items on the bookmark bar, submenus of the bookmark bar and
 // the bookmark manager.
 class BookmarkContextMenuGtk : public BookmarkModelObserver,
-                               public MenuGtk::Delegate {
+                               public menus::SimpleMenuModel::Delegate {
  public:
   // Used to configure what the context menu shows.
   enum ConfigurationType {
@@ -60,19 +60,18 @@ class BookmarkContextMenuGtk : public BookmarkModelObserver,
                          Delegate* delegate);
   virtual ~BookmarkContextMenuGtk();
 
-  // Pops up this menu. This call doesn't block.
-  void PopupAsContext(guint32 event_time);
-
-  // Returns the menu.
-  GtkWidget* menu() const { return menu_->widget(); }
+  menus::MenuModel* menu_model() const { return menu_model_.get(); }
 
   // Should be called by the delegate when it is no longer valid.
   void DelegateDestroyed();
 
-  // Menu::Delegate / MenuGtk::Delegate methods.
-  virtual void ExecuteCommandById(int id);
-  virtual bool IsItemChecked(int id) const;
-  virtual bool IsCommandEnabled(int id) const;
+  // Menu::Delegate methods.
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator);
+  virtual void ExecuteCommand(int command_id);
 
  private:
   // BookmarkModelObserver method. Any change to the model results in closing
@@ -100,9 +99,6 @@ class BookmarkContextMenuGtk : public BookmarkModelObserver,
 
   // Invoked from the various bookmark model observer methods. Closes the menu.
   void ModelChanged();
-
-  // Builds the platform specific menu object.
-  void CreateMenuObject();
 
   // Adds a IDS_* style command to the menu.
   void AppendItem(int id);
@@ -133,7 +129,12 @@ class BookmarkContextMenuGtk : public BookmarkModelObserver,
   BookmarkModel* model_;
   ConfigurationType configuration_;
   Delegate* delegate_;
-  scoped_ptr<MenuGtk> menu_;
+  scoped_ptr<menus::SimpleMenuModel> menu_model_;
+
+  // Tracks whether the model has changed. For the most part the model won't
+  // change while a context menu is showing, but if it does, we'd better not
+  // try to execute any commands.
+  bool model_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenuGtk);
 };

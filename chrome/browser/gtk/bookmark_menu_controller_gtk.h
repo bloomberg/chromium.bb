@@ -21,6 +21,7 @@ class Profiler;
 class PageNavigator;
 class BookmarkModel;
 class BookmarkNode;
+class MenuGtk;
 
 class BookmarkMenuController : public BaseBookmarkModelObserver,
                                public BookmarkContextMenuGtk::Delegate {
@@ -123,8 +124,9 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // nodes of type URL.
   std::map<const BookmarkNode*, GtkWidget*> node_to_menu_widget_map_;
 
-  // Owns our right click context menu.
-  scoped_ptr<BookmarkContextMenuGtk> context_menu_;
+  // The controller and view for the right click context menu.
+  scoped_ptr<BookmarkContextMenuGtk> context_menu_controller_;
+  scoped_ptr<MenuGtk> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkMenuController);
 };

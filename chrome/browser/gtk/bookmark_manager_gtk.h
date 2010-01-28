@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.TIT
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 
 class BookmarkModel;
 class BookmarkTableModel;
+class MenuGtk;
 class Profile;
 
 class BookmarkManagerGtk : public BookmarkModelObserver,
@@ -338,7 +339,10 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   // The Organize menu item.
   GtkWidget* organize_;
   // The submenu the item pops up.
-  scoped_ptr<BookmarkContextMenuGtk> organize_menu_;
+  // The controller.
+  scoped_ptr<BookmarkContextMenuGtk> organize_menu_controller_;
+  // The view.
+  scoped_ptr<MenuGtk> organize_menu_;
   // Whether the menu refers to the left selection.
   bool organize_is_for_left_;
 

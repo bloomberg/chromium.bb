@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -214,10 +214,11 @@ BookmarkContextMenuGtk::BookmarkContextMenuGtk(
       selection_(selection),
       model_(profile->GetBookmarkModel()),
       configuration_(configuration),
-      delegate_(delegate) {
+      delegate_(delegate),
+      model_changed_(false) {
   DCHECK(profile_);
   DCHECK(model_->IsLoaded());
-  CreateMenuObject();
+  menu_model_.reset(new menus::SimpleMenuModel(this));
 
   if (configuration != BOOKMARK_MANAGER_ORGANIZE_MENU) {
     if (selection.size() == 1 && selection[0]->is_url()) {
@@ -281,15 +282,14 @@ BookmarkContextMenuGtk::~BookmarkContextMenuGtk() {
     model_->RemoveObserver(this);
 }
 
-void BookmarkContextMenuGtk::PopupAsContext(guint32 event_time) {
-  menu_->PopupAsContext(event_time);
-}
-
 void BookmarkContextMenuGtk::DelegateDestroyed() {
   delegate_ = NULL;
 }
 
-void BookmarkContextMenuGtk::ExecuteCommandById(int id) {
+void BookmarkContextMenuGtk::ExecuteCommand(int id) {
+  if (model_changed_)
+    return;
+
   if (delegate_)
     delegate_->WillExecuteCommand();
 
@@ -433,12 +433,12 @@ void BookmarkContextMenuGtk::ExecuteCommandById(int id) {
   }
 }
 
-bool BookmarkContextMenuGtk::IsItemChecked(int id) const {
+bool BookmarkContextMenuGtk::IsCommandIdChecked(int id) const {
   DCHECK(id == IDS_BOOMARK_BAR_ALWAYS_SHOW);
   return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
-bool BookmarkContextMenuGtk::IsCommandEnabled(int id) const {
+bool BookmarkContextMenuGtk::IsCommandIdEnabled(int id) const {
   bool is_root_node =
       (selection_.size() == 1 &&
        selection_[0]->GetParent() == model_->root_node());
@@ -486,6 +486,12 @@ bool BookmarkContextMenuGtk::IsCommandEnabled(int id) const {
   return true;
 }
 
+bool BookmarkContextMenuGtk::GetAcceleratorForCommandId(
+    int command_id,
+    menus::Accelerator* accelerator) {
+  return false;
+}
+
 void BookmarkContextMenuGtk::BookmarkModelBeingDeleted(BookmarkModel* model) {
   ModelChanged();
 }
@@ -522,27 +528,23 @@ void BookmarkContextMenuGtk::BookmarkNodeChildrenReordered(
 }
 
 void BookmarkContextMenuGtk::ModelChanged() {
-  menu_->Cancel();
-}
-
-void BookmarkContextMenuGtk::CreateMenuObject() {
-  menu_.reset(new MenuGtk(this));
+  model_changed_ = true;
 }
 
 void BookmarkContextMenuGtk::AppendItem(int id) {
-  menu_->AppendMenuItemWithLabel(id, l10n_util::GetStringUTF8(id));
+  menu_model_->AddItem(id, l10n_util::GetStringUTF16(id));
 }
 
 void BookmarkContextMenuGtk::AppendItem(int id, int localization_id) {
-  menu_->AppendMenuItemWithLabel(id, l10n_util::GetStringUTF8(localization_id));
+  menu_model_->AddItemWithStringId(id, localization_id);
 }
 
 void BookmarkContextMenuGtk::AppendSeparator() {
-  menu_->AppendSeparator();
+  menu_model_->AddSeparator();
 }
 
 void BookmarkContextMenuGtk::AppendCheckboxItem(int id) {
-  menu_->AppendCheckMenuItemWithLabel(id, l10n_util::GetStringUTF8(id));
+  menu_model_->AddCheckItemWithStringId(id, id);
 }
 
 BookmarkModel* BookmarkContextMenuGtk::RemoveModelObserver() {

@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/bookmark_tree_model.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
+#include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -627,14 +628,18 @@ void BookmarkManagerGtk::ResetOrganizeMenu(bool left) {
 
   // We DeleteSoon on the old one to give any reference holders (e.g.
   // the event that caused this reset) a chance to release their refs.
-  BookmarkContextMenuGtk* old_menu = organize_menu_.release();
+  MenuGtk* old_menu = organize_menu_.release();
   if (old_menu)
     MessageLoop::current()->DeleteSoon(FROM_HERE, old_menu);
 
-  organize_menu_.reset(new BookmarkContextMenuGtk(GTK_WINDOW(window_), profile_,
-      NULL, NULL, parent, nodes,
-      BookmarkContextMenuGtk::BOOKMARK_MANAGER_ORGANIZE_MENU, NULL));
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(organize_), organize_menu_->menu());
+  organize_menu_controller_.reset(
+      new BookmarkContextMenuGtk(GTK_WINDOW(window_), profile_,
+        NULL, NULL, parent, nodes,
+        BookmarkContextMenuGtk::BOOKMARK_MANAGER_ORGANIZE_MENU, NULL));
+  organize_menu_.reset(
+      new MenuGtk(NULL, organize_menu_controller_->menu_model()));
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(organize_),
+                            organize_menu_->widget());
 }
 
 void BookmarkManagerGtk::BuildLeftStore() {
@@ -1333,9 +1338,9 @@ gboolean BookmarkManagerGtk::OnTreeViewKeyPress(
   if (command == -1)
     return FALSE;
 
-  if (bm->organize_menu_.get() &&
-      bm->organize_menu_->IsCommandEnabled(command)) {
-    bm->organize_menu_->ExecuteCommandById(command);
+  if (bm->organize_menu_controller_.get() &&
+      bm->organize_menu_controller_->IsCommandIdEnabled(command)) {
+    bm->organize_menu_controller_->ExecuteCommand(command);
     return TRUE;
   }
 

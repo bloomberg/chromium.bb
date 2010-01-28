@@ -106,9 +106,8 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
 }
 
 BookmarkMenuController::~BookmarkMenuController() {
-
-  if (context_menu_.get())
-    context_menu_->DelegateDestroyed();
+  if (context_menu_controller_.get())
+    context_menu_controller_->DelegateDestroyed();
   profile_->GetBookmarkModel()->RemoveObserver(this);
   gtk_menu_popdown(GTK_MENU(menu_));
 }
@@ -251,17 +250,19 @@ gboolean BookmarkMenuController::OnButtonPressed(
     std::vector<const BookmarkNode*> nodes;
     if (node)
       nodes.push_back(node);
-    controller->context_menu_.reset(
+    controller->context_menu_controller_.reset(
         new BookmarkContextMenuGtk(
             controller->parent_window_, controller->profile_,
             controller->browser_, controller->page_navigator_, parent, nodes,
             BookmarkContextMenuGtk::BOOKMARK_BAR, controller));
+    controller->context_menu_.reset(
+        new MenuGtk(NULL, controller->context_menu_controller_->menu_model()));
 
     // Our bookmark folder menu loses the grab to the context menu. When the
     // context menu is hidden, re-assert our grab.
     GtkWidget* grabbing_menu = gtk_grab_get_current();
     g_object_ref(grabbing_menu);
-    g_signal_connect(controller->context_menu_->menu(), "hide",
+    g_signal_connect(controller->context_menu_->widget(), "hide",
                      G_CALLBACK(OnContextMenuHide), grabbing_menu);
 
     controller->context_menu_->PopupAsContext(event->time);

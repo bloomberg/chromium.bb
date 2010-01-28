@@ -27,6 +27,7 @@
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
+#include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
@@ -914,10 +915,12 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
   }
 
   GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(sender));
-  current_context_menu_.reset(new BookmarkContextMenuGtk(
-                                  window, profile_, browser_, page_navigator_,
-                                  parent, nodes,
-                                  BookmarkContextMenuGtk::BOOKMARK_BAR, NULL));
+  current_context_menu_controller_.reset(
+      new BookmarkContextMenuGtk(
+          window, profile_, browser_, page_navigator_, parent, nodes,
+          BookmarkContextMenuGtk::BOOKMARK_BAR, NULL));
+  current_context_menu_.reset(
+      new MenuGtk(NULL, current_context_menu_controller_->menu_model()));
   current_context_menu_->PopupAsContext(event->time);
 }
 

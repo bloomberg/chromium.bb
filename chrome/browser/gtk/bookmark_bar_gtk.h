@@ -28,6 +28,7 @@ class BookmarkMenuController;
 class Browser;
 class BrowserWindowGtk;
 class CustomContainerButton;
+class MenuGtk;
 class PageNavigator;
 class Profile;
 class TabstripOriginProvider;
@@ -349,7 +350,10 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // The last displayed right click menu, or NULL if no menus have been
   // displayed yet.
-  scoped_ptr<BookmarkContextMenuGtk> current_context_menu_;
+  // The controller.
+  scoped_ptr<BookmarkContextMenuGtk> current_context_menu_controller_;
+  // The view.
+  scoped_ptr<MenuGtk> current_context_menu_;
 
   // The last displayed left click menu, or NULL if no menus have been
   // displayed yet.
