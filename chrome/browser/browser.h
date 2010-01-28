@@ -783,24 +783,8 @@ class Browser : public TabStripModelDelegate,
   // across sessions.
   const SessionID session_id_;
 
-  // TODO(beng): should be combined with ToolbarModel now that this is the only
-  //             implementation.
-  class BrowserToolbarModel : public ToolbarModel {
-  public:
-    explicit BrowserToolbarModel(Browser* browser) : browser_(browser) { }
-    virtual ~BrowserToolbarModel() { }
-
-    // ToolbarModel implementation.
-    virtual NavigationController* GetNavigationController();
-
-  private:
-    Browser* browser_;
-
-    DISALLOW_COPY_AND_ASSIGN(BrowserToolbarModel);
-  };
-
   // The model for the toolbar view.
-  BrowserToolbarModel toolbar_model_;
+  ToolbarModel toolbar_model_;
 
   // The model for the extension shelf.
   scoped_ptr<ExtensionShelfModel> extension_shelf_model_;

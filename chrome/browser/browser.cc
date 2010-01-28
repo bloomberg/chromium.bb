@@ -3212,14 +3212,3 @@ bool Browser::RunUnloadEventsHelper(TabContents* contents) {
   }
   return false;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// BrowserToolbarModel (private):
-
-NavigationController* Browser::BrowserToolbarModel::GetNavigationController() {
-  // This |current_tab| can be NULL during the initialization of the
-  // toolbar during window creation (i.e. before any tabs have been added
-  // to the window).
-  TabContents* current_tab = browser_->GetSelectedTabContents();
-  return current_tab ? &current_tab->controller() : NULL;
-}

@@ -5,6 +5,7 @@
 #include "chrome/browser/toolbar_model.h"
 
 #include "app/l10n_util.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -18,14 +19,16 @@
 #include "net/base/cert_status_flags.h"
 #include "net/base/net_util.h"
 
-ToolbarModel::ToolbarModel() : input_in_progress_(false) {
+ToolbarModel::ToolbarModel(Browser* browser)
+    : browser_(browser),
+      input_in_progress_(false) {
 }
 
 ToolbarModel::~ToolbarModel() {
 }
 
 // ToolbarModel Implementation.
-std::wstring ToolbarModel::GetText() {
+std::wstring ToolbarModel::GetText() const {
   GURL url(chrome::kAboutBlankURL);
   std::wstring languages;  // Empty if we don't have a |navigation_controller|.
 
@@ -46,7 +49,7 @@ std::wstring ToolbarModel::GetText() {
                         NULL);
 }
 
-ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() {
+ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
   if (input_in_progress_)  // When editing, assume no security style.
     return ToolbarModel::NORMAL;
 
@@ -74,12 +77,12 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() {
   }
 }
 
-ToolbarModel::SecurityLevel ToolbarModel::GetSchemeSecurityLevel() {
+ToolbarModel::SecurityLevel ToolbarModel::GetSchemeSecurityLevel() const {
   // For now, in sync with the security level.
   return GetSecurityLevel();
 }
 
-ToolbarModel::Icon ToolbarModel::GetIcon() {
+ToolbarModel::Icon ToolbarModel::GetIcon() const {
   if (input_in_progress_)
     return ToolbarModel::NO_ICON;
 
@@ -108,7 +111,7 @@ ToolbarModel::Icon ToolbarModel::GetIcon() {
   }
 }
 
-void ToolbarModel::GetIconHoverText(std::wstring* text) {
+void ToolbarModel::GetIconHoverText(std::wstring* text) const {
   DCHECK(text);
 
   NavigationController* navigation_controller = GetNavigationController();
@@ -150,8 +153,9 @@ void ToolbarModel::GetIconHoverText(std::wstring* text) {
   }
 }
 
-ToolbarModel::InfoTextType ToolbarModel::GetInfoText(std::wstring* text,
-                                                     std::wstring* tooltip) {
+ToolbarModel::InfoTextType ToolbarModel::GetInfoText(
+    std::wstring* text,
+    std::wstring* tooltip) const {
   DCHECK(text && tooltip);
   text->clear();
   tooltip->clear();
@@ -181,7 +185,16 @@ ToolbarModel::InfoTextType ToolbarModel::GetInfoText(std::wstring* text,
   return INFO_EV_TEXT;
 }
 
-void ToolbarModel::CreateErrorText(NavigationEntry* entry, std::wstring* text) {
+NavigationController* ToolbarModel::GetNavigationController() const {
+  // This |current_tab| can be NULL during the initialization of the
+  // toolbar during window creation (i.e. before any tabs have been added
+  // to the window).
+  TabContents* current_tab = browser_->GetSelectedTabContents();
+  return current_tab ? &current_tab->controller() : NULL;
+}
+
+void ToolbarModel::CreateErrorText(NavigationEntry* entry,
+                                   std::wstring* text) const {
   const NavigationEntry::SSLStatus& ssl = entry->ssl();
   std::vector<SSLErrorInfo> errors;
   SSLErrorInfo::GetErrorsForCertStatus(ssl.cert_id(),
