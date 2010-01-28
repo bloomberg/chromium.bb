@@ -29,7 +29,7 @@ class NotificationProvider : public WebKit::WebNotificationPresenter {
   virtual void cancel(const WebKit::WebNotification& proxy);
   virtual void objectDestroyed(const WebKit::WebNotification& proxy);
   virtual WebKit::WebNotificationPresenter::Permission checkPermission(
-      const WebKit::WebString& origin);
+      const WebKit::WebURL& url, WebKit::WebDocument* document);
   virtual void requestPermission(const WebKit::WebString& origin,
       WebKit::WebNotificationPermissionCallback* callback);
 

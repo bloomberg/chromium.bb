@@ -455,8 +455,11 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
               context_getter,
               &ChromeURLRequestContextGetter::OnNewExtensions,
               extension->id(),
-              extension->path(),
-              extension->default_locale()));
+              new ChromeURLRequestContext::ExtensionInfo(
+                  extension->path(),
+                  extension->default_locale(),
+                  extension->app_origins(),
+                  extension->api_permissions())));
     }
   }
 

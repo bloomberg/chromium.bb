@@ -56,6 +56,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugin.h"
@@ -768,8 +769,16 @@ void ResourceMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
 #endif
 
 void ResourceMessageFilter::OnCheckNotificationPermission(
-    const GURL& source_origin, int* result) {
-  *result = notification_prefs_->HasPermission(source_origin);
+    const GURL& source_url, const std::string& application_id, int* result) {
+  ChromeURLRequestContext* context = GetRequestContextForURL(source_url);
+  if (!application_id.empty() &&
+      context->CheckURLAccessToExtensionPermission(
+          source_url, application_id, Extension::kNotificationPermission)) {
+    *result = WebKit::WebNotificationPresenter::PermissionAllowed;
+    return;
+  }
+
+  *result = notification_prefs_->HasPermission(source_url);
 }
 
 void ResourceMessageFilter::OnGetMimeTypeFromExtension(

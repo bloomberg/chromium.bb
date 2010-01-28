@@ -210,7 +210,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnClipboardFindPboardWriteString(const string16& text);
 #endif
 
-  void OnCheckNotificationPermission(const GURL& origin,
+  void OnCheckNotificationPermission(const GURL& source_url,
+                                     const std::string& application_id,
                                      int* permission_level);
 
 #if !defined(OS_MACOSX)

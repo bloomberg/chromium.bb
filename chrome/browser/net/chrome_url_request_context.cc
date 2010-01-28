@@ -515,9 +515,8 @@ void ChromeURLRequestContextGetter::CleanupOnUIThread() {
 
 void ChromeURLRequestContextGetter::OnNewExtensions(
     const std::string& id,
-    const FilePath& path,
-    const std::string default_locale) {
-  GetIOContext()->OnNewExtensions(id, path, default_locale);
+    ChromeURLRequestContext::ExtensionInfo* info) {
+  GetIOContext()->OnNewExtensions(id, info);
 }
 
 void ChromeURLRequestContextGetter::OnUnloadedExtension(
@@ -654,22 +653,51 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
 }
 
 FilePath ChromeURLRequestContext::GetPathForExtension(const std::string& id) {
-  ExtensionPaths::iterator iter = extension_paths_.find(id);
-  if (iter != extension_paths_.end()) {
-    return iter->second;
-  } else {
+  ExtensionInfoMap::iterator iter = extension_info_.find(id);
+  if (iter != extension_info_.end())
+    return iter->second->path;
+  else
     return FilePath();
-  }
 }
 
 std::string ChromeURLRequestContext::GetDefaultLocaleForExtension(
     const std::string& id) {
-  ExtensionDefaultLocales::iterator iter = extension_default_locales_.find(id);
+  ExtensionInfoMap::iterator iter = extension_info_.find(id);
   std::string result;
-  if (iter != extension_default_locales_.end())
-    result = iter->second;
+  if (iter != extension_info_.end())
+    result = iter->second->default_locale;
 
   return result;
+}
+
+bool ChromeURLRequestContext::CheckURLAccessToExtensionPermission(
+    const GURL& url,
+    const std::string& application_id,
+    const char* permission_name) {
+  DCHECK(!application_id.empty());
+
+  // Get the information about the specified extension. If the extension isn't
+  // installed, then permission is not granted.
+  ExtensionInfoMap::iterator info = extension_info_.find(application_id);
+  if (info == extension_info_.end())
+    return false;
+
+  // Check that the extension declares the required permission.
+  std::vector<std::string>& permissions = info->second->api_permissions;
+  if (permissions.end() == std::find(permissions.begin(), permissions.end(),
+                                     permission_name)) {
+    return false;
+  }
+
+  // Check that the extension declares the source URL in its extent.
+  std::vector<GURL>& origins = info->second->web_origins;
+  for (std::vector<GURL>::iterator origin = origins.begin();
+       origin != origins.end(); ++origin) {
+    if (url.GetOrigin() == *origin)
+      return true;
+  }
+
+  return false;
 }
 
 const std::string& ChromeURLRequestContext::GetUserAgent(
@@ -715,26 +743,19 @@ const Blacklist* ChromeURLRequestContext::GetPrivacyBlacklist() const {
   return privacy_blacklist_;
 }
 
-void ChromeURLRequestContext::OnNewExtensions(
-    const std::string& id,
-    const FilePath& path,
-    const std::string& default_locale) {
-  if (!is_off_the_record_) {
-    extension_paths_[id] = path;
-    if (!default_locale.empty())
-      extension_default_locales_[id] = default_locale;
-  }
+void ChromeURLRequestContext::OnNewExtensions(const std::string& id,
+                                              ExtensionInfo* info) {
+  if (!is_off_the_record_)
+    extension_info_[id] = linked_ptr<ExtensionInfo>(info);
 }
 
 void ChromeURLRequestContext::OnUnloadedExtension(const std::string& id) {
   CheckCurrentlyOnIOThread();
   if (is_off_the_record_)
     return;
-  ExtensionPaths::iterator iter = extension_paths_.find(id);
-  DCHECK(iter != extension_paths_.end());
-  extension_paths_.erase(iter);
-
-  extension_default_locales_.erase(id);
+  ExtensionInfoMap::iterator iter = extension_info_.find(id);
+  DCHECK(iter != extension_info_.end());
+  extension_info_.erase(iter);
 }
 
 ChromeURLRequestContext::ChromeURLRequestContext(
@@ -755,7 +776,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   referrer_charset_ = other->referrer_charset_;
 
   // Set ChromeURLRequestContext members
-  extension_paths_ = other->extension_paths_;
+  extension_info_ = other->extension_info_;
   user_script_dir_path_ = other->user_script_dir_path_;
   appcache_service_ = other->appcache_service_;
   host_zoom_map_ = other->host_zoom_map_;
@@ -848,9 +869,13 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
         profile->GetExtensionsService()->extensions();
     for (ExtensionList::const_iterator iter = extensions->begin();
         iter != extensions->end(); ++iter) {
-      extension_paths_[(*iter)->id()] = (*iter)->path();
-      if (!(*iter)->default_locale().empty())
-        extension_default_locales_[(*iter)->id()] = (*iter)->default_locale();
+      extension_info_[(*iter)->id()] =
+          linked_ptr<ChromeURLRequestContext::ExtensionInfo>(
+              new ChromeURLRequestContext::ExtensionInfo(
+                  (*iter)->path(),
+                  (*iter)->default_locale(),
+                  (*iter)->app_origins(),
+                  (*iter)->api_permissions()));
     }
   }
 
@@ -876,8 +901,7 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_accept_charset(accept_charset_);
   context->set_referrer_charset(referrer_charset_);
   context->set_cookie_policy_type(cookie_policy_type_);
-  context->set_extension_paths(extension_paths_);
-  context->set_extension_default_locales(extension_default_locales_);
+  context->set_extension_info(extension_info_);
   context->set_user_script_dir_path(user_script_dir_path_);
   context->set_host_zoom_map(host_zoom_map_);
   context->set_privacy_blacklist(privacy_blacklist_);

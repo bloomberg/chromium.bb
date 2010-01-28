@@ -4,18 +4,23 @@
 
 #include "chrome/renderer/notification_provider.h"
 
+#include "base/string_util.h"
 #include "base/task.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPermissionCallback.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
+using WebKit::WebDocument;
 using WebKit::WebNotification;
 using WebKit::WebNotificationPresenter;
 using WebKit::WebNotificationPermissionCallback;
 using WebKit::WebString;
+using WebKit::WebURL;
 
 NotificationProvider::NotificationProvider(RenderView* view)
     : view_(view) {
@@ -47,10 +52,13 @@ void NotificationProvider::objectDestroyed(
 }
 
 WebNotificationPresenter::Permission NotificationProvider::checkPermission(
-    const WebString& origin) {
+    const WebURL& url, WebDocument* document) {
   int permission;
-  Send(new ViewHostMsg_CheckNotificationPermission(view_->routing_id(),
-                                                   GURL(origin), &permission));
+  Send(new ViewHostMsg_CheckNotificationPermission(
+          view_->routing_id(),
+          url,
+          document ? UTF16ToASCII(document->applicationID()) : "",
+          &permission));
   return static_cast<WebNotificationPresenter::Permission>(permission);
 }
 
