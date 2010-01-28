@@ -64,6 +64,7 @@ BUG24182 SLOW RELEASE : http/tests/misc/DOMContentLoaded-event.html = PASS
 BUG24182 SLOW LINUX DEBUG : http/tests/misc/DOMContentLoaded-event.html = PASS
 BUG24182 SLOW LINUX MAC RELEASE : http/tests/navigation/multiple-back-forward-entries.html = PASS
 BUG24182 SLOW LINUX DEBUG : http/tests/navigation/multiple-back-forward-entries.html = PASS
+BUG24182 SLOW LINUX DEBUG : svg/filters/big-sized-filter.svg = PASS
 BUG24182 SLOW : http/tests/xmlhttprequest/simple-cross-origin-progress-events.html = PASS
 //BUG24182 SLOW WIN MAC : svg/custom/invisible-text-after-scrolling.xhtml = PASS
 BUG24182 SLOW : tables/mozilla/other/slashlogo.html = PASS
@@ -2877,7 +2878,7 @@ BUG32665 WIN DEBUG : media/video-source-error-no-candidate.html = TIMEOUT
 
 // Flaky tests found during the roll.
 BUG32679 LINUX DEBUG : http/tests/navigation/lockedhistory-iframe.html = TEXT PASS
-BUG32680 LINUX DEBUG : svg/filters/big-sized-filter.svg = IMAGE+TEXT TIMEOUT PASS
+BUG32680 WIN DEBUG : svg/filters/big-sized-filter.svg = TIMEOUT PASS
 BUG32682 LINUX : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
 BUG32683 LINUX DEBUG : svg/css/glyph-orientation-rounding-test.xhtml = TEXT PASS
 BUG32684 WIN DEBUG : inspector/timeline-layout.html = TEXT PASS
