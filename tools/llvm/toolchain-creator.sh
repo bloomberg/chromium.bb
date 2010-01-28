@@ -184,7 +184,20 @@ UntarPatchConfigureAndBuildSfiLlc() {
 InstallUntrustedLinkerScript() {
    Banner "installing untrusted ld script"
    cp tools/llvm/ld_script_arm_untrusted ${INSTALL_ROOT}/arm-none-linux-gnueabi/
- }
+}
+
+
+# Run a modified version of the script used by ConfigureAndBuildLlvm to build
+# it all a second time, with some patches, using the newly-installed driver
+# script to produce SFI libs.
+InstallSecondPhaseLlvmGccLibs() {
+  Banner "Untar,Configure,Build llvm/llvm-gcc phase2"
+  export MAKE_OPTS="-j6 VERBOSE=1"
+  export CC=$(readlink -f tools/llvm/mygcc32)
+  export CXX=$(readlink -f tools/llvm/myg++32)
+
+  nice tools/llvm/build-phase2-llvmgcc.sh
+}
 
 
 # we copy some useful tools after building them first
@@ -192,7 +205,14 @@ InstallMiscTools() {
    Banner "building and installing misc tools"
    SubBanner "sel loader"
    # TODO(robertm): revisit some of these options
-  ./scons MODE=nacl,opt-linux platform=arm dangerous_debug_disable_inner_sandbox=1 sdl_mode=none sdl=none naclsdk_mode=manual naclsdk_validate=0 sysinfo= sel_ldr
+  ./scons MODE=nacl,opt-linux \
+          platform=arm \
+          sdl_mode=none \
+          sdl=none \
+          naclsdk_mode=manual \
+          naclsdk_validate=0 \
+          sysinfo= \
+          sel_ldr
    rm -rf  ${INSTALL_ROOT}/tools-arm
    mkdir ${INSTALL_ROOT}/tools-arm
    cp scons-out/opt-linux-arm/obj/src/trusted/service_runtime/sel_ldr\
@@ -229,7 +249,16 @@ InstallNewlibAndNaClRuntime() {
 
   SubBanner "building extra sdk libs"
   rm -rf scons-out/nacl_extra_sdk-arm/
-  ./scons MODE=nacl_extra_sdk platform=arm sdl_mode=none sdl=none naclsdk_mode=manual naclsdk_validate=0 extra_sdk_clean extra_sdk_update_header install_libpthread extra_sdk_update
+  ./scons MODE=nacl_extra_sdk \
+          platform=arm \
+          sdl_mode=none \
+          sdl=none \
+          naclsdk_mode=manual \
+          naclsdk_validate=0 \
+          extra_sdk_clean \
+          extra_sdk_update_header \
+          install_libpthread \
+          extra_sdk_update
   cp -r src/third_party/nacl_sdk/arm-newlib ${INSTALL_ROOT}
 }
 
@@ -279,6 +308,7 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   UntarPatchConfigureAndBuildSfiLlc
   InstallUntrustedLinkerScript
   InstallDriver
+  InstallSecondPhaseLlvmGccLibs
   # TODO(cbiffle): sandboxed libgcc build
   source tools/llvm/setup_arm_untrusted_toolchain.sh
   InstallNewlibAndNaClRuntime
