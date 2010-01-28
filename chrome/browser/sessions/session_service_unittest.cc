@@ -553,7 +553,9 @@ TEST_F(SessionServiceTest, PinnedFalseWhenSetToFalse) {
   EXPECT_FALSE(CreateAndWriteSessionWithOneTab(false, true));
 }
 
-// Explicitly set the pinned state to false and make sure we get back true.
+#if defined(ENABLE_PINNED_TABS)
+// Explicitly set the pinned state to true and make sure we get back true.
 TEST_F(SessionServiceTest, PinnedTrue) {
   EXPECT_TRUE(CreateAndWriteSessionWithOneTab(true, true));
 }
+#endif

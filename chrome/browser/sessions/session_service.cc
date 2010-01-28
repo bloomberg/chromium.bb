@@ -910,7 +910,9 @@ bool SessionService::CreateTabsAndWindows(
         PinnedStatePayload payload;
         if (!command->GetPayload(&payload, sizeof(payload)))
           return true;
+#if defined(ENABLE_PINNED_TABS)
         GetTab(payload.tab_id, tabs)->pinned = payload.pinned_state;
+#endif
         break;
       }
 

@@ -18,6 +18,7 @@ void TabMenuModel::Build() {
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,
                       IDS_TAB_CXMENU_DUPLICATE);
+#if defined(ENABLE_PINNED_TABS)
   // On Mac the HIG prefers "pin/unpin" to a checkmark. The Mac code will fix up
   // the actual string based on the tab's state via the delegate.
 #if defined(OS_MACOSX)
@@ -26,6 +27,7 @@ void TabMenuModel::Build() {
 #else
   AddCheckItemWithStringId(TabStripModel::CommandTogglePinned,
                            IDS_TAB_CXMENU_PIN_TAB);
+#endif
 #endif
   AddSeparator();
   AddItemWithStringId(TabStripModel::CommandCloseTab,

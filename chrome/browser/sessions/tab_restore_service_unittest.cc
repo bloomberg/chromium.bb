@@ -364,6 +364,7 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabs) {
   EXPECT_TRUE(url3_ == tab->navigations[2].url());
 }
 
+#if defined(ENABLE_PINNED_TABS)
 // Make sure pinned state is correctly loaded from session service.
 TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabsPinned) {
   CreateSessionServiceWithOneWindow(true);
@@ -402,6 +403,7 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabsPinned) {
   EXPECT_TRUE(url2_ == tab->navigations[1].url());
   EXPECT_TRUE(url3_ == tab->navigations[2].url());
 }
+#endif
 
 // Creates TabRestoreService::kMaxEntries + 1 windows in the session service
 // and makes sure we only get back TabRestoreService::kMaxEntries on restore.

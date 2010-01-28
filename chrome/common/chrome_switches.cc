@@ -433,10 +433,6 @@ const char kPackExtensionKey[]              = "pack-extension-key";
 // Specifies the path to the user data folder for the parent profile.
 const char kParentProfile[]                 = "parent-profile";
 
-// Number of tabs to pin on startup. This is not use if session restore is
-// enabled.
-const char kPinnedTabCount[]                = "pinned-tab-count";
-
 // Read previously recorded data from the cache. Only cached data is read.
 // See kRecordMode.
 const char kPlaybackMode[]                  = "playback-mode";

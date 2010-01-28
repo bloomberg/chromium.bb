@@ -14,7 +14,7 @@ class Browser;
 class TabMenuModel : public menus::SimpleMenuModel {
  public:
   explicit TabMenuModel(menus::SimpleMenuModel::Delegate* delegate);
-  virtual ~TabMenuModel() { }
+  virtual ~TabMenuModel() {}
 
  private:
   void Build();

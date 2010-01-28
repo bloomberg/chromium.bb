@@ -131,7 +131,6 @@ extern const char kOpenInNewWindow[];
 extern const char kPackExtension[];
 extern const char kPackExtensionKey[];
 extern const char kParentProfile[];
-extern const char kPinnedTabCount[];
 extern const char kPlaybackMode[];
 extern const char kPluginDataDir[];
 extern const char kPluginLauncher[];

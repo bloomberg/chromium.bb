@@ -228,16 +228,13 @@ class SessionRestoreImpl : public NotificationObserver {
   void FinishedTabCreation(bool succeeded, bool created_tabbed_browser) {
     if (!created_tabbed_browser && always_create_tabbed_browser_) {
       Browser* browser = Browser::Create(profile_);
-      // Honor --pinned-tab-count if we're synchronous (which means we're run
-      // during startup) and the user specified urls on the command line.
-      bool honor_pin_tabs = synchronous_ && !urls_to_open_.empty();
       if (urls_to_open_.empty()) {
         // No tab browsers were created and no URLs were supplied on the command
         // line. Add an empty URL, which is treated as opening the users home
         // page.
         urls_to_open_.push_back(GURL());
       }
-      AppendURLsToBrowser(browser, urls_to_open_, honor_pin_tabs);
+      AppendURLsToBrowser(browser, urls_to_open_);
       browser->window()->Show();
     }
 
@@ -321,7 +318,7 @@ class SessionRestoreImpl : public NotificationObserver {
       current_browser->CloseAllTabs();
     }
     if (last_browser && !urls_to_open_.empty())
-      AppendURLsToBrowser(last_browser, urls_to_open_, false);
+      AppendURLsToBrowser(last_browser, urls_to_open_);
     // If last_browser is NULL and urls_to_open_ is non-empty,
     // FinishedTabCreation will create a new TabbedBrowser and add the urls to
     // it.
@@ -368,27 +365,12 @@ class SessionRestoreImpl : public NotificationObserver {
     browser->GetSelectedTabContents()->view()->SetInitialFocus();
   }
 
-  // Appends the urls in |urls| to |browser|. If |pin_tabs| is true the first n
-  // tabs are pinned, where n is the command line value for --pinned-tab-count.
+  // Appends the urls in |urls| to |browser|.
   void AppendURLsToBrowser(Browser* browser,
-                           const std::vector<GURL>& urls,
-                           bool pin_tabs) {
-    int pin_count = 0;
-    if (pin_tabs) {
-      std::string pin_count_string =
-          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kPinnedTabCount);
-      if (!pin_count_string.empty())
-        pin_count = StringToInt(pin_count_string);
-    }
-
+                           const std::vector<GURL>& urls) {
     for (size_t i = 0; i < urls.size(); ++i) {
       browser->AddTabWithURL(urls[i], GURL(), PageTransition::START_PAGE,
                             (i == 0), -1, false, NULL);
-      if (i < static_cast<size_t>(pin_count)) {
-        browser->tabstrip_model()->SetTabPinned(browser->tab_count() - 1,
-                                                true);
-      }
     }
   }
 
