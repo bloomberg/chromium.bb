@@ -277,7 +277,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // any dependent types to GROUP_PASSIVE, so that the syncapi doesn't call
     // into garbage.  If an index is non-NULL, it means at least one ModelType
     // that routes to that model safe group is being synced.
-    scoped_refptr<browser_sync::ModelSafeWorker>
+    browser_sync::ModelSafeWorker*
         workers[browser_sync::MODEL_SAFE_GROUP_COUNT];
     browser_sync::ModelSafeRoutingInfo routing_info;
   } registrar_;

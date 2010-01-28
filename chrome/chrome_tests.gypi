@@ -788,7 +788,6 @@
         'browser/ssl/ssl_host_state_unittest.cc',
         'browser/sync/glue/http_bridge_unittest.cc',
         'browser/sync/glue/ui_model_worker_unittest.cc',
-        'browser/sync/glue/database_model_worker_unittest.cc',
         'browser/sync/profile_sync_service_unittest.cc',
         'browser/sync/sync_setup_wizard_unittest.cc',
         'browser/sync/sync_ui_util_mac_unittest.mm',

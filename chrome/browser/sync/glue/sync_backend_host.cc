@@ -113,7 +113,8 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   core_thread_.Stop();
 
   registrar_.routing_info.clear();
-  registrar_.workers[GROUP_UI].release();
+  delete registrar_.workers[GROUP_UI];
+  registrar_.workers[GROUP_UI] = NULL;
   frontend_ = NULL;
   core_ = NULL;  // Releases reference to core_.
 }

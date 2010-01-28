@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/ref_counted.h"
 #include "base/thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
@@ -48,7 +47,7 @@ class Syncer {
     worker_->DoWorkAndWaitUntilDone(c.get());
   }
  private:
-  scoped_refptr<UIModelWorker> worker_;
+  UIModelWorker* worker_;
   DISALLOW_COPY_AND_ASSIGN(Syncer);
 };
 
@@ -93,7 +92,7 @@ class FakeSyncapiShutdownTask : public Task {
   }
  private:
   base::Thread* syncer_thread_;
-  scoped_refptr<UIModelWorker> worker_;
+  UIModelWorker* worker_;
   base::WaitableEvent** jobs_;
   size_t job_count_;
   base::WaitableEvent all_jobs_done_;
@@ -107,7 +106,7 @@ class UIModelWorkerTest : public testing::Test {
 
   virtual void SetUp() {
     faux_syncer_thread_.Start();
-    bmw_ = new UIModelWorker(&faux_ui_loop_);
+    bmw_.reset(new UIModelWorker(&faux_ui_loop_));
     syncer_.reset(new Syncer(bmw_.get()));
   }
 
@@ -120,7 +119,7 @@ class UIModelWorkerTest : public testing::Test {
   MessageLoop faux_ui_loop_;
   base::Thread faux_syncer_thread_;
   base::Thread faux_core_thread_;
-  scoped_refptr<UIModelWorker> bmw_;
+  scoped_ptr<UIModelWorker> bmw_;
   scoped_ptr<Syncer> syncer_;
 };
 

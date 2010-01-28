@@ -8,7 +8,6 @@
 #include <map>
 #include <vector>
 
-#include "base/ref_counted.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/sync_types.h"
@@ -31,7 +30,7 @@ enum ModelSafeGroup {
 // is guaranteed to be "model-safe", where "safe" refers to not allowing us to
 // cause an embedding application model to fall out of sync with the
 // syncable::Directory due to a race.
-class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
+class ModelSafeWorker {
  public:
   ModelSafeWorker() { }
   virtual ~ModelSafeWorker() { }
@@ -48,8 +47,6 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
   }
 
  private:
-  friend class base::RefCountedThreadSafe<ModelSafeWorker>;
-
   DISALLOW_COPY_AND_ASSIGN(ModelSafeWorker);
 };
 
