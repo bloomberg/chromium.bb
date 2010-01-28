@@ -166,7 +166,7 @@ class SyncerTest : public testing::Test,
 
     mock_server_.reset(
         new MockConnectionManager(syncdb_.manager(), syncdb_.name()));
-    worker_.reset(new ModelSafeWorker());
+    worker_ = new ModelSafeWorker();
     context_.reset(new SyncSessionContext(mock_server_.get(), syncdb_.manager(),
        this));
     context_->set_account_name(syncdb_.name());
@@ -399,7 +399,7 @@ class SyncerTest : public testing::Test,
   std::set<SyncerEvent> syncer_events_;
   base::TimeDelta last_short_poll_interval_received_;
   base::TimeDelta last_long_poll_interval_received_;
-  scoped_ptr<ModelSafeWorker> worker_;
+  scoped_refptr<ModelSafeWorker> worker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
 };

@@ -1550,6 +1550,8 @@
         'browser/sync/glue/bookmark_model_associator.cc',
         'browser/sync/glue/change_processor.cc',
         'browser/sync/glue/change_processor.h',
+        'browser/sync/glue/database_model_worker.cc',
+        'browser/sync/glue/database_model_worker.h',
         'browser/sync/glue/http_bridge.cc',
         'browser/sync/glue/http_bridge.h',
         'browser/sync/glue/model_associator.h',

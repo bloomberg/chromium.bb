@@ -35,7 +35,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
     connection_.reset(new MockConnectionManager(metadb_.manager(),
                                                 metadb_.name()));
     allstatus_.reset(new AllStatus());
-    worker_.reset(new ModelSafeWorker());
+    worker_ = new ModelSafeWorker();
     SyncSessionContext* context = new SyncSessionContext(connection_.get(),
         metadb_.manager(), this);
     syncer_thread_ = new SyncerThread(context, allstatus_.get());
@@ -85,7 +85,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
   scoped_ptr<MockConnectionManager> connection_;
   scoped_ptr<AllStatus> allstatus_;
   scoped_refptr<SyncerThread> syncer_thread_;
-  scoped_ptr<ModelSafeWorker> worker_;
+  scoped_refptr<ModelSafeWorker> worker_;
   scoped_ptr<EventListenerHookup> syncer_event_hookup_;
   base::WaitableEvent sync_cycle_ended_event_;
   DISALLOW_COPY_AND_ASSIGN(SyncerThreadWithSyncerTest);
