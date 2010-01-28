@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/socket/ssl_test_util.h"
+
 #include <algorithm>
 #include <string>
 #include <vector>
-
-#include "net/socket/ssl_test_util.h"
 
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
 #include <wincrypt.h>
-#elif defined(OS_LINUX)
+#elif defined(USE_NSS)
 #include <nspr.h>
 #include <nss.h>
 #include <secerr.h>
@@ -44,7 +44,7 @@
 
 namespace {
 
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
 static CERTCertificate* LoadTemporaryCert(const FilePath& filename) {
   base::EnsureNSSInit();
 
@@ -138,7 +138,7 @@ TestServerLauncher::TestServerLauncher() : process_handle_(
     forking_(false),
     connection_attempts_(kDefaultTestConnectionAttempts),
     connection_timeout_(kDefaultTestConnectionTimeout)
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
 , cert_(NULL)
 #endif
 {
@@ -151,7 +151,7 @@ TestServerLauncher::TestServerLauncher(int connection_attempts,
                           forking_(false),
                           connection_attempts_(connection_attempts),
                           connection_timeout_(connection_timeout)
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
 , cert_(NULL)
 #endif
 {
@@ -353,7 +353,7 @@ bool TestServerLauncher::Stop() {
 }
 
 TestServerLauncher::~TestServerLauncher() {
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
   if (cert_)
     CERT_DestroyCertificate(reinterpret_cast<CERTCertificate*>(cert_));
 #elif defined(OS_MACOSX)
@@ -381,7 +381,7 @@ FilePath TestServerLauncher::GetExpiredCertPath() {
 }
 
 bool TestServerLauncher::LoadTestRootCert() {
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
   if (cert_)
     return true;
 
