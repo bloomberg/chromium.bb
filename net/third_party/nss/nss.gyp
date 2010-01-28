@@ -4,14 +4,18 @@
 
 {
   'conditions': [
-    ['sysroot!=""', {
-      'variables': {
-        'pkg-config': './pkg-config-wrapper "<(sysroot)"',
-      },
-    }, {
-      'variables': {
-        'pkg-config': 'pkg-config'
-      },
+    [ 'OS == "linux"', {
+      'conditions': [
+        ['sysroot!=""', {
+          'variables': {
+            'pkg-config': './pkg-config-wrapper "<(sysroot)"',
+          },
+        }, {
+          'variables': {
+            'pkg-config': 'pkg-config'
+          },
+        }],
+      ],
     }],
   ],
 
@@ -66,23 +70,11 @@
       'defines': [
         'NSS_ENABLE_ECC',
         'NSS_ENABLE_ZLIB',
-        'SHLIB_PREFIX="lib"',
-        'SHLIB_SUFFIX="so"',
-        'SHLIB_VERSION="3"',
-        'SOFTOKEN_SHLIB_VERSION="3"',
         'USE_UTIL_DIRECTLY',
       ],
-      'include_dirs': [
-        './ssl/bodge',
-      ],
-      'cflags': [
-        '<!@(<(pkg-config) --cflags nss)',
-      ],
-      'ldflags': [
-        '<!@(<(pkg-config) --libs-only-L --libs-only-other nss)',
-      ],
-      'libraries': [
-        '<!@(<(pkg-config) --libs-only-l nss | sed -e "s/-lssl3//")',
+      'defines!': [
+        # Regrettably, NSS can't be compiled with NO_NSPR_10_SUPPORT yet.
+        'NO_NSPR_10_SUPPORT',
       ],
       'conditions': [
         [ 'OS == "linux"', {
@@ -92,6 +84,46 @@
             'ssl/win32err.c',
             'ssl/win32err.h',
           ],
+          'defines': [
+            # These macros are needed only for compiling the files in
+            # ssl/bodge.
+            'SHLIB_PREFIX="lib"',
+            'SHLIB_SUFFIX="so"',
+            'SHLIB_VERSION="3"',
+            'SOFTOKEN_SHLIB_VERSION="3"',
+          ],
+          'include_dirs': [
+            'ssl/bodge',
+          ],
+          'cflags': [
+            '<!@(<(pkg-config) --cflags nss)',
+          ],
+          'ldflags': [
+            '<!@(<(pkg-config) --libs-only-L --libs-only-other nss)',
+          ],
+          'libraries': [
+            '<!@(<(pkg-config) --libs-only-l nss | sed -e "s/-lssl3//")',
+          ],
+        }],
+        [ 'OS == "win"', {
+          'sources/': [
+            ['exclude', 'ssl/bodge/'],
+          ],
+          'sources!': [
+            'ssl/os2_err.c',
+            'ssl/os2_err.h',
+            'ssl/unix_err.c',
+            'ssl/unix_err.h',
+          ],
+          'dependencies': [
+            '../../../third_party/zlib/zlib.gyp:zlib',
+            '../../../third_party/nss/nss.gyp:nss',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              'ssl',
+            ],
+          },
         }],
       ],
     },
