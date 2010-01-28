@@ -232,9 +232,8 @@ static int asm_HasCPUID() {
   volatile int before, after, result;
 #if NACL_BUILD_SUBARCH == 64
   return 1;
-#endif
 /* TODO(bradchen): split into separate Windows, etc., files */
-#if (NACL_LINUX || NACL_OSX)
+#elif (NACL_LINUX || NACL_OSX)
   __asm__ volatile("pushfl                \n\t" /* save EFLAGS to eax */
                    "pop %%eax             \n\t"
                    "movl %%eax, %0        \n\t" /* remember EFLAGS in %0 */

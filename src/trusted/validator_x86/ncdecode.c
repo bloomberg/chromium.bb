@@ -386,6 +386,7 @@ void ConsumeSIB(struct NCDecoderState* mstate) {
 
 void ConsumeID(struct NCDecoderState* mstate) {
   uint8_t* old_next_byte = mstate->nextbyte;
+  ssize_t inst_length;
   if (mstate->inst.immtype == IMM_UNKNOWN) {
     ErrorInternal(mstate->vstate);
   }
@@ -400,7 +401,12 @@ void ConsumeID(struct NCDecoderState* mstate) {
     mstate->nextbyte += kImmTypeToSize[mstate->inst.immtype];
   }
   mstate->nextbyte += mstate->inst.dispbytes;
-  mstate->inst.length = mstate->nextbyte - mstate->mpc;
+  inst_length = mstate->nextbyte - mstate->mpc;
+  mstate->inst.length = (uint8_t)(inst_length & 0xff);
+  if ((ssize_t)mstate->inst.length != inst_length) {
+    printf("Unexpected instruction length\n");
+    ErrorInternal(mstate->vstate);
+  }
   DEBUG( printf("ID: consume %"PRIxPTR" bytes\n",
                 (intptr_t)( mstate->nextbyte - old_next_byte)) );
 }

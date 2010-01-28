@@ -36,7 +36,118 @@
     'validate_gen_out':
        '<(SHARED_INTERMEDIATE_DIR)/gen/native_client/src/trusted/validator_x86',
   },
+  'target_defaults': {
+    'variables': {
+      'target_base': 'none',
+    },
+    'target_conditions': [
+      ['target_base=="ncvalidate"', {
+      'include_dirs': [
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
+      'sources': [
+        'nacl_cpuid.c',
+        'ncdecode.c',
+        'nc_segment.c',
+        'nc_inst_iter.c',
+        'nc_inst_state.c',
+        'nc_inst_trans.c',
+        'ncop_exps.c',
+        'nc_read_segment.c',
+        'ncvalidate.c',
+      ],
+      'cflags!': [
+        '-Wextra',
+        '-Wswitch-enum',
+        '-Wsign-compare'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ]
+      },
+      'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
+      # When ncvalidate is a dependency, it needs to be a hard dependency
+      # because dependents may rely on ncvalidate to create header files below.
+      'hard_dependency': 1,
+      'actions': [
+        {
+          'action_name': 'ncdecode_table',
+          'msvs_cygwin_shell': 0,
+          'inputs': [
+            '<(PRODUCT_DIR)/ncdecode_table',
+          ],
+          'outputs': [
+            # TODO(gregoryd): keeping the long include path for now to be
+            # compatible with the scons build.
+            '<(validate_gen_out)/ncdecodetab.h',
+            '<(validate_gen_out)/ncdisasmtab.h',
+          ],
+          'action':
+             ['<(PRODUCT_DIR)/ncdecode_table', '-m32', '<@(_outputs)'],
+          'message': 'Running ncdecode_table',
+          'process_outputs_as_sources': 1,
+        },
+        {
+          'action_name': 'ncdecode_tablegen',
+          'msvs_cygwin_shell': 0,
+          'inputs': [
+            '<(PRODUCT_DIR)/ncdecode_tablegen',
+          ],
+          'outputs': [
+            '<(validate_gen_out)/nc_opcode_table.h',
+          ],
+          'action':
+             ['<@(_inputs)', '-m32', '<@(_outputs)'],
+          'message': 'Running ncdecode_tablegen',
+          'process_outputs_as_sources': 1,
+        },
+        {
+          'action_name': 'ncop_expr_node_flag',
+          'msvs_cygwin_shell': 0,
+          'inputs': [ 'enum_gen.py', 'ncop_expr_node_flag.enum' ],
+          'outputs': [
+            '<(validate_gen_out)/ncop_expr_node_flag.h',
+            '<(validate_gen_out)/ncop_expr_node_flag_impl.h',
+          ],
+          'action':
+          ['<@(python_exe)', 'enum_gen.py',
+           '--header=<(validate_gen_out)/ncop_expr_node_flag.h',
+           '--source=<(validate_gen_out)/ncop_expr_node_flag_impl.h',
+           '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
+           '--name=ExprNodeFlag',
+           '--add_size=1',
+           'ncop_expr_node_flag.enum'],
+          'process_outputs_as_sources': 1,
+          'message': 'Creating ncop_expr_node_flag.h',
+        },
+        {
+          'action_name': 'ncop_expr_node_kind',
+          'msvs_cygwin_shell': 0,
+          'inputs': [ 'enum_gen.py', 'ncop_expr_node_kind.enum' ],
+          'outputs': [
+            '<(validate_gen_out)/ncop_expr_node_kind.h',
+            '<(validate_gen_out)/ncop_expr_node_kind_impl.h',
+          ],
+          'action':
+          ['<@(python_exe)', 'enum_gen.py',
+           '--header=<(validate_gen_out)/ncop_expr_node_kind.h',
+           '--source=<(validate_gen_out)/ncop_expr_node_kind_impl.h',
+           '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
+           '--name=ExprNodeKind',
+           '--add_size=1',
+           'ncop_expr_node_kind.enum'],
+          'process_outputs_as_sources': 1,
+          'message': 'Creating ncop_expr_node_kind.h',
+        },
+      ],
+      }],
+    ],
+  },
   'targets': [
+    # ----------------------------------------------------------------------
     {
       'target_name': 'ncdecode_table',
       'type': 'executable',
@@ -54,6 +165,7 @@
         ]
       },
     },
+    # ----------------------------------------------------------------------
     {
       'target_name': 'nchelper',
       'type': 'static_library',
@@ -71,6 +183,7 @@
         ]
       },
     },
+    # ----------------------------------------------------------------------
     {
       'target_name': 'ncopcode_utils',
       'type': 'static_library',
@@ -89,6 +202,7 @@
         ]
       },
     },
+    # ----------------------------------------------------------------------
     {
       'target_name': 'ncopcode_utils_gen',
       'type': 'none',
@@ -195,6 +309,7 @@
         },
       ],
     },
+    # ----------------------------------------------------------------------
     {
       'target_name': 'ncdecode_tablegen',
       'type': 'executable',
@@ -230,116 +345,20 @@
         }],
       ],
     },
+    # ----------------------------------------------------------------------
     {
       'target_name': 'ncvalidate',
       'type': 'static_library',
-      'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)',
-      ],
+      'variables': {
+        'target_base': 'ncvalidate',
+      },
       'dependencies': [
         'ncdecode_table',
         'ncdecode_tablegen',
         'ncopcode_utils_gen',
       ],
-      'sources': [
-        'nacl_cpuid.c',
-        'ncdecode.c',
-        'nc_segment.c',
-        'nc_inst_iter.c',
-        'nc_inst_state.c',
-        'nc_inst_trans.c',
-        'ncop_exps.c',
-        'nc_read_segment.c',
-        'ncvalidate.c',
-      ],
-      'cflags!': [
-        '-Wextra',
-        '-Wswitch-enum',
-        '-Wsign-compare'
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-Wextra',
-          '-Wswitch-enum',
-          '-Wsign-compare'
-        ]
-      },
-      'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
-      # When ncvalidate is a dependency, it needs to be a hard dependency
-      # because dependents may rely on ncvalidate to create header files below.
-      'hard_dependency': 1,
-      'actions': [
-        {
-          'action_name': 'ncdecode_table',
-          'msvs_cygwin_shell': 0,
-          'inputs': [
-            '<(PRODUCT_DIR)/ncdecode_table',
-          ],
-          'outputs': [
-            # TODO(gregoryd): keeping the long include path for now to be
-            # compatible with the scons build.
-            '<(validate_gen_out)/ncdecodetab.h',
-            '<(validate_gen_out)/ncdisasmtab.h',
-          ],
-          'action':
-             ['<(PRODUCT_DIR)/ncdecode_table', '-m32', '<@(_outputs)'],
-          'message': 'Running ncdecode_table',
-          'process_outputs_as_sources': 1,
-        },
-        {
-          'action_name': 'ncdecode_tablegen',
-          'msvs_cygwin_shell': 0,
-          'inputs': [
-            '<(PRODUCT_DIR)/ncdecode_tablegen',
-          ],
-          'outputs': [
-            '<(validate_gen_out)/nc_opcode_table.h',
-          ],
-          'action':
-             ['<@(_inputs)', '-m32', '<@(_outputs)'],
-          'message': 'Running ncdecode_tablegen',
-          'process_outputs_as_sources': 1,
-        },
-        {
-          'action_name': 'ncop_expr_node_flag',
-          'msvs_cygwin_shell': 0,
-          'inputs': [ 'enum_gen.py', 'ncop_expr_node_flag.enum' ],
-          'outputs': [
-            '<(validate_gen_out)/ncop_expr_node_flag.h',
-            '<(validate_gen_out)/ncop_expr_node_flag_impl.h',
-          ],
-          'action':
-          ['<@(python_exe)', 'enum_gen.py',
-           '--header=<(validate_gen_out)/ncop_expr_node_flag.h',
-           '--source=<(validate_gen_out)/ncop_expr_node_flag_impl.h',
-           '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
-           '--name=ExprNodeFlag',
-           '--add_size=1',
-           'ncop_expr_node_flag.enum'],
-          'process_outputs_as_sources': 1,
-          'message': 'Creating ncop_expr_node_flag.h',
-        },
-        {
-          'action_name': 'ncop_expr_node_kind',
-          'msvs_cygwin_shell': 0,
-          'inputs': [ 'enum_gen.py', 'ncop_expr_node_kind.enum' ],
-          'outputs': [
-            '<(validate_gen_out)/ncop_expr_node_kind.h',
-            '<(validate_gen_out)/ncop_expr_node_kind_impl.h',
-          ],
-          'action':
-          ['<@(python_exe)', 'enum_gen.py',
-           '--header=<(validate_gen_out)/ncop_expr_node_kind.h',
-           '--source=<(validate_gen_out)/ncop_expr_node_kind_impl.h',
-           '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
-           '--name=ExprNodeKind',
-           '--add_size=1',
-           'ncop_expr_node_kind.enum'],
-          'process_outputs_as_sources': 1,
-          'message': 'Creating ncop_expr_node_kind.h',
-        },
-      ],
     },
+    # ----------------------------------------------------------------------
     { 'target_name': 'ncvalidate_sfi',
       'type': 'static_library',
       'include_dirs': [
@@ -371,6 +390,7 @@
       },
       'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
     },
+    # ----------------------------------------------------------------------
     {
       'target_name': 'ncdis_util',
       'type': 'static_library',
@@ -393,5 +413,46 @@
         ]
       },
     },
-  ]
+  ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        # ---------------------------------------------------------------------
+        {
+          'target_name': 'ncdecode_table64',
+          'type': 'executable',
+          'variables': {
+            'target_arch': 'x64',
+            'win_target': 'x64',
+          },
+          'sources': ['ncdecode_table.c'],
+          'cflags!': [
+            '-Wextra',
+            '-Wswitch-enum',
+            '-Wsign-compare'
+          ],
+          'xcode_settings': {
+            'WARNING_CFLAGS!': [
+              '-Wextra',
+              '-Wswitch-enum',
+              '-Wsign-compare'
+            ]
+          },
+        },
+        # ---------------------------------------------------------------------
+        {
+          'target_name': 'ncvalidate64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'ncvalidate',
+            'win_target': 'x64',
+          },
+          'dependencies': [
+            'ncdecode_table64',
+            'ncdecode_tablegen',
+          ],
+        },
+      ],
+    }],
+  ],
 }

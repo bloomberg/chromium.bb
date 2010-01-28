@@ -51,7 +51,7 @@
  */
 #define MAX_INPUT_LINE 4096
 
-static void ConvertHexToByte(char mini_buf[3], int mini_buf_index,
+static void ConvertHexToByte(char mini_buf[3], size_t mini_buf_index,
                              uint8_t* mbase, size_t mbase_size,
                              size_t* count) {
   mini_buf[mini_buf_index] = '\0';
