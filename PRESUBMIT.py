@@ -8,12 +8,16 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
-EXCLUDED_PATHS = (
+_EXCLUDED_PATHS = (
     r"breakpad[\\\/].*",
     r"skia[\\\/].*",
     r"v8[\\\/].*",
 )
 
+_TEXT_FILES = (
+    r".*\.txt",
+    r".*\.json",
+)
 
 _LICENSE_HEADER = (
      r".*? Copyright \(c\) 20\d\d The Chromium Authors\. All rights reserved\."
@@ -32,8 +36,11 @@ def _CommonChecks(input_api, output_api):
   # add our black list (breakpad, skia and v8 are still not following
   # google style and are not really living this repository).
   # See presubmit_support.py InputApi.FilterSourceFile for the (simple) usage.
-  black_list = input_api.DEFAULT_BLACK_LIST + EXCLUDED_PATHS
+  black_list = input_api.DEFAULT_BLACK_LIST + _EXCLUDED_PATHS
+  white_list = input_api.DEFAULT_WHITE_LIST + _TEXT_FILES
   sources = lambda x: input_api.FilterSourceFile(x, black_list=black_list)
+  text_files = lambda x: input_api.FilterSourceFile(x, black_list=black_list,
+                                                    white_list=white_list)
   results.extend(input_api.canned_checks.CheckLongLines(
       input_api, output_api, sources))
   results.extend(input_api.canned_checks.CheckChangeHasNoTabs(
@@ -45,7 +52,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(input_api.canned_checks.CheckChangeHasTestField(
       input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
-      input_api, output_api, sources))
+      input_api, output_api, text_files))
   results.extend(input_api.canned_checks.CheckSvnForCommonMimeTypes(
       input_api, output_api))
   results.extend(input_api.canned_checks.CheckLicense(
