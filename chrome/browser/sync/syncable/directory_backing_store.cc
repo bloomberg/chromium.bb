@@ -241,6 +241,15 @@ bool DirectoryBackingStore::SaveChanges(
     const Directory::SaveChangesSnapshot& snapshot) {
   sqlite3* dbhandle = LazyGetSaveHandle();
 
+  // SQLTransaction::BeginExclusive causes a disk write to occur. This is not
+  // something that should happen every 10 seconds when this function runs, so
+  // just stop here if there's nothing to save.
+  bool save_info =
+    (Directory::KERNEL_SHARE_INFO_DIRTY == snapshot.kernel_info_status);
+  if (snapshot.dirty_metas.size() < 1 && snapshot.dirty_xattrs.size() < 1 &&
+      !save_info)
+    return true;
+
   SQLTransaction transaction(dbhandle);
   if (SQLITE_OK != transaction.BeginExclusive())
     return false;
@@ -264,7 +273,7 @@ bool DirectoryBackingStore::SaveChanges(
     }
   }
 
-  if (Directory::KERNEL_SHARE_INFO_DIRTY == snapshot.kernel_info_status) {
+  if (save_info) {
     const Directory::PersistedKernelInfo& info = snapshot.kernel_info;
     SQLStatement update;
     update.prepare(dbhandle, "UPDATE share_info "
