@@ -30,3 +30,17 @@ env.ComponentProgram('sel_universal',
                                  ],
                        FRAMEWORKS=['Cocoa'],
                      )
+# NOTE: we need Cocoa because of the GetPluginDir() implementation
+#       on mac (nonnacl_util_c)
+
+env.ComponentProgram('rpc_benchmarker',
+                     'rpc_benchmarker.c',
+                     EXTRA_LIBS=['nonnacl_util_c',
+                                 'nonnacl_srpc',
+                                 'nrd_xfer',
+                                 'platform',
+                                 'gio',
+                                 'google_nacl_imc_c',
+                                 ],
+                       FRAMEWORKS=['Cocoa'],
+                     )

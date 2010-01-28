@@ -13,20 +13,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#if NACL_WINDOWS
-#include <process.h>
-static int gettimeofday(struct timeval *tv, struct timezone *tz);
-#endif
-
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher_c.h"
-
-#define MAX_ARRAY_SIZE 4096
-
-static int timed_rpc_count;
-static uint32_t timed_rpc_method = 1;
-static int timed_rpc_bytes = 4000;
 
 static const char* kUsage =
   "Usage:\n"
@@ -34,193 +22,12 @@ static const char* kUsage =
   "sel_universal [option*] -f nacl_file [-- sel_ldr_arg*] [-- module_arg*]\n"
   "\n"
   "where option may be\n"
-  "-r count:method:bytes  (special benchmarking mode, requires recompile)\n"
+  "-f nacl_module        nacl module to execute\n"
   "-v                    increase verbosity (can be repeated)\n"
   "\n"
   "After startup the user is prompted for interactive commands.\n"
   "For sample commands have a look at: tests/srpc/srpc_basic_test.stdin\n"
   ;
-
-/* #define BENCHMARKING_MODE */
-#if defined(BENCHMARKING_MODE)
-/*
- * This function works with the rpc services in tests/srpc to test the
- * interfaces.
- */
-static void TestRandomRpcs(NaClSrpcChannel* channel) {
-  NaClSrpcArg        in;
-  NaClSrpcArg*       inv[2];
-  NaClSrpcArg        out;
-  NaClSrpcArg*       outv[2];
-  NaClSrpcError      errcode;
-  int                argument_count;
-  int                return_count;
-  int                i;
-
-  inv[0] = &in;
-  inv[1] = NULL;
-
-  outv[0] = &out;
-  outv[1] = NULL;
-
-  /*
-   * TODO(sehr): set up timing on both ends of the IMC channel.
-   */
-
-  do {
-    const char* name;
-    const char* input_types;
-    const char* output_types;
-    uint32_t method_count;
-
-    if (NULL == channel->client) {
-      break;
-    }
-    method_count = NaClSrpcServiceMethodCount(channel->client);
-    if (timed_rpc_method < 1 || timed_rpc_method >= method_count) {
-      fprintf(stderr,
-              "method number must be between 1 and %"PRIu32" (inclusive)\n",
-              method_count - 1);
-      break;
-    }
-
-    NaClSrpcServiceMethodNameAndTypes(channel->client,
-                                      timed_rpc_method,
-                                      &name,
-                                      &input_types,
-                                      &output_types);
-    argument_count = strlen(input_types);
-    return_count = strlen(output_types);
-
-    if (argument_count != return_count) {
-      fprintf(stderr, "method argument and return count must match\n");
-      break;
-    }
-
-    if (1 < argument_count) {
-      fprintf(stderr, "method must take zero or one argument\n");
-      break;
-    }
-
-    if (argument_count == 0) {
-      inv[0] = NULL;
-      outv[0] = NULL;
-    } else {
-      enum NaClSrpcArgType  type;
-      static char           c_in[MAX_ARRAY_SIZE];
-      static char           c_out[MAX_ARRAY_SIZE];
-      static double         d_in[MAX_ARRAY_SIZE / sizeof(double)];
-      static double         d_out[MAX_ARRAY_SIZE / sizeof(double)];
-      static int            i_in[MAX_ARRAY_SIZE / sizeof(int)];
-      static int            i_out[MAX_ARRAY_SIZE / sizeof(int)];
-      char*                 macbeth =
-                              "She should have died hereafter;"
-                              "There would have been a time for such a word."
-                              "To-morrow, and to-morrow, and to-morrow,"
-                              "Creeps in this petty pace from day to day"
-                              "To the last syllable of recorded time,"
-                              "And all our yesterdays have lighted fools"
-                              "The way to dusty death.  Out, out, brief candle!"
-                              "Life's but a walking shadow, a poor player"
-                              "That struts and frets his hour upon the stage"
-                              "And then is heard no more: it is a tale"
-                              "Told by an idiot, full of sound and fury,"
-                              "Signifying nothing";
-
-      in.tag = input_types[0];
-      out.tag = output_types[0];
-
-      type = input_types[0];
-      switch (type) {
-        case NACL_SRPC_ARG_TYPE_BOOL:
-          in.u.bval = 1;
-          break;
-        case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-          in.u.caval.count = timed_rpc_bytes;
-          in.u.caval.carr = c_in;
-          out.u.caval.count = in.u.iaval.count;
-          out.u.caval.carr = c_out;
-          break;
-        case NACL_SRPC_ARG_TYPE_DOUBLE:
-          in.u.dval = 3.1415926;
-          break;
-        case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-          in.u.daval.count = timed_rpc_bytes / sizeof(double);
-          in.u.daval.darr = d_in;
-          out.u.daval.count = in.u.iaval.count;
-          out.u.daval.darr = d_out;
-          break;
-        case NACL_SRPC_ARG_TYPE_INT:
-          in.u.ival = -1;
-          break;
-        case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-          in.u.iaval.count = timed_rpc_bytes / sizeof(int);
-          in.u.iaval.iarr = i_in;
-          out.u.iaval.count = in.u.iaval.count;
-          out.u.iaval.iarr = i_out;
-          break;
-        case NACL_SRPC_ARG_TYPE_STRING:
-          /* TODO(sehr): needs length variation */
-          in.u.sval = macbeth;
-          break;
-        case NACL_SRPC_ARG_TYPE_INVALID:
-        case NACL_SRPC_ARG_TYPE_HANDLE:
-        case NACL_SRPC_ARG_TYPE_OBJECT:
-        case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-          continue;
-      }
-    }
-
-    /*
-     * Do the rpcs.
-     */
-    for (i = 0; i < timed_rpc_count; ++i) {
-      errcode = NaClSrpcInvokeV(channel, timed_rpc_method, inv, outv);
-      if (NACL_SRPC_RESULT_OK != errcode) {
-        fprintf(stderr, "rpc call failed %s\n", NaClSrpcErrorString(errcode));
-        break;
-      }
-    }
-
-    if (i == timed_rpc_count) {
-      NaClSrpcArg* timer_inv[] = { NULL };
-      NaClSrpcArg  tm[4];
-      NaClSrpcArg* timer_outv[5];
-      double       total_server_usec;
-      double       dummy_receive;
-      double       dummy_imc_read;
-      double       dummy_imc_write;
-
-      timer_outv[0] =  &tm[0];
-      timer_outv[1] =  &tm[1];
-      timer_outv[2] =  &tm[2];
-      timer_outv[3] =  &tm[3];
-      timer_outv[4] =  NULL;
-
-      NaClSrpcGetTimes(channel,
-                       &total_server_usec,
-                       &dummy_receive,
-                       &dummy_imc_read,
-                       &dummy_imc_write);
-      printf("server time observed by client: %.6f sec\n",
-             total_server_usec / 1000000.0);
-      tm[0].tag = NACL_SRPC_ARG_TYPE_DOUBLE;
-      tm[1].tag = NACL_SRPC_ARG_TYPE_DOUBLE;
-      tm[2].tag = NACL_SRPC_ARG_TYPE_DOUBLE;
-      tm[3].tag = NACL_SRPC_ARG_TYPE_DOUBLE;
-      errcode = NaClSrpcInvokeV(channel,
-                                NACL_SRPC_GET_TIMES_METHOD,
-                                timer_inv,
-                                timer_outv);
-      printf("server send time:    %.6f sec\n", tm[0].u.dval / 1000000.0);
-      printf("server receive time: %.6f sec\n", tm[1].u.dval / 1000000.0);
-      printf("imc read time:       %.6f sec\n", tm[2].u.dval / 1000000.0);
-      printf("imc write time:      %.6f sec\n", tm[3].u.dval / 1000000.0);
-      printf("PASS\n");
-    }
-  } while (0);
-}
-#endif
 
 
 static NaClSrpcError Interpreter(NaClSrpcService* service,
@@ -246,7 +53,6 @@ int main(int  argc, char *argv[]) {
   struct NaClSelLdrLauncher* launcher;
   int                        opt;
   static char*               application_name = NULL;
-  char*                      nextp;
   int                        i;
   size_t                     n;
   int                        sel_ldr_argc;
@@ -260,30 +66,11 @@ int main(int  argc, char *argv[]) {
   /* Descriptor transfer requires the following. */
   NaClNrdAllModulesInit();
 
-  /* We are only testing if this count is not zero. */
-  timed_rpc_count = 0;
-
   /* command line parsing */
-  while ((opt = getopt(argc, argv, "f:r:v")) != -1) {
+  while ((opt = getopt(argc, argv, "f:v")) != -1) {
     switch (opt) {
       case 'f':
         application_name = optarg;
-        break;
-      case 'r':
-#if !defined(BENCHMARKING_MODE)
-        assert(0);
-#endif
-        timed_rpc_count = strtol(optarg, &nextp, 0);
-        if (':' == *nextp) {
-          timed_rpc_method = strtol(nextp + 1, &nextp, 0);
-          if (':' == *nextp) {
-            timed_rpc_bytes = strtol(nextp + 1, 0, 0);
-          }
-        }
-        printf("Testing: %d iterations, method %d, %d bytes\n",
-               timed_rpc_count,
-               timed_rpc_method,
-               timed_rpc_bytes);
         break;
       case 'v':
         NaClLogIncrVerbosity();
@@ -362,16 +149,10 @@ int main(int  argc, char *argv[]) {
     return 1;
   }
 
-  if (0 == timed_rpc_count) {
-    NaClSrpcCommandLoop(channel.client,
+  NaClSrpcCommandLoop(channel.client,
                         &channel,
-                        Interpreter,
-                        NaClSelLdrGetSockAddr(launcher));
-  } else {
-#if defined(BENCHMARKING_MODE)
-    TestRandomRpcs(&channel);
-#endif
-  }
+                      Interpreter,
+                      NaClSelLdrGetSockAddr(launcher));
 
   /*
    * Close the connections to sel_ldr.
@@ -388,20 +169,3 @@ int main(int  argc, char *argv[]) {
   NaClNrdAllModulesFini();
   return 0;
 }
-
-#if NACL_WINDOWS
-/* TODO(sehr): create one utility function to get usec times. */
-static int gettimeofday(struct timeval *tv, struct timezone *tz) {
-  unsigned __int64 timer = 0;
-  FILETIME filetime;
-  GetSystemTimeAsFileTime(&filetime);
-  timer |= filetime.dwHighDateTime;
-  timer <<= 32;
-  timer |= filetime.dwLowDateTime;
-  /* FILETIME has 100ns precision.  Convert to usec. */
-  timer /= 10;
-  tv->tv_sec = (long) (timer / 1000000UL);
-  tv->tv_usec = (long) (timer % 1000000UL);
-  return 0;
-}
-#endif
