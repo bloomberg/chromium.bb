@@ -34,7 +34,7 @@ def SendStack(stack, url='http://chromium-status.appspot.com/breakpad'):
 
 def CheckForException():
   last_tb = getattr(sys, 'last_traceback', None)
-  if last_tb:
+  if last_tb and sys.last_type is not KeyboardInterrupt:
     SendStack(''.join(traceback.format_tb(last_tb)))
 
 
