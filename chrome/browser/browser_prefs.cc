@@ -37,6 +37,7 @@
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/options/content_settings_window_view.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -97,6 +98,9 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   Blacklist::RegisterUserPrefs(user_prefs);
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port.
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
+#if defined(OS_WIN)
+  ContentSettingsWindowView::RegisterUserPrefs(user_prefs);
+#endif
 #endif
 #if defined(TOOLKIT_GTK)
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);

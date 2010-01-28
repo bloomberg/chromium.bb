@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/content_settings_window.h"
+#include "chrome/browser/views/options/content_settings_window_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/cookie_monster.h"
@@ -138,8 +138,7 @@ void CookiesPromptView::LinkActivated(views::Link* source, int event_flags) {
   if (source == show_cookie_link_)
     ToggleCookieViewExpand();
   else if (source == manage_cookies_link_)
-    ContentSettings::ShowContentSettingsWindow(CONTENT_SETTINGS_TAB_COOKIES,
-                                               profile_);
+    ContentSettingsWindowView::Show(CONTENT_SETTINGS_TYPE_COOKIES, profile_);
   else
     NOTREACHED();
 }

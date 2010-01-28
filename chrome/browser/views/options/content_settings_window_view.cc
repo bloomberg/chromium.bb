@@ -30,6 +30,27 @@ static const int kDialogPadding = 7;
 ///////////////////////////////////////////////////////////////////////////////
 // ContentSettingsWindowView, public:
 
+// static
+void ContentSettingsWindowView::Show(ContentSettingsType page,
+                                     Profile* profile) {
+  DCHECK(profile);
+  // If there's already an existing options window, activate it and switch to
+  // the specified page.
+  // TODO(beng): note this is not multi-simultaneous-profile-safe. When we care
+  //             about this case this will have to be fixed.
+  if (!instance_) {
+    instance_ = new ContentSettingsWindowView(profile);
+    views::Window::CreateChromeWindow(NULL, gfx::Rect(), instance_);
+    // The window is alive by itself now...
+  }
+  instance_->ShowContentSettingsTab(page);
+}
+
+// static
+void ContentSettingsWindowView::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex, 0);
+}
+
 ContentSettingsWindowView::ContentSettingsWindowView(Profile* profile)
     // Always show preferences for the original profile. Most state when off
     // the record comes from the original profile, but we explicitly use
@@ -145,17 +166,11 @@ void ContentSettingsWindowView::Init() {
                        l10n_util::GetString(IDS_POPUP_TAB_LABEL),
                        popup_page, false);
 
-  DCHECK(tabs_->GetTabCount() == CONTENT_SETTINGS_NUM_TABS);
+  DCHECK(tabs_->GetTabCount() == CONTENT_SETTINGS_NUM_TYPES);
 }
-
-const OptionsPageView*
-    ContentSettingsWindowView::GetCurrentContentSettingsTabView() const {
-  return static_cast<OptionsPageView*>(tabs_->GetSelectedTab());
-}
-
 
 void ContentSettingsWindowView::ShowContentSettingsTab(
-    ContentSettingsTab page) {
+    ContentSettingsType page) {
   // If the window is not yet visible, we need to show it (it will become
   // active), otherwise just bring it to the front.
   if (!window()->IsVisible())
@@ -163,37 +178,20 @@ void ContentSettingsWindowView::ShowContentSettingsTab(
   else
     window()->Activate();
 
-  if (page == CONTENT_SETTINGS_TAB_DEFAULT) {
+  if (page == CONTENT_SETTINGS_TYPE_DEFAULT) {
     // Remember the last visited page from local state.
-    page = static_cast<ContentSettingsTab>(last_selected_page_.GetValue());
-    if (page == CONTENT_SETTINGS_TAB_DEFAULT)
-      page = CONTENT_SETTINGS_TAB_COOKIES;
+    page = static_cast<ContentSettingsType>(last_selected_page_.GetValue());
+    if (page == CONTENT_SETTINGS_TYPE_DEFAULT)
+      page = CONTENT_SETTINGS_FIRST_TYPE;
   }
   // If the page number is out of bounds, reset to the first tab.
   if (page < 0 || page >= tabs_->GetTabCount())
-    page = CONTENT_SETTINGS_TAB_COOKIES;
+    page = CONTENT_SETTINGS_FIRST_TYPE;
 
   tabs_->SelectTabAt(static_cast<int>(page));
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Factory/finder method:
-void ContentSettings::ShowContentSettingsWindow(ContentSettingsTab page,
-                                                Profile* profile) {
-  DCHECK(profile);
-  // If there's already an existing options window, activate it and switch to
-  // the specified page.
-  // TODO(beng): note this is not multi-simultaneous-profile-safe. When we care
-  //             about this case this will have to be fixed.
-  if (!instance_) {
-    instance_ = new ContentSettingsWindowView(profile);
-    views::Window::CreateChromeWindow(NULL, gfx::Rect(), instance_);
-    // The window is alive by itself now...
-  }
-  instance_->ShowContentSettingsTab(page);
+const OptionsPageView*
+    ContentSettingsWindowView::GetCurrentContentSettingsTabView() const {
+  return static_cast<OptionsPageView*>(tabs_->GetSelectedTab());
 }
-
-void ContentSettings::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex, 0);
-}
-
