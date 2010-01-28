@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,7 +15,17 @@ EXCLUDED_PATHS = (
 )
 
 
-def CheckChangeOnUpload(input_api, output_api):
+_LICENSE_HEADER = (
+     r".*? Copyright \(c\) 20\d\d The Chromium Authors\. All rights reserved\."
+       "\n"
+     r".*? Use of this source code is governed by a BSD-style license that can "
+       "be\n"
+     r".*? found in the LICENSE file\."
+       "\n"
+)
+
+
+def _CommonChecks(input_api, output_api):
   results = []
   # What does this code do?
   # It loads the default black list (e.g. third_party, experimental, etc) and
@@ -38,27 +48,20 @@ def CheckChangeOnUpload(input_api, output_api):
       input_api, output_api, sources))
   results.extend(input_api.canned_checks.CheckSvnForCommonMimeTypes(
       input_api, output_api))
+  results.extend(input_api.canned_checks.CheckLicense(
+      input_api, output_api, _LICENSE_HEADER, sources))
+  return results
+
+
+def CheckChangeOnUpload(input_api, output_api):
+  results = []
+  results.extend(_CommonChecks(input_api, output_api))
   return results
 
 
 def CheckChangeOnCommit(input_api, output_api):
   results = []
-  black_list = input_api.DEFAULT_BLACK_LIST + EXCLUDED_PATHS
-  sources = lambda x: input_api.FilterSourceFile(x, black_list=black_list)
-  results.extend(input_api.canned_checks.CheckLongLines(
-      input_api, output_api, sources))
-  results.extend(input_api.canned_checks.CheckChangeHasNoTabs(
-      input_api, output_api, sources))
-  results.extend(input_api.canned_checks.CheckChangeHasNoStrayWhitespace(
-      input_api, output_api, sources))
-  results.extend(input_api.canned_checks.CheckChangeHasBugField(
-      input_api, output_api))
-  results.extend(input_api.canned_checks.CheckChangeHasTestField(
-      input_api, output_api))
-  results.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
-      input_api, output_api, sources))
-  results.extend(input_api.canned_checks.CheckSvnForCommonMimeTypes(
-      input_api, output_api))
+  results.extend(_CommonChecks(input_api, output_api))
   # TODO(thestig) temporarily disabled, doesn't work in third_party/
   #results.extend(input_api.canned_checks.CheckSvnModifiedDirectories(
   #    input_api, output_api, sources))
