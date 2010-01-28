@@ -93,6 +93,8 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
 
 MenuGtk::~MenuGtk() {
   Cancel();
+
+  gtk_widget_destroy(menu_);
   g_object_unref(menu_);
 
   STLDeleteContainerPointers(submenus_we_own_.begin(), submenus_we_own_.end());
