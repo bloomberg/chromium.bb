@@ -270,37 +270,6 @@ WebInspector.UnresolvedPropertyValue = function(type, className) {
 };
 
 
-/**
- * This function overrides standard searchableViews getters to perform search
- * only in the current view (other views are loaded asynchronously, no way to
- * search them yet).
- */
-WebInspector.searchableViews_ = function() {
-  var views = [];
-  const visibleView = this.visibleView;
-  if (visibleView && visibleView.performSearch) {
-    views.push(visibleView);
-  }
-  return views;
-};
-
-
-/**
- * @override
- */
-WebInspector.ResourcesPanel.prototype.__defineGetter__(
-    'searchableViews',
-    WebInspector.searchableViews_);
-
-
-/**
- * @override
- */
-WebInspector.ScriptsPanel.prototype.__defineGetter__(
-    'searchableViews',
-    WebInspector.searchableViews_);
-
-
 (function() {
   var oldShow = WebInspector.ScriptsPanel.prototype.show;
   WebInspector.ScriptsPanel.prototype.show =  function() {

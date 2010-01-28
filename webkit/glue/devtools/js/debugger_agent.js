@@ -189,7 +189,10 @@ devtools.DebuggerAgent.prototype.resolveScriptSource = function(
   this.requestSeqToCallback_[cmd.getSequenceNumber()] = function(msg) {
     if (msg.isSuccess()) {
       var scriptJson = msg.getBody()[0];
-      callback(scriptJson.source);
+      if (scriptJson)
+        callback(scriptJson.source);
+      else
+        callback(null);
     } else {
       callback(null);
     }
