@@ -18,20 +18,13 @@ env.Append(CPPPATH=['${TARGET_ROOT}'])
 
 
 if env['TARGET_ARCHITECTURE'] == 'x86':
-  env.Append(
-      LIBS = ['ncvalidate',],
-  )
-  if env.Bit('linux'):
-    env.Append(
-        LIBS = ['dl',],
-    )
-
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  env.Append(
-    LIBS = ['ncvalidate_arm_v2',
-            'arm_validator_core']
-  )
-
+  env.Append(LIBS=['ncvalidate'])
+elif env['TARGET_ARCHITECTURE'] == 'arm':
+  env.Append(LIBS=['ncvalidate_arm_v2',
+                   'arm_validator_core'])
+else:
+  # unknown architcture
+  assert 0
 
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
@@ -338,19 +331,6 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
   # we need this to build the plugin, so register it here
   env.AddPluginPrerequisite(SEL_LDR_NODE[0])
 
-  # NOTE: we need Cocoa because of some GetPluginDir() implementation
-  #       on mac
-  env.ComponentProgram('sel_universal',
-                       'sel_universal.c',
-                       EXTRA_LIBS=['nonnacl_util_c',
-                                   'nonnacl_srpc',
-                                   'nrd_xfer',
-                                   'platform',
-                                   'gio',
-                                   'google_nacl_imc_c',
-                                   ],
-                       FRAMEWORKS=['Cocoa'],
-                       )
   # NOTE: we do not have segments on ARM
   if env['BUILD_ARCHITECTURE'] == 'x86':
     env.ComponentProgram('nacl_ldt_unittest',

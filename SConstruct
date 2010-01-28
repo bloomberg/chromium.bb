@@ -590,6 +590,7 @@ base_env.Append(
 base_env.Append(
   BUILD_SCONSCRIPTS = [
     'src/trusted/gio/build.scons',
+    'src/trusted/sel_universal/build.scons',
     'src/trusted/service_runtime/build.scons',
     'src/trusted/base/build.scons',
     'src/shared/imc/build.scons',

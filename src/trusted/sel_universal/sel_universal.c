@@ -222,9 +222,6 @@ static void TestRandomRpcs(NaClSrpcChannel* channel) {
 }
 #endif
 
-#if defined(HAVE_SDL)
-#include <SDL.h>
-#endif
 
 static NaClSrpcError Interpreter(NaClSrpcService* service,
                                  NaClSrpcChannel* channel,
