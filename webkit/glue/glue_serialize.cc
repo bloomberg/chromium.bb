@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,9 +49,8 @@ struct SerializeObject {
 //    This version checks and reads v1 and v2 correctly.
 // 4: Adds support for storing FormData::identifier().
 // 5: Adds support for empty FormData
-// 6: Adds support for documentSequenceNumbers
 // Should be const, but unit tests may modify it.
-int kVersion = 6;
+int kVersion = 5;
 
 // A bunch of convenience functions to read/write to SerializeObjects.
 // The serializers assume the input data is in the correct format and so does
@@ -285,8 +284,6 @@ static void WriteHistoryItem(
   WriteInteger(static_cast<int>(children.size()), obj);
   for (size_t i = 0, c = children.size(); i < c; ++i)
     WriteHistoryItem(children[i], obj);
-
-  WriteInteger64(item.documentSequenceNumber(), obj);
 }
 
 // Creates a new HistoryItem tree based on the serialized string.
@@ -331,9 +328,6 @@ static WebHistoryItem ReadHistoryItem(
   int num_children = ReadInteger(obj);
   for (int i = 0; i < num_children; ++i)
     item.appendToChildren(ReadHistoryItem(obj, include_form_data));
-
-  if (obj->version >= 6)
-    item.setDocumentSequenceNumber(ReadInteger64(obj));
 
   return item;
 }

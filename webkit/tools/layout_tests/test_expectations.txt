@@ -2108,6 +2108,7 @@ BUG9786 : http/tests/security/cross-frame-access-document-direct.html = TIMEOUT
 BUG10479 MAC : svg/hixie/perf/001.xml = FAIL
 BUG10479 MAC : svg/hixie/perf/002.xml = FAIL
 
+BUG9798 SLOW WIN DEBUG : fast/dom/Window/slow_unload_handler.html = PASS
 BUG9798 LINUX DEBUG SLOW : fast/frames/calculate-round.html = CRASH PASS
 
 // Was flaky. Became a consistent failure.
@@ -2733,7 +2734,7 @@ BUG30048 : svg/css/composite-shadow-with-opacity.html = IMAGE
 BUG30049 : platform/win/editing/selection/doubleclick-should-not-expand-across-lines.html = TEXT MISSING
 
 // Flaky.
-BUG30180 : fast/text/international/hindi-whitespace.html = IMAGE+TEXT PASS
+BUG30180 : fast/text/international/hindi-whitespace.html = IMAGE PASS
 
 // evan's fix rolled out in http://trac.webkit.org/changeset/52071 due to compat issues.
 BUG30343 LINUX : fast/css/large-number-round-trip.html = TEXT
@@ -2843,7 +2844,7 @@ BUG32149 WIN RELEASE : fast/dom/Document/early-document-access.html = TIMEOUT PA
 
 BUG32195 : fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = IMAGE+TEXT PASS
 
-BUG32201 LINUX : fast/text/atsui-spacing-features.html = IMAGE+TEXT
+BUG32201 LINUX DEBUG : fast/text/atsui-spacing-features.html = IMAGE+TEXT
 
 // Expectations from roll to 53171:53194
 BUG32235 LINUX DEBUG : svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = PASS TEXT
@@ -2910,19 +2911,7 @@ BUG33099 : media/video-timeupdate-reverse-play.html = TIMEOUT
 BUG33288 : fast/forms/input-valueasnumber-date.html = TEXT
 BUG33288 : fast/forms/input-valueasnumber-datetime.html = TEXT
 BUG33288 : fast/forms/input-valueasnumber-month.html = TEXT
-// Newly added tests from r53964
-BUG33288 : fast/forms/input-valueasnumber-datetimelocal.html = TEXT
 
 // Flaky storage tests
 BUG33343 LINUX MAC : storage/database-lock-after-reload.html = CRASH TEXT PASS
 BUG33343 DEBUG : storage/multiple-databases-garbage-collection.html = CRASH PASS
-
-// Disabled until we get history.{back,forward,go} changed to always be
-// asynchronously again.
-BUG33350 : fast/dom/location-hash.html = TEXT
-
-// WebKit roll 53941 -> 53974
-BUG33359 WIN LINUX : fast/css/button-height.html = TEXT
-BUG33358 : fast/dom/Window/window-postmessage-clone-frames.html = TEXT
-BUG33357 : fast/dom/Window/slow-unload-handler-only-frame-is-stopped.html = TEXT
-BUG33357 : fast/dom/Window/slow-unload-handler.html = TEXT
