@@ -67,12 +67,12 @@ class Module {
   // A source file.
   struct File {
     // The name of the source file.
-    string name_;
+    string name;
 
     // The file's source id.  The Write member function clears this
     // field and assigns source ids a fresh, so any value placed here
     // before calling Write will be lost.
-    int source_id_;
+    int source_id;
   };
 
   // A function.
@@ -80,21 +80,21 @@ class Module {
     // For sorting by address.  (Not style-guide compliant, but it's
     // stupid not to put this in the struct.)
     static bool CompareByAddress(const Function *x, const Function *y) {
-      return x->address_ < y->address_;
+      return x->address < y->address;
     }
 
     // The function's name.
-    string name_;
+    string name;
     
     // The start address and length of the function's code.
-    Address address_, size_;
+    Address address, size;
 
     // The function's parameter size.
-    Address parameter_size_;
+    Address parameter_size;
 
     // Source lines belonging to this function, sorted by increasing
     // address.
-    vector<Line> lines_;
+    vector<Line> lines;
   };
 
   // A source line.
@@ -102,12 +102,12 @@ class Module {
     // For sorting by address.  (Not style-guide compliant, but it's
     // stupid not to put this in the struct.)
     static bool CompareByAddress(const Module::Line &x, const Module::Line &y) {
-      return x.address_ < y.address_;
+      return x.address < y.address;
     }
 
-    Address address_, size_;    // The address and size of the line's code.
-    File *file_;                // The source file.
-    int number_;                // The source line number.
+    Address address, size;    // The address and size of the line's code.
+    File *file;                // The source file.
+    int number;                // The source line number.
   };
     
   // Create a new module with the given name, operating system,

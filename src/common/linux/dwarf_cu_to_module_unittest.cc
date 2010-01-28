@@ -276,10 +276,10 @@ const size_t CUFixtureBase::dummy_line_size_ =
 void CUFixtureBase::PushLine(Module::Address address, Module::Address size,
                              const string &filename, int line_number) {
   Module::Line l;
-  l.address_ = address;
-  l.size_ = size;
-  l.file_ = module_.FindFile(filename);
-  l.number_ = line_number;
+  l.address = address;
+  l.size = size;
+  l.file = module_.FindFile(filename);
+  l.number = line_number;
   lines_.push_back(l);
 }
 
@@ -539,17 +539,17 @@ void CUFixtureBase::TestFunction(int i, const string &name,
   ASSERT_LT((size_t) i, functions_.size());
 
   Module::Function *function = functions_[i];
-  EXPECT_EQ(name,    function->name_);
-  EXPECT_EQ(address, function->address_);
-  EXPECT_EQ(size,    function->size_);
-  EXPECT_EQ(0U,      function->parameter_size_);
+  EXPECT_EQ(name,    function->name);
+  EXPECT_EQ(address, function->address);
+  EXPECT_EQ(size,    function->size);
+  EXPECT_EQ(0U,      function->parameter_size);
 }
 
 void CUFixtureBase::TestLineCount(int i, size_t expected) {
   FillFunctions();
   ASSERT_LT((size_t) i, functions_.size());
 
-  ASSERT_EQ(expected, functions_[i]->lines_.size());
+  ASSERT_EQ(expected, functions_[i]->lines.size());
 }
 
 void CUFixtureBase::TestLine(int i, int j,
@@ -557,13 +557,13 @@ void CUFixtureBase::TestLine(int i, int j,
                              const string &filename, int number) {
   FillFunctions();
   ASSERT_LT((size_t) i, functions_.size());
-  ASSERT_LT((size_t) j, functions_[i]->lines_.size());
+  ASSERT_LT((size_t) j, functions_[i]->lines.size());
 
-  Module::Line *line = &functions_[i]->lines_[j];
-  EXPECT_EQ(address,  line->address_);
-  EXPECT_EQ(size,     line->size_);
-  EXPECT_EQ(filename, line->file_->name_.c_str());
-  EXPECT_EQ(number,   line->number_);
+  Module::Line *line = &functions_[i]->lines[j];
+  EXPECT_EQ(address,  line->address);
+  EXPECT_EQ(size,     line->size);
+  EXPECT_EQ(filename, line->file->name.c_str());
+  EXPECT_EQ(number,   line->number);
 }
 
 // Include caller locations for our test subroutines.
@@ -1280,7 +1280,7 @@ TEST_F(Specifications, InterCU) {
   vector<Module::Function *> functions;
   m.GetFunctions(&functions, functions.end());
   EXPECT_EQ(1U, functions.size());
-  EXPECT_STREQ("class_A::member_func_B", functions[0]->name_.c_str());
+  EXPECT_STREQ("class_A::member_func_B", functions[0]->name.c_str());
 }
 
 TEST_F(Specifications, BadOffset) {

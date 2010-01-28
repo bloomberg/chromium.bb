@@ -1,4 +1,4 @@
-// Copyright (c) 2009, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -83,10 +83,10 @@ Module::File *Module::FindFile(const string &name) {
   if (destiny == files_.end()
       || *destiny->first != name) {  // Repeated string comparison, boo hoo.
     File *file = new File;
-    file->name_ = name;
-    file->source_id_ = -1;
+    file->name = name;
+    file->source_id = -1;
     destiny = files_.insert(destiny,
-                            FileByNameMap::value_type(&file->name_, file));
+                            FileByNameMap::value_type(&file->name, file));
   }
   return destiny->second;
 }
@@ -111,16 +111,16 @@ void Module::AssignSourceIds() {
   // First, give every source file an id of -1.
   for (FileByNameMap::iterator file_it = files_.begin();
        file_it != files_.end(); file_it++)
-    file_it->second->source_id_ = -1;
+    file_it->second->source_id = -1;
 
   // Next, mark all files actually cited by our functions' line number
   // info, by setting each one's source id to zero.
   for (vector<Function *>::const_iterator func_it = functions_.begin();
        func_it != functions_.end(); func_it++) {
     Function *func = *func_it;
-    for (vector<Line>::iterator line_it = func->lines_.begin();
-         line_it != func->lines_.end(); line_it++)
-      line_it->file_->source_id_ = 0;
+    for (vector<Line>::iterator line_it = func->lines.begin();
+         line_it != func->lines.end(); line_it++)
+      line_it->file->source_id = 0;
   }
 
   // Finally, assign source ids to those files that have been marked.
@@ -130,8 +130,8 @@ void Module::AssignSourceIds() {
   int next_source_id = 0;
   for (FileByNameMap::iterator file_it = files_.begin();
        file_it != files_.end(); file_it++)
-    if (! file_it->second->source_id_)
-      file_it->second->source_id_ = next_source_id++;
+    if (! file_it->second->source_id)
+      file_it->second->source_id = next_source_id++;
 }
 
 bool Module::ReportError() {
@@ -152,9 +152,9 @@ bool Module::Write(FILE *stream) {
   for (FileByNameMap::iterator file_it = files_.begin();
        file_it != files_.end(); file_it++) {
     File *file = file_it->second;
-    if (file->source_id_ >= 0) {
+    if (file->source_id >= 0) {
       if (0 > fprintf(stream, "FILE %d %s\n",
-                      file->source_id_, file->name_.c_str()))
+                      file->source_id, file->name.c_str()))
         return ReportError();
     }
   }
@@ -164,18 +164,18 @@ bool Module::Write(FILE *stream) {
        func_it != functions_.end(); func_it++) {
     Function *func = *func_it;
     if (0 > fprintf(stream, "FUNC %llx %llx %llx %s\n",
-                    (unsigned long long) (func->address_ - load_address_),
-                    (unsigned long long) func->size_,
-                    (unsigned long long) func->parameter_size_,
-                    func->name_.c_str()))
+                    (unsigned long long) (func->address - load_address_),
+                    (unsigned long long) func->size,
+                    (unsigned long long) func->parameter_size,
+                    func->name.c_str()))
       return ReportError();
-    for (vector<Line>::iterator line_it = func->lines_.begin();
-         line_it != func->lines_.end(); line_it++)
+    for (vector<Line>::iterator line_it = func->lines.begin();
+         line_it != func->lines.end(); line_it++)
       if (0 > fprintf(stream, "%llx %llx %d %d\n",
-                      (unsigned long long) (line_it->address_ - load_address_),
-                      (unsigned long long) line_it->size_,
-                      line_it->number_,
-                      line_it->file_->source_id_))
+                      (unsigned long long) (line_it->address - load_address_),
+                      (unsigned long long) line_it->size,
+                      line_it->number,
+                      line_it->file->source_id))
         return ReportError();
   }
 

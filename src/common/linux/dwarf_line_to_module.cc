@@ -108,11 +108,11 @@ void DwarfLineToModule::AddLine(uint64 address, uint64 length,
     return;
   }
   Module::Line line;
-  line.address_ = address;
+  line.address = address;
   // We set the size when we get the next line or the EndSequence call.
-  line.size_ = length;
-  line.file_ = file;
-  line.number_ = line_num;
+  line.size = length;
+  line.file = file;
+  line.number = line_num;
   lines_->push_back(line);
 }
 

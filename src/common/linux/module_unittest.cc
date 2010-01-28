@@ -1,4 +1,4 @@
-// Copyright (c) 2009, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -111,13 +111,13 @@ TEST(Write, OneLineFunc) {
 
   Module::File *file = m.FindFile("file_name.cc");
   Module::Function *function = new(Module::Function);
-  function->name_ = "function_name";
-  function->address_ = 0xe165bf8023b9d9abLL;
-  function->size_ = 0x1e4bb0eb1cbf5b09LL;
-  function->parameter_size_ = 0x772beee89114358aLL;
+  function->name = "function_name";
+  function->address = 0xe165bf8023b9d9abLL;
+  function->size = 0x1e4bb0eb1cbf5b09LL;
+  function->parameter_size = 0x772beee89114358aLL;
   Module::Line line = { 0xe165bf8023b9d9abLL, 0x1e4bb0eb1cbf5b09LL,
                         file, 67519080 };
-  function->lines_.push_back(line);
+  function->lines.push_back(line);
   m.AddFunction(function);
 
   m.Write(f);
@@ -145,18 +145,18 @@ TEST(Write, RelativeLoadAddress) {
 
   // A function.
   Module::Function *function = new(Module::Function);
-  function->name_ = "A_FLIBBERTIJIBBET::a_will_o_the_wisp(a clown)";
-  function->address_ = 0xbec774ea5dd935f3LL;
-  function->size_ = 0x2922088f98d3f6fcLL;
-  function->parameter_size_ = 0xe5e9aa008bd5f0d0LL;
+  function->name = "A_FLIBBERTIJIBBET::a_will_o_the_wisp(a clown)";
+  function->address = 0xbec774ea5dd935f3LL;
+  function->size = 0x2922088f98d3f6fcLL;
+  function->parameter_size = 0xe5e9aa008bd5f0d0LL;
 
   // Some source lines.  The module should not sort these.
   Module::Line line1 = { 0xbec774ea5dd935f3LL, 0x1c2be6d6c5af2611LL,
                          file1, 41676901 };
   Module::Line line2 = { 0xdaf35bc123885c04LL, 0xcf621b8d324d0ebLL,
                          file2, 67519080 };
-  function->lines_.push_back(line2);
-  function->lines_.push_back(line1);
+  function->lines.push_back(line2);
+  function->lines.push_back(line1);
 
   m.AddFunction(function);
 
@@ -185,18 +185,18 @@ TEST(Write, OmitUnusedFiles) {
 
   // Create a function.
   Module::Function *function = new(Module::Function);
-  function->name_ = "function_name";
-  function->address_ = 0x9b926d464f0b9384LL;
-  function->size_ = 0x4f524a4ba795e6a6LL;
-  function->parameter_size_ = 0xbbe8133a6641c9b7LL;
+  function->name = "function_name";
+  function->address = 0x9b926d464f0b9384LL;
+  function->size = 0x4f524a4ba795e6a6LL;
+  function->parameter_size = 0xbbe8133a6641c9b7LL;
 
   // Source files that refer to some files, but not others.
   Module::Line line1 = { 0x595fa44ebacc1086LL, 0x1e1e0191b066c5b3LL,
                          file1, 137850127 };
   Module::Line line2 = { 0x401ce8c8a12d25e3LL, 0x895751c41b8d2ce2LL,
                          file3, 28113549 };
-  function->lines_.push_back(line1);
-  function->lines_.push_back(line2);
+  function->lines.push_back(line1);
+  function->lines.push_back(line2);
   m.AddFunction(function);
 
   m.AssignSourceIds();
@@ -204,13 +204,13 @@ TEST(Write, OmitUnusedFiles) {
   vector<Module::File *> vec;
   m.GetFiles(&vec);
   EXPECT_EQ((size_t) 3, vec.size());
-  EXPECT_STREQ("filename1", vec[0]->name_.c_str());
-  EXPECT_NE(-1, vec[0]->source_id_);
+  EXPECT_STREQ("filename1", vec[0]->name.c_str());
+  EXPECT_NE(-1, vec[0]->source_id);
   // Expect filename2 not to be used.
-  EXPECT_STREQ("filename2", vec[1]->name_.c_str());
-  EXPECT_EQ(-1, vec[1]->source_id_);
-  EXPECT_STREQ("filename3", vec[2]->name_.c_str());
-  EXPECT_NE(-1, vec[2]->source_id_);
+  EXPECT_STREQ("filename2", vec[1]->name.c_str());
+  EXPECT_EQ(-1, vec[1]->source_id);
+  EXPECT_STREQ("filename3", vec[2]->name.c_str());
+  EXPECT_NE(-1, vec[2]->source_id);
 
   FILE *f = checked_tmpfile();
   m.Write(f);
@@ -234,16 +234,16 @@ TEST(Construct, AddFunctions) {
 
   // Two functions.
   Module::Function *function1 = new(Module::Function);
-  function1->name_ = "_without_form";
-  function1->address_ = 0xd35024aa7ca7da5cLL;
-  function1->size_ = 0x200b26e605f99071LL;
-  function1->parameter_size_ = 0xf14ac4fed48c4a99LL;
+  function1->name = "_without_form";
+  function1->address = 0xd35024aa7ca7da5cLL;
+  function1->size = 0x200b26e605f99071LL;
+  function1->parameter_size = 0xf14ac4fed48c4a99LL;
 
   Module::Function *function2 = new(Module::Function);
-  function2->name_ = "_and_void";
-  function2->address_ = 0x2987743d0b35b13fLL;
-  function2->size_ = 0xb369db048deb3010LL;
-  function2->parameter_size_ = 0x938e556cb5a79988LL;
+  function2->name = "_and_void";
+  function2->address = 0x2987743d0b35b13fLL;
+  function2->size = 0xb369db048deb3010LL;
+  function2->parameter_size = 0x938e556cb5a79988LL;
 
   // Put them in a vector.
   vector<Module::Function *> vec;

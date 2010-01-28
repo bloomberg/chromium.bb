@@ -1,4 +1,4 @@
-// Copyright (c) 2009, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -60,16 +60,16 @@ TEST(DumpStabsHandler, SimpleCU) {
   m.GetFunctions(&functions, functions.end());
   ASSERT_EQ((size_t) 1, functions.size());
   Module::Function *function = functions[0];
-  EXPECT_STREQ("function", function->name_.c_str());
-  EXPECT_EQ(0xfde4abbed390c394LL, function->address_);
-  EXPECT_EQ(0x10U, function->size_);
-  EXPECT_EQ(0U, function->parameter_size_);
-  ASSERT_EQ((size_t) 1, function->lines_.size());
-  Module::Line *line = &function->lines_[0];
-  EXPECT_EQ(0xfde4abbed390c394LL, line->address_);
-  EXPECT_EQ(0x10U, line->size_); // derived from EndFunction
-  EXPECT_TRUE(line->file_ == file);
-  EXPECT_EQ(174823314, line->number_);
+  EXPECT_STREQ("function", function->name.c_str());
+  EXPECT_EQ(0xfde4abbed390c394LL, function->address);
+  EXPECT_EQ(0x10U, function->size);
+  EXPECT_EQ(0U, function->parameter_size);
+  ASSERT_EQ((size_t) 1, function->lines.size());
+  Module::Line *line = &function->lines[0];
+  EXPECT_EQ(0xfde4abbed390c394LL, line->address);
+  EXPECT_EQ(0x10U, line->size); // derived from EndFunction
+  EXPECT_TRUE(line->file == file);
+  EXPECT_EQ(174823314, line->number);
 }
 
 TEST(InferSizes, LineSize) {
@@ -101,23 +101,23 @@ TEST(InferSizes, LineSize) {
   ASSERT_EQ((size_t) 1, functions.size());
 
   Module::Function *function = functions[0];
-  EXPECT_STREQ("function", function->name_.c_str());
-  EXPECT_EQ(0xb4513962eff94e92LL, function->address_);
-  EXPECT_EQ(0x1000100000000ULL, function->size_); // inferred from CU end
-  EXPECT_EQ(0U, function->parameter_size_);
-  ASSERT_EQ((size_t) 2, function->lines_.size());
+  EXPECT_STREQ("function", function->name.c_str());
+  EXPECT_EQ(0xb4513962eff94e92LL, function->address);
+  EXPECT_EQ(0x1000100000000ULL, function->size); // inferred from CU end
+  EXPECT_EQ(0U, function->parameter_size);
+  ASSERT_EQ((size_t) 2, function->lines.size());
 
-  Module::Line *line1 = &function->lines_[0];
-  EXPECT_EQ(0xb4513962eff94e92LL, line1->address_);
-  EXPECT_EQ(0x100000000ULL, line1->size_); // derived from EndFunction
-  EXPECT_TRUE(line1->file_ == file1);
-  EXPECT_EQ(77396614, line1->number_);
+  Module::Line *line1 = &function->lines[0];
+  EXPECT_EQ(0xb4513962eff94e92LL, line1->address);
+  EXPECT_EQ(0x100000000ULL, line1->size); // derived from EndFunction
+  EXPECT_TRUE(line1->file == file1);
+  EXPECT_EQ(77396614, line1->number);
 
-  Module::Line *line2 = &function->lines_[1];
-  EXPECT_EQ(0xb4513963eff94e92LL, line2->address_);
-  EXPECT_EQ(0x1000000000000ULL, line2->size_); // derived from EndFunction
-  EXPECT_TRUE(line2->file_ == file2);
-  EXPECT_EQ(87660088, line2->number_);
+  Module::Line *line2 = &function->lines[1];
+  EXPECT_EQ(0xb4513963eff94e92LL, line2->address);
+  EXPECT_EQ(0x1000000000000ULL, line2->size); // derived from EndFunction
+  EXPECT_TRUE(line2->file == file2);
+  EXPECT_EQ(87660088, line2->number);
 }
 
 TEST(FunctionNames, Mangled) {
@@ -148,11 +148,11 @@ TEST(FunctionNames, Mangled) {
   EXPECT_STREQ("std::vector<unsigned long long, "
                "std::allocator<unsigned long long> >::"
                "push_back(unsigned long long const&)",
-               function->name_.c_str());
-  EXPECT_EQ(0xf2cfda63cef7f46dLL, function->address_);
-  EXPECT_LT(0U, function->size_); // should have used dummy size
-  EXPECT_EQ(0U, function->parameter_size_);
-  ASSERT_EQ(0U, function->lines_.size());
+               function->name.c_str());
+  EXPECT_EQ(0xf2cfda63cef7f46dLL, function->address);
+  EXPECT_LT(0U, function->size); // should have used dummy size
+  EXPECT_EQ(0U, function->parameter_size);
+  ASSERT_EQ(0U, function->lines.size());
 }
 
 // TODO --- if we actually cared about STABS. Even without these we've

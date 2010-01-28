@@ -1,4 +1,4 @@
-// Copyright (c) 2009, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -78,10 +78,10 @@ bool DumpStabsHandler::StartFunction(const string &name,
                                      uint64_t address) {
   assert(!current_function_);
   Module::Function *f = new Module::Function;
-  f->name_ = Demangle(name);
-  f->address_ = address;
-  f->size_ = 0;           // We compute this in DumpStabsHandler::Finalize().
-  f->parameter_size_ = 0; // We don't provide this information.
+  f->name = Demangle(name);
+  f->address = address;
+  f->size = 0;           // We compute this in DumpStabsHandler::Finalize().
+  f->parameter_size = 0; // We don't provide this information.
   current_function_ = f;
   boundaries_.push_back(static_cast<Module::Address>(address));
   return true;
@@ -97,7 +97,7 @@ bool DumpStabsHandler::EndFunction(uint64_t address) {
   // (I don't really understand the above comment; just bringing it
   // along from the previous code, and leaving the behaivor unchanged.
   // If you know the whole story, please patch this comment.  --jimb)
-  if (current_function_->address_ >= comp_unit_base_address_)
+  if (current_function_->address >= comp_unit_base_address_)
     functions_.push_back(current_function_);
   else
     delete current_function_;
@@ -115,11 +115,11 @@ bool DumpStabsHandler::Line(uint64_t address, const char *name, int number) {
     current_source_file_name_ = name;
   }
   Module::Line line;
-  line.address_ = address;
-  line.size_ = 0;  // We compute this in DumpStabsHandler::Finalize().
-  line.file_ = current_source_file_;
-  line.number_ = number;
-  current_function_->lines_.push_back(line);
+  line.address = address;
+  line.size = 0;  // We compute this in DumpStabsHandler::Finalize().
+  line.file = current_source_file_;
+  line.number = number;
+  current_function_->lines.push_back(line);
   return true;
 }
 
@@ -142,27 +142,27 @@ void DumpStabsHandler::Finalize() {
     Module::Function *f = *func_it;
     // Compute the function f's size.
     vector<Module::Address>::iterator boundary
-        = std::upper_bound(boundaries_.begin(), boundaries_.end(), f->address_);
+        = std::upper_bound(boundaries_.begin(), boundaries_.end(), f->address);
     if (boundary != boundaries_.end())
-      f->size_ = *boundary - f->address_;
+      f->size = *boundary - f->address;
     else
       // If this is the last function in the module, and the STABS
       // reader was unable to give us its ending address, then assign
       // it a bogus, very large value.  This will happen at most once
       // per module: since we've added all functions' addresses to the
       // boundary table, only one can be the last.
-      f->size_ = kFallbackSize;
+      f->size = kFallbackSize;
 
     // Compute sizes for each of the function f's lines --- if it has any.
-    if (!f->lines_.empty()) {
-      stable_sort(f->lines_.begin(), f->lines_.end(),
+    if (!f->lines.empty()) {
+      stable_sort(f->lines.begin(), f->lines.end(),
                   Module::Line::CompareByAddress);
-      vector<Module::Line>::iterator last_line = f->lines_.end() - 1;
-      for (vector<Module::Line>::iterator line_it = f->lines_.begin();
+      vector<Module::Line>::iterator last_line = f->lines.end() - 1;
+      for (vector<Module::Line>::iterator line_it = f->lines.begin();
            line_it != last_line; line_it++)
-        line_it[0].size_ = line_it[1].address_ - line_it[0].address_;
+        line_it[0].size = line_it[1].address - line_it[0].address;
       // Compute the size of the last line from f's end address.
-      last_line->size_ = (f->address_ + f->size_) - last_line->address_;
+      last_line->size = (f->address + f->size) - last_line->address;
     }
   }
   // Now that everything has a size, add our functions to the module, and

@@ -316,10 +316,10 @@ void DwarfCUToModule::FuncHandler::Finish() {
     // Create a Module::Function based on the data we've gathered, and
     // add it to the functions_ list.
     Module::Function *func = new Module::Function;
-    func->name_ = name_;
-    func->address_ = low_pc_;
-    func->size_ = high_pc_ - low_pc_;
-    func->parameter_size_ = 0;
+    func->name = name_;
+    func->address = low_pc_;
+    func->size = high_pc_ - low_pc_;
+    func->parameter_size = 0;
     cu_context_->functions.push_back(func);
   }
 }
@@ -404,15 +404,15 @@ void DwarfCUToModule::WarningReporter::UncoveredFunction(
     const Module::Function &function) {
   UncoveredHeading();
   fprintf(stderr, "    function%s: %s\n",
-          function.size_ == 0 ? " (zero-length)" : "",
-          function.name_.c_str());
+          function.size == 0 ? " (zero-length)" : "",
+          function.name.c_str());
 }
 
 void DwarfCUToModule::WarningReporter::UncoveredLine(const Module::Line &line) {
   UncoveredHeading();
   fprintf(stderr, "    line%s: %s:%d at 0x%llx\n",
-          (line.size_ == 0 ? " (zero-length)" : ""),
-          line.file_->name_.c_str(), line.number_, line.address_);
+          (line.size == 0 ? " (zero-length)" : ""),
+          line.file->name.c_str(), line.number, line.address);
 }
 
 DwarfCUToModule::DwarfCUToModule(FileContext *file_context,
@@ -545,7 +545,7 @@ inline bool within(const T &item, Module::Address address) {
   // Because Module::Address is unsigned, and unsigned arithmetic
   // wraps around, this will be false if ADDRESS falls before the
   // start of ITEM, or if it falls after ITEM's end.
-  return address - item.address_ < item.size_;
+  return address - item.address < item.size;
 }
 }
 
@@ -579,7 +579,7 @@ void DwarfCUToModule::AssignLinesToFunctions() {
   const Module::Line *last_line_cited = NULL;
 
   // Make a single pass through both vectors from lower to higher
-  // addresses, populating each Function's lines_ vector with lines
+  // addresses, populating each Function's lines vector with lines
   // from our lines_ vector that fall within the function's address
   // range.
   vector<Module::Function *>::iterator func_it = functions->begin();
@@ -597,15 +597,15 @@ void DwarfCUToModule::AssignLinesToFunctions() {
   if (func_it != functions->end() && line_it != lines_.end()) {
     func = *func_it;
     line = &*line_it;
-    current = std::min(func->address_, line->address_);
+    current = std::min(func->address, line->address);
   } else if (line_it != lines_.end()) {
     func = NULL;
     line = &*line_it;
-    current = line->address_;
+    current = line->address;
   } else if (func_it != functions->end()) {
     func = *func_it;
     line = NULL;
-    current = (*func_it)->address_;
+    current = (*func_it)->address;
   } else {
     return;
   }
@@ -640,25 +640,25 @@ void DwarfCUToModule::AssignLinesToFunctions() {
     // iterator. So neither iterator moves.
 
     // Assert the first invariant (see above).
-    assert(!func || current < func->address_ || within(*func, current));
-    assert(!line || current < line->address_ || within(*line, current));
+    assert(!func || current < func->address || within(*func, current));
+    assert(!line || current < line->address || within(*line, current));
 
     // The next transition after CURRENT.
     Module::Address next_transition;
 
     // Figure out which state we're in, add lines or warn, and compute
     // the next transition address.
-    if (func && current >= func->address_) {
-      if (line && current >= line->address_) {
+    if (func && current >= func->address) {
+      if (line && current >= line->address) {
         // Covered by both a line and a function.
-        Module::Address func_left = func->size_ - (current - func->address_);
-        Module::Address line_left = line->size_ - (current - line->address_);
+        Module::Address func_left = func->size - (current - func->address);
+        Module::Address line_left = line->size - (current - line->address);
         // This may overflow, but things work out.
         next_transition = current + std::min(func_left, line_left);
         Module::Line l = *line;
-        l.address_ = current;
-        l.size_ = next_transition - current;
-        func->lines_.push_back(l);
+        l.address = current;
+        l.size = next_transition - current;
+        func->lines.push_back(l);
         last_line_used = line;
       } else {
         // Covered by a function, but no line.
@@ -666,14 +666,14 @@ void DwarfCUToModule::AssignLinesToFunctions() {
           reporter->UncoveredFunction(*func);
           last_function_cited = func;
         }
-        if (line && within(*func, line->address_))
-          next_transition = line->address_;
+        if (line && within(*func, line->address))
+          next_transition = line->address;
         else
           // If this overflows, we'll catch it below.
-          next_transition = func->address_ + func->size_;
+          next_transition = func->address + func->size;
       }
     } else {
-      if (line && current >= line->address_) {
+      if (line && current >= line->address) {
         // Covered by a line, but no function.
         //
         // If GCC emits padding after one function to align the start
@@ -688,15 +688,15 @@ void DwarfCUToModule::AssignLinesToFunctions() {
         if (line != last_line_cited
             && !(func
                  && line == last_line_used
-                 && func->address_ - line->address_ == line->size_)) {
+                 && func->address - line->address == line->size)) {
           reporter->UncoveredLine(*line);
           last_line_cited = line;
         }
-        if (func && within(*line, func->address_))
-          next_transition = func->address_;
+        if (func && within(*line, func->address))
+          next_transition = func->address;
         else
           // If this overflows, we'll catch it below.
-          next_transition = line->address_ + line->size_;
+          next_transition = line->address + line->size;
       } else {
         // Covered by neither a function nor a line. By the invariant,
         // both func and line begin after CURRENT. The next transition
@@ -704,11 +704,11 @@ void DwarfCUToModule::AssignLinesToFunctions() {
         // is earliest.
         assert (func || line);
         if (func && line)
-          next_transition = std::min(func->address_, line->address_);
+          next_transition = std::min(func->address, line->address);
         else if (func)
-          next_transition = func->address_;
+          next_transition = func->address;
         else
-          next_transition = line->address_;
+          next_transition = line->address;
       }
     }
 
@@ -724,12 +724,12 @@ void DwarfCUToModule::AssignLinesToFunctions() {
     // about what result we produce in that case, just as long as we don't
     // hang or crash.
     while (func_it != functions->end()
-           && current >= (*func_it)->address_
+           && current >= (*func_it)->address
            && !within(**func_it, next_transition))
       func_it++;
     func = (func_it != functions->end()) ? *func_it : NULL;
     while (line_it != lines_.end()
-           && current >= line_it->address_
+           && current >= line_it->address
            && !within(*line_it, next_transition))
       line_it++;
     line = (line_it != lines_.end()) ? &*line_it : NULL;
