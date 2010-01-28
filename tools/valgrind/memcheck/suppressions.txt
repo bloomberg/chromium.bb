@@ -2233,3 +2233,29 @@
    fun:start_thread
    fun:clone
 }
+{
+  bug_33394
+  Memcheck:Leak
+  fun:calloc
+  fun:PR_Calloc
+  fun:PR_NewLock
+  fun:_PR_UnixInit
+  fun:_PR_ImplicitInitialization
+  ...
+  fun:_ZN4base14EnsureNSPRInitEv
+  fun:ChromeMain
+  fun:main
+}
+{
+  bug_33394_b
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:PR_NewMonitor
+   fun:_PR_UnixInit
+   fun:_PR_ImplicitInitialization
+   ...
+   fun:_ZN4base14EnsureNSPRInitEv
+   fun:ChromeMain
+   fun:main
+}
