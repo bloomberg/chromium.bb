@@ -117,7 +117,7 @@ class TestServerLauncher {
   int connection_attempts_;
   int connection_timeout_;
 
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
   struct PrivateCERTCertificate;
   PrivateCERTCertificate *cert_;
 #endif
