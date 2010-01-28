@@ -2914,8 +2914,8 @@ BUG33343 LINUX MAC : storage/database-lock-after-reload.html = CRASH TEXT PASS
 BUG33343 DEBUG : storage/multiple-databases-garbage-collection.html = CRASH PASS
 
 // Rebaseline!
-BUG21852 WIN MAC : fast/canvas/webgl/gl-object-get-calls.html = TEXT
-BUG21852 WIN MAC : fast/canvas/webgl/null-object-behaviour.html = TEXT
-BUG21852 WIN MAC : fast/canvas/webgl/texImageTest.html = TEXT
-BUG21852 WIN MAC : fast/canvas/webgl/uniform-location.html = TEXT
-BUG21852 SKIP LINUX : fast/canvas/webgl = CRASH
+BUG21852 MAC : fast/canvas/webgl/gl-object-get-calls.html = TEXT
+BUG21852 MAC : fast/canvas/webgl/null-object-behaviour.html = TEXT
+BUG21852 MAC : fast/canvas/webgl/texImageTest.html = TEXT
+BUG21852 MAC : fast/canvas/webgl/uniform-location.html = TEXT
+BUG21852 SKIP WIN LINUX : fast/canvas/webgl = CRASH
