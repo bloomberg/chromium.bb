@@ -2893,7 +2893,6 @@ BUG32666 MAC DEBUG : svg/custom/use-detach.svg = IMAGE PASS
 BUG33293 SKIP : fast/media/lifetime.html = TIMEOUT
 
 // WebKit roll 53585 -> 53655
-BUG32863 LINUX MAC : websocket/tests/url-no-trailing-slash.html = TEXT
 BUG32864 WIN LINUX MAC : plugins/mouse-events-fixedpos.html = TEXT
 
 // WebKit roll 53655 -> 53704
