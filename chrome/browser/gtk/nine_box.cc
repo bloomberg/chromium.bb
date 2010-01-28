@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,18 +15,36 @@
 namespace {
 
 // Draw pixbuf |src| into |dst| at position (x, y).
-void DrawPixbuf(cairo_t* cr, GdkPixbuf* src, int x, int y) {
+void DrawPixbuf(cairo_t* cr, GdkPixbuf* src, int x, int y, double alpha) {
   gdk_cairo_set_source_pixbuf(cr, src, x, y);
-  cairo_paint(cr);
+  cairo_paint_with_alpha(cr, alpha);
 }
 
 // Tile pixbuf |src| across |cr| at |x|, |y| for |width| and |height|.
 void TileImage(cairo_t* cr, GdkPixbuf* src,
-               int x, int y, int width, int height) {
-  gdk_cairo_set_source_pixbuf(cr, src, x, y);
-  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-  cairo_rectangle(cr, x, y, width, height);
-  cairo_fill(cr);
+               int x, int y, int width, int height, double alpha) {
+  if (alpha == 1.0) {
+    gdk_cairo_set_source_pixbuf(cr, src, x, y);
+    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+    cairo_rectangle(cr, x, y, width, height);
+    cairo_fill(cr);
+  } else {
+    // Since there is no easy way to apply a mask to a fill operation, we create
+    // a secondary surface and tile into that, then paint it with |alpha|.
+    cairo_surface_t* surface = cairo_image_surface_create(
+        CAIRO_FORMAT_ARGB32, width, height);
+    cairo_t* tiled = cairo_create(surface);
+    gdk_cairo_set_source_pixbuf(tiled, src, 0, 0);
+    cairo_pattern_set_extend(cairo_get_source(tiled), CAIRO_EXTEND_REPEAT);
+    cairo_rectangle(tiled, 0, 0, width, height);
+    cairo_fill(tiled);
+
+    cairo_set_source_surface(cr, surface, x, y);
+    cairo_paint_with_alpha(cr, alpha);
+
+    cairo_destroy(tiled);
+    cairo_surface_destroy(surface);
+  }
 }
 
 }  // namespace
@@ -88,6 +106,10 @@ NineBox::~NineBox() {
 }
 
 void NineBox::RenderToWidget(GtkWidget* dst) const {
+  RenderToWidgetWithOpacity(dst, 1.0);
+}
+
+void NineBox::RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const {
   int dst_width = dst->allocation.width;
   int dst_height = dst->allocation.height;
 
@@ -117,35 +139,35 @@ void NineBox::RenderToWidget(GtkWidget* dst) const {
 
   // Top row, center image is horizontally tiled.
   if (images_[0])
-    DrawPixbuf(cr, images_[0], 0, 0);
+    DrawPixbuf(cr, images_[0], 0, 0, opacity);
   if (images_[1])
-    RenderTopCenterStrip(cr, x1, 0, x2 - x1);
+    TileImage(cr, images_[1], x1, 0, x2 - x1, y1, opacity);
   if (images_[2])
-    DrawPixbuf(cr, images_[2], x2, 0);
+    DrawPixbuf(cr, images_[2], x2, 0, opacity);
 
   // Center row, all images are vertically tiled, center is horizontally tiled.
   if (images_[3])
-    TileImage(cr, images_[3], 0, y1, x1, y2 - y1);
+    TileImage(cr, images_[3], 0, y1, x1, y2 - y1, opacity);
   if (images_[4])
-    TileImage(cr, images_[4], x1, y1, x2 - x1, y2 - y1);
+    TileImage(cr, images_[4], x1, y1, x2 - x1, y2 - y1, opacity);
   if (images_[5])
-    TileImage(cr, images_[5], x2, y1, dst_width - x2, y2 - y1);
+    TileImage(cr, images_[5], x2, y1, dst_width - x2, y2 - y1, opacity);
 
   // Bottom row, center image is horizontally tiled.
   if (images_[6])
-    DrawPixbuf(cr, images_[6], 0, y2);
+    DrawPixbuf(cr, images_[6], 0, y2, opacity);
   if (images_[7])
-    TileImage(cr, images_[7], x1, y2, x2 - x1, dst_height - y2);
+    TileImage(cr, images_[7], x1, y2, x2 - x1, dst_height - y2, opacity);
   if (images_[8])
-    DrawPixbuf(cr, images_[8], x2, y2);
+    DrawPixbuf(cr, images_[8], x2, y2, opacity);
 
   cairo_destroy(cr);
 }
 
-void NineBox::RenderTopCenterStrip(cairo_t* cr,
-                                   int x, int y, int width) const {
+void NineBox::RenderTopCenterStrip(cairo_t* cr, int x, int y,
+                                   int width) const {
   const int height = gdk_pixbuf_get_height(images_[1]);
-  TileImage(cr, images_[1], x, y, width, height);
+  TileImage(cr, images_[1], x, y, width, height, 1.0);
 }
 
 void NineBox::ChangeWhiteToTransparent() {

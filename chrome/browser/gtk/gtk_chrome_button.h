@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,12 @@ void gtk_chrome_button_unset_paint_state(GtkChromeButton* button);
 // Whether we should use custom theme images or let GTK take care of it.
 void gtk_chrome_button_set_use_gtk_rendering(GtkChromeButton* button,
                                              gboolean value);
+
+// Sets the partial hover state of the button. The acceptable range is 0.0 to
+// 1.0. If |state| is outside of that range, then revert the button to normal
+// hovering.
+void gtk_chrome_button_set_hover_state(GtkChromeButton* button,
+                                       gdouble state);
 
 G_END_DECLS
 

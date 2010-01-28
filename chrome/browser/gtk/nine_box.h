@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,9 @@ class NineBox {
   // Render the NineBox to |dst|.
   // The images will be tiled to fit into the widget.
   void RenderToWidget(GtkWidget* dst) const;
+
+  // As above, but rendered partially transparent.
+  void RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const;
 
   // Render the top row of images to |dst| between |x1| and |x1| + |width|.
   // This is split from RenderToWidget so the toolbar can use it.

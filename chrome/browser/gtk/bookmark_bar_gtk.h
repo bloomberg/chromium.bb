@@ -133,7 +133,7 @@ class BookmarkBarGtk : public AnimationDelegate,
   // |extra_space| is how much extra space to give the toolbar during the
   // calculation (for the purposes of determining if ditching the chevron
   // would be a good idea).
-  // If non-NULL, |showing_folders| is packed with all the folders that are
+  // If non-NULL, |showing_folders| will be packed with all the folders that are
   // showing on the bar.
   int GetFirstHiddenBookmark(int extra_space,
                              std::vector<GtkWidget*>* showing_folders);
@@ -154,6 +154,14 @@ class BookmarkBarGtk : public AnimationDelegate,
   // Finds the size of the current tab contents. If the size cannot be found,
   // DCHECKs and returns false. Otherwise, sets |size| to the correct value.
   bool GetTabContentsSize(gfx::Size* size);
+
+  // Makes the appropriate widget on the bookmark bar stop throbbing
+  // (a folder, the overflow chevron, or nothing).
+  void StartThrobbing(const BookmarkNode* node);
+
+  // Set |throbbing_widget_| to |widget|. Also makes sure that
+  // |throbbing_widget_| doesn't become stale.
+  void SetThrobbingWidget(GtkWidget* widget);
 
   // Overridden from BookmarkModelObserver:
 
@@ -262,6 +270,10 @@ class BookmarkBarGtk : public AnimationDelegate,
                                    GtkAllocation* allocation,
                                    BookmarkBarGtk* bar);
 
+  // |throbbing_widget_| callback.
+  static void OnThrobbingWidgetDestroy(GtkWidget* widget,
+                                       BookmarkBarGtk* bar);
+
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 
@@ -360,8 +372,11 @@ class BookmarkBarGtk : public AnimationDelegate,
   // of this so we don't force too many paints.
   gfx::Size last_tab_contents_size_;
 
-  // We post delayed paints using this factory.
-  ScopedRunnableMethodFactory<BookmarkBarGtk> event_box_paint_factory_;
+  // The currently throbbing widget. This is NULL if no widget is throbbing.
+  // We track it because we only want to allow one widget to throb at a time.
+  GtkWidget* throbbing_widget_;
+
+  ScopedRunnableMethodFactory<BookmarkBarGtk> method_factory_;
 };
 
 #endif  // CHROME_BROWSER_GTK_BOOKMARK_BAR_GTK_H_

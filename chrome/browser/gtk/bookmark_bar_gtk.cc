@@ -30,6 +30,7 @@
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
+#include "chrome/browser/gtk/throb_controller_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/ntp_background_util.h"
@@ -133,7 +134,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       menu_bar_helper_(this),
       floating_(false),
       last_allocation_width_(-1),
-      event_box_paint_factory_(this) {
+      method_factory_(this) {
   if (profile->GetProfileSyncService()) {
     // Obtain a pointer to the profile sync service and add our instance as an
     // observer.
@@ -403,13 +404,13 @@ void BookmarkBarGtk::BookmarkNodeMoved(BookmarkModel* model,
 void BookmarkBarGtk::BookmarkNodeAdded(BookmarkModel* model,
                                        const BookmarkNode* parent,
                                        int index) {
+  const BookmarkNode* node = parent->GetChild(index);
   if (parent != model_->GetBookmarkBarNode()) {
-    // We only care about nodes on the bookmark bar.
+    StartThrobbing(node);
     return;
   }
   DCHECK(index >= 0 && index <= GetBookmarkButtonCount());
 
-  const BookmarkNode* node = parent->GetChild(index);
   GtkToolItem* item = CreateBookmarkToolItem(node);
   gtk_toolbar_insert(GTK_TOOLBAR(bookmark_toolbar_.get()),
                      item, index);
@@ -418,6 +419,10 @@ void BookmarkBarGtk::BookmarkNodeAdded(BookmarkModel* model,
 
   SetInstructionState();
   SetChevronState();
+
+  MessageLoop::current()->PostTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &BookmarkBarGtk::StartThrobbing, node));
 }
 
 void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
@@ -684,6 +689,61 @@ bool BookmarkBarGtk::GetTabContentsSize(gfx::Size* size) {
   }
   *size = tab_contents->view()->GetContainerSize();
   return true;
+}
+
+void BookmarkBarGtk::StartThrobbing(const BookmarkNode* node) {
+  const BookmarkNode* parent_on_bb = NULL;
+  for (const BookmarkNode* parent = node; parent;
+       parent = parent->GetParent()) {
+    if (parent->GetParent() == model_->GetBookmarkBarNode()) {
+      parent_on_bb = parent;
+      break;
+    }
+  }
+
+  // Descendant of "Other Bookmarks".
+  if (!parent_on_bb)
+    return;
+
+  int hidden = GetFirstHiddenBookmark(0, NULL);
+  int idx = model_->GetBookmarkBarNode()->IndexOfChild(parent_on_bb);
+  GtkWidget* widget_to_throb = NULL;
+
+  if (hidden >= idx) {
+    widget_to_throb = overflow_button_;
+  } else {
+    if (parent_on_bb->is_url())
+      return;
+    widget_to_throb = gtk_bin_get_child(GTK_BIN(gtk_toolbar_get_nth_item(
+        GTK_TOOLBAR(bookmark_toolbar_.get()), idx)));
+  }
+
+  SetThrobbingWidget(widget_to_throb);
+}
+
+void BookmarkBarGtk::SetThrobbingWidget(GtkWidget* widget) {
+  if (throbbing_widget_) {
+    ThrobControllerGtk* throbber =
+        ThrobControllerGtk::GetThrobControllerGtk(throbbing_widget_);
+    if (throbber)
+      throbber->Destroy();
+
+    g_signal_handlers_disconnect_by_func(
+        throbbing_widget_,
+        reinterpret_cast<gpointer>(OnThrobbingWidgetDestroy),
+        this);
+    g_object_unref(throbbing_widget_);
+    throbbing_widget_ = NULL;
+  }
+
+  if (widget) {
+    throbbing_widget_ = widget;
+    g_object_ref(throbbing_widget_);
+    g_signal_connect(throbbing_widget_, "destroy",
+                     G_CALLBACK(OnThrobbingWidgetDestroy), this);
+
+    ThrobControllerGtk::ThrobFor(throbbing_widget_);
+  }
 }
 
 bool BookmarkBarGtk::IsAlwaysShown() {
@@ -962,6 +1022,12 @@ void BookmarkBarGtk::OnButtonDragGet(GtkWidget* widget, GdkDragContext* context,
 // static
 void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender,
                                      BookmarkBarGtk* bar) {
+  // Stop its throbbing, if any.
+  ThrobControllerGtk* throbber =
+      ThrobControllerGtk::GetThrobControllerGtk(sender);
+  if (throbber)
+    throbber->Destroy();
+
   bar->PopupForButton(sender);
 }
 
@@ -1164,7 +1230,7 @@ void BookmarkBarGtk::OnParentSizeAllocate(GtkWidget* widget,
   // be asynchronous.
   if (bar->floating_) {
     MessageLoop::current()->PostTask(FROM_HERE,
-        bar->event_box_paint_factory_.NewRunnableMethod(
+        bar->method_factory_.NewRunnableMethod(
             &BookmarkBarGtk::PaintEventBox));
   }
 }
@@ -1214,6 +1280,12 @@ gboolean BookmarkBarGtk::OnSeparatorExpose(GtkWidget* widget,
   cairo_pattern_destroy(pattern);
 
   return TRUE;
+}
+
+// static
+void BookmarkBarGtk::OnThrobbingWidgetDestroy(GtkWidget* widget,
+                                              BookmarkBarGtk* bar) {
+  bar->SetThrobbingWidget(NULL);
 }
 
 // MenuBarHelper::Delegate implementation --------------------------------------

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,8 @@ struct _GtkChromeButtonPrivate {
   // If true, we use images provided by the theme instead of GTK's default
   // button rendering.
   gboolean use_gtk_rendering;
+
+  gdouble hover_state;
 };
 
 G_DEFINE_TYPE(GtkChromeButton, gtk_chrome_button, GTK_TYPE_BUTTON)
@@ -46,9 +48,8 @@ static void gtk_chrome_button_class_init(GtkChromeButtonClass* button_class) {
       "}"
       "widget_class \"*.<GtkChromeButton>\" style \"chrome-button\"");
 
-  GObjectClass* gobject_class = G_OBJECT_CLASS(button_class);
-  GtkWidgetClass* widget_class = reinterpret_cast<GtkWidgetClass*>(
-      button_class);
+  GtkWidgetClass* widget_class =
+      reinterpret_cast<GtkWidgetClass*>(button_class);
   widget_class->expose_event = gtk_chrome_button_expose;
 
   g_nine_box_prelight = new NineBox(
@@ -73,6 +74,7 @@ static void gtk_chrome_button_class_init(GtkChromeButtonClass* button_class) {
       IDR_TEXTBUTTON_BOTTOM_P,
       IDR_TEXTBUTTON_BOTTOM_RIGHT_P);
 
+  GObjectClass* gobject_class = G_OBJECT_CLASS(button_class);
   g_type_class_add_private(gobject_class, sizeof(GtkChromeButtonPrivate));
 }
 
@@ -80,6 +82,7 @@ static void gtk_chrome_button_init(GtkChromeButton* button) {
   GtkChromeButtonPrivate* priv = GTK_CHROME_BUTTON_GET_PRIVATE(button);
   priv->paint_state = -1;
   priv->use_gtk_rendering = FALSE;
+  priv->hover_state = -1.0;
 
   GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
 }
@@ -102,15 +105,17 @@ static gboolean gtk_chrome_button_expose(GtkWidget* widget,
           (widget, event);
     }
   } else {
-    NineBox* nine_box = NULL;
-    if (paint_state == GTK_STATE_PRELIGHT)
-      nine_box = g_nine_box_prelight;
-    else if (paint_state == GTK_STATE_ACTIVE)
-      nine_box = g_nine_box_active;
+    double effective_hover_state = paint_state == GTK_STATE_PRELIGHT ?
+                                   1.0 : 0.0;
+    if (priv->hover_state >= 0.0)
+      effective_hover_state = priv->hover_state;
 
-    // Only draw theme graphics if we have some.
-    if (nine_box)
-      nine_box->RenderToWidget(widget);
+    if (paint_state == GTK_STATE_ACTIVE) {
+      g_nine_box_active->RenderToWidget(widget);
+    } else {
+      g_nine_box_prelight->RenderToWidgetWithOpacity(widget,
+                                                     effective_hover_state);
+    }
   }
 
   // If we have a child widget, draw it.
@@ -151,6 +156,16 @@ void gtk_chrome_button_set_use_gtk_rendering(GtkChromeButton* button,
   g_return_if_fail(GTK_IS_CHROME_BUTTON(button));
   GtkChromeButtonPrivate *priv = GTK_CHROME_BUTTON_GET_PRIVATE(button);
   priv->use_gtk_rendering = value;
+}
+
+void gtk_chrome_button_set_hover_state(GtkChromeButton* button,
+                                       gdouble state) {
+  GtkChromeButtonPrivate* priv = GTK_CHROME_BUTTON_GET_PRIVATE(button);
+  if (state >= 0.0 && state <= 1.0)
+    priv->hover_state = state;
+  else
+    priv->hover_state = -1.0;
+  gtk_widget_queue_draw(GTK_WIDGET(button));
 }
 
 G_END_DECLS
