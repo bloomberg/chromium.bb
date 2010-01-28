@@ -85,6 +85,25 @@ static const char* kSimilarTagnames =
 " </app>"
 "</gupdate>";
 
+// Includes a <daystart> tag.
+static const char* kWithDaystart =
+"<?xml version='1.0' encoding='UTF-8'?>"
+"<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
+" <daystart elapsed_seconds='456' />"
+" <app appid='12345'>"
+"  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
+"               version='1.2.3.4' prodversionmin='2.0.143.0' />"
+" </app>"
+"</gupdate>";
+
+// Indicates no updates available - this should not be a parse error.
+static const char* kNoUpdate =
+"<?xml version='1.0' encoding='UTF-8'?>"
+"<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
+" <app appid='12345'>"
+"  <updatecheck status='noupdate' />"
+" </app>"
+"</gupdate>";
 
 TEST(ExtensionUpdateManifestTest, TestUpdateManifest) {
   UpdateManifest parser;
@@ -98,8 +117,8 @@ TEST(ExtensionUpdateManifestTest, TestUpdateManifest) {
 
   // Parse some valid XML, and check that all params came out as expected
   EXPECT_TRUE(parser.Parse(kValidXml));
-  EXPECT_FALSE(parser.results().empty());
-  const UpdateManifest::Result* firstResult = &parser.results().at(0);
+  EXPECT_FALSE(parser.results().list.empty());
+  const UpdateManifest::Result* firstResult = &parser.results().list.at(0);
   EXPECT_EQ(GURL("http://example.com/extension_1.2.3.4.crx"),
             firstResult->crx_url);
 
@@ -113,7 +132,18 @@ TEST(ExtensionUpdateManifestTest, TestUpdateManifest) {
 
   // Parse xml with hash value
   EXPECT_TRUE(parser.Parse(valid_xml_with_hash));
-  EXPECT_FALSE(parser.results().empty());
-  firstResult = &parser.results().at(0);
+  EXPECT_FALSE(parser.results().list.empty());
+  firstResult = &parser.results().list.at(0);
   EXPECT_EQ("1234", firstResult->package_hash);
+
+  EXPECT_TRUE(parser.Parse(kWithDaystart));
+  EXPECT_FALSE(parser.results().list.empty());
+  EXPECT_EQ(parser.results().daystart_elapsed_seconds, 456);
+
+  // Parse a no-update response.
+  EXPECT_TRUE(parser.Parse(kNoUpdate));
+  EXPECT_FALSE(parser.results().list.empty());
+  firstResult = &parser.results().list.at(0);
+  EXPECT_EQ(firstResult->extension_id, "12345");
+  EXPECT_EQ(firstResult->version, "");
 }

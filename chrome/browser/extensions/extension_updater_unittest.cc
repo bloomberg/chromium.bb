@@ -33,6 +33,9 @@
 #define MAYBE_TestBlacklistUpdateCheckRequests TestBlacklistUpdateCheckRequests
 #endif
 
+using base::Time;
+using base::TimeDelta;
+
 static int expected_load_flags =
     net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
 
@@ -66,7 +69,23 @@ class MockService : public ExtensionUpdateService {
     EXPECT_TRUE(false);
     return false;
   }
+
+  virtual void SetLastPingDay(const std::string& extension_id,
+                              const Time& time) {
+    last_ping_days_[extension_id] = time;
+  }
+
+  virtual Time LastPingDay(const std::string& extension_id) {
+    std::map<std::string, Time>::iterator i =
+        last_ping_days_.find(extension_id);
+    if (i != last_ping_days_.end())
+      return i->second;
+
+    return Time();
+  }
+
  private:
+  std::map<std::string, Time> last_ping_days_;
   DISALLOW_COPY_AND_ASSIGN(MockService);
 };
 
@@ -200,19 +219,6 @@ class ServiceForBlacklistTests : public MockService {
   FilePath install_path_;
 };
 
-
-// For testing gallery updates.
-class MockUidProvider : public ExtensionUpdater::UidProvider {
- public:
-  explicit MockUidProvider(std::string uid) : uid_(uid) {}
-  virtual ~MockUidProvider() {}
-  virtual std::string GetUidString() {
-    return uid_;
-  }
- private:
-  std::string uid_;
-};
-
 static const int kUpdateFrequencySecs = 15;
 
 // Takes a string with KEY=VALUE parameters separated by '&' in |params| and
@@ -240,8 +246,6 @@ static void ExtractParameters(const std::string& params,
 // inside this class (which is a friend to ExtensionUpdater).
 class ExtensionUpdaterTest : public testing::Test {
  public:
-
-
   static void SimulateTimerFired(ExtensionUpdater* updater) {
     EXPECT_TRUE(updater->timer_.IsRunning());
     updater->timer_.Stop();
@@ -253,12 +257,12 @@ class ExtensionUpdaterTest : public testing::Test {
       const std::string& id,
       const std::string& version,
       const std::string& url,
-      std::vector<UpdateManifest::Result>* results) {
+      UpdateManifest::Results* results) {
     UpdateManifest::Result result;
     result.extension_id = id;
     result.version = version;
     result.crx_url = GURL(url);
-    results->push_back(result);
+    results->list.push_back(result);
   }
 
   static void TestExtensionUpdateCheckRequests() {
@@ -379,8 +383,10 @@ class ExtensionUpdaterTest : public testing::Test {
         new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs);
 
     // Check passing an empty list of parse results to DetermineUpdates
-    std::vector<UpdateManifest::Result> updates;
-    std::vector<int> updateable = updater->DetermineUpdates(updates);
+    ManifestFetchData fetch_data(GURL("http://localhost/foo"));
+    UpdateManifest::Results updates;
+    std::vector<int> updateable = updater->DetermineUpdates(fetch_data,
+                                                            updates);
     EXPECT_TRUE(updateable.empty());
 
     // Create two updates - expect that DetermineUpdates will return the first
@@ -388,11 +394,15 @@ class ExtensionUpdaterTest : public testing::Test {
     // installed and available at v2.0).
     scoped_ptr<Version> one(Version::GetVersionFromString("1.0"));
     EXPECT_TRUE(tmp[0]->version()->Equals(*one));
+    fetch_data.AddExtension(tmp[0]->id(), tmp[0]->VersionString(),
+                            ManifestFetchData::kNeverPinged);
     AddParseResult(tmp[0]->id(),
         "1.1", "http://localhost/e1_1.1.crx", &updates);
+    fetch_data.AddExtension(tmp[1]->id(), tmp[1]->VersionString(),
+                            ManifestFetchData::kNeverPinged);
     AddParseResult(tmp[1]->id(),
         tmp[1]->VersionString(), "http://localhost/e2_2.0.crx", &updates);
-    updateable = updater->DetermineUpdates(updates);
+    updateable = updater->DetermineUpdates(fetch_data, updates);
     EXPECT_EQ(1u, updateable.size());
     EXPECT_EQ(0, updateable[0]);
     STLDeleteElements(&tmp);
@@ -419,8 +429,12 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Request 2 update checks - the first should begin immediately and the
     // second one should be queued up.
-    updater->StartUpdateCheck(url1);
-    updater->StartUpdateCheck(url2);
+    ManifestFetchData* fetch1 = new ManifestFetchData(url1);
+    ManifestFetchData* fetch2 = new ManifestFetchData(url2);
+    fetch1->AddExtension("1111", "1.0", 0);
+    fetch2->AddExtension("12345", "2.0", ManifestFetchData::kNeverPinged);
+    updater->StartUpdateCheck(fetch1);
+    updater->StartUpdateCheck(fetch2);
 
     std::string invalid_xml = "invalid xml";
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
@@ -622,7 +636,7 @@ class ExtensionUpdaterTest : public testing::Test {
     file_util::Delete(service.install_path(), false);
   }
 
-  static void TestGalleryRequests() {
+  static void TestGalleryRequests(int ping_days) {
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
 
@@ -637,15 +651,20 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_EQ(2u, tmp.size());
     service.set_extensions(tmp);
 
+    Time now = Time::Now();
+    if (ping_days == 0) {
+      service.SetLastPingDay(tmp[0]->id(), now - TimeDelta::FromSeconds(15));
+    } else if (ping_days > 0) {
+      Time last_ping_day =
+          now - TimeDelta::FromDays(ping_days) - TimeDelta::FromSeconds(15);
+      service.SetLastPingDay(tmp[0]->id(), last_ping_day);
+    }
+
     MessageLoop message_loop;
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
       new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs);
     updater->set_blacklist_checks_enabled(false);
-
-    // Create a mock uid provider and have the updater take ownership of it.
-    MockUidProvider* uid_provider = new MockUidProvider("foobar");
-    updater->set_uid_provider(uid_provider);
 
     // Make the updater do manifest fetching, and note the urls it tries to
     // fetch.
@@ -675,11 +694,48 @@ class ExtensionUpdaterTest : public testing::Test {
       NOTREACHED();
     }
 
-    // Now make sure the google query had the uid but the regular one did not.
-    std::string search_string = std::string(ExtensionUpdater::kUidKey) + "=" +
-        uid_provider->GetUidString();
-    EXPECT_TRUE(url1_query.find(search_string) != std::string::npos);
+    // Now make sure the non-google query had no ping parameter, but the google
+    // one did (depending on ping_days).
+    std::string search_string = "ping%3Dr";
     EXPECT_TRUE(url2_query.find(search_string) == std::string::npos);
+    if (ping_days == 0) {
+      EXPECT_TRUE(url1_query.find(search_string) == std::string::npos);
+    } else {
+      search_string += "%253D" + IntToString(ping_days);
+      size_t pos = url1_query.find(search_string);
+      EXPECT_TRUE(pos != std::string::npos);
+    }
+
+    STLDeleteElements(&tmp);
+  }
+
+  // This makes sure that the extension updater properly stores the results
+  // of a <daystart> tag from a manifest fetch in one of two cases: 1) This is
+  // the first time we fetched the extension, or 2) We sent a ping value of
+  // >= 1 day for the extension.
+  static void TestHandleManifestResults() {
+    ServiceForManifestTests service;
+    ScopedTempPrefService prefs;
+    scoped_refptr<ExtensionUpdater> updater =
+        new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs);
+
+    GURL update_url("http://www.google.com/manifest");
+    ExtensionList tmp;
+    CreateTestExtensions(1, &tmp, &update_url.spec());
+    service.set_extensions(tmp);
+
+    ManifestFetchData fetch_data(update_url);
+    Extension* extension = tmp[0];
+    fetch_data.AddExtension(extension->id(), extension->VersionString(),
+                            ManifestFetchData::kNeverPinged);
+    UpdateManifest::Results results;
+    results.daystart_elapsed_seconds = 750;
+
+    updater->HandleManifestResults(fetch_data, results);
+    Time last_ping_day = service.LastPingDay(extension->id());
+    EXPECT_FALSE(last_ping_day.is_null());
+    int64 seconds_diff = (Time::Now() - last_ping_day).InSeconds();
+    EXPECT_LT(seconds_diff - results.daystart_elapsed_seconds, 5);
 
     STLDeleteElements(&tmp);
   }
@@ -720,7 +776,14 @@ TEST(ExtensionUpdaterTest, TestMultipleExtensionDownloading) {
 }
 
 TEST(ExtensionUpdaterTest, TestGalleryRequests) {
-  ExtensionUpdaterTest::TestGalleryRequests();
+  ExtensionUpdaterTest::TestGalleryRequests(ManifestFetchData::kNeverPinged);
+  ExtensionUpdaterTest::TestGalleryRequests(0);
+  ExtensionUpdaterTest::TestGalleryRequests(1);
+  ExtensionUpdaterTest::TestGalleryRequests(5);
+}
+
+TEST(ExtensionUpdaterTest, TestHandleManifestResults) {
+  ExtensionUpdaterTest::TestHandleManifestResults();
 }
 
 // TODO(asargent) - (http://crbug.com/12780) add tests for:

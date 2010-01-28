@@ -57,7 +57,7 @@ class UtilityProcessHost : public ChildProcessHost {
 
     // Called when an update manifest xml file was successfully parsed.
     virtual void OnParseUpdateManifestSucceeded(
-        const UpdateManifest::ResultList& list) {}
+        const UpdateManifest::Results& results) {}
 
     // Called when an update manifest xml file failed parsing. |error_message|
     // contains details suitable for logging.

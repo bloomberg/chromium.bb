@@ -64,7 +64,7 @@ IPC_BEGIN_MESSAGES(UtilityHost)
   // Reply when the utility process has succeeded in parsing an update manifest
   // xml document.
   IPC_MESSAGE_CONTROL1(UtilityHostMsg_ParseUpdateManifest_Succeeded,
-                       std::vector<UpdateManifest::Result> /* updates */)
+                       UpdateManifest::Results /* updates */)
 
   // Reply when an error occured parsing the update manifest. |error_message|
   // is a description of what went wrong suitable for logging.

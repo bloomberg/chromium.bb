@@ -23,12 +23,16 @@ class UpdateManifest {
   //
   // <?xml version='1.0' encoding='UTF-8'?>
   // <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
+  //  <daystart elapsed_seconds='300' />
   //  <app appid='12345'>
   //   <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'
   //                version='1.2.3.4' prodversionmin='2.0.143.0'
   //                hash="12345"/>
   //  </app>
   // </gupdate>
+  //
+  // The <daystart> tag contains a "elapsed_seconds" attribute which refers to
+  // the server's notion of how many seconds it has been since midnight.
   //
   // The "appid" attribute of the <app> tag refers to the unique id of the
   // extension. The "codebase" attribute of the <updatecheck> tag is the url to
@@ -44,7 +48,12 @@ class UpdateManifest {
     GURL crx_url;
   };
 
-  typedef std::vector<Result> ResultList;
+  static const int kNoDaystart = -1;
+  struct Results {
+    std::vector<Result> list;
+    // This will be >= 0, or kNoDaystart if the <daystart> tag was not present.
+    int daystart_elapsed_seconds;
+  };
 
   UpdateManifest();
   ~UpdateManifest();
@@ -55,16 +64,17 @@ class UpdateManifest {
   // by calling errors().
   bool Parse(const std::string& manifest_xml);
 
-  const ResultList& results() { return results_; }
+  const Results& results() { return results_; }
   const std::string& errors() { return errors_; }
 
  private:
-  ResultList results_;
-
+  Results results_;
   std::string errors_;
 
   // Helper function that adds parse error details to our errors_ string.
   void ParseError(const char* details, ...);
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateManifest);
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_UPDATE_MANIFEST_H_

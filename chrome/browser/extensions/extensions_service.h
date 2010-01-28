@@ -51,6 +51,12 @@ class ExtensionUpdateService {
   virtual void UpdateExtensionBlacklist(
     const std::vector<std::string>& blacklist) = 0;
   virtual bool HasInstalledExtensions() = 0;
+
+  // These set/get a server-provided time representing the start of the last day
+  // that we sent the 'ping' parameter during an update check.
+  virtual void SetLastPingDay(const std::string& extension_id,
+                              const base::Time& time) = 0;
+  virtual base::Time LastPingDay(const std::string& extension_id) = 0;
 };
 
 // Manages installed and running Chromium extensions.
@@ -95,6 +101,11 @@ class ExtensionsService
   virtual bool HasInstalledExtensions() {
     return !(extensions_.empty() && disabled_extensions_.empty());
   }
+
+  virtual void SetLastPingDay(const std::string& extension_id,
+                              const base::Time& time);
+  virtual base::Time LastPingDay(const std::string& extension_id);
+
 
   const FilePath& install_directory() const { return install_directory_; }
 

@@ -42,6 +42,8 @@
 #include "chrome/browser/extensions/external_registry_extension_provider_win.h"
 #endif
 
+using base::Time;
+
 namespace errors = extension_manifest_errors;
 
 namespace {
@@ -433,7 +435,6 @@ void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
         info.extension_id,
         info.extension_location));
   }
-
 }
 
 void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
@@ -513,6 +514,15 @@ void ExtensionsService::UpdateExtensionBlacklist(
   for (unsigned int i = 0; i < to_be_removed.size(); ++i) {
     UnloadExtension(to_be_removed[i]);
   }
+}
+
+void ExtensionsService::SetLastPingDay(const std::string& extension_id,
+                                       const base::Time& time) {
+  extension_prefs_->SetLastPingDay(extension_id, time);
+}
+
+base::Time ExtensionsService::LastPingDay(const std::string& extension_id) {
+  return extension_prefs_->LastPingDay(extension_id);
 }
 
 void ExtensionsService::CheckForExternalUpdates() {

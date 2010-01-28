@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_prefs.h"
-
 #include "base/string_util.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/common/extensions/extension.h"
+
+using base::Time;
 
 namespace {
 
@@ -44,6 +45,10 @@ const wchar_t kExtensionShelf[] = L"extensions.shelf";
 // object stored in the Preferences file. The extensions are stored by ID.
 const wchar_t kExtensionToolbar[] = L"extensions.toolbar";
 
+// The key for a serialized Time value indicating the start of the day (from the
+// server's perspective) an extension last included a "ping" parameter during
+// its update check.
+const wchar_t kLastPingDay[] = L"lastpingday";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -230,6 +235,28 @@ void ExtensionPrefs::UpdateBlacklist(
   prefs_->ScheduleSavePersistentPrefs();
   return;
 }
+
+Time ExtensionPrefs::LastPingDay(const std::string& extension_id) {
+  DictionaryValue* dictionary = GetExtensionPref(extension_id);
+  if (dictionary && dictionary->HasKey(kLastPingDay)) {
+    std::string string_value;
+    int64 value;
+    dictionary->GetString(kLastPingDay, &string_value);
+    if (StringToInt64(string_value, &value)) {
+      return Time::FromInternalValue(value);
+    }
+  }
+  return Time();
+}
+
+void ExtensionPrefs::SetLastPingDay(const std::string& extension_id,
+                                    const Time& time) {
+  std::string value = Int64ToString(time.ToInternalValue());
+  UpdateExtensionPref(extension_id, kLastPingDay,
+                      Value::CreateStringValue(value));
+  prefs_->ScheduleSavePersistentPrefs();
+}
+
 
 void ExtensionPrefs::GetKilledExtensionIds(std::set<std::string>* killed_ids) {
   const DictionaryValue* dict = prefs_->GetDictionary(kExtensionsPref);

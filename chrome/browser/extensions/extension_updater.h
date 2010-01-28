@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_UPDATER_H_
 
 #include <deque>
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -24,6 +26,57 @@ class Extension;
 class ExtensionUpdaterTest;
 class ExtensionUpdaterFileHandler;
 class PrefService;
+
+// To save on server resources we can request updates for multiple extensions
+// in one manifest check. This class helps us keep track of the id's for a
+// given fetch, building up the actual URL, and what if anything to include
+// in the ping parameter.
+class ManifestFetchData {
+ public:
+  static const int kNeverPinged = -1;
+
+  explicit ManifestFetchData(GURL update_url) : base_url_(update_url),
+      full_url_(update_url) {}
+
+  // Returns true if this extension information was successfully added. If the
+  // return value is false it means the full_url would have become too long, and
+  // this ManifestFetchData object remains unchanged.
+  bool AddExtension(std::string id, std::string version, int ping_days);
+
+  const GURL& base_url() const { return base_url_; }
+  const GURL& full_url() const { return full_url_; }
+  int extension_count() { return extension_ids_.size(); }
+  const std::set<std::string>& extension_ids() const { return extension_ids_; }
+
+  // Returns true if the given id is included in this manifest fetch.
+  bool Includes(std::string extension_id) const {
+    return extension_ids_.find(extension_id) != extension_ids_.end();
+  }
+
+  // Returns true if a ping parameter was added to full_url for this extension
+  // id.
+  bool DidPing(std::string extension_id) const;
+
+ private:
+  // Returns true if we should include a ping parameter for a given number of
+  // days.
+  bool ShouldPing(int days) const;
+
+  std::set<std::string> extension_ids_;
+
+  // Keeps track of the day value to use for the extensions where we want to
+  // send a 'days since last ping' parameter in the check.
+  std::map<std::string, int> ping_days_;
+
+  // The base update url without any arguments added.
+  GURL base_url_;
+
+  // The base update url plus arguments indicating the id, version, etc.
+  // information about each extension.
+  GURL full_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManifestFetchData);
+};
 
 // A class for doing auto-updates of installed Extensions. Used like this:
 //
@@ -60,19 +113,6 @@ class ExtensionUpdater
     blacklist_checks_enabled_ = enabled;
   }
 
-  // Interface for getting a uid to send for checks to the gallery.
-  class UidProvider {
-   public:
-    static const unsigned int maxUidLength = 256;
-    virtual ~UidProvider() {}
-
-    // This should return a uid string no longer than maxUidLength, or the empty
-    // string if there is no known uid (in which case nothing will be sent). It
-    // will be url-escaped by the consumer so implementers of this interface
-    // don't need to worry about it.
-    virtual std::string GetUidString() = 0;
-  };
-
  private:
   friend class base::RefCountedThreadSafe<ExtensionUpdater>;
   friend class ExtensionUpdaterTest;
@@ -101,9 +141,6 @@ class ExtensionUpdater
 
   static const char* kBlacklistUpdateUrl;
   static const char* kBlacklistAppID;
-
-  // Key used to denote Omaha uid in gallery update check urls.
-  static const char* kUidKey;
 
   // Does common work from constructors.
   void Init();
@@ -149,15 +186,20 @@ class ExtensionUpdater
   // BaseTimer::ReceiverMethod callback.
   void TimerFired();
 
-  // Begins an update check - called with url to fetch an update manifest.
-  void StartUpdateCheck(const GURL& url);
+  // Begins an update check. Takes ownership of |fetch_data|.
+  void StartUpdateCheck(ManifestFetchData* fetch_data);
 
   // Begins (or queues up) download of an updated extension.
   void FetchUpdatedExtension(const std::string& id, const GURL& url,
     const std::string& hash, const std::string& version);
 
   // Once a manifest is parsed, this starts fetches of any relevant crx files.
-  void HandleManifestResults(const UpdateManifest::ResultList& results);
+  void HandleManifestResults(const ManifestFetchData& fetch_data,
+                             const UpdateManifest::Results& results);
+
+  // Calculates the value to use for the ping days parameter in manifest
+  // fetches for a given extension.
+  int CalculatePingDays(const std::string& extension_id);
 
   // Determines the version of an existing extension.
   // Returns true on success and false on failures.
@@ -165,17 +207,8 @@ class ExtensionUpdater
 
   // Given a list of potential updates, returns the indices of the ones that are
   // applicable (are actually a new version, etc.) in |result|.
-  std::vector<int> DetermineUpdates(
-      const std::vector<UpdateManifest::Result>& possible_updates);
-
-  // Creates a blacklist update url.
-  static GURL GetBlacklistUpdateUrl(const std::wstring& version);
-
-  // Registers a custom UidProvider, deleting the default one. Takes ownership
-  // of |provider|. Useful mainly for testing.
-  void set_uid_provider(UidProvider* provider) {
-    uid_provider_.reset(provider);
-  }
+  std::vector<int> DetermineUpdates(const ManifestFetchData& fetch_data,
+      const UpdateManifest::Results& possible_updates);
 
   // Outstanding url fetch requests for manifests and updates.
   scoped_ptr<URLFetcher> manifest_fetcher_;
@@ -183,8 +216,11 @@ class ExtensionUpdater
 
   // Pending manifests and extensions to be fetched when the appropriate fetcher
   // is available.
-  std::deque<GURL> manifests_pending_;
+  std::deque<ManifestFetchData*> manifests_pending_;
   std::deque<ExtensionFetch> extensions_pending_;
+
+  // The manifest currently being fetched (if any).
+  scoped_ptr<ManifestFetchData> current_manifest_fetch_;
 
   // The extension currently being fetched (if any).
   ExtensionFetch current_extension_fetch_;
@@ -199,8 +235,6 @@ class ExtensionUpdater
 
   scoped_refptr<ExtensionUpdaterFileHandler> file_handler_;
   bool blacklist_checks_enabled_;
-
-  scoped_ptr<UidProvider> uid_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUpdater);
 };

@@ -17,7 +17,9 @@ static const char* kExpectedGupdateProtocol = "2.0";
 static const char* kExpectedGupdateXmlns =
     "http://www.google.com/update2/response";
 
-UpdateManifest::UpdateManifest() {}
+UpdateManifest::UpdateManifest() {
+  results_.daystart_elapsed_seconds = kNoDaystart;
+}
 
 UpdateManifest::~UpdateManifest() {}
 
@@ -135,6 +137,10 @@ static bool ParseSingleAppTag(xmlNode* app_node, xmlNs* xml_namespace,
   }
   xmlNode *updatecheck = updates[0];
 
+  if (GetAttribute(updatecheck, "status") == "noupdate") {
+    return true;
+  }
+
   // Find the url to the crx file.
   result->crx_url = GURL(GetAttribute(updatecheck, "codebase"));
   if (!result->crx_url.is_valid()) {
@@ -180,7 +186,8 @@ static bool ParseSingleAppTag(xmlNode* app_node, xmlNs* xml_namespace,
 
 
 bool UpdateManifest::Parse(const std::string& manifest_xml) {
-  results_.resize(0);
+  results_.list.resize(0);
+  results_.daystart_elapsed_seconds = kNoDaystart;
 
   if (manifest_xml.length() < 1) {
     return false;
@@ -222,6 +229,17 @@ bool UpdateManifest::Parse(const std::string& manifest_xml) {
     return false;
   }
 
+  // Parse the first <daystart> if it's present.
+  std::vector<xmlNode*> daystarts = GetChildren(root, gupdate_ns, "daystart");
+  if (daystarts.size() > 0) {
+    xmlNode* first = daystarts[0];
+    std::string elapsed_seconds = GetAttribute(first, "elapsed_seconds");
+    int parsed_elapsed = kNoDaystart;
+    if (StringToInt(elapsed_seconds, &parsed_elapsed)) {
+      results_.daystart_elapsed_seconds = parsed_elapsed;
+    }
+  }
+
   // Parse each of the <app> tags.
   std::vector<xmlNode*> apps = GetChildren(root, gupdate_ns, "app");
   for (unsigned int i = 0; i < apps.size(); i++) {
@@ -231,7 +249,7 @@ bool UpdateManifest::Parse(const std::string& manifest_xml) {
       ParseError("%s", error.c_str());
       return false;
     }
-    results_.push_back(current);
+    results_.list.push_back(current);
   }
 
   return true;

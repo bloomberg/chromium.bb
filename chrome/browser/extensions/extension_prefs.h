@@ -11,6 +11,7 @@
 
 #include "base/linked_ptr.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_service.h"
 #include "googleurl/src/gurl.h"
@@ -84,6 +85,15 @@ class ExtensionPrefs {
 
   // Did the extension ask to escalate its permission during an upgrade?
   bool DidExtensionEscalatePermissions(const std::string& id);
+
+  // Returns the last value set via SetLastPingDay. If there isn't such a
+  // pref, the returned Time will return true for is_null().
+  base::Time LastPingDay(const std::string& extension_id);
+
+  // The time stored is based on the server's perspective of day start time, not
+  // the client's.
+  void SetLastPingDay(const std::string& extension_id, const base::Time& time);
+
 
   // Saves ExtensionInfo for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't be saved
