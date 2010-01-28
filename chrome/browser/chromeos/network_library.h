@@ -135,6 +135,9 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   bool cellular_connected() const { return cellular_.connected; }
   int cellular_strength() const { return cellular_.strength; }
 
+  // Return true if any network is currently connected.
+  bool Connected() const;
+
   // Returns the current list of wifi networks.
   const WifiNetworkVector& wifi_networks() const { return wifi_networks_; }
 

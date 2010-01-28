@@ -47,6 +47,7 @@ class LoginManagerView : public views::View,
   views::Textfield* username_field_;
   views::Textfield* password_field_;
   views::Label* os_version_label_;
+  views::Label* error_label_;
 
   // The dialog dimensions.
   gfx::Size dialog_dimensions_;

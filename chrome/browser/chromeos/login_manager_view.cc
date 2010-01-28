@@ -13,8 +13,10 @@
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
 #include "chrome/browser/chromeos/image_background.h"
 #include "chrome/browser/chromeos/login_library.h"
+#include "chrome/browser/chromeos/network_library.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -35,6 +37,8 @@ const int kPanelSpacing = 36;
 const int kVersionPad = 4;
 const int kTextfieldWidth = 286;
 const SkColor kVersionColor = 0xFF7691DA;
+const SkColor kErrorColor = 0xFF8F384F;
+const char *kDefaultDomain = "@gmail.com";
 
 namespace browser {
 
@@ -108,7 +112,6 @@ LoginManagerView::~LoginManagerView() {
   MessageLoop::current()->Quit();
 }
 
-
 void LoginManagerView::Init() {
   username_field_ = new views::Textfield;
   username_field_->RemoveBorder();
@@ -118,6 +121,11 @@ void LoginManagerView::Init() {
   os_version_label_ = new views::Label();
   os_version_label_->SetColor(kVersionColor);
   os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+
+  error_label_ = new views::Label();
+  error_label_->SetColor(kErrorColor);
+  error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+
   // Creates the main window
   BuildWindow();
 
@@ -164,10 +172,17 @@ void LoginManagerView::BuildWindow() {
       y,
       panel_width - (x + kVersionPad),
       os_version_label_->GetPreferredSize().height());
+  y += kPanelSpacing;
+  error_label_->SetBounds(
+      x,
+      y,
+      panel_width - (x + kVersionPad),
+      error_label_->GetPreferredSize().height());
 
   login_prompt->AddChildView(username_field_);
   login_prompt->AddChildView(password_field_);
   login_prompt->AddChildView(os_version_label_);
+  login_prompt->AddChildView(error_label_);
   AddChildView(login_prompt);
 
   if (!chromeos::LoginLibrary::EnsureLoaded()) {
@@ -220,23 +235,50 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     const views::Textfield::Keystroke& keystroke) {
   if (!chromeos::LoginLibrary::EnsureLoaded())
     return false;
-  if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
-    // Disallow 0 size username | passwords
-    if (username_field_->text().length() == 0 ||
-        password_field_->text().length() == 0) {
+
+  if (keystroke.GetKeyboardCode() == base::VKEY_TAB) {
+    if (username_field_->text().length() != 0) {
+      std::string username = UTF16ToUTF8(username_field_->text());
+
+      if (username.find('@') == std::string::npos) {
+        username += kDefaultDomain;
+        username_field_->SetText(UTF8ToUTF16(username));
+      }
+      return false;
+    }
+  } else if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
+    // Disallow 0 size username.
+    if (username_field_->text().length() == 0) {
       // Return true so that processing ends
       return true;
     } else {
-      // Set up credentials to prepare for authentication.  Also
-      // perform wstring to string conversion
-      std::string username, password;
-      username.assign(username_field_->text().begin(),
-                      username_field_->text().end());
-      password.assign(password_field_->text().begin(),
-                      password_field_->text().end());
+      chromeos::NetworkLibrary* network = chromeos::NetworkLibrary::Get();
+      if (!network || !network->EnsureLoaded()) {
+        error_label_->SetText(
+            l10n_util::GetString(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY));
+        return true;
+      }
 
+      if (!network->Connected()) {
+        error_label_->SetText(
+            l10n_util::GetString(IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED));
+        return true;
+      }
+
+      std::string username = UTF16ToUTF8(username_field_->text());
+      // todo(cmasone) Need to sanitize memory used to store password.
+      std::string password = UTF16ToUTF8(password_field_->text());
+
+      if (username.find('@') == std::string::npos) {
+        username += kDefaultDomain;
+        username_field_->SetText(UTF8ToUTF16(username));
+      }
+
+      // Set up credentials to prepare for authentication.
       if (!Authenticate(username, password)) {
-        return false;
+        error_label_->SetText(
+            l10n_util::GetString(IDS_LOGIN_ERROR_AUTHENTICATING));
+        return true;
       }
       // TODO(cmasone): something sensible if errors occur.
 

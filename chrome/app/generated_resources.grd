@@ -6837,6 +6837,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COMPACT_NAVBAR" desc="The menu item on the app menu to toggle compact navigation bar">
         Toggle Compact Navigation Bar
       </message>
+      <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't log in because username / password invalid">
+        Invalid login
+      </message>
+      <message name="IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED" desc="Couldn't log in because no network connected">
+        Network not connected
+      </message>
+      <message name="IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY" desc="Couldn't log in because nework library couldn't be loaded">
+        Can't access network library
+      </message>
     </if>
      <message name="IDS_BOOKMARK_BAR_IMPORT_LINK" desc="text shown for importing ">
        Import bookmarks now...

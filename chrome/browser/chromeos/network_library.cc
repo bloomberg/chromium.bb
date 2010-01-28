@@ -331,4 +331,8 @@ void NetworkLibrary::NotifyNetworkTraffic(int traffic_type) {
   FOR_EACH_OBSERVER(Observer, observers_, NetworkTraffic(this, traffic_type));
 }
 
+bool NetworkLibrary::Connected() const {
+  return ethernet_connected() || wifi_connected() || cellular_connected();
+}
+
 }  // namespace chromeos
