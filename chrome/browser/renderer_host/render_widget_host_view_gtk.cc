@@ -636,6 +636,11 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
   if (kUseGPURendering) {
     // When we're proxying painting, we don't actually display the web page
     // ourselves.
+    if (gpu_view_host_.get())
+      gpu_view_host_->OnWindowPainted();
+
+    // Erase the background. This will prevent a flash of black when resizing
+    // or exposing the window. White is usually better than black.
     return;
   }
 

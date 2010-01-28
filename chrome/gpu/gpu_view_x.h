@@ -28,6 +28,7 @@ class GpuViewX
   ~GpuViewX();
 
   GpuThread* gpu_thread() const { return gpu_thread_; }
+  XID window() const { return window_; }
 
   // Wrapper around GPUBackingStoreGLXContext using our current window.
   GLXContext BindContext();
@@ -44,6 +45,7 @@ class GpuViewX
  private:
   // IPC message handlers.
   void OnNewBackingStore(int32 routing_id, const gfx::Size& size);
+  void OnWindowPainted();
 
   GpuThread* gpu_thread_;
   int32 routing_id_;

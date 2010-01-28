@@ -40,6 +40,11 @@ IPC_BEGIN_MESSAGES(Gpu)
                       gfx::Rect, /* clip_rect */
                       gfx::Size) /* view_size */
 
+  // Tells the GPU process that the RenderWidgetHost has painted the window.
+  // Depending on the platform, the accelerated content may need to be painted
+  // over the top.
+  IPC_MESSAGE_ROUTED0(GpuMsg_WindowPainted)
+
 IPC_END_MESSAGES(Gpu)
 
 //------------------------------------------------------------------------------

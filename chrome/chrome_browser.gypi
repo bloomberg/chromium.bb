@@ -2060,6 +2060,8 @@
             'browser/password_manager/password_store_win.h',
             'browser/renderer_host/backing_store_proxy.cc',
             'browser/renderer_host/backing_store_proxy.h',
+            'browser/renderer_host/gpu_view_host.cc',
+            'browser/renderer_host/gpu_view_host.h',
             'browser/views/extensions/extension_shelf.cc',
             'browser/views/extensions/extension_shelf.h',
             'browser/views/extensions/extension_view.cc',

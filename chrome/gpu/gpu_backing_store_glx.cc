@@ -32,9 +32,8 @@ GpuBackingStoreGLX::GpuBackingStoreGLX(GpuViewX* view,
   glBindTexture(GL_TEXTURE_2D, texture_id_);
 
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  DCHECK(glGetError() == GL_NO_ERROR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
 GpuBackingStoreGLX::~GpuBackingStoreGLX() {
@@ -83,7 +82,70 @@ void GpuBackingStoreGLX::OnPaintToBackingStore(
 void GpuBackingStoreGLX::OnScrollBackingStore(int dx, int dy,
                                               const gfx::Rect& clip_rect,
                                               const gfx::Size& view_size) {
+  // Create a framebuffer to render our scrolled texture into.
+  GpuBackingStoreGLXContext* context = view_->gpu_thread()->GetGLXContext();
+  if (!context->BindTextureForScrolling(view_->window(), size_))
+    return;
 
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, texture_id_);
+
+  // Set up the the tranform so we can paint exact pixels to the screen, with
+  // (0, 0) at the bottom left.
+  float w = static_cast<float>(size_.width());
+  float h = static_cast<float>(size_.height());
+  glViewport(0, 0, size_.width(), size_.height());
+  glLoadIdentity();
+  glOrtho(0.0, w, 0.0, h, -1.0, 1.0);
+
+  // Paint the non-scrolled background of the page. Note that we try to avoid
+  // this if the entire thing is scrolling, which is a common case.
+  if (view_size != clip_rect.size()) {
+    glBegin(GL_QUADS);
+      glTexCoord2f(0.0f, 0.0f);
+      glVertex2f(0.0, 0.0);
+
+      glTexCoord2f(0.0f, 1.0f);
+      glVertex2f(0.0, h);
+
+      glTexCoord2f(1.0f, 1.0f);
+      glVertex2f(w, h);
+
+      glTexCoord2f(1.0f, 0.0f);
+      glVertex2f(w, 0.0);
+    glEnd();
+  }
+
+  // Constrain the painting to only the area we're scrolling.  Compute the clip
+  // rect in OpenGL pixel coords, which uses the lower-left as the origin.
+  gfx::Rect gl_clip_rect(clip_rect.x(), clip_rect.y(),
+                         clip_rect.width(), clip_rect.height());
+
+  glEnable(GL_SCISSOR_TEST);
+  glScissor(gl_clip_rect.x(), gl_clip_rect.y(),
+            gl_clip_rect.width(), gl_clip_rect.height());
+
+  // Paint the offset texture.
+  glTranslatef(static_cast<float>(dx), static_cast<float>(dy), 0.0f);
+  glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(0.0, 0.0);
+
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex2f(0.0, h);
+
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(w, h);
+
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(w, 0.0);
+  glEnd();
+  glDisable(GL_SCISSOR_TEST);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+  texture_id_ = context->SwapTextureForScrolling(texture_id_, size_);
+  glFlush();
+  DCHECK(texture_id_);
 }
 
 void GpuBackingStoreGLX::PaintOneRectToBackingStore(
@@ -113,14 +175,10 @@ void GpuBackingStoreGLX::PaintOneRectToBackingStore(
     // the updated bitmap to avoid the copy. We will have to benchmark that
     // approach against making the copy here to see if it performs better on
     // the systems we're targeting.
-    SkIRect subset;
-    subset.fLeft = copy_rect.x() - bitmap_rect.x();
-    subset.fTop = copy_rect.y() - bitmap_rect.y();
-    subset.fRight = subset.fLeft + copy_rect.width();
-    subset.fBottom = subset.fTop + copy_rect.height();
     SkIRect sk_copy_rect = { copy_rect.x() - bitmap_rect.x(),
                              copy_rect.y() - bitmap_rect.y(),
-                             copy_rect.right(), copy_rect.bottom() };
+                             copy_rect.right() - bitmap_rect.x(),
+                             copy_rect.bottom() - bitmap_rect.y()};
 
     // extractSubset will not acutually make a copy, and Skia will refer to the
     // original data which is not what we want, since rows won't be contiguous.
@@ -139,7 +197,6 @@ void GpuBackingStoreGLX::PaintOneRectToBackingStore(
                  copy_rect.height(), 0, GL_BGRA, GL_UNSIGNED_BYTE,
                  copy_bitmap.getAddr32(0, 0));
     texture_size_ = copy_rect.size();
-    DCHECK(glGetError() == GL_NO_ERROR);
   } else {
     /* Debugging code for why the below call may fail.
     int existing_width = 0, existing_height = 0;
@@ -152,7 +209,6 @@ void GpuBackingStoreGLX::PaintOneRectToBackingStore(
                     copy_rect.width(), copy_rect.height(),
                     GL_BGRA, GL_UNSIGNED_BYTE,
                     copy_bitmap.getAddr32(0, 0));
-    DCHECK(glGetError() == GL_NO_ERROR);
     /* Enable if you're having problems with TexSubImage failing.
     int err = glGetError();
     DCHECK(err == GL_NO_ERROR) << "Error " << err <<

@@ -30,3 +30,7 @@ BackingStore* GpuViewHost::CreateBackingStore(const gfx::Size& size) {
   return new BackingStoreProxy(widget_, size,
                                process_, backing_store_routing_id);
 }
+
+void GpuViewHost::OnWindowPainted() {
+  process_->Send(new GpuMsg_WindowPainted(routing_id_));
+}

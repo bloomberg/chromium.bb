@@ -26,6 +26,12 @@ class GpuViewHost {
   // the new pointer to the caller.
   BackingStore* CreateBackingStore(const gfx::Size& size);
 
+  // Notification that the RenderWidgetHost has been asked to paint the window.
+  // Depending on the backing store, the GPU backing store may have to repaint
+  // at this time. On Linux this is needed because the GPU process paints
+  // directly into the RWH's X window.
+  void OnWindowPainted();
+
  private:
   RenderWidgetHost* widget_;
 

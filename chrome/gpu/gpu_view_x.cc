@@ -39,6 +39,7 @@ GLXContext GpuViewX::BindContext() {
 void GpuViewX::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(GpuViewX, msg)
     IPC_MESSAGE_HANDLER(GpuMsg_NewBackingStore, OnNewBackingStore)
+    IPC_MESSAGE_HANDLER(GpuMsg_WindowPainted, OnWindowPainted)
   IPC_END_MESSAGE_MAP_EX()
 }
 
@@ -93,4 +94,8 @@ void GpuViewX::Repaint() {
 void GpuViewX::OnNewBackingStore(int32 routing_id, const gfx::Size& size) {
   backing_store_.reset(
       new GpuBackingStoreGLX(this, gpu_thread_, routing_id, size));
+}
+
+void GpuViewX::OnWindowPainted() {
+  Repaint();
 }
