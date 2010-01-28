@@ -132,7 +132,7 @@ class PyWebSocket(http_server.Lighttpd):
         handler_map_file = os.path.join(self._web_socket_tests,
                                         'handler_map.txt')
         if os.path.exists(handler_map_file):
-            logging.info('Using handler_map_file: %s' % handler_map_file)
+            logging.debug('Using handler_map_file: %s' % handler_map_file)
             start_cmd.append('-m')
             start_cmd.append(handler_map_file)
         else:
@@ -157,7 +157,7 @@ class PyWebSocket(http_server.Lighttpd):
         env['PYTHONPATH'] = (pywebsocket_base + os.path.pathsep +
                              env.get('PYTHONPATH', ''))
 
-        logging.info('Starting %s server on %d.' % (
+        logging.debug('Starting %s server on %d.' % (
             self._server_name, self._port))
         logging.debug('cmdline: %s' % ' '.join(start_cmd))
         self._process = subprocess.Popen(start_cmd, stdout=self._wsout,
@@ -207,7 +207,7 @@ class PyWebSocket(http_server.Lighttpd):
             raise PyWebSocketNotFound(
                 'Failed to find %s server pid.' % self._server_name)
 
-        logging.info('Shutting down %s server %d.' % (self._server_name, pid))
+        logging.debug('Shutting down %s server %d.' % (self._server_name, pid))
         platform_utils.kill_process(pid)
 
         if self._process:
