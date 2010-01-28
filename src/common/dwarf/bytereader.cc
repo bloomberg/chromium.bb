@@ -1,4 +1,4 @@
-// Copyright 2006 Google Inc. All Rights Reserved.
+// Copyright 2010 Google Inc. All Rights Reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -58,6 +58,23 @@ void ByteReader::SetAddressSize(uint8 size) {
   } else {
     this->address_reader_ = &ByteReader::ReadEightBytes;
   }
+}
+
+uint64 ByteReader::ReadInitialLength(const char* start, size_t* len) {
+  const uint64 initial_length = ReadFourBytes(start);
+  start += 4;
+
+  // In DWARF2/3, if the initial length is all 1 bits, then the offset
+  // size is 8 and we need to read the next 8 bytes for the real length.
+  if (initial_length == 0xffffffff) {
+    SetOffsetSize(8);
+    *len = 12;
+    return ReadOffset(start);
+  } else {
+    SetOffsetSize(4);
+    *len = 4;
+  }
+  return initial_length;
 }
 
 }  // namespace dwarf2reader

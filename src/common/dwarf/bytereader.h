@@ -1,4 +1,6 @@
-// Copyright 2006 Google Inc. All Rights Reserved.
+// -*- mode: C++ -*-
+
+// Copyright 2010 Google Inc. All Rights Reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -103,6 +105,12 @@ class ByteReader {
   // bytes currently.  Internally we support 4 and 8 byte addresses,
   // and will CHECK on anything else.
   uint64 ReadAddress(const char* buffer) const;
+
+  // Read a DWARF2/3 initial length field from START, and report the
+  // length of the length field in LEN. Return the value of the length
+  // field. Set this reader's offset size as indicated by the length
+  // field's encoding.
+  uint64 ReadInitialLength(const char* start, size_t* len);
 
  private:
 

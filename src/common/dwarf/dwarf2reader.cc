@@ -40,27 +40,6 @@
 
 namespace dwarf2reader {
 
-// Read a DWARF2/3 initial length field from START, using READER, and
-// report the length in LEN.  Return the actual initial length.
-
-static uint64 ReadInitialLength(const char* start,
-                                ByteReader* reader, size_t* len) {
-  const uint64 initial_length = reader->ReadFourBytes(start);
-  start += 4;
-
-  // In DWARF2/3, if the initial length is all 1 bits, then the offset
-  // size is 8 and we need to read the next 8 bytes for the real length.
-  if (initial_length == 0xffffffff) {
-    reader->SetOffsetSize(8);
-    *len = 12;
-    return reader->ReadOffset(start);
-  } else {
-    reader->SetOffsetSize(4);
-    *len = 4;
-  }
-  return initial_length;
-}
-
 CompilationUnit::CompilationUnit(const SectionMap& sections, uint64 offset,
                                  ByteReader* reader, Dwarf2Handler* handler)
     : offset_from_section_start_(offset), reader_(reader),
@@ -243,8 +222,8 @@ void CompilationUnit::ReadHeader() {
   size_t initial_length_size;
 
   assert(headerptr + 4 < buffer_ + buffer_length_);
-  const uint64 initial_length = ReadInitialLength(headerptr, reader_,
-                                                  &initial_length_size);
+  const uint64 initial_length
+    = reader_->ReadInitialLength(headerptr, &initial_length_size);
   headerptr += initial_length_size;
   header_.length = initial_length;
 
@@ -563,8 +542,8 @@ void LineInfo::ReadHeader() {
   const char* lineptr = buffer_;
   size_t initial_length_size;
 
-  const uint64 initial_length = ReadInitialLength(lineptr, reader_,
-                                                  &initial_length_size);
+  const uint64 initial_length
+    = reader_->ReadInitialLength(lineptr, &initial_length_size);
 
   lineptr += initial_length_size;
   header_.total_length = initial_length;
