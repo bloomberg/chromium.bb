@@ -185,6 +185,13 @@ TEST_F(WorkerTest, IncognitoSharedWorkers) {
 
 const wchar_t kDocRoot[] = L"chrome/test/data/workers";
 
+#if defined(OS_WIN)
+// http://crbug.com/33344 - NavigateAndWaitForAuth times out on the Windows
+// build bots.
+#define WorkerHttpAuth DISABLED_WorkerHttpAuth
+#define SharedWorkerHttpAuth DISABLED_SharedWorkerHttpAuth
+#endif
+
 // Make sure that auth dialog is displayed from worker context.
 TEST_F(WorkerTest, WorkerHttpAuth) {
   scoped_refptr<HTTPTestServer> server =

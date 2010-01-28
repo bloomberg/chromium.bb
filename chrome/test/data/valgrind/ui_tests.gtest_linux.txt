@@ -12,3 +12,7 @@ WorkerTest.IncognitoSharedWorkers
 WorkerTest.WorkerHttpLayoutTests
 # See http://crbug.com/32192
 WorkerTest.WorkerWebSocketLayoutTests
+
+# Fails due to mmap failure (http://crbug.com/28439)
+WorkerTest.SharedWorkerHttpAuth
+WorkerTest.WorkerHttpAuth
