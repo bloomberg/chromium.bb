@@ -2234,6 +2234,32 @@
    fun:clone
 }
 {
+   bug_33427
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN7WebCore10StringImpl19createUninitializedEjRPt
+   fun:_ZN7WebCore10StringImpl6createEPKtj
+   fun:_ZN6WebKit9WebString6assignEPKtj
+   fun:_ZN6WebKit9WebStringC1ERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN14PageTranslatorC1EP14TextTranslator
+   fun:_ZN10RenderViewC1EP16RenderThreadBaseRK14WebPreferencesx
+   fun:_ZN10RenderView6CreateEP16RenderThreadBaseiiRK19RendererPreferencesRK14WebPreferencesPN4base14RefCountedDataIiEEix
+   fun:_ZN12RenderThread15OnCreateNewViewERK18ViewMsg_New_Params
+   fun:_Z16DispatchToMethodI12RenderThreadMS0_FvRK18ViewMsg_New_ParamsES1_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN3IPC16MessageWithTupleI6Tuple1I18ViewMsg_New_ParamsEE8DispatchI12RenderThreadMS6_FvRKS2_EEEbPKNS_7MessageEPT_T0_
+   fun:_ZN12RenderThread24OnControlMessageReceivedERKN3IPC7MessageE
+   fun:_ZN11ChildThread17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+}
+{
   bug_33394
   Memcheck:Leak
   fun:calloc
