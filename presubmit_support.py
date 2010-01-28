@@ -98,8 +98,8 @@ class OutputApi(object):
       """
       output_stream.write(self._message)
       output_stream.write('\n')
-      for item in self._items:
-        output_stream.write('  %s\n' % str(item))
+      if len(self._items) > 0:
+        output_stream.write('  ' + ' \\\n  '.join(map(str, self._items)) + '\n')
       if self._long_text:
         output_stream.write('\n***************\n%s\n***************\n' %
                             self._long_text)

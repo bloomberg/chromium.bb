@@ -328,7 +328,7 @@ def CheckSvnProperty(input_api, output_api, prop, expected, affected_files):
       res_type = output_api.PresubmitError
     else:
       res_type = output_api.PresubmitNotifyResult
-    message = "Run `svn pset %s %s <item>` on these files:" % (prop, expected)
+    message = "Run the command: svn pset %s %s \\" % (prop, expected)
     return [res_type(message, items=bad)]
   return []
 
