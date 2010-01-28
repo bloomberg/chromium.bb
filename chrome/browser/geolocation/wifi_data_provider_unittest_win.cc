@@ -107,10 +107,13 @@ TEST_F(Win32WifiDataProviderTest, DoAnEmptyScan) {
   provider_->AddListener(&quit_listener);
   EXPECT_TRUE(provider_->StartDataProvider());
   main_message_loop_.Run();
-  EXPECT_EQ(1, wlan_api_->calls_);
+  // Check we had at least one call. The worker thread may have raced ahead
+  // and made multiple calls.
+  EXPECT_GT(wlan_api_->calls_, 0);
   WifiData data;
   EXPECT_TRUE(provider_->GetData(&data));
   EXPECT_EQ(0, data.access_point_data.size());
+  provider_->RemoveListener(&quit_listener);
 }
 
 TEST_F(Win32WifiDataProviderTest, DoScanWithResults) {
@@ -127,12 +130,13 @@ TEST_F(Win32WifiDataProviderTest, DoScanWithResults) {
 
   EXPECT_TRUE(provider_->StartDataProvider());
   main_message_loop_.Run();
-  EXPECT_EQ(1, wlan_api_->calls_);
+  EXPECT_GT(wlan_api_->calls_, 0);
   WifiData data;
   EXPECT_TRUE(provider_->GetData(&data));
   EXPECT_EQ(1, data.access_point_data.size());
   EXPECT_EQ(single_access_point.age, data.access_point_data.begin()->age);
   EXPECT_EQ(single_access_point.ssid, data.access_point_data.begin()->ssid);
+  provider_->RemoveListener(&quit_listener);
 }
 
 TEST_F(Win32WifiDataProviderTest, StartThreadViaDeviceDataProvider) {
