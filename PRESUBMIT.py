@@ -20,8 +20,8 @@ _TEXT_FILES = (
 )
 
 _LICENSE_HEADER = (
-     r".*? Copyright \(c\) 20\d\d The Chromium Authors\. All rights reserved\."
-       "\n"
+     r".*? Copyright \(c\) 20[0-9\-]{2,7} The Chromium Authors\. All rights "
+       r"reserved\." "\n"
      r".*? Use of this source code is governed by a BSD-style license that can "
        "be\n"
      r".*? found in the LICENSE file\."
