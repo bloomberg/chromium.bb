@@ -64,7 +64,6 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
   }
   EXPECT_EQ(0, filler_thumbnails_count);
 }
-#endif
 
 TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
@@ -88,6 +87,7 @@ TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
       &thumbnails_count));
   EXPECT_GT(thumbnails_count, 0);
 }
+#endif
 
 TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
   PrefService prefs((FilePath()));
