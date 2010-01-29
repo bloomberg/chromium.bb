@@ -62,6 +62,8 @@ TEST_F(AutomatedUITestBase, Home) {
   EXPECT_EQ(L"", title);
 }
 
+// TODO(aa): http://crbug.com/33451
+#if !defined(OS_MACOSX)
 TEST_F(AutomatedUITestBase, OpenNewTab) {
   int tab_count;
   active_browser()->GetTabCount(&tab_count);
@@ -73,6 +75,7 @@ TEST_F(AutomatedUITestBase, OpenNewTab) {
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(3, tab_count);
 }
+#endif
 
 TEST_F(AutomatedUITestBase, DuplicateTab) {
   int tab_count;
