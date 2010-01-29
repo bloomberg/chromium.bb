@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@ class ExtensionMessageService;
 class ExtensionsService;
 class FaviconService;
 class HistoryService;
+class HostContentSettingsMap;
 class HostZoomMap;
 class NavigationController;
 class NTPResourceCache;
@@ -288,6 +289,9 @@ class Profile {
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;
 
+  // Returns the Hostname <-> Content settings map for this profile.
+  virtual HostContentSettingsMap* GetHostContentSettingsMap() = 0;
+
   // Returns the Hostname <-> Zoom Level map for this profile.
   virtual HostZoomMap* GetHostZoomMap() = 0;
 
@@ -437,6 +441,7 @@ class ProfileImpl : public Profile,
   virtual URLRequestContextGetter* GetRequestContextForMedia();
   virtual URLRequestContextGetter* GetRequestContextForExtensions();
   virtual net::SSLConfigService* GetSSLConfigService();
+  virtual HostContentSettingsMap* GetHostContentSettingsMap();
   virtual HostZoomMap* GetHostZoomMap();
   virtual Blacklist* GetPrivacyBlacklist();
   virtual SessionService* GetSessionService();
@@ -521,6 +526,7 @@ class ProfileImpl : public Profile,
 
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
+  scoped_ptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_ptr<Blacklist> privacy_blacklist_;
   scoped_refptr<DownloadManager> download_manager_;
