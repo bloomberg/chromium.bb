@@ -523,9 +523,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceRPCInternal) {
   SimpleBrowserTest(IE, kCFIRPCInternalPage, L"CFInstanceRPCInternal");
 }
 
-// Disabled: http://b/issue?id=2050201
-TEST_F(ChromeFrameTestWithWebServer,
-       DISABLED_WidgetModeFF_CFInstanceRPCInternal) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceRPCInternal) {
   SimpleBrowserTest(FIREFOX, kCFIRPCInternalPage, L"CFInstanceRPCInternal");
 }
 
