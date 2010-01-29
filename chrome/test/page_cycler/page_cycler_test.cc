@@ -151,13 +151,16 @@ void PopulateUBC(const FilePath &test_dir) {
 #endif  // defined(OS_MACOSX)
 
 class PageCyclerTest : public UITest {
-#if defined(OS_MACOSX)
  protected:
+  bool print_times_only_;
+#if defined(OS_MACOSX)
   rlim_t fd_limit_;
 #endif
  public:
-  PageCyclerTest() {
+  PageCyclerTest()
+      : print_times_only_(false) {
     show_window_ = true;
+
 
     // Expose garbage collection for the page cycler tests.
     launch_arguments_.AppendSwitchWithValue(switches::kJavaScriptFlags,
@@ -237,7 +240,8 @@ class PageCyclerTest : public UITest {
   // the path to the test data, so it must be safe for use in a URL without
   // escaping. (No pound (#), question mark (?), semicolon (;), non-ASCII, or
   // other funny stuff.)
-  void RunTestWithSuffix(const char* name, bool use_http, const char* suffix) {
+  void RunTestWithSuffix(const char* graph, const char* name, bool use_http,
+                         const char* suffix) {
     std::wstring pages;
     std::string timings;
     size_t start_size = base::GetSystemCommitCharge();
@@ -246,19 +250,21 @@ class PageCyclerTest : public UITest {
       return;
     size_t stop_size = base::GetSystemCommitCharge();
 
-    PrintMemoryUsageInfo(suffix);
-    PrintIOPerfInfo(suffix);
-    PrintSystemCommitCharge(suffix, stop_size - start_size,
-                            false /* not important */);
+    if (!print_times_only_) {
+      PrintMemoryUsageInfo(suffix);
+      PrintIOPerfInfo(suffix);
+      PrintSystemCommitCharge(suffix, stop_size - start_size,
+                              false /* not important */);
+    }
 
     std::string trace_name = "t" + std::string(suffix);
     wprintf(L"\nPages: [%ls]\n", pages.c_str());
-    PrintResultList("times", "", trace_name, timings, "ms",
+    PrintResultList(graph, "", trace_name, timings, "ms",
                     true /* important */);
   }
 
-  void RunTest(const char* name, bool use_http) {
-    RunTestWithSuffix(name, use_http, "");
+  void RunTest(const char* graph, const char* name, bool use_http) {
+    RunTestWithSuffix(graph, name, use_http, "");
   }
 };
 
@@ -285,7 +291,7 @@ class PageCyclerReferenceTest : public PageCyclerTest {
     PageCyclerTest::SetUp();
   }
 
-  void RunTest(const char* name, bool use_http) {
+  void RunTest(const char* graph, const char* name, bool use_http) {
     std::wstring pages;
     std::string timings;
     size_t start_size = base::GetSystemCommitCharge();
@@ -294,12 +300,14 @@ class PageCyclerReferenceTest : public PageCyclerTest {
       return;
     size_t stop_size = base::GetSystemCommitCharge();
 
-    PrintMemoryUsageInfo("_ref");
-    PrintIOPerfInfo("_ref");
-    PrintSystemCommitCharge("_ref", stop_size - start_size,
-                            false /* not important */);
+    if (!print_times_only_) {
+      PrintMemoryUsageInfo("_ref");
+      PrintIOPerfInfo("_ref");
+      PrintSystemCommitCharge("_ref", stop_size - start_size,
+                              false /* not important */);
+    }
 
-    PrintResultList("times", "", "t_ref", timings, "ms",
+    PrintResultList(graph, "", "t_ref", timings, "ms",
                     true /* important */);
   }
 };
@@ -307,8 +315,8 @@ class PageCyclerReferenceTest : public PageCyclerTest {
 class PageCyclerExtensionTest : public PageCyclerTest {
  public:
   void SetUp() {}
-  void RunTest(const char* extension_profile, const char* output_suffix,
-               const char* name, bool use_http) {
+  void RunTest(const char* graph, const char* extension_profile,
+               const char* output_suffix, const char* name, bool use_http) {
     // Set up the extension profile directory.
     ASSERT_TRUE(extension_profile != NULL);
     FilePath data_dir;
@@ -320,7 +328,7 @@ class PageCyclerExtensionTest : public PageCyclerTest {
 
     // Now run the test.
     PageCyclerTest::SetUp();
-    PageCyclerTest::RunTestWithSuffix(name, use_http, output_suffix);
+    PageCyclerTest::RunTestWithSuffix(graph, name, use_http, output_suffix);
   }
 };
 
@@ -373,6 +381,10 @@ static bool HasDatabaseErrors(const std::string timings) {
 
 class PageCyclerDatabaseTest : public PageCyclerTest {
  public:
+  PageCyclerDatabaseTest() {
+    print_times_only_ = true;
+  }
+
   virtual FilePath GetDataPath(const char* name) {
     return GetDatabaseDataPath(name);
   }
@@ -384,6 +396,10 @@ class PageCyclerDatabaseTest : public PageCyclerTest {
 
 class PageCyclerDatabaseReferenceTest : public PageCyclerReferenceTest {
  public:
+  PageCyclerDatabaseReferenceTest() {
+    print_times_only_ = true;
+  }
+
   virtual FilePath GetDataPath(const char* name) {
     return GetDatabaseDataPath(name);
   }
@@ -396,37 +412,37 @@ class PageCyclerDatabaseReferenceTest : public PageCyclerReferenceTest {
 // This macro simplifies setting up regular and reference build tests.
 #define PAGE_CYCLER_TESTS(test, name, use_http) \
 TEST_F(PageCyclerTest, name) { \
-  RunTest(test, use_http); \
+  RunTest("times", test, use_http); \
 } \
 TEST_F(PageCyclerReferenceTest, name) { \
-  RunTest(test, use_http); \
+  RunTest("times", test, use_http); \
 }
 
 // This macro simplifies setting up regular and reference build tests
 // for HTML5 database tests.
 #define PAGE_CYCLER_DATABASE_TESTS(test, name) \
-TEST_F(PageCyclerDatabaseTest, name) { \
-  RunTest(test, false); \
+TEST_F(PageCyclerDatabaseTest, Database##name##File) { \
+  RunTest(test, test, false); \
 } \
-TEST_F(PageCyclerDatabaseReferenceTest, name) { \
-  RunTest(test, false); \
+TEST_F(PageCyclerDatabaseReferenceTest, Database##name##File) { \
+  RunTest(test, test, false); \
 }
 
 // These are shorthand for File vs. Http tests.
-#define PAGE_CYCLER_FILE_TESTS(test, name)\
+#define PAGE_CYCLER_FILE_TESTS(test, name) \
   PAGE_CYCLER_TESTS(test, name, false)
-#define PAGE_CYCLER_HTTP_TESTS(test, name)\
+#define PAGE_CYCLER_HTTP_TESTS(test, name) \
   PAGE_CYCLER_TESTS(test, name, true)
 
 // This macro lets us define tests with 1 and 10 extensions with 1 content
 // script each. The name for the 10-extension case is changed so as not
 // to run by default on the buildbots.
 #define PAGE_CYCLER_EXTENSIONS_FILE_TESTS(test, name) \
-TEST_F(PageCyclerExtensionTest, name) {  \
-  RunTest("content_scripts1", "_extcs1", test, false); \
+TEST_F(PageCyclerExtensionTest, name) { \
+  RunTest("times", "content_scripts1", "_extcs1", test, false); \
 } \
 TEST_F(PageCyclerExtensionTest, name##10) { \
-  RunTest("content_scripts10", "_extcs10", test, false); \
+  RunTest("times", "content_scripts10", "_extcs10", test, false); \
 }
 
 // file-URL tests
