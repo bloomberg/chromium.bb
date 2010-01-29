@@ -688,7 +688,7 @@ void AutoFillProfilesView::ScrollViewContents::Layout() {
   if (parent && parent->width()) {
     const int width = parent->width();
     const int height = GetHeightForWidth(width);
-    SetBounds(0, 0, width, height);
+    SetBounds(x(), y(), width, height);
   } else {
     gfx::Size prefsize = GetPreferredSize();
     SetBounds(0, 0, prefsize.width(), prefsize.height());
