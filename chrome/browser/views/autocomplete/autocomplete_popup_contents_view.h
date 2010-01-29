@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_CONTENTS_VIEW_H_
 #define CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_CONTENTS_VIEW_H_
@@ -108,8 +108,9 @@ class AutocompletePopupContentsView : public views::View,
   void OpenIndex(size_t index, WindowOpenDisposition disposition);
 
   // Find the index of the match under the given |point|, specified in window
-  // coordinates.
-  int GetIndexForPoint(const gfx::Point& point);
+  // coordinates. Returns AutocompletePopupModel::kNoMatch if there isn't a
+  // match at the specified point.
+  size_t GetIndexForPoint(const gfx::Point& point);
 
   // The popup that contains this view.
   scoped_ptr<AutocompletePopupClass> popup_;

@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
 
@@ -766,7 +766,7 @@ void AutocompletePopupContentsView::OnMouseExited(
 bool AutocompletePopupContentsView::OnMousePressed(
     const views::MouseEvent& event) {
   if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
-    int index = GetIndexForPoint(event.location());
+    size_t index = GetIndexForPoint(event.location());
     model_->SetHoveredLine(index);
     if (HasMatchAt(index) && event.IsLeftMouseButton())
       model_->SetSelectedLine(index, false);
@@ -780,7 +780,7 @@ void AutocompletePopupContentsView::OnMouseReleased(
   if (canceled)
     return;
 
-  int index = GetIndexForPoint(event.location());
+  size_t index = GetIndexForPoint(event.location());
   if (event.IsOnlyMiddleMouseButton())
     OpenIndex(index, NEW_BACKGROUND_TAB);
   else if (event.IsOnlyLeftMouseButton())
@@ -790,7 +790,7 @@ void AutocompletePopupContentsView::OnMouseReleased(
 bool AutocompletePopupContentsView::OnMouseDragged(
     const views::MouseEvent& event) {
   if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
-    int index = GetIndexForPoint(event.location());
+    size_t index = GetIndexForPoint(event.location());
     model_->SetHoveredLine(index);
     if (HasMatchAt(index) && event.IsLeftMouseButton())
       model_->SetSelectedLine(index, false);
@@ -885,7 +885,8 @@ void AutocompletePopupContentsView::OpenIndex(
                       is_keyword_hint ? std::wstring() : keyword);
 }
 
-int AutocompletePopupContentsView::GetIndexForPoint(const gfx::Point& point) {
+size_t AutocompletePopupContentsView::GetIndexForPoint(
+    const gfx::Point& point) {
   if (!HitTest(point))
     return AutocompletePopupModel::kNoMatch;
 
