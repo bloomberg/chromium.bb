@@ -86,6 +86,7 @@ void WebMessagePortChannelImpl::postMessage(
 
   std::vector<int> message_port_ids(channels ? channels->size() : 0);
   if (channels) {
+    // Extract the port IDs from the source array, then free it.
     for (size_t i = 0; i < channels->size(); ++i) {
       WebMessagePortChannelImpl* webchannel =
           static_cast<WebMessagePortChannelImpl*>((*channels)[i]);
@@ -93,6 +94,7 @@ void WebMessagePortChannelImpl::postMessage(
       webchannel->QueueMessages();
       DCHECK(message_port_ids[i] != MSG_ROUTING_NONE);
     }
+    delete channels;
   }
 
   IPC::Message* msg = new WorkerProcessHostMsg_PostMessage(
