@@ -142,8 +142,12 @@ class CarbonIdleEventSource {
   void SendIdleEventsToDelegates(
       const std::set<WebPluginDelegateImpl*>& delegates) const {
     for (std::set<WebPluginDelegateImpl*>::iterator i = delegates.begin();
-         i != delegates.end(); ++i) {
-      (*i)->FireIdleEvent();
+         i != delegates.end();) {
+      // If the plugin changes size or position during idle event handling, it
+      // may be removed from this set; increment the iterator before calling
+      // into the delegate to ensure that the iteration won't be corrupted.
+      WebPluginDelegateImpl* delegate = *(i++);
+      delegate->FireIdleEvent();
     }
   }
 
