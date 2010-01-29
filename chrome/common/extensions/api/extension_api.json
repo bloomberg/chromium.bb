@@ -1794,6 +1794,18 @@
         ]
       },
       {
+        "name": "canPaste",
+        "type": "function",
+        "description": "Whether there are any bookmarks that can be pasted",
+        "nodoc": "true",
+        "parameters": [
+          {"type": "string", "name": "parentId", "description": "The ID of the folder to paste into"},
+          {"type": "function", "name": "callback", "parameters": [
+            {"type": "boolean"}
+          ]}
+        ]
+      },
+      {
         "name": "import",
         "type": "function",
         "description": "Imports bookmarks from a chrome html bookmark file",

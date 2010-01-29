@@ -6,28 +6,78 @@
 
 #include "app/l10n_util.h"
 #include "base/values.h"
-#include "grit/generated_resources.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/profile.h"
+#include "grit/generated_resources.h"
+
+namespace keys = extension_bookmarks_module_constants;
+
+bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut) {
+  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
+  const ListValue* ids = args_as_list();
+  size_t count = ids->GetSize();
+  EXTENSION_FUNCTION_VALIDATE(count > 0);
+
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  std::vector<const BookmarkNode*> nodes;
+
+  for (size_t i = 0; i < count; ++i) {
+    int64 id;
+    std::string id_string;
+    EXTENSION_FUNCTION_VALIDATE(ids->GetString(i, &id_string));
+    if (!GetBookmarkIdAsInt64(id_string, &id))
+      return false;
+    const BookmarkNode* node = model->GetNodeByID(id);
+    if (!node) {
+      error_ = keys::kNoNodeError;
+      return false;
+    } else {
+      nodes.push_back(node);
+    }
+  }
+
+  bookmark_utils::CopyToClipboard(model, nodes, cut);
+
+  return true;
+}
+
+const BookmarkNode* ClipboardBookmarkManagerFunction::GetNodeFromArguments() {
+  std::string id_string;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&id_string));
+  int64 id;
+  EXTENSION_FUNCTION_VALIDATE(StringToInt64(id_string, &id));
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  const BookmarkNode* node = model->GetNodeByID(id);
+  EXTENSION_FUNCTION_VALIDATE(node);
+  return node;
+}
 
 bool CopyBookmarkManagerFunction::RunImpl() {
-  NOTIMPLEMENTED();
-  return true;
+  return CopyOrCut(false);
 }
-
 
 bool CutBookmarkManagerFunction::RunImpl() {
-  NOTIMPLEMENTED();
-  return true;
+  return CopyOrCut(true);
 }
-
 
 bool PasteBookmarkManagerFunction::RunImpl() {
-  NOTIMPLEMENTED();
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  const BookmarkNode* parent_node = GetNodeFromArguments();
+  bookmark_utils::PasteFromClipboard(model, parent_node, -1);
   return true;
 }
 
+bool CanPasteBookmarkManagerFunction::RunImpl() {
+  const BookmarkNode* parent_node = GetNodeFromArguments();
+  bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
+  result_.reset(Value::CreateBooleanValue(can_paste));
+  SendResponse(true);
+  return true;
+}
 void BookmarkManagerIOFunction::SelectFile(SelectFileDialog::Type type) {
   // Balanced in one of the three callbacks of SelectFileDialog:
   // either FileSelectionCanceled, MultiFilesSelected, or FileSelected

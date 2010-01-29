@@ -3,5 +3,5 @@
   "version": "0.1",
   "description": "end-to-end browser test for chrome.experimental.bookmarkManager API",
   "background_page": "test.html",
-  "permissions": ["experimental"]
+  "permissions": ["bookmarks", "experimental"]
 }

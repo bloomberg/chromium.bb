@@ -138,6 +138,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<CopyBookmarkManagerFunction>();
   RegisterFunction<CutBookmarkManagerFunction>();
   RegisterFunction<PasteBookmarkManagerFunction>();
+  RegisterFunction<CanPasteBookmarkManagerFunction>();
   RegisterFunction<ImportBookmarksFunction>();
   RegisterFunction<ExportBookmarksFunction>();
   RegisterFunction<BookmarkManagerGetStringsFunction>();
