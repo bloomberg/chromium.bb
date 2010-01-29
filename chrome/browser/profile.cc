@@ -32,6 +32,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -429,6 +430,10 @@ class OffTheRecordProfileImpl : public Profile,
   virtual SessionService* GetSessionService() {
     // Don't save any sessions when off the record.
     return NULL;
+  }
+
+  virtual ChromeCookiePolicy* GetCookiePolicy() {
+    return GetOriginalProfile()->GetCookiePolicy();
   }
 
   virtual void ShutdownSessionService() {
@@ -1167,6 +1172,13 @@ SessionService* ProfileImpl::GetSessionService() {
   }
   return session_service_.get();
 }
+
+ChromeCookiePolicy* ProfileImpl::GetCookiePolicy() {
+  if (!cookie_policy_.get())
+    cookie_policy_.reset(new ChromeCookiePolicy(this));
+  return cookie_policy_.get();
+}
+
 
 void ProfileImpl::ShutdownSessionService() {
   if (shutdown_session_service_)

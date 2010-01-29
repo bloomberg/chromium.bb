@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/options/cookies_view.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
+#include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/options_util.h"
@@ -35,7 +36,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "net/base/cookie_policy.h"
 
 namespace {
 
@@ -754,7 +754,7 @@ void PrivacySection::OnCookieBehaviorChanged(GtkComboBox* combo_box,
   }
   privacy_section->UserMetricsRecordAction(
       kUserMetrics[cookie_policy], privacy_section->profile()->GetPrefs());
-  privacy_section->cookie_behavior_.SetValue(cookie_policy);
+  privacy_section->profile()->GetCookiePolicy()->set_type(cookie_policy);
 }
 
 // static

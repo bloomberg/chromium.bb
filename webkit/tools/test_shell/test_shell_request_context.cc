@@ -8,6 +8,7 @@
 
 #include "base/file_path.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/cookie_policy.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ssl_config_service.h"
 #include "net/ftp/ftp_network_layer.h"
@@ -32,6 +33,7 @@ void TestShellRequestContext::Init(
     net::HttpCache::Mode cache_mode,
     bool no_proxy) {
   cookie_store_ = new net::CookieMonster();
+  cookie_policy_ = new net::CookiePolicy();
 
   // hard-code A-L and A-C for test shells
   accept_language_ = "en-us,en";
@@ -75,6 +77,7 @@ void TestShellRequestContext::Init(
 TestShellRequestContext::~TestShellRequestContext() {
   delete ftp_transaction_factory_;
   delete http_transaction_factory_;
+  delete cookie_policy_;
 }
 
 const std::string& TestShellRequestContext::GetUserAgent(

@@ -65,6 +65,7 @@ class TestURLRequestContext : public URLRequestContext {
   virtual ~TestURLRequestContext() {
     delete ftp_transaction_factory_;
     delete http_transaction_factory_;
+    delete cookie_policy_;
   }
 
  private:
@@ -78,6 +79,7 @@ class TestURLRequestContext : public URLRequestContext {
           disk_cache::CreateInMemoryCacheBackend(0));
     // In-memory cookie store.
     cookie_store_ = new net::CookieMonster();
+    cookie_policy_ = new net::CookiePolicy();
     accept_language_ = "en-us,fr";
     accept_charset_ = "iso-8859-1,*,utf-8";
   }

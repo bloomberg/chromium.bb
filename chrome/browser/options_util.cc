@@ -9,6 +9,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -22,7 +23,6 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
   const wchar_t* kUserPrefs[] = {
     prefs::kAcceptLanguages,
     prefs::kAlternateErrorPagesEnabled,
-    prefs::kCookieBehavior,
     prefs::kDefaultCharset,
     prefs::kDnsPrefetchingEnabled,
 #if defined(OS_LINUX)
@@ -64,6 +64,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kWebKitSansSerifFontFamily,
     prefs::kWebKitSerifFontFamily,
   };
+  profile->GetCookiePolicy()->ResetToDefaults();
   profile->GetDownloadManager()->ResetAutoOpenFiles();
   profile->GetHostContentSettingsMap()->ResetToDefaults();
   for (size_t i = 0; i < arraysize(kUserPrefs); ++i)

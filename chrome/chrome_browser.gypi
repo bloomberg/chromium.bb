@@ -1217,6 +1217,8 @@
         'browser/modal_html_dialog_delegate.h',
         'browser/net/browser_url_util.cc',
         'browser/net/browser_url_util.h',
+        'browser/net/chrome_cookie_policy.cc',
+        'browser/net/chrome_cookie_policy.h',
         'browser/net/chrome_url_request_context.cc',
         'browser/net/chrome_url_request_context.h',
         'browser/net/url_request_context_getter.cc',

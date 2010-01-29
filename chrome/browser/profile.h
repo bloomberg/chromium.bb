@@ -33,6 +33,7 @@ class DatabaseTracker;
 class Blacklist;
 class BookmarkModel;
 class BrowserThemeProvider;
+class ChromeCookiePolicy;
 class ChromeURLRequestContextGetter;
 class DesktopNotificationService;
 class DownloadManager;
@@ -308,6 +309,9 @@ class Profile {
   // should always check the return value for NULL.
   virtual SessionService* GetSessionService() = 0;
 
+  // Returns the cookie policy for this profile.
+  virtual ChromeCookiePolicy* GetCookiePolicy() = 0;
+
   // If this profile has a session service, it is shut down. To properly record
   // the current state this forces creation of the session service, then shuts
   // it down.
@@ -445,6 +449,7 @@ class ProfileImpl : public Profile,
   virtual HostZoomMap* GetHostZoomMap();
   virtual Blacklist* GetPrivacyBlacklist();
   virtual SessionService* GetSessionService();
+  virtual ChromeCookiePolicy* GetCookiePolicy();
   virtual void ShutdownSessionService();
   virtual bool HasSessionService() const;
   virtual bool DidLastSessionExitCleanly();
@@ -529,6 +534,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_ptr<Blacklist> privacy_blacklist_;
+  scoped_ptr<ChromeCookiePolicy> cookie_policy_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<HistoryService> history_service_;
   scoped_refptr<FaviconService> favicon_service_;

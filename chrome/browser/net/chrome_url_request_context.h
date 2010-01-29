@@ -9,6 +9,7 @@
 #include "base/linked_ptr.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
+#include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/appcache/chrome_appcache_service.h"
 #include "chrome/common/notification_registrar.h"
@@ -136,8 +137,8 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_referrer_charset(const std::string& referrer_charset) {
     referrer_charset_ = referrer_charset;
   }
-  void set_cookie_policy_type(net::CookiePolicy::Type type) {
-    cookie_policy_.set_type(type);
+  void set_cookie_policy(ChromeCookiePolicy* policy) {
+    cookie_policy_ = policy;
   }
   void set_extension_info(
       const ChromeURLRequestContext::ExtensionInfoMap& info) {
@@ -188,9 +189,6 @@ class ChromeURLRequestContext : public URLRequestContext {
 
   // Callback for when the accept language changes.
   void OnAcceptLanguageChange(const std::string& accept_language);
-
-  // Callback for when the cookie policy changes.
-  void OnCookiePolicyChange(net::CookiePolicy::Type type);
 
   // Callback for when the default charset changes.
   void OnDefaultCharsetChange(const std::string& default_charset);
@@ -314,7 +312,6 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // These methods simply forward to the corresponding method on
   // ChromeURLRequestContext.
   void OnAcceptLanguageChange(const std::string& accept_language);
-  void OnCookiePolicyChange(net::CookiePolicy::Type type);
   void OnDefaultCharsetChange(const std::string& default_charset);
 
   // Saves the cookie store to |result| and signals |completion|.
@@ -368,7 +365,7 @@ class ChromeURLRequestContextFactory {
   std::string accept_language_;
   std::string accept_charset_;
   std::string referrer_charset_;
-  net::CookiePolicy::Type cookie_policy_type_;
+  ChromeCookiePolicy* cookie_policy_;
   ChromeURLRequestContext::ExtensionInfoMap extension_info_;
   // TODO(aa): I think this can go away now as we no longer support standalone
   // user scripts.

@@ -120,6 +120,9 @@ const wchar_t kSearchSuggestEnabled[] = L"search.suggest_enabled";
 // 2 - block all cookies
 const wchar_t kCookieBehavior[] = L"security.cookie_behavior";
 
+// Dictionary of exceptions to the default cookie behavior.
+const wchar_t kCookieExceptions[] = L"security.cookie_exceptions";
+
 // Boolean that is true if mixed content should be filtered.
 // TODO(jcampan): http://b/1084034: at some point this will become an enum
 //                 (int): don't filter, filter everything, filter images only.
