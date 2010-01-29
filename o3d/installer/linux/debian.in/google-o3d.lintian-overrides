@@ -1,0 +1,21 @@
+# We are not part of Debian/Ubuntu, so installing into /opt is correct.
+google-o3d: dir-or-file-in-opt opt/google/
+
+# We are not part of Debian/Ubuntu, so installing into /opt is correct.
+google-o3d: dir-or-file-in-opt opt/google/o3d/
+
+# We are not part of Debian/Ubuntu, so installing into /opt is correct.
+google-o3d: dir-or-file-in-opt opt/google/o3d/lib/
+
+# We are not part of Debian/Ubuntu, so installing into /opt is correct.
+google-o3d: dir-or-file-in-opt opt/google/o3d/lib/libCg.so
+
+# We are not part of Debian/Ubuntu, so installing into /opt is correct.
+google-o3d: dir-or-file-in-opt opt/google/o3d/lib/libCgGL.so
+
+# We are not part of Debian/Ubuntu, so installing into /opt is correct.
+google-o3d: dir-or-file-in-opt opt/google/o3d/lib/libnpo3dautoplugin.so
+
+# This is needed to find ourselves in /opt
+google-o3d: binary-or-shlib-defines-rpath ./opt/google/o3d/lib/libnpo3dautoplugin.so /opt/google/o3d/lib
+

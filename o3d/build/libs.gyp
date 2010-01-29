@@ -191,9 +191,6 @@
                   ],
                 ],
                 'files': [
-                  '../../<(glewdir)/<(libdir)/libGLEW.so',
-                  '../../<(glewdir)/<(libdir)/libGLEW.so.1.5',
-                  '../../<(glewdir)/<(libdir)/libGLEW.so.1.5.1',
                   "../../<(cgdir)/<(libdir)/libCg.so",
                   "../../<(cgdir)/<(libdir)/libCgGL.so",
                   "../../<(cgdir)/bin/cgc",
@@ -228,9 +225,6 @@
               {
                 'destination': '<(SHARED_LIB_DIR)',
                 'files': [
-                  '<(PRODUCT_DIR)/libGLEW.so',
-                  '<(PRODUCT_DIR)/libGLEW.so.1.5',
-                  '<(PRODUCT_DIR)/libGLEW.so.1.5.1',
                   "<(PRODUCT_DIR)/libCg.so",
                   "<(PRODUCT_DIR)/libCgGL.so",
                 ],

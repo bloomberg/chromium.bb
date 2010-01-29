@@ -29,7 +29,7 @@
             ],
           },
         ],
-        ['OS=="unix"',
+        ['OS=="linux"',
           {
             'dependencies': [
               'linux/installer.gyp:installer',

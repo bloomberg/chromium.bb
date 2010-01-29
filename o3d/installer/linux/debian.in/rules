@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+
+DEB_DH_STRIP_ARGS=--dbg-package=google-o3d-dbgsym
+
+# Don't call ldconfig.  We're in /opt, which isn't supported.
+DEB_DH_MAKESHLIBS_ARGS_google-o3d := -n
+
+# This is needed on Hardy.  Lucid will remove this requirement.
+binary-install/google-o3d::
+	-dh_lintian -pgoogle-o3d

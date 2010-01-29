@@ -1,13 +1,13 @@
 Source: google-o3d
-Section: non-free/web
-Priority: optional
 Maintainer: Tristan Schmelcher <tschmelcher@google.com>
-Build-Depends: debhelper (>= 4.0.0), cdbs (>=0.4.34ubuntu4)
-Standards-Version: 3.7.2
+Build-Depends-Indep: debhelper (>= 5), cdbs
+Priority: optional
+Section: web
+Standards-Version: 3.7.3
 
 Package: google-o3d
-Architecture: amd64
-Depends: ia32-libs, libc6-i386, lib32stdc++6, lib32gcc1, lib32z1, nspluginwrapper
+Architecture: any
+Depends: ${shlibs:Depends}
 Conflicts: o3d-plugin
 Replaces: o3d-plugin
 Description: Google O3D Plugin
@@ -17,7 +17,7 @@ Description: Google O3D Plugin
  This package provides the NPAPI browser plugin for running O3D-based web apps.
 
 Package: google-o3d-dbgsym
-Architecture: amd64
+Architecture: any
 Depends: google-o3d (= ${Source-Version})
 Description: Google O3D Plugin Debug Symbols
  O3D is an open-source web API for creating rich, interactive 3D applications in

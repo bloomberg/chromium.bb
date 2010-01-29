@@ -1,0 +1,3 @@
+../libCgGL.so /opt/google/o3d/lib
+../libCg.so /opt/google/o3d/lib
+../libnpo3dautoplugin.so /opt/google/o3d

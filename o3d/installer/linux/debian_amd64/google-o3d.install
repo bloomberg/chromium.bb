@@ -1,4 +1,0 @@
-libnpo3dautoplugin.so opt/google/o3d
-libGLEW.so.1.5 opt/google/o3d/lib
-libCg.so opt/google/o3d/lib
-libCgGL.so opt/google/o3d/lib
