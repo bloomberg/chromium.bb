@@ -150,7 +150,6 @@ LocationBarView::LocationBarView(Profile* profile,
 }
 
 LocationBarView::~LocationBarView() {
-  DeletePageActionViews();
 }
 
 void LocationBarView::Init() {
@@ -346,11 +345,10 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction *page_action,
 views::View* LocationBarView::GetPageActionView(
     ExtensionAction *page_action) {
   DCHECK(page_action);
-  for (std::vector<PageActionWithBadgeView*>::iterator iter =
-      page_action_views_.begin(); iter != page_action_views_.end();
-      ++iter) {
-    if ((*iter)->image_view()->page_action() == page_action)
-      return *iter;
+  for (PageActionViews::const_iterator i(page_action_views_.begin());
+       i != page_action_views_.end(); ++i) {
+    if ((*i)->image_view()->page_action() == page_action)
+      return *i;
   }
   return NULL;
 }
@@ -467,6 +465,10 @@ void LocationBarView::OnChanged() {
   DoLayout(false);
 }
 
+void LocationBarView::OnInputInProgress(bool in_progress) {
+  delegate_->OnInputInProgress(in_progress);
+}
+
 void LocationBarView::OnKillFocus() {
 }
 
@@ -497,12 +499,10 @@ void LocationBarView::DoLayout(const bool force_layout) {
 
   int entry_width = width() - (kEntryPadding * 2);
 
-  gfx::Size page_action_size;
-  for (size_t i = 0; i < page_action_views_.size(); i++) {
-    if (page_action_views_[i]->IsVisible()) {
-      page_action_size = page_action_views_[i]->GetPreferredSize();
-      entry_width -= page_action_size.width() + kInnerPadding;
-    }
+  for (PageActionViews::const_iterator i(page_action_views_.begin());
+       i != page_action_views_.end(); ++i) {
+    if ((*i)->IsVisible())
+      entry_width -= (*i)->GetPreferredSize().width() + kInnerPadding;
   }
   gfx::Size security_image_size;
   if (security_image_view_.IsVisible()) {
@@ -556,13 +556,12 @@ void LocationBarView::DoLayout(const bool force_layout) {
     offset -= kInnerPadding;
   }
 
-  for (size_t i = 0; i < page_action_views_.size(); i++) {
-    if (page_action_views_[i]->IsVisible()) {
-      page_action_size = page_action_views_[i]->GetPreferredSize();
-      offset -= page_action_size.width();
-      page_action_views_[i]->SetBounds(offset, location_y,
-                                       page_action_size.width(),
-                                       location_height);
+  for (PageActionViews::const_iterator i(page_action_views_.begin());
+       i != page_action_views_.end(); ++i) {
+    if ((*i)->IsVisible()) {
+      int page_action_width = (*i)->GetPreferredSize().width();
+      offset -= page_action_width;
+      (*i)->SetBounds(offset, location_y, page_action_width, location_height);
       offset -= kInnerPadding;
     }
   }
@@ -698,13 +697,10 @@ void LocationBarView::SetSecurityIcon(ToolbarModel::Icon icon) {
 }
 
 void LocationBarView::DeletePageActionViews() {
-  if (!page_action_views_.empty()) {
-    for (size_t i = 0; i < page_action_views_.size(); ++i)
-      RemoveChildView(page_action_views_[i]);
-    STLDeleteContainerPointers(page_action_views_.begin(),
-                               page_action_views_.end());
-    page_action_views_.clear();
-  }
+  for (PageActionViews::const_iterator i(page_action_views_.begin());
+       i != page_action_views_.end(); ++i)
+    RemoveChildView(*i);
+  STLDeleteElements(&page_action_views_);
 }
 
 void LocationBarView::RefreshPageActionViews() {
@@ -714,10 +710,9 @@ void LocationBarView::RefreshPageActionViews() {
     return;
 
   std::map<ExtensionAction*, bool> old_visibility;
-  for (size_t i = 0; i < page_action_views_.size(); i++) {
-    old_visibility[page_action_views_[i]->image_view()->page_action()] =
-        page_action_views_[i]->IsVisible();
-  }
+  for (PageActionViews::const_iterator i(page_action_views_.begin());
+       i != page_action_views_.end(); ++i)
+    old_visibility[(*i)->image_view()->page_action()] = (*i)->IsVisible();
 
   // Remember the previous visibility of the page actions so that we can
   // notify when this changes.
@@ -738,7 +733,6 @@ void LocationBarView::RefreshPageActionViews() {
           new PageActionImageView(this, profile_,
                                   page_actions[i], bubble_positioner_));
       page_action_views_[i]->SetVisible(false);
-      page_action_views_[i]->set_parent_owned(false);
       AddChildView(page_action_views_[i]);
     }
   }
@@ -747,14 +741,14 @@ void LocationBarView::RefreshPageActionViews() {
   if (!page_action_views_.empty() && contents) {
     GURL url = GURL(WideToUTF8(model_->GetText()));
 
-    for (size_t i = 0; i < page_action_views_.size(); i++) {
-      page_action_views_[i]->UpdateVisibility(contents, url);
+    for (PageActionViews::const_iterator i(page_action_views_.begin());
+         i != page_action_views_.end(); ++i) {
+      (*i)->UpdateVisibility(contents, url);
 
       // Check if the visibility of the action changed and notify if it did.
-      ExtensionAction* action =
-          page_action_views_[i]->image_view()->page_action();
+      ExtensionAction* action = (*i)->image_view()->page_action();
       if (old_visibility.find(action) == old_visibility.end() ||
-          old_visibility[action] != page_action_views_[i]->IsVisible()) {
+          old_visibility[action] != (*i)->IsVisible()) {
         NotificationService::current()->Notify(
             NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
             Source<ExtensionAction>(action),
@@ -1238,10 +1232,10 @@ LocationBarView::SecurityImageView::~SecurityImageView() {
 void LocationBarView::SecurityImageView::SetImageShown(Image image) {
   switch (image) {
     case LOCK:
-      ImageView::SetImage(lock_icon_);
+      SetImage(lock_icon_);
       break;
     case WARNING:
-      ImageView::SetImage(warning_icon_);
+      SetImage(warning_icon_);
       break;
     default:
       NOTREACHED();
@@ -1467,7 +1461,7 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
     }
 
     if (!icon.isNull())
-      ImageView::SetImage(&icon);
+      SetImage(&icon);
   }
   SetVisible(visible);
 }
@@ -1611,13 +1605,14 @@ void LocationBarView::TestPageActionPressed(size_t index) {
     for (size_t i = 0; i < page_action_views_.size(); ++i) {
       if (page_action_views_[i]->IsVisible()) {
         if (current == index) {
-          const int button = 1;  // Left mouse button.
-          page_action_views_[i]->image_view()->ExecuteAction(button);
+          const int kLeftMouseButton = 1;
+          page_action_views_[i]->image_view()->ExecuteAction(kLeftMouseButton);
           return;
         }
         ++current;
       }
     }
   }
+
   NOTREACHED();
 }

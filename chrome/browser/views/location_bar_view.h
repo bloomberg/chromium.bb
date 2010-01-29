@@ -109,7 +109,7 @@ class LocationBarView : public LocationBar,
   void SetPreviewEnabledPageAction(ExtensionAction *page_action,
                                    bool preview_enabled);
 
-  // Retrieves the PageAction View which is associated with |page_action|
+  // Retrieves the PageAction View which is associated with |page_action|.
   views::View* GetPageActionView(ExtensionAction* page_action);
 
   // Sizing functions
@@ -126,7 +126,6 @@ class LocationBarView : public LocationBar,
   // to close its popup.
   virtual void VisibleBoundsInRootChanged();
 
-
 #if defined(OS_WIN)
   // Event Handlers
   virtual bool OnMousePressed(const views::MouseEvent& event);
@@ -140,9 +139,7 @@ class LocationBarView : public LocationBar,
                                     PageTransition::Type transition,
                                     const GURL& alternate_nav_url);
   virtual void OnChanged();
-  virtual void OnInputInProgress(bool in_progress) {
-    delegate_->OnInputInProgress(in_progress);
-  }
+  virtual void OnInputInProgress(bool in_progress);
   virtual void OnKillFocus();
   virtual void OnSetFocus();
   virtual SkBitmap GetFavIcon() const;
@@ -273,7 +270,6 @@ class LocationBarView : public LocationBar,
     DISALLOW_COPY_AND_ASSIGN(KeywordHintView);
   };
 
-
   class ShowInfoBubbleTask;
   class ShowFirstRunBubbleTask;
 
@@ -347,9 +343,6 @@ class LocationBarView : public LocationBar,
 
     // The warning icon shown when HTTPS is broken.
     static SkBitmap* warning_icon_;
-
-    // The currently shown info bubble if any.
-    InfoBubble* info_bubble_;
 
     // A task used to display the info bubble when the mouse hovers on the
     // image.
@@ -462,6 +455,8 @@ class LocationBarView : public LocationBar,
 
   class PageActionWithBadgeView;
   friend class PageActionWithBadgeView;
+  typedef std::vector<PageActionWithBadgeView*> PageActionViews;
+
   // Both Layout and OnChanged call into this. This updates the contents
   // of the 3 views: selected_keyword, keyword_hint and type_search_view. If
   // force_layout is true, or one of these views has changed in such a way as
@@ -580,7 +575,7 @@ class LocationBarView : public LocationBar,
   SecurityImageView security_image_view_;
 
   // The page action icon views.
-  std::vector<PageActionWithBadgeView*> page_action_views_;
+  PageActionViews page_action_views_;
 
   // A label displayed after the lock icon to show some extra information.
   views::Label info_label_;
